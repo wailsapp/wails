@@ -21,7 +21,7 @@ func main() {
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Assets: application.AssetOptions{
 			FS: assets,
 		},

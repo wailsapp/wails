@@ -34,7 +34,7 @@ func main() {
 
 	newWindow := func() {
 		windowName := "WebviewWindow " + strconv.Itoa(windowCounter)
-		app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+		app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 			Name: windowName,
 		}).
 			SetTitle(windowName).
