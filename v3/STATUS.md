@@ -82,8 +82,8 @@ Webview Window Interface Methods
 | Feature | Windows | Linux | Mac | Notes |
 |---------|---------|-------|-----|-------|
 | Quit    |         |       | Y   |       |
-| Hide    |         |       | Y   |       |
-| Show    |         |       | Y   |       |
+| Hide    | Y       |       | Y   |       |
+| Show    | Y       |       | Y   |       |
 
 ### Dialogs
 

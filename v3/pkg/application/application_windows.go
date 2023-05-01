@@ -23,6 +23,10 @@ type windowsApp struct {
 	mainThreadID         w32.HANDLE
 	mainThreadWindowHWND w32.HWND
 
+	// Windows hidden by application.Hide()
+	hiddenWindows []*windowsWebviewWindow
+	focusedWindow w32.HWND
+
 	// system theme
 	isDarkMode bool
 }
@@ -38,9 +42,29 @@ func (m *windowsApp) getScreens() ([]*Screen, error) {
 }
 
 func (m *windowsApp) hide() {
+	// Get the current focussed window
+	m.focusedWindow = w32.GetForegroundWindow()
+
+	// Iterate over all windows and hide them if they aren't already hidden
+	for _, window := range m.windowMap {
+		if window.isVisible() {
+			// Add to hidden windows
+			m.hiddenWindows = append(m.hiddenWindows, window)
+			window.hide()
+		}
+	}
+	// Switch focus to the next application
+	hwndNext := w32.GetWindow(m.mainThreadWindowHWND, w32.GW_HWNDNEXT)
+	w32.SetForegroundWindow(hwndNext)
 }
 
 func (m *windowsApp) show() {
+	// Iterate over all windows and show them if they were previously hidden
+	for _, window := range m.hiddenWindows {
+		window.show()
+	}
+	// Show the foreground window
+	w32.SetForegroundWindow(m.focusedWindow)
 }
 
 func (m *windowsApp) on(eventID uint) {

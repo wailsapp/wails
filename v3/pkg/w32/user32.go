@@ -41,6 +41,7 @@ var (
 	procGetWindowText                 = moduser32.NewProc("GetWindowTextW")
 	procGetWindowRect                 = moduser32.NewProc("GetWindowRect")
 	procGetWindowInfo                 = moduser32.NewProc("GetWindowInfo")
+	procGetWindow                     = moduser32.NewProc("GetWindow")
 	procSetWindowCompositionAttribute = moduser32.NewProc("SetWindowCompositionAttribute")
 	procMoveWindow                    = moduser32.NewProc("MoveWindow")
 	procScreenToClient                = moduser32.NewProc("ScreenToClient")
@@ -413,6 +414,14 @@ func GetWindowInfo(hwnd HWND, info *WINDOWINFO) int {
 		uintptr(unsafe.Pointer(info)),
 	)
 	return int(ret)
+}
+
+func GetWindow(hwnd HWND, cmd uint32) HWND {
+	ret, _, _ := procGetWindow.Call(
+		hwnd,
+		uintptr(cmd),
+	)
+	return HWND(ret)
 }
 
 func GetWindowText(hwnd HWND) string {
