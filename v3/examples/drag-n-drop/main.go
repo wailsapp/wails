@@ -25,7 +25,7 @@ func main() {
 		},
 	})
 
-	window := app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Drag-n-drop Demo",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,

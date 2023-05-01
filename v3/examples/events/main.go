@@ -41,7 +41,7 @@ func main() {
 		}
 	})
 
-	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Events Demo",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
@@ -49,7 +49,7 @@ func main() {
 			InvisibleTitleBarHeight: 50,
 		},
 	})
-	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Events Demo",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
