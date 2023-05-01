@@ -19,12 +19,13 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
-	})
-
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Assets: application.AssetOptions{
 			FS: assets,
 		},
+	})
+
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+		URL: "/",
 	})
 
 	err := app.Run()

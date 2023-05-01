@@ -115,7 +115,7 @@ func main() {
 		Height:        400,
 		AlwaysOnTop:   true,
 		DisableResize: false,
-		BackgroundColour: &application.RGBA{
+		BackgroundColour: application.RGBA{
 			Red:   255,
 			Green: 255,
 			Blue:  255,
