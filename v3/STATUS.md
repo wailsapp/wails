@@ -17,8 +17,8 @@ Application interface methods
 | setIcon(icon []byte)                                          |         |       | Y   |       |
 | on(id uint)                                                   |         |       | Y   |       |
 | dispatchOnMainThread(fn func())                               | Y       |       | Y   |       |
-| hide()                                                        |         |       | Y   |       |
-| show()                                                        |         |       | Y   |       |
+| hide()                                                        | Y       |       | Y   |       |
+| show()                                                        | Y       |       | Y   |       |
 | getPrimaryScreen() (*Screen, error)                           |         |       | Y   |       |
 | getScreens() ([]*Screen, error)                               |         |       | Y   |       |
 

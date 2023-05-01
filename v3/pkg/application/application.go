@@ -242,7 +242,7 @@ func (a *App) On(eventType events.ApplicationEventType, callback func()) func() 
 	}
 }
 func (a *App) NewWebviewWindow() *WebviewWindow {
-	return a.NewWebviewWindowWithOptions(&WebviewWindowOptions{})
+	return a.NewWebviewWindowWithOptions(WebviewWindowOptions{})
 }
 
 func (a *App) GetPID() int {
@@ -283,11 +283,7 @@ func (a *App) error(message string, args ...any) {
 	})
 }
 
-func (a *App) NewWebviewWindowWithOptions(windowOptions *WebviewWindowOptions) *WebviewWindow {
-	// Ensure we have sane defaults
-	if windowOptions == nil {
-		windowOptions = WebviewWindowDefaults
-	}
+func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
 	newWindow := NewWindow(windowOptions)
 	id := newWindow.id
 	if a.windows == nil {

@@ -27,6 +27,10 @@ type WindowsWindow struct {
 	Theme Theme
 	// Custom colours for dark/light mode
 	CustomTheme *ThemeSettings
+
+	// Disable all window decorations in Frameless mode, which means no "Aero Shadow" and no "Rounded Corner" will be shown.
+	// "Rounded Corners" are only available on Windows 11.
+	DisableFramelessWindowDecorations bool
 }
 
 type Theme int
