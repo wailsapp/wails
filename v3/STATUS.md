@@ -31,15 +31,14 @@ Webview Window Interface Methods
 | center()                                           | Y       |       | Y   |                                          |
 | close()                                            |         |       | Y   |                                          |
 | destroy()                                          |         |       | Y   |                                          |
-| disableSizeConstraints()                           |         |       | Y   |                                          |
 | execJS(js string)                                  |         |       | Y   |                                          |
 | forceReload()                                      |         |       | Y   |                                          |
-| fullscreen()                                       |         |       | Y   |                                          |
+| fullscreen()                                       | Y       |       | Y   |                                          |
 | getScreen() (*Screen, error)                       |         |       | Y   |                                          |
 | getZoom() float64                                  |         |       | Y   |                                          |
 | height() int                                       | Y       |       | Y   |                                          |
 | hide()                                             | Y       |       | Y   |                                          |
-| isFullscreen() bool                                |         |       | Y   |                                          |
+| isFullscreen() bool                                | Y       |       | Y   |                                          |
 | isMaximised() bool                                 | Y       |       | Y   |                                          |
 | isMinimised() bool                                 | Y       |       | Y   |                                          |
 | maximise()                                         | Y       |       | Y   |                                          |
@@ -64,9 +63,9 @@ Webview Window Interface Methods
 | setURL(url string)                                 |         |       | Y   |                                          |
 | setZoom(zoom float64)                              |         |       | Y   |                                          |
 | show()                                             | Y       |       | Y   |                                          |
-| size() (int, int)                                  |         |       | Y   |                                          |
+| size() (int, int)                                  | Y       |       | Y   |                                          |
 | toggleDevTools()                                   |         |       | Y   |                                          |
-| unfullscreen()                                     |         |       | Y   |                                          |
+| unfullscreen()                                     | Y       |       | Y   |                                          |
 | unmaximise()                                       | Y       |       | Y   |                                          |
 | unminimise()                                       | Y       |       | Y   |                                          |
 | width() int                                        | Y       |       | Y   |                                          |
