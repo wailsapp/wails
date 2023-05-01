@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/pterm/pterm"
+
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/system"
@@ -21,15 +22,15 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 
 	app.PrintBanner()
 
-	pterm.Print("Scanning system - Please wait (this may take a long time)...")
+	spinner, _ := pterm.DefaultSpinner.Start("Scanning system - Please wait (this may take a long time)...")
 
 	// Get system info
 	info, err := system.GetInfo()
 	if err != nil {
-		pterm.Println("Failed.")
+		spinner.Fail("Failed.")
 		return err
 	}
-	pterm.Println("Done.")
+	spinner.Success("Done.")
 
 	pterm.DefaultSection.Println("System")
 
