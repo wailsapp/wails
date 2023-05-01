@@ -6,10 +6,7 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/w32"
 	"runtime"
 	"sort"
-	"syscall"
 	"unsafe"
-
-	"github.com/samber/lo"
 )
 
 var (
@@ -37,7 +34,7 @@ func (m *windowsApp) initMainLoop() {
 	m.mainThreadWindowHWND = w32.CreateWindowEx(
 		0,
 		windowClassName,
-		lo.Must(syscall.UTF16PtrFromString("__wails_hidden_mainthread")),
+		w32.MustStringToUTF16Ptr("__wails_hidden_mainthread"),
 		w32.WS_DISABLED,
 		w32.CW_USEDEFAULT,
 		w32.CW_USEDEFAULT,

@@ -46,7 +46,7 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		window.UnFullscreen()
 		m.ok(rw)
 	case "Minimise":
-		window.Minimize()
+		window.Minimise()
 		m.ok(rw)
 	case "UnMinimise":
 		window.UnMinimise()

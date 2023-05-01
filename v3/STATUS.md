@@ -26,55 +26,54 @@ Application interface methods
 
 Webview Window Interface Methods
 
-| Method                                             | Windows | Linux | Mac | Notes |    
-|----------------------------------------------------|---------|-------|-----|-------|    
-| setTitle(title string)                             | Y       |       | Y   |       |
-| setSize(width, height int)                         | Y       |       | Y   |       |
-| setAlwaysOnTop(alwaysOnTop bool)                   | Y       |       | Y   |       |
-| setURL(url string)                                 |         |       | Y   |       |
-| setResizable(resizable bool)                       | Y       |       | Y   |       |
-| setMinSize(width, height int)                      |         |       | Y   |       |
-| setMaxSize(width, height int)                      |         |       | Y   |       |
-| execJS(js string)                                  |         |       | Y   |       |
-| restore()                                          |         |       | Y   |       |
-| setBackgroundColour(color RGBA)                    | Y       |       | Y   |       |
-| run()                                              | Y       |       | Y   |       |
-| center()                                           | Y       |       | Y   |       |
-| size() (int, int)                                  |         |       | Y   |       |
-| width() int                                        | Y       |       | Y   |       |
-| height() int                                       | Y       |       | Y   |       |
-| position() (int, int)                              | Y       |       | Y   |       |
-| destroy()                                          |         |       | Y   |       |
-| reload()                                           |         |       | Y   |       |
-| forceReload()                                      |         |       | Y   |       |
-| toggleDevTools()                                   |         |       | Y   |       |
-| zoomReset()                                        |         |       | Y   |       |
-| zoomIn()                                           |         |       | Y   |       |
-| zoomOut()                                          |         |       | Y   |       |
-| getZoom() float64                                  |         |       | Y   |       |
-| setZoom(zoom float64)                              |         |       | Y   |       |
-| close()                                            |         |       | Y   |       |
-| zoom()                                             |         |       | Y   |       |
-| setHTML(html string)                               |         |       | Y   |       |
-| setPosition(x int, y int)                          |         |       | Y   |       |
-| on(eventID uint)                                   |         |       | Y   |       |
-| minimise()                                         | Y       |       | Y   |       |
-| unminimise()                                       | Y       |       | Y   |       |
-| maximise()                                         | Y       |       | Y   |       |
-| unmaximise()                                       | Y       |       | Y   |       |
-| fullscreen()                                       |         |       | Y   |       |
-| unfullscreen()                                     |         |       | Y   |       |
-| isMinimised() bool                                 | Y       |       | Y   |       |
-| isMaximised() bool                                 | Y       |       | Y   |       |
-| isFullscreen() bool                                |         |       | Y   |       |
-| disableSizeConstraints()                           |         |       | Y   |       |
-| setFullscreenButtonEnabled(enabled bool)           |         |       | Y   |       |
-| show()                                             | Y       |       | Y   |       |
-| hide()                                             | Y       |       | Y   |       |
-| getScreen() (*Screen, error)                       |         |       | Y   |       |
-| setFrameless(bool)                                 |         |       | Y   |       |
-| openContextMenu(menu *Menu, data *ContextMenuData) |         |       | Y   |       |
-| nativeWindowHandle() (uintptr, error)              | Y       |       |     |       |
+| Method                                             | Windows | Linux | Mac | Notes                                    |    
+|----------------------------------------------------|---------|-------|-----|------------------------------------------|    
+| center()                                           | Y       |       | Y   |                                          |
+| close()                                            |         |       | Y   |                                          |
+| destroy()                                          |         |       | Y   |                                          |
+| disableSizeConstraints()                           |         |       | Y   |                                          |
+| execJS(js string)                                  |         |       | Y   |                                          |
+| forceReload()                                      |         |       | Y   |                                          |
+| fullscreen()                                       |         |       | Y   |                                          |
+| getScreen() (*Screen, error)                       |         |       | Y   |                                          |
+| getZoom() float64                                  |         |       | Y   |                                          |
+| height() int                                       | Y       |       | Y   |                                          |
+| hide()                                             | Y       |       | Y   |                                          |
+| isFullscreen() bool                                |         |       | Y   |                                          |
+| isMaximised() bool                                 | Y       |       | Y   |                                          |
+| isMinimised() bool                                 | Y       |       | Y   |                                          |
+| maximise()                                         | Y       |       | Y   |                                          |
+| minimise()                                         | Y       |       | Y   |                                          |
+| nativeWindowHandle() (uintptr, error)              | Y       |       |     |                                          |
+| on(eventID uint)                                   |         |       | Y   |                                          |
+| openContextMenu(menu *Menu, data *ContextMenuData) |         |       | Y   |                                          |
+| position() (int, int)                              | Y       |       | Y   |                                          |
+| reload()                                           |         |       | Y   |                                          |
+| run()                                              | Y       |       | Y   |                                          |
+| setAlwaysOnTop(alwaysOnTop bool)                   | Y       |       | Y   |                                          |
+| setBackgroundColour(color RGBA)                    | Y       |       | Y   |                                          |
+| setFrameless(bool)                                 |         |       | Y   |                                          |
+| setFullscreenButtonEnabled(enabled bool)           | X       |       | Y   | There is no fullscreen button in Windows |
+| setHTML(html string)                               |         |       | Y   |                                          |
+| setMaxSize(width, height int)                      | Y       |       | Y   |                                          |
+| setMinSize(width, height int)                      | Y       |       | Y   |                                          |
+| setPosition(x int, y int)                          | Y       |       | Y   |                                          |
+| setResizable(resizable bool)                       | Y       |       | Y   |                                          |
+| setSize(width, height int)                         | Y       |       | Y   |                                          |
+| setTitle(title string)                             | Y       |       | Y   |                                          |
+| setURL(url string)                                 |         |       | Y   |                                          |
+| setZoom(zoom float64)                              |         |       | Y   |                                          |
+| show()                                             | Y       |       | Y   |                                          |
+| size() (int, int)                                  |         |       | Y   |                                          |
+| toggleDevTools()                                   |         |       | Y   |                                          |
+| unfullscreen()                                     |         |       | Y   |                                          |
+| unmaximise()                                       | Y       |       | Y   |                                          |
+| unminimise()                                       | Y       |       | Y   |                                          |
+| width() int                                        | Y       |       | Y   |                                          |
+| zoom()                                             |         |       | Y   |                                          |
+| zoomIn()                                           |         |       | Y   |                                          |
+| zoomOut()                                          |         |       | Y   |                                          |
+| zoomReset()                                        |         |       | Y   |                                          |
 
 ## Runtime
 
