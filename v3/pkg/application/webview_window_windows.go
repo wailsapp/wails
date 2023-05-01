@@ -7,10 +7,7 @@ import (
 	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-	"syscall"
 	"unsafe"
-
-	"github.com/samber/lo"
 )
 
 var showDevTools = func(window unsafe.Pointer) {}
@@ -19,6 +16,10 @@ type windowsWebviewWindow struct {
 	windowImpl unsafe.Pointer
 	parent     *WebviewWindow
 	hwnd       w32.HWND
+
+	// Size Restrictions
+	minWidth, minHeight int
+	maxWidth, maxHeight int
 }
 
 func (w *windowsWebviewWindow) nativeWindowHandle() uintptr {
@@ -57,13 +58,13 @@ func (w *windowsWebviewWindow) setResizable(resizable bool) {
 }
 
 func (w *windowsWebviewWindow) setMinSize(width, height int) {
-	//TODO implement me
-	panic("implement me")
+	w.minWidth = width
+	w.minHeight = height
 }
 
 func (w *windowsWebviewWindow) setMaxSize(width, height int) {
-	//TODO implement me
-	panic("implement me")
+	w.maxWidth = width
+	w.maxHeight = height
 }
 
 func (w *windowsWebviewWindow) execJS(js string) {
@@ -80,8 +81,15 @@ func (w *windowsWebviewWindow) run() {
 }
 
 func (w *windowsWebviewWindow) _run() {
-	var exStyle uint
+
+	// Copy options
 	options := w.parent.options
+	w.minWidth = options.MinWidth
+	w.minHeight = options.MinHeight
+	w.maxWidth = options.MaxWidth
+	w.maxHeight = options.MaxHeight
+
+	var exStyle uint
 	exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
 	if options.BackgroundType != BackgroundTypeSolid {
 		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
@@ -92,7 +100,7 @@ func (w *windowsWebviewWindow) _run() {
 	w.hwnd = w32.CreateWindowEx(
 		exStyle,
 		windowClassName,
-		lo.Must(syscall.UTF16PtrFromString(options.Title)),
+		w32.MustStringToUTF16Ptr(options.Title),
 		w32.WS_OVERLAPPEDWINDOW,
 		w32.CW_USEDEFAULT,
 		w32.CW_USEDEFAULT,
@@ -139,7 +147,6 @@ func (w *windowsWebviewWindow) _run() {
 	switch options.Windows.Theme {
 	case SystemDefault:
 		w.updateTheme(w32.IsCurrentlyDarkMode())
-		// Setup a listener to respond to theme changes
 		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func() {
 			w.updateTheme(w32.IsCurrentlyDarkMode())
 		})
@@ -248,8 +255,9 @@ func (w *windowsWebviewWindow) setHTML(html string) {
 }
 
 func (w *windowsWebviewWindow) setPosition(x int, y int) {
-	//TODO implement me
-	panic("implement me")
+	info := w32.GetMonitorInfoForWindow(w.hwnd)
+	workRect := info.RcWork
+	w32.SetWindowPos(w.hwnd, w32.HWND_TOP, int(workRect.Left)+x, int(workRect.Top)+y, 0, 0, w32.SWP_NOSIZE)
 }
 
 func (w *windowsWebviewWindow) on(eventID uint) {
@@ -476,9 +484,75 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		windowsApp := globalApplication.impl.(*windowsApp)
 		windowsApp.unregisterWindow(w)
 		return 0
-	default:
-		return w32.DefWindowProc(w.hwnd, msg, wparam, lparam)
+	case w32.WM_GETMINMAXINFO:
+		mmi := (*w32.MINMAXINFO)(unsafe.Pointer(lparam))
+		hasConstraints := false
+		if w.minWidth > 0 || w.minHeight > 0 {
+			hasConstraints = true
+
+			width, height := w.scaleWithWindowDPI(w.minWidth, w.minHeight)
+			if width > 0 {
+				mmi.PtMinTrackSize.X = int32(width)
+			}
+			if height > 0 {
+				mmi.PtMinTrackSize.Y = int32(height)
+			}
+		}
+		if w.maxWidth > 0 || w.maxHeight > 0 {
+			hasConstraints = true
+
+			width, height := w.scaleWithWindowDPI(w.maxWidth, w.maxHeight)
+			if width > 0 {
+				mmi.PtMaxTrackSize.X = int32(width)
+			}
+			if height > 0 {
+				mmi.PtMaxTrackSize.Y = int32(height)
+			}
+		}
+		if hasConstraints {
+			return 0
+		}
 	}
+	return w32.DefWindowProc(w.hwnd, msg, wparam, lparam)
+}
+
+func (w *windowsWebviewWindow) DPI() (w32.UINT, w32.UINT) {
+	if w32.HasGetDpiForWindowFunc() {
+		// GetDpiForWindow is supported beginning with Windows 10, 1607 and is the most accureate
+		// one, especially it is consistent with the WM_DPICHANGED event.
+		dpi := w32.GetDpiForWindow(w.hwnd)
+		return dpi, dpi
+	}
+
+	if w32.HasGetDPIForMonitorFunc() {
+		// GetDpiForWindow is supported beginning with Windows 8.1
+		monitor := w32.MonitorFromWindow(w.hwnd, w32.MONITOR_DEFAULTTONEAREST)
+		if monitor == 0 {
+			return 0, 0
+		}
+		var dpiX, dpiY w32.UINT
+		w32.GetDPIForMonitor(monitor, w32.MDT_EFFECTIVE_DPI, &dpiX, &dpiY)
+		return dpiX, dpiY
+	}
+
+	// If none of the above is supported fallback to the System DPI.
+	screen := w32.GetDC(0)
+	x := w32.GetDeviceCaps(screen, w32.LOGPIXELSX)
+	y := w32.GetDeviceCaps(screen, w32.LOGPIXELSY)
+	w32.ReleaseDC(0, screen)
+	return w32.UINT(x), w32.UINT(y)
+}
+
+func (w *windowsWebviewWindow) scaleWithWindowDPI(width, height int) (int, int) {
+	dpix, dpiy := w.DPI()
+	scaledWidth := ScaleWithDPI(width, dpix)
+	scaledHeight := ScaleWithDPI(height, dpiy)
+
+	return scaledWidth, scaledHeight
+}
+
+func ScaleWithDPI(pixels int, dpi uint) int {
+	return (pixels * int(dpi)) / 96
 }
 
 func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error) {

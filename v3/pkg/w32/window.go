@@ -2,6 +2,7 @@ package w32
 
 import (
 	"fmt"
+	"github.com/samber/lo"
 	"log"
 	"strconv"
 	"syscall"
@@ -113,34 +114,23 @@ func showWindow(hwnd uintptr, cmdshow int) bool {
 }
 
 func MustStringToUTF16Ptr(input string) *uint16 {
-	ret, err := syscall.UTF16PtrFromString(input)
-	if err != nil {
-		panic(err)
-	}
-	return ret
+	return lo.Must(syscall.UTF16PtrFromString(input))
 }
 
 func MustStringToUTF16uintptr(input string) uintptr {
-	ret, err := syscall.UTF16PtrFromString(input)
-	if err != nil {
-		panic(err)
-	}
+	ret := lo.Must(syscall.UTF16PtrFromString(input))
 	return uintptr(unsafe.Pointer(ret))
 }
 
-func MustUTF16FromString(input string) []uint16 {
-	ret, err := syscall.UTF16FromString(input)
-	if err != nil {
-		panic(err)
-	}
-	return ret
+func MustStringToUTF16(input string) []uint16 {
+	return lo.Must(syscall.UTF16FromString(input))
 }
 
 func CenterWindow(hwnd HWND) {
 	windowInfo := getWindowInfo(hwnd)
 	frameless := windowInfo.IsPopup()
 
-	info := getMonitorInfo(hwnd)
+	info := GetMonitorInfoForWindow(hwnd)
 	workRect := info.RcWork
 	screenMiddleW := workRect.Left + (workRect.Right-workRect.Left)/2
 	screenMiddleH := workRect.Top + (workRect.Bottom-workRect.Top)/2
@@ -164,7 +154,7 @@ func getWindowInfo(hwnd HWND) *WINDOWINFO {
 	return &info
 }
 
-func getMonitorInfo(hwnd HWND) *MONITORINFO {
+func GetMonitorInfoForWindow(hwnd HWND) *MONITORINFO {
 	currentMonitor := MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST)
 	var info MONITORINFO
 	info.CbSize = uint32(unsafe.Sizeof(info))
