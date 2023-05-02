@@ -853,6 +853,10 @@ func (w *macosWebviewWindow) hide() {
 	C.windowHide(w.nsWindow)
 }
 
+func (w *macosWebviewWindow) isNormal() bool {
+	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
+}
+
 func (w *macosWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
 	C.setFullscreenButtonEnabled(w.nsWindow, C.bool(enabled))
 }
