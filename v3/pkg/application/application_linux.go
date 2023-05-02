@@ -76,11 +76,27 @@ func getNativeApplication() *linuxApp {
 }
 
 func (m *linuxApp) hide() {
-	//	C.hide()
+	windows := C.gtk_application_get_windows((*C.GtkApplication)(m.application))
+	for {
+		fmt.Println("hiding", windows.data)
+		C.gtk_widget_hide((*C.GtkWidget)(windows.data))
+		windows = windows.next
+		if windows == nil {
+			return
+		}
+	}
 }
 
 func (m *linuxApp) show() {
-	//	C.show()
+	windows := C.gtk_application_get_windows((*C.GtkApplication)(m.application))
+	for {
+		fmt.Println("hiding", windows.data)
+		C.gtk_widget_show_all((*C.GtkWidget)(windows.data))
+		windows = windows.next
+		if windows == nil {
+			return
+		}
+	}
 }
 
 func (m *linuxApp) on(eventID uint) {
