@@ -326,26 +326,21 @@ func (w *linuxWebviewWindow) disableSizeConstraints() {
 }
 
 func (w *linuxWebviewWindow) unfullscreen() {
-	fmt.Println("unfullscreen")
-	globalApplication.dispatchOnMainThread(func() {
-		C.gtk_window_unfullscreen((*C.GtkWindow)(w.window))
-		w.unmaximise()
-	})
+	C.gtk_window_unfullscreen((*C.GtkWindow)(w.window))
+	w.unmaximise()
 }
 
 func (w *linuxWebviewWindow) fullscreen() {
 	w.maximise()
 	w.lastWidth, w.lastHeight = w.size()
-	globalApplication.dispatchOnMainThread(func() {
-		x, y, width, height, scale := w.getCurrentMonitorGeometry()
-		if x == -1 && y == -1 && width == -1 && height == -1 {
-			return
-		}
-		w.setMinMaxSize(0, 0, width*scale, height*scale)
-		w.setSize(width*scale, height*scale)
-		C.gtk_window_fullscreen((*C.GtkWindow)(w.window))
-		w.setPosition(0, 0)
-	})
+	x, y, width, height, scale := w.getCurrentMonitorGeometry()
+	if x == -1 && y == -1 && width == -1 && height == -1 {
+		return
+	}
+	w.setMinMaxSize(0, 0, width*scale, height*scale)
+	w.setSize(width*scale, height*scale)
+	C.gtk_window_fullscreen((*C.GtkWindow)(w.window))
+	w.setPosition(0, 0)
 }
 
 func (w *linuxWebviewWindow) unminimise() {
