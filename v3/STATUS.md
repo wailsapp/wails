@@ -52,7 +52,7 @@ Webview Window Interface Methods
 | setAlwaysOnTop(alwaysOnTop bool)                   | Y       |       | Y   |                                          |
 | setBackgroundColour(color RGBA)                    | Y       |       | Y   |                                          |
 | setFrameless(bool)                                 |         |       | Y   |                                          |
-| setFullscreenButtonEnabled(enabled bool)           | X       |       | Y   | There is no fullscreen button in Windows |
+| setFullscreenButtonEnabled(enabled bool)           | -       |       | Y   | There is no fullscreen button in Windows |
 | setHTML(html string)                               |         |       | Y   |                                          |
 | setMaxSize(width, height int)                      | Y       |       | Y   |                                          |
 | setMinSize(width, height int)                      | Y       |       | Y   |                                          |
@@ -148,6 +148,44 @@ Webview Window Interface Methods
 | SetZoom             |         |       | Y   | Set view scale                                                                       |
 | Screen              |         |       | Y   | Get screen for window                                                                |
 
+
+### Window Options
+
+A 'Y' in the table below indicates that the option has been tested and is applied when the window is created. 
+An 'X' indicates that the option is not supported by the platform. 
+
+
+| Feature                         | Windows | Linux | Mac | Notes                                      |
+|---------------------------------|---------|-------|-----|--------------------------------------------|
+| Name                            |         |       |     |                                            |
+| Title                           | Y       |       |     |                                            |
+| Width                           | Y       |       |     |                                            |
+| Height                          | Y       |       |     |                                            |
+| AlwaysOnTop                     | Y       |       |     |                                            |
+| URL                             |         |       |     |                                            |
+| DisableResize                   | Y       |       |     |                                            |
+| Frameless                       |         |       |     |                                            |
+| MinWidth                        | Y       |       |     |                                            |
+| MinHeight                       | Y       |       |     |                                            |
+| MaxWidth                        | Y       |       |     |                                            |
+| MaxHeight                       | Y       |       |     |                                            |
+| StartState                      | Y       |       |     |                                            |
+| Mac                             | -       | -     |     |                                            |
+| BackgroundType                  |         |       |     | Acrylic seems to work but the others don't |
+| BackgroundColour                | Y       |       |     |                                            |
+| HTML                            |         |       |     |                                            |
+| JS                              |         |       |     |                                            |
+| CSS                             |         |       |     |                                            |
+| X                               |         |       |     |                                            |
+| Y                               |         |       |     |                                            |
+| HideOnClose                     |         |       |     |                                            |
+| FullscreenButtonEnabled         |         |       |     |                                            |
+| Hidden                          |         |       |     |                                            |
+| EnableFraudulentWebsiteWarnings |         |       |     |                                            |
+| Zoom                            |         |       |     |                                            |
+| EnableDragAndDrop               |         |       |     |                                            |
+| Windows                         |         | -     | -   |                                            |
+
 ### Log
 
 To log or not to log? System logger vs custom logger.
@@ -230,9 +268,9 @@ Built-in plugin support:
 | Icon Generation |         |       | Y   |       | 
 | Icon Embedding  |         |       | Y   |       | 
 | Info.plist      |         |       | Y   |       | 
-| NSIS Installer  |         |       |     |       | 
+| NSIS Installer  |         |       | -   |       | 
 | Mac bundle      |         |       | Y   |       | 
-| Windows exe     |         |       |     |       | 
+| Windows exe     |         |       | -   |       | 
 
 ## Frameless Windows
 
