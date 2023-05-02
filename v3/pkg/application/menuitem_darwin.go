@@ -606,7 +606,7 @@ func newMinimizeMenuItem() *MenuItem {
 		OnClick(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
-				currentWindow.Minimize()
+				currentWindow.Minimise()
 			}
 		})
 }
@@ -617,6 +617,16 @@ func newZoomMenuItem() *MenuItem {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.Zoom()
+			}
+		})
+}
+
+func newFullScreenMenuItem() *MenuItem {
+	return newMenuItem("Fullscreen").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.Fullscreen()
 			}
 		})
 }
