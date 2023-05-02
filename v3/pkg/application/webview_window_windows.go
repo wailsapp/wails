@@ -662,6 +662,53 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			if w.framelessWithDecorations() {
 				w32.ExtendFrameIntoClientArea(w.hwnd, true)
 			}
+		case w32.WM_NCHITTEST:
+			// Get the cursor position
+			x := int32(w32.LOWORD(uint32(lparam)))
+			y := int32(w32.HIWORD(uint32(lparam)))
+			ptCursor := w32.POINT{X: x, Y: y}
+
+			// Get the window rectangle
+			rcWindow := w32.GetWindowRect(w.hwnd)
+
+			// Determine if the cursor is in a resize area
+			bOnResizeBorder := false
+			resizeBorderWidth := int32(5) // change this to adjust the resize border width
+			if ptCursor.X >= rcWindow.Right-resizeBorderWidth {
+				bOnResizeBorder = true // right edge
+			}
+			if ptCursor.Y >= rcWindow.Bottom-resizeBorderWidth {
+				bOnResizeBorder = true // bottom edge
+			}
+			if ptCursor.X <= rcWindow.Left+resizeBorderWidth {
+				bOnResizeBorder = true // left edge
+			}
+			if ptCursor.Y <= rcWindow.Top+resizeBorderWidth {
+				bOnResizeBorder = true // top edge
+			}
+
+			// Return the appropriate value
+			if bOnResizeBorder {
+				if ptCursor.X >= rcWindow.Right-resizeBorderWidth && ptCursor.Y >= rcWindow.Bottom-resizeBorderWidth {
+					return w32.HTBOTTOMRIGHT
+				} else if ptCursor.X <= rcWindow.Left+resizeBorderWidth && ptCursor.Y >= rcWindow.Bottom-resizeBorderWidth {
+					return w32.HTBOTTOMLEFT
+				} else if ptCursor.X >= rcWindow.Right-resizeBorderWidth && ptCursor.Y <= rcWindow.Top+resizeBorderWidth {
+					return w32.HTTOPRIGHT
+				} else if ptCursor.X <= rcWindow.Left+resizeBorderWidth && ptCursor.Y <= rcWindow.Top+resizeBorderWidth {
+					return w32.HTTOPLEFT
+				} else if ptCursor.X >= rcWindow.Right-resizeBorderWidth {
+					return w32.HTRIGHT
+				} else if ptCursor.Y >= rcWindow.Bottom-resizeBorderWidth {
+					return w32.HTBOTTOM
+				} else if ptCursor.X <= rcWindow.Left+resizeBorderWidth {
+					return w32.HTLEFT
+				} else if ptCursor.Y <= rcWindow.Top+resizeBorderWidth {
+					return w32.HTTOP
+				}
+			}
+			return w32.HTCLIENT
+
 		case w32.WM_NCCALCSIZE:
 			// Disable the standard frame by allowing the client area to take the full
 			// window size.

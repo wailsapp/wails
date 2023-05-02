@@ -12,7 +12,8 @@ const (
 type WebviewWindowOptions struct {
 	Name                            string
 	Title                           string
-	Width, Height                   int
+	Width                           int
+	Height                          int
 	AlwaysOnTop                     bool
 	URL                             string
 	DisableResize                   bool
