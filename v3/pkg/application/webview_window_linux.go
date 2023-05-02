@@ -78,7 +78,7 @@ type linuxWebviewWindow struct {
 }
 
 var (
-	registered bool = false // avoid 'already registered message'
+	registered bool = false // avoid 'already registered message' about 'wails://'
 )
 
 //export buttonEvent
@@ -572,13 +572,11 @@ func (w *linuxWebviewWindow) setMaxSize(width, height int) {
 }
 
 func (w *linuxWebviewWindow) setResizable(resizable bool) {
-	globalApplication.dispatchOnMainThread(func() {
-		if resizable {
-			C.gtk_window_set_resizable((*C.GtkWindow)(w.window), 1)
-		} else {
-			C.gtk_window_set_resizable((*C.GtkWindow)(w.window), 0)
-		}
-	})
+	if resizable {
+		C.gtk_window_set_resizable((*C.GtkWindow)(w.window), 1)
+	} else {
+		C.gtk_window_set_resizable((*C.GtkWindow)(w.window), 0)
+	}
 }
 
 func (w *linuxWebviewWindow) toggleDevTools() {
@@ -721,9 +719,6 @@ func (w *linuxWebviewWindow) setTransparent() {
 }
 
 func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
-	if colour == nil {
-		return
-	}
 	if colour.Alpha != 0 {
 		w.setTransparent()
 	}
