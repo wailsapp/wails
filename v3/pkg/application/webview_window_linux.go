@@ -304,6 +304,17 @@ func (w *linuxWebviewWindow) hide() {
 	C.gtk_widget_hide((*C.GtkWidget)(w.window))
 }
 
+func (w *linuxWebviewWindow) isNormal() bool {
+	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
+}
+
+func (w *linuxWebviewWindow) isVisible() bool {
+	if C.gtk_widget_is_visible((*C.GtkWidget)(w.window)) == 1 {
+		return true
+	}
+	return false
+}
+
 func (w *linuxWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
 	//	C.setFullscreenButtonEnabled(w.nsWindow, C.bool(enabled))
 	fmt.Println("setFullscreenButtonEnabled - not implemented")
@@ -714,7 +725,7 @@ func (w *linuxWebviewWindow) setTransparent() {
 	}
 }
 
-func (w *linuxWebviewWindow) setBackgroundColour(colour *RGBA) {
+func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	if colour == nil {
 		return
 	}
@@ -754,4 +765,8 @@ func (w *linuxWebviewWindow) setHTML(html string) {
 		cHTML,
 		uri,
 		empty)
+}
+
+func (w *linuxWebviewWindow) nativeWindowHandle() uintptr {
+	return uintptr(w.window)
 }
