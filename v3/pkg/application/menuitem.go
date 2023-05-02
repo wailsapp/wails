@@ -173,6 +173,8 @@ func newRole(role Role) *MenuItem {
 		return newMinimizeMenuItem()
 	case Zoom:
 		return newZoomMenuItem()
+	case FullScreen:
+		return newFullScreenMenuItem()
 
 	default:
 		println("No support for role:", role)
