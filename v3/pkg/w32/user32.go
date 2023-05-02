@@ -130,6 +130,7 @@ var (
 	procGetMonitorInfo                = moduser32.NewProc("GetMonitorInfoW")
 	procGetDpiForSystem               = moduser32.NewProc("GetDpiForSystem")
 	procGetDpiForWindow               = moduser32.NewProc("GetDpiForWindow")
+	procSetProcessDPIAware            = moduser32.NewProc("SetProcessDPIAware")
 	procEnumDisplayMonitors           = moduser32.NewProc("EnumDisplayMonitors")
 	procEnumDisplaySettingsEx         = moduser32.NewProc("EnumDisplaySettingsExW")
 	procChangeDisplaySettingsEx       = moduser32.NewProc("ChangeDisplaySettingsExW")
@@ -301,6 +302,14 @@ func HasGetDpiForWindowFunc() bool {
 func GetDpiForWindow(hwnd HWND) UINT {
 	dpi, _, _ := procGetDpiForWindow.Call(hwnd)
 	return uint(dpi)
+}
+
+func SetProcessDPIAware() error {
+	status, r, err := procSetProcessDPIAware.Call()
+	if status == 0 {
+		return fmt.Errorf("SetProcessDPIAware failed %d: %v %v", status, r, err)
+	}
+	return nil
 }
 
 func GetForegroundWindow() HWND {

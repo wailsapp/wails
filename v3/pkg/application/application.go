@@ -1,13 +1,14 @@
 package application
 
 import (
-	"github.com/samber/lo"
 	"log"
 	"net/http"
 	"os"
 	"runtime"
 	"strconv"
 	"sync"
+
+	"github.com/samber/lo"
 
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
@@ -16,6 +17,7 @@ import (
 	wailsruntime "github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/logger"
+	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
 var globalApplication *App
@@ -31,6 +33,12 @@ type EventListener struct {
 func New(appOptions Options) *App {
 	if globalApplication != nil {
 		return globalApplication
+	}
+
+	err := w32.SetProcessDPIAware()
+	if err != nil {
+		println("Fatal error in application initialisation: ", err.Error())
+		os.Exit(1)
 	}
 
 	mergeApplicationDefaults(&appOptions)

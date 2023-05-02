@@ -36,9 +36,9 @@ func (w *windowsWebviewWindow) setTitle(title string) {
 }
 
 func (w *windowsWebviewWindow) setSize(width, height int) {
-	x, y := w.position()
-	// TODO: Take scaling/DPI into consideration
-	w32.MoveWindow(w.hwnd, x, y, width, height, true)
+	rect := w32.GetWindowRect(w.hwnd)
+	width, height = w.scaleWithWindowDPI(width, height)
+	w32.MoveWindow(w.hwnd, int(rect.Left), int(rect.Top), width, height, true)
 }
 
 func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
@@ -206,7 +206,10 @@ func (w *windowsWebviewWindow) enableSizeConstraints() {
 
 func (w *windowsWebviewWindow) size() (int, int) {
 	rect := w32.GetWindowRect(w.hwnd)
-	return int(rect.Right - rect.Left), int(rect.Bottom - rect.Top)
+	width := int(rect.Right - rect.Left)
+	height := int(rect.Bottom - rect.Top)
+	width, height = w.scaleToDefaultDPI(width, height)
+	return width, height
 }
 
 func (w *windowsWebviewWindow) setForeground() {
@@ -218,18 +221,19 @@ func (w *windowsWebviewWindow) update() {
 }
 
 func (w *windowsWebviewWindow) width() int {
-	rect := w32.GetWindowRect(w.hwnd)
-	return int(rect.Right - rect.Left)
+	width, _ := w.size()
+	return width
 }
 
 func (w *windowsWebviewWindow) height() int {
-	rect := w32.GetWindowRect(w.hwnd)
-	return int(rect.Bottom - rect.Top)
+	_, height := w.size()
+	return height
 }
 
 func (w *windowsWebviewWindow) position() (int, int) {
 	rect := w32.GetWindowRect(w.hwnd)
-	return int(rect.Left), int(rect.Right)
+	left, right := w.scaleToDefaultDPI(int(rect.Left), int(rect.Right))
+	return left, right
 }
 
 func (w *windowsWebviewWindow) destroy() {
@@ -293,6 +297,7 @@ func (w *windowsWebviewWindow) setHTML(html string) {
 }
 
 func (w *windowsWebviewWindow) setPosition(x int, y int) {
+	x, y = w.scaleWithWindowDPI(x, y)
 	info := w32.GetMonitorInfoForWindow(w.hwnd)
 	workRect := info.RcWork
 	w32.SetWindowPos(w.hwnd, w32.HWND_TOP, int(workRect.Left)+x, int(workRect.Top)+y, 0, 0, w32.SWP_NOSIZE)
@@ -635,6 +640,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		if hasConstraints {
 			return 0
 		}
+	case w32.WM_DPICHANGED:
+		newWindowSize := (*w32.RECT)(unsafe.Pointer(lparam))
+		w32.SetWindowPos(w.hwnd,
+			uintptr(0),
+			int(newWindowSize.Left),
+			int(newWindowSize.Top),
+			int(newWindowSize.Right-newWindowSize.Left),
+			int(newWindowSize.Bottom-newWindowSize.Top),
+			w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+
 	}
 
 	if options := w.parent.options; options.Frameless {
@@ -743,8 +758,20 @@ func (w *windowsWebviewWindow) scaleWithWindowDPI(width, height int) (int, int) 
 	return scaledWidth, scaledHeight
 }
 
+func (w *windowsWebviewWindow) scaleToDefaultDPI(width, height int) (int, int) {
+	dpix, dpiy := w.DPI()
+	scaledWidth := ScaleToDefaultDPI(width, dpix)
+	scaledHeight := ScaleToDefaultDPI(height, dpiy)
+
+	return scaledWidth, scaledHeight
+}
+
 func ScaleWithDPI(pixels int, dpi uint) int {
 	return (pixels * int(dpi)) / 96
+}
+
+func ScaleToDefaultDPI(pixels int, dpi uint) int {
+	return (pixels * 96) / int(dpi)
 }
 
 func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error) {
