@@ -664,11 +664,7 @@ func (w *linuxWebviewWindow) setTransparent() {
 	}
 }
 
-func (w *linuxWebviewWindow) setBackgroundColour(colour *RGBA) {
-	if colour == nil {
-		return
-	}
-
+func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	if colour.Alpha != 0 {
 		w.setTransparent()
 	}
@@ -717,10 +713,23 @@ func (w *linuxWebviewWindow) destroy() {
 }
 
 func (w *linuxWebviewWindow) setHTML(html string) {
-	fmt.Println("setHTML")
 	var loadHTML func(uintptr, string, string, *string)
 	purego.RegisterLibFunc(&loadHTML, webkit, "webkit_web_view_load_alternate_html")
 	go globalApplication.dispatchOnMainThread(func() {
 		loadHTML(w.webview, html, "wails://", nil)
 	})
+}
+
+func (w *linuxWebviewWindow) isNormal() bool {
+	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
+}
+
+func (w *linuxWebviewWindow) isVisible() bool {
+	var isVisible func(uintptr) bool
+	purego.RegisterLibFunc(&isVisible, gtk, "gtk_widget_is_visible")
+	return isVisible(w.window)
+}
+
+func (w *linuxWebviewWindow) nativeWindowHandle() uintptr {
+	return w.window
 }
