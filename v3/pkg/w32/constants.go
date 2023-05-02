@@ -552,6 +552,7 @@ const (
 	WM_MOUSEHOVER             = 0x2A1
 	WM_MOUSELEAVE             = 0x2A3
 	WM_CLIPBOARDUPDATE        = 0x031D
+	WM_DPICHANGED             = 0x02E0
 )
 
 // WM_ACTIVATE
