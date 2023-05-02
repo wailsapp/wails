@@ -5,11 +5,12 @@ package application
 import (
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/events"
-	"github.com/wailsapp/wails/v3/pkg/w32"
 	"strconv"
 	"unicode/utf16"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
 var showDevTools = func(window unsafe.Pointer) {}
@@ -76,15 +77,11 @@ func (w *windowsWebviewWindow) setBackgroundColour(color RGBA) {
 	w32.SetBackgroundColour(w.hwnd, color.Red, color.Green, color.Blue)
 }
 
-func (w *windowsWebviewWindow) run() {
-	globalApplication.dispatchOnMainThread(w._run)
-}
-
 func (w *windowsWebviewWindow) framelessWithDecorations() bool {
 	return w.parent.options.Frameless && !w.parent.options.Windows.DisableFramelessWindowDecorations
 }
 
-func (w *windowsWebviewWindow) _run() {
+func (w *windowsWebviewWindow) run() {
 
 	options := w.parent.options
 
@@ -119,6 +116,22 @@ func (w *windowsWebviewWindow) _run() {
 	windowsApp.registerWindow(w)
 
 	w.setResizable(!options.DisableResize)
+
+	if options.Frameless {
+		// Inform the application of the frame change this is needed to trigger the WM_NCCALCSIZE event.
+		// => https://learn.microsoft.com/en-us/windows/win32/dwm/customframe#removing-the-standard-frame
+		// This is normally done in WM_CREATE but we can't handle that there because that is emitted during CreateWindowEx
+		// and at that time we can't yet register the window for calling our WndProc method.
+		// This must be called after setResizable above!
+		rcClient := w32.GetWindowRect(w.hwnd)
+		w32.SetWindowPos(w.hwnd,
+			0,
+			int(rcClient.Left),
+			int(rcClient.Top),
+			int(rcClient.Right-rcClient.Left),
+			int(rcClient.Bottom-rcClient.Top),
+			w32.SWP_FRAMECHANGED)
+	}
 
 	// Icon
 	if !options.Windows.DisableIcon {
@@ -333,13 +346,13 @@ func (w *windowsWebviewWindow) fullscreen() {
 	// According to https://devblogs.microsoft.com/oldnewthing/20050505-04/?p=35703 one should use w32.WS_POPUP | w32.WS_VISIBLE
 	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w.previousWindowStyle & ^uint32(w32.WS_OVERLAPPEDWINDOW) | (w32.WS_POPUP|w32.WS_VISIBLE))
 	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME))
+	w.isCurrentlyFullscreen = true
 	w32.SetWindowPos(w.hwnd, w32.HWND_TOP,
 		int(monitorInfo.RcMonitor.Left),
 		int(monitorInfo.RcMonitor.Top),
 		int(monitorInfo.RcMonitor.Right-monitorInfo.RcMonitor.Left),
 		int(monitorInfo.RcMonitor.Bottom-monitorInfo.RcMonitor.Top),
 		w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
-	w.isCurrentlyFullscreen = true
 }
 
 func (w *windowsWebviewWindow) unfullscreen() {
@@ -352,10 +365,10 @@ func (w *windowsWebviewWindow) unfullscreen() {
 	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w.previousWindowStyle)
 	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, w.previousWindowExStyle)
 	w32.SetWindowPlacement(w.hwnd, &w.previousWindowPlacement)
+	w.isCurrentlyFullscreen = false
 	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0,
 		w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
 	w.enableSizeConstraints()
-	w.isCurrentlyFullscreen = false
 }
 
 func (w *windowsWebviewWindow) isMinimised() bool {
@@ -370,6 +383,9 @@ func (w *windowsWebviewWindow) isMaximised() bool {
 
 func (w *windowsWebviewWindow) isFullscreen() bool {
 	// TODO: Actually calculate this based on size of window against screen size
+	// => stffabi: This flag is essential since it indicates that we are in fullscreen mode even before the native properties
+	//             reflect this, e.g. when needing to know if we are in fullscreen during a wndproc message.
+	//             That's also why this flag is set before SetWindowPos in v2 in fullscreen/unfullscreen.
 	return w.isCurrentlyFullscreen
 }
 
@@ -618,6 +634,75 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 		if hasConstraints {
 			return 0
+		}
+	}
+
+	if options := w.parent.options; options.Frameless {
+		switch msg {
+		case w32.WM_ACTIVATE:
+			// If we want to have a frameless window but with the default frame decorations, extend the DWM client area.
+			// This Option is not affected by returning 0 in WM_NCCALCSIZE.
+			// As a result we have hidden the titlebar but still have the default window frame styling.
+			// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
+			if w.framelessWithDecorations() {
+				w32.ExtendFrameIntoClientArea(w.hwnd, true)
+			}
+		case w32.WM_NCCALCSIZE:
+			// Disable the standard frame by allowing the client area to take the full
+			// window size.
+			// See: https://docs.microsoft.com/en-us/windows/win32/winmsg/wm-nccalcsize#remarks
+			// This hides the titlebar and also disables the resizing from user interaction because the standard frame is not
+			// shown. We still need the WS_THICKFRAME style to enable resizing from the frontend.
+			if wparam != 0 {
+				rgrc := (*w32.RECT)(unsafe.Pointer(lparam))
+				if w.isCurrentlyFullscreen {
+					// In Full-Screen mode we don't need to adjust anything
+					// It essential we have the flag here, that is set before SetWindowPos in fullscreen/unfullscreen
+					// because the native size might not yet reflect we are in fullscreen during this event!
+					// TODO: w.chromium.SetPadding(edge.Rect{})
+				} else if w.isMaximised() {
+					// If the window is maximized we must adjust the client area to the work area of the monitor. Otherwise
+					// some content goes beyond the visible part of the monitor.
+					// Make sure to use the provided RECT to get the monitor, because during maximizig there might be
+					// a wrong monitor returned in multi screen mode when using MonitorFromWindow.
+					// See: https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
+					monitor := w32.MonitorFromRect(rgrc, w32.MONITOR_DEFAULTTONULL)
+
+					var monitorInfo w32.MONITORINFO
+					monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
+					if monitor != 0 && w32.GetMonitorInfo(monitor, &monitorInfo) {
+						*rgrc = monitorInfo.RcWork
+
+						maxWidth := options.MaxWidth
+						maxHeight := options.MaxHeight
+						if maxWidth > 0 || maxHeight > 0 {
+							var dpiX, dpiY uint
+							w32.GetDPIForMonitor(monitor, w32.MDT_EFFECTIVE_DPI, &dpiX, &dpiY)
+
+							maxWidth := int32(ScaleWithDPI(maxWidth, dpiX))
+							if maxWidth > 0 && rgrc.Right-rgrc.Left > maxWidth {
+								rgrc.Right = rgrc.Left + maxWidth
+							}
+
+							maxHeight := int32(ScaleWithDPI(maxHeight, dpiY))
+							if maxHeight > 0 && rgrc.Bottom-rgrc.Top > maxHeight {
+								rgrc.Bottom = rgrc.Top + maxHeight
+							}
+						}
+					}
+					// TODO: w.chromium.SetPadding(edge.Rect{})
+				} else {
+					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
+					// See: https://stackoverflow.com/a/6558508
+					// The workaround originally suggests to decrese the bottom 1px, but that seems to bring up a thin
+					// white line on some Windows-Versions, due to DrawBackground using also this reduces ClientSize.
+					// Increasing the bottom also worksaround the flickering but we would loose 1px of the WebView content
+					// therefore let's pad the content with 1px at the bottom.
+					rgrc.Bottom += 1
+					// TODO: w.chromium.SetPadding(edge.Rect{Bottom: 1})
+				}
+				return 0
+			}
 		}
 	}
 	return w32.DefWindowProc(w.hwnd, msg, wparam, lparam)
