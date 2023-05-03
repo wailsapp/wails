@@ -16,7 +16,7 @@ body:
         - Read the [Troubleshooting Guide](https://wails.io/docs/next/guides/troubleshooting).
         - Create a [Minimal Reproducible Example](https://stackoverflow.com/help/minimal-reproducible-example) and link to it in the issue.
         - If your issue is related to TypeScript generation, please open a ticket and create a PR with a failing test case.
-        TS tests can be found [here](https://github.com/wailsapp/wails/tree/master/v2/internal/binding/binding_test). Remember to add
+        TS tests can be found [here](https://github.com/wailsapp/wails/tree/main/v2/internal/binding/binding_test). Remember to add
         your test to the `binding_test.go` file.
         - Try to fix it yourself. Keep a list of things you have done to fix the problem.   
 

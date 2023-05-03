@@ -2,7 +2,7 @@ name: Build + Test v2
 
 on:
   push:
-    branches: [release/*, master]
+    branches: [release/*, main]
   workflow_dispatch:
 
 jobs:

@@ -6,7 +6,7 @@
   Build desktop applications using Go & Web Technologies.
   <br/>
   <br/>
-  <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
+  <a href="https://github.com/wailsapp/wails/blob/main/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/wailsapp/wails"/>
   </a>
   <a href="https://goreportcard.com/report/github.com/wailsapp/wails">
@@ -50,13 +50,15 @@
 
 - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
-  - [Roadmap](#roadmap)
 - [Features](#features)
+  - [Roadmap](#roadmap)
 - [Sponsors](#sponsors)
 - [Getting Started](#getting-started)
 - [FAQ](#faq)
+- [Stargazers over time](#stargazers-over-time)
 - [Contributors](#contributors)
 - [License](#license)
+- [Inspiration](#inspiration)
 
 </details>
 

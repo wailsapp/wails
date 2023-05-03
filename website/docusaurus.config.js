@@ -86,13 +86,13 @@ module.exports = async function configCreatorAsync() {
           docs: {
             sidebarPath: require.resolve("./sidebars.js"),
             // Please change this to your repo.
-            editUrl: "https://github.com/wailsapp/wails/edit/master/website",
+            editUrl: "https://github.com/wailsapp/wails/edit/main/website",
           },
           blog: {
             showReadingTime: true,
             // Please change this to your repo.
             editUrl:
-              "https://github.com/wailsapp/wails/edit/master/website/blog",
+              "https://github.com/wailsapp/wails/edit/main/website/blog",
           },
           theme: {
             customCss: [

@@ -8,7 +8,7 @@
   使用 Go 和 Web 技术构建桌面应用程序。
   <br/>
   <br/>
-  <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
+  <a href="https://github.com/wailsapp/wails/blob/main/LICENSE">
     <img alt="GitHub" src="https://img.shields.io/github/license/wailsapp/wails"/>
   </a>
   <a href="https://goreportcard.com/report/github.com/wailsapp/wails">
@@ -31,7 +31,7 @@
   </a>
   <br/>
   <a href="https://github.com/wailsapp/wails/actions/workflows/build-and-test.yml" rel="nofollow">
-    <img src="https://img.shields.io/github/actions/workflow/status/wailsapp/wails/build-and-test.yml?branch=master&logo=Github" alt="Build" />
+    <img src="https://img.shields.io/github/actions/workflow/status/wailsapp/wails/build-and-test.yml?branch=main&logo=Github" alt="Build" />
   </a>
   <a href="https://github.com/wailsapp/wails/tags" rel="nofollow">
     <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
