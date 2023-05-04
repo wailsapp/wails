@@ -24,7 +24,7 @@ func main() {
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title:  "Wails ML Demo",
 		Width:  800,
 		Height: 600,

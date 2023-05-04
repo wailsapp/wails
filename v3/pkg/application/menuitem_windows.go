@@ -177,3 +177,7 @@ func newMinimizeMenuItem() *MenuItem {
 func newZoomMenuItem() *MenuItem {
 	panic("implement me")
 }
+
+func newFullScreenMenuItem() *MenuItem {
+	panic("implement me")
+}

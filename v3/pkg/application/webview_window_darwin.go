@@ -703,6 +703,12 @@ static bool isFullScreen(void *window) {
     return (mask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen;
 }
 
+static bool isVisible(void *window) {
+	// get main window
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+    return (nsWindow.occlusionState & NSWindowOcclusionStateVisible) == NSWindowOcclusionStateVisible;
+}
+
 // windowSetFullScreen
 static void windowSetFullScreen(void *window, bool fullscreen) {
 	if (isFullScreen(window)) {
@@ -942,6 +948,14 @@ func (w *macosWebviewWindow) isFullscreen() bool {
 	})
 }
 
+func (w *macosWebviewWindow) isNormal() bool {
+	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
+}
+
+func (w *macosWebviewWindow) isVisible() bool {
+	return bool(C.isVisible(w.nsWindow))
+}
+
 func (w *macosWebviewWindow) syncMainThreadReturningBool(fn func() bool) bool {
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -1147,10 +1161,12 @@ func (w *macosWebviewWindow) run() {
 	})
 }
 
-func (w *macosWebviewWindow) setBackgroundColour(colour *RGBA) {
-	if colour == nil {
-		return
-	}
+func (w *macosWebviewWindow) nativeWindowHandle() uintptr {
+	return uintptr(w.nsWindow)
+}
+
+func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
+
 	C.windowSetBackgroundColour(w.nsWindow, C.int(colour.Red), C.int(colour.Green), C.int(colour.Blue), C.int(colour.Alpha))
 }
 

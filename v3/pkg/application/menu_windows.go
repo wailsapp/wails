@@ -50,3 +50,13 @@ func (m *windowsMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 	//
 	//}
 }
+
+func defaultApplicationMenu() *Menu {
+	menu := NewMenu()
+	menu.AddRole(FileMenu)
+	menu.AddRole(EditMenu)
+	menu.AddRole(ViewMenu)
+	menu.AddRole(WindowMenu)
+	menu.AddRole(HelpMenu)
+	return menu
+}

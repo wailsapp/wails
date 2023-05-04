@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -23,7 +24,7 @@ func main() {
 		},
 	})
 	// Create window
-	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Plain Bundle",
 		CSS:   `body { background-color: rgba(255, 255, 255, 0); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; user-select: none; -ms-user-select: none; -webkit-user-select: none; } .main { color: white; margin: 20%; }`,
 		Mac: application.MacWindow{
@@ -37,6 +38,21 @@ func main() {
 	app.Events.On("clicked", func(_ *application.WailsEvent) {
 		println("clicked")
 	})
+
+	go func() {
+		time.Sleep(5 * time.Second)
+
+		app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+			Title:  "Plain Bundle new Window from GoRoutine",
+			Width:  500,
+			Height: 500,
+			Mac: application.MacWindow{
+				Backdrop:                application.MacBackdropTranslucent,
+				TitleBar:                application.MacTitleBarHiddenInsetUnified,
+				InvisibleTitleBarHeight: 50,
+			},
+		})
+	}()
 
 	err := app.Run()
 

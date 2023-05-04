@@ -67,7 +67,7 @@ func main() {
 	if runtime.GOOS == "darwin" {
 		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInset)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 					Mac: application.MacWindow{
 						TitleBar:                application.MacTitleBarHiddenInset,
 						InvisibleTitleBarHeight: 25,
@@ -81,7 +81,7 @@ func main() {
 			})
 		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInsetUnified)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 					Mac: application.MacWindow{
 						TitleBar:                application.MacTitleBarHiddenInsetUnified,
 						InvisibleTitleBarHeight: 50,
@@ -95,7 +95,7 @@ func main() {
 			})
 		myMenu.Add("New WebviewWindow (MacTitleBarHidden)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 					Mac: application.MacWindow{
 						TitleBar:                application.MacTitleBarHidden,
 						InvisibleTitleBarHeight: 25,

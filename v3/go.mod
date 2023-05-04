@@ -17,6 +17,7 @@ require (
 	github.com/samber/lo v1.37.0
 	github.com/tc-hib/winres v0.1.6
 	github.com/wailsapp/wails/v2 v2.3.2-0.20230117193915-45c3a501d9e6
+	golang.org/x/sys v0.7.0
 	modernc.org/sqlite v1.21.0
 )
 
@@ -53,7 +54,6 @@ require (
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/term v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/tools v0.1.12 // indirect

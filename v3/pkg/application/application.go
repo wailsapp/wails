@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/samber/lo"
+
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
 	assetserveroptions "github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -23,6 +25,10 @@ func init() {
 	runtime.LockOSThread()
 }
 
+type EventListener struct {
+	callback func()
+}
+
 func New(appOptions Options) *App {
 	if globalApplication != nil {
 		return globalApplication
@@ -32,7 +38,7 @@ func New(appOptions Options) *App {
 
 	result := &App{
 		options:                   appOptions,
-		applicationEventListeners: make(map[uint][]func()),
+		applicationEventListeners: make(map[uint][]*EventListener),
 		systemTrays:               make(map[uint]*SystemTray),
 		log:                       logger.New(appOptions.Logger.CustomLoggers...),
 		contextMenus:              make(map[string]*Menu),
@@ -155,7 +161,7 @@ var webviewRequests = make(chan *webViewAssetRequest)
 
 type App struct {
 	options                       Options
-	applicationEventListeners     map[uint][]func()
+	applicationEventListeners     map[uint][]*EventListener
 	applicationEventListenersLock sync.RWMutex
 
 	// Windows
@@ -216,17 +222,28 @@ func (a *App) deleteWindowByID(id uint) {
 	delete(a.windows, id)
 }
 
-func (a *App) On(eventType events.ApplicationEventType, callback func()) {
+func (a *App) On(eventType events.ApplicationEventType, callback func()) func() {
 	eventID := uint(eventType)
 	a.applicationEventListenersLock.Lock()
 	defer a.applicationEventListenersLock.Unlock()
-	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], callback)
+	listener := &EventListener{
+		callback: callback,
+	}
+	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], listener)
 	if a.impl != nil {
 		go a.impl.on(eventID)
 	}
+
+	return func() {
+		// lock the map
+		a.applicationEventListenersLock.Lock()
+		defer a.applicationEventListenersLock.Unlock()
+		// Remove listener
+		a.applicationEventListeners[eventID] = lo.Without(a.applicationEventListeners[eventID], listener)
+	}
 }
 func (a *App) NewWebviewWindow() *WebviewWindow {
-	return a.NewWebviewWindowWithOptions(&WebviewWindowOptions{})
+	return a.NewWebviewWindowWithOptions(WebviewWindowOptions{})
 }
 
 func (a *App) GetPID() int {
@@ -267,11 +284,7 @@ func (a *App) error(message string, args ...any) {
 	})
 }
 
-func (a *App) NewWebviewWindowWithOptions(windowOptions *WebviewWindowOptions) *WebviewWindow {
-	// Ensure we have sane defaults
-	if windowOptions == nil {
-		windowOptions = WebviewWindowDefaults
-	}
+func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
 	newWindow := NewWindow(windowOptions)
 	id := newWindow.id
 	if a.windows == nil {
@@ -327,10 +340,6 @@ func (a *App) Run() error {
 		for {
 			request := <-webviewRequests
 			a.handleWebViewRequest(request)
-			err := request.Release()
-			if err != nil {
-				a.error("Failed to release webview request: %s", err.Error())
-			}
 		}
 	}()
 	go func() {
@@ -364,10 +373,10 @@ func (a *App) Run() error {
 	}
 
 	// set the application menu
-	a.impl.setApplicationMenu(a.ApplicationMenu)
-
-	// set the application Icon
-	a.impl.setIcon(a.options.Icon)
+	if runtime.GOOS == "darwin" {
+		a.impl.setApplicationMenu(a.ApplicationMenu)
+		a.impl.setIcon(a.options.Icon)
+	}
 
 	err := a.impl.run()
 	if err != nil {
@@ -387,7 +396,7 @@ func (a *App) handleApplicationEvent(event uint) {
 		return
 	}
 	for _, listener := range listeners {
-		go listener()
+		go listener.callback()
 	}
 }
 
@@ -605,4 +614,36 @@ func (a *App) GetWindowByName(name string) *WebviewWindow {
 		}
 	}
 	return nil
+}
+
+func invokeSync(fn func()) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	globalApplication.dispatchOnMainThread(func() {
+		fn()
+		wg.Done()
+	})
+	wg.Wait()
+}
+
+func invokeSyncWithResult[T any](fn func() T) (res T) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	globalApplication.dispatchOnMainThread(func() {
+		res = fn()
+		wg.Done()
+	})
+	wg.Wait()
+	return res
+}
+
+func invokeSyncWithResultAndError[T any](fn func() (T, error)) (res T, err error) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	globalApplication.dispatchOnMainThread(func() {
+		res, err = fn()
+		wg.Done()
+	})
+	wg.Wait()
+	return res, err
 }

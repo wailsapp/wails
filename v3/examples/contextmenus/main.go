@@ -25,7 +25,7 @@ func main() {
 		},
 	})
 
-	mainWindow := app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+	mainWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Context Menu Demo",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
@@ -34,7 +34,7 @@ func main() {
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Context Menu Demo",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,

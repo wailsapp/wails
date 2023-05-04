@@ -113,7 +113,6 @@ func (f *Frontend) startMessageProcessor() {
 func (f *Frontend) startRequestProcessor() {
 	for request := range requestBuffer {
 		f.assets.ServeWebViewRequest(request)
-		request.Release()
 	}
 }
 func (f *Frontend) startCallbackProcessor() {

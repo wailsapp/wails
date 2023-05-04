@@ -68,12 +68,20 @@
                 appName = [[NSProcessInfo processInfo] processName];
             }
             WailsMenu *appMenu = [[[WailsMenu new] initWithNSTitle:appName] autorelease];
+            
+            if (ctx.aboutTitle != nil) {
+                [appMenu addItem:[self newMenuItemWithContext :ctx :[@"About " stringByAppendingString:appName] :@selector(About) :nil :0]];
+                [appMenu addItem:[NSMenuItem separatorItem]];
+            }
+
+            [appMenu addItem:[self newMenuItem:[@"Hide " stringByAppendingString:appName] :@selector(hide:) :@"h" :NSEventModifierFlagCommand]];
+            [appMenu addItem:[self newMenuItem:@"Hide Others" :@selector(hideOtherApplications:) :@"h" :(NSEventModifierFlagOption | NSEventModifierFlagCommand)]];
+            [appMenu addItem:[self newMenuItem:@"Show All" :@selector(unhideAllApplications:) :@""]];
+            [appMenu addItem:[NSMenuItem separatorItem]];
+
             id quitTitle = [@"Quit " stringByAppendingString:appName];
             NSMenuItem* quitMenuItem = [self newMenuItem:quitTitle :@selector(Quit) :@"q" :NSEventModifierFlagCommand];
             quitMenuItem.target = ctx;
-            if (ctx.aboutTitle != nil) {
-                [appMenu addItem:[self newMenuItemWithContext :ctx :[@"About " stringByAppendingString:appName] :@selector(About) :nil :0]];
-            }
             [appMenu addItem:quitMenuItem];
             [self appendSubmenu:appMenu];
             break;
@@ -99,6 +107,17 @@
             [speechMenu addItem:[self newMenuItem:@"Stop Speaking" :@selector(stopSpeaking:) :@""]];
             [editMenu appendSubmenu:speechMenu];
             [self appendSubmenu:editMenu];
+            
+            break;
+        }
+        case WindowMenu:
+        {
+            WailsMenu *windowMenu = [[[WailsMenu new] initWithNSTitle:@"Window"] autorelease];
+            [windowMenu addItem:[self newMenuItem:@"Minimize" :@selector(performMiniaturize:) :@"m" :NSEventModifierFlagCommand]];
+            [windowMenu addItem:[self newMenuItem:@"Zoom" :@selector(performZoom:) :@""]];
+            [windowMenu addItem:[NSMenuItem separatorItem]];
+            [windowMenu addItem:[self newMenuItem:@"Full Screen" :@selector(enterFullScreenMode:) :@"f" :(NSEventModifierFlagControl | NSEventModifierFlagCommand)]];
+            [self appendSubmenu:windowMenu];
             
             break;
         }

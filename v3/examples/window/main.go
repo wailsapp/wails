@@ -56,7 +56,7 @@ func main() {
 	myMenu.Add("New WebviewWindow (Hide on Close").
 		SetAccelerator("CmdOrCtrl+H").
 		OnClick(func(ctx *application.Context) {
-			app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{HideOnClose: true}).
+			app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{HideOnClose: true}).
 				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 				SetPosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
@@ -66,7 +66,7 @@ func main() {
 	myMenu.Add("New Frameless WebviewWindow").
 		SetAccelerator("CmdOrCtrl+F").
 		OnClick(func(ctx *application.Context) {
-			app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+			app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 				X:         rand.Intn(1000),
 				Y:         rand.Intn(800),
 				Frameless: true,
@@ -79,7 +79,7 @@ func main() {
 	if runtime.GOOS == "darwin" {
 		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInset)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 					Mac: application.MacWindow{
 						TitleBar:                application.MacTitleBarHiddenInset,
 						InvisibleTitleBarHeight: 25,
@@ -93,7 +93,7 @@ func main() {
 			})
 		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInsetUnified)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 					Mac: application.MacWindow{
 						TitleBar:                application.MacTitleBarHiddenInsetUnified,
 						InvisibleTitleBarHeight: 50,
@@ -107,7 +107,7 @@ func main() {
 			})
 		myMenu.Add("New WebviewWindow (MacTitleBarHidden)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 					Mac: application.MacWindow{
 						TitleBar:                application.MacTitleBarHidden,
 						InvisibleTitleBarHeight: 25,

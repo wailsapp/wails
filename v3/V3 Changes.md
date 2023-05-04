@@ -180,3 +180,39 @@ const MyEnum = {
 
 - Why use `float64`? Can't we use `int`? 
   - Because JavaScript doesn't have a concept of `int`. Everything is a `number`, which translates to `float64` in Go. There are also restrictions on casting types in Go's reflection package, which means using `int` doesn't work. 
+
+### BackgroundColour
+
+In v2, this was a pointer to an `RGBA` struct. In v3, this is an `RGBA` struct value.
+
+### WindowIsTranslucent
+
+This flag has been removed. Now there is a `BackgroundType` flag that can be used to set the type of background the window should have.
+This flag can be set to any of the following values:
+- `BackgroundTypeSolid` - The window will have a solid background
+- `BackgroundTypeTransparent` - The window will have a transparent background
+- `BackgroundTypeTranslucent` - The window will have a translucent background
+
+On Windows, if the `BackgroundType` is set to `BackgroundTypeTranslucent`, the type of translucency can be set using the 
+`BackdropType` flag in the `WindowsWindow` options. This can be set to any of the following values:
+- `Auto` - The window will use an effect determined by the system
+- `None` - The window will have no background
+- `Mica` - The window will use the Mica effect
+- `Acrylic` - The window will use the acrylic effect
+- `Tabbed` - The window will use the tabbed effect
+
+
+## Windows Application Options
+
+### WndProcInterceptor
+
+If this is set, the WndProc will be intercepted and the function will be called. This allows you to handle Windows 
+messages directly. The function should have the following signature:
+
+```go
+func(hwnd uintptr, msg uint32, wParam, lParam uintptr) (returnValue uintptr, shouldReturn)
+```
+
+The `shouldReturn` value should be set to `true` if the returnValue should be returned by the main wndProc method. 
+If it is set to `false`, the return value will be ignored and the message will continue to be processed by the main 
+wndProc method.
