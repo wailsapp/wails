@@ -33,7 +33,8 @@ type WindowsWindow struct {
 	DisableFramelessWindowDecorations bool
 
 	// WindowMask is used to set the window shape. Use a PNG with an alpha channel to create a custom shape.
-	WindowMask []byte
+	WindowMask          []byte
+	WindowMaskDraggable bool
 }
 
 type Theme int
