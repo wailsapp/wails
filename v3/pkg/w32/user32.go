@@ -139,6 +139,7 @@ var (
 	procUnhookWindowsHookEx           = moduser32.NewProc("UnhookWindowsHookEx")
 	procCallNextHookEx                = moduser32.NewProc("CallNextHookEx")
 	procGetForegroundWindow           = moduser32.NewProc("GetForegroundWindow")
+	procUpdateLayeredWindow           = moduser32.NewProc("UpdateLayeredWindow")
 
 	procSystemParametersInfo = moduser32.NewProc("SystemParametersInfoW")
 	procSetClassLong         = moduser32.NewProc("SetClassLongW")
@@ -231,6 +232,21 @@ func ShowWindowAsync(hwnd HWND, cmdshow int) bool {
 func UpdateWindow(hwnd HWND) bool {
 	ret, _, _ := procUpdateWindow.Call(
 		uintptr(hwnd))
+	return ret != 0
+}
+
+func UpdateLayeredWindow(hwnd HWND, hdcDst HDC, pptDst *POINT, psize *SIZE,
+	hdcSrc HDC, pptSrc *POINT, crKey COLORREF, pblend *BLENDFUNCTION, dwFlags DWORD) bool {
+	ret, _, _ := procUpdateLayeredWindow.Call(
+		hwnd,
+		hdcDst,
+		uintptr(unsafe.Pointer(pptDst)),
+		uintptr(unsafe.Pointer(psize)),
+		hdcSrc,
+		uintptr(unsafe.Pointer(pptSrc)),
+		uintptr(crKey),
+		uintptr(unsafe.Pointer(pblend)),
+		uintptr(dwFlags))
 	return ret != 0
 }
 

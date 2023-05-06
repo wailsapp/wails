@@ -112,7 +112,7 @@ Webview Window Interface Methods
 
 | Feature    | Windows | Linux | Mac | Notes |
 |------------|---------|-------|-----|-------|
-| GetAll     |         |       | Y   |       |
+| GetAll     | Y       |       | Y   |       |
 | GetPrimary |         |       | Y   |       |
 | GetCurrent |         |       | Y   |       |
 
@@ -148,12 +148,10 @@ Webview Window Interface Methods
 | SetZoom             |         |       | Y   | Set view scale                                                                       |
 | Screen              |         |       | Y   | Get screen for window                                                                |
 
-
 ### Window Options
 
-A 'Y' in the table below indicates that the option has been tested and is applied when the window is created. 
-An 'X' indicates that the option is not supported by the platform. 
-
+A 'Y' in the table below indicates that the option has been tested and is applied when the window is created.
+An 'X' indicates that the option is not supported by the platform.
 
 | Feature                         | Windows | Linux | Mac | Notes                                      |
 |---------------------------------|---------|-------|-----|--------------------------------------------|
@@ -287,5 +285,32 @@ Built-in plugin support:
 
 - [x] Translucency
 - [x] Custom Themes
+
+### Windows Options
+
+| Feature                           | Default | Notes                                       |
+|-----------------------------------|---------|---------------------------------------------|
+| BackdropType                      |         |                                             |
+| DisableIcon                       |         |                                             |
+| Theme                             |         |                                             |
+| CustomTheme                       |         |                                             |
+| DisableFramelessWindowDecorations |         |                                             |
+| WindowMask                        | nil     | Makes the window the contents of the bitmap |
+
+	// Select the type of translucent backdrop. Requires Windows 11 22621 or later.
+	BackdropType BackdropType
+	// Disable the icon in the titlebar
+	DisableIcon bool
+	// Theme. Defaults to SystemDefault which will use whatever the system theme is. The application will follow system theme changes.
+	Theme Theme
+	// Custom colours for dark/light mode
+	CustomTheme *ThemeSettings
+
+	// Disable all window decorations in Frameless mode, which means no "Aero Shadow" and no "Rounded Corner" will be shown.
+	// "Rounded Corners" are only available on Windows 11.
+	DisableFramelessWindowDecorations bool
+
+	// WindowMask is used to set the window shape. Use a PNG with an alpha channel to create a custom shape.
+	WindowMask []byte
 
 ## Linux Specific

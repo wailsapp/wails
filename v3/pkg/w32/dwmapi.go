@@ -14,12 +14,12 @@ var (
 	procDwmExtendFrameIntoClientArea = moddwmapi.NewProc("DwmExtendFrameIntoClientArea")
 )
 
-func DwmSetWindowAttribute(hwnd HWND, dwAttribute DWMWINDOWATTRIBUTE, pvAttribute LPCVOID, cbAttribute uint32) HRESULT {
+func DwmSetWindowAttribute(hwnd HWND, dwAttribute DWMWINDOWATTRIBUTE, pvAttribute unsafe.Pointer, cbAttribute uintptr) HRESULT {
 	ret, _, _ := procDwmSetWindowAttribute.Call(
 		hwnd,
 		uintptr(dwAttribute),
 		uintptr(pvAttribute),
-		uintptr(cbAttribute))
+		cbAttribute)
 	return HRESULT(ret)
 }
 

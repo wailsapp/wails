@@ -5,6 +5,7 @@ package application
 import (
 	"errors"
 	"fmt"
+	"github.com/samber/lo"
 	"strconv"
 	"unicode/utf16"
 	"unsafe"
@@ -42,11 +43,13 @@ func (w *windowsWebviewWindow) setSize(width, height int) {
 }
 
 func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
-	position := w32.HWND_NOTOPMOST
-	if alwaysOnTop {
-		position = w32.HWND_TOPMOST
-	}
-	w32.SetWindowPos(w.hwnd, position, 0, 0, 0, 0, uint(w32.SWP_NOMOVE|w32.SWP_NOSIZE))
+	w32.SetWindowPos(w.hwnd,
+		lo.Ternary(alwaysOnTop, w32.HWND_TOPMOST, w32.HWND_NOTOPMOST),
+		0,
+		0,
+		0,
+		0,
+		uint(w32.SWP_NOMOVE|w32.SWP_NOSIZE))
 }
 
 func (w *windowsWebviewWindow) setURL(url string) {
@@ -144,14 +147,6 @@ func (w *windowsWebviewWindow) run() {
 		w.disableIcon()
 	}
 
-	switch options.BackgroundType {
-	case BackgroundTypeSolid:
-		w.setBackgroundColour(options.BackgroundColour)
-	case BackgroundTypeTransparent:
-	case BackgroundTypeTranslucent:
-		w.setBackdropType(options.Windows.BackdropType)
-	}
-
 	// Process the theme
 	switch options.Windows.Theme {
 	case SystemDefault:
@@ -165,6 +160,14 @@ func (w *windowsWebviewWindow) run() {
 		w.updateTheme(true)
 	}
 
+	switch options.BackgroundType {
+	case BackgroundTypeSolid:
+		w.setBackgroundColour(options.BackgroundColour)
+	case BackgroundTypeTransparent:
+	case BackgroundTypeTranslucent:
+		w.setBackdropType(options.Windows.BackdropType)
+	}
+
 	// Process StartState
 	switch options.StartState {
 	case WindowStateMaximised:
@@ -175,6 +178,11 @@ func (w *windowsWebviewWindow) run() {
 		w.minimise()
 	case WindowStateFullscreen:
 		w.fullscreen()
+	}
+
+	// Process window mask
+	if options.Windows.WindowMask != nil {
+		w.setWindowMask(options.Windows.WindowMask)
 	}
 
 	w.setForeground()
@@ -497,22 +505,14 @@ func (w *windowsWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData
 func (w *windowsWebviewWindow) setStyle(b bool, style int) {
 	currentStyle := int(w32.GetWindowLongPtr(w.hwnd, w32.GWL_STYLE))
 	if currentStyle != 0 {
-		if b {
-			currentStyle |= style
-		} else {
-			currentStyle &^= style
-		}
+		currentStyle = lo.Ternary(b, currentStyle|style, currentStyle&^style)
 		w32.SetWindowLongPtr(w.hwnd, w32.GWL_STYLE, uintptr(currentStyle))
 	}
 }
 func (w *windowsWebviewWindow) setExStyle(b bool, style int) {
 	currentStyle := int(w32.GetWindowLongPtr(w.hwnd, w32.GWL_EXSTYLE))
 	if currentStyle != 0 {
-		if b {
-			currentStyle |= style
-		} else {
-			currentStyle &^= style
-		}
+		currentStyle = lo.Ternary(b, currentStyle|style, currentStyle&^style)
 		w32.SetWindowLongPtr(w.hwnd, w32.GWL_EXSTYLE, uintptr(currentStyle))
 	}
 }
@@ -529,13 +529,7 @@ func (w *windowsWebviewWindow) setBackdropType(backdropType BackdropType) {
 
 		w32.SetWindowCompositionAttribute(w.hwnd, &data)
 	} else {
-		backdropValue := backdropType
-		// We default to None, but in w32 None = 1 and Auto = 0
-		// So we check if the value given was Auto and set it to 0
-		if backdropType == Auto {
-			backdropValue = None
-		}
-		w32.DwmSetWindowAttribute(w.hwnd, w32.DwmwaSystemBackdropType, w32.LPCVOID(&backdropValue), uint32(unsafe.Sizeof(backdropValue)))
+		w32.DwmSetWindowAttribute(w.hwnd, w32.DwmwaSystemBackdropType, w32.PVOID(&backdropType), unsafe.Sizeof(backdropType))
 	}
 }
 
@@ -650,6 +644,13 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			int(newWindowSize.Bottom-newWindowSize.Top),
 			w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
 
+	}
+
+	if w.parent.options.Windows.WindowMask != nil {
+		switch msg {
+		case w32.WM_NCHITTEST:
+			return w32.HTCAPTION
+		}
 	}
 
 	if options := w.parent.options; options.Frameless {
@@ -811,6 +812,50 @@ func (w *windowsWebviewWindow) scaleToDefaultDPI(width, height int) (int, int) {
 	scaledHeight := ScaleToDefaultDPI(height, dpiy)
 
 	return scaledWidth, scaledHeight
+}
+
+func (w *windowsWebviewWindow) setWindowMask(imageData []byte) {
+
+	// Set the window to a WS_EX_LAYERED window
+	newStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE) | w32.WS_EX_LAYERED
+
+	if w.isAlwaysOnTop() {
+		newStyle |= w32.WS_EX_TOPMOST
+	}
+	// Save the current window style
+	w.previousWindowExStyle = uint32(w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE))
+
+	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, uint32(newStyle))
+
+	data, err := pngToImage(imageData)
+	if err != nil {
+		panic(err)
+	}
+
+	bitmap, err := w32.CreateHBITMAPFromImage(data)
+	hdc := w32.CreateCompatibleDC(0)
+	defer w32.DeleteDC(hdc)
+
+	oldBitmap := w32.SelectObject(hdc, bitmap)
+	defer w32.SelectObject(hdc, oldBitmap)
+
+	screenDC := w32.GetDC(0)
+	defer w32.ReleaseDC(0, screenDC)
+
+	size := w32.SIZE{CX: int32(data.Bounds().Dx()), CY: int32(data.Bounds().Dy())}
+	ptSrc := w32.POINT{X: 0, Y: 0}
+	ptDst := w32.POINT{X: int32(w.width()), Y: int32(w.height())}
+	blend := w32.BLENDFUNCTION{
+		BlendOp:             w32.AC_SRC_OVER,
+		BlendFlags:          0,
+		SourceConstantAlpha: 255,
+		AlphaFormat:         w32.AC_SRC_ALPHA,
+	}
+	w32.UpdateLayeredWindow(w.hwnd, screenDC, &ptDst, &size, hdc, &ptSrc, 0, &blend, w32.ULW_ALPHA)
+}
+
+func (w *windowsWebviewWindow) isAlwaysOnTop() bool {
+	return w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE)&w32.WS_EX_TOPMOST != 0
 }
 
 func ScaleWithDPI(pixels int, dpi uint) int {
