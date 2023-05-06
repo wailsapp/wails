@@ -23,7 +23,7 @@ type WebviewWindowOptions struct {
 	MaxWidth                        int
 	MaxHeight                       int
 	StartState                      WindowState
-	Mac                             MacWindow
+	Centered                        bool
 	BackgroundType                  BackgroundType
 	BackgroundColour                RGBA
 	HTML                            string
@@ -37,6 +37,7 @@ type WebviewWindowOptions struct {
 	EnableFraudulentWebsiteWarnings bool
 	Zoom                            float64
 	EnableDragAndDrop               bool
+	Mac                             MacWindow
 	Windows                         WindowsWindow
 }
 

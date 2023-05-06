@@ -446,6 +446,7 @@ func (w *WebviewWindow) handleMessage(message string) {
 // Center centers the window on the screen
 func (w *WebviewWindow) Center() {
 	if w.impl == nil {
+		w.options.Centered = true
 		return
 	}
 	invokeSync(w.impl.center)

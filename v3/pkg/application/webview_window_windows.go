@@ -185,6 +185,10 @@ func (w *windowsWebviewWindow) run() {
 		w.setWindowMask(options.Windows.WindowMask)
 	}
 
+	if options.Centered {
+		w.center()
+	}
+
 	w.setForeground()
 
 	if !options.Hidden {
@@ -649,7 +653,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	if w.parent.options.Windows.WindowMask != nil {
 		switch msg {
 		case w32.WM_NCHITTEST:
-			return w32.HTCAPTION
+			if w.parent.options.Windows.WindowMaskDraggable {
+				return w32.HTCAPTION
+			}
+			return w32.HTCLIENT
 		}
 	}
 
