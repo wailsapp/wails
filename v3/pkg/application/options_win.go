@@ -31,6 +31,9 @@ type WindowsWindow struct {
 	// Disable all window decorations in Frameless mode, which means no "Aero Shadow" and no "Rounded Corner" will be shown.
 	// "Rounded Corners" are only available on Windows 11.
 	DisableFramelessWindowDecorations bool
+
+	// WindowMask is used to set the window shape. Use a PNG with an alpha channel to create a custom shape.
+	WindowMask []byte
 }
 
 type Theme int

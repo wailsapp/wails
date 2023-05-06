@@ -459,6 +459,13 @@ type BITMAP struct {
 	BmBits       unsafe.Pointer
 }
 
+type BLENDFUNCTION struct {
+	BlendOp             byte
+	BlendFlags          byte
+	SourceConstantAlpha byte
+	AlphaFormat         byte
+}
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd183567.aspx
 type DIBSECTION struct {
 	DsBm        BITMAP

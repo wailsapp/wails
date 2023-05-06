@@ -3549,3 +3549,11 @@ const (
 	SIF_TRACKPOS        = 16
 	SIF_ALL             = SIF_RANGE + SIF_PAGE + SIF_POS + SIF_TRACKPOS
 )
+
+const AC_SRC_OVER = 0
+const AC_SRC_ALPHA = 1
+
+const ULW_COLORKEY = 1
+const ULW_ALPHA = 2
+const ULW_OPAQUE = 4
+const ULW_EX_NORESIZE = 8
