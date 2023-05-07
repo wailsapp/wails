@@ -1,4 +1,5 @@
 //go:build windows
+
 package w32
 
 import (
@@ -6,6 +7,7 @@ import (
 	"github.com/samber/lo"
 	"log"
 	"strconv"
+	"sync"
 	"syscall"
 	"unsafe"
 )
@@ -161,4 +163,51 @@ func GetMonitorInfoForWindow(hwnd HWND) *MONITORINFO {
 	info.CbSize = uint32(unsafe.Sizeof(info))
 	GetMonitorInfo(currentMonitor, &info)
 	return &info
+}
+
+type WindowProc func(hwnd HWND, msg uint32, wParam, lParam uintptr) uintptr
+
+var windowClasses = make(map[string]HINSTANCE)
+var windowClassesLock sync.Mutex
+
+func getWindowClass(name string) (HINSTANCE, bool) {
+	windowClassesLock.Lock()
+	defer windowClassesLock.Unlock()
+	result, exists := windowClasses[name]
+	return result, exists
+}
+
+func setWindowClass(name string, instance HINSTANCE) {
+	windowClassesLock.Lock()
+	defer windowClassesLock.Unlock()
+	windowClasses[name] = instance
+}
+
+func RegisterWindow(name string, proc WindowProc) (HINSTANCE, error) {
+	classInstance, exists := getWindowClass(name)
+	if exists {
+		return classInstance, nil
+	}
+	applicationInstance := GetModuleHandle("")
+	if applicationInstance == 0 {
+		return 0, fmt.Errorf("get module handle failed")
+	}
+
+	var wc WNDCLASSEX
+	wc.Size = uint32(unsafe.Sizeof(wc))
+	wc.WndProc = syscall.NewCallback(proc)
+	wc.Instance = applicationInstance
+	wc.Icon = LoadIconWithResourceID(0, uint16(IDI_APPLICATION))
+	wc.Cursor = LoadCursorWithResourceID(0, uint16(IDC_ARROW))
+	wc.Background = COLOR_BTNFACE + 1
+	wc.ClassName = MustStringToUTF16Ptr(name)
+
+	atom := RegisterClassEx(&wc)
+	if atom == 0 {
+		panic(syscall.GetLastError())
+	}
+
+	setWindowClass(name, applicationInstance)
+
+	return applicationInstance, nil
 }

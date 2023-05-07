@@ -78,6 +78,8 @@ const (
 	CSIDL_FLAG_NO_ALIAS           = 0x1000
 	CSIDL_FLAG_PER_USER_INIT      = 0x8000
 	CSIDL_FLAG_MASK               = 0xFF00
+
+	NOTIFYICON_VERSION = 4
 )
 
 var (
@@ -92,7 +94,13 @@ var (
 	procShellExecute         = modshell32.NewProc("ShellExecuteW")
 	procExtractIcon          = modshell32.NewProc("ExtractIconW")
 	procGetSpecialFolderPath = modshell32.NewProc("SHGetSpecialFolderPathW")
+	procShellNotifyIcon      = modshell32.NewProc("Shell_NotifyIconW")
 )
+
+func ShellNotifyIcon(cmd uintptr, nid *NOTIFYICONDATA) bool {
+	ret, _, _ := procShellNotifyIcon.Call(cmd, uintptr(unsafe.Pointer(nid)))
+	return ret == 1
+}
 
 func SHBrowseForFolder(bi *BROWSEINFO) uintptr {
 	ret, _, _ := procSHBrowseForFolder.Call(uintptr(unsafe.Pointer(bi)))

@@ -137,6 +137,10 @@ type macosApp struct {
 	parent          *App
 }
 
+func getNativeApplication() *macosApp {
+	return globalApplication.impl.(*macosApp)
+}
+
 func (m *macosApp) hide() {
 	C.hide()
 }
