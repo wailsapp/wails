@@ -3,11 +3,16 @@
 package application
 
 import (
+	"syscall"
+	"unsafe"
+
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-	"syscall"
-	"unsafe"
+)
+
+const (
+	WM_USER_SYSTRAY = w32.WM_USER + 1
 )
 
 type windowsSystemTray struct {
@@ -33,16 +38,9 @@ func (s *windowsSystemTray) setMenu(menu *Menu) {
 }
 
 func (s *windowsSystemTray) run() {
-
-	NotifyIconClassName := "WailsSystray"
-	_, err := w32.RegisterWindow(NotifyIconClassName, getNativeApplication().wndProc)
-	if err != nil {
-		panic(err)
-	}
-
 	s.hwnd = w32.CreateWindowEx(
 		0,
-		w32.MustStringToUTF16Ptr(NotifyIconClassName),
+		windowClassName,
 		nil,
 		0,
 		0,
@@ -62,7 +60,7 @@ func (s *windowsSystemTray) run() {
 		UID:              uint32(s.parent.id),
 		UFlags:           w32.NIF_ICON | w32.NIF_MESSAGE,
 		HIcon:            s.currentIcon,
-		UCallbackMessage: w32.WM_USER + uint32(s.parent.id),
+		UCallbackMessage: WM_USER_SYSTRAY,
 	}
 	nid.CbSize = uint32(unsafe.Sizeof(nid))
 
@@ -117,7 +115,7 @@ func (s *windowsSystemTray) updateIcon() {
 
 	s.currentIcon = newIcon
 	nid := s.newNotifyIconData()
-	nid.UFlags = w32.NIF_ICON | w32.NIF_MESSAGE
+	nid.UFlags = w32.NIF_ICON
 	if s.currentIcon != 0 {
 		nid.HIcon = s.currentIcon
 	}
@@ -174,8 +172,9 @@ func (s *windowsSystemTray) destroy() {
 
 func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr {
 	switch msg {
-	case w32.WM_USER + uint32(s.parent.id):
-		switch lParam {
+	case WM_USER_SYSTRAY:
+		lparam := w32.LOWORD(uint32(lParam))
+		switch lparam {
 		case w32.WM_LBUTTONUP:
 			if s.parent.leftButtonClickHandler != nil {
 				s.parent.leftButtonClickHandler()
