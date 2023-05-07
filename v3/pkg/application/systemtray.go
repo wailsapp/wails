@@ -22,12 +22,14 @@ type systemTrayImpl interface {
 	setIconPosition(position int)
 	setTemplateIcon(icon []byte)
 	destroy()
+	setDarkModeIcon(icon []byte)
 }
 
 type SystemTray struct {
 	id           uint
 	label        string
 	icon         []byte
+	darkModeIcon []byte
 	iconPosition int
 
 	leftButtonClickHandler        func()
@@ -75,6 +77,17 @@ func (s *SystemTray) SetIcon(icon []byte) *SystemTray {
 	} else {
 		invokeSync(func() {
 			s.impl.setIcon(icon)
+		})
+	}
+	return s
+}
+
+func (s *SystemTray) SetDarkModeIcon(icon []byte) *SystemTray {
+	if s.impl == nil {
+		s.darkModeIcon = icon
+	} else {
+		invokeSync(func() {
+			s.impl.setDarkModeIcon(icon)
 		})
 	}
 	return s

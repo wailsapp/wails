@@ -3,6 +3,7 @@
 package application
 
 import (
+	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 	"syscall"
@@ -75,12 +76,16 @@ func (s *windowsSystemTray) run() {
 		panic(syscall.GetLastError())
 	}
 
-	defaultIcon, err := w32.CreateHIconFromPNG(s.parent.icon)
-	if err != nil {
-		panic(err)
+	if s.parent.icon != nil {
+		s.lightModeIcon = lo.Must(w32.CreateHIconFromPNG(s.parent.icon))
+	} else {
+		s.lightModeIcon = lo.Must(w32.CreateHIconFromPNG(DefaultApplicationIcon))
 	}
-	s.lightModeIcon = defaultIcon
-	s.darkModeIcon = defaultIcon
+	if s.parent.darkModeIcon != nil {
+		s.darkModeIcon = lo.Must(w32.CreateHIconFromPNG(s.parent.darkModeIcon))
+	} else {
+		s.darkModeIcon = s.lightModeIcon
+	}
 	s.uid = nid.UID
 
 	// TODO: Set Menu
@@ -133,18 +138,25 @@ func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
 }
 
 func (s *windowsSystemTray) setIcon(icon []byte) {
-	// TODO:
 	var err error
-	if w32.IsCurrentlyDarkMode() {
-		s.darkModeIcon, err = w32.CreateHIconFromPNG(icon)
-		if err != nil {
-			panic(syscall.GetLastError())
-		}
-	} else {
-		s.lightModeIcon, err = w32.CreateHIconFromPNG(icon)
-		if err != nil {
-			panic(syscall.GetLastError())
-		}
+	s.lightModeIcon, err = w32.CreateHIconFromPNG(icon)
+	if err != nil {
+		panic(syscall.GetLastError())
+	}
+	if s.darkModeIcon == 0 {
+		s.darkModeIcon = s.lightModeIcon
+	}
+	// Update the icon
+	s.updateIcon()
+}
+func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
+	var err error
+	s.darkModeIcon, err = w32.CreateHIconFromPNG(icon)
+	if err != nil {
+		panic(syscall.GetLastError())
+	}
+	if s.lightModeIcon == 0 {
+		s.lightModeIcon = s.darkModeIcon
 	}
 	// Update the icon
 	s.updateIcon()

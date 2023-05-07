@@ -29,13 +29,15 @@ func CreateIconFromResourceEx(presbits uintptr, dwResSize uint32, isIcon bool, v
 
 // CreateHIconFromPNG creates a HICON from a PNG file
 func CreateHIconFromPNG(pngData []byte) (HICON, error) {
+	iconWidth := GetSystemMetrics(SM_CXSMICON)
+	iconHeight := GetSystemMetrics(SM_CYSMICON)
 	icon, err := CreateIconFromResourceEx(
 		uintptr(unsafe.Pointer(&pngData[0])),
 		uint32(len(pngData)),
 		true,
 		0x00030000,
-		0,
-		0,
+		iconWidth,
+		iconHeight,
 		LR_DEFAULTSIZE)
 	return HICON(icon), err
 }
