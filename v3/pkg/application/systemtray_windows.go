@@ -173,8 +173,8 @@ func (s *windowsSystemTray) destroy() {
 func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr {
 	switch msg {
 	case WM_USER_SYSTRAY:
-		lparam := w32.LOWORD(uint32(lParam))
-		switch lparam {
+		msg := (lParam & 0xffff)
+		switch msg {
 		case w32.WM_LBUTTONUP:
 			if s.parent.leftButtonClickHandler != nil {
 				s.parent.leftButtonClickHandler()
@@ -192,7 +192,7 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 				s.parent.rightButtonDoubleClickHandler()
 			}
 		default:
-			println(w32.WMMessageToString(lParam))
+			println(w32.WMMessageToString(msg))
 		}
 		// TODO: Menu processing
 	//case w32.WM_COMMAND:
