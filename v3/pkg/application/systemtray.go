@@ -49,7 +49,9 @@ func (s *SystemTray) SetLabel(label string) {
 		s.label = label
 		return
 	}
-	s.impl.setLabel(label)
+	invokeSync(func() {
+		s.impl.setLabel(label)
+	})
 }
 
 func (s *SystemTray) Label() string {
@@ -58,14 +60,16 @@ func (s *SystemTray) Label() string {
 
 func (s *SystemTray) Run() {
 	s.impl = newSystemTrayImpl(s)
-	s.impl.run()
+	invokeSync(s.impl.run)
 }
 
 func (s *SystemTray) SetIcon(icon []byte) *SystemTray {
 	if s.impl == nil {
 		s.icon = icon
 	} else {
-		s.impl.setIcon(icon)
+		invokeSync(func() {
+			s.impl.setIcon(icon)
+		})
 	}
 	return s
 }
@@ -74,7 +78,9 @@ func (s *SystemTray) SetMenu(menu *Menu) *SystemTray {
 	if s.impl == nil {
 		s.menu = menu
 	} else {
-		s.impl.setMenu(menu)
+		invokeSync(func() {
+			s.impl.setMenu(menu)
+		})
 	}
 	return s
 }
@@ -83,7 +89,9 @@ func (s *SystemTray) SetIconPosition(iconPosition int) *SystemTray {
 	if s.impl == nil {
 		s.iconPosition = iconPosition
 	} else {
-		s.impl.setIconPosition(iconPosition)
+		invokeSync(func() {
+			s.impl.setIconPosition(iconPosition)
+		})
 	}
 	return s
 }
@@ -93,7 +101,9 @@ func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray {
 		s.icon = icon
 		s.isTemplateIcon = true
 	} else {
-		s.impl.setTemplateIcon(icon)
+		invokeSync(func() {
+			s.impl.setTemplateIcon(icon)
+		})
 	}
 	return s
 }
