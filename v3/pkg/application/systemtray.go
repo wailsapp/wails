@@ -30,6 +30,11 @@ type SystemTray struct {
 	icon         []byte
 	iconPosition int
 
+	leftButtonClickHandler        func()
+	rightButtonClickHandler       func()
+	leftButtonDoubleClickHandler  func()
+	rightButtonDoubleClickHandler func()
+
 	// Platform specific implementation
 	impl           systemTrayImpl
 	menu           *Menu
@@ -41,6 +46,7 @@ func NewSystemTray(id uint) *SystemTray {
 		id:           id,
 		label:        "",
 		iconPosition: NSImageLeading,
+		icon:         DefaultApplicationIcon,
 	}
 }
 

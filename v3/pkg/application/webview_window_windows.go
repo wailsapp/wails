@@ -115,8 +115,7 @@ func (w *windowsWebviewWindow) run() {
 	}
 
 	// Register the window with the application
-	windowsApp := globalApplication.impl.(*windowsApp)
-	windowsApp.registerWindow(w)
+	getNativeApplication().registerWindow(w)
 
 	w.setResizable(!options.DisableResize)
 

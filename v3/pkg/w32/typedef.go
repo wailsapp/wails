@@ -9,6 +9,7 @@ package w32
 
 import (
 	"fmt"
+	"golang.org/x/sys/windows"
 	"unsafe"
 )
 
@@ -651,6 +652,24 @@ type TRACKMOUSEEVENT struct {
 	DwFlags     uint32
 	HwndTrack   HWND
 	DwHoverTime uint32
+}
+
+type NOTIFYICONDATA struct {
+	CbSize           uint32
+	HWnd             HWND
+	UID              uint32
+	UFlags           uint32
+	UCallbackMessage uint32
+	HIcon            HICON
+	SzTip            [128]uint16
+	DwState          uint32
+	DwStateMask      uint32
+	SzInfo           [256]uint16
+	UVersion         uint32
+	SzInfoTitle      [64]uint16
+	DwInfoFlags      uint32
+	GuidItem         windows.GUID
+	HBalloonIcon     HICON
 }
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms534067.aspx

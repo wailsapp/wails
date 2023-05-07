@@ -20,7 +20,8 @@ type windowsApp struct {
 
 	instance w32.HINSTANCE
 
-	windowMap map[w32.HWND]*windowsWebviewWindow
+	windowMap  map[w32.HWND]*windowsWebviewWindow
+	systrayMap map[w32.HMENU]*windowsSystemTray
 
 	mainThreadID         w32.HANDLE
 	mainThreadWindowHWND w32.HWND
@@ -31,6 +32,10 @@ type windowsApp struct {
 
 	// system theme
 	isDarkMode bool
+}
+
+func getNativeApplication() *windowsApp {
+	return globalApplication.impl.(*windowsApp)
 }
 
 func (m *windowsApp) getPrimaryScreen() (*Screen, error) {
@@ -194,6 +199,10 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		return window.WndProc(msg, wParam, lParam)
 	}
 
+	if systray, ok := m.systrayMap[hwnd]; ok {
+		return systray.wndProc(msg, wParam, lParam)
+	}
+
 	// Dispatch the message to the appropriate window
 
 	return w32.DefWindowProc(hwnd, msg, wParam, lParam)
@@ -201,6 +210,10 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 
 func (m *windowsApp) registerWindow(result *windowsWebviewWindow) {
 	m.windowMap[result.hwnd] = result
+}
+
+func (m *windowsApp) registerSystemTray(result *windowsSystemTray) {
+	m.systrayMap[result.hwnd] = result
 }
 
 func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
@@ -220,9 +233,10 @@ func newPlatformApp(app *App) *windowsApp {
 	}
 
 	result := &windowsApp{
-		parent:    app,
-		instance:  w32.GetModuleHandle(""),
-		windowMap: make(map[w32.HWND]*windowsWebviewWindow),
+		parent:     app,
+		instance:   w32.GetModuleHandle(""),
+		windowMap:  make(map[w32.HWND]*windowsWebviewWindow),
+		systrayMap: make(map[w32.HWND]*windowsSystemTray),
 	}
 
 	result.init()
