@@ -13,63 +13,61 @@ type windowsDialog struct {
 }
 
 func (m *windowsDialog) show() {
-	globalApplication.dispatchOnMainThread(func() {
-		//
-		//// Mac can only have 4 Buttons on a dialog
-		//if len(m.dialog.Buttons) > 4 {
-		//	m.dialog.Buttons = m.dialog.Buttons[:4]
-		//}
-		//
-		//if m.nsDialog != nil {
-		//	C.releaseDialog(m.nsDialog)
-		//}
-		//var title *C.char
-		//if m.dialog.Title != "" {
-		//	title = C.CString(m.dialog.Title)
-		//}
-		//var message *C.char
-		//if m.dialog.Message != "" {
-		//	message = C.CString(m.dialog.Message)
-		//}
-		//var iconData unsafe.Pointer
-		//var iconLength C.int
-		//if m.dialog.Icon != nil {
-		//	iconData = unsafe.Pointer(&m.dialog.Icon[0])
-		//	iconLength = C.int(len(m.dialog.Icon))
-		//} else {
-		//	// if it's an error, use the application Icon
-		//	if m.dialog.DialogType == ErrorDialog {
-		//		iconData = unsafe.Pointer(&globalApplication.options.Icon[0])
-		//		iconLength = C.int(len(globalApplication.options.Icon))
-		//	}
-		//}
-		//
-		//alertType, ok := alertTypeMap[m.dialog.DialogType]
-		//if !ok {
-		//	alertType = C.NSAlertStyleInformational
-		//}
-		//
-		//m.nsDialog = C.createAlert(alertType, title, message, iconData, iconLength)
-		//
-		//// Reverse the Buttons so that the default is on the right
-		//reversedButtons := make([]*Button, len(m.dialog.Buttons))
-		//var count = 0
-		//for i := len(m.dialog.Buttons) - 1; i >= 0; i-- {
-		//	button := m.dialog.Buttons[i]
-		//	C.alertAddButton(m.nsDialog, C.CString(button.Label), C.bool(button.IsDefault), C.bool(button.IsCancel))
-		//	reversedButtons[count] = m.dialog.Buttons[i]
-		//	count++
-		//}
-		//
-		//buttonPressed := int(C.dialogRunModal(m.nsDialog))
-		//if len(m.dialog.Buttons) > buttonPressed {
-		//	button := reversedButtons[buttonPressed]
-		//	if button.callback != nil {
-		//		button.callback()
-		//	}
-		//}
-		panic("implement me")
-	})
+	//
+	//// Mac can only have 4 Buttons on a dialog
+	//if len(m.dialog.Buttons) > 4 {
+	//	m.dialog.Buttons = m.dialog.Buttons[:4]
+	//}
+	//
+	//if m.nsDialog != nil {
+	//	C.releaseDialog(m.nsDialog)
+	//}
+	//var title *C.char
+	//if m.dialog.Title != "" {
+	//	title = C.CString(m.dialog.Title)
+	//}
+	//var message *C.char
+	//if m.dialog.Message != "" {
+	//	message = C.CString(m.dialog.Message)
+	//}
+	//var iconData unsafe.Pointer
+	//var iconLength C.int
+	//if m.dialog.Icon != nil {
+	//	iconData = unsafe.Pointer(&m.dialog.Icon[0])
+	//	iconLength = C.int(len(m.dialog.Icon))
+	//} else {
+	//	// if it's an error, use the application Icon
+	//	if m.dialog.DialogType == ErrorDialog {
+	//		iconData = unsafe.Pointer(&globalApplication.options.Icon[0])
+	//		iconLength = C.int(len(globalApplication.options.Icon))
+	//	}
+	//}
+	//
+	//alertType, ok := alertTypeMap[m.dialog.DialogType]
+	//if !ok {
+	//	alertType = C.NSAlertStyleInformational
+	//}
+	//
+	//m.nsDialog = C.createAlert(alertType, title, message, iconData, iconLength)
+	//
+	//// Reverse the Buttons so that the default is on the right
+	//reversedButtons := make([]*Button, len(m.dialog.Buttons))
+	//var count = 0
+	//for i := len(m.dialog.Buttons) - 1; i >= 0; i-- {
+	//	button := m.dialog.Buttons[i]
+	//	C.alertAddButton(m.nsDialog, C.CString(button.Label), C.bool(button.IsDefault), C.bool(button.IsCancel))
+	//	reversedButtons[count] = m.dialog.Buttons[i]
+	//	count++
+	//}
+	//
+	//buttonPressed := int(C.dialogRunModal(m.nsDialog))
+	//if len(m.dialog.Buttons) > buttonPressed {
+	//	button := reversedButtons[buttonPressed]
+	//	if button.callback != nil {
+	//		button.callback()
+	//	}
+	//}
+	panic("implement me")
 
 }
 
