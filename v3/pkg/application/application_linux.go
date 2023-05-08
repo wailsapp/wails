@@ -71,6 +71,10 @@ type linuxApp struct {
 	windowsLock sync.Mutex
 }
 
+func getNativeApplication() *linuxApp {
+	return globalApplication.impl.(*linuxApp)
+}
+
 func (m *linuxApp) hide() {
 	//	C.hide()
 }
