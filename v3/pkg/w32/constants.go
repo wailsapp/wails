@@ -544,6 +544,7 @@ const (
 	WM_MBUTTONUP              = 520
 	WM_MBUTTONDBLCLK          = 521
 	WM_MOUSEWHEEL             = 522
+	WM_MOUSEHWHEEL            = 526
 	WM_MOUSEFIRST             = 512
 	WM_XBUTTONDOWN            = 523
 	WM_XBUTTONUP              = 524
