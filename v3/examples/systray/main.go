@@ -17,6 +17,8 @@ func main() {
 		},
 	})
 
+	window := app.NewWebviewWindow().Hide()
+
 	systemTray := app.NewSystemTray()
 	if runtime.GOOS == "darwin" {
 		systemTray.SetIcon(application.DefaultMacTemplateIcon)
@@ -36,6 +38,10 @@ func main() {
 	})
 
 	systemTray.SetMenu(myMenu)
+
+	systemTray.OnClick(func() {
+		window.Show()
+	})
 
 	err := app.Run()
 
