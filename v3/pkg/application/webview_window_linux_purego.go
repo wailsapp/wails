@@ -442,7 +442,7 @@ func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 
 func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 	return &linuxWebviewWindow{
-		application: (globalApplication.impl).(*linuxApp).application,
+		application: getNativeApplication(),
 		parent:      parent,
 	}
 }
@@ -558,7 +558,7 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	globalApplication.dispatchOnMainThread(func() {
-		app := (globalApplication.impl).(*linuxApp)
+		app := getNativeApplication()
 		menu := app.applicationMenu
 		var newWindow func(uintptr) uintptr
 		purego.RegisterLibFunc(&newWindow, gtk, "gtk_application_window_new")

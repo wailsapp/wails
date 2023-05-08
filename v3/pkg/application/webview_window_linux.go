@@ -527,7 +527,7 @@ func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 	//	(*C.struct__GtkWidget)(m.native)
 	//var menubar *C.struct__GtkWidget
 	return &linuxWebviewWindow{
-		application: (globalApplication.impl).(*linuxApp).application,
+		application: getNativeApplication(),
 		parent:      parent,
 		//		menubar:     menubar,
 	}
@@ -631,7 +631,7 @@ func (w *linuxWebviewWindow) run() {
 		w.on(eventId)
 	}
 
-	app := (globalApplication.impl).(*linuxApp)
+	app := getNativeApplication()
 	menu := app.applicationMenu
 
 	globalApplication.dispatchOnMainThread(func() {

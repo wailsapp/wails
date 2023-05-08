@@ -117,7 +117,7 @@ func (m *linuxMenu) addSubMenuToItem(menu *Menu, item *MenuItem) {
 		menu.impl = &linuxMenu{
 			menu:   menu,
 			native: newMenu(),
-		}
+N		}
 	}
 	var itemSetSubmenu func(uintptr, uintptr)
 	purego.RegisterLibFunc(&itemSetSubmenu, gtk, "gtk_menu_item_set_submenu")

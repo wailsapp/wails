@@ -199,9 +199,7 @@ func (m *linuxApp) executeStartupActions() {
 
 //export activateLinux
 func activateLinux(data unsafe.Pointer) {
-	//	globalApplication.activate()
-	app := (globalApplication.impl).(*linuxApp)
-	app.executeStartupActions()
+	getNativeApplication().executeStartupActions()
 }
 
 //export processApplicationEvent
