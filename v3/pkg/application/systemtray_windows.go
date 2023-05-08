@@ -84,8 +84,15 @@ func (s *windowsSystemTray) run() {
 	// TODO: Set Menu
 
 	// Set Default Callbacks
-	s.parent.leftButtonClickHandler = func() {
-		println("Left Button Clicked")
+	if s.parent.clickHandler == nil {
+		s.parent.clickHandler = func() {
+			println("Left Button Clicked")
+		}
+	}
+	if s.parent.rightClickHandler == nil {
+		s.parent.rightClickHandler = func() {
+			//s.showMenu()
+		}
 	}
 
 	// Update the icon
@@ -176,20 +183,20 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 		msg := lParam & 0xffff
 		switch msg {
 		case w32.WM_LBUTTONUP:
-			if s.parent.leftButtonClickHandler != nil {
-				s.parent.leftButtonClickHandler()
+			if s.parent.clickHandler != nil {
+				s.parent.clickHandler()
 			}
 		case w32.WM_RBUTTONUP:
-			if s.parent.rightButtonClickHandler != nil {
-				s.parent.rightButtonClickHandler()
+			if s.parent.rightClickHandler != nil {
+				s.parent.rightClickHandler()
 			}
 		case w32.WM_LBUTTONDBLCLK:
-			if s.parent.leftButtonDoubleClickHandler != nil {
-				s.parent.leftButtonDoubleClickHandler()
+			if s.parent.doubleClickHandler != nil {
+				s.parent.doubleClickHandler()
 			}
 		case w32.WM_RBUTTONDBLCLK:
-			if s.parent.rightButtonDoubleClickHandler != nil {
-				s.parent.rightButtonDoubleClickHandler()
+			if s.parent.rightDoubleClickHandler != nil {
+				s.parent.rightDoubleClickHandler()
 			}
 		case 0x0406:
 			if s.parent.mouseEnterHandler != nil {

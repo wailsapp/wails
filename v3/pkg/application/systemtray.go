@@ -32,12 +32,12 @@ type SystemTray struct {
 	darkModeIcon []byte
 	iconPosition int
 
-	leftButtonClickHandler        func()
-	rightButtonClickHandler       func()
-	leftButtonDoubleClickHandler  func()
-	rightButtonDoubleClickHandler func()
-	mouseEnterHandler             func()
-	mouseLeaveHandler             func()
+	clickHandler            func()
+	rightClickHandler       func()
+	doubleClickHandler      func()
+	rightDoubleClickHandler func()
+	mouseEnterHandler       func()
+	mouseLeaveHandler       func()
 
 	// Platform specific implementation
 	impl           systemTrayImpl
@@ -136,23 +136,23 @@ func (s *SystemTray) Destroy() {
 	s.impl.destroy()
 }
 
-func (s *SystemTray) OnLeftButtonClick(handler func()) *SystemTray {
-	s.leftButtonClickHandler = handler
+func (s *SystemTray) OnClick(handler func()) *SystemTray {
+	s.clickHandler = handler
 	return s
 }
 
-func (s *SystemTray) OnRightButtonClick(handler func()) *SystemTray {
-	s.rightButtonClickHandler = handler
+func (s *SystemTray) OnRightClick(handler func()) *SystemTray {
+	s.rightClickHandler = handler
 	return s
 }
 
-func (s *SystemTray) OnLeftButtonDoubleClick(handler func()) *SystemTray {
-	s.leftButtonDoubleClickHandler = handler
+func (s *SystemTray) OnDoubleClick(handler func()) *SystemTray {
+	s.doubleClickHandler = handler
 	return s
 }
 
-func (s *SystemTray) OnRightButtonDoubleClick(handler func()) *SystemTray {
-	s.rightButtonDoubleClickHandler = handler
+func (s *SystemTray) OnRightDoubleClick(handler func()) *SystemTray {
+	s.rightDoubleClickHandler = handler
 	return s
 }
 
