@@ -21,15 +21,10 @@ type windowsSystemTray struct {
 	// Platform specific implementation
 	uid           uint32
 	hwnd          w32.HWND
-	appIcon       w32.HICON
 	lightModeIcon w32.HICON
 	darkModeIcon  w32.HICON
 	currentIcon   w32.HICON
 	//menu          *w32.PopupMenu
-}
-
-func (s *windowsSystemTray) setIconPosition(position int) {
-	// Unsupported - do nothing
 }
 
 func (s *windowsSystemTray) setMenu(menu *Menu) {
@@ -87,6 +82,11 @@ func (s *windowsSystemTray) run() {
 	s.uid = nid.UID
 
 	// TODO: Set Menu
+
+	// Set Default Callbacks
+	s.parent.leftButtonClickHandler = func() {
+		println("Left Button Clicked")
+	}
 
 	// Update the icon
 	s.updateIcon()
@@ -173,7 +173,7 @@ func (s *windowsSystemTray) destroy() {
 func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr {
 	switch msg {
 	case WM_USER_SYSTRAY:
-		msg := (lParam & 0xffff)
+		msg := lParam & 0xffff
 		switch msg {
 		case w32.WM_LBUTTONUP:
 			if s.parent.leftButtonClickHandler != nil {
@@ -191,9 +191,17 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 			if s.parent.rightButtonDoubleClickHandler != nil {
 				s.parent.rightButtonDoubleClickHandler()
 			}
-		default:
-			println(w32.WMMessageToString(msg))
+		case 0x0406:
+			if s.parent.mouseEnterHandler != nil {
+				s.parent.mouseEnterHandler()
+			}
+		case 0x0407:
+			if s.parent.mouseLeaveHandler != nil {
+				s.parent.mouseLeaveHandler()
+			}
 		}
+		//println(w32.WMMessageToString(msg))
+
 		// TODO: Menu processing
 	//case w32.WM_COMMAND:
 	//	cmdMsgID := int(wparam & 0xffff)
@@ -216,5 +224,9 @@ func (s *windowsSystemTray) setLabel(_ string) {
 }
 
 func (s *windowsSystemTray) setTemplateIcon(_ []byte) {
+	// Unsupported - do nothing
+}
+
+func (s *windowsSystemTray) setIconPosition(position int) {
 	// Unsupported - do nothing
 }

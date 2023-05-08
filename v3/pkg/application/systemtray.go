@@ -36,6 +36,8 @@ type SystemTray struct {
 	rightButtonClickHandler       func()
 	leftButtonDoubleClickHandler  func()
 	rightButtonDoubleClickHandler func()
+	mouseEnterHandler             func()
+	mouseLeaveHandler             func()
 
 	// Platform specific implementation
 	impl           systemTrayImpl
@@ -132,4 +134,34 @@ func (s *SystemTray) Destroy() {
 		return
 	}
 	s.impl.destroy()
+}
+
+func (s *SystemTray) OnLeftButtonClick(handler func()) *SystemTray {
+	s.leftButtonClickHandler = handler
+	return s
+}
+
+func (s *SystemTray) OnRightButtonClick(handler func()) *SystemTray {
+	s.rightButtonClickHandler = handler
+	return s
+}
+
+func (s *SystemTray) OnLeftButtonDoubleClick(handler func()) *SystemTray {
+	s.leftButtonDoubleClickHandler = handler
+	return s
+}
+
+func (s *SystemTray) OnRightButtonDoubleClick(handler func()) *SystemTray {
+	s.rightButtonDoubleClickHandler = handler
+	return s
+}
+
+func (s *SystemTray) OnMouseEnter(handler func()) *SystemTray {
+	s.mouseEnterHandler = handler
+	return s
+}
+
+func (s *SystemTray) OnMouseLeave(handler func()) *SystemTray {
+	s.mouseLeaveHandler = handler
+	return s
 }
