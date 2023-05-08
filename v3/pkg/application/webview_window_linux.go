@@ -527,7 +527,7 @@ func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 	//	(*C.struct__GtkWidget)(m.native)
 	//var menubar *C.struct__GtkWidget
 	return &linuxWebviewWindow{
-		application: getNativeApplication(),
+		application: getNativeApplication().application,
 		parent:      parent,
 		//		menubar:     menubar,
 	}

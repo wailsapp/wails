@@ -395,3 +395,13 @@ func newZoomMenuItem() *MenuItem {
 			}
 		})
 }
+
+func newFullScreenMenuItem() *MenuItem {
+	return newMenuItem("Fullscreen").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.Fullscreen()
+			}
+		})
+}

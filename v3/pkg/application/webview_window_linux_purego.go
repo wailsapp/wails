@@ -442,7 +442,7 @@ func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 
 func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 	return &linuxWebviewWindow{
-		application: getNativeApplication(),
+		application: getNativeApplication().application,
 		parent:      parent,
 	}
 }
