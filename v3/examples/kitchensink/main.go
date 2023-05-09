@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"github.com/wailsapp/wails/v3/pkg/icons"
 	"log"
 	"runtime"
 	"sync"
@@ -62,9 +63,9 @@ func main() {
 			mySystray := app.NewSystemTray()
 			mySystray.SetLabel("Wails")
 			if runtime.GOOS == "darwin" {
-				mySystray.SetTemplateIcon(application.DefaultMacTemplateIcon)
+				mySystray.SetTemplateIcon(icons.SystrayMacTemplate)
 			} else {
-				mySystray.SetIcon(application.DefaultApplicationIcon)
+				mySystray.SetIcon(icons.ApplicationDarkMode256)
 			}
 			myMenu := app.NewMenu()
 			myMenu.Add("Item 1")
@@ -102,9 +103,9 @@ func main() {
 	mySystray := app.NewSystemTray()
 	mySystray.SetLabel("Wails is awesome")
 	if runtime.GOOS == "darwin" {
-		mySystray.SetTemplateIcon(application.DefaultMacTemplateIcon)
+		mySystray.SetTemplateIcon(icons.SystrayMacTemplate)
 	} else {
-		mySystray.SetIcon(application.DefaultApplicationIcon)
+		mySystray.SetIcon(icons.ApplicationDarkMode256)
 	}
 	mySystray.SetMenu(myMenu)
 	mySystray.SetIconPosition(application.NSImageLeading)

@@ -55,6 +55,7 @@ type (
 		isNormal() bool
 		isVisible() bool
 		setFullscreenButtonEnabled(enabled bool)
+		focus()
 		show()
 		hide()
 		getScreen() (*Screen, error)
@@ -806,4 +807,12 @@ func (w *WebviewWindow) NativeWindowHandle() (uintptr, error) {
 		return 0, errors.New("native handle unavailable as window is not running")
 	}
 	return w.impl.nativeWindowHandle(), nil
+}
+
+func (w *WebviewWindow) Focus() {
+	if w.impl == nil {
+		w.options.Focused = true
+		return
+	}
+	invokeSync(w.impl.focus)
 }

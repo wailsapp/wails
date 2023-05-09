@@ -32,6 +32,7 @@ Webview Window Interface Methods
 | close()                                            |         |       | Y   |                                          |
 | destroy()                                          |         |       | Y   |                                          |
 | execJS(js string)                                  |         |       | Y   |                                          |
+| focus()                                            | Y       |       |     |                                          |
 | forceReload()                                      |         |       | Y   |                                          |
 | fullscreen()                                       | Y       |       | Y   |                                          |
 | getScreen() (*Screen, error)                       |         |       | Y   |                                          |
@@ -120,27 +121,28 @@ Webview Window Interface Methods
 
 | Feature             | Windows | Linux | Mac | Notes                                                                                |
 |---------------------|---------|-------|-----|--------------------------------------------------------------------------------------|
-| SetTitle            |         |       | Y   |                                                                                      |
-| SetSize             |         |       | Y   |                                                                                      |
-| Size                |         |       | Y   |                                                                                      |
-| SetPosition         |         |       | Y   |                                                                                      |
-| Position            |         |       | Y   |                                                                                      |
-| FullScreen          |         |       | Y   |                                                                                      |
-| UnFullscreen        |         |       | Y   |                                                                                      |
-| Minimise            |         |       | Y   |                                                                                      |
-| UnMinimise          |         |       | Y   |                                                                                      |
-| Maximise            |         |       | Y   |                                                                                      |
-| UnMaximise          |         |       | Y   |                                                                                      |
-| Show                |         |       | Y   |                                                                                      |
-| Hide                |         |       | Y   |                                                                                      |
-| Center              |         |       | Y   |                                                                                      |
-| SetBackgroundColour |         |       | Y   | https://github.com/MicrosoftEdge/WebView2Feedback/issues/1621#issuecomment-938234294 |
-| SetAlwaysOnTop      |         |       | Y   |                                                                                      |
-| SetResizable        |         |       | Y   |                                                                                      |
-| SetMinSize          |         |       | Y   |                                                                                      |
-| SetMaxSize          |         |       | Y   |                                                                                      |
-| Width               |         |       | Y   |                                                                                      |
-| Height              |         |       | Y   |                                                                                      |
+| SetTitle            | Y       |       | Y   |                                                                                      |
+| SetSize             | Y       |       | Y   |                                                                                      |
+| Size                | Y       |       | Y   |                                                                                      |
+| SetPosition         | Y       |       | Y   |                                                                                      |
+| Position            | Y       |       | Y   |                                                                                      |
+| Focus               | Y       |       |     |                                                                                      |
+| FullScreen          | Y       |       | Y   |                                                                                      |
+| UnFullscreen        | Y       |       | Y   |                                                                                      |
+| Minimise            | Y       |       | Y   |                                                                                      |
+| UnMinimise          | Y       |       | Y   |                                                                                      |
+| Maximise            | Y       |       | Y   |                                                                                      |
+| UnMaximise          | Y       |       | Y   |                                                                                      |
+| Show                | Y       |       | Y   |                                                                                      |
+| Hide                | Y       |       | Y   |                                                                                      |
+| Center              | Y       |       | Y   |                                                                                      |
+| SetBackgroundColour | Y       |       | Y   | https://github.com/MicrosoftEdge/WebView2Feedback/issues/1621#issuecomment-938234294 |
+| SetAlwaysOnTop      | Y       |       | Y   |                                                                                      |
+| SetResizable        | Y       |       | Y   |                                                                                      |
+| SetMinSize          | Y       |       | Y   |                                                                                      |
+| SetMaxSize          | Y       |       | Y   |                                                                                      |
+| Width               | Y       |       | Y   |                                                                                      |
+| Height              | Y       |       | Y   |                                                                                      |
 | ZoomIn              |         |       | Y   | Increase view scale                                                                  |
 | ZoomOut             |         |       | Y   | Decrease view scale                                                                  |
 | ZoomReset           |         |       | Y   | Reset view scale                                                                     |
@@ -183,6 +185,7 @@ An 'X' indicates that the option is not supported by the platform.
 | Zoom                            |         |       |     |                                            |
 | EnableDragAndDrop               |         |       |     |                                            |
 | Windows                         |         | -     | -   |                                            |
+| Focused                         | Y       |       |     |                                            |
 
 ### Log
 
@@ -196,12 +199,12 @@ To log or not to log? System logger vs custom logger.
 
 ## Tray Menus
 
-| Feature            | Windows | Linux | Mac | Notes |
-|--------------------|---------|-------|-----|-------|
-| Icon               |         |       | Y   |       |
-| Label              |         |       | Y   |       |
-| Label (ANSI Codes) |         |       |     |       |
-| Menu               |         |       | Y   |       |
+| Feature            | Windows | Linux | Mac | Notes                                                                |
+|--------------------|---------|-------|-----|----------------------------------------------------------------------|
+| Icon               | Y       |       | Y   | Windows has default icons for light/dark mode & supports PNG or ICO. |
+| Label              | -       |       | Y   |                                                                      |
+| Label (ANSI Codes) | -       |       |     |                                                                      |
+| Menu               |         |       | Y   |                                                                      |
 
 ## Cross Platform Events
 
@@ -231,7 +234,7 @@ TBD
 
 ## Theme
 
-| Plugin | Windows | Linux | Mac | Notes |
+| Mode   | Windows | Linux | Mac | Notes |
 |--------|---------|-------|-----|-------|
 | Dark   | Y       |       |     |       |
 | Light  | Y       |       |     |       |

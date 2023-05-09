@@ -1,6 +1,7 @@
 package application
 
 import (
+	"github.com/wailsapp/wails/v3/pkg/icons"
 	"log"
 	"net/http"
 	"os"
@@ -97,7 +98,7 @@ func mergeApplicationDefaults(o *Options) {
 		o.Description = "An application written using Wails"
 	}
 	if o.Icon == nil {
-		o.Icon = DefaultApplicationIcon
+		o.Icon = icons.ApplicationLightMode256
 	}
 
 }

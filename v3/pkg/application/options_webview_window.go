@@ -39,6 +39,7 @@ type WebviewWindowOptions struct {
 	EnableDragAndDrop               bool
 	Mac                             MacWindow
 	Windows                         WindowsWindow
+	Focused                         bool
 }
 
 var WebviewWindowDefaults = &WebviewWindowOptions{

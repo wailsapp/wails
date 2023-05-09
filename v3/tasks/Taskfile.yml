@@ -1,7 +1,7 @@
 version: '3'
 
 tasks:
-  generate:
+  generate:events:
     dir: ./events
     cmds:
       - go run generate.go
