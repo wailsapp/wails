@@ -180,11 +180,11 @@ An 'X' indicates that the option is not supported by the platform.
 | Y                               |         |       |     |                                            |
 | HideOnClose                     |         |       |     |                                            |
 | FullscreenButtonEnabled         |         |       |     |                                            |
-| Hidden                          |         |       |     |                                            |
+| Hidden                          | Y       |       |     |                                            |
 | EnableFraudulentWebsiteWarnings |         |       |     |                                            |
 | Zoom                            |         |       |     |                                            |
 | EnableDragAndDrop               |         |       |     |                                            |
-| Windows                         |         | -     | -   |                                            |
+| Windows                         | Y       | -     | -   |                                            |
 | Focused                         | Y       |       |     |                                            |
 
 ### Log
