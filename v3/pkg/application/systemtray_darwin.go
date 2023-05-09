@@ -91,6 +91,10 @@ type macosSystemTray struct {
 	isTemplateIcon bool
 }
 
+func (s *macosSystemTray) setDarkModeIcon(icon []byte) {
+	// Is this even possible?
+}
+
 func (s *macosSystemTray) setIconPosition(position int) {
 	s.iconPosition = position
 }

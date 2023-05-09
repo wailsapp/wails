@@ -30,7 +30,7 @@ func main() {
 
 	systemTray := app.NewSystemTray()
 	if runtime.GOOS == "darwin" {
-		systemTray.SetIcon(icons.SystrayMacTemplate)
+		systemTray.SetTemplateIcon(icons.SystrayMacTemplate)
 	}
 
 	myMenu := app.NewMenu()
