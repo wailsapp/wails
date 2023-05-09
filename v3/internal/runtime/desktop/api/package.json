@@ -2,7 +2,21 @@
   "name": "@wailsapp/api",
   "version": "3.0.0-alpha.3",
   "description": "Wails Runtime API",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "module": "./dist/index.mjs",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "npx tsup src/index.ts --dts --format cjs,esm"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/wailsapp/wails.git"
@@ -12,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/wailsapp/wails/issues"
   },
-  "homepage": "https://wails.io"
+  "homepage": "https://wails.io",
+  "devDependencies": {
+    "tsup": "^6.7.0"
+  }
 }
