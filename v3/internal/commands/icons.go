@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/color"
+	"image/png"
 	"os"
 	"strconv"
 	"strings"
@@ -122,5 +124,41 @@ func generateWindowsIcon(iconData []byte, sizes []int, options *IconsOptions) er
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func GenerateTemplateIcon(data []byte, outputFilename string) error {
+	// Decode the input file as a PNG
+	buffer := bytes.NewBuffer(data)
+	img, err := png.Decode(buffer)
+	if err != nil {
+		return fmt.Errorf("failed to decode input file as PNG: %w", err)
+	}
+
+	// Create a new image with the same dimensions and RGBA color model
+	bounds := img.Bounds()
+	iconImg := image.NewRGBA(bounds)
+
+	// Iterate over each pixel of the input image
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			// Get the alpha of the pixel
+			_, _, _, a := img.At(x, y).RGBA()
+			iconImg.SetRGBA(x, y, color.RGBA{R: 0, G: 0, B: 0, A: uint8(a)})
+		}
+	}
+
+	// Create the output file
+	outFile, err := os.Create(outputFilename)
+	if err != nil {
+		return fmt.Errorf("failed to create output file: %w", err)
+	}
+	defer outFile.Close()
+
+	// Encode the template icon image as a PNG and write it to the output file
+	if err := png.Encode(outFile, iconImg); err != nil {
+		return fmt.Errorf("failed to encode output image as PNG: %w", err)
+	}
+
 	return nil
 }

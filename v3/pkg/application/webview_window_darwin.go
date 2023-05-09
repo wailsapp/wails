@@ -808,6 +808,10 @@ type macosWebviewWindow struct {
 	parent   *WebviewWindow
 }
 
+func (w *macosWebviewWindow) focus() {
+	//TODO implement me
+}
+
 func (w *macosWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
 	// Create the menu
 	thisMenu := newMenuImpl(menu)
