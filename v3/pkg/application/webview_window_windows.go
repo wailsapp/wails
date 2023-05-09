@@ -188,7 +188,9 @@ func (w *windowsWebviewWindow) run() {
 		w.center()
 	}
 
-	w.setForeground()
+	if options.Focused {
+		w.Focus()
+	}
 
 	if !options.Hidden {
 		w.show()
@@ -223,7 +225,7 @@ func (w *windowsWebviewWindow) size() (int, int) {
 	return width, height
 }
 
-func (w *windowsWebviewWindow) setForeground() {
+func (w *windowsWebviewWindow) Focus() {
 	w32.SetForegroundWindow(w.hwnd)
 }
 
@@ -416,6 +418,10 @@ func (w *windowsWebviewWindow) isVisible() bool {
 
 func (w *windowsWebviewWindow) setFullscreenButtonEnabled(_ bool) {
 	// Unused in Windows
+}
+
+func (w *windowsWebviewWindow) focus() {
+	w32.SetForegroundWindow(w.hwnd)
 }
 
 func (w *windowsWebviewWindow) show() {

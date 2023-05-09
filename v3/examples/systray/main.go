@@ -2,11 +2,20 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
+	"github.com/wailsapp/wails/v3/pkg/icons"
 	"log"
 	"runtime"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
+
+var counter int
+
+func clickCount() int {
+	counter++
+	return counter
+}
 
 func main() {
 	app := application.New(application.Options{
@@ -21,7 +30,7 @@ func main() {
 
 	systemTray := app.NewSystemTray()
 	if runtime.GOOS == "darwin" {
-		systemTray.SetIcon(application.DefaultMacTemplateIcon)
+		systemTray.SetIcon(icons.SystrayMacTemplate)
 	}
 
 	myMenu := app.NewMenu()
@@ -40,7 +49,8 @@ func main() {
 	systemTray.SetMenu(myMenu)
 
 	systemTray.OnClick(func() {
-		window.Show()
+		window.SetTitle(fmt.Sprintf("Clicked %d times", clickCount()))
+		window.Show().Focus()
 	})
 
 	err := app.Run()

@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"github.com/wailsapp/wails/v3/pkg/icons"
 	"log"
 	"os"
 	"runtime"
@@ -45,7 +46,7 @@ func main() {
 		dialog := app.InfoDialog()
 		dialog.SetTitle("Custom Icon Example")
 		dialog.SetMessage("Using a custom icon")
-		dialog.SetIcon(application.DefaultApplicationIcon)
+		dialog.SetIcon(icons.ApplicationDarkMode256)
 		dialog.Show()
 	})
 
@@ -85,7 +86,7 @@ func main() {
 		dialog := app.QuestionDialog()
 		dialog.SetTitle("Custom Icon Example")
 		dialog.SetMessage("Using a custom icon")
-		dialog.SetIcon(application.WailsLogoWhiteTransparent)
+		dialog.SetIcon(icons.WailsLogoWhiteTransparent)
 		dialog.SetDefaultButton(dialog.AddButton("I like it!"))
 		dialog.AddButton("Not so keen...")
 		dialog.Show()
@@ -112,7 +113,7 @@ func main() {
 		dialog := app.WarningDialog()
 		dialog.SetTitle("Custom Icon Example")
 		dialog.SetMessage("Using a custom icon")
-		dialog.SetIcon(application.DefaultApplicationIcon)
+		dialog.SetIcon(icons.ApplicationLightMode256)
 		dialog.Show()
 	})
 
@@ -137,7 +138,7 @@ func main() {
 		dialog := app.ErrorDialog()
 		dialog.SetTitle("Custom Icon Example")
 		dialog.SetMessage("Using a custom icon")
-		dialog.SetIcon(application.WailsLogoWhite)
+		dialog.SetIcon(icons.WailsLogoWhite)
 		dialog.Show()
 	})
 

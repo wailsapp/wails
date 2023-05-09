@@ -50,7 +50,6 @@ func NewSystemTray(id uint) *SystemTray {
 		id:           id,
 		label:        "",
 		iconPosition: NSImageLeading,
-		icon:         DefaultApplicationIcon,
 	}
 }
 

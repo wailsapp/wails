@@ -3,6 +3,7 @@
 package w32
 
 import (
+	"fmt"
 	"unsafe"
 )
 
@@ -27,13 +28,34 @@ func CreateIconFromResourceEx(presbits uintptr, dwResSize uint32, isIcon bool, v
 	return r, nil
 }
 
-// CreateHIconFromPNG creates a HICON from a PNG file
-func CreateHIconFromPNG(pngData []byte) (HICON, error) {
+func isPNG(fileData []byte) bool {
+	if len(fileData) < 4 {
+		return false
+	}
+	return string(fileData[:4]) == "\x89PNG"
+}
+
+func isICO(fileData []byte) bool {
+	if len(fileData) < 4 {
+		return false
+	}
+	return string(fileData[:4]) == "\x00\x00\x01\x00"
+}
+
+// CreateHIconFromImage creates a HICON from a PNG or ICO file
+func CreateHIconFromImage(fileData []byte) (HICON, error) {
+	if len(fileData) < 8 {
+		return 0, fmt.Errorf("invalid file format")
+	}
+
+	if !isPNG(fileData) && !isICO(fileData) {
+		return 0, fmt.Errorf("unsupported file format")
+	}
 	iconWidth := GetSystemMetrics(SM_CXSMICON)
 	iconHeight := GetSystemMetrics(SM_CYSMICON)
 	icon, err := CreateIconFromResourceEx(
-		uintptr(unsafe.Pointer(&pngData[0])),
-		uint32(len(pngData)),
+		uintptr(unsafe.Pointer(&fileData[0])),
+		uint32(len(fileData)),
 		true,
 		0x00030000,
 		iconWidth,

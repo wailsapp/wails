@@ -3,6 +3,7 @@
 package application
 
 import (
+	"github.com/wailsapp/wails/v3/pkg/icons"
 	"syscall"
 	"unsafe"
 
@@ -70,14 +71,14 @@ func (s *windowsSystemTray) run() {
 	}
 
 	if s.parent.icon != nil {
-		s.lightModeIcon = lo.Must(w32.CreateHIconFromPNG(s.parent.icon))
+		s.lightModeIcon = lo.Must(w32.CreateHIconFromImage(s.parent.icon))
 	} else {
-		s.lightModeIcon = lo.Must(w32.CreateHIconFromPNG(DefaultApplicationIcon))
+		s.lightModeIcon = lo.Must(w32.CreateHIconFromImage(icons.SystrayLight))
 	}
 	if s.parent.darkModeIcon != nil {
-		s.darkModeIcon = lo.Must(w32.CreateHIconFromPNG(s.parent.darkModeIcon))
+		s.darkModeIcon = lo.Must(w32.CreateHIconFromImage(s.parent.darkModeIcon))
 	} else {
-		s.darkModeIcon = s.lightModeIcon
+		s.darkModeIcon = lo.Must(w32.CreateHIconFromImage(icons.SystrayDark))
 	}
 	s.uid = nid.UID
 
@@ -144,7 +145,7 @@ func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
 
 func (s *windowsSystemTray) setIcon(icon []byte) {
 	var err error
-	s.lightModeIcon, err = w32.CreateHIconFromPNG(icon)
+	s.lightModeIcon, err = w32.CreateHIconFromImage(icon)
 	if err != nil {
 		panic(syscall.GetLastError())
 	}
@@ -156,7 +157,7 @@ func (s *windowsSystemTray) setIcon(icon []byte) {
 }
 func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
 	var err error
-	s.darkModeIcon, err = w32.CreateHIconFromPNG(icon)
+	s.darkModeIcon, err = w32.CreateHIconFromImage(icon)
 	if err != nil {
 		panic(syscall.GetLastError())
 	}
