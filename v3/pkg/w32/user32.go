@@ -21,6 +21,7 @@ var (
 	procLoadIcon                      = moduser32.NewProc("LoadIconW")
 	procLoadCursor                    = moduser32.NewProc("LoadCursorW")
 	procShowWindow                    = moduser32.NewProc("ShowWindow")
+	procGetDesktopWindow              = moduser32.NewProc("GetDesktopWindow")
 	procShowWindowAsync               = moduser32.NewProc("ShowWindowAsync")
 	procUpdateWindow                  = moduser32.NewProc("UpdateWindow")
 	procCreateWindowEx                = moduser32.NewProc("CreateWindowExW")
@@ -89,11 +90,8 @@ var (
 	procCreatePopupMenu               = moduser32.NewProc("CreatePopupMenu")
 	procCheckMenuRadioItem            = moduser32.NewProc("CheckMenuRadioItem")
 	procCreateIconFromResourceEx      = moduser32.NewProc("CreateIconFromResourceEx")
-	//procSysColorBrush            = moduser32.NewProc("GetSysColorBrush")
-	//procSetMenu                  = moduser32.NewProc("SetMenu")
-	//procDrawMenuBar     = moduser32.NewProc("DrawMenuBar")
-	//procInsertMenuItem                = moduser32.NewProc("InsertMenuItemW") // FIXIT:
-
+	procInsertMenuItem                = moduser32.NewProc("InsertMenuItemW")
+	procCheckMenuItem                 = moduser32.NewProc("CheckMenuItem")
 	procClientToScreen                = moduser32.NewProc("ClientToScreen")
 	procIsDialogMessage               = moduser32.NewProc("IsDialogMessageW")
 	procIsWindow                      = moduser32.NewProc("IsWindow")
@@ -146,20 +144,19 @@ var (
 	procSetClassLong         = moduser32.NewProc("SetClassLongW")
 	procSetClassLongPtr      = moduser32.NewProc("SetClassLongPtrW")
 
-	libuser32, _        = syscall.LoadLibrary("user32.dll")
-	insertMenuItem, _   = syscall.GetProcAddress(libuser32, "InsertMenuItemW")
-	setMenuItemInfo, _  = syscall.GetProcAddress(libuser32, "SetMenuItemInfoW")
-	setMenu, _          = syscall.GetProcAddress(libuser32, "SetMenu")
-	drawMenuBar, _      = syscall.GetProcAddress(libuser32, "DrawMenuBar")
-	trackPopupMenuEx, _ = syscall.GetProcAddress(libuser32, "TrackPopupMenuEx")
-	getKeyState, _      = syscall.GetProcAddress(libuser32, "GetKeyState")
-	getSysColorBrush, _ = syscall.GetProcAddress(libuser32, "GetSysColorBrush")
+	procSetMenu          = moduser32.NewProc("SetMenu")
+	procAppendMenu       = moduser32.NewProc("AppendMenuW")
+	procSetMenuItemInfo  = moduser32.NewProc("SetMenuItemInfoW")
+	procDrawMenuBar      = moduser32.NewProc("DrawMenuBar")
+	procTrackPopupMenuEx = moduser32.NewProc("TrackPopupMenuEx")
+	procGetKeyState      = moduser32.NewProc("GetKeyState")
+	procGetSysColorBrush = moduser32.NewProc("GetSysColorBrush")
 
-	getWindowPlacement, _ = syscall.GetProcAddress(libuser32, "GetWindowPlacement")
-	setWindowPlacement, _ = syscall.GetProcAddress(libuser32, "SetWindowPlacement")
+	procGetWindowPlacement = moduser32.NewProc("GetWindowPlacement")
+	procSetWindowPlacement = moduser32.NewProc("SetWindowPlacement")
 
-	setScrollInfo, _ = syscall.GetProcAddress(libuser32, "SetScrollInfo")
-	getScrollInfo, _ = syscall.GetProcAddress(libuser32, "GetScrollInfo")
+	procGetScrollInfo = moduser32.NewProc("GetScrollInfo")
+	procSetScrollInfo = moduser32.NewProc("SetScrollInfo")
 
 	mainThread HANDLE
 )
@@ -180,6 +177,11 @@ func GET_Y_LPARAM(lp uintptr) int32 {
 func RegisterClassEx(wndClassEx *WNDCLASSEX) ATOM {
 	ret, _, _ := procRegisterClassEx.Call(uintptr(unsafe.Pointer(wndClassEx)))
 	return ATOM(ret)
+}
+
+func GetDesktopWindow() HWND {
+	ret, _, _ := procGetDesktopWindow.Call()
+	return ret
 }
 
 func LoadIcon(instance HINSTANCE, iconName *uint16) HICON {
@@ -667,15 +669,7 @@ func GetSystemMetrics(index int) int {
 }
 
 func GetSysColorBrush(nIndex int) HBRUSH {
-	/*
-		ret, _, _ := procSysColorBrush.Call(1,
-			uintptr(nIndex),
-			0,
-			0)
-
-		return HBRUSH(ret)
-	*/
-	ret, _, _ := syscall.Syscall(getSysColorBrush, 1,
+	ret, _, _ := procGetSysColorBrush.Call(1,
 		uintptr(nIndex),
 		0,
 		0)
@@ -828,10 +822,17 @@ func CreateMenu() HMENU {
 }
 
 func SetMenu(hWnd HWND, hMenu HMENU) bool {
-	ret, _, _ := syscall.Syscall(setMenu, 2,
-		uintptr(hWnd),
-		uintptr(hMenu),
-		0)
+
+	ret, _, _ := procSetMenu.Call(hWnd, hMenu)
+	return ret != 0
+}
+
+func AppendMenu(hMenu HMENU, uFlags uint32, uIDNewItem uintptr, lpNewItem *uint16) bool {
+	ret, _, _ := procAppendMenu.Call(
+		hMenu,
+		uintptr(uFlags),
+		uIDNewItem,
+		uintptr(unsafe.Pointer(lpNewItem)))
 
 	return ret != 0
 }
@@ -848,39 +849,36 @@ func SelectRadioMenuItem(menuID uint16, startID uint16, endID uint16, hwnd HWND)
 
 }
 
-func CreatePopupMenu() HMENU {
+func CreatePopupMenu() PopupMenu {
 	ret, _, _ := procCreatePopupMenu.Call(0,
 		0,
 		0,
 		0)
 
-	return HMENU(ret)
+	return PopupMenu(ret)
 }
 
-func TrackPopupMenuEx(hMenu HMENU, fuFlags uint32, x, y int32, hWnd HWND, lptpm *TPMPARAMS) BOOL {
-	ret, _, _ := syscall.Syscall6(trackPopupMenuEx, 6,
-		uintptr(hMenu),
+func TrackPopupMenuEx(hMenu HMENU, fuFlags uint32, x, y int32, hWnd HWND, lptpm *TPMPARAMS) bool {
+
+	ret, _, _ := procTrackPopupMenuEx.Call(
+		hMenu,
 		uintptr(fuFlags),
 		uintptr(x),
 		uintptr(y),
-		uintptr(hWnd),
+		hWnd,
 		uintptr(unsafe.Pointer(lptpm)))
-
-	return BOOL(ret)
-}
-
-func DrawMenuBar(hWnd HWND) bool {
-	ret, _, _ := syscall.Syscall(drawMenuBar, 1,
-		uintptr(hWnd),
-		0,
-		0)
 
 	return ret != 0
 }
 
+func DrawMenuBar(hWnd HWND) bool {
+	ret, _, _ := procDrawMenuBar.Call(hWnd, 0, 0)
+	return ret != 0
+}
+
 func InsertMenuItem(hMenu HMENU, uItem uint32, fByPosition bool, lpmii *MENUITEMINFO) bool {
-	ret, _, _ := syscall.Syscall6(insertMenuItem, 4,
-		uintptr(hMenu),
+	ret, _, _ := procInsertMenuItem.Call(
+		hMenu,
 		uintptr(uItem),
 		uintptr(BoolToBOOL(fByPosition)),
 		uintptr(unsafe.Pointer(lpmii)),
@@ -891,8 +889,8 @@ func InsertMenuItem(hMenu HMENU, uItem uint32, fByPosition bool, lpmii *MENUITEM
 }
 
 func SetMenuItemInfo(hMenu HMENU, uItem uint32, fByPosition bool, lpmii *MENUITEMINFO) bool {
-	ret, _, _ := syscall.Syscall6(setMenuItemInfo, 4,
-		uintptr(hMenu),
+	ret, _, _ := procSetMenuItemInfo.Call(
+		hMenu,
 		uintptr(uItem),
 		uintptr(BoolToBOOL(fByPosition)),
 		uintptr(unsafe.Pointer(lpmii)),
@@ -1273,7 +1271,7 @@ func CallNextHookEx(hhk HHOOK, nCode int, wParam WPARAM, lParam LPARAM) LRESULT 
 }
 
 func GetKeyState(nVirtKey int32) int16 {
-	ret, _, _ := syscall.Syscall(getKeyState, 1,
+	ret, _, _ := procGetKeyState.Call(
 		uintptr(nVirtKey),
 		0,
 		0)
@@ -1291,7 +1289,7 @@ func DestroyMenu(hMenu HMENU) bool {
 }
 
 func GetWindowPlacement(hWnd HWND, lpwndpl *WINDOWPLACEMENT) bool {
-	ret, _, _ := syscall.Syscall(getWindowPlacement, 2,
+	ret, _, _ := procGetWindowPlacement.Call(
 		uintptr(hWnd),
 		uintptr(unsafe.Pointer(lpwndpl)),
 		0)
@@ -1300,7 +1298,7 @@ func GetWindowPlacement(hWnd HWND, lpwndpl *WINDOWPLACEMENT) bool {
 }
 
 func SetWindowPlacement(hWnd HWND, lpwndpl *WINDOWPLACEMENT) bool {
-	ret, _, _ := syscall.Syscall(setWindowPlacement, 2,
+	ret, _, _ := procSetWindowPlacement.Call(
 		uintptr(hWnd),
 		uintptr(unsafe.Pointer(lpwndpl)),
 		0)
@@ -1309,7 +1307,7 @@ func SetWindowPlacement(hWnd HWND, lpwndpl *WINDOWPLACEMENT) bool {
 }
 
 func SetScrollInfo(hwnd HWND, fnBar int32, lpsi *SCROLLINFO, fRedraw bool) int32 {
-	ret, _, _ := syscall.Syscall6(setScrollInfo, 4,
+	ret, _, _ := procSetScrollInfo.Call(
 		hwnd,
 		uintptr(fnBar),
 		uintptr(unsafe.Pointer(lpsi)),
@@ -1321,7 +1319,7 @@ func SetScrollInfo(hwnd HWND, fnBar int32, lpsi *SCROLLINFO, fRedraw bool) int32
 }
 
 func GetScrollInfo(hwnd HWND, fnBar int32, lpsi *SCROLLINFO) bool {
-	ret, _, _ := syscall.Syscall(getScrollInfo, 3,
+	ret, _, _ := procGetScrollInfo.Call(
 		hwnd,
 		uintptr(fnBar),
 		uintptr(unsafe.Pointer(lpsi)))
