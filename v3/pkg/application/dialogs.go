@@ -85,7 +85,6 @@ func newMessageDialog(dialogType DialogType) *MessageDialog {
 	return &MessageDialog{
 		MessageDialogOptions: MessageDialogOptions{
 			DialogType: dialogType,
-			Title:      defaultTitles[dialogType],
 		},
 		impl: nil,
 	}
