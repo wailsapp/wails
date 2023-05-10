@@ -1,14 +1,7 @@
-//go:build windows
-
-package win32
+package w32
 
 type Menu HMENU
 type PopupMenu Menu
-
-func CreatePopupMenu() PopupMenu {
-	ret, _, _ := procCreatePopupMenu.Call(0, 0, 0, 0)
-	return PopupMenu(ret)
-}
 
 func (m Menu) Destroy() bool {
 	ret, _, _ := procDestroyMenu.Call(uintptr(m))
@@ -19,31 +12,22 @@ func (p PopupMenu) Destroy() bool {
 	return Menu(p).Destroy()
 }
 
-func (p PopupMenu) Track(flags uint, x, y int, wnd HWND) bool {
-	ret, _, _ := procTrackPopupMenu.Call(
-		uintptr(p),
-		uintptr(flags),
-		uintptr(x),
-		uintptr(y),
-		0,
-		uintptr(wnd),
-		0,
-	)
-	return ret != 0
+func (p PopupMenu) Track(hwnd HWND, flags uint32, x, y int32) bool {
+	return TrackPopupMenuEx(
+		HMENU(p),
+		flags,
+		x,
+		y,
+		hwnd,
+		nil)
 }
 
-func (p PopupMenu) Append(flags uintptr, id uintptr, text string) bool {
+func (p PopupMenu) Append(flags uint32, id uintptr, text string) bool {
 	return Menu(p).Append(flags, id, text)
 }
 
-func (m Menu) Append(flags uintptr, id uintptr, text string) bool {
-	ret, _, _ := procAppendMenuW.Call(
-		uintptr(m),
-		flags,
-		id,
-		MustStringToUTF16uintptr(text),
-	)
-	return ret != 0
+func (m Menu) Append(flags uint32, id uintptr, text string) bool {
+	return AppendMenu(HMENU(m), flags, id, MustStringToUTF16Ptr(text))
 }
 
 func (p PopupMenu) Check(id uintptr, checked bool) bool {
@@ -70,7 +54,7 @@ func (m Menu) CheckRadio(startID int, endID int, selectedID int) bool {
 
 func CheckMenuItem(menu HMENU, id uintptr, flags uint) uint {
 	ret, _, _ := procCheckMenuItem.Call(
-		uintptr(menu),
+		menu,
 		id,
 		uintptr(flags),
 	)
@@ -79,4 +63,14 @@ func CheckMenuItem(menu HMENU, id uintptr, flags uint) uint {
 
 func (p PopupMenu) CheckRadio(startID, endID, selectedID int) bool {
 	return Menu(p).CheckRadio(startID, endID, selectedID)
+}
+
+func NewMenu() HMENU {
+	ret, _, _ := procCreateMenu.Call()
+	return HMENU(ret)
+}
+
+func NewPopupMenu() HMENU {
+	ret, _, _ := procCreatePopupMenu.Call()
+	return ret
 }

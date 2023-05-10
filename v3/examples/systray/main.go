@@ -35,11 +35,13 @@ func main() {
 
 	myMenu := app.NewMenu()
 	myMenu.Add("Hello World!").OnClick(func(ctx *application.Context) {
-		app.InfoDialog().SetTitle("Hello World!").SetMessage("Hello World!").Show()
+		println("Hello World!")
+		//		app.InfoDialog().SetTitle("Hello World!").SetMessage("Hello World!").Show()
 	})
 	subMenu := myMenu.AddSubmenu("Submenu")
 	subMenu.Add("Click me!").OnClick(func(ctx *application.Context) {
-		ctx.ClickedMenuItem().SetLabel("Clicked!")
+		println("Click me!")
+		//		ctx.ClickedMenuItem().SetLabel("Clicked!")
 	})
 	myMenu.AddSeparator()
 	myMenu.Add("Quit").OnClick(func(ctx *application.Context) {

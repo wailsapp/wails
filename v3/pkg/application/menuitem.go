@@ -38,6 +38,7 @@ type menuItemImpl interface {
 	setDisabled(disabled bool)
 	setChecked(checked bool)
 	setAccelerator(accelerator *accelerator)
+	setHidden(hidden bool)
 }
 
 type MenuItem struct {
@@ -46,6 +47,7 @@ type MenuItem struct {
 	tooltip         string
 	disabled        bool
 	checked         bool
+	hidden          bool
 	submenu         *Menu
 	callback        func(*Context)
 	itemType        menuItemType
@@ -257,8 +259,36 @@ func (m *MenuItem) SetChecked(checked bool) *MenuItem {
 	return m
 }
 
+func (m *MenuItem) SetHidden(hidden bool) *MenuItem {
+	m.hidden = hidden
+	if m.impl != nil {
+		m.impl.setHidden(m.hidden)
+	}
+	return m
+}
+
 func (m *MenuItem) Checked() bool {
 	return m.checked
+}
+
+func (m *MenuItem) IsSeparator() bool {
+	return m.itemType == separator
+}
+
+func (m *MenuItem) IsSubmenu() bool {
+	return m.itemType == submenu
+}
+
+func (m *MenuItem) IsCheckbox() bool {
+	return m.itemType == checkbox
+}
+
+func (m *MenuItem) IsRadio() bool {
+	return m.itemType == radio
+}
+
+func (m *MenuItem) Hidden() bool {
+	return m.hidden
 }
 
 func (m *MenuItem) OnClick(f func(*Context)) *MenuItem {

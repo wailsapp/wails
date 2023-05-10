@@ -19,13 +19,14 @@ const (
 type windowsSystemTray struct {
 	parent *SystemTray
 
+	menu *windowsMenu
+
 	// Platform specific implementation
 	uid           uint32
 	hwnd          w32.HWND
 	lightModeIcon w32.HICON
 	darkModeIcon  w32.HICON
 	currentIcon   w32.HICON
-	//menu          *w32.PopupMenu
 }
 
 func (s *windowsSystemTray) setMenu(menu *Menu) {
@@ -82,7 +83,9 @@ func (s *windowsSystemTray) run() {
 	}
 	s.uid = nid.UID
 
-	// TODO: Set Menu
+	if s.parent.menu != nil {
+		s.updateMenu()
+	}
 
 	// Set Default Callbacks
 	if s.parent.clickHandler == nil {
@@ -92,7 +95,9 @@ func (s *windowsSystemTray) run() {
 	}
 	if s.parent.rightClickHandler == nil {
 		s.parent.rightClickHandler = func() {
-			//s.showMenu()
+			if s.menu != nil {
+				s.menu.ShowAtCursor()
+			}
 		}
 	}
 
@@ -174,10 +179,6 @@ func newSystemTrayImpl(parent *SystemTray) systemTrayImpl {
 	}
 }
 
-func (s *windowsSystemTray) destroy() {
-	panic("implement me")
-}
-
 func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr {
 	switch msg {
 	case WM_USER_SYSTRAY:
@@ -211,18 +212,24 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 		//println(w32.WMMessageToString(msg))
 
 		// TODO: Menu processing
-	//case w32.WM_COMMAND:
-	//	cmdMsgID := int(wparam & 0xffff)
-	//	switch cmdMsgID {
-	//	default:
-	//		p.menu.ProcessCommand(cmdMsgID)
-	//	}
+	case w32.WM_COMMAND:
+		cmdMsgID := int(wParam & 0xffff)
+		switch cmdMsgID {
+		default:
+			s.menu.ProcessCommand(cmdMsgID)
+		}
 	default:
-		msg := int(wParam & 0xffff)
-		println(w32.WMMessageToString(uintptr(msg)))
+		//msg := int(wParam & 0xffff)
+		//println(w32.WMMessageToString(uintptr(msg)))
 	}
 
 	return w32.DefWindowProc(s.hwnd, msg, wParam, lParam)
+}
+
+func (s *windowsSystemTray) updateMenu() {
+	s.menu = newMenuImpl(s.parent.menu)
+	s.menu.hWnd = s.hwnd
+	s.menu.update()
 }
 
 // ---- Unsupported ----
@@ -237,4 +244,7 @@ func (s *windowsSystemTray) setTemplateIcon(_ []byte) {
 
 func (s *windowsSystemTray) setIconPosition(position int) {
 	// Unsupported - do nothing
+}
+
+func (s *windowsSystemTray) destroy() {
 }
