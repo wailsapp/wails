@@ -23,20 +23,20 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 		WithBottomPadding(0).
 		WithStyle(pterm.NewStyle(pterm.FgBlue, pterm.Bold))
 
-	app.PrintBanner()
+	pterm.Println() // Spacer
+	pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Println("Wails Doctor")
+	pterm.Println() // Spacer
 
-	spinner, _ := pterm.DefaultSpinner.Start("Scanning system - Please wait (this may take a long time)...")
+	spinner, _ := pterm.DefaultSpinner.WithRemoveWhenDone().Start("Scanning system - Please wait (this may take a long time)...")
 
 	// Get system info
 	info, err := system.GetInfo()
 	if err != nil {
 		spinner.Fail()
+		pterm.Error.Println("Failed to get system information")
 		return err
 	}
 	spinner.Success()
-
-	pterm.Print(strings.Repeat("\n", 2)) // Spacer
-	pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Println("Wails Doctor")
 
 	pterm.DefaultSection.Println("Wails")
 
