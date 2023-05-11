@@ -60,6 +60,14 @@ void setMenuItemDisabled(void* nsMenuItem, bool disabled) {
 	});
 }
 
+// set menu item hidden
+void setMenuItemHidden(void* nsMenuItem, bool hidden) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		MenuItem *menuItem = (MenuItem *)nsMenuItem;
+		[menuItem setHidden:hidden];
+	});
+}
+
 // set menu item tooltip
 void setMenuItemTooltip(void* nsMenuItem, char *tooltip) {
 	MenuItem *menuItem = (MenuItem *)nsMenuItem;
@@ -351,6 +359,10 @@ func (m windowsMenuItem) setDisabled(disabled bool) {
 
 func (m windowsMenuItem) setChecked(checked bool) {
 	C.setMenuItemChecked(m.nsMenuItem, C.bool(checked))
+}
+
+func (m windowsMenuItem) setHidden(hidden bool) {
+	C.setMenuItemHidden(m.nsMenuItem, C.bool(hidden))
 }
 
 func (m windowsMenuItem) setAccelerator(accelerator *accelerator) {
