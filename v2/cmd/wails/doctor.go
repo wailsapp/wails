@@ -153,14 +153,12 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 	// Generate an appropriate diagnosis
 
 	if dependenciesAvailableRequired != 0 {
-		pterm.Info.Println("Required package(s) installation details: \n" + info.Dependencies.InstallAllRequiredCommand())
+		pterm.Println("Required package(s) installation details: \n" + info.Dependencies.InstallAllRequiredCommand())
 	}
 
 	if dependenciesAvailableOptional != 0 {
-		pterm.Info.Println("Optional package(s) installation details: \n" + info.Dependencies.InstallAllOptionalCommand())
+		pterm.Println("Optional package(s) installation details: \n" + info.Dependencies.InstallAllOptionalCommand())
 	}
-
-	pterm.Println() // Spacer
 
 	if len(dependenciesMissing) == 0 && dependenciesAvailableRequired == 0 {
 		pterm.Success.Println("Your system is ready for Wails development!")
