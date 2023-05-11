@@ -102,7 +102,7 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 		name := dependency.Name
 
 		if dependency.Optional {
-			name = "*" + name
+			name = pterm.Gray("*") + name
 			hasOptionalDependencies = true
 		}
 
@@ -143,7 +143,7 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 	dependenciesBox := pterm.DefaultBox.WithTitleBottomCenter()
 
 	if hasOptionalDependencies {
-		dependenciesBox = dependenciesBox.WithTitle("* - Optional Dependency")
+		dependenciesBox = dependenciesBox.WithTitle(pterm.Gray("*") + " - Optional Dependency")
 	}
 
 	dependenciesBox.Println(dependenciesTableString)
