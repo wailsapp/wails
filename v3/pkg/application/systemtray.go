@@ -67,7 +67,7 @@ func (s *SystemTray) Label() string {
 	return s.label
 }
 
-func (s *SystemTray) Run() {
+func (s *SystemTray) run() {
 	s.impl = newSystemTrayImpl(s)
 	invokeSync(s.impl.run)
 }

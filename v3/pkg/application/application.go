@@ -1,13 +1,14 @@
 package application
 
 import (
-	"github.com/wailsapp/wails/v3/pkg/icons"
 	"log"
 	"net/http"
 	"os"
 	"runtime"
 	"strconv"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/pkg/icons"
 
 	"github.com/samber/lo"
 
@@ -40,6 +41,7 @@ func New(appOptions Options) *App {
 	result := &App{
 		options:                   appOptions,
 		applicationEventListeners: make(map[uint][]*EventListener),
+		windows:                   make(map[uint]*WebviewWindow),
 		systemTrays:               make(map[uint]*SystemTray),
 		log:                       logger.New(appOptions.Logger.CustomLoggers...),
 		contextMenus:              make(map[string]*Menu),
@@ -119,6 +121,10 @@ type (
 		getPrimaryScreen() (*Screen, error)
 		getScreens() ([]*Screen, error)
 	}
+
+	runnable interface {
+		run()
+	}
 )
 
 // Messages sent from javascript get routed here
@@ -180,7 +186,10 @@ type App struct {
 	menuItemsLock sync.Mutex
 
 	// Running
-	running  bool
+	running    bool
+	runLock    sync.Mutex
+	pendingRun []runnable
+
 	bindings *Bindings
 	plugins  *PluginManager
 
@@ -288,9 +297,7 @@ func (a *App) error(message string, args ...any) {
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
 	newWindow := NewWindow(windowOptions)
 	id := newWindow.id
-	if a.windows == nil {
-		a.windows = make(map[uint]*WebviewWindow)
-	}
+
 	a.windowsLock.Lock()
 	a.windows[id] = newWindow
 	a.windowsLock.Unlock()
@@ -300,9 +307,7 @@ func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *W
 		hook(newWindow)
 	}
 
-	if a.running {
-		newWindow.run()
-	}
+	a.runOrDeferToAppRun(newWindow)
 
 	return newWindow
 }
@@ -310,13 +315,13 @@ func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *W
 func (a *App) NewSystemTray() *SystemTray {
 	id := a.getSystemTrayID()
 	newSystemTray := NewSystemTray(id)
+
 	a.systemTraysLock.Lock()
 	a.systemTrays[id] = newSystemTray
 	a.systemTraysLock.Unlock()
 
-	if a.running {
-		newSystemTray.Run()
-	}
+	a.runOrDeferToAppRun(newSystemTray)
+
 	return newSystemTray
 }
 
@@ -324,7 +329,6 @@ func (a *App) Run() error {
 	a.info("Starting application")
 	a.impl = newPlatformApp(a)
 
-	a.running = true
 	go func() {
 		for {
 			event := <-applicationEvents
@@ -363,15 +367,15 @@ func (a *App) Run() error {
 		}
 	}()
 
-	// run windows
-	for _, window := range a.windows {
-		go window.run()
-	}
+	a.runLock.Lock()
+	a.running = true
 
-	// run system trays
-	for _, systray := range a.systemTrays {
-		go systray.Run()
+	for _, systray := range a.pendingRun {
+		go systray.run()
 	}
+	a.pendingRun = nil
+
+	a.runLock.Unlock()
 
 	// set the application menu
 	if runtime.GOOS == "darwin" {
@@ -615,6 +619,19 @@ func (a *App) GetWindowByName(name string) *WebviewWindow {
 		}
 	}
 	return nil
+}
+
+func (a *App) runOrDeferToAppRun(r runnable) {
+	a.runLock.Lock()
+	running := a.running
+	if !running {
+		a.pendingRun = append(a.pendingRun, r)
+	}
+	a.runLock.Unlock()
+
+	if running {
+		r.run()
+	}
 }
 
 func invokeSync(fn func()) {
