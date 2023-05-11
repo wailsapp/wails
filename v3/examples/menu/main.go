@@ -82,7 +82,15 @@ func main() {
 			beatles.SetLabel("Hello")
 		}
 	})
-
+	myMenu.Add("Hide the beatles").OnClick(func(ctx *application.Context) {
+		if beatles.Hidden() {
+			ctx.ClickedMenuItem().SetLabel("Unhide the beatles!")
+			beatles.SetHidden(false)
+		} else {
+			beatles.SetHidden(true)
+			ctx.ClickedMenuItem().SetLabel("Hide the beatles!")
+		}
+	})
 	app.SetMenu(menu)
 
 	app.NewWebviewWindow()
