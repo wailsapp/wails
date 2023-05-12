@@ -364,8 +364,8 @@ func (m *macosDialog) show() {
 		buttonPressed := int(C.dialogRunModal(m.nsDialog))
 		if len(m.dialog.Buttons) > buttonPressed {
 			button := reversedButtons[buttonPressed]
-			if button.callback != nil {
-				button.callback()
+			if button.Callback != nil {
+				button.Callback()
 			}
 		}
 	})

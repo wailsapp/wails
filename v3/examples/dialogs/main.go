@@ -20,6 +20,7 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
+
 	// Create a custom menu
 	menu := app.NewMenu()
 	menu.AddRole(application.AppMenu)

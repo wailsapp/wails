@@ -48,11 +48,22 @@ type Button struct {
 	Label     string
 	IsCancel  bool
 	IsDefault bool
-	callback  func()
+	Callback  func()
 }
 
-func (b *Button) OnClick(callback func()) {
-	b.callback = callback
+func (b *Button) OnClick(callback func()) *Button {
+	b.Callback = callback
+	return b
+}
+
+func (b *Button) SetAsDefault() *Button {
+	b.IsDefault = true
+	return b
+}
+
+func (b *Button) SetAsCancel() *Button {
+	b.IsCancel = true
+	return b
 }
 
 type messageDialogImpl interface {
@@ -336,10 +347,12 @@ type SaveFileDialogOptions struct {
 	AllowOtherFileTypes             bool
 	HideExtension                   bool
 	TreatsFilePackagesAsDirectories bool
+	Title                           string
 	Message                         string
 	Directory                       string
 	Filename                        string
 	ButtonText                      string
+	Filters                         []FileFilter
 }
 
 type SaveFileDialog struct {
@@ -354,10 +367,12 @@ type SaveFileDialog struct {
 	directory                       string
 	filename                        string
 	buttonText                      string
+	filters                         []FileFilter
 
 	window *WebviewWindow
 
-	impl saveFileDialogImpl
+	impl  saveFileDialogImpl
+	title string
 }
 
 type saveFileDialogImpl interface {
@@ -365,6 +380,7 @@ type saveFileDialogImpl interface {
 }
 
 func (d *SaveFileDialog) SetOptions(options *SaveFileDialogOptions) {
+	d.title = options.Title
 	d.canCreateDirectories = options.CanCreateDirectories
 	d.showHiddenFiles = options.ShowHiddenFiles
 	d.canSelectHiddenExtension = options.CanSelectHiddenExtension
@@ -375,6 +391,16 @@ func (d *SaveFileDialog) SetOptions(options *SaveFileDialogOptions) {
 	d.directory = options.Directory
 	d.filename = options.Filename
 	d.buttonText = options.ButtonText
+}
+
+// AddFilter adds a filter to the dialog. The filter is a display name and a semicolon separated list of extensions.
+// EG: AddFilter("Image Files", "*.jpg;*.png")
+func (d *SaveFileDialog) AddFilter(displayName, pattern string) *SaveFileDialog {
+	d.filters = append(d.filters, FileFilter{
+		DisplayName: strings.TrimSpace(displayName),
+		Pattern:     strings.TrimSpace(pattern),
+	})
+	return d
 }
 
 func (d *SaveFileDialog) CanCreateDirectories(canCreateDirectories bool) *SaveFileDialog {

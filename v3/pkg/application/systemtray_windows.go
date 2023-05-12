@@ -19,7 +19,7 @@ const (
 type windowsSystemTray struct {
 	parent *SystemTray
 
-	menu *windowsMenu
+	menu *PopupMenu
 
 	// Platform specific implementation
 	uid           uint32
@@ -30,8 +30,7 @@ type windowsSystemTray struct {
 }
 
 func (s *windowsSystemTray) setMenu(menu *Menu) {
-	//s.menu = menu
-	panic("implement me")
+	s.updateMenu(menu)
 }
 
 func (s *windowsSystemTray) run() {
@@ -84,7 +83,7 @@ func (s *windowsSystemTray) run() {
 	s.uid = nid.UID
 
 	if s.parent.menu != nil {
-		s.updateMenu()
+		s.updateMenu(s.parent.menu)
 	}
 
 	// Set Default Callbacks
@@ -226,10 +225,11 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 	return w32.DefWindowProc(s.hwnd, msg, wParam, lParam)
 }
 
-func (s *windowsSystemTray) updateMenu() {
-	s.menu = newMenuImpl(s.parent.menu)
-	s.menu.hWnd = s.hwnd
-	s.menu.update()
+func (s *windowsSystemTray) updateMenu(menu *Menu) {
+	s.menu = NewPopupMenu(s.hwnd, menu)
+	s.menu.onMenuOpen = s.parent.onMenuOpen
+	s.menu.onMenuClose = s.parent.onMenuClose
+	s.menu.Update()
 }
 
 // ---- Unsupported ----

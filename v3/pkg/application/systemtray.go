@@ -38,6 +38,8 @@ type SystemTray struct {
 	rightDoubleClickHandler func()
 	mouseEnterHandler       func()
 	mouseLeaveHandler       func()
+	onMenuOpen              func()
+	onMenuClose             func()
 
 	// Platform specific implementation
 	impl           systemTrayImpl

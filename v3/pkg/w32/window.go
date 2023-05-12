@@ -117,7 +117,11 @@ func showWindow(hwnd uintptr, cmdshow int) bool {
 }
 
 func MustStringToUTF16Ptr(input string) *uint16 {
-	return lo.Must(syscall.UTF16PtrFromString(input))
+	result, err := syscall.UTF16PtrFromString(input)
+	if err != nil {
+		Fatal(err.Error())
+	}
+	return result
 }
 
 func MustStringToUTF16uintptr(input string) uintptr {
