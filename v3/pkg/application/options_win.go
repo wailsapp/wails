@@ -6,6 +6,9 @@ type WindowsApplicationOptions struct {
 	// If `shouldReturn` is `true` then `returnCode` will be returned by the main message loop.
 	// If `shouldReturn` is `false` then returnCode will be ignored and the message will be processed by the main message loop.
 	WndProcInterceptor func(hwnd uintptr, msg uint32, wParam, lParam uintptr) (returnCode uintptr, shouldReturn bool)
+
+	// DisableQuitOnLastWindowClosed disables the auto quit of the application if the last window has been closed.
+	DisableQuitOnLastWindowClosed bool
 }
 
 type BackdropType int32

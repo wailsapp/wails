@@ -5,10 +5,11 @@ package application
 import (
 	"errors"
 	"fmt"
-	"github.com/samber/lo"
 	"strconv"
 	"unicode/utf16"
 	"unsafe"
+
+	"github.com/samber/lo"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
@@ -609,11 +610,14 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_SIZE:
 		return 0
 	case w32.WM_CLOSE:
-		w32.PostMessage(w.hwnd, w32.WM_QUIT, 0, 0)
+		if w.parent.options.HideOnClose {
+			w.hide()
+			return 0 // Do not let the DefWindowProc allow to close us
+		}
+
 		// Unregister the window with the application
 		windowsApp := globalApplication.impl.(*windowsApp)
 		windowsApp.unregisterWindow(w)
-		return 0
 	case w32.WM_GETMINMAXINFO:
 		mmi := (*w32.MINMAXINFO)(unsafe.Pointer(lparam))
 		hasConstraints := false

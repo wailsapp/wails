@@ -220,7 +220,7 @@ func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
 	delete(m.windowMap, w.hwnd)
 
 	// If this was the last window...
-	if len(m.windowMap) == 0 {
+	if len(m.windowMap) == 0 && !m.parent.options.Windows.DisableQuitOnLastWindowClosed {
 		w32.PostQuitMessage(0)
 	}
 }

@@ -164,7 +164,7 @@ An 'X' indicates that the option is not supported by the platform.
 | AlwaysOnTop                     | Y       |       |     |                                            |
 | URL                             |         |       |     |                                            |
 | DisableResize                   | Y       |       |     |                                            |
-| Frameless                       |         |       |     |                                            |
+| Frameless                       | Y       |       |     |                                            |
 | MinWidth                        | Y       |       |     |                                            |
 | MinHeight                       | Y       |       |     |                                            |
 | MaxWidth                        | Y       |       |     |                                            |
@@ -178,7 +178,7 @@ An 'X' indicates that the option is not supported by the platform.
 | CSS                             |         |       |     |                                            |
 | X                               |         |       |     |                                            |
 | Y                               |         |       |     |                                            |
-| HideOnClose                     |         |       |     |                                            |
+| HideOnClose                     | Y       |       |     |                                            |
 | FullscreenButtonEnabled         |         |       |     |                                            |
 | Hidden                          | Y       |       |     |                                            |
 | EnableFraudulentWebsiteWarnings |         |       |     |                                            |
