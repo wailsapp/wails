@@ -6,13 +6,13 @@ package application
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
 #cgo LDFLAGS: -framework Cocoa -framework WebKit
 
-#include "application.h"
-#include "webview_window.h"
+#include "application_darwin.h"
+#include "webview_window_darwin.h"
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"
 #import <WebKit/WebKit.h>
 #import <AppKit/AppKit.h>
-#import "webview_drag.h"
+#import "webview_window_darwin_drag.h"
 
 
 extern void registerListener(unsigned int event);

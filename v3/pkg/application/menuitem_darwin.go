@@ -7,8 +7,8 @@ package application
 #cgo LDFLAGS: -framework Cocoa -framework WebKit
 
 #include "Cocoa/Cocoa.h"
-#include "menuitem.h"
-#include "application.h"
+#include "menuitem_darwin.h"
+#include "application_darwin.h"
 
 #define unicode(input) [NSString stringWithFormat:@"%C", input]
 

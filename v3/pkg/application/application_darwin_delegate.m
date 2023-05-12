@@ -1,5 +1,5 @@
 //go:build darwin
-#import "app_delegate.h"
+#import "application_darwin_delegate.h"
 #import "../events/events.h"
 extern bool hasListeners(unsigned int);
 @implementation AppDelegate

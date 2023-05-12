@@ -2,7 +2,7 @@
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
-#import "webview_drag.h"
+#import "webview_window_darwin_drag.h"
 
 #import "../events/events.h"
 
