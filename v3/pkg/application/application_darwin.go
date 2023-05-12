@@ -7,9 +7,9 @@ package application
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
 #cgo LDFLAGS: -framework Cocoa -mmacosx-version-min=10.13
 
-#include "application.h"
-#include "app_delegate.h"
-#include "webview_window.h"
+#include "application_darwin.h"
+#include "application_darwin_delegate.h"
+#include "webview_window_darwin.h"
 #include <stdlib.h>
 
 extern void registerListener(unsigned int event);

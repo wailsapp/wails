@@ -1,7 +1,7 @@
 //go:build darwin
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
-#import "webview_window.h"
+#import "webview_window_darwin.h"
 #import "../events/events.h"
 extern void processMessage(unsigned int, const char*);
 extern void processURLRequest(unsigned int, void *);

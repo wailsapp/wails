@@ -1,6 +1,6 @@
 //go:build darwin
 
-#import "dialogs_delegate.h"
+#import "dialogs_darwin_delegate.h"
 
 // Override shouldEnableURL
 @implementation OpenPanelDelegate

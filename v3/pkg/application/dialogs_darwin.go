@@ -9,7 +9,7 @@ package application
 #import <Cocoa/Cocoa.h>
 
 #import <UniformTypeIdentifiers/UTType.h>
-#import "dialogs_delegate.h"
+#import "dialogs_darwin_delegate.h"
 
 extern void openFileDialogCallback(uint id, char* path);
 extern void openFileDialogCallbackEnd(uint id);

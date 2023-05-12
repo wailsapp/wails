@@ -7,7 +7,7 @@ package application
 #cgo LDFLAGS: -framework Cocoa -framework WebKit
 
 #include "Cocoa/Cocoa.h"
-#include "menuitem.h"
+#include "menuitem_darwin.h"
 
 // Create a new system tray
 void* systemTrayNew() {

@@ -2,7 +2,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "menuitem.h"
+#import "menuitem_darwin.h"
 
 @implementation MenuItem
 

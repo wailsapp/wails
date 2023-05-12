@@ -6,7 +6,7 @@ package application
 #cgo CFLAGS: -mmacosx-version-min=10.10 -x objective-c
 #cgo LDFLAGS: -framework Cocoa
 
-#include "menuitem.h"
+#include "menuitem_darwin.h"
 
 extern void setMenuItemChecked(void*, unsigned int, bool);
 
