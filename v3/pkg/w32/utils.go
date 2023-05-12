@@ -9,6 +9,9 @@ package w32
 
 import (
 	"fmt"
+	"os"
+	"runtime/debug"
+	"strconv"
 	"syscall"
 	"unicode/utf16"
 	"unsafe"
@@ -634,4 +637,12 @@ func WMMessageToString(msg uintptr) string {
 	default:
 		return fmt.Sprintf("0x%08x", msg)
 	}
+}
+
+func Fatal(message string) {
+	println("***************** FATAL ERROR ******************")
+	fmt.Println("Message: " + message)
+	fmt.Println("Last Error: " + strconv.Itoa(int(GetLastError())))
+	fmt.Println("Stack: " + string(debug.Stack()))
+	os.Exit(1)
 }

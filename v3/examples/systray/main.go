@@ -36,12 +36,27 @@ func main() {
 	myMenu := app.NewMenu()
 	myMenu.Add("Hello World!").OnClick(func(ctx *application.Context) {
 		println("Hello World!")
-		//		app.InfoDialog().SetTitle("Hello World!").SetMessage("Hello World!").Show()
+		q := app.QuestionDialog().SetTitle("Ready?").SetMessage("Are you feeling ready?")
+		q.AddButton("Yes").OnClick(func() {
+			println("Awesome!")
+		})
+		q.AddButton("No").SetAsDefault().OnClick(func() {
+			println("Boo!")
+		})
+		q.Show()
 	})
 	subMenu := myMenu.AddSubmenu("Submenu")
 	subMenu.Add("Click me!").OnClick(func(ctx *application.Context) {
+		ctx.ClickedMenuItem().SetLabel("Clicked!")
+	})
+	myMenu.AddSeparator()
+	myMenu.AddCheckbox("Checked", true).OnClick(func(ctx *application.Context) {
+		println("Checked: ", ctx.ClickedMenuItem().Checked())
+		app.InfoDialog().SetTitle("Hello World!").SetMessage("Hello World!").Show()
+	})
+	myMenu.Add("Enabled").OnClick(func(ctx *application.Context) {
 		println("Click me!")
-		//		ctx.ClickedMenuItem().SetLabel("Clicked!")
+		ctx.ClickedMenuItem().SetLabel("Disabled!").SetEnabled(false)
 	})
 	myMenu.AddSeparator()
 	myMenu.Add("Quit").OnClick(func(ctx *application.Context) {

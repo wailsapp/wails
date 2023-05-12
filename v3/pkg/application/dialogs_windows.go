@@ -2,6 +2,14 @@
 
 package application
 
+import (
+	"github.com/wailsapp/wails/v3/internal/go-common-file-dialog/cfd"
+	"github.com/wailsapp/wails/v3/pkg/w32"
+	"golang.org/x/sys/windows"
+	"path/filepath"
+	"strings"
+)
+
 func (m *windowsApp) showAboutDialog(title string, message string, icon []byte) {
 	panic("implement me")
 }
@@ -13,62 +21,26 @@ type windowsDialog struct {
 }
 
 func (m *windowsDialog) show() {
-	//
-	//// Mac can only have 4 Buttons on a dialog
-	//if len(m.dialog.Buttons) > 4 {
-	//	m.dialog.Buttons = m.dialog.Buttons[:4]
-	//}
-	//
-	//if m.nsDialog != nil {
-	//	C.releaseDialog(m.nsDialog)
-	//}
-	//var title *C.char
-	//if m.dialog.Title != "" {
-	//	title = C.CString(m.dialog.Title)
-	//}
-	//var message *C.char
-	//if m.dialog.Message != "" {
-	//	message = C.CString(m.dialog.Message)
-	//}
-	//var iconData unsafe.Pointer
-	//var iconLength C.int
-	//if m.dialog.Icon != nil {
-	//	iconData = unsafe.Pointer(&m.dialog.Icon[0])
-	//	iconLength = C.int(len(m.dialog.Icon))
-	//} else {
-	//	// if it's an error, use the application Icon
-	//	if m.dialog.DialogType == ErrorDialog {
-	//		iconData = unsafe.Pointer(&globalApplication.options.Icon[0])
-	//		iconLength = C.int(len(globalApplication.options.Icon))
-	//	}
-	//}
-	//
-	//alertType, ok := alertTypeMap[m.dialog.DialogType]
-	//if !ok {
-	//	alertType = C.NSAlertStyleInformational
-	//}
-	//
-	//m.nsDialog = C.createAlert(alertType, title, message, iconData, iconLength)
-	//
-	//// Reverse the Buttons so that the default is on the right
-	//reversedButtons := make([]*Button, len(m.dialog.Buttons))
-	//var count = 0
-	//for i := len(m.dialog.Buttons) - 1; i >= 0; i-- {
-	//	button := m.dialog.Buttons[i]
-	//	C.alertAddButton(m.nsDialog, C.CString(button.Label), C.bool(button.IsDefault), C.bool(button.IsCancel))
-	//	reversedButtons[count] = m.dialog.Buttons[i]
-	//	count++
-	//}
-	//
-	//buttonPressed := int(C.dialogRunModal(m.nsDialog))
-	//if len(m.dialog.Buttons) > buttonPressed {
-	//	button := reversedButtons[buttonPressed]
-	//	if button.callback != nil {
-	//		button.callback()
-	//	}
-	//}
-	panic("implement me")
 
+	title := w32.MustStringToUTF16Ptr(m.dialog.Title)
+	message := w32.MustStringToUTF16Ptr(m.dialog.Message)
+	flags := calculateMessageDialogFlags(m.dialog.MessageDialogOptions)
+
+	button, _ := windows.MessageBox(windows.HWND(0), message, title, flags|windows.MB_SYSTEMMODAL)
+	// This maps MessageBox return values to strings
+	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
+	result := "Error"
+	if int(button) < len(responses) {
+		result = responses[button]
+	}
+	// Check if there's a callback for the button pressed
+	for _, button := range m.dialog.Buttons {
+		if button.Label == result {
+			if button.Callback != nil {
+				button.Callback()
+			}
+		}
+	}
 }
 
 func newDialogImpl(d *MessageDialog) *windowsDialog {
@@ -87,54 +59,49 @@ func newOpenFileDialogImpl(d *OpenFileDialog) *windowOpenFileDialog {
 	}
 }
 
+func getDefaultFolder(folder string) (string, error) {
+	if folder == "" {
+		return "", nil
+	}
+	return filepath.Abs(folder)
+}
+
 func (m *windowOpenFileDialog) show() ([]string, error) {
-	//openFileResponses[m.dialog.id] = make(chan string)
-	//nsWindow := unsafe.Pointer(nil)
-	//if m.dialog.window != nil {
-	//	// get NSWindow from window
-	//	nsWindow = m.dialog.window.impl.(*windowsWebviewWindow).nsWindow
-	//}
-	//
-	//// Massage filter patterns into macOS format
-	//// We iterate all filter patterns, tidy them up and then join them with a semicolon
-	//// This should produce a single string of extensions like "png;jpg;gif"
-	//var filterPatterns string
-	//if len(m.dialog.filters) > 0 {
-	//	var allPatterns []string
-	//	for _, filter := range m.dialog.filters {
-	//		patternComponents := strings.Split(filter.Pattern, ";")
-	//		for i, component := range patternComponents {
-	//			filterPattern := strings.TrimSpace(component)
-	//			filterPattern = strings.TrimPrefix(filterPattern, "*.")
-	//			patternComponents[i] = filterPattern
-	//		}
-	//		allPatterns = append(allPatterns, strings.Join(patternComponents, ";"))
-	//	}
-	//	filterPatterns = strings.Join(allPatterns, ";")
-	//}
-	//
-	//C.showOpenFileDialog(C.uint(m.dialog.id),
-	//	C.bool(m.dialog.canChooseFiles),
-	//	C.bool(m.dialog.canChooseDirectories),
-	//	C.bool(m.dialog.canCreateDirectories),
-	//	C.bool(m.dialog.showHiddenFiles),
-	//	C.bool(m.dialog.allowsMultipleSelection),
-	//	C.bool(m.dialog.resolvesAliases),
-	//	C.bool(m.dialog.hideExtension),
-	//	C.bool(m.dialog.treatsFilePackagesAsDirectories),
-	//	C.bool(m.dialog.allowsOtherFileTypes),
-	//	toCString(filterPatterns),
-	//	C.uint(len(filterPatterns)),
-	//	toCString(m.dialog.message),
-	//	toCString(m.dialog.directory),
-	//	toCString(m.dialog.buttonText),
-	//	nsWindow)
-	//var result []string
-	//for filename := range openFileResponses[m.dialog.id] {
-	//	result = append(result, filename)
-	//}
-	//return result, nil
-	panic("implement me")
+
+	defaultFolder, err := getDefaultFolder(m.dialog.directory)
+	if err != nil {
+		return nil, err
+	}
+
+	config := cfd.DialogConfig{
+		Title:       m.dialog.title,
+		Role:        "PickFolder",
+		FileFilters: convertFilters(m.dialog.filters),
+		Folder:      defaultFolder,
+	}
+
+	var result []string
+	if m.dialog.allowsMultipleSelection {
+		temp, err := showCfdDialog(
+			func() (cfd.Dialog, error) {
+				return cfd.NewOpenMultipleFilesDialog(config)
+			}, true)
+		if err != nil {
+			return nil, err
+		}
+		result = temp.([]string)
+	} else {
+		temp, err := showCfdDialog(
+			func() (cfd.Dialog, error) {
+				return cfd.NewOpenFileDialog(config)
+			}, false)
+		if err != nil {
+			return nil, err
+		}
+		result = []string{temp.(string)}
+	}
+
+	return result, nil
 }
 
 type windowSaveFileDialog struct {
@@ -148,24 +115,71 @@ func newSaveFileDialogImpl(d *SaveFileDialog) *windowSaveFileDialog {
 }
 
 func (m *windowSaveFileDialog) show() (string, error) {
-	//saveFileResponses[m.dialog.id] = make(chan string)
-	//nsWindow := unsafe.Pointer(nil)
-	//if m.dialog.window != nil {
-	//	// get NSWindow from window
-	//	nsWindow = m.dialog.window.impl.(*macosWebviewWindow).nsWindow
-	//}
-	//C.showSaveFileDialog(C.uint(m.dialog.id),
-	//	C.bool(m.dialog.canCreateDirectories),
-	//	C.bool(m.dialog.showHiddenFiles),
-	//	C.bool(m.dialog.canSelectHiddenExtension),
-	//	C.bool(m.dialog.hideExtension),
-	//	C.bool(m.dialog.treatsFilePackagesAsDirectories),
-	//	C.bool(m.dialog.allowOtherFileTypes),
-	//	toCString(m.dialog.message),
-	//	toCString(m.dialog.directory),
-	//	toCString(m.dialog.buttonText),
-	//	toCString(m.dialog.filename),
-	//	nsWindow)
-	//return <-saveFileResponses[m.dialog.id], nil
-	panic("implement me")
+	defaultFolder, err := getDefaultFolder(m.dialog.directory)
+	if err != nil {
+		return "", err
+	}
+
+	config := cfd.DialogConfig{
+		Title:       m.dialog.title,
+		Role:        "SaveFile",
+		FileFilters: convertFilters(m.dialog.filters),
+		FileName:    m.dialog.filename,
+		Folder:      defaultFolder,
+	}
+
+	result, err := showCfdDialog(
+		func() (cfd.Dialog, error) {
+			return cfd.NewSaveFileDialog(config)
+		}, false)
+	return result.(string), nil
+}
+
+func calculateMessageDialogFlags(options MessageDialogOptions) uint32 {
+	var flags uint32
+
+	switch options.DialogType {
+	case InfoDialog:
+		flags = windows.MB_OK | windows.MB_ICONINFORMATION
+	case ErrorDialog:
+		flags = windows.MB_ICONERROR | windows.MB_OK
+	case QuestionDialog:
+		flags = windows.MB_YESNO
+		for _, button := range options.Buttons {
+			if strings.TrimSpace(strings.ToLower(button.Label)) == "no" && button.IsDefault {
+				flags |= windows.MB_DEFBUTTON2
+			}
+		}
+	case WarningDialog:
+		flags = windows.MB_OK | windows.MB_ICONWARNING
+	}
+
+	return flags
+}
+
+func convertFilters(filters []FileFilter) []cfd.FileFilter {
+	var result []cfd.FileFilter
+	for _, filter := range filters {
+		result = append(result, cfd.FileFilter(filter))
+	}
+	return result
+}
+
+func showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelect bool) (any, error) {
+	dlg, err := newDlg()
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		err := dlg.Release()
+		if err != nil {
+			println("ERROR: Unable to release dialog:", err.Error())
+		}
+	}()
+
+	dlg.SetParentWindowHandle(0)
+	if multi, _ := dlg.(cfd.OpenMultipleFilesDialog); multi != nil && isMultiSelect {
+		return multi.ShowAndGetResults()
+	}
+	return dlg.ShowAndGetResult()
 }
