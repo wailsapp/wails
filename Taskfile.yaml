@@ -21,4 +21,4 @@ tasks:
   release:
     dir: v2/tools/release
     cmds:
-      - go run release.go
+      - go run release.go {{.CLI_ARGS}}

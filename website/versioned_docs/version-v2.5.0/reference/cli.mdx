@@ -1,0 +1,240 @@
+---
+sidebar_position: 2
+---
+
+# CLI
+
+The Wails CLI has a number of commands that are used for managing your projects. All commands are run in the following way:
+
+`wails <command> <flags>`
+
+## init
+
+`wails init` is used for generating projects.
+
+| Flag               | Description                                                                                                             |       Default       |
+| :----------------- | :---------------------------------------------------------------------------------------------------------------------- | :-----------------: |
+| -n "project name"  | Name of the project. **Mandatory**.                                                                                     |                     |
+| -d "project dir"   | Project directory to create                                                                                             | Name of the project |
+| -g                 | Initialise git repository                                                                                               |                     |
+| -l                 | List available project templates                                                                                        |                     |
+| -q                 | Suppress output to console                                                                                              |                     |
+| -t "template name" | The project template to use. This can be the name of a default template or a URL to a remote template hosted on github. |       vanilla       |
+| -ide               | Generate IDE project files                                                                                              |                     |
+| -f                 | Force build application                                                                                                 |        false        |
+
+Example:
+`wails init -n test -d mytestproject -g -ide vscode -q`
+
+This will generate a a project called "test" in the "mytestproject" directory, initialise git,
+generate vscode project files and do so silently.
+
+More information on using IDEs with Wails can be found [here](../guides/ides.mdx).
+
+### Remote Templates
+
+Remote templates (hosted on GitHub) are supported and can be installed by using the template's project URL.
+
+Example:
+`wails init -n test -t https://github.com/leaanthony/testtemplate[@v1.0.0]`
+
+A list of community maintained templates can be found [here](../community/templates.mdx)
+
+:::warning Attention
+
+**The Wails project does not maintain, is not responsible nor liable for 3rd party templates!**
+
+If you are unsure about a template, inspect `package.json` and `wails.json` for what scripts are run and what packages are installed.
+
+:::
+
+## build
+
+`wails build` is used for compiling your project to a production-ready binary.
+
+| Flag                 | Description                                                                                                                                                                 | Default                                                                                                                                       |
+|:---------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------|
+| -platform            | Build for the given (comma delimited) [platforms](../reference/cli.mdx#platforms) eg. `windows/arm64`. Note, if you do not give the architecture, `runtime.GOARCH` is used. | platform = `GOOS` environment variable if given else `runtime.GOOS`.<br/>arch = `GOARCH` envrionment variable if given else `runtime.GOARCH`. |
+| -clean               | Cleans the `build/bin` directory                                                                                                                                            |                                                                                                                                               |
+| -compiler "compiler" | Use a different go compiler to build, eg go1.15beta1                                                                                                                        | go                                                                                                                                            |
+| -ldflags "flags"     | Additional ldflags to pass to the compiler                                                                                                                                  |                                                                                                                                               |
+| -nopackage           | Do not package application                                                                                                                                                  |                                                                                                                                               |
+| -o filename          | Output filename                                                                                                                                                             |                                                                                                                                               |
+| -s                   | Skip building the frontend                                                                                                                                                  | false                                                                                                                                         |
+| -f                   | Force build application                                                                                                                                                     | false                                                                                                                                         |
+| -tags "extra tags"   | Build tags to pass to Go compiler. Must be quoted. Space or comma (but not both) separated                                                                                  |                                                                                                                                               |
+| -upx                 | Compress final binary using "upx"                                                                                                                                           |                                                                                                                                               |
+| -upxflags            | Flags to pass to upx                                                                                                                                                        |                                                                                                                                               |
+| -v int               | Verbosity level (0 - silent, 1 - default, 2 - verbose)                                                                                                                      | 1                                                                                                                                             |
+| -webview2            | WebView2 installer strategy: download,embed,browser,error                                                                                                                   | download                                                                                                                                      |
+| -u                   | Updates your project's `go.mod` to use the same version of Wails as the CLI                                                                                                 |                                                                                                                                               |
+| -debug               | Retains debug information in the application. Allows the use of the devtools in the application window                                                                      | false                                                                                                                                         |
+| -trimpath            | Remove all file system paths from the resulting executable.                                                                                                                 | false                                                                                                                                         |
+| -race                | Build with Go's race detector                                                                                                                                               | false                                                                                                                                         |
+| -windowsconsole      | Keep the console window for Windows builds                                                                                                                                  |                                                                                                                                               |
+| -obfuscate           | Obfuscate the application using [garble](https://github.com/burrowers/garble)                                                                                               | false                                                                                                                                         |
+| -garbleargs          | Arguments to pass to garble                                                                                                                                                 | `-literals -tiny -seed=random`                                                                                                                |    
+| -nosyncgomod         | Do not sync go.mod with the Wails version                                                                                                                                   | false                                                                                                                                         |
+
+For a detailed description of the `webview2` flag, please refer to the [Windows](../guides/windows.mdx) Guide.
+
+If you prefer to build using standard Go tooling, please consult the [Manual Builds](../guides/manual-builds.mdx)
+guide.
+
+Example:
+
+`wails build -clean -o myproject.exe`
+
+:::info
+
+On Mac, the application will be bundled with `Info.plist`, not `Info.dev.plist`.
+
+:::
+
+:::info UPX on Apple Silicon
+
+There are [issues](https://github.com/upx/upx/issues/446) with using UPX with Apple Silicon.
+
+:::
+
+:::info UPX on Windows
+
+Some Antivirus vendors false positively mark `upx` compressed binaries as virus, see [issue](https://github.com/upx/upx/issues/437).
+
+:::
+
+### Platforms
+
+Supported platforms are:
+
+| Platform         | Description                                   |
+| :--------------- | :-------------------------------------------- |
+| darwin           | MacOS + architecture of build machine         |
+| darwin/amd64     | MacOS 10.13+ AMD64                            |
+| darwin/arm64     | MacOS 11.0+ ARM64                             |
+| darwin/universal | MacOS AMD64+ARM64 universal application       |
+| windows          | Windows 10/11 + architecture of build machine |
+| windows/amd64    | Windows 10/11 AMD64                           |
+| windows/arm64    | Windows 10/11 ARM64                           |
+| linux            | Linux + architecture of build machine         |
+| linux/amd64      | Linux AMD64                                   |
+| linux/arm64      | Linux ARM64                                   |
+
+## doctor
+
+`wails doctor` will run diagnostics to ensure that your system is ready for development.
+
+Example:
+
+```
+Wails CLI v2.0.0-beta
+
+Scanning system - Please wait (this may take a long time)...Done.
+
+System
+------
+OS:             Windows 10 Pro
+Version:        2009 (Build: 19043)
+ID:             21H1
+Go Version:     go1.18
+Platform:       windows
+Architecture:   amd64
+
+Dependency      Package Name    Status          Version
+----------      ------------    ------          -------
+WebView2        N/A             Installed       93.0.961.52
+npm             N/A             Installed       6.14.15
+*upx            N/A             Installed       upx 3.96
+
+* - Optional Dependency
+
+Diagnosis
+---------
+Your system is ready for Wails development!
+
+```
+
+## dev
+
+`wails dev` is used to run your application in a "live development" mode. This means:
+
+- The application's `go.mod` will be updated to use the same version of Wails as the CLI
+- The application is compiled and run automatically
+- A watcher is started and will trigger a rebuild of your dev app if it detects changes to your go files
+- A webserver is started on `http://localhost:34115` which serves your application (not just frontend) over http. This allows you to use your favourite browser development extensions
+- All application assets are loaded from disk. If they are changed, the application will automatically reload (not rebuild). All connected browsers will also reload
+- A JS module is generated that provides the following:
+  - JavaScript wrappers of your Go methods with autogenerated JSDoc, providing code hinting
+  - TypeScript versions of your Go structs, that can be constructed and passed to your go methods
+- A second JS module is generated that provides a wrapper + TS declaration for the runtime
+- On macOS, it will bundle the application into a `.app` file and run it. It will use a `build/darwin/Info.dev.plist` for development.
+
+| Flag                         | Description                                                                                                                                                                         | Default               |
+|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------|
+| -assetdir "./path/to/assets" | Serve assets from the given directory instead of using the provided asset FS                                                                                                        | Value in `wails.json` |
+| -browser                     | Opens a browser to `http://localhost:34115` on startup                                                                                                                              |                       |
+| -compiler "compiler"         | Use a different go compiler to build, eg go1.15beta1                                                                                                                                | go                    |
+| -e                           | Extensions to trigger rebuilds (comma separated)                                                                                                                                    | go                    |
+| -reloaddirs                  | Additional directories to trigger reloads (comma separated)                                                                                                                         | Value in `wails.json` |
+| -ldflags "flags"             | Additional ldflags to pass to the compiler                                                                                                                                          |                       |
+| -tags "extra tags"           | Build tags to pass to compiler (quoted and space separated)                                                                                                                         |                       |
+| -loglevel "loglevel"         | Loglevel to use - Trace, Debug, Info, Warning, Error                                                                                                                                | Debug                 |
+| -noreload                    | Disable automatic reload when assets change                                                                                                                                         |                       |
+| -nocolour                    | Turn off colour cli output                                                                                                                                                          | false                 |
+| -nogen                       | Disable generate module                                                                                                                                                             |                       |
+| -v                           | Verbosity level (0 - silent, 1 - standard, 2 - verbose)                                                                                                                             | 1                     |
+| -wailsjsdir                  | The directory to generate the generated Wails JS modules                                                                                                                            | Value in `wails.json` |
+| -debounce                    | The time to wait for reload after an asset change is detected                                                                                                                       | 100 (milliseconds)    |
+| -devserver "host:port"       | The address to bind the wails dev server to                                                                                                                                         | "localhost:34115"     |
+| -frontenddevserverurl "url"  | Use 3rd party dev server url to serve assets, EG Vite                                                                                                                               | ""                    |
+| -appargs "args"              | Arguments passed to the application in shell style                                                                                                                                  |                       |
+| -save                        | Saves the given `assetdir`, `reloaddirs`, `wailsjsdir`, `debounce`, `devserver` and `frontenddevserverurl` flags in `wails.json` to become the defaults for subsequent invocations. |                       |
+| -race                        | Build with Go's race detector                                                                                                                                                       | false                 |
+| -s                           | Skip building the frontend                                                                                                                                                          | false                 |
+| -nosyncgomod                 | Do not sync go.mod with the Wails version                                                                                                                                           | false                 |
+
+
+
+Example:
+
+`wails dev -assetdir ./frontend/dist -wailsjsdir ./frontend/src -browser`
+
+This command will do the following:
+
+- Build the application and run it (more details [here](../guides/manual-builds.mdx)
+- Generate the Wails JS modules in `./frontend/src`
+- Watch for updates to files in `./frontend/dist` and reload on any change
+- Open a browser and connect to the application
+
+There is more information on using this feature with existing framework scripts [here](../guides/application-development.mdx#live-reloading).
+
+## generate
+
+### template
+
+Wails uses templates for project generation. The `wails generate template` command helps scaffold a template so that
+it may be used for generating projects.
+
+| Flag             | Description                                 |
+| :--------------- | :------------------------------------------ |
+| -name            | The template name (Mandatory)               |
+| -frontend "path" | Path to frontend project to use in template |
+
+For more details on creating templates, consult the [Templates guide](../guides/templates.mdx).
+
+### module
+
+The `wails generate module` command allows you to manually generate the `wailsjs` directory for your application.
+
+## update
+
+`wails update` will update the version of the Wails CLI.
+
+| Flag               | Description                           |
+| :----------------- | :------------------------------------ |
+| -pre               | Update to latest pre-release version  |
+| -version "version" | Install a specific version of the CLI |
+
+## version
+
+`wails version` will simply output the current CLI version.

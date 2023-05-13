@@ -1,0 +1,100 @@
+---
+sidebar_position: 1
+---
+
+# Introduction
+
+The runtime is a library that provides utility methods for your application. There is both a Go and JavaScript runtime
+and the aim is to try and keep them at parity where possible.
+
+It has utility methods for:
+
+- [Window](window.mdx)
+- [Menu](menu.mdx)
+- [Dialog](dialog.mdx)
+- [Events](events.mdx)
+- [Browser](browser.mdx)
+- [Log](log.mdx)
+- [Clipboard](clipboard.mdx)
+
+The Go Runtime is available through importing `github.com/wailsapp/wails/v2/pkg/runtime`. All methods in this package
+take a context as the first parameter. This context should be obtained from the [OnStartup](../options.mdx#onstartup)
+or [OnDomReady](../options.mdx#ondomready) hooks.
+
+:::info Note
+
+Whilst the context will be provided to the
+[OnStartup](../options.mdx#onstartup) method, there's no guarantee the runtime will work in this method as
+the window is initialising in a different thread. If
+you wish to call runtime methods at startup, use [OnDomReady](../options.mdx#ondomready).
+
+:::
+
+The JavaScript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev`
+mode that provides TypeScript declarations for the runtime. This should be located in the `wailsjs` directory in your
+frontend directory.
+
+### Hide
+
+Go: `Hide(ctx context.Context)`<br/>
+JS: `Hide()`
+
+Hides the application.
+
+:::info Note
+
+On Mac, this will hide the application in the same way as the `Hide` menu item in standard Mac applications.
+This is different to hiding the window, but the application still being in the foreground.
+For Windows and Linux, this is currently the same as `WindowHide`.
+
+:::
+
+### Show
+
+Shows the application.
+
+:::info Note
+
+On Mac, this will bring the application back into the foreground.
+For Windows and Linux, this is currently the same as `WindowShow`.
+
+:::
+
+Go: `Show(ctx context.Context)`<br/>
+JS: `Show()`
+
+### Quit
+
+Quits the application.
+
+Go: `Quit(ctx context.Context)`<br/>
+JS: `Quit()`
+
+### Environment
+
+Returns details of the current environment.
+
+Go: `Environment(ctx context.Context) EnvironmentInfo`<br/>
+JS: `Environment(): Promise<EnvironmentInfo>`
+
+#### EnvironmentInfo
+
+Go:
+
+```go
+type EnvironmentInfo struct {
+	BuildType string
+	Platform  string
+	Arch      string
+}
+```
+
+JS:
+
+```ts
+interface EnvironmentInfo {
+  buildType: string;
+  platform: string;
+  arch: string;
+}
+```
