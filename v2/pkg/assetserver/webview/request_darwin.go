@@ -8,6 +8,7 @@ package webview
 
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
+#include <string.h>
 
 static void URLSchemeTaskRetain(void *wkUrlSchemeTask) {
 	id<WKURLSchemeTask> urlSchemeTask = (id<WKURLSchemeTask>) wkUrlSchemeTask;
@@ -44,9 +45,7 @@ static const char * URLSchemeTaskRequestHeadersJSON(void *wkUrlSchemeTask) {
 		NSString* headerString = [[[NSString alloc] initWithData:headerData encoding:NSUTF8StringEncoding] autorelease];
 		const char * headerJSON = [headerString UTF8String];
 
-		char * headersOut = malloc(strlen(headerJSON));
-		strcpy(headersOut, headerJSON);
-		return headersOut;
+		return strdup(headerJSON);
 	}
 }
 
