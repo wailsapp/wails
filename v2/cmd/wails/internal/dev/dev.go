@@ -318,9 +318,6 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 	os.Setenv("assetdir", f.AssetDir)
 	os.Setenv("devserver", f.DevServer)
 	os.Setenv("frontenddevserverurl", f.FrontendDevServerURL)
-	if legacyUseDevServerInsteadofCustomScheme {
-		os.Setenv("legacyusedevsererinsteadofcustomscheme", "true")
-	}
 
 	// Start up new binary with correct args
 	newProcess := process.NewProcess(appBinary, args...)

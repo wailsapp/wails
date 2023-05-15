@@ -97,13 +97,17 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		log.Fatal(err)
 	}
 
-	assetServer, err := assetserver.NewDevAssetServer(assetHandler, wsHandler, bindingsJSON, ctx.Value("assetdir") != nil, myLogger, runtime.RuntimeAssetsBundle)
+	assetServer, err := assetserver.NewDevAssetServer(assetHandler, bindingsJSON, ctx.Value("assetdir") != nil, myLogger, runtime.RuntimeAssetsBundle)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	d.server.Any("/*", func(c echo.Context) error {
-		assetServer.ServeHTTP(c.Response(), c.Request())
+		if c.IsWebSocket() {
+			wsHandler.ServeHTTP(c.Response(), c.Request())
+		} else {
+			assetServer.ServeHTTP(c.Response(), c.Request())
+		}
 		return nil
 	})
 

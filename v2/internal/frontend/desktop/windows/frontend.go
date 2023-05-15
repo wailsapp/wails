@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -90,6 +91,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
 		return result
+	}
+
+	if port, _ := ctx.Value("assetserverport").(string); port != "" {
+		result.startURL.Host = net.JoinHostPort(result.startURL.Host, port)
 	}
 
 	var bindings string

@@ -78,6 +78,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"runtime"
@@ -149,6 +150,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
 	} else {
+		if port, _ := ctx.Value("assetserverport").(string); port != "" {
+			result.startURL.Host = net.JoinHostPort(result.startURL.Host+".localhost", port)
+		}
+
 		var bindings string
 		var err error
 		if _obfuscated, _ := ctx.Value("obfuscated").(bool); !_obfuscated {
