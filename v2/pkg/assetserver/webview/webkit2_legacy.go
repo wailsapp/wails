@@ -24,7 +24,12 @@ func webkit_uri_scheme_request_get_http_method(_ *C.WebKitURISchemeRequest) stri
 }
 
 func webkit_uri_scheme_request_get_http_headers(_ *C.WebKitURISchemeRequest) http.Header {
-	return http.Header{}
+	// Fake some basic default headers that are needed if e.g. request are being proxied to the an external sever, like
+	// we do in the devserver.
+	h := http.Header{}
+	h.Add("Accept", "*/*")
+	h.Add("User-Agent", "wails.io/605.1.15")
+	return h
 }
 
 func webkit_uri_scheme_request_get_http_body(_ *C.WebKitURISchemeRequest) io.ReadCloser {
