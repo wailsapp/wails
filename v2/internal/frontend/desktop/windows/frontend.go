@@ -589,8 +589,16 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 		headers = append(headers, fmt.Sprintf("%s: %s", k, strings.Join(v, ",")))
 	}
 
+	code := rw.Code
+	if code == http.StatusNotModified {
+		// WebView2 has problems when a request returns a 304 status code and the WebView2 is going to hang for other
+		// requests including IPC calls.
+		f.logger.Error("%s: AssetServer returned 304 - StatusNotModified which are going to hang WebView2, changed code to 505 - StatusInternalServerError", uri)
+		code = http.StatusInternalServerError
+	}
+
 	env := f.chromium.Environment()
-	response, err := env.CreateWebResourceResponse(rw.Body.Bytes(), rw.Code, http.StatusText(rw.Code), strings.Join(headers, "\n"))
+	response, err := env.CreateWebResourceResponse(rw.Body.Bytes(), code, http.StatusText(code), strings.Join(headers, "\n"))
 	if err != nil {
 		f.logger.Error("CreateWebResourceResponse Error: %s", err)
 		return
@@ -828,6 +836,12 @@ func coreWebview2RequestToHttpRequest(coreReq *edge.ICoreWebView2WebResourceRequ
 				return nil, fmt.Errorf("MoveNext Error: %s", err)
 			}
 		}
+
+		// WebView2 has problems when a request returns a 304 status code and the WebView2 is going to hang for other
+		// requests including IPC calls.
+		// So prevent 304 status codes by removing the headers that are used in combinationwith caching.
+		header.Del("If-Modified-Since")
+		header.Del("If-None-Match")
 
 		method, err := coreReq.GetMethod()
 		if err != nil {
