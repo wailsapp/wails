@@ -80,6 +80,13 @@ func (m *windowOpenFileDialog) show() ([]string, error) {
 		Folder:      defaultFolder,
 	}
 
+	if m.dialog.window != nil {
+		config.ParentWindowHandle, err = m.dialog.window.NativeWindowHandle()
+		if err != nil {
+			w32.Fatal(err.Error())
+		}
+	}
+
 	var result []string
 	if m.dialog.allowsMultipleSelection {
 		temp, err := showCfdDialog(

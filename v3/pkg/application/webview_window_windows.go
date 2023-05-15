@@ -97,13 +97,17 @@ func (w *windowsWebviewWindow) run() {
 	if options.AlwaysOnTop {
 		exStyle |= w32.WS_EX_TOPMOST
 	}
+
+	var startX, _ = lo.Coalesce(options.X, w32.CW_USEDEFAULT)
+	var startY, _ = lo.Coalesce(options.Y, w32.CW_USEDEFAULT)
+
 	w.hwnd = w32.CreateWindowEx(
 		exStyle,
 		windowClassName,
 		w32.MustStringToUTF16Ptr(options.Title),
 		w32.WS_OVERLAPPEDWINDOW,
-		w32.CW_USEDEFAULT,
-		w32.CW_USEDEFAULT,
+		startX,
+		startY,
 		options.Width,
 		options.Height,
 		0,

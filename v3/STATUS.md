@@ -89,12 +89,12 @@ Webview Window Interface Methods
 
 | Feature  | Windows | Linux | Mac | Notes |
 |----------|---------|-------|-----|-------|
-| Info     |         |       | Y   |       |
-| Warning  |         |       | Y   |       |
-| Error    |         |       | Y   |       |
-| Question |         |       | Y   |       |
-| OpenFile |         |       | Y   |       |
-| SaveFile |         |       | Y   |       |
+| Info     | Y       |       | Y   |       |
+| Warning  | Y       |       | Y   |       |
+| Error    | Y       |       | Y   |       |
+| Question | Y       |       | Y   |       |
+| OpenFile | Y       |       | Y   |       |
+| SaveFile | Y       |       | Y   |       |
 
 ### Clipboard
 
@@ -157,7 +157,7 @@ An 'X' indicates that the option is not supported by the platform.
 
 | Feature                         | Windows | Linux | Mac | Notes                                      |
 |---------------------------------|---------|-------|-----|--------------------------------------------|
-| Name                            |         |       |     |                                            |
+| Name                            | Y       |       |     |                                            |
 | Title                           | Y       |       |     |                                            |
 | Width                           | Y       |       |     |                                            |
 | Height                          | Y       |       |     |                                            |
@@ -176,10 +176,10 @@ An 'X' indicates that the option is not supported by the platform.
 | HTML                            |         |       |     |                                            |
 | JS                              |         |       |     |                                            |
 | CSS                             |         |       |     |                                            |
-| X                               |         |       |     |                                            |
-| Y                               |         |       |     |                                            |
+| X                               | Y       |       |     |                                            |
+| Y                               | Y       |       |     |                                            |
 | HideOnClose                     | Y       |       |     |                                            |
-| FullscreenButtonEnabled         |         |       |     |                                            |
+| FullscreenButtonEnabled         | Y       |       |     |                                            |
 | Hidden                          | Y       |       |     |                                            |
 | EnableFraudulentWebsiteWarnings |         |       |     |                                            |
 | Zoom                            |         |       |     |                                            |
@@ -204,7 +204,7 @@ To log or not to log? System logger vs custom logger.
 | Icon               | Y       |       | Y   | Windows has default icons for light/dark mode & supports PNG or ICO. |
 | Label              | -       |       | Y   |                                                                      |
 | Label (ANSI Codes) | -       |       |     |                                                                      |
-| Menu               |         |       | Y   |                                                                      |
+| Menu               | Y       |       | Y   |                                                                      |
 
 ## Cross Platform Events
 
@@ -264,14 +264,14 @@ Built-in plugin support:
 
 ## Packaging
 
-|                 | Windows | Linux | Mac | Notes |
-|-----------------|---------|-------|-----|-------|
-| Icon Generation |         |       | Y   |       |
-| Icon Embedding  |         |       | Y   |       |
-| Info.plist      |         |       | Y   |       |
-| NSIS Installer  |         |       | -   |       |
-| Mac bundle      |         |       | Y   |       |
-| Windows exe     |         |       | -   |       |
+|                 | Windows | Linux | Mac | Notes | 
+|-----------------|---------|-------|-----|-------| 
+| Icon Generation |         |       | Y   |       | 
+| Icon Embedding  |         |       | Y   |       | 
+| Info.plist      | -       |       | Y   |       | 
+| NSIS Installer  |         |       | -   |       | 
+| Mac bundle      |         |       | Y   |       | 
+| Windows exe     |         |       | -   |       | 
 
 ## Frameless Windows
 

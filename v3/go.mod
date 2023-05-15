@@ -3,8 +3,10 @@ module github.com/wailsapp/wails/v3
 go 1.19
 
 require (
+	github.com/go-ole/go-ole v1.2.6
 	github.com/go-task/task/v3 v3.20.0
 	github.com/google/go-cmp v0.5.9
+	github.com/google/uuid v1.3.0
 	github.com/jackmordaunt/icns/v2 v2.2.1
 	github.com/json-iterator/go v1.1.12
 	github.com/leaanthony/clir v1.6.0
@@ -28,7 +30,6 @@ require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gookit/color v1.5.2 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
