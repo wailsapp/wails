@@ -8,11 +8,11 @@ Application interface methods
 
 | Method                                                        | Windows | Linux | Mac | Notes |
 |---------------------------------------------------------------|---------|-------|-----|-------|
-| run() error                                                   |         |       | Y   |       |
+| run() error                                                   | Y       |       | Y   |       |
 | destroy()                                                     |         |       | Y   |       |
-| setApplicationMenu(menu *Menu)                                |         |       | Y   |       |
+| setApplicationMenu(menu *Menu)                                | Y       |       | Y   |       |
 | name() string                                                 |         |       | Y   |       |
-| getCurrentWindowID() uint                                     |         |       | Y   |       |
+| getCurrentWindowID() uint                                     | Y       |       | Y   |       |
 | showAboutDialog(name string, description string, icon []byte) |         |       | Y   |       |
 | setIcon(icon []byte)                                          |         |       | Y   |       |
 | on(id uint)                                                   |         |       | Y   |       |
@@ -148,7 +148,7 @@ Webview Window Interface Methods
 | ZoomReset           |         |       | Y   | Reset view scale                                                                     |
 | GetZoom             |         |       | Y   | Get current view scale                                                               |
 | SetZoom             |         |       | Y   | Set view scale                                                                       |
-| Screen              |         |       | Y   | Get screen for window                                                                |
+| Screen              | Y       |       | Y   | Get screen for window                                                                |
 
 ### Window Options
 
@@ -266,14 +266,14 @@ Built-in plugin support:
 
 ## Packaging
 
-|                 | Windows | Linux | Mac | Notes | 
-|-----------------|---------|-------|-----|-------| 
-| Icon Generation |         |       | Y   |       | 
-| Icon Embedding  |         |       | Y   |       | 
-| Info.plist      | -       |       | Y   |       | 
-| NSIS Installer  |         |       | -   |       | 
-| Mac bundle      |         |       | Y   |       | 
-| Windows exe     |         |       | -   |       | 
+|                 | Windows | Linux | Mac | Notes |
+|-----------------|---------|-------|-----|-------|
+| Icon Generation |         |       | Y   |       |
+| Icon Embedding  |         |       | Y   |       |
+| Info.plist      | -       |       | Y   |       |
+| NSIS Installer  |         |       | -   |       |
+| Mac bundle      |         |       | Y   |       |
+| Windows exe     |         |       | -   |       |
 
 ## Frameless Windows
 
