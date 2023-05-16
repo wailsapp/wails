@@ -1,11 +1,14 @@
 //go:build darwin
+
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #import "webview_window_darwin.h"
 #import "../events/events.h"
+
 extern void processMessage(unsigned int, const char*);
 extern void processURLRequest(unsigned int, void *);
 extern bool hasListeners(unsigned int);
+
 @implementation WebviewWindow
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 {
@@ -47,6 +50,7 @@ extern bool hasListeners(unsigned int);
     [super dealloc];
 }
 @end
+
 @implementation WebviewWindowDelegate
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     if( self.hideOnClose ) {

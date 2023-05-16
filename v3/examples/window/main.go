@@ -273,7 +273,11 @@ func main() {
 			app.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
 		})
 	})
-	app.NewWebviewWindow()
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+		Mac: application.MacWindow{
+			DisableWindowShadow: true,
+		},
+	})
 
 	app.SetMenu(menu)
 	err := app.Run()
