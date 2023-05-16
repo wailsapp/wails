@@ -44,6 +44,7 @@ const (
 // MacWindow contains macOS specific options
 type MacWindow struct {
 	Backdrop                MacBackdrop
+	DisableWindowShadow     bool
 	TitleBar                MacTitleBar
 	Appearance              MacAppearanceType
 	InvisibleTitleBarHeight int

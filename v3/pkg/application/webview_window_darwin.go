@@ -642,6 +642,17 @@ void windowDestroy(void* nsWindow) {
 	});
 }
 
+// Remove drop shadow from window
+void windowSetShadow(void* nsWindow, bool hasShadow) {
+	// Remove shadow on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		WebviewWindow* window = (WebviewWindow*)nsWindow;
+		// set shadow
+		[window setHasShadow:hasShadow];
+	});
+}
+
 
 // windowClose closes the current window
 static void windowClose(void *window) {
@@ -839,6 +850,10 @@ func (w *macosWebviewWindow) setFrameless(frameless bool) {
 		C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(appearsTransparent))
 		C.windowSetHideTitle(w.nsWindow, C.bool(hideTitle))
 	}
+}
+
+func (w *macosWebviewWindow) setHasShadow(hasShadow bool) {
+	C.windowSetShadow(w.nsWindow, C.bool(hasShadow))
 }
 
 func (w *macosWebviewWindow) getScreen() (*Screen, error) {
@@ -1161,7 +1176,16 @@ func (w *macosWebviewWindow) run() {
 		}
 		if w.parent.options.Hidden == false {
 			C.windowShow(w.nsWindow)
+			w.setHasShadow(!w.parent.options.Mac.DisableWindowShadow)
+		} else {
+			// We have to wait until the window is shown before we can remove the shadow
+			var cancel func()
+			cancel = w.parent.On(events.Mac.WindowDidBecomeKey, func(_ *WindowEventContext) {
+				w.setHasShadow(!w.parent.options.Mac.DisableWindowShadow)
+				cancel()
+			})
 		}
+
 	})
 }
 
