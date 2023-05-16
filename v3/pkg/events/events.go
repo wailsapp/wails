@@ -7,6 +7,18 @@ const (
 	FilesDropped WindowEventType = iota
 )
 
+var Common = newCommonEvents()
+
+type commonEvents struct {
+	ApplicationStarted ApplicationEventType
+}
+
+func newCommonEvents() commonEvents {
+	return commonEvents{
+		ApplicationStarted: 1152,
+	}
+}
+
 var Mac = newMacEvents()
 
 type macEvents struct {

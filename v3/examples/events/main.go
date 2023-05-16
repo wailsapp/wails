@@ -26,10 +26,12 @@ func main() {
 		},
 	})
 
+	// Custom event handling
 	app.Events.On("myevent", func(e *application.WailsEvent) {
 		log.Printf("[Go] WailsEvent received: %+v\n", e)
 	})
 
+	// OS specific application events
 	app.On(events.Mac.ApplicationDidFinishLaunching, func() {
 		for {
 			log.Println("Sending event")
@@ -39,6 +41,11 @@ func main() {
 			})
 			time.Sleep(10 * time.Second)
 		}
+	})
+
+	// Platform agnostic events
+	app.On(events.Common.ApplicationStarted, func() {
+		println("events.Common.ApplicationStarted fired!")
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{

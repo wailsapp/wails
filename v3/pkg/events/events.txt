@@ -126,3 +126,4 @@ windows:APMSuspend
 windows:APMResumeAutomatic
 windows:APMResumeSuspend
 windows:APMPowerSettingChange
+common:ApplicationStarted
