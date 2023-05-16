@@ -26,8 +26,8 @@ Application interface methods
 
 Webview Window Interface Methods
 
-| Method                                             | Windows | Linux | Mac | Notes                                    |    
-|----------------------------------------------------|---------|-------|-----|------------------------------------------|    
+| Method                                             | Windows | Linux | Mac | Notes                                    |
+|----------------------------------------------------|---------|-------|-----|------------------------------------------|
 | center()                                           | Y       |       | Y   |                                          |
 | close()                                            |         |       | Y   |                                          |
 | destroy()                                          |         |       | Y   |                                          |
@@ -44,7 +44,7 @@ Webview Window Interface Methods
 | isMinimised() bool                                 | Y       |       | Y   |                                          |
 | maximise()                                         | Y       |       | Y   |                                          |
 | minimise()                                         | Y       |       | Y   |                                          |
-| nativeWindowHandle() (uintptr, error)              | Y       |       |     |                                          |
+| nativeWindowHandle() (uintptr, error)              | Y       |       | Y   |                                          |
 | on(eventID uint)                                   |         |       | Y   |                                          |
 | openContextMenu(menu *Menu, data *ContextMenuData) |         |       | Y   |                                          |
 | position() (int, int)                              | Y       |       | Y   |                                          |
@@ -264,14 +264,14 @@ Built-in plugin support:
 
 ## Packaging
 
-|                 | Windows | Linux | Mac | Notes | 
-|-----------------|---------|-------|-----|-------| 
-| Icon Generation |         |       | Y   |       | 
-| Icon Embedding  |         |       | Y   |       | 
-| Info.plist      |         |       | Y   |       | 
-| NSIS Installer  |         |       | -   |       | 
-| Mac bundle      |         |       | Y   |       | 
-| Windows exe     |         |       | -   |       | 
+|                 | Windows | Linux | Mac | Notes |
+|-----------------|---------|-------|-----|-------|
+| Icon Generation |         |       | Y   |       |
+| Icon Embedding  |         |       | Y   |       |
+| Info.plist      |         |       | Y   |       |
+| NSIS Installer  |         |       | -   |       |
+| Mac bundle      |         |       | Y   |       |
+| Windows exe     |         |       | -   |       |
 
 ## Frameless Windows
 

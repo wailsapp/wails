@@ -186,6 +186,7 @@ func (m *macosApp) run() error {
 		C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
 		C.activateIgnoringOtherApps()
 	})
+	m.setupCommonEvents()
 	// setup event listeners
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)

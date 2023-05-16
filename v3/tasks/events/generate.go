@@ -16,6 +16,16 @@ const (
 	FilesDropped WindowEventType = iota
 )
 
+var Common = newCommonEvents()
+
+type commonEvents struct {
+$$COMMONEVENTSDECL}
+
+func newCommonEvents() commonEvents {
+	return commonEvents{
+$$COMMONEVENTSVALUES	}
+}
+
 var Mac = newMacEvents()
 
 type macEvents struct {
@@ -67,6 +77,9 @@ func main() {
 
 	windowsEventsDecl := bytes.NewBufferString("")
 	windowsEventsValues := bytes.NewBufferString("")
+
+	commonEventsDecl := bytes.NewBufferString("")
+	commonEventsValues := bytes.NewBufferString("")
 
 	var id int
 	var maxMacEvents int
@@ -145,6 +158,16 @@ func main() {
 
 `)
 			}
+		case "common":
+			eventType := "ApplicationEventType"
+			if strings.HasPrefix(event, "Window") {
+				eventType = "WindowEventType"
+			}
+			if strings.HasPrefix(event, "WebView") {
+				eventType = "WindowEventType"
+			}
+			commonEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
+			commonEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 		case "windows":
 			eventType := "ApplicationEventType"
 			if strings.HasPrefix(event, "Window") {
@@ -200,6 +223,8 @@ func main() {
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$MACEVENTSVALUES", macEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSDECL", windowsEventsDecl.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSVALUES", windowsEventsValues.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONEVENTSDECL", commonEventsDecl.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONEVENTSVALUES", commonEventsValues.String())
 	err = os.WriteFile("../../pkg/events/events.go", []byte(templateToWrite), 0644)
 	if err != nil {
 		panic(err)
@@ -213,7 +238,7 @@ func main() {
 	}
 
 	// Load the window_delegate.m file
-	windowDelegate, err := os.ReadFile("../../pkg/application/webview_window.m")
+	windowDelegate, err := os.ReadFile("../../pkg/application/webview_window_darwin.m")
 	if err != nil {
 		panic(err)
 	}
@@ -243,13 +268,13 @@ func main() {
 			}
 		}
 	}
-	err = os.WriteFile("../../pkg/application/webview_window.m", buffer.Bytes(), 0755)
+	err = os.WriteFile("../../pkg/application/webview_window_darwin.m", buffer.Bytes(), 0755)
 	if err != nil {
 		panic(err)
 	}
 
 	// Load the app_delegate.m file
-	appDelegate, err := os.ReadFile("../../pkg/application/app_delegate.m")
+	appDelegate, err := os.ReadFile("../../pkg/application/application_darwin_delegate.m")
 	if err != nil {
 		panic(err)
 	}
@@ -277,7 +302,7 @@ func main() {
 			}
 		}
 	}
-	err = os.WriteFile("../../pkg/application/app_delegate.m", buffer.Bytes(), 0755)
+	err = os.WriteFile("../../pkg/application/application_darwin_delegate.m", buffer.Bytes(), 0755)
 	if err != nil {
 		panic(err)
 	}

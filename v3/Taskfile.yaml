@@ -9,73 +9,73 @@ includes:
     optional: true
 
 tasks:
-  build-runtime-debug:
+  build:runtime:debug:
     dir: internal/runtime
     internal: true
     cmds:
       - npx esbuild desktop/main.js --bundle --sourcemap=inline --outfile=runtime_debug_desktop_{{.PLATFORM}}.js --define:DEBUG=true --define:WINDOWS={{.WINDOWS}} --define:DARWIN={{.DARWIN}} --define:LINUX={{.LINUX}} --define:PLATFORM={{.PLATFORM}}
 
-  build-runtime-debug-windows:
+  build:runtime:debug:windows:
     cmds:
-      - task: build-runtime-debug
+      - task: build:runtime:debug
         vars:
           WINDOWS: true
           DARWIN: false
           LINUX: false
           PLATFORM: windows
 
-  build-runtime-debug-linux:
+  build:runtime:debug:linux:
     cmds:
-      - task: build-runtime-debug
+      - task: build:runtime:debug
         vars:
           WINDOWS: false
           DARWIN: false
           LINUX: true
           PLATFORM: linux
 
-  build-runtime-debug-darwin:
+  build:runtime:debug:darwin:
     cmds:
-      - task: build-runtime-debug
+      - task: build:runtime:debug
         vars:
           WINDOWS: false
           DARWIN: true
           LINUX: false
           PLATFORM: darwin
 
-  build-runtime-production:
+  build:runtime:production:
     dir: internal/runtime
     internal: true
     cmds:
       - npx esbuild desktop/main.js --bundle --minify --outfile=runtime_production_desktop_{{.PLATFORM}}.js --define:DEBUG=true --define:WINDOWS={{.WINDOWS}} --define:DARWIN={{.DARWIN}} --define:LINUX={{.LINUX}} --define:PLATFORM={{.PLATFORM}}
 
-  build-runtime-production-windows:
+  build:runtime:production:windows:
     cmds:
-      - task: build-runtime-production
+      - task: build:runtime:production
         vars:
           WINDOWS: true
           DARWIN: false
           LINUX: false
           PLATFORM: windows
 
-  build-runtime-production-linux:
+  build:runtime:production:linux:
     cmds:
-      - task: build-runtime-production
+      - task: build:runtime:production
         vars:
           WINDOWS: false
           DARWIN: false
           LINUX: true
           PLATFORM: linux
 
-  build-runtime-production-darwin:
+  build:runtime:production:darwin:
     cmds:
-      - task: build-runtime-production
+      - task: build:runtime:production
         vars:
           WINDOWS: false
           DARWIN: true
           LINUX: false
           PLATFORM: darwin
 
-  install-runtime-dev-deps:
+  install:runtime-dev-deps:
     dir: internal/runtime/dev
     internal: true
     sources:
@@ -83,7 +83,7 @@ tasks:
     cmds:
       - npm install
 
-  install-runtime-deps:
+  install:runtime-deps:
     dir: internal/runtime
     internal: true
     sources:
@@ -91,35 +91,35 @@ tasks:
     cmds:
       - npm install
 
-  test-runtime:
+  test:runtime:
     dir: internal/runtime
     cmds:
       - npx vitest run
 
-  update-runtime:
+  update:runtime:
     dir: internal/runtime
     cmds:
       - npx npm-check-updates -u
 
-  build-runtime-all:
+  build:runtime-all:
     dir: internal/runtime
     deps:
-      - build-runtime-production-darwin
-      - build-runtime-production-windows
-      - build-runtime-production-linux
-      - build-runtime-debug-darwin
-      - build-runtime-debug-windows
-      - build-runtime-debug-linux
+      - build:runtime:production:darwin
+      - build:runtime:production:windows
+      - build:runtime:production:linux
+      - build:runtime:debug:darwin
+      - build:runtime:debug:windows
+      - build:runtime:debug:linux
 
     cmds:
       - cmd: echo "build complete"
 
-  build-runtime:
+  build:runtime:
     dir: internal/runtime
     deps:
-      - install-runtime-deps
+      - install:runtime-deps
     cmds:
-      - task: build-runtime-all
+      - task: build:runtime-all
 
   recreate-template-dir:
     dir: internal/templates
@@ -129,7 +129,7 @@ tasks:
       - rm -rf {{.TEMPLATE_DIR}}
       - mkdir -p {{.TEMPLATE_DIR}}
 
-  generate-template:
+  generate:template:
     dir: internal/templates/{{.TEMPLATE}}
     deps:
       - task: recreate-template-dir
@@ -156,49 +156,54 @@ tasks:
       - go install
       - echo "Reinstalled wails CLI"
 
-  generate-templates:
+  generate:events:
+    dir: tasks/events
+    cmds:
+      - go run generate.go
+
+  generate:templates:
     dir: internal/templates/
     deps:
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: svelte
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: svelte-ts
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: vue
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: vue-ts
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: react
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: react-ts
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: preact
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: preact-ts
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: lit
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: lit-ts
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: vanilla
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: vanilla-ts
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: react-swc
-      - task: generate-template
+      - task: generate:template
         vars:
           TEMPLATE: react-swc-ts
     cmds:

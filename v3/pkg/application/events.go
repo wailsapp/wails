@@ -24,6 +24,8 @@ type WailsEvent struct {
 	Sender string `json:"sender"`
 }
 
+var commonEvents = make(chan uint)
+
 func (e WailsEvent) ToJSON() string {
 	marshal, err := json.Marshal(&e)
 	if err != nil {
