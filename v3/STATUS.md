@@ -284,6 +284,17 @@ Built-in plugin support:
 
 - [x] Translucency
 
+### Mac Options
+
+| Feature                 | Default           | Notes                                                |
+|-------------------------|-------------------|------------------------------------------------------|
+| Backdrop                | MacBackdropNormal | Standard solid window                                |
+| DisableWindowShadow     | false             |                                                      |
+| TitleBar                |                   | Standard window decorations by default               |
+| Appearance              | DefaultAppearance |                                                      |
+| InvisibleTitleBarHeight | 0                 | Creates an invisible title bar for frameless windows |
+
+
 ## Windows Specific
 
 - [x] Translucency
@@ -300,20 +311,6 @@ Built-in plugin support:
 | DisableFramelessWindowDecorations |         |                                             |
 | WindowMask                        | nil     | Makes the window the contents of the bitmap |
 
-	// Select the type of translucent backdrop. Requires Windows 11 22621 or later.
-	BackdropType BackdropType
-	// Disable the icon in the titlebar
-	DisableIcon bool
-	// Theme. Defaults to SystemDefault which will use whatever the system theme is. The application will follow system theme changes.
-	Theme Theme
-	// Custom colours for dark/light mode
-	CustomTheme *ThemeSettings
 
-	// Disable all window decorations in Frameless mode, which means no "Aero Shadow" and no "Rounded Corner" will be shown.
-	// "Rounded Corners" are only available on Windows 11.
-	DisableFramelessWindowDecorations bool
-
-	// WindowMask is used to set the window shape. Use a PNG with an alpha channel to create a custom shape.
-	WindowMask []byte
 
 ## Linux Specific
