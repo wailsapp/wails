@@ -820,7 +820,7 @@ type macosWebviewWindow struct {
 }
 
 func (w *macosWebviewWindow) focus() {
-	//TODO implement me
+	w.show()
 }
 
 func (w *macosWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
@@ -1176,12 +1176,12 @@ func (w *macosWebviewWindow) run() {
 		}
 		if w.parent.options.Hidden == false {
 			C.windowShow(w.nsWindow)
-			w.setHasShadow(!w.parent.options.Mac.DisableWindowShadow)
+			w.setHasShadow(!w.parent.options.Mac.DisableShadow)
 		} else {
 			// We have to wait until the window is shown before we can remove the shadow
 			var cancel func()
 			cancel = w.parent.On(events.Mac.WindowDidBecomeKey, func(_ *WindowEventContext) {
-				w.setHasShadow(!w.parent.options.Mac.DisableWindowShadow)
+				w.setHasShadow(!w.parent.options.Mac.DisableShadow)
 				cancel()
 			})
 		}

@@ -32,7 +32,7 @@ Webview Window Interface Methods
 | close()                                            |         |       | Y   |                                          |
 | destroy()                                          |         |       | Y   |                                          |
 | execJS(js string)                                  |         |       | Y   |                                          |
-| focus()                                            | Y       |       |     |                                          |
+| focus()                                            | Y       |       | Y   |                                          |
 | forceReload()                                      |         |       | Y   |                                          |
 | fullscreen()                                       | Y       |       | Y   |                                          |
 | getScreen() (*Screen, error)                       |         |       | Y   |                                          |
@@ -126,7 +126,7 @@ Webview Window Interface Methods
 | Size                | Y       |       | Y   |                                                                                      |
 | SetPosition         | Y       |       | Y   |                                                                                      |
 | Position            | Y       |       | Y   |                                                                                      |
-| Focus               | Y       |       |     |                                                                                      |
+| Focus               | Y       |       | Y   |                                                                                      |
 | FullScreen          | Y       |       | Y   |                                                                                      |
 | UnFullscreen        | Y       |       | Y   |                                                                                      |
 | Minimise            | Y       |       | Y   |                                                                                      |
@@ -286,12 +286,12 @@ Built-in plugin support:
 
 ### Mac Options
 
-| Feature                 | Default           | Notes                                                |
-|-------------------------|-------------------|------------------------------------------------------|
-| Backdrop                | MacBackdropNormal | Standard solid window                                |
-| DisableWindowShadow     | false             |                                                      |
-| TitleBar                |                   | Standard window decorations by default               |
-| Appearance              | DefaultAppearance |                                                      |
+| Feature           | Default           | Notes                                                |
+|-------------------|-------------------|------------------------------------------------------|
+| Backdrop          | MacBackdropNormal | Standard solid window                                |
+| DisableShadow     | false             |                                                      |
+| TitleBar          |                   | Standard window decorations by default               |
+| Appearance        | DefaultAppearance |                                                      |
 | InvisibleTitleBarHeight | 0                 | Creates an invisible title bar for frameless windows |
 
 
