@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/samber/lo"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/wailsapp/wails/v2/internal/s"
 )
@@ -43,45 +45,82 @@ func runCommand(name string, arg ...string) {
 	checkError(err)
 }
 
+func IsPointRelease(currentVersion string, newVersion string) bool {
+	// The first n-1 parts of the version should be the same
+	if currentVersion[:len(currentVersion)-2] != newVersion[:len(newVersion)-2] {
+		return false
+	}
+	// split on the last dot in the string
+	currentVersionSplit := strings.Split(currentVersion, ".")
+	newVersionSplit := strings.Split(newVersion, ".")
+	// compare the
+	// if the last part of the version is the same, it's a point release
+	currentMinor := lo.Must(strconv.Atoi(currentVersionSplit[len(currentVersionSplit)-1]))
+	newMinor := lo.Must(strconv.Atoi(newVersionSplit[len(newVersionSplit)-1]))
+	return newMinor == currentMinor+1
+}
+
 func main() {
 	var newVersion string
+	var isPointRelease bool
 	if len(os.Args) > 1 {
 		newVersion = os.Args[1]
-		err := os.WriteFile(versionFile, []byte(newVersion), 0755)
+		currentVersion, err := os.ReadFile(versionFile)
 		checkError(err)
+		err = os.WriteFile(versionFile, []byte(newVersion), 0755)
+		checkError(err)
+		isPointRelease = IsPointRelease(string(currentVersion), newVersion)
 	} else {
 		newVersion = updateVersion()
 	}
 
+	// Update ChangeLog
 	s.CD("../../../website")
-	runCommand("npx", "-y", "pnpm", "install")
 
-	s.ECHO("Generating new Docs for version: " + newVersion)
-
-	runCommand("npx", "pnpm", "run", "docusaurus", "docs:version", newVersion)
-
-	runCommand("npx", "pnpm", "run", "write-translations")
-
-	// Load the version list/*
-	versionsData, err := os.ReadFile("versions.json")
+	// Read in `src/pages/changelog.mdx`
+	changelogData, err := os.ReadFile("src/pages/changelog.mdx")
 	checkError(err)
-	var versions []string
-	err = json.Unmarshal(versionsData, &versions)
-	checkError(err)
-	oldestVersion := versions[len(versions)-1]
-	s.ECHO(oldestVersion)
-	versions = versions[0 : len(versions)-1]
-	newVersions, err := json.Marshal(&versions)
-	checkError(err)
-	err = os.WriteFile("versions.json", newVersions, 0755)
+	changelog := string(changelogData)
+	// Split on the line that has `## [Unreleased]`
+	changelogSplit := strings.Split(changelog, "## [Unreleased]")
+	// Get today's date in YYYY-MM-DD format
+	today := time.Now().Format("2006-01-02")
+	// Add the new version to the top of the changelog
+	newChangelog := changelogSplit[0] + "## [Unreleased]\n\n## [" + newVersion + "] - " + today + changelogSplit[1]
+	// Write the changelog back
+	err = os.WriteFile("src/pages/changelog.mdx", []byte(newChangelog), 0755)
 	checkError(err)
 
-	s.ECHO("Removing old version: " + oldestVersion)
-	s.CD("versioned_docs")
-	s.RMDIR("version-" + oldestVersion)
-	s.CD("../versioned_sidebars")
-	s.RM("version-" + oldestVersion + "-sidebars.json")
-	s.CD("..")
+	if !isPointRelease {
+		runCommand("npx", "-y", "pnpm", "install")
 
-	runCommand("npx", "pnpm", "run", "build")
+		s.ECHO("Generating new Docs for version: " + newVersion)
+
+		runCommand("npx", "pnpm", "run", "docusaurus", "docs:version", newVersion)
+
+		runCommand("npx", "pnpm", "run", "write-translations")
+
+		// Load the version list/*
+		versionsData, err := os.ReadFile("versions.json")
+		checkError(err)
+		var versions []string
+		err = json.Unmarshal(versionsData, &versions)
+		checkError(err)
+		oldestVersion := versions[len(versions)-1]
+		s.ECHO(oldestVersion)
+		versions = versions[0 : len(versions)-1]
+		newVersions, err := json.Marshal(&versions)
+		checkError(err)
+		err = os.WriteFile("versions.json", newVersions, 0755)
+		checkError(err)
+
+		s.ECHO("Removing old version: " + oldestVersion)
+		s.CD("versioned_docs")
+		s.RMDIR("version-" + oldestVersion)
+		s.CD("../versioned_sidebars")
+		s.RM("version-" + oldestVersion + "-sidebars.json")
+		s.CD("..")
+
+		runCommand("npx", "pnpm", "run", "build")
+	}
 }
