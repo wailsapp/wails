@@ -275,7 +275,7 @@ func main() {
 	})
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Mac: application.MacWindow{
-			DisableWindowShadow: true,
+			DisableShadow: true,
 		},
 	})
 
