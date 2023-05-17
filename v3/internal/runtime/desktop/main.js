@@ -20,6 +20,7 @@ import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./eve
 import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
 import {enableContextMenus} from "./contextmenu";
 import {reloadWML} from "./wml";
+import {setupDrag} from "./drag";
 
 window.wails = {
     ...newRuntime(null),
@@ -77,6 +78,8 @@ if (DEBUG) {
 }
 
 enableContextMenus(true);
+
+setupDrag();
 
 document.addEventListener("DOMContentLoaded", function(event) {
     reloadWML();
