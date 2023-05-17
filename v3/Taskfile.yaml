@@ -8,7 +8,7 @@ tasks:
     dir: internal/runtime
     internal: true
     cmds:
-      - npx esbuild desktop/main.js --bundle --sourcemap=inline --outfile=runtime_debug_desktop_{{.PLATFORM}}.js --define:DEBUG=true --define:WINDOWS={{.WINDOWS}} --define:DARWIN={{.DARWIN}} --define:LINUX={{.LINUX}} --define:PLATFORM={{.PLATFORM}}
+      - npx esbuild desktop/main.js --bundle --sourcemap=inline --outfile=runtime_debug_desktop_{{.PLATFORM}}.js --define:DEBUG=true --define:WINDOWS={{.WINDOWS}} --define:DARWIN={{.DARWIN}} --define:LINUX={{.LINUX}} --define:PLATFORM={{.PLATFORM}} --define:INVOKE={{.INVOKE}}
 
   build:runtime:debug:windows:
     cmds:
@@ -18,6 +18,7 @@ tasks:
           DARWIN: false
           LINUX: false
           PLATFORM: windows
+          INVOKE: "chrome.webview.postMessage"
 
   build:runtime:debug:linux:
     cmds:
@@ -27,6 +28,7 @@ tasks:
           DARWIN: false
           LINUX: true
           PLATFORM: linux
+          INVOKE: "webkit.messageHandlers.external.postMessage"
 
   build:runtime:debug:darwin:
     cmds:
@@ -36,12 +38,13 @@ tasks:
           DARWIN: true
           LINUX: false
           PLATFORM: darwin
+          INVOKE: "webkit.messageHandlers.external.postMessage"
 
   build:runtime:production:
     dir: internal/runtime
     internal: true
     cmds:
-      - npx esbuild desktop/main.js --bundle --minify --outfile=runtime_production_desktop_{{.PLATFORM}}.js --define:DEBUG=true --define:WINDOWS={{.WINDOWS}} --define:DARWIN={{.DARWIN}} --define:LINUX={{.LINUX}} --define:PLATFORM={{.PLATFORM}}
+      - npx esbuild desktop/main.js --bundle --minify --outfile=runtime_production_desktop_{{.PLATFORM}}.js --define:DEBUG=true --define:WINDOWS={{.WINDOWS}} --define:DARWIN={{.DARWIN}} --define:LINUX={{.LINUX}} --define:PLATFORM={{.PLATFORM}} --define:INVOKE={{.INVOKE}}
 
   build:runtime:production:windows:
     cmds:
@@ -51,6 +54,7 @@ tasks:
           DARWIN: false
           LINUX: false
           PLATFORM: windows
+          INVOKE: "chrome.webview.postMessage"
 
   build:runtime:production:linux:
     cmds:
@@ -60,6 +64,7 @@ tasks:
           DARWIN: false
           LINUX: true
           PLATFORM: linux
+          INVOKE: "webkit.messageHandlers.external.postMessage"
 
   build:runtime:production:darwin:
     cmds:
@@ -69,6 +74,7 @@ tasks:
           DARWIN: true
           LINUX: false
           PLATFORM: darwin
+          INVOKE: "webkit.messageHandlers.external.postMessage"
 
   install:runtime-dev-deps:
     dir: internal/runtime/dev
