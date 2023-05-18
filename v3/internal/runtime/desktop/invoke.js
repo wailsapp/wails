@@ -11,10 +11,4 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 // defined in the Taskfile
-export let invoke = function(input) {
-    if(WINDOWS) {
-        chrome.webview.postMessage(input);
-    } else {
-        webkit.messageHandlers.external.postMessage(input);
-    }
-}
+export let invoke = (WINDOWS?chrome.webview.postMessage:window.webkit.messageHandlers.external.postMessage);
