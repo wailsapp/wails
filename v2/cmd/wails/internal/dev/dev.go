@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	gitignore "github.com/sabhiram/go-gitignore"
 	"io"
 	"net/http"
 	"net/url"
@@ -139,7 +140,8 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 	}
 
 	// create the project files watcher
-	watcher, err := initialiseWatcher(cwd)
+	ignorer := gitignore.CompileIgnoreLines(projectConfig.DevIgnorePatterns...)
+	watcher, err := initialiseWatcher(cwd, ignorer)
 	if err != nil {
 		return err
 	}
@@ -165,7 +167,7 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 	}()
 
 	// Watch for changes and trigger restartApp()
-	debugBinaryProcess = doWatcherLoop(buildOptions, debugBinaryProcess, f, watcher, exitCodeChannel, quitChannel, f.DevServerURL(), legacyUseDevServerInsteadofCustomScheme)
+	debugBinaryProcess = doWatcherLoop(buildOptions, debugBinaryProcess, f, watcher, ignorer, exitCodeChannel, quitChannel, f.DevServerURL(), legacyUseDevServerInsteadofCustomScheme)
 
 	// Kill the current program if running and remove dev binary
 	if err := killProcessAndCleanupBinary(debugBinaryProcess, appBinary); err != nil {
@@ -337,7 +339,7 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 }
 
 // doWatcherLoop is the main watch loop that runs while dev is active
-func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Process, f *flags.Dev, watcher *fsnotify.Watcher, exitCodeChannel chan int, quitChannel chan os.Signal, devServerURL *url.URL, legacyUseDevServerInsteadofCustomScheme bool) *process.Process {
+func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Process, f *flags.Dev, watcher *fsnotify.Watcher, ignore *gitignore.GitIgnore, exitCodeChannel chan int, quitChannel chan os.Signal, devServerURL *url.URL, legacyUseDevServerInsteadofCustomScheme bool) *process.Process {
 	// Main Loop
 	var extensionsThatTriggerARebuild = sliceToMap(strings.Split(f.Extensions, ","))
 	var dirsThatTriggerAReload []string
@@ -386,6 +388,10 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 					}
 				}
 				return false
+			}
+			// Ignore ignored files
+			if ignore.MatchesPath(item.Name) {
+				continue
 			}
 
 			// Handle write operations
