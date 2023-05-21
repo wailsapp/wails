@@ -81,7 +81,8 @@ func parseKey(key string) C.guint {
 		return result
 	}
 	// Check for unknown namedkeys
-	if len(key) > 1 || len(key) == 0 {
+	// Check if we only have a single character
+	if len(key) != 1 {
 		return C.guint(0)
 	}
 	keyval := rune(key[0])
