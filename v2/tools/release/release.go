@@ -2,12 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/samber/lo"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/samber/lo"
 
 	"github.com/wailsapp/wails/v2/internal/s"
 )
@@ -86,7 +87,7 @@ func main() {
 	// Get today's date in YYYY-MM-DD format
 	today := time.Now().Format("2006-01-02")
 	// Add the new version to the top of the changelog
-	newChangelog := changelogSplit[0] + "## [Unreleased]\n\n## [" + newVersion + "] - " + today + changelogSplit[1]
+	newChangelog := changelogSplit[0] + "## [Unreleased]\n\n## " + newVersion + " - " + today + changelogSplit[1]
 	// Write the changelog back
 	err = os.WriteFile("src/pages/changelog.mdx", []byte(newChangelog), 0755)
 	checkError(err)
