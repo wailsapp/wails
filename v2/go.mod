@@ -15,7 +15,6 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.1.2
 	github.com/jackmordaunt/icns v1.0.0
-	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e
 	github.com/labstack/echo/v4 v4.9.0
 	github.com/labstack/gommon v0.3.1
 	github.com/leaanthony/clir v1.3.0
@@ -34,11 +33,12 @@ require (
 	github.com/tc-hib/winres v0.1.5
 	github.com/tidwall/sjson v1.1.7
 	github.com/tkrajina/go-reflector v0.5.5
+	github.com/wailsapp/go-webview2 v1.0.1
 	github.com/wailsapp/mimetype v1.4.1
 	github.com/wzshiming/ctc v1.2.3
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
 	golang.org/x/net v0.7.0
-	golang.org/x/sys v0.5.0
+	golang.org/x/sys v0.8.0
 	golang.org/x/tools v0.1.12
 )
 
@@ -59,6 +59,7 @@ require (
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
+	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/lithammer/fuzzysearch v1.1.5 // indirect

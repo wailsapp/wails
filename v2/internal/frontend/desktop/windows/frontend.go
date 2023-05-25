@@ -21,9 +21,9 @@ import (
 	"time"
 
 	"github.com/bep/debounce"
+	"github.com/wailsapp/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
