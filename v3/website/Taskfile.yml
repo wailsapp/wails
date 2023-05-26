@@ -1,0 +1,60 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  install:
+    desc: Setup Hugo
+    cmds:
+      - go install github.com/gohugoio/hugo@latest
+
+  update-theme:
+    dir: ../../
+    cmds:
+      - git subtree pull --prefix v3/website/themes/hugo-theme-misidoc https://github.com/misix-themes/hugo-theme-misidoc.git main --squash
+
+  default:
+    desc: Preview Website
+    deps:
+      - install
+      - crowdin:update-translation-progress
+    aliases:
+      - start
+      - dev
+    cmds:
+      - hugo serve -D
+
+  build:
+    desc: Build Website
+    deps:
+      - install
+      - crowdin:update-translation-progress
+    cmds:
+      - hugo
+
+  format:md:
+    desc: Format Markdown files
+    cmds:
+      - npx prettier --write '**/*.md'
+
+  format:
+    desc: Format all files
+    cmds:
+      - task: format:md
+
+  crowdin:push:
+    desc: Upload source files to Crowdin
+    cmds:
+      - npx crowdin push -b v3
+  crowdin:pull:
+    desc: Download approved translation files from Crowdin to local
+    cmds:
+      - npx crowdin pull -b v3 --export-only-approved
+
+  crowdin:update-translation-progress:
+    desc: Get translation progress data
+    dir: tools/update-translation-progress
+    aliases:
+      - crowdin:utp
+    cmds:
+      - go run main.go

@@ -1,0 +1,61 @@
+baseURL = "https://wails.io/"
+defaultContentLanguage = "zh-hans"
+
+theme = "hugo-theme-misidoc"
+
+[languages.en]
+contentDir = "content/en"
+title = "Wails"
+weight = 1
+languageCode = "en"
+languageName = "English"
+
+  [[languages.en.menu.main]]
+  name = "Home"
+  weight = 1
+  url = "/"
+
+  [[languages.en.menu.main]]
+  name = "Guide"
+  weight = 2
+  url = "/docs/guide/"
+
+  [[languages.en.menu.main]]
+  name = "API"
+  weight = 3
+  url = "/docs/api/"
+
+  # [languages.en.params.sidebar]
+  # autogenerate = false
+  #   [languages.en.params.sidebar.docs]
+
+  #     [[languages.en.params.sidebar.docs."/guide/"]]
+  #     text = "Getting Started"
+
+  #       [[languages.en.params.sidebar.docs."/guide/".items]]
+  #       text = "Installation"
+  #       url = "/guide/installation"
+
+  #       [[languages.en.params.sidebar.docs."/guide/".items]]
+  #       text = "First Project"
+  #       url = "/guide/firstproject"
+
+  #     [[languages.en.params.sidebar.docs."/guide/"]]
+  #     text = "Reference"
+
+  #       [[languages.en.params.sidebar.docs."/guide/".items]]
+  #       text = "CLI"
+  #       url = "/reference/cli"
+
+  #       [[languages.en.params.sidebar.docs."/guide/".items]]
+  #       text = "Options"
+  #       url = "/reference/options"
+
+
+[languages.zh-Hans]
+contentDir = "content/zh-Hans"
+title = "Wails"
+weight = 2
+languageCode = "zh-Hans"
+languageName = "简体中文"
+hasCJKLanguage = true

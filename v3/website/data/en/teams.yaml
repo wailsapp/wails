@@ -1,0 +1,10 @@
+- name: Misite Bao
+  introduction: Technology serves evolution rather than control.
+  website: https://misitebao.com
+  location: US
+  language:
+    - English
+    - Chinese
+  github: misitebao
+  twitter: misitebao
+  sponsorLink: https://misitebao.com/sponsors/
