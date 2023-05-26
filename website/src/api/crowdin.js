@@ -1,6 +1,7 @@
 const crowdin = require("@crowdin/crowdin-api-client");
 const personalToken = process.env.CROWDIN_PERSONAL_TOKEN;
-const projectId = 531392;
+const projectId = "531392";
+const branch = "v2";
 
 // initialization of crowdin client
 const initClient = () => {
@@ -16,22 +17,34 @@ const initClient = () => {
   });
 };
 
-const client = initClient() || {};
-
 async function getTranslationProgress() {
   let translationProgress = {};
-  const { translationStatusApi } = client;
+
+  const client = initClient() || {};
+  const { sourceFilesApi, translationStatusApi } = client;
 
   // do nothing if client failed to init
   if (!translationStatusApi) {
     return translationProgress;
   }
 
-  await translationStatusApi.getProjectProgress(projectId).then((res) => {
-    for (const item of res.data) {
-      translationProgress[item.data.languageId] = item.data.approvalProgress;
-    }
-  });
+  const branchId = await sourceFilesApi
+    .listProjectBranches(projectId)
+    .then((res) => {
+      for (const item of res.data) {
+        if (item.data.name == branch) {
+          return item.data.id;
+        }
+      }
+    });
+
+  await translationStatusApi
+    .getBranchProgress(projectId, branchId)
+    .then((res) => {
+      for (const item of res.data) {
+        translationProgress[item.data.languageId] = item.data.approvalProgress;
+      }
+    });
 
   return translationProgress;
 }
