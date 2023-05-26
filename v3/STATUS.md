@@ -183,6 +183,8 @@ An 'X' indicates that the option is not supported by the platform.
 | Hidden                          | Y       |       |     |                                            |
 | EnableFraudulentWebsiteWarnings |         |       |     |                                            |
 | Zoom                            |         |       |     |                                            |
+| ZoomControlEnabled              |         |       |     |                                            |
+| OpenInspectorOnStartup          |         |       |     |                                            |
 | EnableDragAndDrop               |         |       |     |                                            |
 | Windows                         | Y       | -     | -   |                                            |
 | Focused                         | Y       |       |     |                                            |
@@ -286,14 +288,13 @@ Built-in plugin support:
 
 ### Mac Options
 
-| Feature           | Default           | Notes                                                |
-|-------------------|-------------------|------------------------------------------------------|
-| Backdrop          | MacBackdropNormal | Standard solid window                                |
-| DisableShadow     | false             |                                                      |
-| TitleBar          |                   | Standard window decorations by default               |
-| Appearance        | DefaultAppearance |                                                      |
+| Feature                 | Default           | Notes                                                |
+|-------------------------|-------------------|------------------------------------------------------|
+| Backdrop                | MacBackdropNormal | Standard solid window                                |
+| DisableShadow           | false             |                                                      |
+| TitleBar                |                   | Standard window decorations by default               |
+| Appearance              | DefaultAppearance |                                                      |
 | InvisibleTitleBarHeight | 0                 | Creates an invisible title bar for frameless windows |
-
 
 ## Windows Specific
 
@@ -310,7 +311,5 @@ Built-in plugin support:
 | CustomTheme                       |         |                                             |
 | DisableFramelessWindowDecorations |         |                                             |
 | WindowMask                        | nil     | Makes the window the contents of the bitmap |
-
-
 
 ## Linux Specific

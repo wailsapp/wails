@@ -23,6 +23,9 @@ import (
 
 var globalApplication *App
 
+// isDebugMode is true if the application is running in debug mode
+var isDebugMode func() bool
+
 func init() {
 	runtime.LockOSThread()
 }
@@ -51,6 +54,13 @@ func New(appOptions Options) *App {
 
 	if !appOptions.Logger.Silent {
 		result.log.AddOutput(&logger.Console{})
+	}
+
+	// Patch isDebug if we aren't in prod mode
+	if isDebugMode == nil {
+		isDebugMode = func() bool {
+			return true
+		}
 	}
 
 	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
@@ -206,7 +216,8 @@ type App struct {
 	contextMenus     map[string]*Menu
 	contextMenusLock sync.Mutex
 
-	assets *assetserver.AssetServer
+	assets   *assetserver.AssetServer
+	startURL string
 
 	// Hooks
 	windowCreatedCallbacks []func(window *WebviewWindow)

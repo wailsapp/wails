@@ -5,12 +5,19 @@ package application
 import (
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/assetserver"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"strconv"
+	"strings"
 	"unicode/utf16"
 	"unsafe"
 
 	"github.com/samber/lo"
 
+	"github.com/wailsapp/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
@@ -27,6 +34,10 @@ type windowsWebviewWindow struct {
 	previousWindowStyle     uint32
 	previousWindowExStyle   uint32
 	previousWindowPlacement w32.WINDOWPLACEMENT
+
+	// Webview
+	chromium   *edge.Chromium
+	hasStarted bool
 }
 
 func (w *windowsWebviewWindow) nativeWindowHandle() uintptr {
@@ -88,6 +99,8 @@ func (w *windowsWebviewWindow) framelessWithDecorations() bool {
 func (w *windowsWebviewWindow) run() {
 
 	options := w.parent.options
+
+	w.chromium = edge.NewChromium()
 
 	var exStyle uint
 	exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
@@ -196,6 +209,8 @@ func (w *windowsWebviewWindow) run() {
 	if options.Focused {
 		w.Focus()
 	}
+
+	w.setupChromium()
 
 	if !options.Hidden {
 		w.show()
@@ -622,6 +637,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// Unregister the window with the application
 		windowsApp := globalApplication.impl.(*windowsApp)
 		windowsApp.unregisterWindow(w)
+	case w32.WM_NCLBUTTONDOWN:
+		w32.SetFocus(w.hwnd)
+	case w32.WM_MOVE, w32.WM_MOVING:
+		_ = w.chromium.NotifyParentWindowPositionChanged()
 	case w32.WM_GETMINMAXINFO:
 		mmi := (*w32.MINMAXINFO)(unsafe.Pointer(lparam))
 		hasConstraints := false
@@ -742,7 +761,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 					// In Full-Screen mode we don't need to adjust anything
 					// It essential we have the flag here, that is set before SetWindowPos in fullscreen/unfullscreen
 					// because the native size might not yet reflect we are in fullscreen during this event!
-					// TODO: w.chromium.SetPadding(edge.Rect{})
+					w.chromium.SetPadding(edge.Rect{})
 				} else if w.isMaximised() {
 					// If the window is maximized we must adjust the client area to the work area of the monitor. Otherwise
 					// some content goes beyond the visible part of the monitor.
@@ -773,7 +792,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 							}
 						}
 					}
-					// TODO: w.chromium.SetPadding(edge.Rect{})
+					w.chromium.SetPadding(edge.Rect{})
 				} else {
 					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
 					// See: https://stackoverflow.com/a/6558508
@@ -782,7 +801,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 					// Increasing the bottom also worksaround the flickering but we would loose 1px of the WebView content
 					// therefore let's pad the content with 1px at the bottom.
 					rgrc.Bottom += 1
-					// TODO: w.chromium.SetPadding(edge.Rect{Bottom: 1})
+					w.chromium.SetPadding(edge.Rect{Bottom: 1})
 				}
 				return 0
 			}
@@ -876,6 +895,304 @@ func (w *windowsWebviewWindow) setWindowMask(imageData []byte) {
 
 func (w *windowsWebviewWindow) isAlwaysOnTop() bool {
 	return w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE)&w32.WS_EX_TOPMOST != 0
+}
+
+// processMessage is given a message sent from JS via the postMessage API
+// We put it on the global window message buffer to be processed centrally
+func (w *windowsWebviewWindow) processMessage(message string) {
+	// We send all messages to the centralised window message buffer
+	windowMessageBuffer <- &windowMessage{
+		windowId: w.parent.id,
+		message:  message,
+	}
+}
+
+func coreWebview2RequestToHttpRequest(coreReq *edge.ICoreWebView2WebResourceRequest) func() (*http.Request, error) {
+	return func() (r *http.Request, err error) {
+		header := http.Header{}
+		headers, err := coreReq.GetHeaders()
+		if err != nil {
+			return nil, fmt.Errorf("GetHeaders Error: %s", err)
+		}
+		defer headers.Release()
+
+		headersIt, err := headers.GetIterator()
+		if err != nil {
+			return nil, fmt.Errorf("GetIterator Error: %s", err)
+		}
+		defer headersIt.Release()
+
+		for {
+			has, err := headersIt.HasCurrentHeader()
+			if err != nil {
+				return nil, fmt.Errorf("HasCurrentHeader Error: %s", err)
+			}
+			if !has {
+				break
+			}
+
+			name, value, err := headersIt.GetCurrentHeader()
+			if err != nil {
+				return nil, fmt.Errorf("GetCurrentHeader Error: %s", err)
+			}
+
+			header.Set(name, value)
+			if _, err := headersIt.MoveNext(); err != nil {
+				return nil, fmt.Errorf("MoveNext Error: %s", err)
+			}
+		}
+
+		method, err := coreReq.GetMethod()
+		if err != nil {
+			return nil, fmt.Errorf("GetMethod Error: %s", err)
+		}
+
+		uri, err := coreReq.GetUri()
+		if err != nil {
+			return nil, fmt.Errorf("GetUri Error: %s", err)
+		}
+
+		var body io.ReadCloser
+		if content, err := coreReq.GetContent(); err != nil {
+			return nil, fmt.Errorf("GetContent Error: %s", err)
+		} else if content != nil {
+			body = &iStreamReleaseCloser{stream: content}
+		}
+
+		req, err := http.NewRequest(method, uri, body)
+		if err != nil {
+			if body != nil {
+				body.Close()
+			}
+			return nil, err
+		}
+		req.Header = header
+		return req, nil
+	}
+}
+
+type iStreamReleaseCloser struct {
+	stream *edge.IStream
+	closed bool
+}
+
+func (i *iStreamReleaseCloser) Read(p []byte) (int, error) {
+	if i.closed {
+		return 0, io.ErrClosedPipe
+	}
+	return i.stream.Read(p)
+}
+
+func (i *iStreamReleaseCloser) Close() error {
+	if i.closed {
+		return nil
+	}
+	i.closed = true
+	return i.stream.Release()
+}
+
+func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
+	/*
+		webviewRequests <- &webViewAssetRequest{
+			Request:    webview.NewRequest(wkUrlSchemeTask),
+			windowId:   uint(windowID),
+			windowName: globalApplication.getWindowForID(uint(windowID)).Name(),
+		}
+	*/
+	// Setting the UserAgent on the CoreWebView2Settings clears the whole default UserAgent of the Edge browser, but
+	// we want to just append our ApplicationIdentifier. So we adjust the UserAgent for every request.
+	if reqHeaders, err := req.GetHeaders(); err == nil {
+		useragent, _ := reqHeaders.GetHeader(assetserver.HeaderUserAgent)
+		useragent = strings.Join([]string{useragent, assetserver.WailsUserAgentValue}, " ")
+		reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
+		reqHeaders.Release()
+	}
+
+	if globalApplication.assets == nil {
+		// We are using the devServer let the WebView2 handle the request with its default handler
+		return
+	}
+
+	//Get the request
+	uri, _ := req.GetUri()
+	reqUri, err := url.ParseRequestURI(uri)
+	if err != nil {
+		globalApplication.error("Unable to parse request uri %s: %s", uri, err)
+		return
+	}
+
+	if reqUri.Scheme != "http" {
+		// Let the WebView2 handle the request with its default handler
+		return
+	} else if reqUri.Host != "wails.localhost" {
+		// Let the WebView2 handle the request with its default handler
+		return
+	}
+
+	rw := httptest.NewRecorder()
+	globalApplication.assets.ProcessHTTPRequestLegacy(rw, coreWebview2RequestToHttpRequest(req))
+
+	headers := []string{}
+	for k, v := range rw.Header() {
+		headers = append(headers, fmt.Sprintf("%s: %s", k, strings.Join(v, ",")))
+	}
+
+	env := w.chromium.Environment()
+	response, err := env.CreateWebResourceResponse(rw.Body.Bytes(), rw.Code, http.StatusText(rw.Code), strings.Join(headers, "\n"))
+	if err != nil {
+		globalApplication.error("CreateWebResourceResponse Error: %s", err)
+		return
+	}
+	defer response.Release()
+
+	// Send response back
+	err = args.PutResponse(response)
+	if err != nil {
+		globalApplication.error("PutResponse Error: %s", err)
+		return
+	}
+}
+
+func (w *windowsWebviewWindow) setupChromium() {
+	chromium := w.chromium
+	debugMode := isDebugMode()
+
+	disableFeatues := []string{}
+
+	if !w.parent.options.EnableFraudulentWebsiteWarnings {
+		disableFeatues = append(disableFeatues, "msSmartScreenProtection")
+	}
+
+	opts := w.parent.options.Windows
+	chromium.DataPath = opts.WebviewUserDataPath
+	chromium.BrowserPath = opts.WebviewBrowserPath
+
+	if opts.WebviewGpuIsDisabled {
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
+	}
+
+	if len(disableFeatues) > 0 {
+		arg := fmt.Sprintf("--disable-features=%s", strings.Join(disableFeatues, ","))
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
+	}
+
+	chromium.MessageCallback = w.processMessage
+	chromium.WebResourceRequestedCallback = w.processRequest
+	chromium.NavigationCompletedCallback = w.navigationCompleted
+	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
+		w32.PostMessage(w.hwnd, w32.WM_KEYDOWN, uintptr(vkey), 0)
+		return false
+	}
+
+	chromium.Embed(w.hwnd)
+	chromium.Resize()
+	settings, err := chromium.GetSettings()
+	if err != nil {
+		globalApplication.fatal(err.Error())
+	}
+	err = settings.PutAreDefaultContextMenusEnabled(debugMode)
+	if err != nil {
+		globalApplication.fatal(err.Error())
+	}
+	err = settings.PutAreDevToolsEnabled(debugMode)
+	if err != nil {
+		globalApplication.fatal(err.Error())
+	}
+
+	if w.parent.options.Zoom > 0.0 {
+		chromium.PutZoomFactor(w.parent.options.Zoom)
+	}
+	err = settings.PutIsZoomControlEnabled(w.parent.options.ZoomControlEnabled)
+	if err != nil {
+		globalApplication.fatal(err.Error())
+	}
+
+	err = settings.PutIsStatusBarEnabled(false)
+	if err != nil {
+		globalApplication.fatal(err.Error())
+	}
+	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
+	if err != nil {
+		globalApplication.fatal(err.Error())
+	}
+	err = settings.PutIsSwipeNavigationEnabled(false)
+	if err != nil {
+		globalApplication.fatal(err.Error())
+	}
+
+	if debugMode && w.parent.options.OpenInspectorOnStartup {
+		chromium.OpenDevToolsWindow()
+	}
+
+	//TODO: Setup focus event handler
+	//onFocus := f.mainWindow.OnSetFocus()
+	//onFocus.Bind(f.onFocus)
+
+	// Set background colour
+	w.setBackgroundColour(w.parent.options.BackgroundColour)
+
+	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
+	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
+	chromium.Navigate("http://wails.localhost")
+
+}
+
+func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
+
+	// TODO: DomReady Event
+
+	// Todo: Resize hacks
+	/*
+		if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
+			f.ExecJS("window.wails.flags.enableResize = true;")
+		}
+	*/
+
+	// TODO: Work out why we need this
+	//if w.hasStarted {
+	//	return
+	//}
+	//w.hasStarted = true
+
+	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
+	err := w.chromium.Hide()
+	if err != nil {
+		globalApplication.fatal(err.Error())
+	}
+	if w.parent.options.Hidden {
+		return
+	}
+	err = w.chromium.Show()
+	if err != nil {
+		globalApplication.fatal(err.Error())
+
+	}
+
+	//if w.parent.options.Hidden {
+	//	return
+	//}
+
+	//switch f.frontendOptions.WindowStartState {
+	//case options.Maximised:
+	//	if !f.frontendOptions.DisableResize {
+	//		win32.ShowWindowMaximised(f.mainWindow.Handle())
+	//	} else {
+	//		win32.ShowWindow(f.mainWindow.Handle())
+	//	}
+	//case options.Minimised:
+	//	win32.ShowWindowMinimised(f.mainWindow.Handle())
+	//case options.Fullscreen:
+	//	f.mainWindow.Fullscreen()
+	//	win32.ShowWindow(f.mainWindow.Handle())
+	//default:
+	//	if f.frontendOptions.Fullscreen {
+	//		f.mainWindow.Fullscreen()
+	//	}
+	//	win32.ShowWindow(f.mainWindow.Handle())
+	//}
+	//
+	//f.mainWindow.hasBeenShown = true
+
 }
 
 func ScaleWithDPI(pixels int, dpi uint) int {

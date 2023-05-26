@@ -36,7 +36,9 @@ type WebviewWindowOptions struct {
 	Hidden                          bool
 	EnableFraudulentWebsiteWarnings bool
 	Zoom                            float64
+	ZoomControlEnabled              bool
 	EnableDragAndDrop               bool
+	OpenInspectorOnStartup          bool
 	Mac                             MacWindow
 	Windows                         WindowsWindow
 	Focused                         bool
