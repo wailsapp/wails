@@ -45,3 +45,11 @@ tasks:
     deps: [install]
     cmds:
       - npx crowdin pull -b v2 --export-only-approved
+
+  format:md:
+    cmds:
+      - npx prettier --write "**/*.{md,mdx}"
+
+  format:
+    cmds:
+      - task: format:md

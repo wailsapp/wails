@@ -1,0 +1,37 @@
+name: Format Markdown Files
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+jobs:
+  format_markdown_files:
+    runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+
+      - name: Install Task
+        uses: arduino/setup-task@v1
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Format All Markdown Files
+        run: task format-all-md
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: "docs: format document"
+          title: "docs: format document"
+          body: "- [x] Format all Markdown(x) documents"
+          branch: chore/format-markdown-files
+          delete-branch: true
+          draft: false
