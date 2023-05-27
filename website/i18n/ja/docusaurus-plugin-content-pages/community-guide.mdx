@@ -68,7 +68,7 @@ Wailsはオープンソースであり、コミュニティ主導のプロジェ
 - 現時点での[バックログ](https://github.com/orgs/wailsapp/projects/1/views/1)を確認し、修正するつもりのバグを選んでください。
 - 開発を始める前に、チケットに以下の情報が含まれていることを確認してください:
 - 影響のあるプラットフォームといった、イシューの対象範囲。
-- バグの再現手順。 Sometimes bugs are opened that are not Wails issues and the onus is on the reporter to prove that it is a Wails issue with a [minimal reproducible example](https://stackoverflow.com/help/minimal-reproducible-example)
+- バグの再現手順。 内容によっては、Wailsの問題ではないバグだったということもあるため、最小限で再現可能な手順を報告し、あくまでWailsの問題であるということを、裏付けるように努めてください。
 - `wails doctor`の出力内容。
 - バグを再現できるテスト。
 - チケットにこれらの情報が含まれていない場合、チケットをオープンした人に、これらの情報をリクエストしてください。
@@ -92,15 +92,15 @@ Wailsはオープンソースであり、コミュニティ主導のプロジェ
 - ローカルマシンでバグが再現するかどうかのテスト
 - プルリクエストの内容が正しく動作するかを確認するテスト
 
-If you chose to test if someone's bug report is reproducible on your local system, then feel free to add a comment on the ticket confirming this with the output of `wails doctor`.
+誰かが報告しているバグが自身のローカルシステムでも再現するかどうかをテストした場合、`wails doctor`の出力結果を含めたテスト結果のコメントを、自由にチケットに追加してください。
 
-To test PRs, choose a PR to test and check if the PR description has the testing scenarios listed. If not, please ask the person who opened the PR to provide that list. Once you have determined a valid test scenario, please report your findings on the PR.
+プルリクエストをテストする場合、プルリクエストの説明欄にテストシナリオがリストアップされているかどうかを最初に確認してください。 リストアップされていない場合、プルリクエストをオープンした人に、テストシナリオを提供するように依頼してください。 有効なテストシナリオが定まったら、結果をプルリクエスト内で報告してください。
 
-If you ever need more clarity or help on testing, please ask a question in the [Contributing to Wails](https://github.com/wailsapp/wails/discussions/1520) discussion or on slack.
+テストに関して、より詳細な情報やヘルプが必要な場合は、[Contributing to Wails](https://github.com/wailsapp/wails/discussions/1520)ディスカッションまたはslackで質問してください。
 
 ### ドキュメント
 
-This website is also the main documentation site for the project. Sometimes this gets out of date and needs some slight adjustments. Some of the documentation isn't written to the best standards either. Developing documentation is hard and so any contribution to this is greatly appreciated. Features without documentation are unfinished so to the project, it's _as important_ as the code.
+ご覧のウェブサイトは、プロジェクトのメインドキュメントサイトの役割も担っています。 しばしば、ドキュメントの内容は古くなっていることがあるため、多少の修正が必要になってきます。 また、内容がベストな品質となっていないドキュメントもいくつかあります。 ドキュメントを作成する作業は労力がかかるものであるため、これらへの貢献は大歓迎です。 ドキュメント化されていない機能はプロジェクトとしてまだ未完成である、と言っていいほど、ドキュメントはコードと同じくらい_重要なもの_です。
 
 We generally do not create tickets for updating documentation so if there is text you think should be updated or rephrased then feel free to submit a PR for that. This site is in the main repository under the `website` directory. We use [Docusaurus](https://docusaurus.io/) to create the site so there is plenty of existing documentation and tutorials around to get started.
 

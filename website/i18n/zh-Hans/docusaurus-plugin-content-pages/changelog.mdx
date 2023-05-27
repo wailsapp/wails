@@ -4,19 +4,42 @@
 
 格式基于 [维护更新日志](https://keepachangelog.com/en/1.0.0/)，并且该项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
-- `Added` 新添加的功能。
-- `Changed` 对现有功能的变更。
-- `Deprecated` 已经不建议使用，即将移除的功能。
-- `Removed` 已经移除的功能。
-- `Fixed` 对 bug 的修复。
-- `Security` 对安全性的改进。
+- `Added(新增)` 新添加的功能。
+- `Changed(变更)` 对现有功能的变更。
+- `Deprecated(废弃)` 已经不建议使用，即将移除的功能。
+- `Removed(移除)` 已经移除的功能。
+- `Fixed(修复)` 对 bug 的修复。
+- `Security(安全)` 对安全性的改进。
 
 ## [即将发布]
+
+## [v2.5.1] - 2023-05-16
+
+### 重大变更
+
+- Go WebView2Loader 允许环境变量和注册表覆盖来更改 WebView2 的行为。 这在 Wails 使用原生 WebView2Loader 时是不可能的，根据 [PR](https://github.com/wailsapp/wails/pull/1771) 应该是不可能的。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2668) 中变更
+- `wails dev` 现在在 macOS 和 Linux 上为所有 Vite 版本使用自定义 schemes `wails://`。 这也修复了在 Linux 和 Windows 上多次快速保存后丢失的重新加载。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2664) 中变更
+
+### 修复
+
+- 修复了在 macOS 上快速重新加载请求期间的分段错误。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2664) 中修复
+- 修复了 Linux 上旧 WebKit2GTK 版本小于 2.36 的开发服务器。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2664) 中修复
+- 修复了 Windows 上可能触发 WebView2 挂起的 devserver。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2664) 中修复
+
+## v2.5.0 - 2023-05-13
+
+### 重大变更
+
+- 如果使用 Vite >= `v3.0.0`，`wails dev` 现在在 macOS 和 Linux 上使用自定义方案 `wails://`。 这使得开发应用程序的行为与最终生产应用程序一致，并修复了一些长期存在的不一致问题。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2610) 中变更
 
 ### 新增
 
 - 在 `wails doctor` 中添加了 Nodejs 版本。 由 @misitebao 在这个 [PR](https://github.com/wailsapp/wails/pull/2546) 中添加。
 - 在 Linux 上添加了对 WebKit2GTK 2.40+ 的支持。 这为 [AssetServer](/docs/reference/options#资产服务器) 带来了额外的特性，比如对 HTTP 请求体的支持。 应用程序必须使用 Go 构建标签 `webkit2_40` 进行编译，以激活对此功能的支持。 这也会将您应用程序的 WebKit2GTK 最低要求提高到 2.40。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2592) 中添加。
+- macOS：添加了具有众所周知的快捷键“Minimize、Full-Screen 和 Zoom（最小化、全屏和缩放）”的窗口菜单角色。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2586) 中添加。
+- macOS：在 appmenu 中添加了“Hide、Hide Others、Show All（隐藏、隐藏其他、显示所有）”。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2586) 中添加。
+- Windows：添加了禁用 WebView2 `RendererCodeIntegrity` 检查的标志，请参阅标志上的注释以获取更多信息。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2627) 中添加。
+- Windows：添加了对 WebView2 进程崩溃的处理，对于不可恢复的错误，会显示一条错误消息，提示应用需要重新启动。 如果发生显示 chromium 错误页面的错误，请确保 Window 和 WebView2 可见。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2627) 中添加。
 
 ### 变更
 
@@ -30,7 +53,8 @@
 - 修复 macOS 上的 `runtime.MenuUpdateApplicationMenu`。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2588) 中修复
 - 修复了为 `libwebkit`/`pkg-config` 添加包名称并在 `zypper.go` 中使用 shell.RunCommandWithENV 而不是 shell.RunCommand。 由 @wgjtyu 在这个 [PR](https://github.com/wailsapp/wails/pull/2593) 中修复
 - 确保在 Windows 上的主线程上启动 CommonFileDialogs。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2606) 中修复
-- 修复 `StartHidden` 选项在 Linux 上不生效。 由 @LGiki 在这个 [PR](https://github.com/wailsapp/wails/pull/2624) 中修复。
+- 修复生成的 TypeScript 绑定。 由 @dominictwlee 在这个 [PR](https://github.com/wailsapp/wails/pull/2552) 中修复。
+- 修复了 `StartHidden` 选项在 Linux 上不起作用的问题。 由 @LGiki 在这个 [PR](https://github.com/wailsapp/wails/pull/2624) 中修复。
 
 ## v2.4.1 - 2023-03-20
 
@@ -565,7 +589,7 @@ Experimental: &options.Experimental{
 
 ## v2.0.0-beta.35 - 2022-04-27
 
-### Breaking Changes
+### 重大变更
 
 - When data was sent to the `EventsOn` callback, it was being sent as a slice of values, instead of optional parameters to the method. `EventsOn` now works as expected, but you will need to update your code if you currently use this. [More information](https://github.com/wailsapp/wails/issues/1324) `EventsOn` now works as expected, but you will need to update your code if you currently use this. [More information](https://github.com/wailsapp/wails/issues/1324)
 - The broken `bindings.js` and `bindings.d.ts` files have been replaced by a new JS/TS code generation system. More details [here](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) More details [here](https://wails.io/docs/howdoesitwork#calling-bound-go-methods)

@@ -13,10 +13,33 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [v2.5.1] - 2023-05-16
+
+### Modifications importantes
+
+- The Go WebView2Loader allowed env variable and registry overrides to change the behaviour of WebView2. This is not possible when using the native WebView2Loader with Wails and should not be possible according to [PR](https://github.com/wailsapp/wails/pull/1771). Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2668)
+- `wails dev` now uses the custom schemes `wails://` on macOS and Linux for all Vite versions. This also fixes missing reloads after multiple fast savings on Linux and Windows. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2664)
+
+### Corrections
+
+- Fixed segfaults during fast reloads of requests on macOS. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2664)
+- Fixed devserver on Linux for older WebKit2GTK versions < 2.36. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2664)
+- Fixed devserver on Windows that might have triggered the WebView2 into a hang. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2664)
+
+## v2.5.0 - 2023-05-13
+
+### Modifications importantes
+
+- `wails dev` now uses the custom schemes `wails://` on macOS and Linux if Vite >= `v3.0.0` is used. This makes the dev application consistent in behaviour with the final production application and fixes some long-standing inconsistencies. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2610)
+
 ### Ajouts
 
 - Added Nodejs version in `wails doctor`. Added by @misitebao in [PR](https://github.com/wailsapp/wails/pull/2546)
 - Added support for WebKit2GTK 2.40+ on Linux. This brings additional features for the [AssetServer](/docs/reference/options#assetserver), like support for HTTP Request Bodies. The app must be compiled with the Go build tag `webkit2_40` to activate support for this features. This also bumps the minimum requirement of WebKit2GTK to 2.40 for your app. Added by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2592)
+- macOS: Added Window menu role with well known shortcuts "Minimize, Full-Screen and Zoom". Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2586)
+- macOS: Added "Hide, Hide Others, Show All“ to appmenu. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2586)
+- Windows: Added flag to disable the WebView2 `RendererCodeIntegrity` checks, please see the comment on the flag for more information. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2627)
+- Windows: Added handling of WebView2 process crashes, for unrecoverable errors an error message is shown that the app needs to be restarted. If an error occurs that shows a chromium error page, make sure the Window and the WebView2 is visible. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2627)
 
 ### Changements
 
@@ -30,6 +53,8 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Fixed `runtime.MenuUpdateApplicationMenu` on macOS. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2588)
 - Fixed add package name for `libwebkit`/`pkg-config` and use shell.RunCommandWithENV instead of shell.RunCommand in `zypper.go`. Fixed by @wgjtyu in [PR](https://github.com/wailsapp/wails/pull/2593)
 - Make sure to start the CommonFileDialogs on Windows on the Main-Thread. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2606)
+- Fixed generated typescript bindings. Fixed by @dominictwlee in [PR](https://github.com/wailsapp/wails/pull/2552)
+- Fixed `StartHidden` option not working on Linux. Fixed by @LGiki in [PR](https://github.com/wailsapp/wails/pull/2624)
 
 ## v2.4.1 - 2023-03-20
 

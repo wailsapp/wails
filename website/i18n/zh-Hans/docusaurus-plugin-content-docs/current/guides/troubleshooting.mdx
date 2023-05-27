@@ -47,6 +47,12 @@ var assets embed.FS
 
 您的申请很可能 `info.plist` 是无效的。 更新 `build/<yourapp>.app/Contents/info.plist`文件 并检查数据是否有效，比如：检查二进制名称是否正确。 要保留更改，请将文件复制回 `build/darwin` 目录。
 
+## 我的应用程序未在 Windows 资源管理器中显示正确的图标
+
+如果您的应用程序未显示正确的图标，请尝试删除位于 `C:\Users\<您的用户名>\AppData\Local` 目录中的隐藏 `IconCache.db` 文件。 这将强制 Windows 重建图标缓存。
+
+来源：https://github.com/wailsapp/wails/issues/2360#issuecomment-1556070036
+
 ## 无法使用可变参数
 
 如果您有使用可变参数定义的后端方法，例如：
