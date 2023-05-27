@@ -48,6 +48,10 @@ type WindowsWindow struct {
 
 	// WebviewGpuIsDisabled is used to enable / disable GPU acceleration for the webview
 	WebviewGpuIsDisabled bool
+
+	// ResizeDebounceMS is the amount of time to debounce redraws of webview2
+	// when resizing the window
+	ResizeDebounceMS uint16
 }
 
 type Theme int

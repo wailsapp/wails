@@ -5,6 +5,7 @@ package application
 import (
 	"errors"
 	"fmt"
+	"github.com/bep/debounce"
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"io"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf16"
 	"unsafe"
 
@@ -36,8 +38,9 @@ type windowsWebviewWindow struct {
 	previousWindowPlacement w32.WINDOWPLACEMENT
 
 	// Webview
-	chromium   *edge.Chromium
-	hasStarted bool
+	chromium        *edge.Chromium
+	hasStarted      bool
+	resizeDebouncer func(func())
 }
 
 func (w *windowsWebviewWindow) nativeWindowHandle() uintptr {
@@ -200,6 +203,10 @@ func (w *windowsWebviewWindow) run() {
 	// Process window mask
 	if options.Windows.WindowMask != nil {
 		w.setWindowMask(options.Windows.WindowMask)
+	}
+
+	if options.Windows.ResizeDebounceMS > 0 {
+		w.resizeDebouncer = debounce.New(time.Duration(options.Windows.ResizeDebounceMS) * time.Millisecond)
 	}
 
 	if options.Centered {
@@ -641,6 +648,26 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		w32.SetFocus(w.hwnd)
 	case w32.WM_MOVE, w32.WM_MOVING:
 		_ = w.chromium.NotifyParentWindowPositionChanged()
+	case w32.WM_SIZING:
+		// If the window is frameless, and we are minimizing, then we need to suppress the Resize on the
+		// WebView2. If we don't do this, restoring does not work as expected and first restores with some wrong
+		// size during the restore animation and only fully renders when the animation is done. This highly
+		// depends on the content in the WebView, see https://github.com/wailsapp/wails/issues/1319
+		if w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED {
+			return 0
+		}
+
+		// If we have a resize debouncer, use it
+		if w.resizeDebouncer != nil {
+			w.resizeDebouncer(func() {
+				invokeSync(func() {
+					w.chromium.Resize()
+				})
+			})
+		} else {
+			w.chromium.Resize()
+		}
+
 	case w32.WM_GETMINMAXINFO:
 		mmi := (*w32.MINMAXINFO)(unsafe.Pointer(lparam))
 		hasConstraints := false
