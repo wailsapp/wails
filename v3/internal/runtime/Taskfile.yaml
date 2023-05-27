@@ -1,0 +1,108 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  install-deps:
+    internal: true
+    sources:
+      - package.json
+    cmds:
+      - npm install
+
+  test:
+    cmds:
+      - npx vitest run
+
+  update:
+    cmds:
+      - npx npm-check-updates -u
+
+  build:debug:
+    internal: true
+    cmds:
+      - npx esbuild desktop/main.js --bundle --tree-shaking=true --sourcemap=inline --outfile=runtime_debug_desktop_{{.PLATFORM}}.js --define:DEBUG=true --define:WINDOWS={{.WINDOWS}} --define:DARWIN={{.DARWIN}} --define:LINUX={{.LINUX}} --define:PLATFORM={{.PLATFORM}} --define:INVOKE={{.INVOKE}}
+
+  build:debug:windows:
+    cmds:
+      - task: build:debug
+        vars:
+          WINDOWS: true
+          DARWIN: false
+          LINUX: false
+          PLATFORM: windows
+          INVOKE: "chrome.webview.postMessage"
+
+  build:debug:linux:
+    cmds:
+      - task: build:debug
+        vars:
+          WINDOWS: false
+          DARWIN: false
+          LINUX: true
+          PLATFORM: linux
+          INVOKE: "webkit.messageHandlers.external.postMessage"
+
+  build:debug:darwin:
+    cmds:
+      - task: build:debug
+        vars:
+          WINDOWS: false
+          DARWIN: true
+          LINUX: false
+          PLATFORM: darwin
+          INVOKE: "webkit.messageHandlers.external.postMessage"
+
+  build:production:
+    internal: true
+    cmds:
+      - npx esbuild desktop/main.js --bundle --tree-shaking=true --minify --outfile=runtime_production_desktop_{{.PLATFORM}}.js --define:DEBUG=true --define:WINDOWS={{.WINDOWS}} --define:DARWIN={{.DARWIN}} --define:LINUX={{.LINUX}} --define:PLATFORM={{.PLATFORM}} --define:INVOKE={{.INVOKE}}
+
+  build:production:windows:
+    cmds:
+      - task: build:production
+        vars:
+          WINDOWS: true
+          DARWIN: false
+          LINUX: false
+          PLATFORM: windows
+          INVOKE: "chrome.webview.postMessage"
+
+  build:production:linux:
+    cmds:
+      - task: build:production
+        vars:
+          WINDOWS: false
+          DARWIN: false
+          LINUX: true
+          PLATFORM: linux
+          INVOKE: "webkit.messageHandlers.external.postMessage"
+
+  build:production:darwin:
+    cmds:
+      - task: build:production
+        vars:
+          WINDOWS: false
+          DARWIN: true
+          LINUX: false
+          PLATFORM: darwin
+          INVOKE: "webkit.messageHandlers.external.postMessage"
+
+  build:all:
+    internal: true
+    deps:
+      - build:debug:windows
+      - build:debug:linux
+      - build:debug:darwin
+      - build:production:windows
+      - build:production:linux
+      - build:production:darwin
+
+    cmds:
+      - cmd: echo "Build Complete."
+
+  build:
+    deps:
+      - install-deps
+    cmds:
+      - task: build:all

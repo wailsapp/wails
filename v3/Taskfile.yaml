@@ -3,130 +3,16 @@
 version: "3"
 
 includes:
+  runtime:
+    taskfile: ./internal/runtime
+    dir: ./internal/runtime
+
   website:
     taskfile: ./website
     dir: ./website
     optional: true
 
 tasks:
-  build:runtime:debug:
-    dir: internal/runtime
-    internal: true
-    cmds:
-      - npx esbuild desktop/main.js --bundle --tree-shaking=true --sourcemap=inline --outfile=runtime_debug_desktop_{{.PLATFORM}}.js --define:DEBUG=true --define:WINDOWS={{.WINDOWS}} --define:DARWIN={{.DARWIN}} --define:LINUX={{.LINUX}} --define:PLATFORM={{.PLATFORM}} --define:INVOKE={{.INVOKE}}
-
-  build:runtime:debug:windows:
-    cmds:
-      - task: build:runtime:debug
-        vars:
-          WINDOWS: true
-          DARWIN: false
-          LINUX: false
-          PLATFORM: windows
-          INVOKE: "chrome.webview.postMessage"
-
-  build:runtime:debug:linux:
-    cmds:
-      - task: build:runtime:debug
-        vars:
-          WINDOWS: false
-          DARWIN: false
-          LINUX: true
-          PLATFORM: linux
-          INVOKE: "webkit.messageHandlers.external.postMessage"
-
-  build:runtime:debug:darwin:
-    cmds:
-      - task: build:runtime:debug
-        vars:
-          WINDOWS: false
-          DARWIN: true
-          LINUX: false
-          PLATFORM: darwin
-          INVOKE: "webkit.messageHandlers.external.postMessage"
-
-  build:runtime:production:
-    dir: internal/runtime
-    internal: true
-    cmds:
-      - npx esbuild desktop/main.js --bundle --tree-shaking=true --minify --outfile=runtime_production_desktop_{{.PLATFORM}}.js --define:DEBUG=true --define:WINDOWS={{.WINDOWS}} --define:DARWIN={{.DARWIN}} --define:LINUX={{.LINUX}} --define:PLATFORM={{.PLATFORM}} --define:INVOKE={{.INVOKE}}
-
-  build:runtime:production:windows:
-    cmds:
-      - task: build:runtime:production
-        vars:
-          WINDOWS: true
-          DARWIN: false
-          LINUX: false
-          PLATFORM: windows
-          INVOKE: "chrome.webview.postMessage"
-
-  build:runtime:production:linux:
-    cmds:
-      - task: build:runtime:production
-        vars:
-          WINDOWS: false
-          DARWIN: false
-          LINUX: true
-          PLATFORM: linux
-          INVOKE: "webkit.messageHandlers.external.postMessage"
-
-  build:runtime:production:darwin:
-    cmds:
-      - task: build:runtime:production
-        vars:
-          WINDOWS: false
-          DARWIN: true
-          LINUX: false
-          PLATFORM: darwin
-          INVOKE: "webkit.messageHandlers.external.postMessage"
-
-  install:runtime-dev-deps:
-    dir: internal/runtime/dev
-    internal: true
-    sources:
-      - package.json
-    cmds:
-      - npm install
-
-  install:runtime-deps:
-    dir: internal/runtime
-    internal: true
-    sources:
-      - package.json
-    cmds:
-      - npm install
-
-  test:runtime:
-    dir: internal/runtime
-    cmds:
-      - npx vitest run
-
-  update:runtime:
-    dir: internal/runtime
-    cmds:
-      - npx npm-check-updates -u
-
-  build:runtime-all:
-    dir: internal/runtime
-    deps:
-      - build:runtime:production:darwin
-      - build:runtime:production:windows
-      - build:runtime:production:linux
-      - build:runtime:debug:darwin
-      - build:runtime:debug:windows
-      - build:runtime:debug:linux
-
-    cmds:
-      - cmd: echo "build complete"
-
-  build:runtime:
-    dir: internal/runtime
-    deps:
-      - install:runtime-deps
-    cmds:
-      - task: build:runtime-all
-
   recreate-template-dir:
     dir: internal/templates
     internal: true
