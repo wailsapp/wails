@@ -1,0 +1,17 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  release:
+    dir: tools/release
+    cmds:
+      - go run release.go {{.CLI_ARGS}}
+
+  format:md:
+    cmds:
+      - npx prettier --write "**/*.md"
+
+  format:
+    cmds:
+      - task: format:md
