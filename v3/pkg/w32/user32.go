@@ -131,6 +131,8 @@ var (
 	procGetDpiForWindow               = moduser32.NewProc("GetDpiForWindow")
 	procSetProcessDPIAware            = moduser32.NewProc("SetProcessDPIAware")
 	procEnumDisplayMonitors           = moduser32.NewProc("EnumDisplayMonitors")
+	procEnumDisplayDevices            = moduser32.NewProc("EnumDisplayDevicesW")
+	procEnumDisplaySettings           = moduser32.NewProc("EnumDisplaySettingsW")
 	procEnumDisplaySettingsEx         = moduser32.NewProc("EnumDisplaySettingsExW")
 	procChangeDisplaySettingsEx       = moduser32.NewProc("ChangeDisplaySettingsExW")
 	procSendInput                     = moduser32.NewProc("SendInput")
@@ -139,6 +141,8 @@ var (
 	procCallNextHookEx                = moduser32.NewProc("CallNextHookEx")
 	procGetForegroundWindow           = moduser32.NewProc("GetForegroundWindow")
 	procUpdateLayeredWindow           = moduser32.NewProc("UpdateLayeredWindow")
+	getDisplayConfig                  = moduser32.NewProc("GetDisplayConfigBufferSizes")
+	queryDisplayConfig                = moduser32.NewProc("QueryDisplayConfig")
 
 	procSystemParametersInfo = moduser32.NewProc("SystemParametersInfoW")
 	procSetClassLong         = moduser32.NewProc("SetClassLongW")

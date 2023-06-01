@@ -3,7 +3,10 @@
 package application
 
 import (
+	"fmt"
+	"golang.org/x/sys/windows"
 	"os"
+	"strconv"
 	"syscall"
 	"unsafe"
 
@@ -39,13 +42,51 @@ func getNativeApplication() *windowsApp {
 }
 
 func (m *windowsApp) getPrimaryScreen() (*Screen, error) {
-	//TODO implement me
-	panic("implement me")
+	screens, err := m.getScreens()
+	if err != nil {
+		return nil, err
+	}
+	for _, screen := range screens {
+		if screen.IsPrimary {
+			return screen, nil
+		}
+	}
+	return nil, fmt.Errorf("no primary screen found")
 }
 
 func (m *windowsApp) getScreens() ([]*Screen, error) {
-	//TODO implement me
-	panic("implement me")
+	allScreens, err := w32.GetAllScreens()
+	if err != nil {
+		return nil, err
+	}
+	// Convert result to []*Screen
+	screens := make([]*Screen, len(allScreens))
+	for id, screen := range allScreens {
+		x := int(screen.MONITORINFOEX.RcMonitor.Left)
+		y := int(screen.MONITORINFOEX.RcMonitor.Top)
+		right := int(screen.MONITORINFOEX.RcMonitor.Right)
+		bottom := int(screen.MONITORINFOEX.RcMonitor.Bottom)
+		width := right - x
+		height := bottom - y
+		screens[id] = &Screen{
+			ID:     strconv.Itoa(id),
+			Name:   windows.UTF16ToString(screen.MONITORINFOEX.SzDevice[:]),
+			X:      x,
+			Y:      y,
+			Size:   Size{Width: width, Height: height},
+			Bounds: Rect{X: x, Y: y, Width: width, Height: height},
+			WorkArea: Rect{
+				X:      int(screen.MONITORINFOEX.RcWork.Left),
+				Y:      int(screen.MONITORINFOEX.RcWork.Top),
+				Width:  int(screen.MONITORINFOEX.RcWork.Right - screen.MONITORINFOEX.RcWork.Left),
+				Height: int(screen.MONITORINFOEX.RcWork.Bottom - screen.MONITORINFOEX.RcWork.Top),
+			},
+			IsPrimary: screen.IsPrimary,
+			Scale:     screen.Scale,
+			Rotation:  0,
+		}
+	}
+	return screens, nil
 }
 
 func (m *windowsApp) hide() {

@@ -53,6 +53,15 @@ const (
 )
 
 const (
+	EDS_ROTATEDMODE = 0x00000001
+	EDS_RAWMODE     = 0x00000002
+	DMDO_DEFAULT    = 0
+	DMDO_90         = 1
+	DMDO_180        = 2
+	DMDO_270        = 3
+)
+
+const (
 	CW_USEDEFAULT = ^0x7fffffff
 )
 

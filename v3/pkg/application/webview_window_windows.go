@@ -493,27 +493,6 @@ func (w *windowsWebviewWindow) getScreen() (*Screen, error) {
 	thisScreen.IsPrimary = mi.DwFlags&w32.MONITORINFOF_PRIMARY != 0
 
 	// TODO: Get screen rotation
-	// https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-devmodea
-
-	//// get display settings for monitor
-	//var dm w32.DEVMODE
-	//dm.DmSize = uint16(unsafe.Sizeof(dm))
-	//dm.DmDriverExtra = 0
-	//w32.EnumDisplaySettingsEx(&mi.SzDevice[0], w32.ENUM_CURRENT_SETTINGS, &dm, 0)
-	//
-	//// check display settings for rotation
-	//rotationAngle := dm.DmDi
-	//if rotationAngle == DMDO_0 {
-	//	printf("Monitor is not rotated\n")
-	//} else if rotationAngle == DMDO_90 {
-	//	printf("Monitor is rotated 90 degrees\n")
-	//} else if rotationAngle == DMDO_180 {
-	//	printf("Monitor is rotated 180 degrees\n")
-	//} else if rotationAngle == DMDO_270 {
-	//	printf("Monitor is rotated 270 degrees\n")
-	//} else {
-	//	printf("Monitor is rotated at an unknown angle\n")
-	//}
 
 	return &thisScreen, nil
 }
