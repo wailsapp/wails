@@ -42,6 +42,7 @@ type WebviewWindowOptions struct {
 	Mac                             MacWindow
 	Windows                         WindowsWindow
 	Focused                         bool
+	Menu                            *Menu
 }
 
 var WebviewWindowDefaults = &WebviewWindowOptions{

@@ -86,6 +86,8 @@ var (
 	procGetDlgItem                    = moduser32.NewProc("GetDlgItem")
 	procDrawIcon                      = moduser32.NewProc("DrawIcon")
 	procCreateMenu                    = moduser32.NewProc("CreateMenu")
+	procRemoveMenu                    = moduser32.NewProc("RemoveMenu")
+	procGetMenuItemPosition           = moduser32.NewProc("GetMenuItemPosition")
 	procDestroyMenu                   = moduser32.NewProc("DestroyMenu")
 	procCreatePopupMenu               = moduser32.NewProc("CreatePopupMenu")
 	procCheckMenuRadioItem            = moduser32.NewProc("CheckMenuRadioItem")

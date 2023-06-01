@@ -19,7 +19,7 @@ const (
 type windowsSystemTray struct {
 	parent *SystemTray
 
-	menu *PopupMenu
+	menu *Win32Menu
 
 	// Platform specific implementation
 	uid           uint32

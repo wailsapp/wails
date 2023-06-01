@@ -7,6 +7,7 @@ import (
 	"golang.org/x/sys/windows"
 	"os"
 	"strconv"
+	"sync"
 	"syscall"
 	"unsafe"
 
@@ -23,8 +24,9 @@ type windowsApp struct {
 
 	instance w32.HINSTANCE
 
-	windowMap  map[w32.HWND]*windowsWebviewWindow
-	systrayMap map[w32.HMENU]*windowsSystemTray
+	windowMap     map[w32.HWND]*windowsWebviewWindow
+	windowMapLock sync.RWMutex
+	systrayMap    map[w32.HMENU]*windowsSystemTray
 
 	mainThreadID         w32.HANDLE
 	mainThreadWindowHWND w32.HWND
@@ -34,7 +36,14 @@ type windowsApp struct {
 	focusedWindow w32.HWND
 
 	// system theme
-	isDarkMode bool
+	isDarkMode      bool
+	currentWindowID uint
+}
+
+func (m *windowsApp) getWindowForHWND(hwnd w32.HWND) *windowsWebviewWindow {
+	m.windowMapLock.RLock()
+	defer m.windowMapLock.RUnlock()
+	return m.windowMap[hwnd]
 }
 
 func getNativeApplication() *windowsApp {
@@ -131,8 +140,7 @@ func (m *windowsApp) name() string {
 }
 
 func (m *windowsApp) getCurrentWindowID() uint {
-	//return uint(C.getCurrentWindowID())
-	return uint(0)
+	return m.currentWindowID
 }
 
 func (m *windowsApp) setApplicationMenu(menu *Menu) {
@@ -142,9 +150,7 @@ func (m *windowsApp) setApplicationMenu(menu *Menu) {
 	}
 	menu.Update()
 
-	// Convert impl to macosMenu object
-	//m.applicationMenu = (menu.impl).(*macosMenu).nsMenu
-	//C.setApplicationMenu(m.applicationMenu)
+	m.parent.ApplicationMenu = menu
 }
 
 func (m *windowsApp) run() error {
@@ -250,7 +256,9 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 }
 
 func (m *windowsApp) registerWindow(result *windowsWebviewWindow) {
+	m.windowMapLock.Lock()
 	m.windowMap[result.hwnd] = result
+	m.windowMapLock.Unlock()
 }
 
 func (m *windowsApp) registerSystemTray(result *windowsSystemTray) {
@@ -258,7 +266,9 @@ func (m *windowsApp) registerSystemTray(result *windowsSystemTray) {
 }
 
 func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
+	m.windowMapLock.Lock()
 	delete(m.windowMap, w.hwnd)
+	m.windowMapLock.Unlock()
 
 	// If this was the last window...
 	if len(m.windowMap) == 0 && !m.parent.options.Windows.DisableQuitOnLastWindowClosed {

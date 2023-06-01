@@ -8,20 +8,53 @@ import (
 )
 
 type windowsMenuItem struct {
+	parent   *Menu
 	menuItem *MenuItem
 
-	hMenu    w32.HMENU
-	id       int
-	label    string
-	disabled bool
-	checked  bool
-	itemType menuItemType
-	hidden   bool
-	submenu  w32.HMENU
+	hMenu     w32.HMENU
+	id        int
+	label     string
+	disabled  bool
+	checked   bool
+	itemType  menuItemType
+	hidden    bool
+	submenu   w32.HMENU
+	itemAfter *MenuItem
 }
 
 func (m *windowsMenuItem) setHidden(hidden bool) {
 	m.hidden = hidden
+	if m.hidden {
+		// iterate the parent items and find the menu item before us
+		for i, item := range m.parent.items {
+			if item == m.menuItem {
+				if i < len(m.parent.items)-1 {
+					m.itemAfter = m.parent.items[i+1]
+				} else {
+					m.itemAfter = nil
+				}
+				break
+			}
+		}
+		// Get the position of this menu item in the parent menu
+		// m.pos = w32.GetMenuItemPosition(m.hMenu, uint32(m.id))
+		// Remove from parent menu
+		w32.RemoveMenu(m.hMenu, m.id, w32.MF_BYCOMMAND)
+	} else {
+		// Add to parent menu
+		// Get the position of the item before us
+		var pos int
+		if m.itemAfter != nil {
+			for i, item := range m.parent.items {
+				if item == m.itemAfter {
+					pos = i - 1
+					break
+				}
+			}
+			m.itemAfter = nil
+		}
+		w32.InsertMenuItem(m.hMenu, uint32(pos), true, m.getMenuInfo())
+	}
 }
 
 func (m *windowsMenuItem) Checked() bool {
@@ -41,43 +74,7 @@ func (m *windowsMenuItem) Enabled() bool {
 }
 
 func (m *windowsMenuItem) update() {
-	var mii w32.MENUITEMINFO
-	mii.CbSize = uint32(unsafe.Sizeof(mii))
-	mii.FMask = w32.MIIM_FTYPE | w32.MIIM_ID | w32.MIIM_STATE | w32.MIIM_STRING
-	if m.IsSeparator() {
-		mii.FType = w32.MFT_SEPARATOR
-	} else {
-		mii.FType = w32.MFT_STRING
-		//var text string
-		//if s := a.shortcut; s.Key != 0 {
-		//	text = fmt.Sprintf("%s\t%s", a.text, s.String())
-		//	shortcut2Action[a.shortcut] = a
-		//} else {
-		//	text = a.text
-		//}
-		mii.DwTypeData = w32.MustStringToUTF16Ptr(m.label)
-		mii.Cch = uint32(len([]rune(m.label)))
-	}
-	mii.WID = uint32(m.id)
-	if m.Enabled() {
-		mii.FState &^= w32.MFS_DISABLED
-	} else {
-		mii.FState |= w32.MFS_DISABLED
-	}
-
-	if m.IsCheckbox() {
-		mii.FMask |= w32.MIIM_CHECKMARKS
-	}
-	if m.Checked() {
-		mii.FState |= w32.MFS_CHECKED
-	}
-
-	if m.menuItem.submenu != nil {
-		mii.FMask |= w32.MIIM_SUBMENU
-		mii.HSubMenu = m.submenu
-	}
-
-	w32.SetMenuItemInfo(m.hMenu, uint32(m.id), false, &mii)
+	w32.SetMenuItemInfo(m.hMenu, uint32(m.id), false, m.getMenuInfo())
 }
 
 func (m *windowsMenuItem) setLabel(label string) {
@@ -248,4 +245,43 @@ func newFullScreenMenuItem() *MenuItem {
 
 func (m *windowsMenuItem) setTooltip(_ string) {
 	// Unsupported
+}
+
+func (m *windowsMenuItem) getMenuInfo() *w32.MENUITEMINFO {
+	var mii w32.MENUITEMINFO
+	mii.CbSize = uint32(unsafe.Sizeof(mii))
+	mii.FMask = w32.MIIM_FTYPE | w32.MIIM_ID | w32.MIIM_STATE | w32.MIIM_STRING
+	if m.IsSeparator() {
+		mii.FType = w32.MFT_SEPARATOR
+	} else {
+		mii.FType = w32.MFT_STRING
+		//var text string
+		//if s := a.shortcut; s.Key != 0 {
+		//	text = fmt.Sprintf("%s\t%s", a.text, s.String())
+		//	shortcut2Action[a.shortcut] = a
+		//} else {
+		//	text = a.text
+		//}
+		mii.DwTypeData = w32.MustStringToUTF16Ptr(m.label)
+		mii.Cch = uint32(len([]rune(m.label)))
+	}
+	mii.WID = uint32(m.id)
+	if m.Enabled() {
+		mii.FState &^= w32.MFS_DISABLED
+	} else {
+		mii.FState |= w32.MFS_DISABLED
+	}
+
+	if m.IsCheckbox() {
+		mii.FMask |= w32.MIIM_CHECKMARKS
+	}
+	if m.Checked() {
+		mii.FState |= w32.MFS_CHECKED
+	}
+
+	if m.menuItem.submenu != nil {
+		mii.FMask |= w32.MIIM_SUBMENU
+		mii.HSubMenu = m.submenu
+	}
+	return &mii
 }

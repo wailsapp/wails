@@ -30,6 +30,7 @@ type windowsWebviewWindow struct {
 	windowImpl unsafe.Pointer
 	parent     *WebviewWindow
 	hwnd       w32.HWND
+	menu       *Win32Menu
 
 	// Fullscreen flags
 	isCurrentlyFullscreen   bool
@@ -117,6 +118,21 @@ func (w *windowsWebviewWindow) run() {
 	var startX, _ = lo.Coalesce(options.X, w32.CW_USEDEFAULT)
 	var startY, _ = lo.Coalesce(options.Y, w32.CW_USEDEFAULT)
 
+	var appMenu w32.HMENU
+
+	// Process Menu
+	if !options.Windows.DisableMenu {
+		theMenu := globalApplication.ApplicationMenu
+		// Create the menu if we have one
+		if w.parent.options.Menu != nil {
+			theMenu = w.parent.options.Menu
+		}
+		if theMenu != nil {
+			w.menu = NewApplicationMenu(w.hwnd, theMenu)
+			appMenu = w.menu.menu
+		}
+	}
+
 	w.hwnd = w32.CreateWindowEx(
 		exStyle,
 		windowClassName,
@@ -127,7 +143,7 @@ func (w *windowsWebviewWindow) run() {
 		options.Width,
 		options.Height,
 		0,
-		0,
+		appMenu,
 		w32.GetModuleHandle(""),
 		nil)
 
@@ -612,6 +628,10 @@ func (w *windowsWebviewWindow) isActive() bool {
 
 func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	switch msg {
+	case w32.WM_ACTIVATE:
+		if wparam == w32.WA_ACTIVE || wparam == w32.WA_CLICKACTIVE {
+			getNativeApplication().currentWindowID = w.parent.id
+		}
 	case w32.WM_SIZE:
 		return 0
 	case w32.WM_CLOSE:
@@ -695,6 +715,17 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				return w32.HTCAPTION
 			}
 			return w32.HTCLIENT
+		}
+	}
+
+	if w.menu != nil {
+		switch msg {
+		case w32.WM_COMMAND:
+			cmdMsgID := int(wparam & 0xffff)
+			switch cmdMsgID {
+			default:
+				w.menu.ProcessCommand(cmdMsgID)
+			}
 		}
 	}
 
