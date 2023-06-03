@@ -6,8 +6,8 @@ sidebar_position: 3
 
 ## Application Options
 
-The `Options.App` struct contains the application configuration.
-It is passed to the `wails.Run()` method:
+The `Options.App` struct contains the application configuration. It is passed to
+the `wails.Run()` method:
 
 ```go title="Example"
 import (
@@ -121,31 +121,26 @@ func main() {
 
 The text shown in the window's title bar.
 
-Name: Title<br/>
-Type: `string`
+Name: Title<br/> Type: `string`
 
 ### Width
 
 The initial width of the window.
 
-Name: Width<br/>
-Type: `int`<br/>
-Default: 1024.
+Name: Width<br/> Type: `int`<br/> Default: 1024.
 
 ### Height
 
 The initial height of the window.
 
-Name: Height<br/>
-Type: `int`<br/>
-Default: 768
+Name: Height<br/> Type: `int`<br/> Default: 768
 
 ### DisableResize
 
-By default, the main window is resizable. Setting this to `true` will keep it a fixed size.
+By default, the main window is resizable. Setting this to `true` will keep it a
+fixed size.
 
-Name: DisableResize<br/>
-Type: `bool`
+Name: DisableResize<br/> Type: `bool`
 
 ### Fullscreen
 
@@ -161,81 +156,71 @@ Defines how the window should present itself at startup.
 | Maximised  | ✅  | ✅  | ✅  |
 | Minimised  | ✅  | ❌  | ✅  |
 
-Name: WindowStartState<br/>
-Type: `options.WindowStartState`
+Name: WindowStartState<br/> Type: `options.WindowStartState`
 
 ### Frameless
 
-When set to `true`, the window will have no borders or title bar.
-Also see [Frameless Windows](../guides/frameless.mdx).
+When set to `true`, the window will have no borders or title bar. Also see
+[Frameless Windows](../guides/frameless.mdx).
 
-Name: Frameless<br/>
-Type: `bool`
+Name: Frameless<br/> Type: `bool`
 
 ### MinWidth
 
-This sets the minimum width for the window. If the value given in `Width` is less than this value,
-the window will be set to `MinWidth` by default.
+This sets the minimum width for the window. If the value given in `Width` is
+less than this value, the window will be set to `MinWidth` by default.
 
-Name: MinWidth<br/>
-Type: `int`
+Name: MinWidth<br/> Type: `int`
 
 ### MinHeight
 
-This sets the minimum height for the window. If the value given in `Height` is less than this value,
-the window will be set to `MinHeight` by default.
+This sets the minimum height for the window. If the value given in `Height` is
+less than this value, the window will be set to `MinHeight` by default.
 
-Name: MinHeight<br/>
-Type: `int`
+Name: MinHeight<br/> Type: `int`
 
 ### MaxWidth
 
-This sets the maximum width for the window. If the value given in `Width` is more than this value,
-the window will be set to `MaxWidth` by default.
+This sets the maximum width for the window. If the value given in `Width` is
+more than this value, the window will be set to `MaxWidth` by default.
 
-Name: MaxWidth<br/>
-Type: `int`
+Name: MaxWidth<br/> Type: `int`
 
 ### MaxHeight
 
-This sets the maximum height for the window. If the value given in `Height` is more than this value,
-the window will be set to `MaxHeight` by default.
+This sets the maximum height for the window. If the value given in `Height` is
+more than this value, the window will be set to `MaxHeight` by default.
 
-Name: MaxHeight<br/>
-Type: `int`
+Name: MaxHeight<br/> Type: `int`
 
 ### StartHidden
 
-When set to `true`, the application will be hidden until [WindowShow](../reference/runtime/window.mdx#windowshow)
-is called.
+When set to `true`, the application will be hidden until
+[WindowShow](../reference/runtime/window.mdx#windowshow) is called.
 
-Name: StartHidden<br/>
-Type: `bool`
+Name: StartHidden<br/> Type: `bool`
 
 ### HideWindowOnClose
 
-By default, closing the window will close the application. Setting this to `true` means closing the window will
+By default, closing the window will close the application. Setting this to
+`true` means closing the window will
 
 hide the window instead.
 
-Name: HideWindowOnClose<br/>
-Type: `bool`
+Name: HideWindowOnClose<br/> Type: `bool`
 
 ### BackgroundColour
 
-This value is the default background colour of the window.
-Example: options.NewRGBA(255,0,0,128) - Red at 50% transparency
+This value is the default background colour of the window. Example:
+options.NewRGBA(255,0,0,128) - Red at 50% transparency
 
-Name: BackgroundColour<br/>
-Type: `*options.RGBA`<br/>
-Default: white
+Name: BackgroundColour<br/> Type: `*options.RGBA`<br/> Default: white
 
 ### AlwaysOnTop
 
 Indicates that the window should stay above other windows when losing focus.
 
-Name: AlwaysOnTop<br/>
-Type: `bool`
+Name: AlwaysOnTop<br/> Type: `bool`
 
 ### Assets
 
@@ -243,17 +228,20 @@ Deprecated: Please use Assets on [AssetServer specific options](#assetserver).
 
 ### AssetsHandler
 
-Deprecated: Please use AssetsHandler on [AssetServer specific options](#assetserver).
+Deprecated: Please use AssetsHandler on
+[AssetServer specific options](#assetserver).
 
 ### AssetServer
 
-This defines AssetServer specific options. It allows to customize the AssetServer with static assets, serving assets
-dynamically with an `http.Handler` or hook into the request chain with an `assetserver.Middleware`.
+This defines AssetServer specific options. It allows to customize the
+AssetServer with static assets, serving assets dynamically with an
+`http.Handler` or hook into the request chain with an `assetserver.Middleware`.
 
-Not all features of an `http.Request` are currently supported, please see the following feature matrix:
+Not all features of an `http.Request` are currently supported, please see the
+following feature matrix:
 
-| Feature                 | Win | Mac | Lin    |
-| ----------------------- | --- | --- | ------ |
+| Feature                 | Win | Mac | Lin     |
+| ----------------------- | --- | --- | ------- |
 | GET                     | ✅  | ✅  | ✅      |
 | POST                    | ✅  | ✅  | ✅ [^1] |
 | PUT                     | ✅  | ✅  | ✅ [^1] |
@@ -269,56 +257,65 @@ Not all features of an `http.Request` are currently supported, please see the fo
 | WebSockets              | ❌  | ❌  | ❌      |
 | HTTP Redirects 30x      | ✅  | ❌  | ❌      |
 
-[^1]: This requires WebKit2GTK 2.36+ support and your app needs to be build with the build tag `webkit2_36` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.36 for your app.
-[^2]: This requires WebKit2GTK 2.40+ support and your app needs to be build with the build tag `webkit2_40` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.40 for your app.
+[^1]:
+    This requires WebKit2GTK 2.36+ support and your app needs to be build with
+    the build tag `webkit2_36` to activate support for this feature. This also
+    bumps the minimum requirement of WebKit2GTK to 2.36 for your app.
 
-Name: AssetServer<br/>
-Type: `*assetserver.Options`
+[^2]:
+    This requires WebKit2GTK 2.40+ support and your app needs to be build with
+    the build tag `webkit2_40` to activate support for this feature. This also
+    bumps the minimum requirement of WebKit2GTK to 2.40 for your app.
+
+Name: AssetServer<br/> Type: `*assetserver.Options`
 
 #### Assets
 
 The static frontend assets to be used by the application.
 
-A GET request is first tried to be served from this `fs.FS`. If the `fs.FS` returns `os.ErrNotExist` for that file,
-the request handling will fallback to the [Handler](#handler) and tries to serve the GET request from it.
+A GET request is first tried to be served from this `fs.FS`. If the `fs.FS`
+returns `os.ErrNotExist` for that file, the request handling will fallback to
+the [Handler](#handler) and tries to serve the GET request from it.
 
 If set to nil, all GET requests will be forwarded to [Handler](#handler).
 
-Name: Assets<br/>
-Type: `fs.FS`
+Name: Assets<br/> Type: `fs.FS`
 
 #### Handler
 
-The assets handler is a generic `http.Handler` for fallback handling of assets that can't be found.
+The assets handler is a generic `http.Handler` for fallback handling of assets
+that can't be found.
 
-The handler will be called for every GET request that can't be served from [Assets](#assets), due to `os.ErrNotExist`.
-Furthermore all non GET requests will always be served from this Handler.
-If not defined, the result is the following in cases where the Handler would have been called:
+The handler will be called for every GET request that can't be served from
+[Assets](#assets), due to `os.ErrNotExist`. Furthermore all non GET requests
+will always be served from this Handler. If not defined, the result is the
+following in cases where the Handler would have been called:
 
 - GET request: `http.StatusNotFound`
 - Other request: `http.StatusMethodNotAllowed`
 
-NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html
-on every path, that does not contain a file extension.
+NOTE: When used in combination with a Frontend DevServer there might be
+limitations, eg. Vite serves the index.html on every path, that does not contain
+a file extension.
 
-Name: AssetsHandler<br/>
-Type: `http.Handler`
+Name: AssetsHandler<br/> Type: `http.Handler`
 
 #### Middleware
 
-Middleware is a HTTP Middleware which allows to hook into the AssetServer request chain. It allows to skip the default
-request handler dynamically, e.g. implement specialized Routing etc.
-The Middleware is called to build a new `http.Handler` used by the AssetSever and it also receives the default
-handler used by the AssetServer as an argument.
+Middleware is a HTTP Middleware which allows to hook into the AssetServer
+request chain. It allows to skip the default request handler dynamically, e.g.
+implement specialized Routing etc. The Middleware is called to build a new
+`http.Handler` used by the AssetSever and it also receives the default handler
+used by the AssetServer as an argument.
 
 If not defined, the default AssetServer request chain is executed.
 
-Name: Middleware<br/>
-Type: `assetserver.Middleware`
+Name: Middleware<br/> Type: `assetserver.Middleware`
 
 ### Menu
 
-The menu to be used by the application. More details about Menus in the [Menu Reference](../reference/runtime/menu.mdx).
+The menu to be used by the application. More details about Menus in the
+[Menu Reference](../reference/runtime/menu.mdx).
 
 :::note
 
@@ -326,62 +323,58 @@ On Mac, if no menu is specified, a default menu will be created.
 
 :::
 
-Name: Menu<br/>
-Type: `*menu.Menu`
+Name: Menu<br/> Type: `*menu.Menu`
 
 ### Logger
 
-The logger to be used by the application. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
+The logger to be used by the application. More details about logging in the
+[Log Reference](../reference/runtime/log.mdx).
 
-Name: Logger<br/>
-Type: `logger.Logger`<br/>
-Default: Logs to Stdout
+Name: Logger<br/> Type: `logger.Logger`<br/> Default: Logs to Stdout
 
 ### LogLevel
 
-The default log level. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
+The default log level. More details about logging in the
+[Log Reference](../reference/runtime/log.mdx).
 
-Name: LogLevel<br/>
-Type: `logger.LogLevel`<br/>
-Default: `Info` in dev mode, `Error` in production mode
+Name: LogLevel<br/> Type: `logger.LogLevel`<br/> Default: `Info` in dev mode,
+`Error` in production mode
 
 ### LogLevelProduction
 
-The default log level for production builds. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
+The default log level for production builds. More details about logging in the
+[Log Reference](../reference/runtime/log.mdx).
 
-Name: LogLevelProduction<br/>
-Type: `logger.LogLevel`<br/>
-Default: `Error`
+Name: LogLevelProduction<br/> Type: `logger.LogLevel`<br/> Default: `Error`
 
 ### OnStartup
 
-This callback is called after the frontend has been created, but before `index.html` has been loaded. It is given
-the application context.
+This callback is called after the frontend has been created, but before
+`index.html` has been loaded. It is given the application context.
 
-Name: OnStartup<br/>
-Type: `func(ctx context.Context)`
+Name: OnStartup<br/> Type: `func(ctx context.Context)`
 
 ### OnDomReady
 
-This callback is called after the frontend has loaded `index.html` and its resources. It is given
-the application context.
+This callback is called after the frontend has loaded `index.html` and its
+resources. It is given the application context.
 
-Name: OnDomReady<br/>
-Type: `func(ctx context.Context)`
+Name: OnDomReady<br/> Type: `func(ctx context.Context)`
 
 ### OnShutdown
 
-This callback is called after the frontend has been destroyed, just before the application terminates. It is given
-the application context.
+This callback is called after the frontend has been destroyed, just before the
+application terminates. It is given the application context.
 
-Name: OnShutdown<br/>
-Type: `func(ctx context.Context)`
+Name: OnShutdown<br/> Type: `func(ctx context.Context)`
 
 ### OnBeforeClose
 
-If this callback is set, it will be called when the application is about to quit, either by clicking the window close
-button or calling `runtime.Quit`. Returning true will cause the application to continue, false will continue shutdown
-as normal. This is good for confirming with the user that they wish to exit the program.
+If this callback is set, it will be called when the application is about to
+quit, either by clicking the window close button or calling `runtime.Quit`.
+Returning true will cause the application to continue, false will continue
+shutdown as normal. This is good for confirming with the user that they wish to
+exit the program.
 
 Example:
 
@@ -400,82 +393,82 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 }
 ```
 
-Name: OnBeforeClose<br/>
-Type: `func(ctx context.Context) bool`
+Name: OnBeforeClose<br/> Type: `func(ctx context.Context) bool`
 
 ### CSSDragProperty
 
-Indicates the CSS property to use to identify which elements can be used to drag the window. Default: `--wails-draggable`.
+Indicates the CSS property to use to identify which elements can be used to drag
+the window. Default: `--wails-draggable`.
 
-Name: CSSDragProperty<br/>
-Type: `string`
+Name: CSSDragProperty<br/> Type: `string`
 
 ### CSSDragValue
 
-Indicates what value the `CSSDragProperty` style should have to drag the window. Default: `drag`.
+Indicates what value the `CSSDragProperty` style should have to drag the window.
+Default: `drag`.
 
-Name: CSSDragValue<br/>
-Type: `string`
+Name: CSSDragValue<br/> Type: `string`
 
 ### EnableFraudulentWebsiteDetection
 
-EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts.
-These services might send information from your app like URLs navigated to and possibly other content to cloud
-services of Apple and Microsoft.
+EnableFraudulentWebsiteDetection enables scan services for fraudulent content,
+such as malware or phishing attempts. These services might send information from
+your app like URLs navigated to and possibly other content to cloud services of
+Apple and Microsoft.
 
-Name: EnableFraudulentWebsiteDetection<br/>
-Type: `bool`
+Name: EnableFraudulentWebsiteDetection<br/> Type: `bool`
 
 ### ZoomFactor
 
-Name: ZoomFactor<br/>
-Type: `float64`
+Name: ZoomFactor<br/> Type: `float64`
 
-This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+This defines the zoom factor for the WebView2. This is the option matching the
+Edge user activated zoom in or out.
 
 ### IsZoomControlEnabled
 
-Name: IsZoomControlEnabled<br/>
-Type: `bool`
+Name: IsZoomControlEnabled<br/> Type: `bool`
 
-This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while
-disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
+This enables the zoom factor to be changed by the user. Please note that the
+zoom factor can be set in the options while disallowing the user to change it at
+runtime (f.e. for a kiosk application or similar).
 
 ### Bind
 
-A slice of struct instances defining methods that need to be bound to the frontend.
+A slice of struct instances defining methods that need to be bound to the
+frontend.
 
-Name: Bind<br/>
-Type: `[]interface{}`
+Name: Bind<br/> Type: `[]interface{}`
 
 ### Windows
 
 This defines [Windows specific options](#windows).
 
-Name: Windows<br/>
-Type: `*windows.Options`
+Name: Windows<br/> Type: `*windows.Options`
 
 #### WebviewIsTransparent
 
-Setting this to `true` will make the webview background transparent when an alpha value of `0` is used.
-This means that if you use `rgba(0,0,0,0)` for `background-color` in your CSS, the host window will show through.
-Often combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking applications.
+Setting this to `true` will make the webview background transparent when an
+alpha value of `0` is used. This means that if you use `rgba(0,0,0,0)` for
+`background-color` in your CSS, the host window will show through. Often
+combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking
+applications.
 
-Name: WebviewIsTransparent<br/>
-Type: `bool`
+Name: WebviewIsTransparent<br/> Type: `bool`
 
 #### WindowIsTranslucent
 
-Setting this to `true` will make the window background translucent. Often combined
-with [WebviewIsTransparent](#WebviewIsTransparent).
+Setting this to `true` will make the window background translucent. Often
+combined with [WebviewIsTransparent](#WebviewIsTransparent).
 
-For Windows 11 versions before build 22621, this will use the [BlurBehind](https://learn.microsoft.com/en-us/windows/win32/dwm/blur-ovw)
-method for translucency, which can be slow. For Windows 11 versions after build 22621, this will enable the
-newer translucency types that are much faster. By default, the type of translucency used will be determined
-by Windows. To configure this, use the [BackdropType](#BackdropType) option.
+For Windows 11 versions before build 22621, this will use the
+[BlurBehind](https://learn.microsoft.com/en-us/windows/win32/dwm/blur-ovw)
+method for translucency, which can be slow. For Windows 11 versions after build
+22621, this will enable the newer translucency types that are much faster. By
+default, the type of translucency used will be determined by Windows. To
+configure this, use the [BackdropType](#BackdropType) option.
 
-Name: WindowIsTranslucent<br/>
-Type: `bool`
+Name: WindowIsTranslucent<br/> Type: `bool`
 
 #### BackdropType
 
@@ -485,10 +478,10 @@ Requires Windows 11 build 22621 or later.
 
 :::
 
-Sets the translucency type of the window. This is only applicable if [WindowIsTranslucent](#WindowIsTranslucent) is set to `true`.
+Sets the translucency type of the window. This is only applicable if
+[WindowIsTranslucent](#WindowIsTranslucent) is set to `true`.
 
-Name: BackdropType<br/>
-Type `windows.BackdropType`
+Name: BackdropType<br/> Type `windows.BackdropType`
 
 The value can be one of the following:
 
@@ -502,30 +495,31 @@ The value can be one of the following:
 
 #### DisableWindowIcon
 
-Setting this to `true` will remove the icon in the top left corner of the title bar.
+Setting this to `true` will remove the icon in the top left corner of the title
+bar.
 
-Name: DisableWindowIcon<br/>
-Type: `bool`
+Name: DisableWindowIcon<br/> Type: `bool`
 
 #### DisableFramelessWindowDecorations
 
-Setting this to `true` will remove the window decorations in [Frameless](#Frameless) mode. This means there will be no
-'Aero Shadow' and no 'Rounded Corners' shown for the window. Please note that 'Rounded Corners' are only supported on
-Windows 11.
+Setting this to `true` will remove the window decorations in
+[Frameless](#Frameless) mode. This means there will be no 'Aero Shadow' and no
+'Rounded Corners' shown for the window. Please note that 'Rounded Corners' are
+only supported on Windows 11.
 
-Name: DisableFramelessWindowDecorations<br/>
-Type: `bool`
+Name: DisableFramelessWindowDecorations<br/> Type: `bool`
 
 #### WebviewUserDataPath
 
-This defines the path where the WebView2 stores the user data. If empty `%APPDATA%\[BinaryName.exe]` will be used.
+This defines the path where the WebView2 stores the user data. If empty
+`%APPDATA%\[BinaryName.exe]` will be used.
 
-Name: WebviewUserDataPath<br/>
-Type: `string`
+Name: WebviewUserDataPath<br/> Type: `string`
 
 #### WebviewBrowserPath
 
-This defines the path to a directory with WebView2 executable files and libraries. If empty, webview2 installed in the system will be used.
+This defines the path to a directory with WebView2 executable files and
+libraries. If empty, webview2 installed in the system will be used.
 
 Important information about distribution of fixed version runtime:
 
@@ -533,8 +527,7 @@ Important information about distribution of fixed version runtime:
 - [Known issues for fixed version](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#known-issues-for-fixed-version)
 - [The path of fixed version of the WebView2 Runtime should not contain \Edge\Application\.](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
 
-Name: WebviewBrowserPath<br/>
-Type: `string`
+Name: WebviewBrowserPath<br/> Type: `string`
 
 #### Theme
 
@@ -548,8 +541,7 @@ This defines the theme that the application should use:
 | Dark          | The application will use a dark theme exclusively                                                                                             |
 | Light         | The application will use a light theme exclusively                                                                                            |
 
-Name: Theme<br/>
-Type: `windows.Theme`
+Name: Theme<br/> Type: `windows.Theme`
 
 #### CustomTheme
 
@@ -559,16 +551,16 @@ Minimum Windows Version: Windows 10/11 2009/21H2 Build 22000
 
 :::
 
-Allows you to specify custom colours for TitleBar, TitleText and Border for both light and dark mode, as well as
-when the window is active or inactive.
+Allows you to specify custom colours for TitleBar, TitleText and Border for both
+light and dark mode, as well as when the window is active or inactive.
 
-Name: CustomTheme<br/>
-Type: `windows.CustomTheme`
+Name: CustomTheme<br/> Type: `windows.CustomTheme`
 
 ##### CustomTheme type
 
-The CustomTheme struct uses `int32` to specify the colour values. These are in the standard(!) Windows format of:
-`0x00BBGGAA`. A helper function is provided to do RGB conversions into this format: `windows.RGB(r,g,b uint8)`.
+The CustomTheme struct uses `int32` to specify the colour values. These are in
+the standard(!) Windows format of: `0x00BBGGAA`. A helper function is provided
+to do RGB conversions into this format: `windows.RGB(r,g,b uint8)`.
 
 NOTE: Any value not provided will default to black.
 
@@ -612,55 +604,53 @@ Example:
 
 #### Messages
 
-A struct of strings used by the webview2 installer if a valid webview2 runtime is not found.
+A struct of strings used by the webview2 installer if a valid webview2 runtime
+is not found.
 
-Name: Messages<br/>
-Type: `*windows.Messages`
+Name: Messages<br/> Type: `*windows.Messages`
 
 Customise this for any language you choose to support.
 
 #### ResizeDebounceMS
 
-ResizeDebounceMS is the amount of time to debounce redraws of webview2 when resizing the window.
-The default value (0) will perform redraws as fast as it can.
+ResizeDebounceMS is the amount of time to debounce redraws of webview2 when
+resizing the window. The default value (0) will perform redraws as fast as it
+can.
 
-Name: ResizeDebounceMS<br/>
-Type: `uint16`
+Name: ResizeDebounceMS<br/> Type: `uint16`
 
 #### OnSuspend
 
-If set, this function will be called when Windows initiates a switch to low power mode (suspend/hibernate)
+If set, this function will be called when Windows initiates a switch to low
+power mode (suspend/hibernate)
 
-Name: OnSuspend<br/>
-Type: `func()`
+Name: OnSuspend<br/> Type: `func()`
 
 #### OnResume
 
-If set, this function will be called when Windows resumes from low power mode (suspend/hibernate)
+If set, this function will be called when Windows resumes from low power mode
+(suspend/hibernate)
 
-Name: OnResume<br/>
-Type: `func()`
+Name: OnResume<br/> Type: `func()`
 
 #### WebviewGpuIsDisabled
 
 Setting this to `true` will disable GPU hardware acceleration for the webview.
 
-Name: WebviewGpuIsDisabled<br/>
-Type: `bool`
+Name: WebviewGpuIsDisabled<br/> Type: `bool`
 
 ### Mac
 
 This defines [Mac specific options](#mac).
 
-Name: Mac<br/>
-Type: `*mac.Options`
+Name: Mac<br/> Type: `*mac.Options`
 
 #### TitleBar
 
-The TitleBar struct provides the ability to configure the look and feel of the title bar.
+The TitleBar struct provides the ability to configure the look and feel of the
+title bar.
 
-Name: TitleBar<br/>
-Type: [`*mac.TitleBar`](#titlebar-struct)
+Name: TitleBar<br/> Type: [`*mac.TitleBar`](#titlebar-struct)
 
 ##### Titlebar struct
 
@@ -702,18 +692,21 @@ Mac: &mac.Options{
 }
 ```
 
-Click [here](https://github.com/lukakerr/NSWindowStyles) for some inspiration on customising the titlebar.
+Click [here](https://github.com/lukakerr/NSWindowStyles) for some inspiration on
+customising the titlebar.
 
 #### Appearance
 
-Appearance is used to set the style of your app in accordance with Apple's [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) names.
+Appearance is used to set the style of your app in accordance with Apple's
+[NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc)
+names.
 
-Name: Appearance<br/>
-Type: [`mac.AppearanceType`](#appearance-type)
+Name: Appearance<br/> Type: [`mac.AppearanceType`](#appearance-type)
 
 ##### Appearance type
 
-You can specify the application's [appearance](https://developer.apple.com/documentation/appkit/nsappearance?language=objc).
+You can specify the application's
+[appearance](https://developer.apple.com/documentation/appkit/nsappearance?language=objc).
 
 | Value                                                 | Description                                                     |
 | ----------------------------------------------------- | --------------------------------------------------------------- |
@@ -736,27 +729,28 @@ Mac: &mac.Options{
 
 #### WebviewIsTransparent
 
-Setting this to `true` will make the webview background transparent when an alpha value of `0` is used.
-This means that if you use `rgba(0,0,0,0)` for `background-color` in your CSS, the host window will show through.
-Often combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking applications.
+Setting this to `true` will make the webview background transparent when an
+alpha value of `0` is used. This means that if you use `rgba(0,0,0,0)` for
+`background-color` in your CSS, the host window will show through. Often
+combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking
+applications.
 
-Name: WebviewIsTransparent<br/>
-Type: `bool`
+Name: WebviewIsTransparent<br/> Type: `bool`
 
 #### WindowIsTranslucent
 
-Setting this to `true` will make the window background translucent. Often combined
-with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applications.
+Setting this to `true` will make the window background translucent. Often
+combined with [WebviewIsTransparent](#WebviewIsTransparent) to make
+frosty-looking applications.
 
-Name: WindowIsTranslucent<br/>
-Type: `bool`
+Name: WindowIsTranslucent<br/> Type: `bool`
 
 #### About
 
-This configuration lets you set the title, message and icon for the "About" menu item in the app menu created by the "AppMenu" role.
+This configuration lets you set the title, message and icon for the "About" menu
+item in the app menu created by the "AppMenu" role.
 
-Name: About<br/>
-Type: [`*mac.AboutInfo`](#about-struct)
+Name: About<br/> Type: [`*mac.AboutInfo`](#about-struct)
 
 ##### About struct
 
@@ -769,8 +763,8 @@ type AboutInfo struct {
 }
 ```
 
-If these settings are provided, an "About" menu item will appear in the app menu (when using the `AppMenu` role).
-Given this configuration:
+If these settings are provided, an "About" menu item will appear in the app menu
+(when using the `AppMenu` role). Given this configuration:
 
 ```go
 //go:embed build/appicon.png
@@ -818,58 +812,57 @@ When clicked, that will open an about message box:
 
 This defines [Linux specific options](#linux).
 
-Name: Linux<br/>
-Type: `*linux.Options`
+Name: Linux<br/> Type: `*linux.Options`
 
 #### Icon
 
-Sets up the icon representing the window. This icon is used when the window is minimized (also known as iconified).
+Sets up the icon representing the window. This icon is used when the window is
+minimized (also known as iconified).
 
-Name: Icon<br/>
-Type: `[]byte`
+Name: Icon<br/> Type: `[]byte`
 
-Some window managers or desktop environments may also place it in the window frame, or display it in other contexts.
-On others, the icon is not used at all, so your mileage may vary.
+Some window managers or desktop environments may also place it in the window
+frame, or display it in other contexts. On others, the icon is not used at all,
+so your mileage may vary.
 
-NOTE: Gnome on Wayland at least does not display this icon. To have a application icon there, a `.desktop` file has to be used.
-On KDE it should work.
+NOTE: Gnome on Wayland at least does not display this icon. To have a
+application icon there, a `.desktop` file has to be used. On KDE it should work.
 
-The icon should be provided in whatever size it was naturally drawn; that is, don’t scale the image before passing it.
-Scaling is postponed until the last minute, when the desired final size is known, to allow best quality.
+The icon should be provided in whatever size it was naturally drawn; that is,
+don’t scale the image before passing it. Scaling is postponed until the last
+minute, when the desired final size is known, to allow best quality.
 
 #### WindowIsTranslucent
 
-Setting this to `true` will make the window background translucent. Some window managers may ignore it, or result in a black window.
+Setting this to `true` will make the window background translucent. Some window
+managers may ignore it, or result in a black window.
 
-Name: WindowIsTranslucent<br/>
-Type: `bool`
+Name: WindowIsTranslucent<br/> Type: `bool`
 
 #### WebviewGpuPolicy
 
 This option is used for determining the webview's hardware acceleration policy.
 
-Name: WebviewGpuPolicy<br/>
-Type: [`options.WebviewGpuPolicy`](#webviewgpupolicy-type)<br/>
-Default: `WebviewGpuPolicyAlways`
+Name: WebviewGpuPolicy<br/> Type:
+[`options.WebviewGpuPolicy`](#webviewgpupolicy-type)<br/> Default:
+`WebviewGpuPolicyAlways`
 
 ##### WebviewGpuPolicy type
 
-| Value                    | Description |
-| -------------------------| ----------- |
-| WebviewGpuPolicyAlways   | Hardware acceleration is always enabled|
-| WebviewGpuPolicyOnDemand | Hardware acceleration is enabled/disabled as request by web contents|
-| WebviewGpuPolicyNever    | Hardware acceleration is always disabled |
+| Value                    | Description                                                          |
+| ------------------------ | -------------------------------------------------------------------- |
+| WebviewGpuPolicyAlways   | Hardware acceleration is always enabled                              |
+| WebviewGpuPolicyOnDemand | Hardware acceleration is enabled/disabled as request by web contents |
+| WebviewGpuPolicyNever    | Hardware acceleration is always disabled                             |
 
 ### Debug
 
 This defines [Debug specific options](#Debug) that apply to debug builds.
 
-Name: Debug<br/>
-Type: `options.Debug`
+Name: Debug<br/> Type: `options.Debug`
 
 #### OpenInspectorOnStartup
 
 Setting this to `true` will open the WebInspector on startup of the application.
 
-Name: OpenInspectorOnStartup<br/>
-Type: `bool`
+Name: OpenInspectorOnStartup<br/> Type: `bool`

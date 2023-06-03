@@ -10,13 +10,15 @@
 </p>
 ```
 
-Wails supports generating Windows installers using the [NSIS installer](https://nsis.sourceforge.io/).
+Wails supports generating Windows installers using the
+[NSIS installer](https://nsis.sourceforge.io/).
 
 ## Installing NSIS
 
 ### Windows
 
-The installer is available on the [NSIS Download](https://nsis.sourceforge.io/Download) page.
+The installer is available on the
+[NSIS Download](https://nsis.sourceforge.io/Download) page.
 
 If you use the chocolatey package manager, run the following script:
 
@@ -24,12 +26,15 @@ If you use the chocolatey package manager, run the following script:
 choco install nsis
 ```
 
-If you install NSIS manually, you need to add the _Bin_ folder, which contains `makensis.exe`, in your NSIS installation to your path.
-[Here](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) is a good tutorial on how to add to path on Windows.
+If you install NSIS manually, you need to add the _Bin_ folder, which contains
+`makensis.exe`, in your NSIS installation to your path.
+[Here](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/)
+is a good tutorial on how to add to path on Windows.
 
 ### Linux
 
-The `nsis` package should be available through your distribution's package manager.
+The `nsis` package should be available through your distribution's package
+manager.
 
 ### MacOS
 
@@ -37,8 +42,9 @@ NSIS is available to install through homebrew: `brew install nsis`.
 
 ## Generating the installer
 
-When a new project is created, Wails generates the NSIS configuration files in `build/windows/installer`. The config
-data is read from `installer/info.json` and that is configured to use the project's `wails.json` Info section:
+When a new project is created, Wails generates the NSIS configuration files in
+`build/windows/installer`. The config data is read from `installer/info.json`
+and that is configured to use the project's `wails.json` Info section:
 
 ```json
 // ...
@@ -51,7 +57,8 @@ data is read from `installer/info.json` and that is configured to use the projec
   },
 ```
 
-To generate an installer for your application, use the `-nsis` flag with `wails build`:
+To generate an installer for your application, use the `-nsis` flag with
+`wails build`:
 
 ```
 wails build -nsis

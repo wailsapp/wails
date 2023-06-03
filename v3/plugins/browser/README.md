@@ -1,6 +1,7 @@
 # Browser Plugin
 
-This plugin provides the ability to open a URL or local file in the default browser.
+This plugin provides the ability to open a URL or local file in the default
+browser.
 
 ## Installation
 
@@ -41,11 +42,12 @@ You can call the methods exported by the plugin directly:
 You can call the methods from the frontend using the Plugin method:
 
 ```js
-    wails.Plugin("browser","OpenURL","https://www.google.com")
-    // or
-    wails.Plugin("browser","OpenFile","/path/to/file")
+wails.Plugin("browser", "OpenURL", "https://www.google.com");
+// or
+wails.Plugin("browser", "OpenFile", "/path/to/file");
 ```
 
 ## Support
 
-If you find a bug in this plugin, please raise a ticket on the Wails [Issue Tracker](https://github.com/wailsapp/wails/issues). 
+If you find a bug in this plugin, please raise a ticket on the Wails
+[Issue Tracker](https://github.com/wailsapp/wails/issues).

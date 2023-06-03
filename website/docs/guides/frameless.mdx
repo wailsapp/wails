@@ -1,11 +1,14 @@
 # Frameless Applications
 
-Wails supports application that have no frames. This can be achieved by using the [frameless](../reference/options.mdx#frameless)
-field in [Application Options](../reference/options.mdx#application-options).
+Wails supports application that have no frames. This can be achieved by using
+the [frameless](../reference/options.mdx#frameless) field in
+[Application Options](../reference/options.mdx#application-options).
 
-Wails offers a simple solution for dragging the window: Any HTML element that has the CSS style `--wails-draggable:drag` will
-act as a "drag handle". This property applies to all child elements. If you need to indicate that a nested element
-should not drag, then use the attribute '--wails-draggable:no-drag' on that element.
+Wails offers a simple solution for dragging the window: Any HTML element that
+has the CSS style `--wails-draggable:drag` will act as a "drag handle". This
+property applies to all child elements. If you need to indicate that a nested
+element should not drag, then use the attribute '--wails-draggable:no-drag' on
+that element.
 
 ```html
 <html>
@@ -26,8 +29,9 @@ should not drag, then use the attribute '--wails-draggable:no-drag' on that elem
 </html>
 ```
 
-For some projects, using a CSS variable may not be possible due to dynamic styling. In this case, you can use the
-`CSSDragProperty` and `CSSDragValue` application options to define a property and value that will be used to indicate
+For some projects, using a CSS variable may not be possible due to dynamic
+styling. In this case, you can use the `CSSDragProperty` and `CSSDragValue`
+application options to define a property and value that will be used to indicate
 draggable regions:
 
 ```go title=main.go
@@ -87,6 +91,7 @@ func main() {
 
 :::info Fullscreen
 
-If you allow your application to go fullscreen, this drag functionality will be disabled.
+If you allow your application to go fullscreen, this drag functionality will be
+disabled.
 
 :::

@@ -4,7 +4,8 @@ sidebar_position: 2
 
 # CLI
 
-The Wails CLI has a number of commands that are used for managing your projects. All commands are run in the following way:
+The Wails CLI has a number of commands that are used for managing your projects.
+All commands are run in the following way:
 
 `wails <command> <flags>`
 
@@ -23,28 +24,32 @@ The Wails CLI has a number of commands that are used for managing your projects.
 | -ide               | Generate IDE project files                                                                                              |                     |
 | -f                 | Force build application                                                                                                 |        false        |
 
-Example:
-`wails init -n test -d mytestproject -g -ide vscode -q`
+Example: `wails init -n test -d mytestproject -g -ide vscode -q`
 
-This will generate a a project called "test" in the "mytestproject" directory, initialise git,
-generate vscode project files and do so silently.
+This will generate a a project called "test" in the "mytestproject" directory,
+initialise git, generate vscode project files and do so silently.
 
-More information on using IDEs with Wails can be found [here](../guides/ides.mdx).
+More information on using IDEs with Wails can be found
+[here](../guides/ides.mdx).
 
 ### Remote Templates
 
-Remote templates (hosted on GitHub) are supported and can be installed by using the template's project URL.
+Remote templates (hosted on GitHub) are supported and can be installed by using
+the template's project URL.
 
 Example:
 `wails init -n test -t https://github.com/leaanthony/testtemplate[@v1.0.0]`
 
-A list of community maintained templates can be found [here](../community/templates.mdx)
+A list of community maintained templates can be found
+[here](../community/templates.mdx)
 
 :::warning Attention
 
-**The Wails project does not maintain, is not responsible nor liable for 3rd party templates!**
+**The Wails project does not maintain, is not responsible nor liable for 3rd
+party templates!**
 
-If you are unsure about a template, inspect `package.json` and `wails.json` for what scripts are run and what packages are installed.
+If you are unsure about a template, inspect `package.json` and `wails.json` for
+what scripts are run and what packages are installed.
 
 :::
 
@@ -53,7 +58,7 @@ If you are unsure about a template, inspect `package.json` and `wails.json` for 
 `wails build` is used for compiling your project to a production-ready binary.
 
 | Flag                 | Description                                                                                                                                                                 | Default                                                                                                                                       |
-|:---------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------|
+| :------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- |
 | -clean               | Cleans the `build/bin` directory                                                                                                                                            |                                                                                                                                               |
 | -compiler "compiler" | Use a different go compiler to build, eg go1.15beta1                                                                                                                        | go                                                                                                                                            |
 | -debug               | Retains debug information in the application. Allows the use of the devtools in the application window                                                                      |                                                                                                                                               |
@@ -81,10 +86,11 @@ If you are unsure about a template, inspect `package.json` and `wails.json` for 
 | -webview2            | WebView2 installer strategy: download,embed,browser,error                                                                                                                   | download                                                                                                                                      |
 | -windowsconsole      | Keep the console window for Windows builds                                                                                                                                  |                                                                                                                                               |
 
-For a detailed description of the `webview2` flag, please refer to the [Windows](../guides/windows.mdx) Guide.
+For a detailed description of the `webview2` flag, please refer to the
+[Windows](../guides/windows.mdx) Guide.
 
-If you prefer to build using standard Go tooling, please consult the [Manual Builds](../guides/manual-builds.mdx)
-guide.
+If you prefer to build using standard Go tooling, please consult the
+[Manual Builds](../guides/manual-builds.mdx) guide.
 
 Example:
 
@@ -98,13 +104,15 @@ On Mac, the application will be bundled with `Info.plist`, not `Info.dev.plist`.
 
 :::info UPX on Apple Silicon
 
-There are [issues](https://github.com/upx/upx/issues/446) with using UPX with Apple Silicon.
+There are [issues](https://github.com/upx/upx/issues/446) with using UPX with
+Apple Silicon.
 
 :::
 
 :::info UPX on Windows
 
-Some Antivirus vendors false positively mark `upx` compressed binaries as virus, see [issue](https://github.com/upx/upx/issues/437).
+Some Antivirus vendors false positively mark `upx` compressed binaries as virus,
+see [issue](https://github.com/upx/upx/issues/437).
 
 :::
 
@@ -127,7 +135,8 @@ Supported platforms are:
 
 ## doctor
 
-`wails doctor` will run diagnostics to ensure that your system is ready for development.
+`wails doctor` will run diagnostics to ensure that your system is ready for
+development.
 
 Example:
 
@@ -161,21 +170,32 @@ Your system is ready for Wails development!
 
 ## dev
 
-`wails dev` is used to run your application in a "live development" mode. This means:
+`wails dev` is used to run your application in a "live development" mode. This
+means:
 
-- The application's `go.mod` will be updated to use the same version of Wails as the CLI
+- The application's `go.mod` will be updated to use the same version of Wails as
+  the CLI
 - The application is compiled and run automatically
-- A watcher is started and will trigger a rebuild of your dev app if it detects changes to your go files
-- A webserver is started on `http://localhost:34115` which serves your application (not just frontend) over http. This allows you to use your favourite browser development extensions
-- All application assets are loaded from disk. If they are changed, the application will automatically reload (not rebuild). All connected browsers will also reload
+- A watcher is started and will trigger a rebuild of your dev app if it detects
+  changes to your go files
+- A webserver is started on `http://localhost:34115` which serves your
+  application (not just frontend) over http. This allows you to use your
+  favourite browser development extensions
+- All application assets are loaded from disk. If they are changed, the
+  application will automatically reload (not rebuild). All connected browsers
+  will also reload
 - A JS module is generated that provides the following:
-  - JavaScript wrappers of your Go methods with autogenerated JSDoc, providing code hinting
-  - TypeScript versions of your Go structs, that can be constructed and passed to your go methods
-- A second JS module is generated that provides a wrapper + TS declaration for the runtime
-- On macOS, it will bundle the application into a `.app` file and run it. It will use a `build/darwin/Info.dev.plist` for development.
+  - JavaScript wrappers of your Go methods with autogenerated JSDoc, providing
+    code hinting
+  - TypeScript versions of your Go structs, that can be constructed and passed
+    to your go methods
+- A second JS module is generated that provides a wrapper + TS declaration for
+  the runtime
+- On macOS, it will bundle the application into a `.app` file and run it. It
+  will use a `build/darwin/Info.dev.plist` for development.
 
 | Flag                         | Description                                                                                                                                                                         | Default               |
-|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------|
+| :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------- |
 | -appargs "args"              | Arguments passed to the application in shell style                                                                                                                                  |                       |
 | -assetdir "./path/to/assets" | Serve assets from the given directory instead of using the provided asset FS                                                                                                        | Value in `wails.json` |
 | -browser                     | Opens a browser to `http://localhost:34115` on startup                                                                                                                              |                       |
@@ -205,37 +225,42 @@ Example:
 
 This command will do the following:
 
-- Build the application and run it (more details [here](../guides/manual-builds.mdx)
+- Build the application and run it (more details
+  [here](../guides/manual-builds.mdx)
 - Generate the Wails JS modules in `./frontend/src`
 - Watch for updates to files in `./frontend/dist` and reload on any change
 - Open a browser and connect to the application
 
-There is more information on using this feature with existing framework scripts [here](../guides/application-development.mdx#live-reloading).
+There is more information on using this feature with existing framework scripts
+[here](../guides/application-development.mdx#live-reloading).
 
 ## generate
 
 ### template
 
-Wails uses templates for project generation. The `wails generate template` command helps scaffold a template so that
-it may be used for generating projects.
+Wails uses templates for project generation. The `wails generate template`
+command helps scaffold a template so that it may be used for generating
+projects.
 
 | Flag             | Description                                 |
-|:-----------------|:--------------------------------------------|
+| :--------------- | :------------------------------------------ |
 | -name            | The template name (Mandatory)               |
 | -frontend "path" | Path to frontend project to use in template |
 
-For more details on creating templates, consult the [Templates guide](../guides/templates.mdx).
+For more details on creating templates, consult the
+[Templates guide](../guides/templates.mdx).
 
 ### module
 
-The `wails generate module` command allows you to manually generate the `wailsjs` directory for your application.
+The `wails generate module` command allows you to manually generate the
+`wailsjs` directory for your application.
 
 ## update
 
 `wails update` will update the version of the Wails CLI.
 
 | Flag               | Description                           |
-|:-------------------|:--------------------------------------|
+| :----------------- | :------------------------------------ |
 | -pre               | Update to latest pre-release version  |
 | -version "version" | Install a specific version of the CLI |
 

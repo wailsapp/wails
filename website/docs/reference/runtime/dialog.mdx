@@ -4,7 +4,8 @@ sidebar_position: 5
 
 # Dialog
 
-This part of the runtime provides access to native dialogs, such as File Selectors and Message boxes.
+This part of the runtime provides access to native dialogs, such as File
+Selectors and Message boxes.
 
 :::info JavaScript
 
@@ -14,41 +15,51 @@ Dialog is currently unsupported in the JS runtime.
 
 ### OpenDirectoryDialog
 
-Opens a dialog that prompts the user to select a directory. Can be customised using [OpenDialogOptions](#opendialogoptions).
+Opens a dialog that prompts the user to select a directory. Can be customised
+using [OpenDialogOptions](#opendialogoptions).
 
-Go: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
+Go:
+`OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
 Returns: Selected directory (blank if the user cancelled) or an error
 
 ### OpenFileDialog
 
-Opens a dialog that prompts the user to select a file. Can be customised using [OpenDialogOptions](#opendialogoptions).
+Opens a dialog that prompts the user to select a file. Can be customised using
+[OpenDialogOptions](#opendialogoptions).
 
-Go: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
+Go:
+`OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
 Returns: Selected file (blank if the user cancelled) or an error
 
 ### OpenMultipleFilesDialog
 
-Opens a dialog that prompts the user to select multiple files. Can be customised using [OpenDialogOptions](#opendialogoptions).
+Opens a dialog that prompts the user to select multiple files. Can be customised
+using [OpenDialogOptions](#opendialogoptions).
 
-Go: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error)`
+Go:
+`OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error)`
 
 Returns: Selected files (nil if the user cancelled) or an error
 
 ### SaveFileDialog
 
-Opens a dialog that prompts the user to select a filename for the purposes of saving. Can be customised using [SaveDialogOptions](#savedialogoptions).
+Opens a dialog that prompts the user to select a filename for the purposes of
+saving. Can be customised using [SaveDialogOptions](#savedialogoptions).
 
-Go: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error)`
+Go:
+`SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error)`
 
 Returns: The selected file (blank if the user cancelled) or an error
 
 ### MessageDialog
 
-Displays a message using a message dialog. Can be customised using [MessageDialogOptions](#messagedialogoptions).
+Displays a message using a message dialog. Can be customised using
+[MessageDialogOptions](#messagedialogoptions).
 
-Go: `MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error)`
+Go:
+`MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error)`
 
 Returns: The text of the selected button or an error
 
@@ -117,24 +128,26 @@ type MessageDialogOptions struct {
 }
 ```
 
-| Field         | Description                                                                | Win            | Mac | Lin |
-|---------------|----------------------------------------------------------------------------|----------------|-----|-----|
-| Type          | The type of message dialog, eg question, info...                           | ✅              | ✅   | ✅   |
-| Title         | Title for the dialog                                                       | ✅              | ✅   | ✅   |
-| Message       | The message to show the user                                               | ✅              | ✅   | ✅   |
-| Buttons       | A list of button titles                                                    |                | ✅   |     |
-| DefaultButton | The button with this text should be treated as default. Bound to `return`. | ✅[*](#windows) | ✅   |     |
-| CancelButton  | The button with this text should be treated as cancel. Bound to `escape`   |                | ✅   |     |
+| Field         | Description                                                                | Win              | Mac | Lin |
+| ------------- | -------------------------------------------------------------------------- | ---------------- | --- | --- |
+| Type          | The type of message dialog, eg question, info...                           | ✅               | ✅  | ✅  |
+| Title         | Title for the dialog                                                       | ✅               | ✅  | ✅  |
+| Message       | The message to show the user                                               | ✅               | ✅  | ✅  |
+| Buttons       | A list of button titles                                                    |                  | ✅  |     |
+| DefaultButton | The button with this text should be treated as default. Bound to `return`. | ✅[\*](#windows) | ✅  |     |
+| CancelButton  | The button with this text should be treated as cancel. Bound to `escape`   |                  | ✅  |     |
 
 #### Windows
 
-Windows has standard dialog types in which the buttons are not customisable.
-The value returned will be one of: "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "Try Again" or "Continue".
+Windows has standard dialog types in which the buttons are not customisable. The
+value returned will be one of: "Ok", "Cancel", "Abort", "Retry", "Ignore",
+"Yes", "No", "Try Again" or "Continue".
 
-For Question dialogs, the default button is "Yes" and the cancel button is "No". 
+For Question dialogs, the default button is "Yes" and the cancel button is "No".
 This can be changed by setting the `DefaultButton` value to `"No"`.
 
 Example:
+
 ```go
 	result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
 		Type:          runtime.QuestionDialog,
@@ -146,13 +159,14 @@ Example:
 
 #### Linux
 
-Linux has standard dialog types in which the buttons are not customisable.
-The value returned will be one of: "Ok", "Cancel", "Yes", "No"
+Linux has standard dialog types in which the buttons are not customisable. The
+value returned will be one of: "Ok", "Cancel", "Yes", "No"
 
 #### Mac
 
-A message dialog on Mac may specify up to 4 buttons. If no `DefaultButton` or `CancelButton` is given, the first button
-is considered default and is bound to the `return` key.
+A message dialog on Mac may specify up to 4 buttons. If no `DefaultButton` or
+`CancelButton` is given, the first button is considered default and is bound to
+the `return` key.
 
 For the following code:
 
@@ -169,7 +183,7 @@ the first button is shown as default:
 ```mdx-code-block
 <div class="text--center">
   <img
-    src={require("@site/static/img/runtime/dialog_no_defaults.png").default} 
+    src={require("@site/static/img/runtime/dialog_no_defaults.png").default}
     width="30%"
     class="screenshot"
   />
@@ -188,12 +202,13 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 })
 ```
 
-the second button is shown as default. When `return` is pressed, the value "two" is returned.
+the second button is shown as default. When `return` is pressed, the value "two"
+is returned.
 
 ```mdx-code-block
 <div class="text--center">
   <img
-    src={require("@site/static/img/runtime/dialog_default_button.png").default} 
+    src={require("@site/static/img/runtime/dialog_default_button.png").default}
     width="30%"
     class="screenshot"
   />
@@ -213,12 +228,13 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 })
 ```
 
-the button with "three" is shown at the bottom of the dialog. When `escape` is pressed, the value "three" is returned:
+the button with "three" is shown at the bottom of the dialog. When `escape` is
+pressed, the value "three" is returned:
 
 ```mdx-code-block
 <div class="text--center">
   <img
-    src={require("@site/static/img/runtime/dialog_default_cancel.png").default} 
+    src={require("@site/static/img/runtime/dialog_default_cancel.png").default}
     width="30%"
     class="screenshot"
   />
@@ -250,13 +266,13 @@ type FileFilter struct {
 
 #### Windows
 
-Windows allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the
-dialog:
+Windows allows you to use multiple file filters in dialog boxes. Each FileFilter
+will show up as a separate entry in the dialog:
 
 ```mdx-code-block
 <div class="text--center">
   <img
-    src={require("@site/static/img/runtime/dialog_win_filters.png").default} 
+    src={require("@site/static/img/runtime/dialog_win_filters.png").default}
     width="50%"
     class="screenshot"
   />
@@ -268,13 +284,13 @@ dialog:
 
 #### Linux
 
-Linux allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the
-dialog:
+Linux allows you to use multiple file filters in dialog boxes. Each FileFilter
+will show up as a separate entry in the dialog:
 
 ```mdx-code-block
 <div class="text--center">
   <img
-    src={require("@site/static/img/runtime/dialog_lin_filters.png").default} 
+    src={require("@site/static/img/runtime/dialog_lin_filters.png").default}
     width="50%"
     class="screenshot"
   />
@@ -286,8 +302,8 @@ dialog:
 
 #### Mac
 
-Mac dialogs only have the concept of a single set of patterns to filter files. If multiple FileFilters are provided,
-Wails will use all the Patterns defined.
+Mac dialogs only have the concept of a single set of patterns to filter files.
+If multiple FileFilters are provided, Wails will use all the Patterns defined.
 
 Example:
 
@@ -306,4 +322,5 @@ Example:
 	})
 ```
 
-This will result in the Open File dialog using `*.png,*.jpg,*.mov,*.mp4` as a filter.
+This will result in the Open File dialog using `*.png,*.jpg,*.mov,*.mp4` as a
+filter.

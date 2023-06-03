@@ -39,7 +39,7 @@ You can call the methods exported by the plugin directly:
         // handle error
     }
     url := kvstore.Get("url").(string)
-    
+
 	// If you have not enables AutoSave, you will need to call Save() to persist the changes
     err = kvstore.Save()
     if err != nil {
@@ -52,15 +52,14 @@ You can call the methods exported by the plugin directly:
 You can call the methods from the frontend using the Plugin method:
 
 ```js
-    wails.Plugin("kvstore","Set", "url", "https://www.google.com")
-    wails.Plugin("kvstore","Get", "url").then((url) => {
-        
-    })
-    
-    // or
-    wails.Plugin("browser","OpenFile","/path/to/file")
+wails.Plugin("kvstore", "Set", "url", "https://www.google.com");
+wails.Plugin("kvstore", "Get", "url").then((url) => {});
+
+// or
+wails.Plugin("browser", "OpenFile", "/path/to/file");
 ```
 
 ## Support
 
-If you find a bug in this plugin, please raise a ticket on the Wails [Issue Tracker](https://github.com/wailsapp/wails/issues). 
+If you find a bug in this plugin, please raise a ticket on the Wails
+[Issue Tracker](https://github.com/wailsapp/wails/issues).

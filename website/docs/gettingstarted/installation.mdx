@@ -22,14 +22,18 @@ Wails has a number of common dependencies that are required before installation:
 
 Download Go from the [Go Downloads Page](https://go.dev/dl/).
 
-Ensure that you follow the official [Go installation instructions](https://go.dev/doc/install). You will also need to ensure that your `PATH` environment variable also includes the path to your `~/go/bin` directory. Restart your terminal and do the following checks:
+Ensure that you follow the official
+[Go installation instructions](https://go.dev/doc/install). You will also need
+to ensure that your `PATH` environment variable also includes the path to your
+`~/go/bin` directory. Restart your terminal and do the following checks:
 
 - Check Go is installed correctly: `go version`
 - Check "~/go/bin" is in your PATH variable: `echo $PATH | grep go/bin`
 
 ### NPM
 
-Download NPM from the [Node Downloads Page](https://nodejs.org/en/download/). It is best to use the latest release as that is what we generally test against.
+Download NPM from the [Node Downloads Page](https://nodejs.org/en/download/). It
+is best to use the latest release as that is what we generally test against.
 
 Run `npm --version` to verify.
 
@@ -65,29 +69,37 @@ import TabItem from "@theme/TabItem";
 ## Optional Dependencies
 
 - [UPX](https://upx.github.io/) for compressing your applications.
-- [NSIS](https://wails.io/docs/guides/windows-installer/) for generating Windows installers.
+- [NSIS](https://wails.io/docs/guides/windows-installer/) for generating Windows
+  installers.
 
 ## Installing Wails
 
-Run `go install github.com/wailsapp/wails/v2/cmd/wails@latest` to install the Wails CLI.
+Run `go install github.com/wailsapp/wails/v2/cmd/wails@latest` to install the
+Wails CLI.
 
 Note: If you get an error similar to this:
 
 ```shell
 ....\Go\pkg\mod\github.com\wailsapp\wails\v2@v2.1.0\pkg\templates\templates.go:28:12: pattern all:ides/*: no matching files found
 ```
+
 please check you have Go 1.18+ installed:
+
 ```shell
 go version
 ```
 
 ## System Check
 
-Running `wails doctor` will check if you have the correct dependencies installed. If not, it will advise on what is missing and help on how to rectify any problems.
+Running `wails doctor` will check if you have the correct dependencies
+installed. If not, it will advise on what is missing and help on how to rectify
+any problems.
 
 ## The `wails` command appears to be missing?
 
-If your system is reporting that the `wails` command is missing, make sure you have followed the Go installation guide
-correctly. Normally, it means that the `go/bin` directory in your User's home directory is not in the `PATH` environment
-variable. You will also normally need to close and reopen any open command prompts so that changes to the environment
-made by the installer are reflected at the command prompt.
+If your system is reporting that the `wails` command is missing, make sure you
+have followed the Go installation guide correctly. Normally, it means that the
+`go/bin` directory in your User's home directory is not in the `PATH`
+environment variable. You will also normally need to close and reopen any open
+command prompts so that changes to the environment made by the installer are
+reflected at the command prompt.

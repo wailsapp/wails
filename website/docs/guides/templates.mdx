@@ -1,14 +1,17 @@
 # Templates
 
-Wails generates projects from pre-created templates. In v1, this was a difficult to maintain set of projects that were
-subject to going out of date. In v2, to empower the community, a couple of new features have been added for templates:
+Wails generates projects from pre-created templates. In v1, this was a difficult
+to maintain set of projects that were subject to going out of date. In v2, to
+empower the community, a couple of new features have been added for templates:
 
-- Ability to generate projects from [Remote Templates](../reference/cli.mdx#remote-templates)
+- Ability to generate projects from
+  [Remote Templates](../reference/cli.mdx#remote-templates)
 - Tooling to help create your own templates
 
 ## Creating Templates
 
-To create a template, you can use the `wails generate template` command. To generate a default template, run:
+To create a template, you can use the `wails generate template` command. To
+generate a default template, run:
 
 `wails generate template -name mytemplate `
 
@@ -55,8 +58,9 @@ At this point it is advisable to follow the steps in `NEXTSTEPS.md`.
 
 ## Creating a Template from an Existing Project
 
-It's possible to create a template from an existing frontend project by passing the path to the project when generating
-the template. We will now walk through how to create a Vue 3 template:
+It's possible to create a template from an existing frontend project by passing
+the path to the project when generating the template. We will now walk through
+how to create a Vue 3 template:
 
 - Install the vue cli: `npm install -g @vue/cli`
 - Create the default project: `vue create vue3-base`
@@ -74,7 +78,8 @@ Renaming package-lock.json -> package-lock.tmpl.json...
 ```
 
 - The template may now be customised as specified in the `NEXTSTEPS.md` file
-- Once the files are ready, it can be tested by running: `wails init -n my-vue3-project -t .\wails-vue3-template\`
+- Once the files are ready, it can be tested by running:
+  `wails init -n my-vue3-project -t .\wails-vue3-template\`
 - To test the new project, run: `cd my-vue3-project` then `wails build`
 - Once the project has compiled, run it: `.\build\bin\my-vue3-project.exe`
 - You should have a fully functioning Vue3 application:
@@ -90,10 +95,14 @@ Renaming package-lock.json -> package-lock.tmpl.json...
 
 ## Publishing Templates
 
-Publishing a template is simply pushing the files to GitHub. The following best practice is encouraged:
+Publishing a template is simply pushing the files to GitHub. The following best
+practice is encouraged:
 
-- Remove any unwanted files and directories (such as `.git`) from your frontend directory
+- Remove any unwanted files and directories (such as `.git`) from your frontend
+  directory
 - Ensure that `template.json` is complete, especially `helpurl`
 - Push the files to GitHub
 - Create a PR on the [Community Templates](../community/templates.mdx) page
-- Announce the template on the [Template Announcement](https://github.com/wailsapp/wails/discussions/825) discussion board
+- Announce the template on the
+  [Template Announcement](https://github.com/wailsapp/wails/discussions/825)
+  discussion board

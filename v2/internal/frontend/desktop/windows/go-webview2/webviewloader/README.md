@@ -1,9 +1,11 @@
 # Webviewloader
 
-Webviewloader is a port of [OpenWebView2Loader](https://github.com/jchv/OpenWebView2Loader) to Go.
+Webviewloader is a port of
+[OpenWebView2Loader](https://github.com/jchv/OpenWebView2Loader) to Go.
 
-It is intended to be feature-complete with the original WebView2Loader distributed with
-the WebView2 NuGet package, but some features are intentionally not implemented.
+It is intended to be feature-complete with the original WebView2Loader
+distributed with the WebView2 NuGet package, but some features are intentionally
+not implemented.
 
 ## Status
 
@@ -16,4 +18,5 @@ the WebView2 NuGet package, but some features are intentionally not implemented.
 
 - Registry Overrides of Parameters
 - Env Variable Overrides of Parameters
-- Does not incorporate `GetCurrentPackageInfo` to search for an installed runtime
+- Does not incorporate `GetCurrentPackageInfo` to search for an installed
+  runtime

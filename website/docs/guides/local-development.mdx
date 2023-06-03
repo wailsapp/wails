@@ -2,22 +2,25 @@
 
 ## Overview
 
-Wails is in constant development and new releases are regularly "tagged". This usually happens when all the newer code
-on `master` has been tested and confirmed working. If you need a bugfix or feature that has not yet made it to a release,
-it's possible to use the latest "bleeding edge" version using the following steps:
+Wails is in constant development and new releases are regularly "tagged". This
+usually happens when all the newer code on `master` has been tested and
+confirmed working. If you need a bugfix or feature that has not yet made it to a
+release, it's possible to use the latest "bleeding edge" version using the
+following steps:
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails/v2/cmd/wails`
 - `go install`
 
-NOTE: The directory that you cloned the project into will now be called "clonedir".
+NOTE: The directory that you cloned the project into will now be called
+"clonedir".
 
 The Wails CLI will now be at the very latest version.
 
 ### Updating your project
 
-To update projects to use the latest version of the Wails library, update the project's
-`go.mod` and ensure the following line is at the bottom of the file:
+To update projects to use the latest version of the Wails library, update the
+project's `go.mod` and ensure the following line is at the bottom of the file:
 
 `replace github.com/wailsapp/wails/v2 => <clonedir>`
 
@@ -26,8 +29,7 @@ Example:
 On Windows:
 `replace github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
 
-On 'nix:
-`replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
+On 'nix: `replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
 
 To revert to a stable version, run:
 
@@ -35,7 +37,8 @@ To revert to a stable version, run:
 
 ## Testing a Branch
 
-If you want to test a branch, follow the instructions above, but ensure you switch the branch you want to test before installing:
+If you want to test a branch, follow the instructions above, but ensure you
+switch the branch you want to test before installing:
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails`
@@ -47,8 +50,9 @@ Make sure you [update your project](#updating-your-project) as described above.
 
 ## Testing a PR
 
-If you want to test a PR, follow the instructions above, but ensure you fetch the PR and switch the branch before installing.
-Please replace `[IDofThePR]` with the ID of the PR shown on github.com:
+If you want to test a PR, follow the instructions above, but ensure you fetch
+the PR and switch the branch before installing. Please replace `[IDofThePR]`
+with the ID of the PR shown on github.com:
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails`

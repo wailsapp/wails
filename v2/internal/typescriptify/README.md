@@ -1,2 +1,2 @@
-Based on: https://github.com/tkrajina/typescriptify-golang-structs
-License: LICENSE.txt
+Based on: https://github.com/tkrajina/typescriptify-golang-structs License:
+LICENSE.txt
