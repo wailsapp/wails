@@ -69,8 +69,8 @@ func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 }
 
 func (w *windowsWebviewWindow) setURL(url string) {
-	//TODO implement me
-	panic("implement me")
+	// Navigate to the given URL in the webview
+	w.chromium.Navigate(url)
 }
 
 func (w *windowsWebviewWindow) setResizable(resizable bool) {
@@ -88,8 +88,7 @@ func (w *windowsWebviewWindow) setMaxSize(width, height int) {
 }
 
 func (w *windowsWebviewWindow) execJS(js string) {
-	//TODO implement me
-	panic("implement me")
+	w.chromium.Eval(js)
 }
 
 func (w *windowsWebviewWindow) setBackgroundColour(color RGBA) {
@@ -298,8 +297,7 @@ func (w *windowsWebviewWindow) destroy() {
 }
 
 func (w *windowsWebviewWindow) reload() {
-	//TODO implement me
-	panic("implement me")
+	w.execJS("window.location.reload();")
 }
 
 func (w *windowsWebviewWindow) forceReload() {
@@ -313,28 +311,44 @@ func (w *windowsWebviewWindow) toggleDevTools() {
 }
 
 func (w *windowsWebviewWindow) zoomReset() {
-	//TODO implement me
-	panic("implement me")
+	w.setZoom(1.0)
 }
 
 func (w *windowsWebviewWindow) zoomIn() {
-	//TODO implement me
-	panic("implement me")
+	// Increase the zoom level by 0.05
+	currentZoom := w.getZoom()
+	if currentZoom == -1 {
+		return
+	}
+	w.setZoom(currentZoom + 0.05)
 }
 
 func (w *windowsWebviewWindow) zoomOut() {
-	//TODO implement me
-	panic("implement me")
+	// Decrease the zoom level by 0.05
+	currentZoom := w.getZoom()
+	if currentZoom == -1 {
+		return
+	}
+	if currentZoom > 1.05 {
+		// Decrease the zoom level by 0.05
+		w.setZoom(currentZoom - 0.05)
+	} else {
+		// Set the zoom level to 1.0
+		w.setZoom(1.0)
+	}
 }
 
 func (w *windowsWebviewWindow) getZoom() float64 {
-	//TODO implement me
-	panic("implement me")
+	controller := w.chromium.GetController()
+	factor, err := controller.GetZoomFactor()
+	if err != nil {
+		return -1
+	}
+	return factor
 }
 
 func (w *windowsWebviewWindow) setZoom(zoom float64) {
-	//TODO implement me
-	panic("implement me")
+	w.chromium.PutZoomFactor(zoom)
 }
 
 func (w *windowsWebviewWindow) close() {
@@ -348,8 +362,8 @@ func (w *windowsWebviewWindow) zoom() {
 }
 
 func (w *windowsWebviewWindow) setHTML(html string) {
-	//TODO implement me
-	panic("implement me")
+	// Render the given HTML in the webview window
+	w.execJS(fmt.Sprintf("document.documentElement.innerHTML = %q;", html))
 }
 
 func (w *windowsWebviewWindow) setPosition(x int, y int) {

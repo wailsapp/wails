@@ -31,11 +31,11 @@ Webview Window Interface Methods
 | center()                                           | Y       |       | Y   |                                          |
 | close()                                            |         |       | Y   |                                          |
 | destroy()                                          |         |       | Y   |                                          |
-| execJS(js string)                                  |         |       | Y   |                                          |
+| execJS(js string)                                  | Y       |       | Y   |                                          |
 | focus()                                            | Y       |       | Y   |                                          |
 | forceReload()                                      |         |       | Y   |                                          |
 | fullscreen()                                       | Y       |       | Y   |                                          |
-| getScreen() (*Screen, error)                       |         |       | Y   |                                          |
+| getScreen() (*Screen, error)                       | Y       |       | Y   |                                          |
 | getZoom() float64                                  |         |       | Y   |                                          |
 | height() int                                       | Y       |       | Y   |                                          |
 | hide()                                             | Y       |       | Y   |                                          |
@@ -45,7 +45,7 @@ Webview Window Interface Methods
 | maximise()                                         | Y       |       | Y   |                                          |
 | minimise()                                         | Y       |       | Y   |                                          |
 | nativeWindowHandle() (uintptr, error)              | Y       |       | Y   |                                          |
-| on(eventID uint)                                   |         |       | Y   |                                          |
+| on(eventID uint)                                   | Y       |       | Y   |                                          |
 | openContextMenu(menu *Menu, data *ContextMenuData) |         |       | Y   |                                          |
 | position() (int, int)                              | Y       |       | Y   |                                          |
 | reload()                                           |         |       | Y   |                                          |
@@ -61,8 +61,8 @@ Webview Window Interface Methods
 | setResizable(resizable bool)                       | Y       |       | Y   |                                          |
 | setSize(width, height int)                         | Y       |       | Y   |                                          |
 | setTitle(title string)                             | Y       |       | Y   |                                          |
-| setURL(url string)                                 |         |       | Y   |                                          |
-| setZoom(zoom float64)                              |         |       | Y   |                                          |
+| setURL(url string)                                 | Y       |       | Y   |                                          |
+| setZoom(zoom float64)                              | Y       |       | Y   |                                          |
 | show()                                             | Y       |       | Y   |                                          |
 | size() (int, int)                                  | Y       |       | Y   |                                          |
 | toggleDevTools()                                   |         |       | Y   |                                          |
@@ -71,9 +71,9 @@ Webview Window Interface Methods
 | unminimise()                                       | Y       |       | Y   |                                          |
 | width() int                                        | Y       |       | Y   |                                          |
 | zoom()                                             |         |       | Y   |                                          |
-| zoomIn()                                           |         |       | Y   |                                          |
-| zoomOut()                                          |         |       | Y   |                                          |
-| zoomReset()                                        |         |       | Y   |                                          |
+| zoomIn()                                           | Y       |       | Y   |                                          |
+| zoomOut()                                          | Y       |       | Y   |                                          |
+| zoomReset()                                        | Y       |       | Y   |                                          |
 
 ## Runtime
 
