@@ -45,6 +45,9 @@ VIAddVersionKey "FileVersion"     "${INFO_PRODUCTVERSION}"
 VIAddVersionKey "LegalCopyright"  "${INFO_COPYRIGHT}"
 VIAddVersionKey "ProductName"     "${INFO_PRODUCTNAME}"
 
+# Enable HiDPI support. https://nsis.sourceforge.io/Reference/ManifestDPIAware
+ManifestDPIAware true
+
 !include "MUI.nsh"
 
 !define MUI_ICON "..\icon.ico"
