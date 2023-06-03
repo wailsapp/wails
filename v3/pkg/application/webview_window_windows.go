@@ -24,7 +24,7 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
-var showDevTools = func(window unsafe.Pointer) {}
+var showDevTools = func(chromium *edge.Chromium) {}
 
 type windowsWebviewWindow struct {
 	windowImpl unsafe.Pointer
@@ -306,8 +306,7 @@ func (w *windowsWebviewWindow) forceReload() {
 }
 
 func (w *windowsWebviewWindow) toggleDevTools() {
-	//TODO implement me
-	panic("implement me")
+	showDevTools(w.chromium)
 }
 
 func (w *windowsWebviewWindow) zoomReset() {

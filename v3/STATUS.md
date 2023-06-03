@@ -65,7 +65,7 @@ Webview Window Interface Methods
 | setZoom(zoom float64)                              | Y       |       | Y   |                                          |
 | show()                                             | Y       |       | Y   |                                          |
 | size() (int, int)                                  | Y       |       | Y   |                                          |
-| toggleDevTools()                                   |         |       | Y   |                                          |
+| toggleDevTools()                                   | Y       |       | Y   |                                          |
 | unfullscreen()                                     | Y       |       | Y   |                                          |
 | unmaximise()                                       | Y       |       | Y   |                                          |
 | unminimise()                                       | Y       |       | Y   |                                          |
