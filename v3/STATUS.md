@@ -29,7 +29,7 @@ Webview Window Interface Methods
 | Method                                             | Windows | Linux | Mac | Notes                                    |
 |----------------------------------------------------|---------|-------|-----|------------------------------------------|
 | center()                                           | Y       |       | Y   |                                          |
-| close()                                            |         |       | Y   |                                          |
+| close()                                            | Y       |       | Y   |                                          |
 | destroy()                                          |         |       | Y   |                                          |
 | execJS(js string)                                  | Y       |       | Y   |                                          |
 | focus()                                            | Y       |       | Y   |                                          |

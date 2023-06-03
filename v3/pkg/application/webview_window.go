@@ -590,6 +590,10 @@ func (w *WebviewWindow) Close() {
 	if w.impl == nil {
 		return
 	}
+	if w.options.HideOnClose {
+		invokeSync(func() { w.Hide() })
+		return
+	}
 	invokeSync(w.impl.close)
 }
 

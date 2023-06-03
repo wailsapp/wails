@@ -351,8 +351,7 @@ func (w *windowsWebviewWindow) setZoom(zoom float64) {
 }
 
 func (w *windowsWebviewWindow) close() {
-	//TODO implement me
-	panic("implement me")
+	w32.SendMessage(w.hwnd, w32.WM_CLOSE, 0, 0)
 }
 
 func (w *windowsWebviewWindow) zoom() {
