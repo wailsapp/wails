@@ -48,13 +48,13 @@ Webview Window Interface Methods
 | on(eventID uint)                                   | Y       |       | Y   |                                          |
 | openContextMenu(menu *Menu, data *ContextMenuData) |         |       | Y   |                                          |
 | position() (int, int)                              | Y       |       | Y   |                                          |
-| reload()                                           |         |       | Y   |                                          |
+| reload()                                           | Y       |       | Y   |                                          |
 | run()                                              | Y       |       | Y   |                                          |
 | setAlwaysOnTop(alwaysOnTop bool)                   | Y       |       | Y   |                                          |
 | setBackgroundColour(color RGBA)                    | Y       |       | Y   |                                          |
 | setFrameless(bool)                                 |         |       | Y   |                                          |
 | setFullscreenButtonEnabled(enabled bool)           | -       |       | Y   | There is no fullscreen button in Windows |
-| setHTML(html string)                               |         |       | Y   |                                          |
+| setHTML(html string)                               | Y       |       | Y   |                                          |
 | setMaxSize(width, height int)                      | Y       |       | Y   |                                          |
 | setMinSize(width, height int)                      | Y       |       | Y   |                                          |
 | setPosition(x int, y int)                          | Y       |       | Y   |                                          |
