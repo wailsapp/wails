@@ -81,7 +81,7 @@ Webview Window Interface Methods
 
 | Feature | Windows | Linux | Mac | Notes |
 |---------|---------|-------|-----|-------|
-| Quit    |         |       | Y   |       |
+| Quit    | Y       |       | Y   |       |
 | Hide    | Y       |       | Y   |       |
 | Show    | Y       |       | Y   |       |
 
@@ -107,15 +107,15 @@ Webview Window Interface Methods
 
 | Feature         | Windows | Linux | Mac | Notes |
 |-----------------|---------|-------|-----|-------|
-| OpenContextMenu |         |       | Y   |       |
+| OpenContextMenu | Y       |       | Y   |       |
 
 ### Screens
 
 | Feature    | Windows | Linux | Mac | Notes |
 |------------|---------|-------|-----|-------|
 | GetAll     | Y       |       | Y   |       |
-| GetPrimary |         |       | Y   |       |
-| GetCurrent |         |       | Y   |       |
+| GetPrimary | Y       |       | Y   |       |
+| GetCurrent | Y       |       | Y   |       |
 
 ### Window
 
@@ -143,11 +143,11 @@ Webview Window Interface Methods
 | SetMaxSize          | Y       |       | Y   |                                                                                      |
 | Width               | Y       |       | Y   |                                                                                      |
 | Height              | Y       |       | Y   |                                                                                      |
-| ZoomIn              |         |       | Y   | Increase view scale                                                                  |
-| ZoomOut             |         |       | Y   | Decrease view scale                                                                  |
-| ZoomReset           |         |       | Y   | Reset view scale                                                                     |
-| GetZoom             |         |       | Y   | Get current view scale                                                               |
-| SetZoom             |         |       | Y   | Set view scale                                                                       |
+| ZoomIn              | Y       |       | Y   | Increase view scale                                                                  |
+| ZoomOut             | Y       |       | Y   | Decrease view scale                                                                  |
+| ZoomReset           | Y       |       | Y   | Reset view scale                                                                     |
+| GetZoom             | Y       |       | Y   | Get current view scale                                                               |
+| SetZoom             | Y       |       | Y   | Set view scale                                                                       |
 | Screen              | Y       |       | Y   | Get screen for window                                                                |
 
 ### Window Options
