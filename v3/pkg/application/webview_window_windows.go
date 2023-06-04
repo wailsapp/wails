@@ -374,8 +374,8 @@ func (w *windowsWebviewWindow) setPosition(x int, y int) {
 
 // on is used to indicate that a particular event should be listened for
 func (w *windowsWebviewWindow) on(eventID uint) {
-	//TODO implement me
-	panic("implement me")
+	// We don't need to worry about this in Windows as we do not need
+	// to optimise cgo calls
 }
 
 func (w *windowsWebviewWindow) minimise() {
@@ -1192,13 +1192,27 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
-	chromium.Navigate("http://wails.localhost")
+
+	if w.parent.options.HTML != "" {
+		var script string
+		if w.parent.options.JS != "" {
+			script = w.parent.options.JS
+		}
+		if w.parent.options.CSS != "" {
+			script += fmt.Sprintf("; addEventListener(\"DOMContentLoaded\", (event) => { document.head.appendChild(document.createElement('style')).innerHTML=\"%s\"; });", strings.ReplaceAll(w.parent.options.CSS, `"`, `\"`))
+		}
+		chromium.Init(script)
+		chromium.NavigateToString(w.parent.options.HTML)
+	} else {
+		chromium.Navigate("http://wails.localhost")
+	}
 
 }
 
 func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
 
-	// TODO: DomReady Event
+	// Emit DomReady Event
+	windowEvents <- &WindowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
 
 	// Todo: Resize hacks
 	/*

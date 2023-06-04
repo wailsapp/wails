@@ -19,7 +19,7 @@ require (
 	github.com/pterm/pterm v0.12.51
 	github.com/samber/lo v1.37.0
 	github.com/tc-hib/winres v0.1.6
-	github.com/wailsapp/go-webview2 v1.0.1
+	github.com/wailsapp/go-webview2 v1.0.2-0.20230604075323-d593c659ca7b
 	github.com/wailsapp/wails/v2 v2.3.2-0.20230117193915-45c3a501d9e6
 	golang.org/x/sys v0.8.0
 	modernc.org/sqlite v1.21.0
