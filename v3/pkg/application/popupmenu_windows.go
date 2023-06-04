@@ -177,10 +177,10 @@ func (p *Win32Menu) ShowAtCursor() {
 
 }
 
-func (p *Win32Menu) ProcessCommand(cmdMsgID int) {
+func (p *Win32Menu) ProcessCommand(cmdMsgID int) bool {
 	item := p.menuMapping[cmdMsgID]
 	if item == nil {
-		return
+		return false
 	}
 	if item.IsRadio() {
 		item.checked = true
@@ -189,6 +189,7 @@ func (p *Win32Menu) ProcessCommand(cmdMsgID int) {
 	if item.callback != nil {
 		item.handleClick()
 	}
+	return true
 }
 
 func (p *Win32Menu) Destroy() {

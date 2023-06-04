@@ -27,10 +27,11 @@ import (
 var showDevTools = func(chromium *edge.Chromium) {}
 
 type windowsWebviewWindow struct {
-	windowImpl unsafe.Pointer
-	parent     *WebviewWindow
-	hwnd       w32.HWND
-	menu       *Win32Menu
+	windowImpl               unsafe.Pointer
+	parent                   *WebviewWindow
+	hwnd                     w32.HWND
+	menu                     *Win32Menu
+	currentlyOpenContextMenu *Win32Menu
 
 	// Fullscreen flags
 	isCurrentlyFullscreen   bool
@@ -540,9 +541,9 @@ func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
 
 func (w *windowsWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
 	// Create the menu
-	thisMenu := newMenuImpl(menu)
-	thisMenu.update()
-	//C.windowShowMenu(w.nsWindow, thisMenu.nsMenu, C.int(data.X), C.int(data.Y))
+	thisMenu := NewPopupMenu(w.hwnd, menu)
+	w.currentlyOpenContextMenu = thisMenu
+	thisMenu.ShowAtCursor()
 }
 
 func (w *windowsWebviewWindow) setStyle(b bool, style int) {
@@ -568,7 +569,7 @@ func (w *windowsWebviewWindow) setBackdropType(backdropType BackdropType) {
 		var data w32.WINDOWCOMPOSITIONATTRIBDATA
 		data.Attrib = w32.WCA_ACCENT_POLICY
 		data.PvData = w32.PVOID(&accent)
-		data.CbData = w32.SIZE_T(unsafe.Sizeof(accent))
+		data.CbData = unsafe.Sizeof(accent)
 
 		w32.SetWindowCompositionAttribute(w.hwnd, &data)
 	} else {
@@ -730,13 +731,21 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 	}
 
-	if w.menu != nil {
+	if w.menu != nil || w.currentlyOpenContextMenu != nil {
 		switch msg {
 		case w32.WM_COMMAND:
 			cmdMsgID := int(wparam & 0xffff)
 			switch cmdMsgID {
 			default:
-				w.menu.ProcessCommand(cmdMsgID)
+				var processed bool
+				if w.currentlyOpenContextMenu != nil {
+					processed = w.currentlyOpenContextMenu.ProcessCommand(cmdMsgID)
+					w.currentlyOpenContextMenu = nil
+
+				}
+				if !processed && w.menu != nil {
+					processed = w.menu.ProcessCommand(cmdMsgID)
+				}
 			}
 		}
 	}

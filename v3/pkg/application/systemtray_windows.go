@@ -210,7 +210,7 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 		}
 		//println(w32.WMMessageToString(msg))
 
-		// TODO: Menu processing
+	// Menu processing
 	case w32.WM_COMMAND:
 		cmdMsgID := int(wParam & 0xffff)
 		switch cmdMsgID {

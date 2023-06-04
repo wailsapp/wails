@@ -46,7 +46,7 @@ Webview Window Interface Methods
 | minimise()                                         | Y       |       | Y   |                                          |
 | nativeWindowHandle() (uintptr, error)              | Y       |       | Y   |                                          |
 | on(eventID uint)                                   | Y       |       | Y   |                                          |
-| openContextMenu(menu *Menu, data *ContextMenuData) |         |       | Y   |                                          |
+| openContextMenu(menu *Menu, data *ContextMenuData) | Y       |       | Y   |                                          |
 | position() (int, int)                              | Y       |       | Y   |                                          |
 | reload()                                           | Y       |       | Y   |                                          |
 | run()                                              | Y       |       | Y   |                                          |
