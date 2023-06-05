@@ -83,3 +83,23 @@ tasks:
       - generate-icons
     cmds:
       - task: create-app-bundle
+
+  generate:syso:
+    dir: build
+    platform: windows
+    cmds:
+      - wails generate syso -arch {{ "{{.ARCH}}" }} -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+    vars:
+      ARCH: $GOARCH
+
+  package:windows:
+    summary: Packages a production build of the application into a `.exe` bundle
+    platform: windows
+    deps:
+      - generate-icons
+    cmds:
+      - task: generate:syso
+        vars:
+            ARCH: amd64
+      - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
+      - powershell Remove-item wails.syso
