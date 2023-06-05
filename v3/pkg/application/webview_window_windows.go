@@ -57,6 +57,7 @@ func (w *windowsWebviewWindow) setSize(width, height int) {
 	rect := w32.GetWindowRect(w.hwnd)
 	width, height = w.scaleWithWindowDPI(width, height)
 	w32.MoveWindow(w.hwnd, int(rect.Left), int(rect.Top), width, height, true)
+	w.chromium.Resize()
 }
 
 func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
