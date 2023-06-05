@@ -35,6 +35,13 @@ func main() {
 		URL: "/",
 	})
 
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+		Title: "HTML TEST",
+		HTML:  "<h1>AWESOME!</h1>",
+		CSS:   `body { background-color: rgba(255, 0, 0, 255); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; user-select: none; -ms-user-select: none; -webkit-user-select: none; } .main { color: white; margin: 20%; }`,
+		JS:    `window.iamhere = function() { console.log("Hello World!"); }`,
+	})
+
 	app.Events.On("clicked", func(_ *application.WailsEvent) {
 		println("clicked")
 	})

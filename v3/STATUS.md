@@ -313,3 +313,25 @@ Built-in plugin support:
 | WindowMask                        | nil     | Makes the window the contents of the bitmap |
 
 ## Linux Specific
+
+## Examples
+
+| Example      | Windows | Linux | Mac |
+|--------------|---------|-------|-----|
+| binding      |         |       |     |
+| build        |         |       |     |
+| clipboard    |         |       |     |
+| contextmenus |         |       |     |
+| dialogs      |         |       |     |
+| drag-n-drop  |         |       |     |
+| events       |         |       |     |
+| frameless    |         |       |     |
+| kitchensink  |         |       |     |
+| menu         |         |       |     |
+| plain        |         |       |     |
+| plugins      |         |       |     |
+| screen       |         |       |     |
+| systray      |         |       |     |
+| window       |         |       |     |
+| windowjs     |         |       |     |
+| wml          |         |       |     |
