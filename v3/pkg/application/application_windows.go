@@ -26,7 +26,9 @@ type windowsApp struct {
 
 	windowMap     map[w32.HWND]*windowsWebviewWindow
 	windowMapLock sync.RWMutex
-	systrayMap    map[w32.HMENU]*windowsSystemTray
+
+	systrayMap     map[w32.HMENU]*windowsSystemTray
+	systrayMapLock sync.RWMutex
 
 	mainThreadID         w32.HANDLE
 	mainThreadWindowHWND w32.HWND
@@ -246,7 +248,10 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		return window.WndProc(msg, wParam, lParam)
 	}
 
-	if systray, ok := m.systrayMap[hwnd]; ok {
+	m.systrayMapLock.Lock()
+	systray, ok := m.systrayMap[hwnd]
+	m.systrayMapLock.Unlock()
+	if ok {
 		return systray.wndProc(msg, wParam, lParam)
 	}
 
@@ -262,7 +267,15 @@ func (m *windowsApp) registerWindow(result *windowsWebviewWindow) {
 }
 
 func (m *windowsApp) registerSystemTray(result *windowsSystemTray) {
+	m.systrayMapLock.Lock()
+	defer m.systrayMapLock.Unlock()
 	m.systrayMap[result.hwnd] = result
+}
+
+func (m *windowsApp) unregisterSystemTray(result *windowsSystemTray) {
+	m.systrayMapLock.Lock()
+	defer m.systrayMapLock.Unlock()
+	delete(m.systrayMap, result.hwnd)
 }
 
 func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
