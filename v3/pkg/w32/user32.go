@@ -67,6 +67,7 @@ var (
 	procReleaseCapture                = moduser32.NewProc("ReleaseCapture")
 	procGetWindowThreadProcessId      = moduser32.NewProc("GetWindowThreadProcessId")
 	procMessageBox                    = moduser32.NewProc("MessageBoxW")
+	procMessageBoxIndirect            = moduser32.NewProc("MessageBoxIndirectW")
 	procGetSystemMetrics              = moduser32.NewProc("GetSystemMetrics")
 	procPostThreadMessageW            = moduser32.NewProc("PostThreadMessageW")
 	procRegisterWindowMessageA        = moduser32.NewProc("RegisterWindowMessageA")
@@ -220,6 +221,13 @@ func LoadCursorWithResourceID(instance HINSTANCE, res uint16) HCURSOR {
 		uintptr(res))
 
 	return HCURSOR(ret)
+}
+
+func MessageBoxIndirect(msgbox *MSGBOXPARAMS) int32 {
+	ret, _, _ := procMessageBoxIndirect.Call(
+		uintptr(unsafe.Pointer(msgbox)))
+
+	return int32(ret)
 }
 
 func ShowWindow(hwnd HWND, cmdshow int) bool {

@@ -476,6 +476,19 @@ type DIBSECTION struct {
 	DsOffset    uint32
 }
 
+type MSGBOXPARAMS struct {
+	cbSize             uint32
+	hwndOwner          HWND
+	hInstance          HANDLE
+	lpszText           *uint16
+	lpszCaption        *uint16
+	dwStyle            uint32
+	lpszIcon           *uint16
+	dwContextHelp      uintptr
+	lpfnMsgBoxCallback uintptr
+	dwLanguageId       uint32
+}
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd162607.aspx
 type ENHMETAHEADER struct {
 	IType          uint32
