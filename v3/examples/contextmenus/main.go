@@ -46,6 +46,7 @@ func main() {
 	contextMenu := app.NewMenu()
 	contextMenu.Add("Click Me").OnClick(func(data *application.Context) {
 		fmt.Printf("Context menu data: %+v\n", data.ContextMenuData())
+		app.Quit()
 	})
 
 	globalContextMenu := app.NewMenu()

@@ -36,7 +36,9 @@ func main() {
 
 	// Create a custom menu
 	menu := app.NewMenu()
-	menu.AddRole(application.AppMenu)
+	if runtime.GOOS == "darwin" {
+		menu.AddRole(application.AppMenu)
+	}
 
 	windowCounter := 1
 

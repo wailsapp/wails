@@ -15,7 +15,7 @@ type commonEvents struct {
 
 func newCommonEvents() commonEvents {
 	return commonEvents{
-		ApplicationStarted: 1152,
+		ApplicationStarted: 1153,
 	}
 }
 
@@ -276,21 +276,23 @@ func newMacEvents() macEvents {
 var Windows = newWindowsEvents()
 
 type windowsEvents struct {
-	SystemThemeChanged    ApplicationEventType
-	APMPowerStatusChange  ApplicationEventType
-	APMSuspend            ApplicationEventType
-	APMResumeAutomatic    ApplicationEventType
-	APMResumeSuspend      ApplicationEventType
-	APMPowerSettingChange ApplicationEventType
+	SystemThemeChanged         ApplicationEventType
+	APMPowerStatusChange       ApplicationEventType
+	APMSuspend                 ApplicationEventType
+	APMResumeAutomatic         ApplicationEventType
+	APMResumeSuspend           ApplicationEventType
+	APMPowerSettingChange      ApplicationEventType
+	WebViewNavigationCompleted WindowEventType
 }
 
 func newWindowsEvents() windowsEvents {
 	return windowsEvents{
-		SystemThemeChanged:    1146,
-		APMPowerStatusChange:  1147,
-		APMSuspend:            1148,
-		APMResumeAutomatic:    1149,
-		APMResumeSuspend:      1150,
-		APMPowerSettingChange: 1151,
+		SystemThemeChanged:         1146,
+		APMPowerStatusChange:       1147,
+		APMSuspend:                 1148,
+		APMResumeAutomatic:         1149,
+		APMResumeSuspend:           1150,
+		APMPowerSettingChange:      1151,
+		WebViewNavigationCompleted: 1152,
 	}
 }

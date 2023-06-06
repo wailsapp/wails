@@ -8,11 +8,11 @@ Application interface methods
 
 | Method                                                        | Windows | Linux | Mac | Notes |
 |---------------------------------------------------------------|---------|-------|-----|-------|
-| run() error                                                   |         |       | Y   |       |
+| run() error                                                   | Y       |       | Y   |       |
 | destroy()                                                     |         |       | Y   |       |
-| setApplicationMenu(menu *Menu)                                |         |       | Y   |       |
+| setApplicationMenu(menu *Menu)                                | Y       |       | Y   |       |
 | name() string                                                 |         |       | Y   |       |
-| getCurrentWindowID() uint                                     |         |       | Y   |       |
+| getCurrentWindowID() uint                                     | Y       |       | Y   |       |
 | showAboutDialog(name string, description string, icon []byte) |         |       | Y   |       |
 | setIcon(icon []byte)                                          |         |       | Y   |       |
 | on(id uint)                                                   |         |       | Y   |       |
@@ -29,13 +29,13 @@ Webview Window Interface Methods
 | Method                                             | Windows | Linux | Mac | Notes                                    |
 |----------------------------------------------------|---------|-------|-----|------------------------------------------|
 | center()                                           | Y       |       | Y   |                                          |
-| close()                                            |         |       | Y   |                                          |
+| close()                                            | Y       |       | Y   |                                          |
 | destroy()                                          |         |       | Y   |                                          |
-| execJS(js string)                                  |         |       | Y   |                                          |
+| execJS(js string)                                  | Y       |       | Y   |                                          |
 | focus()                                            | Y       |       | Y   |                                          |
 | forceReload()                                      |         |       | Y   |                                          |
 | fullscreen()                                       | Y       |       | Y   |                                          |
-| getScreen() (*Screen, error)                       |         |       | Y   |                                          |
+| getScreen() (*Screen, error)                       | Y       |       | Y   |                                          |
 | getZoom() float64                                  |         |       | Y   |                                          |
 | height() int                                       | Y       |       | Y   |                                          |
 | hide()                                             | Y       |       | Y   |                                          |
@@ -45,35 +45,35 @@ Webview Window Interface Methods
 | maximise()                                         | Y       |       | Y   |                                          |
 | minimise()                                         | Y       |       | Y   |                                          |
 | nativeWindowHandle() (uintptr, error)              | Y       |       | Y   |                                          |
-| on(eventID uint)                                   |         |       | Y   |                                          |
-| openContextMenu(menu *Menu, data *ContextMenuData) |         |       | Y   |                                          |
+| on(eventID uint)                                   | Y       |       | Y   |                                          |
+| openContextMenu(menu *Menu, data *ContextMenuData) | Y       |       | Y   |                                          |
 | position() (int, int)                              | Y       |       | Y   |                                          |
-| reload()                                           |         |       | Y   |                                          |
+| reload()                                           | Y       |       | Y   |                                          |
 | run()                                              | Y       |       | Y   |                                          |
 | setAlwaysOnTop(alwaysOnTop bool)                   | Y       |       | Y   |                                          |
 | setBackgroundColour(color RGBA)                    | Y       |       | Y   |                                          |
 | setFrameless(bool)                                 |         |       | Y   |                                          |
 | setFullscreenButtonEnabled(enabled bool)           | -       |       | Y   | There is no fullscreen button in Windows |
-| setHTML(html string)                               |         |       | Y   |                                          |
+| setHTML(html string)                               | Y       |       | Y   |                                          |
 | setMaxSize(width, height int)                      | Y       |       | Y   |                                          |
 | setMinSize(width, height int)                      | Y       |       | Y   |                                          |
 | setPosition(x int, y int)                          | Y       |       | Y   |                                          |
 | setResizable(resizable bool)                       | Y       |       | Y   |                                          |
 | setSize(width, height int)                         | Y       |       | Y   |                                          |
 | setTitle(title string)                             | Y       |       | Y   |                                          |
-| setURL(url string)                                 |         |       | Y   |                                          |
-| setZoom(zoom float64)                              |         |       | Y   |                                          |
+| setURL(url string)                                 | Y       |       | Y   |                                          |
+| setZoom(zoom float64)                              | Y       |       | Y   |                                          |
 | show()                                             | Y       |       | Y   |                                          |
 | size() (int, int)                                  | Y       |       | Y   |                                          |
-| toggleDevTools()                                   |         |       | Y   |                                          |
+| toggleDevTools()                                   | Y       |       | Y   |                                          |
 | unfullscreen()                                     | Y       |       | Y   |                                          |
 | unmaximise()                                       | Y       |       | Y   |                                          |
 | unminimise()                                       | Y       |       | Y   |                                          |
 | width() int                                        | Y       |       | Y   |                                          |
 | zoom()                                             |         |       | Y   |                                          |
-| zoomIn()                                           |         |       | Y   |                                          |
-| zoomOut()                                          |         |       | Y   |                                          |
-| zoomReset()                                        |         |       | Y   |                                          |
+| zoomIn()                                           | Y       |       | Y   |                                          |
+| zoomOut()                                          | Y       |       | Y   |                                          |
+| zoomReset()                                        | Y       |       | Y   |                                          |
 
 ## Runtime
 
@@ -81,7 +81,7 @@ Webview Window Interface Methods
 
 | Feature | Windows | Linux | Mac | Notes |
 |---------|---------|-------|-----|-------|
-| Quit    |         |       | Y   |       |
+| Quit    | Y       |       | Y   |       |
 | Hide    | Y       |       | Y   |       |
 | Show    | Y       |       | Y   |       |
 
@@ -89,12 +89,12 @@ Webview Window Interface Methods
 
 | Feature  | Windows | Linux | Mac | Notes |
 |----------|---------|-------|-----|-------|
-| Info     |         |       | Y   |       |
-| Warning  |         |       | Y   |       |
-| Error    |         |       | Y   |       |
-| Question |         |       | Y   |       |
-| OpenFile |         |       | Y   |       |
-| SaveFile |         |       | Y   |       |
+| Info     | Y       |       | Y   |       |
+| Warning  | Y       |       | Y   |       |
+| Error    | Y       |       | Y   |       |
+| Question | Y       |       | Y   |       |
+| OpenFile | Y       |       | Y   |       |
+| SaveFile | Y       |       | Y   |       |
 
 ### Clipboard
 
@@ -107,15 +107,15 @@ Webview Window Interface Methods
 
 | Feature         | Windows | Linux | Mac | Notes |
 |-----------------|---------|-------|-----|-------|
-| OpenContextMenu |         |       | Y   |       |
+| OpenContextMenu | Y       |       | Y   |       |
 
 ### Screens
 
 | Feature    | Windows | Linux | Mac | Notes |
 |------------|---------|-------|-----|-------|
 | GetAll     | Y       |       | Y   |       |
-| GetPrimary |         |       | Y   |       |
-| GetCurrent |         |       | Y   |       |
+| GetPrimary | Y       |       | Y   |       |
+| GetCurrent | Y       |       | Y   |       |
 
 ### Window
 
@@ -143,12 +143,12 @@ Webview Window Interface Methods
 | SetMaxSize          | Y       |       | Y   |                                                                                      |
 | Width               | Y       |       | Y   |                                                                                      |
 | Height              | Y       |       | Y   |                                                                                      |
-| ZoomIn              |         |       | Y   | Increase view scale                                                                  |
-| ZoomOut             |         |       | Y   | Decrease view scale                                                                  |
-| ZoomReset           |         |       | Y   | Reset view scale                                                                     |
-| GetZoom             |         |       | Y   | Get current view scale                                                               |
-| SetZoom             |         |       | Y   | Set view scale                                                                       |
-| Screen              |         |       | Y   | Get screen for window                                                                |
+| ZoomIn              | Y       |       | Y   | Increase view scale                                                                  |
+| ZoomOut             | Y       |       | Y   | Decrease view scale                                                                  |
+| ZoomReset           | Y       |       | Y   | Reset view scale                                                                     |
+| GetZoom             | Y       |       | Y   | Get current view scale                                                               |
+| SetZoom             | Y       |       | Y   | Set view scale                                                                       |
+| Screen              | Y       |       | Y   | Get screen for window                                                                |
 
 ### Window Options
 
@@ -157,7 +157,7 @@ An 'X' indicates that the option is not supported by the platform.
 
 | Feature                         | Windows | Linux | Mac | Notes                                      |
 |---------------------------------|---------|-------|-----|--------------------------------------------|
-| Name                            |         |       |     |                                            |
+| Name                            | Y       |       |     |                                            |
 | Title                           | Y       |       |     |                                            |
 | Width                           | Y       |       |     |                                            |
 | Height                          | Y       |       |     |                                            |
@@ -176,13 +176,15 @@ An 'X' indicates that the option is not supported by the platform.
 | HTML                            |         |       |     |                                            |
 | JS                              |         |       |     |                                            |
 | CSS                             |         |       |     |                                            |
-| X                               |         |       |     |                                            |
-| Y                               |         |       |     |                                            |
+| X                               | Y       |       |     |                                            |
+| Y                               | Y       |       |     |                                            |
 | HideOnClose                     | Y       |       |     |                                            |
-| FullscreenButtonEnabled         |         |       |     |                                            |
+| FullscreenButtonEnabled         | Y       |       |     |                                            |
 | Hidden                          | Y       |       |     |                                            |
 | EnableFraudulentWebsiteWarnings |         |       |     |                                            |
 | Zoom                            |         |       |     |                                            |
+| ZoomControlEnabled              |         |       |     |                                            |
+| OpenInspectorOnStartup          |         |       |     |                                            |
 | EnableDragAndDrop               |         |       |     |                                            |
 | Windows                         | Y       | -     | -   |                                            |
 | Focused                         | Y       |       |     |                                            |
@@ -204,7 +206,20 @@ To log or not to log? System logger vs custom logger.
 | Icon               | Y       |       | Y   | Windows has default icons for light/dark mode & supports PNG or ICO. |
 | Label              | -       |       | Y   |                                                                      |
 | Label (ANSI Codes) | -       |       |     |                                                                      |
-| Menu               |         |       | Y   |                                                                      |
+| Menu               | Y       |       | Y   |                                                                      |
+
+### Methods
+
+| Method                        | Windows | Linux | Mac | Notes |
+|-------------------------------|---------|-------|-----|-------|
+| setLabel(label string)        | -       |       | Y   |       |
+| run()                         | Y       |       | Y   |       |
+| setIcon(icon []byte)          | Y       |       | Y   |       |
+| setMenu(menu *Menu)           | Y       |       | Y   |       |
+| setIconPosition(position int) | -       |       | Y   |       |
+| setTemplateIcon(icon []byte)  | -       |       | Y   |       |
+| destroy()                     | Y       |       | Y   |       |
+| setDarkModeIcon(icon []byte)  | Y       |       | Y   |       |
 
 ## Cross Platform Events
 
@@ -268,7 +283,7 @@ Built-in plugin support:
 |-----------------|---------|-------|-----|-------|
 | Icon Generation |         |       | Y   |       |
 | Icon Embedding  |         |       | Y   |       |
-| Info.plist      |         |       | Y   |       |
+| Info.plist      | -       |       | Y   |       |
 | NSIS Installer  |         |       | -   |       |
 | Mac bundle      |         |       | Y   |       |
 | Windows exe     |         |       | -   |       |
@@ -286,14 +301,13 @@ Built-in plugin support:
 
 ### Mac Options
 
-| Feature           | Default           | Notes                                                |
-|-------------------|-------------------|------------------------------------------------------|
-| Backdrop          | MacBackdropNormal | Standard solid window                                |
-| DisableShadow     | false             |                                                      |
-| TitleBar          |                   | Standard window decorations by default               |
-| Appearance        | DefaultAppearance |                                                      |
+| Feature                 | Default           | Notes                                                |
+|-------------------------|-------------------|------------------------------------------------------|
+| Backdrop                | MacBackdropNormal | Standard solid window                                |
+| DisableShadow           | false             |                                                      |
+| TitleBar                |                   | Standard window decorations by default               |
+| Appearance              | DefaultAppearance |                                                      |
 | InvisibleTitleBarHeight | 0                 | Creates an invisible title bar for frameless windows |
-
 
 ## Windows Specific
 
@@ -311,6 +325,26 @@ Built-in plugin support:
 | DisableFramelessWindowDecorations |         |                                             |
 | WindowMask                        | nil     | Makes the window the contents of the bitmap |
 
-
-
 ## Linux Specific
+
+## Examples
+
+| Example      | Windows            | Linux | Mac |
+|--------------|--------------------|-------|-----|
+| binding      | NO                 |       |     |
+| build        | Yes (Debug + Prod) |       |     |
+| clipboard    | NO                 |       |     |
+| contextmenus | Yes                |       |     |
+| dialogs      | Almost             |       |     |
+| drag-n-drop  | NO                 |       |     |
+| events       | NO                 |       |     |
+| frameless    | NO                 |       |     |
+| kitchensink  | Yes                |       |     |
+| menu         | Yes                |       |     |
+| plain        | Yes                |       |     |
+| plugins      |                    |       |     |
+| screen       |                    |       |     |
+| systray      |                    |       |     |
+| window       |                    |       |     |
+| windowjs     |                    |       |     |
+| wml          |                    |       |     |

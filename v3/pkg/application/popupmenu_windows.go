@@ -37,8 +37,9 @@ func (r *RadioGroup) MenuID(item *MenuItem) int {
 	panic("RadioGroup.MenuID: item not found:")
 }
 
-type PopupMenu struct {
-	menu          w32.PopupMenu
+type Win32Menu struct {
+	isPopup       bool
+	menu          w32.HMENU
 	parent        w32.HWND
 	menuMapping   map[int]*MenuItem
 	checkboxItems map[*MenuItem][]int
@@ -49,7 +50,14 @@ type PopupMenu struct {
 	onMenuOpen    func()
 }
 
-func (p *PopupMenu) buildMenu(parentMenu w32.PopupMenu, inputMenu *Menu) {
+func (p *Win32Menu) newMenu() w32.HMENU {
+	if p.isPopup {
+		return w32.NewPopupMenu()
+	}
+	return w32.CreateMenu()
+}
+
+func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 	var currentRadioGroup RadioGroup
 	for _, item := range inputMenu.items {
 		if item.Hidden() {
@@ -59,7 +67,8 @@ func (p *PopupMenu) buildMenu(parentMenu w32.PopupMenu, inputMenu *Menu) {
 		itemID := p.currentMenuID
 		p.menuMapping[itemID] = item
 
-		menuItemImpl := newMenuItemImpl(item, w32.HWND(parentMenu), itemID)
+		menuItemImpl := newMenuItemImpl(item, parentMenu, itemID)
+		menuItemImpl.parent = inputMenu
 
 		flags := uint32(w32.MF_STRING)
 		if item.disabled {
@@ -89,15 +98,14 @@ func (p *PopupMenu) buildMenu(parentMenu w32.PopupMenu, inputMenu *Menu) {
 
 		if item.submenu != nil {
 			flags = flags | w32.MF_POPUP
-			newSubmenu := w32.CreatePopupMenu()
+			newSubmenu := p.newMenu()
 			p.buildMenu(newSubmenu, item.submenu)
 			itemID = int(newSubmenu)
-			menuItemImpl.submenu = w32.HWND(newSubmenu)
+			menuItemImpl.submenu = newSubmenu
 		}
 
 		var menuText = item.Label()
-
-		ok := parentMenu.Append(flags, uintptr(itemID), menuText)
+		ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), w32.MustStringToUTF16Ptr(menuText))
 		if !ok {
 			w32.Fatal(fmt.Sprintf("Error adding menu item: %s", menuText))
 		}
@@ -113,16 +121,27 @@ func (p *PopupMenu) buildMenu(parentMenu w32.PopupMenu, inputMenu *Menu) {
 	}
 }
 
-func (p *PopupMenu) Update() {
-	p.menu = w32.CreatePopupMenu()
+func (p *Win32Menu) Update() {
+	p.menu = p.newMenu()
 	p.menuMapping = make(map[int]*MenuItem)
 	p.currentMenuID = MenuItemMsgID
 	p.buildMenu(p.menu, p.menuData)
 	p.updateRadioGroups()
 }
 
-func NewPopupMenu(parent w32.HWND, inputMenu *Menu) *PopupMenu {
-	result := &PopupMenu{
+func NewPopupMenu(parent w32.HWND, inputMenu *Menu) *Win32Menu {
+	result := &Win32Menu{
+		isPopup:       true,
+		parent:        parent,
+		menuData:      inputMenu,
+		checkboxItems: make(map[*MenuItem][]int),
+		radioGroups:   make(map[*MenuItem][]*RadioGroup),
+	}
+	result.Update()
+	return result
+}
+func NewApplicationMenu(parent w32.HWND, inputMenu *Menu) *Win32Menu {
+	result := &Win32Menu{
 		parent:        parent,
 		menuData:      inputMenu,
 		checkboxItems: make(map[*MenuItem][]int),
@@ -132,7 +151,7 @@ func NewPopupMenu(parent w32.HWND, inputMenu *Menu) *PopupMenu {
 	return result
 }
 
-func (p *PopupMenu) ShowAtCursor() {
+func (p *Win32Menu) ShowAtCursor() {
 	x, y, ok := w32.GetCursorPos()
 	if ok == false {
 		w32.Fatal("GetCursorPos failed")
@@ -144,7 +163,7 @@ func (p *PopupMenu) ShowAtCursor() {
 		p.onMenuOpen()
 	}
 
-	if p.menu.Track(p.parent, w32.TPM_LEFTALIGN, int32(x), int32(y-5)) == false {
+	if !w32.TrackPopupMenuEx(p.menu, w32.TPM_LEFTALIGN, int32(x), int32(y-5), p.parent, nil) {
 		w32.Fatal("TrackPopupMenu failed")
 	}
 
@@ -158,10 +177,10 @@ func (p *PopupMenu) ShowAtCursor() {
 
 }
 
-func (p *PopupMenu) ProcessCommand(cmdMsgID int) {
+func (p *Win32Menu) ProcessCommand(cmdMsgID int) bool {
 	item := p.menuMapping[cmdMsgID]
 	if item == nil {
-		return
+		return false
 	}
 	if item.IsRadio() {
 		item.checked = true
@@ -170,16 +189,21 @@ func (p *PopupMenu) ProcessCommand(cmdMsgID int) {
 	if item.callback != nil {
 		item.handleClick()
 	}
+	return true
 }
 
-func (p *PopupMenu) Destroy() {
-	p.menu.Destroy()
+func (p *Win32Menu) Destroy() {
+	w32.DestroyMenu(p.menu)
 }
 
-func (p *PopupMenu) UpdateMenuItem(item *MenuItem) {
+func (p *Win32Menu) UpdateMenuItem(item *MenuItem) {
 	if item.IsCheckbox() {
 		for _, itemID := range p.checkboxItems[item] {
-			p.menu.Check(uintptr(itemID), item.checked)
+			var checkState uint = w32.MF_UNCHECKED
+			if item.checked {
+				checkState = w32.MF_CHECKED
+			}
+			w32.CheckMenuItem(p.menu, uintptr(itemID), checkState)
 		}
 		return
 	}
@@ -188,7 +212,7 @@ func (p *PopupMenu) UpdateMenuItem(item *MenuItem) {
 	}
 }
 
-func (p *PopupMenu) updateRadioGroups() {
+func (p *Win32Menu) updateRadioGroups() {
 	for menuItem := range p.radioGroups {
 		if menuItem.checked {
 			p.updateRadioGroup(menuItem)
@@ -196,18 +220,19 @@ func (p *PopupMenu) updateRadioGroups() {
 	}
 }
 
-func (p *PopupMenu) updateRadioGroup(item *MenuItem) {
+func (p *Win32Menu) updateRadioGroup(item *MenuItem) {
 	for _, radioGroup := range p.radioGroups[item] {
 		thisMenuID := radioGroup.MenuID(item)
 		startID, endID := radioGroup.Bounds()
-		p.menu.CheckRadio(startID, endID, thisMenuID)
+		w32.CheckRadio(p.menu, startID, endID, thisMenuID)
+
 	}
 }
 
-func (p *PopupMenu) OnMenuOpen(fn func()) {
+func (p *Win32Menu) OnMenuOpen(fn func()) {
 	p.onMenuOpen = fn
 }
 
-func (p *PopupMenu) OnMenuClose(fn func()) {
+func (p *Win32Menu) OnMenuClose(fn func()) {
 	p.onMenuClose = fn
 }

@@ -26,8 +26,8 @@
   <a href="https://github.com/avelino/awesome-go" rel="nofollow">
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
   </a>
-  <a href="https://app.slack.com/client/T029RQSE6/CJ4P9F7MZ">
-    <img alt="Slack" src="https://img.shields.io/badge/slack-gophers%2Fwails%20-blue?logo=slack"/>
+  <a href="https://discord.gg/BrRSWTaxVK">
+    <img alt="Discord" src="https://dcbadge.vercel.app/api/server/BrRSWTaxVK?style=flat"/>
   </a>
   <br/>
   <a href="https://github.com/wailsapp/wails/actions/workflows/build-and-test.yml" rel="nofollow">
@@ -58,6 +58,7 @@
 - [スポンサー](#スポンサー)
 - [始め方](#始め方)
 - [FAQ](#faq)
+- [スター数の推移](#スター数の推移)
 - [コントリビューター](#コントリビューター)
 - [特記事項](#特記事項)
 - [スペシャルサンクス](#スペシャルサンクス)

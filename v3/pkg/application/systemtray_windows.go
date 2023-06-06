@@ -19,7 +19,7 @@ const (
 type windowsSystemTray struct {
 	parent *SystemTray
 
-	menu *PopupMenu
+	menu *Win32Menu
 
 	// Platform specific implementation
 	uid           uint32
@@ -210,7 +210,7 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 		}
 		//println(w32.WMMessageToString(msg))
 
-		// TODO: Menu processing
+	// Menu processing
 	case w32.WM_COMMAND:
 		cmdMsgID := int(wParam & 0xffff)
 		switch cmdMsgID {
@@ -247,4 +247,13 @@ func (s *windowsSystemTray) setIconPosition(position int) {
 }
 
 func (s *windowsSystemTray) destroy() {
+	// Remove and delete the system tray
+	getNativeApplication().unregisterSystemTray(s)
+	s.menu.Destroy()
+	w32.DestroyWindow(s.hwnd)
+	// Destroy the notification icon
+	nid := s.newNotifyIconData()
+	if !w32.ShellNotifyIcon(w32.NIM_DELETE, &nid) {
+		globalApplication.info(syscall.GetLastError().Error())
+	}
 }

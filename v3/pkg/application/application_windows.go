@@ -3,7 +3,11 @@
 package application
 
 import (
+	"fmt"
+	"golang.org/x/sys/windows"
 	"os"
+	"strconv"
+	"sync"
 	"syscall"
 	"unsafe"
 
@@ -20,8 +24,11 @@ type windowsApp struct {
 
 	instance w32.HINSTANCE
 
-	windowMap  map[w32.HWND]*windowsWebviewWindow
-	systrayMap map[w32.HMENU]*windowsSystemTray
+	windowMap     map[w32.HWND]*windowsWebviewWindow
+	windowMapLock sync.RWMutex
+
+	systrayMap     map[w32.HMENU]*windowsSystemTray
+	systrayMapLock sync.RWMutex
 
 	mainThreadID         w32.HANDLE
 	mainThreadWindowHWND w32.HWND
@@ -31,7 +38,14 @@ type windowsApp struct {
 	focusedWindow w32.HWND
 
 	// system theme
-	isDarkMode bool
+	isDarkMode      bool
+	currentWindowID uint
+}
+
+func (m *windowsApp) getWindowForHWND(hwnd w32.HWND) *windowsWebviewWindow {
+	m.windowMapLock.RLock()
+	defer m.windowMapLock.RUnlock()
+	return m.windowMap[hwnd]
 }
 
 func getNativeApplication() *windowsApp {
@@ -39,13 +53,51 @@ func getNativeApplication() *windowsApp {
 }
 
 func (m *windowsApp) getPrimaryScreen() (*Screen, error) {
-	//TODO implement me
-	panic("implement me")
+	screens, err := m.getScreens()
+	if err != nil {
+		return nil, err
+	}
+	for _, screen := range screens {
+		if screen.IsPrimary {
+			return screen, nil
+		}
+	}
+	return nil, fmt.Errorf("no primary screen found")
 }
 
 func (m *windowsApp) getScreens() ([]*Screen, error) {
-	//TODO implement me
-	panic("implement me")
+	allScreens, err := w32.GetAllScreens()
+	if err != nil {
+		return nil, err
+	}
+	// Convert result to []*Screen
+	screens := make([]*Screen, len(allScreens))
+	for id, screen := range allScreens {
+		x := int(screen.MONITORINFOEX.RcMonitor.Left)
+		y := int(screen.MONITORINFOEX.RcMonitor.Top)
+		right := int(screen.MONITORINFOEX.RcMonitor.Right)
+		bottom := int(screen.MONITORINFOEX.RcMonitor.Bottom)
+		width := right - x
+		height := bottom - y
+		screens[id] = &Screen{
+			ID:     strconv.Itoa(id),
+			Name:   windows.UTF16ToString(screen.MONITORINFOEX.SzDevice[:]),
+			X:      x,
+			Y:      y,
+			Size:   Size{Width: width, Height: height},
+			Bounds: Rect{X: x, Y: y, Width: width, Height: height},
+			WorkArea: Rect{
+				X:      int(screen.MONITORINFOEX.RcWork.Left),
+				Y:      int(screen.MONITORINFOEX.RcWork.Top),
+				Width:  int(screen.MONITORINFOEX.RcWork.Right - screen.MONITORINFOEX.RcWork.Left),
+				Height: int(screen.MONITORINFOEX.RcWork.Bottom - screen.MONITORINFOEX.RcWork.Top),
+			},
+			IsPrimary: screen.IsPrimary,
+			Scale:     screen.Scale,
+			Rotation:  0,
+		}
+	}
+	return screens, nil
 }
 
 func (m *windowsApp) hide() {
@@ -90,8 +142,7 @@ func (m *windowsApp) name() string {
 }
 
 func (m *windowsApp) getCurrentWindowID() uint {
-	//return uint(C.getCurrentWindowID())
-	return uint(0)
+	return m.currentWindowID
 }
 
 func (m *windowsApp) setApplicationMenu(menu *Menu) {
@@ -101,9 +152,7 @@ func (m *windowsApp) setApplicationMenu(menu *Menu) {
 	}
 	menu.Update()
 
-	// Convert impl to macosMenu object
-	//m.applicationMenu = (menu.impl).(*macosMenu).nsMenu
-	//C.setApplicationMenu(m.applicationMenu)
+	m.parent.ApplicationMenu = menu
 }
 
 func (m *windowsApp) run() error {
@@ -199,7 +248,10 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		return window.WndProc(msg, wParam, lParam)
 	}
 
-	if systray, ok := m.systrayMap[hwnd]; ok {
+	m.systrayMapLock.Lock()
+	systray, ok := m.systrayMap[hwnd]
+	m.systrayMapLock.Unlock()
+	if ok {
 		return systray.wndProc(msg, wParam, lParam)
 	}
 
@@ -209,15 +261,27 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 }
 
 func (m *windowsApp) registerWindow(result *windowsWebviewWindow) {
+	m.windowMapLock.Lock()
 	m.windowMap[result.hwnd] = result
+	m.windowMapLock.Unlock()
 }
 
 func (m *windowsApp) registerSystemTray(result *windowsSystemTray) {
+	m.systrayMapLock.Lock()
+	defer m.systrayMapLock.Unlock()
 	m.systrayMap[result.hwnd] = result
 }
 
+func (m *windowsApp) unregisterSystemTray(result *windowsSystemTray) {
+	m.systrayMapLock.Lock()
+	defer m.systrayMapLock.Unlock()
+	delete(m.systrayMap, result.hwnd)
+}
+
 func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
+	m.windowMapLock.Lock()
 	delete(m.windowMap, w.hwnd)
+	m.windowMapLock.Unlock()
 
 	// If this was the last window...
 	if len(m.windowMap) == 0 && !m.parent.options.Windows.DisableQuitOnLastWindowClosed {

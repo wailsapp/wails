@@ -67,6 +67,7 @@ var (
 	procReleaseCapture                = moduser32.NewProc("ReleaseCapture")
 	procGetWindowThreadProcessId      = moduser32.NewProc("GetWindowThreadProcessId")
 	procMessageBox                    = moduser32.NewProc("MessageBoxW")
+	procMessageBoxIndirect            = moduser32.NewProc("MessageBoxIndirectW")
 	procGetSystemMetrics              = moduser32.NewProc("GetSystemMetrics")
 	procPostThreadMessageW            = moduser32.NewProc("PostThreadMessageW")
 	procRegisterWindowMessageA        = moduser32.NewProc("RegisterWindowMessageA")
@@ -86,6 +87,8 @@ var (
 	procGetDlgItem                    = moduser32.NewProc("GetDlgItem")
 	procDrawIcon                      = moduser32.NewProc("DrawIcon")
 	procCreateMenu                    = moduser32.NewProc("CreateMenu")
+	procRemoveMenu                    = moduser32.NewProc("RemoveMenu")
+	procGetMenuItemPosition           = moduser32.NewProc("GetMenuItemPosition")
 	procDestroyMenu                   = moduser32.NewProc("DestroyMenu")
 	procCreatePopupMenu               = moduser32.NewProc("CreatePopupMenu")
 	procCheckMenuRadioItem            = moduser32.NewProc("CheckMenuRadioItem")
@@ -131,7 +134,10 @@ var (
 	procGetDpiForWindow               = moduser32.NewProc("GetDpiForWindow")
 	procSetProcessDPIAware            = moduser32.NewProc("SetProcessDPIAware")
 	procEnumDisplayMonitors           = moduser32.NewProc("EnumDisplayMonitors")
+	procEnumDisplayDevices            = moduser32.NewProc("EnumDisplayDevicesW")
+	procEnumDisplaySettings           = moduser32.NewProc("EnumDisplaySettingsW")
 	procEnumDisplaySettingsEx         = moduser32.NewProc("EnumDisplaySettingsExW")
+	procEnumWindows                   = moduser32.NewProc("EnumWindows")
 	procChangeDisplaySettingsEx       = moduser32.NewProc("ChangeDisplaySettingsExW")
 	procSendInput                     = moduser32.NewProc("SendInput")
 	procSetWindowsHookEx              = moduser32.NewProc("SetWindowsHookExW")
@@ -139,6 +145,8 @@ var (
 	procCallNextHookEx                = moduser32.NewProc("CallNextHookEx")
 	procGetForegroundWindow           = moduser32.NewProc("GetForegroundWindow")
 	procUpdateLayeredWindow           = moduser32.NewProc("UpdateLayeredWindow")
+	getDisplayConfig                  = moduser32.NewProc("GetDisplayConfigBufferSizes")
+	queryDisplayConfig                = moduser32.NewProc("QueryDisplayConfig")
 
 	procSystemParametersInfo = moduser32.NewProc("SystemParametersInfoW")
 	procSetClassLong         = moduser32.NewProc("SetClassLongW")
@@ -214,6 +222,13 @@ func LoadCursorWithResourceID(instance HINSTANCE, res uint16) HCURSOR {
 		uintptr(res))
 
 	return HCURSOR(ret)
+}
+
+func MessageBoxIndirect(msgbox *MSGBOXPARAMS) int32 {
+	ret, _, _ := procMessageBoxIndirect.Call(
+		uintptr(unsafe.Pointer(msgbox)))
+
+	return int32(ret)
 }
 
 func ShowWindow(hwnd HWND, cmdshow int) bool {
@@ -638,6 +653,14 @@ func SetCapture(hwnd HWND) HWND {
 
 func ReleaseCapture() bool {
 	ret, _, _ := procReleaseCapture.Call()
+
+	return ret != 0
+}
+
+func EnumWindows(enumFunc uintptr, lparam uintptr) bool {
+	ret, _, _ := procEnumWindows.Call(
+		enumFunc,
+		lparam)
 
 	return ret != 0
 }

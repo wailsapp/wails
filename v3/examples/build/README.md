@@ -11,5 +11,5 @@ requirement.
 To build the example, run:
 
 ```bash
-wails run -t build
+wails task build
 ```

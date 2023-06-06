@@ -32,7 +32,6 @@ type RuntimeHandler interface {
 
 type AssetServer struct {
 	handler   http.Handler
-	wsHandler http.Handler
 	runtimeJS []byte
 	ipcJS     func(*http.Request) []byte
 
@@ -107,12 +106,8 @@ func (d *AssetServer) AddPluginScript(pluginName string, script string) {
 
 func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if isWebSocket(req) {
-		// Forward WebSockets to the distinct websocket handler if it exists
-		if wsHandler := d.wsHandler; wsHandler != nil {
-			wsHandler.ServeHTTP(rw, req)
-		} else {
-			rw.WriteHeader(http.StatusNotImplemented)
-		}
+		// WebSockets are not supported by the AssetServer
+		rw.WriteHeader(http.StatusNotImplemented)
 		return
 	}
 

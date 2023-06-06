@@ -4,6 +4,7 @@ package webviewloader
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"syscall"
 	"unsafe"
@@ -14,6 +15,7 @@ import (
 
 func init() {
 	fmt.Println("DEB | Using go webview2loader")
+	preventEnvAndRegistryOverrides()
 }
 
 type webView2RunTimeType int32
@@ -104,6 +106,8 @@ func createWebViewEnvironmentWithClientDll(lpLibFileName string, runtimeType web
 	envCompletedCom := combridge.New[iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler](envCompletedHandler)
 	defer envCompletedCom.Close()
 
+	preventEnvAndRegistryOverrides()
+
 	const unknown = 1
 	hr, _, err := createProc.Call(
 		uintptr(unknown),
@@ -156,4 +160,17 @@ func (r *environmentCreatedHandler) EnvironmentCompleted(errorCode HRESULT, crea
 	}
 
 	return HRESULT(windows.S_OK)
+}
+
+func preventEnvAndRegistryOverrides() {
+	// Setting these env variables to empty string also prevents registry overrides because webview2
+	// checks for existence and not for empty value
+	os.Setenv("WEBVIEW2_PIPE_FOR_SCRIPT_DEBUGGER", "")
+	os.Setenv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "")
+	os.Setenv("WEBVIEW2_RELEASE_CHANNEL_PREFERENCE", "0")
+
+	// The following seems not be be required because those are only used by the webview2loader which
+	// in this case is implemented on our own. But nevertheless set them to empty to be consistent.
+	os.Setenv("WEBVIEW2_BROWSER_EXECUTABLE_FOLDER", "")
+	os.Setenv("WEBVIEW2_USER_DATA_FOLDER", "")
 }

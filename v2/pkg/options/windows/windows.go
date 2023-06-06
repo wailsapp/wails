@@ -13,6 +13,7 @@ type Messages struct {
 	PressOKToInstall     string
 	ContactAdmin         string
 	InvalidFixedWebview2 string
+	WebView2ProcessCrash string
 }
 
 const (
@@ -102,6 +103,16 @@ type Options struct {
 
 	// WebviewGpuIsDisabled is used to enable / disable GPU acceleration for the webview
 	WebviewGpuIsDisabled bool
+
+	// WebviewDisableRendererCodeIntegrity disables the `RendererCodeIntegrity` of WebView2. Some Security Endpoint
+	// Protection Software inject themself into the WebView2 with unsigned or wrongly signed dlls, which is not allowed
+	// and will stop the WebView2 processes. Those security software need an update to fix this issue or one can disable
+	// the integrity check with this flag.
+	//
+	// The event viewer log contains `Code Integrity Errors` like mentioned here: https://github.com/MicrosoftEdge/WebView2Feedback/issues/2051
+	//
+	// !! Please keep in mind when disabling this feature, this also allows malicious software to inject into the WebView2 !!
+	WebviewDisableRendererCodeIntegrity bool
 }
 
 func DefaultMessages() *Messages {
@@ -116,5 +127,6 @@ func DefaultMessages() *Messages {
 		PressOKToInstall:     "Press Ok to install.",
 		ContactAdmin:         "The WebView2 runtime is required to run this application. Please contact your system administrator.",
 		InvalidFixedWebview2: "The WebView2 runtime is manually specified, but It is not valid. Check minimum required version and webview2 path.",
+		WebView2ProcessCrash: "The WebView2 process crashed and the application needs to be restarted.",
 	}
 }

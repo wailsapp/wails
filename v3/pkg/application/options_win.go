@@ -38,6 +38,23 @@ type WindowsWindow struct {
 	// WindowMask is used to set the window shape. Use a PNG with an alpha channel to create a custom shape.
 	WindowMask          []byte
 	WindowMaskDraggable bool
+
+	// Path where the WebView2 stores the user data. If empty %APPDATA%\[BinaryName.exe] will be used.
+	// If the path is not valid, a messagebox will be displayed with the error and the app will exit with error code.
+	WebviewUserDataPath string
+
+	// Path to the directory with WebView2 executables. If empty WebView2 installed in the system will be used.
+	WebviewBrowserPath string
+
+	// WebviewGpuIsDisabled is used to enable / disable GPU acceleration for the webview
+	WebviewGpuIsDisabled bool
+
+	// ResizeDebounceMS is the amount of time to debounce redraws of webview2
+	// when resizing the window
+	ResizeDebounceMS uint16
+
+	// Disable the menu bar for this window
+	DisableMenu bool
 }
 
 type Theme int

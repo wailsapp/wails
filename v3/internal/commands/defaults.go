@@ -14,8 +14,8 @@ var Manifest []byte
 //go:embed defaults/appicon.png
 var AppIcon []byte
 
-//go:embed defaults/icons.ico
-var IconsIco []byte
+//go:embed defaults/icon.ico
+var IconIco []byte
 
 //go:embed defaults/Info.plist
 var InfoPlist []byte
@@ -30,7 +30,7 @@ var AllAssets = map[string][]byte{
 	"info.json":          Info,
 	"wails.exe.manifest": Manifest,
 	"appicon.png":        AppIcon,
-	"icons.ico":          IconsIco,
+	"icon.ico":           IconIco,
 	"Info.plist":         InfoPlist,
 	"Info.dev.plist":     InfoDevPlist,
 	"icons.icns":         IconsIcns,

@@ -9,9 +9,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -89,6 +91,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
 		return result
+	}
+
+	if port, _ := ctx.Value("assetserverport").(string); port != "" {
+		result.startURL.Host = net.JoinHostPort(result.startURL.Host, port)
 	}
 
 	var bindings string
@@ -428,6 +434,9 @@ func (f *Frontend) setupChromium() {
 		if opts.WebviewGpuIsDisabled {
 			chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
 		}
+		if opts.WebviewDisableRendererCodeIntegrity {
+			disableFeatues = append(disableFeatues, "RendererCodeIntegrity")
+		}
 	}
 
 	if len(disableFeatues) > 0 {
@@ -441,6 +450,37 @@ func (f *Frontend) setupChromium() {
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
 		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
 		return false
+	}
+	chromium.ProcessFailedCallback = func(sender *edge.ICoreWebView2, args *edge.ICoreWebView2ProcessFailedEventArgs) {
+		kind, err := args.GetProcessFailedKind()
+		if err != nil {
+			f.logger.Error("GetProcessFailedKind: %s", err)
+			return
+		}
+
+		f.logger.Error("WebVie2wProcess failed with kind %d", kind)
+		switch kind {
+		case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED:
+			// => The app has to recreate a new WebView to recover from this failure.
+			messages := windows.DefaultMessages()
+			if f.frontendOptions.Windows != nil && f.frontendOptions.Windows.Messages != nil {
+				messages = f.frontendOptions.Windows.Messages
+			}
+			winc.Errorf(f.mainWindow, messages.WebView2ProcessCrash)
+			os.Exit(-1)
+		case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_EXITED,
+			edge.COREWEBVIEW2_PROCESS_FAILED_KIND_FRAME_RENDER_PROCESS_EXITED:
+			// => A new render process is created automatically and navigated to an error page.
+			// => Make sure that the error page is shown.
+			if !f.hasStarted {
+				// NavgiationCompleted didn't come in, make sure the chromium is shown
+				chromium.Show()
+			}
+			if !f.mainWindow.hasBeenShown {
+				// The window has never been shown, make sure to show it
+				f.ShowWindow()
+			}
+		}
 	}
 
 	chromium.Embed(f.mainWindow.Handle())
@@ -554,8 +594,16 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 		headers = append(headers, fmt.Sprintf("%s: %s", k, strings.Join(v, ",")))
 	}
 
+	code := rw.Code
+	if code == http.StatusNotModified {
+		// WebView2 has problems when a request returns a 304 status code and the WebView2 is going to hang for other
+		// requests including IPC calls.
+		f.logger.Error("%s: AssetServer returned 304 - StatusNotModified which are going to hang WebView2, changed code to 505 - StatusInternalServerError", uri)
+		code = http.StatusInternalServerError
+	}
+
 	env := f.chromium.Environment()
-	response, err := env.CreateWebResourceResponse(rw.Body.Bytes(), rw.Code, http.StatusText(rw.Code), strings.Join(headers, "\n"))
+	response, err := env.CreateWebResourceResponse(rw.Body.Bytes(), code, http.StatusText(code), strings.Join(headers, "\n"))
 	if err != nil {
 		f.logger.Error("CreateWebResourceResponse Error: %s", err)
 		return
@@ -793,6 +841,12 @@ func coreWebview2RequestToHttpRequest(coreReq *edge.ICoreWebView2WebResourceRequ
 				return nil, fmt.Errorf("MoveNext Error: %s", err)
 			}
 		}
+
+		// WebView2 has problems when a request returns a 304 status code and the WebView2 is going to hang for other
+		// requests including IPC calls.
+		// So prevent 304 status codes by removing the headers that are used in combinationwith caching.
+		header.Del("If-Modified-Since")
+		header.Del("If-None-Match")
 
 		method, err := coreReq.GetMethod()
 		if err != nil {

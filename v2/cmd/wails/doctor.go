@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/pterm/pterm"
+
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/system"
@@ -13,43 +14,33 @@ import (
 )
 
 func diagnoseEnvironment(f *flags.Doctor) error {
-
 	if f.NoColour {
 		pterm.DisableColor()
 		colour.ColourEnabled = false
 	}
 
-	app.PrintBanner()
+	pterm.DefaultSection = *pterm.DefaultSection.
+		WithBottomPadding(0).
+		WithStyle(pterm.NewStyle(pterm.FgBlue, pterm.Bold))
 
-	pterm.Print("Scanning system - Please wait (this may take a long time)...")
+	pterm.Println() // Spacer
+	pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Println("Wails Doctor")
+	pterm.Println() // Spacer
+
+	spinner, _ := pterm.DefaultSpinner.WithRemoveWhenDone().Start("Scanning system - Please wait (this may take a long time)...")
 
 	// Get system info
 	info, err := system.GetInfo()
 	if err != nil {
-		pterm.Println("Failed.")
+		spinner.Fail()
+		pterm.Error.Println("Failed to get system information")
 		return err
 	}
-	pterm.Println("Done.")
-
-	pterm.DefaultSection.Println("System")
-
-	systemTabledata := [][]string{
-		{"OS", info.OS.Name},
-		{"Version", info.OS.Version},
-		{"ID", info.OS.ID},
-		{"Go Version", runtime.Version()},
-		{"Platform", runtime.GOOS},
-		{"Architecture", runtime.GOARCH},
-	}
-
-	err = pterm.DefaultTable.WithData(systemTabledata).Render()
-	if err != nil {
-		return err
-	}
+	spinner.Success()
 
 	pterm.DefaultSection.Println("Wails")
 
-	wailsTableData := [][]string{
+	wailsTableData := pterm.TableData{
 		{"Version", app.Version()},
 	}
 
@@ -77,41 +68,57 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 		return err
 	}
 
+	pterm.DefaultSection.Println("System")
+
+	systemTabledata := pterm.TableData{
+		{pterm.Bold.Sprint("OS"), info.OS.Name},
+		{pterm.Bold.Sprint("Version"), info.OS.Version},
+		{pterm.Bold.Sprint("ID"), info.OS.ID},
+		{pterm.Bold.Sprint("Go Version"), runtime.Version()},
+		{pterm.Bold.Sprint("Platform"), runtime.GOOS},
+		{pterm.Bold.Sprint("Architecture"), runtime.GOARCH},
+	}
+
+	err = pterm.DefaultTable.WithBoxed().WithData(systemTabledata).Render()
+	if err != nil {
+		return err
+	}
+
 	pterm.DefaultSection.Println("Dependencies")
 
 	// Output Dependencies Status
-	var dependenciesMissing = []string{}
-	var externalPackages = []*packagemanager.Dependency{}
+	var dependenciesMissing []string
+	var externalPackages []*packagemanager.Dependency
 	var dependenciesAvailableRequired = 0
 	var dependenciesAvailableOptional = 0
 
-	dependenciesTableData := [][]string{
+	dependenciesTableData := pterm.TableData{
 		{"Dependency", "Package Name", "Status", "Version"},
 	}
 
 	hasOptionalDependencies := false
 	// Loop over dependencies
 	for _, dependency := range info.Dependencies {
-
 		name := dependency.Name
+
 		if dependency.Optional {
-			name = "*" + name
+			name = pterm.Gray("*") + name
 			hasOptionalDependencies = true
 		}
+
 		packageName := "Unknown"
-		status := "Not Found"
+		status := pterm.LightRed("Not Found")
 
 		// If we found the package
 		if dependency.PackageName != "" {
-
 			packageName = dependency.PackageName
 
 			// If it's installed, update the status
 			if dependency.Installed {
-				status = "Installed"
+				status = pterm.LightGreen("Installed")
 			} else {
 				// Generate meaningful status text
-				status = "Available"
+				status = pterm.LightMagenta("Available")
 
 				if dependency.Optional {
 					dependenciesAvailableOptional++
@@ -132,21 +139,18 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 		dependenciesTableData = append(dependenciesTableData, []string{name, packageName, status, dependency.Version})
 	}
 
-	err = pterm.DefaultTable.WithHasHeader(true).WithData(dependenciesTableData).Render()
+	dependenciesTableString, _ := pterm.DefaultTable.WithHasHeader(true).WithData(dependenciesTableData).Srender()
+	dependenciesBox := pterm.DefaultBox.WithTitleBottomCenter()
 
 	if hasOptionalDependencies {
-		pterm.Println("* - Optional Dependency")
+		dependenciesBox = dependenciesBox.WithTitle(pterm.Gray("*") + " - Optional Dependency")
 	}
+
+	dependenciesBox.Println(dependenciesTableString)
 
 	pterm.DefaultSection.Println("Diagnosis")
 
 	// Generate an appropriate diagnosis
-
-	if len(dependenciesMissing) == 0 && dependenciesAvailableRequired == 0 {
-		pterm.Println("Your system is ready for Wails development!")
-	} else {
-		pterm.Println("Your system has missing dependencies!")
-	}
 
 	if dependenciesAvailableRequired != 0 {
 		pterm.Println("Required package(s) installation details: \n" + info.Dependencies.InstallAllRequiredCommand())
@@ -156,11 +160,18 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 		pterm.Println("Optional package(s) installation details: \n" + info.Dependencies.InstallAllOptionalCommand())
 	}
 
+	if len(dependenciesMissing) == 0 && dependenciesAvailableRequired == 0 {
+		pterm.Success.Println("Your system is ready for Wails development!")
+	} else {
+		pterm.Warning.Println("Your system has missing dependencies!")
+	}
+
 	if len(dependenciesMissing) != 0 {
 		pterm.Println("Fatal:")
 		pterm.Println("Required dependencies missing: " + strings.Join(dependenciesMissing, " "))
 		pterm.Println("Please read this article on how to resolve this: https://wails.io/guides/resolving-missing-packages")
 	}
 
+	pterm.Println() // Spacer for sponsor message
 	return nil
 }

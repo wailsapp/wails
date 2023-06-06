@@ -22,6 +22,14 @@ func (p PopupMenu) Track(hwnd HWND, flags uint32, x, y int32) bool {
 		nil)
 }
 
+func RemoveMenu(m HMENU, pos, flags int) bool {
+	ret, _, _ := procRemoveMenu.Call(
+		uintptr(m),
+		uintptr(pos),
+		uintptr(flags))
+	return ret != 0
+}
+
 func (p PopupMenu) Append(flags uint32, id uintptr, text string) bool {
 	return Menu(p).Append(flags, id, text)
 }
@@ -40,6 +48,16 @@ func (m Menu) Check(id uintptr, check bool) bool {
 		checkState = MF_CHECKED
 	}
 	return CheckMenuItem(HMENU(m), id, checkState) != 0
+}
+
+func CheckRadio(m HMENU, startID int, endID int, selectedID int) bool {
+	ret, _, _ := procCheckMenuRadioItem.Call(
+		m,
+		uintptr(startID),
+		uintptr(endID),
+		uintptr(selectedID),
+		MF_BYCOMMAND)
+	return ret != 0
 }
 
 func (m Menu) CheckRadio(startID int, endID int, selectedID int) bool {

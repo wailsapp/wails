@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"log"
+	"runtime"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -19,7 +20,9 @@ func main() {
 
 	// Create a custom menu
 	menu := app.NewMenu()
-	menu.AddRole(application.AppMenu)
+	if runtime.GOOS == "darwin" {
+		menu.AddRole(application.AppMenu)
+	}
 
 	// Let's make a "Demo" menu
 	myMenu := menu.AddSubmenu("Demo")
@@ -89,11 +92,11 @@ func main() {
 	})
 	myMenu.Add("Hide the beatles").OnClick(func(ctx *application.Context) {
 		if beatles.Hidden() {
-			ctx.ClickedMenuItem().SetLabel("Unhide the beatles!")
+			ctx.ClickedMenuItem().SetLabel("Hide the beatles!")
 			beatles.SetHidden(false)
 		} else {
 			beatles.SetHidden(true)
-			ctx.ClickedMenuItem().SetLabel("Hide the beatles!")
+			ctx.ClickedMenuItem().SetLabel("Unhide the beatles!")
 		}
 	})
 	app.SetMenu(menu)

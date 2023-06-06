@@ -478,6 +478,19 @@ func (i *ICoreWebView2) AddNavigationCompleted(eventHandler *ICoreWebView2Naviga
 	return nil
 }
 
+func (i *ICoreWebView2) AddProcessFailed(eventHandler *ICoreWebView2ProcessFailedEventHandler, token *_EventRegistrationToken) error {
+	var err error
+	_, _, err = i.vtbl.AddProcessFailed.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(eventHandler)),
+		uintptr(unsafe.Pointer(&token)),
+	)
+	if err != windows.ERROR_SUCCESS {
+		return err
+	}
+	return nil
+}
+
 func (i *ICoreWebView2) OpenDevToolsWindow() error {
 	var err error
 	_, _, err = i.vtbl.OpenDevToolsWindow.Call(

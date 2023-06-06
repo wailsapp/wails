@@ -53,6 +53,13 @@ it's likely that your application's `info.plist` is invalid. Update the file in 
 and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to
 the `build/darwin` directory.
 
+## My application is not displaying the correct icon in Windows Explorer
+
+If your application is not displaying the correct icon, try deleting the hidden `IconCache.db` file located in the
+`C:\Users\<your username>\AppData\Local` directory. This will force Windows to rebuild the icon cache.
+
+Source: https://github.com/wailsapp/wails/issues/2360#issuecomment-1556070036
+
 ## Cannot call backend method from frontend with variadic arguments
 
 If you have a backend method defined with variadic parameters, eg:

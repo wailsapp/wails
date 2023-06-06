@@ -106,14 +106,12 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	}
 
 	if frontendDevServerURL != "" {
-		if os.Getenv("legacyusedevsererinsteadofcustomscheme") != "" {
-			startURL, err := url.Parse("http://" + devServer)
-			if err != nil {
-				return nil, err
-			}
-
-			ctx = context.WithValue(ctx, "starturl", startURL)
+		_, port, err := net.SplitHostPort(devServer)
+		if err != nil {
+			return nil, fmt.Errorf("unable to determine port of DevServer: %s", err)
 		}
+
+		ctx = context.WithValue(ctx, "assetserverport", port)
 
 		ctx = context.WithValue(ctx, "frontenddevserverurl", frontendDevServerURL)
 

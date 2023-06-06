@@ -1,0 +1,83 @@
+version: '3'
+
+tasks:
+
+  pre-build:
+    summary: Pre-build hooks
+
+  post-build:
+    summary: Post-build hooks
+
+  build:darwin:
+    summary: Builds the application
+    platforms:
+      - darwin
+    cmds:
+      - task: pre-build
+      - go build -gcflags=all="-N -l" -o bin/testapp
+      - task: post-build
+    env:
+      CGO_CFLAGS: "-mmacosx-version-min=10.13"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+
+  build:windows:
+    summary: Builds the application for Windows
+    platforms:
+      - windows
+    cmds:
+      - task: pre-build
+      - go build -gcflags=all="-N -l" -o bin/testapp.exe
+      - task: post-build
+
+  build:
+    summary: Builds the application
+    cmds:
+      - task: build:darwin
+      - task: build:windows
+
+  generate-icons:
+    summary: Generates Windows `.ico` and Mac `.icns` files from an image
+    dir: build
+    cmds:
+      # Generates both .ico and .icns files
+      - wails generate icons -input appicon.png
+
+  build-prod:
+    summary: Creates a production build of the application
+    cmds:
+      - go build -tags production -ldflags="-w -s" -o bin/testapp{{exeExt}}
+
+  package:darwin:
+    summary: Packages a production build of the application into a `.app` bundle
+    platforms:
+      - darwin
+    deps:
+        - build-prod
+        - generate-icons
+    cmds:
+      - mkdir -p buildtest.app/Contents/{MacOS,Resources}
+      - cp build/icons.icns buildtest.app/Contents/Resources
+      - cp bin/testapp buildtest.app/Contents/MacOS
+      - cp build/Info.plist buildtest.app/Contents
+
+  windows:generate:syso:
+    dir: build
+    cmds:
+      - wails generate syso -arch amd64 -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+
+  package:windows:
+    summary: Packages a production build of the application into a `.exe` bundle
+    platforms:
+      - windows
+    deps:
+      - generate-icons
+    cmds:
+      - task: windows:generate:syso
+      - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/testapp.exe
+      - powershell Remove-item wails.syso
+
+  build:production:
+    summary: Builds the application for production
+    cmds:
+      - task: package:darwin
+      - task: package:windows

@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"log"
+	"runtime"
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -20,7 +21,9 @@ func main() {
 
 	// Create a custom menu
 	menu := app.NewMenu()
-	menu.AddRole(application.AppMenu)
+	if runtime.GOOS == "darwin" {
+		menu.AddRole(application.AppMenu)
+	}
 
 	setClipboardMenu := menu.AddSubmenu("Set Clipboard")
 	setClipboardMenu.Add("Set Text 'Hello'").OnClick(func(ctx *application.Context) {

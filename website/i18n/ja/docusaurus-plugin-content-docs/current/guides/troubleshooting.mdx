@@ -47,6 +47,12 @@ var assets embed.FS
 
 アプリケーションの`info.plist`が無効である可能性があります。 `build/<yourapp>.app/Contents/info.plist`ファイルを更新し、データが有効かどうかを確認します。たとえば、バイナリ名が正しいかどうかを確認してください。 変更を反映するには、ファイルを`build/darwin`ディレクトリにコピーします。
 
+## My application is not displaying the correct icon in Windows Explorer
+
+If your application is not displaying the correct icon, try deleting the hidden `IconCache.db` file located in the `C:\Users\&#060;your username&#062;\AppData\Local` directory. This will force Windows to rebuild the icon cache.
+
+Source: https://github.com/wailsapp/wails/issues/2360#issuecomment-1556070036
+
 ## 可変長引数を持つバックエンドメソッドをフロントエンドから呼び出せません
 
 次のように、可変長引数を持つバックエンドメソッドが定義されている場合:
