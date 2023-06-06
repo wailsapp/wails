@@ -208,6 +208,19 @@ To log or not to log? System logger vs custom logger.
 | Label (ANSI Codes) | -       |       |     |                                                                      |
 | Menu               | Y       |       | Y   |                                                                      |
 
+### Methods
+
+| Method                        | Windows | Linux | Mac | Notes |
+|-------------------------------|---------|-------|-----|-------|
+| setLabel(label string)        | -       |       | Y   |       |
+| run()                         | Y       |       | Y   |       |
+| setIcon(icon []byte)          | Y       |       | Y   |       |
+| setMenu(menu *Menu)           | Y       |       | Y   |       |
+| setIconPosition(position int) | -       |       | Y   |       |
+| setTemplateIcon(icon []byte)  | -       |       | Y   |       |
+| destroy()                     | Y       |       | Y   |       |
+| setDarkModeIcon(icon []byte)  | Y       |       | Y   |       |
+
 ## Cross Platform Events
 
 Mapping native events to cross-platform events.
@@ -316,22 +329,22 @@ Built-in plugin support:
 
 ## Examples
 
-| Example      | Windows | Linux | Mac |
-|--------------|---------|-------|-----|
-| binding      |         |       |     |
-| build        |         |       |     |
-| clipboard    |         |       |     |
-| contextmenus |         |       |     |
-| dialogs      |         |       |     |
-| drag-n-drop  |         |       |     |
-| events       |         |       |     |
-| frameless    |         |       |     |
-| kitchensink  |         |       |     |
-| menu         |         |       |     |
-| plain        |         |       |     |
-| plugins      |         |       |     |
-| screen       |         |       |     |
-| systray      |         |       |     |
-| window       |         |       |     |
-| windowjs     |         |       |     |
-| wml          |         |       |     |
+| Example      | Windows            | Linux | Mac |
+|--------------|--------------------|-------|-----|
+| binding      | NO                 |       |     |
+| build        | Yes (Debug + Prod) |       |     |
+| clipboard    | NO                 |       |     |
+| contextmenus | Yes                |       |     |
+| dialogs      | Almost             |       |     |
+| drag-n-drop  | NO                 |       |     |
+| events       | NO                 |       |     |
+| frameless    | NO                 |       |     |
+| kitchensink  | Yes                |       |     |
+| menu         | Yes                |       |     |
+| plain        | Yes                |       |     |
+| plugins      |                    |       |     |
+| screen       |                    |       |     |
+| systray      |                    |       |     |
+| window       |                    |       |     |
+| windowjs     |                    |       |     |
+| wml          |                    |       |     |
