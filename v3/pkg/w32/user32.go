@@ -137,6 +137,7 @@ var (
 	procEnumDisplayDevices            = moduser32.NewProc("EnumDisplayDevicesW")
 	procEnumDisplaySettings           = moduser32.NewProc("EnumDisplaySettingsW")
 	procEnumDisplaySettingsEx         = moduser32.NewProc("EnumDisplaySettingsExW")
+	procEnumWindows                   = moduser32.NewProc("EnumWindows")
 	procChangeDisplaySettingsEx       = moduser32.NewProc("ChangeDisplaySettingsExW")
 	procSendInput                     = moduser32.NewProc("SendInput")
 	procSetWindowsHookEx              = moduser32.NewProc("SetWindowsHookExW")
@@ -652,6 +653,14 @@ func SetCapture(hwnd HWND) HWND {
 
 func ReleaseCapture() bool {
 	ret, _, _ := procReleaseCapture.Call()
+
+	return ret != 0
+}
+
+func EnumWindows(enumFunc uintptr, lparam uintptr) bool {
+	ret, _, _ := procEnumWindows.Call(
+		enumFunc,
+		lparam)
 
 	return ret != 0
 }
