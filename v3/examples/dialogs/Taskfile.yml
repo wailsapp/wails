@@ -49,6 +49,8 @@ tasks:
 
   package:darwin:
     summary: Packages a production build of the application into a `.app` bundle
+    platforms:
+      - darwin
     deps:
         - build-prod
         - generate-icons
@@ -61,13 +63,21 @@ tasks:
   windows:generate:syso:
     dir: build
     cmds:
-      - wails generate syso -arch amd64 -icon icons.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+      - wails generate syso -arch amd64 -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
 
   package:windows:
     summary: Packages a production build of the application into a `.exe` bundle
+    platforms:
+      - windows
     deps:
       - generate-icons
     cmds:
       - task: windows:generate:syso
       - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/testapp.exe
       - powershell Remove-item wails.syso
+
+  build:production:
+    summary: Builds the application for production
+    cmds:
+      - task: package:darwin
+      - task: package:windows

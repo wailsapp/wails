@@ -33,16 +33,32 @@ tasks:
     cmds:
       - npm run build
 
-  build:
+  build:darwin:
     summary: Builds the application
+    platforms:
+      - darwin
     cmds:
       - task: pre-build
-      - task: build-frontend
-      - go build -gcflags=all="-N -l" -o build/bin/{{ "{{.APP_NAME}}" }} main.go
+      - go build -gcflags=all="-N -l" -o bin/testapp
       - task: post-build
     env:
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
       CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+
+  build:windows:
+    summary: Builds the application for Windows
+    platforms:
+      - windows
+    cmds:
+      - task: pre-build
+      - go build -gcflags=all="-N -l" -o bin/testapp.exe
+      - task: post-build
+
+  build:
+    summary: Builds the application
+    cmds:
+      - task: build:darwin
+      - task: build:windows
 
   generate-icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
@@ -100,6 +116,6 @@ tasks:
     cmds:
       - task: generate:syso
         vars:
-          ARCH: amd64
+            ARCH: amd64
       - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
       - powershell Remove-item wails.syso
