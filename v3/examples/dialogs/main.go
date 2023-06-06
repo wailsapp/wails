@@ -50,6 +50,9 @@ func main() {
 		dialog.SetIcon(icons.ApplicationDarkMode256)
 		dialog.Show()
 	})
+	infoMenu.Add("About").OnClick(func(ctx *application.Context) {
+		app.ShowAboutDialog()
+	})
 
 	questionMenu := menu.AddSubmenu("Question")
 	questionMenu.Add("Question (No default)").OnClick(func(ctx *application.Context) {
