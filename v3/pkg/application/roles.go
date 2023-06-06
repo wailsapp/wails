@@ -89,6 +89,9 @@ func newViewMenu() *MenuItem {
 }
 
 func newAppMenu() *MenuItem {
+	if runtime.GOOS != "darwin" {
+		return nil
+	}
 	appMenu := NewMenu()
 	appMenu.AddRole(About)
 	appMenu.AddSeparator()

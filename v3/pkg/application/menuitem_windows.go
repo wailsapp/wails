@@ -186,8 +186,10 @@ func newSelectAllMenuItem() *MenuItem {
 }
 
 func newAboutMenuItem() *MenuItem {
-	panic("implement me")
-
+	return newMenuItem("About " + globalApplication.options.Name).
+		OnClick(func(ctx *Context) {
+			globalApplication.ShowAboutDialog()
+		})
 }
 
 func newCloseMenuItem() *MenuItem {

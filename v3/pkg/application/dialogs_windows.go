@@ -11,13 +11,22 @@ import (
 )
 
 func (m *windowsApp) showAboutDialog(title string, message string, icon []byte) {
-	panic("implement me")
+	about := newDialogImpl(&MessageDialog{
+		MessageDialogOptions: MessageDialogOptions{
+			DialogType: InfoDialog,
+			Title:      title,
+			Message:    message,
+		},
+	})
+	about.UseAppIcon = true
+	about.show()
 }
 
 type windowsDialog struct {
 	dialog *MessageDialog
 
 	//dialogImpl unsafe.Pointer
+	UseAppIcon bool
 }
 
 func (m *windowsDialog) show() {
@@ -25,8 +34,14 @@ func (m *windowsDialog) show() {
 	title := w32.MustStringToUTF16Ptr(m.dialog.Title)
 	message := w32.MustStringToUTF16Ptr(m.dialog.Message)
 	flags := calculateMessageDialogFlags(m.dialog.MessageDialogOptions)
+	var button int32
 
-	button, _ := windows.MessageBox(windows.HWND(0), message, title, flags|windows.MB_SYSTEMMODAL)
+	if m.UseAppIcon {
+		// 3 is the application icon
+		button, _ = w32.MessageBoxWithIcon(0, message, title, 3, windows.MB_OK|windows.MB_USERICON)
+	} else {
+		button, _ = windows.MessageBox(windows.HWND(0), message, title, flags|windows.MB_SYSTEMMODAL)
+	}
 	// This maps MessageBox return values to strings
 	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
 	result := "Error"
