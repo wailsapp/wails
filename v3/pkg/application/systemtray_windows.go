@@ -247,4 +247,13 @@ func (s *windowsSystemTray) setIconPosition(position int) {
 }
 
 func (s *windowsSystemTray) destroy() {
+	// Remove and delete the system tray
+	getNativeApplication().unregisterSystemTray(s)
+	s.menu.Destroy()
+	w32.DestroyWindow(s.hwnd)
+	// Destroy the notification icon
+	nid := s.newNotifyIconData()
+	if !w32.ShellNotifyIcon(w32.NIM_DELETE, &nid) {
+		globalApplication.info(syscall.GetLastError().Error())
+	}
 }
