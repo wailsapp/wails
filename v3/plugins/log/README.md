@@ -17,20 +17,33 @@ Add the plugin to the `Plugins` option in the Applications options:
 You can then call the methods from the frontend:
 
 ```js
-    wails.Plugin("log","All","hello world").then((result) => console.log(result))
+    wails.Plugin("log","Debug","hello world")
 ```
 
-This method returns a struct with the following fields:
+### Methods
 
-```typescript
-    interface Hashes {
-        MD5: string;
-        SHA1: string;
-        SHA256: string;
-    }
+- Trace
+- Debug
+- Info
+- Warning
+- Error
+- Fatal
+- SetLevel
+
+SetLevel takes an integer value from JS:
+
+```js
+    wails.Plugin("log","SetLevel",1)
 ```
 
-A TypeScript definition file is provided for this interface.
+Levels are:
+
+ - Trace: 1 
+ - Debug: 2
+ - Info: 3
+ - Warning: 4
+ - Error: 5
+ - Fatal: 6
 
 ## Support
 

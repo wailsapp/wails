@@ -269,11 +269,11 @@ Built-in plugin support:
 
 | Plugin          | Windows | Linux | Mac | Notes |
 |-----------------|---------|-------|-----|-------|
-| Browser         |         |       | Y   |       |
-| KV Store        |         |       | Y   |       |
-| Log             |         |       | Y   |       |
-| Single Instance |         |       | Y   |       |
-| SQLite          |         |       | Y   |       |
+| Browser         | Y       |       | Y   |       |
+| KV Store        | Y       |       | Y   |       |
+| Log             | Y       |       | Y   |       |
+| Single Instance | Y       |       | Y   |       |
+| SQLite          | Y       |       | Y   |       |
 | Start at login  |         |       | Y   |       |
 | Server          |         |       |     |       |
 
