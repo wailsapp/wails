@@ -2,9 +2,10 @@
 
 ## Overview
 
-Wails offers Linux support but providing installation instructions for all available distributions is an impossible task.
-Instead, Wails tries to determine if the packages you need to develop applications are available via your system's package
-manager. Currently, we support the following package managers:
+Wails offers Linux support but providing installation instructions for all
+available distributions is an impossible task. Instead, Wails tries to determine
+if the packages you need to develop applications are available via your system's
+package manager. Currently, we support the following package managers:
 
 - apt
 - dnf
@@ -16,11 +17,13 @@ manager. Currently, we support the following package managers:
 
 ## Adding package names
 
-There may be circumstances where your distro uses one of the supported package managers but the package name
-is different. For example, you may use an Ubuntu derivative, but the package name for gtk may be different. Wails
-attempts to find the correct package by iterating through a list of package names.
-The list of packages are stored in the packagemanager specific file in the `v2/internal/system/packagemanager`
-directory. In our example, this would be `v2/internal/system/packagemanager/apt.go`.
+There may be circumstances where your distro uses one of the supported package
+managers but the package name is different. For example, you may use an Ubuntu
+derivative, but the package name for gtk may be different. Wails attempts to
+find the correct package by iterating through a list of package names. The list
+of packages are stored in the packagemanager specific file in the
+`v2/internal/system/packagemanager` directory. In our example, this would be
+`v2/internal/system/packagemanager/apt.go`.
 
 In this file, the list of packages are defined by the `Packages()` method:
 
@@ -49,8 +52,8 @@ func (a *Apt) Packages() packagemap {
 }
 ```
 
-Let's assume that in our linux distro, `libgtk-3` is packaged under the name `lib-gtk3-dev`.
-We could add support for this by adding the following line:
+Let's assume that in our linux distro, `libgtk-3` is packaged under the name
+`lib-gtk3-dev`. We could add support for this by adding the following line:
 
 ```go {5}
 func (a *Apt) Packages() packagemap {
@@ -82,8 +85,10 @@ func (a *Apt) Packages() packagemap {
 
 To add a new package manager, perform the following steps:
 
-- Create a new file in `v2/internal/system/packagemanager` called `<pm>.go`, where `<pm>` is the name of the package manager.
-- Define a struct that conforms to the package manager interface defined in `pm.go`:
+- Create a new file in `v2/internal/system/packagemanager` called `<pm>.go`,
+  where `<pm>` is the name of the package manager.
+- Define a struct that conforms to the package manager interface defined in
+  `pm.go`:
 
 ```go
 type PackageManager interface {
@@ -96,15 +101,19 @@ type PackageManager interface {
 ```
 
 - `Name()` should return the name of the package manager
-- `Packages()` should return a `packagemap`, that provides candidate filenames for dependencies
+- `Packages()` should return a `packagemap`, that provides candidate filenames
+  for dependencies
 - `PackageInstalled()` should return `true` if the given package is installed
-- `PackageAvailable()` should return `true` if the given package is not installed but available for installation
-- `InstallCommand()` should return the exact command to install the given package name
+- `PackageAvailable()` should return `true` if the given package is not
+  installed but available for installation
+- `InstallCommand()` should return the exact command to install the given
+  package name
 
 Take a look at the other package managers code to get an idea how this works.
 
 :::info Remember
 
-If you add support for a new package manager, don't forget to also update this page!
+If you add support for a new package manager, don't forget to also update this
+page!
 
 :::

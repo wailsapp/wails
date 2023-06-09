@@ -1,13 +1,16 @@
 # Application Development
 
-There are no hard and fast rules for developing applications with Wails, but there are some basic guidelines.
+There are no hard and fast rules for developing applications with Wails, but
+there are some basic guidelines.
 
 ## Application Setup
 
-The pattern used by the default templates are that `main.go` is used for configuring and running the application, whilst
-`app.go` is used for defining the application logic.
+The pattern used by the default templates are that `main.go` is used for
+configuring and running the application, whilst `app.go` is used for defining
+the application logic.
 
-The `app.go` file will define a struct that has 2 methods which act as hooks into the main application:
+The `app.go` file will define a struct that has 2 methods which act as hooks
+into the main application:
 
 ```go title="app.go"
 type App struct {
@@ -26,18 +29,23 @@ func (a *App) shutdown(ctx context.Context) {
 }
 ```
 
-- The startup method is called as soon as Wails allocates the resources it needs and is a good place for creating resources,
-  setting up event listeners and anything else the application needs at startup.
-  It is given a `context.Context` which is usually saved in a struct field. This context is needed for calling the
-  [runtime](../reference/runtime/intro.mdx). If this method returns an error, the application will terminate.
-  In dev mode, the error will be output to the console.
+- The startup method is called as soon as Wails allocates the resources it needs
+  and is a good place for creating resources, setting up event listeners and
+  anything else the application needs at startup. It is given a
+  `context.Context` which is usually saved in a struct field. This context is
+  needed for calling the [runtime](../reference/runtime/intro.mdx). If this
+  method returns an error, the application will terminate. In dev mode, the
+  error will be output to the console.
 
-- The shutdown method will be called by Wails right at the end of the shutdown process. This is a good place to deallocate
-  memory and perform any shutdown tasks.
+- The shutdown method will be called by Wails right at the end of the shutdown
+  process. This is a good place to deallocate memory and perform any shutdown
+  tasks.
 
-The `main.go` file generally consists of a single call to `wails.Run()`, which accepts the application configuration.
-The pattern used by the templates is that before the call to `wails.Run()`, an instance of the struct we defined in
-`app.go` is created and saved in a variable called `app`. This configuration is where we add our callbacks:
+The `main.go` file generally consists of a single call to `wails.Run()`, which
+accepts the application configuration. The pattern used by the templates is that
+before the call to `wails.Run()`, an instance of the struct we defined in
+`app.go` is created and saved in a variable called `app`. This configuration is
+where we add our callbacks:
 
 ```go {3,9,10} title="main.go"
 func main() {
@@ -58,12 +66,14 @@ func main() {
 
 ```
 
-More information on application lifecycle hooks can be found [here](../howdoesitwork.mdx#application-lifecycle-callbacks).
+More information on application lifecycle hooks can be found
+[here](../howdoesitwork.mdx#application-lifecycle-callbacks).
 
 ## Binding Methods
 
-It is likely that you will want to call Go methods from the frontend. This is normally done by adding public methods to
-the already defined struct in `app.go`:
+It is likely that you will want to call Go methods from the frontend. This is
+normally done by adding public methods to the already defined struct in
+`app.go`:
 
 ```go {16-18} title="app.go"
 type App struct {
@@ -86,7 +96,8 @@ func (a *App) Greet(name string) string {
 }
 ```
 
-In the main application configuration, the `Bind` key is where we can tell Wails what we want to bind:
+In the main application configuration, the `Bind` key is where we can tell Wails
+what we want to bind:
 
 ```go {11-13} title="main.go"
 func main() {
@@ -110,13 +121,15 @@ func main() {
 
 ```
 
-This will bind all public methods in our `App` struct (it will never bind the startup and shutdown methods).
+This will bind all public methods in our `App` struct (it will never bind the
+startup and shutdown methods).
 
 ### Dealing with context when binding multiple structs
 
-If you want to bind methods for multiple structs but want each struct to keep a reference to the context so that you
-can use the runtime functions, a good pattern is to pass the context from the `OnStartup` method to your struct instances
-:
+If you want to bind methods for multiple structs but want each struct to keep a
+reference to the context so that you can use the runtime functions, a good
+pattern is to pass the context from the `OnStartup` method to your struct
+instances :
 
 ```go
 func main() {
@@ -144,13 +157,15 @@ func main() {
 }
 ```
 
-More information on Binding can be found [here](../howdoesitwork.mdx#method-binding).
+More information on Binding can be found
+[here](../howdoesitwork.mdx#method-binding).
 
 ## Application Menu
 
-Wails supports adding a menu to your application. This is done by passing a [Menu](../reference/menus.mdx#menu) struct
-to application config. It's common to use a method that returns a Menu, and even more common for that to be a method on
-the `App` struct used for the lifecycle hooks.
+Wails supports adding a menu to your application. This is done by passing a
+[Menu](../reference/menus.mdx#menu) struct to application config. It's common to
+use a method that returns a Menu, and even more common for that to be a method
+on the `App` struct used for the lifecycle hooks.
 
 ```go {11} title="main.go"
 func main() {
@@ -177,52 +192,63 @@ func main() {
 
 ## Assets
 
-The great thing about the way Wails v2 handles assets is that it doesn't! The only thing you need to give Wails is an
-`embed.FS`. How you get to that is entirely up to you. You can use vanilla html/css/js files like the vanilla template.
-You could have some complicated build system, it doesn't matter.
+The great thing about the way Wails v2 handles assets is that it doesn't! The
+only thing you need to give Wails is an `embed.FS`. How you get to that is
+entirely up to you. You can use vanilla html/css/js files like the vanilla
+template. You could have some complicated build system, it doesn't matter.
 
-When `wails build` is run, it will check the `wails.json` project file at the project root. There are 2 keys in the
-project file that are read:
+When `wails build` is run, it will check the `wails.json` project file at the
+project root. There are 2 keys in the project file that are read:
 
 - "frontend:install"
 - "frontend:build"
 
-The first, if given, will be executed in the `frontend` directory to install the node modules.
-The second, if given, will be executed in the `frontend` directory to build the frontend project.
+The first, if given, will be executed in the `frontend` directory to install the
+node modules. The second, if given, will be executed in the `frontend` directory
+to build the frontend project.
 
-If these 2 keys aren't given, then Wails does absolutely nothing with the frontend. It is only expecting that `embed.FS`.
+If these 2 keys aren't given, then Wails does absolutely nothing with the
+frontend. It is only expecting that `embed.FS`.
 
 ### AssetsHandler
 
-A Wails v2 app can optionally define a `http.Handler` in the `options.App`, which allows hooking into the AssetServer to
-create files on the fly or process POST/PUT requests.
-GET requests are always first handled by the `assets` FS. If the FS doesn't find the requested file the request will be
-forwarded to the `http.Handler` for serving. Any requests other than GET will be directly processed by the `AssetsHandler`
-if specified.
-It's also possible to only use the `AssetsHandler` by specifiy `nil` as the `Assets` option.
+A Wails v2 app can optionally define a `http.Handler` in the `options.App`,
+which allows hooking into the AssetServer to create files on the fly or process
+POST/PUT requests. GET requests are always first handled by the `assets` FS. If
+the FS doesn't find the requested file the request will be forwarded to the
+`http.Handler` for serving. Any requests other than GET will be directly
+processed by the `AssetsHandler` if specified. It's also possible to only use
+the `AssetsHandler` by specifiy `nil` as the `Assets` option.
 
 ## Built in Dev Server
 
-Running `wails dev` will start the built in dev server which will start a file watcher in your project directory. By
-default, if any file changes, wails checks if it was an application file (default: `.go`, configurable with `-e` flag).
-If it was, then it will rebuild your application and relaunch it. If the changed file was in the assets,
-it will issue a reload after a short amount of time.
+Running `wails dev` will start the built in dev server which will start a file
+watcher in your project directory. By default, if any file changes, wails checks
+if it was an application file (default: `.go`, configurable with `-e` flag). If
+it was, then it will rebuild your application and relaunch it. If the changed
+file was in the assets, it will issue a reload after a short amount of time.
 
-The dev server uses a technique called "debouncing" which means it doesn't reload straight away,
-as there may be multiple files changed in a short amount of time. When a trigger occurs, it waits for a set amount of time
-before issuing a reload. If another trigger happens, it resets to the wait time again. By default this value is `100ms`.
-If this value doesn't work for your project, it can be configured using the `-debounce` flag. If used, this value will
-be saved to your project config and become the default.
+The dev server uses a technique called "debouncing" which means it doesn't
+reload straight away, as there may be multiple files changed in a short amount
+of time. When a trigger occurs, it waits for a set amount of time before issuing
+a reload. If another trigger happens, it resets to the wait time again. By
+default this value is `100ms`. If this value doesn't work for your project, it
+can be configured using the `-debounce` flag. If used, this value will be saved
+to your project config and become the default.
 
 ## External Dev Server
 
-Some frameworks come with their own live-reloading server, however they will not be able to take advantage of the Wails
-Go bindings. In this scenario, it is best to run a watcher script that rebuilds the project into the build directory, which
-Wails will be watching. For an example, see the default svelte template that uses [rollup](https://rollupjs.org/guide/en/).
-For [create-react-app](https://create-react-app.dev/), it's possible to use
-[this script](https://gist.github.com/int128/e0cdec598c5b3db728ff35758abdbafd) to achieve a similar result.
+Some frameworks come with their own live-reloading server, however they will not
+be able to take advantage of the Wails Go bindings. In this scenario, it is best
+to run a watcher script that rebuilds the project into the build directory,
+which Wails will be watching. For an example, see the default svelte template
+that uses [rollup](https://rollupjs.org/guide/en/). For
+[create-react-app](https://create-react-app.dev/), it's possible to use
+[this script](https://gist.github.com/int128/e0cdec598c5b3db728ff35758abdbafd)
+to achieve a similar result.
 
 ## Go Module
 
-The default Wails templates generate a `go.mod` file that contains the module name "changeme". You should change this
-to something more appropriate after project generation.
+The default Wails templates generate a `go.mod` file that contains the module
+name "changeme". You should change this to something more appropriate after
+project generation.

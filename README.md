@@ -40,7 +40,8 @@
 <strong>
 <samp>
 
-[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
+[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
+[한국어](README.ko.md)
 
 </samp>
 </strong>
@@ -62,9 +63,11 @@
 
 ## Introduction
 
-The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different
-approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to
-make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
+The traditional method of providing web interfaces to Go programs is via a
+built-in web server. Wails offers a different approach: it provides the ability
+to wrap both Go code and a web frontend into a single binary. Tools are provided
+to make this easy for you by handling project creation, compilation and
+bundling. All you have to do is get creative!
 
 ## Features
 
@@ -83,12 +86,14 @@ make this easy for you by handling project creation, compilation and bundling. A
 
 ### Roadmap
 
-The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
-this before open up an enhancement request.
+The project roadmap may be found
+[here](https://github.com/wailsapp/wails/discussions/1484). Please consult this
+before open up an enhancement request.
 
 ## Getting Started
 
-The installation instructions are on the [official website](https://wails.io/docs/gettingstarted/installation).
+The installation instructions are on the
+[official website](https://wails.io/docs/gettingstarted/installation).
 
 ## Sponsors
 
@@ -103,20 +108,24 @@ This project is supported by these kind people / companies:
 
 - Is this an alternative to Electron?
 
-  Depends on your requirements. It's designed to make it easy for Go programmers to make lightweight desktop
-  applications or add a frontend to their existing applications. Wails does offer native elements such as menus
-  and dialogs, so it could be considered a lightweight electron alternative.
+  Depends on your requirements. It's designed to make it easy for Go programmers
+  to make lightweight desktop applications or add a frontend to their existing
+  applications. Wails does offer native elements such as menus and dialogs, so
+  it could be considered a lightweight electron alternative.
 
 - Who is this project aimed at?
 
-  Go programmers who want to bundle an HTML/JS/CSS frontend with their applications, without resorting to creating a
-  server and opening a browser to view it.
+  Go programmers who want to bundle an HTML/JS/CSS frontend with their
+  applications, without resorting to creating a server and opening a browser to
+  view it.
 
 - What's with the name?
 
-  When I saw WebView, I thought "What I really want is tooling around building a WebView app, a bit like Rails is to
-  Ruby". So initially it was a play on words (Webview on Rails). It just so happened to also be a homophone of the
-  English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
+  When I saw WebView, I thought "What I really want is tooling around building a
+  WebView app, a bit like Rails is to Ruby". So initially it was a play on words
+  (Webview on Rails). It just so happened to also be a homophone of the English
+  name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it
+  stuck.
 
 ## Stargazers over time
 
@@ -124,8 +133,9 @@ This project is supported by these kind people / companies:
 
 ## Contributors
 
-The contributors list is getting too big for the readme! All the amazing people who have contributed to this
-project have their own page [here](https://wails.io/credits#contributors).
+The contributors list is getting too big for the readme! All the amazing people
+who have contributed to this project have their own page
+[here](https://wails.io/credits#contributors).
 
 ## License
 

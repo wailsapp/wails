@@ -4,15 +4,17 @@ An assortment of troubleshooting tips.
 
 ## The `wails` command appears to be missing?
 
-If your system is reporting that the `wails` command is missing, make sure you have followed the Go installation guide
-correctly. Normally, it means that the `go/bin` directory in your User's home directory is not in the `PATH` environment
-variable. You will also normally need to close and reopen any open command prompts so that changes to the environment
-made by the installer are reflected at the command prompt.
+If your system is reporting that the `wails` command is missing, make sure you
+have followed the Go installation guide correctly. Normally, it means that the
+`go/bin` directory in your User's home directory is not in the `PATH`
+environment variable. You will also normally need to close and reopen any open
+command prompts so that changes to the environment made by the installer are
+reflected at the command prompt.
 
 ## My application is displaying a white/blank screen
 
-Check that your application includes the assets from the correct directory. In your `main.go` file, you will have
-something similar to the following code:
+Check that your application includes the assets from the correct directory. In
+your `main.go` file, you will have something similar to the following code:
 
 ```go
 //go:embed all:frontend/dist
@@ -49,14 +51,16 @@ If your built application looks like this in finder:
 </p>
 ```
 
-it's likely that your application's `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist`
-and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to
+it's likely that your application's `info.plist` is invalid. Update the file in
+`build/<yourapp>.app/Contents/info.plist` and check if the data is valid, EG
+check the binary name is correct. To persist the changes, copy the file back to
 the `build/darwin` directory.
 
 ## My application is not displaying the correct icon in Windows Explorer
 
-If your application is not displaying the correct icon, try deleting the hidden `IconCache.db` file located in the
-`C:\Users\<your username>\AppData\Local` directory. This will force Windows to rebuild the icon cache.
+If your application is not displaying the correct icon, try deleting the hidden
+`IconCache.db` file located in the `C:\Users\<your username>\AppData\Local`
+directory. This will force Windows to rebuild the icon cache.
 
 Source: https://github.com/wailsapp/wails/issues/2360#issuecomment-1556070036
 
@@ -109,8 +113,8 @@ If you are getting errors like this:
 "https://proxy.golang.org/github.com/wailsapp/wails/cmd/wails/@v/list": dial tcp 172.217.163.49:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
 ```
 
-it's probably because the official Go Proxy is being blocked (Users in China have reported this).
-The solution is to set up the proxy manually, eg:
+it's probably because the official Go Proxy is being blocked (Users in China
+have reported this). The solution is to set up the proxy manually, eg:
 
 ```
 go env -w GO111MODULE=on
@@ -121,14 +125,16 @@ Source: https://github.com/wailsapp/wails/issues/1233
 
 ## The generated TypeScript doesn't have the correct types
 
-Sometimes the generated TypeScript doesn't have the correct types. To mitigate this,
-it is possible to specify what types should be generated using the `ts_type` struct tag. For
-more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types).
+Sometimes the generated TypeScript doesn't have the correct types. To mitigate
+this, it is possible to specify what types should be generated using the
+`ts_type` struct tag. For more details, please read
+[this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types).
 
 ## When I navigate away from `index.html`, I am unable to call methods on the frontend
 
-If you navigate away from `index.html` to a new html file, the context will be lost. This can be fixed by adding
-the following imports to the `<head>` section of any new page you navigate to:
+If you navigate away from `index.html` to a new html file, the context will be
+lost. This can be fixed by adding the following imports to the `<head>` section
+of any new page you navigate to:
 
 ```html
 <head>
@@ -141,11 +147,14 @@ Source: https://github.com/wailsapp/wails/discussions/1512
 
 ## I get `too many open files` errors on my Mac when I run `wails dev`
 
-By default, macOS will only allow you to open a maximum of 256 files. This can affect the `wails dev` command.
-This limit can be increased by running: `ulimit -n 1024` in the terminal.
+By default, macOS will only allow you to open a maximum of 256 files. This can
+affect the `wails dev` command. This limit can be increased by running:
+`ulimit -n 1024` in the terminal.
 
-FSNotify is [looking to move to Apple's fsevents](https://github.com/fsnotify/fsnotify/issues/11) for Mac.
-If this isn't completed soon, we will create our own implementation, tracked [here](https://github.com/wailsapp/wails/issues/1733).
+FSNotify is
+[looking to move to Apple's fsevents](https://github.com/fsnotify/fsnotify/issues/11)
+for Mac. If this isn't completed soon, we will create our own implementation,
+tracked [here](https://github.com/wailsapp/wails/issues/1733).
 
 ## My Mac app gives me weird compilation errors
 
@@ -162,26 +171,37 @@ In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/Sy
         #define NS_FORMAT_ARGUMENT(A) __attribute__ ((format_arg(A)))
 ```
 
-This is _normally_ due to a mismatch with the OS version you are running and the version of the XCode Command Line Tools
-installed. If you see an error like this, try upgrading your XCode Command Line Tools to the latest version.
+This is _normally_ due to a mismatch with the OS version you are running and the
+version of the XCode Command Line Tools installed. If you see an error like
+this, try upgrading your XCode Command Line Tools to the latest version.
 
-If reinstalling Xcode Command Tools still fails, you can check the path where the toolkit is located using:
+If reinstalling Xcode Command Tools still fails, you can check the path where
+the toolkit is located using:
 
 `xcode-select -p`
 
-If `/Applications/Xcode.app/Contents/Developer` is displayed, run `sudo xcode-select --switch /Library/Developer/CommandLineTools`
+If `/Applications/Xcode.app/Contents/Developer` is displayed, run
+`sudo xcode-select --switch /Library/Developer/CommandLineTools`
 
-Sources: https://github.com/wailsapp/wails/issues/1806 and https://github.com/wailsapp/wails/issues/1140#issuecomment-1290446496
+Sources: https://github.com/wailsapp/wails/issues/1806 and
+https://github.com/wailsapp/wails/issues/1140#issuecomment-1290446496
 
 --
 
 ## Cannot start service: Host version "x.x.x does not match binary version "x.x.x"
 
-It's preferable to add `frontend/node_modules` and `frontend/package-lock.json` to your `.gitignore`. Otherwise when opening your repository on another machine
-that may have different versions of Node installed, you may not be able to run your application.
+It's preferable to add `frontend/node_modules` and `frontend/package-lock.json`
+to your `.gitignore`. Otherwise when opening your repository on another machine
+that may have different versions of Node installed, you may not be able to run
+your application.
 
-If this does happen, simply delete `frontend/node_modules` and `frontend/package-lock.json` and run your `wails build` or `wails dev` command again. 
+If this does happen, simply delete `frontend/node_modules` and
+`frontend/package-lock.json` and run your `wails build` or `wails dev` command
+again.
 
 ## Build process stuck on "Generating bindings"
 
-Bindings generation process runs your application in a special mode. If application, intentionally or unintentionally, contains an endless loop (i.e. not exiting after `wails.Run()` finished), this can lead to build process stuck on the stage of bindings generation. Please make sure your code exits properly.
+Bindings generation process runs your application in a special mode. If
+application, intentionally or unintentionally, contains an endless loop (i.e.
+not exiting after `wails.Run()` finished), this can lead to build process stuck
+on the stage of bindings generation. Please make sure your code exits properly.

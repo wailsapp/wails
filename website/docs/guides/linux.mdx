@@ -1,11 +1,13 @@
 # Linux
 
-This page has miscellaneous guides related to developing Wails applications for Linux.
+This page has miscellaneous guides related to developing Wails applications for
+Linux.
 
 ## Video tag doesn't fire "ended" event
 
-When using a video tag, the "ended" event is not fired when the video is finished playing. This is a bug
-in WebkitGTK, however you can use the following workaround to fix it:
+When using a video tag, the "ended" event is not fired when the video is
+finished playing. This is a bug in WebkitGTK, however you can use the following
+workaround to fix it:
 
 ```js
 videoTag.addEventListener("timeupdate", (event) => {

@@ -1,10 +1,12 @@
 # Routing
 
-Routing is a popular way to switch views in an application. This page offers some guidance around how to do that.
+Routing is a popular way to switch views in an application. This page offers
+some guidance around how to do that.
 
 ## Vue
 
-The recommended approach for routing in Vue is [Hash Mode](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode):
+The recommended approach for routing in Vue is
+[Hash Mode](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode):
 
 ```js
 import { createRouter, createWebHashHistory } from "vue-router";
@@ -19,7 +21,8 @@ const router = createRouter({
 
 ## Angular
 
-The recommended approach for routing in Angular is [HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies#_hashlocationstrategy):
+The recommended approach for routing in Angular is
+[HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies#_hashlocationstrategy):
 
 ```ts
 RouterModule.forRoot(routes, { useHash: true });
@@ -27,7 +30,8 @@ RouterModule.forRoot(routes, { useHash: true });
 
 ## React
 
-The recommended approach for routing in React is [HashRouter](https://reactrouter.com/en/main/router-components/hash-router):
+The recommended approach for routing in React is
+[HashRouter](https://reactrouter.com/en/main/router-components/hash-router):
 
 ```jsx
 import { HashRouter } from "react-router-dom";

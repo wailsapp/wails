@@ -1,9 +1,10 @@
 # IDEs
 
-Wails aims to provide a great development experience. To that aim, we now support generating IDE specific configuration
-to provide smoother project setup.
+Wails aims to provide a great development experience. To that aim, we now
+support generating IDE specific configuration to provide smoother project setup.
 
-Currently, we support [Visual Studio Code](https://code.visualstudio.com/) but aim to support other IDEs such as Goland.
+Currently, we support [Visual Studio Code](https://code.visualstudio.com/) but
+aim to support other IDEs such as Goland.
 
 ## Visual Studio Code
 
@@ -16,10 +17,13 @@ Currently, we support [Visual Studio Code](https://code.visualstudio.com/) but a
 </p>
 ```
 
-When generating a project using the `-ide vscode` flags, IDE files will be created alongside the other project files.
-These files are placed into the `.vscode` directory and provide the correct configuration for debugging your application.
+When generating a project using the `-ide vscode` flags, IDE files will be
+created alongside the other project files. These files are placed into the
+`.vscode` directory and provide the correct configuration for debugging your
+application.
 
-The 2 files generated are `tasks.json` and `launch.json`. Below are the files generated for the default vanilla project:
+The 2 files generated are `tasks.json` and `launch.json`. Below are the files
+generated for the default vanilla project:
 
 ```json title="tasks.json"
 {
@@ -66,8 +70,9 @@ The 2 files generated are `tasks.json` and `launch.json`. Below are the files ge
 
 ### Configuring the install and build steps
 
-The `tasks.json` file is simple for the default project as there is no `npm install` or `npm run build` step needed.
-For projects that have a frontend build step, such as the svelte template, we would need to edit `tasks.json` to
+The `tasks.json` file is simple for the default project as there is no
+`npm install` or `npm run build` step needed. For projects that have a frontend
+build step, such as the svelte template, we would need to edit `tasks.json` to
 add the install and build steps:
 
 ```json title="tasks.json"
@@ -126,6 +131,7 @@ add the install and build steps:
 
 :::info Future Enhancement
 
-In the future, we hope to generate a `tasks.json` that includes the install and build steps automatically.
+In the future, we hope to generate a `tasks.json` that includes the install and
+build steps automatically.
 
 :::

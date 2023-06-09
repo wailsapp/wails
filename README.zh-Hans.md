@@ -42,7 +42,8 @@
 <strong>
 <samp>
 
-[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
+[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
+[한국어](README.ko.md)
 
 </samp>
 </strong>
@@ -64,8 +65,9 @@
 
 ## 项目介绍
 
-为 Go 程序提供 Web 界面的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方法：它提供了将 Go 代码和 Web
-前端一起打包成单个二进制文件的能力。通过提供的工具，可以很轻松的完成项目的创建、编译和打包。你所要做的就是发挥创造力！
+为 Go 程序提供 Web 界面的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方
+法：它提供了将 Go 代码和 Web 前端一起打包成单个二进制文件的能力。通过提供的工具
+，可以很轻松的完成项目的创建、编译和打包。你所要做的就是发挥创造力！
 
 ## 功能
 
@@ -83,7 +85,8 @@
 
 ### 路线图
 
-项目路线图可在 [此处](https://github.com/wailsapp/wails/discussions/1484) 找到。在提出增强请求之前请查阅此内容。
+项目路线图可在 [此处](https://github.com/wailsapp/wails/discussions/1484) 找到。
+在提出增强请求之前请查阅此内容。
 
 ## 快速入门
 
@@ -99,16 +102,21 @@
 
 - 它是 Electron 的替代品吗?
 
-  取决于您的要求。它旨在使 Go 程序员可以轻松制作轻量级桌面应用程序或在其现有应用程序中添加前端。尽管 Wails 当前不提供对诸如菜单之类的原生元素的钩子，但将来可能会改变。
+  取决于您的要求。它旨在使 Go 程序员可以轻松制作轻量级桌面应用程序或在其现有应用
+  程序中添加前端。尽管 Wails 当前不提供对诸如菜单之类的原生元素的钩子，但将来可
+  能会改变。
 
 - 这个项目针对的是哪些人?
 
-  希望将 HTML / JS / CSS 前端与其应用程序捆绑在一起的程序员，而不是借助创建服务并打开浏览器进行查看的方式。
+  希望将 HTML / JS / CSS 前端与其应用程序捆绑在一起的程序员，而不是借助创建服务
+  并打开浏览器进行查看的方式。
 
 - 名字怎么来的?
 
-  当我看到 WebView 时，我想"我真正想要的是围绕构建 WebView 应用程序工作，有点像 Rails 对于 Ruby"。因此，最初它是一个文字游戏（Webview on
-  Rails）。碰巧也是我来自的 [国家](https://en.wikipedia.org/wiki/Wales) 的英文名字的同音。所以就是它了。
+  当我看到 WebView 时，我想"我真正想要的是围绕构建 WebView 应用程序工作，有点像
+  Rails 对于 Ruby"。因此，最初它是一个文字游戏（Webview on Rails）。碰巧也是我来
+  自的 [国家](https://en.wikipedia.org/wiki/Wales) 的英文名字的同音。所以就是它
+  了。
 
 ## 星星增长趋势
 
@@ -116,7 +124,8 @@
 
 ## 贡献者
 
-贡献者列表对于 README 文件来说太大了！所有为这个项目做出贡献的了不起的人在[这里](https://wails.io/credits#contributors)都有自己的页面。
+贡献者列表对于 README 文件来说太大了！所有为这个项目做出贡献的了不起的人
+在[这里](https://wails.io/credits#contributors)都有自己的页面。
 
 ## 许可证
 

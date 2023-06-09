@@ -17,21 +17,22 @@ sidebar_position: 20
 
 :::note
 
-This tutorial has been kindly provided by [@tatadan](https://twitter.com/tatadan) and forms part of
-their [Wails Examples Repository](https://github.com/tataDan/wails-v2-examples).
+This tutorial has been kindly provided by
+[@tatadan](https://twitter.com/tatadan) and forms part of their
+[Wails Examples Repository](https://github.com/tataDan/wails-v2-examples).
 
 :::
 
-In this tutorial we are going to develop an application that retrieves photos of dogs from the web
-and then displays them.
+In this tutorial we are going to develop an application that retrieves photos of
+dogs from the web and then displays them.
 
 ### Create the project
 
 Let's create the application. From a terminal enter:
 `wails init -n dogs-api -t svelte`
 
-Note: We could optionally add `-ide vscode` or `-ide goland` to the end of this command if you wanted
-to add IDE support.
+Note: We could optionally add `-ide vscode` or `-ide goland` to the end of this
+command if you wanted to add IDE support.
 
 Now let's `cd dogs-api` and start editing the project files.
 
@@ -55,7 +56,8 @@ func (a *App) Greet(name string) string {
 
 Now let's add our new Go code.
 
-Add the following struct declarations to `app.go` before the function definitions:
+Add the following struct declarations to `app.go` before the function
+definitions:
 
 ```go
 type RandomImage struct {
@@ -74,7 +76,8 @@ type ImagesByBreed struct {
 }
 ```
 
-Add the following functions to `app.go` (perhaps after the existing function definitions):
+Add the following functions to `app.go` (perhaps after the existing function
+definitions):
 
 ```go
 func (a *App) GetRandomImageUrl() string {
@@ -246,4 +249,5 @@ To generate the bindings and test the application, run `wails dev`.
 
 ### Compiling the application
 
-To compile the application to a single, production grade binary, run `wails build`.
+To compile the application to a single, production grade binary, run
+`wails build`.

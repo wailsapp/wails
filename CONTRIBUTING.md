@@ -1,1 +1,2 @@
-The current Contribution Guidelines can be found at: https://wails.io/community-guide
+The current Contribution Guidelines can be found at:
+https://wails.io/community-guide

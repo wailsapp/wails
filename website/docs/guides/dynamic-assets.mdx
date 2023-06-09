@@ -1,15 +1,18 @@
 # Dynamic Assets
 
-If you want to load or generate assets for your frontend dynamically, you can achieve that using the
-[AssetsHandler](../reference/options#assetshandler) option. The AssetsHandler is a generic `http.Handler` which will
-be called for any non GET request on the assets server and for GET requests which can not be served from the
-bundled assets because the file is not found.
+If you want to load or generate assets for your frontend dynamically, you can
+achieve that using the [AssetsHandler](../reference/options#assetshandler)
+option. The AssetsHandler is a generic `http.Handler` which will be called for
+any non GET request on the assets server and for GET requests which can not be
+served from the bundled assets because the file is not found.
 
-By installing a custom AssetsHandler, you can serve your own assets using a custom asset server.
+By installing a custom AssetsHandler, you can serve your own assets using a
+custom asset server.
 
 ## Example
 
-In our example project, we will create a simple assets handler which will load files off disk:
+In our example project, we will create a simple assets handler which will load
+files off disk:
 
 ```go title=main.go {17-36,49}
 package main
@@ -75,7 +78,8 @@ func main() {
 }
 ```
 
-When we run the application in dev mode using `wails dev`, we will see the following output:
+When we run the application in dev mode using `wails dev`, we will see the
+following output:
 
 ```
 DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico'
@@ -83,18 +87,19 @@ DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico' failed,
 Requesting file: favicon.ico
 ```
 
-As you can see, the assets handler is called when the default assets server is unable to serve
-the `favicon.ico` file.
+As you can see, the assets handler is called when the default assets server is
+unable to serve the `favicon.ico` file.
 
-If you right click the main application and select "inspect" to bring up the devtools, you can test
-this feature out by typing the following into the console:
+If you right click the main application and select "inspect" to bring up the
+devtools, you can test this feature out by typing the following into the
+console:
 
 ```
 let response = await fetch('does-not-exist.txt');
 ```
 
-This will generate an error in the devtools. We can see that the error is what we expect, returned by
-our custom assets handler:
+This will generate an error in the devtools. We can see that the error is what
+we expect, returned by our custom assets handler:
 
 ```mdx-code-block
 <p className="text--center">
@@ -112,8 +117,8 @@ However, if we request `go.mod`, we will see the following output:
 </p>
 ```
 
-This technique can be used to load images directly into the page. If we updated our default vanilla template and
-replaced the logo image:
+This technique can be used to load images directly into the page. If we updated
+our default vanilla template and replaced the logo image:
 
 ```html
 <img id="logo" class="logo" />
@@ -138,7 +143,7 @@ Then we would see the following:
 
 :::warning
 
-Exposing your filesystem in this way is a security risk. It is recommended that you properly manage access
-to your filesystem.
+Exposing your filesystem in this way is a security risk. It is recommended that
+you properly manage access to your filesystem.
 
 :::
