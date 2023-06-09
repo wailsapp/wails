@@ -58,6 +58,7 @@ func main() {
         Bind: []interface{}{
             app,
         },
+        ErrorFormatter: func(err error) any { return err.Error() },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
@@ -476,6 +477,14 @@ A slice of struct instances defining methods that need to be bound to the fronte
 
 Name: Bind<br/>
 Type: `[]interface{}`
+
+### ErrorFormatter
+
+A function that determines how errors are formatted when returned by a JS-to-Go
+method call. The returned value will be marshalled as JSON.
+
+Name: ErrorFormatter<br/>
+Type: `func (error) any`
 
 ### Windows
 
