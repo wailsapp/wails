@@ -53,7 +53,8 @@ extern bool hasListeners(unsigned int);
         [sender orderOut:nil];
         return false;
     }
-    return true;
+    processWindowEvent(self.windowId, EventWindowShouldClose);
+    return false;
 }
 - (void) dealloc {
     // Makes sure to remove the retained properties so the reference counter of the retains are decreased
@@ -63,7 +64,6 @@ extern bool hasListeners(unsigned int);
 // Handle script messages from the external bridge
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
     NSString *m = message.body;
-
     if ( [m isEqualToString:@"drag"] ) {
         /*
         if( [self IsFullScreen] ) {
@@ -77,7 +77,6 @@ extern bool hasListeners(unsigned int);
         }
         return;
     }
-
     const char *_m = [m UTF8String];
     processMessage(self.windowId, _m);
 }
