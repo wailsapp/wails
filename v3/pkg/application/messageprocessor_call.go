@@ -49,11 +49,14 @@ func (m *MessageProcessor) processCallMethod(method string, rw http.ResponseWrit
 				m.callErrorCallback(window, "Error calling method: %s", callID, err)
 				return
 			}
-			// convert result to json
-			jsonResult, err := json.Marshal(result)
-			if err != nil {
-				m.callErrorCallback(window, "Error converting result to json: %s", callID, err)
-				return
+			var jsonResult = []byte("{}")
+			if result != nil {
+				// convert result to json
+				jsonResult, err = json.Marshal(result)
+				if err != nil {
+					m.callErrorCallback(window, "Error converting result to json: %s", callID, err)
+					return
+				}
 			}
 			m.callCallback(window, callID, string(jsonResult), true)
 		}()

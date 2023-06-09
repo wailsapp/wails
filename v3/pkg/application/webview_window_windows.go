@@ -90,7 +90,9 @@ func (w *windowsWebviewWindow) setMaxSize(width, height int) {
 }
 
 func (w *windowsWebviewWindow) execJS(js string) {
-	w.chromium.Eval(js)
+	invokeSync(func() {
+		w.chromium.Eval(js)
+	})
 }
 
 func (w *windowsWebviewWindow) setBackgroundColour(color RGBA) {
