@@ -22,7 +22,8 @@ var windowClassName = lo.Must(syscall.UTF16PtrFromString("WailsWebviewWindow"))
 type windowsApp struct {
 	parent *App
 
-	instance w32.HINSTANCE
+	windowClass w32.WNDCLASSEX
+	instance    w32.HINSTANCE
 
 	windowMap     map[w32.HWND]*windowsWebviewWindow
 	windowMapLock sync.RWMutex
@@ -182,22 +183,20 @@ func (m *windowsApp) init() {
 
 	icon := w32.LoadIconWithResourceID(m.instance, w32.IDI_APPLICATION)
 
-	var wc w32.WNDCLASSEX
-	wc.Size = uint32(unsafe.Sizeof(wc))
-	wc.Style = w32.CS_HREDRAW | w32.CS_VREDRAW
-	wc.WndProc = syscall.NewCallback(m.wndProc)
-	wc.Instance = m.instance
-	wc.Background = w32.COLOR_BTNFACE + 1
-	wc.Icon = icon
-	wc.Cursor = w32.LoadCursorWithResourceID(0, w32.IDC_ARROW)
-	wc.ClassName = windowClassName
-	wc.MenuName = nil
-	wc.IconSm = icon
+	m.windowClass.Size = uint32(unsafe.Sizeof(m.windowClass))
+	m.windowClass.Style = w32.CS_HREDRAW | w32.CS_VREDRAW
+	m.windowClass.WndProc = syscall.NewCallback(m.wndProc)
+	m.windowClass.Instance = m.instance
+	m.windowClass.Background = w32.COLOR_BTNFACE + 1
+	m.windowClass.Icon = icon
+	m.windowClass.Cursor = w32.LoadCursorWithResourceID(0, w32.IDC_ARROW)
+	m.windowClass.ClassName = windowClassName
+	m.windowClass.MenuName = nil
+	m.windowClass.IconSm = icon
 
-	if ret := w32.RegisterClassEx(&wc); ret == 0 {
+	if ret := w32.RegisterClassEx(&m.windowClass); ret == 0 {
 		panic(syscall.GetLastError())
 	}
-
 	m.isDarkMode = w32.IsCurrentlyDarkMode()
 }
 

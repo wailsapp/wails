@@ -42,8 +42,8 @@ func isICO(fileData []byte) bool {
 	return string(fileData[:4]) == "\x00\x00\x01\x00"
 }
 
-// CreateHIconFromImage creates a HICON from a PNG or ICO file
-func CreateHIconFromImage(fileData []byte) (HICON, error) {
+// CreateSmallHIconFromImage creates a HICON from a PNG or ICO file
+func CreateSmallHIconFromImage(fileData []byte) (HICON, error) {
 	if len(fileData) < 8 {
 		return 0, fmt.Errorf("invalid file format")
 	}
@@ -62,4 +62,30 @@ func CreateHIconFromImage(fileData []byte) (HICON, error) {
 		iconHeight,
 		LR_DEFAULTSIZE)
 	return HICON(icon), err
+}
+
+// CreateLargeHIconFromImage creates a HICON from a PNG or ICO file
+func CreateLargeHIconFromImage(fileData []byte) (HICON, error) {
+	if len(fileData) < 8 {
+		return 0, fmt.Errorf("invalid file format")
+	}
+
+	if !isPNG(fileData) && !isICO(fileData) {
+		return 0, fmt.Errorf("unsupported file format")
+	}
+	iconWidth := GetSystemMetrics(SM_CXICON)
+	iconHeight := GetSystemMetrics(SM_CXICON)
+	icon, err := CreateIconFromResourceEx(
+		uintptr(unsafe.Pointer(&fileData[0])),
+		uint32(len(fileData)),
+		true,
+		0x00030000,
+		iconWidth,
+		iconHeight,
+		LR_DEFAULTSIZE)
+	return HICON(icon), err
+}
+
+func SetWindowIcon(hwnd HWND, icon HICON) {
+	SendMessage(hwnd, WM_SETICON, ICON_SMALL, uintptr(icon))
 }

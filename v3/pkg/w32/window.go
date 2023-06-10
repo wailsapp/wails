@@ -14,6 +14,7 @@ import (
 
 const (
 	GCLP_HBRBACKGROUND int32 = -10
+	GCLP_HICON         int32 = -14
 )
 
 func ExtendFrameIntoClientArea(hwnd uintptr, extend bool) {
@@ -68,6 +69,10 @@ func ShowWindowMaximised(hwnd uintptr) {
 }
 func ShowWindowMinimised(hwnd uintptr) {
 	showWindow(hwnd, SW_MINIMIZE)
+}
+
+func SetApplicationIcon(hwnd uintptr, icon HICON) {
+	setClassLongPtr(hwnd, GCLP_HICON, icon)
 }
 
 func SetBackgroundColour(hwnd uintptr, r, g, b uint8) {

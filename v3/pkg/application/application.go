@@ -391,8 +391,8 @@ func (a *App) Run() error {
 	// set the application menu
 	if runtime.GOOS == "darwin" {
 		a.impl.setApplicationMenu(a.ApplicationMenu)
-		a.impl.setIcon(a.options.Icon)
 	}
+	a.impl.setIcon(a.options.Icon)
 
 	err := a.impl.run()
 	if err != nil {

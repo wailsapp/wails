@@ -2,6 +2,15 @@
 
 Status of features in v3. Incomplete - please add as you see fit.
 
+
+## Major Blockers
+
+- [ ] Dev Support - What will it look like?
+- [ ] Translucency on Windows doesn't work right
+- [ ] Events - cross-platform events, simplified event handling?
+- [ ] Error handling - needs to be revised. Centralised system error handling?
+- [ ] Documentation - needs to be written
+
 ## Application
 
 Application interface methods
@@ -14,7 +23,7 @@ Application interface methods
 | name() string                                                 |         |       | Y   |       |
 | getCurrentWindowID() uint                                     | Y       |       | Y   |       |
 | showAboutDialog(name string, description string, icon []byte) |         |       | Y   |       |
-| setIcon(icon []byte)                                          |         |       | Y   |       |
+| setIcon(icon []byte)                                          | -       |       | Y   |       |
 | on(id uint)                                                   |         |       | Y   |       |
 | dispatchOnMainThread(fn func())                               | Y       |       | Y   |       |
 | hide()                                                        | Y       |       | Y   |       |
@@ -162,7 +171,7 @@ An 'X' indicates that the option is not supported by the platform.
 | Width                           | Y       |       |     |                                            |
 | Height                          | Y       |       |     |                                            |
 | AlwaysOnTop                     | Y       |       |     |                                            |
-| URL                             |         |       |     |                                            |
+| URL                             | Y       |       |     |                                            |
 | DisableResize                   | Y       |       |     |                                            |
 | Frameless                       | Y       |       |     |                                            |
 | MinWidth                        | Y       |       |     |                                            |
@@ -173,9 +182,9 @@ An 'X' indicates that the option is not supported by the platform.
 | Mac                             | -       | -     |     |                                            |
 | BackgroundType                  |         |       |     | Acrylic seems to work but the others don't |
 | BackgroundColour                | Y       |       |     |                                            |
-| HTML                            |         |       |     |                                            |
-| JS                              |         |       |     |                                            |
-| CSS                             |         |       |     |                                            |
+| HTML                            | Y       |       |     |                                            |
+| JS                              | Y       |       |     |                                            |
+| CSS                             | Y       |       |     |                                            |
 | X                               | Y       |       |     |                                            |
 | Y                               | Y       |       |     |                                            |
 | HideOnClose                     | Y       |       |     |                                            |
@@ -277,16 +286,21 @@ Built-in plugin support:
 | Start at login  |         |       | Y   |       |
 | Server          |         |       |     |       |
 
+
+TODO: 
+
+- Ensure each plugin has a JS wrapper that can be injected into the window.
+
 ## Packaging
 
 |                 | Windows | Linux | Mac | Notes |
 |-----------------|---------|-------|-----|-------|
-| Icon Generation |         |       | Y   |       |
-| Icon Embedding  |         |       | Y   |       |
+| Icon Generation | Y       |       | Y   |       |
+| Icon Embedding  | Y       |       | Y   |       |
 | Info.plist      | -       |       | Y   |       |
 | NSIS Installer  |         |       | -   |       |
-| Mac bundle      |         |       | Y   |       |
-| Windows exe     |         |       | -   |       |
+| Mac bundle      | -       |       | Y   |       |
+| Windows exe     | Y       |       | -   |       |
 
 ## Frameless Windows
 
@@ -308,10 +322,11 @@ Built-in plugin support:
 | TitleBar                |                   | Standard window decorations by default               |
 | Appearance              | DefaultAppearance |                                                      |
 | InvisibleTitleBarHeight | 0                 | Creates an invisible title bar for frameless windows |
+| DisableShadow           | false             | Disables the window drop shadow                      |
 
 ## Windows Specific
 
-- [x] Translucency
+- [ ] Translucency
 - [x] Custom Themes
 
 ### Windows Options
@@ -348,3 +363,4 @@ Built-in plugin support:
 | window       |                    |       |     |
 | windowjs     |                    |       |     |
 | wml          |                    |       |     |
+

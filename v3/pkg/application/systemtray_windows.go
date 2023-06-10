@@ -71,14 +71,14 @@ func (s *windowsSystemTray) run() {
 	}
 
 	if s.parent.icon != nil {
-		s.lightModeIcon = lo.Must(w32.CreateHIconFromImage(s.parent.icon))
+		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.icon))
 	} else {
-		s.lightModeIcon = lo.Must(w32.CreateHIconFromImage(icons.SystrayLight))
+		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayLight))
 	}
 	if s.parent.darkModeIcon != nil {
-		s.darkModeIcon = lo.Must(w32.CreateHIconFromImage(s.parent.darkModeIcon))
+		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.darkModeIcon))
 	} else {
-		s.darkModeIcon = lo.Must(w32.CreateHIconFromImage(icons.SystrayDark))
+		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayDark))
 	}
 	s.uid = nid.UID
 
@@ -149,7 +149,7 @@ func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
 
 func (s *windowsSystemTray) setIcon(icon []byte) {
 	var err error
-	s.lightModeIcon, err = w32.CreateHIconFromImage(icon)
+	s.lightModeIcon, err = w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
 		panic(syscall.GetLastError())
 	}
@@ -161,7 +161,7 @@ func (s *windowsSystemTray) setIcon(icon []byte) {
 }
 func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
 	var err error
-	s.darkModeIcon, err = w32.CreateHIconFromImage(icon)
+	s.darkModeIcon, err = w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
 		panic(syscall.GetLastError())
 	}
