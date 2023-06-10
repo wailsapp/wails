@@ -1,9 +1,5 @@
 name: Format Markdown Files
 
-on:
-  workflow_dispatch:
-  push:
-    branches: [master]
 
 jobs:
   format_markdown_files:
