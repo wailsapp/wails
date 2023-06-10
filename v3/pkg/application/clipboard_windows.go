@@ -2,25 +2,26 @@
 
 package application
 
-type windowsClipboard struct{}
+import (
+	"github.com/wailsapp/wails/v3/pkg/w32"
+	"sync"
+)
 
-func (m windowsClipboard) setText(text string) bool {
-	//clipboardLock.Lock()
-	//defer clipboardLock.Unlock()
-	//cText := C.CString(text)
-	//success := C.setClipboardText(cText)
-	//C.free(unsafe.Pointer(cText))
-	//return bool(success)
-	panic("implement me")
+type windowsClipboard struct {
+	lock sync.RWMutex
 }
 
-func (m windowsClipboard) text() string {
-	//clipboardLock.RLock()
-	//defer clipboardLock.RUnlock()
-	//clipboardText := C.getClipboardText()
-	//result := C.GoString(clipboardText)
-	//return result
-	panic("implement me")
+func (m *windowsClipboard) setText(text string) bool {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	return w32.SetClipboardText(text) == nil
+}
+
+func (m *windowsClipboard) text() (string, bool) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	text, err := w32.GetClipboardText()
+	return text, err == nil
 }
 
 func newClipboardImpl() *windowsClipboard {

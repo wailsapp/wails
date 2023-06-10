@@ -43,12 +43,12 @@ func (m macosClipboard) setText(text string) bool {
 	return bool(success)
 }
 
-func (m macosClipboard) text() string {
+func (m macosClipboard) text() (string, bool) {
 	clipboardLock.RLock()
 	defer clipboardLock.RUnlock()
 	clipboardText := C.getClipboardText()
 	result := C.GoString(clipboardText)
-	return result
+	return result, true
 }
 
 func newClipboardImpl() *macosClipboard {
