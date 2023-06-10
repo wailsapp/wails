@@ -51,27 +51,32 @@ WailsではGitHubでホストされているリモートテンプレートをサ
 
 | フラグ                  | 説明                                                                                                                               | デフォルト                                                                                                                                               |
 |:-------------------- |:-------------------------------------------------------------------------------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| -platform            | 指定された[プラットフォーム](../reference/cli.mdx#platforms)(カンマ区切り) 向けにビルドする。例: `windows/arm64`。 アーキテクチャを指定しない場合は、`runtime.GOARCH`の値が使用されます。 | platform = `GOOS` environment variable if given else `runtime.GOOS`.<br/>arch = `GOARCH` envrionment variable if given else `runtime.GOARCH`. |
 | -clean               | `build/bin`ディレクトリをクリーンする                                                                                                         |                                                                                                                                                     |
 | -compiler "compiler" | 違うGoコンパイラを使用する。例: go1.15beta1                                                                                                    | go                                                                                                                                                  |
+| -debug               | アプリケーションのデバッグ情報を保持する。 これにより、アプリケーションウィンドウで開発者ツールを使用することを許可できます。                                                                  |                                                                                                                                                     |
+| -dryrun              | 実際には実行せずにbuildコマンドの結果を表示する                                                                                                       |                                                                                                                                                     |
+| -f                   | アプリケーションを強制的にビルド                                                                                                                 |                                                                                                                                                     |
+| -garbleargs          | garbleへ渡す引数                                                                                                                      | `-literals -tiny -seed=random`                                                                                                                      |
 | -ldflags "flags"     | コンパイラに渡す追加のldflags                                                                                                               |                                                                                                                                                     |
+| -m                   | コンパイル前のmod tidyの実行をスキップする                                                                                                        |                                                                                                                                                     |
 | -nopackage           | アプリケーションをパッケージ化しない                                                                                                               |                                                                                                                                                     |
+| -nocolour            | 出力文字に色をつけない                                                                                                                      |                                                                                                                                                     |
+| -nosyncgomod         | go.modとWailsのバージョンを同期させない                                                                                                        |                                                                                                                                                     |
+| -nsis                | Windows向けのNSISインストーラを生成する                                                                                                        |                                                                                                                                                     |
 | -o filename          | 出力ファイル名                                                                                                                          |                                                                                                                                                     |
-| -s                   | フロントエンドのビルドをスキップ                                                                                                                 | false                                                                                                                                               |
-| -f                   | アプリケーションを強制的にビルド                                                                                                                 | false                                                                                                                                               |
+| -obfuscated          | [garble](https://github.com/burrowers/garble)を使用してアプリケーションを難読化する                                                                 |                                                                                                                                                     |
+| -platform            | 指定された[プラットフォーム](../reference/cli.mdx#platforms)(カンマ区切り) 向けにビルドする。例: `windows/arm64`。 アーキテクチャを指定しない場合は、`runtime.GOARCH`の値が使用されます。 | platform = `GOOS` environment variable if given else `runtime.GOOS`.<br/>arch = `GOARCH` envrionment variable if given else `runtime.GOARCH`. |
+| -race                | Goのrace detectorを使用してビルドする                                                                                                       |                                                                                                                                                     |
+| -s                   | フロントエンドのビルドをスキップ                                                                                                                 |                                                                                                                                                     |
+| -skipbindings        | バインディングの生成をスキップする                                                                                                                |                                                                                                                                                     |
 | -tags "extra tags"   | Goコンパイラに渡すビルドタグ。 値は引用符で囲んでください。 また、スペースまたはカンマで区切ってください(両方は使用しないでください)。                                                           |                                                                                                                                                     |
+| -trimpath            | 実行可能ファイルから、すべてのファイルシステムパスを削除する                                                                                                   |                                                                                                                                                     |
+| -u                   | プロジェクトの`go.mod`を更新し、CLIと同じバージョンのWailsを使用する                                                                                       |                                                                                                                                                     |
 | -upx                 | "upx"を使用して最終的にバイナリを圧縮する                                                                                                          |                                                                                                                                                     |
 | -upxflags            | upxに渡すフラグ                                                                                                                        |                                                                                                                                                     |
 | -v int               | 詳細度レベル (0 - サイレント, 1 - デフォルト, 2 - 詳細)                                                                                            | 1                                                                                                                                                   |
 | -webview2            | WebView2インストーラーのストラテジ: download,embed,browser,error                                                                              | download                                                                                                                                            |
-| -u                   | プロジェクトの`go.mod`を更新し、CLIと同じバージョンのWailsを使用する                                                                                       |                                                                                                                                                     |
-| -debug               | アプリケーションのデバッグ情報を保持する。 これにより、アプリケーションウィンドウで開発者ツールを使用することを許可できます。                                                                  | false                                                                                                                                               |
-| -trimpath            | 実行可能ファイルから、すべてのファイルシステムパスを削除する                                                                                                   | false                                                                                                                                               |
-| -race                | Goのrace detectorを使用してビルドする                                                                                                       | false                                                                                                                                               |
 | -windowsconsole      | Windiws向けビルドでコンソールウィンドウを維持する                                                                                                     |                                                                                                                                                     |
-| -obfuscate           | [garble](https://github.com/burrowers/garble)を使用してアプリケーションを難読化する                                                                 | false                                                                                                                                               |
-| -garbleargs          | garbleへ渡す引数                                                                                                                      | `-literals -tiny -seed=random`                                                                                                                      |
-| -nosyncgomod         | go.modとWailsのバージョンを同期させない                                                                                                        | false                                                                                                                                               |
 
 `webview2`フラグの詳細については、[Windows](../guides/windows.mdx)ガイドをご覧ください。
 
@@ -159,37 +164,36 @@ Your system is ready for Wails development!
 - ウォッチャーが起動し、Goファイルの変更を検出した際には、アプリがリビルドされます
 - `http://localhost:34115`でWebサーバが起動し、HTTP経由でアプリケーション(フロントエンドだけではありません)が提供されます。 これにより、任意のブラウザ拡張機能を使用することができます
 - すべてのアプリケーションアセットはディスクから読み込まれます。 アセットが変更された場合、アプリケーションは自動的に、リビルドではなくリロードされます。 接続されているすべてのブラウザもリロードされます
-- 以下を提供するJSモジュールが生成されます:
-  - コードヒントを提供してくれるJSDocが自動付与された、GoメソッドのJavaScriptラッパー
-  - インスタンス生成したりGoメソッドに渡すことのできる、Go構造体のTypeScriptバージョン
-- ランタイム用のラッパーおよびTypeScript型定義を含むJSモジュールも生成されます
-- MacOSでは、アプリケーションを`.app`ファイルにバンドルして実行されます。 開発向けに、`build/darwin/Info.dev.plist`が使用されます。
+- 以下のものを含むJSモジュールが生成されます:
+  - GoメソッドのJavaScriptラッパー (コードヒントに有用なJSDocも自動付与されています)
+  - Goの構造体のTypeScriptバージョン (構造体のインスタンスを生成したり、Goメソッドの引数として渡したりすることができます)
+- 別のJSモジュールとして、ランタイムのラッパーおよびTS定義も生成されます
+- macOSの場合、アプリケーションは`.app`ファイルにバンドルされて実行されます。 これには、開発用の`build/darwin/Info.dev.plist`を使用します。
 
 | フラグ                          | 説明                                                                                                                            | デフォルト                 |
 |:---------------------------- |:----------------------------------------------------------------------------------------------------------------------------- |:--------------------- |
+| -appargs "args"              | シェル形式でアプリケーションに渡される引数                                                                                                         |                       |
 | -assetdir "./path/to/assets" | 通常のアセットFSを使用する代わりに、指定されたディレクトリからアセットを提供する                                                                                     | `wails.json`で指定されている値 |
 | -browser                     | 起動時にブラウザで`http://localhost:34115`を開く                                                                                          |                       |
 | -compiler "compiler"         | 違うGoコンパイラを使用する。例: go1.15beta1                                                                                                 | go                    |
-| -e                           | リビルドをトリガーする拡張子 (カンマ区切り)                                                                                                       | go                    |
-| -reloaddirs                  | リロードをトリガーする追加ディレクトリ (カンマ区切り)                                                                                                  | `wails.json`で指定されている値 |
-| -ldflags "flags"             | コンパイラに渡す追加のldflags                                                                                                            |                       |
-| -tags "extra tags"           | コンパイラへ渡すビルドタグ (引用符およびスペース区切り)                                                                                                 |                       |
-| -loglevel "loglevel"         | 使用するログレベル - Trace, Debug, Info, Warning, Error                                                                                | Debug                 |
-| -noreload                    | アセットが変更されたときの自動リロードを無効にする                                                                                                     |                       |
-| -nocolour                    | CLIのカラー出力を無効にする                                                                                                               | false                 |
-| -nogen                       | モジュールの生成を無効にする                                                                                                                |                       |
-| -v                           | 詳細度レベル (0 - サイレント, 1 - デフォルト, 2 - 詳細)                                                                                         | 1                     |
-| -wailsjsdir                  | 生成されたWailsのJSモジュールを格納するディレクトリ                                                                                                 | `wails.json`で指定されている値 |
 | -debounce                    | アセットの変更が検出されたあと、リロードするまでの時間                                                                                                   | 100 (ミリ秒)             |
 | -devserver "host:port"       | Wails開発サーバをバインドするアドレス                                                                                                         | "localhost:34115"     |
+| -extensions                  | リビルドをトリガーする拡張子 (カンマ区切り)                                                                                                       | go                    |
+| -forcebuild                  | アプリケーションを強制的にビルドする                                                                                                            |                       |
 | -frontenddevserverurl "url"  | アセットを提供するサードパーティ製の開発サーバ(例: Vite) を使用する                                                                                        | ""                    |
-| -appargs "args"              | シェル形式でアプリケーションに渡される引数                                                                                                         |                       |
-| -save                        | 指定された`assetdir`、`reloaddirs`、`wailsjsdir`、`debounce`、`devserver`、`frontenddevserverurl`フラグの値を、`wails.json`へ保存し、次回以降のデフォルト値にする |                       |
-| -race                        | Goのrace detectorを使用してビルドする                                                                                                    | false                 |
-| -s                           | フロントエンドのビルドをスキップ                                                                                                              | false                 |
+| -ldflags "flags"             | コンパイラに渡す追加のldflags                                                                                                            |                       |
+| -loglevel "loglevel"         | 使用するログレベル - Trace, Debug, Info, Warning, Error                                                                                | Debug                 |
+| -nocolour                    | CLIのカラー出力を無効にする                                                                                                               | false                 |
+| -noreload                    | アセットが変更されたときの自動リロードを無効にする                                                                                                     |                       |
 | -nosyncgomod                 | go.modとWailsのバージョンを同期させない                                                                                                     | false                 |
-
-
+| -race                        | Goのrace detectorを使用してビルドする                                                                                                    | false                 |
+| -reloaddirs                  | リロードをトリガーする追加ディレクトリ (カンマ区切り)                                                                                                  | `wails.json`で指定されている値 |
+| -s                           | フロントエンドのビルドをスキップ                                                                                                              | false                 |
+| -save                        | 指定された`assetdir`、`reloaddirs`、`wailsjsdir`、`debounce`、`devserver`、`frontenddevserverurl`フラグの値を、`wails.json`へ保存し、次回以降のデフォルト値にする |                       |
+| -skipbindings                | バインディングの生成をスキップする                                                                                                             |                       |
+| -tags "extra tags"           | コンパイラへ渡すビルドタグ (引用符およびスペース区切り)                                                                                                 |                       |
+| -v                           | 詳細度レベル (0 - サイレント, 1 - デフォルト, 2 - 詳細)                                                                                         | 1                     |
+| -wailsjsdir                  | 生成されたWailsのJSモジュールを格納するディレクトリ                                                                                                 | `wails.json`で指定されている値 |
 
 例:
 

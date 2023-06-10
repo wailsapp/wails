@@ -51,27 +51,32 @@ Wails CLI 有许多用于管理项目的命令。 所有命令都以此方式运
 
 | 标志              | 描述                                                                                                            | 默认                                                                                                         |
 |:--------------- |:------------------------------------------------------------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------- |
-| -platform       | 为指定的 [平台](../reference/cli#平台)（逗号分割）构建，例如： `windows/arm64`。 `windows/arm64`。 注意，如果不给出架构，则使用 `runtime.GOARCH`。 | 如果给定环境变量 platform = `GOOS` 否则等于 `runtime.GOOS`。 <br/>如果给定环境变量 arch = `GOARCH` 否则等于 `runtime.GOARCH`. |
 | -clean          | 清理 `build/bin` 目录                                                                                             |                                                                                                            |
 | -compiler "编译器" | 使用不同的 go 编译器来构建，例如 go1.15beta1                                                                                | go                                                                                                         |
+| -debug          | 在应用程序中保留调试信息。 允许在应用程序窗口中使用 devtools                                                                           |                                                                                                            |
+| -dryrun         | 打印构建命令但不执行它                                                                                                   |                                                                                                            |
+| -f              | 强制构建应用                                                                                                        |                                                                                                            |
+| -garbleargs     | 传递给 garble 的参数                                                                                                | `-literals -tiny -seed=random`                                                                             |
 | -ldflags "标志"   | 传递给编译器的额外 ldflags                                                                                             |                                                                                                            |
+| -m              | 编译前跳过 mod tidy                                                                                                |                                                                                                            |
 | -nopackage      | 不打包应用程序                                                                                                       |                                                                                                            |
+| -nocolour       | 在输出中禁用颜色                                                                                                      |                                                                                                            |
+| -nosyncgomod    | 不同步 go.mod 中的 Wails 版本                                                                                        |                                                                                                            |
+| -nsis           | 为 Windows 生成 NSIS 安装程序                                                                                        |                                                                                                            |
 | -o 文件名          | 输出文件名                                                                                                         |                                                                                                            |
-| -s              | 跳过前端构建                                                                                                        | false                                                                                                      |
-| -f              | 强制构建应用                                                                                                        | false                                                                                                      |
+| -obfuscated     | 使用 [garble](https://github.com/burrowers/garble) 混淆应用程序                                                       |                                                                                                            |
+| -platform       | 为指定的 [平台](../reference/cli#平台)（逗号分割）构建，例如： `windows/arm64`。 `windows/arm64`。 注意，如果不给出架构，则使用 `runtime.GOARCH`。 | 如果给定环境变量 platform = `GOOS` 否则等于 `runtime.GOOS`。 <br/>如果给定环境变量 arch = `GOARCH` 否则等于 `runtime.GOARCH`. |
+| -race           | 使用 Go 的竞态检测器构建                                                                                                |                                                                                                            |
+| -s              | 跳过前端构建                                                                                                        |                                                                                                            |
+| -skipbindings   | 跳过 bindings 生成                                                                                                |                                                                                                            |
 | -tags "额外标签"    | 构建标签以传递给 Go 编译器。 必须引用。 空格或逗号（但不能同时使用）分隔                                                                       |                                                                                                            |
+| -trimpath       | 从生成的可执行文件中删除所有文件系统路径。                                                                                         |                                                                                                            |
+| -u              | 更新项目的 `go.mod` 以使用与 CLI 相同版本的 Wails                                                                           |                                                                                                            |
 | -upx            | 使用 “upx” 压缩最终二进制文件                                                                                            |                                                                                                            |
 | -upxflags       | 传递给 upx 的标志                                                                                                   |                                                                                                            |
 | -v int          | 详细级别 (0 - silent, 1 - default, 2 - verbose)                                                                   | 1                                                                                                          |
 | -webview2       | WebView2 安装策略：download,embed,browser,error.                                                                   | download                                                                                                   |
-| -u              | 更新项目的 `go.mod` 以使用与 CLI 相同版本的 Wails                                                                           |                                                                                                            |
-| -debug          | 在应用程序中保留调试信息。 允许在应用程序窗口中使用 devtools                                                                           | false                                                                                                      |
-| -trimpath       | 从生成的可执行文件中删除所有文件系统路径。                                                                                         | false                                                                                                      |
-| -race           | 使用 Go 的竞态检测器构建                                                                                                | false                                                                                                      |
 | -windowsconsole | 保留Windows构建控制台窗口                                                                                              |                                                                                                            |
-| -obfuscate      | 使用 [garble](https://github.com/burrowers/garble) 混淆应用程序                                                       | false                                                                                                      |
-| -garbleargs     | 传递给 garble 的参数                                                                                                | `-literals -tiny -seed=random`                                                                             |
-| -nosyncgomod    | 不同步 go.mod 中的 Wails 版本                                                                                        | false                                                                                                      |
 
 有关 `webview2` 标志的详细描述，请参阅 [Windows 系统指南](../guides/windows)。
 
@@ -161,35 +166,34 @@ Your system is ready for Wails development!
 - 所有应用程序资源都从磁盘加载。 如果它们被更改，应用程序将自动重新加载（而不是重新构建）。 所有连接的浏览器也将重新加载
 - 生成的 JS 模块提供以下内容：
   - 带有自动生成的 JSDoc 的 Go 方法的 JavaScript 包装器，提供代码提示
-  - 您的 Go 结构体的 TypeScript 版本，可以构造并传递给您的 Go 方法
-- 生成的第二个 JS 模块，为运行时提供包装器 + TS 声明
-- 在 macOS 上，它会将应用程序打包到一个 `.app` 文件并运行它。 开发模式它将使用 `build/darwin/Info.dev.plist` 。
+  - 您的 Go 结构的 TypeScript 版本，可以构建并传递给您的 go 方法
+- 生成第二个 JS 模块，为运行时提供包装器 + TS 声明
+- 在 macOS 上，它将应用程序捆绑到一个 `.app` 文件中并运行它。 开发模式将使用 `build/darwin/Info.dev.plist` 。
 
 | 标志                           | 描述                                                                                                                               | 默认                |
 |:---------------------------- |:-------------------------------------------------------------------------------------------------------------------------------- |:----------------- |
+| -appargs "参数"                | 以 shell 样式传递给应用程序的参数                                                                                                             |                   |
 | -assetdir "./path/to/assets" | 从给定目录提供资产，而不是使用提供的资产 FS                                                                                                          | `wails.json` 中的值  |
 | -browser                     | 在启动时打开浏览器到 `http://localhost:34115`                                                                                              |                   |
 | -compiler "编译器"              | 使用不同的 go 编译器来构建，例如 go1.15beta1                                                                                                   | go                |
-| -e                           | 触发重新构建的扩展（逗号分隔）                                                                                                                  | go                |
-| -reloaddirs                  | 触发重新加载的附加目录（逗号分隔）                                                                                                                | `wails.json` 中的值  |
-| -ldflags "标志"                | 传递给编译器的额外 ldflags                                                                                                                |                   |
-| -tags "额外标签"                 | 传递给编译器的构建标签（引号和空格分隔）                                                                                                             |                   |
-| -loglevel "日志级别"             | 要使用的日志级别 - Trace, Debug, Info, Warning, Error                                                                                    | Debug（调试）         |
-| -noreload                    | 资产更改时禁用自动重新加载                                                                                                                    |                   |
-| -nocolour                    | 关闭彩色命令行输出                                                                                                                        | false             |
-| -nogen                       | 禁用生成模块                                                                                                                           |                   |
-| -v                           | 详细级别 (0 - silent, 1 - standard, 2 - verbose)                                                                                     | 1                 |
-| -wailsjsdir                  | 生成生成的Wails JS模块的目录                                                                                                               | `wails.json` 中的值  |
 | -debounce                    | 检测到资产更改后等待重新加载的时间                                                                                                                | 100 (毫秒)          |
 | -devserver "host:port"       | 将 wails 开发服务器绑定到的地址                                                                                                              | "localhost:34115" |
+| -extensions                  | 触发重新构建的扩展（逗号分隔）                                                                                                                  | go                |
+| -forcebuild                  | 强制构建应用程序                                                                                                                         |                   |
 | -frontenddevserverurl "url"  | 使用 3rd 方开发服务器 url 提供资产，例如：Vite                                                                                                   | ""                |
-| -appargs "参数"                | 以 shell 样式传递给应用程序的参数                                                                                                             |                   |
-| -save                        | 将指定的 `assetdir`、 `reloaddirs`、 `wailsjsdir`、 `debounce` 、 `devserver` 和 `frontenddevserverurl` 标志的值保存到 `wails.json` 以成为后续调用的默认值。 |                   |
-| -race                        | 使用 Go 的竞态检测器构建                                                                                                                   | false             |
-| -s                           | 跳过前端构建                                                                                                                           | false             |
+| -ldflags "标志"                | 传递给编译器的额外 ldflags                                                                                                                |                   |
+| -loglevel "日志级别"             | 要使用的日志级别 - Trace, Debug, Info, Warning, Error                                                                                    | Debug（调试）         |
+| -nocolour                    | 关闭彩色命令行输出                                                                                                                        | false             |
+| -noreload                    | 资产更改时禁用自动重新加载                                                                                                                    |                   |
 | -nosyncgomod                 | 不同步 go.mod 中的 Wails 版本                                                                                                           | false             |
-
-
+| -race                        | 使用 Go 的竞态检测器构建                                                                                                                   | false             |
+| -reloaddirs                  | 触发重新加载的附加目录（逗号分隔）                                                                                                                | `wails.json` 中的值  |
+| -s                           | 跳过前端构建                                                                                                                           | false             |
+| -save                        | 将指定的 `assetdir`、 `reloaddirs`、 `wailsjsdir`、 `debounce` 、 `devserver` 和 `frontenddevserverurl` 标志的值保存到 `wails.json` 以成为后续调用的默认值。 |                   |
+| -skipbindings                | 跳过 bindings 生成                                                                                                                   |                   |
+| -tags "额外标签"                 | 传递给编译器的构建标签（引号和空格分隔）                                                                                                             |                   |
+| -v                           | 详细级别 (0 - silent, 1 - standard, 2 - verbose)                                                                                     | 1                 |
+| -wailsjsdir                  | 生成生成的Wails JS模块的目录                                                                                                               | `wails.json` 中的值  |
 
 示例：
 
