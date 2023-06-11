@@ -348,7 +348,7 @@ TODO:
 |--------------|--------------------|-------|-----|-------------------------|
 | binding      | NO                 |       |     |                         |
 | build        | Yes (Debug + Prod) |       |     |                         |
-| clipboard    | NO                 |       |     |                         |
+| clipboard    | Yes                |       |     |                         |
 | contextmenus | Yes                |       |     |                         |
 | dialogs      | Almost             |       |     |                         |
 | drag-n-drop  | NO                 |       |     |                         |
@@ -359,7 +359,7 @@ TODO:
 | plain        | Yes                |       |     |                         |
 | plugins      |                    |       |     | Just needs StartAtLogin |
 | screen       | Yes                |       |     |                         |
-| systray      |                    |       |     |                         |
+| systray      | Yes                |       |     |                         |
 | window       |                    |       |     |                         |
 | windowjs     |                    |       |     |                         |
 | wml          |                    |       |     |                         |

@@ -46,8 +46,12 @@ func main() {
 	})
 	getClipboardMenu := menu.AddSubmenu("Get Clipboard")
 	getClipboardMenu.Add("Get Text").OnClick(func(ctx *application.Context) {
-		result := app.Clipboard().Text()
-		app.InfoDialog().SetMessage("Got:\n\n" + result).Show()
+		result, ok := app.Clipboard().Text()
+		if !ok {
+			app.InfoDialog().SetMessage("Failed to get clipboard text").Show()
+		} else {
+			app.InfoDialog().SetMessage("Got:\n\n" + result).Show()
+		}
 	})
 
 	clearClipboardMenu := menu.AddSubmenu("Clear Clipboard")
