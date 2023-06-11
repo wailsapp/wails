@@ -109,8 +109,8 @@ Webview Window Interface Methods
 
 | Feature | Windows | Linux | Mac | Notes |
 |---------|---------|-------|-----|-------|
-| SetText |         |       | Y   |       |
-| Text    |         |       | Y   |       |
+| SetText | Y       |       | Y   |       |
+| Text    | Y       |       | Y   |       |
 
 ### ContextMenu
 
@@ -206,7 +206,7 @@ To log or not to log? System logger vs custom logger.
 
 | Event                    | Windows | Linux | Mac | Notes |
 |--------------------------|---------|-------|-----|-------|
-| Default Application Menu |         |       | Y   |       |
+| Default Application Menu | Y       |       | Y   |       |
 
 ## Tray Menus
 
@@ -344,23 +344,23 @@ TODO:
 
 ## Examples
 
-| Example      | Windows            | Linux | Mac |
-|--------------|--------------------|-------|-----|
-| binding      | NO                 |       |     |
-| build        | Yes (Debug + Prod) |       |     |
-| clipboard    | NO                 |       |     |
-| contextmenus | Yes                |       |     |
-| dialogs      | Almost             |       |     |
-| drag-n-drop  | NO                 |       |     |
-| events       | NO                 |       |     |
-| frameless    | NO                 |       |     |
-| kitchensink  | Yes                |       |     |
-| menu         | Yes                |       |     |
-| plain        | Yes                |       |     |
-| plugins      |                    |       |     |
-| screen       |                    |       |     |
-| systray      |                    |       |     |
-| window       |                    |       |     |
-| windowjs     |                    |       |     |
-| wml          |                    |       |     |
+| Example      | Windows            | Linux | Mac | Notes                   |
+|--------------|--------------------|-------|-----|-------------------------|
+| binding      | NO                 |       |     |                         |
+| build        | Yes (Debug + Prod) |       |     |                         |
+| clipboard    | NO                 |       |     |                         |
+| contextmenus | Yes                |       |     |                         |
+| dialogs      | Almost             |       |     |                         |
+| drag-n-drop  | NO                 |       |     |                         |
+| events       | NO                 |       |     |                         |
+| frameless    | NO                 |       |     |                         |
+| kitchensink  | Yes                |       |     |                         |
+| menu         | Yes                |       |     |                         |
+| plain        | Yes                |       |     |                         |
+| plugins      |                    |       |     | Just needs StartAtLogin |
+| screen       | Yes                |       |     |                         |
+| systray      |                    |       |     |                         |
+| window       |                    |       |     |                         |
+| windowjs     |                    |       |     |                         |
+| wml          |                    |       |     |                         |
 

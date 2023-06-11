@@ -53,10 +53,10 @@
         let html = "";
         for (let i = 0; i < result.length; i++) {
             html += "<article class='center'><div class='monitor'><div style='padding:5px;'>";
-            let hidpi = result[i].scale === 2 ? " (HiDPI)" : "";
-            html += "<h3 class='center'>"+result[i].name+"</h3>";
+            let hidpi = result[i].Scale === 2 ? " (HiDPI)" : "";
+            html += "<h3 class='center'>"+result[i].Name+"</h3>";
             html += "<h4 class='center'>"+hidpi+"</h4>";
-            html += "<h4 class='center'>"+result[i].size.width+"x"+result[i].size.height+"</h4>";
+            html += "<h4 class='center'>"+result[i].Size.Width+"x"+result[i].Size.Height+"</h4>";
             html += "</div></div></article>";
         }
         document.body.innerHTML = html;
