@@ -7,6 +7,7 @@ import (
 	"github.com/samber/lo"
 	"log"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -121,7 +122,18 @@ func showWindow(hwnd uintptr, cmdshow int) bool {
 	return ret != 0
 }
 
+func stripNulls(str string) string {
+	// Split the string into substrings at each null character
+	substrings := strings.Split(str, "\x00")
+
+	// Join the substrings back into a single string
+	strippedStr := strings.Join(substrings, "")
+
+	return strippedStr
+}
+
 func MustStringToUTF16Ptr(input string) *uint16 {
+	input = stripNulls(input)
 	result, err := syscall.UTF16PtrFromString(input)
 	if err != nil {
 		Fatal(err.Error())
@@ -130,11 +142,13 @@ func MustStringToUTF16Ptr(input string) *uint16 {
 }
 
 func MustStringToUTF16uintptr(input string) uintptr {
+	input = stripNulls(input)
 	ret := lo.Must(syscall.UTF16PtrFromString(input))
 	return uintptr(unsafe.Pointer(ret))
 }
 
 func MustStringToUTF16(input string) []uint16 {
+	input = stripNulls(input)
 	return lo.Must(syscall.UTF16FromString(input))
 }
 
