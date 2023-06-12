@@ -648,11 +648,6 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		if wparam == w32.WA_ACTIVE || wparam == w32.WA_CLICKACTIVE {
 			getNativeApplication().currentWindowID = w.parent.id
 		}
-	case w32.WM_SIZE:
-		if w.chromium != nil {
-			w.chromium.Resize()
-		}
-		return 0
 	case w32.WM_CLOSE:
 		if w.parent.options.HideOnClose {
 			w.hide()
@@ -666,17 +661,13 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		w32.SetFocus(w.hwnd)
 	case w32.WM_MOVE, w32.WM_MOVING:
 		_ = w.chromium.NotifyParentWindowPositionChanged()
-	case w32.WM_SIZING:
-		// If the window is frameless, and we are minimizing, then we need to suppress the Resize on the
-		// WebView2. If we don't do this, restoring does not work as expected and first restores with some wrong
-		// size during the restore animation and only fully renders when the animation is done. This highly
-		// depends on the content in the WebView, see https://github.com/wailsapp/wails/issues/1319
+	case w32.WM_SIZE:
 		if w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED {
-			return 0
-		}
-
-		// If we have a resize debouncer, use it
-		if w.resizeDebouncer != nil {
+			// If the window is frameless, and we are minimizing, then we need to suppress the Resize on the
+			// WebView2. If we don't do this, restoring does not work as expected and first restores with some wrong
+			// size during the restore animation and only fully renders when the animation is done. This highly
+			// depends on the content in the WebView, see https://github.com/wailsapp/wails/issues/1319
+		} else if w.resizeDebouncer != nil {
 			w.resizeDebouncer(func() {
 				invokeSync(func() {
 					w.chromium.Resize()
