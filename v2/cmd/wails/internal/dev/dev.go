@@ -279,6 +279,16 @@ func runFrontendDevWatcherCommand(frontendDirectory string, devCommand string, d
 	}, viteServerURL, viteVersion, nil
 }
 
+func isWsl() bool {
+	version, err := os.ReadFile("/proc/version")
+
+	if err != nil {
+		return false
+	}
+
+	return strings.Contains(strings.ToLower(string(version)), "wsl")
+}
+
 // restartApp does the actual rebuilding of the application when files change
 func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process, f *flags.Dev, exitCodeChannel chan int, legacyUseDevServerInsteadofCustomScheme bool) (*process.Process, string, error) {
 
@@ -318,6 +328,12 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 	os.Setenv("assetdir", f.AssetDir)
 	os.Setenv("devserver", f.DevServer)
 	os.Setenv("frontenddevserverurl", f.FrontendDevServerURL)
+
+	if buildOptions.IsWindowsTargetPlatform() && isWsl() {
+		// In the case of building a Windows executable under WSL, we need to specify this variable with a list of
+		// variables that will be passed through
+		os.Setenv("WSLENV", "loglevel/w:frontenddevserverurl/w:devserver/w:assetdir/w")
+	}
 
 	// Start up new binary with correct args
 	newProcess := process.NewProcess(appBinary, args...)
