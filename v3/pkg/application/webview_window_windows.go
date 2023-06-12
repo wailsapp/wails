@@ -391,7 +391,6 @@ func (w *windowsWebviewWindow) unminimise() {
 
 func (w *windowsWebviewWindow) maximise() {
 	w32.ShowWindow(w.hwnd, w32.SW_MAXIMIZE)
-	w.chromium.Resize()
 }
 
 func (w *windowsWebviewWindow) unmaximise() {
@@ -400,7 +399,6 @@ func (w *windowsWebviewWindow) unmaximise() {
 
 func (w *windowsWebviewWindow) restore() {
 	w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
-	w.chromium.Resize()
 }
 
 func (w *windowsWebviewWindow) fullscreen() {
@@ -432,7 +430,6 @@ func (w *windowsWebviewWindow) fullscreen() {
 		int(monitorInfo.RcMonitor.Right-monitorInfo.RcMonitor.Left),
 		int(monitorInfo.RcMonitor.Bottom-monitorInfo.RcMonitor.Top),
 		w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
-	w.chromium.Resize()
 }
 
 func (w *windowsWebviewWindow) unfullscreen() {
@@ -449,7 +446,6 @@ func (w *windowsWebviewWindow) unfullscreen() {
 	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0,
 		w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
 	w.enableSizeConstraints()
-	w.chromium.Resize()
 }
 
 func (w *windowsWebviewWindow) isMinimised() bool {
@@ -653,6 +649,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			getNativeApplication().currentWindowID = w.parent.id
 		}
 	case w32.WM_SIZE:
+		if w.chromium != nil {
+			w.chromium.Resize()
+		}
 		return 0
 	case w32.WM_CLOSE:
 		if w.parent.options.HideOnClose {
