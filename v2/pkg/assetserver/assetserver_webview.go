@@ -96,15 +96,23 @@ func (d *AssetServer) processWebViewRequest(r webview.Request) {
 		d.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Request: %w", err))
 		return
 	}
+
+	// For server requests, the URL is parsed from the URI supplied on the Request-Line as stored in RequestURI. For
+	// most requests, fields other than Path and RawQuery will be empty. (See RFC 7230, Section 5.3)
+	req.URL.Scheme = ""
+	req.URL.Host = ""
+	req.URL.Fragment = ""
+	req.URL.RawFragment = ""
+
+	if url := req.URL; req.RequestURI == "" && url != nil {
+		req.RequestURI = url.String()
+	}
+
 	req.Header = header
 
 	if req.RemoteAddr == "" {
 		// 192.0.2.0/24 is "TEST-NET" in RFC 5737
 		req.RemoteAddr = "192.0.2.1:1234"
-	}
-
-	if req.RequestURI == "" && req.URL != nil {
-		req.RequestURI = req.URL.String()
 	}
 
 	if req.ContentLength == 0 {
