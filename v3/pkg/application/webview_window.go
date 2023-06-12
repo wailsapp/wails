@@ -223,6 +223,7 @@ func (w *WebviewWindow) Show() *WebviewWindow {
 		return w
 	}
 	invokeSync(w.impl.show)
+	w.emit(events.Common.WindowShow)
 	return w
 }
 
@@ -231,6 +232,7 @@ func (w *WebviewWindow) Hide() *WebviewWindow {
 	w.options.Hidden = true
 	if w.impl != nil {
 		invokeSync(w.impl.hide)
+		w.emit(events.Common.WindowHide)
 	}
 	return w
 }
@@ -564,6 +566,7 @@ func (w *WebviewWindow) ToggleDevTools() {
 func (w *WebviewWindow) ZoomReset() *WebviewWindow {
 	if w.impl != nil {
 		invokeSync(w.impl.zoomReset)
+		w.emit(events.Common.WindowZoomReset)
 	}
 	return w
 
@@ -575,6 +578,8 @@ func (w *WebviewWindow) ZoomIn() {
 		return
 	}
 	invokeSync(w.impl.zoomIn)
+	w.emit(events.Common.WindowZoomIn)
+
 }
 
 // ZoomOut decreases the zoom level of the webview content
@@ -583,6 +588,7 @@ func (w *WebviewWindow) ZoomOut() {
 		return
 	}
 	invokeSync(w.impl.zoomOut)
+	w.emit(events.Common.WindowZoomOut)
 }
 
 // Close closes the window
@@ -595,6 +601,7 @@ func (w *WebviewWindow) Close() {
 		return
 	}
 	invokeSync(w.impl.close)
+	w.emit(events.Common.WindowClose)
 }
 
 func (w *WebviewWindow) Zoom() {
@@ -602,6 +609,7 @@ func (w *WebviewWindow) Zoom() {
 		return
 	}
 	invokeSync(w.impl.zoom)
+	w.emit(events.Common.WindowZoom)
 }
 
 // SetHTML sets the HTML of the window to the given html string.
@@ -635,6 +643,7 @@ func (w *WebviewWindow) Minimise() *WebviewWindow {
 	}
 	if !w.IsMinimised() {
 		invokeSync(w.impl.minimise)
+		w.emit(events.Common.WindowMinimise)
 	}
 	return w
 }
@@ -648,6 +657,7 @@ func (w *WebviewWindow) Maximise() *WebviewWindow {
 	if !w.IsMaximised() {
 		w.disableSizeConstraints()
 		invokeSync(w.impl.maximise)
+		w.emit(events.Common.WindowMaximise)
 	}
 	return w
 }
@@ -659,6 +669,7 @@ func (w *WebviewWindow) UnMinimise() {
 	}
 	if w.IsMinimised() {
 		invokeSync(w.impl.unminimise)
+		w.emit(events.Common.WindowUnMinimise)
 	}
 }
 
@@ -670,6 +681,7 @@ func (w *WebviewWindow) UnMaximise() {
 	if w.IsMaximised() {
 		w.enableSizeConstraints()
 		invokeSync(w.impl.unmaximise)
+		w.emit(events.Common.WindowUnMaximise)
 	}
 }
 
@@ -681,6 +693,7 @@ func (w *WebviewWindow) UnFullscreen() {
 	if w.IsFullscreen() {
 		w.enableSizeConstraints()
 		invokeSync(w.impl.unfullscreen)
+		w.emit(events.Common.WindowUnFullscreen)
 	}
 }
 
@@ -697,6 +710,7 @@ func (w *WebviewWindow) Restore() {
 		} else if w.IsFullscreen() {
 			w.UnFullscreen()
 		}
+		w.emit(events.Common.WindowRestore)
 	})
 }
 
@@ -819,4 +833,12 @@ func (w *WebviewWindow) Focus() {
 		return
 	}
 	invokeSync(w.impl.focus)
+	w.emit(events.Common.WindowFocus)
+}
+
+func (w *WebviewWindow) emit(eventType events.WindowEventType) {
+	windowEvents <- &WindowEvent{
+		WindowID: w.id,
+		EventID:  uint(eventType),
+	}
 }

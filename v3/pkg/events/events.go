@@ -11,11 +11,41 @@ var Common = newCommonEvents()
 
 type commonEvents struct {
 	ApplicationStarted ApplicationEventType
+	WindowMaximise     WindowEventType
+	WindowUnMaximise   WindowEventType
+	WindowFullscreen   WindowEventType
+	WindowUnFullscreen WindowEventType
+	WindowRestore      WindowEventType
+	WindowMinimise     WindowEventType
+	WindowUnMinimise   WindowEventType
+	WindowClose        WindowEventType
+	WindowZoom         WindowEventType
+	WindowZoomIn       WindowEventType
+	WindowZoomOut      WindowEventType
+	WindowZoomReset    WindowEventType
+	WindowFocus        WindowEventType
+	WindowShow         WindowEventType
+	WindowHide         WindowEventType
 }
 
 func newCommonEvents() commonEvents {
 	return commonEvents{
 		ApplicationStarted: 1154,
+		WindowMaximise:     1155,
+		WindowUnMaximise:   1156,
+		WindowFullscreen:   1157,
+		WindowUnFullscreen: 1158,
+		WindowRestore:      1159,
+		WindowMinimise:     1160,
+		WindowUnMinimise:   1161,
+		WindowClose:        1162,
+		WindowZoom:         1163,
+		WindowZoomIn:       1164,
+		WindowZoomOut:      1165,
+		WindowZoomReset:    1166,
+		WindowFocus:        1167,
+		WindowShow:         1168,
+		WindowHide:         1169,
 	}
 }
 
