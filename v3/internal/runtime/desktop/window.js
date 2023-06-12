@@ -146,6 +146,11 @@ export function newWindow(windowName) {
         UnMinimise: () => void call('UnMinimise'),
 
         /**
+         * Restore the window
+         */
+        Restore: () => void call('Restore'),
+
+        /**
          * Set the background colour of the window.
          * @param {number} r - A value between 0 and 255
          * @param {number} g - A value between 0 and 255

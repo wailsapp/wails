@@ -57,6 +57,9 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 	case "UnMaximise":
 		window.UnMaximise()
 		m.ok(rw)
+	case "Restore":
+		window.Restore()
+		m.ok(rw)
 	case "Show":
 		window.Show()
 		m.ok(rw)
