@@ -391,6 +391,7 @@ func (w *windowsWebviewWindow) unminimise() {
 
 func (w *windowsWebviewWindow) maximise() {
 	w32.ShowWindow(w.hwnd, w32.SW_MAXIMIZE)
+	w.chromium.Resize()
 }
 
 func (w *windowsWebviewWindow) unmaximise() {
@@ -399,6 +400,7 @@ func (w *windowsWebviewWindow) unmaximise() {
 
 func (w *windowsWebviewWindow) restore() {
 	w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
+	w.chromium.Resize()
 }
 
 func (w *windowsWebviewWindow) fullscreen() {
@@ -430,6 +432,7 @@ func (w *windowsWebviewWindow) fullscreen() {
 		int(monitorInfo.RcMonitor.Right-monitorInfo.RcMonitor.Left),
 		int(monitorInfo.RcMonitor.Bottom-monitorInfo.RcMonitor.Top),
 		w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
+	w.chromium.Resize()
 }
 
 func (w *windowsWebviewWindow) unfullscreen() {
@@ -446,6 +449,7 @@ func (w *windowsWebviewWindow) unfullscreen() {
 	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0,
 		w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
 	w.enableSizeConstraints()
+	w.chromium.Resize()
 }
 
 func (w *windowsWebviewWindow) isMinimised() bool {
@@ -1244,29 +1248,6 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 
 	}
 
-	//if w.parent.options.Hidden {
-	//	return
-	//}
-
-	//switch f.frontendOptions.WindowStartState {
-	//case options.Maximised:
-	//	if !f.frontendOptions.DisableResize {
-	//		win32.ShowWindowMaximised(f.mainWindow.Handle())
-	//	} else {
-	//		win32.ShowWindow(f.mainWindow.Handle())
-	//	}
-	//case options.Minimised:
-	//	win32.ShowWindowMinimised(f.mainWindow.Handle())
-	//case options.Fullscreen:
-	//	f.mainWindow.Fullscreen()
-	//	win32.ShowWindow(f.mainWindow.Handle())
-	//default:
-	//	if f.frontendOptions.Fullscreen {
-	//		f.mainWindow.Fullscreen()
-	//	}
-	//	win32.ShowWindow(f.mainWindow.Handle())
-	//}
-	//
 	//f.mainWindow.hasBeenShown = true
 
 }
