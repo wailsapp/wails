@@ -1239,9 +1239,6 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	if err != nil {
 		globalApplication.fatal(err.Error())
 	}
-	if w.parent.options.Hidden {
-		return
-	}
 	err = w.chromium.Show()
 	if err != nil {
 		globalApplication.fatal(err.Error())
