@@ -1227,11 +1227,12 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 		}
 	*/
 
-	// TODO: Work out why we need this
-	//if w.hasStarted {
-	//	return
-	//}
-	//w.hasStarted = true
+	if w.hasStarted {
+		// NavigationCompleted is triggered for every Load. If an application uses reloads the Hide/Show will trigger
+		// a flickering of the window with every reload. So we only do this once for the first NavigationCompleted.
+		return
+	}
+	w.hasStarted = true
 
 	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
 	err := w.chromium.Hide()
@@ -1244,7 +1245,6 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	err = w.chromium.Show()
 	if err != nil {
 		globalApplication.fatal(err.Error())
-
 	}
 
 	//f.mainWindow.hasBeenShown = true
