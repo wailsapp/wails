@@ -344,23 +344,30 @@ TODO:
 
 ## Examples
 
-| Example      | Windows            | Linux | Mac | Notes                   |
-|--------------|--------------------|-------|-----|-------------------------|
-| binding      | NO                 |       |     |                         |
-| build        | Yes (Debug + Prod) |       |     |                         |
-| clipboard    | Yes                |       |     |                         |
-| contextmenus | Yes                |       |     |                         |
-| dialogs      | Almost             |       |     |                         |
-| drag-n-drop  | NO                 |       |     |                         |
-| events       | NO                 |       |     |                         |
-| frameless    | NO                 |       |     |                         |
-| kitchensink  | Yes                |       |     |                         |
-| menu         | Yes                |       |     |                         |
-| plain        | Yes                |       |     |                         |
-| plugins      |                    |       |     | Just needs StartAtLogin |
-| screen       | Yes                |       |     |                         |
-| systray      | Yes                |       |     |                         |
-| window       |                    |       |     |                         |
-| windowjs     |                    |       |     |                         |
-| wml          |                    |       |     |                         |
+| Example      | Windows                                                | Linux | Mac |
+|--------------|--------------------------------------------------------|-------|-----|
+| binding      | NO                                                     |       |     |
+| build        | Yes (Debug + Prod)                                     |       |     |
+| clipboard    | Yes                                                    |       |     |
+| contextmenus | Yes                                                    |       |     |
+| dialogs      | Almost                                                 |       |     |
+| drag-n-drop  | NO                                                     |       |     |
+| events       | NO                                                     |       |     |
+| frameless    | NO                                                     |       |     |
+| kitchensink  | Yes                                                    |       |     |
+| menu         | Yes                                                    |       |     |
+| plain        | Yes                                                    |       |     |
+| plugins      | Needs StartAtLogin                                     |       |     |
+| screen       | Yes                                                    |       |     |
+| systray      | Yes                                                    |       |     |
+| window       | Size of initial window not right with application menu |       |     |
+| windowjs     | Example not complete                                   |       |     |
+| wml          | Yes                                                    |       |     |
 
+# Alpha Release TODO
+
+- [ ] Check all runtime methods are available in the JS runtime
+
+# Beta Release TODO
+
+- [ ] Make better looking examples
