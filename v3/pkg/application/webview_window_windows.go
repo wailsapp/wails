@@ -647,6 +647,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_ACTIVATE:
 		if wparam == w32.WA_ACTIVE || wparam == w32.WA_CLICKACTIVE {
 			getNativeApplication().currentWindowID = w.parent.id
+			w.parent.emit(events.Common.WindowFocus)
 		}
 	case w32.WM_CLOSE:
 		if w.parent.options.HideOnClose {
@@ -662,6 +663,14 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_MOVE, w32.WM_MOVING:
 		_ = w.chromium.NotifyParentWindowPositionChanged()
 	case w32.WM_SIZE:
+		switch wparam {
+		case w32.SIZE_MAXIMIZED:
+			w.parent.emit(events.Common.WindowMaximise)
+		case w32.SIZE_RESTORED:
+			w.parent.emit(events.Common.WindowRestore)
+		case w32.SIZE_MINIMIZED:
+			w.parent.emit(events.Common.WindowMinimise)
+		}
 		if w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED {
 			// If the window is frameless, and we are minimizing, then we need to suppress the Resize on the
 			// WebView2. If we don't do this, restoring does not work as expected and first restores with some wrong
@@ -715,7 +724,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			int(newWindowSize.Right-newWindowSize.Left),
 			int(newWindowSize.Bottom-newWindowSize.Top),
 			w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
-
+		w.parent.emit(events.Common.WindowDPIChanged)
 	}
 
 	if w.parent.options.Windows.WindowMask != nil {

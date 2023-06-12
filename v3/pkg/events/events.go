@@ -26,6 +26,7 @@ type commonEvents struct {
 	WindowFocus        WindowEventType
 	WindowShow         WindowEventType
 	WindowHide         WindowEventType
+	WindowDPIChanged   WindowEventType
 }
 
 func newCommonEvents() commonEvents {
@@ -46,6 +47,7 @@ func newCommonEvents() commonEvents {
 		WindowFocus:        1167,
 		WindowShow:         1168,
 		WindowHide:         1169,
+		WindowDPIChanged:   1170,
 	}
 }
 
