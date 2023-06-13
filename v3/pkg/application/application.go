@@ -666,6 +666,17 @@ func invokeSyncWithResult[T any](fn func() T) (res T) {
 	return res
 }
 
+func invokeSyncWithError(fn func() error) (err error) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	globalApplication.dispatchOnMainThread(func() {
+		err = fn()
+		wg.Done()
+	})
+	wg.Wait()
+	return
+}
+
 func invokeSyncWithResultAndError[T any](fn func() (T, error)) (res T, err error) {
 	var wg sync.WaitGroup
 	wg.Add(1)

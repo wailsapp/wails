@@ -45,6 +45,15 @@ type windowsWebviewWindow struct {
 	resizeDebouncer func(func())
 }
 
+func (w *windowsWebviewWindow) startDrag() error {
+	if !w32.ReleaseCapture() {
+		return fmt.Errorf("unable to release mouse capture")
+	}
+	// Use PostMessage because we don't want to block the caller until dragging has been finished.
+	w32.PostMessage(w.hwnd, w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
+	return nil
+}
+
 func (w *windowsWebviewWindow) nativeWindowHandle() uintptr {
 	return w.hwnd
 }
@@ -660,6 +669,8 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		windowsApp.unregisterWindow(w)
 	case w32.WM_NCLBUTTONDOWN:
 		w32.SetFocus(w.hwnd)
+	case w32.WM_NCLBUTTONUP:
+
 	case w32.WM_MOVE, w32.WM_MOVING:
 		_ = w.chromium.NotifyParentWindowPositionChanged()
 	case w32.WM_SIZE:

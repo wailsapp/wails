@@ -51,7 +51,14 @@ function onMouseDown(e) {
 }
 
 function onMouseUp(e) {
-    document.body.style.cursor = window.wails.previousCursor || 'auto';
+    let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
+    if (mousePressed > 0) {
+        endDrag();
+    }
+}
+
+export function endDrag() {
+    document.body.style.cursor = 'default';
     shouldDrag = false;
 }
 
@@ -60,10 +67,7 @@ function onMouseMove(e) {
         shouldDrag = false;
         let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
         if (mousePressed > 0) {
-            window.wails.previousCursor = document.body.style.cursor;
-            document.body.style.cursor = 'grab';
             invoke("drag");
-            return;
         }
     }
 }

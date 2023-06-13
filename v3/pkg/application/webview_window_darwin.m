@@ -64,6 +64,8 @@ extern bool hasListeners(unsigned int);
 // Handle script messages from the external bridge
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
     NSString *m = message.body;
+
+    // TODO: Standardise drag by sending the drag event back to Go
     if ( [m isEqualToString:@"drag"] ) {
         /*
         if( [self IsFullScreen] ) {

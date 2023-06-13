@@ -13,7 +13,7 @@ The electron alternative for Go
 // defined in the Taskfile
 export let invoke = function(input) {
     if(WINDOWS) {
-        chrome.external.invoke(input);
+        chrome.webview.postMessage(input);
     } else {
         webkit.messageHandlers.external.postMessage(input);
     }

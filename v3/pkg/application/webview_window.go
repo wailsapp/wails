@@ -62,6 +62,7 @@ type (
 		setFrameless(bool)
 		openContextMenu(menu *Menu, data *ContextMenuData)
 		nativeWindowHandle() uintptr
+		startDrag() error
 	}
 )
 
@@ -437,12 +438,17 @@ func (w *WebviewWindow) SetBackgroundColour(colour RGBA) *WebviewWindow {
 func (w *WebviewWindow) handleMessage(message string) {
 	w.info(message)
 	// Check for special messages
-	if message == "test" {
-		invokeSync(func() {
-			w.SetTitle("Hello World")
-		})
+	if message == "drag" {
+		if !w.IsFullscreen() {
+			invokeSync(func() {
+				err := w.startDrag()
+				if err != nil {
+					w.error("Failed to start drag: %s", err)
+				}
+			})
+		}
 	}
-	w.info("ProcessMessage from front end:", message)
+	w.info("ProcessMessage from front end: %s", message)
 
 }
 
@@ -841,4 +847,11 @@ func (w *WebviewWindow) emit(eventType events.WindowEventType) {
 		WindowID: w.id,
 		EventID:  uint(eventType),
 	}
+}
+
+func (w *WebviewWindow) startDrag() error {
+	if w.impl == nil {
+		return nil
+	}
+	return invokeSyncWithError(w.impl.startDrag)
 }

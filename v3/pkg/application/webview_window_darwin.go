@@ -1222,3 +1222,8 @@ func (w *macosWebviewWindow) setHTML(html string) {
 	// Render HTML
 	C.windowRenderHTML(w.nsWindow, cHTML)
 }
+
+func (w *macosWebviewWindow) startDrag() error {
+	// Unused - handled by the native code
+	return nil
+}
