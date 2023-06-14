@@ -15,7 +15,11 @@ import {invoke} from "./invoke";
 let shouldDrag = false;
 
 export function dragTest(e) {
-    let val = window.getComputedStyle(e.target).getPropertyValue("--wails-draggable");
+    if (window.wails.Capabilities['HasNativeDrag'] === true) {
+        return false;
+    }
+
+    let val = window.getComputedStyle(e.target).getPropertyValue("app-region");
     if (val) {
         val = val.trim();
     }

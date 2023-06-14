@@ -353,7 +353,7 @@ TODO:
 | dialogs      | Almost                                                 |       |     |
 | drag-n-drop  | NO                                                     |       |     |
 | events       | NO                                                     |       |     |
-| frameless    | NO                                                     |       |     |
+| frameless    | Needs resizing                                         |       |     |
 | kitchensink  | Yes                                                    |       |     |
 | menu         | Yes                                                    |       |     |
 | plain        | Yes                                                    |       |     |

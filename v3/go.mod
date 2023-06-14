@@ -20,7 +20,7 @@ require (
 	github.com/samber/lo v1.37.0
 	github.com/tc-hib/winres v0.1.6
 	github.com/wailsapp/go-webview2 v1.0.2-0.20230604075323-d593c659ca7b
-	github.com/wailsapp/wails/v2 v2.3.2-0.20230117193915-45c3a501d9e6
+	github.com/wailsapp/wails/v2 v2.5.1
 	golang.org/x/sys v0.8.0
 	modernc.org/sqlite v1.21.0
 )
@@ -46,7 +46,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
-	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/radovskyb/watcher v1.0.7 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
@@ -61,7 +60,7 @@ require (
 	golang.org/x/term v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/tools v0.1.12 // indirect
-	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect
 	modernc.org/cc/v3 v3.40.0 // indirect

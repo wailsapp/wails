@@ -24,7 +24,14 @@ import {setupDrag, endDrag} from "./drag";
 
 window.wails = {
     ...newRuntime(null),
+    Capabilities: {},
 };
+
+fetch("/wails/capabilities").then((response) => {
+    response.json().then((data) => {
+        window.wails.Capabilities = data;
+    });
+});
 
 // Internal wails endpoints
 window._wails = {

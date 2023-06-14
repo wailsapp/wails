@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bep/debounce"
+	"github.com/wailsapp/go-webview2/webviewloader"
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
+	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -1133,18 +1135,30 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium := w.chromium
 	debugMode := isDebugMode()
 
+	opts := w.parent.options.Windows
+
+	webview2version, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(opts.WebviewBrowserPath)
+	if err != nil {
+		globalApplication.error("Error getting WebView2 version: %s", err)
+		return
+	}
+	globalApplication.capabilities = capabilities.NewCapabilities(webview2version)
+
 	disableFeatues := []string{}
 
 	if !w.parent.options.EnableFraudulentWebsiteWarnings {
 		disableFeatues = append(disableFeatues, "msSmartScreenProtection")
 	}
 
-	opts := w.parent.options.Windows
 	chromium.DataPath = opts.WebviewUserDataPath
 	chromium.BrowserPath = opts.WebviewBrowserPath
 
 	if opts.WebviewGpuIsDisabled {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
+	}
+
+	if globalApplication.capabilities.HasNativeDrag {
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--enable-features=msWebView2EnableDraggableRegions")
 	}
 
 	if len(disableFeatues) > 0 {

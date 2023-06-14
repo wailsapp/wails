@@ -1,6 +1,7 @@
 package application
 
 import (
+	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"log"
 	"net/http"
 	"os"
@@ -75,6 +76,11 @@ func New(appOptions Options) *App {
 	srv, err := assetserver.NewAssetServer("", opts, false, nil, wailsruntime.RuntimeAssetsBundle)
 	if err != nil {
 		result.fatal(err.Error())
+	}
+
+	// Pass through the capabilities
+	srv.GetCapabilities = func() []byte {
+		return globalApplication.capabilities.AsBytes()
 	}
 
 	srv.UseRuntimeHandler(NewMessageProcessor())
@@ -222,6 +228,9 @@ type App struct {
 	// Hooks
 	windowCreatedCallbacks []func(window *WebviewWindow)
 	pid                    int
+
+	// Capabilities
+	capabilities capabilities.Capabilities
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -241,6 +250,10 @@ func (a *App) deleteWindowByID(id uint) {
 	a.windowsLock.Lock()
 	defer a.windowsLock.Unlock()
 	delete(a.windows, id)
+}
+
+func (a *App) Capabilities() capabilities.Capabilities {
+	return a.capabilities
 }
 
 func (a *App) On(eventType events.ApplicationEventType, callback func()) func() {
