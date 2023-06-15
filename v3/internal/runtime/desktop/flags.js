@@ -12,11 +12,26 @@ The electron alternative for Go
 
 let flags = new Map();
 
+function convertToMap(obj) {
+    const map = new Map();
+
+    for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'object' && value !== null) {
+            map.set(key, convertToMap(value)); // Recursively convert nested object
+        } else {
+            map.set(key, value);
+        }
+    }
+
+    return map;
+}
+
 fetch("/wails/flags").then((response) => {
     response.json().then((data) => {
-        flags.Set(data);
+        flags = convertToMap(data);
     });
 });
+
 
 function getValueFromMap(keyString) {
     const keys = keyString.split('.');

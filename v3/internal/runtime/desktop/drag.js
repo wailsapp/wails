@@ -16,9 +16,9 @@ import {GetFlag} from "./flags";
 let shouldDrag = false;
 
 export function dragTest(e) {
-    if (window.wails.Capabilities['HasNativeDrag'] === true) {
-        return false;
-    }
+    // if (window.wails.Capabilities['HasNativeDrag'] === true) {
+    //     return false;
+    // }
 
     let val = window.getComputedStyle(e.target).getPropertyValue("app-region");
     if (val) {
@@ -46,7 +46,7 @@ export function setupDrag() {
 let resizeEdge = null;
 
 function testResize(e) {
-    if( resizeEdge !== null ) {
+    if( resizeEdge ) {
         invoke("resize:" + resizeEdge);
         return true
     }
@@ -96,6 +96,7 @@ function onMouseMove(e) {
         if (mousePressed > 0) {
             invoke("drag");
         }
+        return;
     }
 
     if (WINDOWS) {
@@ -106,28 +107,34 @@ function onMouseMove(e) {
 let defaultCursor = "auto";
 
 function handleResize(e) {
-
-    // if (!GetFlag("enableResize")) {
-    //     return;
-    // }
-
     let resizeHandleHeight = GetFlag("system.resizeHandleHeight") || 5;
     let resizeHandleWidth = GetFlag("system.resizeHandleWidth") || 5;
+
+    // Extra pixels for the corner areas
+    let cornerExtra = GetFlag("resizeCornerExtra") || 3;
+
     let rightBorder = window.outerWidth - e.clientX < resizeHandleWidth;
     let leftBorder = e.clientX < resizeHandleWidth;
     let topBorder = e.clientY < resizeHandleHeight;
     let bottomBorder = window.outerHeight - e.clientY < resizeHandleHeight;
 
+    // Adjust for corners
+    let rightCorner = window.outerWidth - e.clientX < (resizeHandleWidth + cornerExtra);
+    let leftCorner = e.clientX < (resizeHandleWidth + cornerExtra);
+    let topCorner = e.clientY < (resizeHandleHeight + cornerExtra);
+    let bottomCorner = window.outerHeight - e.clientY < (resizeHandleHeight + cornerExtra);
+
     // If we aren't on an edge, but were, reset the cursor to default
     if (!leftBorder && !rightBorder && !topBorder && !bottomBorder && resizeEdge !== undefined) {
         setResize();
-    } else if (rightBorder && bottomBorder) setResize("se-resize");
-    else if (leftBorder && bottomBorder) setResize("sw-resize");
-    else if (leftBorder && topBorder) setResize("nw-resize");
-    else if (topBorder && rightBorder) setResize("ne-resize");
+    }
+    // Adjusted for corner areas
+    else if (rightCorner && bottomCorner) setResize("se-resize");
+    else if (leftCorner && bottomCorner) setResize("sw-resize");
+    else if (leftCorner && topCorner) setResize("nw-resize");
+    else if (topCorner && rightCorner) setResize("ne-resize");
     else if (leftBorder) setResize("w-resize");
     else if (topBorder) setResize("n-resize");
     else if (bottomBorder) setResize("s-resize");
     else if (rightBorder) setResize("e-resize");
-
 }
