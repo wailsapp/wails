@@ -43,6 +43,17 @@ type windowsApp struct {
 	currentWindowID uint
 }
 
+func (m *windowsApp) GetFlags(options Options) map[string]any {
+	if options.Flags == nil {
+		options.Flags = make(map[string]any)
+	}
+	options.Flags["system"] = map[string]any{
+		"resizeHandleWidth":  w32.GetSystemMetrics(w32.SM_CXSIZEFRAME),
+		"resizeHandleHeight": w32.GetSystemMetrics(w32.SM_CYSIZEFRAME),
+	}
+	return options.Flags
+}
+
 func (m *windowsApp) getWindowForHWND(hwnd w32.HWND) *windowsWebviewWindow {
 	m.windowMapLock.RLock()
 	defer m.windowMapLock.RUnlock()

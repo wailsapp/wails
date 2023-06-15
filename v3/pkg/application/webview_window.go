@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/samber/lo"
+	"strings"
 	"sync"
 	"time"
 
@@ -63,6 +64,7 @@ type (
 		openContextMenu(menu *Menu, data *ContextMenuData)
 		nativeWindowHandle() uintptr
 		startDrag() error
+		startResize(border string) error
 	}
 )
 
@@ -436,7 +438,6 @@ func (w *WebviewWindow) SetBackgroundColour(colour RGBA) *WebviewWindow {
 }
 
 func (w *WebviewWindow) handleMessage(message string) {
-	w.info(message)
 	// Check for special messages
 	if message == "drag" {
 		if !w.IsFullscreen() {
@@ -447,9 +448,35 @@ func (w *WebviewWindow) handleMessage(message string) {
 				}
 			})
 		}
+		return
 	}
+
+	if strings.HasPrefix(message, "resize:") {
+		if !w.IsFullscreen() {
+			sl := strings.Split(message, ":")
+			if len(sl) != 2 {
+				w.error("Unknown message returned from dispatcher: %+v", message)
+				return
+			}
+			err := w.startResize(sl[1])
+			if err != nil {
+				w.error(err.Error())
+			}
+		}
+		return
+	}
+
 	w.info("ProcessMessage from front end: %s", message)
 
+}
+
+func (w *WebviewWindow) startResize(border string) error {
+	if w.impl == nil {
+		return nil
+	}
+	return invokeSyncWithResult(func() error {
+		return w.impl.startResize(border)
+	})
 }
 
 // Center centers the window on the screen

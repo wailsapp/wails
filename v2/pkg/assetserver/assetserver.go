@@ -19,6 +19,7 @@ const (
 	ipcJSPath        = "/wails/ipc.js"
 	runtimePath      = "/wails/runtime"
 	capabilitiesPath = "/wails/capabilities"
+	flagsPath        = "/wails/flags"
 )
 
 type RuntimeAssets interface {
@@ -50,6 +51,9 @@ type AssetServer struct {
 
 	// GetCapabilities returns the capabilities of the runtime
 	GetCapabilities func() []byte
+
+	// GetFlags returns the application flags
+	GetFlags func() []byte
 
 	assetServerWebView
 }
@@ -153,6 +157,13 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		var data = []byte("{}")
 		if d.GetCapabilities != nil {
 			data = d.GetCapabilities()
+		}
+		d.writeBlob(rw, path, data)
+
+	case flagsPath:
+		var data = []byte("{}")
+		if d.GetFlags != nil {
+			data = d.GetFlags()
 		}
 		d.writeBlob(rw, path, data)
 

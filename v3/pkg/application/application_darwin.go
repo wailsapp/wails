@@ -199,6 +199,13 @@ func (m *macosApp) destroy() {
 	C.destroyApp()
 }
 
+func (m *macosApp) GetFlags(options Options) map[string]any {
+	if options.Flags == nil {
+		options.Flags = make(map[string]any)
+	}
+	return options.Flags
+}
+
 func newPlatformApp(app *App) *macosApp {
 	C.init()
 	return &macosApp{

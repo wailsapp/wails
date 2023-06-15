@@ -26,6 +26,17 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
+var edgeMap = map[string]uintptr{
+	"n-resize":  w32.HTTOP,
+	"ne-resize": w32.HTTOPRIGHT,
+	"e-resize":  w32.HTRIGHT,
+	"se-resize": w32.HTBOTTOMRIGHT,
+	"s-resize":  w32.HTBOTTOM,
+	"sw-resize": w32.HTBOTTOMLEFT,
+	"w-resize":  w32.HTLEFT,
+	"nw-resize": w32.HTTOPLEFT,
+}
+
 var showDevTools = func(chromium *edge.Chromium) {}
 
 type windowsWebviewWindow struct {
@@ -45,6 +56,15 @@ type windowsWebviewWindow struct {
 	chromium        *edge.Chromium
 	hasStarted      bool
 	resizeDebouncer func(func())
+}
+
+func (w *windowsWebviewWindow) startResize(border string) error {
+	if !w32.ReleaseCapture() {
+		return fmt.Errorf("unable to release mouse capture")
+	}
+	// Use PostMessage because we don't want to block the caller until resizing has been finished.
+	w32.PostMessage(w.hwnd, w32.WM_NCLBUTTONDOWN, edgeMap[border], 0)
+	return nil
 }
 
 func (w *windowsWebviewWindow) startDrag() error {
@@ -1157,9 +1177,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
 	}
 
-	if globalApplication.capabilities.HasNativeDrag {
-		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--enable-features=msWebView2EnableDraggableRegions")
-	}
+	//if globalApplication.capabilities.HasNativeDrag {
+	//	chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--enable-features=msWebView2EnableDraggableRegions")
+	//}
 
 	if len(disableFeatues) > 0 {
 		arg := fmt.Sprintf("--disable-features=%s", strings.Join(disableFeatues, ","))

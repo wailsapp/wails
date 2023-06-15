@@ -20,6 +20,7 @@ type Options struct {
 	}
 	Assets  AssetOptions
 	Plugins map[string]Plugin
+	Flags   map[string]any
 }
 
 // AssetOptions defines the configuration of the AssetServer.

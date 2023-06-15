@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/json"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"log"
 	"net/http"
@@ -83,6 +84,15 @@ func New(appOptions Options) *App {
 		return globalApplication.capabilities.AsBytes()
 	}
 
+	srv.GetFlags = func() []byte {
+		updatedOptions := result.impl.GetFlags(appOptions)
+		flags, err := json.Marshal(updatedOptions)
+		if err != nil {
+			log.Fatal("Invalid flags provided to application: ", err.Error())
+		}
+		return flags
+	}
+
 	srv.UseRuntimeHandler(NewMessageProcessor())
 	result.assets = srv
 
@@ -136,6 +146,7 @@ type (
 		show()
 		getPrimaryScreen() (*Screen, error)
 		getScreens() ([]*Screen, error)
+		GetFlags(options Options) map[string]any
 	}
 
 	runnable interface {
