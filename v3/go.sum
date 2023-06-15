@@ -143,6 +143,8 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
 github.com/tc-hib/winres v0.1.6 h1:qgsYHze+BxQPEYilxIz/KCQGaClvI2+yLBAZs+3+0B8=
 github.com/tc-hib/winres v0.1.6/go.mod h1:pe6dOR40VOrGz8PkzreVKNvEKnlE8t4yR8A8naL+t7A=
+github.com/tmclane/purego v0.0.0-20230601213035-1f25e70d7b01 h1:oQwu3iNDywGp1Hry+PDvz+grwbCGpzY+ckSnWKCnX5Y=
+github.com/tmclane/purego v0.0.0-20230601213035-1f25e70d7b01/go.mod h1:ah1In8AOtksoNK6yk5z1HTJeUkC1Ez4Wk2idgGslMwQ=
 github.com/wailsapp/go-webview2 v1.0.2-0.20230604075323-d593c659ca7b h1:cztK9x+ikg6nFscy5c8NgtfIXv/d0ESdENy9+JkE8i4=
 github.com/wailsapp/go-webview2 v1.0.2-0.20230604075323-d593c659ca7b/go.mod h1:Uk2BePfCRzttBBjFrBmqKGJd41P6QIHeV9kTgIeOZNo=
 github.com/wailsapp/mimetype v1.4.1 h1:pQN9ycO7uo4vsUUuPeHEYoUkLVkaRntMnHJxVwYhwHs=
