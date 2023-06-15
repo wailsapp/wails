@@ -1,7 +1,5 @@
 package application
 
-import "fmt"
-
 func (m *linuxApp) showAboutDialog(title string, message string, icon []byte) {
 	window := globalApplication.getWindowForID(m.getCurrentWindowID())
 	var parent pointer
@@ -31,8 +29,7 @@ func (m *linuxDialog) show() {
 	}
 
 	response := runQuestionDialog(parent, m.dialog)
-	if response >= 0 {
-		fmt.Println("Response: ", response)
+	if response >= 0 && response < len(m.dialog.Buttons) {
 		button := m.dialog.Buttons[response]
 		if button.Callback != nil {
 			go button.Callback()

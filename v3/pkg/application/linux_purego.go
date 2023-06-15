@@ -30,12 +30,12 @@ const (
 	GdkWindowStateFullscreen = 1 << 4
 
 	// https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/gtkmessagedialog.h#L87
-	GtkButtonsNone int = iota
-	GtkButtonsOk
-	GtkButtonsClose
-	GtkButtonsCancel
-	GtkButtonsYesNo
-	GtkButtonsOkCancel
+	GtkButtonsNone     int = 0
+	GtkButtonsOk           = 1
+	GtkButtonsClose        = 2
+	GtkButtonsCancel       = 3
+	GtkButtonsYesNo        = 4
+	GtkButtonsOkCancel     = 5
 
 	// https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/gtkdialog.h#L36
 	GtkDialogModal             = 1 << 0
@@ -45,10 +45,10 @@ const (
 	GtkOrientationVertical = 1
 
 	// enum GtkMessageType
-	GtkMessageInfo = iota
-	GtkMessageWarning
-	GtkMessageQuestion
-	GtkMessageError
+	GtkMessageInfo     = 0
+	GtkMessageWarning  = 1
+	GtkMessageQuestion = 2
+	GtkMessageError    = 3
 )
 
 type GdkGeometry struct {
