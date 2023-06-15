@@ -2,13 +2,14 @@ package application
 
 import (
 	"encoding/json"
-	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"log"
 	"net/http"
 	"os"
 	"runtime"
 	"strconv"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/internal/capabilities"
 
 	"github.com/wailsapp/wails/v3/pkg/icons"
 
@@ -414,7 +415,7 @@ func (a *App) Run() error {
 	a.runLock.Unlock()
 
 	// set the application menu
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == "darwin" || runtime.GOOS == "linux" {
 		a.impl.setApplicationMenu(a.ApplicationMenu)
 	}
 	a.impl.setIcon(a.options.Icon)
