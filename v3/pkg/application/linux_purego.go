@@ -73,8 +73,9 @@ var (
 )
 
 const (
-	gtk3 = "libgtk-3.so"
-	gtk4 = "libgtk-4.so"
+	// TODO: map distro => so filename - with fallback?
+	gtk3 = "libgtk-3.so.0"
+	gtk4 = "libgtk-4.so.1"
 )
 
 var (
@@ -83,12 +84,14 @@ var (
 	webkit  uintptr
 
 	// function references
-	gIdleAdd              func(uintptr)
 	gApplicationHold      func(pointer)
 	gApplicationQuit      func(pointer)
 	gApplicationName      func() string
 	gApplicationRelease   func(pointer)
 	gApplicationRun       func(pointer, int, []string) int
+	gBytesNewStatic       func(uintptr, int) uintptr
+	gBytesUnref           func(uintptr)
+	gIdleAdd              func(uintptr)
 	gObjectRefSink        func(pointer)
 	gObjectUnref          func(pointer)
 	gSignalConnectData    func(pointer, string, uintptr, pointer, bool, int) int
@@ -103,6 +106,7 @@ var (
 	gdkMonitorGetGeometry        func(pointer, pointer) pointer
 	gdkMonitorGetScaleFactor     func(pointer) int
 	gdkMonitorIsPrimary          func(pointer) int
+	gdkPixbufNewFromBytes        func(uintptr, int, int, int, int, int, int) pointer
 	gdkRgbaParse                 func(pointer, string) bool
 	gdkScreenGetRgbaVisual       func(pointer) pointer
 	gdkScreenIsComposited        func(pointer) int
@@ -121,9 +125,11 @@ var (
 	gtkCheckMenuItemSetActive     func(pointer, int)
 	gtkContainerAdd               func(pointer, pointer)
 	gtkDialogAddButton            func(pointer, string, int)
+	gtkDialogGetContentArea       func(pointer) pointer
 	gtkDialogRun                  func(pointer) int
 	gtkDialogSetDefaultResponse   func(pointer, int)
 	gtkDragDestSet                func(pointer, uint, pointer, uint, uint)
+	gtkImageNewFromPixbuf         func(pointer) pointer
 	gtkMenuBarNew                 func() pointer
 	gtkMenuItemNewWithLabel       func(string) pointer
 	gtkMenuItemSetLabel           func(pointer, string)
@@ -155,6 +161,7 @@ var (
 	gtkWindowKeepAbove            func(pointer, bool)
 	gtkWindowMaximize             func(pointer)
 	gtkWindowMinimize             func(pointer)
+	gtkWindowMove                 func(pointer, int, int)
 	gtkWindowPresent              func(pointer)
 	gtkWindowResize               func(pointer, int, int)
 	gtkWindowSetDecorated         func(pointer, int)
@@ -182,6 +189,7 @@ var (
 	webkitWebViewLoadUri                                 func(pointer, string)
 	webkitWebViewSetBackgroundColor                      func(pointer, pointer)
 	webkitWebViewSetSettings                             func(pointer, pointer)
+	webkitWebViewSetZoomLevel                            func(pointer, float64)
 )
 
 func init() {
@@ -189,15 +197,14 @@ func init() {
 	_ = os.Setenv("GDK_BACKEND", "x11")
 	var err error
 
-	/*
-		gtk, err = purego.Dlopen(gtk4, purego.RTLD_NOW|purego.RTLD_GLOBAL)
-		if err == nil {
-			version = 4
-			return
-		}
+	// gtk, err = purego.Dlopen(gtk4, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+	// if err == nil {
+	// 	version = 4
+	// 	return
+	// }
 
-		log.Println("Failed to open GTK4: Falling back to GTK3")
-	*/
+	// log.Println("Failed to open GTK4: Falling back to GTK3")
+
 	gtk, err = purego.Dlopen(gtk3, purego.RTLD_NOW|purego.RTLD_GLOBAL)
 	if err != nil {
 		panic(err)
@@ -217,6 +224,8 @@ func init() {
 	purego.RegisterLibFunc(&gApplicationQuit, gtk, "g_application_quit")
 	purego.RegisterLibFunc(&gApplicationRelease, gtk, "g_application_release")
 	purego.RegisterLibFunc(&gApplicationRun, gtk, "g_application_run")
+	purego.RegisterLibFunc(&gBytesNewStatic, gtk, "g_bytes_new_static")
+	purego.RegisterLibFunc(&gBytesUnref, gtk, "g_bytes_unref")
 	purego.RegisterLibFunc(&gIdleAdd, gtk, "g_idle_add")
 	purego.RegisterLibFunc(&gObjectRefSink, gtk, "g_object_ref_sink")
 	purego.RegisterLibFunc(&gObjectUnref, gtk, "g_object_unref")
@@ -232,6 +241,7 @@ func init() {
 	purego.RegisterLibFunc(&gdkMonitorGetGeometry, gtk, "gdk_monitor_get_geometry")
 	purego.RegisterLibFunc(&gdkMonitorGetScaleFactor, gtk, "gdk_monitor_get_scale_factor")
 	purego.RegisterLibFunc(&gdkMonitorIsPrimary, gtk, "gdk_monitor_is_primary")
+	purego.RegisterLibFunc(&gdkPixbufNewFromBytes, gtk, "gdk_pixbuf_new_from_bytes")
 	purego.RegisterLibFunc(&gdkRgbaParse, gtk, "gdk_rgba_parse")
 	purego.RegisterLibFunc(&gdkScreenGetRgbaVisual, gtk, "gdk_screen_get_rgba_visual")
 	purego.RegisterLibFunc(&gdkScreenIsComposited, gtk, "gdk_screen_is_composited")
@@ -250,12 +260,12 @@ func init() {
 	purego.RegisterLibFunc(&gtkCheckMenuItemSetActive, gtk, "gtk_check_menu_item_set_active")
 	purego.RegisterLibFunc(&gtkContainerAdd, gtk, "gtk_container_add")
 	purego.RegisterLibFunc(&gtkDialogAddButton, gtk, "gtk_dialog_add_button")
+	purego.RegisterLibFunc(&gtkDialogGetContentArea, gtk, "gtk_dialog_get_content_area")
 	purego.RegisterLibFunc(&gtkDialogRun, gtk, "gtk_dialog_run")
 	purego.RegisterLibFunc(&gtkDialogSetDefaultResponse, gtk, "gtk_dialog_set_default_response")
 	purego.RegisterLibFunc(&gtkDragDestSet, gtk, "gtk_drag_dest_set")
-
+	purego.RegisterLibFunc(&gtkImageNewFromPixbuf, gtk, "gtk_image_new_from_pixbuf")
 	purego.RegisterLibFunc(&gtkMenuItemSetLabel, gtk, "gtk_menu_item_set_label")
-
 	purego.RegisterLibFunc(&gtkMenuBarNew, gtk, "gtk_menu_bar_new")
 	purego.RegisterLibFunc(&gtkMenuItemNewWithLabel, gtk, "gtk_menu_item_new_with_label")
 	purego.RegisterLibFunc(&gtkMenuItemSetSubmenu, gtk, "gtk_menu_item_set_submenu")
@@ -284,6 +294,7 @@ func init() {
 	purego.RegisterLibFunc(&gtkWindowGetPosition, gtk, "gtk_window_get_position")
 	purego.RegisterLibFunc(&gtkWindowGetSize, gtk, "gtk_window_get_size")
 	purego.RegisterLibFunc(&gtkWindowMaximize, gtk, "gtk_window_maximize")
+	purego.RegisterLibFunc(&gtkWindowMove, gtk, "gtk_window_move")
 	purego.RegisterLibFunc(&gtkWindowPresent, gtk, "gtk_window_present")
 	//purego.RegisterLibFunc(&gtkWindowPresent, gtk, "gtk_window_unminimize")  // gtk4
 	purego.RegisterLibFunc(&gtkWindowMinimize, gtk, "gtk_window_iconify") // gtk3
@@ -300,7 +311,6 @@ func init() {
 	// webkit
 	purego.RegisterLibFunc(&webkitNewWithUserContentManager, webkit, "webkit_web_view_new_with_user_content_manager")
 	purego.RegisterLibFunc(&webkitRegisterUriScheme, webkit, "webkit_web_context_register_uri_scheme")
-
 	purego.RegisterLibFunc(&webkitSettingsGetEnableDeveloperExtras, webkit, "webkit_settings_get_enable_developer_extras")
 	purego.RegisterLibFunc(&webkitSettingsSetEnableDeveloperExtras, webkit, "webkit_settings_set_enable_developer_extras")
 	purego.RegisterLibFunc(&webkitSettingsSetHardwareAccelerationPolicy, webkit, "webkit_settings_set_hardware_acceleration_policy")
@@ -315,6 +325,7 @@ func init() {
 	purego.RegisterLibFunc(&webkitWebViewLoadUri, webkit, "webkit_web_view_load_uri")
 	purego.RegisterLibFunc(&webkitWebViewSetBackgroundColor, webkit, "webkit_web_view_set_background_color")
 	purego.RegisterLibFunc(&webkitWebViewSetSettings, webkit, "webkit_web_view_set_settings")
+	purego.RegisterLibFunc(&webkitWebViewSetZoomLevel, webkit, "webkit_web_view_set_zoom_level")
 }
 
 // mainthread stuff
@@ -844,9 +855,7 @@ func windowSetTransparent(window pointer) {
 }
 
 func windowSetURL(webview pointer, uri string) {
-	var loadUri func(pointer, string)
-	purego.RegisterLibFunc(&loadUri, webkit, "webkit_web_view_load_uri")
-	loadUri(webview, uri)
+	webkitWebViewLoadUri(webview, uri)
 }
 
 func windowSetupSignalHandlers(windowId uint, window, webview pointer, hideOnClose bool) {
@@ -914,15 +923,11 @@ func windowZoomOut(webview pointer) {
 }
 
 func windowZoomSet(webview pointer, zoom float64) {
-	var setZoom func(pointer, float64)
-	purego.RegisterLibFunc(&setZoom, webkit, "webkit_web_view_set_zoom_level")
-	setZoom(webview, zoom)
+	webkitWebViewSetZoomLevel(webview, zoom)
 }
 
 func windowMove(window pointer, x, y int) {
-	var windowMove func(pointer, int, int)
-	purego.RegisterLibFunc(&windowMove, gtk, "gtk_window_move")
-	windowMove(window, x, y)
+	gtkWindowMove(window, x, y)
 }
 
 /*
@@ -1024,28 +1029,26 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 		gtkWindowSetTitle(dialog, options.Title)
 	}
 
-	/*
-		if img, err := pngToImage(options.Icon); err == nil {
-			gbytes := C.g_bytes_new_static(
-				C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
-				C.ulong(len(img.Pix)))
-			defer C.g_bytes_unref(gbytes)
-			pixBuf := C.gdk_pixbuf_new_from_bytes(
-				gbytes,
-				C.GDK_COLORSPACE_RGB,
-				1, // has_alpha
-				8,
-				C.int(img.Bounds().Dx()),
-				C.int(img.Bounds().Dy()),
-				C.int(img.Stride),
-			)
-			image := C.gtk_image_new_from_pixbuf(pixBuf)
-			C.gtk_widget_set_visible((*C.GtkWidget)(image), C.gboolean(1))
-			contentArea := C.gtk_dialog_get_content_area((*C.GtkDialog)(dialog))
-			C.gtk_container_add(
-				(*C.GtkContainer)(unsafe.Pointer(contentArea)),
-				(*C.GtkWidget)(image))
-		}*/
+	GdkColorspaceRGB := 0
+
+	if img, err := pngToImage(options.Icon); err == nil {
+		gbytes := gBytesNewStatic(uintptr(unsafe.Pointer(&img.Pix[0])), len(img.Pix))
+
+		defer gBytesUnref(gbytes)
+		pixBuf := gdkPixbufNewFromBytes(
+			gbytes,
+			GdkColorspaceRGB,
+			1, // has_alpha
+			8,
+			img.Bounds().Dx(),
+			img.Bounds().Dy(),
+			img.Stride,
+		)
+		image := gtkImageNewFromPixbuf(pixBuf)
+		widgetSetVisible(image, false)
+		contentArea := gtkDialogGetContentArea(dialog)
+		gtkContainerAdd(contentArea, image)
+	}
 
 	for i, button := range options.Buttons {
 		gtkDialogAddButton(
