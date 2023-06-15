@@ -16,19 +16,19 @@ Application interface methods
 
 | Method                                                        | Windows | Linux | Mac | Notes |
 |---------------------------------------------------------------|---------|-------|-----|-------|
-| run() error                                                   | Y       |       | Y   |       |
-| destroy()                                                     |         |       | Y   |       |
-| setApplicationMenu(menu *Menu)                                | Y       |       | Y   |       |
-| name() string                                                 |         |       | Y   |       |
-| getCurrentWindowID() uint                                     | Y       |       | Y   |       |
-| showAboutDialog(name string, description string, icon []byte) |         |       | Y   |       |
-| setIcon(icon []byte)                                          | -       |       | Y   |       |
+| run() error                                                   | Y       | Y     | Y   |       |
+| destroy()                                                     |         | Y     | Y   |       |
+| setApplicationMenu(menu *Menu)                                | Y       | Y     | Y   |       |
+| name() string                                                 |         | Y     | Y   |       |
+| getCurrentWindowID() uint                                     | Y       | Y     | Y   |       |
+| showAboutDialog(name string, description string, icon []byte) |         | Y     | Y   |       |
+| setIcon(icon []byte)                                          | -       | Y     | Y   |       |
 | on(id uint)                                                   |         |       | Y   |       |
-| dispatchOnMainThread(fn func())                               | Y       |       | Y   |       |
-| hide()                                                        | Y       |       | Y   |       |
-| show()                                                        | Y       |       | Y   |       |
-| getPrimaryScreen() (*Screen, error)                           |         |       | Y   |       |
-| getScreens() ([]*Screen, error)                               |         |       | Y   |       |
+| dispatchOnMainThread(fn func())                               | Y       | Y     | Y   |       |
+| hide()                                                        | Y       | Y     | Y   |       |
+| show()                                                        | Y       | Y     | Y   |       |
+| getPrimaryScreen() (*Screen, error)                           |         | Y     | Y   |       |
+| getScreens() ([]*Screen, error)                               |         | Y     | Y   |       |
 
 ## Webview Window
 
@@ -90,7 +90,7 @@ Webview Window Interface Methods
 
 | Feature | Windows | Linux | Mac | Notes |
 |---------|---------|-------|-----|-------|
-| Quit    | Y       |       | Y   |       |
+| Quit    | Y       | Y      | Y   |       |
 | Hide    | Y       |       | Y   |       |
 | Show    | Y       |       | Y   |       |
 
@@ -98,10 +98,10 @@ Webview Window Interface Methods
 
 | Feature  | Windows | Linux | Mac | Notes |
 |----------|---------|-------|-----|-------|
-| Info     | Y       |       | Y   |       |
-| Warning  | Y       |       | Y   |       |
-| Error    | Y       |       | Y   |       |
-| Question | Y       |       | Y   |       |
+| Info     | Y       | Y     | Y   |       |
+| Warning  | Y       | Y     | Y   |       |
+| Error    | Y       | Y     | Y   |       |
+| Question | Y       | Y     | Y   |       |
 | OpenFile | Y       |       | Y   |       |
 | SaveFile | Y       |       | Y   |       |
 
@@ -132,9 +132,9 @@ explicitly set with `--default-contextmenu: show`.
 
 | Feature    | Windows | Linux | Mac | Notes |
 |------------|---------|-------|-----|-------|
-| GetAll     | Y       |       | Y   |       |
-| GetPrimary | Y       |       | Y   |       |
-| GetCurrent | Y       |       | Y   |       |
+| GetAll     | Y       | Y     | Y   |       |
+| GetPrimary | Y       | Y     | Y   |       |
+| GetCurrent | Y       | Y     | Y   |       |
 
 ### Window
 
@@ -183,36 +183,37 @@ An 'X' indicates that the option is not supported by the platform.
 | Feature                         | Windows | Linux | Mac | Notes                                      |
 |---------------------------------|---------|-------|-----|--------------------------------------------|
 | AlwaysOnTop                     | Y       |       |     |                                            |
-| BackgroundColour                | Y       |       |     |                                            |
+| BackgroundColour                | Y       | Y     |     |                                            |
 | BackgroundType                  |         |       |     | Acrylic seems to work but the others don't |
-| CSS                             | Y       |       |     |                                            |
-| DevToolsEnabled                 | Y       |       | Y   |                                            |
-| DisableResize                   | Y       |       |     |                                            |
-| EnableDragAndDrop               |         |       |     |                                            |
+| CSS                             | Y       | Y     |     |                                            |
+| DevToolsEnabled                 | Y       | Y     | Y   |                                            |
+| DisableResize                   | Y       | Y     |     |                                            |
+| EnableDragAndDrop               |         | Y     |     |                                            |
 | EnableFraudulentWebsiteWarnings |         |       |     |                                            |
-| Focused                         | Y       |       |     |                                            |
-| Frameless                       | Y       |       |     |                                            |
+| Focused                         | Y       | Y     |     |                                            |
+| Frameless                       | Y       | Y     |     |                                            |
 | FullscreenButtonEnabled         | Y       |       |     |                                            |
-| Height                          | Y       |       |     |                                            |
-| Hidden                          | Y       |       |     |                                            |
-| HTML                            | Y       |       |     |                                            |
-| JS                              | Y       |       |     |                                            |
+| Height                          | Y       | Y     |     |                                            |
+| Hidden                          | Y       | Y     |     |                                            |
+| HTML                            | Y       | Y     |     |                                            |
+| JS                              | Y       | Y     |     |                                            |
 | Mac                             | -       | -     |     |                                            |
-| MaxHeight                       | Y       |       |     |                                            |
-| MaxWidth                        | Y       |       |     |                                            |
-| MinHeight                       | Y       |       |     |                                            |
-| MinWidth                        | Y       |       |     |                                            |
-| Name                            | Y       |       |     |                                            |
+| MaxHeight                       | Y       | Y     |     |                                            |
+| MaxWidth                        | Y       | Y     |     |                                            |
+| MinHeight                       | Y       | Y     |     |                                            |
+| MinWidth                        | Y       | Y     |     |                                            |
+| Name                            | Y       | Y     |     |                                            |
 | OpenInspectorOnStartup          |         |       |     |                                            |
 | StartState                      | Y       |       |     |                                            |
-| Title                           | Y       |       |     |                                            |
-| URL                             | Y       |       |     |                                            |
-| Width                           | Y       |       |     |                                            |
+| Title                           | Y       | Y     |     |                                            |
+| URL                             | Y       | Y     |     |                                            |
+| Width                           | Y       | Y     |     |                                            |
 | Windows                         | Y       | -     | -   |                                            |
-| X                               | Y       |       |     |                                            |
-| Y                               | Y       |       |     |                                            |
+| X                               | Y       | Y     |     |                                            |
+| Y                               | Y       | Y     |     |                                            |
 | Zoom                            |         |       |     |                                            |
 | ZoomControlEnabled              |         |       |     |                                            |
+
 
 ### Log
 
@@ -222,7 +223,7 @@ To log or not to log? System logger vs custom logger.
 
 | Event                    | Windows | Linux | Mac | Notes |
 |--------------------------|---------|-------|-----|-------|
-| Default Application Menu | Y       |       | Y   |       |
+| Default Application Menu | Y       | Y      | Y   |       |
 
 ## Tray Menus
 
@@ -295,12 +296,14 @@ Built-in plugin support:
 | Plugin          | Windows | Linux | Mac | Notes |
 |-----------------|---------|-------|-----|-------|
 | Browser         | Y       |       | Y   |       |
-| KV Store        | Y       |       | Y   |       |
-| Log             | Y       |       | Y   |       |
+| KV Store        | Y       | Y     | Y   |       |
+| Log             | Y       | Y     | Y   |       |
 | Single Instance | Y       |       | Y   |       |
-| SQLite          | Y       |       | Y   |       |
+| SQLite          | Y       | Y     | Y   |       |
 | Start at login  |         |       | Y   |       |
 | Server          |         |       |     |       |
+
+TODO:
 
 - Ensure each plugin has a JS wrapper that can be injected into the window.
 
@@ -320,7 +323,8 @@ Built-in plugin support:
 | Feature | Windows | Linux | Mac | Notes                                         |
 |---------|---------|-------|-----|-----------------------------------------------|
 | Resize  |         |       |     |                                               |
-| Drag    |         | Y     |     | Linux - can always drag with `Alt`+left mouse |
+| Drag    |         | Y     |     | Linux - can always drag with `Meta`+left mouse |
+
 
 ## Mac Specific
 
@@ -354,6 +358,24 @@ Built-in plugin support:
 | WindowMask                        | nil     | Makes the window the contents of the bitmap |
 
 ## Linux Specific
+
+
+Implementation details for the functions utilized by the `*_linux.go` files are located in the following files:
+
+- linux_cgo.go: CGo implementation
+- linux_purego.go: PureGo implementation
+
+### CGO
+
+By default CGO is utilized to compile the Linux port.  This prevents easy cross-compilation and so the PureGo implementation is also being simultaneously developed.
+
+### Purego
+
+The examples can be compiled using the following command:
+
+    CGO_ENABLED=0 go build -tags purego
+
+Note: things are currently not working after the refactor
 
 ## Examples
 
