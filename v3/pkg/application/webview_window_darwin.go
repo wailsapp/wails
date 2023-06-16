@@ -638,7 +638,15 @@ void windowGetPosition(void* nsWindow, int* x, int* y) {
 	NSRect frame = [window frame];
 	// set x and y
 	*x = frame.origin.x;
-	*y = frame.origin.y;
+
+	// Translate to screen coordinates so Y=0 is the top of the screen
+	NSScreen* screen = [window screen];
+	if( screen == NULL ) {
+		screen = [NSScreen mainScreen];
+	}
+	NSRect screenFrame = [screen frame];
+	*y = screenFrame.size.height - frame.origin.y - frame.size.height;
+
 }
 
 // Destroy window
