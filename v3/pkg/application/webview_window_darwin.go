@@ -936,10 +936,11 @@ func (w *macosWebviewWindow) windowZoom() {
 }
 
 func (w *macosWebviewWindow) close() {
-	C.windowClose(w.nsWindow)
-	if !w.parent.options.HideOnClose {
-		globalApplication.deleteWindowByID(w.parent.id)
+	if w.parent.options.HideOnClose {
+		w.hide()
+		return
 	}
+	C.windowClose(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) zoomIn() {
@@ -1194,6 +1195,11 @@ func (w *macosWebviewWindow) run() {
 
 		w.parent.On(events.Mac.WindowWillClose, func(_ *WindowEventContext) {
 			globalApplication.deleteWindowByID(w.parent.id)
+		})
+
+		w.parent.On(events.Mac.WindowShouldClose, func(_ *WindowEventContext) {
+			// TODO: Process "should close" callback for user
+			w.close()
 		})
 
 		if w.parent.options.HTML != "" {
