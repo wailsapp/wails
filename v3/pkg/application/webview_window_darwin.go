@@ -829,6 +829,11 @@ type macosWebviewWindow struct {
 	parent   *WebviewWindow
 }
 
+func (w *macosWebviewWindow) startResize(border string) error {
+	// Not needed right now
+	return nil
+}
+
 func (w *macosWebviewWindow) focus() {
 	w.show()
 }
@@ -1212,13 +1217,10 @@ func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
 
 func (w *macosWebviewWindow) position() (int, int) {
 	var x, y C.int
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go globalApplication.dispatchOnMainThread(func() {
+	invokeSync(func() {
 		C.windowGetPosition(w.nsWindow, &x, &y)
-		wg.Done()
 	})
-	wg.Wait()
+
 	return int(x), int(y)
 }
 

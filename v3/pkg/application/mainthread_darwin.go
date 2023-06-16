@@ -16,8 +16,16 @@ static void dispatchOnMainThread(unsigned int id) {
 	});
 }
 
+static bool onMainThread() {
+	return [NSThread isMainThread];
+}
+
 */
 import "C"
+
+func (m *macosApp) isOnMainThread() bool {
+	return bool(C.onMainThread())
+}
 
 func (m *macosApp) dispatchOnMainThread(id uint) {
 	C.dispatchOnMainThread(C.uint(id))

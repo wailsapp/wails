@@ -147,6 +147,7 @@ type (
 		getPrimaryScreen() (*Screen, error)
 		getScreens() ([]*Screen, error)
 		GetFlags(options Options) map[string]any
+		isOnMainThread() bool
 	}
 
 	runnable interface {
@@ -585,6 +586,12 @@ func (a *App) Clipboard() *Clipboard {
 }
 
 func (a *App) dispatchOnMainThread(fn func()) {
+	// If we are on the main thread, just call the function
+	if a.impl.isOnMainThread() {
+		fn()
+		return
+	}
+
 	mainThreadFunctionStoreLock.Lock()
 	id := generateFunctionStoreID()
 	mainThreadFunctionStore[id] = fn
