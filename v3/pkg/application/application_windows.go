@@ -43,6 +43,10 @@ type windowsApp struct {
 	currentWindowID uint
 }
 
+func (m *windowsApp) isOnMainThread() bool {
+	return m.mainThreadID == w32.GetCurrentThreadId()
+}
+
 func (m *windowsApp) GetFlags(options Options) map[string]any {
 	if options.Flags == nil {
 		options.Flags = make(map[string]any)
