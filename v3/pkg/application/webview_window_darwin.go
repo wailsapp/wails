@@ -329,7 +329,17 @@ void windowZoomOut(void* nsWindow) {
 void windowSetPosition(void* nsWindow, int x, int y) {
 	// Set window position on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[(WebviewWindow*)nsWindow setFrameOrigin:NSMakePoint(x, y)];
+		WebviewWindow* window = (WebviewWindow*)nsWindow;
+		NSScreen* screen = [window screen];
+		if( screen == NULL ) {
+			screen = [NSScreen mainScreen];
+		}
+		NSRect windowFrame = [window frame];
+		NSRect screenFrame = [screen frame];
+		windowFrame.origin.x = screenFrame.origin.x + (float)x;
+		windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
+
+		[window setFrame:windowFrame display:TRUE animate:FALSE];
 	});
 }
 
