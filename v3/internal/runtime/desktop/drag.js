@@ -16,11 +16,7 @@ import {GetFlag} from "./flags";
 let shouldDrag = false;
 
 export function dragTest(e) {
-    // if (window.wails.Capabilities['HasNativeDrag'] === true) {
-    //     return false;
-    // }
-
-    let val = window.getComputedStyle(e.target).getPropertyValue("app-region");
+    let val = window.getComputedStyle(e.target).getPropertyValue("--webkit-app-region");
     if (val) {
         val = val.trim();
     }

@@ -187,7 +187,6 @@ An 'X' indicates that the option is not supported by the platform.
 | CSS                             | Y       |       |     |                                            |
 | X                               | Y       |       |     |                                            |
 | Y                               | Y       |       |     |                                            |
-| HideOnClose                     | Y       |       |     |                                            |
 | FullscreenButtonEnabled         | Y       |       |     |                                            |
 | Hidden                          | Y       |       |     |                                            |
 | EnableFraudulentWebsiteWarnings |         |       |     |                                            |
