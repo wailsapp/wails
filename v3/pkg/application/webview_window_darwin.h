@@ -27,6 +27,7 @@
 
 - (void)handleLeftMouseUp:(NSWindow *)window;
 - (void)handleLeftMouseDown:(NSEvent*)event;
+- (void)startDrag:(WebviewWindow*)window;
 
 @end
 

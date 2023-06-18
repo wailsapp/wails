@@ -818,6 +818,18 @@ static void windowSetFrameless(void *window, bool frameless) {
 	});
 }
 
+static void startDrag(void *window) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		WebviewWindow* nsWindow = (WebviewWindow*)window;
+
+		// Get delegate
+		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
+
+		// start drag
+		[windowDelegate startDrag:nsWindow];
+	});
+}
 */
 import "C"
 import (
@@ -1239,6 +1251,6 @@ func (w *macosWebviewWindow) setHTML(html string) {
 }
 
 func (w *macosWebviewWindow) startDrag() error {
-	// Unused - handled by the native code
+	C.startDrag(w.nsWindow)
 	return nil
 }

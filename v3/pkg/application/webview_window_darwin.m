@@ -57,26 +57,18 @@ extern bool hasListeners(unsigned int);
     self.leftMouseEvent = nil;
     [super dealloc];
 }
+
+- (void) startDrag:(WebviewWindow*)window {
+    [window performWindowDragWithEvent:self.leftMouseEvent];
+}
+
 // Handle script messages from the external bridge
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
     NSString *m = message.body;
-    // TODO: Standardise drag by sending the drag event back to Go
-    if ( [m isEqualToString:@"drag"] ) {
-        /*
-        if( [self IsFullScreen] ) {
-            return;
-        }
-        */
-        if( self.leftMouseEvent != nil ) {
-            WKWebView *webView = message.webView;
-            WebviewWindow *window = (WebviewWindow*)webView.window;
-            [window performWindowDragWithEvent:self.leftMouseEvent];
-        }
-        return;
-    }
     const char *_m = [m UTF8String];
     processMessage(self.windowId, _m);
 }
+
 - (void)handleLeftMouseDown:(NSEvent *)event {
     self.leftMouseEvent = event;
     NSWindow *window = [event window];
