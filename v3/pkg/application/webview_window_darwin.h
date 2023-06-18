@@ -20,7 +20,6 @@
 
 @interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate, WKURLSchemeHandler, NSDraggingDestination>
 
-@property bool hideOnClose;
 @property unsigned int windowId;
 @property (retain) NSEvent* leftMouseEvent;
 @property unsigned int invisibleTitleBarHeight;

@@ -31,7 +31,6 @@ type WebviewWindowOptions struct {
 	CSS                             string
 	X                               int
 	Y                               int
-	HideOnClose                     bool
 	FullscreenButtonEnabled         bool
 	Hidden                          bool
 	EnableFraudulentWebsiteWarnings bool
@@ -43,6 +42,10 @@ type WebviewWindowOptions struct {
 	Windows                         WindowsWindow
 	Focused                         bool
 	Menu                            *Menu
+
+	// ShouldClose is called when the window is about to close.
+	// Return true to allow the window to close, or false to prevent it from closing.
+	ShouldClose func(window *WebviewWindow) bool
 }
 
 var WebviewWindowDefaults = &WebviewWindowOptions{

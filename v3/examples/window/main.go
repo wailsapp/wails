@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"log"
 	"math/rand"
@@ -24,6 +25,8 @@ func main() {
 	app.On(events.Mac.ApplicationDidFinishLaunching, func() {
 		log.Println("ApplicationDidFinishLaunching")
 	})
+
+	var hiddenWindows []*application.WebviewWindow
 
 	currentWindow := func(fn func(window *application.WebviewWindow)) {
 		if app.CurrentWindow() != nil {
@@ -52,10 +55,29 @@ func main() {
 				Show()
 			windowCounter++
 		})
-	myMenu.Add("New WebviewWindow (Hide on Close").
+	myMenu.Add("New WebviewWindow (Hides on Close one time)").
 		SetAccelerator("CmdOrCtrl+H").
 		OnClick(func(ctx *application.Context) {
-			app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{HideOnClose: true}).
+			app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+				// This will be called when the user clicks the close button
+				// on the window. It will hide the window for 5 seconds.
+				// If the user clicks the close button again, the window will
+				// close.
+				ShouldClose: func(window *application.WebviewWindow) bool {
+					if !lo.Contains(hiddenWindows, window) {
+						hiddenWindows = append(hiddenWindows, window)
+						go func() {
+							time.Sleep(5 * time.Second)
+							window.Show()
+						}()
+						window.Hide()
+						return false
+					}
+					// Remove the window from the hiddenWindows list
+					hiddenWindows = lo.Without(hiddenWindows, window)
+					return true
+				},
+			}).
 				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 				SetPosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").

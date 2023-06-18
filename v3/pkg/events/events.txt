@@ -63,7 +63,7 @@ mac:WindowDidUpdateShadow
 mac:WindowDidUpdateTitle
 mac:WindowDidUpdateToolbar
 mac:WindowDidUpdateVisibility
-mac:WindowShouldClose!
+mac:WindowShouldClose
 mac:WindowWillBecomeKey
 mac:WindowWillBecomeMain
 mac:WindowWillBeginSheet
@@ -136,7 +136,7 @@ common:WindowUnFullscreen
 common:WindowRestore
 common:WindowMinimise
 common:WindowUnMinimise
-common:WindowClose
+common:WindowClosing
 common:WindowZoom
 common:WindowZoomIn
 common:WindowZoomOut

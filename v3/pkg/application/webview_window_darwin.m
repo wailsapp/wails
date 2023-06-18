@@ -48,14 +48,6 @@ extern bool hasListeners(unsigned int);
 }
 @end
 @implementation WebviewWindowDelegate
-- (BOOL)windowShouldClose:(NSWindow *)sender {
-    if( self.hideOnClose ) {
-        [sender orderOut:nil];
-        return false;
-    }
-    processWindowEvent(self.windowId, EventWindowShouldClose);
-    return false;
-}
 - (void) dealloc {
     // Makes sure to remove the retained properties so the reference counter of the retains are decreased
     self.leftMouseEvent = nil;
@@ -378,6 +370,12 @@ extern bool hasListeners(unsigned int);
 - (void)windowDidUpdateVisibility:(NSNotification *)notification {
     if( hasListeners(EventWindowDidUpdateVisibility) ) {
         processWindowEvent(self.windowId, EventWindowDidUpdateVisibility);
+    }
+}
+
+- (void)windowShouldClose:(NSNotification *)notification {
+    if( hasListeners(EventWindowShouldClose) ) {
+        processWindowEvent(self.windowId, EventWindowShouldClose);
     }
 }
 

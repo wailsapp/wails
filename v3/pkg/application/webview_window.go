@@ -125,6 +125,18 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		contextMenus:   make(map[string]*Menu),
 	}
 
+	// Listen for window closing events and de
+	result.On(events.Common.WindowClosing, func(ctx *WindowEventContext) {
+		shouldClose := true
+		if result.options.ShouldClose != nil {
+			shouldClose = result.options.ShouldClose(result)
+		}
+		if shouldClose {
+			globalApplication.deleteWindowByID(result.id)
+			invokeSync(result.impl.close)
+		}
+	})
+
 	return result
 }
 
@@ -629,12 +641,7 @@ func (w *WebviewWindow) Close() {
 	if w.impl == nil {
 		return
 	}
-	if w.options.HideOnClose {
-		invokeSync(func() { w.Hide() })
-		return
-	}
-	invokeSync(w.impl.close)
-	w.emit(events.Common.WindowClose)
+	w.emit(events.Common.WindowClosing)
 }
 
 func (w *WebviewWindow) Zoom() {

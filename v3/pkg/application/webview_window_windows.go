@@ -390,6 +390,9 @@ func (w *windowsWebviewWindow) setZoom(zoom float64) {
 }
 
 func (w *windowsWebviewWindow) close() {
+	// Unregister the window with the application
+	windowsApp := globalApplication.impl.(*windowsApp)
+	windowsApp.unregisterWindow(w)
 	w32.SendMessage(w.hwnd, w32.WM_CLOSE, 0, 0)
 }
 
@@ -694,14 +697,8 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			w32.ExtendFrameIntoClientArea(w.hwnd, true)
 		}
 	case w32.WM_CLOSE:
-		if w.parent.options.HideOnClose {
-			w.hide()
-			return 0 // Do not let the DefWindowProc allow to close us
-		}
-
-		// Unregister the window with the application
-		windowsApp := globalApplication.impl.(*windowsApp)
-		windowsApp.unregisterWindow(w)
+		w.parent.emit(events.Common.WindowClosing)
+		return 0
 	case w32.WM_NCLBUTTONDOWN:
 		w32.SetFocus(w.hwnd)
 	case w32.WM_MOVE, w32.WM_MOVING:
@@ -729,6 +726,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		} else {
 			w.chromium.Resize()
 		}
+		return 0
 
 	case w32.WM_GETMINMAXINFO:
 		mmi := (*w32.MINMAXINFO)(unsafe.Pointer(lparam))

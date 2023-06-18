@@ -18,7 +18,7 @@ type commonEvents struct {
 	WindowRestore      WindowEventType
 	WindowMinimise     WindowEventType
 	WindowUnMinimise   WindowEventType
-	WindowClose        WindowEventType
+	WindowClosing      WindowEventType
 	WindowZoom         WindowEventType
 	WindowZoomIn       WindowEventType
 	WindowZoomOut      WindowEventType
@@ -39,7 +39,7 @@ func newCommonEvents() commonEvents {
 		WindowRestore:      1159,
 		WindowMinimise:     1160,
 		WindowUnMinimise:   1161,
-		WindowClose:        1162,
+		WindowClosing:      1162,
 		WindowZoom:         1163,
 		WindowZoomIn:       1164,
 		WindowZoomOut:      1165,

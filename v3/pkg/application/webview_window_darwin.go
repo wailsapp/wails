@@ -18,7 +18,7 @@ package application
 extern void registerListener(unsigned int event);
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, bool hideOnClose) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable;
@@ -76,8 +76,6 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 	// Ensure webview resizes with the window
 	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-
-	delegate.hideOnClose = hideOnClose;
 
 	if( enableDragAndDrop ) {
 		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
@@ -936,10 +934,6 @@ func (w *macosWebviewWindow) windowZoom() {
 }
 
 func (w *macosWebviewWindow) close() {
-	if w.parent.options.HideOnClose {
-		w.hide()
-		return
-	}
 	C.windowClose(w.nsWindow)
 }
 
@@ -1123,7 +1117,6 @@ func (w *macosWebviewWindow) run() {
 			C.bool(w.parent.options.EnableFraudulentWebsiteWarnings),
 			C.bool(w.parent.options.Frameless),
 			C.bool(w.parent.options.EnableDragAndDrop),
-			C.bool(w.parent.options.HideOnClose),
 		)
 		w.setTitle(w.parent.options.Title)
 		w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
@@ -1193,13 +1186,9 @@ func (w *macosWebviewWindow) run() {
 			}
 		})
 
-		w.parent.On(events.Mac.WindowWillClose, func(_ *WindowEventContext) {
-			globalApplication.deleteWindowByID(w.parent.id)
-		})
-
+		// Translate ShouldClose to common WindowClosing event
 		w.parent.On(events.Mac.WindowShouldClose, func(_ *WindowEventContext) {
-			// TODO: Process "should close" callback for user
-			w.close()
+			w.emit(events.Common.WindowClosing)
 		})
 
 		if w.parent.options.HTML != "" {
