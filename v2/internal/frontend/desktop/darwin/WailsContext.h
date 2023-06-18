@@ -44,7 +44,7 @@
 
 @property bool alwaysOnTop;
 
-@property bool debug;
+@property bool devtools;
 
 @property (retain) WKUserContentController* userContentController;
 

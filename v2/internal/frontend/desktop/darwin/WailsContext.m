@@ -225,7 +225,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     [userContentController addScriptMessageHandler:self name:@"external"];
     config.userContentController = userContentController;
     self.userContentController = userContentController;
-    if (self.debug) {
+    if (self.devtools) {
         [config.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
     } else {
         // Disable default context menus

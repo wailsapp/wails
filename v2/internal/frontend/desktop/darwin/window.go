@@ -40,7 +40,7 @@ func bool2Cint(value bool) C.int {
 	return C.int(0)
 }
 
-func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
+func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window {
 
 	c := NewCalloc()
 	defer c.Free()
@@ -51,7 +51,7 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 	alwaysOnTop := bool2Cint(frontendOptions.AlwaysOnTop)
 	hideWindowOnClose := bool2Cint(frontendOptions.HideWindowOnClose)
 	startsHidden := bool2Cint(frontendOptions.StartHidden)
-	debug := bool2Cint(debugMode)
+	devtoolsEnabled := bool2Cint(devtools)
 
 	var fullSizeContent, hideTitleBar, hideTitle, useToolbar, webviewIsTransparent C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent C.int
@@ -86,7 +86,7 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 	}
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent,
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
-		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug, windowStartState, startsHidden,
+		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, windowStartState, startsHidden,
 		minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings)
 
 	// Create menu
@@ -114,7 +114,7 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 		result.SetApplicationMenu(frontendOptions.Menu)
 	}
 
-	if debugMode && frontendOptions.Debug.OpenInspectorOnStartup {
+	if debug && frontendOptions.Debug.OpenInspectorOnStartup {
 		showInspector(result.context)
 	}
 	return result

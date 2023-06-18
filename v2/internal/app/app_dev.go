@@ -42,7 +42,9 @@ func (a *App) Run() error {
 func CreateApp(appoptions *options.App) (*App, error) {
 	var err error
 
-	ctx := context.WithValue(context.Background(), "debug", true)
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, "debug", true)
+	ctx = context.WithValue(ctx, "devtools", true)
 
 	// Set up logger
 	myLogger := logger.New(appoptions.Logger)
@@ -228,6 +230,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		startupCallback:  appoptions.OnStartup,
 		shutdownCallback: appoptions.OnShutdown,
 		debug:            true,
+		devtools:         true,
 	}
 
 	result.options = appoptions

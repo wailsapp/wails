@@ -40,6 +40,7 @@ type Options struct {
 	Logger            *clilogger.CLILogger // All output to the logger
 	OutputType        string               // EG: desktop, server....
 	Mode              Mode                 // release or dev
+	Devtools          bool                 // Enable devtools in production
 	ProjectData       *project.Project     // The project data
 	Pack              bool                 // Create a package for the app after building
 	Platform          string               // The platform to build for

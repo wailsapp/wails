@@ -48,6 +48,7 @@ type Frontend struct {
 	logger          *logger.Logger
 	chromium        *edge.Chromium
 	debug           bool
+	devtools        bool
 
 	// Assets
 	assets   *assetserver.AssetServer
@@ -142,8 +143,13 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.mainWindow = mainWindow
 
 	var _debug = ctx.Value("debug")
+	var _devtools = ctx.Value("devtools")
+
 	if _debug != nil {
 		f.debug = _debug.(bool)
+	}
+	if _devtools != nil {
+		f.devtools = _devtools.(bool)
 	}
 
 	f.WindowCenter()
@@ -489,11 +495,11 @@ func (f *Frontend) setupChromium() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutAreDefaultContextMenusEnabled(f.debug)
+	err = settings.PutAreDefaultContextMenusEnabled(f.devtools)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutAreDevToolsEnabled(f.debug)
+	err = settings.PutAreDevToolsEnabled(f.devtools)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -234,6 +234,11 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		tags.Add("debug")
 	}
 
+	// This options allows you to enable devtools in production build (not dev build as it's always enabled there)
+	if options.Devtools {
+		tags.Add("devtools")
+	}
+
 	if options.Obfuscated {
 		tags.Add("obfuscated")
 	}
