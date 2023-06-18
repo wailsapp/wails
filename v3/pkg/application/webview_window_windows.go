@@ -434,6 +434,7 @@ func (w *windowsWebviewWindow) unminimise() {
 
 func (w *windowsWebviewWindow) maximise() {
 	w32.ShowWindow(w.hwnd, w32.SW_MAXIMIZE)
+	w.chromium.Focus()
 }
 
 func (w *windowsWebviewWindow) unmaximise() {
@@ -442,6 +443,7 @@ func (w *windowsWebviewWindow) unmaximise() {
 
 func (w *windowsWebviewWindow) restore() {
 	w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
+	w.chromium.Focus()
 }
 
 func (w *windowsWebviewWindow) fullscreen() {
@@ -473,6 +475,7 @@ func (w *windowsWebviewWindow) fullscreen() {
 		int(monitorInfo.RcMonitor.Right-monitorInfo.RcMonitor.Left),
 		int(monitorInfo.RcMonitor.Bottom-monitorInfo.RcMonitor.Top),
 		w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
+	w.chromium.Focus()
 }
 
 func (w *windowsWebviewWindow) unfullscreen() {
@@ -528,6 +531,7 @@ func (w *windowsWebviewWindow) focus() {
 
 func (w *windowsWebviewWindow) show() {
 	w32.ShowWindow(w.hwnd, w32.SW_SHOW)
+	w.chromium.Focus()
 }
 
 func (w *windowsWebviewWindow) hide() {
