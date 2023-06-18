@@ -48,6 +48,10 @@ extern bool hasListeners(unsigned int);
 }
 @end
 @implementation WebviewWindowDelegate
+- (BOOL)windowShouldClose:(NSWindow *)sender {
+    processWindowEvent(self.windowId, EventWindowShouldClose);
+    return false;
+}
 - (void) dealloc {
     // Makes sure to remove the retained properties so the reference counter of the retains are decreased
     self.leftMouseEvent = nil;
@@ -56,7 +60,6 @@ extern bool hasListeners(unsigned int);
 // Handle script messages from the external bridge
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
     NSString *m = message.body;
-
     // TODO: Standardise drag by sending the drag event back to Go
     if ( [m isEqualToString:@"drag"] ) {
         /*
@@ -370,12 +373,6 @@ extern bool hasListeners(unsigned int);
 - (void)windowDidUpdateVisibility:(NSNotification *)notification {
     if( hasListeners(EventWindowDidUpdateVisibility) ) {
         processWindowEvent(self.windowId, EventWindowDidUpdateVisibility);
-    }
-}
-
-- (void)windowShouldClose:(NSNotification *)notification {
-    if( hasListeners(EventWindowShouldClose) ) {
-        processWindowEvent(self.windowId, EventWindowShouldClose);
     }
 }
 

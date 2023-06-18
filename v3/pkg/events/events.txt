@@ -63,7 +63,7 @@ mac:WindowDidUpdateShadow
 mac:WindowDidUpdateTitle
 mac:WindowDidUpdateToolbar
 mac:WindowDidUpdateVisibility
-mac:WindowShouldClose
+mac:WindowShouldClose!
 mac:WindowWillBecomeKey
 mac:WindowWillBecomeMain
 mac:WindowWillBeginSheet

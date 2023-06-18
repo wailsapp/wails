@@ -178,41 +178,6 @@ func main() {
 			}
 			windowsEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			windowsEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
-			//			cHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
-			//			if ignoreEvent {
-			//				continue
-			//			}
-			//			// Check if this is a window event
-			//			if strings.HasPrefix(event, "Window") {
-			//				windowDelegateEvents.WriteString(`- (void)` + delegateEventFunction + `:(NSNotification *)notification {
-			//    if( hasListeners(Event` + eventTitle + `) ) {
-			//        processWindowEvent(self.windowId, Event` + eventTitle + `);
-			//    }
-			//}
-			//
-			//`)
-			//			}
-			//			// Check if this is a webview event
-			//			if strings.HasPrefix(event, "WebView") {
-			//				webViewFunction := strings.TrimPrefix(event, "WebView")
-			//				webViewFunction = string(bytes.ToLower([]byte{webViewFunction[0]})) + webViewFunction[1:]
-			//				webviewDelegateEvents.WriteString(`- (void)webView:(WKWebView *)webview ` + webViewFunction + `:(WKNavigation *)navigation {
-			//    if( hasListeners(Event` + eventTitle + `) ) {
-			//        processWindowEvent(self.windowId, Event` + eventTitle + `);
-			//    }
-			//}
-			//
-			//`)
-			//			}
-			//			if strings.HasPrefix(event, "Application") {
-			//				applicationDelegateEvents.WriteString(`- (void)` + delegateEventFunction + `:(NSNotification *)notification {
-			//    if( hasListeners(Event` + eventTitle + `) ) {
-			//        processApplicationEvent(Event` + eventTitle + `);
-			//    }
-			//}
-			//
-			//`)
-			//			}
 		}
 	}
 

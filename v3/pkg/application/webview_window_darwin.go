@@ -1188,7 +1188,7 @@ func (w *macosWebviewWindow) run() {
 
 		// Translate ShouldClose to common WindowClosing event
 		w.parent.On(events.Mac.WindowShouldClose, func(_ *WindowEventContext) {
-			w.emit(events.Common.WindowClosing)
+			w.parent.emit(events.Common.WindowClosing)
 		})
 
 		if w.parent.options.HTML != "" {
