@@ -65,6 +65,7 @@ type (
 		nativeWindowHandle() uintptr
 		startDrag() error
 		startResize(border string) error
+		print() error
 	}
 )
 
@@ -888,4 +889,11 @@ func (w *WebviewWindow) startDrag() error {
 		return nil
 	}
 	return invokeSyncWithError(w.impl.startDrag)
+}
+
+func (w *WebviewWindow) Print() error {
+	if w.impl == nil {
+		return nil
+	}
+	return invokeSyncWithError(w.impl.print)
 }

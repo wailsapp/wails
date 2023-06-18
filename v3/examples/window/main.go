@@ -294,6 +294,14 @@ func main() {
 			app.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
 		})
 	})
+
+	printMenu := menu.AddSubmenu("Print")
+	printMenu.Add("Print").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			_ = w.Print()
+		})
+	})
+
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Mac: application.MacWindow{
 			DisableShadow: true,

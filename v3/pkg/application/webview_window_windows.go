@@ -62,6 +62,11 @@ type windowsWebviewWindow struct {
 	resizeBorderHeight int32
 }
 
+func (w *windowsWebviewWindow) print() error {
+	w.execJS("window.print();")
+	return nil
+}
+
 func (w *windowsWebviewWindow) startResize(border string) error {
 	if !w32.ReleaseCapture() {
 		return fmt.Errorf("unable to release mouse capture")
