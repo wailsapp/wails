@@ -830,6 +830,41 @@ static void startDrag(void *window) {
 		[windowDelegate startDrag:nsWindow];
 	});
 }
+
+// Credit: https://stackoverflow.com/q/33319295
+static void windowPrint(void *window) {
+
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
+	WKWebView* webView = nsWindow.webView;
+
+	// TODO: Think about whether to expose this as config
+	NSPrintInfo *pInfo = [NSPrintInfo sharedPrintInfo];
+	pInfo.horizontalPagination = NSPrintingPaginationModeAutomatic;
+	pInfo.verticalPagination = NSPrintingPaginationModeAutomatic;
+	pInfo.verticallyCentered = YES;
+	pInfo.horizontallyCentered = YES;
+	pInfo.orientation = NSPaperOrientationLandscape;
+	pInfo.leftMargin = 30;
+	pInfo.rightMargin = 30;
+	pInfo.topMargin = 30;
+	pInfo.bottomMargin = 30;
+
+	NSPrintOperation *po = [webView printOperationWithPrintInfo:pInfo];
+	po.showsPrintPanel = YES;
+	po.showsProgressPanel = YES;
+
+	// Without the next line you get an exception. Also it seems to
+	// completely ignore the values in the rect. I tried changing them
+	// in both x and y direction to include content scrolled off screen.
+	// It had no effect whatsoever in either direction.
+	po.view.frame = webView.bounds;
+
+	// [printOperation runOperation] DOES NOT WORK WITH WKWEBVIEW, use
+	[po runOperationModalForWindow:window delegate:windowDelegate didRunSelector:nil contextInfo:nil];
+
+}
+
 */
 import "C"
 import (
@@ -845,6 +880,11 @@ var showDevTools = func(window unsafe.Pointer) {}
 type macosWebviewWindow struct {
 	nsWindow unsafe.Pointer
 	parent   *WebviewWindow
+}
+
+func (w *macosWebviewWindow) print() error {
+	C.windowPrint(w.nsWindow)
+	return nil
 }
 
 func (w *macosWebviewWindow) startResize(border string) error {
