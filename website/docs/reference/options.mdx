@@ -51,6 +51,7 @@ func main() {
         OnBeforeClose:      app.beforeClose,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        EnableDefaultContextMenu: false,
         EnableFraudulentWebsiteDetection: false,
         ZoomFactor:           1.0,
         IsZoomControlEnabled: false,
@@ -416,6 +417,14 @@ Indicates what value the `CSSDragProperty` style should have to drag the window.
 
 Name: CSSDragValue<br/>
 Type: `string`
+
+### EnableDefaultContextMenu
+
+EnableDefaultContextMenu enables the browser's default context-menu in production.
+This menu is already enabled in development, as well as in debug builds and production builds with the `-devtools` flag.
+
+Name: EnableDefaultContextMenu<br/>
+Type: `bool`
 
 ### EnableFraudulentWebsiteDetection
 
