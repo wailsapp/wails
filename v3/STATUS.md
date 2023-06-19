@@ -167,36 +167,37 @@ An 'X' indicates that the option is not supported by the platform.
 
 | Feature                         | Windows | Linux | Mac | Notes                                      |
 |---------------------------------|---------|-------|-----|--------------------------------------------|
-| Name                            | Y       |       |     |                                            |
-| Title                           | Y       |       |     |                                            |
-| Width                           | Y       |       |     |                                            |
-| Height                          | Y       |       |     |                                            |
 | AlwaysOnTop                     | Y       |       |     |                                            |
-| URL                             | Y       |       |     |                                            |
-| DisableResize                   | Y       |       |     |                                            |
-| Frameless                       | Y       |       |     |                                            |
-| MinWidth                        | Y       |       |     |                                            |
-| MinHeight                       | Y       |       |     |                                            |
-| MaxWidth                        | Y       |       |     |                                            |
-| MaxHeight                       | Y       |       |     |                                            |
-| StartState                      | Y       |       |     |                                            |
-| Mac                             | -       | -     |     |                                            |
-| BackgroundType                  |         |       |     | Acrylic seems to work but the others don't |
 | BackgroundColour                | Y       |       |     |                                            |
+| BackgroundType                  |         |       |     | Acrylic seems to work but the others don't |
+| CSS                             | Y       |       |     |                                            |
+| DevToolsEnabled                 | Y       |       | Y   |                                            |
+| DisableResize                   | Y       |       |     |                                            |
+| EnableDragAndDrop               |         |       |     |                                            |
+| EnableFraudulentWebsiteWarnings |         |       |     |                                            |
+| Focused                         | Y       |       |     |                                            |
+| Frameless                       | Y       |       |     |                                            |
+| FullscreenButtonEnabled         | Y       |       |     |                                            |
+| Height                          | Y       |       |     |                                            |
+| Hidden                          | Y       |       |     |                                            |
 | HTML                            | Y       |       |     |                                            |
 | JS                              | Y       |       |     |                                            |
-| CSS                             | Y       |       |     |                                            |
+| Mac                             | -       | -     |     |                                            |
+| MaxHeight                       | Y       |       |     |                                            |
+| MaxWidth                        | Y       |       |     |                                            |
+| MinHeight                       | Y       |       |     |                                            |
+| MinWidth                        | Y       |       |     |                                            |
+| Name                            | Y       |       |     |                                            |
+| OpenInspectorOnStartup          |         |       |     |                                            |
+| StartState                      | Y       |       |     |                                            |
+| Title                           | Y       |       |     |                                            |
+| URL                             | Y       |       |     |                                            |
+| Width                           | Y       |       |     |                                            |
+| Windows                         | Y       | -     | -   |                                            |
 | X                               | Y       |       |     |                                            |
 | Y                               | Y       |       |     |                                            |
-| FullscreenButtonEnabled         | Y       |       |     |                                            |
-| Hidden                          | Y       |       |     |                                            |
-| EnableFraudulentWebsiteWarnings |         |       |     |                                            |
 | Zoom                            |         |       |     |                                            |
 | ZoomControlEnabled              |         |       |     |                                            |
-| OpenInspectorOnStartup          |         |       |     |                                            |
-| EnableDragAndDrop               |         |       |     |                                            |
-| Windows                         | Y       | -     | -   |                                            |
-| Focused                         | Y       |       |     |                                            |
 
 ### Log
 

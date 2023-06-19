@@ -973,7 +973,7 @@ func (w *macosWebviewWindow) run() {
 			w.setMaxSize(w.parent.options.MaxWidth, w.parent.options.MaxHeight)
 		}
 		//w.setZoom(w.parent.options.Zoom)
-		if isDebugMode() {
+		if isDebugMode() || w.parent.options.DevToolsEnabled {
 			w.enableDevTools()
 		}
 		w.setBackgroundColour(w.parent.options.BackgroundColour)

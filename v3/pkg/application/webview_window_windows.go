@@ -1176,7 +1176,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	if err != nil {
 		globalApplication.fatal(err.Error())
 	}
-	err = settings.PutAreDevToolsEnabled(debugMode)
+	err = settings.PutAreDevToolsEnabled(debugMode || w.parent.options.DevToolsEnabled)
 	if err != nil {
 		globalApplication.fatal(err.Error())
 	}

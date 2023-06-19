@@ -3,7 +3,7 @@ import {newRuntimeCaller} from "./runtime";
 let call = newRuntimeCaller("contextmenu");
 
 function openContextMenu(id, x, y, data) {
-    return call("OpenContextMenu", {id, x, y, data});
+    void call("OpenContextMenu", {id, x, y, data});
 }
 
 export function enableContextMenus(enabled) {
