@@ -2,7 +2,6 @@
 
 Status of features in v3. Incomplete - please add as you see fit.
 
-
 ## Major Blockers
 
 - [ ] Dev Support - What will it look like?
@@ -114,9 +113,11 @@ Webview Window Interface Methods
 
 ### ContextMenu
 
-| Feature         | Windows | Linux | Mac | Notes |
-|-----------------|---------|-------|-----|-------|
-| OpenContextMenu | Y       |       | Y   |       |
+| Feature          | Windows | Linux | Mac | Notes |
+|------------------|---------|-------|-----|-------|
+| OpenContextMenu  | Y       |       | Y   |       |
+| On By Default    |         |       |     |       |
+| Control via HTML |         |       |     |       |
 
 ### Screens
 
@@ -284,9 +285,6 @@ Built-in plugin support:
 | SQLite          | Y       |       | Y   |       |
 | Start at login  |         |       | Y   |       |
 | Server          |         |       |     |       |
-
-
-TODO: 
 
 - Ensure each plugin has a JS wrapper that can be injected into the window.
 
