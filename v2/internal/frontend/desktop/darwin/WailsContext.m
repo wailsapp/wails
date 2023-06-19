@@ -227,7 +227,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     self.userContentController = userContentController;
     if (self.devtools) {
         [config.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
-    } else {
+    } else if (!self.defaultContextMenu) {
         // Disable default context menus
         WKUserScript *initScript = [WKUserScript new];
         [initScript initWithSource:@"window.wails.flags.disableWailsDefaultContextMenu = true;"

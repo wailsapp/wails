@@ -15,7 +15,6 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.3.0
 	github.com/jackmordaunt/icns v1.0.0
-	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/labstack/gommon v0.4.0
 	github.com/leaanthony/clir v1.3.0
@@ -34,8 +33,8 @@ require (
 	github.com/tc-hib/winres v0.1.5
 	github.com/tidwall/sjson v1.1.7
 	github.com/tkrajina/go-reflector v0.5.6
+	github.com/wailsapp/go-webview2 v1.0.1
 	github.com/wailsapp/mimetype v1.4.1
-  github.com/wailsapp/go-webview2 v1.0.1
 	github.com/wzshiming/ctc v1.2.3
 	golang.org/x/mod v0.8.0
 	golang.org/x/net v0.10.0

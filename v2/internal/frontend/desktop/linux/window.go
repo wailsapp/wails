@@ -99,7 +99,7 @@ func NewWindow(appoptions *options.App, debug bool, devtools bool) *Window {
 
 	if devtools {
 		C.DevtoolsEnabled(unsafe.Pointer(webview), C.int(1), C.bool(debug && appoptions.Debug.OpenInspectorOnStartup))
-	} else {
+	} else if !appoptions.EnableDefaultContextMenu {
 		C.DisableContextMenu(unsafe.Pointer(webview))
 	}
 
