@@ -145,153 +145,109 @@ void printWindowStyle(void *window) {
 
 // setInvisibleTitleBarHeight sets the invisible title bar height
 void setInvisibleTitleBarHeight(void* window, unsigned int height) {
-	WebviewWindow* nsWindow = (WebviewWindow*)window;
-	// Get delegate
-	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[nsWindow delegate];
-	// Set height
-	delegate.invisibleTitleBarHeight = height;
+	[(WebviewWindow*)window delegate].invisibleTitleBarHeight = height;
 }
 
 // Make NSWindow transparent
 void windowSetTransparent(void* nsWindow) {
-    // On main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	[window setOpaque:NO];
-	[window setBackgroundColor:[NSColor clearColor]];
-	});
+	[(WebviewWindow*)nsWindow setOpaque:NO];
+	[(WebviewWindow*)nsWindow setBackgroundColor:[NSColor clearColor]];
 }
 
 void windowSetInvisibleTitleBar(void* nsWindow, unsigned int height) {
-	// On main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// Get delegate
-		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[window delegate];
-		// Set height
-		delegate.invisibleTitleBarHeight = height;
-	});
+	[(WebviewWindow*)nsWindow delegate].invisibleTitleBarHeight = height;
 }
 
 
 // Set the title of the NSWindow
 void windowSetTitle(void* nsWindow, char* title) {
-	// Set window title on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		NSString* nsTitle = [NSString stringWithUTF8String:title];
-		[(WebviewWindow*)nsWindow setTitle:nsTitle];
-		free(title);
-	});
+	NSString* nsTitle = [NSString stringWithUTF8String:title];
+	[(WebviewWindow*)nsWindow setTitle:nsTitle];
+	free(title);
 }
 
 // Set the size of the NSWindow
 void windowSetSize(void* nsWindow, int width, int height) {
 	// Set window size on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-  		NSSize contentSize = [window contentRectForFrameRect:NSMakeRect(0, 0, width, height)].size;
-  		[window setContentSize:contentSize];
-  		[window setFrame:NSMakeRect(window.frame.origin.x, window.frame.origin.y, width, height) display:YES animate:YES];
-	});
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSSize contentSize = [window contentRectForFrameRect:NSMakeRect(0, 0, width, height)].size;
+	[window setContentSize:contentSize];
+	[window setFrame:NSMakeRect(window.frame.origin.x, window.frame.origin.y, width, height) display:YES animate:YES];
 }
 
 // Set NSWindow always on top
 void windowSetAlwaysOnTop(void* nsWindow, bool alwaysOnTop) {
 	// Set window always on top on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[(WebviewWindow*)nsWindow setLevel:alwaysOnTop ? NSStatusWindowLevel : NSNormalWindowLevel];
-	});
+	[(WebviewWindow*)nsWindow setLevel:alwaysOnTop ? NSStatusWindowLevel : NSNormalWindowLevel];
 }
 
 // Load URL in NSWindow
 void navigationLoadURL(void* nsWindow, char* url) {
 	// Load URL on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		NSURL* nsURL = [NSURL URLWithString:[NSString stringWithUTF8String:url]];
-		NSURLRequest* request = [NSURLRequest requestWithURL:nsURL];
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		[window.webView loadRequest:request];
-		free(url);
-	});
+	NSURL* nsURL = [NSURL URLWithString:[NSString stringWithUTF8String:url]];
+	NSURLRequest* request = [NSURLRequest requestWithURL:nsURL];
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	[window.webView loadRequest:request];
+	free(url);
 }
 
 // Set NSWindow resizable
 void windowSetResizable(void* nsWindow, bool resizable) {
 	// Set window resizable on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		if (resizable) {
-			NSWindowStyleMask styleMask = [window styleMask] | NSWindowStyleMaskResizable;
-			[window setStyleMask:styleMask];
-		} else {
-			NSWindowStyleMask styleMask = [window styleMask] & ~NSWindowStyleMaskResizable;
-			[window setStyleMask:styleMask];
-		}
-	});
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	if (resizable) {
+		NSWindowStyleMask styleMask = [window styleMask] | NSWindowStyleMaskResizable;
+		[window setStyleMask:styleMask];
+	} else {
+		NSWindowStyleMask styleMask = [window styleMask] & ~NSWindowStyleMaskResizable;
+		[window setStyleMask:styleMask];
+	}
 }
 
 // Set NSWindow min size
 void windowSetMinSize(void* nsWindow, int width, int height) {
 	// Set window min size on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-  		NSSize contentSize = [window contentRectForFrameRect:NSMakeRect(0, 0, width, height)].size;
-  		[window setContentMinSize:contentSize];
-		NSSize size = { width, height };
-  		[window setMinSize:size];
-	});
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSSize contentSize = [window contentRectForFrameRect:NSMakeRect(0, 0, width, height)].size;
+	[window setContentMinSize:contentSize];
+	NSSize size = { width, height };
+	[window setMinSize:size];
 }
 
 // Set NSWindow max size
 void windowSetMaxSize(void* nsWindow, int width, int height) {
 	// Set window max size on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		NSSize size = { FLT_MAX, FLT_MAX };
-    	size.width = width > 0 ? width : FLT_MAX;
-    	size.height = height > 0 ? height : FLT_MAX;
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-  		NSSize contentSize = [window contentRectForFrameRect:NSMakeRect(0, 0, size.width, size.height)].size;
-  		[window setContentMaxSize:contentSize];
-  		[window setMaxSize:size];
-	});
+	NSSize size = { FLT_MAX, FLT_MAX };
+	size.width = width > 0 ? width : FLT_MAX;
+	size.height = height > 0 ? height : FLT_MAX;
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSSize contentSize = [window contentRectForFrameRect:NSMakeRect(0, 0, size.width, size.height)].size;
+	[window setContentMaxSize:contentSize];
+	[window setMaxSize:size];
 }
 
 // Enable NSWindow devtools
 void windowEnableDevTools(void* nsWindow) {
-	// Enable devtools on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// Enable devtools in webview
-		[window.webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
-	});
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	// Enable devtools in webview
+	[window.webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
 }
 
 // windowZoomReset
 void windowZoomReset(void* nsWindow) {
-	// Reset zoom on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// Reset zoom
-		[window.webView setMagnification:1.0];
-	});
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	[window.webView setMagnification:1.0];
 }
 
 // windowZoomSet
 void windowZoomSet(void* nsWindow, double zoom) {
-	// Reset zoom on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// Reset zoom
-		[window.webView setMagnification:zoom];
-	});
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	// Reset zoom
+	[window.webView setMagnification:zoom];
 }
 
 // windowZoomGet
 float windowZoomGet(void* nsWindow) {
-	// get main window
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	// Get zoom
 	return [window.webView magnification];
@@ -299,109 +255,76 @@ float windowZoomGet(void* nsWindow) {
 
 // windowZoomIn
 void windowZoomIn(void* nsWindow) {
-	// Zoom in on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// Zoom in
-		[window.webView setMagnification:window.webView.magnification + 0.05];
-	});
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	// Zoom in
+	[window.webView setMagnification:window.webView.magnification + 0.05];
 }
 
 // windowZoomOut
 void windowZoomOut(void* nsWindow) {
-	// Zoom out on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// Zoom out
-		if( window.webView.magnification > 1.05 ) {
-			[window.webView setMagnification:window.webView.magnification - 0.05];
-		} else {
-			[window.webView setMagnification:1.0];
-		}
-	});
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	// Zoom out
+	if( window.webView.magnification > 1.05 ) {
+		[window.webView setMagnification:window.webView.magnification - 0.05];
+	} else {
+		[window.webView setMagnification:1.0];
+	}
 }
 
 // set the window position
 void windowSetPosition(void* nsWindow, int x, int y) {
-	// Set window position on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		NSScreen* screen = [window screen];
-		if( screen == NULL ) {
-			screen = [NSScreen mainScreen];
-		}
-		NSRect windowFrame = [window frame];
-		NSRect screenFrame = [screen frame];
-		windowFrame.origin.x = screenFrame.origin.x + (float)x;
-		windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSScreen* screen = [window screen];
+	if( screen == NULL ) {
+		screen = [NSScreen mainScreen];
+	}
+	NSRect windowFrame = [window frame];
+	NSRect screenFrame = [screen frame];
+	windowFrame.origin.x = screenFrame.origin.x + (float)x;
+	windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
 
-		[window setFrame:windowFrame display:TRUE animate:FALSE];
-	});
+	[window setFrame:windowFrame display:TRUE animate:FALSE];
 }
 
 // Execute JS in NSWindow
 void windowExecJS(void* nsWindow, const char* js) {
-	// Execute JS on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		[window.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
-		free((void*)js);
-	});
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	[window.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
+	free((void*)js);
 }
 
 // Make NSWindow backdrop translucent
 void windowSetTranslucent(void* nsWindow) {
-	// Set window transparent on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
+	// Get window
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
 
-		// Get window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-
-		id contentView = [window contentView];
-		NSVisualEffectView *effectView = [NSVisualEffectView alloc];
-		NSRect bounds = [contentView bounds];
-		[effectView initWithFrame:bounds];
-		[effectView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-		[effectView setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
-		[effectView setState:NSVisualEffectStateActive];
-		[contentView addSubview:effectView positioned:NSWindowBelow relativeTo:nil];
-	});
+	id contentView = [window contentView];
+	NSVisualEffectView *effectView = [NSVisualEffectView alloc];
+	NSRect bounds = [contentView bounds];
+	[effectView initWithFrame:bounds];
+	[effectView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+	[effectView setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+	[effectView setState:NSVisualEffectStateActive];
+	[contentView addSubview:effectView positioned:NSWindowBelow relativeTo:nil];
 }
 
 // Make webview background transparent
 void webviewSetTransparent(void* nsWindow) {
-	// Set webview transparent on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// Set webview background transparent
-		[window.webView setValue:@NO forKey:@"drawsBackground"];
-	});
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	// Set webview background transparent
+	[window.webView setValue:@NO forKey:@"drawsBackground"];
 }
 
 // Set webview background colour
 void webviewSetBackgroundColour(void* nsWindow, int r, int g, int b, int alpha) {
-	// Set webview background color on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// Set webview background color
-		[window.webView setValue:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0] forKey:@"backgroundColor"];
-	});
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	// Set webview background color
+	[window.webView setValue:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0] forKey:@"backgroundColor"];
 }
 
 // Set the window background colour
 void windowSetBackgroundColour(void* nsWindow, int r, int g, int b, int alpha) {
-	// Set window background color on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// Get window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// Set window background color
-		[window setBackgroundColor:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0]];
-	});
+	[(WebviewWindow*)nsWindow setBackgroundColor:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0]];
 }
 
 bool windowIsMaximised(void* nsWindow) {
@@ -436,102 +359,78 @@ void windowUnFullscreen(void* nsWindow) {
 
 // restore window to normal size
 void windowRestore(void* nsWindow) {
-	// Set window normal on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// If window is fullscreen
-		if([(WebviewWindow*)nsWindow styleMask] & NSWindowStyleMaskFullScreen) {
-			[(WebviewWindow*)nsWindow toggleFullScreen:nil];
-		}
-		// If window is maximised
-		if([(WebviewWindow*)nsWindow isZoomed]) {
-			[(WebviewWindow*)nsWindow zoom:nil];
-		}
-		// If window in minimised
-		if([(WebviewWindow*)nsWindow isMiniaturized]) {
-			[(WebviewWindow*)nsWindow deminiaturize:nil];
-		}
-	});
+	// If window is fullscreen
+	if([(WebviewWindow*)nsWindow styleMask] & NSWindowStyleMaskFullScreen) {
+		[(WebviewWindow*)nsWindow toggleFullScreen:nil];
+	}
+	// If window is maximised
+	if([(WebviewWindow*)nsWindow isZoomed]) {
+		[(WebviewWindow*)nsWindow zoom:nil];
+	}
+	// If window in minimised
+	if([(WebviewWindow*)nsWindow isMiniaturized]) {
+		[(WebviewWindow*)nsWindow deminiaturize:nil];
+	}
 }
 
 // disable window fullscreen button
 void setFullscreenButtonEnabled(void* nsWindow, bool enabled) {
-	// Disable fullscreen button on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// Get window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		NSButton *fullscreenButton = [window standardWindowButton:NSWindowZoomButton];
-		fullscreenButton.enabled = enabled;
-	});
+	NSButton *fullscreenButton = [(WebviewWindow*)nsWindow standardWindowButton:NSWindowZoomButton];
+	fullscreenButton.enabled = enabled;
 }
 
 // Set the titlebar style
 void windowSetTitleBarAppearsTransparent(void* nsWindow, bool transparent) {
-	// Set window titlebar style on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		if( transparent ) {
-			[(WebviewWindow*)nsWindow setTitlebarAppearsTransparent:true];
-		} else {
-			[(WebviewWindow*)nsWindow setTitlebarAppearsTransparent:false];
-		}
-	});
+	if( transparent ) {
+		[(WebviewWindow*)nsWindow setTitlebarAppearsTransparent:true];
+	} else {
+		[(WebviewWindow*)nsWindow setTitlebarAppearsTransparent:false];
+	}
 }
 
 // Set window fullsize content view
 void windowSetFullSizeContent(void* nsWindow, bool fullSize) {
-	// Set window fullsize content view on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		if( fullSize ) {
-			[(WebviewWindow*)nsWindow setStyleMask:[(WebviewWindow*)nsWindow styleMask] | NSWindowStyleMaskFullSizeContentView];
-		} else {
-			[(WebviewWindow*)nsWindow setStyleMask:[(WebviewWindow*)nsWindow styleMask] & ~NSWindowStyleMaskFullSizeContentView];
-		}
-	});
+	if( fullSize ) {
+		[(WebviewWindow*)nsWindow setStyleMask:[(WebviewWindow*)nsWindow styleMask] | NSWindowStyleMaskFullSizeContentView];
+	} else {
+		[(WebviewWindow*)nsWindow setStyleMask:[(WebviewWindow*)nsWindow styleMask] & ~NSWindowStyleMaskFullSizeContentView];
+	}
 }
 
 // Set Hide Titlebar
 void windowSetHideTitleBar(void* nsWindow, bool hideTitlebar) {
-	// Set window titlebar hidden on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		if( hideTitlebar ) {
-			[(WebviewWindow*)nsWindow setStyleMask:[(WebviewWindow*)nsWindow styleMask] & ~NSWindowStyleMaskTitled];
-		} else {
-			[(WebviewWindow*)nsWindow setStyleMask:[(WebviewWindow*)nsWindow styleMask] | NSWindowStyleMaskTitled];
-		}
-	});
+	if( hideTitlebar ) {
+		[(WebviewWindow*)nsWindow setStyleMask:[(WebviewWindow*)nsWindow styleMask] & ~NSWindowStyleMaskTitled];
+	} else {
+		[(WebviewWindow*)nsWindow setStyleMask:[(WebviewWindow*)nsWindow styleMask] | NSWindowStyleMaskTitled];
+	}
 }
 
 // Set Hide Title in Titlebar
 void windowSetHideTitle(void* nsWindow, bool hideTitle) {
-	// Set window titlebar hidden on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		if( hideTitle ) {
-			[(WebviewWindow*)nsWindow setTitleVisibility:NSWindowTitleHidden];
-		} else {
-			[(WebviewWindow*)nsWindow setTitleVisibility:NSWindowTitleVisible];
-		}
-	});
+	if( hideTitle ) {
+		[(WebviewWindow*)nsWindow setTitleVisibility:NSWindowTitleHidden];
+	} else {
+		[(WebviewWindow*)nsWindow setTitleVisibility:NSWindowTitleVisible];
+	}
 }
 
 // Set Window use toolbar
 void windowSetUseToolbar(void* nsWindow, bool useToolbar, int toolbarStyle) {
-	// Set window use toolbar on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		if( useToolbar ) {
-			NSToolbar *toolbar = [[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"];
-			[toolbar autorelease];
-			[window setToolbar:toolbar];
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	if( useToolbar ) {
+		NSToolbar *toolbar = [[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"];
+		[toolbar autorelease];
+		[window setToolbar:toolbar];
 
-			// If macos 11 or higher, set toolbar style
-			if (@available(macOS 11.0, *)) {
-				[window setToolbarStyle:toolbarStyle];
-			}
-
-		} else {
-			[window setToolbar:nil];
+		// If macos 11 or higher, set toolbar style
+		if (@available(macOS 11.0, *)) {
+			[window setToolbarStyle:toolbarStyle];
 		}
-	});
+
+	} else {
+		[window setToolbar:nil];
+	}
 }
 
 // Set window toolbar style
@@ -539,102 +438,57 @@ void windowSetToolbarStyle(void* nsWindow, int style) {
 	// use @available to check if the function is available
 	// if not, return
 	if (@available(macOS 11.0, *)) {
-		// Set window toolbar style on main thread
-		dispatch_async(dispatch_get_main_queue(), ^{
-			// get main window
-			WebviewWindow* window = (WebviewWindow*)nsWindow;
-			// get toolbar
-			NSToolbar* toolbar = [window toolbar];
-			// set toolbar style
-			[toolbar setShowsBaselineSeparator:style];
-		});
+		NSToolbar* toolbar = [(WebviewWindow*)nsWindow toolbar];
+		[toolbar setShowsBaselineSeparator:style];
 	}
 }
 
 // Set Hide Toolbar Separator
 void windowSetHideToolbarSeparator(void* nsWindow, bool hideSeparator) {
-	// Set window hide toolbar separator on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// get toolbar
-		NSToolbar* toolbar = [window toolbar];
-		// Return if toolbar nil
-		if( toolbar == nil ) {
-			return;
-		}
-		if( hideSeparator ) {
-			[toolbar setShowsBaselineSeparator:false];
-		} else {
-			[toolbar setShowsBaselineSeparator:true];
-		}
-	});
+	NSToolbar* toolbar = [(WebviewWindow*)nsWindow toolbar];
+	if( toolbar == nil ) {
+		return;
+	}
+	[toolbar setShowsBaselineSeparator:!hideSeparator];
 }
 
 // Set Window appearance type
 void windowSetAppearanceTypeByName(void* nsWindow, const char *appearanceName) {
-	// Set window appearance type on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// set window appearance type by name
-		// Convert appearance name to NSString
-		NSString* appearanceNameString = [NSString stringWithUTF8String:appearanceName];
-		// Set appearance
-		[window setAppearance:[NSAppearance appearanceNamed:appearanceNameString]];
+	// set window appearance type by name
+	// Convert appearance name to NSString
+	NSString* appearanceNameString = [NSString stringWithUTF8String:appearanceName];
+	// Set appearance
+	[(WebviewWindow*)nsWindow setAppearance:[NSAppearance appearanceNamed:appearanceNameString]];
 
-		free((void*)appearanceName);
-	});
+	free((void*)appearanceName);
 }
 
 // Center window on current monitor
 void windowCenter(void* nsWindow) {
-	// Center window on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		[window center];
-	});
+	[(WebviewWindow*)nsWindow center];
 }
 
 // Get the current size of the window
 void windowGetSize(void* nsWindow, int* width, int* height) {
-	// get main window
-	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// get window frame
-	NSRect frame = [window frame];
-	// set width and height
+	NSRect frame = [(WebviewWindow*)nsWindow frame];
 	*width = frame.size.width;
 	*height = frame.size.height;
 }
 
 // Get window width
 int windowGetWidth(void* nsWindow) {
-	// get main window
-	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// get window frame
-	NSRect frame = [window frame];
-	// return width
-	return frame.size.width;
+	return [(WebviewWindow*)nsWindow frame].size.width;
 }
 
 // Get window height
 int windowGetHeight(void* nsWindow) {
-	// get main window
-	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// get window frame
-	NSRect frame = [window frame];
-	// return height
-	return frame.size.height;
+	return [(WebviewWindow*)nsWindow frame].size.height;
 }
 
 // Get window position
 void windowGetPosition(void* nsWindow, int* x, int* y) {
-	// get main window
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// get window frame
 	NSRect frame = [window frame];
-	// set x and y
 	*x = frame.origin.x;
 
 	// Translate to screen coordinates so Y=0 is the top of the screen
@@ -644,94 +498,61 @@ void windowGetPosition(void* nsWindow, int* x, int* y) {
 	}
 	NSRect screenFrame = [screen frame];
 	*y = screenFrame.size.height - frame.origin.y - frame.size.height;
-
 }
 
 // Destroy window
 void windowDestroy(void* nsWindow) {
-	// Destroy window on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// close window
-		[window close];
-	});
+	[(WebviewWindow*)nsWindow close];
 }
 
 // Remove drop shadow from window
 void windowSetShadow(void* nsWindow, bool hasShadow) {
-	// Remove shadow on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* window = (WebviewWindow*)nsWindow;
-		// set shadow
-		[window setHasShadow:hasShadow];
-	});
+	[(WebviewWindow*)nsWindow setHasShadow:hasShadow];
 }
 
 
 // windowClose closes the current window
 static void windowClose(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// close window
-		[(WebviewWindow*)window close];
-	});
+	[(WebviewWindow*)window close];
 }
 
 // windowZoom
 static void windowZoom(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// zoom window
-		[(WebviewWindow*)window zoom:nil];
-	});
+	[(WebviewWindow*)window zoom:nil];
 }
 
 // webviewRenderHTML renders the given HTML
 static void windowRenderHTML(void *window, const char *html) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* nsWindow = (WebviewWindow*)window;
-		// get window delegate
-		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
-		// render html
-		[nsWindow.webView loadHTMLString:[NSString stringWithUTF8String:html] baseURL:nil];
-	});
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	// get window delegate
+	WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
+	// render html
+	[nsWindow.webView loadHTMLString:[NSString stringWithUTF8String:html] baseURL:nil];
 }
 
 static void windowInjectCSS(void *window, const char *css) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* nsWindow = (WebviewWindow*)window;
-		// inject css
-		[nsWindow.webView evaluateJavaScript:[NSString stringWithFormat:@"(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%@')); document.head.appendChild(style); })();", [NSString stringWithUTF8String:css]] completionHandler:nil];
-        free((void*)css);
-	});
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	// inject css
+	[nsWindow.webView evaluateJavaScript:[NSString stringWithFormat:@"(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%@')); document.head.appendChild(style); })();", [NSString stringWithUTF8String:css]] completionHandler:nil];
+	free((void*)css);
 }
 
 static void windowMinimise(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// minimize window
-		[(WebviewWindow*)window miniaturize:nil];
-	});
+	[(WebviewWindow*)window miniaturize:nil];
 }
 
 // zoom maximizes the window to the screen dimensions
 static void windowMaximise(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// maximize window
-		[(WebviewWindow*)window zoom:nil];
-	});
+	[(WebviewWindow*)window zoom:nil];
 }
 
 static bool isFullScreen(void *window) {
-	// get main window
 	WebviewWindow* nsWindow = (WebviewWindow*)window;
     long mask = [nsWindow styleMask];
     return (mask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen;
 }
 
 static bool isVisible(void *window) {
-	// get main window
 	WebviewWindow* nsWindow = (WebviewWindow*)window;
     return (nsWindow.occlusionState & NSWindowOcclusionStateVisible) == NSWindowOcclusionStateVisible;
 }
@@ -741,94 +562,66 @@ static void windowSetFullScreen(void *window, bool fullscreen) {
 	if (isFullScreen(window)) {
 		return;
 	}
-	dispatch_async(dispatch_get_main_queue(), ^{
-		WebviewWindow* nsWindow = (WebviewWindow*)window;
-		windowSetMaxSize(nsWindow, 0, 0);
-		windowSetMinSize(nsWindow, 0, 0);
-		[nsWindow toggleFullScreen:nil];
-	});
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	windowSetMaxSize(nsWindow, 0, 0);
+	windowSetMinSize(nsWindow, 0, 0);
+	[nsWindow toggleFullScreen:nil];
 }
 
 // windowUnminimise
 static void windowUnminimise(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// unminimize window
-		[(WebviewWindow*)window deminiaturize:nil];
-	});
+	[(WebviewWindow*)window deminiaturize:nil];
 }
 
 // windowUnmaximise
 static void windowUnmaximise(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// unmaximize window
-		[(WebviewWindow*)window zoom:nil];
-	});
+	[(WebviewWindow*)window zoom:nil];
 }
 
 static void windowDisableSizeConstraints(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* nsWindow = (WebviewWindow*)window;
-		// disable size constraints
-		[nsWindow setContentMinSize:CGSizeZero];
-		[nsWindow setContentMaxSize:CGSizeZero];
-	});
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	// disable size constraints
+	[nsWindow setContentMinSize:CGSizeZero];
+	[nsWindow setContentMaxSize:CGSizeZero];
 }
 
 static void windowShow(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// show window
-		[(WebviewWindow*)window makeKeyAndOrderFront:nil];
-	});
+	[(WebviewWindow*)window makeKeyAndOrderFront:nil];
 }
 
 static void windowHide(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[(WebviewWindow*)window orderOut:nil];
-	});
+	[(WebviewWindow*)window orderOut:nil];
 }
 
 // windowShowMenu opens an NSMenu at the given coordinates
 static void windowShowMenu(void *window, void *menu, int x, int y) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* nsWindow = (WebviewWindow*)window;
-		// get menu
-		NSMenu* nsMenu = (NSMenu*)menu;
-		// get webview
-		WKWebView* webView = nsWindow.webView;
-		NSPoint point = NSMakePoint(x, y);
-  		[nsMenu popUpMenuPositioningItem:nil atLocation:point inView:webView];
-	});
+	NSMenu* nsMenu = (NSMenu*)menu;
+	WKWebView* webView = ((WebviewWindow*)window).webView;
+	NSPoint point = NSMakePoint(x, y);
+	[nsMenu popUpMenuPositioningItem:nil atLocation:point inView:webView];
 }
 
 
 
 // Make the given window frameless
 static void windowSetFrameless(void *window, bool frameless) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* nsWindow = (WebviewWindow*)window;
-		// set the window style to be frameless
-		if (frameless) {
-			[nsWindow setStyleMask:([nsWindow styleMask] | NSWindowStyleMaskFullSizeContentView)];
-		} else {
-			[nsWindow setStyleMask:([nsWindow styleMask] & ~NSWindowStyleMaskFullSizeContentView)];
-		}
-	});
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	// set the window style to be frameless
+	if (frameless) {
+		[nsWindow setStyleMask:([nsWindow styleMask] | NSWindowStyleMaskFullSizeContentView)];
+	} else {
+		[nsWindow setStyleMask:([nsWindow styleMask] & ~NSWindowStyleMaskFullSizeContentView)];
+	}
 }
 
 static void startDrag(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// get main window
-		WebviewWindow* nsWindow = (WebviewWindow*)window;
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
 
-		// Get delegate
-		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
+	// Get delegate
+	WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
 
-		// start drag
-		[windowDelegate startDrag:nsWindow];
-	});
+	// start drag
+	[windowDelegate startDrag:nsWindow];
 }
 
 // Credit: https://stackoverflow.com/q/33319295
@@ -887,8 +680,8 @@ func (w *macosWebviewWindow) print() error {
 	return nil
 }
 
-func (w *macosWebviewWindow) startResize(border string) error {
-	// Not needed right now
+func (w *macosWebviewWindow) startResize(_ string) error {
+	// Never called. Handled natively by the OS.
 	return nil
 }
 
