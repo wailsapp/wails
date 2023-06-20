@@ -18,7 +18,7 @@ import {Plugin, Call, callErrorCallback, callCallback} from "./calls";
 import {newWindow} from "./window";
 import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
 import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
-import {enableContextMenus} from "./contextmenu";
+import {setupContextMenus} from "./contextmenu";
 import {reloadWML} from "./wml";
 import {setupDrag, endDrag} from "./drag";
 
@@ -85,8 +85,7 @@ if (DEBUG) {
     console.log("Wails v3.0.0 Debug Mode Enabled");
 }
 
-enableContextMenus(true);
-
+setupContextMenus();
 setupDrag();
 
 document.addEventListener("DOMContentLoaded", function(event) {

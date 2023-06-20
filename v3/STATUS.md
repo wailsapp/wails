@@ -117,7 +117,13 @@ Webview Window Interface Methods
 |------------------|---------|-------|-----|-------|
 | OpenContextMenu  | Y       |       | Y   |       |
 | On By Default    |         |       |     |       |
-| Control via HTML |         |       |     |       |
+| Control via HTML | Y       |       |     |       |
+
+The default context menu is enabled by default for all elements that are `contentEditable: true`, `<input>` or `<textarea>` tags or have the `--default-contextmenu: true` style set.
+The `--default-contextmenu: show` style will always show the context menu
+The `--default-contextmenu: hide` style will always hide the context menu
+
+Anything nested under a tag with `--default-contextmenu: hide` style will not show the context menu unless it is explicitly set with `--default-contextmenu: show`.
 
 ### Screens
 

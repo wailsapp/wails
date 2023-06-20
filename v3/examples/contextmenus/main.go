@@ -26,16 +26,9 @@ func main() {
 	})
 
 	mainWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title: "Context Menu Demo",
-		Mac: application.MacWindow{
-			Backdrop:                application.MacBackdropTranslucent,
-			TitleBar:                application.MacTitleBarHiddenInsetUnified,
-			InvisibleTitleBarHeight: 50,
-		},
-	})
-
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title: "Context Menu Demo",
+		Title:  "Context Menu Demo",
+		Width:  1024,
+		Height: 800,
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
@@ -46,7 +39,6 @@ func main() {
 	contextMenu := app.NewMenu()
 	contextMenu.Add("Click Me").OnClick(func(data *application.Context) {
 		fmt.Printf("Context menu data: %+v\n", data.ContextMenuData())
-		app.Quit()
 	})
 
 	globalContextMenu := app.NewMenu()
