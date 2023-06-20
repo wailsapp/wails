@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -1172,7 +1173,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	if err != nil {
 		globalApplication.fatal(err.Error())
 	}
-	err = settings.PutAreDefaultContextMenusEnabled(debugMode)
+	err = settings.PutAreDefaultContextMenusEnabled(debugMode || !w.parent.options.DefaultContextMenuDisabled)
 	if err != nil {
 		globalApplication.fatal(err.Error())
 	}
@@ -1227,7 +1228,24 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.Init(script)
 		chromium.NavigateToString(w.parent.options.HTML)
 	} else {
-		chromium.Navigate("http://wails.localhost")
+		var startURL = "http://wails.localhost"
+		if w.parent.options.URL != "" {
+			// parse the url
+			parsedURL, err := url.Parse(w.parent.options.URL)
+			if err != nil {
+				globalApplication.fatal("Error parsing URL: %s", err)
+			}
+			if parsedURL.Scheme == "" {
+				startURL = path.Join(startURL, w.parent.options.URL)
+				// if the original URL had a trailing slash, add it back
+				if strings.HasSuffix(w.parent.options.URL, "/") {
+					startURL = startURL + "/"
+				}
+			} else {
+				startURL = w.parent.options.URL
+			}
+		}
+		chromium.Navigate(startURL)
 	}
 
 }

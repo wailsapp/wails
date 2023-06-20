@@ -49,6 +49,9 @@ type WebviewWindowOptions struct {
 
 	// If true, the window's devtools will be available (default true in builds without the `production` build tag)
 	DevToolsEnabled bool
+
+	// If true, the window's default context menu will be disabled (default false)
+	DefaultContextMenuDisabled bool
 }
 
 var WebviewWindowDefaults = &WebviewWindowOptions{

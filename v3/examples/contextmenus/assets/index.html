@@ -7,16 +7,19 @@
     <style>.file{ width: 100px; height: 100px; border: 3px solid black; }</style>
 </head>
 <body>
-<h1>Events Demo</h1>
+<h1>Context Menu Demo</h1>
 <br/>
-<div class="file" id="123abc" data-contextmenu="test" data-contextmenu-data="1" draggable="true" ondragstart="dragstart()" ondragend="dragend()">
+<div class="file" id="123abc" data-contextmenu="test" data-contextmenu-data="1">
     <h1>1</h1>
 </div>
-<div class="file" id="234abc" data-contextmenu="test" data-contextmenu-data="2" draggable="true" ondragstart="dragstart()" ondragend="dragend()">
+<div class="file" id="234abc" data-contextmenu="test" data-contextmenu-data="2">
     <h1>2</h1>
 </div>
-<div class="file" id="345abc" data-contextmenu="test" data-contextmenu-data="3" draggable="true" ondragstart="dragstart()" ondragend="dragend()">
-    <h1>3</h1>
+<div class="file" id="123abcg" style="--default-contextmenu: show">
+    <h1>Default Context Menu shown here</h1>
+</div>
+<div class="file" id="234abcs" style="--default-contextmenu: hide">
+    <h1>Default Context Menu hidden here</h1>
 </div>
 <div id="results"></div>
 </body>
