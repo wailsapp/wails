@@ -858,6 +858,10 @@ func messageDialogCB(button C.int) {
 
 }
 
+func runOpenFileDialog(dialog *OpenFileDialog) ([]string, error) {
+	return []string{}, fmt.Errorf("not implemented")
+}
+
 func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	cMsg := C.CString(options.Message)
 	cTitle := C.CString(options.Title)
@@ -919,6 +923,10 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 
 	defer C.gtk_widget_destroy((*C.GtkWidget)(dialog))
 	return int(C.gtk_dialog_run((*C.GtkDialog)(unsafe.Pointer(dialog))))
+}
+
+func runSaveFileDialog(dialog *SaveFileDialog) (string, error) {
+	return "", fmt.Errorf("not implemented")
 }
 
 //export openFileDialogCallbackEnd
