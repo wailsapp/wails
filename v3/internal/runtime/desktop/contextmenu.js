@@ -36,9 +36,9 @@ Anything nested under a tag with --default-contextmenu: hide will not show the c
 function processDefaultContextMenu(event) {
     // Process default context menu
     let element = event.target;
-    let defaultContextMenuAction = window.getComputedStyle(element).getPropertyValue("--default-contextmenu");
-    defaultContextMenuAction = defaultContextMenuAction ? defaultContextMenuAction.trim() : "";
-    switch(defaultContextMenuAction) {
+    const computedStyle = window.getComputedStyle(element);
+    let defaultContextMenuAction = computedStyle.getPropertyValue("--default-contextmenu").trim();
+    switch (defaultContextMenuAction) {
         case "show":
             return;
         case "hide":
@@ -46,21 +46,29 @@ function processDefaultContextMenu(event) {
             return;
         default:
             // Check if contentEditable is true
-            let contentEditable = element.getAttribute("contentEditable");
-            if (contentEditable && contentEditable.toLowerCase() === "true") {
+            if (element.isContentEditable) {
                 return;
             }
 
             // Check if text has been selected
             let selection = window.getSelection();
             if (selection && selection.toString().length > 0) {
-                return;
+                for (let i = 0; i < selection.rangeCount; i++) {
+                    let range = selection.getRangeAt(i);
+                    let rects = range.getClientRects();
+                    for (let j = 0; j < rects.length; j++) {
+                        let rect = rects[j];
+                        if (document.elementFromPoint(rect.left, rect.top) === element) {
+                            return;
+                        }
+                    }
+                }
             }
-
             // Check if tagname is input or textarea
-            let tagName = element.tagName.toLowerCase();
-            if (tagName === "input" || tagName === "textarea") {
-                return;
+            if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
+                if (!element.readOnly && !element.disabled) {
+                    return;
+                }
             }
 
             // hide default context menu
