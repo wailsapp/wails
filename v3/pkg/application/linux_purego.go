@@ -16,7 +16,13 @@ import (
 type windowPointer uintptr
 type identifier uint
 type pointer uintptr
-type GSList uintptr
+
+// type GSList uintptr
+type GSList struct {
+	data pointer
+	next *GSList
+}
+
 type GSListPointer *GSList
 
 const (
@@ -93,6 +99,7 @@ var (
 	gApplicationRun       func(pointer, int, []string) int
 	gBytesNewStatic       func(uintptr, int) uintptr
 	gBytesUnref           func(uintptr)
+	gFree                 func(pointer)
 	gIdleAdd              func(uintptr)
 	gObjectRefSink        func(pointer)
 	gObjectUnref          func(pointer)
@@ -116,63 +123,70 @@ var (
 	gdkWindowGetDisplay          func(pointer) pointer
 
 	// gtk functions
-	gtkApplicationNew             func(string, uint) pointer
-	gtkApplicationGetActiveWindow func(pointer) pointer
-	gtkApplicationGetWindows      func(pointer) *GList
-	gtkApplicationWindowNew       func(pointer) pointer
-	gtkBoxNew                     func(int, int) pointer
-	gtkBoxPackStart               func(pointer, pointer, int, int, int)
-	gtkCheckMenuItemGetActive     func(pointer) int
-	gtkCheckMenuItemNewWithLabel  func(string) pointer
-	gtkCheckMenuItemSetActive     func(pointer, int)
-	gtkContainerAdd               func(pointer, pointer)
-	gtkDialogAddButton            func(pointer, string, int)
-	gtkDialogGetContentArea       func(pointer) pointer
-	gtkDialogRun                  func(pointer) int
-	gtkDialogSetDefaultResponse   func(pointer, int)
-	gtkDragDestSet                func(pointer, uint, pointer, uint, uint)
-	gtkImageNewFromPixbuf         func(pointer) pointer
-	gtkMenuBarNew                 func() pointer
-	gtkMenuItemNewWithLabel       func(string) pointer
-	gtkMenuItemSetLabel           func(pointer, string)
-	gtkMenuItemSetSubmenu         func(pointer, pointer)
-	gtkMenuNew                    func() pointer
-	gtkMenuShellAppend            func(pointer, pointer)
-	gtkMessageDialogNew           func(pointer, int, int, int, string) pointer
-	gtkRadioMenuItemGetGroup      func(pointer) GSListPointer
-	gtkRadioMenuItemNewWithLabel  func(GSListPointer, string) pointer
-	gtkSeparatorMenuItemNew       func() pointer
-	gtkTargetEntryFree            func(pointer)
-	gtkTargetEntryNew             func(string, int, uint) pointer
-	gtkWidgetDestroy              func(pointer)
-	gtkWidgetGetDisplay           func(pointer) pointer
-	gtkWidgetGetWindow            func(pointer) pointer
-	gtkWidgetGetScreen            func(pointer) pointer
-	gtkWidgetHide                 func(pointer)
-	gtkWidgetIsVisible            func(pointer) bool
-	gtkWidgetShow                 func(pointer)
-	gtkWidgetShowAll              func(pointer)
-	gtkWidgetSetAppPaintable      func(pointer, int)
-	gtkWidgetSetSensitive         func(pointer, int)
-	gtkWidgetSetToolTipText       func(pointer, string)
-	gtkWidgetSetVisual            func(pointer, pointer)
-	gtkWindowClose                func(pointer)
-	gtkWindowFullScreen           func(pointer)
-	gtkWindowGetPosition          func(pointer, *int, *int) bool
-	gtkWindowGetSize              func(pointer, *int, *int)
-	gtkWindowKeepAbove            func(pointer, bool)
-	gtkWindowMaximize             func(pointer)
-	gtkWindowMinimize             func(pointer)
-	gtkWindowMove                 func(pointer, int, int)
-	gtkWindowPresent              func(pointer)
-	gtkWindowResize               func(pointer, int, int)
-	gtkWindowSetDecorated         func(pointer, int)
-	gtkWindowSetGeometryHints     func(pointer, pointer, pointer, int)
-	gtkWindowSetKeepAbove         func(pointer, bool)
-	gtkWindowSetResizable         func(pointer, bool)
-	gtkWindowSetTitle             func(pointer, string)
-	gtkWindowUnfullscreen         func(pointer)
-	gtkWindowUnmaximize           func(pointer)
+	gtkApplicationNew               func(string, uint) pointer
+	gtkApplicationGetActiveWindow   func(pointer) pointer
+	gtkApplicationGetWindows        func(pointer) *GList
+	gtkApplicationWindowNew         func(pointer) pointer
+	gtkBoxNew                       func(int, int) pointer
+	gtkBoxPackStart                 func(pointer, pointer, int, int, int)
+	gtkCheckMenuItemGetActive       func(pointer) int
+	gtkCheckMenuItemNewWithLabel    func(string) pointer
+	gtkCheckMenuItemSetActive       func(pointer, int)
+	gtkContainerAdd                 func(pointer, pointer)
+	gtkDialogAddButton              func(pointer, string, int)
+	gtkDialogGetContentArea         func(pointer) pointer
+	gtkDialogRun                    func(pointer) int
+	gtkDialogSetDefaultResponse     func(pointer, int)
+	gtkDragDestSet                  func(pointer, uint, pointer, uint, uint)
+	gtkFileChooserDialogNew         func(string, pointer, int, string, int, string, int, pointer) pointer
+	gtkFileChooserGetFilenames      func(pointer) *GSList
+	gtkFileChooserSetCreateFolders  func(pointer, int)
+	gtkFileChooserSetCurrentFolder  func(pointer, string)
+	gtkFileChooserSetSelectMultiple func(pointer, int)
+	gtkFileChooserSetShowHidden     func(pointer, int)
+
+	gtkImageNewFromPixbuf        func(pointer) pointer
+	gtkMenuBarNew                func() pointer
+	gtkMenuItemNewWithLabel      func(string) pointer
+	gtkMenuItemSetLabel          func(pointer, string)
+	gtkMenuItemSetSubmenu        func(pointer, pointer)
+	gtkMenuNew                   func() pointer
+	gtkMenuShellAppend           func(pointer, pointer)
+	gtkMessageDialogNew          func(pointer, int, int, int, string) pointer
+	gtkRadioMenuItemGetGroup     func(pointer) GSListPointer
+	gtkRadioMenuItemNewWithLabel func(GSListPointer, string) pointer
+	gtkSeparatorMenuItemNew      func() pointer
+	gtkTargetEntryFree           func(pointer)
+	gtkTargetEntryNew            func(string, int, uint) pointer
+	gtkWidgetDestroy             func(pointer)
+	gtkWidgetGetDisplay          func(pointer) pointer
+	gtkWidgetGetWindow           func(pointer) pointer
+	gtkWidgetGetScreen           func(pointer) pointer
+	gtkWidgetHide                func(pointer)
+	gtkWidgetIsVisible           func(pointer) bool
+	gtkWidgetShow                func(pointer)
+	gtkWidgetShowAll             func(pointer)
+	gtkWidgetSetAppPaintable     func(pointer, int)
+	gtkWidgetSetSensitive        func(pointer, int)
+	gtkWidgetSetToolTipText      func(pointer, string)
+	gtkWidgetSetVisual           func(pointer, pointer)
+	gtkWindowClose               func(pointer)
+	gtkWindowFullScreen          func(pointer)
+	gtkWindowGetPosition         func(pointer, *int, *int) bool
+	gtkWindowGetSize             func(pointer, *int, *int)
+	gtkWindowKeepAbove           func(pointer, bool)
+	gtkWindowMaximize            func(pointer)
+	gtkWindowMinimize            func(pointer)
+	gtkWindowMove                func(pointer, int, int)
+	gtkWindowPresent             func(pointer)
+	gtkWindowResize              func(pointer, int, int)
+	gtkWindowSetDecorated        func(pointer, int)
+	gtkWindowSetGeometryHints    func(pointer, pointer, pointer, int)
+	gtkWindowSetKeepAbove        func(pointer, bool)
+	gtkWindowSetResizable        func(pointer, bool)
+	gtkWindowSetTitle            func(pointer, string)
+	gtkWindowUnfullscreen        func(pointer)
+	gtkWindowUnmaximize          func(pointer)
 
 	// webkit
 	webkitNewWithUserContentManager                      func(pointer) pointer
@@ -227,6 +241,7 @@ func init() {
 	purego.RegisterLibFunc(&gApplicationRun, gtk, "g_application_run")
 	purego.RegisterLibFunc(&gBytesNewStatic, gtk, "g_bytes_new_static")
 	purego.RegisterLibFunc(&gBytesUnref, gtk, "g_bytes_unref")
+	purego.RegisterLibFunc(&gFree, gtk, "g_free")
 	purego.RegisterLibFunc(&gIdleAdd, gtk, "g_idle_add")
 	purego.RegisterLibFunc(&gObjectRefSink, gtk, "g_object_ref_sink")
 	purego.RegisterLibFunc(&gObjectUnref, gtk, "g_object_unref")
@@ -265,6 +280,12 @@ func init() {
 	purego.RegisterLibFunc(&gtkDialogRun, gtk, "gtk_dialog_run")
 	purego.RegisterLibFunc(&gtkDialogSetDefaultResponse, gtk, "gtk_dialog_set_default_response")
 	purego.RegisterLibFunc(&gtkDragDestSet, gtk, "gtk_drag_dest_set")
+	purego.RegisterLibFunc(&gtkFileChooserDialogNew, gtk, "gtk_file_chooser_dialog_new")
+	purego.RegisterLibFunc(&gtkFileChooserGetFilenames, gtk, "gtk_file_chooser_get_filenames")
+	purego.RegisterLibFunc(&gtkFileChooserSetCreateFolders, gtk, "gtk_file_chooser_set_create_folders")
+	purego.RegisterLibFunc(&gtkFileChooserSetCurrentFolder, gtk, "gtk_file_chooser_set_current_folder")
+	purego.RegisterLibFunc(&gtkFileChooserSetSelectMultiple, gtk, "gtk_file_chooser_set_select_multiple")
+	purego.RegisterLibFunc(&gtkFileChooserSetShowHidden, gtk, "gtk_file_chooser_set_show_hidden")
 	purego.RegisterLibFunc(&gtkImageNewFromPixbuf, gtk, "gtk_image_new_from_pixbuf")
 	purego.RegisterLibFunc(&gtkMenuItemSetLabel, gtk, "gtk_menu_item_set_label")
 	purego.RegisterLibFunc(&gtkMenuBarNew, gtk, "gtk_menu_bar_new")
@@ -919,79 +940,103 @@ func windowMove(window pointer, x, y int) {
 	gtkWindowMove(window, x, y)
 }
 
-/*
-func onButtonEvent(_ pointer, event *C.GdkEventButton, data unsafe.Pointer) C.gboolean {
-	// Constants (defined here to be easier to use with )
-	GdkButtonPress := C.GDK_BUTTON_PRESS     // 4
-	Gdk2ButtonPress := C.GDK_2BUTTON_PRESS   // 5 for double-click
-	GdkButtonRelease := C.GDK_BUTTON_RELEASE // 7
+func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) ([]string, error) {
+	GtkResponseCancel := 0
+	GtkResponseAccept := 1
 
-	windowId := uint(*((*C.uint)(data)))
-	window := globalApplication.getWindowForID(windowId)
-	if window == nil {
-		return C.gboolean(0)
-	}
-	lw, ok := (window.impl).(*linuxWebviewWindow)
-	if !ok {
-		return C.gboolean(0)
-	}
+	fc := gtkFileChooserDialogNew(
+		title,
+		window,
+		action,
+		"_Cancel",
+		GtkResponseCancel,
+		acceptLabel,
+		GtkResponseAccept,
+		0)
 
-	if event == nil {
-		return C.gboolean(0)
-	}
-	if event.button == 3 {
-		return C.gboolean(0)
+	for _, filter := range filters {
+		// TODO: Process and add filters
+		// gtk_file_chooser_add_filter(fc, thisFilter)
+		fmt.Println("filter", filter)
 	}
 
-	switch int(event._type) {
-	case GdkButtonPress:
-		lw.startDrag(uint(event.button), int(event.x_root), int(event.y_root))
-	case Gdk2ButtonPress:
-		fmt.Printf("%d - button %d - double-clicked\n", windowId, int(event.button))
-	case GdkButtonRelease:
-		lw.endDrag(uint(event.button), int(event.x_root), int(event.y_root))
+	if allowMultiple {
+		gtkFileChooserSetSelectMultiple(fc, 1)
 	}
 
-	return C.gboolean(0)
-}
+	if createFolders {
+		gtkFileChooserSetCreateFolders(fc, 1)
+	}
 
+	if showHidden {
+		gtkFileChooserSetShowHidden(fc, 1)
+	}
 
-func onDragNDrop(target unsafe.Pointer, context *C.GdkDragContext, x C.gint, y C.gint, seldata unsafe.Pointer, info C.guint, time C.guint, data unsafe.Pointer) {
-	fmt.Println("target", target, info)
-	var length C.gint
-	selection := unsafe.Pointer(C.gtk_selection_data_get_data_with_length((*C.GtkSelectionData)(seldata), &length))
-	extracted := C.g_uri_list_extract_uris((*C.char)(selection))
-	defer C.g_strfreev(extracted)
+	if currentFolder != "" {
+		gtkFileChooserSetCurrentFolder(fc, currentFolder)
+	}
 
-	uris := unsafe.Slice(
-		(**C.char)(unsafe.Pointer(extracted)),
-		int(length))
-
-	var filenames []string
-	for _, uri := range uris {
-		if uri == nil {
-			break
+	buildStringAndFree := func(s pointer) string {
+		bytes := []byte{}
+		p := unsafe.Pointer(s)
+		for {
+			val := *(*byte)(p)
+			if val == 0 { // this is the null terminator
+				break
+			}
+			bytes = append(bytes, val)
+			p = unsafe.Add(p, 1)
 		}
-		filenames = append(filenames, strings.TrimPrefix(C.GoString(uri), "file://"))
+		gFree(s) // so we don't have to iterate a second time
+		return string(bytes)
 	}
-	windowDragAndDropBuffer <- &dragAndDropMessage{
-		windowId:  uint(*((*C.uint)(data))),
-		filenames: filenames,
+
+	response := gtkDialogRun(fc)
+	selections := []string{}
+	if response == GtkResponseAccept {
+		filenames := gtkFileChooserGetFilenames(fc)
+		iter := filenames
+		count := 0
+		for {
+			selection := buildStringAndFree(iter.data)
+			selections = append(selections, selection)
+			iter = iter.next
+			if iter == nil || count == 1024 {
+				break
+			}
+			count++
+		}
 	}
-	C.gtk_drag_finish(context, C.true, C.false, time)
+	defer gtkWidgetDestroy(fc)
+	return selections, nil
 }
 
-func onProcessRequest(request unsafe.Pointer, data unsafe.Pointer) {
-	windowId := uint(*((*C.uint)(data)))
-	webviewRequests <- &webViewAssetRequest{
-		Request:    webview.NewRequest(request),
-		windowId:   windowId,
-		windowName: globalApplication.getWindowForID(windowId).Name(),
-	}
-}
-*/
+// dialog related
+func runOpenFileDialog(dialog *OpenFileDialog) ([]string, error) {
+	GtkFileChooserActionOpen := 0
+	//	GtkFileChooserActionSave := 1
+	//	GtkFileChooserActionSelectFolder := 2
+	//	GtkFileChooserActionCreateFolder := 3
 
-// dialog reloated
+	//		(dialog.window.impl).(*linuxWebviewWindow).window // FIXME: dialog.window == nil!
+	window := pointer(0)
+	buttonText := dialog.buttonText
+	if buttonText == "" {
+		buttonText = "_Open"
+	}
+
+	return runChooserDialog(
+		window,
+		dialog.allowsMultipleSelection,
+		dialog.canCreateDirectories,
+		dialog.showHiddenFiles,
+		dialog.directory,
+		dialog.title,
+		GtkFileChooserActionOpen,
+		buttonText,
+		dialog.filters)
+}
+
 func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	dType, ok := map[DialogType]int{
 		InfoDialog:     GtkMessageInfo,
@@ -1051,4 +1096,31 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	}
 	defer gtkWidgetDestroy(dialog)
 	return gtkDialogRun(dialog)
+}
+
+func runSaveFileDialog(dialog *SaveFileDialog) (string, error) {
+	GtkFileChooserActionSave := 1
+	//	GtkFileChooserActionSelectFolder := 2
+	//	GtkFileChooserActionCreateFolder := 3
+	window := pointer(0)
+	buttonText := dialog.buttonText
+	if buttonText == "" {
+		buttonText = "_Save"
+	}
+	results, err := runChooserDialog(
+		window,
+		false, // multiple selection
+		dialog.canCreateDirectories,
+		dialog.showHiddenFiles,
+		dialog.directory,
+		dialog.title,
+		GtkFileChooserActionSave,
+		buttonText,
+		dialog.filters)
+
+	if err != nil || len(results) == 0 {
+		return "", err
+	}
+
+	return results[0], nil
 }
