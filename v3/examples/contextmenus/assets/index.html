@@ -22,26 +22,39 @@
     </label>
 </div>
 <div class="region" id="123abcgr">
-    <h1>Smart Context Menu shown here</h1>
+    <h1>Default auto (smart) Context Menu here</h1>
     <label>
         <input type="text" placeholder="context menu shown here"/>
     </label>
     <br/>
-    <div>
-    <p style="user-select: text">Context menu shown here only if you select text</p>
-    <p style="user-select: text">Context menu shown here only if you select text</p>
-    <p style="user-select: text">Context menu shown here only if you select text</p>
+    <div style="user-select: text">
+        <p>Context menu shown here only if you select text</p>
+        <p>Selecting text here and right-clicking the box below or its border shouldn't show the context menu</p>
+        <div style="user-select: none; padding: 10px; width: 50px; margin: auto; background: #00a4db;">
+            <div style="user-select: auto; height: 20px; background: white;">
+            </div>
+        </div>
     </div>
-    <br/>
-    <label>
+    <div>
+        <input type="text" value="input">
+        <input type="text" value="disabled" disabled>
+        <input type="text" value="readonly" readonly>
         <textarea placeholder="context menu shown here"></textarea>
-    </label>
+        <p contenteditable="true">content editable</p>
+    </div>
 </div>
 <div class="region" id="234abcs" style="--default-contextmenu: hide">
     <h1>Default Context Menu hidden here</h1>
+    <p style="user-select: text">Context Menu hidden here even if text is selected</p>
     <label>
         <input type="text" placeholder="context menu works here" style="--default-contextmenu: show"/>
     </label>
+    <div style="--default-contextmenu: auto">
+        <div style="border: solid 2px white; margin: 10px">
+            <h2>Nested section reverted to auto (smart) default Context Menu</h2>
+            <p style="user-select: text">Context menu shown here only if you select text</p>
+        </div>
+    </div>
 </div>
 </body>
 </html>
