@@ -41,7 +41,7 @@ The project has the following structure:
 
 ### Updating the runtime
 
-When the runtime is updated, the following steps need to be taken:
+The runtime is located in `v3/internal/runtime`. When the runtime is updated, the following steps need to be taken:
 
 ```shell
 wails task runtime:build
