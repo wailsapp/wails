@@ -74,10 +74,9 @@ type WindowEventListener struct {
 }
 
 type WebviewWindow struct {
-	options  WebviewWindowOptions
-	impl     webviewWindowImpl
-	implLock sync.RWMutex
-	id       uint
+	options WebviewWindowOptions
+	impl    webviewWindowImpl
+	id      uint
 
 	eventListeners     map[uint][]*WindowEventListener
 	eventListenersLock sync.RWMutex
@@ -149,8 +148,6 @@ func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 
 // SetTitle sets the title of the window
 func (w *WebviewWindow) SetTitle(title string) *WebviewWindow {
-	w.implLock.RLock()
-	defer w.implLock.RUnlock()
 	w.options.Title = title
 	if w.impl != nil {
 		invokeSync(func() {
@@ -212,9 +209,7 @@ func (w *WebviewWindow) run() {
 	if w.impl != nil {
 		return
 	}
-	w.implLock.Lock()
 	w.impl = newWindowImpl(w)
-	w.implLock.Unlock()
 	invokeSync(w.impl.run)
 }
 
@@ -431,8 +426,6 @@ func (w *WebviewWindow) Size() (int, int) {
 
 // IsFullscreen returns true if the window is fullscreen
 func (w *WebviewWindow) IsFullscreen() bool {
-	w.implLock.RLock()
-	defer w.implLock.RUnlock()
 	if w.impl == nil {
 		return false
 	}
@@ -548,8 +541,6 @@ func (w *WebviewWindow) Height() int {
 
 // Position returns the position of the window
 func (w *WebviewWindow) Position() (int, int) {
-	w.implLock.RLock()
-	defer w.implLock.RUnlock()
 	if w.impl == nil {
 		return 0, 0
 	}

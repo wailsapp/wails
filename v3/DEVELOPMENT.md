@@ -27,6 +27,8 @@ The project has the following structure:
     ├── cmd/wails                  // CLI
     ├── examples                   // Examples of Wails apps 
     ├── internal                   // Internal packages
+    |   ├── runtime                // The Wails JS runtime
+    |   └── templates              // The supported project templates
     ├── pkg
     |   ├── application            // The core Wails library
     |   └── events                 // The event definitions
@@ -38,6 +40,17 @@ The project has the following structure:
     ```
 
 ## Development
+
+### Adding window functionality
+
+The preferred way to add window functionality is to add a new function to the `pkg/application/webview_window.go` file. This should implement all the functionality required for all platforms. Any platform specific code should be called via a `webviewWindowImpl` interface method. This interface is implemented by each of the target platforms to provide the platform specific functionality. In some cases, this may do nothing.
+Once you've added the interface method, ensure each platform implements it. A good example of this is the `SetMinSize` method.
+
+- Mac: `webview_window_darwin.go`
+- Windows: `webview_window_windows.go`
+- Linux: `webview_window_linux.go`
+
+Most, if not all, of the platform specific code should be run on the main thread. To simplify this, there are a number of `invokeSync` methods defined in `application.go`. 
 
 ### Updating the runtime
 
