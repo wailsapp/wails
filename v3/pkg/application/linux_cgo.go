@@ -786,7 +786,6 @@ func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data unsafe.Pointer)
 
 //export onDragNDrop
 func onDragNDrop(target unsafe.Pointer, context *C.GdkDragContext, x C.gint, y C.gint, seldata unsafe.Pointer, info C.guint, time C.guint, data unsafe.Pointer) {
-	fmt.Println("target", target, info)
 	var length C.gint
 	selection := unsafe.Pointer(C.gtk_selection_data_get_data_with_length((*C.GtkSelectionData)(seldata), &length))
 	extracted := C.g_uri_list_extract_uris((*C.char)(selection))
