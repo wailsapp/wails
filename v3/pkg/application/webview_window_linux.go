@@ -53,7 +53,10 @@ func (w *linuxWebviewWindow) enableDND() {
 }
 
 func (w *linuxWebviewWindow) connectSignals() {
-	windowSetupSignalHandlers(w.parent.id, w.window, w.webview, w.parent.options.HideOnClose)
+	cb := func(e events.WindowEventType) {
+		w.parent.emit(e)
+	}
+	windowSetupSignalHandlers(w.parent.id, w.window, w.webview, cb)
 }
 
 func (w *linuxWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
@@ -193,9 +196,6 @@ func (w *linuxWebviewWindow) windowZoom() {
 
 func (w *linuxWebviewWindow) close() {
 	windowClose(w.window)
-	if !w.parent.options.HideOnClose {
-		globalApplication.deleteWindowByID(w.parent.id)
-	}
 }
 
 func (w *linuxWebviewWindow) zoomIn() {
@@ -489,4 +489,9 @@ func (w *linuxWebviewWindow) startResize(border string) error {
 
 func (w *linuxWebviewWindow) nativeWindowHandle() uintptr {
 	return uintptr(w.window)
+}
+
+func (w *linuxWebviewWindow) print() error {
+	w.execJS("window.print();")
+	return nil
 }

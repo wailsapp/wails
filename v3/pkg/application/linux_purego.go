@@ -10,6 +10,7 @@ import (
 
 	"github.com/ebitengine/purego"
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type windowPointer uintptr
@@ -74,8 +75,9 @@ var (
 
 const (
 	// TODO: map distro => so filename - with fallback?
-	gtk3 = "libgtk-3.so.0"
-	gtk4 = "libgtk-4.so.1"
+	gtk3    = "libgtk-3.so.0"
+	gtk4    = "libgtk-4.so.1"
+	webkit4 = "libwebkit2gtk-4.1.so.0"
 )
 
 var (
@@ -211,7 +213,6 @@ func init() {
 	}
 	version = 3
 
-	var webkit4 string = "libwebkit2gtk-4.1.so"
 	webkit, err = purego.Dlopen(webkit4, purego.RTLD_NOW|purego.RTLD_GLOBAL)
 	if err != nil {
 		panic(err)
@@ -858,23 +859,11 @@ func windowSetURL(webview pointer, uri string) {
 	webkitWebViewLoadUri(webview, uri)
 }
 
-func windowSetupSignalHandlers(windowId uint, window, webview pointer, hideOnClose bool) {
-	// Window close handler
-	if hideOnClose {
-		handleDelete := purego.NewCallback(func(pointer) {
-			// FIXME: I think this should be the WebviewWindow
-			//w.close()
-			if !hideOnClose {
-				fmt.Println("Need to do more!")
-			}
-		})
-
-		gSignalConnectData(window, "delete-event", handleDelete, 0, false, 0)
-
-	} else {
-		//FIXME: what event should be emitted?
-		//		C.signal_connect((*C.GtkWidget)(window), event, C.close_button_pressed, w.parent.id)
-	}
+func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func(e events.WindowEventType)) {
+	handleDelete := purego.NewCallback(func(pointer) {
+		emit(events.Common.WindowClosing)
+	})
+	gSignalConnectData(window, "delete-event", handleDelete, 0, false, 0)
 
 	/*
 		event = C.CString("load-changed")

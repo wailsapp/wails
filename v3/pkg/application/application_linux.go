@@ -95,6 +95,11 @@ func (m *linuxApp) destroy() {
 	appDestroy(m.application)
 }
 
+func (m *linuxApp) isOnMainThread() bool {
+	// FIXME: How do we detect this properly?
+	return false
+}
+
 // register our window to our parent mapping
 func (m *linuxApp) registerWindow(window pointer, id uint) {
 	m.windowsLock.Lock()

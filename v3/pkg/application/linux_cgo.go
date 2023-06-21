@@ -8,6 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 /*
@@ -42,8 +43,14 @@ static void dispatchOnMainThread(unsigned int id) {
     g_idle_add((GSourceFunc)dispatchCallback, (gpointer)args);
 }
 
+typedef struct WindowEvent {
+    uint id;
+    uint event;
+} WindowEvent;
+
 // exported below
 void activateLinux(gpointer data);
+extern void emit(WindowEvent* data);
 void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 extern void onDragNDrop(
@@ -112,7 +119,6 @@ typedef struct Screen {
 static int GetNumScreens(){
     return 0;
 }
-
 */
 import "C"
 
@@ -669,17 +675,22 @@ func windowSetURL(webview pointer, uri string) {
 	C.free(unsafe.Pointer(target))
 }
 
-func windowSetupSignalHandlers(windowId uint, window, webview pointer, hideOnClose bool) {
+//export emit
+func emit(we *C.WindowEvent) {
+	window := globalApplication.getWindowForID(uint(we.id))
+	if window != nil {
+		window.emit(events.WindowEventType(we.event))
+	}
+}
+
+func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func(e events.WindowEventType)) {
 	event := C.CString("delete-event")
 	defer C.free(unsafe.Pointer(event))
-
-	// Window close handler
-	if hideOnClose {
-		C.signal_connect((*C.GtkWidget)(window), event, C.gtk_widget_hide_on_delete, C.NULL)
-	} else {
-		//FIXME: what event should be emitted?
-		//		C.signal_connect((*C.GtkWidget)(window), event, C.close_button_pressed, w.parent.id)
+	wEvent := C.WindowEvent{
+		id:    C.uint(windowId),
+		event: C.uint(events.Common.WindowClosing),
 	}
+	C.signal_connect((*C.GtkWidget)(window), event, C.emit, unsafe.Pointer(&wEvent))
 
 	/*
 		event = C.CString("load-changed")
