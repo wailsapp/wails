@@ -145,7 +145,11 @@ void printWindowStyle(void *window) {
 
 // setInvisibleTitleBarHeight sets the invisible title bar height
 void setInvisibleTitleBarHeight(void* window, unsigned int height) {
-	[(WebviewWindow*)window delegate].invisibleTitleBarHeight = height;
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	// Get delegate
+	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[nsWindow delegate];
+	// Set height
+	delegate.invisibleTitleBarHeight = height;
 }
 
 // Make NSWindow transparent
@@ -155,7 +159,9 @@ void windowSetTransparent(void* nsWindow) {
 }
 
 void windowSetInvisibleTitleBar(void* nsWindow, unsigned int height) {
-	[(WebviewWindow*)nsWindow delegate].invisibleTitleBarHeight = height;
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[window delegate];
+	delegate.invisibleTitleBarHeight = height;
 }
 
 
@@ -627,34 +633,37 @@ static void startDrag(void *window) {
 // Credit: https://stackoverflow.com/q/33319295
 static void windowPrint(void *window) {
 
-	WebviewWindow* nsWindow = (WebviewWindow*)window;
-	WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
-	WKWebView* webView = nsWindow.webView;
+	// Check if macOS 11.0 or newer
+	if (@available(macOS 11.0, *)) {
+		WebviewWindow* nsWindow = (WebviewWindow*)window;
+		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
+		WKWebView* webView = nsWindow.webView;
 
-	// TODO: Think about whether to expose this as config
-	NSPrintInfo *pInfo = [NSPrintInfo sharedPrintInfo];
-	pInfo.horizontalPagination = NSPrintingPaginationModeAutomatic;
-	pInfo.verticalPagination = NSPrintingPaginationModeAutomatic;
-	pInfo.verticallyCentered = YES;
-	pInfo.horizontallyCentered = YES;
-	pInfo.orientation = NSPaperOrientationLandscape;
-	pInfo.leftMargin = 30;
-	pInfo.rightMargin = 30;
-	pInfo.topMargin = 30;
-	pInfo.bottomMargin = 30;
+		// TODO: Think about whether to expose this as config
+		NSPrintInfo *pInfo = [NSPrintInfo sharedPrintInfo];
+		pInfo.horizontalPagination = NSPrintingPaginationModeAutomatic;
+		pInfo.verticalPagination = NSPrintingPaginationModeAutomatic;
+		pInfo.verticallyCentered = YES;
+		pInfo.horizontallyCentered = YES;
+		pInfo.orientation = NSPaperOrientationLandscape;
+		pInfo.leftMargin = 30;
+		pInfo.rightMargin = 30;
+		pInfo.topMargin = 30;
+		pInfo.bottomMargin = 30;
 
-	NSPrintOperation *po = [webView printOperationWithPrintInfo:pInfo];
-	po.showsPrintPanel = YES;
-	po.showsProgressPanel = YES;
+		NSPrintOperation *po = [webView printOperationWithPrintInfo:pInfo];
+		po.showsPrintPanel = YES;
+		po.showsProgressPanel = YES;
 
-	// Without the next line you get an exception. Also it seems to
-	// completely ignore the values in the rect. I tried changing them
-	// in both x and y direction to include content scrolled off screen.
-	// It had no effect whatsoever in either direction.
-	po.view.frame = webView.bounds;
+		// Without the next line you get an exception. Also it seems to
+		// completely ignore the values in the rect. I tried changing them
+		// in both x and y direction to include content scrolled off screen.
+		// It had no effect whatsoever in either direction.
+		po.view.frame = webView.bounds;
 
-	// [printOperation runOperation] DOES NOT WORK WITH WKWEBVIEW, use
-	[po runOperationModalForWindow:window delegate:windowDelegate didRunSelector:nil contextInfo:nil];
+		// [printOperation runOperation] DOES NOT WORK WITH WKWEBVIEW, use
+		[po runOperationModalForWindow:window delegate:windowDelegate didRunSelector:nil contextInfo:nil];
+	}
 
 }
 
@@ -732,10 +741,6 @@ func (w *macosWebviewWindow) show() {
 
 func (w *macosWebviewWindow) hide() {
 	C.windowHide(w.nsWindow)
-}
-
-func (w *macosWebviewWindow) isNormal() bool {
-	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
 }
 
 func (w *macosWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
@@ -869,12 +874,12 @@ func (w *macosWebviewWindow) execJS(js string) {
 
 func (w *macosWebviewWindow) setURL(uri string) {
 	if uri != "" {
-		url, err := url.Parse(uri)
-		if err == nil && url.Scheme == "" && url.Host == "" {
+		parsedURL, err := url.Parse(uri)
+		if err == nil && parsedURL.Scheme == "" && parsedURL.Host == "" {
 			// TODO handle this in a central location, the scheme and host might be platform dependant.
-			url.Scheme = "wails"
-			url.Host = "wails"
-			uri = url.String()
+			parsedURL.Scheme = "wails"
+			parsedURL.Host = "wails"
+			uri = parsedURL.String()
 		}
 	}
 	C.navigationLoadURL(w.nsWindow, C.CString(uri))
