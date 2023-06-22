@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/samber/lo"
@@ -144,6 +145,39 @@ func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 	w.cancellersLock.Lock()
 	defer w.cancellersLock.Unlock()
 	w.cancellers = append(w.cancellers, canceller)
+}
+
+// formatJS ensures the 'data' provided marshals to valid json or panics
+func (w *WebviewWindow) formatJS(f string, callID string, data string) string {
+	j, err := json.Marshal(data)
+	if err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf(f, callID, j)
+}
+
+func (w *WebviewWindow) CallError(callID *string, result string) {
+	if w.impl != nil {
+		w.impl.execJS(w.formatJS("_wails.callErrorCallback('%s', %s);", *callID, result))
+	}
+}
+
+func (w *WebviewWindow) CallResponse(callID *string, result string) {
+	if w.impl != nil {
+		w.impl.execJS(w.formatJS("_wails.callCallback('%s', %s, true);", *callID, result))
+	}
+}
+
+func (w *WebviewWindow) DialogError(dialogID *string, result string) {
+	if w.impl != nil {
+		w.impl.execJS(w.formatJS("_wails.dialogErrorCallback('%s', %s);", *dialogID, result))
+	}
+}
+
+func (w *WebviewWindow) DialogResponse(dialogID *string, result string) {
+	if w.impl != nil {
+		w.impl.execJS(w.formatJS("_wails.dialogCallback('%s', %s, true);", *dialogID, result))
+	}
 }
 
 // SetTitle sets the title of the window

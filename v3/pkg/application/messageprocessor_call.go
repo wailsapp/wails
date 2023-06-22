@@ -4,19 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 )
 
 func (m *MessageProcessor) callErrorCallback(window *WebviewWindow, message string, callID *string, err error) {
 	errorMsg := fmt.Sprintf(message, err)
 	m.Error(errorMsg)
-	msg := "_wails.callErrorCallback('" + *callID + "', " + strconv.Quote(errorMsg) + ");"
-	window.ExecJS(msg)
+	window.CallError(callID, errorMsg)
 }
 
 func (m *MessageProcessor) callCallback(window *WebviewWindow, callID *string, result string, isJSON bool) {
-	msg := fmt.Sprintf("_wails.callCallback('%s', %s, %v);", *callID, strconv.Quote(result), isJSON)
-	window.ExecJS(msg)
+	window.CallResponse(callID, result)
 }
 
 func (m *MessageProcessor) processCallMethod(method string, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {

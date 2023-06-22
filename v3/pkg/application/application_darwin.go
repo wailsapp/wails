@@ -185,6 +185,7 @@ func (m *macosApp) run() error {
 		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))
 		C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
 		C.activateIgnoringOtherApps()
+		globalApplication.activate()
 	})
 	m.setupCommonEvents()
 	// setup event listeners

@@ -333,7 +333,9 @@ func (a *App) error(message string, args ...any) {
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
 	newWindow := NewWindow(windowOptions)
 	id := newWindow.id
-
+	if a.windows == nil {
+		a.windows = make(map[uint]*WebviewWindow)
+	}
 	a.windowsLock.Lock()
 	a.windows[id] = newWindow
 	a.windowsLock.Unlock()
