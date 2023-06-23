@@ -5,16 +5,19 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
+	"strconv"
 )
 
 func (m *MessageProcessor) dialogErrorCallback(window *WebviewWindow, message string, dialogID *string, err error) {
 	errorMsg := fmt.Sprintf(message, err)
 	m.Error(errorMsg)
-	window.DialogError(dialogID, errorMsg)
+	msg := "_wails.dialogErrorCallback('" + *dialogID + "', " + strconv.Quote(errorMsg) + ");"
+	window.ExecJS(msg)
 }
 
 func (m *MessageProcessor) dialogCallback(window *WebviewWindow, dialogID *string, result string, isJSON bool) {
-	window.DialogResponse(dialogID, result)
+	msg := fmt.Sprintf("_wails.dialogCallback('%s', %s, %v);", *dialogID, strconv.Quote(result), isJSON)
+	window.ExecJS(msg)
 }
 
 func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {

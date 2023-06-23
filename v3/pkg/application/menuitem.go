@@ -203,9 +203,7 @@ func (m *MenuItem) handleClick() {
 	if m.itemType == radio {
 		for _, member := range m.radioGroupMembers {
 			member.checked = false
-			if member.impl != nil {
-				member.impl.setChecked(false)
-			}
+			member.impl.setChecked(false)
 		}
 		m.checked = true
 		ctx.withChecked(true)
