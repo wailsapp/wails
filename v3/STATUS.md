@@ -55,7 +55,7 @@ Webview Window Interface Methods
 | nativeWindowHandle() (uintptr, error)              | Y       | Y     |     |                                          |
 | on(eventID uint)                                   | y       |       | Y   |                                          |
 | openContextMenu(menu *Menu, data *ContextMenuData) | y       |       | Y   |                                          |
-| position() (int, int)                              | Y       | Y     | Y   |                                          |
+| relativePosition() (int, int)                      | Y       | Y     | Y   |                                          |
 | reload()                                           | y       | Y     | Y   |                                          |
 | run()                                              | Y       | Y     | Y   |                                          |
 | setAlwaysOnTop(alwaysOnTop bool)                   | Y       | Y     | Y   |                                          |
@@ -66,7 +66,7 @@ Webview Window Interface Methods
 | setHTML(html string)                               | Y       | Y     | Y   |                                          |
 | setMaxSize(width, height int)                      | Y       | Y     | Y   |                                          |
 | setMinSize(width, height int)                      | Y       | Y     | Y   |                                          |
-| setPosition(x int, y int)                          | Y       | Y     | Y   |                                          |
+| setRelativePosition(x int, y int)                  | Y       | Y     | Y   |                                          |
 | setResizable(resizable bool)                       | Y       | Y     | Y   |                                          |
 | setSize(width, height int)                         | Y       | Y     | Y   |                                          |
 | setTitle(title string)                             | Y       | Y     | Y   |                                          |
@@ -120,11 +120,13 @@ Webview Window Interface Methods
 | On By Default    |         |       |     |       |
 | Control via HTML | Y       |       |     |       |
 
-The default context menu is enabled by default for all elements that are `contentEditable: true`, `<input>` or `<textarea>` tags or have the `--default-contextmenu: true` style set.
+The default context menu is enabled by default for all elements that are `contentEditable: true`, `<input>`
+or `<textarea>` tags or have the `--default-contextmenu: true` style set.
 The `--default-contextmenu: show` style will always show the context menu
 The `--default-contextmenu: hide` style will always hide the context menu
 
-Anything nested under a tag with `--default-contextmenu: hide` style will not show the context menu unless it is explicitly set with `--default-contextmenu: show`.
+Anything nested under a tag with `--default-contextmenu: hide` style will not show the context menu unless it is
+explicitly set with `--default-contextmenu: show`.
 
 ### Screens
 
@@ -138,6 +140,7 @@ Anything nested under a tag with `--default-contextmenu: hide` style will not sh
 
 Y = Supported
 U = Untested
+
 - = Not available
 
 | Feature             | Windows | Linux | Mac | Notes                                                                                |
@@ -150,14 +153,14 @@ U = Untested
 | Hide                | Y       | Y     | Y   |                                                                                      |
 | Maximise            | Y       | Y     | Y   |                                                                                      |
 | Minimise            | Y       | Y     | Y   |                                                                                      |
-| Position            | Y       | Y     | Y   |                                                                                      |
+| RelativePosition    | Y       | Y     | Y   |                                                                                      |
 | Screen              | Y       | Y     | Y   | Get screen for window                                                                |
 | SetAlwaysOnTop      | Y       | Y     | Y   |                                                                                      |
 | SetBackgroundColour | Y       | Y     | Y   | https://github.com/MicrosoftEdge/WebView2Feedback/issues/1621#issuecomment-938234294 |
 | SetEnabled          | Y       | U     | U   | Set the window to be enabled/disabled                                                |
 | SetMaxSize          | Y       | Y     | Y   |                                                                                      |
 | SetMinSize          | Y       | Y     | Y   |                                                                                      |
-| SetPosition         | Y       | Y     | Y   |                                                                                      |
+| SetRelativePosition | Y       | Y     | Y   |                                                                                      |
 | SetResizable        | Y       | Y     | Y   |                                                                                      |
 | SetSize             | Y       | Y     | Y   |                                                                                      |
 | SetTitle            | Y       | Y     | Y   |                                                                                      |
@@ -316,7 +319,6 @@ Built-in plugin support:
 |---------|---------|-------|-----|-----------------------------------------------|
 | Resize  |         |       |     |                                               |
 | Drag    |         | Y     |     | Linux - can always drag with `Alt`+left mouse |
-
 
 ## Mac Specific
 
