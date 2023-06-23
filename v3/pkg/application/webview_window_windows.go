@@ -334,7 +334,7 @@ func (w *windowsWebviewWindow) height() int {
 	return height
 }
 
-func (w *windowsWebviewWindow) position() (int, int) {
+func (w *windowsWebviewWindow) relativePosition() (int, int) {
 	rect := w32.GetWindowRect(w.hwnd)
 	left, right := w.scaleToDefaultDPI(int(rect.Left), int(rect.Right))
 	return left, right
@@ -416,7 +416,7 @@ func (w *windowsWebviewWindow) setHTML(html string) {
 	w.execJS(fmt.Sprintf("document.documentElement.innerHTML = %q;", html))
 }
 
-func (w *windowsWebviewWindow) setPosition(x int, y int) {
+func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 	x, y = w.scaleWithWindowDPI(x, y)
 	info := w32.GetMonitorInfoForWindow(w.hwnd)
 	workRect := info.RcWork

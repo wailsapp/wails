@@ -30,14 +30,14 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		}
 		window.SetSize(*width, *height)
 		m.ok(rw)
-	case "SetPosition":
+	case "SetRelativePosition":
 		x := args.Int("x")
 		y := args.Int("y")
 		if x == nil || y == nil {
-			m.Error("Invalid SetPosition Message")
+			m.Error("Invalid SetRelativePosition Message")
 			return
 		}
-		window.SetPosition(*x, *y)
+		window.SetRelativePosition(*x, *y)
 		m.ok(rw)
 	case "Fullscreen":
 		window.Fullscreen()
@@ -78,8 +78,8 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 			"width":  width,
 			"height": height,
 		})
-	case "Position":
-		x, y := window.Position()
+	case "RelativePosition":
+		x, y := window.RelativePosition()
 		m.json(rw, map[string]interface{}{
 			"x": x,
 			"y": y,

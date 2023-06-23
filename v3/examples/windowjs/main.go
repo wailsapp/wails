@@ -38,7 +38,7 @@ func main() {
 			Name: windowName,
 		}).
 			SetTitle(windowName).
-			SetPosition(rand.Intn(1000), rand.Intn(800)).
+			SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 			Show()
 		windowCounter++
 	}

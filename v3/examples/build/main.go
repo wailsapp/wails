@@ -50,7 +50,7 @@ func main() {
 		OnClick(func(ctx *application.Context) {
 			app.NewWebviewWindow().
 				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
-				SetPosition(rand.Intn(1000), rand.Intn(800)).
+				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
 				Show()
 			windowCounter++
@@ -60,7 +60,7 @@ func main() {
 		OnClick(func(ctx *application.Context) {
 			app.NewWebviewWindow().
 				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
-				SetPosition(rand.Intn(1000), rand.Intn(800)).
+				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
 				SetFrameless(true).
 				Show()
@@ -76,7 +76,7 @@ func main() {
 					},
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
-					SetPosition(rand.Intn(1000), rand.Intn(800)).
+					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 					SetHTML("<br/><br/><p>A MacTitleBarHiddenInset WebviewWindow example</p>").
 					Show()
 				windowCounter++
@@ -90,7 +90,7 @@ func main() {
 					},
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
-					SetPosition(rand.Intn(1000), rand.Intn(800)).
+					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 					SetHTML("<br/><br/><p>A MacTitleBarHiddenInsetUnified WebviewWindow example</p>").
 					Show()
 				windowCounter++
@@ -104,7 +104,7 @@ func main() {
 					},
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
-					SetPosition(rand.Intn(1000), rand.Intn(800)).
+					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 					SetHTML("<br/><br/><p>A MacTitleBarHidden WebviewWindow example</p>").
 					Show()
 				windowCounter++
@@ -154,21 +154,21 @@ func main() {
 		})
 	})
 	positionMenu := menu.AddSubmenu("Position")
-	positionMenu.Add("Set Position (0,0)").OnClick(func(ctx *application.Context) {
+	positionMenu.Add("Set Relative Position (0,0)").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
-			w.SetPosition(0, 0)
+			w.SetRelativePosition(0, 0)
 		})
 	})
-	positionMenu.Add("Set Position (Random)").OnClick(func(ctx *application.Context) {
+	positionMenu.Add("Set Relative Position (Random)").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
-			w.SetPosition(rand.Intn(1000), rand.Intn(800))
+			w.SetRelativePosition(rand.Intn(1000), rand.Intn(800))
 		})
 	})
 
-	positionMenu.Add("Get Position").OnClick(func(ctx *application.Context) {
+	positionMenu.Add("Get Relative Position").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
-			x, y := w.Position()
-			app.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
+			x, y := w.RelativePosition()
+			app.InfoDialog().SetTitle("Current WebviewWindow Relative Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
 		})
 	})
 

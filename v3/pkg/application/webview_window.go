@@ -30,7 +30,7 @@ type (
 		size() (int, int)
 		width() int
 		height() int
-		position() (int, int)
+		relativePosition() (int, int)
 		destroy()
 		reload()
 		forceReload()
@@ -43,7 +43,7 @@ type (
 		close()
 		zoom()
 		setHTML(html string)
-		setPosition(x int, y int)
+		setRelativePosition(x int, y int)
 		on(eventID uint)
 		minimise()
 		unminimise()
@@ -574,14 +574,14 @@ func (w *WebviewWindow) Height() int {
 	return invokeSyncWithResult(w.impl.height)
 }
 
-// Position returns the position of the window
-func (w *WebviewWindow) Position() (int, int) {
+// RelativePosition returns the relative position of the window to the screen
+func (w *WebviewWindow) RelativePosition() (int, int) {
 	if w.impl == nil {
 		return 0, 0
 	}
 	var x, y int
 	invokeSync(func() {
-		x, y = w.impl.position()
+		x, y = w.impl.relativePosition()
 	})
 	return x, y
 }
@@ -690,13 +690,13 @@ func (w *WebviewWindow) SetHTML(html string) *WebviewWindow {
 	return w
 }
 
-// SetPosition sets the position of the window.
-func (w *WebviewWindow) SetPosition(x, y int) *WebviewWindow {
+// SetRelativePosition sets the position of the window.
+func (w *WebviewWindow) SetRelativePosition(x, y int) *WebviewWindow {
 	w.options.X = x
 	w.options.Y = y
 	if w.impl != nil {
 		invokeSync(func() {
-			w.impl.setPosition(x, y)
+			w.impl.setRelativePosition(x, y)
 		})
 	}
 	return w

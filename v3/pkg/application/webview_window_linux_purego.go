@@ -217,7 +217,7 @@ func (w *linuxWebviewWindow) fullscreen() {
 		}
 		w.setMinMaxSize(0, 0, width*scale, height*scale)
 		w.setSize(width*scale, height*scale)
-		w.setPosition(0, 0)
+		w.setRelativePosition(0, 0)
 		fullScreen(w.window)
 	})
 }
@@ -365,7 +365,7 @@ func (w *linuxWebviewWindow) center() {
 	newX := ((width - int(windowWidth)) / 2) + x
 	newY := ((height - int(windowHeight)) / 2) + y
 
-	w.setPosition(newX, newY)
+	w.setRelativePosition(newX, newY)
 }
 
 func (w *linuxWebviewWindow) isMinimised() bool {
@@ -530,11 +530,11 @@ func (w *linuxWebviewWindow) size() (int, int) {
 	return width, height
 }
 
-func (w *linuxWebviewWindow) setPosition(x, y int) {
+func (w *linuxWebviewWindow) setRelativePosition(x, y int) {
 	var windowMove func(uintptr, int, int)
 	purego.RegisterLibFunc(&windowMove, gtk, "gtk_window_move")
 	mx, my, _, _, _ := w.getCurrentMonitorGeometry()
-	fmt.Println("setPosition", mx, my)
+	fmt.Println("setRelativePosition", mx, my)
 	globalApplication.dispatchOnMainThread(func() {
 		windowMove(w.window, x+mx, y+my)
 	})
@@ -641,7 +641,7 @@ func (w *linuxWebviewWindow) run() {
 		if w.parent.options.Hidden == false {
 			w.show()
 			if w.parent.options.X != 0 || w.parent.options.Y != 0 {
-				w.setPosition(w.parent.options.X, w.parent.options.Y)
+				w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
 			} else {
 				w.center()
 			}
@@ -697,7 +697,7 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	setBackgroundColor(w.webview, pointer)
 }
 
-func (w *linuxWebviewWindow) position() (int, int) {
+func (w *linuxWebviewWindow) relativePosition() (int, int) {
 	var getPosition func(uintptr, *int, *int) bool
 	purego.RegisterLibFunc(&getPosition, gtk, "gtk_window_get_position")
 

@@ -87,17 +87,17 @@ export function newWindow(windowName) {
         SetAlwaysOnTop: (onTop) => void call('SetAlwaysOnTop', {alwaysOnTop:onTop}),
 
         /**
-         * Set the window position.
+         * Set the window relative position.
          * @param {number} x
          * @param {number} y
          */
-        SetPosition: (x, y) => call('SetPosition', {x,y}),
+        SetRelativePosition: (x, y) => call('SetRelativePosition', {x,y}),
 
         /**
          * Get the window position.
          * @returns {Promise<Position>} The window position
          */
-        Position: () => { return call('Position'); },
+        RelativePosition: () => { return call('RelativePosition'); },
 
         /**
          * Get the screen the window is on.

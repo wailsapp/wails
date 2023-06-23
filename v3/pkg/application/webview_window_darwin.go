@@ -277,8 +277,8 @@ void windowZoomOut(void* nsWindow) {
 	}
 }
 
-// set the window position
-void windowSetPosition(void* nsWindow, int x, int y) {
+// set the window position relative to the screen
+void windowSetrelativePosition(void* nsWindow, int x, int y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	NSScreen* screen = [window screen];
 	if( screen == NULL ) {
@@ -941,8 +941,8 @@ func (w *macosWebviewWindow) size() (int, int) {
 	return int(width), int(height)
 }
 
-func (w *macosWebviewWindow) setPosition(x, y int) {
-	C.windowSetPosition(w.nsWindow, C.int(x), C.int(y))
+func (w *macosWebviewWindow) setRelativePosition(x, y int) {
+	C.windowSetrelativePosition(w.nsWindow, C.int(x), C.int(y))
 }
 
 func (w *macosWebviewWindow) width() int {
