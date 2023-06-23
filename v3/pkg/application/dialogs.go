@@ -179,6 +179,7 @@ type OpenFileDialogOptions struct {
 	TreatsFilePackagesAsDirectories bool
 	AllowsOtherFileTypes            bool
 	Filters                         []FileFilter
+	Window                          *WebviewWindow
 
 	Title      string
 	Message    string
@@ -327,6 +328,7 @@ func (d *OpenFileDialog) SetOptions(options *OpenFileDialogOptions) {
 	d.treatsFilePackagesAsDirectories = options.TreatsFilePackagesAsDirectories
 	d.allowsOtherFileTypes = options.AllowsOtherFileTypes
 	d.filters = options.Filters
+	d.window = options.Window
 }
 
 func newOpenFileDialog() *OpenFileDialog {
@@ -359,6 +361,7 @@ type SaveFileDialogOptions struct {
 	Filename                        string
 	ButtonText                      string
 	Filters                         []FileFilter
+	Window                          *WebviewWindow
 }
 
 type SaveFileDialog struct {
@@ -397,6 +400,8 @@ func (d *SaveFileDialog) SetOptions(options *SaveFileDialogOptions) {
 	d.directory = options.Directory
 	d.filename = options.Filename
 	d.buttonText = options.ButtonText
+	d.filters = options.Filters
+	d.window = options.Window
 }
 
 // AddFilter adds a filter to the dialog. The filter is a display name and a semicolon separated list of extensions.

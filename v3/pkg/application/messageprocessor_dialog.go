@@ -54,7 +54,7 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		case "Question":
 			dialog = globalApplication.QuestionDialog()
 		}
-		var detached = params.Bool("Detached")
+		var detached = args.Bool("Detached")
 		if detached == nil || !*detached {
 			dialog.AttachToWindow(window)
 		}
@@ -76,6 +76,10 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		if err != nil {
 			m.httpError(rw, "Error parsing dialog options: %s", err.Error())
 			return
+		}
+		var detached = args.Bool("Detached")
+		if detached == nil || !*detached {
+			options.Window = window
 		}
 		dialog := globalApplication.OpenFileDialogWithOptions(&options)
 
@@ -109,6 +113,10 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		if err != nil {
 			m.httpError(rw, "Error parsing dialog options: %s", err.Error())
 			return
+		}
+		var detached = args.Bool("Detached")
+		if detached == nil || !*detached {
+			options.Window = window
 		}
 		dialog := globalApplication.SaveFileDialogWithOptions(&options)
 
