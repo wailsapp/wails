@@ -15,6 +15,8 @@ interface MessageDialogOptions {
     Message?: string;
     // The buttons to use on the dialog
     Buttons?: Button[];
+    // Whether the dialog is detached from the current window
+    Detached?: boolean;
 }
 
 export interface OpenFileDialogOptions {
@@ -48,6 +50,8 @@ export interface OpenFileDialogOptions {
     ButtonText?: string;
     // The default directory to open the dialog in
     Directory?: string;
+    // Whether the dialog is detached from the current window
+    Detached?: boolean;
 }
 export interface FileFilter {
     // The display name for the filter, e.g. "Text Files"
@@ -76,6 +80,8 @@ export interface SaveFileDialogOptions {
     Filename?: string;
     // The label for the select button
     ButtonText?: string;
+    // Whether the dialog is detached from the current window
+    Detached?: boolean;
 }
 
 export interface Screen {

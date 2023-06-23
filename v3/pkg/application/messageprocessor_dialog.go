@@ -54,7 +54,11 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		case "Question":
 			dialog = globalApplication.QuestionDialog()
 		}
-		// TODO: Add support for attaching Message dialogs to windows
+		var detached = params.Bool("Detached")
+		if detached == nil || !*detached {
+			dialog.AttachToWindow(window)
+		}
+
 		dialog.SetTitle(options.Title)
 		dialog.SetMessage(options.Message)
 		for _, button := range options.Buttons {

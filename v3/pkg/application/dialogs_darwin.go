@@ -67,9 +67,16 @@ static void* createAlert(int alertType, char* title, char *message, void *icon, 
 }
 
 // Run the dialog
-static int dialogRunModal(void *dialog) {
+static int dialogRunModal(void *dialog, void *parent) {
 	NSAlert *alert = (__bridge NSAlert *)dialog;
-    long response = [alert runModal];
+
+    long response;
+	if( parent != NULL ) {
+		NSWindow *window = (__bridge NSWindow *)parent;
+		response = [alert runModalSheetForWindow:window];
+	} else {
+		response = [alert runModal];
+	}
     int result;
 
     if( response == NSAlertFirstButtonReturn ) {
@@ -343,13 +350,17 @@ func (m *macosDialog) show() {
 				iconLength = C.int(len(globalApplication.options.Icon))
 			}
 		}
+		if m.dialog.window != nil {
+			// get NSWindow from window
+			nsWindow = m.dialog.window.impl.(*macosWebviewWindow).nsWindow
+		}
 
 		alertType, ok := alertTypeMap[m.dialog.DialogType]
 		if !ok {
 			alertType = C.NSAlertStyleInformational
 		}
 
-		m.nsDialog = C.createAlert(alertType, title, message, iconData, iconLength)
+		m.nsDialog = C.createAlert(alertType, title, message, iconData, iconLength, nsWindow)
 
 		// Reverse the Buttons so that the default is on the right
 		reversedButtons := make([]*Button, len(m.dialog.Buttons))
@@ -361,7 +372,7 @@ func (m *macosDialog) show() {
 			count++
 		}
 
-		buttonPressed := int(C.dialogRunModal(m.nsDialog))
+		buttonPressed := int(C.dialogRunModal(m.nsDialog, nsWindow))
 		if len(m.dialog.Buttons) > buttonPressed {
 			button := reversedButtons[buttonPressed]
 			if button.Callback != nil {

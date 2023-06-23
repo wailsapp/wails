@@ -62,6 +62,14 @@ func main() {
 		dialog.AddButton("No")
 		dialog.Show()
 	})
+	questionMenu.Add("Question (Attached to Window)").OnClick(func(ctx *application.Context) {
+		dialog := app.QuestionDialog()
+		dialog.AttachToWindow(app.CurrentWindow())
+		dialog.SetMessage("No default button")
+		dialog.AddButton("Yes")
+		dialog.AddButton("No")
+		dialog.Show()
+	})
 	questionMenu.Add("Question (With Default)").OnClick(func(ctx *application.Context) {
 		dialog := app.QuestionDialog()
 		dialog.SetTitle("Quit")

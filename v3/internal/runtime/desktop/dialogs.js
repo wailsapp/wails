@@ -75,7 +75,7 @@ export function Info(options) {
 }
 
 /**
- * Shows an Warning dialog with the given options.
+ * Shows a Warning dialog with the given options.
  * @param {MessageDialogOptions} options
  * @returns {Promise<string>} The label of the button pressed
  */
@@ -94,7 +94,7 @@ export function Error(options) {
 
 /**
  * Shows a Question dialog with the given options.
- * @param {MessageDialogOptions} options
+ * @param {MessageDialogOptions} options} options
  * @returns {Promise<string>} The label of the button pressed
  */
 export function Question(options) {

@@ -36,11 +36,20 @@ func (m *windowsDialog) show() {
 	flags := calculateMessageDialogFlags(m.dialog.MessageDialogOptions)
 	var button int32
 
+	var parentWindow uintptr
+	var err error
+	if m.dialog.window != nil {
+		parentWindow, err = m.dialog.window.NativeWindowHandle()
+		if err != nil {
+			w32.Fatal(err.Error())
+		}
+	}
+
 	if m.UseAppIcon {
 		// 3 is the application icon
-		button, _ = w32.MessageBoxWithIcon(0, message, title, 3, windows.MB_OK|windows.MB_USERICON)
+		button, _ = w32.MessageBoxWithIcon(parentWindow, message, title, 3, windows.MB_OK|windows.MB_USERICON)
 	} else {
-		button, _ = windows.MessageBox(windows.HWND(0), message, title, flags|windows.MB_SYSTEMMODAL)
+		button, _ = windows.MessageBox(windows.HWND(parentWindow), message, title, flags|windows.MB_SYSTEMMODAL)
 	}
 	// This maps MessageBox return values to strings
 	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}

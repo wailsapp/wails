@@ -16,7 +16,7 @@ function addWMLEventListeners() {
 
         let callback = function () {
             if (confirm) {
-                Question({Title: "Confirm", Message:confirm, Buttons:[{Label:"Yes"},{Label:"No", IsDefault:true}]}).then(function (result) {
+                Question({Title: "Confirm", Message:confirm, Detached: false, Buttons:[{Label:"Yes"},{Label:"No", IsDefault:true}]}).then(function (result) {
                     if (result !== "No") {
                         sendEvent(eventType);
                     }
