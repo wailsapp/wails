@@ -278,7 +278,7 @@ void windowZoomOut(void* nsWindow) {
 }
 
 // set the window position relative to the screen
-void windowSetrelativePosition(void* nsWindow, int x, int y) {
+void windowSetRelativePosition(void* nsWindow, int x, int y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	NSScreen* screen = [window screen];
 	if( screen == NULL ) {
@@ -492,7 +492,7 @@ int windowGetHeight(void* nsWindow) {
 }
 
 // Get window position
-void windowGetPosition(void* nsWindow, int* x, int* y) {
+void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	NSRect frame = [window frame];
 	*x = frame.origin.x;
@@ -504,6 +504,20 @@ void windowGetPosition(void* nsWindow, int* x, int* y) {
 	}
 	NSRect screenFrame = [screen frame];
 	*y = screenFrame.size.height - frame.origin.y - frame.size.height;
+}
+
+// Get absolute window position
+void windowGetAbsolutePosition(void* nsWindow, int* x, int* y) {
+	NSRect frame = [(WebviewWindow*)nsWindow frame];
+	*x = frame.origin.x;
+	*y = frame.origin.y;
+}
+
+void windowSetAbsolutePosition(void* nsWindow, int x, int y) {
+	NSRect frame = [(WebviewWindow*)nsWindow frame];
+	frame.origin.x = x;
+	frame.origin.y = y;
+	[(WebviewWindow*)nsWindow setFrame:frame display:YES];
 }
 
 // Destroy window
@@ -942,9 +956,12 @@ func (w *macosWebviewWindow) size() (int, int) {
 }
 
 func (w *macosWebviewWindow) setRelativePosition(x, y int) {
-	C.windowSetrelativePosition(w.nsWindow, C.int(x), C.int(y))
+	C.windowSetRelativePosition(w.nsWindow, C.int(x), C.int(y))
 }
 
+func (w *macosWebviewWindow) setRelativePosition(x, y int) {
+	C.windowSetAbsolutePosition(w.nsWindow, C.int(x), C.int(y))
+}
 func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
@@ -1080,10 +1097,19 @@ func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
 	C.windowSetBackgroundColour(w.nsWindow, C.int(colour.Red), C.int(colour.Green), C.int(colour.Blue), C.int(colour.Alpha))
 }
 
-func (w *macosWebviewWindow) position() (int, int) {
+func (w *macosWebviewWindow) relativePosition() (int, int) {
 	var x, y C.int
 	invokeSync(func() {
-		C.windowGetPosition(w.nsWindow, &x, &y)
+		C.windowGetRelativePosition(w.nsWindow, &x, &y)
+	})
+
+	return int(x), int(y)
+}
+
+func (w *macosWebviewWindow) absolutePosition() (int, int) {
+	var x, y C.int
+	invokeSync(func() {
+		C.windowGetAbsolutePosition(w.nsWindow, &x, &y)
 	})
 
 	return int(x), int(y)

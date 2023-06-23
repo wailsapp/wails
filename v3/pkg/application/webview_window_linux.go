@@ -630,6 +630,18 @@ func (w *linuxWebviewWindow) height() int {
 	return height
 }
 
+func (w *linuxWebviewWindow) absolutePosition() (int, int) {
+	var x, y C.int
+	var wg sync.WaitGroup
+	wg.Add(1)
+	globalApplication.dispatchOnMainThread(func() {
+		C.gtk_window_get_position((*C.GtkWindow)(w.window), &x, &y)
+		wg.Done()
+	})
+	wg.Wait()
+	return int(x), int(y)
+}
+
 func (w *linuxWebviewWindow) run() {
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
@@ -738,12 +750,24 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	C.webkit_web_view_set_background_color((*C.WebKitWebView)(w.webview), &rgba)
 }
 
-func (w *linuxWebviewWindow) position() (int, int) {
+func (w *linuxWebviewWindow) relativePosition() (int, int) {
 	var x, y C.int
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go globalApplication.dispatchOnMainThread(func() {
 		C.gtk_window_get_position((*C.GtkWindow)(w.window), &x, &y)
+
+		// The position must be relative to the screen it is on
+		// We need to get the screen it is on
+		screen := C.gtk_widget_get_screen((*C.GtkWidget)(w.window))
+		monitor := C.gdk_screen_get_monitor_at_window(screen, (*C.GdkWindow)(w.window))
+		geometry := C.GdkRectangle{}
+		C.gdk_screen_get_monitor_geometry(screen, monitor, &geometry)
+		x = x - geometry.x
+		y = y - geometry.y
+
+		// TODO: Scale based on DPI
+
 		wg.Done()
 	})
 	wg.Wait()

@@ -203,6 +203,25 @@ func main() {
 		})
 	})
 
+	positionMenu.Add("Set Absolute Position (0,0)").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetAbsolutePosition(0, 0)
+		})
+	})
+
+	positionMenu.Add("Set Absolute Position (Random)").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetAbsolutePosition(rand.Intn(1000), rand.Intn(800))
+		})
+	})
+
+	positionMenu.Add("Get Absolute Position").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			x, y := w.AbsolutePosition()
+			app.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
+		})
+	})
+
 	positionMenu.Add("Center").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			w.Center()

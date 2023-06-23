@@ -706,6 +706,27 @@ func (w *linuxWebviewWindow) relativePosition() (int, int) {
 	wg.Add(1)
 	go globalApplication.dispatchOnMainThread(func() {
 		getPosition(w.window, &x, &y)
+
+		// Get the position of the window relative to the screen
+		var getOrigin func(uintptr, *int, *int)
+		purego.RegisterLibFunc(&getOrigin, gtk, "gtk_widget_translate_coordinates")
+		getOrigin(w.window, &x, &y)
+
+		wg.Done()
+	})
+	wg.Wait()
+	return x, y
+}
+
+func (w *linuxWebviewWindow) absolutePosition() (int, int) {
+	var getOrigin func(uintptr, *int, *int)
+	purego.RegisterLibFunc(&getOrigin, gtk, "gtk_widget_translate_coordinates")
+
+	var x, y int
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go globalApplication.dispatchOnMainThread(func() {
+		getOrigin(w.window, nil, nil)
 		wg.Done()
 	})
 	wg.Wait()

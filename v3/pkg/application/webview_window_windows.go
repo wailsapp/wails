@@ -63,6 +63,17 @@ type windowsWebviewWindow struct {
 	resizeBorderHeight int32
 }
 
+func (w *windowsWebviewWindow) setAbsolutePosition(x int, y int) {
+	// Set the window's absolute position
+	w32.SetWindowPos(w.hwnd, 0, x, y, 0, 0, w32.SWP_NOSIZE|w32.SWP_NOZORDER)
+}
+
+func (w *windowsWebviewWindow) absolutePosition() (int, int) {
+	rect := w32.GetWindowRect(w.hwnd)
+	left, right := w.scaleToDefaultDPI(int(rect.Left), int(rect.Right))
+	return left, right
+}
+
 func (w *windowsWebviewWindow) setEnabled(enabled bool) {
 	w32.EnableWindow(w.hwnd, enabled)
 }
@@ -335,9 +346,20 @@ func (w *windowsWebviewWindow) height() int {
 }
 
 func (w *windowsWebviewWindow) relativePosition() (int, int) {
+	// Get monitor for window
+	monitor := w32.MonitorFromWindow(w.hwnd, w32.MONITOR_DEFAULTTONEAREST)
+	var monitorInfo w32.MONITORINFO
+	monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
+	w32.GetMonitorInfo(monitor, &monitorInfo)
+
+	// Get window rect
 	rect := w32.GetWindowRect(w.hwnd)
-	left, right := w.scaleToDefaultDPI(int(rect.Left), int(rect.Right))
-	return left, right
+
+	// Calculate relative position
+	x := int(rect.Left) - int(monitorInfo.RcWork.Left)
+	y := int(rect.Top) - int(monitorInfo.RcWork.Top)
+
+	return w.scaleToDefaultDPI(x, y)
 }
 
 func (w *windowsWebviewWindow) destroy() {
