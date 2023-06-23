@@ -195,6 +195,14 @@ func (w *linuxWebviewWindow) unfullscreen() {
 	})
 }
 
+func (w *linuxWebviewWindow) setEnabled(enabled bool) {
+	var gtkWidgetSensitive func(uintptr, int)
+	purego.RegisterLibFunc(&gtkWidgetSensitive, gtk, "gtk_widget_set_sensitive")
+	globalApplication.dispatchOnMainThread(func() {
+		gtkWidgetSensitive(w.window, boolToInt(enabled))
+	})
+}
+
 func (w *linuxWebviewWindow) fullscreen() {
 	var fullScreen func(uintptr)
 	purego.RegisterLibFunc(&fullScreen, gtk, "gtk_window_fullscreen")

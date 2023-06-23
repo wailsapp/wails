@@ -294,6 +294,13 @@ func main() {
 			app.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
 		})
 	})
+	stateMenu.Add("Disable for 5s").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetEnabled(false)
+			time.Sleep(5 * time.Second)
+			w.SetEnabled(true)
+		})
+	})
 
 	printMenu := menu.AddSubmenu("Print")
 	printMenu.Add("Print").OnClick(func(ctx *application.Context) {

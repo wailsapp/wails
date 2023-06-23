@@ -348,6 +348,12 @@ func (w *linuxWebviewWindow) fullscreen() {
 	})
 }
 
+func (w *linuxWebviewWindow) setEnabled(enabled bool) {
+	globalApplication.dispatchOnMainThread(func() {
+		C.gtk_widget_set_sensitive((*C.GtkWidget)(w.window), C.gboolean(enabled))
+	})
+}
+
 func (w *linuxWebviewWindow) unminimise() {
 	C.gtk_window_present((*C.GtkWindow)(w.window))
 	// gtk_window_unminimize ((*C.GtkWindow)(w.window)) /// gtk4

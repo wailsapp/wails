@@ -60,6 +60,7 @@ Webview Window Interface Methods
 | run()                                              | Y       | Y     | Y   |                                          |
 | setAlwaysOnTop(alwaysOnTop bool)                   | Y       | Y     | Y   |                                          |
 | setBackgroundColour(color RGBA)                    | Y       | Y     | Y   |                                          |
+| setEnabled(bool)                                   |         | Y     | Y   |                                          |
 | setFrameless(bool)                                 |         | Y     | Y   |                                          |
 | setFullscreenButtonEnabled(enabled bool)           | -       | Y     | Y   | There is no fullscreen button in Windows |
 | setHTML(html string)                               | Y       | Y     | Y   |                                          |
@@ -135,36 +136,41 @@ Anything nested under a tag with `--default-contextmenu: hide` style will not sh
 
 ### Window
 
+Y = Supported
+U = Untested
+- = Not available
+
 | Feature             | Windows | Linux | Mac | Notes                                                                                |
 |---------------------|---------|-------|-----|--------------------------------------------------------------------------------------|
-| SetTitle            | Y       | Y     | Y   |                                                                                      |
-| SetSize             | Y       | Y     | Y   |                                                                                      |
-| Size                | Y       | Y     | Y   |                                                                                      |
-| SetPosition         | Y       | Y     | Y   |                                                                                      |
-| Position            | Y       | Y     | Y   |                                                                                      |
+| Center              | Y       | Y     | Y   |                                                                                      |
 | Focus               | Y       | Y     |     |                                                                                      |
 | FullScreen          | Y       | Y     | Y   |                                                                                      |
-| UnFullscreen        | Y       | Y     | Y   |                                                                                      |
-| Minimise            | Y       | Y     | Y   |                                                                                      |
-| UnMinimise          | Y       | Y     | Y   |                                                                                      |
-| Maximise            | Y       | Y     | Y   |                                                                                      |
-| UnMaximise          | Y       | Y     | Y   |                                                                                      |
-| Show                | Y       | Y     | Y   |                                                                                      |
-| Hide                | Y       | Y     | Y   |                                                                                      |
-| Center              | Y       | Y     | Y   |                                                                                      |
-| SetBackgroundColour | Y       | Y     | Y   | https://github.com/MicrosoftEdge/WebView2Feedback/issues/1621#issuecomment-938234294 |
-| SetAlwaysOnTop      | Y       | Y     | Y   |                                                                                      |
-| SetResizable        | Y       | Y     | Y   |                                                                                      |
-| SetMinSize          | Y       | Y     | Y   |                                                                                      |
-| SetMaxSize          | Y       | Y     | Y   |                                                                                      |
-| Width               | Y       | Y     | Y   |                                                                                      |
+| GetZoom             | Y       | Y     | Y   | Get current view scale                                                               |
 | Height              | Y       | Y     | Y   |                                                                                      |
+| Hide                | Y       | Y     | Y   |                                                                                      |
+| Maximise            | Y       | Y     | Y   |                                                                                      |
+| Minimise            | Y       | Y     | Y   |                                                                                      |
+| Position            | Y       | Y     | Y   |                                                                                      |
+| Screen              | Y       | Y     | Y   | Get screen for window                                                                |
+| SetAlwaysOnTop      | Y       | Y     | Y   |                                                                                      |
+| SetBackgroundColour | Y       | Y     | Y   | https://github.com/MicrosoftEdge/WebView2Feedback/issues/1621#issuecomment-938234294 |
+| SetEnabled          | Y       | U     | U   | Set the window to be enabled/disabled                                                |
+| SetMaxSize          | Y       | Y     | Y   |                                                                                      |
+| SetMinSize          | Y       | Y     | Y   |                                                                                      |
+| SetPosition         | Y       | Y     | Y   |                                                                                      |
+| SetResizable        | Y       | Y     | Y   |                                                                                      |
+| SetSize             | Y       | Y     | Y   |                                                                                      |
+| SetTitle            | Y       | Y     | Y   |                                                                                      |
+| SetZoom             | Y       | Y     | Y   | Set view scale                                                                       |
+| Show                | Y       | Y     | Y   |                                                                                      |
+| Size                | Y       | Y     | Y   |                                                                                      |
+| UnFullscreen        | Y       | Y     | Y   |                                                                                      |
+| UnMaximise          | Y       | Y     | Y   |                                                                                      |
+| UnMinimise          | Y       | Y     | Y   |                                                                                      |
+| Width               | Y       | Y     | Y   |                                                                                      |
 | ZoomIn              | Y       | Y     | Y   | Increase view scale                                                                  |
 | ZoomOut             | Y       | Y     | Y   | Decrease view scale                                                                  |
 | ZoomReset           | Y       | Y     | Y   | Reset view scale                                                                     |
-| GetZoom             | Y       | Y     | Y   | Get current view scale                                                               |
-| SetZoom             | Y       | Y     | Y   | Set view scale                                                                       |
-| Screen              | Y       | Y     | Y   | Get screen for window                                                                |
 
 ### Window Options
 

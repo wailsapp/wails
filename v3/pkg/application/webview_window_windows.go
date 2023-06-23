@@ -63,6 +63,10 @@ type windowsWebviewWindow struct {
 	resizeBorderHeight int32
 }
 
+func (w *windowsWebviewWindow) setEnabled(enabled bool) {
+	w32.EnableWindow(w.hwnd, enabled)
+}
+
 func (w *windowsWebviewWindow) print() error {
 	w.execJS("window.print();")
 	return nil

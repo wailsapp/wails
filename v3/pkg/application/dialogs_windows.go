@@ -199,7 +199,6 @@ func showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelect bool) (any, 
 		}
 	}()
 
-	dlg.SetParentWindowHandle(0)
 	if multi, _ := dlg.(cfd.OpenMultipleFilesDialog); multi != nil && isMultiSelect {
 		return multi.ShowAndGetResults()
 	}

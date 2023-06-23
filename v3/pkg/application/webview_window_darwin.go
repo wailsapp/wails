@@ -664,7 +664,11 @@ static void windowPrint(void *window) {
 		// [printOperation runOperation] DOES NOT WORK WITH WKWEBVIEW, use
 		[po runOperationModalForWindow:window delegate:windowDelegate didRunSelector:nil contextInfo:nil];
 	}
+}
 
+void setWindowEnabled(void *window, bool enabled) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	[nsWindow setIgnoresMouseEvents:!enabled];
 }
 
 */
@@ -866,6 +870,10 @@ func (w *macosWebviewWindow) restore() {
 
 func (w *macosWebviewWindow) restoreWindow() {
 	C.windowRestore(w.nsWindow)
+}
+
+func (w *macosWebviewWindow) setEnabled(enabled bool) {
+	C.windowSetEnabled(w.nsWindow, C.bool(enabled))
 }
 
 func (w *macosWebviewWindow) execJS(js string) {
