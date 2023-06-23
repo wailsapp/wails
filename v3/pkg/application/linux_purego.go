@@ -691,6 +691,17 @@ func windowGetCurrentMonitorGeometry(window pointer) (x int, y int, width int, h
 	return int(result.x), int(result.y), int(result.width), int(result.height), gdkMonitorGetScaleFactor(monitor)
 }
 
+func windowGetRelativePosition(window pointer) (int, int) {
+	absX, absY := windowGetAbsolutePosition(window)
+	x, y, _, _, _ := windowGetCurrentMonitorGeometry(window)
+
+	relX := absX - x
+	relY := absY - y
+
+	// TODO: Scale based on DPI
+	return relX, relY
+}
+
 func windowGetSize(window pointer) (int, int) {
 	// TODO: dispatchOnMainThread?
 	var width, height int
