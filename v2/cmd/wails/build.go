@@ -57,6 +57,7 @@ func buildApplication(f *flags.Build) error {
 		OutputFile:        f.OutputFilename,
 		CleanBinDirectory: f.Clean,
 		Mode:              f.GetBuildMode(),
+		Devtools:          f.Debug || f.Devtools,
 		Pack:              !f.NoPackage,
 		LDFlags:           f.LdFlags,
 		Compiler:          f.Compiler,
@@ -82,6 +83,7 @@ func buildApplication(f *flags.Build) error {
 		{"Compiler", f.GetCompilerPath()},
 		{"Skip Bindings", bool2Str(f.SkipBindings)},
 		{"Build Mode", f.GetBuildModeAsString()},
+		{"Devtools", bool2Str(buildOptions.Devtools)},
 		{"Frontend Directory", projectOptions.GetFrontendDir()},
 		{"Obfuscated", bool2Str(f.Obfuscated)},
 	}

@@ -70,6 +70,10 @@ type App struct {
 	// The CSS Value that the CSSDragProperty must have to be draggable, EG: "drag"
 	CSSDragValue string
 
+	// EnableDefaultContextMenu enables the browser's default context-menu in production
+	// This menu is already enabled in development, as well as in debug builds and production builds with the `-devtools` flag
+	EnableDefaultContextMenu bool
+
 	// EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts.
 	// These services might send information from your app like URLs navigated to and possibly other content to cloud
 	// services of Apple and Microsoft.

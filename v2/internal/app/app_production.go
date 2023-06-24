@@ -34,7 +34,9 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	options.MergeDefaults(appoptions)
 
 	debug := IsDebug()
+	devtools := IsDevtoolsEnabled()
 	ctx = context.WithValue(ctx, "debug", debug)
+	ctx = context.WithValue(ctx, "devtools", devtools)
 
 	// Set up logger
 	myLogger := logger.New(appoptions.Logger)
@@ -93,6 +95,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		startupCallback:  appoptions.OnStartup,
 		shutdownCallback: appoptions.OnShutdown,
 		debug:            debug,
+		devtools:         devtools,
 		options:          appoptions,
 	}
 

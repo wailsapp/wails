@@ -126,6 +126,7 @@ func (d *Dev) GenerateBuildOptions() *build.Options {
 		OutputType:     "dev",
 		Mode:           build.Dev,
 		Arch:           targets[0].Arch,
+		Devtools:       true,
 		Pack:           true,
 		Platform:       targets[0].Platform,
 		LDFlags:        d.LdFlags,

@@ -46,7 +46,7 @@ func NewExternalAssetsHandler(logger Logger, options assetserver.Options, url *u
 	proxy.ErrorHandler = func(rw http.ResponseWriter, r *http.Request, err error) {
 		if baseHandler != nil && errors.Is(err, errSkipProxy) {
 			if logger != nil {
-				logger.Debug("[ExternalAssetHandler] Loading '%s' failed, using original AssetHandler", r.URL)
+				logger.Debug("[ExternalAssetHandler] '%s' returned not found, using AssetHandler", r.URL)
 			}
 			baseHandler.ServeHTTP(rw, r)
 		} else {
