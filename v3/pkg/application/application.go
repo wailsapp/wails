@@ -543,31 +543,31 @@ func (a *App) ShowAboutDialog() {
 	}
 }
 
-func (a *App) InfoDialog() *MessageDialog {
-	return newMessageDialog(InfoDialog)
+func InfoDialog() *MessageDialog {
+	return newMessageDialog(InfoDialogType)
 }
 
-func (a *App) QuestionDialog() *MessageDialog {
-	return newMessageDialog(QuestionDialog)
+func QuestionDialog() *MessageDialog {
+	return newMessageDialog(QuestionDialogType)
 }
 
-func (a *App) WarningDialog() *MessageDialog {
-	return newMessageDialog(WarningDialog)
+func WarningDialog() *MessageDialog {
+	return newMessageDialog(WarningDialogType)
 }
 
-func (a *App) ErrorDialog() *MessageDialog {
-	return newMessageDialog(ErrorDialog)
+func ErrorDialog() *MessageDialog {
+	return newMessageDialog(ErrorDialogType)
 }
 
-func (a *App) OpenDirectoryDialog() *MessageDialog {
-	return newMessageDialog(OpenDirectoryDialog)
+func OpenDirectoryDialog() *MessageDialog {
+	return newMessageDialog(OpenDirectoryDialogType)
 }
 
-func (a *App) OpenFileDialog() *OpenFileDialog {
+func OpenFileDialog() *OpenFileDialogStruct {
 	return newOpenFileDialog()
 }
 
-func (a *App) SaveFileDialog() *SaveFileDialog {
+func SaveFileDialog() *SaveFileDialogStruct {
 	return newSaveFileDialog()
 }
 
@@ -601,14 +601,14 @@ func (a *App) dispatchOnMainThread(fn func()) {
 	a.impl.dispatchOnMainThread(id)
 }
 
-func (a *App) OpenFileDialogWithOptions(options *OpenFileDialogOptions) *OpenFileDialog {
-	result := a.OpenFileDialog()
+func OpenFileDialogWithOptions(options *OpenFileDialogOptions) *OpenFileDialogStruct {
+	result := OpenFileDialog()
 	result.SetOptions(options)
 	return result
 }
 
-func (a *App) SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialog {
-	result := a.SaveFileDialog()
+func SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialogStruct {
+	result := SaveFileDialog()
 	result.SetOptions(s)
 	return result
 }

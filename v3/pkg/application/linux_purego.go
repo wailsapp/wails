@@ -1037,7 +1037,7 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 }
 
 // dialog related
-func runOpenFileDialog(dialog *OpenFileDialog) ([]string, error) {
+func runOpenFileDialog(dialog *OpenFileDialogStruct) ([]string, error) {
 	GtkFileChooserActionOpen := 0
 	//	GtkFileChooserActionSave := 1
 	//	GtkFileChooserActionSelectFolder := 2
@@ -1064,9 +1064,9 @@ func runOpenFileDialog(dialog *OpenFileDialog) ([]string, error) {
 
 func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	dType, ok := map[DialogType]int{
-		InfoDialog:     GtkMessageInfo,
-		WarningDialog:  GtkMessageWarning,
-		QuestionDialog: GtkMessageQuestion,
+		InfoDialogType:     GtkMessageInfo,
+		WarningDialogType:  GtkMessageWarning,
+		QuestionDialogType: GtkMessageQuestion,
 	}[options.DialogType]
 	if !ok {
 		// FIXME: Add logging here!
@@ -1123,7 +1123,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	return gtkDialogRun(dialog)
 }
 
-func runSaveFileDialog(dialog *SaveFileDialog) (string, error) {
+func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 	GtkFileChooserActionSave := 1
 	//	GtkFileChooserActionSelectFolder := 2
 	//	GtkFileChooserActionCreateFolder := 3

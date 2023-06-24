@@ -36,7 +36,7 @@ func main() {
 	myMenu := app.NewMenu()
 	myMenu.Add("Hello World!").OnClick(func(ctx *application.Context) {
 		println("Hello World!")
-		q := app.QuestionDialog().SetTitle("Ready?").SetMessage("Are you feeling ready?")
+		q := application.QuestionDialog().SetTitle("Ready?").SetMessage("Are you feeling ready?")
 		q.AddButton("Yes").OnClick(func() {
 			println("Awesome!")
 		})
@@ -52,7 +52,7 @@ func main() {
 	myMenu.AddSeparator()
 	myMenu.AddCheckbox("Checked", true).OnClick(func(ctx *application.Context) {
 		println("Checked: ", ctx.ClickedMenuItem().Checked())
-		app.InfoDialog().SetTitle("Hello World!").SetMessage("Hello World!").Show()
+		application.InfoDialog().SetTitle("Hello World!").SetMessage("Hello World!").Show()
 	})
 	myMenu.Add("Enabled").OnClick(func(ctx *application.Context) {
 		println("Click me!")

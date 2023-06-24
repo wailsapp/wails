@@ -49,13 +49,13 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		var dialog *MessageDialog
 		switch method {
 		case "Info":
-			dialog = globalApplication.InfoDialog()
+			dialog = InfoDialog()
 		case "Warning":
-			dialog = globalApplication.WarningDialog()
+			dialog = WarningDialog()
 		case "Error":
-			dialog = globalApplication.ErrorDialog()
+			dialog = ErrorDialog()
 		case "Question":
-			dialog = globalApplication.QuestionDialog()
+			dialog = QuestionDialog()
 		}
 		var detached = args.Bool("Detached")
 		if detached == nil || !*detached {
@@ -84,7 +84,7 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		if detached == nil || !*detached {
 			options.Window = window
 		}
-		dialog := globalApplication.OpenFileDialogWithOptions(&options)
+		dialog := OpenFileDialogWithOptions(&options)
 
 		go func() {
 			if options.AllowsMultipleSelection {
@@ -121,7 +121,7 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		if detached == nil || !*detached {
 			options.Window = window
 		}
-		dialog := globalApplication.SaveFileDialogWithOptions(&options)
+		dialog := SaveFileDialogWithOptions(&options)
 
 		go func() {
 			file, err := dialog.PromptForSingleSelection()

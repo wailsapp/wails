@@ -882,7 +882,7 @@ func messageDialogCB(button C.int) {
 
 }
 
-func runOpenFileDialog(dialog *OpenFileDialog) ([]string, error) {
+func runOpenFileDialog(dialog *OpenFileDialogStruct) ([]string, error) {
 	return []string{}, fmt.Errorf("not implemented")
 }
 
@@ -897,9 +897,9 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	}
 
 	dType, ok := map[DialogType]C.int{
-		InfoDialog:     C.GTK_MESSAGE_INFO,
-		QuestionDialog: C.GTK_MESSAGE_QUESTION,
-		WarningDialog:  C.GTK_MESSAGE_WARNING,
+		InfoDialogType:     C.GTK_MESSAGE_INFO,
+		QuestionDialogType: C.GTK_MESSAGE_QUESTION,
+		WarningDialogType:  C.GTK_MESSAGE_WARNING,
 	}[options.DialogType]
 	if !ok {
 		// FIXME: Add logging here!
@@ -949,7 +949,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	return int(C.gtk_dialog_run((*C.GtkDialog)(unsafe.Pointer(dialog))))
 }
 
-func runSaveFileDialog(dialog *SaveFileDialog) (string, error) {
+func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 	return "", fmt.Errorf("not implemented")
 }
 

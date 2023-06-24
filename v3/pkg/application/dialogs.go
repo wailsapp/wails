@@ -37,11 +37,11 @@ var openFileResponses = make(map[uint]chan string)
 var saveFileResponses = make(map[uint]chan string)
 
 const (
-	InfoDialog DialogType = iota
-	QuestionDialog
-	WarningDialog
-	ErrorDialog
-	OpenDirectoryDialog
+	InfoDialogType DialogType = iota
+	QuestionDialogType
+	WarningDialogType
+	ErrorDialogType
+	OpenDirectoryDialogType
 )
 
 type Button struct {
@@ -87,10 +87,10 @@ type MessageDialog struct {
 }
 
 var defaultTitles = map[DialogType]string{
-	InfoDialog:     "Information",
-	QuestionDialog: "Question",
-	WarningDialog:  "Warning",
-	ErrorDialog:    "Error",
+	InfoDialogType:     "Information",
+	QuestionDialogType: "Question",
+	WarningDialogType:  "Warning",
+	ErrorDialogType:    "Error",
 }
 
 func newMessageDialog(dialogType DialogType) *MessageDialog {
@@ -187,7 +187,7 @@ type OpenFileDialogOptions struct {
 	Directory  string
 }
 
-type OpenFileDialog struct {
+type OpenFileDialogStruct struct {
 	id                              uint
 	canChooseDirectories            bool
 	canChooseFiles                  bool
@@ -210,57 +210,57 @@ type OpenFileDialog struct {
 	impl openFileDialogImpl
 }
 
-func (d *OpenFileDialog) CanChooseFiles(canChooseFiles bool) *OpenFileDialog {
+func (d *OpenFileDialogStruct) CanChooseFiles(canChooseFiles bool) *OpenFileDialogStruct {
 	d.canChooseFiles = canChooseFiles
 	return d
 }
 
-func (d *OpenFileDialog) CanChooseDirectories(canChooseDirectories bool) *OpenFileDialog {
+func (d *OpenFileDialogStruct) CanChooseDirectories(canChooseDirectories bool) *OpenFileDialogStruct {
 	d.canChooseDirectories = canChooseDirectories
 	return d
 }
 
-func (d *OpenFileDialog) CanCreateDirectories(canCreateDirectories bool) *OpenFileDialog {
+func (d *OpenFileDialogStruct) CanCreateDirectories(canCreateDirectories bool) *OpenFileDialogStruct {
 	d.canCreateDirectories = canCreateDirectories
 	return d
 }
 
-func (d *OpenFileDialog) AllowsOtherFileTypes(allowsOtherFileTypes bool) *OpenFileDialog {
+func (d *OpenFileDialogStruct) AllowsOtherFileTypes(allowsOtherFileTypes bool) *OpenFileDialogStruct {
 	d.allowsOtherFileTypes = allowsOtherFileTypes
 	return d
 }
 
-func (d *OpenFileDialog) ShowHiddenFiles(showHiddenFiles bool) *OpenFileDialog {
+func (d *OpenFileDialogStruct) ShowHiddenFiles(showHiddenFiles bool) *OpenFileDialogStruct {
 	d.showHiddenFiles = showHiddenFiles
 	return d
 }
 
-func (d *OpenFileDialog) HideExtension(hideExtension bool) *OpenFileDialog {
+func (d *OpenFileDialogStruct) HideExtension(hideExtension bool) *OpenFileDialogStruct {
 	d.hideExtension = hideExtension
 	return d
 }
 
-func (d *OpenFileDialog) TreatsFilePackagesAsDirectories(treatsFilePackagesAsDirectories bool) *OpenFileDialog {
+func (d *OpenFileDialogStruct) TreatsFilePackagesAsDirectories(treatsFilePackagesAsDirectories bool) *OpenFileDialogStruct {
 	d.treatsFilePackagesAsDirectories = treatsFilePackagesAsDirectories
 	return d
 }
 
-func (d *OpenFileDialog) AttachToWindow(window *WebviewWindow) *OpenFileDialog {
+func (d *OpenFileDialogStruct) AttachToWindow(window *WebviewWindow) *OpenFileDialogStruct {
 	d.window = window
 	return d
 }
 
-func (d *OpenFileDialog) ResolvesAliases(resolvesAliases bool) *OpenFileDialog {
+func (d *OpenFileDialogStruct) ResolvesAliases(resolvesAliases bool) *OpenFileDialogStruct {
 	d.resolvesAliases = resolvesAliases
 	return d
 }
 
-func (d *OpenFileDialog) SetTitle(title string) *OpenFileDialog {
+func (d *OpenFileDialogStruct) SetTitle(title string) *OpenFileDialogStruct {
 	d.title = title
 	return d
 }
 
-func (d *OpenFileDialog) PromptForSingleSelection() (string, error) {
+func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error) {
 	d.allowsMultipleSelection = false
 	if d.impl == nil {
 		d.impl = newOpenFileDialogImpl(d)
@@ -276,7 +276,7 @@ func (d *OpenFileDialog) PromptForSingleSelection() (string, error) {
 
 // AddFilter adds a filter to the dialog. The filter is a display name and a semicolon separated list of extensions.
 // EG: AddFilter("Image Files", "*.jpg;*.png")
-func (d *OpenFileDialog) AddFilter(displayName, pattern string) *OpenFileDialog {
+func (d *OpenFileDialogStruct) AddFilter(displayName, pattern string) *OpenFileDialogStruct {
 	d.filters = append(d.filters, FileFilter{
 		DisplayName: strings.TrimSpace(displayName),
 		Pattern:     strings.TrimSpace(pattern),
@@ -284,7 +284,7 @@ func (d *OpenFileDialog) AddFilter(displayName, pattern string) *OpenFileDialog 
 	return d
 }
 
-func (d *OpenFileDialog) PromptForMultipleSelection() ([]string, error) {
+func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error) {
 	d.allowsMultipleSelection = true
 	if d.impl == nil {
 		d.impl = newOpenFileDialogImpl(d)
@@ -292,27 +292,27 @@ func (d *OpenFileDialog) PromptForMultipleSelection() ([]string, error) {
 	return invokeSyncWithResultAndError(d.impl.show)
 }
 
-func (d *OpenFileDialog) SetMessage(message string) *OpenFileDialog {
+func (d *OpenFileDialogStruct) SetMessage(message string) *OpenFileDialogStruct {
 	d.message = message
 	return d
 }
 
-func (d *OpenFileDialog) SetButtonText(text string) *OpenFileDialog {
+func (d *OpenFileDialogStruct) SetButtonText(text string) *OpenFileDialogStruct {
 	d.buttonText = text
 	return d
 }
 
-func (d *OpenFileDialog) SetDirectory(directory string) *OpenFileDialog {
+func (d *OpenFileDialogStruct) SetDirectory(directory string) *OpenFileDialogStruct {
 	d.directory = directory
 	return d
 }
 
-func (d *OpenFileDialog) CanSelectHiddenExtension(canSelectHiddenExtension bool) *OpenFileDialog {
+func (d *OpenFileDialogStruct) CanSelectHiddenExtension(canSelectHiddenExtension bool) *OpenFileDialogStruct {
 	d.canSelectHiddenExtension = canSelectHiddenExtension
 	return d
 }
 
-func (d *OpenFileDialog) SetOptions(options *OpenFileDialogOptions) {
+func (d *OpenFileDialogStruct) SetOptions(options *OpenFileDialogOptions) {
 	d.title = options.Title
 	d.message = options.Message
 	d.buttonText = options.ButtonText
@@ -331,8 +331,8 @@ func (d *OpenFileDialog) SetOptions(options *OpenFileDialogOptions) {
 	d.window = options.Window
 }
 
-func newOpenFileDialog() *OpenFileDialog {
-	return &OpenFileDialog{
+func newOpenFileDialog() *OpenFileDialogStruct {
+	return &OpenFileDialogStruct{
 		id:                   getDialogID(),
 		canChooseDirectories: false,
 		canChooseFiles:       true,
@@ -341,8 +341,8 @@ func newOpenFileDialog() *OpenFileDialog {
 	}
 }
 
-func newSaveFileDialog() *SaveFileDialog {
-	return &SaveFileDialog{
+func newSaveFileDialog() *SaveFileDialogStruct {
+	return &SaveFileDialogStruct{
 		id:                   getDialogID(),
 		canCreateDirectories: true,
 	}
@@ -364,7 +364,7 @@ type SaveFileDialogOptions struct {
 	Window                          *WebviewWindow
 }
 
-type SaveFileDialog struct {
+type SaveFileDialogStruct struct {
 	id                              uint
 	canCreateDirectories            bool
 	showHiddenFiles                 bool
@@ -388,7 +388,7 @@ type saveFileDialogImpl interface {
 	show() (string, error)
 }
 
-func (d *SaveFileDialog) SetOptions(options *SaveFileDialogOptions) {
+func (d *SaveFileDialogStruct) SetOptions(options *SaveFileDialogOptions) {
 	d.title = options.Title
 	d.canCreateDirectories = options.CanCreateDirectories
 	d.showHiddenFiles = options.ShowHiddenFiles
@@ -406,7 +406,7 @@ func (d *SaveFileDialog) SetOptions(options *SaveFileDialogOptions) {
 
 // AddFilter adds a filter to the dialog. The filter is a display name and a semicolon separated list of extensions.
 // EG: AddFilter("Image Files", "*.jpg;*.png")
-func (d *SaveFileDialog) AddFilter(displayName, pattern string) *SaveFileDialog {
+func (d *SaveFileDialogStruct) AddFilter(displayName, pattern string) *SaveFileDialogStruct {
 	d.filters = append(d.filters, FileFilter{
 		DisplayName: strings.TrimSpace(displayName),
 		Pattern:     strings.TrimSpace(pattern),
@@ -414,64 +414,64 @@ func (d *SaveFileDialog) AddFilter(displayName, pattern string) *SaveFileDialog 
 	return d
 }
 
-func (d *SaveFileDialog) CanCreateDirectories(canCreateDirectories bool) *SaveFileDialog {
+func (d *SaveFileDialogStruct) CanCreateDirectories(canCreateDirectories bool) *SaveFileDialogStruct {
 	d.canCreateDirectories = canCreateDirectories
 	return d
 }
 
-func (d *SaveFileDialog) CanSelectHiddenExtension(canSelectHiddenExtension bool) *SaveFileDialog {
+func (d *SaveFileDialogStruct) CanSelectHiddenExtension(canSelectHiddenExtension bool) *SaveFileDialogStruct {
 	d.canSelectHiddenExtension = canSelectHiddenExtension
 	return d
 }
 
-func (d *SaveFileDialog) ShowHiddenFiles(showHiddenFiles bool) *SaveFileDialog {
+func (d *SaveFileDialogStruct) ShowHiddenFiles(showHiddenFiles bool) *SaveFileDialogStruct {
 	d.showHiddenFiles = showHiddenFiles
 	return d
 }
 
-func (d *SaveFileDialog) SetMessage(message string) *SaveFileDialog {
+func (d *SaveFileDialogStruct) SetMessage(message string) *SaveFileDialogStruct {
 	d.message = message
 	return d
 }
 
-func (d *SaveFileDialog) SetDirectory(directory string) *SaveFileDialog {
+func (d *SaveFileDialogStruct) SetDirectory(directory string) *SaveFileDialogStruct {
 	d.directory = directory
 	return d
 }
 
-func (d *SaveFileDialog) AttachToWindow(window *WebviewWindow) *SaveFileDialog {
+func (d *SaveFileDialogStruct) AttachToWindow(window *WebviewWindow) *SaveFileDialogStruct {
 	d.window = window
 	return d
 }
 
-func (d *SaveFileDialog) PromptForSingleSelection() (string, error) {
+func (d *SaveFileDialogStruct) PromptForSingleSelection() (string, error) {
 	if d.impl == nil {
 		d.impl = newSaveFileDialogImpl(d)
 	}
 	return invokeSyncWithResultAndError(d.impl.show)
 }
 
-func (d *SaveFileDialog) SetButtonText(text string) *SaveFileDialog {
+func (d *SaveFileDialogStruct) SetButtonText(text string) *SaveFileDialogStruct {
 	d.buttonText = text
 	return d
 }
 
-func (d *SaveFileDialog) SetFilename(filename string) *SaveFileDialog {
+func (d *SaveFileDialogStruct) SetFilename(filename string) *SaveFileDialogStruct {
 	d.filename = filename
 	return d
 }
 
-func (d *SaveFileDialog) AllowsOtherFileTypes(allowOtherFileTypes bool) *SaveFileDialog {
+func (d *SaveFileDialogStruct) AllowsOtherFileTypes(allowOtherFileTypes bool) *SaveFileDialogStruct {
 	d.allowOtherFileTypes = allowOtherFileTypes
 	return d
 }
 
-func (d *SaveFileDialog) HideExtension(hideExtension bool) *SaveFileDialog {
+func (d *SaveFileDialogStruct) HideExtension(hideExtension bool) *SaveFileDialogStruct {
 	d.hideExtension = hideExtension
 	return d
 }
 
-func (d *SaveFileDialog) TreatsFilePackagesAsDirectories(treatsFilePackagesAsDirectories bool) *SaveFileDialog {
+func (d *SaveFileDialogStruct) TreatsFilePackagesAsDirectories(treatsFilePackagesAsDirectories bool) *SaveFileDialogStruct {
 	d.treatsFilePackagesAsDirectories = treatsFilePackagesAsDirectories
 	return d
 }

@@ -299,10 +299,10 @@ const NSAlertStyleInformational = C.int(1)
 const NSAlertStyleCritical = C.int(2)
 
 var alertTypeMap = map[DialogType]C.int{
-	WarningDialog:  NSAlertStyleWarning,
-	InfoDialog:     NSAlertStyleInformational,
-	ErrorDialog:    NSAlertStyleCritical,
-	QuestionDialog: NSAlertStyleInformational,
+	WarningDialogType:  NSAlertStyleWarning,
+	InfoDialogType:     NSAlertStyleInformational,
+	ErrorDialogType:    NSAlertStyleCritical,
+	QuestionDialogType: NSAlertStyleInformational,
 }
 
 func (m *macosApp) showAboutDialog(title string, message string, icon []byte) {
@@ -345,7 +345,7 @@ func (m *macosDialog) show() {
 			iconLength = C.int(len(m.dialog.Icon))
 		} else {
 			// if it's an error, use the application Icon
-			if m.dialog.DialogType == ErrorDialog {
+			if m.dialog.DialogType == ErrorDialogType {
 				iconData = unsafe.Pointer(&globalApplication.options.Icon[0])
 				iconLength = C.int(len(globalApplication.options.Icon))
 			}
@@ -390,10 +390,10 @@ func newDialogImpl(d *MessageDialog) *macosDialog {
 }
 
 type macosOpenFileDialog struct {
-	dialog *OpenFileDialog
+	dialog *OpenFileDialogStruct
 }
 
-func newOpenFileDialogImpl(d *OpenFileDialog) *macosOpenFileDialog {
+func newOpenFileDialogImpl(d *OpenFileDialogStruct) *macosOpenFileDialog {
 	return &macosOpenFileDialog{
 		dialog: d,
 	}
@@ -481,10 +481,10 @@ func openFileDialogCallbackEnd(cid C.uint) {
 }
 
 type macosSaveFileDialog struct {
-	dialog *SaveFileDialog
+	dialog *SaveFileDialogStruct
 }
 
-func newSaveFileDialogImpl(d *SaveFileDialog) *macosSaveFileDialog {
+func newSaveFileDialogImpl(d *SaveFileDialogStruct) *macosSaveFileDialog {
 	return &macosSaveFileDialog{
 		dialog: d,
 	}

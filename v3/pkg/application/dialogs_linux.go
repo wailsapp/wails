@@ -6,7 +6,7 @@ func (m *linuxApp) showAboutDialog(title string, message string, icon []byte) {
 	if window != nil {
 		parent = window.impl.(*linuxWebviewWindow).window
 	}
-	about := newMessageDialog(InfoDialog)
+	about := newMessageDialog(InfoDialogType)
 	about.SetTitle(title).
 		SetMessage(message).
 		SetIcon(icon)
@@ -44,10 +44,10 @@ func newDialogImpl(d *MessageDialog) *linuxDialog {
 }
 
 type linuxOpenFileDialog struct {
-	dialog *OpenFileDialog
+	dialog *OpenFileDialogStruct
 }
 
-func newOpenFileDialogImpl(d *OpenFileDialog) *linuxOpenFileDialog {
+func newOpenFileDialogImpl(d *OpenFileDialogStruct) *linuxOpenFileDialog {
 	return &linuxOpenFileDialog{
 		dialog: d,
 	}
@@ -58,10 +58,10 @@ func (m *linuxOpenFileDialog) show() ([]string, error) {
 }
 
 type linuxSaveFileDialog struct {
-	dialog *SaveFileDialog
+	dialog *SaveFileDialogStruct
 }
 
-func newSaveFileDialogImpl(d *SaveFileDialog) *linuxSaveFileDialog {
+func newSaveFileDialogImpl(d *SaveFileDialogStruct) *linuxSaveFileDialog {
 	return &linuxSaveFileDialog{
 		dialog: d,
 	}

@@ -13,7 +13,7 @@ import (
 func (m *windowsApp) showAboutDialog(title string, message string, icon []byte) {
 	about := newDialogImpl(&MessageDialog{
 		MessageDialogOptions: MessageDialogOptions{
-			DialogType: InfoDialog,
+			DialogType: InfoDialogType,
 			Title:      title,
 			Message:    message,
 		},
@@ -74,10 +74,10 @@ func newDialogImpl(d *MessageDialog) *windowsDialog {
 }
 
 type windowOpenFileDialog struct {
-	dialog *OpenFileDialog
+	dialog *OpenFileDialogStruct
 }
 
-func newOpenFileDialogImpl(d *OpenFileDialog) *windowOpenFileDialog {
+func newOpenFileDialogImpl(d *OpenFileDialogStruct) *windowOpenFileDialog {
 	return &windowOpenFileDialog{
 		dialog: d,
 	}
@@ -136,10 +136,10 @@ func (m *windowOpenFileDialog) show() ([]string, error) {
 }
 
 type windowSaveFileDialog struct {
-	dialog *SaveFileDialog
+	dialog *SaveFileDialogStruct
 }
 
-func newSaveFileDialogImpl(d *SaveFileDialog) *windowSaveFileDialog {
+func newSaveFileDialogImpl(d *SaveFileDialogStruct) *windowSaveFileDialog {
 	return &windowSaveFileDialog{
 		dialog: d,
 	}
@@ -170,18 +170,18 @@ func calculateMessageDialogFlags(options MessageDialogOptions) uint32 {
 	var flags uint32
 
 	switch options.DialogType {
-	case InfoDialog:
+	case InfoDialogType:
 		flags = windows.MB_OK | windows.MB_ICONINFORMATION
-	case ErrorDialog:
+	case ErrorDialogType:
 		flags = windows.MB_ICONERROR | windows.MB_OK
-	case QuestionDialog:
+	case QuestionDialogType:
 		flags = windows.MB_YESNO
 		for _, button := range options.Buttons {
 			if strings.TrimSpace(strings.ToLower(button.Label)) == "no" && button.IsDefault {
 				flags |= windows.MB_DEFBUTTON2
 			}
 		}
-	case WarningDialog:
+	case WarningDialogType:
 		flags = windows.MB_OK | windows.MB_ICONWARNING
 	}
 
