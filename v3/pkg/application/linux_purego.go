@@ -614,6 +614,14 @@ func getScreens(app pointer) ([]*Screen, error) {
 }
 
 // widgets
+func widgetSetSensitive(widget pointer, enabled bool) {
+	value := 0
+	if enabled {
+		value = 1
+	}
+	gtkWidgetSetSensitive(widget, value)
+}
+
 func widgetSetVisible(widget pointer, hidden bool) {
 	if hidden {
 		gtkWidgetHide(widget)
@@ -663,6 +671,12 @@ func windowDestroy(window pointer) {
 
 func windowFullscreen(window pointer) {
 	gtkWindowFullScreen(window)
+}
+
+func windowGetAbsolutePosition(window pointer) (int, int) {
+	var x, y int
+	gtkWindowGetPosition(window, &x, &y)
+	return x, y
 }
 
 func windowGetCurrentMonitor(window pointer) pointer {

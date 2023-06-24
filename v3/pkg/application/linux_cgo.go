@@ -412,6 +412,15 @@ func getScreens(app pointer) ([]*Screen, error) {
 }
 
 // widgets
+func widgetSetSensitive(widget pointer, enabled bool) {
+	value := C.int(0)
+	if enabled {
+		value = C.int(1)
+	}
+
+	C.gtk_widget_set_sensitive((*C.GtkWidget)(widget), value)
+}
+
 func widgetSetVisible(widget pointer, hidden bool) {
 	if hidden {
 		C.gtk_widget_hide((*C.GtkWidget)(widget))
@@ -488,7 +497,7 @@ func windowGetSize(window pointer) (int, int) {
 	return int(windowWidth), int(windowHeight)
 }
 
-func windowGetPosition(window pointer) (int, int) {
+func windowGetRelativePosition(window pointer) (int, int) {
 	var x C.int
 	var y C.int
 	C.gtk_window_get_position((*C.GtkWindow)(window), &x, &y)
