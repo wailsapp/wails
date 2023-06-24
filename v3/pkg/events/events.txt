@@ -142,6 +142,7 @@ common:WindowZoomIn
 common:WindowZoomOut
 common:WindowZoomReset
 common:WindowFocus
+common:WindowUnFocus
 common:WindowShow
 common:WindowHide
 common:WindowDPIChanged

@@ -1070,6 +1070,11 @@ func (w *macosWebviewWindow) run() {
 			w.parent.emit(events.Common.WindowClosing)
 		})
 
+		// Translate WindowDidUnfocus to common WindowUnFocus event
+		w.parent.On(events.Mac.WindowDidUnfocus, func(_ *WindowEventContext) {
+			w.parent.emit(events.Common.WindowUnFocus)
+		})
+
 		if w.parent.options.HTML != "" {
 			w.setHTML(w.parent.options.HTML)
 		}

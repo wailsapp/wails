@@ -735,6 +735,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_CLOSE:
 		w.parent.emit(events.Common.WindowClosing)
 		return 0
+	case w32.WM_KILLFOCUS:
+		w.parent.emit(events.Common.WindowUnFocus)
+	case w32.WM_SETFOCUS:
+		w.parent.emit(events.Common.WindowFocus)
 	case w32.WM_NCLBUTTONDOWN:
 		w32.SetFocus(w.hwnd)
 	case w32.WM_MOVE, w32.WM_MOVING:

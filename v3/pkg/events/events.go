@@ -24,6 +24,7 @@ type commonEvents struct {
 	WindowZoomOut      WindowEventType
 	WindowZoomReset    WindowEventType
 	WindowFocus        WindowEventType
+	WindowUnFocus      WindowEventType
 	WindowShow         WindowEventType
 	WindowHide         WindowEventType
 	WindowDPIChanged   WindowEventType
@@ -45,9 +46,10 @@ func newCommonEvents() commonEvents {
 		WindowZoomOut:      1165,
 		WindowZoomReset:    1166,
 		WindowFocus:        1167,
-		WindowShow:         1168,
-		WindowHide:         1169,
-		WindowDPIChanged:   1170,
+		WindowUnFocus:      1168,
+		WindowShow:         1169,
+		WindowHide:         1170,
+		WindowDPIChanged:   1171,
 	}
 }
 

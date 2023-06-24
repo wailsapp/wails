@@ -59,3 +59,23 @@ The runtime is located in `v3/internal/runtime`. When the runtime is updated, th
 ```shell
 wails task runtime:build
 ```
+
+### Events
+
+Events are defined in `v3/pkg/events`. When adding a new event, the following steps need to be taken:
+
+- Add the event to the `events.txt` file
+- Run `wails task events:generate`
+
+There are a number of types of events: platform specific application and window events + common events. The common events are useful for cross-platform event handling, but you aren't limited to the "lowest common denominator". You can use the platform specific events if you need to.
+
+When adding a common event, ensure that the platform specific events are mapped. An example of this is in `window_webview_darwin.go`:
+
+```go
+		// Translate ShouldClose to common WindowClosing event
+		w.parent.On(events.Mac.WindowShouldClose, func(_ *WindowEventContext) {
+			w.parent.emit(events.Common.WindowClosing)
+		})
+```
+
+NOTE: We may try to automate this in the future by adding the mapping to the event definition.
