@@ -20,12 +20,12 @@ func (m linuxClipboard) setText(text string) bool {
 	return bool(success)
 }
 
-func (m linuxClipboard) text() string {
+func (m linuxClipboard) text() (string, bool) {
 	clipboardLock.RLock()
 	defer clipboardLock.RUnlock()
 	//	clipboardText := C.getClipboardText()
 	//	result := C.GoString(clipboardText)
-	return ""
+	return "", false
 }
 
 func newClipboardImpl() *linuxClipboard {

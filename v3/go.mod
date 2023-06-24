@@ -3,8 +3,8 @@ module github.com/wailsapp/wails/v3
 go 1.19
 
 require (
-	github.com/ebitengine/purego v0.3.2
 	github.com/bep/debounce v1.2.1
+	github.com/ebitengine/purego v0.4.0-alpha.4
 	github.com/go-ole/go-ole v1.2.6
 	github.com/go-task/task/v3 v3.20.0
 	github.com/google/go-cmp v0.5.9
@@ -77,4 +77,4 @@ require (
 
 replace github.com/wailsapp/wails/v2 => ../v2
 
-replace github.com/ebitengine/purego v0.3.2 => github.com/TotallyGamerJet/purego v0.2.0-alpha.0.20230404174033-5655abccca7e
+replace github.com/ebitengine/purego v0.4.0-alpha.4 => github.com/tmclane/purego v0.0.0-20230601213035-1f25e70d7b01

@@ -2,13 +2,14 @@ package application
 
 import (
 	"encoding/json"
-	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"log"
 	"net/http"
 	"os"
 	"runtime"
 	"strconv"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/internal/capabilities"
 
 	"github.com/wailsapp/wails/v3/pkg/icons"
 
@@ -333,9 +334,7 @@ func (a *App) error(message string, args ...any) {
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
 	newWindow := NewWindow(windowOptions)
 	id := newWindow.id
-	if a.windows == nil {
-		a.windows = make(map[uint]*WebviewWindow)
-	}
+
 	a.windowsLock.Lock()
 	a.windows[id] = newWindow
 	a.windowsLock.Unlock()
@@ -416,7 +415,7 @@ func (a *App) Run() error {
 	a.runLock.Unlock()
 
 	// set the application menu
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == "darwin" || runtime.GOOS == "linux" {
 		a.impl.setApplicationMenu(a.ApplicationMenu)
 	}
 	a.impl.setIcon(a.options.Icon)

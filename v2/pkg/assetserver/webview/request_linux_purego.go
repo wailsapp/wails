@@ -4,7 +4,6 @@
 package webview
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 
@@ -76,7 +75,6 @@ func (r *request) Body() (io.ReadCloser, error) {
 }
 
 func (r *request) Response() ResponseWriter {
-	fmt.Println("r.Response()")
 	if r.rw != nil {
 		return r.rw
 	}

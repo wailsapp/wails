@@ -14,21 +14,21 @@ Status of features in v3. Incomplete - please add as you see fit.
 
 Application interface methods
 
-| Method                                                        | Windows | Linux | Mac | Notes                        |
-|---------------------------------------------------------------|---------|-------|-----|------------------------------|
-| run() error                                                   | Y       | Y     | Y   |                              |
-| destroy()                                                     |         | Y     | Y   |                              |
-| setApplicationMenu(menu *Menu)                                | Y       |       | Y   |                              |
-| name() string                                                 |         |       | Y   |                              |
-| getCurrentWindowID() uint                                     | Y       | Y     | Y   |                              |
-| showAboutDialog(name string, description string, icon []byte) |         | Y     | Y   | [linux] No icon possible yet |
-| setIcon(icon []byte)                                          | -       |       | Y   |                              |
-| on(id uint)                                                   |         |       | Y   |                              |
-| dispatchOnMainThread(fn func())                               | Y       | Y     | Y   |                              |
-| hide()                                                        | Y       |       | Y   |                              |
-| show()                                                        | Y       |       | Y   |                              |
-| getPrimaryScreen() (*Screen, error)                           |         | Y     | Y   |                              |
-| getScreens() ([]*Screen, error)                               |         | Y     | Y   |                              |
+| Method                                                        | Windows | Linux | Mac | Notes |
+|---------------------------------------------------------------|---------|-------|-----|-------|
+| run() error                                                   | Y       | Y     | Y   |       |
+| destroy()                                                     |         | Y     | Y   |       |
+| setApplicationMenu(menu *Menu)                                | Y       | Y     | Y   |       |
+| name() string                                                 |         | Y     | Y   |       |
+| getCurrentWindowID() uint                                     | Y       | Y     | Y   |       |
+| showAboutDialog(name string, description string, icon []byte) |         | Y     | Y   |       |
+| setIcon(icon []byte)                                          | -       | Y     | Y   |       |
+| on(id uint)                                                   |         |       | Y   |       |
+| dispatchOnMainThread(fn func())                               | Y       | Y     | Y   |       |
+| hide()                                                        | Y       | Y     | Y   |       |
+| show()                                                        | Y       | Y     | Y   |       |
+| getPrimaryScreen() (*Screen, error)                           |         | Y     | Y   |       |
+| getScreens() ([]*Screen, error)                               |         | Y     | Y   |       |
 
 ## Webview Window
 
@@ -90,7 +90,7 @@ Webview Window Interface Methods
 
 | Feature | Windows | Linux | Mac | Notes |
 |---------|---------|-------|-----|-------|
-| Quit    | Y       | Y     | Y   |       |
+| Quit    | Y       | Y      | Y   |       |
 | Hide    | Y       |       | Y   |       |
 | Show    | Y       |       | Y   |       |
 
@@ -98,10 +98,10 @@ Webview Window Interface Methods
 
 | Feature  | Windows | Linux | Mac | Notes |
 |----------|---------|-------|-----|-------|
-| Info     | Y       |       | Y   |       |
-| Warning  | Y       |       | Y   |       |
-| Error    | Y       |       | Y   |       |
-| Question | Y       |       | Y   |       |
+| Info     | Y       | Y     | Y   |       |
+| Warning  | Y       | Y     | Y   |       |
+| Error    | Y       | Y     | Y   |       |
+| Question | Y       | Y     | Y   |       |
 | OpenFile | Y       |       | Y   |       |
 | SaveFile | Y       |       | Y   |       |
 
@@ -180,37 +180,40 @@ U = Untested
 A 'Y' in the table below indicates that the option has been tested and is applied when the window is created.
 An 'X' indicates that the option is not supported by the platform.
 
-| Feature                         | Windows | Linux | Mac | Notes                                             |
-|---------------------------------|---------|-------|-----|---------------------------------------------------|
-| Name                            |         |       |     |                                                   |
-| Title                           | Y       |       |     |                                                   |
-| Width                           | Y       | Y     |     |                                                   |
-| Height                          | Y       | Y     |     |                                                   |
-| AlwaysOnTop                     | Y       | Y     |     |                                                   |
-| URL                             | Y       |       |     |                                                   |
-| DisableResize                   | Y       | Y     |     |                                                   |
-| Frameless                       | Y       | Y     |     |                                                   |
-| MinWidth                        | Y       | Y     |     |                                                   |
-| MinHeight                       | Y       | Y     |     |                                                   |
-| MaxWidth                        | Y       | Y     |     |                                                   |
-| MaxHeight                       | Y       | Y     |     |                                                   |
-| StartState                      | Y       |       |     |                                                   |
-| Mac                             | -       | -     |     |                                                   |
-| BackgroundType                  |         |       |     | Acrylic seems to work but the others don't        |
-| BackgroundColour                | Y       | Y     |     |                                                   |
-| HTML                            | Y       | Y     |     |                                                   |
-| JS                              | Y       | Y     |     |                                                   |
-| CSS                             | Y       | Y     |     |                                                   |
-| X                               | Y       | Y     |     |                                                   |
-| Y                               | Y       | Y     |     |                                                   |
-| HideOnClose                     | Y       | Y     |     |                                                   |
-| FullscreenButtonEnabled         |         | ?     |     | [linux] How is this different from DisableResize? |
-| Hidden                          | Y       |       |     |                                                   |
-| EnableFraudulentWebsiteWarnings |         |       |     |                                                   |
-| Zoom                            |         | Y     |     |                                                   |
-| EnableDragAndDrop               | Y       | Y     |     |                                                   |
-| Windows                         | Y       | -     | -   |                                                   |
-| Focused                         | Y       |       |     |                                                   |
+| Feature                         | Windows | Linux | Mac | Notes                                      |
+|---------------------------------|---------|-------|-----|--------------------------------------------|
+| AlwaysOnTop                     | Y       |       |     |                                            |
+| BackgroundColour                | Y       | Y     |     |                                            |
+| BackgroundType                  |         |       |     | Acrylic seems to work but the others don't |
+| CSS                             | Y       | Y     |     |                                            |
+| DevToolsEnabled                 | Y       | Y     | Y   |                                            |
+| DisableResize                   | Y       | Y     |     |                                            |
+| EnableDragAndDrop               |         | Y     |     |                                            |
+| EnableFraudulentWebsiteWarnings |         |       |     |                                            |
+| Focused                         | Y       | Y     |     |                                            |
+| Frameless                       | Y       | Y     |     |                                            |
+| FullscreenButtonEnabled         | Y       |       |     |                                            |
+| Height                          | Y       | Y     |     |                                            |
+| Hidden                          | Y       | Y     |     |                                            |
+| HTML                            | Y       | Y     |     |                                            |
+| JS                              | Y       | Y     |     |                                            |
+| Mac                             | -       | -     |     |                                            |
+| MaxHeight                       | Y       | Y     |     |                                            |
+| MaxWidth                        | Y       | Y     |     |                                            |
+| MinHeight                       | Y       | Y     |     |                                            |
+| MinWidth                        | Y       | Y     |     |                                            |
+| Name                            | Y       | Y     |     |                                            |
+| OpenInspectorOnStartup          |         |       |     |                                            |
+| StartState                      | Y       |       |     |                                            |
+| Title                           | Y       | Y     |     |                                            |
+| URL                             | Y       | Y     |     |                                            |
+| Width                           | Y       | Y     |     |                                            |
+| Windows                         | Y       | -     | -   |                                            |
+| X                               | Y       | Y     |     |                                            |
+| Y                               | Y       | Y     |     |                                            |
+| Zoom                            |         |       |     |                                            |
+| ZoomControlEnabled              |         |       |     |                                            |
+
 
 ### Log
 
@@ -220,7 +223,7 @@ To log or not to log? System logger vs custom logger.
 
 | Event                    | Windows | Linux | Mac | Notes |
 |--------------------------|---------|-------|-----|-------|
-| Default Application Menu | Y       | Y     | Y   |       |
+| Default Application Menu | Y       | Y      | Y   |       |
 
 ## Tray Menus
 
@@ -300,6 +303,8 @@ Built-in plugin support:
 | Start at login  |         |       | Y   |       |
 | Server          |         |       |     |       |
 
+TODO:
+
 - Ensure each plugin has a JS wrapper that can be injected into the window.
 
 ## Packaging
@@ -318,7 +323,8 @@ Built-in plugin support:
 | Feature | Windows | Linux | Mac | Notes                                         |
 |---------|---------|-------|-----|-----------------------------------------------|
 | Resize  |         |       |     |                                               |
-| Drag    |         | Y     |     | Linux - can always drag with `Alt`+left mouse |
+| Drag    |         | Y     |     | Linux - can always drag with `Meta`+left mouse |
+
 
 ## Mac Specific
 
@@ -352,6 +358,24 @@ Built-in plugin support:
 | WindowMask                        | nil     | Makes the window the contents of the bitmap |
 
 ## Linux Specific
+
+
+Implementation details for the functions utilized by the `*_linux.go` files are located in the following files:
+
+- linux_cgo.go: CGo implementation
+- linux_purego.go: PureGo implementation
+
+### CGO
+
+By default CGO is utilized to compile the Linux port.  This prevents easy cross-compilation and so the PureGo implementation is also being simultaneously developed.
+
+### Purego
+
+The examples can be compiled using the following command:
+
+    CGO_ENABLED=0 go build -tags purego
+
+Note: things are currently not working after the refactor
 
 ## Examples
 

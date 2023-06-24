@@ -89,7 +89,6 @@ func (rw *responseWriter) WriteHeader(code int) {
 			contentLength = pLen
 		}
 	}
-	fmt.Println("content_length", contentLength)
 	// We can't use os.Pipe here, because that returns files with a finalizer for closing the FD. But the control over the
 	// read FD is given to the InputStream and will be closed there.
 	// Furthermore we especially don't want to have the FD_CLOEXEC

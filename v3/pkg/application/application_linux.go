@@ -1,74 +1,40 @@
-//go:build linux && !purego
+//go:build linux
 
 package application
 
-/*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
-
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
-#include <webkit2/webkit2.h>
-#include <stdio.h>
-#include <limits.h>
-#include <stdint.h>
-
-typedef struct App {
-  void *app;
-} App;
-
-extern void processApplicationEvent(uint);
-
-extern void activateLinux(gpointer data);
-
-static void activate (GtkApplication* app, gpointer data) {
-   // FIXME: should likely emit a WAILS specific code
-   // events.Mac.EventApplicationDidFinishLaunching == 1032
-   //processApplicationEvent(1032);
-
-   activateLinux(data);
-}
-
-static GtkApplication* init(char* name) {
-   return gtk_application_new(name, G_APPLICATION_DEFAULT_FLAGS);
-}
-
-static int run(void *app, void *data) {
-  g_signal_connect (app, "activate", G_CALLBACK (activate), data);
-  g_application_hold(app);  // allows it to run without a window
-  int status = g_application_run (G_APPLICATION (app), 0, NULL);
-  g_application_release(app);
-  g_object_unref (app);
-  return status;
-}
-
-*/
-import "C"
 import (
 	"fmt"
 	"log"
 	"os"
 	"strings"
 	"sync"
-	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 func init() {
+	// FIXME: This should be handled appropriately in the individual files most likely.
 	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
 	_ = os.Setenv("GDK_BACKEND", "x11")
 }
 
 type linuxApp struct {
-	application     unsafe.Pointer
-	applicationMenu unsafe.Pointer
+	application     pointer
+	applicationMenu pointer
 	parent          *App
 
 	startupActions []func()
 
 	// Native -> uint
-	windows     map[*C.GtkWindow]uint
+	windows     map[windowPointer]uint
 	windowsLock sync.Mutex
+}
+
+func (m *linuxApp) GetFlags(options Options) map[string]any {
+	if options.Flags == nil {
+		options.Flags = make(map[string]any)
+	}
+	return options.Flags
 }
 
 func getNativeApplication() *linuxApp {
@@ -76,78 +42,28 @@ func getNativeApplication() *linuxApp {
 }
 
 func (m *linuxApp) hide() {
-	windows := C.gtk_application_get_windows((*C.GtkApplication)(m.application))
-	for {
-		fmt.Println("hiding", windows.data)
-		C.gtk_widget_hide((*C.GtkWidget)(windows.data))
-		windows = windows.next
-		if windows == nil {
-			return
-		}
-	}
+	hideAllWindows(m.application)
 }
 
 func (m *linuxApp) show() {
-	windows := C.gtk_application_get_windows((*C.GtkApplication)(m.application))
-	for {
-		fmt.Println("hiding", windows.data)
-		C.gtk_widget_show_all((*C.GtkWidget)(windows.data))
-		windows = windows.next
-		if windows == nil {
-			return
-		}
-	}
+	showAllWindows(m.application)
 }
 
 func (m *linuxApp) on(eventID uint) {
+	// TODO: What do we need to do here?
 	log.Println("linuxApp.on()", eventID)
-	// TODO: Setup signal handling as appropriate
-	// Note: GTK signals seem to be strings!
 }
 
 func (m *linuxApp) setIcon(icon []byte) {
-	/* // FIXME: WIP
-	   loader := C.gdk_pixbuf_loader_new()
-
-	   	if loader == nil {
-	   		return
-	   	}
-
-	   loaded := C.gdk_pixbuf_loader_write(loader, (*C.guchar)(&icon[0]), (C.gsize)(len(icon)), 0)
-
-	   	if loaded == C.bool(1) && C.gdk_pixbuf_loader_close(loader, 0) {
-	   		pixbuf := C.gdk_pixbuf_loader_get_pixbuf(loader)
-	   		if pixbuf != nil {
-	   			ww := m.parent.CurrentWindow()
-	   			window := ww.impl.window
-	   			C.gtk_window_set_icon(window, pixbuf)
-	   		}
-	   	}
-
-	   C.g_object_unref(loader)
-	*/
+	fmt.Println("linuxApp.setIcon", "not implemented")
 }
 
 func (m *linuxApp) name() string {
-	// appName := C.getAppName()
-	// defer C.free(unsafe.Pointer(appName))
-	// return C.GoString(appName)
-	return ""
+	return appName()
 }
 
 func (m *linuxApp) getCurrentWindowID() uint {
-	// TODO: Add extra metadata to window
-	window := (*C.GtkWindow)(C.gtk_application_get_active_window((*C.GtkApplication)(m.application)))
-	if window == nil {
-		return uint(1)
-	}
-	m.windowsLock.Lock()
-	defer m.windowsLock.Unlock()
-	identifier, ok := m.windows[window]
-	if ok {
-		return identifier
-	}
-	return uint(1)
+	return getCurrentWindowID(m.application, m.windows)
 }
 
 func (m *linuxApp) setApplicationMenu(menu *Menu) {
@@ -172,20 +88,22 @@ func (m *linuxApp) run() error {
 		fmt.Println("events.Mac.ApplicationDidFinishLaunching received!")
 	})
 
-	var app C.App
-	app.app = unsafe.Pointer(m)
-	C.run(m.application, m.application)
-	return nil
+	return appRun(m.application)
 }
 
 func (m *linuxApp) destroy() {
-	C.g_application_quit((*C.GApplication)(m.application))
+	appDestroy(m.application)
+}
+
+func (m *linuxApp) isOnMainThread() bool {
+	// FIXME: How do we detect this properly?
+	return false
 }
 
 // register our window to our parent mapping
-func (m *linuxApp) registerWindow(window *C.GtkWindow, id uint) {
+func (m *linuxApp) registerWindow(window pointer, id uint) {
 	m.windowsLock.Lock()
-	m.windows[window] = id
+	m.windows[windowPointer(window)] = id
 	m.windowsLock.Unlock()
 }
 
@@ -194,30 +112,15 @@ func newPlatformApp(parent *App) *linuxApp {
 	if name == "" {
 		name = "undefined"
 	}
-	nameC := C.CString(fmt.Sprintf("org.wails.%s", name))
 	app := &linuxApp{
 		parent:      parent,
-		application: unsafe.Pointer(C.init(nameC)),
-		//		name:        fmt.Sprintf("org.wails.%s", name),
-		windows: map[*C.GtkWindow]uint{},
+		application: appNew(name),
+		windows:     map[windowPointer]uint{},
 	}
-	C.free(unsafe.Pointer(nameC))
 	return app
 }
 
-// executeStartupActions is called by `activateLinux` below to execute
-// code which needs to be run after the 'activate' signal is received
-func (m *linuxApp) executeStartupActions() {
-	for _, fn := range m.startupActions {
-		fn()
-	}
-}
-
-//export activateLinux
-func activateLinux(data unsafe.Pointer) {
-	getNativeApplication().executeStartupActions()
-}
-
+/*
 //export processApplicationEvent
 func processApplicationEvent(eventID C.uint) {
 	// TODO: add translation to Wails events
@@ -256,7 +159,7 @@ func processDragItems(windowID C.uint, arr **C.char, length C.int) {
 }
 
 //export processMenuItemClick
-func processMenuItemClick(menuID C.uint) {
+func processMenuItemClick(menuID identifier) {
 	menuItemClicked <- uint(menuID)
 }
 
@@ -266,3 +169,4 @@ func setIcon(icon []byte) {
 	}
 	//C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
 }
+*/

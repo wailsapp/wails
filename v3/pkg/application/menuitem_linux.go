@@ -5,48 +5,31 @@ package application
 import (
 	"fmt"
 	"runtime"
-	"unsafe"
 )
-
-/*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
-
-#include <stdio.h>
-#include "gtk/gtk.h"
-
-
-
-*/
-import "C"
 
 type linuxMenuItem struct {
 	menuItem  *MenuItem
-	native    unsafe.Pointer
-	handlerId C.gulong
+	native    pointer
+	handlerId uint
 }
 
 func (l linuxMenuItem) setTooltip(tooltip string) {
 	globalApplication.dispatchOnMainThread(func() {
 		l.blockSignal()
 		defer l.unBlockSignal()
-
-		value := C.CString(tooltip)
-		C.gtk_widget_set_tooltip_text(
-			(*C.GtkWidget)(l.native),
-			value)
-		C.free(unsafe.Pointer(value))
+		menuItemSetToolTip(l.native, tooltip)
 	})
 }
 
 func (l linuxMenuItem) blockSignal() {
 	if l.handlerId != 0 {
-		C.g_signal_handler_block(C.gpointer(l.native), l.handlerId)
+		menuItemSignalBlock(l.native, l.handlerId, true)
 	}
 }
 
 func (l linuxMenuItem) unBlockSignal() {
 	if l.handlerId != 0 {
-		C.g_signal_handler_unblock(C.gpointer(l.native), l.handlerId)
+		menuItemSignalBlock(l.native, l.handlerId, false)
 	}
 }
 
@@ -54,35 +37,19 @@ func (l linuxMenuItem) setLabel(s string) {
 	globalApplication.dispatchOnMainThread(func() {
 		l.blockSignal()
 		defer l.unBlockSignal()
-		value := C.CString(s)
-		C.gtk_menu_item_set_label(
-			(*C.GtkMenuItem)(l.native),
-			value)
-		C.free(unsafe.Pointer(value))
-
+		menuItemSetLabel(l.native, s)
 	})
 }
 
 func (l linuxMenuItem) isChecked() bool {
-	if C.gtk_check_menu_item_get_active((*C.GtkCheckMenuItem)(l.native)) == C.int(1) {
-		return true
-	}
-	return false
+	return menuItemChecked(l.native)
 }
 
 func (l linuxMenuItem) setDisabled(disabled bool) {
-
 	globalApplication.dispatchOnMainThread(func() {
 		l.blockSignal()
 		defer l.unBlockSignal()
-
-		value := C.int(1)
-		if disabled {
-			value = C.int(0)
-		}
-		C.gtk_widget_set_sensitive(
-			(*C.GtkWidget)(l.native),
-			value)
+		menuItemSetDisabled(l.native, disabled)
 	})
 }
 
@@ -90,15 +57,15 @@ func (l linuxMenuItem) setChecked(checked bool) {
 	globalApplication.dispatchOnMainThread(func() {
 		l.blockSignal()
 		defer l.unBlockSignal()
+		menuItemSetChecked(l.native, checked)
+	})
+}
 
-		value := C.int(0)
-		if checked {
-			value = C.int(1)
-		}
-
-		C.gtk_check_menu_item_set_active(
-			(*C.GtkCheckMenuItem)(l.native),
-			value)
+func (l linuxMenuItem) setHidden(hidden bool) {
+	globalApplication.dispatchOnMainThread(func() {
+		l.blockSignal()
+		defer l.unBlockSignal()
+		widgetSetVisible(l.native, hidden)
 	})
 }
 
@@ -120,41 +87,30 @@ func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
 	result := &linuxMenuItem{
 		menuItem: item,
 	}
-	cLabel := C.CString(item.label)
 	switch item.itemType {
 	case text:
-		result.native = unsafe.Pointer(C.gtk_menu_item_new_with_label(cLabel))
+		result.native = menuItemNew(item.label)
 
 	case checkbox:
-		result.native = unsafe.Pointer(C.gtk_check_menu_item_new_with_label(cLabel))
+		result.native = menuCheckItemNew(item.label)
 		result.setChecked(item.checked)
-		if item.itemType == checkbox || item.itemType == radio {
-			//			C.setMenuItemChecked(result.nsMenuItem, C.bool(item.checked))
-		}
 		if item.accelerator != nil {
 			result.setAccelerator(item.accelerator)
 		}
-	case radio:
-		panic("Shouldn't get here with a radio item")
-
 	case submenu:
-		result.native = unsafe.Pointer(C.gtk_menu_item_new_with_label(cLabel))
+		result.native = menuItemNew(item.label)
 
 	default:
-		panic("WTF")
+		panic(fmt.Sprintf("Unknown menu type: %v", item.itemType))
 	}
 	result.setDisabled(result.menuItem.disabled)
-
-	C.free(unsafe.Pointer(cLabel))
 	return result
 }
 
-func newRadioItemImpl(item *MenuItem, group *C.GSList) *linuxMenuItem {
-	cLabel := C.CString(item.label)
-	defer C.free(unsafe.Pointer(cLabel))
+func newRadioItemImpl(item *MenuItem, group GSListPointer) *linuxMenuItem {
 	result := &linuxMenuItem{
 		menuItem: item,
-		native:   unsafe.Pointer(C.gtk_radio_menu_item_new_with_label(group, cLabel)),
+		native:   menuRadioItemNew(group, item.label),
 	}
 	result.setChecked(item.checked)
 	result.setDisabled(result.menuItem.disabled)
@@ -182,6 +138,7 @@ func newHideMenuItem() *MenuItem {
 	return newMenuItem("Hide " + globalApplication.options.Name).
 		SetAccelerator("CmdOrCtrl+h").
 		OnClick(func(ctx *Context) {
+
 			//			C.hideApplication()
 		})
 }
