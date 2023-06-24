@@ -490,6 +490,13 @@ func windowGetCurrentMonitorGeometry(window pointer) (x int, y int, width int, h
 	return int(result.x), int(result.y), int(result.width), int(result.height), scale
 }
 
+func windowGetAbsolutePosition(window pointer) (int, int) {
+	var x C.int
+	var y C.int
+	C.gtk_window_get_position((*C.GtkWindow)(window), &x, &y)
+	return int(x), int(y)
+}
+
 func windowGetSize(window pointer) (int, int) {
 	var windowWidth C.int
 	var windowHeight C.int
@@ -498,10 +505,18 @@ func windowGetSize(window pointer) (int, int) {
 }
 
 func windowGetRelativePosition(window pointer) (int, int) {
-	var x C.int
-	var y C.int
-	C.gtk_window_get_position((*C.GtkWindow)(window), &x, &y)
-	return int(x), int(y)
+	x, y := windowGetAbsolutePosition(window)
+	// The position must be relative to the screen it is on
+	// We need to get the screen it is on
+	monitor := windowGetCurrentMonitor(window)
+	geometry := C.GdkRectangle{}
+	C.gdk_monitor_get_geometry(monitor, &geometry)
+	x = x - int(geometry.x)
+	y = y - int(geometry.y)
+
+	// TODO: Scale based on DPI
+
+	return x, y
 }
 
 func windowHide(window pointer) {
