@@ -14,7 +14,7 @@ Application events are events that are emitted by the application. These events 
 
 ### Window Events
 
-Window events are events that are emitted by a window. These events include native events such as `WindowDidBecomeMain` on macOS.
+Window events are events that are emitted by a window. These events include native events such as `WindowDidBecomeMain` on macOS. Common events are also defined, so they work cross-platform, e.g. `WindowClosing`.
 
 ### Custom Events
 
@@ -46,6 +46,8 @@ When emitting an event in JS, it now sends the event to the application. This wi
 The Window API has largely remained the same, however the methods are now on an instance of a window rather than the runtime. 
 Some notable differences are:
 - Windows now have a Name that identifies them. This is used to identify the window when emitting events.
+- Windows have even more methods on the that were previously unavailable, such as `AbsolutePosition` and `ToggleDevTools`.
+- Windows can now accept files via native drag and drop. See the Drag and Drop section for more details.
 
 ## ClipBoard
 

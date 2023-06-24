@@ -7,10 +7,19 @@ import (
 type Plugin struct {
 	app      *application.App
 	disabled bool
+	options  Config
 }
 
-func NewPlugin() *Plugin {
-	return &Plugin{}
+type Config struct {
+	// RegistryKey is the key in the registry to use for storing the start at login setting.
+	// This defaults to the name of the executable
+	RegistryKey string
+}
+
+func NewPlugin(options Config) *Plugin {
+	return &Plugin{
+		options: options,
+	}
 }
 
 // Shutdown is called when the app is shutting down

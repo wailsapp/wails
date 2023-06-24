@@ -90,7 +90,7 @@ Webview Window Interface Methods
 
 | Feature | Windows | Linux | Mac | Notes |
 |---------|---------|-------|-----|-------|
-| Quit    | Y       | Y      | Y   |       |
+| Quit    | Y       | Y     | Y   |       |
 | Hide    | Y       |       | Y   |       |
 | Show    | Y       |       | Y   |       |
 
@@ -214,7 +214,6 @@ An 'X' indicates that the option is not supported by the platform.
 | Zoom                            |         |       |     |                                            |
 | ZoomControlEnabled              |         |       |     |                                            |
 
-
 ### Log
 
 To log or not to log? System logger vs custom logger.
@@ -223,7 +222,7 @@ To log or not to log? System logger vs custom logger.
 
 | Event                    | Windows | Linux | Mac | Notes |
 |--------------------------|---------|-------|-----|-------|
-| Default Application Menu | Y       | Y      | Y   |       |
+| Default Application Menu | Y       | Y     | Y   |       |
 
 ## Tray Menus
 
@@ -320,11 +319,10 @@ TODO:
 
 ## Frameless Windows
 
-| Feature | Windows | Linux | Mac | Notes                                         |
-|---------|---------|-------|-----|-----------------------------------------------|
-| Resize  |         |       |     |                                               |
-| Drag    |         | Y     |     | Linux - can always drag with `Meta`+left mouse |
-
+| Feature | Windows | Linux | Mac | Notes                                          |
+|---------|---------|-------|-----|------------------------------------------------|
+| Resize  | Y       |       | Y   |                                                |
+| Drag    | Y       | Y     | Y   | Linux - can always drag with `Meta`+left mouse |
 
 ## Mac Specific
 
@@ -359,7 +357,6 @@ TODO:
 
 ## Linux Specific
 
-
 Implementation details for the functions utilized by the `*_linux.go` files are located in the following files:
 
 - linux_cgo.go: CGo implementation
@@ -367,7 +364,8 @@ Implementation details for the functions utilized by the `*_linux.go` files are 
 
 ### CGO
 
-By default CGO is utilized to compile the Linux port.  This prevents easy cross-compilation and so the PureGo implementation is also being simultaneously developed.
+By default CGO is utilized to compile the Linux port. This prevents easy cross-compilation and so the PureGo
+implementation is also being simultaneously developed.
 
 ### Purego
 

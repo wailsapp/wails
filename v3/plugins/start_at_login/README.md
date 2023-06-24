@@ -24,7 +24,7 @@ You can then call the methods from the frontend:
 To use this from Go, create a new instance of the plugin, then call the methods on that:
 
 ```go
-    start_at_login := start_at_login.NewPlugin()
+    start_at_login := start_at_login.NewPlugin(Options)
 	start_at_login.StartAtLogin(true)
 ```
 

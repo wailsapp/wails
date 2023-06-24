@@ -7,6 +7,7 @@ require github.com/wailsapp/wails/v3 v3.0.0-alpha.0
 require (
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/ebitengine/purego v0.4.0-alpha.4 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
@@ -22,7 +23,7 @@ require (
 	github.com/samber/lo v1.37.0 // indirect
 	github.com/wailsapp/go-webview2 v1.0.2-0.20230604075323-d593c659ca7b // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
-	github.com/wailsapp/wails/v2 v2.3.2-0.20230117193915-45c3a501d9e6 // indirect
+	github.com/wailsapp/wails/v2 v2.5.1 // indirect
 	golang.org/x/exp v0.0.0-20220930202632-ec3f01382ef9 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.7.0 // indirect

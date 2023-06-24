@@ -39,15 +39,16 @@ func main() {
 				// When true, the original app will be activated when a second instance is launched
 				ActivateAppOnSubsequentLaunch: true,
 			}),
-			"start_at_login": start_at_login.NewPlugin(),
+			"start_at_login": start_at_login.NewPlugin(start_at_login.Config{}),
 		},
 		Assets: application.AssetOptions{
 			FS: assets,
 		},
 	})
 
-	window := app.NewWebviewWindow()
-	window.ToggleDevTools()
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+		DevToolsEnabled: true,
+	})
 
 	err := app.Run()
 
