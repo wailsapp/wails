@@ -685,6 +685,10 @@ void setWindowEnabled(void *window, bool enabled) {
 	[nsWindow setIgnoresMouseEvents:!enabled];
 }
 
+void windowSetEnabled(void *window, bool enabled) {
+	// TODO: Implement
+}
+
 */
 import "C"
 import (
@@ -700,6 +704,10 @@ var showDevTools = func(window unsafe.Pointer) {}
 type macosWebviewWindow struct {
 	nsWindow unsafe.Pointer
 	parent   *WebviewWindow
+}
+
+func (w *macosWebviewWindow) setAbsolutePosition(x int, y int) {
+	C.windowSetAbsolutePosition(w.nsWindow, C.int(x), C.int(y))
 }
 
 func (w *macosWebviewWindow) print() error {
@@ -959,9 +967,6 @@ func (w *macosWebviewWindow) setRelativePosition(x, y int) {
 	C.windowSetRelativePosition(w.nsWindow, C.int(x), C.int(y))
 }
 
-func (w *macosWebviewWindow) setRelativePosition(x, y int) {
-	C.windowSetAbsolutePosition(w.nsWindow, C.int(x), C.int(y))
-}
 func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup

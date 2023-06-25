@@ -130,6 +130,10 @@ func (s *macosSystemTray) setIcon(icon []byte) {
 	})
 }
 
+func (s *macosSystemTray) setDarkModeIcon(icon []byte) {
+	s.setIcon(icon)
+}
+
 func (s *macosSystemTray) setTemplateIcon(icon []byte) {
 	s.icon = icon
 	s.isTemplateIcon = true

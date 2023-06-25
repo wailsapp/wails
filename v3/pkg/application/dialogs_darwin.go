@@ -70,13 +70,24 @@ static void* createAlert(int alertType, char* title, char *message, void *icon, 
 static int dialogRunModal(void *dialog, void *parent) {
 	NSAlert *alert = (__bridge NSAlert *)dialog;
 
-    long response;
-	if( parent != NULL ) {
-		NSWindow *window = (__bridge NSWindow *)parent;
-		response = [alert runModalSheetForWindow:window];
-	} else {
+    __block long response;
+	//if( parent != NULL ) {
+	//	NSWindow *window = (__bridge NSWindow *)parent;
+	//	response = [alert runModalSheetForWindow:window];
+	//} else {
+	//	response = [alert runModal];
+	//}
+
+	// If the parent is NULL, we are running a modal dialog, otherwise attach the alert to the parent
+	if( parent == NULL ) {
 		response = [alert runModal];
+	} else {
+		NSWindow *window = (__bridge NSWindow *)parent;
+		[alert beginSheetModalForWindow:window completionHandler:^(NSModalResponse returnCode) {
+			response = returnCode;
+		}];
 	}
+
     int result;
 
     if( response == NSAlertFirstButtonReturn ) {
@@ -350,9 +361,10 @@ func (m *macosDialog) show() {
 				iconLength = C.int(len(globalApplication.options.Icon))
 			}
 		}
+		var parent unsafe.Pointer
 		if m.dialog.window != nil {
 			// get NSWindow from window
-			nsWindow = m.dialog.window.impl.(*macosWebviewWindow).nsWindow
+			parent = m.dialog.window.impl.(*macosWebviewWindow).nsWindow
 		}
 
 		alertType, ok := alertTypeMap[m.dialog.DialogType]
@@ -360,7 +372,7 @@ func (m *macosDialog) show() {
 			alertType = C.NSAlertStyleInformational
 		}
 
-		m.nsDialog = C.createAlert(alertType, title, message, iconData, iconLength, nsWindow)
+		m.nsDialog = C.createAlert(alertType, title, message, iconData, iconLength)
 
 		// Reverse the Buttons so that the default is on the right
 		reversedButtons := make([]*Button, len(m.dialog.Buttons))
@@ -372,7 +384,7 @@ func (m *macosDialog) show() {
 			count++
 		}
 
-		buttonPressed := int(C.dialogRunModal(m.nsDialog, nsWindow))
+		buttonPressed := int(C.dialogRunModal(m.nsDialog, parent))
 		if len(m.dialog.Buttons) > buttonPressed {
 			button := reversedButtons[buttonPressed]
 			if button.Callback != nil {
