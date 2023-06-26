@@ -10,6 +10,7 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
+import {EventTypes} from './event_types';
 
 /**
  * The Events API provides methods to interact with the event system.
@@ -65,4 +66,9 @@ export const Events = {
     OffAll: () => {
         wails.Events.OffAll();
     },
+
+    Windows: EventTypes.Windows,
+    Mac: EventTypes.Mac,
+    Common: EventTypes.Common,
+
 };

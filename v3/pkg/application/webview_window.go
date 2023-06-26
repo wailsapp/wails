@@ -520,10 +520,11 @@ func (w *WebviewWindow) On(eventType events.WindowEventType, callback func(ctx *
 
 func (w *WebviewWindow) handleWindowEvent(id uint) {
 	w.eventListenersLock.RLock()
+	defer w.eventListenersLock.RUnlock()
 	for _, listener := range w.eventListeners[id] {
 		go listener.callback(blankWindowEventContext)
 	}
-	w.eventListenersLock.RUnlock()
+	w.dispatchWindowEvent(id)
 }
 
 // Width returns the width of the window
@@ -810,7 +811,17 @@ func (w *WebviewWindow) SetFrameless(frameless bool) *WebviewWindow {
 
 func (w *WebviewWindow) dispatchWailsEvent(event *WailsEvent) {
 	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON())
+	println("Dispatching event: " + msg)
 	w.ExecJS(msg)
+}
+
+func (w *WebviewWindow) dispatchWindowEvent(id uint) {
+	// TODO: Make this more efficient by keeping a list of which events have been registered
+	// and only dispatching those.
+	jsEvent := &WailsEvent{
+		Name: events.JSEvent(id),
+	}
+	w.dispatchWailsEvent(jsEvent)
 }
 
 func (w *WebviewWindow) info(message string, args ...any) {

@@ -6,7 +6,7 @@ Status of features in v3. Incomplete - please add as you see fit.
 
 - [ ] Dev Support - What will it look like?
 - [ ] Translucency on Windows doesn't work right
-- [ ] Events - cross-platform events, simplified event handling?
+- [ ] Events - cross-platform events, simplified event handling?, event constants in JS
 - [ ] Error handling - needs to be revised. Centralised system error handling?
 - [ ] Documentation - needs to be written
 

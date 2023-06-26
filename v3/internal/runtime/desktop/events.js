@@ -137,7 +137,6 @@ function listenerOff(listener) {
  * @param {WailsEvent} event
  */
 export function dispatchWailsEvent(event) {
-    console.log("dispatching event: ", {event});
     let listeners = eventListeners.get(event.name);
     if (listeners) {
         // iterate listeners and call callback. If callback returns true, remove listener

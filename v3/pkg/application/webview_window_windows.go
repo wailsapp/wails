@@ -146,7 +146,7 @@ func (w *windowsWebviewWindow) setMaxSize(width, height int) {
 }
 
 func (w *windowsWebviewWindow) execJS(js string) {
-	invokeSync(func() {
+	globalApplication.dispatchOnMainThread(func() {
 		w.chromium.Eval(js)
 	})
 }
@@ -446,7 +446,7 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 }
 
 // on is used to indicate that a particular event should be listened for
-func (w *windowsWebviewWindow) on(eventID uint) {
+func (w *windowsWebviewWindow) on(_ uint) {
 	// We don't need to worry about this in Windows as we do not need
 	// to optimise cgo calls
 }
