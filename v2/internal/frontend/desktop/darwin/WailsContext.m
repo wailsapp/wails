@@ -230,7 +230,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     } else if (!self.defaultContextMenu) {
         // Disable default context menus
         WKUserScript *initScript = [WKUserScript new];
-        [initScript initWithSource:@"window.wails.flags.disableWailsDefaultContextMenu = true;"
+        [initScript initWithSource:@"window.wails.flags.disableDefaultContextMenu = true;"
                      injectionTime:WKUserScriptInjectionTimeAtDocumentEnd
                   forMainFrameOnly:false];
         [userContentController addUserScript:initScript];

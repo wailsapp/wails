@@ -420,8 +420,28 @@ Type: `string`
 
 ### EnableDefaultContextMenu
 
-EnableDefaultContextMenu enables the browser's default context-menu in production (Without the devtools inspector).
-This menu is already enabled in development, as well as in debug builds and production builds with the `-devtools` flag.
+EnableDefaultContextMenu enables the browser's default context-menu in production.
+
+By default, the browser's default context-menu is only available in development and in a `-debug` or `-devtools` [build](../reference/cli.mdx#build) along with the devtools inspector, Using this option you can enable the default context-menu in `production` while the devtools inspector won't be available unless the `-devtools` build flag is used.
+
+When this option is enabled, by default the context-menu will only be shown for text contexts (where Cut/Copy/Paste is needed), to override this behavior, you can use the CSS property `--default-contextmenu` on any HTML element (including the `body`) with the following values :
+
+| CSS Style                      | Behavior                                                                                                                                           |
+|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--default-contextmenu: auto;` | (**default**) will show the default context menu only if :<br/> contentEditable is true OR text has been selected OR element is input or textarea  |
+| `--default-contextmenu: show;` | will always show the default context menu                                                                                                          |
+| `--default-contextmenu: hide;` | will always hide the default context menu                                                                                                          |
+
+This rule is inherited like any normal CSS rule, so nesting works as expected.
+
+:::note
+This filtering functionality is only enabled in production, so in development and in debug build, the full context-menu is always available everywhere.
+:::
+
+:::warning
+This filtering functionality is NOT a security measure, the developer should expect that the full context-menu could be leaked anytime which could contain commands like (Download image, Reload, Save webpage), if this is a concern, the developer SHOULD NOT enable the default context-menu.
+:::
+
 
 Name: EnableDefaultContextMenu<br/>
 Type: `bool`
