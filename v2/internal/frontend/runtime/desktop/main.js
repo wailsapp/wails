@@ -16,6 +16,7 @@ import * as Window from "./window";
 import * as Screen from "./screen";
 import * as Browser from "./browser";
 import * as Clipboard from "./clipboard";
+import * as ContextMenu from "./contextmenu";
 
 
 export function Quit() {
@@ -61,7 +62,7 @@ window.wails = {
     callbacks,
     flags: {
         disableScrollbarDrag: false,
-        disableWailsDefaultContextMenu: false,
+        disableDefaultContextMenu: false,
         enableResize: false,
         defaultCursor: null,
         borderThickness: 6,
@@ -187,8 +188,13 @@ window.addEventListener('mousemove', function (e) {
 
 // Setup context menu hook
 window.addEventListener('contextmenu', function (e) {
-    if (window.wails.flags.disableWailsDefaultContextMenu) {
+    // always show the contextmenu in debug & dev
+    if (DEBUG) return;
+
+    if (window.wails.flags.disableDefaultContextMenu) {
         e.preventDefault();
+    } else {
+        ContextMenu.processDefaultContextMenu(e);
     }
 });
 
