@@ -78,10 +78,8 @@ if (window.wailsbindings) {
     delete window.wails.SetBindings;
 }
 
-// This is evaluated at build time in package.json
-// const dev = 0;
-// const production = 1;
-if (ENV === 1) {
+// (bool) This is evaluated at build time in package.json
+if (!DEBUG) {
     delete window.wailsbindings;
 }
 
