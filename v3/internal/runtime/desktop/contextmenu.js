@@ -34,6 +34,11 @@ Default: Show default context menu if contentEditable: true OR text has been sel
 Anything nested under a tag with --default-contextmenu: hide will not show the context menu unless it is explicitly set with --default-contextmenu: show
  */
 function processDefaultContextMenu(event) {
+    // Debug builds always show the menu
+    if(DEBUG) {
+        return;
+    }
+
     // Process default context menu
     let element = event.target;
     const computedStyle = window.getComputedStyle(element);

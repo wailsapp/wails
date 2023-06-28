@@ -56,7 +56,7 @@ tasks:
   build:production:
     internal: true
     cmds:
-      - npx esbuild desktop/main.js --bundle --tree-shaking=true --minify --outfile=runtime_production_desktop_{{.PLATFORM}}.js --define:DEBUG=true --define:WINDOWS={{.WINDOWS}} --define:DARWIN={{.DARWIN}} --define:LINUX={{.LINUX}} --define:PLATFORM={{.PLATFORM}} --define:INVOKE={{.INVOKE}}
+      - npx esbuild desktop/main.js --bundle --tree-shaking=true --minify --outfile=runtime_production_desktop_{{.PLATFORM}}.js --define:DEBUG=false --define:WINDOWS={{.WINDOWS}} --define:DARWIN={{.DARWIN}} --define:LINUX={{.LINUX}} --define:PLATFORM={{.PLATFORM}} --define:INVOKE={{.INVOKE}}
 
   build:production:windows:
     cmds:

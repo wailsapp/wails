@@ -811,7 +811,6 @@ func (w *WebviewWindow) SetFrameless(frameless bool) *WebviewWindow {
 
 func (w *WebviewWindow) dispatchWailsEvent(event *WailsEvent) {
 	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON())
-	println("Dispatching event: " + msg)
 	w.ExecJS(msg)
 }
 
