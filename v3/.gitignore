@@ -1,5 +1,5 @@
 examples/kitchensink/kitchensink
-cmd/wails/wails
+cmd/wails3/wails
 /examples/systray/systray
 /examples/window/window
 /examples/dialogs/dialogs

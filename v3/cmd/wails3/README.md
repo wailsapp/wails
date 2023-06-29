@@ -34,7 +34,7 @@ The `icon` command generates icons for your project.
 | `-macFilename`     | string | The output filename for the Mac icon bundle          | icons.icns            |
 
 ```bash
-wails generate icon -input myicon.png -sizes "32,64,128" -windowsFilename myicon.ico -macFilename myicon.icns       
+wails3 generate icon -input myicon.png -sizes "32,64,128" -windowsFilename myicon.ico -macFilename myicon.icns       
 ```
 
 This will generate icons for mac and windows and save them in the current directory as `myicon.ico`
@@ -45,7 +45,7 @@ and `myicons.icns`.
 The `syso` command generates a Windows resource file (aka `.syso`).
 
 ```bash
-wails generate syso <options>
+wails3 generate syso <options>
 ```
 
 | Flag        | Type   | Description                                | Default          |
@@ -74,14 +74,14 @@ NOTE: Whilst the tool will work for 32-bit Windows, it is not supported. Please 
 #### defaults
 
 ```bash
-wails generate defaults      
+wails3 generate defaults      
 ```
 This will generate all the default assets and resources in the current directory.
 
 #### bindings
 
 ```bash
-wails generate bindings
+wails3 generate bindings
 ```
 
 Generates bindings and models for your bound Go methods and structs.
