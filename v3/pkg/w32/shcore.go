@@ -27,3 +27,13 @@ func GetDPIForMonitor(hmonitor HMONITOR, dpiType MONITOR_DPI_TYPE, dpiX *UINT, d
 
 	return ret
 }
+
+func GetNotificationFlyoutBounds() (*RECT, error) {
+	var rect RECT
+	res, _, err := procSystemParametersInfo.Call(SPI_GETNOTIFYWINDOWRECT, 0, uintptr(unsafe.Pointer(&rect)), 0)
+	if res == 0 {
+		_ = err
+		return nil, err
+	}
+	return &rect, nil
+}

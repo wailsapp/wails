@@ -3,6 +3,7 @@
 package application
 
 import (
+	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/icons"
 	"syscall"
 	"unsafe"
@@ -27,6 +28,106 @@ type windowsSystemTray struct {
 	lightModeIcon w32.HICON
 	darkModeIcon  w32.HICON
 	currentIcon   w32.HICON
+}
+
+func (s *windowsSystemTray) positionWindow(window *WebviewWindow) error {
+
+	// Get the trayBounds of this system tray
+	trayBounds, err := s.bounds()
+	if err != nil {
+		return err
+	}
+
+	// Get the current screen trayBounds
+	currentScreen, err := s.getScreen()
+	if err != nil {
+		return err
+	}
+
+	screenBounds := currentScreen.WorkArea
+
+	taskbarBounds := w32.GetTaskbarPosition()
+	switch taskbarBounds.UEdge {
+	case w32.ABE_LEFT:
+		if trayBounds == nil {
+			// Move it to the bottom left corner of the screen
+			window.SetRelativePosition(0, screenBounds.Height-window.Height())
+			return nil
+		}
+		newHeight := trayBounds.Y - (window.Height() / 2)
+		if newHeight < 0 {
+			newHeight = 0
+		}
+		// Move it to the top left corner of the screen
+		window.SetRelativePosition(0, newHeight)
+	case w32.ABE_TOP:
+		if trayBounds == nil {
+			// Move it to the top right corner of the screen
+			window.SetRelativePosition(screenBounds.Width-window.Width(), 0)
+			return nil
+		}
+		newWidth := trayBounds.X - (window.Width() / 2)
+		if newWidth > screenBounds.Width-window.Width() {
+			newWidth = screenBounds.Width - window.Width()
+		}
+		// Move it to the top left corner of the screen
+		window.SetRelativePosition(newWidth, 0)
+	case w32.ABE_RIGHT:
+		if trayBounds == nil {
+			// Move it to the bottom right corner of the screen
+			window.SetRelativePosition(screenBounds.Width-window.Width(), screenBounds.Height-window.Height())
+			return nil
+		}
+		newHeight := trayBounds.Y - (window.Height() / 2)
+		if newHeight > screenBounds.Height-window.Height() {
+			newHeight = screenBounds.Height - window.Height()
+		}
+		window.SetRelativePosition(screenBounds.Width-window.Width(), newHeight)
+	case w32.ABE_BOTTOM:
+		if trayBounds == nil {
+			// Move it to the bottom right corner of the screen
+			window.SetRelativePosition(screenBounds.Width-window.Width(), screenBounds.Height-window.Height())
+			return nil
+		}
+		newWidth := trayBounds.X - (window.Width() / 2)
+		if newWidth > screenBounds.Width-window.Width() {
+			newWidth = screenBounds.Width - window.Width()
+		}
+		window.SetRelativePosition(newWidth, screenBounds.Height-window.Height())
+	}
+	return nil
+}
+
+func (s *windowsSystemTray) bounds() (*Rect, error) {
+	bounds, err := w32.GetSystrayBounds(s.hwnd, s.uid)
+	if err != nil {
+		return nil, err
+	}
+
+	monitor := w32.MonitorFromWindow(s.hwnd, w32.MONITOR_DEFAULTTONEAREST)
+	if monitor == 0 {
+		return nil, fmt.Errorf("failed to get monitor")
+	}
+
+	// Get the taskbar rect
+	taskbarRect := w32.GetTaskbarPosition()
+
+	flyoutOpen := !w32.RectInRect(bounds, &taskbarRect.Rc)
+	if flyoutOpen {
+		return nil, nil
+	}
+
+	return &Rect{
+		X:      int(bounds.Left),
+		Y:      int(bounds.Top),
+		Width:  int(bounds.Right - bounds.Left),
+		Height: int(bounds.Bottom - bounds.Top),
+	}, nil
+}
+
+func (s *windowsSystemTray) getScreen() (*Screen, error) {
+	// Get the screen for this systray
+	return getScreen(s.hwnd)
 }
 
 func (s *windowsSystemTray) setMenu(menu *Menu) {

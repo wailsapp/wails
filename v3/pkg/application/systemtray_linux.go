@@ -20,6 +20,18 @@ func (s *linuxSystemTray) setMenu(menu *Menu) {
 	s.menu = menu
 }
 
+func (s *linuxSystemTray) positionWindow(window *WebviewWindow) error {
+	panic("not implemented")
+}
+
+func (s *linuxSystemTray) getScreen() (*Screen, error) {
+	panic("not implemented")
+}
+
+func (s *linuxSystemTray) bounds() (*Rect, error) {
+	panic("not implemented")
+}
+
 func (s *linuxSystemTray) run() {
 	globalApplication.dispatchOnMainThread(func() {
 		// if s.nsStatusItem != nil {

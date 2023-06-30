@@ -26,7 +26,12 @@ func main() {
 		},
 	})
 
-	window := app.NewWebviewWindow().Hide()
+	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+		Width:  500,
+		Height: 800,
+		//Frameless: true,
+		Hidden: true,
+	})
 
 	systemTray := app.NewSystemTray()
 	if runtime.GOOS == "darwin" {
@@ -67,6 +72,11 @@ func main() {
 
 	systemTray.OnClick(func() {
 		window.SetTitle(fmt.Sprintf("Clicked %d times", clickCount()))
+		err := systemTray.PositionWindow(window)
+		if err != nil {
+			application.InfoDialog().SetTitle("Error").SetMessage(err.Error()).Show()
+			return
+		}
 		window.Show().Focus()
 	})
 

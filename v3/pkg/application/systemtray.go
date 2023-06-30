@@ -1,5 +1,9 @@
 package application
 
+import (
+	"fmt"
+)
+
 type IconPosition int
 
 const (
@@ -23,6 +27,9 @@ type systemTrayImpl interface {
 	setTemplateIcon(icon []byte)
 	destroy()
 	setDarkModeIcon(icon []byte)
+	bounds() (*Rect, error)
+	getScreen() (*Screen, error)
+	positionWindow(window *WebviewWindow) error
 }
 
 type SystemTray struct {
@@ -72,6 +79,15 @@ func (s *SystemTray) Label() string {
 func (s *SystemTray) run() {
 	s.impl = newSystemTrayImpl(s)
 	invokeSync(s.impl.run)
+}
+
+func (s *SystemTray) PositionWindow(window *WebviewWindow) error {
+	if s.impl == nil {
+		return fmt.Errorf("system tray not running")
+	}
+	return invokeSyncWithError(func() error {
+		return s.impl.positionWindow(window)
+	})
 }
 
 func (s *SystemTray) SetIcon(icon []byte) *SystemTray {

@@ -759,6 +759,11 @@ func PtInRect(rect *RECT, x, y int) bool {
 	return ret != 0
 }
 
+func RectInRect(rect1, rect2 *RECT) bool {
+	return rect1.Left >= rect2.Left && rect1.Right <= rect2.Right &&
+		rect1.Top >= rect2.Top && rect1.Bottom <= rect2.Bottom
+}
+
 func SetRect(rect *RECT, left, top, right, bottom int) bool {
 	ret, _, _ := procSetRect.Call(
 		uintptr(unsafe.Pointer(rect)),

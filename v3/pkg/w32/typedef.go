@@ -677,6 +677,29 @@ type NOTIFYICONDATA struct {
 	HBalloonIcon     HICON
 }
 
+const SPI_GETNOTIFYWINDOWRECT = 0x0040
+
+// Taskbar constants
+const ABM_GETTASKBARPOS = 0x00000005
+const ABM_GETSTATE = 0x00000004
+const ABM_GETAUTOHIDEBAR = 0x00000007
+const ABM_SETSTATE = 0x0000000a
+const ABM_SETAUTOHIDEBAR = 0x00000008
+const ABM_WINDOWPOSCHANGED = 0x00000009
+const ABM_SETPOS = 0x00000003
+
+const ABE_LEFT = 0
+const ABE_TOP = 1
+const ABE_RIGHT = 2
+const ABE_BOTTOM = 3
+
+type NOTIFYICONIDENTIFIER struct {
+	CbSize   uint32
+	HWnd     HWND
+	UId      uint32
+	GuidItem windows.GUID
+}
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms534067.aspx
 type GdiplusStartupInput struct {
 	GdiplusVersion           uint32

@@ -72,6 +72,27 @@ void systemTrayDestroy(void* nsStatusItem) {
 	});
 }
 
+void systemTrayGetBounds(void* nsStatusItem, NSRect *rect) {
+	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+	*rect = statusItem.button.window.frame;
+}
+
+// Get the screen for the system tray
+NSScreen* getScreenForSystemTray(void* nsStatusItem) {
+	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+	NSRect frame = statusItem.button.frame;
+	NSArray<NSScreen *> *screens = NSScreen.screens;
+	NSScreen *associatedScreen = nil;
+
+	for (NSScreen *screen in screens) {
+		if (NSPointInRect(frame.origin, screen.frame)) {
+			associatedScreen = screen;
+			break;
+		}
+	}
+	return associatedScreen;
+}
+
 */
 import "C"
 import (
@@ -97,6 +118,93 @@ func (s *macosSystemTray) setIconPosition(position int) {
 
 func (s *macosSystemTray) setMenu(menu *Menu) {
 	s.menu = menu
+}
+
+func (s *macosSystemTray) positionWindow(window *WebviewWindow) error {
+
+	// Get the trayBounds of this system tray
+	trayBounds, err := s.bounds()
+	if err != nil {
+		return err
+	}
+
+	// Get the current screen trayBounds
+	currentScreen, err := s.getScreen()
+	if err != nil {
+		return err
+	}
+
+	screenBounds := currentScreen.Bounds
+
+	// Determine which quadrant of the screen the system tray is in
+	// ----------
+	// | 1 | 2  |
+	// ----------
+	// | 3 | 4  |
+	// ----------
+	quadrant := 4
+	if trayBounds.X < screenBounds.Width/2 {
+		quadrant -= 1
+	}
+	if trayBounds.Y < screenBounds.Height/2 {
+		quadrant -= 2
+	}
+
+	// Get the center height of the window
+	windowWidthCenter := window.Width() / 2
+	// Get the center height of the system tray
+	systemTrayWidthCenter := trayBounds.Width / 2
+
+	// Position the window based on the quadrant
+	// It will be centered on the system tray and if it goes off-screen it will be moved back on screen
+	switch quadrant {
+	case 1:
+		// The X will be 0 and the Y will be the system tray Y
+		// Center the window on the system tray
+		window.SetRelativePosition(0, trayBounds.Y)
+	case 2:
+		// The Y will be 0 and the X will make the center of the window line up with the center of the system tray
+		windowX := trayBounds.X + systemTrayWidthCenter - windowWidthCenter
+		// If the end of the window goes off-screen, move it back enough to be on screen
+		if windowX+window.Width() > screenBounds.Width {
+			windowX = screenBounds.Width - window.Width()
+		}
+		window.SetRelativePosition(windowX, 0)
+	case 3:
+		// The X will be 0 and the Y will be the system tray Y - the height of the window
+		windowY := trayBounds.Y - window.Height()
+		// If the end of the window goes off-screen, move it back enough to be on screen
+		if windowY < 0 {
+			windowY = 0
+		}
+		window.SetRelativePosition(0, windowY)
+	case 4:
+		// The Y will be 0 and the X will make the center of the window line up with the center of the system tray - the height of the window
+		windowX := trayBounds.X + systemTrayWidthCenter - windowWidthCenter
+		windowY := trayBounds.Y - window.Height()
+		// If the end of the window goes off-screen, move it back enough to be on screen
+		if windowX+window.Width() > screenBounds.Width {
+			windowX = screenBounds.Width - window.Width()
+		}
+		window.SetRelativePosition(windowX, windowY)
+	}
+	return nil
+}
+
+func (s *macosSystemTray) getScreen() (*Screen, error) {
+	cScreen := C.getScreenForSystemTray(s.nsStatusItem)
+	return cScreenToScreen(cScreen), nil
+}
+
+func (s *macosSystemTray) bounds() (*Rect, error) {
+	var rect C.NSRect
+	rect = C.systemTrayGetBounds(s.nsStatusItem)
+	return &Rect{
+		X:      int(rect.origin.x),
+		Y:      int(rect.origin.y),
+		Width:  int(rect.size.width),
+		Height: int(rect.size.height),
+	}, nil
 }
 
 func (s *macosSystemTray) run() {

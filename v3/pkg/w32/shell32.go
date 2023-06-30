@@ -204,18 +204,29 @@ var (
 var (
 	modshell32 = syscall.NewLazyDLL("shell32.dll")
 
-	procSHBrowseForFolder    = modshell32.NewProc("SHBrowseForFolderW")
-	procSHGetPathFromIDList  = modshell32.NewProc("SHGetPathFromIDListW")
-	procDragAcceptFiles      = modshell32.NewProc("DragAcceptFiles")
-	procDragQueryFile        = modshell32.NewProc("DragQueryFileW")
-	procDragQueryPoint       = modshell32.NewProc("DragQueryPoint")
-	procDragFinish           = modshell32.NewProc("DragFinish")
-	procShellExecute         = modshell32.NewProc("ShellExecuteW")
-	procExtractIcon          = modshell32.NewProc("ExtractIconW")
-	procGetSpecialFolderPath = modshell32.NewProc("SHGetSpecialFolderPathW")
-	procShellNotifyIcon      = modshell32.NewProc("Shell_NotifyIconW")
-	procSHGetKnownFolderPath = modshell32.NewProc("SHGetKnownFolderPath")
+	procSHBrowseForFolder      = modshell32.NewProc("SHBrowseForFolderW")
+	procSHGetPathFromIDList    = modshell32.NewProc("SHGetPathFromIDListW")
+	procDragAcceptFiles        = modshell32.NewProc("DragAcceptFiles")
+	procDragQueryFile          = modshell32.NewProc("DragQueryFileW")
+	procDragQueryPoint         = modshell32.NewProc("DragQueryPoint")
+	procDragFinish             = modshell32.NewProc("DragFinish")
+	procShellExecute           = modshell32.NewProc("ShellExecuteW")
+	procExtractIcon            = modshell32.NewProc("ExtractIconW")
+	procGetSpecialFolderPath   = modshell32.NewProc("SHGetSpecialFolderPathW")
+	procShellNotifyIcon        = modshell32.NewProc("Shell_NotifyIconW")
+	procShellNotifyIconGetRect = modshell32.NewProc("Shell_NotifyIconGetRect")
+	procSHGetKnownFolderPath   = modshell32.NewProc("SHGetKnownFolderPath")
+	procSHAppBarMessage        = modshell32.NewProc("SHAppBarMessage")
 )
+
+type APPBARDATA struct {
+	CbSize           uint32
+	HWnd             HWND
+	UCallbackMessage uint32
+	UEdge            uint32
+	Rc               RECT
+	LParam           uintptr
+}
 
 func ShellNotifyIcon(cmd uintptr, nid *NOTIFYICONDATA) bool {
 	ret, _, _ := procShellNotifyIcon.Call(cmd, uintptr(unsafe.Pointer(nid)))
@@ -369,4 +380,36 @@ func SHGetSpecialFolderPath(hwndOwner HWND, lpszPath *uint16, csidl CSIDL, fCrea
 		0)
 
 	return ret != 0
+}
+
+func GetSystrayBounds(hwnd HWND, uid uint32) (*RECT, error) {
+	var rect RECT
+	identifier := NOTIFYICONIDENTIFIER{
+		CbSize: uint32(unsafe.Sizeof(NOTIFYICONIDENTIFIER{})),
+		HWnd:   hwnd,
+		UId:    uid,
+	}
+	ret, _, _ := procShellNotifyIconGetRect.Call(
+		uintptr(unsafe.Pointer(&identifier)),
+		uintptr(unsafe.Pointer(&rect)))
+
+	if ret != S_OK {
+		return nil, syscall.GetLastError()
+	}
+
+	return &rect, nil
+}
+
+// GetTaskbarPosition returns the location of the taskbar.
+func GetTaskbarPosition() *APPBARDATA {
+	var result APPBARDATA
+	result.CbSize = uint32(unsafe.Sizeof(APPBARDATA{}))
+	ret, _, _ := procSHAppBarMessage.Call(
+		ABM_GETTASKBARPOS,
+		uintptr(unsafe.Pointer(&result)))
+	if ret == 0 {
+		return nil
+	}
+
+	return &result
 }

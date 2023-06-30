@@ -323,7 +323,7 @@ func (w *windowsWebviewWindow) size() (int, int) {
 	rect := w32.GetWindowRect(w.hwnd)
 	width := int(rect.Right - rect.Left)
 	height := int(rect.Bottom - rect.Top)
-	width, height = w.scaleToDefaultDPI(width, height)
+	//width, height = w.scaleToDefaultDPI(width, height)
 	return width, height
 }
 
@@ -439,7 +439,7 @@ func (w *windowsWebviewWindow) setHTML(html string) {
 }
 
 func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
-	x, y = w.scaleWithWindowDPI(x, y)
+	//x, y = w.scaleWithWindowDPI(x, y)
 	info := w32.GetMonitorInfoForWindow(w.hwnd)
 	workRect := info.RcWork
 	w32.SetWindowPos(w.hwnd, w32.HWND_TOP, int(workRect.Left)+x, int(workRect.Top)+y, 0, 0, w32.SWP_NOSIZE)
@@ -565,10 +565,8 @@ func (w *windowsWebviewWindow) hide() {
 	w32.ShowWindow(w.hwnd, w32.SW_HIDE)
 }
 
-// Get the screen for the current window
-func (w *windowsWebviewWindow) getScreen() (*Screen, error) {
-	hMonitor := w32.MonitorFromWindow(w.hwnd, w32.MONITOR_DEFAULTTONEAREST)
-
+func getScreen(hwnd w32.HWND) (*Screen, error) {
+	hMonitor := w32.MonitorFromWindow(hwnd, w32.MONITOR_DEFAULTTONEAREST)
 	var mi w32.MONITORINFOEX
 	mi.CbSize = uint32(unsafe.Sizeof(mi))
 	w32.GetMonitorInfoEx(hMonitor, &mi)
@@ -603,9 +601,22 @@ func (w *windowsWebviewWindow) getScreen() (*Screen, error) {
 	return &thisScreen, nil
 }
 
+// Get the screen for the current window
+func (w *windowsWebviewWindow) getScreen() (*Screen, error) {
+	return getScreen(w.hwnd)
+}
+
 func (w *windowsWebviewWindow) setFrameless(b bool) {
-	//TODO implement me
-	panic("implement me")
+	// If the window is already frameless, don't do anything
+	if w.parent.options.Frameless == b {
+		return
+	}
+	// Remove or add the frame
+	if b {
+		w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_POPUP)
+	} else {
+		w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_OVERLAPPEDWINDOW)
+	}
 }
 
 func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
