@@ -146,6 +146,9 @@ func (w *windowsWebviewWindow) setMaxSize(width, height int) {
 }
 
 func (w *windowsWebviewWindow) execJS(js string) {
+	if w.chromium == nil {
+		return
+	}
 	globalApplication.dispatchOnMainThread(func() {
 		w.chromium.Eval(js)
 	})
@@ -209,6 +212,8 @@ func (w *windowsWebviewWindow) run() {
 	if w.hwnd == 0 {
 		panic("Unable to create window")
 	}
+
+	w.setupChromium()
 
 	// Register the window with the application
 	getNativeApplication().registerWindow(w)
@@ -292,8 +297,6 @@ func (w *windowsWebviewWindow) run() {
 		w.Focus()
 	}
 
-	w.setupChromium()
-
 	if !options.Hidden {
 		w.show()
 		w.update()
@@ -323,6 +326,7 @@ func (w *windowsWebviewWindow) size() (int, int) {
 	rect := w32.GetWindowRect(w.hwnd)
 	width := int(rect.Right - rect.Left)
 	height := int(rect.Bottom - rect.Top)
+	// Scaling appears to give invalid results...
 	//width, height = w.scaleToDefaultDPI(width, height)
 	return width, height
 }
