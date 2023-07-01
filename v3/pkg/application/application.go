@@ -2,6 +2,7 @@ package application
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -365,7 +366,6 @@ func (a *App) NewSystemTray() *SystemTray {
 func (a *App) Run() error {
 	a.info("Starting application")
 	a.impl = newPlatformApp(a)
-
 	go func() {
 		for {
 			event := <-applicationEvents
@@ -681,6 +681,18 @@ func invokeSync(fn func()) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
+		defer func() {
+			if err := recover(); err != nil {
+				// Print the panic details
+				fmt.Println("Panic occurred:", err)
+
+				// Print the stack trace
+				buf := make([]byte, 1<<16)
+				runtime.Stack(buf, true)
+				fmt.Println("Stack trace:")
+				fmt.Println(string(buf))
+			}
+		}()
 		fn()
 		wg.Done()
 	})
@@ -691,6 +703,18 @@ func invokeSyncWithResult[T any](fn func() T) (res T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
+		defer func() {
+			if err := recover(); err != nil {
+				// Print the panic details
+				fmt.Println("Panic occurred:", err)
+
+				// Print the stack trace
+				buf := make([]byte, 1<<16)
+				runtime.Stack(buf, true)
+				fmt.Println("Stack trace:")
+				fmt.Println(string(buf))
+			}
+		}()
 		res = fn()
 		wg.Done()
 	})
@@ -702,6 +726,18 @@ func invokeSyncWithError(fn func() error) (err error) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
+		defer func() {
+			if err := recover(); err != nil {
+				// Print the panic details
+				fmt.Println("Panic occurred:", err)
+
+				// Print the stack trace
+				buf := make([]byte, 1<<16)
+				runtime.Stack(buf, true)
+				fmt.Println("Stack trace:")
+				fmt.Println(string(buf))
+			}
+		}()
 		err = fn()
 		wg.Done()
 	})
@@ -713,6 +749,18 @@ func invokeSyncWithResultAndError[T any](fn func() (T, error)) (res T, err error
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
+		defer func() {
+			if err := recover(); err != nil {
+				// Print the panic details
+				fmt.Println("Panic occurred:", err)
+
+				// Print the stack trace
+				buf := make([]byte, 1<<16)
+				runtime.Stack(buf, true)
+				fmt.Println("Stack trace:")
+				fmt.Println(string(buf))
+			}
+		}()
 		res, err = fn()
 		wg.Done()
 	})
