@@ -1,13 +1,28 @@
 package main
 
 import (
-	"os"
-
 	"github.com/pterm/pterm"
+	"github.com/samber/lo"
+	"os"
+	"runtime/debug"
 
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v3/internal/commands"
 )
+
+func init() {
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		return
+	}
+	commands.BuildSettings = lo.Associate(buildInfo.Settings, func(setting debug.BuildSetting) (string, string) {
+		return setting.Key, setting.Value
+	})
+	// Iterate over the Deps and add them to the build settings using a prefix of "mod."
+	for _, dep := range buildInfo.Deps {
+		commands.BuildSettings["mod."+dep.Path] = dep.Version
+	}
+}
 
 func main() {
 	app := clir.NewCli("wails", "The Wails CLI", "v3")

@@ -111,3 +111,31 @@ the frontend. These method names must exactly match the names of the methods exp
 by the plugin.
 
 The `InjectJS()` method returns JavaScript that should be injected into all windows as they are created. This is useful for adding custom JavaScript functions that complement the plugin.
+
+
+## Misc Tasks
+
+### Upgrading Taskfile
+
+The Wails CLI uses the [Task](https://taskfile.dev) build system. It is imported as a library and used to run the tasks defined in `Taskfile.yaml`.
+The main interfacing with Task happens in `v3/internal/commands/task.go`.
+
+To check if there's an upgrade for Taskfile, run `wails3 task -version` and check against the Task website.
+
+To upgrade the version of Taskfile used, run:
+
+```shell
+wails3 task taskfile:upgrade
+```
+
+If there are incompatibilities then they should appear in the `v3/internal/commands/task.go` file.
+
+Usually the best way to fix incompatibilities is to clone the task repo at `https://github.com/go-task/task` and look at the git history to determine what has changed and why.
+
+To check all changes have worked correctly, re-install the CLI and check the version again:
+
+```shell
+wails3 task cli:install
+wails3 task -version
+```
+
