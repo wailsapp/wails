@@ -139,3 +139,35 @@ wails3 task cli:install
 wails3 task -version
 ```
 
+## Opening a PR
+
+Make sure that all PRs have a ticket associated with them providing context to the change. If there is no ticket, please create one first.
+Ensure that all PRs have updated the CHANGELOG.md file with the changes made. The CHANGELOG.md file is located in the `v3` directory.
+
+
+## Misc Tasks
+
+### Upgrading Taskfile
+
+The Wails CLI uses the [Task](https://taskfile.dev) build system. It is imported as a library and used to run the tasks defined in `Taskfile.yaml`.
+The main interfacing with Task happens in `v3/internal/commands/task.go`.
+
+To check if there's an upgrade for Taskfile, run `wails3 task -version` and check against the Task website.
+
+To upgrade the version of Taskfile used, run:
+
+```shell
+wails3 task taskfile:upgrade
+```
+
+If there are incompatibilities then they should appear in the `v3/internal/commands/task.go` file.
+
+Usually the best way to fix incompatibilities is to clone the task repo at `https://github.com/go-task/task` and look at the git history to determine what has changed and why.
+
+To check all changes have worked correctly, re-install the CLI and check the version again:
+
+```shell
+wails3 task cli:install
+wails3 task -version
+```
+
