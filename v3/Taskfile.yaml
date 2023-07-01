@@ -21,6 +21,12 @@ tasks:
       - rm -rf {{.TEMPLATE_DIR}}
       - mkdir -p {{.TEMPLATE_DIR}}
 
+  cli:install:
+    dir: cmd/wails3
+    cmds:
+      - go install
+      - echo "Installed wails CLI"
+
   generate:template:
     dir: internal/templates/{{.TEMPLATE}}
     deps:
@@ -40,6 +46,10 @@ tasks:
       - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old wails.svg -new wails.png -ext .ts,.js,.html -ignore vite.config.js,vite.config.ts,vite-env.d.ts
       - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old wailsjs.dev -new wails.io -ext .ts,.js,.html -ignore vite.config.js,vite.config.ts,vite-env.d.ts
       - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old "framework powered by Wails" -new "framework powered by Vite" -ext .ts,.js,.html,.svelte -ignore vite.config.js,vite.config.ts,vite-env.d.ts
+
+  taskfile:upgrade:
+    cmds:
+      - go get -u github.com/go-task/task/v3
 
   reinstall-cli:
     dir: cmd/wails

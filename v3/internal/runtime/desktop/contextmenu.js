@@ -27,22 +27,22 @@ function contextMenuHandler(event) {
 
 
 /*
-Default: Show default context menu if contentEditable: true OR text has been selected OR --default-contextmenu: show OR tagname is input or textarea
---default-contextmenu: show will always show the context menu
---default-contextmenu: hide will always hide the context menu
+--default-contextmenu: auto; (default) will show the default context menu if contentEditable is true OR text has been selected OR element is input or textarea
+--default-contextmenu: show; will always show the default context menu
+--default-contextmenu: hide; will always hide the default context menu
 
-Anything nested under a tag with --default-contextmenu: hide will not show the context menu unless it is explicitly set with --default-contextmenu: show
- */
+This rule is inherited like normal CSS rules, so nesting works as expected
+*/
 function processDefaultContextMenu(event) {
     // Debug builds always show the menu
-    if(DEBUG) {
+    if (DEBUG) {
         return;
     }
 
     // Process default context menu
-    let element = event.target;
+    const element = event.target;
     const computedStyle = window.getComputedStyle(element);
-    let defaultContextMenuAction = computedStyle.getPropertyValue("--default-contextmenu").trim();
+    const defaultContextMenuAction = computedStyle.getPropertyValue("--default-contextmenu").trim();
     switch (defaultContextMenuAction) {
         case "show":
             return;
@@ -56,13 +56,14 @@ function processDefaultContextMenu(event) {
             }
 
             // Check if text has been selected
-            let selection = window.getSelection();
-            if (selection && selection.toString().length > 0) {
+            const selection = window.getSelection();
+            const hasSelection = (selection.toString().length > 0)
+            if (hasSelection) {
                 for (let i = 0; i < selection.rangeCount; i++) {
-                    let range = selection.getRangeAt(i);
-                    let rects = range.getClientRects();
+                    const range = selection.getRangeAt(i);
+                    const rects = range.getClientRects();
                     for (let j = 0; j < rects.length; j++) {
-                        let rect = rects[j];
+                        const rect = rects[j];
                         if (document.elementFromPoint(rect.left, rect.top) === element) {
                             return;
                         }
@@ -71,7 +72,7 @@ function processDefaultContextMenu(event) {
             }
             // Check if tagname is input or textarea
             if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
-                if (!element.readOnly && !element.disabled) {
+                if (hasSelection || (!element.readOnly && !element.disabled)) {
                     return;
                 }
             }

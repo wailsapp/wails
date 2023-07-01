@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
+	"github.com/go-task/task/v3/errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -17,6 +18,9 @@ import (
 	"github.com/go-task/task/v3/taskfile"
 )
 
+// BuildSettings contains the CLI build settings
+var BuildSettings = map[string]string{}
+
 type RunTaskOptions struct {
 	Name             string `pos:"1"`
 	Help             bool   `name:"h" description:"shows Task usage"`
@@ -28,6 +32,7 @@ type RunTaskOptions struct {
 	Force            bool   `name:"f" description:"forces execution even when the task is up-to-date"`
 	Watch            bool   `name:"w" description:"enables watch of the given task"`
 	Verbose          bool   `name:"v" description:"enables verbose mode"`
+	Version          bool   `name:"version" description:"prints version"`
 	Silent           bool   `name:"s" description:"disables echoing"`
 	Parallel         bool   `name:"p" description:"executes tasks provided on command line in parallel"`
 	Dry              bool   `name:"dry" description:"compiles and prints tasks in the order that they would be run, without executing them"`
@@ -44,6 +49,12 @@ type RunTaskOptions struct {
 }
 
 func RunTask(options *RunTaskOptions, otherArgs []string) error {
+
+	if options.Version {
+		ver := BuildSettings["mod.github.com/go-task/task/v3"]
+		fmt.Println("Task Version:", ver)
+		return nil
+	}
 
 	if options.Init {
 		wd, err := os.Getwd()
@@ -111,10 +122,6 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 	if err := e.Setup(); err != nil {
 		log.Fatal(err)
 	}
-	v, err := e.Taskfile.ParsedVersion()
-	if err != nil {
-		return err
-	}
 
 	if listOptions.ShouldListTasks() {
 		if foundTasks, err := e.ListTasks(listOptions); !foundTasks || err != nil {
@@ -128,24 +135,24 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		globals *taskfile.Vars
 	)
 
-	var taskAndVars []string
+	var tasksAndVars []string
 	for _, taskAndVar := range os.Args[2:] {
 		if taskAndVar == "--" {
 			break
 		}
-		taskAndVars = append(taskAndVars, taskAndVar)
+		tasksAndVars = append(tasksAndVars, taskAndVar)
 	}
 
-	if len(taskAndVars) > 0 && len(otherArgs) > 0 {
-		if taskAndVars[0] == otherArgs[0] {
+	if len(tasksAndVars) > 0 && len(otherArgs) > 0 {
+		if tasksAndVars[0] == otherArgs[0] {
 			otherArgs = otherArgs[1:]
 		}
 	}
 
-	if v >= 3.0 {
-		calls, globals = args.ParseV3(taskAndVars...)
+	if e.Taskfile.Version.Compare(taskfile.V3) >= 0 {
+		calls, globals = args.ParseV3(tasksAndVars...)
 	} else {
-		calls, globals = args.ParseV2(taskAndVars...)
+		calls, globals = args.ParseV2(tasksAndVars...)
 	}
 
 	globals.Set("CLI_ARGS", taskfile.Var{Static: strings.Join(otherArgs, " ")})
@@ -165,8 +172,8 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		pterm.Error.Println(err.Error())
 
 		if options.ExitCode {
-			if err, ok := err.(*task.TaskRunError); ok {
-				os.Exit(err.ExitCode())
+			if err, ok := err.(*errors.TaskRunError); ok {
+				os.Exit(err.Code())
 			}
 		}
 		os.Exit(1)

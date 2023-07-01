@@ -28,7 +28,7 @@ func main() {
 	mainWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title:  "Context Menu Demo",
 		Width:  1024,
-		Height: 1124,
+		Height: 1024,
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
