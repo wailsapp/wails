@@ -157,6 +157,25 @@ type (
 	}
 )
 
+func processPanic(value any) {
+	if value == nil {
+		value = fmt.Errorf("unknown error")
+	}
+	if globalApplication.options.PanicHandler != nil {
+		globalApplication.options.PanicHandler(value)
+		return
+	}
+	// Print the panic details
+	fmt.Printf("Panic occurred: %v", value)
+
+	// Print the stack trace
+	buf := make([]byte, 1<<16)
+	runtime.Stack(buf, true)
+	fmt.Println("Stack trace:")
+	fmt.Println(string(buf))
+	os.Exit(1)
+}
+
 // Messages sent from javascript get routed here
 type windowMessage struct {
 	windowId uint
@@ -365,6 +384,14 @@ func (a *App) NewSystemTray() *SystemTray {
 
 func (a *App) Run() error {
 	a.info("Starting application")
+
+	// Setup panic handler
+	defer func() {
+		if err := recover(); err != nil {
+			processPanic(err)
+		}
+	}()
+
 	a.impl = newPlatformApp(a)
 	go func() {
 		for {
@@ -683,14 +710,7 @@ func invokeSync(fn func()) {
 	globalApplication.dispatchOnMainThread(func() {
 		defer func() {
 			if err := recover(); err != nil {
-				// Print the panic details
-				fmt.Println("Panic occurred:", err)
-
-				// Print the stack trace
-				buf := make([]byte, 1<<16)
-				runtime.Stack(buf, true)
-				fmt.Println("Stack trace:")
-				fmt.Println(string(buf))
+				processPanic(err)
 			}
 		}()
 		fn()
@@ -705,14 +725,7 @@ func invokeSyncWithResult[T any](fn func() T) (res T) {
 	globalApplication.dispatchOnMainThread(func() {
 		defer func() {
 			if err := recover(); err != nil {
-				// Print the panic details
-				fmt.Println("Panic occurred:", err)
-
-				// Print the stack trace
-				buf := make([]byte, 1<<16)
-				runtime.Stack(buf, true)
-				fmt.Println("Stack trace:")
-				fmt.Println(string(buf))
+				processPanic(err)
 			}
 		}()
 		res = fn()
@@ -728,14 +741,7 @@ func invokeSyncWithError(fn func() error) (err error) {
 	globalApplication.dispatchOnMainThread(func() {
 		defer func() {
 			if err := recover(); err != nil {
-				// Print the panic details
-				fmt.Println("Panic occurred:", err)
-
-				// Print the stack trace
-				buf := make([]byte, 1<<16)
-				runtime.Stack(buf, true)
-				fmt.Println("Stack trace:")
-				fmt.Println(string(buf))
+				processPanic(err)
 			}
 		}()
 		err = fn()
@@ -751,14 +757,7 @@ func invokeSyncWithResultAndError[T any](fn func() (T, error)) (res T, err error
 	globalApplication.dispatchOnMainThread(func() {
 		defer func() {
 			if err := recover(); err != nil {
-				// Print the panic details
-				fmt.Println("Panic occurred:", err)
-
-				// Print the stack trace
-				buf := make([]byte, 1<<16)
-				runtime.Stack(buf, true)
-				fmt.Println("Stack trace:")
-				fmt.Println(string(buf))
+				processPanic(err)
 			}
 		}()
 		res, err = fn()

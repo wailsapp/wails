@@ -172,20 +172,12 @@ func (m *windowsApp) setApplicationMenu(menu *Menu) {
 }
 
 func (m *windowsApp) run() error {
-	// Add a hook to the ApplicationDidFinishLaunching event
-	//m.parent.On(events.Mac.ApplicationDidFinishLaunching, func() {
-	//	C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))
-	//	C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
-	//	C.activateIgnoringOtherApps()
-	//})
-	// setup event listeners
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)
 	}
 
 	_ = m.runMainLoop()
 
-	//C.run()
 	return nil
 }
 

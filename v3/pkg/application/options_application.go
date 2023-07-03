@@ -21,6 +21,9 @@ type Options struct {
 	Assets  AssetOptions
 	Plugins map[string]Plugin
 	Flags   map[string]any
+
+	// PanicHandler is a way to register a custom panic handler
+	PanicHandler func(any)
 }
 
 // AssetOptions defines the configuration of the AssetServer.
