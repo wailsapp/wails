@@ -8,91 +8,7 @@ package application
 
 #include "Cocoa/Cocoa.h"
 #include "menuitem_darwin.h"
-
-// Create a new system tray
-void* systemTrayNew() {
-	NSStatusItem *statusItem = [[[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength] retain];
-	return (void*)statusItem;
-}
-
-void systemTraySetLabel(void* nsStatusItem, char *label) {
-	if( label == NULL ) {
-		return;
-	}
-	// Set the label on the main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-		statusItem.button.title = [NSString stringWithUTF8String:label];
-		free(label);
-	});
-}
-
-// Create an nsimage from a byte array
-NSImage* imageFromBytes(const unsigned char *bytes, int length) {
-	NSData *data = [NSData dataWithBytes:bytes length:length];
-	NSImage *image = [[NSImage alloc] initWithData:data];
-	return image;
-}
-
-// Set the icon on the system tray
-void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isTemplate) {
-	// Set the icon on the main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-		NSImage *image = (NSImage *)nsImage;
-
-		NSStatusBar *statusBar = [NSStatusBar systemStatusBar];
-		CGFloat thickness = [statusBar thickness];
-		[image setSize:NSMakeSize(thickness, thickness)];
-		if( isTemplate ) {
-			[image setTemplate:YES];
-		}
-		statusItem.button.image = [image autorelease];
-		statusItem.button.imagePosition = position;
-	});
-}
-
-// Add menu to system tray
-void systemTraySetMenu(void* nsStatusItem, void* nsMenu) {
-	// Set the menu on the main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-		NSMenu *menu = (NSMenu *)nsMenu;
-		statusItem.menu = menu;
-	});
-}
-
-// Destroy system tray
-void systemTrayDestroy(void* nsStatusItem) {
-	// Remove the status item from the status bar and its associated menu
-	dispatch_async(dispatch_get_main_queue(), ^{
-		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-		[[NSStatusBar systemStatusBar] removeStatusItem:statusItem];
-		[statusItem release];
-	});
-}
-
-void systemTrayGetBounds(void* nsStatusItem, NSRect *rect) {
-	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-	*rect = statusItem.button.window.frame;
-}
-
-// Get the screen for the system tray
-NSScreen* getScreenForSystemTray(void* nsStatusItem) {
-	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-	NSRect frame = statusItem.button.frame;
-	NSArray<NSScreen *> *screens = NSScreen.screens;
-	NSScreen *associatedScreen = nil;
-
-	for (NSScreen *screen in screens) {
-		if (NSPointInRect(frame.origin, screen.frame)) {
-			associatedScreen = screen;
-			break;
-		}
-	}
-	return associatedScreen;
-}
-
+#include "systemtray_darwin.h"
 */
 import "C"
 import (
@@ -110,6 +26,27 @@ type macosSystemTray struct {
 	nsMenu         unsafe.Pointer
 	iconPosition   int
 	isTemplateIcon bool
+	parent         *SystemTray
+}
+
+type button int
+
+const (
+	left button = iota
+	right
+)
+
+// system tray map
+var systemTrayMap = make(map[uint]*macosSystemTray)
+
+//export systrayClickCallback
+func systrayClickCallback(id C.long, buttonID C.int) {
+	// Get the system tray
+	systemTray := systemTrayMap[uint(id)]
+	if systemTray == nil {
+		return
+	}
+	systemTray.processClick(button(buttonID))
 }
 
 func (s *macosSystemTray) setIconPosition(position int) {
@@ -192,13 +129,21 @@ func (s *macosSystemTray) positionWindow(window *WebviewWindow) error {
 }
 
 func (s *macosSystemTray) getScreen() (*Screen, error) {
-	cScreen := C.getScreenForSystemTray(s.nsStatusItem)
-	return cScreenToScreen(cScreen), nil
+	return getScreenForSystray(s)
 }
 
 func (s *macosSystemTray) bounds() (*Rect, error) {
 	var rect C.NSRect
-	rect = C.systemTrayGetBounds(s.nsStatusItem)
+	C.systemTrayGetBounds(s.nsStatusItem, &rect)
+	// Get the screen height for the screen that the systray is on
+	screen, err := getScreenForSystray(s)
+	if err != nil {
+		return nil, err
+	}
+
+	// Invert Y axis based on screen height
+	rect.origin.y = C.double(screen.Bounds.Height) - rect.origin.y - rect.size.height
+
 	return &Rect{
 		X:      int(rect.origin.x),
 		Y:      int(rect.origin.y),
@@ -212,7 +157,8 @@ func (s *macosSystemTray) run() {
 		if s.nsStatusItem != nil {
 			Fatal("System tray '%d' already running", s.id)
 		}
-		s.nsStatusItem = unsafe.Pointer(C.systemTrayNew())
+		s.nsStatusItem = unsafe.Pointer(C.systemTrayNew(C.long(s.id)))
+
 		if s.label != "" {
 			C.systemTraySetLabel(s.nsStatusItem, C.CString(s.label))
 		}
@@ -252,7 +198,8 @@ func (s *macosSystemTray) setTemplateIcon(icon []byte) {
 }
 
 func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
-	return &macosSystemTray{
+	result := &macosSystemTray{
+		parent:         s,
 		id:             s.id,
 		label:          s.label,
 		icon:           s.icon,
@@ -260,6 +207,8 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 		iconPosition:   s.iconPosition,
 		isTemplateIcon: s.isTemplateIcon,
 	}
+	systemTrayMap[s.id] = result
+	return result
 }
 
 func (s *macosSystemTray) setLabel(label string) {
@@ -270,4 +219,25 @@ func (s *macosSystemTray) setLabel(label string) {
 func (s *macosSystemTray) destroy() {
 	// Remove the status item from the status bar and its associated menu
 	C.systemTrayDestroy(s.nsStatusItem)
+}
+
+func (s *macosSystemTray) processClick(b button) {
+	switch b {
+	case left:
+		// Check if we have a callback
+		if s.parent.clickHandler != nil {
+			s.parent.clickHandler()
+			return
+		}
+	case right:
+		// Check if we have a callback
+		if s.parent.rightClickHandler != nil {
+			s.parent.rightClickHandler()
+			return
+		}
+	}
+	// Open the default menu if we have one
+	if s.menu != nil {
+		C.showMenu(s.nsStatusItem)
+	}
 }

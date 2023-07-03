@@ -97,6 +97,28 @@ Screen getScreenForWindow(void* window){
 	return processScreen(screen);
 }
 
+// Get the screen for the system tray
+Screen getScreenForSystemTray(void* nsStatusItem) {
+	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+	NSRect frame = statusItem.button.frame;
+	NSArray<NSScreen *> *screens = NSScreen.screens;
+	NSScreen *associatedScreen = nil;
+
+	for (NSScreen *screen in screens) {
+		if (NSPointInRect(frame.origin, screen.frame)) {
+			associatedScreen = screen;
+			break;
+		}
+	}
+	return processScreen(associatedScreen);
+}
+
+void* getWindowForSystray(void* nsStatusItem) {
+	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+	return statusItem.button.window;
+}
+
+
 */
 import "C"
 import "unsafe"
@@ -147,5 +169,13 @@ func (m *macosApp) getScreens() ([]*Screen, error) {
 
 func getScreenForWindow(window *macosWebviewWindow) (*Screen, error) {
 	cScreen := C.getScreenForWindow(window.nsWindow)
+	return cScreenToScreen(cScreen), nil
+}
+
+func getScreenForSystray(systray *macosSystemTray) (*Screen, error) {
+	// Get the Window for the status item
+	// https://stackoverflow.com/a/5875019/4188138
+	window := C.getWindowForSystray(systray.nsStatusItem)
+	cScreen := C.getScreenForWindow(window)
 	return cScreenToScreen(cScreen), nil
 }

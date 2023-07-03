@@ -68,9 +68,11 @@ func main() {
 		app.Quit()
 	})
 
-	systemTray.SetMenu(myMenu)
+	if runtime.GOOS != "darwin" {
+		systemTray.SetMenu(myMenu)
+	}
 
-	systemTray.OnClick(func() {
+	showWindow := func() {
 		window.SetTitle(fmt.Sprintf("Clicked %d times", clickCount()))
 		err := systemTray.PositionWindow(window)
 		if err != nil {
@@ -78,7 +80,8 @@ func main() {
 			return
 		}
 		window.Show().Focus()
-	})
+	}
+	systemTray.OnClick(showWindow)
 
 	err := app.Run()
 
