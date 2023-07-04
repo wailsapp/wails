@@ -106,3 +106,9 @@ void systemTrayGetBounds(void* nsStatusItem, NSRect *rect) {
 	NSRect buttonFrame = statusItem.button.frame;
 	*rect = [statusItem.button.window convertRectToScreen:buttonFrame];
 }
+
+int statusBarHeight() {
+    NSMenu *mainMenu = [NSApp mainMenu];
+    CGFloat menuBarHeight = [mainMenu menuBarHeight];
+    return (int)menuBarHeight;
+}

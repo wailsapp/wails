@@ -73,9 +73,9 @@ extern bool hasListeners(unsigned int);
     }
 }
 
-- (void)applicationDidResignActive:(NSNotification *)notification {
-    if( hasListeners(EventApplicationDidResignActive) ) {
-        processApplicationEvent(EventApplicationDidResignActive);
+- (void)applicationDidResignActiveNotification:(NSNotification *)notification {
+    if( hasListeners(EventApplicationDidResignActiveNotification) ) {
+        processApplicationEvent(EventApplicationDidResignActiveNotification);
     }
 }
 

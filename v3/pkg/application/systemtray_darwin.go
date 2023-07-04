@@ -57,7 +57,7 @@ func (s *macosSystemTray) setMenu(menu *Menu) {
 	s.menu = menu
 }
 
-func (s *macosSystemTray) positionWindow(window *WebviewWindow) error {
+func (s *macosSystemTray) positionWindow(window *WebviewWindow, offset int) error {
 
 	// Get the trayBounds of this system tray
 	trayBounds, err := s.bounds()
@@ -70,61 +70,23 @@ func (s *macosSystemTray) positionWindow(window *WebviewWindow) error {
 	if err != nil {
 		return err
 	}
-
 	screenBounds := currentScreen.Bounds
-
-	// Determine which quadrant of the screen the system tray is in
-	// ----------
-	// | 1 | 2  |
-	// ----------
-	// | 3 | 4  |
-	// ----------
-	quadrant := 4
-	if trayBounds.X < screenBounds.Width/2 {
-		quadrant -= 1
-	}
-	if trayBounds.Y < screenBounds.Height/2 {
-		quadrant -= 2
-	}
 
 	// Get the center height of the window
 	windowWidthCenter := window.Width() / 2
+
 	// Get the center height of the system tray
 	systemTrayWidthCenter := trayBounds.Width / 2
 
-	// Position the window based on the quadrant
-	// It will be centered on the system tray and if it goes off-screen it will be moved back on screen
-	switch quadrant {
-	case 1:
-		// The X will be 0 and the Y will be the system tray Y
-		// Center the window on the system tray
-		window.SetRelativePosition(0, trayBounds.Y)
-	case 2:
-		// The Y will be 0 and the X will make the center of the window line up with the center of the system tray
-		windowX := trayBounds.X + systemTrayWidthCenter - windowWidthCenter
-		// If the end of the window goes off-screen, move it back enough to be on screen
-		if windowX+window.Width() > screenBounds.Width {
-			windowX = screenBounds.Width - window.Width()
-		}
-		window.SetRelativePosition(windowX, 0)
-	case 3:
-		// The X will be 0 and the Y will be the system tray Y - the height of the window
-		windowY := trayBounds.Y - window.Height()
-		// If the end of the window goes off-screen, move it back enough to be on screen
-		if windowY < 0 {
-			windowY = 0
-		}
-		window.SetRelativePosition(0, windowY)
-	case 4:
-		// The Y will be 0 and the X will make the center of the window line up with the center of the system tray - the height of the window
-		windowX := trayBounds.X + systemTrayWidthCenter - windowWidthCenter
-		windowY := trayBounds.Y - window.Height()
-		// If the end of the window goes off-screen, move it back enough to be on screen
-		if windowX+window.Width() > screenBounds.Width {
-			windowX = screenBounds.Width - window.Width()
-		}
-		window.SetRelativePosition(windowX, windowY)
+	// The Y will be 0 and the X will make the center of the window line up with the center of the system tray
+	windowX := trayBounds.X + systemTrayWidthCenter - windowWidthCenter
+
+	// If the end of the window goes off-screen, move it back enough to be on screen
+	if windowX+window.Width() > screenBounds.Width {
+		windowX = screenBounds.Width - window.Width()
 	}
+	window.SetRelativePosition(windowX, int(C.statusBarHeight())+offset)
+
 	return nil
 }
 

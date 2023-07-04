@@ -8,7 +8,7 @@ mac:ApplicationDidChangeStatusBarFrame
 mac:ApplicationDidChangeStatusBarOrientation
 mac:ApplicationDidFinishLaunching
 mac:ApplicationDidHide
-mac:ApplicationDidResignActive
+mac:ApplicationDidResignActiveNotification
 mac:ApplicationDidUnhide
 mac:ApplicationDidUpdate
 mac:ApplicationWillBecomeActive
@@ -54,7 +54,6 @@ mac:WindowDidOrderOnScreen
 mac:WindowDidResignKey
 mac:WindowDidResignMain
 mac:WindowDidResize
-mac:WindowDidUnfocus
 mac:WindowDidUpdate
 mac:WindowDidUpdateAlpha
 mac:WindowDidUpdateCollectionBehavior
@@ -142,7 +141,7 @@ common:WindowZoomIn
 common:WindowZoomOut
 common:WindowZoomReset
 common:WindowFocus
-common:WindowUnFocus
+common:WindowLostFocus
 common:WindowShow
 common:WindowHide
 common:WindowDPIChanged

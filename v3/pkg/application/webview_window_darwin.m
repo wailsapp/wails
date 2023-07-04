@@ -57,18 +57,15 @@ extern bool hasListeners(unsigned int);
     self.leftMouseEvent = nil;
     [super dealloc];
 }
-
 - (void) startDrag:(WebviewWindow*)window {
     [window performWindowDragWithEvent:self.leftMouseEvent];
 }
-
 // Handle script messages from the external bridge
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
     NSString *m = message.body;
     const char *_m = [m UTF8String];
     processMessage(self.windowId, _m);
 }
-
 - (void)handleLeftMouseDown:(NSEvent *)event {
     self.leftMouseEvent = event;
     NSWindow *window = [event window];
@@ -311,12 +308,6 @@ extern bool hasListeners(unsigned int);
 - (void)windowDidResize:(NSNotification *)notification {
     if( hasListeners(EventWindowDidResize) ) {
         processWindowEvent(self.windowId, EventWindowDidResize);
-    }
-}
-
-- (void)windowDidUnfocus:(NSNotification *)notification {
-    if( hasListeners(EventWindowDidUnfocus) ) {
-        processWindowEvent(self.windowId, EventWindowDidUnfocus);
     }
 }
 

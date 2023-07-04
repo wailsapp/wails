@@ -2,20 +2,13 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
+	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/icons"
 	"log"
 	"runtime"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
-
-var counter int
-
-func clickCount() int {
-	counter++
-	return counter
-}
 
 func main() {
 	app := application.New(application.Options{
@@ -27,10 +20,23 @@ func main() {
 	})
 
 	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Width:  500,
-		Height: 800,
-		//Frameless: true,
-		Hidden: true,
+		Width:       500,
+		Height:      800,
+		Frameless:   true,
+		AlwaysOnTop: true,
+		Hidden:      true,
+		ShouldClose: func(window *application.WebviewWindow) bool {
+			window.Hide()
+			return false
+		},
+	})
+
+	window.On(events.Common.WindowLostFocus, func(ctx *application.WindowEventContext) {
+		window.Hide()
+	})
+
+	app.On(events.Mac.ApplicationDidResignActiveNotification, func() {
+		window.Hide()
 	})
 
 	systemTray := app.NewSystemTray()
@@ -73,8 +79,11 @@ func main() {
 	}
 
 	showWindow := func() {
-		window.SetTitle(fmt.Sprintf("Clicked %d times", clickCount()))
-		err := systemTray.PositionWindow(window)
+		if window.IsVisible() {
+			window.Hide()
+			return
+		}
+		err := systemTray.PositionWindow(window, 5)
 		if err != nil {
 			application.InfoDialog().SetTitle("Error").SetMessage(err.Error()).Show()
 			return

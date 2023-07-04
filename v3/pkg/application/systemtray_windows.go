@@ -30,7 +30,7 @@ type windowsSystemTray struct {
 	currentIcon   w32.HICON
 }
 
-func (s *windowsSystemTray) positionWindow(window *WebviewWindow) error {
+func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) error {
 
 	// Get the trayBounds of this system tray
 	trayBounds, err := s.bounds()
@@ -51,7 +51,7 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow) error {
 	case w32.ABE_LEFT:
 		if trayBounds == nil {
 			// Move it to the bottom left corner of the screen
-			window.SetRelativePosition(0, screenBounds.Height-window.Height())
+			window.SetRelativePosition(offset, screenBounds.Height-window.Height())
 			return nil
 		}
 		newHeight := trayBounds.Y - (window.Height() / 2)
@@ -59,11 +59,11 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow) error {
 			newHeight = 0
 		}
 		// Move it to the top left corner of the screen
-		window.SetRelativePosition(0, newHeight)
+		window.SetRelativePosition(offset, newHeight)
 	case w32.ABE_TOP:
 		if trayBounds == nil {
 			// Move it to the top right corner of the screen
-			window.SetRelativePosition(screenBounds.Width-window.Width(), 0)
+			window.SetRelativePosition(screenBounds.Width-window.Width(), offset)
 			return nil
 		}
 		newWidth := trayBounds.X - (window.Width() / 2)
@@ -71,29 +71,29 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow) error {
 			newWidth = screenBounds.Width - window.Width()
 		}
 		// Move it to the top left corner of the screen
-		window.SetRelativePosition(newWidth, 0)
+		window.SetRelativePosition(newWidth, offset)
 	case w32.ABE_RIGHT:
 		if trayBounds == nil {
 			// Move it to the bottom right corner of the screen
-			window.SetRelativePosition(screenBounds.Width-window.Width(), screenBounds.Height-window.Height())
+			window.SetRelativePosition(screenBounds.Width-window.Width()-offset, screenBounds.Height-window.Height())
 			return nil
 		}
 		newHeight := trayBounds.Y - (window.Height() / 2)
 		if newHeight > screenBounds.Height-window.Height() {
 			newHeight = screenBounds.Height - window.Height()
 		}
-		window.SetRelativePosition(screenBounds.Width-window.Width(), newHeight)
+		window.SetRelativePosition(screenBounds.Width-window.Width()-offset, newHeight)
 	case w32.ABE_BOTTOM:
 		if trayBounds == nil {
 			// Move it to the bottom right corner of the screen
-			window.SetRelativePosition(screenBounds.Width-window.Width(), screenBounds.Height-window.Height())
+			window.SetRelativePosition(screenBounds.Width-window.Width(), screenBounds.Height-window.Height()-offset)
 			return nil
 		}
 		newWidth := trayBounds.X - (window.Width() / 2)
 		if newWidth > screenBounds.Width-window.Width() {
 			newWidth = screenBounds.Width - window.Width()
 		}
-		window.SetRelativePosition(newWidth, screenBounds.Height-window.Height())
+		window.SetRelativePosition(newWidth, screenBounds.Height-window.Height()-offset)
 	}
 	return nil
 }

@@ -13,3 +13,4 @@ void systemTraySetMenu(void* nsStatusItem, void* nsMenu);
 void systemTrayDestroy(void* nsStatusItem);
 void showMenu(void* nsStatusItem);
 void systemTrayGetBounds(void* nsStatusItem, NSRect *rect);
+int statusBarHeight();

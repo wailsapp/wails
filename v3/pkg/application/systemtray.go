@@ -29,7 +29,11 @@ type systemTrayImpl interface {
 	setDarkModeIcon(icon []byte)
 	bounds() (*Rect, error)
 	getScreen() (*Screen, error)
-	positionWindow(window *WebviewWindow) error
+	positionWindow(window *WebviewWindow, offset int) error
+}
+
+type PositionOptions struct {
+	Buffer int
 }
 
 type SystemTray struct {
@@ -81,12 +85,12 @@ func (s *SystemTray) run() {
 	invokeSync(s.impl.run)
 }
 
-func (s *SystemTray) PositionWindow(window *WebviewWindow) error {
+func (s *SystemTray) PositionWindow(window *WebviewWindow, offset int) error {
 	if s.impl == nil {
 		return fmt.Errorf("system tray not running")
 	}
 	return invokeSyncWithError(func() error {
-		return s.impl.positionWindow(window)
+		return s.impl.positionWindow(window, offset)
 	})
 }
 

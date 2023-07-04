@@ -689,6 +689,16 @@ void windowSetEnabled(void *window, bool enabled) {
 	// TODO: Implement
 }
 
+void windowFocus(void *window) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	// If the current application is not active, activate it
+	if (![[NSApplication sharedApplication] isActive]) {
+		[[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+	}
+	[nsWindow makeKeyAndOrderFront:nil];
+	[nsWindow makeKeyWindow];
+}
+
 */
 import "C"
 import (
@@ -721,7 +731,8 @@ func (w *macosWebviewWindow) startResize(_ string) error {
 }
 
 func (w *macosWebviewWindow) focus() {
-	w.show()
+	// Make the window key and main
+	C.windowFocus(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
@@ -1075,9 +1086,12 @@ func (w *macosWebviewWindow) run() {
 			w.parent.emit(events.Common.WindowClosing)
 		})
 
-		// Translate WindowDidUnfocus to common WindowUnFocus event
-		w.parent.On(events.Mac.WindowDidUnfocus, func(_ *WindowEventContext) {
-			w.parent.emit(events.Common.WindowUnFocus)
+		// Translate WindowDidResignKey to common WindowLostFocus event
+		w.parent.On(events.Mac.WindowDidResignKey, func(_ *WindowEventContext) {
+			w.parent.emit(events.Common.WindowLostFocus)
+		})
+		w.parent.On(events.Mac.WindowDidResignMain, func(_ *WindowEventContext) {
+			w.parent.emit(events.Common.WindowLostFocus)
 		})
 
 		if w.parent.options.HTML != "" {
