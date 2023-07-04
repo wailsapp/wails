@@ -61,6 +61,10 @@ type windowsWebviewWindow struct {
 	// resizeBorder* is the width/height of the resize border in pixels.
 	resizeBorderWidth  int32
 	resizeBorderHeight int32
+
+	// Internal flag to prevent closing the window almost immediately after opening it.
+	// This happens when the window is opened after clicking a notification icon
+	justOpened bool
 }
 
 func (w *windowsWebviewWindow) setAbsolutePosition(x int, y int) {
@@ -747,10 +751,18 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		if w.framelessWithDecorations() {
 			w32.ExtendFrameIntoClientArea(w.hwnd, true)
 		}
+		w.justOpened = true
+		go func() {
+			time.Sleep(100 * time.Millisecond)
+			w.justOpened = false
+		}()
 	case w32.WM_CLOSE:
 		w.parent.emit(events.Common.WindowClosing)
 		return 0
 	case w32.WM_KILLFOCUS:
+		if w.justOpened {
+			return 0
+		}
 		w.parent.emit(events.Common.WindowLostFocus)
 	case w32.WM_SETFOCUS:
 		w.parent.emit(events.Common.WindowFocus)
