@@ -61,10 +61,7 @@ type windowsWebviewWindow struct {
 	// resizeBorder* is the width/height of the resize border in pixels.
 	resizeBorderWidth  int32
 	resizeBorderHeight int32
-
-	// Internal flag to prevent closing the window almost immediately after opening it.
-	// This happens when the window is opened after clicking a notification icon
-	justOpened bool
+	focusingChromium   bool
 }
 
 func (w *windowsWebviewWindow) setAbsolutePosition(x int, y int) {
@@ -566,7 +563,9 @@ func (w *windowsWebviewWindow) focus() {
 
 func (w *windowsWebviewWindow) show() {
 	w32.ShowWindow(w.hwnd, w32.SW_SHOW)
+	w.focusingChromium = true
 	w.chromium.Focus()
+	w.focusingChromium = false
 }
 
 func (w *windowsWebviewWindow) hide() {
@@ -740,6 +739,9 @@ func (w *windowsWebviewWindow) isActive() bool {
 func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	switch msg {
 	case w32.WM_ACTIVATE:
+		if int(wparam&0xffff) == w32.WA_INACTIVE {
+			w.parent.emit(events.Common.WindowLostFocus)
+		}
 		if wparam == w32.WA_ACTIVE || wparam == w32.WA_CLICKACTIVE {
 			getNativeApplication().currentWindowID = w.parent.id
 			w.parent.emit(events.Common.WindowFocus)
@@ -751,16 +753,11 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		if w.framelessWithDecorations() {
 			w32.ExtendFrameIntoClientArea(w.hwnd, true)
 		}
-		w.justOpened = true
-		go func() {
-			time.Sleep(100 * time.Millisecond)
-			w.justOpened = false
-		}()
 	case w32.WM_CLOSE:
 		w.parent.emit(events.Common.WindowClosing)
 		return 0
 	case w32.WM_KILLFOCUS:
-		if w.justOpened {
+		if w.focusingChromium {
 			return 0
 		}
 		w.parent.emit(events.Common.WindowLostFocus)
