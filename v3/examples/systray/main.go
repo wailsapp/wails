@@ -83,7 +83,11 @@ func main() {
 	}
 
 	showWindow := func() {
-		if justClosed {
+		if runtime.GOOS == "windows" && justClosed {
+			return
+		}
+		if window.IsVisible() {
+			window.Hide()
 			return
 		}
 		_ = systemTray.PositionWindow(window, 5)
