@@ -1,5 +1,7 @@
 package application
 
+import "github.com/wailsapp/wails/v3/pkg/events"
+
 type WindowsApplicationOptions struct {
 	// WndProcInterceptor is a function that will be called for every message sent in the application.
 	// Use this to hook into the main message loop. This is useful for handling custom window messages.
@@ -55,6 +57,9 @@ type WindowsWindow struct {
 
 	// Disable the menu bar for this window
 	DisableMenu bool
+
+	// Event mapping for the window
+	EventMapping map[events.WindowEventType]events.WindowEventType
 }
 
 type Theme int

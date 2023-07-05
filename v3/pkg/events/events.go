@@ -32,24 +32,24 @@ type commonEvents struct {
 
 func newCommonEvents() commonEvents {
 	return commonEvents{
-		ApplicationStarted: 1153,
-		WindowMaximise:     1154,
-		WindowUnMaximise:   1155,
-		WindowFullscreen:   1156,
-		WindowUnFullscreen: 1157,
-		WindowRestore:      1158,
-		WindowMinimise:     1159,
-		WindowUnMinimise:   1160,
-		WindowClosing:      1161,
-		WindowZoom:         1162,
-		WindowZoomIn:       1163,
-		WindowZoomOut:      1164,
-		WindowZoomReset:    1165,
-		WindowFocus:        1166,
-		WindowLostFocus:    1167,
-		WindowShow:         1168,
-		WindowHide:         1169,
-		WindowDPIChanged:   1170,
+		ApplicationStarted: 1166,
+		WindowMaximise:     1167,
+		WindowUnMaximise:   1168,
+		WindowFullscreen:   1169,
+		WindowUnFullscreen: 1170,
+		WindowRestore:      1171,
+		WindowMinimise:     1172,
+		WindowUnMinimise:   1173,
+		WindowClosing:      1174,
+		WindowZoom:         1175,
+		WindowZoomIn:       1176,
+		WindowZoomOut:      1177,
+		WindowZoomReset:    1178,
+		WindowFocus:        1179,
+		WindowLostFocus:    1180,
+		WindowShow:         1181,
+		WindowHide:         1182,
+		WindowDPIChanged:   1183,
 	}
 }
 
@@ -317,6 +317,19 @@ type windowsEvents struct {
 	APMResumeSuspend           ApplicationEventType
 	APMPowerSettingChange      ApplicationEventType
 	WebViewNavigationCompleted WindowEventType
+	WindowInactive             WindowEventType
+	WindowActive               WindowEventType
+	WindowClickActive          WindowEventType
+	WindowMaximise             WindowEventType
+	WindowUnMaximise           WindowEventType
+	WindowFullscreen           WindowEventType
+	WindowUnFullscreen         WindowEventType
+	WindowRestore              WindowEventType
+	WindowMinimise             WindowEventType
+	WindowUnMinimise           WindowEventType
+	WindowClose                WindowEventType
+	WindowSetFocus             WindowEventType
+	WindowKillFocus            WindowEventType
 }
 
 func newWindowsEvents() windowsEvents {
@@ -328,6 +341,19 @@ func newWindowsEvents() windowsEvents {
 		APMResumeSuspend:           1150,
 		APMPowerSettingChange:      1151,
 		WebViewNavigationCompleted: 1152,
+		WindowInactive:             1153,
+		WindowActive:               1154,
+		WindowClickActive:          1155,
+		WindowMaximise:             1156,
+		WindowUnMaximise:           1157,
+		WindowFullscreen:           1158,
+		WindowUnFullscreen:         1159,
+		WindowRestore:              1160,
+		WindowMinimise:             1161,
+		WindowUnMinimise:           1162,
+		WindowClose:                1163,
+		WindowSetFocus:             1164,
+		WindowKillFocus:            1165,
 	}
 }
 
@@ -465,22 +491,35 @@ var eventToJS = map[uint]string{
 	1150: "windows:APMResumeSuspend",
 	1151: "windows:APMPowerSettingChange",
 	1152: "windows:WebViewNavigationCompleted",
-	1153: "common:ApplicationStarted",
-	1154: "common:WindowMaximise",
-	1155: "common:WindowUnMaximise",
-	1156: "common:WindowFullscreen",
-	1157: "common:WindowUnFullscreen",
-	1158: "common:WindowRestore",
-	1159: "common:WindowMinimise",
-	1160: "common:WindowUnMinimise",
-	1161: "common:WindowClosing",
-	1162: "common:WindowZoom",
-	1163: "common:WindowZoomIn",
-	1164: "common:WindowZoomOut",
-	1165: "common:WindowZoomReset",
-	1166: "common:WindowFocus",
-	1167: "common:WindowLostFocus",
-	1168: "common:WindowShow",
-	1169: "common:WindowHide",
-	1170: "common:WindowDPIChanged",
+	1153: "windows:WindowInactive",
+	1154: "windows:WindowActive",
+	1155: "windows:WindowClickActive",
+	1156: "windows:WindowMaximise",
+	1157: "windows:WindowUnMaximise",
+	1158: "windows:WindowFullscreen",
+	1159: "windows:WindowUnFullscreen",
+	1160: "windows:WindowRestore",
+	1161: "windows:WindowMinimise",
+	1162: "windows:WindowUnMinimise",
+	1163: "windows:WindowClose",
+	1164: "windows:WindowSetFocus",
+	1165: "windows:WindowKillFocus",
+	1166: "common:ApplicationStarted",
+	1167: "common:WindowMaximise",
+	1168: "common:WindowUnMaximise",
+	1169: "common:WindowFullscreen",
+	1170: "common:WindowUnFullscreen",
+	1171: "common:WindowRestore",
+	1172: "common:WindowMinimise",
+	1173: "common:WindowUnMinimise",
+	1174: "common:WindowClosing",
+	1175: "common:WindowZoom",
+	1176: "common:WindowZoomIn",
+	1177: "common:WindowZoomOut",
+	1178: "common:WindowZoomReset",
+	1179: "common:WindowFocus",
+	1180: "common:WindowLostFocus",
+	1181: "common:WindowShow",
+	1182: "common:WindowHide",
+	1183: "common:WindowDPIChanged",
 }

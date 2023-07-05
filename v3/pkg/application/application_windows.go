@@ -182,7 +182,8 @@ func (m *windowsApp) run() error {
 }
 
 func (m *windowsApp) destroy() {
-	//C.destroyApp()
+	// Post a quit message to the main thread
+	w32.PostQuitMessage(0)
 }
 
 func (m *windowsApp) init() {

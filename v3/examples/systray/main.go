@@ -6,6 +6,7 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/icons"
 	"log"
 	"runtime"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -31,12 +32,15 @@ func main() {
 		},
 	})
 
+	var justClosed bool
+
 	window.On(events.Common.WindowLostFocus, func(ctx *application.WindowEventContext) {
 		window.Hide()
-	})
-
-	app.On(events.Mac.ApplicationDidResignActiveNotification, func() {
-		window.Hide()
+		justClosed = true
+		go func() {
+			time.Sleep(200 * time.Millisecond)
+			justClosed = false
+		}()
 	})
 
 	systemTray := app.NewSystemTray()
@@ -79,15 +83,10 @@ func main() {
 	}
 
 	showWindow := func() {
-		if window.IsVisible() {
-			window.Hide()
+		if justClosed {
 			return
 		}
-		err := systemTray.PositionWindow(window, 5)
-		if err != nil {
-			application.InfoDialog().SetTitle("Error").SetMessage(err.Error()).Show()
-			return
-		}
+		_ = systemTray.PositionWindow(window, 5)
 		window.Show().Focus()
 	}
 	systemTray.OnClick(showWindow)

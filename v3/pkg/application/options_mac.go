@@ -1,5 +1,7 @@
 package application
 
+import "github.com/wailsapp/wails/v3/pkg/events"
+
 type ActivationPolicy int
 
 const (
@@ -48,6 +50,8 @@ type MacWindow struct {
 	TitleBar                MacTitleBar
 	Appearance              MacAppearanceType
 	InvisibleTitleBarHeight int
+	// Maps events from platform specific to the event name
+	EventMapping map[events.WindowEventType]events.WindowEventType
 }
 
 // MacTitleBar contains options for the Mac titlebar

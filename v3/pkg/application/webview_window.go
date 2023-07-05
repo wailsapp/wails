@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/samber/lo"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -109,6 +110,30 @@ func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType
 	w.addCancellationFunction(cancelFn)
 }
 
+func (w *WebviewWindow) setupEventMapping() {
+
+	var mapping map[events.WindowEventType]events.WindowEventType
+	switch runtime.GOOS {
+	case "darwin":
+		mapping = w.options.Mac.EventMapping
+	case "windows":
+		mapping = w.options.Windows.EventMapping
+	case "linux":
+		// TBD
+	}
+	if mapping == nil {
+		mapping = events.DefaultWindowEventMapping()
+	}
+
+	for source, target := range mapping {
+		source := source
+		target := target
+		w.On(source, func(ctx *WindowEventContext) {
+			w.emit(target)
+		})
+	}
+}
+
 // NewWindow creates a new window with the given options
 func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	if options.Width == 0 {
@@ -127,6 +152,8 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		eventListeners: make(map[uint][]*WindowEventListener),
 		contextMenus:   make(map[string]*Menu),
 	}
+
+	result.setupEventMapping()
 
 	// Listen for window closing events and de
 	result.On(events.Common.WindowClosing, func(ctx *WindowEventContext) {

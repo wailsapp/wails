@@ -368,8 +368,7 @@ func (w *windowsWebviewWindow) relativePosition() (int, int) {
 }
 
 func (w *windowsWebviewWindow) destroy() {
-	//TODO implement me
-	panic("implement me")
+	// Not sure if we have anything to destroy...
 }
 
 func (w *windowsWebviewWindow) reload() {
@@ -740,11 +739,15 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	switch msg {
 	case w32.WM_ACTIVATE:
 		if int(wparam&0xffff) == w32.WA_INACTIVE {
-			w.parent.emit(events.Common.WindowLostFocus)
+			w.parent.emit(events.Windows.WindowInactive)
 		}
-		if wparam == w32.WA_ACTIVE || wparam == w32.WA_CLICKACTIVE {
+		if wparam == w32.WA_ACTIVE {
 			getNativeApplication().currentWindowID = w.parent.id
-			w.parent.emit(events.Common.WindowFocus)
+			w.parent.emit(events.Windows.WindowActive)
+		}
+		if wparam == w32.WA_CLICKACTIVE {
+			getNativeApplication().currentWindowID = w.parent.id
+			w.parent.emit(events.Windows.WindowClickActive)
 		}
 		// If we want to have a frameless window but with the default frame decorations, extend the DWM client area.
 		// This Option is not affected by returning 0 in WM_NCCALCSIZE.
@@ -754,15 +757,15 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			w32.ExtendFrameIntoClientArea(w.hwnd, true)
 		}
 	case w32.WM_CLOSE:
-		w.parent.emit(events.Common.WindowClosing)
+		w.parent.emit(events.Windows.WindowClose)
 		return 0
 	case w32.WM_KILLFOCUS:
 		if w.focusingChromium {
 			return 0
 		}
-		w.parent.emit(events.Common.WindowLostFocus)
+		w.parent.emit(events.Windows.WindowKillFocus)
 	case w32.WM_SETFOCUS:
-		w.parent.emit(events.Common.WindowFocus)
+		w.parent.emit(events.Windows.WindowSetFocus)
 	case w32.WM_NCLBUTTONDOWN:
 		w32.SetFocus(w.hwnd)
 	case w32.WM_MOVE, w32.WM_MOVING:
@@ -770,11 +773,11 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_SIZE:
 		switch wparam {
 		case w32.SIZE_MAXIMIZED:
-			w.parent.emit(events.Common.WindowMaximise)
+			w.parent.emit(events.Windows.WindowMaximise)
 		case w32.SIZE_RESTORED:
-			w.parent.emit(events.Common.WindowRestore)
+			w.parent.emit(events.Windows.WindowRestore)
 		case w32.SIZE_MINIMIZED:
-			w.parent.emit(events.Common.WindowMinimise)
+			w.parent.emit(events.Windows.WindowMinimise)
 		}
 		if w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED {
 			// If the window is frameless, and we are minimizing, then we need to suppress the Resize on the

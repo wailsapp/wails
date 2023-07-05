@@ -534,28 +534,21 @@ func (a *App) CurrentWindow() *WebviewWindow {
 }
 
 func (a *App) Quit() {
-	var wg sync.WaitGroup
-	wg.Add(2)
-	go func() {
+	invokeSync(func() {
 		a.windowsLock.Lock()
 		for _, window := range a.windows {
 			window.Destroy()
 		}
 		a.windowsLock.Unlock()
-		wg.Done()
-	}()
-	go func() {
 		a.systemTraysLock.Lock()
 		for _, systray := range a.systemTrays {
 			systray.Destroy()
 		}
 		a.systemTraysLock.Unlock()
-		wg.Done()
-	}()
-	wg.Wait()
-	if a.impl != nil {
-		a.impl.destroy()
-	}
+		if a.impl != nil {
+			a.impl.destroy()
+		}
+	})
 }
 
 func (a *App) SetMenu(menu *Menu) {
