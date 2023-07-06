@@ -2,6 +2,10 @@ package application
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v3/pkg/events"
+	"runtime"
+	"sync"
+	"time"
 )
 
 type IconPosition int
@@ -56,14 +60,22 @@ type SystemTray struct {
 	impl           systemTrayImpl
 	menu           *Menu
 	isTemplateIcon bool
+	attachedWindow WindowAttachConfig
 }
 
 func NewSystemTray(id uint) *SystemTray {
-	return &SystemTray{
+	result := &SystemTray{
 		id:           id,
 		label:        "",
 		iconPosition: NSImageLeading,
+		attachedWindow: WindowAttachConfig{
+			Window:   nil,
+			Offset:   0,
+			Debounce: 200 * time.Millisecond,
+		},
 	}
+	result.clickHandler = result.defaultClickHandler
+	return result
 }
 
 func (s *SystemTray) SetLabel(label string) {
@@ -82,6 +94,26 @@ func (s *SystemTray) Label() string {
 
 func (s *SystemTray) run() {
 	s.impl = newSystemTrayImpl(s)
+
+	if s.attachedWindow.Window != nil {
+		// Setup listener
+		s.attachedWindow.Window.On(events.Common.WindowLostFocus, func(ctx *WindowEventContext) {
+			s.attachedWindow.Window.Hide()
+			// Special handler for Windows
+			if runtime.GOOS == "windows" {
+				// We don't do this unless the window has already been shown
+				if s.attachedWindow.hasBeenShown == false {
+					return
+				}
+				s.attachedWindow.justClosed = true
+				go func() {
+					time.Sleep(s.attachedWindow.Debounce)
+					s.attachedWindow.justClosed = false
+				}()
+			}
+		})
+	}
+
 	invokeSync(s.impl.run)
 }
 
@@ -185,4 +217,70 @@ func (s *SystemTray) OnMouseEnter(handler func()) *SystemTray {
 func (s *SystemTray) OnMouseLeave(handler func()) *SystemTray {
 	s.mouseLeaveHandler = handler
 	return s
+}
+
+type WindowAttachConfig struct {
+	// Window is the window to attach to the system tray. If it's null, the request to attach will be ignored.
+	Window *WebviewWindow
+
+	// Offset indicates the gap in pixels between the system tray and the window
+	Offset int
+
+	// Debounce is used by Windows to indicate how long to wait before responding to a mouse
+	// up event on the notification icon. See https://stackoverflow.com/questions/4585283/alternate-showing-hiding-window-when-notify-icon-is-clicked
+	Debounce time.Duration
+
+	// Indicates that the window has just been closed
+	justClosed bool
+
+	// Indicates that the window has been shown a first time
+	hasBeenShown bool
+
+	// Used to ensure that the window state is read on first click
+	initialClick sync.Once
+}
+
+// AttachWindow attaches a window to the system tray. The window will be shown when the system tray icon is clicked.
+// The window will be hidden when the system tray icon is clicked again, or when the window loses focus.
+func (s *SystemTray) AttachWindow(window *WebviewWindow) *SystemTray {
+	s.attachedWindow.Window = window
+	return s
+}
+
+// WindowOffset sets the gap in pixels between the system tray and the window
+func (s *SystemTray) WindowOffset(offset int) *SystemTray {
+	s.attachedWindow.Offset = offset
+	return s
+}
+
+// WindowDebounce is used by Windows to indicate how long to wait before responding to a mouse
+// up event on the notification icon. This prevents the window from being hidden and then immediately
+// shown when the user clicks on the system tray icon.
+// See https://stackoverflow.com/questions/4585283/alternate-showing-hiding-window-when-notify-icon-is-clicked
+func (s *SystemTray) WindowDebounce(debounce time.Duration) *SystemTray {
+	s.attachedWindow.Debounce = debounce
+	return s
+}
+
+func (s *SystemTray) defaultClickHandler() {
+	if s.attachedWindow.Window == nil {
+		return
+	}
+
+	// Check the initial visibility state
+	s.attachedWindow.initialClick.Do(func() {
+		s.attachedWindow.hasBeenShown = s.attachedWindow.Window.IsVisible()
+	})
+
+	if runtime.GOOS == "windows" && s.attachedWindow.justClosed {
+		return
+	}
+
+	if s.attachedWindow.Window.IsVisible() {
+		s.attachedWindow.Window.Hide()
+	} else {
+		s.attachedWindow.hasBeenShown = true
+		_ = s.PositionWindow(s.attachedWindow.Window, s.attachedWindow.Offset)
+		s.attachedWindow.Window.Show().Focus()
+	}
 }

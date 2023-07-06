@@ -2,13 +2,10 @@ package main
 
 import (
 	_ "embed"
-	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/icons"
 	"log"
 	"runtime"
-	"time"
-
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 func main() {
@@ -30,17 +27,6 @@ func main() {
 			window.Hide()
 			return false
 		},
-	})
-
-	var justClosed bool
-
-	window.On(events.Common.WindowLostFocus, func(ctx *application.WindowEventContext) {
-		window.Hide()
-		justClosed = true
-		go func() {
-			time.Sleep(200 * time.Millisecond)
-			justClosed = false
-		}()
 	})
 
 	systemTray := app.NewSystemTray()
@@ -82,18 +68,7 @@ func main() {
 		systemTray.SetMenu(myMenu)
 	}
 
-	showWindow := func() {
-		if runtime.GOOS == "windows" && justClosed {
-			return
-		}
-		if window.IsVisible() {
-			window.Hide()
-			return
-		}
-		_ = systemTray.PositionWindow(window, 5)
-		window.Show().Focus()
-	}
-	systemTray.OnClick(showWindow)
+	systemTray.AttachWindow(window).WindowOffset(5)
 
 	err := app.Run()
 
