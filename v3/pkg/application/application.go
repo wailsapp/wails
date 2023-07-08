@@ -38,6 +38,10 @@ type EventListener struct {
 	callback func()
 }
 
+func Get() *App {
+	return globalApplication
+}
+
 func New(appOptions Options) *App {
 	if globalApplication != nil {
 		return globalApplication
