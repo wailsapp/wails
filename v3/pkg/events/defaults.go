@@ -4,6 +4,7 @@ import "runtime"
 
 var defaultWindowEventMapping = map[string]map[WindowEventType]WindowEventType{
 	"windows": {
+		Windows.WindowClose:        Common.WindowClosing,
 		Windows.WindowInactive:     Common.WindowLostFocus,
 		Windows.WindowClickActive:  Common.WindowFocus,
 		Windows.WindowActive:       Common.WindowFocus,
