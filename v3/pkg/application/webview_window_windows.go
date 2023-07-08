@@ -170,12 +170,18 @@ func (w *windowsWebviewWindow) run() {
 	w.chromium = edge.NewChromium()
 
 	var exStyle uint
-	exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
+	exStyle = w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
 		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 	}
 	if options.AlwaysOnTop {
 		exStyle |= w32.WS_EX_TOPMOST
+	}
+	// If we're frameless, we need to add the WS_EX_TOOLWINDOW style to hide the window from the taskbar
+	if options.Windows.HiddenOnTaskbar {
+		exStyle |= w32.WS_EX_TOOLWINDOW
+	} else {
+		exStyle |= w32.WS_EX_APPWINDOW
 	}
 
 	var startX, _ = lo.Coalesce(options.X, w32.CW_USEDEFAULT)
@@ -196,16 +202,20 @@ func (w *windowsWebviewWindow) run() {
 		}
 	}
 
+	var parent w32.HWND
+
+	var style uint = w32.WS_OVERLAPPEDWINDOW
+
 	w.hwnd = w32.CreateWindowEx(
 		exStyle,
 		windowClassName,
 		w32.MustStringToUTF16Ptr(options.Title),
-		w32.WS_OVERLAPPEDWINDOW,
+		style,
 		startX,
 		startY,
 		options.Width,
 		options.Height,
-		0,
+		parent,
 		appMenu,
 		w32.GetModuleHandle(""),
 		nil)
@@ -558,13 +568,168 @@ func (w *windowsWebviewWindow) setFullscreenButtonEnabled(_ bool) {
 
 func (w *windowsWebviewWindow) focus() {
 	w32.SetForegroundWindow(w.hwnd)
+	w.focusingChromium = true
+	w.chromium.Focus()
+	w.focusingChromium = false
+}
+
+// printStyle takes a windows style and prints it in a human-readable format
+// This is for debugging window style issues
+func (w *windowsWebviewWindow) printStyle() {
+	style := uint32(w32.GetWindowLong(w.hwnd, w32.GWL_STYLE))
+	fmt.Printf("Style: ")
+	if style&w32.WS_BORDER != 0 {
+		fmt.Printf("WS_BORDER ")
+	}
+	if style&w32.WS_CAPTION != 0 {
+		fmt.Printf("WS_CAPTION ")
+	}
+	if style&w32.WS_CHILD != 0 {
+		fmt.Printf("WS_CHILD ")
+	}
+	if style&w32.WS_CLIPCHILDREN != 0 {
+		fmt.Printf("WS_CLIPCHILDREN ")
+	}
+	if style&w32.WS_CLIPSIBLINGS != 0 {
+		fmt.Printf("WS_CLIPSIBLINGS ")
+	}
+	if style&w32.WS_DISABLED != 0 {
+		fmt.Printf("WS_DISABLED ")
+	}
+	if style&w32.WS_DLGFRAME != 0 {
+		fmt.Printf("WS_DLGFRAME ")
+	}
+	if style&w32.WS_GROUP != 0 {
+		fmt.Printf("WS_GROUP ")
+	}
+	if style&w32.WS_HSCROLL != 0 {
+		fmt.Printf("WS_HSCROLL ")
+	}
+	if style&w32.WS_MAXIMIZE != 0 {
+		fmt.Printf("WS_MAXIMIZE ")
+	}
+	if style&w32.WS_MAXIMIZEBOX != 0 {
+		fmt.Printf("WS_MAXIMIZEBOX ")
+	}
+	if style&w32.WS_MINIMIZE != 0 {
+		fmt.Printf("WS_MINIMIZE ")
+	}
+	if style&w32.WS_MINIMIZEBOX != 0 {
+		fmt.Printf("WS_MINIMIZEBOX ")
+	}
+	if style&w32.WS_OVERLAPPED != 0 {
+		fmt.Printf("WS_OVERLAPPED ")
+	}
+	if style&w32.WS_POPUP != 0 {
+		fmt.Printf("WS_POPUP ")
+	}
+	if style&w32.WS_SYSMENU != 0 {
+		fmt.Printf("WS_SYSMENU ")
+	}
+	if style&w32.WS_TABSTOP != 0 {
+		fmt.Printf("WS_TABSTOP ")
+	}
+	if style&w32.WS_THICKFRAME != 0 {
+		fmt.Printf("WS_THICKFRAME ")
+	}
+	if style&w32.WS_VISIBLE != 0 {
+		fmt.Printf("WS_VISIBLE ")
+	}
+	if style&w32.WS_VSCROLL != 0 {
+		fmt.Printf("WS_VSCROLL ")
+	}
+	fmt.Printf("\n")
+
+	// Do the same for the extended style
+	extendedStyle := uint32(w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE))
+	fmt.Printf("Extended Style: ")
+	if extendedStyle&w32.WS_EX_ACCEPTFILES != 0 {
+		fmt.Printf("WS_EX_ACCEPTFILES ")
+	}
+	if extendedStyle&w32.WS_EX_APPWINDOW != 0 {
+		fmt.Printf("WS_EX_APPWINDOW ")
+	}
+	if extendedStyle&w32.WS_EX_CLIENTEDGE != 0 {
+		fmt.Printf("WS_EX_CLIENTEDGE ")
+	}
+	if extendedStyle&w32.WS_EX_COMPOSITED != 0 {
+		fmt.Printf("WS_EX_COMPOSITED ")
+	}
+	if extendedStyle&w32.WS_EX_CONTEXTHELP != 0 {
+		fmt.Printf("WS_EX_CONTEXTHELP ")
+	}
+	if extendedStyle&w32.WS_EX_CONTROLPARENT != 0 {
+		fmt.Printf("WS_EX_CONTROLPARENT ")
+	}
+	if extendedStyle&w32.WS_EX_DLGMODALFRAME != 0 {
+		fmt.Printf("WS_EX_DLGMODALFRAME ")
+	}
+	if extendedStyle&w32.WS_EX_LAYERED != 0 {
+		fmt.Printf("WS_EX_LAYERED ")
+	}
+	if extendedStyle&w32.WS_EX_LAYOUTRTL != 0 {
+		fmt.Printf("WS_EX_LAYOUTRTL ")
+	}
+	if extendedStyle&w32.WS_EX_LEFT != 0 {
+		fmt.Printf("WS_EX_LEFT ")
+	}
+	if extendedStyle&w32.WS_EX_LEFTSCROLLBAR != 0 {
+		fmt.Printf("WS_EX_LEFTSCROLLBAR ")
+	}
+	if extendedStyle&w32.WS_EX_LTRREADING != 0 {
+		fmt.Printf("WS_EX_LTRREADING ")
+	}
+	if extendedStyle&w32.WS_EX_MDICHILD != 0 {
+		fmt.Printf("WS_EX_MDICHILD ")
+	}
+	if extendedStyle&w32.WS_EX_NOACTIVATE != 0 {
+		fmt.Printf("WS_EX_NOACTIVATE ")
+	}
+	if extendedStyle&w32.WS_EX_NOINHERITLAYOUT != 0 {
+		fmt.Printf("WS_EX_NOINHERITLAYOUT ")
+	}
+	if extendedStyle&w32.WS_EX_NOPARENTNOTIFY != 0 {
+		fmt.Printf("WS_EX_NOPARENTNOTIFY ")
+	}
+	if extendedStyle&w32.WS_EX_NOREDIRECTIONBITMAP != 0 {
+		fmt.Printf("WS_EX_NOREDIRECTIONBITMAP ")
+	}
+	if extendedStyle&w32.WS_EX_OVERLAPPEDWINDOW != 0 {
+		fmt.Printf("WS_EX_OVERLAPPEDWINDOW ")
+	}
+	if extendedStyle&w32.WS_EX_PALETTEWINDOW != 0 {
+		fmt.Printf("WS_EX_PALETTEWINDOW ")
+	}
+	if extendedStyle&w32.WS_EX_RIGHT != 0 {
+		fmt.Printf("WS_EX_RIGHT ")
+	}
+	if extendedStyle&w32.WS_EX_RIGHTSCROLLBAR != 0 {
+		fmt.Printf("WS_EX_RIGHTSCROLLBAR ")
+	}
+	if extendedStyle&w32.WS_EX_RTLREADING != 0 {
+		fmt.Printf("WS_EX_RTLREADING ")
+	}
+	if extendedStyle&w32.WS_EX_STATICEDGE != 0 {
+		fmt.Printf("WS_EX_STATICEDGE ")
+	}
+	if extendedStyle&w32.WS_EX_TOOLWINDOW != 0 {
+		fmt.Printf("WS_EX_TOOLWINDOW ")
+	}
+	if extendedStyle&w32.WS_EX_TOPMOST != 0 {
+		fmt.Printf("WS_EX_TOPMOST ")
+	}
+	if extendedStyle&w32.WS_EX_TRANSPARENT != 0 {
+		fmt.Printf("WS_EX_TRANSPARENT ")
+	}
+	if extendedStyle&w32.WS_EX_WINDOWEDGE != 0 {
+		fmt.Printf("WS_EX_WINDOWEDGE ")
+	}
+	fmt.Printf("\n")
+
 }
 
 func (w *windowsWebviewWindow) show() {
 	w32.ShowWindow(w.hwnd, w32.SW_SHOW)
-	w.focusingChromium = true
-	w.chromium.Focus()
-	w.focusingChromium = false
 }
 
 func (w *windowsWebviewWindow) hide() {
@@ -674,7 +839,7 @@ func (w *windowsWebviewWindow) setBackdropType(backdropType BackdropType) {
 }
 
 func (w *windowsWebviewWindow) setIcon(icon w32.HICON) {
-	w32.SendMessage(w.hwnd, w32.BM_SETIMAGE, w32.IMAGE_ICON, uintptr(icon))
+	w32.SendMessage(w.hwnd, w32.BM_SETIMAGE, w32.IMAGE_ICON, icon)
 }
 
 func (w *windowsWebviewWindow) disableIcon() {
@@ -1207,10 +1372,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
 	}
 
-	//if globalApplication.capabilities.HasNativeDrag {
-	//	chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--enable-features=msWebView2EnableDraggableRegions")
-	//}
-
 	if len(disableFeatues) > 0 {
 		arg := fmt.Sprintf("--disable-features=%s", strings.Join(disableFeatues, ","))
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
@@ -1264,10 +1425,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.OpenDevToolsWindow()
 	}
 
-	//TODO: Setup focus event handler
-	//onFocus := f.mainWindow.OnSetFocus()
-	//onFocus.Bind(f.onFocus)
-
 	// Set background colour
 	w.setBackgroundColour(w.parent.options.BackgroundColour)
 
@@ -1311,13 +1468,6 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 
 	// Emit DomReady Event
 	windowEvents <- &WindowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
-
-	// Todo: Resize hacks
-	/*
-		if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
-			f.ExecJS("window.wails.flags.enableResize = true;")
-		}
-	*/
 
 	if w.hasStarted {
 		// NavigationCompleted is triggered for every Load. If an application uses reloads the Hide/Show will trigger

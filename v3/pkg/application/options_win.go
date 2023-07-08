@@ -60,6 +60,9 @@ type WindowsWindow struct {
 
 	// Event mapping for the window
 	EventMapping map[events.WindowEventType]events.WindowEventType
+
+	// HiddenOnTaskbar hides the window from the taskbar
+	HiddenOnTaskbar bool
 }
 
 type Theme int

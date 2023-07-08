@@ -27,6 +27,9 @@ func main() {
 			window.Hide()
 			return false
 		},
+		Windows: application.WindowsWindow{
+			HiddenOnTaskbar: true,
+		},
 	})
 
 	systemTray := app.NewSystemTray()
