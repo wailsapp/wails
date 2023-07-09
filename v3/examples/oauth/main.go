@@ -41,15 +41,6 @@ func main() {
 		},
 	})
 
-	oAuthWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title:         "Login",
-		Width:         600,
-		Height:        850,
-		Hidden:        true,
-		DisableResize: true,
-		URL:           "http://localhost:9876/auth/github",
-	})
-
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title:                  "OAuth Demo",
 		DevToolsEnabled:        true,
@@ -61,17 +52,8 @@ func main() {
 		},
 	})
 
-	// Custom event handling
-	app.Events.On(oauth.Success, func(e *application.WailsEvent) {
-		oAuthWindow.Hide()
-	})
-
-	app.Events.On(oauth.Error, func(e *application.WailsEvent) {
-		oAuthWindow.Hide()
-	})
 	app.Events.On("github-login", func(e *application.WailsEvent) {
-		oAuthPlugin.Start()
-		oAuthWindow.Show()
+		oAuthPlugin.Github()
 	})
 
 	err := app.Run()
