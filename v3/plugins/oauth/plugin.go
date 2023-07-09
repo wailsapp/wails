@@ -17,8 +17,9 @@ import (
 // Both the Init() and Shutdown() methods are called synchronously when the app starts and stops.
 
 const (
-	Success = "wails:oauth:success"
-	Error   = "wails:oauth:error"
+	Success   = "wails:oauth:success"
+	Error     = "wails:oauth:error"
+	LoggedOut = "wails:oauth:loggedout"
 )
 
 type Plugin struct {
@@ -89,34 +90,6 @@ func (p *Plugin) Init(_ *application.App) error {
 	gothic.Store = store
 	goth.UseProviders(p.config.Providers...)
 
-	p.router = pat.New()
-	p.router.Get("/auth/{provider}/callback", func(res http.ResponseWriter, req *http.Request) {
-
-		println("Callback...")
-		event := &application.WailsEvent{
-			Name:   Success,
-			Sender: "",
-		}
-		user, err := gothic.CompleteUserAuth(res, req)
-		if err != nil {
-			event.Data = err.Error()
-			event.Name = Error
-		} else {
-			event.Data = user
-		}
-		application.Get().Events.Emit(event)
-		err = p.server.Close()
-		if err != nil {
-			return
-		}
-		p.server = nil
-	})
-
-	p.router.Get("/auth/{provider}", func(res http.ResponseWriter, req *http.Request) {
-		println("Authenticating...")
-		gothic.BeginAuthHandler(res, req)
-	})
-
 	return nil
 }
 
@@ -182,6 +155,66 @@ func (p *Plugin) CallableByJS() []string {
 		"Yammer",
 		"Yandex",
 		"Zoom",
+		"AmazonLogout",
+		"AppleLogout",
+		"Auth0Logout",
+		"AzureADLogout",
+		"BattleNetLogout",
+		"BitbucketLogout",
+		"BoxLogout",
+		"DailymotionLogout",
+		"DeezerLogout",
+		"DigitalOceanLogout",
+		"DiscordLogout",
+		"DropboxLogout",
+		"EveOnlineLogout",
+		"FacebookLogout",
+		"FitbitLogout",
+		"GiteaLogout",
+		"GitlabLogout",
+		"GithubLogout",
+		"GoogleLogout",
+		"GooglePlusLogout",
+		"HerokuLogout",
+		"IntercomLogout",
+		"InstagramLogout",
+		"KakaoLogout",
+		"LastFMLogout",
+		"LinkedInLogout",
+		"LineLogout",
+		"MastodonLogout",
+		"MeetupLogout",
+		"MicrosoftOnlineLogout",
+		"NaverLogout",
+		"NextCloudLogout",
+		"OktaLogout",
+		"OnedriveLogout",
+		"OpenIDConnectLogout",
+		"PatreonLogout",
+		"PayPalLogout",
+		"SalesForceLogout",
+		"SeaTalkLogout",
+		"ShopifyLogout",
+		"SlackLogout",
+		"SoundCloudLogout",
+		"SpotifyLogout",
+		"SteamLogout",
+		"StravaLogout",
+		"StripeLogout",
+		"TikTokLogout",
+		"TwitterLogout",
+		"TwitterV2Logout",
+		"TypetalkLogout",
+		"TwitchLogout",
+		"UberLogout",
+		"VKLogout",
+		"WeComLogout",
+		"WepayLogout",
+		"XeroLogout",
+		"YahooLogout",
+		"YammerLogout",
+		"YandexLogout",
+		"ZoomLogout",
 	}
 }
 
@@ -193,12 +226,35 @@ func (p *Plugin) start(provider string) error {
 	if p.server != nil {
 		return fmt.Errorf("server already processing request. Please wait for the current login to complete")
 	}
+
+	router := pat.New()
+	router.Get("/auth/{provider}/callback", func(res http.ResponseWriter, req *http.Request) {
+
+		event := &application.WailsEvent{Name: Success}
+
+		user, err := gothic.CompleteUserAuth(res, req)
+		if err != nil {
+			event.Data = err.Error()
+			event.Name = Error
+		} else {
+			event.Data = user
+		}
+		application.Get().Events.Emit(event)
+		_ = p.server.Close()
+		p.server = nil
+	})
+
+	router.Get("/auth/{provider}", func(res http.ResponseWriter, req *http.Request) {
+		gothic.BeginAuthHandler(res, req)
+	})
+
 	p.server = &http.Server{
 		Addr:    p.config.Address,
-		Handler: p.router,
+		Handler: router,
 	}
 
 	go p.server.ListenAndServe()
+
 	// Keep trying to connect until we succeed
 	var keepTrying = true
 	var connected = false
@@ -226,6 +282,67 @@ func (p *Plugin) start(provider string) error {
 	window.Show()
 
 	application.Get().Events.On(Success, func(event *application.WailsEvent) {
+		window.Close()
+	})
+	application.Get().Events.On(Error, func(event *application.WailsEvent) {
+		window.Close()
+	})
+
+	return nil
+}
+
+func (p *Plugin) logout(provider string) error {
+	if p.server != nil {
+		return fmt.Errorf("server already processing request. Please wait for the current operation to complete")
+	}
+
+	router := pat.New()
+	router.Get("/logout/{provider}", func(res http.ResponseWriter, req *http.Request) {
+		err := gothic.Logout(res, req)
+		event := &application.WailsEvent{Name: LoggedOut}
+		if err != nil {
+			event.Data = err.Error()
+			event.Name = Error
+		}
+		application.Get().Events.Emit(event)
+		_ = p.server.Close()
+		p.server = nil
+	})
+
+	p.server = &http.Server{
+		Addr:    p.config.Address,
+		Handler: router,
+	}
+
+	go p.server.ListenAndServe()
+
+	// Keep trying to connect until we succeed
+	var keepTrying = true
+	var connected = false
+
+	go func() {
+		time.Sleep(3 * time.Second)
+		keepTrying = false
+	}()
+
+	for keepTrying {
+		_, err := http.Get("http://" + p.config.Address)
+		if err == nil {
+			connected = true
+			break
+		}
+	}
+
+	if !connected {
+		return fmt.Errorf("server failed to start")
+	}
+
+	// create a window
+	p.config.WindowConfig.URL = "http://" + p.config.Address + "/logout/" + provider
+	window := application.Get().NewWebviewWindowWithOptions(*p.config.WindowConfig)
+	window.Show()
+
+	application.Get().Events.On(LoggedOut, func(event *application.WailsEvent) {
 		window.Close()
 	})
 	application.Get().Events.On(Error, func(event *application.WailsEvent) {
@@ -475,4 +592,244 @@ func (p *Plugin) Yandex() error {
 
 func (p *Plugin) Zoom() error {
 	return p.start("zoom")
+}
+
+func (p *Plugin) LogoutAmazon() error {
+	return p.logout("amazon")
+}
+
+func (p *Plugin) LogoutApple() error {
+	return p.logout("apple")
+}
+
+func (p *Plugin) LogoutAuth0() error {
+	return p.logout("auth0")
+}
+
+func (p *Plugin) LogoutAzureAD() error {
+	return p.logout("azuread")
+}
+
+func (p *Plugin) LogoutBattleNet() error {
+	return p.logout("battlenet")
+}
+
+func (p *Plugin) LogoutBitbucket() error {
+	return p.logout("bitbucket")
+}
+
+func (p *Plugin) LogoutBox() error {
+	return p.logout("box")
+}
+
+func (p *Plugin) LogoutDailymotion() error {
+	return p.logout("dailymotion")
+}
+
+func (p *Plugin) LogoutDeezer() error {
+	return p.logout("deezer")
+}
+
+func (p *Plugin) LogoutDigitalOcean() error {
+	return p.logout("digitalocean")
+}
+
+func (p *Plugin) LogoutDiscord() error {
+	return p.logout("discord")
+}
+
+func (p *Plugin) LogoutDropbox() error {
+	return p.logout("dropbox")
+}
+
+func (p *Plugin) LogoutEveOnline() error {
+	return p.logout("eveonline")
+}
+
+func (p *Plugin) LogoutFacebook() error {
+	return p.logout("facebook")
+}
+
+func (p *Plugin) LogoutFitbit() error {
+	return p.logout("fitbit")
+}
+
+func (p *Plugin) LogoutGitea() error {
+	return p.logout("gitea")
+}
+
+func (p *Plugin) LogoutGitlab() error {
+	return p.logout("gitlab")
+}
+
+func (p *Plugin) LogoutGithub() error {
+	return p.logout("github")
+}
+
+func (p *Plugin) LogoutGoogle() error {
+	return p.logout("google")
+}
+
+func (p *Plugin) LogoutGooglePlus() error {
+	return p.logout("gplus")
+}
+
+func (p *Plugin) LogoutHeroku() error {
+	return p.logout("heroku")
+}
+
+func (p *Plugin) LogoutIntercom() error {
+	return p.logout("intercom")
+}
+
+func (p *Plugin) LogoutInstagram() error {
+	return p.logout("instagram")
+}
+
+func (p *Plugin) LogoutKakao() error {
+	return p.logout("kakao")
+}
+
+func (p *Plugin) LogoutLastFM() error {
+	return p.logout("lastfm")
+}
+
+func (p *Plugin) LogoutLinkedIn() error {
+	return p.logout("linkedin")
+}
+
+func (p *Plugin) LogoutLine() error {
+	return p.logout("line")
+}
+
+func (p *Plugin) LogoutMastodon() error {
+	return p.logout("mastodon")
+}
+
+func (p *Plugin) LogoutMeetup() error {
+	return p.logout("meetup")
+}
+
+func (p *Plugin) LogoutMicrosoftOnline() error {
+	return p.logout("microsoftonline")
+}
+
+func (p *Plugin) LogoutNaver() error {
+	return p.logout("naver")
+}
+
+func (p *Plugin) LogoutNextCloud() error {
+	return p.logout("nextcloud")
+}
+
+func (p *Plugin) LogoutOkta() error {
+	return p.logout("okta")
+}
+
+func (p *Plugin) LogoutOnedrive() error {
+	return p.logout("onedrive")
+}
+
+func (p *Plugin) LogoutOpenIDConnect() error {
+	return p.logout("openid-connect")
+}
+
+func (p *Plugin) LogoutPatreon() error {
+	return p.logout("patreon")
+}
+
+func (p *Plugin) LogoutPayPal() error {
+	return p.logout("paypal")
+}
+
+func (p *Plugin) LogoutSalesForce() error {
+	return p.logout("salesforce")
+}
+
+func (p *Plugin) LogoutSeaTalk() error {
+	return p.logout("seatalk")
+}
+
+func (p *Plugin) LogoutShopify() error {
+	return p.logout("shopify")
+}
+
+func (p *Plugin) LogoutSlack() error {
+	return p.logout("slack")
+}
+
+func (p *Plugin) LogoutSoundCloud() error {
+	return p.logout("soundcloud")
+}
+
+func (p *Plugin) LogoutSpotify() error {
+	return p.logout("spotify")
+}
+
+func (p *Plugin) LogoutSteam() error {
+	return p.logout("steam")
+}
+
+func (p *Plugin) LogoutStrava() error {
+	return p.logout("strava")
+}
+
+func (p *Plugin) LogoutStripe() error {
+	return p.logout("stripe")
+}
+
+func (p *Plugin) LogoutTikTok() error {
+	return p.logout("tiktok")
+}
+
+func (p *Plugin) LogoutTwitter() error {
+	return p.logout("twitter")
+}
+
+func (p *Plugin) LogoutTwitterV2() error {
+	return p.logout("twitterv2")
+}
+
+func (p *Plugin) LogoutTypetalk() error {
+	return p.logout("typetalk")
+}
+
+func (p *Plugin) LogoutTwitch() error {
+	return p.logout("twitch")
+}
+
+func (p *Plugin) LogoutUber() error {
+	return p.logout("uber")
+}
+
+func (p *Plugin) LogoutVK() error {
+	return p.logout("vk")
+}
+
+func (p *Plugin) LogoutWeCom() error {
+	return p.logout("wecom")
+}
+
+func (p *Plugin) LogoutWepay() error {
+	return p.logout("wepay")
+}
+
+func (p *Plugin) LogoutXero() error {
+	return p.logout("xero")
+}
+
+func (p *Plugin) LogoutYahoo() error {
+	return p.logout("yahoo")
+}
+
+func (p *Plugin) LogoutYammer() error {
+	return p.logout("yammer")
+}
+
+func (p *Plugin) LogoutYandex() error {
+	return p.logout("yandex")
+}
+
+func (p *Plugin) LogoutZoom() error {
+	return p.logout("zoom")
 }

@@ -55,6 +55,9 @@ func main() {
 	app.Events.On("github-login", func(e *application.WailsEvent) {
 		oAuthPlugin.Github()
 	})
+	app.Events.On("github-logout", func(e *application.WailsEvent) {
+		oAuthPlugin.LogoutGithub()
+	})
 
 	err := app.Run()
 

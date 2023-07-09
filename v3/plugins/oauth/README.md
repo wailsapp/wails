@@ -199,6 +199,16 @@ const (
 
 There is a working example of GitHub auth in the `v3/examples/oauth` directory.
 
+## Logging Out
+
+To log out, you can call the relevant `Logout` method for the provider:
+
+```go
+    err := oAuthPlugin.GithubLogout()
+```
+
+On success, the plugin will send a `wails:oauth:loggedout` event. On failure, it will send a `wails:oauth:error` event.
+
 ## Support
 
 If you find a bug in this plugin, please raise a ticket on the Wails [Issue Tracker](https://github.com/wailsapp/wails/issues). 
