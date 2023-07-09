@@ -92,7 +92,7 @@ func main() {
     Plugins: map[string]application.Plugin{
         "oauth": oAuthPlugin,
     },
-    })
+})
 ```
 
 ### Configuration
@@ -124,12 +124,12 @@ type Config struct {
 If you don't specify a `WindowConfig`, the plugin will use the default window configuration:
 
 ```go
-    &application.WebviewWindowOptions{
-        Title:  "OAuth Login",
-        Width:  600,
-        Height: 850,
-        Hidden: true,
-    }
+&application.WebviewWindowOptions{
+    Title:  "OAuth Login",
+    Width:  600,
+    Height: 850,
+    Hidden: true,
+}
 ```
 
 ## Usage
@@ -139,18 +139,18 @@ If you don't specify a `WindowConfig`, the plugin will use the default window co
 You can start the flow by calling one of the provider methods:
 
 ```go
-    err := oAuthPlugin.Github()
+err := oAuthPlugin.Github()
 ```
 
 In this example, we send an event from the frontend to start the process, so we listen for the event in the backend:
 
 ```go
-	app.Events.On("github-login", func(e *application.WailsEvent) {
-        err := oAuthPlugin.Github()
-        if err != nil {
-            // process error
-        }
-    })
+app.Events.On("github-login", func(e *application.WailsEvent) {
+    err := oAuthPlugin.Github()
+    if err != nil {
+        // process error
+    }
+})
 ```
 
 ### JavaScript
@@ -158,7 +158,7 @@ In this example, we send an event from the frontend to start the process, so we 
 You can start the flow by calling one of the provider methods:
 
 ```javascript
-    await wails.Plugin("oauth","Github")
+await wails.Plugin("oauth","Github")
 ```
 
 ### Handling Success & Failure
@@ -171,30 +171,30 @@ When the OAuth flow completes, the plugin will send one of 2 events:
 In Javascript, we can listen for these events like so:
 
 ```javascript
-    window.wails.Events.On("wails:oauth:success", (event) => {
-        document.getElementById("main").style.display = "none";
-        document.getElementById("name").innerText = event.data.Name;
-        document.getElementById("logo").src = event.data.AvatarURL;
-        document.body.style.backgroundColor = "#000";
-        document.body.style.color = "#FFF";
-    });
+window.wails.Events.On("wails:oauth:success", (event) => {
+    document.getElementById("main").style.display = "none";
+    document.getElementById("name").innerText = event.data.Name;
+    document.getElementById("logo").src = event.data.AvatarURL;
+    document.body.style.backgroundColor = "#000";
+    document.body.style.color = "#FFF";
+});
 ```
 
 If you want to handle them in Go, you can do so like this:
 
 ```go
-    app.Events.On("wails:oauth:success", func(e *application.WailsEvent) {
-        // Do something with the user data
-    })
+app.Events.On("wails:oauth:success", func(e *application.WailsEvent) {
+    // Do something with the user data
+})
 ```
 
 Both these events are constants in the plugin:
 
 ```go
-    const (
-        Success = "wails:oauth:success"
-        Error   = "wails:oauth:error"
-    )
+const (
+    Success = "wails:oauth:success"
+    Error   = "wails:oauth:error"
+)
 ```
 
 There is a working example of GitHub auth in the `v3/examples/oauth` directory.
