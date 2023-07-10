@@ -68,11 +68,9 @@ func main() {
 	})
 
 	systemTray.SetMenu(myMenu)
-
 	systemTray.AttachWindow(window).WindowOffset(5)
 
 	err := app.Run()
-
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -33,7 +33,7 @@ type button int
 
 const (
 	leftButtonDown  button = 1
-	rightButtonDown button = 2
+	rightButtonDown button = 3
 )
 
 // system tray map
@@ -197,19 +197,28 @@ func (s *macosSystemTray) processClick(b button) {
 			s.parent.clickHandler()
 			return
 		}
+		if s.parent.attachedWindow.Window != nil {
+			s.parent.defaultClickHandler()
+			return
+		}
+		if s.menu != nil {
+			C.showMenu(s.nsStatusItem, s.nsMenu)
+		}
 	case rightButtonDown:
 		// Check if we have a callback
 		if s.parent.rightClickHandler != nil {
 			s.parent.rightClickHandler()
 			return
 		}
-	}
-	// Open the default menu if we have one
-	if s.menu != nil {
-		if s.parent.attachedWindow.Window != nil {
-			// If we have an attached window, then we need to hide it
-			s.parent.attachedWindow.Window.Hide()
+		if s.menu != nil {
+			if s.parent.attachedWindow.Window != nil {
+				s.parent.attachedWindow.Window.Hide()
+			}
+			C.showMenu(s.nsStatusItem, s.nsMenu)
+			return
 		}
-		C.showMenu(s.nsStatusItem, s.nsMenu)
+		if s.parent.attachedWindow.Window != nil {
+			s.parent.defaultClickHandler()
+		}
 	}
 }
