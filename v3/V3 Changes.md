@@ -128,6 +128,18 @@ This attribute specifies which javascript event should trigger the action. The d
 <button data-wml-event="hover-box" data-wml-trigger="mouseover">Hover over me!</button>
 ```
 
+
+## Systray
+
+Wails 3 comes with a built-in systray. This is a fully featured systray that has been designed to be as simple as possible to use.
+It is possible to set the icon, tooltip and menu of the systray. It is possible to also "attach" a window to the systray. Doing this will provide the following functionality:
+
+- Clicking the systray icon with toggle the window visibility
+- Right-clicking the systray will open the menu, if there is one
+
+On macOS, if there is no attached window, the systray will use the default method of displaying the menu (any button). 
+If there is an attached window but no menu, the systray will toggle the window regardless of the button pressed.
+
 ## Plugins
 
 Plugins are a way to extend the functionality of your Wails application.
@@ -255,3 +267,4 @@ handle this. The `--webkit-app-region` attribute can be set to any of the follow
 
 We would have ideally liked to use `app-region`, however this is not supported by the `getComputedStyle` call on 
 webkit on macOS. 
+

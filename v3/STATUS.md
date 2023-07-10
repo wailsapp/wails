@@ -377,25 +377,25 @@ Note: things are currently not working after the refactor
 
 ## Examples
 
-| Example      | Windows                                                | Linux | Mac |
-|--------------|--------------------------------------------------------|-------|-----|
-| binding      | NO                                                     |       |     |
-| build        | Yes (Debug + Prod)                                     |       |     |
-| clipboard    | Yes                                                    |       |     |
-| contextmenus | Yes                                                    |       |     |
-| dialogs      | Almost                                                 |       |     |
-| drag-n-drop  | NO                                                     |       |     |
-| events       | NO                                                     |       |     |
-| frameless    | Needs resizing                                         |       |     |
-| kitchensink  | Yes                                                    |       |     |
-| menu         | Yes                                                    |       |     |
-| plain        | Yes                                                    |       |     |
-| plugins      | Needs StartAtLogin                                     |       |     |
-| screen       | Yes                                                    |       |     |
-| systray      | Yes                                                    |       |     |
-| window       | Size of initial window not right with application menu |       |     |
-| windowjs     | Example not complete                                   |       |     |
-| wml          | Yes                                                    |       |     |
+| Example      | Windows              | Linux | Mac |
+|--------------|----------------------|-------|-----|
+| binding      | NO                   |       |     |
+| build        | Yes (Debug + Prod)   |       |     |
+| clipboard    | Yes                  |       |     |
+| contextmenus | Yes                  |       |     |
+| dialogs      | Almost               |       |     |
+| drag-n-drop  | NO                   |       |     |
+| events       | NO                   |       |     |
+| frameless    | Yes                  |       |     |
+| kitchensink  | Yes                  |       |     |
+| menu         | Yes                  |       |     |
+| plain        | Yes                  |       |     |
+| plugins      | Yes                  |       |     |
+| screen       | Yes                  |       |     |
+| systray      | Yes                  |       | Yes |
+| window       | Yes                  |       |     |
+| windowjs     | Example not complete |       |     |
+| wml          | Yes                  |       |     |
 
 # Alpha Release TODO
 
