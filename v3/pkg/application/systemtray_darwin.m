@@ -10,15 +10,8 @@ extern void systrayClickCallback(long, int);
 @implementation StatusItemController
 
 - (void)statusItemClicked:(id)sender {
-	// Get the left or right button
 	NSEvent *event = [NSApp currentEvent];
-	if (event.type == NSEventTypeRightMouseUp) {
-		// Right click
-		systrayClickCallback(self.id, 1);
-	} else {
-		// Left click
-		systrayClickCallback(self.id, 0);
-	}
+	systrayClickCallback(self.id, event.type);
 }
 
 @end
@@ -30,6 +23,8 @@ void* systemTrayNew(long id) {
 	NSStatusItem *statusItem = [[[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength] retain];
 	[statusItem setTarget:controller];
 	[statusItem setAction:@selector(statusItemClicked:)];
+	NSButton *button = statusItem.button;
+	[button sendActionOn:(NSEventMaskLeftMouseDown|NSEventMaskRightMouseDown)];
 	return (void*)statusItem;
 }
 
@@ -90,14 +85,23 @@ void systemTrayDestroy(void* nsStatusItem) {
 	});
 }
 
-void showMenu(void* nsStatusItem) {
+void showMenu(void* nsStatusItem, void *nsMenu) {
 	// Show the menu on the main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-		// Check it's not nil
-		if( statusItem.menu != nil ) {
-			[statusItem popUpStatusItemMenu:statusItem.menu];
-		}
+		[statusItem popUpStatusItemMenu:(NSMenu *)nsMenu];
+        // Post a mouse up event so the statusitem defocuses
+        NSEvent *event = [NSEvent mouseEventWithType:NSEventTypeLeftMouseUp
+                                            location:[NSEvent mouseLocation]
+                                       modifierFlags:0
+                                           timestamp:[[NSProcessInfo processInfo] systemUptime]
+                                        windowNumber:0
+                                             context:nil
+                                         eventNumber:0
+                                          clickCount:1
+                                            pressure:1];
+        [NSApp postEvent:event atStart:NO];
+        [statusItem.button highlight:NO];
 	});
 }
 

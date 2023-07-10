@@ -32,8 +32,8 @@ type macosSystemTray struct {
 type button int
 
 const (
-	left button = iota
-	right
+	leftButtonDown  button = 1
+	rightButtonDown button = 2
 )
 
 // system tray map
@@ -44,6 +44,7 @@ func systrayClickCallback(id C.long, buttonID C.int) {
 	// Get the system tray
 	systemTray := systemTrayMap[uint(id)]
 	if systemTray == nil {
+		println("system tray not found")
 		return
 	}
 	systemTray.processClick(button(buttonID))
@@ -132,7 +133,12 @@ func (s *macosSystemTray) run() {
 			s.menu.Update()
 			// Convert impl to macosMenu object
 			s.nsMenu = (s.menu.impl).(*macosMenu).nsMenu
-			C.systemTraySetMenu(s.nsStatusItem, s.nsMenu)
+			// We only set the tray menu if we don't have an attached
+			// window. If we do, then we manually operate the menu using
+			// the right mouse button
+			if s.parent.attachedWindow.Window == nil {
+				C.systemTraySetMenu(s.nsStatusItem, s.nsMenu)
+			}
 		}
 
 	})
@@ -185,13 +191,13 @@ func (s *macosSystemTray) destroy() {
 
 func (s *macosSystemTray) processClick(b button) {
 	switch b {
-	case left:
+	case leftButtonDown:
 		// Check if we have a callback
 		if s.parent.clickHandler != nil {
 			s.parent.clickHandler()
 			return
 		}
-	case right:
+	case rightButtonDown:
 		// Check if we have a callback
 		if s.parent.rightClickHandler != nil {
 			s.parent.rightClickHandler()
@@ -200,6 +206,10 @@ func (s *macosSystemTray) processClick(b button) {
 	}
 	// Open the default menu if we have one
 	if s.menu != nil {
-		C.showMenu(s.nsStatusItem)
+		if s.parent.attachedWindow.Window != nil {
+			// If we have an attached window, then we need to hide it
+			s.parent.attachedWindow.Window.Hide()
+		}
+		C.showMenu(s.nsStatusItem, s.nsMenu)
 	}
 }

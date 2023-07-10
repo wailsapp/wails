@@ -67,9 +67,7 @@ func main() {
 		app.Quit()
 	})
 
-	if runtime.GOOS != "darwin" {
-		systemTray.SetMenu(myMenu)
-	}
+	systemTray.SetMenu(myMenu)
 
 	systemTray.AttachWindow(window).WindowOffset(5)
 
