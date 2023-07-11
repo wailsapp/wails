@@ -32,6 +32,8 @@ type Events struct {
 }
 
 func (e *Events) Notify(sender frontend.Frontend, name string, data ...interface{}) {
+	e.notifyLock.Lock()
+	defer e.notifyLock.Unlock()
 	e.notifyBackend(name, data...)
 	for _, thisFrontend := range e.frontend {
 		if thisFrontend == sender {
@@ -54,6 +56,8 @@ func (e *Events) Once(eventName string, callback func(...interface{})) func() {
 }
 
 func (e *Events) Emit(eventName string, data ...interface{}) {
+	e.notifyLock.Lock()
+	defer e.notifyLock.Unlock()
 	e.notifyBackend(eventName, data...)
 	for _, thisFrontend := range e.frontend {
 		thisFrontend.Notify(eventName, data...)
@@ -116,9 +120,6 @@ func (e *Events) unRegisterListener(eventName string) {
 
 // Notify backend for the given event name
 func (e *Events) notifyBackend(eventName string, data ...interface{}) {
-	e.notifyLock.Lock()
-	defer e.notifyLock.Unlock()
-
 	// Get list of event listeners
 	listeners := e.listeners[eventName]
 	if listeners == nil {
