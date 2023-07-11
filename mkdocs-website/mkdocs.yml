@@ -1,0 +1,88 @@
+site_name: The Wails Project | Wails
+site_description: The Wails Project - Build beautiful cross-platform applications using Go
+theme:
+  name: material
+  custom_dir: overrides
+  logo: assets/images/wails-logo-horizontal-dark.svg
+  favicon: assets/images/favicon.svg
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.instant
+    - navigation.top
+
+    - toc.integrate
+    - toc.follow
+
+    - search.suggest
+    - search.highlight
+
+    - content.tabs.link
+    - content.tabs.annotation
+    - content.tabs.copy
+    - content.code.copy
+  language: en
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light mode
+
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/wailsapp/wails
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/wailsapp
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/JDdSxwjhGf
+
+nav:
+  - Home: index.md
+  - Getting started:
+    - Introduction: introduction.md
+    - Installation: getting-started/installation.md
+    - Creating a Project: getting-started/creating-a-project.md
+    - How does it work: how-does-it-work.md
+    - Developing your Application: getting-started/developing-your-application.md
+    - Compiling your Project: getting-started/compiling-your-project.md
+  - API Reference:
+    - Runtime:
+      - Introduction: reference/runtime/introduction.md
+    - CLI: reference/cli.md
+  - Community:
+    - Template: community/templates.md
+    - Guides:
+      - Angular: guides/angular.md
+    - Showcase:
+      - Emaillit: community/showcase/emailit.md
+    - Contributing: community/contributing.md
+    - Links: community/links.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.mark
+  - attr_list
+  - admonition
+  - footnotes
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+copyright:
+  Copyright © 2023 Lea Anthony
