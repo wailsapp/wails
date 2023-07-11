@@ -166,6 +166,8 @@ var (
 	procGetScrollInfo = moduser32.NewProc("GetScrollInfo")
 	procSetScrollInfo = moduser32.NewProc("SetScrollInfo")
 
+	procFlashWindowEx = moduser32.NewProc("FlashWindowEx")
+
 	mainThread HANDLE
 )
 

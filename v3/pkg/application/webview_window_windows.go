@@ -1464,6 +1464,10 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 }
 
+func (w *windowsWebviewWindow) flash(enabled bool) {
+	w32.FlashWindow(w.hwnd, enabled)
+}
+
 func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
 
 	// Emit DomReady Event

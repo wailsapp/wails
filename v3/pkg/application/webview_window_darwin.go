@@ -944,6 +944,10 @@ func (w *macosWebviewWindow) setTitle(title string) {
 	}
 }
 
+func (w *macosWebviewWindow) flash(enabled bool) {
+	// Not supported on macOS
+}
+
 func (w *macosWebviewWindow) setSize(width, height int) {
 	C.windowSetSize(w.nsWindow, C.int(width), C.int(height))
 }

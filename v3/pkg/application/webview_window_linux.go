@@ -179,6 +179,10 @@ func (w *linuxWebviewWindow) minimise() {
 	windowMinimize(w.window)
 }
 
+func (w *linuxWebviewWindow) flash(enabled bool) {
+	// Not supported on linux
+}
+
 func (w *linuxWebviewWindow) on(eventID uint) {
 	// Don't think this is correct!
 	// GTK Events are strings

@@ -321,6 +321,15 @@ func main() {
 		})
 	})
 
+	if runtime.GOOS == "windows" {
+		stateMenu.Add("Flash Start").OnClick(func(ctx *application.Context) {
+			currentWindow(func(w *application.WebviewWindow) {
+				time.Sleep(2 * time.Second)
+				w.Flash(true)
+			})
+		})
+	}
+
 	printMenu := menu.AddSubmenu("Print")
 	printMenu.Add("Print").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {

@@ -234,3 +234,15 @@ func RegisterWindow(name string, proc WindowProc) (HINSTANCE, error) {
 
 	return applicationInstance, nil
 }
+
+func FlashWindow(hwnd HWND, enabled bool) {
+	var flashInfo FLASHWINFO
+	flashInfo.CbSize = uint32(unsafe.Sizeof(flashInfo))
+	flashInfo.Hwnd = hwnd
+	if enabled {
+		flashInfo.DwFlags = FLASHW_ALL | FLASHW_TIMERNOFG
+	} else {
+		flashInfo.DwFlags = FLASHW_STOP
+	}
+	_, _, _ = procFlashWindowEx.Call(uintptr(unsafe.Pointer(&flashInfo)))
+}

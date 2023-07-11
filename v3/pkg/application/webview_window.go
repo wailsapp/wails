@@ -70,6 +70,7 @@ type (
 		setEnabled(enabled bool)
 		absolutePosition() (int, int)
 		setAbsolutePosition(x int, y int)
+		flash(enabled bool)
 	}
 )
 
@@ -416,6 +417,16 @@ func (w *WebviewWindow) SetFullscreenButtonEnabled(enabled bool) *WebviewWindow 
 		})
 	}
 	return w
+}
+
+// Flash flashes the window's taskbar button/icon. Windows only.
+func (w *WebviewWindow) Flash(enabled bool) {
+	if w.impl == nil {
+		return
+	}
+	invokeSync(func() {
+		w.impl.flash(enabled)
+	})
 }
 
 // IsMinimised returns true if the window is minimised

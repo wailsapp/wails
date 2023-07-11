@@ -1133,3 +1133,11 @@ type SCROLLINFO struct {
 	NPos      int32
 	NTrackPos int32
 }
+
+type FLASHWINFO struct {
+	CbSize    uint32
+	Hwnd      HWND
+	DwFlags   DWORD
+	UCount    uint32
+	DwTimeout DWORD
+}

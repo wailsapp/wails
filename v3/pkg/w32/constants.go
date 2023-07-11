@@ -915,6 +915,15 @@ const (
 	SS_ELLIPSISMASK    = 0x0000C000
 )
 
+const (
+	FLASHW_STOP      = 0  // Stop flashing. The system restores the window to its original state.
+	FLASHW_CAPTION   = 1  // Flash the window caption.
+	FLASHW_TRAY      = 2  // Flash the taskbar button.
+	FLASHW_ALL       = 3  // Flash both the window caption and taskbar button. This is equivalent to setting the FLASHW_CAPTION | FLASHW_TRAY flags.
+	FLASHW_TIMER     = 4  // Flash continuously, until the FLASHW_STOP flag is set.
+	FLASHW_TIMERNOFG = 12 // Flash continuously until the window comes to the foreground.
+)
+
 // Edit styles
 const (
 	ES_LEFT        = 0x0000
