@@ -62,7 +62,7 @@ cd $project
 sed -i "s|npm|$manager|g" wails.json
 sed -i 's|"auto",|"auto",\n  "wailsjsdir": "./frontend/src/lib",|' wails.json
 sed -i "s|all:frontend/dist|all:frontend/build|" main.go
-if [[ -z $brand ]]; then
+if [[ -n $brand ]]; then
 	mv frontend/src/App.svelte +page.svelte
 	sed -i "s|'./assets|'\$lib/assets|" +page.svelte
 	sed -i "s|'../wails|'\$lib/wails|" +page.svelte
@@ -70,7 +70,7 @@ if [[ -z $brand ]]; then
 fi
 rm -r frontend
 $manager create svelte@latest frontend
-if [[ -z $brand ]]; then
+if [[ -n $brand ]]; then
 	mv +page.svelte frontend/src/routes/+page.svelte
 	mkdir frontend/src/lib
 	mv assets frontend/src/lib/
