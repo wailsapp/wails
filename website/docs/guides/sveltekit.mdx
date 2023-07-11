@@ -19,7 +19,7 @@ While in the Wails project root. Use your favorite package manager and install S
 
 Modify wails.json.
 - Add `"wailsjsdir": "./frontend/src/lib",` Do note that this is where your Go and runtime functions will appear.
-- Change your packange manager frontend here if not using npm.
+- Change your package manager frontend here if not using npm.
 
 Modify main.go.
 - The first comment `//go:embed all:frontend/dist` needs to be changed to `//go:embed all:frontend/build`
@@ -48,7 +48,7 @@ This Bash Script does the steps listed above for you.  Make sure to read over th
 
 - Create a file sveltekit-wails.sh
 - Copy the below code into the new file then save it.
-- Make it executable with chmod +x sveltekit-wails.sh
+- Make it executable with `chmod +x sveltekit-wails.sh`
 - Brand is an optional param below that adds back in the wails branding.  Leave third param blank to not insert the Wails branding.
 - Example usage: `./sveltekit-wails.sh pnpm newapp brand`
 
