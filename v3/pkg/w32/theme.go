@@ -20,9 +20,6 @@ const DwmwaSystemBackdropType DWMWINDOWATTRIBUTE = 38
 const SPI_GETHIGHCONTRAST = 0x0042
 const HCF_HIGHCONTRASTON = 0x00000001
 
-// BackdropType defines the type of translucency we wish to use
-type BackdropType int32
-
 func dwmSetWindowAttribute(hwnd uintptr, dwAttribute DWMWINDOWATTRIBUTE, pvAttribute unsafe.Pointer, cbAttribute uintptr) {
 	ret, _, err := procDwmSetWindowAttribute.Call(
 		hwnd,
@@ -66,7 +63,7 @@ func SetTheme(hwnd uintptr, useDarkMode bool) {
 	}
 }
 
-func EnableTranslucency(hwnd uintptr, backdrop BackdropType) {
+func EnableTranslucency(hwnd uintptr, backdrop int32) {
 	if SupportsBackdropTypes() {
 		dwmSetWindowAttribute(hwnd, DwmwaSystemBackdropType, unsafe.Pointer(&backdrop), unsafe.Sizeof(backdrop))
 	} else {

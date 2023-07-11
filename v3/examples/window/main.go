@@ -141,6 +141,50 @@ func main() {
 				windowCounter++
 			})
 	}
+	if runtime.GOOS == "windows" {
+		myMenu.Add("New WebviewWindow (Mica)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					Title:          "WebviewWindow " + strconv.Itoa(windowCounter),
+					X:              rand.Intn(1000),
+					Y:              rand.Intn(800),
+					BackgroundType: application.BackgroundTypeTranslucent,
+					HTML:           "<html style='background-color: rgba(0,0,0,0);'><body></body></html>",
+					Windows: application.WindowsWindow{
+						BackdropType: application.Mica,
+					},
+				}).Show()
+				windowCounter++
+			})
+		myMenu.Add("New WebviewWindow (Acrylic)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					Title:          "WebviewWindow " + strconv.Itoa(windowCounter),
+					X:              rand.Intn(1000),
+					Y:              rand.Intn(800),
+					BackgroundType: application.BackgroundTypeTranslucent,
+					HTML:           "<html style='background-color: rgba(0,0,0,0);'><body></body></html>",
+					Windows: application.WindowsWindow{
+						BackdropType: application.Acrylic,
+					},
+				}).Show()
+				windowCounter++
+			})
+		myMenu.Add("New WebviewWindow (Tabbed)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					Title:          "WebviewWindow " + strconv.Itoa(windowCounter),
+					X:              rand.Intn(1000),
+					Y:              rand.Intn(800),
+					BackgroundType: application.BackgroundTypeTranslucent,
+					HTML:           "<html style='background-color: rgba(0,0,0,0);'><body></body></html>",
+					Windows: application.WindowsWindow{
+						BackdropType: application.Tabbed,
+					},
+				}).Show()
+				windowCounter++
+			})
+	}
 
 	sizeMenu := menu.AddSubmenu("Size")
 	sizeMenu.Add("Set Size (800,600)").OnClick(func(ctx *application.Context) {

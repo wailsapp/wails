@@ -273,9 +273,13 @@ func (w *windowsWebviewWindow) run() {
 
 	switch options.BackgroundType {
 	case BackgroundTypeSolid:
-		w.setBackgroundColour(options.BackgroundColour)
+		var col = options.BackgroundColour
+		w.setBackgroundColour(col)
+		w.chromium.SetBackgroundColour(col.Red, col.Green, col.Blue, col.Alpha)
 	case BackgroundTypeTransparent:
+		w.chromium.SetBackgroundColour(0, 0, 0, 0)
 	case BackgroundTypeTranslucent:
+		w.chromium.SetBackgroundColour(0, 0, 0, 0)
 		w.setBackdropType(options.Windows.BackdropType)
 	}
 
@@ -823,7 +827,7 @@ func (w *windowsWebviewWindow) setExStyle(b bool, style int) {
 }
 
 func (w *windowsWebviewWindow) setBackdropType(backdropType BackdropType) {
-	if !w32.IsWindowsVersionAtLeast(10, 0, 22621) {
+	if !w32.SupportsBackdropTypes() {
 		var accent = w32.ACCENT_POLICY{
 			AccentState: w32.ACCENT_ENABLE_BLURBEHIND,
 		}
@@ -834,7 +838,7 @@ func (w *windowsWebviewWindow) setBackdropType(backdropType BackdropType) {
 
 		w32.SetWindowCompositionAttribute(w.hwnd, &data)
 	} else {
-		w32.DwmSetWindowAttribute(w.hwnd, w32.DwmwaSystemBackdropType, w32.PVOID(&backdropType), unsafe.Sizeof(backdropType))
+		w32.EnableTranslucency(w.hwnd, int32(backdropType))
 	}
 }
 
