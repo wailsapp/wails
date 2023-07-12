@@ -32,7 +32,7 @@ func main() {
 	})
 
 	// OS specific application events
-	app.On(events.Mac.ApplicationDidFinishLaunching, func() {
+	app.On(events.Mac.ApplicationDidFinishLaunching, func(event *application.Event) {
 		for {
 			log.Println("Sending event")
 			app.Events.Emit(&application.WailsEvent{
@@ -44,7 +44,7 @@ func main() {
 	})
 
 	// Platform agnostic events
-	app.On(events.Common.ApplicationStarted, func() {
+	app.On(events.Common.ApplicationStarted, func(event *application.Event) {
 		println("events.Common.ApplicationStarted fired!")
 	})
 
@@ -56,13 +56,27 @@ func main() {
 			InvisibleTitleBarHeight: 50,
 		},
 	})
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	win2 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Events Demo",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
 			InvisibleTitleBarHeight: 50,
 		},
+	})
+
+	var cancel bool
+
+	win2.RegisterHook(events.Common.WindowFocus, func(e *application.WindowEvent) {
+		println("---------------\n[Hook] Window focus!")
+		cancel = !cancel
+		if cancel {
+			e.Cancel()
+		}
+	})
+
+	win2.On(events.Common.WindowFocus, func(e *application.WindowEventContext) {
+		println("[Event] Window focus!")
 	})
 
 	err := app.Run()

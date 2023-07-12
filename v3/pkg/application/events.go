@@ -9,19 +9,32 @@ import (
 
 var applicationEvents = make(chan uint)
 
-type WindowEvent struct {
+type windowEvent struct {
 	WindowID uint
 	EventID  uint
 }
 
-var windowEvents = make(chan *WindowEvent)
+type Event struct {
+	Cancelled bool
+}
+
+func (e *Event) Cancel() {
+	e.Cancelled = true
+}
+
+var windowEvents = make(chan *windowEvent)
 
 var menuItemClicked = make(chan uint)
 
 type WailsEvent struct {
-	Name   string `json:"name"`
-	Data   any    `json:"data"`
-	Sender string `json:"sender"`
+	Name      string `json:"name"`
+	Data      any    `json:"data"`
+	Sender    string `json:"sender"`
+	Cancelled bool
+}
+
+func (e *WailsEvent) Cancel() {
+	e.Cancelled = true
 }
 
 var commonEvents = make(chan uint)
@@ -33,6 +46,10 @@ func (e WailsEvent) ToJSON() string {
 		return ""
 	}
 	return string(marshal)
+}
+
+type hook struct {
+	callback func(*WailsEvent)
 }
 
 // eventListener holds a callback function which is invoked when
@@ -51,12 +68,15 @@ type EventProcessor struct {
 	listeners              map[string][]*eventListener
 	notifyLock             sync.RWMutex
 	dispatchEventToWindows func(*WailsEvent)
+	hooks                  map[string][]*hook
+	hookLock               sync.RWMutex
 }
 
 func NewWailsEventProcessor(dispatchEventToWindows func(*WailsEvent)) *EventProcessor {
 	return &EventProcessor{
 		listeners:              make(map[string][]*eventListener),
 		dispatchEventToWindows: dispatchEventToWindows,
+		hooks:                  make(map[string][]*hook),
 	}
 }
 
@@ -80,6 +100,19 @@ func (e *EventProcessor) Emit(thisEvent *WailsEvent) {
 	if thisEvent == nil {
 		return
 	}
+
+	// If we have any hooks, run them first and check if the event was cancelled
+	if e.hooks != nil {
+		if hooks, ok := e.hooks[thisEvent.Name]; ok {
+			for _, thisHook := range hooks {
+				thisHook.callback(thisEvent)
+				if thisEvent.Cancelled {
+					return
+				}
+			}
+		}
+	}
+
 	go e.dispatchEventToListeners(thisEvent)
 	go e.dispatchEventToWindows(thisEvent)
 }
@@ -115,6 +148,29 @@ func (e *EventProcessor) registerListener(eventName string, callback func(*Wails
 		}
 		e.listeners[eventName] = lo.Filter(e.listeners[eventName], func(l *eventListener, i int) bool {
 			return l != thisListener
+		})
+	}
+}
+
+// RegisterHook provides a means of registering methods to be called before emitting the event
+func (e *EventProcessor) RegisterHook(eventName string, callback func(*WailsEvent)) func() {
+	// Create new hook
+	thisHook := &hook{
+		callback: callback,
+	}
+	e.hookLock.Lock()
+	// Append the new listener to the listeners slice
+	e.hooks[eventName] = append(e.hooks[eventName], thisHook)
+	e.hookLock.Unlock()
+	return func() {
+		e.hookLock.Lock()
+		defer e.hookLock.Unlock()
+
+		if _, ok := e.hooks[eventName]; !ok {
+			return
+		}
+		e.hooks[eventName] = lo.Filter(e.hooks[eventName], func(l *hook, i int) bool {
+			return l != thisHook
 		})
 	}
 }

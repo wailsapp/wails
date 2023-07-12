@@ -220,7 +220,7 @@ func processApplicationEvent(eventID C.uint) {
 
 //export processWindowEvent
 func processWindowEvent(windowID C.uint, eventID C.uint) {
-	windowEvents <- &WindowEvent{
+	windowEvents <- &windowEvent{
 		WindowID: uint(windowID),
 		EventID:  uint(eventID),
 	}

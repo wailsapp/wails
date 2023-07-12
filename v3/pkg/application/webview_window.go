@@ -74,8 +74,21 @@ type (
 	}
 )
 
+type WindowEvent struct {
+	WindowEventContext
+	Cancelled bool
+}
+
+func (w *WindowEvent) Cancel() {
+	w.Cancelled = true
+}
+
 type WindowEventListener struct {
 	callback func(ctx *WindowEventContext)
+}
+
+type windowHook struct {
+	callback func(ctx *WindowEvent)
 }
 
 type WebviewWindow struct {
@@ -85,6 +98,8 @@ type WebviewWindow struct {
 
 	eventListeners     map[uint][]*WindowEventListener
 	eventListenersLock sync.RWMutex
+	eventHooks         map[uint][]*windowHook
+	eventHooksLock     sync.RWMutex
 
 	contextMenus     map[string]*Menu
 	contextMenusLock sync.RWMutex
@@ -106,7 +121,7 @@ func getWindowID() uint {
 
 // Use onApplicationEvent to register a callback for an application event from a window.
 // This will handle tidying up the callback when the window is destroyed
-func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func()) {
+func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func(*Event)) {
 	cancelFn := globalApplication.On(eventType, callback)
 	w.addCancellationFunction(cancelFn)
 }
@@ -152,6 +167,7 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		options:        options,
 		eventListeners: make(map[uint][]*WindowEventListener),
 		contextMenus:   make(map[string]*Menu),
+		eventHooks:     make(map[uint][]*windowHook),
 	}
 
 	result.setupEventMapping()
@@ -553,12 +569,44 @@ func (w *WebviewWindow) On(eventType events.WindowEventType, callback func(ctx *
 		defer w.eventListenersLock.Unlock()
 		w.eventListeners[eventID] = lo.Without(w.eventListeners[eventID], windowEventListener)
 	}
+}
 
+// RegisterHook registers a hook for the given window event
+func (w *WebviewWindow) RegisterHook(eventType events.WindowEventType, callback func(ctx *WindowEvent)) func() {
+	eventID := uint(eventType)
+	w.eventHooksLock.Lock()
+	defer w.eventHooksLock.Unlock()
+	windowEventHook := &windowHook{
+		callback: callback,
+	}
+	w.eventHooks[eventID] = append(w.eventHooks[eventID], windowEventHook)
+
+	return func() {
+		w.eventHooksLock.Lock()
+		defer w.eventHooksLock.Unlock()
+		w.eventHooks[eventID] = lo.Without(w.eventHooks[eventID], windowEventHook)
+	}
 }
 
 func (w *WebviewWindow) handleWindowEvent(id uint) {
 	w.eventListenersLock.RLock()
 	defer w.eventListenersLock.RUnlock()
+
+	// Get hooks
+	w.eventHooksLock.RLock()
+	hooks := w.eventHooks[id]
+	w.eventHooksLock.RUnlock()
+
+	// Create new WindowEvent
+	thisEvent := &WindowEvent{}
+
+	for _, thisHook := range hooks {
+		thisHook.callback(thisEvent)
+		if thisEvent.Cancelled {
+			return
+		}
+	}
+
 	for _, listener := range w.eventListeners[id] {
 		go listener.callback(blankWindowEventContext)
 	}
@@ -932,7 +980,7 @@ func (w *WebviewWindow) Focus() {
 }
 
 func (w *WebviewWindow) emit(eventType events.WindowEventType) {
-	windowEvents <- &WindowEvent{
+	windowEvents <- &windowEvent{
 		WindowID: w.id,
 		EventID:  uint(eventType),
 	}

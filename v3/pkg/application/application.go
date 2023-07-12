@@ -35,7 +35,7 @@ func init() {
 }
 
 type EventListener struct {
-	callback func()
+	callback func(*Event)
 }
 
 func Get() *App {
@@ -219,10 +219,16 @@ func (r *webViewAssetRequest) Header() (http.Header, error) {
 
 var webviewRequests = make(chan *webViewAssetRequest)
 
+type eventHook struct {
+	callback func(*Event)
+}
+
 type App struct {
 	options                       Options
 	applicationEventListeners     map[uint][]*EventListener
 	applicationEventListenersLock sync.RWMutex
+	applicationEventHooks         map[uint][]*eventHook
+	applicationEventHooksLock     sync.RWMutex
 
 	// Windows
 	windows     map[uint]*WebviewWindow
@@ -293,7 +299,7 @@ func (a *App) Capabilities() capabilities.Capabilities {
 	return a.capabilities
 }
 
-func (a *App) On(eventType events.ApplicationEventType, callback func()) func() {
+func (a *App) On(eventType events.ApplicationEventType, callback func(event *Event)) func() {
 	eventID := uint(eventType)
 	a.applicationEventListenersLock.Lock()
 	defer a.applicationEventListenersLock.Unlock()
@@ -313,6 +319,25 @@ func (a *App) On(eventType events.ApplicationEventType, callback func()) func() 
 		a.applicationEventListeners[eventID] = lo.Without(a.applicationEventListeners[eventID], listener)
 	}
 }
+
+// RegisterHook registers a hook for the given event type. Hooks are called before the event listeners and can cancel the event.
+// The returned function can be called to remove the hook.
+func (a *App) RegisterHook(eventType events.ApplicationEventType, callback func(event *Event)) func() {
+	eventID := uint(eventType)
+	a.applicationEventHooksLock.Lock()
+	defer a.applicationEventHooksLock.Unlock()
+	thisHook := &eventHook{
+		callback: callback,
+	}
+	a.applicationEventHooks[eventID] = append(a.applicationEventHooks[eventID], thisHook)
+
+	return func() {
+		a.applicationEventHooksLock.Lock()
+		a.applicationEventHooks[eventID] = lo.Without(a.applicationEventHooks[eventID], thisHook)
+		a.applicationEventHooksLock.Unlock()
+	}
+}
+
 func (a *App) NewWebviewWindow() *WebviewWindow {
 	return a.NewWebviewWindowWithOptions(WebviewWindowOptions{})
 }
@@ -468,8 +493,24 @@ func (a *App) handleApplicationEvent(event uint) {
 	if !ok {
 		return
 	}
+
+	thisEvent := &Event{}
+
+	// Process Hooks
+	a.applicationEventHooksLock.RLock()
+	hooks, ok := a.applicationEventHooks[event]
+	a.applicationEventHooksLock.RUnlock()
+	if ok {
+		for _, thisHook := range hooks {
+			thisHook.callback(thisEvent)
+			if thisEvent.Cancelled {
+				return
+			}
+		}
+	}
+
 	for _, listener := range listeners {
-		go listener.callback()
+		go listener.callback(thisEvent)
 	}
 }
 
@@ -506,7 +547,7 @@ func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 	a.assets.ServeWebViewRequest(request)
 }
 
-func (a *App) handleWindowEvent(event *WindowEvent) {
+func (a *App) handleWindowEvent(event *windowEvent) {
 	// Get window from window map
 	a.windowsLock.Lock()
 	window, ok := a.windows[event.WindowID]

@@ -262,7 +262,7 @@ func (w *windowsWebviewWindow) run() {
 	switch options.Windows.Theme {
 	case SystemDefault:
 		w.updateTheme(w32.IsCurrentlyDarkMode())
-		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func() {
+		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*Event) {
 			w.updateTheme(w32.IsCurrentlyDarkMode())
 		})
 	case Light:
@@ -1475,7 +1475,7 @@ func (w *windowsWebviewWindow) flash(enabled bool) {
 func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
 
 	// Emit DomReady Event
-	windowEvents <- &WindowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
+	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
 
 	if w.hasStarted {
 		// NavigationCompleted is triggered for every Load. If an application uses reloads the Hide/Show will trigger
