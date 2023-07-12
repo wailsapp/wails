@@ -48,7 +48,7 @@ func main() {
 		println("events.Common.ApplicationStarted fired!")
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	win1 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Events Demo",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
@@ -56,6 +56,19 @@ func main() {
 			InvisibleTitleBarHeight: 50,
 		},
 	})
+
+	var countdown = 3
+
+	win1.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+		countdown--
+		if countdown == 0 {
+			println("Closing!")
+			return
+		}
+		println("Nope! Not closing!")
+		e.Cancel()
+	})
+
 	win2 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Events Demo",
 		Mac: application.MacWindow{
