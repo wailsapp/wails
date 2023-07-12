@@ -181,7 +181,7 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 
 func (m *macosApp) run() error {
 	// Add a hook to the ApplicationDidFinishLaunching event
-	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func() {
+	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func(*Event) {
 		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))
 		C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
 		C.activateIgnoringOtherApps()
