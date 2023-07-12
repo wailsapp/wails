@@ -75,7 +75,7 @@ func main() {
 		}
 	})
 
-	win2.On(events.Common.WindowFocus, func(e *application.WindowEventContext) {
+	win2.On(events.Common.WindowFocus, func(e *application.WindowEvent) {
 		println("[Event] Window focus!")
 	})
 

@@ -75,8 +75,16 @@ type (
 )
 
 type WindowEvent struct {
-	WindowEventContext
+	ctx       *WindowEventContext
 	Cancelled bool
+}
+
+func (w *WindowEvent) Context() *WindowEventContext {
+	return w.ctx
+}
+
+func NewWindowEvent() *WindowEvent {
+	return &WindowEvent{}
 }
 
 func (w *WindowEvent) Cancel() {
@@ -84,11 +92,7 @@ func (w *WindowEvent) Cancel() {
 }
 
 type WindowEventListener struct {
-	callback func(ctx *WindowEventContext)
-}
-
-type windowHook struct {
-	callback func(ctx *WindowEvent)
+	callback func(event *WindowEvent)
 }
 
 type WebviewWindow struct {
@@ -98,7 +102,7 @@ type WebviewWindow struct {
 
 	eventListeners     map[uint][]*WindowEventListener
 	eventListenersLock sync.RWMutex
-	eventHooks         map[uint][]*windowHook
+	eventHooks         map[uint][]*WindowEventListener
 	eventHooksLock     sync.RWMutex
 
 	contextMenus     map[string]*Menu
@@ -144,7 +148,7 @@ func (w *WebviewWindow) setupEventMapping() {
 	for source, target := range mapping {
 		source := source
 		target := target
-		w.On(source, func(ctx *WindowEventContext) {
+		w.On(source, func(event *WindowEvent) {
 			w.emit(target)
 		})
 	}
@@ -167,13 +171,13 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		options:        options,
 		eventListeners: make(map[uint][]*WindowEventListener),
 		contextMenus:   make(map[string]*Menu),
-		eventHooks:     make(map[uint][]*windowHook),
+		eventHooks:     make(map[uint][]*WindowEventListener),
 	}
 
 	result.setupEventMapping()
 
 	// Listen for window closing events and de
-	result.On(events.Common.WindowClosing, func(ctx *WindowEventContext) {
+	result.On(events.Common.WindowClosing, func(event *WindowEvent) {
 		shouldClose := true
 		if result.options.ShouldClose != nil {
 			shouldClose = result.options.ShouldClose(result)
@@ -552,7 +556,7 @@ func (w *WebviewWindow) Center() {
 }
 
 // On registers a callback for the given window event
-func (w *WebviewWindow) On(eventType events.WindowEventType, callback func(ctx *WindowEventContext)) func() {
+func (w *WebviewWindow) On(eventType events.WindowEventType, callback func(event *WindowEvent)) func() {
 	eventID := uint(eventType)
 	w.eventListenersLock.Lock()
 	defer w.eventListenersLock.Unlock()
@@ -572,11 +576,11 @@ func (w *WebviewWindow) On(eventType events.WindowEventType, callback func(ctx *
 }
 
 // RegisterHook registers a hook for the given window event
-func (w *WebviewWindow) RegisterHook(eventType events.WindowEventType, callback func(ctx *WindowEvent)) func() {
+func (w *WebviewWindow) RegisterHook(eventType events.WindowEventType, callback func(event *WindowEvent)) func() {
 	eventID := uint(eventType)
 	w.eventHooksLock.Lock()
 	defer w.eventHooksLock.Unlock()
-	windowEventHook := &windowHook{
+	windowEventHook := &WindowEventListener{
 		callback: callback,
 	}
 	w.eventHooks[eventID] = append(w.eventHooks[eventID], windowEventHook)
@@ -598,7 +602,7 @@ func (w *WebviewWindow) handleWindowEvent(id uint) {
 	w.eventHooksLock.RUnlock()
 
 	// Create new WindowEvent
-	thisEvent := &WindowEvent{}
+	thisEvent := NewWindowEvent()
 
 	for _, thisHook := range hooks {
 		thisHook.callback(thisEvent)
@@ -608,7 +612,7 @@ func (w *WebviewWindow) handleWindowEvent(id uint) {
 	}
 
 	for _, listener := range w.eventListeners[id] {
-		go listener.callback(blankWindowEventContext)
+		go listener.callback(thisEvent)
 	}
 	w.dispatchWindowEvent(id)
 }
@@ -931,10 +935,12 @@ func (w *WebviewWindow) error(message string, args ...any) {
 }
 
 func (w *WebviewWindow) handleDragAndDropMessage(event *dragAndDropMessage) {
+	thisEvent := NewWindowEvent()
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(event.filenames)
+	thisEvent.ctx = ctx
 	for _, listener := range w.eventListeners[uint(events.FilesDropped)] {
-		listener.callback(ctx)
+		listener.callback(thisEvent)
 	}
 }
 
