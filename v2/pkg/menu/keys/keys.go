@@ -99,8 +99,6 @@ func Combo(key string, modifier1 Modifier, modifier2 Modifier, rest ...Modifier)
 		Key:       key,
 		Modifiers: []Modifier{modifier1, modifier2},
 	}
-	for _, extra := range rest {
-		result.Modifiers = append(result.Modifiers, extra)
-	}
+	result.Modifiers = append(result.Modifiers, rest...)
 	return result
 }

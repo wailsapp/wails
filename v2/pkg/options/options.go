@@ -64,6 +64,9 @@ type App struct {
 	Bind               []interface{}
 	WindowStartState   WindowStartState
 
+	// ErrorFormatter overrides the formatting of errors returned by backend methods
+	ErrorFormatter ErrorFormatter
+
 	// CSS property to test for draggable elements. Default "--wails-draggable"
 	CSSDragProperty string
 
@@ -89,6 +92,8 @@ type App struct {
 	// Debug options for debug builds. These options will be ignored in a production build.
 	Debug Debug
 }
+
+type ErrorFormatter func(error) any
 
 type RGBA struct {
 	R uint8 `json:"r"`
