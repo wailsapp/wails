@@ -111,7 +111,7 @@ See https://wails.io/docs/guides/frontend for more information.
 
 ##### Error Handling
 - Expected errors using Throw error works in +page.ts/+page.js with a +error.svelte page. https://kit.svelte.dev/docs/errors#expected-errors
-- Unexpected errors will cause the application to become unusable.  Only recovery option from unexpected errors is to reload the app.  To do this create a file myapp/frontend/src/hooks.client.ts then add the below to the file.
+- Unexpected errors will cause the application to become unusable.  Only recovery option (known so far) from unexpected errors is to reload the app.  To do this create a file myapp/frontend/src/hooks.client.ts then add the below code to the file.
 ```
 import { WindowReloadApp } from '$lib/wailsjs/runtime/runtime' 
 export async function handleError() {
@@ -119,5 +119,15 @@ export async function handleError() {
 }
 ```
 
-#####
-- <Test use:enhance for forms>
+##### Using Forms
+- The simplest way is to call a function from the form and bind:value your variables `<form method="POST" on:submit|preventDefault={handle}>`
+- The more advanced way is to use:enhance which will allow for convenient access to formData, formElement, submitter.  The import note is to always cancel() the form which prevents server side behavior.  Example:
+```
+<form method="POST" use:enhance={({cancel, formData, formElement, submitter}) => {
+	cancel()
+	console.log(Object.fromEntries(formData))
+	console.log(formElement)
+	console.log(submitter)
+	handle()
+}}>
+```
