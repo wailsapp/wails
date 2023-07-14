@@ -91,7 +91,7 @@ wails dev
 - +layout.server.ts, +page.server.ts, +server.ts or any file with "server" in the name will fail to build as all routes are prerendered.
 
 ##### The Wails runtime unloads with full page navigations!
-- Anything that causes full page navigations: `window.location.href = '/<some>/<page>'` or Context menu reload when using wails dev.  What this means is that when using a frameless window you can end up losing the ability to call any runtime breaking the app. There are two ways to work around this.
+- Anything that causes full page navigations: `window.location.href = '/<some>/<page>'` or Context menu reload when using wails dev.  What this means is that you can end up losing the ability to call any runtime breaking the app. There are two ways to work around this.
 - Use `import { goto } from '$app/navigation'` then call `goto('/<some>/<page>')` in your +page.svelte. This will prevent a full page navigation.
 - If full page navigation can't be prevented the Wails runtime can be added to all pages by adding the below into the <head> of myapp/frontend/src/app.html
 ```
