@@ -119,8 +119,8 @@ export async function handleError() {
 }
 ```
 
-##### Using Forms
-- The simplest way is to call a function from the form, bind:value your variables and prevent submission `<form method="POST" on:submit|preventDefault={handle}>`
+##### Using Forms and handling functions
+- The simplest way is to call a function from the form is to, bind:value your variables and prevent submission `<form method="POST" on:submit|preventDefault={handle}>`
 - The more advanced way is to use:enhance (progressive enhancement) which will allow for convenient access to formData, formElement, submitter.  The import note is to always cancel() the form which prevents server side behavior.  https://kit.svelte.dev/docs/form-actions#progressive-enhancement  Example:
 ```
 <form method="POST" use:enhance={({cancel, formData, formElement, submitter}) => {
