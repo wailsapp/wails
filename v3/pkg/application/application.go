@@ -2,7 +2,6 @@ package application
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -161,23 +160,15 @@ type (
 	}
 )
 
-func processPanic(value any) {
-	if value == nil {
-		value = fmt.Errorf("unknown error")
-	}
-	if globalApplication.options.PanicHandler != nil {
-		globalApplication.options.PanicHandler(value)
+func processPanicHandlerRecover() {
+	h := globalApplication.options.PanicHandler
+	if h == nil {
 		return
 	}
-	// Print the panic details
-	fmt.Printf("Panic occurred: %v", value)
 
-	// Print the stack trace
-	buf := make([]byte, 1<<16)
-	runtime.Stack(buf, true)
-	fmt.Println("Stack trace:")
-	fmt.Println(string(buf))
-	os.Exit(1)
+	if err := recover(); err != nil {
+		h(err)
+	}
 }
 
 // Messages sent from javascript get routed here
@@ -415,11 +406,7 @@ func (a *App) Run() error {
 	a.info("Starting application")
 
 	// Setup panic handler
-	defer func() {
-		if err := recover(); err != nil {
-			processPanic(err)
-		}
-	}()
+	defer processPanicHandlerRecover()
 
 	a.impl = newPlatformApp(a)
 	go func() {
@@ -746,11 +733,7 @@ func invokeSync(fn func()) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer func() {
-			if err := recover(); err != nil {
-				processPanic(err)
-			}
-		}()
+		defer processPanicHandlerRecover()
 		fn()
 		wg.Done()
 	})
@@ -761,11 +744,7 @@ func invokeSyncWithResult[T any](fn func() T) (res T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer func() {
-			if err := recover(); err != nil {
-				processPanic(err)
-			}
-		}()
+		defer processPanicHandlerRecover()
 		res = fn()
 		wg.Done()
 	})
@@ -777,11 +756,7 @@ func invokeSyncWithError(fn func() error) (err error) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer func() {
-			if err := recover(); err != nil {
-				processPanic(err)
-			}
-		}()
+		defer processPanicHandlerRecover()
 		err = fn()
 		wg.Done()
 	})
@@ -793,11 +768,7 @@ func invokeSyncWithResultAndError[T any](fn func() (T, error)) (res T, err error
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer func() {
-			if err := recover(); err != nil {
-				processPanic(err)
-			}
-		}()
+		defer processPanicHandlerRecover()
 		res, err = fn()
 		wg.Done()
 	})
