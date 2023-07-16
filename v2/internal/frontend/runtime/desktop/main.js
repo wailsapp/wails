@@ -35,6 +35,27 @@ export function Environment() {
     return Call(":wails:Environment");
 }
 
+export function ResolveFilePaths(files) {
+    return new Promise(function (resolve, reject) {
+        // Only for windows webview2 >= 1.0.1774.30
+        // https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2webmessagereceivedeventargs2?view=webview2-1.0.1823.32#applies-to
+        if (!window.chrome?.webview?.postMessageWithAdditionalObjects) {
+            reject(new Error("Unsupported Platform"));
+            return;
+        }
+
+		var callbackID = `file-${new Date().getTime()}`;
+
+		callbacks[callbackID] = {
+			timeoutHandle: 0,
+			reject: reject,
+			resolve: resolve
+		};
+
+		chrome.webview.postMessageWithAdditionalObjects(`file:${callbackID}`, files);
+    });
+}
+
 // The JS runtime
 window.runtime = {
     ...Log,
@@ -50,7 +71,8 @@ window.runtime = {
     Environment,
     Show,
     Hide,
-    Quit
+    Quit,
+    ResolveFilePaths,
 };
 
 // Internal wails endpoints
