@@ -453,6 +453,7 @@ func (f *Frontend) setupChromium() {
 	chromium.MessageCallback = f.processMessage
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
+	chromium.ContainsFullScreenElementChangedCallback = f.fullscreenChanged
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
 		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
 		return false
@@ -811,6 +812,18 @@ func (f *Frontend) ShowWindow() {
 
 func (f *Frontend) onFocus(arg *winc.Event) {
 	f.chromium.Focus()
+}
+
+func (f *Frontend) fullscreenChanged(sender *edge.ICoreWebView2, _ *edge.ICoreWebView2ContainsFullScreenElementChangedEventArgs) {
+	isFullscreen, err := sender.GetContainsFullScreenElement()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if isFullscreen {
+		f.mainWindow.Fullscreen()
+	} else {
+		f.mainWindow.UnFullscreen()
+	}
 }
 
 func coreWebview2RequestToHttpRequest(coreReq *edge.ICoreWebView2WebResourceRequest) func() (*http.Request, error) {
