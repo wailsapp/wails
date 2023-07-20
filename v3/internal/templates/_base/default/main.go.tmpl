@@ -15,6 +15,9 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "{{.ProjectName}}",
 		Description: "A demo of using raw HTML & CSS",
+        Assets: application.AssetOptions{
+			FS: assets,
+		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
@@ -28,11 +31,7 @@ func main() {
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInset,
 		},
-
 		URL: "/",
-		Assets: application.AssetOptions{
-			FS: assets,
-		},
 	})
 
 	err := app.Run()

@@ -16,11 +16,11 @@ func main() {
 		Bind: []interface{}{
 			&GreetService{},
 		},
-		Mac: application.MacOptions{
-			ApplicationShouldTerminateAfterLastWindowClosed: true,
-		},
 		Assets: application.AssetOptions{
 			FS: assets,
+		},
+		Mac: application.MacOptions{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 

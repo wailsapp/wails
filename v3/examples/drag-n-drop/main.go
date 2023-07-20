@@ -17,11 +17,11 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Drag-n-drop Demo",
 		Description: "A demo of the Drag-n-drop API",
-		Mac: application.MacOptions{
-			ApplicationShouldTerminateAfterLastWindowClosed: true,
-		},
 		Assets: application.AssetOptions{
 			FS: assets,
+		},
+		Mac: application.MacOptions{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 
