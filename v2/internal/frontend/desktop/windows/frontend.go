@@ -699,7 +699,10 @@ func (f *Frontend) processMessage(message string) {
 func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
 	if strings.HasPrefix(message, "file:") {
 		callbackID := message[5:]
+
 		objs, err := args.GetAdditionalObjects()
+		defer objs.Release()
+
 		if err != nil {
 			f.logger.Error(err.Error())
 			return
@@ -709,14 +712,13 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 			return
 		}
 
-		_count, err := objs.GetCount()
+		count, err := objs.GetCount()
 		if err != nil {
 			f.logger.Error(err.Error())
 			return
 		}
 
 		files := []File{}
-		count := *(*uint32)(unsafe.Pointer(&_count))
 		for i := uint32(0); i < count; i++ {
 			_file, err := objs.GetValueAtIndex(i)
 			if err != nil {
@@ -725,6 +727,8 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 			}
 
 			file := (*edge.ICoreWebView2File)(unsafe.Pointer(_file))
+			defer file.Release()
+
 			filepath, err := file.GetPath()
 			if err != nil {
 				f.logger.Error("cannot get path for object at %d : %s", i, err.Error())
@@ -734,6 +738,7 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 			files = append(files, File{
 				Path: filepath,
 			})
+
 		}
 
 		callbackMessage := &dispatcher.CallbackMessage{
