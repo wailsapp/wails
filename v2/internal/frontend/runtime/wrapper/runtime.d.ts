@@ -234,5 +234,8 @@ export function ClipboardGetText(): Promise<string>;
 // Sets a text on the clipboard
 export function ClipboardSetText(text: string): Promise<boolean>;
 
+// Check if the file path resolver is available
+export function CanResolveFilePaths(): boolean;
+
 // Resolves file paths for an array of files
 export function ResolveFilePaths(files: File[]): Promise<{ path: string }[]>;

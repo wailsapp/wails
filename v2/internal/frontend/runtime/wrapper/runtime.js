@@ -201,6 +201,10 @@ export function ClipboardSetText(text) {
     return window.runtime.ClipboardSetText(text);
 }
 
+export function CanResolveFilePaths() {
+    return window.runtime.CanResolveFilePaths();
+}
+
 export function ResolveFilePaths(files) {
     return window.runtime.ResolveFilePaths(files);
 }

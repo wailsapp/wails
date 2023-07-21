@@ -35,6 +35,10 @@ export function Environment() {
     return Call(":wails:Environment");
 }
 
+export function CanResolveFilePaths() {
+    return window.chrome?.webview?.postMessageWithAdditionalObjects != null;
+}
+
 export function ResolveFilePaths(files) {
     return new Promise(function (resolve, reject) {
         // Only for windows webview2 >= 1.0.1774.30
@@ -72,6 +76,7 @@ window.runtime = {
     Show,
     Hide,
     Quit,
+    CanResolveFilePaths,
     ResolveFilePaths,
 };
 
