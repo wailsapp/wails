@@ -724,7 +724,7 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 				return
 			}
 
-			file := *(**edge.ICoreWebView2File)(unsafe.Pointer(&_file))
+			file := (*edge.ICoreWebView2File)(unsafe.Pointer(_file))
 			filepath, err := file.GetPath()
 			if err != nil {
 				f.logger.Error("cannot get path for object at %d : %s", i, err.Error())
