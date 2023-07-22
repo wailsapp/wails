@@ -721,6 +721,12 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 		files := []File{}
 		for i := uint32(0); i < count; i++ {
 			_file, err := objs.GetValueAtIndex(i)
+			defer func() {
+				err := _file.CallRelease(unsafe.Pointer(_file))
+				if err != nil {
+					f.logger.Error("cannot release resource: %s", err.Error())
+				}
+			}()
 			if err != nil {
 				f.logger.Error("cannot get value at %d : %s", i, err.Error())
 				return
