@@ -701,16 +701,12 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 		callbackID := message[5:]
 
 		objs, err := args.GetAdditionalObjects()
-		defer objs.Release()
-
 		if err != nil {
 			f.logger.Error(err.Error())
 			return
 		}
 
-		if objs == nil {
-			return
-		}
+		defer objs.Release()
 
 		count, err := objs.GetCount()
 		if err != nil {
@@ -721,12 +717,6 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 		files := []File{}
 		for i := uint32(0); i < count; i++ {
 			_file, err := objs.GetValueAtIndex(i)
-			defer func() {
-				err := _file.CallRelease(unsafe.Pointer(_file))
-				if err != nil {
-					f.logger.Error("cannot release resource: %s", err.Error())
-				}
-			}()
 			if err != nil {
 				f.logger.Error("cannot get value at %d : %s", i, err.Error())
 				return
@@ -744,7 +734,6 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 			files = append(files, File{
 				Path: filepath,
 			})
-
 		}
 
 		callbackMessage := &dispatcher.CallbackMessage{
