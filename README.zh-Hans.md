@@ -87,7 +87,7 @@
 
 ## 快速入门
 
-使用说明在 [官网](https://wails.io/docs/gettingstarted/installation)。
+使用说明在 [官网](https://wails.io/zh-Hans/docs/gettingstarted/installation/)。
 
 ## 赞助商
 
