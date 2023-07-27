@@ -47,6 +47,7 @@ type Frontend struct {
 	frontendOptions *options.App
 	logger          *logger.Logger
 	debug           bool
+	devtools        bool
 
 	// Assets
 	assets   *assetserver.AssetServer
@@ -151,12 +152,18 @@ func (f *Frontend) WindowSetDarkTheme() {
 
 func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
+
 	var _debug = ctx.Value("debug")
+	var _devtools = ctx.Value("devtools")
+
 	if _debug != nil {
 		f.debug = _debug.(bool)
 	}
+	if _devtools != nil {
+		f.devtools = _devtools.(bool)
+	}
 
-	mainWindow := NewWindow(f.frontendOptions, f.debug)
+	mainWindow := NewWindow(f.frontendOptions, f.debug, f.devtools)
 	f.mainWindow = mainWindow
 	f.mainWindow.Center()
 

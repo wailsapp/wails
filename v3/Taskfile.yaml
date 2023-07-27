@@ -1,9 +1,14 @@
 # https://taskfile.dev
 
-version: '3'
+version: "3"
+
+includes:
+  website:
+    taskfile: ./website
+    dir: ./website
+    optional: true
 
 tasks:
-
   build-runtime-debug:
     dir: internal/runtime
     internal: true
@@ -77,7 +82,6 @@ tasks:
       - package.json
     cmds:
       - npm install
-
 
   install-runtime-deps:
     dir: internal/runtime
@@ -200,3 +204,11 @@ tasks:
     cmds:
       - task: reinstall-cli
       - echo "Generated templates"
+
+  format:md:
+    cmds:
+      - npx prettier --write "**/*.md"
+
+  format:
+    cmds:
+      - task: format:md

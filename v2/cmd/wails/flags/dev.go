@@ -120,6 +120,7 @@ func (d *Dev) GenerateBuildOptions() *build.Options {
 	result := &build.Options{
 		OutputType:     "dev",
 		Mode:           build.Dev,
+		Devtools:       true,
 		Arch:           runtime.GOARCH,
 		Pack:           true,
 		Platform:       runtime.GOOS,

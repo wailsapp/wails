@@ -106,6 +106,7 @@ type Frontend struct {
 	frontendOptions *options.App
 	logger          *logger.Logger
 	debug           bool
+	devtools        bool
 
 	// Assets
 	assets   *assetserver.AssetServer
@@ -176,10 +177,16 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	go result.startMessageProcessor()
 
 	var _debug = ctx.Value("debug")
+	var _devtools = ctx.Value("devtools")
+
 	if _debug != nil {
 		result.debug = _debug.(bool)
 	}
-	result.mainWindow = NewWindow(appoptions, result.debug)
+	if _devtools != nil {
+		result.devtools = _devtools.(bool)
+	}
+
+	result.mainWindow = NewWindow(appoptions, result.debug, result.devtools)
 
 	C.install_signal_handlers()
 

@@ -2,8 +2,19 @@
 
 version: "3"
 
-vars:
-  GREETING: Hello, World!
+includes:
+  website:
+    taskfile: website
+    dir: website
+
+  v2:
+    taskfile: v2
+    dir: v2
+    optional: true
+  v3:
+    taskfile: v3
+    dir: v3
+    optional: true
 
 tasks:
   contributors:check:
@@ -18,7 +29,19 @@ tasks:
     cmds:
       - npx -y all-contributors-cli generate
 
-  release:
-    dir: v2/tools/release
+  format:md:
     cmds:
-      - go run release.go {{.CLI_ARGS}}
+      - npx prettier --write "**/*.md"
+
+  format:
+    cmds:
+      - task: format:md
+
+  format-all-md:
+    cmds:
+      - task: format:md
+      - task: website:format:md
+      - task: v2:format:md
+      # - task: v2:website:format
+      - task: v3:format:md
+      # - task: v3:website:format:md

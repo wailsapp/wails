@@ -13,7 +13,15 @@
 
 ## [即将发布]
 
-## [v2.5.1] - 2023-05-16
+### 修复
+
+- 当 Linux GTK 密钥为空时避免应用程序崩溃。 由 @aminya 在这个 [PR](https://github.com/wailsapp/wails/pull/2672) 中修复。
+
+### 变更
+
+- 更改了 `doctor` 命令的样式。 由 @MarvinJWendt 在 [PR](https://github.com/wailsapp/wails/pull/2660) 中更改。
+
+## v2.5.1 - 2023-05-16
 
 ### 重大变更
 
@@ -87,8 +95,8 @@
 ### 修复
 
 - Fixed failing build hooks when `build/bin` was missing. @Lyimmi 在 [PR](https://github.com/wailsapp/wails/pull/2273) 中修复
-- Fixed fullscreen mode for frameless window on Windows to fully cover the taskbar when changing into fullscreen from maximised state. @stffabi 在 [PR](https://github.com/wailsapp/wails/pull/2279) 中修复
-- Fixed set window background colour on Windows when setting the colour via runtime. @stffabi 在 [PR](https://github.com/wailsapp/wails/pull/2279) 中修复
+- Fixed fullscreen mode for frameless window on Windows to fully cover the taskbar when changing into fullscreen from maximised state. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279)
+- Fixed set window background colour on Windows when setting the colour via runtime. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279)
 - Fixed the showing of a white border around a fullscreen window when `DisableWindowIcon` is active on Windows. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2299)
 - Fixed the sometimes lagging drag experience with `--wails-draggable` on Windows. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2302)
 - Fixed applying the default arch to platform flag in wails cli. If only a `GOOS` has been supplied as platform flag e.g. `wails build --platform windows` the current architecture wasn't applied and the build failed. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2309)

@@ -3,8 +3,9 @@ package dispatcher
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/frontend"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/internal/frontend"
 )
 
 type callMessage struct {
@@ -49,7 +50,12 @@ func (d *Dispatcher) processCallMessage(message string, sender frontend.Frontend
 		CallbackID: payload.CallbackID,
 	}
 	if err != nil {
-		callbackMessage.Err = err.Error()
+		// Use the error formatter if one was provided
+		if d.errfmt != nil {
+			callbackMessage.Err = d.errfmt(err)
+		} else {
+			callbackMessage.Err = err.Error()
+		}
 	} else {
 		callbackMessage.Result = result
 	}
@@ -66,7 +72,7 @@ func (d *Dispatcher) processCallMessage(message string, sender frontend.Frontend
 // CallbackMessage defines a message that contains the result of a call
 type CallbackMessage struct {
 	Result     interface{} `json:"result"`
-	Err        string      `json:"error"`
+	Err        any         `json:"error"`
 	CallbackID string      `json:"callbackid"`
 }
 
