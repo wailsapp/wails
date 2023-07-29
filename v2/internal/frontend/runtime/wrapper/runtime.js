@@ -202,7 +202,7 @@ export function ClipboardSetText(text) {
 }
 
 export function CanResolveFilePaths() {
-    return window.runtime.CanResolveFilePaths();
+    return window.CanAccessAdditionalWebMessageObjects == true;
 }
 
 export function ResolveFilePaths(files) {

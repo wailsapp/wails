@@ -502,6 +502,10 @@ func (f *Frontend) setupChromium() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = chromium.CheckCanAccessAdditionalWebMessageObjects()
+	if err != nil {
+		log.Fatal(err)
+	}
 	err = settings.PutAreDefaultContextMenusEnabled(f.devtools || f.frontendOptions.EnableDefaultContextMenu)
 	if err != nil {
 		log.Fatal(err)
