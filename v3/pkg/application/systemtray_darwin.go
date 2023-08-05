@@ -12,6 +12,7 @@ package application
 */
 import "C"
 import (
+	"github.com/leaanthony/go-ansi-parser"
 	"unsafe"
 )
 
@@ -123,7 +124,7 @@ func (s *macosSystemTray) run() {
 		s.nsStatusItem = unsafe.Pointer(C.systemTrayNew(C.long(s.id)))
 
 		if s.label != "" {
-			C.systemTraySetLabel(s.nsStatusItem, C.CString(s.label))
+			s.setLabel(s.label)
 		}
 		if s.icon != nil {
 			s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&s.icon[0]), C.int(len(s.icon))))
@@ -181,7 +182,27 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 
 func (s *macosSystemTray) setLabel(label string) {
 	s.label = label
-	C.systemTraySetLabel(s.nsStatusItem, C.CString(label))
+	if !ansi.HasEscapeCodes(label) {
+		C.systemTraySetLabel(s.nsStatusItem, C.CString(label))
+	} else {
+		parsed, err := ansi.Parse(label)
+		if err != nil {
+			C.systemTraySetLabel(s.nsStatusItem, C.CString(label))
+			return
+		}
+		//TODO: Support more than one colour
+		newLabel := parsed[0].Label
+		var FG string
+		if parsed[0].FgCol != nil {
+			FG = parsed[0].FgCol.Hex
+		}
+		var BG string
+		if parsed[0].BgCol != nil {
+			BG = parsed[0].BgCol.Hex
+		}
+
+		C.systemTraySetANSILabel(s.nsStatusItem, C.CString(newLabel), C.CString(FG), C.CString(BG))
+	}
 }
 
 func (s *macosSystemTray) destroy() {

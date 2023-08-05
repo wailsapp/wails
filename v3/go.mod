@@ -14,6 +14,7 @@ require (
 	github.com/jackmordaunt/icns/v2 v2.2.1
 	github.com/json-iterator/go v1.1.12
 	github.com/leaanthony/clir v1.6.0
+	github.com/leaanthony/go-ansi-parser v1.6.1
 	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/winicon v1.0.0
 	github.com/markbates/goth v1.77.0
