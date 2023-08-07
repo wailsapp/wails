@@ -39,6 +39,16 @@ func OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (
 	return appFrontend.OpenDirectoryDialog(dialogOptions)
 }
 
+func OpenMultipleDirectoriesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error) {
+	appFrontend := getFrontend(ctx)
+	if dialogOptions.DefaultDirectory != "" {
+		if !fs.DirExists(dialogOptions.DefaultDirectory) {
+			return nil, fmt.Errorf("default directory '%s' does not exist", dialogOptions.DefaultDirectory)
+		}
+	}
+	return appFrontend.OpenMultipleDirectoriesDialog(dialogOptions)
+}
+
 // OpenFileDialog prompts the user to select a file
 func OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
 	appFrontend := getFrontend(ctx)
