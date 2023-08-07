@@ -41,6 +41,14 @@ func (f *Frontend) OpenDirectoryDialog(options frontend.OpenDialogOptions) (stri
 	return selected, nil
 }
 
+func (f *Frontend) OpenMultipleDirectoriesDialog(options frontend.OpenDialogOptions) ([]string, error) {
+	results, err := f.openDialog(&options, true, false, true)
+	if err != nil {
+		return "", err
+	}
+	return results, nil
+}
+
 func (f *Frontend) openDialog(options *frontend.OpenDialogOptions, multiple bool, allowfiles bool, allowdirectories bool) ([]string, error) {
 	dialogLock.Lock()
 	defer dialogLock.Unlock()

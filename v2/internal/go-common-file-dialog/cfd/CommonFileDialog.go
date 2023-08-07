@@ -13,6 +13,7 @@ type Dialog interface {
 	// Blocks until the user has closed the dialog and returns their selection.
 	// Returns an error if the user cancelled the dialog.
 	// Do not use for the Open Multiple Files dialog. Use ShowAndGetResults instead.
+	// Do not use for Select Multiple Folders dialog. Use ShowAndGetResults instead.
 	ShowAndGetResult() (string, error)
 	// Sets the title of the dialog window.
 	SetTitle(title string) error
@@ -65,6 +66,15 @@ type OpenMultipleFilesDialog interface {
 
 type SelectFolderDialog interface {
 	Dialog
+}
+
+type SelectMultipleFoldersDialog interface {
+	Dialog
+	// Show the dialog to the user.
+	// Blocks until the user has closed the dialog and returns the selected files.
+	ShowAndGetResults() ([]string, error)
+	// Gets the selected file paths, as absolute paths eg. "C:\Folder\file.txt"
+	GetResults() ([]string, error)
 }
 
 type SaveFileDialog interface { // TODO Properties
