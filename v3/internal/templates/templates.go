@@ -4,12 +4,15 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/debug"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 
@@ -176,7 +179,7 @@ func getLocalTemplate(templateName string) (*Template, error) {
 	var err error
 	_, err = os.Stat(templateName)
 	if err != nil {
-		return nil, err
+		return nil, nil
 	}
 
 	template, err = parseTemplate(os.DirFS(templateName), templateName)
@@ -204,7 +207,11 @@ type Template struct {
 
 func parseTemplate(template fs.FS, templateName string) (Template, error) {
 	var result Template
-	data, err := fs.ReadFile(template, templateName+"/template.json")
+	jsonFile := "template.json"
+	if templateName != "" {
+		jsonFile = templateName + "/template.json"
+	}
+	data, err := fs.ReadFile(template, jsonFile)
 	if err != nil {
 		return result, errors.Wrap(err, "Error parsing template")
 	}
@@ -225,6 +232,57 @@ func parseTemplate(template fs.FS, templateName string) (Template, error) {
 	return result, nil
 }
 
+// Clones the given uri and returns the temporary cloned directory
+func gitclone(uri string) (string, error) {
+	// Create temporary directory
+	dirname, err := os.MkdirTemp("", "wails-template-*")
+	if err != nil {
+		return "", err
+	}
+
+	// Parse remote template url and version number
+	templateInfo := strings.Split(uri, "@")
+	cloneOption := &git.CloneOptions{
+		URL: templateInfo[0],
+	}
+	if len(templateInfo) > 1 {
+		cloneOption.ReferenceName = plumbing.NewTagReferenceName(templateInfo[1])
+	}
+
+	_, err = git.PlainClone(dirname, false, cloneOption)
+
+	return dirname, err
+
+}
+
+func getRemoteTemplate(uri string) (template *Template, err error) {
+	// git clone to temporary dir
+	var tempDir string
+	tempDir, err = gitclone(uri)
+
+	defer func(path string) {
+		_ = os.RemoveAll(path)
+	}(tempDir)
+
+	if err != nil {
+		return
+	}
+
+	// Remove the .git directory
+	err = os.RemoveAll(filepath.Join(tempDir, ".git"))
+	if err != nil {
+		return
+	}
+
+	templateFS := os.DirFS(tempDir)
+	var parsedTemplate Template
+	parsedTemplate, err = parseTemplate(templateFS, "")
+	if err != nil {
+		return
+	}
+	return &parsedTemplate, nil
+}
+
 func Install(options *flags.Init) error {
 
 	templateData := TemplateOptions{
@@ -237,7 +295,9 @@ func Install(options *flags.Init) error {
 		_ = os.Remove(filepath.Join(templateData.ProjectDir, "template.json"))
 	}()
 
-	template, err := getInternalTemplate(options.TemplateName)
+	var err error
+	var template *Template
+	template, err = getInternalTemplate(options.TemplateName)
 	if err != nil {
 		return err
 	}
@@ -247,9 +307,12 @@ func Install(options *flags.Init) error {
 	if err != nil {
 		return err
 	}
-	//if templateFS == nil {
-	//	templateFS = getRemoteTemplate(options.TemplateName)
-	//}
+	if template == nil {
+		template, err = getRemoteTemplate(options.TemplateName)
+	}
+	if err != nil {
+		return err
+	}
 
 	if template == nil {
 		return fmt.Errorf("invalid template name: %s. Use -l flag to view available templates or use a valid filepath / url to a template", options.TemplateName)
