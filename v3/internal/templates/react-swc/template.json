@@ -1,0 +1,8 @@
+{
+  "name": "React + SWC + Vite",
+  "shortname": "react-swc",
+  "author": "Lea Anthony",
+  "description": "React + SWC + Vite development server",
+  "helpurl": "https://wails.io",
+  "version": 3
+}

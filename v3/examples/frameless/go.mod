@@ -15,7 +15,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/samber/lo v1.37.0 // indirect
-	github.com/wailsapp/go-webview2 v1.0.2-0.20230604075323-d593c659ca7b // indirect
+	github.com/wailsapp/go-webview2 v1.0.2 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/wailsapp/wails/v2 v2.5.1 // indirect
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
