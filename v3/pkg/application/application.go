@@ -46,10 +46,17 @@ func New(appOptions Options) *App {
 		return globalApplication
 	}
 
+	// Patch isDebug if we aren't in prod mode
+	if isDebugMode == nil {
+		isDebugMode = func() bool {
+			return true
+		}
+	}
+
 	mergeApplicationDefaults(&appOptions)
 
 	result := &App{
-		options:                   appOptions,
+		options:                   appOptions.getOptions(isDebugMode()),
 		applicationEventListeners: make(map[uint][]*EventListener),
 		windows:                   make(map[uint]*WebviewWindow),
 		systemTrays:               make(map[uint]*SystemTray),
@@ -61,13 +68,6 @@ func New(appOptions Options) *App {
 
 	if !appOptions.Logger.Silent {
 		result.log.AddOutput(&logger.Console{})
-	}
-
-	// Patch isDebug if we aren't in prod mode
-	if isDebugMode == nil {
-		isDebugMode = func() bool {
-			return true
-		}
 	}
 
 	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)

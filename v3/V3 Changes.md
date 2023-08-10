@@ -1,5 +1,13 @@
 # Changes for v3
 
+## Options
+
+The application options have been revised since v2. 
+
+### Production Overrides
+
+Any application option can now be overridden using the `ProductionOverrides` field. When building in production mode, the values in this field will be used instead of the values in the main options struct. This allows you to have different options for development and production.
+
 ## Events
 
 In v3, there are 3 types of events:

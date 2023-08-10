@@ -1,10 +1,9 @@
 package application
 
 import (
+	"github.com/wailsapp/wails/v3/pkg/logger"
 	"io/fs"
 	"net/http"
-
-	"github.com/wailsapp/wails/v3/pkg/logger"
 )
 
 type Options struct {
@@ -24,6 +23,17 @@ type Options struct {
 
 	// PanicHandler is a way to register a custom panic handler
 	PanicHandler func(any)
+
+	// ProductionOverrides allows you to override any option in production builds
+	ProductionOverrides *Options
+}
+
+func (o Options) getOptions(debugMode bool) Options {
+	if o.ProductionOverrides == nil || debugMode {
+		o.ProductionOverrides = nil
+		return o
+	}
+	return *o.ProductionOverrides
 }
 
 // AssetOptions defines the configuration of the AssetServer.
