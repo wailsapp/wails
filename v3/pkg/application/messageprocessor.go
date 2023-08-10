@@ -84,8 +84,6 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 		m.processEventsMethod(method, rw, r, targetWindow, params)
 	case "application":
 		m.processApplicationMethod(method, rw, r, targetWindow, params)
-	case "log":
-		m.processLogMethod(method, rw, r, targetWindow, params)
 	case "contextmenu":
 		m.processContextMenuMethod(method, rw, r, targetWindow, params)
 	case "screens":
