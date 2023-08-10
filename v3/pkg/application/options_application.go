@@ -1,8 +1,8 @@
 package application
 
 import (
-	"github.com/wailsapp/wails/v3/pkg/logger"
 	"io/fs"
+	"log/slog"
 	"net/http"
 )
 
@@ -13,18 +13,17 @@ type Options struct {
 	Mac         MacOptions
 	Windows     WindowsApplicationOptions
 	Bind        []any
-	Logger      struct {
-		Silent        bool
-		CustomLoggers []logger.Output
-	}
-	Assets  AssetOptions
-	Plugins map[string]Plugin
-	Flags   map[string]any
+	Logger      *slog.Logger
+	Assets      AssetOptions
+	Plugins     map[string]Plugin
+	Flags       map[string]any
 
 	// PanicHandler is a way to register a custom panic handler
 	PanicHandler func(any)
 
-	// ProductionOverrides allows you to override any option in production builds
+	// ProductionOverrides allows you to have different options in production builds
+	// We would love if we could merge the options, but we can't because of the way
+	// Go handles zero values.
 	ProductionOverrides *Options
 }
 

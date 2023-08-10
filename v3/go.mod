@@ -1,6 +1,6 @@
 module github.com/wailsapp/wails/v3
 
-go 1.19
+go 1.21
 
 require (
 	github.com/bep/debounce v1.2.1
@@ -17,8 +17,11 @@ require (
 	github.com/leaanthony/clir v1.6.0
 	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/winicon v1.0.0
+	github.com/lmittmann/tint v1.0.0
 	github.com/markbates/goth v1.77.0
 	github.com/matryer/is v1.4.0
+	github.com/mattn/go-colorable v0.1.13
+	github.com/mattn/go-isatty v0.0.19
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.51
@@ -55,8 +58,6 @@ require (
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/lithammer/fuzzysearch v1.1.5 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mattn/go-zglob v0.0.4 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect

@@ -14,6 +14,7 @@ import (
 )
 
 func init() {
+	// TODO: Set a flag here and output this message only if the flag is set in the application startup
 	fmt.Println("DEB | Using go webview2loader")
 	preventEnvAndRegistryOverrides()
 }

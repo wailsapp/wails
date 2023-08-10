@@ -3,6 +3,7 @@ package application
 import (
 	"encoding/json"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"runtime"
@@ -21,7 +22,6 @@ import (
 
 	wailsruntime "github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
-	"github.com/wailsapp/wails/v3/pkg/logger"
 )
 
 var globalApplication *App
@@ -60,14 +60,14 @@ func New(appOptions Options) *App {
 		applicationEventListeners: make(map[uint][]*EventListener),
 		windows:                   make(map[uint]*WebviewWindow),
 		systemTrays:               make(map[uint]*SystemTray),
-		log:                       logger.New(appOptions.Logger.CustomLoggers...),
 		contextMenus:              make(map[string]*Menu),
+		logger:                    appOptions.Logger,
 		pid:                       os.Getpid(),
 	}
 	globalApplication = result
 
-	if !appOptions.Logger.Silent {
-		result.log.AddOutput(&logger.Console{})
+	if result.logger == nil {
+		result.logger = DefaultLogger()
 	}
 
 	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
@@ -251,7 +251,7 @@ type App struct {
 
 	clipboard *Clipboard
 	Events    *EventProcessor
-	log       *logger.Logger
+	logger    *slog.Logger
 
 	contextMenus     map[string]*Menu
 	contextMenusLock sync.Mutex
@@ -338,37 +338,17 @@ func (a *App) GetPID() int {
 }
 
 func (a *App) info(message string, args ...any) {
-	a.Log(&logger.Message{
-		Level:   "INFO",
-		Message: message,
-		Data:    args,
-		Sender:  "Wails",
-	})
+	a.logger.Info(message, args...)
 }
 
 func (a *App) fatal(message string, args ...any) {
-	msg := "************** FATAL **************\n"
-	msg += message
-	msg += "***********************************\n"
-
-	a.Log(&logger.Message{
-		Level:   "FATAL",
-		Message: msg,
-		Data:    args,
-		Sender:  "Wails",
-	})
-
-	a.log.Flush()
+	msg := "A FATAL ERROR HAS OCCURRED: " + message
+	a.logger.Error(msg, args...)
 	os.Exit(1)
 }
 
 func (a *App) error(message string, args ...any) {
-	a.Log(&logger.Message{
-		Level:   "ERROR",
-		Message: message,
-		Data:    args,
-		Sender:  "Wails",
-	})
+	a.logger.Error(message, args...)
 }
 
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
@@ -681,10 +661,6 @@ func (a *App) Show() {
 	if a.impl != nil {
 		a.impl.show()
 	}
-}
-
-func (a *App) Log(message *logger.Message) {
-	a.log.Log(message)
 }
 
 func (a *App) RegisterContextMenu(name string, menu *Menu) {

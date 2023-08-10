@@ -47,7 +47,11 @@ Hooks can be registered at the application level or at the window level using `R
 
 ### Logging
 
-There was a lot of requests for different types of logging in v2 so for v3 we have simplified things to make it as customisable as you want. There is now a single call `Log` that takes a LogMessage object. This object contains the message, the level, and the source, the log message and any data to be printed out. The default logger is the Console logger, however any number of outputs to log to can be added. Simply add custom loggers to the `options.Application.Logger.CustomLoggers` slice. The default logger does not have log level filtering, however custom loggers can be added that do.
+Logging in v2 was confusing as both application logs and system (internal) logs were using the same logger. We have simplified this as follows:
+
+- Internal logs are now handled using the standard Go `slog` logger. This is configured using the `logger` option in the application options. By default, this uses the [tint](https://github.com/lmittmann/tint) logger.
+- Application logs can now be achieved through the new `log` plugin which utilises `slog` under the hood. This plugin provides a simple API for logging to the console. It is available in both Go and JS.
+
 
 ### Developer notes
 
