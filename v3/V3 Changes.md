@@ -32,6 +32,11 @@ Similarly, the `Emit` function has changed. Instead of taking a name and optiona
 
 In v2, `Off` and `OffAll` calls would remove events in both JS and Go. Due to the multi-window nature of v3, this has been changed so that these methods only apply to the context they are called in. For example, if you call `Off` in a window, it will only remove events for that window. If you use `Off` in Go, it will only remove events for Go.
 
+### Hooks
+
+Event Hooks are a new feature in v3. They allow you to hook into the event system and perform actions when certain events are emitted. For example, you can hook into the `WindowClosing` event and perform some cleanup before the window closes. 
+Hooks can be registered at the application level or at the window level using `RegisterHook`. Application level are for application events. Window level hooks will only be called for the window they are registered with.
+
 ### Logging
 
 There was a lot of requests for different types of logging in v2 so for v3 we have simplified things to make it as customisable as you want. There is now a single call `Log` that takes a LogMessage object. This object contains the message, the level, and the source, the log message and any data to be printed out. The default logger is the Console logger, however any number of outputs to log to can be added. Simply add custom loggers to the `options.Application.Logger.CustomLoggers` slice. The default logger does not have log level filtering, however custom loggers can be added that do.
