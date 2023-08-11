@@ -17,6 +17,14 @@ import * as Screen from "./screen";
 import * as Browser from "./browser";
 import * as Clipboard from "./clipboard";
 import * as ContextMenu from "./contextmenu";
+import {
+    MessageDialog,
+    OpenDirectoryDialog,
+    OpenFileDialog,
+    OpenMultipleDirectoriesDialog,
+    OpenMultipleFilesDialog,
+    SaveFileDialog
+} from "./dialog";
 
 
 export function Quit() {
@@ -50,7 +58,14 @@ window.runtime = {
     Environment,
     Show,
     Hide,
-    Quit
+    Quit,
+    // Dialog
+    OpenDirectoryDialog,
+    OpenMultipleDirectoriesDialog,
+    OpenFileDialog,
+    OpenMultipleFilesDialog,
+    SaveFileDialog,
+    MessageDialog,
 };
 
 // Internal wails endpoints

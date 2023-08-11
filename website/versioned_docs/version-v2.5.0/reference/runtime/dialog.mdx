@@ -20,6 +20,14 @@ Go: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (
 
 Returns: Selected directory (blank if the user cancelled) or an error
 
+### OpenMultipleDirectoriesDialog
+
+Opens a dialog prompting the user to select multiple directories. Can be customised using [OpenDialogOptions](#opendialogoptions).
+
+Go: `OpenMultipleDirectoriesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error)`
+
+Returns: An array of selected directories (blank if the user cancelled) or an error.
+
 ### OpenFileDialog
 
 Opens a dialog that prompts the user to select a file. Can be customised using [OpenDialogOptions](#opendialogoptions).

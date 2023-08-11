@@ -165,6 +165,30 @@ export function ScreenGetAll() {
     return window.runtime.ScreenGetAll();
 }
 
+export function OpenDirectoryDialog() {
+    return window.runtime.OpenDirectoryDialog();
+}
+
+export function OpenFileDialog() {
+    return window.runtime.OpenFileDialog()
+}
+
+export function OpenMultipleFilesDialog() {
+    return window.runtime.OpenMultipleFilesDialog()
+}
+
+export function SaveFileDialog() {
+    return window.runtime.SaveFileDialog()
+}
+
+export function MessageDialog() {
+    return window.runtime.MessageDialog()
+}
+
+export function OpenMultipleDirectoriesDialog() {
+    return window.runtime.OpenMultipleDirectoriesDialog()
+}
+
 export function WindowIsMinimised() {
     return window.runtime.WindowIsMinimised();
 }

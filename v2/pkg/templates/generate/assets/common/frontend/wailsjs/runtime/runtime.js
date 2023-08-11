@@ -161,6 +161,22 @@ export function BrowserOpenURL(url) {
     window.runtime.BrowserOpenURL(url);
 }
 
+export function OpenDirectoryDialog() {
+    window.runtime.OpenDirectoryDialog()
+}
+
+export function OpenFileDialog() {
+    window.runtime.OpenFileDialog()
+}
+
+export function OpenMultipleFilesDialog() {
+    window.runtime.OpenMultipleFilesDialog()
+}
+
+export function SaveFileDialog() {
+
+}
+
 export function Environment() {
     return window.runtime.Environment();
 }
