@@ -4,6 +4,7 @@ package application
 
 import (
 	"fmt"
+	"github.com/wailsapp/go-webview2/webviewloader"
 	"golang.org/x/sys/windows"
 	"os"
 	"strconv"
@@ -172,6 +173,9 @@ func (m *windowsApp) setApplicationMenu(menu *Menu) {
 }
 
 func (m *windowsApp) run() error {
+	if webviewloader.UsingGoWebview2Loader {
+		globalApplication.info("Using Go Webview2Loader")
+	}
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)
 	}

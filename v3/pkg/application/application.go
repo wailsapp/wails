@@ -60,13 +60,13 @@ func New(appOptions Options) *App {
 		windows:                   make(map[uint]*WebviewWindow),
 		systemTrays:               make(map[uint]*SystemTray),
 		contextMenus:              make(map[string]*Menu),
-		logger:                    appOptions.Logger,
+		Logger:                    appOptions.Logger,
 		pid:                       os.Getpid(),
 	}
 	globalApplication = result
 
-	if result.logger == nil {
-		result.logger = DefaultLogger()
+	if result.Logger == nil {
+		result.Logger = DefaultLogger()
 	}
 
 	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
@@ -249,7 +249,7 @@ type App struct {
 
 	clipboard *Clipboard
 	Events    *EventProcessor
-	logger    *slog.Logger
+	Logger    *slog.Logger
 
 	contextMenus     map[string]*Menu
 	contextMenusLock sync.Mutex
@@ -336,17 +336,21 @@ func (a *App) GetPID() int {
 }
 
 func (a *App) info(message string, args ...any) {
-	a.logger.Info(message, args...)
+	a.Logger.Info(message, args...)
+}
+
+func (a *App) debug(message string, args ...any) {
+	a.Logger.Debug(message, args...)
 }
 
 func (a *App) fatal(message string, args ...any) {
 	msg := "A FATAL ERROR HAS OCCURRED: " + message
-	a.logger.Error(msg, args...)
+	a.Logger.Error(msg, args...)
 	os.Exit(1)
 }
 
 func (a *App) error(message string, args ...any) {
-	a.logger.Error(message, args...)
+	a.Logger.Error(message, args...)
 }
 
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
