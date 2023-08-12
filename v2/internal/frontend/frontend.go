@@ -54,13 +54,13 @@ type Screen struct {
 
 // MessageDialogOptions contains the options for the Message dialogs, EG Info, Warning, etc runtime methods
 type MessageDialogOptions struct {
-	Type          DialogType
-	Title         string
-	Message       string
-	Buttons       []string
-	DefaultButton string
-	CancelButton  string
-	Icon          []byte
+	Type          DialogType `json:"type"`
+	Title         string     `json:"title"`
+	Message       string     `json:"message"`
+	Buttons       []string   `json:"buttons"`
+	DefaultButton string     `json:"defaultButton"`
+	CancelButton  string     `json:"cancelButton"`
+	Icon          []byte     `json:"icon"`
 }
 
 type Frontend interface {

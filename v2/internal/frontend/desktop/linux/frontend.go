@@ -443,6 +443,8 @@ func (f *Frontend) processMessage(message string) {
 			default:
 				f.logger.Info("Unknown message returned from dispatcher: %+v", result)
 			}
+		} else if resultsArray, ok := result.([]string); ok {
+			f.Callback(resultsArray)
 		} else {
 			f.logger.Info("Unsupported message type returned from dispatcher: %+v", result)
 		}
