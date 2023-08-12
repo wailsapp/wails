@@ -9,31 +9,31 @@ import (
 
 // FileFilter defines a filter for dialog boxes
 type FileFilter struct {
-	DisplayName string // Filter information EG: "Image Files (*.jpg, *.png)"
-	Pattern     string // semicolon separated list of extensions, EG: "*.jpg;*.png"
+	DisplayName string `json:"displayName" ` // Filter information EG: "Image Files (*.jpg, *.png)"
+	Pattern     string `json:"pattern"`      // semicolon separated list of extensions, EG: "*.jpg;*.png"
 }
 
 // OpenDialogOptions contains the options for the OpenDialogOptions runtime method
 type OpenDialogOptions struct {
-	DefaultDirectory           string
-	DefaultFilename            string
-	Title                      string
-	Filters                    []FileFilter
-	ShowHiddenFiles            bool
-	CanCreateDirectories       bool
-	ResolvesAliases            bool
-	TreatPackagesAsDirectories bool
+	DefaultDirectory           string       `json:"defaultDirectory"`
+	DefaultFilename            string       `json:"defaultFilename"`
+	Title                      string       `json:"title"`
+	Filters                    []FileFilter `json:"filters"`
+	ShowHiddenFiles            bool         `json:"showHiddenFiles"`
+	CanCreateDirectories       bool         `json:"canCreateDirectories"`
+	ResolvesAliases            bool         `json:"resolvesAliases"`
+	TreatPackagesAsDirectories bool         `json:"treatPackagesAsDirectories"`
 }
 
 // SaveDialogOptions contains the options for the SaveDialog runtime method
 type SaveDialogOptions struct {
-	DefaultDirectory           string
-	DefaultFilename            string
-	Title                      string
-	Filters                    []FileFilter
-	ShowHiddenFiles            bool
-	CanCreateDirectories       bool
-	TreatPackagesAsDirectories bool
+	DefaultDirectory           string       `json:"defaultDirectory"`
+	DefaultFilename            string       `json:"defaultFilename"`
+	Title                      string       `json:"title"`
+	Filters                    []FileFilter `json:"filters"`
+	ShowHiddenFiles            bool         `json:"showHiddenFiles"`
+	CanCreateDirectories       bool         `json:"canCreateDirectories"`
+	TreatPackagesAsDirectories bool         `json:"treatPackagesAsDirectories"`
 }
 
 type DialogType string

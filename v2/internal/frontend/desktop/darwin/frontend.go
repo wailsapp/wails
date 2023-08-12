@@ -346,7 +346,7 @@ func (f *Frontend) processMessage(message string) {
 
 }
 
-func (f *Frontend) Callback(message string) {
+func (f *Frontend) Callback(message any) {
 	escaped, err := json.Marshal(message)
 	if err != nil {
 		panic(err)

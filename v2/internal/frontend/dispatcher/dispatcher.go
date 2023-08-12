@@ -30,7 +30,7 @@ func NewDispatcher(ctx context.Context, log *logger.Logger, bindings *binding.Bi
 	}
 }
 
-func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (string, error) {
+func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (any, error) {
 	if message == "" {
 		return "", errors.New("No message to process")
 	}

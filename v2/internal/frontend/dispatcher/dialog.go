@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (d *Dispatcher) processDialogMessage(message string, sender frontend.Frontend) (string, error) {
+func (d *Dispatcher) processDialogMessage(message string, sender frontend.Frontend) (any, error) {
 	if len(message) < 2 {
 		return "", errors.New("Invalid Dialog Message: " + message)
 	}
@@ -62,19 +62,7 @@ func (d *Dispatcher) processDialogMessage(message string, sender frontend.Fronte
 			return "", errors.WithStack(err)
 		}
 
-		results, err := sender.OpenMultipleFilesDialog(dialogOptions)
-
-		if err != nil {
-			return "", errors.WithStack(err)
-		}
-
-		resultsJSON, err := json.Marshal(results)
-
-		if err != nil {
-			return "", errors.WithStack(err)
-		}
-
-		return string(resultsJSON), nil
+		return sender.OpenMultipleFilesDialog(dialogOptions)
 	case "OMD":
 		// OpenMultipleDirectoriesDialog
 		var dialogOptions frontend.OpenDialogOptions
@@ -83,19 +71,7 @@ func (d *Dispatcher) processDialogMessage(message string, sender frontend.Fronte
 			return "", errors.WithStack(err)
 		}
 
-		results, err := sender.OpenMultipleDirectoriesDialog(dialogOptions)
-
-		if err != nil {
-			return "", errors.WithStack(err)
-		}
-
-		resultsJSON, err := json.Marshal(results)
-
-		if err != nil {
-			return "", errors.WithStack(err)
-		}
-
-		return string(resultsJSON), nil
+		return sender.OpenMultipleDirectoriesDialog(dialogOptions)
 	}
 
 	d.log.Error("unknown Dialog message: %s", message)

@@ -77,6 +77,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	"net"
 	"net/url"
@@ -426,7 +427,7 @@ func (f *Frontend) processMessage(message string) {
 	go func() {
 		result, err := f.dispatcher.ProcessMessage(message, f)
 		if err != nil {
-			f.logger.Error(err.Error())
+			f.logger.Error(fmt.Sprintf("Failed to process message: %+v", errors.WithStack(err)))
 			f.Callback(result)
 			return
 		}
@@ -434,20 +435,24 @@ func (f *Frontend) processMessage(message string) {
 			return
 		}
 
-		switch result[0] {
-		case 'c':
-			// Callback from a method call
-			f.Callback(result[1:])
-		default:
-			f.logger.Info("Unknown message returned from dispatcher: %+v", result)
+		if resultString, ok := result.(string); ok {
+			switch resultString[0] {
+			case 'c':
+				// Callback from a method call
+				f.Callback(resultString[1:])
+			default:
+				f.logger.Info("Unknown message returned from dispatcher: %+v", result)
+			}
+		} else {
+			f.logger.Info("Unsupported message type returned from dispatcher: %+v", result)
 		}
 	}()
 }
 
-func (f *Frontend) Callback(message string) {
+func (f *Frontend) Callback(message any) {
 	escaped, err := json.Marshal(message)
 	if err != nil {
-		panic(err)
+		panic(errors.WithStack(err))
 	}
 	f.ExecJS(`window.wails.Callback(` + string(escaped) + `);`)
 }

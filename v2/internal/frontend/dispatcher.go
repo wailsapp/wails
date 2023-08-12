@@ -1,5 +1,5 @@
 package frontend
 
 type Dispatcher interface {
-	ProcessMessage(message string, sender Frontend) (string, error)
+	ProcessMessage(message string, sender Frontend) (any, error)
 }
