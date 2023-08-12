@@ -32,13 +32,13 @@ type RuntimeHandler interface {
 type AssetServer struct {
 	handler   http.Handler
 	runtimeJS []byte
+	debug     bool
 	ipcJS     func(*http.Request) []byte
 
 	logger  Logger
 	runtime RuntimeAssets
 
-	servingFromDisk     bool
-	appendSpinnerToBody bool
+	servingFromDisk bool
 
 	// Use http based runtime
 	runtimeHandler RuntimeHandler
@@ -55,24 +55,17 @@ type AssetServer struct {
 	assetServerWebView
 }
 
-func NewAssetServerMainPage(bindingsJSON string, options *Options, servingFromDisk bool, logger Logger, runtime RuntimeAssets) (*AssetServer, error) {
-	return NewAssetServer(bindingsJSON, options, servingFromDisk, logger, runtime)
-}
-
-func NewAssetServer(bindingsJSON string, options *Options, servingFromDisk bool, logger Logger, runtime RuntimeAssets) (*AssetServer, error) {
+func NewAssetServer(options *Options, servingFromDisk bool, logger Logger, runtime RuntimeAssets, debug bool) (*AssetServer, error) {
 	handler, err := NewAssetHandler(options, logger)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewAssetServerWithHandler(handler, bindingsJSON, servingFromDisk, logger, runtime)
+	return NewAssetServerWithHandler(handler, servingFromDisk, logger, runtime, debug)
 }
 
-func NewAssetServerWithHandler(handler http.Handler, bindingsJSON string, servingFromDisk bool, logger Logger, runtime RuntimeAssets) (*AssetServer, error) {
+func NewAssetServerWithHandler(handler http.Handler, servingFromDisk bool, logger Logger, runtime RuntimeAssets, debug bool) (*AssetServer, error) {
 	var buffer bytes.Buffer
-	if bindingsJSON != "" {
-		buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
-	}
 	buffer.Write(runtime.RuntimeDesktopJS())
 
 	result := &AssetServer{
@@ -86,6 +79,7 @@ func NewAssetServerWithHandler(handler http.Handler, bindingsJSON string, servin
 		servingFromDisk: servingFromDisk,
 		logger:          logger,
 		runtime:         runtime,
+		debug:           debug,
 	}
 
 	return result, nil
@@ -122,7 +116,7 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	case "", "/", "/index.html":
 		recorder := httptest.NewRecorder()
 		d.handler.ServeHTTP(recorder, req)
-		for k, v := range recorder.HeaderMap {
+		for k, v := range recorder.Result().Header {
 			header[k] = v
 		}
 
@@ -190,7 +184,7 @@ func (d *AssetServer) processIndexHTML(indexHTML []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	if d.appendSpinnerToBody {
+	if d.debug {
 		err = appendSpinnerToBody(htmlNode)
 		if err != nil {
 			return nil, err
@@ -201,8 +195,10 @@ func (d *AssetServer) processIndexHTML(indexHTML []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	if err := insertScriptInHead(htmlNode, ipcJSPath); err != nil {
-		return nil, err
+	if d.debug {
+		if err := insertScriptInHead(htmlNode, ipcJSPath); err != nil {
+			return nil, err
+		}
 	}
 
 	// Inject plugins

@@ -77,8 +77,7 @@ func New(appOptions Options) *App {
 		Middleware: assetserver.Middleware(appOptions.Assets.Middleware),
 	}
 
-	// TODO ServingFrom disk?
-	srv, err := assetserver.NewAssetServer("", opts, false, nil, wailsruntime.RuntimeAssetsBundle)
+	srv, err := assetserver.NewAssetServer(opts, false, nil, wailsruntime.RuntimeAssetsBundle, isDebugMode())
 	if err != nil {
 		result.fatal(err.Error())
 	}
