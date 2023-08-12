@@ -11,6 +11,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/debug"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -350,6 +351,17 @@ func Install(options *flags.Init) error {
 	}
 
 	err = gosod.New(tfs).Extract(options.ProjectDir, templateData)
+	if err != nil {
+		return err
+	}
+
+	// Change to project directory
+	err = os.Chdir(templateData.ProjectDir)
+	if err != nil {
+		return err
+	}
+	// Run `go mod tidy`
+	err = exec.Command("go", "mod", "tidy").Run()
 	if err != nil {
 		return err
 	}
