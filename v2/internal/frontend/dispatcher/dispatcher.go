@@ -45,8 +45,6 @@ func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (a
 		return d.processSecureCallMessage(message, sender)
 	case 'W':
 		return d.processWindowMessage(message, sender)
-	case 'D':
-		return d.processDialogMessage(message, sender)
 	case 'B':
 		return d.processBrowserMessage(message, sender)
 	case 'Q':

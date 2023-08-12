@@ -1,3 +1,5 @@
+import {Call} from "./calls";
+
 /**
  * Returns the selected directory.
  *
@@ -5,25 +7,25 @@
  * @return {Promise<string>} The selected directory
  */
 export function OpenDirectoryDialog(dialogOptions) {
-  return window.WailsInvoke("DOD:" + JSON.stringify(dialogOptions))
+  return Call(":wails:OpenDirectoryDialog", [dialogOptions])
 }
 
 export function OpenMultipleDirectoriesDialog(dialogOptions) {
-  return window.WailsInvoke("DOMD:" + JSON.stringify(dialogOptions))
+  return Call(":wails:OpenMultipleDirectoriesDialog", [dialogOptions])
 }
 
 export function OpenFileDialog(dialogOptions) {
-  return window.WailsInvoke("DOF:" + JSON.stringify(dialogOptions))
+  return Call(":wails:OpenFileDialog", [dialogOptions])
 }
 
 export function OpenMultipleFilesDialog(dialogOptions) {
-  return window.WailsInvoke("DOMF:" + JSON.stringify(dialogOptions))
+  return Call(":wails:OpenMultipleFilesDialog", [dialogOptions])
 }
 
 export function SaveFileDialog(dialogOptions) {
-  return window.WailsInvoke("DSF:" + JSON.stringify(dialogOptions))
+  return Call(":wails:SaveFileDialog", [dialogOptions])
 }
 
 export function MessageDialog(dialogOptions) {
-  return window.WailsInvoke("DM:" + JSON.stringify(dialogOptions))
+  return Call(":wails:MessageDialog", [dialogOptions])
 }
