@@ -11,7 +11,7 @@ func (d *Dispatcher) processDialogMessage(message string, sender frontend.Fronte
 		return "", errors.New("Invalid Dialog Message: " + message)
 	}
 
-	switch message[1:] {
+	switch message[1:3] {
 	case "OD":
 		// OpenDirectoryDialog
 		var dialogOptions frontend.OpenDialogOptions
@@ -21,27 +21,6 @@ func (d *Dispatcher) processDialogMessage(message string, sender frontend.Fronte
 		}
 
 		return sender.OpenDirectoryDialog(dialogOptions)
-	case "OMD":
-		// OpenMultipleDirectoriesDialog
-		var dialogOptions frontend.OpenDialogOptions
-
-		if err := json.Unmarshal([]byte(message[5:]), &dialogOptions); err != nil {
-			return "", errors.WithStack(err)
-		}
-
-		results, err := sender.OpenMultipleDirectoriesDialog(dialogOptions)
-
-		if err != nil {
-			return "", errors.WithStack(err)
-		}
-
-		resultsJSON, err := json.Marshal(results)
-
-		if err != nil {
-			return "", errors.WithStack(err)
-		}
-
-		return string(resultsJSON), nil
 	case "OF":
 		// OpenFileDialog
 		var dialogOptions frontend.OpenDialogOptions
@@ -51,6 +30,30 @@ func (d *Dispatcher) processDialogMessage(message string, sender frontend.Fronte
 		}
 
 		return sender.OpenFileDialog(dialogOptions)
+	case "SF":
+		// SaveFileDialog
+		var dialogOptions frontend.SaveDialogOptions
+
+		if err := json.Unmarshal([]byte(message[4:]), &dialogOptions); err != nil {
+			return "", errors.WithStack(err)
+		}
+
+		return sender.SaveFileDialog(dialogOptions)
+	}
+
+	switch message[2] {
+	case 'M':
+		// MessageDialog
+		var dialogOptions frontend.MessageDialogOptions
+
+		if err := json.Unmarshal([]byte(message[3:]), &dialogOptions); err != nil {
+			return "", errors.WithStack(err)
+		}
+
+		return sender.MessageDialog(dialogOptions)
+	}
+
+	switch message[1:4] {
 	case "OMF":
 		// OpenMultipleFilesDialog
 		var dialogOptions frontend.OpenDialogOptions
@@ -72,26 +75,30 @@ func (d *Dispatcher) processDialogMessage(message string, sender frontend.Fronte
 		}
 
 		return string(resultsJSON), nil
-	case "SF":
-		// SaveFileDialog
-		var dialogOptions frontend.SaveDialogOptions
+	case "OMD":
+		// OpenMultipleDirectoriesDialog
+		var dialogOptions frontend.OpenDialogOptions
 
-		if err := json.Unmarshal([]byte(message[4:]), &dialogOptions); err != nil {
+		if err := json.Unmarshal([]byte(message[5:]), &dialogOptions); err != nil {
 			return "", errors.WithStack(err)
 		}
 
-		return sender.SaveFileDialog(dialogOptions)
-	case "M":
-		// MessageDialog
-		var dialogOptions frontend.MessageDialogOptions
+		results, err := sender.OpenMultipleDirectoriesDialog(dialogOptions)
 
-		if err := json.Unmarshal([]byte(message[3:]), &dialogOptions); err != nil {
+		if err != nil {
 			return "", errors.WithStack(err)
 		}
 
-		return sender.MessageDialog(dialogOptions)
-	default:
-		d.log.Error("unknown Dialog message: %s", message)
-		return "", nil
+		resultsJSON, err := json.Marshal(results)
+
+		if err != nil {
+			return "", errors.WithStack(err)
+		}
+
+		return string(resultsJSON), nil
 	}
+
+	d.log.Error("unknown Dialog message: %s", message)
+
+	return "", nil
 }
