@@ -2,8 +2,8 @@ package dispatcher
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"strings"
 
@@ -61,6 +61,54 @@ func (d *Dispatcher) processSystemCall(payload callMessage, sender frontend.Fron
 			return false, err
 		}
 		return true, nil
+	case "OpenMultipleFilesDialog":
+		var dialogOptions frontend.OpenDialogOptions
+
+		if err := json.Unmarshal(payload.Args[0], &dialogOptions); err != nil {
+			return "", errors.WithStack(err)
+		}
+
+		return sender.OpenMultipleFilesDialog(dialogOptions)
+	case "OpenMultipleDirectoriesDialog":
+		var dialogOptions frontend.OpenDialogOptions
+
+		if err := json.Unmarshal(payload.Args[0], &dialogOptions); err != nil {
+			return "", errors.WithStack(err)
+		}
+
+		return sender.OpenMultipleDirectoriesDialog(dialogOptions)
+	case "OpenDirectoryDialog":
+		var dialogOptions frontend.OpenDialogOptions
+
+		if err := json.Unmarshal(payload.Args[0], &dialogOptions); err != nil {
+			return "", errors.WithStack(err)
+		}
+
+		return sender.OpenDirectoryDialog(dialogOptions)
+	case "OpenFileDialog":
+		var dialogOptions frontend.OpenDialogOptions
+
+		if err := json.Unmarshal(payload.Args[0], &dialogOptions); err != nil {
+			return "", errors.WithStack(err)
+		}
+
+		return sender.OpenFileDialog(dialogOptions)
+	case "SaveFileDialog":
+		var dialogOptions frontend.SaveDialogOptions
+
+		if err := json.Unmarshal(payload.Args[0], &dialogOptions); err != nil {
+			return "", errors.WithStack(err)
+		}
+
+		return sender.SaveFileDialog(dialogOptions)
+	case "MessageDialog":
+		var dialogOptions frontend.MessageDialogOptions
+
+		if err := json.Unmarshal(payload.Args[0], &dialogOptions); err != nil {
+			return "", errors.WithStack(err)
+		}
+
+		return sender.MessageDialog(dialogOptions)
 	default:
 		return nil, fmt.Errorf("unknown systemcall message: %s", payload.Name)
 	}
