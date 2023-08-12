@@ -38,9 +38,10 @@ tasks:
     platforms:
       - darwin
     cmds:
-      - task: pre-build
-      - go build -gcflags=all="-N -l" -o bin/testapp
-      - task: post-build
+     - task: pre-build
+     - task: build-frontend
+     - go build -gcflags=all="-N -l" -o bin/testapp
+     - task: post-build
     env:
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
       CGO_LDFLAGS: "-mmacosx-version-min=10.13"
@@ -51,7 +52,7 @@ tasks:
       - windows
     cmds:
       - task: pre-build
-      - go build -gcflags=all="-N -l" -o bin/testapp.exe
+- task: build-frontend      - go build -gcflags=all="-N -l" -o bin/testapp.exe
       - task: post-build
 
   build:

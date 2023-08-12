@@ -5,8 +5,6 @@ github.com/leaanthony/slicer v1.5.0/go.mod h1:FwrApmf8gOrpzEWM2J/9Lh79tyq8KTX5Az
 github.com/matryer/is v1.4.0 h1:sosSmIWwkYITGrxZ25ULNDeKiMNzFSr4V/eqBQP0PeE=
 github.com/wailsapp/mimetype v1.4.1 h1:pQN9ycO7uo4vsUUuPeHEYoUkLVkaRntMnHJxVwYhwHs=
 github.com/wailsapp/mimetype v1.4.1/go.mod h1:9aV5k31bBOv5z6u+QP8TltzvNGJPmNJD4XlAL3U+j3o=
-github.com/wailsapp/wails/v2 v2.3.2-0.20230117193915-45c3a501d9e6 h1:Wn+nhnS+VytzE0PegUzSh4T3hXJCtggKGD/4U5H9+wQ=
-github.com/wailsapp/wails/v2 v2.3.2-0.20230117193915-45c3a501d9e6/go.mod h1:zlNLI0E2c2qA6miiuAHtp0Bac8FaGH0tlhA19OssR/8=
 github.com/wailsapp/wails/v3 v3.0.0-alpha.0 h1:T5gqG98Xr8LBf69oxlPkhpsFD59w2SnqUZk6XHj8Zoc=
 github.com/wailsapp/wails/v3 v3.0.0-alpha.0/go.mod h1:OAfO5bP0TSUvCIHZYc6Dqfow/9RqxzHvYtmhWPpo1c0=
 golang.org/x/net v0.0.0-20210505024714-0287a6fb4125/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=

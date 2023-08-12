@@ -1,6 +1,8 @@
 module plugin_demo
 
-go 1.20
+go 1.21
+
+toolchain go1.21.0
 
 require github.com/wailsapp/wails/v3 v3.0.0-alpha.0
 
@@ -23,7 +25,6 @@ require (
 	github.com/samber/lo v1.37.0 // indirect
 	github.com/wailsapp/go-webview2 v1.0.2 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
-	github.com/wailsapp/wails/v2 v2.5.1 // indirect
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
 	golang.org/x/mod v0.11.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
@@ -42,5 +43,3 @@ require (
 )
 
 replace github.com/wailsapp/wails/v3 => ../..
-
-replace github.com/wailsapp/wails/v2 => ../../../v2

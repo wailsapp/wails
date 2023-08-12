@@ -32,8 +32,6 @@ func isLocalBuild() bool {
 
 // RelativePath returns a qualified path created by joining the
 // directory of the calling file and the given relative path.
-//
-// Example: RelativePath("..") in *this* file would give you '/path/to/wails2/v2/internal`
 func RelativePath(relativepath string, optionalpaths ...string) string {
 	_, thisFile, _, _ := runtime.Caller(1)
 	localDir := filepath.Dir(thisFile)

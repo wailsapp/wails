@@ -16,9 +16,8 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/wailsapp/wails/v2/pkg/assetserver"
-	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
-	assetserveroptions "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v3/pkg/assetserver"
+	"github.com/wailsapp/wails/v3/pkg/assetserver/webview"
 
 	wailsruntime "github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -72,10 +71,10 @@ func New(appOptions Options) *App {
 
 	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
 
-	opts := assetserveroptions.Options{
+	opts := &assetserver.Options{
 		Assets:     appOptions.Assets.FS,
 		Handler:    appOptions.Assets.Handler,
-		Middleware: assetserveroptions.Middleware(appOptions.Assets.Middleware),
+		Middleware: assetserver.Middleware(appOptions.Assets.Middleware),
 	}
 
 	// TODO ServingFrom disk?

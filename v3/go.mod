@@ -28,7 +28,8 @@ require (
 	github.com/samber/lo v1.37.0
 	github.com/tc-hib/winres v0.1.6
 	github.com/wailsapp/go-webview2 v1.0.2
-	github.com/wailsapp/wails/v2 v2.5.1
+	github.com/wailsapp/mimetype v1.4.1
+	golang.org/x/net v0.7.0
 	golang.org/x/sys v0.9.0
 	modernc.org/sqlite v1.21.0
 )
@@ -56,7 +57,6 @@ require (
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
-	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/lithammer/fuzzysearch v1.1.5 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mattn/go-zglob v0.0.4 // indirect
@@ -70,14 +70,12 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sajari/fuzzy v1.0.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
-	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
 	golang.org/x/image v0.5.0 // indirect
 	golang.org/x/mod v0.11.0 // indirect
-	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43 // indirect
 	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/term v0.9.0 // indirect
@@ -98,7 +96,5 @@ require (
 	modernc.org/token v1.0.1 // indirect
 	mvdan.cc/sh/v3 v3.7.0 // indirect
 )
-
-replace github.com/wailsapp/wails/v2 => ../v2
 
 replace github.com/ebitengine/purego v0.4.0-alpha.4 => github.com/tmclane/purego v0.0.0-20230601213035-1f25e70d7b01
