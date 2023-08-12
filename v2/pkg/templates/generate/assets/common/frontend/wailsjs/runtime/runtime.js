@@ -161,20 +161,28 @@ export function BrowserOpenURL(url) {
     window.runtime.BrowserOpenURL(url);
 }
 
-export function OpenDirectoryDialog() {
-    window.runtime.OpenDirectoryDialog()
+export function OpenDirectoryDialog(dialogOptions) {
+    return window.runtime.OpenDirectoryDialog(dialogOptions)
 }
 
-export function OpenFileDialog() {
-    window.runtime.OpenFileDialog()
+export function OpenMultipleDirectoriesDialog(dialogOptions) {
+    return window.runtime.OpenMultipleDirectoriesDialog(dialogOptions)
 }
 
-export function OpenMultipleFilesDialog() {
-    window.runtime.OpenMultipleFilesDialog()
+export function OpenFileDialog(dialogOptions) {
+    return window.runtime.OpenFileDialog(dialogOptions)
 }
 
-export function SaveFileDialog() {
+export function OpenMultipleFilesDialog(dialogOptions) {
+    return window.runtime.OpenMultipleFilesDialog(dialogOptions)
+}
 
+export function SaveFileDialog(dialogOptions) {
+    return window.runtime.SaveFileDialog(dialogOptions)
+}
+
+export function MessageDialog(dialogOptions) {
+    return window.runtime.MessageDialog(dialogOptions)
 }
 
 export function Environment() {

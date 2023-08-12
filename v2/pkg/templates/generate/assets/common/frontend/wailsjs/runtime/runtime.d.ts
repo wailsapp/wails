@@ -32,6 +32,41 @@ export interface EnvironmentInfo {
     arch: string;
 }
 
+export interface FileFilter {
+    displayName: string;
+    pattern: string;
+}
+
+export interface OpenDialogOptions {
+    defaultDirectory: string;
+    defaultFilename: string;
+    title: string;
+    filters: Array<FileFilter>;
+    showHiddenFiles: boolean;
+    canCreateDirectories: boolean;
+    resolvesAliases: boolean;
+    treatPackagesAsDirectories: boolean;
+}
+
+export interface SaveDialogOptions {
+    defaultDirectory: string;
+    defaultFilename: string;
+    title: string;
+    filters: Array<FileFilter>;
+    showHiddenFiles: boolean;
+    canCreateDirectories: boolean;
+    treatPackagesAsDirectories: boolean;
+}
+
+export interface MessageDialogOptions {
+    type: "info" | "warning" | "error" | "question"
+    title: string;
+    message: string;
+    buttons: Array<string>;
+    defaultButton: string;
+    cancelButton: string;
+}
+
 // [EventsEmit](https://wails.io/docs/reference/runtime/events#eventsemit)
 // emits the given event. Optional data may be passed with the event.
 // This will trigger any event listeners.
@@ -185,6 +220,30 @@ export function WindowSetBackgroundColour(R: number, G: number, B: number, A: nu
 // [ScreenGetAll](https://wails.io/docs/reference/runtime/window#screengetall)
 // Gets the all screens. Call this anew each time you want to refresh data from the underlying windowing system.
 export function ScreenGetAll(): Promise<Screen[]>;
+
+// [OpenDirectoryDialog](https://wails.io/docs/reference/runtime/dialog/#opendirectorydialog)
+// Opens a dialog that prompts the user to select a directory.
+export function OpenDirectoryDialog(dialogOptions: OpenDialogOptions): Promise<string>;
+
+// [OpenMultipleDirectoriesDialog](https://wails.io/docs/reference/runtime/dialog/#openmultipledirectoriesdialog)
+// Opens a dialog prompting the user to select multiple directories.
+export function OpenMultipleDirectoriesDialog(dialogOptions: OpenDialogOptions): Promise<Array<string>>;
+
+// [OpenFileDialog](https://wails.io/docs/reference/runtime/dialog/#openfiledialog)
+// Opens a dialog that prompts the user to select a file.
+export function OpenFileDialog(dialogOptions: OpenDialogOptions): Promise<string>;
+
+// [OpenMultipleFilesDialog](https://wails.io/docs/reference/runtime/dialog/#openmultiplefilesdialog)
+// Opens a dialog that prompts the user to select multiple files.
+export function OpenMultipleFilesDialog(dialogOptions: OpenDialogOptions): Promise<Array<string>>;
+
+// [SaveFileDialog](https://wails.io/docs/reference/runtime/dialog/#savefiledialog)
+// Opens a dialog that prompts the user to select a filename for the purposes of saving.
+export function SaveFileDialog(dialogOptions: SaveDialogOptions): Promise<string>;
+
+// [MessageDialog](https://wails.io/docs/reference/runtime/dialog/#messagedialog)
+// Displays a message using a message dialog.
+export function MessageDialog(dialogOptions: MessageDialogOptions): Promise<string>;
 
 // [BrowserOpenURL](https://wails.io/docs/reference/runtime/browser#browseropenurl)
 // Opens the given URL in the system browser.
