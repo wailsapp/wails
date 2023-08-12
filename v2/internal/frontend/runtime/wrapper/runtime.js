@@ -165,28 +165,28 @@ export function ScreenGetAll() {
     return window.runtime.ScreenGetAll();
 }
 
-export function OpenDirectoryDialog() {
-    return window.runtime.OpenDirectoryDialog();
+export function OpenDirectoryDialog(dialogOptions) {
+    return window.runtime.OpenDirectoryDialog(dialogOptions);
 }
 
-export function OpenFileDialog() {
-    return window.runtime.OpenFileDialog()
+export function OpenMultipleDirectoriesDialog(dialogOptions) {
+    return window.runtime.OpenMultipleDirectoriesDialog(dialogOptions)
 }
 
-export function OpenMultipleFilesDialog() {
-    return window.runtime.OpenMultipleFilesDialog()
+export function OpenFileDialog(dialogOptions) {
+    return window.runtime.OpenFileDialog(dialogOptions)
 }
 
-export function SaveFileDialog() {
-    return window.runtime.SaveFileDialog()
+export function OpenMultipleFilesDialog(dialogOptions) {
+    return window.runtime.OpenMultipleFilesDialog(dialogOptions)
 }
 
-export function MessageDialog() {
-    return window.runtime.MessageDialog()
+export function SaveFileDialog(dialogOptions) {
+    return window.runtime.SaveFileDialog(dialogOptions)
 }
 
-export function OpenMultipleDirectoriesDialog() {
-    return window.runtime.OpenMultipleDirectoriesDialog()
+export function MessageDialog(dialogOptions) {
+    return window.runtime.MessageDialog(dialogOptions)
 }
 
 export function WindowIsMinimised() {

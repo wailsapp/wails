@@ -1,31 +1,29 @@
-import {Call} from "./calls";
-
 /**
  * Returns the selected directory.
  *
  * @export
  * @return {Promise<string>} The selected directory
  */
-export function OpenDirectoryDialog() {
-  return Call(":wails:OpenDirectoryDialog")
+export function OpenDirectoryDialog(dialogOptions) {
+  return window.WailsInvoke(":wails:OpenDirectoryDialog:" + JSON.stringify(dialogOptions))
 }
 
-export function OpenMultipleDirectoriesDialog() {
-  return Call(":wails:OpenMultipleDirectoriesDialog")
+export function OpenMultipleDirectoriesDialog(dialogOptions) {
+  return window.WailsInvoke(":wails:OpenMultipleDirectoriesDialog:" + JSON.stringify(dialogOptions))
 }
 
-export function OpenFileDialog() {
-  return Call(":wails:OpenFileDialog")
+export function OpenFileDialog(dialogOptions) {
+  return window.WailsInvoke(":wails:OpenFileDialog:" + JSON.stringify(dialogOptions))
 }
 
-export function OpenMultipleFilesDialog() {
-  return Call(":wails:OpenMultipleFilesDialog")
+export function OpenMultipleFilesDialog(dialogOptions) {
+  return window.WailsInvoke(":wails:OpenMultipleFilesDialog:" + JSON.stringify(dialogOptions))
 }
 
-export function SaveFileDialog() {
-  return Call(":wails:SaveFileDialog")
+export function SaveFileDialog(dialogOptions) {
+  return window.WailsInvoke(":wails:SaveFileDialog:" + JSON.stringify(dialogOptions))
 }
 
-export function MessageDialog() {
-  return Call(":wails:MessageDialog")
+export function MessageDialog(dialogOptions) {
+  return window.WailsInvoke(":wails:MessageDialog:" + JSON.stringify(dialogOptions))
 }
