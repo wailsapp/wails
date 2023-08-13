@@ -3,6 +3,7 @@ package assetserver
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
@@ -35,7 +36,7 @@ type AssetServer struct {
 	debug     bool
 	ipcJS     func(*http.Request) []byte
 
-	logger  Logger
+	logger  *slog.Logger
 	runtime RuntimeAssets
 
 	servingFromDisk bool
@@ -55,7 +56,7 @@ type AssetServer struct {
 	assetServerWebView
 }
 
-func NewAssetServer(options *Options, servingFromDisk bool, logger Logger, runtime RuntimeAssets, debug bool) (*AssetServer, error) {
+func NewAssetServer(options *Options, servingFromDisk bool, logger *slog.Logger, runtime RuntimeAssets, debug bool) (*AssetServer, error) {
 	handler, err := NewAssetHandler(options, logger)
 	if err != nil {
 		return nil, err
@@ -64,7 +65,7 @@ func NewAssetServer(options *Options, servingFromDisk bool, logger Logger, runti
 	return NewAssetServerWithHandler(handler, servingFromDisk, logger, runtime, debug)
 }
 
-func NewAssetServerWithHandler(handler http.Handler, servingFromDisk bool, logger Logger, runtime RuntimeAssets, debug bool) (*AssetServer, error) {
+func NewAssetServerWithHandler(handler http.Handler, servingFromDisk bool, logger *slog.Logger, runtime RuntimeAssets, debug bool) (*AssetServer, error) {
 	var buffer bytes.Buffer
 	buffer.Write(runtime.RuntimeDesktopJS())
 

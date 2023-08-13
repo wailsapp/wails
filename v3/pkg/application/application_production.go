@@ -2,9 +2,11 @@
 
 package application
 
-// We use this to patch the application to production mode.
-func init() {
-	isDebugMode = func() bool {
-		return false
+func newApplication(options *Options) *App {
+	result := &App{
+		isDebugMode: false,
+		options:     options.getOptions(false),
 	}
+	result.init()
+	return result
 }

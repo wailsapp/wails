@@ -25,9 +25,6 @@ import (
 
 var globalApplication *App
 
-// isDebugMode is true if the application is running in debug mode
-var isDebugMode func() bool
-
 func init() {
 	runtime.LockOSThread()
 }
@@ -45,24 +42,9 @@ func New(appOptions Options) *App {
 		return globalApplication
 	}
 
-	// Patch isDebug if we aren't in prod mode
-	if isDebugMode == nil {
-		isDebugMode = func() bool {
-			return true
-		}
-	}
-
 	mergeApplicationDefaults(&appOptions)
 
-	result := &App{
-		options:                   appOptions.getOptions(isDebugMode()),
-		applicationEventListeners: make(map[uint][]*EventListener),
-		windows:                   make(map[uint]*WebviewWindow),
-		systemTrays:               make(map[uint]*SystemTray),
-		contextMenus:              make(map[string]*Menu),
-		Logger:                    appOptions.Logger,
-		pid:                       os.Getpid(),
-	}
+	result := newApplication(&appOptions)
 	globalApplication = result
 
 	if result.Logger == nil {
@@ -77,7 +59,7 @@ func New(appOptions Options) *App {
 		Middleware: assetserver.Middleware(appOptions.Assets.Middleware),
 	}
 
-	srv, err := assetserver.NewAssetServer(opts, false, nil, wailsruntime.RuntimeAssetsBundle, isDebugMode())
+	srv, err := assetserver.NewAssetServer(opts, false, result.Logger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode)
 	if err != nil {
 		result.fatal(err.Error())
 	}
@@ -263,6 +245,16 @@ type App struct {
 
 	// Capabilities
 	capabilities capabilities.Capabilities
+	isDebugMode  bool
+}
+
+func (a *App) init() {
+	a.applicationEventListeners = make(map[uint][]*EventListener)
+	a.windows = make(map[uint]*WebviewWindow)
+	a.systemTrays = make(map[uint]*SystemTray)
+	a.contextMenus = make(map[string]*Menu)
+	a.Logger = a.options.Logger
+	a.pid = os.Getpid()
 }
 
 func (a *App) getSystemTrayID() uint {

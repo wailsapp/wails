@@ -1352,7 +1352,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 
 func (w *windowsWebviewWindow) setupChromium() {
 	chromium := w.chromium
-	debugMode := isDebugMode()
+	debugMode := globalApplication.isDebugMode
 
 	opts := w.parent.options.Windows
 
