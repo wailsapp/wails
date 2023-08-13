@@ -45,6 +45,8 @@ func main() {
 	plugin.NewSubCommandFunction("init", "Initialise a new plugin", commands.PluginInit)
 	//plugin.NewSubCommandFunction("add", "Add a plugin", commands.PluginAdd)
 
+	app.NewSubCommandFunction("version", "Print the version", commands.Version)
+
 	err := app.Run()
 	if err != nil {
 		pterm.Error.Println(err)
