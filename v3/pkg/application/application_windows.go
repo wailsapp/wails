@@ -173,9 +173,6 @@ func (m *windowsApp) setApplicationMenu(menu *Menu) {
 }
 
 func (m *windowsApp) run() error {
-	if webviewloader.UsingGoWebview2Loader {
-		globalApplication.info("Using Go Webview2Loader")
-	}
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)
 	}
@@ -318,4 +315,15 @@ func newPlatformApp(app *App) *windowsApp {
 	result.initMainLoop()
 
 	return result
+}
+
+func (a *App) logPlatformInfo() {
+	var args []any
+	args = append(args, "Go-WebView2Loader", webviewloader.UsingGoWebview2Loader)
+	windowsVersion, err := w32.GetWindowsVersionInfo()
+	if err == nil {
+		args = append(args, "Version", windowsVersion)
+	}
+	args = append(args, "Branding", w32.GetBranding())
+	a.info("Windows Info:", args...)
 }

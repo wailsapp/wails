@@ -10,3 +10,5 @@ func newApplication(options *Options) *App {
 	result.init()
 	return result
 }
+
+func (a *App) logStartup() {}

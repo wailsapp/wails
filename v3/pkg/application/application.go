@@ -47,7 +47,7 @@ func New(appOptions Options) *App {
 	result := newApplication(&appOptions)
 	globalApplication = result
 
-	if result.Logger == nil {
+	if result.isDebugMode && result.Logger == nil {
 		result.Logger = DefaultLogger()
 	}
 
@@ -328,21 +328,31 @@ func (a *App) GetPID() int {
 }
 
 func (a *App) info(message string, args ...any) {
-	a.Logger.Info(message, args...)
+	if a.Logger != nil {
+		a.Logger.Info(message, args...)
+	}
 }
 
 func (a *App) debug(message string, args ...any) {
-	a.Logger.Debug(message, args...)
+	if a.Logger != nil {
+		a.Logger.Debug(message, args...)
+	}
 }
 
 func (a *App) fatal(message string, args ...any) {
 	msg := "A FATAL ERROR HAS OCCURRED: " + message
-	a.Logger.Error(msg, args...)
+	if a.Logger != nil {
+		a.Logger.Error(msg, args...)
+	} else {
+		println(msg)
+	}
 	os.Exit(1)
 }
 
 func (a *App) error(message string, args ...any) {
-	a.Logger.Error(message, args...)
+	if a.Logger != nil {
+		a.Logger.Error(message, args...)
+	}
 }
 
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
@@ -377,7 +387,8 @@ func (a *App) NewSystemTray() *SystemTray {
 }
 
 func (a *App) Run() error {
-	a.info("Starting application")
+	a.logStartup()
+	a.logPlatformInfo()
 
 	// Setup panic handler
 	defer processPanicHandlerRecover()
