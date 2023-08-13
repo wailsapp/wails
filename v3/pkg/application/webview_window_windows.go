@@ -1314,7 +1314,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 	uri, _ := req.GetUri()
 	reqUri, err := url.ParseRequestURI(uri)
 	if err != nil {
-		globalApplication.error("Unable to parse request uri %s: %s", uri, err)
+		globalApplication.error("Unable to parse request uri", "uri", uri, "error", err)
 		return
 	}
 
@@ -1337,7 +1337,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 	env := w.chromium.Environment()
 	response, err := env.CreateWebResourceResponse(rw.Body.Bytes(), rw.Code, http.StatusText(rw.Code), strings.Join(headers, "\n"))
 	if err != nil {
-		globalApplication.error("CreateWebResourceResponse Error: %s", err)
+		globalApplication.error("CreateWebResourceResponse Error: " + err.Error())
 		return
 	}
 	defer response.Release()
@@ -1345,7 +1345,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 	// Send response back
 	err = args.PutResponse(response)
 	if err != nil {
-		globalApplication.error("PutResponse Error: %s", err)
+		globalApplication.error("PutResponse Error: " + err.Error())
 		return
 	}
 }
@@ -1358,7 +1358,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	webview2version, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(opts.WebviewBrowserPath)
 	if err != nil {
-		globalApplication.error("Error getting WebView2 version: %s", err)
+		globalApplication.error("Error getting WebView2 version: " + err.Error())
 		return
 	}
 	globalApplication.capabilities = capabilities.NewCapabilities(webview2version)
@@ -1451,7 +1451,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 			// parse the url
 			parsedURL, err := url.Parse(w.parent.options.URL)
 			if err != nil {
-				globalApplication.fatal("Error parsing URL: %s", err)
+				globalApplication.fatal("Error parsing URL: " + err.Error())
 			}
 			if parsedURL.Scheme == "" {
 				startURL = path.Join(startURL, w.parent.options.URL)

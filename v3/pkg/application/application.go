@@ -59,7 +59,7 @@ func New(appOptions Options) *App {
 		Middleware: assetserver.Middleware(appOptions.Assets.Middleware),
 	}
 
-	srv, err := assetserver.NewAssetServer(opts, false, result.Logger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode)
+	srv, err := assetserver.NewAssetServer(opts, false, result.Logger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode, NewMessageProcessor())
 	if err != nil {
 		result.fatal(err.Error())
 	}
@@ -78,7 +78,6 @@ func New(appOptions Options) *App {
 		return flags
 	}
 
-	srv.UseRuntimeHandler(NewMessageProcessor())
 	result.assets = srv
 
 	result.bindings, err = NewBindings(appOptions.Bind)

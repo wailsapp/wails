@@ -6,12 +6,13 @@ package assetserver
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 )
 
-func NewExternalAssetsHandler(logger Logger, options Options, url *url.URL) http.Handler {
+func NewExternalAssetsHandler(logger *slog.Logger, options Options, url *url.URL) http.Handler {
 	baseHandler := options.Handler
 
 	errSkipProxy := fmt.Errorf("skip proxying")

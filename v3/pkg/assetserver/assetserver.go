@@ -56,22 +56,23 @@ type AssetServer struct {
 	assetServerWebView
 }
 
-func NewAssetServer(options *Options, servingFromDisk bool, logger *slog.Logger, runtime RuntimeAssets, debug bool) (*AssetServer, error) {
+func NewAssetServer(options *Options, servingFromDisk bool, logger *slog.Logger, runtime RuntimeAssets, debug bool, runtimeHandler RuntimeHandler) (*AssetServer, error) {
 	handler, err := NewAssetHandler(options, logger)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewAssetServerWithHandler(handler, servingFromDisk, logger, runtime, debug)
+	return NewAssetServerWithHandler(handler, servingFromDisk, logger, runtime, debug, runtimeHandler)
 }
 
-func NewAssetServerWithHandler(handler http.Handler, servingFromDisk bool, logger *slog.Logger, runtime RuntimeAssets, debug bool) (*AssetServer, error) {
+func NewAssetServerWithHandler(handler http.Handler, servingFromDisk bool, logger *slog.Logger, runtime RuntimeAssets, debug bool, runtimeHandler RuntimeHandler) (*AssetServer, error) {
 	var buffer bytes.Buffer
 	buffer.Write(runtime.RuntimeDesktopJS())
 
 	result := &AssetServer{
-		handler:   handler,
-		runtimeJS: buffer.Bytes(),
+		handler:        handler,
+		runtimeJS:      buffer.Bytes(),
+		runtimeHandler: runtimeHandler,
 
 		// Check if we have been given a directory to serve assets from.
 		// If so, this means we are in dev mode and are serving assets off disk.
@@ -84,10 +85,6 @@ func NewAssetServerWithHandler(handler http.Handler, servingFromDisk bool, logge
 	}
 
 	return result, nil
-}
-
-func (d *AssetServer) UseRuntimeHandler(handler RuntimeHandler) {
-	d.runtimeHandler = handler
 }
 
 func (d *AssetServer) AddPluginScript(pluginName string, script string) {
@@ -156,11 +153,7 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		d.writeBlob(rw, path, data)
 
 	case runtimePath:
-		if d.runtimeHandler != nil {
-			d.runtimeHandler.HandleRuntimeCall(rw, req)
-		} else {
-			d.handler.ServeHTTP(rw, req)
-		}
+		d.runtimeHandler.HandleRuntimeCall(rw, req)
 
 	case ipcJSPath:
 		content := d.runtime.DesktopIPC()

@@ -7,16 +7,12 @@ import (
 	"fmt"
 	"io"
 	iofs "io/fs"
+	"log/slog"
 	"net/http"
 	"os"
 	"path"
 	"strings"
 )
-
-type Logger interface {
-	Debug(message string, args ...interface{})
-	Error(message string, args ...interface{})
-}
 
 //go:embed defaultindex.html
 var defaultHTML []byte
@@ -29,12 +25,12 @@ type assetHandler struct {
 	fs      iofs.FS
 	handler http.Handler
 
-	logger Logger
+	logger *slog.Logger
 
 	retryMissingFiles bool
 }
 
-func NewAssetHandler(options *Options, log Logger) (http.Handler, error) {
+func NewAssetHandler(options *Options, log *slog.Logger) (http.Handler, error) {
 
 	vfs := options.Assets
 	if vfs != nil {
