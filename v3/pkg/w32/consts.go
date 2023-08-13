@@ -3,9 +3,12 @@
 package w32
 
 import (
+	"fmt"
+	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 	"strconv"
 	"syscall"
+	"unsafe"
 )
 
 var (
@@ -20,8 +23,12 @@ var (
 	kernelGlobalUnlock = kernel32.NewProc("GlobalUnlock")
 	kernelLstrcpy      = kernel32.NewProc("lstrcpyW")
 )
+var (
+	modBranding          = syscall.NewLazyDLL("winbrand.dll")
+	brandingFormatString = modBranding.NewProc("BrandingFormatString")
+)
 
-var windowsVersion, _ = getWindowsVersionInfo()
+var windowsVersion, _ = GetWindowsVersionInfo()
 
 func IsWindowsVersionAtLeast(major, minor, buildNumber int) bool {
 	return windowsVersion.Major >= major &&
@@ -36,11 +43,23 @@ type WindowsVersionInfo struct {
 	DisplayVersion string
 }
 
+func (w *WindowsVersionInfo) String() string {
+	return fmt.Sprintf("%d.%d.%d (%s)", w.Major, w.Minor, w.Build, w.DisplayVersion)
+}
+
 func (w *WindowsVersionInfo) IsWindowsVersionAtLeast(major, minor, buildNumber int) bool {
 	return w.Major >= major && w.Minor >= minor && w.Build >= buildNumber
 }
 
-func getWindowsVersionInfo() (*WindowsVersionInfo, error) {
+func GetBranding() string {
+	windowsLong := MustStringToUTF16Ptr("%WINDOWS_LONG%\x00")
+	ret, _, _ := brandingFormatString.Call(
+		uintptr(unsafe.Pointer(windowsLong)),
+	)
+	return windows.UTF16PtrToString((*uint16)(unsafe.Pointer(ret)))
+}
+
+func GetWindowsVersionInfo() (*WindowsVersionInfo, error) {
 	key, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)
 	if err != nil {
 		return nil, err

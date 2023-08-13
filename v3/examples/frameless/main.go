@@ -16,11 +16,11 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Frameless Demo",
 		Description: "A demo of frameless windows",
-		Mac: application.MacOptions{
-			ApplicationShouldTerminateAfterLastWindowClosed: true,
-		},
 		Assets: application.AssetOptions{
 			FS: assets,
+		},
+		Mac: application.MacOptions{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 

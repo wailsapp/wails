@@ -170,3 +170,5 @@ func setIcon(icon []byte) {
 	//C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
 }
 */
+
+func (a *App) logPlatformInfo() {}

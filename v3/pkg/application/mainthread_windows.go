@@ -3,10 +3,11 @@
 package application
 
 import (
-	"github.com/wailsapp/wails/v3/pkg/w32"
 	"runtime"
 	"sort"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
 var (
@@ -56,7 +57,7 @@ func (m *windowsApp) runMainLoop() int {
 	}
 
 	msg := (*w32.MSG)(unsafe.Pointer(w32.GlobalAlloc(0, uint32(unsafe.Sizeof(w32.MSG{})))))
-	defer w32.GlobalFree(w32.HGLOBAL(unsafe.Pointer(m)))
+	defer w32.GlobalFree(w32.HGLOBAL(unsafe.Pointer(msg)))
 
 	for w32.GetMessage(msg, 0, 0, 0) != 0 {
 		w32.TranslateMessage(msg)

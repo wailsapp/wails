@@ -17,11 +17,11 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Context Menu Demo",
 		Description: "A demo of the Context Menu API",
-		Mac: application.MacOptions{
-			ApplicationShouldTerminateAfterLastWindowClosed: true,
-		},
 		Assets: application.AssetOptions{
 			FS: assets,
+		},
+		Mac: application.MacOptions{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 

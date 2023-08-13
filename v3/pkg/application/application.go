@@ -2,8 +2,8 @@ package application
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"runtime"
@@ -16,19 +16,14 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/wailsapp/wails/v2/pkg/assetserver"
-	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
-	assetserveroptions "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v3/pkg/assetserver"
+	"github.com/wailsapp/wails/v3/pkg/assetserver/webview"
 
 	wailsruntime "github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
-	"github.com/wailsapp/wails/v3/pkg/logger"
 )
 
 var globalApplication *App
-
-// isDebugMode is true if the application is running in debug mode
-var isDebugMode func() bool
 
 func init() {
 	runtime.LockOSThread()
@@ -49,38 +44,22 @@ func New(appOptions Options) *App {
 
 	mergeApplicationDefaults(&appOptions)
 
-	result := &App{
-		options:                   appOptions,
-		applicationEventListeners: make(map[uint][]*EventListener),
-		windows:                   make(map[uint]*WebviewWindow),
-		systemTrays:               make(map[uint]*SystemTray),
-		log:                       logger.New(appOptions.Logger.CustomLoggers...),
-		contextMenus:              make(map[string]*Menu),
-		pid:                       os.Getpid(),
-	}
+	result := newApplication(&appOptions)
 	globalApplication = result
 
-	if !appOptions.Logger.Silent {
-		result.log.AddOutput(&logger.Console{})
-	}
-
-	// Patch isDebug if we aren't in prod mode
-	if isDebugMode == nil {
-		isDebugMode = func() bool {
-			return true
-		}
+	if result.isDebugMode && result.Logger == nil {
+		result.Logger = DefaultLogger()
 	}
 
 	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
 
-	opts := assetserveroptions.Options{
+	opts := &assetserver.Options{
 		Assets:     appOptions.Assets.FS,
 		Handler:    appOptions.Assets.Handler,
-		Middleware: assetserveroptions.Middleware(appOptions.Assets.Middleware),
+		Middleware: assetserver.Middleware(appOptions.Assets.Middleware),
 	}
 
-	// TODO ServingFrom disk?
-	srv, err := assetserver.NewAssetServer("", opts, false, nil, wailsruntime.RuntimeAssetsBundle)
+	srv, err := assetserver.NewAssetServer(opts, false, result.Logger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode)
 	if err != nil {
 		result.fatal(err.Error())
 	}
@@ -161,23 +140,15 @@ type (
 	}
 )
 
-func processPanic(value any) {
-	if value == nil {
-		value = fmt.Errorf("unknown error")
-	}
-	if globalApplication.options.PanicHandler != nil {
-		globalApplication.options.PanicHandler(value)
+func processPanicHandlerRecover() {
+	h := globalApplication.options.PanicHandler
+	if h == nil {
 		return
 	}
-	// Print the panic details
-	fmt.Printf("Panic occurred: %v", value)
 
-	// Print the stack trace
-	buf := make([]byte, 1<<16)
-	runtime.Stack(buf, true)
-	fmt.Println("Stack trace:")
-	fmt.Println(string(buf))
-	os.Exit(1)
+	if err := recover(); err != nil {
+		h(err)
+	}
 }
 
 // Messages sent from javascript get routed here
@@ -260,7 +231,7 @@ type App struct {
 
 	clipboard *Clipboard
 	Events    *EventProcessor
-	log       *logger.Logger
+	Logger    *slog.Logger
 
 	contextMenus     map[string]*Menu
 	contextMenusLock sync.Mutex
@@ -274,6 +245,16 @@ type App struct {
 
 	// Capabilities
 	capabilities capabilities.Capabilities
+	isDebugMode  bool
+}
+
+func (a *App) init() {
+	a.applicationEventListeners = make(map[uint][]*EventListener)
+	a.windows = make(map[uint]*WebviewWindow)
+	a.systemTrays = make(map[uint]*SystemTray)
+	a.contextMenus = make(map[string]*Menu)
+	a.Logger = a.options.Logger
+	a.pid = os.Getpid()
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -347,37 +328,31 @@ func (a *App) GetPID() int {
 }
 
 func (a *App) info(message string, args ...any) {
-	a.Log(&logger.Message{
-		Level:   "INFO",
-		Message: message,
-		Data:    args,
-		Sender:  "Wails",
-	})
+	if a.Logger != nil {
+		a.Logger.Info(message, args...)
+	}
+}
+
+func (a *App) debug(message string, args ...any) {
+	if a.Logger != nil {
+		a.Logger.Debug(message, args...)
+	}
 }
 
 func (a *App) fatal(message string, args ...any) {
-	msg := "************** FATAL **************\n"
-	msg += message
-	msg += "***********************************\n"
-
-	a.Log(&logger.Message{
-		Level:   "FATAL",
-		Message: msg,
-		Data:    args,
-		Sender:  "Wails",
-	})
-
-	a.log.Flush()
+	msg := "A FATAL ERROR HAS OCCURRED: " + message
+	if a.Logger != nil {
+		a.Logger.Error(msg, args...)
+	} else {
+		println(msg)
+	}
 	os.Exit(1)
 }
 
 func (a *App) error(message string, args ...any) {
-	a.Log(&logger.Message{
-		Level:   "ERROR",
-		Message: message,
-		Data:    args,
-		Sender:  "Wails",
-	})
+	if a.Logger != nil {
+		a.Logger.Error(message, args...)
+	}
 }
 
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
@@ -412,14 +387,11 @@ func (a *App) NewSystemTray() *SystemTray {
 }
 
 func (a *App) Run() error {
-	a.info("Starting application")
+	a.logStartup()
+	a.logPlatformInfo()
 
 	// Setup panic handler
-	defer func() {
-		if err := recover(); err != nil {
-			processPanic(err)
-		}
-	}()
+	defer processPanicHandlerRecover()
 
 	a.impl = newPlatformApp(a)
 	go func() {
@@ -696,10 +668,6 @@ func (a *App) Show() {
 	}
 }
 
-func (a *App) Log(message *logger.Message) {
-	a.log.Log(message)
-}
-
 func (a *App) RegisterContextMenu(name string, menu *Menu) {
 	a.contextMenusLock.Lock()
 	defer a.contextMenusLock.Unlock()
@@ -746,11 +714,7 @@ func invokeSync(fn func()) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer func() {
-			if err := recover(); err != nil {
-				processPanic(err)
-			}
-		}()
+		defer processPanicHandlerRecover()
 		fn()
 		wg.Done()
 	})
@@ -761,11 +725,7 @@ func invokeSyncWithResult[T any](fn func() T) (res T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer func() {
-			if err := recover(); err != nil {
-				processPanic(err)
-			}
-		}()
+		defer processPanicHandlerRecover()
 		res = fn()
 		wg.Done()
 	})
@@ -777,11 +737,7 @@ func invokeSyncWithError(fn func() error) (err error) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer func() {
-			if err := recover(); err != nil {
-				processPanic(err)
-			}
-		}()
+		defer processPanicHandlerRecover()
 		err = fn()
 		wg.Done()
 	})
@@ -793,11 +749,7 @@ func invokeSyncWithResultAndError[T any](fn func() (T, error)) (res T, err error
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer func() {
-			if err := recover(); err != nil {
-				processPanic(err)
-			}
-		}()
+		defer processPanicHandlerRecover()
 		res, err = fn()
 		wg.Done()
 	})

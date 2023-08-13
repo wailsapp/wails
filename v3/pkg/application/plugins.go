@@ -1,6 +1,6 @@
 package application
 
-import "github.com/wailsapp/wails/v2/pkg/assetserver"
+import "github.com/wailsapp/wails/v3/pkg/assetserver"
 
 type Plugin interface {
 	Name() string

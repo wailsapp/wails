@@ -21,8 +21,8 @@ func Init(options *flags.Init) error {
 		return fmt.Errorf("please use the -n flag to specify a project name")
 	}
 
-	if !templates.ValidTemplateName(options.TemplateName) {
-		return fmt.Errorf("invalid template name: %s. Use -l flag to view available templates", options.TemplateName)
+	if templates.ValidTemplateName(options.TemplateName) {
+		return templates.Install(options)
 	}
 
 	return templates.Install(options)

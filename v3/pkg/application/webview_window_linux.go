@@ -8,7 +8,6 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -29,7 +28,7 @@ type linuxWebviewWindow struct {
 	parent      *WebviewWindow
 	menubar     pointer
 	vbox        pointer
-	menu        *menu.Menu
+	menu        *Menu
 	accels      pointer
 	lastWidth   int
 	lastHeight  int

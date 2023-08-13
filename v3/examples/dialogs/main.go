@@ -2,11 +2,12 @@ package main
 
 import (
 	_ "embed"
-	"github.com/wailsapp/wails/v3/pkg/icons"
 	"log"
 	"os"
 	"runtime"
 	"strings"
+
+	"github.com/wailsapp/wails/v3/pkg/icons"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )

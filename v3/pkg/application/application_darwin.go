@@ -128,7 +128,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
+	"github.com/wailsapp/wails/v3/pkg/assetserver/webview"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -268,3 +268,5 @@ func setIcon(icon []byte) {
 	}
 	C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
 }
+
+func (a *App) logPlatformInfo() {}

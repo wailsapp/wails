@@ -3,13 +3,14 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v3/pkg/events"
 	"log"
 	"math/rand"
 	"runtime"
 	"strconv"
 	"time"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/pkg/events"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )

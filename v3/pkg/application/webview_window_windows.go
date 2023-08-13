@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"github.com/bep/debounce"
 	"github.com/wailsapp/go-webview2/webviewloader"
-	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/pkg/assetserver"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -1352,7 +1352,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 
 func (w *windowsWebviewWindow) setupChromium() {
 	chromium := w.chromium
-	debugMode := isDebugMode()
+	debugMode := globalApplication.isDebugMode
 
 	opts := w.parent.options.Windows
 

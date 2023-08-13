@@ -18,11 +18,11 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Events Demo",
 		Description: "A demo of the Events API",
-		Mac: application.MacOptions{
-			ApplicationShouldTerminateAfterLastWindowClosed: true,
-		},
 		Assets: application.AssetOptions{
 			FS: assets,
+		},
+		Mac: application.MacOptions{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 

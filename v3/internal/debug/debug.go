@@ -1,39 +1,25 @@
 package debug
 
 import (
+	"os"
 	"path/filepath"
 	"runtime"
-	"runtime/debug"
-
-	"github.com/samber/lo"
 )
 
-// Why go doesn't provide this as a map already is beyond me.
-var buildSettings = map[string]string{}
 var LocalModulePath = ""
 
 func init() {
-	buildInfo, ok := debug.ReadBuildInfo()
-	if !ok {
-		return
-	}
-	buildSettings = lo.Associate(buildInfo.Settings, func(setting debug.BuildSetting) (string, string) {
-		return setting.Key, setting.Value
-	})
-	if isLocalBuild() || buildInfo.Path == "" {
+	// Check if .git exists in the relative directory from here: ../../..
+	// If it does, we are in a local build
+	gitDir := RelativePath("..", "..", "..", ".git")
+	if _, err := os.Stat(gitDir); err == nil {
 		modulePath := RelativePath("..", "..", "..")
 		LocalModulePath, _ = filepath.Abs(modulePath)
 	}
 }
 
-func isLocalBuild() bool {
-	return buildSettings["vcs.modified"] == "true"
-}
-
 // RelativePath returns a qualified path created by joining the
 // directory of the calling file and the given relative path.
-//
-// Example: RelativePath("..") in *this* file would give you '/path/to/wails2/v2/internal`
 func RelativePath(relativepath string, optionalpaths ...string) string {
 	_, thisFile, _, _ := runtime.Caller(1)
 	localDir := filepath.Dir(thisFile)

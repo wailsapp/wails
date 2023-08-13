@@ -2,6 +2,9 @@ package main
 
 import (
 	"embed"
+	"os"
+	"plugin_demo/plugins/hashes"
+
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/plugins/browser"
 	"github.com/wailsapp/wails/v3/plugins/kvstore"
@@ -9,8 +12,6 @@ import (
 	"github.com/wailsapp/wails/v3/plugins/single_instance"
 	"github.com/wailsapp/wails/v3/plugins/sqlite"
 	"github.com/wailsapp/wails/v3/plugins/start_at_login"
-	"os"
-	"plugin_demo/plugins/hashes"
 )
 
 //go:embed assets/*

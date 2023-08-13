@@ -4,14 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/pkg/events"
 	"runtime"
 	"strings"
 	"sync"
-	"time"
-
-	"github.com/wailsapp/wails/v3/pkg/logger"
-
-	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type (
@@ -914,24 +910,17 @@ func (w *WebviewWindow) dispatchWindowEvent(id uint) {
 }
 
 func (w *WebviewWindow) info(message string, args ...any) {
-
-	globalApplication.Log(&logger.Message{
-		Level:   "INFO",
-		Message: message,
-		Data:    args,
-		Sender:  w.Name(),
-		Time:    time.Now(),
-	})
+	var messageArgs []interface{}
+	messageArgs = append(messageArgs, args...)
+	messageArgs = append(messageArgs, "sender", w.Name())
+	globalApplication.info(message, messageArgs...)
 }
-func (w *WebviewWindow) error(message string, args ...any) {
 
-	globalApplication.Log(&logger.Message{
-		Level:   "ERROR",
-		Message: message,
-		Data:    args,
-		Sender:  w.Name(),
-		Time:    time.Now(),
-	})
+func (w *WebviewWindow) error(message string, args ...any) {
+	var messageArgs []interface{}
+	messageArgs = append(messageArgs, args...)
+	messageArgs = append(messageArgs, "sender", w.Name())
+	globalApplication.error(message, messageArgs...)
 }
 
 func (w *WebviewWindow) handleDragAndDropMessage(event *dragAndDropMessage) {

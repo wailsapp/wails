@@ -4,6 +4,7 @@ package application
 
 import (
 	"fmt"
+	"github.com/wailsapp/go-webview2/webviewloader"
 	"golang.org/x/sys/windows"
 	"os"
 	"strconv"
@@ -314,4 +315,15 @@ func newPlatformApp(app *App) *windowsApp {
 	result.initMainLoop()
 
 	return result
+}
+
+func (a *App) logPlatformInfo() {
+	var args []any
+	args = append(args, "Go-WebView2Loader", webviewloader.UsingGoWebview2Loader)
+	windowsVersion, err := w32.GetWindowsVersionInfo()
+	if err == nil {
+		args = append(args, "Version", windowsVersion)
+	}
+	args = append(args, "Branding", w32.GetBranding())
+	a.info("Windows Info:", args...)
 }
