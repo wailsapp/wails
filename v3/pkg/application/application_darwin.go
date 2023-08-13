@@ -128,7 +128,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/wailsapp/wails/v3/pkg/assetserver/webview"
+	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 

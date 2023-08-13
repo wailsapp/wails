@@ -9,7 +9,7 @@ import (
 	"unsafe"
 
 	"github.com/ebitengine/purego"
-	"github.com/wailsapp/wails/v3/pkg/assetserver/webview"
+	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 

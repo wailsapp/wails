@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/wailsapp/wails/v3/pkg/assetserver/webview"
+	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 )
 
 type assetServerWebView struct {

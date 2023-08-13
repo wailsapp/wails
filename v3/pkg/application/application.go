@@ -16,8 +16,8 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/wailsapp/wails/v3/pkg/assetserver"
-	"github.com/wailsapp/wails/v3/pkg/assetserver/webview"
+	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 
 	wailsruntime "github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
