@@ -57,7 +57,7 @@ func (f *Frontend) OpenMultipleDirectoriesDialog(options frontend.OpenDialogOpti
 
 	defaultFolder, err := getDefaultFolder(options.DefaultDirectory)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	config := cfd.DialogConfig{
@@ -72,7 +72,7 @@ func (f *Frontend) OpenMultipleDirectoriesDialog(options frontend.OpenDialogOpti
 		}, false)
 
 	if err != nil && err != cfd.ErrorCancelled {
-		return "", err
+		return nil, err
 	}
 	return results.([]string), nil
 }

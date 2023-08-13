@@ -44,7 +44,7 @@ func (f *Frontend) OpenDirectoryDialog(options frontend.OpenDialogOptions) (stri
 func (f *Frontend) OpenMultipleDirectoriesDialog(options frontend.OpenDialogOptions) ([]string, error) {
 	results, err := f.openDialog(&options, true, false, true)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	return results, nil
 }

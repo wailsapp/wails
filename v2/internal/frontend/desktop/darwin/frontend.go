@@ -327,7 +327,7 @@ func (f *Frontend) processMessage(message string) {
 	go func() {
 		result, err := f.dispatcher.ProcessMessage(message, f)
 		if err != nil {
-			f.logger.Error(err.Error())
+			f.logger.Error(fmt.Sprintf("Failed to process message: %+v", errors.WithStack(err)))
 			f.Callback(result)
 			return
 		}
@@ -335,12 +335,18 @@ func (f *Frontend) processMessage(message string) {
 			return
 		}
 
-		switch result[0] {
-		case 'c':
-			// Callback from a method call
-			f.Callback(result[1:])
-		default:
-			f.logger.Info("Unknown message returned from dispatcher: %+v", result)
+		if resultString, ok := result.(string); ok {
+			switch resultString[0] {
+			case 'c':
+				// Callback from a method call
+				f.Callback(resultString[1:])
+			default:
+				f.logger.Info("Unknown message returned from dispatcher: %+v", result)
+			}
+		} else if resultsArray, ok := result.([]string); ok {
+			f.Callback(resultsArray)
+		} else {
+			f.logger.Info("Unsupported message type returned from dispatcher: %+v", result)
 		}
 	}()
 
