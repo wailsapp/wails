@@ -70,7 +70,7 @@ func (f *Frontend) OpenMultipleDirectoriesDialog(options frontend.OpenDialogOpti
 	results, err := f.showCfdDialog(
 		func() (cfd.Dialog, error) {
 			return cfd.NewSelectMultipleFoldersDialog(config)
-		}, false)
+		}, true)
 
 	if err != nil && err != cfd.ErrorCancelled {
 		return nil, err
