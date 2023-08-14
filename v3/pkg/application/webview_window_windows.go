@@ -1238,6 +1238,12 @@ func coreWebview2RequestToHttpRequest(coreReq *edge.ICoreWebView2WebResourceRequ
 			}
 		}
 
+		// WebView2 has problems when a request returns a 304 status code and the WebView2 is going to hang for other
+		// requests including IPC calls.
+		// So prevent 304 status codes by removing the headers that are used in combination with caching.
+		header.Del("If-Modified-Since")
+		header.Del("If-None-Match")
+
 		method, err := coreReq.GetMethod()
 		if err != nil {
 			return nil, fmt.Errorf("GetMethod Error: %s", err)
@@ -1334,8 +1340,16 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 		headers = append(headers, fmt.Sprintf("%s: %s", k, strings.Join(v, ",")))
 	}
 
+	code := rw.Code
+	if code == http.StatusNotModified {
+		// WebView2 has problems when a request returns a 304 status code and the WebView2 is going to hang for other
+		// requests including IPC calls.
+		globalApplication.error("AssetServer returned 304 - StatusNotModified which is going to hang WebView2, changed code to 505 - StatusInternalServerError", "uri", uri)
+		code = http.StatusInternalServerError
+	}
+
 	env := w.chromium.Environment()
-	response, err := env.CreateWebResourceResponse(rw.Body.Bytes(), rw.Code, http.StatusText(rw.Code), strings.Join(headers, "\n"))
+	response, err := env.CreateWebResourceResponse(rw.Body.Bytes(), code, http.StatusText(code), strings.Join(headers, "\n"))
 	if err != nil {
 		globalApplication.error("CreateWebResourceResponse Error: " + err.Error())
 		return
@@ -1447,7 +1461,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.NavigateToString(w.parent.options.HTML)
 	} else {
 		var startURL = "http://wails.localhost"
-		if w.parent.options.URL != "" {
+		if globalApplication.options.Assets.ExternalURL != "" {
+			startURL = globalApplication.options.Assets.ExternalURL
+		} else if w.parent.options.URL != "" {
 			// parse the url
 			parsedURL, err := url.Parse(w.parent.options.URL)
 			if err != nil {

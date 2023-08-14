@@ -62,6 +62,10 @@ type AssetOptions struct {
 	// Multiple Middlewares can be chained together with:
 	//   ChainMiddleware(middleware ...Middleware) Middleware
 	Middleware Middleware
+
+	// External URL can be set to a development server URL so that all requests are forwarded to it. This is useful
+	// when using a development server like `vite` or `snowpack` which serves the assets on a different port.
+	ExternalURL string
 }
 
 // Middleware defines a HTTP middleware that can be applied to the AssetServer.

@@ -78,11 +78,11 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if strings.EqualFold(req.Method, http.MethodGet) {
 		filename := path.Clean(strings.TrimPrefix(url, "/"))
 
-		d.logDebug("Handling request '%s' (file='%s')", url, filename)
+		d.logInfo("Handling request", "url", url, "file", filename)
 		if err := d.serveFSFile(rw, req, filename); err != nil {
 			if os.IsNotExist(err) {
 				if handler != nil {
-					d.logDebug("File '%s' not found, serving '%s' by AssetHandler", filename, url)
+					d.logInfo("File not found. Deferring to AssetHandler", "filename", filename, "url", url)
 					handler.ServeHTTP(rw, req)
 					err = nil
 				} else {
@@ -97,7 +97,7 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			}
 		}
 	} else if handler != nil {
-		d.logDebug("No GET request, serving '%s' by AssetHandler", url)
+		d.logInfo("Non-GET request. Deferring to AssetHandler", "url", url)
 		handler.ServeHTTP(rw, req)
 	} else {
 		rw.WriteHeader(http.StatusMethodNotAllowed)
@@ -185,14 +185,10 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 	return err
 }
 
-func (d *assetHandler) logDebug(message string, args ...interface{}) {
-	if d.logger != nil {
-		d.logger.Debug("[AssetHandler] "+message, args...)
-	}
+func (d *assetHandler) logInfo(message string, args ...interface{}) {
+	d.logger.Debug("[AssetHandler] "+message, args...)
 }
 
 func (d *assetHandler) logError(message string, args ...interface{}) {
-	if d.logger != nil {
-		d.logger.Error("[AssetHandler] "+message, args...)
-	}
+	d.logger.Error("[AssetHandler] "+message, args...)
 }

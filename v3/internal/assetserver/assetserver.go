@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"net/http/httputil"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -38,6 +39,7 @@ type AssetServer struct {
 
 	logger  *slog.Logger
 	runtime RuntimeAssets
+	options *Options
 
 	servingFromDisk bool
 
@@ -53,6 +55,9 @@ type AssetServer struct {
 	// GetFlags returns the application flags
 	GetFlags func() []byte
 
+	// External dev server proxy
+	wsHandler *httputil.ReverseProxy
+
 	assetServerWebView
 }
 
@@ -62,10 +67,6 @@ func NewAssetServer(options *Options, servingFromDisk bool, logger *slog.Logger,
 		return nil, err
 	}
 
-	return NewAssetServerWithHandler(handler, servingFromDisk, logger, runtime, debug, runtimeHandler)
-}
-
-func NewAssetServerWithHandler(handler http.Handler, servingFromDisk bool, logger *slog.Logger, runtime RuntimeAssets, debug bool, runtimeHandler RuntimeHandler) (*AssetServer, error) {
 	var buffer bytes.Buffer
 	buffer.Write(runtime.RuntimeDesktopJS())
 
@@ -73,6 +74,7 @@ func NewAssetServerWithHandler(handler http.Handler, servingFromDisk bool, logge
 		handler:        handler,
 		runtimeJS:      buffer.Bytes(),
 		runtimeHandler: runtimeHandler,
+		options:        options,
 
 		// Check if we have been given a directory to serve assets from.
 		// If so, this means we are in dev mode and are serving assets off disk.
@@ -84,7 +86,42 @@ func NewAssetServerWithHandler(handler http.Handler, servingFromDisk bool, logge
 		debug:           debug,
 	}
 
+	// Check if proxy required
+	externalURL, err := options.getExternalURL()
+	if err != nil {
+		return nil, err
+	} else {
+		result.wsHandler = httputil.NewSingleHostReverseProxy(externalURL)
+		err := result.checkExternalURL()
+		if err != nil {
+			return nil, err
+		}
+	}
 	return result, nil
+}
+
+func (d *AssetServer) checkExternalURL() error {
+	req, err := http.NewRequest("OPTIONS", "/", nil)
+	if err != nil {
+		return err
+	}
+	w := httptest.NewRecorder()
+	d.wsHandler.ServeHTTP(w, req)
+	if w.Code != http.StatusNoContent {
+		return fmt.Errorf("unable to connect to external server: %s. Please check it's running.", d.options.ExternalURL)
+	}
+	return nil
+}
+
+func (d *AssetServer) LogDetails() {
+	if d.debug {
+		d.logger.Info("AssetServer Info:",
+			"assetsFS", d.options.Assets != nil,
+			"middleware", d.options.Middleware != nil,
+			"handler", d.options.Handler != nil,
+			"externalURL", d.options.ExternalURL,
+		)
+	}
 }
 
 func (d *AssetServer) AddPluginScript(pluginName string, script string) {
@@ -97,11 +134,23 @@ func (d *AssetServer) AddPluginScript(pluginName string, script string) {
 	d.pluginScripts[pluginScriptName] = script
 }
 
+func (d *AssetServer) logRequest(req *http.Request, code int) {
+	d.logger.Info("AssetServer:", "code", code, "method", req.Method, "url", req.URL.Path)
+}
+
 func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if isWebSocket(req) {
-		// WebSockets are not supported by the AssetServer
-		rw.WriteHeader(http.StatusNotImplemented)
+
+	if d.wsHandler != nil {
+		d.wsHandler.ServeHTTP(rw, req)
+		// Get response code from header
+		code := rw.(*contentTypeSniffer).rw.(*legacyRequestNoOpCloserResponseWriter).ResponseWriter.(*httptest.ResponseRecorder).Code
+		d.logRequest(req, code)
 		return
+	} else {
+		if isWebSocket(req) {
+			// WebSockets are not supported by the AssetServer
+			rw.WriteHeader(http.StatusNotImplemented)
+		}
 	}
 
 	header := rw.Header()
@@ -223,14 +272,10 @@ func (d *AssetServer) serveError(rw http.ResponseWriter, err error, msg string, 
 	rw.WriteHeader(http.StatusInternalServerError)
 }
 
-func (d *AssetServer) logDebug(message string, args ...interface{}) {
-	if d.logger != nil {
-		d.logger.Debug("[AssetServer] "+message, args...)
-	}
+func (d *AssetServer) logInfo(message string, args ...interface{}) {
+	d.logger.Info("AssetServer: "+message, args...)
 }
 
 func (d *AssetServer) logError(message string, args ...interface{}) {
-	if d.logger != nil {
-		d.logger.Error("[AssetServer] "+message, args...)
-	}
+	d.logger.Error("AssetServer: "+message, args...)
 }

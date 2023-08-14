@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"net/url"
 )
 
 // Options defines the configuration of the AssetServer.
@@ -33,6 +34,10 @@ type Options struct {
 	// Multiple Middlewares can be chained together with:
 	//   ChainMiddleware(middleware ...Middleware) Middleware
 	Middleware Middleware
+
+	// ExternalURL is the URL that the assets are served from
+	// This is useful when using a development server like `vite` or `snowpack` which serves the assets on a different port.
+	ExternalURL string
 }
 
 // Validate the options
@@ -42,4 +47,11 @@ func (o Options) Validate() error {
 	}
 
 	return nil
+}
+
+func (o Options) getExternalURL() (*url.URL, error) {
+	if o.ExternalURL == "" {
+		return nil, nil
+	}
+	return url.Parse(o.ExternalURL)
 }

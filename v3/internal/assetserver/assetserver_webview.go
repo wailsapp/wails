@@ -63,7 +63,7 @@ func (d *AssetServer) processWebViewRequest(r webview.Request) {
 
 	uri, err := r.URL()
 	if err != nil {
-		d.logError("Error processing request, unable to get URL: %s (HttpResponse=500)", err)
+		d.logError("Error processing request, unable to get URL (HttpResponse=500)", "error", err.Error())
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -96,6 +96,18 @@ func (d *AssetServer) processWebViewRequest(r webview.Request) {
 		d.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Request: %w", err))
 		return
 	}
+
+	// For server requests, the URL is parsed from the URI supplied on the Request-Line as stored in RequestURI. For
+	// most requests, fields other than Path and RawQuery will be empty. (See RFC 7230, Section 5.3)
+	req.URL.Scheme = ""
+	req.URL.Host = ""
+	req.URL.Fragment = ""
+	req.URL.RawFragment = ""
+
+	if url := req.URL; req.RequestURI == "" && url != nil {
+		req.RequestURI = url.String()
+	}
+
 	req.Header = header
 
 	if req.RemoteAddr == "" {
@@ -131,7 +143,7 @@ func (d *AssetServer) webviewRequestErrorHandler(uri string, rw http.ResponseWri
 		logInfo = strings.Replace(logInfo, fmt.Sprintf("%s://%s", uri.Scheme, uri.Host), "", 1)
 	}
 
-	d.logError("Error processing request '%s': %s (HttpResponse=500)", logInfo, err)
+	d.logError("Error processing request (HttpResponse=500)", "details", logInfo, "error", err.Error())
 	http.Error(rw, err.Error(), http.StatusInternalServerError)
 }
 
