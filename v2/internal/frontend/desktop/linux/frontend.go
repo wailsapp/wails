@@ -191,6 +191,12 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	C.install_signal_handlers()
 
+	if appoptions.Linux != nil && appoptions.Linux.ProgramName != "" {
+		prgname := C.CString(appoptions.Linux.ProgramName)
+		C.g_set_prgname(prgname)
+		C.free(unsafe.Pointer(prgname))
+	}
+
 	return result
 }
 
