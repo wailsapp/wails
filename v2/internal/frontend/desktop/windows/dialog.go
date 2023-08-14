@@ -69,7 +69,7 @@ func (f *Frontend) OpenMultipleDirectoriesDialog(options frontend.OpenDialogOpti
 	results, err := f.showCfdDialog(
 		func() (cfd.Dialog, error) {
 			return cfd.NewSelectMultipleFoldersDialog(config)
-		}, false)
+		}, true)
 
 	if err != nil && err != cfd.ErrorCancelled {
 		return nil, err
@@ -118,7 +118,7 @@ func (f *Frontend) OpenMultipleFilesDialog(options frontend.OpenDialogOptions) (
 		Folder:      defaultFolder,
 	}
 
-	result, err := f.showCfdDialog(
+	results, err := f.showCfdDialog(
 		func() (cfd.Dialog, error) {
 			return cfd.NewOpenMultipleFilesDialog(config)
 		}, true)
@@ -126,7 +126,7 @@ func (f *Frontend) OpenMultipleFilesDialog(options frontend.OpenDialogOptions) (
 	if err != nil && err != cfd.ErrorCancelled {
 		return nil, err
 	}
-	return result.([]string), nil
+	return results.([]string), nil
 }
 
 // SaveFileDialog prompts the user to select a file
@@ -170,10 +170,10 @@ func (f *Frontend) showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelec
 		}()
 
 		dlg.SetParentWindowHandle(f.getHandleForDialog())
-		if multi, _ := dlg.(cfd.OpenMultipleFilesDialog); multi != nil && isMultiSelect {
+		if multi, ok := dlg.(cfd.OpenMultipleFilesDialog); ok && isMultiSelect {
 			return multi.ShowAndGetResults()
 		}
-		if multiFolder, _ := dlg.(cfd.SelectMultipleFoldersDialog); multiFolder != nil && isMultiSelect {
+		if multiFolder, ok := dlg.(cfd.SelectMultipleFoldersDialog); ok && isMultiSelect {
 			return multiFolder.ShowAndGetResults()
 		}
 

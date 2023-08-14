@@ -78,6 +78,9 @@ func NewSelectMultipleFoldersDialog(config DialogConfig) (SelectMultipleFoldersD
 	if err != nil {
 		return nil, err
 	}
+	if err := openDialog.setIsMultiselect(true); err != nil {
+		return nil, err
+	}
 	return openDialog, nil
 }
 
