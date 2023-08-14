@@ -4,7 +4,6 @@
 package windows
 
 import (
-	"github.com/pkg/errors"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -75,14 +74,7 @@ func (f *Frontend) OpenMultipleDirectoriesDialog(options frontend.OpenDialogOpti
 	if err != nil && err != cfd.ErrorCancelled {
 		return nil, err
 	}
-
-	if resultsString, ok := results.(string); ok {
-		return []string{resultsString}, nil
-	} else if resultsArray, ok := results.([]string); ok {
-		return resultsArray, nil
-	} else {
-		return nil, errors.New("invalid results type")
-	}
+	return results.([]string), nil
 }
 
 // OpenFileDialog prompts the user to select a file
@@ -134,14 +126,7 @@ func (f *Frontend) OpenMultipleFilesDialog(options frontend.OpenDialogOptions) (
 	if err != nil && err != cfd.ErrorCancelled {
 		return nil, err
 	}
-
-	if resultsString, ok := results.(string); ok {
-		return []string{resultsString}, nil
-	} else if resultsArray, ok := results.([]string); ok {
-		return resultsArray, nil
-	} else {
-		return nil, errors.New("unsupported results type")
-	}
+	return results.([]string), nil
 }
 
 // SaveFileDialog prompts the user to select a file
