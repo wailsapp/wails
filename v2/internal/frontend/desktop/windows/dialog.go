@@ -185,10 +185,10 @@ func (f *Frontend) showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelec
 		}()
 
 		dlg.SetParentWindowHandle(f.getHandleForDialog())
-		if multi, _ := dlg.(cfd.OpenMultipleFilesDialog); multi != nil && isMultiSelect {
+		if multi, ok := dlg.(cfd.OpenMultipleFilesDialog); ok && isMultiSelect {
 			return multi.ShowAndGetResults()
 		}
-		if multiFolder, _ := dlg.(cfd.SelectMultipleFoldersDialog); multiFolder != nil && isMultiSelect {
+		if multiFolder, ok := dlg.(cfd.SelectMultipleFoldersDialog); ok && isMultiSelect {
 			return multiFolder.ShowAndGetResults()
 		}
 
