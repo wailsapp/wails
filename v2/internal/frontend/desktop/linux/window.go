@@ -37,6 +37,7 @@ func gtkBool(input bool) C.gboolean {
 type Window struct {
 	appoptions                               *options.App
 	debug                                    bool
+	devtools                                 bool
 	gtkWindow                                unsafe.Pointer
 	contentManager                           unsafe.Pointer
 	webview                                  unsafe.Pointer
@@ -54,12 +55,13 @@ func bool2Cint(value bool) C.int {
 	return C.int(0)
 }
 
-func NewWindow(appoptions *options.App, debug bool) *Window {
+func NewWindow(appoptions *options.App, debug bool, devtools bool) *Window {
 	validateWebKit2Version(appoptions)
 
 	result := &Window{
 		appoptions: appoptions,
 		debug:      debug,
+		devtools:   devtools,
 		minHeight:  appoptions.MinHeight,
 		minWidth:   appoptions.MinWidth,
 		maxHeight:  appoptions.MaxHeight,
@@ -95,9 +97,9 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	defer C.free(unsafe.Pointer(buttonPressedName))
 	C.ConnectButtons(unsafe.Pointer(webview))
 
-	if debug {
-		C.DevtoolsEnabled(unsafe.Pointer(webview), C.int(1), C.bool(appoptions.Debug.OpenInspectorOnStartup))
-	} else {
+	if devtools {
+		C.DevtoolsEnabled(unsafe.Pointer(webview), C.int(1), C.bool(debug && appoptions.Debug.OpenInspectorOnStartup))
+	} else if !appoptions.EnableDefaultContextMenu {
 		C.DisableContextMenu(unsafe.Pointer(webview))
 	}
 

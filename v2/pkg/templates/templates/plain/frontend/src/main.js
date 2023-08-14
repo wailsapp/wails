@@ -1,6 +1,7 @@
 // Get input + focus
 let nameElement = document.getElementById("name");
 nameElement.focus();
+import './main.css';
 
 // Setup the greet function
 window.greet = function () {

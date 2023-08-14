@@ -3,10 +3,9 @@
 package windows
 
 import (
+	"github.com/wailsapp/go-webview2/pkg/edge"
 	"sync"
 	"unsafe"
-
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"

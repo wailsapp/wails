@@ -44,6 +44,7 @@ func (y *Dnf) Packages() packagemap {
 		},
 		"npm": []*Package{
 			{Name: "npm", SystemPackage: true},
+			{Name: "nodejs-npm", SystemPackage: true},
 		},
 		"upx": []*Package{
 			{Name: "upx", SystemPackage: true, Optional: true},
@@ -57,6 +58,7 @@ func (y *Dnf) Packages() packagemap {
 					"fedora": "Follow the guide: https://docs.docker.com/engine/install/fedora/",
 				},
 			},
+			{Name: "moby-engine", SystemPackage: true, Optional: true},
 		},
 	}
 }
