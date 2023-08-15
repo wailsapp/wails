@@ -44,7 +44,7 @@ func New(appOptions Options) *App {
 
 	mergeApplicationDefaults(&appOptions)
 
-	result := newApplication(&appOptions)
+	result := newApplication(appOptions)
 	globalApplication = result
 
 	if result.isDebugMode && result.Logger == nil {

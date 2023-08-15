@@ -28,10 +28,10 @@ func init() {
 }
 
 // We use this to patch the application to production mode.
-func newApplication(options *Options) *App {
+func newApplication(options Options) *App {
 	result := &App{
 		isDebugMode: true,
-		options:     options.getOptions(true),
+		options:     options,
 	}
 	result.init()
 	return result

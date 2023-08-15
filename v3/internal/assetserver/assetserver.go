@@ -21,6 +21,9 @@ const (
 	flagsPath        = "/wails/flags"
 )
 
+const webViewRequestHeaderWindowId = "x-wails-window-id"
+const webViewRequestHeaderWindowName = "x-wails-window-name"
+
 type RuntimeAssets interface {
 	DesktopIPC() []byte
 	WebsocketIPC() []byte
@@ -135,7 +138,9 @@ func (d *AssetServer) AddPluginScript(pluginName string, script string) {
 }
 
 func (d *AssetServer) logRequest(req *http.Request, code int) {
-	d.logger.Info("AssetServer:", "code", code, "method", req.Method, "url", req.URL.Path)
+	windowName := req.Header.Get(webViewRequestHeaderWindowName)
+	windowID := req.Header.Get(webViewRequestHeaderWindowId)
+	d.logger.Info("AssetServer:", "code", code, "windowName", windowName, "windowID", windowID, "method", req.Method, "url", req.URL.Path)
 }
 
 func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {

@@ -1327,7 +1327,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 	if reqUri.Scheme != "http" {
 		// Let the WebView2 handle the request with its default handler
 		return
-	} else if reqUri.Host != "wails.localhost" {
+	} else if !strings.HasPrefix(reqUri.Host, "wails.localhost") {
 		// Let the WebView2 handle the request with its default handler
 		return
 	}
@@ -1462,21 +1462,31 @@ func (w *windowsWebviewWindow) setupChromium() {
 	} else {
 		var startURL = "http://wails.localhost"
 		if globalApplication.options.Assets.ExternalURL != "" {
-			startURL = globalApplication.options.Assets.ExternalURL
-		} else if w.parent.options.URL != "" {
-			// parse the url
-			parsedURL, err := url.Parse(w.parent.options.URL)
+			// Parse the port
+			parsedURL, err := url.Parse(globalApplication.options.Assets.ExternalURL)
 			if err != nil {
-				globalApplication.fatal("Error parsing URL: " + err.Error())
+				globalApplication.fatal("Error parsing ExternalURL: " + err.Error())
 			}
-			if parsedURL.Scheme == "" {
-				startURL = path.Join(startURL, w.parent.options.URL)
-				// if the original URL had a trailing slash, add it back
-				if strings.HasSuffix(w.parent.options.URL, "/") {
-					startURL = startURL + "/"
+			port := parsedURL.Port()
+			if port != "" {
+				startURL += ":" + port
+			}
+		} else {
+			if w.parent.options.URL != "" {
+				// parse the url
+				parsedURL, err := url.Parse(w.parent.options.URL)
+				if err != nil {
+					globalApplication.fatal("Error parsing URL: " + err.Error())
 				}
-			} else {
-				startURL = w.parent.options.URL
+				if parsedURL.Scheme == "" {
+					startURL = path.Join(startURL, w.parent.options.URL)
+					// if the original URL had a trailing slash, add it back
+					if strings.HasSuffix(w.parent.options.URL, "/") {
+						startURL = startURL + "/"
+					}
+				} else {
+					startURL = w.parent.options.URL
+				}
 			}
 		}
 		chromium.Navigate(startURL)
