@@ -44,6 +44,8 @@ func main() {
 	//plugin.NewSubCommandFunction("list", "List plugins", commands.PluginList)
 	plugin.NewSubCommandFunction("init", "Initialise a new plugin", commands.PluginInit)
 	//plugin.NewSubCommandFunction("add", "Add a plugin", commands.PluginAdd)
+	tool := app.NewSubCommand("tool", "Various tools")
+	tool.NewSubCommandFunction("checkport", "Checks if a port is open. Useful for testing if vite is running.", commands.ToolCheckPort)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 
