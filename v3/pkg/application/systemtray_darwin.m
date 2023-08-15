@@ -40,61 +40,54 @@ void systemTraySetLabel(void* nsStatusItem, char *label) {
 	});
 }
 
-void systemTraySetANSILabel(void* nsStatusItem, char *label, char *FG, char *BG) {
+void systemTraySetANSILabel(void* nsStatusItem, void* label) {
     if( label == NULL ) {
         return;
     }
 
-    NSLog(@"ANSI Label: %s\n", label);
-
-    //call createAttributedString
-    NSMutableAttributedString* attributedString = createAttributedString(label, FG, BG);
-
-    printf("ANSI Label 2: %s\n", label);
+    NSMutableAttributedString* attributedString = (NSMutableAttributedString*) label;
 
     // Set the label
     NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
     [statusItem setAttributedTitle:attributedString];
     // [attributedString release];
-
-    // Free memory
-    free(label);
-    free(FG);
-    free(BG);
 }
 
-NSMutableAttributedString* createAttributedString(char *title, char *FG, char *BG) {
+void* appendAttributedString(void *currentString, char *title, char *FG, char *BG) {
+
+    NSMutableAttributedString* newString = createAttributedString(title, FG, BG);
+    if( currentString != NULL ) {
+        NSMutableAttributedString* current = (NSMutableAttributedString*)currentString;
+        [current appendAttributedString:newString];
+        newString = current;
+    }
+
+    return (void*)newString;
+}
+
+void* createAttributedString(char *title, char *FG, char *BG) {
 
     NSMutableDictionary *dictionary = [NSMutableDictionary new];
-    printf("1\n");
 
     // RGBA
-    if(strlen(FG) > 0) {
-    printf("2\n");
+    if(FG != NULL && strlen(FG) > 0) {
         unsigned short r, g, b, a;
 
         // white by default
         r = g = b = a = 255;
         int count = sscanf(FG, "#%02hx%02hx%02hx%02hx", &r, &g, &b, &a);
-    printf("count: %d\n", count);
-    printf("r, g, b, a: %d, %d, %d, %d\n", r, g, b, a);
-
         if (count > 0) {
             NSColor *colour = [NSColor colorWithCalibratedRed:(CGFloat)r / 255.0
                                                          green:(CGFloat)g / 255.0
                                                           blue:(CGFloat)b / 255.0
                                                          alpha:(CGFloat)a / 255.0];
-                             printf("here\n");
             dictionary[NSForegroundColorAttributeName] = colour;
-                             printf("here\n");
 
         }
     }
 
     // Calculate BG colour
-    if(strlen(BG) > 0) {
-                             printf("here2\n");
-
+    if(BG != NULL && strlen(BG) > 0) {
             unsigned short r, g, b, a;
 
             // white by default
@@ -108,11 +101,8 @@ NSMutableAttributedString* createAttributedString(char *title, char *FG, char *B
                 dictionary[NSBackgroundColorAttributeName] = colour;
             }
     }
-                             printf("here6\n");
-
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithUTF8String:title] attributes:dictionary];
-    printf("eof\n");
-    return attributedString;
+    return (void*)attributedString;
 }
 
 // Create an nsimage from a byte array

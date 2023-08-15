@@ -12,8 +12,9 @@ package application
 */
 import "C"
 import (
-	"github.com/leaanthony/go-ansi-parser"
 	"unsafe"
+
+	"github.com/leaanthony/go-ansi-parser"
 )
 
 type macosSystemTray struct {
@@ -180,6 +181,17 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 	return result
 }
 
+func extractAnsiTextParts(text *ansi.StyledText) (label *C.char, fg *C.char, bg *C.char) {
+	label = C.CString(text.Label)
+	if text.FgCol != nil {
+		fg = C.CString(text.FgCol.Hex)
+	}
+	if text.BgCol != nil {
+		bg = C.CString(text.BgCol.Hex)
+	}
+	return
+}
+
 func (s *macosSystemTray) setLabel(label string) {
 	s.label = label
 	if !ansi.HasEscapeCodes(label) {
@@ -190,18 +202,19 @@ func (s *macosSystemTray) setLabel(label string) {
 			C.systemTraySetLabel(s.nsStatusItem, C.CString(label))
 			return
 		}
-		//TODO: Support more than one colour
-		newLabel := parsed[0].Label
-		var FG string
-		if parsed[0].FgCol != nil {
-			FG = parsed[0].FgCol.Hex
+		if len(parsed) == 0 {
+			return
 		}
-		var BG string
-		if parsed[0].BgCol != nil {
-			BG = parsed[0].BgCol.Hex
+		label, fg, bg := extractAnsiTextParts(parsed[0])
+		var attributedString = C.createAttributedString(label, fg, bg)
+		if len(parsed) > 1 {
+			for _, parsedPart := range parsed[1:] {
+				label, fg, bg = extractAnsiTextParts(parsedPart)
+				attributedString = C.appendAttributedString(attributedString, label, fg, bg)
+			}
 		}
 
-		C.systemTraySetANSILabel(s.nsStatusItem, C.CString(newLabel), C.CString(FG), C.CString(BG))
+		C.systemTraySetANSILabel(s.nsStatusItem, attributedString)
 	}
 }
 

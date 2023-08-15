@@ -7,8 +7,9 @@
 
 void* systemTrayNew(long id);
 void systemTraySetLabel(void* nsStatusItem, char *label);
-void systemTraySetANSILabel(void* nsStatusItem, char *label, char *FG, char *BG);
-NSMutableAttributedString* createAttributedString(char *title, char *FG, char *BG);
+void systemTraySetANSILabel(void* nsStatusItem, void* attributedString);
+void* createAttributedString(char *title, char *FG, char *BG);
+void* appendAttributedString(void* original, char* label, char* fg, char* bg);
 NSImage* imageFromBytes(const unsigned char *bytes, int length);
 void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isTemplate);
 void systemTraySetMenu(void* nsStatusItem, void* nsMenu);
