@@ -1,7 +1,7 @@
 version: '3'
 
 vars:
-  APP_NAME: "{{.ProjectName}}"
+  APP_NAME: "{{.ProjectName}}{{exeExt}}"
 
 tasks:
 
@@ -28,6 +28,8 @@ tasks:
   build-frontend:
     summary: Build the frontend project
     dir: frontend
+    generates:
+      - frontend/dist/*
     deps:
       - install-frontend-deps
     cmds:
@@ -38,10 +40,22 @@ tasks:
     platforms:
       - darwin
     cmds:
-     - task: pre-build
-     - task: build-frontend
-     - go build -gcflags=all="-N -l" -o bin/testapp
-     - task: post-build
+      - task: pre-build
+      - task: build-frontend
+      - go build -gcflags=all="-N -l" -o bin/{{.APP_NAME}}
+      - task: post-build
+    env:
+      CGO_CFLAGS: "-mmacosx-version-min=10.13"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+
+  build:backend:darwin:
+    summary: Builds the application
+    platforms:
+      - darwin
+    cmds:
+      - task: pre-build
+      - go build -gcflags=all="-N -l" -o bin/{{ "{{.APP_NAME}}" }}
+      - task: post-build
     env:
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
       CGO_LDFLAGS: "-mmacosx-version-min=10.13"
@@ -52,7 +66,18 @@ tasks:
       - windows
     cmds:
       - task: pre-build
-- task: build-frontend      - go build -gcflags=all="-N -l" -o bin/testapp.exe
+      - task: build-frontend
+      - go build -gcflags=all="-N -l" -o bin/{{ "{{.APP_NAME}}" }}
+      - task: post-build
+
+
+  build:backend:windows:
+    summary: Builds the backend application for Windows
+    platforms:
+      - windows
+    cmds:
+      - task: pre-build
+      - go build -gcflags=all="-N -l" -o bin/{{ "{{.APP_NAME}}" }}
       - task: post-build
 
   build:
@@ -60,6 +85,12 @@ tasks:
     cmds:
       - task: build:darwin
       - task: build:windows
+
+  build:backend:
+    summary: Builds the backend application
+    cmds:
+      - task: build:backend:darwin
+      - task: build:backend:windows
 
   generate-icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
@@ -81,6 +112,25 @@ tasks:
     vars:
       ARCH: $GOARCH
 
+  frontend:dev:
+    summary: Runs the frontend in development mode
+    dir: frontend
+    cmds:
+      - npm run dev
+
+  run:
+    summary: Runs the application
+    cmds:
+      - ./bin/{{ "{{.APP_NAME}}" }}
+
+  dev:
+    summary: Runs the application in development mode
+    preconditions:
+    - sh: 'wails3 tool checkport -p 5173'
+      msg: "Vite does not appear to be running."
+    cmds:
+      - task: build:backend
+      - task: run
 
   create-app-bundle:
     summary: Builds a `.app` bundle
