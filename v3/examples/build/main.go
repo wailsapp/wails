@@ -15,13 +15,9 @@ import (
 )
 
 func main() {
-	app := application.New(application.Options{
-		Name:        "WebviewWindow Demo",
-		Description: "A demo of the WebviewWindow API",
-		Mac: application.MacOptions{
-			ApplicationShouldTerminateAfterLastWindowClosed: true,
-		},
-	})
+
+	app := application.New(Options)
+
 	app.On(events.Mac.ApplicationDidFinishLaunching, func(*application.Event) {
 		log.Println("ApplicationDidFinishLaunching")
 	})
