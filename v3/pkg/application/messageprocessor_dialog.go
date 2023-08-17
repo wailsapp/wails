@@ -13,6 +13,7 @@ func (m *MessageProcessor) dialogErrorCallback(window *WebviewWindow, message st
 	m.Error(errorMsg)
 	msg := "_wails.dialogErrorCallback('" + *dialogID + "', " + strconv.Quote(errorMsg) + ");"
 	window.ExecJS(msg)
+	m.Error(message, "error", err)
 }
 
 func (m *MessageProcessor) dialogCallback(window *WebviewWindow, dialogID *string, result string, isJSON bool) {
@@ -73,6 +74,8 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		dialog.AddButtons(options.Buttons)
 		dialog.Show()
 		m.ok(rw)
+		m.Info("Runtime:", "method", "Dialog."+method, "options", options)
+
 	case "OpenFile":
 		var options OpenFileDialogOptions
 		err := params.ToStruct(&options)
@@ -99,6 +102,7 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 						return
 					}
 					m.dialogCallback(window, dialogID, string(result), true)
+					m.Info("Runtime:", "method", "Dialog."+method, "result", result)
 				}
 			} else {
 				file, err := dialog.PromptForSingleSelection()
@@ -107,9 +111,12 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 					return
 				}
 				m.dialogCallback(window, dialogID, file, false)
+				m.Info("Runtime:", "method", "Dialog."+method, "result", file)
 			}
 		}()
 		m.ok(rw)
+		m.Info("Runtime:", "method", "Dialog."+method, "options", options)
+
 	case "SaveFile":
 		var options SaveFileDialogOptions
 		err := params.ToStruct(&options)
@@ -130,8 +137,10 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 				return
 			}
 			m.dialogCallback(window, dialogID, file, false)
+			m.Info("Runtime:", "method", "Dialog."+method, "result", file)
 		}()
 		m.ok(rw)
+		m.Info("Runtime:", "method", "Dialog."+method, "options", options)
 
 	default:
 		m.httpError(rw, "Unknown dialog method: %s", method)

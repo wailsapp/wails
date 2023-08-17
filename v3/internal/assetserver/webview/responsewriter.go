@@ -22,4 +22,7 @@ type ResponseWriter interface {
 
 	// Finish the response and flush all data. A Finish after the request has already been finished has no effect.
 	Finish()
+
+	// Code returns the HTTP status code of the response
+	Code() int
 }

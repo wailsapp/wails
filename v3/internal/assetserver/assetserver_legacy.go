@@ -53,7 +53,7 @@ func (r *legacyRequest) Body() (io.ReadCloser, error) {
 }
 
 func (r legacyRequest) Response() webview.ResponseWriter {
-	return &legacyRequestNoOpCloserResponseWriter{r.rw}
+	return &legacyRequestNoOpCloserResponseWriter{ResponseWriter: r.rw}
 }
 
 func (r legacyRequest) Close() error { return nil }
@@ -73,6 +73,11 @@ func (r *legacyRequest) request() (*http.Request, error) {
 
 type legacyRequestNoOpCloserResponseWriter struct {
 	http.ResponseWriter
+	code int
 }
 
 func (*legacyRequestNoOpCloserResponseWriter) Finish() {}
+
+func (r *legacyRequestNoOpCloserResponseWriter) Code() int {
+	return r.code
+}

@@ -16,6 +16,10 @@ type CallOptions struct {
 	Args        []any  `json:"args"`
 }
 
+func (c CallOptions) Name() string {
+	return fmt.Sprintf("%s.%s.%s", c.PackageName, c.StructName, c.MethodName)
+}
+
 type PluginCallOptions struct {
 	Name string `json:"name"`
 	Args []any  `json:"args"`

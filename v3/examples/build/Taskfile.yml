@@ -1,5 +1,8 @@
 version: '3'
 
+vars:
+  APP_NAME: "dev{{exeExt}}"
+
 tasks:
 
   pre-build:
@@ -8,13 +11,50 @@ tasks:
   post-build:
     summary: Post-build hooks
 
+  install-frontend-deps:
+    summary: Install frontend dependencies
+    dir: frontend
+    sources:
+      - package.json
+      - package-lock.json
+    generates:
+      - node_modules/*
+    preconditions:
+      - sh: npm version
+        msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+    cmds:
+      - npm install
+
+  build-frontend:
+    summary: Build the frontend project
+    dir: frontend
+    generates:
+      - frontend/dist/*
+    deps:
+      - install-frontend-deps
+    cmds:
+      - npm run build
+
   build:darwin:
     summary: Builds the application
     platforms:
       - darwin
     cmds:
       - task: pre-build
-      - go build -gcflags=all="-N -l" -o bin/testapp
+      - task: build-frontend
+      - go build -gcflags=all="-N -l" -o bin/{{.APP_NAME}}
+      - task: post-build
+    env:
+      CGO_CFLAGS: "-mmacosx-version-min=10.13"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+
+  build:backend:darwin:
+    summary: Builds the application
+    platforms:
+      - darwin
+    cmds:
+      - task: pre-build
+      - go build -gcflags=all="-N -l" -o bin/{{.APP_NAME}}
       - task: post-build
     env:
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
@@ -26,7 +66,18 @@ tasks:
       - windows
     cmds:
       - task: pre-build
-      - go build -gcflags=all="-N -l" -o bin/testapp.exe
+      - task: build-frontend
+      - go build -gcflags=all="-N -l" -o bin/{{.APP_NAME}}
+      - task: post-build
+
+
+  build:backend:windows:
+    summary: Builds the backend application for Windows
+    platforms:
+      - windows
+    cmds:
+      - task: pre-build
+      - go build -gcflags=all="-N -l" -o bin/{{.APP_NAME}}
       - task: post-build
 
   build:
@@ -35,39 +86,87 @@ tasks:
       - task: build:darwin
       - task: build:windows
 
+  build:backend:
+    summary: Builds the backend application
+    cmds:
+      - task: build:backend:darwin
+      - task: build:backend:windows
+
   generate-icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
     dir: build
     cmds:
       # Generates both .ico and .icns files
-      - wails3 generate icons -input appicon.png
+      - wails generate icons -input appicon.png
 
-  build-prod:
+  build-app-prod-darwin:
     summary: Creates a production build of the application
     cmds:
-      - go build -tags production -ldflags="-w -s" -o bin/testapp{{exeExt}}
+      - task: pre-build
+      - task: build-frontend
+      - GOOS=darwin GOARCH={{.ARCH}} go build -tags production -ldflags="-w -s" -o build/bin/{{.APP_NAME}}
+      - task: post-build
+    env:
+      CGO_CFLAGS: "-mmacosx-version-min=10.13"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+    vars:
+      ARCH: $GOARCH
 
-  package:darwin:
+  frontend:dev:
+    summary: Runs the frontend in development mode
+    dir: frontend
+    cmds:
+      - npm run dev
+
+  run:
+    summary: Runs the application
+    cmds:
+      - ./bin/{{.APP_NAME}}
+
+  dev:
+    summary: Runs the application in development mode
+    preconditions:
+      - sh: 'wails3 tool checkport -p 5173'
+        msg: "Vite does not appear to be running."
+    cmds:
+      - task: build:backend
+      - task: run
+
+  create-app-bundle:
+    summary: Builds a `.app` bundle
+    cmds:
+      - mkdir -p {{.APP_NAME}}.app/Contents/{MacOS,Resources}
+      - cp build/icons.icns {{.APP_NAME}}.app/Contents/Resources
+      - cp build/bin/{{.APP_NAME}} {{.APP_NAME}}.app/Contents/MacOS
+      - cp build/Info.plist {{.APP_NAME}}.app/Contents
+
+  package-darwin-arm64:
     summary: Packages a production build of the application into a `.app` bundle
+    platform: darwin
     deps:
-        - build-prod
-        - generate-icons
+      - task: build-app-prod-darwin
+        vars:
+          ARCH: arm64
+      - generate-icons
     cmds:
-      - mkdir -p buildtest.app/Contents/{MacOS,Resources}
-      - cp build/icons.icns buildtest.app/Contents/Resources
-      - cp bin/testapp buildtest.app/Contents/MacOS
-      - cp build/Info.plist buildtest.app/Contents
+      - task: create-app-bundle
 
-  windows:generate:syso:
+  generate:syso:
     dir: build
+    platform: windows
     cmds:
-      - wails3 generate syso -arch amd64 -icon icons.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+      - wails generate syso -arch {{.ARCH}} -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+    vars:
+      ARCH: $GOARCH
 
   package:windows:
     summary: Packages a production build of the application into a `.exe` bundle
+    platform: windows
     deps:
       - generate-icons
     cmds:
-      - task: windows:generate:syso
-      - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/testapp.exe
+      - task: generate:syso
+        vars:
+          ARCH: amd64
+      - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{.APP_NAME}}.exe
       - powershell Remove-item wails.syso

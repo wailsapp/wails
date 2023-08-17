@@ -60,7 +60,7 @@ func New(appOptions Options) *App {
 		ExternalURL: appOptions.Assets.ExternalURL,
 	}
 
-	srv, err := assetserver.NewAssetServer(opts, false, result.Logger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode, NewMessageProcessor())
+	srv, err := assetserver.NewAssetServer(opts, false, result.Logger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode, NewMessageProcessor(result.Logger))
 	if err != nil {
 		result.fatal(err.Error())
 	}
@@ -513,9 +513,6 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 }
 
 func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
-	// Get window from window map
-	url, _ := request.URL()
-	a.info("Window: '%s', Request: %s", request.windowName, url)
 	a.assets.ServeWebViewRequest(request)
 }
 

@@ -2,6 +2,7 @@ package application
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -14,10 +15,13 @@ import (
 
 type MessageProcessor struct {
 	pluginManager *PluginManager
+	logger        *slog.Logger
 }
 
-func NewMessageProcessor() *MessageProcessor {
-	return &MessageProcessor{}
+func NewMessageProcessor(logger *slog.Logger) *MessageProcessor {
+	return &MessageProcessor{
+		logger: logger,
+	}
 }
 
 func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, args ...any) {
@@ -69,7 +73,7 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 
 	targetWindow := m.getTargetWindow(r)
 	if targetWindow == nil {
-		m.Error("No valid window found")
+		m.httpError(rw, "No valid window found")
 		return
 	}
 
@@ -93,15 +97,14 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 	default:
 		m.httpError(rw, "Unknown runtime call: %s", object)
 	}
-
 }
 
 func (m *MessageProcessor) Error(message string, args ...any) {
-	fmt.Printf("[MessageProcessor] Error: "+message, args...)
+	m.logger.Error(message, args...)
 }
 
 func (m *MessageProcessor) Info(message string, args ...any) {
-	fmt.Printf("[MessageProcessor] Info: "+message, args...)
+	m.logger.Info(message, args...)
 }
 
 func (m *MessageProcessor) json(rw http.ResponseWriter, data any) {

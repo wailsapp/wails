@@ -126,10 +126,23 @@ func (a *Args) Int(s string) *int {
 		return nil
 	}
 	if val := a.data[s]; val != nil {
-		result := val.(int)
-		return &result
+		return convertNumber[int](val)
 	}
 	return nil
+}
+
+func convertNumber[T int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64](val any) *T {
+	if val == nil {
+		return nil
+	}
+	var result T
+	switch v := val.(type) {
+	case T:
+		result = v
+	case float64:
+		result = T(v)
+	}
+	return &result
 }
 
 func (a *Args) UInt8(s string) *uint8 {
@@ -137,8 +150,7 @@ func (a *Args) UInt8(s string) *uint8 {
 		return nil
 	}
 	if val := a.data[s]; val != nil {
-		result := val.(uint8)
-		return &result
+		return convertNumber[uint8](val)
 	}
 	return nil
 }
@@ -147,8 +159,7 @@ func (a *Args) UInt(s string) *uint {
 		return nil
 	}
 	if val := a.data[s]; val != nil {
-		result := val.(uint)
-		return &result
+		return convertNumber[uint](val)
 	}
 	return nil
 }

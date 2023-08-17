@@ -80,6 +80,7 @@ type responseWriter struct {
 
 	header      http.Header
 	wroteHeader bool
+	code        int
 
 	finished bool
 }
@@ -112,6 +113,7 @@ func (rw *responseWriter) Write(buf []byte) (int, error) {
 }
 
 func (rw *responseWriter) WriteHeader(code int) {
+	rw.code = code
 	if rw.wroteHeader || rw.finished {
 		return
 	}
@@ -144,4 +146,8 @@ func (rw *responseWriter) Finish() {
 	rw.finished = true
 
 	C.URLSchemeTaskDidFinish(rw.r.task)
+}
+
+func (rw *responseWriter) Code() int {
+	return rw.code
 }

@@ -4,6 +4,7 @@ package application
 
 import (
 	"github.com/lmittmann/tint"
+	"github.com/mattn/go-isatty"
 	"log/slog"
 	"os"
 	"time"

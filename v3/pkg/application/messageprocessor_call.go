@@ -59,6 +59,7 @@ func (m *MessageProcessor) processCallMethod(method string, rw http.ResponseWrit
 				}
 			}
 			m.callCallback(window, callID, string(jsonResult), true)
+			m.Info("Call Binding:", "method", options.Name(), "args", args.data, "result", result)
 		}()
 		m.ok(rw)
 	default:

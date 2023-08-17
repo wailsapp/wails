@@ -27,4 +27,6 @@ func (m *MessageProcessor) processContextMenuMethod(method string, rw http.Respo
 		m.httpError(rw, "Unknown clipboard method: %s", method)
 	}
 
+	m.Info("Runtime:", "method", "ContextMenu."+method)
+
 }

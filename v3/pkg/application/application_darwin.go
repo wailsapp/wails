@@ -126,6 +126,7 @@ static void show(void) {
 */
 import "C"
 import (
+	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
@@ -269,4 +270,13 @@ func setIcon(icon []byte) {
 	C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
 }
 
-func (a *App) logPlatformInfo() {}
+func (a *App) logPlatformInfo() {
+	info, err := operatingsystem.Info()
+	if err != nil {
+		a.error("Error getting OS info", "error", err.Error())
+		return
+	}
+
+	a.info("Platform Info:", "name", info.Name, "version", info.Version, "id", info.ID)
+
+}

@@ -3,6 +3,7 @@ package assetserver
 import (
 	"bytes"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"log/slog"
 	"math/rand"
 	"net/http"
@@ -93,7 +94,8 @@ func NewAssetServer(options *Options, servingFromDisk bool, logger *slog.Logger,
 	externalURL, err := options.getExternalURL()
 	if err != nil {
 		return nil, err
-	} else {
+	}
+	if externalURL != nil {
 		result.wsHandler = httputil.NewSingleHostReverseProxy(externalURL)
 		err := result.checkExternalURL()
 		if err != nil {
@@ -137,10 +139,10 @@ func (d *AssetServer) AddPluginScript(pluginName string, script string) {
 	d.pluginScripts[pluginScriptName] = script
 }
 
-func (d *AssetServer) logRequest(req *http.Request, code int) {
+func logRequest(logger *slog.Logger, req *http.Request, code int) {
 	windowName := req.Header.Get(webViewRequestHeaderWindowName)
 	windowID := req.Header.Get(webViewRequestHeaderWindowId)
-	d.logger.Info("AssetServer:", "code", code, "windowName", windowName, "windowID", windowID, "method", req.Method, "url", req.URL.Path)
+	logger.Info("Asset Request:", "windowName", windowName, "windowID", windowID, "code", code, "method", req.Method, "url", req.URL.Path)
 }
 
 func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -149,12 +151,14 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		d.wsHandler.ServeHTTP(rw, req)
 		// Get response code from header
 		code := rw.(*contentTypeSniffer).rw.(*legacyRequestNoOpCloserResponseWriter).ResponseWriter.(*httptest.ResponseRecorder).Code
-		d.logRequest(req, code)
+		logRequest(d.logger, req, code)
 		return
 	} else {
 		if isWebSocket(req) {
 			// WebSockets are not supported by the AssetServer
 			rw.WriteHeader(http.StatusNotImplemented)
+			logRequest(d.logger, req, http.StatusNotImplemented)
+			return
 		}
 	}
 
@@ -188,6 +192,8 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			rw.WriteHeader(recorder.Code)
 
 		}
+		logRequest(d.logger, req, recorder.Code)
+		return
 
 	case runtimeJSPath:
 		d.writeBlob(rw, path, d.runtimeJS)
@@ -208,6 +214,7 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	case runtimePath:
 		d.runtimeHandler.HandleRuntimeCall(rw, req)
+		return
 
 	case ipcJSPath:
 		content := d.runtime.DesktopIPC()
@@ -220,10 +227,15 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		// Check if this is a plugin script
 		if script, ok := d.pluginScripts[path]; ok {
 			d.writeBlob(rw, path, []byte(script))
+		} else {
+			d.handler.ServeHTTP(rw, req)
+			code := rw.(*contentTypeSniffer).rw.(webview.ResponseWriter).Code()
+			logRequest(d.logger, req, code)
 			return
 		}
-		d.handler.ServeHTTP(rw, req)
 	}
+
+	logRequest(d.logger, req, http.StatusOK)
 }
 
 func (d *AssetServer) processIndexHTML(indexHTML []byte) ([]byte, error) {
@@ -278,9 +290,9 @@ func (d *AssetServer) serveError(rw http.ResponseWriter, err error, msg string, 
 }
 
 func (d *AssetServer) logInfo(message string, args ...interface{}) {
-	d.logger.Info("AssetServer: "+message, args...)
+	d.logger.Info("Asset Request: "+message, args...)
 }
 
 func (d *AssetServer) logError(message string, args ...interface{}) {
-	d.logger.Error("AssetServer: "+message, args...)
+	d.logger.Error("Asset Request: "+message, args...)
 }

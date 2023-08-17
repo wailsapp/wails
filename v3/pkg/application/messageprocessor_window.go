@@ -189,4 +189,10 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		m.httpError(rw, "Unknown window method: %s", method)
 	}
 
+	var logArgs = []any{"method", "Window." + method}
+	for name, arg := range args.data {
+		logArgs = append(logArgs, name)
+		logArgs = append(logArgs, arg)
+	}
+	m.Info("Runtime:", logArgs...)
 }

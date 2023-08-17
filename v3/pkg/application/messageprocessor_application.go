@@ -20,4 +20,6 @@ func (m *MessageProcessor) processApplicationMethod(method string, rw http.Respo
 		m.httpError(rw, "Unknown event method: %s", method)
 	}
 
+	m.Info("Runtime:", "method", "Application."+method)
+
 }
