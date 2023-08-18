@@ -27,6 +27,7 @@ func platformInfo() (*OS, error) {
 	result.Name = productName
 	result.Version = fmt.Sprintf("%s (Build: %s)", releaseId, currentBuild)
 	result.ID = displayVersion
+	result.Branding = w32.GetBranding()
 
 	return &result, key.Close()
 }
