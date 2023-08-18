@@ -277,6 +277,6 @@ func (a *App) logPlatformInfo() {
 		return
 	}
 
-	a.info("Platform Info:", "name", info.Name, "version", info.Version, "id", info.ID)
+	a.info("Platform Info:", info.AsLogSlice()...)
 
 }

@@ -7,6 +7,32 @@ import (
 	"strings"
 )
 
+var macOSNames = map[string]string{
+	"10.10": "Yosemite",
+	"10.11": "El Capitan",
+	"10.12": "Sierra",
+	"10.13": "High Sierra",
+	"10.14": "Mojave",
+	"10.15": "Catalina",
+	"11":    "Big Sur",
+	"12":    "Monterey",
+	"13":    "Ventura",
+	"14":    "Sonoma",
+	// Add newer versions as they are released...
+}
+
+func getOSName(version string) string {
+	trimmedVersion := version
+	if !strings.HasPrefix(version, "10.") {
+		trimmedVersion = strings.SplitN(version, ".", 2)[0]
+	}
+	name, ok := macOSNames[trimmedVersion]
+	if ok {
+		return name
+	}
+	return "MacOS " + version
+}
+
 func getSysctlValue(key string) (string, error) {
 	// Run "sysctl" command
 	command := exec.Command("sysctl", key)
@@ -39,18 +65,7 @@ func platformInfo() (*OS, error) {
 		return nil, err
 	}
 	result.ID = ID
-
-	// 		cmd := CreateCommand(directory, command, args...)
-	// 		var stdo, stde bytes.Buffer
-	// 		cmd.Stdout = &stdo
-	// 		cmd.Stderr = &stde
-	// 		err := cmd.Run()
-	// 		return stdo.String(), stde.String(), err
-	// 	}
-	// 	sysctl := shell.NewCommand("sysctl")
-	// 	kern.ostype: Darwin
-	// kern.osrelease: 20.1.0
-	// kern.osrevision: 199506
+	result.Branding = getOSName(result.Version)
 
 	return &result, nil
 }
