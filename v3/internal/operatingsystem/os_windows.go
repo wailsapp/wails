@@ -4,6 +4,7 @@ package operatingsystem
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v3/pkg/w32"
 
 	"golang.org/x/sys/windows/registry"
 )

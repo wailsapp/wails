@@ -68,4 +68,4 @@ require (
 	mvdan.cc/sh/v3 v3.7.0 // indirect
 )
 
-replace github.com/wailsapp/wails/v3 => /Users/lea/GolandProjects/wails/v3
+replace github.com/wailsapp/wails/v3 => D:\GolandProjects\wails\v3

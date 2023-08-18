@@ -1370,7 +1370,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	opts := w.parent.options.Windows
 
-	webview2version, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(opts.WebviewBrowserPath)
+	webview2version, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(globalApplication.options.Windows.WebviewBrowserPath)
 	if err != nil {
 		globalApplication.error("Error getting WebView2 version: " + err.Error())
 		return
@@ -1383,8 +1383,8 @@ func (w *windowsWebviewWindow) setupChromium() {
 		disableFeatues = append(disableFeatues, "msSmartScreenProtection")
 	}
 
-	chromium.DataPath = opts.WebviewUserDataPath
-	chromium.BrowserPath = opts.WebviewBrowserPath
+	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
+	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
 
 	if opts.WebviewGpuIsDisabled {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
