@@ -3,6 +3,7 @@ package assetserver
 import (
 	"io"
 	"net/http"
+	"net/http/httptest"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 )
@@ -79,5 +80,5 @@ type legacyRequestNoOpCloserResponseWriter struct {
 func (*legacyRequestNoOpCloserResponseWriter) Finish() {}
 
 func (r *legacyRequestNoOpCloserResponseWriter) Code() int {
-	return r.code
+	return r.ResponseWriter.(*httptest.ResponseRecorder).Code
 }
