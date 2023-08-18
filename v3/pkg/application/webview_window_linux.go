@@ -448,7 +448,7 @@ func (w *linuxWebviewWindow) run() {
 		}
 		// We need to wait for the HTML to load before we can execute the javascript
 		// FIXME: What event is this?  DomReady?
-		w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEventContext) {
+		w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
 			if w.parent.options.JS != "" {
 				w.execJS(w.parent.options.JS)
 			}
