@@ -83,7 +83,7 @@ func (m *linuxApp) run() error {
 
 	// Add a hook to the ApplicationDidFinishLaunching event
 	// FIXME: add Wails specific events - i.e. Shouldn't platform specific ones be translated to Wails events?
-	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func() {
+	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func(evt *Event) {
 		// Do we need to do anything now?
 		fmt.Println("events.Mac.ApplicationDidFinishLaunching received!")
 	})
@@ -105,6 +105,12 @@ func (m *linuxApp) registerWindow(window pointer, id uint) {
 	m.windowsLock.Lock()
 	m.windows[windowPointer(window)] = id
 	m.windowsLock.Unlock()
+}
+
+func (m *linuxApp) isDarkMode() bool {
+	// FIXME: How do we detect this?
+	// Maybe this helps: https://askubuntu.com/questions/1469869/how-does-firefox-detect-light-dark-theme-change-on-kde-systems
+	return false
 }
 
 func newPlatformApp(parent *App) *linuxApp {

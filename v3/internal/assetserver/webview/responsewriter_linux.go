@@ -28,9 +28,14 @@ type responseWriter struct {
 	header      http.Header
 	wroteHeader bool
 	finished    bool
+	code        int
 
 	w    io.WriteCloser
 	wErr error
+}
+
+func (rw *responseWriter) Code() int {
+	return rw.code
 }
 
 func (rw *responseWriter) Header() http.Header {
@@ -53,6 +58,7 @@ func (rw *responseWriter) Write(buf []byte) (int, error) {
 }
 
 func (rw *responseWriter) WriteHeader(code int) {
+	rw.code = code
 	if rw.wroteHeader || rw.finished {
 		return
 	}

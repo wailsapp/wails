@@ -20,7 +20,7 @@ func (s *linuxSystemTray) setMenu(menu *Menu) {
 	s.menu = menu
 }
 
-func (s *linuxSystemTray) positionWindow(window *WebviewWindow) error {
+func (s *linuxSystemTray) positionWindow(window *WebviewWindow, offset int) error {
 	panic("not implemented")
 }
 
