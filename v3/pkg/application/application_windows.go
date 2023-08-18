@@ -41,8 +41,12 @@ type windowsApp struct {
 	focusedWindow w32.HWND
 
 	// system theme
-	isDarkMode      bool
-	currentWindowID uint
+	isCurrentlyDarkMode bool
+	currentWindowID     uint
+}
+
+func (m *windowsApp) isDarkMode() bool {
+	return w32.IsCurrentlyDarkMode()
 }
 
 func (m *windowsApp) isOnMainThread() bool {
@@ -207,7 +211,7 @@ func (m *windowsApp) init() {
 	if ret := w32.RegisterClassEx(&m.windowClass); ret == 0 {
 		panic(syscall.GetLastError())
 	}
-	m.isDarkMode = w32.IsCurrentlyDarkMode()
+	m.isCurrentlyDarkMode = w32.IsCurrentlyDarkMode()
 }
 
 func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) uintptr {
@@ -231,9 +235,9 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))
 		if settingChanged == "ImmersiveColorSet" {
 			isDarkMode := w32.IsCurrentlyDarkMode()
-			if isDarkMode != m.isDarkMode {
+			if isDarkMode != m.isCurrentlyDarkMode {
 				applicationEvents <- uint(events.Windows.SystemThemeChanged)
-				m.isDarkMode = isDarkMode
+				m.isCurrentlyDarkMode = isDarkMode
 			}
 		}
 		return 0
