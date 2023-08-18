@@ -178,6 +178,7 @@ func (m *windowsApp) setApplicationMenu(menu *Menu) {
 }
 
 func (m *windowsApp) run() error {
+	m.setupCommonEvents()
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)
 	}
