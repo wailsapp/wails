@@ -13,6 +13,7 @@ The electron alternative for Go
 import * as Clipboard from './clipboard';
 import * as Application from './application';
 import * as Screens from './screens';
+import * as System from './system';
 import {Plugin, Call, callErrorCallback, callCallback} from "./calls";
 import {newWindow} from "./window";
 import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
@@ -53,6 +54,7 @@ export function newRuntime(windowName) {
                 return newRuntime(windowName);
             }
         },
+        System,
         Screens,
         Call,
         Plugin,

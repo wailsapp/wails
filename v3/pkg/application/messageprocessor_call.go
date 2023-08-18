@@ -63,7 +63,7 @@ func (m *MessageProcessor) processCallMethod(method string, rw http.ResponseWrit
 		}()
 		m.ok(rw)
 	default:
-		m.httpError(rw, "Unknown dialog method: %s", method)
+		m.httpError(rw, "Unknown call method: %s", method)
 	}
 
 }

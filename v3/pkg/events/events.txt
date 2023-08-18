@@ -18,6 +18,7 @@ mac:ApplicationWillResignActive
 mac:ApplicationWillTerminate
 mac:ApplicationWillUnhide
 mac:ApplicationWillUpdate
+mac:ApplicationDidChangeTheme!
 mac:WindowDidBecomeKey
 mac:WindowDidBecomeMain
 mac:WindowDidBeginSheet
@@ -158,3 +159,4 @@ common:WindowLostFocus
 common:WindowShow
 common:WindowHide
 common:WindowDPIChanged
+common:ThemeChanged

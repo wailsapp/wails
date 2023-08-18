@@ -43,6 +43,7 @@ export const EventTypes = {
 		ApplicationWillTerminate: "mac:ApplicationWillTerminate",
 		ApplicationWillUnhide: "mac:ApplicationWillUnhide",
 		ApplicationWillUpdate: "mac:ApplicationWillUpdate",
+		ApplicationDidChangeTheme: "mac:ApplicationDidChangeTheme!",
 		WindowDidBecomeKey: "mac:WindowDidBecomeKey",
 		WindowDidBecomeMain: "mac:WindowDidBecomeMain",
 		WindowDidBeginSheet: "mac:WindowDidBeginSheet",
@@ -165,5 +166,6 @@ export const EventTypes = {
 		WindowShow: "common:WindowShow",
 		WindowHide: "common:WindowHide",
 		WindowDPIChanged: "common:WindowDPIChanged",
+		ThemeChanged: "common:ThemeChanged",
 	},
 };

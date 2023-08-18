@@ -136,6 +136,12 @@ explicitly set with `--default-contextmenu: show`.
 | GetPrimary | Y       | Y     | Y   |       |
 | GetCurrent | Y       | Y     | Y   |       |
 
+### System
+
+| Feature    | Windows | Linux | Mac | Notes |
+|------------|---------|-------|-----|-------|
+| IsDarkMode |         |       | Y   |       |
+
 ### Window
 
 Y = Supported

@@ -16,8 +16,10 @@ func (m *MessageProcessor) processApplicationMethod(method string, rw http.Respo
 	case "Show":
 		globalApplication.Show()
 		m.ok(rw)
+	case "IsDarkMode":
+		m.json(rw, globalApplication.IsDarkMode())
 	default:
-		m.httpError(rw, "Unknown event method: %s", method)
+		m.httpError(rw, "Unknown application method: %s", method)
 	}
 
 	m.Info("Runtime:", "method", "Application."+method)

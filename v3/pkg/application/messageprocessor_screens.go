@@ -29,7 +29,7 @@ func (m *MessageProcessor) processScreensMethod(method string, rw http.ResponseW
 		}
 		m.json(rw, screen)
 	default:
-		m.httpError(rw, "Unknown clipboard method: %s", method)
+		m.httpError(rw, "Unknown screens method: %s", method)
 	}
 
 	m.Info("Runtime:", "method", "Screens."+method)

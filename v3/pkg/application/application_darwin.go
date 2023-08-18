@@ -52,6 +52,24 @@ static void init(void) {
 		}
 		return event;
 	}];
+
+	NSDistributedNotificationCenter *center = [NSDistributedNotificationCenter defaultCenter];
+	[center addObserver:appDelegate selector:@selector(themeChanged:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
+
+}
+
+static bool isDarkMode(void) {
+	NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+	if (userDefaults == nil) {
+		return false;
+	}
+
+	NSString *interfaceStyle = [userDefaults stringForKey:@"AppleInterfaceStyle"];
+	if (interfaceStyle == nil) {
+		return false;
+	}
+
+	return [interfaceStyle isEqualToString:@"Dark"];
 }
 
 static void setApplicationShouldTerminateAfterLastWindowClosed(bool shouldTerminate) {
@@ -136,6 +154,10 @@ import (
 type macosApp struct {
 	applicationMenu unsafe.Pointer
 	parent          *App
+}
+
+func (m *macosApp) isDarkMode() bool {
+	return bool(C.isDarkMode())
 }
 
 func getNativeApplication() *macosApp {

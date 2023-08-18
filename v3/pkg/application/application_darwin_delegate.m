@@ -12,6 +12,11 @@ extern bool hasListeners(unsigned int);
 {
     return self.shouldTerminateWhenLastWindowClosed;
 }
+- (void)themeChanged:(NSNotification *)notification {
+    if( hasListeners(EventApplicationDidChangeTheme) ) {
+        processApplicationEvent(EventApplicationDidChangeTheme);
+    }
+}
 // GENERATED EVENTS START
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     if( hasListeners(EventApplicationDidBecomeActive) ) {

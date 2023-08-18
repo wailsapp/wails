@@ -132,6 +132,7 @@ type (
 		getScreens() ([]*Screen, error)
 		GetFlags(options Options) map[string]any
 		isOnMainThread() bool
+		isDarkMode() bool
 	}
 
 	runnable interface {
@@ -651,6 +652,13 @@ func (a *App) dispatchEventToWindows(event *WailsEvent) {
 	for _, window := range a.windows {
 		window.dispatchWailsEvent(event)
 	}
+}
+
+func (a *App) IsDarkMode() bool {
+	if a.impl == nil {
+		return false
+	}
+	return a.impl.isDarkMode()
 }
 
 func (a *App) Hide() {
