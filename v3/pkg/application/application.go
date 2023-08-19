@@ -51,6 +51,9 @@ func New(appOptions Options) *App {
 		result.Logger = DefaultLogger()
 	}
 
+	result.logStartup()
+	result.logPlatformInfo()
+
 	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
 
 	opts := &assetserver.Options{
@@ -80,6 +83,8 @@ func New(appOptions Options) *App {
 	}
 
 	result.assets = srv
+
+	result.assets.LogDetails()
 
 	result.bindings, err = NewBindings(appOptions.Bind)
 	if err != nil {
@@ -387,9 +392,6 @@ func (a *App) NewSystemTray() *SystemTray {
 }
 
 func (a *App) Run() error {
-	a.logStartup()
-	a.logPlatformInfo()
-	a.assets.LogDetails()
 
 	// Setup panic handler
 	defer processPanicHandlerRecover()
