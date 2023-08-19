@@ -16,7 +16,7 @@ export namespace main {
         source = JSON.parse(source);
       }
 
-      this.name = source["name"]
+      this.name = source['name'];
       
     }
   }

@@ -51,6 +51,7 @@ function callBinding(type, options) {
         let id = generateID();
         options = options || {};
         options["call-id"] = id;
+
         callResponses.set(id, {resolve, reject});
         call(type, options).catch((error) => {
             reject(error);

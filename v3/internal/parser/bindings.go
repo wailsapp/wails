@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -14,32 +15,14 @@ const header = `// @ts-check
 
 `
 
-const helperTemplate = `function {{structName}}(method) {
-    return {
-        packageName: "{{packageName}}",
-        serviceName: "{{structName}}",
-        methodName: method,
-        args: Array.prototype.slice.call(arguments, 1),
-    };
-}
-`
-
-func GenerateHelper(packageName, structName string) string {
-	result := strings.ReplaceAll(helperTemplate, "{{packageName}}", packageName)
-	result = strings.ReplaceAll(result, "{{structName}}", structName)
-	return result
-}
-
 const bindingTemplate = `
-/**
- * {{structName}}.{{methodName}}
- * Comments
- * @param name {string}
- * @returns {Promise<string>}
- **/
-function {{methodName}}({{inputs}}) {
-    return wails.Call({{structName}}("{{methodName}}"{{args}}));
-}
+		/**
+		 * {{structName}}.{{methodName}}
+		 * Comments
+		 * @param name {string}
+		 * @returns {Promise<string>}
+		 **/
+	    {{methodName}}: function({{inputs}}) { wails.Call({"wails-method-id":{{ID}}, args: Array.prototype.slice.call(arguments, 0)}); },
 `
 
 var reservedWords = []string{
@@ -123,6 +106,7 @@ func GenerateBinding(structName string, method *BoundMethod) (string, []string) 
 	var models []string
 	result := strings.ReplaceAll(bindingTemplate, "{{structName}}", structName)
 	result = strings.ReplaceAll(result, "{{methodName}}", method.Name)
+	result = strings.ReplaceAll(result, "{{ID}}", fmt.Sprintf("%v", method.ID))
 	comments := strings.TrimSpace(method.DocComment)
 	result = strings.ReplaceAll(result, "Comments", comments)
 	var params string
@@ -234,32 +218,27 @@ func GenerateBindings(bindings map[string]map[string][]*BoundMethod) map[string]
 		packageBindings := bindings[packageName]
 		structNames := lo.Keys(packageBindings)
 		sort.Strings(structNames)
-		for _, structName := range structNames {
-			result[normalisedPackageNames[packageName]] += GenerateHelper(normalisedPackageNames[packageName], structName)
-			methods := packageBindings[structName]
-			sort.Slice(methods, func(i, j int) bool {
-				return methods[i].Name < methods[j].Name
-			})
-			for _, method := range methods {
-				thisBinding, models := GenerateBinding(structName, method)
-				result[normalisedPackageNames[packageName]] += thisBinding
-				allModels = append(allModels, models...)
-			}
-		}
-
 		result[normalisedPackageNames[packageName]] += `
 window.go = window.go || {};
 `
 		// Iterate over the sorted struct keys
 		result[normalisedPackageNames[packageName]] += "window.go." + normalisedPackageNames[packageName] + " = {\n"
 		for _, structName := range structNames {
+			/**
+			 * The GreetService provides methods to greet a person.
+			 */
+			//result[normalisedPackageNames[packageName]] += "    /**\n"
+			//result[normalisedPackageNames[packageName]] += "     {{structcomments}}\n"
+			//result[normalisedPackageNames[packageName]] += "     */\n"
 			result[normalisedPackageNames[packageName]] += "    " + structName + ": {\n"
 			methods := packageBindings[structName]
 			sort.Slice(methods, func(i, j int) bool {
 				return methods[i].Name < methods[j].Name
 			})
 			for _, method := range methods {
-				result[normalisedPackageNames[packageName]] += "        " + method.Name + ",\n"
+				thisBinding, models := GenerateBinding(structName, method)
+				allModels = append(allModels, models...)
+				result[normalisedPackageNames[packageName]] += "        " + thisBinding
 			}
 			result[normalisedPackageNames[packageName]] += "    },\n"
 		}
@@ -275,7 +254,7 @@ window.go = window.go || {};
 			sort.Strings(models)
 			result[normalisedPackageNames[packageName]] += "\n"
 			imports := "import {" + strings.Join(models, ", ") + "} from './models';\n"
-			result[normalisedPackageNames[packageName]] = imports + "\n" + result[normalisedPackageNames[packageName]]
+			result[normalisedPackageNames[packageName]] = imports + result[normalisedPackageNames[packageName]]
 		}
 
 		result[normalisedPackageNames[packageName]] = header + result[normalisedPackageNames[packageName]]

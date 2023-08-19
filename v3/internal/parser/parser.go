@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/hash"
 	"go/ast"
 	"go/build"
 	"go/parser"
@@ -79,6 +80,11 @@ type BoundMethod struct {
 	DocComment string
 	Inputs     []*Parameter
 	Outputs    []*Parameter
+	ID         uint32
+}
+
+func (m BoundMethod) IDAsString() string {
+	return strconv.Itoa(int(m.ID))
 }
 
 type Field struct {
@@ -379,8 +385,14 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 				recvType, ok := funcDecl.Recv.List[0].Type.(*ast.StarExpr)
 				if ok {
 					if ident, ok := recvType.X.(*ast.Ident); ok && ident.Name == name {
+						fqn := fmt.Sprintf("%s.%s.%s", pkg.Path, name, funcDecl.Name.Name)
+						id, err := hash.Fnv(fqn)
+						if err != nil {
+							return err
+						}
 						// Add the method to the list of methods
 						method := &BoundMethod{
+							ID:         id,
 							Name:       funcDecl.Name.Name,
 							DocComment: funcDecl.Doc.Text(),
 						}

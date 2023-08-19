@@ -14,15 +14,21 @@ const runtimeURL = window.location.origin + "/wails/runtime";
 
 function runtimeCall(method, windowName, args) {
     let url = new URL(runtimeURL);
-    url.searchParams.append("method", method);
-    if (args) {
-        url.searchParams.append("args", JSON.stringify(args));
+    if( method ) {
+        url.searchParams.append("method", method);
     }
     let fetchOptions = {
         headers: {},
     };
     if (windowName) {
         fetchOptions.headers["x-wails-window-name"] = windowName;
+    }
+    if (args['wails-method-id']) {
+        fetchOptions.headers["x-wails-method-id"] = args['wails-method-id'];
+        delete args['wails-method-id'];
+    }
+    if (args) {
+        url.searchParams.append("args", JSON.stringify(args));
     }
     return new Promise((resolve, reject) => {
         fetch(url, fetchOptions)

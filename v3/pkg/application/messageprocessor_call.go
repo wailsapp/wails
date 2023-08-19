@@ -19,7 +19,7 @@ func (m *MessageProcessor) callCallback(window *WebviewWindow, callID *string, r
 	window.ExecJS(msg)
 }
 
-func (m *MessageProcessor) processCallMethod(method string, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
+func (m *MessageProcessor) processCallMethod(method string, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
 	args, err := params.Args()
 	if err != nil {
 		m.httpError(rw, "Unable to parse arguments: %s", err)
@@ -38,13 +38,23 @@ func (m *MessageProcessor) processCallMethod(method string, rw http.ResponseWrit
 			m.callErrorCallback(window, "Error parsing call options: %s", callID, err)
 			return
 		}
-		bindings := globalApplication.bindings.Get(&options)
-		if bindings == nil {
+		var boundMethod *BoundMethod
+		id, err := strconv.ParseUint(r.Header.Get("x-wails-method-id"), 10, 32)
+		if err != nil {
+			m.callErrorCallback(window, "Error parsing method id for call: %s", callID, err)
+			return
+		}
+		if id != 0 {
+			boundMethod = globalApplication.bindings.GetByID(uint32(id))
+		} else {
+			boundMethod = globalApplication.bindings.Get(&options)
+		}
+		if boundMethod == nil {
 			m.callErrorCallback(window, "Error getting binding for method: %s", callID, fmt.Errorf("'%s' not found", options.MethodName))
 			return
 		}
 		go func() {
-			result, err := bindings.Call(options.Args)
+			result, err := boundMethod.Call(options.Args)
 			if err != nil {
 				m.callErrorCallback(window, "Error calling method: %s", callID, err)
 				return
@@ -59,7 +69,7 @@ func (m *MessageProcessor) processCallMethod(method string, rw http.ResponseWrit
 				}
 			}
 			m.callCallback(window, callID, string(jsonResult), true)
-			m.Info("Call Binding:", "method", options.Name(), "args", args.data, "result", result)
+			m.Info("Call Binding:", "method", boundMethod, "args", options.Args, "result", result)
 		}()
 		m.ok(rw)
 	default:

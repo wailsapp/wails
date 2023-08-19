@@ -4,6 +4,7 @@ type Person struct {
 	name string
 }
 
+// GreetService is a service that greets people
 type GreetService struct {
 }
 

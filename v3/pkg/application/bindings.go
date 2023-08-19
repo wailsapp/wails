@@ -2,6 +2,7 @@ package application
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/hash"
 	"reflect"
 	"runtime"
 	"strings"
@@ -60,6 +61,7 @@ func (p *Parameter) IsError() bool {
 // BoundMethod defines all the data related to a Go method that is
 // bound to the Wails application
 type BoundMethod struct {
+	ID          uint32        `json:"id"`
 	Name        string        `json:"name"`
 	Inputs      []*Parameter  `json:"inputs,omitempty"`
 	Outputs     []*Parameter  `json:"outputs,omitempty"`
@@ -72,11 +74,13 @@ type BoundMethod struct {
 
 type Bindings struct {
 	boundMethods map[string]map[string]map[string]*BoundMethod
+	boundByID    map[uint32]*BoundMethod
 }
 
 func NewBindings(bindings []any) (*Bindings, error) {
 	b := &Bindings{
 		boundMethods: make(map[string]map[string]map[string]*BoundMethod),
+		boundByID:    make(map[uint32]*BoundMethod),
 	}
 	for _, binding := range bindings {
 		err := b.Add(binding)
@@ -108,6 +112,7 @@ func (b *Bindings) Add(structPtr interface{}) error {
 			b.boundMethods[packageName][structName] = make(map[string]*BoundMethod)
 		}
 		b.boundMethods[packageName][structName][methodName] = method
+		b.boundByID[method.ID] = method
 	}
 	return nil
 }
@@ -148,6 +153,7 @@ func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
 	return nil
 }
 
+// Get returns the bound method with the given name
 func (b *Bindings) Get(options *CallOptions) *BoundMethod {
 	_, ok := b.boundMethods[options.PackageName]
 	if !ok {
@@ -162,6 +168,30 @@ func (b *Bindings) Get(options *CallOptions) *BoundMethod {
 		return nil
 	}
 	return method
+}
+
+// GetByID returns the bound method with the given ID
+func (b *Bindings) GetByID(id uint32) *BoundMethod {
+	result := b.boundByID[id]
+	return result
+}
+
+// GenerateID generates a unique ID for a binding
+func (b *Bindings) GenerateID(name string) (uint32, error) {
+	id, err := hash.Fnv(name)
+	if err != nil {
+		return 0, err
+	}
+	// Check if we already have it
+	boundMethod, ok := b.boundByID[id]
+	if ok {
+		return 0, fmt.Errorf("oh wow, we're sorry about this! Amazingly, a hash collision was detected for method '%s' (it generates the same hash as '%s'). To continue, please rename it. Sorry :(", name, boundMethod.String())
+	}
+	return id, nil
+}
+
+func (b *BoundMethod) String() string {
+	return fmt.Sprintf("%s.%s.%s", b.PackageName, b.StructName, b.Name)
 }
 
 func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
@@ -210,7 +240,13 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 			Comments:    "",
 			Method:      method,
 		}
+		var err error
+		boundMethod.ID, err = hash.Fnv(boundMethod.String())
+		if err != nil {
+			return nil, err
+		}
 
+		globalApplication.Logger.Info("Adding method", "name", boundMethod, "id", boundMethod.ID)
 		// Iterate inputs
 		methodType := method.Type()
 		inputParamCount := methodType.NumIn()
