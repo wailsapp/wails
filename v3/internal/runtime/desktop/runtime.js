@@ -1,6 +1,6 @@
 /*
- _	   __	  _ __
-| |	 / /___ _(_) /____
+ _     __     _ __
+| |  / /___ _(_) /____
 | | /| / / __ `/ / / ___/
 | |/ |/ / /_/ / / (__  )
 |__/|__/\__,_/_/_/____/
@@ -9,6 +9,7 @@ The electron alternative for Go
 */
 
 /* jshint esversion: 9 */
+import { nanoid } from 'nanoid/non-secure';
 
 const runtimeURL = window.location.origin + "/wails/runtime";
 // Object Names
@@ -23,6 +24,7 @@ export const objectNames = {
     Screens: 7,
     System: 8,
 }
+export let clientId = nanoid();
 
 function runtimeCall(method, windowName, args) {
     let url = new URL(runtimeURL);
@@ -38,6 +40,8 @@ function runtimeCall(method, windowName, args) {
     if (args) {
         url.searchParams.append("args", JSON.stringify(args));
     }
+    fetchOptions.headers["x-wails-client-id"] = clientId;
+
     return new Promise((resolve, reject) => {
         fetch(url, fetchOptions)
             .then(response => {
@@ -75,6 +79,7 @@ function runtimeCallWithID(objectID, method, windowName, args) {
     if (args) {
         url.searchParams.append("args", JSON.stringify(args));
     }
+    fetchOptions.headers["x-wails-client-id"] = clientId;
     return new Promise((resolve, reject) => {
         fetch(url, fetchOptions)
             .then(response => {
@@ -98,5 +103,3 @@ export function newRuntimeCallerWithID(object, windowName) {
         return runtimeCallWithID(object, method, windowName, args);
     };
 }
-
-
