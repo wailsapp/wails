@@ -94,7 +94,7 @@ func NewBindings(bindings []any) (*Bindings, error) {
 // Add the given struct methods to the Bindings
 func (b *Bindings) Add(structPtr interface{}) error {
 
-	methods, err := b.getMethods(structPtr)
+	methods, err := b.getMethods(structPtr, false)
 	if err != nil {
 		return fmt.Errorf("cannot bind value to app: %s", err.Error())
 	}
@@ -119,7 +119,7 @@ func (b *Bindings) Add(structPtr interface{}) error {
 
 func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
 	for pluginID, plugin := range plugins {
-		methods, err := b.getMethods(plugin)
+		methods, err := b.getMethods(plugin, true)
 		if err != nil {
 			return fmt.Errorf("cannot add plugin '%s' to app: %s", pluginID, err.Error())
 		}
@@ -147,7 +147,7 @@ func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
 				b.boundMethods[packageName][structName] = make(map[string]*BoundMethod)
 			}
 			b.boundMethods[packageName][structName][methodName] = method
-			globalApplication.info("Added %s plugin method: %s", structName, methodName)
+			globalApplication.info("Added plugin method: "+structName+"."+methodName, "id", method.ID)
 		}
 	}
 	return nil
@@ -194,7 +194,7 @@ func (b *BoundMethod) String() string {
 	return fmt.Sprintf("%s.%s.%s", b.PackageName, b.StructName, b.Name)
 }
 
-func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
+func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod, error) {
 
 	// Create result placeholder
 	var result []*BoundMethod
@@ -246,7 +246,9 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 			return nil, err
 		}
 
-		globalApplication.Logger.Info("Adding method", "name", boundMethod, "id", boundMethod.ID)
+		if !isPlugin {
+			globalApplication.Logger.Info("Adding method", "name", boundMethod, "id", boundMethod.ID)
+		}
 		// Iterate inputs
 		methodType := method.Type()
 		inputParamCount := methodType.NumIn()

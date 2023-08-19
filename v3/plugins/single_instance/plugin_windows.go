@@ -15,7 +15,6 @@ func enumWindowsProc(hwnd syscall.Handle, lParam uintptr) uintptr {
 	if uint32(processID) == targetProcessID {
 		// Bring the window forward
 		w32.SetForegroundWindow(w32.HWND(hwnd))
-		println("Found window: ", hwnd)
 	}
 
 	// Continue enumeration

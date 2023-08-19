@@ -2,12 +2,10 @@ package kvstore
 
 import (
 	"encoding/json"
+	"github.com/wailsapp/wails/v3/pkg/application"
 	"io"
 	"os"
 	"sync"
-
-	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/logger"
 )
 
 type KeyValueStore struct {
@@ -16,7 +14,6 @@ type KeyValueStore struct {
 	data     map[string]any
 	unsaved  bool
 	lock     sync.RWMutex
-	app      *application.App
 }
 
 func (kvs *KeyValueStore) InjectJS() string {
@@ -54,8 +51,7 @@ func (kvs *KeyValueStore) Name() string {
 
 // Init is called when the plugin is loaded. It is passed the application.App
 // instance. This is where you should do any setup.
-func (kvs *KeyValueStore) Init(app *application.App) error {
-	kvs.app = app
+func (kvs *KeyValueStore) Init() error {
 	err := kvs.open(kvs.config.Filename)
 	if err != nil {
 		return err
@@ -92,13 +88,9 @@ func (kvs *KeyValueStore) open(filename string) (err error) {
 	defer func() {
 		err2 := file.Close()
 		if err2 != nil {
+			application.Get().Logger.Error("Key/Value Store Plugin Error:", "error", err.Error())
 			if err == nil {
 				err = err2
-			} else {
-				kvs.app.Log(&logger.Message{
-					Level:   "error",
-					Message: err.Error(),
-				})
 			}
 		}
 	}()

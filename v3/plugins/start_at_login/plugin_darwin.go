@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v3/pkg/logger"
+	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/mac"
 	"os"
 	"os/exec"
@@ -17,10 +17,7 @@ import (
 func (p *Plugin) init() error {
 	bundleID := mac.GetBundleID()
 	if bundleID == "" {
-		p.app.Log(&logger.Message{
-			Level:   "INFO",
-			Message: "Application is not in bundle. StartAtLogin will not work.",
-		})
+		application.Get().Logger.Warn("StartAtLogin Plugin: Application is not in bundle. StartAtLogin will not work.")
 		p.disabled = true
 	}
 	return nil

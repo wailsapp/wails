@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/application"
 	_ "modernc.org/sqlite"
 	"strings"
 )
@@ -33,7 +32,6 @@ type Config struct {
 
 type Plugin struct {
 	config          *Config
-	app             *application.App
 	conn            *sql.DB
 	callableMethods []string
 	js              string
@@ -60,10 +58,8 @@ func (p *Plugin) Name() string {
 }
 
 // Init is called when the app is starting up. You can use this to
-// initialise any resources you need. You can also access the application
-// instance via the app property.
-func (p *Plugin) Init(app *application.App) error {
-	p.app = app
+// initialise any resources you need.
+func (p *Plugin) Init() error {
 	p.callableMethods = []string{"Execute", "Select"}
 	p.js = executeselectjs
 	if p.config.CanOpenFromJS {

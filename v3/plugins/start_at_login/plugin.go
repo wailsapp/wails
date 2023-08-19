@@ -1,11 +1,6 @@
 package start_at_login
 
-import (
-	"github.com/wailsapp/wails/v3/pkg/application"
-)
-
 type Plugin struct {
-	app      *application.App
 	disabled bool
 	options  Config
 }
@@ -32,8 +27,7 @@ func (p *Plugin) Name() string {
 	return "github.com/wailsapp/wails/v3/plugins/start_at_login"
 }
 
-func (p *Plugin) Init(app *application.App) error {
-	p.app = app
+func (p *Plugin) Init() error {
 	// OS specific initialiser
 	err := p.init()
 	if err != nil {

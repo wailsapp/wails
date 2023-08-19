@@ -79,7 +79,7 @@ func (p *Plugin) Name() string {
 	return "github.com/wailsapp/wails/v3/plugins/oauth"
 }
 
-func (p *Plugin) Init(_ *application.App) error {
+func (p *Plugin) Init() error {
 
 	store := sessions.NewCookieStore([]byte(p.config.SessionSecret))
 	store.MaxAge(p.config.MaxAge)

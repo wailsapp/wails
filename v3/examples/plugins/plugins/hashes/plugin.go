@@ -5,8 +5,6 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
-
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // ---------------- Plugin Setup ----------------
@@ -23,7 +21,7 @@ func (r *Plugin) Name() string {
 	return "Hashes Plugin"
 }
 
-func (r *Plugin) Init(_ *application.App) error {
+func (r *Plugin) Init() error {
 	return nil
 }
 

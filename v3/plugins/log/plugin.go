@@ -28,7 +28,6 @@ type Plugin struct {
 }
 
 func NewPluginWithConfig(config *Config) *Plugin {
-
 	if config.Logger == nil {
 		config.Logger = application.DefaultLogger()
 	}
@@ -52,8 +51,7 @@ func (p *Plugin) Name() string {
 	return "github.com/wailsapp/wails/v3/plugins/log"
 }
 
-func (p *Plugin) Init(app *application.App) error {
-	p.app = app
+func (p *Plugin) Init() error {
 	return nil
 }
 

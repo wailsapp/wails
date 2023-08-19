@@ -16,7 +16,6 @@ type Config struct {
 
 type Plugin struct {
 	config   *Config
-	app      *application.App
 	lockfile *os.File
 }
 
@@ -55,12 +54,10 @@ func (p *Plugin) Name() string {
 // Init is called when the app is starting up. You can use this to
 // initialise any resources you need. You can also access the application
 // instance via the app property.
-func (p *Plugin) Init(app *application.App) error {
-	p.app = app
-
+func (p *Plugin) Init() error {
 	var err error
 	lockfileName := p.config.LockFilePath + "/" + p.config.LockFileName
-	p.lockfile, err = CreateLockFile(lockfileName, p.app.GetPID())
+	p.lockfile, err = CreateLockFile(lockfileName, application.Get().GetPID())
 	if err != nil {
 		if p.config.ActivateAppOnSubsequentLaunch {
 			pid, err := GetLockFilePid(lockfileName)

@@ -4,7 +4,7 @@ import "github.com/wailsapp/wails/v3/internal/assetserver"
 
 type Plugin interface {
 	Name() string
-	Init(app *App) error
+	Init() error
 	Shutdown()
 	CallableByJS() []string
 	InjectJS() string
@@ -26,9 +26,9 @@ func NewPluginManager(plugins map[string]Plugin, assetServer *assetserver.AssetS
 
 func (p *PluginManager) Init() error {
 	for _, plugin := range p.plugins {
-		err := plugin.Init(globalApplication)
+		err := plugin.Init()
 		if err != nil {
-			globalApplication.error("Plugin '%s' failed to initialise: %s", plugin.Name(), err.Error())
+			globalApplication.error("Plugin failed to initialise:", "plugin", plugin.Name(), "error", err.Error())
 			p.Shutdown()
 			return err
 		}
@@ -37,7 +37,7 @@ func (p *PluginManager) Init() error {
 		if injectJS != "" {
 			p.assetServer.AddPluginScript(plugin.Name(), injectJS)
 		}
-		globalApplication.info("Plugin '%s' initialised", plugin.Name())
+		globalApplication.info("Plugin initialised: " + plugin.Name())
 	}
 	return nil
 }
@@ -45,6 +45,6 @@ func (p *PluginManager) Init() error {
 func (p *PluginManager) Shutdown() {
 	for _, plugin := range p.initialisedPlugins {
 		plugin.Shutdown()
-		globalApplication.info("Plugin '%s' shutdown", plugin.Name())
+		globalApplication.info("Plugin shutdown: " + plugin.Name())
 	}
 }
