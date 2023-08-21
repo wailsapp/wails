@@ -393,7 +393,7 @@ func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 	}
 
 	printBulletPoint("Executing %s build hook '%s': ", hookName, hookIdentifier)
-	args, err := shlex.Split(buildHook, " ")
+	args, err := shlex.Split(buildHook)
 	if err != nil {
 		return fmt.Errorf("could not parse %s build hook command: %w", hookName, err)
 	}
