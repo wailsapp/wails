@@ -145,15 +145,15 @@ func Build(options *Options) (string, error) {
 		if err != nil {
 			return "", err
 		}
-	}
 
-	hookArgs["${bin}"] = compileBinary
-	for _, hook := range []string{options.Platform + "/" + options.Arch, options.Platform + "/*", "*/*"} {
-		if err := execPostBuildHook(outputLogger, options, hook, hookArgs); err != nil {
-			return "", err
+		hookArgs["${bin}"] = compileBinary
+		for _, hook := range []string{options.Platform + "/" + options.Arch, options.Platform + "/*", "*/*"} {
+			if err := execPostBuildHook(outputLogger, options, hook, hookArgs); err != nil {
+				return "", err
+			}
 		}
-	}
 
+	}
 	return compileBinary, nil
 }
 
