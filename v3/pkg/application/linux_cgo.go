@@ -800,7 +800,7 @@ func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data unsafe.Pointer)
 	case GdkButtonPress:
 		lw.startDrag() //uint(event.button), int(event.x_root), int(event.y_root))
 	case Gdk2ButtonPress:
-		fmt.Printf("%d - button %d - double-clicked\n", windowId, int(event.button))
+		// do we need something here?
 	case GdkButtonRelease:
 		lw.endDrag(uint(event.button), int(event.x_root), int(event.y_root))
 	}
@@ -853,7 +853,6 @@ func gtkBool(input bool) C.gboolean {
 // dialog related
 
 func setWindowIcon(window pointer, icon []byte) {
-	fmt.Println("setWindowIcon", len(icon))
 	loader := C.gdk_pixbuf_loader_new()
 	if loader == nil {
 		return
