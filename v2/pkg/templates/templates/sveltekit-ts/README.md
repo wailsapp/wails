@@ -10,9 +10,9 @@ Please see [this wails.io page](https://wails.io/docs/next/guides/sveltekit/) fo
 
 ## Important Notes
 
-1. Server files will cause build failures.  Because wails serves SvelteKit as a static site, using any `+laout.server.ts`, `+page.server.ts`, or `+server.ts` pages will fail to build since all routes are pre-rendered.
+1. Server files will cause build failures.  Because wails serves SvelteKit as a static site, using any `+layout.server.ts`, `+page.server.ts`, or `+server.ts` pages will fail to build since all routes are pre-rendered.
 
-1. Anything that causes full page navigation (like `window.location.href = '/<some>/<page>`) or reloads when using wails dev.  What this means is possibly losing the ability to call any runtime, and breaking the app.  Work around this by using the svelte `goto` functino from `$app/navigation`. More details [here](https://wails.io/docs/next/guides/sveltekit/#3-important-notes).
+1. Anything that causes full page navigation (like `window.location.href = '/<some>/<page>`) or reloads when using wails dev.  What this means is possibly losing the ability to call any runtime, and breaking the app.  Work around this by using the svelte `goto` function from `$app/navigation`. More details [here](https://wails.io/docs/next/guides/sveltekit/#3-important-notes).
 
 1. Server files notwithstanding, `+page.ts`, works well with load() functions in the typical sveltekit way, like this:
 
