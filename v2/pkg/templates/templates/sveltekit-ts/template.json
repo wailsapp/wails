@@ -1,0 +1,7 @@
+{
+  "name": "SvelteKit Typescript Template",
+  "shortname": "sveltekit-ts",
+  "author": "David Haukeness (@haukened)",
+  "description": "Wails sveltekit template with typescript annontations",
+  "helpurl": "https://wails.io"
+}
