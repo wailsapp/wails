@@ -210,7 +210,7 @@ func (w *linuxWebviewWindow) zoomOut() {
 }
 
 func (w *linuxWebviewWindow) zoomReset() {
-	windowZoomSet(w.webview, 0.0)
+	windowZoomSet(w.webview, 1.0)
 }
 
 func (w *linuxWebviewWindow) reload() {

@@ -765,6 +765,9 @@ func windowZoomOut(webview pointer) {
 }
 
 func windowZoomSet(webview pointer, zoom float64) {
+	if zoom < 1 { // 1.0 is the smallest allowable
+		zoom = 1
+	}
 	C.webkit_web_view_set_zoom_level((*C.WebKitWebView)(webview), C.double(zoom))
 }
 

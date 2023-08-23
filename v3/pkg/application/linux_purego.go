@@ -947,7 +947,6 @@ func windowZoom(webview pointer) float64 {
 	return webkitWebViewGetZoom(webview)
 }
 
-// FIXME: ZoomIn/Out is assumed to be incorrect!
 func windowZoomIn(webview pointer) {
 	ZoomInFactor := 1.10
 	windowZoomSet(webview, windowZoom(webview)*ZoomInFactor)
@@ -958,6 +957,9 @@ func windowZoomOut(webview pointer) {
 }
 
 func windowZoomSet(webview pointer, zoom float64) {
+	if zoom < 1.0 { // 1.0 is the smallest allowable
+		zoom = 1.0
+	}
 	webkitWebViewSetZoomLevel(webview, zoom)
 }
 
