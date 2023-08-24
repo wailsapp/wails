@@ -173,7 +173,13 @@ func (w *Window) Center() {
 }
 
 func (w *Window) SetPosition(x int, y int) {
-	C.SetPosition(unsafe.Pointer(w.asGTKWindow()), C.int(x), C.int(y))
+	var wg sync.WaitGroup
+	wg.Add(1)
+	invokeOnMainThread(func() {
+		C.SetPosition(unsafe.Pointer(w.asGTKWindow()), C.int(x), C.int(y))
+		wg.Done()
+	})
+	wg.Wait()
 }
 
 func (w *Window) Size() (int, int) {
