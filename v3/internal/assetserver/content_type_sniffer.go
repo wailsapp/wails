@@ -5,12 +5,12 @@ import (
 )
 
 type contentTypeSniffer struct {
-	rw http.ResponseWriter
-
+	rw          http.ResponseWriter
+	status      int
 	wroteHeader bool
 }
 
-func (rw *contentTypeSniffer) Header() http.Header {
+func (rw contentTypeSniffer) Header() http.Header {
 	return rw.rw.Header()
 }
 
@@ -23,7 +23,7 @@ func (rw *contentTypeSniffer) WriteHeader(code int) {
 	if rw.wroteHeader {
 		return
 	}
-
+	rw.status = code
 	rw.rw.WriteHeader(code)
 	rw.wroteHeader = true
 }

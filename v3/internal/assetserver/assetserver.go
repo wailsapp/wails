@@ -3,13 +3,13 @@ package assetserver
 import (
 	"bytes"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"log/slog"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
 	"strings"
+	"time"
 
 	"golang.org/x/net/html"
 )
@@ -139,25 +139,30 @@ func (d *AssetServer) AddPluginScript(pluginName string, script string) {
 	d.pluginScripts[pluginScriptName] = script
 }
 
-func logRequest(logger *slog.Logger, req *http.Request, code int) {
-	windowName := req.Header.Get(webViewRequestHeaderWindowName)
-	windowID := req.Header.Get(webViewRequestHeaderWindowId)
-	logger.Info("Asset Request:", "windowName", windowName, "windowID", windowID, "code", code, "method", req.Method, "url", req.URL.Path)
+func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	start := time.Now()
+	wrapped := &contentTypeSniffer{rw: rw}
+	d.serveHTTP(wrapped, req)
+	d.logger.Info(
+		"Asset Request:",
+		"windowName", req.Header.Get(webViewRequestHeaderWindowName),
+		"windowID", req.Header.Get(webViewRequestHeaderWindowId),
+		"code", wrapped.status,
+		"method", req.Method,
+		"path", req.URL.EscapedPath(),
+		"duration", time.Since(start),
+	)
 }
 
-func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+func (d *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	if d.wsHandler != nil {
 		d.wsHandler.ServeHTTP(rw, req)
-		// Get response code from header
-		code := rw.(*contentTypeSniffer).rw.(*legacyRequestNoOpCloserResponseWriter).ResponseWriter.(*httptest.ResponseRecorder).Code
-		logRequest(d.logger, req, code)
 		return
 	} else {
 		if isWebSocket(req) {
 			// WebSockets are not supported by the AssetServer
 			rw.WriteHeader(http.StatusNotImplemented)
-			logRequest(d.logger, req, http.StatusNotImplemented)
 			return
 		}
 	}
@@ -192,7 +197,6 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			rw.WriteHeader(recorder.Code)
 
 		}
-		logRequest(d.logger, req, recorder.Code)
 		return
 
 	case runtimeJSPath:
@@ -229,13 +233,9 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			d.writeBlob(rw, path, []byte(script))
 		} else {
 			d.handler.ServeHTTP(rw, req)
-			code := rw.(*contentTypeSniffer).rw.(webview.ResponseWriter).Code()
-			logRequest(d.logger, req, code)
 			return
 		}
 	}
-
-	logRequest(d.logger, req, http.StatusOK)
 }
 
 func (d *AssetServer) processIndexHTML(indexHTML []byte) ([]byte, error) {
