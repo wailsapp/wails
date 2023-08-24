@@ -271,6 +271,7 @@ func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {
 		b:       C.uchar(b),
 		a:       C.uchar(a),
 		webview: w.webview,
+		window:  w.gtkWindow,
 	}
 	invokeOnMainThread(func() { C.SetBackgroundColour(unsafe.Pointer(&data)) })
 
