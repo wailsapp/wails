@@ -10,15 +10,18 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
-import {newRuntimeCaller} from "./runtime";
+import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
-let call = newRuntimeCaller("clipboard");
+let call = newRuntimeCallerWithID(objectNames.Clipboard);
+
+let ClipboardSetText = 0;
+let ClipboardText = 1;
 
 /**
  * Set the Clipboard text
  */
 export function SetText(text) {
-    void call("SetText", {text});
+    void call(ClipboardSetText, {text});
 }
 
 /**
@@ -26,5 +29,5 @@ export function SetText(text) {
  * @returns {Promise<string>}
  */
 export function Text() {
-    return call("Text");
+    return call(ClipboardText);
 }

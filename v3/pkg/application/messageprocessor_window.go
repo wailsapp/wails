@@ -4,7 +4,73 @@ import (
 	"net/http"
 )
 
-func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
+const (
+	WindowCenter              = 0
+	WindowSetTitle            = 1
+	WindowFullscreen          = 2
+	WindowUnFullscreen        = 3
+	WindowSetSize             = 4
+	WindowSize                = 5
+	WindowSetMaxSize          = 6
+	WindowSetMinSize          = 7
+	WindowSetAlwaysOnTop      = 8
+	WindowSetRelativePosition = 9
+	WindowRelativePosition    = 10
+	WindowScreen              = 11
+	WindowHide                = 12
+	WindowMaximise            = 13
+	WindowUnMaximise          = 14
+	WindowToggleMaximise      = 15
+	WindowMinimise            = 16
+	WindowUnMinimise          = 17
+	WindowRestore             = 18
+	WindowShow                = 19
+	WindowClose               = 20
+	WindowSetBackgroundColour = 21
+	WindowSetResizable        = 22
+	WindowWidth               = 23
+	WindowHeight              = 24
+	WindowZoomIn              = 25
+	WindowZoomOut             = 26
+	WindowZoomReset           = 27
+	WindowGetZoomLevel        = 28
+	WindowSetZoomLevel        = 29
+)
+
+var windowMethods = map[int]string{
+	WindowCenter:              "Center",
+	WindowSetTitle:            "SetTitle",
+	WindowFullscreen:          "Fullscreen",
+	WindowUnFullscreen:        "UnFullscreen",
+	WindowSetSize:             "SetSize",
+	WindowSize:                "Size",
+	WindowSetMaxSize:          "SetMaxSize",
+	WindowSetMinSize:          "SetMinSize",
+	WindowSetAlwaysOnTop:      "SetAlwaysOnTop",
+	WindowSetRelativePosition: "SetRelativePosition",
+	WindowRelativePosition:    "RelativePosition",
+	WindowScreen:              "Screen",
+	WindowHide:                "Hide",
+	WindowMaximise:            "Maximise",
+	WindowUnMaximise:          "UnMaximise",
+	WindowToggleMaximise:      "ToggleMaximise",
+	WindowMinimise:            "Minimise",
+	WindowUnMinimise:          "UnMinimise",
+	WindowRestore:             "Restore",
+	WindowShow:                "Show",
+	WindowClose:               "Close",
+	WindowSetBackgroundColour: "SetBackgroundColour",
+	WindowSetResizable:        "SetResizable",
+	WindowWidth:               "Width",
+	WindowHeight:              "Height",
+	WindowZoomIn:              "ZoomIn",
+	WindowZoomOut:             "ZoomOut",
+	WindowZoomReset:           "ZoomReset",
+	WindowGetZoomLevel:        "GetZoomLevel",
+	WindowSetZoomLevel:        "SetZoomLevel",
+}
+
+func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
 
 	args, err := params.Args()
 	if err != nil {
@@ -13,7 +79,7 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 	}
 
 	switch method {
-	case "SetTitle":
+	case WindowSetTitle:
 		title := args.String("title")
 		if title == nil {
 			m.Error("SetTitle: title is required")
@@ -21,7 +87,7 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		}
 		window.SetTitle(*title)
 		m.ok(rw)
-	case "SetSize":
+	case WindowSetSize:
 		width := args.Int("width")
 		height := args.Int("height")
 		if width == nil || height == nil {
@@ -30,7 +96,7 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		}
 		window.SetSize(*width, *height)
 		m.ok(rw)
-	case "SetRelativePosition":
+	case WindowSetRelativePosition:
 		x := args.Int("x")
 		y := args.Int("y")
 		if x == nil || y == nil {
@@ -39,52 +105,52 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		}
 		window.SetRelativePosition(*x, *y)
 		m.ok(rw)
-	case "Fullscreen":
+	case WindowFullscreen:
 		window.Fullscreen()
 		m.ok(rw)
-	case "UnFullscreen":
+	case WindowUnFullscreen:
 		window.UnFullscreen()
 		m.ok(rw)
-	case "Minimise":
+	case WindowMinimise:
 		window.Minimise()
 		m.ok(rw)
-	case "UnMinimise":
+	case WindowUnMinimise:
 		window.UnMinimise()
 		m.ok(rw)
-	case "Maximise":
+	case WindowMaximise:
 		window.Maximise()
 		m.ok(rw)
-	case "UnMaximise":
+	case WindowUnMaximise:
 		window.UnMaximise()
 		m.ok(rw)
-	case "Restore":
+	case WindowRestore:
 		window.Restore()
 		m.ok(rw)
-	case "Show":
+	case WindowShow:
 		window.Show()
 		m.ok(rw)
-	case "Hide":
+	case WindowHide:
 		window.Hide()
 		m.ok(rw)
-	case "Close":
+	case WindowClose:
 		window.Close()
 		m.ok(rw)
-	case "Center":
+	case WindowCenter:
 		window.Center()
 		m.ok(rw)
-	case "Size":
+	case WindowSize:
 		width, height := window.Size()
 		m.json(rw, map[string]interface{}{
 			"width":  width,
 			"height": height,
 		})
-	case "RelativePosition":
+	case WindowRelativePosition:
 		x, y := window.RelativePosition()
 		m.json(rw, map[string]interface{}{
 			"x": x,
 			"y": y,
 		})
-	case "SetBackgroundColour":
+	case WindowSetBackgroundColour:
 		r := args.UInt8("r")
 		if r == nil {
 			m.Error("Invalid SetBackgroundColour Message: 'r' value required")
@@ -112,7 +178,7 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 			Alpha: *a,
 		})
 		m.ok(rw)
-	case "SetAlwaysOnTop":
+	case WindowSetAlwaysOnTop:
 		alwaysOnTop := args.Bool("alwaysOnTop")
 		if alwaysOnTop == nil {
 			m.Error("Invalid SetAlwaysOnTop Message: 'alwaysOnTop' value required")
@@ -120,7 +186,7 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		}
 		window.SetAlwaysOnTop(*alwaysOnTop)
 		m.ok(rw)
-	case "SetResizable":
+	case WindowSetResizable:
 		resizable := args.Bool("resizable")
 		if resizable == nil {
 			m.Error("Invalid SetResizable Message: 'resizable' value required")
@@ -128,7 +194,7 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		}
 		window.SetResizable(*resizable)
 		m.ok(rw)
-	case "SetMinSize":
+	case WindowSetMinSize:
 		width := args.Int("width")
 		height := args.Int("height")
 		if width == nil || height == nil {
@@ -137,7 +203,7 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		}
 		window.SetMinSize(*width, *height)
 		m.ok(rw)
-	case "SetMaxSize":
+	case WindowSetMaxSize:
 		width := args.Int("width")
 		height := args.Int("height")
 		if width == nil || height == nil {
@@ -146,38 +212,38 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		}
 		window.SetMaxSize(*width, *height)
 		m.ok(rw)
-	case "Width":
+	case WindowWidth:
 		width := window.Width()
 		m.json(rw, map[string]interface{}{
 			"width": width,
 		})
-	case "Height":
+	case WindowHeight:
 		height := window.Height()
 		m.json(rw, map[string]interface{}{
 			"height": height,
 		})
-	case "ZoomIn":
+	case WindowZoomIn:
 		window.ZoomIn()
 		m.ok(rw)
-	case "ZoomOut":
+	case WindowZoomOut:
 		window.ZoomOut()
 		m.ok(rw)
-	case "ZoomReset":
+	case WindowZoomReset:
 		window.ZoomReset()
 		m.ok(rw)
-	case "GetZoom":
+	case WindowGetZoomLevel:
 		zoomLevel := window.GetZoom()
 		m.json(rw, map[string]interface{}{
 			"zoomLevel": zoomLevel,
 		})
-	case "Screen":
+	case WindowScreen:
 		screen, err := window.GetScreen()
 		if err != nil {
 			m.httpError(rw, err.Error())
 			return
 		}
 		m.json(rw, screen)
-	case "SetZoom":
+	case WindowSetZoomLevel:
 		zoomLevel := args.Float64("zoomLevel")
 		if zoomLevel == nil {
 			m.Error("Invalid SetZoom Message: invalid 'zoomLevel' value")
@@ -186,10 +252,10 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		window.SetZoom(*zoomLevel)
 		m.ok(rw)
 	default:
-		m.httpError(rw, "Unknown window method: %s", method)
+		m.httpError(rw, "Unknown window method id: %s", method)
 	}
 
-	var logArgs = []any{"method", "Window." + method}
+	var logArgs = []any{"method", method}
 	for name, arg := range args.data {
 		logArgs = append(logArgs, name)
 		logArgs = append(logArgs, arg)

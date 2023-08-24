@@ -8,6 +8,24 @@ import (
 	"strconv"
 )
 
+const (
+	DialogInfo     = 0
+	DialogWarning  = 1
+	DialogError    = 2
+	DialogQuestion = 3
+	DialogOpenFile = 4
+	DialogSaveFile = 5
+)
+
+var dialogMethodNames = map[int]string{
+	DialogInfo:     "Info",
+	DialogWarning:  "Warning",
+	DialogError:    "Error",
+	DialogQuestion: "Question",
+	DialogOpenFile: "OpenFile",
+	DialogSaveFile: "SaveFile",
+}
+
 func (m *MessageProcessor) dialogErrorCallback(window *WebviewWindow, message string, dialogID *string, err error) {
 	errorMsg := fmt.Sprintf(message, err)
 	m.Error(errorMsg)
@@ -21,7 +39,7 @@ func (m *MessageProcessor) dialogCallback(window *WebviewWindow, dialogID *strin
 	window.ExecJS(msg)
 }
 
-func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
+func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
 
 	args, err := params.Args()
 	if err != nil {
@@ -33,8 +51,11 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		m.Error("dialog-id is required")
 		return
 	}
+
+	var methodName = "Dialog." + dialogMethodNames[method]
+
 	switch method {
-	case "Info", "Warning", "Error", "Question":
+	case DialogInfo, DialogWarning, DialogError, DialogQuestion:
 		var options MessageDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
@@ -49,13 +70,13 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		}
 		var dialog *MessageDialog
 		switch method {
-		case "Info":
+		case DialogInfo:
 			dialog = InfoDialog()
-		case "Warning":
+		case DialogWarning:
 			dialog = WarningDialog()
-		case "Error":
+		case DialogError:
 			dialog = ErrorDialog()
-		case "Question":
+		case DialogQuestion:
 			dialog = QuestionDialog()
 		}
 		var detached = args.Bool("Detached")
@@ -74,9 +95,9 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		dialog.AddButtons(options.Buttons)
 		dialog.Show()
 		m.ok(rw)
-		m.Info("Runtime:", "method", "Dialog."+method, "options", options)
+		m.Info("Runtime:", "method", methodName, "options", options)
 
-	case "OpenFile":
+	case DialogOpenFile:
 		var options OpenFileDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
@@ -102,7 +123,7 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 						return
 					}
 					m.dialogCallback(window, dialogID, string(result), true)
-					m.Info("Runtime:", "method", "Dialog."+method, "result", result)
+					m.Info("Runtime:", "method", methodName, "result", result)
 				}
 			} else {
 				file, err := dialog.PromptForSingleSelection()
@@ -111,13 +132,13 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 					return
 				}
 				m.dialogCallback(window, dialogID, file, false)
-				m.Info("Runtime:", "method", "Dialog."+method, "result", file)
+				m.Info("Runtime:", "method", methodName, "result", file)
 			}
 		}()
 		m.ok(rw)
-		m.Info("Runtime:", "method", "Dialog."+method, "options", options)
+		m.Info("Runtime:", "method", methodName, "options", options)
 
-	case "SaveFile":
+	case DialogSaveFile:
 		var options SaveFileDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
@@ -137,10 +158,10 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 				return
 			}
 			m.dialogCallback(window, dialogID, file, false)
-			m.Info("Runtime:", "method", "Dialog."+method, "result", file)
+			m.Info("Runtime:", "method", methodName, "result", file)
 		}()
 		m.ok(rw)
-		m.Info("Runtime:", "method", "Dialog."+method, "options", options)
+		m.Info("Runtime:", "method", methodName, "options", options)
 
 	default:
 		m.httpError(rw, "Unknown dialog method: %s", method)

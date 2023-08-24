@@ -14,16 +14,20 @@ The electron alternative for Go
  * @typedef {import("./api/types").Screen} Screen
  */
 
-import {newRuntimeCaller} from "./runtime";
+import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
-let call = newRuntimeCaller("screens");
+let call = newRuntimeCallerWithID(objectNames.Screens);
+
+let ScreensGetAll = 0;
+let ScreensGetPrimary = 1;
+let ScreensGetCurrent = 2;
 
 /**
  * Gets all screens.
  * @returns {Promise<Screen[]>}
  */
 export function GetAll() {
-    return call("GetAll");
+    return call(ScreensGetAll);
 }
 
 /**
@@ -31,7 +35,7 @@ export function GetAll() {
  * @returns {Promise<Screen>}
  */
 export function GetPrimary() {
-    return call("GetPrimary");
+    return call(ScreensGetPrimary);
 }
 
 /**
@@ -40,5 +44,5 @@ export function GetPrimary() {
  * @constructor
  */
 export function GetCurrent() {
-    return call("GetCurrent");
+    return call(ScreensGetCurrent);
 }

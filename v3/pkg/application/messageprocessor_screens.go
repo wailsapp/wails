@@ -4,24 +4,36 @@ import (
 	"net/http"
 )
 
-func (m *MessageProcessor) processScreensMethod(method string, rw http.ResponseWriter, _ *http.Request, _ *WebviewWindow, _ QueryParams) {
+const (
+	ScreensGetAll     = 0
+	ScreensGetPrimary = 1
+	ScreensGetCurrent = 2
+)
+
+var screensMethodNames = map[int]string{
+	ScreensGetAll:     "GetAll",
+	ScreensGetPrimary: "GetPrimary",
+	ScreensGetCurrent: "GetCurrent",
+}
+
+func (m *MessageProcessor) processScreensMethod(method int, rw http.ResponseWriter, _ *http.Request, _ *WebviewWindow, _ QueryParams) {
 
 	switch method {
-	case "GetAll":
+	case ScreensGetAll:
 		screens, err := globalApplication.GetScreens()
 		if err != nil {
 			m.Error("GetAll: %s", err.Error())
 			return
 		}
 		m.json(rw, screens)
-	case "GetPrimary":
+	case ScreensGetPrimary:
 		screen, err := globalApplication.GetPrimaryScreen()
 		if err != nil {
 			m.Error("GetPrimary: %s", err.Error())
 			return
 		}
 		m.json(rw, screen)
-	case "GetCurrent":
+	case ScreensGetCurrent:
 		screen, err := globalApplication.CurrentWindow().GetScreen()
 		if err != nil {
 			m.Error("GetCurrent: %s", err.Error())
@@ -32,6 +44,6 @@ func (m *MessageProcessor) processScreensMethod(method string, rw http.ResponseW
 		m.httpError(rw, "Unknown screens method: %s", method)
 	}
 
-	m.Info("Runtime:", "method", "Screens."+method)
+	m.Info("Runtime:", "method", "Screens."+screensMethodNames[method])
 
 }

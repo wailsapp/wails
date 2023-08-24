@@ -16,11 +16,19 @@ The electron alternative for Go
  * @typedef {import("./api/types").SaveDialogOptions} SaveDialogOptions
  */
 
-import {newRuntimeCaller} from "./runtime";
+import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
 import { nanoid } from 'nanoid/non-secure';
 
-let call = newRuntimeCaller("dialog");
+let call = newRuntimeCallerWithID(objectNames.Dialog);
+
+let DialogInfo = 0;
+let DialogWarning = 1;
+let DialogError = 2;
+let DialogQuestion = 3;
+let DialogOpenFile = 4;
+let DialogSaveFile = 5;
+
 
 let dialogResponses = new Map();
 
@@ -71,7 +79,7 @@ function dialog(type, options) {
  * @returns {Promise<string>} The label of the button pressed
  */
 export function Info(options) {
-    return dialog("Info", options);
+    return dialog(DialogInfo, options);
 }
 
 /**
@@ -80,7 +88,7 @@ export function Info(options) {
  * @returns {Promise<string>} The label of the button pressed
  */
 export function Warning(options) {
-    return dialog("Warning", options);
+    return dialog(DialogWarning, options);
 }
 
 /**
@@ -89,16 +97,16 @@ export function Warning(options) {
  * @returns {Promise<string>} The label of the button pressed
  */
 export function Error(options) {
-    return dialog("Error", options);
+    return dialog(DialogError, options);
 }
 
 /**
  * Shows a Question dialog with the given options.
- * @param {MessageDialogOptions} options} options
+ * @param {MessageDialogOptions} options
  * @returns {Promise<string>} The label of the button pressed
  */
 export function Question(options) {
-    return dialog("Question", options);
+    return dialog(DialogQuestion, options);
 }
 
 /**
@@ -107,15 +115,15 @@ export function Question(options) {
  * @returns {Promise<string[]|string>} Returns the selected file or an array of selected files if AllowsMultipleSelection is true. A blank string is returned if no file was selected.
  */
 export function OpenFile(options) {
-    return dialog("OpenFile", options);
+    return dialog(DialogOpenFile, options);
 }
 
 /**
  * Shows a Save dialog with the given options.
- * @param {OpenDialogOptions} options
+ * @param {SaveDialogOptions} options
  * @returns {Promise<string>} Returns the selected file. A blank string is returned if no file was selected.
  */
 export function SaveFile(options) {
-    return dialog("SaveFile", options);
+    return dialog(DialogSaveFile, options);
 }
 

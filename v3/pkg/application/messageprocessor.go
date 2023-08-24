@@ -13,6 +13,18 @@ import (
 // TODO maybe we could use a new struct that has the targetWindow as an attribute so we could get rid of passing the targetWindow
 // as parameter through every function call.
 
+const (
+	callRequest        int = 0
+	clipboardRequest       = 1
+	applicationRequest     = 2
+	eventsRequest          = 3
+	contextMenuRequest     = 4
+	dialogRequest          = 5
+	windowRequest          = 6
+	screensRequest         = 7
+	systemRequest          = 8
+)
+
 type MessageProcessor struct {
 	pluginManager *PluginManager
 	logger        *slog.Logger
@@ -53,6 +65,11 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) *WebviewWindow {
 }
 
 func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Request) {
+	object := r.URL.Query().Get("object")
+	if object != "" {
+		m.HandleRuntimeCallWithIDs(rw, r)
+		return
+	}
 	// Read "method" from query string
 	method := r.URL.Query().Get("method")
 	if method == "" {
@@ -65,7 +82,7 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 		return
 	}
 	// Get the object
-	object := splitMethod[0]
+	object = splitMethod[0]
 	// Get the method
 	method = splitMethod[1]
 
@@ -78,23 +95,66 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 	}
 
 	switch object {
-	case "window":
-		m.processWindowMethod(method, rw, r, targetWindow, params)
-	case "clipboard":
-		m.processClipboardMethod(method, rw, r, targetWindow, params)
-	case "dialog":
-		m.processDialogMethod(method, rw, r, targetWindow, params)
-	case "events":
-		m.processEventsMethod(method, rw, r, targetWindow, params)
-	case "application":
-		m.processApplicationMethod(method, rw, r, targetWindow, params)
-	case "contextmenu":
-		m.processContextMenuMethod(method, rw, r, targetWindow, params)
-	case "screens":
-		m.processScreensMethod(method, rw, r, targetWindow, params)
+	//case "window":
+	//	m.processWindowMethod(method, rw, r, targetWindow, params)
+	//case "clipboard":
+	//	m.processClipboardMethod(method, rw, r, targetWindow, params)
+	//case "dialog":
+	//	m.processDialogMethod(method, rw, r, targetWindow, params)
+	//case "events":
+	//	m.processEventsMethod(method, rw, r, targetWindow, params)
+	//case "application":
+	//	m.processApplicationMethod(method, rw, r, targetWindow, params)
+	//case "contextmenu":
+	//	m.processContextMenuMethod(method, rw, r, targetWindow, params)
+	//case "screens":
+	//	m.processScreensMethod(method, rw, r, targetWindow, params)
 	case "call":
 		m.processCallMethod(method, rw, r, targetWindow, params)
-	case "system":
+	//case "system":
+	//	m.processSystemMethod(method, rw, r, targetWindow, params)
+	default:
+		m.httpError(rw, "Unknown runtime call: %s", object)
+	}
+}
+
+func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *http.Request) {
+	object, err := strconv.Atoi(r.URL.Query().Get("object"))
+	if err != nil {
+		m.httpError(rw, "Error decoding object value: "+err.Error())
+		return
+	}
+	method, err := strconv.Atoi(r.URL.Query().Get("method"))
+	if err != nil {
+		m.httpError(rw, "Error decoding method value: "+err.Error())
+		return
+	}
+	params := QueryParams(r.URL.Query())
+
+	targetWindow := m.getTargetWindow(r)
+	if targetWindow == nil {
+		m.httpError(rw, "No valid window found")
+		return
+	}
+
+	switch object {
+	case windowRequest:
+		m.processWindowMethod(method, rw, r, targetWindow, params)
+	case clipboardRequest:
+		m.processClipboardMethod(method, rw, r, targetWindow, params)
+	case dialogRequest:
+		m.processDialogMethod(method, rw, r, targetWindow, params)
+	case eventsRequest:
+		m.processEventsMethod(method, rw, r, targetWindow, params)
+	case applicationRequest:
+		m.processApplicationMethod(method, rw, r, targetWindow, params)
+	case contextMenuRequest:
+		m.processContextMenuMethod(method, rw, r, targetWindow, params)
+	case screensRequest:
+		m.processScreensMethod(method, rw, r, targetWindow, params)
+	//case callRequest:
+	//	m.processCallMethod(method, rw, r, targetWindow, params)
+	case systemRequest:
 		m.processSystemMethod(method, rw, r, targetWindow, params)
 	default:
 		m.httpError(rw, "Unknown runtime call: %s", object)

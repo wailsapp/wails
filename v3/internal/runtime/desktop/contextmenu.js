@@ -1,9 +1,11 @@
-import {newRuntimeCaller} from "./runtime";
+import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
-let call = newRuntimeCaller("contextmenu");
+let call = newRuntimeCallerWithID(objectNames.ContextMenu);
+
+let ContextMenuOpen = 0;
 
 function openContextMenu(id, x, y, data) {
-    void call("OpenContextMenu", {id, x, y, data});
+    void call(ContextMenuOpen, {id, x, y, data});
 }
 
 export function setupContextMenus() {

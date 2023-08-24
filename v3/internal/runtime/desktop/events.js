@@ -14,9 +14,10 @@ The electron alternative for Go
  * @typedef {import("./api/types").WailsEvent} WailsEvent
  */
 
-import {newRuntimeCaller} from "./runtime";
+import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
-let call = newRuntimeCaller("events");
+let call = newRuntimeCallerWithID(objectNames.Events);
+let EventEmit = 0;
 
 /**
  * The Listener class defines a listener! :-)
@@ -189,5 +190,5 @@ export function OffAll() {
  * @param {WailsEvent} event The event to emit
  */
 export function Emit(event) {
-    void call("Emit", event);
+    void call(EventEmit, event);
 }

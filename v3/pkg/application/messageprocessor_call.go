@@ -39,18 +39,23 @@ func (m *MessageProcessor) processCallMethod(method string, rw http.ResponseWrit
 			return
 		}
 		var boundMethod *BoundMethod
-		id, err := strconv.ParseUint(r.Header.Get("x-wails-method-id"), 10, 32)
-		if err != nil {
-			m.callErrorCallback(window, "Error parsing method id for call: %s", callID, err)
-			return
-		}
-		if id != 0 {
-			boundMethod = globalApplication.bindings.GetByID(uint32(id))
-		} else {
+		methodID := r.Header.Get("x-wails-method-id")
+		if methodID == "" {
 			boundMethod = globalApplication.bindings.Get(&options)
+			if boundMethod == nil {
+				m.callErrorCallback(window, "Error getting binding for method: %s", callID, fmt.Errorf("method '%s' not found", options.Name()))
+				return
+			}
+		} else {
+			id, err := strconv.ParseUint(methodID, 10, 32)
+			if err != nil {
+				m.callErrorCallback(window, "Error parsing method id for call: %s", callID, err)
+				return
+			}
+			boundMethod = globalApplication.bindings.GetByID(uint32(id))
 		}
 		if boundMethod == nil {
-			m.callErrorCallback(window, "Error getting binding for method: %s", callID, fmt.Errorf("'%s' not found", options.MethodName))
+			m.callErrorCallback(window, "Error getting binding for method: %s", callID, fmt.Errorf("method ID '%s' not found", options.Name()))
 			return
 		}
 		go func() {

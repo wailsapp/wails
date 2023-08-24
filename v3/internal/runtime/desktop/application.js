@@ -10,22 +10,28 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
-import {newRuntimeCaller} from "./runtime";
+import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
-let call = newRuntimeCaller("application");
+let call = newRuntimeCallerWithID(objectNames.Application);
+
+let methods = {
+    Hide: 0,
+    Show: 1,
+    Quit: 2,
+}
 
 /**
  * Hide the application
  */
 export function Hide() {
-    void call("Hide");
+    void call(methods.Hide);
 }
 
 /**
  * Show the application
  */
 export function Show() {
-    void call("Show");
+    void call(methods.Show);
 }
 
 
@@ -33,5 +39,5 @@ export function Show() {
  * Quit the application
  */
 export function Quit() {
-    void call("Quit");
+    void call(methods.Quit);
 }

@@ -11,10 +11,18 @@ type ContextMenuData struct {
 	Data any    `json:"data"`
 }
 
-func (m *MessageProcessor) processContextMenuMethod(method string, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
+const (
+	ContextMenuOpen = 0
+)
+
+var contextmenuMethodNames = map[int]string{
+	ContextMenuOpen: "Open",
+}
+
+func (m *MessageProcessor) processContextMenuMethod(method int, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
 
 	switch method {
-	case "OpenContextMenu":
+	case ContextMenuOpen:
 		var data ContextMenuData
 		err := params.ToStruct(&data)
 		if err != nil {
@@ -27,6 +35,6 @@ func (m *MessageProcessor) processContextMenuMethod(method string, rw http.Respo
 		m.httpError(rw, "Unknown contextmenu method: %s", method)
 	}
 
-	m.Info("Runtime:", "method", "ContextMenu."+method)
+	m.Info("Runtime:", "method", "ContextMenu."+contextmenuMethodNames[method])
 
 }

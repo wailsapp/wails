@@ -4,12 +4,20 @@ import (
 	"net/http"
 )
 
-func (m *MessageProcessor) processEventsMethod(method string, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
+const (
+	EventsEmit = 0
+)
+
+var eventsMethodNames = map[int]string{
+	EventsEmit: "Emit",
+}
+
+func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
 
 	var event WailsEvent
 
 	switch method {
-	case "Emit":
+	case EventsEmit:
 		err := params.ToStruct(&event)
 		if err != nil {
 			m.httpError(rw, "Error parsing event: %s", err)
@@ -27,6 +35,6 @@ func (m *MessageProcessor) processEventsMethod(method string, rw http.ResponseWr
 		return
 	}
 
-	m.Info("Runtime:", "method", "Events."+method, "event", event)
+	m.Info("Runtime:", "method", "Events."+eventsMethodNames[method], "event", event)
 
 }

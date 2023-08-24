@@ -10,14 +10,16 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
-import {newRuntimeCaller} from "./runtime";
+import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
-let call = newRuntimeCaller("system");
+let call = newRuntimeCallerWithID(objectNames.System);
+
+let SystemIsDarkMode = 0;
 
 /**
  * Determines if the system is currently using dark mode
  * @returns {Promise<boolean>}
  */
 export function IsDarkMode() {
-    return call("IsDarkMode");
+    return call(SystemIsDarkMode);
 }

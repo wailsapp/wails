@@ -4,24 +4,34 @@ import (
 	"net/http"
 )
 
-func (m *MessageProcessor) processApplicationMethod(method string, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
+const (
+	ApplicationQuit = 0
+	ApplicationHide = 1
+	ApplicationShow = 2
+)
+
+var applicationMethodNames = map[int]string{
+	ApplicationQuit: "Quit",
+	ApplicationHide: "Hide",
+	ApplicationShow: "Show",
+}
+
+func (m *MessageProcessor) processApplicationMethod(method int, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
 
 	switch method {
-	case "Quit":
+	case ApplicationQuit:
 		globalApplication.Quit()
 		m.ok(rw)
-	case "Hide":
+	case ApplicationHide:
 		globalApplication.Hide()
 		m.ok(rw)
-	case "Show":
+	case ApplicationShow:
 		globalApplication.Show()
 		m.ok(rw)
-	case "IsDarkMode":
-		m.json(rw, globalApplication.IsDarkMode())
 	default:
-		m.httpError(rw, "Unknown application method: %s", method)
+		m.httpError(rw, "Unknown application method: %d", method)
 	}
 
-	m.Info("Runtime:", "method", "Application."+method)
+	m.Info("Runtime Call:", "method", "Application."+applicationMethodNames[method])
 
 }
