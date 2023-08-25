@@ -173,7 +173,9 @@ func (w *Window) Center() {
 }
 
 func (w *Window) SetPosition(x int, y int) {
-	C.SetPosition(unsafe.Pointer(w.asGTKWindow()), C.int(x), C.int(y))
+	invokeOnMainThread(func() {
+		C.SetPosition(unsafe.Pointer(w.asGTKWindow()), C.int(x), C.int(y))
+	})
 }
 
 func (w *Window) Size() (int, int) {
@@ -269,6 +271,7 @@ func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {
 		b:       C.uchar(b),
 		a:       C.uchar(a),
 		webview: w.webview,
+		window:  w.gtkWindow,
 	}
 	invokeOnMainThread(func() { C.SetBackgroundColour(unsafe.Pointer(&data)) })
 
