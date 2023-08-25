@@ -18,5 +18,11 @@ go mod tidy
 ```
 -  run the example you want
 ```cmd
-go run v3/examples/(example you want)/main.go
+cd v3/examples/(example you want)
+```
+```cmd
+go mod tidy
+```
+```cmd
+go run main.go
 ```
