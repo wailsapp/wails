@@ -117,7 +117,7 @@ JS: `WindowIsNormal() bool`
 Sets the width and height of the window.
 
 Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/>
-JS: `WindowSetSize(size: Size)`
+JS: `WindowSetSize(width: number, height: number)`
 
 ### WindowGetSize
 
@@ -134,7 +134,7 @@ Will resize the window if the window is currently smaller than the given dimensi
 Setting a size of `0,0` will disable this constraint.
 
 Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/>
-JS: `WindowSetMinSize(size: Size)`
+JS: `WindowSetMinSize(width: number, height: number)`
 
 ### WindowSetMaxSize
 
@@ -144,7 +144,7 @@ Will resize the window if the window is currently larger than the given dimensio
 Setting a size of `0,0` will disable this constraint.
 
 Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/>
-JS: `WindowSetMaxSize(size: Size)`
+JS: `WindowSetMaxSize(width: number, height: number)`
 
 ### WindowSetAlwaysOnTop
 
@@ -158,7 +158,7 @@ JS: `WindowSetAlwaysOnTop(b: Boolen)`
 Sets the window position relative to the monitor the window is currently on.
 
 Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/>
-JS: `WindowSetPosition(position: Position)`
+JS: `WindowSetPosition(x: number, y: number)`
 
 ### WindowGetPosition
 
