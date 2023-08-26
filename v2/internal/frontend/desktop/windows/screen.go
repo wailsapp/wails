@@ -5,10 +5,12 @@ package windows
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"syscall"
 	"unsafe"
+
+	"github.com/pkg/errors"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 )
 
 func MonitorsEqual(first w32.MONITORINFO, second w32.MONITORINFO) bool {
@@ -66,12 +68,25 @@ func EnumProc(hMonitor w32.HMONITOR, hdcMonitor w32.HDC, lprcMonitor *w32.RECT, 
 		return w32.TRUE
 	}
 
-	height := lprcMonitor.Right - lprcMonitor.Left
-	width := lprcMonitor.Bottom - lprcMonitor.Top
+	width := lprcMonitor.Right - lprcMonitor.Left
+	height := lprcMonitor.Bottom - lprcMonitor.Top
 	ourMonitorData.IsPrimary = monInfo.DwFlags&w32.MONITORINFOF_PRIMARY == 1
-	ourMonitorData.Height = int(width)
-	ourMonitorData.Width = int(height)
+	ourMonitorData.Height = int(height)
+	ourMonitorData.Width = int(width)
 	ourMonitorData.IsCurrent = MonitorsEqual(*currentMonInfo, *monInfo)
+
+	ourMonitorData.PhysicalSize.Width = int(width)
+	ourMonitorData.PhysicalSize.Height = int(height)
+
+	var dpiX, dpiY uint
+	w32.GetDPIForMonitor(hMonitor, w32.MDT_EFFECTIVE_DPI, &dpiX, &dpiY)
+	if dpiX == 0 || dpiY == 0 {
+		screenContainer.errors = append(screenContainer.errors, fmt.Errorf("unable to get DPI for screen"))
+		screenContainer.monitors = append(screenContainer.monitors, Screen{})
+		return w32.TRUE
+	}
+	ourMonitorData.Size.Width = winc.ScaleToDefaultDPI(ourMonitorData.PhysicalSize.Width, dpiX)
+	ourMonitorData.Size.Height = winc.ScaleToDefaultDPI(ourMonitorData.PhysicalSize.Height, dpiY)
 
 	// the reason we need a container is that we have don't know how many times this function will be called
 	// this "append" call could potentially do an allocation and rewrite the pointer to monitors. So we save the pointer in screenContainer.monitors
