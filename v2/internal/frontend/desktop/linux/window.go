@@ -110,7 +110,7 @@ func NewWindow(appoptions *options.App, debug bool, devtools bool) *Window {
 	// Setup window
 	result.SetKeepAbove(appoptions.AlwaysOnTop)
 	result.SetResizable(!appoptions.DisableResize)
-	result.SetSize(appoptions.Width, appoptions.Height)
+	result.SetDefaultSize(appoptions.Width, appoptions.Height)
 	result.SetDecorated(!appoptions.Frameless)
 	result.SetTitle(appoptions.Title)
 	result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
@@ -173,7 +173,9 @@ func (w *Window) Center() {
 }
 
 func (w *Window) SetPosition(x int, y int) {
-	C.SetPosition(unsafe.Pointer(w.asGTKWindow()), C.int(x), C.int(y))
+	invokeOnMainThread(func() {
+		C.SetPosition(unsafe.Pointer(w.asGTKWindow()), C.int(x), C.int(y))
+	})
 }
 
 func (w *Window) Size() (int, int) {
@@ -269,6 +271,7 @@ func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {
 		b:       C.uchar(b),
 		a:       C.uchar(a),
 		webview: w.webview,
+		window:  w.gtkWindow,
 	}
 	invokeOnMainThread(func() { C.SetBackgroundColour(unsafe.Pointer(&data)) })
 
@@ -310,6 +313,10 @@ func (w *Window) SetKeepAbove(top bool) {
 
 func (w *Window) SetResizable(resizable bool) {
 	C.gtk_window_set_resizable(w.asGTKWindow(), gtkBool(resizable))
+}
+
+func (w *Window) SetDefaultSize(width int, height int) {
+	C.gtk_window_set_default_size(w.asGTKWindow(), C.int(width), C.int(height))
 }
 
 func (w *Window) SetSize(width int, height int) {
