@@ -6,7 +6,7 @@
  * @returns {Promise<void>}
  */
 function Execute(statement, ...args) {
-    return wails.Plugin("sqlite", "Execute", statement, ...args);
+    return wails.CallByID(2804887383, statement, ...args);
 }
 
 /**
@@ -16,5 +16,5 @@ function Execute(statement, ...args) {
  * @returns {Promise<any>}
  */
 function Select(statement, ...args) {
-    return wails.Plugin("sqlite", "Select", statement, ...args);
+    return wails.CallByID(2209315040, statement, ...args);
 }

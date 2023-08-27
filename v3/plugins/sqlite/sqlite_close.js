@@ -4,5 +4,5 @@
  * @returns {Promise<void>}
  */
 function Close() {
-    return wails.Plugin("sqlite", "Close");
+    return wails.CallByID(3998329564);
 }

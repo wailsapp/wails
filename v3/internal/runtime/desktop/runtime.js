@@ -36,10 +36,6 @@ function runtimeCall(method, windowName, args) {
         fetchOptions.headers["x-wails-window-name"] = windowName;
     }
     if (args) {
-        if (args['wails-method-id']) {
-            fetchOptions.headers["x-wails-method-id"] = args['wails-method-id'];
-            delete args['wails-method-id'];
-        }
         url.searchParams.append("args", JSON.stringify(args));
     }
     return new Promise((resolve, reject) => {
@@ -77,10 +73,6 @@ function runtimeCallWithID(objectID, method, windowName, args) {
         fetchOptions.headers["x-wails-window-name"] = windowName;
     }
     if (args) {
-        if (args['wails-method-id']) {
-            fetchOptions.headers["x-wails-method-id"] = args['wails-method-id'];
-            delete args['wails-method-id'];
-        }
         url.searchParams.append("args", JSON.stringify(args));
     }
     return new Promise((resolve, reject) => {

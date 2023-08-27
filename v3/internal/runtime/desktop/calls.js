@@ -10,11 +10,13 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
-import {newRuntimeCaller} from "./runtime";
+import {newRuntimeCaller, newRuntimeCallerWithID, objectNames} from "./runtime";
 
 import { nanoid } from 'nanoid/non-secure';
 
-let call = newRuntimeCaller("call");
+let call = newRuntimeCallerWithID(objectNames.Call);
+
+let CallBinding = 0;
 
 let callResponses = new Map();
 
@@ -61,7 +63,14 @@ function callBinding(type, options) {
 }
 
 export function Call(options) {
-    return callBinding("Call", options);
+    return callBinding(CallBinding, options);
+}
+
+export function CallByID(methodID, ...args) {
+    return callBinding(CallBinding, {
+        methodID: methodID,
+        args: args,
+    });
 }
 
 /**
@@ -72,7 +81,7 @@ export function Call(options) {
  * @returns {Promise<any>} - promise that resolves with the result
  */
 export function Plugin(pluginName, methodName, ...args) {
-    return callBinding("Call", {
+    return callBinding(CallBinding, {
         packageName: "wails-plugins",
         structName: pluginName,
         methodName: methodName,

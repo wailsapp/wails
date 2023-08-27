@@ -10,7 +10,7 @@
  */
 
 function Debug(input, ...args) {
-    return wails.Plugin("log", "Debug", input, ...args);
+    return wails.CallByID(4111675027, input, ...args);
 }
 
 /**
@@ -20,7 +20,7 @@ function Debug(input, ...args) {
  * @returns {Promise<void|Error>}
  */
 function Info(input, ...args) {
-    return wails.Plugin("log", "Info", input, ...args);
+    return wails.CallByID(2391172776, input, ...args);
 }
 
 /**
@@ -30,7 +30,7 @@ function Info(input, ...args) {
  * @returns {Promise<void|Error>}
  */
 function Warning(input, ...args) {
-    return wails.Plugin("log", "Warning", input, ...args);
+    return wails.CallByID(2762394760, input, ...args);
 }
 
 /**
@@ -40,5 +40,5 @@ function Warning(input, ...args) {
  * @returns {Promise<void|Error>}
  */
 function Error(input, ...args) {
-    return wails.Plugin("log", "Error", input, ...args);
+    return wails.CallByID(878590242, input, ...args);
 }

@@ -5,7 +5,7 @@
  * @returns {Promise<void>}
  */
 function OpenURL(url) {
-    return wails.Plugin("browser", "OpenURL", url);
+    return wails.CallByID(3188315539, url);
 }
 
 /**
@@ -14,7 +14,7 @@ function OpenURL(url) {
  * @returns {Promise<void>}
  */
 function OpenFile(filename) {
-    return wails.Plugin("browser", "OpenFile", filename);
+    return wails.CallByID(3105408620, filename);
 }
 
 export default {

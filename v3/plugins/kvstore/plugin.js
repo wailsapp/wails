@@ -8,7 +8,7 @@
  * @returns {Promise<any>} - The value of the key.
  */
 export function Get(key) {
-    return wails.Plugin("kvstore", "Get", key);
+    return wails.CallByID(3322496224, key);
 }
 
 /**
@@ -18,7 +18,7 @@ export function Get(key) {
  * @returns {Promise<void>}
  */
 export function Set(key, value) {
-    return wails.Plugin("kvstore", "Set", key, value);
+    return wails.CallByID(1207638860, key, value);
 }
 
 
@@ -27,5 +27,5 @@ export function Set(key, value) {
  * @returns {Promise<void|Error>}
  */
 export function Save() {
-    return wails.Plugin("kvstore", "Save");
+    return wails.CallByID(1377075201);
 }

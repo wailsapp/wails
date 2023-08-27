@@ -4,5 +4,5 @@
  * @returns {Promise<void>}
  */
 function Open(filename) {
-    return wails.Plugin("sqlite", "Open", filename);
+    return wails.CallByID(147348976, filename);
 }

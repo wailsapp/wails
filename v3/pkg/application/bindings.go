@@ -11,6 +11,7 @@ import (
 )
 
 type CallOptions struct {
+	MethodID    uint32 `json:"methodID"`
 	PackageName string `json:"packageName"`
 	StructName  string `json:"structName"`
 	MethodName  string `json:"methodName"`
@@ -147,6 +148,7 @@ func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
 				b.boundMethods[packageName][structName] = make(map[string]*BoundMethod)
 			}
 			b.boundMethods[packageName][structName][methodName] = method
+			b.boundByID[method.ID] = method
 			globalApplication.info("Added plugin method: "+structName+"."+methodName, "id", method.ID)
 		}
 	}

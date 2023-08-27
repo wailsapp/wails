@@ -37,7 +37,7 @@ const (
 	WindowSetZoomLevel        = 29
 )
 
-var windowMethods = map[int]string{
+var windowMethodNames = map[int]string{
 	WindowCenter:              "Center",
 	WindowSetTitle:            "SetTitle",
 	WindowFullscreen:          "Fullscreen",
@@ -255,10 +255,5 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 		m.httpError(rw, "Unknown window method id: %s", method)
 	}
 
-	var logArgs = []any{"method", method}
-	for name, arg := range args.data {
-		logArgs = append(logArgs, name)
-		logArgs = append(logArgs, arg)
-	}
-	m.Info("Runtime:", logArgs...)
+	m.Info("Runtime:", "method", "Window."+windowMethodNames[method])
 }

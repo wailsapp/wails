@@ -1,482 +1,488 @@
-function Github() {
-    return wails.Plugin("oauth", "Github");
-}
+// Calculate FNV hash of "auth.Github" to get the plugin ID
+// https://www.fileformat.info/tool/hash.htm?text=auth.Github
+// 4111675027
 
-function LogoutGithub() {
-    return wails.Plugin("oauth", "LogoutGithub");
-}
 
 function Amazon() {
-    return wails.Plugin("oauth", "Amazon");
-}
-
-function LogoutAmazon() {
-    return wails.Plugin("oauth", "LogoutAmazon");
+    return wails.CallByID(2331828509);
 }
 
 function Apple() {
-    return wails.Plugin("oauth", "Apple");
-}
-
-function LogoutApple() {
-    return wails.Plugin("oauth", "LogoutApple");
+    return wails.CallByID(3176757999);
 }
 
 function Auth0() {
-    return wails.Plugin("oauth", "Auth0");
-}
-
-function LogoutAuth0() {
-    return wails.Plugin("oauth", "LogoutAuth0");
+    return wails.CallByID(2541844605);
 }
 
 function AzureAD() {
-    return wails.Plugin("oauth", "AzureAD");
-}
-
-function LogoutAzureAD() {
-    return wails.Plugin("oauth", "LogoutAzureAD");
+    return wails.CallByID(4136596197);
 }
 
 function BattleNet() {
-    return wails.Plugin("oauth", "BattleNet");
-}
-
-function LogoutBattleNet() {
-    return wails.Plugin("oauth", "LogoutBattleNet");
+    return wails.CallByID(1768856346);
 }
 
 function Bitbucket() {
-    return wails.Plugin("oauth", "Bitbucket");
-}
-
-function LogoutBitbucket() {
-    return wails.Plugin("oauth", "LogoutBitbucket");
+    return wails.CallByID(526693694);
 }
 
 function Box() {
-    return wails.Plugin("oauth", "Box");
-}
-
-function LogoutBox() {
-    return wails.Plugin("oauth", "LogoutBox");
+    return wails.CallByID(2583659906);
 }
 
 function Dailymotion() {
-    return wails.Plugin("oauth", "Dailymotion");
-}
-
-function LogoutDailymotion() {
-    return wails.Plugin("oauth", "LogoutDailymotion");
+    return wails.CallByID(1431387676);
 }
 
 function Deezer() {
-    return wails.Plugin("oauth", "Deezer");
-}
-
-function LogoutDeezer() {
-    return wails.Plugin("oauth", "LogoutDeezer");
+    return wails.CallByID(828114094);
 }
 
 function DigitalOcean() {
-    return wails.Plugin("oauth", "DigitalOcean");
-}
-
-function LogoutDigitalOcean() {
-    return wails.Plugin("oauth", "LogoutDigitalOcean");
+    return wails.CallByID(3019360447);
 }
 
 function Discord() {
-    return wails.Plugin("oauth", "Discord");
-}
-
-function LogoutDiscord() {
-    return wails.Plugin("oauth", "LogoutDiscord");
+    return wails.CallByID(655199039);
 }
 
 function Dropbox() {
-    return wails.Plugin("oauth", "Dropbox");
-}
-
-function LogoutDropbox() {
-    return wails.Plugin("oauth", "LogoutDropbox");
+    return wails.CallByID(3446570357);
 }
 
 function EveOnline() {
-    return wails.Plugin("oauth", "EveOnline");
-}
-
-function LogoutEveOnline() {
-    return wails.Plugin("oauth", "LogoutEveOnline");
+    return wails.CallByID(1615270010);
 }
 
 function Facebook() {
-    return wails.Plugin("oauth", "Facebook");
-}
-
-function LogoutFacebook() {
-    return wails.Plugin("oauth", "LogoutFacebook");
+    return wails.CallByID(825207297);
 }
 
 function Fitbit() {
-    return wails.Plugin("oauth", "Fitbit");
-}
-
-function LogoutFitbit() {
-    return wails.Plugin("oauth", "LogoutFitbit");
+    return wails.CallByID(1290725671);
 }
 
 function Gitea() {
-    return wails.Plugin("oauth", "Gitea");
+    return wails.CallByID(3921640321);
 }
 
-function LogoutGitea() {
-    return wails.Plugin("oauth", "LogoutGitea");
+function Github() {
+    return wails.CallByID(1424971906);
 }
 
 function Gitlab() {
-    return wails.Plugin("oauth", "Gitlab");
-}
-
-function LogoutGitlab() {
-    return wails.Plugin("oauth", "LogoutGitlab");
+    return wails.CallByID(387644474);
 }
 
 function Google() {
-    return wails.Plugin("oauth", "Google");
-}
-
-function LogoutGoogle() {
-    return wails.Plugin("oauth", "LogoutGoogle");
+    return wails.CallByID(1712198358);
 }
 
 function GooglePlus() {
-    return wails.Plugin("oauth", "GooglePlus");
-}
-
-function LogoutGooglePlus() {
-    return wails.Plugin("oauth", "LogoutGooglePlus");
+    return wails.CallByID(2550604010);
 }
 
 function Heroku() {
-    return wails.Plugin("oauth", "Heroku");
-}
-
-function LogoutHeroku() {
-    return wails.Plugin("oauth", "LogoutHeroku");
-}
-
-function Intercom() {
-    return wails.Plugin("oauth", "Intercom");
-}
-
-function LogoutIntercom() {
-    return wails.Plugin("oauth", "LogoutIntercom");
+    return wails.CallByID(3655952201);
 }
 
 function Instagram() {
-    return wails.Plugin("oauth", "Instagram");
+    return wails.CallByID(65944971);
 }
 
-function LogoutInstagram() {
-    return wails.Plugin("oauth", "LogoutInstagram");
+function Intercom() {
+    return wails.CallByID(10529210);
 }
 
 function Kakao() {
-    return wails.Plugin("oauth", "Kakao");
-}
-
-function LogoutKakao() {
-    return wails.Plugin("oauth", "LogoutKakao");
+    return wails.CallByID(3034570310);
 }
 
 function LastFM() {
-    return wails.Plugin("oauth", "LastFM");
-}
-
-function LogoutLastFM() {
-    return wails.Plugin("oauth", "LogoutLastFM");
-}
-
-function LinkedIn() {
-    return wails.Plugin("oauth", "LinkedIn");
-}
-
-function LogoutLinkedIn() {
-    return wails.Plugin("oauth", "LogoutLinkedIn");
+    return wails.CallByID(1802166992);
 }
 
 function Line() {
-    return wails.Plugin("oauth", "Line");
+    return wails.CallByID(2789106871);
+}
+
+function LinkedIn() {
+    return wails.CallByID(1277552879);
+}
+
+function LogoutAmazon() {
+    return wails.CallByID(469077327);
+}
+
+function LogoutApple() {
+    return wails.CallByID(3655868585);
+}
+
+function LogoutAuth0() {
+    return wails.CallByID(18151695);
+}
+
+function LogoutAzureAD() {
+    return wails.CallByID(2138080511);
+}
+
+function LogoutBattleNet() {
+    return wails.CallByID(4280940652);
+}
+
+function LogoutBitbucket() {
+    return wails.CallByID(3756772960);
+}
+
+function LogoutBox() {
+    return wails.CallByID(2810174732);
+}
+
+function LogoutDailymotion() {
+    return wails.CallByID(2060789018);
+}
+
+function LogoutDeezer() {
+    return wails.CallByID(1779336988);
+}
+
+function LogoutDigitalOcean() {
+    return wails.CallByID(2745195285);
+}
+
+function LogoutDiscord() {
+    return wails.CallByID(1756238441);
+}
+
+function LogoutDropbox() {
+    return wails.CallByID(1276092991);
+}
+
+function LogoutEveOnline() {
+    return wails.CallByID(3427696132);
+}
+
+function LogoutFacebook() {
+    return wails.CallByID(3289650391);
+}
+
+function LogoutFitbit() {
+    return wails.CallByID(4026910725);
+}
+
+function LogoutGitea() {
+    return wails.CallByID(289654943);
+}
+
+function LogoutGithub() {
+    return wails.CallByID(1644797072);
+}
+
+function LogoutGitlab() {
+    return wails.CallByID(654269224);
+}
+
+function LogoutGoogle() {
+    return wails.CallByID(4020864940);
+}
+
+function LogoutGooglePlus() {
+    return wails.CallByID(3868989020);
+}
+
+function LogoutHeroku() {
+    return wails.CallByID(2618955859);
+}
+
+function LogoutInstagram() {
+    return wails.CallByID(931376085);
+}
+
+function LogoutIntercom() {
+    return wails.CallByID(4092924400);
+}
+
+function LogoutKakao() {
+    return wails.CallByID(3794403964);
+}
+
+function LogoutLastFM() {
+    return wails.CallByID(1376498158);
 }
 
 function LogoutLine() {
-    return wails.Plugin("oauth", "LogoutLine");
+    return wails.CallByID(3582304913);
 }
 
-function Mastodon() {
-    return wails.Plugin("oauth", "Mastodon");
+function LogoutLinkedIn() {
+    return wails.CallByID(1607790273);
 }
 
 function LogoutMastodon() {
-    return wails.Plugin("oauth", "LogoutMastodon");
-}
-
-function Meetup() {
-    return wails.Plugin("oauth", "Meetup");
+    return wails.CallByID(4210982224);
 }
 
 function LogoutMeetup() {
-    return wails.Plugin("oauth", "LogoutMeetup");
-}
-
-function MicrosoftOnline() {
-    return wails.Plugin("oauth", "MicrosoftOnline");
+    return wails.CallByID(3715047585);
 }
 
 function LogoutMicrosoftOnline() {
-    return wails.Plugin("oauth", "LogoutMicrosoftOnline");
-}
-
-function Naver() {
-    return wails.Plugin("oauth", "Naver");
+    return wails.CallByID(97532862);
 }
 
 function LogoutNaver() {
-    return wails.Plugin("oauth", "LogoutNaver");
-}
-
-function NextCloud() {
-    return wails.Plugin("oauth", "NextCloud");
+    return wails.CallByID(2633825507);
 }
 
 function LogoutNextCloud() {
-    return wails.Plugin("oauth", "LogoutNextCloud");
-}
-
-function Okta() {
-    return wails.Plugin("oauth", "Okta");
+    return wails.CallByID(3261782247);
 }
 
 function LogoutOkta() {
-    return wails.Plugin("oauth", "LogoutOkta");
-}
-
-function Onedrive() {
-    return wails.Plugin("oauth", "Onedrive");
+    return wails.CallByID(624232214);
 }
 
 function LogoutOnedrive() {
-    return wails.Plugin("oauth", "LogoutOnedrive");
-}
-
-function OpenIDConnect() {
-    return wails.Plugin("oauth", "OpenIDConnect");
+    return wails.CallByID(814508603);
 }
 
 function LogoutOpenIDConnect() {
-    return wails.Plugin("oauth", "LogoutOpenIDConnect");
-}
-
-function Patreon() {
-    return wails.Plugin("oauth", "Patreon");
+    return wails.CallByID(1020114184);
 }
 
 function LogoutPatreon() {
-    return wails.Plugin("oauth", "LogoutPatreon");
-}
-
-function PayPal() {
-    return wails.Plugin("oauth", "PayPal");
+    return wails.CallByID(202386648);
 }
 
 function LogoutPayPal() {
-    return wails.Plugin("oauth", "LogoutPayPal");
-}
-
-function SalesForce() {
-    return wails.Plugin("oauth", "SalesForce");
+    return wails.CallByID(1094363076);
 }
 
 function LogoutSalesForce() {
-    return wails.Plugin("oauth", "LogoutSalesForce");
-}
-
-function SeaTalk() {
-    return wails.Plugin("oauth", "SeaTalk");
+    return wails.CallByID(186208216);
 }
 
 function LogoutSeaTalk() {
-    return wails.Plugin("oauth", "LogoutSeaTalk");
-}
-
-function Shopify() {
-    return wails.Plugin("oauth", "Shopify");
+    return wails.CallByID(967155452);
 }
 
 function LogoutShopify() {
-    return wails.Plugin("oauth", "LogoutShopify");
-}
-
-function Slack() {
-    return wails.Plugin("oauth", "Slack");
+    return wails.CallByID(710746663);
 }
 
 function LogoutSlack() {
-    return wails.Plugin("oauth", "LogoutSlack");
-}
-
-function SoundCloud() {
-    return wails.Plugin("oauth", "SoundCloud");
+    return wails.CallByID(2829130917);
 }
 
 function LogoutSoundCloud() {
-    return wails.Plugin("oauth", "LogoutSoundCloud");
-}
-
-function Spotify() {
-    return wails.Plugin("oauth", "Spotify");
+    return wails.CallByID(1958837967);
 }
 
 function LogoutSpotify() {
-    return wails.Plugin("oauth", "LogoutSpotify");
-}
-
-function Steam() {
-    return wails.Plugin("oauth", "Steam");
+    return wails.CallByID(3505564851);
 }
 
 function LogoutSteam() {
-    return wails.Plugin("oauth", "LogoutSteam");
-}
-
-function Strava() {
-    return wails.Plugin("oauth", "Strava");
+    return wails.CallByID(1111934849);
 }
 
 function LogoutStrava() {
-    return wails.Plugin("oauth", "LogoutStrava");
-}
-
-function Stripe() {
-    return wails.Plugin("oauth", "Stripe");
+    return wails.CallByID(1393113524);
 }
 
 function LogoutStripe() {
-    return wails.Plugin("oauth", "LogoutStripe");
-}
-
-function TikTok() {
-    return wails.Plugin("oauth", "TikTok");
+    return wails.CallByID(2886428130);
 }
 
 function LogoutTikTok() {
-    return wails.Plugin("oauth", "LogoutTikTok");
-}
-
-function Twitter() {
-    return wails.Plugin("oauth", "Twitter");
-}
-
-function LogoutTwitter() {
-    return wails.Plugin("oauth", "LogoutTwitter");
-}
-
-function TwitterV2() {
-    return wails.Plugin("oauth", "TwitterV2");
-}
-
-function LogoutTwitterV2() {
-    return wails.Plugin("oauth", "LogoutTwitterV2");
-}
-
-function Typetalk() {
-    return wails.Plugin("oauth", "Typetalk");
-}
-
-function LogoutTypetalk() {
-    return wails.Plugin("oauth", "LogoutTypetalk");
-}
-
-function Twitch() {
-    return wails.Plugin("oauth", "Twitch");
+    return wails.CallByID(3971249709);
 }
 
 function LogoutTwitch() {
-    return wails.Plugin("oauth", "LogoutTwitch");
+    return wails.CallByID(88308904);
 }
 
-function Uber() {
-    return wails.Plugin("oauth", "Uber");
+function LogoutTwitter() {
+    return wails.CallByID(1067400118);
+}
+
+function LogoutTwitterV2() {
+    return wails.CallByID(2761439446);
+}
+
+function LogoutTypetalk() {
+    return wails.CallByID(128226145);
 }
 
 function LogoutUber() {
-    return wails.Plugin("oauth", "LogoutUber");
-}
-
-function VK() {
-    return wails.Plugin("oauth", "VK");
+    return wails.CallByID(3429923567);
 }
 
 function LogoutVK() {
-    return wails.Plugin("oauth", "LogoutVK");
-}
-
-function WeCom() {
-    return wails.Plugin("oauth", "WeCom");
+    return wails.CallByID(1951646996);
 }
 
 function LogoutWeCom() {
-    return wails.Plugin("oauth", "LogoutWeCom");
-}
-
-function Wepay() {
-    return wails.Plugin("oauth", "Wepay");
+    return wails.CallByID(1686099456);
 }
 
 function LogoutWepay() {
-    return wails.Plugin("oauth", "LogoutWepay");
-}
-
-function Xero() {
-    return wails.Plugin("oauth", "Xero");
+    return wails.CallByID(1261265379);
 }
 
 function LogoutXero() {
-    return wails.Plugin("oauth", "LogoutXero");
-}
-
-function Yahoo() {
-    return wails.Plugin("oauth", "Yahoo");
+    return wails.CallByID(2890165735);
 }
 
 function LogoutYahoo() {
-    return wails.Plugin("oauth", "LogoutYahoo");
-}
-
-function Yammer() {
-    return wails.Plugin("oauth", "Yammer");
+    return wails.CallByID(2054451877);
 }
 
 function LogoutYammer() {
-    return wails.Plugin("oauth", "LogoutYammer");
-}
-
-function Yandex() {
-    return wails.Plugin("oauth", "Yandex");
+    return wails.CallByID(407239716);
 }
 
 function LogoutYandex() {
-    return wails.Plugin("oauth", "LogoutYandex");
-}
-
-function Zoom() {
-    return wails.Plugin("oauth", "Zoom");
+    return wails.CallByID(2947524466);
 }
 
 function LogoutZoom() {
-    return wails.Plugin("oauth", "LogoutZoom");
+    return wails.CallByID(4146090020);
 }
+
+function Mastodon() {
+    return wails.CallByID(3603981882);
+}
+
+function Meetup() {
+    return wails.CallByID(1147762171);
+}
+
+function MicrosoftOnline() {
+    return wails.CallByID(1805946880);
+}
+
+function Naver() {
+    return wails.CallByID(749569909);
+}
+
+function NextCloud() {
+    return wails.CallByID(1924196249);
+}
+
+function Okta() {
+    return wails.CallByID(412847760);
+}
+
+function Onedrive() {
+    return wails.CallByID(3973355685);
+}
+
+function OpenIDConnect() {
+    return wails.CallByID(2729309874);
+}
+
+function Patreon() {
+    return wails.CallByID(3723931538);
+}
+
+function PayPal() {
+    return wails.CallByID(3284153782);
+}
+
+function SalesForce() {
+    return wails.CallByID(1734014770);
+}
+
+function SeaTalk() {
+    return wails.CallByID(3129463546);
+}
+
+function Shopify() {
+    return wails.CallByID(1877652737);
+}
+
+function Slack() {
+    return wails.CallByID(812719543);
+}
+
+function SoundCloud() {
+    return wails.CallByID(3726943661);
+}
+
+function Spotify() {
+    return wails.CallByID(256059429);
+}
+
+function Steam() {
+    return wails.CallByID(4258843427);
+}
+
+function Strava() {
+    return wails.CallByID(1874925690);
+}
+
+function Stripe() {
+    return wails.CallByID(2661473260);
+}
+
+function TikTok() {
+    return wails.CallByID(1284732707);
+}
+
+function Twitch() {
+    return wails.CallByID(487656954);
+}
+
+function Twitter() {
+    return wails.CallByID(3389126356);
+}
+
+function TwitterV2() {
+    return wails.CallByID(4048286460);
+}
+
+function Typetalk() {
+    return wails.CallByID(1880294983);
+}
+
+function Uber() {
+    return wails.CallByID(2810476945);
+}
+
+function VK() {
+    return wails.CallByID(1043499094);
+}
+
+function WeCom() {
+    return wails.CallByID(2495227034);
+}
+
+function Wepay() {
+    return wails.CallByID(3921566885);
+}
+
+function Xero() {
+    return wails.CallByID(1174147097);
+}
+
+function Yahoo() {
+    return wails.CallByID(4227069139);
+}
+
+function Yammer() {
+    return wails.CallByID(2053813786);
+}
+
+function Yandex() {
+    return wails.CallByID(1095025512);
+}
+
+function Zoom() {
+    return wails.CallByID(391053986);
+}
+
 
 export default {
     Github,

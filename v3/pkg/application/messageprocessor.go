@@ -2,12 +2,10 @@ package application
 
 import (
 	"fmt"
+	jsoniter "github.com/json-iterator/go"
 	"log/slog"
 	"net/http"
 	"strconv"
-	"strings"
-
-	jsoniter "github.com/json-iterator/go"
 )
 
 // TODO maybe we could use a new struct that has the targetWindow as an attribute so we could get rid of passing the targetWindow
@@ -70,52 +68,37 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 		m.HandleRuntimeCallWithIDs(rw, r)
 		return
 	}
-	// Read "method" from query string
-	method := r.URL.Query().Get("method")
-	if method == "" {
-		m.httpError(rw, "No method specified")
-		return
-	}
-	splitMethod := strings.Split(method, ".")
-	if len(splitMethod) != 2 {
-		m.httpError(rw, "Invalid method format")
-		return
-	}
-	// Get the object
-	object = splitMethod[0]
-	// Get the method
-	method = splitMethod[1]
 
-	params := QueryParams(r.URL.Query())
-
-	targetWindow := m.getTargetWindow(r)
-	if targetWindow == nil {
-		m.httpError(rw, "No valid window found")
-		return
-	}
-
-	switch object {
-	//case "window":
-	//	m.processWindowMethod(method, rw, r, targetWindow, params)
-	//case "clipboard":
-	//	m.processClipboardMethod(method, rw, r, targetWindow, params)
-	//case "dialog":
-	//	m.processDialogMethod(method, rw, r, targetWindow, params)
-	//case "events":
-	//	m.processEventsMethod(method, rw, r, targetWindow, params)
-	//case "application":
-	//	m.processApplicationMethod(method, rw, r, targetWindow, params)
-	//case "contextmenu":
-	//	m.processContextMenuMethod(method, rw, r, targetWindow, params)
-	//case "screens":
-	//	m.processScreensMethod(method, rw, r, targetWindow, params)
-	case "call":
-		m.processCallMethod(method, rw, r, targetWindow, params)
-	//case "system":
-	//	m.processSystemMethod(method, rw, r, targetWindow, params)
-	default:
-		m.httpError(rw, "Unknown runtime call: %s", object)
-	}
+	//// Read "method" from query string
+	//method := r.URL.Query().Get("method")
+	//if method == "" {
+	//	m.httpError(rw, "No method specified")
+	//	return
+	//}
+	//splitMethod := strings.Split(method, ".")
+	//if len(splitMethod) != 2 {
+	//	m.httpError(rw, "Invalid method format")
+	//	return
+	//}
+	//// Get the object
+	//object = splitMethod[0]
+	//// Get the method
+	//method = splitMethod[1]
+	//
+	//params := QueryParams(r.URL.Query())
+	//
+	//targetWindow := m.getTargetWindow(r)
+	//if targetWindow == nil {
+	//	m.httpError(rw, "No valid window found")
+	//	return
+	//}
+	//
+	//switch object {
+	//case "call":
+	//	m.processCallMethod(method, rw, r, targetWindow, params)
+	//default:
+	//	m.httpError(rw, "Unknown runtime call: %s", object)
+	//}
 }
 
 func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *http.Request) {
@@ -152,8 +135,8 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *h
 		m.processContextMenuMethod(method, rw, r, targetWindow, params)
 	case screensRequest:
 		m.processScreensMethod(method, rw, r, targetWindow, params)
-	//case callRequest:
-	//	m.processCallMethod(method, rw, r, targetWindow, params)
+	case callRequest:
+		m.processCallMethod(method, rw, r, targetWindow, params)
 	case systemRequest:
 		m.processSystemMethod(method, rw, r, targetWindow, params)
 	default:
