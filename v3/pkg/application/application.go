@@ -86,7 +86,7 @@ func New(appOptions Options) *App {
 
 	result.assets.LogDetails()
 
-	result.bindings, err = NewBindings(appOptions.Bind)
+	result.bindings, err = NewBindings(appOptions.Bind, appOptions.BindAliases)
 	if err != nil {
 		println("Fatal error in application initialisation: ", err.Error())
 		os.Exit(1)

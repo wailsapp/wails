@@ -22,7 +22,7 @@ const bindingTemplate = `
 		 * @param name {string}
 		 * @returns {Promise<string>}
 		 **/
-	    {{methodName}}: function({{inputs}}) { wails.Call({"wails-method-id":{{ID}}, args: Array.prototype.slice.call(arguments, 0)}); },
+	    {{methodName}}: function({{inputs}}) { wails.CallByID({{ID}}, ...Array.prototype.slice.call(arguments, 0)); },
 `
 
 var reservedWords = []string{

@@ -74,16 +74,18 @@ type BoundMethod struct {
 }
 
 type Bindings struct {
-	boundMethods map[string]map[string]map[string]*BoundMethod
-	boundByID    map[uint32]*BoundMethod
+	boundMethods  map[string]map[string]map[string]*BoundMethod
+	boundByID     map[uint32]*BoundMethod
+	methodAliases map[uint32]uint32
 }
 
-func NewBindings(bindings []any) (*Bindings, error) {
+func NewBindings(structs []any, aliases map[uint32]uint32) (*Bindings, error) {
 	b := &Bindings{
-		boundMethods: make(map[string]map[string]map[string]*BoundMethod),
-		boundByID:    make(map[uint32]*BoundMethod),
+		boundMethods:  make(map[string]map[string]map[string]*BoundMethod),
+		boundByID:     make(map[uint32]*BoundMethod),
+		methodAliases: aliases,
 	}
-	for _, binding := range bindings {
+	for _, binding := range structs {
 		err := b.Add(binding)
 		if err != nil {
 			return nil, err
@@ -174,6 +176,12 @@ func (b *Bindings) Get(options *CallOptions) *BoundMethod {
 
 // GetByID returns the bound method with the given ID
 func (b *Bindings) GetByID(id uint32) *BoundMethod {
+	// Check method aliases
+	if b.methodAliases != nil {
+		if alias, ok := b.methodAliases[id]; ok {
+			id = alias
+		}
+	}
 	result := b.boundByID[id]
 	return result
 }
@@ -249,7 +257,14 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 		}
 
 		if !isPlugin {
-			globalApplication.Logger.Info("Adding method", "name", boundMethod, "id", boundMethod.ID)
+			args := []any{"name", boundMethod, "id", boundMethod.ID}
+			if b.methodAliases != nil {
+				alias, found := lo.FindKey(b.methodAliases, boundMethod.ID)
+				if found {
+					args = append(args, "alias", alias)
+				}
+			}
+			globalApplication.info("Adding method:", args...)
 		}
 		// Iterate inputs
 		methodType := method.Type()
@@ -280,7 +295,27 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 }
 
 // Call will attempt to call this bound method with the given args
-func (b *BoundMethod) Call(args []interface{}) (interface{}, error) {
+func (b *BoundMethod) Call(args []interface{}) (returnValue interface{}, err error) {
+
+	// Use a defer statement to capture panics
+	defer func() {
+		if r := recover(); r != nil {
+			if str, ok := r.(string); ok {
+				if strings.HasPrefix(str, "reflect: Call using") {
+					// Remove prefix
+					str = strings.Replace(str, "reflect: Call using ", "", 1)
+					// Split on "as"
+					parts := strings.Split(str, " as type ")
+					if len(parts) == 2 {
+						err = fmt.Errorf("invalid argument type: got '%s', expected '%s'", parts[0], parts[1])
+						return
+					}
+				}
+			}
+			err = fmt.Errorf("%v", r)
+		}
+	}()
+
 	// Check inputs
 	expectedInputLength := len(b.Inputs)
 	actualInputLength := len(args)
@@ -315,9 +350,6 @@ func (b *BoundMethod) Call(args []interface{}) (interface{}, error) {
 	callResults := b.Method.Call(callArgs)
 
 	//** Check results **//
-	var returnValue interface{}
-	var err error
-
 	switch len(b.Outputs) {
 	case 1:
 		// Loop over results and determine if the result

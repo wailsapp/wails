@@ -329,8 +329,16 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 					}
 
 					// Check array type is of type "interface{}"
-					if _, ok := arrayType.Elt.(*ast.InterfaceType); !ok {
-						continue
+					_, isInterfaceType := arrayType.Elt.(*ast.InterfaceType)
+					if !isInterfaceType {
+						// Check it's an "any" type
+						ident, isAnyType := arrayType.Elt.(*ast.Ident)
+						if !isAnyType {
+							continue
+						}
+						if ident.Name != "any" {
+							continue
+						}
 					}
 					callFound = true
 					// Iterate through the slice elements

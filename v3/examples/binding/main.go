@@ -13,8 +13,12 @@ var assets embed.FS
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []interface{}{
+		Bind: []any{
 			&GreetService{},
+		},
+		BindAliases: map[uint32]uint32{
+			1: 1411160069,
+			2: 4021313248,
 		},
 		Assets: application.AssetOptions{
 			FS: assets,

@@ -13,6 +13,7 @@ type Options struct {
 	Mac         MacOptions
 	Windows     WindowsApplicationOptions
 	Bind        []any
+	BindAliases map[uint32]uint32
 	Logger      *slog.Logger
 	Assets      AssetOptions
 	Plugins     map[string]Plugin
