@@ -16,6 +16,7 @@ typedef struct Screen {
 	int isPrimary;
 	int height;
 	int width;
+	int scale;
 } Screen;
 
 int GetNMonitors(GtkWindow *window){
@@ -36,14 +37,16 @@ Screen GetNThMonitor(int monitor_num, GtkWindow *window){
 	screen.isPrimary = gdk_monitor_is_primary(monitor);
 	screen.height = geometry.height;
 	screen.width = geometry.width;
+	screen.scale = gdk_monitor_get_scale_factor(monitor);
 	return screen;
 }
 */
 import "C"
 import (
+	"sync"
+
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/internal/frontend"
-	"sync"
 )
 
 type Screen = frontend.Screen
@@ -59,11 +62,21 @@ func GetAllScreens(window *C.GtkWindow) ([]Screen, error) {
 		numMonitors := C.GetNMonitors(window)
 		for i := 0; i < int(numMonitors); i++ {
 			cMonitor := C.GetNThMonitor(C.int(i), window)
+
 			screen := Screen{
 				IsCurrent: cMonitor.isCurrent == 1,
 				IsPrimary: cMonitor.isPrimary == 1,
 				Width:     int(cMonitor.width),
 				Height:    int(cMonitor.height),
+
+				Size: frontend.ScreenSize{
+					Width:  int(cMonitor.width),
+					Height: int(cMonitor.height),
+				},
+				PhysicalSize: frontend.ScreenSize{
+					Width:  int(cMonitor.width * cMonitor.scale),
+					Height: int(cMonitor.height * cMonitor.scale),
+				},
 			}
 			screens = append(screens, screen)
 		}
