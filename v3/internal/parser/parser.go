@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/hash"
 	"go/ast"
 	"go/build"
@@ -81,6 +82,7 @@ type BoundMethod struct {
 	Inputs     []*Parameter
 	Outputs    []*Parameter
 	ID         uint32
+	Alias      *uint32
 }
 
 func (m BoundMethod) IDAsString() string {
@@ -394,6 +396,21 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 				if ok {
 					if ident, ok := recvType.X.(*ast.Ident); ok && ident.Name == name {
 						fqn := fmt.Sprintf("%s.%s.%s", pkg.Path, name, funcDecl.Name.Name)
+
+						var alias *uint32
+						var err error
+						// Check for the text `wails:methodID <integer>`
+						for _, docstring := range funcDecl.Doc.List {
+							if strings.Contains(docstring.Text, "//wails:methodID") {
+								idString := strings.TrimSpace(strings.TrimPrefix(docstring.Text, "//wails:methodID"))
+								parsedID, err := strconv.ParseUint(idString, 10, 32)
+								if err != nil {
+									return fmt.Errorf("invalid value in `wails:methodID` directive: '%s'. Expected a valid uint32 value", idString)
+								}
+								alias = lo.ToPtr(uint32(parsedID))
+								break
+							}
+						}
 						id, err := hash.Fnv(fqn)
 						if err != nil {
 							return err
@@ -403,6 +420,7 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 							ID:         id,
 							Name:       funcDecl.Name.Name,
 							DocComment: funcDecl.Doc.Text(),
+							Alias:      alias,
 						}
 
 						if funcDecl.Type.Params != nil {

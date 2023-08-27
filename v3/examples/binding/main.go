@@ -16,10 +16,6 @@ func main() {
 		Bind: []any{
 			&GreetService{},
 		},
-		BindAliases: map[uint32]uint32{
-			1: 1411160069,
-			2: 4021313248,
-		},
 		Assets: application.AssetOptions{
 			FS: assets,
 		},
