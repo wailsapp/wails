@@ -5,9 +5,9 @@ import (
 )
 
 const (
-	ApplicationQuit = 0
-	ApplicationHide = 1
-	ApplicationShow = 2
+	ApplicationHide = 0
+	ApplicationShow = 1
+	ApplicationQuit = 2
 )
 
 var applicationMethodNames = map[int]string{
