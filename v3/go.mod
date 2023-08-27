@@ -7,7 +7,7 @@ require (
 	github.com/ebitengine/purego v0.4.0-alpha.4
 	github.com/go-git/go-git/v5 v5.3.0
 	github.com/go-ole/go-ole v1.2.6
-	github.com/go-task/task/v3 v3.27.1
+	github.com/go-task/task/v3 v3.29.1
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/pat v1.0.1
@@ -31,7 +31,7 @@ require (
 	github.com/wailsapp/go-webview2 v1.0.4
 	github.com/wailsapp/mimetype v1.4.1
 	golang.org/x/net v0.7.0
-	golang.org/x/sys v0.9.0
+	golang.org/x/sys v0.11.0
 	modernc.org/sqlite v1.21.0
 )
 
@@ -79,7 +79,7 @@ require (
 	golang.org/x/mod v0.11.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/term v0.9.0 // indirect
+	golang.org/x/term v0.11.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/tools v0.2.0 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
