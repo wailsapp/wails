@@ -139,11 +139,31 @@ void SetWindowTransparency(GtkWidget *widget)
     }
 }
 
+static GtkCssProvider *windowCssProvider = NULL;
+
 void SetBackgroundColour(void *data)
 {
+    // set webview's background color
     RGBAOptions *options = (RGBAOptions *)data;
     GdkRGBA colour = {options->r / 255.0, options->g / 255.0, options->b / 255.0, options->a / 255.0};
     webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
+
+    // set window's background color
+    GtkWidget *window = GTK_WIDGET(options->window);
+    gchar *str = g_strdup_printf("window {background-color: rgba(%d, %d, %d, %d);}", options->r, options->g, options->b, options->a);
+
+    if (windowCssProvider == NULL)
+    {
+        windowCssProvider = gtk_css_provider_new();
+        gtk_style_context_add_provider(
+            gtk_widget_get_style_context(window),
+            GTK_STYLE_PROVIDER(windowCssProvider),
+            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+        g_object_unref(windowCssProvider);
+    }
+
+    gtk_css_provider_load_from_data(windowCssProvider, str, -1, NULL);
+    g_free(str);
 }
 
 static gboolean setTitle(gpointer data)
