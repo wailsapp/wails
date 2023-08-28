@@ -86,6 +86,7 @@ static void* new_message_dialog(GtkWindow *parent, const gchar *msg, int dialogT
        GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 	   dialogType,
 	   buttonMask,
+       "%s",
        msg);
 
    // g_signal_connect_swapped (dialog,
