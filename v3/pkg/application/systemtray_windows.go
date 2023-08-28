@@ -167,7 +167,7 @@ func (s *windowsSystemTray) run() {
 	// Set Default Callbacks
 	if s.parent.clickHandler == nil {
 		s.parent.clickHandler = func() {
-			println("Left Button Clicked")
+			globalApplication.info("Left Button Clicked")
 		}
 	}
 	if s.parent.rightClickHandler == nil {

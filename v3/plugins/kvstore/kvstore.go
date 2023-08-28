@@ -39,7 +39,7 @@ func (kvs *KeyValueStore) Shutdown() {
 	if kvs.unsaved {
 		err := kvs.Save()
 		if err != nil {
-			println("Error saving store: " + err.Error())
+			application.Get().Logger.Error("Error saving store: " + err.Error())
 		}
 	}
 }

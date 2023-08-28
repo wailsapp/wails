@@ -64,11 +64,7 @@ func SetTheme(hwnd uintptr, useDarkMode bool) {
 }
 
 func EnableTranslucency(hwnd uintptr, backdrop int32) {
-	if SupportsBackdropTypes() {
-		dwmSetWindowAttribute(hwnd, DwmwaSystemBackdropType, unsafe.Pointer(&backdrop), unsafe.Sizeof(backdrop))
-	} else {
-		println("Warning: Translucency type unavailable on Windows < 22621")
-	}
+	dwmSetWindowAttribute(hwnd, DwmwaSystemBackdropType, unsafe.Pointer(&backdrop), unsafe.Sizeof(backdrop))
 }
 
 func SetTitleBarColour(hwnd uintptr, titleBarColour int32) {

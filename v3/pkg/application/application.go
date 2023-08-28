@@ -88,7 +88,7 @@ func New(appOptions Options) *App {
 
 	result.bindings, err = NewBindings(appOptions.Bind, appOptions.BindAliases)
 	if err != nil {
-		println("Fatal error in application initialisation: ", err.Error())
+		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
 		os.Exit(1)
 	}
 
@@ -101,7 +101,7 @@ func New(appOptions Options) *App {
 
 	err = result.bindings.AddPlugins(appOptions.Plugins)
 	if err != nil {
-		println("Fatal error in application initialisation: ", err.Error())
+		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
 		os.Exit(1)
 	}
 

@@ -204,7 +204,7 @@ func showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelect bool) (any, 
 	defer func() {
 		err := dlg.Release()
 		if err != nil {
-			println("ERROR: Unable to release dialog:", err.Error())
+			globalApplication.error("Unable to release dialog: " + err.Error())
 		}
 	}()
 
