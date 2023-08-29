@@ -255,8 +255,8 @@ func runFrontendDevWatcherCommand(frontendDirectory string, devCommand string, d
 
 	const (
 		stateRunning   int32 = 0
-		stateCanceling       = 1
-		stateStopped         = 2
+		stateCanceling int32 = 1
+		stateStopped   int32 = 2
 	)
 	state := stateRunning
 	go func() {
