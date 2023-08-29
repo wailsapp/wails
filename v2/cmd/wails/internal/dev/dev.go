@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -138,20 +139,6 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 		}
 	}
 
-	// create the project files watcher
-	watcher, err := initialiseWatcher(cwd)
-	if err != nil {
-		return err
-	}
-
-	defer func(watcher *fsnotify.Watcher) {
-		err := watcher.Close()
-		if err != nil {
-			logger.Fatal(err.Error())
-		}
-	}(watcher)
-
-	logutils.LogGreen("Watching (sub)/directory: %s", cwd)
 	logutils.LogGreen("Using DevServer URL: %s", f.DevServerURL())
 	if f.FrontendDevServerURL != "" {
 		logutils.LogGreen("Using Frontend DevServer URL: %s", f.FrontendDevServerURL)
@@ -165,7 +152,10 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 	}()
 
 	// Watch for changes and trigger restartApp()
-	debugBinaryProcess = doWatcherLoop(buildOptions, debugBinaryProcess, f, watcher, exitCodeChannel, quitChannel, f.DevServerURL(), legacyUseDevServerInsteadofCustomScheme)
+	debugBinaryProcess, err = doWatcherLoop(cwd, buildOptions, debugBinaryProcess, f, exitCodeChannel, quitChannel, f.DevServerURL(), legacyUseDevServerInsteadofCustomScheme)
+	if err != nil {
+		return err
+	}
 
 	// Kill the current program if running and remove dev binary
 	if err := killProcessAndCleanupBinary(debugBinaryProcess, appBinary); err != nil {
@@ -337,7 +327,23 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 }
 
 // doWatcherLoop is the main watch loop that runs while dev is active
-func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Process, f *flags.Dev, watcher *fsnotify.Watcher, exitCodeChannel chan int, quitChannel chan os.Signal, devServerURL *url.URL, legacyUseDevServerInsteadofCustomScheme bool) *process.Process {
+func doWatcherLoop(cwd string, buildOptions *build.Options, debugBinaryProcess *process.Process, f *flags.Dev, exitCodeChannel chan int, quitChannel chan os.Signal, devServerURL *url.URL, legacyUseDevServerInsteadofCustomScheme bool) (*process.Process, error) {
+	// create the project files watcher
+	watcher, err := initialiseWatcher(cwd)
+	if err != nil {
+		logutils.LogRed("Unable to create filesystem watcher. Reloads will not occur.")
+		return nil, err
+	}
+
+	defer func(watcher *fsnotify.Watcher) {
+		err := watcher.Close()
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	}(watcher)
+
+	logutils.LogGreen("Watching (sub)/directory: %s", cwd)
+
 	// Main Loop
 	var extensionsThatTriggerARebuild = sliceToMap(strings.Split(f.Extensions, ","))
 	var dirsThatTriggerAReload []string
@@ -351,6 +357,12 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			continue
 		}
 		dirsThatTriggerAReload = append(dirsThatTriggerAReload, thePath)
+		err = watcher.Add(thePath)
+		if err != nil {
+			logutils.LogRed("Unable to watch path: %s due to error %v", thePath, err)
+		} else {
+			logutils.LogGreen("Watching (sub)/directory: %s", thePath)
+		}
 	}
 
 	quit := false
@@ -494,7 +506,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			quit = true
 		}
 	}
-	return debugBinaryProcess
+	return debugBinaryProcess, nil
 }
 
 func joinPath(url *url.URL, subPath string) string {
