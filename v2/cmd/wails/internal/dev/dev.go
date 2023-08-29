@@ -80,7 +80,7 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 
 	// Setup signal handler
 	quitChannel := make(chan os.Signal, 1)
-	signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
+	signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM)
 	exitCodeChannel := make(chan int, 1)
 
 	// Build the frontend if requested, but ignore building the application itself.
