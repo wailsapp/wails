@@ -441,16 +441,21 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 		case <-timer.C:
 			if rebuild {
 				rebuild = false
-				logutils.LogGreen("[Rebuild triggered] files updated")
-				// Try and build the app
-				newBinaryProcess, _, err := restartApp(buildOptions, debugBinaryProcess, f, exitCodeChannel, legacyUseDevServerInsteadofCustomScheme)
-				if err != nil {
-					logutils.LogRed("Error during build: %s", err.Error())
-					continue
-				}
-				// If we have a new process, saveConfig it
-				if newBinaryProcess != nil {
-					debugBinaryProcess = newBinaryProcess
+				if f.NoGoRebuild {
+					logutils.LogGreen("[Rebuild triggered] skipping due to flag -nogorebuild")
+				} else {
+					logutils.LogGreen("[Rebuild triggered] files updated")
+					// Try and build the app
+
+					newBinaryProcess, _, err := restartApp(buildOptions, debugBinaryProcess, f, exitCodeChannel, legacyUseDevServerInsteadofCustomScheme)
+					if err != nil {
+						logutils.LogRed("Error during build: %s", err.Error())
+						continue
+					}
+					// If we have a new process, saveConfig it
+					if newBinaryProcess != nil {
+						debugBinaryProcess = newBinaryProcess
+					}
 				}
 			}
 
