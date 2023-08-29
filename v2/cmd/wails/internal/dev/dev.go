@@ -366,7 +366,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 
 	assetDirURL := joinPath(devServerURL, "/wails/assetdir")
 	reloadURL := joinPath(devServerURL, "/wails/reload")
-	for quit == false {
+	for !quit {
 		// reload := false
 		select {
 		case exitCode := <-exitCodeChannel:
