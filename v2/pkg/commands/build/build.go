@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/google/shlex"
 	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 
@@ -392,7 +393,10 @@ func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 	}
 
 	printBulletPoint("Executing %s build hook '%s': ", hookName, hookIdentifier)
-	args := strings.Split(buildHook, " ")
+	args, err := shlex.Split(buildHook)
+	if err != nil {
+		return fmt.Errorf("could not parse %s build hook command: %w", hookName, err)
+	}
 	for i, arg := range args {
 		newArg := argReplacements[arg]
 		if newArg == "" {
