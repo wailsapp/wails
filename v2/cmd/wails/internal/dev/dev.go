@@ -81,7 +81,7 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 
 	// Setup signal handler
 	quitChannel := make(chan os.Signal, 1)
-	signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
+	signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM)
 	exitCodeChannel := make(chan int, 1)
 
 	// Build the frontend if requested, but ignore building the application itself.
@@ -245,8 +245,8 @@ func runFrontendDevWatcherCommand(frontendDirectory string, devCommand string, d
 
 	const (
 		stateRunning   int32 = 0
-		stateCanceling       = 1
-		stateStopped         = 2
+		stateCanceling int32 = 1
+		stateStopped   int32 = 2
 	)
 	state := stateRunning
 	go func() {
@@ -378,7 +378,7 @@ func doWatcherLoop(cwd string, buildOptions *build.Options, debugBinaryProcess *
 
 	assetDirURL := joinPath(devServerURL, "/wails/assetdir")
 	reloadURL := joinPath(devServerURL, "/wails/reload")
-	for quit == false {
+	for !quit {
 		// reload := false
 		select {
 		case exitCode := <-exitCodeChannel:
@@ -453,16 +453,21 @@ func doWatcherLoop(cwd string, buildOptions *build.Options, debugBinaryProcess *
 		case <-timer.C:
 			if rebuild {
 				rebuild = false
-				logutils.LogGreen("[Rebuild triggered] files updated")
-				// Try and build the app
-				newBinaryProcess, _, err := restartApp(buildOptions, debugBinaryProcess, f, exitCodeChannel, legacyUseDevServerInsteadofCustomScheme)
-				if err != nil {
-					logutils.LogRed("Error during build: %s", err.Error())
-					continue
-				}
-				// If we have a new process, saveConfig it
-				if newBinaryProcess != nil {
-					debugBinaryProcess = newBinaryProcess
+				if f.NoGoRebuild {
+					logutils.LogGreen("[Rebuild triggered] skipping due to flag -nogorebuild")
+				} else {
+					logutils.LogGreen("[Rebuild triggered] files updated")
+					// Try and build the app
+
+					newBinaryProcess, _, err := restartApp(buildOptions, debugBinaryProcess, f, exitCodeChannel, legacyUseDevServerInsteadofCustomScheme)
+					if err != nil {
+						logutils.LogRed("Error during build: %s", err.Error())
+						continue
+					}
+					// If we have a new process, saveConfig it
+					if newBinaryProcess != nil {
+						debugBinaryProcess = newBinaryProcess
+					}
 				}
 			}
 
