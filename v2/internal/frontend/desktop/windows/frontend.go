@@ -530,10 +530,6 @@ func (f *Frontend) setupChromium() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutIsSwipeNavigationEnabled(false)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	if f.debug && f.frontendOptions.Debug.OpenInspectorOnStartup {
 		chromium.OpenDevToolsWindow()
