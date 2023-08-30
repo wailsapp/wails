@@ -58,6 +58,7 @@ func main() {
         Bind: []interface{}{
             app,
         },
+        ErrorFormatter: func(err error) any { return err.Error() },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
@@ -104,7 +105,8 @@ func main() {
         Linux: &linux.Options{
             Icon: icon,
             WindowIsTranslucent: false,
-			WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
+            WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
+            ProgramName: "wails"
         },
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
@@ -476,6 +478,14 @@ A slice of struct instances defining methods that need to be bound to the fronte
 
 Name: Bind<br/>
 Type: `[]interface{}`
+
+### ErrorFormatter
+
+A function that determines how errors are formatted when returned by a JS-to-Go
+method call. The returned value will be marshalled as JSON.
+
+Name: ErrorFormatter<br/>
+Type: `func (error) any`
 
 ### Windows
 
@@ -888,6 +898,17 @@ Default: `WebviewGpuPolicyAlways`
 | WebviewGpuPolicyAlways   | Hardware acceleration is always enabled|
 | WebviewGpuPolicyOnDemand | Hardware acceleration is enabled/disabled as request by web contents|
 | WebviewGpuPolicyNever    | Hardware acceleration is always disabled |
+
+#### ProgramName
+
+This option is used to set the program's name for the window manager via GTK's g_set_prgname().
+This name should not be localized, [see the docs](https://docs.gtk.org/glib/func.set_prgname.html).
+
+When a .desktop file is created this value helps with window grouping and desktop icons when the .desktop file's `Name`
+property differs form the executable's filename.
+
+Name: ProgramName<br/>
+Type: string<br/>
 
 ### Debug
 

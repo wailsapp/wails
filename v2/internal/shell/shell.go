@@ -47,9 +47,7 @@ func (c *Command) Stderr() string {
 }
 
 func (c *Command) AddArgs(args []string) {
-	for _, arg := range args {
-		c.args = append(c.args, arg)
-	}
+	c.args = append(c.args, args...)
 }
 
 // CreateCommand returns a *Cmd struct that when run, will run the given command + args in the given directory

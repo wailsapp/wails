@@ -82,7 +82,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		ctx = context.WithValue(ctx, "buildtype", "production")
 	}
 
-	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler)
+	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler, appoptions.ErrorFormatter)
 	appFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)
 	eventHandler.AddFrontend(appFrontend)
 
