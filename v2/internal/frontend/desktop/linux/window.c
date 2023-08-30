@@ -149,7 +149,6 @@ void SetBackgroundColour(void *data)
     webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
 
     // set window's background color
-    //GtkWidget *window = GTK_WIDGET(options->window);
     gchar *str = g_strdup_printf("#webview-box {background-color: rgba(%d, %d, %d, %d);}", options->r, options->g, options->b, options->a);
 
     if (windowCssProvider == NULL)
