@@ -1404,6 +1404,14 @@ func (w *windowsWebviewWindow) setupChromium() {
 	}
 
 	chromium.Embed(w.hwnd)
+
+	if chromium.HasCapability(edge.SwipeNavigation) {
+		err := chromium.PutIsSwipeNavigationEnabled(opts.EnableSwipeGestures)
+		if err != nil {
+			globalApplication.fatal(err.Error())
+		}
+	}
+
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
 	if err != nil {

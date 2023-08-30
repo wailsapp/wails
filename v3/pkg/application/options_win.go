@@ -63,6 +63,9 @@ type WindowsWindow struct {
 
 	// HiddenOnTaskbar hides the window from the taskbar
 	HiddenOnTaskbar bool
+
+	// EnableSwipeGestures enables swipe gestures for the window
+	EnableSwipeGestures bool
 }
 
 type Theme int
