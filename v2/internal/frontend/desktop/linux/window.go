@@ -271,13 +271,18 @@ func (w *Window) IsNormal() bool {
 }
 
 func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {
+	windowIsTranslucent := false
+	if w.appoptions.Linux != nil && w.appoptions.Linux.WindowIsTranslucent {
+		windowIsTranslucent = true
+	}
 	data := C.RGBAOptions{
-		r:          C.uchar(r),
-		g:          C.uchar(g),
-		b:          C.uchar(b),
-		a:          C.uchar(a),
-		webview:    w.webview,
-		webviewBox: unsafe.Pointer(w.webviewBox),
+		r:                   C.uchar(r),
+		g:                   C.uchar(g),
+		b:                   C.uchar(b),
+		a:                   C.uchar(a),
+		webview:             w.webview,
+		webviewBox:          unsafe.Pointer(w.webviewBox),
+		windowIsTranslucent: gtkBool(windowIsTranslucent),
 	}
 	invokeOnMainThread(func() { C.SetBackgroundColour(unsafe.Pointer(&data)) })
 

@@ -56,6 +56,7 @@ typedef struct RGBAOptions
     uint8_t a;
     void *webview;
     void *webviewBox;
+    gboolean windowIsTranslucent;
 } RGBAOptions;
 
 typedef struct SetTitleArgs
