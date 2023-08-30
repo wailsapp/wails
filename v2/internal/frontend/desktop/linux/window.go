@@ -43,6 +43,7 @@ type Window struct {
 	webview                                  unsafe.Pointer
 	applicationMenu                          *menu.Menu
 	menubar                                  *C.GtkWidget
+	webviewBox                               *C.GtkWidget
 	vbox                                     *C.GtkWidget
 	accels                                   *C.GtkAccelGroup
 	minWidth, minHeight, maxWidth, maxHeight int
@@ -71,6 +72,11 @@ func NewWindow(appoptions *options.App, debug bool, devtools bool) *Window {
 	gtkWindow := C.gtk_window_new(C.GTK_WINDOW_TOPLEVEL)
 	C.g_object_ref_sink(C.gpointer(gtkWindow))
 	result.gtkWindow = unsafe.Pointer(gtkWindow)
+
+	webviewName := C.CString("webview-box")
+	defer C.free(unsafe.Pointer(webviewName))
+	result.webviewBox = C.gtk_box_new(C.GTK_ORIENTATION_VERTICAL, 0)
+	C.gtk_widget_set_name(result.webviewBox, webviewName)
 
 	result.vbox = C.gtk_box_new(C.GTK_ORIENTATION_VERTICAL, 0)
 	C.gtk_container_add(result.asGTKContainer(), result.vbox)
@@ -266,12 +272,12 @@ func (w *Window) IsNormal() bool {
 
 func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {
 	data := C.RGBAOptions{
-		r:       C.uchar(r),
-		g:       C.uchar(g),
-		b:       C.uchar(b),
-		a:       C.uchar(a),
-		webview: w.webview,
-		window:  w.gtkWindow,
+		r:          C.uchar(r),
+		g:          C.uchar(g),
+		b:          C.uchar(b),
+		a:          C.uchar(a),
+		webview:    w.webview,
+		webviewBox: unsafe.Pointer(w.webviewBox),
 	}
 	invokeOnMainThread(func() { C.SetBackgroundColour(unsafe.Pointer(&data)) })
 
@@ -288,7 +294,9 @@ func (w *Window) Run(url string) {
 	if w.menubar != nil {
 		C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), w.menubar, 0, 0, 0)
 	}
-	C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), C.GTKWIDGET(w.webview), 1, 1, 0)
+
+	C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.webviewBox)), C.GTKWIDGET(w.webview), 1, 1, 0)
+	C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), w.webviewBox, 1, 1, 0)
 	_url := C.CString(url)
 	C.LoadIndex(w.webview, _url)
 	defer C.free(unsafe.Pointer(_url))
