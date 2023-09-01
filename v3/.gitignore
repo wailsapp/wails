@@ -6,3 +6,4 @@ cmd/wails3/wails
 /examples/menu/menu
 /examples/clipboard/clipboard
 /examples/plain/plain
+/cmd/wails3/ui/.task/

@@ -2,10 +2,10 @@
 
 package application
 
-func newApplication(options *Options) *App {
+func newApplication(options Options) *App {
 	result := &App{
 		isDebugMode: false,
-		options:     options.getOptions(false),
+		options:     options,
 	}
 	result.init()
 	return result

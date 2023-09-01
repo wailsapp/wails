@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/pterm/pterm"
 	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/cmd/wails3/ui"
 	"os"
 	"runtime/debug"
 
@@ -28,6 +29,9 @@ func main() {
 	app := clir.NewCli("wails", "The Wails CLI", "v3")
 	app.NewSubCommandFunction("build", "Build the project", commands.Build)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
+	app.NewSubCommand("contribute", "Contribute to Wails development").Action(func() error {
+		return ui.Run()
+	})
 	task := app.NewSubCommand("task", "Run and list tasks")
 	var taskFlags commands.RunTaskOptions
 	task.AddFlags(&taskFlags)
