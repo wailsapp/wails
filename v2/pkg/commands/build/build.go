@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/google/shlex"
 	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 
@@ -145,15 +146,15 @@ func Build(options *Options) (string, error) {
 		if err != nil {
 			return "", err
 		}
-	}
 
-	hookArgs["${bin}"] = compileBinary
-	for _, hook := range []string{options.Platform + "/" + options.Arch, options.Platform + "/*", "*/*"} {
-		if err := execPostBuildHook(outputLogger, options, hook, hookArgs); err != nil {
-			return "", err
+		hookArgs["${bin}"] = compileBinary
+		for _, hook := range []string{options.Platform + "/" + options.Arch, options.Platform + "/*", "*/*"} {
+			if err := execPostBuildHook(outputLogger, options, hook, hookArgs); err != nil {
+				return "", err
+			}
 		}
-	}
 
+	}
 	return compileBinary, nil
 }
 
@@ -392,7 +393,10 @@ func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 	}
 
 	printBulletPoint("Executing %s build hook '%s': ", hookName, hookIdentifier)
-	args := strings.Split(buildHook, " ")
+	args, err := shlex.Split(buildHook)
+	if err != nil {
+		return fmt.Errorf("could not parse %s build hook command: %w", hookName, err)
+	}
 	for i, arg := range args {
 		newArg := argReplacements[arg]
 		if newArg == "" {

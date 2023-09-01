@@ -36,7 +36,7 @@ require (
 	github.com/wailsapp/go-webview2 v1.0.1
 	github.com/wailsapp/mimetype v1.4.1
 	github.com/wzshiming/ctc v1.2.3
-	golang.org/x/mod v0.8.0
+	golang.org/x/mod v0.12.0
 	golang.org/x/net v0.10.0
 	golang.org/x/sys v0.8.0
 	golang.org/x/tools v0.6.0
