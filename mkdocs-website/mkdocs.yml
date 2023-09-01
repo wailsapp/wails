@@ -1,4 +1,4 @@
-site_name: The Wails Project | Wails
+site_name: ""
 site_description: The Wails Project - Build beautiful cross-platform applications using Go
 theme:
   name: material
@@ -28,14 +28,14 @@ theme:
     - media: "(prefers-color-scheme: light)"
       scheme: default
       toggle:
-        icon: material/brightness-4
+        icon: material/toggle-switch-off-outline
         name: Switch to dark mode
 
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       toggle:
-        icon: material/brightness-7
+        icon: material/toggle-switch
         name: Switch to light mode
 
 extra:
@@ -47,29 +47,34 @@ extra:
     - icon: fontawesome/brands/discord
       link: https://discord.gg/JDdSxwjhGf
 
+extra_css:
+  - stylesheets/extra.css
+
 nav:
   - Home: index.md
   - Getting started:
-    - Introduction: introduction.md
+#    - Introduction: introduction.md
     - Installation: getting-started/installation.md
-    - Creating a Project: getting-started/creating-a-project.md
-    - How does it work: how-does-it-work.md
-    - Developing your Application: getting-started/developing-your-application.md
-    - Compiling your Project: getting-started/compiling-your-project.md
-  - API Reference:
-    - Runtime:
-      - Introduction: reference/runtime/introduction.md
-    - CLI: reference/cli.md
-  - Community:
-    - Template: community/templates.md
-    - Guides:
-      - Angular: guides/angular.md
-    - Showcase:
-      - Emaillit: community/showcase/emailit.md
+#    - Creating a Project: getting-started/creating-a-project.md
+#    - How does it work: how-does-it-work.md
+#    - Developing your Application: getting-started/developing-your-application.md
+#    - Compiling your Project: getting-started/compiling-your-project.md
+#  - API Reference:
+#    - Runtime:
+#      - Introduction: reference/runtime/introduction.md
+#    - CLI: reference/cli.md
+#  - Community:
+#    - Template: community/templates.md
+#    - Guides:
+#      - Angular: guides/angular.md
+#    - Showcase:
+#      - Emaillit: community/showcase/emailit.md
     - Contributing: community/contributing.md
-    - Links: community/links.md
+#    - Links: community/links.md
 
 markdown_extensions:
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite

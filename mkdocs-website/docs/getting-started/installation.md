@@ -1,5 +1,12 @@
 # Installation
 
+
+To install the Wails CLI, ensure you have [Go 1.21+](https://go.dev/dl/) installed and run:
+
+```shell
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+```
+
 ## Supported Platforms
 
 - Windows 10/11 AMD64/ARM64
@@ -11,79 +18,55 @@
 
 Wails has a number of common dependencies that are required before installation:
 
-- Go 1.18+
-- NPM (Node 15+)
+=== "Go 1.21+"
 
-### Go
+    Download Go from the [Go Downloads Page](https://go.dev/dl/).
+    
+    Ensure that you follow the official [Go installation instructions](https://go.dev/doc/install). You will also need to ensure that your `PATH` environment variable also includes the path to your `~/go/bin` directory. Restart your terminal and do the following checks:
+    
+    - Check Go is installed correctly: `go version`
+    - Check `~/go/bin` is in your PATH variable: `echo $PATH | grep go/bin`
 
-Download Go from the [Go Downloads Page](https://go.dev/dl/).
+=== "NPM (Node 18+)"
 
-Ensure that you follow the official [Go installation instructions](https://go.dev/doc/install). You will also need to ensure that your `PATH` environment variable also includes the path to your `~/go/bin` directory. Restart your terminal and do the following checks:
+    Download NPM from the [Node Downloads Page](https://nodejs.org/en/download/). It is best to use the latest release as that is what we generally test against.
+    
+    Run `npm --version` to verify.
 
-- Check Go is installed correctly: `go version`
-- Check "~/go/bin" is in your PATH variable: `echo $PATH | grep go/bin`
+=== "Task (Optional)"
 
-### NPM
-
-Download NPM from the [Node Downloads Page](https://nodejs.org/en/download/). It is best to use the latest release as that is what we generally test against.
-
-Run `npm --version` to verify.
+    The Wails CLI embeds a task runner called [Task](https://taskfile.dev/#/installation). It is optional, but recommended. If you do not wish to install Task, you can use the `wails3 task` command instead of `task`.
+    Installing Task will give you the greatest flexibility.
 
 ## Platform Specific Dependencies
 
 You will also need to install platform specific dependencies:
 
-```mdx-code-block
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
+=== "Mac"
 
-<Tabs
-  defaultValue="Windows"
-  values={[
-    { label: "Windows", value: "Windows" },
-    { label: "MacOS", value: "MacOS" },
-    { label: "Linux", value: "Linux" },
-  ]}
->
-  <TabItem value="MacOS">
     Wails requires that the xcode command line tools are installed. This can be
-    done by running <code>xcode-select --install</code>.
-  </TabItem>
-  <TabItem value="Windows">
-    Wails requires that the <a href="https://developer.microsoft.com/en-us/microsoft-edge/webview2/">WebView2</a> runtime is installed. Some Windows installations will already have this installed. You can check using the <code>wails doctor</code> command.
-  </TabItem>
-  <TabItem value={"Linux"}>
-    Linux requires the standard <code>gcc</code> build tools plus <code>libgtk3</code> and <code>libwebkit</code>. Rather than list a ton of commands for different distros, Wails can try to determine what the installation commands are for your specific distribution. Run <code>wails doctor</code> after installation to be shown how to install the dependencies. If your distro/package manager is not supported, please consult the <a href={"/docs/guides/linux-distro-support"}>Add Linux Distro</a> guide.
-  </TabItem>
-</Tabs>
-```
+    done by running:
 
-## Optional Dependencies
+    ```
+    xcode-select --install
+    ```
 
-- [UPX](https://upx.github.io/) for compressing your applications.
-- [NSIS](https://wails.io/docs/guides/windows-installer/) for generating Windows installers.
+=== "Windows"
 
-## Installing Wails
+    Wails requires that the [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) is installed. Some Windows installations will already have this installed. You can check using the `wails doctor` command.
 
-Run `go install github.com/wailsapp/wails/v2/cmd/wails@latest` to install the Wails CLI.
+=== "Linux"
 
-Note: If you get an error similar to this:
-
-```shell
-....\Go\pkg\mod\github.com\wailsapp\wails\v2@v2.1.0\pkg\templates\templates.go:28:12: pattern all:ides/*: no matching files found
-```
-please check you have Go 1.18+ installed:
-```shell
-go version
-```
+    Linux requires the standard `gcc` build tools plus `libgtk3` and `libwebkit`. Rather than list a ton of commands for different distros, Wails can try to determine what the installation commands are for your specific distribution. Run <code>wails doctor</code> after installation to be shown how to install the dependencies. If your distro/package manager is not supported, please consult [this guide](/guides/linux-distro-support).
 
 ## System Check
 
-Running `wails doctor` will check if you have the correct dependencies installed. If not, it will advise on what is missing and help on how to rectify any problems.
+Running `wails3 doctor` will check if you have the correct dependencies installed. If not, it will advise on what is missing and help on how to rectify any problems.
 
-## The `wails` command appears to be missing?
+## The `wails3` command appears to be missing?
 
-If your system is reporting that the `wails` command is missing, make sure you have followed the Go installation guide
-correctly. Normally, it means that the `go/bin` directory in your User's home directory is not in the `PATH` environment
-variable. You will also normally need to close and reopen any open command prompts so that changes to the environment
-made by the installer are reflected at the command prompt.
+If your system is reporting that the `wails3` command is missing, check the following:
+  
+  - Make sure you have followed the Go installation guide correctly. 
+  - Check that the `go/bin` directory is in the `PATH` environment variable. 
+  - Close/Reopen current terminals to pick up the new `PATH` variable.
