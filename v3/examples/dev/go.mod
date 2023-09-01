@@ -51,7 +51,7 @@ require (
 	github.com/samber/lo v1.37.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/tc-hib/winres v0.1.6 // indirect
-	github.com/wailsapp/go-webview2 v1.0.4 // indirect
+	github.com/wailsapp/go-webview2 v1.0.5 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect

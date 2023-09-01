@@ -189,6 +189,7 @@ github.com/tmclane/purego v0.0.0-20230601213035-1f25e70d7b01 h1:oQwu3iNDywGp1Hry
 github.com/tmclane/purego v0.0.0-20230601213035-1f25e70d7b01/go.mod h1:ah1In8AOtksoNK6yk5z1HTJeUkC1Ez4Wk2idgGslMwQ=
 github.com/wailsapp/go-webview2 v1.0.4 h1:f+rn18MqZKpgn6HhhrpXzUg/zkDzNJyzIZIL3Gq2Pw4=
 github.com/wailsapp/go-webview2 v1.0.4/go.mod h1:Uk2BePfCRzttBBjFrBmqKGJd41P6QIHeV9kTgIeOZNo=
+github.com/wailsapp/go-webview2 v1.0.5/go.mod h1:Uk2BePfCRzttBBjFrBmqKGJd41P6QIHeV9kTgIeOZNo=
 github.com/wailsapp/mimetype v1.4.1 h1:pQN9ycO7uo4vsUUuPeHEYoUkLVkaRntMnHJxVwYhwHs=
 github.com/wailsapp/mimetype v1.4.1/go.mod h1:9aV5k31bBOv5z6u+QP8TltzvNGJPmNJD4XlAL3U+j3o=
 github.com/xanzy/ssh-agent v0.3.0 h1:wUMzuKtKilRgBAD1sUb8gOwwRr2FGoBVumcjoOACClI=
