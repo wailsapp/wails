@@ -476,7 +476,7 @@ func (w *linuxWebviewWindow) setTransparent() {
 }
 
 func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
-	if colour.Alpha != 0 {
+	if colour.Alpha < 255 {
 		w.setTransparent()
 	}
 	windowSetBackgroundColour(w.webview, colour)
