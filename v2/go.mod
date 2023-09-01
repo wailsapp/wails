@@ -33,7 +33,7 @@ require (
 	github.com/tc-hib/winres v0.1.5
 	github.com/tidwall/sjson v1.1.7
 	github.com/tkrajina/go-reflector v0.5.6
-	github.com/wailsapp/go-webview2 v1.0.5
+	github.com/wailsapp/go-webview2 v1.0.6-0.20230901120557-e959fdf1ccc3
 	github.com/wailsapp/mimetype v1.4.1
 	github.com/wzshiming/ctc v1.2.3
 	golang.org/x/mod v0.12.0
