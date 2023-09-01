@@ -12,6 +12,11 @@ includes:
     dir: ./website
     optional: true
 
+  docs:
+    taskfile: ../mkdocs-website
+    dir: ../mkdocs-website
+    optional: true
+
 tasks:
   recreate-template-dir:
     dir: internal/templates
@@ -119,3 +124,5 @@ tasks:
   format:
     cmds:
       - task: format:md
+
+

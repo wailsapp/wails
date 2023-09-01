@@ -26,12 +26,12 @@ require (
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.51
-	github.com/samber/lo v1.37.0
+	github.com/samber/lo v1.38.1
 	github.com/tc-hib/winres v0.1.6
-	github.com/wailsapp/go-webview2 v1.0.5
+	github.com/wailsapp/go-webview2 v1.0.6-0.20230901120557-e959fdf1ccc3
 	github.com/wailsapp/mimetype v1.4.1
 	github.com/wailsapp/wails/v3/cmd/wails3/ui v0.0.0-20210706143420-7d21f8c997e2
-	golang.org/x/net v0.7.0
+	golang.org/x/net v0.10.0
 	golang.org/x/sys v0.11.0
 	modernc.org/sqlite v1.21.0
 )
@@ -69,7 +69,7 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/radovskyb/watcher v1.0.7 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/sajari/fuzzy v1.0.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
@@ -81,8 +81,8 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43 // indirect
 	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/term v0.11.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
-	golang.org/x/tools v0.2.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/tools v0.6.0 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

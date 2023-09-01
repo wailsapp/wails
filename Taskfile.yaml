@@ -16,6 +16,11 @@ includes:
     dir: v3
     optional: true
 
+  docs:
+    taskfile: mkdocs-website
+    dir: mkdocs-website
+    optional: true
+
 tasks:
   contributors:check:
     cmds:

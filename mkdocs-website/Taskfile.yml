@@ -1,0 +1,29 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+
+  setup:
+    summary: Setup the project
+    preconditions:
+      - sh: python{{exeExt}} --version
+        msg: "Looks like Python isn't installed. Python is required to build the documentation: https://www.python.org/downloads/"
+    cmds:
+      - python -m pip install -r requirements.txt --user
+
+  build:
+    summary: Builds the documentation
+    preconditions:
+      - sh: mkdocs --version
+        msg: "Looks like mkdocs isn't installed. Run `wails3 task setup` or `task setup` in the documentation directory to install it."
+    cmds:
+      - mkdocs build
+
+  serve:
+    summary: Builds the documentation and serves it locally
+    preconditions:
+      - sh: mkdocs --version
+        msg: "Looks like mkdocs isn't installed. Run `wails3 task setup` or `task setup` in the documentation directory to install it."
+    cmds:
+      - mkdocs serve
