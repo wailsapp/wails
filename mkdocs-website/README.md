@@ -7,7 +7,7 @@ This is the documentation for Wails v3. It is currently a work in progress.
 Install the wails3 CLI if you haven't already:
 
 ```shell
-go install github.com/wailsapp/wails/v2/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 ```
 
 The documentation uses mkdocs, so you will need to install [Python](https://www.python.org/). Once installed, 
