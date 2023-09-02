@@ -30,7 +30,6 @@ require (
 	github.com/tc-hib/winres v0.1.6
 	github.com/wailsapp/go-webview2 v1.0.6-0.20230901120557-e959fdf1ccc3
 	github.com/wailsapp/mimetype v1.4.1
-	github.com/wailsapp/wails/v3/cmd/wails3/ui v0.0.0-20210706143420-7d21f8c997e2
 	golang.org/x/net v0.10.0
 	golang.org/x/sys v0.11.0
 	modernc.org/sqlite v1.21.0
@@ -100,5 +99,3 @@ require (
 )
 
 replace github.com/ebitengine/purego v0.4.0-alpha.4 => github.com/tmclane/purego v0.0.0-20230601213035-1f25e70d7b01
-
-replace github.com/wailsapp/wails/v3/cmd/wails3/ui => D:\GolandProjects\wails\v3\cmd\wails3\ui

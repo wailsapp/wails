@@ -2,14 +2,12 @@ package commands
 
 import (
 	_ "embed"
+	"github.com/wailsapp/wails/v3/internal/version"
 )
-
-//go:embed version.txt
-var VersionString string
 
 type VersionOptions struct{}
 
 func Version(_ *VersionOptions) error {
-	println(VersionString)
+	println(version.VersionString)
 	return nil
 }

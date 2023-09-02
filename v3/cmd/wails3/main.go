@@ -27,6 +27,7 @@ func init() {
 func main() {
 	app := clir.NewCli("wails", "The Wails CLI", "v3")
 	app.NewSubCommandFunction("build", "Build the project", commands.Build)
+	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
 	task := app.NewSubCommand("task", "Run and list tasks")
 	var taskFlags commands.RunTaskOptions
