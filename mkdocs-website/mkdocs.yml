@@ -69,8 +69,11 @@ nav:
 #      - Angular: guides/angular.md
 #    - Showcase:
 #      - Emaillit: community/showcase/emailit.md
-    - Contributing: community/contributing.md
+#    - Contributing: community/contributing.md
 #    - Links: community/links.md
+    - Feedback: getting-started/feedback.md
+  - Change Log: changelog.md
+
 
 markdown_extensions:
   - pymdownx.tabbed:
