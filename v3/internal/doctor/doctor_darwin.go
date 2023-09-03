@@ -2,7 +2,7 @@
 
 package doctor
 
-func getInfo() map[string]string {
+func getInfo() (map[string]string, bool) {
 	result := make(map[string]string)
-	return result
+	return result, true
 }
