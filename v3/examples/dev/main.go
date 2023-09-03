@@ -3,7 +3,6 @@ package main
 import (
 	"embed"
 	_ "embed"
-	"github.com/wailsapp/wails/v3/pkg/events"
 	"log"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -36,13 +35,13 @@ func main() {
 		URL: "/",
 	})
 
-	app.On(events.Common.ThemeChanged, func(e *application.Event) {
-		if app.IsDarkMode() {
-			log.Println("Dark mode!")
-		} else {
-			log.Println("Light mode!")
-		}
-	})
+	//app.On(events.Common.ThemeChanged, func(e *application.Event) {
+	//	if app.IsDarkMode() {
+	//		log.Println("Dark mode!")
+	//	} else {
+	//		log.Println("Light mode!")
+	//	}
+	//})
 
 	err := app.Run()
 

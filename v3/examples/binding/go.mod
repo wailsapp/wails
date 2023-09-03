@@ -48,23 +48,23 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pterm/pterm v0.12.51 // indirect
 	github.com/radovskyb/watcher v1.0.7 // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/sajari/fuzzy v1.0.0 // indirect
-	github.com/samber/lo v1.37.0 // indirect
+	github.com/samber/lo v1.38.1 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/tc-hib/winres v0.1.6 // indirect
-	github.com/wailsapp/go-webview2 v1.0.5 // indirect
+	github.com/wailsapp/go-webview2 v1.0.6-0.20230901120557-e959fdf1ccc3 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
 	golang.org/x/image v0.5.0 // indirect
-	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/term v0.11.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	mvdan.cc/sh/v3 v3.7.0 // indirect
