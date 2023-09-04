@@ -2,74 +2,39 @@
 
 package doctor
 
+import (
+	"github.com/wailsapp/wails/v3/internal/doctor/packagemanager"
+	"github.com/wailsapp/wails/v3/internal/operatingsystem"
+)
+
 func getInfo() (map[string]string, bool) {
 	result := make(map[string]string)
-	/*
-		pterm.DefaultSection.Println("Dependencies")
+	ok := true
 
-		// Output Dependencies Status
-		var dependenciesMissing []string
-		var externalPackages []*packagemanager.Dependency
-		var dependenciesAvailableRequired = 0
-		var dependenciesAvailableOptional = 0
+	info, _ := operatingsystem.Info()
 
-		dependenciesTableData := pterm.TableData{
-			{"Dependency", "Package Name", "Status", "Version"},
-		}
+	pm := packagemanager.Find(info.ID)
+	deps, _ := packagemanager.Dependencies(pm)
+	for _, dep := range deps {
+		var status string
 
-		hasOptionalDependencies := false
-		// Loop over dependencies
-		for _, dependency := range info.Dependencies {
-			name := dependency.Name
-
-			if dependency.Optional {
-				name = pterm.Gray("*") + name
-				hasOptionalDependencies = true
-			}
-
-			packageName := "Unknown"
-			status := pterm.LightRed("Not Found")
-
-			// If we found the package
-			if dependency.PackageName != "" {
-				packageName = dependency.PackageName
-
-				// If it's installed, update the status
-				if dependency.Installed {
-					status = pterm.LightGreen("Installed")
-				} else {
-					// Generate meaningful status text
-					status = pterm.LightMagenta("Available")
-
-					if dependency.Optional {
-						dependenciesAvailableOptional++
-					} else {
-						dependenciesAvailableRequired++
-					}
-				}
+		switch true {
+		case !dep.Installed:
+			if dep.Optional {
+				status = "[Optional] "
 			} else {
-				if !dependency.Optional {
-					dependenciesMissing = append(dependenciesMissing, dependency.Name)
-				}
-
-				if dependency.External {
-					externalPackages = append(externalPackages, dependency)
-				}
+				ok = false
 			}
-
-			dependenciesTableData = append(dependenciesTableData, []string{name, packageName, status, dependency.Version})
+			status += "not installed."
+			if dep.InstallCommand != "" {
+				status += " Install with: " + dep.InstallCommand
+			}
+		case dep.Version != "":
+			status = dep.Version
 		}
 
-		dependenciesTableString, _ := pterm.DefaultTable.WithHasHeader(true).WithData(dependenciesTableData).Srender()
-		dependenciesBox := pterm.DefaultBox.WithTitleBottomCenter()
+		result[dep.Name] = status
+	}
 
-		if hasOptionalDependencies {
-			dependenciesBox = dependenciesBox.WithTitle(pterm.Gray("*") + " - Optional Dependency")
-		}
-
-		dependenciesBox.Println(dependenciesTableString)
-
-		pterm.Println() // Spacer for sponsor message
-	*/
-	return result, true
+	return result, ok
 }

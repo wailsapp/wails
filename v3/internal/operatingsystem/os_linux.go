@@ -40,11 +40,13 @@ func parseOsRelease(osRelease string) *OS {
 		}
 		switch splitLine[0] {
 		case "ID":
-			result.ID = strings.ToLower(strings.Trim(splitLine[1], "\""))
+			result.ID = strings.ToLower(strings.Trim(splitLine[1], `"`))
 		case "NAME":
-			result.Name = strings.Trim(splitLine[1], "\"")
+			result.Name = strings.Trim(splitLine[1], `"`)
 		case "VERSION_ID":
-			result.Version = strings.Trim(splitLine[1], "\"")
+			result.Version = strings.Trim(splitLine[1], `"`)
+		case "VERSION":
+			result.Branding = strings.Trim(splitLine[1], `"`)
 		}
 	}
 	return &result

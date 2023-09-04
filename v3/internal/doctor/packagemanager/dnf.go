@@ -23,8 +23,8 @@ func NewDnf(osid string) *Dnf {
 
 // Packages returns the libraries that we need for Wails to compile
 // They will potentially differ on different distributions or versions
-func (y *Dnf) Packages() packagemap {
-	return packagemap{
+func (y *Dnf) Packages() Packagemap {
+	return Packagemap{
 		"libgtk-3": []*Package{
 			{Name: "gtk3-devel", SystemPackage: true, Library: true},
 		},
@@ -42,20 +42,6 @@ func (y *Dnf) Packages() packagemap {
 		"npm": []*Package{
 			{Name: "npm", SystemPackage: true},
 			{Name: "nodejs-npm", SystemPackage: true},
-		},
-		"upx": []*Package{
-			{Name: "upx", SystemPackage: true, Optional: true},
-		},
-		"docker": []*Package{
-			{
-				SystemPackage: false,
-				Optional:      true,
-				InstallCommand: map[string]string{
-					"centos": "Follow the guide: https://docs.docker.com/engine/install/centos/",
-					"fedora": "Follow the guide: https://docs.docker.com/engine/install/fedora/",
-				},
-			},
-			{Name: "moby-engine", SystemPackage: true, Optional: true},
 		},
 	}
 }
@@ -95,7 +81,7 @@ func (y *Dnf) PackageAvailable(pkg *Package) (bool, error) {
 	if pkg.SystemPackage == false {
 		return false, nil
 	}
-	stdout, _, err := execCmd("dnf", "info", pkg.Name)
+	stdout, err := execCmd("dnf", "info", pkg.Name)
 	// We add a space to ensure we get a full match, not partial match
 	if err != nil {
 		_, ok := err.(*exec.ExitError)

@@ -24,8 +24,8 @@ func NewEmerge(osid string) *Emerge {
 
 // Packages returns the libraries that we need for Wails to compile
 // They will potentially differ on different distributions or versions
-func (e *Emerge) Packages() packagemap {
-	return packagemap{
+func (e *Emerge) Packages() Packagemap {
+	return Packagemap{
 		"libgtk-3": []*Package{
 			{Name: "x11-libs/gtk+", SystemPackage: true, Library: true},
 		},
@@ -40,9 +40,6 @@ func (e *Emerge) Packages() packagemap {
 		},
 		"npm": []*Package{
 			{Name: "net-libs/nodejs", SystemPackage: true},
-		},
-		"docker": []*Package{
-			{Name: "app-emulation/docker", SystemPackage: true, Optional: true},
 		},
 	}
 }

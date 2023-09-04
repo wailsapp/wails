@@ -25,8 +25,8 @@ func NewZypper(osid string) *Zypper {
 
 // Packages returns the libraries that we need for Wails to compile
 // They will potentially differ on different distributions or versions
-func (z *Zypper) Packages() packagemap {
-	return packagemap{
+func (z *Zypper) Packages() Packagemap {
+	return Packagemap{
 		"libgtk-3": []*Package{
 			{Name: "gtk3-devel", SystemPackage: true, Library: true},
 		},
@@ -44,9 +44,6 @@ func (z *Zypper) Packages() packagemap {
 		"npm": []*Package{
 			{Name: "npm10", SystemPackage: true},
 		},
-		"docker": []*Package{
-			{Name: "docker", SystemPackage: true, Optional: true},
-		},
 	}
 }
 
@@ -60,7 +57,7 @@ func (z *Zypper) PackageInstalled(pkg *Package) (bool, error) {
 	if pkg.SystemPackage == false {
 		return false, nil
 	}
-	stdout, err := cmdExec("zypper", "info", pkg.Name)
+	stdout, err := execCmd("zypper", "info", pkg.Name)
 	if err != nil {
 		_, ok := err.(*exec.ExitError)
 		if ok {
@@ -83,8 +80,7 @@ func (z *Zypper) PackageAvailable(pkg *Package) (bool, error) {
 	if pkg.SystemPackage == false {
 		return false, nil
 	}
-	var env []string
-	stdout, err := cmdExec("zypper", "info", pkg.Name)
+	stdout, err := execCmd("zypper", "info", pkg.Name)
 	// We add a space to ensure we get a full match, not partial match
 	if err != nil {
 		_, ok := err.(*exec.ExitError)

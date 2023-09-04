@@ -3,10 +3,11 @@
 package packagemanager
 
 import (
+	"bytes"
+	"os"
+	"os/exec"
 	"sort"
 	"strings"
-
-	"github.com/wailsapp/wails/v2/internal/shell"
 )
 
 func execCmd(command string, args ...string) (string, error) {
@@ -30,12 +31,21 @@ var pmcommands = []string{
 	"nix-env",
 }
 
+// commandExists returns true if the given command can be found on the shell
+func commandExists(name string) bool {
+	_, err := exec.LookPath(name)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 // Find will attempt to find the system package manager
 func Find(osid string) PackageManager {
 
 	// Loop over pmcommands
 	for _, pmname := range pmcommands {
-		if shell.CommandExists(pmname) {
+		if commandExists(pmname) {
 			return newPackageManager(pmname, osid)
 		}
 	}
@@ -124,10 +134,6 @@ func AppVersion(name string) string {
 		return npmVersion()
 	}
 
-	if name == "docker" {
-		return dockerVersion()
-	}
-
 	return ""
 
 }
@@ -138,13 +144,13 @@ func gccVersion() string {
 	var err error
 
 	// Try "-dumpfullversion"
-	version, _, err = shell.RunCommand(".", "gcc", "-dumpfullversion")
+	version, err = execCmd("gcc", "-dumpfullversion")
 	if err != nil {
 
 		// Try -dumpversion
 		// We ignore the error as this function is not for testing whether the
 		// application exists, only that we can get the version number
-		dumpversion, _, err := shell.RunCommand(".", "gcc", "-dumpversion")
+		dumpversion, err := execCmd("gcc", "-dumpversion")
 		if err == nil {
 			version = dumpversion
 		}
@@ -153,19 +159,11 @@ func gccVersion() string {
 }
 
 func pkgConfigVersion() string {
-	version, _, _ := shell.RunCommand(".", "pkg-config", "--version")
+	version, _ := execCmd("pkg-config", "--version")
 	return strings.TrimSpace(version)
 }
 
 func npmVersion() string {
-	version, _, _ := shell.RunCommand(".", "npm", "--version")
+	version, _ := execCmd("npm", "--version")
 	return strings.TrimSpace(version)
-}
-
-func dockerVersion() string {
-	version, _, _ := shell.RunCommand(".", "docker", "--version")
-	version = strings.TrimPrefix(version, "Docker version ")
-	version = strings.ReplaceAll(version, ", build ", " (")
-	version = strings.TrimSpace(version) + ")"
-	return version
 }

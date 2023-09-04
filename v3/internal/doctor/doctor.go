@@ -118,7 +118,7 @@ func Run() (err error) {
 		return err
 	}
 
-	pterm.DefaultSection.Println("Operating System")
+	pterm.DefaultSection.Println("System")
 
 	systemTabledata := pterm.TableData{
 		{pterm.Sprint("Name"), info.Name},

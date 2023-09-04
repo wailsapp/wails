@@ -3,6 +3,7 @@
 package packagemanager
 
 import (
+	"regexp"
 	"strings"
 )
 
@@ -22,8 +23,8 @@ func NewApt(osid string) *Apt {
 
 // Packages returns the libraries that we need for Wails to compile
 // They will potentially differ on different distributions or versions
-func (a *Apt) Packages() packagemap {
-	return packagemap{
+func (a *Apt) Packages() Packagemap {
+	return Packagemap{
 		"libgtk-3": []*Package{
 			{Name: "libgtk-3-dev", SystemPackage: true, Library: true},
 		},
@@ -38,12 +39,6 @@ func (a *Apt) Packages() packagemap {
 		},
 		"npm": []*Package{
 			{Name: "npm", SystemPackage: true},
-		},
-		"docker": []*Package{
-			{Name: "docker.io", SystemPackage: true, Optional: true},
-		},
-		"nsis": []*Package{
-			{Name: "nsis", SystemPackage: true, Optional: true},
 		},
 	}
 }
@@ -73,7 +68,6 @@ func (a *Apt) PackageAvailable(pkg *Package) (bool, error) {
 	}
 	output, err := a.listPackage(pkg.Name)
 	// We add a space to ensure we get a full match, not partial match
-	output = a.removeEscapeSequences(output)
 	escapechars, _ := regexp.Compile(`\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])`)
 	escapechars.ReplaceAllString(output, "")
 	installed := strings.HasPrefix(output, pkg.Name)
