@@ -1,28 +1,8 @@
-# v3
+# v3 Alpha
 
-This directory is experimental. It probably won't work for you. There's no support for this directory. Dragons be here. You have been warned!
+Thanks for wanting to help out with testing/developing Wails v3! This guide will help you get started.
 
-## Run examples
-follow these steps to run the examples:
--  clone the repo
-```cmd
-git clone https://github.com/wailsapp/wails.git
-```
--  switch to v3-alpha branch
-```cmd
-git checkout v3-alpha
-```
--  install dependencies 
-  ```cmd 
-go mod tidy
-```
--  run the example you want
-```cmd
-cd v3/examples/(example you want)
-```
-```cmd
-go mod tidy
-```
-```cmd
-go run main.go
-```
+## Getting Started
+
+All the instructions for getting started are in the v3 documentation directory: `mkdocs-website`. 
+Please read the README.md file in that directory for more information.

@@ -57,7 +57,7 @@ You will also need to install platform specific dependencies:
 
 === "Linux"
 
-    Linux requires the standard `gcc` build tools plus `libgtk3` and `libwebkit`. Rather than list a ton of commands for different distros, Wails can try to determine what the installation commands are for your specific distribution. Run <code>wails doctor</code> after installation to be shown how to install the dependencies. If your distro/package manager is not supported, please consult [this guide](/guides/linux-distro-support).
+    Linux requires the standard `gcc` build tools plus `libgtk3` and `libwebkit`. Rather than list a ton of commands for different distros, Wails can try to determine what the installation commands are for your specific distribution. Run <code>wails doctor</code> after installation to be shown how to install the dependencies. If your distro/package manager is not supported, please let us know on discord.
 
 ## System Check
 

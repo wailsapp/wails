@@ -1,0 +1,5 @@
+INHERIT: mkdocs.yml
+plugins:
+  - search
+  - social
+  - tags

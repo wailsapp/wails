@@ -1,4 +1,4 @@
-# Development
+# Introduction
 
 **This guide is a work in progress.**
 
@@ -7,7 +7,7 @@ Thanks for wanting to help out with development of Wails! This guide will help y
 ## Getting Started
 
 - Git clone this repository. Checkout the `v3-alpha` branch.
-- Install the CLI: `cd v3/cmd/wails && go install`
+- Install the CLI: `cd v3/cmd/3wails && go install`
 
 - Optional: If you are wanting to use the build system to build frontend code, you will need to install [npm](https://nodejs.org/en/download).
 
@@ -24,7 +24,7 @@ The project has the following structure:
     
     ```
     v3
-    ├── cmd/wails                  // CLI
+    ├── cmd/wails3                  // CLI
     ├── examples                   // Examples of Wails apps 
     ├── internal                   // Internal packages
     |   ├── runtime                // The Wails JS runtime
@@ -65,7 +65,7 @@ wails task runtime:build
 Events are defined in `v3/pkg/events`. When adding a new event, the following steps need to be taken:
 
 - Add the event to the `events.txt` file
-- Run `wails task events:generate`
+- Run `wails3 task events:generate`
 
 There are a number of types of events: platform specific application and window events + common events. The common events are useful for cross-platform event handling, but you aren't limited to the "lowest common denominator". You can use the platform specific events if you need to.
 

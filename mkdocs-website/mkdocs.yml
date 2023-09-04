@@ -1,4 +1,4 @@
-site_name: ""
+site_name: "alpha"
 site_description: The Wails Project - Build beautiful cross-platform applications using Go
 theme:
   name: material
@@ -11,6 +11,7 @@ theme:
     - navigation.expand
     - navigation.instant
     - navigation.top
+    - navigation.footer
 
     - toc.integrate
     - toc.follow
@@ -71,7 +72,12 @@ nav:
 #      - Emaillit: community/showcase/emailit.md
 #    - Contributing: community/contributing.md
 #    - Links: community/links.md
+    - Next Steps: getting-started/next-steps.md
     - Feedback: getting-started/feedback.md
+  - Development:
+    - Introduction: development/introduction.md
+    - Status: development/status.md
+    - v3 Changes: development/changes.md
   - Change Log: changelog.md
 
 

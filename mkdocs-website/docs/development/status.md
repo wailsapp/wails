@@ -1,14 +1,14 @@
 # Status
 
-Status of features in v3. Incomplete - please add as you see fit.
+Status of features in v3. 
 
-## Major Blockers
+This list is a mixture of public and internal API support.
+Incomplete - please add as you see fit.
 
-- [ ] Dev Support - What will it look like?
-- [ ] Translucency on Windows doesn't work right
-- [ ] Events - cross-platform events, simplified event handling?, event constants in JS
-- [ ] Error handling - needs to be revised. Centralised system error handling?
-- [ ] Documentation - needs to be written
+## Known Issues
+
+- Linux is not yet up to feature parity with Windows/Mac
+
 
 ## Application
 
