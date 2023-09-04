@@ -27,9 +27,11 @@ Wails has a number of common dependencies that are required before installation:
     - Check Go is installed correctly: `go version`
     - Check `~/go/bin` is in your PATH variable: `echo $PATH | grep go/bin`
 
-=== "NPM (Node 18+)"
+=== "npm (Optional)"
 
-    Download NPM from the [Node Downloads Page](https://nodejs.org/en/download/). It is best to use the latest release as that is what we generally test against.
+    Although Wails doesn't require npm to be installed, it is needed if you want to use the bundled templates.
+
+    Download the latest node installer from the [Node Downloads Page](https://nodejs.org/en/download/). It is best to use the latest release as that is what we generally test against.
     
     Run `npm --version` to verify.
 

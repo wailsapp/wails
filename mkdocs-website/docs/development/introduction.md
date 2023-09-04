@@ -1,13 +1,14 @@
 # Introduction
 
-**This guide is a work in progress.**
+!!! note
+        This guide is a work in progress.
 
 Thanks for wanting to help out with development of Wails! This guide will help you get started.
 
 ## Getting Started
 
 - Git clone this repository. Checkout the `v3-alpha` branch.
-- Install the CLI: `cd v3/cmd/3wails && go install`
+- Install the CLI: `cd v3/cmd/wails3 && go install`
 
 - Optional: If you are wanting to use the build system to build frontend code, you will need to install [npm](https://nodejs.org/en/download).
 
@@ -57,7 +58,7 @@ Most, if not all, of the platform specific code should be run on the main thread
 The runtime is located in `v3/internal/runtime`. When the runtime is updated, the following steps need to be taken:
 
 ```shell
-wails task runtime:build
+wails3 task runtime:build
 ```
 
 ### Events

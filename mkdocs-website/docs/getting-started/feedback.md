@@ -40,6 +40,9 @@ Things we are looking for feedback on:
     - The API 
         - Is it easy to use? 
         - Does it do what you expect?
+        - Is it missing anything?
+        - Is there anything that should be removed?
+        - Is it consistent between Go and JS?
     - The build system 
         - Is it easy to use? 
         - Can we improve it?
