@@ -2,8 +2,10 @@
 
 Status of features in v3. 
 
-This list is a mixture of public and internal API support.
-Incomplete - please add as you see fit.
+!!! note
+
+        This list is a mixture of public and internal API support.<br/>
+        It is not complete and probably not up to date.
 
 ## Known Issues
 
@@ -268,15 +270,15 @@ Mapping native events to cross-platform events.
 
 ## Bindings Generation
 
-TBD
+Working well.
 
 ## Models Generation
 
-TBD
+Working well.
 
 ## Task file
 
-TBD
+Contains a lot needed for development.
 
 ## Theme
 
@@ -292,7 +294,7 @@ TBD
 
 ## Templates
 
-TBD
+All templates are working.
 
 ## Plugins
 
@@ -305,7 +307,7 @@ Built-in plugin support:
 | Log             | Y       | Y     | Y   |       |
 | Single Instance | Y       |       | Y   |       |
 | SQLite          | Y       | Y     | Y   |       |
-| Start at login  |         |       | Y   |       |
+| Start at login  | Y       |       | Y   |       |
 | Server          |         |       |     |       |
 
 TODO:
