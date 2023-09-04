@@ -5,7 +5,7 @@ package application
 import (
 	"github.com/go-git/go-git/v5"
 	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v3/internal/commands"
+	"github.com/wailsapp/wails/v3/internal/version"
 	"path/filepath"
 	"runtime/debug"
 )
@@ -44,7 +44,7 @@ func (a *App) logStartup() {
 		return dep.Path == "github.com/wailsapp/wails/v3"
 	})
 
-	wailsVersion := commands.VersionString
+	wailsVersion := version.VersionString
 	if wailsPackage != nil && wailsPackage.Replace != nil {
 		wailsVersion = "(local) => " + filepath.ToSlash(wailsPackage.Replace.Path)
 		// Get the latest commit hash
