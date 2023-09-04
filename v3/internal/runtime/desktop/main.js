@@ -14,7 +14,7 @@ import * as Clipboard from './clipboard';
 import * as Application from './application';
 import * as Screens from './screens';
 import * as System from './system';
-import {Plugin, Call, callErrorCallback, callCallback, CallByID} from "./calls";
+import {Plugin, Call, callErrorCallback, callCallback, CallByID, CallByName} from "./calls";
 import {newWindow} from "./window";
 import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
 import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
@@ -58,6 +58,7 @@ export function newRuntime(windowName) {
         Screens,
         Call,
         CallByID,
+        CallByName,
         Plugin,
         WML: {
             Reload: reloadWML,
@@ -89,6 +90,6 @@ if (DEBUG) {
 setupContextMenus();
 setupDrag();
 
-document.addEventListener("DOMContentLoaded", function(event) {
+document.addEventListener("DOMContentLoaded", function() {
     reloadWML();
 });

@@ -10,7 +10,7 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
-import {newRuntimeCaller, newRuntimeCallerWithID, objectNames} from "./runtime";
+import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
 import { nanoid } from 'nanoid/non-secure';
 
@@ -64,6 +64,23 @@ function callBinding(type, options) {
 
 export function Call(options) {
     return callBinding(CallBinding, options);
+}
+
+export function CallByName(name, ...args) {
+
+    // Ensure first argument is a string and has 2 dots
+    if (typeof name !== "string" || name.split(".").length !== 3) {
+        throw new Error("CallByName requires a string in the format 'package.struct.method'");
+    }
+    // Split inputs
+    let parts = name.split(".");
+
+    return callBinding(CallBinding, {
+        packageName: parts[0],
+        structName: parts[1],
+        methodName: parts[2],
+        args: args,
+    });
 }
 
 export function CallByID(methodID, ...args) {
