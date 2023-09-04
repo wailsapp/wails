@@ -33,3 +33,21 @@ We welcome (and encourage) your feedback! Here are the different ways to provide
     - Posts can be "upvoted" by using the :thumbsup: emoji. Please apply to any posts that are a priority for you. 
     - Please *don't* just add comments like "+1" or "me too". 
     - Please feel free to comment if there is more to add to the post, such as "this bug also affect ARM builds" or "Another option would be to ....."
+
+
+Things we are looking for feedback on:
+
+    - The API 
+        - Is it easy to use? 
+        - Does it do what you expect?
+    - The build system 
+        - Is it easy to use? 
+        - Can we improve it?
+    - The examples
+        - Are they clear?
+        - Do they cover the basics?
+    - Features
+        - What features are missing?
+        - What features are not needed?
+    - Documentation
+        - What could be clearer?
