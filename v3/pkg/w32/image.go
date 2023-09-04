@@ -1,3 +1,5 @@
+//go:build windows
+
 package w32
 
 import (
