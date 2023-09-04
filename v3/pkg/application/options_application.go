@@ -13,6 +13,9 @@ type Options struct {
 	Mac         MacOptions
 	Windows     WindowsApplicationOptions
 	Bind        []any
+
+	// BindAliases allows you to specify alias IDs for your bound methods.
+	// Example: `BindAliases: map[uint32]uint32{1: 1411160069}` states that alias ID 1 maps to the Go method with ID 1411160069.
 	BindAliases map[uint32]uint32
 	Logger      *slog.Logger
 	Assets      AssetOptions

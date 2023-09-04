@@ -14,7 +14,7 @@ window.go.main = {
 		 * @param name {string}
 		 * @returns {Promise<string>}
 		 **/
-	    Greet: function(name) { wails.CallByID(1, ...Array.prototype.slice.call(arguments, 0)); },
+	    Greet: function(name) { wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0)); },
         
 		/**
 		 * GreetService.GreetPerson
@@ -22,7 +22,7 @@ window.go.main = {
 		 * @param person {main.Person}
 		 * @returns {Promise<string>}
 		 **/
-	    GreetPerson: function(person) { wails.CallByID(2, ...Array.prototype.slice.call(arguments, 0)); },
+	    GreetPerson: function(person) { wails.CallByID(4021313248, ...Array.prototype.slice.call(arguments, 0)); },
     },
 };
 
