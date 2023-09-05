@@ -32,39 +32,58 @@ const (
 
 type WindowsWindow struct {
 	// Select the type of translucent backdrop. Requires Windows 11 22621 or later.
+	// Only used when window's `BackgroundType` is set to `BackgroundTypeTranslucent`.
+	// Default: Auto
 	BackdropType BackdropType
+
 	// Disable the icon in the titlebar
+	// Default: false
 	DisableIcon bool
-	// Theme. Defaults to SystemDefault which will use whatever the system theme is. The application will follow system theme changes.
+
+	// Theme (Dark / Light / SystemDefault)
+	// Default: SystemDefault - The application will follow system theme changes.
 	Theme Theme
-	// Custom colours for dark/light mode
+
+	// Specify custom colours to use for dark/light mode
+	// Default: nil
 	CustomTheme *ThemeSettings
 
 	// Disable all window decorations in Frameless mode, which means no "Aero Shadow" and no "Rounded Corner" will be shown.
 	// "Rounded Corners" are only available on Windows 11.
+	// Default: false
 	DisableFramelessWindowDecorations bool
 
 	// WindowMask is used to set the window shape. Use a PNG with an alpha channel to create a custom shape.
-	WindowMask          []byte
+	// Default: nil
+	WindowMask []byte
+
+	// WindowMaskDraggable is used to make the window draggable by clicking on the window mask.
+	// Default: false
 	WindowMaskDraggable bool
 
 	// WebviewGpuIsDisabled is used to enable / disable GPU acceleration for the webview
+	// Default: false
 	WebviewGpuIsDisabled bool
 
 	// ResizeDebounceMS is the amount of time to debounce redraws of webview2
 	// when resizing the window
+	// Default: 0
 	ResizeDebounceMS uint16
 
 	// Disable the menu bar for this window
+	// Default: false
 	DisableMenu bool
 
-	// Event mapping for the window
+	// Event mapping for the window. This allows you to define a translation from one event to another.
+	// Default: nil
 	EventMapping map[events.WindowEventType]events.WindowEventType
 
 	// HiddenOnTaskbar hides the window from the taskbar
+	// Default: false
 	HiddenOnTaskbar bool
 
 	// EnableSwipeGestures enables swipe gestures for the window
+	// Default: false
 	EnableSwipeGestures bool
 }
 

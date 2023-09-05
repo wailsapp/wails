@@ -1,6 +1,6 @@
 # Status
 
-Status of features in v3. 
+Status of features in v3.
 
 !!! note
 
@@ -10,7 +10,6 @@ Status of features in v3.
 ## Known Issues
 
 - Linux is not yet up to feature parity with Windows/Mac
-
 
 ## Application
 
@@ -349,19 +348,19 @@ TODO:
 
 ## Windows Specific
 
-- [ ] Translucency
+- [x] Translucency
 - [x] Custom Themes
 
 ### Windows Options
 
-| Feature                           | Default | Notes                                       |
-|-----------------------------------|---------|---------------------------------------------|
-| BackdropType                      |         |                                             |
-| DisableIcon                       |         |                                             |
-| Theme                             |         |                                             |
-| CustomTheme                       |         |                                             |
-| DisableFramelessWindowDecorations |         |                                             |
-| WindowMask                        | nil     | Makes the window the contents of the bitmap |
+| Feature                           | Default       | Notes                                       |
+|-----------------------------------|---------------|---------------------------------------------|
+| BackdropType                      | Solid         |                                             |
+| DisableIcon                       | false         |                                             |
+| Theme                             | SystemDefault |                                             |
+| CustomTheme                       | nil           |                                             |
+| DisableFramelessWindowDecorations | false         |                                             |
+| WindowMask                        | nil           | Makes the window the contents of the bitmap |
 
 ## Linux Specific
 

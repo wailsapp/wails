@@ -1,9 +1,13 @@
 site_name: "alpha"
 site_description: The Wails Project - Build beautiful cross-platform applications using Go
+repo_url: https://github.com/wailsapp/wails
+edit_uri: edit/v3-alpha/mkdocs-website/docs/
 theme:
   name: material
   custom_dir: overrides
   logo: assets/images/wails-logo-horizontal-dark.svg
+  icon:
+    repo: fontawesome/brands/github
   favicon: assets/images/favicon.svg
   features:
     - navigation.tabs
@@ -18,11 +22,13 @@ theme:
 
     - search.suggest
     - search.highlight
+    - search.share
 
     - content.tabs.link
     - content.tabs.annotation
     - content.tabs.copy
     - content.code.copy
+    - content.action.edit
   language: en
   palette:
     # Palette toggle for light mode
@@ -86,6 +92,8 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.highlight:
       anchor_linenums: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.details
