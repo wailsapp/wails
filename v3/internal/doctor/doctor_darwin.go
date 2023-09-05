@@ -9,6 +9,14 @@ import (
 	"syscall"
 )
 
+func getSysctl(name string) string {
+	value, err := syscall.Sysctl(name)
+	if err != nil {
+		return "unknown"
+	}
+	return value
+}
+
 func getInfo() (map[string]string, bool) {
 	result := make(map[string]string)
 	ok := true
@@ -21,6 +29,7 @@ func getInfo() (map[string]string, bool) {
 		appleSilicon = lo.Ternary(r == "\x00\x00\x00" || r == "\x01\x00\x00", "true", "false")
 	}
 	result["Apple Silicon"] = appleSilicon
+	result["CPU"] = getSysctl("machdep.cpu.brand_string")
 
 	// Check for xcode command line tools
 	output, err := exec.Command("xcode-select", "-v").Output()
