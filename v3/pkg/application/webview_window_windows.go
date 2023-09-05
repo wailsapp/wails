@@ -193,8 +193,8 @@ func (w *windowsWebviewWindow) run() {
 	if !options.Windows.DisableMenu {
 		theMenu := globalApplication.ApplicationMenu
 		// Create the menu if we have one
-		if w.parent.options.Menu != nil {
-			theMenu = w.parent.options.Menu
+		if w.parent.options.Windows.Menu != nil {
+			theMenu = w.parent.options.Windows.Menu
 		}
 		if theMenu != nil {
 			w.menu = NewApplicationMenu(w.hwnd, theMenu)
@@ -1379,7 +1379,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	disableFeatues := []string{}
 
-	if !w.parent.options.EnableFraudulentWebsiteWarnings {
+	if !opts.EnableFraudulentWebsiteWarnings {
 		disableFeatues = append(disableFeatues, "msSmartScreenProtection")
 	}
 

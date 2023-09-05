@@ -8,7 +8,7 @@ theme:
   logo: assets/images/wails-logo-horizontal-dark.svg
   icon:
     repo: fontawesome/brands/github
-  favicon: assets/images/favicon.svg
+  favicon: /favicon.ico
   features:
     - navigation.tabs
     - navigation.sections

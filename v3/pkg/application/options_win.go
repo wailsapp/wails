@@ -85,6 +85,13 @@ type WindowsWindow struct {
 	// EnableSwipeGestures enables swipe gestures for the window
 	// Default: false
 	EnableSwipeGestures bool
+
+	// EnableFraudulentWebsiteWarnings will enable warnings for fraudulent websites.
+	// Default: false
+	EnableFraudulentWebsiteWarnings bool
+
+	// Menu is the menu to use for the window.
+	Menu *Menu
 }
 
 type Theme int
