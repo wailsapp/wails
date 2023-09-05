@@ -121,6 +121,7 @@ type Frontend interface {
 	WindowIsNormal() bool
 	WindowIsFullscreen() bool
 	WindowClose()
+	WindowPrint()
 
 	//Screen
 	ScreenGetAll() ([]Screen, error)

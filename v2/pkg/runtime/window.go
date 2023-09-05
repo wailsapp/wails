@@ -179,3 +179,8 @@ func WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8) {
 	}
 	appFrontend.WindowSetBackgroundColour(col)
 }
+
+func WindowPrint(ctx context.Context) {
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowPrint()
+}
