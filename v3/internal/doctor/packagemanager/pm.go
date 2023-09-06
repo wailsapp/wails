@@ -12,12 +12,12 @@ type Package struct {
 	Optional       bool
 }
 
-type packagemap = map[string][]*Package
+type Packagemap = map[string][]*Package
 
 // PackageManager is a common interface across all package managers
 type PackageManager interface {
 	Name() string
-	Packages() packagemap
+	Packages() Packagemap
 	PackageInstalled(*Package) (bool, error)
 	PackageAvailable(*Package) (bool, error)
 	InstallCommand(*Package) string
