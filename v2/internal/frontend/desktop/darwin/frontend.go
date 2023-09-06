@@ -286,6 +286,10 @@ func (f *Frontend) Quit() {
 	f.mainWindow.Quit()
 }
 
+func (f *Frontend) WindowPrint() {
+	f.mainWindow.Print()
+}
+
 type EventNotify struct {
 	Name string        `json:"name"`
 	Data []interface{} `json:"data"`
