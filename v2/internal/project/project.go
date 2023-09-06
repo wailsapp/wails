@@ -27,6 +27,9 @@ type Project struct {
 	DevBuildCommand   string `json:"frontend:dev:build"`
 	DevInstallCommand string `json:"frontend:dev:install"`
 	DevWatcherCommand string `json:"frontend:dev:watcher"`
+	// List of path patterns ignored by the dev command's file watcher
+	DevIgnorePatterns []string `json:"ignore"`
+
 	// The url of the external wails dev server. If this is set, this server is used for the frontend. Default ""
 	FrontendDevServerURL string `json:"frontend:dev:serverUrl"`
 

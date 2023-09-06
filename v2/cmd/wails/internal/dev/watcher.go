@@ -17,7 +17,7 @@ type Watcher interface {
 }
 
 // initialiseWatcher creates the project directory watcher that will trigger recompile
-func initialiseWatcher(cwd string) (*fsnotify.Watcher, error) {
+func initialiseWatcher(cwd string, ignorer *gitignore.GitIgnore) (*fsnotify.Watcher, error) {
 
 	// Ignore dot files, node_modules and build directories by default
 	ignoreDirs := getIgnoreDirs(cwd)
@@ -34,6 +34,9 @@ func initialiseWatcher(cwd string) (*fsnotify.Watcher, error) {
 	}
 
 	for _, dir := range processDirectories(dirs.AsSlice(), ignoreDirs) {
+		if ignorer.MatchesPath(dir) {
+			continue
+		}
 		err := watcher.Add(dir)
 		if err != nil {
 			return nil, err

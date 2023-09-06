@@ -19,6 +19,13 @@
             "type": "string",
             "description": "Additional directories to trigger reloads (comma separated). Often, this is only used for advanced asset configurations."
         },
+        "ignore": {
+            "type": "array",
+            "description": "Specifies a matching folder or file path that should not trigger a reload when changed. Each pattern follows gitignore's matching rules.",
+            "examples": [
+                ["*_test.go", "/cmd/cli/*.go"]
+            ]
+        },
         "build:dir": {
             "type": "string",
             "description": "The directory where the build files reside.",
