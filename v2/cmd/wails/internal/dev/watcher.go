@@ -38,7 +38,6 @@ func initialiseWatcher(cwd string) (*fsnotify.Watcher, error) {
 		if err != nil {
 			return nil, err
 		}
-		println("watching: " + dir)
 	}
 	return watcher, nil
 }
