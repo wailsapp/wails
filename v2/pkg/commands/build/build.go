@@ -209,7 +209,7 @@ func printBulletPoint(text string, args ...any) {
 		fatal(err.Error())
 	}
 	t = strings.Trim(t, "\n\r")
-	pterm.Printfln(t, args...)
+	pterm.Printf(t, args...)
 }
 
 func GenerateBindings(buildOptions *Options) error {
@@ -374,7 +374,7 @@ func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hook
 
 }
 
-func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string, buildHook string, hookName string) error {
+func executeBuildHook(_ *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string, buildHook string, hookName string) error {
 	if !options.ProjectData.RunNonNativeBuildHooks {
 		if hookIdentifier == "" {
 			// That's the global hook
