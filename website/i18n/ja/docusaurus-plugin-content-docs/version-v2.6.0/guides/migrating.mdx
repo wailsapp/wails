@@ -1,0 +1,191 @@
+# v1からの移行
+
+## 概要
+
+Wails v2は、v1から大幅に変更されています。 このドキュメントでは、変更点、および既存のプロジェクトを移行する方法に焦点をあてて説明します。
+
+### アプリケーションの作成
+
+v1では、`wails.CreateApp`でメインアプリケーションを作成して、`app.Bind`でバインディングを追加し、`app.Run()`でアプリケーションを起動していました。
+
+例:
+
+```go title="v1"
+ app := wails.CreateApp(&wails.AppConfig{
+    Title:  "MyApp",
+    Width:  1024,
+    Height: 768,
+    JS:     js,
+    CSS:    css,
+    Colour: "#131313",
+  })
+  app.Bind(basic)
+  app.Run()
+```
+
+v2では、`wails.Run()`メソッドだけが、[アプリケーションオプション](../reference/options.mdx#application-options)を指定することができます。
+
+```go title="v2"
+    err := wails.Run(&options.App{
+        Title:  "MyApp",
+        Width:  800,
+        Height: 600,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
+        Bind:   []interface{}{
+            basic,
+        },
+    })
+```
+
+### バインディング
+
+v1では、任意の関数と構造体の両方をバインドすることが可能でした。 v2では、構造体のみバインドできるようになり、シンプルになりました。 v1において`Bind()`メソッドに渡していた構造体のインスタンスは、[アプリケーションオプション](../reference/options.mdx#application-options)の`Bind`フィールドで指定できます。
+
+```go title="v1"
+  app := wails.CreateApp(/* options */)
+  app.Bind(basic)
+```
+
+```go title="v2"
+    err := wails.Run(&options.App{
+        /* other options */
+        Bind: []interface{}{
+            basic,
+        },
+    })
+```
+
+v1では、バインドされたメソッドをフロントエンドから利用するには`window.backend`を使用していました。 これは`window.go`に変更されました。
+
+### アプリケーションライフサイクル
+
+v1では、バインドされた構造体の中に、`WailsInit()`および`WailsShutdown()`という2つの特別なメソッドが存在しました。 これらは、[アプリケーションオプション](../reference/options.mdx#application-options)の一部として、3つのライフサイクルフックに置き換えられています:
+
+- [OnStartup](../reference/options.mdx#onstartup)
+- [OnShutdown](../reference/options.mdx#onshutdown)
+- [OnDomReady](../reference/options.mdx#ondomready)
+
+注意: [OnDomReady](../reference/options.mdx#ondomready)は、v1での`wails:ready`システムイベントに代わるものです。
+
+これらのメソッドは標準的な関数を指定できますが、一般的には、それらのメソッドを構造体の一部として保持しておきます:
+
+```go title="v2"
+    basic := NewBasicApp()
+    err := wails.Run(&options.App{
+        /* Other Options */
+        OnStartup:  basic.startup,
+        OnShutdown: basic.shutdown,
+        OnDomReady: basic.domready,
+    })
+...
+type Basic struct {
+    ctx context.Context
+}
+func (b *Basic) startup(ctx context.Context) {
+    b.ctx = ctx
+}
+...
+```
+
+### ランタイム
+
+v2のランタイムはv1よりも非常に充実しており、メニュー、ウィンドウ操作、優れたダイアログをサポートしています。 メソッドのシグネチャが若干変更されていますので、詳しくは[ランタイムのリファレンス](../reference/runtime/intro.mdx)を参照してください。
+
+v1では、`WailsInit()`に渡された構造体を介して[ランタイム](../reference/runtime/intro.mdx)を利用できていました。 v2では、ランタイムは独自のパッケージとして移植されています。 ランタイムの各メソッドは、[OnStartup](../reference/options.mdx#onstartup)メソッドで受け渡される`context.Context`を引数に取ります。
+
+```go title="Runtime Example"
+package main
+
+import "github.com/wailsapp/wails/v2/pkg/runtime"
+
+type Basic struct {
+    ctx context.Context
+}
+
+// startupはアプリケーション起動時に呼び出される
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+    runtime.LogInfo(ctx, "Application Startup called!")
+}
+
+```
+
+### アセット
+
+v2での_最も大きな_変更は、アセットの取り扱い方です。
+
+v1では、2つのアプリケーションオプションを介してアセットを指定していました:
+
+- `JS` - アプリケーションのJavaScript
+- `CSS` - アプリケーションのCSS
+
+これは、単一のJSファイルおよびCSSファイルを、開発者が責任をもって作成する必要があることを意味していました。 基本的には、webpackのような複雑なパッカーを使用する必要がありました。
+
+v2では、Wailsは一般的なWebサーバと同じように、フロントエンドアセットは何でも構いません。 すべてのアプリケーションアセットは、`embed.FS`インスタンスとしてアプリケーションオプションに渡されます。
+
+**つまりアセットをバンドルしたり、画像をBase64でエンコードしたり、カスタムフォントを使用するためにバンドラーの設定を工夫したりする必要は一切ありません**。
+
+アプリケーション起動時に、Wailsは、あらかじめ`embed.FS`で指定されたディレクトリ内をスキャンして`index.html`を探し、Webサーバの挙動のように、その場所をすべてのアプリケーションアセットのルートパスとみなします。
+
+例: とあるアプリケーションのプロジェクトディレクトリの構成が次のようになっているとします。 この場合、最終的に必要なすべてのアセットは`frontend/dist`ディレクトリ配下に配置される必要があります:
+
+```shell
+.
+├── build/
+├── frontend/
+│   └── dist/
+│       ├── index.html
+│       ├── main.js
+│       ├── main.css
+│       └── logo.svg
+├── main.go
+└── wails.json
+```
+
+これらのアセットは、`embed.FS`を定義するだけで、アプリケーションから使用することができます:
+
+```go title="Assets Example"
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    err := wails.Run(&options.App{
+        /* Other Options */
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
+    })
+}
+```
+
+もちろん、必要に応じてバンドラを使用することもできます。 唯一行わなければいけないことは、[アプリケーションオプション](../reference/options.mdx#application-options)の`Assets`キーに`embed.FS`インスタンスを指定して、Wailsにアプリケーションアセットディレクトリを教えてあげることです。
+
+### プロジェクト構成
+
+v1では、プロジェクトルートに存在する`project.json`ファイルで、プロジェクト構成を管理していました。 v2では、プロジェクトルートにある`wails.json`ファイルでプロジェクト構成を管理します。
+
+フォーマットは若干変更されています。 比較表は次のとおりです:
+
+<p align="center">
+
+| v1                 | v2               | 備考 |
+| ------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name | name |  |
+| description |  | 消去されました |
+| author / name | author / name |  |
+| author / email | author / email |  |
+| version | version |  |
+| binaryname | outputfilename | 変更されました |
+| frontend / dir |  | 消去されました |
+| frontend / install | frontend:install | 変更されました |
+| frontend / build   | frontend:build | 変更されました |
+| frontend / bridge |  | 消去されました |
+| frontend / serve |  | 消去されました |
+| tags |  | 消去されました |
+|  | wailsjsdir | wailsjsモジュールを生成するディレクトリ |
+|  | assetdir | `dev`モードでコンパイルされたフロントエンドアセットのディレクトリ。 通常は自動推定されるため、空のままで構いません。                                                           |
+|  | reloaddirs | `dev`モードでリロードをトリガーさせたい追加のディレクトリを指定するための、カンマ区切りのリスト。 高度なアセット構成をとる場合にのみ必要です。 |
+
+</p>
