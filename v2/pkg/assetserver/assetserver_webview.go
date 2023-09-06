@@ -26,8 +26,8 @@ type assetServerWebView struct {
 func (d *AssetServer) ServeWebViewRequest(req webview.Request) {
 	d.dispatchInit.Do(func() {
 		workers := d.dispatchWorkers
-		if workers == 0 {
-			workers = 10
+		if workers <= 0 {
+			return
 		}
 
 		workerC := make(chan webview.Request, workers*2)
