@@ -425,6 +425,10 @@ func (f *Frontend) Quit() {
 	f.mainWindow.Invoke(winc.Exit)
 }
 
+func (f *Frontend) WindowPrint() {
+	f.ExecJS("window.print();")
+}
+
 func (f *Frontend) setupChromium() {
 	chromium := f.chromium
 
