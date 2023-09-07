@@ -1,0 +1,136 @@
+# 動的アセット
+
+[AssetsHandler](../reference/options#assetshandler)オプションを使用することで、フロントエンドアセットを動的に読み込んだり生成させることができます。 AssetsHandlerは、ジェネリックな`http.Handler`です。アセットサーバへのGET以外のすべてのリクエスト、および、アセットファイルとして存在しなかったがために転送されてきたGETリクエストに対して、ハンドラが呼び出されます。
+
+カスタムされたAssetsHandlerを導入すると、カスタムアセットサーバを使用して独自のアセットを提供することができます。
+
+## 例
+
+このサンプルプロジェクトでは、ディスクからファイルを読み込むシンプルなアセットハンドラを作成します:
+
+```go title=main.go {17-36,49}
+package main
+
+import (
+    "embed"
+    "fmt"
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "net/http"
+    "os"
+    "strings"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+type FileLoader struct {
+    http.Handler
+}
+
+func NewFileLoader() *FileLoader {
+    return &FileLoader{}
+}
+
+func (h *FileLoader) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+    var err error
+    requestedFilename := strings.TrimPrefix(req.URL.Path, "/")
+    println("Requesting file:", requestedFilename)
+    fileData, err := os.ReadFile(requestedFilename)
+    if err != nil {
+        res.WriteHeader(http.StatusBadRequest)
+        res.Write([]byte(fmt.Sprintf("Could not load file %s", requestedFilename)))
+    }
+
+    res.Write(fileData)
+}
+
+func main() {
+    // App構造体のインスタンスを作成
+    app := NewApp()
+
+    // オプション付きでアプリケーションを作成
+    err := wails.Run(&options.App{
+        Title:  "helloworld",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets:  assets,
+            Handler: NewFileLoader(),
+        },
+        BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 255},
+        OnStartup:        app.startup,
+        Bind: []interface{}{
+            app,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err)
+    }
+}
+```
+
+`wails dev`コマンドでアプリケーションを開発モードで実行すると、次のように出力されます:
+
+```
+DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico'
+DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico' failed, using AssetHandler
+Requesting file: favicon.ico
+```
+
+これを見ると分かるように、アセットハンドラは、デフォルトのアセットサーバが`favicon.ico`を提供できない場合に呼び出されています。
+
+メインアプリケーションをクリックし、"検証(開発者ツールで調査する)"を選択して、開発者ツールを起動します。そして、コンソールに次のように入力して実行することで、機能をテストできます:
+
+```
+let response = await fetch('does-not-exist.txt');
+```
+
+これにより、開発者ツールでエラーが発生します。 カスタムアセットハンドラによって、想定どおりのエラーが返却されていることが分かります。
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={require("@site/static/img/assetshandler-does-not-exist.webp").default}
+  />
+</p>
+```
+
+もし、`go.mod`をリクエストした場合は、次のような出力となります:
+
+```mdx-code-block
+<p className="text--center">
+  <img src={require("@site/static/img/assetshandler-go-mod.webp").default} />
+</p>
+```
+
+このテクニックを使用して、ページ上に画像を直接読み込ませることができます。 デフォルトのバニラテンプレートで、ロゴ画像を指定している、下記コードを、
+
+```html
+<img id="logo" class="logo" />
+```
+
+次のように書き換えます:
+
+```html
+<img src="build/appicon.png" style="width: 300px" />
+```
+
+すると、画面上は次のような表示となります:
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={require("@site/static/img/assetshandler-image.webp").default}
+    style={{ width: "75%" }}
+  />
+</p>
+```
+
+:::warning
+
+この例のようにファイルシステムを公開することは、セキュリティ上のリスクとなります。 ファイルシステムへのアクセスは、適切に管理することを推奨します。
+
+:::

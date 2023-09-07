@@ -263,3 +263,7 @@ func (w *Window) SetApplicationMenu(inMenu *menu.Menu) {
 func (w *Window) UpdateApplicationMenu() {
 	C.UpdateApplicationMenu(w.context)
 }
+
+func (w Window) Print() {
+	C.WindowPrint(w.context)
+}
