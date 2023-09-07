@@ -32,14 +32,14 @@ func NewNixpkgs(osid string) *Nixpkgs {
 
 // Packages returns the libraries that we need for Wails to compile
 // They will potentially differ on different distributions or versions
-func (n *Nixpkgs) Packages() Packagemap {
+func (n *Nixpkgs) Packages() packagemap {
 	// Currently, only support checking the default channel.
 	channel := "nixpkgs"
 	if n.osid == "nixos" {
 		channel = "nixos"
 	}
 
-	return Packagemap{
+	return packagemap{
 		"libgtk-3": []*Package{
 			{Name: channel + ".gtk3", SystemPackage: true, Library: true},
 		},

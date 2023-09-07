@@ -25,8 +25,8 @@ func NewZypper(osid string) *Zypper {
 
 // Packages returns the libraries that we need for Wails to compile
 // They will potentially differ on different distributions or versions
-func (z *Zypper) Packages() Packagemap {
-	return Packagemap{
+func (z *Zypper) Packages() packagemap {
+	return packagemap{
 		"libgtk-3": []*Package{
 			{Name: "gtk3-devel", SystemPackage: true, Library: true},
 		},
