@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 dependencies:
   '@crowdin/crowdin-api-client':
     specifier: ^1.19.2
@@ -204,7 +208,7 @@ packages:
       json5: 2.2.3
       lodash: 4.17.21
       resolve: 1.22.2
-      semver: 5.7.1
+      semver: 5.7.2
       source-map: 0.5.7
     transitivePeerDependencies:
       - supports-color
@@ -1766,7 +1770,7 @@ packages:
       '@docusaurus/react-loadable': 5.5.2(react@17.0.2)
       '@docusaurus/types': 2.4.0(@swc/core@1.3.7)(react-dom@17.0.2)(react@17.0.2)
       '@types/history': 4.7.11
-      '@types/react': 18.0.34
+      '@types/react': 18.0.35
       '@types/react-router-config': 5.0.7
       '@types/react-router-dom': 5.3.3
       react: 17.0.2
@@ -3057,7 +3061,7 @@ packages:
     resolution: {integrity: sha512-pFFVXUIydHlcJP6wJm7sDii5mD/bCmmAY0wQzq+M+uX7bqS95AQqHZWP1iNMKrWVQSuHIzj5qi9BvrtLX2/T4w==}
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 18.0.34
+      '@types/react': 18.0.35
       '@types/react-router': 5.1.20
     dev: false
 
@@ -3065,7 +3069,7 @@ packages:
     resolution: {integrity: sha512-kpqnYK4wcdm5UaWI3fLcELopqLrHgLqNsdpHauzlQktfkHL3npOSwtj1Uz9oKBAzs7lFtVkV8j83voAz2D8fhw==}
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 18.0.34
+      '@types/react': 18.0.35
       '@types/react-router': 5.1.20
     dev: false
 
@@ -3073,7 +3077,7 @@ packages:
     resolution: {integrity: sha512-jGjmu/ZqS7FjSH6owMcD5qpq19+1RS9DeVRqfl1FeBMxTDQAGwlMWOcs52NDoXaNKyG3d1cYQFMs9rCrb88o9Q==}
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 18.0.34
+      '@types/react': 18.0.35
     dev: false
 
   /@types/react@18.0.34:
@@ -7700,8 +7704,8 @@ packages:
       semver: 6.3.0
     dev: false
 
-  /semver@5.7.1:
-    resolution: {integrity: sha512-sauaDf/PZdVgrLTNYHRtpXa1iRiKcaebiKQ1BJdpQlWH2lCvexQdX55snPFyK7QzpudqbCI0qXFfOasHdyNDGQ==}
+  /semver@5.7.2:
+    resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
     hasBin: true
     dev: false
 
