@@ -4,6 +4,7 @@ version: "3"
 
 tasks:
   release:
+    summary: Release a new version of Task. Call with `task v2:release -- <version>`
     dir: tools/release
     cmds:
       - go run release.go {{.CLI_ARGS}}

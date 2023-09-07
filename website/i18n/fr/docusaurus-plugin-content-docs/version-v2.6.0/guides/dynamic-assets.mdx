@@ -1,0 +1,136 @@
+# Ressources dynamiques
+
+Si vous voulez charger ou générer des ressources pour votre frontend de manière dynamique, vous pouvez y parvenir en utilisant l'option [AssetsHandler](../reference/options#assetshandler). Le AssetsHandler est un générique`http.Handler` qui sera appelé pour toute requête non GET sur le serveur d'assets et pour les requêtes GET qui ne peuvent pas être servies car l'asset n'est pas trouvé.
+
+En installant un AssetsHandler personnalisé, vous pouvez servir vos propres ressources en utilisant un serveur de ressources personnalisé.
+
+## Exemple
+
+Dans notre exemple de projet, nous allons créer un gestionnaire de ressources simple qui chargera les fichiers à partir du disque:
+
+```go title=main.go {17-36,49}
+package main
+
+import (
+    "embed"
+    "fmt"
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "net/http"
+    "os"
+    "strings"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+type FileLoader struct {
+    http.Handler
+}
+
+func NewFileLoader() *FileLoader {
+    return &FileLoader{}
+}
+
+func (h *FileLoader) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+    var err error
+    requestedFilename := strings.TrimPrefix(req.URL.Path, "/")
+    println("Requesting file:", requestedFilename)
+    fileData, err := os.ReadFile(requestedFilename)
+    if err != nil {
+        res.WriteHeader(http.StatusBadRequest)
+        res.Write([]byte(fmt.Sprintf("Could not load file %s", requestedFilename)))
+    }
+
+    res.Write(fileData)
+}
+
+func main() {
+    // Create an instance of the app structure
+    app := NewApp()
+
+    // Create application with options
+    err := wails.Run(&options.App{
+        Title:  "helloworld",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets:  assets,
+            Handler: NewFileLoader(),
+        },
+        BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 255},
+        OnStartup:        app.startup,
+        Bind: []interface{}{
+            app,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err)
+    }
+}
+```
+
+Lorsque nous exécutons l'application en mode dev en utilisant `wails dev`, nous verrons la sortie suivante :
+
+```
+DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico'
+DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico' failed, using AssetHandler
+Requesting file: favicon.ico
+```
+
+Comme vous pouvez le voir, le gestionnaire d'actifs est appelé lorsque le serveur d'assets par défaut est incapable de servir le fichier `favicon.ico`.
+
+Si vous faites un clic droit sur l'application principale et sélectionnez "inspecter" pour afficher les devtools, vous pouvez tester cette fonctionnalité en tapant ce qui suit dans la console :
+
+```
+let response = await fetch('does-not-exist.txt');
+```
+
+Cela générera une erreur dans les devtools. Nous pouvons voir que l'erreur est ce que nous attendons est retourné par notre gestionnaire de ressources personnalisées :
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={require("@site/static/img/assetshandler-does-not-exist.webp").default}
+  />
+</p>
+```
+
+Cependant, si nous demandons `go.mod`, nous verrons la sortie suivante :
+
+```mdx-code-block
+<p className="text--center">
+  <img src={require("@site/static/img/assetshandler-go-mod.webp").default} />
+</p>
+```
+
+Cette technique peut être utilisée pour charger des images directement dans la page. Si nous avons mis à jour notre modèle vanilla par défaut et a remplacé l'image du logo :
+
+```html
+<img id="logo" class="logo" />
+```
+
+avec :
+
+```html
+<img src="build/appicon.png" style="width: 300px" />
+```
+
+Nous verrions ensuite ce qui suit:
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={require("@site/static/img/assetshandler-image.webp").default}
+    style={{ width: "75%" }}
+  />
+</p>
+```
+
+:::warning
+
+Exposer votre système de fichiers de cette manière est un risque de sécurité. Il est recommandé de gérer correctement l'accès à votre système de fichiers.
+
+:::

@@ -41,6 +41,7 @@ void ShowApplication(void* ctx);
 void SetBackgroundColour(void* ctx, int r, int g, int b, int a);
 void ExecJS(void* ctx, const char*);
 void Quit(void*);
+void WindowPrint(void* ctx);
 
 const char* GetSize(void *ctx);
 const char* GetPosition(void *ctx);
