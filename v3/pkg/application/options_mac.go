@@ -52,6 +52,10 @@ type MacWindow struct {
 	InvisibleTitleBarHeight int
 	// Maps events from platform specific to the event name
 	EventMapping map[events.WindowEventType]events.WindowEventType
+
+	// EnableFraudulentWebsiteWarnings will enable warnings for fraudulent websites.
+	// Default: false
+	EnableFraudulentWebsiteWarnings bool
 }
 
 // MacTitleBar contains options for the Mac titlebar

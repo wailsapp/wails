@@ -1010,29 +1010,30 @@ func (w *macosWebviewWindow) run() {
 		w.on(eventId)
 	}
 	globalApplication.dispatchOnMainThread(func() {
+		options := w.parent.options
+		macOptions := options.Mac
 		w.nsWindow = C.windowNew(C.uint(w.parent.id),
-			C.int(w.parent.options.Width),
-			C.int(w.parent.options.Height),
-			C.bool(w.parent.options.EnableFraudulentWebsiteWarnings),
-			C.bool(w.parent.options.Frameless),
-			C.bool(w.parent.options.EnableDragAndDrop),
+			C.int(options.Width),
+			C.int(options.Height),
+			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
+			C.bool(options.Frameless),
+			C.bool(options.EnableDragAndDrop),
 		)
-		w.setTitle(w.parent.options.Title)
-		w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
-		w.setResizable(!w.parent.options.DisableResize)
-		if w.parent.options.MinWidth != 0 || w.parent.options.MinHeight != 0 {
-			w.setMinSize(w.parent.options.MinWidth, w.parent.options.MinHeight)
+		w.setTitle(options.Title)
+		w.setAlwaysOnTop(options.AlwaysOnTop)
+		w.setResizable(!options.DisableResize)
+		if options.MinWidth != 0 || options.MinHeight != 0 {
+			w.setMinSize(options.MinWidth, options.MinHeight)
 		}
-		if w.parent.options.MaxWidth != 0 || w.parent.options.MaxHeight != 0 {
-			w.setMaxSize(w.parent.options.MaxWidth, w.parent.options.MaxHeight)
+		if options.MaxWidth != 0 || options.MaxHeight != 0 {
+			w.setMaxSize(options.MaxWidth, options.MaxHeight)
 		}
-		//w.setZoom(w.parent.options.Zoom)
-		if globalApplication.isDebugMode || w.parent.options.DevToolsEnabled {
+		//w.setZoom(options.Zoom)
+		if globalApplication.isDebugMode || options.DevToolsEnabled {
 			w.enableDevTools()
 		}
-		w.setBackgroundColour(w.parent.options.BackgroundColour)
+		w.setBackgroundColour(options.BackgroundColour)
 
-		macOptions := w.parent.options.Mac
 		switch macOptions.Backdrop {
 		case MacBackdropTransparent:
 			C.windowSetTransparent(w.nsWindow)
@@ -1072,16 +1073,16 @@ func (w *macosWebviewWindow) run() {
 		}
 		C.windowCenter(w.nsWindow)
 
-		if w.parent.options.URL != "" {
-			w.setURL(w.parent.options.URL)
+		if options.URL != "" {
+			w.setURL(options.URL)
 		}
 		// We need to wait for the HTML to load before we can execute the javascript
 		w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
-			if w.parent.options.JS != "" {
-				w.execJS(w.parent.options.JS)
+			if options.JS != "" {
+				w.execJS(options.JS)
 			}
-			if w.parent.options.CSS != "" {
-				C.windowInjectCSS(w.nsWindow, C.CString(w.parent.options.CSS))
+			if options.CSS != "" {
+				C.windowInjectCSS(w.nsWindow, C.CString(options.CSS))
 			}
 		})
 
@@ -1098,17 +1099,17 @@ func (w *macosWebviewWindow) run() {
 			w.parent.emit(events.Common.WindowLostFocus)
 		})
 
-		if w.parent.options.HTML != "" {
-			w.setHTML(w.parent.options.HTML)
+		if options.HTML != "" {
+			w.setHTML(options.HTML)
 		}
-		if w.parent.options.Hidden == false {
+		if options.Hidden == false {
 			C.windowShow(w.nsWindow)
-			w.setHasShadow(!w.parent.options.Mac.DisableShadow)
+			w.setHasShadow(!options.Mac.DisableShadow)
 		} else {
 			// We have to wait until the window is shown before we can remove the shadow
 			var cancel func()
 			cancel = w.parent.On(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
-				w.setHasShadow(!w.parent.options.Mac.DisableShadow)
+				w.setHasShadow(!options.Mac.DisableShadow)
 				cancel()
 			})
 		}
