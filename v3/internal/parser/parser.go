@@ -400,15 +400,17 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 						var alias *uint32
 						var err error
 						// Check for the text `wails:methodID <integer>`
-						for _, docstring := range funcDecl.Doc.List {
-							if strings.Contains(docstring.Text, "//wails:methodID") {
-								idString := strings.TrimSpace(strings.TrimPrefix(docstring.Text, "//wails:methodID"))
-								parsedID, err := strconv.ParseUint(idString, 10, 32)
-								if err != nil {
-									return fmt.Errorf("invalid value in `wails:methodID` directive: '%s'. Expected a valid uint32 value", idString)
+						if funcDecl.Doc != nil {
+							for _, docstring := range funcDecl.Doc.List {
+								if strings.Contains(docstring.Text, "//wails:methodID") {
+									idString := strings.TrimSpace(strings.TrimPrefix(docstring.Text, "//wails:methodID"))
+									parsedID, err := strconv.ParseUint(idString, 10, 32)
+									if err != nil {
+										return fmt.Errorf("invalid value in `wails:methodID` directive: '%s'. Expected a valid uint32 value", idString)
+									}
+									alias = lo.ToPtr(uint32(parsedID))
+									break
 								}
-								alias = lo.ToPtr(uint32(parsedID))
-								break
 							}
 						}
 						id, err := hash.Fnv(fqn)

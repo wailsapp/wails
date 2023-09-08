@@ -20,7 +20,7 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 	case EventsEmit:
 		err := params.ToStruct(&event)
 		if err != nil {
-			m.httpError(rw, "Error parsing event: %s", err)
+			m.httpError(rw, "Error parsing event: %s", err.Error())
 			return
 		}
 		if event.Name == "" {
@@ -31,7 +31,7 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 		globalApplication.Events.Emit(&event)
 		m.ok(rw)
 	default:
-		m.httpError(rw, "Unknown event method: %s", method)
+		m.httpError(rw, "Unknown event method: %d", method)
 		return
 	}
 

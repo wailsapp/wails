@@ -74,7 +74,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 
 	args, err := params.Args()
 	if err != nil {
-		m.httpError(rw, "Unable to parse arguments: %s", err)
+		m.httpError(rw, "Unable to parse arguments: %s", err.Error())
 		return
 	}
 
@@ -252,7 +252,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 		window.SetZoom(*zoomLevel)
 		m.ok(rw)
 	default:
-		m.httpError(rw, "Unknown window method id: %s", method)
+		m.httpError(rw, "Unknown window method id: %d", method)
 	}
 
 	m.Info("Runtime:", "method", "Window."+windowMethodNames[method])

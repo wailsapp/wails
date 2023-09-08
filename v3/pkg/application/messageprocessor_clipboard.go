@@ -18,7 +18,7 @@ func (m *MessageProcessor) processClipboardMethod(method int, rw http.ResponseWr
 
 	args, err := params.Args()
 	if err != nil {
-		m.httpError(rw, "Unable to parse arguments: %s", err)
+		m.httpError(rw, "Unable to parse arguments: %s", err.Error())
 		return
 	}
 
@@ -37,7 +37,7 @@ func (m *MessageProcessor) processClipboardMethod(method int, rw http.ResponseWr
 		m.text(rw, text)
 		m.Info("Runtime Call:", "method", "Clipboard."+clipboardMethods[method], "text", text)
 	default:
-		m.httpError(rw, "Unknown clipboard method: %s", method)
+		m.httpError(rw, "Unknown clipboard method: %d", method)
 		return
 	}
 

@@ -32,7 +32,7 @@ func (m *MessageProcessor) processContextMenuMethod(method int, rw http.Response
 		window.openContextMenu(&data)
 		m.ok(rw)
 	default:
-		m.httpError(rw, "Unknown contextmenu method: %s", method)
+		m.httpError(rw, "Unknown contextmenu method: %d", method)
 	}
 
 	m.Info("Runtime:", "method", "ContextMenu."+contextmenuMethodNames[method])

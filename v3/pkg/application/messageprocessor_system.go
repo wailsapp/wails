@@ -18,7 +18,7 @@ func (m *MessageProcessor) processSystemMethod(method int, rw http.ResponseWrite
 	case SystemIsDarkMode:
 		m.json(rw, globalApplication.IsDarkMode())
 	default:
-		m.httpError(rw, "Unknown system method: %s", method)
+		m.httpError(rw, "Unknown system method: %d", method)
 	}
 
 	m.Info("Runtime:", "method", "System."+systemMethodNames[method])

@@ -41,7 +41,7 @@ func (m *MessageProcessor) processScreensMethod(method int, rw http.ResponseWrit
 		}
 		m.json(rw, screen)
 	default:
-		m.httpError(rw, "Unknown screens method: %s", method)
+		m.httpError(rw, "Unknown screens method: %d", method)
 	}
 
 	m.Info("Runtime:", "method", "Screens."+screensMethodNames[method])

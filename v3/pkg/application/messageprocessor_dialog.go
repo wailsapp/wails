@@ -43,7 +43,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 
 	args, err := params.Args()
 	if err != nil {
-		m.httpError(rw, "Unable to parse arguments: %s", err)
+		m.httpError(rw, "Unable to parse arguments: %s", err.Error())
 		return
 	}
 	dialogID := args.String("dialog-id")
@@ -164,7 +164,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		m.Info("Runtime:", "method", methodName, "options", options)
 
 	default:
-		m.httpError(rw, "Unknown dialog method: %s", method)
+		m.httpError(rw, "Unknown dialog method: %d", method)
 	}
 
 }

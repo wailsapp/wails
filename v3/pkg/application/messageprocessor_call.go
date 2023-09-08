@@ -26,7 +26,7 @@ func (m *MessageProcessor) callCallback(window *WebviewWindow, callID *string, r
 func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
 	args, err := params.Args()
 	if err != nil {
-		m.httpError(rw, "Unable to parse arguments: %s", err)
+		m.httpError(rw, "Unable to parse arguments: %s", err.Error())
 		return
 	}
 	callID := args.String("call-id")
@@ -76,7 +76,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 		}()
 		m.ok(rw)
 	default:
-		m.httpError(rw, "Unknown call method: %s", method)
+		m.httpError(rw, "Unknown call method: %d", method)
 	}
 
 }
