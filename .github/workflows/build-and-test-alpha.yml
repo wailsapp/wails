@@ -3,6 +3,8 @@ name: Build + Test v3 alpha
 on:
   push:
     branches: [v3-alpha]
+    paths-ignore:
+      - 'mkdocs-website/**/*'
   workflow_dispatch:
 
 jobs:

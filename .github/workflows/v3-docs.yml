@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - v3-alpha
+    paths:
+      - 'mkdocs-website/**/*'
 permissions:
   contents: write
 jobs:
