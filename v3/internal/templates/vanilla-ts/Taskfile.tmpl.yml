@@ -45,6 +45,7 @@ tasks:
     env:
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
       CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+      MACOSX_DEPLOYMENT_TARGET: "10.13"
 
   build:windows:
     summary: Builds the application for Windows
@@ -79,6 +80,7 @@ tasks:
     env:
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
       CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+      MACOSX_DEPLOYMENT_TARGET: "10.13"
     vars:
       ARCH: $GOARCH
 
