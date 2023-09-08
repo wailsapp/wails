@@ -9,6 +9,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.event.repository.fork == false
+    defaults:
+      run:
+        working-directory: ./mkdocs-website
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -23,6 +26,7 @@ jobs:
             mkdocs-material-
       - run: sudo apt-get install pngquant
       - run: pip install git+https://${GH_TOKEN}@github.com/squidfunk/mkdocs-material-insiders.git
+      - run: mkdocs build --config-file mkdocs.insiders.yml
       - run: mkdocs gh-deploy --force
 env:
   GH_TOKEN: ${{ secrets.GH_TOKEN }}
