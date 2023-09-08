@@ -80,6 +80,7 @@ nav:
 #    - Links: community/links.md
     - Next Steps: getting-started/next-steps.md
     - Feedback: getting-started/feedback.md
+  - What's New in v3?: whats-new.md
   - Development:
     - Introduction: development/introduction.md
     - Status: development/status.md
