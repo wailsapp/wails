@@ -21,7 +21,7 @@ jobs:
           path: .cache
           restore-keys: |
             mkdocs-material-
-      - run: apt-get install pngquant
+      - run: sudo apt-get install pngquant
       - run: pip install git+https://${GH_TOKEN}@github.com/squidfunk/mkdocs-material-insiders.git
       - run: mkdocs gh-deploy --force
 env:
