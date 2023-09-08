@@ -56,7 +56,7 @@
     "description": "The label of footer link with label=Discord linking to https://discord.gg/JDdSxwjhGf"
   },
   "logo.alt": {
-    "message": "Wails Logo",
+    "message": "Logo Wails",
     "description": "The alt text of footer logo"
   }
 }

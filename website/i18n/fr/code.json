@@ -421,11 +421,11 @@
     "description": "The ARIA label for hamburger menu button of mobile navigation"
   },
   "theme.NavBar.navAriaLabel": {
-    "message": "Main",
+    "message": "Menu Principal",
     "description": "The ARIA label for the main navigation"
   },
   "theme.docs.sidebar.navAriaLabel": {
-    "message": "Docs sidebar",
+    "message": "Barre latérale de la documentation",
     "description": "The ARIA label for the sidebar navigation"
   }
 }
