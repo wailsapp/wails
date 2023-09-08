@@ -2,6 +2,8 @@
 
 This is the documentation for Wails v3. It is currently a work in progress.
 
+If you do not wish to build it locally, it is available online at [https://wailsapp.github.io/wails/](https://wailsapp.github.io/wails/).
+
 ## Recommended Setup Steps
 
 Install the wails3 CLI if you haven't already:
