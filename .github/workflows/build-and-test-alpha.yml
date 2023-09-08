@@ -116,6 +116,6 @@ jobs:
           go install github.com/go-task/task/v3/cmd/task@latest 
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
-          wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }} -ci
+          wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}
           cd ${{ matrix.template }}
           wails3 build
