@@ -9,6 +9,6 @@
 </p>
 ```
 
-[Modal File Manager](https://github.com/raguay/ModalFileManager) is a dual pane file manager using web technologies. My original design was based on NW.js and can be found [here](https://github.com/raguay/ModalFileManager-NWjs). This version uses the same Svelte based frontend code (but it has be greatly modified since the departure from NW.js), but the backend is a [Wails 2](https://wails.io/) implementation. By using this implementation, I no longer use command line `rm`, `cp`, etc. commands, but a git install has to be on the system to download themes and extensions. It is fully coded using Go and runs much faster than the previous versions.
+[Modal File Manager](https://github.com/raguay/ModalFileManager)は、Web技術を使用した、デュアルペインファイルマネージャです。 [こちら](https://github.com/raguay/ModalFileManager-NWjs)でもともと公開していたNW.jsで構築されたものをベースとしています。 本バージョンでは、フロントエンドのコードには前と同様にSvelteを使用(NW.jsを使用していた時から大幅な修正はありました)しましたが、バックエンドの実装にはWails 2を使用しました。 この実装によって、コマンドラインの`rm`、`cp`などのコマンドを使用しなくなりましたが、テーマや拡張機能のダウンロードのために、システム上でgitのインストールは必要となります。 Goで完全にコード化されており、以前のバージョンよりもはるかに高速に実行されます。
 
-This file manager is designed around the same principle as Vim: a state controlled keyboard actions. The number of states isn't fixed, but very programmable. Therefore, an infinite number of keyboard configurations can be created and used. This is the main difference from other file managers. There are themes and extensions available to download from GitHub.
+このファイルマネージャは、Vimと同じ、状態制御キーボード操作の原理に基づいて設計されています。 状態の数に制限はなく、とてもプログラマブルです。 つまり、無数にキーボード構成を作成・使用することができます。 この点は、他のファイルマネージャとの主な違いと言えるでしょう。 また、GitHubからテーマや拡張機能をダウンロードできます。

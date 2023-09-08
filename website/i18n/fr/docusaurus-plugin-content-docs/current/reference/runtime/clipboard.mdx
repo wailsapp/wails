@@ -4,20 +4,20 @@ sidebar_position: 8
 
 # Clipboard
 
-This part of the runtime provides access to the operating system's clipboard.<br/> The current implementation only handles text.
+Cette partie du runtime fournit un accès au presse-papiers du système d'exploitation.<br/> L'implémentation actuelle ne gère que le texte.
 
 ### ClipboardGetText
 
-This method reads the currently stored text from the clipboard.
+Cette méthode lit le texte actuellement stocké dans le presse-papiers.
 
-Go: `ClipboardGetText(ctx context.Context) (string, error)`<br/> Returns: a string (if the clipboard is empty an empty string will be returned) or an error.
+Go: `ClipboardGetText(ctx context.Context) (string, error)`<br/> Retourne: une chaîne de caractères (si le presse papier est vide, il retournera une chaîne vide) ou une erreur.
 
-JS: `ClipboardGetText(): Promise<string>`<br/> Returns: a promise with a string result (if the clipboard is empty an empty string will be returned).
+JS: `ClipboardGetText(): Promise<string>`<br/> Retourne : Un promise d'une chaine de caractères (si le presse papier est vide, il retournera une chaîne vide).
 
 ### ClipboardSetText
 
-This method writes a text to the clipboard.
+Cette méthode écrit du texte dans le presse-papiers.
 
-Go: `ClipboardSetText(ctx context.Context, text string) error`<br/> Returns: an error if there is any.
+Go: `ClipboardSetText(ctx context.Context, text string) error`<br/> Retourne: Une erreur si il y en a une.
 
-JS: `ClipboardSetText(text: string): Promise<boolean>`<br/> Returns: a promise with true result if the text was successfully set on the clipboard, false otherwise.
+JS: `ClipboardSetText(text: string): Promise<boolean>`<br/> Retourne: Un promise avec true si le texte a été écrit avec succès dans le presse papier, autrement il contiendra false.

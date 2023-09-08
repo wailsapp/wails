@@ -50,12 +50,14 @@ func main() {
         OnBeforeClose:      app.beforeClose,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        EnableDefaultContextMenu: false,
         EnableFraudulentWebsiteDetection: false,
         ZoomFactor:           1.0,
         IsZoomControlEnabled: false,
         Bind: []interface{}{
             app,
         },
+        ErrorFormatter: func(err error) any { return err.Error() },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
@@ -103,6 +105,7 @@ func main() {
             Icon: icon,
             WindowIsTranslucent: false,
             WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
+            ProgramName: "wails"
         },
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
@@ -359,6 +362,33 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 名前: CSSDragValue<br/> データ型: `string`
 
+### EnableDefaultContextMenu
+
+EnableDefaultContextMenuは、本番環境において、ブラウザのデフォルトコンテキストメニューを有効にします。
+
+通常、ブラウザのデフォルトコンテキストメニューは、開発環境での動作時、または`-debug`・`-devtools`フラグをつけて開発者ツールを有効にして[ビルド](../reference/cli.mdx#build)したときのみ利用できますが、本オプションを使うと、`-devtools`フラグをつけない限り開発者ツールは使用できませんが、`本番`環境でもコンテキストメニューを有効にすることができます。
+
+このオプションを有効にすると、デフォルトでは、テキストに関するコンテキスト(切り取り/コピー/貼り付け) のみがコンテキストメニューに表示されます。この動作をオーバーライドするには、`--default-contextmenu`というCSSプロパティを任意のHTML要素(`body`含む) で以下の値と共に使用してください:
+
+| CSSスタイル                        | 動作                                                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `--default-contextmenu: auto;` | (**デフォルト**) 次の場合にのみデフォルトのコンテキストメニューを表示します:<br/> contentEditableがtrueである、またはテキストが選択されている、またはinput要素/textarea要素であるとき |
+| `--default-contextmenu: show;` | 常にデフォルトのコンテキストメニューを表示します                                                                                                 |
+| `--default-contextmenu: hide;` | 常にデフォルトのコンテキストメニューを非表示にします                                                                                               |
+
+このルールは通常のCSSルールと同様に継承されるため、ネストも期待どおりに動作します。
+
+:::note
+このフィルタリング機能は本番環境でのみ有効であり、開発・デバッグビルドでは、フルコンテキストメニューが常に使用できます。
+:::
+
+:::warning
+このフィルタリング機能はセキュリティ対策として使用することはできません。開発者は、画像のダウンロード、リロード、ウェブページの保存といったコマンドを含むフルコンテキストメニューが常にリークされる可能性を考慮すべきです。この点が気になる場合、開発者はデフォルトのコンテキストメニューを有効にするべきではありません。
+:::
+
+
+名前: EnableDefaultContextMenu<br/> データ型: `bool`
+
 ### EnableFraudulentWebsiteDetection
 
 EnableFraudulentWebsiteDetectionは、マルウェアやフィッシング詐欺などの不正コンテンツのスキャンサービスを有効にします。 これらのサービスは、ナビゲートされたURLやその他コンテンツ情報を、アプリからAppleおよびMicrosoftのクラウドサービスに送信する可能性があります。
@@ -382,6 +412,12 @@ WebView2の拡大率を定義します。 これは、Edgeのユーザによる�
 フロントエンドにバインドする必要があるメソッドが定義された、構造体インスタンスのスライスです。
 
 名前: Bind<br/> データ型: `[]interface{}`
+
+### ErrorFormatter
+
+JSからGoへ呼び出されたメソッドがエラーを返す際に、エラーをフォーマットする関数です。 返り値はJSONとして変換されます。
+
+名前: ErrorFormatter<br/> データ型: `func (error) any`
 
 ### Windows
 
@@ -750,6 +786,14 @@ func main() {
 | WebviewGpuPolicyAlways   | ハードウェアアクセラレーションを常に有効にする                       |
 | WebviewGpuPolicyOnDemand | Webコンテンツからの要求に応じて、ハードウェアアクセラレーションの有効/無効を切り替える |
 | WebviewGpuPolicyNever    | ハードウェアアクセラレーションを常に無効にする                       |
+
+#### ProgramName
+
+このオプションでは、GTKのg_set_prgname() を使用し、ウィンドウマネージャのプログラム名を設定することができます。 ただし、ローカライズされた名前を設定すべきではありません。詳しくは[ドキュメント](https://docs.gtk.org/glib/func.set_prgname.html)をご覧ください。
+
+.desktopファイルが作成される際、.desktopファイルの`Name`オプションと実行ファイルのファイル名が異なる場合に、ウィンドウのグループ化およびデスクトップアイコンの表示に、本オプションは役立ちます。
+
+名前: ProgramName<br/> データ型: string<br/>
 
 ### Debug
 
