@@ -1,4 +1,4 @@
-name: ci
+name: v3 docs
 on:
   push:
     branches:
@@ -25,6 +25,7 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: sudo apt-get install pngquant
+      - run: pip install pillow cairosvg
       - run: pip install git+https://${GH_TOKEN}@github.com/squidfunk/mkdocs-material-insiders.git
       - run: mkdocs build --config-file mkdocs.insiders.yml
       - run: mkdocs gh-deploy --force
