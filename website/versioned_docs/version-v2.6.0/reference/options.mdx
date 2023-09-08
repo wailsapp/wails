@@ -39,7 +39,7 @@ func main() {
         AssetServer: &assetserver.Options{
             Assets:     assets,
             Handler:    assetsHandler,
-            Middleware: assetsMidldeware,
+            Middleware: assetsMiddleware,
 		},
         Menu:               app.applicationMenu(),
         Logger:             nil,
