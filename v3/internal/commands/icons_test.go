@@ -52,7 +52,7 @@ func TestGenerateIcon(t *testing.T) {
 				_, thisFile, _, _ := runtime.Caller(1)
 				localDir := filepath.Dir(thisFile)
 				// Get the path to the example icon
-				exampleIcon := filepath.Join(localDir, "examples", "appicon.png")
+				exampleIcon := filepath.Join(localDir, "defaults", "appicon.png")
 				return &IconsOptions{
 					Input:           exampleIcon,
 					WindowsFilename: "appicon.ico",
@@ -94,7 +94,7 @@ func TestGenerateIcon(t *testing.T) {
 				_, thisFile, _, _ := runtime.Caller(1)
 				localDir := filepath.Dir(thisFile)
 				// Get the path to the example icon
-				exampleIcon := filepath.Join(localDir, "examples", "appicon.png")
+				exampleIcon := filepath.Join(localDir, "defaults", "appicon.png")
 				return &IconsOptions{
 					Input:       exampleIcon,
 					MacFilename: "appicon.icns",
@@ -133,7 +133,7 @@ func TestGenerateIcon(t *testing.T) {
 				_, thisFile, _, _ := runtime.Caller(1)
 				localDir := filepath.Dir(thisFile)
 				// Get the path to the example icon
-				exampleIcon := filepath.Join(localDir, "examples", "appicon.png")
+				exampleIcon := filepath.Join(localDir, "defaults", "appicon.png")
 				return &IconsOptions{
 					Input:           exampleIcon,
 					Sizes:           "16",
@@ -181,7 +181,7 @@ func TestGenerateIcon(t *testing.T) {
 				_, thisFile, _, _ := runtime.Caller(1)
 				localDir := filepath.Dir(thisFile)
 				// Get the path to the example icon
-				exampleIcon := filepath.Join(localDir, "examples", "appicon.png")
+				exampleIcon := filepath.Join(localDir, "defaults", "appicon.png")
 				return &IconsOptions{
 					Input: exampleIcon,
 				}
@@ -195,7 +195,7 @@ func TestGenerateIcon(t *testing.T) {
 				_, thisFile, _, _ := runtime.Caller(1)
 				localDir := filepath.Dir(thisFile)
 				// Get the path to the example icon
-				exampleIcon := filepath.Join(localDir, "examples", "appicon.png")
+				exampleIcon := filepath.Join(localDir, "defaults", "appicon.png")
 				return &IconsOptions{
 					Input:           exampleIcon,
 					WindowsFilename: "appicon.ico",
@@ -211,7 +211,7 @@ func TestGenerateIcon(t *testing.T) {
 				_, thisFile, _, _ := runtime.Caller(1)
 				localDir := filepath.Dir(thisFile)
 				// Get the path to the example icon
-				exampleIcon := filepath.Join(localDir, "examples", "appicon.png")
+				exampleIcon := filepath.Join(localDir, "defaults", "appicon.png")
 				return &IconsOptions{
 					Input:           exampleIcon,
 					WindowsFilename: "appicon.ico",

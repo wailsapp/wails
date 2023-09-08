@@ -110,6 +110,11 @@ func TestGenerateBindings(t *testing.T) {
 					return
 				}
 				// compare the binding
+
+				// convert all line endings to \n
+				binding = convertLineEndings(binding)
+				expected = convertLineEndings(expected)
+
 				if diff := cmp.Diff(expected, binding); diff != "" {
 					err = os.WriteFile(tt.dir+"/bindings_"+name+".got.js", []byte(binding), 0644)
 					if err != nil {

@@ -4,29 +4,17 @@
 
 import {services} from './models';
 
-function OtherService(method) {
-    return {
-        packageName: "services",
-        serviceName: "OtherService",
-        methodName: method,
-        args: Array.prototype.slice.call(arguments, 1),
-    };
-}
-
-/**
- * OtherService.Yay
- * 
- *
- * @returns {Promise<services.Address | null>}
- **/
-function Yay() {
-    return wails.Call(OtherService("Yay"));
-}
-
 window.go = window.go || {};
 window.go.services = {
     OtherService: {
-        Yay,
+
+		/**
+		 * OtherService.Yay
+		 *
+		 *
+		 * @returns {Promise<services.Address | null>}
+		 **/
+	    Yay: function() { wails.CallByID(302702907, ...Array.prototype.slice.call(arguments, 0)); },
     },
 };
 

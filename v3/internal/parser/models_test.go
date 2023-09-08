@@ -4,6 +4,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -63,8 +64,10 @@ func TestGenerateModels(t *testing.T) {
 			if err != nil {
 				t.Fatalf("GenerateModels() error = %v", err)
 			}
-
-			if diff := cmp.Diff(tt.want, got); diff != "" {
+			// convert all line endings to \n
+			got = convertLineEndings(got)
+			want := convertLineEndings(tt.want)
+			if diff := cmp.Diff(want, got); diff != "" {
 				err = os.WriteFile(filepath.Join(tt.dir, "models.got.ts"), []byte(got), 0644)
 				if err != nil {
 					t.Errorf("os.WriteFile() error = %v", err)
@@ -74,4 +77,9 @@ func TestGenerateModels(t *testing.T) {
 			}
 		})
 	}
+}
+
+func convertLineEndings(str string) string {
+	// replace all \r\n with \n
+	return strings.ReplaceAll(str, "\r\n", "\n")
 }

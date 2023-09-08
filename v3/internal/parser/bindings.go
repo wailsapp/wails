@@ -18,7 +18,7 @@ const header = `// @ts-check
 const bindingTemplate = `
 		/**
 		 * {{structName}}.{{methodName}}
-		 * Comments
+		 *Comments
 		 * @param name {string}
 		 * @returns {Promise<string>}
 		 **/
@@ -108,6 +108,9 @@ func GenerateBinding(structName string, method *BoundMethod) (string, []string) 
 	result = strings.ReplaceAll(result, "{{methodName}}", method.Name)
 	result = strings.ReplaceAll(result, "{{ID}}", fmt.Sprintf("%v", method.ID))
 	comments := strings.TrimSpace(method.DocComment)
+	if comments != "" {
+		comments = " " + comments
+	}
 	result = strings.ReplaceAll(result, "Comments", comments)
 	var params string
 	for _, input := range method.Inputs {
@@ -238,7 +241,7 @@ window.go = window.go || {};
 			for _, method := range methods {
 				thisBinding, models := GenerateBinding(structName, method)
 				allModels = append(allModels, models...)
-				result[normalisedPackageNames[packageName]] += "        " + thisBinding
+				result[normalisedPackageNames[packageName]] += thisBinding
 			}
 			result[normalisedPackageNames[packageName]] += "    },\n"
 		}

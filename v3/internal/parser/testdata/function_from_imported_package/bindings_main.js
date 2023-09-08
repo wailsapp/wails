@@ -4,40 +4,25 @@
 
 import {main} from './models';
 
-function GreetService(method) {
-    return {
-        packageName: "main",
-        serviceName: "GreetService",
-        methodName: method,
-        args: Array.prototype.slice.call(arguments, 1),
-    };
-}
-
-/**
- * GreetService.Greet
- * Greet does XYZ
- * @param name {string}
- * @returns {Promise<string>}
- **/
-function Greet(name) {
-    return wails.Call(GreetService("Greet", name));
-}
-
-/**
- * GreetService.NewPerson
- * NewPerson creates a new person
- * @param name {string}
- * @returns {Promise<main.Person | null>}
- **/
-function NewPerson(name) {
-    return wails.Call(GreetService("NewPerson", name));
-}
-
 window.go = window.go || {};
 window.go.main = {
     GreetService: {
-        Greet,
-        NewPerson,
+
+		/**
+		 * GreetService.Greet
+		 * Greet does XYZ
+		 * @param name {string}
+		 * @returns {Promise<string>}
+		 **/
+	    Greet: function(name) { wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0)); },
+
+		/**
+		 * GreetService.NewPerson
+		 * NewPerson creates a new person
+		 * @param name {string}
+		 * @returns {Promise<main.Person | null>}
+		 **/
+	    NewPerson: function(name) { wails.CallByID(1661412647, ...Array.prototype.slice.call(arguments, 0)); },
     },
 };
 

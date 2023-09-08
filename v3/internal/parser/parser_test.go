@@ -40,6 +40,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1411160069,
 						},
 						{
 							Name:       "NoInputsStringOut",
@@ -53,6 +54,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1075577233,
 						},
 						{
 							Name: "StringArrayInputStringOut",
@@ -72,6 +74,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1091960237,
 						},
 						{
 							Name: "StringArrayInputStringArrayOut",
@@ -92,6 +95,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 383995060,
 						},
 						{
 							Name: "StringArrayInputNamedOutput",
@@ -113,6 +117,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 3678582682,
 						},
 						{
 							Name: "StringArrayInputNamedOutputs",
@@ -140,6 +145,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 319259595,
 						},
 						{
 							Name: "IntPointerInputNamedOutputs",
@@ -166,6 +172,7 @@ func TestParseDirectory(t *testing.T) {
 										Name: "error",
 									}},
 							},
+							ID: 2718999663,
 						},
 						{
 							Name: "UIntPointerInAndOutput",
@@ -186,6 +193,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1367187362,
 						},
 						{
 							Name: "UInt8PointerInAndOutput",
@@ -206,6 +214,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 518250834,
 						},
 						{
 							Name: "UInt16PointerInAndOutput",
@@ -226,6 +235,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1236957573,
 						},
 						{
 							Name: "UInt32PointerInAndOutput",
@@ -246,6 +256,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1739300671,
 						},
 						{
 							Name: "UInt64PointerInAndOutput",
@@ -266,6 +277,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1403757716,
 						},
 						{
 							Name: "IntPointerInAndOutput",
@@ -286,6 +298,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1066151743,
 						},
 						{
 							Name: "Int8PointerInAndOutput",
@@ -306,6 +319,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 2189402897,
 						},
 						{
 							Name: "Int16PointerInAndOutput",
@@ -326,6 +340,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1754277916,
 						},
 						{
 							Name: "Int32PointerInAndOutput",
@@ -346,6 +361,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 4251088558,
 						},
 						{
 							Name: "Int64PointerInAndOutput",
@@ -366,6 +382,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 2205561041,
 						},
 						{
 							Name: "IntInIntOut",
@@ -384,6 +401,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 642881729,
 						},
 						{
 							Name: "Int8InIntOut",
@@ -402,6 +420,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 572240879,
 						},
 						{
 							Name: "Int16InIntOut",
@@ -420,6 +439,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 3306292566,
 						},
 						{
 							Name: "Int32InIntOut",
@@ -438,6 +458,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1909469092,
 						},
 						{
 							Name: "Int64InIntOut",
@@ -456,6 +477,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1343888303,
 						},
 						{
 							Name: "UIntInUIntOut",
@@ -474,6 +496,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 2836661285,
 						},
 						{
 							Name: "UInt8InUIntOut",
@@ -492,6 +515,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 2988345717,
 						},
 						{
 							Name: "UInt16InUIntOut",
@@ -510,6 +534,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 3401034892,
 						},
 						{
 							Name: "UInt32InUIntOut",
@@ -528,6 +553,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1160383782,
 						},
 						{
 							Name: "UInt64InUIntOut",
@@ -546,6 +572,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 793803239,
 						},
 						{
 							Name: "Float32InFloat32Out",
@@ -564,6 +591,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 3132595881,
 						},
 						{
 							Name: "Float64InFloat64Out",
@@ -582,6 +610,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 2182412247,
 						},
 						{
 							Name: "PointerFloat32InFloat32Out",
@@ -602,6 +631,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 224675106,
 						},
 						{
 							Name: "PointerFloat64InFloat64Out",
@@ -622,6 +652,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 2124953624,
 						},
 						{
 							Name: "BoolInBoolOut",
@@ -640,6 +671,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 2424639793,
 						},
 						{
 							Name: "PointerBoolInBoolOut",
@@ -660,6 +692,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 3589606958,
 						},
 						{
 							Name: "PointerStringInStringOut",
@@ -680,6 +713,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 229603958,
 						},
 						{
 							Name: "StructPointerInputErrorOutput",
@@ -701,6 +735,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 2447692557,
 						},
 						{
 							Name: "StructInputStructOutput",
@@ -723,6 +758,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 3835643147,
 						},
 						{
 							Name: "StructPointerInputStructPointerOutput",
@@ -747,6 +783,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 2943477349,
 						},
 						{
 							Name: "MapIntInt",
@@ -764,6 +801,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 2386486356,
 						},
 						{
 							Name: "PointerMapIntInt",
@@ -782,6 +820,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 3516977899,
 						},
 						{
 							Name: "MapIntPointerInt",
@@ -800,6 +839,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 550413585,
 						},
 						{
 							Name: "MapIntSliceInt",
@@ -818,6 +858,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 2900172572,
 						},
 						{
 							Name: "MapIntSliceIntInMapIntSliceIntOut",
@@ -851,6 +892,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 881980169,
 						},
 						{
 							Name: "ArrayInt",
@@ -863,6 +905,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 3862002418,
 						},
 					},
 				},
@@ -956,11 +999,13 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1411160069,
 						},
 					},
 					"OtherService": {
 						{
 							Name: "Hello",
+							ID:   4249972365,
 						},
 					},
 				},
@@ -992,11 +1037,13 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1411160069,
 						},
 					},
 					"OtherService": {
 						{
 							Name: "Hello",
+							ID:   4249972365,
 						},
 					},
 				},
@@ -1029,6 +1076,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1411160069,
 						},
 						{
 							Name:       "NewPerson",
@@ -1052,6 +1100,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1661412647,
 						},
 					},
 				},
@@ -1069,6 +1118,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 469445984,
 						},
 					},
 				},
@@ -1149,6 +1199,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1411160069,
 						},
 					},
 				},
@@ -1180,6 +1231,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1411160069,
 						},
 					},
 				},
@@ -1211,6 +1263,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1411160069,
 						},
 						{
 							Name:       "NewPerson",
@@ -1234,6 +1287,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1661412647,
 						},
 					},
 				},
@@ -1251,6 +1305,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 302702907,
 						},
 					},
 				},
@@ -1331,6 +1386,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1411160069,
 						},
 					},
 				},
@@ -1362,6 +1418,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1411160069,
 						},
 						{
 							Name:       "NewPerson",
@@ -1385,6 +1442,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 1661412647,
 						},
 					},
 				},
@@ -1402,6 +1460,7 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+							ID: 302702907,
 						},
 					},
 				},
