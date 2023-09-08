@@ -1,4 +1,0 @@
-# netlify.toml
-[build]
-    command = "pip install git+https://${GH_TOKEN}@github.com/squidfunk/mkdocs-material-insiders.git && mkdocs build"
-    publish = "site"
