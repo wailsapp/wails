@@ -10,7 +10,6 @@ import (
 )
 
 type SysoOptions struct {
-	Example  bool   `description:"Generate example manifest & info files"`
 	Manifest string `description:"The manifest file"`
 	Info     string `description:"The info.json file"`
 	Icon     string `description:"The icon file"`
@@ -25,11 +24,6 @@ func (i *SysoOptions) Default() *SysoOptions {
 }
 
 func GenerateSyso(options *SysoOptions) error {
-
-	// Generate example files?
-	if options.Example {
-		return generateExampleSyso()
-	}
 
 	if options.Manifest == "" {
 		return fmt.Errorf("manifest is required")
@@ -102,20 +96,6 @@ func GenerateSyso(options *SysoOptions) error {
 	}
 
 	err = rs.WriteObject(fout, targetArch)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func generateExampleSyso() error {
-	// Generate example info.json
-	err := os.WriteFile("info.json", Info, 0644)
-	if err != nil {
-		return err
-	}
-	// Generate example manifest
-	err = os.WriteFile("wails.exe.manifest", Manifest, 0644)
 	if err != nil {
 		return err
 	}

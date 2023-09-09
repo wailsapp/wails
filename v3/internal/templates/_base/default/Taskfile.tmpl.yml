@@ -2,8 +2,22 @@ version: '3'
 
 vars:
   APP_NAME: "{{.ProjectName}}{{exeExt}}"
+  APP_VERSION: "0.1.0"
+  PRODUCT_NAME: "My Product"
+  PRODUCT_DESCRIPTION: "My Product Description"
+  PRODUCT_VERSION: "0.1.0"
+  PRODUCT_COMPANY: "My Company"
+  PRODUCT_COPYRIGHT: "(c) 2023 My Company"
+  PRODUCT_COMMENTS: "My Comments"
+  PRODUCT_IDENTIFIER: "com.mycompany.myproduct"
+  BUILD_DIR: "build"
 
 tasks:
+
+  generate:build-assets:
+    summary: Generates the build assets
+    cmds:
+      - wails3 generate build-assets -dir {{.BUILD_DIR}} -name "{{.APP_NAME}}" -productname "{{.PRODUCT_NAME}}" -productdescription "{{.PRODUCT_DESCRIPTION}}" -productversion "{{.PRODUCT_VERSION}}" -productcompany "{{.PRODUCT_COMPANY}}" -productcopyright "{{.PRODUCT_COPYRIGHT}}" -productcomments "{{.PRODUCT_COMMENTS}}" -productidentifier "{{.PRODUCT_IDENTIFIER}}"
 
   pre-build:
     summary: Pre-build hooks

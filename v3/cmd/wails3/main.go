@@ -37,7 +37,7 @@ func main() {
 	})
 	task.LongDescription("\nUsage: wails task [taskname] [flags]\n\nTasks are defined in the `Taskfile.yaml` file. See https://taskfile.dev for more information.")
 	generate := app.NewSubCommand("generate", "Generation tools")
-	generate.NewSubCommandFunction("defaults", "Generate default build assets", commands.Defaults)
+	generate.NewSubCommandFunction("build-assets", "Generate build assets", commands.GenerateBuildAssets)
 	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
 	generate.NewSubCommandFunction("syso", "Generate Windows .syso file", commands.GenerateSyso)
 	generate.NewSubCommandFunction("bindings", "Generate bindings + models", commands.GenerateBindings)

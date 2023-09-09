@@ -68,7 +68,11 @@ func GenerateIcons(options *IconsOptions) error {
 }
 
 func generateExampleIcon() error {
-	return os.WriteFile("appicon.png", []byte(AppIcon), 0644)
+	appIcon, err := buildAssets.ReadFile("build_assets/appicon.png")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile("appicon.png", appIcon, 0644)
 }
 
 func parseSizes(sizes string) ([]int, error) {

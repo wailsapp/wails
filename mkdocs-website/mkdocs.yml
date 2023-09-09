@@ -14,8 +14,11 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.instant
+    - navigation.instant.prefetch
     - navigation.top
     - navigation.footer
+    - navigation.path
+    - navigation.prune
 
     - toc.integrate
     - toc.follow
@@ -86,6 +89,7 @@ nav:
     - Status: development/status.md
     - v3 Changes: development/changes.md
   - Change Log: changelog.md
+  - Sponsor❤️: https://github.com/sponsors/leaanthony
 
 
 markdown_extensions:
