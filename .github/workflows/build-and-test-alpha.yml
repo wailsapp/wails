@@ -89,7 +89,6 @@ jobs:
             lit-ts,
             vanilla,
             vanilla-ts,
-            plain,
           ]
         go-version: [1.21]
     steps:
