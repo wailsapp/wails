@@ -17,7 +17,7 @@ tasks:
   generate:build-assets:
     summary: Generates the build assets
     cmds:
-      - wails3 generate build-assets -dir {{.BUILD_DIR}} -name "{{.APP_NAME}}" -productname "{{.PRODUCT_NAME}}" -productdescription "{{.PRODUCT_DESCRIPTION}}" -productversion "{{.PRODUCT_VERSION}}" -productcompany "{{.PRODUCT_COMPANY}}" -productcopyright "{{.PRODUCT_COPYRIGHT}}" -productcomments "{{.PRODUCT_COMMENTS}}" -productidentifier "{{.PRODUCT_IDENTIFIER}}"
+      - wails3 generate build-assets -dir "{{ "{{.BUILD_DIR}}" }}" -name "{{ "{{.APP_NAME}}" }}" -productname "{{ "{{.PRODUCT_NAME}}" }}" -productdescription "{{ "{{.PRODUCT_DESCRIPTION}}" }}" -productversion "{{ "{{.PRODUCT_VERSION}}" }}" -productcompany "{{ "{{.PRODUCT_COMPANY}}" }}" -productcopyright "{{ "{{.PRODUCT_COPYRIGHT}}" }}" -productcomments "{{ "{{.PRODUCT_COMMENTS}}" }}" -productidentifier "{{ "{{.PRODUCT_IDENTIFIER}}" }}"
 
   pre-build:
     summary: Pre-build hooks
@@ -79,17 +79,16 @@ tasks:
 
   generate-icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
-    dir: build
     cmds:
       # Generates both .ico and .icns files
-      - wails generate icons -input appicon.png
+      - wails3 generate icons -input {{ "{{.BUILD_DIR}}" }}/appicon.png
 
   build-app-prod-darwin:
     summary: Creates a production build of the application
     cmds:
       - task: pre-build
       - task: build-frontend
-      - GOOS=darwin GOARCH={{ "{{.ARCH}}" }} go build -tags production -ldflags="-w -s" -o build/bin/{{ "{{.APP_NAME}}" }}
+      - GOOS=darwin GOARCH={{ "{{.ARCH}}" }} go build -tags production -ldflags="-w -s" -o bin/{{ "{{.APP_NAME}}" }}
       - task: post-build
     env:
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
@@ -103,9 +102,9 @@ tasks:
     summary: Builds a `.app` bundle
     cmds:
       - mkdir -p {{ "{{.APP_NAME}}" }}.app/Contents/{MacOS,Resources}
-      - cp build/icons.icns {{ "{{.APP_NAME}}" }}.app/Contents/Resources
-      - cp build/bin/{{ "{{.APP_NAME}}" }} {{ "{{.APP_NAME}}" }}.app/Contents/MacOS
-      - cp build/Info.plist {{ "{{.APP_NAME}}" }}.app/Contents
+      - cp {{ "{{.BUILD_DIR}}" }}/icons.icns {{ "{{.APP_NAME}}" }}.app/Contents/Resources
+      - cp bin/{{ "{{.APP_NAME}}" }} {{ "{{.APP_NAME}}" }}.app/Contents/MacOS
+      - cp {{ "{{.BUILD_DIR}}" }}/Info.plist {{ "{{.APP_NAME}}" }}.app/Contents
 
   package-darwin-arm64:
     summary: Packages a production build of the application into a `.app` bundle
@@ -122,7 +121,7 @@ tasks:
     dir: build
     platform: windows
     cmds:
-      - wails generate syso -arch {{ "{{.ARCH}}" }} -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+      - wails3 generate syso -arch {{ "{{.ARCH}}" }} -icon {{ "{{.BUILD_DIR}}" }}/icon.ico -manifest {{ "{{.BUILD_DIR}}" }}/wails.exe.manifest -info {{ "{{.BUILD_DIR}}" }}/info.json -out ../wails.syso
     vars:
       ARCH: $GOARCH
 
@@ -135,5 +134,5 @@ tasks:
       - task: generate:syso
         vars:
             ARCH: amd64
-      - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
+      - go build -tags production -ldflags="-w -s -H windowsgui" -o "{{ "{{.BUILD_DIR}}" }}"/bin/{{ "{{.APP_NAME}}" }}.exe
       - powershell Remove-item wails.syso

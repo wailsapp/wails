@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/templates"
+	"path/filepath"
 
 	"github.com/pterm/pterm"
 )
@@ -21,11 +22,22 @@ func Init(options *flags.Init) error {
 		return fmt.Errorf("please use the -n flag to specify a project name")
 	}
 
-	if templates.ValidTemplateName(options.TemplateName) {
-		return templates.Install(options)
+	if !templates.ValidTemplateName(options.TemplateName) {
+		return fmt.Errorf("invalid template name: %s. Use -l flag to list valid templates", options.TemplateName)
 	}
 
-	return templates.Install(options)
+	err := templates.Install(options)
+	if err != nil {
+		return err
+	}
+
+	// Generate build assets
+	buildAssetsOptions := &BuildAssetsOptions{
+		Name:   options.ProjectName,
+		Dir:    filepath.Join(options.ProjectDir, "build"),
+		Silent: true,
+	}
+	return GenerateBuildAssets(buildAssetsOptions)
 }
 
 func printTemplates() error {

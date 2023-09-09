@@ -25,6 +25,7 @@ type BuildAssetsOptions struct {
 	ProductCopyright   string `description:"The copyright notice"`
 	ProductComments    string `description:"Comments to add to the generated files" default:"This is a comment"`
 	ProductIdentifier  string `description:"The product identifier, e.g com.mycompany.myproduct"`
+	Silent             bool   `description:"Suppress output to console"`
 }
 
 func GenerateBuildAssets(options *BuildAssetsOptions) error {
@@ -56,7 +57,9 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 		return err
 	}
 
-	println("Generating build assets in " + options.Dir)
+	if !options.Silent {
+		println("Generating build assets in " + options.Dir)
+	}
 	return gosod.New(tfs).Extract(options.Dir, options)
 
 }
