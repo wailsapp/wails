@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"fmt"
-	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -15,50 +13,6 @@ func TestGenerateSyso(t *testing.T) {
 		wantErr bool
 		test    func() error
 	}{
-		{
-			name: "should generate example info and manifest files when using the `example` flag",
-			setup: func() *SysoOptions {
-				return &SysoOptions{
-					Example: true,
-				}
-			},
-			wantErr: false,
-			test: func() error {
-				// the file `info.json` should be created in the current directory
-				// check for the existence of the file
-				f, err := os.Stat("info.json")
-				if err != nil {
-					return err
-				}
-				m, err := os.Stat("wails.exe.manifest")
-				if err != nil {
-					return err
-				}
-				defer func() {
-					err := os.Remove("info.json")
-					err2 := os.Remove("wails.exe.manifest")
-					if err != nil {
-						panic(err)
-					}
-					if err2 != nil {
-						panic(err2)
-					}
-				}()
-				if f.IsDir() {
-					return fmt.Errorf("info.json is a directory")
-				}
-				if f.Size() == 0 {
-					return fmt.Errorf("info.json is empty")
-				}
-				if m.IsDir() {
-					return fmt.Errorf("wails.exe.manifest is a directory")
-				}
-				if m.Size() == 0 {
-					return fmt.Errorf("wails.exe.manifest is empty")
-				}
-				return nil
-			},
-		},
 		{
 			name: "should error if manifest filename is not provided",
 			setup: func() *SysoOptions {

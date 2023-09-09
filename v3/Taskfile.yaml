@@ -125,4 +125,8 @@ tasks:
     cmds:
       - task: format:md
 
+  precommit:
+    cmds:
+      - go test ./...
+
 
