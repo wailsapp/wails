@@ -129,7 +129,7 @@ type pointer unsafe.Pointer
 type GSList C.GSList
 type GSListPointer *GSList
 
-const (
+var (
 	nilPointer    pointer       = nil
 	nilRadioGroup GSListPointer = nil
 )
