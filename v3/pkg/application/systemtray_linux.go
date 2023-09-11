@@ -2,6 +2,8 @@
 
 package application
 
+import "fmt"
+
 type linuxSystemTray struct {
 	id    uint
 	label string
@@ -17,6 +19,7 @@ func (s *linuxSystemTray) setIconPosition(position int) {
 }
 
 func (s *linuxSystemTray) setMenu(menu *Menu) {
+	fmt.Println("linuxSystemTray.SetMenu")
 	s.menu = menu
 }
 
@@ -33,7 +36,7 @@ func (s *linuxSystemTray) bounds() (*Rect, error) {
 }
 
 func (s *linuxSystemTray) run() {
-	globalApplication.dispatchOnMainThread(func() {
+	invokeSync(func() {
 		// if s.nsStatusItem != nil {
 		// 	Fatal("System tray '%d' already running", s.id)
 		// }
@@ -57,7 +60,7 @@ func (s *linuxSystemTray) run() {
 
 func (s *linuxSystemTray) setIcon(icon []byte) {
 	s.icon = icon
-	globalApplication.dispatchOnMainThread(func() {
+	invokeSync(func() {
 		//		s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&icon[0]), C.int(len(icon))))
 		//		C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
 	})
@@ -65,7 +68,7 @@ func (s *linuxSystemTray) setIcon(icon []byte) {
 
 func (s *linuxSystemTray) setDarkModeIcon(icon []byte) {
 	s.icon = icon
-	globalApplication.dispatchOnMainThread(func() {
+	invokeSync(func() {
 		//		s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&icon[0]), C.int(len(icon))))
 		//		C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
 	})

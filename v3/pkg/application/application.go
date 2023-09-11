@@ -2,6 +2,7 @@ package application
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
@@ -446,7 +447,7 @@ func (a *App) Run() error {
 	a.runLock.Unlock()
 
 	// set the application menu
-	if runtime.GOOS == "darwin" || runtime.GOOS == "linux" {
+	if runtime.GOOS == "darwin" {
 		a.impl.setApplicationMenu(a.ApplicationMenu)
 	}
 	a.impl.setIcon(a.options.Icon)
@@ -569,6 +570,7 @@ func (a *App) Quit() {
 }
 
 func (a *App) SetMenu(menu *Menu) {
+	fmt.Println("App.SetMenu")
 	a.ApplicationMenu = menu
 	if a.impl != nil {
 		a.impl.setApplicationMenu(menu)

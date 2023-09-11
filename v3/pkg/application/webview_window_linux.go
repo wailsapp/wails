@@ -5,7 +5,6 @@ package application
 import (
 	"fmt"
 	"net/url"
-	"sync"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -104,21 +103,15 @@ func (w *linuxWebviewWindow) getScreen() (*Screen, error) {
 }
 
 func (w *linuxWebviewWindow) focus() {
-	globalApplication.dispatchOnMainThread(func() {
-		windowPresent(w.window)
-	})
+	windowPresent(w.window)
 }
 
 func (w *linuxWebviewWindow) show() {
-	globalApplication.dispatchOnMainThread(func() {
-		windowShow(w.window)
-	})
+	windowShow(w.window)
 }
 
 func (w *linuxWebviewWindow) hide() {
-	globalApplication.dispatchOnMainThread(func() {
-		windowHide(w.window)
-	})
+	windowHide(w.window)
 }
 
 func (w *linuxWebviewWindow) isNormal() bool {
@@ -140,26 +133,21 @@ func (w *linuxWebviewWindow) disableSizeConstraints() {
 }
 
 func (w *linuxWebviewWindow) unfullscreen() {
-	fmt.Println("unfullscreen")
-	globalApplication.dispatchOnMainThread(func() {
-		windowUnfullscreen(w.window)
-		w.unmaximise()
-	})
+	windowUnfullscreen(w.window)
+	w.unmaximise()
 }
 
 func (w *linuxWebviewWindow) fullscreen() {
 	w.maximise()
 	w.lastWidth, w.lastHeight = w.size()
-	globalApplication.dispatchOnMainThread(func() {
-		x, y, width, height, scale := windowGetCurrentMonitorGeometry(w.window)
-		if x == -1 && y == -1 && width == -1 && height == -1 {
-			return
-		}
-		w.setMinMaxSize(0, 0, width*scale, height*scale)
-		w.setSize(width*scale, height*scale)
-		windowFullscreen(w.window)
-		w.setRelativePosition(0, 0)
-	})
+	x, y, width, height, scale := windowGetCurrentMonitorGeometry(w.window)
+	if x == -1 && y == -1 && width == -1 && height == -1 {
+		return
+	}
+	w.setMinMaxSize(0, 0, width*scale, height*scale)
+	w.setSize(width*scale, height*scale)
+	windowFullscreen(w.window)
+	w.setRelativePosition(0, 0)
 }
 
 func (w *linuxWebviewWindow) unminimise() {
@@ -222,19 +210,17 @@ func (w *linuxWebviewWindow) forceReload() {
 }
 
 func (w *linuxWebviewWindow) center() {
-	globalApplication.dispatchOnMainThread(func() {
-		x, y, width, height, _ := windowGetCurrentMonitorGeometry(w.window)
-		if x == -1 && y == -1 && width == -1 && height == -1 {
-			return
-		}
-		windowWidth, windowHeight := windowGetSize(w.window)
+	x, y, width, height, _ := windowGetCurrentMonitorGeometry(w.window)
+	if x == -1 && y == -1 && width == -1 && height == -1 {
+		return
+	}
+	windowWidth, windowHeight := windowGetSize(w.window)
 
-		newX := ((width - int(windowWidth)) / 2) + x
-		newY := ((height - int(windowHeight)) / 2) + y
+	newX := ((width - int(windowWidth)) / 2) + x
+	newY := ((height - int(windowHeight)) / 2) + y
 
-		// Place the window at the center of the monitor
-		windowMove(w.window, newX, newY)
-	})
+	// Place the window at the center of the monitor
+	windowMove(w.window, newX, newY)
 }
 
 func (w *linuxWebviewWindow) isMinimised() bool {
@@ -242,27 +228,11 @@ func (w *linuxWebviewWindow) isMinimised() bool {
 }
 
 func (w *linuxWebviewWindow) isMaximised() bool {
-	return w.syncMainThreadReturningBool(func() bool {
-		return windowIsMaximized(w.window)
-	})
+	return windowIsMaximized(w.window)
 }
 
 func (w *linuxWebviewWindow) isFullscreen() bool {
-	return w.syncMainThreadReturningBool(func() bool {
-		return windowIsFullscreen(w.window)
-	})
-}
-
-func (w *linuxWebviewWindow) syncMainThreadReturningBool(fn func() bool) bool {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	var result bool
-	globalApplication.dispatchOnMainThread(func() {
-		result = fn()
-		wg.Done()
-	})
-	wg.Wait()
-	return result
+	return windowIsFullscreen(w.window)
 }
 
 func (w *linuxWebviewWindow) restore() {
@@ -344,26 +314,12 @@ func (w *linuxWebviewWindow) toggleDevTools() {
 }
 
 func (w *linuxWebviewWindow) size() (int, int) {
-	/*	var width, height C.int
-		var wg sync.WaitGroup
-		wg.Add(1)
-		globalApplication.dispatchOnMainThread(func() {
-
-			C.gtk_window_get_size((*C.GtkWindow)(w.window), &width, &height)
-			wg.Done()
-		})
-		wg.Wait()
-		return int(width), int(height)
-	*/
-	// Does this need to be guarded?
 	return windowGetSize(w.window)
 }
 
 func (w *linuxWebviewWindow) setRelativePosition(x, y int) {
 	mx, my, _, _, _ := windowGetCurrentMonitorGeometry(w.window)
-	globalApplication.dispatchOnMainThread(func() {
-		windowMove(w.window, x+mx, y+my)
-	})
+	windowMove(w.window, x+mx, y+my)
 }
 
 func (w *linuxWebviewWindow) width() int {
@@ -383,13 +339,7 @@ func (w *linuxWebviewWindow) setAbsolutePosition(x int, y int) {
 
 func (w *linuxWebviewWindow) absolutePosition() (int, int) {
 	var x, y int
-	var wg sync.WaitGroup
-	wg.Add(1)
-	globalApplication.dispatchOnMainThread(func() {
-		x, y = windowGetAbsolutePosition(w.window)
-		wg.Done()
-	})
-	wg.Wait()
+	x, y = windowGetAbsolutePosition(w.window)
 	return x, y
 }
 
@@ -399,76 +349,74 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	app := getNativeApplication()
-	menu := app.applicationMenu
 
-	globalApplication.dispatchOnMainThread(func() {
-		w.window, w.webview = windowNew(app.application, menu, w.parent.id, 1)
-		app.registerWindow(w.window, w.parent.id) // record our mapping
-		w.connectSignals()
-		if w.parent.options.EnableDragAndDrop {
-			w.enableDND()
-		}
-		w.setTitle(w.parent.options.Title)
-		w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
-		w.setResizable(!w.parent.options.DisableResize)
-		// only set min/max size if actually set
-		if w.parent.options.MinWidth != 0 &&
-			w.parent.options.MinHeight != 0 &&
-			w.parent.options.MaxWidth != 0 &&
-			w.parent.options.MaxHeight != 0 {
-			w.setMinMaxSize(
-				w.parent.options.MinWidth,
-				w.parent.options.MinHeight,
-				w.parent.options.MaxWidth,
-				w.parent.options.MaxHeight,
-			)
-		}
-		w.setSize(w.parent.options.Width, w.parent.options.Height)
-		w.setZoom(w.parent.options.Zoom)
-		w.setBackgroundColour(w.parent.options.BackgroundColour)
-		w.setFrameless(w.parent.options.Frameless)
+	menu := app.getApplicationMenu()
+	w.window, w.webview, w.vbox = windowNew(app.application, menu, w.parent.id, 1)
+	app.registerWindow(w.window, w.parent.id) // record our mapping
+	w.connectSignals()
+	if w.parent.options.EnableDragAndDrop {
+		w.enableDND()
+	}
+	w.setTitle(w.parent.options.Title)
+	w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
+	w.setResizable(!w.parent.options.DisableResize)
+	// only set min/max size if actually set
+	if w.parent.options.MinWidth != 0 &&
+		w.parent.options.MinHeight != 0 &&
+		w.parent.options.MaxWidth != 0 &&
+		w.parent.options.MaxHeight != 0 {
+		w.setMinMaxSize(
+			w.parent.options.MinWidth,
+			w.parent.options.MinHeight,
+			w.parent.options.MaxWidth,
+			w.parent.options.MaxHeight,
+		)
+	}
+	w.setSize(w.parent.options.Width, w.parent.options.Height)
+	w.setZoom(w.parent.options.Zoom)
+	w.setBackgroundColour(w.parent.options.BackgroundColour)
+	w.setFrameless(w.parent.options.Frameless)
 
+	if w.parent.options.X != 0 || w.parent.options.Y != 0 {
+		w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
+	} else {
+		fmt.Println("attempting to set in the center")
+		w.center()
+	}
+	switch w.parent.options.StartState {
+	case WindowStateMaximised:
+		w.maximise()
+	case WindowStateMinimised:
+		w.minimise()
+	case WindowStateFullscreen:
+		w.fullscreen()
+	}
+
+	if w.parent.options.URL != "" {
+		w.setURL(w.parent.options.URL)
+	}
+	// We need to wait for the HTML to load before we can execute the javascript
+	// FIXME: What event is this?  DomReady?
+	w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
+		if w.parent.options.JS != "" {
+			w.execJS(w.parent.options.JS)
+		}
+		if w.parent.options.CSS != "" {
+			js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();", w.parent.options.CSS)
+			w.execJS(js)
+		}
+	})
+	if w.parent.options.HTML != "" {
+		w.setHTML(w.parent.options.HTML)
+	}
+	if !w.parent.options.Hidden {
+		w.show()
 		if w.parent.options.X != 0 || w.parent.options.Y != 0 {
 			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
 		} else {
-			fmt.Println("attempting to set in the center")
-			w.center()
+			w.center() // needs to be queued until after GTK starts up!
 		}
-		switch w.parent.options.StartState {
-		case WindowStateMaximised:
-			w.maximise()
-		case WindowStateMinimised:
-			w.minimise()
-		case WindowStateFullscreen:
-			w.fullscreen()
-		}
-
-		if w.parent.options.URL != "" {
-			w.setURL(w.parent.options.URL)
-		}
-		// We need to wait for the HTML to load before we can execute the javascript
-		// FIXME: What event is this?  DomReady?
-		w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
-			if w.parent.options.JS != "" {
-				w.execJS(w.parent.options.JS)
-			}
-			if w.parent.options.CSS != "" {
-				js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();", w.parent.options.CSS)
-				w.execJS(js)
-			}
-		})
-		if w.parent.options.HTML != "" {
-			w.setHTML(w.parent.options.HTML)
-		}
-		if !w.parent.options.Hidden {
-			w.show()
-			if w.parent.options.X != 0 || w.parent.options.Y != 0 {
-				w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
-			} else {
-				w.center() // needs to be queued until after GTK starts up!
-			}
-		}
-	})
+	}
 }
 
 func (w *linuxWebviewWindow) setTransparent() {
@@ -479,18 +427,12 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	if colour.Alpha < 255 {
 		w.setTransparent()
 	}
-	windowSetBackgroundColour(w.webview, colour)
+	windowSetBackgroundColour(w.vbox, w.webview, colour)
 }
 
 func (w *linuxWebviewWindow) relativePosition() (int, int) {
 	var x, y int
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go globalApplication.dispatchOnMainThread(func() {
-		x, y = windowGetRelativePosition(w.window)
-		wg.Done()
-	})
-	wg.Wait()
+	x, y = windowGetRelativePosition(w.window)
 	return x, y
 }
 
@@ -499,9 +441,7 @@ func (w *linuxWebviewWindow) destroy() {
 }
 
 func (w *linuxWebviewWindow) setEnabled(enabled bool) {
-	globalApplication.dispatchOnMainThread(func() {
-		widgetSetSensitive(w.window, enabled)
-	})
+	widgetSetSensitive(w.window, enabled)
 }
 
 func (w *linuxWebviewWindow) setHTML(html string) {

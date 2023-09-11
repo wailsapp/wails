@@ -15,6 +15,10 @@ func newMenuImpl(menu *Menu) *linuxMenu {
 	return result
 }
 
+func (m *linuxMenu) run() {
+	m.update()
+}
+
 func (m *linuxMenu) update() {
 	m.processMenu(m.menu)
 }

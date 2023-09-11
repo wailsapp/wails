@@ -16,7 +16,7 @@ func (m *linuxApp) getScreens() ([]*Screen, error) {
 	var screens []*Screen
 	var err error
 	wg.Add(1)
-	globalApplication.dispatchOnMainThread(func() {
+	invokeSync(func() {
 		screens, err = getScreens(m.application)
 		wg.Done()
 	})

@@ -129,17 +129,23 @@ type pointer unsafe.Pointer
 type GSList C.GSList
 type GSListPointer *GSList
 
+const (
+	nilPointer    pointer       = nil
+	nilRadioGroup GSListPointer = nil
+)
+
 var (
-	nilRadioGroup       GSListPointer = nil
 	gtkSignalHandlers   map[*C.GtkWidget]C.gulong
 	gtkSignalToMenuItem map[*C.GtkWidget]*MenuItem
+	mainThreadId        *C.GThread
 )
 
 func init() {
-	fmt.Println("linux_cgo")
-
 	gtkSignalHandlers = map[*C.GtkWidget]C.gulong{}
 	gtkSignalToMenuItem = map[*C.GtkWidget]*MenuItem{}
+
+	mainThreadId = C.g_thread_self()
+	fmt.Println("init mainthread=", mainThreadId)
 }
 
 // mainthread stuff
@@ -155,6 +161,13 @@ func dispatchOnMainThreadCallback(callbackID C.uint) {
 //export activateLinux
 func activateLinux(data pointer) {
 	// NOOP: Callback for now
+	fmt.Println("activateLinux", mainThreadId)
+}
+
+func isOnMainThread() bool {
+	threadId := C.g_thread_self()
+	//	fmt.Println("isOnMainThread = ", threadId == mainThreadId)
+	return threadId == mainThreadId
 }
 
 // implementation below
@@ -173,8 +186,16 @@ func appNew(name string) pointer {
 func appRun(app pointer) error {
 	application := (*C.GApplication)(app)
 	C.g_application_hold(application) // allows it to run without a window
+
 	signal := C.CString("activate")
-	C.g_signal_connect_data(C.gpointer(application), signal, C.GCallback(C.activateLinux), nil, nil, 0)
+	defer C.free(unsafe.Pointer(signal))
+	C.g_signal_connect_data(
+		C.gpointer(application),
+		signal,
+		C.GCallback(C.activateLinux),
+		nil,
+		nil,
+		0)
 	status := C.g_application_run(application, 0, nil)
 	C.g_application_release(application)
 	C.g_object_unref(C.gpointer(app))
@@ -557,13 +578,16 @@ func windowMinimize(window pointer) {
 	C.gtk_window_iconify((*C.GtkWindow)(window))
 }
 
-func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy int) (window pointer, webview pointer) {
+func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy int) (window, webview, vbox pointer) {
 	window = pointer(C.gtk_application_window_new((*C.GtkApplication)(application)))
 	C.g_object_ref_sink(C.gpointer(window))
 	webview = windowNewWebview(windowId, gpuPolicy)
-	vbox := pointer(C.gtk_box_new(C.GTK_ORIENTATION_VERTICAL, 0))
-	C.gtk_container_add((*C.GtkContainer)(window), (*C.GtkWidget)(vbox))
+	vbox = pointer(C.gtk_box_new(C.GTK_ORIENTATION_VERTICAL, 0))
+	name := C.CString("webview-box")
+	defer C.free(unsafe.Pointer(name))
+	C.gtk_widget_set_name((*C.GtkWidget)(vbox), name)
 
+	C.gtk_container_add((*C.GtkContainer)(window), (*C.GtkWidget)(vbox))
 	if menu != nil {
 		C.gtk_box_pack_start((*C.GtkBox)(vbox), (*C.GtkWidget)(menu), 0, 0, 0)
 	}
@@ -634,9 +658,20 @@ func windowShow(window pointer) {
 	C.gtk_widget_show_all((*C.GtkWidget)(window))
 }
 
-func windowSetBackgroundColour(webview pointer, colour RGBA) {
+func windowSetBackgroundColour(vbox, webview pointer, colour RGBA) {
 	rgba := C.GdkRGBA{C.double(colour.Red) / 255.0, C.double(colour.Green) / 255.0, C.double(colour.Blue) / 255.0, C.double(colour.Alpha) / 255.0}
 	C.webkit_web_view_set_background_color((*C.WebKitWebView)(webview), &rgba)
+
+	colour.Alpha = 255
+	cssStr := C.CString(fmt.Sprintf("#webview-box {background-color: rgba(%d, %d, %d, %1.1f);}", colour.Red, colour.Green, colour.Blue, float32(colour.Alpha)/255.0))
+	provider := C.gtk_css_provider_new()
+	C.gtk_style_context_add_provider(
+		C.gtk_widget_get_style_context((*C.GtkWidget)(vbox)),
+		(*C.GtkStyleProvider)(unsafe.Pointer(provider)),
+		C.GTK_STYLE_PROVIDER_PRIORITY_USER)
+	C.g_object_unref(C.gpointer(provider))
+	C.gtk_css_provider_load_from_data(provider, cssStr, -1, nil)
+	C.free(unsafe.Pointer(cssStr))
 }
 
 func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHeight int) {

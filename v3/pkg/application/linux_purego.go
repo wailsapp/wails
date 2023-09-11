@@ -26,6 +26,10 @@ type GSList struct {
 type GSListPointer *GSList
 
 const (
+	nilPointer pointer = 0
+)
+
+const (
 	GSourceRemove int = 0
 
 	// https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gdk/gdkwindow.h#L121
@@ -77,6 +81,7 @@ var (
 	nilRadioGroup       GSListPointer         = nil
 	gtkSignalHandlers   map[pointer]uint      = map[pointer]uint{}
 	gtkSignalToMenuItem map[pointer]*MenuItem = map[pointer]*MenuItem{}
+	mainThreadId        uint64
 )
 
 const (
@@ -87,9 +92,9 @@ const (
 )
 
 var (
-	gtk     uintptr
-	version int
-	webkit  uintptr
+	gtk        uintptr
+	gtkVersion int
+	webkit     uintptr
 
 	// function references
 	gApplicationHold      func(pointer)
@@ -107,6 +112,7 @@ var (
 	gSignalConnectObject  func(pointer, string, pointer, pointer, int) uint
 	gSignalHandlerBlock   func(pointer, uint)
 	gSignalHandlerUnblock func(pointer, uint)
+	gThreadSelf           func() uint64
 
 	// gdk functions
 	gdkDisplayGetMonitor         func(pointer, int) pointer
@@ -225,7 +231,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	version = 3
+	gtkVersion = 3
 
 	webkit, err = purego.Dlopen(webkit4, purego.RTLD_NOW|purego.RTLD_GLOBAL)
 	if err != nil {
@@ -249,6 +255,7 @@ func init() {
 	purego.RegisterLibFunc(&gSignalConnectObject, gtk, "g_signal_connect_object")
 	purego.RegisterLibFunc(&gSignalHandlerBlock, gtk, "g_signal_handler_block")
 	purego.RegisterLibFunc(&gSignalHandlerUnblock, gtk, "g_signal_handler_unblock")
+	purego.RegisterLibFunc(&gThreadSelf, gtk, "g_thread_self")
 
 	// GDK
 	purego.RegisterLibFunc(&gdkDisplayGetMonitor, gtk, "gdk_display_get_monitor")
@@ -352,6 +359,8 @@ func init() {
 
 // mainthread stuff
 func dispatchOnMainThread(id uint) {
+	fmt.Println("dispatchOnMainThread", gThreadSelf())
+
 	gIdleAdd(purego.NewCallback(func(pointer) int {
 		executeOnMainThread(id)
 		return GSourceRemove
@@ -376,6 +385,9 @@ func appNew(name string) pointer {
 }
 
 func appRun(application pointer) error {
+	mainThreadId = gThreadSelf()
+	fmt.Println("linux_purego: appRun threadID", mainThreadId)
+
 	app := pointer(application)
 	activate := func() {
 		// TODO: Do we care?
@@ -765,7 +777,7 @@ func windowMinimize(window pointer) {
 	gtkWindowMinimize(window)
 }
 
-func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy int) (pointer, pointer) {
+func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy int) (pointer, pointer, pointer) {
 	window := gtkApplicationWindowNew(application)
 	gObjectRefSink(window)
 	webview := windowNewWebview(windowId, gpuPolicy)
@@ -776,7 +788,7 @@ func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy int) 
 		gtkBoxPackStart(vbox, menu, 0, 0, 0)
 	}
 	gtkBoxPackStart(vbox, webview, 1, 1, 0)
-	return pointer(window), pointer(webview)
+	return pointer(window), pointer(webview), pointer(vbox)
 }
 
 func windowNewWebview(parentId uint, gpuPolicy int) pointer {
@@ -826,7 +838,7 @@ func windowShow(window pointer) {
 	gtkWidgetShowAll(pointer(window))
 }
 
-func windowSetBackgroundColour(webview pointer, colour RGBA) {
+func windowSetBackgroundColour(vbox, webview pointer, colour RGBA) {
 	// FIXME: Use a struct!
 	rgba := make([]byte, 4*8) // C.sizeof_GdkRGBA == 32
 	rgbaPointer := pointer(unsafe.Pointer(&rgba[0]))
@@ -841,6 +853,19 @@ func windowSetBackgroundColour(webview pointer, colour RGBA) {
 		return
 	}
 	webkitWebViewSetBackgroundColor(pointer(webview), rgbaPointer)
+
+	/*
+		colour.Alpha = 255
+		cssStr := C.CString(fmt.Sprintf("#webview-box {background-color: rgba(%d, %d, %d, %1.1f);}", colour.Red, colour.Green, colour.Blue, float32(colour.Alpha)/255.0))
+		provider := C.gtk_css_provider_new()
+		C.gtk_style_context_add_provider(
+			C.gtk_widget_get_style_context((*C.GtkWidget)(vbox)),
+			(*C.GtkStyleProvider)(unsafe.Pointer(provider)),
+			C.GTK_STYLE_PROVIDER_PRIORITY_USER)
+		C.g_object_unref(C.gpointer(provider))
+		C.gtk_css_provider_load_from_data(provider, cssStr, -1, nil)
+		C.free(unsafe.Pointer(cssStr))
+	*/
 }
 
 func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHeight int) {
@@ -1150,4 +1175,8 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 	}
 
 	return results[0], nil
+}
+
+func isOnMainThread() bool {
+	return mainThreadId == gThreadSelf()
 }

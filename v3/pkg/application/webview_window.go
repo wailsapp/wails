@@ -3,11 +3,12 @@ package application
 import (
 	"errors"
 	"fmt"
-	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v3/pkg/events"
 	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type (
@@ -277,7 +278,7 @@ func (w *WebviewWindow) Show() *WebviewWindow {
 		return w
 	}
 	if w.impl == nil {
-		w.run()
+		invokeSync(w.run)
 		return w
 	}
 	invokeSync(w.impl.show)
@@ -657,10 +658,12 @@ func (w *WebviewWindow) Destroy() {
 	if w.impl == nil {
 		return
 	}
+
 	// Cancel the callbacks
 	for _, cancelFunc := range w.cancellers {
 		cancelFunc()
 	}
+
 	invokeSync(w.impl.destroy)
 }
 

@@ -2,10 +2,11 @@ package application
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/events"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type IconPosition int
@@ -149,6 +150,7 @@ func (s *SystemTray) SetDarkModeIcon(icon []byte) *SystemTray {
 }
 
 func (s *SystemTray) SetMenu(menu *Menu) *SystemTray {
+	fmt.Println("SystemTray.SetMenu", menu, s.impl)
 	if s.impl == nil {
 		s.menu = menu
 	} else {

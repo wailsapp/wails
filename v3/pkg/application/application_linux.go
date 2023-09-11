@@ -51,11 +51,12 @@ func (m *linuxApp) show() {
 
 func (m *linuxApp) on(eventID uint) {
 	// TODO: What do we need to do here?
-	log.Println("linuxApp.on()", eventID)
+	//	log.Println("linuxApp.on()", eventID)
 }
 
 func (m *linuxApp) setIcon(icon []byte) {
-	fmt.Println("linuxApp.setIcon", "not implemented")
+
+	log.Println("linuxApp.setIcon", "not implemented")
 }
 
 func (m *linuxApp) name() string {
@@ -66,17 +67,36 @@ func (m *linuxApp) getCurrentWindowID() uint {
 	return getCurrentWindowID(m.application, m.windows)
 }
 
+type rnr struct {
+	f func()
+}
+
+func (r rnr) run() {
+	r.f()
+}
+
+func (m *linuxApp) getApplicationMenu() pointer {
+	if m.applicationMenu != nilPointer {
+		return m.applicationMenu
+	}
+
+	menu := globalApplication.ApplicationMenu
+	if menu != nil {
+		invokeSync(func() {
+			menu.Update()
+		})
+		m.applicationMenu = (menu.impl).(*linuxMenu).native
+	}
+	return m.applicationMenu
+}
+
 func (m *linuxApp) setApplicationMenu(menu *Menu) {
+	// FIXME: How do we avoid putting a menu?
 	if menu == nil {
 		// Create a default menu
 		menu = defaultApplicationMenu()
+		globalApplication.ApplicationMenu = menu
 	}
-	globalApplication.dispatchOnMainThread(func() {
-		fmt.Println("setApplicationMenu")
-
-		menu.Update()
-		m.applicationMenu = (menu.impl).(*linuxMenu).native
-	})
 }
 
 func (m *linuxApp) run() error {
@@ -96,8 +116,7 @@ func (m *linuxApp) destroy() {
 }
 
 func (m *linuxApp) isOnMainThread() bool {
-	// FIXME: How do we detect this properly?
-	return false
+	return isOnMainThread()
 }
 
 // register our window to our parent mapping
