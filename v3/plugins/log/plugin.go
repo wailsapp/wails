@@ -18,6 +18,9 @@ type Config struct {
 	// Logger is the logger to use. If not set, a default logger will be used.
 	Logger *slog.Logger
 
+	// LogLevel defines the log level of the logger.
+	LogLevel slog.Level
+
 	// Handles errors that occur when writing to the log
 	ErrorHandler func(err error)
 }
@@ -25,16 +28,19 @@ type Config struct {
 type Plugin struct {
 	config *Config
 	app    *application.App
+	level  slog.LevelVar
 }
 
 func NewPluginWithConfig(config *Config) *Plugin {
 	if config.Logger == nil {
-		config.Logger = application.DefaultLogger()
+		config.Logger = application.DefaultLogger(config.LogLevel)
 	}
 
-	return &Plugin{
+	result := &Plugin{
 		config: config,
 	}
+	result.level.Set(config.LogLevel)
+	return result
 }
 
 func NewPlugin() *Plugin {
@@ -62,6 +68,7 @@ func (p *Plugin) CallableByJS() []string {
 		"Info",
 		"Warning",
 		"Error",
+		"SetLogLevel",
 	}
 }
 
@@ -89,4 +96,8 @@ func (p *Plugin) Warning(message string, args ...any) {
 
 func (p *Plugin) Error(message string, args ...any) {
 	p.config.Logger.Error(message, args...)
+}
+
+func (p *Plugin) SetLogLevel(level slog.Level) {
+	p.level.Set(level)
 }

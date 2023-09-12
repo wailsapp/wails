@@ -42,3 +42,18 @@ function Warning(input, ...args) {
 function Error(input, ...args) {
     return wails.CallByID(878590242, input, ...args);
 }
+
+const LevelDebug  = -4
+const LevelInfo   = 0
+const LevelWarn   = 4
+const LevelError  = 8
+
+
+/**
+ * Set Log level
+ * @param level {LogLevel} - The log level to set.
+ * @returns {Promise<void|Error>}
+ */
+function SetLogLevel(level) {
+    return wails.CallByID(2758810652, level);
+}
