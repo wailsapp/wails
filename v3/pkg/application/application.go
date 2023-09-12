@@ -49,7 +49,7 @@ func New(appOptions Options) *App {
 	globalApplication = result
 
 	if result.isDebugMode && result.Logger == nil {
-		result.Logger = DefaultLogger()
+		result.Logger = DefaultLogger(result.options.LogLevel)
 	}
 
 	result.logStartup()

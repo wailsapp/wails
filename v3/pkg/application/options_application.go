@@ -7,20 +7,44 @@ import (
 )
 
 type Options struct {
-	Name        string
+	// Name is the name of the application
+	Name string
+
+	// Description is the description of the application (used in the default about box)
 	Description string
-	Icon        []byte
-	Mac         MacOptions
-	Windows     WindowsApplicationOptions
-	Bind        []any
+
+	// Icon is the icon of the application (used in the default about box)
+	Icon []byte
+
+	// Mac is the Mac specific configuration for Mac builds
+	Mac MacOptions
+
+	// Windows is the Windows specific configuration for Windows builds
+	Windows WindowsApplicationOptions
+
+	// Bind allows you to bind Go methods to the frontend.
+	Bind []any
 
 	// BindAliases allows you to specify alias IDs for your bound methods.
 	// Example: `BindAliases: map[uint32]uint32{1: 1411160069}` states that alias ID 1 maps to the Go method with ID 1411160069.
 	BindAliases map[uint32]uint32
-	Logger      *slog.Logger
-	Assets      AssetOptions
-	Plugins     map[string]Plugin
-	Flags       map[string]any
+
+	// Logger i a slog.Logger instance used for logging Wails system messages (not application messages).
+	// If not defined, a default logger is used.
+	Logger *slog.Logger
+
+	// LogLevel defines the log level of the Wails system logger.
+	LogLevel slog.Level
+
+	// Assets are the application assets to be used.
+	Assets AssetOptions
+
+	// Plugins is a map of plugins used by the application
+	Plugins map[string]Plugin
+
+	// Flags are key value pairs that are available to the frontend.
+	// This is also used by Wails to provide information to the frontend.
+	Flags map[string]any
 
 	// PanicHandler is a way to register a custom panic handler
 	PanicHandler func(any)
