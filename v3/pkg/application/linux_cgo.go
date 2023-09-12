@@ -551,6 +551,11 @@ func windowIsFullscreen(window pointer) bool {
 	return state&C.GDK_WINDOW_STATE_FULLSCREEN > 0
 }
 
+func windowIsFocused(window pointer) bool {
+	// returns true if window is focused
+	return C.gtk_window_has_toplevel_focus((*C.GtkWindow)(window)) == 1
+}
+
 func windowIsMaximized(window pointer) bool {
 	gdkwindow := C.gtk_widget_get_window((*C.GtkWidget)(window))
 	state := C.gdk_window_get_state(gdkwindow)

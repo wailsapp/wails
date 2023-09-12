@@ -53,6 +53,7 @@ type (
 		isFullscreen() bool
 		isNormal() bool
 		isVisible() bool
+		isFocused() bool
 		setFullscreenButtonEnabled(enabled bool)
 		focus()
 		show()
@@ -480,6 +481,14 @@ func (w *WebviewWindow) Size() (int, int) {
 		width, height = w.impl.size()
 	})
 	return width, height
+}
+
+// IsFocused returns true if the window is currently focused
+func (w *WebviewWindow) IsFocused() bool {
+	if w.impl == nil {
+		return false
+	}
+	return invokeSyncWithResult(w.impl.isFullscreen)
 }
 
 // IsFullscreen returns true if the window is fullscreen

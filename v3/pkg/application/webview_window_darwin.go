@@ -345,6 +345,10 @@ bool windowIsMinimised(void* nsWindow) {
 	return [(WebviewWindow*)nsWindow isMiniaturized];
 }
 
+bool windowIsFocused(void* nsWindow) {
+	return [(WebviewWindow*)nsWindow isKeyWindow];
+}
+
 // Set Window fullscreen
 void windowFullscreen(void* nsWindow) {
 	if( windowIsFullscreen(nsWindow) ) {
@@ -716,6 +720,10 @@ type macosWebviewWindow struct {
 	parent   *WebviewWindow
 }
 
+func (w *macosWebviewWindow) isFocused() bool {
+	return bool(C.windowIsFocused(w.nsWindow))
+}
+
 func (w *macosWebviewWindow) setAbsolutePosition(x int, y int) {
 	C.windowSetAbsolutePosition(w.nsWindow, C.int(x), C.int(y))
 }
@@ -944,7 +952,7 @@ func (w *macosWebviewWindow) setTitle(title string) {
 	}
 }
 
-func (w *macosWebviewWindow) flash(enabled bool) {
+func (w *macosWebviewWindow) flash(_ bool) {
 	// Not supported on macOS
 }
 

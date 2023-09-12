@@ -549,6 +549,11 @@ func (w *windowsWebviewWindow) isMaximised() bool {
 	return style&w32.WS_MAXIMIZE != 0
 }
 
+func (w *windowsWebviewWindow) isFocused() bool {
+	// Returns true if the window is currently focused
+	return w32.GetForegroundWindow() == w.hwnd
+}
+
 func (w *windowsWebviewWindow) isFullscreen() bool {
 	// TODO: Actually calculate this based on size of window against screen size
 	// => stffabi: This flag is essential since it indicates that we are in fullscreen mode even before the native properties

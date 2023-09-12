@@ -231,6 +231,10 @@ func (w *linuxWebviewWindow) isMaximised() bool {
 	return windowIsMaximized(w.window)
 }
 
+func (w *linuxWebviewWindow) isFocused() bool {
+	return windowIsFocused(w.window)
+}
+
 func (w *linuxWebviewWindow) isFullscreen() bool {
 	return windowIsFullscreen(w.window)
 }
