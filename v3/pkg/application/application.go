@@ -2,7 +2,6 @@ package application
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
@@ -335,20 +334,20 @@ func (a *App) GetPID() int {
 
 func (a *App) info(message string, args ...any) {
 	if a.Logger != nil {
-		a.Logger.Info(message, args...)
+		go a.Logger.Info(message, args...)
 	}
 }
 
 func (a *App) debug(message string, args ...any) {
 	if a.Logger != nil {
-		a.Logger.Debug(message, args...)
+		go a.Logger.Debug(message, args...)
 	}
 }
 
 func (a *App) fatal(message string, args ...any) {
 	msg := "A FATAL ERROR HAS OCCURRED: " + message
 	if a.Logger != nil {
-		a.Logger.Error(msg, args...)
+		go a.Logger.Error(msg, args...)
 	} else {
 		println(msg)
 	}
@@ -357,7 +356,7 @@ func (a *App) fatal(message string, args ...any) {
 
 func (a *App) error(message string, args ...any) {
 	if a.Logger != nil {
-		a.Logger.Error(message, args...)
+		go a.Logger.Error(message, args...)
 	}
 }
 
@@ -570,7 +569,6 @@ func (a *App) Quit() {
 }
 
 func (a *App) SetMenu(menu *Menu) {
-	fmt.Println("App.SetMenu")
 	a.ApplicationMenu = menu
 	if a.impl != nil {
 		a.impl.setApplicationMenu(menu)
