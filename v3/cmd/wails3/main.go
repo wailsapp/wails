@@ -41,6 +41,7 @@ func main() {
 	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
 	generate.NewSubCommandFunction("syso", "Generate Windows .syso file", commands.GenerateSyso)
 	generate.NewSubCommandFunction("bindings", "Generate bindings + models", commands.GenerateBindings)
+	generate.NewSubCommandFunction("constants", "Generate JS constants from Go", commands.GenerateConstants)
 	plugin := app.NewSubCommand("plugin", "Plugin tools")
 	//plugin.NewSubCommandFunction("list", "List plugins", commands.PluginList)
 	plugin.NewSubCommandFunction("init", "Initialise a new plugin", commands.PluginInit)
