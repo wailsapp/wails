@@ -11,7 +11,7 @@
 #import <Cocoa/Cocoa.h>
 #import "WailsContext.h"
 
-@interface AppDelegate : NSResponder <NSTouchBarProvider>
+@interface AppDelegate : NSResponder <NSApplicationDelegate, NSTouchBarProvider>
 
 @property bool alwaysOnTop;
 @property bool startHidden;
@@ -19,5 +19,9 @@
 @property (retain) WailsWindow* mainWindow;
 
 @end
+
+extern void HandleOpenFile(char *);
+
+extern void HandleOpenFiles(char**, int);
 
 #endif /* AppDelegate_h */
