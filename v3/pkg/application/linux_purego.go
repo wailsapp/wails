@@ -139,60 +139,70 @@ var (
 	gtkCheckMenuItemNewWithLabel    func(string) pointer
 	gtkCheckMenuItemSetActive       func(pointer, int)
 	gtkContainerAdd                 func(pointer, pointer)
+	gtkCSSProviderLoadFromData      func(pointer, string, int, pointer)
+	gtkCSSProviderNew               func() pointer
 	gtkDialogAddButton              func(pointer, string, int)
 	gtkDialogGetContentArea         func(pointer) pointer
 	gtkDialogRun                    func(pointer) int
 	gtkDialogSetDefaultResponse     func(pointer, int)
 	gtkDragDestSet                  func(pointer, uint, pointer, uint, uint)
+	gtkFileChooserAddFilter         func(pointer, pointer)
 	gtkFileChooserDialogNew         func(string, pointer, int, string, int, string, int, pointer) pointer
 	gtkFileChooserGetFilenames      func(pointer) *GSList
-	gtkFileChooserSetCreateFolders  func(pointer, int)
+	gtkFileChooserSetAction         func(pointer, int)
+	gtkFileChooserSetCreateFolders  func(pointer, bool)
 	gtkFileChooserSetCurrentFolder  func(pointer, string)
-	gtkFileChooserSetSelectMultiple func(pointer, int)
-	gtkFileChooserSetShowHidden     func(pointer, int)
-
-	gtkImageNewFromPixbuf        func(pointer) pointer
-	gtkMenuBarNew                func() pointer
-	gtkMenuItemNewWithLabel      func(string) pointer
-	gtkMenuItemSetLabel          func(pointer, string)
-	gtkMenuItemSetSubmenu        func(pointer, pointer)
-	gtkMenuNew                   func() pointer
-	gtkMenuShellAppend           func(pointer, pointer)
-	gtkMessageDialogNew          func(pointer, int, int, int, string) pointer
-	gtkRadioMenuItemGetGroup     func(pointer) GSListPointer
-	gtkRadioMenuItemNewWithLabel func(GSListPointer, string) pointer
-	gtkSeparatorMenuItemNew      func() pointer
-	gtkTargetEntryFree           func(pointer)
-	gtkTargetEntryNew            func(string, int, uint) pointer
-	gtkWidgetDestroy             func(pointer)
-	gtkWidgetGetDisplay          func(pointer) pointer
-	gtkWidgetGetWindow           func(pointer) pointer
-	gtkWidgetGetScreen           func(pointer) pointer
-	gtkWidgetHide                func(pointer)
-	gtkWidgetIsVisible           func(pointer) bool
-	gtkWidgetShow                func(pointer)
-	gtkWidgetShowAll             func(pointer)
-	gtkWidgetSetAppPaintable     func(pointer, int)
-	gtkWidgetSetSensitive        func(pointer, int)
-	gtkWidgetSetToolTipText      func(pointer, string)
-	gtkWidgetSetVisual           func(pointer, pointer)
-	gtkWindowClose               func(pointer)
-	gtkWindowFullScreen          func(pointer)
-	gtkWindowGetPosition         func(pointer, *int, *int) bool
-	gtkWindowGetSize             func(pointer, *int, *int)
-	gtkWindowKeepAbove           func(pointer, bool)
-	gtkWindowMaximize            func(pointer)
-	gtkWindowMinimize            func(pointer)
-	gtkWindowMove                func(pointer, int, int)
-	gtkWindowPresent             func(pointer)
-	gtkWindowResize              func(pointer, int, int)
-	gtkWindowSetDecorated        func(pointer, int)
-	gtkWindowSetGeometryHints    func(pointer, pointer, pointer, int)
-	gtkWindowSetKeepAbove        func(pointer, bool)
-	gtkWindowSetResizable        func(pointer, bool)
-	gtkWindowSetTitle            func(pointer, string)
-	gtkWindowUnfullscreen        func(pointer)
-	gtkWindowUnmaximize          func(pointer)
+	gtkFileChooserSetSelectMultiple func(pointer, bool)
+	gtkFileChooserSetShowHidden     func(pointer, bool)
+	gtkFileFilterAddPattern         func(pointer, string)
+	gtkFileFilterNew                func() pointer
+	gtkFileFilterSetName            func(pointer, string)
+	gtkImageNewFromPixbuf           func(pointer) pointer
+	gtkMenuBarNew                   func() pointer
+	gtkMenuItemNewWithLabel         func(string) pointer
+	gtkMenuItemSetLabel             func(pointer, string)
+	gtkMenuItemSetSubmenu           func(pointer, pointer)
+	gtkMenuNew                      func() pointer
+	gtkMenuShellAppend              func(pointer, pointer)
+	gtkMessageDialogNew             func(pointer, int, int, int, string) pointer
+	gtkRadioMenuItemGetGroup        func(pointer) GSListPointer
+	gtkRadioMenuItemNewWithLabel    func(GSListPointer, string) pointer
+	gtkSeparatorMenuItemNew         func() pointer
+	gtkStyleContextAddProvider      func(pointer, pointer, int)
+	gtkTargetEntryFree              func(pointer)
+	gtkTargetEntryNew               func(string, int, uint) pointer
+	gtkWidgetDestroy                func(pointer)
+	gtkWidgetGetDisplay             func(pointer) pointer
+	gtkWidgetGetScreen              func(pointer) pointer
+	gtkWidgetGetStyleContext        func(pointer) pointer
+	gtkWidgetGetWindow              func(pointer) pointer
+	gtkWidgetHide                   func(pointer)
+	gtkWidgetIsVisible              func(pointer) bool
+	gtkWidgetShow                   func(pointer)
+	gtkWidgetShowAll                func(pointer)
+	gtkWidgetSetAppPaintable        func(pointer, int)
+	gtkWidgetSetName                func(pointer, string)
+	gtkWidgetSetSensitive           func(pointer, int)
+	gtkWidgetSetToolTipText         func(pointer, string)
+	gtkWidgetSetVisual              func(pointer, pointer)
+	gtkWindowClose                  func(pointer)
+	gtkWindowFullScreen             func(pointer)
+	gtkWindowGetPosition            func(pointer, *int, *int) bool
+	gtkWindowGetSize                func(pointer, *int, *int)
+	gtkWindowHasToplevelFocus       func(pointer) int
+	gtkWindowKeepAbove              func(pointer, bool)
+	gtkWindowMaximize               func(pointer)
+	gtkWindowMinimize               func(pointer)
+	gtkWindowMove                   func(pointer, int, int)
+	gtkWindowPresent                func(pointer)
+	gtkWindowResize                 func(pointer, int, int)
+	gtkWindowSetDecorated           func(pointer, int)
+	gtkWindowSetGeometryHints       func(pointer, pointer, pointer, int)
+	gtkWindowSetKeepAbove           func(pointer, bool)
+	gtkWindowSetResizable           func(pointer, bool)
+	gtkWindowSetTitle               func(pointer, string)
+	gtkWindowUnfullscreen           func(pointer)
+	gtkWindowUnmaximize             func(pointer)
 
 	// webkit
 	webkitNewWithUserContentManager                      func(pointer) pointer
@@ -282,17 +292,23 @@ func init() {
 	purego.RegisterLibFunc(&gtkCheckMenuItemNewWithLabel, gtk, "gtk_check_menu_item_new_with_label")
 	purego.RegisterLibFunc(&gtkCheckMenuItemSetActive, gtk, "gtk_check_menu_item_set_active")
 	purego.RegisterLibFunc(&gtkContainerAdd, gtk, "gtk_container_add")
+	purego.RegisterLibFunc(&gtkCSSProviderLoadFromData, gtk, "gtk_css_provider_load_from_data")
 	purego.RegisterLibFunc(&gtkDialogAddButton, gtk, "gtk_dialog_add_button")
 	purego.RegisterLibFunc(&gtkDialogGetContentArea, gtk, "gtk_dialog_get_content_area")
 	purego.RegisterLibFunc(&gtkDialogRun, gtk, "gtk_dialog_run")
 	purego.RegisterLibFunc(&gtkDialogSetDefaultResponse, gtk, "gtk_dialog_set_default_response")
 	purego.RegisterLibFunc(&gtkDragDestSet, gtk, "gtk_drag_dest_set")
+	purego.RegisterLibFunc(&gtkFileChooserAddFilter, gtk, "gtk_file_chooser_add_filter")
 	purego.RegisterLibFunc(&gtkFileChooserDialogNew, gtk, "gtk_file_chooser_dialog_new")
 	purego.RegisterLibFunc(&gtkFileChooserGetFilenames, gtk, "gtk_file_chooser_get_filenames")
+	purego.RegisterLibFunc(&gtkFileChooserSetAction, gtk, "gtk_file_chooser_set_action")
 	purego.RegisterLibFunc(&gtkFileChooserSetCreateFolders, gtk, "gtk_file_chooser_set_create_folders")
 	purego.RegisterLibFunc(&gtkFileChooserSetCurrentFolder, gtk, "gtk_file_chooser_set_current_folder")
 	purego.RegisterLibFunc(&gtkFileChooserSetSelectMultiple, gtk, "gtk_file_chooser_set_select_multiple")
 	purego.RegisterLibFunc(&gtkFileChooserSetShowHidden, gtk, "gtk_file_chooser_set_show_hidden")
+	purego.RegisterLibFunc(&gtkFileFilterAddPattern, gtk, "gtk_file_filter_add_pattern")
+	purego.RegisterLibFunc(&gtkFileFilterNew, gtk, "gtk_file_filter_new")
+	purego.RegisterLibFunc(&gtkFileFilterSetName, gtk, "gtk_file_filter_set_name")
 	purego.RegisterLibFunc(&gtkImageNewFromPixbuf, gtk, "gtk_image_new_from_pixbuf")
 	purego.RegisterLibFunc(&gtkMenuItemSetLabel, gtk, "gtk_menu_item_set_label")
 	purego.RegisterLibFunc(&gtkMenuBarNew, gtk, "gtk_menu_bar_new")
@@ -304,15 +320,18 @@ func init() {
 	purego.RegisterLibFunc(&gtkRadioMenuItemGetGroup, gtk, "gtk_radio_menu_item_get_group")
 	purego.RegisterLibFunc(&gtkRadioMenuItemNewWithLabel, gtk, "gtk_radio_menu_item_new_with_label")
 	purego.RegisterLibFunc(&gtkSeparatorMenuItemNew, gtk, "gtk_separator_menu_item_new")
+	purego.RegisterLibFunc(&gtkStyleContextAddProvider, gtk, "gtk_style_context_add_provider")
 	purego.RegisterLibFunc(&gtkTargetEntryFree, gtk, "gtk_target_entry_free")
 	purego.RegisterLibFunc(&gtkTargetEntryNew, gtk, "gtk_target_entry_new")
 	purego.RegisterLibFunc(&gtkWidgetDestroy, gtk, "gtk_widget_destroy")
 	purego.RegisterLibFunc(&gtkWidgetGetDisplay, gtk, "gtk_widget_get_display")
 	purego.RegisterLibFunc(&gtkWidgetGetScreen, gtk, "gtk_widget_get_screen")
+	purego.RegisterLibFunc(&gtkWidgetGetStyleContext, gtk, "gtk_widget_get_style_context")
 	purego.RegisterLibFunc(&gtkWidgetGetWindow, gtk, "gtk_widget_get_window")
 	purego.RegisterLibFunc(&gtkWidgetHide, gtk, "gtk_widget_hide")
 	purego.RegisterLibFunc(&gtkWidgetIsVisible, gtk, "gtk_widget_is_visible")
 	purego.RegisterLibFunc(&gtkWidgetSetAppPaintable, gtk, "gtk_widget_set_app_paintable")
+	purego.RegisterLibFunc(&gtkWidgetSetName, gtk, "gtk_widget_set_name")
 	purego.RegisterLibFunc(&gtkWidgetSetSensitive, gtk, "gtk_widget_set_sensitive")
 	purego.RegisterLibFunc(&gtkWidgetSetToolTipText, gtk, "gtk_widget_set_tooltip_text")
 	purego.RegisterLibFunc(&gtkWidgetSetVisual, gtk, "gtk_widget_set_visual")
@@ -326,6 +345,7 @@ func init() {
 	purego.RegisterLibFunc(&gtkWindowMove, gtk, "gtk_window_move")
 	purego.RegisterLibFunc(&gtkWindowPresent, gtk, "gtk_window_present")
 	//purego.RegisterLibFunc(&gtkWindowPresent, gtk, "gtk_window_unminimize")  // gtk4
+	purego.RegisterLibFunc(&gtkWindowHasToplevelFocus, gtk, "gtk_window_has_toplevel_focus")
 	purego.RegisterLibFunc(&gtkWindowMinimize, gtk, "gtk_window_iconify") // gtk3
 	//	purego.RegisterLibFunc(&gtkWindowMinimize, gtk, "gtk_window_minimize") // gtk4
 	purego.RegisterLibFunc(&gtkWindowResize, gtk, "gtk_window_resize")
@@ -359,8 +379,6 @@ func init() {
 
 // mainthread stuff
 func dispatchOnMainThread(id uint) {
-	fmt.Println("dispatchOnMainThread", gThreadSelf())
-
 	gIdleAdd(purego.NewCallback(func(pointer) int {
 		executeOnMainThread(id)
 		return GSourceRemove
@@ -746,6 +764,10 @@ func windowHide(window pointer) {
 	gtkWidgetHide(window)
 }
 
+func windowIsFocused(window pointer) bool {
+	return gtkWindowHasToplevelFocus(window) == 1
+}
+
 func windowIsFullscreen(window pointer) bool {
 	gdkwindow := gtkWidgetGetWindow(window)
 	state := gdkWindowGetState(gdkwindow)
@@ -783,6 +805,7 @@ func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy int) 
 	webview := windowNewWebview(windowId, gpuPolicy)
 	vbox := gtkBoxNew(GtkOrientationVertical, 0)
 	gtkContainerAdd(window, vbox)
+	gtkWidgetSetName(vbox, "webview-box")
 
 	if menu != 0 {
 		gtkBoxPackStart(vbox, menu, 0, 0, 0)
@@ -839,6 +862,8 @@ func windowShow(window pointer) {
 }
 
 func windowSetBackgroundColour(vbox, webview pointer, colour RGBA) {
+	const GtkStyleProviderPriorityUser = 800
+
 	// FIXME: Use a struct!
 	rgba := make([]byte, 4*8) // C.sizeof_GdkRGBA == 32
 	rgbaPointer := pointer(unsafe.Pointer(&rgba[0]))
@@ -854,18 +879,16 @@ func windowSetBackgroundColour(vbox, webview pointer, colour RGBA) {
 	}
 	webkitWebViewSetBackgroundColor(pointer(webview), rgbaPointer)
 
-	/*
-		colour.Alpha = 255
-		cssStr := C.CString(fmt.Sprintf("#webview-box {background-color: rgba(%d, %d, %d, %1.1f);}", colour.Red, colour.Green, colour.Blue, float32(colour.Alpha)/255.0))
-		provider := C.gtk_css_provider_new()
-		C.gtk_style_context_add_provider(
-			C.gtk_widget_get_style_context((*C.GtkWidget)(vbox)),
-			(*C.GtkStyleProvider)(unsafe.Pointer(provider)),
-			C.GTK_STYLE_PROVIDER_PRIORITY_USER)
-		C.g_object_unref(C.gpointer(provider))
-		C.gtk_css_provider_load_from_data(provider, cssStr, -1, nil)
-		C.free(unsafe.Pointer(cssStr))
-	*/
+	colour.Alpha = 255
+	css := fmt.Sprintf("#webview-box {background-color: rgba(%d, %d, %d, %1.1f);}", colour.Red, colour.Green, colour.Blue, float32(colour.Alpha)/255.0)
+	provider := gtkCSSProviderNew()
+	defer gObjectUnref(provider)
+	gtkStyleContextAddProvider(
+		gtkWidgetGetStyleContext(vbox),
+		provider,
+		GtkStyleProviderPriorityUser,
+	)
+	gtkCSSProviderLoadFromData(provider, css, -1, 0)
 }
 
 func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHeight int) {
@@ -1006,23 +1029,19 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 		GtkResponseAccept,
 		0)
 
+	gtkFileChooserSetAction(fc, action)
+
+	gtkFilters := []pointer{}
 	for _, filter := range filters {
-		// TODO: Process and add filters
-		// gtk_file_chooser_add_filter(fc, thisFilter)
-		fmt.Println("filter", filter)
+		f := gtkFileFilterNew()
+		gtkFileFilterSetName(f, filter.DisplayName)
+		gtkFileFilterAddPattern(f, filter.Pattern)
+		gtkFileChooserAddFilter(fc, f)
+		gtkFilters = append(gtkFilters, f)
 	}
-
-	if allowMultiple {
-		gtkFileChooserSetSelectMultiple(fc, 1)
-	}
-
-	if createFolders {
-		gtkFileChooserSetCreateFolders(fc, 1)
-	}
-
-	if showHidden {
-		gtkFileChooserSetShowHidden(fc, 1)
-	}
+	gtkFileChooserSetSelectMultiple(fc, allowMultiple)
+	gtkFileChooserSetCreateFolders(fc, createFolders)
+	gtkFileChooserSetShowHidden(fc, showHidden)
 
 	if currentFolder != "" {
 		gtkFileChooserSetCurrentFolder(fc, currentFolder)
@@ -1050,8 +1069,7 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 		iter := filenames
 		count := 0
 		for {
-			selection := buildStringAndFree(iter.data)
-			selections = append(selections, selection)
+			selections = append(selections, buildStringAndFree(iter.data))
 			iter = iter.next
 			if iter == nil || count == 1024 {
 				break
@@ -1065,13 +1083,13 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 
 // dialog related
 func runOpenFileDialog(dialog *OpenFileDialogStruct) ([]string, error) {
-	GtkFileChooserActionOpen := 0
-	//	GtkFileChooserActionSave := 1
-	//	GtkFileChooserActionSelectFolder := 2
-	//	GtkFileChooserActionCreateFolder := 3
+	const GtkFileChooserActionOpen = 0
 
-	//		(dialog.window.impl).(*linuxWebviewWindow).window // FIXME: dialog.window == nil!
 	window := pointer(0)
+	if dialog.window != nil {
+		window = (dialog.window.impl).(*linuxWebviewWindow).window
+	}
+
 	buttonText := dialog.buttonText
 	if buttonText == "" {
 		buttonText = "_Open"
@@ -1151,9 +1169,8 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 }
 
 func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
-	GtkFileChooserActionSave := 1
-	//	GtkFileChooserActionSelectFolder := 2
-	//	GtkFileChooserActionCreateFolder := 3
+	const GtkFileChooserActionSave = 1
+
 	window := pointer(0)
 	buttonText := dialog.buttonText
 	if buttonText == "" {
