@@ -98,6 +98,19 @@ static void* new_message_dialog(GtkWindow *parent, const gchar *msg, int dialogT
 
 extern void messageDialogCB(gint button);
 
+static void* gtkFileChooserDialogNew(char* title, GtkWindow* window, GtkFileChooserAction action, char* cancelLabel, char* acceptLabel) {
+   // gtk_file_chooser_dialog_new is variadic!  Can't call from cgo directly
+	return (GtkFileChooser*)gtk_file_chooser_dialog_new(
+		title,
+		window,
+		action,
+		cancelLabel,
+		GTK_RESPONSE_CANCEL,
+		acceptLabel,
+		GTK_RESPONSE_ACCEPT,
+		0);
+}
+
 typedef struct Screen {
 	const char* id;
 	const char* name;
@@ -925,8 +938,112 @@ func messageDialogCB(button C.int) {
 
 }
 
+func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) ([]string, error) {
+	titleStr := C.CString(title)
+	defer C.free(unsafe.Pointer(titleStr))
+	cancelStr := C.CString("_Cancel")
+	defer C.free(unsafe.Pointer(cancelStr))
+	acceptLabelStr := C.CString(acceptLabel)
+	defer C.free(unsafe.Pointer(acceptLabelStr))
+
+	fc := C.gtkFileChooserDialogNew(
+		titleStr,
+		(*C.GtkWindow)(window),
+		C.GtkFileChooserAction(action),
+		cancelStr,
+		acceptLabelStr)
+
+	C.gtk_file_chooser_set_action((*C.GtkFileChooser)(fc), C.GtkFileChooserAction(action))
+
+	gtkFilters := []*C.GtkFileFilter{}
+	for _, filter := range filters {
+		f := (C.gtk_file_filter_new())
+		displayStr := C.CString(filter.DisplayName)
+		C.gtk_file_filter_set_name(f, displayStr)
+		C.free(unsafe.Pointer(displayStr))
+		patternStr := C.CString(filter.Pattern)
+		C.gtk_file_filter_add_pattern(f, patternStr)
+		C.free(unsafe.Pointer(patternStr))
+		C.gtk_file_chooser_add_filter((*C.GtkFileChooser)(fc), f)
+		gtkFilters = append(gtkFilters, f)
+	}
+	C.gtk_file_chooser_set_select_multiple(
+		(*C.GtkFileChooser)(fc),
+		gtkBool(allowMultiple))
+	C.gtk_file_chooser_set_create_folders(
+		(*C.GtkFileChooser)(fc),
+		gtkBool(createFolders))
+	C.gtk_file_chooser_set_show_hidden(
+		(*C.GtkFileChooser)(fc),
+		gtkBool(showHidden))
+
+	if currentFolder != "" {
+		path := C.CString(currentFolder)
+		C.gtk_file_chooser_set_current_folder(
+			(*C.GtkFileChooser)(fc),
+			path)
+		C.free(unsafe.Pointer(path))
+	}
+
+	// FIXME: This should be consolidated - duplicate exists in linux_purego.go
+	buildStringAndFree := func(s C.gpointer) string {
+		bytes := []byte{}
+		p := unsafe.Pointer(s)
+		for {
+			val := *(*byte)(p)
+			if val == 0 { // this is the null terminator
+				break
+			}
+			bytes = append(bytes, val)
+			p = unsafe.Add(p, 1)
+		}
+		C.g_free(s) // so we don't have to iterate a second time
+		return string(bytes)
+	}
+
+	response := C.gtk_dialog_run((*C.GtkDialog)(fc))
+	selections := []string{}
+	if response == C.GTK_RESPONSE_ACCEPT {
+		filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
+		iter := filenames
+		count := 0
+		for {
+			selections = append(selections, buildStringAndFree(C.gpointer(iter.data)))
+			iter = iter.next
+			if iter == nil || count == 1024 {
+				break
+			}
+			count++
+		}
+	}
+
+	defer C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
+	return selections, nil
+}
+
 func runOpenFileDialog(dialog *OpenFileDialogStruct) ([]string, error) {
-	return []string{}, fmt.Errorf("not implemented")
+	const GtkFileChooserActionOpen = C.GTK_FILE_CHOOSER_ACTION_OPEN
+
+	window := nilPointer
+	if dialog.window != nil {
+		window = (dialog.window.impl).(*linuxWebviewWindow).window
+	}
+
+	buttonText := dialog.buttonText
+	if buttonText == "" {
+		buttonText = "_Open"
+	}
+
+	return runChooserDialog(
+		window,
+		dialog.allowsMultipleSelection,
+		dialog.canCreateDirectories,
+		dialog.showHiddenFiles,
+		dialog.directory,
+		dialog.title,
+		GtkFileChooserActionOpen,
+		buttonText,
+		dialog.filters)
 }
 
 func runQuestionDialog(parent pointer, options *MessageDialog) int {
@@ -940,7 +1057,8 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	}
 
 	dType, ok := map[DialogType]C.int{
-		InfoDialogType:     C.GTK_MESSAGE_INFO,
+		InfoDialogType: C.GTK_MESSAGE_INFO,
+		//		ErrorDialogType:
 		QuestionDialogType: C.GTK_MESSAGE_QUESTION,
 		WarningDialogType:  C.GTK_MESSAGE_WARNING,
 	}[options.DialogType]
@@ -993,7 +1111,27 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 }
 
 func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
-	return "", fmt.Errorf("not implemented")
+	window := nilPointer
+	buttonText := dialog.buttonText
+	if buttonText == "" {
+		buttonText = "_Save"
+	}
+	results, err := runChooserDialog(
+		window,
+		false, // multiple selection
+		dialog.canCreateDirectories,
+		dialog.showHiddenFiles,
+		dialog.directory,
+		dialog.title,
+		C.GTK_FILE_CHOOSER_ACTION_SAVE,
+		buttonText,
+		dialog.filters)
+
+	if err != nil || len(results) == 0 {
+		return "", err
+	}
+
+	return results[0], nil
 }
 
 //export openFileDialogCallbackEnd
