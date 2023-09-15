@@ -30,7 +30,7 @@ func init() {
 }
 
 type EventListener struct {
-	callback func(*Event)
+	callback func(app *Event)
 }
 
 func Get() *App {
@@ -196,7 +196,7 @@ func (r *webViewAssetRequest) Header() (http.Header, error) {
 var webviewRequests = make(chan *webViewAssetRequest)
 
 type eventHook struct {
-	callback func(*Event)
+	callback func(event *Event)
 }
 
 type App struct {
@@ -461,31 +461,29 @@ func (a *App) Run() error {
 	return nil
 }
 
-func (a *App) handleApplicationEvent(event uint) {
+func (a *App) handleApplicationEvent(event *Event) {
 	a.applicationEventListenersLock.RLock()
-	listeners, ok := a.applicationEventListeners[event]
+	listeners, ok := a.applicationEventListeners[event.Id]
 	a.applicationEventListenersLock.RUnlock()
 	if !ok {
 		return
 	}
 
-	thisEvent := &Event{}
-
 	// Process Hooks
 	a.applicationEventHooksLock.RLock()
-	hooks, ok := a.applicationEventHooks[event]
+	hooks, ok := a.applicationEventHooks[event.Id]
 	a.applicationEventHooksLock.RUnlock()
 	if ok {
 		for _, thisHook := range hooks {
-			thisHook.callback(thisEvent)
-			if thisEvent.Cancelled {
+			thisHook.callback(event)
+			if event.Cancelled {
 				return
 			}
 		}
 	}
 
 	for _, listener := range listeners {
-		go listener.callback(thisEvent)
+		go listener.callback(event)
 	}
 }
 

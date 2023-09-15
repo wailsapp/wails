@@ -11,7 +11,8 @@ var commonApplicationEventMap = map[events.ApplicationEventType]events.Applicati
 func (m *windowsApp) setupCommonEvents() {
 	for sourceEvent, targetEvent := range commonApplicationEventMap {
 		m.parent.On(sourceEvent, func(event *Event) {
-			applicationEvents <- uint(targetEvent)
+			event.Id = uint(targetEvent)
+			applicationEvents <- event
 		})
 	}
 }

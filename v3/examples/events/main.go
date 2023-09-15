@@ -43,6 +43,15 @@ func main() {
 		}
 	})
 
+	app.On(events.Windows.SystemThemeChanged, func(event *application.Event) {
+		log.Println("System theme changed!")
+		if event.Context().IsDarkMode() {
+			log.Println("System is now using dark mode!")
+		} else {
+			log.Println("System is now using light mode!")
+		}
+	})
+
 	// Platform agnostic events
 	app.On(events.Common.ApplicationStarted, func(event *application.Event) {
 		println("events.Common.ApplicationStarted fired!")

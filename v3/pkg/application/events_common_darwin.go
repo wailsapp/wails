@@ -12,7 +12,8 @@ var commonApplicationEventMap = map[events.ApplicationEventType]events.Applicati
 func (m *macosApp) setupCommonEvents() {
 	for sourceEvent, targetEvent := range commonApplicationEventMap {
 		m.parent.On(sourceEvent, func(event *Event) {
-			applicationEvents <- uint(targetEvent)
+			event.Id = uint(targetEvent)
+			applicationEvents <- event
 		})
 	}
 }

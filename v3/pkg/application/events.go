@@ -7,19 +7,31 @@ import (
 	"github.com/samber/lo"
 )
 
-var applicationEvents = make(chan uint)
+type Event struct {
+	Id        uint
+	ctx       *ApplicationEventContext
+	Cancelled bool
+}
+
+func (w *Event) Context() *ApplicationEventContext {
+	return w.ctx
+}
+
+func NewApplicationEvent(id int) *Event {
+	return &Event{
+		Id: uint(id),
+	}
+}
+
+func (w *Event) Cancel() {
+	w.Cancelled = true
+}
+
+var applicationEvents = make(chan *Event)
 
 type windowEvent struct {
 	WindowID uint
 	EventID  uint
-}
-
-type Event struct {
-	Cancelled bool
-}
-
-func (e *Event) Cancel() {
-	e.Cancelled = true
 }
 
 var windowEvents = make(chan *windowEvent)
@@ -37,7 +49,7 @@ func (e *WailsEvent) Cancel() {
 	e.Cancelled = true
 }
 
-var commonEvents = make(chan uint)
+var commonEvents = make(chan *Event)
 
 func (e WailsEvent) ToJSON() string {
 	marshal, err := json.Marshal(&e)

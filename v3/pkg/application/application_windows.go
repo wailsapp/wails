@@ -237,7 +237,12 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		if settingChanged == "ImmersiveColorSet" {
 			isDarkMode := w32.IsCurrentlyDarkMode()
 			if isDarkMode != m.isCurrentlyDarkMode {
-				applicationEvents <- uint(events.Windows.SystemThemeChanged)
+				eventContext := newApplicationEventContext()
+				eventContext.setIsDarkMode(isDarkMode)
+				applicationEvents <- &Event{
+					Id:  uint(events.Windows.SystemThemeChanged),
+					ctx: eventContext,
+				}
 				m.isCurrentlyDarkMode = isDarkMode
 			}
 		}
@@ -245,15 +250,15 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 	case w32.WM_POWERBROADCAST:
 		switch wParam {
 		case w32.PBT_APMPOWERSTATUSCHANGE:
-			applicationEvents <- uint(events.Windows.APMPowerStatusChange)
+			applicationEvents <- NewApplicationEvent(int(events.Windows.APMPowerStatusChange))
 		case w32.PBT_APMSUSPEND:
-			applicationEvents <- uint(events.Windows.APMSuspend)
+			applicationEvents <- NewApplicationEvent(int(events.Windows.APMSuspend))
 		case w32.PBT_APMRESUMEAUTOMATIC:
-			applicationEvents <- uint(events.Windows.APMResumeAutomatic)
+			applicationEvents <- NewApplicationEvent(int(events.Windows.APMResumeAutomatic))
 		case w32.PBT_APMRESUMESUSPEND:
-			applicationEvents <- uint(events.Windows.APMResumeSuspend)
+			applicationEvents <- NewApplicationEvent(int(events.Windows.APMResumeSuspend))
 		case w32.PBT_POWERSETTINGCHANGE:
-			applicationEvents <- uint(events.Windows.APMPowerSettingChange)
+			applicationEvents <- NewApplicationEvent(int(events.Windows.APMPowerSettingChange))
 		}
 		return 0
 	}

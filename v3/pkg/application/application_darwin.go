@@ -238,7 +238,7 @@ func newPlatformApp(app *App) *macosApp {
 
 //export processApplicationEvent
 func processApplicationEvent(eventID C.uint) {
-	applicationEvents <- uint(eventID)
+	applicationEvents <- NewApplicationEvent(uint(eventID))
 }
 
 //export processWindowEvent
