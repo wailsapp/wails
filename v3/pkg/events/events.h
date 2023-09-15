@@ -3,7 +3,7 @@
 #ifndef _events_h
 #define _events_h
 
-extern void processApplicationEvent(unsigned int);
+extern void processApplicationEvent(unsigned int, void* data);
 extern void processWindowEvent(unsigned int, unsigned int);
 
 #define EventApplicationDidBecomeActive 1024

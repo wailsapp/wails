@@ -237,8 +237,14 @@ func newPlatformApp(app *App) *macosApp {
 }
 
 //export processApplicationEvent
-func processApplicationEvent(eventID C.uint) {
-	applicationEvents <- NewApplicationEvent(uint(eventID))
+func processApplicationEvent(eventID C.uint, _ unsafe.Pointer) {
+	event := NewApplicationEvent(int(eventID))
+	switch event.Id {
+	case uint(events.Mac.ApplicationDidChangeTheme):
+		isDark := globalApplication.IsDarkMode()
+		event.Context().setIsDarkMode(isDark)
+	}
+	applicationEvents <- event
 }
 
 //export processWindowEvent
@@ -283,13 +289,6 @@ func processDragItems(windowID C.uint, arr **C.char, length C.int) {
 //export processMenuItemClick
 func processMenuItemClick(menuID C.uint) {
 	menuItemClicked <- uint(menuID)
-}
-
-func setIcon(icon []byte) {
-	if icon == nil {
-		return
-	}
-	C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
 }
 
 func (a *App) logPlatformInfo() {

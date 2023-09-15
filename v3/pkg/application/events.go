@@ -19,7 +19,8 @@ func (w *Event) Context() *ApplicationEventContext {
 
 func NewApplicationEvent(id int) *Event {
 	return &Event{
-		Id: uint(id),
+		Id:  uint(id),
+		ctx: newApplicationEventContext(),
 	}
 }
 
@@ -48,8 +49,6 @@ type WailsEvent struct {
 func (e *WailsEvent) Cancel() {
 	e.Cancelled = true
 }
-
-var commonEvents = make(chan *Event)
 
 func (e WailsEvent) ToJSON() string {
 	marshal, err := json.Marshal(&e)
