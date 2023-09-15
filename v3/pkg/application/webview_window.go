@@ -488,7 +488,7 @@ func (w *WebviewWindow) IsFocused() bool {
 	if w.impl == nil {
 		return false
 	}
-	return invokeSyncWithResult(w.impl.isFullscreen)
+	return invokeSyncWithResult(w.impl.isFocused)
 }
 
 // IsFullscreen returns true if the window is fullscreen
