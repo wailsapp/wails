@@ -108,7 +108,7 @@ func NewWindow(appoptions *options.App, debug bool, devtools bool) *Window {
 		// Install F12 hotkey to call ShowInspector
 		C.InstallF12Hotkey(unsafe.Pointer(gtkWindow))
 	} else if !appoptions.EnableDefaultContextMenu {
-		C.DisableContextMenu(unsafe.Pointer(gtkWindow))
+		C.DisableContextMenu(unsafe.Pointer(webview))
 	}
 
 	// Set background colour
