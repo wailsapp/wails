@@ -323,6 +323,11 @@ func (f *Frontend) processMessage(message string) {
 		return
 	}
 
+	if message == "wails:openInspector" {
+		showInspector(f.mainWindow.context)
+		return
+	}
+
 	//if strings.HasPrefix(message, "systemevent:") {
 	//	f.processSystemEvent(message)
 	//	return
@@ -390,6 +395,6 @@ func processCallback(callbackID uint) {
 }
 
 //export processURLRequest
-func processURLRequest(ctx unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
+func processURLRequest(_ unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
 	requestBuffer <- webview.NewRequest(wkURLSchemeTask)
 }
