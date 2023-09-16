@@ -24,6 +24,8 @@ func (a *App) Run() error {
 		a.options.OnShutdown,
 		a.options.OnDomReady,
 		a.options.OnBeforeClose,
+		a.options.OnFileOpen,
+		a.options.OnFilesOpen,
 	}
 
 	// Check for CLI Flags

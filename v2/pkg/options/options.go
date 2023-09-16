@@ -61,6 +61,8 @@ type App struct {
 	OnDomReady         func(ctx context.Context)                `json:"-"`
 	OnShutdown         func(ctx context.Context)                `json:"-"`
 	OnBeforeClose      func(ctx context.Context) (prevent bool) `json:"-"`
+	OnFileOpen         func(filePath string)                    `json:"-"`
+	OnFilesOpen        func(filePaths []string)                 `json:"-"`
 	Bind               []interface{}
 	WindowStartState   WindowStartState
 
