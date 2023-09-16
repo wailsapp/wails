@@ -6,6 +6,7 @@ import (
 	"github.com/leaanthony/winicon"
 	"github.com/tc-hib/winres"
 	"github.com/tc-hib/winres/version"
+	"github.com/wailsapp/wails/v2/internal/project"
 	"image"
 	"os"
 	"path/filepath"
@@ -95,10 +96,18 @@ func packageApplicationForDarwin(options *Options) error {
 		return err
 	}
 
-	// Generate Icons
-	err = processApplicationIcon(options, resourceDir)
+	// Generate App Icon
+	err = processDarwinIcon(options.ProjectData, resourceDir, "appicon")
 	if err != nil {
 		return err
+	}
+
+	// Generate FileAssociation Icons
+	for _, fileAssociation := range options.ProjectData.Info.FileAssociations {
+		err = processDarwinIcon(options.ProjectData, resourceDir, fileAssociation.IconName)
+		if err != nil {
+			return err
+		}
 	}
 
 	options.CompiledBinary = packedBinaryPath
@@ -124,8 +133,8 @@ func processPList(options *Options, contentsDirectory string) error {
 	return os.WriteFile(targetFile, content, 0644)
 }
 
-func processApplicationIcon(options *Options, resourceDir string) (err error) {
-	appIcon, err := buildassets.ReadFile(options.ProjectData, "appicon.png")
+func processDarwinIcon(projectData *project.Project, iconName string, resourceDir string) (err error) {
+	appIcon, err := buildassets.ReadFile(projectData, iconName+".png")
 	if err != nil {
 		return err
 	}
@@ -135,7 +144,7 @@ func processApplicationIcon(options *Options, resourceDir string) (err error) {
 		return err
 	}
 
-	tgtBundle := filepath.Join(resourceDir, "iconfile.icns")
+	tgtBundle := filepath.Join(resourceDir, iconName+".icns")
 	dest, err := os.Create(tgtBundle)
 	if err != nil {
 		return err
@@ -151,11 +160,19 @@ func processApplicationIcon(options *Options, resourceDir string) (err error) {
 }
 
 func packageApplicationForWindows(options *Options) error {
-	// Generate icon
+	// Generate app icon
 	var err error
-	err = generateIcoFile(options)
+	err = generateIcoFile(options, "appicon")
 	if err != nil {
 		return err
+	}
+
+	// Generate FileAssociation Icons
+	for _, fileAssociation := range options.ProjectData.Info.FileAssociations {
+		err = generateIcoFile(options, fileAssociation.IconName)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Create syso file
@@ -171,13 +188,13 @@ func packageApplicationForLinux(_ *Options) error {
 	return nil
 }
 
-func generateIcoFile(options *Options) error {
-	content, err := buildassets.ReadFile(options.ProjectData, "appicon.png")
+func generateIcoFile(options *Options, iconName string) error {
+	content, err := buildassets.ReadFile(options.ProjectData, iconName+".png")
 	if err != nil {
 		return err
 	}
 	// Check ico file exists already
-	icoFile := buildassets.GetLocalPath(options.ProjectData, "windows/icon.ico")
+	icoFile := buildassets.GetLocalPath(options.ProjectData, "windows/"+iconName+".ico")
 	if !fs.FileExists(icoFile) {
 		if dir := filepath.Dir(icoFile); !fs.DirExists(dir) {
 			if err := fs.MkDirs(dir, 0755); err != nil {
