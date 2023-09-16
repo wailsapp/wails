@@ -115,10 +115,6 @@ func (d *AssetServer) processWebViewRequest(r webview.Request) {
 		req.RemoteAddr = "192.0.2.1:1234"
 	}
 
-	if req.RequestURI == "" && req.URL != nil {
-		req.RequestURI = req.URL.String()
-	}
-
 	if req.ContentLength == 0 {
 		req.ContentLength, _ = strconv.ParseInt(req.Header.Get(HeaderContentLength), 10, 64)
 	} else {
