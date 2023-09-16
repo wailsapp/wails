@@ -3,7 +3,6 @@
 !include "x64.nsh"
 !include "WinVer.nsh"
 !include "FileFunc.nsh"
-!include "fileassoc.nsh"
 
 !ifndef INFO_PROJECTNAME
     !define INFO_PROJECTNAME "{{.Name}}"
@@ -177,6 +176,29 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 
     SetDetailsPrint both
     ok:
+!macroend
+
+# Copy of APP_ASSOCIATE and APP_UNASSOCIATE macros from here https://gist.github.com/nikku/281d0ef126dbc215dd58bfd5b3a5cd5b
+!macro APP_ASSOCIATE EXT FILECLASS DESCRIPTION ICON COMMANDTEXT COMMAND
+  ; Backup the previously associated file class
+  ReadRegStr $R0 SHELL_CONTEXT "Software\Classes\.${EXT}" ""
+  WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "${FILECLASS}_backup" "$R0"
+
+  WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "" "${FILECLASS}"
+
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${FILECLASS}" "" `${DESCRIPTION}`
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${FILECLASS}\DefaultIcon" "" `${ICON}`
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${FILECLASS}\shell" "" "open"
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${FILECLASS}\shell\open" "" `${COMMANDTEXT}`
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${FILECLASS}\shell\open\command" "" `${COMMAND}`
+!macroend
+
+!macro APP_UNASSOCIATE EXT FILECLASS
+  ; Backup the previously associated file class
+  ReadRegStr $R0 SHELL_CONTEXT "Software\Classes\.${EXT}" `${FILECLASS}_backup`
+  WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "" "$R0"
+
+  DeleteRegKey SHELL_CONTEXT `Software\Classes\${FILECLASS}`
 !macroend
 
 !macro wails.associateFiles
