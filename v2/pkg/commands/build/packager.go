@@ -97,14 +97,14 @@ func packageApplicationForDarwin(options *Options) error {
 	}
 
 	// Generate App Icon
-	err = processDarwinIcon(options.ProjectData, "appicon", resourceDir)
+	err = processDarwinIcon(options.ProjectData, "appicon", resourceDir, "iconfile")
 	if err != nil {
 		return err
 	}
 
 	// Generate FileAssociation Icons
 	for _, fileAssociation := range options.ProjectData.Info.FileAssociations {
-		err = processDarwinIcon(options.ProjectData, fileAssociation.IconName, resourceDir)
+		err = processDarwinIcon(options.ProjectData, fileAssociation.IconName, resourceDir, "")
 		if err != nil {
 			return err
 		}
@@ -133,7 +133,7 @@ func processPList(options *Options, contentsDirectory string) error {
 	return os.WriteFile(targetFile, content, 0644)
 }
 
-func processDarwinIcon(projectData *project.Project, iconName string, resourceDir string) (err error) {
+func processDarwinIcon(projectData *project.Project, iconName string, resourceDir string, destIconName string) (err error) {
 	appIcon, err := buildassets.ReadFile(projectData, iconName+".png")
 	if err != nil {
 		return err
@@ -144,7 +144,11 @@ func processDarwinIcon(projectData *project.Project, iconName string, resourceDi
 		return err
 	}
 
-	tgtBundle := filepath.Join(resourceDir, iconName+".icns")
+	if destIconName == "" {
+		destIconName = iconName
+	}
+
+	tgtBundle := filepath.Join(resourceDir, destIconName+".icns")
 	dest, err := os.Create(tgtBundle)
 	if err != nil {
 		return err
@@ -162,14 +166,14 @@ func processDarwinIcon(projectData *project.Project, iconName string, resourceDi
 func packageApplicationForWindows(options *Options) error {
 	// Generate app icon
 	var err error
-	err = generateIcoFile(options, "appicon")
+	err = generateIcoFile(options, "appicon", "icon")
 	if err != nil {
 		return err
 	}
 
 	// Generate FileAssociation Icons
 	for _, fileAssociation := range options.ProjectData.Info.FileAssociations {
-		err = generateIcoFile(options, fileAssociation.IconName)
+		err = generateIcoFile(options, fileAssociation.IconName, "")
 		if err != nil {
 			return err
 		}
@@ -188,13 +192,18 @@ func packageApplicationForLinux(_ *Options) error {
 	return nil
 }
 
-func generateIcoFile(options *Options, iconName string) error {
+func generateIcoFile(options *Options, iconName string, destIconName string) error {
 	content, err := buildassets.ReadFile(options.ProjectData, iconName+".png")
 	if err != nil {
 		return err
 	}
+
+	if destIconName == "" {
+		destIconName = iconName
+	}
+
 	// Check ico file exists already
-	icoFile := buildassets.GetLocalPath(options.ProjectData, "windows/"+iconName+".ico")
+	icoFile := buildassets.GetLocalPath(options.ProjectData, "windows/"+destIconName+".ico")
 	if !fs.FileExists(icoFile) {
 		if dir := filepath.Dir(icoFile); !fs.DirExists(dir) {
 			if err := fs.MkDirs(dir, 0755); err != nil {
