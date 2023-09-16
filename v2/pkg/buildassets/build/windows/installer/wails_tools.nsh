@@ -184,7 +184,7 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
     {{range .Info.FileAssociations}}
       !insertmacro APP_ASSOCIATE "{{.Ext}}" "{{.Name}}" "{{.Description}}" "$INSTDIR\{{.IconPath}}" "Open with ${INFO_PRODUCTNAME}" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
 
-      CopyFiles "..\{{.IconPath}}" "$INSTDIR\{{.IconPath}}"
+      File "..\{{.IconPath}}"
     {{end}}
 !macroend
 
