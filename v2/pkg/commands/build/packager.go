@@ -97,14 +97,14 @@ func packageApplicationForDarwin(options *Options) error {
 	}
 
 	// Generate App Icon
-	err = processDarwinIcon(options.ProjectData, resourceDir, "appicon")
+	err = processDarwinIcon(options.ProjectData, "appicon", resourceDir)
 	if err != nil {
 		return err
 	}
 
 	// Generate FileAssociation Icons
 	for _, fileAssociation := range options.ProjectData.Info.FileAssociations {
-		err = processDarwinIcon(options.ProjectData, resourceDir, fileAssociation.IconName)
+		err = processDarwinIcon(options.ProjectData, fileAssociation.IconName, resourceDir)
 		if err != nil {
 			return err
 		}
