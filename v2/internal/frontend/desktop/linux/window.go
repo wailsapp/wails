@@ -105,8 +105,10 @@ func NewWindow(appoptions *options.App, debug bool, devtools bool) *Window {
 
 	if devtools {
 		C.DevtoolsEnabled(unsafe.Pointer(webview), C.int(1), C.bool(debug && appoptions.Debug.OpenInspectorOnStartup))
+		// Install F12 hotkey to call ShowInspector
+		C.InstallF12Hotkey(unsafe.Pointer(gtkWindow))
 	} else if !appoptions.EnableDefaultContextMenu {
-		C.DisableContextMenu(unsafe.Pointer(webview))
+		C.DisableContextMenu(unsafe.Pointer(gtkWindow))
 	}
 
 	// Set background colour
@@ -444,6 +446,10 @@ func (w *Window) ToggleMaximise() {
 	} else {
 		w.Maximise()
 	}
+}
+
+func (w *Window) ShowInspector() {
+	invokeOnMainThread(func() { C.ShowInspector(w.webview) })
 }
 
 // showModalDialogAndExit shows a modal dialog and exits the app.

@@ -732,3 +732,21 @@ GtkFileFilter *newFileFilter()
     g_object_ref(result);
     return result;
 }
+
+void ShowInspector(void *webview) {
+    WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(webview));
+    webkit_web_inspector_show(WEBKIT_WEB_INSPECTOR(inspector));
+}
+
+void sendShowInspectorMessage() {
+    processMessage("wails:showInspector");
+}
+
+void InstallF12Hotkey(void *window)
+{
+    // When the user presses F12, call ShowInspector
+    GtkAccelGroup *accel_group = gtk_accel_group_new();
+    gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
+    GClosure *closure = g_cclosure_new(G_CALLBACK(sendShowInspectorMessage), window, NULL);
+    gtk_accel_group_connect(accel_group, GDK_KEY_F12, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, closure);
+}

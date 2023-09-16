@@ -410,6 +410,11 @@ func (f *Frontend) processMessage(message string) {
 		return
 	}
 
+	if message == "wails:showInspector" {
+		f.mainWindow.ShowInspector()
+		return
+	}
+
 	if strings.HasPrefix(message, "resize:") {
 		if !f.mainWindow.IsFullScreen() {
 			sl := strings.Split(message, ":")
