@@ -204,9 +204,9 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 !macro wails.associateFiles
     ; Create file associations
     {{range .Info.FileAssociations}}
-      !insertmacro APP_ASSOCIATE "{{.Ext}}" "{{.Name}}" "{{.Description}}" "$INSTDIR\{{.IconPath}}" "Open with ${INFO_PRODUCTNAME}" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
+      !insertmacro APP_ASSOCIATE "{{.Ext}}" "{{.Name}}" "{{.Description}}" "$INSTDIR\{{.IconName}}.ico" "Open with ${INFO_PRODUCTNAME}" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
 
-      File "..\{{.IconPath}}"
+      File "..\{{.IconName}}.ico"
     {{end}}
 !macroend
 
@@ -215,6 +215,6 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
     {{range .Info.FileAssociations}}
       !insertmacro APP_UNASSOCIATE "{{.Ext}}" "{{.Name}}"
 
-      Delete "$INSTDIR\{{.IconPath}}"
+      Delete "$INSTDIR\{{.IconName}}.ico"
     {{end}}
 !macroend

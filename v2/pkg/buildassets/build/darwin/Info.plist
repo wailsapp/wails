@@ -37,7 +37,7 @@
             <key>CFBundleTypeRole</key>
             <string>{{.Role}}</string>
             <key>CFBundleTypeIconFile</key>
-            <string>{{.IconPath}}</string>
+            <string>{{.IconName}}</string>
           </dict>
           {{end}}
         </array>

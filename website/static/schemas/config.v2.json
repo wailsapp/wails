@@ -190,9 +190,9 @@
                 "type": "string",
                 "description": "Linux-only. The mime-type e.g. 'image/png' or 'text/plain'"
               },
-              "iconPath": {
+              "iconName": {
                 "type": "string",
-                "description": "The path to icon (.icns for MacOS and .ico for Windows), relative to build (build resources directory)"
+                "description": "The icon Name without extension. (.icns for MacOS and .ico for Windows)"
               },
               "role": {
                 "description": "MacOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.",

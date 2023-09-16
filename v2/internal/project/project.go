@@ -229,7 +229,7 @@ type FileAssociation struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	MimeType    string `json:"mimeType"`
-	IconPath    string `json:"iconPath"`
+	IconName    string `json:"iconName"`
 	Role        string `json:"role"`
 }
 
