@@ -156,6 +156,39 @@
                     "type": "string",
                     "description": "A short comment for the app",
                     "default": "Built using Wails (https://wails.io)"
+                },
+                "fileAssociations": {
+                  "type": "array",
+                  "description": "File associations for the app",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "ext": {
+                        "type": "string",
+                        "description": "The extension (minus the leading period). e.g. png"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "The name. e.g. PNG File"
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "windows-only. The description."
+                      },
+                      "mimeType": {
+                        "type": "string",
+                        "description": "linux-only. The mime-type"
+                      },
+                      "iconPath": {
+                        "type": "string",
+                        "description": "The path to icon (.icns for MacOS and .ico for Windows), relative to build (build resources directory)"
+                      },
+                      "role": {
+                        "type": "string",
+                        "description": "macOS-only The app’s role with respect to the type. The value can be Editor, Viewer, Shell, or None. Corresponds to CFBundleTypeRole."
+                      }
+                    }
+                  }
                 }
             }
         },
@@ -231,7 +264,7 @@
 				"type": "object",
 				"description": "Bindings configurations",
 				"properties": {
-						"ts_generation": { 
+						"ts_generation": {
 								"type": "object",
 								"description": "model.ts file generation config",
 								"properties": {
