@@ -1,0 +1,122 @@
+---
+sidebar_position: 10
+---
+
+# Hello World
+
+このチュートリアルの目的は、Wailsを使用して、最も基礎的なアプリケーションを起動および実行することです。 あなたは、次のことができるようになります:
+
+- 新しいWailsアプリケーションを作成する
+- アプリケーションをビルドする
+- アプリケーションを実行する
+
+:::note
+
+このチュートリアルでは、Windowsをターゲットプラットフォームとして使用します。 出力される内容は、オペレーティングシステムによって多少異なります。
+
+:::
+
+## 新しいWailsアプリケーションを作成する
+
+デフォルトのバニラJSテンプレートを使用して、新しいWailsアプリケーションを作成するには、次のコマンドを実行します:
+
+```bash
+wails init -n helloworld
+```
+
+すると、次のように表示されます:
+
+```
+Wails CLI v2.0.0
+
+Initialising Project 'helloworld'
+---------------------------------
+
+Project Name:      helloworld
+Project Directory: C:\Users\leaan\tutorial\helloworld
+Project Template:  vanilla
+Template Support:  https://wails.io
+
+Initialised project 'helloworld' in 232ms.
+```
+
+これにより、カレントディレクトリに`helloworld`という新しいディレクトリが作成されます。 このディレクトリには、いくつかのファイルがあります:
+
+```
+build/       - Contains the build files + compiled application
+frontend/    - Contains the frontend files
+app.go       - Contains the application code
+main.go      - The main program with the application configuration
+wails.json   - The project configuration file
+go.mod       - The go module file
+go.sum       - The go module checksum file
+```
+
+## アプリケーションをビルドする
+
+アプリケーションをビルドするには、新しくできた`helloworld`プロジェクトディレクトリに移動し、次のコマンドを実行します:
+
+```bash
+wails build
+```
+
+すると、次のように表示されます:
+
+```
+Wails CLI v2.0.0
+
+App Type:               desktop
+Platforms:              windows/amd64
+Compiler:               C:\Users\leaan\go\go1.18.3\bin\go.exe
+Build Mode:             Production
+Skip Frontend:          false
+Compress:               false
+Package:                true
+Clean Build Dir:        false
+LDFlags:                ""
+Tags:                   []
+Race Detector:          false
+
+Building target: windows/amd64
+------------------------------
+  - Installing frontend dependencies: Done.
+  - Compiling frontend: Done.
+  - Generating bundle assets: Done.
+  - Compiling application: Done.
+Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
+```
+
+これにより、アプリケーションがコンパイルされ、`build/bin`ディレクトリに保存されます。
+
+## アプリケーションを実行する
+
+Windowsのエクスプローラで`build/bin`ディレクトリを閲覧すると、プロジェクトのバイナリファイルが存在するはずです:
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/helloworld-app-icon.webp").default}
+    width="134px"
+  />
+</div>
+<br />
+```
+
+`helloworld.exe`ファイルをダブルクリックするだけで起動できます。
+
+Macの場合、Wailsは`helloworld.app`ファイルを生成します。このファイルをダブルクリックすることで起動できます。
+
+Linuxの場合、`build/bin`ディレクトリ内の`./helloworld`を呼び出すことでアプリケーションを起動できます。
+
+アプリケーションが期待したとおりに動作することでしょう:
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/windows-default-app.webp").default}
+    width="50%"
+    className="screenshot"
+  />
+</div>
+<br />
+```

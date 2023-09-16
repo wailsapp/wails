@@ -102,41 +102,41 @@ Wailsはオープンソースであり、コミュニティ主導のプロジェ
 
 ご覧のウェブサイトは、プロジェクトのメインドキュメントサイトの役割も担っています。 しばしば、ドキュメントの内容は古くなっていることがあるため、多少の修正が必要になってきます。 また、内容がベストな品質となっていないドキュメントもいくつかあります。 ドキュメントを作成する作業は労力がかかるものであるため、これらへの貢献は大歓迎です。 ドキュメント化されていない機能はプロジェクトとしてまだ未完成である、と言っていいほど、ドキュメントはコードと同じくらい_重要なもの_です。
 
-We generally do not create tickets for updating documentation so if there is text you think should be updated or rephrased then feel free to submit a PR for that. This site is in the main repository under the `website` directory. We use [Docusaurus](https://docusaurus.io/) to create the site so there is plenty of existing documentation and tutorials around to get started.
+通常、ドキュメントの更新に関するチケットは作成しませんので、もし更新や文言修正が必要なドキュメントが存在する場合は、気兼ねなくプルリクエストを作成してください。 このサイトは、メインリポジトリの`website`ディレクトリ内に格納されています。 サイト制作には[Docusaurus](https://docusaurus.io/)というツールを使用しており、このツールを使うためのドキュメントやチュートリアルはたくさん用意されています。
 
-To set up a local documentation development environment, do the following:
+自身のローカル環境にドキュメント作成環境を構築するには、次の手順を実施してください:
 
-- [Install npm](https://docs.npmjs.com/cli/v8/configuring-npm/install)
+- [npmをインストール](https://docs.npmjs.com/cli/v8/configuring-npm/install)
 - `cd website`
 - `npm install`
 - `npm run start`
 
-After it has all installed and is running, you should see the site at [`http://localhost:3000`](http://localhost:3000). Any changes made to the site text will be immediately reflected in the browser.
+上記の手順をすべて実施後、[`http://localhost:3000`](http://localhost:3000)へアクセスすると、サイトが表示されるはずです。 サイト内のテキストに変更を加えると、すぐにブラウザに変更が反映されます。
 
 #### バージョン管理
 
-We employ a versioning system where we have the "latest" documentation AKA "Next Version" which has all the changes that have occurred since the last release. We also keep the last release documentation as well as the version before that.
+ドキュメントにはバージョン管理システムを使用しており、"最新(次期バージョン)" のドキュメントには、直近のリリース以降に発生したすべての更新内容が記載されています。 また、直近リリース分とその1つ前のリリース分のドキュメントを保持するようにしています。
 
-There isn't usually a reason to update released documentation so we don't generally update the documents in the `versioned_docs` or `versioned_sidebars` directories.
+通常、リリース済みのドキュメントを更新する理由はないため、`versioned_docs`ディレクトリや`versioned_sidebars`ディレクトリは基本的に更新しません。
 
-The "next version" docs are mainly in `website/docs` with some "version independent" documents in `src/pages`. Any updates should be made in the `website/docs` directory.
+"次期バージョン"のドキュメントは`website/docs`ディレクトリ、バージョンに依存しないドキュメントは`src/pages`ディレクトリに存在します。 すべての更新は`website/docs`ディレクトリで実施してください。
 
 #### 翻訳
 
-The default documents of the Wails project are English documents. We use the "crowdin" tool to translate documents in other languages and synchronize them to the website. You can [join our project](https://crowdin.com/project/wails) and submit your translations to make contributions.
+Wailsプロジェクトのデフォルトドキュメントは英語です。 私たちは、"crowdin"というツールを使用してドキュメントを様々な言語に翻訳し、Webサイトに同期させています。 翻訳に貢献していただける場合は、[私たちのcrowdinプロジェクトに参加](https://crowdin.com/project/wails)してください。
 
-##### Add new language
+##### 新しい言語の追加
 
-If you want to add a new language to the documentation, please follow the prompts to [fill in and submit an Issue](https://github.com/wailsapp/wails/issues/new?assignees=&labels=documentation&template=documentation.yml). After being confirmed by the maintainer, we will add the language to the "crowdin" and you will then be able to submit your translation.
+ドキュメントに新しい言語を追加したい場合は、プロンプトに従って[イシューを作成](https://github.com/wailsapp/wails/issues/new?assignees=&labels=documentation&template=documentation.yml)してください。 管理者が確認し次第、"crowdin"に言語が追加され、翻訳をはじめることができます。
 
-### Helping Others
+### 他者を助ける
 
-A great way to contribute to the project is to help others who are experiencing difficulty. This is normally reported as a ticket or a message on the Wails discord server. Even just clarifying the issue can really help out. Sometimes, when an issue is discussed and gets resolved, we create a guide out of it to help others who face the same issues.
+困難に直面している他者を助けることは、プロジェクトにとって大きな貢献となります。 WailsのDiscordサーバでは、助けを求めている人が、チケットまたはメッセージを投稿しています。 曖昧な問題をより明確にしていただくだけでも、非常に助かります。 問題が議論されていき、最終的に解決されると、同じ問題に直面している人を助けるために、ガイドを作成する場合があります。
 
-To join the Wails discord server, click [here](https://discord.gg/JDdSxwjhGf).
+WailsのDiscordサーバに参加するには、[こちら](https://discord.gg/JDdSxwjhGf)をクリックしてください。
 
 :::note
 
-Work In Progress
+このドキュメントは書きかけの状態です。
 
 :::

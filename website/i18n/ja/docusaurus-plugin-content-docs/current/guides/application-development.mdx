@@ -187,7 +187,28 @@ Wails v2では必要に応じて、`options.App`の中に`http.Handler`を定義
 
 ## 外部開発サーバ
 
-フレームワークによっては独自のライブリロードサーバが付属しているものがありますが、それらはWailsのGoバインディングを使用することができません。 このような場面では、Wailsが監視するビルドディレクトリ内で、プロジェクトをリビルドする監視スクリプトを実行すると良いでしょう。 例としては、[rollup](https://rollupjs.org/guide/en/)を使用するデフォルトのsvelteテンプレートをご覧ください。 また[create-react-app](https://create-react-app.dev/)を使用する場合、[このスクリプト](https://gist.github.com/int128/e0cdec598c5b3db728ff35758abdbafd)を使用すると同様の結果を得ることができます。
+フレームワークによっては独自のライブリロードサーバが付属しているものがありますが、それらはWailsのGoバインディングを使用することができません。 このような場面では、Wailsが監視するビルドディレクトリ内で、プロジェクトをリビルドする監視スクリプトを実行すると良いでしょう。 例としては、[rollup](https://rollupjs.org/guide/en/)を使用するデフォルトのsvelteテンプレートをご覧ください。
+
+### Create React App
+
+The process for a Create-React-App project is slightly more complicated. In order to support live frontend reloading the following configuration needs to be added to your `wails.json`:
+
+```json
+  "frontend:dev:watcher": "yarn start",
+  "frontend:dev:serverUrl": "http://localhost:3000",
+```
+
+The `frontend:dev:watcher` command will start the Create-React-App development server (hosted on port `3000` typically). The `frontend:dev:serverUrl` command then instructs Wails to serve assets from the development server when loading the frontend rather than from the build folder. In addition to the above, the `index.html` needs to be updated with the following:
+
+```html
+    <head>
+        <meta name="wails-options" content="noautoinject" />
+        <script src="/wails/ipc.js"></script>
+        <script src="/wails/runtime.js"></script>
+    </head>
+```
+
+This is required as the watcher command that rebuilds the frontend prevents Wails from injecting the required scripts. This circumvents that issue by ensuring the scripts are always injected. With this configuration, `wails dev` can be run which will appropriately build the frontend and backend with hot-reloading enabled. Additionally, when accessing the application from a browser the React developer tools can now be used on a non-minified version of the application for straightforward debugging. Finally, for faster builds, `wails dev -s` can be run to skip the default building of the frontend by Wails as this is an unnecessary step.
 
 ## Goモジュール
 

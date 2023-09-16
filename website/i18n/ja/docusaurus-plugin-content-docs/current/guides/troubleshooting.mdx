@@ -170,3 +170,19 @@ XCodeコマンドラインツールの再インストールが引き続き失敗
 ## ビルドプロセスが"Generating bindings"で停止します
 
 バインディングの生成プロセスは、アプリケーションを特別なモードで実行します。 アプリケーションに、意図に有無にかかわらず無限ループ(`wails.Run()`のあとに終了されないコード)が含まれている場合、バインディングの生成の段階でビルドプロセスが停止する可能性があります。 コードが正しく終了していることを確認してください。
+
+## Mac application flashes white at startup
+
+This is due to the default background of the webview being white. If you want to use the window background colour instead, you can make the webview background transparent using the following config:
+
+```go
+    err := wails.Run(&options.App{
+        Title:  "macflash",
+        Width:  1024,
+        Height: 768,
+        // Other settings
+        Mac: &mac.Options{
+            WebviewIsTransparent: true,
+        },
+    })
+```
