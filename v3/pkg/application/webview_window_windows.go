@@ -944,6 +944,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		w32.SetFocus(w.hwnd)
 	case w32.WM_MOVE, w32.WM_MOVING:
 		_ = w.chromium.NotifyParentWindowPositionChanged()
+	// Check for keypress
+	case w32.WM_KEYDOWN:
+		w.processKeyBinding(uint(wparam))
 	case w32.WM_SIZE:
 		switch wparam {
 		case w32.SIZE_MAXIMIZED:
@@ -1404,6 +1407,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.WebResourceRequestedCallback = w.processRequest
 	chromium.NavigationCompletedCallback = w.navigationCompleted
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
+		if w.processKeyBinding(vkey) {
+			return true
+		}
 		w32.PostMessage(w.hwnd, w32.WM_KEYDOWN, uintptr(vkey), 0)
 		return false
 	}
@@ -1534,6 +1540,51 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	}
 
 	//f.mainWindow.hasBeenShown = true
+
+}
+
+func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
+
+	globalApplication.debug("Processing key binding", "vkey", vkey)
+
+	if len(w.parent.keyBindings) == 0 {
+		return false
+	}
+	// Get the keyboard state and convert to an accellerator
+	var keyState [256]byte
+	if !w32.GetKeyboardState(keyState[:]) {
+		globalApplication.error("Error getting keyboard state")
+		return false
+	}
+
+	var acc accelerator
+	// Check if CTRL is pressed
+	if keyState[w32.VK_CONTROL]&0x80 != 0 {
+		acc.Modifiers = append(acc.Modifiers, ControlKey)
+	}
+	// Check if ALT is pressed
+	if keyState[w32.VK_MENU]&0x80 != 0 {
+		acc.Modifiers = append(acc.Modifiers, OptionOrAltKey)
+	}
+	// Check if SHIFT is pressed
+	if keyState[w32.VK_SHIFT]&0x80 != 0 {
+		acc.Modifiers = append(acc.Modifiers, ShiftKey)
+	}
+	// Check if WIN is pressed
+	if keyState[w32.VK_LWIN]&0x80 != 0 || keyState[w32.VK_RWIN]&0x80 != 0 {
+		acc.Modifiers = append(acc.Modifiers, SuperKey)
+	}
+
+	// Convert the vkey to a string
+	accKey, ok := VirtualKeyCodes[vkey]
+	if !ok {
+		return false
+	}
+
+	acc.Key = accKey
+
+	// Process the key binding
+	return w.parent.processKeyBinding(acc.String())
 
 }
 

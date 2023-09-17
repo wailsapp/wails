@@ -117,7 +117,8 @@ var (
 	procBeginPaint                    = moduser32.NewProc("BeginPaint")
 	procEndPaint                      = moduser32.NewProc("EndPaint")
 	procGetKeyboardState              = moduser32.NewProc("GetKeyboardState")
-	procMapVirtualKey                 = moduser32.NewProc("MapVirtualKeyExW")
+	procMapVirtualKey                 = moduser32.NewProc("MapVirtualKeyW")
+	procMapVirtualKeyEx               = moduser32.NewProc("MapVirtualKeyExW")
 	procGetAsyncKeyState              = moduser32.NewProc("GetAsyncKeyState")
 	procToAscii                       = moduser32.NewProc("ToAscii")
 	procSwapMouseButton               = moduser32.NewProc("SwapMouseButton")
@@ -1096,17 +1097,24 @@ func EndPaint(hwnd HWND, paint *PAINTSTRUCT) {
 		uintptr(unsafe.Pointer(paint)))
 }
 
-func GetKeyboardState(lpKeyState *[]byte) bool {
-	ret, _, _ := procGetKeyboardState.Call(
-		uintptr(unsafe.Pointer(&(*lpKeyState)[0])))
+func GetKeyboardState(keyState []byte) bool {
+	if len(keyState) != 256 {
+		panic("keyState slice must have a size of 256 bytes")
+	}
+	ret, _, _ := procGetKeyboardState.Call(uintptr(unsafe.Pointer(&keyState[0])))
 	return ret != 0
 }
 
 func MapVirtualKeyEx(uCode, uMapType uint, dwhkl HKL) uint {
-	ret, _, _ := procMapVirtualKey.Call(
+	ret, _, _ := procMapVirtualKeyEx.Call(
 		uintptr(uCode),
 		uintptr(uMapType),
 		uintptr(dwhkl))
+	return uint(ret)
+}
+
+func MapVirtualKey(uCode uint, uMapType uint) uint {
+	ret, _, _ := procMapVirtualKey.Call(uintptr(uCode), uintptr(uMapType))
 	return uint(ret)
 }
 

@@ -48,6 +48,9 @@ type Options struct {
 
 	// PanicHandler is a way to register a custom panic handler
 	PanicHandler func(any)
+
+	// KeyBindings is a map of key bindings to functions
+	KeyBindings map[string]func(window *WebviewWindow)
 }
 
 // AssetOptions defines the configuration of the AssetServer.

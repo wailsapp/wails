@@ -2,6 +2,8 @@ package application
 
 import (
 	"fmt"
+	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -22,6 +24,34 @@ const (
 	ControlKey modifier = 4 << iota
 )
 
+func (m modifier) String() string {
+	return modifierStringMap[runtime.GOOS][m]
+}
+
+var modifierStringMap = map[string]map[modifier]string{
+	"windows": {
+		CmdOrCtrlKey:   "Ctrl",
+		ControlKey:     "Ctrl",
+		OptionOrAltKey: "Alt",
+		ShiftKey:       "Shift",
+		SuperKey:       "Win",
+	},
+	"darwin": {
+		CmdOrCtrlKey:   "Cmd",
+		ControlKey:     "Ctrl",
+		OptionOrAltKey: "Option",
+		ShiftKey:       "Shift",
+		SuperKey:       "Cmd",
+	},
+	"linux": {
+		CmdOrCtrlKey:   "Ctrl",
+		ControlKey:     "Ctrl",
+		OptionOrAltKey: "Alt",
+		ShiftKey:       "Shift",
+		SuperKey:       "Super",
+	},
+}
+
 var modifierMap = map[string]modifier{
 	"cmdorctrl":   CmdOrCtrlKey,
 	"cmd":         CmdOrCtrlKey,
@@ -38,6 +68,18 @@ var modifierMap = map[string]modifier{
 type accelerator struct {
 	Key       string
 	Modifiers []modifier
+}
+
+func (a *accelerator) String() string {
+	result := strings.Builder{}
+	// Sort modifiers
+	slices.Sort(a.Modifiers)
+	for _, modifier := range a.Modifiers {
+		result.WriteString(modifier.String())
+		result.WriteString("+")
+	}
+	result.WriteString(a.Key)
+	return strings.ToLower(result.String())
 }
 
 var namedKeys = map[string]struct{}{

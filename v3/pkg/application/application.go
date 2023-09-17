@@ -105,6 +105,11 @@ func New(appOptions Options) *App {
 		os.Exit(1)
 	}
 
+	// Process keybindings
+	if result.options.KeyBindings != nil {
+		result.keyBindings = processKeyBindingOptions(result.options.KeyBindings)
+	}
+
 	return result
 }
 
@@ -251,6 +256,9 @@ type App struct {
 	// Capabilities
 	capabilities capabilities.Capabilities
 	isDebugMode  bool
+
+	// Keybindings
+	keyBindings map[string]func(window *WebviewWindow)
 }
 
 func (a *App) init() {
@@ -258,6 +266,7 @@ func (a *App) init() {
 	a.windows = make(map[uint]*WebviewWindow)
 	a.systemTrays = make(map[uint]*SystemTray)
 	a.contextMenus = make(map[string]*Menu)
+	a.keyBindings = make(map[string]func(window *WebviewWindow))
 	a.Logger = a.options.Logger
 	a.pid = os.Getpid()
 }
@@ -713,6 +722,24 @@ func (a *App) runOrDeferToAppRun(r runnable) {
 	if running {
 		r.run()
 	}
+}
+
+func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow) bool {
+
+	if a.keyBindings == nil {
+		return false
+	}
+
+	// Check key bindings
+	callback, ok := a.keyBindings[acceleratorString]
+	if !ok {
+		return false
+	}
+
+	// Execute callback
+	go callback(window)
+
+	return true
 }
 
 func invokeSync(fn func()) {

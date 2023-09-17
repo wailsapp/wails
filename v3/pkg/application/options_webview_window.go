@@ -112,6 +112,9 @@ type WebviewWindowOptions struct {
 
 	// If true, the window's default context menu will be disabled (default false)
 	DefaultContextMenuDisabled bool
+
+	// KeyBindings is a map of key bindings to functions
+	KeyBindings map[string]func(window *WebviewWindow)
 }
 
 var WebviewWindowDefaults = &WebviewWindowOptions{
