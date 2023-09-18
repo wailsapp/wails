@@ -120,4 +120,9 @@ void MessageDialog(void *data);
 GtkFileFilter **AllocFileFilterArray(size_t ln);
 void Opendialog(void *data);
 
+// Inspector
+void sendShowInspectorMessage();
+void ShowInspector(void *webview);
+void InstallF12Hotkey(void *window);
+
 #endif /* window_h */

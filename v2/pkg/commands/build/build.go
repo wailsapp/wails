@@ -348,8 +348,8 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		}
 	}
 
-	if options.Platform == "darwin" && options.Mode == Debug {
-		pterm.Warning.Println("A darwin debug build contains private APIs, please don't distribute this build. Please use it only as a test build for testing and debug purposes.")
+	if options.Platform == "darwin" && (options.Mode == Debug || options.Devtools) {
+		pterm.Warning.Println("This darwin build contains the use of private APIs. This will not pass Apple's AppStore approval process. Please use it only as a test build for testing and debug purposes.")
 	}
 
 	return options.CompiledBinary, nil

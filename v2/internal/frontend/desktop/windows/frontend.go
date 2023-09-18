@@ -458,6 +458,18 @@ func (f *Frontend) setupChromium() {
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
+		if vkey == w32.VK_F12 && f.devtools {
+			var keyState [256]byte
+			if w32.GetKeyboardState(keyState[:]) {
+				// Check if CTRL is pressed
+				if keyState[w32.VK_CONTROL]&0x80 != 0 && keyState[w32.VK_SHIFT]&0x80 != 0 {
+					chromium.OpenDevToolsWindow()
+					return true
+				}
+			} else {
+				f.logger.Error("Call to GetKeyboardState failed")
+			}
+		}
 		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
 		return false
 	}
