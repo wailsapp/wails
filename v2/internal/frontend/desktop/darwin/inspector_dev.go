@@ -52,7 +52,10 @@ void showInspector(void *inctx) {
 
 void setupF12hotkey() {
 	[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
-		if (event.keyCode == 111 && event.modifierFlags & NSEventModifierFlagFunction) {
+		if (event.keyCode == 111 &&
+				event.modifierFlags & NSEventModifierFlagFunction &&
+				event.modifierFlags & NSEventModifierFlagCommand &&
+				event.modifierFlags & NSEventModifierFlagShift) {
 			processMessage("wails:openInspector");
 			return nil;
 		}
