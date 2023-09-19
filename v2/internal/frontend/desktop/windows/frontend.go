@@ -506,6 +506,14 @@ func (f *Frontend) setupChromium() {
 	}
 
 	chromium.Embed(f.mainWindow.Handle())
+
+	if chromium.HasCapability(edge.SwipeNavigation) {
+		swipeGesturesEnabled := f.frontendOptions.Windows != nil && f.frontendOptions.Windows.EnableSwipeGestures
+		err := chromium.PutIsSwipeNavigationEnabled(swipeGesturesEnabled)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
 	if err != nil {
@@ -535,10 +543,6 @@ func (f *Frontend) setupChromium() {
 		log.Fatal(err)
 	}
 	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = settings.PutIsSwipeNavigationEnabled(false)
 	if err != nil {
 		log.Fatal(err)
 	}
