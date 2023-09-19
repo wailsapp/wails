@@ -16,7 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Added support for enabling/disabling swipe gestures for Windows WebView2. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2878)
+- When building with `-devtools` flag, CMD/CTRL+SHIFT+F12 can be used to open the devtools. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2915)
 
+#### Fixed
+
+- Fixed typo on docs/reference/options page. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2887)
 
 
 ## v2.6.0 - 2023-09-06
@@ -50,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added new community template wails-sveltekit-tailwind. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2851)
 - Added support for print dialogs. Added by [@aangelisc](https://github.com/aangelisc) in [PR](https://github.com/wailsapp/wails/pull/2822)
 - Added new `wails dev -nogorebuild` flag to prevent restarts on back end file changes. [@haukened](https://github.com/haukened) in [PR #2870](https://github.com/wailsapp/wails/pull/2870)
+- Added a guide to describe a cross-platform build using GitHub Actions. Added by [@dennypenta](https://github.com/dennypenta) in [PR](https://github.com/wailsapp/wails/pull/2879)
 
 ### Changed
 
@@ -717,9 +722,6 @@ Experimental: &options.Experimental{
 - [v2, nsis] Seems like / as path separator works only for some directives in a cross platform way
   by [@stffabi](https://github.com/stffabi) in #1227
 - import models on binding definition by [@adalessa](https://github.com/adalessa) in #123
-
-  1
-
 - Use local search on website by [@leaanthony](https://github.com/leaanthony) in #1234
 - Ensure binary resources can be served by [@napalu](https://github.com/napalu) in #1240
 - Only retry loading assets when loading from disk by [@leaanthony](https://github.com/leaanthony) in #1241

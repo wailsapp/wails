@@ -20,59 +20,59 @@ tags:
 
 # Introduction
 
-Wails est un projet qui simplifie la possibilité d'écrire des applications de bureau inter-plateformes en utilisant Go. It uses native webview components for the frontend (not embedded browsers), bringing the power of the world's most popular UI system to Go, whilst remaining lightweight.
+Wails est un projet qui simplifie la possibilité d'écrire des applications de bureau inter-plateformes en utilisant Go. Il utilise des composants web natifs pour le frontend (pas de navigateurs intégrés) apportant à Go la puissance du système d'interface utilisateur le plus populaire au monde, tout en restant léger.
 
 La version 2 a été publiée le 22 septembre 2022 et a apporté de nombreuses améliorations y compris :
 
-- Live development, leveraging the popular Vite project
-- Rich functionality for managing windows and creating menus
-- Microsoft's WebView2 component
-- Generation of Typescript models that mirror your Go structs
-- Creating of NSIS Installer
-- Obfuscated builds
+- Développement en direct, en tirant parti du projet populaire Vite
+- Fonctionnalités avancées pour gérer les fenêtres et créer des menus
+- Composants Microsoft WebView2
+- Génération de modèles Typescript qui reflètent vos structures Go
+- Création de l'installateur NSIS
+- Compilations obfusquées
 
-Right now, Wails v2 provides powerful tooling for creating rich, cross-platform desktop applications.
+En ce moment, Wails v2 fournit un outil puissant pour créer des applications de bureau riches et multiplateforme.
 
-This blog post aims to look at where the project is at right now and what we can improve on moving forward.
+Ce billet de blog vise à voir où se trouve le projet en ce moment et ce que nous pouvons améliorer pour aller de l'avant.
 
 # Où en sommes-nous actuellement?
 
-It's been incredible to see the popularity of Wails rising since the v2 release. I'm constantly amazed by the creativity of the community and the wonderful things that are being built with it. With more popularity, comes more eyes on the project. And with that, more feature requests and bug reports.
+C'est incroyable de voir la popularité de Wails en hausse depuis la version v2. Je suis constamment stupéfait par la créativité de la communauté et les choses merveilleuses qui sont en train d'être construites avec elle. Avec plus de popularité, vient plus d'yeux sur le projet. Et avec cela, plus de demandes de fonctionnalités et rapports de bogues.
 
-Over time, I've been able to identify some of the most pressing issues facing the project. I've also been able to identify some of the things that are holding the project back.
+Au fil du temps, j'ai pu identifier certains des problèmes les plus urgents auxquels le projet est confronté. J'ai également été en mesure d'identifier certaines des choses qui tirent le projet vers l'arrière.
 
 ## Problèmes actuels
 
-I've identified the following areas that I feel are holding the project back:
+J'ai identifié les domaines suivants qui, selon moi, tirent le projet vers l'arrière :
 
-- The API
-- Bindings generation
-- The Build System
+- L'API
+- Génération des liaisons
+- Le système de compilation
 
-### The API
+### L'API
 
-The API to build a Wails application currently consists of 2 parts:
+L'API pour construire une application Wails se compose actuellement de 2 parties :
 
-- The Application API
-- The Runtime API
+- La partie applicative
+- La partie exécution
 
-The Application API famously has only 1 function: `Run()` which takes a heap of options which govern how the application will work. Whilst this is very simple to use, it is also very limiting. It is a "declarative" approach which hides a lot of the underlying complexity. For instance, there is no handle to the main window, so you can't interact with it directly. For that, you need to use the Runtime API. This is a problem when you start to want to do more complex things like create multiple windows.
+La partie applicative ne possède qu'une fonction : `Run()` qui prend un tas d'options qui régissent le fonctionnement de l'application. Bien que cela soit très simple à utiliser, elle est également très limitée. C'est une approche "déclarative" qui masque beaucoup de la complexité sous-jacente. Par exemple, il n'y a pas de gestion de la fenêtre principale, faisant qu'il n'est pas possible d'intéragir directement avec. Pour cela, vous devez utiliser la partie exécution de l'API. Ceci est un problème lorsque vous commencez à vouloir faire des choses plus complexes comme créer plusieurs fenêtres.
 
-The Runtime API provides a lot of utility functions for the developer. This includes:
+La partie exécution fournit de nombreuses fonctions utilitaires pour le développeur. Incluant :
 
-- Window management
-- Dialogs
-- Menus
-- Events
-- Logs
+- La gestion des fenêtres
+- Les boites de dialogues
+- Les menus
+- Les évènements
+- Les journaux de logs
 
-There are a number of things I am not happy with the Runtime API. The first is that it requires a "context" to be passed around. This is both frustrating and confusing for new developers who pass in a context and then get a runtime error.
+Il y a un certain nombre de choses dont je ne suis pas satisfait dans la partie exécution de l'API. La première est que nécessite un "contexte" pour être contourné. C'est autant frustrant que confusant pour les nouveaux développeurs qui donnent un contexte et qui obtiennent une erreur runtime.
 
-The biggest issue with the Runtime API is that it was designed for applications that only use a single window. Over time, the demand for multiple windows has grown and the API is not well suited to this.
+Le plus gros problème avec la partie exécution de l'API est que cela a été pensé pour des applications qui n'ont qu'une seule fenêtre. Au fil du temps, la demande pour plusieurs fenêtres a augmenté et l'API n'est pas adaptée à cela.
 
-### Thoughts on the v3 API
+### Réflexions sur l'API v3
 
-Wouldn't it be great if we could do something like this?
+Ne serait-ce pas génial si nous pouvions faire quelque chose comme ça ?
 
 ```go
 func main() {
@@ -86,7 +86,7 @@ func main() {
 }
 ```
 
-This programmatic approach is far more intuitive and allows the developer to interact with the application elements directly. All current runtime methods for windows would simply be methods on the window object. For the other runtime methods, we could move them to the application object like so:
+Cette approche programmatique est beaucoup plus intuitive et permet au développeur d'interagir avec les éléments d'application directement. Toutes les méthodes d'exécution pour les fenêtres seraient simplement des méthodes dans l'objet fenêtre. Pour toutes les autres méthodes qui étaient présentes dans la partie exécution de l'API, on pourrait les déplacer dans un objet application comme suit :
 
 ```go
 app := wails.NewApplication(options.App{})
@@ -94,7 +94,7 @@ app.NewInfoDialog(options.InfoDialog{})
 app.Log.Info("Hello World")
 ```
 
-This is a much more powerful API which will allow for more complex applications to be built. It also allows for the creation of multiple windows, [the most up-voted feature on GitHub](https://github.com/wailsapp/wails/issues/1480):
+Cela devient une API bien plus puissante, capable de construire des applications plus complexes. Il permet également la création de plusieurs fenêtres, [la fonctionnalité la plus votée sur GitHub](https://github.com/wailsapp/wails/issues/1480):
 
 ```go
 func main() {
@@ -113,72 +113,72 @@ func main() {
 }
 ```
 
-### Bindings generation
+### Génération des liaisons
 
-One of the key features of Wails is generating bindings for your Go methods so they may be called from Javascript. The current method for doing this is a bit of a hack. It involves building the application with a special flag and then running the resultant binary which uses reflection to determine what has been bound. This leads to a bit of a chicken and egg situation: You can't build the application without the bindings and you can't generate the bindings without building the application. There are many ways around this but the best one would be not to use this approach at all.
+L'une des fonctionnalités clés de Wails est la génération de liaisons pour permettre à vos méthodes Go d'être appelées à partir du Javascript. La méthode courante pour faire cela est un peu un hack. Il implique de construire l'application avec une option spéciale, puis d'exécuter le binaire qui utilise la réflexion pour déterminer ce qui lui a été lié. Cela mène à une situation de la poule et de l'oeuf : vous ne pouvez pas construire l'application sans les liaisons et vous ne pouvez pas générer les liaisons sans construire l'application. Il y a plusieurs façons de contourner cela, mais le meilleur serait de ne pas utiliser cette approche du tout.
 
-There was a number of attempts at writing a static analyser for Wails projects but they didn't get very far. In more recent times, it has become slightly easier to do this with more material available on the subject.
+Il y a eu un certain nombre de tentatives d'écriture d'un analyseur statique pour les projets Wails mais ils ne sont pas allés très loin. Plus récemment, il est devenu légèrement plus facile de le faire avec le nouveau matériel disponible sur le sujet.
 
-Compared to reflection, the AST approach is much faster however it is significantly more complicated. To start with, we may need to impose certain constraints on how to specify bindings in the code. The goal is to support the most common use cases and then expand it later on.
+Comparée à la réflexion, l'approche AST est beaucoup plus rapide, cependant elle est considérablement plus compliquée. Pour commencer, nous pourrions devoir imposer certaines contraintes sur la façon de spécifier les liaisons dans le code. L'objectif est de supporter les cas d'utilisation les plus courants, puis d'étendre plus tard.
 
-### The Build System
+### Le système de compilation
 
-Like the declarative approach to the API, the build system was created to hide the complexities of building a desktop application. When you run `wails build`, it does a lot of things behind the scenes:
-- Builds the backend binary for bindings and generates the bindings
-- Installs the frontend dependencies
-- Builds the frontend assets
-- Determines if the application icon is present and if so, embeds it
-- Builds the final binary
-- If the build is for `darwin/universal` it builds 2 binaries, one for `darwin/amd64` and one for `darwin/arm64` and then creates a fat binary using `lipo`
-- If compression is required, it compresses the binary with UPX
-- Determines if this binary is to be packaged and if so:
-  - Ensures the icon and application manifest are compiled into the binary (Windows)
-  - Builds out the application bundle, generates the icon bundle and copies it, the binary and Info.plist to the application bundle (Mac)
-- If an NSIS installer is required, it builds it
+Comme l'approche déclarative de l'API, le système de construction a été créé pour masquer les complexités de la construction d'une application de bureau. Quand vous exécutez la commande `wails build`, ça effectue pas mal de choses de manière invisible :
+- Construit le binaire d'arrière-plan pour les liaisons et génère les liaisons
+- Installe les dépendances frontend
+- Construit les ressources du frontend
+- Détermine si l'icône de l'application est présente et si oui, l'intègre
+- Construit le binaire final
+- Si l'application est construite pour `darwin/universal`, ça va générer deux fichiers binaires, un pour `darwin/amd64` et un pour `darwin/arm64` avant d'en créer un dernier incluant les deux premiers en utilisant `lipo`
+- Si la compression est demandée, le binaire est compressé avec UPX
+- Détermine si ce binaire doit être empaqueté et si c'est le cas :
+  - S'assure que l'icône et le manifeste d'application sont compilés dans le binaire (Windows)
+  - Construit le lot d'applications, génère le lot d'icônes et le copie avec le binaire et Info.plist dans le bundle d'applications (Mac)
+- Si un installateur NSIS est demandé, il le construit
 
-This entire process, whilst very powerful, is also very opaque. It is very difficult to customise it and it is very difficult to debug.
+Tout ce processus, bien que très puissant, est également très opaque. Le rendant très difficile à personnalisé et débugger.
 
-To address this in v3, I would like to move to a build system that exists outside of Wails. After using [Task](https://taskfile.dev/) for a while, I am a big fan of it. It is a great tool for configuring build systems and should be reasonably familiar to anyone who has used Makefiles.
+Pour résoudre ce problème dans la v3, je voudrais passer à un système de compilation qui existe en dehors de Wails. Après avoir utilisé [Task](https://taskfile.dev/) pendant un certain temps, je suis un grand fan de ça. C'est un excellent outil pour configurer les systèmes de compilation et devrait être raisonnablement familier à tous ceux qui ont utilisé Makefiles.
 
-The build system would be configured using a `Taskfile.yml` file which would be generated by default with any of the supported templates. This would have all of the steps required to do all the current tasks, such as building or packaging the application, allowing for easy customisation.
+Le système de compilation serait configuré à l'aide d'un fichier `Taskfile.yml` qui serait généré par défaut avec n'importe lequel des modèles supportés. Cela contiendrait toutes les étapes requises pour effectuer toutes les tâches actuelles, comme la construction ou l'empaquetage de l'application, mais permettrait de facilement personnaliser ce processus.
 
-There will be no external requirement for this tooling as it would form part of the Wails CLI. This means that you can still use `wails build` and it will do all the things it does today. However, if you want to customise the build process, you can do so by editing the `Taskfile.yml` file. It also means you can easily understand the build steps and use your own build system if you wish.
+Il n'y aurait pas de prérequis pour pouvoir utiliser cet outil vu qu'il sera intégré comme étant une partie du CLI de Wails. Cela signifie que vous pouvez toujours utiliser `wails build` et qu'il fera tout ce qu'il fait déjà aujourd'hui. Cependant, si vous souhaitez personnaliser le processus de compilation, vous pourrez le faire en éditant le fichier `Taskfile.yml`. Cela signifie aussi que vous pourrez comprendre facilement les différentes étapes de compilation et créer votre propre processus de compilation si vous le désirez.
 
-The missing piece in the build puzzle is the atomic operations in the build process, such as icon generation, compression and packaging. To require a bunch of external tooling would not be a great experience for the developer. To address this, the Wails CLI will provide all these capabilities as part of the CLI. This means that the builds still work as expected, with no extra external tooling, however you can replace any step of the build with any tool you like.
+Les pièces manquantes dans le puzzle de la compilation sont les opérations atomiques comme la génération d'icônes, la compression et la création du package. Avoir une liste d'application et autres outils comme prérequis ne serait pas une bonne expérience pour le développeur. Pour résoudre ce problème, le CLI Wails fournira toutes ces fonctionnalités dans le CLI. Cela signifie que les compilations vont toujours se faire comme prévues, sans outils externes. Cependant, vous pourrez remplacer n'importe quel outil utilisé dans le processus de compilation.
 
-This will be a much more transparent build system which will allow for easier customisation and address a lot of the issues that have been raised around it.
+Ceci sera un système de compilation beaucoup plus transparent qui permettra une personnalisation plus facile et de résoudre un grand nombre des problèmes qui ont été soulevés autour de lui.
 
-## The Payoff
+## Le gain
 
-These positive changes will be a huge benefit to the project:
-- The new API will be much more intuitive and will allow for more complex applications to be built.
-- Using static analysis for bindings generation will be much faster and reduce a lot of the complexity around the current process.
-- Using an established, external build system will make the build process completely transparent, allowing for powerful customisation.
+Ces changements positifs constitueront un énorme avantage pour le projet:
+- La nouvelle API sera beaucoup plus intuitive et permettra de construire des applications plus complexes .
+- Utiliser l'analyse statique pour la génération des liaisons sera beaucoup plus rapide et réduira beaucoup de la complexité vis à vis du processus actuel.
+- Utiliser un système de compilation externe établi rendra le processus de compilation complètement transparent, permettant une plus grande personnalisation.
 
-Benefits to the project maintainers are:
+Les avantages pour les responsables du projet sont :
 
-- The new API will be much easier to maintain and adapt to new features and platforms.
-- The new build system will be much easier to maintain and extend. I hope this will lead to a new ecosystem of community driven build pipelines.
-- Better separation of concerns within the project. This will make it easier to add new features and platforms.
+- La nouvelle API sera beaucoup plus facile à maintenir et à adapter aux nouvelles fonctionnalités et plates-formes.
+- Le nouveau système de compilation sera beaucoup plus facile à maintenir et à étendre. J'espère que cela conduira à un nouvel écosystème de pipelines de construction pilotés par la communauté.
+- Une meilleure séparation des préoccupations au sein du projet. Cela facilitera l'ajout de nouvelles fonctionnalités et de nouvelles plateformes.
 
 ## Le Plan
 
-A lot of the experimentation for this has already been done and it's looking good. There is no current timeline for this work but I'm hoping by the end of Q1 2023, there will be an alpha release for Mac to allow the community to test, experiment with and provide feedback.
+Un grand nombre de tests ont déjà été réalisés et ça se passe très bien. Il n'y a pas de calendrier actuel pour ce travail, mais j'espère d'ici la fin du T1 2023, là sera une version alpha pour Mac pour permettre à la communauté de tester, d'expérimenter et de fournir des commentaires.
 
 ## Résumé
 
-- The v2 API is declarative, hides a lot from the developer and not suitable for features such as multiple windows. A new API will be created which will be simpler, intuitive and more powerful.
-- The build system is opaque and difficult to customise so we will move to an external build system which will open it all up.
-- The bindings generation is slow and complex so we will move to static analysis which will remove a lot of the complexity the current method has.
+- L'API v2 est déclarative, mais masque beaucoup de choses au développeur et ne convient pas pour des fonctionnalités telles que les fenêtres multiples. La nouvelle API sera créée sera plus simple, intuitive et plus puissante.
+- Le système de compilation est opaque et difficile à personnaliser donc nous allons passer à un système de compilation externe qui l'ouvrira tous.
+- La génération des liaisons est lente et complexe, donc nous allons passer à l'analyse statique qui supprimera une grande partie de la complexité de la méthode actuelle.
 
-There has been a lot of work put into the guts of v2 and it's solid. It's now time to address the layer on top of it and make it a much better experience for the developer.
+Il y a eu beaucoup de travail dans les entrailles de la v2 et c'est solide. Il est maintenant temps d'aborder la couche au-dessus de celle-ci et d'en faire une bien meilleure expérience pour le développeur.
 
-I hope you are as excited about this as I am. I'm looking forward to hearing your thoughts and feedback.
+J'espère que vous êtes aussi excité que moi à ce sujet. J'ai hâte d'entendre vos réflexions et vos commentaires.
 
 Cordialement,
 
 &dash; Lea
 
-PS: If you or your company find Wails useful, please consider [sponsoring the project](https://github.com/sponsors/leaanthony). Thanks!
+PPS : Si vous ou votre entreprise trouvez Wails utile, veuillez envisager [de parrainer le projet](https://github.com/sponsors/leaanthony). Merci !
 
-PPS: Yes, that's a genuine screenshot of a multi-window application built with Wails. It's not a mockup. It's real. It's awesome. It's coming soon.
+PPS: Oui, c'est une véritable capture d'écran d'une application multi-fenêtres construite avec Wails. Ce n'est pas une maquette. C'est réel. C'est génial ! Ca va arriver bientôt.

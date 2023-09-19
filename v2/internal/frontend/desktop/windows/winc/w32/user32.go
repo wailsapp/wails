@@ -1023,9 +1023,11 @@ func EndPaint(hwnd HWND, paint *PAINTSTRUCT) {
 		uintptr(unsafe.Pointer(paint)))
 }
 
-func GetKeyboardState(lpKeyState *[]byte) bool {
-	ret, _, _ := procGetKeyboardState.Call(
-		uintptr(unsafe.Pointer(&(*lpKeyState)[0])))
+func GetKeyboardState(keyState []byte) bool {
+	if len(keyState) != 256 {
+		panic("keyState slice must have a size of 256 bytes")
+	}
+	ret, _, _ := procGetKeyboardState.Call(uintptr(unsafe.Pointer(&keyState[0])))
 	return ret != 0
 }
 

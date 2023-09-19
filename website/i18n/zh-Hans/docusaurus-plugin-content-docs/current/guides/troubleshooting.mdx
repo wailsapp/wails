@@ -170,3 +170,19 @@ In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/Sy
 ## 构建过程停留在“生成绑定”
 
 绑定生成过程在特殊模式下运行应用程序。 如果应用程序有意或无意地包含一个无限循环(即在 `wails.Run()` 结束后不退出)，这可能导致构建过程停留在绑定生成阶段。 请确保您的代码正确退出。
+
+## Mac application flashes white at startup
+
+This is due to the default background of the webview being white. If you want to use the window background colour instead, you can make the webview background transparent using the following config:
+
+```go
+    err := wails.Run(&options.App{
+        Title:  "macflash",
+        Width:  1024,
+        Height: 768,
+        // Other settings
+        Mac: &mac.Options{
+            WebviewIsTransparent: true,
+        },
+    })
+```

@@ -13,13 +13,44 @@ O formato é baseado em [Manter um Log de Alterações](https://keepachangelog.c
 
 ## [Unreleased]
 
+## v2.6.0 - 2023-09-06
+
+### Grandes Alterações
+
+- AssetServer RequestURI and URL are now RFC and Go Docs compliant for server requests. This means Scheme, Host and Fragments are not provided anymore. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2722)
+
 ### Corrigido
 
-- Avoid app crashing when the Linux GTK key is empty by @aminya in [PR](https://github.com/wailsapp/wails/pull/2672)
+- Avoid app crashing when the Linux GTK key is empty. Fixed by @aminya in [PR](https://github.com/wailsapp/wails/pull/2672)
+- Fix issue where app would exit before main() on linux if $DISPLAY env var was not set. Fixed by @phildrip in [PR](https://github.com/wailsapp/wails/pull/2841)
+- Fixed a race condition when positioning the window on Linux. Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2850)
+- Fixed `SetBackgroundColour` so it sets the window's background color to reduce resize flickering on Linux. Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2853)
+- Fixed disable window resize option and wrong initial window size when its enabled. Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2863)
+- Fixed build hook command parsing. Added by @smac89 in [PR](https://github.com/wailsapp/wails/pull/2836)
+- Fixed `-reloaddir` flag to watch additional directories (non-recursively). [@haukened](https://github.com/haukened) in [PR #2871](https://github.com/wailsapp/wails/pull/2871)
+- Fixed support for Go 1.21 `go.mod` files. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2876)
+
+### Adicionado
+
+- Added correct NodeJS and Docker package names for DNF package manager of Fedora 38. Added by @aranggitoar in [PR](https://github.com/wailsapp/wails/pull/2790)
+- Added `-devtools` production build flag. Added by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2725)
+- Added `EnableDefaultContextMenu` option to allow enabling the browser's default context-menu in production . Added by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2733)
+- Added smart functionality for the default context-menu in production with CSS styles to control it. Added by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2748)
+- Added custom error formatting to allow passing structured errors back to the frontend.
+- Added sveltekit.mdx guide. Added by @figuerom16 in [PR](https://github.com/wailsapp/wails/pull/2771)
+- Added ProgramName option to [linux.Options](/docs/reference/options#linux). Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2817)
+- Added new community template wails-sveltekit-ts. Added by [@haukened](https://github.com/haukened) in [PR](https://github.com/wailsapp/wails/pull/2851)
+- Added support for retrieving the logical and physical screen size in the screen api. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2856)
+- Added new community template wails-sveltekit-tailwind. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2851)
+- Added support for print dialogs. Added by [@aangelisc](https://github.com/aangelisc) in [PR](https://github.com/wailsapp/wails/pull/2822)
+- Added new `wails dev -nogorebuild` flag to prevent restarts on back end file changes. [@haukened](https://github.com/haukened) in [PR #2870](https://github.com/wailsapp/wails/pull/2870)
 
 ### Alterado
 
+- Now uses new `go-webview2` module. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2687).
 - Changed styling of `doctor` command. Changed by @MarvinJWendt in [PR](https://github.com/wailsapp/wails/pull/2660)
+- Enable HiDPI option by default in windows nsis installer. Changed by @5aaee9 in [PR](https://github.com/wailsapp/wails/pull/2694)
+- Now debug builds include the un-minified version of the runtime JS with source maps . Changed by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2745)
 
 ## v2.5.1 - 2023-05-16
 

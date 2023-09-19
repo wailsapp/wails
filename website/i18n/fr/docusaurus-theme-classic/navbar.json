@@ -40,7 +40,7 @@
     "description": "Navbar item with label Code of Conduct"
   },
   "logo.alt": {
-    "message": "Wails Logo",
+    "message": "Logo Wails",
     "description": "The alt text of navbar logo"
   }
 }

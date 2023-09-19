@@ -50,12 +50,14 @@ func main() {
         OnBeforeClose:      app.beforeClose,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        EnableDefaultContextMenu: false,
         EnableFraudulentWebsiteDetection: false,
         ZoomFactor:           1.0,
         IsZoomControlEnabled: false,
         Bind: []interface{}{
             app,
         },
+        ErrorFormatter: func(err error) any { return err.Error() },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
@@ -103,6 +105,7 @@ func main() {
             Icon: icon,
             WindowIsTranslucent: false,
             WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
+            ProgramName: "wails"
         },
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
@@ -359,6 +362,33 @@ Indicates what value the `CSSDragProperty` style should have to drag the window.
 
 Name: CSSDragValue<br/> Type: `string`
 
+### EnableDefaultContextMenu
+
+EnableDefaultContextMenu enables the browser's default context-menu in production.
+
+By default, the browser's default context-menu is only available in development and in a `-debug` or `-devtools` [build](../reference/cli.mdx#build) along with the devtools inspector, Using this option you can enable the default context-menu in `production` while the devtools inspector won't be available unless the `-devtools` build flag is used.
+
+When this option is enabled, by default the context-menu will only be shown for text contexts (where Cut/Copy/Paste is needed), to override this behavior, you can use the CSS property `--default-contextmenu` on any HTML element (including the `body`) with the following values :
+
+| CSS Style                      | Behavior                                                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--default-contextmenu: auto;` | (**default**) will show the default context menu only if :<br/> contentEditable is true OR text has been selected OR element is input or textarea |
+| `--default-contextmenu: show;` | will always show the default context menu                                                                                                               |
+| `--default-contextmenu: hide;` | will always hide the default context menu                                                                                                               |
+
+This rule is inherited like any normal CSS rule, so nesting works as expected.
+
+:::note
+This filtering functionality is only enabled in production, so in development and in debug build, the full context-menu is always available everywhere.
+:::
+
+:::warning
+This filtering functionality is NOT a security measure, the developer should expect that the full context-menu could be leaked anytime which could contain commands like (Download image, Reload, Save webpage), if this is a concern, the developer SHOULD NOT enable the default context-menu.
+:::
+
+
+Name: EnableDefaultContextMenu<br/> Type: `bool`
+
 ### EnableFraudulentWebsiteDetection
 
 EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts. These services might send information from your app like URLs navigated to and possibly other content to cloud services of Apple and Microsoft.
@@ -382,6 +412,12 @@ This enables the zoom factor to be changed by the user. Please note that the zoo
 A slice of struct instances defining methods that need to be bound to the frontend.
 
 Name: Bind<br/> Type: `[]interface{}`
+
+### ErrorFormatter
+
+A function that determines how errors are formatted when returned by a JS-to-Go method call. The returned value will be marshalled as JSON.
+
+Name: ErrorFormatter<br/> Type: `func (error) any`
 
 ### Windows
 
@@ -750,6 +786,14 @@ Name: WebviewGpuPolicy<br/> Type: [`options.WebviewGpuPolicy`](#webviewgpupolicy
 | WebviewGpuPolicyAlways   | Hardware acceleration is always enabled                              |
 | WebviewGpuPolicyOnDemand | Hardware acceleration is enabled/disabled as request by web contents |
 | WebviewGpuPolicyNever    | Hardware acceleration is always disabled                             |
+
+#### ProgramName
+
+This option is used to set the program's name for the window manager via GTK's g_set_prgname(). This name should not be localized, [see the docs](https://docs.gtk.org/glib/func.set_prgname.html).
+
+When a .desktop file is created this value helps with window grouping and desktop icons when the .desktop file's `Name` property differs form the executable's filename.
+
+Name: ProgramName<br/> Type: string<br/>
 
 ### Debug
 

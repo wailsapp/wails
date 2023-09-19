@@ -102,7 +102,7 @@ Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() bool`
 
 Définit la largeur et la hauteur de la fenêtre.
 
-Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetSize(size: Size)`
+Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetSize(width: number, height: number)`
 
 ### WindowGetSize
 
@@ -116,7 +116,7 @@ Définit la taille minimale de la fenêtre. Redimensionnera la fenêtre si la fe
 
 Définir une taille de `0,0` désactivera cette contrainte.
 
-Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMinSize(size: Size)`
+Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMinSize(width: number, height: number)`
 
 ### WindowSetMaxSize
 
@@ -124,7 +124,7 @@ Définit la taille maximale de la fenêtre. Redimensionnera la fenêtre si la fe
 
 Définir une taille de `0,0` désactivera cette contrainte.
 
-Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMaxSize(size: Size)`
+Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMaxSize(width: number, height: number)`
 
 ### WindowSetAlwaysOnTop
 
@@ -136,7 +136,7 @@ Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlway
 
 Définit la position de la fenêtre par rapport au moniteur sur lequel la fenêtre est activée.
 
-Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPosition(position: Position)`
+Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPosition(x: number, y: number)`
 
 ### WindowGetPosition
 
@@ -199,6 +199,12 @@ Sous Windows, seules les valeurs 0 et 255 sont prises en charge pour A. Toute va
 :::
 
 Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/> JS: `WindowSetBackgroundColour(R, G, B, A)`
+
+### WindowPrint
+
+Opens tha native print dialog.
+
+Go: `WindowPrint(ctx context.Context)`<br/> JS: `WindowPrint()`
 
 ## Définitions d'objets TypeScript
 

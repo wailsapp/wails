@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <stdint.h>
+#include <locale.h>
 #include "window.h"
 
 // These are the x,y,time & button of the last mouse down event
@@ -145,20 +146,39 @@ void SetBackgroundColour(void *data)
 {
     // set webview's background color
     RGBAOptions *options = (RGBAOptions *)data;
+
     GdkRGBA colour = {options->r / 255.0, options->g / 255.0, options->b / 255.0, options->a / 255.0};
+    if (options->windowIsTranslucent != NULL && options->windowIsTranslucent == TRUE)
+    {
+        colour.alpha = 0.0;
+    }
     webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
 
     // set window's background color
-    GtkWidget *window = GTK_WIDGET(options->window);
-    gchar *str = g_strdup_printf("window {background-color: rgba(%d, %d, %d, %d);}", options->r, options->g, options->b, options->a);
+    // Get the name of the current locale
+    char *old_locale, *saved_locale;
+    old_locale = setlocale(LC_ALL, NULL);
+
+    // Copy the name so it won’t be clobbered by setlocale.
+    saved_locale = strdup(old_locale);
+    if (saved_locale == NULL)
+        return;
+
+    //Now change the locale to english for so printf always converts floats with a dot decimal separator
+    setlocale(LC_ALL, "en_US.UTF-8");
+    gchar *str = g_strdup_printf("#webview-box {background-color: rgba(%d, %d, %d, %1.1f);}", options->r, options->g, options->b, options->a / 255.0);
+
+    //Restore the original locale.
+    setlocale(LC_ALL, saved_locale);
+    free(saved_locale);
 
     if (windowCssProvider == NULL)
     {
         windowCssProvider = gtk_css_provider_new();
         gtk_style_context_add_provider(
-            gtk_widget_get_style_context(window),
+            gtk_widget_get_style_context(GTK_WIDGET(options->webviewBox)),
             GTK_STYLE_PROVIDER(windowCssProvider),
-            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+            GTK_STYLE_PROVIDER_PRIORITY_USER);
         g_object_unref(windowCssProvider);
     }
 
@@ -711,4 +731,22 @@ GtkFileFilter *newFileFilter()
     GtkFileFilter *result = gtk_file_filter_new();
     g_object_ref(result);
     return result;
+}
+
+void ShowInspector(void *webview) {
+    WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(webview));
+    webkit_web_inspector_show(WEBKIT_WEB_INSPECTOR(inspector));
+}
+
+void sendShowInspectorMessage() {
+    processMessage("wails:showInspector");
+}
+
+void InstallF12Hotkey(void *window)
+{
+    // When the user presses Ctrl+Shift+F12, call ShowInspector
+    GtkAccelGroup *accel_group = gtk_accel_group_new();
+    gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
+    GClosure *closure = g_cclosure_new(G_CALLBACK(sendShowInspectorMessage), window, NULL);
+    gtk_accel_group_connect(accel_group, GDK_KEY_F12, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, closure);
 }

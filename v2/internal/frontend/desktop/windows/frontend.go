@@ -48,7 +48,7 @@ type Frontend struct {
 	logger          *logger.Logger
 	chromium        *edge.Chromium
 	debug           bool
-	devtools        bool
+	devtoolsEnabled bool
 
 	// Assets
 	assets   *assetserver.AssetServer
@@ -143,13 +143,13 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.mainWindow = mainWindow
 
 	var _debug = ctx.Value("debug")
-	var _devtools = ctx.Value("devtools")
+	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
 
 	if _debug != nil {
 		f.debug = _debug.(bool)
 	}
-	if _devtools != nil {
-		f.devtools = _devtools.(bool)
+	if _devtoolsEnabled != nil {
+		f.devtoolsEnabled = _devtoolsEnabled.(bool)
 	}
 
 	f.WindowCenter()
@@ -458,6 +458,18 @@ func (f *Frontend) setupChromium() {
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
+		if vkey == w32.VK_F12 && f.devtoolsEnabled {
+			var keyState [256]byte
+			if w32.GetKeyboardState(keyState[:]) {
+				// Check if CTRL is pressed
+				if keyState[w32.VK_CONTROL]&0x80 != 0 && keyState[w32.VK_SHIFT]&0x80 != 0 {
+					chromium.OpenDevToolsWindow()
+					return true
+				}
+			} else {
+				f.logger.Error("Call to GetKeyboardState failed")
+			}
+		}
 		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
 		return false
 	}
@@ -507,11 +519,11 @@ func (f *Frontend) setupChromium() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutAreDefaultContextMenusEnabled(f.devtools || f.frontendOptions.EnableDefaultContextMenu)
+	err = settings.PutAreDefaultContextMenusEnabled(f.devtoolsEnabled || f.frontendOptions.EnableDefaultContextMenu)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutAreDevToolsEnabled(f.devtools)
+	err = settings.PutAreDevToolsEnabled(f.devtoolsEnabled)
 	if err != nil {
 		log.Fatal(err)
 	}
