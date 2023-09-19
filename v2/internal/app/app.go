@@ -22,7 +22,7 @@ type App struct {
 	debug bool
 
 	// Indicates if the devtools is enabled
-	devtools bool
+	devtoolsEnabled bool
 
 	// OnStartup/OnShutdown
 	startupCallback  func(ctx context.Context)
