@@ -80,6 +80,7 @@ Wails CLI 为项目做了很多繁重的工作，但有时需要手动构建项�
 #### 手动步骤
 
 - 对于 dev 构建，最少的命令是：`go build -tags dev -gcflags "all=-N -l"`
+  - 在macos上需要加上环境变量 `export CGO_LDFLAGS="-framework UniformTypeIdentifiers" && go build -tags dev -gcflags "all=-N -l"`
 - 对于生产构建，最少的命令是：`go build -tags desktop,production -ldflags "-w -s -H windowsgui"`
 - 确保在与 `.syso` 文件相同的目录中进行编译
 
