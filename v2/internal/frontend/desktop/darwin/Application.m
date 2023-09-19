@@ -14,14 +14,14 @@
 #import "WailsMenu.h"
 #import "WailsMenuItem.h"
 
-WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int devtoolsEnabled, int defaultContextMenu, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled) {
+WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int devtoolsEnabled, int defaultContextMenuEnabled, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled) {
     
     [NSApplication sharedApplication];
 
     WailsContext *result = [WailsContext new];
 
     result.devtoolsEnabled = devtoolsEnabled;
-    result.defaultContextMenu = defaultContextMenu;
+    result.defaultContextMenuEnabled = defaultContextMenuEnabled;
     
     if ( windowStartState == WindowStartsFullscreen ) {
         fullscreen = 1;

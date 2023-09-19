@@ -225,16 +225,18 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     [userContentController addScriptMessageHandler:self name:@"external"];
     config.userContentController = userContentController;
     self.userContentController = userContentController;
+
     if (self.devtoolsEnabled) {
         [config.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
-    } else if (!self.defaultContextMenu) {
+    }
+
+    if (!self.defaultContextMenuEnabled) {
         // Disable default context menus
         WKUserScript *initScript = [WKUserScript new];
         [initScript initWithSource:@"window.wails.flags.disableDefaultContextMenu = true;"
                      injectionTime:WKUserScriptInjectionTimeAtDocumentEnd
                   forMainFrameOnly:false];
         [userContentController addUserScript:initScript];
-        
     }
     
     self.webview = [WKWebView alloc];

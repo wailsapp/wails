@@ -45,7 +45,7 @@
 @property bool alwaysOnTop;
 
 @property bool devtoolsEnabled;
-@property bool defaultContextMenu;
+@property bool defaultContextMenuEnabled;
 
 @property (retain) WKUserContentController* userContentController;
 
