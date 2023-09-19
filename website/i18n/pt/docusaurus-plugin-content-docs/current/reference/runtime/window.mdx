@@ -102,7 +102,7 @@ Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() bool`
 
 Define a largura e a altura da janela.
 
-Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetSize(size: Size)`
+Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetSize(width: number, height: number)`
 
 ### WindowGetSize
 
@@ -116,7 +116,7 @@ Define o tamanho mínimo da janela. Será redimensionada a janela se a janela fo
 
 Definir um tamanho de `0,0` irá desativar esta restrição.
 
-Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMinSize(size: Size)`
+Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMinSize(width: number, height: number)`
 
 ### WindowSetMaxSize
 
@@ -124,7 +124,7 @@ Define o tamanho máximo da janela. Será redimensionada a janela se a janela fo
 
 Definir um tamanho de `0,0` irá desativar esta restrição.
 
-Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMaxSize(size: Size)`
+Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMaxSize(width: number, height: number)`
 
 ### WindowSetAlwaysOnTop
 
@@ -136,7 +136,7 @@ Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlway
 
 Define a posição da janela em relação ao monitor da janela ativada.
 
-Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPosition(position: Position)`
+Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPosition(x: number, y: number)`
 
 ### WindowGetPosition
 
@@ -199,6 +199,12 @@ No Windows, apenas valores alfa de 0 ou 255 são suportados. Qualquer valor que 
 :::
 
 Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/> JS: `WindowSetBackgroundColour(R, G, B, A)`
+
+### WindowPrint
+
+Opens tha native print dialog.
+
+Go: `WindowPrint(ctx context.Context)`<br/> JS: `WindowPrint()`
 
 ## TypeScript Object Definitions
 

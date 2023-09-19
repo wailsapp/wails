@@ -209,7 +209,7 @@ func printBulletPoint(text string, args ...any) {
 		fatal(err.Error())
 	}
 	t = strings.Trim(t, "\n\r")
-	pterm.Printfln(t, args...)
+	pterm.Printf(t, args...)
 }
 
 func GenerateBindings(buildOptions *Options) error {
@@ -348,8 +348,8 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		}
 	}
 
-	if options.Platform == "darwin" && options.Mode == Debug {
-		pterm.Warning.Println("A darwin debug build contains private APIs, please don't distribute this build. Please use it only as a test build for testing and debug purposes.")
+	if options.Platform == "darwin" && (options.Mode == Debug || options.Devtools) {
+		pterm.Warning.Println("This darwin build contains the use of private APIs. This will not pass Apple's AppStore approval process. Please use it only as a test build for testing and debug purposes.")
 	}
 
 	return options.CompiledBinary, nil
@@ -374,7 +374,7 @@ func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hook
 
 }
 
-func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string, buildHook string, hookName string) error {
+func executeBuildHook(_ *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string, buildHook string, hookName string) error {
 	if !options.ProjectData.RunNonNativeBuildHooks {
 		if hookIdentifier == "" {
 			// That's the global hook

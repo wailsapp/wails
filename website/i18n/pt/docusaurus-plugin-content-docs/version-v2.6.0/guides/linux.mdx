@@ -1,0 +1,18 @@
+# Linux
+
+Esta página possui vários guias relacionados ao desenvolvimento de aplicativos Wails para Linux.
+
+## A tag de vídeo não ativa o evento "ended"
+
+Ao usar uma tag de vídeo, o evento "ended" não é acionado quando o vídeo terminar de ser reproduzido. Este é um erro no WebkitGTK, no entanto, você pode usar a seguinte solução alternativa para corrigi-lo:
+
+```js
+videoTag.addEventListener("timeupdate", (event) => {
+  if (event.target.duration - event.target.currentTime < 0.2) {
+    let ended = new Event("ended");
+    event.target.dispatchEvent(ended);
+  }
+});
+```
+
+Fonte: [Lyimmi](https://github.com/Lyimmi) no [fórum de discussões](https://github.com/wailsapp/wails/issues/1729#issuecomment-1212291275)

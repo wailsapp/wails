@@ -1,0 +1,172 @@
+# トラブルシューティング
+
+このページは、トラブルシューティングを手助けするヒント集です。
+
+## `wails`コマンドが見つからないのですが?
+
+`wails`コマンドが見つからないとシステムに怒られた場合は、Goが、公式のGoインストール手順に従って導入されているかを確認してください。 コマンドが見つからないほとんどの理由は、あなたのホームディレクトリ配下にある`go/bin`ディレクトリのパスが、`PATH`環境変数に含まれていないからです。 また、インストールによって行われた環境変更を反映させるために、もともと開いていたコマンドプロンプト(ターミナル)がある場合はそれらをいったん閉じて、再度開きなおしてください。
+
+## アプリケーションがホワイト/ブラックスクリーン表示になってしまいます
+
+アプリケーション内で、正しいディレクトリでアセットが指定されていることを確認してください。 `main.go`ファイル内には、以下のようなコードが存在します:
+
+```go
+//go:embed all:frontend/dist
+var assets embed.FS
+```
+
+また、`frontend/dist`ディレクトリ内に、アプリケーションアセットがきちんと含まれているか確認してください。
+
+### Mac
+
+この事象がMacで発生した場合は、`Info.plist`に以下の記述を追加してみてください:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsLocalNetworking</key>
+    <true/>
+</dict>
+```
+
+参考: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
+
+## Macのアプリケーションが無効になっています
+
+ビルドしたアプリケーションが次のように表示される場合:
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={
+      require("@site/static/img/troubleshooting/invalid_mac_app.png").default
+    }
+  />
+</p>
+```
+
+アプリケーションの`info.plist`が無効である可能性があります。 `build/<yourapp>.app/Contents/info.plist`ファイルを更新し、データが有効かどうかを確認します。たとえば、バイナリ名が正しいかどうかを確認してください。 変更を反映するには、ファイルを`build/darwin`ディレクトリにコピーします。
+
+## Windowsのエクスプローラにアプリケーションアイコンが正しく表示されません
+
+アプリケーションアイコンが正しく表示されない場合は、`C:\Users\&#060;あなたのユーザ名&#062;\AppData\Local`ディレクトリ内にある、`IconCache.db`という隠しファイルを削除してみてください。 これにより、Windowsのアイコンキャッシュが強制的に再作成されます。
+
+出典: https://github.com/wailsapp/wails/issues/2360#issuecomment-1556070036
+
+## 可変長引数を持つバックエンドメソッドをフロントエンドから呼び出せません
+
+次のように、可変長引数を持つバックエンドメソッドが定義されている場合:
+
+```go
+func (a *App) TestFunc(msg string, args ...interface{}) error {
+    // Code
+}
+```
+
+このメソッドを、次のようにフロントエンドから呼び出すと失敗します:
+
+```js
+var msg = "Hello: ";
+var args = ["Go", "JS"];
+window.go.main.App.TestFunc(msg, ...args)
+  .then((result) => {
+    //do things here
+  })
+  .catch((error) => {
+    //handle error
+  });
+```
+
+回避方法:
+
+```js
+var msg = "Hello ";
+var args = ["Go", "JS"];
+window.go.main.App.TestFunc(msg, args)
+  .then((result) => {
+    //without the 3 dots
+    //do things here
+  })
+  .catch((error) => {
+    //handle error
+  });
+```
+
+出典: https://github.com/wailsapp/wails/issues/1186
+
+## Wailsのインストール時にプロキシエラーが発生します
+
+次のようなエラーが発生する場合:
+
+```
+"https://proxy.golang.org/github.com/wailsapp/wails/cmd/wails/@v/list": dial tcp 172.217.163.49:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+```
+
+おそらく、公式のGo Proxyがブロックされています (中国のユーザより報告されています)。 解決するには、次のように、プロキシを手動で設定します:
+
+```
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.cn,direct
+```
+
+出典: https://github.com/wailsapp/wails/issues/1233
+
+## 生成されたTypeScriptの型定義が正しくありません
+
+場合によっては、生成されるTypeScriptの型定義が誤っていることがあります。 この事象を軽減させるために、`ts_type`という構造体のタグを使用して、生成する型を指定することができます。 詳しくは、[こちら](https://github.com/tkrajina/typescriptify-golang-structs#custom-types)をご覧ください。
+
+## `index.html`から移動するとフロントエンド上でメソッドを呼び出すことができません
+
+`index.html`から新しいhtmlファイルへ遷移すると、コンテキスト情報は失われてしまいます。 この事象を修正するには、遷移先の新しいページの`<head>`セクションに、次のインポートコードを追加します:
+
+```html
+<head>
+  <script src="/wails/ipc.js"></script>
+  <script src="/wails/runtime.js"></script>
+</head>
+```
+
+出典: https://github.com/wailsapp/wails/discussions/1512
+
+## Macで`wails dev`を実行すると`too many open files`エラーが発生します
+
+デフォルトでは、macOSは最大で256個のファイルしか開くことができません。 この制限により、`wails dev`コマンド実行時に影響が発生する場合があります。 この制限は、ターミナルで次のようなコマンドを実行することで、緩和することができます: `ulimit -n 1024`。
+
+FSNotifyは、Macのために、[Appleのfseventsへの移行を検討しています](https://github.com/fsnotify/fsnotify/issues/11)。 この移行が完了しない間は、[こちら](https://github.com/wailsapp/wails/issues/1733)で言及されているように、独自で実装を行います。
+
+## Macアプリで不可解なコンパイルエラーが発生します
+
+一部のユーザより、次のようなコンパイルエラーが発生することがあるという報告を受けています:
+
+```shell
+# github.com/wailsapp/wails/v2/internal/frontend/desktop/darwin
+In file included from ../../pkg/mod/github.com/wailsapp/wails/v2@v2.0.0-beta.44.2/internal/frontend/desktop/darwin/callbacks.go:9:
+In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/System/Library/Frameworks/Foundation.framework/Headers/Foundation.h:12:
+/Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSBundle.h:91:143: error: function does not return NSString
+- (NSAttributedString *)localizedAttributedStringForKey:(NSString *)key value:(nullable NSString *)value table:(nullable NSString *)tableName NS_FORMAT_ARGUMENT(1) NS_REFINED_FOR_SWIFT API_AVAILABLE(macos(12.0), ios(15.0), watchos(8.0), tvos(15.0));
+                                                         ~~~~~~~~~~~~~~                                                                       ^                  ~
+/Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSObjCRuntime.h:103:48: note: expanded from macro 'NS_FORMAT_ARGUMENT'
+        #define NS_FORMAT_ARGUMENT(A) __attribute__ ((format_arg(A)))
+```
+
+これは_一般的に_、実行されているOSのバージョンと、インストールされているXCodeコマンドラインツールのバージョンが不一致であることが原因です。 このようなエラーが発生した場合は、XCodeコマンドラインツールを最新バージョンに更新してみてください。
+
+XCodeコマンドラインツールの再インストールが引き続き失敗する場合は、次のコマンドを使用して、ツールキットがどこに配置されているかを確認できます:
+
+`xcode-select -p`
+
+`/Applications/Xcode.app/Contents/Developer`と表示された場合、`sudo xcode-select --switch /Library/Developer/CommandLineTools`というコマンドを実行してください。
+
+出典: https://github.com/wailsapp/wails/issues/1806 および https://github.com/wailsapp/wails/issues/1140#issuecomment-1290446496
+
+--
+
+## Cannot start service: Host version "x.x.x does not match binary version "x.x.x"
+
+`frontend/node_modules`と`frontend/package-lock.json`を`.gitignore`に追加することをお勧めします。 そうしないと、異なるバージョンのNodeがインストールされている別のマシンでリポジトリを開いた際に、アプリケーションが実行できなくなる場合があります。
+
+この事象が発生した場合は、単純に`frontend/node_modules`と`frontend/package-lock.json`を削除し、`wails build`コマンドおよび`wails dev`コマンドを再実行してください。
+
+## ビルドプロセスが"Generating bindings"で停止します
+
+バインディングの生成プロセスは、アプリケーションを特別なモードで実行します。 アプリケーションに、意図に有無にかかわらず無限ループ(`wails.Run()`のあとに終了されないコード)が含まれている場合、バインディングの生成の段階でビルドプロセスが停止する可能性があります。 コードが正しく終了していることを確認してください。

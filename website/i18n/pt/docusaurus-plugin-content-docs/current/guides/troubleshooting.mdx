@@ -170,3 +170,19 @@ If this does happen, simply delete `frontend/node_modules` and `frontend/package
 ## Build process stuck on "Generating bindings"
 
 Bindings generation process runs your application in a special mode. If application, intentionally or unintentionally, contains an endless loop (i.e. not exiting after `wails.Run()` finished), this can lead to build process stuck on the stage of bindings generation. Please make sure your code exits properly.
+
+## Mac application flashes white at startup
+
+This is due to the default background of the webview being white. If you want to use the window background colour instead, you can make the webview background transparent using the following config:
+
+```go
+    err := wails.Run(&options.App{
+        Title:  "macflash",
+        Width:  1024,
+        Height: 768,
+        // Other settings
+        Mac: &mac.Options{
+            WebviewIsTransparent: true,
+        },
+    })
+```
