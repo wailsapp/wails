@@ -391,51 +391,58 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 		// Iterate over all declarations in the file
 		for _, decl := range file.Decls {
 			// Check if the declaration is a type declaration
-			if funcDecl, ok := decl.(*ast.FuncDecl); ok && funcDecl.Recv != nil {
-				// Check if the function has a receiver argument of the struct type
-				recvType, ok := funcDecl.Recv.List[0].Type.(*ast.StarExpr)
-				if ok {
-					if ident, ok := recvType.X.(*ast.Ident); ok && ident.Name == name {
-						fqn := fmt.Sprintf("%s.%s.%s", pkg.Path, name, funcDecl.Name.Name)
+			if funcDecl, ok := decl.(*ast.FuncDecl); ok && funcDecl.Recv != nil && funcDecl.Name.IsExported() {
+				var ident *ast.Ident
+				var ok bool
 
-						var alias *uint32
-						var err error
-						// Check for the text `wails:methodID <integer>`
-						if funcDecl.Doc != nil {
-							for _, docstring := range funcDecl.Doc.List {
-								if strings.Contains(docstring.Text, "//wails:methodID") {
-									idString := strings.TrimSpace(strings.TrimPrefix(docstring.Text, "//wails:methodID"))
-									parsedID, err := strconv.ParseUint(idString, 10, 32)
-									if err != nil {
-										return fmt.Errorf("invalid value in `wails:methodID` directive: '%s'. Expected a valid uint32 value", idString)
-									}
-									alias = lo.ToPtr(uint32(parsedID))
-									break
+				switch v := funcDecl.Recv.List[0].Type.(type) {
+				case *ast.StarExpr:
+					recv := funcDecl.Recv.List[0].Type.(*ast.StarExpr)
+					ident, ok = recv.X.(*ast.Ident)
+				case *ast.Ident:
+					ident, ok = funcDecl.Recv.List[0].Type.(*ast.Ident)
+				}
+				if ok && ident.Name == name {
+					fqn := fmt.Sprintf("%s.%s.%s", pkg.Path, name, funcDecl.Name.Name)
+
+					var alias *uint32
+					var err error
+					// Check for the text `wails:methodID <integer>`
+					if funcDecl.Doc != nil {
+						for _, docstring := range funcDecl.Doc.List {
+							if strings.Contains(docstring.Text, "//wails:methodID") {
+								idString := strings.TrimSpace(strings.TrimPrefix(docstring.Text, "//wails:methodID"))
+								parsedID, err := strconv.ParseUint(idString, 10, 32)
+								if err != nil {
+									return fmt.Errorf("invalid value in `wails:methodID` directive: '%s'. Expected a valid uint32 value", idString)
 								}
+								alias = lo.ToPtr(uint32(parsedID))
+								break
 							}
 						}
-						id, err := hash.Fnv(fqn)
-						if err != nil {
-							return err
-						}
-						// Add the method to the list of methods
-						method := &BoundMethod{
-							ID:         id,
-							Name:       funcDecl.Name.Name,
-							DocComment: funcDecl.Doc.Text(),
-							Alias:      alias,
-						}
-
-						if funcDecl.Type.Params != nil {
-							method.Inputs = p.parseParameters(funcDecl.Type.Params, pkg)
-						}
-						if funcDecl.Type.Results != nil {
-							method.Outputs = p.parseParameters(funcDecl.Type.Results, pkg)
-						}
-
-						methods = append(methods, method)
 					}
+					id, err := hash.Fnv(fqn)
+					if err != nil {
+						return err
+					}
+					// Add the method to the list of methods
+					method := &BoundMethod{
+						ID:         id,
+						Name:       funcDecl.Name.Name,
+						DocComment: funcDecl.Doc.Text(),
+						Alias:      alias,
+					}
+
+					if funcDecl.Type.Params != nil {
+						method.Inputs = p.parseParameters(funcDecl.Type.Params, pkg)
+					}
+					if funcDecl.Type.Results != nil {
+						method.Outputs = p.parseParameters(funcDecl.Type.Results, pkg)
+					}
+
+					methods = append(methods, method)
 				}
+
 			}
 		}
 	}
