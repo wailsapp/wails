@@ -187,6 +187,13 @@ type webViewAssetRequest struct {
 	windowName string
 }
 
+var windowKeyEvents = make(chan *windowKeyEvent)
+
+type windowKeyEvent struct {
+	windowId          uint
+	acceleratorString string
+}
+
 func (r *webViewAssetRequest) Header() (http.Header, error) {
 	h, err := r.Request.Header()
 	if err != nil {
@@ -428,6 +435,12 @@ func (a *App) Run() error {
 		for {
 			event := <-windowMessageBuffer
 			a.handleWindowMessage(event)
+		}
+	}()
+	go func() {
+		for {
+			event := <-windowKeyEvents
+			a.handleWindowKeyEvent(event)
 		}
 	}()
 	go func() {
@@ -740,6 +753,19 @@ func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow)
 	go callback(window)
 
 	return true
+}
+
+func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
+	// Get window from window map
+	a.windowsLock.Lock()
+	window, ok := a.windows[event.windowId]
+	a.windowsLock.Unlock()
+	if !ok {
+		log.Printf("WebviewWindow #%d not found", event.windowId)
+		return
+	}
+	// Get callback from window
+	window.handleKeyEvent(event.acceleratorString)
 }
 
 func invokeSync(fn func()) {

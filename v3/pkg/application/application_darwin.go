@@ -272,6 +272,14 @@ func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
 	}
 }
 
+//export processWindowKeyDownEvent
+func processWindowKeyDownEvent(windowID C.uint, acceleratorString *C.char) {
+	windowKeyEvents <- &windowKeyEvent{
+		windowId:          uint(windowID),
+		acceleratorString: C.GoString(acceleratorString),
+	}
+}
+
 //export processDragItems
 func processDragItems(windowID C.uint, arr **C.char, length C.int) {
 	var filenames []string
