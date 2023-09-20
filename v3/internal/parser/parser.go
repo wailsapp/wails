@@ -395,7 +395,7 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 				var ident *ast.Ident
 				var ok bool
 
-				switch v := funcDecl.Recv.List[0].Type.(type) {
+				switch funcDecl.Recv.List[0].Type.(type) {
 				case *ast.StarExpr:
 					recv := funcDecl.Recv.List[0].Type.(*ast.StarExpr)
 					ident, ok = recv.X.(*ast.Ident)
