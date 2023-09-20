@@ -720,6 +720,16 @@ type macosWebviewWindow struct {
 	parent   *WebviewWindow
 }
 
+func (w *macosWebviewWindow) handleKeyEvent(acceleratorString string) {
+	// Parse acceleratorString
+	accelerator, err := parseAccelerator(acceleratorString)
+	if err != nil {
+		globalApplication.error("unable to parse accelerator: %s", err.Error())
+		return
+	}
+	w.parent.processKeyBinding(accelerator.String())
+}
+
 func (w *macosWebviewWindow) isFocused() bool {
 	return bool(C.windowIsFocused(w.nsWindow))
 }

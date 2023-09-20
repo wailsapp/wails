@@ -1550,7 +1550,7 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 	if len(w.parent.keyBindings) == 0 {
 		return false
 	}
-	// Get the keyboard state and convert to an accellerator
+	// Get the keyboard state and convert to an accelerator
 	var keyState [256]byte
 	if !w32.GetKeyboardState(keyState[:]) {
 		globalApplication.error("Error getting keyboard state")

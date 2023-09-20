@@ -69,6 +69,7 @@ type (
 		absolutePosition() (int, int)
 		setAbsolutePosition(x int, y int)
 		flash(enabled bool)
+		handleKeyEvent(acceleratorString string)
 	}
 )
 
@@ -1064,4 +1065,13 @@ func (w *WebviewWindow) processKeyBinding(acceleratorString string) bool {
 	go callback(w)
 
 	return true
+}
+
+func (w *WebviewWindow) handleKeyEvent(acceleratorString string) {
+	if w.impl == nil {
+		return
+	}
+	invokeSync(func() {
+		w.impl.handleKeyEvent(acceleratorString)
+	})
 }

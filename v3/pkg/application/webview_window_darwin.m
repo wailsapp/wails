@@ -5,6 +5,7 @@
 #import "../events/events.h"
 extern void processMessage(unsigned int, const char*);
 extern void processURLRequest(unsigned int, void *);
+extern void processWindowKeyDownEvent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 @implementation WebviewWindow
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
@@ -16,8 +17,41 @@ extern bool hasListeners(unsigned int);
     [self setMovableByWindowBackground:YES];
     return self;
 }
+
 - (void)keyDown:(NSEvent *)event {
+
+    NSUInteger modifierFlags = event.modifierFlags;
+
+    // Create an array to hold the modifier strings
+    NSMutableArray *modifierStrings = [NSMutableArray array];
+
+    // Check for modifier flags and add corresponding strings to the array
+    if (modifierFlags & NSEventModifierFlagShift) {
+        [modifierStrings addObject:@"Shift"];
+    }
+    if (modifierFlags & NSEventModifierFlagControl) {
+        [modifierStrings addObject:@"Ctrl"];
+    }
+    if (modifierFlags & NSEventModifierFlagOption) {
+        [modifierStrings addObject:@"Option"];
+    }
+    if (modifierFlags & NSEventModifierFlagCommand) {
+        [modifierStrings addObject:@"Cmd"];
+    }
+
+    NSString *keyString = [NSEvent stringWithKeyCode:event.keyCode];
+    [modifierStrings addObject:keyString];
+
+    // Combine the modifier strings with the key character
+    NSString *keyEventString = [modifierStrings componentsJoinedByString:@"+"];
+
+    const char* utf8String = [keyEventString UTF8String];
+    WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
+    processWindowKeyDownEvent(delegate.windowId, utf8String);
+
+    NSLog(@"Key pressed: %@", keyEventString);
 }
+
 - (BOOL)canBecomeKeyWindow {
     return YES;
 }
