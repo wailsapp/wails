@@ -24,7 +24,8 @@ func NewRequest(env *edge.ICoreWebView2Environment, args *edge.ICoreWebView2WebR
 		invokeSync: invokeSync,
 	}
 
-	r.response, err = env.CreateWebResourceResponse(nil, http.StatusInternalServerError, "")
+	code := http.StatusInternalServerError
+	r.response, err = env.CreateWebResourceResponse(nil, code, http.StatusText(code), "")
 	if err != nil {
 		return nil, fmt.Errorf("CreateWebResourceResponse failed: %s", err)
 	}
