@@ -2,8 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v3/internal/hash"
 	"go/ast"
 	"go/build"
 	"go/parser"
@@ -14,6 +12,9 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/hash"
 )
 
 type packagePath = string
