@@ -26,19 +26,15 @@ type assetServerWebView struct {
 func (d *AssetServer) ServeWebViewRequest(req webview.Request) {
 	d.dispatchInit.Do(func() {
 		workers := d.dispatchWorkers
-		if workers == 0 {
-			workers = 10
+		if workers <= 0 {
+			return
 		}
 
 		workerC := make(chan webview.Request, workers*2)
 		for i := 0; i < workers; i++ {
 			go func() {
 				for req := range workerC {
-					uri, _ := req.URL()
 					d.processWebViewRequest(req)
-					if err := req.Close(); err != nil {
-						d.logError("Unable to call close for request for uri '%s'", uri)
-					}
 				}
 			}()
 		}
@@ -49,19 +45,38 @@ func (d *AssetServer) ServeWebViewRequest(req webview.Request) {
 		d.dispatchReqC = dispatchC
 	})
 
-	d.dispatchReqC <- req
+	if d.dispatchReqC == nil {
+		go d.processWebViewRequest(req)
+	} else {
+		d.dispatchReqC <- req
+	}
+}
+
+func (d *AssetServer) processWebViewRequest(r webview.Request) {
+	uri, _ := r.URL()
+	d.processWebViewRequestInternal(r)
+	if err := r.Close(); err != nil {
+		d.logError("Unable to call close for request for uri '%s'", uri)
+	}
 }
 
 // processHTTPRequest processes the HTTP Request by faking a golang HTTP Server.
 // The request will be finished with a StatusNotImplemented code if no handler has written to the response.
-func (d *AssetServer) processWebViewRequest(r webview.Request) {
+func (d *AssetServer) processWebViewRequestInternal(r webview.Request) {
+	uri := "unknown"
+	var err error
+
 	wrw := r.Response()
-	defer wrw.Finish()
+	defer func() {
+		if err := wrw.Finish(); err != nil {
+			d.logError("Error finishing request '%s': %s", uri, err)
+		}
+	}()
 
 	var rw http.ResponseWriter = &contentTypeSniffer{rw: wrw} // Make sure we have a Content-Type sniffer
 	defer rw.WriteHeader(http.StatusNotImplemented)           // This is a NOP when a handler has already written and set the status
 
-	uri, err := r.URL()
+	uri, err = r.URL()
 	if err != nil {
 		d.logError("Error processing request, unable to get URL: %s (HttpResponse=500)", err)
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
