@@ -31,6 +31,13 @@ type macosSystemTray struct {
 	parent         *SystemTray
 }
 
+func (s *macosSystemTray) openMenu() {
+	if s.nsMenu == nil {
+		return
+	}
+	C.showMenu(s.nsStatusItem, s.nsMenu)
+}
+
 type button int
 
 const (
