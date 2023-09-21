@@ -4,6 +4,9 @@ package application
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 	"strings"
 	"unsafe"
 
@@ -12,7 +15,7 @@ import (
 )
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
+#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0 ayatana-appindicator3-0.1
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -20,11 +23,14 @@ import (
 #include <stdio.h>
 #include <limits.h>
 #include <stdint.h>
+
 #ifdef G_APPLICATION_DEFAULT_FLAGS
     #define APPLICATION_DEFAULT_FLAGS G_APPLICATION_DEFAULT_FLAGS
 #else
     #define APPLICATION_DEFAULT_FLAGS G_APPLICATION_FLAGS_NONE
 #endif
+
+#include <libayatana-appindicator/app-indicator.h>
 
 typedef struct CallbackID
 {
@@ -1140,4 +1146,69 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 	}
 
 	return results[0], nil
+}
+
+// systray
+func systrayNew(label string) pointer {
+	labelStr := C.CString(label)
+	defer C.free(unsafe.Pointer(labelStr))
+	emptyStr := C.CString("")
+	defer C.free(unsafe.Pointer(emptyStr))
+	indicator := C.app_indicator_new(labelStr, labelStr, C.APP_INDICATOR_CATEGORY_APPLICATION_STATUS)
+
+	trayMenu := C.gtk_menu_new()
+	//	item := C.gtk_menu_item_new_with_label(labelStr)
+	//	C.gtk_menu_shell_append((*C.GtkMenuShell)(unsafe.Pointer(trayMenu)), item)
+	//	C.gtk_widget_show(item)
+	C.app_indicator_set_status(indicator, C.APP_INDICATOR_STATUS_ACTIVE)
+	C.app_indicator_set_menu(indicator, (*C.GtkMenu)(unsafe.Pointer(trayMenu)))
+	iconStr := C.CString("wails-systray-icon")
+	defer C.free(unsafe.Pointer(iconStr))
+	C.app_indicator_set_icon_full(indicator, iconStr, emptyStr)
+	systraySetLabel(pointer(indicator), label)
+	return pointer(indicator)
+}
+
+func systraySetTitle(tray pointer, title string) {
+	titleStr := C.CString(title)
+	defer C.free(unsafe.Pointer(titleStr))
+	C.app_indicator_set_title((*C.AppIndicator)(tray), titleStr)
+}
+
+func systraySetLabel(tray pointer, label string) {
+	labelStr := C.CString(label)
+	defer C.free(unsafe.Pointer(labelStr))
+	emptyStr := C.CString("")
+	defer C.free(unsafe.Pointer(emptyStr))
+	C.app_indicator_set_label((*C.AppIndicator)(tray), labelStr, labelStr)
+}
+
+func systrayMenuSet(tray pointer, menu pointer) {
+	//	C.app_indicator_set_menu((*C.AppIndicator)(tray), (*C.GtkMenu)(unsafe.Pointer(menu)))
+}
+
+/*
+GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(icon_file_path, NULL);
+int width, height;
+gdk_pixbuf_get_file_info (icon_file_path, &width, &height);
+gtk_icon_theme_add_builtin_icon ("custom_icon", width, pixbuf);
+g_object_unref (G_OBJECT (pixbuf));
+
+GtkToolItem *toolbar_item = gtk_toggle_tool_button_new();
+gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON(toolbar_item), "custom_icon");
+*/
+
+func systraySetTemplateIcon(tray pointer, icon []byte) {
+	dirname, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	file := filepath.Join(dirname, ".icons", "wails-systray-icon.png")
+	if err := os.WriteFile(file, icon, 0666); err != nil {
+		log.Fatal(err)
+	}
+	systrayStr := C.CString("wails-systray-icon")
+	defer C.free(unsafe.Pointer(systrayStr))
+
+	C.app_indicator_set_attention_icon_full((*C.AppIndicator)(tray), systrayStr, systrayStr)
 }
