@@ -64,6 +64,10 @@ type windowsWebviewWindow struct {
 	focusingChromium   bool
 }
 
+func (w *windowsWebviewWindow) handleKeyEvent(_ string) {
+	// Unused on windows
+}
+
 func (w *windowsWebviewWindow) setAbsolutePosition(x int, y int) {
 	// Set the window's absolute position
 	w32.SetWindowPos(w.hwnd, 0, x, y, 0, 0, w32.SWP_NOSIZE|w32.SWP_NOZORDER)

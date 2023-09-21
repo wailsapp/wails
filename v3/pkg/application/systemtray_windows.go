@@ -30,6 +30,21 @@ type windowsSystemTray struct {
 	currentIcon   w32.HICON
 }
 
+func (s *windowsSystemTray) openMenu() {
+	if s.menu == nil {
+		return
+	}
+	// Get the system tray bounds
+	trayBounds, err := s.bounds()
+	if err != nil {
+		return
+	}
+
+	// Show the menu at the tray bounds
+	s.menu.ShowAt(trayBounds.X, trayBounds.Y)
+
+}
+
 func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) error {
 
 	// Get the trayBounds of this system tray

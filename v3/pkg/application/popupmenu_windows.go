@@ -151,11 +151,7 @@ func NewApplicationMenu(parent w32.HWND, inputMenu *Menu) *Win32Menu {
 	return result
 }
 
-func (p *Win32Menu) ShowAtCursor() {
-	x, y, ok := w32.GetCursorPos()
-	if ok == false {
-		w32.Fatal("GetCursorPos failed")
-	}
+func (p *Win32Menu) ShowAt(x int, y int) {
 
 	w32.SetForegroundWindow(p.parent)
 
@@ -175,6 +171,15 @@ func (p *Win32Menu) ShowAtCursor() {
 		w32.Fatal("PostMessage failed")
 	}
 
+}
+
+func (p *Win32Menu) ShowAtCursor() {
+	x, y, ok := w32.GetCursorPos()
+	if ok == false {
+		w32.Fatal("GetCursorPos failed")
+	}
+
+	p.ShowAt(x, y)
 }
 
 func (p *Win32Menu) ProcessCommand(cmdMsgID int) bool {

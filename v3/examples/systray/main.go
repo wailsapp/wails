@@ -18,12 +18,15 @@ func main() {
 		},
 	})
 
+	systemTray := app.NewSystemTray()
+
 	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Width:       500,
 		Height:      800,
 		Frameless:   true,
 		AlwaysOnTop: true,
 		Hidden:      true,
+		HTML:        "<html><body><h1>This window should be centered to the icon!</h1><p>F12 should open the menu</p></body></html>",
 		ShouldClose: func(window *application.WebviewWindow) bool {
 			window.Hide()
 			return false
@@ -31,9 +34,13 @@ func main() {
 		Windows: application.WindowsWindow{
 			HiddenOnTaskbar: true,
 		},
+		KeyBindings: map[string]func(window *application.WebviewWindow){
+			"F12": func(window *application.WebviewWindow) {
+				systemTray.OpenMenu()
+			},
+		},
 	})
 
-	systemTray := app.NewSystemTray()
 	if runtime.GOOS == "darwin" {
 		systemTray.SetTemplateIcon(icons.SystrayMacTemplate)
 		systemTray.SetLabel("\u001B[1;31mW\u001B[1;32ma\u001B[1;33mi\u001B[1;34ml\u001B[1;35ms\u001B[0m")

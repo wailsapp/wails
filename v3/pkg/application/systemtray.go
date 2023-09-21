@@ -35,6 +35,7 @@ type systemTrayImpl interface {
 	bounds() (*Rect, error)
 	getScreen() (*Screen, error)
 	positionWindow(window *WebviewWindow, offset int) error
+	openMenu()
 }
 
 type PositionOptions struct {
@@ -150,7 +151,6 @@ func (s *SystemTray) SetDarkModeIcon(icon []byte) *SystemTray {
 }
 
 func (s *SystemTray) SetMenu(menu *Menu) *SystemTray {
-	fmt.Println("SystemTray.SetMenu", menu, s.impl)
 	if s.impl == nil {
 		s.menu = menu
 	} else {
@@ -285,4 +285,14 @@ func (s *SystemTray) defaultClickHandler() {
 		_ = s.PositionWindow(s.attachedWindow.Window, s.attachedWindow.Offset)
 		s.attachedWindow.Window.Show().Focus()
 	}
+}
+
+func (s *SystemTray) OpenMenu() {
+	if s.menu == nil {
+		return
+	}
+	if s.impl == nil {
+		return
+	}
+	invokeSync(s.impl.openMenu)
 }
