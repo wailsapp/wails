@@ -95,6 +95,11 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 		isTemplateIcon: s.isTemplateIcon,
 	}
 }
+func (s *linuxSystemTray) openMenu() {
+	if s.tray == nil {
+		return
+	}
+}
 
 func (s *linuxSystemTray) openMenu() {
 }

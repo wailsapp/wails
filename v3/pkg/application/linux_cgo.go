@@ -1157,9 +1157,9 @@ func systrayNew(label string) pointer {
 	indicator := C.app_indicator_new(labelStr, labelStr, C.APP_INDICATOR_CATEGORY_APPLICATION_STATUS)
 
 	trayMenu := C.gtk_menu_new()
-	//	item := C.gtk_menu_item_new_with_label(labelStr)
-	//	C.gtk_menu_shell_append((*C.GtkMenuShell)(unsafe.Pointer(trayMenu)), item)
-	//	C.gtk_widget_show(item)
+	item := C.gtk_menu_item_new_with_label(labelStr)
+	C.gtk_menu_shell_append((*C.GtkMenuShell)(unsafe.Pointer(trayMenu)), item)
+	C.gtk_widget_show(item)
 	C.app_indicator_set_status(indicator, C.APP_INDICATOR_STATUS_ACTIVE)
 	C.app_indicator_set_menu(indicator, (*C.GtkMenu)(unsafe.Pointer(trayMenu)))
 	iconStr := C.CString("wails-systray-icon")
@@ -1186,17 +1186,6 @@ func systraySetLabel(tray pointer, label string) {
 func systrayMenuSet(tray pointer, menu pointer) {
 	//	C.app_indicator_set_menu((*C.AppIndicator)(tray), (*C.GtkMenu)(unsafe.Pointer(menu)))
 }
-
-/*
-GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(icon_file_path, NULL);
-int width, height;
-gdk_pixbuf_get_file_info (icon_file_path, &width, &height);
-gtk_icon_theme_add_builtin_icon ("custom_icon", width, pixbuf);
-g_object_unref (G_OBJECT (pixbuf));
-
-GtkToolItem *toolbar_item = gtk_toggle_tool_button_new();
-gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON(toolbar_item), "custom_icon");
-*/
 
 func systraySetTemplateIcon(tray pointer, icon []byte) {
 	dirname, err := os.UserHomeDir()
