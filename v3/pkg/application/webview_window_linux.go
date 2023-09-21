@@ -465,3 +465,13 @@ func (w *linuxWebviewWindow) print() error {
 	w.execJS("window.print();")
 	return nil
 }
+
+func (w *linuxWebviewWindow) handleKeyEvent(acceleratorString string) {
+	// Parse acceleratorString
+	// accelerator, err := parseAccelerator(acceleratorString)
+	// if err != nil {
+	// 	globalApplication.error("unable to parse accelerator: %s", err.Error())
+	// 	return
+	// }
+	w.parent.processKeyBinding(acceleratorString)
+}
