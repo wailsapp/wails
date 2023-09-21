@@ -49,7 +49,7 @@ type Frontend struct {
 	frontendOptions *options.App
 	logger          *logger.Logger
 	debug           bool
-	devtools        bool
+	devtoolsEnabled bool
 
 	// Assets
 	assets   *assetserver.AssetServer
@@ -171,16 +171,16 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
 
 	var _debug = ctx.Value("debug")
-	var _devtools = ctx.Value("devtools")
+	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
 
 	if _debug != nil {
 		f.debug = _debug.(bool)
 	}
-	if _devtools != nil {
-		f.devtools = _devtools.(bool)
+	if _devtoolsEnabled != nil {
+		f.devtoolsEnabled = _devtoolsEnabled.(bool)
 	}
 
-	mainWindow := NewWindow(f.frontendOptions, f.debug, f.devtools)
+	mainWindow := NewWindow(f.frontendOptions, f.debug, f.devtoolsEnabled)
 	f.mainWindow = mainWindow
 	f.mainWindow.Center()
 
@@ -340,6 +340,11 @@ func (f *Frontend) processMessage(message string) {
 		return
 	}
 
+	if message == "wails:openInspector" {
+		showInspector(f.mainWindow.context)
+		return
+	}
+
 	//if strings.HasPrefix(message, "systemevent:") {
 	//	f.processSystemEvent(message)
 	//	return
@@ -419,7 +424,7 @@ func processCallback(callbackID uint) {
 }
 
 //export processURLRequest
-func processURLRequest(ctx unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
+func processURLRequest(_ unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
 	requestBuffer <- webview.NewRequest(wkURLSchemeTask)
 }
 
