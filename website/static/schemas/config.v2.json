@@ -186,10 +186,6 @@
                 "type": "string",
                 "description": "Windows-only. The description. It is displayed on the `Type` column on Windows Explorer."
               },
-              "mimeType": {
-                "type": "string",
-                "description": "Linux-only. The mime-type e.g. 'image/png' or 'text/plain'"
-              },
               "iconName": {
                 "type": "string",
                 "description": "The icon Name without extension. (.icns for MacOS and .ico for Windows)"
