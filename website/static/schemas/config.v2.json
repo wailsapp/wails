@@ -188,10 +188,10 @@
               },
               "iconName": {
                 "type": "string",
-                "description": "The icon Name without extension. (.icns for MacOS and .ico for Windows)"
+                "description": "The icon name without extension. Icons should be located in build folder. Proper icons will be generated from .png file for both macOS and Windows)"
               },
               "role": {
-                "description": "MacOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.",
+                "description": "macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.",
                 "allOf": [
                   {
                     "$ref": "#/definitions/BundleTypeRole"
