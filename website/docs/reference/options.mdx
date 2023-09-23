@@ -797,6 +797,40 @@ with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applic
 Name: WindowIsTranslucent<br/>
 Type: `bool`
 
+#### Preferences
+
+The Preferences struct provides the ability to configure the Webview preferences.
+
+Name: Preferences<br/>
+Type: [`*mac.Preferences`](#preferences-struct)
+
+##### Preferences struct 
+
+You can specify the webview preferences.
+
+```go
+type Preferences struct {
+	TabFocusesLinks        u.Bool
+	TextInteractionEnabled u.Bool
+}
+```
+
+| Name                       | Description                                                                                                                                                                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| TabFocusesLinks            | A Boolean value that indicates whether pressing the tab key changes the focus to links and form controls. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/2818595-tabfocuseslinks?language=objc)         |
+| TextInteractionEnabled     | A Boolean value that indicates whether to allow people to select or otherwise interact with text. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3727362-textinteractionenabled?language=objc)          |
+
+Example:
+
+```go
+Mac: &mac.Options{
+    Preferences: &mac.Preferences{
+		TabFocusesLinks:        mac.EnablePreference(),
+		TextInteractionEnabled: mac.DisablePreference(),
+	}
+}
+```
+
 #### About
 
 This configuration lets you set the title, message and icon for the "About" menu item in the app menu created by the "AppMenu" role.
