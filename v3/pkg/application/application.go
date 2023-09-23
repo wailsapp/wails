@@ -377,7 +377,7 @@ func (a *App) error(message string, args ...any) {
 }
 
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
-	newWindow := NewWindow(windowOptions)
+	newWindow := newWindow(windowOptions)
 	id := newWindow.id
 
 	a.windowsLock.Lock()
@@ -396,7 +396,7 @@ func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *W
 
 func (a *App) NewSystemTray() *SystemTray {
 	id := a.getSystemTrayID()
-	newSystemTray := NewSystemTray(id)
+	newSystemTray := newSystemTray(id)
 
 	a.systemTraysLock.Lock()
 	a.systemTrays[id] = newSystemTray
@@ -571,7 +571,7 @@ func (a *App) CurrentWindow() *WebviewWindow {
 }
 
 func (a *App) Quit() {
-	invokeSync(func() {
+	InvokeSync(func() {
 		a.windowsLock.Lock()
 		for _, window := range a.windows {
 			window.Destroy()
@@ -766,51 +766,4 @@ func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
 	}
 	// Get callback from window
 	window.handleKeyEvent(event.acceleratorString)
-}
-
-func invokeSync(fn func()) {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	globalApplication.dispatchOnMainThread(func() {
-		defer processPanicHandlerRecover()
-		fn()
-		wg.Done()
-	})
-	wg.Wait()
-}
-
-func invokeSyncWithResult[T any](fn func() T) (res T) {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	globalApplication.dispatchOnMainThread(func() {
-		defer processPanicHandlerRecover()
-		res = fn()
-		wg.Done()
-	})
-	wg.Wait()
-	return res
-}
-
-func invokeSyncWithError(fn func() error) (err error) {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	globalApplication.dispatchOnMainThread(func() {
-		defer processPanicHandlerRecover()
-		err = fn()
-		wg.Done()
-	})
-	wg.Wait()
-	return
-}
-
-func invokeSyncWithResultAndError[T any](fn func() (T, error)) (res T, err error) {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	globalApplication.dispatchOnMainThread(func() {
-		defer processPanicHandlerRecover()
-		res, err = fn()
-		wg.Done()
-	})
-	wg.Wait()
-	return res, err
 }

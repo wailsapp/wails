@@ -84,6 +84,12 @@ nav:
     - Next Steps: getting-started/next-steps.md
     - Feedback: getting-started/feedback.md
   - What's New in v3?: whats-new.md
+  - API:
+      - Application: API/application.md
+      - Window: API/window.md
+      - System Tray: API/systray.md
+      - Menu: API/menu.md
+      - Main Thread: API/mainthread.md
   - Development:
     - Introduction: development/introduction.md
     - Status: development/status.md

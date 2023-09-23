@@ -82,7 +82,7 @@ func (m *linuxApp) getApplicationMenu() pointer {
 
 	menu := globalApplication.ApplicationMenu
 	if menu != nil {
-		invokeSync(func() {
+		InvokeSync(func() {
 			menu.Update()
 		})
 		m.applicationMenu = (menu.impl).(*linuxMenu).native

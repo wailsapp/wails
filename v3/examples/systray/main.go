@@ -43,8 +43,6 @@ func main() {
 
 	if runtime.GOOS == "darwin" {
 		systemTray.SetTemplateIcon(icons.SystrayMacTemplate)
-		systemTray.SetLabel("\u001B[1;31mW\u001B[1;32ma\u001B[1;33mi\u001B[1;34ml\u001B[1;35ms\u001B[0m")
-
 	}
 
 	myMenu := app.NewMenu()

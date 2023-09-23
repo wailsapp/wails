@@ -1146,7 +1146,7 @@ func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
 
 func (w *macosWebviewWindow) relativePosition() (int, int) {
 	var x, y C.int
-	invokeSync(func() {
+	InvokeSync(func() {
 		C.windowGetRelativePosition(w.nsWindow, &x, &y)
 	})
 
@@ -1155,7 +1155,7 @@ func (w *macosWebviewWindow) relativePosition() (int, int) {
 
 func (w *macosWebviewWindow) absolutePosition() (int, int) {
 	var x, y C.int
-	invokeSync(func() {
+	InvokeSync(func() {
 		C.windowGetAbsolutePosition(w.nsWindow, &x, &y)
 	})
 

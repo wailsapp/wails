@@ -967,7 +967,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			// depends on the content in the WebView, see https://github.com/wailsapp/wails/issues/1319
 		} else if w.resizeDebouncer != nil {
 			w.resizeDebouncer(func() {
-				invokeSync(func() {
+				InvokeSync(func() {
 					w.chromium.Resize()
 				})
 			})

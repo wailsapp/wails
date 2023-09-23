@@ -111,7 +111,7 @@ func (d *MessageDialog) Show() {
 	if d.impl == nil {
 		d.impl = newDialogImpl(d)
 	}
-	invokeSync(d.impl.show)
+	InvokeSync(d.impl.show)
 }
 
 func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog {
@@ -265,7 +265,7 @@ func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error) {
 	if d.impl == nil {
 		d.impl = newOpenFileDialogImpl(d)
 	}
-	selection, err := invokeSyncWithResultAndError(d.impl.show)
+	selection, err := InvokeSyncWithResultAndError(d.impl.show)
 	var result string
 	if len(selection) > 0 {
 		result = selection[0]
@@ -289,7 +289,7 @@ func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error) {
 	if d.impl == nil {
 		d.impl = newOpenFileDialogImpl(d)
 	}
-	return invokeSyncWithResultAndError(d.impl.show)
+	return InvokeSyncWithResultAndError(d.impl.show)
 }
 
 func (d *OpenFileDialogStruct) SetMessage(message string) *OpenFileDialogStruct {
@@ -448,7 +448,7 @@ func (d *SaveFileDialogStruct) PromptForSingleSelection() (string, error) {
 	if d.impl == nil {
 		d.impl = newSaveFileDialogImpl(d)
 	}
-	return invokeSyncWithResultAndError(d.impl.show)
+	return InvokeSyncWithResultAndError(d.impl.show)
 }
 
 func (d *SaveFileDialogStruct) SetButtonText(text string) *SaveFileDialogStruct {

@@ -14,7 +14,7 @@ type linuxMenuItem struct {
 }
 
 func (l linuxMenuItem) setTooltip(tooltip string) {
-	invokeSync(func(){
+	InvokeSync(func() {
 		l.blockSignal()
 		defer l.unBlockSignal()
 		menuItemSetToolTip(l.native, tooltip)
@@ -34,7 +34,7 @@ func (l linuxMenuItem) unBlockSignal() {
 }
 
 func (l linuxMenuItem) setLabel(s string) {
-	invokeSync(func() {
+	InvokeSync(func() {
 		l.blockSignal()
 		defer l.unBlockSignal()
 		menuItemSetLabel(l.native, s)
@@ -46,7 +46,7 @@ func (l linuxMenuItem) isChecked() bool {
 }
 
 func (l linuxMenuItem) setDisabled(disabled bool) {
-	invokeSync(func() {
+	InvokeSync(func() {
 		l.blockSignal()
 		defer l.unBlockSignal()
 		menuItemSetDisabled(l.native, disabled)
@@ -54,7 +54,7 @@ func (l linuxMenuItem) setDisabled(disabled bool) {
 }
 
 func (l linuxMenuItem) setChecked(checked bool) {
-	invokeSync(func() {
+	InvokeSync(func() {
 		l.blockSignal()
 		defer l.unBlockSignal()
 		menuItemSetChecked(l.native, checked)
@@ -62,7 +62,7 @@ func (l linuxMenuItem) setChecked(checked bool) {
 }
 
 func (l linuxMenuItem) setHidden(hidden bool) {
-	invokeSync(func() {
+	InvokeSync(func() {
 		l.blockSignal()
 		defer l.unBlockSignal()
 		widgetSetVisible(l.native, hidden)

@@ -156,8 +156,8 @@ func (w *WebviewWindow) setupEventMapping() {
 	}
 }
 
-// NewWindow creates a new window with the given options
-func NewWindow(options WebviewWindowOptions) *WebviewWindow {
+// newWindow creates a new window with the given options
+func newWindow(options WebviewWindowOptions) *WebviewWindow {
 	if options.Width == 0 {
 		options.Width = 800
 	}
@@ -186,7 +186,7 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		}
 		if shouldClose {
 			globalApplication.deleteWindowByID(result.id)
-			invokeSync(result.impl.close)
+			InvokeSync(result.impl.close)
 		}
 	})
 
@@ -223,7 +223,7 @@ func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 func (w *WebviewWindow) SetTitle(title string) *WebviewWindow {
 	w.options.Title = title
 	if w.impl != nil {
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setTitle(title)
 		})
 	}
@@ -271,7 +271,7 @@ func (w *WebviewWindow) SetSize(width, height int) *WebviewWindow {
 	}
 
 	if w.impl != nil {
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setSize(width, height)
 		})
 	}
@@ -283,14 +283,14 @@ func (w *WebviewWindow) run() {
 		return
 	}
 	w.impl = newWindowImpl(w)
-	invokeSync(w.impl.run)
+	InvokeSync(w.impl.run)
 }
 
 // SetAlwaysOnTop sets the window to be always on top.
 func (w *WebviewWindow) SetAlwaysOnTop(b bool) *WebviewWindow {
 	w.options.AlwaysOnTop = b
 	if w.impl != nil {
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setAlwaysOnTop(b)
 		})
 	}
@@ -303,10 +303,10 @@ func (w *WebviewWindow) Show() *WebviewWindow {
 		return w
 	}
 	if w.impl == nil {
-		invokeSync(w.run)
+		InvokeSync(w.run)
 		return w
 	}
-	invokeSync(w.impl.show)
+	InvokeSync(w.impl.show)
 	w.emit(events.Common.WindowShow)
 	return w
 }
@@ -315,7 +315,7 @@ func (w *WebviewWindow) Show() *WebviewWindow {
 func (w *WebviewWindow) Hide() *WebviewWindow {
 	w.options.Hidden = true
 	if w.impl != nil {
-		invokeSync(w.impl.hide)
+		InvokeSync(w.impl.hide)
 		w.emit(events.Common.WindowHide)
 	}
 	return w
@@ -324,7 +324,7 @@ func (w *WebviewWindow) Hide() *WebviewWindow {
 func (w *WebviewWindow) SetURL(s string) *WebviewWindow {
 	w.options.URL = s
 	if w.impl != nil {
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setURL(s)
 		})
 	}
@@ -335,7 +335,7 @@ func (w *WebviewWindow) SetURL(s string) *WebviewWindow {
 func (w *WebviewWindow) SetZoom(magnification float64) *WebviewWindow {
 	w.options.Zoom = magnification
 	if w.impl != nil {
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setZoom(magnification)
 		})
 	}
@@ -345,7 +345,7 @@ func (w *WebviewWindow) SetZoom(magnification float64) *WebviewWindow {
 // GetZoom returns the current zoom level of the window.
 func (w *WebviewWindow) GetZoom() float64 {
 	if w.impl != nil {
-		return invokeSyncWithResult(w.impl.getZoom)
+		return InvokeSyncWithResult(w.impl.getZoom)
 	}
 	return 1
 }
@@ -354,7 +354,7 @@ func (w *WebviewWindow) GetZoom() float64 {
 func (w *WebviewWindow) SetResizable(b bool) *WebviewWindow {
 	w.options.DisableResize = !b
 	if w.impl != nil {
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setResizable(b)
 		})
 	}
@@ -387,11 +387,11 @@ func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) *WebviewWindow {
 	}
 	if w.impl != nil {
 		if newSize {
-			invokeSync(func() {
+			InvokeSync(func() {
 				w.impl.setSize(newWidth, newHeight)
 			})
 		}
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setMinSize(minWidth, minHeight)
 		})
 	}
@@ -419,11 +419,11 @@ func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) *WebviewWindow {
 	}
 	if w.impl != nil {
 		if newSize {
-			invokeSync(func() {
+			InvokeSync(func() {
 				w.impl.setSize(newWidth, newHeight)
 			})
 		}
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setMaxSize(maxWidth, maxHeight)
 		})
 	}
@@ -446,7 +446,7 @@ func (w *WebviewWindow) Fullscreen() *WebviewWindow {
 	}
 	if !w.IsFullscreen() {
 		w.disableSizeConstraints()
-		invokeSync(w.impl.fullscreen)
+		InvokeSync(w.impl.fullscreen)
 	}
 	return w
 }
@@ -454,7 +454,7 @@ func (w *WebviewWindow) Fullscreen() *WebviewWindow {
 func (w *WebviewWindow) SetFullscreenButtonEnabled(enabled bool) *WebviewWindow {
 	w.options.FullscreenButtonEnabled = enabled
 	if w.impl != nil {
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setFullscreenButtonEnabled(enabled)
 		})
 	}
@@ -466,7 +466,7 @@ func (w *WebviewWindow) Flash(enabled bool) {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(func() {
+	InvokeSync(func() {
 		w.impl.flash(enabled)
 	})
 }
@@ -476,7 +476,7 @@ func (w *WebviewWindow) IsMinimised() bool {
 	if w.impl == nil {
 		return false
 	}
-	return invokeSyncWithResult(w.impl.isMinimised)
+	return InvokeSyncWithResult(w.impl.isMinimised)
 }
 
 // IsVisible returns true if the window is visible
@@ -484,7 +484,7 @@ func (w *WebviewWindow) IsVisible() bool {
 	if w.impl == nil {
 		return false
 	}
-	return invokeSyncWithResult(w.impl.isVisible)
+	return InvokeSyncWithResult(w.impl.isVisible)
 }
 
 // IsMaximised returns true if the window is maximised
@@ -492,7 +492,7 @@ func (w *WebviewWindow) IsMaximised() bool {
 	if w.impl == nil {
 		return false
 	}
-	return invokeSyncWithResult(w.impl.isMaximised)
+	return InvokeSyncWithResult(w.impl.isMaximised)
 }
 
 // Size returns the size of the window
@@ -501,7 +501,7 @@ func (w *WebviewWindow) Size() (int, int) {
 		return 0, 0
 	}
 	var width, height int
-	invokeSync(func() {
+	InvokeSync(func() {
 		width, height = w.impl.size()
 	})
 	return width, height
@@ -512,7 +512,7 @@ func (w *WebviewWindow) IsFocused() bool {
 	if w.impl == nil {
 		return false
 	}
-	return invokeSyncWithResult(w.impl.isFocused)
+	return InvokeSyncWithResult(w.impl.isFocused)
 }
 
 // IsFullscreen returns true if the window is fullscreen
@@ -520,14 +520,14 @@ func (w *WebviewWindow) IsFullscreen() bool {
 	if w.impl == nil {
 		return false
 	}
-	return invokeSyncWithResult(w.impl.isFullscreen)
+	return InvokeSyncWithResult(w.impl.isFullscreen)
 }
 
 // SetBackgroundColour sets the background colour of the window
 func (w *WebviewWindow) SetBackgroundColour(colour RGBA) *WebviewWindow {
 	w.options.BackgroundColour = colour
 	if w.impl != nil {
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setBackgroundColour(colour)
 		})
 	}
@@ -538,7 +538,7 @@ func (w *WebviewWindow) handleMessage(message string) {
 	// Check for special messages
 	if message == "drag" {
 		if !w.IsFullscreen() {
-			invokeSync(func() {
+			InvokeSync(func() {
 				err := w.startDrag()
 				if err != nil {
 					w.error("Failed to start drag: %s", err)
@@ -571,7 +571,7 @@ func (w *WebviewWindow) startResize(border string) error {
 	if w.impl == nil {
 		return nil
 	}
-	return invokeSyncWithResult(func() error {
+	return InvokeSyncWithResult(func() error {
 		return w.impl.startResize(border)
 	})
 }
@@ -582,7 +582,7 @@ func (w *WebviewWindow) Center() {
 		w.options.Centered = true
 		return
 	}
-	invokeSync(w.impl.center)
+	InvokeSync(w.impl.center)
 }
 
 // On registers a callback for the given window event
@@ -652,7 +652,7 @@ func (w *WebviewWindow) Width() int {
 	if w.impl == nil {
 		return 0
 	}
-	return invokeSyncWithResult(w.impl.width)
+	return InvokeSyncWithResult(w.impl.width)
 }
 
 // Height returns the height of the window
@@ -660,7 +660,7 @@ func (w *WebviewWindow) Height() int {
 	if w.impl == nil {
 		return 0
 	}
-	return invokeSyncWithResult(w.impl.height)
+	return InvokeSyncWithResult(w.impl.height)
 }
 
 // RelativePosition returns the relative position of the window to the screen
@@ -669,7 +669,7 @@ func (w *WebviewWindow) RelativePosition() (int, int) {
 		return 0, 0
 	}
 	var x, y int
-	invokeSync(func() {
+	InvokeSync(func() {
 		x, y = w.impl.relativePosition()
 	})
 	return x, y
@@ -681,7 +681,7 @@ func (w *WebviewWindow) AbsolutePosition() (int, int) {
 		return 0, 0
 	}
 	var x, y int
-	invokeSync(func() {
+	InvokeSync(func() {
 		x, y = w.impl.absolutePosition()
 	})
 	return x, y
@@ -697,7 +697,7 @@ func (w *WebviewWindow) Destroy() {
 		cancelFunc()
 	}
 
-	invokeSync(w.impl.destroy)
+	InvokeSync(w.impl.destroy)
 }
 
 // Reload reloads the page assets
@@ -705,7 +705,7 @@ func (w *WebviewWindow) Reload() {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(w.impl.reload)
+	InvokeSync(w.impl.reload)
 }
 
 // ForceReload forces the window to reload the page assets
@@ -713,7 +713,7 @@ func (w *WebviewWindow) ForceReload() {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(w.impl.forceReload)
+	InvokeSync(w.impl.forceReload)
 }
 
 // ToggleFullscreen toggles the window between fullscreen and normal
@@ -721,7 +721,7 @@ func (w *WebviewWindow) ToggleFullscreen() {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(func() {
+	InvokeSync(func() {
 		if w.IsFullscreen() {
 			w.UnFullscreen()
 		} else {
@@ -734,13 +734,13 @@ func (w *WebviewWindow) ToggleDevTools() {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(w.impl.toggleDevTools)
+	InvokeSync(w.impl.toggleDevTools)
 }
 
 // ZoomReset resets the zoom level of the webview content to 100%
 func (w *WebviewWindow) ZoomReset() *WebviewWindow {
 	if w.impl != nil {
-		invokeSync(w.impl.zoomReset)
+		InvokeSync(w.impl.zoomReset)
 		w.emit(events.Common.WindowZoomReset)
 	}
 	return w
@@ -752,7 +752,7 @@ func (w *WebviewWindow) ZoomIn() {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(w.impl.zoomIn)
+	InvokeSync(w.impl.zoomIn)
 	w.emit(events.Common.WindowZoomIn)
 
 }
@@ -762,7 +762,7 @@ func (w *WebviewWindow) ZoomOut() {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(w.impl.zoomOut)
+	InvokeSync(w.impl.zoomOut)
 	w.emit(events.Common.WindowZoomOut)
 }
 
@@ -778,7 +778,7 @@ func (w *WebviewWindow) Zoom() {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(w.impl.zoom)
+	InvokeSync(w.impl.zoom)
 	w.emit(events.Common.WindowZoom)
 }
 
@@ -786,7 +786,7 @@ func (w *WebviewWindow) Zoom() {
 func (w *WebviewWindow) SetHTML(html string) *WebviewWindow {
 	w.options.HTML = html
 	if w.impl != nil {
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setHTML(html)
 		})
 	}
@@ -798,7 +798,7 @@ func (w *WebviewWindow) SetRelativePosition(x, y int) *WebviewWindow {
 	w.options.X = x
 	w.options.Y = y
 	if w.impl != nil {
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setRelativePosition(x, y)
 		})
 	}
@@ -812,7 +812,7 @@ func (w *WebviewWindow) Minimise() *WebviewWindow {
 		return w
 	}
 	if !w.IsMinimised() {
-		invokeSync(w.impl.minimise)
+		InvokeSync(w.impl.minimise)
 		w.emit(events.Common.WindowMinimise)
 	}
 	return w
@@ -826,7 +826,7 @@ func (w *WebviewWindow) Maximise() *WebviewWindow {
 	}
 	if !w.IsMaximised() {
 		w.disableSizeConstraints()
-		invokeSync(w.impl.maximise)
+		InvokeSync(w.impl.maximise)
 		w.emit(events.Common.WindowMaximise)
 	}
 	return w
@@ -838,7 +838,7 @@ func (w *WebviewWindow) UnMinimise() {
 		return
 	}
 	if w.IsMinimised() {
-		invokeSync(w.impl.unminimise)
+		InvokeSync(w.impl.unminimise)
 		w.emit(events.Common.WindowUnMinimise)
 	}
 }
@@ -850,7 +850,7 @@ func (w *WebviewWindow) UnMaximise() {
 	}
 	if w.IsMaximised() {
 		w.enableSizeConstraints()
-		invokeSync(w.impl.unmaximise)
+		InvokeSync(w.impl.unmaximise)
 		w.emit(events.Common.WindowUnMaximise)
 	}
 }
@@ -862,7 +862,7 @@ func (w *WebviewWindow) UnFullscreen() {
 	}
 	if w.IsFullscreen() {
 		w.enableSizeConstraints()
-		invokeSync(w.impl.unfullscreen)
+		InvokeSync(w.impl.unfullscreen)
 		w.emit(events.Common.WindowUnFullscreen)
 	}
 }
@@ -872,7 +872,7 @@ func (w *WebviewWindow) Restore() {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(func() {
+	InvokeSync(func() {
 		if w.IsMinimised() {
 			w.UnMinimise()
 		} else if w.IsMaximised() {
@@ -888,7 +888,7 @@ func (w *WebviewWindow) disableSizeConstraints() {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(func() {
+	InvokeSync(func() {
 		if w.options.MinWidth > 0 && w.options.MinHeight > 0 {
 			w.impl.setMinSize(0, 0)
 		}
@@ -902,7 +902,7 @@ func (w *WebviewWindow) enableSizeConstraints() {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(func() {
+	InvokeSync(func() {
 		if w.options.MinWidth > 0 && w.options.MinHeight > 0 {
 			w.SetMinSize(w.options.MinWidth, w.options.MinHeight)
 		}
@@ -917,14 +917,14 @@ func (w *WebviewWindow) GetScreen() (*Screen, error) {
 	if w.impl == nil {
 		return nil, nil
 	}
-	return invokeSyncWithResultAndError(w.impl.getScreen)
+	return InvokeSyncWithResultAndError(w.impl.getScreen)
 }
 
 // SetFrameless removes the window frame and title bar
 func (w *WebviewWindow) SetFrameless(frameless bool) *WebviewWindow {
 	w.options.Frameless = frameless
 	if w.impl != nil {
-		invokeSync(func() {
+		InvokeSync(func() {
 			w.impl.setFrameless(frameless)
 		})
 	}
@@ -932,7 +932,7 @@ func (w *WebviewWindow) SetFrameless(frameless bool) *WebviewWindow {
 }
 
 func (w *WebviewWindow) dispatchWailsEvent(event *WailsEvent) {
-	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON())
+	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.toJSON())
 	w.ExecJS(msg)
 }
 
@@ -1006,7 +1006,7 @@ func (w *WebviewWindow) Focus() {
 		w.options.Focused = true
 		return
 	}
-	invokeSync(w.impl.focus)
+	InvokeSync(w.impl.focus)
 	w.emit(events.Common.WindowFocus)
 }
 
@@ -1021,21 +1021,21 @@ func (w *WebviewWindow) startDrag() error {
 	if w.impl == nil {
 		return nil
 	}
-	return invokeSyncWithError(w.impl.startDrag)
+	return InvokeSyncWithError(w.impl.startDrag)
 }
 
 func (w *WebviewWindow) Print() error {
 	if w.impl == nil {
 		return nil
 	}
-	return invokeSyncWithError(w.impl.print)
+	return InvokeSyncWithError(w.impl.print)
 }
 
 func (w *WebviewWindow) SetEnabled(enabled bool) {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(func() {
+	InvokeSync(func() {
 		w.impl.setEnabled(enabled)
 	})
 }
@@ -1045,7 +1045,7 @@ func (w *WebviewWindow) SetAbsolutePosition(x int, y int) {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(func() {
+	InvokeSync(func() {
 		w.impl.setAbsolutePosition(x, y)
 	})
 }
@@ -1071,7 +1071,7 @@ func (w *WebviewWindow) handleKeyEvent(acceleratorString string) {
 	if w.impl == nil {
 		return
 	}
-	invokeSync(func() {
+	InvokeSync(func() {
 		w.impl.handleKeyEvent(acceleratorString)
 	})
 }

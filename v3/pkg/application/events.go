@@ -17,7 +17,7 @@ func (w *Event) Context() *ApplicationEventContext {
 	return w.ctx
 }
 
-func NewApplicationEvent(id int) *Event {
+func newApplicationEvent(id int) *Event {
 	return &Event{
 		Id:  uint(id),
 		ctx: newApplicationEventContext(),
@@ -50,7 +50,7 @@ func (e *WailsEvent) Cancel() {
 	e.Cancelled = true
 }
 
-func (e WailsEvent) ToJSON() string {
+func (e WailsEvent) toJSON() string {
 	marshal, err := json.Marshal(&e)
 	if err != nil {
 		// TODO: Fatal error? log?

@@ -82,7 +82,7 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 }
 
 func (w *windowsMenu) ShowAtCursor() {
-	invokeSync(func() {
+	InvokeSync(func() {
 		x, y, ok := w32.GetCursorPos()
 		if !ok {
 			return

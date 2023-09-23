@@ -250,15 +250,15 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 	case w32.WM_POWERBROADCAST:
 		switch wParam {
 		case w32.PBT_APMPOWERSTATUSCHANGE:
-			applicationEvents <- NewApplicationEvent(int(events.Windows.APMPowerStatusChange))
+			applicationEvents <- newApplicationEvent(int(events.Windows.APMPowerStatusChange))
 		case w32.PBT_APMSUSPEND:
-			applicationEvents <- NewApplicationEvent(int(events.Windows.APMSuspend))
+			applicationEvents <- newApplicationEvent(int(events.Windows.APMSuspend))
 		case w32.PBT_APMRESUMEAUTOMATIC:
-			applicationEvents <- NewApplicationEvent(int(events.Windows.APMResumeAutomatic))
+			applicationEvents <- newApplicationEvent(int(events.Windows.APMResumeAutomatic))
 		case w32.PBT_APMRESUMESUSPEND:
-			applicationEvents <- NewApplicationEvent(int(events.Windows.APMResumeSuspend))
+			applicationEvents <- newApplicationEvent(int(events.Windows.APMResumeSuspend))
 		case w32.PBT_POWERSETTINGCHANGE:
-			applicationEvents <- NewApplicationEvent(int(events.Windows.APMPowerSettingChange))
+			applicationEvents <- newApplicationEvent(int(events.Windows.APMPowerSettingChange))
 		}
 		return 0
 	}

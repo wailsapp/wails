@@ -65,7 +65,7 @@ type SystemTray struct {
 	attachedWindow WindowAttachConfig
 }
 
-func NewSystemTray(id uint) *SystemTray {
+func newSystemTray(id uint) *SystemTray {
 	result := &SystemTray{
 		id:           id,
 		label:        "",
@@ -85,7 +85,7 @@ func (s *SystemTray) SetLabel(label string) {
 		s.label = label
 		return
 	}
-	invokeSync(func() {
+	InvokeSync(func() {
 		s.impl.setLabel(label)
 	})
 }
@@ -116,14 +116,14 @@ func (s *SystemTray) run() {
 		})
 	}
 
-	invokeSync(s.impl.run)
+	InvokeSync(s.impl.run)
 }
 
 func (s *SystemTray) PositionWindow(window *WebviewWindow, offset int) error {
 	if s.impl == nil {
 		return fmt.Errorf("system tray not running")
 	}
-	return invokeSyncWithError(func() error {
+	return InvokeSyncWithError(func() error {
 		return s.impl.positionWindow(window, offset)
 	})
 }
@@ -132,7 +132,7 @@ func (s *SystemTray) SetIcon(icon []byte) *SystemTray {
 	if s.impl == nil {
 		s.icon = icon
 	} else {
-		invokeSync(func() {
+		InvokeSync(func() {
 			s.impl.setIcon(icon)
 		})
 	}
@@ -143,7 +143,7 @@ func (s *SystemTray) SetDarkModeIcon(icon []byte) *SystemTray {
 	if s.impl == nil {
 		s.darkModeIcon = icon
 	} else {
-		invokeSync(func() {
+		InvokeSync(func() {
 			s.impl.setDarkModeIcon(icon)
 		})
 	}
@@ -154,7 +154,7 @@ func (s *SystemTray) SetMenu(menu *Menu) *SystemTray {
 	if s.impl == nil {
 		s.menu = menu
 	} else {
-		invokeSync(func() {
+		InvokeSync(func() {
 			s.impl.setMenu(menu)
 		})
 	}
@@ -165,7 +165,7 @@ func (s *SystemTray) SetIconPosition(iconPosition int) *SystemTray {
 	if s.impl == nil {
 		s.iconPosition = iconPosition
 	} else {
-		invokeSync(func() {
+		InvokeSync(func() {
 			s.impl.setIconPosition(iconPosition)
 		})
 	}
@@ -177,7 +177,7 @@ func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray {
 		s.icon = icon
 		s.isTemplateIcon = true
 	} else {
-		invokeSync(func() {
+		InvokeSync(func() {
 			s.impl.setTemplateIcon(icon)
 		})
 	}
@@ -294,5 +294,5 @@ func (s *SystemTray) OpenMenu() {
 	if s.impl == nil {
 		return
 	}
-	invokeSync(s.impl.openMenu)
+	InvokeSync(s.impl.openMenu)
 }

@@ -238,7 +238,7 @@ func newPlatformApp(app *App) *macosApp {
 
 //export processApplicationEvent
 func processApplicationEvent(eventID C.uint, _ unsafe.Pointer) {
-	event := NewApplicationEvent(int(eventID))
+	event := newApplicationEvent(int(eventID))
 	switch event.Id {
 	case uint(events.Mac.ApplicationDidChangeTheme):
 		isDark := globalApplication.IsDarkMode()
