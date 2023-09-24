@@ -145,7 +145,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.mainWindow = mainWindow
 
 	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
-		winc.SingleInstanceHWND(f.mainWindow.Handle())
+		winc.SingleInstanceMainWindowHWND(f.mainWindow.Handle())
 	}
 
 	var _debug = ctx.Value("debug")
