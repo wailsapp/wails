@@ -2,32 +2,19 @@ package application
 
 import "github.com/wailsapp/wails/v3/pkg/events"
 
-type ActivationPolicy int
-
-const (
-	ActivationPolicyRegular ActivationPolicy = iota
-	// ActivationPolicyAccessory is used for applications that do not have a main window,
-	// such as system tray applications or background applications.
-	ActivationPolicyAccessory
-	ActivationPolicyProhibited
-)
-
-type MacOptions struct {
-	// ActivationPolicy is the activation policy for the application. Defaults to
-	// applicationActivationPolicyRegular.
-	ActivationPolicy ActivationPolicy
-	// If set to true, the application will terminate when the last window is closed.
-	ApplicationShouldTerminateAfterLastWindowClosed bool
-}
-
+// MacBackdrop is the backdrop type for macOS
 type MacBackdrop int
 
 const (
+	// MacBackdropNormal - The default value. The window will have a normal opaque background.
 	MacBackdropNormal MacBackdrop = iota
+	// MacBackdropTransparent - The window will have a transparent background, with the content underneath it being visible
 	MacBackdropTransparent
+	// MacBackdropTranslucent - The window will have a translucent background, with the content underneath it being "fuzzy" or "frosted"
 	MacBackdropTranslucent
 )
 
+// MacToolbarStyle is the style of toolbar for macOS
 type MacToolbarStyle int
 
 const (
@@ -43,14 +30,19 @@ const (
 	MacToolbarStyleUnifiedCompact
 )
 
-// MacWindow contains macOS specific options
+// MacWindow contains macOS specific options for Webview Windows
 type MacWindow struct {
-	Backdrop                MacBackdrop
-	DisableShadow           bool
-	TitleBar                MacTitleBar
-	Appearance              MacAppearanceType
+	// Backdrop is the backdrop type for the window
+	Backdrop MacBackdrop
+	// DisableShadow will disable the window shadow
+	DisableShadow bool
+	// TitleBar contains options for the Mac titlebar
+	TitleBar MacTitleBar
+	// Appearance is the appearance type for the window
+	Appearance MacAppearanceType
+	// InvisibleTitleBarHeight defines the height of an invisible titlebar which responds to dragging
 	InvisibleTitleBarHeight int
-	// Maps events from platform specific to the event name
+	// Maps events from platform specific to common event types
 	EventMapping map[events.WindowEventType]events.WindowEventType
 
 	// EnableFraudulentWebsiteWarnings will enable warnings for fraudulent websites.
@@ -60,13 +52,20 @@ type MacWindow struct {
 
 // MacTitleBar contains options for the Mac titlebar
 type MacTitleBar struct {
-	AppearsTransparent   bool
-	Hide                 bool
-	HideTitle            bool
-	FullSizeContent      bool
-	UseToolbar           bool
+	// AppearsTransparent will make the titlebar transparent
+	AppearsTransparent bool
+	// Hide will hide the titlebar
+	Hide bool
+	// HideTitle will hide the title
+	HideTitle bool
+	// FullSizeContent will extend the window content to the full size of the window
+	FullSizeContent bool
+	// UseToolbar will use a toolbar instead of a titlebar
+	UseToolbar bool
+	// HideToolbarSeparator will hide the toolbar separator
 	HideToolbarSeparator bool
-	ToolbarStyle         MacToolbarStyle
+	// ToolbarStyle is the style of toolbar to use
+	ToolbarStyle MacToolbarStyle
 }
 
 // MacTitleBarDefault results in the default Mac MacTitleBar

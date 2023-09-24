@@ -20,7 +20,7 @@ type Options struct {
 	Mac MacOptions
 
 	// Windows is the Windows specific configuration for Windows builds
-	Windows WindowsApplicationOptions
+	Windows WindowsOptions
 
 	// Bind allows you to bind Go methods to the frontend.
 	Bind []any

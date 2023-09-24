@@ -19,6 +19,12 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		Windows: application.WindowsOptions{
+			WndProcInterceptor:            nil,
+			DisableQuitOnLastWindowClosed: false,
+			WebviewUserDataPath:           "",
+			WebviewBrowserPath:            "",
+		},
 		Assets: application.AssetOptions{
 			FS: assets,
 		},

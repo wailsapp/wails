@@ -312,3 +312,19 @@ This is a brief summary of the exported methods in the provided `App` struct. Do
 ../v3/pkg/application/options_application.go
 --8<--
 ```
+
+### Windows Options
+
+```go title="application_options_windows.go"
+--8<--
+../v3/pkg/application/options_application_win.go
+--8<--
+```
+
+### Mac Options
+
+```go title="options_application_mac.go"
+--8<--
+../v3/pkg/application/options_application_mac.go
+--8<--
+```
