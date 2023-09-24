@@ -106,7 +106,8 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      restrict_base_path: false
   - pymdownx.details
   - pymdownx.superfences
   - pymdownx.mark
