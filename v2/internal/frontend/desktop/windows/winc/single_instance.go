@@ -20,7 +20,7 @@ type COPYDATASTRUCT struct {
 	lpData uintptr
 }
 
-var mainHWND w32.HWND
+var mainHWND *w32.HWND
 
 const WMCOPYDATA_SINGLE_INSTANCE_DATA = 1542
 const SC_RESTORE = 0xF120
@@ -70,7 +70,7 @@ func SetupSingleInstance(title string, lock *options.SingleInstanceLock) {
 	createEventTargetWindow(className, windowName, lock)
 }
 
-func SingleInstanceHWND(hwnd w32.HWND) {
+func SingleInstanceHWND(hwnd *w32.HWND) {
 	mainHWND = hwnd
 }
 
@@ -91,11 +91,11 @@ func createEventTargetWindow(className string, windowName string, lock *options.
 
 				go lock.OnSecondInstanceLaunch(secondInstanceData)
 
-				if lock.ActivateAppOnSubsequentLaunch && mainHWND != 0 {
-					w32.SendMessage(hwnd, w32.WM_SYSCOMMAND, SC_RESTORE, 0)                                                  // restore the minimize window
-					w32.SetWindowPos(hwnd, w32.HWND_TOPMOST, 0, 0, 0, 0, w32.SWP_SHOWWINDOW|w32.SWP_NOSIZE|w32.SWP_NOMOVE)   // force set our main window on top
-					w32.SetWindowPos(hwnd, w32.HWND_NOTOPMOST, 0, 0, 0, 0, w32.SWP_SHOWWINDOW|w32.SWP_NOSIZE|w32.SWP_NOMOVE) // remove topmost to allow normal windows manipulations
-					w32.SetForegroundWindow(hwnd)                                                                            // put window on tops
+				if lock.ActivateAppOnSubsequentLaunch && mainHWND != nil {
+					w32.SendMessage(*mainHWND, w32.WM_SYSCOMMAND, SC_RESTORE, 0)                                                  // restore the minimize window
+					w32.SetWindowPos(*mainHWND, w32.HWND_TOPMOST, 0, 0, 0, 0, w32.SWP_SHOWWINDOW|w32.SWP_NOSIZE|w32.SWP_NOMOVE)   // force set our main window on top
+					w32.SetWindowPos(*mainHWND, w32.HWND_NOTOPMOST, 0, 0, 0, 0, w32.SWP_SHOWWINDOW|w32.SWP_NOSIZE|w32.SWP_NOMOVE) // remove topmost to allow normal windows manipulations
+					w32.SetForegroundWindow(*mainHWND)                                                                            // put window on tops
 				}
 			}
 
