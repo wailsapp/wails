@@ -152,6 +152,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo, f.chromium)
 	f.mainWindow = mainWindow
 
+	// we should pass HWND to single_instance so that when we want to make the window active we can do this correctly for client only window
 	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
 		winc.SingleInstanceMainWindowHWND(f.mainWindow.Handle())
 	}
