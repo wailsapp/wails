@@ -22,6 +22,7 @@ require (
 	github.com/leaanthony/go-ansi-parser v1.6.0
 	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/slicer v1.6.0
+	github.com/leaanthony/u v1.1.0
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
@@ -33,7 +34,7 @@ require (
 	github.com/tc-hib/winres v0.1.5
 	github.com/tidwall/sjson v1.1.7
 	github.com/tkrajina/go-reflector v0.5.6
-	github.com/wailsapp/go-webview2 v1.0.6
+	github.com/wailsapp/go-webview2 v1.0.7
 	github.com/wailsapp/mimetype v1.4.1
 	github.com/wzshiming/ctc v1.2.3
 	golang.org/x/mod v0.12.0
