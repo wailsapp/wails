@@ -29,6 +29,17 @@ const (
 type Experimental struct {
 }
 
+type SingleInstanceLock struct {
+	Enabled bool
+	// When true, the original app will be activated when a second instance is launched
+	ActivateAppOnSubsequentLaunch bool
+	OnSecondInstanceLaunch        func(secondInstanceData SecondInstanceData)
+}
+
+type SecondInstanceData struct {
+	Args []string
+}
+
 // App contains options for creating the App
 type App struct {
 	Title             string
@@ -83,6 +94,8 @@ type App struct {
 	// These services might send information from your app like URLs navigated to and possibly other content to cloud
 	// services of Apple and Microsoft.
 	EnableFraudulentWebsiteDetection bool
+
+	SingleInstanceLock *SingleInstanceLock
 
 	Windows *windows.Options
 	Mac     *mac.Options

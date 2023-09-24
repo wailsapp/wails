@@ -137,8 +137,16 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 	f.chromium = edge.NewChromium()
 
+	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
+		winc.SetupSingleInstance(f.frontendOptions.Title, f.frontendOptions.SingleInstanceLock)
+	}
+
 	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo, f.chromium)
 	f.mainWindow = mainWindow
+
+	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
+		winc.SingleInstanceHWND(f.mainWindow.Handle())
+	}
 
 	var _debug = ctx.Value("debug")
 	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
