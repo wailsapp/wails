@@ -35,6 +35,8 @@ import (
 
 const startURL = "http://wails.localhost/"
 
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 100)
+
 type Screen = frontend.Screen
 
 type Frontend struct {
@@ -113,6 +115,8 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 	result.assets = assets
 
+	go result.startSecondInstanceProcessor()
+
 	return result
 }
 
@@ -138,7 +142,11 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.chromium = edge.NewChromium()
 
 	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
-		winc.SetupSingleInstance(f.frontendOptions.Title, f.frontendOptions.SingleInstanceLock)
+		winc.SetupSingleInstance(
+			f.frontendOptions.SingleInstanceLock.UniqueID,
+			f.frontendOptions.SingleInstanceLock.ActivateAppOnSubsequentLaunch,
+			addSecondInstanceDataToBuffer,
+		)
 	}
 
 	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo, f.chromium)
@@ -832,4 +840,16 @@ func (f *Frontend) ShowWindow() {
 
 func (f *Frontend) onFocus(arg *winc.Event) {
 	f.chromium.Focus()
+}
+
+func addSecondInstanceDataToBuffer(data options.SecondInstanceData) {
+	secondInstanceBuffer <- data
+}
+
+func (f *Frontend) startSecondInstanceProcessor() {
+	for secondInstanceData := range secondInstanceBuffer {
+		if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
+		}
+	}
 }

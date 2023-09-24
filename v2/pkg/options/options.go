@@ -30,7 +30,9 @@ type Experimental struct {
 }
 
 type SingleInstanceLock struct {
-	Enabled bool
+	// TODO: create unique id based on title? Maybe require user to set unique id?
+	UniqueID string
+	Enabled  bool
 	// When true, the original app will be activated when a second instance is launched
 	ActivateAppOnSubsequentLaunch bool
 	OnSecondInstanceLaunch        func(secondInstanceData SecondInstanceData)

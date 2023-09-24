@@ -35,10 +35,9 @@ func SendMessage(hwnd w32.HWND, data string) {
 	w32.SendMessage(hwnd, w32.WM_COPYDATA, 0, uintptr(unsafe.Pointer(pCopyData)))
 }
 
-// single instance windows app
-func SetupSingleInstance(title string, lock *options.SingleInstanceLock) {
-	// TODO: create unique id based on title. Maybe better to have something more unique?
-	id := "wails-app-" + title
+// ingle instance Windows app
+func SetupSingleInstance(uniqueID string, activateAppOnSubsequentLaunch bool, callback func(data options.SecondInstanceData)) {
+	id := "wails-app-" + uniqueID
 
 	className := id + "-sic"
 	windowName := id + "-siw"
@@ -66,14 +65,14 @@ func SetupSingleInstance(title string, lock *options.SingleInstanceLock) {
 		}
 	}
 
-	createEventTargetWindow(className, windowName, lock)
+	createEventTargetWindow(className, windowName, activateAppOnSubsequentLaunch, callback)
 }
 
 func SingleInstanceMainWindowHWND(hwnd w32.HWND) {
 	mainWindowHWND = hwnd
 }
 
-func createEventTargetWindow(className string, windowName string, lock *options.SingleInstanceLock) w32.HWND {
+func createEventTargetWindow(className string, windowName string, activateAppOnSubsequentLaunch bool, callback func(data options.SecondInstanceData)) w32.HWND {
 	// callback handler in the event target window
 	wndProc := func(
 		hwnd w32.HWND, msg uint32, wparam w32.WPARAM, lparam w32.LPARAM,
@@ -88,9 +87,9 @@ func createEventTargetWindow(className string, windowName string, lock *options.
 
 				json.Unmarshal([]byte(serialized), &secondInstanceData)
 
-				go lock.OnSecondInstanceLaunch(secondInstanceData)
+				go callback(secondInstanceData)
 
-				if lock.ActivateAppOnSubsequentLaunch && mainWindowHWND != 0 {
+				if activateAppOnSubsequentLaunch && mainWindowHWND != 0 {
 					// restore the minimized window, if it is
 					w32.SendMessage(
 						mainWindowHWND,
