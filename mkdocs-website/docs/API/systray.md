@@ -2,11 +2,14 @@
 
 The system tray houses notification area on a desktop environment, which can contain both icons of currently-running applications and specific system notifications.
 
-### NewSystemTray
+You create a system tray by calling `app.NewSystemTray()`:
 
-API: `NewSystemTray(id uint) *SystemTray`
+```go
+    // Create a new system tray
+tray := app.NewSystemTray()
+```
 
-The `NewSystemTray` function constructs an instance of the `SystemTray` struct. This function takes a unique identifier of type `uint`. It returns a pointer to a `SystemTray` instance.
+The following methods are available on the `SystemTray` type:
 
 ### SetLabel
 

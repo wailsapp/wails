@@ -51,3 +51,9 @@ tasks:
         msg: "Looks like mkdocs isn't installed. Run `wails3 task setup` or `task setup` in the documentation directory to install it."
     cmds:
       - mkdocs serve --config-file mkdocs.insiders.yml
+
+  update:api:
+    summary: Updates the API documentation
+    dir: generate
+    cmds:
+      - go run .

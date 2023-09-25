@@ -1,12 +1,15 @@
 # Menu
 
-### `type Menu struct`
+Menus can be created and added to the application. They can be used to create context menus, system tray menus and application menus.
 
-The `Menu` struct holds information about a menu, including which items it contains and its label.
+To create a new menu, call:
 
-### `func NewMenu() *Menu`
+```go
+    // Create a new menu
+    menu := app.NewMenu()
+```
 
-This function initializes a new Menu.
+The following operations are then available on the `Menu` type:
 
 ### Add
 

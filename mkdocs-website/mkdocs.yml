@@ -90,6 +90,7 @@ nav:
       - System Tray: API/systray.md
       - Menu: API/menu.md
       - Main Thread: API/mainthread.md
+      - Full API: API/fullapi.md
   - Development:
     - Introduction: development/introduction.md
     - Status: development/status.md
