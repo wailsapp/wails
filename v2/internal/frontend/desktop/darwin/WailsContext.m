@@ -136,7 +136,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     return NO;
 }
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled {
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences {
     NSWindowStyleMask styleMask = 0;
     
     if( !frameless ) {
@@ -214,6 +214,16 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     config.suppressesIncrementalRendering = true;
     config.applicationNameForUserAgent = @"wails.io";
     [config setURLSchemeHandler:self forURLScheme:@"wails"];
+
+    if (preferences.tabFocusesLinks != NULL) {
+        config.preferences.tabFocusesLinks = *preferences.tabFocusesLinks;
+    }
+
+    if (@available(macOS 11.3, *)) {
+        if (preferences.textInteractionEnabled != NULL) {
+            config.preferences.textInteractionEnabled = *preferences.textInteractionEnabled;
+        }
+    }
     
 //    [config.preferences setValue:[NSNumber numberWithBool:true] forKey:@"developerExtrasEnabled"];
 
@@ -225,16 +235,18 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     [userContentController addScriptMessageHandler:self name:@"external"];
     config.userContentController = userContentController;
     self.userContentController = userContentController;
+
     if (self.devtoolsEnabled) {
         [config.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
-    } else if (!self.defaultContextMenu) {
+    }
+
+    if (!self.defaultContextMenuEnabled) {
         // Disable default context menus
         WKUserScript *initScript = [WKUserScript new];
         [initScript initWithSource:@"window.wails.flags.disableDefaultContextMenu = true;"
                      injectionTime:WKUserScriptInjectionTimeAtDocumentEnd
                   forMainFrameOnly:false];
         [userContentController addUserScript:initScript];
-        
     }
     
     self.webview = [WKWebView alloc];

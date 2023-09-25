@@ -113,6 +113,9 @@ type Options struct {
 	//
 	// !! Please keep in mind when disabling this feature, this also allows malicious software to inject into the WebView2 !!
 	WebviewDisableRendererCodeIntegrity bool
+
+	// Configure whether swipe gestures should be enabled
+	EnableSwipeGestures bool
 }
 
 func DefaultMessages() *Messages {
