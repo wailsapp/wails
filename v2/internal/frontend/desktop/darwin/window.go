@@ -40,6 +40,11 @@ func bool2Cint(value bool) C.int {
 	return C.int(0)
 }
 
+func bool2CboolPtr(value bool) *C.bool {
+	v := C.bool(value)
+	return &v
+}
+
 func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window {
 
 	c := NewCalloc()
@@ -57,6 +62,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	var fullSizeContent, hideTitleBar, hideTitle, useToolbar, webviewIsTransparent C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent C.int
 	var appearance, title *C.char
+	var preferences C.struct_Preferences
 
 	width := C.int(frontendOptions.Width)
 	height := C.int(frontendOptions.Height)
@@ -80,6 +86,17 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 			titlebarAppearsTransparent = bool2Cint(mac.TitleBar.TitlebarAppearsTransparent)
 			hideToolbarSeparator = bool2Cint(mac.TitleBar.HideToolbarSeparator)
 		}
+
+		if mac.Preferences != nil {
+			if mac.Preferences.TabFocusesLinks.IsSet() {
+				preferences.tabFocusesLinks = bool2CboolPtr(mac.Preferences.TabFocusesLinks.Get())
+			}
+
+			if mac.Preferences.TextInteractionEnabled.IsSet() {
+				preferences.textInteractionEnabled = bool2CboolPtr(mac.Preferences.TextInteractionEnabled.Get())
+			}
+		}
+
 		windowIsTranslucent = bool2Cint(mac.WindowIsTranslucent)
 		webviewIsTransparent = bool2Cint(mac.WebviewIsTransparent)
 
@@ -88,7 +105,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent,
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
 		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenu,
-		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings)
+		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings, preferences)
 
 	// Create menu
 	result := &Window{
