@@ -16,10 +16,10 @@ Status of features in v3.
 Application interface methods
 
 | Method                                                        | Windows | Linux | Mac | Notes |
-|---------------------------------------------------------------|---------|-------|-----|-------|
+| ------------------------------------------------------------- | ------- | ----- | --- | ----- |
 | run() error                                                   | Y       | Y     | Y   |       |
 | destroy()                                                     |         | Y     | Y   |       |
-| setApplicationMenu(menu *Menu)                                | Y       | Y     | Y   |       |
+| setApplicationMenu(menu \*Menu)                               | Y       | Y     | Y   |       |
 | name() string                                                 |         | Y     | Y   |       |
 | getCurrentWindowID() uint                                     | Y       | Y     | Y   |       |
 | showAboutDialog(name string, description string, icon []byte) |         | Y     | Y   |       |
@@ -28,15 +28,15 @@ Application interface methods
 | dispatchOnMainThread(fn func())                               | Y       | Y     | Y   |       |
 | hide()                                                        | Y       | Y     | Y   |       |
 | show()                                                        | Y       | Y     | Y   |       |
-| getPrimaryScreen() (*Screen, error)                           |         | Y     | Y   |       |
-| getScreens() ([]*Screen, error)                               |         | Y     | Y   |       |
+| getPrimaryScreen() (\*Screen, error)                          |         | Y     | Y   |       |
+| getScreens() ([]\*Screen, error)                              |         | Y     | Y   |       |
 
 ## Webview Window
 
 Webview Window Interface Methods
 
 | Method                                             | Windows | Linux | Mac | Notes                                    |
-|----------------------------------------------------|---------|-------|-----|------------------------------------------|
+| -------------------------------------------------- | ------- | ----- | --- | ---------------------------------------- |
 | center()                                           | Y       | Y     | Y   |                                          |
 | close()                                            | y       | Y     | Y   |                                          |
 | destroy()                                          |         | Y     | Y   |                                          |
@@ -44,7 +44,7 @@ Webview Window Interface Methods
 | focus()                                            | Y       | Y     |     |                                          |
 | forceReload()                                      |         | Y     | Y   |                                          |
 | fullscreen()                                       | Y       | Y     | Y   |                                          |
-| getScreen() (*Screen, error)                       | y       | Y     | Y   |                                          |
+| getScreen() (\*Screen, error)                      | y       | Y     | Y   |                                          |
 | getZoom() float64                                  |         | Y     | Y   |                                          |
 | height() int                                       | Y       | Y     | Y   |                                          |
 | hide()                                             | Y       | Y     | Y   |                                          |
@@ -90,7 +90,7 @@ Webview Window Interface Methods
 ### Application
 
 | Feature | Windows | Linux | Mac | Notes |
-|---------|---------|-------|-----|-------|
+| ------- | ------- | ----- | --- | ----- |
 | Quit    | Y       | Y     | Y   |       |
 | Hide    | Y       |       | Y   |       |
 | Show    | Y       |       | Y   |       |
@@ -98,7 +98,7 @@ Webview Window Interface Methods
 ### Dialogs
 
 | Feature  | Windows | Linux | Mac | Notes |
-|----------|---------|-------|-----|-------|
+| -------- | ------- | ----- | --- | ----- |
 | Info     | Y       | Y     | Y   |       |
 | Warning  | Y       | Y     | Y   |       |
 | Error    | Y       | Y     | Y   |       |
@@ -109,30 +109,32 @@ Webview Window Interface Methods
 ### Clipboard
 
 | Feature | Windows | Linux | Mac | Notes |
-|---------|---------|-------|-----|-------|
+| ------- | ------- | ----- | --- | ----- |
 | SetText | Y       |       | Y   |       |
 | Text    | Y       |       | Y   |       |
 
 ### ContextMenu
 
 | Feature          | Windows | Linux | Mac | Notes |
-|------------------|---------|-------|-----|-------|
+| ---------------- | ------- | ----- | --- | ----- |
 | OpenContextMenu  | Y       |       | Y   |       |
 | On By Default    |         |       |     |       |
 | Control via HTML | Y       |       |     |       |
 
-The default context menu is enabled by default for all elements that are `contentEditable: true`, `<input>`
-or `<textarea>` tags or have the `--default-contextmenu: true` style set.
-The `--default-contextmenu: show` style will always show the context menu
-The `--default-contextmenu: hide` style will always hide the context menu
+The default context menu is enabled by default for all elements that are
+`contentEditable: true`, `<input>` or `<textarea>` tags or have the
+`--default-contextmenu: true` style set. The `--default-contextmenu: show` style
+will always show the context menu The `--default-contextmenu: hide` style will
+always hide the context menu
 
-Anything nested under a tag with `--default-contextmenu: hide` style will not show the context menu unless it is
-explicitly set with `--default-contextmenu: show`.
+Anything nested under a tag with `--default-contextmenu: hide` style will not
+show the context menu unless it is explicitly set with
+`--default-contextmenu: show`.
 
 ### Screens
 
 | Feature    | Windows | Linux | Mac | Notes |
-|------------|---------|-------|-----|-------|
+| ---------- | ------- | ----- | --- | ----- |
 | GetAll     | Y       | Y     | Y   |       |
 | GetPrimary | Y       | Y     | Y   |       |
 | GetCurrent | Y       | Y     | Y   |       |
@@ -140,18 +142,17 @@ explicitly set with `--default-contextmenu: show`.
 ### System
 
 | Feature    | Windows | Linux | Mac | Notes |
-|------------|---------|-------|-----|-------|
+| ---------- | ------- | ----- | --- | ----- |
 | IsDarkMode |         |       | Y   |       |
 
 ### Window
 
-Y = Supported
-U = Untested
+Y = Supported U = Untested
 
 - = Not available
 
 | Feature             | Windows | Linux | Mac | Notes                                                                                |
-|---------------------|---------|-------|-----|--------------------------------------------------------------------------------------|
+| ------------------- | ------- | ----- | --- | ------------------------------------------------------------------------------------ |
 | Center              | Y       | Y     | Y   |                                                                                      |
 | Focus               | Y       | Y     |     |                                                                                      |
 | FullScreen          | Y       | Y     | Y   |                                                                                      |
@@ -184,11 +185,12 @@ U = Untested
 
 ### Window Options
 
-A 'Y' in the table below indicates that the option has been tested and is applied when the window is created.
-An 'X' indicates that the option is not supported by the platform.
+A 'Y' in the table below indicates that the option has been tested and is
+applied when the window is created. An 'X' indicates that the option is not
+supported by the platform.
 
 | Feature                         | Windows | Linux | Mac | Notes                                      |
-|---------------------------------|---------|-------|-----|--------------------------------------------|
+| ------------------------------- | ------- | ----- | --- | ------------------------------------------ |
 | AlwaysOnTop                     | Y       |       |     |                                            |
 | BackgroundColour                | Y       | Y     |     |                                            |
 | BackgroundType                  |         |       |     | Acrylic seems to work but the others don't |
@@ -228,13 +230,13 @@ To log or not to log? System logger vs custom logger.
 ## Menu
 
 | Event                    | Windows | Linux | Mac | Notes |
-|--------------------------|---------|-------|-----|-------|
+| ------------------------ | ------- | ----- | --- | ----- |
 | Default Application Menu | Y       | Y     | Y   |       |
 
 ## Tray Menus
 
 | Feature            | Windows | Linux | Mac | Notes                                                                |
-|--------------------|---------|-------|-----|----------------------------------------------------------------------|
+| ------------------ | ------- | ----- | --- | -------------------------------------------------------------------- |
 | Icon               | Y       |       | Y   | Windows has default icons for light/dark mode & supports PNG or ICO. |
 | Label              | -       |       | Y   |                                                                      |
 | Label (ANSI Codes) | -       |       |     |                                                                      |
@@ -243,11 +245,11 @@ To log or not to log? System logger vs custom logger.
 ### Methods
 
 | Method                        | Windows | Linux | Mac | Notes |
-|-------------------------------|---------|-------|-----|-------|
+| ----------------------------- | ------- | ----- | --- | ----- |
 | setLabel(label string)        | -       |       | Y   |       |
 | run()                         | Y       |       | Y   |       |
 | setIcon(icon []byte)          | Y       |       | Y   |       |
-| setMenu(menu *Menu)           | Y       |       | Y   |       |
+| setMenu(menu \*Menu)          | Y       |       | Y   |       |
 | setIconPosition(position int) | -       |       | Y   |       |
 | setTemplateIcon(icon []byte)  | -       |       | Y   |       |
 | destroy()                     | Y       |       | Y   |       |
@@ -258,7 +260,7 @@ To log or not to log? System logger vs custom logger.
 Mapping native events to cross-platform events.
 
 | Event                    | Windows | Linux | Mac             | Notes |
-|--------------------------|---------|-------|-----------------|-------|
+| ------------------------ | ------- | ----- | --------------- | ----- |
 | WindowWillClose          |         |       | WindowWillClose |       |
 | WindowDidClose           |         |       |                 |       |
 | WindowDidResize          |         |       |                 |       |
@@ -282,7 +284,7 @@ Contains a lot needed for development.
 ## Theme
 
 | Mode   | Windows | Linux | Mac | Notes |
-|--------|---------|-------|-----|-------|
+| ------ | ------- | ----- | --- | ----- |
 | Dark   | Y       |       |     |       |
 | Light  | Y       |       |     |       |
 | System | Y       |       |     |       |
@@ -300,7 +302,7 @@ All templates are working.
 Built-in plugin support:
 
 | Plugin          | Windows | Linux | Mac | Notes |
-|-----------------|---------|-------|-----|-------|
+| --------------- | ------- | ----- | --- | ----- |
 | Browser         | Y       |       | Y   |       |
 | KV Store        | Y       | Y     | Y   |       |
 | Log             | Y       | Y     | Y   |       |
@@ -316,7 +318,7 @@ TODO:
 ## Packaging
 
 |                 | Windows | Linux | Mac | Notes |
-|-----------------|---------|-------|-----|-------|
+| --------------- | ------- | ----- | --- | ----- |
 | Icon Generation | Y       |       | Y   |       |
 | Icon Embedding  | Y       |       | Y   |       |
 | Info.plist      | -       |       | Y   |       |
@@ -327,7 +329,7 @@ TODO:
 ## Frameless Windows
 
 | Feature | Windows | Linux | Mac | Notes                                          |
-|---------|---------|-------|-----|------------------------------------------------|
+| ------- | ------- | ----- | --- | ---------------------------------------------- |
 | Resize  | Y       |       | Y   |                                                |
 | Drag    | Y       | Y     | Y   | Linux - can always drag with `Meta`+left mouse |
 
@@ -338,7 +340,7 @@ TODO:
 ### Mac Options
 
 | Feature                 | Default           | Notes                                                |
-|-------------------------|-------------------|------------------------------------------------------|
+| ----------------------- | ----------------- | ---------------------------------------------------- |
 | Backdrop                | MacBackdropNormal | Standard solid window                                |
 | DisableShadow           | false             |                                                      |
 | TitleBar                |                   | Standard window decorations by default               |
@@ -354,7 +356,7 @@ TODO:
 ### Windows Options
 
 | Feature                           | Default       | Notes                                       |
-|-----------------------------------|---------------|---------------------------------------------|
+| --------------------------------- | ------------- | ------------------------------------------- |
 | BackdropType                      | Solid         |                                             |
 | DisableIcon                       | false         |                                             |
 | Theme                             | SystemDefault |                                             |
@@ -364,15 +366,17 @@ TODO:
 
 ## Linux Specific
 
-Implementation details for the functions utilized by the `*_linux.go` files are located in the following files:
+Implementation details for the functions utilized by the `*_linux.go` files are
+located in the following files:
 
 - linux_cgo.go: CGo implementation
 - linux_purego.go: PureGo implementation
 
 ### CGO
 
-By default CGO is utilized to compile the Linux port. This prevents easy cross-compilation and so the PureGo
-implementation is also being simultaneously developed.
+By default CGO is utilized to compile the Linux port. This prevents easy
+cross-compilation and so the PureGo implementation is also being simultaneously
+developed.
 
 ### Purego
 
@@ -385,7 +389,7 @@ Note: things are currently not working after the refactor
 ## Examples
 
 | Example      | Windows              | Linux | Mac |
-|--------------|----------------------|-------|-----|
+| ------------ | -------------------- | ----- | --- |
 | binding      | NO                   |       |     |
 | build        | Yes (Debug + Prod)   |       |     |
 | clipboard    | Yes                  |       |     |

@@ -17,14 +17,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-
 ### Added
-* [darwin] add getPrimaryScreen/getScreens to impl by @tmclane in https://github.com/wailsapp/wails/pull/2618
+
+- [darwin] add getPrimaryScreen/getScreens to impl by @tmclane in
+  https://github.com/wailsapp/wails/pull/2618
 
 ### Fixed
 
-- Fixed background colours of examples on Windows by [mmgvh](https://github.com/mmghv) in [#2750](https://github.com/wailsapp/wails/pull/2750).
-- Fixed default context menus by [mmgvh](https://github.com/mmghv) in [#2753](https://github.com/wailsapp/wails/pull/2753).
+- Fixed background colours of examples on Windows by
+  [mmgvh](https://github.com/mmghv) in
+  [#2750](https://github.com/wailsapp/wails/pull/2750).
+- Fixed default context menus by [mmgvh](https://github.com/mmghv) in
+  [#2753](https://github.com/wailsapp/wails/pull/2753).
 
 ### Changed
 
@@ -33,4 +37,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 ### Security
-

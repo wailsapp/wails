@@ -1,7 +1,7 @@
 # Installation
 
-
-To install the Wails CLI, ensure you have [Go 1.21+](https://go.dev/dl/) installed and run:
+To install the Wails CLI, ensure you have [Go 1.21+](https://go.dev/dl/)
+installed and run:
 
 ```shell
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
@@ -21,9 +21,9 @@ Wails has a number of common dependencies that are required before installation:
 === "Go 1.21+"
 
     Download Go from the [Go Downloads Page](https://go.dev/dl/).
-    
+
     Ensure that you follow the official [Go installation instructions](https://go.dev/doc/install). You will also need to ensure that your `PATH` environment variable also includes the path to your `~/go/bin` directory. Restart your terminal and do the following checks:
-    
+
     - Check Go is installed correctly: `go version`
     - Check `~/go/bin` is in your PATH variable: `echo $PATH | grep go/bin`
 
@@ -32,7 +32,7 @@ Wails has a number of common dependencies that are required before installation:
     Although Wails doesn't require npm to be installed, it is needed if you want to use the bundled templates.
 
     Download the latest node installer from the [Node Downloads Page](https://nodejs.org/en/download/). It is best to use the latest release as that is what we generally test against.
-    
+
     Run `npm --version` to verify.
 
 === "Task (Optional)"
@@ -63,12 +63,15 @@ You will also need to install platform specific dependencies:
 
 ## System Check
 
-Running `wails3 doctor` will check if you have the correct dependencies installed. If not, it will advise on what is missing and help on how to rectify any problems.
+Running `wails3 doctor` will check if you have the correct dependencies
+installed. If not, it will advise on what is missing and help on how to rectify
+any problems.
 
 ## The `wails3` command appears to be missing?
 
-If your system is reporting that the `wails3` command is missing, check the following:
-  
-  - Make sure you have followed the Go installation guide correctly. 
-  - Check that the `go/bin` directory is in the `PATH` environment variable. 
-  - Close/Reopen current terminals to pick up the new `PATH` variable.
+If your system is reporting that the `wails3` command is missing, check the
+following:
+
+- Make sure you have followed the Go installation guide correctly.
+- Check that the `go/bin` directory is in the `PATH` environment variable.
+- Close/Reopen current terminals to pick up the new `PATH` variable.

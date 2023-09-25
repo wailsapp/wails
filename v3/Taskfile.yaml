@@ -118,6 +118,7 @@ tasks:
       - echo "Generated templates"
 
   format:md:
+    dir: ../mkdocs-website
     cmds:
       - npx prettier --write "**/*.md"
 
@@ -128,5 +129,7 @@ tasks:
   precommit:
     cmds:
       - go test ./...
+      - task: format
+      - task: docs:update:api
 
 
