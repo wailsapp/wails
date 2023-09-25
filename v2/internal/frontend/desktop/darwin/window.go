@@ -57,7 +57,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	hideWindowOnClose := bool2Cint(frontendOptions.HideWindowOnClose)
 	startsHidden := bool2Cint(frontendOptions.StartHidden)
 	devtoolsEnabled := bool2Cint(devtools)
-	defaultContextMenu := bool2Cint(frontendOptions.EnableDefaultContextMenu)
+	defaultContextMenuEnabled := bool2Cint(debug || frontendOptions.EnableDefaultContextMenu)
 
 	var fullSizeContent, hideTitleBar, hideTitle, useToolbar, webviewIsTransparent C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent C.int
@@ -104,7 +104,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	}
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent,
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
-		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenu,
+		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenuEnabled,
 		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings, preferences)
 
 	// Create menu

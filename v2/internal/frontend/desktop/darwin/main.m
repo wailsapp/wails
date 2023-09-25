@@ -216,10 +216,10 @@ int main(int argc, const char * argv[]) {
     const char* appearance = "NSAppearanceNameDarkAqua";
     int windowIsTranslucent = 1;
     int devtoolsEnabled = 1;
-    int defaultContextMenu = 1;
+    int defaultContextMenuEnabled = 1;
     int windowStartState = 0;
     int startsHidden = 0;
-    WailsContext *result = Create("OI OI!",400,400, frameless,  resizable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenu, windowStartState,
+    WailsContext *result = Create("OI OI!",400,400, frameless,  resizable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenuEnabled, windowStartState,
                                   startsHidden, 400, 400, 600, 600, false);
     SetBackgroundColour(result, 255, 0, 0, 255);
     void *m = NewMenu("");

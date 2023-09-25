@@ -107,7 +107,9 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 		C.DevtoolsEnabled(unsafe.Pointer(webview), C.int(1), C.bool(debug && appoptions.Debug.OpenInspectorOnStartup))
 		// Install Ctrl-Shift-F12 hotkey to call ShowInspector
 		C.InstallF12Hotkey(unsafe.Pointer(gtkWindow))
-	} else if !appoptions.EnableDefaultContextMenu {
+	}
+
+	if !(debug || appoptions.EnableDefaultContextMenu) {
 		C.DisableContextMenu(unsafe.Pointer(webview))
 	}
 

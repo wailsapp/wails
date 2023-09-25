@@ -74,7 +74,7 @@ type App struct {
 	CSSDragValue string
 
 	// EnableDefaultContextMenu enables the browser's default context-menu in production
-	// This menu is already enabled in development, as well as in debug builds and production builds with the `-devtools` flag
+	// This menu is already enabled in development and debug builds
 	EnableDefaultContextMenu bool
 
 	// EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts.
