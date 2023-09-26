@@ -527,7 +527,8 @@ func (f *Frontend) startSecondInstanceProcessor() {
 		if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
 			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
 			if f.frontendOptions.SingleInstanceLock.ActivateAppOnSubsequentLaunch {
-				f.mainWindow.Present()
+				println("try to activate the app")
+				f.mainWindow.UnMinimise()
 			}
 		}
 	}
