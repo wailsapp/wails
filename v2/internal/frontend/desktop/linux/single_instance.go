@@ -6,7 +6,6 @@ package linux
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/BurntSushi/xgbutil"
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"os"
@@ -26,11 +25,6 @@ func SetupSingleInstance(uniqueID string, activateAppOnSubsequentLaunch bool, ca
 	dbusName := "org." + id + ".SingleInstance"
 	dbusPath := "/org/" + id + "/SingleInstance"
 	var err error
-
-	xConn, err := xgbutil.NewConn()
-	if err != nil {
-		// fatal
-	}
 
 	conn, err := dbus.ConnectSessionBus()
 	println("dbus connected")
