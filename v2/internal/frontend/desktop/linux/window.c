@@ -474,8 +474,7 @@ void DevtoolsEnabled(void *webview, int enabled, bool showInspector)
 
     if (genabled && showInspector)
     {
-        WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(webview));
-        webkit_web_inspector_show(WEBKIT_WEB_INSPECTOR(inspector));
+        ShowInspector(webview);
     }
 }
 
