@@ -526,6 +526,9 @@ func (f *Frontend) startSecondInstanceProcessor() {
 	for secondInstanceData := range secondInstanceBuffer {
 		if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
 			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
+			if f.frontendOptions.SingleInstanceLock.ActivateAppOnSubsequentLaunch {
+				f.mainWindow.UnMinimise()
+			}
 		}
 	}
 }

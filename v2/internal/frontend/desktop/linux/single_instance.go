@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/BurntSushi/xgbutil"
-	"github.com/BurntSushi/xgbutil/ewmh"
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"os"
@@ -49,30 +48,9 @@ func SetupSingleInstance(uniqueID string, activateAppOnSubsequentLaunch bool, ca
 			println("calling callback")
 			go callback(secondInstanceData)
 
-			if activateAppOnSubsequentLaunch {
-				clientids, err := ewmh.ClientListGet(xConn)
-				if err != nil {
-					//log.Fatal(err)
-				}
-
-				for _, clientid := range clientids {
-					pid, err := ewmh.WmPidGet(xConn, clientid)
-					if err != nil {
-						//log.Fatal(err)
-					}
-
-					if pid == uint(os.Getpid()) {
-						println("matched pid", pid)
-
-						err := ewmh.ActiveWindowSet(xConn, clientid)
-						if err != nil {
-							//log.Fatal(err)
-						}
-					}
-				}
-			}
+		} else {
+			fmt.Fprintln(os.Stderr, "Failed to deserialize", err)
 		}
-		fmt.Fprintln(os.Stderr, "Failed to deserialize", err)
 	})
 
 	println("try to export callback")
