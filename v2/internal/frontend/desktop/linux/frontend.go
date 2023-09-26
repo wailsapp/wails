@@ -102,6 +102,8 @@ var initOnce = sync.Once{}
 
 const startURL = "wails://wails/"
 
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 100)
+
 type Frontend struct {
 
 	// Context
@@ -234,6 +236,14 @@ func (f *Frontend) Run(ctx context.Context) error {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
+
+	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
+		SetupSingleInstance(
+			f.frontendOptions.SingleInstanceLock.UniqueID,
+			f.frontendOptions.SingleInstanceLock.ActivateAppOnSubsequentLaunch,
+			addSecondInstanceDataToBuffer,
+		)
+	}
 
 	f.mainWindow.Run(f.startURL.String())
 
@@ -504,4 +514,8 @@ func (f *Frontend) startRequestProcessor() {
 //export processURLRequest
 func processURLRequest(request unsafe.Pointer) {
 	requestBuffer <- webview.NewRequest(request)
+}
+
+func addSecondInstanceDataToBuffer(data options.SecondInstanceData) {
+	secondInstanceBuffer <- data
 }
