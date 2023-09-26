@@ -203,6 +203,8 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		C.free(unsafe.Pointer(prgname))
 	}
 
+	go result.startSecondInstanceProcessor()
+
 	return result
 }
 
@@ -518,4 +520,12 @@ func processURLRequest(request unsafe.Pointer) {
 
 func addSecondInstanceDataToBuffer(data options.SecondInstanceData) {
 	secondInstanceBuffer <- data
+}
+
+func (f *Frontend) startSecondInstanceProcessor() {
+	for secondInstanceData := range secondInstanceBuffer {
+		if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
+		}
+	}
 }
