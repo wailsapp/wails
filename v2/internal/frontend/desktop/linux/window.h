@@ -101,6 +101,7 @@ gboolean Hide(gpointer data);
 gboolean Maximise(gpointer data);
 gboolean UnMaximise(gpointer data);
 gboolean Minimise(gpointer data);
+gboolean Present(gpointer data);
 gboolean UnMinimise(gpointer data);
 gboolean Fullscreen(gpointer data);
 gboolean UnFullscreen(gpointer data);

@@ -246,6 +246,10 @@ func (w *Window) Minimise() {
 	C.ExecuteOnMainThread(C.Minimise, C.gpointer(w.asGTKWindow()))
 }
 
+func (w *Window) Present() {
+	C.ExecuteOnMainThread(C.Present, C.gpointer(w.asGTKWindow()))
+}
+
 func (w *Window) UnMinimise() {
 	C.ExecuteOnMainThread(C.UnMinimise, C.gpointer(w.asGTKWindow()))
 }
