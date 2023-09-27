@@ -54,9 +54,9 @@
 - [Introduction](#introduction)
 - [Fonctionnalités](#fonctionnalités)
   - [Feuille de route](#feuille-de-route)
-- [Getting Started](#getting-started)
-- [Sponsors](#sponsors)
-- [FAQ](#faq)
+- [Démarrage](#démarrage)
+- [Les sponsors](#les-sponsors)
+- [Foire aux questions](#foire-aux-questions)
 - [Les étoiles au fil du temps](#les-étoiles-au-fil-du-temps)
 - [Les contributeurs](#les-contributeurs)
 - [License](#license)
@@ -85,11 +85,11 @@ La méthode traditionnelle pour fournir des interfaces web aux programmes Go con
 
 La feuille de route du projet peut être consultée [ici](https://github.com/wailsapp/wails/discussions/1484). Veuillez consulter avant d'ouvrir une demande d'amélioration.
 
-## Getting Started
+## Démarrage
 
 Les instructions d'installation se trouvent sur le site [site officiel](https://wails.io/docs/gettingstarted/installation).
 
-## Sponsors
+## Les sponsors
 
 Ce projet est soutenu par ces personnes aimables et entreprises:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
@@ -98,7 +98,7 @@ Ce projet est soutenu par ces personnes aimables et entreprises:
 <img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
 
-## FAQ
+## Foire aux questions
 
 - S'agit-il d'une alternative à Electron ?
 
