@@ -406,7 +406,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
 - (void) SetAlwaysOnTop:(int)onTop {
     if (onTop) {
-        [self.mainWindow setLevel:NSStatusWindowLevel];
+        [self.mainWindow setLevel:NSFloatingWindowLevel];
     } else {
         [self.mainWindow setLevel:NSNormalWindowLevel];
     }
