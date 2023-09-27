@@ -242,7 +242,6 @@ func (f *Frontend) Run(ctx context.Context) error {
 	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
 		SetupSingleInstance(
 			f.frontendOptions.SingleInstanceLock.UniqueID,
-			f.frontendOptions.SingleInstanceLock.ActivateAppOnSubsequentLaunch,
 			addSecondInstanceDataToBuffer,
 		)
 	}
@@ -524,11 +523,12 @@ func addSecondInstanceDataToBuffer(data options.SecondInstanceData) {
 
 func (f *Frontend) startSecondInstanceProcessor() {
 	for secondInstanceData := range secondInstanceBuffer {
-		if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
-			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
+		if f.frontendOptions.SingleInstanceLock != nil {
 			if f.frontendOptions.SingleInstanceLock.ActivateAppOnSubsequentLaunch {
-				println("try to activate the app")
 				f.mainWindow.UnMinimise()
+			}
+			if f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+				f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
 			}
 		}
 	}

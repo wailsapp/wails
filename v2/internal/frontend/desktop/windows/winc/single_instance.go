@@ -19,13 +19,8 @@ type COPYDATASTRUCT struct {
 	lpData uintptr
 }
 
-var mainWindowHWND w32.HWND
-
 // WMCOPYDATA_SINGLE_INSTANCE_DATA we define our own type for WM_COPYDATA message
 const WMCOPYDATA_SINGLE_INSTANCE_DATA = 1542
-
-// SC_RESTORE param for WM_SYSCOMMAND to restore app if it is minimized
-const SC_RESTORE = 0xF120
 
 func SendMessage(hwnd w32.HWND, data string) {
 	arrUtf16, _ := syscall.UTF16FromString(data)
@@ -39,7 +34,7 @@ func SendMessage(hwnd w32.HWND, data string) {
 }
 
 // SetupSingleInstance single instance Windows app
-func SetupSingleInstance(uniqueID string, activateAppOnSubsequentLaunch bool, callback func(data options.SecondInstanceData)) {
+func SetupSingleInstance(uniqueID string, callback func(data options.SecondInstanceData)) {
 	id := "wails-app-" + uniqueID
 
 	className := id + "-sic"
@@ -66,15 +61,11 @@ func SetupSingleInstance(uniqueID string, activateAppOnSubsequentLaunch bool, ca
 			// if we got any other unknown error we will just start new application instance
 		}
 	} else {
-		createEventTargetWindow(className, windowName, activateAppOnSubsequentLaunch, callback)
+		createEventTargetWindow(className, windowName, callback)
 	}
 }
 
-func SingleInstanceMainWindowHWND(hwnd w32.HWND) {
-	mainWindowHWND = hwnd
-}
-
-func createEventTargetWindow(className string, windowName string, activateAppOnSubsequentLaunch bool, callback func(data options.SecondInstanceData)) w32.HWND {
+func createEventTargetWindow(className string, windowName string, callback func(data options.SecondInstanceData)) w32.HWND {
 	// callback handler in the event target window
 	wndProc := func(
 		hwnd w32.HWND, msg uint32, wparam w32.WPARAM, lparam w32.LPARAM,
@@ -92,34 +83,6 @@ func createEventTargetWindow(className string, windowName string, activateAppOnS
 				if err == nil {
 					// pass callback to first instance
 					go callback(secondInstanceData)
-
-					// if activateAppOnSubsequentLaunch is true, we will try to activate the first instance
-					if activateAppOnSubsequentLaunch && mainWindowHWND != 0 {
-						// restore the minimized window, if it is
-						w32.SendMessage(
-							mainWindowHWND,
-							w32.WM_SYSCOMMAND,
-							SC_RESTORE,
-							0,
-						)
-						// WindowPos is used with HWND_TOPMOST to guarantee bring our app on top
-						// force set our main window on top
-						w32.SetWindowPos(
-							mainWindowHWND,
-							w32.HWND_TOPMOST,
-							0, 0, 0, 0,
-							w32.SWP_SHOWWINDOW|w32.SWP_NOSIZE|w32.SWP_NOMOVE,
-						)
-						// remove topmost to allow normal windows manipulations
-						w32.SetWindowPos(
-							mainWindowHWND,
-							w32.HWND_NOTOPMOST,
-							0, 0, 0, 0,
-							w32.SWP_SHOWWINDOW|w32.SWP_NOSIZE|w32.SWP_NOMOVE,
-						)
-						// put main window on tops foreground
-						w32.SetForegroundWindow(mainWindowHWND)
-					}
 				}
 			}
 

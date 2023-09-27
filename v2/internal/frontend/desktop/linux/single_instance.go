@@ -5,7 +5,6 @@ package linux
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"os"
@@ -19,60 +18,52 @@ func (f dbusHandler) SendMessage(message string) *dbus.Error {
 	return nil
 }
 
-func SetupSingleInstance(uniqueID string, activateAppOnSubsequentLaunch bool, callback func(data options.SecondInstanceData)) {
-	id := "wails_app_" + strings.ReplaceAll(uniqueID, "-", "_")
+func SetupSingleInstance(uniqueID string, callback func(data options.SecondInstanceData)) {
+	id := "wails_app_" + strings.ReplaceAll(strings.ReplaceAll(uniqueID, "-", "_"), ".", "_")
 
 	dbusName := "org." + id + ".SingleInstance"
 	dbusPath := "/org/" + id + "/SingleInstance"
-	var err error
 
 	conn, err := dbus.ConnectSessionBus()
-	println("dbus connected")
+	// if we will reach any error during establishing connection or sending message we will just continue.
+	// It should not be the case that such thing will happen actually, but just in case.
 	if err != nil {
-
+		return
 	}
 
 	f := dbusHandler(func(message string) {
-		println("got message", message)
 		var secondInstanceData options.SecondInstanceData
 
 		err := json.Unmarshal([]byte(message), &secondInstanceData)
-
 		if err == nil {
-			println("calling callback")
 			go callback(secondInstanceData)
-
-		} else {
-			fmt.Fprintln(os.Stderr, "Failed to deserialize", err)
 		}
 	})
 
-	println("try to export callback")
-	conn.Export(f, dbus.ObjectPath(dbusPath), dbusName)
-
-	println("try to request name")
-	reply, err := conn.RequestName(dbusName, dbus.NameFlagDoNotQueue)
+	err = conn.Export(f, dbus.ObjectPath(dbusPath), dbusName)
 	if err != nil {
-		println("error on requesting name")
-		panic(err)
+		return
 	}
 
-	println("got reply", reply)
+	reply, err := conn.RequestName(dbusName, dbus.NameFlagDoNotQueue)
+	if err != nil {
+		return
+	}
 
-	// name already taken, so send args using dbus to existing instance and exit
+	// if name already taken, try to send args to existing instance, if no success just launch new instance
 	if reply == dbus.RequestNameReplyExists {
-		println("name already taken, sending request to existing instance")
 		data := options.SecondInstanceData{
 			Args: os.Args[1:],
 		}
-		serialized, _ := json.Marshal(data)
+		serialized, err := json.Marshal(data)
+		if err != nil {
+			return
+		}
 
 		err = conn.Object(dbusName, dbus.ObjectPath(dbusPath)).Call(dbusName+".SendMessage", 0, string(serialized)).Store()
-
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Failed to call Foo function (is the server example running?):", err)
+			return
 		}
-		println("sent successfully", string(serialized))
 		os.Exit(1)
 	}
 }

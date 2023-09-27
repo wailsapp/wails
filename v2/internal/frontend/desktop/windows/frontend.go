@@ -144,18 +144,12 @@ func (f *Frontend) Run(ctx context.Context) error {
 	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
 		winc.SetupSingleInstance(
 			f.frontendOptions.SingleInstanceLock.UniqueID,
-			f.frontendOptions.SingleInstanceLock.ActivateAppOnSubsequentLaunch,
 			addSecondInstanceDataToBuffer,
 		)
 	}
 
 	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo, f.chromium)
 	f.mainWindow = mainWindow
-
-	// we should pass HWND to single_instance so that when we want to make the window active we can do this correctly for client only window
-	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
-		winc.SingleInstanceMainWindowHWND(f.mainWindow.Handle())
-	}
 
 	var _debug = ctx.Value("debug")
 	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
@@ -849,8 +843,13 @@ func addSecondInstanceDataToBuffer(data options.SecondInstanceData) {
 
 func (f *Frontend) startSecondInstanceProcessor() {
 	for secondInstanceData := range secondInstanceBuffer {
-		if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
-			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
+		if f.frontendOptions.SingleInstanceLock != nil {
+			if f.frontendOptions.SingleInstanceLock.ActivateAppOnSubsequentLaunch {
+				f.mainWindow.UnMinimise()
+			}
+			if f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+				f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
+			}
 		}
 	}
 }
