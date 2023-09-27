@@ -20,6 +20,11 @@ import (
 #include <stdio.h>
 #include <limits.h>
 #include <stdint.h>
+#ifdef G_APPLICATION_DEFAULT_FLAGS
+    #define APPLICATION_DEFAULT_FLAGS G_APPLICATION_DEFAULT_FLAGS
+#else
+    #define APPLICATION_DEFAULT_FLAGS G_APPLICATION_FLAGS_NONE
+#endif
 
 typedef struct CallbackID
 {
@@ -193,7 +198,7 @@ func appName() string {
 func appNew(name string) pointer {
 	nameC := C.CString(fmt.Sprintf("org.wails.%s", name))
 	defer C.free(unsafe.Pointer(nameC))
-	return pointer(C.gtk_application_new(nameC, C.G_APPLICATION_DEFAULT_FLAGS))
+	return pointer(C.gtk_application_new(nameC, C.APPLICATION_DEFAULT_FLAGS))
 }
 
 func appRun(app pointer) error {
