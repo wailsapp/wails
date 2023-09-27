@@ -184,7 +184,7 @@ void windowSetSize(void* nsWindow, int width, int height) {
 // Set NSWindow always on top
 void windowSetAlwaysOnTop(void* nsWindow, bool alwaysOnTop) {
 	// Set window always on top on main thread
-	[(WebviewWindow*)nsWindow setLevel:alwaysOnTop ? NSStatusWindowLevel : NSNormalWindowLevel];
+	[(WebviewWindow*)nsWindow setLevel:alwaysOnTop ? NSFloatingWindowLevel : NSNormalWindowLevel];
 }
 
 // Load URL in NSWindow
