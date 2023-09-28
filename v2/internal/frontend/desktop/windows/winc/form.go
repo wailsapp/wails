@@ -139,36 +139,6 @@ func (fm *Form) Restore() {
 	w32.ShowWindow(fm.hwnd, w32.SW_RESTORE)
 }
 
-func (fm *Form) UnMinimise() {
-	// SC_RESTORE param for WM_SYSCOMMAND to restore app if it is minimized
-	const SC_RESTORE = 0xF120
-
-	// restore the minimized window, if it is
-	w32.SendMessage(
-		fm.hwnd,
-		w32.WM_SYSCOMMAND,
-		SC_RESTORE,
-		0,
-	)
-	// WindowPos is used with HWND_TOPMOST to guarantee bring our app on top
-	// force set our main window on top
-	w32.SetWindowPos(
-		fm.hwnd,
-		w32.HWND_TOPMOST,
-		0, 0, 0, 0,
-		w32.SWP_SHOWWINDOW|w32.SWP_NOSIZE|w32.SWP_NOMOVE,
-	)
-	// remove topmost to allow normal windows manipulations
-	w32.SetWindowPos(
-		fm.hwnd,
-		w32.HWND_NOTOPMOST,
-		0, 0, 0, 0,
-		w32.SWP_SHOWWINDOW|w32.SWP_NOSIZE|w32.SWP_NOMOVE,
-	)
-	// put main window on tops foreground
-	w32.SetForegroundWindow(fm.hwnd)
-}
-
 // Public methods
 func (fm *Form) Center() {
 
