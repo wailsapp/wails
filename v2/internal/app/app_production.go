@@ -71,8 +71,6 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		appoptions.OnShutdown,
 		appoptions.OnDomReady,
 		appoptions.OnBeforeClose,
-		appoptions.OnFileOpen,
-		appoptions.OnFilesOpen,
 	}
 	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions, IsObfuscated())
 	eventHandler := runtime.NewEvents(myLogger)

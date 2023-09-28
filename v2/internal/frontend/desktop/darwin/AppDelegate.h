@@ -22,6 +22,4 @@
 
 extern void HandleOpenFile(char *);
 
-extern void HandleOpenFiles(char**, int);
-
 #endif /* AppDelegate_h */
