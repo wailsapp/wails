@@ -280,10 +280,11 @@ func menuAddSeparator(menu *Menu) {
 		C.gtk_separator_menu_item_new())
 }
 
-func menuAppend(parent *Menu, menu *MenuItem) {
+func menuAppend(parent *Menu, item *MenuItem) {
+
 	C.gtk_menu_shell_append(
 		(*C.GtkMenuShell)((parent.impl).(*linuxMenu).native),
-		(*C.GtkWidget)((menu.impl).(*linuxMenuItem).native),
+		(*C.GtkWidget)((item.impl).(*linuxMenuItem).native),
 	)
 	/* gtk4
 	C.gtk_menu_item_set_submenu(
@@ -361,13 +362,17 @@ func menuItemChecked(widget pointer) bool {
 func menuItemNew(label string) pointer {
 	cLabel := C.CString(label)
 	defer C.free(unsafe.Pointer(cLabel))
-	return pointer(C.gtk_menu_item_new_with_label(cLabel))
+	item := C.gtk_menu_item_new_with_label(cLabel)
+	C.gtk_widget_show((*C.GtkWidget)(item))
+	return pointer(item)
 }
 
 func menuCheckItemNew(label string) pointer {
 	cLabel := C.CString(label)
 	defer C.free(unsafe.Pointer(cLabel))
-	return pointer(C.gtk_check_menu_item_new_with_label(cLabel))
+	item := C.gtk_check_menu_item_new_with_label(cLabel)
+	C.gtk_widget_show((*C.GtkWidget)(item))
+	return pointer(item)
 }
 
 func menuItemSetChecked(widget pointer, checked bool) {
@@ -607,7 +612,7 @@ func windowMinimize(window pointer) {
 	C.gtk_window_iconify((*C.GtkWindow)(window))
 }
 
-func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy int) (window, webview, vbox pointer) {
+func windowNew(application pointer, menuBar pointer, windowId uint, gpuPolicy int) (window, webview, vbox pointer) {
 	window = pointer(C.gtk_application_window_new((*C.GtkApplication)(application)))
 	C.g_object_ref_sink(C.gpointer(window))
 	webview = windowNewWebview(windowId, gpuPolicy)
@@ -615,10 +620,9 @@ func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy int) 
 	name := C.CString("webview-box")
 	defer C.free(unsafe.Pointer(name))
 	C.gtk_widget_set_name((*C.GtkWidget)(vbox), name)
-
 	C.gtk_container_add((*C.GtkContainer)(window), (*C.GtkWidget)(vbox))
-	if menu != nil {
-		C.gtk_box_pack_start((*C.GtkBox)(vbox), (*C.GtkWidget)(menu), 0, 0, 0)
+	if menuBar != nil {
+		C.gtk_box_pack_start((*C.GtkBox)(vbox), (*C.GtkWidget)(menuBar), 0, 0, 0)
 	}
 	C.gtk_box_pack_start((*C.GtkBox)(unsafe.Pointer(vbox)), (*C.GtkWidget)(webview), 1, 1, 0)
 	return
@@ -1149,19 +1153,18 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 }
 
 // systray
+func systrayDestroy(tray pointer) {
+	// FIXME: this is not the correct way to remove our systray
+	//	C.g_object_unref(C.gpointer(tray))
+}
+
 func systrayNew(label string) pointer {
 	labelStr := C.CString(label)
 	defer C.free(unsafe.Pointer(labelStr))
 	emptyStr := C.CString("")
 	defer C.free(unsafe.Pointer(emptyStr))
 	indicator := C.app_indicator_new(labelStr, labelStr, C.APP_INDICATOR_CATEGORY_APPLICATION_STATUS)
-
-	trayMenu := C.gtk_menu_new()
-	item := C.gtk_menu_item_new_with_label(labelStr)
-	C.gtk_menu_shell_append((*C.GtkMenuShell)(unsafe.Pointer(trayMenu)), item)
-	C.gtk_widget_show(item)
 	C.app_indicator_set_status(indicator, C.APP_INDICATOR_STATUS_ACTIVE)
-	C.app_indicator_set_menu(indicator, (*C.GtkMenu)(unsafe.Pointer(trayMenu)))
 	iconStr := C.CString("wails-systray-icon")
 	defer C.free(unsafe.Pointer(iconStr))
 	C.app_indicator_set_icon_full(indicator, iconStr, emptyStr)
@@ -1184,7 +1187,9 @@ func systraySetLabel(tray pointer, label string) {
 }
 
 func systrayMenuSet(tray pointer, menu pointer) {
-	//	C.app_indicator_set_menu((*C.AppIndicator)(tray), (*C.GtkMenu)(unsafe.Pointer(menu)))
+	C.app_indicator_set_menu(
+		(*C.AppIndicator)(tray),
+		(*C.GtkMenu)(unsafe.Pointer(menu)))
 }
 
 func systraySetTemplateIcon(tray pointer, icon []byte) {

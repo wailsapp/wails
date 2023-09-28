@@ -10,6 +10,14 @@ type linuxMenu struct {
 func newMenuImpl(menu *Menu) *linuxMenu {
 	result := &linuxMenu{
 		menu:   menu,
+		native: menuNew(),
+	}
+	return result
+}
+
+func newMenuBarImpl(menu *Menu) *linuxMenu {
+	result := &linuxMenu{
+		menu:   menu,
 		native: menuBarNew(),
 	}
 	return result

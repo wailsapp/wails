@@ -2,8 +2,6 @@
 
 package application
 
-import "fmt"
-
 type linuxSystemTray struct {
 	id    uint
 	label string
@@ -13,6 +11,7 @@ type linuxSystemTray struct {
 	iconPosition   int
 	isTemplateIcon bool
 	tray           pointer
+	nativeMenu     pointer
 }
 
 func (s *linuxSystemTray) setIconPosition(position int) {
@@ -20,8 +19,10 @@ func (s *linuxSystemTray) setIconPosition(position int) {
 }
 
 func (s *linuxSystemTray) setMenu(menu *Menu) {
-	fmt.Println("linuxSystemTray.SetMenu")
 	s.menu = menu
+	s.menu.impl = newMenuImpl(menu)
+	menu.Update()
+	systrayMenuSet(s.tray, (menu.impl).(*linuxMenu).native)
 }
 
 func (s *linuxSystemTray) positionWindow(window *WebviewWindow, offset int) error {
@@ -55,9 +56,8 @@ func (s *linuxSystemTray) run() {
 			s.setIcon(s.icon)
 		}
 		if s.menu != nil {
-			s.menu.Update()
-			menu := (s.menu.impl).(*linuxMenu).menu
-			systrayMenuSet(s.tray, (menu.impl).(*linuxMenu).native)
+			//			s.menu.Update()
+			s.setMenu(s.menu)
 		}
 	})
 }
@@ -101,15 +101,11 @@ func (s *linuxSystemTray) openMenu() {
 	}
 }
 
-func (s *linuxSystemTray) openMenu() {
-}
-
 func (s *linuxSystemTray) setLabel(label string) {
 	s.label = label
 	systraySetLabel(s.tray, label)
 }
 
 func (s *linuxSystemTray) destroy() {
-	// Remove the status item from the status bar and its associated menu
-	//	C.systemTrayDestroy(s.nsStatusItem)
+	systrayDestroy(s.tray)
 }
