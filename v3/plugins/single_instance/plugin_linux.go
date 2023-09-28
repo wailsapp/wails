@@ -3,7 +3,6 @@
 package single_instance
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,7 +17,7 @@ func init() {
 	)
 	go func() {
 		for {
-			s := <-sigc
+			<-sigc
 			application.Get().Show()
 		}
 	}()
