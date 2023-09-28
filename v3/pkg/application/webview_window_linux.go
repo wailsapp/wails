@@ -43,7 +43,7 @@ func (w *linuxWebviewWindow) startDrag() error {
 }
 
 func (w *linuxWebviewWindow) endDrag(button uint, x, y int) {
-	fmt.Println("endDrag", button, x, y)
+
 }
 
 func (w *linuxWebviewWindow) enableDND() {
