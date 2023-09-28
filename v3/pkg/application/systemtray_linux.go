@@ -94,6 +94,9 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 	}
 }
 
+func (s *linuxSystemTray) openMenu() {
+}
+
 func (s *linuxSystemTray) setLabel(label string) {
 	s.label = label
 	//	C.systemTraySetLabel(s.nsStatusItem, C.CString(label))
