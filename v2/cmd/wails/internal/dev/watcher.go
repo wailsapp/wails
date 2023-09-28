@@ -44,14 +44,16 @@ func initialiseWatcher(cwd string) (*fsnotify.Watcher, error) {
 
 func getIgnoreDirs(cwd string) []string {
 	ignoreDirs := []string{filepath.Join(cwd, "build/*"), ".*", "node_modules"}
-
+	baseDir := filepath.Base(cwd)
 	// Read .gitignore into ignoreDirs
 	f, err := os.Open(filepath.Join(cwd, ".gitignore"))
 	if err == nil {
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
 			line := scanner.Text()
-			ignoreDirs = append(ignoreDirs, line)
+			if line != baseDir {
+				ignoreDirs = append(ignoreDirs, line)
+			}
 		}
 	}
 
