@@ -76,7 +76,7 @@ type MessageDialogOptions struct {
 	Message    string
 	Buttons    []*Button
 	Icon       []byte
-	window     *WebviewWindow
+	window     Window
 }
 
 type MessageDialog struct {
@@ -132,7 +132,7 @@ func (d *MessageDialog) AddButtons(buttons []*Button) *MessageDialog {
 	return d
 }
 
-func (d *MessageDialog) AttachToWindow(window *WebviewWindow) *MessageDialog {
+func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog {
 	d.window = window
 	return d
 }
@@ -179,7 +179,7 @@ type OpenFileDialogOptions struct {
 	TreatsFilePackagesAsDirectories bool
 	AllowsOtherFileTypes            bool
 	Filters                         []FileFilter
-	Window                          *WebviewWindow
+	Window                          Window
 
 	Title      string
 	Message    string
@@ -205,7 +205,7 @@ type OpenFileDialogStruct struct {
 	message    string
 	buttonText string
 	directory  string
-	window     *WebviewWindow
+	window     Window
 
 	impl openFileDialogImpl
 }
@@ -245,7 +245,7 @@ func (d *OpenFileDialogStruct) TreatsFilePackagesAsDirectories(treatsFilePackage
 	return d
 }
 
-func (d *OpenFileDialogStruct) AttachToWindow(window *WebviewWindow) *OpenFileDialogStruct {
+func (d *OpenFileDialogStruct) AttachToWindow(window Window) *OpenFileDialogStruct {
 	d.window = window
 	return d
 }
@@ -361,7 +361,7 @@ type SaveFileDialogOptions struct {
 	Filename                        string
 	ButtonText                      string
 	Filters                         []FileFilter
-	Window                          *WebviewWindow
+	Window                          Window
 }
 
 type SaveFileDialogStruct struct {
@@ -378,7 +378,7 @@ type SaveFileDialogStruct struct {
 	buttonText                      string
 	filters                         []FileFilter
 
-	window *WebviewWindow
+	window Window
 
 	impl  saveFileDialogImpl
 	title string
@@ -439,7 +439,7 @@ func (d *SaveFileDialogStruct) SetDirectory(directory string) *SaveFileDialogStr
 	return d
 }
 
-func (d *SaveFileDialogStruct) AttachToWindow(window *WebviewWindow) *SaveFileDialogStruct {
+func (d *SaveFileDialogStruct) AttachToWindow(window Window) *SaveFileDialogStruct {
 	d.window = window
 	return d
 }

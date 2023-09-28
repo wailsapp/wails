@@ -14,7 +14,7 @@ var clipboardMethods = map[int]string{
 	ClipboardText:    "Text",
 }
 
-func (m *MessageProcessor) processClipboardMethod(method int, rw http.ResponseWriter, _ *http.Request, _ *WebviewWindow, params QueryParams) {
+func (m *MessageProcessor) processClipboardMethod(method int, rw http.ResponseWriter, _ *http.Request, _ Window, params QueryParams) {
 
 	args, err := params.Args()
 	if err != nil {

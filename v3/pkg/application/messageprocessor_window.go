@@ -70,7 +70,7 @@ var windowMethodNames = map[int]string{
 	WindowSetZoomLevel:        "SetZoomLevel",
 }
 
-func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
+func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
 
 	args, err := params.Args()
 	if err != nil {

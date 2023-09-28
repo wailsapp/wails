@@ -762,7 +762,10 @@ func windowSetURL(webview pointer, uri string) {
 func emit(we *C.WindowEvent) {
 	window := globalApplication.getWindowForID(uint(we.id))
 	if window != nil {
-		window.emit(events.WindowEventType(we.event))
+		windowEvents <- &windowEvent{
+			WindowID: window.ID(),
+			EventID:  uint(events.WindowEventType(we.event)),
+		}
 	}
 }
 
@@ -846,7 +849,7 @@ func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data unsafe.Pointer)
 	if window == nil {
 		return C.gboolean(0)
 	}
-	lw, ok := (window.impl).(*linuxWebviewWindow)
+	lw, ok := (window.(*WebviewWindow).impl).(*linuxWebviewWindow)
 	if !ok {
 		return C.gboolean(0)
 	}
@@ -1031,7 +1034,7 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) ([]string, error) {
 
 	window := nilPointer
 	if dialog.window != nil {
-		window = (dialog.window.impl).(*linuxWebviewWindow).window
+		window = (dialog.window.(*WebviewWindow).impl).(*linuxWebviewWindow).window
 	}
 
 	buttonText := dialog.buttonText

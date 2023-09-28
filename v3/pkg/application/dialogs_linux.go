@@ -4,7 +4,7 @@ func (m *linuxApp) showAboutDialog(title string, message string, icon []byte) {
 	window := globalApplication.getWindowForID(m.getCurrentWindowID())
 	var parent pointer
 	if window != nil {
-		parent = window.impl.(*linuxWebviewWindow).window
+		parent = (window.(*WebviewWindow).impl).(*linuxWebviewWindow).window
 	}
 	about := newMessageDialog(InfoDialogType)
 	about.SetTitle(title).
@@ -25,7 +25,7 @@ func (m *linuxDialog) show() {
 	window := globalApplication.getWindowForID(windowId)
 	var parent pointer
 	if window != nil {
-		parent = window.impl.(*linuxWebviewWindow).window
+		parent = (window.(*WebviewWindow).impl).(*linuxWebviewWindow).window
 	}
 
 	response := runQuestionDialog(parent, m.dialog)

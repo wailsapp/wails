@@ -16,8 +16,7 @@ var applicationMethodNames = map[int]string{
 	ApplicationShow: "Show",
 }
 
-func (m *MessageProcessor) processApplicationMethod(method int, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
-
+func (m *MessageProcessor) processApplicationMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
 	switch method {
 	case ApplicationQuit:
 		globalApplication.Quit()

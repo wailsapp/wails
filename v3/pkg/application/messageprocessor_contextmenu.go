@@ -19,7 +19,7 @@ var contextmenuMethodNames = map[int]string{
 	ContextMenuOpen: "Open",
 }
 
-func (m *MessageProcessor) processContextMenuMethod(method int, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
+func (m *MessageProcessor) processContextMenuMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
 
 	switch method {
 	case ContextMenuOpen:
@@ -29,7 +29,7 @@ func (m *MessageProcessor) processContextMenuMethod(method int, rw http.Response
 			m.httpError(rw, "error parsing contextmenu message: %s", err.Error())
 			return
 		}
-		window.openContextMenu(&data)
+		window.OpenContextMenu(&data)
 		m.ok(rw)
 	default:
 		m.httpError(rw, "Unknown contextmenu method: %d", method)

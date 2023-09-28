@@ -12,7 +12,7 @@ var eventsMethodNames = map[int]string{
 	EventsEmit: "Emit",
 }
 
-func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
+func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
 
 	var event WailsEvent
 
