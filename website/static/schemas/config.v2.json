@@ -200,6 +200,31 @@
                             }
                         }
                     }
+                },
+                "protocols": {
+                    "type": "array",
+                    "description": "Custom URI protocols that should be opened by the application",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "scheme": {
+                                "type": "string",
+                                "description": "protocol scheme. e.g. myapp"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name. e.g. My App"
+                            },
+                            "role": {
+                                "description": "macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.",
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/BundleTypeRole"
+                                    }
+                                ]
+                            }
+                        }
+                    }
                 }
             }
         },

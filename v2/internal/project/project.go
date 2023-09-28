@@ -222,6 +222,7 @@ type Info struct {
 	Copyright        *string           `json:"copyright"`
 	Comments         *string           `json:"comments"`
 	FileAssociations []FileAssociation `json:"fileAssociations"`
+	Protocols        []Protocol        `json:"protocols"`
 }
 
 type FileAssociation struct {
@@ -230,6 +231,12 @@ type FileAssociation struct {
 	Description string `json:"description"`
 	IconName    string `json:"iconName"`
 	Role        string `json:"role"`
+}
+
+type Protocol struct {
+	Scheme string `json:"scheme"`
+	Name   string `json:"name"`
+	Role   string `json:"role"`
 }
 
 type Bindings struct {

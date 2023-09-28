@@ -24,5 +24,6 @@ type Options struct {
 	//ActivationPolicy     ActivationPolicy
 	About      *AboutInfo
 	OnFileOpen func(filePath string) `json:"-"`
+	OnUrlOpen  func(filePath string) `json:"-"`
 	//URLHandlers          map[string]func(string)
 }

@@ -39,6 +39,7 @@ var messageBuffer = make(chan string, 100)
 var requestBuffer = make(chan webview.Request, 100)
 var callbackBuffer = make(chan uint, 10)
 var openFilepathBuffer = make(chan string, 100)
+var openUrlBuffer = make(chan string, 100)
 var secondInstanceBuffer = make(chan options.SecondInstanceData, 100)
 
 type Frontend struct {
@@ -110,6 +111,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	go result.startMessageProcessor()
 	go result.startCallbackProcessor()
 	go result.startFileOpenProcessor()
+	go result.startUrlOpenProcessor()
 	go result.startSecondInstanceProcessor()
 
 	return result
@@ -118,6 +120,12 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 func (f *Frontend) startFileOpenProcessor() {
 	for filePath := range openFilepathBuffer {
 		f.ProcessOpenFileEvent(filePath)
+	}
+}
+
+func (f *Frontend) startUrlOpenProcessor() {
+	for url := range openFilepathBuffer {
+		f.ProcessOpenUrlEvent(url)
 	}
 }
 
@@ -385,6 +393,12 @@ func (f *Frontend) ProcessOpenFileEvent(filePath string) {
 	}
 }
 
+func (f *Frontend) ProcessOpenUrlEvent(url string) {
+	if f.frontendOptions.Mac != nil && f.frontendOptions.Mac.OnUrlOpen != nil {
+		f.frontendOptions.Mac.OnUrlOpen(url)
+	}
+}
+
 func (f *Frontend) Callback(message string) {
 	escaped, err := json.Marshal(message)
 	if err != nil {
@@ -433,4 +447,10 @@ func processURLRequest(_ unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
 func HandleOpenFile(filePath *C.char) {
 	goFilepath := C.GoString(filePath)
 	openFilepathBuffer <- goFilepath
+}
+
+//export HandleOpenUrl
+func HandleOpenUrl(url *C.char) {
+	goUrl := C.GoString(url)
+	openUrlBuffer <- goUrl
 }
