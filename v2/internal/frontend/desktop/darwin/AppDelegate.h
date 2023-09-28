@@ -24,8 +24,6 @@
 
 extern void HandleOpenFile(char *);
 
-extern void HandleOpenFiles(char**, int);
-
 extern void HandleSecondInstanceData(char * message);
 
 void SendDataToFirstInstance(char * singleInstanceUniqueId, char * text);
