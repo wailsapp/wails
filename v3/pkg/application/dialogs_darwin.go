@@ -423,7 +423,7 @@ func (m *macosOpenFileDialog) show() ([]string, error) {
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
 		// get NSWindow from window
-		nsWindow = m.dialog.window.impl.(*macosWebviewWindow).nsWindow
+		nsWindow = (m.dialog.window).(*WebviewWindow).impl.(*macosWebviewWindow).nsWindow
 	}
 
 	// Massage filter patterns into macOS format
@@ -507,7 +507,7 @@ func (m *macosSaveFileDialog) show() (string, error) {
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
 		// get NSWindow from window
-		nsWindow = m.dialog.window.impl.(*macosWebviewWindow).nsWindow
+		nsWindow = (m.dialog.window).(*WebviewWindow).impl.(*macosWebviewWindow).nsWindow
 	}
 	C.showSaveFileDialog(C.uint(m.dialog.id),
 		C.bool(m.dialog.canCreateDirectories),
