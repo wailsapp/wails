@@ -76,7 +76,7 @@ type MessageDialogOptions struct {
 	Message    string
 	Buttons    []*Button
 	Icon       []byte
-	window     Window
+	window     *WebviewWindow
 }
 
 type MessageDialog struct {
@@ -133,7 +133,7 @@ func (d *MessageDialog) AddButtons(buttons []*Button) *MessageDialog {
 }
 
 func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog {
-	d.window = window
+	d.window = window.(*WebviewWindow)
 	return d
 }
 
