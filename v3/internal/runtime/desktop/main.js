@@ -1,6 +1,6 @@
 /*
- _	   __	  _ __
-| |	 / /___ _(_) /____
+ _     __     _ __
+| |  / /___ _(_) /____
 | | /| / / __ `/ / / ___/
 | |/ |/ / /_/ / / (__  )
 |__/|__/\__,_/_/_/____/
@@ -15,6 +15,7 @@ import * as Application from './application';
 import * as Screens from './screens';
 import * as System from './system';
 import {Plugin, Call, callErrorCallback, callCallback, CallByID, CallByName} from "./calls";
+import {clientId} from './runtime';
 import {newWindow} from "./window";
 import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
 import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
@@ -25,6 +26,7 @@ import {setupDrag, endDrag} from "./drag";
 window.wails = {
     ...newRuntime(null),
     Capabilities: {},
+    clientId: clientId,
 };
 
 fetch("/wails/capabilities").then((response) => {
