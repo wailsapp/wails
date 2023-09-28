@@ -8,6 +8,7 @@ package darwin
 #cgo LDFLAGS: -framework Foundation -framework Cocoa -framework WebKit
 #import <Foundation/Foundation.h>
 #import "Application.h"
+#import "CustomUrl.h"
 #import "WailsContext.h"
 
 #include <stdlib.h>
@@ -80,6 +81,8 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 	result.startURL, _ = url.Parse(startURL)
 
+	C.StartCustomURLHandler()
+
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
 	} else {
@@ -124,7 +127,7 @@ func (f *Frontend) startFileOpenProcessor() {
 }
 
 func (f *Frontend) startUrlOpenProcessor() {
-	for url := range openFilepathBuffer {
+	for url := range openUrlBuffer {
 		f.ProcessOpenUrlEvent(url)
 	}
 }
@@ -449,8 +452,8 @@ func HandleOpenFile(filePath *C.char) {
 	openFilepathBuffer <- goFilepath
 }
 
-//export HandleOpenUrl
-func HandleOpenUrl(url *C.char) {
+//export HandleCustomURL
+func HandleCustomURL(url *C.char) {
 	goUrl := C.GoString(url)
 	openUrlBuffer <- goUrl
 }

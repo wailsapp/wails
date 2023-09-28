@@ -41,9 +41,6 @@
         [self.mainWindow toggleFullScreen:nil];
     }
 
-    NSAppleEventManager *appleEventManager = [NSAppleEventManager sharedAppleEventManager];
-    [appleEventManager setEventHandler:self andSelector:@selector(handleGetURLEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID: kAEGetURL];
-
     if ( self.singleInstanceLockEnabled ) {
       [[NSDistributedNotificationCenter defaultCenter] addObserver:self
           selector:@selector(handleSecondInstanceNotification:) name:self.singleInstanceUniqueId object:nil];
@@ -65,13 +62,6 @@ void SendDataToFirstInstance(char * singleInstanceUniqueId, char * message) {
         const char* utf8Message = message.UTF8String;
         HandleSecondInstanceData((char*)utf8Message);
     }
-}
-
-- (void)handleGetURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
-    [event paramDescriptorForKeyword:keyDirectObject];
-    NSString *urlStr = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-
-    HandleOpenUrl((char*)[[[event paramDescriptorForKeyword:keyDirectObject] stringValue] UTF8String]);
 }
 
 - (void)dealloc {

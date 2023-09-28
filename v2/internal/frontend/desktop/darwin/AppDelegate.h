@@ -28,6 +28,4 @@ extern void HandleSecondInstanceData(char * message);
 
 void SendDataToFirstInstance(char * singleInstanceUniqueId, char * text);
 
-extern void HandleOpenUrl(char*);
-
 #endif /* AppDelegate_h */
