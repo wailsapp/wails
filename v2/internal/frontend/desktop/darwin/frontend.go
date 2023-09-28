@@ -39,7 +39,6 @@ var messageBuffer = make(chan string, 100)
 var requestBuffer = make(chan webview.Request, 100)
 var callbackBuffer = make(chan uint, 10)
 var openFilepathBuffer = make(chan string, 100)
-var openFilepathsBuffer = make(chan []string, 100)
 
 type Frontend struct {
 
