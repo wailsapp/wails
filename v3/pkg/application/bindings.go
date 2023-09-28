@@ -2,10 +2,11 @@ package application
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/hash"
 	"reflect"
 	"runtime"
 	"strings"
+
+	"github.com/wailsapp/wails/v3/internal/hash"
 
 	"github.com/samber/lo"
 )

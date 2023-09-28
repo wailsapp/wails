@@ -50,7 +50,7 @@ func (e *WailsEvent) Cancel() {
 	e.Cancelled = true
 }
 
-func (e WailsEvent) toJSON() string {
+func (e WailsEvent) ToJSON() string {
 	marshal, err := json.Marshal(&e)
 	if err != nil {
 		// TODO: Fatal error? log?

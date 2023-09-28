@@ -40,7 +40,7 @@ func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, arg
 	rw.Write([]byte(fmt.Sprintf(message, args...)))
 }
 
-func (m *MessageProcessor) getTargetWindow(r *http.Request) *WebviewWindow {
+func (m *MessageProcessor) getTargetWindow(r *http.Request) Window {
 	windowName := r.Header.Get(webViewRequestHeaderWindowName)
 	if windowName != "" {
 		return globalApplication.GetWindowByName(windowName)

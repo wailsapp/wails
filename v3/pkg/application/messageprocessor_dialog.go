@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
-	"strconv"
 )
 
 const (
@@ -26,20 +25,17 @@ var dialogMethodNames = map[int]string{
 	DialogSaveFile: "SaveFile",
 }
 
-func (m *MessageProcessor) dialogErrorCallback(window *WebviewWindow, message string, dialogID *string, err error) {
+func (m *MessageProcessor) dialogErrorCallback(window Window, message string, dialogID *string, err error) {
 	errorMsg := fmt.Sprintf(message, err)
 	m.Error(errorMsg)
-	msg := "_wails.dialogErrorCallback('" + *dialogID + "', " + strconv.Quote(errorMsg) + ");"
-	window.ExecJS(msg)
-	m.Error(message, "error", err)
+	window.DialogError(*dialogID, errorMsg)
 }
 
-func (m *MessageProcessor) dialogCallback(window *WebviewWindow, dialogID *string, result string, isJSON bool) {
-	msg := fmt.Sprintf("_wails.dialogCallback('%s', %s, %v);", *dialogID, strconv.Quote(result), isJSON)
-	window.ExecJS(msg)
+func (m *MessageProcessor) dialogCallback(window Window, dialogID *string, result string, isJSON bool) {
+	window.DialogResponse(*dialogID, result)
 }
 
-func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
+func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
 
 	args, err := params.Args()
 	if err != nil {

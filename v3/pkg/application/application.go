@@ -146,7 +146,7 @@ type (
 	}
 
 	runnable interface {
-		run()
+		Run()
 	}
 )
 
@@ -219,7 +219,7 @@ type App struct {
 	applicationEventHooksLock     sync.RWMutex
 
 	// Windows
-	windows     map[uint]*WebviewWindow
+	windows     map[uint]Window
 	windowsLock sync.Mutex
 
 	// System Trays
@@ -257,7 +257,7 @@ type App struct {
 	startURL string
 
 	// Hooks
-	windowCreatedCallbacks []func(window *WebviewWindow)
+	windowCreatedCallbacks []func(window Window)
 	pid                    int
 
 	// Capabilities
@@ -270,7 +270,7 @@ type App struct {
 
 func (a *App) init() {
 	a.applicationEventListeners = make(map[uint][]*EventListener)
-	a.windows = make(map[uint]*WebviewWindow)
+	a.windows = make(map[uint]Window)
 	a.systemTrays = make(map[uint]*SystemTray)
 	a.contextMenus = make(map[string]*Menu)
 	a.keyBindings = make(map[string]func(window *WebviewWindow))
@@ -285,7 +285,7 @@ func (a *App) getSystemTrayID() uint {
 	return a.systemTrayID
 }
 
-func (a *App) getWindowForID(id uint) *WebviewWindow {
+func (a *App) getWindowForID(id uint) Window {
 	a.windowsLock.Lock()
 	defer a.windowsLock.Unlock()
 	return a.windows[id]
@@ -340,7 +340,7 @@ func (a *App) RegisterHook(eventType events.ApplicationEventType, callback func(
 	}
 }
 
-func (a *App) NewWebviewWindow() *WebviewWindow {
+func (a *App) NewWebviewWindow() Window {
 	return a.NewWebviewWindowWithOptions(WebviewWindowOptions{})
 }
 
@@ -376,9 +376,9 @@ func (a *App) error(message string, args ...any) {
 	}
 }
 
-func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
-	newWindow := newWindow(windowOptions)
-	id := newWindow.id
+func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) Window {
+	newWindow := NewWindow(windowOptions)
+	id := newWindow.ID()
 
 	a.windowsLock.Lock()
 	a.windows[id] = newWindow
@@ -460,8 +460,13 @@ func (a *App) Run() error {
 	a.runLock.Lock()
 	a.running = true
 
+	// run windows
+	for _, window := range a.windows {
+		go window.Run()
+	}
+
 	for _, systray := range a.pendingRun {
-		go systray.run()
+		go systray.Run()
 	}
 	a.pendingRun = nil
 
@@ -519,7 +524,7 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 		return
 	}
 	// Get callback from window
-	window.handleDragAndDropMessage(event)
+	window.HandleDragAndDropMessage(event.filenames)
 }
 
 func (a *App) handleWindowMessage(event *windowMessage) {
@@ -532,7 +537,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 		return
 	}
 	// Get callback from window
-	window.handleMessage(event.message)
+	window.HandleMessage(event.message)
 }
 
 func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
@@ -545,10 +550,10 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.Unlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.WindowID)
+		log.Printf("Window #%d not found", event.WindowID)
 		return
 	}
-	window.handleWindowEvent(event.EventID)
+	window.HandleWindowEvent(event.EventID)
 }
 
 func (a *App) handleMenuItemClicked(menuItemID uint) {
@@ -560,7 +565,7 @@ func (a *App) handleMenuItemClicked(menuItemID uint) {
 	menuItem.handleClick()
 }
 
-func (a *App) CurrentWindow() *WebviewWindow {
+func (a *App) CurrentWindow() Window {
 	if a.impl == nil {
 		return nil
 	}
@@ -672,7 +677,7 @@ func SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialogStruct {
 
 func (a *App) dispatchEventToWindows(event *WailsEvent) {
 	for _, window := range a.windows {
-		window.dispatchWailsEvent(event)
+		window.DispatchWailsEvent(event)
 	}
 }
 
@@ -709,11 +714,11 @@ func (a *App) getContextMenu(name string) (*Menu, bool) {
 
 }
 
-func (a *App) OnWindowCreation(callback func(window *WebviewWindow)) {
+func (a *App) OnWindowCreation(callback func(window Window)) {
 	a.windowCreatedCallbacks = append(a.windowCreatedCallbacks, callback)
 }
 
-func (a *App) GetWindowByName(name string) *WebviewWindow {
+func (a *App) GetWindowByName(name string) Window {
 	a.windowsLock.Lock()
 	defer a.windowsLock.Unlock()
 	for _, window := range a.windows {
@@ -733,7 +738,7 @@ func (a *App) runOrDeferToAppRun(r runnable) {
 	a.runLock.Unlock()
 
 	if running {
-		r.run()
+		r.Run()
 	}
 }
 
@@ -765,5 +770,26 @@ func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
 		return
 	}
 	// Get callback from window
-	window.handleKeyEvent(event.acceleratorString)
+	window.HandleKeyEvent(event.acceleratorString)
+}
+
+func (a *App) AssetServerHandler() func(rw http.ResponseWriter, req *http.Request) {
+	return a.assets.ServeHTTP
+}
+
+func (a *App) RegisterWindow(window Window) uint {
+	id := getWindowID()
+	if a.windows == nil {
+		a.windows = make(map[uint]Window)
+	}
+	a.windowsLock.Lock()
+	defer a.windowsLock.Unlock()
+	a.windows[id] = window
+	return id
+}
+
+func (a *App) UnregisterWindow(id uint) {
+	a.windowsLock.Lock()
+	defer a.windowsLock.Unlock()
+	delete(a.windows, id)
 }
