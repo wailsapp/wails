@@ -159,7 +159,7 @@ func (w *WebviewWindow) setupEventMapping() {
 }
 
 // NewWindow creates a new window with the given options
-func NewWindow(options WebviewWindowOptions) Window {
+func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	if options.Width == 0 {
 		options.Width = 800
 	}

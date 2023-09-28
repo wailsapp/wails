@@ -340,7 +340,7 @@ func (a *App) RegisterHook(eventType events.ApplicationEventType, callback func(
 	}
 }
 
-func (a *App) NewWebviewWindow() Window {
+func (a *App) NewWebviewWindow() *WebviewWindow {
 	return a.NewWebviewWindowWithOptions(WebviewWindowOptions{})
 }
 
@@ -376,7 +376,7 @@ func (a *App) error(message string, args ...any) {
 	}
 }
 
-func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) Window {
+func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
 	newWindow := NewWindow(windowOptions)
 	id := newWindow.ID()
 
