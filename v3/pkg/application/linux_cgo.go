@@ -269,7 +269,7 @@ func hideAllWindows(application pointer) {
 
 func showAllWindows(application pointer) {
 	for _, window := range getWindows(application) {
-		C.gtk_widget_show_all((*C.GtkWidget)(window))
+		C.gtk_window_present((*C.GtkWindow)(window))
 	}
 }
 

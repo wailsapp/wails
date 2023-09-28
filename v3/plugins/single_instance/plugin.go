@@ -2,9 +2,10 @@ package single_instance
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/application"
 	"os"
 	"path/filepath"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type Config struct {

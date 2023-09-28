@@ -1,6 +1,6 @@
 # single-instance Plugin
 
-This example plugin provides a way to generate hashes of strings.
+This plugin provides a way to prevent multiple launches of your application.
 
 ## Installation
 

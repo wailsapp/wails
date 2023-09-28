@@ -2,16 +2,29 @@
 
 package single_instance
 
-/*
-#cgo CFLAGS:
-#cgo LDFLAGS:
+import (
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
-*/
-import "C"
-import "fmt"
+	"github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func init() {
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc,
+		syscall.SIGUSR2,
+	)
+	go func() {
+		for {
+			s := <-sigc
+			application.Get().Show()
+		}
+	}()
+}
 
 func (p *Plugin) activeInstance(pid int) error {
-	//	C.activateApplicationWithProcessID(C.int(pid))
-	fmt.Println("[linux] activateInstance - not implemented: ", pid)
+	syscall.Kill(pid, syscall.SIGUSR2)
 	return nil
 }
