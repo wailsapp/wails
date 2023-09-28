@@ -565,14 +565,14 @@ func (a *App) handleMenuItemClicked(menuItemID uint) {
 	menuItem.handleClick()
 }
 
-func (a *App) CurrentWindow() Window {
+func (a *App) CurrentWindow() *WebviewWindow {
 	if a.impl == nil {
 		return nil
 	}
 	id := a.impl.getCurrentWindowID()
 	a.windowsLock.Lock()
 	defer a.windowsLock.Unlock()
-	return a.windows[id]
+	return a.windows[id].(*WebviewWindow)
 }
 
 func (a *App) Quit() {
