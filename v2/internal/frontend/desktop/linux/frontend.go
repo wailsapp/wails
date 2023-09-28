@@ -240,10 +240,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 	}()
 
 	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
-		SetupSingleInstance(
-			f.frontendOptions.SingleInstanceLock.UniqueID,
-			addSecondInstanceDataToBuffer,
-		)
+		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
 	}
 
 	f.mainWindow.Run(f.startURL.String())
@@ -517,19 +514,11 @@ func processURLRequest(request unsafe.Pointer) {
 	requestBuffer <- webview.NewRequest(request)
 }
 
-func addSecondInstanceDataToBuffer(data options.SecondInstanceData) {
-	secondInstanceBuffer <- data
-}
-
 func (f *Frontend) startSecondInstanceProcessor() {
 	for secondInstanceData := range secondInstanceBuffer {
-		if f.frontendOptions.SingleInstanceLock != nil {
-			if f.frontendOptions.SingleInstanceLock.ActivateAppOnSubsequentLaunch {
-				f.mainWindow.UnMinimise()
-			}
-			if f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
-				f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
-			}
+		if f.frontendOptions.SingleInstanceLock != nil &&
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
 		}
 	}
 }

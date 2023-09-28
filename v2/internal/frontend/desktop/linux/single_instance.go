@@ -18,7 +18,7 @@ func (f dbusHandler) SendMessage(message string) *dbus.Error {
 	return nil
 }
 
-func SetupSingleInstance(uniqueID string, callback func(data options.SecondInstanceData)) {
+func SetupSingleInstance(uniqueID string) {
 	id := "wails_app_" + strings.ReplaceAll(strings.ReplaceAll(uniqueID, "-", "_"), ".", "_")
 
 	dbusName := "org." + id + ".SingleInstance"
@@ -36,7 +36,7 @@ func SetupSingleInstance(uniqueID string, callback func(data options.SecondInsta
 
 		err := json.Unmarshal([]byte(message), &secondInstanceData)
 		if err == nil {
-			go callback(secondInstanceData)
+			secondInstanceBuffer <- secondInstanceData
 		}
 	})
 

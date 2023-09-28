@@ -53,6 +53,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	startsHidden := bool2Cint(frontendOptions.StartHidden)
 	devtoolsEnabled := bool2Cint(devtools)
 	defaultContextMenu := bool2Cint(frontendOptions.EnableDefaultContextMenu)
+	singleInstanceEnabled := bool2Cint(frontendOptions.SingleInstanceLock != nil && frontendOptions.SingleInstanceLock.Enabled)
 
 	var fullSizeContent, hideTitleBar, hideTitle, useToolbar, webviewIsTransparent C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent C.int
@@ -67,6 +68,12 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	windowStartState := C.int(int(frontendOptions.WindowStartState))
 
 	title = c.String(frontendOptions.Title)
+
+	singleInstanceUniqueIdStr := ""
+	if frontendOptions.SingleInstanceLock != nil {
+		singleInstanceUniqueIdStr = frontendOptions.SingleInstanceLock.UniqueId
+	}
+	singleInstanceUniqueId := c.String(singleInstanceUniqueIdStr)
 
 	enableFraudulentWebsiteWarnings := C.bool(frontendOptions.EnableFraudulentWebsiteDetection)
 
@@ -88,7 +95,9 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent,
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
 		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenu,
-		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings)
+		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings,
+		singleInstanceEnabled, singleInstanceUniqueId,
+	)
 
 	// Create menu
 	result := &Window{

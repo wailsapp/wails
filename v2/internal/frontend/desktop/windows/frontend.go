@@ -142,10 +142,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.chromium = edge.NewChromium()
 
 	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
-		winc.SetupSingleInstance(
-			f.frontendOptions.SingleInstanceLock.UniqueID,
-			addSecondInstanceDataToBuffer,
-		)
+		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
 	}
 
 	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo, f.chromium)
@@ -837,19 +834,11 @@ func (f *Frontend) onFocus(arg *winc.Event) {
 	f.chromium.Focus()
 }
 
-func addSecondInstanceDataToBuffer(data options.SecondInstanceData) {
-	secondInstanceBuffer <- data
-}
-
 func (f *Frontend) startSecondInstanceProcessor() {
 	for secondInstanceData := range secondInstanceBuffer {
-		if f.frontendOptions.SingleInstanceLock != nil {
-			if f.frontendOptions.SingleInstanceLock.ActivateAppOnSubsequentLaunch {
-				f.mainWindow.UnMinimise()
-			}
-			if f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
-				f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
-			}
+		if f.frontendOptions.SingleInstanceLock != nil &&
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
 		}
 	}
 }

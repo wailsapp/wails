@@ -1,6 +1,6 @@
 //go:build windows
 
-package winc
+package windows
 
 import (
 	"encoding/json"
@@ -34,8 +34,8 @@ func SendMessage(hwnd w32.HWND, data string) {
 }
 
 // SetupSingleInstance single instance Windows app
-func SetupSingleInstance(uniqueID string, callback func(data options.SecondInstanceData)) {
-	id := "wails-app-" + uniqueID
+func SetupSingleInstance(uniqueId string) {
+	id := "wails-app-" + uniqueId
 
 	className := id + "-sic"
 	windowName := id + "-siw"
@@ -61,11 +61,11 @@ func SetupSingleInstance(uniqueID string, callback func(data options.SecondInsta
 			// if we got any other unknown error we will just start new application instance
 		}
 	} else {
-		createEventTargetWindow(className, windowName, callback)
+		createEventTargetWindow(className, windowName)
 	}
 }
 
-func createEventTargetWindow(className string, windowName string, callback func(data options.SecondInstanceData)) w32.HWND {
+func createEventTargetWindow(className string, windowName string) w32.HWND {
 	// callback handler in the event target window
 	wndProc := func(
 		hwnd w32.HWND, msg uint32, wparam w32.WPARAM, lparam w32.LPARAM,
@@ -81,8 +81,7 @@ func createEventTargetWindow(className string, windowName string, callback func(
 				err := json.Unmarshal([]byte(serialized), &secondInstanceData)
 
 				if err == nil {
-					// pass callback to first instance
-					go callback(secondInstanceData)
+					secondInstanceBuffer <- secondInstanceData
 				}
 			}
 

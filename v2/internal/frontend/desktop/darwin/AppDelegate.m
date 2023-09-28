@@ -11,27 +11,11 @@
 #import "AppDelegate.h"
 
 @implementation AppDelegate
-// openFile implemented as well just in case, but it's not called (at least we don't know how to call it)
 -(BOOL)application:(NSApplication *)sender openFile:(NSString *)filename
 {
    const char* utf8FileName = filename.UTF8String;
    HandleOpenFile((char*)utf8FileName);
    return YES;
-}
-
-// for some reasons it's triggered even when only one file is opened, instead of openFile.
--(void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames
-{
-   int count = [filenames count];
-	 int i;
-	 char **fileNamesArray = NULL;
-	 fileNamesArray = (char**)realloc(fileNamesArray, i*sizeof(*fileNamesArray));
-   for (i=0; i<count; i++) {
-      NSString* fnm = [filenames objectAtIndex: i];
-      const char* utf8FileName = fnm.UTF8String;
-      fileNamesArray[i] = (char*)utf8FileName;
-   }
-   HandleOpenFiles(fileNamesArray, count);
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender {
@@ -55,6 +39,28 @@
         behaviour |= NSWindowCollectionBehaviorFullScreenPrimary;
         [self.mainWindow setCollectionBehavior:behaviour];
         [self.mainWindow toggleFullScreen:nil];
+    }
+
+    if ( self.singleInstanceLockEnabled ) {
+      [[NSDistributedNotificationCenter defaultCenter] addObserver:self
+          selector:@selector(handleSecondInstanceNotification:) name:self.singleInstanceUniqueId object:nil];
+    }
+}
+
+void SendDataToFirstInstance(char * singleInstanceUniqueId, char * message) {
+    [[NSDistributedNotificationCenter defaultCenter]
+        postNotificationName:[NSString stringWithUTF8String:singleInstanceUniqueId]
+        object:nil
+        userInfo:@{@"message": [NSString stringWithUTF8String:message]}
+        deliverImmediately:YES];
+}
+
+- (void)handleSecondInstanceNotification:(NSNotification *)note;
+{
+    if (note.userInfo[@"message"] != nil) {
+        NSString *message = note.userInfo[@"message"];
+        const char* utf8Message = message.UTF8String;
+        HandleSecondInstanceData((char*)utf8Message);
     }
 }
 

@@ -5,6 +5,8 @@ import (
 	"html"
 	"io/fs"
 	"net/http"
+	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -27,19 +29,6 @@ const (
 )
 
 type Experimental struct {
-}
-
-type SingleInstanceLock struct {
-	// TODO: create unique id based on title? Maybe require user to set unique id?
-	UniqueID string
-	Enabled  bool
-	// When true, the original app will be activated when a second instance is launched
-	ActivateAppOnSubsequentLaunch bool
-	OnSecondInstanceLaunch        func(secondInstanceData SecondInstanceData)
-}
-
-type SecondInstanceData struct {
-	Args []string
 }
 
 // App contains options for creating the App
@@ -74,8 +63,6 @@ type App struct {
 	OnDomReady         func(ctx context.Context)                `json:"-"`
 	OnShutdown         func(ctx context.Context)                `json:"-"`
 	OnBeforeClose      func(ctx context.Context) (prevent bool) `json:"-"`
-	OnFileOpen         func(filePath string)                    `json:"-"`
-	OnFilesOpen        func(filePaths []string)                 `json:"-"`
 	Bind               []interface{}
 	WindowStartState   WindowStartState
 
@@ -180,6 +167,31 @@ func MergeDefaults(appoptions *App) {
 
 	// Process Drag Options
 	processDragOptions(appoptions)
+}
+
+type SingleInstanceLock struct {
+	// uniqueId that will be used for setting up messaging between instances
+	UniqueId               string
+	Enabled                bool
+	OnSecondInstanceLaunch func(secondInstanceData SecondInstanceData)
+}
+
+type SecondInstanceData struct {
+	Args             []string
+	WorkingDirectory string
+}
+
+func NewSecondInstanceData() (*SecondInstanceData, error) {
+	ex, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+	workingDirectory := filepath.Dir(ex)
+
+	return &SecondInstanceData{
+		Args:             os.Args[1:],
+		WorkingDirectory: workingDirectory,
+	}, nil
 }
 
 func processMenus(appoptions *App) {

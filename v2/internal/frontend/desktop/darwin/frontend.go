@@ -39,7 +39,7 @@ var messageBuffer = make(chan string, 100)
 var requestBuffer = make(chan webview.Request, 100)
 var callbackBuffer = make(chan uint, 10)
 var openFilepathBuffer = make(chan string, 100)
-var openFilepathsBuffer = make(chan []string, 100)
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 100)
 
 type Frontend struct {
 
@@ -110,7 +110,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	go result.startMessageProcessor()
 	go result.startCallbackProcessor()
 	go result.startFileOpenProcessor()
-	go result.startFilesOpenProcessor()
+	go result.startSecondInstanceProcessor()
 
 	return result
 }
@@ -121,9 +121,12 @@ func (f *Frontend) startFileOpenProcessor() {
 	}
 }
 
-func (f *Frontend) startFilesOpenProcessor() {
-	for filePaths := range openFilepathsBuffer {
-		f.ProcessOpenFilesEvent(filePaths)
+func (f *Frontend) startSecondInstanceProcessor() {
+	for secondInstanceData := range secondInstanceBuffer {
+		if f.frontendOptions.SingleInstanceLock != nil &&
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
+		}
 	}
 }
 
@@ -169,6 +172,10 @@ func (f *Frontend) WindowSetDarkTheme() {
 
 func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
+
+	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
+		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
+	}
 
 	var _debug = ctx.Value("debug")
 	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
@@ -373,14 +380,8 @@ func (f *Frontend) processMessage(message string) {
 }
 
 func (f *Frontend) ProcessOpenFileEvent(filePath string) {
-	if f.frontendOptions.OnFileOpen != nil {
-		f.frontendOptions.OnFileOpen(filePath)
-	}
-}
-
-func (f *Frontend) ProcessOpenFilesEvent(filePaths []string) {
-	if f.frontendOptions.OnFilesOpen != nil {
-		f.frontendOptions.OnFilesOpen(filePaths)
+	if f.frontendOptions.Mac != nil && f.frontendOptions.Mac.OnFileOpen != nil {
+		f.frontendOptions.Mac.OnFileOpen(filePath)
 	}
 }
 
@@ -432,23 +433,4 @@ func processURLRequest(_ unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
 func HandleOpenFile(filePath *C.char) {
 	goFilepath := C.GoString(filePath)
 	openFilepathBuffer <- goFilepath
-}
-
-//export HandleOpenFiles
-func HandleOpenFiles(filePaths **C.char, count C.int) {
-	length := int(count)
-	if length != 0 {
-		paths := make([]string, 0, length)
-		for _, v := range unsafe.Slice(filePaths, length) {
-			paths = append(paths, C.GoString(v))
-		}
-
-		// in case if only one file was opened, but multiple files event was triggered
-		if length == 1 {
-			openFilepathBuffer <- paths[0]
-			return
-		}
-
-		openFilepathsBuffer <- paths
-	}
 }

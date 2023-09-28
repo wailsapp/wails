@@ -40,6 +40,9 @@
 @property bool startHidden;
 @property bool startFullscreen;
 
+@property bool singleInstanceLockEnabled;
+@property (retain) NSString* singleInstanceUniqueId;
+
 @property (retain) NSEvent* mouseEvent;
 
 @property bool alwaysOnTop;
