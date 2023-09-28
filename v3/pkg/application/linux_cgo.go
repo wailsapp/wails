@@ -4,6 +4,9 @@ package application
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 	"strings"
 	"unsafe"
 
@@ -12,7 +15,7 @@ import (
 )
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
+#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0 ayatana-appindicator3-0.1
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -20,11 +23,14 @@ import (
 #include <stdio.h>
 #include <limits.h>
 #include <stdint.h>
+
 #ifdef G_APPLICATION_DEFAULT_FLAGS
     #define APPLICATION_DEFAULT_FLAGS G_APPLICATION_DEFAULT_FLAGS
 #else
     #define APPLICATION_DEFAULT_FLAGS G_APPLICATION_FLAGS_NONE
 #endif
+
+#include <libayatana-appindicator/app-indicator.h>
 
 typedef struct CallbackID
 {
@@ -274,10 +280,11 @@ func menuAddSeparator(menu *Menu) {
 		C.gtk_separator_menu_item_new())
 }
 
-func menuAppend(parent *Menu, menu *MenuItem) {
+func menuAppend(parent *Menu, item *MenuItem) {
+
 	C.gtk_menu_shell_append(
 		(*C.GtkMenuShell)((parent.impl).(*linuxMenu).native),
-		(*C.GtkWidget)((menu.impl).(*linuxMenuItem).native),
+		(*C.GtkWidget)((item.impl).(*linuxMenuItem).native),
 	)
 	/* gtk4
 	C.gtk_menu_item_set_submenu(
@@ -355,13 +362,17 @@ func menuItemChecked(widget pointer) bool {
 func menuItemNew(label string) pointer {
 	cLabel := C.CString(label)
 	defer C.free(unsafe.Pointer(cLabel))
-	return pointer(C.gtk_menu_item_new_with_label(cLabel))
+	item := C.gtk_menu_item_new_with_label(cLabel)
+	C.gtk_widget_show((*C.GtkWidget)(item))
+	return pointer(item)
 }
 
 func menuCheckItemNew(label string) pointer {
 	cLabel := C.CString(label)
 	defer C.free(unsafe.Pointer(cLabel))
-	return pointer(C.gtk_check_menu_item_new_with_label(cLabel))
+	item := C.gtk_check_menu_item_new_with_label(cLabel)
+	C.gtk_widget_show((*C.GtkWidget)(item))
+	return pointer(item)
 }
 
 func menuItemSetChecked(widget pointer, checked bool) {
@@ -601,7 +612,7 @@ func windowMinimize(window pointer) {
 	C.gtk_window_iconify((*C.GtkWindow)(window))
 }
 
-func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy int) (window, webview, vbox pointer) {
+func windowNew(application pointer, menuBar pointer, windowId uint, gpuPolicy int) (window, webview, vbox pointer) {
 	window = pointer(C.gtk_application_window_new((*C.GtkApplication)(application)))
 	C.g_object_ref_sink(C.gpointer(window))
 	webview = windowNewWebview(windowId, gpuPolicy)
@@ -609,10 +620,9 @@ func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy int) 
 	name := C.CString("webview-box")
 	defer C.free(unsafe.Pointer(name))
 	C.gtk_widget_set_name((*C.GtkWidget)(vbox), name)
-
 	C.gtk_container_add((*C.GtkContainer)(window), (*C.GtkWidget)(vbox))
-	if menu != nil {
-		C.gtk_box_pack_start((*C.GtkBox)(vbox), (*C.GtkWidget)(menu), 0, 0, 0)
+	if menuBar != nil {
+		C.gtk_box_pack_start((*C.GtkBox)(vbox), (*C.GtkWidget)(menuBar), 0, 0, 0)
 	}
 	C.gtk_box_pack_start((*C.GtkBox)(unsafe.Pointer(vbox)), (*C.GtkWidget)(webview), 1, 1, 0)
 	return
@@ -1140,4 +1150,59 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 	}
 
 	return results[0], nil
+}
+
+// systray
+func systrayDestroy(tray pointer) {
+	// FIXME: this is not the correct way to remove our systray
+	//	C.g_object_unref(C.gpointer(tray))
+}
+
+func systrayNew(label string) pointer {
+	labelStr := C.CString(label)
+	defer C.free(unsafe.Pointer(labelStr))
+	emptyStr := C.CString("")
+	defer C.free(unsafe.Pointer(emptyStr))
+	indicator := C.app_indicator_new(labelStr, labelStr, C.APP_INDICATOR_CATEGORY_APPLICATION_STATUS)
+	C.app_indicator_set_status(indicator, C.APP_INDICATOR_STATUS_ACTIVE)
+	iconStr := C.CString("wails-systray-icon")
+	defer C.free(unsafe.Pointer(iconStr))
+	C.app_indicator_set_icon_full(indicator, iconStr, emptyStr)
+	systraySetLabel(pointer(indicator), label)
+	return pointer(indicator)
+}
+
+func systraySetTitle(tray pointer, title string) {
+	titleStr := C.CString(title)
+	defer C.free(unsafe.Pointer(titleStr))
+	C.app_indicator_set_title((*C.AppIndicator)(tray), titleStr)
+}
+
+func systraySetLabel(tray pointer, label string) {
+	labelStr := C.CString(label)
+	defer C.free(unsafe.Pointer(labelStr))
+	emptyStr := C.CString("")
+	defer C.free(unsafe.Pointer(emptyStr))
+	C.app_indicator_set_label((*C.AppIndicator)(tray), labelStr, labelStr)
+}
+
+func systrayMenuSet(tray pointer, menu pointer) {
+	C.app_indicator_set_menu(
+		(*C.AppIndicator)(tray),
+		(*C.GtkMenu)(unsafe.Pointer(menu)))
+}
+
+func systraySetTemplateIcon(tray pointer, icon []byte) {
+	dirname, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	file := filepath.Join(dirname, ".icons", "wails-systray-icon.png")
+	if err := os.WriteFile(file, icon, 0666); err != nil {
+		log.Fatal(err)
+	}
+	systrayStr := C.CString("wails-systray-icon")
+	defer C.free(unsafe.Pointer(systrayStr))
+
+	C.app_indicator_set_attention_icon_full((*C.AppIndicator)(tray), systrayStr, systrayStr)
 }
