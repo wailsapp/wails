@@ -364,7 +364,8 @@ func (m *macosDialog) show() {
 		var parent unsafe.Pointer
 		if m.dialog.window != nil {
 			// get NSWindow from window
-			parent = m.dialog.window.impl.(*macosWebviewWindow).nsWindow
+			window, _ := m.dialog.window.NativeWindowHandle()
+			parent = unsafe.Pointer(window)
 		}
 
 		alertType, ok := alertTypeMap[m.dialog.DialogType]
@@ -423,7 +424,8 @@ func (m *macosOpenFileDialog) show() ([]string, error) {
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
 		// get NSWindow from window
-		nsWindow = (m.dialog.window).(*WebviewWindow).impl.(*macosWebviewWindow).nsWindow
+		window, _ := m.dialog.window.NativeWindowHandle()
+		nsWindow = unsafe.Pointer(window)
 	}
 
 	// Massage filter patterns into macOS format
@@ -507,7 +509,8 @@ func (m *macosSaveFileDialog) show() (string, error) {
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
 		// get NSWindow from window
-		nsWindow, _ = m.dialog.window.NativeWindowHandle()
+		window, _ := m.dialog.window.NativeWindowHandle()
+		nsWindow = unsafe.Pointer(window)
 	}
 	C.showSaveFileDialog(C.uint(m.dialog.id),
 		C.bool(m.dialog.canCreateDirectories),

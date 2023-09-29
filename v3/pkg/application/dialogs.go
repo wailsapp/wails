@@ -361,7 +361,7 @@ type SaveFileDialogOptions struct {
 	Filename                        string
 	ButtonText                      string
 	Filters                         []FileFilter
-	Window                          Window
+	Window                          *WebviewWindow
 }
 
 type SaveFileDialogStruct struct {
@@ -378,7 +378,7 @@ type SaveFileDialogStruct struct {
 	buttonText                      string
 	filters                         []FileFilter
 
-	window Window
+	window *WebviewWindow
 
 	impl  saveFileDialogImpl
 	title string
@@ -440,7 +440,7 @@ func (d *SaveFileDialogStruct) SetDirectory(directory string) *SaveFileDialogStr
 }
 
 func (d *SaveFileDialogStruct) AttachToWindow(window Window) *SaveFileDialogStruct {
-	d.window = window
+	d.window = window.(*WebviewWindow)
 	return d
 }
 
