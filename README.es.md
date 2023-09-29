@@ -119,13 +119,13 @@ Este Proyecto cuenta con el apoyo de estas amables personas/ compañías:
   menús y diálogos, por lo que podría considerarse una alternativa liviana a
   Electron.
 
-- ¿A quien esta dirigido este proyecto?
+- ¿A quién está dirigido este proyecto?
 
-  El proyecto esta dirigido a programadores de Go que desean integrar una
+  El proyecto está dirigido a programadores de Go que desean integrar una
   interfaz HMTL/JS/CSS en sus aplicaciones, sin tener que recurrir a la creación
   de un servidor y abrir el navegador para visualizarla.
 
-- ¿Cual es el significado del nombre?
+- ¿Cuál es el significado del nombre?
 
   Cuando vi WebView, pensé: "Lo que realmente quiero es una herramienta para
   construir una aplicación WebView, algo similar a lo que Rails es para Ruby".
@@ -142,7 +142,7 @@ Este Proyecto cuenta con el apoyo de estas amables personas/ compañías:
 
 ¡La lista de colaboradores se está volviendo demasiado grande para el archivo
 readme! Todas las personas increíbles que han contribuido a este proyecto tienen
-su propia página [aqui](https://wails.io/credits#contributors).
+su propia página [aquí](https://wails.io/credits#contributors).
 
 ## Licencia
 
@@ -165,4 +165,4 @@ Este proyecto fue construido mientras se escuchaban estos álbumes:
 - [Bloc Party - Silent Alarm](https://open.spotify.com/album/6SsIdN05HQg2GwYLfXuzLB)
 - [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
 - [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
-  [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
+
