@@ -234,15 +234,15 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 !macroend
 
 !macro wails.associateCustomProtocols
-    ; Create file associations
+    ; Create custom protocols associations
     {{range .Info.Protocols}}
-      !insertmacro CUSTOM_URL_ASSOCIATE "{{.Scheme}}" "{{.Scheme}}" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
+      !insertmacro CUSTOM_URL_ASSOCIATE "{{.Scheme}}" "{{.Description}}" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
 
     {{end}}
 !macroend
 
 !macro wails.unassociateCustomProtocols
-    ; Delete app associations
+    ; Delete app custom protocol associations
     {{range .Info.Protocols}}
       !insertmacro CUSTOM_URL_UNASSOCIATE "{{.Scheme}}"
     {{end}}

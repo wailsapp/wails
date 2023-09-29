@@ -234,9 +234,9 @@ type FileAssociation struct {
 }
 
 type Protocol struct {
-	Scheme string `json:"scheme"`
-	Name   string `json:"name"`
-	Role   string `json:"role"`
+	Scheme      string `json:"scheme"`
+	Description string `json:"description"`
+	Role        string `json:"role"`
 }
 
 type Bindings struct {

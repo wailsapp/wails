@@ -211,9 +211,9 @@
                                 "type": "string",
                                 "description": "protocol scheme. e.g. myapp"
                             },
-                            "name": {
+                            "description": {
                                 "type": "string",
-                                "description": "The name. e.g. My App"
+                                "description": "Windows-only. The description. It is displayed on the `Type` column on Windows Explorer."
                             },
                             "role": {
                                 "description": "macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.",
