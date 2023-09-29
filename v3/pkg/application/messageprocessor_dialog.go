@@ -102,7 +102,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		}
 		var detached = args.Bool("Detached")
 		if detached == nil || !*detached {
-			options.Window = window
+			options.Window = window.(*WebviewWindow)
 		}
 		dialog := OpenFileDialogWithOptions(&options)
 

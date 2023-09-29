@@ -2,16 +2,16 @@ package application
 
 func (m *linuxApp) showAboutDialog(title string, message string, icon []byte) {
 	window := globalApplication.getWindowForID(m.getCurrentWindowID())
-	var parent pointer
+	var parent uintptr
 	if window != nil {
-		parent = (window.(*WebviewWindow).impl).(*linuxWebviewWindow).window
+		parent, _ = window.(*WebviewWindow).NativeWindowHandle()
 	}
 	about := newMessageDialog(InfoDialogType)
 	about.SetTitle(title).
 		SetMessage(message).
 		SetIcon(icon)
 	runQuestionDialog(
-		parent,
+		pointer(parent),
 		about,
 	)
 }
@@ -23,12 +23,12 @@ type linuxDialog struct {
 func (m *linuxDialog) show() {
 	windowId := getNativeApplication().getCurrentWindowID()
 	window := globalApplication.getWindowForID(windowId)
-	var parent pointer
+	var parent uintptr
 	if window != nil {
-		parent = (window.(*WebviewWindow).impl).(*linuxWebviewWindow).window
+		parent, _ = window.(*WebviewWindow).NativeWindowHandle()
 	}
 
-	response := runQuestionDialog(parent, m.dialog)
+	response := runQuestionDialog(pointer(parent), m.dialog)
 	if response >= 0 && response < len(m.dialog.Buttons) {
 		button := m.dialog.Buttons[response]
 		if button.Callback != nil {

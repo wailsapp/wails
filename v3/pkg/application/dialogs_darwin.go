@@ -507,7 +507,7 @@ func (m *macosSaveFileDialog) show() (string, error) {
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
 		// get NSWindow from window
-		nsWindow = (m.dialog.window).(*WebviewWindow).impl.(*macosWebviewWindow).nsWindow
+		nsWindow, _ = m.dialog.window.NativeWindowHandle()
 	}
 	C.showSaveFileDialog(C.uint(m.dialog.id),
 		C.bool(m.dialog.canCreateDirectories),

@@ -3,11 +3,12 @@
 package application
 
 import (
+	"path/filepath"
+	"strings"
+
 	"github.com/wailsapp/wails/v3/internal/go-common-file-dialog/cfd"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 	"golang.org/x/sys/windows"
-	"path/filepath"
-	"strings"
 )
 
 func (m *windowsApp) showAboutDialog(title string, message string, icon []byte) {

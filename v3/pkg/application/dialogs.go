@@ -179,7 +179,7 @@ type OpenFileDialogOptions struct {
 	TreatsFilePackagesAsDirectories bool
 	AllowsOtherFileTypes            bool
 	Filters                         []FileFilter
-	Window                          Window
+	Window                          *WebviewWindow
 
 	Title      string
 	Message    string
@@ -205,7 +205,7 @@ type OpenFileDialogStruct struct {
 	message    string
 	buttonText string
 	directory  string
-	window     Window
+	window     *WebviewWindow
 
 	impl openFileDialogImpl
 }
@@ -246,7 +246,7 @@ func (d *OpenFileDialogStruct) TreatsFilePackagesAsDirectories(treatsFilePackage
 }
 
 func (d *OpenFileDialogStruct) AttachToWindow(window Window) *OpenFileDialogStruct {
-	d.window = window
+	d.window = window.(*WebviewWindow)
 	return d
 }
 
