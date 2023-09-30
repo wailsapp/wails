@@ -23,8 +23,8 @@ func NewDnf(osid string) *Dnf {
 
 // Packages returns the libraries that we need for Wails to compile
 // They will potentially differ on different distributions or versions
-func (y *Dnf) Packages() packagemap {
-	return packagemap{
+func (y *Dnf) Packages() Packagemap {
+	return Packagemap{
 		"libgtk-3": []*Package{
 			{Name: "gtk3-devel", SystemPackage: true, Library: true},
 		},

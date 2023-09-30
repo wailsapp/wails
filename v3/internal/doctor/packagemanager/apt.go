@@ -23,8 +23,8 @@ func NewApt(osid string) *Apt {
 
 // Packages returns the libraries that we need for Wails to compile
 // They will potentially differ on different distributions or versions
-func (a *Apt) Packages() packagemap {
-	return packagemap{
+func (a *Apt) Packages() Packagemap {
+	return Packagemap{
 		"libgtk-3": []*Package{
 			{Name: "libgtk-3-dev", SystemPackage: true, Library: true},
 		},

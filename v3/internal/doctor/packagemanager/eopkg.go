@@ -25,8 +25,8 @@ func NewEopkg(osid string) *Eopkg {
 
 // Packages returns the packages that we need for Wails to compile
 // They will potentially differ on different distributions or versions
-func (e *Eopkg) Packages() packagemap {
-	return packagemap{
+func (e *Eopkg) Packages() Packagemap {
+	return Packagemap{
 		"libgtk-3": []*Package{
 			{Name: "libgtk-3-devel", SystemPackage: true, Library: true},
 		},

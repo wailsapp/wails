@@ -24,8 +24,8 @@ func NewPacman(osid string) *Pacman {
 
 // Packages returns the libraries that we need for Wails to compile
 // They will potentially differ on different distributions or versions
-func (p *Pacman) Packages() packagemap {
-	return packagemap{
+func (p *Pacman) Packages() Packagemap {
+	return Packagemap{
 		"libgtk-3": []*Package{
 			{Name: "gtk3", SystemPackage: true, Library: true},
 		},
