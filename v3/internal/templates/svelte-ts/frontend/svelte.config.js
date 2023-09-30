@@ -1,4 +1,4 @@
-import { wailsPreprocess } from '@sveltejs/wails-plugin-svelte'
+import { wailsPreprocess } from '@sveltejs/vite-plugin-svelte'
 
 export default {
   // Consult https://svelte.dev/docs#compile-time-svelte-preprocess
