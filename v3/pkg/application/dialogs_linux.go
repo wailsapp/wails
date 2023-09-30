@@ -53,7 +53,7 @@ func newOpenFileDialogImpl(d *OpenFileDialogStruct) *linuxOpenFileDialog {
 	}
 }
 
-func (m *linuxOpenFileDialog) show() ([]string, error) {
+func (m *linuxOpenFileDialog) show() (chan string, error) {
 	return runOpenFileDialog(m.dialog)
 }
 
@@ -67,6 +67,6 @@ func newSaveFileDialogImpl(d *SaveFileDialogStruct) *linuxSaveFileDialog {
 	}
 }
 
-func (m *linuxSaveFileDialog) show() (string, error) {
+func (m *linuxSaveFileDialog) show() (chan string, error) {
 	return runSaveFileDialog(m.dialog)
 }

@@ -91,7 +91,7 @@ func getDefaultFolder(folder string) (string, error) {
 	return filepath.Abs(folder)
 }
 
-func (m *windowOpenFileDialog) show() ([]string, error) {
+func (m *windowOpenFileDialog) show() (chan string, error) {
 
 	defaultFolder, err := getDefaultFolder(m.dialog.directory)
 	if err != nil {
@@ -133,7 +133,14 @@ func (m *windowOpenFileDialog) show() ([]string, error) {
 		result = []string{temp.(string)}
 	}
 
-	return result, nil
+	files := make(chan string)
+	go func() {
+		for _, file := range result {
+			files <- file
+		}
+		close(files)
+	}()
+	return files, nil
 }
 
 type windowSaveFileDialog struct {
@@ -146,10 +153,12 @@ func newSaveFileDialogImpl(d *SaveFileDialogStruct) *windowSaveFileDialog {
 	}
 }
 
-func (m *windowSaveFileDialog) show() (string, error) {
+func (m *windowSaveFileDialog) show() (chan string, error) {
+	files := make(chan string)
 	defaultFolder, err := getDefaultFolder(m.dialog.directory)
 	if err != nil {
-		return "", err
+		close(files)
+		return files, err
 	}
 
 	config := cfd.DialogConfig{
@@ -164,7 +173,11 @@ func (m *windowSaveFileDialog) show() (string, error) {
 		func() (cfd.Dialog, error) {
 			return cfd.NewSaveFileDialog(config)
 		}, false)
-	return result.(string), nil
+	go func() {
+		files <- result.(string)
+		close(files)
+	}()
+	return files, err
 }
 
 func calculateMessageDialogFlags(options MessageDialogOptions) uint32 {

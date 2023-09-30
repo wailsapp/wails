@@ -973,7 +973,7 @@ func messageDialogCB(button C.int) {
 
 }
 
-func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) ([]string, error) {
+func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) (chan string, error) {
 	titleStr := C.CString(title)
 	defer C.free(unsafe.Pointer(titleStr))
 	cancelStr := C.CString("_Cancel")
@@ -1036,27 +1036,32 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 		return string(bytes)
 	}
 
-	response := C.gtk_dialog_run((*C.GtkDialog)(fc))
-	selections := []string{}
-	if response == C.GTK_RESPONSE_ACCEPT {
-		filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
-		iter := filenames
-		count := 0
-		for {
-			selections = append(selections, buildStringAndFree(C.gpointer(iter.data)))
-			iter = iter.next
-			if iter == nil || count == 1024 {
-				break
+	selections := make(chan string)
+	// run this on the gtk thread
+	InvokeAsync(func() {
+		go func() {
+			response := C.gtk_dialog_run((*C.GtkDialog)(fc))
+			if response == C.GTK_RESPONSE_ACCEPT {
+				filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
+				iter := filenames
+				count := 0
+				for {
+					selections <- buildStringAndFree(C.gpointer(iter.data))
+					iter = iter.next
+					if iter == nil || count == 1024 {
+						break
+					}
+					count++
+				}
+				close(selections)
+				C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
 			}
-			count++
-		}
-	}
-
-	defer C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
+		}()
+	})
 	return selections, nil
 }
 
-func runOpenFileDialog(dialog *OpenFileDialogStruct) ([]string, error) {
+func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
 	const GtkFileChooserActionOpen = C.GTK_FILE_CHOOSER_ACTION_OPEN
 
 	window := nilPointer
@@ -1145,7 +1150,7 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 	return int(C.gtk_dialog_run((*C.GtkDialog)(unsafe.Pointer(dialog))))
 }
 
-func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
+func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
 	window := nilPointer
 	buttonText := dialog.buttonText
 	if buttonText == "" {
@@ -1162,11 +1167,7 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 		buttonText,
 		dialog.filters)
 
-	if err != nil || len(results) == 0 {
-		return "", err
-	}
-
-	return results[0], nil
+	return results, err
 }
 
 // systray
