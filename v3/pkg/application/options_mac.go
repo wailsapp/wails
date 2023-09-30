@@ -1,6 +1,7 @@
 package application
 
 import "github.com/wailsapp/wails/v3/pkg/events"
+import "github.com/leaanthony/u"
 
 // MacBackdrop is the backdrop type for macOS
 type MacBackdrop int
@@ -48,6 +49,19 @@ type MacWindow struct {
 	// EnableFraudulentWebsiteWarnings will enable warnings for fraudulent websites.
 	// Default: false
 	EnableFraudulentWebsiteWarnings bool
+
+	// WebviewPreferences contains preferences for the webview
+	WebviewPreferences MacWebviewPreferences
+}
+
+// MacWebviewPreferences contains preferences for the Mac webview
+type MacWebviewPreferences struct {
+	// TabFocusesLinks will enable tabbing to links
+	TabFocusesLinks u.Bool
+	// TextInteractionEnabled will enable text interaction
+	TextInteractionEnabled u.Bool
+	// FullscreenEnabled will enable fullscreen
+	FullscreenEnabled u.Bool
 }
 
 // MacTitleBar contains options for the Mac titlebar

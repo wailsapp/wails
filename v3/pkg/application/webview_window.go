@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/leaanthony/u"
 	"runtime"
 	"strings"
 	"sync"
@@ -11,6 +12,12 @@ import (
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
+
+// Enabled means the feature should be enabled
+var Enabled = u.True
+
+// Disabled means the feature should be disabled
+var Disabled = u.False
 
 type (
 	webviewWindowImpl interface {

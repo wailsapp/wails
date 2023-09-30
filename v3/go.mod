@@ -17,6 +17,7 @@ require (
 	github.com/leaanthony/clir v1.6.0
 	github.com/leaanthony/go-ansi-parser v1.6.1
 	github.com/leaanthony/gosod v1.0.3
+	github.com/leaanthony/u v1.1.0
 	github.com/leaanthony/winicon v1.0.0
 	github.com/lmittmann/tint v1.0.0
 	github.com/markbates/goth v1.77.0

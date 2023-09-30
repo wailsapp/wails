@@ -14,11 +14,16 @@ package application
 #import <AppKit/AppKit.h>
 #import "webview_window_darwin_drag.h"
 
+struct WebviewPreferences {
+    bool *TabFocusesLinks;
+    bool *TextInteractionEnabled;
+    bool *FullscreenEnabled;
+};
 
 extern void registerListener(unsigned int event);
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable;
@@ -51,6 +56,25 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	NSRect frame = NSMakeRect(0, 0, width, height);
 	WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
 	[config autorelease];
+
+	// Set preferences
+    if (preferences.TabFocusesLinks != NULL) {
+		config.preferences.tabFocusesLinks = *preferences.TabFocusesLinks;
+	}
+
+	if (@available(macOS 11.3, *)) {
+		if (preferences.TextInteractionEnabled != NULL) {
+			config.preferences.textInteractionEnabled = *preferences.TextInteractionEnabled;
+		}
+	}
+
+	if (@available(macOS 12.3, *)) {
+         if (preferences.FullscreenEnabled != NULL) {
+             config.preferences.elementFullscreenEnabled = *preferences.FullscreenEnabled;
+         }
+     }
+
+
 
 	config.suppressesIncrementalRendering = true;
     config.applicationNameForUserAgent = @"wails.io";
@@ -1023,6 +1047,29 @@ func (w *macosWebviewWindow) height() int {
 	return int(height)
 }
 
+func bool2CboolPtr(value bool) *C.bool {
+	v := C.bool(value)
+	return &v
+}
+
+func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences {
+	wvprefs := w.parent.options.Mac.WebviewPreferences
+
+	var result C.struct_WebviewPreferences
+
+	if wvprefs.TextInteractionEnabled.IsSet() {
+		result.TextInteractionEnabled = bool2CboolPtr(wvprefs.TextInteractionEnabled.Get())
+	}
+	if wvprefs.TabFocusesLinks.IsSet() {
+		result.TabFocusesLinks = bool2CboolPtr(wvprefs.TabFocusesLinks.Get())
+	}
+	if wvprefs.FullscreenEnabled.IsSet() {
+		result.FullscreenEnabled = bool2CboolPtr(wvprefs.FullscreenEnabled.Get())
+	}
+
+	return result
+}
+
 func (w *macosWebviewWindow) run() {
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
@@ -1030,12 +1077,14 @@ func (w *macosWebviewWindow) run() {
 	globalApplication.dispatchOnMainThread(func() {
 		options := w.parent.options
 		macOptions := options.Mac
+
 		w.nsWindow = C.windowNew(C.uint(w.parent.id),
 			C.int(options.Width),
 			C.int(options.Height),
 			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
 			C.bool(options.Frameless),
 			C.bool(options.EnableDragAndDrop),
+			w.getWebviewPreferences(),
 		)
 		w.setTitle(options.Title)
 		w.setAlwaysOnTop(options.AlwaysOnTop)
