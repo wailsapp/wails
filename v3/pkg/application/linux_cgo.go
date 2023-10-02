@@ -273,6 +273,23 @@ func showAllWindows(application pointer) {
 	}
 }
 
+// Clipboard
+func clipboardGet() string {
+	clip := C.gtk_clipboard_get(C.GDK_SELECTION_CLIPBOARD)
+	text := C.gtk_clipboard_wait_for_text(clip)
+	return C.GoString(text)
+}
+
+func clipboardSet(text string) {
+	cText := C.CString(text)
+	clip := C.gtk_clipboard_get(C.GDK_SELECTION_CLIPBOARD)
+	C.gtk_clipboard_set_text(clip, cText, -1)
+
+	clip = C.gtk_clipboard_get(C.GDK_SELECTION_PRIMARY)
+	C.gtk_clipboard_set_text(clip, cText, -1)
+	C.free(unsafe.Pointer(cText))
+}
+
 // Menu
 func menuAddSeparator(menu *Menu) {
 	C.gtk_menu_shell_append(
