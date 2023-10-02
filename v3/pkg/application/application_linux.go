@@ -3,13 +3,10 @@
 package application
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strings"
 	"sync"
-
-	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 func init() {
@@ -104,10 +101,12 @@ func (m *linuxApp) run() error {
 
 	// Add a hook to the ApplicationDidFinishLaunching event
 	// FIXME: add Wails specific events - i.e. Shouldn't platform specific ones be translated to Wails events?
-	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func(evt *Event) {
-		// Do we need to do anything now?
-		fmt.Println("events.Mac.ApplicationDidFinishLaunching received!")
-	})
+	//m.parent.On(events.Mac.ApplicationDidFinishLaunching, func(evt *Event) {
+	//	// Do we need to do anything now?
+	//	fmt.Println("events.Mac.ApplicationDidFinishLaunching received!")
+	//})
+
+	m.setupCommonEvents()
 
 	return appRun(m.application)
 }

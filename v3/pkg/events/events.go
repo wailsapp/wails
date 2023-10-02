@@ -33,25 +33,25 @@ type commonEvents struct {
 
 func newCommonEvents() commonEvents {
 	return commonEvents{
-		ApplicationStarted: 1167,
-		WindowMaximise:     1168,
-		WindowUnMaximise:   1169,
-		WindowFullscreen:   1170,
-		WindowUnFullscreen: 1171,
-		WindowRestore:      1172,
-		WindowMinimise:     1173,
-		WindowUnMinimise:   1174,
-		WindowClosing:      1175,
-		WindowZoom:         1176,
-		WindowZoomIn:       1177,
-		WindowZoomOut:      1178,
-		WindowZoomReset:    1179,
-		WindowFocus:        1180,
-		WindowLostFocus:    1181,
-		WindowShow:         1182,
-		WindowHide:         1183,
-		WindowDPIChanged:   1184,
-		ThemeChanged:       1185,
+		ApplicationStarted: 1168,
+		WindowMaximise:     1169,
+		WindowUnMaximise:   1170,
+		WindowFullscreen:   1171,
+		WindowUnFullscreen: 1172,
+		WindowRestore:      1173,
+		WindowMinimise:     1174,
+		WindowUnMinimise:   1175,
+		WindowClosing:      1176,
+		WindowZoom:         1177,
+		WindowZoomIn:       1178,
+		WindowZoomOut:      1179,
+		WindowZoomReset:    1180,
+		WindowFocus:        1181,
+		WindowLostFocus:    1182,
+		WindowShow:         1183,
+		WindowHide:         1184,
+		WindowDPIChanged:   1185,
+		ThemeChanged:       1186,
 	}
 }
 
@@ -311,6 +311,18 @@ func newMacEvents() macEvents {
 	}
 }
 
+var Linux = newLinuxEvents()
+
+type linuxEvents struct {
+	SystemThemeChanged ApplicationEventType
+}
+
+func newLinuxEvents() linuxEvents {
+	return linuxEvents{
+		SystemThemeChanged: 1167,
+	}
+}
+
 var Windows = newWindowsEvents()
 
 type windowsEvents struct {
@@ -509,23 +521,23 @@ var eventToJS = map[uint]string{
 	1164: "windows:WindowClose",
 	1165: "windows:WindowSetFocus",
 	1166: "windows:WindowKillFocus",
-	1167: "common:ApplicationStarted",
-	1168: "common:WindowMaximise",
-	1169: "common:WindowUnMaximise",
-	1170: "common:WindowFullscreen",
-	1171: "common:WindowUnFullscreen",
-	1172: "common:WindowRestore",
-	1173: "common:WindowMinimise",
-	1174: "common:WindowUnMinimise",
-	1175: "common:WindowClosing",
-	1176: "common:WindowZoom",
-	1177: "common:WindowZoomIn",
-	1178: "common:WindowZoomOut",
-	1179: "common:WindowZoomReset",
-	1180: "common:WindowFocus",
-	1181: "common:WindowLostFocus",
-	1182: "common:WindowShow",
-	1183: "common:WindowHide",
-	1184: "common:WindowDPIChanged",
-	1185: "common:ThemeChanged",
+	1168: "common:ApplicationStarted",
+	1169: "common:WindowMaximise",
+	1170: "common:WindowUnMaximise",
+	1171: "common:WindowFullscreen",
+	1172: "common:WindowUnFullscreen",
+	1173: "common:WindowRestore",
+	1174: "common:WindowMinimise",
+	1175: "common:WindowUnMinimise",
+	1176: "common:WindowClosing",
+	1177: "common:WindowZoom",
+	1178: "common:WindowZoomIn",
+	1179: "common:WindowZoomOut",
+	1180: "common:WindowZoomReset",
+	1181: "common:WindowFocus",
+	1182: "common:WindowLostFocus",
+	1183: "common:WindowShow",
+	1184: "common:WindowHide",
+	1185: "common:WindowDPIChanged",
+	1186: "common:ThemeChanged",
 }

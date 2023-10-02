@@ -147,6 +147,9 @@ export const EventTypes = {
 		WindowFileDraggingPerformed: "mac:WindowFileDraggingPerformed",
 		WindowFileDraggingExited: "mac:WindowFileDraggingExited",
 	},
+	Linux: {
+		SystemThemeChanged: "linux:SystemThemeChanged",
+},
 	Common: {
 		ApplicationStarted: "common:ApplicationStarted",
 		WindowMaximise: "common:WindowMaximise",
