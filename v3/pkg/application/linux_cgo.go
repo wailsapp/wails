@@ -119,7 +119,7 @@ static void* gtkFileChooserDialogNew(char* title, GtkWindow* window, GtkFileChoo
 		GTK_RESPONSE_CANCEL,
 		acceptLabel,
 		GTK_RESPONSE_ACCEPT,
-		0);
+		NULL);
 }
 
 typedef struct Screen {

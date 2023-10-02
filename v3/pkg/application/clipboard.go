@@ -16,9 +16,11 @@ func newClipboard() *Clipboard {
 }
 
 func (c *Clipboard) SetText(text string) bool {
-	return c.impl.setText(text)
+	return InvokeSyncWithResult(func() bool {
+		return c.impl.setText(text)
+	})
 }
 
 func (c *Clipboard) Text() (string, bool) {
-	return c.impl.text()
+	return InvokeSyncWithResultAndOther(c.impl.text)
 }
