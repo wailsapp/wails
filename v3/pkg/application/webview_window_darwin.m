@@ -2,7 +2,7 @@
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #import "webview_window_darwin.h"
-#import "../events/events.h"
+#import "../events/events_darwin.h"
 extern void processMessage(unsigned int, const char*);
 extern void processURLRequest(unsigned int, void *);
 extern void processWindowKeyDownEvent(unsigned int, const char*);
@@ -17,14 +17,10 @@ extern bool hasListeners(unsigned int);
     [self setMovableByWindowBackground:YES];
     return self;
 }
-
 - (void)keyDown:(NSEvent *)event {
-
     NSUInteger modifierFlags = event.modifierFlags;
-
     // Create an array to hold the modifier strings
     NSMutableArray *modifierStrings = [NSMutableArray array];
-
     // Check for modifier flags and add corresponding strings to the array
     if (modifierFlags & NSEventModifierFlagShift) {
         [modifierStrings addObject:@"shift"];
@@ -38,29 +34,23 @@ extern bool hasListeners(unsigned int);
     if (modifierFlags & NSEventModifierFlagCommand) {
         [modifierStrings addObject:@"cmd"];
     }
-
     NSString *keyString = [self keyStringFromEvent:event];
     if (keyString.length > 0) {
         [modifierStrings addObject:keyString];
     }
-
     // Combine the modifier strings with the key character
     NSString *keyEventString = [modifierStrings componentsJoinedByString:@"+"];
-
     const char* utf8String = [keyEventString UTF8String];
     WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
     processWindowKeyDownEvent(delegate.windowId, utf8String);
 }
-
 - (NSString *)keyStringFromEvent:(NSEvent *)event {
-
     // Get the pressed key
     // Check for special keys like escape and tab
     NSString *characters = [event characters];
     if (characters.length == 0) {
         return @"";
     }
-
     if ([characters isEqualToString:@"\r"]) {
         return @"enter";
     }
@@ -90,7 +80,6 @@ extern bool hasListeners(unsigned int);
     if ([characters isEqualToString:@"\x0C"]) {
         return @"clear";
     }
-
     switch ([event keyCode]) {
         // Function keys
         case 122: return @"f1";
@@ -113,7 +102,6 @@ extern bool hasListeners(unsigned int);
         case 79: return @"f18";
         case 80: return @"f19";
         case 90: return @"f20";
-
         // Letter keys
         case 0: return @"a";
         case 11: return @"b";
@@ -141,7 +129,6 @@ extern bool hasListeners(unsigned int);
         case 7: return @"x";
         case 16: return @"y";
         case 6: return @"z";
-
         // Number keys
         case 29: return @"0";
         case 18: return @"1";
@@ -153,7 +140,6 @@ extern bool hasListeners(unsigned int);
         case 26: return @"7";
         case 28: return @"8";
         case 25: return @"9";
-
         // Other special keys
         case 51: return @"delete";
         case 117: return @"forward delete";
@@ -164,7 +150,6 @@ extern bool hasListeners(unsigned int);
         case 48: return @"tab";
         case 53: return @"escape";
         case 49: return @"space";
-
         // Punctuation and other keys (for a standard US layout)
         case 33: return @"[";
         case 30: return @"]";
@@ -177,12 +162,9 @@ extern bool hasListeners(unsigned int);
         case 24: return @"=";
         case 50: return @"`";
         case 42: return @"\\";
-
         default: return @"";
     }
 }
-
-
 - (BOOL)canBecomeKeyWindow {
     return YES;
 }

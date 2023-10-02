@@ -4,7 +4,7 @@
 #import <AppKit/AppKit.h>
 #import "webview_window_darwin_drag.h"
 
-#import "../events/events.h"
+#import "../events/events_darwin.h"
 
 extern void processDragItems(unsigned int windowId, char** arr, int length);
 
