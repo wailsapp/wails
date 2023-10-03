@@ -22,6 +22,10 @@ func NewSelectFolderDialog(config DialogConfig) (SelectFolderDialog, error) {
 	return nil, unsupportedError
 }
 
+func NewSelectMultipleFoldersDialog(config DialogConfig) (SelectMultipleFoldersDialog, error) {
+	return nil, unsupportedError
+}
+
 // TODO doc
 func NewSaveFileDialog(config DialogConfig) (SaveFileDialog, error) {
 	return nil, unsupportedError

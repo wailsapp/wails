@@ -53,6 +53,29 @@ func (f *Frontend) OpenDirectoryDialog(options frontend.OpenDialogOptions) (stri
 	return result.(string), nil
 }
 
+func (f *Frontend) OpenMultipleDirectoriesDialog(options frontend.OpenDialogOptions) ([]string, error) {
+	defaultFolder, err := getDefaultFolder(options.DefaultDirectory)
+	if err != nil {
+		return nil, err
+	}
+
+	config := cfd.DialogConfig{
+		Title:  options.Title,
+		Role:   "PickFolder",
+		Folder: defaultFolder,
+	}
+
+	results, err := f.showCfdDialog(
+		func() (cfd.Dialog, error) {
+			return cfd.NewSelectMultipleFoldersDialog(config)
+		}, true)
+
+	if err != nil && err != cfd.ErrorCancelled {
+		return nil, err
+	}
+	return results.([]string), nil
+}
+
 // OpenFileDialog prompts the user to select a file
 func (f *Frontend) OpenFileDialog(options frontend.OpenDialogOptions) (string, error) {
 	defaultFolder, err := getDefaultFolder(options.DefaultDirectory)
@@ -149,6 +172,10 @@ func (f *Frontend) showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelec
 		if multi, _ := dlg.(cfd.OpenMultipleFilesDialog); multi != nil && isMultiSelect {
 			return multi.ShowAndGetResults()
 		}
+		if multiFolder, ok := dlg.(cfd.SelectMultipleFoldersDialog); ok && isMultiSelect {
+			return multiFolder.ShowAndGetResults()
+		}
+
 		return dlg.ShowAndGetResult()
 	})
 }

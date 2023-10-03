@@ -63,6 +63,27 @@ func NewSelectFolderDialog(config DialogConfig) (SelectFolderDialog, error) {
 	return openDialog, nil
 }
 
+func NewSelectMultipleFoldersDialog(config DialogConfig) (SelectMultipleFoldersDialog, error) {
+	initialize()
+
+	openDialog, err := newIFileOpenDialog()
+	if err != nil {
+		return nil, err
+	}
+	err = config.apply(openDialog)
+	if err != nil {
+		return nil, err
+	}
+	err = openDialog.setPickFolders(true)
+	if err != nil {
+		return nil, err
+	}
+	if err := openDialog.setIsMultiselect(true); err != nil {
+		return nil, err
+	}
+	return openDialog, nil
+}
+
 // TODO doc
 func NewSaveFileDialog(config DialogConfig) (SaveFileDialog, error) {
 	initialize()

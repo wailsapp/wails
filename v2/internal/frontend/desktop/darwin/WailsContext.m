@@ -577,9 +577,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
             [dialog setNameFieldStringValue:defaultFilename];
         }
         
-        [dialog setAllowsMultipleSelection: allowMultipleSelection];
         [dialog setShowsHiddenFiles: showHiddenFiles];
-
     }
 
     // Default Directory
@@ -592,6 +590,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     // Setup Options
     [dialog setCanChooseFiles: allowFiles];
     [dialog setCanChooseDirectories: allowDirectories];
+    [dialog setAllowsMultipleSelection: allowMultipleSelection];
     [dialog setCanCreateDirectories: canCreateDirectories];
     [dialog setResolvesAliases: resolveAliases];
     [dialog setTreatsFilePackagesAsDirectories: treatPackagesAsDirectories];
