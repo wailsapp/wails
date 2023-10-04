@@ -7,11 +7,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net"
-	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"os"
 	"runtime"
@@ -31,6 +28,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
@@ -48,7 +46,7 @@ type Frontend struct {
 	logger          *logger.Logger
 	chromium        *edge.Chromium
 	debug           bool
-	devtools        bool
+	devtoolsEnabled bool
 
 	// Assets
 	assets   *assetserver.AssetServer
@@ -143,13 +141,13 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.mainWindow = mainWindow
 
 	var _debug = ctx.Value("debug")
-	var _devtools = ctx.Value("devtools")
+	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
 
 	if _debug != nil {
 		f.debug = _debug.(bool)
 	}
-	if _devtools != nil {
-		f.devtools = _devtools.(bool)
+	if _devtoolsEnabled != nil {
+		f.devtoolsEnabled = _devtoolsEnabled.(bool)
 	}
 
 	f.WindowCenter()
@@ -458,6 +456,18 @@ func (f *Frontend) setupChromium() {
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
+		if vkey == w32.VK_F12 && f.devtoolsEnabled {
+			var keyState [256]byte
+			if w32.GetKeyboardState(keyState[:]) {
+				// Check if CTRL is pressed
+				if keyState[w32.VK_CONTROL]&0x80 != 0 && keyState[w32.VK_SHIFT]&0x80 != 0 {
+					chromium.OpenDevToolsWindow()
+					return true
+				}
+			} else {
+				f.logger.Error("Call to GetKeyboardState failed")
+			}
+		}
 		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
 		return false
 	}
@@ -494,16 +504,24 @@ func (f *Frontend) setupChromium() {
 	}
 
 	chromium.Embed(f.mainWindow.Handle())
+
+	if chromium.HasCapability(edge.SwipeNavigation) {
+		swipeGesturesEnabled := f.frontendOptions.Windows != nil && f.frontendOptions.Windows.EnableSwipeGestures
+		err := chromium.PutIsSwipeNavigationEnabled(swipeGesturesEnabled)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutAreDefaultContextMenusEnabled(f.devtools || f.frontendOptions.EnableDefaultContextMenu)
+	err = settings.PutAreDefaultContextMenusEnabled(f.debug || f.frontendOptions.EnableDefaultContextMenu)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutAreDevToolsEnabled(f.devtools)
+	err = settings.PutAreDevToolsEnabled(f.devtoolsEnabled)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -523,10 +541,6 @@ func (f *Frontend) setupChromium() {
 		log.Fatal(err)
 	}
 	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = settings.PutIsSwipeNavigationEnabled(false)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -596,36 +610,31 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 		return
 	}
 
-	rw := httptest.NewRecorder()
-	f.assets.ProcessHTTPRequestLegacy(rw, coreWebview2RequestToHttpRequest(req))
+	webviewRequest, err := webview.NewRequest(
+		f.chromium.Environment(),
+		args,
+		func(fn func()) {
+			runtime.LockOSThread()
+			defer runtime.UnlockOSThread()
+			if f.mainWindow.InvokeRequired() {
+				var wg sync.WaitGroup
+				wg.Add(1)
+				f.mainWindow.Invoke(func() {
+					fn()
+					wg.Done()
+				})
+				wg.Wait()
+			} else {
+				fn()
+			}
+		})
 
-	headers := []string{}
-	for k, v := range rw.Header() {
-		headers = append(headers, fmt.Sprintf("%s: %s", k, strings.Join(v, ",")))
-	}
-
-	code := rw.Code
-	if code == http.StatusNotModified {
-		// WebView2 has problems when a request returns a 304 status code and the WebView2 is going to hang for other
-		// requests including IPC calls.
-		f.logger.Error("%s: AssetServer returned 304 - StatusNotModified which are going to hang WebView2, changed code to 505 - StatusInternalServerError", uri)
-		code = http.StatusInternalServerError
-	}
-
-	env := f.chromium.Environment()
-	response, err := env.CreateWebResourceResponse(rw.Body.Bytes(), code, http.StatusText(code), strings.Join(headers, "\n"))
 	if err != nil {
-		f.logger.Error("CreateWebResourceResponse Error: %s", err)
+		f.logger.Error("%s: NewRequest failed: %s", uri, err)
 		return
 	}
-	defer response.Release()
 
-	// Send response back
-	err = args.PutResponse(response)
-	if err != nil {
-		f.logger.Error("PutResponse Error: %s", err)
-		return
-	}
+	f.assets.ServeWebViewRequest(webviewRequest)
 }
 
 var edgeMap = map[string]uintptr{
@@ -815,94 +824,4 @@ func (f *Frontend) ShowWindow() {
 
 func (f *Frontend) onFocus(arg *winc.Event) {
 	f.chromium.Focus()
-}
-
-func coreWebview2RequestToHttpRequest(coreReq *edge.ICoreWebView2WebResourceRequest) func() (*http.Request, error) {
-	return func() (r *http.Request, err error) {
-		header := http.Header{}
-		headers, err := coreReq.GetHeaders()
-		if err != nil {
-			return nil, fmt.Errorf("GetHeaders Error: %s", err)
-		}
-		defer headers.Release()
-
-		headersIt, err := headers.GetIterator()
-		if err != nil {
-			return nil, fmt.Errorf("GetIterator Error: %s", err)
-		}
-		defer headersIt.Release()
-
-		for {
-			has, err := headersIt.HasCurrentHeader()
-			if err != nil {
-				return nil, fmt.Errorf("HasCurrentHeader Error: %s", err)
-			}
-			if !has {
-				break
-			}
-
-			name, value, err := headersIt.GetCurrentHeader()
-			if err != nil {
-				return nil, fmt.Errorf("GetCurrentHeader Error: %s", err)
-			}
-
-			header.Set(name, value)
-			if _, err := headersIt.MoveNext(); err != nil {
-				return nil, fmt.Errorf("MoveNext Error: %s", err)
-			}
-		}
-
-		// WebView2 has problems when a request returns a 304 status code and the WebView2 is going to hang for other
-		// requests including IPC calls.
-		// So prevent 304 status codes by removing the headers that are used in combinationwith caching.
-		header.Del("If-Modified-Since")
-		header.Del("If-None-Match")
-
-		method, err := coreReq.GetMethod()
-		if err != nil {
-			return nil, fmt.Errorf("GetMethod Error: %s", err)
-		}
-
-		uri, err := coreReq.GetUri()
-		if err != nil {
-			return nil, fmt.Errorf("GetUri Error: %s", err)
-		}
-
-		var body io.ReadCloser
-		if content, err := coreReq.GetContent(); err != nil {
-			return nil, fmt.Errorf("GetContent Error: %s", err)
-		} else if content != nil {
-			body = &iStreamReleaseCloser{stream: content}
-		}
-
-		req, err := http.NewRequest(method, uri, body)
-		if err != nil {
-			if body != nil {
-				body.Close()
-			}
-			return nil, err
-		}
-		req.Header = header
-		return req, nil
-	}
-}
-
-type iStreamReleaseCloser struct {
-	stream *edge.IStream
-	closed bool
-}
-
-func (i *iStreamReleaseCloser) Read(p []byte) (int, error) {
-	if i.closed {
-		return 0, io.ErrClosedPipe
-	}
-	return i.stream.Read(p)
-}
-
-func (i *iStreamReleaseCloser) Close() error {
-	if i.closed {
-		return nil
-	}
-	i.closed = true
-	return i.stream.Release()
 }

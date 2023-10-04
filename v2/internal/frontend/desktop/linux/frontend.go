@@ -110,7 +110,7 @@ type Frontend struct {
 	frontendOptions *options.App
 	logger          *logger.Logger
 	debug           bool
-	devtools        bool
+	devtoolsEnabled bool
 
 	// Assets
 	assets   *assetserver.AssetServer
@@ -182,16 +182,16 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	go result.startMessageProcessor()
 
 	var _debug = ctx.Value("debug")
-	var _devtools = ctx.Value("devtools")
+	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
 
 	if _debug != nil {
 		result.debug = _debug.(bool)
 	}
-	if _devtools != nil {
-		result.devtools = _devtools.(bool)
+	if _devtoolsEnabled != nil {
+		result.devtoolsEnabled = _devtoolsEnabled.(bool)
 	}
 
-	result.mainWindow = NewWindow(appoptions, result.debug, result.devtools)
+	result.mainWindow = NewWindow(appoptions, result.debug, result.devtoolsEnabled)
 
 	C.install_signal_handlers()
 
@@ -407,6 +407,11 @@ func (f *Frontend) processMessage(message string) {
 		if !f.mainWindow.IsFullScreen() {
 			f.startDrag()
 		}
+		return
+	}
+
+	if message == "wails:showInspector" {
+		f.mainWindow.ShowInspector()
 		return
 	}
 

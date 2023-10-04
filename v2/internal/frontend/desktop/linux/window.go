@@ -37,7 +37,7 @@ func gtkBool(input bool) C.gboolean {
 type Window struct {
 	appoptions                               *options.App
 	debug                                    bool
-	devtools                                 bool
+	devtoolsEnabled                          bool
 	gtkWindow                                unsafe.Pointer
 	contentManager                           unsafe.Pointer
 	webview                                  unsafe.Pointer
@@ -56,17 +56,17 @@ func bool2Cint(value bool) C.int {
 	return C.int(0)
 }
 
-func NewWindow(appoptions *options.App, debug bool, devtools bool) *Window {
+func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Window {
 	validateWebKit2Version(appoptions)
 
 	result := &Window{
-		appoptions: appoptions,
-		debug:      debug,
-		devtools:   devtools,
-		minHeight:  appoptions.MinHeight,
-		minWidth:   appoptions.MinWidth,
-		maxHeight:  appoptions.MaxHeight,
-		maxWidth:   appoptions.MaxWidth,
+		appoptions:      appoptions,
+		debug:           debug,
+		devtoolsEnabled: devtoolsEnabled,
+		minHeight:       appoptions.MinHeight,
+		minWidth:        appoptions.MinWidth,
+		maxHeight:       appoptions.MaxHeight,
+		maxWidth:        appoptions.MaxWidth,
 	}
 
 	gtkWindow := C.gtk_window_new(C.GTK_WINDOW_TOPLEVEL)
@@ -103,9 +103,13 @@ func NewWindow(appoptions *options.App, debug bool, devtools bool) *Window {
 	defer C.free(unsafe.Pointer(buttonPressedName))
 	C.ConnectButtons(unsafe.Pointer(webview))
 
-	if devtools {
+	if devtoolsEnabled {
 		C.DevtoolsEnabled(unsafe.Pointer(webview), C.int(1), C.bool(debug && appoptions.Debug.OpenInspectorOnStartup))
-	} else if !appoptions.EnableDefaultContextMenu {
+		// Install Ctrl-Shift-F12 hotkey to call ShowInspector
+		C.InstallF12Hotkey(unsafe.Pointer(gtkWindow))
+	}
+
+	if !(debug || appoptions.EnableDefaultContextMenu) {
 		C.DisableContextMenu(unsafe.Pointer(webview))
 	}
 
@@ -444,6 +448,10 @@ func (w *Window) ToggleMaximise() {
 	} else {
 		w.Maximise()
 	}
+}
+
+func (w *Window) ShowInspector() {
+	invokeOnMainThread(func() { C.ShowInspector(w.webview) })
 }
 
 // showModalDialogAndExit shows a modal dialog and exits the app.

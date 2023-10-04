@@ -202,3 +202,14 @@ you can make the webview background transparent using the following config:
 		},
 	})
 ```
+
+## WebView2 installation succeeded, but the wails doctor command shows that it is not installed
+
+If you have installed WebView2, but the `wails doctor` command shows that it is not installed, it is likely that the
+WebView2 runtime installed was for a different architecture. You can download the correct runtime from [here](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
+
+Source: https://github.com/wailsapp/wails/issues/2917
+
+## WebVie2wProcess failed with kind
+
+If your Windows app generates this kind of error, you can check out what the error means [here](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/corewebview2processfailedkind?view=webview2-winrt-1.0.2045.28).
