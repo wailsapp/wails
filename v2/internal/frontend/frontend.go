@@ -88,6 +88,7 @@ type Frontend interface {
 	OpenFileDialog(dialogOptions OpenDialogOptions) (string, error)
 	OpenMultipleFilesDialog(dialogOptions OpenDialogOptions) ([]string, error)
 	OpenDirectoryDialog(dialogOptions OpenDialogOptions) (string, error)
+	OpenMultipleDirectoriesDialog(dialogOptions OpenDialogOptions) ([]string, error)
 	SaveFileDialog(dialogOptions SaveDialogOptions) (string, error)
 	MessageDialog(dialogOptions MessageDialogOptions) (string, error)
 
