@@ -79,7 +79,6 @@ func (m *linuxApp) getApplicationMenu() pointer {
 
 	menu := globalApplication.ApplicationMenu
 	if menu != nil {
-		menu.impl = newMenuBarImpl(menu)
 		InvokeSync(func() {
 			menu.Update()
 		})

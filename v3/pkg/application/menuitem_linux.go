@@ -103,7 +103,6 @@ func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
 	default:
 		panic(fmt.Sprintf("Unknown menu type: %v", item.itemType))
 	}
-
 	result.setDisabled(result.menuItem.disabled)
 	return result
 }

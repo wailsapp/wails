@@ -353,8 +353,9 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	app := getNativeApplication()
-	nativeMenu := app.getApplicationMenu()
-	w.window, w.webview, w.vbox = windowNew(app.application, nativeMenu, w.parent.id, 1)
+
+	menu := app.getApplicationMenu()
+	w.window, w.webview, w.vbox = windowNew(app.application, menu, w.parent.id, 1)
 	app.registerWindow(w.window, w.parent.id) // record our mapping
 	w.connectSignals()
 	if w.parent.options.EnableDragAndDrop {

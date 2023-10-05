@@ -1,6 +1,8 @@
-﻿//go:build linux
+//go:build linux
 
 package application
+
+import "fmt"
 
 type linuxSystemTray struct {
 	id    uint
@@ -10,8 +12,6 @@ type linuxSystemTray struct {
 
 	iconPosition   int
 	isTemplateIcon bool
-	tray           pointer
-	nativeMenu     pointer
 }
 
 func (s *linuxSystemTray) setIconPosition(position int) {
@@ -19,10 +19,8 @@ func (s *linuxSystemTray) setIconPosition(position int) {
 }
 
 func (s *linuxSystemTray) setMenu(menu *Menu) {
+	fmt.Println("linuxSystemTray.SetMenu")
 	s.menu = menu
-	s.menu.impl = newMenuImpl(menu)
-	menu.Update()
-	systrayMenuSet(s.tray, (menu.impl).(*linuxMenu).native)
 }
 
 func (s *linuxSystemTray) positionWindow(window *WebviewWindow, offset int) error {
@@ -39,49 +37,49 @@ func (s *linuxSystemTray) bounds() (*Rect, error) {
 
 func (s *linuxSystemTray) run() {
 	InvokeSync(func() {
-		label := s.label
-		if label == "" {
-			label = "Wails"
-		}
-		s.tray = systrayNew(label)
-
 		// if s.nsStatusItem != nil {
 		// 	Fatal("System tray '%d' already running", s.id)
 		// }
 		//		s.nsStatusItem = unsafe.Pointer(C.systemTrayNew())
 		if s.label != "" {
-			systraySetTitle(s.tray, s.label)
+			//			C.systemTraySetLabel(s.nsStatusItem, C.CString(s.label))
 		}
 		if s.icon != nil {
-			s.setIcon(s.icon)
+			//		s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&s.icon[0]), C.int(len(s.icon))))
+			//			C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
 		}
 		if s.menu != nil {
-			//			s.menu.Update()
-			s.setMenu(s.menu)
+			s.menu.Update()
+			// Convert impl to macosMenu object
+			//			s.nsMenu = (s.menu.impl).(*macosMenu).nsMenu
+			//			C.systemTraySetMenu(s.nsStatusItem, s.nsMenu)
 		}
+
 	})
 }
 
 func (s *linuxSystemTray) setIcon(icon []byte) {
 	s.icon = icon
 	InvokeSync(func() {
-		systraySetTemplateIcon(s.tray, icon)
+		//		s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&icon[0]), C.int(len(icon))))
+		//		C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
 	})
 }
 
 func (s *linuxSystemTray) setDarkModeIcon(icon []byte) {
 	s.icon = icon
 	InvokeSync(func() {
-		systraySetTemplateIcon(s.tray, icon)
+		//		s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&icon[0]), C.int(len(icon))))
+		//		C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
 	})
 }
 
 func (s *linuxSystemTray) setTemplateIcon(icon []byte) {
 	s.icon = icon
 	s.isTemplateIcon = true
-
 	globalApplication.dispatchOnMainThread(func() {
-		systraySetTemplateIcon(s.tray, icon)
+		//		s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&icon[0]), C.int(len(icon))))
+		//		C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
 	})
 }
 
@@ -95,17 +93,16 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 		isTemplateIcon: s.isTemplateIcon,
 	}
 }
+
 func (s *linuxSystemTray) openMenu() {
-	if s.tray == nil {
-		return
-	}
 }
 
 func (s *linuxSystemTray) setLabel(label string) {
 	s.label = label
-	systraySetLabel(s.tray, label)
+	//	C.systemTraySetLabel(s.nsStatusItem, C.CString(label))
 }
 
 func (s *linuxSystemTray) destroy() {
-	systrayDestroy(s.tray)
+	// Remove the status item from the status bar and its associated menu
+	//	C.systemTrayDestroy(s.nsStatusItem)
 }
