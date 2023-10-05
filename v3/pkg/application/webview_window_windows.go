@@ -10,8 +10,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
-	"io"
-	"net/http"
 	"net/url"
 	"path"
 	"strconv"
@@ -1215,96 +1213,6 @@ func (w *windowsWebviewWindow) processMessage(message string) {
 	}
 }
 
-func coreWebview2RequestToHttpRequest(coreReq *edge.ICoreWebView2WebResourceRequest) func() (*http.Request, error) {
-	return func() (r *http.Request, err error) {
-		header := http.Header{}
-		headers, err := coreReq.GetHeaders()
-		if err != nil {
-			return nil, fmt.Errorf("GetHeaders Error: %s", err)
-		}
-		defer headers.Release()
-
-		headersIt, err := headers.GetIterator()
-		if err != nil {
-			return nil, fmt.Errorf("GetIterator Error: %s", err)
-		}
-		defer headersIt.Release()
-
-		for {
-			has, err := headersIt.HasCurrentHeader()
-			if err != nil {
-				return nil, fmt.Errorf("HasCurrentHeader Error: %s", err)
-			}
-			if !has {
-				break
-			}
-
-			name, value, err := headersIt.GetCurrentHeader()
-			if err != nil {
-				return nil, fmt.Errorf("GetCurrentHeader Error: %s", err)
-			}
-
-			header.Set(name, value)
-			if _, err := headersIt.MoveNext(); err != nil {
-				return nil, fmt.Errorf("MoveNext Error: %s", err)
-			}
-		}
-
-		// WebView2 has problems when a request returns a 304 status code and the WebView2 is going to hang for other
-		// requests including IPC calls.
-		// So prevent 304 status codes by removing the headers that are used in combination with caching.
-		header.Del("If-Modified-Since")
-		header.Del("If-None-Match")
-
-		method, err := coreReq.GetMethod()
-		if err != nil {
-			return nil, fmt.Errorf("GetMethod Error: %s", err)
-		}
-
-		uri, err := coreReq.GetUri()
-		if err != nil {
-			return nil, fmt.Errorf("GetUri Error: %s", err)
-		}
-
-		var body io.ReadCloser
-		if content, err := coreReq.GetContent(); err != nil {
-			return nil, fmt.Errorf("GetContent Error: %s", err)
-		} else if content != nil {
-			body = &iStreamReleaseCloser{stream: content}
-		}
-
-		req, err := http.NewRequest(method, uri, body)
-		if err != nil {
-			if body != nil {
-				body.Close()
-			}
-			return nil, err
-		}
-		req.Header = header
-		return req, nil
-	}
-}
-
-type iStreamReleaseCloser struct {
-	stream *edge.IStream
-	closed bool
-}
-
-func (i *iStreamReleaseCloser) Read(p []byte) (int, error) {
-	if i.closed {
-		return 0, io.ErrClosedPipe
-	}
-	return i.stream.Read(p)
-}
-
-func (i *iStreamReleaseCloser) Close() error {
-	if i.closed {
-		return nil
-	}
-	i.closed = true
-	return i.stream.Release()
-}
-
 func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
 
 	// Setting the UserAgent on the CoreWebView2Settings clears the whole default UserAgent of the Edge browser, but
@@ -1354,7 +1262,6 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 		windowId:   uint(windowID),
 		windowName: globalApplication.getWindowForID(uint(windowID)).Name(),
 	}
-	//globalApplication.assets.ServeWebViewRequest(webviewRequest)
 }
 
 func (w *windowsWebviewWindow) setupChromium() {
