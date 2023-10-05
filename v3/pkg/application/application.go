@@ -460,11 +460,6 @@ func (a *App) Run() error {
 	a.runLock.Lock()
 	a.running = true
 
-	// run windows
-	for _, window := range a.windows {
-		go window.Run()
-	}
-
 	for _, systray := range a.pendingRun {
 		go systray.Run()
 	}
