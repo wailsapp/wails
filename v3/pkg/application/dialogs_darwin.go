@@ -18,7 +18,7 @@ extern void saveFileDialogCallback(uint id, char* path);
 static void showAboutBox(char* title, char *message, void *icon, int length) {
 
 	// run on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
+    //	dispatch_async(dispatch_get_main_queue(), ^{
 		NSAlert *alert = [[NSAlert alloc] init];
 		if (title != NULL) {
 			[alert setMessageText:[NSString stringWithUTF8String:title]];
@@ -34,7 +34,7 @@ static void showAboutBox(char* title, char *message, void *icon, int length) {
 		}
 		[alert setAlertStyle:NSAlertStyleInformational];
 		[alert runModal];
-	});
+        //	});
 }
 
 
@@ -163,7 +163,7 @@ static void showOpenFileDialog(unsigned int dialogID,
 	void *window) {
 
 	// run on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
 
 		NSOpenPanel *panel = [NSOpenPanel openPanel];
 
@@ -229,7 +229,7 @@ static void showOpenFileDialog(unsigned int dialogID,
 				processOpenFileDialogResults(panel, result, dialogID);
 			}];
 		}
-	});
+   });
 }
 
 static void showSaveFileDialog(unsigned int dialogID,
@@ -246,7 +246,7 @@ static void showSaveFileDialog(unsigned int dialogID,
 	void *window) {
 
 	// run on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
 		NSSavePanel *panel = [NSSavePanel savePanel];
 
 		if (message != NULL) {
@@ -280,8 +280,8 @@ static void showSaveFileDialog(unsigned int dialogID,
 			[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
 				const char *path = NULL;
 				if (result == NSModalResponseOK) {
-					NSURL *url = [panel URL];
-					const char *path = [[url path] UTF8String];
+   					NSURL *url = [panel URL];
+					path = [[url path] UTF8String];
 				}
 				saveFileDialogCallback(dialogID, (char *)path);
 			}];
@@ -290,12 +290,12 @@ static void showSaveFileDialog(unsigned int dialogID,
 				const char *path = NULL;
 				if (result == NSModalResponseOK) {
 					NSURL *url = [panel URL];
-					const char *path = [[url path] UTF8String];
+					path = [[url path] UTF8String];
 				}
 				saveFileDialogCallback(dialogID, (char *)path);
 			}];
 		}
-	});
+    });
 }
 
 */
@@ -321,7 +321,9 @@ func (m *macosApp) showAboutDialog(title string, message string, icon []byte) {
 	if icon != nil {
 		iconData = unsafe.Pointer(&icon[0])
 	}
-	C.showAboutBox(C.CString(title), C.CString(message), iconData, C.int(len(icon)))
+	InvokeAsync(func() {
+		C.showAboutBox(C.CString(title), C.CString(message), iconData, C.int(len(icon)))
+	})
 }
 
 type macosDialog struct {
@@ -331,7 +333,7 @@ type macosDialog struct {
 }
 
 func (m *macosDialog) show() {
-	globalApplication.dispatchOnMainThread(func() {
+	InvokeAsync(func() {
 
 		// Mac can only have 4 Buttons on a dialog
 		if len(m.dialog.Buttons) > 4 {
@@ -419,7 +421,7 @@ func toCString(s string) *C.char {
 	return C.CString(s)
 }
 
-func (m *macosOpenFileDialog) show() ([]string, error) {
+func (m *macosOpenFileDialog) show() (chan string, error) {
 	openFileResponses[m.dialog.id] = make(chan string)
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
@@ -445,7 +447,6 @@ func (m *macosOpenFileDialog) show() ([]string, error) {
 		}
 		filterPatterns = strings.Join(allPatterns, ";")
 	}
-
 	C.showOpenFileDialog(C.uint(m.dialog.id),
 		C.bool(m.dialog.canChooseFiles),
 		C.bool(m.dialog.canChooseDirectories),
@@ -462,11 +463,8 @@ func (m *macosOpenFileDialog) show() ([]string, error) {
 		toCString(m.dialog.directory),
 		toCString(m.dialog.buttonText),
 		nsWindow)
-	var result []string
-	for filename := range openFileResponses[m.dialog.id] {
-		result = append(result, filename)
-	}
-	return result, nil
+
+	return openFileResponses[m.dialog.id], nil
 }
 
 //export openFileDialogCallback
@@ -504,7 +502,7 @@ func newSaveFileDialogImpl(d *SaveFileDialogStruct) *macosSaveFileDialog {
 	}
 }
 
-func (m *macosSaveFileDialog) show() (string, error) {
+func (m *macosSaveFileDialog) show() (chan string, error) {
 	saveFileResponses[m.dialog.id] = make(chan string)
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
@@ -524,7 +522,7 @@ func (m *macosSaveFileDialog) show() (string, error) {
 		toCString(m.dialog.buttonText),
 		toCString(m.dialog.filename),
 		nsWindow)
-	return <-saveFileResponses[m.dialog.id], nil
+	return saveFileResponses[m.dialog.id], nil
 }
 
 //export saveFileDialogCallback

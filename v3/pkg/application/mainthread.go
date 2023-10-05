@@ -67,6 +67,18 @@ func InvokeSyncWithResultAndError[T any](fn func() (T, error)) (res T, err error
 	return res, err
 }
 
+func InvokeSyncWithResultAndOther[T any, U any](fn func() (T, U)) (res T, other U) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	globalApplication.dispatchOnMainThread(func() {
+		defer processPanicHandlerRecover()
+		res, other = fn()
+		wg.Done()
+	})
+	wg.Wait()
+	return res, other
+}
+
 func InvokeAsync(fn func()) {
 	globalApplication.dispatchOnMainThread(func() {
 		defer processPanicHandlerRecover()

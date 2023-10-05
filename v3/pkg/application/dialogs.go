@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 )
@@ -159,7 +160,7 @@ func (d *MessageDialog) SetMessage(message string) *MessageDialog {
 }
 
 type openFileDialogImpl interface {
-	show() ([]string, error)
+	show() (chan string, error)
 }
 
 type FileFilter struct {
@@ -265,10 +266,11 @@ func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error) {
 	if d.impl == nil {
 		d.impl = newOpenFileDialogImpl(d)
 	}
-	selection, err := InvokeSyncWithResultAndError(d.impl.show)
+
 	var result string
-	if len(selection) > 0 {
-		result = selection[0]
+	selections, err := InvokeSyncWithResultAndError(d.impl.show)
+	if err == nil {
+		result = <-selections
 	}
 
 	return result, err
@@ -289,7 +291,17 @@ func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error) {
 	if d.impl == nil {
 		d.impl = newOpenFileDialogImpl(d)
 	}
-	return InvokeSyncWithResultAndError(d.impl.show)
+
+	selections, err := InvokeSyncWithResultAndError(d.impl.show)
+
+	var result []string
+	fmt.Println("Waiting for results:")
+	for filename := range selections {
+		fmt.Println(filename)
+		result = append(result, filename)
+	}
+
+	return result, err
 }
 
 func (d *OpenFileDialogStruct) SetMessage(message string) *OpenFileDialogStruct {
@@ -385,7 +397,7 @@ type SaveFileDialogStruct struct {
 }
 
 type saveFileDialogImpl interface {
-	show() (string, error)
+	show() (chan string, error)
 }
 
 func (d *SaveFileDialogStruct) SetOptions(options *SaveFileDialogOptions) {
@@ -448,7 +460,13 @@ func (d *SaveFileDialogStruct) PromptForSingleSelection() (string, error) {
 	if d.impl == nil {
 		d.impl = newSaveFileDialogImpl(d)
 	}
-	return InvokeSyncWithResultAndError(d.impl.show)
+
+	var result string
+	selections, err := InvokeSyncWithResultAndError(d.impl.show)
+	if err == nil {
+		result = <-selections
+	}
+	return result, err
 }
 
 func (d *SaveFileDialogStruct) SetButtonText(text string) *SaveFileDialogStruct {

@@ -141,6 +141,7 @@ windows:WindowUnMinimise
 windows:WindowClose
 windows:WindowSetFocus
 windows:WindowKillFocus
+linux:SystemThemeChanged
 common:ApplicationStarted
 common:WindowMaximise
 common:WindowUnMaximise

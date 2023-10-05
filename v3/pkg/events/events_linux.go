@@ -1,12 +1,9 @@
-//go:build darwin
+//go:build linux
 
 package events
 
 /*
-#cgo CFLAGS:  -x objective-c
-#cgo LDFLAGS: -framework Cocoa -mmacosx-version-min=10.13
-
-#include "events_darwin.h"
+#include "events_linux.h"
 #include <stdlib.h>
 #include <stdbool.h>
 
