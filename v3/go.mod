@@ -24,13 +24,14 @@ require (
 	github.com/matryer/is v1.4.0
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mattn/go-isatty v0.0.19
-	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2
+	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.51
 	github.com/samber/lo v1.38.1
 	github.com/tc-hib/winres v0.1.6
-	github.com/wailsapp/go-webview2 v1.0.6-0.20230901120557-e959fdf1ccc3
+	github.com/wailsapp/go-webview2 v1.0.7
 	github.com/wailsapp/mimetype v1.4.1
+	github.com/wailsapp/wails/v2 v2.6.0
 	golang.org/x/net v0.10.0
 	golang.org/x/sys v0.11.0
 	modernc.org/sqlite v1.21.0
@@ -74,10 +75,10 @@ require (
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
-	golang.org/x/crypto v0.1.0 // indirect
+	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
 	golang.org/x/image v0.5.0 // indirect
-	golang.org/x/mod v0.11.0 // indirect
+	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43 // indirect
 	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/term v0.11.0 // indirect

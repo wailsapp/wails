@@ -8,10 +8,10 @@ import (
 	"github.com/bep/debounce"
 	"github.com/wailsapp/go-webview2/webviewloader"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"path"
 	"strconv"
@@ -1306,13 +1306,7 @@ func (i *iStreamReleaseCloser) Close() error {
 }
 
 func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
-	/*
-		webviewRequests <- &webViewAssetRequest{
-			Request:    webview.NewRequest(wkUrlSchemeTask),
-			windowId:   uint(windowID),
-			windowName: globalApplication.getWindowForID(uint(windowID)).Name(),
-		}
-	*/
+
 	// Setting the UserAgent on the CoreWebView2Settings clears the whole default UserAgent of the Edge browser, but
 	// we want to just append our ApplicationIdentifier. So we adjust the UserAgent for every request.
 	if reqHeaders, err := req.GetHeaders(); err == nil {
@@ -1344,36 +1338,23 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 		return
 	}
 
-	rw := httptest.NewRecorder()
-	globalApplication.assets.ProcessHTTPRequestLegacy(rw, coreWebview2RequestToHttpRequest(req))
-
-	headers := []string{}
-	for k, v := range rw.Header() {
-		headers = append(headers, fmt.Sprintf("%s: %s", k, strings.Join(v, ",")))
-	}
-
-	code := rw.Code
-	if code == http.StatusNotModified {
-		// WebView2 has problems when a request returns a 304 status code and the WebView2 is going to hang for other
-		// requests including IPC calls.
-		globalApplication.error("AssetServer returned 304 - StatusNotModified which is going to hang WebView2, changed code to 505 - StatusInternalServerError", "uri", uri)
-		code = http.StatusInternalServerError
-	}
-
-	env := w.chromium.Environment()
-	response, err := env.CreateWebResourceResponse(rw.Body.Bytes(), code, http.StatusText(code), strings.Join(headers, "\n"))
+	webviewRequest, err := webview.NewRequest(
+		w.chromium.Environment(),
+		args,
+		func(fn func()) {
+			InvokeSync(fn)
+		})
 	if err != nil {
-		globalApplication.error("CreateWebResourceResponse Error: " + err.Error())
+		globalApplication.error("%s: NewRequest failed: %s", uri, err)
 		return
 	}
-	defer response.Release()
 
-	// Send response back
-	err = args.PutResponse(response)
-	if err != nil {
-		globalApplication.error("PutResponse Error: " + err.Error())
-		return
+	webviewRequests <- &webViewAssetRequest{
+		Request:    webviewRequest,
+		windowId:   uint(windowID),
+		windowName: globalApplication.getWindowForID(uint(windowID)).Name(),
 	}
+	//globalApplication.assets.ServeWebViewRequest(webviewRequest)
 }
 
 func (w *windowsWebviewWindow) setupChromium() {

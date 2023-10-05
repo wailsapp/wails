@@ -21,7 +21,7 @@ type ResponseWriter interface {
 	http.ResponseWriter
 
 	// Finish the response and flush all data. A Finish after the request has already been finished has no effect.
-	Finish()
+	Finish() error
 
 	// Code returns the HTTP status code of the response
 	Code() int
