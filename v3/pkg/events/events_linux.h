@@ -6,9 +6,9 @@
 extern void processApplicationEvent(unsigned int, void* data);
 extern void processWindowEvent(unsigned int, unsigned int);
 
-#define EventSystemThemeChanged 1167
+#define EventSystemThemeChanged 0
 
-#define MAX_EVENTS 2
+#define MAX_EVENTS 1
 
 
 #endif

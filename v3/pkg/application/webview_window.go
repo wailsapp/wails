@@ -980,8 +980,12 @@ func (w *WebviewWindow) DispatchWailsEvent(event *WailsEvent) {
 func (w *WebviewWindow) dispatchWindowEvent(id uint) {
 	// TODO: Make this more efficient by keeping a list of which events have been registered
 	// and only dispatching those.
+	eventType := "common"
+	if id < 4096 {
+		eventType = runtime.GOOS
+	}
 	jsEvent := &WailsEvent{
-		Name: events.JSEvent(id),
+		Name: events.JSEvent(eventType, id),
 	}
 	w.DispatchWailsEvent(jsEvent)
 }
