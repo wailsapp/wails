@@ -378,7 +378,11 @@ func (w *linuxWebviewWindow) run() {
 	}
 	w.setSize(w.parent.options.Width, w.parent.options.Height)
 	w.setZoom(w.parent.options.Zoom)
-	w.setBackgroundColour(w.parent.options.BackgroundColour)
+	if w.parent.options.BackgroundType != BackgroundTypeSolid {
+		w.setTransparent()
+		w.setBackgroundColour(w.parent.options.BackgroundColour)
+	}
+
 	w.setFrameless(w.parent.options.Frameless)
 
 	if w.parent.options.X != 0 || w.parent.options.Y != 0 {
@@ -428,9 +432,6 @@ func (w *linuxWebviewWindow) setTransparent() {
 }
 
 func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
-	if colour.Alpha < 255 {
-		w.setTransparent()
-	}
 	windowSetBackgroundColour(w.vbox, w.webview, colour)
 }
 
