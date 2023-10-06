@@ -25,6 +25,7 @@ require (
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.6.1 // indirect
+	github.com/leaanthony/u v1.1.0 // indirect
 	github.com/lmittmann/tint v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect

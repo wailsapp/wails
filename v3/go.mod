@@ -31,7 +31,6 @@ require (
 	github.com/tc-hib/winres v0.1.6
 	github.com/wailsapp/go-webview2 v1.0.7
 	github.com/wailsapp/mimetype v1.4.1
-	github.com/wailsapp/wails/v2 v2.6.0
 	golang.org/x/net v0.10.0
 	golang.org/x/sys v0.11.0
 	modernc.org/sqlite v1.21.0
