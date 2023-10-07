@@ -36,16 +36,6 @@ func newMacEvents() macEvents {
 $$MACEVENTSVALUES	}
 }
 
-var Linux = newLinuxEvents()
-
-type linuxEvents struct {
-$$LINUXEVENTSDECL}
-
-func newLinuxEvents() linuxEvents {
-	return linuxEvents{
-$$LINUXEVENTSVALUES	}
-}
-
 var Windows = newWindowsEvents()
 
 type windowsEvents struct {
@@ -65,27 +55,15 @@ $$EVENTTOJS}
 
 `
 
-var eventsDarwinH = `//go:build darwin
+var eventsH = `//go:build darwin
 
-#ifndef _events_darwin_h
-#define _events_darwin_h
-
-extern void processApplicationEvent(unsigned int, void* data);
-extern void processWindowEvent(unsigned int, unsigned int);
-
-$$CDARWINHEADEREVENTS
-
-#endif`
-
-var eventsLinuxH = `//go:build linux
-
-#ifndef _events_linux_h
-#define _events_linux_h
+#ifndef _events_h
+#define _events_h
 
 extern void processApplicationEvent(unsigned int, void* data);
 extern void processWindowEvent(unsigned int, unsigned int);
 
-$$CLINUXHEADEREVENTS
+$$CHEADEREVENTS
 
 #endif`
 
@@ -95,8 +73,6 @@ export const EventTypes = {
 $$WINDOWSJSEVENTS	},
 	Mac: {
 $$MACJSEVENTS	},
-	Linux: {
-$$LINUXJSEVENTS},
 	Common: {
 $$COMMONJSEVENTS	},
 };
@@ -111,7 +87,7 @@ func main() {
 
 	macEventsDecl := bytes.NewBufferString("")
 	macEventsValues := bytes.NewBufferString("")
-	cDarwinHeaderEvents := bytes.NewBufferString("")
+	cHeaderEvents := bytes.NewBufferString("")
 	windowDelegateEvents := bytes.NewBufferString("")
 	applicationDelegateEvents := bytes.NewBufferString("")
 	webviewDelegateEvents := bytes.NewBufferString("")
@@ -128,14 +104,8 @@ func main() {
 
 	eventToJS := bytes.NewBufferString("")
 
-	linuxEventsDecl := bytes.NewBufferString("")
-	linuxEventsValues := bytes.NewBufferString("")
-	linuxJSEvents := bytes.NewBufferString("")
-	cLinuxHeaderEvents := bytes.NewBufferString("")
-
 	var id int
 	var maxMacEvents int
-	var maxLinuxEvents int
 	var line []byte
 	// Loop over each line in the file
 	for id, line = range bytes.Split(eventNames, []byte{'\n'}) {
@@ -165,22 +135,6 @@ func main() {
 
 		// Add to buffer
 		switch platform {
-		case "linux":
-			eventType := "ApplicationEventType"
-			if strings.HasPrefix(event, "Window") {
-				eventType = "WindowEventType"
-			}
-			if strings.HasPrefix(event, "WebView") {
-				eventType = "WindowEventType"
-			}
-			cLinuxHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
-			linuxEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
-			linuxEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
-			linuxJSEvents.WriteString("\t\t" + event + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
-			maxLinuxEvents++
-			if ignoreEvent {
-				continue
-			}
 		case "mac":
 			eventType := "ApplicationEventType"
 			if strings.HasPrefix(event, "Window") {
@@ -192,9 +146,9 @@ func main() {
 			macEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			macEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			macJSEvents.WriteString("\t\t" + event + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
-			cDarwinHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
+			cHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
-			maxMacEvents++
+			maxMacEvents = id
 			if ignoreEvent {
 				continue
 			}
@@ -256,13 +210,10 @@ func main() {
 		}
 	}
 
-	cLinuxHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxLinuxEvents+1) + "\n")
-	cDarwinHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxMacEvents+1) + "\n")
+	cHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxMacEvents+1) + "\n")
 
 	// Save the eventsGo template substituting the values and decls
 	templateToWrite := strings.ReplaceAll(eventsGo, "$$MACEVENTSDECL", macEventsDecl.String())
-	templateToWrite = strings.ReplaceAll(templateToWrite, "$$LINUXEVENTSDECL", linuxEventsDecl.String())
-	templateToWrite = strings.ReplaceAll(templateToWrite, "$$LINUXEVENTSVALUES", linuxEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$MACEVENTSVALUES", macEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSDECL", windowsEventsDecl.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSVALUES", windowsEventsValues.String())
@@ -277,23 +228,15 @@ func main() {
 	// Save the eventsJS template substituting the values and decls
 	templateToWrite = strings.ReplaceAll(eventsJS, "$$MACJSEVENTS", macJSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSJSEVENTS", windowsJSEvents.String())
-	templateToWrite = strings.ReplaceAll(templateToWrite, "$$LINUXJSEVENTS", linuxJSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONJSEVENTS", commonJSEvents.String())
 	err = os.WriteFile("../../internal/runtime/desktop/api/event_types.js", []byte(templateToWrite), 0644)
 	if err != nil {
 		panic(err)
 	}
 
-	// Save the eventsDarwinH template substituting the values and decls
-	templateToWrite = strings.ReplaceAll(eventsDarwinH, "$$CDARWINHEADEREVENTS", cDarwinHeaderEvents.String())
-	err = os.WriteFile("../../pkg/events/events_darwin.h", []byte(templateToWrite), 0644)
-	if err != nil {
-		panic(err)
-	}
-
-	// Save the eventsDarwinH template substituting the values and decls
-	templateToWrite = strings.ReplaceAll(eventsLinuxH, "$$CLINUXHEADEREVENTS", cLinuxHeaderEvents.String())
-	err = os.WriteFile("../../pkg/events/events_linux.h", []byte(templateToWrite), 0644)
+	// Save the eventsH template substituting the values and decls
+	templateToWrite = strings.ReplaceAll(eventsH, "$$CHEADEREVENTS", cHeaderEvents.String())
+	err = os.WriteFile("../../pkg/events/events.h", []byte(templateToWrite), 0644)
 	if err != nil {
 		panic(err)
 	}
