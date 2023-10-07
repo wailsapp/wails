@@ -855,7 +855,7 @@ func (w *macosWebviewWindow) minimise() {
 }
 
 func (w *macosWebviewWindow) on(eventID uint) {
-	C.registerListener(C.uint(eventID))
+	//C.registerListener(C.uint(eventID))
 }
 
 func (w *macosWebviewWindow) zoom() {
@@ -952,7 +952,9 @@ func (w *macosWebviewWindow) setEnabled(enabled bool) {
 }
 
 func (w *macosWebviewWindow) execJS(js string) {
-	C.windowExecJS(w.nsWindow, C.CString(js))
+	InvokeAsync(func() {
+		C.windowExecJS(w.nsWindow, C.CString(js))
+	})
 }
 
 func (w *macosWebviewWindow) setURL(uri string) {

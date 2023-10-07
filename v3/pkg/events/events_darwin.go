@@ -17,8 +17,8 @@ void registerListener(unsigned int event) {
 }
 
 bool hasListeners(unsigned int event) {
-	return hasListener[event];
-	//return true;
+	//return hasListener[event];
+	return true;
 }
 
 */
