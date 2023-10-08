@@ -39,7 +39,7 @@ require (
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
 	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
 

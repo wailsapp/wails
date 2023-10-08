@@ -28,8 +28,10 @@ tasks:
   build-frontend:
     summary: Build the frontend project
     dir: frontend
+    sources:
+      - src/*
     generates:
-      - frontend/dist/*
+      - dist/*
     deps:
       - install-frontend-deps
     cmds:
@@ -84,9 +86,13 @@ tasks:
 
   build:
     summary: Builds the application
+    watch: true
+    sources:
+      - main.go
     cmds:
       - task: build:darwin
       - task: build:windows
+      - task: run
 
   build:backend:
     summary: Builds the backend application
@@ -117,6 +123,8 @@ tasks:
 
   frontend:dev:
     summary: Runs the frontend in development mode
+    deps:
+      - task: install-frontend-deps
     dir: frontend
     cmds:
       - npm run dev
@@ -128,12 +136,12 @@ tasks:
 
   dev:
     summary: Runs the application in development mode
+    watch: true
     preconditions:
       - sh: 'wails3 tool checkport -p 5173'
-        msg: "Vite does not appear to be running."
+        msg: "Vite does not appear to be running. Please run `wails3 task frontend:dev` in another terminal."
     cmds:
       - task: build:backend
-      - task: run
 
   create-app-bundle:
     summary: Builds a `.app` bundle
