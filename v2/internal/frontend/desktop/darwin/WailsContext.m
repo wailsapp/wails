@@ -224,6 +224,12 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
             config.preferences.textInteractionEnabled = *preferences.textInteractionEnabled;
         }
     }
+
+    if (@available(macOS 12.3, *)) {
+        if (preferences.fullscreenEnabled != NULL) {
+            config.preferences.elementFullscreenEnabled = *preferences.fullscreenEnabled;
+        }
+    }
     
 //    [config.preferences setValue:[NSNumber numberWithBool:true] forKey:@"developerExtrasEnabled"];
 
@@ -406,7 +412,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
 - (void) SetAlwaysOnTop:(int)onTop {
     if (onTop) {
-        [self.mainWindow setLevel:NSStatusWindowLevel];
+        [self.mainWindow setLevel:NSFloatingWindowLevel];
     } else {
         [self.mainWindow setLevel:NSNormalWindowLevel];
     }
