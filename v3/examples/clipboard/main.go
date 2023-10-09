@@ -14,6 +14,7 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Clipboard Demo",
 		Description: "A demo of the clipboard API",
+		Assets:      application.AlphaAssets,
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
