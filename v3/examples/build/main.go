@@ -16,7 +16,14 @@ import (
 
 func main() {
 
-	app := application.New(Options)
+	app := application.New(application.Options{
+		Name:        "WebviewWindow Demo (debug)",
+		Description: "A demo of the WebviewWindow API",
+		Assets:      application.AlphaAssets,
+		Mac: application.MacOptions{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
+		},
+	})
 
 	app.On(events.Mac.ApplicationDidFinishLaunching, func(*application.Event) {
 		log.Println("ApplicationDidFinishLaunching")
@@ -54,12 +61,14 @@ func main() {
 	myMenu.Add("New Frameless WebviewWindow").
 		SetAccelerator("CmdOrCtrl+F").
 		OnClick(func(ctx *application.Context) {
-			app.NewWebviewWindow().
-				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
-				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
-				SetURL("https://wails.io").
-				SetFrameless(true).
-				Show()
+			app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+				X:         rand.Intn(1000),
+				Y:         rand.Intn(800),
+				Frameless: true,
+				Mac: application.MacWindow{
+					InvisibleTitleBarHeight: 50,
+				},
+			}).Show()
 			windowCounter++
 		})
 	if runtime.GOOS == "darwin" {
