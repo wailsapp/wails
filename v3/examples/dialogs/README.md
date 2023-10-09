@@ -15,11 +15,24 @@ go run main.go
 To build the example in debug mode, simply run the following command:
 
 ```bash
-wails task build
+wails3 task build
 ```
 
 To build the example to use application icons, simply run the following command:
 
 ```bash
-wails task build:production
+wails3 task package
 ```
+
+
+# Status
+
+| Platform | Status            |
+|----------|-------------------|
+| Mac      |                   |
+| Windows  | Partially Working |
+| Linux    |                   |
+
+## TODO
+
+- [ ] Windows: Show application icon in about dialog

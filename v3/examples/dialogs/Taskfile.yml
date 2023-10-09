@@ -1,84 +1,105 @@
 version: '3'
 
+vars:
+  APP_NAME: "buildtest{{exeExt}}"
 tasks:
 
-  pre-build:
-    summary: Pre-build hooks
-
-  post-build:
-    summary: Post-build hooks
-
-  build:darwin:
+  build:
     summary: Builds the application
-    platforms:
-      - darwin
     cmds:
-      - task: pre-build
-      - go build -gcflags=all="-N -l" -o bin/testapp
-      - task: post-build
+      - go build -gcflags=all="-N -l" -o bin/{{.APP_NAME}}
     env:
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
       CGO_LDFLAGS: "-mmacosx-version-min=10.13"
       MACOSX_DEPLOYMENT_TARGET: "10.13"
 
-  build:windows:
-    summary: Builds the application for Windows
-    platforms:
-      - windows
+  package:
+    summary: Packages a production build of the application into a `.app` or `.exe` bundle
     cmds:
-      - task: pre-build
-      - go build -gcflags=all="-N -l" -o bin/testapp.exe
-      - task: post-build
+      - task: package:darwin
+      - task: package:windows
 
-  build:
-    summary: Builds the application
-    cmds:
-      - task: build:darwin
-      - task: build:windows
+# ------------------------------------------------------------------------------
 
-  generate-icons:
+  generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
     dir: build
     cmds:
       # Generates both .ico and .icns files
-      - wails generate icons -input appicon.png
+      - wails3 generate icons -input appicon.png
 
-  build-prod:
+  build:production:darwin:
     summary: Creates a production build of the application
     cmds:
-      - go build -tags production -ldflags="-w -s" -o bin/testapp{{exeExt}}
+      - GOOS=darwin GOARCH={{.GOARCH}} go build -tags production -ldflags="-w -s" -o build/bin/{{.APP_NAME}}
+    env:
+      CGO_CFLAGS: "-mmacosx-version-min=10.13"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+      MACOSX_DEPLOYMENT_TARGET: "10.13"
+      GOARCH: '{{.GOARCH}}'
+
+  generate:app_bundle:
+    summary: Builds a `.app` bundle
+    cmds:
+      - mkdir -p {{.APP_NAME}}.app/Contents/{MacOS,Resources}
+      - cp build/icons.icns {{.APP_NAME}}.app/Contents/Resources
+      - cp build/bin/{{.APP_NAME}} {{.APP_NAME}}.app/Contents/MacOS
+      - cp build/Info.plist {{.APP_NAME}}.app/Contents
+
+  package:darwin:arm64:
+    summary: Packages a production build of the application into a `.app` bundle
+    platforms:
+      - darwin
+    deps:
+      - task: build:production:darwin
+        vars:
+          ARCH: arm64
+      - generate:icons
+    cmds:
+      - task: generate:app_bundle
 
   package:darwin:
     summary: Packages a production build of the application into a `.app` bundle
     platforms:
       - darwin
     deps:
-        - build-prod
-        - generate-icons
+      - task: build:production:darwin
+      - generate:icons
     cmds:
-      - mkdir -p buildtest.app/Contents/{MacOS,Resources}
-      - cp build/icons.icns buildtest.app/Contents/Resources
-      - cp bin/testapp buildtest.app/Contents/MacOS
-      - cp build/Info.plist buildtest.app/Contents
+      - task: generate:app_bundle
 
-  windows:generate:syso:
+  generate:syso:
     dir: build
+    platforms:
+      - windows
     cmds:
-      - wails generate syso -arch amd64 -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+      - wails3 generate syso -arch {{.GOARCH}} -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+    vars:
+      GOARCH: '{{.GOARCH}}'
 
   package:windows:
     summary: Packages a production build of the application into a `.exe` bundle
     platforms:
-      - windows
+      - windows/amd64
     deps:
-      - generate-icons
+      - generate:icons
     cmds:
-      - task: windows:generate:syso
-      - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/testapp.exe
+      - task: generate:syso
+        vars:
+            GOARCH: amd64
+      - go build -tags production -gcflags=all="-N -l" -o bin/{{.APP_NAME}}
       - powershell Remove-item wails.syso
 
-  build:production:
-    summary: Builds the application for production
+
+  package:windows:arm64:
+    summary: Packages a production build of the application into a `.exe` bundle (ARM64)
+    platforms:
+      - windows
     cmds:
-      - task: package:darwin
-      - task: package:windows
+      - task: generate:syso
+        vars:
+          GOARCH: arm64
+      - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/buildtest.arm64.exe
+      - powershell Remove-item wails.syso
+    env:
+      GOARCH: arm64

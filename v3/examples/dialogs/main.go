@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"log"
+	"log/slog"
 	"os"
 	"runtime"
 	"strings"
@@ -17,6 +18,8 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Dialogs Demo",
 		Description: "A demo of the dialogs API",
+		Assets:      application.AlphaAssets,
+		Logger:      application.DefaultLogger(slog.LevelDebug),
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
