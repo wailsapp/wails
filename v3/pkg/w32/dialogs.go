@@ -11,7 +11,7 @@ func MessageBoxWithIcon(hwnd HWND, text *uint16, caption *uint16, iconID int, fl
 	params := MSGBOXPARAMS{
 		cbSize:      uint32(unsafe.Sizeof(MSGBOXPARAMS{})),
 		hwndOwner:   hwnd,
-		hInstance:   0,
+		hInstance:   GetApplicationHandle(),
 		lpszText:    text,
 		lpszCaption: caption,
 		dwStyle:     flags,

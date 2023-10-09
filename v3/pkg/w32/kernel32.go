@@ -60,6 +60,11 @@ func GetModuleHandle(modulename string) HINSTANCE {
 	return HINSTANCE(ret)
 }
 
+func GetApplicationHandle() HINSTANCE {
+	ret, _, _ := procGetModuleHandle.Call(0)
+	return ret
+}
+
 func MulDiv(number, numerator, denominator int) int {
 	ret, _, _ := procMulDiv.Call(
 		uintptr(number),
