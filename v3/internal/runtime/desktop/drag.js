@@ -107,7 +107,7 @@ function handleResize(e) {
     let resizeHandleWidth = GetFlag("system.resizeHandleWidth") || 5;
 
     // Extra pixels for the corner areas
-    let cornerExtra = GetFlag("resizeCornerExtra") || 3;
+    let cornerExtra = GetFlag("resizeCornerExtra") || 10;
 
     let rightBorder = window.outerWidth - e.clientX < resizeHandleWidth;
     let leftBorder = e.clientX < resizeHandleWidth;
