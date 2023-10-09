@@ -19,6 +19,7 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "WebviewWindow Demo",
 		Description: "A demo of the WebviewWindow API",
+		Assets:      application.AlphaAssets,
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
