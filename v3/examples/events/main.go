@@ -28,13 +28,13 @@ func main() {
 
 	// Custom event handling
 	app.Events.On("myevent", func(e *application.WailsEvent) {
-		log.Printf("[Go] WailsEvent received: %+v\n", e)
+		app.Logger.Info("[Go] WailsEvent received: %+v\n", e)
 	})
 
 	// OS specific application events
-	app.On(events.Mac.ApplicationDidFinishLaunching, func(event *application.Event) {
+	app.On(events.Common.ApplicationStarted, func(event *application.Event) {
 		for {
-			log.Println("Sending event")
+			app.Logger.Info("Sending event from Go!")
 			app.Events.Emit(&application.WailsEvent{
 				Name: "myevent",
 				Data: "hello",
@@ -44,21 +44,22 @@ func main() {
 	})
 
 	app.On(events.Common.ThemeChanged, func(event *application.Event) {
-		log.Println("System theme changed!")
+		app.Logger.Info("System theme changed!")
 		if event.Context().IsDarkMode() {
-			log.Println("System is now using dark mode!")
+			app.Logger.Info("System is now using dark mode!")
 		} else {
-			log.Println("System is now using light mode!")
+			app.Logger.Info("System is now using light mode!")
 		}
 	})
 
 	// Platform agnostic events
 	app.On(events.Common.ApplicationStarted, func(event *application.Event) {
-		println("events.Common.ApplicationStarted fired!")
+		app.Logger.Info("events.Common.ApplicationStarted fired!")
 	})
 
 	win1 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Events Demo",
+		Name:  "Window 1",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
@@ -71,15 +72,16 @@ func main() {
 	win1.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
 		countdown--
 		if countdown == 0 {
-			println("Closing!")
+			app.Logger.Info("Window 1 Closing!")
 			return
 		}
-		println("Nope! Not closing!")
+		app.Logger.Info("Window 1 Closing? Nope! Not closing!")
 		e.Cancel()
 	})
 
 	win2 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Events Demo",
+		Name:  "Window 2",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
@@ -90,7 +92,7 @@ func main() {
 	var cancel bool
 
 	win2.RegisterHook(events.Common.WindowFocus, func(e *application.WindowEvent) {
-		println("---------------\n[Hook] Window focus!")
+		app.Logger.Info("[Hook] Window focus!")
 		cancel = !cancel
 		if cancel {
 			e.Cancel()
@@ -98,7 +100,7 @@ func main() {
 	})
 
 	win2.On(events.Common.WindowFocus, func(e *application.WindowEvent) {
-		println("[Event] Window focus!")
+		app.Logger.Info("[Event] Window focus!")
 	})
 
 	err := app.Run()

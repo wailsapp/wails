@@ -1,6 +1,6 @@
 # Dialogs Example
 
-This example is a comprehensive example of using dialogs in Wails. 
+This example is a comprehensive example of using dialogs in Wails.
 
 ## Running the example
 
@@ -24,15 +24,10 @@ To build the example to use application icons, simply run the following command:
 wails3 task package
 ```
 
-
 # Status
 
-| Platform | Status            |
-|----------|-------------------|
-| Mac      |                   |
-| Windows  | Partially Working |
-| Linux    |                   |
-
-## TODO
-
-- [ ] Windows: Show application icon in about dialog
+| Platform | Status  |
+|----------|---------|
+| Mac      |         |
+| Windows  | Working |
+| Linux    |         |

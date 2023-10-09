@@ -253,7 +253,6 @@ func (w *windowsWebviewWindow) run() {
 	if !options.Windows.DisableIcon {
 		// App icon ID is 3
 		icon, err := NewIconFromResource(w32.GetModuleHandle(""), uint16(3))
-		println("icon", icon)
 		if err == nil {
 			w.setIcon(icon)
 		}
@@ -813,7 +812,7 @@ func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
 	return result
 }
 
-func (w *windowsWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
+func (w *windowsWebviewWindow) openContextMenu(menu *Menu, _ *ContextMenuData) {
 	// Create the menu
 	thisMenu := NewPopupMenu(w.hwnd, menu)
 	w.currentlyOpenContextMenu = thisMenu

@@ -134,6 +134,24 @@ type RGBA struct {
 	Red, Green, Blue, Alpha uint8
 }
 
+func NewRGBA(red, green, blue, alpha uint8) RGBA {
+	return RGBA{
+		Red:   red,
+		Green: green,
+		Blue:  blue,
+		Alpha: alpha,
+	}
+}
+
+func NewRGB(red, green, blue uint8) RGBA {
+	return RGBA{
+		Red:   red,
+		Green: green,
+		Blue:  blue,
+		Alpha: 255,
+	}
+}
+
 type BackgroundType int
 
 const (

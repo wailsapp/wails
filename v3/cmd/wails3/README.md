@@ -5,13 +5,9 @@ There are a number of commands related to tooling, such as icon generation and a
 
 ## Commands
 
-### run
+### task
 
-The run command is for running tasks defined in `Taskfile.yml`. 
-
-| Flag               | Type   | Description                                          | Default               |
-|--------------------|--------|------------------------------------------------------|-----------------------|
-| `-t`               | string | The name of the task to run                          |                       |
+The `task` command is for running tasks defined in `Taskfile.yml`. It is a wrapper around [Task](https://taskfile.dev).
 
 ### generate
 

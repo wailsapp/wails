@@ -90,9 +90,10 @@ func main() {
 		SetAccelerator("CmdOrCtrl+F").
 		OnClick(func(ctx *application.Context) {
 			app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-				X:         rand.Intn(1000),
-				Y:         rand.Intn(800),
-				Frameless: true,
+				X:                rand.Intn(1000),
+				Y:                rand.Intn(800),
+				BackgroundColour: application.NewRGB(33, 37, 41),
+				Frameless:        true,
 				Mac: application.MacWindow{
 					InvisibleTitleBarHeight: 50,
 				},
@@ -108,6 +109,7 @@ func main() {
 						InvisibleTitleBarHeight: 25,
 					},
 				}).
+					SetBackgroundColour(application.NewRGB(33, 37, 41)).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 					SetHTML("<br/><br/><p>A MacTitleBarHiddenInset WebviewWindow example</p>").
@@ -384,6 +386,7 @@ func main() {
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+		BackgroundColour: application.NewRGB(33, 37, 41),
 		Mac: application.MacWindow{
 			DisableShadow: true,
 		},

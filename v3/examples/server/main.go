@@ -25,7 +25,7 @@ func main() {
 			"log": log.NewPlugin(),
 			"server": server.NewPlugin(&server.Config{
 				Host:    "0.0.0.0",
-				Port:    31115,
+				Port:    34115,
 				Enabled: true,
 			}),
 		},

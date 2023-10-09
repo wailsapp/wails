@@ -148,12 +148,10 @@ func (m *windowsApp) show() {
 	w32.SetForegroundWindow(m.focusedWindow)
 }
 
-func (m *windowsApp) on(eventID uint) {
-	//C.registerListener(C.uint(eventID))
+func (m *windowsApp) on(_ uint) {
 }
 
-func (m *windowsApp) setIcon(icon []byte) {
-	//C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
+func (m *windowsApp) setIcon(_ []byte) {
 }
 
 func (m *windowsApp) name() string {

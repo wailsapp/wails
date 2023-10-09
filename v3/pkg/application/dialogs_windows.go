@@ -11,7 +11,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-func (m *windowsApp) showAboutDialog(title string, message string, icon []byte) {
+func (m *windowsApp) showAboutDialog(title string, message string, _ []byte) {
 	about := newDialogImpl(&MessageDialog{
 		MessageDialogOptions: MessageDialogOptions{
 			DialogType: InfoDialogType,

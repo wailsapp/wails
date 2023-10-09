@@ -15,7 +15,7 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 		KeyBindings: map[string]func(window *application.WebviewWindow){
-			"CmdOrCtrl+Shift+C": func(window *application.WebviewWindow) {
+			"F11": func(window *application.WebviewWindow) {
 				window.Center()
 			},
 		},
