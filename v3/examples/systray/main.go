@@ -13,6 +13,7 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Systray Demo",
 		Description: "A demo of the Systray API",
+		Assets:      application.AlphaAssets,
 		Mac: application.MacOptions{
 			ActivationPolicy: application.ActivationPolicyAccessory,
 		},
@@ -26,7 +27,6 @@ func main() {
 		Frameless:   true,
 		AlwaysOnTop: true,
 		Hidden:      true,
-		HTML:        "<html><body><h1>This window should be centered to the icon!</h1><p>F12 should open the menu</p></body></html>",
 		ShouldClose: func(window *application.WebviewWindow) bool {
 			window.Hide()
 			return false
