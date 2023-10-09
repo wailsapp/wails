@@ -192,7 +192,7 @@ func (w *windowsWebviewWindow) run() {
 	var appMenu w32.HMENU
 
 	// Process Menu
-	if !options.Windows.DisableMenu {
+	if !options.Windows.DisableMenu && !options.Frameless {
 		theMenu := globalApplication.ApplicationMenu
 		// Create the menu if we have one
 		if w.parent.options.Windows.Menu != nil {
@@ -253,6 +253,7 @@ func (w *windowsWebviewWindow) run() {
 	if !options.Windows.DisableIcon {
 		// App icon ID is 3
 		icon, err := NewIconFromResource(w32.GetModuleHandle(""), uint16(3))
+		println("icon", icon)
 		if err == nil {
 			w.setIcon(icon)
 		}
@@ -312,6 +313,11 @@ func (w *windowsWebviewWindow) run() {
 
 	if options.Focused {
 		w.Focus()
+	}
+
+	if options.Frameless {
+		// Trigger a resize to ensure the window is sized correctly
+		w.chromium.Resize()
 	}
 
 	if !options.Hidden {
@@ -789,10 +795,6 @@ func (w *windowsWebviewWindow) getScreen() (*Screen, error) {
 }
 
 func (w *windowsWebviewWindow) setFrameless(b bool) {
-	// If the window is already frameless, don't do anything
-	if w.parent.options.Frameless == b {
-		return
-	}
 	// Remove or add the frame
 	if b {
 		w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_POPUP)
