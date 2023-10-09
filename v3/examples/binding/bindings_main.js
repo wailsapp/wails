@@ -7,7 +7,7 @@ import {main} from './models';
 window.go = window.go || {};
 window.go.main = {
     GreetService: {
-        
+
 		/**
 		 * GreetService.Greet
 		 * Greet greets a person
@@ -15,7 +15,7 @@ window.go.main = {
 		 * @returns {Promise<string>}
 		 **/
 	    Greet: function(name) { wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0)); },
-        
+
 		/**
 		 * GreetService.GreetPerson
 		 * GreetPerson greets a person

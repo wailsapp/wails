@@ -16,9 +16,7 @@ func main() {
 		Bind: []any{
 			&GreetService{},
 		},
-		Assets: application.AssetOptions{
-			FS: assets,
-		},
+		Assets: application.AlphaAssets,
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
