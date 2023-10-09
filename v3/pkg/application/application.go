@@ -1,7 +1,9 @@
 package application
 
 import (
+	"embed"
 	"encoding/json"
+	"io"
 	"log"
 	"log/slog"
 	"net/http"
@@ -23,7 +25,15 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
+//go:embed assets/*
+var alphaAssets embed.FS
+
 var globalApplication *App
+
+// AlphaAssets is the default assets for the alpha application
+var AlphaAssets = AssetOptions{
+	FS: alphaAssets,
+}
 
 func init() {
 	runtime.LockOSThread()
@@ -47,8 +57,12 @@ func New(appOptions Options) *App {
 	result := newApplication(appOptions)
 	globalApplication = result
 
-	if result.isDebugMode && result.Logger == nil {
-		result.Logger = DefaultLogger(result.options.LogLevel)
+	if result.Logger == nil {
+		if result.isDebugMode {
+			result.Logger = DefaultLogger(result.options.LogLevel)
+		} else {
+			result.Logger = slog.New(slog.NewTextHandler(io.Discard, nil))
+		}
 	}
 
 	result.logStartup()
