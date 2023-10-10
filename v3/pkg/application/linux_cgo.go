@@ -153,14 +153,12 @@ var (
 )
 
 var (
-	gtkSignalHandlers   map[*C.GtkWidget]C.gulong
-	gtkSignalToMenuItem map[*C.GtkWidget]*MenuItem
+	gtkSignalToMenuItem map[uint]*MenuItem
 	mainThreadId        *C.GThread
 )
 
 func init() {
-	gtkSignalHandlers = map[*C.GtkWidget]C.gulong{}
-	gtkSignalToMenuItem = map[*C.GtkWidget]*MenuItem{}
+	gtkSignalToMenuItem = map[uint]*MenuItem{}
 
 	mainThreadId = C.g_thread_self()
 	fmt.Println("init mainthread=", mainThreadId)
@@ -324,12 +322,14 @@ func menuGetRadioGroup(item *linuxMenuItem) *GSList {
 
 //export handleClick
 func handleClick(idPtr unsafe.Pointer) {
-	id := (*C.GtkWidget)(idPtr)
+	ident := C.CString("id")
+	defer C.free(unsafe.Pointer(ident))
+	value := C.g_object_get_data((*C.GObject)(idPtr), ident)
+	id := uint(*(*C.uint)(value))
 	item, ok := gtkSignalToMenuItem[id]
 	if !ok {
 		return
 	}
-
 	switch item.itemType {
 	case text, checkbox:
 		menuItemClicked <- item.id
@@ -341,10 +341,9 @@ func handleClick(idPtr unsafe.Pointer) {
 	}
 }
 
-func attachMenuHandler(item *MenuItem) {
+func attachMenuHandler(item *MenuItem) uint {
 	signal := C.CString("activate")
 	defer C.free(unsafe.Pointer(signal))
-
 	impl := (item.impl).(*linuxMenuItem)
 	widget := impl.native
 	flags := C.GConnectFlags(0)
@@ -355,10 +354,17 @@ func attachMenuHandler(item *MenuItem) {
 		C.gpointer(widget),
 		flags)
 
-	id := (*C.GtkWidget)(widget)
-	gtkSignalToMenuItem[id] = item
-	gtkSignalHandlers[id] = handlerId
-	impl.handlerId = uint(handlerId)
+	id := C.uint(item.id)
+	ident := C.CString("id")
+	defer C.free(unsafe.Pointer(ident))
+	C.g_object_set_data(
+		(*C.GObject)(widget),
+		ident,
+		C.gpointer(&id),
+	)
+
+	gtkSignalToMenuItem[item.id] = item
+	return uint(handlerId)
 }
 
 // menuItem
