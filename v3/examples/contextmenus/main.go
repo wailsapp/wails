@@ -3,7 +3,6 @@ package main
 import (
 	"embed"
 	_ "embed"
-	"fmt"
 	"log"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -38,12 +37,12 @@ func main() {
 
 	contextMenu := app.NewMenu()
 	contextMenu.Add("Click Me").OnClick(func(data *application.Context) {
-		fmt.Printf("Context menu data: %+v\n", data.ContextMenuData())
+		app.Logger.Info("Context menu", "context data", data.ContextMenuData())
 	})
 
 	globalContextMenu := app.NewMenu()
 	globalContextMenu.Add("Default context menu item").OnClick(func(data *application.Context) {
-		fmt.Printf("Context menu data: %+v\n", data.ContextMenuData())
+		app.Logger.Info("Context menu", "context data", data.ContextMenuData())
 	})
 
 	// Registering the menu with a window will make it available to that window only

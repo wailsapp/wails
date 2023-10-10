@@ -1025,7 +1025,9 @@ func (w *WebviewWindow) OpenContextMenu(data *ContextMenuData) {
 	if w.impl == nil {
 		return
 	}
-	w.impl.openContextMenu(menu, data)
+	InvokeSync(func() {
+		w.impl.openContextMenu(menu, data)
+	})
 }
 
 // RegisterContextMenu registers a context menu and assigns it the given name.

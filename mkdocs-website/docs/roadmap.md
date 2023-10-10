@@ -17,22 +17,22 @@ The main goal is to get most of the examples working on all platforms.
 - P - Partially working
 - N - Not working
 
-| Example      | Mac | Windows | Linux |
-|--------------|-----|---------|-------|
-| binding      |     | W       |       |
-| build        |     | W       |       |
-| clipboard    |     | W       |       |
-| contextmenus |     | N       |       |
-| dialog       |     | W       |       |
-| events       |     | N       |       |
-| frameless    |     | W       |       |
-| keybindings  |     | W       |       |
-| menu         |     | W       |       |
-| plain        |     | W       |       |
-| screen       |     | W       |       |
-| systray      |     | W       |       |
-| window       |     | W       |       |
-| wml          |     | W       |       |
+| Example       | Mac | Windows | Linux |
+|---------------|-----|---------|-------|
+| binding       |     | W       |       |
+| build         |     | W       |       |
+| clipboard     |     | W       |       |
+| context menus |     | W       |       |
+| dialog        |     | W       |       |
+| events        |     | W       |       |
+| frameless     |     | W       |       |
+| keybindings   |     | W       |       |
+| menu          |     | W       |       |
+| plain         |     | W       |       |
+| screen        |     | W       |       |
+| systray       |     | W       |       |
+| window        |     | W       |       |
+| wml           |     | W       |       |
 
 
 ### Alpha 2

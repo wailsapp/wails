@@ -7,6 +7,7 @@ export const EventTypes = {
 		APMResumeAutomatic: "windows:APMResumeAutomatic",
 		APMResumeSuspend: "windows:APMResumeSuspend",
 		APMPowerSettingChange: "windows:APMPowerSettingChange",
+		ApplicationStarted: "windows:ApplicationStarted",
 		WebViewNavigationCompleted: "windows:WebViewNavigationCompleted",
 		WindowInactive: "windows:WindowInactive",
 		WindowActive: "windows:WindowActive",

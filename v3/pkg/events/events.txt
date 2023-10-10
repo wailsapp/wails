@@ -127,6 +127,7 @@ windows:APMSuspend
 windows:APMResumeAutomatic
 windows:APMResumeSuspend
 windows:APMPowerSettingChange
+windows:ApplicationStarted
 windows:WebViewNavigationCompleted
 windows:WindowInactive
 windows:WindowActive

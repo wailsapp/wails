@@ -815,6 +815,7 @@ func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
 func (w *windowsWebviewWindow) openContextMenu(menu *Menu, _ *ContextMenuData) {
 	// Create the menu
 	thisMenu := NewPopupMenu(w.hwnd, menu)
+	thisMenu.Update()
 	w.currentlyOpenContextMenu = thisMenu
 	thisMenu.ShowAtCursor()
 }
@@ -1260,8 +1261,8 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 
 	webviewRequests <- &webViewAssetRequest{
 		Request:    webviewRequest,
-		windowId:   uint(windowID),
-		windowName: globalApplication.getWindowForID(uint(windowID)).Name(),
+		windowId:   w.parent.id,
+		windowName: globalApplication.getWindowForID(w.parent.id).Name(),
 	}
 }
 

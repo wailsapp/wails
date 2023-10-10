@@ -180,7 +180,11 @@ func (m *windowsApp) run() error {
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)
 	}
-
+	// Emit application started event
+	applicationEvents <- &Event{
+		Id:  uint(events.Windows.ApplicationStarted),
+		ctx: blankApplicationEventContext,
+	}
 	_ = m.runMainLoop()
 
 	return nil

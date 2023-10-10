@@ -28,13 +28,12 @@ func main() {
 
 	// Custom event handling
 	app.Events.On("myevent", func(e *application.WailsEvent) {
-		app.Logger.Info("[Go] WailsEvent received: %+v\n", e)
+		app.Logger.Info("[Go] WailsEvent received", "name", e.Name, "data", e.Data, "sender", e.Sender, "cancelled", e.Cancelled)
 	})
 
 	// OS specific application events
 	app.On(events.Common.ApplicationStarted, func(event *application.Event) {
 		for {
-			app.Logger.Info("Sending event from Go!")
 			app.Events.Emit(&application.WailsEvent{
 				Name: "myevent",
 				Data: "hello",
