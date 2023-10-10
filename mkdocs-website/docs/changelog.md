@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#2750](https://github.com/wailsapp/wails/pull/2750).
 - Fixed default context menus by [mmgvh](https://github.com/mmghv) in
   [#2753](https://github.com/wailsapp/wails/pull/2753).
+- Fixed Doctor apt package verify by [Atterpac](https://github.com/Atterpac) in
+  [#2972](https://github.com/wailsapp/wails/pull/2972).
 
 ### Changed
 
