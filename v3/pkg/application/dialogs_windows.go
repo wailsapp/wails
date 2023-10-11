@@ -3,12 +3,11 @@
 package application
 
 import (
-	"path/filepath"
-	"strings"
-
 	"github.com/wailsapp/wails/v3/internal/go-common-file-dialog/cfd"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 	"golang.org/x/sys/windows"
+	"path/filepath"
+	"strings"
 )
 
 func (m *windowsApp) showAboutDialog(title string, message string, _ []byte) {
@@ -46,7 +45,7 @@ func (m *windowsDialog) show() {
 		}
 	}
 
-	if m.UseAppIcon {
+	if m.UseAppIcon || m.dialog.Icon != nil {
 		// 3 is the application icon
 		button, _ = w32.MessageBoxWithIcon(parentWindow, message, title, 3, windows.MB_OK|windows.MB_USERICON)
 	} else {
