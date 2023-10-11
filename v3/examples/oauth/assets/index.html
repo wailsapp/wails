@@ -11,13 +11,13 @@
     <div class="jumbotron text-center text-success" style="padding-top:70px;">
         <h1><span class="fa fa-lock"></span> Social Authentication</h1>
         <p>Login or Register with:</p>
-        <a data-wml-event="github-login" class="btn btn-primary"><span class="fa fa-github" style="color: #FFF"></span> SignIn with Github</a>
+        <a wml-event="github-login" class="btn btn-primary"><span class="fa fa-github" style="color: #FFF"></span> SignIn with Github</a>
     </div>
 </div>
 <div id="details" class="text-center" style="display: none">
     <image id="logo" style="width:250px"></image>
     <h3 id="name" style="padding-top: 10px"></h3>
-    <a data-wml-event="github-logout" class="btn btn-primary"><span class="fa fa-github" style="color: #FFF"></span> Logout </a>
+    <a wml-event="github-logout" class="btn btn-primary"><span class="fa fa-github" style="color: #FFF"></span> Logout </a>
 </div>
 <script>
     window.wails.Events.On("wails:oauth:success", (event) => {

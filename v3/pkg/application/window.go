@@ -8,7 +8,7 @@ type Callback interface {
 	CallError(callID string, result string)
 	CallResponse(callID string, result string)
 	DialogError(dialogID string, result string)
-	DialogResponse(dialogID string, result string)
+	DialogResponse(dialogID string, result string, isJSON bool)
 }
 
 type Window interface {

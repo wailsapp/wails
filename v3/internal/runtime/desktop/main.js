@@ -14,6 +14,7 @@ import * as Clipboard from './clipboard';
 import * as Application from './application';
 import * as Screens from './screens';
 import * as System from './system';
+import * as Browser from './browser';
 import {Plugin, Call, callErrorCallback, callCallback, CallByID, CallByName} from "./calls";
 import {clientId} from './runtime';
 import {newWindow} from "./window";
@@ -58,6 +59,7 @@ export function newRuntime(windowName) {
         },
         System,
         Screens,
+        Browser,
         Call,
         CallByID,
         CallByName,

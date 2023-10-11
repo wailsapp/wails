@@ -255,9 +255,13 @@ func (w *WebviewWindow) DialogError(dialogID string, result string) {
 	}
 }
 
-func (w *WebviewWindow) DialogResponse(dialogID string, result string) {
+func (w *WebviewWindow) DialogResponse(dialogID string, result string, isJSON bool) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.dialogCallback('%s', %s, true);", dialogID, result))
+		if isJSON {
+			w.impl.execJS(w.formatJS("_wails.dialogCallback('%s', %s, true);", dialogID, result))
+		} else {
+			w.impl.execJS(fmt.Sprintf("_wails.dialogCallback('%s', '%s', false);", dialogID, result))
+		}
 	}
 }
 

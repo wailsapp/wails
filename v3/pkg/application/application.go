@@ -3,6 +3,7 @@ package application
 import (
 	"embed"
 	"encoding/json"
+	"github.com/pkg/browser"
 	"io"
 	"log"
 	"log/slog"
@@ -801,4 +802,12 @@ func (a *App) UnregisterWindow(id uint) {
 	a.windowsLock.Lock()
 	defer a.windowsLock.Unlock()
 	delete(a.windows, id)
+}
+
+func (a *App) BrowserOpenURL(url string) error {
+	return browser.OpenURL(url)
+}
+
+func (a *App) BrowserOpenFile(path string) error {
+	return browser.OpenFile(path)
 }
