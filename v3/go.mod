@@ -8,6 +8,7 @@ require (
 	github.com/go-git/go-git/v5 v5.3.0
 	github.com/go-ole/go-ole v1.2.6
 	github.com/go-task/task/v3 v3.31.0
+	github.com/godbus/dbus/v5 v5.1.0
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/pat v1.0.1
