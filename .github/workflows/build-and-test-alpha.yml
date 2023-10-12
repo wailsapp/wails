@@ -38,6 +38,7 @@ jobs:
         run: go test -v ./...
 
       - name: Run go build for each subdirectory in v3/examples
+        if: matrix.os != 'windows-latest'
         run: |
           for dir in v3/examples/*
           do 
@@ -47,6 +48,17 @@ jobs:
             go build $dir
             cd -
           done
+
+      - name: Run go build for each subdirectory in v3/examples
+        if: matrix.os == 'windows-latest'
+        run: |
+          foreach ($dir in Get-ChildItem -Path ./v3/examples -Directory) {
+            Write-Host ("Building in " + $dir.FullName)
+            Set-Location -Path $dir.FullName
+            go build
+            Set-Location -Path ${{ github.workspace }}
+          }
+        shell: pwsh
 
       - name: Run tests (!mac)
         if: matrix.os != 'macos-latest'
