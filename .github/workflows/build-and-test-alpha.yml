@@ -39,7 +39,7 @@ jobs:
 
       - name: Run go build for each subdirectory in v3/examples
         run: |
-          for dir in *
+          for dir in v3/examples/*
           do 
             dir=${dir%*/}
             echo "Building $dir"
