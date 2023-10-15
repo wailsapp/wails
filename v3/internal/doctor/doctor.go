@@ -3,6 +3,7 @@ package doctor
 import (
 	"fmt"
 	"github.com/go-git/go-git/v5"
+	"github.com/jaypipes/ghw"
 	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -11,6 +12,7 @@ import (
 	"runtime"
 	"runtime/debug"
 	"slices"
+	"strconv"
 )
 
 func Run() (err error) {
@@ -135,6 +137,44 @@ func Run() (err error) {
 	for _, key := range mapKeys {
 		systemTabledata = append(systemTabledata, []string{key, platformExtras[key]})
 	}
+
+	// Probe CPU
+	cpus, _ := ghw.CPU()
+	if cpus != nil {
+		prefix := "CPU"
+		for idx, cpu := range cpus.Processors {
+			if len(cpus.Processors) > 1 {
+				prefix = "CPU " + strconv.Itoa(idx+1)
+			}
+			systemTabledata = append(systemTabledata, []string{prefix, cpu.Model})
+		}
+	} else {
+		systemTabledata = append(systemTabledata, []string{"CPU", "Unknown"})
+	}
+
+	// Probe GPU
+	gpu, _ := ghw.GPU(ghw.WithDisableWarnings())
+	if gpu != nil {
+		prefix := "GPU"
+		for idx, card := range gpu.GraphicsCards {
+			if len(gpu.GraphicsCards) > 1 {
+				prefix = "GPU " + strconv.Itoa(idx+1) + " "
+			}
+			details := fmt.Sprintf("%s (%s) - Driver: %s", card.DeviceInfo.Product.Name, card.DeviceInfo.Vendor.Name, card.DeviceInfo.Driver)
+			systemTabledata = append(systemTabledata, []string{prefix, details})
+		}
+	} else {
+		systemTabledata = append(systemTabledata, []string{"GPU", "Unknown"})
+	}
+
+	memory, _ := ghw.Memory()
+	if memory != nil {
+		systemTabledata = append(systemTabledata, []string{"Memory", strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"})
+	} else {
+		systemTabledata = append(systemTabledata, []string{"Memory", "Unknown"})
+	}
+
+	//systemTabledata = append(systemTabledata, []string{"CPU", cpu.Processors[0].Model})
 
 	err = pterm.DefaultTable.WithData(systemTabledata).Render()
 	if err != nil {
