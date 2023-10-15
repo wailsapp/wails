@@ -37,7 +37,7 @@ func (p *PluginManager) Init() error {
 		if injectJS != "" {
 			p.assetServer.AddPluginScript(plugin.Name(), injectJS)
 		}
-		globalApplication.info("Plugin initialised: " + plugin.Name())
+		globalApplication.debug("Plugin initialised: " + plugin.Name())
 	}
 	return nil
 }
@@ -45,6 +45,6 @@ func (p *PluginManager) Init() error {
 func (p *PluginManager) Shutdown() {
 	for _, plugin := range p.initialisedPlugins {
 		plugin.Shutdown()
-		globalApplication.info("Plugin shutdown: " + plugin.Name())
+		globalApplication.debug("Plugin shutdown: " + plugin.Name())
 	}
 }

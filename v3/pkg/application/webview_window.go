@@ -217,7 +217,7 @@ func processKeyBindingOptions(keyBindings map[string]func(window *WebviewWindow)
 			continue
 		}
 		result[acc.String()] = callback
-		globalApplication.info("Added Keybinding", "accelerator", acc.String())
+		globalApplication.debug("Added Keybinding", "accelerator", acc.String())
 	}
 	return result
 }

@@ -1469,13 +1469,14 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 		acc.Modifiers = append(acc.Modifiers, SuperKey)
 	}
 
-	// Convert the vkey to a string
-	accKey, ok := VirtualKeyCodes[vkey]
-	if !ok {
-		return false
+	if vkey != w32.VK_CONTROL && vkey != w32.VK_MENU && vkey != w32.VK_SHIFT && vkey != w32.VK_LWIN && vkey != w32.VK_RWIN {
+		// Convert the vkey to a string
+		accKey, ok := VirtualKeyCodes[vkey]
+		if !ok {
+			return false
+		}
+		acc.Key = accKey
 	}
-
-	acc.Key = accKey
 
 	// Process the key binding
 	return w.parent.processKeyBinding(acc.String())

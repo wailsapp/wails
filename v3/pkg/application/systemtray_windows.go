@@ -182,7 +182,7 @@ func (s *windowsSystemTray) run() {
 	// Set Default Callbacks
 	if s.parent.clickHandler == nil {
 		s.parent.clickHandler = func() {
-			globalApplication.info("Left Button Clicked")
+			globalApplication.debug("Left Button Clicked")
 		}
 	}
 	if s.parent.rightClickHandler == nil {
@@ -347,6 +347,6 @@ func (s *windowsSystemTray) destroy() {
 	// Destroy the notification icon
 	nid := s.newNotifyIconData()
 	if !w32.ShellNotifyIcon(w32.NIM_DELETE, &nid) {
-		globalApplication.info(syscall.GetLastError().Error())
+		globalApplication.debug(syscall.GetLastError().Error())
 	}
 }

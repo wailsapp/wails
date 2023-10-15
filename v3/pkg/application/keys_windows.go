@@ -14,7 +14,7 @@ var VirtualKeyCodes = map[uint]string{
 	0x0C: "clear",
 	0x0D: "return",
 	0x10: "shift",
-	0x11: "control",
+	0x11: "ctrl",
 	0x12: "menu",
 	0x13: "pause",
 	0x14: "capital",
