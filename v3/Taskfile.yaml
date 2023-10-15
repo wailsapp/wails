@@ -137,7 +137,7 @@ tasks:
     cmds:
       - echo "Building example {{.DIR}}"
       - go mod tidy
-      - go build
+      - go build -o "testbuild-{{.DIR}}{{exeExt}}"
 
   test:examples:
     summary: Builds the examples
