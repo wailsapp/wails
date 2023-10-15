@@ -134,8 +134,6 @@ tasks:
 
   test:example:
     dir: 'examples/{{.DIR}}'
-    sources:
-      - 'examples/{{.DIR}}/**/*.go'
     cmds:
       - echo "Building example {{.DIR}}"
       - go mod tidy
