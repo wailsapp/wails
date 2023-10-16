@@ -40,6 +40,11 @@ export function setupDrag() {
 }
 
 let resizeEdge = null;
+let resizable = false;
+
+export function setResizable(value) {
+    resizable = value;
+}
 
 function testResize(e) {
     if( resizeEdge ) {
@@ -96,7 +101,9 @@ function onMouseMove(e) {
     }
 
     if (WINDOWS) {
-        handleResize(e);
+        if (resizable) {
+            handleResize(e);
+        }
     }
 }
 

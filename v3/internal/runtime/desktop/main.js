@@ -22,7 +22,7 @@ import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./eve
 import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
 import {setupContextMenus} from "./contextmenu";
 import {reloadWML} from "./wml";
-import {setupDrag, endDrag} from "./drag";
+import {setupDrag, endDrag, setResizable} from "./drag";
 
 window.wails = {
     ...newRuntime(null),
@@ -44,6 +44,7 @@ window._wails = {
     callCallback,
     callErrorCallback,
     endDrag,
+    setResizable,
 };
 
 export function newRuntime(windowName) {
