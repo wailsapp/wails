@@ -181,6 +181,7 @@ type macEvents struct {
 	WindowFileDraggingEntered                               WindowEventType
 	WindowFileDraggingPerformed                             WindowEventType
 	WindowFileDraggingExited                                WindowEventType
+	ApplicationShouldHandleReopen                           ApplicationEventType
 }
 
 func newMacEvents() macEvents {
@@ -308,6 +309,7 @@ func newMacEvents() macEvents {
 		WindowFileDraggingEntered:                               1144,
 		WindowFileDraggingPerformed:                             1145,
 		WindowFileDraggingExited:                                1146,
+		ApplicationShouldHandleReopen:                           1187,
 	}
 }
 
@@ -531,4 +533,5 @@ var eventToJS = map[uint]string{
 	1184: "common:WindowHide",
 	1185: "common:WindowDPIChanged",
 	1186: "common:ThemeChanged",
+	1187: "mac:ApplicationShouldHandleReopen!",
 }

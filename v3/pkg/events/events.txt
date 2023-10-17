@@ -161,3 +161,4 @@ common:WindowShow
 common:WindowHide
 common:WindowDPIChanged
 common:ThemeChanged
+mac:ApplicationShouldHandleReopen!

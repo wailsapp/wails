@@ -147,6 +147,7 @@ export const EventTypes = {
 		WindowFileDraggingEntered: "mac:WindowFileDraggingEntered",
 		WindowFileDraggingPerformed: "mac:WindowFileDraggingPerformed",
 		WindowFileDraggingExited: "mac:WindowFileDraggingExited",
+		ApplicationShouldHandleReopen: "mac:ApplicationShouldHandleReopen!",
 	},
 	Common: {
 		ApplicationStarted: "common:ApplicationStarted",

@@ -129,8 +129,9 @@ extern void processWindowEvent(unsigned int, unsigned int);
 #define EventWindowFileDraggingEntered 1144
 #define EventWindowFileDraggingPerformed 1145
 #define EventWindowFileDraggingExited 1146
+#define EventApplicationShouldHandleReopen 1187
 
-#define MAX_EVENTS 1147
+#define MAX_EVENTS 1188
 
 
 #endif
