@@ -26,8 +26,8 @@ wails3 task package
 
 # Status
 
-| Platform | Status  |
-|----------|---------|
-| Mac      |         |
-| Windows  | Working |
-| Linux    |         |
+| Platform | Status         |
+|----------|----------------|
+| Mac      | Mostly Working |
+| Windows  | Working        |
+| Linux    |                |

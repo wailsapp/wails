@@ -22,11 +22,12 @@ func main() {
 	systemTray := app.NewSystemTray()
 
 	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Width:       500,
-		Height:      800,
-		Frameless:   true,
-		AlwaysOnTop: true,
-		Hidden:      true,
+		Width:         500,
+		Height:        800,
+		Frameless:     true,
+		AlwaysOnTop:   true,
+		Hidden:        true,
+		DisableResize: true,
 		ShouldClose: func(window *application.WebviewWindow) bool {
 			window.Hide()
 			return false

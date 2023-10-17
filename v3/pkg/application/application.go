@@ -582,7 +582,11 @@ func (a *App) CurrentWindow() *WebviewWindow {
 	id := a.impl.getCurrentWindowID()
 	a.windowsLock.RLock()
 	defer a.windowsLock.RUnlock()
-	return a.windows[id].(*WebviewWindow)
+	result := a.windows[id]
+	if result == nil {
+		return nil
+	}
+	return result.(*WebviewWindow)
 }
 
 func (a *App) Quit() {

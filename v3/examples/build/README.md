@@ -11,13 +11,13 @@ requirement.
 To build the example, run:
 
 ```bash
-wails task build
+wails3 task build
 ```
 
 # Status
 
 | Platform | Status  |
 |----------|---------|
-| Mac      |         |
+| Mac      | Working |
 | Windows  | Working |
 | Linux    |         |

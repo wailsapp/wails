@@ -8,17 +8,14 @@ Run the example and press `Ctrl/CMD+Shift+C` to center the focused window.
 To run the example, simply run the following command:
 
 ```bash
-go run main.go
+go run .
 ```
 
 # Status
 
-| Platform | Status         |
-|----------|----------------|
-| Mac      |                |
-| Windows  | Mostly Working |
-| Linux    |                |
+| Platform | Status  |
+|----------|---------|
+| Mac      | Working |
+| Windows  | Working |
+| Linux    |         |
 
-## Known Issues
-
-- [Some Keybindings not working on Windows](https://github.com/orgs/wailsapp/projects/6/views/1?pane=issue&itemId=40962823)

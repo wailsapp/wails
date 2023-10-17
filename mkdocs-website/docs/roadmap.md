@@ -8,6 +8,7 @@ Each milestone will have a set of goals that we are aiming to achieve. These are
 ### Alpha 1
 
 #### Goals
+
 Alpha 1 is the initial release. It is intended to get feedback on the new API and to get people experimenting with it.
 The main goal is to get most of the examples working on all platforms.
 
@@ -19,21 +20,27 @@ The main goal is to get most of the examples working on all platforms.
 
 | Example       | Mac | Windows | Linux |
 |---------------|-----|---------|-------|
-| binding       |     | W       |       |
-| build         |     | W       |       |
-| clipboard     |     | W       |       |
-| context menus |     | W       |       |
-| dialog        |     | W       |       |
-| events        |     | W       |       |
-| frameless     |     | W       |       |
-| keybindings   |     | W       |       |
-| menu          |     | W       |       |
-| plain         |     | W       |       |
-| screen        |     | W       |       |
-| systray       |     | W       |       |
-| window        |     | W       |       |
+| binding       | W   | W       |       |
+| build         | W   | W       |       |
+| clipboard     | W   | W       |       |
+| context menus | W   | W       |       |
+| dialogs       | P   | W       |       |
+| drag-n-drop   | W   | N       |       |
+| events        | W   | W       |       |
+| frameless     | W   | W       |       |
+| keybindings   | W   | W       |       |
+| plain         | W   | W       |       |
+| screen        | W   | W       |       |
+| systray       | W   | W       |       |
+| window        | P   | W       |       |
 | wml           |     | W       |       |
 
+- Mac Dialogs work, however the file dialogs issue a warning that needs to be fixed.
+
+#### TODO:
+
+- [ ] Fix `+[CATransaction synchronize] called within transaction` warnings on mac
+- [ ] When hiding window, application terminates
 
 ### Alpha 2
 

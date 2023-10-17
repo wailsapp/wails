@@ -24,10 +24,7 @@ This is really useful when using components to distinguish between different ele
 
 | Platform | Status  |
 |----------|---------|
-| Mac      |         |
+| Mac      | Working |
 | Windows  | Working |
 | Linux    |         |
 
-# TODO
-
-- [ ] Windows: Fix crash for custom context menu
