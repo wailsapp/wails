@@ -45,6 +45,7 @@ export const EventTypes = {
 		ApplicationWillUnhide: "mac:ApplicationWillUnhide",
 		ApplicationWillUpdate: "mac:ApplicationWillUpdate",
 		ApplicationDidChangeTheme: "mac:ApplicationDidChangeTheme!",
+		ApplicationShouldHandleReopen: "mac:ApplicationShouldHandleReopen!",
 		WindowDidBecomeKey: "mac:WindowDidBecomeKey",
 		WindowDidBecomeMain: "mac:WindowDidBecomeMain",
 		WindowDidBeginSheet: "mac:WindowDidBeginSheet",
@@ -147,7 +148,6 @@ export const EventTypes = {
 		WindowFileDraggingEntered: "mac:WindowFileDraggingEntered",
 		WindowFileDraggingPerformed: "mac:WindowFileDraggingPerformed",
 		WindowFileDraggingExited: "mac:WindowFileDraggingExited",
-		ApplicationShouldHandleReopen: "mac:ApplicationShouldHandleReopen!",
 	},
 	Common: {
 		ApplicationStarted: "common:ApplicationStarted",
