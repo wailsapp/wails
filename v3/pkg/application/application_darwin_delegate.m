@@ -23,7 +23,7 @@ extern bool hasListeners(unsigned int);
         processApplicationEvent(EventApplicationShouldHandleReopen, NULL);
     }
     
-    return flag;
+    return TRUE;
 }
 // GENERATED EVENTS START
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
