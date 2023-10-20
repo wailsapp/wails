@@ -208,7 +208,7 @@ func (s *linuxSystemTray) run() {
 		globalApplication.error("systray error: failed to connect to DBus: %v\n", err)
 		return
 	}
-	err = notifier.ExportStatusNotifierItem(conn, itemPath, &notifier.UnimplementedStatusNotifierItem{})
+	err = notifier.ExportStatusNotifierItem(conn, itemPath, s)
 	if err != nil {
 		globalApplication.error("systray error: failed to export status notifier item: %v\n", err)
 	}
@@ -612,6 +612,29 @@ func (s *linuxSystemTray) GetLayout(parentID int32, recursionDepth int32, proper
 		return s.menuVersion, *m.dbusItem, nil
 	}
 
+	return
+}
+
+// Activate implements org.kde.StatusNotifierItem.Activate method.
+func (s *linuxSystemTray) Activate(x int32, y int32) (err *dbus.Error) {
+	fmt.Println("Activate", x, y)
+	return
+}
+
+// ContextMenu is org.kde.StatusNotifierItem.ContextMenu method
+func (s *linuxSystemTray) ContextMenu(x int32, y int32) (err *dbus.Error) {
+	fmt.Println("ContextMenu", x, y)
+	return
+}
+
+func (s *linuxSystemTray) Scroll(delta int32, orientation string) (err *dbus.Error) {
+	fmt.Println("Scroll", delta, orientation)
+	return
+}
+
+// SecondaryActivate implements org.kde.StatusNotifierItem.SecondaryActivate method.
+func (s *linuxSystemTray) SecondaryActivate(x int32, y int32) (err *dbus.Error) {
+	fmt.Println("SecondaryActivate", x, y)
 	return
 }
 
