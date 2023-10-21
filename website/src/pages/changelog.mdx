@@ -15,23 +15,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Added support for enabling/disabling swipe gestures for Windows WebView2. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2878)
 - When building with `-devtools` flag, CMD/CTRL+SHIFT+F12 can be used to open the devtools. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2915)
 - Added support for setting some of the Webview preferences, `textInteractionEnabled` and `tabFocusesLinks` on Mac. Added by @fkhadra in [PR](https://github.com/wailsapp/wails/pull/2937)
+- Added support for enabling/disabling fullscreen of the Webview on Mac. Added by @fkhadra in [PR](https://github.com/wailsapp/wails/pull/2953)
+- Added French README.fr.md page. Added by @nejos97 in [PR](https://github.com/wailsapp/wails/pull/2943)
+- New task created for linting v2 `task v2:lint`. Workflow updated to run the task. Added by @mikeee in [PR](https://github.com/wailsapp/wails/pull/2957)
+- Added new community template wails-htmx-templ-chi-tailwind. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2984)
+- Added CPU/GPU/Memory detection for `wails doctor`. Added by @leaanthony in #d51268b8d0680430f3a614775b13e6cd2b906d1c
 
 ### Changed
 
 - AssetServer requests are now processed asynchronously without blocking the main thread on Windows. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2926)
 - AssetServer requests are now processed concurrently by spawning a goroutine per request. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2926)
-
+- Now building with `-devtools` flag doesn't enable the default context-menu. Changed by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2923)
+- Change Window Level. Changed by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/2944)
 #### Fixed
 
 - Fixed typo on docs/reference/options page. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2887)
-
-### Changed
-
-- Now building with `-devtools` flag doesn't enable the default context-menu. Changed by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2923)
-
+- Fixed issue with npm being called npm20 on openSUSE-Tumbleweed. Fixed by @TuffenDuffen in [PR] in (https://github.com/wailsapp/wails/pull/2941)
 
 ## v2.6.0 - 2023-09-06
 
