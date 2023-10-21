@@ -216,11 +216,20 @@ type Author struct {
 }
 
 type Info struct {
-	CompanyName    string  `json:"companyName"`
-	ProductName    string  `json:"productName"`
-	ProductVersion string  `json:"productVersion"`
-	Copyright      *string `json:"copyright"`
-	Comments       *string `json:"comments"`
+	CompanyName      string            `json:"companyName"`
+	ProductName      string            `json:"productName"`
+	ProductVersion   string            `json:"productVersion"`
+	Copyright        *string           `json:"copyright"`
+	Comments         *string           `json:"comments"`
+	FileAssociations []FileAssociation `json:"fileAssociations"`
+}
+
+type FileAssociation struct {
+	Ext         string `json:"ext"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	IconName    string `json:"iconName"`
+	Role        string `json:"role"`
 }
 
 type Bindings struct {

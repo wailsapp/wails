@@ -11,9 +11,17 @@
 #import "AppDelegate.h"
 
 @implementation AppDelegate
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender {
-    return NO;  
+-(BOOL)application:(NSApplication *)sender openFile:(NSString *)filename
+{
+   const char* utf8FileName = filename.UTF8String;
+   HandleOpenFile((char*)utf8FileName);
+   return YES;
 }
+
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender {
+    return NO;
+}
+
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification {
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     if (self.alwaysOnTop) {

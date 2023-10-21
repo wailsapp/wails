@@ -23,5 +23,24 @@
         <string>true</string>
         <key>NSHumanReadableCopyright</key>
         <string>{{.Info.Copyright}}</string>
+        {{if .Info.FileAssociations}}
+        <key>CFBundleDocumentTypes</key>
+        <array>
+          {{range .Info.FileAssociations}}
+          <dict>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+              <string>{{.Ext}}</string>
+            </array>
+            <key>CFBundleTypeName</key>
+            <string>{{.Name}}</string>
+            <key>CFBundleTypeRole</key>
+            <string>{{.Role}}</string>
+            <key>CFBundleTypeIconFile</key>
+            <string>{{.IconName}}</string>
+          </dict>
+          {{end}}
+        </array>
+        {{end}}
     </dict>
 </plist>

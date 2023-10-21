@@ -38,6 +38,7 @@ const startURL = "wails://wails/"
 var messageBuffer = make(chan string, 100)
 var requestBuffer = make(chan webview.Request, 100)
 var callbackBuffer = make(chan uint, 10)
+var openFilepathBuffer = make(chan string, 100)
 
 type Frontend struct {
 
@@ -107,8 +108,15 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	go result.startMessageProcessor()
 	go result.startCallbackProcessor()
+	go result.startFileOpenProcessor()
 
 	return result
+}
+
+func (f *Frontend) startFileOpenProcessor() {
+	for filePath := range openFilepathBuffer {
+		f.ProcessOpenFileEvent(filePath)
+	}
 }
 
 func (f *Frontend) startMessageProcessor() {
@@ -116,6 +124,7 @@ func (f *Frontend) startMessageProcessor() {
 		f.processMessage(message)
 	}
 }
+
 func (f *Frontend) startRequestProcessor() {
 	for request := range requestBuffer {
 		f.assets.ServeWebViewRequest(request)
@@ -355,6 +364,12 @@ func (f *Frontend) processMessage(message string) {
 
 }
 
+func (f *Frontend) ProcessOpenFileEvent(filePath string) {
+	if f.frontendOptions.Mac != nil && f.frontendOptions.Mac.OnFileOpen != nil {
+		f.frontendOptions.Mac.OnFileOpen(filePath)
+	}
+}
+
 func (f *Frontend) Callback(message string) {
 	escaped, err := json.Marshal(message)
 	if err != nil {
@@ -397,4 +412,10 @@ func processCallback(callbackID uint) {
 //export processURLRequest
 func processURLRequest(_ unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
 	requestBuffer <- webview.NewRequest(wkURLSchemeTask)
+}
+
+//export HandleOpenFile
+func HandleOpenFile(filePath *C.char) {
+	goFilepath := C.GoString(filePath)
+	openFilepathBuffer <- goFilepath
 }

@@ -22,6 +22,7 @@ type Options struct {
 	WindowIsTranslucent  bool
 	Preferences          *Preferences
 	//ActivationPolicy     ActivationPolicy
-	About *AboutInfo
+	About      *AboutInfo
+	OnFileOpen func(filePath string) `json:"-"`
 	//URLHandlers          map[string]func(string)
 }
