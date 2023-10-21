@@ -3,7 +3,11 @@
 package w32
 
 import (
+	"bytes"
 	"fmt"
+	"image"
+	"image/draw"
+	"image/png"
 	"unsafe"
 )
 
@@ -88,4 +92,46 @@ func CreateLargeHIconFromImage(fileData []byte) (HICON, error) {
 
 func SetWindowIcon(hwnd HWND, icon HICON) {
 	SendMessage(hwnd, WM_SETICON, ICON_SMALL, uintptr(icon))
+}
+
+func pngToImage(data []byte) (*image.RGBA, error) {
+	img, err := png.Decode(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+
+	bounds := img.Bounds()
+	rgba := image.NewRGBA(bounds)
+	draw.Draw(rgba, bounds, img, bounds.Min, draw.Src)
+	return rgba, nil
+}
+
+func SetMenuIcons(parentMenu HMENU, itemID int, unchecked []byte, checked []byte) error {
+	if unchecked == nil {
+		return fmt.Errorf("invalid unchecked bitmap")
+	}
+	var err error
+	var uncheckedIcon, checkedIcon HBITMAP
+	var uncheckedImage, checkedImage *image.RGBA
+	uncheckedImage, err = pngToImage(unchecked)
+	if err != nil {
+		return err
+	}
+	uncheckedIcon, err = CreateHBITMAPFromImage(uncheckedImage)
+	if err != nil {
+		return err
+	}
+	if checked != nil {
+		checkedImage, err = pngToImage(checked)
+		if err != nil {
+			return err
+		}
+		checkedIcon, err = CreateHBITMAPFromImage(checkedImage)
+		if err != nil {
+			return err
+		}
+	} else {
+		checkedIcon = uncheckedIcon
+	}
+	return SetMenuItemBitmaps(parentMenu, uint32(itemID), MF_BYCOMMAND, checkedIcon, uncheckedIcon)
 }

@@ -109,6 +109,12 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		if !ok {
 			w32.Fatal(fmt.Sprintf("Error adding menu item: %s", menuText))
 		}
+		if item.bitmap != nil {
+			err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
+			if err != nil {
+				w32.Fatal(fmt.Sprintf("Error setting menu icons: %s", err.Error()))
+			}
+		}
 
 		item.impl = menuItemImpl
 	}

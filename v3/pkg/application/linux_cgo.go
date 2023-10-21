@@ -415,6 +415,13 @@ func menuItemSetLabel(widget pointer, label string) {
 	C.free(unsafe.Pointer(value))
 }
 
+func menuItemSetBitmap(widget pointer, data []byte) {
+	image := C.gdk_pixbuf_new_from_inline(C.int(len(data)), (*C.guchar)(unsafe.Pointer(&data[0])), C.FALSE, nil)
+	imageWidget := C.gtk_image_new_from_pixbuf(image)
+	C.gtk_image_set_pixel_size((*C.GtkImage)(imageWidget), 16)
+	C.gtk_menu_item_set_image((*C.GtkMenuItem)(widget), imageWidget)
+}
+
 func menuItemSetToolTip(widget pointer, tooltip string) {
 	value := C.CString(tooltip)
 	C.gtk_widget_set_tooltip_text(

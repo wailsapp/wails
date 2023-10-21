@@ -40,6 +40,7 @@ type menuItemImpl interface {
 	setChecked(checked bool)
 	setAccelerator(accelerator *accelerator)
 	setHidden(hidden bool)
+	setBitmap(bitmap []byte)
 }
 
 type MenuItem struct {
@@ -49,6 +50,7 @@ type MenuItem struct {
 	disabled        bool
 	checked         bool
 	hidden          bool
+	bitmap          []byte
 	submenu         *Menu
 	callback        func(*Context)
 	itemType        menuItemType
@@ -255,6 +257,14 @@ func (m *MenuItem) SetEnabled(enabled bool) *MenuItem {
 	m.disabled = !enabled
 	if m.impl != nil {
 		m.impl.setDisabled(m.disabled)
+	}
+	return m
+}
+
+func (m *MenuItem) SetBitmap(bitmap []byte) *MenuItem {
+	m.bitmap = bitmap
+	if m.impl != nil {
+		m.impl.setBitmap(bitmap)
 	}
 	return m
 }

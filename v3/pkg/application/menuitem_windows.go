@@ -105,6 +105,20 @@ func (m *windowsMenuItem) setAccelerator(accelerator *accelerator) {
 	//C.setMenuItemKeyEquivalent(m.nsMenuItem, key, modifier)
 }
 
+func (m *windowsMenuItem) setBitmap(bitmap []byte) {
+	if m.menuItem.bitmap == nil {
+		return
+	}
+
+	// Set the icon
+	err := w32.SetMenuIcons(m.hMenu, m.id, bitmap, nil)
+	if err != nil {
+		globalApplication.error("Unable to set bitmap on menu item", "error", err.Error())
+		return
+	}
+	m.update()
+}
+
 func newMenuItemImpl(item *MenuItem, parentMenu w32.HMENU, ID int) *windowsMenuItem {
 	result := &windowsMenuItem{
 		menuItem: item,

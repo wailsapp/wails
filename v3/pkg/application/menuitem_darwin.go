@@ -332,6 +332,11 @@ static void showAll(void) {
 	[[NSApplication sharedApplication] unhideAllApplications:nil];
 }
 
+static void setMenuItemBitmap(void* nsMenuItem, unsigned char *bitmap, int length) {
+	MenuItem *menuItem = (MenuItem *)nsMenuItem;
+	NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:bitmap length:length]];
+	[menuItem setImage:image];
+}
 */
 import "C"
 import (
@@ -339,33 +344,37 @@ import (
 	"unsafe"
 )
 
-type windowsMenuItem struct {
+type macosMenuItem struct {
 	menuItem *MenuItem
 
 	nsMenuItem unsafe.Pointer
 }
 
-func (m windowsMenuItem) setTooltip(tooltip string) {
+func (m macosMenuItem) setTooltip(tooltip string) {
 	C.setMenuItemTooltip(m.nsMenuItem, C.CString(tooltip))
 }
 
-func (m windowsMenuItem) setLabel(s string) {
+func (m macosMenuItem) setLabel(s string) {
 	C.setMenuItemLabel(m.nsMenuItem, C.CString(s))
 }
 
-func (m windowsMenuItem) setDisabled(disabled bool) {
+func (m macosMenuItem) setDisabled(disabled bool) {
 	C.setMenuItemDisabled(m.nsMenuItem, C.bool(disabled))
 }
 
-func (m windowsMenuItem) setChecked(checked bool) {
+func (m macosMenuItem) setChecked(checked bool) {
 	C.setMenuItemChecked(m.nsMenuItem, C.bool(checked))
 }
 
-func (m windowsMenuItem) setHidden(hidden bool) {
+func (m macosMenuItem) setHidden(hidden bool) {
 	C.setMenuItemHidden(m.nsMenuItem, C.bool(hidden))
 }
 
-func (m windowsMenuItem) setAccelerator(accelerator *accelerator) {
+func (m macosMenuItem) setBitmap(bitmap []byte) {
+	C.setMenuItemBitmap(m.nsMenuItem, (*C.uchar)(&bitmap[0]), C.int(len(bitmap)))
+}
+
+func (m macosMenuItem) setAccelerator(accelerator *accelerator) {
 	// Set the keyboard shortcut of the menu item
 	var modifier C.int
 	var key *C.char
@@ -378,8 +387,8 @@ func (m windowsMenuItem) setAccelerator(accelerator *accelerator) {
 	C.setMenuItemKeyEquivalent(m.nsMenuItem, key, modifier)
 }
 
-func newMenuItemImpl(item *MenuItem) *windowsMenuItem {
-	result := &windowsMenuItem{
+func newMenuItemImpl(item *MenuItem) *macosMenuItem {
+	result := &macosMenuItem{
 		menuItem: item,
 	}
 

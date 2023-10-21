@@ -26,6 +26,13 @@ func (l linuxMenuItem) blockSignal() {
 		menuItemSignalBlock(l.native, l.handlerId, true)
 	}
 }
+func (l linuxMenuItem) setBitmap(data []byte) {
+	InvokeSync(func() {
+		l.blockSignal()
+		defer l.unBlockSignal()
+		menuItemSetBitmap(l.native, data)
+	})
+}
 
 func (l linuxMenuItem) unBlockSignal() {
 	if l.handlerId != 0 {

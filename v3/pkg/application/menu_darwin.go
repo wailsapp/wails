@@ -100,6 +100,9 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 		case separator:
 			C.addMenuSeparator(parent)
 		}
+		if item.bitmap != nil {
+			C.setMenuItemBitmap(item.impl, (*C.uchar)(&item.bitmap[0]), C.int(len(item.bitmap)))
+		}
 
 	}
 }

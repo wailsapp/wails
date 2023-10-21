@@ -21,3 +21,7 @@ go run .
 # Known Issues
 
 - [Resize cursor still visible when not resizable](https://github.com/orgs/wailsapp/projects/6/views/1?pane=issue&itemId=40962163)
+
+--- 
+
+Icon attribution: [Click icons created by kusumapotter - Flaticon](https://www.flaticon.com/free-icons/click)

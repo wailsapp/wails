@@ -9,6 +9,7 @@ package w32
 
 import (
 	"fmt"
+	"golang.org/x/sys/windows"
 	"runtime"
 	"syscall"
 	"unsafe"
@@ -169,6 +170,8 @@ var (
 
 	procFlashWindowEx = moduser32.NewProc("FlashWindowEx")
 
+	procSetMenuItemBitmaps = moduser32.NewProc("SetMenuItemBitmaps")
+
 	mainThread HANDLE
 )
 
@@ -188,6 +191,20 @@ func GET_Y_LPARAM(lp uintptr) int32 {
 func RegisterClassEx(wndClassEx *WNDCLASSEX) ATOM {
 	ret, _, _ := procRegisterClassEx.Call(uintptr(unsafe.Pointer(wndClassEx)))
 	return ATOM(ret)
+}
+
+func SetMenuItemBitmaps(hMenu HMENU, uPosition, uFlags uint32, hBitmapUnchecked HBITMAP, hBitmapChecked HBITMAP) error {
+	ret, _, _ := procSetMenuItemBitmaps.Call(
+		hMenu,
+		uintptr(uPosition),
+		uintptr(uFlags),
+		hBitmapUnchecked,
+		hBitmapChecked)
+
+	if ret == 0 {
+		return windows.GetLastError()
+	}
+	return nil
 }
 
 func GetDesktopWindow() HWND {

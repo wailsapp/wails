@@ -78,6 +78,9 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		var menuText = w32.MustStringToUTF16Ptr(item.Label())
 
 		w32.AppendMenu(parentMenu, flags, uintptr(itemID), menuText)
+		if item.bitmap != nil {
+			w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
+		}
 	}
 }
 

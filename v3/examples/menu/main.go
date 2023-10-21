@@ -8,6 +8,9 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
+//go:embed icon.png
+var clickBitmap []byte
+
 func main() {
 
 	app := application.New(application.Options{
@@ -32,7 +35,7 @@ func main() {
 	myMenu.Add("Not Enabled").SetEnabled(false)
 
 	// Click callbacks
-	myMenu.Add("Click Me!").OnClick(func(ctx *application.Context) {
+	myMenu.Add("Click Me!").SetBitmap(clickBitmap).OnClick(func(ctx *application.Context) {
 		switch ctx.ClickedMenuItem().Label() {
 		case "Click Me!":
 			ctx.ClickedMenuItem().SetLabel("Thanks mate!")
