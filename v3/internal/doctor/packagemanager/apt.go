@@ -58,7 +58,8 @@ func (a *Apt) PackageInstalled(pkg *Package) (bool, error) {
 		return false, nil
 	}
 	output, err := a.listPackage(pkg.Name)
-	return strings.Contains(output, "[installed]"), err
+	// apt list -qq returns "all" if you have packages installed globally and locally
+	return strings.Contains(output, "installed") || strings.Contains(output, " all"), err
 }
 
 // PackageAvailable tests if the given package is available for installation
