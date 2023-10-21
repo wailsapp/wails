@@ -102,6 +102,10 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 			if mac.Preferences.TextInteractionEnabled.IsSet() {
 				preferences.textInteractionEnabled = bool2CboolPtr(mac.Preferences.TextInteractionEnabled.Get())
 			}
+
+			if mac.Preferences.FullscreenEnabled.IsSet() {
+				preferences.fullscreenEnabled = bool2CboolPtr(mac.Preferences.FullscreenEnabled.Get())
+			}
 		}
 
 		windowIsTranslucent = bool2Cint(mac.WindowIsTranslucent)

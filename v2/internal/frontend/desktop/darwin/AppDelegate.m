@@ -25,7 +25,7 @@
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification {
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     if (self.alwaysOnTop) {
-        [self.mainWindow setLevel:NSStatusWindowLevel];
+        [self.mainWindow setLevel:NSFloatingWindowLevel];
     }
     if ( !self.startHidden ) {
         [self.mainWindow makeKeyAndOrderFront:self];

@@ -41,7 +41,7 @@
 <samp>
 
 [English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
-[한국어](README.ko.md) · [Español](README.es.md) · [Русский](README.ru.md)
+[한국어](README.ko.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Francais](README.fr.md)
 
 </samp>
 </strong>
@@ -52,7 +52,7 @@
 - [Содержание](#содержание)
 - [Вступление](#вступление)
 - [Особенности](#особенности)
-    - [Roadmap](#roadmap)
+  - [Roadmap](#roadmap)
 - [Быстрый старт](#быстрый-старт)
 - [Спонсоры](#спонсоры)
 - [FAQ](#faq)
