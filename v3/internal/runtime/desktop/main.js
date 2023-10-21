@@ -14,6 +14,7 @@ import * as Clipboard from './clipboard';
 import * as Application from './application';
 import * as Screens from './screens';
 import * as System from './system';
+import * as Browser from './browser';
 import {Plugin, Call, callErrorCallback, callCallback, CallByID, CallByName} from "./calls";
 import {clientId} from './runtime';
 import {newWindow} from "./window";
@@ -21,7 +22,7 @@ import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./eve
 import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
 import {setupContextMenus} from "./contextmenu";
 import {reloadWML} from "./wml";
-import {setupDrag, endDrag} from "./drag";
+import {setupDrag, endDrag, setResizable} from "./drag";
 
 window.wails = {
     ...newRuntime(null),
@@ -43,6 +44,7 @@ window._wails = {
     callCallback,
     callErrorCallback,
     endDrag,
+    setResizable,
 };
 
 export function newRuntime(windowName) {
@@ -58,6 +60,7 @@ export function newRuntime(windowName) {
         },
         System,
         Screens,
+        Browser,
         Call,
         CallByID,
         CallByName,

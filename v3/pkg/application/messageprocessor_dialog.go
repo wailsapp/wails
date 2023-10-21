@@ -32,7 +32,7 @@ func (m *MessageProcessor) dialogErrorCallback(window Window, message string, di
 }
 
 func (m *MessageProcessor) dialogCallback(window Window, dialogID *string, result string, isJSON bool) {
-	window.DialogResponse(*dialogID, result)
+	window.DialogResponse(*dialogID, result, isJSON)
 }
 
 func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {

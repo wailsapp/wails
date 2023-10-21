@@ -7,13 +7,13 @@ This is an example of how to use the experimental WML, which provides HTMX style
 To run the example, simply run the following command:
 
 ```bash
-go run main.go
+go run .
 ```
 
 # Status
 
 | Platform | Status  |
 |----------|---------|
-| Mac      |         |
+| Mac      | Working |
 | Windows  | Working |
 | Linux    |         |

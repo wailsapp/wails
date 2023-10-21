@@ -21,6 +21,7 @@ const (
 	windowRequest          = 6
 	screensRequest         = 7
 	systemRequest          = 8
+	browserRequest         = 9
 )
 
 type MessageProcessor struct {
@@ -139,6 +140,8 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *h
 		m.processCallMethod(method, rw, r, targetWindow, params)
 	case systemRequest:
 		m.processSystemMethod(method, rw, r, targetWindow, params)
+	case browserRequest:
+		m.processBrowserMethod(method, rw, r, targetWindow, params)
 	default:
 		m.httpError(rw, "Unknown runtime call: %d", object)
 	}

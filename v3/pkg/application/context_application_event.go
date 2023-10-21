@@ -3,7 +3,6 @@ package application
 var blankApplicationEventContext = &ApplicationEventContext{}
 
 const (
-	// FilesDropped is the event name for when files are dropped on the window
 	openedFiles = "openedFiles"
 )
 

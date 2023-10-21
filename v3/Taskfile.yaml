@@ -132,4 +132,36 @@ tasks:
       - task: format
       - task: docs:update:api
 
+  test:example:
+    dir: 'examples/{{.DIR}}'
+    cmds:
+      - echo "Building example {{.DIR}}"
+      - go mod tidy
+      - go build -o "testbuild-{{.DIR}}{{exeExt}}"
 
+  test:examples:
+    summary: Builds the examples
+    dir: examples
+    vars:
+      EXAMPLEDIRS: |
+        binding
+        build
+        clipboard
+        contextmenus
+        dialogs
+        drag-n-drop
+        events
+        frameless
+        keybindings
+        menu
+        plain
+        plugins
+        screen
+        systray
+        window
+        wml
+    cmds:
+      - for: { var: EXAMPLEDIRS }
+        task: test:example
+        vars:
+          DIR: "{{.ITEM}}"

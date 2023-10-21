@@ -69,7 +69,7 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 }
 
 func (m *linuxMenu) attachHandler(item *MenuItem) {
-	attachMenuHandler(item)
+	(item.impl).(*linuxMenuItem).handlerId = attachMenuHandler(item)
 }
 
 func (m *linuxMenu) addSubMenuToItem(menu *Menu, item *MenuItem) {

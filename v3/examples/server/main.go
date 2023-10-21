@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/plugins/experimental/server"
 	"github.com/wailsapp/wails/v3/plugins/log"
-	"github.com/wailsapp/wails/v3/plugins/server"
 )
 
 //go:embed assets/*

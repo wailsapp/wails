@@ -259,13 +259,13 @@ func SHGetPathFromIDList(idl uintptr) string {
 
 func DragAcceptFiles(hwnd HWND, accept bool) {
 	procDragAcceptFiles.Call(
-		uintptr(hwnd),
+		hwnd,
 		uintptr(BoolToBOOL(accept)))
 }
 
 func DragQueryFile(hDrop HDROP, iFile uint) (fileName string, fileCount uint) {
 	ret, _, _ := procDragQueryFile.Call(
-		uintptr(hDrop),
+		hDrop,
 		uintptr(iFile),
 		0,
 		0)
@@ -276,7 +276,7 @@ func DragQueryFile(hDrop HDROP, iFile uint) (fileName string, fileCount uint) {
 		buf := make([]uint16, fileCount+1)
 
 		ret, _, _ := procDragQueryFile.Call(
-			uintptr(hDrop),
+			hDrop,
 			uintptr(iFile),
 			uintptr(unsafe.Pointer(&buf[0])),
 			uintptr(fileCount+1))

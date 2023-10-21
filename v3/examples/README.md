@@ -8,7 +8,7 @@ The examples in this directory may or may not compile / run at any given time.  
 
     cd v3/examples/<example>
     go mod tidy
-    go run main.go
+    go run .
 
 ## Compiling the examples
 

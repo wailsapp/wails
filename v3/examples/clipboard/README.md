@@ -6,6 +6,6 @@ This example demonstrates how to use the clipboard API.
 
 | Platform | Status  |
 |----------|---------|
-| Mac      |         |
+| Mac      | Working |
 | Windows  | Working |
 | Linux    |         |

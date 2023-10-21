@@ -7,7 +7,7 @@ This example is a demonstration of the Windows API.
 To run the example, simply run the following command:
 
 ```bash
-go run main.go
+go run .
 ```
 
 # Status

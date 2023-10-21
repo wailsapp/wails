@@ -7,13 +7,13 @@ This example is a demonstration of using frameless windows in Wails.
 To run the example, simply run the following command:
 
 ```bash
-go run main.go
+go run .
 ```
 
 # Status
 
 | Platform | Status  |
 |----------|---------|
-| Mac      |         |
+| Mac      | Working |
 | Windows  | Working |
 | Linux    |         |

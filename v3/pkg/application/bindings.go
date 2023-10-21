@@ -152,7 +152,7 @@ func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
 			}
 			b.boundMethods[packageName][structName][methodName] = method
 			b.boundByID[method.ID] = method
-			globalApplication.info("Added plugin method: "+structName+"."+methodName, "id", method.ID)
+			globalApplication.debug("Added plugin method: "+structName+"."+methodName, "id", method.ID)
 		}
 	}
 	return nil
@@ -265,7 +265,7 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 					args = append(args, "alias", alias)
 				}
 			}
-			globalApplication.info("Adding method:", args...)
+			globalApplication.debug("Adding method:", args...)
 		}
 		// Iterate inputs
 		methodType := method.Type()

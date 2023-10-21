@@ -8,11 +8,13 @@ require (
 	github.com/go-git/go-git/v5 v5.3.0
 	github.com/go-ole/go-ole v1.2.6
 	github.com/go-task/task/v3 v3.31.0
+	github.com/godbus/dbus/v5 v5.1.0
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/pat v1.0.1
 	github.com/gorilla/sessions v1.2.1
 	github.com/jackmordaunt/icns/v2 v2.2.1
+	github.com/jaypipes/ghw v0.12.0
 	github.com/json-iterator/go v1.1.12
 	github.com/leaanthony/clir v1.6.0
 	github.com/leaanthony/go-ansi-parser v1.6.1
@@ -29,7 +31,7 @@ require (
 	github.com/pterm/pterm v0.12.51
 	github.com/samber/lo v1.38.1
 	github.com/tc-hib/winres v0.1.6
-	github.com/wailsapp/go-webview2 v1.0.8
+	github.com/wailsapp/go-webview2 v1.0.9
 	github.com/wailsapp/mimetype v1.4.1
 	golang.org/x/net v0.10.0
 	golang.org/x/sys v0.13.0
@@ -41,10 +43,12 @@ require (
 	atomicgo.dev/keyboard v0.2.8 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/Microsoft/go-winio v0.4.16 // indirect
+	github.com/StackExchange/wmi v1.2.1 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/fatih/color v1.15.0 // indirect
+	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.2.0 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
@@ -54,6 +58,7 @@ require (
 	github.com/gorilla/mux v1.6.2 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
+	github.com/jaypipes/pcidb v1.0.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
@@ -88,7 +93,9 @@ require (
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	howett.net/plist v1.0.0 // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect
 	modernc.org/cc/v3 v3.40.0 // indirect
 	modernc.org/ccgo/v3 v3.16.13 // indirect

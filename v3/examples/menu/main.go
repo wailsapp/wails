@@ -102,7 +102,7 @@ func main() {
 	})
 	app.SetMenu(menu)
 
-	app.NewWebviewWindow()
+	app.NewWebviewWindow().SetBackgroundColour(application.NewRGB(33, 37, 41))
 
 	err := app.Run()
 

@@ -3,6 +3,7 @@ package application
 import (
 	"embed"
 	"encoding/json"
+	"github.com/pkg/browser"
 	"io"
 	"log"
 	"log/slog"
@@ -190,6 +191,13 @@ type dragAndDropMessage struct {
 
 var windowDragAndDropBuffer = make(chan *dragAndDropMessage)
 
+func addDragAndDropMessage(windowId uint, filenames []string) {
+	windowDragAndDropBuffer <- &dragAndDropMessage{
+		windowId:  windowId,
+		filenames: filenames,
+	}
+}
+
 var _ webview.Request = &webViewAssetRequest{}
 
 const webViewRequestHeaderWindowId = "x-wails-window-id"
@@ -234,7 +242,7 @@ type App struct {
 
 	// Windows
 	windows     map[uint]Window
-	windowsLock sync.Mutex
+	windowsLock sync.RWMutex
 
 	// System Trays
 	systemTrays      map[uint]*SystemTray
@@ -300,8 +308,8 @@ func (a *App) getSystemTrayID() uint {
 }
 
 func (a *App) getWindowForID(id uint) Window {
-	a.windowsLock.Lock()
-	defer a.windowsLock.Unlock()
+	a.windowsLock.RLock()
+	defer a.windowsLock.RUnlock()
 	return a.windows[id]
 }
 
@@ -538,9 +546,9 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 
 func (a *App) handleWindowMessage(event *windowMessage) {
 	// Get window from window map
-	a.windowsLock.Lock()
+	a.windowsLock.RLock()
 	window, ok := a.windows[event.windowId]
-	a.windowsLock.Unlock()
+	a.windowsLock.RUnlock()
 	if !ok {
 		log.Printf("WebviewWindow #%d not found", event.windowId)
 		return
@@ -555,9 +563,9 @@ func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 
 func (a *App) handleWindowEvent(event *windowEvent) {
 	// Get window from window map
-	a.windowsLock.Lock()
+	a.windowsLock.RLock()
 	window, ok := a.windows[event.WindowID]
-	a.windowsLock.Unlock()
+	a.windowsLock.RUnlock()
 	if !ok {
 		log.Printf("Window #%d not found", event.WindowID)
 		return
@@ -579,18 +587,22 @@ func (a *App) CurrentWindow() *WebviewWindow {
 		return nil
 	}
 	id := a.impl.getCurrentWindowID()
-	a.windowsLock.Lock()
-	defer a.windowsLock.Unlock()
-	return a.windows[id].(*WebviewWindow)
+	a.windowsLock.RLock()
+	defer a.windowsLock.RUnlock()
+	result := a.windows[id]
+	if result == nil {
+		return nil
+	}
+	return result.(*WebviewWindow)
 }
 
 func (a *App) Quit() {
 	InvokeSync(func() {
-		a.windowsLock.Lock()
+		a.windowsLock.RLock()
 		for _, window := range a.windows {
 			window.Destroy()
 		}
-		a.windowsLock.Unlock()
+		a.windowsLock.RUnlock()
 		a.systemTraysLock.Lock()
 		for _, systray := range a.systemTrays {
 			systray.Destroy()
@@ -728,8 +740,8 @@ func (a *App) OnWindowCreation(callback func(window Window)) {
 }
 
 func (a *App) GetWindowByName(name string) Window {
-	a.windowsLock.Lock()
-	defer a.windowsLock.Unlock()
+	a.windowsLock.RLock()
+	defer a.windowsLock.RUnlock()
 	for _, window := range a.windows {
 		if window.Name() == name {
 			return window
@@ -771,9 +783,9 @@ func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow)
 
 func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
 	// Get window from window map
-	a.windowsLock.Lock()
+	a.windowsLock.RLock()
 	window, ok := a.windows[event.windowId]
-	a.windowsLock.Unlock()
+	a.windowsLock.RUnlock()
 	if !ok {
 		log.Printf("WebviewWindow #%d not found", event.windowId)
 		return
@@ -801,4 +813,12 @@ func (a *App) UnregisterWindow(id uint) {
 	a.windowsLock.Lock()
 	defer a.windowsLock.Unlock()
 	delete(a.windows, id)
+}
+
+func (a *App) BrowserOpenURL(url string) error {
+	return browser.OpenURL(url)
+}
+
+func (a *App) BrowserOpenFile(path string) error {
+	return browser.OpenFile(path)
 }

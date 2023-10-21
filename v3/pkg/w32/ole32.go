@@ -7,6 +7,7 @@
 package w32
 
 import (
+	"github.com/wailsapp/go-webview2/pkg/combridge"
 	"syscall"
 	"unsafe"
 )
@@ -16,8 +17,10 @@ var (
 
 	procCoInitializeEx        = modole32.NewProc("CoInitializeEx")
 	procCoInitialize          = modole32.NewProc("CoInitialize")
+	procOleInitialize         = modole32.NewProc("OleInitialize")
 	procCoUninitialize        = modole32.NewProc("CoUninitialize")
 	procCreateStreamOnHGlobal = modole32.NewProc("CreateStreamOnHGlobal")
+	procRegisterDragDrop      = modole32.NewProc("RegisterDragDrop")
 )
 
 func CoInitializeEx(coInit uintptr) HRESULT {
@@ -62,4 +65,21 @@ func CreateStreamOnHGlobal(hGlobal HGLOBAL, fDeleteOnRelease bool) *IStream {
 	}
 
 	return stream
+}
+func OleInitialise() {
+	procOleInitialize.Call()
+}
+
+func RegisterDragDrop(hwnd HWND, dropTarget *DropTarget) error {
+
+	dt := combridge.New[iDropTarget](dropTarget)
+	hr, _, _ := procRegisterDragDrop.Call(
+		hwnd,
+		dt.Ref(),
+	)
+
+	if hr != S_OK {
+		return syscall.Errno(hr)
+	}
+	return nil
 }

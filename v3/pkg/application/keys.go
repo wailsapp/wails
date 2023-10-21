@@ -71,15 +71,16 @@ type accelerator struct {
 }
 
 func (a *accelerator) String() string {
-	result := strings.Builder{}
+	var result []string
 	// Sort modifiers
-	slices.Sort(a.Modifiers)
 	for _, modifier := range a.Modifiers {
-		result.WriteString(modifier.String())
-		result.WriteString("+")
+		result = append(result, modifier.String())
 	}
-	result.WriteString(a.Key)
-	return strings.ToLower(result.String())
+	slices.Sort(result)
+	if len(a.Key) > 0 {
+		result = append(result, a.Key)
+	}
+	return strings.ToLower(strings.Join(result, "+"))
 }
 
 var namedKeys = map[string]struct{}{

@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"log"
-	"log/slog"
 )
 
 func main() {
@@ -15,11 +14,10 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 		KeyBindings: map[string]func(window *application.WebviewWindow){
-			"F11": func(window *application.WebviewWindow) {
+			"shift+ctrl+c": func(window *application.WebviewWindow) {
 				window.Center()
 			},
 		},
-		LogLevel: slog.LevelDebug,
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{

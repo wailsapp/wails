@@ -8,7 +8,7 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-//go:embed assets
+//go:embed assets/*
 var assets embed.FS
 
 func main() {
@@ -16,7 +16,9 @@ func main() {
 		Bind: []any{
 			&GreetService{},
 		},
-		Assets: application.AlphaAssets,
+		Assets: application.AssetOptions{
+			FS: assets,
+		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},

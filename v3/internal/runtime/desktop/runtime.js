@@ -23,6 +23,7 @@ export const objectNames = {
     Window: 6,
     Screens: 7,
     System: 8,
+    Browser: 9,
 }
 export let clientId = nanoid();
 

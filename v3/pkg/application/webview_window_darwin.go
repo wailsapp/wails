@@ -888,12 +888,12 @@ func (w *macosWebviewWindow) toggleDevTools() {
 
 func (w *macosWebviewWindow) reload() {
 	//TODO: Implement
-	globalApplication.info("reload called on WebviewWindow", "parentID", w.parent.id)
+	globalApplication.debug("reload called on WebviewWindow", "parentID", w.parent.id)
 }
 
 func (w *macosWebviewWindow) forceReload() {
 	//TODO: Implement
-	globalApplication.info("force reload called on WebviewWindow", "parentID", w.parent.id)
+	globalApplication.debug("force reload called on WebviewWindow", "parentID", w.parent.id)
 }
 
 func (w *macosWebviewWindow) center() {

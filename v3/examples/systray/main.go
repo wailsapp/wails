@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"log"
 	"runtime"
 
@@ -22,11 +23,12 @@ func main() {
 	systemTray := app.NewSystemTray()
 
 	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Width:       500,
-		Height:      800,
-		Frameless:   true,
-		AlwaysOnTop: true,
-		Hidden:      true,
+		Width:         500,
+		Height:        800,
+		Frameless:     true,
+		AlwaysOnTop:   true,
+		Hidden:        true,
+		DisableResize: true,
 		ShouldClose: func(window *application.WebviewWindow) bool {
 			window.Hide()
 			return false
@@ -70,6 +72,19 @@ func main() {
 		println("Click me!")
 		ctx.ClickedMenuItem().SetLabel("Disabled!").SetEnabled(false)
 	})
+	myMenu.AddSeparator()
+	// Callbacks can be shared. This is useful for radio groups
+	radioCallback := func(ctx *application.Context) {
+		menuItem := ctx.ClickedMenuItem()
+		menuItem.SetLabel(menuItem.Label() + "!")
+		fmt.Println("radioCallback: ")
+	}
+
+	// Radio groups are created implicitly by placing radio items next to each other in a menu
+	myMenu.AddRadio("Radio 1", true).OnClick(radioCallback)
+	myMenu.AddRadio("Radio 2", false).OnClick(radioCallback)
+	myMenu.AddRadio("Radio 3", false).OnClick(radioCallback)
+
 	myMenu.AddSeparator()
 	myMenu.Add("Quit").OnClick(func(ctx *application.Context) {
 		app.Quit()

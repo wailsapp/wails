@@ -14,6 +14,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf16"
 	"unsafe"
@@ -60,6 +61,8 @@ type windowsWebviewWindow struct {
 	resizeBorderWidth  int32
 	resizeBorderHeight int32
 	focusingChromium   bool
+	dropTarget         *w32.DropTarget
+	onceDo             sync.Once
 }
 
 func (w *windowsWebviewWindow) handleKeyEvent(_ string) {
@@ -136,6 +139,7 @@ func (w *windowsWebviewWindow) setURL(url string) {
 
 func (w *windowsWebviewWindow) setResizable(resizable bool) {
 	w.setStyle(resizable, w32.WS_THICKFRAME)
+	w.execJS(fmt.Sprintf("window._wails.setResizable(%v);", resizable))
 }
 
 func (w *windowsWebviewWindow) setMinSize(width, height int) {
@@ -390,6 +394,9 @@ func (w *windowsWebviewWindow) relativePosition() (int, int) {
 
 func (w *windowsWebviewWindow) destroy() {
 	// Not sure if we have anything to destroy...
+	if w.dropTarget != nil {
+		w.dropTarget.Release()
+	}
 }
 
 func (w *windowsWebviewWindow) reload() {
@@ -914,6 +921,7 @@ func (w *windowsWebviewWindow) isActive() bool {
 }
 
 func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
+	w.onceDo.Do(w.onCreate)
 	switch msg {
 	case w32.WM_ACTIVATE:
 		if int(wparam&0xffff) == w32.WA_INACTIVE {
@@ -1005,6 +1013,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		if hasConstraints {
 			return 0
 		}
+
 	case w32.WM_DPICHANGED:
 		newWindowSize := (*w32.RECT)(unsafe.Pointer(lparam))
 		w32.SetWindowPos(w.hwnd,
@@ -1298,6 +1307,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	}
 
 	chromium.MessageCallback = w.processMessage
+	chromium.MessageWithAdditionalObjectsCallback = w.processMessageWithAdditionalObjects
 	chromium.WebResourceRequestedCallback = w.processRequest
 	chromium.NavigationCompletedCallback = w.navigationCompleted
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
@@ -1316,6 +1326,49 @@ func (w *windowsWebviewWindow) setupChromium() {
 			globalApplication.fatal(err.Error())
 		}
 	}
+
+	if chromium.HasCapability(edge.AllowExternalDrop) {
+		err := chromium.AllowExternalDrag(false)
+		if err != nil {
+			globalApplication.fatal(err.Error())
+		}
+		if opts.OnEnterEffect != 0 {
+			w.dropTarget.OnEnterEffect = convertEffect(opts.OnEnterEffect)
+		}
+		if opts.OnOverEffect != 0 {
+			w.dropTarget.OnOverEffect = convertEffect(opts.OnOverEffect)
+		}
+		if w.parent.options.EnableDragAndDrop {
+			w.dropTarget = w32.NewDropTarget()
+			w.dropTarget.OnDrop = func(files []string) {
+				w.parent.emit(events.Windows.WindowDragDrop)
+				windowDragAndDropBuffer <- &dragAndDropMessage{
+					windowId:  windowID,
+					filenames: files,
+				}
+			}
+			w.dropTarget.OnEnter = func() {
+				w.parent.emit(events.Windows.WindowDragEnter)
+			}
+			w.dropTarget.OnLeave = func() {
+				w.parent.emit(events.Windows.WindowDragLeave)
+			}
+			w.dropTarget.OnOver = func() {
+				w.parent.emit(events.Windows.WindowDragOver)
+			}
+		}
+	}
+
+	// We will get round to this
+	//if chromium.HasCapability(edge.AllowExternalDrop) {
+	//	err := chromium.AllowExternalDrag(w.parent.options.EnableDragAndDrop)
+	//	if err != nil {
+	//		globalApplication.fatal(err.Error())
+	//	}
+	//	if w.parent.options.EnableDragAndDrop {
+	//		chromium.MessageWithAdditionalObjectsCallback = w.processMessageWithAdditionalObjects
+	//	}
+	//}
 
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
@@ -1407,6 +1460,19 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 }
 
+func convertEffect(effect DragEffect) w32.DWORD {
+	switch effect {
+	case DragEffectCopy:
+		return w32.DROPEFFECT_COPY
+	case DragEffectMove:
+		return w32.DROPEFFECT_MOVE
+	case DragEffectLink:
+		return w32.DROPEFFECT_LINK
+	default:
+		return w32.DROPEFFECT_NONE
+	}
+}
+
 func (w *windowsWebviewWindow) flash(enabled bool) {
 	w32.FlashWindow(w.hwnd, enabled)
 }
@@ -1469,17 +1535,71 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 		acc.Modifiers = append(acc.Modifiers, SuperKey)
 	}
 
-	// Convert the vkey to a string
-	accKey, ok := VirtualKeyCodes[vkey]
-	if !ok {
-		return false
+	if vkey != w32.VK_CONTROL && vkey != w32.VK_MENU && vkey != w32.VK_SHIFT && vkey != w32.VK_LWIN && vkey != w32.VK_RWIN {
+		// Convert the vkey to a string
+		accKey, ok := VirtualKeyCodes[vkey]
+		if !ok {
+			return false
+		}
+		acc.Key = accKey
 	}
-
-	acc.Key = accKey
 
 	// Process the key binding
 	return w.parent.processKeyBinding(acc.String())
 
+}
+
+func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+	if strings.HasPrefix(message, "FilesDropped") {
+		objs, err := args.GetAdditionalObjects()
+		if err != nil {
+			globalApplication.error(err.Error())
+			return
+		}
+
+		defer objs.Release()
+
+		count, err := objs.GetCount()
+		if err != nil {
+			globalApplication.error(err.Error())
+			return
+		}
+
+		var filenames []string
+		for i := uint32(0); i < count; i++ {
+			_file, err := objs.GetValueAtIndex(i)
+			if err != nil {
+				globalApplication.error("cannot get value at %d : %s", i, err.Error())
+				return
+			}
+
+			file := (*edge.ICoreWebView2File)(unsafe.Pointer(_file))
+			defer file.Release()
+
+			filepath, err := file.GetPath()
+			if err != nil {
+				globalApplication.error("cannot get path for object at %d : %s", i, err.Error())
+				return
+			}
+
+			filenames = append(filenames, filepath)
+		}
+
+		addDragAndDropMessage(w.parent.id, filenames)
+		return
+	}
+}
+
+func (w *windowsWebviewWindow) onCreate() {
+	// Register DnD
+	InvokeSync(func() {
+		if w.parent.options.EnableDragAndDrop {
+			err := w32.RegisterDragDrop(w.hwnd, w.dropTarget)
+			if err != nil {
+				globalApplication.error("Error registering drag and drop: " + err.Error())
+			}
+		}
+	})
 }
 
 func ScaleWithDPI(pixels int, dpi uint) int {

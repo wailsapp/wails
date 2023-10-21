@@ -217,7 +217,7 @@ func processKeyBindingOptions(keyBindings map[string]func(window *WebviewWindow)
 			continue
 		}
 		result[acc.String()] = callback
-		globalApplication.info("Added Keybinding", "accelerator", acc.String())
+		globalApplication.debug("Added Keybinding", "accelerator", acc.String())
 	}
 	return result
 }
@@ -255,9 +255,13 @@ func (w *WebviewWindow) DialogError(dialogID string, result string) {
 	}
 }
 
-func (w *WebviewWindow) DialogResponse(dialogID string, result string) {
+func (w *WebviewWindow) DialogResponse(dialogID string, result string, isJSON bool) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.dialogCallback('%s', %s, true);", dialogID, result))
+		if isJSON {
+			w.impl.execJS(w.formatJS("_wails.dialogCallback('%s', %s, true);", dialogID, result))
+		} else {
+			w.impl.execJS(fmt.Sprintf("_wails.dialogCallback('%s', '%s', false);", dialogID, result))
+		}
 	}
 }
 
@@ -1006,7 +1010,7 @@ func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(filenames)
 	thisEvent.ctx = ctx
-	for _, listener := range w.eventListeners[uint(events.FilesDropped)] {
+	for _, listener := range w.eventListeners[uint(events.Common.WindowFilesDropped)] {
 		listener.callback(thisEvent)
 	}
 }

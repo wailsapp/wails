@@ -142,6 +142,10 @@ windows:WindowUnMinimise
 windows:WindowClose
 windows:WindowSetFocus
 windows:WindowKillFocus
+windows:WindowDragDrop
+windows:WindowDragEnter
+windows:WindowDragLeave
+windows:WindowDragOver
 common:ApplicationStarted
 common:WindowMaximise
 common:WindowUnMaximise
@@ -160,4 +164,5 @@ common:WindowLostFocus
 common:WindowShow
 common:WindowHide
 common:WindowDPIChanged
+common:WindowFilesDropped
 common:ThemeChanged

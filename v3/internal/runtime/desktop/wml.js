@@ -8,11 +8,11 @@ function sendEvent(eventName, data=null) {
 }
 
 function addWMLEventListeners() {
-    const elements = document.querySelectorAll('[data-wml-event]');
+    const elements = document.querySelectorAll('[wml-event]');
     elements.forEach(function (element) {
-        const eventType = element.getAttribute('data-wml-event');
-        const confirm = element.getAttribute('data-wml-confirm');
-        const trigger = element.getAttribute('data-wml-trigger') || "click";
+        const eventType = element.getAttribute('wml-event');
+        const confirm = element.getAttribute('wml-confirm');
+        const trigger = element.getAttribute('wml-trigger') || "click";
 
         let callback = function () {
             if (confirm) {
@@ -42,11 +42,11 @@ function callWindowMethod(method) {
 }
 
 function addWMLWindowListeners() {
-    const elements = document.querySelectorAll('[data-wml-window]');
+    const elements = document.querySelectorAll('[wml-window]');
     elements.forEach(function (element) {
-        const windowMethod = element.getAttribute('data-wml-window');
-        const confirm = element.getAttribute('data-wml-confirm');
-        const trigger = element.getAttribute('data-wml-trigger') || "click";
+        const windowMethod = element.getAttribute('wml-window');
+        const confirm = element.getAttribute('wml-confirm');
+        const trigger = element.getAttribute('wml-trigger') || "click";
 
         let callback = function () {
             if (confirm) {
@@ -68,7 +68,35 @@ function addWMLWindowListeners() {
     });
 }
 
+function addWMLOpenBrowserListener() {
+    const elements = document.querySelectorAll('[wml-openurl]');
+    elements.forEach(function (element) {
+        const url = element.getAttribute('wml-openurl');
+        const confirm = element.getAttribute('wml-confirm');
+        const trigger = element.getAttribute('wml-trigger') || "click";
+
+        let callback = function () {
+            if (confirm) {
+                Question({Title: "Confirm", Message:confirm, Buttons:[{Label:"Yes"},{Label:"No", IsDefault:true}]}).then(function (result) {
+                    if (result !== "No") {
+                        void wails.Browser.OpenURL(url);
+                    }
+                });
+                return;
+            }
+            void wails.Browser.OpenURL(url);
+        };
+
+        // Remove existing listeners
+        element.removeEventListener(trigger, callback);
+
+        // Add new listener
+        element.addEventListener(trigger, callback);
+    });
+}
+
 export function reloadWML() {
     addWMLEventListeners();
     addWMLWindowListeners();
+    addWMLOpenBrowserListener();
 }

@@ -30,6 +30,16 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
+      - name: Install Task
+        uses: arduino/setup-task@v1
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Examples
+        working-directory: ./v3
+        run: task test:examples
+
       - name: Run tests (mac)
         if: matrix.os == 'macos-latest'
         env:
@@ -99,6 +109,16 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
+
+      - name: Setup Golang caches
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-golang-
 
       - name: Build Wails3 CLI
         run: |
