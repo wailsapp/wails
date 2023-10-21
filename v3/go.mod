@@ -8,6 +8,7 @@ require (
 	github.com/go-git/go-git/v5 v5.3.0
 	github.com/go-ole/go-ole v1.2.6
 	github.com/go-task/task/v3 v3.31.0
+	github.com/godbus/dbus/v5 v5.1.0
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/pat v1.0.1
@@ -30,7 +31,7 @@ require (
 	github.com/pterm/pterm v0.12.51
 	github.com/samber/lo v1.38.1
 	github.com/tc-hib/winres v0.1.6
-	github.com/wailsapp/go-webview2 v1.0.8
+	github.com/wailsapp/go-webview2 v1.0.9
 	github.com/wailsapp/mimetype v1.4.1
 	golang.org/x/net v0.10.0
 	golang.org/x/sys v0.13.0

@@ -1,8 +1,24 @@
 package application
 
-import "github.com/wailsapp/wails/v3/pkg/events"
+import (
+	"github.com/wailsapp/wails/v3/pkg/events"
+)
 
 type BackdropType int32
+type DragEffect int32
+
+const (
+	// DragEffectNone is used to indicate that the drop target cannot accept the data.
+	DragEffectNone DragEffect = 1
+	// DragEffectCopy is used to indicate that the data is copied to the drop target.
+	DragEffectCopy DragEffect = 2
+	// DragEffectMove is used to indicate that the data is removed from the drag source.
+	DragEffectMove DragEffect = 3
+	// DragEffectLink is used to indicate that a link to the original data is established.
+	DragEffectLink DragEffect = 4
+	// DragEffectScroll is used to indicate that the target can be scrolled while dragging to locate a drop position that is not currently visible in the target.
+
+)
 
 const (
 	Auto    BackdropType = 0
@@ -74,6 +90,10 @@ type WindowsWindow struct {
 
 	// Menu is the menu to use for the window.
 	Menu *Menu
+
+	// Drag Cursor Effects
+	OnEnterEffect DragEffect
+	OnOverEffect  DragEffect
 }
 
 type Theme int

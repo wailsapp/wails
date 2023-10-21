@@ -22,6 +22,10 @@ export const EventTypes = {
 		WindowClose: "windows:WindowClose",
 		WindowSetFocus: "windows:WindowSetFocus",
 		WindowKillFocus: "windows:WindowKillFocus",
+		WindowDragDrop: "windows:WindowDragDrop",
+		WindowDragEnter: "windows:WindowDragEnter",
+		WindowDragLeave: "windows:WindowDragLeave",
+		WindowDragOver: "windows:WindowDragOver",
 	},
 	Mac: {
 		ApplicationDidBecomeActive: "mac:ApplicationDidBecomeActive",
@@ -168,6 +172,7 @@ export const EventTypes = {
 		WindowShow: "common:WindowShow",
 		WindowHide: "common:WindowHide",
 		WindowDPIChanged: "common:WindowDPIChanged",
+		WindowFilesDropped: "common:WindowFilesDropped",
 		ThemeChanged: "common:ThemeChanged",
 	},
 };

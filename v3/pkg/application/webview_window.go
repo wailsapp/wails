@@ -1010,7 +1010,7 @@ func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(filenames)
 	thisEvent.ctx = ctx
-	for _, listener := range w.eventListeners[uint(events.FilesDropped)] {
+	for _, listener := range w.eventListeners[uint(events.Common.WindowFilesDropped)] {
 		listener.callback(thisEvent)
 	}
 }

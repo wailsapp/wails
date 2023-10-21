@@ -72,6 +72,7 @@ func newMenuItem(label string) *MenuItem {
 
 func newMenuItemSeparator() *MenuItem {
 	result := &MenuItem{
+		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
 		itemType: separator,
 	}
 	return result
@@ -199,7 +200,9 @@ func (m *MenuItem) handleClick() {
 	if m.itemType == checkbox {
 		m.checked = !m.checked
 		ctx.withChecked(m.checked)
-		m.impl.setChecked(m.checked)
+		if m.impl != nil {
+			m.impl.setChecked(m.checked)
+		}
 	}
 	if m.itemType == radio {
 		for _, member := range m.radioGroupMembers {
@@ -210,7 +213,9 @@ func (m *MenuItem) handleClick() {
 		}
 		m.checked = true
 		ctx.withChecked(true)
-		m.impl.setChecked(true)
+		if m.impl != nil {
+			m.impl.setChecked(true)
+		}
 	}
 	if m.callback != nil {
 		go m.callback(ctx)

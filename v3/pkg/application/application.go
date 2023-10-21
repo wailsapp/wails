@@ -191,6 +191,13 @@ type dragAndDropMessage struct {
 
 var windowDragAndDropBuffer = make(chan *dragAndDropMessage)
 
+func addDragAndDropMessage(windowId uint, filenames []string) {
+	windowDragAndDropBuffer <- &dragAndDropMessage{
+		windowId:  windowId,
+		filenames: filenames,
+	}
+}
+
 var _ webview.Request = &webViewAssetRequest{}
 
 const webViewRequestHeaderWindowId = "x-wails-window-id"
