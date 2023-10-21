@@ -12,10 +12,6 @@ var eventsGo = `package events
 type ApplicationEventType uint
 type WindowEventType      uint
 
-const (
-	FilesDropped WindowEventType = iota
-)
-
 var Common = newCommonEvents()
 
 type commonEvents struct {

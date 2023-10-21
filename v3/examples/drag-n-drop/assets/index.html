@@ -13,6 +13,17 @@ Drop Files onto this window...
 </body>
 
 <script>
+    document.body.addEventListener('drop', function(e) {
+        // Note that postMessageWithAdditionalObjects does not accept a single object,
+        // but only accepts an ArrayLike object.
+        // However, input.files is type FileList, which is already an ArrayLike object so
+        // no conversion to array is needed.
+        const currentFiles = input.files;
+        chrome.webview.postMessageWithAdditionalObjects("FilesDropped", currentFiles);
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
     wails.Events.On("files", function(event) {
         let resultsHTML = "";
         event.data.forEach(function(file) {

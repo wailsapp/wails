@@ -35,13 +35,13 @@ func main() {
 		EnableDragAndDrop: true,
 	})
 
-	window.On(events.FilesDropped, func(event *application.WindowEvent) {
+	window.On(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
 		files := event.Context().DroppedFiles()
 		app.Events.Emit(&application.WailsEvent{
 			Name: "files",
 			Data: files,
 		})
-		log.Printf("[Go] FilesDropped received: %+v\n", files)
+		app.Logger.Info("Files Dropped!", "files", files)
 	})
 
 	err := app.Run()

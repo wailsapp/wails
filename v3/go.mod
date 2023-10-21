@@ -28,9 +28,10 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.51
+	github.com/rodrigocfd/windigo v0.0.0-20230809154420-8faa606d9f5f
 	github.com/samber/lo v1.38.1
 	github.com/tc-hib/winres v0.1.6
-	github.com/wailsapp/go-webview2 v1.0.8
+	github.com/wailsapp/go-webview2 v1.0.9-0.20231016103125-072d9d56c9b2
 	github.com/wailsapp/mimetype v1.4.1
 	golang.org/x/net v0.10.0
 	golang.org/x/sys v0.13.0
@@ -108,3 +109,4 @@ require (
 )
 
 replace github.com/ebitengine/purego v0.4.0-alpha.4 => github.com/tmclane/purego v0.0.0-20230818202843-0b72c8c9140f
+replace github.com/wailsapp/go-webview2 v1.0.9-0.20231016103125-072d9d56c9b2 => ..\..\go-webview2

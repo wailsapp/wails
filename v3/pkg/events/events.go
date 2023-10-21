@@ -3,10 +3,6 @@ package events
 type ApplicationEventType uint
 type WindowEventType uint
 
-const (
-	FilesDropped WindowEventType = iota
-)
-
 var Common = newCommonEvents()
 
 type commonEvents struct {
@@ -28,30 +24,32 @@ type commonEvents struct {
 	WindowShow         WindowEventType
 	WindowHide         WindowEventType
 	WindowDPIChanged   WindowEventType
+	WindowFilesDropped WindowEventType
 	ThemeChanged       ApplicationEventType
 }
 
 func newCommonEvents() commonEvents {
 	return commonEvents{
-		ApplicationStarted: 1168,
-		WindowMaximise:     1169,
-		WindowUnMaximise:   1170,
-		WindowFullscreen:   1171,
-		WindowUnFullscreen: 1172,
-		WindowRestore:      1173,
-		WindowMinimise:     1174,
-		WindowUnMinimise:   1175,
-		WindowClosing:      1176,
-		WindowZoom:         1177,
-		WindowZoomIn:       1178,
-		WindowZoomOut:      1179,
-		WindowZoomReset:    1180,
-		WindowFocus:        1181,
-		WindowLostFocus:    1182,
-		WindowShow:         1183,
-		WindowHide:         1184,
-		WindowDPIChanged:   1185,
-		ThemeChanged:       1186,
+		ApplicationStarted: 1172,
+		WindowMaximise:     1173,
+		WindowUnMaximise:   1174,
+		WindowFullscreen:   1175,
+		WindowUnFullscreen: 1176,
+		WindowRestore:      1177,
+		WindowMinimise:     1178,
+		WindowUnMinimise:   1179,
+		WindowClosing:      1180,
+		WindowZoom:         1181,
+		WindowZoomIn:       1182,
+		WindowZoomOut:      1183,
+		WindowZoomReset:    1184,
+		WindowFocus:        1185,
+		WindowLostFocus:    1186,
+		WindowShow:         1187,
+		WindowHide:         1188,
+		WindowDPIChanged:   1189,
+		WindowFilesDropped: 1190,
+		ThemeChanged:       1191,
 	}
 }
 
@@ -335,6 +333,10 @@ type windowsEvents struct {
 	WindowClose                WindowEventType
 	WindowSetFocus             WindowEventType
 	WindowKillFocus            WindowEventType
+	WindowDragDrop             WindowEventType
+	WindowDragEnter            WindowEventType
+	WindowDragLeave            WindowEventType
+	WindowDragOver             WindowEventType
 }
 
 func newWindowsEvents() windowsEvents {
@@ -360,6 +362,10 @@ func newWindowsEvents() windowsEvents {
 		WindowClose:                1165,
 		WindowSetFocus:             1166,
 		WindowKillFocus:            1167,
+		WindowDragDrop:             1168,
+		WindowDragEnter:            1169,
+		WindowDragLeave:            1170,
+		WindowDragOver:             1171,
 	}
 }
 
@@ -512,23 +518,28 @@ var eventToJS = map[uint]string{
 	1165: "windows:WindowClose",
 	1166: "windows:WindowSetFocus",
 	1167: "windows:WindowKillFocus",
-	1168: "common:ApplicationStarted",
-	1169: "common:WindowMaximise",
-	1170: "common:WindowUnMaximise",
-	1171: "common:WindowFullscreen",
-	1172: "common:WindowUnFullscreen",
-	1173: "common:WindowRestore",
-	1174: "common:WindowMinimise",
-	1175: "common:WindowUnMinimise",
-	1176: "common:WindowClosing",
-	1177: "common:WindowZoom",
-	1178: "common:WindowZoomIn",
-	1179: "common:WindowZoomOut",
-	1180: "common:WindowZoomReset",
-	1181: "common:WindowFocus",
-	1182: "common:WindowLostFocus",
-	1183: "common:WindowShow",
-	1184: "common:WindowHide",
-	1185: "common:WindowDPIChanged",
-	1186: "common:ThemeChanged",
+	1168: "windows:WindowDragDrop",
+	1169: "windows:WindowDragEnter",
+	1170: "windows:WindowDragLeave",
+	1171: "windows:WindowDragOver",
+	1172: "common:ApplicationStarted",
+	1173: "common:WindowMaximise",
+	1174: "common:WindowUnMaximise",
+	1175: "common:WindowFullscreen",
+	1176: "common:WindowUnFullscreen",
+	1177: "common:WindowRestore",
+	1178: "common:WindowMinimise",
+	1179: "common:WindowUnMinimise",
+	1180: "common:WindowClosing",
+	1181: "common:WindowZoom",
+	1182: "common:WindowZoomIn",
+	1183: "common:WindowZoomOut",
+	1184: "common:WindowZoomReset",
+	1185: "common:WindowFocus",
+	1186: "common:WindowLostFocus",
+	1187: "common:WindowShow",
+	1188: "common:WindowHide",
+	1189: "common:WindowDPIChanged",
+	1190: "common:WindowFilesDropped",
+	1191: "common:ThemeChanged",
 }
