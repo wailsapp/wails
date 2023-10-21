@@ -10,23 +10,24 @@
 #import "WailsContext.h"
 #import "Application.h"
 #import "AppDelegate.h"
+#import "WindowDelegate.h"
 #import "WailsMenu.h"
 #import "WailsMenuItem.h"
 
-WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int devtools, int defaultContextMenu, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled) {
+WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int devtoolsEnabled, int defaultContextMenuEnabled, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled, struct Preferences preferences) {
     
     [NSApplication sharedApplication];
 
     WailsContext *result = [WailsContext new];
 
-    result.devtools = devtools;
-    result.defaultContextMenu = defaultContextMenu;
+    result.devtoolsEnabled = devtoolsEnabled;
+    result.defaultContextMenuEnabled = defaultContextMenuEnabled;
     
     if ( windowStartState == WindowStartsFullscreen ) {
         fullscreen = 1;
     }
 
-    [result CreateWindow:width :height :frameless :resizable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent :minWidth :minHeight :maxWidth :maxHeight :fraudulentWebsiteWarningEnabled];
+    [result CreateWindow:width :height :frameless :resizable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent :minWidth :minHeight :maxWidth :maxHeight :fraudulentWebsiteWarningEnabled :preferences];
     [result SetTitle:safeInit(title)];
     [result Center];
     
@@ -383,4 +384,37 @@ void RunMainLoop(void) {
 void ReleaseContext(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     [ctx release];
+}
+
+// Credit: https://stackoverflow.com/q/33319295
+void WindowPrint(void *inctx) {
+
+	// Check if macOS 11.0 or newer
+	if (@available(macOS 11.0, *)) {
+        ON_MAIN_THREAD(
+            WailsContext *ctx = (__bridge WailsContext*) inctx;
+            WKWebView* webView = ctx.webview;
+
+            // I think this should be exposed as a config 
+            // It directly affects the printed output/PDF
+            NSPrintInfo *pInfo = [NSPrintInfo sharedPrintInfo];
+            pInfo.horizontalPagination = NSPrintingPaginationModeAutomatic;
+            pInfo.verticalPagination = NSPrintingPaginationModeAutomatic;
+            pInfo.verticallyCentered = YES;
+            pInfo.horizontallyCentered = YES;
+            pInfo.orientation = NSPaperOrientationLandscape;
+            pInfo.leftMargin = 0;
+            pInfo.rightMargin = 0;
+            pInfo.topMargin = 0;
+            pInfo.bottomMargin = 0;
+
+            NSPrintOperation *po = [webView printOperationWithPrintInfo:pInfo];
+            po.showsPrintPanel = YES;
+            po.showsProgressPanel = YES;
+
+            po.view.frame = webView.bounds;
+
+            [po runOperationModalForWindow:ctx.mainWindow delegate:ctx.mainWindow.delegate didRunSelector:nil contextInfo:nil];
+        )
+	}
 }

@@ -44,7 +44,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "debug", true)
-	ctx = context.WithValue(ctx, "devtools", true)
+	ctx = context.WithValue(ctx, "devtoolsEnabled", true)
 
 	// Set up logger
 	myLogger := logger.New(appoptions.Logger)
@@ -213,7 +213,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	eventHandler := runtime.NewEvents(myLogger)
 	ctx = context.WithValue(ctx, "events", eventHandler)
-	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler)
+	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler, appoptions.ErrorFormatter)
 
 	// Create the frontends and register to event handler
 	desktopFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)
@@ -230,7 +230,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		startupCallback:  appoptions.OnStartup,
 		shutdownCallback: appoptions.OnShutdown,
 		debug:            true,
-		devtools:         true,
+		devtoolsEnabled:  true,
 	}
 
 	result.options = appoptions

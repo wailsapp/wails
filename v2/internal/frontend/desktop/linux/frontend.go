@@ -76,6 +76,7 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -83,6 +84,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"sync"
 	"text/template"
 	"unsafe"
 
@@ -96,6 +98,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
+var initOnce = sync.Once{}
+
 const startURL = "wails://wails/"
 
 type Frontend struct {
@@ -106,7 +110,7 @@ type Frontend struct {
 	frontendOptions *options.App
 	logger          *logger.Logger
 	debug           bool
-	devtools        bool
+	devtoolsEnabled bool
 
 	// Assets
 	assets   *assetserver.AssetServer
@@ -126,18 +130,19 @@ func (f *Frontend) WindowClose() {
 	f.mainWindow.Destroy()
 }
 
-func init() {
-	runtime.LockOSThread()
-
-	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
-	if os.Getenv("GDK_BACKEND") == "" && (os.Getenv("XDG_SESSION_TYPE") == "" || os.Getenv("XDG_SESSION_TYPE") == "unspecified" || os.Getenv("XDG_SESSION_TYPE") == "x11") {
-		_ = os.Setenv("GDK_BACKEND", "x11")
-	}
-
-	C.gtk_init(nil, nil)
-}
-
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
+	initOnce.Do(func() {
+		runtime.LockOSThread()
+
+		// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
+		if os.Getenv("GDK_BACKEND") == "" && (os.Getenv("XDG_SESSION_TYPE") == "" || os.Getenv("XDG_SESSION_TYPE") == "unspecified" || os.Getenv("XDG_SESSION_TYPE") == "x11") {
+			_ = os.Setenv("GDK_BACKEND", "x11")
+		}
+
+		if ok := C.gtk_init_check(nil, nil); ok != 1 {
+			panic(errors.New("failed to init GTK"))
+		}
+	})
 
 	result := &Frontend{
 		frontendOptions: appoptions,
@@ -177,18 +182,24 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	go result.startMessageProcessor()
 
 	var _debug = ctx.Value("debug")
-	var _devtools = ctx.Value("devtools")
+	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
 
 	if _debug != nil {
 		result.debug = _debug.(bool)
 	}
-	if _devtools != nil {
-		result.devtools = _devtools.(bool)
+	if _devtoolsEnabled != nil {
+		result.devtoolsEnabled = _devtoolsEnabled.(bool)
 	}
 
-	result.mainWindow = NewWindow(appoptions, result.debug, result.devtools)
+	result.mainWindow = NewWindow(appoptions, result.debug, result.devtoolsEnabled)
 
 	C.install_signal_handlers()
+
+	if appoptions.Linux != nil && appoptions.Linux.ProgramName != "" {
+		prgname := C.CString(appoptions.Linux.ProgramName)
+		C.g_set_prgname(prgname)
+		C.free(unsafe.Pointer(prgname))
+	}
 
 	return result
 }
@@ -351,6 +362,10 @@ func (f *Frontend) Quit() {
 	f.mainWindow.Quit()
 }
 
+func (f *Frontend) WindowPrint() {
+	f.ExecJS("window.print();")
+}
+
 type EventNotify struct {
 	Name string        `json:"name"`
 	Data []interface{} `json:"data"`
@@ -392,6 +407,11 @@ func (f *Frontend) processMessage(message string) {
 		if !f.mainWindow.IsFullScreen() {
 			f.startDrag()
 		}
+		return
+	}
+
+	if message == "wails:showInspector" {
+		f.mainWindow.ShowInspector()
 		return
 	}
 

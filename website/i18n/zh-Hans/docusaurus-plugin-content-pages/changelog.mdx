@@ -13,13 +13,44 @@
 
 ## [即将发布]
 
+## v2.6.0 - 2023-09-06
+
+### 重大变更
+
+- AssetServer RequestURI and URL are now RFC and Go Docs compliant for server requests. This means Scheme, Host and Fragments are not provided anymore. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2722)
+
 ### 修复
 
-- 当 Linux GTK 密钥为空时避免应用程序崩溃。 由 @aminya 在这个 [PR](https://github.com/wailsapp/wails/pull/2672) 中修复。
+- Avoid app crashing when the Linux GTK key is empty. Fixed by @aminya in [PR](https://github.com/wailsapp/wails/pull/2672)
+- Fix issue where app would exit before main() on linux if $DISPLAY env var was not set. Fixed by @phildrip in [PR](https://github.com/wailsapp/wails/pull/2841)
+- Fixed a race condition when positioning the window on Linux. Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2850)
+- Fixed `SetBackgroundColour` so it sets the window's background color to reduce resize flickering on Linux. Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2853)
+- Fixed disable window resize option and wrong initial window size when its enabled. Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2863)
+- Fixed build hook command parsing. Added by @smac89 in [PR](https://github.com/wailsapp/wails/pull/2836)
+- Fixed `-reloaddir` flag to watch additional directories (non-recursively). [@haukened](https://github.com/haukened) in [PR #2871](https://github.com/wailsapp/wails/pull/2871)
+- Fixed support for Go 1.21 `go.mod` files. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2876)
+
+### 新增
+
+- Added correct NodeJS and Docker package names for DNF package manager of Fedora 38. Added by @aranggitoar in [PR](https://github.com/wailsapp/wails/pull/2790)
+- Added `-devtools` production build flag. Added by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2725)
+- Added `EnableDefaultContextMenu` option to allow enabling the browser's default context-menu in production . Added by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2733)
+- Added smart functionality for the default context-menu in production with CSS styles to control it. Added by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2748)
+- Added custom error formatting to allow passing structured errors back to the frontend.
+- Added sveltekit.mdx guide. Added by @figuerom16 in [PR](https://github.com/wailsapp/wails/pull/2771)
+- Added ProgramName option to [linux.Options](/docs/reference/options#linux). Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2817)
+- Added new community template wails-sveltekit-ts. Added by [@haukened](https://github.com/haukened) in [PR](https://github.com/wailsapp/wails/pull/2851)
+- Added support for retrieving the logical and physical screen size in the screen api. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2856)
+- Added new community template wails-sveltekit-tailwind. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2851)
+- Added support for print dialogs. Added by [@aangelisc](https://github.com/aangelisc) in [PR](https://github.com/wailsapp/wails/pull/2822)
+- Added new `wails dev -nogorebuild` flag to prevent restarts on back end file changes. [@haukened](https://github.com/haukened) in [PR #2870](https://github.com/wailsapp/wails/pull/2870)
 
 ### 变更
 
-- 更改了 `doctor` 命令的样式。 由 @MarvinJWendt 在 [PR](https://github.com/wailsapp/wails/pull/2660) 中更改。
+- Now uses new `go-webview2` module. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2687).
+- Changed styling of `doctor` command. Changed by @MarvinJWendt in [PR](https://github.com/wailsapp/wails/pull/2660)
+- Enable HiDPI option by default in windows nsis installer. Changed by @5aaee9 in [PR](https://github.com/wailsapp/wails/pull/2694)
+- Now debug builds include the un-minified version of the runtime JS with source maps . Changed by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2745)
 
 ## v2.5.1 - 2023-05-16
 
@@ -30,9 +61,9 @@
 
 ### 修复
 
-- 修复了在 macOS 上快速重新加载请求期间的分段错误。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2664) 中修复
-- 修复了 Linux 上旧 WebKit2GTK 版本小于 2.36 的开发服务器。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2664) 中修复
-- 修复了 Windows 上可能触发 WebView2 挂起的 devserver。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2664) 中修复
+- 修复了在 macOS 上快速重新加载请求期间的分段错误。 Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2664)
+- 修复了 Linux 上旧 WebKit2GTK 版本小于 2.36 的开发服务器。 Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2664)
+- 修复了 Windows 上可能触发 WebView2 挂起的 devserver。 Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2664)
 
 ## v2.5.0 - 2023-05-13
 
@@ -44,10 +75,10 @@
 
 - 在 `wails doctor` 中添加了 Nodejs 版本。 由 @misitebao 在这个 [PR](https://github.com/wailsapp/wails/pull/2546) 中添加。
 - 在 Linux 上添加了对 WebKit2GTK 2.40+ 的支持。 这为 [AssetServer](/docs/reference/options#资产服务器) 带来了额外的特性，比如对 HTTP 请求体的支持。 应用程序必须使用 Go 构建标签 `webkit2_40` 进行编译，以激活对此功能的支持。 这也会将您应用程序的 WebKit2GTK 最低要求提高到 2.40。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2592) 中添加。
-- macOS：添加了具有众所周知的快捷键“Minimize、Full-Screen 和 Zoom（最小化、全屏和缩放）”的窗口菜单角色。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2586) 中添加。
-- macOS：在 appmenu 中添加了“Hide、Hide Others、Show All（隐藏、隐藏其他、显示所有）”。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2586) 中添加。
-- Windows：添加了禁用 WebView2 `RendererCodeIntegrity` 检查的标志，请参阅标志上的注释以获取更多信息。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2627) 中添加。
-- Windows：添加了对 WebView2 进程崩溃的处理，对于不可恢复的错误，会显示一条错误消息，提示应用需要重新启动。 如果发生显示 chromium 错误页面的错误，请确保 Window 和 WebView2 可见。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2627) 中添加。
+- macOS：添加了具有众所周知的快捷键“Minimize、Full-Screen 和 Zoom（最小化、全屏和缩放）”的窗口菜单角色。 Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2586)
+- macOS：在 appmenu 中添加了“Hide、Hide Others、Show All（隐藏、隐藏其他、显示所有）”。 Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2586)
+- Windows：添加了禁用 WebView2 `RendererCodeIntegrity` 检查的标志，请参阅标志上的注释以获取更多信息。 Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2627)
+- Windows：添加了对 WebView2 进程崩溃的处理，对于不可恢复的错误，会显示一条错误消息，提示应用需要重新启动。 如果发生显示 chromium 错误页面的错误，请确保 Window 和 WebView2 可见。 Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2627)
 
 ### 变更
 

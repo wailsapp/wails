@@ -1,0 +1,3 @@
+# Mark all files as documentation so it gets excluded from github language statistics
+# https://github.com/github-linguist/linguist/blob/master/docs/overrides.md#documentation
+** linguist-documentation

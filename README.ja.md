@@ -42,7 +42,9 @@
 <strong>
 <samp>
 
-[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
+[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
+[한국어](README.ko.md) · [Español](README.es.md) · [Português](README.pt-br.md) ·
+[Русский](README.ru.md) · [Francais](README.fr.md)
 
 </samp>
 </strong>
@@ -52,17 +54,16 @@
 
 - [目次](#目次)
 - [はじめに](#はじめに)
-  - [公式サイト](#公式サイト)
-  - [ロードマップ](#ロードマップ)
 - [特徴](#特徴)
-- [スポンサー](#スポンサー)
+  - [ロードマップ](#ロードマップ)
 - [始め方](#始め方)
+- [スポンサー](#スポンサー)
 - [FAQ](#faq)
 - [スター数の推移](#スター数の推移)
 - [コントリビューター](#コントリビューター)
-- [特記事項](#特記事項)
-- [スペシャルサンクス](#スペシャルサンクス)
 - [ライセンス](#ライセンス)
+- [インスピレーション](#インスピレーション)
+
 
 ## はじめに
 
@@ -70,43 +71,34 @@ Go プログラムにウェブインタフェースを提供する従来の方�
 Wails では Go のコードとウェブフロントエンドを単一のバイナリにまとめる機能を提供します。
 また、プロジェクトの作成、コンパイル、ビルドを行うためのツールが提供されています。あなたがすべきことは創造性を発揮することです！
 
-### 公式サイト
-
-Version 2:
-
-Wails v2 が 3 つのプラットフォームでベータ版としてリリースされました。興味のある方は[新しいウェブサイト](https://wails.io)をご覧ください。
-
-レガシー版 v1:
-
-レガシー版 v1 のドキュメントは[https://wails.app](https://wails.app)で見ることができます。
-
-### ロードマップ
-
-プロジェクトのロードマップは[こちら](https://github.com/wailsapp/wails/discussions/1484)になります。  
-機能拡張のリクエストを出す前にご覧ください。
-
 ## 特徴
 
 - バックエンドには Go を利用しています
 - 使い慣れたフロントエンド技術を利用して UI を構築できます
-- あらかじめ用意されたテンプレートを利用することで、リッチなフロントエンドを備えた Go プログラムを作成できます
+- あらかじめ用意されたテンプレートを利用することで、リッチなフロントエンドを備えた Go プログラムを素早く作成できます
 - JavaScript から Go のメソッドを簡単に呼び出すことができます
 - あなたの書いた Go の構造体やメソットに応じた TypeScript の定義が自動生成されます
 - ネイティブのダイアログとメニューが利用できます
+- ネイティブなダーク/ライトモードをサポートします
 - モダンな半透明や「frosted window」エフェクトをサポートしています
 - Go と JavaScript 間で統一されたイベント・システムを備えています
 - プロジェクトを素早く生成して構築する強力な cli ツールを用意しています
 - マルチプラットフォームに対応しています
 - ネイティブなレンダリングエンジンを使用しています - _つまりブラウザを埋め込んでいるわけではありません！_
 
-## スポンサー
+### ロードマップ
 
-このプロジェクトは、以下の方々・企業によって支えられています。
-<img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
+プロジェクトのロードマップは[こちら](https://github.com/wailsapp/wails/discussions/1484)になります。  
+機能拡張のリクエストを出す前にご覧ください。
 
 ## 始め方
 
 インストール方法は[公式サイト](https://wails.io/docs/gettingstarted/installation)に掲載されています。
+
+## スポンサー
+
+このプロジェクトは、以下の方々・企業によって支えられています。
+<img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 ## FAQ
 
@@ -135,13 +127,11 @@ Wails v2 が 3 つのプラットフォームでベータ版としてリリー�
 貢献してくれた方のリストが大きくなりすぎて、readme に入りきらなくなりました！  
 このプロジェクトに貢献してくれた素晴らしい方々のページは[こちら](https://wails.io/credits#contributors)です。
 
-## 特記事項
+## ライセンス
 
-このプロジェクトは以下の方々の協力がなければ、実現しなかったと思います。
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
 
-- [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - 彼のサポートとフィードバックはとても大きいものでした。
-- [Serge Zaitsev](https://github.com/zserge) - Wails のウィンドウで使用している[Webview](https://github.com/zserge/webview)の作者です。
-- [Byron](https://github.com/bh90210) - 時には Byron が一人でこのプロジェクトを存続させてくれたこともありました。彼の素晴らしいインプットがなければ v1 に到達することはなかったでしょう。
+## インスピレーション
 
 プロジェクトを進める際に、以下のアルバムたちも支えてくれています。
 
@@ -159,20 +149,3 @@ Wails v2 が 3 つのプラットフォームでベータ版としてリリー�
 - [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
 - [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
 
-## スペシャルサンクス
-
-<p align="center" style="text-align: center">
-   <a href="https://pace.dev"><img src="/assets/images/pace.jpeg"/></a><br/>
-   このプロジェクトを後援し、WailsをApple Siliconに移植する取り組みを支援してくれた <a href="https://pace.dev">Pace</a> に <i>とても</i>感謝しています！<br/><br/>
-   パワフルで素早く簡単に使えるプロジェクト管理ツールをお探しなら、ぜひチェックしてみてください！<br/><br/>
-</p>
-
-<p align="center" style="text-align: center">
-   ライセンスを提供していただいたJetBrains社に感謝します！<br/><br/>
-   ロゴをクリックして、感謝の気持ちを伝えてください！<br/><br/>
-   <a href="https://www.jetbrains.com?from=Wails"><img src="/assets/images/jetbrains-grayscale.png" width="30%"></a>
-</p>
-
-## ライセンス
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)

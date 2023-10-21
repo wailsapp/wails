@@ -1,0 +1,221 @@
+---
+sidebar_position: 4
+---
+
+# Window
+
+이러한 메서드는 응용 프로그램 창을 제어합니다.
+
+### WindowSetTitle
+
+창 제목 표시줄의 텍스트를 설정합니다.
+
+Go: `WindowSetTitle(ctx context.Context, title string)`<br/> JS: `WindowSetTitle(title: string)`
+
+### WindowFullscreen
+
+창을 전체화면으로 만듭니다.
+
+Go: `WindowFullscreen(ctx context.Context)`<br/> JS: `WindowFullscreen()`
+
+### WindowUnfullscreen
+
+전체 화면 이전의 이전 창 크기와 위치를 복원합니다.
+
+Go: `WindowUnfullscreen(ctx context.Context)`<br/> JS: `WindowUnfullscreen()`
+
+### WindowIsFullscreen
+
+창이 전체 화면이면 true를 반환합니다.
+
+Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen() bool`
+
+### WindowCenter
+
+창이 현재 켜져 있는 모니터의 중앙에 창을 맞춥니다.
+
+Go: `WindowCenter(ctx context.Context)`<br/> JS: `WindowCenter()`
+
+### WindowExecJS
+
+창에서 임의의 JS 코드를 실행합니다.
+
+이 메서드는 브라우저에서 코드를 비동기적으로 실행하고 즉시 반환합니다. 만약 스크립트에서 오류가 발생하면 브라우저 콘솔에서만 사용할 수 있습니다.
+
+Go: `WindowExecJS(ctx context.Context, js string)`
+
+### WindowReload
+
+"새로고침"을 수행합니다(현재 페이지 새로고침).
+
+Go: `WindowReload(ctx context.Context)`<br/> JS: `WindowReload()`
+
+### WindowReloadApp
+
+프론트엔드 애플리케이션을 새로고침합니다.
+
+Go: `WindowReloadApp(ctx context.Context)`<br/> JS: `WindowReloadApp()`
+
+### WindowSetSystemDefaultTheme
+
+윈도우 전용.
+
+Go: `WindowSetSystemDefaultTheme(ctx context.Context)`<br/> JS: `WindowSetSystemDefaultTheme()`
+
+창의 테마를 시스템 기본값으로 설정합니다(다크/라이트).
+
+### WindowSetLightTheme
+
+윈도우 전용.
+
+Go: `WindowSetLightTheme(ctx context.Context)`<br/> JS: `WindowSetLightTheme()`
+
+창 테마를 라이트 모드로 설정합니다.
+
+### WindowSetDarkTheme
+
+윈도우 전용.
+
+Go: `WindowSetDarkTheme(ctx context.Context)`<br/> JS: `WindowSetDarkTheme()`
+
+윈도우 테마를 다크로 설정합니다.
+
+### WindowShow
+
+만약 현재 창의 상태가 숨기기로 되어 있다면, 창을 보여줍니다.
+
+Go: `WindowShow(ctx context.Context)`<br/> JS: `WindowShow()`
+
+### WindowHide
+
+현재 창이 표시되어 있는 경우 창을 숨깁니다.
+
+Go: `WindowHide(ctx context.Context)`<br/> JS: `WindowHide()`
+
+### WindowIsNormal
+
+창이 최소화, 최대화 또는 전체 화면이 아닌 경우 true를 반환합니다.
+
+Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() bool`
+
+### WindowSetSize
+
+창의 너비와 높이를 설정합니다.
+
+Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetSize(size: Size)`
+
+### WindowGetSize
+
+창의 너비와 높이를 가져옵니다.
+
+Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize() : Size`
+
+### WindowSetMinSize
+
+최소 창 크기를 설정합니다. 창이 현재 지정된 크기보다 작은 경우 창 크기를 조정합니다.
+
+`0,0`의 크기를 설정하면 이 제약 조건이 비활성화됩니다.
+
+Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMinSize(size: Size)`
+
+### WindowSetMaxSize
+
+최대 창 크기를 설정합니다. 창이 현재 지정된 크기보다 큰 경우 창 크기를 조정합니다.
+
+`0,0`의 크기를 설정하면 이 제약 조건이 비활성화됩니다.
+
+Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMaxSize(size: Size)`
+
+### WindowSetAlwaysOnTop
+
+창을 항상위 또는 맨 위에 놓지 않도록 설정합니다.
+
+Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: Boolen)`
+
+### WindowSetPosition
+
+창이 현재 켜져 있는 모니터를 기준으로 창 위치를 설정합니다.
+
+Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPosition(position: Position)`
+
+### WindowGetPosition
+
+창이 현재 있는 모니터에 상대적인 창 위치를 가져옵니다.
+
+Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition() : Position`
+
+### WindowMaximise
+
+창을 최대화하여 화면을 채웁니다.
+
+Go: `WindowMaximise(ctx context.Context)`<br/> JS: `WindowMaximise()`
+
+### WindowUnmaximise
+
+창을 최대화하기 전의 크기와 위치로 복원합니다.
+
+Go: `WindowUnmaximise(ctx context.Context)`<br/> JS: `WindowUnmaximise()`
+
+### WindowIsMaximised
+
+창이 최대화되면 true를 반환합니다.
+
+Go: `WindowIsMaximised(ctx context.Context) bool`<br/> JS: `WindowIsMaximised() bool`
+
+### WindowToggleMaximise
+
+최대화와 최대화 해제 사이를 전환합니다.
+
+Go: `WindowToggleMaximise(ctx context.Context)`<br/> JS: `WindowToggleMaximise()`
+
+### WindowMinimise
+
+창을 최소화합니다.
+
+Go: `WindowMinimise(ctx context.Context)`<br/> JS: `WindowMinimise()`
+
+### WindowUnminimise
+
+최소화하기 전의 크기와 위치로 창을 복원합니다.
+
+Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
+
+### WindowIsMinimised
+
+창이 최소화된 경우 true를 반환합니다.
+
+Go: `WindowIsMinimised(ctx context.Context) bool`<br/> JS: `WindowIsMinimised() bool`
+
+### WindowSetBackgroundColour
+
+창의 배경색을 지정된 RGBA 색상 정의로 설정합니다. 이 색상은 모든 투명 픽셀에 대해 표시됩니다.
+
+R, G, B 및 A의 유효한 값은 0-255입니다.
+
+:::info Windows
+
+Windows에서는 0 또는 255의 알파 값만 지원됩니다. 0이 아닌 모든 값은 255로 간주됩니다.
+
+:::
+
+Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/> JS: `WindowSetBackgroundColour(R, G, B, A)`
+
+## TypeScript Object Definitions
+
+### 위치
+
+```ts
+interface Position {
+  x: number;
+  y: number;
+}
+```
+
+### 크기
+
+```ts
+interface Size {
+  w: number;
+  h: number;
+}
+```

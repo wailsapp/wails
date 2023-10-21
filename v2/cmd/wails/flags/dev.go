@@ -21,6 +21,7 @@ type Dev struct {
 	Browser              bool   `flag:"browser" description:"Open the application in a browser"`
 	NoReload             bool   `flag:"noreload" description:"Disable reload on asset change"`
 	NoColour             bool   `flag:"nocolor" description:"Disable colour in output"`
+	NoGoRebuild          bool   `flag:"nogorebuild" description:"Disable automatic rebuilding on backend file changes/additions"`
 	WailsJSDir           string `flag:"wailsjsdir" description:"Directory to generate the Wails JS modules"`
 	LogLevel             string `flag:"loglevel" description:"LogLevel to use - Trace, Debug, Info, Warning, Error)"`
 	ForceBuild           bool   `flag:"f" description:"Force build of application"`

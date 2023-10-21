@@ -50,12 +50,14 @@ func main() {
         OnBeforeClose:      app.beforeClose,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        EnableDefaultContextMenu: false,
         EnableFraudulentWebsiteDetection: false,
         ZoomFactor:           1.0,
         IsZoomControlEnabled: false,
         Bind: []interface{}{
             app,
         },
+        ErrorFormatter: func(err error) any { return err.Error() },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
@@ -103,6 +105,7 @@ func main() {
             Icon: icon,
             WindowIsTranslucent: false,
             WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
+            ProgramName: "wails"
         },
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
@@ -359,11 +362,38 @@ Indique quelle valeur le style `CSSDragProperty` doit avoir pour faire glisser l
 
 Nom: CSSDragValue<br/> Type: `string`
 
+### EnableDefaultContextMenu
+
+EnableDefaultContextMenu active le menu contextuel par défaut du navigateur en production.
+
+Par défaut, le menu contextuel par défaut du navigateur n'est disponible qu'en développement et dans un `-debug` ou `-devtools` [build](../reference/cli.mdx#build) avec l'inspecteur de devtools, En utilisant cette option, vous pouvez activer le menu contextuel par défaut dans `production` alors que l'inspecteur devtools ne sera pas disponible à moins que le drapeau `-devtools` ne soit utilisé.
+
+Lorsque cette option est activée, par défaut, le menu contextuel ne sera affiché que pour du texte (où Couper/Copier/Coller est nécessaire), pour remplacer ce comportement, vous pouvez utiliser la propriété CSS `--default-contextmenu` sur n'importe quel élément HTML (y compris le corps ``) avec les valeurs suivantes :
+
+| Style CSS                      | Comportement                                                                                                                                                                  |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--default-contextmenu: auto;` | (**défaut**) n'affichera le menu contextuel par défaut que si :<br/> contentEditable est vrai OU le texte a été sélectionné OU l'élément est entrée ou la zone de texte |
+| `--default-contextmenu: show;` | affichera toujours le menu de contexte par défaut                                                                                                                             |
+| `--default-contextmenu: hide;` | masquera toujours le menu contextuel par défaut                                                                                                                               |
+
+Cette règle est héritée comme n'importe quelle règle CSS normale, donc l'imbrication fonctionne comme prévu.
+
+:::note
+Cette fonctionnalité de filtrage n'est activée qu'en production, donc en développement et en construction de débogage, le menu contextuel complet est toujours disponible partout.
+:::
+
+:::warning
+Cette fonctionnalité de filtrage n'est PAS une mesure de sécurité, le développeur devrait s'attendre à ce que le menu contextuel complet puisse être divulgué à tout moment qui pourrait contenir des commandes comme (Télécharger l'image, Recharger, Enregistrer la page web), si c'est une préoccupation, le développeur DEVRAIT NE PAS activer le menu contextuel par défaut.
+:::
+
+
+Nom: EnableDefaultContextMenu<br/> Type: `bool`
+
 ### EnableFraudulentWebsiteDetection
 
-EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts. These services might send information from your app like URLs navigated to and possibly other content to cloud services of Apple and Microsoft.
+EnableFraudulentWebWebDetection permet de rechercher des contenus frauduleux, tels que des programmes malveillants ou des tentatives d'hameçonnage. Ces services peuvent envoyer des informations à partir de votre application, telles que les URL vers lesquelles vous avez navigué et éventuellement d'autres contenus vers le cloud, des services d'Apple et de Microsoft.
 
-Name: EnableFraudulentWebsiteDetection<br/> Type: `bool`
+Nom: EnableFraudulentWebsiteDetection<br/> Type: `bool`
 
 ### ZoomFactor
 
@@ -382,6 +412,12 @@ Cela permet de modifier le facteur de zoom par l'utilisateur. Veuillez noter que
 La liste des structs Go définissant des méthodes qui doivent être liées au frontend.
 
 Nom: Bind<br/> Type: `[]interface{}`
+
+### ErrorFormatter
+
+Une fonction qui détermine comment les erreurs sont formatées lorsqu'elles sont retournées par un appel de méthode JS-to-Go. La valeur retournée sera sous format JSON.
+
+Nom: ErrorFormatter<br/> Type: `func (error) any`
 
 ### Windows
 
@@ -553,9 +589,9 @@ Nom: OnResume<br/> Type: `func()`
 
 #### WebviewGpuIsDisabled
 
-Setting this to `true` will disable GPU hardware acceleration for the webview.
+Définir ceci à `true` désactivera l'accélération matérielle GPU pour la webview.
 
-Name: WebviewGpuIsDisabled<br/> Type: `bool`
+Nom: WebviewGpuIsDisabled<br/> Type: `bool`
 
 ### Mac
 
@@ -739,17 +775,25 @@ Nom: WindowIsTranslucent<br/> Type: `bool`
 
 #### WebviewGpuPolicy
 
-This option is used for determining the webview's hardware acceleration policy.
+Cette option est utilisée pour déterminer la politique d'accélération matérielle effectuée par webview.
 
-Name: WebviewGpuPolicy<br/> Type: [`options.WebviewGpuPolicy`](#webviewgpupolicy-type)<br/> Default: `WebviewGpuPolicyAlways`
+Nom: WebviewGpuPolicy<br/> Type: [`options.WebviewGpuPolicy`](#webviewgpupolicy-type)<br/> Défaut: `WebviewGpuPolicyAlways`
 
-##### WebviewGpuPolicy type
+##### Type de WebviewGpuPolicy
 
-| Valeur                   | Description                                                          |
-| ------------------------ | -------------------------------------------------------------------- |
-| WebviewGpuPolicyAlways   | Hardware acceleration is always enabled                              |
-| WebviewGpuPolicyOnDemand | Hardware acceleration is enabled/disabled as request by web contents |
-| WebviewGpuPolicyNever    | Hardware acceleration is always disabled                             |
+| Valeur                   | Description                                                                  |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| WebviewGpuPolicyAlways   | L'accélération matérielle est toujours activée                               |
+| WebviewGpuPolicyOnDemand | L'accélération matérielle est activée/désactivée à la demande du contenu web |
+| WebviewGpuPolicyNever    | L'accélération matérielle est toujours désactivée                            |
+
+#### ProgramName
+
+This option is used to set the program's name for the window manager via GTK's g_set_prgname(). This name should not be localized, [see the docs](https://docs.gtk.org/glib/func.set_prgname.html).
+
+When a .desktop file is created this value helps with window grouping and desktop icons when the .desktop file's `Name` property differs form the executable's filename.
+
+Name: ProgramName<br/> Type: string<br/>
 
 ### Debug
 
@@ -763,5 +807,5 @@ Définir cette option à `true` ouvrira l'inspecteur Web au démarrage de l'appl
 
 Nom: OpenInspectorOnStartup<br/> Type: `bool`
 
-[^1]: This requires WebKit2GTK 2.36+ support and your app needs to be build with the build tag `webkit2_36` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.36 for your app.
-[^2]: This requires WebKit2GTK 2.40+ support and your app needs to be build with the build tag `webkit2_40` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.40 for your app.
+[^1]: Cela nécessite la prise en charge de WebKit2GTK 2.36+ et votre application doit être construite avec la balise de compilation `webkit2_36` pour activer le support de cette fonctionnalité. Cela augmente aussi la version minnimale de WebKit2GTK à 2.36 pour votre application.
+[^2]: Cela nécessite la prise en charge de WebKit2GTK 2.40+ et votre application doit être construite avec la balise de compilation `webkit2_40` pour activer le support de cette fonctionnalité. Cela augmente aussi la version minnimale de WebKit2GTK à 2.40 pour votre application.&#160;[ [    &#8617;](#fnref2:2){.footnote-backref} &#8617;](#fnref:2){.footnote-backref}

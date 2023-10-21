@@ -64,6 +64,9 @@ type App struct {
 	Bind               []interface{}
 	WindowStartState   WindowStartState
 
+	// ErrorFormatter overrides the formatting of errors returned by backend methods
+	ErrorFormatter ErrorFormatter
+
 	// CSS property to test for draggable elements. Default "--wails-draggable"
 	CSSDragProperty string
 
@@ -71,7 +74,7 @@ type App struct {
 	CSSDragValue string
 
 	// EnableDefaultContextMenu enables the browser's default context-menu in production
-	// This menu is already enabled in development, as well as in debug builds and production builds with the `-devtools` flag
+	// This menu is already enabled in development and debug builds
 	EnableDefaultContextMenu bool
 
 	// EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts.
@@ -89,6 +92,8 @@ type App struct {
 	// Debug options for debug builds. These options will be ignored in a production build.
 	Debug Debug
 }
+
+type ErrorFormatter func(error) any
 
 type RGBA struct {
 	R uint8 `json:"r"`

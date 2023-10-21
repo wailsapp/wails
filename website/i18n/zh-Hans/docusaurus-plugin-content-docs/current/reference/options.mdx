@@ -50,12 +50,14 @@ func main() {
         OnBeforeClose:      app.beforeClose,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        EnableDefaultContextMenu: false,
         EnableFraudulentWebsiteDetection: false,
         ZoomFactor:           1.0,
         IsZoomControlEnabled: false,
         Bind: []interface{}{
             app,
         },
+        ErrorFormatter: func(err error) any { return err.Error() },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
@@ -103,6 +105,7 @@ func main() {
             Icon: icon,
             WindowIsTranslucent: false,
             WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
+            ProgramName: "wails"
         },
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
@@ -359,6 +362,33 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 名称：CSSDragValue<br/> 类型：`string`
 
+### EnableDefaultContextMenu
+
+EnableDefaultContextMenu enables the browser's default context-menu in production.
+
+By default, the browser's default context-menu is only available in development and in a `-debug` or `-devtools` [build](../reference/cli.mdx#build) along with the devtools inspector, Using this option you can enable the default context-menu in `production` while the devtools inspector won't be available unless the `-devtools` build flag is used.
+
+When this option is enabled, by default the context-menu will only be shown for text contexts (where Cut/Copy/Paste is needed), to override this behavior, you can use the CSS property `--default-contextmenu` on any HTML element (including the `body`) with the following values :
+
+| CSS Style                      | Behavior                                                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--default-contextmenu: auto;` | (**default**) will show the default context menu only if :<br/> contentEditable is true OR text has been selected OR element is input or textarea |
+| `--default-contextmenu: show;` | will always show the default context menu                                                                                                               |
+| `--default-contextmenu: hide;` | will always hide the default context menu                                                                                                               |
+
+This rule is inherited like any normal CSS rule, so nesting works as expected.
+
+:::note
+This filtering functionality is only enabled in production, so in development and in debug build, the full context-menu is always available everywhere.
+:::
+
+:::warning
+This filtering functionality is NOT a security measure, the developer should expect that the full context-menu could be leaked anytime which could contain commands like (Download image, Reload, Save webpage), if this is a concern, the developer SHOULD NOT enable the default context-menu.
+:::
+
+
+Name: EnableDefaultContextMenu<br/> Type: `bool`
+
 ### 启用欺诈网站检测
 
 EnableFraudulentWebsiteDetection 启用针对欺诈内容（例如恶意软件或网络钓鱼尝试）的扫描服务。 这些服务可能会从你的应用中发送信息，比如导航到苹果和微软的云服务的url和其他内容。
@@ -382,6 +412,12 @@ EnableFraudulentWebsiteDetection 启用针对欺诈内容（例如恶意软件�
 定义需要绑定到前端的方法的结构实例切片。
 
 名称：Bind<br/> 类型：`[]interface{}`
+
+### ErrorFormatter
+
+A function that determines how errors are formatted when returned by a JS-to-Go method call. The returned value will be marshalled as JSON.
+
+Name: ErrorFormatter<br/> Type: `func (error) any`
 
 ### Windows
 
@@ -766,6 +802,14 @@ func main() {
 | WebviewGpuPolicyAlways   | 始终启用硬件加速              |
 | WebviewGpuPolicyOnDemand | 根据 Web 内容的请求启用/禁用硬件加速 |
 | WebviewGpuPolicyNever    | 硬件加速始终处于禁用状态          |
+
+#### ProgramName
+
+This option is used to set the program's name for the window manager via GTK's g_set_prgname(). This name should not be localized, [see the docs](https://docs.gtk.org/glib/func.set_prgname.html).
+
+When a .desktop file is created this value helps with window grouping and desktop icons when the .desktop file's `Name` property differs form the executable's filename.
+
+Name: ProgramName<br/> Type: string<br/>
 
 ### 调试
 

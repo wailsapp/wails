@@ -7,8 +7,8 @@
     "build": "run-p build:*",
     "build:ipc-desktop": "npx esbuild desktop/ipc.js --bundle --minify --outfile=ipc.js",
     "build:ipc-dev": "cd dev && npm install && npm run build",
-    "build:runtime-desktop-prod": "npx esbuild desktop/main.js --bundle --minify --outfile=runtime_prod_desktop.js --define:ENV=1",
-    "build:runtime-desktop-dev": "npx esbuild desktop/main.js --bundle --sourcemap=inline --outfile=runtime_dev_desktop.js --define:ENV=0",
+    "build:runtime-desktop-prod": "npx esbuild desktop/main.js --bundle --minify --outfile=runtime_prod_desktop.js --define:DEBUG=false",
+    "build:runtime-desktop-debug": "npx esbuild desktop/main.js --bundle --sourcemap=inline --outfile=runtime_debug_desktop.js --define:DEBUG=true",
     "test": "vitest"
   },
   "author": "Lea Anthony <lea.anthony@gmail.com>",

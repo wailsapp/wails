@@ -1,0 +1,18 @@
+# Linux
+
+Cette page a divers guides liés au développement d'applications Wails pour Linux.
+
+## Le tag vidéo ne déclenche pas l'événement "terminé"
+
+Lorsque vous utilisez un tag vidéo, l'événement "terminé" n'est pas déclenché lorsque la vidéo est finie. Ceci est un bogue dans WebkitGTK, cependant vous pouvez utiliser le contournement suivant pour le corriger :
+
+```js
+videoTag.addEventListener("timeupdate", (event) => {
+  if (event.target.duration - event.target.currentTime < 0.2) {
+    let ended = new Event("ended");
+    event.target.dispatchEvent(ended);
+  }
+});
+```
+
+Source : [Lyimmi](https://github.com/Lyimmi) sur le [forum de discussion](https://github.com/wailsapp/wails/issues/1729#issuecomment-1212291275)
