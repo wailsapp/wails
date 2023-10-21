@@ -173,6 +173,28 @@ If `/Applications/Xcode.app/Contents/Developer` is displayed, run `sudo xcode-se
 
 Sources: https://github.com/wailsapp/wails/issues/1806 and https://github.com/wailsapp/wails/issues/1140#issuecomment-1290446496
 
+## My application won't compile on Mac
+
+If you are getting errors like this:
+
+```shell
+l1@m2 GoEasyDesigner % go build -tags dev -gcflags "all=-N -l"
+/Users/l1/sdk/go1.20.5/pkg/tool/darwin_arm64/link: running clang failed: exit status 1
+Undefined symbols for architecture arm64:
+  "_OBJC_CLASS_$_UTType", referenced from:
+      objc-class-ref in 000016.o
+ld: symbol(s) not found for architecture arm64
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+```
+Ensure you have the latest SDK installed. If so and you're still experiencing this issue, try the following:
+
+```shell
+export CGO_LDFLAGS="-framework UniformTypeIdentifiers" && go build -tags dev -gcflags "all=-N -l"
+```
+
+Sources: https://github.com/wailsapp/wails/pull/2925#issuecomment-1726828562
+
+
 --
 
 ## Cannot start service: Host version "x.x.x does not match binary version "x.x.x"
