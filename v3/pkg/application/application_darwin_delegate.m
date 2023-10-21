@@ -20,7 +20,7 @@ extern bool hasListeners(unsigned int);
 - (BOOL)applicationShouldHandleReopen:(NSNotification *)notification 
                     hasVisibleWindows:(BOOL)flag {
     if( hasListeners(EventApplicationShouldHandleReopen) ) {
-        processApplicationEvent(EventApplicationShouldHandleReopen, NULL);
+        processApplicationEvent(EventApplicationShouldHandleReopen, @{@"hasVisibleWindows": @(flag)});
     }
     
     return TRUE;

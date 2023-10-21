@@ -141,11 +141,28 @@ static void show(void) {
 	[NSApp unhide:nil];
 }
 
+static const char* serializationNSDictionary(void *dict) {
+	@autoreleasepool {
+		NSDictionary *nsDict = (__bridge NSDictionary *)dict;
+
+		if ([NSJSONSerialization isValidJSONObject:nsDict]) {
+			NSError *error;
+			NSData *data = [NSJSONSerialization dataWithJSONObject:nsDict options:kNilOptions error:&error];
+			NSString *result = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
+
+			return strdup([result UTF8String]);
+		}
+	}
+
+	return nil;
+}
 */
 import "C"
 import (
-	"github.com/wailsapp/wails/v3/internal/operatingsystem"
+	"encoding/json"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -237,8 +254,26 @@ func newPlatformApp(app *App) *macosApp {
 }
 
 //export processApplicationEvent
-func processApplicationEvent(eventID C.uint, _ unsafe.Pointer) {
+func processApplicationEvent(eventID C.uint, data unsafe.Pointer) {
 	event := newApplicationEvent(int(eventID))
+
+	if data != nil {
+		dataCStrJSON := C.serializationNSDictionary(data)
+		if dataCStrJSON != nil {
+			defer C.free(unsafe.Pointer(dataCStrJSON))
+
+			dataJSON := C.GoString(dataCStrJSON)
+			var result map[string]any
+			err := json.Unmarshal([]byte(dataJSON), &result)
+
+			if err != nil {
+				panic(err)
+			}
+
+			event.Context().setData(result)
+		}
+	}
+
 	switch event.Id {
 	case uint(events.Mac.ApplicationDidChangeTheme):
 		isDark := globalApplication.IsDarkMode()
