@@ -31,8 +31,8 @@ func (c ApplicationEventContext) setIsDarkMode(mode bool) {
 	c.data["isDarkMode"] = mode
 }
 
-func (c ApplicationEventContext) IsDarkMode() bool {
-	mode, ok := c.data["isDarkMode"]
+func (c ApplicationEventContext) getBool(key string) bool {
+	mode, ok := c.data[key]
 	if !ok {
 		return false
 	}
@@ -41,6 +41,18 @@ func (c ApplicationEventContext) IsDarkMode() bool {
 		return false
 	}
 	return result
+}
+
+func (c ApplicationEventContext) IsDarkMode() bool {
+	return c.getBool("isDarkMode")
+}
+
+func (c ApplicationEventContext) HasVisibleWindows() bool {
+	return c.getBool("hasVisibleWindows")
+}
+
+func (c ApplicationEventContext) setData(data map[string]any) {
+	c.data = data
 }
 
 func newApplicationEventContext() *ApplicationEventContext {

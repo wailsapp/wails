@@ -19,6 +19,7 @@ mac:ApplicationWillTerminate
 mac:ApplicationWillUnhide
 mac:ApplicationWillUpdate
 mac:ApplicationDidChangeTheme!
+mac:ApplicationShouldHandleReopen!
 mac:WindowDidBecomeKey
 mac:WindowDidBecomeMain
 mac:WindowDidBeginSheet
