@@ -58,7 +58,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	startsHidden := bool2Cint(frontendOptions.StartHidden)
 	devtoolsEnabled := bool2Cint(devtools)
 	defaultContextMenuEnabled := bool2Cint(debug || frontendOptions.EnableDefaultContextMenu)
-	singleInstanceEnabled := bool2Cint(frontendOptions.SingleInstanceLock != nil && frontendOptions.SingleInstanceLock.Enabled)
+	singleInstanceEnabled := bool2Cint(frontendOptions.SingleInstanceLock != nil)
 
 	var fullSizeContent, hideTitleBar, hideTitle, useToolbar, webviewIsTransparent C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent C.int
@@ -118,7 +118,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenuEnabled,
 		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings,
 		preferences, singleInstanceEnabled, singleInstanceUniqueId,
-		)
+	)
 
 	// Create menu
 	result := &Window{

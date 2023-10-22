@@ -172,7 +172,6 @@ func MergeDefaults(appoptions *App) {
 type SingleInstanceLock struct {
 	// uniqueId that will be used for setting up messaging between instances
 	UniqueId               string
-	Enabled                bool
 	OnSecondInstanceLaunch func(secondInstanceData SecondInstanceData)
 }
 

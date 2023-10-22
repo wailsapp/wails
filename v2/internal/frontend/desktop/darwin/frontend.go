@@ -39,7 +39,7 @@ var messageBuffer = make(chan string, 100)
 var requestBuffer = make(chan webview.Request, 100)
 var callbackBuffer = make(chan uint, 10)
 var openFilepathBuffer = make(chan string, 100)
-var secondInstanceBuffer = make(chan options.SecondInstanceData, 100)
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 5)
 
 type Frontend struct {
 
@@ -173,7 +173,7 @@ func (f *Frontend) WindowSetDarkTheme() {
 func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
 
-	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
+	if f.frontendOptions.SingleInstanceLock != nil {
 		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
 	}
 

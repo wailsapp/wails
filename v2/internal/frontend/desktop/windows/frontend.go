@@ -35,7 +35,7 @@ import (
 
 const startURL = "http://wails.localhost/"
 
-var secondInstanceBuffer = make(chan options.SecondInstanceData, 100)
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 5)
 
 type Screen = frontend.Screen
 
@@ -141,7 +141,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 	f.chromium = edge.NewChromium()
 
-	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
+	if f.frontendOptions.SingleInstanceLock != nil {
 		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
 	}
 
