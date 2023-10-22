@@ -19,7 +19,6 @@ Linux: Single instance lock is implemented using [dbus](https://www.freedesktop.
 When creating your app, you can enable single instance lock by passing a `SingleInstanceLock` struct to the `App` struct.
 Use the `UniqueId` field to specify a unique id for your app.
 This id is used to generate the mutex name on Windows and macOS and the dbus name on Linux. Use a UUID to ensure that the id is unique.
-The `Enabled` field is used to enable or disable single instance lock.
 The `OnSecondInstanceLaunch` field is used to specify a callback that is called when a second instance of your app is launched.
 The callback receives a `SecondInstanceData` struct that contains the command line arguments passed to the second instance and the working directory of the second instance.
 
