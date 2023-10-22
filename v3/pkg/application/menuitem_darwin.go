@@ -332,7 +332,7 @@ static void showAll(void) {
 	[[NSApplication sharedApplication] unhideAllApplications:nil];
 }
 
-static void setMenuItemBitmap(void* nsMenuItem, unsigned char *bitmap, int length) {
+void setMenuItemBitmap(void* nsMenuItem, unsigned char *bitmap, int length) {
 	MenuItem *menuItem = (MenuItem *)nsMenuItem;
 	NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:bitmap length:length]];
 	[menuItem setImage:image];

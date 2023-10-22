@@ -9,6 +9,7 @@ package application
 #include "menuitem_darwin.h"
 
 extern void setMenuItemChecked(void*, unsigned int, bool);
+extern void setMenuItemBitmap(void*, unsigned char*, int);
 
 // Clear and release all menu items in the menu
 void clearMenu(void* nsMenu) {
@@ -101,7 +102,8 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 			C.addMenuSeparator(parent)
 		}
 		if item.bitmap != nil {
-			C.setMenuItemBitmap(item.impl, (*C.uchar)(&item.bitmap[0]), C.int(len(item.bitmap)))
+			macMenuItem := item.impl.(*macosMenuItem)
+			C.setMenuItemBitmap(macMenuItem.nsMenuItem, (*C.uchar)(&item.bitmap[0]), C.int(len(item.bitmap)))
 		}
 
 	}

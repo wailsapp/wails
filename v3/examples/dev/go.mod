@@ -33,7 +33,7 @@ require (
 	github.com/samber/lo v1.38.1 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
-	github.com/wailsapp/go-webview2 v1.0.8 // indirect
+	github.com/wailsapp/go-webview2 v1.0.9 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
