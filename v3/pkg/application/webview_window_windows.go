@@ -1306,6 +1306,12 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
+	if opts.Permissions != nil {
+		for permission, state := range opts.Permissions {
+			chromium.SetPermission(permission, state)
+		}
+	}
+
 	chromium.MessageCallback = w.processMessage
 	chromium.MessageWithAdditionalObjectsCallback = w.processMessageWithAdditionalObjects
 	chromium.WebResourceRequestedCallback = w.processRequest

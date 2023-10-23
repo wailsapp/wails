@@ -95,6 +95,9 @@ type WindowsWindow struct {
 	// Drag Cursor Effects
 	OnEnterEffect DragEffect
 	OnOverEffect  DragEffect
+
+	// Permissions map for WebView2. If empty, default permissions will be granted.
+	Permissions map[edge.CoreWebView2PermissionKind]edge.CoreWebView2PermissionState
 }
 
 type Theme int
