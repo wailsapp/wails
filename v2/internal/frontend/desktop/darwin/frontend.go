@@ -81,6 +81,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 	result.startURL, _ = url.Parse(startURL)
 
+	// this should be initialized as early as possible to handle first instance launch
 	C.StartCustomURLHandler()
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
