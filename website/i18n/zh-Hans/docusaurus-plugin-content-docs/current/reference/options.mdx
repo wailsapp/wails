@@ -366,7 +366,7 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 EnableDefaultContextMenu enables the browser's default context-menu in production.
 
-By default, the browser's default context-menu is only available in development and in a `-debug` or `-devtools` [build](../reference/cli.mdx#build) along with the devtools inspector, Using this option you can enable the default context-menu in `production` while the devtools inspector won't be available unless the `-devtools` build flag is used.
+By default, the browser's default context-menu is only available in development and in a `-debug` [build](../reference/cli.mdx#build) along with the devtools inspector, Using this option you can enable the default context-menu in `production` while the devtools inspector won't be available unless the `-devtools` build flag is used.
 
 When this option is enabled, by default the context-menu will only be shown for text contexts (where Cut/Copy/Paste is needed), to override this behavior, you can use the CSS property `--default-contextmenu` on any HTML element (including the `body`) with the following values :
 
@@ -593,6 +593,12 @@ ResizeDebounceMS 是调整窗口大小时去抖动 webview2 重绘的时间量�
 
 名称：WebviewGpuIsDisabled<br/> 类型：`bool`
 
+#### EnableSwipeGestures
+
+Setting this to `true` will enable swipe gestures for the webview.
+
+Name: EnableSwipeGestures<br/> Type: `bool`
+
 ### Mac
 
 这定义了 [Mac 特定的选项](#mac)。
@@ -687,6 +693,42 @@ Mac: &mac.Options{
 将此设置为 `true` 将使窗口半透明。 通常与[Webview 透明](#webview-透明) 结合使用以制作冰霜效果的应用程序。
 
 名称：WindowIsTranslucent<br/> 类型：`bool`
+
+#### Preferences
+
+The Preferences struct provides the ability to configure the Webview preferences.
+
+Name: Preferences<br/> Type: [`*mac.Preferences`](#preferences-struct)
+
+##### Preferences struct
+
+You can specify the webview preferences.
+
+```go
+type Preferences struct {
+    TabFocusesLinks        u.Bool
+    TextInteractionEnabled u.Bool
+    FullscreenEnabled      u.Bool 
+}
+```
+
+| 设置                     | 描述                                                                                                                                                                                                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TabFocusesLinks        | A Boolean value that indicates whether pressing the tab key changes the focus to links and form controls. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/2818595-tabfocuseslinks?language=objc) |
+| TextInteractionEnabled | A Boolean value that indicates whether to allow people to select or otherwise interact with text. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3727362-textinteractionenabled?language=objc)  |
+| FullscreenEnabled      | A Boolean value that indicates whether a web view can display content full screen. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3917769-elementfullscreenenabled?language=objc)               |
+
+示例：
+
+```go
+Mac: &mac.Options{
+    Preferences: &mac.Preferences{
+        TabFocusesLinks:        mac.Enabled,
+        TextInteractionEnabled: mac.Disabled,
+        FullscreenEnabled:      mac.Enabled,
+    }
+}
+```
 
 #### 关于
 

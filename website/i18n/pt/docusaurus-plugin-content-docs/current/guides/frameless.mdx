@@ -1,8 +1,8 @@
-# Frameless Applications
+# Aplicações sem frames
 
-Wails supports application that have no frames. This can be achieved by using the [frameless](../reference/options.mdx#frameless) field in [Application Options](../reference/options.mdx#application-options).
+O Wails suporta aplicativos que não possuem frames. Isso pode ser conseguido usando o campo [sem frameless](../reference/options.mdx#frameless) no [Application Options](../reference/options.mdx#application-options).
 
-Wails offers a simple solution for dragging the window: Any HTML element that has the CSS style `--wails-draggable:drag` will act as a "drag handle". This property applies to all child elements. If you need to indicate that a nested element should not drag, then use the attribute '--wails-draggable:no-drag' on that element.
+Wails oferece uma solução simples para arrastar a janela: qualquer elemento HTML que tenha o estilo CSS `--wails-draggable:drag` irá atuar como uma "alça de arrastar". Esta propriedade se aplica a todos os elementos filhos. Se você precisar indicar que um elemento aninhado não deve arrastar, então use o atributo '--wails-draggable:no-drag' nesse elemento.
 
 ```html
 <html>
@@ -23,7 +23,7 @@ Wails offers a simple solution for dragging the window: Any HTML element that ha
 </html>
 ```
 
-For some projects, using a CSS variable may not be possible due to dynamic styling. In this case, you can use the `CSSDragProperty` and `CSSDragValue` application options to define a property and value that will be used to indicate draggable regions:
+Para alguns projetos, usar uma variável CSS pode não ser possível devido a um estilo dinâmico. Neste caso, você pode usar o aplicativo `CSSDragProperty` e `CSSDragValue` opções para definir uma propriedade e valor que serão usados para indicar regiões arrastáveis:
 
 ```go title=main.go
 package main
@@ -80,8 +80,8 @@ func main() {
 </html>
 ```
 
-:::info Fullscreen
+:::info Tela Cheia
 
-If you allow your application to go fullscreen, this drag functionality will be disabled.
+Se você permitir que seu aplicativo vá para tela cheia, esta funcionalidade de arrastar será desativada.
 
 :::
