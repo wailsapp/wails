@@ -13,6 +13,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Added support for enabling/disabling swipe gestures for Windows WebView2. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2878)
+- When building with `-devtools` flag, CMD/CTRL+SHIFT+F12 can be used to open the devtools. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2915) – Added file association support for macOS and Windows. Added by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/2918)
+- Added support for setting some of the Webview preferences, `textInteractionEnabled` and `tabFocusesLinks` on Mac. Added by @fkhadra in [PR](https://github.com/wailsapp/wails/pull/2937)
+- Added support for enabling/disabling fullscreen of the Webview on Mac. Added by @fkhadra in [PR](https://github.com/wailsapp/wails/pull/2953)
+- Added French README.fr.md page. Added by @nejos97 in [PR](https://github.com/wailsapp/wails/pull/2943)
+- New task created for linting v2 `task v2:lint`. Workflow updated to run the task. Added by @mikeee in [PR](https://github.com/wailsapp/wails/pull/2957)
+- Added new community template wails-htmx-templ-chi-tailwind. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2984)
+- Added CPU/GPU/Memory detection for `wails doctor`. Added by @leaanthony in #d51268b8d0680430f3a614775b13e6cd2b906d1c
+
+### Changed
+
+- AssetServer requests are now processed asynchronously without blocking the main thread on Windows. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2926)
+- AssetServer requests are now processed concurrently by spawning a goroutine per request. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2926)
+- Now building with `-devtools` flag doesn't enable the default context-menu. Changed by @mmghv in [PR](https://github.com/wailsapp/wails/pull/2923)
+- Change Window Level. Changed by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/2944)
+#### Fixed
+
+- Fixed typo on docs/reference/options page. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2887)
+- Fixed issue with npm being called npm20 on openSUSE-Tumbleweed. Fixed by @TuffenDuffen in [PR] in (https://github.com/wailsapp/wails/pull/2941)
+
 ## v2.6.0 - 2023-09-06
 
 ### Breaking Changes
@@ -27,6 +49,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed `SetBackgroundColour` so it sets the window's background color to reduce resize flickering on Linux. Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2853)
 - Fixed disable window resize option and wrong initial window size when its enabled. Added by @lyimmi in [PR](https://github.com/wailsapp/wails/pull/2863)
 - Fixed build hook command parsing. Added by @smac89 in [PR](https://github.com/wailsapp/wails/pull/2836)
+- Fixed filesystem watcher from filtering top level project directory if binary name is included in .gitignore. Added by [@haukened](https://github.com/haukened) in [PR #2869](https://github.com/wailsapp/wails/pull/2869)
 - Fixed `-reloaddir` flag to watch additional directories (non-recursively). [@haukened](https://github.com/haukened) in [PR #2871](https://github.com/wailsapp/wails/pull/2871)
 - Fixed support for Go 1.21 `go.mod` files. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2876)
 
@@ -44,6 +67,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added new community template wails-sveltekit-tailwind. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2851)
 - Added support for print dialogs. Added by [@aangelisc](https://github.com/aangelisc) in [PR](https://github.com/wailsapp/wails/pull/2822)
 - Added new `wails dev -nogorebuild` flag to prevent restarts on back end file changes. [@haukened](https://github.com/haukened) in [PR #2870](https://github.com/wailsapp/wails/pull/2870)
+- Added a guide to describe a cross-platform build using GitHub Actions. Added by [@dennypenta](https://github.com/dennypenta) in [PR](https://github.com/wailsapp/wails/pull/2879)
 
 ### Changed
 
@@ -680,9 +704,6 @@ Experimental: &options.Experimental{
 
 - [v2, nsis] Seems like / as path separator works only for some directives in a cross platform way by [@stffabi](https://github.com/stffabi) in #1227
 - import models on binding definition by [@adalessa](https://github.com/adalessa) in #123
-
-  1
-
 - Use local search on website by [@leaanthony](https://github.com/leaanthony) in #1234
 - Ensure binary resources can be served by [@napalu](https://github.com/napalu) in #1240
 - Only retry loading assets when loading from disk by [@leaanthony](https://github.com/leaanthony) in #1241
