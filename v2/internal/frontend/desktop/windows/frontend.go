@@ -35,7 +35,7 @@ import (
 
 const startURL = "http://wails.localhost/"
 
-var secondInstanceBuffer = make(chan options.SecondInstanceData, 5)
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
 
 type Screen = frontend.Screen
 

@@ -102,7 +102,7 @@ var initOnce = sync.Once{}
 
 const startURL = "wails://wails/"
 
-var secondInstanceBuffer = make(chan options.SecondInstanceData, 5)
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
 
 type Frontend struct {
 

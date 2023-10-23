@@ -9,7 +9,6 @@ import (
 	"golang.org/x/sys/windows"
 	"os"
 	"syscall"
-	"unicode/utf16"
 	"unsafe"
 )
 
@@ -74,7 +73,7 @@ func createEventTargetWindow(className string, windowName string) w32.HWND {
 			ldata := (*COPYDATASTRUCT)(unsafe.Pointer(lparam))
 
 			if ldata.dwData == WMCOPYDATA_SINGLE_INSTANCE_DATA {
-				serialized := uintptrToString(ldata.lpData)
+				serialized := windows.UTF16PtrToString((*uint16)(unsafe.Pointer(ldata.lpData)))
 
 				var secondInstanceData options.SecondInstanceData
 
@@ -109,52 +108,19 @@ func createEventTargetWindow(className string, windowName string) w32.HWND {
 
 	// create event window that will not be visible for user
 	hwnd := w32.CreateWindowEx(
-		w32.WS_EX_NOACTIVATE|
-			w32.WS_EX_TRANSPARENT|
-			w32.WS_EX_LAYERED|
-			// WS_EX_TOOLWINDOW prevents this window from ever showing up in the taskbar, which
-			// we want to avoid. If you remove this style, this window won't show up in the
-			// taskbar *initially*, but it can show up at some later point. This can sometimes
-			// happen on its own after several hours have passed, although this has proven
-			// difficult to reproduce. Alternatively, it can be manually triggered by killing
-			// `explorer.exe` and then starting the process back up.
-			// It is unclear why the bug is triggered by waiting for several hours.
-			w32.WS_EX_TOOLWINDOW,
+		0,
 		windows.StringToUTF16Ptr(className),
 		windows.StringToUTF16Ptr(windowName),
-		w32.WS_OVERLAPPED,
 		0,
 		0,
 		0,
 		0,
 		0,
+		w32.HWND_MESSAGE,
 		0,
 		w32.GetModuleHandle(""),
 		nil,
 	)
 
-	w32.SetWindowLongPtr(
-		hwnd,
-		w32.GWL_STYLE,
-		// The window technically has to be visible to receive WM_PAINT messages (which are used
-		// for delivering events during resizes), but it isn't displayed to the user because of
-		// the LAYERED style.
-		w32.WS_VISIBLE|w32.WS_POPUP,
-	)
-
 	return hwnd
-}
-
-func uintptrToString(cstr uintptr) string {
-	if cstr != 0 {
-		us := make([]uint16, 0, 256)
-		for p := cstr; ; p += 2 {
-			u := *(*uint16)(unsafe.Pointer(p))
-			if u == 0 {
-				return string(utf16.Decode(us))
-			}
-			us = append(us, u)
-		}
-	}
-	return ""
 }
