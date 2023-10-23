@@ -1,6 +1,7 @@
 package application
 
 import (
+	"github.com/wailsapp/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 

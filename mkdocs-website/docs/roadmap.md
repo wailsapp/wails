@@ -32,6 +32,7 @@ The main goal is to get most of the examples working on all platforms.
 | plain         | W   | W       |       |
 | screen        | W   | W       |       |
 | systray       | W   | W       |       |
+| video         |     | W       |       |
 | window        | P   | W       |       |
 | wml           |     | W       |       |
 
@@ -39,7 +40,7 @@ The main goal is to get most of the examples working on all platforms.
 
 #### TODO:
 
-- [ ] Fix `+[CATransaction synchronize] called within transaction` warnings on mac
+- [ ] Fix `+[CATransaction synchronize] called within transaction` warnings on Mac
 - [ ] When hiding window, application terminates
 
 ### Alpha 2

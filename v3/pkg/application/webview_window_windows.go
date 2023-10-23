@@ -1309,6 +1309,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.MessageCallback = w.processMessage
 	chromium.MessageWithAdditionalObjectsCallback = w.processMessageWithAdditionalObjects
 	chromium.WebResourceRequestedCallback = w.processRequest
+	chromium.ContainsFullScreenElementChangedCallback = w.fullscreenChanged
 	chromium.NavigationCompletedCallback = w.navigationCompleted
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
 		if w.processKeyBinding(vkey) {
@@ -1458,6 +1459,18 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.Navigate(startURL)
 	}
 
+}
+
+func (w *windowsWebviewWindow) fullscreenChanged(sender *edge.ICoreWebView2, _ *edge.ICoreWebView2ContainsFullScreenElementChangedEventArgs) {
+	isFullscreen, err := sender.GetContainsFullScreenElement()
+	if err != nil {
+		globalApplication.fatal("Fatal error in callback fullscreenChanged: " + err.Error())
+	}
+	if isFullscreen {
+		w.fullscreen()
+	} else {
+		w.unfullscreen()
+	}
 }
 
 func convertEffect(effect DragEffect) w32.DWORD {
