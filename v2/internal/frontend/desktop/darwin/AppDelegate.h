@@ -15,11 +15,17 @@
 
 @property bool alwaysOnTop;
 @property bool startHidden;
+@property (retain) NSString* singleInstanceUniqueId;
+@property bool singleInstanceLockEnabled;
 @property bool startFullscreen;
 @property (retain) WailsWindow* mainWindow;
 
 @end
 
 extern void HandleOpenFile(char *);
+
+extern void HandleSecondInstanceData(char * message);
+
+void SendDataToFirstInstance(char * singleInstanceUniqueId, char * text);
 
 #endif /* AppDelegate_h */

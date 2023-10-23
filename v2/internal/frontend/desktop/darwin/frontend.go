@@ -39,6 +39,7 @@ var messageBuffer = make(chan string, 100)
 var requestBuffer = make(chan webview.Request, 100)
 var callbackBuffer = make(chan uint, 10)
 var openFilepathBuffer = make(chan string, 100)
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
 
 type Frontend struct {
 
@@ -109,6 +110,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	go result.startMessageProcessor()
 	go result.startCallbackProcessor()
 	go result.startFileOpenProcessor()
+	go result.startSecondInstanceProcessor()
 
 	return result
 }
@@ -116,6 +118,15 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 func (f *Frontend) startFileOpenProcessor() {
 	for filePath := range openFilepathBuffer {
 		f.ProcessOpenFileEvent(filePath)
+	}
+}
+
+func (f *Frontend) startSecondInstanceProcessor() {
+	for secondInstanceData := range secondInstanceBuffer {
+		if f.frontendOptions.SingleInstanceLock != nil &&
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
+		}
 	}
 }
 
@@ -161,6 +172,10 @@ func (f *Frontend) WindowSetDarkTheme() {
 
 func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
+
+	if f.frontendOptions.SingleInstanceLock != nil {
+		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
+	}
 
 	var _debug = ctx.Value("debug")
 	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")

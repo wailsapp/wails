@@ -5,6 +5,8 @@ import (
 	"html"
 	"io/fs"
 	"net/http"
+	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -81,6 +83,8 @@ type App struct {
 	// These services might send information from your app like URLs navigated to and possibly other content to cloud
 	// services of Apple and Microsoft.
 	EnableFraudulentWebsiteDetection bool
+
+	SingleInstanceLock *SingleInstanceLock
 
 	Windows *windows.Options
 	Mac     *mac.Options
@@ -163,6 +167,30 @@ func MergeDefaults(appoptions *App) {
 
 	// Process Drag Options
 	processDragOptions(appoptions)
+}
+
+type SingleInstanceLock struct {
+	// uniqueId that will be used for setting up messaging between instances
+	UniqueId               string
+	OnSecondInstanceLaunch func(secondInstanceData SecondInstanceData)
+}
+
+type SecondInstanceData struct {
+	Args             []string
+	WorkingDirectory string
+}
+
+func NewSecondInstanceData() (*SecondInstanceData, error) {
+	ex, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+	workingDirectory := filepath.Dir(ex)
+
+	return &SecondInstanceData{
+		Args:             os.Args[1:],
+		WorkingDirectory: workingDirectory,
+	}, nil
 }
 
 func processMenus(appoptions *App) {

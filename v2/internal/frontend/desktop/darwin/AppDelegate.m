@@ -40,6 +40,28 @@
         [self.mainWindow setCollectionBehavior:behaviour];
         [self.mainWindow toggleFullScreen:nil];
     }
+
+    if ( self.singleInstanceLockEnabled ) {
+      [[NSDistributedNotificationCenter defaultCenter] addObserver:self
+          selector:@selector(handleSecondInstanceNotification:) name:self.singleInstanceUniqueId object:nil];
+    }
+}
+
+void SendDataToFirstInstance(char * singleInstanceUniqueId, char * message) {
+    [[NSDistributedNotificationCenter defaultCenter]
+        postNotificationName:[NSString stringWithUTF8String:singleInstanceUniqueId]
+        object:nil
+        userInfo:@{@"message": [NSString stringWithUTF8String:message]}
+        deliverImmediately:YES];
+}
+
+- (void)handleSecondInstanceNotification:(NSNotification *)note;
+{
+    if (note.userInfo[@"message"] != nil) {
+        NSString *message = note.userInfo[@"message"];
+        const char* utf8Message = message.UTF8String;
+        HandleSecondInstanceData((char*)utf8Message);
+    }
 }
 
 - (void)dealloc {

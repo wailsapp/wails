@@ -334,7 +334,23 @@ func (cba *ControlBase) ClientHeight() int {
 }
 
 func (cba *ControlBase) Show() {
-	w32.ShowWindow(cba.hwnd, w32.SW_SHOWDEFAULT)
+	// WindowPos is used with HWND_TOPMOST to guarantee bring our app on top
+	// force set our main window on top
+	w32.SetWindowPos(
+		cba.hwnd,
+		w32.HWND_TOPMOST,
+		0, 0, 0, 0,
+		w32.SWP_SHOWWINDOW|w32.SWP_NOSIZE|w32.SWP_NOMOVE,
+	)
+	// remove topmost to allow normal windows manipulations
+	w32.SetWindowPos(
+		cba.hwnd,
+		w32.HWND_NOTOPMOST,
+		0, 0, 0, 0,
+		w32.SWP_SHOWWINDOW|w32.SWP_NOSIZE|w32.SWP_NOMOVE,
+	)
+	// put main window on tops foreground
+	w32.SetForegroundWindow(cba.hwnd)
 }
 
 func (cba *ControlBase) Hide() {
