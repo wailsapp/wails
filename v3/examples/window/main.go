@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
 	"runtime"
 	"strconv"
 	"time"
@@ -94,6 +95,21 @@ func main() {
 				Y:                rand.Intn(800),
 				BackgroundColour: application.NewRGB(33, 37, 41),
 				Frameless:        true,
+				Mac: application.MacWindow{
+					InvisibleTitleBarHeight: 50,
+				},
+			}).Show()
+			windowCounter++
+		})
+	myMenu.Add("New WebviewWindow (ignores mouse events").
+		SetAccelerator("CmdOrCtrl+F").
+		OnClick(func(ctx *application.Context) {
+			app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+				HTML:              "<div style='width: 100%; height: 95%; border: 3px solid red; background-color: \"0000\";'></div>",
+				X:                 rand.Intn(1000),
+				Y:                 rand.Intn(800),
+				IgnoreMouseEvents: true,
+				BackgroundType:    application.BackgroundTypeTransparent,
 				Mac: application.MacWindow{
 					InvisibleTitleBarHeight: 50,
 				},
@@ -382,6 +398,16 @@ func main() {
 	printMenu.Add("Print").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			_ = w.Print()
+		})
+	})
+	printMenu.Add("Capture PNG").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			img, err := w.CapturePNG()
+			if err != nil {
+				application.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
+				return
+			}
+			os.WriteFile("capture.png", img, 0644)
 		})
 	})
 

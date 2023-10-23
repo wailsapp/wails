@@ -179,6 +179,9 @@ func (w *windowsWebviewWindow) run() {
 	exStyle = w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
 		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
+		if w.parent.options.IgnoreMouseEvents {
+			exStyle |= w32.WS_EX_TRANSPARENT | w32.WS_EX_LAYERED
+		}
 	}
 	if options.AlwaysOnTop {
 		exStyle |= w32.WS_EX_TOPMOST

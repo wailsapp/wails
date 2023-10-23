@@ -115,6 +115,9 @@ type WebviewWindowOptions struct {
 
 	// KeyBindings is a map of key bindings to functions
 	KeyBindings map[string]func(window *WebviewWindow)
+
+	// IgnoreMouseEvents will ignore mouse events in the window
+	IgnoreMouseEvents bool
 }
 
 var WebviewWindowDefaults = &WebviewWindowOptions{
