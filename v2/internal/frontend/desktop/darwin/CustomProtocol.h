@@ -11,4 +11,4 @@ extern void HandleCustomProtocol(char*);
 
 void StartCustomProtocolHandler(void);
 
-#endif /* CustomUrl_h */
+#endif /* CustomProtocol_h */
