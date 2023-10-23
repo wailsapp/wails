@@ -8,7 +8,7 @@ package darwin
 #cgo LDFLAGS: -framework Foundation -framework Cocoa -framework WebKit
 #import <Foundation/Foundation.h>
 #import "Application.h"
-#import "CustomUrl.h"
+#import "CustomProtocol.h"
 #import "WailsContext.h"
 
 #include <stdlib.h>
@@ -453,8 +453,8 @@ func HandleOpenFile(filePath *C.char) {
 	openFilepathBuffer <- goFilepath
 }
 
-//export HandleCustomURL
-func HandleCustomURL(url *C.char) {
+//export HandleCustomProtocol
+func HandleCustomProtocol(url *C.char) {
 	goUrl := C.GoString(url)
 	openUrlBuffer <- goUrl
 }

@@ -1,16 +1,16 @@
 #include "CustomUrl.h"
 
-@implementation CustomUrlSchemeHandler
+@implementation CustomProtocolSchemeHandler
 + (void)handleGetURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
   [event paramDescriptorForKeyword:keyDirectObject];
 
    NSString *urlStr = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
 
-   HandleCustomURL((char*)[[[event paramDescriptorForKeyword:keyDirectObject] stringValue] UTF8String]);
+   HandleCustomProtocol((char*)[[[event paramDescriptorForKeyword:keyDirectObject] stringValue] UTF8String]);
 }
 @end
 
-void StartCustomURLHandler(void) {
+void StartCustomProtocolHandler(void) {
 	NSAppleEventManager *appleEventManager = [NSAppleEventManager sharedAppleEventManager];
 
 	[appleEventManager setEventHandler:[CustomUrlSchemeHandler class]
