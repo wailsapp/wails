@@ -13,7 +13,7 @@
 void StartCustomProtocolHandler(void) {
 	NSAppleEventManager *appleEventManager = [NSAppleEventManager sharedAppleEventManager];
 
-	[appleEventManager setEventHandler:[CustomUrlSchemeHandler class]
+	[appleEventManager setEventHandler:[CustomProtocolSchemeHandler class]
 	    andSelector:@selector(handleGetURLEvent:withReplyEvent:)
 	    forEventClass:kInternetEventClass
 	    andEventID: kAEGetURL];
