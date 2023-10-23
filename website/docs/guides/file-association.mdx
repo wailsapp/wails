@@ -44,7 +44,7 @@ For example:
 ## Platform Specifics:
 
 ### macOS
-When you open file (or files) with your app, the system will launch your app and call the `openFile` `openFiles` functions in your Wails app. Example:
+When you open file (or files) with your app, the system will launch your app and call the `OnFileOpen` function in your Wails app. Example:
 ```go title="main.go"
 func main() {
 	// Create application with options
@@ -100,7 +100,6 @@ func main() {
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		SingleInstanceLock: &options.SingleInstanceLock{
 			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
-			Enabled:                true,
 			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
 		},
 		Bind: []interface{}{
@@ -119,7 +118,7 @@ You can use [nfpm](https://nfpm.goreleaser.com/) to create .deb package for your
 ```ini
 [Desktop Entry]
 Categories=Office
-Exec=/usr/bin/wails-open-file
+Exec=/usr/bin/wails-open-file %u
 Icon=wails-open-file.png
 Name=wails-open-file
 Terminal=false
@@ -219,7 +218,6 @@ func main() {
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		SingleInstanceLock: &options.SingleInstanceLock{
 			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
-			Enabled:                true,
 			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
 		},
 		Bind: []interface{}{

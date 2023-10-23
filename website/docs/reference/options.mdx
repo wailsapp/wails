@@ -812,6 +812,7 @@ You can specify the webview preferences.
 type Preferences struct {
 	TabFocusesLinks        u.Bool
 	TextInteractionEnabled u.Bool
+	FullscreenEnabled      u.Bool 
 }
 ```
 
@@ -819,6 +820,7 @@ type Preferences struct {
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | TabFocusesLinks            | A Boolean value that indicates whether pressing the tab key changes the focus to links and form controls. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/2818595-tabfocuseslinks?language=objc)         |
 | TextInteractionEnabled     | A Boolean value that indicates whether to allow people to select or otherwise interact with text. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3727362-textinteractionenabled?language=objc)          |
+| FullscreenEnabled          | A Boolean value that indicates whether a web view can display content full screen. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3917769-elementfullscreenenabled?language=objc)                       |
 
 Example:
 
@@ -827,6 +829,7 @@ Mac: &mac.Options{
     Preferences: &mac.Preferences{
 		TabFocusesLinks:        mac.Enabled,
 		TextInteractionEnabled: mac.Disabled,
+		FullscreenEnabled:      mac.Enabled,
 	}
 }
 ```

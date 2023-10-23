@@ -102,7 +102,7 @@ var initOnce = sync.Once{}
 
 const startURL = "wails://wails/"
 
-var secondInstanceBuffer = make(chan options.SecondInstanceData, 100)
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
 
 type Frontend struct {
 
@@ -239,7 +239,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 		}
 	}()
 
-	if f.frontendOptions.SingleInstanceLock != nil && f.frontendOptions.SingleInstanceLock.Enabled {
+	if f.frontendOptions.SingleInstanceLock != nil {
 		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
 	}
 
