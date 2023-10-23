@@ -1,4 +1,4 @@
-#include "CustomUrl.h"
+#include "CustomProtocol.h"
 
 @implementation CustomProtocolSchemeHandler
 + (void)handleGetURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
