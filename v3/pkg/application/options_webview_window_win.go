@@ -1,7 +1,6 @@
 package application
 
 import (
-	"github.com/wailsapp/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -97,7 +96,7 @@ type WindowsWindow struct {
 	OnOverEffect  DragEffect
 
 	// Permissions map for WebView2. If empty, default permissions will be granted.
-	Permissions map[edge.CoreWebView2PermissionKind]edge.CoreWebView2PermissionState
+	Permissions map[uint32]uint32
 }
 
 type Theme int

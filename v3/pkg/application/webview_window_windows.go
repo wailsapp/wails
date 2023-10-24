@@ -1311,7 +1311,8 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	if opts.Permissions != nil {
 		for permission, state := range opts.Permissions {
-			chromium.SetPermission(permission, state)
+			chromium.SetPermission(edge.CoreWebView2PermissionKind(permission),
+				edge.CoreWebView2PermissionState(state))
 		}
 	}
 
