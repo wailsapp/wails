@@ -19,6 +19,7 @@ var (
 	moduser32 = syscall.NewLazyDLL("user32.dll")
 
 	procRegisterClassEx               = moduser32.NewProc("RegisterClassExW")
+	procGetClassName                  = moduser32.NewProc("GetClassNameW")
 	procLoadIcon                      = moduser32.NewProc("LoadIconW")
 	procLoadCursor                    = moduser32.NewProc("LoadCursorW")
 	procShowWindow                    = moduser32.NewProc("ShowWindow")
@@ -140,6 +141,7 @@ var (
 	procEnumDisplaySettings           = moduser32.NewProc("EnumDisplaySettingsW")
 	procEnumDisplaySettingsEx         = moduser32.NewProc("EnumDisplaySettingsExW")
 	procEnumWindows                   = moduser32.NewProc("EnumWindows")
+	procEnumChildWindows              = moduser32.NewProc("EnumChildWindows")
 	procChangeDisplaySettingsEx       = moduser32.NewProc("ChangeDisplaySettingsExW")
 	procSendInput                     = moduser32.NewProc("SendInput")
 	procSetWindowsHookEx              = moduser32.NewProc("SetWindowsHookExW")
@@ -356,6 +358,16 @@ func HasGetDpiForWindowFunc() bool {
 func GetDpiForWindow(hwnd HWND) UINT {
 	dpi, _, _ := procGetDpiForWindow.Call(hwnd)
 	return uint(dpi)
+}
+
+func GetClassName(hwnd HWND) string {
+	var buf [256]uint16
+	procGetClassName.Call(
+		uintptr(hwnd),
+		uintptr(unsafe.Pointer(&buf[0])),
+		uintptr(len(buf)))
+
+	return syscall.UTF16ToString(buf[:])
 }
 
 func SetProcessDPIAware() error {

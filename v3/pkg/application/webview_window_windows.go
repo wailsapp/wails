@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 	"unicode/utf16"
 	"unsafe"
@@ -924,7 +925,6 @@ func (w *windowsWebviewWindow) isActive() bool {
 }
 
 func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
-	w.onceDo.Do(w.onCreate)
 	switch msg {
 	case w32.WM_ACTIVATE:
 		if int(wparam&0xffff) == w32.WA_INACTIVE {
@@ -1309,12 +1309,12 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
-	if opts.Permissions != nil {
-		for permission, state := range opts.Permissions {
-			chromium.SetPermission(edge.CoreWebView2PermissionKind(permission),
+	//if opts.Permissions != nil {
+	//	for permission, state := range opts.Permissions {
+	//		chromium.SetPermission(edge.CoreWebView2PermissionKind(permission),
 				edge.CoreWebView2PermissionState(state))
-		}
-	}
+	//	}
+	//}
 
 	chromium.MessageCallback = w.processMessage
 	chromium.MessageWithAdditionalObjectsCallback = w.processMessageWithAdditionalObjects
@@ -1343,31 +1343,46 @@ func (w *windowsWebviewWindow) setupChromium() {
 		if err != nil {
 			globalApplication.fatal(err.Error())
 		}
+	}
+	if w.parent.options.EnableDragAndDrop {
+		w.dropTarget = w32.NewDropTarget()
+		w.dropTarget.OnDrop = func(files []string) {
+			w.parent.emit(events.Windows.WindowDragDrop)
+			windowDragAndDropBuffer <- &dragAndDropMessage{
+				windowId:  windowID,
+				filenames: files,
+			}
+		}
 		if opts.OnEnterEffect != 0 {
 			w.dropTarget.OnEnterEffect = convertEffect(opts.OnEnterEffect)
 		}
 		if opts.OnOverEffect != 0 {
 			w.dropTarget.OnOverEffect = convertEffect(opts.OnOverEffect)
 		}
-		if w.parent.options.EnableDragAndDrop {
-			w.dropTarget = w32.NewDropTarget()
-			w.dropTarget.OnDrop = func(files []string) {
-				w.parent.emit(events.Windows.WindowDragDrop)
-				windowDragAndDropBuffer <- &dragAndDropMessage{
-					windowId:  windowID,
-					filenames: files,
-				}
-			}
-			w.dropTarget.OnEnter = func() {
-				w.parent.emit(events.Windows.WindowDragEnter)
-			}
-			w.dropTarget.OnLeave = func() {
-				w.parent.emit(events.Windows.WindowDragLeave)
-			}
-			w.dropTarget.OnOver = func() {
-				w.parent.emit(events.Windows.WindowDragOver)
-			}
+		w.dropTarget.OnEnter = func() {
+			w.parent.emit(events.Windows.WindowDragEnter)
 		}
+		w.dropTarget.OnLeave = func() {
+			w.parent.emit(events.Windows.WindowDragLeave)
+		}
+		w.dropTarget.OnOver = func() {
+			w.parent.emit(events.Windows.WindowDragOver)
+		}
+		// Enumerate all the child windows for this window and register them as drop targets
+		w32.EnumChildWindows(w.hwnd, func(hwnd w32.HWND, lparam w32.LPARAM) w32.LRESULT {
+			// Check if the window class is "Chrome_RenderWidgetHostHWND"
+			// If it is, then we register it as a drop target
+			//windowName := w32.GetClassName(hwnd)
+			//println(windowName)
+			//if windowName == "Chrome_RenderWidgetHostHWND" {
+			err := w32.RegisterDragDrop(hwnd, w.dropTarget)
+			if err != nil && err != syscall.Errno(w32.DRAGDROP_E_ALREADYREGISTERED) {
+				globalApplication.error("Error registering drag and drop: " + err.Error())
+			}
+			//}
+			return 1
+		})
+
 	}
 
 	// We will get round to this
@@ -1611,18 +1626,6 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 		addDragAndDropMessage(w.parent.id, filenames)
 		return
 	}
-}
-
-func (w *windowsWebviewWindow) onCreate() {
-	// Register DnD
-	InvokeSync(func() {
-		if w.parent.options.EnableDragAndDrop {
-			err := w32.RegisterDragDrop(w.hwnd, w.dropTarget)
-			if err != nil {
-				globalApplication.error("Error registering drag and drop: " + err.Error())
-			}
-		}
-	})
 }
 
 func ScaleWithDPI(pixels int, dpi uint) int {

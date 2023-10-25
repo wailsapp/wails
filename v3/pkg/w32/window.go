@@ -246,3 +246,8 @@ func FlashWindow(hwnd HWND, enabled bool) {
 	}
 	_, _, _ = procFlashWindowEx.Call(uintptr(unsafe.Pointer(&flashInfo)))
 }
+
+func EnumChildWindows(hwnd HWND, callback func(hwnd HWND, lparam LPARAM) LRESULT) LRESULT {
+	r, _, _ := procEnumChildWindows.Call(hwnd, syscall.NewCallback(callback), 0)
+	return r
+}

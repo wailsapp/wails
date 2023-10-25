@@ -21,6 +21,7 @@ var (
 	procCoUninitialize        = modole32.NewProc("CoUninitialize")
 	procCreateStreamOnHGlobal = modole32.NewProc("CreateStreamOnHGlobal")
 	procRegisterDragDrop      = modole32.NewProc("RegisterDragDrop")
+	procRevokeDragDrop        = modole32.NewProc("RevokeDragDrop")
 )
 
 func CoInitializeEx(coInit uintptr) HRESULT {
@@ -76,6 +77,17 @@ func RegisterDragDrop(hwnd HWND, dropTarget *DropTarget) error {
 	hr, _, _ := procRegisterDragDrop.Call(
 		hwnd,
 		dt.Ref(),
+	)
+
+	if hr != S_OK {
+		return syscall.Errno(hr)
+	}
+	return nil
+}
+
+func RevokeDragDrop(hwnd HWND) error {
+	hr, _, _ := procRevokeDragDrop.Call(
+		hwnd,
 	)
 
 	if hr != S_OK {

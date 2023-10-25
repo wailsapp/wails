@@ -7,11 +7,16 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+var (
+	DROPEFFECT_NONE DWORD = 0
+	DROPEFFECT_COPY DWORD = 1
+	DROPEFFECT_MOVE DWORD = 2
+	DROPEFFECT_LINK DWORD = 4
+)
+
 const (
-	DROPEFFECT_NONE = 0
-	DROPEFFECT_COPY = 1
-	DROPEFFECT_MOVE = 2
-	DROPEFFECT_LINK = 4
+	DRAGDROP_E_ALREADYREGISTERED = 0x80040101
+	DRAGDROP_E_INVALIDHWND       = 0x80040102
 )
 
 func _NOP(_ uintptr) uintptr {
@@ -25,7 +30,6 @@ func init() {
 		_iDropTargetDragOver,
 		_iDropTargetDragLeave,
 		_iDropTargetDrop,
-		_NOP,
 	)
 }
 
@@ -67,10 +71,11 @@ type DropTarget struct {
 }
 
 func NewDropTarget() *DropTarget {
-	return &DropTarget{
+	result := &DropTarget{
 		OnEnterEffect: DROPEFFECT_COPY,
 		OnOverEffect:  DROPEFFECT_COPY,
 	}
+	return result
 }
 
 func (d *DropTarget) DragEnter(dataObject *IDataObject, grfKeyState DWORD, point POINT, pdfEffect *DWORD) uintptr {
