@@ -1309,12 +1309,12 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
-	//if opts.Permissions != nil {
-	//	for permission, state := range opts.Permissions {
-	//		chromium.SetPermission(edge.CoreWebView2PermissionKind(permission),
+	if opts.Permissions != nil {
+		for permission, state := range opts.Permissions {
+			chromium.SetPermission(edge.CoreWebView2PermissionKind(permission),
 				edge.CoreWebView2PermissionState(state))
-	//	}
-	//}
+		}
+	}
 
 	chromium.MessageCallback = w.processMessage
 	chromium.MessageWithAdditionalObjectsCallback = w.processMessageWithAdditionalObjects

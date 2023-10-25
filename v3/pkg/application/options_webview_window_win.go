@@ -28,6 +28,26 @@ const (
 	Tabbed  BackdropType = 4
 )
 
+type CoreWebView2PermissionKind uint32
+
+const (
+	CoreWebView2PermissionKindUnknownPermission CoreWebView2PermissionKind = iota
+	CoreWebView2PermissionKindMicrophone
+	CoreWebView2PermissionKindCamera
+	CoreWebView2PermissionKindGeolocation
+	CoreWebView2PermissionKindNotifications
+	CoreWebView2PermissionKindOtherSensors
+	CoreWebView2PermissionKindClipboardRead
+)
+
+type CoreWebView2PermissionState uint32
+
+const (
+	CoreWebView2PermissionStateDefault CoreWebView2PermissionState = iota
+	CoreWebView2PermissionStateAllow
+	CoreWebView2PermissionStateDeny
+)
+
 type WindowsWindow struct {
 	// Select the type of translucent backdrop. Requires Windows 11 22621 or later.
 	// Only used when window's `BackgroundType` is set to `BackgroundTypeTranslucent`.
@@ -96,7 +116,7 @@ type WindowsWindow struct {
 	OnOverEffect  DragEffect
 
 	// Permissions map for WebView2. If empty, default permissions will be granted.
-	Permissions map[uint32]uint32
+	Permissions map[CoreWebView2PermissionKind]CoreWebView2PermissionState
 }
 
 type Theme int
