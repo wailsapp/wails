@@ -48,6 +48,8 @@ func main() {
 	}
 
 	myMenu := app.NewMenu()
+	myMenu.Add("Wails").SetBitmap(icons.WailsLogoBlackTransparent).SetEnabled(false)
+
 	myMenu.Add("Hello World!").OnClick(func(ctx *application.Context) {
 		println("Hello World!")
 		q := application.QuestionDialog().SetTitle("Ready?").SetMessage("Are you feeling ready?")

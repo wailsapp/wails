@@ -56,6 +56,11 @@ type systrayMenuItem struct {
 	dbusItem *dbusMenu
 }
 
+func (s *systrayMenuItem) setBitmap(data []byte) {
+	s.dbusItem.V1["icon-data"] = dbus.MakeVariant(data)
+	s.sysTray.update(s)
+}
+
 func (s *systrayMenuItem) setTooltip(v string) {
 	s.dbusItem.V1["tooltip"] = dbus.MakeVariant(v)
 	s.sysTray.update(s)
@@ -128,6 +133,9 @@ func (s *linuxSystemTray) processMenu(menu *Menu, parentId int32) {
 		menuItem.V1["visible"] = dbus.MakeVariant(!item.hidden)
 		if item.label != "" {
 			menuItem.V1["label"] = dbus.MakeVariant(item.label)
+		}
+		if item.bitmap != nil {
+			menuItem.V1["icon-data"] = dbus.MakeVariant(item.bitmap)
 		}
 		switch item.itemType {
 		case checkbox:
@@ -446,6 +454,13 @@ func (s *linuxSystemTray) createPropSpec() map[string]map[string]*prop.Prop {
 			Emit:     prop.EmitTrue,
 			Callback: nil,
 		},
+		"IconData": {
+			Value:    "",
+			Writable: false,
+			Emit:     prop.EmitTrue,
+			Callback: nil,
+		},
+
 		"IconName": {
 			Value:    "",
 			Writable: false,
