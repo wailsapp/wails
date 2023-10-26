@@ -96,16 +96,16 @@ func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
 	}
 	switch item.itemType {
 	case text:
-		result.native = menuItemNew(item.label)
+		result.native = menuItemNew(item.label, item.bitmap)
 
 	case checkbox:
-		result.native = menuCheckItemNew(item.label)
+		result.native = menuCheckItemNew(item.label, item.bitmap)
 		result.setChecked(item.checked)
 		if item.accelerator != nil {
 			result.setAccelerator(item.accelerator)
 		}
 	case submenu:
-		result.native = menuItemNew(item.label)
+		result.native = menuItemNew(item.label, item.bitmap)
 
 	default:
 		panic(fmt.Sprintf("Unknown menu type: %v", item.itemType))

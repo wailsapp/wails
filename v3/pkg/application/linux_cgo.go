@@ -375,16 +375,61 @@ func menuItemChecked(widget pointer) bool {
 	return false
 }
 
-func menuItemNew(label string) pointer {
-	cLabel := C.CString(label)
-	defer C.free(unsafe.Pointer(cLabel))
-	return pointer(C.gtk_menu_item_new_with_label(cLabel))
+func menuItemNew(label string, bitmap []byte) pointer {
+	return menuItemAddProperties(C.gtk_menu_item_new(), label, bitmap)
 }
 
-func menuCheckItemNew(label string) pointer {
+func menuItemAddProperties(menuItem *C.GtkWidget, label string, bitmap []byte) pointer {
+	/*
+		   // FIXME: Support accelerator configuration
+		   activate := C.CString("activate")
+			defer C.free(unsafe.Pointer(activate))
+			accelGroup := C.gtk_accel_group_new()
+			C.gtk_widget_add_accelerator(menuItem, activate, accelGroup,
+				C.GDK_KEY_m, C.GDK_CONTROL_MASK, C.GTK_ACCEL_VISIBLE)
+	*/
 	cLabel := C.CString(label)
 	defer C.free(unsafe.Pointer(cLabel))
-	return pointer(C.gtk_check_menu_item_new_with_label(cLabel))
+	lbl := unsafe.Pointer(C.gtk_accel_label_new(cLabel))
+	C.gtk_label_set_use_underline((*C.GtkLabel)(lbl), 1)
+	C.gtk_label_set_xalign((*C.GtkLabel)(lbl), 0.0)
+	C.gtk_accel_label_set_accel_widget(
+		(*C.GtkAccelLabel)(lbl),
+		(*C.GtkWidget)(unsafe.Pointer(menuItem)))
+
+	box := C.gtk_box_new(C.GTK_ORIENTATION_HORIZONTAL, 6)
+	if img, err := pngToImage(bitmap); err == nil {
+		gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
+			C.ulong(len(img.Pix)))
+		defer C.g_bytes_unref(gbytes)
+		pixBuf := C.gdk_pixbuf_new_from_bytes(
+			gbytes,
+			C.GDK_COLORSPACE_RGB,
+			1, // has_alpha
+			8,
+			C.int(img.Bounds().Dx()),
+			C.int(img.Bounds().Dy()),
+			C.int(img.Stride),
+		)
+		image := C.gtk_image_new_from_pixbuf(pixBuf)
+		C.gtk_widget_set_visible((*C.GtkWidget)(image), C.gboolean(1))
+		C.gtk_container_add(
+			(*C.GtkContainer)(unsafe.Pointer(box)),
+			(*C.GtkWidget)(unsafe.Pointer(image)))
+	}
+
+	C.gtk_box_pack_end(
+		(*C.GtkBox)(unsafe.Pointer(box)),
+		(*C.GtkWidget)(lbl), 1, 1, 0)
+	C.gtk_container_add(
+		(*C.GtkContainer)(unsafe.Pointer(menuItem)),
+		(*C.GtkWidget)(unsafe.Pointer(box)))
+	C.gtk_widget_show_all(menuItem)
+	return pointer(menuItem)
+}
+
+func menuCheckItemNew(label string, bitmap []byte) pointer {
+	return menuItemAddProperties(C.gtk_check_menu_item_new(), label, bitmap)
 }
 
 func menuItemSetChecked(widget pointer, checked bool) {
@@ -415,11 +460,42 @@ func menuItemSetLabel(widget pointer, label string) {
 	C.free(unsafe.Pointer(value))
 }
 
+/*
+     GtkWidget *box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+  GtkWidget *icon = gtk_image_new_from_icon_name ("folder-music-symbolic", GTK_ICON_SIZE_MENU);
+  GtkWidget *label = gtk_label_new ("Music");
+  GtkWidget *menu_item = gtk_menu_item_new ();
+
+  gtk_container_add (GTK_CONTAINER (box), icon);
+  gtk_container_add (GTK_CONTAINER (box), label);
+
+  gtk_container_add (GTK_CONTAINER (menu_item), box);
+
+  gtk_widget_show_all (menu_item);
+*/
+
 func menuItemSetBitmap(widget pointer, data []byte) {
-	image := C.gdk_pixbuf_new_from_inline(C.int(len(data)), (*C.guchar)(unsafe.Pointer(&data[0])), C.FALSE, nil)
-	imageWidget := C.gtk_image_new_from_pixbuf(image)
-	C.gtk_image_set_pixel_size((*C.GtkImage)(imageWidget), 16)
-	C.gtk_menu_item_set_image((*C.GtkMenuItem)(widget), imageWidget)
+	parent := C.gtk_widget_get_parent((*C.GtkWidget)(widget))
+	fmt.Println("parent", parent)
+	//parent := C.gtk_widget_get_parent((*C.GtkWidget)widget)
+	if img, err := pngToImage(data); err == nil {
+		gbytes := C.g_bytes_new_static(
+			C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
+			C.ulong(len(img.Pix)))
+		defer C.g_bytes_unref(gbytes)
+		pixBuf := C.gdk_pixbuf_new_from_bytes(
+			gbytes,
+			C.GDK_COLORSPACE_RGB,
+			1, // has_alpha
+			8,
+			C.int(img.Bounds().Dx()),
+			C.int(img.Bounds().Dy()),
+			C.int(img.Stride),
+		)
+		image := C.gtk_image_new_from_pixbuf(pixBuf)
+		fmt.Println("image", image)
+		//		C.gtk_menu_item_set_image((*C.GtkMenuItem)(widget), image)
+	}
 }
 
 func menuItemSetToolTip(widget pointer, tooltip string) {
