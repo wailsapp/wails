@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - [darwin] add Event ApplicationShouldHandleReopen to able handle dock icon click by @5aaee9 in [#2991](https://github.com/wailsapp/wails/pull/2991)
+- [linux] add VirtualKeyCodes for keybinds by @atterpac in [#3007](https://github.com/wailsapp/wails/pull/3007).
 - [darwin] add getPrimaryScreen/getScreens to impl by @tmclane in [#2618](https://github.com/wailsapp/wails/pull/2618)
 
 ### Fixed
