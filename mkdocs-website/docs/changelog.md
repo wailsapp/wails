@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-
+- [linux] add VirtualKeyCodes for keybinds by @atterpac in [#3001](https://github.com/wailsapp/wails/pull/3001).
 - [darwin] add getPrimaryScreen/getScreens to impl by @tmclane in [#2618](https://github.com/wailsapp/wails/pull/2618)
 
 ### Fixed
