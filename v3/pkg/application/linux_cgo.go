@@ -476,6 +476,9 @@ func menuItemSetLabel(widget pointer, label string) {
 */
 
 func menuItemSetBitmap(widget pointer, data []byte) {
+	children := C.gtk_container_get_children((*C.GtkContainer)(widget))
+	fmt.Println("children", children)
+
 	parent := C.gtk_widget_get_parent((*C.GtkWidget)(widget))
 	fmt.Println("parent", parent)
 	//parent := C.gtk_widget_get_parent((*C.GtkWidget)widget)
@@ -1012,6 +1015,7 @@ func onDragNDrop(target unsafe.Pointer, context *C.GdkDragContext, x C.gint, y C
 //export onKeyPressEvent
 func onKeyPressEvent(widget *C.GtkWidget, event *C.GdkEventKey, userData unsafe.Pointer) C.gboolean {
 	windowId := uint(*((*C.uint)(userData)))
+	fmt.Println("onKeyPressEvent", windowId)
 	/*
 		windowKeyEvents <- &windowKeyEvent{
 			windowId:          windowID,
