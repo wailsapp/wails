@@ -162,7 +162,6 @@ func init() {
 	gtkSignalToMenuItem = map[uint]*MenuItem{}
 
 	mainThreadId = C.g_thread_self()
-	fmt.Println("init mainthread=", mainThreadId)
 }
 
 // mainthread stuff
@@ -178,12 +177,10 @@ func dispatchOnMainThreadCallback(callbackID C.uint) {
 //export activateLinux
 func activateLinux(data pointer) {
 	// NOOP: Callback for now
-	fmt.Println("activateLinux", mainThreadId)
 }
 
 func isOnMainThread() bool {
 	threadId := C.g_thread_self()
-	//	fmt.Println("isOnMainThread = ", threadId == mainThreadId)
 	return threadId == mainThreadId
 }
 
@@ -1055,13 +1052,11 @@ func setWindowIcon(window pointer, icon []byte) {
 		C.ulong(len(icon)),
 		nil)
 	if written == 0 {
-		fmt.Println("failed to write icon")
 		return
 	}
 	C.gdk_pixbuf_loader_close(loader, nil)
 	pixbuf := C.gdk_pixbuf_loader_get_pixbuf(loader)
 	if pixbuf != nil {
-		fmt.Println("gtk_window_set_icon", window)
 		C.gtk_window_set_icon((*C.GtkWindow)(window), pixbuf)
 	}
 	C.g_object_unref(C.gpointer(loader))
@@ -1070,7 +1065,6 @@ func setWindowIcon(window pointer, icon []byte) {
 //export messageDialogCB
 func messageDialogCB(button C.int) {
 	fmt.Println("messageDialogCB", button)
-
 }
 
 func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) (chan string, error) {
