@@ -67,6 +67,7 @@ extern void onDragNDrop(
    guint        info,
    guint        time,
    gpointer     data);
+extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 extern void onProcessRequest(void *request, gpointer user_data);
 // exported below (end)
 
@@ -896,6 +897,10 @@ func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func
 	event = C.CString("button-release-event")
 	defer C.free(unsafe.Pointer(event))
 	C.signal_connect((*C.GtkWidget)(unsafe.Pointer(webview)), event, C.onButtonEvent, unsafe.Pointer(&id))
+
+	event = C.CString("key-press-event")
+	defer C.free(unsafe.Pointer(event))
+	C.signal_connect((*C.GtkWidget)(unsafe.Pointer(webview)), event, C.onKeyPressEvent, unsafe.Pointer(&id))
 }
 
 func windowToggleDevTools(webview pointer) {
@@ -1002,6 +1007,18 @@ func onDragNDrop(target unsafe.Pointer, context *C.GdkDragContext, x C.gint, y C
 		filenames: filenames,
 	}
 	C.gtk_drag_finish(context, C.true, C.false, time)
+}
+
+//export onKeyPressEvent
+func onKeyPressEvent(widget *C.GtkWidget, event *C.GdkEventKey, userData unsafe.Pointer) C.gboolean {
+	windowId := uint(*((*C.uint)(userData)))
+	/*
+		windowKeyEvents <- &windowKeyEvent{
+			windowId:          windowID,
+			acceleratorString: C.GoString(acceleratorString),
+		}
+	*/
+	return C.gboolean(0)
 }
 
 //export onProcessRequest
