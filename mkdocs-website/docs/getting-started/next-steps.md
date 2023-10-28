@@ -15,7 +15,7 @@ go run .
 
 in the example directory.
 
-The status of the examples is on the [roadmap](/roadmap).
+The status of the examples is on the [roadmap](../roadmap.md).
 
 ## Creating a new project
 
