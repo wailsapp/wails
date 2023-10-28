@@ -15,6 +15,8 @@ go run .
 
 in the example directory.
 
+The status of the examples is on the [roadmap](/roadmap).
+
 ## Creating a new project
 
 To create a new project, you can use the `wails3 init` command. This will create

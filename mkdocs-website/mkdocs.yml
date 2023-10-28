@@ -2,6 +2,7 @@ site_name: "alpha"
 site_description: The Wails Project - Build beautiful cross-platform applications using Go
 repo_url: https://github.com/wailsapp/wails
 edit_uri: edit/v3-alpha/mkdocs-website/docs/
+site_url: https://v3alpha.wails.io
 theme:
   name: material
   custom_dir: overrides
@@ -47,6 +48,9 @@ theme:
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
+
+#plugins:
+#  - info
 
 extra:
   social:
@@ -95,6 +99,7 @@ nav:
     - Introduction: development/introduction.md
     - Status: development/status.md
     - v3 Changes: development/changes.md
+  - Roadmap: roadmap.md
   - Change Log: changelog.md
   - Sponsor❤️: https://github.com/sponsors/leaanthony
 

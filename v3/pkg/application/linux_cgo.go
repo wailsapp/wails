@@ -162,7 +162,6 @@ func init() {
 	gtkSignalToMenuItem = map[uint]*MenuItem{}
 
 	mainThreadId = C.g_thread_self()
-	fmt.Println("init mainthread=", mainThreadId)
 }
 
 // mainthread stuff
@@ -178,12 +177,10 @@ func dispatchOnMainThreadCallback(callbackID C.uint) {
 //export activateLinux
 func activateLinux(data pointer) {
 	// NOOP: Callback for now
-	fmt.Println("activateLinux", mainThreadId)
 }
 
 func isOnMainThread() bool {
 	threadId := C.g_thread_self()
-	//	fmt.Println("isOnMainThread = ", threadId == mainThreadId)
 	return threadId == mainThreadId
 }
 
@@ -461,27 +458,26 @@ func menuItemSetLabel(widget pointer, label string) {
 	C.free(unsafe.Pointer(value))
 }
 
-/*
-     GtkWidget *box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-  GtkWidget *icon = gtk_image_new_from_icon_name ("folder-music-symbolic", GTK_ICON_SIZE_MENU);
-  GtkWidget *label = gtk_label_new ("Music");
-  GtkWidget *menu_item = gtk_menu_item_new ();
+func menuItemRemoveBitmap(widget pointer) {
+	box := C.gtk_bin_get_child((*C.GtkBin)(widget))
+	if box == nil {
+		return
+	}
 
-  gtk_container_add (GTK_CONTAINER (box), icon);
-  gtk_container_add (GTK_CONTAINER (box), label);
+	children := C.gtk_container_get_children((*C.GtkContainer)(unsafe.Pointer(box)))
+	defer C.g_list_free(children)
+	count := int(C.g_list_length(children))
+	if count == 2 {
+		C.gtk_container_remove((*C.GtkContainer)(unsafe.Pointer(box)),
+			(*C.GtkWidget)(children.data))
+	}
+}
 
-  gtk_container_add (GTK_CONTAINER (menu_item), box);
-
-  gtk_widget_show_all (menu_item);
-*/
-
-func menuItemSetBitmap(widget pointer, data []byte) {
-	parent := C.gtk_widget_get_parent((*C.GtkWidget)(widget))
-	fmt.Println("parent", parent)
-	//parent := C.gtk_widget_get_parent((*C.GtkWidget)widget)
-	if img, err := pngToImage(data); err == nil {
-		gbytes := C.g_bytes_new_static(
-			C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
+func menuItemSetBitmap(widget pointer, bitmap []byte) {
+	menuItemRemoveBitmap(widget)
+	box := C.gtk_bin_get_child((*C.GtkBin)(widget))
+	if img, err := pngToImage(bitmap); err == nil {
+		gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&img.Pix[0])),
 			C.ulong(len(img.Pix)))
 		defer C.g_bytes_unref(gbytes)
 		pixBuf := C.gdk_pixbuf_new_from_bytes(
@@ -494,9 +490,12 @@ func menuItemSetBitmap(widget pointer, data []byte) {
 			C.int(img.Stride),
 		)
 		image := C.gtk_image_new_from_pixbuf(pixBuf)
-		fmt.Println("image", image)
-		//		C.gtk_menu_item_set_image((*C.GtkMenuItem)(widget), image)
+		C.gtk_widget_set_visible((*C.GtkWidget)(image), C.gboolean(1))
+		C.gtk_container_add(
+			(*C.GtkContainer)(unsafe.Pointer(box)),
+			(*C.GtkWidget)(unsafe.Pointer(image)))
 	}
+
 }
 
 func menuItemSetToolTip(widget pointer, tooltip string) {
@@ -1012,6 +1011,7 @@ func onDragNDrop(target unsafe.Pointer, context *C.GdkDragContext, x C.gint, y C
 //export onKeyPressEvent
 func onKeyPressEvent(widget *C.GtkWidget, event *C.GdkEventKey, userData unsafe.Pointer) C.gboolean {
 	windowId := uint(*((*C.uint)(userData)))
+	fmt.Println("onKeyPressEvent", windowId)
 	/*
 		windowKeyEvents <- &windowKeyEvent{
 			windowId:          windowID,
@@ -1051,13 +1051,11 @@ func setWindowIcon(window pointer, icon []byte) {
 		C.ulong(len(icon)),
 		nil)
 	if written == 0 {
-		fmt.Println("failed to write icon")
 		return
 	}
 	C.gdk_pixbuf_loader_close(loader, nil)
 	pixbuf := C.gdk_pixbuf_loader_get_pixbuf(loader)
 	if pixbuf != nil {
-		fmt.Println("gtk_window_set_icon", window)
 		C.gtk_window_set_icon((*C.GtkWindow)(window), pixbuf)
 	}
 	C.g_object_unref(C.gpointer(loader))
@@ -1066,7 +1064,6 @@ func setWindowIcon(window pointer, icon []byte) {
 //export messageDialogCB
 func messageDialogCB(button C.int) {
 	fmt.Println("messageDialogCB", button)
-
 }
 
 func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) (chan string, error) {

@@ -34,7 +34,7 @@ The main goal is to get most of the examples working on all platforms.
 | systray       | W   | W       |       |
 | video         |     | W       |       |
 | window        | P   | W       |       |
-| wml           |     | W       |       |
+| wml           | W   | W       |       |
 
 - Mac Dialogs work, however the file dialogs issue a warning that needs to be fixed.
 

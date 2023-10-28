@@ -134,13 +134,16 @@ The `InjectJS()` method returns JavaScript that should be injected into all
 windows as they are created. This is useful for adding custom JavaScript
 functions that complement the plugin.
 
-## Misc Tasks
+The built-in plugins can be found in the `v3/plugins` directory. 
+Check them out for inspiration.
 
-### Upgrading Taskfile
+## Tasks
 
 The Wails CLI uses the [Task](https://taskfile.dev) build system. It is imported
 as a library and used to run the tasks defined in `Taskfile.yaml`. The main
 interfacing with Task happens in `v3/internal/commands/task.go`.
+
+### Upgrading Taskfile
 
 To check if there's an upgrade for Taskfile, run `wails3 task -version` and
 check against the Task website.
@@ -171,7 +174,7 @@ wails3 task -version
 Make sure that all PRs have a ticket associated with them providing context to
 the change. If there is no ticket, please create one first. Ensure that all PRs
 have updated the CHANGELOG.md file with the changes made. The CHANGELOG.md file
-is located in the `v3` directory.
+is located in the `mkdocs-website/docs` directory.
 
 ## Misc Tasks
 
