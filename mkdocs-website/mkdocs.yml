@@ -5,7 +5,7 @@ edit_uri: edit/v3-alpha/mkdocs-website/docs/
 site_url: https://v3alpha.wails.io
 theme:
   name: material
-#  custom_dir: overrides
+  custom_dir: overrides
   logo: assets/images/wails-logo-horizontal-dark.svg
   icon:
     repo: fontawesome/brands/github
@@ -99,6 +99,7 @@ nav:
     - Introduction: development/introduction.md
     - Status: development/status.md
     - v3 Changes: development/changes.md
+  - Roadmap: roadmap.md
   - Change Log: changelog.md
   - Sponsor❤️: https://github.com/sponsors/leaanthony
 

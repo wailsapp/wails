@@ -4,7 +4,9 @@ To install the Wails CLI, ensure you have [Go 1.21+](https://go.dev/dl/)
 installed and run:
 
 ```shell
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+git clone https://github.com/wailsapp/wails.git
+cd wails/cmd/wails3
+go install
 ```
 
 ## Supported Platforms

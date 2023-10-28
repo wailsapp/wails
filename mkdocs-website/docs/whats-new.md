@@ -1,7 +1,7 @@
 # What's new in v3?
 
-!!! note The features that will be included in the v3 release may change from
-this list.
+!!! note 
+    The features that will be included in the v3 release may change from this list.
 
 ## Multiple Windows
 
@@ -311,24 +311,24 @@ An experimental feature to call runtime methods using plain html, similar to
   <body style="margin-top:50px; color: white; background-color: #191919">
     <h2>Wails ML Demo</h2>
     <p>This application contains no Javascript!</p>
-    <button data-wml-event="button-pressed">Press me!</button>
-    <button data-wml-event="delete-things" data-wml-confirm="Are you sure?">
+    <button wml-event="button-pressed">Press me!</button>
+    <button wml-event="delete-things" wml-confirm="Are you sure?">
       Delete all the things!
     </button>
-    <button data-wml-window="Close" data-wml-confirm="Are you sure?">
+    <button wml-window="Close" wml-confirm="Are you sure?">
       Close the Window?
     </button>
-    <button data-wml-window="Center">Center</button>
-    <button data-wml-window="Minimise">Minimise</button>
-    <button data-wml-window="Maximise">Maximise</button>
-    <button data-wml-window="UnMaximise">UnMaximise</button>
-    <button data-wml-window="Fullscreen">Fullscreen</button>
-    <button data-wml-window="UnFullscreen">UnFullscreen</button>
-    <button data-wml-window="Restore">Restore</button>
+    <button wml-window="Center">Center</button>
+    <button wml-window="Minimise">Minimise</button>
+    <button wml-window="Maximise">Maximise</button>
+    <button wml-window="UnMaximise">UnMaximise</button>
+    <button wml-window="Fullscreen">Fullscreen</button>
+    <button wml-window="UnFullscreen">UnFullscreen</button>
+    <button wml-window="Restore">Restore</button>
     <div
       style="width: 200px; height: 200px; border: 2px solid white;"
-      data-wml-event="hover"
-      data-wml-trigger="mouseover"
+      wml-event="hover"
+      wml-trigger="mouseover"
     >
       Hover over me
     </div>
