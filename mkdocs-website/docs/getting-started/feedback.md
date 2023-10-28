@@ -1,7 +1,7 @@
 # Feedback
 
-We welcome (and encourage) your feedback! Here are the different ways to provide
-feedback:
+We welcome (and encourage) your feedback! Please search for existing tickets or posts before creating new ones.
+Here are the different ways to provide feedback:
 
 === "Bugs"
 
@@ -16,7 +16,7 @@ feedback:
 
     If you have a fix for a bug or an update for documentation, please do the following:
 
-    - Open a pull request on the [Wails repository](https://github.com/wailsapp/wails). The title of the PR should start with `[v3]`.
+    - Open a pull request on the [Wails repository](https://github.com/wailsapp/wails). The title of the PR should start with `[v3 alpha]`.
     - Create a post in the [v3 Alpha Feedback](https://discord.gg/3mgVyGua) channel.
     - The post should be given the `PR` tag.
     - Please include a link to the PR in your post.
