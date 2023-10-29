@@ -16,7 +16,7 @@ go install
 - Windows 10/11 AMD64/ARM64
 - MacOS 10.13+ AMD64
 - MacOS 11.0+ ARM64
-- Linux AMD64/ARM64
+- Ubuntu AMD64/ARM64 (other Linux may work too!)
 
 ## Dependencies
 
