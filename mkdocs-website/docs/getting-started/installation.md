@@ -5,6 +5,7 @@ installed and run:
 
 ```shell
 git clone https://github.com/wailsapp/wails.git
+git checkout v3-alpha
 cd wails/cmd/wails3
 go install
 ```
