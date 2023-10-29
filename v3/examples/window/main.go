@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"os"
 	"runtime"
 	"strconv"
 	"time"
@@ -398,16 +397,6 @@ func main() {
 	printMenu.Add("Print").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			_ = w.Print()
-		})
-	})
-	printMenu.Add("Capture PNG").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
-			img, err := w.CapturePNG()
-			if err != nil {
-				application.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
-				return
-			}
-			os.WriteFile("capture.png", img, 0644)
 		})
 	})
 

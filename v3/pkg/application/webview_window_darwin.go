@@ -649,7 +649,11 @@ static void windowShowMenu(void *window, void *menu, int x, int y) {
 	[nsMenu popUpMenuPositioningItem:nil atLocation:point inView:webView];
 }
 
-
+// windowIgnoreMouseEvents makes the window ignore mouse events
+static void windowIgnoreMouseEvents(void *window, bool ignore) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	[nsWindow setIgnoresMouseEvents:ignore];
+}
 
 // Make the given window frameless
 static void windowSetFrameless(void *window, bool frameless) {
@@ -1110,6 +1114,10 @@ func (w *macosWebviewWindow) run() {
 		case MacBackdropTranslucent:
 			C.windowSetTranslucent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
+		}
+
+		if options.IgnoreMouseEvents {
+			C.windowIgnoreMouseEvents(w.nsWindow, C.bool(true))
 		}
 
 		titleBarOptions := macOptions.TitleBar

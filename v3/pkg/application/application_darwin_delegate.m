@@ -17,7 +17,13 @@ extern bool hasListeners(unsigned int);
         processApplicationEvent(EventApplicationDidChangeTheme, NULL);
     }
 }
-- (BOOL)applicationShouldHandleReopen:(NSNotification *)notification 
+
+- (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app
+{
+    return YES;
+}
+
+- (BOOL)applicationShouldHandleReopen:(NSNotification *)notification
                     hasVisibleWindows:(BOOL)flag {
     if( hasListeners(EventApplicationShouldHandleReopen) ) {
         processApplicationEvent(EventApplicationShouldHandleReopen, @{@"hasVisibleWindows": @(flag)});
