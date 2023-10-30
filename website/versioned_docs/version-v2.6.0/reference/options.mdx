@@ -53,8 +53,6 @@ func main() {
         CSSDragValue:      "drag",
         EnableDefaultContextMenu: false,
         EnableFraudulentWebsiteDetection: false,
-        ZoomFactor:           1.0,
-        IsZoomControlEnabled: false,
         Bind: []interface{}{
             app,
         },
@@ -82,7 +80,9 @@ func main() {
             OnSuspend func()
             // OnResume is called when Windows resumes from low power mode
             OnResume func(),
-			WebviewGpuDisabled: false,
+	    WebviewGpuDisabled: false,
+            ZoomFactor:           1.0,
+            IsZoomControlEnabled: false,
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -457,21 +457,6 @@ services of Apple and Microsoft.
 Name: EnableFraudulentWebsiteDetection<br/>
 Type: `bool`
 
-### ZoomFactor
-
-Name: ZoomFactor<br/>
-Type: `float64`
-
-This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
-
-### IsZoomControlEnabled
-
-Name: IsZoomControlEnabled<br/>
-Type: `bool`
-
-This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while
-disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
-
 ### Bind
 
 A slice of struct instances defining methods that need to be bound to the frontend.
@@ -686,6 +671,21 @@ Setting this to `true` will disable GPU hardware acceleration for the webview.
 
 Name: WebviewGpuIsDisabled<br/>
 Type: `bool`
+
+#### ZoomFactor
+
+Name: ZoomFactor<br/>
+Type: `float64`
+
+This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+
+#### IsZoomControlEnabled
+
+Name: IsZoomControlEnabled<br/>
+Type: `bool`
+
+This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while
+disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
 
 ### Mac
 
