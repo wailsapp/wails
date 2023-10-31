@@ -1010,8 +1010,8 @@ func onDragNDrop(target unsafe.Pointer, context *C.GdkDragContext, x C.gint, y C
 
 //export onKeyPressEvent
 func onKeyPressEvent(widget *C.GtkWidget, event *C.GdkEventKey, userData unsafe.Pointer) C.gboolean {
-	windowId := uint(*((*C.uint)(userData)))
-	fmt.Println("onKeyPressEvent", windowId)
+	//	windowId := uint(*((*C.uint)(userData)))
+	//	fmt.Println("onKeyPressEvent", windowId)
 	/*
 		windowKeyEvents <- &windowKeyEvent{
 			windowId:          windowID,
