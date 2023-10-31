@@ -424,6 +424,9 @@ func (w *linuxWebviewWindow) run() {
 			w.center() // needs to be queued until after GTK starts up!
 		}
 	}
+	if w.parent.options.DevToolsEnabled {
+		w.toggleDevTools()
+	}
 }
 
 func (w *linuxWebviewWindow) setTransparent() {
