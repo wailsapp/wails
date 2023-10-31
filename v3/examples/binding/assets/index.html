@@ -75,20 +75,20 @@
     <p class="button-42" onclick="window.open('https://wailsapp.github.io/wails/')">Documentation</p>
     <p class="button-42" onclick="window.open('https://wailsapp.github.io/wails/getting-started/feedback/')">Feedback</p>
 </div>
-<div class="result" id="result">{resultText}</div>
+<div class="result" id="result">Please enter your name below 👇</div>
 <div class="input-box" id="input">
     <input autocomplete="off" class="input" id="name" type="text"/>
-    <button class="btn" onclick="greet">Greet</button>
+    <button class="btn" onclick="greet()">Greet</button>
 </div>
+<script src='bindings_main.js'></script>
 <script>
-    import {Greet} from '../assets/bindings_main.js';
+  let resultText = "";
+  let name = "";
 
-    let resultText = "Please enter your name below 👇"
-    let name
-
-    function greet() {
-        Greet(name).then(result => resultText = result)
-    }
+  function greet() {
+	  window.go.main.GreetService.Greet(document.getElementById("name").value).then((result) =>
+          document.getElementById("result").innerHTML = result);
+  }
 </script>
 </body>
 </html>

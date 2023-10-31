@@ -22,7 +22,7 @@ const bindingTemplate = `
 		 * @param name {string}
 		 * @returns {Promise<string>}
 		 **/
-	    {{methodName}}: function({{inputs}}) { wails.CallByID({{ID}}, ...Array.prototype.slice.call(arguments, 0)); },
+	    {{methodName}}: function({{inputs}}) { return wails.CallByID({{ID}}, ...Array.prototype.slice.call(arguments, 0)); },
 `
 
 var reservedWords = []string{
@@ -248,17 +248,18 @@ window.go = window.go || {};
 		result[normalisedPackageNames[packageName]] += "};\n"
 
 		// add imports
-		if len(allModels) > 0 {
-			allModels := lo.Uniq(allModels)
-			var models []string
-			for _, model := range allModels {
-				models = append(models, normalisedPackageNames[model])
-			}
-			sort.Strings(models)
-			result[normalisedPackageNames[packageName]] += "\n"
-			imports := "import {" + strings.Join(models, ", ") + "} from './models';\n"
-			result[normalisedPackageNames[packageName]] = imports + result[normalisedPackageNames[packageName]]
-		}
+		/*		if len(allModels) > 0 {
+					allModels := lo.Uniq(allModels)
+					var models []string
+					for _, model := range allModels {
+						models = append(models, normalisedPackageNames[model])
+					}
+					sort.Strings(models)
+					result[normalisedPackageNames[packageName]] += "\n"
+					imports := "import {" + strings.Join(models, ", ") + "} from './models';\n"
+					result[normalisedPackageNames[packageName]] = imports + result[normalisedPackageNames[packageName]]
+				}
+		*/
 
 		result[normalisedPackageNames[packageName]] = header + result[normalisedPackageNames[packageName]]
 	}
