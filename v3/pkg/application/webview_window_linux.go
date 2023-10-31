@@ -5,12 +5,11 @@ package application
 import (
 	"fmt"
 	"net/url"
-	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
-var showDevTools = func(window unsafe.Pointer) {}
+var showDevTools = func(window pointer) {}
 
 type dragInfo struct {
 	XRoot       int
