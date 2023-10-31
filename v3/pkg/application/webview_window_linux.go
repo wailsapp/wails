@@ -314,7 +314,7 @@ func (w *linuxWebviewWindow) setResizable(resizable bool) {
 }
 
 func (w *linuxWebviewWindow) toggleDevTools() {
-	windowToggleDevTools(w.webview)
+	showDevTools(w.webview)
 }
 
 func (w *linuxWebviewWindow) size() (int, int) {
