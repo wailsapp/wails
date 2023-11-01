@@ -4,6 +4,7 @@ package application
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"unsafe"
 
@@ -192,7 +193,14 @@ func appName() string {
 }
 
 func appNew(name string) pointer {
-	nameC := C.CString(fmt.Sprintf("org.wails.%s", name))
+	// prevent leading number
+	if matched, _ := regexp.MatchString(`^\d+`, name); matched {
+		name = fmt.Sprintf("_%s", name)
+	}
+	name = strings.Replace(name, "(", "_", -1)
+	name = strings.Replace(name, ")", "_", -1)
+	appId := fmt.Sprintf("org.wails.%s", name)
+	nameC := C.CString(appId)
 	defer C.free(unsafe.Pointer(nameC))
 	return pointer(C.gtk_application_new(nameC, C.APPLICATION_DEFAULT_FLAGS))
 }
