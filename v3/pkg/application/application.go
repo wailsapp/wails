@@ -3,7 +3,6 @@ package application
 import (
 	"embed"
 	"encoding/json"
-	"github.com/pkg/browser"
 	"io"
 	"log"
 	"log/slog"
@@ -13,17 +12,15 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/wailsapp/wails/v3/internal/capabilities"
-
-	"github.com/wailsapp/wails/v3/pkg/icons"
-
+	"github.com/pkg/browser"
 	"github.com/samber/lo"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
-
+	"github.com/wailsapp/wails/v3/internal/capabilities"
 	wailsruntime "github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/icons"
 )
 
 //go:embed assets/*
