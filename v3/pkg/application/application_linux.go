@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -196,4 +197,13 @@ func setIcon(icon []byte) {
 }
 */
 
-func (a *App) logPlatformInfo() {}
+// logPlatformInfo logs the platform information to the console
+func (a *App) logPlatformInfo() {
+	info, err := operatingsystem.Info()
+	if err != nil {
+		a.error("Error getting OS info", "error", err.Error())
+		return
+	}
+
+	a.info("Platform Info:", info.AsLogSlice()...)
+}
