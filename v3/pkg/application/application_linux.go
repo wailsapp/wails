@@ -146,57 +146,6 @@ func newPlatformApp(parent *App) *linuxApp {
 	return app
 }
 
-/*
-//export processApplicationEvent
-func processApplicationEvent(eventID C.uint) {
-	// TODO: add translation to Wails events
-	//       currently reusing Mac specific values
-	applicationEvents <- uint(eventID)
-}
-
-//export processWindowEvent
-func processWindowEvent(windowID C.uint, eventID C.uint) {
-	windowEvents <- &windowEvent{
-		WindowID: uint(windowID),
-		EventID:  uint(eventID),
-	}
-}
-
-//export processMessage
-func processMessage(windowID C.uint, message *C.char) {
-	windowMessageBuffer <- &windowMessage{
-		windowId: uint(windowID),
-		message:  C.GoString(message),
-	}
-}
-
-//export processDragItems
-func processDragItems(windowID C.uint, arr **C.char, length C.int) {
-	var filenames []string
-	// Convert the C array to a Go slice
-	goSlice := (*[1 << 30]*C.char)(unsafe.Pointer(arr))[:length:length]
-	for _, str := range goSlice {
-		filenames = append(filenames, C.GoString(str))
-	}
-	windowDragAndDropBuffer <- &dragAndDropMessage{
-		windowId:  uint(windowID),
-		filenames: filenames,
-	}
-}
-
-//export processMenuItemClick
-func processMenuItemClick(menuID identifier) {
-	menuItemClicked <- uint(menuID)
-}
-
-func setIcon(icon []byte) {
-	if icon == nil {
-		return
-	}
-	//C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
-}
-*/
-
 // logPlatformInfo logs the platform information to the console
 func (a *App) logPlatformInfo() {
 	info, err := operatingsystem.Info()
