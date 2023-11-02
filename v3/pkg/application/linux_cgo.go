@@ -1038,13 +1038,13 @@ func onKeyPressEvent(widget *C.GtkWidget, event *C.GdkEventKey, userData unsafe.
 	windowID := uint(*((*C.uint)(userData)))
 	accelerator, ok := getKeyboardState(event)
 	if !ok {
-		return C.gboolean(0)
+		return C.gboolean(1)
 	}
 	windowKeyEvents <- &windowKeyEvent{
 		windowId:          windowID,
 		acceleratorString: accelerator,
 	}
-	return C.gboolean(0)
+	return C.gboolean(1)
 }
 
 func getKeyboardState(event *C.GdkEventKey) (string, bool) {
