@@ -1035,15 +1035,43 @@ func onDragNDrop(target unsafe.Pointer, context *C.GdkDragContext, x C.gint, y C
 
 //export onKeyPressEvent
 func onKeyPressEvent(widget *C.GtkWidget, event *C.GdkEventKey, userData unsafe.Pointer) C.gboolean {
-	//	windowId := uint(*((*C.uint)(userData)))
-	//	fmt.Println("onKeyPressEvent", windowId)
-	/*
-		windowKeyEvents <- &windowKeyEvent{
-			windowId:          windowID,
-			acceleratorString: C.GoString(acceleratorString),
-		}
-	*/
+	windowID := uint(*((*C.uint)(userData)))
+	accelerator, ok := getKeyboardState(event)
+	if !ok {
+		return C.gboolean(0)
+	}
+	windowKeyEvents <- &windowKeyEvent{
+		windowId:          windowID,
+		acceleratorString: accelerator,
+	}
 	return C.gboolean(0)
+}
+
+func getKeyboardState(event *C.GdkEventKey) (string, bool) {
+	modifiers := uint(event.state) & C.GDK_MODIFIER_MASK
+	keyCode := uint(event.keyval)
+
+	var acc accelerator
+	// Check Accelerators
+	if modifiers&(C.GDK_SHIFT_MASK) != 0 {
+		acc.Modifiers = append(acc.Modifiers, ShiftKey)
+	}
+	if modifiers&(C.GDK_CONTROL_MASK) != 0 {
+		acc.Modifiers = append(acc.Modifiers, ControlKey)
+	}
+	if modifiers&(C.GDK_MOD1_MASK) != 0 {
+		acc.Modifiers = append(acc.Modifiers, OptionOrAltKey)
+	}
+	if modifiers&(C.GDK_SUPER_MASK) != 0 {
+		acc.Modifiers = append(acc.Modifiers, SuperKey)
+	}
+	keyString, ok := VirtualKeyCodes[keyCode]
+	if !ok {
+		fmt.Println("Error Could not find key code: ", keyCode)
+		return "", false
+	}
+	acc.Key = keyString
+	return acc.String(), true
 }
 
 //export onProcessRequest
