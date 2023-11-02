@@ -20,8 +20,7 @@ void runOnAppThread(QObject *context, Functor &&function,
 
 template <typename Functor>
 void runOnAppThread(QObject *context, Functor &&function) {
-  bool ok = QMetaObject::invokeMethod(context, function,
-                                      Qt::QueuedConnection);
+  bool ok = QMetaObject::invokeMethod(context, function, Qt::QueuedConnection);
 
   if (!ok) {
     throw "Failed to invoke qt method";
@@ -29,8 +28,7 @@ void runOnAppThread(QObject *context, Functor &&function) {
 }
 
 // A threadsafe-queue.
-template <class T> 
-class SafeQueue {
+template <class T> class SafeQueue {
 public:
   SafeQueue(void) : q(), m(), c() {}
 
