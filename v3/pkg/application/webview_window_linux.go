@@ -57,20 +57,17 @@ func (w *linuxWebviewWindow) connectSignals() {
 }
 
 func (w *linuxWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
-	// Create the menu
-	thisMenu := newMenuImpl(menu)
-	thisMenu.update()
-	fmt.Println("linux.openContextMenu() - not implemented")
-	/*	void
-		gtk_menu_popup_at_rect (
-		  GtkMenu* menu,
-		  GdkWindow* rect_window,
-		  const GdkRectangle* rect,
-		  GdkGravity rect_anchor,
-		  GdkGravity menu_anchor,
-		  const GdkEvent* trigger_event
-		)
-	*/
+	// Create the menu manually because we don't want a gtk_menu_bar
+	// as the top-level item
+	ctxMenu := &linuxMenu{
+		menu: menu,
+	}
+	if menu.impl == nil {
+		ctxMenu.update()
+	}
+
+	native := ctxMenu.menu.impl.(*linuxMenu).native
+	contextMenuShow(w.window, native, data)
 }
 
 func (w *linuxWebviewWindow) getZoom() float64 {

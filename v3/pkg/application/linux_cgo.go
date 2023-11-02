@@ -233,6 +233,23 @@ func appDestroy(application pointer) {
 	C.g_application_quit((*C.GApplication)(application))
 }
 
+func contextMenuShow(window pointer, menu pointer, data *ContextMenuData) {
+	geometry := C.GdkRectangle{
+		x: C.int(data.X),
+		y: C.int(data.Y),
+	}
+	event := C.GdkEvent{}
+	gdkWindow := C.gtk_widget_get_window((*C.GtkWidget)(window))
+	C.gtk_menu_popup_at_rect(
+		(*C.GtkMenu)(menu),
+		gdkWindow,
+		(*C.GdkRectangle)(&geometry),
+		C.GDK_GRAVITY_NORTH_WEST,
+		C.GDK_GRAVITY_NORTH_WEST,
+		(*C.GdkEvent)(&event),
+	)
+}
+
 func getCurrentWindowID(application pointer, windows map[windowPointer]uint) uint {
 	// TODO: Add extra metadata to window and use it!
 	window := (*C.GtkWindow)(C.gtk_application_get_active_window((*C.GtkApplication)(application)))
