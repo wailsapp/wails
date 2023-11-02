@@ -1,0 +1,28 @@
+
+* Status
+
+| Example      | Status          | Notes                                                                         |
+|--------------+-----------------+-------------------------------------------------------------------------------|
+| binding      | works           |                                                                               |
+| build        | works           | removed OS X specific env variables from default target                       |
+| clipboard    | works           |                                                                               |
+| contextmenus | works (partial) |                                                                               |
+| dev          | works           | purpose?                                                                      |
+| dialogs      |                 | broken                                                                        |
+| drag-n-drop  | works           |                                                                               |
+| events       | partial         | receives WailsEvents - not ApplicationEvents                                  |
+| frameless    | partial         | drag areas do not function                                                    |
+| hide-window  | partial         | crash on windowShow - believe this is because window is being destroyed not hidden |
+| keybindings  | working         |                                                                               |
+| menu         | working         | Lock WebviewWindow Resize isn't correct                                       |
+| oauth        | failed          | Can't type in window - but can paste - redirect failed as well                |
+| plain        | works           |                                                                               |
+| plugins      | works           | Might should provide example commands or something.                           |
+| screen       | failed          |                                                                               |
+| server       | works           |                                                                               |
+| systray      | works           |                                                                               |
+| video        | works           | binary is named 'frameless'                                                   |
+| window       | partial         | Screens related stuff isn't implemented                                       |
+| wml          | partial         |                                                                               |
+
+
