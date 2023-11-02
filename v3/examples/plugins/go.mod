@@ -16,6 +16,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.2.0 // indirect
 	github.com/go-git/go-git/v5 v5.3.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
+	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
