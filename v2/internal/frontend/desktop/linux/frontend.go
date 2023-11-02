@@ -1,5 +1,5 @@
-//go:build linux
-// +build linux
+//go:build linux && !qt
+// +build linux,!qt
 
 package linux
 
@@ -105,7 +105,6 @@ const startURL = "wails://wails/"
 var secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
 
 type Frontend struct {
-
 	// Context
 	ctx context.Context
 

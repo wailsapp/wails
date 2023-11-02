@@ -1,4 +1,4 @@
-//go:build linux && (webkit2_36 || webkit2_40)
+//go:build linux && (webkit2_36 || webkit2_40) && !qt
 
 package webview
 
