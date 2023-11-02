@@ -3,19 +3,19 @@
 #include <QApplication>
 #include <QLabel>
 #include <QMetaObject>
+#include <QTimer>
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QWebEngineView>
 #include <QtWidgets>
-#include <QTimer>
 #include <condition_variable>
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <thread>
 
-#include <math.h>
 #include <errno.h>
+#include <math.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
@@ -24,7 +24,7 @@
 
 /* Application */
 
-void* Application_new(char* app_name) {
+void *Application_new(char *app_name) {
   QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
   auto queue = std::make_unique<SafeQueue<QApplication *>>();
@@ -34,7 +34,7 @@ void* Application_new(char* app_name) {
   // https://forum.qt.io/topic/124878/running-qapplication-exec-from-another-thread-qcoreapplication-qguiapplication
   auto appThread = new std::thread([&]() {
     int numArgs = 1;
-    char* args[] = { app_name };
+    char *args[] = {app_name};
     auto app = new QApplication(numArgs, args);
     queue->enqueue(app);
     appExited(app->exec());
@@ -43,9 +43,7 @@ void* Application_new(char* app_name) {
   auto qtApp = queue->dequeue();
 
   // Ensure that app has started executing before returning.
-  QTimer::singleShot(0, qtApp, [&]() {
-    queue->enqueue(nullptr);
-  });
+  QTimer::singleShot(0, qtApp, [&]() { queue->enqueue(nullptr); });
   queue->dequeue();
   return qtApp;
 }
@@ -60,7 +58,7 @@ Window *Window_new(void *app_ptr) {
   Window *win;
   runOnAppThread(
       app,
-      [=]() -> Window* {
+      [=]() -> Window * {
         auto w = new QWidget();
         w->resize(320, 240);
         w->setMinimumSize(320, 240);
@@ -75,7 +73,7 @@ Window *Window_new(void *app_ptr) {
 
         w->show();
 
-        return new Window {
+        return new Window{
             .window = w,
             .window_layout = layout,
             .web_engine_view = view,
@@ -112,60 +110,60 @@ void WebEngineView_load_url(void *web_engine_ptr, char *url) {
 
 /* End WebEngineView */
 
-
 /* Misc */
 
 // CREDIT: https://github.com/rainycape/magick
 void fix_signal(int signum) {
-    struct sigaction st;
+  struct sigaction st;
 
-    if (sigaction(signum, NULL, &st) < 0) {
-        goto fix_signal_error;
-    }
-    st.sa_flags |= SA_ONSTACK;
-    if (sigaction(signum, &st,  NULL) < 0) {
-        goto fix_signal_error;
-    }
-    return;
+  if (sigaction(signum, NULL, &st) < 0) {
+    goto fix_signal_error;
+  }
+  st.sa_flags |= SA_ONSTACK;
+  if (sigaction(signum, &st, NULL) < 0) {
+    goto fix_signal_error;
+  }
+  return;
 fix_signal_error:
-        fprintf(stderr, "error fixing handler for signal %d, please "
-                "report this issue to "
-                "https://github.com/wailsapp/wails: %s\n",
-                signum, strerror(errno));
+  fprintf(stderr,
+          "error fixing handler for signal %d, please "
+          "report this issue to "
+          "https://github.com/wailsapp/wails: %s\n",
+          signum, strerror(errno));
 }
 
 void install_signal_handlers() {
 #if defined(SIGCHLD)
-    fix_signal(SIGCHLD);
+  fix_signal(SIGCHLD);
 #endif
 #if defined(SIGHUP)
-    fix_signal(SIGHUP);
+  fix_signal(SIGHUP);
 #endif
 #if defined(SIGINT)
-    fix_signal(SIGINT);
+  fix_signal(SIGINT);
 #endif
 #if defined(SIGQUIT)
-    fix_signal(SIGQUIT);
+  fix_signal(SIGQUIT);
 #endif
 #if defined(SIGABRT)
-    fix_signal(SIGABRT);
+  fix_signal(SIGABRT);
 #endif
 #if defined(SIGFPE)
-    fix_signal(SIGFPE);
+  fix_signal(SIGFPE);
 #endif
 #if defined(SIGTERM)
-    fix_signal(SIGTERM);
+  fix_signal(SIGTERM);
 #endif
 #if defined(SIGBUS)
-    fix_signal(SIGBUS);
+  fix_signal(SIGBUS);
 #endif
 #if defined(SIGSEGV)
-    fix_signal(SIGSEGV);
+  fix_signal(SIGSEGV);
 #endif
 #if defined(SIGXCPU)
-    fix_signal(SIGXCPU);
+  fix_signal(SIGXCPU);
 #endif
 #if defined(SIGXFSZ)
-    fix_signal(SIGXFSZ);
+  fix_signal(SIGXFSZ);
 #endif
 }
