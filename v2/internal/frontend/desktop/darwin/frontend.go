@@ -8,6 +8,7 @@ package darwin
 #cgo LDFLAGS: -framework Foundation -framework Cocoa -framework WebKit
 #import <Foundation/Foundation.h>
 #import "Application.h"
+#import "CustomProtocol.h"
 #import "WailsContext.h"
 
 #include <stdlib.h>
@@ -39,6 +40,7 @@ var messageBuffer = make(chan string, 100)
 var requestBuffer = make(chan webview.Request, 100)
 var callbackBuffer = make(chan uint, 10)
 var openFilepathBuffer = make(chan string, 100)
+var openUrlBuffer = make(chan string, 100)
 var secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
 
 type Frontend struct {
@@ -79,6 +81,9 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 	result.startURL, _ = url.Parse(startURL)
 
+	// this should be initialized as early as possible to handle first instance launch
+	C.StartCustomProtocolHandler()
+
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
 	} else {
@@ -110,6 +115,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	go result.startMessageProcessor()
 	go result.startCallbackProcessor()
 	go result.startFileOpenProcessor()
+	go result.startUrlOpenProcessor()
 	go result.startSecondInstanceProcessor()
 
 	return result
@@ -118,6 +124,12 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 func (f *Frontend) startFileOpenProcessor() {
 	for filePath := range openFilepathBuffer {
 		f.ProcessOpenFileEvent(filePath)
+	}
+}
+
+func (f *Frontend) startUrlOpenProcessor() {
+	for url := range openUrlBuffer {
+		f.ProcessOpenUrlEvent(url)
 	}
 }
 
@@ -385,6 +397,12 @@ func (f *Frontend) ProcessOpenFileEvent(filePath string) {
 	}
 }
 
+func (f *Frontend) ProcessOpenUrlEvent(url string) {
+	if f.frontendOptions.Mac != nil && f.frontendOptions.Mac.OnUrlOpen != nil {
+		f.frontendOptions.Mac.OnUrlOpen(url)
+	}
+}
+
 func (f *Frontend) Callback(message string) {
 	escaped, err := json.Marshal(message)
 	if err != nil {
@@ -433,4 +451,10 @@ func processURLRequest(_ unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
 func HandleOpenFile(filePath *C.char) {
 	goFilepath := C.GoString(filePath)
 	openFilepathBuffer <- goFilepath
+}
+
+//export HandleCustomProtocol
+func HandleCustomProtocol(url *C.char) {
+	goUrl := C.GoString(url)
+	openUrlBuffer <- goUrl
 }

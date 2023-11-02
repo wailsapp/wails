@@ -218,3 +218,32 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
       Delete "$INSTDIR\{{.IconName}}.ico"
     {{end}}
 !macroend
+
+!macro CUSTOM_PROTOCOL_ASSOCIATE PROTOCOL DESCRIPTION ICON COMMAND
+  DeleteRegKey SHELL_CONTEXT "Software\Classes\${PROTOCOL}"
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}" "" "${DESCRIPTION}"
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}" "URL Protocol" ""
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\DefaultIcon" "" "${ICON}"
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\shell" "" ""
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\shell\open" "" ""
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\shell\open\command" "" "${COMMAND}"
+!macroend
+
+!macro CUSTOM_PROTOCOL_UNASSOCIATE PROTOCOL
+  DeleteRegKey SHELL_CONTEXT "Software\Classes\${PROTOCOL}"
+!macroend
+
+!macro wails.associateCustomProtocols
+    ; Create custom protocols associations
+    {{range .Info.Protocols}}
+      !insertmacro CUSTOM_PROTOCOL_ASSOCIATE "{{.Scheme}}" "{{.Description}}" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
+
+    {{end}}
+!macroend
+
+!macro wails.unassociateCustomProtocols
+    ; Delete app custom protocol associations
+    {{range .Info.Protocols}}
+      !insertmacro CUSTOM_PROTOCOL_UNASSOCIATE "{{.Scheme}}"
+    {{end}}
+!macroend

@@ -200,6 +200,31 @@
                             }
                         }
                     }
+                },
+                "protocols": {
+                    "type": "array",
+                    "description": "Custom URI protocols that should be opened by the application",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "scheme": {
+                                "type": "string",
+                                "description": "protocol scheme. e.g. myapp"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Windows-only. The description. It is displayed on the `Type` column on Windows Explorer."
+                            },
+                            "role": {
+                                "description": "macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.",
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/BundleTypeRole"
+                                    }
+                                ]
+                            }
+                        }
+                    }
                 }
             }
         },
