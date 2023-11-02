@@ -1,7 +1,6 @@
 # Application
 
-The application API assists in creating an application using the Wails
-framework.
+The application API assists in creating an application using the Wails framework.
 
 ### New
 
