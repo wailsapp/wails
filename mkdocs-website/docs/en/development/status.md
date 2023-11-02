@@ -53,9 +53,9 @@ Webview Window Interface Methods
 | isMinimised() bool                                 | Y       | Y     | Y   |                                          |
 | maximise()                                         | Y       | Y     | Y   |                                          |
 | minimise()                                         | Y       | Y     | Y   |                                          |
-| nativeWindowHandle() (uintptr, error)              | Y       | Y     |     |                                          |
+| nativeWindowHandle() (uintptr, error)              | Y       | Y     | Y   |                                          |
 | on(eventID uint)                                   | y       |       | Y   |                                          |
-| openContextMenu(menu *Menu, data *ContextMenuData) | y       |       | Y   |                                          |
+| openContextMenu(menu *Menu, data *ContextMenuData) | y       | Y     | Y   |                                          |
 | relativePosition() (int, int)                      | Y       | Y     | Y   |                                          |
 | reload()                                           | y       | Y     | Y   |                                          |
 | run()                                              | Y       | Y     | Y   |                                          |
@@ -92,7 +92,7 @@ Webview Window Interface Methods
 | Feature | Windows | Linux | Mac | Notes |
 | ------- | ------- | ----- | --- | ----- |
 | Quit    | Y       | Y     | Y   |       |
-| Hide    | Y       |       | Y   |       |
+| Hide    | Y       | Y     | Y   |       |
 | Show    | Y       |       | Y   |       |
 
 ### Dialogs
@@ -103,21 +103,21 @@ Webview Window Interface Methods
 | Warning  | Y       | Y     | Y   |       |
 | Error    | Y       | Y     | Y   |       |
 | Question | Y       | Y     | Y   |       |
-| OpenFile | Y       |       | Y   |       |
-| SaveFile | Y       |       | Y   |       |
+| OpenFile | Y       | Y     | Y   |       |
+| SaveFile | Y       | Y     | Y   |       |
 
 ### Clipboard
 
 | Feature | Windows | Linux | Mac | Notes |
-| ------- | ------- | ----- | --- | ----- |
-| SetText | Y       |       | Y   |       |
-| Text    | Y       |       | Y   |       |
+|---------|---------|-------|-----|-------|
+| SetText | Y       | Y     | Y   |       |
+| Text    | Y       | Y     | Y   |       |
 
 ### ContextMenu
 
 | Feature          | Windows | Linux | Mac | Notes |
-| ---------------- | ------- | ----- | --- | ----- |
-| OpenContextMenu  | Y       |       | Y   |       |
+|------------------|---------|-------|-----|-------|
+| OpenContextMenu  | Y       | Y     | Y   |       |
 | On By Default    |         |       |     |       |
 | Control via HTML | Y       |       |     |       |
 
@@ -190,8 +190,8 @@ applied when the window is created. An 'X' indicates that the option is not
 supported by the platform.
 
 | Feature                         | Windows | Linux | Mac | Notes                                      |
-| ------------------------------- | ------- | ----- | --- | ------------------------------------------ |
-| AlwaysOnTop                     | Y       |       |     |                                            |
+|---------------------------------|---------|-------|-----|--------------------------------------------|
+| AlwaysOnTop                     | Y       | Y     |     |                                            |
 | BackgroundColour                | Y       | Y     |     |                                            |
 | BackgroundType                  |         |       |     | Acrylic seems to work but the others don't |
 | CSS                             | Y       | Y     |     |                                            |
@@ -236,24 +236,24 @@ To log or not to log? System logger vs custom logger.
 ## Tray Menus
 
 | Feature            | Windows | Linux | Mac | Notes                                                                |
-| ------------------ | ------- | ----- | --- | -------------------------------------------------------------------- |
-| Icon               | Y       |       | Y   | Windows has default icons for light/dark mode & supports PNG or ICO. |
-| Label              | -       |       | Y   |                                                                      |
+|--------------------|---------|-------|-----|----------------------------------------------------------------------|
+| Icon               | Y       | Y     | Y   | Windows has default icons for light/dark mode & supports PNG or ICO. |
+| Label              | -       | Y     | Y   |                                                                      |
 | Label (ANSI Codes) | -       |       |     |                                                                      |
-| Menu               | Y       |       | Y   |                                                                      |
+| Menu               | Y       | Y     | Y   |                                                                      |
 
 ### Methods
 
 | Method                        | Windows | Linux | Mac | Notes |
 | ----------------------------- | ------- | ----- | --- | ----- |
-| setLabel(label string)        | -       |       | Y   |       |
-| run()                         | Y       |       | Y   |       |
-| setIcon(icon []byte)          | Y       |       | Y   |       |
-| setMenu(menu \*Menu)          | Y       |       | Y   |       |
-| setIconPosition(position int) | -       |       | Y   |       |
-| setTemplateIcon(icon []byte)  | -       |       | Y   |       |
-| destroy()                     | Y       |       | Y   |       |
-| setDarkModeIcon(icon []byte)  | Y       |       | Y   |       |
+| setLabel(label string)        | -       | Y     | Y   |       |
+| run()                         | Y       | Y     | Y   |       |
+| setIcon(icon []byte)          | Y       | Y     | Y   |       |
+| setMenu(menu \*Menu)          | Y       | Y     | Y   |       |
+| setIconPosition(position int) | -       | Y     | Y   |       |
+| setTemplateIcon(icon []byte)  | -       | Y     | Y   |       |
+| destroy()                     | Y       | Y     | Y   |       |
+| setDarkModeIcon(icon []byte)  | Y       | Y     | Y   | Darkmode isn't handled yet (linux)      |
 
 ## Cross Platform Events
 
