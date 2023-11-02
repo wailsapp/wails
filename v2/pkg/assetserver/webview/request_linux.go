@@ -1,5 +1,5 @@
-//go:build linux
-// +build linux
+//go:build linux && !qt
+// +build linux,!qt
 
 package webview
 

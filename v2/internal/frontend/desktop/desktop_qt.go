@@ -1,5 +1,5 @@
-//go:build linux && !qt
-// +build linux,!qt
+//go:build qt
+// +build qt
 
 package desktop
 
@@ -8,11 +8,11 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/linux"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/qt"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 func NewFrontend(ctx context.Context, appoptions *options.App, logger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) frontend.Frontend {
-	return linux.NewFrontend(ctx, appoptions, logger, appBindings, dispatcher)
+	return qt.NewFrontend(ctx, appoptions, logger, appBindings, dispatcher)
 }

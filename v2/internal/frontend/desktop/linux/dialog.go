@@ -1,11 +1,12 @@
-//go:build linux
-// +build linux
+//go:build linux && !qt
+// +build linux,!qt
 
 package linux
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v2/internal/frontend"
 )
 
 /*

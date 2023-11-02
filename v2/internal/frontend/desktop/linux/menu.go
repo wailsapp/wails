@@ -1,5 +1,5 @@
-//go:build linux
-// +build linux
+//go:build linux && !qt
+// +build linux,!qt
 
 package linux
 
@@ -32,8 +32,11 @@ void addAccelerator(GtkWidget* menuItem, GtkAccelGroup* group, guint key, GdkMod
 }
 */
 import "C"
-import "github.com/wailsapp/wails/v2/pkg/menu"
-import "unsafe"
+import (
+	"unsafe"
+
+	"github.com/wailsapp/wails/v2/pkg/menu"
+)
 
 var menuIdCounter int
 var menuItemToId map[*menu.MenuItem]int
