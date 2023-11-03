@@ -37,6 +37,16 @@ tasks:
     cmds:
       - task: format:md
 
+  syncfork:
+    cmds:
+      - git fetch upstream
+      - git checkout master
+      - git rebase upstream/master
+      - git push origin master
+      - git checkout v3-alpha
+      - git rebase upstream/v3-alpha
+      - git push origin v3-alpha
+
   format-all-md:
     cmds:
       - task: format:md
