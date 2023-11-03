@@ -1,6 +1,7 @@
 # Introduction
 
-!!! note This guide is a work in progress.
+!!! note 
+    This guide is a work in progress.
 
 Thanks for wanting to help out with development of Wails! This guide will help
 you get started.
@@ -44,6 +45,11 @@ The project has the following structure:
     ```
 
 ## Development
+
+### Alpha Todo List
+
+We are currently tracking known issues and tasks in the [Alpha Todo List](https://github.com/orgs/wailsapp/projects/6).
+If you want to help out, please check this list and follow the instructions in the [Feedback](../getting-started/feedback.md) page.
 
 ### Adding window functionality
 
