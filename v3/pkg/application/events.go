@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type Event struct {
@@ -17,7 +18,7 @@ func (w *Event) Context() *ApplicationEventContext {
 	return w.ctx
 }
 
-func newApplicationEvent(id int) *Event {
+func newApplicationEvent(id events.ApplicationEventType) *Event {
 	return &Event{
 		Id:  uint(id),
 		ctx: newApplicationEventContext(),

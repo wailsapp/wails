@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -29,6 +30,8 @@ type linuxApp struct {
 	// Native -> uint
 	windows     map[windowPointer]uint
 	windowsLock sync.Mutex
+
+	theme string
 }
 
 func (m *linuxApp) GetFlags(options Options) map[string]any {
@@ -52,7 +55,7 @@ func (m *linuxApp) show() {
 
 func (m *linuxApp) on(eventID uint) {
 	// TODO: What do we need to do here?
-	//	log.Println("linuxApp.on()", eventID)
+	log.Println("linuxApp.on()", eventID)
 }
 
 func (m *linuxApp) setIcon(icon []byte) {
@@ -108,7 +111,7 @@ func (m *linuxApp) run() error {
 		// Do we need to do anything now?
 		fmt.Println("events.Mac.ApplicationDidFinishLaunching received!")
 	})
-
+	m.monitorThemeChanges()
 	return appRun(m.application)
 }
 
@@ -128,9 +131,52 @@ func (m *linuxApp) registerWindow(window pointer, id uint) {
 }
 
 func (m *linuxApp) isDarkMode() bool {
-	// FIXME: How do we detect this?
-	// Maybe this helps: https://askubuntu.com/questions/1469869/how-does-firefox-detect-light-dark-theme-change-on-kde-systems
-	return false
+	return strings.Contains(m.theme, "dark")
+}
+
+func (m *linuxApp) monitorThemeChanges() {
+	go func() {
+		conn, err := dbus.ConnectSessionBus()
+		if err != nil {
+			m.parent.info("[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:", err)
+			return
+		}
+		defer conn.Close()
+
+		if err = conn.AddMatchSignal(
+			dbus.WithMatchObjectPath("/org/freedesktop/portal/desktop"),
+		); err != nil {
+			panic(err)
+		}
+
+		c := make(chan *dbus.Signal, 10)
+		conn.Signal(c)
+
+		getTheme := func(body []interface{}) (string, bool) {
+			if body[0].(string) != "org.gnome.desktop.interface" {
+				return "", false
+			}
+			if body[1].(string) == "color-scheme" {
+				return body[2].(dbus.Variant).Value().(string), true
+			}
+			return "", false
+		}
+
+		for v := range c {
+			theme, ok := getTheme(v.Body)
+			if !ok {
+				continue
+			}
+
+			if theme != m.theme {
+				m.theme = theme
+				event := newApplicationEvent(events.Common.ThemeChanged)
+				event.Context().setIsDarkMode(m.isDarkMode())
+				applicationEvents <- event
+			}
+
+		}
+	}()
 }
 
 func newPlatformApp(parent *App) *linuxApp {
