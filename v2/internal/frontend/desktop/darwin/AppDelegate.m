@@ -57,6 +57,13 @@ void SendDataToFirstInstance(char * singleInstanceUniqueId, char * message) {
         deliverImmediately:YES];
 }
 
+char* GetMacOsNativeTempDir() {
+    NSString *tempDir = NSTemporaryDirectory();
+    char *copy = strdup([tempDir UTF8String]);
+
+    return copy;
+}
+
 - (void)handleSecondInstanceNotification:(NSNotification *)note;
 {
     if (note.object != nil) {
