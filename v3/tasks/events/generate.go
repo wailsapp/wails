@@ -22,6 +22,16 @@ func newCommonEvents() commonEvents {
 $$COMMONEVENTSVALUES	}
 }
 
+var Linux = newLinuxEvents()
+
+type linuxEvents struct {
+$$LINUXEVENTSDECL}
+
+func newLinuxEvents() linuxEvents {
+	return linuxEvents{
+$$LINUXEVENTSVALUES	}
+}
+
 var Mac = newMacEvents()
 
 type macEvents struct {
@@ -81,6 +91,9 @@ func main() {
 		panic(err)
 	}
 
+	linuxEventsDecl := bytes.NewBufferString("")
+	linuxEventsValues := bytes.NewBufferString("")
+
 	macEventsDecl := bytes.NewBufferString("")
 	macEventsValues := bytes.NewBufferString("")
 	cHeaderEvents := bytes.NewBufferString("")
@@ -94,6 +107,7 @@ func main() {
 	commonEventsDecl := bytes.NewBufferString("")
 	commonEventsValues := bytes.NewBufferString("")
 
+	linuxJSEvents := bytes.NewBufferString("")
 	macJSEvents := bytes.NewBufferString("")
 	windowsJSEvents := bytes.NewBufferString("")
 	commonJSEvents := bytes.NewBufferString("")
@@ -101,6 +115,7 @@ func main() {
 	eventToJS := bytes.NewBufferString("")
 
 	var id int
+	//	var maxLinuxEvents int
 	var maxMacEvents int
 	var line []byte
 	// Loop over each line in the file
@@ -131,6 +146,19 @@ func main() {
 
 		// Add to buffer
 		switch platform {
+		case "linux":
+			eventType := "ApplicationEventType"
+			if strings.HasPrefix(event, "Window") {
+				eventType = "WindowEventType"
+			}
+			if strings.HasPrefix(event, "WebView") {
+				eventType = "WindowEventType"
+			}
+			linuxEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
+			linuxEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
+			linuxJSEvents.WriteString("\t\t" + event + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
+			//maxLinuxEvents = id
 		case "mac":
 			eventType := "ApplicationEventType"
 			if strings.HasPrefix(event, "Window") {
@@ -209,8 +237,11 @@ func main() {
 	cHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxMacEvents+1) + "\n")
 
 	// Save the eventsGo template substituting the values and decls
-	templateToWrite := strings.ReplaceAll(eventsGo, "$$MACEVENTSDECL", macEventsDecl.String())
+	templateToWrite := strings.ReplaceAll(eventsGo, "$$LINUXEVENTSDECL", linuxEventsDecl.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$LINUXEVENTSVALUES", linuxEventsValues.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$MACEVENTSDECL", macEventsDecl.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$MACEVENTSVALUES", macEventsValues.String())
+
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSDECL", windowsEventsDecl.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSVALUES", windowsEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONEVENTSDECL", commonEventsDecl.String())

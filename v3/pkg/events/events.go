@@ -53,6 +53,18 @@ func newCommonEvents() commonEvents {
 	}
 }
 
+var Linux = newLinuxEvents()
+
+type linuxEvents struct {
+	SystemThemeChanged ApplicationEventType
+}
+
+func newLinuxEvents() linuxEvents {
+	return linuxEvents{
+		SystemThemeChanged: 1193,
+	}
+}
+
 var Mac = newMacEvents()
 
 type macEvents struct {
@@ -545,4 +557,5 @@ var eventToJS = map[uint]string{
 	1190: "common:WindowDPIChanged",
 	1191: "common:WindowFilesDropped",
 	1192: "common:ThemeChanged",
+	1193: "linux:SystemThemeChanged",
 }

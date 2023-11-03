@@ -1,3 +1,4 @@
+linux:SystemThemeChanged
 mac:ApplicationDidBecomeActive
 mac:ApplicationDidChangeBackingProperties
 mac:ApplicationDidChangeEffectiveAppearance
@@ -167,3 +168,4 @@ common:WindowHide
 common:WindowDPIChanged
 common:WindowFilesDropped
 common:ThemeChanged
+
