@@ -9,6 +9,7 @@ extern void appExited(int code);
 void *Application_new(char *app_name);
 void Application_exec(void *app_ptr);
 void Application_quit(void *app_ptr);
+char *Application_get_screens(void *app_ptr); // Returns a json blob
 /* End Application */
 
 /* Window */
@@ -32,6 +33,7 @@ void Window_close(void *win_ptr);
 /* WebEngineView */
 void WebEngineView_load_url(void *web_engine_ptr, char *url);
 void WebEngineView_reload(void *web_engine_ptr);
+void WebEngineView_run_js(void *web_engine_ptr, char *script);
 /* End WebEngineView */
 
 void fix_signal(int signum);

@@ -8,6 +8,9 @@
 #include <QVBoxLayout>
 #include <QWebEngineView>
 #include <QtWidgets>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <condition_variable>
 #include <iostream>
 #include <memory>
@@ -53,6 +56,53 @@ void Application_quit(void *app_ptr) {
   runOnAppThread(app, [=]() { app->quit(); });
 }
 
+char *Application_get_screens(void *app_ptr) {
+  auto app = static_cast<QApplication *>(app_ptr);
+  QString res;
+  runOnAppThread(app, [=]() -> QString {
+    QScreen *focusedScreen;
+
+    auto screens = app->screens();
+    auto primaryScreen = app->primaryScreen();
+
+    QScreen *currentScreen;
+    auto focusedWidget = app->focusWidget();
+    if (focusedWidget) {
+      currentScreen = focusedWidget->window()->windowHandle()->screen();
+    }
+
+    QJsonArray arr;
+    for (auto &&screen : screens) {
+      QJsonObject s;
+      s["isCurrent"] = currentScreen == screen;
+      s["isPrimary"] = primaryScreen == screen;
+
+      auto screenSize = screen->size();
+
+      s["width"] = (int) screenSize.width();
+      s["height"] = (int) screenSize.height();
+
+      QJsonObject size;
+      size["width"] = (int) screenSize.width();
+      size["height"] = (int) screenSize.height();
+      s["size"] = size;
+
+      auto screenPhysicalSize = screen->physicalSize();
+
+      QJsonObject physicalSize;
+      physicalSize["width"] = (int) screenPhysicalSize.width();
+      physicalSize["height"] = (int) screenPhysicalSize.height();
+      s["physicalSize"] = size;
+
+      arr.push_back(s);
+    }
+
+    return QJsonDocument(arr).toJson(QJsonDocument::Compact);
+  }, &res);
+
+  qInfo() << "Screens" << res;
+  return res.toLocal8Bit().data();
+}
 /* End Application */
 
 /* Window */
@@ -91,7 +141,7 @@ Window *Window_new(void *app_ptr, char *start_url) {
 
 void Window_set_title(void *win_ptr, char *title) {
   auto win = static_cast<QWidget *>(win_ptr);
-  QString qtitle(title);
+  auto qtitle = QString::fromUtf8(title);
   runOnAppThread(win, [=]() { win->setWindowTitle(qtitle); });
 }
 
@@ -142,6 +192,17 @@ void WebEngineView_load_url(void *web_engine_ptr, char *url) {
 void WebEngineView_reload(void *web_engine_ptr) {
   auto eng = static_cast<QWebEngineView *>(web_engine_ptr);
   runOnAppThread(eng, [=]() { eng->reload(); });
+}
+
+void WebEngineView_run_js(void *web_engine_ptr, char *script) {
+  auto eng = static_cast<QWebEngineView *>(web_engine_ptr);
+  auto qScript = QString::fromUtf8(script);
+  runOnAppThread(eng, [=]() {
+    eng->page()->runJavaScript(qScript);
+//    eng->page()->runJavaScript(qScript, [=](const QVariant &v) {
+//      qInfo() << "Ran script" << qScript << "got result" << v;
+//    });
+  });
 }
 
 /* End WebEngineView */
