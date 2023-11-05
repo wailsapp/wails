@@ -50,6 +50,9 @@ theme:
         name: Switch to light mode
 
 plugins:
+  - table-reader:
+      data_path: "shared"
+      allow_missing_files: False
   - i18n:
       docs_structure: folder
       languages:
@@ -182,6 +185,8 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
-
+watch:
+  - overrides
+  - shared
 copyright:
   Copyright © 2023 Lea Anthony

@@ -14,27 +14,11 @@ Alpha 1 是最初的发布版本。旨在收集关于新 API 的反馈，并让�
 
 #### 状态
 
-- W - 工作正常
-- P - 部分工作
-- N - 无法工作
+- :material-check-bold: - 工作正常
+- :material-minus: - 部分工作
+- :material-close: - 无法工作
 
-| 示例           | Mac | Windows | Linux |
-|---------------|-----|---------|-------|
-| binding       | W   | W       |       |
-| build         | W   | W       |       |
-| clipboard     | W   | W       |       |
-| context menus | W   | W       |       |
-| dialogs       | P   | W       |       |
-| drag-n-drop   | W   | N       |       |
-| events        | W   | W       |       |
-| frameless     | W   | W       |       |
-| keybindings   | W   | W       |       |
-| plain         | W   | W       |       |
-| screen        | W   | W       |       |
-| systray       | W   | W       |       |
-| video         |     | W       |       |
-| window        | P   | W       |       |
-| wml           | W   | W       |       |
+{{ read_csv("status.csv")  }}
 
 - Mac 上的 Dialogs 可以工作，但是文件对话框会发出一个需要解决的警告。
 

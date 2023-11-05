@@ -1,4 +1,4 @@
-# Roadmap
+**# Roadmap
 
 The roadmap is a living document and is subject to change. If you have any suggestions, please open an issue.
 Each milestone will have a set of goals that we are aiming to achieve. These are subject to change.
@@ -14,27 +14,11 @@ The main goal is to get most of the examples working on all platforms.
 
 #### Status
 
-- W - Working
-- P - Partially working
-- N - Not working
+- :material-check-bold: - Working
+- :material-minus: - Partially working
+- :material-close: - Not working
 
-| Example       | Mac | Windows | Linux |
-|---------------|-----|---------|-------|
-| binding       | W   | W       |       |
-| build         | W   | W       |       |
-| clipboard     | W   | W       |       |
-| context menus | W   | W       |       |
-| dialogs       | P   | W       |       |
-| drag-n-drop   | W   | N       |       |
-| events        | W   | W       |       |
-| frameless     | W   | W       |       |
-| keybindings   | W   | W       |       |
-| plain         | W   | W       |       |
-| screen        | W   | W       |       |
-| systray       | W   | W       |       |
-| video         |     | W       |       |
-| window        | P   | W       |       |
-| wml           | W   | W       |       |
+{{ read_csv("status.csv") }}
 
 - Mac Dialogs work, however the file dialogs issue a warning that needs to be fixed.
 
