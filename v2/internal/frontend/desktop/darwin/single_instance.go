@@ -12,13 +12,16 @@ package darwin
 import "C"
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"os"
+	"strings"
 	"syscall"
+	"unsafe"
 )
 
 func SetupSingleInstance(uniqueID string) {
-	lockFilePath := os.TempDir()
+	lockFilePath := getTempDir()
 	lockFileName := uniqueID + ".lock"
 	_, err := createLockFile(lockFilePath + "/" + lockFileName)
 
@@ -62,14 +65,28 @@ func HandleSecondInstanceData(secondInstanceMessage *C.char) {
 func createLockFile(filename string) (*os.File, error) {
 	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
+		fmt.Printf("Failed to open lockfile %s: %s", filename, err)
 		return nil, err
 	}
 
 	err = syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
 	if err != nil {
+		// Flock failed for some other reason than other instance already lock it. Print it in logs for possible debugging.
+		if !strings.Contains(err.Error(), "resource temporarily unavailable") {
+			fmt.Printf("Failed to lock lockfile %s: %s", filename, err)
+		}
 		file.Close()
 		return nil, err
 	}
 
 	return file, nil
+}
+
+// If app is sandboxed, golang os.TempDir() will return path that will not be accessible. So use native macOS temp dir function.
+func getTempDir() string {
+	cstring := C.GetMacOsNativeTempDir()
+	path := C.GoString(cstring)
+	C.free(unsafe.Pointer(cstring))
+
+	return path
 }
