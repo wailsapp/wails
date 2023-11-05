@@ -1,7 +1,7 @@
 # What's new in v3?
 
-!!! note 
-    The features that will be included in the v3 release may change from this list.
+!!! note The features that will be included in the v3 release may change from
+this list.
 
 ## Multiple Windows
 

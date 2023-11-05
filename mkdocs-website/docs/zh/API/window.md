@@ -1,6 +1,8 @@
 # 窗口
 
-要创建一个窗口，可以使用[Application.NewWebviewWindow](application.md#newwebviewwindow)或[Application.NewWebviewWindowWithOptions](application.md#newwebviewwindowwithoptions)。前者创建一个具有默认选项的窗口，而后者允许您指定自定义选项。
+要创建一个窗口，可以使
+用[Application.NewWebviewWindow](application.md#newwebviewwindow)或[Application.NewWebviewWindowWithOptions](application.md#newwebviewwindowwithoptions)。
+前者创建一个具有默认选项的窗口，而后者允许您指定自定义选项。
 
 这些方法可在返回的WebviewWindow对象上调用：
 
@@ -20,7 +22,8 @@ API: `Name() string`
 
 API: `SetSize(width, height int) *WebviewWindow`
 
-此方法将WebviewWindow的大小设置为提供的宽度和高度参数。如果提供的尺寸超过约束条件，它们将被相应调整。
+此方法将WebviewWindow的大小设置为提供的宽度和高度参数。如果提供的尺寸超过约束条
+件，它们将被相应调整。
 
 ### SetAlwaysOnTop
 
@@ -32,7 +35,8 @@ API: `SetAlwaysOnTop(b bool) *WebviewWindow`
 
 API: `Show() *WebviewWindow`
 
-`Show`方法用于使窗口可见。如果窗口未运行，它首先调用`run`方法启动窗口，然后使其可见。
+`Show`方法用于使窗口可见。如果窗口未运行，它首先调用`run`方法启动窗口，然后使其
+可见。
 
 ### Hide
 
@@ -68,7 +72,8 @@ API: `GetScreen() (*Screen, error)`
 
 API: `SetFrameless(frameless bool) *WebviewWindow`
 
-此函数用于移除窗口边框和标题栏。它根据提供的布尔值（true表示无边框，false表示有边框）切换窗口的无边框状态。
+此函数用于移除窗口边框和标题栏。它根据提供的布尔值（true表示无边框，false表示有
+边框）切换窗口的无边框状态。
 
 #### RegisterContextMenu
 

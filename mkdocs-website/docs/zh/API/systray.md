@@ -93,7 +93,8 @@ API：`WindowOffset(offset int) *SystemTray`
 
 API：`WindowDebounce(debounce time.Duration) *SystemTray`
 
-`WindowDebounce` 方法设置防抖时间。在 Windows 上，它用于指定在响应通知图标上的鼠标松开事件之前等待多长时间。
+`WindowDebounce` 方法设置防抖时间。在 Windows 上，它用于指定在响应通知图标上的鼠
+标松开事件之前等待多长时间。
 
 ### OpenMenu
 

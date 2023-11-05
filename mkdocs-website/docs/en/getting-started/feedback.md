@@ -1,7 +1,7 @@
 # Feedback
 
-We welcome (and encourage) your feedback! Please search for existing tickets or posts before creating new ones.
-Here are the different ways to provide feedback:
+We welcome (and encourage) your feedback! Please search for existing tickets or
+posts before creating new ones. Here are the different ways to provide feedback:
 
 === "Bugs"
 
@@ -35,7 +35,8 @@ Here are the different ways to provide feedback:
     - Please *don't* just add comments like "+1" or "me too".
     - Please feel free to comment if there is more to add to the post, such as "this bug also affect ARM builds" or "Another option would be to ....."
 
-There is a list of known issues & work in progress can be found [here](https://github.com/orgs/wailsapp/projects/6). 
+There is a list of known issues & work in progress can be found
+[here](https://github.com/orgs/wailsapp/projects/6).
 
 ## Things we are looking for feedback on
 

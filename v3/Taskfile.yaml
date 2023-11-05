@@ -130,7 +130,7 @@ tasks:
     cmds:
       - go test ./...
       - task: format
-      - task: docs:update:api
+#      - task: docs:update:api
 
   test:example:
     dir: 'examples/{{.DIR}}'

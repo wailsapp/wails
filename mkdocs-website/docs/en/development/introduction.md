@@ -1,7 +1,6 @@
 # Introduction
 
-!!! note 
-    This guide is a work in progress.
+!!! note This guide is a work in progress.
 
 Thanks for wanting to help out with development of Wails! This guide will help
 you get started.
@@ -48,8 +47,10 @@ The project has the following structure:
 
 ### Alpha Todo List
 
-We are currently tracking known issues and tasks in the [Alpha Todo List](https://github.com/orgs/wailsapp/projects/6).
-If you want to help out, please check this list and follow the instructions in the [Feedback](../getting-started/feedback.md) page.
+We are currently tracking known issues and tasks in the
+[Alpha Todo List](https://github.com/orgs/wailsapp/projects/6). If you want to
+help out, please check this list and follow the instructions in the
+[Feedback](../getting-started/feedback.md) page.
 
 ### Adding window functionality
 
@@ -140,8 +141,8 @@ The `InjectJS()` method returns JavaScript that should be injected into all
 windows as they are created. This is useful for adding custom JavaScript
 functions that complement the plugin.
 
-The built-in plugins can be found in the `v3/plugins` directory. 
-Check them out for inspiration.
+The built-in plugins can be found in the `v3/plugins` directory. Check them out
+for inspiration.
 
 ## Tasks
 
