@@ -164,7 +164,7 @@ func Run() (err error) {
 			if card.DeviceInfo != nil {
 				details := fmt.Sprintf("%s (%s) - Driver:%s ", card.DeviceInfo.Product.Name, card.DeviceInfo.Vendor.Name, card.DeviceInfo.Driver)
 				systemTabledata = append(systemTabledata, []string{prefix, details})
-				return
+				continue
 			}
 			systemTabledata = append(systemTabledata, []string{"GPU", "Unknown"})
 		}
