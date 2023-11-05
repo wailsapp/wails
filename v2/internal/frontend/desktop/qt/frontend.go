@@ -5,6 +5,7 @@ package qt
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/pkg/browser"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -16,6 +17,7 @@ import (
 	"log"
 	"net"
 	"net/url"
+	"text/template"
 	"time"
 	"unsafe"
 )
@@ -150,6 +152,9 @@ func (f *Frontend) ClipboardSetText(text string) error {
 // ExecJS implements frontend.Frontend.
 func (f *Frontend) ExecJS(js string) {
 	f.logger.Info("ExecJS")
+	s := C.CString(js)
+	defer C.bye(unsafe.Pointer(s))
+	C.WebEngineView_run_js(f.qWindow.web_engine_view, s)
 }
 
 // Hide implements frontend.Frontend.
@@ -180,9 +185,28 @@ func (f *Frontend) MessageDialog(dialogOptions frontend.MessageDialogOptions) (s
 	return "", nil
 }
 
+func (f *Frontend) WindowPrint() {
+	f.logger.Info("WindowPrint")
+	f.ExecJS("window.print();")
+}
+
+type EventNotify struct {
+	Name string        `json:"name"`
+	Data []interface{} `json:"data"`
+}
+
 // Notify implements frontend.Frontend.
 func (f *Frontend) Notify(name string, data ...interface{}) {
-	f.logger.Info("Notify")
+	notification := EventNotify{
+		Name: name,
+		Data: data,
+	}
+	payload, err := json.Marshal(notification)
+	if err != nil {
+		f.logger.Error(err.Error())
+		return
+	}
+	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
 
 // OpenDirectoryDialog implements frontend.Frontend.
@@ -244,7 +268,7 @@ func (f *Frontend) RunMainLoop() {
 	f.logger.Info("RunMainLoop")
 
 	time.Sleep(3 * time.Second)
-	f.WindowSetTitle("New title")
+	f.ScreenGetAll()
 
 	<-exitCh
 
@@ -260,7 +284,14 @@ func (f *Frontend) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (str
 // ScreenGetAll implements frontend.Frontend.
 func (f *Frontend) ScreenGetAll() ([]frontend.Screen, error) {
 	f.logger.Info("ScreenGetAll")
-	return []frontend.Screen{}, nil
+	screensJson := C.GoString(C.Application_get_screens(f.qApp))
+	var screens []frontend.Screen
+	if err := json.Unmarshal([]byte(screensJson), &screens); err != nil {
+		f.logger.Error("Failed to unmarshal screens: %s", err)
+		return screens, err
+	}
+	f.logger.Info("Got screens: %+v", screens)
+	return screens, nil
 }
 
 // WindowCenter implements frontend.Frontend.
@@ -300,7 +331,7 @@ func (f *Frontend) WindowHide() {
 
 // WindowIsFullscreen implements frontend.Frontend.
 func (f *Frontend) WindowIsFullscreen() bool {
-	f.logger.Info("WindowHide")
+	f.logger.Info("WindowIsFullscreen")
 	return false
 }
 
@@ -334,15 +365,11 @@ func (f *Frontend) WindowMinimise() {
 	C.Window_hide(f.qWindow.window)
 }
 
-// WindowPrint implements frontend.Frontend.
-func (f *Frontend) WindowPrint() {
-	f.logger.Info("WindowPrint")
-}
-
 // WindowReload implements frontend.Frontend.
 func (f *Frontend) WindowReload() {
 	f.logger.Info("WindowReload")
-	C.WebEngineView_reload(f.qWindow.web_engine_view)
+	//C.WebEngineView_reload(f.qWindow.web_engine_view)
+	f.ExecJS("runtime.WindowReload();")
 }
 
 // WindowReloadApp implements frontend.Frontend.
@@ -408,6 +435,7 @@ func (f *Frontend) WindowSetTitle(title string) {
 // WindowShow implements frontend.Frontend.
 func (f *Frontend) WindowShow() {
 	f.logger.Info("WindowShow")
+	//f.WindowShow()
 }
 
 // WindowToggleMaximise implements frontend.Frontend.
