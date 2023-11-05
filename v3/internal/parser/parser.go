@@ -41,6 +41,23 @@ type Parameter struct {
 	Type *ParameterType
 }
 
+func (p *Parameter) NamespacedStructType() string {
+	var typeName string
+	if p.Type.Package != "" {
+		parts := strings.Split(p.Type.Package, "/")
+		typeName = parts[len(parts)-1] + "."
+	}
+	return typeName + p.Type.Name
+}
+func (p *Parameter) NamespacedStructVariable() string {
+	var typeName string
+	if p.Type.Package != "" {
+		parts := strings.Split(p.Type.Package, "/")
+		typeName = parts[len(parts)-1]
+	}
+	return typeName + p.Type.Name
+}
+
 func (p *Parameter) JSType() string {
 	// Convert type to javascript equivalent type
 	var typeName string
@@ -57,11 +74,8 @@ func (p *Parameter) JSType() string {
 
 	// if the type is a struct, we need to add the package name
 	if p.Type.IsStruct {
-		if p.Type.Package != "" {
-			parts := strings.Split(p.Type.Package, "/")
-			typeName = parts[len(parts)-1] + "." + typeName
-			// TODO: Check if this is a duplicate package name
-		}
+		typeName = p.NamespacedStructType()
+		typeName = strings.ReplaceAll(typeName, ".", "")
 	}
 
 	// Add slice suffix

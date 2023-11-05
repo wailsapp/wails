@@ -13,7 +13,7 @@ window.go.main = {
 		 * @param name {string}
 		 * @returns {Promise<string>}
 		 **/
-	    Greet: function(name) { wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0)); },
+	    Greet: function(name) { return wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0)); },
     },
     OtherService: {
 
@@ -23,6 +23,6 @@ window.go.main = {
 		 *
 		 * @returns {Promise<void>}
 		 **/
-	    Hello: function() { wails.CallByID(4249972365, ...Array.prototype.slice.call(arguments, 0)); },
+	    Hello: function() { return wails.CallByID(4249972365, ...Array.prototype.slice.call(arguments, 0)); },
     },
 };

@@ -13,6 +13,6 @@ window.go.main = {
 		 * @param name {string}
 		 * @returns {Promise<string>}
 		 **/
-	    Greet: function(name) { wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0)); },
+	    Greet: function(name) { return wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0)); },
     },
 };

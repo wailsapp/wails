@@ -102,7 +102,8 @@ func sanitiseJSVarName(name string) string {
 	return name
 }
 
-func GenerateBinding(structName string, method *BoundMethod) (string, []string) {
+func GenerateBinding(structName string, method *BoundMethod) (string, []string, []string) {
+	var namespacedStructs []string
 	var models []string
 	result := strings.ReplaceAll(bindingTemplate, "{{structName}}", structName)
 	result = strings.ReplaceAll(result, "{{methodName}}", method.Name)
@@ -114,11 +115,16 @@ func GenerateBinding(structName string, method *BoundMethod) (string, []string) 
 	result = strings.ReplaceAll(result, "Comments", comments)
 	var params string
 	for _, input := range method.Inputs {
+		inputName := sanitiseJSVarName(input.Name)
 		pkgName := getPackageName(input)
 		if pkgName != "" {
 			models = append(models, pkgName)
+			if input.Type.IsStruct {
+				nsStruct := input.NamespacedStructType()
+				namespacedStructs = append(namespacedStructs, nsStruct)
+			}
 		}
-		params += " * @param " + sanitiseJSVarName(input.Name) + " {" + input.JSType() + "}\n"
+		params += " * @param " + inputName + " {" + input.JSType() + "}\n"
 	}
 	params = strings.TrimSuffix(params, "\n")
 	if len(params) == 0 {
@@ -156,6 +162,10 @@ func GenerateBinding(structName string, method *BoundMethod) (string, []string) 
 			if jsType == "error" {
 				jsType = "void"
 			}
+			if output.Type.IsStruct {
+				namespacedStructs = append(namespacedStructs, output.NamespacedStructType())
+				jsType = output.NamespacedStructVariable()
+			}
 			returns += jsType + ", "
 		}
 		returns = strings.TrimSuffix(returns, ", ")
@@ -163,7 +173,7 @@ func GenerateBinding(structName string, method *BoundMethod) (string, []string) 
 	}
 	result = strings.ReplaceAll(result, " * @returns {Promise<string>}", returns)
 
-	return result, lo.Uniq(models)
+	return result, lo.Uniq(models), lo.Uniq(namespacedStructs)
 }
 
 func getPackageName(input *Parameter) string {
@@ -217,6 +227,7 @@ func GenerateBindings(bindings map[string]map[string][]*BoundMethod) map[string]
 	sort.Strings(packageNames)
 	for _, packageName := range packageNames {
 		var allModels []string
+		var allNamespacedStructs []string
 
 		packageBindings := bindings[packageName]
 		structNames := lo.Keys(packageBindings)
@@ -239,7 +250,8 @@ window.go = window.go || {};
 				return methods[i].Name < methods[j].Name
 			})
 			for _, method := range methods {
-				thisBinding, models := GenerateBinding(structName, method)
+				thisBinding, models, namespacedStructs := GenerateBinding(structName, method)
+				allNamespacedStructs = append(allNamespacedStructs, namespacedStructs...)
 				allModels = append(allModels, models...)
 				result[normalisedPackageNames[packageName]] += thisBinding
 			}
@@ -247,19 +259,14 @@ window.go = window.go || {};
 		}
 		result[normalisedPackageNames[packageName]] += "};\n"
 
-		// add imports
-		/*		if len(allModels) > 0 {
-					allModels := lo.Uniq(allModels)
-					var models []string
-					for _, model := range allModels {
-						models = append(models, normalisedPackageNames[model])
-					}
-					sort.Strings(models)
-					result[normalisedPackageNames[packageName]] += "\n"
-					imports := "import {" + strings.Join(models, ", ") + "} from './models';\n"
-					result[normalisedPackageNames[packageName]] = imports + result[normalisedPackageNames[packageName]]
-				}
-		*/
+		if len(allNamespacedStructs) > 0 {
+			typedefs := "/**\n"
+			for _, namespacedStruct := range lo.Uniq(allNamespacedStructs) {
+				typedefs += " * @typedef {import('./models')." + namespacedStruct + "} " + strings.ReplaceAll(namespacedStruct, ".", "") + "\n"
+			}
+			typedefs += " */\n\n"
+			result[normalisedPackageNames[packageName]] = typedefs + result[normalisedPackageNames[packageName]]
+		}
 
 		result[normalisedPackageNames[packageName]] = header + result[normalisedPackageNames[packageName]]
 	}
