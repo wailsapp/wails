@@ -1,6 +1,7 @@
 # Introduction
 
-!!! note This guide is a work in progress.
+!!! note 
+    This guide is a work in progress.
 
 Thanks for wanting to help out with development of Wails! This guide will help
 you get started.
