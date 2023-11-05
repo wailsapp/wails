@@ -48,11 +48,16 @@ void *Application_new(char *app_name) {
   return qtApp;
 }
 
+void Application_quit(void *app_ptr) {
+  auto app = static_cast<QApplication *>(app_ptr);
+  runOnAppThread(app, [=]() { app->quit(); });
+}
+
 /* End Application */
 
 /* Window */
 
-Window *Window_new(void *app_ptr) {
+Window *Window_new(void *app_ptr, char *start_url) {
   auto app = static_cast<QApplication *>(app_ptr);
 
   Window *win;
@@ -60,7 +65,7 @@ Window *Window_new(void *app_ptr) {
       app,
       [=]() -> Window * {
         auto w = new QWidget();
-        w->resize(320, 240);
+        w->resize(800, 600);
         w->setMinimumSize(320, 240);
 
         auto layout = new QVBoxLayout(w);
@@ -69,7 +74,7 @@ Window *Window_new(void *app_ptr) {
 
         auto view = new QWebEngineView(w);
         layout->addWidget(view);
-        view->load(QUrl("https://example.org"));
+        view->load(QUrl(start_url));
 
         w->show();
 
@@ -86,7 +91,8 @@ Window *Window_new(void *app_ptr) {
 
 void Window_set_title(void *win_ptr, char *title) {
   auto win = static_cast<QWidget *>(win_ptr);
-  runOnAppThread(win, [=]() { win->setWindowTitle(title); });
+  QString qtitle(title);
+  runOnAppThread(win, [=]() { win->setWindowTitle(qtitle); });
 }
 
 void Window_set_minimum_size(void *win_ptr, int width, int height) {
@@ -99,6 +105,31 @@ void Window_resize(void *win_ptr, int width, int height) {
   runOnAppThread(win, [=]() { win->resize(width, height); });
 }
 
+void Window_hide(void *win_ptr) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  runOnAppThread(win, [=]() { win->showMinimized(); });
+}
+
+void Window_show(void *win_ptr) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  runOnAppThread(win, [=]() { win->showNormal(); });
+}
+
+void Window_fullscreen(void *win_ptr) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  runOnAppThread(win, [=]() { win->setWindowState(win->windowState() ^ Qt::WindowFullScreen); });
+}
+
+void Window_maximize(void *win_ptr) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  runOnAppThread(win, [=]() { win->setWindowState(win->windowState() ^ Qt::WindowMaximized); });
+}
+
+void Window_close(void *win_ptr) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  runOnAppThread(win, [=]() { win->close(); });
+}
+
 /* End Window */
 
 /* WebEngineView */
@@ -106,6 +137,11 @@ void Window_resize(void *win_ptr, int width, int height) {
 void WebEngineView_load_url(void *web_engine_ptr, char *url) {
   auto eng = static_cast<QWebEngineView *>(web_engine_ptr);
   runOnAppThread(eng, [=]() { eng->load(QUrl(url)); });
+}
+
+void WebEngineView_reload(void *web_engine_ptr) {
+  auto eng = static_cast<QWebEngineView *>(web_engine_ptr);
+  runOnAppThread(eng, [=]() { eng->reload(); });
 }
 
 /* End WebEngineView */
@@ -166,4 +202,8 @@ void install_signal_handlers() {
 #if defined(SIGXFSZ)
   fix_signal(SIGXFSZ);
 #endif
+}
+
+void bye(void* ptr) {
+    free(ptr);
 }

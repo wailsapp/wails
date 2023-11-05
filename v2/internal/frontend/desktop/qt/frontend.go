@@ -5,7 +5,6 @@ package qt
 
 import (
 	"context"
-	"fmt"
 	"github.com/pkg/browser"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -17,6 +16,7 @@ import (
 	"log"
 	"net"
 	"net/url"
+	"time"
 	"unsafe"
 )
 
@@ -131,81 +131,89 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 }
 
 // BrowserOpenURL implements frontend.Frontend.
-func (*Frontend) BrowserOpenURL(url string) {
+func (f *Frontend) BrowserOpenURL(url string) {
 	_ = browser.OpenURL(url)
 }
 
 // ClipboardGetText implements frontend.Frontend.
-func (*Frontend) ClipboardGetText() (string, error) {
-	fmt.Println("ClipboardGetText")
+func (f *Frontend) ClipboardGetText() (string, error) {
+	f.logger.Info("ClipboardGetText")
 	return "", nil
 }
 
 // ClipboardSetText implements frontend.Frontend.
-func (*Frontend) ClipboardSetText(text string) error {
-	fmt.Println("ClipboardSetText")
+func (f *Frontend) ClipboardSetText(text string) error {
+	f.logger.Info("ClipboardSetText")
 	return nil
 }
 
 // ExecJS implements frontend.Frontend.
-func (*Frontend) ExecJS(js string) {
-	fmt.Println("ExecJS")
+func (f *Frontend) ExecJS(js string) {
+	f.logger.Info("ExecJS")
 }
 
 // Hide implements frontend.Frontend.
-func (*Frontend) Hide() {
-	fmt.Println("Hide")
+func (f *Frontend) Hide() {
+	f.logger.Info("Hide")
+	C.Window_hide(f.qWindow.window)
+}
+
+// Show implements frontend.Frontend.
+func (f *Frontend) Show() {
+	f.logger.Info("Show")
+	C.Window_show(f.qWindow.window)
 }
 
 // MenuSetApplicationMenu implements frontend.Frontend.
-func (*Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
-	fmt.Println("MenuSetApplicationMenu")
+func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
+	f.logger.Info("MenuSetApplicationMenu")
 }
 
 // MenuUpdateApplicationMenu implements frontend.Frontend.
-func (*Frontend) MenuUpdateApplicationMenu() {
-	fmt.Println("MenuUpdateApplicationMenu")
+func (f *Frontend) MenuUpdateApplicationMenu() {
+	f.logger.Info("MenuUpdateApplicationMenu")
 }
 
 // MessageDialog implements frontend.Frontend.
-func (*Frontend) MessageDialog(dialogOptions frontend.MessageDialogOptions) (string, error) {
-	fmt.Println("MessageDialog")
+func (f *Frontend) MessageDialog(dialogOptions frontend.MessageDialogOptions) (string, error) {
+	f.logger.Info("MessageDialog")
 	return "", nil
 }
 
 // Notify implements frontend.Frontend.
-func (*Frontend) Notify(name string, data ...interface{}) {
-	fmt.Println("Notify")
+func (f *Frontend) Notify(name string, data ...interface{}) {
+	f.logger.Info("Notify")
 }
 
 // OpenDirectoryDialog implements frontend.Frontend.
-func (*Frontend) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
-	fmt.Println("OpenDirectoryDialog")
+func (f *Frontend) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
+	f.logger.Info("OpenDirectoryDialog")
 	return "", nil
 }
 
 // OpenFileDialog implements frontend.Frontend.
-func (*Frontend) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
-	fmt.Println("OpenFileDialog")
+func (f *Frontend) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
+	f.logger.Info("OpenFileDialog")
 	return "", nil
 }
 
 // OpenMultipleFilesDialog implements frontend.Frontend.
-func (*Frontend) OpenMultipleFilesDialog(dialogOptions frontend.OpenDialogOptions) ([]string, error) {
-	fmt.Println("OpenMultipleFilesDialog")
+func (f *Frontend) OpenMultipleFilesDialog(dialogOptions frontend.OpenDialogOptions) ([]string, error) {
+	f.logger.Info("OpenMultipleFilesDialog")
 	return []string{}, nil
 }
 
 // Quit implements frontend.Frontend.
-func (*Frontend) Quit() {
-	fmt.Println("Quit")
+func (f *Frontend) Quit() {
+	f.logger.Info("Quit")
+	C.Application_quit(f.qApp)
 }
 
 // Run implements frontend.Frontend.
 func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
 
-	fmt.Println("Run")
+	f.logger.Info("Run")
 
 	go func() {
 		if f.frontendOptions.OnStartup != nil {
@@ -219,194 +227,207 @@ func (f *Frontend) Run(ctx context.Context) error {
 	//
 	//f.mainWindow.Run(f.startURL.String())
 
-	//<-ctx.Done()
-	//return ctx.Err()
+	// TODO: Whats up with this?
+	if f.startURL.Scheme == "wails" {
+		f.startURL.Scheme = "http"
+	}
+
+	f.logger.Info("Creating window with url %s", f.startURL)
+
+	f.qWindow = C.Window_new(f.qApp, C.CString(f.startURL.String()))
+
 	return nil
 }
 
 // RunMainLoop implements frontend.Frontend.
 func (f *Frontend) RunMainLoop() {
-	fmt.Println("RunMainLoop")
+	f.logger.Info("RunMainLoop")
 
-	f.qWindow = C.Window_new(f.qApp)
+	time.Sleep(3 * time.Second)
+	f.WindowSetTitle("New title")
 
 	<-exitCh
 
-	fmt.Println("Qt App exited")
+	f.logger.Info("Qt App exited")
 }
 
 // SaveFileDialog implements frontend.Frontend.
-func (*Frontend) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (string, error) {
-	fmt.Println("SaveFileDialog")
+func (f *Frontend) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (string, error) {
+	f.logger.Info("SaveFileDialog")
 	return "", nil
 }
 
 // ScreenGetAll implements frontend.Frontend.
-func (*Frontend) ScreenGetAll() ([]frontend.Screen, error) {
-	fmt.Println("ScreenGetAll")
+func (f *Frontend) ScreenGetAll() ([]frontend.Screen, error) {
+	f.logger.Info("ScreenGetAll")
 	return []frontend.Screen{}, nil
 }
 
-// Show implements frontend.Frontend.
-func (f *Frontend) Show() {
-	fmt.Println("Show")
-}
-
 // WindowCenter implements frontend.Frontend.
-func (*Frontend) WindowCenter() {
-	fmt.Println("WindowCenter")
+func (f *Frontend) WindowCenter() {
+	f.logger.Info("WindowCenter")
 }
 
 // WindowClose implements frontend.Frontend.
-func (*Frontend) WindowClose() {
-	fmt.Println("WindowClose")
+func (f *Frontend) WindowClose() {
+	f.logger.Info("WindowClose")
+	C.Window_close(f.qWindow.window)
 }
 
 // WindowFullscreen implements frontend.Frontend.
-func (*Frontend) WindowFullscreen() {
-	fmt.Println("WindowFullscreen")
+func (f *Frontend) WindowFullscreen() {
+	f.logger.Info("WindowFullscreen")
+	C.Window_fullscreen(f.qWindow.window)
 }
 
 // WindowGetPosition implements frontend.Frontend.
-func (*Frontend) WindowGetPosition() (int, int) {
-	fmt.Println("WindowGetPosition")
+func (f *Frontend) WindowGetPosition() (int, int) {
+	f.logger.Info("WindowGetPosition")
 	return 0, 0
 }
 
 // WindowGetSize implements frontend.Frontend.
-func (*Frontend) WindowGetSize() (int, int) {
-	fmt.Println("WindowGetSize")
+func (f *Frontend) WindowGetSize() (int, int) {
+	f.logger.Info("WindowGetSize")
 	return 1, 1
 }
 
 // WindowHide implements frontend.Frontend.
-func (*Frontend) WindowHide() {
-	fmt.Println("WindowHide")
+func (f *Frontend) WindowHide() {
+	f.logger.Info("WindowHide")
+	C.Window_hide(f.qWindow.window)
 }
 
 // WindowIsFullscreen implements frontend.Frontend.
-func (*Frontend) WindowIsFullscreen() bool {
-	fmt.Println("WindowHide")
+func (f *Frontend) WindowIsFullscreen() bool {
+	f.logger.Info("WindowHide")
 	return false
 }
 
 // WindowIsMaximised implements frontend.Frontend.
-func (*Frontend) WindowIsMaximised() bool {
-	fmt.Println("WindowIsMaximized")
+func (f *Frontend) WindowIsMaximised() bool {
+	f.logger.Info("WindowIsMaximized")
 	return false
 }
 
 // WindowIsMinimised implements frontend.Frontend.
-func (*Frontend) WindowIsMinimised() bool {
-	fmt.Println("WindowIsMinimized")
+func (f *Frontend) WindowIsMinimised() bool {
+	f.logger.Info("WindowIsMinimized")
 	return false
 }
 
 // WindowIsNormal implements frontend.Frontend.
-func (*Frontend) WindowIsNormal() bool {
-	fmt.Println("WindowIsNormal")
+func (f *Frontend) WindowIsNormal() bool {
+	f.logger.Info("WindowIsNormal")
 	return false
 }
 
 // WindowMaximise implements frontend.Frontend.
-func (*Frontend) WindowMaximise() {
-	fmt.Println("WindowMaximize")
+func (f *Frontend) WindowMaximise() {
+	f.logger.Info("WindowMaximize")
+	C.Window_maximize(f.qWindow.window)
 }
 
 // WindowMinimise implements frontend.Frontend.
-func (*Frontend) WindowMinimise() {
-	fmt.Println("WindowMinimize")
+func (f *Frontend) WindowMinimise() {
+	f.logger.Info("WindowMinimize")
+	C.Window_hide(f.qWindow.window)
 }
 
 // WindowPrint implements frontend.Frontend.
-func (*Frontend) WindowPrint() {
-	fmt.Println("WindowPrint")
+func (f *Frontend) WindowPrint() {
+	f.logger.Info("WindowPrint")
 }
 
 // WindowReload implements frontend.Frontend.
-func (*Frontend) WindowReload() {
-	fmt.Println("WindowReload")
+func (f *Frontend) WindowReload() {
+	f.logger.Info("WindowReload")
+	C.WebEngineView_reload(f.qWindow.web_engine_view)
 }
 
 // WindowReloadApp implements frontend.Frontend.
-func (*Frontend) WindowReloadApp() {
-	fmt.Println("WindowReloadApp")
+func (f *Frontend) WindowReloadApp() {
+	f.logger.Info("WindowReloadApp")
+	C.WebEngineView_reload(f.qWindow.web_engine_view)
 }
 
 // WindowSetAlwaysOnTop implements frontend.Frontend.
-func (*Frontend) WindowSetAlwaysOnTop(b bool) {
-	fmt.Println("WindowSetAlwaysOnTop")
+func (f *Frontend) WindowSetAlwaysOnTop(b bool) {
+	f.logger.Info("WindowSetAlwaysOnTop")
 }
 
 // WindowSetBackgroundColour implements frontend.Frontend.
-func (*Frontend) WindowSetBackgroundColour(col *options.RGBA) {
-	fmt.Println("WindowSetBackgroundColour")
+func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
+	f.logger.Info("WindowSetBackgroundColour")
 }
 
 // WindowSetDarkTheme implements frontend.Frontend.
-func (*Frontend) WindowSetDarkTheme() {
-	fmt.Println("WindowSetDarkTheme")
+func (f *Frontend) WindowSetDarkTheme() {
+	f.logger.Info("WindowSetDarkTheme")
 }
 
 // WindowSetLightTheme implements frontend.Frontend.
-func (*Frontend) WindowSetLightTheme() {
-	fmt.Println("WindowSetLightTheme")
+func (f *Frontend) WindowSetLightTheme() {
+	f.logger.Info("WindowSetLightTheme")
 }
 
 // WindowSetMaxSize implements frontend.Frontend.
-func (*Frontend) WindowSetMaxSize(width int, height int) {
-	fmt.Println("WindowSetMaxSize")
+func (f *Frontend) WindowSetMaxSize(width int, height int) {
+	f.logger.Info("WindowSetMaxSize")
 }
 
 // WindowSetMinSize implements frontend.Frontend.
-func (*Frontend) WindowSetMinSize(width int, height int) {
-	fmt.Println("WindowSetMinSize")
+func (f *Frontend) WindowSetMinSize(width int, height int) {
+	f.logger.Info("WindowSetMinSize")
 }
 
 // WindowSetPosition implements frontend.Frontend.
-func (*Frontend) WindowSetPosition(x int, y int) {
-	fmt.Println("WindowSetPosition")
+func (f *Frontend) WindowSetPosition(x int, y int) {
+	f.logger.Info("WindowSetPosition")
 }
 
 // WindowSetSize implements frontend.Frontend.
 func (f *Frontend) WindowSetSize(width int, height int) {
-	fmt.Println("WindowSetSize")
+	f.logger.Info("WindowSetSize")
 	C.Window_resize(f.qWindow.window, C.int(width), C.int(height))
 }
 
 // WindowSetSystemDefaultTheme implements frontend.Frontend.
-func (*Frontend) WindowSetSystemDefaultTheme() {
-	fmt.Println("WindowSetSystemDefaultTheme")
+func (f *Frontend) WindowSetSystemDefaultTheme() {
+	f.logger.Info("WindowSetSystemDefaultTheme")
 }
 
 // WindowSetTitle implements frontend.Frontend.
-func (*Frontend) WindowSetTitle(title string) {
-	fmt.Println("WindowSetTitle")
+func (f *Frontend) WindowSetTitle(title string) {
+	f.logger.Info("WindowSetTitle")
+	str := C.CString(title)
+	defer C.bye(unsafe.Pointer(str))
+	C.Window_set_title(f.qWindow.window, str)
 }
 
 // WindowShow implements frontend.Frontend.
-func (*Frontend) WindowShow() {
-	fmt.Println("WindowShow")
+func (f *Frontend) WindowShow() {
+	f.logger.Info("WindowShow")
 }
 
 // WindowToggleMaximise implements frontend.Frontend.
-func (*Frontend) WindowToggleMaximise() {
-	fmt.Println("WindowToggleMaximize")
+func (f *Frontend) WindowToggleMaximise() {
+	f.logger.Info("WindowToggleMaximize")
 }
 
 // WindowUnfullscreen implements frontend.Frontend.
-func (*Frontend) WindowUnfullscreen() {
-	fmt.Println("WindowUnfullscreen")
+func (f *Frontend) WindowUnfullscreen() {
+	f.logger.Info("WindowUnfullscreen")
 }
 
 // WindowUnmaximise implements frontend.Frontend.
-func (*Frontend) WindowUnmaximise() {
-	fmt.Println("WindowUnmaximize")
+func (f *Frontend) WindowUnmaximise() {
+	f.logger.Info("WindowUnmaximize")
 }
 
 // WindowUnminimise implements frontend.Frontend.
-func (*Frontend) WindowUnminimise() {
-	fmt.Println("WindowUnminimize")
+func (f *Frontend) WindowUnminimise() {
+	f.logger.Info("WindowUnminimize")
 }
 
 var _ frontend.Frontend = &Frontend{}
