@@ -4,14 +4,15 @@ package application
 
 import (
 	"fmt"
-	"github.com/wailsapp/go-webview2/webviewloader"
-	"github.com/wailsapp/wails/v3/internal/operatingsystem"
-	"golang.org/x/sys/windows"
 	"os"
 	"strconv"
 	"sync"
 	"syscall"
 	"unsafe"
+
+	"github.com/wailsapp/go-webview2/webviewloader"
+	"github.com/wailsapp/wails/v3/internal/operatingsystem"
+	"golang.org/x/sys/windows"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
@@ -252,15 +253,15 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 	case w32.WM_POWERBROADCAST:
 		switch wParam {
 		case w32.PBT_APMPOWERSTATUSCHANGE:
-			applicationEvents <- newApplicationEvent(int(events.Windows.APMPowerStatusChange))
+			applicationEvents <- newApplicationEvent(events.Windows.APMPowerStatusChange)
 		case w32.PBT_APMSUSPEND:
-			applicationEvents <- newApplicationEvent(int(events.Windows.APMSuspend))
+			applicationEvents <- newApplicationEvent(events.Windows.APMSuspend)
 		case w32.PBT_APMRESUMEAUTOMATIC:
-			applicationEvents <- newApplicationEvent(int(events.Windows.APMResumeAutomatic))
+			applicationEvents <- newApplicationEvent(events.Windows.APMResumeAutomatic)
 		case w32.PBT_APMRESUMESUSPEND:
-			applicationEvents <- newApplicationEvent(int(events.Windows.APMResumeSuspend))
+			applicationEvents <- newApplicationEvent(events.Windows.APMResumeSuspend)
 		case w32.PBT_POWERSETTINGCHANGE:
-			applicationEvents <- newApplicationEvent(int(events.Windows.APMPowerSettingChange))
+			applicationEvents <- newApplicationEvent(events.Windows.APMPowerSettingChange)
 		}
 		return 0
 	}
