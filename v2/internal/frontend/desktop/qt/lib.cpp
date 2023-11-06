@@ -11,6 +11,8 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMessageBox>
+#include <QFileDialog>
 #include <condition_variable>
 #include <iostream>
 #include <memory>
@@ -226,6 +228,58 @@ const char *Window_run_message_dialog(void *win_ptr, int dialog_type, char *titl
   default:
     return "Unknown";
   }
+}
+
+const char *Window_open_file_dialog(void *win_ptr, char *dialog_options) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  QByteArray bytes(dialog_options);
+  auto doc = QJsonDocument::fromJson(bytes);
+
+  QString res;
+  runOnAppThread(win, [=]() -> QString {
+    QFileDialog diag;
+
+    auto dir = doc["DefaultDirectory"].toString();
+    if (!dir.isEmpty()) {
+      diag.setDirectory(dir);
+    }
+
+    // Unsupported fields
+//    auto fileName = doc["DefaultFilename"].toString();
+//    auto canCreateDirectories = doc["CanCreateDirectories"].toBool(false);
+//    auto resolveAliases = doc["ResolveAliases"].toBool(false);
+//    auto treatPackagesAsDirectories = doc["TreatPackagesAsDirectories"].toBool(false);
+
+    auto title = doc["Title"].toString();
+    if (!title.isEmpty()) {
+      diag.setWindowTitle(title);
+    }
+
+    QStringList nameFilters;
+    for (auto &&val : doc["Filters"].toArray()) {
+      auto obj = val.toObject();
+      nameFilters.push_back(QString("%1 (%2)").arg(obj["DisplayName"].toString()).arg(obj["Pattern"].toString()));
+    }
+    diag.setNameFilters(nameFilters);
+
+    QFlags<QDir::Filter> filters = QDir::AllEntries;
+    filters.setFlag(QDir::Hidden, doc["ShowHiddenFiles"].toBool(false));
+    diag.setFilter(filters);
+
+    int ret = diag.exec();
+    if (!ret) {
+      return "[]";
+    }
+
+    diag.selectedFiles();
+    QJsonArray arr;
+    for (auto &&file : diag.selectedFiles()) {
+      arr.push_back(file);
+    }
+    return QJsonDocument(arr).toJson(QJsonDocument::Compact);
+  }, &res);
+
+  return res.toUtf8().constData();
 }
 
 /* End Window */

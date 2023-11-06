@@ -238,13 +238,36 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 // OpenDirectoryDialog implements frontend.Frontend.
 func (f *Frontend) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
 	f.logger.Info("OpenDirectoryDialog")
+
 	return "", nil
 }
 
 // OpenFileDialog implements frontend.Frontend.
 func (f *Frontend) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
 	f.logger.Info("OpenFileDialog")
-	return "", nil
+
+	j, err := json.Marshal(dialogOptions)
+	if err != nil {
+		f.logger.Error("Failed to marshal dialogOptions %+v", err)
+		return "", err
+	}
+
+	s := C.CString(string(j))
+	defer C.cfree(unsafe.Pointer(s))
+
+	res := C.GoString(C.Window_open_file_dialog(f.qWindow.window, s))
+
+	var files []string
+	if err := json.Unmarshal([]byte(res), &files); err != nil {
+		f.logger.Error("Failed to unmarshal file dialog result %s", err)
+		return "", err
+	}
+
+	if len(files) != 1 {
+		return "", nil
+	}
+
+	return files[0], nil
 }
 
 // OpenMultipleFilesDialog implements frontend.Frontend.
@@ -294,11 +317,20 @@ func (f *Frontend) RunMainLoop() {
 	f.logger.Info("RunMainLoop")
 
 	time.Sleep(3 * time.Second)
-	_, _ = f.MessageDialog(frontend.MessageDialogOptions{
-		Title:   "Title",
-		Message: "THis is a longer warning message.",
-		Type:    frontend.QuestionDialog,
+	res, err := f.OpenFileDialog(frontend.OpenDialogOptions{
+		Title:            "Title",
+		DefaultDirectory: "/home/ben/Code",
+		DefaultFilename:  "foo.txt",
+		Filters: []frontend.FileFilter{
+			{DisplayName: "Images", Pattern: "*.jpg *.png"},
+			{DisplayName: "Text Files", Pattern: "*.txt"},
+		},
+		ShowHiddenFiles:            true,
+		CanCreateDirectories:       true,
+		ResolvesAliases:            true,
+		TreatPackagesAsDirectories: true,
 	})
+	f.logger.Info("Got file diag result %s - %s", res, err)
 
 	<-exitCh
 
