@@ -180,6 +180,54 @@ void Window_close(void *win_ptr) {
   runOnAppThread(win, [=]() { win->close(); });
 }
 
+const char *Window_run_message_dialog(void *win_ptr, int dialog_type, char *title, char *message) {
+  auto win = static_cast<QWidget *>(win_ptr);
+
+  auto qTitle = QString::fromUtf8(title);
+  auto qMessage = QString::fromUtf8(message);
+
+  int ret;
+  runOnAppThread(win, [=]() -> int {
+    QMessageBox msgBox;
+    msgBox.setText(qTitle);
+    msgBox.setInformativeText(qMessage);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+
+    QMessageBox::Icon icon;
+    switch (dialog_type) {
+    case 0:
+      icon = QMessageBox::Information;
+      break;
+    case 1:
+      icon = QMessageBox::Critical;
+      break;
+    case 2:
+      icon = QMessageBox::Question;
+      break;
+    case 3:
+      icon = QMessageBox::Warning;
+      break;
+    }
+
+    msgBox.setIcon(icon);
+
+    return msgBox.exec();
+  }, &ret);
+
+  switch (ret) {
+  case QMessageBox::Ok:
+    return "Ok";
+  case QMessageBox::No:
+    return "No";
+  case QMessageBox::Yes:
+    return "Yes";
+  case QMessageBox::Cancel:
+    return "Cancel";
+  default:
+    return "Unknown";
+  }
+}
+
 /* End Window */
 
 /* WebEngineView */
@@ -265,6 +313,6 @@ void install_signal_handlers() {
 #endif
 }
 
-void bye(void* ptr) {
+void cfree(void* ptr) {
     free(ptr);
 }

@@ -153,7 +153,7 @@ func (f *Frontend) ClipboardSetText(text string) error {
 func (f *Frontend) ExecJS(js string) {
 	f.logger.Info("ExecJS")
 	s := C.CString(js)
-	defer C.bye(unsafe.Pointer(s))
+	defer C.cfree(unsafe.Pointer(s))
 	C.WebEngineView_run_js(f.qWindow.web_engine_view, s)
 }
 
@@ -182,12 +182,38 @@ func (f *Frontend) MenuUpdateApplicationMenu() {
 // MessageDialog implements frontend.Frontend.
 func (f *Frontend) MessageDialog(dialogOptions frontend.MessageDialogOptions) (string, error) {
 	f.logger.Info("MessageDialog")
-	return "", nil
+
+	title := C.CString(dialogOptions.Title)
+	message := C.CString(dialogOptions.Message)
+
+	defer func() {
+		C.cfree(unsafe.Pointer(title))
+		C.cfree(unsafe.Pointer(message))
+	}()
+
+	var messageType C.int
+	switch dialogOptions.Type {
+	case frontend.InfoDialog:
+		messageType = C.int(0)
+	case frontend.ErrorDialog:
+		messageType = C.int(1)
+	case frontend.QuestionDialog:
+		messageType = C.int(2)
+	case frontend.WarningDialog:
+		messageType = C.int(3)
+	}
+
+	ret := C.Window_run_message_dialog(f.qWindow.window, messageType, title, message)
+	result := C.GoString(ret)
+	f.logger.Info("Message dialog returned code %s", result)
+
+	return result, nil
 }
 
 func (f *Frontend) WindowPrint() {
 	f.logger.Info("WindowPrint")
-	f.ExecJS("window.print();")
+	// TODO: webView->page()->printToPdf(fileName);
+	//f.ExecJS("window.print();")
 }
 
 type EventNotify struct {
@@ -268,7 +294,11 @@ func (f *Frontend) RunMainLoop() {
 	f.logger.Info("RunMainLoop")
 
 	time.Sleep(3 * time.Second)
-	f.ScreenGetAll()
+	_, _ = f.MessageDialog(frontend.MessageDialogOptions{
+		Title:   "Title",
+		Message: "THis is a longer warning message.",
+		Type:    frontend.QuestionDialog,
+	})
 
 	<-exitCh
 
@@ -428,7 +458,7 @@ func (f *Frontend) WindowSetSystemDefaultTheme() {
 func (f *Frontend) WindowSetTitle(title string) {
 	f.logger.Info("WindowSetTitle")
 	str := C.CString(title)
-	defer C.bye(unsafe.Pointer(str))
+	defer C.cfree(unsafe.Pointer(str))
 	C.Window_set_title(f.qWindow.window, str)
 }
 
