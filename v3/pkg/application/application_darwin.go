@@ -255,7 +255,7 @@ func newPlatformApp(app *App) *macosApp {
 
 //export processApplicationEvent
 func processApplicationEvent(eventID C.uint, data unsafe.Pointer) {
-	event := newApplicationEvent(int(eventID))
+	event := newApplicationEvent(events.ApplicationEventType(eventID))
 
 	if data != nil {
 		dataCStrJSON := C.serializationNSDictionary(data)
