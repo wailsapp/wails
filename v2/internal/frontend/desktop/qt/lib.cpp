@@ -230,7 +230,7 @@ const char *Window_run_message_dialog(void *win_ptr, int dialog_type, char *titl
   }
 }
 
-const char *Window_open_file_dialog(void *win_ptr, char *dialog_options) {
+const char *Window_open_file_dialog(void *win_ptr, int isDirectory, char *dialog_options) {
   auto win = static_cast<QWidget *>(win_ptr);
   QByteArray bytes(dialog_options);
   auto doc = QJsonDocument::fromJson(bytes);
@@ -265,6 +265,10 @@ const char *Window_open_file_dialog(void *win_ptr, char *dialog_options) {
     QFlags<QDir::Filter> filters = QDir::AllEntries;
     filters.setFlag(QDir::Hidden, doc["ShowHiddenFiles"].toBool(false));
     diag.setFilter(filters);
+
+    if (isDirectory) {
+      diag.setOption(QFileDialog::ShowDirsOnly, true);
+    }
 
     int ret = diag.exec();
     if (!ret) {
