@@ -2,17 +2,18 @@ package doctor
 
 import (
 	"fmt"
+	"path/filepath"
+	"runtime"
+	"runtime/debug"
+	"slices"
+	"strconv"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/jaypipes/ghw"
 	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
-	"path/filepath"
-	"runtime"
-	"runtime/debug"
-	"slices"
-	"strconv"
 )
 
 func Run() (err error) {
@@ -155,12 +156,12 @@ func Run() (err error) {
 	// Probe GPU
 	gpu, _ := ghw.GPU(ghw.WithDisableWarnings())
 	if gpu != nil {
-		prefix := "GPU"
 		for idx, card := range gpu.GraphicsCards {
-			if len(gpu.GraphicsCards) > 1 {
-				prefix = "GPU " + strconv.Itoa(idx+1) + " "
+			details := "Unknown"
+			prefix := "GPU " + strconv.Itoa(idx+1)
+			if card.DeviceInfo != nil {
+				details = fmt.Sprintf("%s (%s) - Driver: %s ", card.DeviceInfo.Product.Name, card.DeviceInfo.Vendor.Name, card.DeviceInfo.Driver)
 			}
-			details := fmt.Sprintf("%s (%s) - Driver: %s", card.DeviceInfo.Product.Name, card.DeviceInfo.Vendor.Name, card.DeviceInfo.Driver)
 			systemTabledata = append(systemTabledata, []string{prefix, details})
 		}
 	} else {
