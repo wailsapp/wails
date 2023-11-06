@@ -28,6 +28,7 @@ void Window_show(void *win_ptr);
 void Window_fullscreen(void *win_ptr);
 void Window_maximize(void *win_ptr);
 void Window_close(void *win_ptr);
+const char *Window_run_message_dialog(void *win_ptr, int dialog_type, char *title, char *message);
 /* End Window */
 
 /* WebEngineView */
@@ -39,7 +40,7 @@ void WebEngineView_run_js(void *web_engine_ptr, char *script);
 void fix_signal(int signum);
 void install_signal_handlers();
 
-void bye(void* ptr);
+void cfree(void* ptr);
 
 #ifdef __cplusplus
 }
