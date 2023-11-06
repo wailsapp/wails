@@ -235,17 +235,7 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
 
-// OpenDirectoryDialog implements frontend.Frontend.
-func (f *Frontend) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
-	f.logger.Info("OpenDirectoryDialog")
-
-	return "", nil
-}
-
-// OpenFileDialog implements frontend.Frontend.
-func (f *Frontend) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
-	f.logger.Info("OpenFileDialog")
-
+func (f *Frontend) openFileDialogCommon(directory bool, dialogOptions frontend.OpenDialogOptions) (string, error) {
 	j, err := json.Marshal(dialogOptions)
 	if err != nil {
 		f.logger.Error("Failed to marshal dialogOptions %+v", err)
@@ -255,7 +245,12 @@ func (f *Frontend) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (str
 	s := C.CString(string(j))
 	defer C.cfree(unsafe.Pointer(s))
 
-	res := C.GoString(C.Window_open_file_dialog(f.qWindow.window, s))
+	isDirectory := 0
+	if directory {
+		isDirectory = 1
+	}
+
+	res := C.GoString(C.Window_open_file_dialog(f.qWindow.window, C.int(isDirectory), s))
 
 	var files []string
 	if err := json.Unmarshal([]byte(res), &files); err != nil {
@@ -268,6 +263,18 @@ func (f *Frontend) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (str
 	}
 
 	return files[0], nil
+}
+
+// OpenDirectoryDialog implements frontend.Frontend.
+func (f *Frontend) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
+	f.logger.Info("OpenDirectoryDialog")
+	return f.openFileDialogCommon(true, dialogOptions)
+}
+
+// OpenFileDialog implements frontend.Frontend.
+func (f *Frontend) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
+	f.logger.Info("OpenFileDialog")
+	return f.openFileDialogCommon(false, dialogOptions)
 }
 
 // OpenMultipleFilesDialog implements frontend.Frontend.
@@ -316,19 +323,11 @@ func (f *Frontend) Run(ctx context.Context) error {
 func (f *Frontend) RunMainLoop() {
 	f.logger.Info("RunMainLoop")
 
-	time.Sleep(3 * time.Second)
-	res, err := f.OpenFileDialog(frontend.OpenDialogOptions{
+	time.Sleep(1 * time.Second)
+	res, err := f.OpenDirectoryDialog(frontend.OpenDialogOptions{
 		Title:            "Title",
 		DefaultDirectory: "/home/ben/Code",
 		DefaultFilename:  "foo.txt",
-		Filters: []frontend.FileFilter{
-			{DisplayName: "Images", Pattern: "*.jpg *.png"},
-			{DisplayName: "Text Files", Pattern: "*.txt"},
-		},
-		ShowHiddenFiles:            true,
-		CanCreateDirectories:       true,
-		ResolvesAliases:            true,
-		TreatPackagesAsDirectories: true,
 	})
 	f.logger.Info("Got file diag result %s - %s", res, err)
 
