@@ -156,17 +156,13 @@ func Run() (err error) {
 	// Probe GPU
 	gpu, _ := ghw.GPU(ghw.WithDisableWarnings())
 	if gpu != nil {
-		prefix := "GPU"
 		for idx, card := range gpu.GraphicsCards {
-			if len(gpu.GraphicsCards) > 1 {
-				prefix = "GPU " + strconv.Itoa(idx+1) + " "
-			}
+			details := "Unknown"
+			prefix := "GPU " + strconv.Itoa(idx+1)
 			if card.DeviceInfo != nil {
-				details := fmt.Sprintf("%s (%s) - Driver:%s ", card.DeviceInfo.Product.Name, card.DeviceInfo.Vendor.Name, card.DeviceInfo.Driver)
-				systemTabledata = append(systemTabledata, []string{prefix, details})
-				continue
+				details = fmt.Sprintf("%s (%s) - Driver: %s ", card.DeviceInfo.Product.Name, card.DeviceInfo.Vendor.Name, card.DeviceInfo.Driver)
 			}
-			systemTabledata = append(systemTabledata, []string{"GPU", "Unknown"})
+			systemTabledata = append(systemTabledata, []string{prefix, details})
 		}
 	} else {
 		systemTabledata = append(systemTabledata, []string{"GPU", "Unknown"})
