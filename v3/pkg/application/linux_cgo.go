@@ -927,6 +927,11 @@ func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func
 	C.signal_connect((*C.GtkWidget)(unsafe.Pointer(webview)), event, C.onKeyPressEvent, unsafe.Pointer(&id))
 }
 
+func windowShowDevTools(webview pointer) {
+	inspector := C.webkit_web_view_get_inspector((*C.WebKitWebView)(webview))
+	C.webkit_web_inspector_show(inspector)
+}
+
 func windowToggleDevTools(webview pointer) {
 	settings := C.webkit_web_view_get_settings((*C.WebKitWebView)(webview))
 	enabled := C.webkit_settings_get_enable_developer_extras(settings)

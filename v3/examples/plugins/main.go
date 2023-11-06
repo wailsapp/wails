@@ -51,7 +51,8 @@ func main() {
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		DevToolsEnabled: true,
+		DevToolsEnabled:        true,
+		OpenInspectorOnStartup: true,
 	})
 
 	err := app.Run()

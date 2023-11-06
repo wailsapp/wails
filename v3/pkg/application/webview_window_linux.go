@@ -309,6 +309,10 @@ func (w *linuxWebviewWindow) setResizable(resizable bool) {
 	windowSetResizable(w.window, resizable)
 }
 
+func (w *linuxWebviewWindow) showDevTools() {
+	windowShowDevTools(w.webview)
+}
+
 func (w *linuxWebviewWindow) toggleDevTools() {
 	showDevTools(w.webview)
 }
@@ -423,6 +427,9 @@ func (w *linuxWebviewWindow) run() {
 	}
 	if w.parent.options.DevToolsEnabled {
 		w.toggleDevTools()
+		if w.parent.options.OpenInspectorOnStartup {
+			w.showDevTools()
+		}
 	}
 }
 
