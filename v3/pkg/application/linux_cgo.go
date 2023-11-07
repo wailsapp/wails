@@ -1115,24 +1115,10 @@ func sendMessageToBackend(contentManager *C.WebKitUserContentManager, result *C.
 	data unsafe.Pointer) {
 
 	var msg string
-	if C.webkit_get_major_version() >= 2 &&
-		C.webkit_get_minor_version() >= 22 {
-		value := C.webkit_javascript_result_get_js_value(result)
-		message := C.jsc_value_to_string(value)
-		msg = C.GoString(message)
-		defer C.g_free(C.gpointer(message))
-	} else {
-		// FIXME: This isn't very nice.  Should use build tags
-		context := C.webkit_javascript_result_get_global_context(result)
-		value := C.webkit_javascript_result_get_value(result)
-		js := C.JSValueToStringCopy(context, value, nil)
-		messageSize := C.JSStringGetMaximumUTF8CStringSize(js)
-		message := (*C.char)(C.g_malloc(messageSize))
-		C.JSStringGetUTF8CString(js, message, messageSize)
-		msg = C.GoString(message)
-		C.JSStringRelease(js)
-	}
-
+	value := C.webkit_javascript_result_get_js_value(result)
+	message := C.jsc_value_to_string(value)
+	msg = C.GoString(message)
+	defer C.g_free(C.gpointer(message))
 	windowMessageBuffer <- &windowMessage{
 		windowId: uint(windowID),
 		message:  msg,
