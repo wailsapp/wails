@@ -14,7 +14,7 @@ var showDevTools = func(window pointer) {}
 type dragInfo struct {
 	XRoot       int
 	YRoot       int
-	DragTime    int
+	DragTime    uint32
 	MouseButton uint
 }
 
@@ -38,11 +38,14 @@ var (
 )
 
 func (w *linuxWebviewWindow) startDrag() error {
+	windowStartDrag(w.window, w.drag.MouseButton, w.drag.XRoot, w.drag.YRoot, w.drag.DragTime)
 	return nil
 }
 
 func (w *linuxWebviewWindow) endDrag(button uint, x, y int) {
-
+	w.drag.XRoot = 0.0
+	w.drag.YRoot = 0.0
+	w.drag.DragTime = 0
 }
 
 func (w *linuxWebviewWindow) enableDND() {

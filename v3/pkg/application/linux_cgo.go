@@ -13,8 +13,9 @@ import (
 )
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
+#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0 javascriptcoregtk-4.1
 
+#include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <webkit2/webkit2.h>
@@ -70,9 +71,10 @@ extern void onDragNDrop(
    gpointer     data);
 extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 extern void onProcessRequest(void *request, gpointer user_data);
+extern void sendMessageToBackend(WebKitUserContentManager *contentManager, WebKitJavascriptResult *result, void *data);
 // exported below (end)
 
-static void signal_connect(GtkWidget *widget, char *event, void *cb, void* data) {
+static void signal_connect(void *widget, char *event, void *cb, void* data) {
    // g_signal_connect is a macro and can't be called directly
    g_signal_connect(widget, event, cb, data);
 }
@@ -614,7 +616,7 @@ func windowEnableDND(id uint, webview pointer) {
 	event := C.CString("drag-data-received")
 	defer C.free(unsafe.Pointer(event))
 	windowId := C.uint(id)
-	C.signal_connect((*C.GtkWidget)(unsafe.Pointer(webview)), event, C.onDragNDrop, unsafe.Pointer(C.gpointer(&windowId)))
+	C.signal_connect(unsafe.Pointer(webview), event, C.onDragNDrop, unsafe.Pointer(C.gpointer(&windowId)))
 }
 
 func windowExecJS(webview pointer, js string) {
@@ -907,7 +909,12 @@ func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func
 		id:    C.uint(windowId),
 		event: C.uint(events.Common.WindowClosing),
 	}
-	C.signal_connect((*C.GtkWidget)(window), event, C.emit, unsafe.Pointer(&wEvent))
+	C.signal_connect(unsafe.Pointer(window), event, C.emit, unsafe.Pointer(&wEvent))
+
+	contentManager := C.webkit_web_view_get_user_content_manager((*C.WebKitWebView)(webview))
+	event = C.CString("script-message-received::external")
+	defer C.free(unsafe.Pointer(event))
+	C.signal_connect(unsafe.Pointer(contentManager), event, C.sendMessageToBackend, nil)
 
 	/*
 		event = C.CString("load-changed")
@@ -916,20 +923,29 @@ func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func
 	*/
 	id := C.uint(windowId)
 	event = C.CString("button-press-event")
-	C.signal_connect((*C.GtkWidget)(unsafe.Pointer(webview)), event, C.onButtonEvent, unsafe.Pointer(&id))
+	C.signal_connect(unsafe.Pointer(webview), event, C.onButtonEvent, unsafe.Pointer(&id))
 	C.free(unsafe.Pointer(event))
 	event = C.CString("button-release-event")
 	defer C.free(unsafe.Pointer(event))
-	C.signal_connect((*C.GtkWidget)(unsafe.Pointer(webview)), event, C.onButtonEvent, unsafe.Pointer(&id))
+	C.signal_connect(unsafe.Pointer(webview), event, C.onButtonEvent, unsafe.Pointer(&id))
 
 	event = C.CString("key-press-event")
 	defer C.free(unsafe.Pointer(event))
-	C.signal_connect((*C.GtkWidget)(unsafe.Pointer(webview)), event, C.onKeyPressEvent, unsafe.Pointer(&id))
+	C.signal_connect(unsafe.Pointer(webview), event, C.onKeyPressEvent, unsafe.Pointer(&id))
 }
 
 func windowShowDevTools(webview pointer) {
 	inspector := C.webkit_web_view_get_inspector((*C.WebKitWebView)(webview))
 	C.webkit_web_inspector_show(inspector)
+}
+
+func windowStartDrag(window pointer, button uint, xroot int, yroot int, dragTime uint32) {
+	C.gtk_window_begin_move_drag(
+		(*C.GtkWindow)(window),
+		C.int(button),
+		C.int(xroot),
+		C.int(yroot),
+		C.uint32_t(dragTime))
 }
 
 func windowToggleDevTools(webview pointer) {
@@ -977,9 +993,11 @@ func windowMove(window pointer, x, y int) {
 	C.gtk_window_move((*C.GtkWindow)(window), C.int(x), C.int(y))
 }
 
+// FIXME Change this to reflect mouse button!
+//
 //export onButtonEvent
 func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data unsafe.Pointer) C.gboolean {
-	// Constants (defined here to be easier to use with )
+	// Constants (defined here to be easier to use with purego)
 	GdkButtonPress := C.GDK_BUTTON_PRESS     // 4
 	Gdk2ButtonPress := C.GDK_2BUTTON_PRESS   // 5 for double-click
 	GdkButtonRelease := C.GDK_BUTTON_RELEASE // 7
@@ -1003,7 +1021,10 @@ func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data unsafe.Pointer)
 
 	switch int(event._type) {
 	case GdkButtonPress:
-		lw.startDrag() //uint(event.button), int(event.x_root), int(event.y_root))
+		lw.drag.MouseButton = uint(event.button)
+		lw.drag.XRoot = int(event.x_root)
+		lw.drag.YRoot = int(event.y_root)
+		lw.drag.DragTime = uint32(event.time)
 	case Gdk2ButtonPress:
 		// do we need something here?
 	case GdkButtonRelease:
@@ -1086,6 +1107,35 @@ func onProcessRequest(request unsafe.Pointer, data unsafe.Pointer) {
 		Request:    webview.NewRequest(request),
 		windowId:   windowId,
 		windowName: globalApplication.getWindowForID(windowId).Name(),
+	}
+}
+
+//export sendMessageToBackend
+func sendMessageToBackend(contentManager *C.WebKitUserContentManager, result *C.WebKitJavascriptResult,
+	data unsafe.Pointer) {
+
+	var msg string
+	if C.webkit_get_major_version() >= 2 &&
+		C.webkit_get_minor_version() >= 22 {
+		value := C.webkit_javascript_result_get_js_value(result)
+		message := C.jsc_value_to_string(value)
+		msg = C.GoString(message)
+		defer C.g_free(C.gpointer(message))
+	} else {
+		// FIXME: This isn't very nice.  Should use build tags
+		context := C.webkit_javascript_result_get_global_context(result)
+		value := C.webkit_javascript_result_get_value(result)
+		js := C.JSValueToStringCopy(context, value, nil)
+		messageSize := C.JSStringGetMaximumUTF8CStringSize(js)
+		message := (*C.char)(C.g_malloc(messageSize))
+		C.JSStringGetUTF8CString(js, message, messageSize)
+		msg = C.GoString(message)
+		C.JSStringRelease(js)
+	}
+
+	windowMessageBuffer <- &windowMessage{
+		windowId: uint(windowID),
+		message:  msg,
 	}
 }
 
