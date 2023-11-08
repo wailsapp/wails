@@ -89,6 +89,31 @@ func main() {
 }
 ```
 
+You also can enable single instance lock for your app. In this case, when you open file with your app, new instance of app is not launched
+and arguments are passed to already running instance. Check single instance lock guide for details. Example:
+
+```go title="main.go"
+func main() {
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+}
+```
+
 ### Linux
 
 Currently, Wails doesn't support bundling for Linux. So, you need to create file associations manually.
@@ -193,7 +218,27 @@ func main() {
 }
 ```
 
-## Limitations:
+You also can enable single instance lock for your app. In this case, when you open file with your app, new instance of app is not launched
+and arguments are passed to already running instance. Check single instance lock guide for details. Example:
 
-On Windows and Linux when associated file is opened, new instance of your app is launched.
-Currently, Wails doesn't support opening files in already running app. There is plugin for single instance support for v3 in development.
+```go title="main.go"
+func main() {
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+}
+```
