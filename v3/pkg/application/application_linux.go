@@ -153,6 +153,9 @@ func (m *linuxApp) monitorThemeChanges() {
 		conn.Signal(c)
 
 		getTheme := func(body []interface{}) (string, bool) {
+			if len(body) < 2 {
+				return "", false
+			}
 			if body[0].(string) != "org.gnome.desktop.interface" {
 				return "", false
 			}
