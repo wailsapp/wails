@@ -1,4 +1,4 @@
-\*\*# Roadmap
+# Roadmap
 
 The roadmap is a living document and is subject to change. If you have any
 suggestions, please open an issue. Each milestone will have a set of goals that
