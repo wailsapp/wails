@@ -45,7 +45,7 @@ func (a *App) Run() error {
 
 	tsOutputType := os.Getenv("tsoutputtype")
 	if tsOutputType == "" {
-		tsOutputTypeFlag = bindingFlags.String("tsoutputtype", "", "Output type for generated typescript entities (interface|class)")
+		tsOutputTypeFlag = bindingFlags.String("tsoutputtype", "", "Output type for generated typescript entities (classes|interfaces)")
 	}
 
 	_ = bindingFlags.Parse(os.Args[1:])
