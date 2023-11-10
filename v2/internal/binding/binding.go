@@ -96,6 +96,7 @@ func (b *Bindings) ToJSON() (string, error) {
 func (b *Bindings) GenerateModels() ([]byte, error) {
 	models := map[string]string{}
 	var seen slicer.StringSlicer
+	var seenEnumsPackages slicer.StringSlicer
 	allStructNames := b.getAllStructNames()
 	allStructNames.Sort()
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
@@ -132,6 +133,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 				}
 				w.AddEnum(enum)
 			}
+			seenEnumsPackages.Add(packageName)
 		}
 
 		str, err := w.Convert(nil)
@@ -140,6 +142,35 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		}
 		thisPackageCode += str
 		seen.AddSlice(w.GetGeneratedStructs())
+		models[packageName] = thisPackageCode
+	}
+
+	// Add outstanding enums to the models that were not in packages with structs
+	for packageName, enumsToGenerate := range b.enumsToGenerateTS {
+		if seenEnumsPackages.Contains(packageName) {
+			continue
+		}
+
+		thisPackageCode := ""
+		w := typescriptify.New()
+		w.WithPrefix(b.tsPrefix)
+		w.WithSuffix(b.tsSuffix)
+		w.WithInterface(b.tsInterface)
+		w.Namespace = packageName
+		w.WithBackupDir("")
+
+		for enumName, enum := range enumsToGenerate {
+			fqemumname := packageName + "." + enumName
+			if seen.Contains(fqemumname) {
+				continue
+			}
+			w.AddEnum(enum)
+		}
+		str, err := w.Convert(nil)
+		if err != nil {
+			return nil, err
+		}
+		thisPackageCode += str
 		models[packageName] = thisPackageCode
 	}
 
@@ -191,8 +222,8 @@ func (b *Bindings) AddEnumToGenerateTS(e interface{}) {
 
 	// enums should be represented as array of all possible values
 	if hasElements(enumType) {
-		packageName := getPackageName(enumType.Elem().PkgPath())
-		enumName := getPackageName(enumType.Elem().Name())
+		packageName := getPackageName(enumType.Elem().String())
+		enumName := enumType.Elem().Name()
 		if b.enumsToGenerateTS[packageName] == nil {
 			b.enumsToGenerateTS[packageName] = make(map[string]interface{})
 		}
