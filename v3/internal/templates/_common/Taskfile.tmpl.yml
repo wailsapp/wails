@@ -40,12 +40,22 @@ tasks:
     cmds:
       - task: pre-build
       - task: build-frontend
-      - go build -gcflags=all="-N -l" -o bin/testapp
+      - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}
       - task: post-build
     env:
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
       CGO_LDFLAGS: "-mmacosx-version-min=10.13"
       MACOSX_DEPLOYMENT_TARGET: "10.13"
+
+  build:linux:
+    summary: Builds the application for Linux
+    platforms:
+      - linux
+    cmds:
+      - task: pre-build
+      - task: build-frontend     
+      - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}
+      - task: post-build
 
   build:windows:
     summary: Builds the application for Windows
@@ -54,13 +64,14 @@ tasks:
     cmds:
       - task: pre-build
       - task: build-frontend     
-      - go build -gcflags=all="-N -l" -o bin/testapp.exe
+      - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}.exe
       - task: post-build
 
   build:
     summary: Builds the application
     cmds:
       - task: build:darwin
+      - task: build:linux	  
       - task: build:windows
 
   generate-icons:
