@@ -2,6 +2,7 @@ package templates
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
@@ -34,5 +35,10 @@ func TestInstall(t *testing.T) {
 				t.Errorf("Install() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+		t.Cleanup(func() {
+			path, _ := os.Getwd()
+			_ = os.RemoveAll(filepath.Join(path, "..", tt.options.ProjectName))
+		})
 	}
+
 }
