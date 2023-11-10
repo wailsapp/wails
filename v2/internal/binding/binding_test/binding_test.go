@@ -46,7 +46,7 @@ func TestBindings_GenerateModels(t *testing.T) {
 	testLogger := &logger.Logger{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			b := binding.NewBindings(testLogger, tt.structs, tt.exemptions, false)
+			b := binding.NewBindings(testLogger, tt.structs, tt.exemptions, false, []interface{}{})
 			for _, s := range tt.structs {
 				err := b.Add(s)
 				require.NoError(t, err)

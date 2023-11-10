@@ -23,6 +23,7 @@ type Bindings struct {
 	exemptions slicer.StringSlicer
 
 	structsToGenerateTS map[string]map[string]interface{}
+	enumsToGenerateTS   map[string]map[string]interface{}
 	tsPrefix            string
 	tsSuffix            string
 	tsInterface         bool
@@ -30,11 +31,12 @@ type Bindings struct {
 }
 
 // NewBindings returns a new Bindings object
-func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exemptions []interface{}, obfuscate bool) *Bindings {
+func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exemptions []interface{}, obfuscate bool, enumsToBind []interface{}) *Bindings {
 	result := &Bindings{
 		db:                  newDB(),
 		logger:              logger.CustomLogger("Bindings"),
 		structsToGenerateTS: make(map[string]map[string]interface{}),
+		enumsToGenerateTS:   make(map[string]map[string]interface{}),
 		obfuscate:           obfuscate,
 	}
 
@@ -46,6 +48,10 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 		// Yuk yuk yuk! Is there a better way?
 		name = strings.TrimSuffix(name, "-fm")
 		result.exemptions.Add(name)
+	}
+
+	for _, enum := range enumsToBind {
+		result.AddEnumToGenerateTS(enum)
 	}
 
 	// Add the structs to bind
@@ -115,6 +121,19 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 			structInterface := structsToGenerate[structName]
 			w.Add(structInterface)
 		}
+
+		// if we have enums for this package, add them as well
+		var enums, enumsExist = b.enumsToGenerateTS[packageName]
+		if enumsExist {
+			for enumName, enum := range enums {
+				fqemumname := packageName + "." + enumName
+				if seen.Contains(fqemumname) {
+					continue
+				}
+				w.AddEnum(enum)
+			}
+		}
+
 		str, err := w.Convert(nil)
 		if err != nil {
 			return nil, err
@@ -165,6 +184,23 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 	}
 
 	return nil
+}
+
+func (b *Bindings) AddEnumToGenerateTS(e interface{}) {
+	enumType := reflect.TypeOf(e)
+
+	// enums should be represented as array of all possible values
+	if hasElements(enumType) {
+		packageName := getPackageName(enumType.Elem().PkgPath())
+		enumName := getPackageName(enumType.Elem().Name())
+		if b.enumsToGenerateTS[packageName] == nil {
+			b.enumsToGenerateTS[packageName] = make(map[string]interface{})
+		}
+		if b.enumsToGenerateTS[packageName][enumName] != nil {
+			return
+		}
+		b.enumsToGenerateTS[packageName][enumName] = e
+	}
 }
 
 func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, s interface{}) {

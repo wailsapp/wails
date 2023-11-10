@@ -59,7 +59,7 @@ func (a *App) Run() error {
 		tsOutputType = *tsOutputTypeFlag
 	}
 
-	appBindings := binding.NewBindings(a.logger, a.options.Bind, bindingExemptions, IsObfuscated())
+	appBindings := binding.NewBindings(a.logger, a.options.Bind, bindingExemptions, IsObfuscated(), a.options.EnumBind)
 
 	appBindings.SetTsPrefix(tsPrefix)
 	appBindings.SetTsSuffix(tsSuffix)
