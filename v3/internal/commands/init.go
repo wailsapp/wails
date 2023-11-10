@@ -2,9 +2,10 @@ package commands
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/templates"
-	"path/filepath"
 
 	"github.com/pterm/pterm"
 )

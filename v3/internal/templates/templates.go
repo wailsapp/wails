@@ -44,11 +44,7 @@ func init() {
 			continue
 		}
 		if dir.IsDir() {
-			templateDir, err := fs.Sub(templates, dir.Name())
-			if err != nil {
-				continue
-			}
-			template, err := parseTemplate(templateDir, "")
+			template, err := parseTemplate(templates, dir.Name())
 			if err != nil {
 				continue
 			}
@@ -56,7 +52,7 @@ func init() {
 				TemplateData{
 					Name:        dir.Name(),
 					Description: template.Description,
-					FS:          templateDir,
+					FS:          templates,
 				})
 		}
 	}
@@ -268,7 +264,14 @@ func Install(options *flags.Init) error {
 	if err != nil {
 		return err
 	}
-
+	common, err := fs.Sub(templates, "_common")
+	if err != nil {
+		return err
+	}
+	err = gosod.New(common).Extract(options.ProjectDir, templateData)
+	if err != nil {
+		return err
+	}
 	err = gosod.New(tfs).Extract(options.ProjectDir, templateData)
 	if err != nil {
 		return err
