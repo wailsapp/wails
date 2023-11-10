@@ -220,10 +220,27 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 func (b *Bindings) AddEnumToGenerateTS(e interface{}) {
 	enumType := reflect.TypeOf(e)
 
+	var packageName string
+	var enumName string
 	// enums should be represented as array of all possible values
 	if hasElements(enumType) {
-		packageName := getPackageName(enumType.Elem().String())
-		enumName := enumType.Elem().Name()
+		enum := enumType.Elem()
+		println(enum.Kind())
+		// simple enum represented by struct with Value/TSName fields
+		if enum.Kind() == reflect.Struct {
+			_, tsNamePresented := enum.FieldByName("TSName")
+			enumT, valuePresented := enum.FieldByName("Value")
+			if tsNamePresented && valuePresented {
+				packageName = getPackageName(enumT.Type.String())
+				enumName = enumT.Type.Name()
+			} else {
+				return
+			}
+			// otherwise expecting implementation with TSName() https://github.com/tkrajina/typescriptify-golang-structs#enums-with-tsname
+		} else {
+			packageName = getPackageName(enumType.Elem().String())
+			enumName = enumType.Elem().Name()
+		}
 		if b.enumsToGenerateTS[packageName] == nil {
 			b.enumsToGenerateTS[packageName] = make(map[string]interface{})
 		}
