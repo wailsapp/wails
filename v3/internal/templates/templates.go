@@ -4,16 +4,17 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/pkg/errors"
-	"github.com/pterm/pterm"
-	"github.com/wailsapp/wails/v3/internal/debug"
 	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/pkg/errors"
+	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/debug"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 
@@ -22,125 +23,43 @@ import (
 	"github.com/samber/lo"
 )
 
-//go:embed lit
-var lit embed.FS
-
-//go:embed lit-ts
-var litTS embed.FS
-
-//go:embed vue
-var vue embed.FS
-
-//go:embed vue-ts
-var vueTS embed.FS
-
-//go:embed react
-var react embed.FS
-
-//go:embed react-ts
-var reactTS embed.FS
-
-//go:embed react-swc
-var reactSWC embed.FS
-
-//go:embed react-swc-ts
-var reactSWCTS embed.FS
-
-//go:embed svelte
-var svelte embed.FS
-
-//go:embed svelte-ts
-var svelteTS embed.FS
-
-//go:embed preact
-var preact embed.FS
-
-//go:embed preact-ts
-var preactTS embed.FS
-
-//go:embed vanilla
-var vanilla embed.FS
-
-//go:embed vanilla-ts
-var vanillaTS embed.FS
+//go:embed *
+var templates embed.FS
 
 type TemplateData struct {
 	Name        string
 	Description string
-	FS          embed.FS
+	FS          fs.FS
 }
 
-var defaultTemplates = []TemplateData{
-	{
-		Name:        "lit",
-		Description: "Template using Lit Web Components: https://lit.dev",
-		FS:          lit,
-	},
-	{
-		Name:        "lit-ts",
-		Description: "Template using Lit Web Components (TypeScript) : https://lit.dev",
-		FS:          litTS,
-	},
-	{
-		Name:        "vue",
-		Description: "Template using Vue: https://vuejs.org",
-		FS:          vue,
-	},
-	{
-		Name:        "vue-ts",
-		Description: "Template using Vue (TypeScript): https://vuejs.org",
-		FS:          vueTS,
-	},
-	{
-		Name:        "react",
-		Description: "Template using React: https://reactjs.org",
-		FS:          react,
-	},
-	{
-		Name:        "react-ts",
-		Description: "Template using React (TypeScript): https://reactjs.org",
-		FS:          reactTS,
-	},
-	{
-		Name:        "react-swc",
-		Description: "Template using React with SWC: https://reactjs.org & https://swc.rs",
-		FS:          reactSWC,
-	},
-	{
-		Name:        "react-swc-ts",
-		Description: "Template using React with SWC (TypeScript): https://reactjs.org & https://swc.rs",
-		FS:          reactSWCTS,
-	},
-	{
-		Name:        "svelte",
-		Description: "Template using Svelte: https://svelte.dev",
-		FS:          svelte,
-	},
-	{
-		Name:        "svelte-ts",
-		Description: "Template using Svelte (TypeScript): https://svelte.dev",
-		FS:          svelteTS,
-	},
-	{
-		Name:        "preact",
-		Description: "Template using Preact: https://preactjs.com",
-		FS:          preact,
-	},
-	{
-		Name:        "preact-ts",
-		Description: "Template using Preact (TypeScript): https://preactjs.com",
-		FS:          preactTS,
-	},
-	{
-		Name:        "vanilla",
-		Description: "Template using Vanilla JS",
-		FS:          vanilla,
-	},
-	{
-		Name:        "vanilla-ts",
-		Description: "Template using Vanilla JS (TypeScript)",
-		FS:          vanillaTS,
-	},
+var defaultTemplates = []TemplateData{}
+
+func init() {
+	dirs, err := templates.ReadDir(".")
+	if err != nil {
+		return
+	}
+	for _, dir := range dirs {
+		if strings.HasPrefix(dir.Name(), "_") {
+			continue
+		}
+		if dir.IsDir() {
+			templateDir, err := fs.Sub(templates, dir.Name())
+			if err != nil {
+				continue
+			}
+			template, err := parseTemplate(templateDir, "")
+			if err != nil {
+				continue
+			}
+			defaultTemplates = append(defaultTemplates,
+				TemplateData{
+					Name:        dir.Name(),
+					Description: template.Description,
+					FS:          templateDir,
+				})
+		}
+	}
 }
 
 func ValidTemplateName(name string) bool {
