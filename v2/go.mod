@@ -1,8 +1,6 @@
 module github.com/wailsapp/wails/v2
 
-go 1.21
-
-toolchain go1.21.3
+go 1.18
 
 require (
 	github.com/Masterminds/semver v1.5.0
