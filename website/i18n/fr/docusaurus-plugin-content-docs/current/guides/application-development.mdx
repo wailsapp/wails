@@ -189,16 +189,16 @@ Le serveur de développement utilise une technique appelée "debouncing", ce qui
 
 Certains frameworks sont fournis avec leur propre serveur de rechargement en direct, cependant ils ne seront pas en mesure de tirer parti des liaisons Wails Go. Dans ce scénario, il est préférable d'exécuter un script qui va surveiller le projet dans dossier build, dossier que Wails surveille aussi. Pour un exemple, voir le modèle svelte par défaut qui utilise [rollup](https://rollupjs.org/guide/en/).
 
-### Create React App
+### Créer une application React
 
-The process for a Create-React-App project is slightly more complicated. In order to support live frontend reloading the following configuration needs to be added to your `wails.json`:
+Le processus pour créer un projet Reactest un peu plus compliqué. Afin de prendre en charge le rechargement du frontend en direct, la configuration suivante doit être ajoutée à votre `wails.json`:
 
 ```json
   "frontend:dev:watcher": "yarn start",
   "frontend:dev:serverUrl": "http://localhost:3000",
 ```
 
-The `frontend:dev:watcher` command will start the Create-React-App development server (hosted on port `3000` typically). The `frontend:dev:serverUrl` command then instructs Wails to serve assets from the development server when loading the frontend rather than from the build folder. In addition to the above, the `index.html` needs to be updated with the following:
+La commande `frontend:dev:watcher` démarrera le serveur de développement React (hébergé sur le port `3000` typiquement). La commande `frontend:dev:serverUrl` demande ensuite à Wails d'exposer les ressources depuis le serveur de développement lors du chargement du frontend, plutôt que depuis le dossier de construction. En plus de ce qui précède, le fichier `index.html` doit être mis à jour avec les éléments suivants :
 
 ```html
     <head>
@@ -208,7 +208,7 @@ The `frontend:dev:watcher` command will start the Create-React-App development s
     </head>
 ```
 
-This is required as the watcher command that rebuilds the frontend prevents Wails from injecting the required scripts. This circumvents that issue by ensuring the scripts are always injected. With this configuration, `wails dev` can be run which will appropriately build the frontend and backend with hot-reloading enabled. Additionally, when accessing the application from a browser the React developer tools can now be used on a non-minified version of the application for straightforward debugging. Finally, for faster builds, `wails dev -s` can be run to skip the default building of the frontend by Wails as this is an unnecessary step.
+Ceci est nécessaire, car la commande watcher qui reconstruit le frontend empêche Wails de les injecter. Ça contourne le problème en assurant les scripts sont toujours injectés. Avec cette configuration, `wails dev` peut être exécuté, ce qui construira le frontend et le backend de manière appropriée avec le rechargement à chaud activé. De plus, lorsque vous accédez à l'application à partir d'un navigateur, les outils de développement de React peuvent maintenant être utilisés sur une version non minifiée de l'application pour le débogage. Enfin, pour des compilations plus rapides, `wails dev -s` peut être exécuté pour passer la construction par défaut du frontend par Wails car c'est une étape inutile.
 
 ## Module Go
 
