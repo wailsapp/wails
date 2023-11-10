@@ -43,9 +43,6 @@ func generateModule(f *flags.GenerateModule) error {
 		return err
 	}
 
-	println("I'm here")
-	println(projectConfig.Bindings.TsGeneration.OutputType)
-
 	if projectConfig.Bindings.TsGeneration.OutputType == "" {
 		projectConfig.Bindings.TsGeneration.OutputType = "classes"
 	}
