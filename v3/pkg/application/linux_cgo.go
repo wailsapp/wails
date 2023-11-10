@@ -560,13 +560,20 @@ func getScreenByIndex(display *C.struct__GdkDisplay, index int) *Screen {
 	if C.gdk_monitor_is_primary(monitor) == 1 {
 		primary = true
 	}
-
 	return &Screen{
+		ID:        fmt.Sprintf("%d", index),
+		Name:      fmt.Sprintf("Screen %d", index),
 		IsPrimary: primary,
-		Scale:     1.0,
+		Scale:     float32(C.gdk_monitor_get_scale_factor(monitor)),
 		X:         int(geometry.x),
 		Y:         int(geometry.y),
 		Size: Size{
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		Bounds: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
 			Height: int(geometry.height),
 			Width:  int(geometry.width),
 		},
@@ -576,7 +583,8 @@ func getScreenByIndex(display *C.struct__GdkDisplay, index int) *Screen {
 func getScreens(app pointer) ([]*Screen, error) {
 	var screens []*Screen
 	window := C.gtk_application_get_active_window((*C.GtkApplication)(app))
-	display := C.gdk_window_get_display((*C.GdkWindow)(unsafe.Pointer(window)))
+	gdkWindow := C.gtk_widget_get_window((*C.GtkWidget)(unsafe.Pointer(window)))
+	display := C.gdk_window_get_display(gdkWindow)
 	count := C.gdk_display_get_n_monitors(display)
 	for i := 0; i < int(count); i++ {
 		screens = append(screens, getScreenByIndex(display, i))
