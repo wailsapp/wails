@@ -25,6 +25,7 @@ type Bindings struct {
 	structsToGenerateTS map[string]map[string]interface{}
 	tsPrefix            string
 	tsSuffix            string
+	tsInterface         bool
 	obfuscate           bool
 }
 
@@ -96,6 +97,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		w := typescriptify.New()
 		w.WithPrefix(b.tsPrefix)
 		w.WithSuffix(b.tsSuffix)
+		w.WithInterface(b.tsInterface)
 		w.Namespace = packageName
 		w.WithBackupDir("")
 		w.KnownStructs = allStructNames
@@ -230,6 +232,13 @@ func (b *Bindings) SetTsPrefix(prefix string) *Bindings {
 
 func (b *Bindings) SetTsSuffix(postfix string) *Bindings {
 	b.tsSuffix = postfix
+	return b
+}
+
+func (b *Bindings) SetOutputType(outputType string) *Bindings {
+	if outputType == "interfaces" {
+		b.tsInterface = true
+	}
 	return b
 }
 
