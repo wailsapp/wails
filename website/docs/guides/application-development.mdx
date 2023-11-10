@@ -160,27 +160,17 @@ const (
 	Saturday  Weekday = "Saturday"
 )
 
-var AllWeekdays = []Weekday{Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday}
-
-func (w Weekday) TSName() string {
-	switch w {
-	case Sunday:
-		return "SUNDAY"
-	case Monday:
-		return "MONDAY"
-	case Tuesday:
-		return "TUESDAY"
-	case Wednesday:
-		return "WEDNESDAY"
-	case Thursday:
-		return "THURSDAY"
-	case Friday:
-		return "FRIDAY"
-	case Saturday:
-		return "SATURDAY"
-	default:
-		return "???"
-	}
+var AllWeekdays = []struct {
+	Value  Weekday
+	TSName string
+}{
+	{Sunday, "SUNDAY"},
+	{Monday, "MONDAY"},
+	{Tuesday, "TUESDAY"},
+	{Wednesday, "WEDNESDAY"},
+	{Thursday, "THURSDAY"},
+	{Friday, "FRIDAY"},
+	{Saturday, "SATURDAY"},
 }
 ```
 
