@@ -428,7 +428,7 @@ func (w *linuxWebviewWindow) run() {
 			w.center() // needs to be queued until after GTK starts up!
 		}
 	}
-	if w.parent.options.DevToolsEnabled {
+	if w.parent.options.DevToolsEnabled || globalApplication.isDebugMode {
 		w.toggleDevTools()
 		if w.parent.options.OpenInspectorOnStartup {
 			w.showDevTools()
