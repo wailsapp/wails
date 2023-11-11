@@ -225,7 +225,6 @@ func (b *Bindings) AddEnumToGenerateTS(e interface{}) {
 	// enums should be represented as array of all possible values
 	if hasElements(enumType) {
 		enum := enumType.Elem()
-		println(enum.Kind())
 		// simple enum represented by struct with Value/TSName fields
 		if enum.Kind() == reflect.Struct {
 			_, tsNamePresented := enum.FieldByName("TSName")
