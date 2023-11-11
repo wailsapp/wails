@@ -4,6 +4,7 @@ package application
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"net/url"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -354,6 +355,9 @@ func (w *linuxWebviewWindow) run() {
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
 	}
+
+	// Register the capabilities
+	globalApplication.capabilities = capabilities.NewCapabilities()
 
 	app := getNativeApplication()
 

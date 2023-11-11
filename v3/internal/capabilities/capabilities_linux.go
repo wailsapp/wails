@@ -2,8 +2,12 @@
 
 package capabilities
 
-func newCapabilities(_ string) Capabilities {
+import "github.com/wailsapp/wails/v3/internal/operatingsystem"
+
+func NewCapabilities() Capabilities {
 	c := Capabilities{}
-	c.HasNativeDrag = false
+
+	webkitVersion := operatingsystem.GetWebkitVersion()
+	c.HasNativeDrag = webkitVersion.IsAtLeast(2, 36, 0)
 	return c
 }

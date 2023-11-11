@@ -14,7 +14,7 @@ func (v version) IsAtLeast(input string) bool {
 	return result >= 0
 }
 
-func newCapabilities(webview2version string) Capabilities {
+func NewCapabilities(version string) Capabilities {
 	webview2 := version(webview2version)
 	c := Capabilities{}
 	c.HasNativeDrag = webview2.IsAtLeast("113.0.0.0")

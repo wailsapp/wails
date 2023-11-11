@@ -203,5 +203,9 @@ func (a *App) logPlatformInfo() {
 		return
 	}
 
-	a.info("Platform Info:", info.AsLogSlice()...)
+	wkVersion := operatingsystem.GetWebkitVersion()
+	platformInfo := info.AsLogSlice()
+	platformInfo = append(platformInfo, "Webkit2Gtk", wkVersion)
+
+	a.info("Platform Info:", platformInfo...)
 }
