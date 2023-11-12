@@ -120,15 +120,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-golang-
 
+      - name: Install linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev build-essential pkg-config
+
       - name: Build Wails3 CLI
         run: |
           cd ./v3/cmd/wails3
           go install
           wails3 -help
-
-      - name: Install linux dependencies
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev build-essential pkg-config
 
       - name: Generate template '${{ matrix.template }}'
         run: |
