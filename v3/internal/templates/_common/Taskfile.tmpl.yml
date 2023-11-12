@@ -5,13 +5,211 @@ vars:
 
 tasks:
 
-  pre-build:
-    summary: Pre-build hooks
+## -------------------------- Build -------------------------- ##
 
-  post-build:
-    summary: Post-build hooks
+  build:
+    summary: Builds the application
+    cmds:
+      - task: build:darwin
+      - task: build:linux
+      - task: build:windows
 
-  install-frontend-deps:
+
+## --- Windows ---
+
+  build:windows:
+    summary: Builds the application for Windows
+    platforms:
+      - windows
+    cmds:
+      - task: build:frontend
+      - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}.exe
+
+## --- Darwin ---
+
+  build:darwin:
+    summary: Builds the application
+    platforms:
+      - darwin
+    cmds:
+      - task: build:frontend
+      - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}
+    env:
+      CGO_CFLAGS: "-mmacosx-version-min=10.13"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+      MACOSX_DEPLOYMENT_TARGET: "10.13"
+
+
+  ## --- Linux ---
+
+  build:linux:
+    summary: Builds the application for Linux
+    platforms:
+      - linux
+    cmds:
+      - task: build:frontend
+      - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}
+
+## -------------------------- Package -------------------------- ##
+
+  package:
+    summary: Packages a production build of the application into a bundle
+    cmds:
+      # Target specific archs
+      # - task: package:darwin:arm64
+      # - task: package:darwin:amd64
+      # - task: package:windows:arm64
+      # - task: package:windows:amd64
+
+      # Target current arch
+      - task: package:darwin
+      - task: package:windows
+
+  ## --- Windows AMD64 ---
+
+  package:windows:amd64:
+    summary: Packages a production build of the application into a `.exe` bundle
+    platform: windows/amd64
+    deps:
+      - generate:icons
+    cmds:
+      - task: generate:syso:amd64
+      - GOOS=windows GOARCH=amd64 go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
+      - powershell Remove-item wails.syso
+
+  ## --- Windows ARM64 ---
+
+  package:windows:arm64:
+    summary: Packages a production build of the application into a `.exe` bundle
+    platform: windows/arm64
+    deps:
+      - generate:icons
+    cmds:
+      - task: generate:syso:arm64
+      - GOOS=windows GOARCH=arm64 go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
+      - powershell Remove-item wails.syso
+
+  ## --- Windows Default ---
+
+  package:windows:
+    summary: Packages a production build of the application into a `.exe` bundle
+    platform: windows
+    deps:
+      - generate:icons
+    cmds:
+      - task: generate:syso
+      - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
+      - powershell Remove-item wails.syso
+
+  ## --- Darwin ARM64 ---
+
+  package:darwin:arm64:
+    summary: Packages a production build of the application into a `.app` bundle
+    platform: darwin/arm64
+    deps:
+      - task: build:app:prod:darwin
+        vars:
+          ARCH: arm64
+      - generate:icons
+    cmds:
+      - task: create:app:bundle
+
+  ## --- Darwin AMD64 ---
+
+  package:darwin:amd64:
+    summary: Packages a production build of the application into a `.app` bundle
+    platform: darwin/amd64
+    deps:
+      - task: build:app:prod:darwin
+        vars:
+          ARCH: amd64
+      - generate:icons
+    cmds:
+      - task: create:app:bundle
+
+  ## --- Darwin Default ---
+
+  package:darwin:
+    summary: Packages a production build of the application into a `.app` bundle
+    deps:
+      - task: build:app:prod:darwin
+      - generate:icons
+    cmds:
+      - task: create:app:bundle
+
+
+## -------------------------- Misc -------------------------- ##
+
+  create:app:bundle:
+    summary: Creates an `.app` bundle
+    cmds:
+      - mkdir -p {{ "{{.APP_NAME}}" }}.app/Contents/{MacOS,Resources}
+      - cp build/icons.icns {{ "{{.APP_NAME}}" }}.app/Contents/Resources
+      - cp build/bin/{{ "{{.APP_NAME}}" }} {{ "{{.APP_NAME}}" }}.app/Contents/MacOS
+      - cp build/Info.plist {{ "{{.APP_NAME}}" }}.app/Contents
+
+  build:app:prod:darwin:
+    summary: Creates a production build of the application
+    cmds:
+      - task: build:frontend
+      - go build -tags production -ldflags="-w -s" -o build/bin/{{ "{{.APP_NAME}}" }}
+    env:
+      CGO_CFLAGS: "-mmacosx-version-min=10.13"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+      MACOSX_DEPLOYMENT_TARGET: "10.13"
+
+
+  build:app:prod:darwin:arm64:
+    summary: Creates a production build of the application
+    cmds:
+      - task: build:frontend
+      - GOOS=darwin GOARCH=arm64 go build -tags production -ldflags="-w -s" -o build/bin/{{ "{{.APP_NAME}}" }}
+    env:
+      CGO_CFLAGS: "-mmacosx-version-min=10.13"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+      MACOSX_DEPLOYMENT_TARGET: "10.13"
+
+
+  build:app:prod:darwin:amd64:
+    summary: Creates a production build of the application
+    cmds:
+      - task: build:frontend
+      - GOOS=darwin GOARCH=amd64 go build -tags production -ldflags="-w -s" -o build/bin/{{ "{{.APP_NAME}}" }}
+    env:
+      CGO_CFLAGS: "-mmacosx-version-min=10.13"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+      MACOSX_DEPLOYMENT_TARGET: "10.13"
+
+  generate:icons:
+    summary: Generates Windows `.ico` and Mac `.icns` files from an image
+    dir: build
+    cmds:
+      # Generates both .ico and .icns files
+      - wails3 generate icons -input appicon.png
+
+  generate:syso:arm64:
+    summary: Generates Windows `.syso` file
+    dir: build
+    platform: windows/arm64
+    cmds:
+      - wails3 generate syso -arch arm64 -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+
+  generate:syso:amd64:
+    summary: Generates Windows `.syso` file
+    dir: build
+    platform: windows/amd64
+    cmds:
+      - wails3 generate syso -arch amd64 -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+
+  generate:syso:
+    summary: Generates Windows `.syso` file
+    dir: build
+    platform: windows
+    cmds:
+      - wails3 generate syso -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+
+
+  install:frontend:deps:
     summary: Install frontend dependencies
     dir: frontend
     sources:
@@ -25,112 +223,12 @@ tasks:
     cmds:
       - npm install
 
-  build-frontend:
+  build:frontend:
     summary: Build the frontend project
     dir: frontend
     deps:
-      - install-frontend-deps
+      - install:frontend:deps
     cmds:
       - npm run build
 
-  build:darwin:
-    summary: Builds the application
-    platforms:
-      - darwin
-    cmds:
-      - task: pre-build
-      - task: build-frontend
-      - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}
-      - task: post-build
-    env:
-      CGO_CFLAGS: "-mmacosx-version-min=10.13"
-      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
-      MACOSX_DEPLOYMENT_TARGET: "10.13"
 
-  build:linux:
-    summary: Builds the application for Linux
-    platforms:
-      - linux
-    cmds:
-      - task: pre-build
-      - task: build-frontend
-      - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}
-      - task: post-build
-
-  build:windows:
-    summary: Builds the application for Windows
-    platforms:
-      - windows
-    cmds:
-      - task: pre-build
-      - task: build-frontend
-      - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}.exe
-      - task: post-build
-
-  build:
-    summary: Builds the application
-    cmds:
-      - task: build:darwin
-      - task: build:linux
-      - task: build:windows
-
-  generate-icons:
-    summary: Generates Windows `.ico` and Mac `.icns` files from an image
-    dir: build
-    cmds:
-      # Generates both .ico and .icns files
-      - wails generate icons -input appicon.png
-
-  build-app-prod-darwin:
-    summary: Creates a production build of the application
-    cmds:
-      - task: pre-build
-      - task: build-frontend
-      - GOOS=darwin GOARCH={{ "{{.ARCH}}" }} go build -tags production -ldflags="-w -s" -o build/bin/{{ "{{.APP_NAME}}" }}
-      - task: post-build
-    env:
-      CGO_CFLAGS: "-mmacosx-version-min=10.13"
-      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
-      MACOSX_DEPLOYMENT_TARGET: "10.13"
-    vars:
-      ARCH: $GOARCH
-
-
-  create-app-bundle:
-    summary: Builds a `.app` bundle
-    cmds:
-      - mkdir -p {{ "{{.APP_NAME}}" }}.app/Contents/{MacOS,Resources}
-      - cp build/icons.icns {{ "{{.APP_NAME}}" }}.app/Contents/Resources
-      - cp build/bin/{{ "{{.APP_NAME}}" }} {{ "{{.APP_NAME}}" }}.app/Contents/MacOS
-      - cp build/Info.plist {{ "{{.APP_NAME}}" }}.app/Contents
-
-  package-darwin-arm64:
-    summary: Packages a production build of the application into a `.app` bundle
-    platform: darwin
-    deps:
-      - task: build-app-prod-darwin
-        vars:
-            ARCH: arm64
-      - generate-icons
-    cmds:
-      - task: create-app-bundle
-
-  generate:syso:
-    dir: build
-    platform: windows
-    cmds:
-      - wails generate syso -arch {{ "{{.ARCH}}" }} -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
-    vars:
-      ARCH: $GOARCH
-
-  package:windows:
-    summary: Packages a production build of the application into a `.exe` bundle
-    platform: windows
-    deps:
-      - generate-icons
-    cmds:
-      - task: generate:syso
-        vars:
-            ARCH: amd64
-      - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
-      - powershell Remove-item wails.syso
