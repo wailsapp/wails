@@ -123,10 +123,8 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
 	if path == runtimeJSPath {
 		d.writeBlob(rw, path, d.runtimeJS)
-
 	} else if path == runtimePath && d.runtimeHandler != nil {
 		d.runtimeHandler.HandleRuntimeCall(rw, req)
-
 	} else if path == ipcJSPath {
 		content := d.runtime.DesktopIPC()
 		if d.ipcJS != nil {
@@ -136,7 +134,6 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	} else if script, ok := d.pluginScripts[path]; ok {
 		d.writeBlob(rw, path, []byte(script))
-
 	} else if d.isRuntimeInjectionMatch(path) {
 		recorder := &bodyRecorder{
 			ResponseWriter: rw,
@@ -150,7 +147,8 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				}
 
 				return strings.Contains(h.Get(HeaderContentType), "text/html")
-			}}
+			},
+		}
 
 		handler.ServeHTTP(recorder, req)
 

@@ -67,7 +67,6 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 
 // Add the given struct methods to the Bindings
 func (b *Bindings) Add(structPtr interface{}) error {
-
 	methods, err := b.getMethods(structPtr)
 	if err != nil {
 		return fmt.Errorf("cannot bind value to app: %s", err.Error())
@@ -201,7 +200,6 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 }
 
 func (b *Bindings) WriteModels(modelsDir string) error {
-
 	modelsData, err := b.GenerateModels()
 	if err != nil {
 		return err
@@ -212,7 +210,7 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 	}
 
 	filename := filepath.Join(modelsDir, "models.ts")
-	err = os.WriteFile(filename, modelsData, 0755)
+	err = os.WriteFile(filename, modelsData, 0o755)
 	if err != nil {
 		return err
 	}

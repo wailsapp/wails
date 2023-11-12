@@ -72,7 +72,6 @@ type Options struct {
 // Template holds data relating to a template
 // including the metadata stored in template.json
 type Template struct {
-
 	// Template details
 	Name        string `json:"name"`
 	ShortName   string `json:"shortname"`
@@ -100,7 +99,6 @@ func parseTemplate(template gofs.FS) (Template, error) {
 
 // List returns the list of available templates
 func List() ([]Template, error) {
-
 	// If the cache isn't loaded, load it
 	if templateCache == nil {
 		err := loadTemplateCache()
@@ -114,7 +112,6 @@ func List() ([]Template, error) {
 
 // getTemplateByShortname returns the template with the given short name
 func getTemplateByShortname(shortname string) (Template, error) {
-
 	var result Template
 
 	// If the cache isn't loaded, load it
@@ -136,7 +133,6 @@ func getTemplateByShortname(shortname string) (Template, error) {
 
 // Loads the template cache
 func loadTemplateCache() error {
-
 	templatesFS, err := debme.FS(templates, "templates")
 	if err != nil {
 		return err
@@ -309,11 +305,9 @@ func gitclone(options *Options) (string, error) {
 	_, err = git.PlainClone(dirname, false, cloneOption)
 
 	return dirname, err
-
 }
 
 func generateIDEFiles(options *Options) error {
-
 	switch options.IDE {
 	case "vscode":
 		return generateVSCodeFiles(options)
@@ -361,7 +355,6 @@ func generateVSCodeFiles(options *Options) error {
 		options:   options,
 	}
 	return installIDEFiles(ideoptions)
-
 }
 
 func installIDEFiles(o ideOptions) error {

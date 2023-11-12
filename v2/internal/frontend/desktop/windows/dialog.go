@@ -47,7 +47,7 @@ func (f *Frontend) OpenDirectoryDialog(options frontend.OpenDialogOptions) (stri
 			return cfd.NewSelectFolderDialog(config)
 		}, false)
 
-	if err != nil && err != cfd.ErrorCancelled {
+	if err != nil && err != cfd.ErrCancelled {
 		return "", err
 	}
 	return result.(string), nil
@@ -72,7 +72,7 @@ func (f *Frontend) OpenFileDialog(options frontend.OpenDialogOptions) (string, e
 			return cfd.NewOpenFileDialog(config)
 		}, false)
 
-	if err != nil && err != cfd.ErrorCancelled {
+	if err != nil && err != cfd.ErrCancelled {
 		return "", err
 	}
 	return result.(string), nil
@@ -99,7 +99,7 @@ func (f *Frontend) OpenMultipleFilesDialog(options frontend.OpenDialogOptions) (
 			return cfd.NewOpenMultipleFilesDialog(config)
 		}, true)
 
-	if err != nil && err != cfd.ErrorCancelled {
+	if err != nil && err != cfd.ErrCancelled {
 		return nil, err
 	}
 	return result.([]string), nil
@@ -126,7 +126,7 @@ func (f *Frontend) SaveFileDialog(options frontend.SaveDialogOptions) (string, e
 			return cfd.NewSaveFileDialog(config)
 		}, false)
 
-	if err != nil && err != cfd.ErrorCancelled {
+	if err != nil && err != cfd.ErrCancelled {
 		return "", err
 	}
 	return result.(string), nil

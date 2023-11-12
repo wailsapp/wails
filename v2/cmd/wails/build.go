@@ -18,7 +18,6 @@ import (
 )
 
 func buildApplication(f *flags.Build) error {
-
 	if f.NoColour {
 		pterm.DisableColor()
 		colour.ColourEnabled = false
@@ -255,5 +254,4 @@ func buildApplication(f *flags.Build) error {
 	}
 
 	return nil
-
 }

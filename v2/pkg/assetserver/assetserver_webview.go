@@ -133,7 +133,8 @@ func (d *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	if req.ContentLength == 0 {
 		req.ContentLength, _ = strconv.ParseInt(req.Header.Get(HeaderContentLength), 10, 64)
 	} else {
-		req.Header.Set(HeaderContentLength, fmt.Sprintf("%d", req.ContentLength))
+		size := strconv.FormatInt(req.ContentLength, 10)
+		req.Header.Set(HeaderContentLength, size)
 	}
 
 	if host := req.Header.Get(HeaderHost); host != "" {

@@ -73,7 +73,6 @@ type Options struct {
 
 // Build the project!
 func Build(options *Options) (string, error) {
-
 	// Extract logger
 	outputLogger := options.Logger
 
@@ -171,7 +170,7 @@ func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
 	for _, embedDetail := range embedDetails {
 		fullPath := embedDetail.GetFullPath()
 		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			err := os.MkdirAll(fullPath, 0755)
+			err := os.MkdirAll(fullPath, 0o755)
 			if err != nil {
 				return err
 			}
@@ -184,7 +183,6 @@ func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
 	}
 
 	return nil
-
 }
 
 func fatal(message string) {
@@ -213,7 +211,6 @@ func printBulletPoint(text string, args ...any) {
 }
 
 func GenerateBindings(buildOptions *Options) error {
-
 	obfuscated := buildOptions.Obfuscated
 	if obfuscated {
 		printBulletPoint("Generating obfuscated bindings: ")
@@ -376,7 +373,6 @@ func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hook
 	}
 
 	return executeBuildHook(outputLogger, options, hookIdentifier, argReplacements, postBuildHook, "post")
-
 }
 
 func executeBuildHook(_ *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string, buildHook string, hookName string) error {
@@ -412,7 +408,6 @@ func executeBuildHook(_ *clilogger.CLILogger, options *Options, hookIdentifier s
 
 	if options.Verbosity == VERBOSE {
 		pterm.Info.Println(strings.Join(args, " "))
-
 	}
 
 	if !fs.DirExists(options.BinDirectory) {

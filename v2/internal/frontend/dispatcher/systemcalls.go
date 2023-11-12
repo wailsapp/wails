@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"github.com/wailsapp/wails/v2/internal/frontend"
 )
@@ -23,7 +24,6 @@ type size struct {
 }
 
 func (d *Dispatcher) processSystemCall(payload callMessage, sender frontend.Frontend) (interface{}, error) {
-
 	// Strip prefix
 	name := strings.TrimPrefix(payload.Name, systemCallPrefix)
 
@@ -64,5 +64,4 @@ func (d *Dispatcher) processSystemCall(payload callMessage, sender frontend.Fron
 	default:
 		return nil, fmt.Errorf("unknown systemcall message: %s", payload.Name)
 	}
-
 }

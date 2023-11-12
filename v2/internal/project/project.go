@@ -12,7 +12,6 @@ import (
 
 // Project holds the data related to a Wails project
 type Project struct {
-
 	/*** Application Data ***/
 	Name           string `json:"name"`
 	AssetDirectory string `json:"assetdir,omitempty"`
@@ -144,11 +143,10 @@ func (p *Project) Save() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(p.filename, data, 0755)
+	return os.WriteFile(p.filename, data, 0o755)
 }
 
 func (p *Project) setDefaults() {
-
 	if p.Path == "" {
 		p.Path = lo.Must(os.Getwd())
 	}

@@ -25,7 +25,6 @@ func NewProcess(cmd string, args ...string) *Process {
 
 // Start the process
 func (p *Process) Start(exitCodeChannel chan int) error {
-
 	err := p.cmd.Start()
 	if err != nil {
 		return err

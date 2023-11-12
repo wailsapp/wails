@@ -128,8 +128,8 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 	// Output Dependencies Status
 	var dependenciesMissing []string
 	var externalPackages []*packagemanager.Dependency
-	var dependenciesAvailableRequired = 0
-	var dependenciesAvailableOptional = 0
+	dependenciesAvailableRequired := 0
+	dependenciesAvailableOptional := 0
 
 	dependenciesTableData := pterm.TableData{
 		{"Dependency", "Package Name", "Status", "Version"},
