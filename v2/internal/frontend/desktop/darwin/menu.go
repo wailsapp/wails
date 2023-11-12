@@ -13,6 +13,7 @@ package darwin
 #include <stdlib.h>
 */
 import "C"
+
 import (
 	"unsafe"
 
@@ -122,7 +123,6 @@ func processMenuItem(parent *NSMenu, menuItem *menu.MenuItem) *MenuItem {
 	}
 
 	return parent.AddMenuItem(menuItem)
-
 }
 
 func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {

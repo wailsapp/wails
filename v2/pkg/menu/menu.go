@@ -59,8 +59,7 @@ func (m *Menu) Prepend(item *MenuItem) {
 }
 
 func NewMenuFromItems(first *MenuItem, rest ...*MenuItem) *Menu {
-
-	var result = NewMenu()
+	result := NewMenu()
 	result.Append(first)
 	for _, item := range rest {
 		result.Append(item)

@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/leaanthony/debme"
 	"github.com/leaanthony/gosod"
 	"github.com/pterm/pterm"
@@ -14,12 +17,9 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
-	"os"
-	"path/filepath"
 )
 
 func generateModule(f *flags.GenerateModule) error {
-
 	if f.NoColour {
 		pterm.DisableColor()
 		colour.ColourEnabled = false
@@ -55,7 +55,6 @@ func generateModule(f *flags.GenerateModule) error {
 }
 
 func generateTemplate(f *flags.GenerateTemplate) error {
-
 	if f.NoColour {
 		pterm.DisableColor()
 		colour.ColourEnabled = false
@@ -77,7 +76,7 @@ func generateTemplate(f *flags.GenerateTemplate) error {
 	}
 	templateDir := filepath.Join(cwd, f.Name)
 	if !fs.DirExists(templateDir) {
-		err := os.MkdirAll(templateDir, 0755)
+		err := os.MkdirAll(templateDir, 0o755)
 		if err != nil {
 			return err
 		}
@@ -200,7 +199,7 @@ func processPackageJSON(frontendDir string) error {
 	json, _ = sjson.SetBytes(json, "name", "{{.ProjectName}}")
 	json, _ = sjson.SetBytes(json, "author", "{{.AuthorName}}")
 
-	err = os.WriteFile(packageJSON, json, 0644)
+	err = os.WriteFile(packageJSON, json, 0o644)
 	if err != nil {
 		return err
 	}
@@ -231,7 +230,7 @@ func processPackageLockJSON(frontendDir string) error {
 	printBulletPoint("Updating package-lock.json data...")
 	json, _ = sjson.Set(json, "name", "{{.ProjectName}}")
 
-	err = os.WriteFile(filename, []byte(json), 0644)
+	err = os.WriteFile(filename, []byte(json), 0o644)
 	if err != nil {
 		return err
 	}

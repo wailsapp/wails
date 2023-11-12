@@ -47,7 +47,6 @@ func (*Dev) Default() *Dev {
 }
 
 func (d *Dev) Process() error {
-
 	var err error
 	err = d.loadAndMergeProjectConfig()
 	if err != nil {
@@ -113,7 +112,6 @@ func (d *Dev) loadAndMergeProjectConfig() error {
 	}
 
 	return nil
-
 }
 
 // GenerateBuildOptions creates a build.Options using the flags

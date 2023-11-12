@@ -13,16 +13,19 @@ package darwin
 #include <stdlib.h>
 */
 import "C"
+
 import (
 	"log"
 	"math"
 	"sync"
 )
 
-var menuItemToID = make(map[*MenuItem]uint)
-var idToMenuItem = make(map[uint]*MenuItem)
-var menuItemLock sync.Mutex
-var menuItemIDCounter uint = 0
+var (
+	menuItemToID      = make(map[*MenuItem]uint)
+	idToMenuItem      = make(map[uint]*MenuItem)
+	menuItemLock      sync.Mutex
+	menuItemIDCounter uint = 0
+)
 
 func createMenuItemID(item *MenuItem) uint {
 	menuItemLock.Lock()

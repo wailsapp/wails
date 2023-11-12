@@ -13,6 +13,7 @@ package darwin
 #include <stdlib.h>
 */
 import "C"
+
 import (
 	"log"
 	"runtime"
@@ -46,7 +47,6 @@ func bool2CboolPtr(value bool) *C.bool {
 }
 
 func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window {
-
 	c := NewCalloc()
 	defer c.Free()
 
@@ -196,6 +196,7 @@ func (w *Window) SetTitle(title string) {
 func (w *Window) Maximise() {
 	C.Maximise(w.context)
 }
+
 func (w *Window) ToggleMaximise() {
 	C.ToggleMaximise(w.context)
 }
@@ -251,6 +252,7 @@ func (w *Window) Show() {
 func (w *Window) Hide() {
 	C.Hide(w.context)
 }
+
 func (w *Window) ShowApplication() {
 	C.ShowApplication(w.context)
 }

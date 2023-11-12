@@ -14,7 +14,6 @@ type Init struct {
 }
 
 func (i *Init) Default() *Init {
-
 	result := &Init{
 		TemplateName: "vanilla",
 	}

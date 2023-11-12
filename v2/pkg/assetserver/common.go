@@ -3,9 +3,9 @@ package assetserver
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -44,7 +44,7 @@ const (
 
 func serveFile(rw http.ResponseWriter, filename string, blob []byte) error {
 	header := rw.Header()
-	header.Set(HeaderContentLength, fmt.Sprintf("%d", len(blob)))
+	header.Set(HeaderContentLength, strconv.Itoa(len(blob)))
 	if mimeType := header.Get(HeaderContentType); mimeType == "" {
 		mimeType = GetMimetype(filename, blob)
 		header.Set(HeaderContentType, mimeType)

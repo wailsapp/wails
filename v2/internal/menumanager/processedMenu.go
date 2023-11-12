@@ -2,6 +2,7 @@ package menumanager
 
 import (
 	"encoding/json"
+
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 )
@@ -11,7 +12,7 @@ type ProcessedMenuItem struct {
 	// Label is what appears as the menu text
 	Label string `json:",omitempty"`
 	// Role is a predefined menu type
-	//Role menu.Role `json:",omitempty"`
+	// Role menu.Role `json:",omitempty"`
 	// Accelerator holds a representation of a key binding
 	Accelerator *keys.Accelerator `json:",omitempty"`
 	// Type of MenuItem, EG: Checkbox, Text, Separator, Radio, Submenu
@@ -23,7 +24,7 @@ type ProcessedMenuItem struct {
 	// Checked indicates if the item is selected (used by Checkbox and Radio types only)
 	Checked bool `json:",omitempty"`
 	// Submenu contains a list of menu items that will be shown as a submenu
-	//SubMenu []*MenuItem `json:"SubMenu,omitempty"`
+	// SubMenu []*MenuItem `json:"SubMenu,omitempty"`
 	SubMenu *ProcessedMenu `json:",omitempty"`
 	/*
 		// Colour
@@ -47,7 +48,6 @@ type ProcessedMenuItem struct {
 }
 
 func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *ProcessedMenuItem {
-
 	ID := menuItemMap.menuItemToIDMap[menuItem]
 
 	// Parse ANSI text
@@ -63,21 +63,21 @@ func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *Pr
 	result := &ProcessedMenuItem{
 		ID:    ID,
 		Label: menuItem.Label,
-		//Role:             menuItem.Role,
+		// Role:             menuItem.Role,
 		Accelerator: menuItem.Accelerator,
 		Type:        menuItem.Type,
 		Disabled:    menuItem.Disabled,
 		Hidden:      menuItem.Hidden,
 		Checked:     menuItem.Checked,
 		SubMenu:     nil,
-		//BackgroundColour:             menuItem.BackgroundColour,
-		//FontSize:         menuItem.FontSize,
-		//FontName:         menuItem.FontName,
-		//Image:            menuItem.Image,
-		//MacTemplateImage: menuItem.MacTemplateImage,
-		//MacAlternate:     menuItem.MacAlternate,
-		//Tooltip:          menuItem.Tooltip,
-		//StyledLabel:      styledLabel,
+		// BackgroundColour:             menuItem.BackgroundColour,
+		// FontSize:         menuItem.FontSize,
+		// FontName:         menuItem.FontName,
+		// Image:            menuItem.Image,
+		// MacTemplateImage: menuItem.MacTemplateImage,
+		// MacAlternate:     menuItem.MacAlternate,
+		// Tooltip:          menuItem.Tooltip,
+		// StyledLabel:      styledLabel,
 	}
 
 	if menuItem.SubMenu != nil {
@@ -92,7 +92,6 @@ type ProcessedMenu struct {
 }
 
 func NewProcessedMenu(menuItemMap *MenuItemMap, menu *menu.Menu) *ProcessedMenu {
-
 	result := &ProcessedMenu{}
 	if menu != nil {
 		for _, item := range menu.Items {
@@ -131,7 +130,6 @@ func NewWailsMenu(menuItemMap *MenuItemMap, menu *menu.Menu) *WailsMenu {
 }
 
 func (w *WailsMenu) AsJSON() (string, error) {
-
 	menuAsJSON, err := json.Marshal(w)
 	if err != nil {
 		return "", err
@@ -150,7 +148,6 @@ func (w *WailsMenu) processRadioGroups() {
 }
 
 func (w *WailsMenu) processMenuItem(item *ProcessedMenuItem) {
-
 	switch item.Type {
 
 	// We need to recurse submenus
@@ -172,7 +169,6 @@ func (w *WailsMenu) processMenuItem(item *ProcessedMenuItem) {
 }
 
 func (w *WailsMenu) finaliseRadioGroup() {
-
 	// If we were processing a radio group, fix up the references
 	if len(w.currentRadioGroup) > 0 {
 

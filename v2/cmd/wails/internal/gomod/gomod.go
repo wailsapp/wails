@@ -56,7 +56,7 @@ func SyncGoMod(logger *clilogger.CLILogger, updateWailsVersion bool) error {
 	}
 
 	if updated {
-		return os.WriteFile(gomodFilename, gomodData, 0755)
+		return os.WriteFile(gomodFilename, gomodData, 0o755)
 	}
 
 	return nil

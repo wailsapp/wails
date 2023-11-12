@@ -26,7 +26,6 @@ type Options struct {
 // GenerateBindings generates bindings for the Wails project in the given ProjectDirectory.
 // If no project directory is given then the current working directory is used.
 func GenerateBindings(options Options) (string, error) {
-
 	filename, _ := lo.Coalesce(options.Filename, "wailsbindings")
 	if runtime.GOOS == "windows" {
 		filename += ".exe"

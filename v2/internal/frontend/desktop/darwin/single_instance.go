@@ -10,21 +10,22 @@ package darwin
 
 */
 import "C"
+
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/options"
 	"os"
 	"strings"
 	"syscall"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 func SetupSingleInstance(uniqueID string) {
 	lockFilePath := getTempDir()
 	lockFileName := uniqueID + ".lock"
 	_, err := createLockFile(lockFilePath + "/" + lockFileName)
-
 	// if lockFile exist – send notification to second instance
 	if err != nil {
 		c := NewCalloc()
@@ -63,7 +64,7 @@ func HandleSecondInstanceData(secondInstanceMessage *C.char) {
 // exclusive lock on it. If the file already exists AND is still locked, it will
 // fail.
 func createLockFile(filename string) (*os.File, error) {
-	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0600)
+	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0o600)
 	if err != nil {
 		fmt.Printf("Failed to open lockfile %s: %s", filename, err)
 		return nil, err

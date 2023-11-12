@@ -25,7 +25,6 @@ func isStruct(value interface{}) bool {
 }
 
 func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
-
 	// Create result placeholder
 	var result []*BoundMethod
 
@@ -169,7 +168,6 @@ func getPackageName(in string) string {
 func getSplitReturn(in string) (string, string) {
 	result := strings.Split(in, ".")
 	return result[0], result[1]
-
 }
 
 func hasElements(typ reflect.Type) bool {

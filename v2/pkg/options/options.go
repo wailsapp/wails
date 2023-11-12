@@ -28,8 +28,7 @@ const (
 	Fullscreen WindowStartState = 3
 )
 
-type Experimental struct {
-}
+type Experimental struct{}
 
 // App contains options for creating the App
 type App struct {

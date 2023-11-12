@@ -8,8 +8,8 @@ import (
 // Builder defines a builder that can build Wails applications
 type Builder interface {
 	SetProjectData(projectData *project.Project)
-	BuildFrontend(*clilogger.CLILogger) error
-	CompileProject(*Options) error
-	OutputFilename(*Options) string
+	BuildFrontend(logger *clilogger.CLILogger) error
+	CompileProject(options *Options) error
+	OutputFilename(options *Options) string
 	CleanUp()
 }

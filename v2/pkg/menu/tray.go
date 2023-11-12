@@ -2,7 +2,6 @@ package menu
 
 // TrayMenu are the options
 type TrayMenu struct {
-
 	// Label is the text we wish to display in the tray
 	Label string
 
@@ -27,7 +26,7 @@ type TrayMenu struct {
 	Tooltip string
 
 	// Callback function when menu clicked
-	//Click Callback `json:"-"`
+	// Click Callback `json:"-"`
 
 	// Disabled makes the item unselectable
 	Disabled bool
