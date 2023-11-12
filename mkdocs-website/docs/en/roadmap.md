@@ -22,15 +22,6 @@ examples working on all platforms.
 
 {{ read_csv("status.csv") }}
 
-- Mac Dialogs work, however the file dialogs issue a warning that needs to be
-  fixed.
-
-#### TODO:
-
-- [ ] Fix `+[CATransaction synchronize] called within transaction` warnings on
-      Mac
-- [ ] When hiding window, application terminates
-
 ### Alpha 2
 
 - [ ] Most examples working on Linux

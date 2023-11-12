@@ -3,7 +3,7 @@ binding,:material-check-bold:,:material-check-bold:,:material-check-bold:
 build,:material-check-bold:,:material-check-bold:,:material-check-bold:
 clipboard,:material-check-bold:,:material-check-bold:,:material-check-bold:
 context menus,:material-check-bold:,:material-check-bold:,:material-check-bold:
-dialogs,:material-minus:,:material-check-bold:,:material-check-bold:
+dialogs,:material-check-bold:,:material-check-bold:,:material-check-bold:
 drag-n-drop,:material-check-bold:,:material-check-bold:,:material-check-bold:
 events,:material-check-bold:,:material-check-bold:,:material-minus:
 frameless,:material-check-bold:,:material-check-bold:,:material-check-bold:
@@ -12,5 +12,5 @@ plain,:material-check-bold:,:material-check-bold:,:material-check-bold:
 screen,:material-check-bold:,:material-check-bold:,:material-check-bold:
 systray,:material-check-bold:,:material-check-bold:,:material-check-bold:
 video,:material-check-bold:,:material-check-bold:,:material-check-bold:
-window,:material-minus:,:material-check-bold:,:material-minus:
+window,:material-check-bold:,:material-check-bold:,:material-minus:
 wml,:material-check-bold:,:material-check-bold:,:material-check-bold:

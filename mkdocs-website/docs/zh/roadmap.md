@@ -20,14 +20,6 @@ Alpha 1 是最初的发布版本。旨在收集关于新 API 的反馈，并让�
 
 {{ read_csv("status.csv")  }}
 
-- Mac 上的 Dialogs 可以工作，但是文件对话框会发出一个需要解决的警告。
-
-#### TODO:
-
-- [ ] 修复 Mac 上的 `+[CATransaction synchronize] called within transaction` 警
-      告
-- [ ] 隐藏窗口时，应用程序终止
-
 ### Alpha 2
 
 - [ ] 在 Linux 上使大多数示例正常工作

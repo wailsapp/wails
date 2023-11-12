@@ -163,73 +163,70 @@ static void showOpenFileDialog(unsigned int dialogID,
 	void *window) {
 
 	// run on main thread
-    dispatch_async(dispatch_get_main_queue(), ^{
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
 
-		NSOpenPanel *panel = [NSOpenPanel openPanel];
+	// print out filterPatterns if length > 0
+	if (filterPatternsCount > 0) {
+		OpenPanelDelegate *delegate = [[OpenPanelDelegate alloc] init];
+		[panel setDelegate:delegate];
+		// Initialise NSString with bytes and UTF8 encoding
+		NSString *filterPatternsString = [[NSString alloc] initWithBytes:filterPatterns length:filterPatternsCount encoding:NSUTF8StringEncoding];
+		// Convert NSString to NSArray
+		delegate.allowedExtensions = [filterPatternsString componentsSeparatedByString:@";"];
 
-		// print out filterPatterns if length > 0
-		if (filterPatternsCount > 0) {
-			OpenPanelDelegate *delegate = [[OpenPanelDelegate alloc] init];
-			[panel setDelegate:delegate];
-			// Initialise NSString with bytes and UTF8 encoding
-			NSString *filterPatternsString = [[NSString alloc] initWithBytes:filterPatterns length:filterPatternsCount encoding:NSUTF8StringEncoding];
-			// Convert NSString to NSArray
-			delegate.allowedExtensions = [filterPatternsString componentsSeparatedByString:@";"];
-
-				// Use UTType if macOS 11 or higher to add file filters
-			if (@available(macOS 11, *)) {
-				NSMutableArray *filterTypes = [NSMutableArray array];
-				// Iterate the filtertypes, create uti's that are limited to the file extensions then add
-				for (NSString *filterType in delegate.allowedExtensions) {
-					[filterTypes addObject:[UTType typeWithFilenameExtension:filterType]];
-				}
-				[panel setAllowedContentTypes:filterTypes];
-			} else {
-				[panel setAllowedFileTypes:delegate.allowedExtensions];
+			// Use UTType if macOS 11 or higher to add file filters
+		if (@available(macOS 11, *)) {
+			NSMutableArray *filterTypes = [NSMutableArray array];
+			// Iterate the filtertypes, create uti's that are limited to the file extensions then add
+			for (NSString *filterType in delegate.allowedExtensions) {
+				[filterTypes addObject:[UTType typeWithFilenameExtension:filterType]];
 			}
-
-			// Free the memory
-			free(filterPatterns);
-		}
-
-
-		if (message != NULL) {
-			[panel setMessage:[NSString stringWithUTF8String:message]];
-			free(message);
-		}
-
-		if (directory != NULL) {
-			[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:directory]]];
-			free(directory);
-		}
-
-		if (buttonText != NULL) {
-			[panel setPrompt:[NSString stringWithUTF8String:buttonText]];
-			free(buttonText);
-		}
-
-		[panel setCanChooseFiles:canChooseFiles];
-		[panel setCanChooseDirectories:canChooseDirectories];
-		[panel setCanCreateDirectories:canCreateDirectories];
-		[panel setShowsHiddenFiles:showHiddenFiles];
-		[panel setAllowsMultipleSelection:allowsMultipleSelection];
-		[panel setResolvesAliases:resolvesAliases];
-		[panel setExtensionHidden:hideExtension];
-		[panel setTreatsFilePackagesAsDirectories:treatsFilePackagesAsDirectories];
-		[panel setAllowsOtherFileTypes:allowsOtherFileTypes];
-
-
-
-		if (window != NULL) {
-			[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
-				processOpenFileDialogResults(panel, result, dialogID);
-			}];
+			[panel setAllowedContentTypes:filterTypes];
 		} else {
-			[panel beginWithCompletionHandler:^(NSInteger result) {
-				processOpenFileDialogResults(panel, result, dialogID);
-			}];
+			[panel setAllowedFileTypes:delegate.allowedExtensions];
 		}
-   });
+
+		// Free the memory
+		free(filterPatterns);
+	}
+
+
+	if (message != NULL) {
+		[panel setMessage:[NSString stringWithUTF8String:message]];
+		free(message);
+	}
+
+	if (directory != NULL) {
+		[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:directory]]];
+		free(directory);
+	}
+
+	if (buttonText != NULL) {
+		[panel setPrompt:[NSString stringWithUTF8String:buttonText]];
+		free(buttonText);
+	}
+
+	[panel setCanChooseFiles:canChooseFiles];
+	[panel setCanChooseDirectories:canChooseDirectories];
+	[panel setCanCreateDirectories:canCreateDirectories];
+	[panel setShowsHiddenFiles:showHiddenFiles];
+	[panel setAllowsMultipleSelection:allowsMultipleSelection];
+	[panel setResolvesAliases:resolvesAliases];
+	[panel setExtensionHidden:hideExtension];
+	[panel setTreatsFilePackagesAsDirectories:treatsFilePackagesAsDirectories];
+	[panel setAllowsOtherFileTypes:allowsOtherFileTypes];
+
+
+
+	if (window != NULL) {
+		[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
+			processOpenFileDialogResults(panel, result, dialogID);
+		}];
+	} else {
+		[panel beginWithCompletionHandler:^(NSInteger result) {
+			processOpenFileDialogResults(panel, result, dialogID);
+		}];
+	}
 }
 
 static void showSaveFileDialog(unsigned int dialogID,
@@ -245,57 +242,54 @@ static void showSaveFileDialog(unsigned int dialogID,
 	char* filename,
 	void *window) {
 
-	// run on main thread
-    dispatch_async(dispatch_get_main_queue(), ^{
-		NSSavePanel *panel = [NSSavePanel savePanel];
+	NSSavePanel *panel = [NSSavePanel savePanel];
 
-		if (message != NULL) {
-			[panel setMessage:[NSString stringWithUTF8String:message]];
-			free(message);
-		}
+	if (message != NULL) {
+		[panel setMessage:[NSString stringWithUTF8String:message]];
+		free(message);
+	}
 
-		if (directory != NULL) {
-			[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:directory]]];
-			free(directory);
-		}
+	if (directory != NULL) {
+		[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:directory]]];
+		free(directory);
+	}
 
-		if (filename != NULL) {
-			[panel setNameFieldStringValue:[NSString stringWithUTF8String:filename]];
-			free(filename);
-		}
+	if (filename != NULL) {
+		[panel setNameFieldStringValue:[NSString stringWithUTF8String:filename]];
+		free(filename);
+	}
 
-		if (buttonText != NULL) {
-			[panel setPrompt:[NSString stringWithUTF8String:buttonText]];
-			free(buttonText);
-		}
+	if (buttonText != NULL) {
+		[panel setPrompt:[NSString stringWithUTF8String:buttonText]];
+		free(buttonText);
+	}
 
-		[panel setCanCreateDirectories:canCreateDirectories];
-		[panel setShowsHiddenFiles:showHiddenFiles];
-		[panel setCanSelectHiddenExtension:canSelectHiddenExtension];
-		[panel setExtensionHidden:hideExtension];
-		[panel setTreatsFilePackagesAsDirectories:treatsFilePackagesAsDirectories];
-		[panel setAllowsOtherFileTypes:allowOtherFileTypes];
+	[panel setCanCreateDirectories:canCreateDirectories];
+	[panel setShowsHiddenFiles:showHiddenFiles];
+	[panel setCanSelectHiddenExtension:canSelectHiddenExtension];
+	[panel setExtensionHidden:hideExtension];
+	[panel setTreatsFilePackagesAsDirectories:treatsFilePackagesAsDirectories];
+	[panel setAllowsOtherFileTypes:allowOtherFileTypes];
 
-		if (window != NULL) {
-			[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
-				const char *path = NULL;
-				if (result == NSModalResponseOK) {
-   					NSURL *url = [panel URL];
-					path = [[url path] UTF8String];
-				}
-				saveFileDialogCallback(dialogID, (char *)path);
-			}];
-		} else {
-			[panel beginWithCompletionHandler:^(NSInteger result) {
-				const char *path = NULL;
-				if (result == NSModalResponseOK) {
-					NSURL *url = [panel URL];
-					path = [[url path] UTF8String];
-				}
-				saveFileDialogCallback(dialogID, (char *)path);
-			}];
-		}
-    });
+	if (window != NULL) {
+		[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
+			const char *path = NULL;
+			if (result == NSModalResponseOK) {
+				NSURL *url = [panel URL];
+				path = [[url path] UTF8String];
+			}
+			saveFileDialogCallback(dialogID, (char *)path);
+		}];
+	} else {
+		[panel beginWithCompletionHandler:^(NSInteger result) {
+			const char *path = NULL;
+			if (result == NSModalResponseOK) {
+				NSURL *url = [panel URL];
+				path = [[url path] UTF8String];
+			}
+			saveFileDialogCallback(dialogID, (char *)path);
+		}];
+	}
 }
 
 */
