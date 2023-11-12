@@ -99,6 +99,8 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 	var seenEnumsPackages slicer.StringSlicer
 	allStructNames := b.getAllStructNames()
 	allStructNames.Sort()
+	allEnumNames := b.getAllEnumNames()
+	allEnumNames.Sort()
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
 		thisPackageCode := ""
 		w := typescriptify.New()
@@ -108,6 +110,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		w.Namespace = packageName
 		w.WithBackupDir("")
 		w.KnownStructs = allStructNames
+		w.KnownEnums = allEnumNames
 		// sort the structs
 		var structNames []string
 		for structName := range structsToGenerate {
@@ -330,6 +333,16 @@ func (b *Bindings) getAllStructNames() *slicer.StringSlicer {
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
 		for structName := range structsToGenerate {
 			result.Add(packageName + "." + structName)
+		}
+	}
+	return &result
+}
+
+func (b *Bindings) getAllEnumNames() *slicer.StringSlicer {
+	var result slicer.StringSlicer
+	for packageName, enumsToGenerate := range b.enumsToGenerateTS {
+		for enumName := range enumsToGenerate {
+			result.Add(packageName + "." + enumName)
 		}
 	}
 	return &result

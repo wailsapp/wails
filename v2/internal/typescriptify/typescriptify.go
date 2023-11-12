@@ -104,6 +104,7 @@ type TypeScriptify struct {
 
 	Namespace    string
 	KnownStructs *slicer.StringSlicer
+	KnownEnums   *slicer.StringSlicer
 }
 
 func New() *TypeScriptify {
@@ -723,7 +724,16 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 			}
 		} else { // Simple field:
 			t.logf(depth, "- simple field %s.%s", typeOf.Name(), field.Name)
-			err = builder.AddSimpleField(jsonFieldName, field, fldOpts)
+			// check if type is in known enum. If so, then replace TStype with enum name to avoid missing types
+			isKnownEnum := t.KnownEnums.Contains(getStructFQN(field.Type.String()))
+			if isKnownEnum {
+				err = builder.AddSimpleField(jsonFieldName, field, TypeOptions{
+					TSType:      getStructFQN(field.Type.String()),
+					TSTransform: fldOpts.TSTransform,
+				})
+			} else {
+				err = builder.AddSimpleField(jsonFieldName, field, fldOpts)
+			}
 		}
 		if err != nil {
 			return "", err
