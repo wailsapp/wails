@@ -1,0 +1,5 @@
+" ",Mac,Windows,Linux
+`wails init`," "," "," "
+`wails build`," "," "," "
+`wails dev`," "," "," "
+`wails package`," "," "," "

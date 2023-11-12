@@ -6,6 +6,27 @@ we are aiming to achieve. These are subject to change.
 
 ## Alpha milestones
 
+
+### Alpha 2
+
+#### Goals
+
+Alpha 2 aims to introduce [Taskfile](https://taskfile.dev) support. This will
+allow us to have a single, extensible build system that works on all platforms.
+We also want to get all examples working on Linux.
+
+#### Status
+
+- [ ] All examples working on Linux
+- [ ] Init, Build, Dev & Package commands
+
+
+- :material-check-bold: - Working
+- :material-minus: - Partially working
+- :material-close: - Not working
+
+{{ read_csv("alpha2.csv") }}
+
 ### Alpha 1
 
 #### Goals
@@ -20,9 +41,4 @@ examples working on all platforms.
 - :material-minus: - Partially working
 - :material-close: - Not working
 
-{{ read_csv("status.csv") }}
-
-### Alpha 2
-
-- [ ] Most examples working on Linux
-- [ ] Project creation via `wails init`
+{{ read_csv("alpha1.csv") }}
