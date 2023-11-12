@@ -1,5 +1,5 @@
 " ",Mac,Windows,Linux
-`wails init`," "," "," "
-`wails build`," "," "," "
+`wails init`," ",:material-check-bold:," "
+`wails build`," ",:material-check-bold:," "
 `wails dev`," "," "," "
 `wails package`," "," "," "
