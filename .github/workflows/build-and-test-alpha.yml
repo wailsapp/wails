@@ -23,7 +23,7 @@ jobs:
 
       - name: Install linux dependencies
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev javascriptcoregtk-4.1-dev build-essential pkg-config
+        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev javascriptcoregtk-4.1-dev build-essential pkg-config
 
       - name: Setup Go
         uses: actions/setup-go@v3
@@ -122,7 +122,7 @@ jobs:
 
       - name: Install linux dependencies
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev build-essential pkg-config
+        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev javascriptcoregtk-4.1-dev build-essential pkg-config
 
       - name: Build Wails3 CLI
         run: |
