@@ -1,14 +1,15 @@
-//go:build linux
-// +build linux
+//go:build linux && !qt
+// +build linux,!qt
 
 package linux
 
 import (
 	"encoding/json"
-	"github.com/godbus/dbus/v5"
-	"github.com/wailsapp/wails/v2/pkg/options"
 	"os"
 	"strings"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 type dbusHandler func(string)
