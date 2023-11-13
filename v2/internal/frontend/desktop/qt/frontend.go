@@ -6,6 +6,13 @@ package qt
 import (
 	"context"
 	"encoding/json"
+	"log"
+	"net"
+	"net/url"
+	"text/template"
+	"time"
+	"unsafe"
+
 	"github.com/pkg/browser"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -14,12 +21,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"log"
-	"net"
-	"net/url"
-	"text/template"
-	"time"
-	"unsafe"
 )
 
 /*
@@ -235,11 +236,11 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
 
-func (f *Frontend) openFileDialogCommon(directory bool, dialogOptions frontend.OpenDialogOptions) (string, error) {
+func (f *Frontend) openFileDialogCommon(directory bool, multiple bool, dialogOptions frontend.OpenDialogOptions) ([]string, error) {
 	j, err := json.Marshal(dialogOptions)
 	if err != nil {
 		f.logger.Error("Failed to marshal dialogOptions %+v", err)
-		return "", err
+		return []string{}, err
 	}
 
 	s := C.CString(string(j))
@@ -250,37 +251,52 @@ func (f *Frontend) openFileDialogCommon(directory bool, dialogOptions frontend.O
 		isDirectory = 1
 	}
 
-	res := C.GoString(C.Window_open_file_dialog(f.qWindow.window, C.int(isDirectory), s))
+	isMultiple := 0
+	if multiple {
+		isMultiple = 1
+	}
+
+	res := C.GoString(C.Window_open_file_dialog(f.qWindow.window, C.int(isDirectory), C.int(isMultiple), s))
 
 	var files []string
 	if err := json.Unmarshal([]byte(res), &files); err != nil {
 		f.logger.Error("Failed to unmarshal file dialog result %s", err)
-		return "", err
+		return []string{}, err
 	}
 
-	if len(files) != 1 {
-		return "", nil
-	}
-
-	return files[0], nil
+	return files, nil
 }
 
 // OpenDirectoryDialog implements frontend.Frontend.
 func (f *Frontend) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
 	f.logger.Info("OpenDirectoryDialog")
-	return f.openFileDialogCommon(true, dialogOptions)
+	files, err := f.openFileDialogCommon(true, false, dialogOptions)
+	if err != nil {
+		return "", err
+	}
+	if len(files) != 1 {
+		return "", nil
+	}
+	return files[0], nil
 }
 
 // OpenFileDialog implements frontend.Frontend.
 func (f *Frontend) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
 	f.logger.Info("OpenFileDialog")
-	return f.openFileDialogCommon(false, dialogOptions)
+	files, err := f.openFileDialogCommon(false, false, dialogOptions)
+	if err != nil {
+		return "", err
+	}
+	if len(files) != 1 {
+		return "", nil
+	}
+	return files[0], nil
 }
 
 // OpenMultipleFilesDialog implements frontend.Frontend.
 func (f *Frontend) OpenMultipleFilesDialog(dialogOptions frontend.OpenDialogOptions) ([]string, error) {
 	f.logger.Info("OpenMultipleFilesDialog")
-	return []string{}, nil
+	return f.openFileDialogCommon(false, true, dialogOptions)
 }
 
 // Quit implements frontend.Frontend.
@@ -324,7 +340,7 @@ func (f *Frontend) RunMainLoop() {
 	f.logger.Info("RunMainLoop")
 
 	time.Sleep(1 * time.Second)
-	res, err := f.OpenDirectoryDialog(frontend.OpenDialogOptions{
+	res, err := f.OpenMultipleFilesDialog(frontend.OpenDialogOptions{
 		Title:            "Title",
 		DefaultDirectory: "/home/ben/Code",
 		DefaultFilename:  "foo.txt",
