@@ -38,6 +38,11 @@ void WebEngineView_reload(void *web_engine_ptr);
 void WebEngineView_run_js(void *web_engine_ptr, char *script);
 /* End WebEngineView */
 
+/* Clipboard */
+const char *Clipboard_get_text(void *app_ptr);
+void Clipboard_set_text(void *app_ptr, char *text);
+/* End Clipboard */
+
 void fix_signal(int signum);
 void install_signal_handlers();
 

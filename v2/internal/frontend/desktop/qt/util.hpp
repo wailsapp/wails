@@ -20,7 +20,7 @@ void runOnAppThread(QObject *context, Functor &&function,
 
 template <typename Functor>
 void runOnAppThread(QObject *context, Functor &&function) {
-  bool ok = QMetaObject::invokeMethod(context, function, Qt::QueuedConnection);
+  bool ok = QMetaObject::invokeMethod(context, function, Qt::BlockingQueuedConnection);
 
   if (!ok) {
     throw "Failed to invoke qt method";
