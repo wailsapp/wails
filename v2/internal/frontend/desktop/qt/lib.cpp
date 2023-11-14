@@ -249,7 +249,7 @@ const char *Window_run_message_dialog(void *win_ptr, int dialog_type, char *titl
   }
 }
 
-const char *Window_open_file_dialog(void *win_ptr, int isDirectory, int isMultiple, char *dialog_options) {
+const char *Window_open_file_dialog(void *win_ptr, int isDirectory, int isMultiple, int isSave, char *dialog_options) {
   auto win = static_cast<QWidget *>(win_ptr);
   QByteArray bytes(dialog_options);
   auto doc = QJsonDocument::fromJson(bytes);
@@ -258,7 +258,9 @@ const char *Window_open_file_dialog(void *win_ptr, int isDirectory, int isMultip
   runOnAppThread(win, [=]() -> QString {
     QFileDialog diag;
 
-    if (isMultiple) {
+    if (isSave) {
+      diag.setAcceptMode(QFileDialog::AcceptSave);
+    } else if (isMultiple) {
       diag.setFileMode(QFileDialog::ExistingFiles);
     } else {
       diag.setFileMode(QFileDialog::AnyFile);
