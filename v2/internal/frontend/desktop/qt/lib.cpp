@@ -125,6 +125,7 @@ Window *Window_new(void *app_ptr, char *start_url) {
         layout->setSpacing(0);
 
         auto view = new QWebEngineView(w);
+        view->page()->setBackgroundColor(Qt::transparent);
         layout->addWidget(view);
         view->load(QUrl(start_url));
 
@@ -152,9 +153,51 @@ void Window_set_minimum_size(void *win_ptr, int width, int height) {
   runOnAppThread(win, [=]() { win->setMinimumSize(width, height); });
 }
 
+void Window_set_maximum_size(void *win_ptr, int width, int height) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  runOnAppThread(win, [=]() { win->setMaximumSize(width, height); });
+}
+
+void Window_set_background_color(void *win_ptr, RGBA color) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  runOnAppThread(win, [=]() {
+    auto css = QString("background-color: rgba(%1, %2, %3, %4);")
+      .arg(color.r)
+      .arg(color.g)
+      .arg(color.b)
+      .arg(color.a);
+    win->setStyleSheet(css);
+  });
+}
+
 void Window_resize(void *win_ptr, int width, int height) {
   auto win = static_cast<QWidget *>(win_ptr);
   runOnAppThread(win, [=]() { win->resize(width, height); });
+}
+
+Point Window_get_size(void *win_ptr) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  QSize size;
+  runOnAppThread(win, [=]() -> QSize {
+    return win->size();
+  }, &size);
+  return Point { .x = size.width(), .y = size.height() };
+}
+
+void Window_set_flag(void *win_ptr, int flag, bool on) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  runOnAppThread(win, [=]() {
+    return win->setWindowFlag(static_cast<Qt::WindowType>(flag), on);
+  });
+}
+
+int Window_get_flags(void *win_ptr) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  int flags;
+  runOnAppThread(win, [=]() -> int {
+    return win->windowFlags();
+  }, &flags);
+  return flags;
 }
 
 void Window_hide(void *win_ptr) {
@@ -164,12 +207,22 @@ void Window_hide(void *win_ptr) {
 
 void Window_show(void *win_ptr) {
   auto win = static_cast<QWidget *>(win_ptr);
-  runOnAppThread(win, [=]() { win->showNormal(); });
+  runOnAppThread(win, [=]() {
+    win->show();
+    win->showNormal();
+  });
 }
 
 void Window_fullscreen(void *win_ptr) {
   auto win = static_cast<QWidget *>(win_ptr);
   runOnAppThread(win, [=]() { win->setWindowState(win->windowState() ^ Qt::WindowFullScreen); });
+}
+
+int Window_get_state(void *win_ptr) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  int state;
+  runOnAppThread(win, [=]() -> int { return (int) win->windowState(); }, &state);
+  return state;
 }
 
 void Window_maximize(void *win_ptr) {
@@ -182,11 +235,30 @@ void Window_close(void *win_ptr) {
   runOnAppThread(win, [=]() { win->close(); });
 }
 
+// Noop on wayland
 void Window_center(void *win_ptr) {
   auto win = static_cast<QWidget *>(win_ptr);
   runOnAppThread(win, [=]() {
-    // Note: this is a noop on wayland.
     win->move(win->screen()->geometry().center() - win->frameGeometry().center());
+  });
+}
+
+// Noop on wayland
+Point Window_get_position(void *win_ptr) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  Point pos;
+  runOnAppThread(win, [=]() -> Point {
+    auto p = win->pos();
+    return Point { .x = p.x(), .y = p.y() };
+  }, &pos);
+  return pos;
+}
+
+void Window_set_position(void *win_ptr, Point position) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  runOnAppThread(win, [=]() {
+    QPoint p(position.x, position.y) ;
+    win->move(p);
   });
 }
 
@@ -257,7 +329,7 @@ const char *Window_run_message_dialog(void *win_ptr, int dialog_type, char *titl
   }
 }
 
-const char *Window_open_file_dialog(void *win_ptr, int isDirectory, int isMultiple, int isSave, char *dialog_options) {
+const char *Window_open_file_dialog(void *win_ptr, bool isDirectory, bool isMultiple, bool isSave, char *dialog_options) {
   auto win = static_cast<QWidget *>(win_ptr);
   QByteArray bytes(dialog_options);
   auto doc = QJsonDocument::fromJson(bytes);
