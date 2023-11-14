@@ -241,7 +241,14 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
 
-func (f *Frontend) openFileDialogCommon(directory bool, multiple bool, dialogOptions frontend.OpenDialogOptions) ([]string, error) {
+func boolToCint(b bool) C.int {
+	if b {
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
+func (f *Frontend) openFileDialogCommon(directory bool, multiple bool, save bool, dialogOptions frontend.OpenDialogOptions) ([]string, error) {
 	j, err := json.Marshal(dialogOptions)
 	if err != nil {
 		f.logger.Error("Failed to marshal dialogOptions %+v", err)
@@ -251,17 +258,7 @@ func (f *Frontend) openFileDialogCommon(directory bool, multiple bool, dialogOpt
 	s := C.CString(string(j))
 	defer C.cfree(unsafe.Pointer(s))
 
-	isDirectory := 0
-	if directory {
-		isDirectory = 1
-	}
-
-	isMultiple := 0
-	if multiple {
-		isMultiple = 1
-	}
-
-	res := C.GoString(C.Window_open_file_dialog(f.qWindow.window, C.int(isDirectory), C.int(isMultiple), s))
+	res := C.GoString(C.Window_open_file_dialog(f.qWindow.window, boolToCint(directory), boolToCint(multiple), boolToCint(save), s))
 
 	var files []string
 	if err := json.Unmarshal([]byte(res), &files); err != nil {
@@ -275,7 +272,7 @@ func (f *Frontend) openFileDialogCommon(directory bool, multiple bool, dialogOpt
 // OpenDirectoryDialog implements frontend.Frontend.
 func (f *Frontend) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
 	f.logger.Info("OpenDirectoryDialog")
-	files, err := f.openFileDialogCommon(true, false, dialogOptions)
+	files, err := f.openFileDialogCommon(true, false, false, dialogOptions)
 	if err != nil {
 		return "", err
 	}
@@ -288,7 +285,7 @@ func (f *Frontend) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions)
 // OpenFileDialog implements frontend.Frontend.
 func (f *Frontend) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
 	f.logger.Info("OpenFileDialog")
-	files, err := f.openFileDialogCommon(false, false, dialogOptions)
+	files, err := f.openFileDialogCommon(false, false, false, dialogOptions)
 	if err != nil {
 		return "", err
 	}
@@ -301,7 +298,29 @@ func (f *Frontend) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (str
 // OpenMultipleFilesDialog implements frontend.Frontend.
 func (f *Frontend) OpenMultipleFilesDialog(dialogOptions frontend.OpenDialogOptions) ([]string, error) {
 	f.logger.Info("OpenMultipleFilesDialog")
-	return f.openFileDialogCommon(false, true, dialogOptions)
+	return f.openFileDialogCommon(false, true, false, dialogOptions)
+}
+
+// SaveFileDialog implements frontend.Frontend.
+func (f *Frontend) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (string, error) {
+	f.logger.Info("SaveFileDialog")
+	files, err := f.openFileDialogCommon(false, false, true, frontend.OpenDialogOptions{
+		DefaultDirectory:           dialogOptions.DefaultDirectory,
+		DefaultFilename:            dialogOptions.DefaultFilename,
+		Title:                      dialogOptions.Title,
+		Filters:                    dialogOptions.Filters,
+		ShowHiddenFiles:            dialogOptions.ShowHiddenFiles,
+		CanCreateDirectories:       dialogOptions.CanCreateDirectories,
+		ResolvesAliases:            false,
+		TreatPackagesAsDirectories: dialogOptions.TreatPackagesAsDirectories,
+	})
+	if err != nil {
+		return "", err
+	}
+	if len(files) != 1 {
+		return "", nil
+	}
+	return files[0], nil
 }
 
 // Quit implements frontend.Frontend.
@@ -345,17 +364,22 @@ func (f *Frontend) RunMainLoop() {
 	f.logger.Info("RunMainLoop")
 
 	time.Sleep(1 * time.Second)
-	f.WindowPrint()
+	file, err := f.SaveFileDialog(frontend.SaveDialogOptions{
+		DefaultDirectory: "/home/ben/Downloads",
+		DefaultFilename:  "foo.txt",
+		Title:            "Save somthing!",
+		Filters: []frontend.FileFilter{
+			{DisplayName: "PDFs", Pattern: "(*.pdf)"},
+		},
+		ShowHiddenFiles:            true,
+		CanCreateDirectories:       true,
+		TreatPackagesAsDirectories: true,
+	})
+	f.logger.Info("Saving %s %+v", file, err)
 
 	<-exitCh
 
 	f.logger.Info("Qt App exited")
-}
-
-// SaveFileDialog implements frontend.Frontend.
-func (f *Frontend) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (string, error) {
-	f.logger.Info("SaveFileDialog")
-	return "", nil
 }
 
 // ScreenGetAll implements frontend.Frontend.
