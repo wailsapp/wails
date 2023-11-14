@@ -9,6 +9,8 @@ import (
 	"log"
 	"net"
 	"net/url"
+	"os"
+	"strings"
 	"text/template"
 	"time"
 	"unsafe"
@@ -33,9 +35,26 @@ import (
 */
 import "C"
 
-var exitCh = make(chan int)
-
 const startURL = "wails://wails/"
+
+// WindowFlags https://doc.qt.io/qt-6/qt.html#WindowType-enum
+const (
+	windowStaysOnTopHint = 0x00040000
+	//windowFramelessWindowHint = 0x00000800
+)
+
+// WindowStates https://doc.qt.io/qt-6/qt.html#WindowState-enum
+const (
+	windowStateNoState    = 0x00000000
+	windowStateMinimized  = 0x00000001
+	windowStateMaximized  = 0x00000002
+	windowStateFullScreen = 0x00000004
+	//windowStateActive     = 0x00000008
+)
+
+var isWayland = strings.EqualFold(os.Getenv("XDG_SESSION_TYPE"), "wayland")
+
+var exitCh = make(chan int)
 
 //export appExited
 func appExited(retCode C.int) {
@@ -167,8 +186,28 @@ func (f *Frontend) Run(ctx context.Context) error {
 func (f *Frontend) RunMainLoop() {
 	f.logger.Info("RunMainLoop")
 
-	time.Sleep(1 * time.Second)
-	f.WindowCenter()
+	time.Sleep(3 * time.Second)
+	f.WindowSetBackgroundColour(options.NewRGB(0, 255, 0))
+
+	//f.WindowSetAlwaysOnTop(true)
+	//time.Sleep(1 * time.Second)
+	//f.WindowSetAlwaysOnTop(false)
+	//
+	//f.logger.Info("IsNormarl %s", f.WindowIsNormal())
+	//f.logger.Info("IsMaximized %s", f.WindowIsMaximised())
+	//time.Sleep(1 * time.Second)
+	//f.WindowToggleMaximise()
+	//f.logger.Info("IsNormarl %s", f.WindowIsNormal())
+	//f.logger.Info("IsMaximized %s", f.WindowIsMaximised())
+	//time.Sleep(1 * time.Second)
+	//f.WindowToggleMaximise()
+	//f.logger.Info("IsMaximized %s", f.WindowIsMaximised())
+	//time.Sleep(1 * time.Second)
+	//f.WindowFullscreen()
+	//f.logger.Info("IsFullscreen %s", f.WindowIsFullscreen())
+	//time.Sleep(3 * time.Second)
+	//f.WindowFullscreen()
+	//f.logger.Info("IsFullscreen %s", f.WindowIsFullscreen())
 
 	<-exitCh
 
@@ -195,6 +234,7 @@ func (f *Frontend) ClipboardSetText(text string) error {
 	defer C.cfree(unsafe.Pointer(cStr))
 
 	C.Clipboard_set_text(f.qApp, cStr)
+
 	return nil
 }
 
@@ -283,13 +323,6 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
 
-func boolToCint(b bool) C.int {
-	if b {
-		return C.int(1)
-	}
-	return C.int(0)
-}
-
 func (f *Frontend) openFileDialogCommon(directory bool, multiple bool, save bool, dialogOptions frontend.OpenDialogOptions) ([]string, error) {
 	j, err := json.Marshal(dialogOptions)
 	if err != nil {
@@ -300,7 +333,7 @@ func (f *Frontend) openFileDialogCommon(directory bool, multiple bool, save bool
 	s := C.CString(string(j))
 	defer C.cfree(unsafe.Pointer(s))
 
-	res := C.GoString(C.Window_open_file_dialog(f.qWindow.window, boolToCint(directory), boolToCint(multiple), boolToCint(save), s))
+	res := C.GoString(C.Window_open_file_dialog(f.qWindow.window, C.bool(directory), C.bool(multiple), C.bool(save), s))
 
 	var files []string
 	if err := json.Unmarshal([]byte(res), &files); err != nil {
@@ -369,6 +402,7 @@ func (f *Frontend) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (str
 func (f *Frontend) Quit() {
 	f.logger.Info("Quit")
 	C.Application_quit(f.qApp)
+	f.logger.Info("Did Quit")
 }
 
 // ScreenGetAll implements frontend.Frontend.
@@ -396,22 +430,31 @@ func (f *Frontend) WindowClose() {
 	C.Window_close(f.qWindow.window)
 }
 
-// WindowFullscreen implements frontend.Frontend.
-func (f *Frontend) WindowFullscreen() {
-	f.logger.Info("WindowFullscreen")
-	C.Window_fullscreen(f.qWindow.window)
-}
-
 // WindowGetPosition implements frontend.Frontend.
 func (f *Frontend) WindowGetPosition() (int, int) {
 	f.logger.Info("WindowGetPosition")
-	return 0, 0
+	cPoint := C.Window_get_position(f.qWindow.window)
+	return int(cPoint.x), int(cPoint.y)
+}
+
+// WindowSetPosition implements frontend.Frontend.
+func (f *Frontend) WindowSetPosition(x int, y int) {
+	f.logger.Info("WindowSetPosition")
+	p := C.Point{x: C.int(x), y: C.int(y)}
+	C.Window_set_position(f.qWindow.window, p)
 }
 
 // WindowGetSize implements frontend.Frontend.
 func (f *Frontend) WindowGetSize() (int, int) {
 	f.logger.Info("WindowGetSize")
-	return 1, 1
+	cPoint := C.Window_get_size(f.qWindow.window)
+	return int(cPoint.x), int(cPoint.y)
+}
+
+// WindowFullscreen implements frontend.Frontend.
+func (f *Frontend) WindowFullscreen() {
+	f.logger.Info("WindowFullscreen")
+	C.Window_fullscreen(f.qWindow.window)
 }
 
 // WindowHide implements frontend.Frontend.
@@ -423,25 +466,29 @@ func (f *Frontend) WindowHide() {
 // WindowIsFullscreen implements frontend.Frontend.
 func (f *Frontend) WindowIsFullscreen() bool {
 	f.logger.Info("WindowIsFullscreen")
-	return false
+	state := int(C.Window_get_state(f.qWindow.window))
+	return state&windowStateFullScreen != 0
 }
 
 // WindowIsMaximised implements frontend.Frontend.
 func (f *Frontend) WindowIsMaximised() bool {
 	f.logger.Info("WindowIsMaximized")
-	return false
+	state := int(C.Window_get_state(f.qWindow.window))
+	return state&windowStateMaximized != 0
 }
 
 // WindowIsMinimised implements frontend.Frontend.
 func (f *Frontend) WindowIsMinimised() bool {
 	f.logger.Info("WindowIsMinimized")
-	return false
+	state := int(C.Window_get_state(f.qWindow.window))
+	return state&windowStateMinimized != 0
 }
 
 // WindowIsNormal implements frontend.Frontend.
 func (f *Frontend) WindowIsNormal() bool {
 	f.logger.Info("WindowIsNormal")
-	return false
+	state := int(C.Window_get_state(f.qWindow.window))
+	return state&windowStateNoState != 0
 }
 
 // WindowMaximise implements frontend.Frontend.
@@ -470,13 +517,25 @@ func (f *Frontend) WindowReloadApp() {
 }
 
 // WindowSetAlwaysOnTop implements frontend.Frontend.
-func (f *Frontend) WindowSetAlwaysOnTop(b bool) {
-	f.logger.Info("WindowSetAlwaysOnTop")
+func (f *Frontend) WindowSetAlwaysOnTop(on bool) {
+	// Setting window flags seems to cause a crash on wayland
+	if isWayland {
+		f.logger.Warning("WindowSetAlwaysOnTop not supported on wayland")
+		return
+	}
+	C.Window_set_flag(f.qWindow.window, windowStaysOnTopHint, C.bool(on))
 }
 
 // WindowSetBackgroundColour implements frontend.Frontend.
 func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 	f.logger.Info("WindowSetBackgroundColour")
+	cColor := C.RGBA{
+		r: C.int(col.R),
+		g: C.int(col.G),
+		b: C.int(col.B),
+		a: C.int(col.A),
+	}
+	C.Window_set_background_color(f.qWindow.window, cColor)
 }
 
 // WindowSetDarkTheme implements frontend.Frontend.
@@ -489,30 +548,27 @@ func (f *Frontend) WindowSetLightTheme() {
 	f.logger.Info("WindowSetLightTheme")
 }
 
+// WindowSetSystemDefaultTheme implements frontend.Frontend.
+func (f *Frontend) WindowSetSystemDefaultTheme() {
+	f.logger.Info("WindowSetSystemDefaultTheme")
+}
+
 // WindowSetMaxSize implements frontend.Frontend.
 func (f *Frontend) WindowSetMaxSize(width int, height int) {
 	f.logger.Info("WindowSetMaxSize")
+	C.Window_set_maximum_size(f.qWindow.window, C.int(width), C.int(height))
 }
 
 // WindowSetMinSize implements frontend.Frontend.
 func (f *Frontend) WindowSetMinSize(width int, height int) {
 	f.logger.Info("WindowSetMinSize")
-}
-
-// WindowSetPosition implements frontend.Frontend.
-func (f *Frontend) WindowSetPosition(x int, y int) {
-	f.logger.Info("WindowSetPosition")
+	C.Window_set_minimum_size(f.qWindow.window, C.int(width), C.int(height))
 }
 
 // WindowSetSize implements frontend.Frontend.
 func (f *Frontend) WindowSetSize(width int, height int) {
 	f.logger.Info("WindowSetSize")
 	C.Window_resize(f.qWindow.window, C.int(width), C.int(height))
-}
-
-// WindowSetSystemDefaultTheme implements frontend.Frontend.
-func (f *Frontend) WindowSetSystemDefaultTheme() {
-	f.logger.Info("WindowSetSystemDefaultTheme")
 }
 
 // WindowSetTitle implements frontend.Frontend.
@@ -526,27 +582,31 @@ func (f *Frontend) WindowSetTitle(title string) {
 // WindowShow implements frontend.Frontend.
 func (f *Frontend) WindowShow() {
 	f.logger.Info("WindowShow")
-	//f.WindowShow()
+	C.Window_show(f.qWindow.window)
 }
 
 // WindowToggleMaximise implements frontend.Frontend.
 func (f *Frontend) WindowToggleMaximise() {
 	f.logger.Info("WindowToggleMaximize")
+	f.WindowMaximise()
 }
 
 // WindowUnfullscreen implements frontend.Frontend.
 func (f *Frontend) WindowUnfullscreen() {
 	f.logger.Info("WindowUnfullscreen")
+	C.Window_show(f.qWindow.window)
 }
 
 // WindowUnmaximise implements frontend.Frontend.
 func (f *Frontend) WindowUnmaximise() {
 	f.logger.Info("WindowUnmaximize")
+	C.Window_show(f.qWindow.window)
 }
 
 // WindowUnminimise implements frontend.Frontend.
 func (f *Frontend) WindowUnminimise() {
 	f.logger.Info("WindowUnminimize")
+	C.Window_show(f.qWindow.window)
 }
 
 var _ frontend.Frontend = &Frontend{}
