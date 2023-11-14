@@ -141,12 +141,18 @@ func (f *Frontend) BrowserOpenURL(url string) {
 // ClipboardGetText implements frontend.Frontend.
 func (f *Frontend) ClipboardGetText() (string, error) {
 	f.logger.Info("ClipboardGetText")
-	return "", nil
+	cStr := C.Clipboard_get_text(f.qApp)
+	return C.GoString(cStr), nil
 }
 
 // ClipboardSetText implements frontend.Frontend.
 func (f *Frontend) ClipboardSetText(text string) error {
 	f.logger.Info("ClipboardSetText")
+
+	cStr := C.CString(text)
+	defer C.cfree(unsafe.Pointer(cStr))
+
+	C.Clipboard_set_text(f.qApp, cStr)
 	return nil
 }
 
@@ -340,12 +346,14 @@ func (f *Frontend) RunMainLoop() {
 	f.logger.Info("RunMainLoop")
 
 	time.Sleep(1 * time.Second)
-	res, err := f.OpenMultipleFilesDialog(frontend.OpenDialogOptions{
-		Title:            "Title",
-		DefaultDirectory: "/home/ben/Code",
-		DefaultFilename:  "foo.txt",
-	})
-	f.logger.Info("Got file diag result %s - %s", res, err)
+	_ = f.ClipboardSetText("Foo")
+	txt, err := f.ClipboardGetText()
+	//res, err := f.OpenMultipleFilesDialog(frontend.OpenDialogOptions{
+	//	Title:            "Title",
+	//	DefaultDirectory: "/home/ben/Code",
+	//	DefaultFilename:  "foo.txt",
+	//})
+	f.logger.Info("Got clipboard result %s - %s", txt, err)
 
 	<-exitCh
 

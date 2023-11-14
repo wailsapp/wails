@@ -182,6 +182,25 @@ void Window_close(void *win_ptr) {
   runOnAppThread(win, [=]() { win->close(); });
 }
 
+const char *Clipboard_get_text(void *app_ptr) {
+  auto app = static_cast<QApplication *>(app_ptr);
+  QString ret;
+  runOnAppThread(app, [=]() -> QString {
+    auto clipboard = QGuiApplication::clipboard();
+    return clipboard->text();
+  }, &ret);
+  return ret.toUtf8().constData();
+}
+
+void Clipboard_set_text(void *app_ptr, char *text) {
+  auto app = static_cast<QApplication *>(app_ptr);
+  auto qText = QString::fromUtf8(text);
+  runOnAppThread(app, [=]() {
+    auto clipboard = QGuiApplication::clipboard();
+    return clipboard->setText(qText);
+  });
+}
+
 const char *Window_run_message_dialog(void *win_ptr, int dialog_type, char *title, char *message) {
   auto win = static_cast<QWidget *>(win_ptr);
 
