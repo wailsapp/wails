@@ -133,6 +133,48 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	return f
 }
 
+// Run implements frontend.Frontend.
+func (f *Frontend) Run(ctx context.Context) error {
+	f.ctx = ctx
+
+	f.logger.Info("Run")
+
+	go func() {
+		if f.frontendOptions.OnStartup != nil {
+			f.frontendOptions.OnStartup(f.ctx)
+		}
+	}()
+
+	//if f.frontendOptions.SingleInstanceLock != nil {
+	//	SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
+	//}
+	//
+	//f.mainWindow.Run(f.startURL.String())
+
+	// TODO: Whats up with this?
+	if f.startURL.Scheme == "wails" {
+		f.startURL.Scheme = "http"
+	}
+
+	f.logger.Info("Creating window with url %s", f.startURL)
+
+	f.qWindow = C.Window_new(f.qApp, C.CString(f.startURL.String()))
+
+	return nil
+}
+
+// RunMainLoop implements frontend.Frontend.
+func (f *Frontend) RunMainLoop() {
+	f.logger.Info("RunMainLoop")
+
+	time.Sleep(1 * time.Second)
+	f.WindowCenter()
+
+	<-exitCh
+
+	f.logger.Info("Qt App exited")
+}
+
 // BrowserOpenURL implements frontend.Frontend.
 func (f *Frontend) BrowserOpenURL(url string) {
 	_ = browser.OpenURL(url)
@@ -329,59 +371,6 @@ func (f *Frontend) Quit() {
 	C.Application_quit(f.qApp)
 }
 
-// Run implements frontend.Frontend.
-func (f *Frontend) Run(ctx context.Context) error {
-	f.ctx = ctx
-
-	f.logger.Info("Run")
-
-	go func() {
-		if f.frontendOptions.OnStartup != nil {
-			f.frontendOptions.OnStartup(f.ctx)
-		}
-	}()
-
-	//if f.frontendOptions.SingleInstanceLock != nil {
-	//	SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
-	//}
-	//
-	//f.mainWindow.Run(f.startURL.String())
-
-	// TODO: Whats up with this?
-	if f.startURL.Scheme == "wails" {
-		f.startURL.Scheme = "http"
-	}
-
-	f.logger.Info("Creating window with url %s", f.startURL)
-
-	f.qWindow = C.Window_new(f.qApp, C.CString(f.startURL.String()))
-
-	return nil
-}
-
-// RunMainLoop implements frontend.Frontend.
-func (f *Frontend) RunMainLoop() {
-	f.logger.Info("RunMainLoop")
-
-	time.Sleep(1 * time.Second)
-	file, err := f.SaveFileDialog(frontend.SaveDialogOptions{
-		DefaultDirectory: "/home/ben/Downloads",
-		DefaultFilename:  "foo.txt",
-		Title:            "Save somthing!",
-		Filters: []frontend.FileFilter{
-			{DisplayName: "PDFs", Pattern: "(*.pdf)"},
-		},
-		ShowHiddenFiles:            true,
-		CanCreateDirectories:       true,
-		TreatPackagesAsDirectories: true,
-	})
-	f.logger.Info("Saving %s %+v", file, err)
-
-	<-exitCh
-
-	f.logger.Info("Qt App exited")
-}
-
 // ScreenGetAll implements frontend.Frontend.
 func (f *Frontend) ScreenGetAll() ([]frontend.Screen, error) {
 	f.logger.Info("ScreenGetAll")
@@ -398,6 +387,7 @@ func (f *Frontend) ScreenGetAll() ([]frontend.Screen, error) {
 // WindowCenter implements frontend.Frontend.
 func (f *Frontend) WindowCenter() {
 	f.logger.Info("WindowCenter")
+	C.Window_center(f.qWindow.window)
 }
 
 // WindowClose implements frontend.Frontend.

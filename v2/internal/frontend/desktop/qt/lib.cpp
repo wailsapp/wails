@@ -182,6 +182,14 @@ void Window_close(void *win_ptr) {
   runOnAppThread(win, [=]() { win->close(); });
 }
 
+void Window_center(void *win_ptr) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  runOnAppThread(win, [=]() {
+    // Note: this is a noop on wayland.
+    win->move(win->screen()->geometry().center() - win->frameGeometry().center());
+  });
+}
+
 const char *Clipboard_get_text(void *app_ptr) {
   auto app = static_cast<QApplication *>(app_ptr);
   QString ret;

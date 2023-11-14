@@ -28,6 +28,7 @@ void Window_show(void *win_ptr);
 void Window_fullscreen(void *win_ptr);
 void Window_maximize(void *win_ptr);
 void Window_close(void *win_ptr);
+void Window_center(void *win_ptr);
 const char *Window_run_message_dialog(void *win_ptr, int dialog_type, char *title, char *message);
 const char *Window_open_file_dialog(void *win_ptr, int isDirectory, int isMultiple, int isSave, char *dialog_options);
 /* End Window */
