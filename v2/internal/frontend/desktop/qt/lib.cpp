@@ -336,6 +336,20 @@ void WebEngineView_run_js(void *web_engine_ptr, char *script) {
   });
 }
 
+void WebEngineView_print_page(void *web_engine_ptr) {
+  auto eng = static_cast<QWebEngineView *>(web_engine_ptr);
+  runOnAppThread(eng, [=]() {
+    auto fileName = QFileDialog::getSaveFileName(eng, "Save page as PDF",
+                               QDir::homePath(),
+                               "PDF Files (*.pdf)");
+    if (fileName.isEmpty()) {
+      return;
+    }
+
+    eng->page()->printToPdf(fileName);
+  });
+}
+
 /* End WebEngineView */
 
 /* Misc */

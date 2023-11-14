@@ -36,6 +36,7 @@ const char *Window_open_file_dialog(void *win_ptr, int isDirectory, int isMultip
 void WebEngineView_load_url(void *web_engine_ptr, char *url);
 void WebEngineView_reload(void *web_engine_ptr);
 void WebEngineView_run_js(void *web_engine_ptr, char *script);
+void WebEngineView_print_page(void *web_engine_ptr);
 /* End WebEngineView */
 
 /* Clipboard */

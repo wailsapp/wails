@@ -219,8 +219,7 @@ func (f *Frontend) MessageDialog(dialogOptions frontend.MessageDialogOptions) (s
 
 func (f *Frontend) WindowPrint() {
 	f.logger.Info("WindowPrint")
-	// TODO: webView->page()->printToPdf(fileName);
-	//f.ExecJS("window.print();")
+	C.WebEngineView_print_page(f.qWindow.web_engine_view)
 }
 
 type EventNotify struct {
@@ -346,14 +345,7 @@ func (f *Frontend) RunMainLoop() {
 	f.logger.Info("RunMainLoop")
 
 	time.Sleep(1 * time.Second)
-	_ = f.ClipboardSetText("Foo")
-	txt, err := f.ClipboardGetText()
-	//res, err := f.OpenMultipleFilesDialog(frontend.OpenDialogOptions{
-	//	Title:            "Title",
-	//	DefaultDirectory: "/home/ben/Code",
-	//	DefaultFilename:  "foo.txt",
-	//})
-	f.logger.Info("Got clipboard result %s - %s", txt, err)
+	f.WindowPrint()
 
 	<-exitCh
 
