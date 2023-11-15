@@ -12,6 +12,7 @@ import (
 )
 
 func Init(options *flags.Init) error {
+
 	if options.List {
 		return printTemplates()
 	}
@@ -37,9 +38,16 @@ func Init(options *flags.Init) error {
 
 	// Generate build assets
 	buildAssetsOptions := &BuildAssetsOptions{
-		Name:   options.ProjectName,
-		Dir:    filepath.Join(options.ProjectDir, "build"),
-		Silent: true,
+		Name:               options.ProjectName,
+		Dir:                filepath.Join(options.ProjectDir, "build"),
+		Silent:             true,
+		ProductComments:    options.ProductComments,
+		ProductCompany:     options.ProductCompany,
+		ProductDescription: options.ProductDescription,
+		ProductName:        options.ProductName,
+		ProductVersion:     options.ProductVersion,
+		ProductIdentifier:  options.ProductIdentifier,
+		ProductCopyright:   options.ProductCopyright,
 	}
 	return GenerateBuildAssets(buildAssetsOptions)
 }

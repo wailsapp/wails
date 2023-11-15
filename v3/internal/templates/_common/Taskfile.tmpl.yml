@@ -5,7 +5,7 @@ vars:
 
 tasks:
 
-## -------------------------- Build -------------------------- ##
+  ## -------------------------- Build -------------------------- ##
 
   build:
     summary: Builds the application
@@ -15,7 +15,7 @@ tasks:
       - task: build:windows
 
 
-## --- Windows ---
+  ## --- Windows ---
 
   build:windows:
     summary: Builds the application for Windows
@@ -25,7 +25,7 @@ tasks:
       - task: build:frontend
       - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}.exe
 
-## --- Darwin ---
+  ## --- Darwin ---
 
   build:darwin:
     summary: Builds the application
@@ -50,7 +50,7 @@ tasks:
       - task: build:frontend
       - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}
 
-## -------------------------- Package -------------------------- ##
+  ## -------------------------- Package -------------------------- ##
 
   package:
     summary: Packages a production build of the application into a bundle
@@ -67,45 +67,78 @@ tasks:
 
   ## --- Windows AMD64 ---
 
-  package:windows:amd64:
+  build:app:prod:windows:amd64:
     summary: Packages a production build of the application into a `.exe` bundle
-    platform: windows/amd64
+    platforms: [ windows/amd64 ]
     deps:
+      - build:frontend
       - generate:icons
+      - generate:syso:amd64
+# --- Uncomment this to speed up builds, but you need to make sure `sources` includes all the files you need to build your binary
+#    sources:
+#      - "*"
+#    generates:
+#      - "bin/{{ "{{.APP_NAME}}" }}.exe"
     cmds:
       - task: generate:syso:amd64
       - GOOS=windows GOARCH=amd64 go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
-      - powershell Remove-item wails.syso
 
   ## --- Windows ARM64 ---
 
-  package:windows:arm64:
+  build:app:prod:windows:arm64:
     summary: Packages a production build of the application into a `.exe` bundle
-    platform: windows/arm64
+    platforms: [ windows/arm64 ]
     deps:
+      - build:frontend
       - generate:icons
+      - generate:syso:arm64
+    # --- Uncomment this to speed up builds, but you need to make sure `sources` includes all the files you need to build your binary
+    #    sources:
+    #      - "*"
+    #    generates:
+    #      - "bin/{{ "{{.APP_NAME}}" }}.exe"
     cmds:
       - task: generate:syso:arm64
       - GOOS=windows GOARCH=arm64 go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
-      - powershell Remove-item wails.syso
 
   ## --- Windows Default ---
 
-  package:windows:
+  build:app:prod:windows:
     summary: Packages a production build of the application into a `.exe` bundle
-    platform: windows
+    platforms: [ windows ]
     deps:
       - generate:icons
+      - generate:syso
+# --- Uncomment this to speed up builds, but you need to make sure `sources` includes all the files you need to build your binary
+#    sources:
+#      - "*"
+#    generates:
+#      - "bin/{{ "{{.APP_NAME}}" }}.exe"
     cmds:
-      - task: generate:syso
       - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
-      - powershell Remove-item wails.syso
+
+## ------ Package Windows ------
+
+  package:windows:arm64:
+    summary: Packages a production build of the application into a `.exe` bundle
+    cmds:
+      - task: create:nsis:installer:arm64
+
+  package:windows:amd64:
+    summary: Packages a production build of the application into a `.exe` bundle
+    cmds:
+      - task: create:nsis:installer:amd64
+
+  package:windows:
+    summary: Packages a production build of the application into a `.exe` bundle
+    cmds:
+      - task: create:nsis:installer:{{ "{{ARCH}}" }}
 
   ## --- Darwin ARM64 ---
 
   package:darwin:arm64:
     summary: Packages a production build of the application into a `.app` bundle
-    platform: darwin/arm64
+    platforms: [ darwin/arm64 ]
     deps:
       - task: build:app:prod:darwin
         vars:
@@ -118,7 +151,7 @@ tasks:
 
   package:darwin:amd64:
     summary: Packages a production build of the application into a `.app` bundle
-    platform: darwin/amd64
+    platforms: [ darwin/amd64 ]
     deps:
       - task: build:app:prod:darwin
         vars:
@@ -131,6 +164,7 @@ tasks:
 
   package:darwin:
     summary: Packages a production build of the application into a `.app` bundle
+    platforms: [ darwin ]
     deps:
       - task: build:app:prod:darwin
       - generate:icons
@@ -138,7 +172,7 @@ tasks:
       - task: create:app:bundle
 
 
-## -------------------------- Misc -------------------------- ##
+  ## -------------------------- Misc -------------------------- ##
 
   create:app:bundle:
     summary: Creates an `.app` bundle
@@ -183,6 +217,12 @@ tasks:
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
     dir: build
+    sources:
+      - "appicon.png"
+    generates:
+      - "icons.icns"
+      - "icons.ico"
+    method: timestamp
     cmds:
       # Generates both .ico and .icns files
       - wails3 generate icons -input appicon.png
@@ -190,21 +230,39 @@ tasks:
   generate:syso:arm64:
     summary: Generates Windows `.syso` file
     dir: build
-    platform: windows/arm64
+    sources:
+      - "icon.ico"
+      - "wails.exe.manifest"
+      - "info.json"
+    generates:
+      - "wails.syso"
+    method: timestamp
     cmds:
       - wails3 generate syso -arch arm64 -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
 
   generate:syso:amd64:
     summary: Generates Windows `.syso` file
     dir: build
-    platform: windows/amd64
+    sources:
+      - "icon.ico"
+      - "wails.exe.manifest"
+      - "info.json"
+    generates:
+      - "wails.syso"
+    method: timestamp
     cmds:
       - wails3 generate syso -arch amd64 -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
 
   generate:syso:
     summary: Generates Windows `.syso` file
     dir: build
-    platform: windows
+    sources:
+      - "icon.ico"
+      - "wails.exe.manifest"
+      - "info.json"
+    generates:
+      - "wails.syso"
+    method: timestamp
     cmds:
       - wails3 generate syso -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
 
@@ -226,9 +284,35 @@ tasks:
   build:frontend:
     summary: Build the frontend project
     dir: frontend
+    sources:
+      - "*"
+    generates:
+      - dist/*
     deps:
       - install:frontend:deps
     cmds:
       - npm run build
 
+  create:nsis:installer:amd64:
+    summary: Creates an NSIS installer
+    dir: build/nsis
+    sources:
+      - "{{ "{{.ROOT_DIR}}"}}\\bin\\{{ "{{.APP_NAME}}"}}.exe"
+    generates:
+      - "{{ "{{.ROOT_DIR}}"}}\\bin\\{{ "{{.APP_NAME}}"}}-amd64-installer.exe"
+    deps:
+      - task: build:app:prod:windows:amd64
+    cmds:
+      - makensis -DARG_WAILS_AMD64_BINARY="{{ "{{.ROOT_DIR}}"}}\bin\{{ "{{.APP_NAME}}"}}.exe" project.nsi
 
+  create:nsis:installer:arm64:
+    summary: Creates an NSIS installer
+    dir: build/nsis
+    sources:
+      - "{{ "{{.ROOT_DIR}}"}}\\bin\\{{ "{{.APP_NAME}}"}}.exe"
+    generates:
+      - "{{ "{{.ROOT_DIR}}"}}\\bin\\{{ "{{.APP_NAME}}"}}-arm64-installer.exe.exe"
+    deps:
+      - task: build:app:prod:windows:arm64
+    cmds:
+      - makensis -DARG_WAILS_ARM64_BINARY="{{ "{{.ROOT_DIR}}"}}\bin\{{ "{{.APP_NAME}}"}}.exe" project.nsi
