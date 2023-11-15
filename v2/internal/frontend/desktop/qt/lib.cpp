@@ -239,7 +239,14 @@ void Window_close(void *win_ptr) {
 void Window_center(void *win_ptr) {
   auto win = static_cast<QWidget *>(win_ptr);
   runOnAppThread(win, [=]() {
-    win->move(win->screen()->geometry().center() - win->frameGeometry().center());
+    win->setGeometry(
+      QStyle::alignedRect(
+        Qt::LeftToRight,
+        Qt::AlignCenter,
+        win->size(),
+        win->screen()->geometry()
+      )
+    );
   });
 }
 

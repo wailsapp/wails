@@ -187,27 +187,7 @@ func (f *Frontend) RunMainLoop() {
 	f.logger.Info("RunMainLoop")
 
 	time.Sleep(3 * time.Second)
-	f.WindowSetBackgroundColour(options.NewRGB(0, 255, 0))
-
-	//f.WindowSetAlwaysOnTop(true)
-	//time.Sleep(1 * time.Second)
-	//f.WindowSetAlwaysOnTop(false)
-	//
-	//f.logger.Info("IsNormarl %s", f.WindowIsNormal())
-	//f.logger.Info("IsMaximized %s", f.WindowIsMaximised())
-	//time.Sleep(1 * time.Second)
-	//f.WindowToggleMaximise()
-	//f.logger.Info("IsNormarl %s", f.WindowIsNormal())
-	//f.logger.Info("IsMaximized %s", f.WindowIsMaximised())
-	//time.Sleep(1 * time.Second)
-	//f.WindowToggleMaximise()
-	//f.logger.Info("IsMaximized %s", f.WindowIsMaximised())
-	//time.Sleep(1 * time.Second)
-	//f.WindowFullscreen()
-	//f.logger.Info("IsFullscreen %s", f.WindowIsFullscreen())
-	//time.Sleep(3 * time.Second)
-	//f.WindowFullscreen()
-	//f.logger.Info("IsFullscreen %s", f.WindowIsFullscreen())
+	f.WindowCenter()
 
 	<-exitCh
 
