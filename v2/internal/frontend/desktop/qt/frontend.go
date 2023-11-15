@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync/atomic"
 	"text/template"
 	"time"
 	"unsafe"
@@ -52,13 +53,18 @@ const (
 	//windowStateActive     = 0x00000008
 )
 
-var isWayland = strings.EqualFold(os.Getenv("XDG_SESSION_TYPE"), "wayland")
+var (
+	isWayland = strings.EqualFold(os.Getenv("XDG_SESSION_TYPE"), "wayland")
 
-var exitCh = make(chan int)
+	exitCh    = make(chan int)
+	hasExited = atomic.Bool{}
+)
 
 //export appExited
 func appExited(retCode C.int) {
+	hasExited.Store(true)
 	exitCh <- int(retCode)
+	close(exitCh)
 }
 
 type Frontend struct {
@@ -407,7 +413,9 @@ func (f *Frontend) WindowCenter() {
 // WindowClose implements frontend.Frontend.
 func (f *Frontend) WindowClose() {
 	f.logger.Info("WindowClose")
-	C.Window_close(f.qWindow.window)
+	if !hasExited.Load() {
+		C.Window_close(f.qWindow.window)
+	}
 }
 
 // WindowGetPosition implements frontend.Frontend.
