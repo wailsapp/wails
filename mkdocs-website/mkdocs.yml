@@ -69,26 +69,27 @@ plugins:
           nav:
             - 主页: index.md
             - 入门:
-                #    - 介绍: introduction.md
-                - 安装: getting-started/installation.md
-                #    - 创建项目: getting-started/creating-a-project.md
-                #    - 它是如何工作的: how-does-it-work.md
-                #    - 开发您的应用程序: getting-started/developing-your-application.md
-                #    - 编译您的项目: getting-started/compiling-your-project.md
-                #  - API 参考:
-                #    - 运行时:
-                #      - 介绍: reference/runtime/introduction.md
-                #    - CLI: reference/cli.md
-                #  - 社区:
-                #    - 模板: community/templates.md
-                #    - 指南:
-                #      - Angular: guides/angular.md
-                #    - 展示:
-                #      - Emaillit: community/showcase/emailit.md
-                #    - 贡献: community/contributing.md
-                #    - 链接: community/links.md
-                - 下一步: getting-started/next-steps.md
-                - 反馈: getting-started/feedback.md
+              #    - 介绍: introduction.md
+              - 安装: getting-started/installation.md
+              #    - 创建项目: getting-started/creating-a-project.md
+              #    - 它是如何工作的: how-does-it-work.md
+              #    - 开发您的应用程序: getting-started/developing-your-application.md
+              #    - 编译您的项目: getting-started/compiling-your-project.md
+              #  - API 参考:
+              #    - 运行时:
+              #      - 介绍: reference/runtime/introduction.md
+              #    - CLI: reference/cli.md
+              #  - 社区:
+              #    - 模板: community/templates.md
+              #    - 指南:
+              #      - Angular: guides/angular.md
+              #    - 展示:
+              #      - Emaillit: community/showcase/emailit.md
+              #    - 贡献: community/contributing.md
+              #    - 链接: community/links.md
+              - 下一步: getting-started/next-steps.md
+              - 反馈: getting-started/feedback.md
+            - 反馈: getting-started/feedback.md
             - v3 版本中的新内容是什么?: whats-new.md
             - API:
                 - 应用程序: API/application.md
@@ -149,6 +150,7 @@ nav:
 #    - Links: community/links.md
     - Next Steps: getting-started/next-steps.md
     - Feedback: getting-started/feedback.md
+  - Feedback: getting-started/feedback.md
   - What's New in v3?: whats-new.md
   - API:
       - Application: API/application.md
