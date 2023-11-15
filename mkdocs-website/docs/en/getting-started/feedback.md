@@ -5,12 +5,19 @@ posts before creating new ones. Here are the different ways to provide feedback:
 
 === "Bugs"
 
-    If you find a bug, please let us know by posting into the [v3 Alpha Feedback](https://discord.gg/3mgVyGua) channel on Discord:
-
+    If you find a bug, please let us know by posting into the [v3 Alpha Feedback](https://discord.gg/3mgVyGua) channel on Discord. 
+    
     - The post should clearly state what the bug is and have a simple reproducible example. If the docs are unclear what *should* happen, please include that in the post.
     - The post should be given the `Bug` tag.
     - Please include the output of `wails doctor` in your post.
-    - *Remember* unexpected behaviour isn't necessarily a bug - it might just not do what you expect it to do. Use [Suggestions](#suggestions) for this.
+    - If the bug is behaviour that does not align with current documentation, e.g. a window does not resize properly, please do the following:
+      - Update an existing example in the `v3/example` directory or create a new example in the `v3/examples` folder that clearly shows the issue.
+      - Open a [PR](https://github.com/wailsapp/wails/pulls) with the title `[v3 alpha test] <description of bug>`.
+      - Please include a link to the PR in your post.
+
+!!! warning
+    *Remember*, unexpected behaviour isn't necessarily a bug - it might just not do what you expect it to do. Use [Suggestions](#suggestions) for this.
+
 
 === "Fixes"
 
