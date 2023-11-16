@@ -791,6 +791,18 @@ func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
 	window.HandleKeyEvent(event.acceleratorString)
 }
 
+func (a *App) setupCommonEvents() {
+	// commonApplicationEventMap is defined in events_common_*.go (platform specific)
+	for sourceEvent, targetEvent := range commonApplicationEventMap {
+		sourceEvent := sourceEvent
+		targetEvent := targetEvent
+		a.On(sourceEvent, func(event *Event) {
+			event.Id = uint(targetEvent)
+			applicationEvents <- event
+		})
+	}
+}
+
 func (a *App) AssetServerHandler() func(rw http.ResponseWriter, req *http.Request) {
 	return a.assets.ServeHTTP
 }

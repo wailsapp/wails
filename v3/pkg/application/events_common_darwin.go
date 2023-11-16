@@ -8,14 +8,3 @@ var commonApplicationEventMap = map[events.ApplicationEventType]events.Applicati
 	events.Mac.ApplicationDidFinishLaunching: events.Common.ApplicationStarted,
 	events.Mac.ApplicationDidChangeTheme:     events.Common.ThemeChanged,
 }
-
-func (m *macosApp) setupCommonEvents() {
-	for sourceEvent, targetEvent := range commonApplicationEventMap {
-		sourceEvent := sourceEvent
-		targetEvent := targetEvent
-		m.parent.On(sourceEvent, func(event *Event) {
-			event.Id = uint(targetEvent)
-			applicationEvents <- event
-		})
-	}
-}
