@@ -2,6 +2,8 @@ version: '3'
 
 vars:
   APP_NAME: "buildtest{{exeExt}}"
+
+
 tasks:
 
   build:
