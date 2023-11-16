@@ -2,6 +2,7 @@ version: '3'
 
 vars:
   APP_NAME: "{{.ProjectName}}"
+  BIN_DIR: "bin"
 
 tasks:
 
@@ -10,210 +11,219 @@ tasks:
   build:
     summary: Builds the application
     cmds:
-      - task: build:darwin
-      - task: build:linux
-      - task: build:windows
+      # Build for current OS
+      - task: build:{{ "{{OS}}" }}
+
+      # Uncomment to build for specific OSes
+      # - task: build:linux
+      # - task: build:windows
+      # - task: build:darwin
 
 
-  ## --- Windows ---
+  ## ------> Windows <-------
 
   build:windows:
     summary: Builds the application for Windows
-    platforms:
-      - windows
-    cmds:
+    deps:
       - task: build:frontend
-      - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}.exe
+      - task: generate:icons
+      - task: generate:syso
+        vars:
+          ARCH: {{ "{{.ARCH}}" }}
+    cmds:
+      - go build {{ "{{.BUILD_FLAGS}}" }} -o {{ "{{.BIN_DIR}}" }}/{{.ProjectName}}.exe
+    vars:
+      BUILD_FLAGS: {{ "{{if eq .PRODUCTION \"true\"}}-tags production -ldflags=\"-w -s\"{{else}}-gcflags=all=\"-N -l\"{{end}}" }}
+    env:
+      GOOS: windows
+      CGO_ENABLED: 0
+      GOARCH: {{ "{{.ARCH | default ARCH}}" }}
+      PRODUCTION: {{ "{{.PRODUCTION | default \"false\"}}" }}
 
-  ## --- Darwin ---
+  build:windows:prod:arm64:
+    summary: Creates a production build of the application
+    cmds:
+      - task: build:windows
+        vars:
+          ARCH: arm64
+          PRODUCTION: "true"
+
+  build:windows:prod:amd64:
+    summary: Creates a production build of the application
+    cmds:
+      - task: build:windows
+        vars:
+          ARCH: amd64
+          PRODUCTION: "true"
+
+  build:windows:debug:arm64:
+    summary: Creates a debug build of the application
+    cmds:
+      - task: build:windows
+        vars:
+          ARCH: arm64
+
+  build:windows:debug:amd64:
+    summary: Creates a debug build of the application
+    cmds:
+      - task: build:windows
+        vars:
+          ARCH: amd64
+
+  ## ------> Darwin <-------
 
   build:darwin:
-    summary: Builds the application
-    platforms:
-      - darwin
-    cmds:
+    summary: Creates a production build of the application
+    deps:
       - task: build:frontend
-      - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}
+      - task: generate:icons
+    cmds:
+      - go build {{ "{{.BUILD_FLAGS}}" }} -o {{ "{{.BIN_DIR}}" }}/{{ "{{.APP_NAME}}" }}
+    vars:
+      BUILD_FLAGS: {{ "'{{if eq .PRODUCTION \"true\"}}-tags production -ldflags=\"-w -s\"{{else}}-gcflags=all=\"-N -l\"{{end}}'" }}
     env:
+      GOOS: darwin
+      CGO_ENABLED: 1
+      GOARCH: {{ "{{.ARCH | default ARCH}}" }}
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
       CGO_LDFLAGS: "-mmacosx-version-min=10.13"
       MACOSX_DEPLOYMENT_TARGET: "10.13"
+      PRODUCTION: {{ "{{.PRODUCTION | default \"false\"}}" }}
 
-
-  ## --- Linux ---
-
-  build:linux:
-    summary: Builds the application for Linux
-    platforms:
-      - linux
+  build:darwin:prod:arm64:
+    summary: Creates a production build of the application
     cmds:
-      - task: build:frontend
-      - go build -gcflags=all="-N -l" -o bin/{{.ProjectName}}
+      - task: build:darwin
+        vars:
+          ARCH: arm64
+          PRODUCTION: "true"
+
+  build:darwin:prod:amd64:
+    summary: Creates a production build of the application
+    cmds:
+      - task: build:darwin
+        vars:
+          ARCH: amd64
+          PRODUCTION: "true"
+
+  build:darwin:debug:arm64:
+    summary: Creates a debug build of the application
+    cmds:
+      - task: build:darwin
+        vars:
+          ARCH: arm64
+
+  build:darwin:debug:amd64:
+    summary: Creates a debug build of the application
+    cmds:
+      - task: build:darwin
+        vars:
+          ARCH: amd64
 
   ## -------------------------- Package -------------------------- ##
 
   package:
     summary: Packages a production build of the application into a bundle
     cmds:
-      # Target specific archs
+
+      # Package for current OS
+      - task: package:{{ "{{OS}}" }}
+
+      # Package for specific os/arch
       # - task: package:darwin:arm64
       # - task: package:darwin:amd64
       # - task: package:windows:arm64
       # - task: package:windows:amd64
 
-      # Target current arch
-      - task: package:darwin
-      - task: package:windows
-
-  ## --- Windows AMD64 ---
-
-  build:app:prod:windows:amd64:
-    summary: Packages a production build of the application into a `.exe` bundle
-    platforms: [ windows/amd64 ]
-    deps:
-      - build:frontend
-      - generate:icons
-      - generate:syso:amd64
-# --- Uncomment this to speed up builds, but you need to make sure `sources` includes all the files you need to build your binary
-#    sources:
-#      - "*"
-#    generates:
-#      - "bin/{{ "{{.APP_NAME}}" }}.exe"
-    cmds:
-      - task: generate:syso:amd64
-      - GOOS=windows GOARCH=amd64 go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
-
-  ## --- Windows ARM64 ---
-
-  build:app:prod:windows:arm64:
-    summary: Packages a production build of the application into a `.exe` bundle
-    platforms: [ windows/arm64 ]
-    deps:
-      - build:frontend
-      - generate:icons
-      - generate:syso:arm64
-    # --- Uncomment this to speed up builds, but you need to make sure `sources` includes all the files you need to build your binary
-    #    sources:
-    #      - "*"
-    #    generates:
-    #      - "bin/{{ "{{.APP_NAME}}" }}.exe"
-    cmds:
-      - task: generate:syso:arm64
-      - GOOS=windows GOARCH=arm64 go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
-
-  ## --- Windows Default ---
-
-  build:app:prod:windows:
-    summary: Packages a production build of the application into a `.exe` bundle
-    platforms: [ windows ]
-    deps:
-      - generate:icons
-      - generate:syso
-# --- Uncomment this to speed up builds, but you need to make sure `sources` includes all the files you need to build your binary
-#    sources:
-#      - "*"
-#    generates:
-#      - "bin/{{ "{{.APP_NAME}}" }}.exe"
-    cmds:
-      - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
-
-## ------ Package Windows ------
-
-  package:windows:arm64:
-    summary: Packages a production build of the application into a `.exe` bundle
-    cmds:
-      - task: create:nsis:installer:arm64
-
-  package:windows:amd64:
-    summary: Packages a production build of the application into a `.exe` bundle
-    cmds:
-      - task: create:nsis:installer:amd64
+  ## ------>  Windows <------
 
   package:windows:
     summary: Packages a production build of the application into a `.exe` bundle
     cmds:
-      - task: create:nsis:installer:{{ "{{ARCH}}" }}
+      - task: create:nsis:installer
+        vars:
+          ARCH: {{ "{{.ARCH}}" }}
+    vars:
+        ARCH: {{ "{{.ARCH | default ARCH}}" }}
 
-  ## --- Darwin ARM64 ---
-
-  package:darwin:arm64:
-    summary: Packages a production build of the application into a `.app` bundle
-    platforms: [ darwin/arm64 ]
-    deps:
-      - task: build:app:prod:darwin
+  package:windows:arm64:
+    summary: Packages a production build of the application into a `.exe` bundle
+    cmds:
+      - task: package:windows
         vars:
           ARCH: arm64
-      - generate:icons
+
+  package:windows:amd64:
+    summary: Packages a production build of the application into a `.exe` bundle
     cmds:
-      - task: create:app:bundle
-
-  ## --- Darwin AMD64 ---
-
-  package:darwin:amd64:
-    summary: Packages a production build of the application into a `.app` bundle
-    platforms: [ darwin/amd64 ]
-    deps:
-      - task: build:app:prod:darwin
+      - task: package:windows
         vars:
           ARCH: amd64
-      - generate:icons
-    cmds:
-      - task: create:app:bundle
 
-  ## --- Darwin Default ---
+  generate:syso:
+    summary: Generates Windows `.syso` file
+    dir: build
+    cmds:
+      - wails3 generate syso -arch {{ "{{.ARCH}}" }} -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+    vars:
+      ARCH: {{ "{{.ARCH | default ARCH}}" }}
+
+  create:nsis:installer:
+    summary: Creates an NSIS installer
+    label: "NSIS Installer ({{ "{{.ARCH}}"}})"
+    dir: build/nsis
+    sources:
+      - "{{ "{{.ROOT_DIR}}"}}\\bin\\{{ "{{.APP_NAME}}"}}.exe"
+    generates:
+      - "{{ "{{.ROOT_DIR}}"}}\\bin\\{{ "{{.APP_NAME}}"}}-{{ "{{.ARCH}}"}}-installer.exe"
+    deps:
+      - task: build:windows
+        vars:
+          PRODUCTION: "true"
+          ARCH: {{ "'{{.ARCH}}'" }}
+    cmds:
+      - makensis -DARG_WAILS_ARM64_BINARY="{{ "{{.ROOT_DIR}}"}}\{{ "{{.BIN_DIR}}" }}\{{ "{{.APP_NAME}}"}}.exe" project.nsi
+    vars:
+      ARCH: {{ "'{{.ARCH | default ARCH}}'" }}
+
+  ## ------>  Darwin <------
 
   package:darwin:
     summary: Packages a production build of the application into a `.app` bundle
     platforms: [ darwin ]
     deps:
-      - task: build:app:prod:darwin
-      - generate:icons
+      - task: build:darwin
+        vars:
+          PRODUCTION: "true"
     cmds:
       - task: create:app:bundle
 
+  package:darwin:arm64:
+    summary: Packages a production build of the application into a `.app` bundle
+    platforms: [ darwin/arm64 ]
+    deps:
+      - task: package:darwin
+        vars:
+          ARCH: arm64
+
+  package:darwin:amd64:
+    summary: Packages a production build of the application into a `.app` bundle
+    platforms: [ darwin/amd64 ]
+    deps:
+      - task: package:darwin
+        vars:
+          ARCH: amd64
 
   ## -------------------------- Misc -------------------------- ##
 
   create:app:bundle:
     summary: Creates an `.app` bundle
     cmds:
-      - mkdir -p {{ "{{.APP_NAME}}" }}.app/Contents/{MacOS,Resources}
-      - cp build/icons.icns {{ "{{.APP_NAME}}" }}.app/Contents/Resources
-      - cp build/bin/{{ "{{.APP_NAME}}" }} {{ "{{.APP_NAME}}" }}.app/Contents/MacOS
-      - cp build/Info.plist {{ "{{.APP_NAME}}" }}.app/Contents
-
-  build:app:prod:darwin:
-    summary: Creates a production build of the application
-    cmds:
-      - task: build:frontend
-      - go build -tags production -ldflags="-w -s" -o build/bin/{{ "{{.APP_NAME}}" }}
-    env:
-      CGO_CFLAGS: "-mmacosx-version-min=10.13"
-      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
-      MACOSX_DEPLOYMENT_TARGET: "10.13"
-
-
-  build:app:prod:darwin:arm64:
-    summary: Creates a production build of the application
-    cmds:
-      - task: build:frontend
-      - GOOS=darwin GOARCH=arm64 go build -tags production -ldflags="-w -s" -o build/bin/{{ "{{.APP_NAME}}" }}
-    env:
-      CGO_CFLAGS: "-mmacosx-version-min=10.13"
-      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
-      MACOSX_DEPLOYMENT_TARGET: "10.13"
-
-
-  build:app:prod:darwin:amd64:
-    summary: Creates a production build of the application
-    cmds:
-      - task: build:frontend
-      - GOOS=darwin GOARCH=amd64 go build -tags production -ldflags="-w -s" -o build/bin/{{ "{{.APP_NAME}}" }}
-    env:
-      CGO_CFLAGS: "-mmacosx-version-min=10.13"
-      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
-      MACOSX_DEPLOYMENT_TARGET: "10.13"
-
+      - mkdir -p {{ "{{.BIN_DIR}}" }}/{{ "{{.APP_NAME}}" }}.app/Contents/{MacOS,Resources}
+      - cp build/icons.icns {{ "{{.BIN_DIR}}" }}/{{ "{{.APP_NAME}}" }}.app/Contents/Resources
+      - cp {{ "{{.BIN_DIR}}" }}/{{ "{{.APP_NAME}}" }} {{ "{{.BIN_DIR}}" }}/{{ "{{.APP_NAME}}" }}.app/Contents/MacOS
+      - cp build/Info.plist {{ "{{.BIN_DIR}}" }}/{{ "{{.APP_NAME}}" }}.app/Contents
+          
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
     dir: build
@@ -226,46 +236,6 @@ tasks:
     cmds:
       # Generates both .ico and .icns files
       - wails3 generate icons -input appicon.png
-
-  generate:syso:arm64:
-    summary: Generates Windows `.syso` file
-    dir: build
-    sources:
-      - "icon.ico"
-      - "wails.exe.manifest"
-      - "info.json"
-    generates:
-      - "wails.syso"
-    method: timestamp
-    cmds:
-      - wails3 generate syso -arch arm64 -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
-
-  generate:syso:amd64:
-    summary: Generates Windows `.syso` file
-    dir: build
-    sources:
-      - "icon.ico"
-      - "wails.exe.manifest"
-      - "info.json"
-    generates:
-      - "wails.syso"
-    method: timestamp
-    cmds:
-      - wails3 generate syso -arch amd64 -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
-
-  generate:syso:
-    summary: Generates Windows `.syso` file
-    dir: build
-    sources:
-      - "icon.ico"
-      - "wails.exe.manifest"
-      - "info.json"
-    generates:
-      - "wails.syso"
-    method: timestamp
-    cmds:
-      - wails3 generate syso -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
-
 
   install:frontend:deps:
     summary: Install frontend dependencies
@@ -292,27 +262,3 @@ tasks:
       - install:frontend:deps
     cmds:
       - npm run build
-
-  create:nsis:installer:amd64:
-    summary: Creates an NSIS installer
-    dir: build/nsis
-    sources:
-      - "{{ "{{.ROOT_DIR}}"}}\\bin\\{{ "{{.APP_NAME}}"}}.exe"
-    generates:
-      - "{{ "{{.ROOT_DIR}}"}}\\bin\\{{ "{{.APP_NAME}}"}}-amd64-installer.exe"
-    deps:
-      - task: build:app:prod:windows:amd64
-    cmds:
-      - makensis -DARG_WAILS_AMD64_BINARY="{{ "{{.ROOT_DIR}}"}}\bin\{{ "{{.APP_NAME}}"}}.exe" project.nsi
-
-  create:nsis:installer:arm64:
-    summary: Creates an NSIS installer
-    dir: build/nsis
-    sources:
-      - "{{ "{{.ROOT_DIR}}"}}\\bin\\{{ "{{.APP_NAME}}"}}.exe"
-    generates:
-      - "{{ "{{.ROOT_DIR}}"}}\\bin\\{{ "{{.APP_NAME}}"}}-arm64-installer.exe.exe"
-    deps:
-      - task: build:app:prod:windows:arm64
-    cmds:
-      - makensis -DARG_WAILS_ARM64_BINARY="{{ "{{.ROOT_DIR}}"}}\bin\{{ "{{.APP_NAME}}"}}.exe" project.nsi
