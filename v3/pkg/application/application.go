@@ -427,6 +427,7 @@ func (a *App) NewSystemTray() *SystemTray {
 }
 
 func (a *App) Run() error {
+	a.setupCommonEvents()
 
 	// Setup panic handler
 	defer processPanicHandlerRecover()
