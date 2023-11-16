@@ -1,4 +1,6 @@
+linux:ApplicationStarted
 linux:SystemThemeChanged
+linux:WindowClosing
 mac:ApplicationDidBecomeActive
 mac:ApplicationDidChangeBackingProperties
 mac:ApplicationDidChangeEffectiveAppearance

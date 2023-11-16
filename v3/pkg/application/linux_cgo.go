@@ -72,6 +72,7 @@ extern void onDragNDrop(
 extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 extern void onProcessRequest(void *request, gpointer user_data);
 extern void sendMessageToBackend(WebKitUserContentManager *contentManager, WebKitJavascriptResult *result, void *data);
+void webviewLoadChanged(WebKitWebView *web_view, WebKitLoadEvent load_event, gpointer data);
 // exported below (end)
 
 static void signal_connect(void *widget, char *event, void *cb, void* data) {
@@ -179,7 +180,7 @@ func dispatchOnMainThreadCallback(callbackID C.uint) {
 
 //export activateLinux
 func activateLinux(data pointer) {
-	// NOOP: Callback for now
+	applicationEvents <- newApplicationEvent(events.Linux.ApplicationStarted)
 }
 
 func isOnMainThread() bool {
@@ -910,12 +911,19 @@ func emit(we *C.WindowEvent) {
 	}
 }
 
+//export webviewLoadChanged
+func webviewLoadChanged(web_view *C.WebKitWebView, load_event C.WebKitLoadEvent, data unsafe.Pointer) {
+	if load_event == C.WEBKIT_LOAD_FINISHED {
+		//applicationEvents <- newApplicationEvent(events.Linux.ApplicationStarted)
+	}
+}
+
 func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func(e events.WindowEventType)) {
 	event := C.CString("delete-event")
 	defer C.free(unsafe.Pointer(event))
 	wEvent := C.WindowEvent{
 		id:    C.uint(windowId),
-		event: C.uint(events.Common.WindowClosing),
+		event: C.uint(events.Linux.WindowClosing),
 	}
 	C.signal_connect(unsafe.Pointer(window), event, C.emit, unsafe.Pointer(&wEvent))
 
@@ -924,11 +932,10 @@ func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func
 	defer C.free(unsafe.Pointer(event))
 	C.signal_connect(unsafe.Pointer(contentManager), event, C.sendMessageToBackend, nil)
 
-	/*
-		event = C.CString("load-changed")
-		defer C.free(unsafe.Pointer(event))
-		C.signal_connect(webview, event, C.webviewLoadChanged, unsafe.Pointer(&w.parent.id))
-	*/
+	event = C.CString("load-changed")
+	defer C.free(unsafe.Pointer(event))
+	C.signal_connect(unsafe.Pointer(webview), event, C.webviewLoadChanged, unsafe.Pointer(&windowId))
+
 	id := C.uint(windowId)
 	event = C.CString("button-press-event")
 	C.signal_connect(unsafe.Pointer(webview), event, C.onButtonEvent, unsafe.Pointer(&id))

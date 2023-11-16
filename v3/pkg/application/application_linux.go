@@ -3,7 +3,6 @@
 package application
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -104,13 +103,6 @@ func (m *linuxApp) setApplicationMenu(menu *Menu) {
 }
 
 func (m *linuxApp) run() error {
-
-	// Add a hook to the ApplicationDidFinishLaunching event
-	// FIXME: add Wails specific events - i.e. Shouldn't platform specific ones be translated to Wails events?
-	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func(evt *Event) {
-		// Do we need to do anything now?
-		fmt.Println("events.Mac.ApplicationDidFinishLaunching received!")
-	})
 	m.monitorThemeChanges()
 	return appRun(m.application)
 }
