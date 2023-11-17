@@ -33,7 +33,7 @@ tasks:
     cmds:
       - go build {{ "{{.BUILD_FLAGS}}" }} -o {{ "{{.BIN_DIR}}" }}/{{.ProjectName}}.exe
     vars:
-      BUILD_FLAGS: {{ "'{{if eq .PRODUCTION \"true\"}}-tags production -ldflags=\"-w -s\"{{else}}-gcflags=all=\"-N -l\"{{end}}'" }}
+      BUILD_FLAGS: {{ "'{{if eq .PRODUCTION \"true\"}}-tags production -ldflags=\"-w -s -H windowsgui\"{{else}}-gcflags=all=\"-N -l\"{{end}}'" }}
     env:
       GOOS: windows
       CGO_ENABLED: 0
@@ -120,6 +120,56 @@ tasks:
         vars:
           ARCH: amd64
 
+
+  ## ------> Linux <-------
+
+  build:linux:
+    summary: Builds the application for Linux
+    deps:
+      - task: build:frontend
+      - task: generate:icons
+        vars:
+          ARCH: {{ "'{{.ARCH}}'" }}
+    cmds:
+      - go build {{ "{{.BUILD_FLAGS}}" }} -o {{ "{{.BIN_DIR}}" }}/{{.ProjectName}}
+    vars:
+      BUILD_FLAGS: {{ "'{{if eq .PRODUCTION \"true\"}}-tags production -ldflags=\"-w -s\"{{else}}-gcflags=all=\"-N -l\"{{end}}'" }}
+    env:
+      GOOS: linux
+      CGO_ENABLED: 1
+      GOARCH: {{ "'{{.ARCH | default ARCH}}'" }}
+      PRODUCTION: {{ "'{{.PRODUCTION | default \"false\"}}'" }}
+
+  build:linux:prod:arm64:
+    summary: Creates a production build of the application
+    cmds:
+      - task: build:linux
+        vars:
+          ARCH: arm64
+          PRODUCTION: "true"
+
+  build:linux:prod:amd64:
+    summary: Creates a production build of the application
+    cmds:
+      - task: build:linux
+        vars:
+          ARCH: amd64
+          PRODUCTION: "true"
+
+  build:linux:debug:arm64:
+    summary: Creates a debug build of the application
+    cmds:
+      - task: build:linux
+        vars:
+          ARCH: arm64
+
+  build:linux:debug:amd64:
+    summary: Creates a debug build of the application
+    cmds:
+      - task: build:linux
+        vars:
+          ARCH: amd64
+
   ## -------------------------- Package -------------------------- ##
 
   package:
@@ -182,9 +232,10 @@ tasks:
           PRODUCTION: "true"
           ARCH: {{ "'{{.ARCH}}'" }}
     cmds:
-      - makensis -DARG_WAILS_ARM64_BINARY="{{ "{{.ROOT_DIR}}"}}\{{ "{{.BIN_DIR}}" }}\{{ "{{.APP_NAME}}"}}.exe" project.nsi
+      - makensis -DARG_WAILS_{{ "'{{.ARG_FLAG}}'" }}_BINARY="{{ "{{.ROOT_DIR}}"}}\{{ "{{.BIN_DIR}}" }}\{{ "{{.APP_NAME}}"}}.exe" project.nsi
     vars:
       ARCH: {{ "'{{.ARCH | default ARCH}}'" }}
+      ARG_FLAG: {{ "'{{if eq .ARCH \"amd64\"}}AMD64{{else}}ARM64{{end}}'" }}
 
   ## ------>  Darwin <------
 
@@ -249,6 +300,7 @@ tasks:
       - sh: npm version
         msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
     cmds:
+      # - npm install --silent --no-progress
       - npm install
 
   build:frontend:
