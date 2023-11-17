@@ -213,6 +213,14 @@ void Window_show(void *win_ptr) {
   });
 }
 
+void Window_unminimize(void *win_ptr) {
+  auto win = static_cast<QWidget *>(win_ptr);
+  runOnAppThread(win, [=]() {
+    // This doesn't do anything on wayland
+    win->setWindowState(win->windowState() & ~Qt::WindowMinimized | Qt::WindowActive);
+  });
+}
+
 void Window_fullscreen(void *win_ptr) {
   auto win = static_cast<QWidget *>(win_ptr);
   runOnAppThread(win, [=]() { win->setWindowState(win->windowState() ^ Qt::WindowFullScreen); });
