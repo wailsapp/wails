@@ -13,7 +13,6 @@ import (
 	"strings"
 	"sync/atomic"
 	"text/template"
-	"time"
 	"unsafe"
 
 	"github.com/pkg/browser"
@@ -191,9 +190,6 @@ func (f *Frontend) Run(ctx context.Context) error {
 // RunMainLoop implements frontend.Frontend.
 func (f *Frontend) RunMainLoop() {
 	f.logger.Info("RunMainLoop")
-
-	time.Sleep(3 * time.Second)
-	f.WindowCenter()
 
 	<-exitCh
 
@@ -594,7 +590,7 @@ func (f *Frontend) WindowUnmaximise() {
 // WindowUnminimise implements frontend.Frontend.
 func (f *Frontend) WindowUnminimise() {
 	f.logger.Info("WindowUnminimize")
-	C.Window_show(f.qWindow.window)
+	C.Window_unminimize(f.qWindow.window)
 }
 
 var _ frontend.Frontend = &Frontend{}

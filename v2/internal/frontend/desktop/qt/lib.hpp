@@ -50,6 +50,7 @@ void Window_maximize(void *win_ptr);
 void Window_close(void *win_ptr);
 void Window_center(void *win_ptr);
 void Window_center(void *win_ptr);
+void Window_unminimize(void *win_ptr);
 Point Window_get_position(void *win_ptr);
 void Window_set_position(void *win_ptr, Point position);
 const char *Window_run_message_dialog(void *win_ptr, int dialog_type, char *title, char *message);
