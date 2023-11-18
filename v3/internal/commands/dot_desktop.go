@@ -35,9 +35,7 @@ func (d *DotDesktopOptions) asBytes() []byte {
 	if d.Icon != "" {
 		buf.WriteString(fmt.Sprintf("Icon=%s\n", d.Icon))
 	}
-	if d.Categories != "" {
-		buf.WriteString(fmt.Sprintf("Categories=%s\n", d.Categories))
-	}
+	buf.WriteString(fmt.Sprintf("Categories=%s\n", d.Categories))
 	if d.Comment != "" {
 		buf.WriteString(fmt.Sprintf("Comment=%s\n", d.Comment))
 	}

@@ -2,4 +2,4 @@
 `wails init`,:material-check-bold:,:material-check-bold:,:material-check-bold:
 `wails build`,:material-check-bold:,:material-check-bold:,:material-check-bold:
 `wails dev`," "," "," "
-`wails package`," ",:material-check-bold:," "
+`wails package`," ",:material-check-bold:,:material-check-bold:

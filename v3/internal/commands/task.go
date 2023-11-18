@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-task/task/v3/errors"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,6 +19,11 @@ import (
 
 // BuildSettings contains the CLI build settings
 var BuildSettings = map[string]string{}
+
+func fatal(message string) {
+	pterm.Error.Println(message)
+	os.Exit(1)
+}
 
 type RunTaskOptions struct {
 	Name             string `pos:"1"`
@@ -111,7 +115,7 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 
 	var listOptions = task.NewListOptions(options.List, options.ListAll, options.ListJSON)
 	if err := listOptions.Validate(); err != nil {
-		log.Fatal(err)
+		fatal(err.Error())
 	}
 
 	if (listOptions.ShouldListTasks()) && options.Silent {
@@ -120,7 +124,7 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 	}
 
 	if err := e.Setup(); err != nil {
-		log.Fatal(err)
+		fatal(err.Error())
 	}
 
 	if listOptions.ShouldListTasks() {

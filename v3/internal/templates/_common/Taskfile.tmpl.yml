@@ -287,6 +287,7 @@ tasks:
 
   create:appimage:
     summary: Creates an AppImage
+    dir: build/appimage
     platforms: [ linux ]
     deps:
       - task: build:linux
@@ -294,44 +295,44 @@ tasks:
           PRODUCTION: "true"
       - task: generate:linux:dotdesktop
     cmds:
-      - chmod +x {{ "{{.BIN_DIR}}" }}/{{ "{{.APP_NAME}}" }}
-      - chmod +x build/appimage/build.sh
-      - sh: build/appimage/build.sh
-        env:
-          - APP_NAME: {{ "'{{.APP_NAME}}'" }}
-          - APP_BINARY: '{{ "{{.ROOT_DIR}}"}}/{{ "{{.BIN_DIR}}" }}/{{ "{{.APP_NAME}}" }}'
-          - ICON_PATH: '{{ "{{.ROOT_DIR}}"}}/build/appicon.png'
-          - DESKTOP_FILE: '{{ "{{.ROOT_DIR}}"}}/build/{{ "{{.APP_NAME}}" }}.desktop'
+      # Copy binary + icon to appimage dir
+      - cp {{ "{{.APP_BINARY}}" }} {{ "{{.APP_NAME}}" }}
+      - cp ../appicon.png appicon.png
+      # Generate AppImage
+      - wails3 generate appimage -binary {{ "{{.APP_NAME}}" }} -icon {{ "{{.ICON}}" }} -desktopfile {{ "{{.DESKTOP_FILE}}" }} -outputdir {{ "{{.OUTPUT_DIR}}" }} -builddir {{ "{{.ROOT_DIR}}" }}/build/appimage
+    vars:
+      APP_NAME: '{{ "{{.APP_NAME}}" }}'
+      APP_BINARY: '../../bin/{{ "{{.APP_NAME}}" }}'
+      ICON: '../appicon.png'
+      DESKTOP_FILE: '{{ "{{.APP_NAME}}" }}.desktop'
+      OUTPUT_DIR: '../../bin'
 
-    generate:linux:dotdesktop:
-        summary: Generates a `.desktop` file
-        dir: build
-        sources:
-            - "appicon.png"
-        generates:
-            - "{{ "{{.ROOT_DIR}}"}}/build/appimage/{{ "{{.APP_NAME}}" }}.desktop"
-        cmds:
-          # Run `wails3 generate .desktop -help` for all the options
-          - |
-            wails3 generate .desktop 
-            -name "{{ "{{.APP_NAME}}" }}"
-            -exec "{{ "{{.EXEC}}" }}"
-            -icon "{{ "{{.ICON}}" }}" 
-            -outputfile {{ "{{.ROOT_DIR}}"}}/build/appimage/{{ "{{.APP_NAME}}" }}.desktop
-            # -categories "Development;Graphics;"
-            # -comment "A comment"
-            # -terminal "true"
-            # -version "1.0"
-            # -genericname "Generic Name"
-            # -keywords "keyword1;keyword2;"
-            # -startupnotify "true"
-            # -mimetype "application/x-extension1;application/x-extension2;"
+  generate:linux:dotdesktop:
+    summary: Generates a `.desktop` file
+    dir: build
+    sources:
+        - "appicon.png"
+    generates:
+        - '{{ "{{.ROOT_DIR}}"}}/build/appimage/{{ "{{.APP_NAME}}" }}.desktop'
+    cmds:
+      - mkdir -p {{ "{{.ROOT_DIR}}"}}/build/appimage
+      # Run `wails3 generate .desktop -help` for all the options
+      - wails3 generate .desktop -name "{{ "{{.APP_NAME}}" }}" -exec "{{ "{{.EXEC}}" }}" -icon "{{ "{{.ICON}}" }}" -outputfile {{ "{{.ROOT_DIR}}"}}/build/appimage/{{ "{{.APP_NAME}}" }}.desktop -categories "{{ "{{.CATEGORIES}}" }}"
+      # -comment "A comment"
+      # -terminal "true"
+      # -version "1.0"
+      # -genericname "Generic Name"
+      # -keywords "keyword1;keyword2;"
+      # -startupnotify "true"
+      # -mimetype "application/x-extension1;application/x-extension2;"
 
-        vars:
-          APP_NAME: '-name \"{{ "{{.APP_NAME}}" }}\"'
-          EXEC: '{{ "{{.ROOT_DIR}}"}}/{{ "{{.BIN_DIR}}" }}/{{ "{{.APP_NAME}}" }}'
-          ICON: '{{ "{{.ROOT_DIR}}"}}/build/appicon.png'
-          OUTPUTFILE: '-outputfile {{ "{{.ROOT_DIR}}"}}/build/appimage/{{ "{{.APP_NAME}}" }}.desktop'
+    vars:
+      APP_NAME: '{{ "{{.APP_NAME}}" }}'
+      EXEC: '{{ "{{.APP_NAME}}" }}'
+      ICON: 'appicon'
+      CATEGORIES: 'Development;'
+      OUTPUTFILE: '{{ "{{.ROOT_DIR}}"}}/build/appimage/{{ "{{.APP_NAME}}" }}.desktop'
+
   ## -------------------------- Misc -------------------------- ##
 
 

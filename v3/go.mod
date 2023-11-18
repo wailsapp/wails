@@ -10,6 +10,7 @@ require (
 	github.com/go-task/task/v3 v3.31.0
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/google/go-cmp v0.5.9
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/pat v1.0.1
 	github.com/gorilla/sessions v1.2.1
