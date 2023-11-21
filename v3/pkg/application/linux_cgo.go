@@ -69,6 +69,7 @@ extern void onDragNDrop(
    guint        info,
    guint        time,
    gpointer     data);
+extern gboolean windowDeleteHandler(GtkWidget *widget, GdkEvent *event, gpointer user_data);
 extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 extern void onProcessRequest(void *request, gpointer user_data);
 extern void sendMessageToBackend(WebKitUserContentManager *contentManager, WebKitJavascriptResult *result, void *data);
@@ -900,15 +901,15 @@ func windowSetURL(webview pointer, uri string) {
 	C.free(unsafe.Pointer(target))
 }
 
-//export emit
-func emit(we *C.WindowEvent) {
-	window := globalApplication.getWindowForID(uint(we.id))
-	if window != nil {
-		windowEvents <- &windowEvent{
-			WindowID: window.ID(),
-			EventID:  uint(events.WindowEventType(we.event)),
-		}
+//export windowDeleteHandler
+func windowDeleteHandler(window *C.GtkWidget, event *C.GdkEvent, data unsafe.Pointer) C.gboolean {
+	id := uint(*((*C.uint)(data)))
+	windowEvents <- &windowEvent{
+		WindowID: id,
+		EventID:  uint(events.WindowEventType(events.Common.WindowClosing)),
 	}
+	// stop propagation
+	return C.gboolean(1)
 }
 
 //export webviewLoadChanged
@@ -921,11 +922,7 @@ func webviewLoadChanged(web_view *C.WebKitWebView, load_event C.WebKitLoadEvent,
 func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func(e events.WindowEventType)) {
 	event := C.CString("delete-event")
 	defer C.free(unsafe.Pointer(event))
-	wEvent := C.WindowEvent{
-		id:    C.uint(windowId),
-		event: C.uint(events.Linux.WindowClosing),
-	}
-	C.signal_connect(unsafe.Pointer(window), event, C.emit, unsafe.Pointer(&wEvent))
+	C.signal_connect(unsafe.Pointer(window), event, C.windowDeleteHandler, unsafe.Pointer(&windowId))
 
 	contentManager := C.webkit_web_view_get_user_content_manager((*C.WebKitWebView)(webview))
 	event = C.CString("script-message-received::external")
