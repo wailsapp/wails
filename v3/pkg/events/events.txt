@@ -1,3 +1,4 @@
+linux:ActivateFocus
 linux:ApplicationStarted
 linux:SystemThemeChanged
 linux:WindowClosing
