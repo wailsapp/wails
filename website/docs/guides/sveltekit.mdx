@@ -24,6 +24,9 @@ This guide will go into:
 ##### Modify main.go.
 - The first comment `//go:embed all:frontend/dist` needs to be changed to `//go:embed all:frontend/build`
 
+##### Modify .gitignore
+- The line `frontned/dist` needs to be replaced with `frontend/build`
+
 ##### Install/remove dependencies using your favorite package manager.
 - Navigate into your "frontend" folder.
 - `npm i`
