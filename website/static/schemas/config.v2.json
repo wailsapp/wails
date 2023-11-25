@@ -251,6 +251,33 @@
         "garbleargs": {
             "type": "string",
             "description": "The arguments to pass to the garble command when using the obfuscated flag"
+        },
+        "bindings": {
+            "type": "object",
+            "description": "Bindings configurations",
+            "properties": {
+                "ts_generation": {
+                    "type": "object",
+                    "description": "model.ts file generation config",
+                    "properties": {
+                        "prefix": {
+                            "type": "string",
+                            "description": "All generated JavaScript entities will be prefixed with this value"
+                        },
+                        "suffix": {
+                            "type": "string",
+                            "description": "All generated JavaScript entities will be suffixed with this value"
+                        },
+                        "outputType": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/BindingsOutputTypes"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
         }
     },
     "dependencies": {
@@ -346,26 +373,25 @@
                     ]
                 }
             ]
-        }
-    },
-    "bindings": {
-        "type": "object",
-        "description": "Bindings configurations",
-        "properties": {
-            "ts_generation": {
-                "type": "object",
-                "description": "model.ts file generation config",
-                "properties": {
-                    "prefix": {
-                        "type": "string",
-                        "description": "All generated JavaScript entities will be prefixed with this value"
-                    },
-                    "suffix": {
-                        "type": "string",
-                        "description": "All generated JavaScript entities will be suffixed with this value"
-                    }
+        },
+        "BindingsOutputTypes": {
+            "description": "Type of output to generate",
+            "oneOf": [
+                {
+                    "description": "Classes",
+                    "type": "string",
+                    "enum": [
+                        "classes"
+                    ]
+                },
+                {
+                    "description": "Interfaces",
+                    "type": "string",
+                    "enum": [
+                        "interfaces"
+                    ]
                 }
-            }
+            ]
         }
     }
 }

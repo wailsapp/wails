@@ -43,10 +43,15 @@ func generateModule(f *flags.GenerateModule) error {
 		return err
 	}
 
+	if projectConfig.Bindings.TsGeneration.OutputType == "" {
+		projectConfig.Bindings.TsGeneration.OutputType = "classes"
+	}
+
 	_, err = bindings.GenerateBindings(bindings.Options{
-		Tags:     buildTags,
-		TsPrefix: projectConfig.Bindings.TsGeneration.Prefix,
-		TsSuffix: projectConfig.Bindings.TsGeneration.Suffix,
+		Tags:         buildTags,
+		TsPrefix:     projectConfig.Bindings.TsGeneration.Prefix,
+		TsSuffix:     projectConfig.Bindings.TsGeneration.Suffix,
+		TsOutputType: projectConfig.Bindings.TsGeneration.OutputType,
 	})
 	if err != nil {
 		return err
