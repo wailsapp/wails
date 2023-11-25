@@ -219,12 +219,17 @@ func GenerateBindings(buildOptions *Options) error {
 		printBulletPoint("Generating bindings: ")
 	}
 
+	if buildOptions.ProjectData.Bindings.TsGeneration.OutputType == "" {
+		buildOptions.ProjectData.Bindings.TsGeneration.OutputType = "classes"
+	}
+
 	// Generate Bindings
 	output, err := bindings.GenerateBindings(bindings.Options{
-		Tags:      buildOptions.UserTags,
-		GoModTidy: !buildOptions.SkipModTidy,
-		TsPrefix:  buildOptions.ProjectData.Bindings.TsGeneration.Prefix,
-		TsSuffix:  buildOptions.ProjectData.Bindings.TsGeneration.Suffix,
+		Tags:         buildOptions.UserTags,
+		GoModTidy:    !buildOptions.SkipModTidy,
+		TsPrefix:     buildOptions.ProjectData.Bindings.TsGeneration.Prefix,
+		TsSuffix:     buildOptions.ProjectData.Bindings.TsGeneration.Suffix,
+		TsOutputType: buildOptions.ProjectData.Bindings.TsGeneration.OutputType,
 	})
 	if err != nil {
 		return err

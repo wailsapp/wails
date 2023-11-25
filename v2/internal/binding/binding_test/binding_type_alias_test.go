@@ -41,7 +41,7 @@ func TestAliases(t *testing.T) {
 
 	// setup
 	testLogger := &logger.Logger{}
-	b := binding.NewBindings(testLogger, []interface{}{&AliasTest{}}, []interface{}{}, false)
+	b := binding.NewBindings(testLogger, []interface{}{&AliasTest{}}, []interface{}{}, false, []interface{}{})
 
 	// then
 	err := b.GenerateGoBindings(generationDir)
