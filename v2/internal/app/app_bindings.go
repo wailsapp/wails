@@ -31,6 +31,7 @@ func (a *App) Run() error {
 
 	var tsPrefixFlag *string
 	var tsPostfixFlag *string
+	var tsOutputTypeFlag *string
 
 	tsPrefix := os.Getenv("tsprefix")
 	if tsPrefix == "" {
@@ -42,6 +43,11 @@ func (a *App) Run() error {
 		tsPostfixFlag = bindingFlags.String("tssuffix", "", "Suffix for generated typescript entities")
 	}
 
+	tsOutputType := os.Getenv("tsoutputtype")
+	if tsOutputType == "" {
+		tsOutputTypeFlag = bindingFlags.String("tsoutputtype", "", "Output type for generated typescript entities (classes|interfaces)")
+	}
+
 	_ = bindingFlags.Parse(os.Args[1:])
 	if tsPrefixFlag != nil {
 		tsPrefix = *tsPrefixFlag
@@ -49,11 +55,15 @@ func (a *App) Run() error {
 	if tsPostfixFlag != nil {
 		tsSuffix = *tsPostfixFlag
 	}
+	if tsOutputTypeFlag != nil {
+		tsOutputType = *tsOutputTypeFlag
+	}
 
-	appBindings := binding.NewBindings(a.logger, a.options.Bind, bindingExemptions, IsObfuscated())
+	appBindings := binding.NewBindings(a.logger, a.options.Bind, bindingExemptions, IsObfuscated(), a.options.EnumBind)
 
 	appBindings.SetTsPrefix(tsPrefix)
 	appBindings.SetTsSuffix(tsSuffix)
+	appBindings.SetOutputType(tsOutputType)
 
 	err := generateBindings(appBindings)
 	if err != nil {

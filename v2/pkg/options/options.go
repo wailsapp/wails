@@ -63,6 +63,7 @@ type App struct {
 	OnShutdown         func(ctx context.Context)                `json:"-"`
 	OnBeforeClose      func(ctx context.Context) (prevent bool) `json:"-"`
 	Bind               []interface{}
+	EnumBind           []interface{}
 	WindowStartState   WindowStartState
 
 	// ErrorFormatter overrides the formatting of errors returned by backend methods
