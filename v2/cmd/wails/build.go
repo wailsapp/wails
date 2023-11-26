@@ -49,6 +49,16 @@ func buildApplication(f *flags.Build) error {
 		return err
 	}
 
+	// Set obfuscation from project file
+	if projectOptions.Obfuscated {
+		f.Obfuscated = projectOptions.Obfuscated
+	}
+
+	// Set garble args from project file
+	if projectOptions.GarbleArgs != "" {
+		f.GarbleArgs = projectOptions.GarbleArgs
+	}
+
 	// Create BuildOptions
 	buildOptions := &build.Options{
 		Logger:            logger,
