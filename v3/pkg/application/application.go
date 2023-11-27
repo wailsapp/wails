@@ -76,7 +76,8 @@ func New(appOptions Options) *App {
 
 	srv, err := assetserver.NewAssetServer(opts, false, result.Logger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode, NewMessageProcessor(result.Logger))
 	if err != nil {
-		result.fatal(err.Error())
+		result.Logger.Error("Fatal error in application initialisation: " + err.Error())
+		os.Exit(1)
 	}
 
 	// Pass through the capabilities

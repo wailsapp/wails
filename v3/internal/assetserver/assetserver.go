@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
@@ -99,28 +100,25 @@ func NewAssetServer(options *Options, servingFromDisk bool, logger *slog.Logger,
 	if result.devServerURL != "" {
 		logger.Info("Using External DevServer", "url", result.devServerURL)
 		// Parse devServerURL into url.URL
-		devserverURL, err := url.Parse(result.devServerURL)
+		devServerURL, err := url.Parse(result.devServerURL)
 		if err != nil {
 			return nil, err
 		}
-		result.wsHandler = httputil.NewSingleHostReverseProxy(devserverURL)
-		err = result.checkDevServerURL()
+		err = result.checkDevServerURL(devServerURL)
 		if err != nil {
 			return nil, err
 		}
+		result.wsHandler = httputil.NewSingleHostReverseProxy(devServerURL)
 	}
 	return result, nil
 }
 
-func (d *AssetServer) checkDevServerURL() error {
-	req, err := http.NewRequest("OPTIONS", "/", nil)
+func (d *AssetServer) checkDevServerURL(devServerURL *url.URL) error {
+	// Open a connection to the devserver URL
+	hostPort := devServerURL.Hostname() + ":" + devServerURL.Port()
+	_, err := net.DialTimeout("tcp", hostPort, 1*time.Second)
 	if err != nil {
-		return err
-	}
-	w := httptest.NewRecorder()
-	d.wsHandler.ServeHTTP(w, req)
-	if w.Code != http.StatusNoContent {
-		return fmt.Errorf("unable to connect to external server: %s. Please check it's running", d.devServerURL)
+		return fmt.Errorf("unable to connect to dev server: %s. Please check it's running", d.devServerURL)
 	}
 	return nil
 }
