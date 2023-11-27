@@ -85,14 +85,15 @@ module.exports = async function configCreatorAsync() {
         ({
           docs: {
             sidebarPath: require.resolve("./sidebars.js"),
-            // Please change this to your repo.
-            editUrl: "https://github.com/wailsapp/wails/edit/master/website",
+            editUrl: ({ docPath }) => {
+              return `https://holocron.so/github/pr/wailsapp/wails/master/editor/website/docs/${docPath}`
+            },
           },
           blog: {
             showReadingTime: true,
-            // Please change this to your repo.
-            editUrl:
-              "https://github.com/wailsapp/wails/edit/master/website/blog",
+            editUrl: ({ docPath }) => {
+              return `https://holocron.so/github/pr/wailsapp/wails/master/editor/website/docs/${docPath}`
+            },
           },
           theme: {
             customCss: [
