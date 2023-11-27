@@ -1453,11 +1453,12 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.NavigateToString(w.parent.options.HTML)
 	} else {
 		var startURL = "http://wails.localhost"
-		if globalApplication.options.Assets.ExternalURL != "" {
+		devServerURL := assetserver.GetDevServerURL()
+		if devServerURL != "" {
 			// Parse the port
-			parsedURL, err := url.Parse(globalApplication.options.Assets.ExternalURL)
+			parsedURL, err := url.Parse(devServerURL)
 			if err != nil {
-				globalApplication.fatal("Error parsing ExternalURL: " + err.Error())
+				globalApplication.fatal("Error parsing environment variable 'WAILS_DEVSERVER_URL`: " + err.Error())
 			}
 			port := parsedURL.Port()
 			if port != "" {

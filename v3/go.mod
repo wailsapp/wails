@@ -1,8 +1,11 @@
 module github.com/wailsapp/wails/v3
 
-go 1.21
+go 1.21.1
+
+toolchain go1.21.4
 
 require (
+	github.com/atterpac/refresh v0.2.4
 	github.com/bep/debounce v1.2.1
 	github.com/ebitengine/purego v0.4.0-alpha.4
 	github.com/go-git/go-git/v5 v5.3.0
@@ -22,7 +25,7 @@ require (
 	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/u v1.1.0
 	github.com/leaanthony/winicon v1.0.0
-	github.com/lmittmann/tint v1.0.0
+	github.com/lmittmann/tint v1.0.3
 	github.com/markbates/goth v1.77.0
 	github.com/matryer/is v1.4.0
 	github.com/mattn/go-colorable v0.1.13
@@ -35,13 +38,14 @@ require (
 	github.com/wailsapp/go-webview2 v1.0.9
 	github.com/wailsapp/mimetype v1.4.1
 	golang.org/x/net v0.10.0
-	golang.org/x/sys v0.13.0
+	golang.org/x/sys v0.14.0
 	modernc.org/sqlite v1.21.0
 )
 
 require (
 	atomicgo.dev/cursor v0.1.1 // indirect
 	atomicgo.dev/keyboard v0.2.8 // indirect
+	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/Microsoft/go-winio v0.4.16 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
@@ -77,10 +81,15 @@ require (
 	github.com/radovskyb/watcher v1.0.7 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/rjeczalik/notify v0.9.3 // indirect
 	github.com/sajari/fuzzy v1.0.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
+	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
+	github.com/tklauser/go-sysconf v0.3.12 // indirect
+	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
+	github.com/yusufpapurcu/wmi v1.2.3 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
@@ -108,5 +117,3 @@ require (
 	modernc.org/token v1.0.1 // indirect
 	mvdan.cc/sh/v3 v3.7.0 // indirect
 )
-
-replace github.com/ebitengine/purego v0.4.0-alpha.4 => github.com/tmclane/purego v0.0.0-20230818202843-0b72c8c9140f

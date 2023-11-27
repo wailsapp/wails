@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
+	"net/url"
 	"strings"
 	"time"
 
@@ -62,6 +63,9 @@ type AssetServer struct {
 	// External dev server proxy
 	wsHandler *httputil.ReverseProxy
 
+	// External dev server URL
+	devServerURL string
+
 	assetServerWebView
 }
 
@@ -91,13 +95,16 @@ func NewAssetServer(options *Options, servingFromDisk bool, logger *slog.Logger,
 	}
 
 	// Check if proxy required
-	externalURL, err := options.getExternalURL()
-	if err != nil {
-		return nil, err
-	}
-	if externalURL != nil {
-		result.wsHandler = httputil.NewSingleHostReverseProxy(externalURL)
-		err := result.checkExternalURL()
+	result.devServerURL = GetDevServerURL()
+	if result.devServerURL != "" {
+		logger.Info("Using External DevServer", "url", result.devServerURL)
+		// Parse devServerURL into url.URL
+		devserverURL, err := url.Parse(result.devServerURL)
+		if err != nil {
+			return nil, err
+		}
+		result.wsHandler = httputil.NewSingleHostReverseProxy(devserverURL)
+		err = result.checkDevServerURL()
 		if err != nil {
 			return nil, err
 		}
@@ -105,7 +112,7 @@ func NewAssetServer(options *Options, servingFromDisk bool, logger *slog.Logger,
 	return result, nil
 }
 
-func (d *AssetServer) checkExternalURL() error {
+func (d *AssetServer) checkDevServerURL() error {
 	req, err := http.NewRequest("OPTIONS", "/", nil)
 	if err != nil {
 		return err
@@ -113,19 +120,23 @@ func (d *AssetServer) checkExternalURL() error {
 	w := httptest.NewRecorder()
 	d.wsHandler.ServeHTTP(w, req)
 	if w.Code != http.StatusNoContent {
-		return fmt.Errorf("unable to connect to external server: %s. Please check it's running.", d.options.ExternalURL)
+		return fmt.Errorf("unable to connect to external server: %s. Please check it's running", d.devServerURL)
 	}
 	return nil
 }
 
 func (d *AssetServer) LogDetails() {
 	if d.debug {
-		d.logger.Info("AssetServer Info:",
+		var info = []any{
 			"assetsFS", d.options.Assets != nil,
 			"middleware", d.options.Middleware != nil,
 			"handler", d.options.Handler != nil,
-			"externalURL", d.options.ExternalURL,
-		)
+			"devServerURL", d.devServerURL,
+		}
+		if d.devServerURL != "" {
+			info = append(info, "devServerURL", d.devServerURL)
+		}
+		d.logger.Info("AssetServer Info:", info...)
 	}
 }
 

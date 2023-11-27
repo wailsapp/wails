@@ -69,10 +69,9 @@ func New(appOptions Options) *App {
 	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
 
 	opts := &assetserver.Options{
-		Assets:      appOptions.Assets.FS,
-		Handler:     appOptions.Assets.Handler,
-		Middleware:  assetserver.Middleware(appOptions.Assets.Middleware),
-		ExternalURL: appOptions.Assets.ExternalURL,
+		Assets:     appOptions.Assets.FS,
+		Handler:    appOptions.Assets.Handler,
+		Middleware: assetserver.Middleware(appOptions.Assets.Middleware),
 	}
 
 	srv, err := assetserver.NewAssetServer(opts, false, result.Logger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode, NewMessageProcessor(result.Logger))

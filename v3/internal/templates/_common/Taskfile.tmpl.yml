@@ -25,6 +25,7 @@ tasks:
   build:windows:
     summary: Builds the application for Windows
     deps:
+      - task: go:mod:tidy
       - task: build:frontend
       - task: generate:icons
       - task: generate:syso
@@ -75,6 +76,7 @@ tasks:
   build:darwin:
     summary: Creates a production build of the application
     deps:
+      - task: go:mod:tidy
       - task: build:frontend
       - task: generate:icons
     cmds:
@@ -85,9 +87,9 @@ tasks:
       GOOS: darwin
       CGO_ENABLED: 1
       GOARCH: {{ "'{{.ARCH | default ARCH}}'" }}
-      CGO_CFLAGS: "-mmacosx-version-min=10.13"
-      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
-      MACOSX_DEPLOYMENT_TARGET: "10.13"
+      CGO_CFLAGS: "-mmacosx-version-min=10.15"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.15"
+      MACOSX_DEPLOYMENT_TARGET: "10.15"
       PRODUCTION: {{ "'{{.PRODUCTION | default \"false\"}}'" }}
 
   build:darwin:prod:arm64:
@@ -126,6 +128,7 @@ tasks:
   build:linux:
     summary: Builds the application for Linux
     deps:
+      - task: go:mod:tidy
       - task: build:frontend
       - task: generate:icons
         vars:
@@ -374,4 +377,55 @@ tasks:
     deps:
       - install:frontend:deps
     cmds:
-      - npm run build
+      - npm run build -q
+
+  go:mod:tidy:
+    summary: Runs `go mod tidy`
+    internal: true
+    generates:
+      - go.sum
+    sources:
+      - go.mod
+    cmds:
+      - go mod tidy
+
+# ----------------------- dev ----------------------- #
+
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: run:{{ "{{OS}}" }}
+
+  run:windows:
+    cmds:
+      - {{ "'{{.BIN_DIR}}\\\\{{.APP_NAME}}.exe'" }}
+
+  dev:frontend:
+    summary: Runs the frontend in development mode
+    dir: frontend
+    cmds:
+      - npm run dev
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 tool watcher -path {{ "{{.PATH}}" }} -preexec {{ "\"{{.PREEXEC}}\""}} {{ "{{.PREWAIT}}" }} -postexec {{ "\"{{.POSTEXEC}}\"" }} -ignorefiles {{ "{{.IGNOREFILES}}" }} -ignoredirs {{ "{{.IGNOREDIRS}}" }} -ignoreextensions {{ "{{.IGNOREEXTENSIONS}}" }} -exec {{ "\"{{.EXEC}}\"" }} -debounce {{ "{{.DEBOUNCE}}" }}
+    vars:
+      PATH: '.'
+      PREEXEC: 'wails3 task build'
+      PREWAIT: '-prewait true'
+      EXEC: 'wails3 task run'
+      POSTEXEC: ''
+      IGNOREFILES: 'Taskfile.yml'
+      IGNOREDIRS: '.git,frontend'
+      IGNOREEXTENSIONS: '.exe,.syso'
+      DEBOUNCE: 1000
+    env:
+      # This is the default vite dev server port
+      WAILS_DEVSERVER_URL: 'http://localhost:5173'
+
+  dev:reload:
+    summary: Reloads the application
+    cmds:
+      - task: run
