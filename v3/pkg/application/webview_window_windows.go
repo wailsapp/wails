@@ -193,6 +193,7 @@ func (w *windowsWebviewWindow) run() {
 		exStyle |= w32.WS_EX_APPWINDOW
 	}
 
+	// ToDo: X, Y should also be scaled, should it be always relative to the main monitor?
 	var startX, _ = lo.Coalesce(options.X, w32.CW_USEDEFAULT)
 	var startY, _ = lo.Coalesce(options.Y, w32.CW_USEDEFAULT)
 
@@ -222,8 +223,8 @@ func (w *windowsWebviewWindow) run() {
 		style,
 		startX,
 		startY,
-		options.Width,
-		options.Height,
+		w32.CW_USEDEFAULT,
+		w32.CW_USEDEFAULT,
 		parent,
 		appMenu,
 		w32.GetModuleHandle(""),
@@ -233,9 +234,9 @@ func (w *windowsWebviewWindow) run() {
 		panic("Unable to create window")
 	}
 
-	w.setupChromium()
-
 	w.setSize(options.Width, options.Height)
+
+	w.setupChromium()
 
 	// Min/max buttons
 	if !options.Windows.DisableMinimiseButton {
