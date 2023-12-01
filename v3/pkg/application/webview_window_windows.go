@@ -1283,7 +1283,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 	webviewRequests <- &webViewAssetRequest{
 		Request:    webviewRequest,
 		windowId:   w.parent.id,
-		windowName: globalApplication.getWindowForID(w.parent.id).Name(),
+		windowName: w.parent.options.Name,
 	}
 }
 
