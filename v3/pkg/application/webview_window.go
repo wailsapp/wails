@@ -1096,20 +1096,17 @@ func (w *WebviewWindow) SetAbsolutePosition(x int, y int) {
 }
 
 func (w *WebviewWindow) processKeyBinding(acceleratorString string) bool {
-
-	if w.keyBindings == nil {
-		return false
-	}
-
 	// Check key bindings
-	callback, ok := w.keyBindings[acceleratorString]
-	if !ok {
-		return globalApplication.processKeyBinding(acceleratorString, w)
-	}
-	// Execute callback
-	go callback(w)
+	if w.keyBindings != nil {
+		if callback := w.keyBindings[acceleratorString]; callback != nil {
+			// Execute callback
+			go callback(w)
 
-	return true
+			return true
+		}
+	}
+
+	return globalApplication.processKeyBinding(acceleratorString, w)
 }
 
 func (w *WebviewWindow) HandleKeyEvent(acceleratorString string) {

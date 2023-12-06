@@ -767,8 +767,7 @@ func (a *App) runOrDeferToAppRun(r runnable) {
 }
 
 func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow) bool {
-
-	if a.keyBindings == nil {
+	if len(a.keyBindings) == 0 {
 		return false
 	}
 

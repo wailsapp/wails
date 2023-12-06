@@ -1289,14 +1289,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 	globalApplication.capabilities = capabilities.NewCapabilities(webview2version)
 
 	disableFeatues := []string{}
-
 	if !opts.EnableFraudulentWebsiteWarnings {
 		disableFeatues = append(disableFeatues, "msSmartScreenProtection")
 	}
-
-	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
-	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
-
 	if opts.WebviewGpuIsDisabled {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
 	}
@@ -1305,6 +1300,15 @@ func (w *windowsWebviewWindow) setupChromium() {
 		arg := fmt.Sprintf("--disable-features=%s", strings.Join(disableFeatues, ","))
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
+
+	enableFeatures := []string{"msWebView2BrowserHitTransparent"}
+	if len(enableFeatures) > 0 {
+		arg := fmt.Sprintf("--enable-features=%s", strings.Join(enableFeatures, ","))
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
+	}
+
+	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
+	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
 
 	if opts.Permissions != nil {
 		for permission, state := range opts.Permissions {
@@ -1547,9 +1551,6 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 
 	globalApplication.debug("Processing key binding", "vkey", vkey)
 
-	if len(w.parent.keyBindings) == 0 {
-		return false
-	}
 	// Get the keyboard state and convert to an accelerator
 	var keyState [256]byte
 	if !w32.GetKeyboardState(keyState[:]) {
@@ -1584,9 +1585,20 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 		acc.Key = accKey
 	}
 
-	// Process the key binding
-	return w.parent.processKeyBinding(acc.String())
+	accKey := acc.String()
+	globalApplication.debug("Processing key binding", "vkey", vkey, "acc", accKey)
 
+	// Process the key binding
+	if w.parent.processKeyBinding(accKey) {
+		return true
+	}
+
+	if accKey == "alt+f4" {
+		w32.PostMessage(w.hwnd, w32.WM_CLOSE, 0, 0)
+		return true
+	}
+
+	return false
 }
 
 func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
