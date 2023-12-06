@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/leaanthony/u"
 	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/leaanthony/u"
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -1050,10 +1051,6 @@ func (w *WebviewWindow) NativeWindowHandle() (uintptr, error) {
 }
 
 func (w *WebviewWindow) Focus() {
-	if w.impl == nil {
-		w.options.Focused = true
-		return
-	}
 	InvokeSync(w.impl.focus)
 	w.emit(events.Common.WindowFocus)
 }
