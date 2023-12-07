@@ -1322,13 +1322,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.WebResourceRequestedCallback = w.processRequest
 	chromium.ContainsFullScreenElementChangedCallback = w.fullscreenChanged
 	chromium.NavigationCompletedCallback = w.navigationCompleted
-	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
-		if w.processKeyBinding(vkey) {
-			return true
-		}
-		w32.PostMessage(w.hwnd, w32.WM_KEYDOWN, uintptr(vkey), 0)
-		return false
-	}
+	chromium.AcceleratorKeyCallback = w.processKeyBinding
 
 	chromium.Embed(w.hwnd)
 
