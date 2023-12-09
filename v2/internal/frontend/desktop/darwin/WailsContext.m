@@ -231,7 +231,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         }
     } else {
         if (preferences.fullscreenEnabled != NULL) {
-            [configuration.preferences setValue:@true forKey:@"fullScreenEnabled"]
+            [configuration.preferences setValue:@YES forKey:@"fullScreenEnabled"]
         }
     }
     
