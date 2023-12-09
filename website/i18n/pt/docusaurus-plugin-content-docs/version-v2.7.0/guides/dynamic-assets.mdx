@@ -1,0 +1,136 @@
+# Recursos Dinâmicos
+
+Se você deseja carregar ou gerar assets para seu frontend de forma dinâmica, você pode conseguir isso usando a opção [AssetsHandler](../reference/options#assetshandler). O AssetsHandler é um `http.Handler` genérico que irá ser chamado para qualquer solicitação não GET no servidor de ativos e para solicitações GET que não podem ser atendidas pelo ativos agrupados porque o arquivo não foi encontrado.
+
+Ao instalar um AssetsHandler personalizado, você pode servir seus próprios assets usando um servidor de arquivos personalizado.
+
+## Exemplo
+
+Em nosso projeto de exemplo, vamos criar um gerenciador de arquivos simples que irá carregar arquivos fora do disco:
+
+```go title=main.go {17-36,49}
+package main
+
+import (
+    "embed"
+    "fmt"
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "net/http"
+    "os"
+    "strings"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+type FileLoader struct {
+    http.Handler
+}
+
+func NewFileLoader() *FileLoader {
+    return &FileLoader{}
+}
+
+func (h *FileLoader) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+    var err error
+    requestedFilename := strings.TrimPrefix(req.URL.Path, "/")
+    println("Requesting file:", requestedFilename)
+    fileData, err := os.ReadFile(requestedFilename)
+    if err != nil {
+        res.WriteHeader(http.StatusBadRequest)
+        res.Write([]byte(fmt.Sprintf("Could not load file %s", requestedFilename)))
+    }
+
+    res.Write(fileData)
+}
+
+func main() {
+    // Create an instance of the app structure
+    app := NewApp()
+
+    // Create application with options
+    err := wails.Run(&options.App{
+        Title:  "helloworld",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets:  assets,
+            Handler: NewFileLoader(),
+        },
+        BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 255},
+        OnStartup:        app.startup,
+        Bind: []interface{}{
+            app,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err)
+    }
+}
+```
+
+Quando executarmos o aplicativo no modo de desenvolvimento usando `wail dev`, veremos a seguinte saída:
+
+```
+DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico'
+DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico' failed, using AssetHandler
+Requesting file: favicon.ico
+```
+
+Como você pode ver, o manipulador de assets é chamado quando o servidor de assets padrão não consegue servir o arquivo `favicon.ico`.
+
+Se você clicar com o botão direito no aplicativo principal e selecionar "inspeção" para abrir as devtools, você pode testar esta função digitando o seguinte no console:
+
+```
+let response = await fetch('does-not-exist.txt');
+```
+
+Isto irá gerar um erro no devtools. Podemos ver que o erro é o que esperamos, retornado por nosso manipulador de ativos personalizados:
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={require("@site/static/img/assetshandler-does-not-exist.webp").default}
+  />
+</p>
+```
+
+No entanto, se requisitarmos `go.mod`, veremos a seguinte saída:
+
+```mdx-code-block
+<p className="text--center">
+  <img src={require("@site/static/img/assetshandler-go-mod.webp").default} />
+</p>
+```
+
+Esta técnica pode ser usada para carregar imagens diretamente para a página. Se atualizarmos nosso modelo padrão do vanilla e substituirmos a imagem do logotipo:
+
+```html
+<img id="logo" class="logo" />
+```
+
+com:
+
+```html
+<img src="build/appicon.png" style="width: 300px" />
+```
+
+Veremos então o seguinte:
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={require("@site/static/img/assetshandler-image.webp").default}
+    style={{ width: "75%" }}
+  />
+</p>
+```
+
+:::warning
+
+Expor seu sistema de arquivos desta forma é um risco à segurança. É recomendável que você gerencie corretamente o acesso ao seu sistema de arquivos.
+
+:::
