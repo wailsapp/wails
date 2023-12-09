@@ -219,23 +219,27 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         config.preferences.tabFocusesLinks = *preferences.tabFocusesLinks;
     }
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110300
     if (@available(macOS 11.3, *)) {
         if (preferences.textInteractionEnabled != NULL) {
             config.preferences.textInteractionEnabled = *preferences.textInteractionEnabled;
         }
     }
+#endif
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120300
     if (@available(macOS 12.3, *)) {
-        if (preferences.fullscreenEnabled != NULL) {
-            config.preferences.elementFullscreenEnabled = *preferences.fullscreenEnabled;
-        }
+            if (preferences.fullscreenEnabled != NULL) {
+                config.preferences.elementFullscreenEnabled = *preferences.fullscreenEnabled;
+            }
     }
-    
-//    [config.preferences setValue:[NSNumber numberWithBool:true] forKey:@"developerExtrasEnabled"];
+#endif
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
     if (@available(macOS 10.15, *)) {
         config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
     }
+#endif
 
     WKUserContentController* userContentController = [WKUserContentController new];
     [userContentController addScriptMessageHandler:self name:@"external"];
@@ -431,10 +435,11 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     
     NSOpenPanel *openPanel = [NSOpenPanel openPanel];
     openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101400
     if (@available(macOS 10.14, *)) {
         openPanel.canChooseDirectories = parameters.allowsDirectories;
     }
-    
+#endif
     [openPanel 
         beginSheetModalForWindow:webView.window
         completionHandler:^(NSInteger result) {
@@ -558,14 +563,18 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 #ifdef USE_NEW_FILTERS
                 NSMutableArray *contentTypes = [[NSMutableArray new] autorelease];
                 for (NSString *filter in filterList) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
                     if (@available(macOS 11.0, *)) {
                         UTType *t = [UTType typeWithFilenameExtension:filter];
                         [contentTypes addObject:t];
                     }
+#endif
                 }
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
             if (@available(macOS 11.0, *)) {
                 [dialog setAllowedContentTypes:contentTypes];
             }
+#endif
 #else
                 [dialog setAllowedFileTypes:filterList];
 #endif
@@ -638,17 +647,21 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 #ifdef USE_NEW_FILTERS
             NSMutableArray *contentTypes = [[NSMutableArray new] autorelease];
             for (NSString *filter in filterList) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
                 if (@available(macOS 11.0, *)) {
                     UTType *t = [UTType typeWithFilenameExtension:filter];
                     [contentTypes addObject:t];
                 }
+#endif
             }
         if( contentTypes.count == 0) {
             [dialog setAllowsOtherFileTypes:true];
         } else {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
             if (@available(macOS 11.0, *)) {
                 [dialog setAllowedContentTypes:contentTypes];
             }
+#endif
         }
 
 #else
