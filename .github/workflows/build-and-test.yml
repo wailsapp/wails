@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest, macos-11]
-        go-version: [1.19]
+        go-version: ['1.20', '1.21']
 
     steps:
       - name: Checkout code
@@ -27,6 +27,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
+          cache-dependency-path: ./v2/go.sum
 
       - name: Run tests (mac)
         if: matrix.os == 'macos-latest' || matrix.os == 'macos-11'
@@ -89,7 +90,7 @@ jobs:
             vanilla-ts,
             plain,
           ]
-        go-version: [1.19]
+        go-version: ['1.20', '1.21']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -98,6 +99,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
+          cache-dependency-path: ./v2/go.sum
 
       - name: Build Wails CLI
         run: |
