@@ -226,9 +226,11 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     }
 
     if (@available(macOS 12.3, *)) {
-        if (preferences.fullscreenEnabled != NULL) {
-            config.preferences.elementFullscreenEnabled = *preferences.fullscreenEnabled;
-        }
+        #if MAC_OS_X_VERSION_MAX_ALLOWED >= 120300
+            if (preferences.fullscreenEnabled != NULL) {
+                config.preferences.elementFullscreenEnabled = *preferences.fullscreenEnabled;
+            }
+        #endif
     }
     
 //    [config.preferences setValue:[NSNumber numberWithBool:true] forKey:@"developerExtrasEnabled"];
