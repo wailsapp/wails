@@ -229,6 +229,10 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         if (preferences.fullscreenEnabled != NULL) {
             config.preferences.elementFullscreenEnabled = *preferences.fullscreenEnabled;
         }
+    } else {
+        if (preferences.fullscreenEnabled != NULL) {
+            [configuration.preferences setValue:@true forKey:@"fullScreenEnabled"]
+        }
     }
     
 //    [config.preferences setValue:[NSNumber numberWithBool:true] forKey:@"developerExtrasEnabled"];
