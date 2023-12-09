@@ -396,7 +396,7 @@ void ReleaseContext(void *inctx) {
 // Credit: https://stackoverflow.com/q/33319295
 void WindowPrint(void *inctx) {
 
-	// Check if macOS 11.0 or newer
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 	if (@available(macOS 11.0, *)) {
         ON_MAIN_THREAD(
             WailsContext *ctx = (__bridge WailsContext*) inctx;
@@ -424,4 +424,5 @@ void WindowPrint(void *inctx) {
             [po runOperationModalForWindow:ctx.mainWindow delegate:ctx.mainWindow.delegate didRunSelector:nil contextInfo:nil];
         )
 	}
+#endif
 }
