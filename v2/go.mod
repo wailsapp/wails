@@ -1,6 +1,6 @@
 module github.com/wailsapp/wails/v2
 
-go 1.18
+go 1.20
 
 require (
 	github.com/Masterminds/semver v1.5.0
@@ -33,7 +33,7 @@ require (
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
 	github.com/samber/lo v1.38.1
 	github.com/stretchr/testify v1.8.1
-	github.com/tc-hib/winres v0.1.5
+	github.com/tc-hib/winres v0.2.1
 	github.com/tidwall/sjson v1.1.7
 	github.com/tkrajina/go-reflector v0.5.6
 	github.com/wailsapp/go-webview2 v1.0.10
@@ -94,7 +94,7 @@ require (
 	github.com/yuin/goldmark-emoji v1.0.1 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
-	golang.org/x/image v0.10.0 // indirect
+	golang.org/x/image v0.12.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
