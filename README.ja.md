@@ -120,7 +120,7 @@ Wails では Go のコードとウェブフロントエンドを単一のバイ�
 
 ## スター数の推移
 
-[![スター数の推移](https://starchart.cc/wailsapp/wails.svg)](https://starchart.cc/wailsapp/wails)
+[![Star History Chart](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
 
 ## コントリビューター
 
