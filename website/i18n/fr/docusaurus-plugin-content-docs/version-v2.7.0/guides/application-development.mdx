@@ -1,0 +1,215 @@
+# Développement d'applications
+
+Il n'y a pas de règles gravées dans le marbre pour le développement d'applications avec Wails, mais il y a quelques lignes directrices de base.
+
+## Configuration de l'application
+
+Le modèle utilisé par défaut défini que `main.go` est utilisé pour configurer et démarrer l'application, tandis que `app.go` est utilisé pour définir la logique de l'application.
+
+Le fichier `app.go` va définir une structure qui a 2 méthodes qui agissent comme crochets dans l'application principale:
+
+```go title="app.go"
+type App struct {
+    ctx context.Context
+}
+
+func NewApp() *App {
+    return &App{}
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+}
+
+func (a *App) shutdown(ctx context.Context) {
+}
+```
+
+- La méthode startup est appelée d-s que Wails a donné les ressources nécessaires et qu'il est dans un bon état pour créer les ressources, mettre en place les event listeners et tout ce dont l'application peut avoir besoin pour démarrer. Il est donné un `context.Context` qui est généralement sauvegardé dans un champ struct. Ce contexte est nécessaire pour appeler le [runtime](../reference/runtime/intro.mdx). Si cette méthode renvoie une erreur, l'application se fermera. En mode développement, l'erreur sera affichée dans la console.
+
+- La méthode d'arrêt sera appelée par Wails à la fin du processus d'arrêt. C'est un bon endroit pour vider la mémoire et effectuer toutes les tâches d'arrêt.
+
+Le fichier `main.go` consiste généralement en un seul appel à `wails.Run()`, qui accepte la configuration de l'application. Le modèle utilisé par les templates fait qu'avant l'appel à `wails.Run()`, une instance du struct que l'on a définie dans `app.go` est créée et instanciée dans une variable appelée `app`. Cette configuration est l'endroit où nous ajoutons nos callbacks :
+
+```go {3,9,10} title="main.go"
+func main() {
+
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:             "My App",
+        Width:             800,
+        Height:            600,
+        OnStartup:  app.startup,
+        OnShutdown: app.shutdown,
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+```
+
+Plus d'informations sur les crochets du cycle de vie des applications peuvent être trouvées [ici](../howdoesitwork.mdx#application-lifecycle-callbacks).
+
+## Méthodes de liaison
+
+Il est probable que vous vouliez appeler les méthodes Go depuis le frontend. Cela se fait normalement en ajoutant des méthodes publiques à le struct déjà défini dans `app.go`:
+
+```go {16-18} title="app.go"
+type App struct {
+    ctx context.Context
+}
+
+func NewApp() *App {
+    return &App{}
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+}
+
+func (a *App) shutdown(ctx context.Context) {
+}
+
+func (a *App) Greet(name string) string {
+    return fmt.Sprintf("Hello %s!", name)
+}
+```
+
+Dans la configuration principale de l'application, le paramètre `Bind` est l'endroit où nous pouvons dire à Wails ce que nous voulons lier :
+
+```go {11-13} title="main.go"
+func main() {
+
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:             "My App",
+        Width:             800,
+        Height:            600,
+        OnStartup:  app.startup,
+        OnShutdown: app.shutdown,
+        Bind: []interface{}{
+            app,
+        },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+```
+
+Cela liera toutes les méthodes publiques de notre structure `App` (cela ne liera jamais les méthodes de démarrage et d'arrêt du système).
+
+### Traiter avec le contexte lors de la liaison de plusieurs structures
+
+Si vous voulez lier des méthodes pour des structures multiples, mais que vous voulez que chaque struct conserve une référence au contexte pour que vous puissiez utiliser les fonctions d'exécution... Un bon choix est de passer le contexte de la méthode `OnStartup` à vos instances struct :
+
+```go
+func main() {
+
+    app := NewApp()
+    otherStruct := NewOtherStruct()
+
+    err := wails.Run(&options.App{
+        Title:             "My App",
+        Width:             800,
+        Height:            600,
+        OnStartup:  func(ctx context.Context){
+            app.SetContext(ctx)
+            otherStruct.SetContext(ctx)
+        },
+        OnShutdown: app.shutdown,
+        Bind: []interface{}{
+            app,
+            otherStruct
+        },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+Plus d'informations à sur Binding peuvent être trouvées [ici](../howdoesitwork.mdx#method-binding).
+
+## Menu de l’application
+
+Wails prend en charge l'ajout d'un menu à votre application. Ceci est fait en passant un [Menu](../reference/menus.mdx#menu) structuré à la configuration de l'application. Il est courant d'utiliser une méthode qui renvoie un Menu, et encore plus courant pour que cela soit une méthode sur la struct de l'`app` qui soit utilisée pour les hooks du cycle de vie.
+
+```go {11} title="main.go"
+func main() {
+
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:             "My App",
+        Width:             800,
+        Height:            600,
+        OnStartup:  app.startup,
+        OnShutdown: app.shutdown,
+        Menu:       app.menu(),
+        Bind: []interface{}{
+            app,
+        },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+```
+
+## Ressources
+
+La grande chose à propos de la façon dont Wails v2 gère les ressources pour le frontend, est que ce n'est pas le cas! La seule chose que vous devez donner à Wails est un `embed.FS`. C'est à vous de décider comment vous y arrivez. Vous pouvez utiliser les fichiers html/css/js vanilla comme dans le modèle vanilla. Vous pourriez avoir un système de compilation compliqué, peu importe.
+
+Quand la commande `wails dev` est exécutée, elle vérifiera le fichier de projet `wails.json` à la racine du projet. Il y a 2 clés dans le fichier du projet qui sont lues :
+
+- "frontend:install"
+- "frontend:build"
+
+Le premier, si fourni, sera exécuté dans le répertoire `frontend` pour installer les modules. Le second, si fourni, sera exécuté dans le répertoire `frontend` pour construire le projet frontend.
+
+Si ces 2 clés ne sont pas fournies, alors Wails ne fait absolument rien avec le frontend. Il n'attend que `embed.FS`.
+
+### AssetsHandler
+
+Une application Wails v2 peut éventuellement définir un `http.Handler` dans `options.app`, qui permet de se connecter à l'AssetServer pour créer des fichiers à la volée ou traiter les requêtes POST/PUT. Les requêtes GET sont toujours traitées d'abord par le `assets` FS. Si le FS ne trouve pas le fichier demandé, la requête sera transmise au `http.Handler`. Toute requête autre que GET sera traitée directement par le `AssetsHandler` si spécifié. Il est également possible d'utiliser le `AssetsHandler` uniquement en spécifiant `nil` dans l'option `Assets`.
+
+## Serveur de développement embarqué
+
+Exécuter `wails dev` démarrera le serveur de développement intégré qui démarrera un observateur de fichiers dans votre répertoire de projet. Par par défaut, si un fichier change, wails vérifie s'il s'agit d'un fichier d'application (par défaut: `.go`, configurable avec l'option `-e`). Si c'est le cas, il reconstruira votre application et la relancera. Si le fichier modifié se trouvait dans les actifs, il lancera un rechargement après un court laps de temps.
+
+Le serveur de développement utilise une technique appelée "debouncing", ce qui signifie qu'il ne se recharge pas tout de suite, comme il peut y avoir plusieurs fichiers modifiés en un court laps de temps. Lorsqu'un déclencheur se produit, il attend un temps défini avant d'émettre un rechargement. Si un autre déclencheur se produit, le temps d'attente se réinitialise avant un prochain rechargement. Par défaut, cette période est définie à `100ms`. Si cette valeur ne fonctionne pas pour votre projet, elle peut être configurée en utilisant l'option `-debounce`. Si elle est utilisée, cette valeur sera enregistrée dans la configuration de votre projet et deviendra la valeur par défaut.
+
+## Serveur de développement externe
+
+Certains frameworks sont fournis avec leur propre serveur de rechargement en direct, cependant ils ne seront pas en mesure de tirer parti des liaisons Wails Go. Dans ce scénario, il est préférable d'exécuter un script qui va surveiller le projet dans dossier build, dossier que Wails surveille aussi. Pour un exemple, voir le modèle svelte par défaut qui utilise [rollup](https://rollupjs.org/guide/en/).
+
+### Créer une application React
+
+Le processus pour créer un projet Reactest un peu plus compliqué. Afin de prendre en charge le rechargement du frontend en direct, la configuration suivante doit être ajoutée à votre `wails.json`:
+
+```json
+  "frontend:dev:watcher": "yarn start",
+  "frontend:dev:serverUrl": "http://localhost:3000",
+```
+
+La commande `frontend:dev:watcher` démarrera le serveur de développement React (hébergé sur le port `3000` typiquement). La commande `frontend:dev:serverUrl` demande ensuite à Wails d'exposer les ressources depuis le serveur de développement lors du chargement du frontend, plutôt que depuis le dossier de construction. En plus de ce qui précède, le fichier `index.html` doit être mis à jour avec les éléments suivants :
+
+```html
+    <head>
+        <meta name="wails-options" content="noautoinject" />
+        <script src="/wails/ipc.js"></script>
+        <script src="/wails/runtime.js"></script>
+    </head>
+```
+
+Ceci est nécessaire, car la commande watcher qui reconstruit le frontend empêche Wails de les injecter. Ça contourne le problème en assurant les scripts sont toujours injectés. Avec cette configuration, `wails dev` peut être exécuté, ce qui construira le frontend et le backend de manière appropriée avec le rechargement à chaud activé. De plus, lorsque vous accédez à l'application à partir d'un navigateur, les outils de développement de React peuvent maintenant être utilisés sur une version non minifiée de l'application pour le débogage. Enfin, pour des compilations plus rapides, `wails dev -s` peut être exécuté pour passer la construction par défaut du frontend par Wails car c'est une étape inutile.
+
+## Module Go
+
+Les modèles Wails par défaut génèrent un fichier `go.mod` qui contient le nom de module "changeme". Vous devriez changer ceci pour quelque chose de plus approprié après la génération du projet.

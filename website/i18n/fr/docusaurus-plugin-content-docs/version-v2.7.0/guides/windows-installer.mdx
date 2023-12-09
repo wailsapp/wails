@@ -1,0 +1,58 @@
+# Installateur NSIS
+
+```mdx-code-block
+<p style={{ "text-align": "center" }}>
+  <img
+    src={require("@site/static/img/nsis.webp").default}
+    style={{ "max-width": "50%" }}
+  />
+  <br />
+</p>
+```
+
+Wails prend en charge la génération d'installateurs Windows en utilisant l'installateur [NSIS](https://nsis.sourceforge.io/).
+
+## Installation de NSIS
+
+### Windows
+
+L'installateur est disponible sur la page [de téléchargement NSIS](https://nsis.sourceforge.io/Download).
+
+Si vous utilisez le gestionnaire de paquets chocolatey, exécutez le script suivant :
+
+```
+choco install nsis
+```
+
+Si vous installez NSIS manuellement, vous devez ajouter le dossier _Bin_ , qui contient `makensis.exe`, dans la variable d'environnement PATH. [Cette page](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) est un bon tutoriel sur comment ajouter un dossier dans votre variable d'environnement PATH sur Windows.
+
+### Linux
+
+Le paquet `nsis` devrait être disponible via le gestionnaire de paquets de votre distribution.
+
+### MacOS
+
+NSIS est disponible via homebrew en utilisant : `brew install nsis`.
+
+## Génération de l'installateur
+
+Lorsqu'un nouveau projet est créé, Wails génère les fichiers de configuration NSIS dans `build/windows/installer`. La configuration est lue dans `installer/info.json`, et est configuré pour utiliser la section info du fichier `wails.json` :
+
+```json
+// ...
+ "Info": {
+    "companyName": "My Company Name",
+    "productName": "Wails Vite",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright.........",
+    "comments": "Built using Wails (https://wails.io)"
+  },
+```
+
+Pour générer l'installateur de votre application, utilisez l'option `-nsis` avec la commande `wails build`:
+
+```
+wails build -nsis
+```
+
+L'installateur sera ensuite disponible dans le dossier `build/bin`.

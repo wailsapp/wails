@@ -1,0 +1,127 @@
+# 統合開発環境
+
+Wailsでは、優れた開発体験の提供を目指しています。 その一環として、統合開発環境特有の構成設定の生成をサポートしており、より快適にプロジェクトをセットアップできるようになっています。
+
+現在は[Visual Studio Code](https://code.visualstudio.com/)をサポートしていますが、今後、Golandなど他の統合開発環境もサポートしていく予定です。
+
+## Visual Studio Code
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={require("@site/static/img/vscode.webp").default}
+    style={{ width: "75%" }}
+  />
+</p>
+```
+
+プロジェクト生成時のコマンドに`-ide vscode`フラグを付与すると、統合開発環境用の構成ファイルが、他のプロジェクトファイルと共に作成されます。 これらのファイルは`.vscode`ディレクトリ内に配置され、アプリケーションをデバッグするための正しい構成設定が記述されています。
+
+生成されるのは`tasks.json`ファイルおよび`launch.json`ファイルの2つです。 デフォルトのバニラプロジェクトの場合、次のような内容となります:
+
+```json title="tasks.json"
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "command": "go",
+      "args": [
+        "build",
+        "-tags",
+        "dev",
+        "-gcflags",
+        "all=-N -l",
+        "-o",
+        "build/bin/myproject.exe"
+      ]
+    }
+  ]
+}
+```
+
+```json title="launch.json"
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Wails: Debug myproject",
+      "type": "go",
+      "request": "launch",
+      "mode": "exec",
+      "program": "${workspaceFolder}/build/bin/myproject.exe",
+      "preLaunchTask": "build",
+      "cwd": "${workspaceFolder}",
+      "env": {}
+    }
+  ]
+}
+```
+
+### インストールおよびビルドステップの構成
+
+デフォルトのプロジェクトでは、`npm install`や`npm run build`などのステップが必要ないため、`tasks.json`ファイルの内容なシンプルなものになっています。 Svelteテンプレートのように、フロントエンドのビルドステップが必要なプロジェクトの場合、`tasks.json`を編集して、インストールおよびビルドのステップを追加する必要があります。
+
+```json title="tasks.json"
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "npm install",
+      "type": "npm",
+      "script": "install",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "presentation": {
+        "clear": true,
+        "panel": "shared",
+        "showReuseMessage": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "npm run build",
+      "type": "npm",
+      "script": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "presentation": {
+        "clear": true,
+        "panel": "shared",
+        "showReuseMessage": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "build",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "command": "go",
+      "args": [
+        "build",
+        "-tags",
+        "dev",
+        "-gcflags",
+        "all=-N -l",
+        "-o",
+        "build/bin/vscode.exe"
+      ],
+      "dependsOn": ["npm install", "npm run build"]
+    }
+  ]
+}
+```
+
+今後の機能強化予定
+
+将来的に、インストールおよびビルドステップを含んだ`tasks.json`を自動生成できるように計画しています。
+
+:::
