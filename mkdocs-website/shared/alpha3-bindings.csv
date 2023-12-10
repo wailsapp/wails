@@ -1,0 +1,7 @@
+Scenario,Windows,Mac,Linux,WSL
+Same package,,,
+Different package,,,
+Different package with same name,,,
+Containing another struct from same package,,,
+Containing another struct from different package,,,
+Containing an anonymous struct,,,

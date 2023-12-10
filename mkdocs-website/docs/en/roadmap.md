@@ -7,6 +7,56 @@ we are aiming to achieve. These are subject to change.
 ## Alpha milestones
 
 
+### Alpha 3
+
+#### Goals
+
+The Alpha 3 cycle aims to provide bindings support. Wails 3 uses a new static analysis approach which allows us to provide 
+a better bindings experience than in Wails 2. 
+We also want to get all examples working on Linux.
+
+#### Status
+
+Bindings for struct:
+- [ ] Same package
+- [ ] Different package
+- [ ] Different package with same name
+- [ ] Containing another struct from same package
+- [ ] Containing another struct from different package
+- [ ] Containing an anonymous struct
+
+- :material-check-bold: - Working
+- :material-minus: - Partially working
+- :material-close: - Not working
+
+{{ read_csv("alpha3-bindings.csv") }}
+
+Models:
+- [ ] Class model for struct in same package
+- [ ] Class model for struct in different package
+- [ ] Interface model for struct in same package
+- [ ] Interface model for struct in different package
+- [ ] Enum in same package
+- [ ] Enum in different package
+
+Examples:
+- [ ] All examples working on Linux
+
+
+- :material-check-bold: - Working
+- :material-minus: - Partially working
+- :material-close: - Not working
+
+**Bindings**:
+
+{{ read_csv("alpha3-bindings.csv") }}
+
+**Models**:
+
+{{ read_csv("alpha3-models.csv") }}
+
+
+
 ### Alpha 2
 
 #### Goals
@@ -18,7 +68,7 @@ We also want to get all examples working on Linux.
 #### Status
 
 - [ ] All examples working on Linux
-- [ ] Init, Build, Dev & Package commands
+- [x] Init & Build commands
 
 
 - :material-check-bold: - Working

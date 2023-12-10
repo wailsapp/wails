@@ -1,0 +1,3 @@
+" ",Mac,Windows,Linux,WSL
+`wails dev`," ",:material-check-bold:," ",:material-minus:
+`wails package`," ",:material-check-bold:,:material-check-bold:,:material-check-bold:
