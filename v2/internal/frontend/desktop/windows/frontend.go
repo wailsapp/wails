@@ -543,6 +543,10 @@ func (f *Frontend) setupChromium() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		err = settings.PutIsPinchZoomEnabled(opts.IsPinchZoomEnabled)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	err = settings.PutIsStatusBarEnabled(false)
