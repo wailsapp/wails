@@ -34,7 +34,7 @@ func defaultTarget() Target {
 	}
 
 	return Target{
-		Platform: defaultPlatform + "/" + defaultArch,
+		Platform: defaultPlatform,
 		Arch:     defaultArch,
 	}
 }
