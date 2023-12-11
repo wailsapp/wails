@@ -72,7 +72,7 @@ func (b *Build) GetWebView2Strategy() string {
 }
 
 func (b *Build) GetTargets() TargetsCollection {
-	parseTargets(b.Platform)
+	return parseTargets(b.Platform)
 }
 
 func (b *Build) GetCompilerPath() string {

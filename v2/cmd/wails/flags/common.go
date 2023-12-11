@@ -39,6 +39,8 @@ func defaultTarget() Target {
 	}
 }
 
+type TargetsCollection []Target
+
 func (c TargetsCollection) MacTargetsCount() int {
 	count := 0
 
@@ -56,7 +58,7 @@ func (t Target) String() string {
 		return fmt.Sprintf("%s/%s", t.Platform, t.Arch)
 	}
 
-	return fmt.Sprintf("%s", t.Platform)
+	return t.Platform
 }
 
 func parseTargets(platform string) TargetsCollection {
