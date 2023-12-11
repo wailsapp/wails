@@ -1,7 +1,7 @@
 Scenario,Windows,Mac,Linux,WSL
-Class model for struct in same package,"","",""
-Class model for struct in different package,"","",""
-Interface model for struct in same package,"","",""
-Interface model for struct in different package,"","",""
-Enum in same package,"","",""
-Enum in different package,"","",""
+Class model for struct in same package," "," "," "
+Class model for struct in different package," "," "," "
+Interface model for struct in same package," "," "," "
+Interface model for struct in different package," "," "," "
+Enum in same package," "," "," "
+Enum in different package," "," "," "
