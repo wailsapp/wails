@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/leaanthony/slicer"
+	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/internal/system"
 )
 
@@ -62,6 +63,17 @@ func (t Target) String() string {
 }
 
 func parseTargets(platform string) TargetsCollection {
+	allowedPlatforms := map[string]bool{
+		"windows": true,
+		"linux":   true,
+		"darwin":  true,
+	}
+
+	if !allowedPlatforms[platform] {
+		pterm.Error.Println("platform argument must be one of 'windows', 'linux', or 'darwin'")
+		os.Exit(1)
+	}
+
 	var result []Target
 	var targets slicer.StringSlicer
 
