@@ -15,9 +15,31 @@ The Alpha 3 cycle aims to provide bindings support. Wails 3 uses a new static an
 a better bindings experience than in Wails 2. 
 We also want to get all examples working on Linux.
 
+#### How Can I Help?
+
+If you are interested in helping out, please review the table below and look for
+untested scenarios. The parser code and tests are located in `v3/internal/parser`.
+All tests can be run using `go test ./...` from the `v3` directory.
+Basically, try to break it and let us know if you find any issues! :smile:
+
 #### Status
 
-Bindings for struct:
+Bindings for struct (CallByID):
+- [x] Same package
+- [x] Different package
+- [ ] Different package with same name
+- [x] Containing another struct from same package
+- [x] Containing another struct from different package
+- [x] Containing an anonymous struct
+
+
+- :material-check-bold: - Working
+- :material-minus: - Partially working
+- :material-close: - Not working
+
+{{ read_csv("alpha3-bindings-callbyid.csv") }}
+
+Bindings for struct (CallByName):
 - [ ] Same package
 - [ ] Different package
 - [ ] Different package with same name
@@ -29,15 +51,17 @@ Bindings for struct:
 - :material-minus: - Partially working
 - :material-close: - Not working
 
-{{ read_csv("alpha3-bindings.csv") }}
+{{ read_csv("alpha3-bindings-callbyname.csv") }}
 
 Models:
-- [ ] Class model for struct in same package
-- [ ] Class model for struct in different package
+- [x] Class model for struct in same package
+- [x] Class model for struct in different package
 - [ ] Interface model for struct in same package
 - [ ] Interface model for struct in different package
-- [ ] Enum in same package
-- [ ] Enum in different package
+- [x] Enum in same package
+- [x] Enum in different package
+- [x] Interface using enum in same package
+- [ ] Interface using enum in different package
 
 Examples:
 - [ ] All examples working on Linux
