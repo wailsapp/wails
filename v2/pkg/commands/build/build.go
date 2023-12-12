@@ -330,8 +330,9 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("%s - %s", err.Error(), stderr)
 		}
-		if options.Verbosity == VERBOSE {
+		if options.Verbosity == VERBOSE && stdout != "" {
 			pterm.Info.Println(stdout)
+		}
 		}
 	}
 
