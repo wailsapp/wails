@@ -18,6 +18,7 @@ type Options struct {
 	Filename         string
 	Tags             []string
 	ProjectDirectory string
+	Compiler         string
 	GoModTidy        bool
 	TsPrefix         string
 	TsSuffix         string
@@ -46,13 +47,13 @@ func GenerateBindings(options Options) (string, error) {
 	tagString := buildtags.Stringify(genModuleTags)
 
 	if options.GoModTidy {
-		stdout, stderr, err = shell.RunCommand(workingDirectory, "go", "mod", "tidy")
+		stdout, stderr, err = shell.RunCommand(workingDirectory, options.Compiler, "mod", "tidy")
 		if err != nil {
 			return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 		}
 	}
 
-	stdout, stderr, err = shell.RunCommand(workingDirectory, "go", "build", "-tags", tagString, "-o", filename)
+	stdout, stderr, err = shell.RunCommand(workingDirectory, options.Compiler, "build", "-tags", tagString, "-o", filename)
 	if err != nil {
 		return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 	}

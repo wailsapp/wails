@@ -61,7 +61,7 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 	}
 
 	// Run go mod tidy to ensure we're up-to-date
-	err = runCommand(cwd, false, "go", "mod", "tidy")
+	err = runCommand(cwd, false, f.Compiler, "mod", "tidy")
 	if err != nil {
 		return err
 	}
