@@ -18,8 +18,130 @@ func TestParseEnum(t *testing.T) {
 		wantErr          bool
 	}{
 		{
-			name:    "should find a bound services with an enum",
+			name:    "should find a bound service with an enum",
 			dir:     "testdata/enum",
+			wantErr: false,
+			wantBoundMethods: map[string]map[string][]*BoundMethod{
+				"main": {
+					"GreetService": {
+						{
+							Name:       "Greet",
+							DocComment: "Greet does XYZ",
+							Inputs: []*Parameter{
+								{
+									Name: "name",
+									Type: &ParameterType{
+										Package: "main",
+										Name:    "string",
+									},
+								},
+								{
+									Name: "title",
+									Type: &ParameterType{
+										Package: "main",
+										Name:    "Title",
+										IsEnum:  true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Name: "",
+									Type: &ParameterType{
+										Package: "main",
+										Name:    "string",
+									},
+								},
+							},
+							ID: 1411160069,
+						},
+						{
+							Name:       "NewPerson",
+							DocComment: "NewPerson creates a new person",
+							Inputs: []*Parameter{
+								{
+									Name: "name",
+									Type: &ParameterType{
+										Package: "main",
+										Name:    "string",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Package:   "main",
+										Name:      "Person",
+										IsStruct:  true,
+										IsPointer: true,
+									},
+								},
+							},
+							ID: 1661412647,
+						},
+					},
+				},
+			},
+			wantTypes: map[string]map[string]*TypeDef{
+				"main": {
+					"Title": {
+						Name: "Title",
+						Type: "string",
+						Consts: []*ConstDef{
+							{
+								Name:       "Mister",
+								DocComment: "Mister is a title",
+								Value:      `"Mr"`,
+							},
+							{
+								Name:  "Miss",
+								Value: `"Miss"`,
+							},
+							{
+								Name:  "Ms",
+								Value: `"Ms"`,
+							},
+							{
+								Name:  "Mrs",
+								Value: `"Mrs"`,
+							},
+							{
+								Name:  "Dr",
+								Value: `"Dr"`,
+							},
+						},
+						ShouldGenerate: true,
+					},
+				},
+			},
+			wantModels: map[string]map[string]*StructDef{
+				"main": {
+					"Person": {
+						Name: "Person",
+						Fields: []*Field{
+							{
+								Name: "Title",
+								Type: &ParameterType{
+									Package: "main",
+									Name:    "Title",
+									IsEnum:  true,
+								},
+							},
+							{
+								Name: "Name",
+								Type: &ParameterType{
+									Package: "main",
+									Name:    "string",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:    "should find a bound service with an enum interface",
+			dir:     "testdata/enum-interface",
 			wantErr: false,
 			wantBoundMethods: map[string]map[string][]*BoundMethod{
 				"main": {

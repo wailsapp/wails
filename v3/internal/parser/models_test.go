@@ -12,8 +12,9 @@ import (
 func TestGenerateModels(t *testing.T) {
 
 	tests := []struct {
-		dir  string
-		want string
+		dir          string
+		want         string
+		useInterface bool
 	}{
 		{
 			dir: "testdata/function_single",
@@ -50,6 +51,11 @@ func TestGenerateModels(t *testing.T) {
 			dir:  "testdata/enum",
 			want: getFile("testdata/enum/models.ts"),
 		},
+		{
+			dir:          "testdata/enum-interface",
+			want:         getFile("testdata/enum-interface/models.ts"),
+			useInterface: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.dir, func(t *testing.T) {
@@ -60,7 +66,9 @@ func TestGenerateModels(t *testing.T) {
 			}
 
 			// Generate Models
-			got, err := GenerateModels(project.Models, project.Types, &flags.GenerateBindingsOptions{})
+			got, err := GenerateModels(project.Models, project.Types, &flags.GenerateBindingsOptions{
+				UseInterfaces: tt.useInterface,
+			})
 			if err != nil {
 				t.Fatalf("GenerateModels() error = %v", err)
 			}
