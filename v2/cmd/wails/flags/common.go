@@ -62,7 +62,7 @@ func (t Target) String() string {
 	return t.Platform
 }
 
-func parseTargets(platform string) TargetsCollection {
+func parseTargets(platform string) (TargetsCollection, error) {
 	allowedPlatforms := map[string]bool{
 		"windows": true,
 		"linux":   true,
@@ -71,7 +71,7 @@ func parseTargets(platform string) TargetsCollection {
 
 	if !allowedPlatforms[platform] {
 		pterm.Error.Println("platform argument must be one of 'windows', 'linux', or 'darwin'")
-		os.Exit(1)
+		return nil, fmt.Errorf("invalid platform argument: %s", platform)
 	}
 
 	var result []Target
@@ -99,5 +99,5 @@ func parseTargets(platform string) TargetsCollection {
 		result = append(result, target)
 	})
 
-	return result
+	return result, nil
 }
