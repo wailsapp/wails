@@ -6,15 +6,12 @@
  * @typedef {import('./models').main.Person} mainPerson
  */
 
-
-window.go = window.go || {};
-window.go.main = {
-    GreetService: {
+export const GreetService = {
 
 		/**
 		 * GreetService.ArrayInt
 		 *
-		 * @param _in {number[]}
+         * @param _in {number[]}
 		 * @returns {Promise<void>}
 		 **/
 	    ArrayInt: function(_in) { return wails.CallByID(3862002418, ...Array.prototype.slice.call(arguments, 0)); },
@@ -22,7 +19,7 @@ window.go.main = {
 		/**
 		 * GreetService.BoolInBoolOut
 		 *
-		 * @param _in {boolean}
+         * @param _in {boolean}
 		 * @returns {Promise<boolean>}
 		 **/
 	    BoolInBoolOut: function(_in) { return wails.CallByID(2424639793, ...Array.prototype.slice.call(arguments, 0)); },
@@ -30,7 +27,7 @@ window.go.main = {
 		/**
 		 * GreetService.Float32InFloat32Out
 		 *
-		 * @param _in {number}
+         * @param _in {number}
 		 * @returns {Promise<number>}
 		 **/
 	    Float32InFloat32Out: function(_in) { return wails.CallByID(3132595881, ...Array.prototype.slice.call(arguments, 0)); },
@@ -38,7 +35,7 @@ window.go.main = {
 		/**
 		 * GreetService.Float64InFloat64Out
 		 *
-		 * @param _in {number}
+         * @param _in {number}
 		 * @returns {Promise<number>}
 		 **/
 	    Float64InFloat64Out: function(_in) { return wails.CallByID(2182412247, ...Array.prototype.slice.call(arguments, 0)); },
@@ -46,7 +43,7 @@ window.go.main = {
 		/**
 		 * GreetService.Greet
 		 * Greet someone
-		 * @param name {string}
+         * @param name {string}
 		 * @returns {Promise<string>}
 		 **/
 	    Greet: function(name) { return wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0)); },
@@ -54,7 +51,7 @@ window.go.main = {
 		/**
 		 * GreetService.Int16InIntOut
 		 *
-		 * @param _in {number}
+         * @param _in {number}
 		 * @returns {Promise<number>}
 		 **/
 	    Int16InIntOut: function(_in) { return wails.CallByID(3306292566, ...Array.prototype.slice.call(arguments, 0)); },
@@ -62,7 +59,7 @@ window.go.main = {
 		/**
 		 * GreetService.Int16PointerInAndOutput
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null>}
 		 **/
 	    Int16PointerInAndOutput: function(_in) { return wails.CallByID(1754277916, ...Array.prototype.slice.call(arguments, 0)); },
@@ -70,7 +67,7 @@ window.go.main = {
 		/**
 		 * GreetService.Int32InIntOut
 		 *
-		 * @param _in {number}
+         * @param _in {number}
 		 * @returns {Promise<number>}
 		 **/
 	    Int32InIntOut: function(_in) { return wails.CallByID(1909469092, ...Array.prototype.slice.call(arguments, 0)); },
@@ -78,7 +75,7 @@ window.go.main = {
 		/**
 		 * GreetService.Int32PointerInAndOutput
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null>}
 		 **/
 	    Int32PointerInAndOutput: function(_in) { return wails.CallByID(4251088558, ...Array.prototype.slice.call(arguments, 0)); },
@@ -86,7 +83,7 @@ window.go.main = {
 		/**
 		 * GreetService.Int64InIntOut
 		 *
-		 * @param _in {number}
+         * @param _in {number}
 		 * @returns {Promise<number>}
 		 **/
 	    Int64InIntOut: function(_in) { return wails.CallByID(1343888303, ...Array.prototype.slice.call(arguments, 0)); },
@@ -94,7 +91,7 @@ window.go.main = {
 		/**
 		 * GreetService.Int64PointerInAndOutput
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null>}
 		 **/
 	    Int64PointerInAndOutput: function(_in) { return wails.CallByID(2205561041, ...Array.prototype.slice.call(arguments, 0)); },
@@ -102,7 +99,7 @@ window.go.main = {
 		/**
 		 * GreetService.Int8InIntOut
 		 *
-		 * @param _in {number}
+         * @param _in {number}
 		 * @returns {Promise<number>}
 		 **/
 	    Int8InIntOut: function(_in) { return wails.CallByID(572240879, ...Array.prototype.slice.call(arguments, 0)); },
@@ -110,7 +107,7 @@ window.go.main = {
 		/**
 		 * GreetService.Int8PointerInAndOutput
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null>}
 		 **/
 	    Int8PointerInAndOutput: function(_in) { return wails.CallByID(2189402897, ...Array.prototype.slice.call(arguments, 0)); },
@@ -118,7 +115,7 @@ window.go.main = {
 		/**
 		 * GreetService.IntInIntOut
 		 *
-		 * @param _in {number}
+         * @param _in {number}
 		 * @returns {Promise<number>}
 		 **/
 	    IntInIntOut: function(_in) { return wails.CallByID(642881729, ...Array.prototype.slice.call(arguments, 0)); },
@@ -126,7 +123,7 @@ window.go.main = {
 		/**
 		 * GreetService.IntPointerInAndOutput
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null>}
 		 **/
 	    IntPointerInAndOutput: function(_in) { return wails.CallByID(1066151743, ...Array.prototype.slice.call(arguments, 0)); },
@@ -134,7 +131,7 @@ window.go.main = {
 		/**
 		 * GreetService.IntPointerInputNamedOutputs
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null, void>}
 		 **/
 	    IntPointerInputNamedOutputs: function(_in) { return wails.CallByID(2718999663, ...Array.prototype.slice.call(arguments, 0)); },
@@ -142,7 +139,7 @@ window.go.main = {
 		/**
 		 * GreetService.MapIntInt
 		 *
-		 * @param _in {map}
+         * @param _in {map}
 		 * @returns {Promise<void>}
 		 **/
 	    MapIntInt: function(_in) { return wails.CallByID(2386486356, ...Array.prototype.slice.call(arguments, 0)); },
@@ -150,7 +147,7 @@ window.go.main = {
 		/**
 		 * GreetService.MapIntPointerInt
 		 *
-		 * @param _in {map}
+         * @param _in {map}
 		 * @returns {Promise<void>}
 		 **/
 	    MapIntPointerInt: function(_in) { return wails.CallByID(550413585, ...Array.prototype.slice.call(arguments, 0)); },
@@ -158,7 +155,7 @@ window.go.main = {
 		/**
 		 * GreetService.MapIntSliceInt
 		 *
-		 * @param _in {map}
+         * @param _in {map}
 		 * @returns {Promise<void>}
 		 **/
 	    MapIntSliceInt: function(_in) { return wails.CallByID(2900172572, ...Array.prototype.slice.call(arguments, 0)); },
@@ -166,7 +163,7 @@ window.go.main = {
 		/**
 		 * GreetService.MapIntSliceIntInMapIntSliceIntOut
 		 *
-		 * @param _in {map}
+         * @param _in {map}
 		 * @returns {Promise<map>}
 		 **/
 	    MapIntSliceIntInMapIntSliceIntOut: function(_in) { return wails.CallByID(881980169, ...Array.prototype.slice.call(arguments, 0)); },
@@ -174,7 +171,7 @@ window.go.main = {
 		/**
 		 * GreetService.NoInputsStringOut
 		 *
-		 *
+         *
 		 * @returns {Promise<string>}
 		 **/
 	    NoInputsStringOut: function() { return wails.CallByID(1075577233, ...Array.prototype.slice.call(arguments, 0)); },
@@ -182,7 +179,7 @@ window.go.main = {
 		/**
 		 * GreetService.PointerBoolInBoolOut
 		 *
-		 * @param _in {boolean | null}
+         * @param _in {boolean | null}
 		 * @returns {Promise<boolean | null>}
 		 **/
 	    PointerBoolInBoolOut: function(_in) { return wails.CallByID(3589606958, ...Array.prototype.slice.call(arguments, 0)); },
@@ -190,7 +187,7 @@ window.go.main = {
 		/**
 		 * GreetService.PointerFloat32InFloat32Out
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null>}
 		 **/
 	    PointerFloat32InFloat32Out: function(_in) { return wails.CallByID(224675106, ...Array.prototype.slice.call(arguments, 0)); },
@@ -198,7 +195,7 @@ window.go.main = {
 		/**
 		 * GreetService.PointerFloat64InFloat64Out
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null>}
 		 **/
 	    PointerFloat64InFloat64Out: function(_in) { return wails.CallByID(2124953624, ...Array.prototype.slice.call(arguments, 0)); },
@@ -206,7 +203,7 @@ window.go.main = {
 		/**
 		 * GreetService.PointerMapIntInt
 		 *
-		 * @param _in {map | null}
+         * @param _in {map | null}
 		 * @returns {Promise<void>}
 		 **/
 	    PointerMapIntInt: function(_in) { return wails.CallByID(3516977899, ...Array.prototype.slice.call(arguments, 0)); },
@@ -214,7 +211,7 @@ window.go.main = {
 		/**
 		 * GreetService.PointerStringInStringOut
 		 *
-		 * @param _in {string | null}
+         * @param _in {string | null}
 		 * @returns {Promise<string | null>}
 		 **/
 	    PointerStringInStringOut: function(_in) { return wails.CallByID(229603958, ...Array.prototype.slice.call(arguments, 0)); },
@@ -222,7 +219,7 @@ window.go.main = {
 		/**
 		 * GreetService.StringArrayInputNamedOutput
 		 *
-		 * @param _in {string[]}
+         * @param _in {string[]}
 		 * @returns {Promise<string[]>}
 		 **/
 	    StringArrayInputNamedOutput: function(_in) { return wails.CallByID(3678582682, ...Array.prototype.slice.call(arguments, 0)); },
@@ -230,7 +227,7 @@ window.go.main = {
 		/**
 		 * GreetService.StringArrayInputNamedOutputs
 		 *
-		 * @param _in {string[]}
+         * @param _in {string[]}
 		 * @returns {Promise<string[], void>}
 		 **/
 	    StringArrayInputNamedOutputs: function(_in) { return wails.CallByID(319259595, ...Array.prototype.slice.call(arguments, 0)); },
@@ -238,7 +235,7 @@ window.go.main = {
 		/**
 		 * GreetService.StringArrayInputStringArrayOut
 		 *
-		 * @param _in {string[]}
+         * @param _in {string[]}
 		 * @returns {Promise<string[]>}
 		 **/
 	    StringArrayInputStringArrayOut: function(_in) { return wails.CallByID(383995060, ...Array.prototype.slice.call(arguments, 0)); },
@@ -246,7 +243,7 @@ window.go.main = {
 		/**
 		 * GreetService.StringArrayInputStringOut
 		 *
-		 * @param _in {string[]}
+         * @param _in {string[]}
 		 * @returns {Promise<string>}
 		 **/
 	    StringArrayInputStringOut: function(_in) { return wails.CallByID(1091960237, ...Array.prototype.slice.call(arguments, 0)); },
@@ -254,7 +251,7 @@ window.go.main = {
 		/**
 		 * GreetService.StructInputStructOutput
 		 *
-		 * @param _in {mainPerson}
+         * @param _in {mainPerson}
 		 * @returns {Promise<mainPerson>}
 		 **/
 	    StructInputStructOutput: function(_in) { return wails.CallByID(3835643147, ...Array.prototype.slice.call(arguments, 0)); },
@@ -262,7 +259,7 @@ window.go.main = {
 		/**
 		 * GreetService.StructPointerInputErrorOutput
 		 *
-		 * @param _in {mainPerson | null}
+         * @param _in {mainPerson | null}
 		 * @returns {Promise<void>}
 		 **/
 	    StructPointerInputErrorOutput: function(_in) { return wails.CallByID(2447692557, ...Array.prototype.slice.call(arguments, 0)); },
@@ -270,7 +267,7 @@ window.go.main = {
 		/**
 		 * GreetService.StructPointerInputStructPointerOutput
 		 *
-		 * @param _in {mainPerson | null}
+         * @param _in {mainPerson | null}
 		 * @returns {Promise<mainPerson>}
 		 **/
 	    StructPointerInputStructPointerOutput: function(_in) { return wails.CallByID(2943477349, ...Array.prototype.slice.call(arguments, 0)); },
@@ -278,7 +275,7 @@ window.go.main = {
 		/**
 		 * GreetService.UInt16InUIntOut
 		 *
-		 * @param _in {number}
+         * @param _in {number}
 		 * @returns {Promise<number>}
 		 **/
 	    UInt16InUIntOut: function(_in) { return wails.CallByID(3401034892, ...Array.prototype.slice.call(arguments, 0)); },
@@ -286,7 +283,7 @@ window.go.main = {
 		/**
 		 * GreetService.UInt16PointerInAndOutput
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null>}
 		 **/
 	    UInt16PointerInAndOutput: function(_in) { return wails.CallByID(1236957573, ...Array.prototype.slice.call(arguments, 0)); },
@@ -294,7 +291,7 @@ window.go.main = {
 		/**
 		 * GreetService.UInt32InUIntOut
 		 *
-		 * @param _in {number}
+         * @param _in {number}
 		 * @returns {Promise<number>}
 		 **/
 	    UInt32InUIntOut: function(_in) { return wails.CallByID(1160383782, ...Array.prototype.slice.call(arguments, 0)); },
@@ -302,7 +299,7 @@ window.go.main = {
 		/**
 		 * GreetService.UInt32PointerInAndOutput
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null>}
 		 **/
 	    UInt32PointerInAndOutput: function(_in) { return wails.CallByID(1739300671, ...Array.prototype.slice.call(arguments, 0)); },
@@ -310,7 +307,7 @@ window.go.main = {
 		/**
 		 * GreetService.UInt64InUIntOut
 		 *
-		 * @param _in {number}
+         * @param _in {number}
 		 * @returns {Promise<number>}
 		 **/
 	    UInt64InUIntOut: function(_in) { return wails.CallByID(793803239, ...Array.prototype.slice.call(arguments, 0)); },
@@ -318,7 +315,7 @@ window.go.main = {
 		/**
 		 * GreetService.UInt64PointerInAndOutput
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null>}
 		 **/
 	    UInt64PointerInAndOutput: function(_in) { return wails.CallByID(1403757716, ...Array.prototype.slice.call(arguments, 0)); },
@@ -326,7 +323,7 @@ window.go.main = {
 		/**
 		 * GreetService.UInt8InUIntOut
 		 *
-		 * @param _in {number}
+         * @param _in {number}
 		 * @returns {Promise<number>}
 		 **/
 	    UInt8InUIntOut: function(_in) { return wails.CallByID(2988345717, ...Array.prototype.slice.call(arguments, 0)); },
@@ -334,7 +331,7 @@ window.go.main = {
 		/**
 		 * GreetService.UInt8PointerInAndOutput
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null>}
 		 **/
 	    UInt8PointerInAndOutput: function(_in) { return wails.CallByID(518250834, ...Array.prototype.slice.call(arguments, 0)); },
@@ -342,7 +339,7 @@ window.go.main = {
 		/**
 		 * GreetService.UIntInUIntOut
 		 *
-		 * @param _in {number}
+         * @param _in {number}
 		 * @returns {Promise<number>}
 		 **/
 	    UIntInUIntOut: function(_in) { return wails.CallByID(2836661285, ...Array.prototype.slice.call(arguments, 0)); },
@@ -350,9 +347,9 @@ window.go.main = {
 		/**
 		 * GreetService.UIntPointerInAndOutput
 		 *
-		 * @param _in {number | null}
+         * @param _in {number | null}
 		 * @returns {Promise<number | null>}
 		 **/
 	    UIntPointerInAndOutput: function(_in) { return wails.CallByID(1367187362, ...Array.prototype.slice.call(arguments, 0)); },
-    },
 };
+

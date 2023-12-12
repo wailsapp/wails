@@ -412,8 +412,8 @@ tasks:
   dev:
     summary: Runs the application in development mode
     preconditions:
-      - sh: wails3 tool checkport -u {{ "\"$WAILS_DEVSERVER_URL\"" }}
-        msg: "Looks like the devserver isn't available. Please ensure you have run `wails3 task dev:frontend` in another terminal."
+      - sh: wails3 tool checkport -u {{ "\"$FRONTEND_DEVSERVER_URL\"" }}
+        msg: 'Cannot connect to frontend dev server ({{ "$FRONTEND_DEVSERVER_URL" }}). Please ensure you have run `wails3 dev:frontend` in another terminal.'
     cmds:
       - wails3 tool watcher -path {{ "{{.PATH}}" }} -preexec {{ "\"{{.PREEXEC}}\""}} {{ "{{.PREWAIT}}" }} -postexec {{ "\"{{.POSTEXEC}}\"" }} -ignorefiles {{ "{{.IGNOREFILES}}" }} -ignoredirs {{ "{{.IGNOREDIRS}}" }} -ignoreextensions {{ "{{.IGNOREEXTENSIONS}}" }} -exec {{ "\"{{.EXEC}}\"" }} -debounce {{ "{{.DEBOUNCE}}" }}
     vars:
@@ -423,12 +423,12 @@ tasks:
       EXEC: 'wails3 task run'
       POSTEXEC: ''
       IGNOREFILES: 'Taskfile.yml'
-      IGNOREDIRS: '.git,frontend'
+      IGNOREDIRS: '.git,frontend,.idea,.vscode,bin'
       IGNOREEXTENSIONS: '.exe,.syso'
       DEBOUNCE: 1000
     env:
       # This is the default vite dev server port
-      WAILS_DEVSERVER_URL: 'http://localhost:5173'
+      FRONTEND_DEVSERVER_URL: 'http://localhost:5173'
 
   dev:reload:
     summary: Reloads the application

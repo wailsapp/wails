@@ -2,6 +2,7 @@ package parser
 
 import (
 	"github.com/google/go-cmp/cmp"
+	"github.com/wailsapp/wails/v3/internal/flags"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,40 +16,39 @@ func TestGenerateModels(t *testing.T) {
 		want string
 	}{
 		{
-			"testdata/function_single",
-			"",
+			dir: "testdata/function_single",
 		},
 		{
-			"testdata/function_from_imported_package",
-			getFile("testdata/function_from_imported_package/models.ts"),
+			dir:  "testdata/function_from_imported_package",
+			want: getFile("testdata/function_from_imported_package/models.ts"),
 		},
 		{
-			"testdata/variable_single",
-			"",
+			dir: "testdata/variable_single",
 		},
 		{
-			"testdata/variable_single_from_function",
-			"",
+			dir: "testdata/variable_single_from_function",
 		},
 		{
-			"testdata/variable_single_from_other_function",
-			getFile("testdata/variable_single_from_other_function/models.ts"),
+			dir:  "testdata/variable_single_from_other_function",
+			want: getFile("testdata/variable_single_from_other_function/models.ts"),
 		},
 		{
-			"testdata/struct_literal_single",
-			getFile("testdata/struct_literal_single/models.ts"),
+			dir:  "testdata/struct_literal_single",
+			want: getFile("testdata/struct_literal_single/models.ts"),
 		},
 		{
-			"testdata/struct_literal_multiple",
-			"",
+			dir: "testdata/struct_literal_multiple",
 		},
 		{
-			"testdata/struct_literal_multiple_other",
-			getFile("testdata/struct_literal_multiple_other/models.ts"),
+			dir:  "testdata/struct_literal_multiple_other",
+			want: getFile("testdata/struct_literal_multiple_other/models.ts"),
 		},
 		{
-			"testdata/struct_literal_multiple_files",
-			"",
+			dir: "testdata/struct_literal_multiple_files",
+		},
+		{
+			dir:  "testdata/enum",
+			want: getFile("testdata/enum/models.ts"),
 		},
 	}
 	for _, tt := range tests {
@@ -60,7 +60,7 @@ func TestGenerateModels(t *testing.T) {
 			}
 
 			// Generate Models
-			got, err := GenerateModels(project.Models)
+			got, err := GenerateModels(project.Models, project.Types, &flags.GenerateBindingsOptions{})
 			if err != nil {
 				t.Fatalf("GenerateModels() error = %v", err)
 			}

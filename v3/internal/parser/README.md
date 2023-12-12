@@ -58,6 +58,9 @@ This package contains the static analyser used for parsing Wails projects so tha
   - [ ] Maps
   - [x] Structs
 - [ ] Generation of bindings
+  - [ ] Classes
+  - [ ] Interfaces
+  - [ ] Enums
 
 ## Limitations
 

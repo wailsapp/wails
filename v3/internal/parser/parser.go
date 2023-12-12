@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/flags"
 	"go/ast"
 	"go/build"
 	"go/parser"
@@ -12,6 +13,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/hash"
@@ -26,14 +28,37 @@ type StructDef struct {
 	Fields     []*Field
 }
 
+func (s *StructDef) DefaultValueList() string {
+	var allFields []string
+	for _, field := range s.Fields {
+		thisFieldWithDefaultValue := fmt.Sprintf("%s = %s", field.JSName(), field.DefaultValue())
+		allFields = append(allFields, thisFieldWithDefaultValue)
+	}
+	return strings.Join(allFields, ", ")
+}
+
 type ParameterType struct {
 	Name      string
 	IsStruct  bool
 	IsSlice   bool
 	IsPointer bool
+	IsEnum    bool
 	MapKey    *ParameterType
 	MapValue  *ParameterType
 	Package   string
+}
+
+type EnumDef struct {
+	Name        string
+	Filename    string
+	DocComments []string
+	Values      []*EnumValue
+}
+
+type EnumValue struct {
+	Name        string
+	Value       string
+	DocComments []string
 }
 
 type Parameter struct {
@@ -73,7 +98,7 @@ func (p *Parameter) JSType() string {
 	}
 
 	// if the type is a struct, we need to add the package name
-	if p.Type.IsStruct {
+	if p.Type.IsStruct || p.Type.IsEnum {
 		typeName = p.NamespacedStructType()
 		typeName = strings.ReplaceAll(typeName, ".", "")
 	}
@@ -117,7 +142,7 @@ func (f *Field) JSName() string {
 // via assignment for simple types or constructors for structs
 func (f *Field) TSBuild(pkg string) string {
 	if !f.Type.IsStruct {
-		return fmt.Sprintf("source['%s']", f.JSName())
+		return fmt.Sprintf("safeSource['%s']", f.JSName())
 	}
 
 	if f.Type.Package == "" || f.Type.Package == pkg {
@@ -141,7 +166,8 @@ func (f *Field) JSDef(pkg string) string {
 	}
 
 	var result string
-	if f.Type.Package == "" || f.Type.Package == pkg {
+	isExternalStruct := f.Type.Package != "" && f.Type.Package != pkg && f.Type.IsStruct
+	if f.Type.Package == "" || f.Type.Package == pkg || !isExternalStruct {
 		result += fmt.Sprintf("%s: %s;", f.JSName(), jsType)
 	} else {
 		parts := strings.Split(f.Type.Package, "/")
@@ -155,12 +181,45 @@ func (f *Field) JSDef(pkg string) string {
 	return result
 }
 
+func (f *Field) DefaultValue() string {
+	// Return the default value of the typescript version of the type as a string
+	switch f.Type.Name {
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uintptr", "float32", "float64", "uint64":
+		return "0"
+	case "string":
+		return `""`
+	case "bool":
+		return "false"
+	default:
+		return "null"
+	}
+}
+
+type ConstDef struct {
+	Name       string
+	DocComment string
+	Value      string
+}
+
+type TypeDef struct {
+	Name           string
+	DocComments    []string
+	Type           string
+	Consts         []*ConstDef
+	ShouldGenerate bool
+}
+
+func (t *TypeDef) GeneratedName() string {
+	return t.Name + "Enum"
+}
+
 type ParsedPackage struct {
 	Pkg         *ast.Package
 	Name        string
 	Path        string
 	Dir         string
 	StructCache map[structName]*StructDef
+	TypeCache   map[string]*TypeDef
 }
 
 type Project struct {
@@ -168,7 +227,19 @@ type Project struct {
 	Path                     string
 	BoundMethods             map[packagePath]map[structName][]*BoundMethod
 	Models                   map[packagePath]map[structName]*StructDef
+	Types                    map[packagePath]map[structName]*TypeDef
 	anonymousStructIDCounter int
+	Stats                    Stats
+}
+
+type Stats struct {
+	NumPackages int
+	NumStructs  int
+	NumMethods  int
+	NumEnums    int
+	NumModels   int
+	StartTime   time.Time
+	EndTime     time.Time
 }
 
 func ParseProject(projectPath string) (*Project, error) {
@@ -176,6 +247,7 @@ func ParseProject(projectPath string) (*Project, error) {
 		BoundMethods: make(map[packagePath]map[structName][]*BoundMethod),
 		packageCache: make(map[string]*ParsedPackage),
 	}
+	result.Stats.StartTime = time.Now()
 	pkgs, err := result.parseDirectory(projectPath)
 	if err != nil {
 		return nil, err
@@ -195,8 +267,8 @@ func ParseProject(projectPath string) (*Project, error) {
 	return result, nil
 }
 
-func GenerateBindingsAndModels(projectDir string, outputDir string) error {
-	p, err := ParseProject(projectDir)
+func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) error {
+	p, err := ParseProject(options.ProjectDirectory)
 	if err != nil {
 		return err
 	}
@@ -204,43 +276,64 @@ func GenerateBindingsAndModels(projectDir string, outputDir string) error {
 	if p.BoundMethods == nil {
 		return nil
 	}
-	err = os.MkdirAll(outputDir, 0755)
+	err = os.MkdirAll(options.OutputDirectory, 0755)
 	if err != nil {
 		return err
 	}
+	p.Stats.NumMethods = len(p.BoundMethods)
 	generatedMethods := GenerateBindings(p.BoundMethods)
 	for pkg, text := range generatedMethods {
 		// Write the file
-		err = os.WriteFile(filepath.Join(outputDir, "bindings_"+pkg+".js"), []byte(text), 0644)
+		err = os.WriteFile(filepath.Join(options.OutputDirectory, pkg+".js"), []byte(text), 0644)
 		if err != nil {
 			return err
 		}
 	}
+
+	p.Stats.NumModels = len(p.Models)
+	p.Stats.NumEnums = len(p.Types)
 
 	// Generate Models
 	if len(p.Models) > 0 {
-		generatedModels, err := GenerateModels(p.Models)
+		generatedModels, err := GenerateModels(p.Models, p.Types, options)
 		if err != nil {
 			return err
 		}
-		err = os.WriteFile(filepath.Join(outputDir, "models.ts"), []byte(generatedModels), 0644)
+		err = os.WriteFile(filepath.Join(options.OutputDirectory, options.ModelsFilename), []byte(generatedModels), 0644)
 		if err != nil {
 			return err
 		}
 	}
 
-	absPath, err := filepath.Abs(projectDir)
+	p.Stats.EndTime = time.Now()
+
+	absPath, err := filepath.Abs(options.ProjectDirectory)
 	if err != nil {
 		return err
 	}
-	println("Generated bindings and models for project: " + absPath)
-	absPath, err = filepath.Abs(outputDir)
+
+	fmt.Printf("Processed: %s, %s, %s, %s, %s in %s.\n",
+		pluralise(p.Stats.NumPackages, "Package"),
+		pluralise(p.Stats.NumStructs, "Struct"),
+		pluralise(p.Stats.NumMethods, "Method"),
+		pluralise(p.Stats.NumEnums, "Enum"),
+		pluralise(p.Stats.NumModels, "Model"),
+		p.Stats.EndTime.Sub(p.Stats.StartTime).String())
+
+	absPath, err = filepath.Abs(options.OutputDirectory)
 	if err != nil {
 		return err
 	}
 	println("Output directory: " + absPath)
 
 	return nil
+}
+
+func pluralise(number int, word string) string {
+	if number == 1 {
+		return fmt.Sprintf("%d %s", number, word)
+	}
+	return fmt.Sprintf("%d %ss", number, word)
 }
 
 func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) {
@@ -261,6 +354,7 @@ func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) 
 		return nil, err
 	}
 	var result = make(map[string]*ParsedPackage)
+	p.Stats.NumPackages = len(pkgs)
 	for packageName, pkg := range pkgs {
 		parsedPackage := &ParsedPackage{
 			Pkg:         pkg,
@@ -268,6 +362,7 @@ func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) 
 			Path:        packageName,
 			Dir:         getDirectoryForPackage(pkg),
 			StructCache: make(map[structName]*StructDef),
+			TypeCache:   make(map[string]*TypeDef),
 		}
 		p.packageCache[packageName] = parsedPackage
 		result[packageName] = parsedPackage
@@ -285,6 +380,28 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 		for _, file := range thisPackage.Files {
 			// Use an ast.Inspector to find the calls to application.New
 			ast.Inspect(file, func(n ast.Node) bool {
+				// Check for const declaration
+				genDecl, ok := n.(*ast.GenDecl)
+				if ok {
+					switch genDecl.Tok {
+					case token.TYPE:
+						var comments []string
+						if genDecl.Doc != nil {
+							comments = CommentGroupToText(genDecl.Doc)
+						}
+						for _, spec := range genDecl.Specs {
+							if typeSpec, ok := spec.(*ast.TypeSpec); ok {
+								p.parseTypeDeclaration(typeSpec, pkg, comments)
+							}
+						}
+					case token.CONST:
+						p.parseConstDeclaration(genDecl, pkg)
+					default:
+					}
+					return true
+
+				}
+
 				// Check if the node is a call expression
 				callExpr, ok := n.(*ast.CallExpr)
 				if !ok {
@@ -372,6 +489,7 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 				return true
 			})
 		}
+		p.addTypes(pkg.Path, pkg.TypeCache)
 		if !callFound {
 			return fmt.Errorf("no Bound structs found")
 		}
@@ -443,7 +561,7 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 					method := &BoundMethod{
 						ID:         id,
 						Name:       funcDecl.Name.Name,
-						DocComment: funcDecl.Doc.Text(),
+						DocComment: strings.TrimSpace(funcDecl.Doc.Text()),
 						Alias:      alias,
 					}
 
@@ -462,6 +580,20 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 	}
 	p.addBoundMethods(pkg.Path, name, methods)
 	return nil
+}
+
+func (p *Project) addTypes(packagePath string, types map[string]*TypeDef) {
+	if types == nil || len(types) == 0 {
+		return
+	}
+	if p.Types == nil {
+		p.Types = make(map[string]map[string]*TypeDef)
+	}
+	_, ok := p.Types[packagePath]
+	if !ok {
+		p.Types[packagePath] = make(map[string]*TypeDef)
+	}
+	p.Types[packagePath] = types
 }
 
 func (p *Project) parseParameters(params *ast.FieldList, pkg *ParsedPackage) []*Parameter {
@@ -489,11 +621,21 @@ func (p *Project) parseParameters(params *ast.FieldList, pkg *ParsedPackage) []*
 }
 
 func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *ParameterType {
-	result := &ParameterType{}
+	result := &ParameterType{
+		Package: pkg.Path,
+	}
 	result.Name = getTypeString(field.Type)
 	switch t := field.Type.(type) {
 	case *ast.Ident:
 		result.IsStruct = isStructType(t)
+		if !result.IsStruct {
+			// Check if it's a type alias
+			typeDef, ok := pkg.TypeCache[t.Name]
+			if ok {
+				typeDef.ShouldGenerate = true
+				result.IsEnum = true
+			}
+		}
 	case *ast.StarExpr:
 		result = p.parseParameterType(&ast.Field{Type: t.X}, pkg)
 		result.IsPointer = true
@@ -597,9 +739,9 @@ func (p *Project) parseStructFields(structType *ast.StructType, pkg *ParsedPacka
 				if !ok {
 					p.getStructDef(paramType.Name, pkg)
 				}
-				if paramType.Package == "" {
-					paramType.Package = pkg.Path
-				}
+			}
+			if paramType.Package == "" {
+				paramType.Package = pkg.Path
 			}
 			thisField.Type = paramType
 			result = append(result, thisField)
@@ -822,6 +964,72 @@ func (p *Project) getFunctionFromName(name string, parsedPackage *ParsedPackage)
 	return nil, fmt.Errorf("function not found")
 }
 
+func (p *Project) parseTypeDeclaration(decl *ast.TypeSpec, pkg *ParsedPackage, comments []string) {
+	switch t := decl.Type.(type) {
+	case *ast.Ident:
+		switch t.Name {
+		case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64",
+			"uintptr", "float32", "float64", "string", "bool":
+			// Store this in the type cache
+			pkg.TypeCache[decl.Name.Name] = &TypeDef{
+				Name:        decl.Name.Name,
+				Type:        t.Name,
+				DocComments: TrimSlice(comments),
+			}
+		}
+	}
+}
+
+func (p *Project) parseConstDeclaration(decl *ast.GenDecl, pkg *ParsedPackage) {
+	// Check if the type of the constant is in the type cache and if it doesn't exist, return
+	var latestValues []ast.Expr
+
+	for _, spec := range decl.Specs {
+		valueSpec, ok := spec.(*ast.ValueSpec)
+		if !ok {
+			continue
+		}
+		// Extract the Type
+		typeString := getTypeString(valueSpec.Type)
+		if typeString == "" {
+			continue
+		}
+		// Check if the type is in the type cache
+		typeDecl, ok := pkg.TypeCache[typeString]
+		if !ok {
+			continue
+		}
+
+		// Get the latest values
+		if len(valueSpec.Values) > 0 {
+			latestValues = valueSpec.Values
+		}
+
+		// Iterate over the names
+		for index, name := range valueSpec.Names {
+			constDecl := &ConstDef{
+				Name:  name.Name,
+				Value: typeString,
+			}
+
+			// Get the value
+			if len(latestValues) > 0 {
+				switch t := latestValues[index].(type) {
+				case *ast.BasicLit:
+					constDecl.Value = t.Value
+				case *ast.Ident:
+					constDecl.Value = t.Name
+				}
+			}
+
+			if valueSpec.Doc != nil {
+				constDecl.DocComment = strings.TrimSpace(valueSpec.Doc.Text())
+			}
+			typeDecl.Consts = append(typeDecl.Consts, constDecl)
+		}
+	}
+}
+
 func getTypeString(expr ast.Expr) string {
 	switch t := expr.(type) {
 	case *ast.Ident:
@@ -852,7 +1060,10 @@ func isStructType(expr ast.Expr) bool {
 	case *ast.SliceExpr:
 		return isStructType(e.X)
 	case *ast.Ident:
-		return e.Obj != nil && e.Obj.Kind == ast.Typ
+		if e.Obj != nil && e.Obj.Kind == ast.Typ {
+			return isStructType(e.Obj.Decl.(*ast.TypeSpec).Type)
+		}
+		return false
 	default:
 		return false
 	}
@@ -868,4 +1079,22 @@ func getDirectoryForPackage(pkg *ast.Package) string {
 		return abs
 	}
 	return ""
+}
+
+func CommentGroupToText(comments *ast.CommentGroup) []string {
+	if comments == nil {
+		return nil
+	}
+	var result []string
+	for _, comment := range comments.List {
+		result = append(result, strings.TrimSpace(comment.Text))
+	}
+	return result
+}
+
+func TrimSlice(comments []string) []string {
+	for i, comment := range comments {
+		comments[i] = strings.TrimSpace(comment)
+	}
+	return comments
 }

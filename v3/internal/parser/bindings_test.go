@@ -28,6 +28,12 @@ func TestGenerateBindings(t *testing.T) {
 		want map[string]string
 	}{
 		{
+			"testdata/enum",
+			map[string]string{
+				"main": getFile("testdata/enum/bindings_main.js"),
+			},
+		},
+		{
 			"testdata/function_single",
 			map[string]string{
 				"main": getFile("testdata/function_single/bindings_main.js"),

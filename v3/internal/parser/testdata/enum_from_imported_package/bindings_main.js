@@ -6,12 +6,15 @@
  * @typedef {import('./models').main.Person} mainPerson
  */
 
-export const GreetService = {
+
+window.go = window.go || {};
+window.go.main = {
+    GreetService: {
 
 		/**
 		 * GreetService.Greet
 		 * Greet does XYZ
-         * @param name {string}
+		 * @param name {string}
 		 * @returns {Promise<string>}
 		 **/
 	    Greet: function(name) { return wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0)); },
@@ -19,9 +22,9 @@ export const GreetService = {
 		/**
 		 * GreetService.NewPerson
 		 * NewPerson creates a new person
-         * @param name {string}
+		 * @param name {string}
 		 * @returns {Promise<mainPerson>}
 		 **/
 	    NewPerson: function(name) { return wails.CallByID(1661412647, ...Array.prototype.slice.call(arguments, 0)); },
+    },
 };
-

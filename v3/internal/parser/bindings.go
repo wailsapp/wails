@@ -19,10 +19,16 @@ const bindingTemplate = `
 		/**
 		 * {{structName}}.{{methodName}}
 		 *Comments
-		 * @param name {string}
+* @param names {string}
 		 * @returns {Promise<string>}
 		 **/
 	    {{methodName}}: function({{inputs}}) { return wails.CallByID({{ID}}, ...Array.prototype.slice.call(arguments, 0)); },
+`
+
+const enumTemplate = `
+        	export enum {{.EnumName}} {
+        	    {{.EnumValues}}
+        	}
 `
 
 var reservedWords = []string{
@@ -119,18 +125,19 @@ func GenerateBinding(structName string, method *BoundMethod) (string, []string, 
 		pkgName := getPackageName(input)
 		if pkgName != "" {
 			models = append(models, pkgName)
-			if input.Type.IsStruct {
-				nsStruct := input.NamespacedStructType()
-				namespacedStructs = append(namespacedStructs, nsStruct)
-			}
 		}
-		params += " * @param " + inputName + " {" + input.JSType() + "}\n"
+		if input.Type.IsStruct || input.Type.IsEnum {
+			nsStruct := input.NamespacedStructType()
+			namespacedStructs = append(namespacedStructs, nsStruct)
+		}
+
+		params += "         * @param " + inputName + " {" + input.JSType() + "}\n"
 	}
 	params = strings.TrimSuffix(params, "\n")
 	if len(params) == 0 {
-		params = " *"
+		params = "         *"
 	}
-	result = strings.ReplaceAll(result, " * @param name {string}", params)
+	result = strings.ReplaceAll(result, "* @param names {string}", params)
 	var inputs string
 	for _, input := range method.Inputs {
 		pkgName := getPackageName(input)
@@ -232,19 +239,8 @@ func GenerateBindings(bindings map[string]map[string][]*BoundMethod) map[string]
 		packageBindings := bindings[packageName]
 		structNames := lo.Keys(packageBindings)
 		sort.Strings(structNames)
-		result[normalisedPackageNames[packageName]] += `
-window.go = window.go || {};
-`
-		// Iterate over the sorted struct keys
-		result[normalisedPackageNames[packageName]] += "window.go." + normalisedPackageNames[packageName] + " = {\n"
 		for _, structName := range structNames {
-			/**
-			 * The GreetService provides methods to greet a person.
-			 */
-			//result[normalisedPackageNames[packageName]] += "    /**\n"
-			//result[normalisedPackageNames[packageName]] += "     {{structcomments}}\n"
-			//result[normalisedPackageNames[packageName]] += "     */\n"
-			result[normalisedPackageNames[packageName]] += "    " + structName + ": {\n"
+			result[normalisedPackageNames[packageName]] += "export const " + structName + " = {\n"
 			methods := packageBindings[structName]
 			sort.Slice(methods, func(i, j int) bool {
 				return methods[i].Name < methods[j].Name
@@ -255,9 +251,8 @@ window.go = window.go || {};
 				allModels = append(allModels, models...)
 				result[normalisedPackageNames[packageName]] += thisBinding
 			}
-			result[normalisedPackageNames[packageName]] += "    },\n"
+			result[normalisedPackageNames[packageName]] += "};\n\n"
 		}
-		result[normalisedPackageNames[packageName]] += "};\n"
 
 		if len(allNamespacedStructs) > 0 {
 			typedefs := "/**\n"

@@ -1,0 +1,8 @@
+{{$pkg := .Package}}
+export namespace {{.Package}} {
+    {{range $name, $def := .Models}}
+    export interface {{$def.Name}} { {{range $def.Fields}}
+        {{.JSDef $pkg}}{{end}}
+    }
+    {{end}}
+}

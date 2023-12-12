@@ -6,17 +6,14 @@
  * @typedef {import('./models').services.Address} servicesAddress
  */
 
-
-window.go = window.go || {};
-window.go.services = {
-    OtherService: {
+export const OtherService = {
 
 		/**
 		 * OtherService.Yay
 		 *
-		 *
+         *
 		 * @returns {Promise<servicesAddress>}
 		 **/
 	    Yay: function() { return wails.CallByID(302702907, ...Array.prototype.slice.call(arguments, 0)); },
-    },
 };
+

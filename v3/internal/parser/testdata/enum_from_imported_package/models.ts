@@ -4,7 +4,6 @@
 
 export namespace main {
     
-    
     export class Person {
         name: string;
         address: services.Address;
@@ -23,8 +22,8 @@ export namespace main {
     }
     
 }
+
 export namespace services {
-    
     
     export class Address {
         street: string;
