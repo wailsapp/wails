@@ -73,7 +73,7 @@ Examples:
 
 **Bindings**:
 
-{{ read_csv("alpha3-bindings.csv") }}
+{{ read_csv("alpha3-bindings-callbyid.csv") }}
 
 **Models**:
 

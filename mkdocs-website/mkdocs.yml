@@ -60,61 +60,61 @@ plugins:
           default: true
           name: English
           build: true
-        - locale: zh
-          name: 简体中文
-          build: true
-          site_description: Wails 项目 - 使用 Go 构建美观的跨平台应用程序
-          extra:
-            announcement: 这些文档是自动生成的。 如有错误，请告知我们。
-          nav:
-            - 主页: index.md
-            - 入门:
-              #    - 介绍: introduction.md
-              - 安装: getting-started/installation.md
-              #    - 创建项目: getting-started/creating-a-project.md
-              #    - 它是如何工作的: how-does-it-work.md
-              #    - 开发您的应用程序: getting-started/developing-your-application.md
-              #    - 编译您的项目: getting-started/compiling-your-project.md
-              #  - API 参考:
-              #    - 运行时:
-              #      - 介绍: reference/runtime/introduction.md
-              #    - CLI: reference/cli.md
-              #  - 社区:
-              #    - 模板: community/templates.md
-              #    - 指南:
-              #      - Angular: guides/angular.md
-              #    - 展示:
-              #      - Emaillit: community/showcase/emailit.md
-              #    - 贡献: community/contributing.md
-              #    - 链接: community/links.md
-              - 下一步: getting-started/next-steps.md
-              - 反馈: getting-started/feedback.md
-            - 反馈: getting-started/feedback.md
-            - v3 版本中的新内容是什么?: whats-new.md
-            - API:
-                - 应用程序: API/application.md
-                - 窗口: API/window.md
-                - 系统托盘: API/systray.md
-                - 菜单: API/menu.md
-                - 主线程: API/mainthread.md
-                - 完整 API: API/fullapi.md
-            - 开发:
-                - 介绍: development/introduction.md
-                - 状态: development/status.md
-                - v3 变更: development/changes.md
-            - 路线图: roadmap.md
-            - 更改日志: changelog.md
-            - 赞助❤️: https://github.com/sponsors/leaanthony
+#        - locale: zh
+#          name: 简体中文
+#          build: true
+#          site_description: Wails 项目 - 使用 Go 构建美观的跨平台应用程序
+#          extra:
+#            announcement: 这些文档是自动生成的。 如有错误，请告知我们。
+#          nav:
+#            - 主页: index.md
+#            - 入门:
+#              #    - 介绍: introduction.md
+#              - 安装: getting-started/installation.md
+#              #    - 创建项目: getting-started/creating-a-project.md
+#              #    - 它是如何工作的: how-does-it-work.md
+#              #    - 开发您的应用程序: getting-started/developing-your-application.md
+#              #    - 编译您的项目: getting-started/compiling-your-project.md
+#              #  - API 参考:
+#              #    - 运行时:
+#              #      - 介绍: reference/runtime/introduction.md
+#              #    - CLI: reference/cli.md
+#              #  - 社区:
+#              #    - 模板: community/templates.md
+#              #    - 指南:
+#              #      - Angular: guides/angular.md
+#              #    - 展示:
+#              #      - Emaillit: community/showcase/emailit.md
+#              #    - 贡献: community/contributing.md
+#              #    - 链接: community/links.md
+#              - 下一步: getting-started/next-steps.md
+#              - 反馈: getting-started/feedback.md
+#            - 反馈: getting-started/feedback.md
+#            - v3 版本中的新内容是什么?: whats-new.md
+#            - API:
+#                - 应用程序: API/application.md
+#                - 窗口: API/window.md
+#                - 系统托盘: API/systray.md
+#                - 菜单: API/menu.md
+#                - 主线程: API/mainthread.md
+#                - 完整 API: API/fullapi.md
+#            - 开发:
+#                - 介绍: development/introduction.md
+#                - 状态: development/status.md
+#                - v3 变更: development/changes.md
+#            - 路线图: roadmap.md
+#            - 更改日志: changelog.md
+#            - 赞助❤️: https://github.com/sponsors/leaanthony
 
 
 extra:
-  alternate:
-    - name: English
-      link: /
-      lang: en
-    - name: 简体中文
-      link: /zh/
-      lang: zh
+#  alternate:
+#    - name: English
+#      link: /
+#      lang: en
+#    - name: 简体中文
+#      link: /zh/
+#      lang: zh
       
   social:
     - icon: fontawesome/brands/github-alt
@@ -148,6 +148,7 @@ nav:
 #      - Emaillit: community/showcase/emailit.md
 #    - Contributing: community/contributing.md
 #    - Links: community/links.md
+    - Your First Application: getting-started/your-first-app.md
     - Next Steps: getting-started/next-steps.md
     - Feedback: getting-started/feedback.md
   - Feedback: getting-started/feedback.md

@@ -1,7 +1,6 @@
-# What's new in v3?
+# What's New in Wails v3 Alpha
 
-!!! note The features that will be included in the v3 release may change from
-this list.
+Wails v3 Alpha moves from the v2's single-window, declarative API to a procedural one. This intuitive API makes code development easier, boosts readability, and unlocks complex multi-window apps. Wails v3 Alpha isn't just an improvement on past versions - it reimagines desktop application development capabilities with Go and modern web technologies.
 
 ## Multiple Windows
 
@@ -335,3 +334,6 @@ An experimental feature to call runtime methods using plain html, similar to
   </body>
 </html>
 ```
+## Examples
+
+There are more examples available in the [examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples) directory. Check them out!
