@@ -1,5 +1,5 @@
-//go:build linux && !qt
-// +build linux,!qt
+//go:build linux
+// +build linux
 
 package linux
 
