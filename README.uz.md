@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  Go & Web Texnologiyasi yordamida ish stoli ilovalarini yarating.
+  Go va Web texnologiyalaridan foydalangan holda ish stoli ilovalarini yarating
   <br/>
   <br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
@@ -64,8 +64,10 @@
 
 ## Kirish
 
-Go dasturlariga veb-interfeyslarni taqdim etishning an'anaviy usuli o'rnatilgan veb-server orqali amalga oshiriladi. Wails boshqa yondashuvni taklif qiladi: u Go kodini ham, veb-frontendni ham bitta binarga o'rash imkoniyatini beradi. Asboblar taqdim etiladi
-Loyihani yaratish, kompilyatsiya qilish va to'plash bilan shug'ullanish orqali buni siz uchun osonlashtiring. Siz qilishingiz kerak bo'lgan narsa - ijodkorlik!
+Odatda, Go dasturlari uchun veb-interfeyslar o'rnatilgan veb-server va veb-brauzerdir.
+Walls boshqacha yondashuvni qo'llaydi: u Go kodini ham, veb-interfeysni ham bitta ikkilik (e.g: EXE)fayliga o'raydi.
+Loyihalarni yaratish, kompilyatsiya qilish va birlashtirishni boshqarish orqali ilovangizni yaratishni osonlashtiradi.
+Hamma narsa faqat sizning tasavvuringiz bilan cheklangan!
 
 ## Xususiyatlari
 
