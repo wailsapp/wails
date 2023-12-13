@@ -41,7 +41,7 @@
 <samp>
 
 [English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
-[한국어](README.ko.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Francais](README.fr.md)
+[한국어](README.ko.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz-oz.md)
 
 </samp>
 </strong>
