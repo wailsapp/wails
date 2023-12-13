@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  Go & Web Technologiyasi yordamida ish stoli ilovalarini yarating.
+  Go & Web Texnologiyasi yordamida ish stoli ilovalarini yarating.
   <br/>
   <br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
