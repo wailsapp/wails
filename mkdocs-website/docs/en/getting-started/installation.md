@@ -13,6 +13,7 @@ go install
 OR
 ```shell
 go install github.com/wailsapp/wails/v3/cmd/wails3@v3-alpha
+Note: You will also need to edit your go.mod file by commenting out the //replace line at the bottom
 ```
 
 ## Supported Platforms
