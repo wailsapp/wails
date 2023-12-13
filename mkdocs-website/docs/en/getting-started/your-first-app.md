@@ -8,7 +8,7 @@ Before you begin, ensure you have the following installed:
 
 - Go (version 1.21 or later)
 - Node.js (LTS version)
-- Wails v3 Alpha (see the [installation guide](/getting-started/installation) for instructions)
+- Wails v3 Alpha (see the [installation guide](installation.md) for instructions)
 
 ## Step 1: Creating a New Project
 
