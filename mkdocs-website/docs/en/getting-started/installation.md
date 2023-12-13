@@ -10,6 +10,10 @@ git checkout v3-alpha
 cd v3/cmd/wails3
 go install
 ```
+OR
+```shell
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3-alpha
+```
 
 ## Supported Platforms
 
