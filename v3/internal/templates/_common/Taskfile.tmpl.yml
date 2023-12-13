@@ -413,7 +413,7 @@ tasks:
     summary: Runs the application in development mode
     preconditions:
       - sh: wails3 tool checkport -u {{ "\"$FRONTEND_DEVSERVER_URL\"" }}
-        msg: 'Cannot connect to frontend dev server ({{ "$FRONTEND_DEVSERVER_URL" }}). Please ensure you have run `wails3 dev:frontend` in another terminal.'
+        msg: 'Cannot connect to frontend dev server ({{ "$FRONTEND_DEVSERVER_URL" }}). Please ensure you have run `wails3 task dev:frontend` in another terminal.'
     cmds:
       - wails3 tool watcher -path {{ "{{.PATH}}" }} -preexec {{ "\"{{.PREEXEC}}\""}} {{ "{{.PREWAIT}}" }} -postexec {{ "\"{{.POSTEXEC}}\"" }} -ignorefiles {{ "{{.IGNOREFILES}}" }} -ignoredirs {{ "{{.IGNOREDIRS}}" }} -ignoreextensions {{ "{{.IGNOREEXTENSIONS}}" }} -exec {{ "\"{{.EXEC}}\"" }} -debounce {{ "{{.DEBOUNCE}}" }}
     vars:
