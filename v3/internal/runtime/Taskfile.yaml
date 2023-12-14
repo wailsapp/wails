@@ -18,6 +18,13 @@ tasks:
     cmds:
       - npx npm-check-updates -u
 
+  build:types:
+    internal: true
+    cmds:
+      - rm -rf desktop/api/types
+      - npx -p typescript tsc desktop/api/*.js --declaration --allowJs --emitDeclarationOnly --outDir desktop/api/types
+      - cp desktop/api/wails.d.ts desktop/api/types/wails.d.ts
+
   build:debug:
     internal: true
     cmds:
@@ -91,6 +98,7 @@ tasks:
   build:all:
     internal: true
     deps:
+      - build:types
       - build:debug:windows
       - build:debug:linux
       - build:debug:darwin

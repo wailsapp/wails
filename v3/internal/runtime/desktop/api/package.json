@@ -3,6 +3,7 @@
   "version": "3.0.0-alpha.4",
   "description": "Wails Runtime API",
   "main": "index.js",
+  "types": "types/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/wailsapp/wails.git"
