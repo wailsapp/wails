@@ -9,14 +9,12 @@ The electron alternative for Go
 */
 /* jshint esversion: 9 */
 
-import * as Clipboard from "./clipboard";
-import * as Application from "./application";
-import * as Screens from "./screens";
-import * as Dialogs from "./dialogs";
-import * as Events from "./events";
-import * as Window from "./window";
-
-export { Clipboard, Application, Screens, Dialogs, Events, Window };
+export * from "./clipboard";
+export * from "./application";
+export * from "./screens";
+export * from "./dialogs";
+export * from "./events";
+export * from "./window";
 
 /**
  * Call a plugin method
