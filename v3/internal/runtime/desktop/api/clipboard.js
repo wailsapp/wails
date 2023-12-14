@@ -24,6 +24,7 @@ export const Clipboard = {
     /**
      * Sets the text on the clipboard
      * @param {string} text - text to set in the clipboard
+     * @returns {Promise<void>}
      */
     SetText: (text) => {
         return wails.Clipboard.SetText(text);

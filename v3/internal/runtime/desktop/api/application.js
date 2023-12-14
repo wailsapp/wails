@@ -16,18 +16,21 @@ The electron alternative for Go
 export const Application = {
     /**
      * Hides the application
+     * @returns {Promise<void>}
      */
     Hide: () => {
         return wails.Application.Hide();
     },
     /**
      * Shows the application
+     * @returns {Promise<void>}
      */
     Show: () => {
         return wails.Application.Show();
     },
     /**
      * Quits the application
+     * @returns {Promise<void>}
      */
     Quit: () => {
         return wails.Application.Quit();

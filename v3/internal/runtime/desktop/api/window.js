@@ -10,6 +10,12 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
+/**
+ * @typedef {import("./wails").Size} Size
+ * @typedef {import("./wails").Position} Position
+ * @typedef {import("./wails").Screen} Screen
+ */
+
 
 /**
  * The Window API provides methods to interact with the window.
@@ -17,21 +23,25 @@ The electron alternative for Go
 export const Window = {
     /**
      * Center the window.
+     * @returns {Promise<void>}
      */
     Center: () => void wails.Window.Center(),
     /**
      * Set the window title.
-     * @param title
+     * @param {string} title
+     * @returns {Promise<void>}
      */
     SetTitle: (title) => void wails.Window.SetTitle(title),
 
     /**
      * Makes the window fullscreen.
+     * @returns {Promise<void>}
      */
     Fullscreen: () => void wails.Window.Fullscreen(),
 
     /**
      * Unfullscreen the window.
+     * @returns {Promise<void>}
      */
     UnFullscreen: () => void wails.Window.UnFullscreen(),
 
@@ -54,6 +64,7 @@ export const Window = {
      * Set the window maximum size.
      * @param {number} width
      * @param {number} height
+     * @returns {Promise<void>}
      */
     SetMaxSize: (width, height) => void wails.Window.SetMaxSize(width, height),
 
@@ -61,12 +72,14 @@ export const Window = {
      * Set the window minimum size.
      * @param {number} width
      * @param {number} height
+     * @returns {Promise<void>}
      */
     SetMinSize: (width, height) => void wails.Window.SetMinSize(width, height),
 
     /**
      * Set window to be always on top.
      * @param {boolean} onTop Whether the window should be always on top
+     * @returns {Promise<void>}
      */
     SetAlwaysOnTop: (onTop) => void wails.Window.SetAlwaysOnTop(onTop),
 
@@ -74,6 +87,7 @@ export const Window = {
      * Set the window position relative to the current monitor.
      * @param {number} x
      * @param {number} y
+     * @returns {Promise<void>}
      */
     SetRelativePosition: (x, y) => void wails.Window.SetRelativePosition(x, y),
 
@@ -89,6 +103,7 @@ export const Window = {
      * Set the absolute window position.
      * @param {number} x
      * @param {number} y
+     * @returns {Promise<void>}
      */
     SetAbsolutePosition: (x, y) => void wails.Window.SetAbsolutePosition(x, y),
 
@@ -110,41 +125,49 @@ export const Window = {
 
     /**
      * Hide the window
+     * @returns {Promise<void>}
      */
     Hide: () => void wails.Window.Hide(),
 
     /**
      * Maximise the window
+     * @returns {Promise<void>}
      */
     Maximise: () => void wails.Window.Maximise(),
 
     /**
      * Show the window
+     * @returns {Promise<void>}
      */
     Show: () => void wails.Window.Show(),
 
     /**
      * Close the window
+     * @returns {Promise<void>}
      */
     Close: () => void wails.Window.Close(),
 
     /**
      * Toggle the window maximise state
+     * @returns {Promise<void>}
      */
     ToggleMaximise: () => void wails.Window.ToggleMaximise(),
 
     /**
      * Unmaximise the window
+     * @returns {Promise<void>}
      */
     UnMaximise: () => void wails.Window.UnMaximise(),
 
     /**
      * Minimise the window
+     * @returns {Promise<void>}
      */
     Minimise: () => void wails.Window.Minimise(),
 
     /**
      * Unminimise the window
+     * @returns {Promise<void>}
      */
     UnMinimise: () => void wails.Window.UnMinimise(),
 
@@ -154,6 +177,7 @@ export const Window = {
      * @param {number} g - The green value between 0 and 255
      * @param {number} b - The blue value between 0 and 255
      * @param {number} a - The alpha value between 0 and 255
+     * @returns {Promise<void>}
      */
     SetBackgroundColour: (r, g, b, a) => void wails.Window.SetBackgroundColour(r, g, b, a),
 };
