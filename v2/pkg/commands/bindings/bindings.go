@@ -57,6 +57,14 @@ func GenerateBindings(options Options) (string, error) {
 		return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 	}
 
+	if runtime.GOOS == "darwin" {
+		// Remove quarantine attribute
+		stdout, stderr, err = shell.RunCommand(workingDirectory, "xattr", "-rc", filename)
+		if err != nil {
+			return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
+		}
+	}
+
 	defer func() {
 		// Best effort removal of temp file
 		_ = os.Remove(filename)
