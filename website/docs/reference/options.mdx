@@ -70,6 +70,7 @@ func main() {
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
             BackdropType:                      windows.Mica,
+            DisablePinchZoom:               false,
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
@@ -576,6 +577,13 @@ The value can be one of the following:
 | Acrylic | Use [Acrylic](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) effect |
 | Mica    | Use [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) effect       |
 | Tabbed  | Use Tabbed. This is a backdrop that is similar to Mica.                                   |
+
+#### DisablePinchZoom
+
+Setting this to `true` will disable pinch zoom gestures.
+
+Name: DisablePinchZoom<br/>
+Type: `bool`
 
 #### DisableWindowIcon
 
