@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [darwin] add getPrimaryScreen/getScreens to impl by @tmclane in
   [#2618](https://github.com/wailsapp/wails/pull/2618)
 - [linux] add onKeyPress logic to convert linux keypress into an accelerator @[Atterpac](https://github.com/Atterpac) in[#3022](https://github.com/wailsapp/wails/pull/3022])
+- [js] add types for npm package and make imports align with the documentation by [@jpatters](https://github.com/jpatters) in [#3131](https://github.com/wailsapp/wails/pull/3131)
 
 ### Fixed
 
