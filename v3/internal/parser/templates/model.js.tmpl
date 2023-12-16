@@ -1,0 +1,41 @@
+{{$pkg := .Package}}
+// Defining the {{$pkg}} namespace
+export const {{$pkg}} = {};
+{{range $enumindex, $enumdef := .Enums}}
+// Simulating the enum with an object
+{{$pkg}}.{{$enumdef.Name}} = {
+    {{- range $constindex, $constdef := .Consts}}
+    {{- if $constdef.DocComment}}
+    // {{$constdef.DocComment}}
+    {{- end}}
+    {{$constdef.Name}}: {{$constdef.Value}},{{end}}
+};
+{{- end}}
+{{range $name, $def := .Models}}
+{{- if $def.DocComment}}
+// {{$def.DocComment}}
+{{- end -}}
+{{$pkg}}.{{$def.Name}} = class {
+    /**
+     * Creates a new {{$def.Name}} instance.
+     * @constructor
+     * @param {Object} source - The source object to create the {{$def.Name}}.
+{{- range $field := $def.Fields}}
+     * @param { {{- .JSDocType $pkg -}} } source.{{$field.Name}}{{end}}
+     */
+    constructor(source = {}) {
+        const { {{$def.DefaultValueList}} } = source;        {{range $def.Fields}}
+        this.{{.JSName}} = {{.JSName}};{{end}}
+    }
+
+    /**
+     * Creates a new {{$def.Name}} instance from a string or object.
+     * @param {string|object} source - The source data to create a {{$def.Name}} instance from.
+     * @returns {{$pkg}}.{{$def.Name}} A new {{$def.Name}} instance.
+     */
+    static createFrom(source = {}) {
+        let parsedSource = typeof source === 'string' ? JSON.parse(source) : source;
+        return new {{$pkg}}.{{$def.Name}}(parsedSource);
+    }
+};
+{{end}}
