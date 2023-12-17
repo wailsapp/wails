@@ -53,8 +53,6 @@ func main() {
         CSSDragValue:      "drag",
         EnableDefaultContextMenu: false,
         EnableFraudulentWebsiteDetection: false,
-        ZoomFactor:           1.0,
-        IsZoomControlEnabled: false,
         Bind: []interface{}{
             app,
         },
@@ -84,12 +82,17 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
+            // ZoomFactor is the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+            ZoomFactor:           float64,
+            // IsZoomControlEnabled enables the zoom factor to be changed by the user.
+            IsZoomControlEnabled: bool,
             // User messages that can be customised
-            Messages *windows.Messages
+            Messages: *windows.Messages
             // OnSuspend is called when Windows enters low power mode
-            OnSuspend func()
+            OnSuspend: func()
             // OnResume is called when Windows resumes from low power mode
-            OnResume func(),
+            OnResume: func(),
+            // Disable GPU hardware acceleration for the webview
 			WebviewGpuDisabled: false,
         },
         Mac: &mac.Options{
