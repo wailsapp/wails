@@ -71,6 +71,10 @@ type Options struct {
 	SkipBindings      bool                 // Skip binding generation
 }
 
+func (o *Options) IsWindowsTargetPlatform() bool {
+	return strings.Contains(strings.ToLower(o.Platform), "windows")
+}
+
 // Build the project!
 func Build(options *Options) (string, error) {
 	// Extract logger
@@ -319,6 +323,20 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		err := builder.CompileProject(options)
 		if err != nil {
 			return "", err
+		}
+	}
+
+	if runtime.GOOS == "darwin" {
+		// Remove quarantine attribute
+		if _, err := os.Stat(options.CompiledBinary); os.IsNotExist(err) {
+			return "", fmt.Errorf("compiled binary does not exist at path: %s", options.CompiledBinary)
+		}
+		stdout, stderr, err := shell.RunCommand(options.BinDirectory, "xattr", "-rc", options.CompiledBinary)
+		if err != nil {
+			return "", fmt.Errorf("%s - %s", err.Error(), stderr)
+		}
+		if options.Verbosity == VERBOSE && stdout != "" {
+			pterm.Info.Println(stdout)
 		}
 	}
 
