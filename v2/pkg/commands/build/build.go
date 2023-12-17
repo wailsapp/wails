@@ -71,6 +71,10 @@ type Options struct {
 	SkipBindings      bool                 // Skip binding generation
 }
 
+func (o *Options) IsWindowsTargetPlatform() bool {
+	return strings.Contains(strings.ToLower(o.Platform), "windows")
+}
+
 // Build the project!
 func Build(options *Options) (string, error) {
 	// Extract logger
