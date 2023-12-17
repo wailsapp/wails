@@ -229,6 +229,7 @@ func GenerateBindings(buildOptions *Options) error {
 
 	// Generate Bindings
 	output, err := bindings.GenerateBindings(bindings.Options{
+		Compiler:     buildOptions.Compiler,
 		Tags:         buildOptions.UserTags,
 		GoModTidy:    !buildOptions.SkipModTidy,
 		TsPrefix:     buildOptions.ProjectData.Bindings.TsGeneration.Prefix,
