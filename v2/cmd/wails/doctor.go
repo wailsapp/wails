@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/shell"
 	"runtime"
 	"runtime/debug"
 	"strconv"
@@ -93,7 +94,14 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 			systemTabledata = append(systemTabledata, []string{prefix, cpu.Model})
 		}
 	} else {
-		systemTabledata = append(systemTabledata, []string{"CPU", "Unknown"})
+		cpuInfo := "Unknown"
+		if runtime.GOOS == "darwin" {
+			// Try to get CPU info from sysctl
+			if stdout, _, err := shell.RunCommand("", "sysctl", "-n", "machdep.cpu.brand_string"); err == nil {
+				cpuInfo = strings.TrimSpace(stdout)
+			}
+		}
+		systemTabledata = append(systemTabledata, []string{"CPU", cpuInfo})
 	}
 
 	// Probe GPU
@@ -112,14 +120,47 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 			systemTabledata = append(systemTabledata, []string{prefix, details})
 		}
 	} else {
-		systemTabledata = append(systemTabledata, []string{"GPU", "Unknown"})
+		gpuInfo := "Unknown"
+		if runtime.GOOS == "darwin" {
+			// Try to get GPU info from system_profiler
+			if stdout, _, err := shell.RunCommand("", "system_profiler", "SPDisplaysDataType"); err == nil {
+				var (
+					startCapturing bool
+					gpuInfoDetails []string
+				)
+				for _, line := range strings.Split(stdout, "\n") {
+					if strings.Contains(line, "Chipset Model") {
+						startCapturing = true
+					}
+					if startCapturing {
+						gpuInfoDetails = append(gpuInfoDetails, strings.TrimSpace(line))
+					}
+					if strings.Contains(line, "Metal Support") {
+						break
+					}
+				}
+				if len(gpuInfoDetails) > 0 {
+					gpuInfo = strings.Join(gpuInfoDetails, " ")
+				}
+			}
+		}
+		systemTabledata = append(systemTabledata, []string{"GPU", gpuInfo})
 	}
 
 	memory, _ := ghw.Memory()
 	if memory != nil {
 		systemTabledata = append(systemTabledata, []string{"Memory", strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"})
 	} else {
-		systemTabledata = append(systemTabledata, []string{"Memory", "Unknown"})
+		memInfo := "Unknown"
+		if runtime.GOOS == "darwin" {
+			// Try to get Memory info from sysctl
+			if stdout, _, err := shell.RunCommand("", "sysctl", "-n", "hw.memsize"); err == nil {
+				if memSize, err := strconv.Atoi(strings.TrimSpace(stdout)); err == nil {
+					memInfo = strconv.Itoa(memSize/1024/1024/1024) + "GB"
+				}
+			}
+		}
+		systemTabledata = append(systemTabledata, []string{"Memory", memInfo})
 	}
 
 	err = pterm.DefaultTable.WithBoxed().WithData(systemTabledata).Render()
