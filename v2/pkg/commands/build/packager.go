@@ -3,12 +3,14 @@ package build
 import (
 	"bytes"
 	"fmt"
-	"github.com/leaanthony/winicon"
-	"github.com/tc-hib/winres"
-	"github.com/tc-hib/winres/version"
 	"image"
 	"os"
 	"path/filepath"
+
+	"github.com/leaanthony/winicon"
+	"github.com/tc-hib/winres"
+	"github.com/tc-hib/winres/version"
+	"github.com/wailsapp/wails/v2/internal/project"
 
 	"github.com/jackmordaunt/icns"
 	"github.com/pkg/errors"
@@ -19,7 +21,6 @@ import (
 
 // PackageProject packages the application
 func packageProject(options *Options, platform string) error {
-
 	var err error
 	switch platform {
 	case "darwin":
@@ -41,7 +42,6 @@ func packageProject(options *Options, platform string) error {
 
 // cleanBinDirectory will remove an existing bin directory and recreate it
 func cleanBinDirectory(options *Options) error {
-
 	buildDirectory := options.BinDirectory
 
 	// Clear out old builds
@@ -53,7 +53,7 @@ func cleanBinDirectory(options *Options) error {
 	}
 
 	// Create clean directory
-	err := os.MkdirAll(buildDirectory, 0700)
+	err := os.MkdirAll(buildDirectory, 0o700)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,6 @@ func cleanBinDirectory(options *Options) error {
 }
 
 func packageApplicationForDarwin(options *Options) error {
-
 	var err error
 
 	// Create directory structure
@@ -73,12 +72,12 @@ func packageApplicationForDarwin(options *Options) error {
 
 	contentsDirectory := filepath.Join(options.BinDirectory, bundlename, "/Contents")
 	exeDir := filepath.Join(contentsDirectory, "/MacOS")
-	err = fs.MkDirs(exeDir, 0755)
+	err = fs.MkDirs(exeDir, 0o755)
 	if err != nil {
 		return err
 	}
 	resourceDir := filepath.Join(contentsDirectory, "/Resources")
-	err = fs.MkDirs(resourceDir, 0755)
+	err = fs.MkDirs(resourceDir, 0o755)
 	if err != nil {
 		return err
 	}
@@ -95,10 +94,18 @@ func packageApplicationForDarwin(options *Options) error {
 		return err
 	}
 
-	// Generate Icons
-	err = processApplicationIcon(options, resourceDir)
+	// Generate App Icon
+	err = processDarwinIcon(options.ProjectData, "appicon", resourceDir, "iconfile")
 	if err != nil {
 		return err
+	}
+
+	// Generate FileAssociation Icons
+	for _, fileAssociation := range options.ProjectData.Info.FileAssociations {
+		err = processDarwinIcon(options.ProjectData, fileAssociation.IconName, resourceDir, "")
+		if err != nil {
+			return err
+		}
 	}
 
 	options.CompiledBinary = packedBinaryPath
@@ -107,7 +114,6 @@ func packageApplicationForDarwin(options *Options) error {
 }
 
 func processPList(options *Options, contentsDirectory string) error {
-
 	sourcePList := "Info.plist"
 	if options.Mode == Dev {
 		// Use Info.dev.plist if using build mode
@@ -121,11 +127,11 @@ func processPList(options *Options, contentsDirectory string) error {
 	}
 
 	targetFile := filepath.Join(contentsDirectory, "Info.plist")
-	return os.WriteFile(targetFile, content, 0644)
+	return os.WriteFile(targetFile, content, 0o644)
 }
 
-func processApplicationIcon(options *Options, resourceDir string) (err error) {
-	appIcon, err := buildassets.ReadFile(options.ProjectData, "appicon.png")
+func processDarwinIcon(projectData *project.Project, iconName string, resourceDir string, destIconName string) (err error) {
+	appIcon, err := buildassets.ReadFile(projectData, iconName+".png")
 	if err != nil {
 		return err
 	}
@@ -135,11 +141,14 @@ func processApplicationIcon(options *Options, resourceDir string) (err error) {
 		return err
 	}
 
-	tgtBundle := filepath.Join(resourceDir, "iconfile.icns")
+	if destIconName == "" {
+		destIconName = iconName
+	}
+
+	tgtBundle := filepath.Join(resourceDir, destIconName+".icns")
 	dest, err := os.Create(tgtBundle)
 	if err != nil {
 		return err
-
 	}
 	defer func() {
 		err = dest.Close()
@@ -151,11 +160,19 @@ func processApplicationIcon(options *Options, resourceDir string) (err error) {
 }
 
 func packageApplicationForWindows(options *Options) error {
-	// Generate icon
+	// Generate app icon
 	var err error
-	err = generateIcoFile(options)
+	err = generateIcoFile(options, "appicon", "icon")
 	if err != nil {
 		return err
+	}
+
+	// Generate FileAssociation Icons
+	for _, fileAssociation := range options.ProjectData.Info.FileAssociations {
+		err = generateIcoFile(options, fileAssociation.IconName, "")
+		if err != nil {
+			return err
+		}
 	}
 
 	// Create syso file
@@ -171,21 +188,26 @@ func packageApplicationForLinux(_ *Options) error {
 	return nil
 }
 
-func generateIcoFile(options *Options) error {
-	content, err := buildassets.ReadFile(options.ProjectData, "appicon.png")
+func generateIcoFile(options *Options, iconName string, destIconName string) error {
+	content, err := buildassets.ReadFile(options.ProjectData, iconName+".png")
 	if err != nil {
 		return err
 	}
+
+	if destIconName == "" {
+		destIconName = iconName
+	}
+
 	// Check ico file exists already
-	icoFile := buildassets.GetLocalPath(options.ProjectData, "windows/icon.ico")
+	icoFile := buildassets.GetLocalPath(options.ProjectData, "windows/"+destIconName+".ico")
 	if !fs.FileExists(icoFile) {
 		if dir := filepath.Dir(icoFile); !fs.DirExists(dir) {
-			if err := fs.MkDirs(dir, 0755); err != nil {
+			if err := fs.MkDirs(dir, 0o755); err != nil {
 				return err
 			}
 		}
 
-		output, err := os.OpenFile(icoFile, os.O_CREATE|os.O_WRONLY, 0644)
+		output, err := os.OpenFile(icoFile, os.O_CREATE|os.O_WRONLY, 0o644)
 		if err != nil {
 			return err
 		}
@@ -200,13 +222,12 @@ func generateIcoFile(options *Options) error {
 }
 
 func compileResources(options *Options) error {
-
 	currentDir, err := os.Getwd()
 	if err != nil {
 		return err
 	}
 	defer func() {
-		os.Chdir(currentDir)
+		_ = os.Chdir(currentDir)
 	}()
 	windowsDir := filepath.Join(options.ProjectData.GetBuildDir(), "windows")
 	err = os.Chdir(windowsDir)

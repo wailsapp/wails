@@ -18,7 +18,6 @@ type Watcher interface {
 
 // initialiseWatcher creates the project directory watcher that will trigger recompile
 func initialiseWatcher(cwd string) (*fsnotify.Watcher, error) {
-
 	// Ignore dot files, node_modules and build directories by default
 	ignoreDirs := getIgnoreDirs(cwd)
 

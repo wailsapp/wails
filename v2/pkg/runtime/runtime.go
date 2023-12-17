@@ -27,6 +27,7 @@ func getFrontend(ctx context.Context) frontend.Frontend {
 	log.Fatalf("cannot call '%s': %s", funcName, contextError)
 	return nil
 }
+
 func getLogger(ctx context.Context) *logger.Logger {
 	if ctx == nil {
 		pc, _, _, _ := goruntime.Caller(1)

@@ -18,7 +18,6 @@ import (
 )
 
 func buildApplication(f *flags.Build) error {
-
 	if f.NoColour {
 		pterm.DisableColor()
 		colour.ColourEnabled = false
@@ -48,6 +47,16 @@ func buildApplication(f *flags.Build) error {
 	projectOptions, err := project.Load(cwd)
 	if err != nil {
 		return err
+	}
+
+	// Set obfuscation from project file
+	if projectOptions.Obfuscated {
+		f.Obfuscated = projectOptions.Obfuscated
+	}
+
+	// Set garble args from project file
+	if projectOptions.GarbleArgs != "" {
+		f.GarbleArgs = projectOptions.GarbleArgs
 	}
 
 	// Create BuildOptions
@@ -99,7 +108,7 @@ func buildApplication(f *flags.Build) error {
 		{"Tags", "[" + strings.Join(f.GetTags(), ",") + "]"},
 		{"Race Detector", bool2Str(f.RaceDetector)},
 	}...)
-	if len(buildOptions.OutputFile) > 0 && f.GetTargets().Length() == 1 {
+	if len(buildOptions.OutputFile) > 0 && len(f.GetTargets()) == 1 {
 		tableData = append(tableData, []string{"Output File", f.OutputFilename})
 	}
 	pterm.DefaultSection.Println("Build Options")
@@ -136,16 +145,11 @@ func buildApplication(f *flags.Build) error {
 
 	// Allows cancelling the build after the first error. It would be nice if targets.Each would support funcs
 	// returning an error.
-	var targetErr error
 	targets := f.GetTargets()
-	targets.Each(func(platform string) {
-		if targetErr != nil {
-			return
-		}
-
-		if !validPlatformArch.Contains(platform) {
-			buildOptions.Logger.Println("platform '%s' is not supported - skipping. Supported platforms: %s", platform, validPlatformArch.Join(","))
-			return
+	for _, target := range targets {
+		if !validPlatformArch.Contains(target.Platform) {
+			buildOptions.Logger.Println("platform '%s' is not supported - skipping. Supported platforms: %s", target.Platform, validPlatformArch.Join(","))
+			continue
 		}
 
 		desiredFilename := projectOptions.OutputFilename
@@ -154,17 +158,13 @@ func buildApplication(f *flags.Build) error {
 		}
 		desiredFilename = strings.TrimSuffix(desiredFilename, ".exe")
 
-		// Calculate platform and arch
-		platformSplit := strings.Split(platform, "/")
-		buildOptions.Platform = platformSplit[0]
-		buildOptions.Arch = f.GetDefaultArch()
-		if len(platformSplit) > 1 {
-			buildOptions.Arch = platformSplit[1]
-		}
+		buildOptions.Platform = target.Platform
+		buildOptions.Arch = target.Arch
+
 		banner := "Building target: " + buildOptions.Platform + "/" + buildOptions.Arch
 		pterm.DefaultSection.Println(banner)
 
-		if f.Upx && platform == "darwin/universal" {
+		if f.Upx && target.String() == "darwin/universal" {
 			pterm.Warning.Println("Warning: compress flag unsupported for universal binaries. Ignoring.")
 			f.Upx = false
 		}
@@ -173,22 +173,19 @@ func buildApplication(f *flags.Build) error {
 		case "linux":
 			if runtime.GOOS != "linux" {
 				pterm.Warning.Println("Crosscompiling to Linux not currently supported.")
-				return
+				continue
 			}
 		case "darwin":
 			if runtime.GOOS != "darwin" {
 				pterm.Warning.Println("Crosscompiling to Mac not currently supported.")
-				return
+				continue
 			}
-			macTargets := targets.Filter(func(platform string) bool {
-				return strings.HasPrefix(platform, "darwin")
-			})
-			if macTargets.Length() == 2 {
+			if targets.MacTargetsCount() == 2 {
 				buildOptions.BundleName = fmt.Sprintf("%s-%s.app", desiredFilename, buildOptions.Arch)
 			}
 		}
 
-		if targets.Length() > 1 {
+		if len(targets) > 1 {
 			// target filename
 			switch buildOptions.Platform {
 			case "windows":
@@ -210,32 +207,27 @@ func buildApplication(f *flags.Build) error {
 			pterm.Warning.Println("obfuscated flag overrides skipbindings flag.")
 			buildOptions.SkipBindings = false
 		}
+	}
 
-		if !f.DryRun {
-			// Start Time
-			start := time.Now()
+	if !f.DryRun {
+		// Start Time
+		start := time.Now()
 
-			compiledBinary, err := build.Build(buildOptions)
-			if err != nil {
-				pterm.Error.Println(err.Error())
-				targetErr = err
-				return
-			}
-
-			buildOptions.IgnoreFrontend = true
-			buildOptions.CleanBinDirectory = false
-
-			// Output stats
-			buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", compiledBinary, time.Since(start).Round(time.Millisecond).String()))
-
-			outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = compiledBinary
-		} else {
-			pterm.Info.Println("Dry run: skipped build.")
+		compiledBinary, err := build.Build(buildOptions)
+		if err != nil {
+			pterm.Error.Println(err.Error())
+			return err
 		}
-	})
 
-	if targetErr != nil {
-		return targetErr
+		buildOptions.IgnoreFrontend = true
+		buildOptions.CleanBinDirectory = false
+
+		// Output stats
+		buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", compiledBinary, time.Since(start).Round(time.Millisecond).String()))
+
+		outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = compiledBinary
+	} else {
+		pterm.Info.Println("Dry run: skipped build.")
 	}
 
 	if f.DryRun {
@@ -255,5 +247,4 @@ func buildApplication(f *flags.Build) error {
 	}
 
 	return nil
-
 }

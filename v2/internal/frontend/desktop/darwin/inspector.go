@@ -7,5 +7,4 @@ import (
 )
 
 func showInspector(_ unsafe.Pointer) {
-
 }

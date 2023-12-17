@@ -2,9 +2,10 @@ package staticanalysis
 
 import (
 	"go/ast"
-	"golang.org/x/tools/go/packages"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/tools/go/packages"
 )
 
 type EmbedDetails struct {

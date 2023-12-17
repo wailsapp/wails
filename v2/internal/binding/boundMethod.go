@@ -28,7 +28,6 @@ func (b *BoundMethod) OutputCount() int {
 
 // ParseArgs method converts the input json into the types expected by the method
 func (b *BoundMethod) ParseArgs(args []json.RawMessage) ([]interface{}, error) {
-
 	result := make([]interface{}, b.InputCount())
 	if len(args) != b.InputCount() {
 		return nil, fmt.Errorf("received %d arguments to method '%s', expected %d", len(args), b.Name, b.InputCount())

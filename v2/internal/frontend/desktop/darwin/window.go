@@ -13,6 +13,7 @@ package darwin
 #include <stdlib.h>
 */
 import "C"
+
 import (
 	"log"
 	"runtime"
@@ -46,7 +47,6 @@ func bool2CboolPtr(value bool) *C.bool {
 }
 
 func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window {
-
 	c := NewCalloc()
 	defer c.Free()
 
@@ -58,6 +58,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	startsHidden := bool2Cint(frontendOptions.StartHidden)
 	devtoolsEnabled := bool2Cint(devtools)
 	defaultContextMenuEnabled := bool2Cint(debug || frontendOptions.EnableDefaultContextMenu)
+	singleInstanceEnabled := bool2Cint(frontendOptions.SingleInstanceLock != nil)
 
 	var fullSizeContent, hideTitleBar, hideTitle, useToolbar, webviewIsTransparent C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent C.int
@@ -73,6 +74,12 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	windowStartState := C.int(int(frontendOptions.WindowStartState))
 
 	title = c.String(frontendOptions.Title)
+
+	singleInstanceUniqueIdStr := ""
+	if frontendOptions.SingleInstanceLock != nil {
+		singleInstanceUniqueIdStr = frontendOptions.SingleInstanceLock.UniqueId
+	}
+	singleInstanceUniqueId := c.String(singleInstanceUniqueIdStr)
 
 	enableFraudulentWebsiteWarnings := C.bool(frontendOptions.EnableFraudulentWebsiteDetection)
 
@@ -95,6 +102,10 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 			if mac.Preferences.TextInteractionEnabled.IsSet() {
 				preferences.textInteractionEnabled = bool2CboolPtr(mac.Preferences.TextInteractionEnabled.Get())
 			}
+
+			if mac.Preferences.FullscreenEnabled.IsSet() {
+				preferences.fullscreenEnabled = bool2CboolPtr(mac.Preferences.FullscreenEnabled.Get())
+			}
 		}
 
 		windowIsTranslucent = bool2Cint(mac.WindowIsTranslucent)
@@ -105,7 +116,9 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent,
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
 		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenuEnabled,
-		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings, preferences)
+		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings,
+		preferences, singleInstanceEnabled, singleInstanceUniqueId,
+	)
 
 	// Create menu
 	result := &Window{
@@ -183,6 +196,7 @@ func (w *Window) SetTitle(title string) {
 func (w *Window) Maximise() {
 	C.Maximise(w.context)
 }
+
 func (w *Window) ToggleMaximise() {
 	C.ToggleMaximise(w.context)
 }
@@ -238,6 +252,7 @@ func (w *Window) Show() {
 func (w *Window) Hide() {
 	C.Hide(w.context)
 }
+
 func (w *Window) ShowApplication() {
 	C.ShowApplication(w.context)
 }
