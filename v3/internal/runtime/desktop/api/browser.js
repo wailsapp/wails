@@ -16,6 +16,7 @@ The electron alternative for Go
 export const Browser = {
     /**
      * Opens a browser window to the given URL
+     * @param {string} url - the url to open
      * @returns {Promise<string>}
      */
     OpenURL: (url) => {

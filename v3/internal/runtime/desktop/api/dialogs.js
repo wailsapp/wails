@@ -11,9 +11,9 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 /**
- * @typedef {import("./types").MessageDialogOptions} MessageDialogOptions
- * @typedef {import("./types").OpenDialogOptions} OpenDialogOptions
- * @typedef {import("./types").SaveDialogOptions} SaveDialogOptions
+ * @typedef {import("./wails").MessageDialogOptions} MessageDialogOptions
+ * @typedef {import("./wails").OpenFileDialogOptions} OpenFileDialogOptions
+ * @typedef {import("./wails").SaveFileDialogOptions} SaveFileDialogOptions
  */
 /**
  * The Dialog API provides methods to interact with system dialogs.
@@ -56,7 +56,7 @@ export const Dialog = {
     /**
      * Shows a file open dialog and returns the files selected by the user.
      * A blank string indicates that the dialog was cancelled.
-     * @param {OpenDialogOptions} options - options for the dialog
+     * @param {OpenFileDialogOptions} options - options for the dialog
      * @returns {Promise<string[]>|Promise<string>}
      */
     OpenFile: (options) => {
@@ -66,7 +66,7 @@ export const Dialog = {
     /**
      * Shows a file save dialog and returns the filename given by the user.
      * A blank string indicates that the dialog was cancelled.
-     * @param {SaveDialogOptions} options - options for the dialog
+     * @param {SaveFileDialogOptions} options - options for the dialog
      * @returns {Promise<string>}
      */
     SaveFile: (options) => {
