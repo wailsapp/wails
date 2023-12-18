@@ -45,6 +45,7 @@ func (z *Zypper) Packages() packagemap {
 		},
 		"npm": []*Package{
 			{Name: "npm10", SystemPackage: true},
+			{Name: "npm20", SystemPackage: true},
 		},
 		"docker": []*Package{
 			{Name: "docker", SystemPackage: true, Optional: true},

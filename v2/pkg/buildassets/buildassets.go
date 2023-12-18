@@ -128,12 +128,12 @@ func writeFileSystemFile(projectData *project.Project, file string, content []by
 	targetPath := GetLocalPath(projectData, file)
 
 	if dir := filepath.Dir(targetPath); !fs.DirExists(dir) {
-		if err := fs.MkDirs(dir, 0755); err != nil {
+		if err := fs.MkDirs(dir, 0o755); err != nil {
 			return fmt.Errorf("Unable to create directory: %w", err)
 		}
 	}
 
-	if err := os.WriteFile(targetPath, content, 0644); err != nil {
+	if err := os.WriteFile(targetPath, content, 0o644); err != nil {
 		return err
 	}
 	return nil

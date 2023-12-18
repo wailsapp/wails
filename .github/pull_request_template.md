@@ -1,3 +1,11 @@
+
+<!--
+READ CAREFULLY: Before submitting your PR, please ensure you have created an issue for your PR.
+It is essential that you do this so that we can discuss the proposed changes before you spend time on them.
+If you do not create an issue, your PR may be rejected without review.
+If a relevant issue already exists, please reference it in your PR by including `Fixes #<issue number>` in your PR description.
+-->
+
 # Description
 
 Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context. List any dependencies that are required for this change.

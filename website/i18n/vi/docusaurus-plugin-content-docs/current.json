@@ -1,0 +1,38 @@
+{
+  "version.label": {
+    "message": "Phiên Bản Tiếp Theo 🚧",
+    "description": "The label for version current"
+  },
+  "sidebar.docs.category.Getting Started": {
+    "message": "Hướng Dẫn Nhanh",
+    "description": "The label for category Getting Started in sidebar docs"
+  },
+  "sidebar.docs.category.Reference": {
+    "message": "Tham Khảo",
+    "description": "The label for category Reference in sidebar docs"
+  },
+  "sidebar.docs.category.Runtime": {
+    "message": "Bộ Công Cụ Runtime",
+    "description": "The label for category Runtime in sidebar docs"
+  },
+  "sidebar.docs.category.Community": {
+    "message": "Cộng Đồng",
+    "description": "The label for category Community in sidebar docs"
+  },
+  "sidebar.docs.category.Showcase": {
+    "message": "Trưng Bày",
+    "description": "The label for category Showcase in sidebar docs"
+  },
+  "sidebar.docs.category.Guides": {
+    "message": "Định Hướng",
+    "description": "The label for category Guides in sidebar docs"
+  },
+  "sidebar.docs.category.Tutorials": {
+    "message": "Thực Hành",
+    "description": "The label for category Tutorials in sidebar docs"
+  },
+  "sidebar.docs.link.Contributing": {
+    "message": "Đóng Góp",
+    "description": "The label for link Contributing in sidebar docs, linking to /community-guide#ways-of-contributing"
+  }
+}

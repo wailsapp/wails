@@ -35,6 +35,8 @@ import (
 
 const startURL = "http://wails.localhost/"
 
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
+
 type Screen = frontend.Screen
 
 type Frontend struct {
@@ -113,6 +115,8 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 	result.assets = assets
 
+	go result.startSecondInstanceProcessor()
+
 	return result
 }
 
@@ -136,6 +140,10 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
 
 	f.chromium = edge.NewChromium()
+
+	if f.frontendOptions.SingleInstanceLock != nil {
+		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
+	}
 
 	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo, f.chromium)
 	f.mainWindow = mainWindow
@@ -211,6 +219,7 @@ func (f *Frontend) WindowCenter() {
 
 func (f *Frontend) WindowSetAlwaysOnTop(b bool) {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.mainWindow.SetAlwaysOnTop(b)
 }
 
@@ -534,6 +543,10 @@ func (f *Frontend) setupChromium() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		err = settings.PutIsPinchZoomEnabled(!opts.DisablePinchZoom)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	err = settings.PutIsStatusBarEnabled(false)
@@ -824,4 +837,13 @@ func (f *Frontend) ShowWindow() {
 
 func (f *Frontend) onFocus(arg *winc.Event) {
 	f.chromium.Focus()
+}
+
+func (f *Frontend) startSecondInstanceProcessor() {
+	for secondInstanceData := range secondInstanceBuffer {
+		if f.frontendOptions.SingleInstanceLock != nil &&
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
+		}
+	}
 }

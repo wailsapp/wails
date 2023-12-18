@@ -23,7 +23,7 @@ type MenuItem struct {
 	// Checked indicates if the item is selected (used by Checkbox and Radio types only)
 	Checked bool
 	// Submenu contains a list of menu items that will be shown as a submenu
-	//SubMenu []*MenuItem `json:"SubMenu,omitempty"`
+	// SubMenu []*MenuItem `json:"SubMenu,omitempty"`
 	SubMenu *Menu
 
 	// Callback function when menu clicked
@@ -106,7 +106,6 @@ func (m *MenuItem) removeChild(item *MenuItem) {
 // menu. If there is no parent menu (we are a top level menu) then false is
 // returned
 func (m *MenuItem) InsertAfter(item *MenuItem) bool {
-
 	// We need to find my parent
 	if m.parent == nil {
 		return false
@@ -120,7 +119,6 @@ func (m *MenuItem) InsertAfter(item *MenuItem) bool {
 // menu. If there is no parent menu (we are a top level menu) then false is
 // returned
 func (m *MenuItem) InsertBefore(item *MenuItem) bool {
-
 	// We need to find my parent
 	if m.parent == nil {
 		return false
@@ -134,8 +132,8 @@ func (m *MenuItem) InsertBefore(item *MenuItem) bool {
 // in this item's submenu. If we are not a submenu,
 // then something bad has happened :/
 func (m *MenuItem) insertNewItemAfterGivenItem(target *MenuItem,
-	newItem *MenuItem) bool {
-
+	newItem *MenuItem,
+) bool {
 	if !m.isSubMenu() {
 		return false
 	}
@@ -154,8 +152,8 @@ func (m *MenuItem) insertNewItemAfterGivenItem(target *MenuItem,
 // target in this item's submenu. If we are not a submenu, then something bad
 // has happened :/
 func (m *MenuItem) insertNewItemBeforeGivenItem(target *MenuItem,
-	newItem *MenuItem) bool {
-
+	newItem *MenuItem,
+) bool {
 	if !m.isSubMenu() {
 		return false
 	}
@@ -176,7 +174,6 @@ func (m *MenuItem) isSubMenu() bool {
 
 // getItemIndex returns the index of the given target relative to this menu
 func (m *MenuItem) getItemIndex(target *MenuItem) int {
-
 	// This should only be called on submenus
 	if !m.isSubMenu() {
 		return -1
@@ -196,7 +193,6 @@ func (m *MenuItem) getItemIndex(target *MenuItem) int {
 // the given index
 // Credit: https://stackoverflow.com/a/61822301
 func (m *MenuItem) insertItemAtIndex(index int, target *MenuItem) bool {
-
 	// If index is OOB, return false
 	if index > len(m.SubMenu.Items) {
 		return false

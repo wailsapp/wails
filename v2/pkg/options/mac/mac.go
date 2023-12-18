@@ -21,7 +21,9 @@ type Options struct {
 	WebviewIsTransparent bool
 	WindowIsTranslucent  bool
 	Preferences          *Preferences
-	//ActivationPolicy     ActivationPolicy
-	About *AboutInfo
-	//URLHandlers          map[string]func(string)
+	// ActivationPolicy     ActivationPolicy
+	About      *AboutInfo
+	OnFileOpen func(filePath string) `json:"-"`
+	OnUrlOpen  func(filePath string) `json:"-"`
+	// URLHandlers          map[string]func(string)
 }

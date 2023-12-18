@@ -53,16 +53,22 @@ func main() {
         CSSDragValue:      "drag",
         EnableDefaultContextMenu: false,
         EnableFraudulentWebsiteDetection: false,
-        ZoomFactor:           1.0,
-        IsZoomControlEnabled: false,
         Bind: []interface{}{
             app,
         },
+        EnumBind: []interface{}{
+            AllWeekdays,
+        },
         ErrorFormatter: func(err error) any { return err.Error() },
+        SingleInstanceLock: &options.SingleInstanceLock{
+          UniqueId:               "c9c8fd93-6758-4144-87d1-34bdb0a8bd60",
+          OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+        },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
             BackdropType:                      windows.Mica,
+            DisablePinchZoom:               false,
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
@@ -76,12 +82,17 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
+            // ZoomFactor is the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+            ZoomFactor:           float64,
+            // IsZoomControlEnabled enables the zoom factor to be changed by the user.
+            IsZoomControlEnabled: bool,
             // User messages that can be customised
-            Messages *windows.Messages
+            Messages: *windows.Messages
             // OnSuspend is called when Windows enters low power mode
-            OnSuspend func()
+            OnSuspend: func()
             // OnResume is called when Windows resumes from low power mode
-            OnResume func(),
+            OnResume: func(),
+            // Disable GPU hardware acceleration for the webview
 			WebviewGpuDisabled: false,
         },
         Mac: &mac.Options{
@@ -92,6 +103,8 @@ func main() {
                 FullSizeContent:            false,
                 UseToolbar:                 false,
                 HideToolbarSeparator:       true,
+                OnFileOpen: app.onFileOpen,
+			          OnUrlOpen:  app.onUrlOpen,
             },
 			Appearance:           mac.NSAppearanceNameDarkAqua,
             WebviewIsTransparent: true,
@@ -479,6 +492,13 @@ A slice of struct instances defining methods that need to be bound to the fronte
 Name: Bind<br/>
 Type: `[]interface{}`
 
+### EnumBind
+
+A slice of Enum arrays that need to be bound to the frontend.
+
+Name: EnumBind<br/>
+Type: `[]interface{}`
+
 ### ErrorFormatter
 
 A function that determines how errors are formatted when returned by a JS-to-Go
@@ -486,6 +506,28 @@ method call. The returned value will be marshalled as JSON.
 
 Name: ErrorFormatter<br/>
 Type: `func (error) any`
+
+### SingleInstanceLock
+
+Enables single instance locking. This means that only one instance of your application can be running at a time.
+
+Name: SingleInstanceLock<br/>
+Type: `*options.SingleInstanceLock`
+
+#### UniqueId
+
+This id is used to generate the mutex name on Windows and macOS and the dbus name on Linux. Use a UUID to ensure that the id is unique.
+
+Name: UniqueId<br/>
+Type: `string`
+
+#### OnSecondInstanceLaunch
+
+Callback that is called when a second instance of your app is launched.
+
+Name: OnSecondInstanceLaunch<br/>
+Type: `func(secondInstanceData SecondInstanceData)`
+
 
 ### Windows
 
@@ -538,6 +580,13 @@ The value can be one of the following:
 | Acrylic | Use [Acrylic](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) effect |
 | Mica    | Use [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) effect       |
 | Tabbed  | Use Tabbed. This is a backdrop that is similar to Mica.                                   |
+
+#### DisablePinchZoom
+
+Setting this to `true` will disable pinch zoom gestures.
+
+Name: DisablePinchZoom<br/>
+Type: `bool`
 
 #### DisableWindowIcon
 
@@ -797,6 +846,20 @@ with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applic
 Name: WindowIsTranslucent<br/>
 Type: `bool`
 
+#### OnFileOpen
+
+Callback that is called when a file is opened with the application.
+
+Name: OnFileOpen<br/>
+Type: `func(filePath string)`
+
+#### OnUrlOpen
+
+Callback that is called when a URL is opened with the application.
+
+Name: OnUrlOpen<br/>
+Type: `func(filePath string)`
+
 #### Preferences
 
 The Preferences struct provides the ability to configure the Webview preferences.
@@ -804,7 +867,7 @@ The Preferences struct provides the ability to configure the Webview preferences
 Name: Preferences<br/>
 Type: [`*mac.Preferences`](#preferences-struct)
 
-##### Preferences struct 
+##### Preferences struct
 
 You can specify the webview preferences.
 
@@ -812,6 +875,7 @@ You can specify the webview preferences.
 type Preferences struct {
 	TabFocusesLinks        u.Bool
 	TextInteractionEnabled u.Bool
+	FullscreenEnabled      u.Bool
 }
 ```
 
@@ -819,6 +883,7 @@ type Preferences struct {
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | TabFocusesLinks            | A Boolean value that indicates whether pressing the tab key changes the focus to links and form controls. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/2818595-tabfocuseslinks?language=objc)         |
 | TextInteractionEnabled     | A Boolean value that indicates whether to allow people to select or otherwise interact with text. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3727362-textinteractionenabled?language=objc)          |
+| FullscreenEnabled          | A Boolean value that indicates whether a web view can display content full screen. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3917769-elementfullscreenenabled?language=objc)                       |
 
 Example:
 
@@ -827,6 +892,7 @@ Mac: &mac.Options{
     Preferences: &mac.Preferences{
 		TabFocusesLinks:        mac.Enabled,
 		TextInteractionEnabled: mac.Disabled,
+		FullscreenEnabled:      mac.Enabled,
 	}
 }
 ```

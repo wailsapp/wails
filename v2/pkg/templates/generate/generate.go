@@ -159,7 +159,6 @@ var templates = []*template{
 }
 
 func main() {
-
 	rebuildRuntime()
 
 	for _, t := range templates {

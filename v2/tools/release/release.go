@@ -33,7 +33,7 @@ func updateVersion() string {
 	minorVersion++
 	vsplit[len(vsplit)-1] = strconv.Itoa(minorVersion)
 	newVersion := strings.Join(vsplit, ".")
-	err = os.WriteFile(versionFile, []byte(newVersion), 0755)
+	err = os.WriteFile(versionFile, []byte(newVersion), 0o755)
 	checkError(err)
 	return newVersion
 }
@@ -68,7 +68,7 @@ func main() {
 		newVersion = os.Args[1]
 		currentVersion, err := os.ReadFile(versionFile)
 		checkError(err)
-		err = os.WriteFile(versionFile, []byte(newVersion), 0755)
+		err = os.WriteFile(versionFile, []byte(newVersion), 0o755)
 		checkError(err)
 		isPointRelease = IsPointRelease(string(currentVersion), newVersion)
 	} else {
@@ -89,7 +89,7 @@ func main() {
 	// Add the new version to the top of the changelog
 	newChangelog := changelogSplit[0] + "## [Unreleased]\n\n## " + newVersion + " - " + today + changelogSplit[1]
 	// Write the changelog back
-	err = os.WriteFile("src/pages/changelog.mdx", []byte(newChangelog), 0755)
+	err = os.WriteFile("src/pages/changelog.mdx", []byte(newChangelog), 0o755)
 	checkError(err)
 
 	if !isPointRelease {
@@ -112,7 +112,7 @@ func main() {
 		versions = versions[0 : len(versions)-1]
 		newVersions, err := json.Marshal(&versions)
 		checkError(err)
-		err = os.WriteFile("versions.json", newVersions, 0755)
+		err = os.WriteFile("versions.json", newVersions, 0o755)
 		checkError(err)
 
 		s.ECHO("Removing old version: " + oldestVersion)
