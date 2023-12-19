@@ -65,14 +65,6 @@ github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYU
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPdPJAN/hZIm0C4OItdklCFmMRWYpio=
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5/go.mod h1:wHh0iHkYZB8zMSxRWpUBQtwG5a7fFgvEO+odwuTv2gs=
 github.com/atomicgo/cursor v0.0.1/go.mod h1:cBON2QmmrysudxNBFthvMtN32r3jxVRIvzkUiF/RuIk=
-github.com/atterpac/refresh v0.1.0 h1:vFdy+4+Q4X7ENyemskVpGFCGAUt8zi0S05vX1O5tfq8=
-github.com/atterpac/refresh v0.1.0/go.mod h1:KiBQUk5h76Z3Yvw/k3Ys2JGDrKmKmflwS9XB6B5N9qY=
-github.com/atterpac/refresh v0.2.1 h1:xWI4PsP88wFJueMq8DscZg+IA3pxMoaS9g8/Gl+p85I=
-github.com/atterpac/refresh v0.2.1/go.mod h1:KiBQUk5h76Z3Yvw/k3Ys2JGDrKmKmflwS9XB6B5N9qY=
-github.com/atterpac/refresh v0.2.2 h1:PD+zKYz4LBViPzLUqLPm9p6aiRr6vNd1m1UTHsx8ln8=
-github.com/atterpac/refresh v0.2.2/go.mod h1:KiBQUk5h76Z3Yvw/k3Ys2JGDrKmKmflwS9XB6B5N9qY=
-github.com/atterpac/refresh v0.2.3 h1:bV6VGbeUTUFiTvYGKadPZIfIWKhXgUbadHSp8r86JIo=
-github.com/atterpac/refresh v0.2.3/go.mod h1:KiBQUk5h76Z3Yvw/k3Ys2JGDrKmKmflwS9XB6B5N9qY=
 github.com/atterpac/refresh v0.2.4 h1:rTD9qchbLa0qPIVr+qpyqkePe6+1Cs14ETXDguEvttI=
 github.com/atterpac/refresh v0.2.4/go.mod h1:KiBQUk5h76Z3Yvw/k3Ys2JGDrKmKmflwS9XB6B5N9qY=
 github.com/bep/debounce v1.2.1 h1:v67fRdBA9UQu2NhLFXrSg0Brw7CexQekrBwDMM8bzeY=
@@ -95,6 +87,7 @@ github.com/decred/dcrd/crypto/blake256 v1.0.0/go.mod h1:sQl2p6Y26YV+ZOcSTP6thNdn
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.0-20210816181553-5444fa50b93d/go.mod h1:tmAIfUFEirG/Y8jhZ9M+h36obRZAk/1fcSpXwAVlfqE=
 github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
+github.com/ebitengine/purego v0.4.0-alpha.4 h1:Y7yIV06Yo5M2BAdD7EVPhfp6LZ0tEcQo5770OhYUVes=
 github.com/ebitengine/purego v0.4.0-alpha.4/go.mod h1:ah1In8AOtksoNK6yk5z1HTJeUkC1Ez4Wk2idgGslMwQ=
 github.com/emirpasic/gods v1.12.0 h1:QAUIPSaCu4G+POclxeqb3F+WPpdKqFGlw36+yOzGlrg=
 github.com/emirpasic/gods v1.12.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
@@ -369,8 +362,6 @@ github.com/tklauser/go-sysconf v0.3.12 h1:0QaGUFOdQaIVdPgfITYzaTegZvdCjmYO52cSFA
 github.com/tklauser/go-sysconf v0.3.12/go.mod h1:Ho14jnntGE1fpdOqQEEaiKRpvIavV0hSfmBq8nJbHYI=
 github.com/tklauser/numcpus v0.6.1 h1:ng9scYS7az0Bk4OZLvrNXNSAO2Pxr1XXRAPyjhIx+Fk=
 github.com/tklauser/numcpus v0.6.1/go.mod h1:1XfjsgE2zo8GVw7POkMbHENHzVg3GzmoZ9fESEdAacY=
-github.com/tmclane/purego v0.0.0-20230818202843-0b72c8c9140f h1:/HXk9aFXP97CJRzOIphm4pzySmJLqIMhKu1kD5usz1E=
-github.com/tmclane/purego v0.0.0-20230818202843-0b72c8c9140f/go.mod h1:ah1In8AOtksoNK6yk5z1HTJeUkC1Ez4Wk2idgGslMwQ=
 github.com/wailsapp/go-webview2 v1.0.9 h1:lrU+q0cf1wgLdR69rN+ZnRtMJNaJRrcQ4ELxoO7/xjs=
 github.com/wailsapp/go-webview2 v1.0.9/go.mod h1:Uk2BePfCRzttBBjFrBmqKGJd41P6QIHeV9kTgIeOZNo=
 github.com/wailsapp/mimetype v1.4.1 h1:pQN9ycO7uo4vsUUuPeHEYoUkLVkaRntMnHJxVwYhwHs=

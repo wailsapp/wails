@@ -25,6 +25,7 @@ func TestParseVariableSingle(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
+							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet someone",
 							Inputs: []*Parameter{
@@ -59,6 +60,7 @@ func TestParseVariableSingle(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
+							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet someone",
 							Inputs: []*Parameter{
@@ -93,6 +95,7 @@ func TestParseVariableSingle(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
+							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet does XYZ",
 							Inputs: []*Parameter{
@@ -116,6 +119,7 @@ func TestParseVariableSingle(t *testing.T) {
 							ID: 1411160069,
 						},
 						{
+							Package:    "main",
 							Name:       "NewPerson",
 							DocComment: "NewPerson creates a new person",
 							Inputs: []*Parameter{
@@ -145,7 +149,8 @@ func TestParseVariableSingle(t *testing.T) {
 				"github.com/wailsapp/wails/v3/internal/parser/testdata/variable_single_from_other_function/services": {
 					"OtherService": {
 						{
-							Name: "Yay",
+							Package: "github.com/wailsapp/wails/v3/internal/parser/testdata/variable_single_from_other_function/services",
+							Name:    "Yay",
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{

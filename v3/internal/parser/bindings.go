@@ -22,7 +22,11 @@ const bindingTemplate = `
 * @param names {string}
 		 * @returns {Promise<string>}
 		 **/
-	    {{methodName}}: function({{inputs}}) { return wails.CallByID({{ID}}, ...Array.prototype.slice.call(arguments, 0)); },
+`
+
+const callByID = `	    {{methodName}}: function({{inputs}}) { return wails.CallByID({{ID}}, ...Array.prototype.slice.call(arguments, 0)); },
+`
+const callByName = `	    {{methodName}}: function({{inputs}}) { return wails.CallByName("{{Name}}", ...Array.prototype.slice.call(arguments, 0)); },
 `
 
 const enumTemplate = `
@@ -108,12 +112,24 @@ func sanitiseJSVarName(name string) string {
 	return name
 }
 
-func GenerateBinding(structName string, method *BoundMethod) (string, []string, []string) {
+func GenerateBinding(structName string, method *BoundMethod, useIDs bool) (string, []string, []string) {
 	var namespacedStructs []string
 	var models []string
-	result := strings.ReplaceAll(bindingTemplate, "{{structName}}", structName)
+	template := bindingTemplate
+	if useIDs {
+		template += callByID
+	} else {
+		template += callByName
+	}
+	result := strings.ReplaceAll(template, "{{structName}}", structName)
 	result = strings.ReplaceAll(result, "{{methodName}}", method.Name)
 	result = strings.ReplaceAll(result, "{{ID}}", fmt.Sprintf("%v", method.ID))
+
+	// get last part of method.Package path
+	parts := strings.Split(method.Package, "/")
+	packageName := parts[len(parts)-1]
+
+	result = strings.ReplaceAll(result, "{{Name}}", fmt.Sprintf("%v.%v.%v", packageName, structName, method.Name))
 	comments := strings.TrimSpace(method.DocComment)
 	if comments != "" {
 		comments = " " + comments
@@ -224,7 +240,7 @@ func normalisePackageNames(packageNames []string) map[string]string {
 	return result
 }
 
-func GenerateBindings(bindings map[string]map[string][]*BoundMethod) map[string]string {
+func GenerateBindings(bindings map[string]map[string][]*BoundMethod, useIDs bool) map[string]string {
 
 	var result = make(map[string]string)
 
@@ -246,7 +262,7 @@ func GenerateBindings(bindings map[string]map[string][]*BoundMethod) map[string]
 				return methods[i].Name < methods[j].Name
 			})
 			for _, method := range methods {
-				thisBinding, models, namespacedStructs := GenerateBinding(structName, method)
+				thisBinding, models, namespacedStructs := GenerateBinding(structName, method, useIDs)
 				allNamespacedStructs = append(allNamespacedStructs, namespacedStructs...)
 				allModels = append(allModels, models...)
 				result[normalisedPackageNames[packageName]] += thisBinding

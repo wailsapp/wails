@@ -24,6 +24,7 @@ func TestParseStructLiteralMultiple(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
+							Package:    "main",
 							Name:       "Greet",
 							DocComment: "",
 							Inputs: []*Parameter{
@@ -49,8 +50,9 @@ func TestParseStructLiteralMultiple(t *testing.T) {
 					},
 					"OtherService": {
 						{
-							Name: "Hello",
-							ID:   4249972365,
+							Package: "main",
+							Name:    "Hello",
+							ID:      4249972365,
 						},
 					},
 				},
@@ -64,6 +66,7 @@ func TestParseStructLiteralMultiple(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
+							Package:    "main",
 							Name:       "Greet",
 							DocComment: "",
 							Inputs: []*Parameter{
@@ -89,8 +92,9 @@ func TestParseStructLiteralMultiple(t *testing.T) {
 					},
 					"OtherService": {
 						{
-							Name: "Hello",
-							ID:   4249972365,
+							Package: "main",
+							Name:    "Hello",
+							ID:      4249972365,
 						},
 					},
 				},
@@ -105,6 +109,7 @@ func TestParseStructLiteralMultiple(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
+							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet does XYZ",
 							Inputs: []*Parameter{
@@ -128,6 +133,7 @@ func TestParseStructLiteralMultiple(t *testing.T) {
 							ID: 1411160069,
 						},
 						{
+							Package:    "main",
 							Name:       "NewPerson",
 							DocComment: "NewPerson creates a new person",
 							Inputs: []*Parameter{
@@ -157,7 +163,8 @@ func TestParseStructLiteralMultiple(t *testing.T) {
 				"github.com/wailsapp/wails/v3/internal/parser/testdata/struct_literal_multiple_other/services": {
 					"OtherService": {
 						{
-							Name: "Yay",
+							Package: "github.com/wailsapp/wails/v3/internal/parser/testdata/struct_literal_multiple_other/services",
+							Name:    "Yay",
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{

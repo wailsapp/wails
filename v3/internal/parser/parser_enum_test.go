@@ -25,6 +25,7 @@ func TestParseEnum(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
+							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet does XYZ",
 							Inputs: []*Parameter{
@@ -56,6 +57,7 @@ func TestParseEnum(t *testing.T) {
 							ID: 1411160069,
 						},
 						{
+							Package:    "main",
 							Name:       "NewPerson",
 							DocComment: "NewPerson creates a new person",
 							Inputs: []*Parameter{
@@ -147,6 +149,7 @@ func TestParseEnum(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
+							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet does XYZ",
 							Inputs: []*Parameter{
@@ -178,6 +181,7 @@ func TestParseEnum(t *testing.T) {
 							ID: 1411160069,
 						},
 						{
+							Package:    "main",
 							Name:       "NewPerson",
 							DocComment: "NewPerson creates a new person",
 							Inputs: []*Parameter{

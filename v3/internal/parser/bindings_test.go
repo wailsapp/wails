@@ -24,20 +24,39 @@ func getFile(filename string) string {
 func TestGenerateBindings(t *testing.T) {
 
 	tests := []struct {
-		dir  string
-		want map[string]string
+		dir    string
+		want   map[string]string
+		useIDs bool
 	}{
 		{
 			"testdata/enum",
 			map[string]string{
 				"main": getFile("testdata/enum/bindings_main.js"),
 			},
+			true,
+		},
+		{
+			"testdata/enum",
+			map[string]string{
+				"main": getFile("testdata/enum/bindings_main.name.js"),
+			},
+			false,
+		},
+		// TODO: Fix this test to pull in enum
+		{
+			"testdata/enum_from_imported_package",
+			map[string]string{
+				"main":     getFile("testdata/enum_from_imported_package/bindings_main.js"),
+				"services": getFile("testdata/enum_from_imported_package/bindings_services.js"),
+			},
+			true,
 		},
 		{
 			"testdata/function_single",
 			map[string]string{
 				"main": getFile("testdata/function_single/bindings_main.js"),
 			},
+			true,
 		},
 		{
 			"testdata/function_from_imported_package",
@@ -45,18 +64,21 @@ func TestGenerateBindings(t *testing.T) {
 				"main":     getFile("testdata/function_from_imported_package/bindings_main.js"),
 				"services": getFile("testdata/function_from_imported_package/bindings_services.js"),
 			},
+			true,
 		},
 		{
 			"testdata/variable_single",
 			map[string]string{
 				"main": getFile("testdata/variable_single/bindings_main.js"),
 			},
+			true,
 		},
 		{
 			"testdata/variable_single_from_function",
 			map[string]string{
 				"main": getFile("testdata/variable_single_from_function/bindings_main.js"),
 			},
+			true,
 		},
 		{
 			"testdata/variable_single_from_other_function",
@@ -64,18 +86,21 @@ func TestGenerateBindings(t *testing.T) {
 				"main":     getFile("testdata/variable_single_from_other_function/bindings_main.js"),
 				"services": getFile("testdata/variable_single_from_other_function/bindings_services.js"),
 			},
+			true,
 		},
 		{
 			"testdata/struct_literal_single",
 			map[string]string{
 				"main": getFile("testdata/struct_literal_single/bindings_main.js"),
 			},
+			true,
 		},
 		{
 			"testdata/struct_literal_multiple",
 			map[string]string{
 				"main": getFile("testdata/struct_literal_multiple/bindings_main.js"),
 			},
+			true,
 		},
 		{
 			"testdata/struct_literal_multiple_other",
@@ -83,12 +108,14 @@ func TestGenerateBindings(t *testing.T) {
 				"main":     getFile("testdata/struct_literal_multiple_other/bindings_main.js"),
 				"services": getFile("testdata/struct_literal_multiple_other/bindings_services.js"),
 			},
+			true,
 		},
 		{
 			"testdata/struct_literal_multiple_files",
 			map[string]string{
 				"main": getFile("testdata/struct_literal_multiple_files/bindings_main.js"),
 			},
+			true,
 		},
 	}
 	for _, tt := range tests {
@@ -101,7 +128,7 @@ func TestGenerateBindings(t *testing.T) {
 			}
 
 			// Generate Bindings
-			got := GenerateBindings(project.BoundMethods)
+			got := GenerateBindings(project.BoundMethods, tt.useIDs)
 
 			for name, binding := range got {
 				// check if the binding is in the expected bindings

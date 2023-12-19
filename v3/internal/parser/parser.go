@@ -117,6 +117,7 @@ func (p *Parameter) JSType() string {
 }
 
 type BoundMethod struct {
+	Package    string
 	Name       string
 	DocComment string
 	Inputs     []*Parameter
@@ -276,7 +277,12 @@ type Stats struct {
 }
 
 func ParseProject(projectPath string) (*Project, error) {
+	absPath, err := filepath.Abs(projectPath)
+	if err != nil {
+		return nil, err
+	}
 	result := &Project{
+		Path:         absPath,
 		BoundMethods: make(map[packagePath]map[structName][]*BoundMethod),
 		packageCache: make(map[string]*ParsedPackage),
 	}
@@ -314,7 +320,7 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) error {
 		return err
 	}
 	p.Stats.NumMethods = len(p.BoundMethods)
-	generatedMethods := GenerateBindings(p.BoundMethods)
+	generatedMethods := GenerateBindings(p.BoundMethods, options.UseIDs)
 	for pkg, text := range generatedMethods {
 		// Write the file
 		err = os.WriteFile(filepath.Join(options.OutputDirectory, pkg+".js"), []byte(text), 0644)
@@ -590,8 +596,9 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 					if err != nil {
 						return err
 					}
-					// Add the method to the list of methods
+
 					method := &BoundMethod{
+						Package:    pkg.Path,
 						ID:         id,
 						Name:       funcDecl.Name.Name,
 						DocComment: strings.TrimSpace(funcDecl.Doc.Text()),
@@ -1061,6 +1068,10 @@ func (p *Project) parseConstDeclaration(decl *ast.GenDecl, pkg *ParsedPackage) {
 			typeDecl.Consts = append(typeDecl.Consts, constDecl)
 		}
 	}
+}
+
+func (p *Project) RelativePackageDir(path string) string {
+	return strings.TrimPrefix(path, p.Path)
 }
 
 func getTypeString(expr ast.Expr) string {

@@ -8,5 +8,6 @@ type GenerateBindingsOptions struct {
 	TSSuffix         string `description:"The postfix for the typescript names" default:""`
 	UseInterfaces    bool   `name:"i" description:"Use interfaces instead of classes"`
 	ProjectDirectory string `name:"p" description:"The project directory" default:"."`
+	UseIDs           bool   `name:"ids" description:"Use IDs instead of names in the binding calls"`
 	OutputDirectory  string `name:"d" description:"The output directory" default:"frontend/bindings"`
 }

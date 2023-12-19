@@ -11,6 +11,6 @@ export const GreetService = {
          * @param title {Title}
 		 * @returns {Promise<string>}
 		 **/
-	    Greet: function(name, title) { return wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0)); },
+	    Greet: function(name, title) { return wails.CallByName("main.GreetService.Greet", ...Array.prototype.slice.call(arguments, 0)); },
 };
 
