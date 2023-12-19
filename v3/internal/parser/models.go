@@ -58,7 +58,7 @@ func pkgAlias(fullPkg string) string {
 }
 
 func GenerateModels(models map[packagePath]map[structName]*StructDef, enums map[packagePath]map[string]*TypeDef, options *flags.GenerateBindingsOptions) (string, error) {
-	if models == nil {
+	if models == nil && enums == nil {
 		return "", nil
 	}
 
@@ -69,6 +69,9 @@ func GenerateModels(models map[packagePath]map[structName]*StructDef, enums map[
 	// and then sort resulting list by the alias
 	var keys []string
 	for pkg := range models {
+		keys = append(keys, pkg)
+	}
+	for pkg := range enums {
 		keys = append(keys, pkg)
 	}
 

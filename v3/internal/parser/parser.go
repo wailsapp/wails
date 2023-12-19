@@ -403,6 +403,7 @@ func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) 
 			StructCache: make(map[structName]*StructDef),
 			TypeCache:   make(map[string]*TypeDef),
 		}
+		p.parseTypes(map[string]*ParsedPackage{packageName: parsedPackage})
 		p.packageCache[packageName] = parsedPackage
 		result[packageName] = parsedPackage
 	}
@@ -412,6 +413,8 @@ func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) 
 func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err error) {
 
 	var callFound bool
+
+	p.parseTypes(pkgs)
 
 	for _, pkg := range pkgs {
 		thisPackage := pkg.Pkg
@@ -701,6 +704,14 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 			log.Fatal(err)
 		}
 		result.IsStruct = p.getStructDef(t.Sel.Name, extPackage)
+		if !result.IsStruct {
+			// Check if it's a type alias
+			typeDef, ok := extPackage.TypeCache[t.Sel.Name]
+			if ok {
+				typeDef.ShouldGenerate = true
+				result.IsEnum = true
+			}
+		}
 		result.Package = extPackage.Path
 	case *ast.ArrayType:
 		result.IsSlice = true
@@ -814,8 +825,13 @@ func (p *Project) getParsedPackageFromName(packageName string, currentPackage *P
 					Path:        path,
 					Dir:         dir,
 					StructCache: make(map[string]*StructDef),
+					TypeCache:   make(map[string]*TypeDef),
 				}
 				p.packageCache[path] = result
+
+				// Parse types
+				p.parseTypes(map[string]*ParsedPackage{path: result})
+
 				return result, nil
 			}
 		}
@@ -832,7 +848,7 @@ func getPackageDir(importPath string) (string, error) {
 }
 
 func (p *Project) getPackageFromPath(packagedir string, packagepath string) (*ast.Package, error) {
-	impPkg, err := parser.ParseDir(token.NewFileSet(), packagedir, nil, parser.AllErrors)
+	impPkg, err := parser.ParseDir(token.NewFileSet(), packagedir, nil, parser.AllErrors|parser.ParseComments)
 	if err != nil {
 		return nil, err
 	}
@@ -1072,6 +1088,42 @@ func (p *Project) parseConstDeclaration(decl *ast.GenDecl, pkg *ParsedPackage) {
 
 func (p *Project) RelativePackageDir(path string) string {
 	return strings.TrimPrefix(path, p.Path)
+}
+
+func (p *Project) parseTypes(pkgs map[string]*ParsedPackage) {
+	for _, pkg := range pkgs {
+		thisPackage := pkg.Pkg
+		// Iterate through the package's files
+		for _, file := range thisPackage.Files {
+			// Use an ast.Inspector to find the calls to application.New
+			ast.Inspect(file, func(n ast.Node) bool {
+				// Check for const declaration
+				genDecl, ok := n.(*ast.GenDecl)
+				if ok {
+					switch genDecl.Tok {
+					case token.TYPE:
+						var comments []string
+						if genDecl.Doc != nil {
+							comments = CommentGroupToText(genDecl.Doc)
+						}
+						for _, spec := range genDecl.Specs {
+							if typeSpec, ok := spec.(*ast.TypeSpec); ok {
+								p.parseTypeDeclaration(typeSpec, pkg, comments)
+							}
+						}
+					case token.CONST:
+						p.parseConstDeclaration(genDecl, pkg)
+					default:
+					}
+					return true
+
+				}
+
+				return true
+			})
+		}
+		p.addTypes(pkg.Path, pkg.TypeCache)
+	}
 }
 
 func getTypeString(expr ast.Expr) string {

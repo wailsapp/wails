@@ -46,8 +46,7 @@ func TestGenerateBindings(t *testing.T) {
 		{
 			"testdata/enum_from_imported_package",
 			map[string]string{
-				"main":     getFile("testdata/enum_from_imported_package/bindings_main.js"),
-				"services": getFile("testdata/enum_from_imported_package/bindings_services.js"),
+				"main": getFile("testdata/enum_from_imported_package/bindings_main.js"),
 			},
 			true,
 		},

@@ -100,6 +100,18 @@ func TestGenerateModels(t *testing.T) {
 			want: getFile("testdata/enum/models.js"),
 		},
 		{
+			name:          "enum from imported package",
+			dir:           "testdata/enum_from_imported_package",
+			want:          getFile("testdata/enum_from_imported_package/models.ts"),
+			useTypescript: true,
+		},
+		{
+			name:          "enum from imported package",
+			dir:           "testdata/enum_from_imported_package",
+			want:          getFile("testdata/enum_from_imported_package/models.js"),
+			useTypescript: false,
+		},
+		{
 			name:          "enum interface",
 			dir:           "testdata/enum-interface",
 			want:          getFile("testdata/enum-interface/models.ts"),
