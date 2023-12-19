@@ -611,6 +611,12 @@ func (a *App) Quit() {
 	})
 }
 
+func (a *App) SetIcon(icon []byte) {
+	if a.impl != nil {
+		a.impl.setIcon(icon)
+	}
+}
+
 func (a *App) SetMenu(menu *Menu) {
 	a.ApplicationMenu = menu
 	if a.impl != nil {
