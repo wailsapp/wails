@@ -1,8 +1,9 @@
 package keys
 
 import (
-	"github.com/leaanthony/slicer"
 	"strings"
+
+	"github.com/leaanthony/slicer"
 )
 
 var modifierStringMap = map[string]map[Modifier]string{
@@ -11,21 +12,21 @@ var modifierStringMap = map[string]map[Modifier]string{
 		ControlKey:     "Ctrl",
 		OptionOrAltKey: "Alt",
 		ShiftKey:       "Shift",
-		//SuperKey:       "Win",
+		// SuperKey:       "Win",
 	},
 	"darwin": {
 		CmdOrCtrlKey:   "Cmd",
 		ControlKey:     "Ctrl",
 		OptionOrAltKey: "Option",
 		ShiftKey:       "Shift",
-		//SuperKey:       "Cmd",
+		// SuperKey:       "Cmd",
 	},
 	"linux": {
 		CmdOrCtrlKey:   "Ctrl",
 		ControlKey:     "Ctrl",
 		OptionOrAltKey: "Alt",
 		ShiftKey:       "Shift",
-		//SuperKey:       "Super",
+		// SuperKey:       "Super",
 	},
 }
 

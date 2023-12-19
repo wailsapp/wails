@@ -1,6 +1,6 @@
 ---
 slug: wails-v2-released
-title: Wails v2 Released
+title: Wails v2 liberado
 authors:
   - leaanthony
 tags:
@@ -18,81 +18,81 @@ tags:
 <br />
 ```
 
-# It's here!
+# Já disponível!
 
-Today marks the release of [Wails](https://wails.io) v2. It's been about 18 months since the first v2 alpha and about a year from the first beta release. I'm truly grateful to everyone involved in the evolution of the project.
+Hoje marca a liberação de [Wails](https://wails.io) v2. Já faz cerca de 18 meses desde o primeiro alfa v2 e cerca de um ano desde a primeira versão beta. Eu sou realmente grato a todos que participaram da evolução do projeto.
 
-Part of the reason it took that long was due to wanting to get to some definition of completeness before officially calling it v2. The truth is, there's never a perfect time to tag a release - there's always outstanding issues or "just one more" feature to squeeze in. What tagging an imperfect major release does do, however, is to provide a bit of stability for users of the project, as well as a bit of a reset for the developers.
+Uma parte da razão por que demorou tanto tempo a querer chegar a uma definição de completude antes de a designar oficialmente como v2. A verdade é que nunca há um momento perfeito para marcar uma versão - há sempre questões pendentes ou "apenas mais um" recurso para entrar. No entanto, o que marcar uma versão principal imperfeita faz. é fornecer um pouco de estabilidade para os usuários do projeto, bem como um pouco de redefinição para os desenvolvedores.
 
-This release is more than I'd ever expected it to be. I hope it gives you as much pleasure as it has given us to develop it.
+Esta versão é mais do que eu já esperava que fosse. Espero que lhe dê tanto prazer como nos deu em desenvolvê-lo.
 
-# What _is_ Wails?
+# O que _é_ Wails?
 
-If you are unfamiliar with Wails, it is a project that enables Go programmers to provide rich frontends for their Go programs using familiar web technologies. It's a lightweight, Go alternative to Electron. Much more information can be found on the [official site](https://wails.io/docs/introduction).
+Se você não estiver familiarizado com as Wails, é um projeto que permite aos programadores Go fornecerem frontend ricos para seus programas usando tecnologias web familiares. É leve, uma alternativa ao Electron. Muito mais informações podem ser encontradas no [site oficial](https://wails.io/docs/introduction).
 
-# What's new?
+# O que há de novo?
 
-The v2 release is a huge leap forward for the project, addressing many of the pain points of v1. If you have not read any of the blog posts on the Beta releases for [macOS](/blog/wails-v2-beta-for-mac), [Windows](/blog/wails-v2-beta-for-windows) or [Linux](/blog/wails-v2-beta-for-linux), then I encourage you to do so as it covers all the major changes in more detail. In summary:
+A liberação v2 é um enorme salto em frente para o projeto, abordando muitos dos pontos de dor da v1. Se você não leu nenhum dos posts no blog em versões beta para [macOS](/blog/wails-v2-beta-for-mac), [Windows](/blog/wails-v2-beta-for-windows) ou [Linux](/blog/wails-v2-beta-for-linux), Então eu encorajo-os a fazê-lo porque cobre todas as principais mudanças em mais detalhes. Resumo:
 
-- Webview2 component for Windows that supports modern web standards and debugging capabilities.
-- [Dark / Light theme](/docs/reference/options#theme) + [custom theming](/docs/reference/options#customtheme) on Windows.
-- Windows now has no CGO requirements.
-- Out-of-the-box support for Svelte, Vue, React, Preact, Lit & Vanilla project templates.
-- [Vite](https://vitejs.dev/) integration providing a hot-reload development environment for your application.
-- Native application [menus](/docs/guides/application-development#application-menu) and [dialogs](/docs/reference/runtime/dialog).
-- Native window translucency effects for [Windows](/docs/reference/options#windowistranslucent) and [macOS](/docs/reference/options#windowistranslucent-1). Support for Mica & Acrylic backdrops.
-- Easily generate an [NSIS installer](/docs/guides/windows-installer) for Windows deployments.
-- A rich [runtime library](/docs/reference/runtime/intro) providing utility methods for window manipulation, eventing, dialogs, menus and logging.
-- Support for [obfuscating](/docs/guides/obfuscated) your application using [garble](https://github.com/burrowers/garble).
-- Support for compressing your application using [UPX](https://upx.github.io/).
-- Automatic TypeScript generation of Go structs. More info [here](/docs/howdoesitwork#calling-bound-go-methods).
-- No extra libraries or DLLs are required to be shipped with your application. For any platform.
-- No requirement to bundle frontend assets. Just develop your application like any other web application.
+- Componente Webview2 para Windows que oferece suporte a modernos padrões da web e capacidades de depuração.
+- [Tema Dark / Light](/docs/reference/options#theme) + [tema personalizado](/docs/reference/options#customtheme) no Windows.
+- Windows não tem os requisitos de CGO.
+- Suporte fora da caixa para modelos de projeto Svelte, Vue, React, Preact, Lit & Vanilla.
+- [Vite](https://vitejs.dev/) integração proporcionando um ambiente de desenvolvimento de atualização quente para seu aplicativo.
+- Aplicação nativa [menus](/docs/guides/application-development#application-menu) e [dialogs](/docs/reference/runtime/dialog).
+- Efeitos de translucência nativos da janela para [Windows](/docs/reference/options#windowistranslucent) e [macOS](/docs/reference/options#windowistranslucent-1). Support para Mica & Acrylic backdrops.
+- Gera facilmente um instalador [NSIS](/docs/guides/windows-installer) para deploys com Windows.
+- Uma biblioteca [em tempo de execução](/docs/reference/runtime/intro) que fornece métodos utilitários para manipulação de janelas, eventos, diálogos, menus e logs.
+- Suporte para [ofuscar](/docs/guides/obfuscated) seu aplicativo usando [garble](https://github.com/burrowers/garble).
+- Suporte para compactar sua aplicação usando [UPX](https://upx.github.io/).
+- Geração automática de estruturas de Go para TypeScript. Mais informações [aqui](/docs/howdoesitwork#calling-bound-go-methods).
+- Não são necessárias bibliotecas extras ou DLLs para enviar com sua aplicação. Para qualquer plataforma.
+- Nenhum requisito para empacotar assets. Apenas desenvolva seu aplicativo como qualquer outro aplicativo da web.
 
-# Credit & Thanks
+# Crédito & Obrigado
 
-Getting to v2 has been a huge effort. There have been ~2.2K commits by 89 contributors between the initial alpha and the release today, and many, many more that have provided translations, testing, feedback and help on the discussion forums as well as the issue tracker. I'm so unbelievably grateful to each one of you. I'd also like to give an extra special thank you to all the project sponsors who have provided guidance, advice and feedback. Everything you do is hugely appreciated.
+Chegar à v2 tem sido um enorme esforço. Houve cerca de 2,2 mil commits de 89 colaboradores entre o alfa inicial e o lançamento de hoje, e muitos, muitos mais que forneceram traduções, testes, feedback e ajuda nos fóruns de discussão, bem como no rastreador de problemas. Sou tão incrivelmente grato a cada um de vocês. Eu também gostaria de dar um agradecimento especial extra para todos os patrocinadores do projeto que forneceram orientação, conselho e feedback. Tudo o que você faz é extremamente apreciado.
 
-There are a few people I'd like to give special mention to:
+Há algumas pessoas que eu gostaria de mencionar especialmente:
 
-Firstly, a **huge** thank you to [@stffabi](https://github.com/stffabi) who has provided so many contributions which we all benefit from, as well as providing a lot of support on many issues. He has provided some key features such as the external dev server support which transformed our dev mode offering by allowing us to hook into [Vite](https://vitejs.dev/)'s superpowers. It's fair to say that Wails v2 would be a far less exciting release without his [incredible contributions](https://github.com/wailsapp/wails/commits?author=stffabi&since=2020-01-04). Thank you so much @stffabi!
+Primeiro, a **enorme** obrigado a [@stffabi](https://github.com/stffabi) que forneceu tantas contribuições das quais todos nos beneficiamos, Para além de prestar muito apoio em muitas questões. Ele forneceu algumas principais características, como o suporte ao servidor de desenvolvimento externo que transformou a oferta de desenvolvimento ao nos permitir conectar aos superpoderes do [Vite](https://vitejs.dev/). É justo dizer que o Wails v2 seria um lançamento muito menos emocionante sem sua [incrível contribuição](https://github.com/wailsapp/wails/commits?author=stffabi&since=2020-01-04). Muito obrigado @stffabi!
 
-I'd also like to give a huge shout-out to [@misitebao](https://github.com/misitebao) who has tirelessly been maintaining the website, as well as providing Chinese translations, managing Crowdin and helping new translators get up to speed. This is a hugely important task, and I'm extremely grateful for all the time and effort put into this! You rock!
+Eu também gostaria de dar um grande grito para [@misitebao](https://github.com/misitebao) que tem mantido o site incansavelmente. Além de fornecer traduções chinesas, gerenciar Crowdin e ajudar novos tradutores a se atualizarem para a velocidade. Esta é uma tarefa extremamente importante, e estou extremamente grato por todo o tempo e esforço investido nisso! Você é espetacular!
 
-Last, but not least, a huge thank you to Mat Ryer who has provided advice and support during the development of v2. Writing xBar together using an early Alpha of v2 was helpful in shaping the direction of v2, as well as give me an understanding of some design flaws in the early releases. I'm happy to announce that as of today, we will start to port xBar to Wails v2, and it will become the flagship application for the project. Cheers Mat!
+Por último, mas não menos importante, um enorme agradecimento ao senhor Mat Ryer, que prestou aconselhamento e apoio durante o desenvolvimento da v2. Escrever xBar junto usando um alfa inicial da v2 foi útil para moldar a direção da v2, Além de me dar uma ideia de algumas falhas de design nas versões mais cedo. Tenho prazer em anunciar que, a partir de hoje, começaremos a abrir o porto xBar para Wails v2, e tornar-se-á o principal aplicativo para o projecto. Felicidades Mat!
 
-# Lessons Learnt
+# Lições Aprendidas
 
-There are a number of lessons learnt in getting to v2 that will shape development moving forward.
+Há uma série de lições aprendidas ao chegar à v2 que irão moldar o desenvolvimento avançado.
 
-## Smaller, Quicker, Focused Releases
+## Menor, Rápido e Focado Versões
 
-In the course of developing v2, there were many features and bug fixes that were developed on an ad-hoc basis. This led to longer release cycles and were harder to debug. Moving forward, we are going to create releases more often that will include a reduced number of features. A release will involve updates to documentation as well as thorough testing. Hopefully, these smaller, quicker, focussed releases will lead to fewer regressions and better quality documentation.
+No desenvolvimento da v2, havia muitas características e correções de erros que foram desenvolvidas numa base ad-hoc. Isso levou a ciclos de lançamento mais longos e era mais difícil de depurar. Seguindo, vamos criar lançamentos com mais frequência que incluirá um número reduzido de recursos. Uma versão envolverá atualizações da documentação, bem como testes completos. Esperemos que estes lançamentos mais pequenos, mais rápidos e focados conduzam a menos regressões e a uma melhor documentação de qualidade.
 
-## Encourage Engagement
+## Incentive o envolvimento
 
-When starting this project, I wanted to immediately help everyone who had a problem. Issues were "personal" and I wanted them resolved as quickly as possible. This is unsustainable and ultimately works against the longevity of the project. Moving forward, I will be giving more space for people to get involved in answering questions and triaging issues. It would be good to get some tooling to help with this so if you have any suggestions, please join in the discussion [here](https://github.com/wailsapp/wails/discussions/1855).
+Ao iniciar este projeto, eu queria ajudar imediatamente todos os que tiveram um problema. Os problemas eram "pessoais" e eu queria que eles fossem resolvidos o mais rapidamente possível. Isto é insustentável e acaba por contrariar a longevidade do projecto. Avançando, darei mais espaço para que as pessoas se envolvam na resposta a perguntas e na triagem de questões. Seria bom conseguir algumas ferramentas para ajudar com isso, portanto, se você tiver alguma sugestão, por favor, participe da discussão [aqui](https://github.com/wailsapp/wails/discussions/1855).
 
-## Learning to say No
+## Aprendendo a dizer Não
 
-The more people that engage with an Open Source project, the more requests there will be for additional features that may or may not be useful to the majority of people. These features will take an initial amount of time to develop and debug, and incur an ongoing maintenance cost from that point on. I myself am the most guilty of this, often wanting to "boil the sea" rather than provide the minimum viable feature. Moving forward, we will need to say "No" a bit more to adding core features and focus our energies on a way to empower developers to provide that functionality themselves. We are looking seriously into plugins for this scenario. This will allow anyone to extend the project as they see fit, as well as providing an easy way to contribute towards the project.
+Quanto mais pessoas se envolverem com um projeto de Código Aberto, quanto mais pedidos forem para recursos adicionais que possam ou não ser úteis para a maioria das pessoas. Estas características levarão um tempo inicial para desenvolver e debugar e incorrer num custo de manutenção contínuo a partir desse ponto. Eu próprio sou o mais culpado por isso, querendo muitas vezes "ferver o mar" em vez de fornecer o mínimo viável. Seguindo, precisaremos dizer "Não" um pouco mais para adicionar recursos principais e concentrar as nossas energias em uma forma de capacitar os desenvolvedores para fornecer essas funcionalidades por conta própria. Estamos analisando seriamente plugins para este cenário. Isso permitirá a qualquer pessoa alargar o projecto como considerar conveniente, bem como proporcionar uma forma fácil de contribuir para o projecto.
 
-# Looking to the Future
+# Olhando para o futuro
 
-There are so many core features we are looking at to add to Wails in the next major development cycle already. The [roadmap](https://github.com/wailsapp/wails/discussions/1484) is full of interesting ideas, and I'm keen to start work on them. One of the big asks has been for multiple window support. It's a tricky one and to do it right, and we may need to look at providing an alternative API, as the current one was not designed with this in mind. Based on some preliminary ideas and feedback, I think you'll like where we're looking to go with it.
+Há tantas características centrais que estamos a analisar para adicionar às Wails no próximo grande ciclo de desenvolvimento. O [planejamento](https://github.com/wailsapp/wails/discussions/1484) está cheio de ideias interessantes, e estou ansioso para começar a trabalhar nelas. Uma das grandes perguntas tem sido a de múltiplas janelas. É um pouco complicado e para fazer isso certo, e pode ser que precisemos analisar a prover uma API alternativa. Como o actual não foi concebido tendo isso em mente. Com base em algumas idéias preliminares e feedback, eu acho que você vai gostar de onde estamos procurando acompanhá-lo.
 
-I'm personally very excited at the prospect of getting Wails apps running on mobile. We already have a demo project showing that it is possible to run a Wails app on Android, so I'm really keen to explore where we can go with this!
+Eu pessoalmente estou muito animado com a perspectiva de fazer aplicativos Wails funcionarem em dispositivos móveis. Já temos um projeto de demonstração mostrando que é possível executar um aplicativo Wails no Android, então eu estou realmente ansioso para explorar onde podemos ir com isso!
 
-A final point I'd like to raise is that of feature parity. It has long been a core principle that we wouldn't add anything to the project without there being full cross-platform support for it. Whilst this has proven to be (mainly) achievable so far, it has really held the project back in releasing new features. Moving forward, we will be adopting a slightly different approach: any new feature that cannot be immediately released for all platforms will be released under an experimental configuration or API. This allows early adopters on certain platforms to try the feature and provide feedback that will feed into the final design of the feature. This, of course, means that there are no guarantees of API stability until it is fully supported by all the platforms it can be supported on, but at least it will unblock development.
+Um último ponto que gostaria de levantar é o da paridade de recursos. Há muito tempo é um princípio central que não adicionamos nada ao projeto sem que haja suporte completo entre plataformas para ele. Embora isto tenha provado ser (principalmente) exequível até agora, conseguiu realmente reter o projeto na libertação de novas características. Movendo para frente, estaremos adotando uma abordagem ligeiramente diferente: qualquer nova funcionalidade que não possa ser imediatamente lançada para todas as plataformas será lançada sob uma configuração experimental ou API. Isso permite que usuários antecipados de certas plataformas experimentem o recurso e forneçam feedback que serão incorporados no design final da funcionalidade. Isto, claro, significa que não há garantias de estabilidade da API até que ela seja totalmente suportada por todas as plataformas em que pode ser suportada, mas pelo menos vai desbloquear o desenvolvimento.
 
-# Final Words
+# Palavras Finais
 
-I'm really proud of what we've been able to achieve with the V2 release. It's amazing to see what people have already been able to build using the beta releases so far. Quality applications like [Varly](https://varly.app/), [Surge](https://getsurge.io/) and [October](https://october.utf9k.net/). I encourage you to check them out.
+Estou muito orgulhoso do que conseguimos alcançar com a versão V2. É incrível ver o que as pessoas já foram capazes de construir usando os lançamentos beta. Aplicativos de qualidade como [Varly](https://varly.app/), [Surge](https://getsurge.io/) e [outubro](https://october.utf9k.net/). Eu encorajo você a conferi-los.
 
-This release was achieved through the hard work of many contributors. Whilst it is free to download and use, it has not come about through zero cost. Make no mistakes, this project has come at considerable cost. It has not only been my time and the time of each and every contributor, but also the cost of absence from friends and families of each of those people too. That's why I'm extremely grateful for every second that has been dedicated to making this project happen. The more contributors we have, the more this effort can be spread out and the more we can achieve together. I'd like to encourage you all to pick one thing that you can contribute, whether it is confirming someone's bug, suggesting a fix, making a documentation change or helping out someone who needs it. All of these small things have such a huge impact! It would be so awesome if you too were part of the story in getting to v3.
+Esta libertação foi conseguida através do trabalho árduo de muitos contribuintes. Embora seja livre de descarregar e utilizar, não surgiu através de custo zero. Não cometamos erros, este projeto tem um custo considerável. Não foi só o meu tempo e o tempo de cada um dos intervenientes, mas também o de cada um. mas também o custo da ausência de amigos e famílias de cada uma dessas pessoas. É por isso que eu estou extremamente grato por cada segundo que foi dedicado a fazer este projeto acontecer. Quanto mais contribuidores tivermos, mais este esforço poderá ser repartido e mais conseguiremos alcançar em conjunto. Eu gostaria de encorajar todos vocês a escolherem uma coisa que você possa contribuir, seja confirmar o bug de alguém, Sugira uma correção, fazendo uma documentação mudar ou ajudando alguém que precise. Todas estas pequenas coisas têm um impacto tão grande! Seria fantástico se o senhor também fizesse parte da história para chegar à v3.
 
-Enjoy!
+Aproveite!
 
 &dash; Lea
 
-PS: If you or your company find Wails useful, please consider [sponsoring the project](https://github.com/sponsors/leaanthony). Thanks!
+PS: Se você ou sua empresa consideram o Wails útil, considere [patrocinar o projeto](https://github.com/sponsors/leaanthony). Obrigado!

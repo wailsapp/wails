@@ -9,8 +9,10 @@ import (
 
 var signalChannel = make(chan os.Signal, 2)
 
-var callbacks []func()
-var lock sync.Mutex
+var (
+	callbacks []func()
+	lock      sync.Mutex
+)
 
 func OnShutdown(callback func()) {
 	lock.Lock()
@@ -20,20 +22,17 @@ func OnShutdown(callback func()) {
 
 // Start the Signal Manager
 func Start() {
-
 	// Hook into interrupts
 	gosignal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
 	// Spin off signal listener and wait for either a cancellation
 	// or signal
 	go func() {
-		select {
-		case <-signalChannel:
-			println("")
-			println("Ctrl+C detected. Shutting down...")
-			for _, callback := range callbacks {
-				callback()
-			}
+		<-signalChannel
+		println("")
+		println("Ctrl+C detected. Shutting down...")
+		for _, callback := range callbacks {
+			callback()
 		}
 	}()
 }

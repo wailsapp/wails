@@ -181,6 +181,39 @@ func (f *Field) JSDef(pkg string) string {
 	return result
 }
 
+func (f *Field) JSDocType(pkg string) string {
+	var jsType string
+	switch f.Type.Name {
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
+		jsType = "number"
+	case "string":
+		jsType = "string"
+	case "bool":
+		jsType = "boolean"
+	default:
+		jsType = f.Type.Name
+	}
+
+	var result string
+	isExternalStruct := f.Type.Package != "" && f.Type.Package != pkg && f.Type.IsStruct
+	if f.Type.Package == "" || f.Type.Package == pkg || !isExternalStruct {
+		if f.Type.IsStruct || f.Type.IsEnum {
+			result = fmt.Sprintf("%s.%s", pkg, jsType)
+		} else {
+			result = jsType
+		}
+	} else {
+		parts := strings.Split(f.Type.Package, "/")
+		result += fmt.Sprintf("%s.%s", parts[len(parts)-1], jsType)
+	}
+
+	if !ast.IsExported(f.Name) {
+		result += " // Warning: this is unexported in the Go struct."
+	}
+
+	return result
+}
+
 func (f *Field) DefaultValue() string {
 	// Return the default value of the typescript version of the type as a string
 	switch f.Type.Name {
@@ -699,8 +732,8 @@ func (p *Project) getStructDef(name string, pkg *ParsedPackage) bool {
 							if structType, ok := typeSpec.Type.(*ast.StructType); ok {
 								if typeSpec.Name.Name == name {
 									result := &StructDef{
-										Name:       name,
-										DocComment: typeDecl.Doc.Text(),
+										Name: name,
+										//TODO DocComment: CommentGroupToText(typeDecl.Doc),
 									}
 									pkg.StructCache[name] = result
 									result.Fields = p.parseStructFields(structType, pkg)

@@ -9,12 +9,10 @@ import (
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 )
 
-var (
-	IsAppleSilicon bool
-)
+var IsAppleSilicon bool
 
 // Info holds information about the current operating system,
-// package manager and required dependancies
+// package manager and required dependencies
 type Info struct {
 	OS           *operatingsystem.OS
 	PM           packagemanager.PackageManager
@@ -23,7 +21,7 @@ type Info struct {
 
 // GetInfo scans the system for operating system details,
 // the system package manager and the status of required
-// dependancies.
+// dependencies.
 func GetInfo() (*Info, error) {
 	var result Info
 	err := result.discover()
@@ -34,7 +32,6 @@ func GetInfo() (*Info, error) {
 }
 
 func checkNodejs() *packagemanager.Dependency {
-
 	// Check for Nodejs
 	output, err := exec.Command("node", "-v").Output()
 	installed := true
@@ -58,7 +55,6 @@ func checkNodejs() *packagemanager.Dependency {
 }
 
 func checkNPM() *packagemanager.Dependency {
-
 	// Check for npm
 	output, err := exec.Command("npm", "-version").Output()
 	installed := true
@@ -80,7 +76,6 @@ func checkNPM() *packagemanager.Dependency {
 }
 
 func checkUPX() *packagemanager.Dependency {
-
 	// Check for npm
 	output, err := exec.Command("upx", "-V").Output()
 	installed := true
@@ -102,7 +97,6 @@ func checkUPX() *packagemanager.Dependency {
 }
 
 func checkNSIS() *packagemanager.Dependency {
-
 	// Check for nsis installer
 	output, err := exec.Command("makensis", "-VERSION").Output()
 	installed := true
@@ -141,7 +135,6 @@ func checkLibrary(name string) func() *packagemanager.Dependency {
 }
 
 func checkDocker() *packagemanager.Dependency {
-
 	// Check for npm
 	output, err := exec.Command("docker", "version").Output()
 	installed := true

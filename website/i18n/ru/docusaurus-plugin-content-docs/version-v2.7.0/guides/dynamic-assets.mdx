@@ -1,0 +1,136 @@
+# Динамические ресурсы
+
+Если вы хотите загрузить или генерировать ресурсы для вашего фронтенда динамически, вы можете это сделать, используя опцию [AssetsHandler](../reference/options#assetshandler). AssetsHandler это общий `http.Handler`, который будет вызываться для любого запроса, не являющегося GET, на сервере ресурсов и для запросов GET, которые не могут быть обработаны из бандла ресурсов, поскольку файл не найден.
+
+Установив пользовательские AssetsHandler, вы можете предоставлять свои собственные ресурсы с помощью пользовательского ресурсного сервера.
+
+## Пример
+
+В нашем примере мы создадим простой обработчик ресурсов, который загрузит файлы с диска:
+
+```go title=main.go {17-36,49}
+package main
+
+import (
+    "embed"
+    "fmt"
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "net/http"
+    "os"
+    "strings"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+type FileLoader struct {
+    http.Handler
+}
+
+func NewFileLoader() *FileLoader {
+    return &FileLoader{}
+}
+
+func (h *FileLoader) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+    var err error
+    requestedFilename := strings.TrimPrefix(req.URL.Path, "/")
+    println("Requesting file:", requestedFilename)
+    fileData, err := os.ReadFile(requestedFilename)
+    if err != nil {
+        res.WriteHeader(http.StatusBadRequest)
+        res.Write([]byte(fmt.Sprintf("Could not load file %s", requestedFilename)))
+    }
+
+    res.Write(fileData)
+}
+
+func main() {
+    // Create an instance of the app structure
+    app := NewApp()
+
+    // Create application with options
+    err := wails.Run(&options.App{
+        Title:  "helloworld",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets:  assets,
+            Handler: NewFileLoader(),
+        },
+        BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 255},
+        OnStartup:        app.startup,
+        Bind: []interface{}{
+            app,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err)
+    }
+}
+```
+
+Когда мы запустим приложение в dev режиме, с помощью команды `wails dev`, мы увидим следующий вывод:
+
+```
+DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico'
+DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico' failed, using AssetHandler
+Requesting file: favicon.ico
+```
+
+Как видите, обработчик ресурсов вызывается, когда стандартный сервер ресурсов не может предоставить файл `favicon.ico`.
+
+Если вы щелкните правой кнопкой мыши по окну приложения и выберите "Исследовать элемент" для вызова devtools, вы сможете протестировать эту функцию, введя в консоль следующую строку:
+
+```
+let response = await fetch('does-not-exist.txt');
+```
+
+Это сгенерирует ошибку в devtools. Мы видим ошибку обработчика пользовательских ресурсов, которую мы ожидали увидеть:
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={require("@site/static/img/assetshandler-does-not-exist.webp").default}
+  />
+</p>
+```
+
+Однако, если мы вызовем `go.mod`, мы увидим следующий вывод:
+
+```mdx-code-block
+<p className="text--center">
+  <img src={require("@site/static/img/assetshandler-go-mod.webp").default} />
+</p>
+```
+
+А так мы можем разместить изображение прямо на страницу. Если мы обновим шаблон по умолчанию и заменим изображение логотипа:
+
+```html
+<img id="logo" class="logo" />
+```
+
+на:
+
+```html
+<img src="build/appicon.png" style="width: 300px" />
+```
+
+Тогда мы увидим следующее:
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={require("@site/static/img/assetshandler-image.webp").default}
+    style={{ width: "75%" }}
+  />
+</p>
+```
+
+:::warning
+
+Раскрытие структуры файловой системы таким образом сопряжено с рисками безопасности. Рекомендуется правильно управлять доступом к файловой системе.
+
+:::

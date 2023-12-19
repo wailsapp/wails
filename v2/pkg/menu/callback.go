@@ -2,7 +2,7 @@ package menu
 
 type CallbackData struct {
 	MenuItem *MenuItem
-	//ContextData string
+	// ContextData string
 }
 
 type Callback func(*CallbackData)

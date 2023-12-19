@@ -20,9 +20,12 @@ type ModelDefinitions struct {
 }
 
 func GenerateModel(wr io.Writer, def *ModelDefinitions, options *flags.GenerateBindingsOptions) error {
-	templateName := "model.ts.tmpl"
-	if options.UseInterfaces {
-		templateName = "interfaces.ts.tmpl"
+	templateName := "model.js.tmpl"
+	if options.TS {
+		templateName = "model.ts.tmpl"
+		if options.UseInterfaces {
+			templateName = "interfaces.ts.tmpl"
+		}
 	}
 
 	// Fix up TS names

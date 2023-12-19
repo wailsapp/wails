@@ -25,6 +25,7 @@ type GreetService struct {
 	target       *Person
 }
 
+// Person represents a person
 type Person struct {
 	Title Title
 	Name  string

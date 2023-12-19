@@ -41,7 +41,7 @@ func GenerateNSISInstaller(options *Options, amd64Binary string, arm64Binary str
 	// Write the WebView2 SetupFile
 	webviewSetup := buildassets.GetLocalPath(options.ProjectData, path.Join(nsisFolder, nsisWebView2SetupFile))
 	if dir := filepath.Dir(webviewSetup); !fs.DirExists(dir) {
-		if err := fs.MkDirs(dir, 0755); err != nil {
+		if err := fs.MkDirs(dir, 0o755); err != nil {
 			return err
 		}
 	}
@@ -92,7 +92,7 @@ func makeNSIS(options *Options, installerKind string, amd64Binary string, arm64B
 	outputLogger := options.Logger
 
 	outputLogger.Print("  - Building '%s' installer: ", installerKind)
-	var args = []string{}
+	args := []string{}
 	if amd64Binary != "" {
 		args = append(args, "-DARG_WAILS_AMD64_BINARY="+amd64Binary)
 	}

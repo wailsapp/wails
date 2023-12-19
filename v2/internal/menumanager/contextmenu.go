@@ -23,7 +23,6 @@ func (t *ContextMenu) AsJSON() (string, error) {
 }
 
 func NewContextMenu(contextMenu *menu.ContextMenu) *ContextMenu {
-
 	result := &ContextMenu{
 		ID:          contextMenu.ID,
 		menu:        contextMenu.Menu,
@@ -37,7 +36,6 @@ func NewContextMenu(contextMenu *menu.ContextMenu) *ContextMenu {
 }
 
 func (m *Manager) AddContextMenu(contextMenu *menu.ContextMenu) {
-
 	newContextMenu := NewContextMenu(contextMenu)
 
 	// Save the references
