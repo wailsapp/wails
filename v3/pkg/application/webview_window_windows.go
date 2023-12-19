@@ -236,6 +236,8 @@ func (w *windowsWebviewWindow) run() {
 
 	w.setupChromium()
 
+	w.setSize(options.Width, options.Height)
+
 	// Register the window with the application
 	getNativeApplication().registerWindow(w)
 
