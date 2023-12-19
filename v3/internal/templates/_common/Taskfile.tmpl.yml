@@ -401,6 +401,10 @@ tasks:
     cmds:
       - {{ "'{{.BIN_DIR}}\\\\{{.APP_NAME}}.exe'" }}
 
+  run:linux:
+    cmds:
+      - {{ "'{{.BIN_DIR}}/{{.APP_NAME}}'" }}
+
   dev:frontend:
     summary: Runs the frontend in development mode
     dir: frontend
