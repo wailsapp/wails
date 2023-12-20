@@ -82,7 +82,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetTitle:
 		title := args.String("title")
 		if title == nil {
-			m.Error("SetTitle: title is required")
+			m.httpError(rw, "SetTitle: title is required")
 			return
 		}
 		window.SetTitle(*title)
@@ -91,7 +91,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 		width := args.Int("width")
 		height := args.Int("height")
 		if width == nil || height == nil {
-			m.Error("Invalid SetSize Message")
+			m.httpError(rw, "Invalid SetSize Message")
 			return
 		}
 		window.SetSize(*width, *height)
@@ -100,7 +100,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 		x := args.Int("x")
 		y := args.Int("y")
 		if x == nil || y == nil {
-			m.Error("Invalid SetRelativePosition Message")
+			m.httpError(rw, "Invalid SetRelativePosition Message")
 			return
 		}
 		window.SetRelativePosition(*x, *y)
@@ -153,22 +153,22 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetBackgroundColour:
 		r := args.UInt8("r")
 		if r == nil {
-			m.Error("Invalid SetBackgroundColour Message: 'r' value required")
+			m.httpError(rw, "Invalid SetBackgroundColour Message: 'r' value required")
 			return
 		}
 		g := args.UInt8("g")
 		if g == nil {
-			m.Error("Invalid SetBackgroundColour Message: 'g' value required")
+			m.httpError(rw, "Invalid SetBackgroundColour Message: 'g' value required")
 			return
 		}
 		b := args.UInt8("b")
 		if b == nil {
-			m.Error("Invalid SetBackgroundColour Message: 'b' value required")
+			m.httpError(rw, "Invalid SetBackgroundColour Message: 'b' value required")
 			return
 		}
 		a := args.UInt8("a")
 		if a == nil {
-			m.Error("Invalid SetBackgroundColour Message: 'a' value required")
+			m.httpError(rw, "Invalid SetBackgroundColour Message: 'a' value required")
 			return
 		}
 		window.SetBackgroundColour(RGBA{
@@ -181,7 +181,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetAlwaysOnTop:
 		alwaysOnTop := args.Bool("alwaysOnTop")
 		if alwaysOnTop == nil {
-			m.Error("Invalid SetAlwaysOnTop Message: 'alwaysOnTop' value required")
+			m.httpError(rw, "Invalid SetAlwaysOnTop Message: 'alwaysOnTop' value required")
 			return
 		}
 		window.SetAlwaysOnTop(*alwaysOnTop)
@@ -189,7 +189,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetResizable:
 		resizable := args.Bool("resizable")
 		if resizable == nil {
-			m.Error("Invalid SetResizable Message: 'resizable' value required")
+			m.httpError(rw, "Invalid SetResizable Message: 'resizable' value required")
 			return
 		}
 		window.SetResizable(*resizable)
@@ -198,7 +198,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 		width := args.Int("width")
 		height := args.Int("height")
 		if width == nil || height == nil {
-			m.Error("Invalid SetMinSize Message")
+			m.httpError(rw, "Invalid SetMinSize Message")
 			return
 		}
 		window.SetMinSize(*width, *height)
@@ -207,7 +207,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 		width := args.Int("width")
 		height := args.Int("height")
 		if width == nil || height == nil {
-			m.Error("Invalid SetMaxSize Message")
+			m.httpError(rw, "Invalid SetMaxSize Message")
 			return
 		}
 		window.SetMaxSize(*width, *height)
@@ -246,7 +246,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetZoomLevel:
 		zoomLevel := args.Float64("zoomLevel")
 		if zoomLevel == nil {
-			m.Error("Invalid SetZoom Message: invalid 'zoomLevel' value")
+			m.httpError(rw, "Invalid SetZoom Message: invalid 'zoomLevel' value")
 			return
 		}
 		window.SetZoom(*zoomLevel)

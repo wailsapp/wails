@@ -26,7 +26,7 @@ func (m *MessageProcessor) processClipboardMethod(method int, rw http.ResponseWr
 	case ClipboardSetText:
 		text := args.String("text")
 		if text == nil {
-			m.Error("SetText: text is required")
+			m.httpError(rw, "SetText: text is required")
 			return
 		}
 		globalApplication.Clipboard().SetText(*text)

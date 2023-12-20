@@ -25,12 +25,12 @@ func (m *MessageProcessor) processBrowserMethod(method int, rw http.ResponseWrit
 	case BrowserOpenURL:
 		url := args.String("url")
 		if url == nil {
-			m.Error("OpenURL: url is required")
+			m.httpError(rw, "OpenURL: url is required")
 			return
 		}
 		err := browser.OpenURL(*url)
 		if err != nil {
-			m.Error("OpenURL: %s", err.Error())
+			m.httpError(rw, "OpenURL: %s", err.Error())
 			return
 		}
 		m.ok(rw)

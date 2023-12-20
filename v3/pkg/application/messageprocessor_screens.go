@@ -22,21 +22,21 @@ func (m *MessageProcessor) processScreensMethod(method int, rw http.ResponseWrit
 	case ScreensGetAll:
 		screens, err := globalApplication.GetScreens()
 		if err != nil {
-			m.Error("GetAll: %s", err.Error())
+			m.httpError(rw, "GetAll: %s", err.Error())
 			return
 		}
 		m.json(rw, screens)
 	case ScreensGetPrimary:
 		screen, err := globalApplication.GetPrimaryScreen()
 		if err != nil {
-			m.Error("GetPrimary: %s", err.Error())
+			m.httpError(rw, "GetPrimary: %s", err.Error())
 			return
 		}
 		m.json(rw, screen)
 	case ScreensGetCurrent:
 		screen, err := globalApplication.CurrentWindow().GetScreen()
 		if err != nil {
-			m.Error("GetCurrent: %s", err.Error())
+			m.httpError(rw, "GetCurrent: %s", err.Error())
 			return
 		}
 		m.json(rw, screen)
