@@ -19,9 +19,11 @@ let ClipboardText = 1;
 
 /**
  * Set the Clipboard text
+ * @param {string} text - text to set in the clipboard
+ * @returns {Promise<void>}
  */
 export function SetText(text) {
-    void call(ClipboardSetText, {text});
+    return call(ClipboardSetText, {text});
 }
 
 /**

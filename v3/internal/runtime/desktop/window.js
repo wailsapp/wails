@@ -55,29 +55,34 @@ export function newWindow(windowName) {
 
         /**
          * Centers the window.
+         * @returns {Promise<void>}
          */
-        Center: () => void call(WindowCenter),
+        Center: () => call(WindowCenter),
 
         /**
          * Set the window title.
          * @param title
+         * @returns {Promise<void>}
          */
-        SetTitle: (title) => void call(WindowSetTitle, {title}),
+        SetTitle: (title) => call(WindowSetTitle, {title}),
 
         /**
          * Makes the window fullscreen.
+         * @returns {Promise<void>}
          */
-        Fullscreen: () => void call(WindowFullscreen),
+        Fullscreen: () => call(WindowFullscreen),
 
         /**
          * Unfullscreen the window.
+         * @returns {Promise<void>}
          */
-        UnFullscreen: () => void call(WindowUnFullscreen),
+        UnFullscreen: () => call(WindowUnFullscreen),
 
         /**
          * Set the window size.
          * @param {number} width The window width
          * @param {number} height The window height
+         * @returns {Promise<void>}
          */
         SetSize: (width, height) => call(WindowSetSize, {width,height}),
 
@@ -85,32 +90,36 @@ export function newWindow(windowName) {
          * Get the window size.
          * @returns {Promise<Size>} The window size
          */
-        Size: () => { return call(WindowSize); },
+        Size: () => call(WindowSize),
 
         /**
          * Set the window maximum size.
          * @param {number} width
          * @param {number} height
+         * @returns {Promise<void>}
          */
-        SetMaxSize: (width, height) => void call(WindowSetMaxSize, {width,height}),
+        SetMaxSize: (width, height) => call(WindowSetMaxSize, {width,height}),
 
         /**
          * Set the window minimum size.
          * @param {number} width
          * @param {number} height
+         * @returns {Promise<void>}
          */
-        SetMinSize: (width, height) => void call(WindowSetMinSize, {width,height}),
+        SetMinSize: (width, height) => call(WindowSetMinSize, {width,height}),
 
         /**
          * Set window to be always on top.
          * @param {boolean} onTop Whether the window should be always on top
+         * @returns {Promise<void>}
          */
-        SetAlwaysOnTop: (onTop) => void call(WindowSetAlwaysOnTop, {alwaysOnTop:onTop}),
+        SetAlwaysOnTop: (onTop) => call(WindowSetAlwaysOnTop, {alwaysOnTop:onTop}),
 
         /**
          * Set the window relative position.
          * @param {number} x
          * @param {number} y
+         * @returns {Promise<void>}
          */
         SetRelativePosition: (x, y) => call(WindowSetRelativePosition, {x,y}),
 
@@ -118,58 +127,67 @@ export function newWindow(windowName) {
          * Get the window position.
          * @returns {Promise<Position>} The window position
          */
-        RelativePosition: () => { return call(WindowRelativePosition); },
+        RelativePosition: () => call(WindowRelativePosition),
 
         /**
          * Get the screen the window is on.
          * @returns {Promise<Screen>}
          */
-        Screen: () => { return call(WindowScreen); },
+        Screen: () => call(WindowScreen),
 
         /**
          * Hide the window
+         * @returns {Promise<void>}
          */
-        Hide: () => void call(WindowHide),
+        Hide: () => call(WindowHide),
 
         /**
          * Maximise the window
+         * @returns {Promise<void>}
          */
-        Maximise: () => void call(WindowMaximise),
+        Maximise: () => call(WindowMaximise),
 
         /**
          * Show the window
+         * @returns {Promise<void>}
          */
-        Show: () => void call(WindowShow),
+        Show: () => call(WindowShow),
 
         /**
          * Close the window
+         * @returns {Promise<void>}
          */
-        Close: () => void call(WindowClose),
+        Close: () => call(WindowClose),
 
         /**
          * Toggle the window maximise state
+         * @returns {Promise<void>}
          */
-        ToggleMaximise: () => void call(WindowToggleMaximise),
+        ToggleMaximise: () => call(WindowToggleMaximise),
 
         /**
          * Unmaximise the window
+         * @returns {Promise<void>}
          */
-        UnMaximise: () => void call(WindowUnMaximise),
+        UnMaximise: () => call(WindowUnMaximise),
 
         /**
          * Minimise the window
+         * @returns {Promise<void>}
          */
-        Minimise: () => void call(WindowMinimise),
+        Minimise: () => call(WindowMinimise),
 
         /**
          * Unminimise the window
+         * @returns {Promise<void>}
          */
-        UnMinimise: () => void call(WindowUnMinimise),
+        UnMinimise: () => call(WindowUnMinimise),
 
         /**
          * Restore the window
+         * @returns {Promise<void>}
          */
-        Restore: () => void call(WindowRestore),
+        Restore: () => call(WindowRestore),
 
         /**
          * Set the background colour of the window.
@@ -177,52 +195,58 @@ export function newWindow(windowName) {
          * @param {number} g - A value between 0 and 255
          * @param {number} b - A value between 0 and 255
          * @param {number} a - A value between 0 and 255
+         * @returns {Promise<void>}
          */
-        SetBackgroundColour: (r, g, b, a) => void call(WindowSetBackgroundColour, {r, g, b, a}),
+        SetBackgroundColour: (r, g, b, a) => call(WindowSetBackgroundColour, {r, g, b, a}),
 
         /**
          * Set whether the window can be resized or not
          * @param {boolean} resizable
+         * @returns {Promise<void>}
          */
-        SetResizable: (resizable) => void call(WindowSetResizable, {resizable}),
+        SetResizable: (resizable) => call(WindowSetResizable, {resizable}),
 
         /**
          * Get the window width
          * @returns {Promise<number>}
          */
-        Width: () => { return call(WindowWidth); },
+        Width: () => call(WindowWidth),
 
         /**
          * Get the window height
          * @returns {Promise<number>}
          */
-        Height: () => { return call(WindowHeight); },
+        Height: () => call(WindowHeight),
 
         /**
          * Zoom in the window
+         * @returns {Promise<void>}
          */
-        ZoomIn: () => void call(WindowZoomIn),
+        ZoomIn: () => call(WindowZoomIn),
 
         /**
          * Zoom out the window
+         * @returns {Promise<void>}
          */
-        ZoomOut: () => void call(WindowZoomOut),
+        ZoomOut: () => call(WindowZoomOut),
 
         /**
          * Reset the window zoom
+         * @returns {Promise<void>}
          */
-        ZoomReset: () => void call(WindowZoomReset),
+        ZoomReset: () => call(WindowZoomReset),
 
         /**
          * Get the window zoom
          * @returns {Promise<number>}
          */
-        GetZoomLevel: () => { return call(WindowGetZoomLevel); },
+        GetZoomLevel: () => call(WindowGetZoomLevel),
 
         /**
          * Set the window zoom level
          * @param {number} zoomLevel
+         * @returns {Promise<void>}
          */
-        SetZoomLevel: (zoomLevel) => void call(WindowSetZoomLevel, {zoomLevel}),
+        SetZoomLevel: (zoomLevel) => call(WindowSetZoomLevel, {zoomLevel}),
     };
 }

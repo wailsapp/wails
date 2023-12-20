@@ -41,7 +41,6 @@ export function GetPrimary() {
 /**
  * Gets the current active screen.
  * @returns {Promise<Screen>}
- * @constructor
  */
 export function GetCurrent() {
     return call(ScreensGetCurrent);

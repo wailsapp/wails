@@ -19,7 +19,8 @@ let BrowserOpenURL = 0;
 /**
  * Open a browser window to the given URL
  * @param {string} url - The URL to open
+ * @returns {Promise<void>}
  */
 export function OpenURL(url) {
-    void call(BrowserOpenURL, {url});
+    return call(BrowserOpenURL, {url});
 }

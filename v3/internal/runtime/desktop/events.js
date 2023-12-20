@@ -28,7 +28,7 @@ class Listener {
     /**
      * Creates an instance of Listener.
      * @param {string} eventName
-     * @param {function} callback
+     * @param {(data: any) => void} callback
      * @param {number} maxCallbacks
      * @memberof Listener
      */
@@ -79,9 +79,9 @@ export const eventListeners = new Map();
  *
  * @export
  * @param {string} eventName
- * @param {function(WailsEvent): void} callback
+ * @param {(data: any) => void} callback
  * @param {number} maxCallbacks
- * @returns {function} A function to cancel the listener
+ * @returns {() => void} A function to cancel the listener
  */
 export function OnMultiple(eventName, callback, maxCallbacks) {
     let listeners = eventListeners.get(eventName) || [];
@@ -97,7 +97,7 @@ export function OnMultiple(eventName, callback, maxCallbacks) {
  * @export
  * @param {string} eventName
  * @param {function(WailsEvent): void} callback
- * @returns {function} A function to cancel the listener
+ * @returns {() => void} A function to cancel the listener
  */
 export function On(eventName, callback) {
     return OnMultiple(eventName, callback, -1);
@@ -109,7 +109,7 @@ export function On(eventName, callback) {
  * @export
  * @param {string} eventName
  * @param {function(WailsEvent): void} callback
- @returns {function} A function to cancel the listener
+ * @returns {() => void} A function to cancel the listener
  */
 export function Once(eventName, callback) {
     return OnMultiple(eventName, callback, 1);
@@ -119,6 +119,7 @@ export function Once(eventName, callback) {
  * listenerOff unregisters a listener previously registered with On
  *
  * @param {Listener} listener
+ * @returns {void}
  */
 function listenerOff(listener) {
     const eventName = listener.eventName;
@@ -168,6 +169,7 @@ export function dispatchWailsEvent(event) {
  *
  * @param {string} eventName
  * @param  {...string} additionalEventNames
+ * @returns {void}
  */
 export function Off(eventName, ...additionalEventNames) {
     let eventsToRemove = [eventName, ...additionalEventNames];
@@ -180,6 +182,7 @@ export function Off(eventName, ...additionalEventNames) {
  * OffAll unregisters all listeners
  * [v3 CHANGE] OffAll only unregisters listeners within the current window
  *
+ * @returns {void}
  */
 export function OffAll() {
     eventListeners.clear();
@@ -188,7 +191,9 @@ export function OffAll() {
 /**
  * Emit an event
  * @param {WailsEvent} event The event to emit
+ *
+ * @returns {Promise<void>}
  */
 export function Emit(event) {
-    void call(EventEmit, event);
+    return call(EventEmit, event);
 }

@@ -18,21 +18,15 @@ export const Screens = {
      * Get the primary screen
      * @returns {Promise<Screen>}
      */
-    GetPrimary: () => {
-        return wails.Screens.GetPrimary();
-    },
+    GetPrimary: () => wails.Screens.GetPrimary(),
     /**
      * Get all screens
      * @returns {Promise<Screen[]>}
      */
-    GetAll: () => {
-        return wails.Screens.GetAll();
-    },
+    GetAll: () => wails.Screens.GetAll(),
     /**
      * Get the current screen
      * @returns {Promise<Screen>}
      */
-    GetCurrent: () => {
-        return wails.Screens.GetCurrent();
-    },
+    GetCurrent: () => wails.Screens.GetCurrent(),
 };

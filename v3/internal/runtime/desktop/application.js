@@ -22,22 +22,24 @@ let methods = {
 
 /**
  * Hide the application
+ * @returns {Promise<void>}
  */
 export function Hide() {
-    void call(methods.Hide);
+    return call(methods.Hide);
 }
 
 /**
  * Show the application
+ * @returns {Promise<void>}
  */
 export function Show() {
-    void call(methods.Show);
+    return call(methods.Show);
 }
-
 
 /**
  * Quit the application
+ * @returns {Promise<void>}
  */
 export function Quit() {
-    void call(methods.Quit);
+    return call(methods.Quit);
 }

@@ -18,21 +18,15 @@ export const Application = {
      * Hides the application
      * @returns {Promise<void>}
      */
-    Hide: () => {
-        return wails.Application.Hide();
-    },
+    Hide: () => wails.Application.Hide(),
     /**
      * Shows the application
      * @returns {Promise<void>}
      */
-    Show: () => {
-        return wails.Application.Show();
-    },
+    Show: () => wails.Application.Show(),
     /**
      * Quits the application
      * @returns {Promise<void>}
      */
-    Quit: () => {
-        return wails.Application.Quit();
-    },
+    Quit: () => wails.Application.Quit(),
 };

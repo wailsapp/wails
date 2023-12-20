@@ -17,9 +17,7 @@ export const Browser = {
     /**
      * Opens a browser window to the given URL
      * @param {string} url - the url to open
-     * @returns {Promise<string>}
+     * @returns {Promise<void>}
      */
-    OpenURL: (url) => {
-        return wails.Browser.OpenURL(url);
-    },
+    OpenURL: (url) => wails.Browser.OpenURL(url),
 };
