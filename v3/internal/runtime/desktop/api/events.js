@@ -11,6 +11,7 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 import {EventTypes} from './event_types';
+import {WailsEvent} from '../events';
 
 
 /**

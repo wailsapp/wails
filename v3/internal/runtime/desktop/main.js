@@ -18,7 +18,7 @@ import * as Browser from './browser';
 import {Plugin, Call, callErrorCallback, callCallback, CallByID, CallByName} from "./calls";
 import {clientId} from './runtime';
 import {newWindow} from "./window";
-import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
+import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple, WailsEvent} from "./events";
 import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
 import {setupContextMenus} from "./contextmenu";
 import {reloadWML} from "./wml";
@@ -83,6 +83,7 @@ export function newRuntime(windowName) {
             OnMultiple,
             Off,
             OffAll,
+            WailsEvent,
         },
         Window: newWindow(windowName),
     };
