@@ -152,7 +152,13 @@ func (m *windowsApp) show() {
 func (m *windowsApp) on(_ uint) {
 }
 
-func (m *windowsApp) setIcon(_ []byte) {
+func (m *windowsApp) setIcon(icon []byte) {
+	hIcon, err := w32.CreateLargeHIconFromImage(icon)
+	if err != nil {
+		m.parent.error("unable to create icon:", err)
+		return
+	}
+	w32.SetApplicationIcon(m.mainThreadWindowHWND, hIcon)
 }
 
 func (m *windowsApp) name() string {
