@@ -17,21 +17,16 @@ We also want to get all examples working on Linux.
 
 #### How Can I Help?
 
-If you are interested in helping out, please review the table below and look for
-untested scenarios. The parser code and tests are located in `v3/internal/parser`.
-All tests can be run using `go test ./...` from the `v3` directory.
+You can generate bindings using the `wails3 generate bindings` command. This will generate bindings for all exported struct methods bound to your project.
+You can then use these bindings in your frontend code. You can see an example of this in the `examples/bindings` directory.
+Run `wails3 generate bindings -help` to view options that govern how bindings are generated.
+ 
+Review the table below and look for untested scenarios. The parser code and tests are located in `v3/internal/parser`. All tests can be run using `go test ./...` from the `v3` directory.
 Basically, try to break it and let us know if you find any issues! :smile:
 
 #### Status
 
 Bindings for struct (CallByID):
-- [x] Same package
-- [x] Different package
-- [ ] Different package with same name
-- [x] Containing another struct from same package
-- [x] Containing another struct from different package
-- [x] Containing an anonymous struct
-
 
 - :material-check-bold: - Working
 - :material-minus: - Partially working
@@ -40,12 +35,6 @@ Bindings for struct (CallByID):
 {{ read_csv("alpha3-bindings-callbyid.csv") }}
 
 Bindings for struct (CallByName):
-- [ ] Same package
-- [ ] Different package
-- [ ] Different package with same name
-- [ ] Containing another struct from same package
-- [ ] Containing another struct from different package
-- [ ] Containing an anonymous struct
 
 - :material-check-bold: - Working
 - :material-minus: - Partially working
@@ -54,31 +43,17 @@ Bindings for struct (CallByName):
 {{ read_csv("alpha3-bindings-callbyname.csv") }}
 
 Models:
-- [x] Class model for struct in same package
-- [x] Class model for struct in different package
-- [ ] Interface model for struct in same package
-- [ ] Interface model for struct in different package
-- [x] Enum in same package
-- [x] Enum in different package
-- [x] Interface using enum in same package
-- [ ] Interface using enum in different package
-
-Examples:
-- [ ] All examples working on Linux
-
 
 - :material-check-bold: - Working
 - :material-minus: - Partially working
 - :material-close: - Not working
 
-**Bindings**:
-
-{{ read_csv("alpha3-bindings-callbyid.csv") }}
-
-**Models**:
-
 {{ read_csv("alpha3-models.csv") }}
 
+
+Examples:
+
+- [ ] All examples working on Linux
 
 
 ### Alpha 2

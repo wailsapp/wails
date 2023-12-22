@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "embed"
-	"github.com/wailsapp/wails/v3/internal/parser/testdata/variable_single_from_other_function/services"
+	"github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services"
 	"log"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -15,6 +15,7 @@ type GreetService struct {
 	target       *Person
 }
 
+// Person is a person
 type Person struct {
 	Name    string
 	Address *services.Address

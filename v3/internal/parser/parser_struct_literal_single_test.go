@@ -1120,6 +1120,36 @@ func TestParseStructLiteralSingle(t *testing.T) {
 				t.Errorf("ParseDirectory() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			// Patch the PackageDir in the wantBoundMethods
+			for _, packageData := range got.BoundMethods {
+				for _, boundMethods := range packageData {
+					for _, boundMethod := range boundMethods {
+						boundMethod.PackageDir = ""
+					}
+				}
+			}
+
+			// Loop over the things we want
+			for packageName, packageData := range tt.wantBoundMethods {
+				for structName, wantBoundMethods := range packageData {
+					gotBoundMethods := got.BoundMethods[packageName][structName]
+					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods); diff != "" {
+						t.Errorf("ParseDirectory() failed:\n" + diff)
+					}
+				}
+			}
+
+			// Loop over the models
+			for _, packageData := range got.Models {
+				for _, wantModel := range packageData {
+					// Loop over the Fields
+					for _, field := range wantModel.Fields {
+						field.Project = nil
+					}
+				}
+			}
+
 			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}

@@ -16,23 +16,26 @@ const header = `// @ts-check
 `
 
 const bindingTemplate = `
-		/**
-		 * {{structName}}.{{methodName}}
-		 *Comments
-* @param names {string}
-		 * @returns {Promise<string>}
-		 **/
+/**Comments 
+ * @function {{methodName}}* @param names {string}
+ * @returns {Promise<string>}
+ **/
 `
 
-const callByID = `	    {{methodName}}: function({{inputs}}) { return wails.CallByID({{ID}}, ...Array.prototype.slice.call(arguments, 0)); },
+const callByID = `export function {{methodName}}({{inputs}}) {
+	return wails.CallByID({{ID}}, ...Array.prototype.slice.call(arguments, 0));
+}
 `
-const callByName = `	    {{methodName}}: function({{inputs}}) { return wails.CallByName("{{Name}}", ...Array.prototype.slice.call(arguments, 0)); },
+
+const callByName = `export function {{methodName}}({{inputs}}) {
+	return wails.CallByName("{{Name}}", ...Array.prototype.slice.call(arguments, 0));
+}
 `
 
 const enumTemplate = `
-        	export enum {{.EnumName}} {
-        	    {{.EnumValues}}
-        	}
+		export enum {{.EnumName}} {
+			{{.EnumValues}}
+		}
 `
 
 var reservedWords = []string{
@@ -112,8 +115,13 @@ func sanitiseJSVarName(name string) string {
 	return name
 }
 
-func GenerateBinding(structName string, method *BoundMethod, useIDs bool) (string, []string, []string) {
-	var namespacedStructs []string
+type ExternalStruct struct {
+	Package string
+	Name    string
+}
+
+func GenerateBinding(thisStructName string, method *BoundMethod, useIDs bool) (string, []string, map[packagePath]map[string]*ExternalStruct) {
+	var externalStructs = make(map[packagePath]map[string]*ExternalStruct)
 	var models []string
 	template := bindingTemplate
 	if useIDs {
@@ -121,7 +129,7 @@ func GenerateBinding(structName string, method *BoundMethod, useIDs bool) (strin
 	} else {
 		template += callByName
 	}
-	result := strings.ReplaceAll(template, "{{structName}}", structName)
+	result := strings.ReplaceAll(template, "{{structName}}", thisStructName)
 	result = strings.ReplaceAll(result, "{{methodName}}", method.Name)
 	result = strings.ReplaceAll(result, "{{ID}}", fmt.Sprintf("%v", method.ID))
 
@@ -129,10 +137,10 @@ func GenerateBinding(structName string, method *BoundMethod, useIDs bool) (strin
 	parts := strings.Split(method.Package, "/")
 	packageName := parts[len(parts)-1]
 
-	result = strings.ReplaceAll(result, "{{Name}}", fmt.Sprintf("%v.%v.%v", packageName, structName, method.Name))
+	result = strings.ReplaceAll(result, "{{Name}}", fmt.Sprintf("%v.%v.%v", packageName, thisStructName, method.Name))
 	comments := strings.TrimSpace(method.DocComment)
 	if comments != "" {
-		comments = " " + comments
+		comments = "\n * " + comments
 	}
 	result = strings.ReplaceAll(result, "Comments", comments)
 	var params string
@@ -143,16 +151,22 @@ func GenerateBinding(structName string, method *BoundMethod, useIDs bool) (strin
 			models = append(models, pkgName)
 		}
 		if input.Type.IsStruct || input.Type.IsEnum {
-			nsStruct := input.NamespacedStructType()
-			namespacedStructs = append(namespacedStructs, nsStruct)
+			if _, ok := externalStructs[input.Type.Package]; !ok {
+				externalStructs[input.Type.Package] = make(map[string]*ExternalStruct)
+			}
+			externalStructs[input.Type.Package][input.Type.Name] = &ExternalStruct{
+				Package: input.Type.Package,
+				Name:    input.Type.Name,
+			}
 		}
 
-		params += "         * @param " + inputName + " {" + input.JSType() + "}\n"
+		inputType := input.JSType(packageName)
+		params += "\n * @param " + inputName + " {" + inputType + "}"
 	}
 	params = strings.TrimSuffix(params, "\n")
-	if len(params) == 0 {
-		params = "         *"
-	}
+	//if len(params) > 0 {
+	//	params = "\n" + params
+	//}
 	result = strings.ReplaceAll(result, "* @param names {string}", params)
 	var inputs string
 	for _, input := range method.Inputs {
@@ -181,13 +195,19 @@ func GenerateBinding(structName string, method *BoundMethod, useIDs bool) (strin
 			if pkgName != "" {
 				models = append(models, pkgName)
 			}
-			jsType := output.JSType()
+			jsType := output.JSType(packageName)
 			if jsType == "error" {
 				jsType = "void"
 			}
 			if output.Type.IsStruct {
-				namespacedStructs = append(namespacedStructs, output.NamespacedStructType())
-				jsType = output.NamespacedStructVariable()
+				if _, ok := externalStructs[output.Type.Package]; !ok {
+					externalStructs[output.Type.Package] = make(map[string]*ExternalStruct)
+				}
+				externalStructs[output.Type.Package][output.Type.Name] = &ExternalStruct{
+					Package: output.Type.Package,
+					Name:    output.Type.Name,
+				}
+				jsType = output.NamespacedStructVariable(output.Type.Package)
 			}
 			returns += jsType + ", "
 		}
@@ -196,7 +216,7 @@ func GenerateBinding(structName string, method *BoundMethod, useIDs bool) (strin
 	}
 	result = strings.ReplaceAll(result, " * @returns {Promise<string>}", returns)
 
-	return result, lo.Uniq(models), lo.Uniq(namespacedStructs)
+	return result, lo.Uniq(models), externalStructs
 }
 
 func getPackageName(input *Parameter) string {
@@ -240,47 +260,81 @@ func normalisePackageNames(packageNames []string) map[string]string {
 	return result
 }
 
-func GenerateBindings(bindings map[string]map[string][]*BoundMethod, useIDs bool) map[string]string {
+func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod, useIDs bool) map[string]map[string]string {
 
-	var result = make(map[string]string)
+	var result = make(map[string]map[string]string)
 
-	var normalisedPackageNames = normalisePackageNames(lo.Keys(bindings))
 	// sort the bindings keys
 	packageNames := lo.Keys(bindings)
 	sort.Strings(packageNames)
 	for _, packageName := range packageNames {
 		var allModels []string
-		var allNamespacedStructs []string
 
 		packageBindings := bindings[packageName]
 		structNames := lo.Keys(packageBindings)
+		relativePackageDir := p.RelativePackageDir(packageName)
+		_ = relativePackageDir
 		sort.Strings(structNames)
 		for _, structName := range structNames {
-			result[normalisedPackageNames[packageName]] += "export const " + structName + " = {\n"
+			if _, ok := result[relativePackageDir]; !ok {
+				result[relativePackageDir] = make(map[string]string)
+			}
 			methods := packageBindings[structName]
 			sort.Slice(methods, func(i, j int) bool {
 				return methods[i].Name < methods[j].Name
 			})
+			var allNamespacedStructs map[packagePath]map[string]*ExternalStruct
+			var namespacedStructs map[packagePath]map[string]*ExternalStruct
+			var thisBinding string
+			var models []string
 			for _, method := range methods {
-				thisBinding, models, namespacedStructs := GenerateBinding(structName, method, useIDs)
-				allNamespacedStructs = append(allNamespacedStructs, namespacedStructs...)
+				thisBinding, models, namespacedStructs = GenerateBinding(structName, method, useIDs)
+				// Merge the namespaced structs
+				allNamespacedStructs = mergeNamespacedStructs(allNamespacedStructs, namespacedStructs)
 				allModels = append(allModels, models...)
-				result[normalisedPackageNames[packageName]] += thisBinding
+				result[relativePackageDir][structName] += thisBinding
 			}
-			result[normalisedPackageNames[packageName]] += "};\n\n"
-		}
 
-		if len(allNamespacedStructs) > 0 {
-			typedefs := "/**\n"
-			for _, namespacedStruct := range lo.Uniq(allNamespacedStructs) {
-				typedefs += " * @typedef {import('./models')." + namespacedStruct + "} " + strings.ReplaceAll(namespacedStruct, ".", "") + "\n"
+			if len(allNamespacedStructs) > 0 {
+				thisPkg := p.packageCache[packageName]
+				typedefs := "/**\n"
+				for externalPackageName, namespacedStruct := range allNamespacedStructs {
+					pkgInfo := p.packageCache[externalPackageName]
+					relativePackageDir := p.RelativeBindingsDir(thisPkg, pkgInfo)
+					namePrefix := ""
+					if pkgInfo.Name != "" && pkgInfo.Path != thisPkg.Path {
+						namePrefix = pkgInfo.Name
+					}
+
+					// Get keys from namespacedStruct and iterate over them in sorted order
+					namespacedStructNames := lo.Keys(namespacedStruct)
+					sort.Strings(namespacedStructNames)
+					for _, thisStructName := range namespacedStructNames {
+						structInfo := namespacedStruct[thisStructName]
+						typedefs += " * @typedef {import('" + relativePackageDir + "/models')." + thisStructName + "} " + namePrefix + structInfo.Name + "\n"
+					}
+				}
+				typedefs += " */\n"
+				result[relativePackageDir][structName] = typedefs + result[relativePackageDir][structName]
 			}
-			typedefs += " */\n\n"
-			result[normalisedPackageNames[packageName]] = typedefs + result[normalisedPackageNames[packageName]]
+			result[relativePackageDir][structName] = header + result[relativePackageDir][structName]
 		}
-
-		result[normalisedPackageNames[packageName]] = header + result[normalisedPackageNames[packageName]]
 	}
 
 	return result
+}
+
+func mergeNamespacedStructs(structs map[packagePath]map[string]*ExternalStruct, structs2 map[packagePath]map[string]*ExternalStruct) map[packagePath]map[string]*ExternalStruct {
+	if structs == nil {
+		structs = make(map[packagePath]map[string]*ExternalStruct)
+	}
+	for pkg, pkgStructs := range structs2 {
+		if _, ok := structs[pkg]; !ok {
+			structs[pkg] = make(map[string]*ExternalStruct)
+		}
+		for name, structInfo := range pkgStructs {
+			structs[pkg][name] = structInfo
+		}
+	}
+	return structs
 }

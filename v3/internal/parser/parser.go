@@ -23,9 +23,9 @@ type packagePath = string
 type structName = string
 
 type StructDef struct {
-	Name       string
-	DocComment string
-	Fields     []*Field
+	Name        string
+	DocComments []string
+	Fields      []*Field
 }
 
 func (s *StructDef) DefaultValueList() string {
@@ -66,24 +66,24 @@ type Parameter struct {
 	Type *ParameterType
 }
 
-func (p *Parameter) NamespacedStructType() string {
+func (p *Parameter) NamespacedStructType(pkgName string) string {
 	var typeName string
-	if p.Type.Package != "" {
+	if p.Type.Package != "" && p.Type.Package != pkgName {
 		parts := strings.Split(p.Type.Package, "/")
 		typeName = parts[len(parts)-1] + "."
 	}
 	return typeName + p.Type.Name
 }
-func (p *Parameter) NamespacedStructVariable() string {
+func (p *Parameter) NamespacedStructVariable(pkgName string) string {
 	var typeName string
-	if p.Type.Package != "" {
+	if p.Type.Package != "" && p.Type.Package != pkgName {
 		parts := strings.Split(p.Type.Package, "/")
 		typeName = parts[len(parts)-1]
 	}
 	return typeName + p.Type.Name
 }
 
-func (p *Parameter) JSType() string {
+func (p *Parameter) JSType(pkgName string) string {
 	// Convert type to javascript equivalent type
 	var typeName string
 	switch p.Type.Name {
@@ -99,7 +99,7 @@ func (p *Parameter) JSType() string {
 
 	// if the type is a struct, we need to add the package name
 	if p.Type.IsStruct || p.Type.IsEnum {
-		typeName = p.NamespacedStructType()
+		typeName = p.NamespacedStructType(pkgName)
 		typeName = strings.ReplaceAll(typeName, ".", "")
 	}
 
@@ -118,6 +118,7 @@ func (p *Parameter) JSType() string {
 
 type BoundMethod struct {
 	Package    string
+	PackageDir string
 	Name       string
 	DocComment string
 	Inputs     []*Parameter
@@ -131,8 +132,9 @@ func (m BoundMethod) IDAsString() string {
 }
 
 type Field struct {
-	Name string
-	Type *ParameterType
+	Name    string
+	Type    *ParameterType
+	Project *Project
 }
 
 func (f *Field) JSName() string {
@@ -195,17 +197,24 @@ func (f *Field) JSDocType(pkg string) string {
 		jsType = f.Type.Name
 	}
 
+	// If we are the same package, just return the type
+	externalPkgInfo := f.Project.packageCache[f.Type.Package]
+	if externalPkgInfo.Name == pkg {
+		return jsType
+	}
+
 	var result string
 	isExternalStruct := f.Type.Package != "" && f.Type.Package != pkg && f.Type.IsStruct
-	if f.Type.Package == "" || f.Type.Package == pkg || !isExternalStruct {
+	if f.Type.Package == "" || !isExternalStruct {
 		if f.Type.IsStruct || f.Type.IsEnum {
-			result = fmt.Sprintf("%s.%s", pkg, jsType)
+			// get the relative package directory
+			result = fmt.Sprintf("%s%s", externalPkgInfo.Name, f.Type.Name)
 		} else {
 			result = jsType
 		}
 	} else {
-		parts := strings.Split(f.Type.Package, "/")
-		result += fmt.Sprintf("%s.%s", parts[len(parts)-1], jsType)
+		// get the relative package directory
+		result = fmt.Sprintf("%s%s", externalPkgInfo.Name, f.Type.Name)
 	}
 
 	if !ast.IsExported(f.Name) {
@@ -230,9 +239,9 @@ func (f *Field) DefaultValue() string {
 }
 
 type ConstDef struct {
-	Name       string
-	DocComment string
-	Value      string
+	Name        string
+	DocComments []string
+	Value       string
 }
 
 type TypeDef struct {
@@ -258,6 +267,7 @@ type ParsedPackage struct {
 
 type Project struct {
 	packageCache             map[string]*ParsedPackage
+	outputDirectory          string
 	Path                     string
 	BoundMethods             map[packagePath]map[structName][]*BoundMethod
 	Models                   map[packagePath]map[structName]*StructDef
@@ -320,12 +330,20 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) error {
 		return err
 	}
 	p.Stats.NumMethods = len(p.BoundMethods)
-	generatedMethods := GenerateBindings(p.BoundMethods, options.UseIDs)
-	for pkg, text := range generatedMethods {
-		// Write the file
-		err = os.WriteFile(filepath.Join(options.OutputDirectory, pkg+".js"), []byte(text), 0644)
-		if err != nil {
+	p.outputDirectory = options.OutputDirectory
+	generatedMethods := p.GenerateBindings(p.BoundMethods, options.UseIDs)
+	for pkg, structs := range generatedMethods {
+		// Write the directory
+		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkg), 0755)
+		if err != nil && !os.IsExist(err) {
 			return err
+		}
+		// Write the files
+		for structName, text := range structs {
+			err = os.WriteFile(filepath.Join(options.OutputDirectory, pkg, structName+".js"), []byte(text), 0644)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -334,11 +352,17 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) error {
 
 	// Generate Models
 	if len(p.Models) > 0 {
-		generatedModels, err := GenerateModels(p.Models, p.Types, options)
+		generatedModels, err := p.GenerateModels(p.Models, p.Types, options)
 		if err != nil {
 			return err
 		}
-		err = os.WriteFile(filepath.Join(options.OutputDirectory, options.ModelsFilename), []byte(generatedModels), 0644)
+		for pkg, text := range generatedModels {
+			// Get directory for package
+			pkgInfo := p.packageCache[pkg]
+			relativePackageDir := p.RelativeBindingsDir(pkgInfo, pkgInfo)
+			// Write the directory
+			err = os.WriteFile(filepath.Join(options.OutputDirectory, relativePackageDir, options.ModelsFilename), []byte(text), 0644)
+		}
 		if err != nil {
 			return err
 		}
@@ -602,6 +626,7 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 
 					method := &BoundMethod{
 						Package:    pkg.Path,
+						PackageDir: pkg.Dir,
 						ID:         id,
 						Name:       funcDecl.Name.Name,
 						DocComment: strings.TrimSpace(funcDecl.Doc.Text()),
@@ -689,7 +714,8 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 			result.Name = p.anonymousStructID()
 			// Create a new struct definition
 			result := &StructDef{
-				Name: result.Name,
+				Name:        result.Name,
+				DocComments: CommentGroupToText(field.Doc),
 			}
 			pkg.StructCache[result.Name] = result
 			// Parse the fields
@@ -750,8 +776,8 @@ func (p *Project) getStructDef(name string, pkg *ParsedPackage) bool {
 							if structType, ok := typeSpec.Type.(*ast.StructType); ok {
 								if typeSpec.Name.Name == name {
 									result := &StructDef{
-										Name: name,
-										//TODO DocComment: CommentGroupToText(typeDecl.Doc),
+										Name:        name,
+										DocComments: CommentGroupToText(typeDecl.Doc),
 									}
 									pkg.StructCache[name] = result
 									result.Fields = p.parseStructFields(structType, pkg)
@@ -774,12 +800,14 @@ func (p *Project) parseStructFields(structType *ast.StructType, pkg *ParsedPacka
 		if len(field.Names) > 0 {
 			for _, name := range field.Names {
 				theseFields = append(theseFields, &Field{
-					Name: name.Name,
+					Project: p,
+					Name:    name.Name,
 				})
 			}
 		} else {
 			theseFields = append(theseFields, &Field{
-				Name: "",
+				Project: p,
+				Name:    "",
 			})
 		}
 		// loop over fields
@@ -1079,7 +1107,7 @@ func (p *Project) parseConstDeclaration(decl *ast.GenDecl, pkg *ParsedPackage) {
 			}
 
 			if valueSpec.Doc != nil {
-				constDecl.DocComment = strings.TrimSpace(valueSpec.Doc.Text())
+				constDecl.DocComments = CommentGroupToText(valueSpec.Doc)
 			}
 			typeDecl.Consts = append(typeDecl.Consts, constDecl)
 		}
@@ -1087,7 +1115,22 @@ func (p *Project) parseConstDeclaration(decl *ast.GenDecl, pkg *ParsedPackage) {
 }
 
 func (p *Project) RelativePackageDir(path string) string {
-	return strings.TrimPrefix(path, p.Path)
+
+	// Get the package details
+	pkgInfo, ok := p.packageCache[path]
+	if !ok {
+		panic("package not found: " + path)
+	}
+
+	result := filepath.ToSlash(strings.TrimPrefix(pkgInfo.Dir, p.Path))
+	if result == "" {
+		return "main"
+	}
+	// Remove the leading slash
+	if result[0] == '/' || result[0] == '\\' {
+		result = result[1:]
+	}
+	return result
 }
 
 func (p *Project) parseTypes(pkgs map[string]*ParsedPackage) {
@@ -1124,6 +1167,56 @@ func (p *Project) parseTypes(pkgs map[string]*ParsedPackage) {
 		}
 		p.addTypes(pkg.Path, pkg.TypeCache)
 	}
+}
+
+func (p *Project) RelativeBindingsDir(dir *ParsedPackage, dir2 *ParsedPackage) string {
+
+	if dir.Dir == dir2.Dir {
+		return "."
+	}
+
+	// Calculate the relative path from the bindings directory to the package directory
+	absoluteSourceDir := dir.Dir
+	if absoluteSourceDir == p.Path {
+		absoluteSourceDir = filepath.Join(p.Path, p.outputDirectory, "main")
+	} else {
+		absoluteSourceDir = dir.Dir
+	}
+	targetRelativeDir := strings.TrimPrefix(dir2.Dir, p.Path)
+	targetBindingsDir := filepath.Join(p.Path, p.outputDirectory, targetRelativeDir)
+	// Calculate the relative path from the source directory to the target directory
+	relativePath, err := filepath.Rel(absoluteSourceDir, targetBindingsDir)
+	if err != nil {
+		panic(err)
+	}
+	return filepath.ToSlash(relativePath)
+}
+
+type ImportDef struct {
+	Name        string
+	Path        string
+	VarName     string
+	PackageName string
+}
+
+func (p *Project) calculateImports(pkg string, m map[structName]*StructDef) []*ImportDef {
+	var result []*ImportDef
+	for _, structDef := range m {
+		for _, field := range structDef.Fields {
+			if field.Type.Package != pkg {
+				// Find the relative path from the source directory to the target directory
+				fieldPkgInfo := p.packageCache[field.Type.Package]
+				relativePath := p.RelativeBindingsDir(p.packageCache[pkg], fieldPkgInfo)
+				result = append(result, &ImportDef{
+					PackageName: fieldPkgInfo.Name,
+					Name:        field.Name,
+					Path:        relativePath,
+					VarName:     fieldPkgInfo.Name + field.Name,
+				})
+			}
+		}
+	}
+	return result
 }
 
 func getTypeString(expr ast.Expr) string {

@@ -7,6 +7,7 @@ toolchain go1.21.4
 require (
 	github.com/atterpac/refresh v0.2.4
 	github.com/bep/debounce v1.2.1
+	github.com/davecgh/go-spew v1.1.1
 	github.com/ebitengine/purego v0.4.0-alpha.4
 	github.com/go-git/go-git/v5 v5.3.0
 	github.com/go-ole/go-ole v1.2.6

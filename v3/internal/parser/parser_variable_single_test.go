@@ -149,8 +149,9 @@ func TestParseVariableSingle(t *testing.T) {
 				"github.com/wailsapp/wails/v3/internal/parser/testdata/variable_single_from_other_function/services": {
 					"OtherService": {
 						{
-							Package: "github.com/wailsapp/wails/v3/internal/parser/testdata/variable_single_from_other_function/services",
-							Name:    "Yay",
+							Package:    "github.com/wailsapp/wails/v3/internal/parser/testdata/variable_single_from_other_function/services",
+							Name:       "Yay",
+							DocComment: "Yay does this and that",
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
@@ -169,7 +170,8 @@ func TestParseVariableSingle(t *testing.T) {
 			wantModels: map[string]map[string]*StructDef{
 				"main": {
 					"Person": {
-						Name: "Person",
+						Name:        "Person",
+						DocComments: []string{"// Person is a person!", "// They have a name and an address"},
 						Fields: []*Field{
 							{
 								Name: "Name",
@@ -228,6 +230,36 @@ func TestParseVariableSingle(t *testing.T) {
 				t.Errorf("ParseDirectory() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			// Patch the PackageDir in the wantBoundMethods
+			for _, packageData := range got.BoundMethods {
+				for _, boundMethods := range packageData {
+					for _, boundMethod := range boundMethods {
+						boundMethod.PackageDir = ""
+					}
+				}
+			}
+
+			// Loop over the things we want
+			for packageName, packageData := range tt.wantBoundMethods {
+				for structName, wantBoundMethods := range packageData {
+					gotBoundMethods := got.BoundMethods[packageName][structName]
+					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods); diff != "" {
+						t.Errorf("ParseDirectory() failed:\n" + diff)
+					}
+				}
+			}
+
+			// Loop over the models
+			for _, packageData := range got.Models {
+				for _, wantModel := range packageData {
+					// Loop over the Fields
+					for _, field := range wantModel.Fields {
+						field.Project = nil
+					}
+				}
+			}
+
 			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
