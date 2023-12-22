@@ -13,6 +13,6 @@
  * @param title {servicesTitle}
  * @returns {Promise<string>}
  **/
-export function Greet(name, title) {
+export async function Greet(name, title) {
 	return wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0));
 }

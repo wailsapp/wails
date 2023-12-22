@@ -7,6 +7,6 @@
  * @function Hello
  * @returns {Promise<void>}
  **/
-export function Hello() {
+export async function Hello() {
 	return wails.CallByName("main.OtherService.Hello", ...Array.prototype.slice.call(arguments, 0));
 }

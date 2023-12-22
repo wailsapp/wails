@@ -14,7 +14,7 @@
  * @param title {Title}
  * @returns {Promise<string>}
  **/
-export function Greet(name, title) {
+export async function Greet(name, title) {
 	return wails.CallByName("main.GreetService.Greet", ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -24,6 +24,6 @@ export function Greet(name, title) {
  * @param name {string}
  * @returns {Promise<Person>}
  **/
-export function NewPerson(name) {
+export async function NewPerson(name) {
 	return wails.CallByName("main.GreetService.NewPerson", ...Array.prototype.slice.call(arguments, 0));
 }

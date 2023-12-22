@@ -7,6 +7,6 @@
  * @function Hello
  * @returns {Promise<void>}
  **/
-export function Hello() {
+export async function Hello() {
 	return wails.CallByID(4249972365, ...Array.prototype.slice.call(arguments, 0));
 }

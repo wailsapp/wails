@@ -331,7 +331,7 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) error {
 	}
 	p.Stats.NumMethods = len(p.BoundMethods)
 	p.outputDirectory = options.OutputDirectory
-	generatedMethods := p.GenerateBindings(p.BoundMethods, options.UseIDs)
+	generatedMethods := p.GenerateBindings(p.BoundMethods, options.UseIDs, options.TS)
 	for pkg, structs := range generatedMethods {
 		// Write the directory
 		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkg), 0755)
@@ -340,7 +340,11 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) error {
 		}
 		// Write the files
 		for structName, text := range structs {
-			err = os.WriteFile(filepath.Join(options.OutputDirectory, pkg, structName+".js"), []byte(text), 0644)
+			filename := structName + ".js"
+			if options.TS {
+				filename = structName + ".ts"
+			}
+			err = os.WriteFile(filepath.Join(options.OutputDirectory, pkg, filename), []byte(text), 0644)
 			if err != nil {
 				return err
 			}

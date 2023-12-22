@@ -11,6 +11,6 @@
  * @function Yay
  * @returns {Promise<Address>}
  **/
-export function Yay() {
+export async function Yay() {
 	return wails.CallByID(469445984, ...Array.prototype.slice.call(arguments, 0));
 }

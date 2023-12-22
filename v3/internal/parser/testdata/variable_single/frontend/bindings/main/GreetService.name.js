@@ -9,6 +9,6 @@
  * @param name {string}
  * @returns {Promise<string>}
  **/
-export function Greet(name) {
+export async function Greet(name) {
 	return wails.CallByName("main.GreetService.Greet", ...Array.prototype.slice.call(arguments, 0));
 }

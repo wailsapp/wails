@@ -11,7 +11,7 @@
  * @param _in {number[]}
  * @returns {Promise<void>}
  **/
-export function ArrayInt(_in) {
+export async function ArrayInt(_in) {
 	return wails.CallByID(3862002418, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -20,7 +20,7 @@ export function ArrayInt(_in) {
  * @param _in {boolean}
  * @returns {Promise<boolean>}
  **/
-export function BoolInBoolOut(_in) {
+export async function BoolInBoolOut(_in) {
 	return wails.CallByID(2424639793, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -29,7 +29,7 @@ export function BoolInBoolOut(_in) {
  * @param _in {number}
  * @returns {Promise<number>}
  **/
-export function Float32InFloat32Out(_in) {
+export async function Float32InFloat32Out(_in) {
 	return wails.CallByID(3132595881, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -38,7 +38,7 @@ export function Float32InFloat32Out(_in) {
  * @param _in {number}
  * @returns {Promise<number>}
  **/
-export function Float64InFloat64Out(_in) {
+export async function Float64InFloat64Out(_in) {
 	return wails.CallByID(2182412247, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -48,7 +48,7 @@ export function Float64InFloat64Out(_in) {
  * @param name {string}
  * @returns {Promise<string>}
  **/
-export function Greet(name) {
+export async function Greet(name) {
 	return wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -57,7 +57,7 @@ export function Greet(name) {
  * @param _in {number}
  * @returns {Promise<number>}
  **/
-export function Int16InIntOut(_in) {
+export async function Int16InIntOut(_in) {
 	return wails.CallByID(3306292566, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -66,7 +66,7 @@ export function Int16InIntOut(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null>}
  **/
-export function Int16PointerInAndOutput(_in) {
+export async function Int16PointerInAndOutput(_in) {
 	return wails.CallByID(1754277916, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -75,7 +75,7 @@ export function Int16PointerInAndOutput(_in) {
  * @param _in {number}
  * @returns {Promise<number>}
  **/
-export function Int32InIntOut(_in) {
+export async function Int32InIntOut(_in) {
 	return wails.CallByID(1909469092, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -84,7 +84,7 @@ export function Int32InIntOut(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null>}
  **/
-export function Int32PointerInAndOutput(_in) {
+export async function Int32PointerInAndOutput(_in) {
 	return wails.CallByID(4251088558, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -93,7 +93,7 @@ export function Int32PointerInAndOutput(_in) {
  * @param _in {number}
  * @returns {Promise<number>}
  **/
-export function Int64InIntOut(_in) {
+export async function Int64InIntOut(_in) {
 	return wails.CallByID(1343888303, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -102,7 +102,7 @@ export function Int64InIntOut(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null>}
  **/
-export function Int64PointerInAndOutput(_in) {
+export async function Int64PointerInAndOutput(_in) {
 	return wails.CallByID(2205561041, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -111,7 +111,7 @@ export function Int64PointerInAndOutput(_in) {
  * @param _in {number}
  * @returns {Promise<number>}
  **/
-export function Int8InIntOut(_in) {
+export async function Int8InIntOut(_in) {
 	return wails.CallByID(572240879, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -120,7 +120,7 @@ export function Int8InIntOut(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null>}
  **/
-export function Int8PointerInAndOutput(_in) {
+export async function Int8PointerInAndOutput(_in) {
 	return wails.CallByID(2189402897, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -129,7 +129,7 @@ export function Int8PointerInAndOutput(_in) {
  * @param _in {number}
  * @returns {Promise<number>}
  **/
-export function IntInIntOut(_in) {
+export async function IntInIntOut(_in) {
 	return wails.CallByID(642881729, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -138,7 +138,7 @@ export function IntInIntOut(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null>}
  **/
-export function IntPointerInAndOutput(_in) {
+export async function IntPointerInAndOutput(_in) {
 	return wails.CallByID(1066151743, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -147,7 +147,7 @@ export function IntPointerInAndOutput(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null, void>}
  **/
-export function IntPointerInputNamedOutputs(_in) {
+export async function IntPointerInputNamedOutputs(_in) {
 	return wails.CallByID(2718999663, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -156,7 +156,7 @@ export function IntPointerInputNamedOutputs(_in) {
  * @param _in {map}
  * @returns {Promise<void>}
  **/
-export function MapIntInt(_in) {
+export async function MapIntInt(_in) {
 	return wails.CallByID(2386486356, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -165,7 +165,7 @@ export function MapIntInt(_in) {
  * @param _in {map}
  * @returns {Promise<void>}
  **/
-export function MapIntPointerInt(_in) {
+export async function MapIntPointerInt(_in) {
 	return wails.CallByID(550413585, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -174,7 +174,7 @@ export function MapIntPointerInt(_in) {
  * @param _in {map}
  * @returns {Promise<void>}
  **/
-export function MapIntSliceInt(_in) {
+export async function MapIntSliceInt(_in) {
 	return wails.CallByID(2900172572, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -183,7 +183,7 @@ export function MapIntSliceInt(_in) {
  * @param _in {map}
  * @returns {Promise<map>}
  **/
-export function MapIntSliceIntInMapIntSliceIntOut(_in) {
+export async function MapIntSliceIntInMapIntSliceIntOut(_in) {
 	return wails.CallByID(881980169, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -191,7 +191,7 @@ export function MapIntSliceIntInMapIntSliceIntOut(_in) {
  * @function NoInputsStringOut
  * @returns {Promise<string>}
  **/
-export function NoInputsStringOut() {
+export async function NoInputsStringOut() {
 	return wails.CallByID(1075577233, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -200,7 +200,7 @@ export function NoInputsStringOut() {
  * @param _in {boolean | null}
  * @returns {Promise<boolean | null>}
  **/
-export function PointerBoolInBoolOut(_in) {
+export async function PointerBoolInBoolOut(_in) {
 	return wails.CallByID(3589606958, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -209,7 +209,7 @@ export function PointerBoolInBoolOut(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null>}
  **/
-export function PointerFloat32InFloat32Out(_in) {
+export async function PointerFloat32InFloat32Out(_in) {
 	return wails.CallByID(224675106, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -218,7 +218,7 @@ export function PointerFloat32InFloat32Out(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null>}
  **/
-export function PointerFloat64InFloat64Out(_in) {
+export async function PointerFloat64InFloat64Out(_in) {
 	return wails.CallByID(2124953624, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -227,7 +227,7 @@ export function PointerFloat64InFloat64Out(_in) {
  * @param _in {map | null}
  * @returns {Promise<void>}
  **/
-export function PointerMapIntInt(_in) {
+export async function PointerMapIntInt(_in) {
 	return wails.CallByID(3516977899, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -236,7 +236,7 @@ export function PointerMapIntInt(_in) {
  * @param _in {string | null}
  * @returns {Promise<string | null>}
  **/
-export function PointerStringInStringOut(_in) {
+export async function PointerStringInStringOut(_in) {
 	return wails.CallByID(229603958, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -245,7 +245,7 @@ export function PointerStringInStringOut(_in) {
  * @param _in {string[]}
  * @returns {Promise<string[]>}
  **/
-export function StringArrayInputNamedOutput(_in) {
+export async function StringArrayInputNamedOutput(_in) {
 	return wails.CallByID(3678582682, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -254,7 +254,7 @@ export function StringArrayInputNamedOutput(_in) {
  * @param _in {string[]}
  * @returns {Promise<string[], void>}
  **/
-export function StringArrayInputNamedOutputs(_in) {
+export async function StringArrayInputNamedOutputs(_in) {
 	return wails.CallByID(319259595, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -263,7 +263,7 @@ export function StringArrayInputNamedOutputs(_in) {
  * @param _in {string[]}
  * @returns {Promise<string[]>}
  **/
-export function StringArrayInputStringArrayOut(_in) {
+export async function StringArrayInputStringArrayOut(_in) {
 	return wails.CallByID(383995060, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -272,7 +272,7 @@ export function StringArrayInputStringArrayOut(_in) {
  * @param _in {string[]}
  * @returns {Promise<string>}
  **/
-export function StringArrayInputStringOut(_in) {
+export async function StringArrayInputStringOut(_in) {
 	return wails.CallByID(1091960237, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -281,7 +281,7 @@ export function StringArrayInputStringOut(_in) {
  * @param _in {Person}
  * @returns {Promise<Person>}
  **/
-export function StructInputStructOutput(_in) {
+export async function StructInputStructOutput(_in) {
 	return wails.CallByID(3835643147, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -290,7 +290,7 @@ export function StructInputStructOutput(_in) {
  * @param _in {Person | null}
  * @returns {Promise<void>}
  **/
-export function StructPointerInputErrorOutput(_in) {
+export async function StructPointerInputErrorOutput(_in) {
 	return wails.CallByID(2447692557, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -299,7 +299,7 @@ export function StructPointerInputErrorOutput(_in) {
  * @param _in {Person | null}
  * @returns {Promise<Person>}
  **/
-export function StructPointerInputStructPointerOutput(_in) {
+export async function StructPointerInputStructPointerOutput(_in) {
 	return wails.CallByID(2943477349, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -308,7 +308,7 @@ export function StructPointerInputStructPointerOutput(_in) {
  * @param _in {number}
  * @returns {Promise<number>}
  **/
-export function UInt16InUIntOut(_in) {
+export async function UInt16InUIntOut(_in) {
 	return wails.CallByID(3401034892, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -317,7 +317,7 @@ export function UInt16InUIntOut(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null>}
  **/
-export function UInt16PointerInAndOutput(_in) {
+export async function UInt16PointerInAndOutput(_in) {
 	return wails.CallByID(1236957573, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -326,7 +326,7 @@ export function UInt16PointerInAndOutput(_in) {
  * @param _in {number}
  * @returns {Promise<number>}
  **/
-export function UInt32InUIntOut(_in) {
+export async function UInt32InUIntOut(_in) {
 	return wails.CallByID(1160383782, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -335,7 +335,7 @@ export function UInt32InUIntOut(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null>}
  **/
-export function UInt32PointerInAndOutput(_in) {
+export async function UInt32PointerInAndOutput(_in) {
 	return wails.CallByID(1739300671, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -344,7 +344,7 @@ export function UInt32PointerInAndOutput(_in) {
  * @param _in {number}
  * @returns {Promise<number>}
  **/
-export function UInt64InUIntOut(_in) {
+export async function UInt64InUIntOut(_in) {
 	return wails.CallByID(793803239, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -353,7 +353,7 @@ export function UInt64InUIntOut(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null>}
  **/
-export function UInt64PointerInAndOutput(_in) {
+export async function UInt64PointerInAndOutput(_in) {
 	return wails.CallByID(1403757716, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -362,7 +362,7 @@ export function UInt64PointerInAndOutput(_in) {
  * @param _in {number}
  * @returns {Promise<number>}
  **/
-export function UInt8InUIntOut(_in) {
+export async function UInt8InUIntOut(_in) {
 	return wails.CallByID(2988345717, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -371,7 +371,7 @@ export function UInt8InUIntOut(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null>}
  **/
-export function UInt8PointerInAndOutput(_in) {
+export async function UInt8PointerInAndOutput(_in) {
 	return wails.CallByID(518250834, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -380,7 +380,7 @@ export function UInt8PointerInAndOutput(_in) {
  * @param _in {number}
  * @returns {Promise<number>}
  **/
-export function UIntInUIntOut(_in) {
+export async function UIntInUIntOut(_in) {
 	return wails.CallByID(2836661285, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -389,6 +389,6 @@ export function UIntInUIntOut(_in) {
  * @param _in {number | null}
  * @returns {Promise<number | null>}
  **/
-export function UIntPointerInAndOutput(_in) {
+export async function UIntPointerInAndOutput(_in) {
 	return wails.CallByID(1367187362, ...Array.prototype.slice.call(arguments, 0));
 }

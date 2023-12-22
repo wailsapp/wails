@@ -12,7 +12,7 @@
  * @param name {string}
  * @returns {Promise<string>}
  **/
-export function Greet(name) {
+export async function Greet(name) {
 	return wails.CallByID(1411160069, ...Array.prototype.slice.call(arguments, 0));
 }
 
@@ -22,6 +22,6 @@ export function Greet(name) {
  * @param name {string}
  * @returns {Promise<Person>}
  **/
-export function NewPerson(name) {
+export async function NewPerson(name) {
 	return wails.CallByID(1661412647, ...Array.prototype.slice.call(arguments, 0));
 }
