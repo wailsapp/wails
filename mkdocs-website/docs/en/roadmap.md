@@ -18,9 +18,10 @@ We also want to get all examples working on Linux.
 #### How Can I Help?
 
 You can generate bindings using the `wails3 generate bindings` command. This will generate bindings for all exported struct methods bound to your project.
-You can then use these bindings in your frontend code. You can see an example of this in the `examples/bindings` directory.
 Run `wails3 generate bindings -help` to view options that govern how bindings are generated.
  
+The tests for the bindings generator can be found [here](https://github.com/wailsapp/wails/tree/v3-alpha/v3/internal/parser) with the test data located in the `testdata` directory. 
+
 Review the table below and look for untested scenarios. The parser code and tests are located in `v3/internal/parser`. All tests can be run using `go test ./...` from the `v3` directory.
 Basically, try to break it and let us know if you find any issues! :smile:
 
