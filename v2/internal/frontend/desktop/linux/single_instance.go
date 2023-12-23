@@ -55,6 +55,11 @@ func SetupSingleInstance(uniqueID string) {
 		data := options.SecondInstanceData{
 			Args: os.Args[1:],
 		}
+		data.WorkingDirectory, err = os.Getwd()
+		if err != nil {
+			return
+		}
+
 		serialized, err := json.Marshal(data)
 		if err != nil {
 			return

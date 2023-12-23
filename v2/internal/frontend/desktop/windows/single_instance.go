@@ -51,6 +51,7 @@ func SetupSingleInstance(uniqueId string) {
 				data := options.SecondInstanceData{
 					Args: os.Args[1:],
 				}
+				data.WorkingDirectory, _ = os.Getwd()
 				serialized, _ := json.Marshal(data)
 
 				SendMessage(hwnd, string(serialized))
