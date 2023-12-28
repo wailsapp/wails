@@ -201,9 +201,26 @@ func getRemoteTemplate(uri string) (template *Template, err error) {
 
 func Install(options *flags.Init) error {
 
+	var projectDir string
+	if options.ProjectDir == "." || options.ProjectDir == "" {
+		projectDir = lo.Must(os.Getwd())
+	}
+	var err error
+	projectDir, err = filepath.Abs(filepath.Join(options.ProjectDir, options.ProjectName))
+	if err != nil {
+		return err
+	}
+
+	// Calculate relative path from project directory to LocalModulePath
+	var relativePath string
+	relativePath, err = filepath.Rel(projectDir, debug.LocalModulePath)
+	if err != nil {
+		return err
+	}
+
 	templateData := TemplateOptions{
 		options,
-		filepath.FromSlash(debug.LocalModulePath + "/"),
+		filepath.ToSlash(relativePath + "/"),
 	}
 
 	defer func() {
@@ -211,7 +228,6 @@ func Install(options *flags.Init) error {
 		_ = os.Remove(filepath.Join(templateData.ProjectDir, "template.json"))
 	}()
 
-	var err error
 	var template *Template
 	template, err = getInternalTemplate(options.TemplateName)
 	if err != nil {
@@ -234,10 +250,7 @@ func Install(options *flags.Init) error {
 		return fmt.Errorf("invalid template name: %s. Use -l flag to view available templates or use a valid filepath / url to a template", options.TemplateName)
 	}
 
-	if options.ProjectDir == "." || options.ProjectDir == "" {
-		templateData.ProjectDir = lo.Must(os.Getwd())
-	}
-	templateData.ProjectDir = filepath.Join(options.ProjectDir, options.ProjectName)
+	templateData.ProjectDir = projectDir
 
 	// If project directory already exists and is not empty, error
 	if _, err := os.Stat(templateData.ProjectDir); !os.IsNotExist(err) {
