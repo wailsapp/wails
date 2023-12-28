@@ -1,7 +1,7 @@
 {
-  "name": "@wailsapp/api",
+  "name": "@wailsio/runtime",
   "version": "3.0.0-alpha.4",
-  "description": "Wails Runtime API",
+  "description": "Wails Runtime",
   "main": "index.js",
   "repository": {
     "type": "git",

@@ -825,3 +825,10 @@ func (a *App) BrowserOpenURL(url string) error {
 func (a *App) BrowserOpenFile(path string) error {
 	return browser.OpenFile(path)
 }
+
+func (a *App) Environment() EnvironmentInfo {
+	return EnvironmentInfo{
+		OS:   runtime.GOOS,
+		Arch: runtime.GOARCH,
+	}
+}

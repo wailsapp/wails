@@ -15,34 +15,31 @@ The electron alternative for Go
  */
 
 import {newRuntimeCallerWithID, objectNames} from "./runtime";
+const call = newRuntimeCallerWithID(objectNames.Screens, '');
 
-let call = newRuntimeCallerWithID(objectNames.Screens);
-
-let ScreensGetAll = 0;
-let ScreensGetPrimary = 1;
-let ScreensGetCurrent = 2;
+const getAll = 0;
+const getPrimary = 1;
+const getCurrent = 2;
 
 /**
  * Gets all screens.
- * @returns {Promise<Screen[]>}
+ * @returns {Promise<Screen[]>} A promise that resolves to an array of Screen objects.
  */
 export function GetAll() {
-    return call(ScreensGetAll);
+    return call(getAll);
 }
-
 /**
  * Gets the primary screen.
- * @returns {Promise<Screen>}
+ * @returns {Promise<Screen>} A promise that resolves to the primary screen.
  */
 export function GetPrimary() {
-    return call(ScreensGetPrimary);
+    return call(getPrimary);
 }
-
 /**
  * Gets the current active screen.
- * @returns {Promise<Screen>}
- * @constructor
+ *
+ * @returns {Promise<Screen>} A promise that resolves with the current active screen.
  */
 export function GetCurrent() {
-    return call(ScreensGetCurrent);
+    return call(getCurrent);
 }

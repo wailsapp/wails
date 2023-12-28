@@ -1,8 +1,19 @@
+/*
+ _	   __	  _ __
+| |	 / /___ _(_) /____
+| | /| / / __ `/ / / ___/
+| |/ |/ / /_/ / / (__  )
+|__/|__/\__,_/_/_/____/
+The electron alternative for Go
+(c) Lea Anthony 2019-present
+*/
+
+/* jshint esversion: 9 */
+
 import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
-let call = newRuntimeCallerWithID(objectNames.ContextMenu);
-
-let ContextMenuOpen = 0;
+const call = newRuntimeCallerWithID(objectNames.ContextMenu, '');
+const ContextMenuOpen = 0;
 
 function openContextMenu(id, x, y, data) {
     void call(ContextMenuOpen, {id, x, y, data});

@@ -1,12 +1,26 @@
 
 import {Emit, WailsEvent} from "./events";
 import {Question} from "./dialogs";
+import {WindowMethods, Get} from "./window";
 
+/**
+ * Sends an event with the given name and optional data.
+ *
+ * @param {string} eventName - The name of the event to send.
+ * @param {any} [data=null] - Optional data to send along with the event.
+ *
+ * @return {void}
+ */
 function sendEvent(eventName, data=null) {
     let event = new WailsEvent(eventName, data);
     Emit(event);
 }
 
+/**
+ * Adds event listeners to elements with `wml-event` attribute.
+ *
+ * @return {void}
+ */
 function addWMLEventListeners() {
     const elements = document.querySelectorAll('[wml-event]');
     elements.forEach(function (element) {
@@ -25,8 +39,8 @@ function addWMLEventListeners() {
             }
             sendEvent(eventType);
         };
-        // Remove existing listeners
 
+        // Remove existing listeners
         element.removeEventListener(trigger, callback);
 
         // Add new listener
@@ -34,13 +48,30 @@ function addWMLEventListeners() {
     });
 }
 
+/**
+ * Calls a method on the window object.
+ *
+ * @param {string} method - The name of the method to call on the window object.
+ *
+ * @return {void}
+ */
 function callWindowMethod(method) {
-    if (wails.Window[method] === undefined) {
+    // TODO: Make this a parameter!
+    let windowName = '';
+    let targetWindow = Get('');
+    let methodMap = WindowMethods(targetWindow);
+    if (!methodMap.has(method)) {
         console.log("Window method " + method + " not found");
     }
-    wails.Window[method]();
+    methodMap.get(method)();
 }
 
+/**
+ * Adds window listeners for elements with the 'wml-window' attribute.
+ * Removes any existing listeners before adding new ones.
+ *
+ * @return {void}
+ */
 function addWMLWindowListeners() {
     const elements = document.querySelectorAll('[wml-window]');
     elements.forEach(function (element) {
@@ -68,6 +99,15 @@ function addWMLWindowListeners() {
     });
 }
 
+/**
+ * Adds a listener to elements with the 'wml-openurl' attribute.
+ * When the specified trigger event is fired on any of these elements,
+ * the listener will open the URL specified by the 'wml-openurl' attribute.
+ * If a 'wml-confirm' attribute is provided, a confirmation dialog will be displayed,
+ * and the URL will only be opened if the user confirms.
+ *
+ * @return {void}
+ */
 function addWMLOpenBrowserListener() {
     const elements = document.querySelectorAll('[wml-openurl]');
     elements.forEach(function (element) {
@@ -95,7 +135,13 @@ function addWMLOpenBrowserListener() {
     });
 }
 
+/**
+ * Reloads the WML page by adding necessary event listeners and browser listeners.
+ *
+ * @return {void}
+ */
 export function reloadWML() {
+    console.log("Reloading WML");
     addWMLEventListeners();
     addWMLWindowListeners();
     addWMLOpenBrowserListener();

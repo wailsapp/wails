@@ -10,26 +10,22 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
-import {invoke} from "./invoke";
+import {invoke, IsWindows} from "./system";
 import {GetFlag} from "./flags";
 
 let shouldDrag = false;
+let resizeEdge = null;
+let resizable = false;
+let defaultCursor = "auto";
+window._wails = window._wails || {};
+window._wails.setResizable = setResizable;
+window._wails.endDrag = endDrag;
 
 export function dragTest(e) {
     let val = window.getComputedStyle(e.target).getPropertyValue("--webkit-app-region");
-    if (val) {
-        val = val.trim();
-    }
-
-    if (val !== "drag") {
+    if (val && val.trim() !== "drag" || e.buttons !== 1) {
         return false;
     }
-
-    // Only process the primary button
-    if (e.buttons !== 1) {
-        return false;
-    }
-
     return e.detail === 1;
 }
 
@@ -39,38 +35,32 @@ export function setupDrag() {
     window.addEventListener('mouseup', onMouseUp);
 }
 
-let resizeEdge = null;
-let resizable = false;
-
 export function setResizable(value) {
     resizable = value;
 }
 
-function testResize(e) {
+export function endDrag() {
+    document.body.style.cursor = 'default';
+    shouldDrag = false;
+}
+
+function testResize() {
     if( resizeEdge ) {
-        invoke("resize:" + resizeEdge);
+        invoke(`resize:${resizeEdge}`);
         return true
     }
     return false;
 }
 
 function onMouseDown(e) {
+    if(IsWindows() && testResize() || dragTest(e)) {
+        shouldDrag = !!isValidDrag(e);
+    }
+}
 
-    // Check for resizing on Windows
-    if( WINDOWS ) {
-        if (testResize()) {
-            return;
-        }
-    }
-    if (dragTest(e)) {
-        // Ignore drag on scrollbars
-        if (e.offsetX > e.target.clientWidth || e.offsetY > e.target.clientHeight) {
-            return;
-        }
-        shouldDrag = true;
-    } else {
-        shouldDrag = false;
-    }
+function isValidDrag(e) {
+    // Ignore drag on scrollbars
+    return !(e.offsetX > e.target.clientWidth || e.offsetY > e.target.clientHeight);
 }
 
 function onMouseUp(e) {
@@ -80,34 +70,26 @@ function onMouseUp(e) {
     }
 }
 
-export function endDrag() {
-    document.body.style.cursor = 'default';
-    shouldDrag = false;
-}
-
-function setResize(cursor) {
-    document.documentElement.style.cursor = cursor || defaultCursor;
+function setResize(cursor = defaultCursor) {
+    document.documentElement.style.cursor = cursor;
     resizeEdge = cursor;
 }
 
 function onMouseMove(e) {
-    if (shouldDrag) {
-        shouldDrag = false;
-        let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
-        if (mousePressed > 0) {
-            invoke("drag");
-        }
-        return;
-    }
-
-    if (WINDOWS) {
-        if (resizable) {
-            handleResize(e);
-        }
+    shouldDrag = checkDrag(e);
+    if (IsWindows() && resizable) {
+        handleResize(e);
     }
 }
 
-let defaultCursor = "auto";
+function checkDrag(e) {
+    let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
+    if(shouldDrag && mousePressed > 0) {
+        invoke("drag");
+        return false;
+    }
+    return shouldDrag;
+}
 
 function handleResize(e) {
     let resizeHandleHeight = GetFlag("system.resizeHandleHeight") || 5;

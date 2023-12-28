@@ -9,17 +9,16 @@ The electron alternative for Go
 */
 
 /* jshint esversion: 9 */
-
 import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
-let call = newRuntimeCallerWithID(objectNames.Browser);
-
-let BrowserOpenURL = 0;
+const call = newRuntimeCallerWithID(objectNames.Browser, '');
+const BrowserOpenURL = 0;
 
 /**
  * Open a browser window to the given URL
  * @param {string} url - The URL to open
+ * @returns {Promise<string>}
  */
 export function OpenURL(url) {
-    void call(BrowserOpenURL, {url});
+    return call(BrowserOpenURL, {url});
 }

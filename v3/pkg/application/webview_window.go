@@ -239,13 +239,13 @@ func (w *WebviewWindow) formatJS(f string, callID string, data string) string {
 
 func (w *WebviewWindow) CallError(callID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.callErrorCallback('%s', %s);", callID, result))
+		w.impl.execJS(w.formatJS("_wails.callErrorHandler('%s', %s);", callID, result))
 	}
 }
 
 func (w *WebviewWindow) CallResponse(callID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.callCallback('%s', %s, true);", callID, result))
+		w.impl.execJS(w.formatJS("_wails.callResultHandler('%s', %s, true);", callID, result))
 	}
 }
 

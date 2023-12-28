@@ -12,6 +12,7 @@ The electron alternative for Go
 import { nanoid } from 'nanoid/non-secure';
 
 const runtimeURL = window.location.origin + "/wails/runtime";
+
 // Object Names
 export const objectNames = {
     Call: 0,
@@ -26,6 +27,33 @@ export const objectNames = {
     Browser: 9,
 }
 export let clientId = nanoid();
+
+/**
+ * Creates a runtime caller function that invokes a specified method on a given object within a specified window context.
+ *
+ * @param {Object} object - The object on which the method is to be invoked.
+ * @param {string} windowName - The name of the window context in which the method should be called.
+ * @returns {Function} A runtime caller function that takes the method name and optionally arguments and invokes the method within the specified window context.
+ */
+export function newRuntimeCaller(object, windowName) {
+    return function (method, args=null) {
+        return runtimeCall(object + "." + method, windowName, args);
+    };
+}
+
+/**
+ * Creates a new runtime caller with specified ID.
+ *
+ * @param {object} object - The object to invoke the method on.
+ * @param {string} windowName - The name of the window.
+ * @return {Function} - The new runtime caller function.
+ */
+export function newRuntimeCallerWithID(object, windowName) {
+    return function (method, args=null) {
+        return runtimeCallWithID(object, method, windowName, args);
+    };
+}
+
 
 function runtimeCall(method, windowName, args) {
     let url = new URL(runtimeURL);
@@ -61,12 +89,6 @@ function runtimeCall(method, windowName, args) {
     });
 }
 
-export function newRuntimeCaller(object, windowName) {
-    return function (method, args=null) {
-        return runtimeCall(object + "." + method, windowName, args);
-    };
-}
-
 function runtimeCallWithID(objectID, method, windowName, args) {
     let url = new URL(runtimeURL);
     url.searchParams.append("object", objectID);
@@ -97,10 +119,4 @@ function runtimeCallWithID(objectID, method, windowName, args) {
             .then(data => resolve(data))
             .catch(error => reject(error));
     });
-}
-
-export function newRuntimeCallerWithID(object, windowName) {
-    return function (method, args=null) {
-        return runtimeCallWithID(object, method, windowName, args);
-    };
 }
