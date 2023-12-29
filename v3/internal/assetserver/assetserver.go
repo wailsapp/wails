@@ -18,7 +18,6 @@ import (
 
 const (
 	runtimeJSPath    = "/wails/runtime.js"
-	ipcJSPath        = "/wails/ipc.js"
 	runtimePath      = "/wails/runtime"
 	capabilitiesPath = "/wails/capabilities"
 	flagsPath        = "/wails/flags"
@@ -229,13 +228,6 @@ func (d *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request) {
 		d.runtimeHandler.HandleRuntimeCall(rw, req)
 		return
 
-	case ipcJSPath:
-		content := d.runtime.DesktopIPC()
-		if d.ipcJS != nil {
-			content = d.ipcJS(req)
-		}
-		d.writeBlob(rw, path, content)
-
 	default:
 		// Check if this is a plugin script
 		if script, ok := d.pluginScripts[path]; ok {
@@ -256,16 +248,6 @@ func (d *AssetServer) processIndexHTML(indexHTML []byte) ([]byte, error) {
 	if d.debug {
 		err = appendSpinnerToBody(htmlNode)
 		if err != nil {
-			return nil, err
-		}
-	}
-
-	if err := insertScriptInHead(htmlNode, runtimeJSPath); err != nil {
-		return nil, err
-	}
-
-	if d.debug {
-		if err := insertScriptInHead(htmlNode, ipcJSPath); err != nil {
 			return nil, err
 		}
 	}
