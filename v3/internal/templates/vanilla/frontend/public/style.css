@@ -28,8 +28,16 @@ body {
   margin: 0;
   display: flex;
   place-items: center;
+  place-content: center;
   min-width: 320px;
   min-height: 100vh;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 h1 {

@@ -7,7 +7,19 @@
     <title>Wails App</title>
   </head>
   <body>
-    <div id="app"></div>
+    <a wml-openurl="https://wails.io">
+      <img src="/wails.png" class="logo" alt="Wails logo"/>
+    </a>
+    <a wml-openurl="https://developer.mozilla.org/en-US/docs/Web/JavaScript">
+      <img src="/javascript.svg" class="logo vanilla" alt="JavaScript logo"/>
+    </a>
+    <h1>Hello Wails!</h1>
+    <div class="card">
+      <button id="test" onclick="doGreet()">Press me!</button>
+    </div>
+    <p class="read-the-docs">
+      Click on the Wails logo to learn more
+    </p>
     <script type="module" src="/main.js"></script>
   </body>
 </html>

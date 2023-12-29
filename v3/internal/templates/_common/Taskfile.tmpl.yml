@@ -371,13 +371,24 @@ tasks:
     summary: Build the frontend project
     dir: frontend
     sources:
-      - "*"
+      - "**/*"
     generates:
       - dist/*
     deps:
       - install:frontend:deps
+      - generate:bindings
     cmds:
       - npm run build -q
+
+  generate:bindings:
+    summary: Generates bindings for the frontend
+    sources:
+      - "**/*.go"
+    generates:
+      - "frontend/bindings/**/*"
+    cmds:
+      - wails3 generate bindings
+      # - wails3 generate bindings -silent
 
   go:mod:tidy:
     summary: Runs `go mod tidy`
