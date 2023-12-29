@@ -1,11 +1,16 @@
 {
   "name": "@wailsio/runtime",
-  "version": "3.0.0-alpha.6",
+  "version": "3.0.0-alpha.8",
   "description": "Wails Runtime",
-  "main": "index.js",
+  "main": "src/index.js",
+  "types": "types/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/wailsapp/wails.git"
+  },
+  "scripts": {
+    "prebuild:types": "rimraf ./types",
+    "build:types": "npx -p typescript tsc src/index.js --declaration --allowJs --emitDeclarationOnly --outDir types"
   },
   "author": "The Wails Team",
   "license": "MIT",
@@ -13,5 +18,9 @@
     "url": "https://github.com/wailsapp/wails/issues"
   },
   "homepage": "https://wails.io",
-  "private": false
+  "private": false,
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  }
 }

@@ -11,7 +11,7 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 import { newRuntimeCallerWithID, objectNames } from "./runtime";
-const call = newRuntimeCallerWithID(objectNames.Application);
+const call = newRuntimeCallerWithID(objectNames.Application, '');
 
 const HideMethod = 0;
 const ShowMethod = 1;

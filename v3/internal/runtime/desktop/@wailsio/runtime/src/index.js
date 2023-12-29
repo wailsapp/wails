@@ -15,15 +15,17 @@ import {Emit, Off, OffAll, On, Once, OnMultiple, WailsEvent} from './events';
 import {ByID, ByName, Plugin} from "./calls";
 import {Error, Info, OpenFile, Question, SaveFile, Warning} from "./dialogs";
 
-export * as Application from "./application";
-export * as Browser from "./browser";
-export * as Clipboard from "./clipboard";
-export * as ContextMenu from "./contextmenu";
-export * as Flags from "./flags";
-export * as Runtime from "./runtime";
-export * as Screens from "./screens";
-export * as System from "./system";
-export * as Window from "./window";
+import * as Application from "./application";
+import * as Browser from "./browser";
+import * as Clipboard from "./clipboard";
+import * as ContextMenu from "./contextmenu";
+import * as Flags from "./flags";
+import * as Runtime from "./runtime";
+import * as Screens from "./screens";
+import * as System from "./system";
+import * as Window from "./window";
+
+export { Application, Browser, Clipboard, ContextMenu, Flags, Runtime, Screens, System, Window };
 
 export const Events = {
     On,
