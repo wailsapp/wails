@@ -1,6 +1,6 @@
 {
   "name": "@wailsio/runtime",
-  "version": "3.0.0-alpha.4",
+  "version": "3.0.0-alpha.6",
   "description": "Wails Runtime",
   "main": "index.js",
   "repository": {
@@ -12,5 +12,6 @@
   "bugs": {
     "url": "https://github.com/wailsapp/wails/issues"
   },
-  "homepage": "https://wails.io"
+  "homepage": "https://wails.io",
+  "private": false
 }

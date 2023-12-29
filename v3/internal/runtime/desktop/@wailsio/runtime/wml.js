@@ -2,6 +2,7 @@
 import {Emit, WailsEvent} from "./events";
 import {Question} from "./dialogs";
 import {WindowMethods, Get} from "./window";
+import {OpenURL} from "./browser";
 
 /**
  * Sends an event with the given name and optional data.
@@ -119,12 +120,12 @@ function addWMLOpenBrowserListener() {
             if (confirm) {
                 Question({Title: "Confirm", Message:confirm, Buttons:[{Label:"Yes"},{Label:"No", IsDefault:true}]}).then(function (result) {
                     if (result !== "No") {
-                        void wails.Browser.OpenURL(url);
+                        void OpenURL(url);
                     }
                 });
                 return;
             }
-            void wails.Browser.OpenURL(url);
+            void OpenURL(url);
         };
 
         // Remove existing listeners

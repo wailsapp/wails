@@ -116,3 +116,7 @@ export function IsARM() {
 export function IsARM64() {
     return environmentCache.Arch === "arm64";
 }
+
+export function IsDebug() {
+    return environmentCache.Debug === true;
+}

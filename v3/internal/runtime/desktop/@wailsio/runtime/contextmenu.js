@@ -11,6 +11,7 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 import {newRuntimeCallerWithID, objectNames} from "./runtime";
+import {IsDebug} from "./system";
 
 const call = newRuntimeCallerWithID(objectNames.ContextMenu, '');
 const ContextMenuOpen = 0;
@@ -47,8 +48,9 @@ function contextMenuHandler(event) {
 This rule is inherited like normal CSS rules, so nesting works as expected
 */
 function processDefaultContextMenu(event) {
+
     // Debug builds always show the menu
-    if (DEBUG) {
+    if (IsDebug()) {
         return;
     }
 
