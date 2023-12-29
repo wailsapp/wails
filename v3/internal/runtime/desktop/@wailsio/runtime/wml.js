@@ -49,22 +49,23 @@ function addWMLEventListeners() {
     });
 }
 
+
 /**
- * Calls a method on the window object.
- *
- * @param {string} method - The name of the method to call on the window object.
- *
- * @return {void}
+ * Calls a method on a specified window.
+ * @param {string} windowName - The name of the window to call the method on.
+ * @param {string} method - The name of the method to call.
  */
-function callWindowMethod(method) {
-    // TODO: Make this a parameter!
-    let windowName = '';
-    let targetWindow = Get('');
+function callWindowMethod(windowName, method) {
+    let targetWindow = Get(windowName);
     let methodMap = WindowMethods(targetWindow);
     if (!methodMap.has(method)) {
         console.log("Window method " + method + " not found");
     }
-    methodMap.get(method)();
+    try {
+        methodMap.get(method)();
+    } catch (e) {
+        console.error("Error calling window method '" + method + "': " + e);
+    }
 }
 
 /**
@@ -78,18 +79,19 @@ function addWMLWindowListeners() {
     elements.forEach(function (element) {
         const windowMethod = element.getAttribute('wml-window');
         const confirm = element.getAttribute('wml-confirm');
-        const trigger = element.getAttribute('wml-trigger') || "click";
+        const trigger = element.getAttribute('wml-trigger') || 'click';
+        const targetWindow = element.getAttribute('wml-target-window') || '';
 
         let callback = function () {
             if (confirm) {
                 Question({Title: "Confirm", Message:confirm, Buttons:[{Label:"Yes"},{Label:"No", IsDefault:true}]}).then(function (result) {
                     if (result !== "No") {
-                        callWindowMethod(windowMethod);
+                        callWindowMethod(targetWindow, windowMethod);
                     }
                 });
                 return;
             }
-            callWindowMethod(windowMethod);
+            callWindowMethod(targetWindow, windowMethod);
         };
 
         // Remove existing listeners

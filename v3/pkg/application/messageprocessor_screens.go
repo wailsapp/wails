@@ -44,6 +44,6 @@ func (m *MessageProcessor) processScreensMethod(method int, rw http.ResponseWrit
 		m.httpError(rw, "Unknown screens method: %d", method)
 	}
 
-	m.Info("Runtime:", "method", "Screens."+screensMethodNames[method])
+	m.Info("Runtime Call:", "method", "Screens."+screensMethodNames[method])
 
 }

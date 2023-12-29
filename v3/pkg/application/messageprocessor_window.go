@@ -255,5 +255,5 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 		m.httpError(rw, "Unknown window method id: %d", method)
 	}
 
-	m.Info("Runtime:", "method", "Window."+windowMethodNames[method])
+	m.Info("Runtime Call:", "method", "Window."+windowMethodNames[method])
 }

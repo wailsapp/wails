@@ -65,41 +65,12 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 
 func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Request) {
 	object := r.URL.Query().Get("object")
-	if object != "" {
-		m.HandleRuntimeCallWithIDs(rw, r)
+	if object == "" {
+		m.httpError(rw, "Invalid runtime call")
 		return
 	}
 
-	//// Read "method" from query string
-	//method := r.URL.Query().Get("method")
-	//if method == "" {
-	//	m.httpError(rw, "No method specified")
-	//	return
-	//}
-	//splitMethod := strings.Split(method, ".")
-	//if len(splitMethod) != 2 {
-	//	m.httpError(rw, "Invalid method format")
-	//	return
-	//}
-	//// Get the object
-	//object = splitMethod[0]
-	//// Get the method
-	//method = splitMethod[1]
-	//
-	//params := QueryParams(r.URL.Query())
-	//
-	//targetWindow := m.getTargetWindow(r)
-	//if targetWindow == nil {
-	//	m.httpError(rw, "No valid window found")
-	//	return
-	//}
-	//
-	//switch object {
-	//case "call":
-	//	m.processCallMethod(method, rw, r, targetWindow, params)
-	//default:
-	//	m.httpError(rw, "Unknown runtime call: %s", object)
-	//}
+	m.HandleRuntimeCallWithIDs(rw, r)
 }
 
 func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *http.Request) {
