@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"errors"
 	"fmt"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"go/ast"
@@ -21,6 +22,9 @@ import (
 
 type packagePath = string
 type structName = string
+
+// ErrNoBindingsFound is returned when no bound structs are found
+var ErrNoBindingsFound = errors.New("no bound structs found")
 
 type StructDef struct {
 	Name        string
@@ -316,37 +320,42 @@ func ParseProject(projectPath string) (*Project, error) {
 	return result, nil
 }
 
-func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) error {
+func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project, error) {
 	p, err := ParseProject(options.ProjectDirectory)
 	if err != nil {
-		return err
+		return p, err
 	}
 
 	if p.BoundMethods == nil {
-		return nil
+		return p, nil
 	}
 	err = os.MkdirAll(options.OutputDirectory, 0755)
 	if err != nil {
-		return err
+		return p, err
 	}
-	p.Stats.NumMethods = len(p.BoundMethods)
 	p.outputDirectory = options.OutputDirectory
+	for _, pkg := range p.BoundMethods {
+		for _, boundMethods := range pkg {
+			p.Stats.NumMethods += len(boundMethods)
+		}
+	}
 	generatedMethods := p.GenerateBindings(p.BoundMethods, options.UseIDs, options.TS)
 	for pkg, structs := range generatedMethods {
 		// Write the directory
 		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkg), 0755)
 		if err != nil && !os.IsExist(err) {
-			return err
+			return p, err
 		}
 		// Write the files
 		for structName, text := range structs {
+			p.Stats.NumStructs++
 			filename := structName + ".js"
 			if options.TS {
 				filename = structName + ".ts"
 			}
 			err = os.WriteFile(filepath.Join(options.OutputDirectory, pkg, filename), []byte(text), 0644)
 			if err != nil {
-				return err
+				return p, err
 			}
 		}
 	}
@@ -358,7 +367,7 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) error {
 	if len(p.Models) > 0 {
 		generatedModels, err := p.GenerateModels(p.Models, p.Types, options)
 		if err != nil {
-			return err
+			return p, err
 		}
 		for pkg, text := range generatedModels {
 			// Get directory for package
@@ -368,39 +377,13 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) error {
 			err = os.WriteFile(filepath.Join(options.OutputDirectory, relativePackageDir, options.ModelsFilename), []byte(text), 0644)
 		}
 		if err != nil {
-			return err
+			return p, err
 		}
 	}
 
 	p.Stats.EndTime = time.Now()
 
-	absPath, err := filepath.Abs(options.ProjectDirectory)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Processed: %s, %s, %s, %s, %s in %s.\n",
-		pluralise(p.Stats.NumPackages, "Package"),
-		pluralise(p.Stats.NumStructs, "Struct"),
-		pluralise(p.Stats.NumMethods, "Method"),
-		pluralise(p.Stats.NumEnums, "Enum"),
-		pluralise(p.Stats.NumModels, "Model"),
-		p.Stats.EndTime.Sub(p.Stats.StartTime).String())
-
-	absPath, err = filepath.Abs(options.OutputDirectory)
-	if err != nil {
-		return err
-	}
-	println("Output directory: " + absPath)
-
-	return nil
-}
-
-func pluralise(number int, word string) string {
-	if number == 1 {
-		return fmt.Sprintf("%d %s", number, word)
-	}
-	return fmt.Sprintf("%d %ss", number, word)
+	return p, nil
 }
 
 func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) {
@@ -561,7 +544,7 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 		}
 		p.addTypes(pkg.Path, pkg.TypeCache)
 		if !callFound {
-			return fmt.Errorf("no Bound structs found")
+			return ErrNoBindingsFound
 		}
 	}
 	return nil

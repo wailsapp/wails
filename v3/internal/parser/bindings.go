@@ -28,24 +28,24 @@ const bindingTemplate = `
 const bindingTemplateTypescript = `Comments`
 
 const callByIDTypescript = `export async function {{methodName}}({{inputs}}) : {{ReturnType}} {
-	return wails.CallByID({{ID}}{{params}});
+	return Call.ByID({{ID}}{{params}});
 }
 
 `
 
 const callByNameTypescript = `export async function {{methodName}}({{inputs}}) : {{ReturnType}} {
-	return wails.CallByName("{{Name}}"{{params}});
+	return Call.ByName("{{Name}}"{{params}});
 }
 
 `
 
 const callByID = `export async function {{methodName}}({{inputs}}) {
-	return wails.CallByID({{ID}}, ...Array.prototype.slice.call(arguments, 0));
+	return Call.ByID({{ID}}, ...Array.prototype.slice.call(arguments, 0));
 }
 `
 
 const callByName = `export async function {{methodName}}({{inputs}}) {
-	return wails.CallByName("{{Name}}", ...Array.prototype.slice.call(arguments, 0));
+	return Call.ByName("{{Name}}", ...Array.prototype.slice.call(arguments, 0));
 }
 `
 
@@ -364,6 +364,10 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 			var namespacedStructs map[packagePath]map[string]*ExternalStruct
 			var thisBinding string
 			var models []string
+			var mainImports = ""
+			if len(methods) > 0 {
+				mainImports = "import { Call } from '@wailsio/runtime';\n"
+			}
 			for _, method := range methods {
 				if useTypescript {
 					thisBinding, models, namespacedStructs = GenerateBindingTypescript(structName, method, useIDs)
@@ -426,9 +430,9 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 				}
 			}
 			if useTypescript {
-				result[relativePackageDir][structName] = headerTypescript + result[relativePackageDir][structName]
+				result[relativePackageDir][structName] = headerTypescript + mainImports + result[relativePackageDir][structName]
 			} else {
-				result[relativePackageDir][structName] = header + result[relativePackageDir][structName]
+				result[relativePackageDir][structName] = header + mainImports + result[relativePackageDir][structName]
 			}
 		}
 	}
