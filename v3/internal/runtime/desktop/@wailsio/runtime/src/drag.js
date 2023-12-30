@@ -23,7 +23,7 @@ window._wails.endDrag = endDrag;
 
 export function dragTest(e) {
     let val = window.getComputedStyle(e.target).getPropertyValue("--webkit-app-region");
-    if (val && val.trim() !== "drag" || e.buttons !== 1) {
+    if (!val || val === "" || val.trim() !== "drag" || e.buttons !== 1) {
         return false;
     }
     return e.detail === 1;
