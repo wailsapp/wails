@@ -70,7 +70,7 @@ function dialog(type, options = {}) {
  *
  * @return {undefined}
  */
-export function dialogCallback(id, data, isJSON) {
+export function dialogResultCallback(id, data, isJSON) {
     let p = dialogResponses.get(id);
     if (p) {
         if (isJSON) {

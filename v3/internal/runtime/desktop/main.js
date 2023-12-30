@@ -19,7 +19,7 @@ import * as Window from './@wailsio/runtime/window';
 import {Plugin, Call, errorHandler as callErrorHandler, resultHandler as callResultHandler, ByID, ByName} from "./@wailsio/runtime/calls";
 import {clientId} from './@wailsio/runtime/runtime';
 import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./@wailsio/runtime/events";
-import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning} from "./@wailsio/runtime/dialogs";
+import {dialogResultCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning} from "./@wailsio/runtime/dialogs";
 import {setupContextMenus} from './@wailsio/runtime/contextmenu';
 import {reloadWML} from './@wailsio/runtime/wml';
 import {setupDrag, endDrag, setResizable} from './@wailsio/runtime/drag';
@@ -31,7 +31,7 @@ window.wails = {
 
 // Internal wails endpoints
 window._wails = {
-    dialogCallback,
+    dialogResultCallback,
     dialogErrorCallback,
     dispatchWailsEvent,
     callErrorHandler,

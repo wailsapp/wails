@@ -7,7 +7,7 @@
  *
  * @return {undefined}
  */
-export function dialogCallback(id: string, data: string, isJSON: boolean): undefined;
+export function dialogResultCallback(id: string, data: string, isJSON: boolean): undefined;
 /**
  * Callback function for handling errors in dialog.
  *

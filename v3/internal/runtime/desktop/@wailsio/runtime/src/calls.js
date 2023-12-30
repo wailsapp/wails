@@ -17,8 +17,8 @@ const call = newRuntimeCallerWithID(objectNames.Call, '');
 let callResponses = new Map();
 
 window._wails = window._wails || {};
-window._wails.callCallback = resultHandler;
-window._wails.callErrorCallback = errorHandler;
+window._wails.callResultHandler = resultHandler;
+window._wails.callErrorHandler = errorHandler;
 
 function generateID() {
     let result;
