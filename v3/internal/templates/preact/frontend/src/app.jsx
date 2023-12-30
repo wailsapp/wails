@@ -1,32 +1,51 @@
-import { useState } from 'preact/hooks'
-import preactLogo from './assets/preact.svg'
-import './app.css'
+import { useState, useEffect } from 'preact/hooks'
+import {Greet} from "../bindings/main/GreetService.js";
+import {Events} from "@wailsio/runtime";
 
 export function App() {
-  const [count, setCount] = useState(0)
+  const [name, setName] = useState('');
+  const [result, setResult] = useState('Please enter your name below 👇');
+  const [time, setTime] = useState('Listening for Time event...');
+
+  const doGreet = () => {
+    if (!name) {
+      setName('from Go');
+    }
+    Greet(name).then((resultValue) => {
+      setResult(resultValue);
+    }).catch((err) => {
+      console.log(err);
+    });
+  }
+
+  useEffect(() => {
+    Events.On('time', (timeValue) => {
+      setTime(timeValue.data);
+    });
+  }, []);
 
   return (
-    <>
+    <div className="container">
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" class="logo" alt="Vite logo" />
+        <a wml-openURL="https://wails.io">
+          <img src="/wails.png" className="logo" alt="Wails logo"/>
         </a>
-        <a href="https://preactjs.com" target="_blank">
-          <img src={preactLogo} class="logo preact" alt="Preact logo" />
+        <a wml-openURL="https://preactjs.com">
+          <img src="/preact.svg" className="logo preact" alt="Preact logo"/>
         </a>
       </div>
-      <h1>Vite + Preact</h1>
-      <div class="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/app.jsx</code> and save to test HMR
-        </p>
+      <h1>Wails + Preact</h1>
+      <div className="card">
+        <div className="result">{result}</div>
+        <div className="input-box">
+          <input className="input" value={name} onInput={(e) => setName(e.target.value)} type="text" autoComplete="off"/>
+          <button className="btn" onClick={doGreet}>Greet</button>
+        </div>
       </div>
-      <p class="read-the-docs">
-        Click on the Vite and Preact logos to learn more
-      </p>
-    </>
+      <div className="footer">
+        <div><p>Click on the Wails logo to learn more</p></div>
+        <div><p>{time}</p></div>
+      </div>
+    </div>
   )
 }

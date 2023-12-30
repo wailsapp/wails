@@ -1,6 +1,6 @@
 /**
- * Reloads the WML page by adding necessary event listeners and browser listeners.
+ * Reloads the WML system by adding necessary event listeners and browser listeners.
  *
  * @return {void}
  */
-export function reloadWML(): void;
+export function Reload(): void;

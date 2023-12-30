@@ -71,6 +71,7 @@ func GetDefaultTemplates() []TemplateData {
 type TemplateOptions struct {
 	*flags.Init
 	LocalModulePath string
+	UseTypescript   bool
 }
 
 func getInternalTemplate(templateName string) (*Template, error) {
@@ -218,9 +219,12 @@ func Install(options *flags.Init) error {
 		return err
 	}
 
+	UseTypescript := strings.HasSuffix(options.TemplateName, "-ts")
+
 	templateData := TemplateOptions{
-		options,
-		filepath.ToSlash(relativePath + "/"),
+		Init:            options,
+		LocalModulePath: filepath.ToSlash(relativePath + "/"),
+		UseTypescript:   UseTypescript,
 	}
 
 	defer func() {

@@ -7,7 +7,7 @@ import (
 )
 
 type Options struct {
-	// Name is the name of the application
+	// Name is the name of the application (used in the default about box)
 	Name string
 
 	// Description is the description of the application (used in the default about box)

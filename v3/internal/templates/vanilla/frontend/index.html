@@ -18,20 +18,17 @@
         </a>
     </div>
     <h1>Wails + Javascript</h1>
-    <div>
-        <p id="time">Listening for Time event...</p>
-    </div>
     <div class="card">
-        <label for="name">Enter your name</label>
-        <input id="name" type="text"/>
-        <button onclick="doGreet()">Press me!</button>
+        <div class="result" id="result">Please enter your name below 👇</div>
+        <div class="input-box" id="input">
+            <input class="input" id="name" type="text" autocomplete="off"/>
+            <button class="btn" onclick="doGreet()">Greet</button>
+        </div>
     </div>
-    <div>
-        <p id="greeting">&nbsp;</p>
+    <div class="footer">
+        <div><p>Click on the Wails logo to learn more</p></div>
+        <div><p id="time">Listening for Time event...</p></div>
     </div>
-    <p class="read-the-docs">
-        Click on the Wails logo to learn more
-    </p>
 </div>
 <script type="module" src="/main.js"></script>
 </body>

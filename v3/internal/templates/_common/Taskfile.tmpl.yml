@@ -387,7 +387,12 @@ tasks:
     generates:
       - "frontend/bindings/**/*"
     cmds:
-      - wails3 generate bindings
+      {{- if .UseTypescript }}
+      # For a complete list of options, run `wails3 generate bindings -help`
+      - wails3 generate bindings -silent -ts
+        {{- else }}
+      - wails3 generate bindings -silent
+      {{- end }}
       # - wails3 generate bindings -silent
 
   go:mod:tidy:

@@ -1,32 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import { useState, useEffect } from 'react'
+import {Greet} from "../bindings/main/GreetService.js";
+import {Events, WML} from "@wailsio/runtime";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [name, setName] = useState('');
+  const [result, setResult] = useState('Please enter your name below 👇');
+  const [time, setTime] = useState('Listening for Time event...');
+
+  const doGreet = () => {
+    if (!name) {
+      setName('from Go');
+    }
+    Greet(name).then((resultValue) => {
+      setResult(resultValue);
+    }).catch((err) => {
+      console.log(err);
+    });
+  }
+
+  useEffect(() => {
+    Events.On('time', (timeValue) => {
+      setTime(timeValue.data);
+    });
+    // Reload WML so it picks up the wml tags
+    WML.Reload();
+  }, []);
 
   return (
-    <div className="App">
+    <div className="container">
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
+        <a wml-openURL="https://wails.io">
+          <img src="/wails.png" className="logo" alt="Wails logo"/>
         </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
+        <a wml-openURL="https://reactjs.org">
+          <img src='/react.svg' className="logo react" alt="React logo"/>
         </a>
       </div>
-      <h1>Vite + React</h1>
+      <h1>Wails + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+        <div className="result">{result}</div>
+        <div className="input-box">
+          <input className="input" value={name} onChange={(e) => setName(e.target.value)} type="text" autoComplete="off"/>
+          <button className="btn" onClick={doGreet}>Greet</button>
+        </div>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <div className="footer">
+        <div><p>Click on the Wails logo to learn more</p></div>
+        <div><p>{time}</p></div>
+      </div>
     </div>
   )
 }

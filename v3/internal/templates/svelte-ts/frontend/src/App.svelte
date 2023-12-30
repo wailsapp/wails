@@ -1,45 +1,50 @@
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import Counter from './lib/Counter.svelte'
+  import {Greet} from "../bindings/main/GreetService.js";
+  import {Events} from "@wailsio/runtime";
+
+  let name: string = '';
+  let result: string = 'Please enter your name below 👇';
+  let time: string = 'Listening for Time event...';
+
+  const doGreet = (): void => {
+    if (!name) {
+      name = 'from Go';
+    }
+    Greet(name).then((resultValue: string) => {
+      result = resultValue;
+    }).catch((err: any) => {
+      console.log(err);
+    });
+  }
+
+  Events.On('time', (timeValue: any) => {
+    time = timeValue.data;
+  });
 </script>
 
-<main>
+<div class="container">
   <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer"> 
-      <img src="/vite.svg" class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer"> 
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
+    <span wml-openURL="https://wails.io">
+      <img src="/wails.png" class="logo" alt="Wails logo"/>
+    </span>
+    <span wml-openURL="https://svelte.dev">
+      <img src="/svelte.svg" class="logo svelte" alt="Svelte logo"/>
+    </span>
   </div>
-  <h1>Vite + Svelte</h1>
-
+  <h1>Wails + Svelte</h1>
   <div class="card">
-    <Counter />
+    <div class="result">{result}</div>
+    <div class="input-box">
+      <input class="input" bind:value={name} type="text" autocomplete="off"/>
+      <button class="btn" on:click={doGreet}>Greet</button>
+    </div>
   </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
-</main>
+  <div class="footer">
+    <div><p>Click on the Wails logo to learn more</p></div>
+    <div><p>{time}</p></div>
+  </div>
+</div>
 
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
+  /* Put your standard CSS here */
 </style>
