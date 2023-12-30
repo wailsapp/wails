@@ -6,8 +6,7 @@ we are aiming to achieve. These are subject to change.
 
 ## Alpha milestones
 
-
-### Alpha 3
+### Current: Alpha 3
 
 #### Goals
 
@@ -56,6 +55,25 @@ Examples:
 
 - [ ] All examples working on Linux
 
+## Upcoming milestones
+
+### Alpha 4
+
+#### Goals
+
+- [ ] `wails3 dev` command
+- [ ] `wails3 package` command
+
+### Alpha 5
+
+#### Goals
+
+- [ ] Keyboard shortcuts
+    - Window Level shortcuts
+    - Application Level shortcuts (applies to all windows)
+    - Ensure Keydown/Keyup events are sent to JS if not handled by Go
+
+## Previous milestones
 
 ### Alpha 2
 
