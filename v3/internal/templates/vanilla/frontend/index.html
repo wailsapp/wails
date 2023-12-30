@@ -8,23 +8,31 @@
     <title>Wails App</title>
 </head>
 <body>
-    <div class="container">
-        <div>
-            <a wml-openURL="https://wails.io">
-                <img src="/wails.png" class="logo" alt="Wails logo"/>
-            </a>
-            <a wml-openURL="https://developer.mozilla.org/en-US/docs/Web/JavaScript">
-                <img src="/javascript.svg" class="logo vanilla" alt="JavaScript logo"/>
-            </a>
-        </div>
-        <h1>Hello Wails!</h1>
-        <div class="card">
-            <button id="test" onclick="doGreet()">Press me!</button>
-        </div>
-        <p class="read-the-docs">
-            Click on the Wails logo to learn more
-        </p>
+<div class="container">
+    <div>
+        <a wml-openURL="https://wails.io">
+            <img src="/wails.png" class="logo" alt="Wails logo"/>
+        </a>
+        <a wml-openURL="https://developer.mozilla.org/en-US/docs/Web/JavaScript">
+            <img src="/javascript.svg" class="logo vanilla" alt="JavaScript logo"/>
+        </a>
     </div>
-    <script type="module" src="/main.js"></script>
+    <h1>Wails + Javascript</h1>
+    <div>
+        <p id="time">Listening for Time event...</p>
+    </div>
+    <div class="card">
+        <label for="name">Enter your name</label>
+        <input id="name" type="text"/>
+        <button onclick="doGreet()">Press me!</button>
+    </div>
+    <div>
+        <p id="greeting">&nbsp;</p>
+    </div>
+    <p class="read-the-docs">
+        Click on the Wails logo to learn more
+    </p>
+</div>
+<script type="module" src="/main.js"></script>
 </body>
 </html>

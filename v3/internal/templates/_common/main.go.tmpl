@@ -27,16 +27,26 @@ func main() {
 	})
 	// Create window
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title: "Plain Bundle",
-		CSS:   `body { background-color: rgba(255, 255, 255, 0); } .main { color: white; margin: 20%; }`,
+		Title: "Window 1",
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInset,
 		},
-
+        BackgroundColour: application.NewRGB(36, 36, 36),
 		URL: "/",
 	})
+
+    go func() {
+        for {
+            now := time.Now().Format(time.RFC1123)
+            app.Events.Emit(&application.WailsEvent{
+                Name: "time",
+                Data: now,
+            })
+            time.Sleep(time.Second)
+        }
+    }()
 
 	err := app.Run()
 
