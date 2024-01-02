@@ -139,8 +139,16 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		globals *taskfile.Vars
 	)
 
+	var index int
+	var arg string
+	for index, arg = range os.Args[2:] {
+		if !strings.HasPrefix(arg, "-") {
+			break
+		}
+	}
+
 	var tasksAndVars []string
-	for _, taskAndVar := range os.Args[2:] {
+	for _, taskAndVar := range os.Args[index+2:] {
 		if taskAndVar == "--" {
 			break
 		}
