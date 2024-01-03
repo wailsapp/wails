@@ -51,8 +51,16 @@ func SetupSingleInstance(uniqueId string) {
 				data := options.SecondInstanceData{
 					Args: os.Args[1:],
 				}
-				data.WorkingDirectory, _ = os.Getwd()
-				serialized, _ := json.Marshal(data)
+				data.WorkingDirectory, err = os.Getwd()
+				if err != nil {
+				    log.Printf("Failed to get working directory: %v", err)
+				    return
+				}
+				serialized, err := json.Marshal(data)
+				if err != nil {
+				    log.Printf("Failed to marshal data: %v", err)
+				    return
+				}
 
 				SendMessage(hwnd, string(serialized))
 				// exit second instance of app after sending message

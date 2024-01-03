@@ -57,11 +57,13 @@ func SetupSingleInstance(uniqueID string) {
 		}
 		data.WorkingDirectory, err = os.Getwd()
 		if err != nil {
+			log.Printf("Failed to get working directory: %v", err)
 			return
 		}
 
 		serialized, err := json.Marshal(data)
 		if err != nil {
+		     log.Printf("Failed to marshal data: %v", err)
 			return
 		}
 
