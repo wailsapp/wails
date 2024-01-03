@@ -7,6 +7,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"golang.org/x/sys/windows"
+	"log"
 	"os"
 	"syscall"
 	"unsafe"
@@ -53,13 +54,13 @@ func SetupSingleInstance(uniqueId string) {
 				}
 				data.WorkingDirectory, err = os.Getwd()
 				if err != nil {
-				    log.Printf("Failed to get working directory: %v", err)
-				    return
+					log.Printf("Failed to get working directory: %v", err)
+					return
 				}
 				serialized, err := json.Marshal(data)
 				if err != nil {
-				    log.Printf("Failed to marshal data: %v", err)
-				    return
+					log.Printf("Failed to marshal data: %v", err)
+					return
 				}
 
 				SendMessage(hwnd, string(serialized))

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"log"
 	"os"
 	"strings"
 )
@@ -63,7 +64,7 @@ func SetupSingleInstance(uniqueID string) {
 
 		serialized, err := json.Marshal(data)
 		if err != nil {
-		     log.Printf("Failed to marshal data: %v", err)
+			log.Printf("Failed to marshal data: %v", err)
 			return
 		}
 
