@@ -5,11 +5,6 @@ package application
 import (
 	"errors"
 	"fmt"
-	"github.com/bep/debounce"
-	"github.com/wailsapp/go-webview2/webviewloader"
-	"github.com/wailsapp/wails/v3/internal/assetserver"
-	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
-	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"net/url"
 	"path"
 	"strconv"
@@ -19,6 +14,12 @@ import (
 	"time"
 	"unicode/utf16"
 	"unsafe"
+
+	"github.com/bep/debounce"
+	"github.com/wailsapp/go-webview2/webviewloader"
+	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
+	"github.com/wailsapp/wails/v3/internal/capabilities"
 
 	"github.com/samber/lo"
 
@@ -320,10 +321,6 @@ func (w *windowsWebviewWindow) run() {
 		w.center()
 	}
 
-	if options.Focused {
-		w.Focus()
-	}
-
 	if options.Frameless {
 		// Trigger a resize to ensure the window is sized correctly
 		w.chromium.Resize()
@@ -361,10 +358,6 @@ func (w *windowsWebviewWindow) size() (int, int) {
 	// Scaling appears to give invalid results...
 	//width, height = w.scaleToDefaultDPI(width, height)
 	return width, height
-}
-
-func (w *windowsWebviewWindow) Focus() {
-	w32.SetForegroundWindow(w.hwnd)
 }
 
 func (w *windowsWebviewWindow) update() {
@@ -955,10 +948,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			return 0
 		}
 		w.parent.emit(events.Windows.WindowKillFocus)
-	case w32.WM_SETFOCUS:
-		w.parent.emit(events.Windows.WindowSetFocus)
-	case w32.WM_NCLBUTTONDOWN:
+	case w32.WM_ENTERSIZEMOVE:
+		// This is needed to close open dropdowns when moving the window https://github.com/MicrosoftEdge/WebView2Feedback/issues/2290
 		w32.SetFocus(w.hwnd)
+	case w32.WM_SETFOCUS:
+		w.focus()
+		w.parent.emit(events.Windows.WindowSetFocus)
 	case w32.WM_MOVE, w32.WM_MOVING:
 		_ = w.chromium.NotifyParentWindowPositionChanged()
 	// Check for keypress
@@ -1294,14 +1289,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 	globalApplication.capabilities = capabilities.NewCapabilities(webview2version)
 
 	disableFeatues := []string{}
-
 	if !opts.EnableFraudulentWebsiteWarnings {
 		disableFeatues = append(disableFeatues, "msSmartScreenProtection")
 	}
-
-	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
-	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
-
 	if opts.WebviewGpuIsDisabled {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
 	}
@@ -1310,6 +1300,15 @@ func (w *windowsWebviewWindow) setupChromium() {
 		arg := fmt.Sprintf("--disable-features=%s", strings.Join(disableFeatues, ","))
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
+
+	enableFeatures := []string{"msWebView2BrowserHitTransparent"}
+	if len(enableFeatures) > 0 {
+		arg := fmt.Sprintf("--enable-features=%s", strings.Join(enableFeatures, ","))
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
+	}
+
+	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
+	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
 
 	if opts.Permissions != nil {
 		for permission, state := range opts.Permissions {
@@ -1323,13 +1322,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.WebResourceRequestedCallback = w.processRequest
 	chromium.ContainsFullScreenElementChangedCallback = w.fullscreenChanged
 	chromium.NavigationCompletedCallback = w.navigationCompleted
-	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
-		if w.processKeyBinding(vkey) {
-			return true
-		}
-		w32.PostMessage(w.hwnd, w32.WM_KEYDOWN, uintptr(vkey), 0)
-		return false
-	}
+	chromium.AcceleratorKeyCallback = w.processKeyBinding
 
 	chromium.Embed(w.hwnd)
 
@@ -1530,6 +1523,7 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	}
 	w.hasStarted = true
 
+	wasFocused := w.isFocused()
 	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
 	err := w.chromium.Hide()
 	if err != nil {
@@ -1538,6 +1532,9 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	err = w.chromium.Show()
 	if err != nil {
 		globalApplication.fatal(err.Error())
+	}
+	if wasFocused {
+		w.focus()
 	}
 
 	//f.mainWindow.hasBeenShown = true
@@ -1548,9 +1545,6 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 
 	globalApplication.debug("Processing key binding", "vkey", vkey)
 
-	if len(w.parent.keyBindings) == 0 {
-		return false
-	}
 	// Get the keyboard state and convert to an accelerator
 	var keyState [256]byte
 	if !w32.GetKeyboardState(keyState[:]) {
@@ -1585,9 +1579,20 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 		acc.Key = accKey
 	}
 
-	// Process the key binding
-	return w.parent.processKeyBinding(acc.String())
+	accKey := acc.String()
+	globalApplication.debug("Processing key binding", "vkey", vkey, "acc", accKey)
 
+	// Process the key binding
+	if w.parent.processKeyBinding(accKey) {
+		return true
+	}
+
+	if accKey == "alt+f4" {
+		w32.PostMessage(w.hwnd, w32.WM_CLOSE, 0, 0)
+		return true
+	}
+
+	return false
 }
 
 func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {

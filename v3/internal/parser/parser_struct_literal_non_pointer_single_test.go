@@ -24,6 +24,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
+							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet someone",
 							Inputs: []*Parameter{
@@ -47,6 +48,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 1411160069,
 						},
 						{
+							Package:    "main",
 							Name:       "NoInputsStringOut",
 							DocComment: "",
 							Inputs:     nil,
@@ -62,7 +64,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 1075577233,
 						},
 						{
-							Name: "StringArrayInputStringOut",
+							Package: "main",
+							Name:    "StringArrayInputStringOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -84,7 +87,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 1091960237,
 						},
 						{
-							Name: "StringArrayInputStringArrayOut",
+							Package: "main",
+							Name:    "StringArrayInputStringArrayOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -107,7 +111,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 383995060,
 						},
 						{
-							Name: "StringArrayInputNamedOutput",
+							Package: "main",
+							Name:    "StringArrayInputNamedOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -131,7 +136,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 3678582682,
 						},
 						{
-							Name: "StringArrayInputNamedOutputs",
+							Package: "main",
+							Name:    "StringArrayInputNamedOutputs",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -162,7 +168,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 319259595,
 						},
 						{
-							Name: "IntPointerInputNamedOutputs",
+							Package: "main",
+							Name:    "IntPointerInputNamedOutputs",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -192,7 +199,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 2718999663,
 						},
 						{
-							Name: "UIntPointerInAndOutput",
+							Package: "main",
+							Name:    "UIntPointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -215,7 +223,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 1367187362,
 						},
 						{
-							Name: "UInt8PointerInAndOutput",
+							Package: "main",
+							Name:    "UInt8PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -238,7 +247,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 518250834,
 						},
 						{
-							Name: "UInt16PointerInAndOutput",
+							Package: "main",
+							Name:    "UInt16PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -261,7 +271,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 1236957573,
 						},
 						{
-							Name: "UInt32PointerInAndOutput",
+							Package: "main",
+							Name:    "UInt32PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -284,7 +295,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 1739300671,
 						},
 						{
-							Name: "UInt64PointerInAndOutput",
+							Package: "main",
+							Name:    "UInt64PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -307,7 +319,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 1403757716,
 						},
 						{
-							Name: "IntPointerInAndOutput",
+							Package: "main",
+							Name:    "IntPointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -330,7 +343,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 1066151743,
 						},
 						{
-							Name: "Int8PointerInAndOutput",
+							Package: "main",
+							Name:    "Int8PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -353,7 +367,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 2189402897,
 						},
 						{
-							Name: "Int16PointerInAndOutput",
+							Package: "main",
+							Name:    "Int16PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -376,7 +391,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 1754277916,
 						},
 						{
-							Name: "Int32PointerInAndOutput",
+							Package: "main",
+							Name:    "Int32PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -399,7 +415,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 4251088558,
 						},
 						{
-							Name: "Int64PointerInAndOutput",
+							Package: "main",
+							Name:    "Int64PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -422,7 +439,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 2205561041,
 						},
 						{
-							Name: "IntInIntOut",
+							Package: "main",
+							Name:    "IntInIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -443,7 +461,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 642881729,
 						},
 						{
-							Name: "Int8InIntOut",
+							Package: "main",
+							Name:    "Int8InIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -464,7 +483,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 572240879,
 						},
 						{
-							Name: "Int16InIntOut",
+							Package: "main",
+							Name:    "Int16InIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -485,7 +505,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 3306292566,
 						},
 						{
-							Name: "Int32InIntOut",
+							Package: "main",
+							Name:    "Int32InIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -506,7 +527,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 1909469092,
 						},
 						{
-							Name: "Int64InIntOut",
+							Package: "main",
+							Name:    "Int64InIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -527,7 +549,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 1343888303,
 						},
 						{
-							Name: "UIntInUIntOut",
+							Package: "main",
+							Name:    "UIntInUIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -548,7 +571,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 2836661285,
 						},
 						{
-							Name: "UInt8InUIntOut",
+							Package: "main",
+							Name:    "UInt8InUIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -569,7 +593,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 2988345717,
 						},
 						{
-							Name: "UInt16InUIntOut",
+							Package: "main",
+							Name:    "UInt16InUIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -590,7 +615,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 3401034892,
 						},
 						{
-							Name: "UInt32InUIntOut",
+							Package: "main",
+							Name:    "UInt32InUIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -611,7 +637,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 1160383782,
 						},
 						{
-							Name: "UInt64InUIntOut",
+							Package: "main",
+							Name:    "UInt64InUIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -632,7 +659,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 793803239,
 						},
 						{
-							Name: "Float32InFloat32Out",
+							Package: "main",
+							Name:    "Float32InFloat32Out",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -653,7 +681,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 3132595881,
 						},
 						{
-							Name: "Float64InFloat64Out",
+							Package: "main",
+							Name:    "Float64InFloat64Out",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -674,7 +703,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 2182412247,
 						},
 						{
-							Name: "PointerFloat32InFloat32Out",
+							Package: "main",
+							Name:    "PointerFloat32InFloat32Out",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -697,7 +727,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 224675106,
 						},
 						{
-							Name: "PointerFloat64InFloat64Out",
+							Package: "main",
+							Name:    "PointerFloat64InFloat64Out",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -720,7 +751,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 2124953624,
 						},
 						{
-							Name: "BoolInBoolOut",
+							Package: "main",
+							Name:    "BoolInBoolOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -741,7 +773,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 2424639793,
 						},
 						{
-							Name: "PointerBoolInBoolOut",
+							Package: "main",
+							Name:    "PointerBoolInBoolOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -764,7 +797,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 3589606958,
 						},
 						{
-							Name: "PointerStringInStringOut",
+							Package: "main",
+							Name:    "PointerStringInStringOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -787,7 +821,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 229603958,
 						},
 						{
-							Name: "StructPointerInputErrorOutput",
+							Package: "main",
+							Name:    "StructPointerInputErrorOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -810,7 +845,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 2447692557,
 						},
 						{
-							Name: "StructInputStructOutput",
+							Package: "main",
+							Name:    "StructInputStructOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -833,7 +869,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 3835643147,
 						},
 						{
-							Name: "StructPointerInputStructPointerOutput",
+							Package: "main",
+							Name:    "StructPointerInputStructPointerOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -858,7 +895,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 2943477349,
 						},
 						{
-							Name: "MapIntInt",
+							Package: "main",
+							Name:    "MapIntInt",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -879,7 +917,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 2386486356,
 						},
 						{
-							Name: "PointerMapIntInt",
+							Package: "main",
+							Name:    "PointerMapIntInt",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -901,7 +940,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 3516977899,
 						},
 						{
-							Name: "MapIntPointerInt",
+							Package: "main",
+							Name:    "MapIntPointerInt",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -923,7 +963,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 550413585,
 						},
 						{
-							Name: "MapIntSliceInt",
+							Package: "main",
+							Name:    "MapIntSliceInt",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -945,7 +986,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 2900172572,
 						},
 						{
-							Name: "MapIntSliceIntInMapIntSliceIntOut",
+							Package: "main",
+							Name:    "MapIntSliceIntInMapIntSliceIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -985,7 +1027,8 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							ID: 881980169,
 						},
 						{
-							Name: "ArrayInt",
+							Package: "main",
+							Name:    "ArrayInt",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
@@ -1076,6 +1119,36 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 				t.Errorf("ParseDirectory() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			// Patch the PackageDir in the wantBoundMethods
+			for _, packageData := range got.BoundMethods {
+				for _, boundMethods := range packageData {
+					for _, boundMethod := range boundMethods {
+						boundMethod.PackageDir = ""
+					}
+				}
+			}
+
+			// Loop over the things we want
+			for packageName, packageData := range tt.wantBoundMethods {
+				for structName, wantBoundMethods := range packageData {
+					gotBoundMethods := got.BoundMethods[packageName][structName]
+					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods); diff != "" {
+						t.Errorf("ParseDirectory() failed:\n" + diff)
+					}
+				}
+			}
+
+			// Loop over the models
+			for _, packageData := range got.Models {
+				for _, wantModel := range packageData {
+					// Loop over the Fields
+					for _, field := range wantModel.Fields {
+						field.Project = nil
+					}
+				}
+			}
+
 			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}

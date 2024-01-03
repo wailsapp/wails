@@ -26,7 +26,6 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 		m.httpError(rw, "Unable to parse arguments: %s", err.Error())
 		return
 	}
-	fmt.Println("processCallMethod", args)
 	callID := args.String("call-id")
 	if callID == nil {
 		m.Error("call-id is required")

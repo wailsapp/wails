@@ -10,39 +10,32 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 
-import * as Clipboard from './clipboard';
-import * as Application from './application';
-import * as Screens from './screens';
-import * as System from './system';
-import * as Browser from './browser';
-import {Plugin, Call, callErrorCallback, callCallback, CallByID, CallByName} from "./calls";
-import {clientId} from './runtime';
-import {newWindow} from "./window";
-import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
-import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
-import {setupContextMenus} from "./contextmenu";
-import {reloadWML} from "./wml";
-import {setupDrag, endDrag, setResizable} from "./drag";
+import * as Clipboard from './@wailsio/runtime/clipboard';
+import * as Application from './@wailsio/runtime/application';
+import * as Screens from './@wailsio/runtime/screens';
+import * as System from './@wailsio/runtime/system';
+import * as Browser from './@wailsio/runtime/browser';
+import * as Window from './@wailsio/runtime/window';
+import {Plugin, Call, errorHandler as callErrorHandler, resultHandler as callResultHandler, ByID, ByName} from "./@wailsio/runtime/calls";
+import {clientId} from './@wailsio/runtime/runtime';
+import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./@wailsio/runtime/events";
+import {dialogResultCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning} from "./@wailsio/runtime/dialogs";
+import {setupContextMenus} from './@wailsio/runtime/contextmenu';
+import {reloadWML} from './@wailsio/runtime/wml';
+import {setupDrag, endDrag, setResizable} from './@wailsio/runtime/drag';
 
 window.wails = {
     ...newRuntime(null),
-    Capabilities: {},
     clientId: clientId,
 };
 
-fetch("/wails/capabilities").then((response) => {
-    response.json().then((data) => {
-        window.wails.Capabilities = data;
-    });
-});
-
 // Internal wails endpoints
 window._wails = {
-    dialogCallback,
+    dialogResultCallback,
     dialogErrorCallback,
     dispatchWailsEvent,
-    callCallback,
-    callErrorCallback,
+    callErrorHandler,
+    callResultHandler,
     endDrag,
     setResizable,
 };
@@ -54,17 +47,16 @@ export function newRuntime(windowName) {
         },
         Application: {
             ...Application,
-            GetWindowByName(windowName) {
-                return newRuntime(windowName);
-            }
         },
         System,
         Screens,
         Browser,
-        Call,
-        CallByID,
-        CallByName,
-        Plugin,
+        Call: {
+            Call,
+            ByID,
+            ByName,
+            Plugin,
+        },
         WML: {
             Reload: reloadWML,
         },
@@ -84,12 +76,10 @@ export function newRuntime(windowName) {
             Off,
             OffAll,
         },
-        Window: newWindow(windowName),
+        Window: {
+            ...Window.Get('')
+        },
     };
-}
-
-if (DEBUG) {
-    console.log("Wails v3.0.0 Debug Mode Enabled");
 }
 
 setupContextMenus();

@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/leaanthony/u"
 	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/leaanthony/u"
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -239,13 +240,13 @@ func (w *WebviewWindow) formatJS(f string, callID string, data string) string {
 
 func (w *WebviewWindow) CallError(callID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.callErrorCallback('%s', %s);", callID, result))
+		w.impl.execJS(w.formatJS("_wails.callErrorHandler('%s', %s);", callID, result))
 	}
 }
 
 func (w *WebviewWindow) CallResponse(callID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.callCallback('%s', %s, true);", callID, result))
+		w.impl.execJS(w.formatJS("_wails.callResultHandler('%s', %s, true);", callID, result))
 	}
 }
 
@@ -258,9 +259,9 @@ func (w *WebviewWindow) DialogError(dialogID string, result string) {
 func (w *WebviewWindow) DialogResponse(dialogID string, result string, isJSON bool) {
 	if w.impl != nil {
 		if isJSON {
-			w.impl.execJS(w.formatJS("_wails.dialogCallback('%s', %s, true);", dialogID, result))
+			w.impl.execJS(w.formatJS("_wails.dialogResultCallback('%s', %s, true);", dialogID, result))
 		} else {
-			w.impl.execJS(fmt.Sprintf("_wails.dialogCallback('%s', '%s', false);", dialogID, result))
+			w.impl.execJS(fmt.Sprintf("_wails.dialogResultCallback('%s', '%s', false);", dialogID, result))
 		}
 	}
 }
@@ -1050,10 +1051,6 @@ func (w *WebviewWindow) NativeWindowHandle() (uintptr, error) {
 }
 
 func (w *WebviewWindow) Focus() {
-	if w.impl == nil {
-		w.options.Focused = true
-		return
-	}
 	InvokeSync(w.impl.focus)
 	w.emit(events.Common.WindowFocus)
 }
@@ -1099,20 +1096,17 @@ func (w *WebviewWindow) SetAbsolutePosition(x int, y int) {
 }
 
 func (w *WebviewWindow) processKeyBinding(acceleratorString string) bool {
-
-	if w.keyBindings == nil {
-		return false
-	}
-
 	// Check key bindings
-	callback, ok := w.keyBindings[acceleratorString]
-	if !ok {
-		return globalApplication.processKeyBinding(acceleratorString, w)
-	}
-	// Execute callback
-	go callback(w)
+	if w.keyBindings != nil {
+		if callback := w.keyBindings[acceleratorString]; callback != nil {
+			// Execute callback
+			go callback(w)
 
-	return true
+			return true
+		}
+	}
+
+	return globalApplication.processKeyBinding(acceleratorString, w)
 }
 
 func (w *WebviewWindow) HandleKeyEvent(acceleratorString string) {

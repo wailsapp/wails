@@ -179,14 +179,14 @@ type windowMessage struct {
 	message  string
 }
 
-var windowMessageBuffer = make(chan *windowMessage)
+var windowMessageBuffer = make(chan *windowMessage, 5)
 
 type dragAndDropMessage struct {
 	windowId  uint
 	filenames []string
 }
 
-var windowDragAndDropBuffer = make(chan *dragAndDropMessage)
+var windowDragAndDropBuffer = make(chan *dragAndDropMessage, 5)
 
 func addDragAndDropMessage(windowId uint, filenames []string) {
 	windowDragAndDropBuffer <- &dragAndDropMessage{
@@ -206,7 +206,7 @@ type webViewAssetRequest struct {
 	windowName string
 }
 
-var windowKeyEvents = make(chan *windowKeyEvent)
+var windowKeyEvents = make(chan *windowKeyEvent, 5)
 
 type windowKeyEvent struct {
 	windowId          uint
@@ -224,7 +224,7 @@ func (r *webViewAssetRequest) Header() (http.Header, error) {
 	return hh, nil
 }
 
-var webviewRequests = make(chan *webViewAssetRequest)
+var webviewRequests = make(chan *webViewAssetRequest, 5)
 
 type eventHook struct {
 	callback func(event *Event)
@@ -435,44 +435,44 @@ func (a *App) Run() error {
 	go func() {
 		for {
 			event := <-applicationEvents
-			a.handleApplicationEvent(event)
+			go a.handleApplicationEvent(event)
 		}
 	}()
 	go func() {
 		for {
 			event := <-windowEvents
-			a.handleWindowEvent(event)
+			go a.handleWindowEvent(event)
 		}
 	}()
 	go func() {
 		for {
 			request := <-webviewRequests
-			a.handleWebViewRequest(request)
+			go a.handleWebViewRequest(request)
 		}
 	}()
 	go func() {
 		for {
 			event := <-windowMessageBuffer
-			a.handleWindowMessage(event)
+			go a.handleWindowMessage(event)
 		}
 	}()
 	go func() {
 		for {
 			event := <-windowKeyEvents
-			a.handleWindowKeyEvent(event)
+			go a.handleWindowKeyEvent(event)
 		}
 	}()
 	go func() {
 		for {
 			dragAndDropMessage := <-windowDragAndDropBuffer
-			a.handleDragAndDropMessage(dragAndDropMessage)
+			go a.handleDragAndDropMessage(dragAndDropMessage)
 		}
 	}()
 
 	go func() {
 		for {
 			menuItemID := <-menuItemClicked
-			a.handleMenuItemClicked(menuItemID)
+			go a.handleMenuItemClicked(menuItemID)
 		}
 	}()
 
@@ -609,6 +609,12 @@ func (a *App) Quit() {
 			a.impl.destroy()
 		}
 	})
+}
+
+func (a *App) SetIcon(icon []byte) {
+	if a.impl != nil {
+		a.impl.setIcon(icon)
+	}
 }
 
 func (a *App) SetMenu(menu *Menu) {
@@ -761,8 +767,7 @@ func (a *App) runOrDeferToAppRun(r runnable) {
 }
 
 func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow) bool {
-
-	if a.keyBindings == nil {
+	if len(a.keyBindings) == 0 {
 		return false
 	}
 
@@ -818,4 +823,12 @@ func (a *App) BrowserOpenURL(url string) error {
 
 func (a *App) BrowserOpenFile(path string) error {
 	return browser.OpenFile(path)
+}
+
+func (a *App) Environment() EnvironmentInfo {
+	return EnvironmentInfo{
+		OS:    runtime.GOOS,
+		Arch:  runtime.GOARCH,
+		Debug: a.isDebugMode,
+	}
 }

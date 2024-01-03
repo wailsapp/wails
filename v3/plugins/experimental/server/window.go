@@ -50,9 +50,9 @@ func (w Window) DialogError(dialogID string, result string) {
 }
 
 func (w Window) DialogResponse(dialogID string, result string, isJSON bool) {
-	cmd := "_wails.dialogCallback('%s', %s, true);"
+	cmd := "_wails.dialogResultCallback('%s', %s, true);"
 	if !isJSON {
-		cmd = "_wails.dialogCallback('%s', %s, false);"
+		cmd = "_wails.dialogResultCallback('%s', %s, false);"
 	}
 	w.ExecJS(dialogID, w.formatJS(cmd, dialogID, result))
 }

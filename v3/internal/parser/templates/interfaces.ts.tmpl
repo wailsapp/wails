@@ -1,20 +1,26 @@
-{{$pkg := .Package}}
-export namespace {{.Package}} {
-    {{range $enumindex, $enumdef := .Enums}}
-    {{- range $commentindex, $commentdef := .DocComments}}
-        {{$commentdef -}}
+{{- $pkg := .Package}}{{- range .Imports}}
+import * as {{.PackageName}} from "{{.Path}}/models";{{- end}}
+{{- range $enumindex, $enumdef := .Enums}}
+{{- range $commentindex, $commentdef := $enumdef.DocComments}}
+{{$commentdef -}}
+{{- end}}
+export enum {{$enumdef.Name}} {
+    {{- range $constindex, $constdef := .Consts}}
+    {{- if $constdef.DocComments}}
+    {{- range $commentindex, $commentdef := $constdef.DocComments}}
+    {{$commentdef -}}
+    {{- end }}
     {{- end}}
-    export enum {{$enumdef.Name}} {
-        {{- range $constindex, $constdef := .Consts}}
-        {{- if $constdef.DocComment}}
-        // {{$constdef.DocComment}}
-        {{- end}}
-        {{$constdef.Name}} = {{$constdef.Value}},{{end}}
-    }
-    {{- end}}
-    {{range $name, $def := .Models}}
-    export interface {{$def.Name}} { {{range $def.Fields}}
-        {{.JSDef $pkg}}{{end}}
-    }
-    {{end}}
+    {{$constdef.Name}} = {{$constdef.Value}},{{end}}
 }
+{{- end}}
+{{range $name, $def := .Models}}
+{{- if $def.DocComments}}
+{{- range $commentindex, $commentdef := $def.DocComments}}
+{{$commentdef -}}
+{{- end }}
+{{- end}}
+export interface {{$def.Name}} { {{- range $def.Fields}}
+    {{.JSDef $pkg}}{{end}}
+}
+{{end}}

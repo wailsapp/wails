@@ -7,6 +7,7 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
+// Title is a title
 type Title string
 
 const (

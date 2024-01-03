@@ -2,6 +2,11 @@
 
 package runtime
 
+import _ "embed"
+
+//go:embed runtime_debug.js
+var DesktopRuntime []byte
+
 var RuntimeAssetsBundle = &RuntimeAssets{
 	runtimeDesktopJS: DesktopRuntime,
 }

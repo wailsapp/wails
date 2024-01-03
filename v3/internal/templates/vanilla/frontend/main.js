@@ -1,23 +1,20 @@
-import './style.css'
-import javascriptLogo from './javascript.svg'
-import { setupCounter } from './counter.js'
+import {Greet} from "./bindings/main/GreetService.js";
+import {Events} from "@wailsio/runtime";
 
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://wails.io" target="_blank">
-      <img src="/wails.png" class="logo" alt="Wails logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Wails!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Wails logo to learn more
-    </p>
-  </div>
-`
+window.doGreet = () => {
+    let name = document.getElementById('name').value;
+    if (!name) {
+        name = 'from Go';
+    }
+    Greet(name).then((result) => {
+        let element = document.getElementById('greeting');
+        element.innerText = result;
+    }).catch((err) => {
+        console.log(err);
+    });
+}
 
-setupCounter(document.querySelector('#counter'))
+Events.On('time', (time) => {
+    let element = document.getElementById('time');
+    element.innerText = time.data;
+});

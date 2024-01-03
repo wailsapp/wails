@@ -29,16 +29,16 @@ func (w *Event) Cancel() {
 	w.Cancelled = true
 }
 
-var applicationEvents = make(chan *Event)
+var applicationEvents = make(chan *Event, 5)
 
 type windowEvent struct {
 	WindowID uint
 	EventID  uint
 }
 
-var windowEvents = make(chan *windowEvent)
+var windowEvents = make(chan *windowEvent, 5)
 
-var menuItemClicked = make(chan uint)
+var menuItemClicked = make(chan uint, 5)
 
 type WailsEvent struct {
 	Name      string `json:"name"`

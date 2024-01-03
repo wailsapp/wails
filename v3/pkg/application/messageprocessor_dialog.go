@@ -91,7 +91,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		dialog.AddButtons(options.Buttons)
 		dialog.Show()
 		m.ok(rw)
-		m.Info("Runtime:", "method", methodName, "options", options)
+		m.Info("Runtime Call:", "method", methodName, "options", options)
 
 	case DialogOpenFile:
 		var options OpenFileDialogOptions
@@ -119,7 +119,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 						return
 					}
 					m.dialogCallback(window, dialogID, string(result), true)
-					m.Info("Runtime:", "method", methodName, "result", result)
+					m.Info("Runtime Call:", "method", methodName, "result", result)
 				}
 			} else {
 				file, err := dialog.PromptForSingleSelection()
@@ -128,11 +128,11 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 					return
 				}
 				m.dialogCallback(window, dialogID, file, false)
-				m.Info("Runtime:", "method", methodName, "result", file)
+				m.Info("Runtime Call:", "method", methodName, "result", file)
 			}
 		}()
 		m.ok(rw)
-		m.Info("Runtime:", "method", methodName, "options", options)
+		m.Info("Runtime Call:", "method", methodName, "options", options)
 
 	case DialogSaveFile:
 		var options SaveFileDialogOptions
@@ -154,10 +154,10 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 				return
 			}
 			m.dialogCallback(window, dialogID, file, false)
-			m.Info("Runtime:", "method", methodName, "result", file)
+			m.Info("Runtime Call:", "method", methodName, "result", file)
 		}()
 		m.ok(rw)
-		m.Info("Runtime:", "method", methodName, "options", options)
+		m.Info("Runtime Call:", "method", methodName, "options", options)
 
 	default:
 		m.httpError(rw, "Unknown dialog method: %d", method)

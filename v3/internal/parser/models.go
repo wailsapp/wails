@@ -17,9 +17,10 @@ type ModelDefinitions struct {
 	Package string
 	Models  map[string]*StructDef
 	Enums   map[string]*TypeDef
+	Imports []*ImportDef
 }
 
-func GenerateModel(wr io.Writer, def *ModelDefinitions, options *flags.GenerateBindingsOptions) error {
+func (p *Project) GenerateModel(wr io.Writer, def *ModelDefinitions, options *flags.GenerateBindingsOptions) error {
 	templateName := "model.js.tmpl"
 	if options.TS {
 		templateName = "model.ts.tmpl"
@@ -57,18 +58,23 @@ func pkgAlias(fullPkg string) string {
 	return pkgParts[len(pkgParts)-1]
 }
 
-func GenerateModels(models map[packagePath]map[structName]*StructDef, enums map[packagePath]map[string]*TypeDef, options *flags.GenerateBindingsOptions) (string, error) {
-	if models == nil {
-		return "", nil
-	}
+type Model struct {
+	Package string
+}
 
-	var buffer bytes.Buffer
-	buffer.WriteString(modelsHeader)
+func (p *Project) GenerateModels(models map[packagePath]map[structName]*StructDef, enums map[packagePath]map[string]*TypeDef, options *flags.GenerateBindingsOptions) (map[packagePath]string, error) {
+	if models == nil && enums == nil {
+		return nil, nil
+	}
+	var result = make(map[packagePath]string)
 
 	// sort pkgs by alias (e.g. services) instead of full pkg name (e.g. github.com/wailsapp/wails/somedir/services)
 	// and then sort resulting list by the alias
 	var keys []string
 	for pkg := range models {
+		keys = append(keys, pkg)
+	}
+	for pkg := range enums {
 		keys = append(keys, pkg)
 	}
 
@@ -77,14 +83,21 @@ func GenerateModels(models map[packagePath]map[structName]*StructDef, enums map[
 	})
 
 	for _, pkg := range keys {
-		err := GenerateModel(&buffer, &ModelDefinitions{
+		var buffer bytes.Buffer
+		buffer.WriteString(modelsHeader)
+		err := p.GenerateModel(&buffer, &ModelDefinitions{
+			Imports: p.calculateImports(pkg, models[pkg]),
 			Package: pkgAlias(pkg),
 			Models:  models[pkg],
 			Enums:   enums[pkg],
 		}, options)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
+
+		// Get the relative package path
+		relativePackageDir := p.RelativePackageDir(pkg)
+		result[relativePackageDir] = buffer.String()
 	}
-	return buffer.String(), nil
+	return result, nil
 }

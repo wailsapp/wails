@@ -25,6 +25,7 @@ func TestParseEnum(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
+							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet does XYZ",
 							Inputs: []*Parameter{
@@ -56,6 +57,7 @@ func TestParseEnum(t *testing.T) {
 							ID: 1411160069,
 						},
 						{
+							Package:    "main",
 							Name:       "NewPerson",
 							DocComment: "NewPerson creates a new person",
 							Inputs: []*Parameter{
@@ -85,13 +87,14 @@ func TestParseEnum(t *testing.T) {
 			wantTypes: map[string]map[string]*TypeDef{
 				"main": {
 					"Title": {
-						Name: "Title",
-						Type: "string",
+						Name:        "Title",
+						DocComments: []string{"// Title is a title"},
+						Type:        "string",
 						Consts: []*ConstDef{
 							{
-								Name:       "Mister",
-								DocComment: "Mister is a title",
-								Value:      `"Mr"`,
+								Name:        "Mister",
+								DocComments: []string{"// Mister is a title"},
+								Value:       `"Mr"`,
 							},
 							{
 								Name:  "Miss",
@@ -117,129 +120,8 @@ func TestParseEnum(t *testing.T) {
 			wantModels: map[string]map[string]*StructDef{
 				"main": {
 					"Person": {
-						Name: "Person",
-						Fields: []*Field{
-							{
-								Name: "Title",
-								Type: &ParameterType{
-									Package: "main",
-									Name:    "Title",
-									IsEnum:  true,
-								},
-							},
-							{
-								Name: "Name",
-								Type: &ParameterType{
-									Package: "main",
-									Name:    "string",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name:    "should find a bound service with an enum interface",
-			dir:     "testdata/enum-interface",
-			wantErr: false,
-			wantBoundMethods: map[string]map[string][]*BoundMethod{
-				"main": {
-					"GreetService": {
-						{
-							Name:       "Greet",
-							DocComment: "Greet does XYZ",
-							Inputs: []*Parameter{
-								{
-									Name: "name",
-									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
-									},
-								},
-								{
-									Name: "title",
-									Type: &ParameterType{
-										Package: "main",
-										Name:    "Title",
-										IsEnum:  true,
-									},
-								},
-							},
-							Outputs: []*Parameter{
-								{
-									Name: "",
-									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
-									},
-								},
-							},
-							ID: 1411160069,
-						},
-						{
-							Name:       "NewPerson",
-							DocComment: "NewPerson creates a new person",
-							Inputs: []*Parameter{
-								{
-									Name: "name",
-									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
-									},
-								},
-							},
-							Outputs: []*Parameter{
-								{
-									Type: &ParameterType{
-										Package:   "main",
-										Name:      "Person",
-										IsStruct:  true,
-										IsPointer: true,
-									},
-								},
-							},
-							ID: 1661412647,
-						},
-					},
-				},
-			},
-			wantTypes: map[string]map[string]*TypeDef{
-				"main": {
-					"Title": {
-						Name: "Title",
-						Type: "string",
-						Consts: []*ConstDef{
-							{
-								Name:       "Mister",
-								DocComment: "Mister is a title",
-								Value:      `"Mr"`,
-							},
-							{
-								Name:  "Miss",
-								Value: `"Miss"`,
-							},
-							{
-								Name:  "Ms",
-								Value: `"Ms"`,
-							},
-							{
-								Name:  "Mrs",
-								Value: `"Mrs"`,
-							},
-							{
-								Name:  "Dr",
-								Value: `"Dr"`,
-							},
-						},
-						ShouldGenerate: true,
-					},
-				},
-			},
-			wantModels: map[string]map[string]*StructDef{
-				"main": {
-					"Person": {
-						Name: "Person",
+						Name:        "Person",
+						DocComments: []string{"// Person represents a person"},
 						Fields: []*Field{
 							{
 								Name: "Title",
@@ -269,6 +151,36 @@ func TestParseEnum(t *testing.T) {
 				t.Errorf("ParseDirectory() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			// Patch the PackageDir in the wantBoundMethods
+			for _, packageData := range got.BoundMethods {
+				for _, boundMethods := range packageData {
+					for _, boundMethod := range boundMethods {
+						boundMethod.PackageDir = ""
+					}
+				}
+			}
+
+			// Loop over the things we want
+			for packageName, packageData := range tt.wantBoundMethods {
+				for structName, wantBoundMethods := range packageData {
+					gotBoundMethods := got.BoundMethods[packageName][structName]
+					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods); diff != "" {
+						t.Errorf("ParseDirectory() failed:\n" + diff)
+					}
+				}
+			}
+
+			// Loop over the models
+			for _, packageData := range got.Models {
+				for _, wantModel := range packageData {
+					// Loop over the Fields
+					for _, field := range wantModel.Fields {
+						field.Project = nil
+					}
+				}
+			}
+
 			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}

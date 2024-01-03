@@ -1,13 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/wails.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/svg+xml" href="/wails.png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="/style.css"/>
     <title>Wails App</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/main.js"></script>
-  </body>
+</head>
+<body>
+<div class="container">
+    <div>
+        <a wml-openURL="https://wails.io">
+            <img src="/wails.png" class="logo" alt="Wails logo"/>
+        </a>
+        <a wml-openURL="https://developer.mozilla.org/en-US/docs/Web/JavaScript">
+            <img src="/javascript.svg" class="logo vanilla" alt="JavaScript logo"/>
+        </a>
+    </div>
+    <h1>Wails + Javascript</h1>
+    <div>
+        <p id="time">Listening for Time event...</p>
+    </div>
+    <div class="card">
+        <label for="name">Enter your name</label>
+        <input id="name" type="text"/>
+        <button onclick="doGreet()">Press me!</button>
+    </div>
+    <div>
+        <p id="greeting">&nbsp;</p>
+    </div>
+    <p class="read-the-docs">
+        Click on the Wails logo to learn more
+    </p>
+</div>
+<script type="module" src="/main.js"></script>
+</body>
 </html>

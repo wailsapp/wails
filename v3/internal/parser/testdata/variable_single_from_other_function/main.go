@@ -15,6 +15,8 @@ type GreetService struct {
 	target       *Person
 }
 
+// Person is a person!
+// They have a name and an address
 type Person struct {
 	Name    string
 	Address *services.Address
