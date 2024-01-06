@@ -9,7 +9,7 @@ const timeElement = document.getElementById('time')! as HTMLDivElement;
 greetButton.addEventListener('click', () => {
     let name = (nameElement as HTMLInputElement).value
     if (!name) {
-        name = 'from Go';
+        name = 'anonymous';
     }
     Greet(name).then((result: string) => {
         resultElement.innerText = result;

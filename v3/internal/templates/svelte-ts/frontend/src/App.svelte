@@ -7,10 +7,11 @@
   let time: string = 'Listening for Time event...';
 
   const doGreet = (): void => {
-    if (!name) {
-      name = 'from Go';
+    let localName = name;
+    if (!localName) {
+      localName = 'anonymous';
     }
-    Greet(name).then((resultValue: string) => {
+    Greet(localName).then((resultValue: string) => {
       result = resultValue;
     }).catch((err: any) => {
       console.log(err);
@@ -32,8 +33,8 @@
     </span>
   </div>
   <h1>Wails + Svelte</h1>
+  <div class="result">{result}</div>
   <div class="card">
-    <div class="result">{result}</div>
     <div class="input-box">
       <input class="input" bind:value={name} type="text" autocomplete="off"/>
       <button class="btn" on:click={doGreet}>Greet</button>

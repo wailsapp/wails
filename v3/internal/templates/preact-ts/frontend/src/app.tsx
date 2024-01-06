@@ -8,10 +8,11 @@ export function App() {
     const [time, setTime] = useState<string>('Listening for Time event...');
 
     const doGreet = (): void => {
-        if (!name) {
-            setName('from Go');
+        let localName = name;
+        if (!localName) {
+            localName = 'anonymous';
         }
-        Greet(name).then((resultValue: string) => {
+        Greet(localName).then((resultValue: string) => {
             setResult(resultValue);
         }).catch((err: any) => {
             console.log(err);
@@ -36,8 +37,8 @@ export function App() {
                     </a>
                 </div>
                 <h1>Wails + Preact</h1>
+                <div className="result">{result}</div>
                 <div className="card">
-                    <div className="result">{result}</div>
                     <div className="input-box">
                         <input className="input" value={name} onInput={(e) => setName(e.currentTarget.value)}
                                type="text" autocomplete="off"/>

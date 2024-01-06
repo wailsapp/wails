@@ -10,10 +10,11 @@ const result = ref('Please enter your name below 👇')
 const time = ref('Listening for Time event...')
 
 const doGreet = () => {
-  if (!name.value) {
-    name.value = 'from Go';
+  let localName = name.value;
+  if (!localName) {
+    localName = 'anonymous';
   }
-  Greet(name.value).then((resultValue: string) => {
+  Greet(localName).then((resultValue: string) => {
     result.value = resultValue;
   }).catch((err: Error) => {
     console.log(err);
@@ -31,8 +32,8 @@ onMounted(() => {
 <template>
   <h1>{{ msg }}</h1>
 
+  <div class="result">{{ result }}</div>
   <div class="card">
-    <div class="result">{{ result }}</div>
     <div class="input-box">
       <input class="input" v-model="name" type="text" autocomplete="off"/>
       <button class="btn" @click="doGreet">Greet</button>

@@ -8,10 +8,11 @@ export const App = component$(() => {
   const time = useSignal('Listening for Time event...');
 
   const doGreet = () => {
-    if (!name.value) {
-      name.value = 'from Go';
+    let localName = name.value;
+    if (!localName) {
+      localName = 'anonymous';
     }
-    Greet(name.value).then((resultValue) => {
+    Greet(localName).then((resultValue) => {
       result.value = resultValue;
     }).catch((err) => {
       console.log(err);
@@ -37,8 +38,8 @@ export const App = component$(() => {
         </a>
       </div>
       <h1>Wails + Qwik</h1>
+      <div class="result">{result.value}</div>
       <div class="card">
-        <div class="result">{result.value}</div>
         <div class="input-box">
           <input class="input" value={name.value} onInput$={(e) => name.value = e.target.value} type="text" autocomplete="off"/>
           <button class="btn" onClick$={doGreet}>Greet</button>

@@ -8,10 +8,11 @@ function App() {
   const [time, setTime] = createSignal('Listening for Time event...');
 
   const doGreet = () => {
-    if (!name()) {
-      setName('from Go');
+    let localName = name();
+    if (!localName) {
+      localName = 'anonymous';
     }
-    Greet(name()).then((resultValue: string) => {
+    Greet(localName).then((resultValue: string) => {
       setResult(resultValue);
     }).catch((err: any) => {
       console.log(err);
@@ -35,8 +36,8 @@ function App() {
         </a>
       </div>
       <h1>Wails + Solid</h1>
+      <div class="result">{result()}</div>
       <div class="card">
-        <div class="result">{result()}</div>
         <div class="input-box">
           <input class="input" value={name()} onInput={(e) => setName(e.currentTarget.value)} type="text" autocomplete="off"/>
           <button class="btn" onClick={doGreet}>Greet</button>

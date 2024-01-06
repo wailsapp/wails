@@ -7,7 +7,7 @@ const timeElement = document.getElementById('time');
 window.doGreet = () => {
     let name = document.getElementById('name').value;
     if (!name) {
-        name = 'from Go';
+        name = 'anonymous';
     }
     Greet(name).then((result) => {
         resultElement.innerText = result;

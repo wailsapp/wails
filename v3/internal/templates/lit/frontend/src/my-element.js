@@ -20,10 +20,11 @@ export class MyElement extends LitElement {
     }
 
     doGreet() {
-        if (!this.name) {
-            this.name = 'from Go';
+        let name = this.name;
+        if (!name) {
+            name = 'anonymous';
         }
-        Greet(this.name).then((resultValue) => {
+        Greet(name).then((resultValue) => {
             this.result = resultValue;
         }).catch((err) => {
             console.log(err);
@@ -42,8 +43,8 @@ export class MyElement extends LitElement {
                     </a>
                 </div>
                 <slot></slot>
+                <div class="result">${this.result}</div>
                 <div class="card">
-                    <div class="result">${this.result}</div>
                     <div class="input-box">
                         <input class="input" .value=${this.name} @input=${e => this.name = e.target.value} type="text"
                                autocomplete="off"/>
