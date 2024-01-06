@@ -19,11 +19,11 @@ export function ByName(name: string, ...args: any[]): any;
 /**
  * Calls a method by its ID with the specified arguments.
  *
- * @param {string} methodID - The ID of the method to call.
+ * @param {number} methodID - The ID of the method to call.
  * @param {...*} args - The arguments to pass to the method.
  * @return {*} - The result of the method call.
  */
-export function ByID(methodID: string, ...args: any[]): any;
+export function ByID(methodID: number, ...args: any[]): any;
 /**
  * Calls a method on a plugin.
  *

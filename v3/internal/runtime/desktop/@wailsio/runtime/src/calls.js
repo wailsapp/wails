@@ -94,7 +94,7 @@ export function ByName(name, ...args) {
 /**
  * Calls a method by its ID with the specified arguments.
  *
- * @param {string} methodID - The ID of the method to call.
+ * @param {number} methodID - The ID of the method to call.
  * @param {...*} args - The arguments to pass to the method.
  * @return {*} - The result of the method call.
  */
