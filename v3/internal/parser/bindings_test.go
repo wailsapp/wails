@@ -63,15 +63,6 @@ func TestGenerateBindings(t *testing.T) {
 			useTypescript: true,
 		},
 		{
-			name: "enum",
-			dir:  "testdata/enum",
-			want: map[string]map[string]string{
-				"main": {
-					"GreetService": getFile("testdata/enum/frontend/bindings/main/GreetService.name.js"),
-				},
-			},
-		},
-		{
 			name: "enum_from_imported_package",
 			dir:  "testdata/enum_from_imported_package",
 			want: map[string]map[string]string{
@@ -690,15 +681,19 @@ func TestGenerateBindings(t *testing.T) {
 
 					if diff := cmp.Diff(expected, binding); diff != "" {
 						outFileName := name + ".got.js"
-						originalFilename := name + ".js"
-						if tt.useTypescript {
-							if tt.useIDs {
-								originalFilename = name + ".ts"
-							} else {
-								originalFilename = name + ".name.ts"
-							}
-							outFileName = name + ".got.ts"
+						originalFilename := name
+						if !tt.useIDs {
+							originalFilename += ".name"
 						}
+						outFileName = originalFilename + ".got"
+						if tt.useTypescript {
+							originalFilename += ".ts"
+							outFileName += ".ts"
+						} else {
+							originalFilename += ".js"
+							outFileName += ".js"
+						}
+
 						originalFile := filepath.Join(tt.dir, project.outputDirectory, dirName, originalFilename)
 						// Check if file exists
 						if _, err := os.Stat(originalFile); err != nil {

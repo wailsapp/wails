@@ -366,7 +366,7 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 			var models []string
 			var mainImports = ""
 			if len(methods) > 0 {
-				mainImports = "import { Call } from '@wailsio/runtime';\n"
+				mainImports = "import {Call} from '@wailsio/runtime';\n"
 			}
 			for _, method := range methods {
 				if useTypescript {
