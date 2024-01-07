@@ -1,10 +1,10 @@
 Scenario,Windows,Mac,Linux,WSL
-Class model for struct in same package,:material-check-bold:," "," "," "
-Class model for struct in different package,:material-check-bold:," "," "," "
-Interface model for struct in same package,:material-check-bold:," "," "," "
-Interface model for struct in different package,:material-check-bold:," "," "," "
-Enum in same package,:material-check-bold:," "," "," "
-Enum in different package,:material-check-bold:," "," "," "
-Interface using enum in same package,:material-check-bold:," "," "," "
-Interface using enum in different package,:material-check-bold:," "," "," "
+Class model for struct in same package,:material-check-bold:,:material-check-bold:," "," "
+Class model for struct in different package,:material-check-bold:,:material-check-bold:," "," "
+Interface model for struct in same package,:material-check-bold:,:material-check-bold:," "," "
+Interface model for struct in different package,:material-check-bold:,:material-check-bold:," "," "
+Enum in same package,:material-check-bold:,:material-check-bold:," "," "
+Enum in different package,:material-check-bold:,:material-check-bold:," "," "
+Interface using enum in same package,:material-check-bold:,:material-check-bold:," "," "
+Interface using enum in different package,:material-check-bold:,:material-check-bold:," "," "
 
