@@ -122,6 +122,11 @@ func New(appOptions Options) *App {
 		result.keyBindings = processKeyBindingOptions(result.options.KeyBindings)
 	}
 
+	// Handle the terminate event
+	result.On(events.Common.ApplicationTerminate, func(e *Event) {
+		result.Quit()
+	})
+
 	return result
 }
 

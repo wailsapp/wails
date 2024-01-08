@@ -1,6 +1,7 @@
 //go:build darwin
 #import "application_darwin_delegate.h"
 #import "../events/events_darwin.h"
+#import "message.h"
 extern bool hasListeners(unsigned int);
 @implementation AppDelegate
 - (void)dealloc
@@ -17,7 +18,10 @@ extern bool hasListeners(unsigned int);
         processApplicationEvent(EventApplicationDidChangeTheme, NULL);
     }
 }
-
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+    processApplicationEvent(EventApplicationTerminate, NULL);
+    return NSTerminateCancel;
+}
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app
 {
     return YES;
@@ -149,6 +153,12 @@ extern bool hasListeners(unsigned int);
 - (void)applicationWillUpdate:(NSNotification *)notification {
     if( hasListeners(EventApplicationWillUpdate) ) {
         processApplicationEvent(EventApplicationWillUpdate, NULL);
+    }
+}
+
+- (void)applicationTerminate:(NSNotification *)notification {
+    if( hasListeners(EventApplicationTerminate) ) {
+        processApplicationEvent(EventApplicationTerminate, NULL);
     }
 }
 

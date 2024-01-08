@@ -42,3 +42,8 @@ tasks:
       - install-deps
     cmds:
       - task: build:all
+
+  generate:events:
+    dir: ../../tasks/events
+    cmds:
+      - go run generate.go

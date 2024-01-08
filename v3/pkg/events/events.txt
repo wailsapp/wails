@@ -19,6 +19,7 @@ mac:ApplicationWillResignActive
 mac:ApplicationWillTerminate
 mac:ApplicationWillUnhide
 mac:ApplicationWillUpdate
+mac:ApplicationTerminate
 mac:ApplicationDidChangeTheme!
 mac:ApplicationShouldHandleReopen!
 mac:WindowDidBecomeKey
@@ -168,4 +169,4 @@ common:WindowHide
 common:WindowDPIChanged
 common:WindowFilesDropped
 common:ThemeChanged
-
+common:ApplicationTerminate
