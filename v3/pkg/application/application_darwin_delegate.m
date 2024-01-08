@@ -1,8 +1,9 @@
 //go:build darwin
 #import "application_darwin_delegate.h"
 #import "../events/events_darwin.h"
-#import "message.h"
 extern bool hasListeners(unsigned int);
+extern void quitApplication();
+
 @implementation AppDelegate
 - (void)dealloc
 {
@@ -19,14 +20,13 @@ extern bool hasListeners(unsigned int);
     }
 }
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
-    processApplicationEvent(EventApplicationTerminate, NULL);
+    quitApplication();
     return NSTerminateCancel;
 }
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app
 {
     return YES;
 }
-
 - (BOOL)applicationShouldHandleReopen:(NSNotification *)notification
                     hasVisibleWindows:(BOOL)flag {
     if( hasListeners(EventApplicationShouldHandleReopen) ) {
@@ -153,12 +153,6 @@ extern bool hasListeners(unsigned int);
 - (void)applicationWillUpdate:(NSNotification *)notification {
     if( hasListeners(EventApplicationWillUpdate) ) {
         processApplicationEvent(EventApplicationWillUpdate, NULL);
-    }
-}
-
-- (void)applicationTerminate:(NSNotification *)notification {
-    if( hasListeners(EventApplicationTerminate) ) {
-        processApplicationEvent(EventApplicationTerminate, NULL);
     }
 }
 

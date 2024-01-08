@@ -334,6 +334,11 @@ func processMenuItemClick(menuID C.uint) {
 	menuItemClicked <- uint(menuID)
 }
 
+//export quitApplication
+func quitApplication() {
+	globalApplication.Quit()
+}
+
 func (a *App) logPlatformInfo() {
 	info, err := operatingsystem.Info()
 	if err != nil {

@@ -1222,6 +1222,7 @@ func (w *macosWebviewWindow) absolutePosition() (int, int) {
 }
 
 func (w *macosWebviewWindow) destroy() {
+	w.parent.markAsDestroyed()
 	C.windowDestroy(w.nsWindow)
 }
 

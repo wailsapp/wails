@@ -48,7 +48,6 @@ export declare const EventTypes: {
 		ApplicationWillTerminate: string,
 		ApplicationWillUnhide: string,
 		ApplicationWillUpdate: string,
-		ApplicationTerminate: string,
 		ApplicationDidChangeTheme: string,
 		ApplicationShouldHandleReopen: string,
 		WindowDidBecomeKey: string,

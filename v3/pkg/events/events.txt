@@ -19,7 +19,6 @@ mac:ApplicationWillResignActive
 mac:ApplicationWillTerminate
 mac:ApplicationWillUnhide
 mac:ApplicationWillUpdate
-mac:ApplicationTerminate
 mac:ApplicationDidChangeTheme!
 mac:ApplicationShouldHandleReopen!
 mac:WindowDidBecomeKey

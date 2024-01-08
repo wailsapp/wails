@@ -48,7 +48,6 @@ export const EventTypes = {
 		ApplicationWillTerminate: "mac:ApplicationWillTerminate",
 		ApplicationWillUnhide: "mac:ApplicationWillUnhide",
 		ApplicationWillUpdate: "mac:ApplicationWillUpdate",
-		ApplicationTerminate: "mac:ApplicationTerminate",
 		ApplicationDidChangeTheme: "mac:ApplicationDidChangeTheme!",
 		ApplicationShouldHandleReopen: "mac:ApplicationShouldHandleReopen!",
 		WindowDidBecomeKey: "mac:WindowDidBecomeKey",

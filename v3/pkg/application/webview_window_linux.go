@@ -455,6 +455,7 @@ func (w *linuxWebviewWindow) relativePosition() (int, int) {
 }
 
 func (w *linuxWebviewWindow) destroy() {
+	w.parent.markAsDestroyed()
 	windowDestroy(w.window)
 }
 

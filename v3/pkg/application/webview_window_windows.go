@@ -392,7 +392,7 @@ func (w *windowsWebviewWindow) relativePosition() (int, int) {
 }
 
 func (w *windowsWebviewWindow) destroy() {
-	// Not sure if we have anything to destroy...
+	w.parent.markAsDestroyed()
 	if w.dropTarget != nil {
 		w.dropTarget.Release()
 	}

@@ -290,6 +290,9 @@ type App struct {
 
 	// Keybindings
 	keyBindings map[string]func(window *WebviewWindow)
+
+	//
+	shutdownOnce sync.Once
 }
 
 func (a *App) init() {
@@ -604,14 +607,17 @@ func (a *App) Quit() {
 		for _, window := range a.windows {
 			window.Destroy()
 		}
+		a.windows = nil
 		a.windowsLock.RUnlock()
 		a.systemTraysLock.Lock()
 		for _, systray := range a.systemTrays {
 			systray.Destroy()
 		}
+		a.systemTrays = nil
 		a.systemTraysLock.Unlock()
 		if a.impl != nil {
 			a.impl.destroy()
+			a.impl = nil
 		}
 	})
 }

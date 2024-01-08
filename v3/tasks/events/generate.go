@@ -298,7 +298,7 @@ func main() {
 
 	// Save the eventsH template substituting the values and decls
 	templateToWrite = strings.ReplaceAll(eventsH, "$$CHEADEREVENTS", cHeaderEvents.String())
-	err = os.WriteFile("../../pkg/events/events.h", []byte(templateToWrite), 0644)
+	err = os.WriteFile("../../pkg/events/events_darwin.h", []byte(templateToWrite), 0644)
 	if err != nil {
 		panic(err)
 	}
