@@ -11,9 +11,66 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 /**
- * @typedef {import("./types").MessageDialogOptions} MessageDialogOptions
- * @typedef {import("./types").OpenDialogOptions} OpenDialogOptions
- * @typedef {import("./types").SaveDialogOptions} SaveDialogOptions
+ * @typedef {Object} OpenFileDialogOptions
+ * @property {boolean} [CanChooseDirectories] - Indicates if directories can be chosen.
+ * @property {boolean} [CanChooseFiles] - Indicates if files can be chosen.
+ * @property {boolean} [CanCreateDirectories] - Indicates if directories can be created.
+ * @property {boolean} [ShowHiddenFiles] - Indicates if hidden files should be shown.
+ * @property {boolean} [ResolvesAliases] - Indicates if aliases should be resolved.
+ * @property {boolean} [AllowsMultipleSelection] - Indicates if multiple selection is allowed.
+ * @property {boolean} [HideExtension] - Indicates if the extension should be hidden.
+ * @property {boolean} [CanSelectHiddenExtension] - Indicates if hidden extensions can be selected.
+ * @property {boolean} [TreatsFilePackagesAsDirectories] - Indicates if file packages should be treated as directories.
+ * @property {boolean} [AllowsOtherFiletypes] - Indicates if other file types are allowed.
+ * @property {FileFilter[]} [Filters] - Array of file filters.
+ * @property {string} [Title] - Title of the dialog.
+ * @property {string} [Message] - Message to show in the dialog.
+ * @property {string} [ButtonText] - Text to display on the button.
+ * @property {string} [Directory] - Directory to open in the dialog.
+ * @property {boolean} [Detached] - Indicates if the dialog should appear detached from the main window.
+ */
+
+
+/**
+ * @typedef {Object} SaveFileDialogOptions
+ * @property {string} [Filename] - Default filename to use in the dialog.
+ * @property {boolean} [CanChooseDirectories] - Indicates if directories can be chosen.
+ * @property {boolean} [CanChooseFiles] - Indicates if files can be chosen.
+ * @property {boolean} [CanCreateDirectories] - Indicates if directories can be created.
+ * @property {boolean} [ShowHiddenFiles] - Indicates if hidden files should be shown.
+ * @property {boolean} [ResolvesAliases] - Indicates if aliases should be resolved.
+ * @property {boolean} [AllowsMultipleSelection] - Indicates if multiple selection is allowed.
+ * @property {boolean} [HideExtension] - Indicates if the extension should be hidden.
+ * @property {boolean} [CanSelectHiddenExtension] - Indicates if hidden extensions can be selected.
+ * @property {boolean} [TreatsFilePackagesAsDirectories] - Indicates if file packages should be treated as directories.
+ * @property {boolean} [AllowsOtherFiletypes] - Indicates if other file types are allowed.
+ * @property {FileFilter[]} [Filters] - Array of file filters.
+ * @property {string} [Title] - Title of the dialog.
+ * @property {string} [Message] - Message to show in the dialog.
+ * @property {string} [ButtonText] - Text to display on the button.
+ * @property {string} [Directory] - Directory to open in the dialog.
+ * @property {boolean} [Detached] - Indicates if the dialog should appear detached from the main window.
+ */
+
+/**
+ * @typedef {Object} MessageDialogOptions
+ * @property {string} [Title] - The title of the dialog window.
+ * @property {string} [Message] - The main message to show in the dialog.
+ * @property {Button[]} [Buttons] - Array of button options to show in the dialog.
+ * @property {boolean} [Detached] - True if the dialog should appear detached from the main window (if applicable).
+ */
+
+/**
+ * @typedef {Object} Button
+ * @property {string} [Label] - Text that appears within the button.
+ * @property {boolean} [IsCancel] - True if the button should cancel an operation when clicked.
+ * @property {boolean} [IsDefault] - True if the button should be the default action when the user presses enter.
+ */
+
+/**
+ * @typedef {Object} FileFilter
+ * @property {string} [DisplayName] - Display name for the filter, it could be "Text Files", "Images" etc.
+ * @property {string} [Pattern] - Pattern to match for the filter, e.g. "*.txt;*.md" for text markdown files.
  */
 
 import {newRuntimeCallerWithID, objectNames} from "./runtime";
@@ -46,7 +103,7 @@ function generateID() {
 /**
  * Shows a dialog of specified type with the given options.
  * @param {number} type - type of dialog
- * @param {object} options - options for the dialog
+ * @param {MessageDialogOptions|OpenFileDialogOptions|SaveFileDialogOptions} options - options for the dialog
  * @returns {Promise} promise that resolves with result of dialog
  */
 function dialog(type, options = {}) {
@@ -61,6 +118,10 @@ function dialog(type, options = {}) {
     });
 }
 
+window._wails = window._wails || {};
+window._wails.dialogErrorCallback = dialogErrorCallback;
+window._wails.dialogResultCallback = dialogResultCallback;
+
 /**
  * Handles the callback from a dialog.
  *
@@ -70,7 +131,7 @@ function dialog(type, options = {}) {
  *
  * @return {undefined}
  */
-export function dialogResultCallback(id, data, isJSON) {
+function dialogResultCallback(id, data, isJSON) {
     let p = dialogResponses.get(id);
     if (p) {
         if (isJSON) {
@@ -90,7 +151,7 @@ export function dialogResultCallback(id, data, isJSON) {
  *
  * @return {void}
  */
-export function dialogErrorCallback(id, message) {
+function dialogErrorCallback(id, message) {
     let p = dialogResponses.get(id);
     if (p) {
         p.reject(message);
@@ -126,13 +187,13 @@ export const Error = (options) => dialog(DialogError, options);
 export const Question = (options) => dialog(DialogQuestion, options);
 
 /**
- * @param {OpenDialogOptions} options - Dialog options
+ * @param {OpenFileDialogOptions} options - Dialog options
  * @returns {Promise<string[]|string>} Returns selected file or list of files. Returns blank string if no file is selected.
  */
 export const OpenFile = (options) => dialog(DialogOpenFile, options);
 
 /**
- * @param {SaveDialogOptions} options - Dialog options
+ * @param {SaveFileDialogOptions} options - Dialog options
  * @returns {Promise<string>} Returns the selected file. Returns blank string if no file is selected.
  */
 export const SaveFile = (options) => dialog(DialogSaveFile, options);

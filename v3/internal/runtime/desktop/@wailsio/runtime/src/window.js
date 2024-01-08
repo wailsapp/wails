@@ -10,11 +10,37 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
+// Import screen jsdoc definition from ./screens.js
 /**
- * @typedef {import("../api/types").Size} Size
- * @typedef {import("../api/types").Position} Position
- * @typedef {import("../api/types").Screen} Screen
+ * @typedef {import("./screens").Screen} Screen
  */
+
+/**
+ * @typedef {Object} Position
+ * @property {number} X - The X coordinate.
+ * @property {number} Y - The Y coordinate.
+ */
+
+/**
+ * @typedef {Object} Size
+ * @property {number} X - The width.
+ * @property {number} Y - The height.
+ */
+
+
+/**
+ * @typedef {Object} Rect
+ * @property {number} X - The X coordinate of the top-left corner.
+ * @property {number} Y - The Y coordinate of the top-left corner.
+ * @property {number} Width - The width of the rectangle.
+ * @property {number} Height - The height of the rectangle.
+ */
+
+/**
+ * @typedef {('Zero'|'Ninety'|'OneEighty'|'TwoSeventy')} Rotation
+ * The rotation of the screen. Can be one of 'Zero', 'Ninety', 'OneEighty', 'TwoSeventy'.
+ */
+
 
 import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
@@ -49,7 +75,7 @@ const zoomReset = 27;
 const getZoomLevel = 28;
 const setZoomLevel = 29;
 
-const thisWindow = newRuntimeCallerWithID(objectNames.Window, '');
+const thisWindow = Get('');
 
 function createWindow(call) {
     return {
@@ -98,25 +124,220 @@ export function Get(windowName) {
 }
 
 /**
- * Returns a map of all methods in the current window.
- * @returns {Map} - A map of window methods.
+ * Centers the window on the screen.
  */
-export function WindowMethods(targetWindow) {
-    // Create a new map to store methods
-    let result = new Map();
-
-    // Iterate over all properties of the window object
-    for (let method in targetWindow) {
-        // Check if the property is indeed a method (function)
-        if(typeof targetWindow[method] === 'function') {
-            // Add the method to the map
-            result.set(method, targetWindow[method]);
-        }
-
-    }
-    // Return the map of window methods
-    return result;
+export function Center() {
+    thisWindow.Center();
 }
-export default {
-    ...Get('')
+
+/**
+ * Sets the title of the window.
+ * @param {string} title - The title to set.
+ */
+export function SetTitle(title) {
+    thisWindow.SetTitle(title);
+}
+
+/**
+ * Sets the window to fullscreen.
+ */
+export function Fullscreen() {
+    thisWindow.Fullscreen();
+}
+
+/**
+ * Sets the size of the window.
+ * @param {number} width - The width of the window.
+ * @param {number} height - The height of the window.
+ */
+export function SetSize(width, height) {
+    thisWindow.SetSize(width, height);
+}
+
+/**
+ * Gets the size of the window.
+ */
+export function Size() {
+    return thisWindow.Size();
+}
+
+/**
+ * Sets the maximum size of the window.
+ * @param {number} width - The maximum width of the window.
+ * @param {number} height - The maximum height of the window.
+ */
+export function SetMaxSize(width, height) {
+    thisWindow.SetMaxSize(width, height);
+}
+
+/**
+ * Sets the minimum size of the window.
+ * @param {number} width - The minimum width of the window.
+ * @param {number} height - The minimum height of the window.
+ */
+export function SetMinSize(width, height) {
+    thisWindow.SetMinSize(width, height);
+}
+
+/**
+ * Sets the window to always be on top.
+ * @param {boolean} onTop - Whether the window should always be on top.
+ */
+export function SetAlwaysOnTop(onTop) {
+    thisWindow.SetAlwaysOnTop(onTop);
+}
+
+/**
+ * Sets the relative position of the window.
+ * @param {number} x - The x-coordinate of the window's position.
+ * @param {number} y - The y-coordinate of the window's position.
+ */
+export function SetRelativePosition(x, y) {
+    thisWindow.SetRelativePosition(x, y);
+}
+
+/**
+ * Gets the relative position of the window.
+ */
+export function RelativePosition() {
+    return thisWindow.RelativePosition();
+}
+
+/**
+ * Gets the screen that the window is on.
+ */
+export function Screen() {
+    return thisWindow.Screen();
+}
+
+/**
+ * Hides the window.
+ */
+export function Hide() {
+    thisWindow.Hide();
+}
+
+/**
+ * Maximises the window.
+ */
+export function Maximise() {
+    thisWindow.Maximise();
+}
+
+/**
+ * Un-maximises the window.
+ */
+export function UnMaximise() {
+    thisWindow.UnMaximise();
+}
+
+/**
+ * Toggles the maximisation of the window.
+ */
+export function ToggleMaximise() {
+    thisWindow.ToggleMaximise();
+}
+
+/**
+ * Minimises the window.
+ */
+export function Minimise() {
+    thisWindow.Minimise();
+}
+
+/**
+ * Un-minimises the window.
+ */
+export function UnMinimise() {
+    thisWindow.UnMinimise();
+}
+
+/**
+ * Restores the window.
+ */
+export function Restore() {
+    thisWindow.Restore();
+}
+
+/**
+ * Shows the window.
+ */
+export function Show() {
+    thisWindow.Show();
+}
+
+/**
+ * Closes the window.
+ */
+export function Close() {
+    thisWindow.Close();
+}
+
+/**
+ * Sets the background colour of the window.
+ * @param {number} r - The red component of the colour.
+ * @param {number} g - The green component of the colour.
+ * @param {number} b - The blue component of the colour.
+ * @param {number} a - The alpha component of the colour.
+ */
+export function SetBackgroundColour(r, g, b, a) {
+    thisWindow.SetBackgroundColour(r, g, b, a);
+}
+
+/**
+ * Sets whether the window is resizable.
+ * @param {boolean} resizable - Whether the window should be resizable.
+ */
+export function SetResizable(resizable) {
+    thisWindow.SetResizable(resizable);
+}
+
+/**
+ * Gets the width of the window.
+ */
+export function Width() {
+    return thisWindow.Width();
+}
+
+/**
+ * Gets the height of the window.
+ */
+export function Height() {
+    return thisWindow.Height();
+}
+
+/**
+ * Zooms in the window.
+ */
+export function ZoomIn() {
+    thisWindow.ZoomIn();
+}
+
+/**
+ * Zooms out the window.
+ */
+export function ZoomOut() {
+    thisWindow.ZoomOut();
+}
+
+/**
+ * Resets the zoom of the window.
+ */
+export function ZoomReset() {
+    thisWindow.ZoomReset();
+}
+
+/**
+ * Gets the zoom level of the window.
+ */
+export function GetZoomLevel() {
+    return thisWindow.GetZoomLevel();
+}
+
+/**
+ * Sets the zoom level of the window.
+ * @param {number} zoomLevel - The zoom level to set.
+ */
+export function SetZoomLevel(zoomLevel) {
+    thisWindow.SetZoomLevel(zoomLevel);
 }

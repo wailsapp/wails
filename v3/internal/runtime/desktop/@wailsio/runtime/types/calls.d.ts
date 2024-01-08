@@ -1,5 +1,3 @@
-export function resultHandler(id: any, data: any, isJSON: any): void;
-export function errorHandler(id: any, message: any): void;
 /**
  * Call method.
  *

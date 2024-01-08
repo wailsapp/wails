@@ -1,28 +1,184 @@
-/**
- * Handles the callback from a dialog.
- *
- * @param {string} id - The ID of the dialog response.
- * @param {string} data - The data received from the dialog.
- * @param {boolean} isJSON - Flag indicating whether the data is in JSON format.
- *
- * @return {undefined}
- */
-export function dialogResultCallback(id: string, data: string, isJSON: boolean): undefined;
-/**
- * Callback function for handling errors in dialog.
- *
- * @param {string} id - The id of the dialog response.
- * @param {string} message - The error message.
- *
- * @return {void}
- */
-export function dialogErrorCallback(id: string, message: string): void;
-export function Info(options: any): Promise<string>;
-export function Warning(options: any): Promise<string>;
-export function Error(options: any): Promise<string>;
-export function Question(options: any): Promise<string>;
-export function OpenFile(options: any): Promise<string[] | string>;
-export function SaveFile(options: any): Promise<string>;
-export type MessageDialogOptions = any;
-export type OpenDialogOptions = any;
-export type SaveDialogOptions = any;
+export function Info(options: MessageDialogOptions): Promise<string>;
+export function Warning(options: MessageDialogOptions): Promise<string>;
+export function Error(options: MessageDialogOptions): Promise<string>;
+export function Question(options: MessageDialogOptions): Promise<string>;
+export function OpenFile(options: OpenFileDialogOptions): Promise<string[] | string>;
+export function SaveFile(options: SaveFileDialogOptions): Promise<string>;
+export type OpenFileDialogOptions = {
+    /**
+     * - Indicates if directories can be chosen.
+     */
+    CanChooseDirectories?: boolean;
+    /**
+     * - Indicates if files can be chosen.
+     */
+    CanChooseFiles?: boolean;
+    /**
+     * - Indicates if directories can be created.
+     */
+    CanCreateDirectories?: boolean;
+    /**
+     * - Indicates if hidden files should be shown.
+     */
+    ShowHiddenFiles?: boolean;
+    /**
+     * - Indicates if aliases should be resolved.
+     */
+    ResolvesAliases?: boolean;
+    /**
+     * - Indicates if multiple selection is allowed.
+     */
+    AllowsMultipleSelection?: boolean;
+    /**
+     * - Indicates if the extension should be hidden.
+     */
+    HideExtension?: boolean;
+    /**
+     * - Indicates if hidden extensions can be selected.
+     */
+    CanSelectHiddenExtension?: boolean;
+    /**
+     * - Indicates if file packages should be treated as directories.
+     */
+    TreatsFilePackagesAsDirectories?: boolean;
+    /**
+     * - Indicates if other file types are allowed.
+     */
+    AllowsOtherFiletypes?: boolean;
+    /**
+     * - Array of file filters.
+     */
+    Filters?: FileFilter[];
+    /**
+     * - Title of the dialog.
+     */
+    Title?: string;
+    /**
+     * - Message to show in the dialog.
+     */
+    Message?: string;
+    /**
+     * - Text to display on the button.
+     */
+    ButtonText?: string;
+    /**
+     * - Directory to open in the dialog.
+     */
+    Directory?: string;
+    /**
+     * - Indicates if the dialog should appear detached from the main window.
+     */
+    Detached?: boolean;
+};
+export type SaveFileDialogOptions = {
+    /**
+     * - Default filename to use in the dialog.
+     */
+    Filename?: string;
+    /**
+     * - Indicates if directories can be chosen.
+     */
+    CanChooseDirectories?: boolean;
+    /**
+     * - Indicates if files can be chosen.
+     */
+    CanChooseFiles?: boolean;
+    /**
+     * - Indicates if directories can be created.
+     */
+    CanCreateDirectories?: boolean;
+    /**
+     * - Indicates if hidden files should be shown.
+     */
+    ShowHiddenFiles?: boolean;
+    /**
+     * - Indicates if aliases should be resolved.
+     */
+    ResolvesAliases?: boolean;
+    /**
+     * - Indicates if multiple selection is allowed.
+     */
+    AllowsMultipleSelection?: boolean;
+    /**
+     * - Indicates if the extension should be hidden.
+     */
+    HideExtension?: boolean;
+    /**
+     * - Indicates if hidden extensions can be selected.
+     */
+    CanSelectHiddenExtension?: boolean;
+    /**
+     * - Indicates if file packages should be treated as directories.
+     */
+    TreatsFilePackagesAsDirectories?: boolean;
+    /**
+     * - Indicates if other file types are allowed.
+     */
+    AllowsOtherFiletypes?: boolean;
+    /**
+     * - Array of file filters.
+     */
+    Filters?: FileFilter[];
+    /**
+     * - Title of the dialog.
+     */
+    Title?: string;
+    /**
+     * - Message to show in the dialog.
+     */
+    Message?: string;
+    /**
+     * - Text to display on the button.
+     */
+    ButtonText?: string;
+    /**
+     * - Directory to open in the dialog.
+     */
+    Directory?: string;
+    /**
+     * - Indicates if the dialog should appear detached from the main window.
+     */
+    Detached?: boolean;
+};
+export type MessageDialogOptions = {
+    /**
+     * - The title of the dialog window.
+     */
+    Title?: string;
+    /**
+     * - The main message to show in the dialog.
+     */
+    Message?: string;
+    /**
+     * - Array of button options to show in the dialog.
+     */
+    Buttons?: Button[];
+    /**
+     * - True if the dialog should appear detached from the main window (if applicable).
+     */
+    Detached?: boolean;
+};
+export type Button = {
+    /**
+     * - Text that appears within the button.
+     */
+    Label?: string;
+    /**
+     * - True if the button should cancel an operation when clicked.
+     */
+    IsCancel?: boolean;
+    /**
+     * - True if the button should be the default action when the user presses enter.
+     */
+    IsDefault?: boolean;
+};
+export type FileFilter = {
+    /**
+     * - Display name for the filter, it could be "Text Files", "Images" etc.
+     */
+    DisplayName?: string;
+    /**
+     * - Pattern to match for the filter, e.g. "*.txt;*.md" for text markdown files.
+     */
+    Pattern?: string;
+};

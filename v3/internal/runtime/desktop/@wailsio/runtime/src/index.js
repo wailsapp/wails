@@ -10,45 +10,22 @@ The electron alternative for Go
 
 import {setupContextMenus} from "./contextmenu";
 import {setupDrag} from "./drag";
-import {Emit, Off, OffAll, On, Once, OnMultiple, WailsEvent} from './events';
 import {ByID, ByName, Plugin} from "./calls";
-import {Error, Info, OpenFile, Question, SaveFile, Warning} from "./dialogs";
 
 import * as Application from "./application";
 import * as Browser from "./browser";
 import * as Clipboard from "./clipboard";
-import * as ContextMenu from "./contextmenu";
 import * as Flags from "./flags";
-import * as Runtime from "./runtime";
 import * as Screens from "./screens";
 import * as System from "./system";
 import * as Window from "./window";
 import * as WML from './wml';
+import * as Events from "./events";
+import * as Dialogs from "./dialogs";
+import * as Call from "./calls";
 
-export { Application, Browser, Clipboard, ContextMenu, Flags, Runtime, Screens, System, Window, WML };
+export { Application, Browser, Call, Clipboard, Dialogs, Events, Flags, Screens, System, Window, WML};
 
-export const Events = {
-    On,
-    Off,
-    OnMultiple,
-    WailsEvent,
-    OffAll,
-    Emit,
-    Once
-
-}
-
-export const Call = {
-    Plugin,
-    ByID,
-    ByName
-}
-
-export const Dialogs = {
-    Info,
-    Error,
-    OpenFile, Question, Warning, SaveFile
-}
 
 /***
  This technique for proper load detection is taken from HTMX:

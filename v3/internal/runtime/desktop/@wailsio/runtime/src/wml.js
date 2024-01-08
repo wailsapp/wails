@@ -1,7 +1,7 @@
 
 import {Emit, WailsEvent} from "./events";
 import {Question} from "./dialogs";
-import {WindowMethods, Get} from "./window";
+import {Get} from "./window";
 import {OpenURL} from "./browser";
 
 /**
@@ -148,4 +148,25 @@ export function Reload() {
     addWMLEventListeners();
     addWMLWindowListeners();
     addWMLOpenBrowserListener();
+}
+
+/**
+ * Returns a map of all methods in the current window.
+ * @returns {Map} - A map of window methods.
+ */
+function WindowMethods(targetWindow) {
+    // Create a new map to store methods
+    let result = new Map();
+
+    // Iterate over all properties of the window object
+    for (let method in targetWindow) {
+        // Check if the property is indeed a method (function)
+        if(typeof targetWindow[method] === 'function') {
+            // Add the method to the map
+            result.set(method, targetWindow[method]);
+        }
+
+    }
+    // Return the map of window methods
+    return result;
 }

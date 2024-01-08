@@ -5,13 +5,48 @@
  * @return {Object} - The specified window object.
  */
 export function Get(windowName: string): any;
-/**
- * Returns a map of all methods in the current window.
- * @returns {Map} - A map of window methods.
- */
-export function WindowMethods(targetWindow: any): Map<any, any>;
 declare const _default: any;
 export default _default;
-export type Size = any;
-export type Position = any;
-export type Screen = any;
+export type Screen = import("./screens").Screen;
+export type Position = {
+    /**
+     * - The X coordinate.
+     */
+    X: number;
+    /**
+     * - The Y coordinate.
+     */
+    Y: number;
+};
+export type Size = {
+    /**
+     * - The width.
+     */
+    X: number;
+    /**
+     * - The height.
+     */
+    Y: number;
+};
+export type Rect = {
+    /**
+     * - The X coordinate of the top-left corner.
+     */
+    X: number;
+    /**
+     * - The Y coordinate of the top-left corner.
+     */
+    Y: number;
+    /**
+     * - The width of the rectangle.
+     */
+    Width: number;
+    /**
+     * - The height of the rectangle.
+     */
+    Height: number;
+};
+/**
+ * The rotation of the screen. Can be one of 'Zero', 'Ninety', 'OneEighty', 'TwoSeventy'.
+ */
+export type Rotation = ('Zero' | 'Ninety' | 'OneEighty' | 'TwoSeventy');

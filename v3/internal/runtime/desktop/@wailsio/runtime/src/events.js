@@ -15,6 +15,9 @@ The electron alternative for Go
  */
 import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
+import {EventTypes} from "./event_types";
+export const Types = EventTypes;
+
 const call = newRuntimeCallerWithID(objectNames.Events, '');
 const EmitMethod = 0;
 const eventListeners = new Map();
@@ -43,7 +46,7 @@ export class WailsEvent {
 window._wails = window._wails || {};
 window._wails.dispatchWailsEvent = dispatchWailsEvent;
 
-export function dispatchWailsEvent(event) {
+function dispatchWailsEvent(event) {
     let listeners = eventListeners.get(event.name);
     if (listeners) {
         let toRemove = listeners.filter(listener => {

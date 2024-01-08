@@ -20,6 +20,11 @@ window._wails = window._wails || {};
 window._wails.callResultHandler = resultHandler;
 window._wails.callErrorHandler = errorHandler;
 
+/**
+ * Generates a unique ID using the nanoid library.
+ *
+ * @return {string} - A unique ID that does not exist in the callResponses set.
+ */
 function generateID() {
     let result;
     do {
@@ -28,26 +33,57 @@ function generateID() {
     return result;
 }
 
-export function resultHandler(id, data, isJSON) {
+/**
+ * Handles the result of a call request.
+ *
+ * @param {string} id - The id of the request to handle the result for.
+ * @param {string} data - The result data of the request.
+ * @param {boolean} isJSON - Indicates whether the data is JSON or not.
+ *
+ * @return {undefined} - This method does not return any value.
+ */
+function resultHandler(id, data, isJSON) {
     const promiseHandler = getAndDeleteResponse(id);
     if (promiseHandler) {
         promiseHandler.resolve(isJSON ? JSON.parse(data) : data);
     }
 }
 
-export function errorHandler(id, message) {
+/**
+ * Handles the error from a call request.
+ *
+ * @param {string} id - The id of the promise handler.
+ * @param {string} message - The error message to reject the promise handler with.
+ *
+ * @return {void}
+ */
+function errorHandler(id, message) {
     const promiseHandler = getAndDeleteResponse(id);
     if (promiseHandler) {
         promiseHandler.reject(message);
     }
 }
 
+/**
+ * Retrieves and removes the response associated with the given ID from the callResponses map.
+ *
+ * @param {any} id - The ID of the response to be retrieved and removed.
+ *
+ * @returns {any} The response object associated with the given ID.
+ */
 function getAndDeleteResponse(id) {
     const response = callResponses.get(id);
     callResponses.delete(id);
     return response;
 }
 
+/**
+ * Executes a call using the provided type and options.
+ *
+ * @param {string|number} type - The type of call to execute.
+ * @param {Object} [options={}] - Additional options for the call.
+ * @return {Promise} - A promise that will be resolved or rejected based on the result of the call.
+ */
 function callBinding(type, options = {}) {
     return new Promise((resolve, reject) => {
         const id = generateID();
