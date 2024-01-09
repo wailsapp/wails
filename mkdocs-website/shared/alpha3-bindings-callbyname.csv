@@ -1,7 +1,7 @@
-Scenario,Windows,Mac,Linux,WSL
-Same package,:material-check-bold:,:material-check-bold:," "," "
-Different package,:material-check-bold:,:material-check-bold:," "," "
-Different package with same name," "," "," "," "
-Containing another struct from same package,:material-check-bold:,:material-check-bold:," "," "
-Containing another struct from different package,:material-check-bold:,:material-check-bold:," "," "
-Containing an anonymous struct,:material-check-bold:,:material-check-bold:," "," "
+Scenario,Windows,Mac,Linux
+Same package,:material-check-bold:,:material-check-bold:,:material-check-bold:
+Different package,:material-check-bold:,:material-check-bold:,:material-check-bold:
+Different package with same name," "," "," "
+Containing another struct from same package,:material-check-bold:,:material-check-bold:,:material-check-bold:
+Containing another struct from different package,:material-check-bold:,:material-check-bold:,:material-check-bold:
+Containing an anonymous struct,:material-check-bold:,:material-check-bold:,:material-check-bold:
