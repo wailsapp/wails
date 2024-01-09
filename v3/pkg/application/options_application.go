@@ -80,6 +80,9 @@ type AssetOptions struct {
 	// Multiple Middlewares can be chained together with:
 	//   ChainMiddleware(middleware ...Middleware) Middleware
 	Middleware Middleware
+
+	// DisableLogging disables logging of the AssetServer. By default, the AssetServer logs every request.
+	DisableLogging bool
 }
 
 // Middleware defines HTTP middleware that can be applied to the AssetServer.

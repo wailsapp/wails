@@ -74,7 +74,12 @@ func New(appOptions Options) *App {
 		Middleware: assetserver.Middleware(appOptions.Assets.Middleware),
 	}
 
-	srv, err := assetserver.NewAssetServer(opts, false, result.Logger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode, NewMessageProcessor(result.Logger))
+	assetLogger := result.Logger
+	if appOptions.Assets.DisableLogging {
+		assetLogger = slog.New(slog.NewTextHandler(io.Discard, nil))
+	}
+
+	srv, err := assetserver.NewAssetServer(opts, false, assetLogger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode, NewMessageProcessor(result.Logger))
 	if err != nil {
 		result.Logger.Error("Fatal error in application initialisation: " + err.Error())
 		os.Exit(1)
