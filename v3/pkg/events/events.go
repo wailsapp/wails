@@ -6,52 +6,50 @@ type WindowEventType uint
 var Common = newCommonEvents()
 
 type commonEvents struct {
-	ApplicationStarted   ApplicationEventType
-	WindowMaximise       WindowEventType
-	WindowUnMaximise     WindowEventType
-	WindowFullscreen     WindowEventType
-	WindowUnFullscreen   WindowEventType
-	WindowRestore        WindowEventType
-	WindowMinimise       WindowEventType
-	WindowUnMinimise     WindowEventType
-	WindowClosing        WindowEventType
-	WindowZoom           WindowEventType
-	WindowZoomIn         WindowEventType
-	WindowZoomOut        WindowEventType
-	WindowZoomReset      WindowEventType
-	WindowFocus          WindowEventType
-	WindowLostFocus      WindowEventType
-	WindowShow           WindowEventType
-	WindowHide           WindowEventType
-	WindowDPIChanged     WindowEventType
-	WindowFilesDropped   WindowEventType
-	ThemeChanged         ApplicationEventType
-	ApplicationTerminate ApplicationEventType
+	ApplicationStarted ApplicationEventType
+	WindowMaximise     WindowEventType
+	WindowUnMaximise   WindowEventType
+	WindowFullscreen   WindowEventType
+	WindowUnFullscreen WindowEventType
+	WindowRestore      WindowEventType
+	WindowMinimise     WindowEventType
+	WindowUnMinimise   WindowEventType
+	WindowClosing      WindowEventType
+	WindowZoom         WindowEventType
+	WindowZoomIn       WindowEventType
+	WindowZoomOut      WindowEventType
+	WindowZoomReset    WindowEventType
+	WindowFocus        WindowEventType
+	WindowLostFocus    WindowEventType
+	WindowShow         WindowEventType
+	WindowHide         WindowEventType
+	WindowDPIChanged   WindowEventType
+	WindowFilesDropped WindowEventType
+	ThemeChanged       ApplicationEventType
 }
 
 func newCommonEvents() commonEvents {
 	return commonEvents{
-		ApplicationStarted:   1174,
-		WindowMaximise:       1175,
-		WindowUnMaximise:     1176,
-		WindowFullscreen:     1177,
-		WindowUnFullscreen:   1178,
-		WindowRestore:        1179,
-		WindowMinimise:       1180,
-		WindowUnMinimise:     1181,
-		WindowClosing:        1182,
-		WindowZoom:           1183,
-		WindowZoomIn:         1184,
-		WindowZoomOut:        1185,
-		WindowZoomReset:      1186,
-		WindowFocus:          1187,
-		WindowLostFocus:      1188,
-		WindowShow:           1189,
-		WindowHide:           1190,
-		WindowDPIChanged:     1191,
-		WindowFilesDropped:   1192,
-		ThemeChanged:         1193,
-		ApplicationTerminate: 1194,
+		ApplicationStarted: 1174,
+		WindowMaximise:     1175,
+		WindowUnMaximise:   1176,
+		WindowFullscreen:   1177,
+		WindowUnFullscreen: 1178,
+		WindowRestore:      1179,
+		WindowMinimise:     1180,
+		WindowUnMinimise:   1181,
+		WindowClosing:      1182,
+		WindowZoom:         1183,
+		WindowZoomIn:       1184,
+		WindowZoomOut:      1185,
+		WindowZoomReset:    1186,
+		WindowFocus:        1187,
+		WindowLostFocus:    1188,
+		WindowShow:         1189,
+		WindowHide:         1190,
+		WindowDPIChanged:   1191,
+		WindowFilesDropped: 1192,
+		ThemeChanged:       1193,
 	}
 }
 
@@ -560,5 +558,4 @@ var eventToJS = map[uint]string{
 	1191: "common:WindowDPIChanged",
 	1192: "common:WindowFilesDropped",
 	1193: "common:ThemeChanged",
-	1194: "common:ApplicationTerminate",
 }

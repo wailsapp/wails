@@ -122,11 +122,6 @@ func New(appOptions Options) *App {
 		result.keyBindings = processKeyBindingOptions(result.options.KeyBindings)
 	}
 
-	// Handle the terminate event
-	result.On(events.Common.ApplicationTerminate, func(e *Event) {
-		result.Quit()
-	})
-
 	return result
 }
 
@@ -291,8 +286,11 @@ type App struct {
 	// Keybindings
 	keyBindings map[string]func(window *WebviewWindow)
 
-	//
-	shutdownOnce sync.Once
+	// OnShutdown is called when the application is about to quit.
+	// This is useful for cleanup tasks.
+	// The shutdown process blocks until this function returns
+	OnShutdown         func()
+	performingShutdown bool
 }
 
 func (a *App) init() {
@@ -602,6 +600,13 @@ func (a *App) CurrentWindow() *WebviewWindow {
 }
 
 func (a *App) Quit() {
+	if a.performingShutdown {
+		return
+	}
+	a.performingShutdown = true
+	if a.OnShutdown != nil {
+		a.OnShutdown()
+	}
 	InvokeSync(func() {
 		a.windowsLock.RLock()
 		for _, window := range a.windows {

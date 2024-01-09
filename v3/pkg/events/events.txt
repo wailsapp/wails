@@ -168,4 +168,3 @@ common:WindowHide
 common:WindowDPIChanged
 common:WindowFilesDropped
 common:ThemeChanged
-common:ApplicationTerminate

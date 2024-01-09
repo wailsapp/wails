@@ -177,6 +177,5 @@ export declare const EventTypes: {
 		WindowDPIChanged: string,
 		WindowFilesDropped: string,
 		ThemeChanged: string,
-		ApplicationTerminate: string,
 	},
 };

@@ -177,6 +177,5 @@ export const EventTypes = {
 		WindowDPIChanged: "common:WindowDPIChanged",
 		WindowFilesDropped: "common:WindowFilesDropped",
 		ThemeChanged: "common:ThemeChanged",
-		ApplicationTerminate: "common:ApplicationTerminate",
 	},
 };
