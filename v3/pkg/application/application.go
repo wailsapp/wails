@@ -291,10 +291,6 @@ type App struct {
 	// Keybindings
 	keyBindings map[string]func(window *WebviewWindow)
 
-	// OnShutdown is called when the application is about to quit.
-	// This is useful for cleanup tasks.
-	// The shutdown process blocks until this function returns
-	OnShutdown         func()
 	performingShutdown bool
 }
 
@@ -609,8 +605,8 @@ func (a *App) Quit() {
 		return
 	}
 	a.performingShutdown = true
-	if a.OnShutdown != nil {
-		a.OnShutdown()
+	if a.options.OnShutdown != nil {
+		a.options.OnShutdown()
 	}
 	InvokeSync(func() {
 		a.windowsLock.RLock()
