@@ -146,7 +146,7 @@ func TestGenerateBindings(t *testing.T) {
 			useTypescript: true,
 		},
 		{
-			name: "function_from_imported_package",
+			name: "function_from_imported_package - CallByName",
 			dir:  "testdata/function_from_imported_package",
 			want: map[string]map[string]string{
 				"main": {
@@ -159,7 +159,7 @@ func TestGenerateBindings(t *testing.T) {
 			useIDs: false,
 		},
 		{
-			name: "function_from_imported_package",
+			name: "function_from_imported_package - CallById",
 			dir:  "testdata/function_from_imported_package",
 			want: map[string]map[string]string{
 				"main": {
