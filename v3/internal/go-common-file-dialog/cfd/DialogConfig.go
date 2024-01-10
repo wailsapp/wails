@@ -2,12 +2,19 @@
 
 package cfd
 
+import (
+	"reflect"
+)
+
 type FileFilter struct {
 	// The display name of the filter (That is shown to the user)
 	DisplayName string
 	// The filter pattern. Eg. "*.txt;*.png" to select all txt and png files, "*.*" to select any files, etc.
 	Pattern string
 }
+
+// Never obfuscate the FileFilter type.
+var _ = reflect.TypeOf(FileFilter{})
 
 type DialogConfig struct {
 	// The title of the dialog
