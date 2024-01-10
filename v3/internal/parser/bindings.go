@@ -131,7 +131,7 @@ type ExternalStruct struct {
 	Name    string
 }
 
-func GenerateBinding(thisStructName string, method *BoundMethod, useIDs bool) (string, []string, map[packagePath]map[string]*ExternalStruct) {
+func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, useIDs bool) (string, []string, map[packagePath]map[string]*ExternalStruct) {
 	var externalStructs = make(map[packagePath]map[string]*ExternalStruct)
 	var models []string
 	template := bindingTemplate
@@ -156,6 +156,7 @@ func GenerateBinding(thisStructName string, method *BoundMethod, useIDs bool) (s
 	result = strings.ReplaceAll(result, "Comments", comments)
 	var params string
 	for _, input := range method.Inputs {
+		input.project = p
 		inputName := sanitiseJSVarName(input.Name)
 		pkgName := getPackageName(input)
 		if pkgName != "" {
@@ -202,11 +203,12 @@ func GenerateBinding(thisStructName string, method *BoundMethod, useIDs bool) (s
 	} else {
 		returns = " * @returns {Promise<"
 		for _, output := range method.Outputs {
+			output.project = p
 			pkgName := getPackageName(output)
 			if pkgName != "" {
 				models = append(models, pkgName)
 			}
-			jsType := output.JSType(packageName)
+			jsType := output.JSType(pkgName)
 			if jsType == "error" {
 				jsType = "void"
 			}
@@ -230,7 +232,7 @@ func GenerateBinding(thisStructName string, method *BoundMethod, useIDs bool) (s
 	return result, lo.Uniq(models), externalStructs
 }
 
-func GenerateBindingTypescript(thisStructName string, method *BoundMethod, useIDs bool) (string, []string, map[packagePath]map[string]*ExternalStruct) {
+func (p *Project) GenerateBindingTypescript(thisStructName string, method *BoundMethod, useIDs bool) (string, []string, map[packagePath]map[string]*ExternalStruct) {
 	var externalStructs = make(map[packagePath]map[string]*ExternalStruct)
 	var models []string
 	template := bindingTemplateTypescript
@@ -255,6 +257,7 @@ func GenerateBindingTypescript(thisStructName string, method *BoundMethod, useID
 	result = strings.ReplaceAll(result, "Comments", comments)
 	var params string
 	for _, input := range method.Inputs {
+		input.project = p
 		inputName := sanitiseJSVarName(input.Name)
 		pkgName := getPackageName(input)
 		if pkgName != "" {
@@ -298,11 +301,12 @@ func GenerateBindingTypescript(thisStructName string, method *BoundMethod, useID
 	} else {
 		returns = "Promise<"
 		for _, output := range method.Outputs {
+			output.project = p
 			pkgName := getPackageName(output)
 			if pkgName != "" {
 				models = append(models, pkgName)
 			}
-			jsType := output.JSType(packageName)
+			jsType := output.JSType(pkgName)
 			if jsType == "error" {
 				jsType = "void"
 			}
@@ -370,9 +374,9 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 			}
 			for _, method := range methods {
 				if useTypescript {
-					thisBinding, models, namespacedStructs = GenerateBindingTypescript(structName, method, useIDs)
+					thisBinding, models, namespacedStructs = p.GenerateBindingTypescript(structName, method, useIDs)
 				} else {
-					thisBinding, models, namespacedStructs = GenerateBinding(structName, method, useIDs)
+					thisBinding, models, namespacedStructs = p.GenerateBinding(structName, method, useIDs)
 				}
 				// Merge the namespaced structs
 				allNamespacedStructs = mergeNamespacedStructs(allNamespacedStructs, namespacedStructs)
