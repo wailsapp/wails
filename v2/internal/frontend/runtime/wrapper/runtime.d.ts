@@ -233,3 +233,11 @@ export function ClipboardGetText(): Promise<string>;
 // [ClipboardSetText](https://wails.io/docs/reference/runtime/clipboard#clipboardsettext)
 // Sets a text on the clipboard
 export function ClipboardSetText(text: string): Promise<boolean>;
+
+// [DragAndDropOnMotion](https://wails.io/docs/reference/runtime/draganddrop#draganddroponmotion)
+// Calls a callback with X and Y coordinates of the mouse position inside the window while it is dragging something.
+export function DragAndDropOnMotion(callback: (x: number, y: number) => void):() => void;
+
+// [DragAndDropOnDrop](https://wails.io/docs/reference/runtime/draganddrop#draganddropondrop)
+// Calls a callback with slice of file path strings when a drop is finished.
+export function DragAndDropOnDrop(callback: (paths: string[]) => void): () => void;

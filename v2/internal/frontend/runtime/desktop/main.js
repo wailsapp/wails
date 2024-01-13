@@ -16,7 +16,9 @@ import * as Window from "./window";
 import * as Screen from "./screen";
 import * as Browser from "./browser";
 import * as Clipboard from "./clipboard";
+import * as DragAndDrop from "./draganddrop";
 import * as ContextMenu from "./contextmenu";
+import {DragAndDropOnDrop, DragAndDropOnMotion} from "./draganddrop";
 
 
 export function Quit() {
@@ -42,6 +44,7 @@ window.runtime = {
     ...Browser,
     ...Screen,
     ...Clipboard,
+    ...DragAndDrop,
     EventsOn,
     EventsOnce,
     EventsOnMultiple,

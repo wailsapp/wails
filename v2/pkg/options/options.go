@@ -95,6 +95,15 @@ type App struct {
 
 	// Debug options for debug builds. These options will be ignored in a production build.
 	Debug Debug
+
+	// EnableDragAndDrop disables the webview's default drag and drop functionality and enables wails's custom
+	//drag and drop events and handlers.
+	EnableDragAndDrop bool
+
+	// DisableWebviewDragAndDrop disables the webview's default drag and drop functionality.
+	//
+	// It can be used to prevent accidental file opening of dragged in files in the webview, when there is no need for drag and drop.
+	DisableWebviewDragAndDrop bool
 }
 
 type ErrorFormatter func(error) any

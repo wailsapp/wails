@@ -200,3 +200,11 @@ export function ClipboardGetText() {
 export function ClipboardSetText(text) {
     return window.runtime.ClipboardSetText(text);
 }
+
+export function DragAndDropOnMotion(callback) {
+    return window.runtime.DragAndDropOnMotion(callback);
+}
+
+export function DragAndDropOnDrop(callback) {
+    return window.runtime.DragAndDropOnDrop(callback);
+}

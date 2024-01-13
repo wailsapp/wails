@@ -47,6 +47,8 @@ func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (s
 		return d.processWindowMessage(message, sender)
 	case 'B':
 		return d.processBrowserMessage(message, sender)
+	case 'D':
+		return d.processDragAndDropMessage(message, sender)
 	case 'Q':
 		sender.Quit()
 		return "", nil
