@@ -104,6 +104,17 @@ func TestGenerateBindings(t *testing.T) {
 			useTypescript: true,
 		},
 		{
+			name: "enum_from_imported_package_same_name - CallByName",
+			dir:  "testdata/enum_from_imported_package_same_name",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/enum_from_imported_package_same_name/frontend/bindings/main/GreetService.name.ts"),
+				},
+			},
+			useIDs:        false,
+			useTypescript: true,
+		},
+		{
 			name: "function_single",
 			dir:  "testdata/function_single",
 			want: map[string]map[string]string{
