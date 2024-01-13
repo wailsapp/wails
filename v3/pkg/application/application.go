@@ -127,6 +127,10 @@ func New(appOptions Options) *App {
 		result.keyBindings = processKeyBindingOptions(result.options.KeyBindings)
 	}
 
+	if appOptions.OnShutdown != nil {
+		result.OnShutdown(appOptions.OnShutdown)
+	}
+
 	return result
 }
 
@@ -291,7 +295,12 @@ type App struct {
 	// Keybindings
 	keyBindings map[string]func(window *WebviewWindow)
 
+	// Shutdown
 	performingShutdown bool
+	// Shutdown tasks are run when the application is shutting down.
+	// They are run in the order they are added and run on the main thread.
+	// The application option `OnShutdown` is run first.
+	shutdownTasks []func()
 }
 
 func (a *App) init() {
@@ -600,13 +609,22 @@ func (a *App) CurrentWindow() *WebviewWindow {
 	return result.(*WebviewWindow)
 }
 
+// OnShutdown adds a function to be run when the application is shutting down.
+func (a *App) OnShutdown(f func()) {
+	if f == nil {
+		return
+	}
+	a.shutdownTasks = append(a.shutdownTasks, f)
+}
+
 func (a *App) Quit() {
 	if a.performingShutdown {
 		return
 	}
 	a.performingShutdown = true
-	if a.options.OnShutdown != nil {
-		a.options.OnShutdown()
+	// Run the shutdown tasks
+	for _, shutdownTask := range a.shutdownTasks {
+		InvokeSync(shutdownTask)
 	}
 	InvokeSync(func() {
 		a.windowsLock.RLock()
