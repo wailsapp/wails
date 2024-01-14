@@ -236,7 +236,7 @@ export function ClipboardSetText(text: string): Promise<boolean>;
 
 // [HandleDragAndDrop](https://wails.io/docs/reference/runtime/draganddrop#handledraganddrop)
 // Calls a callback with slice of file path strings when a drop is finished.
-export function HandleDragAndDrop(callback: (paths: string[]) => void): () => void;
+export function HandleDragAndDrop(callback: (x: number, y: number ,paths: string[]) => void): () => void;
 
 // Check if the file path resolver is available
 export function CanResolveFilePaths(): boolean;

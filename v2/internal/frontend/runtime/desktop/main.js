@@ -272,15 +272,14 @@ window.addEventListener('drop', function (e) {
     if (e.dataTransfer.items) {
         files = [...e.dataTransfer.items].map((item, i) => {
             if (item.kind === 'file') {
-                const file = item.getAsFile();
-                return file;
+                return item.getAsFile();
             }
         });
     } else {
         files = [...e.dataTransfer.files];
     }
 
-    window.runtime.ResolveFilePaths(files);
+    window.runtime.ResolveFilePaths(e.x, e.y, files);
     if(window.wails.flags.wailsDropPreviousElement) {
         window.wails.flags.wailsDropPreviousElement.classList.remove("wails-drop-target-active");
     }

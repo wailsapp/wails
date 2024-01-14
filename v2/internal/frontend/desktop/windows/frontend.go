@@ -751,7 +751,15 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 
 			files[i] = filepath
 		}
-		go f.dispatchMessage(fmt.Sprintf("DD:%s", strings.Join(files, "\n")))
+
+		var x, y string
+		coords := strings.SplitN(message[10:], ":", 3)
+		if len(coords) == 3 {
+			x = coords[0]
+			y = coords[1]
+		}
+
+		go f.dispatchMessage(fmt.Sprintf("DD:%s:%s:%s", x, y, strings.Join(files, "\n")))
 		return
 	}
 }

@@ -204,7 +204,7 @@ static gboolean setTitle(gpointer data)
 
 void SetTitle(GtkWindow *window, char *title)
 {
-    SetTitleArgs *args = malloc(sizeof(SetTitleArgs));
+    SetTitleArgs *args = (char *)malloc(sizeof(SetTitleArgs));
     args->window = window;
     args->title = title;
     ExecuteOnMainThread(setTitle, (gpointer)args);
@@ -435,39 +435,75 @@ gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void *data)
     return TRUE;
 }
 
-static void onDragDataReceived(GtkWidget *wgt, GdkDragContext *context, gint x, gint y, GtkSelectionData *seldata, guint info, guint time, gpointer data)
+char *droppedFiles = NULL;
+
+static void onDragDataReceived(GtkWidget *self, GdkDragContext *context, gint x, gint y, GtkSelectionData *seldata, guint info, guint time, gpointer data)
 {
+    if(info != 2)
+    {
+        return;
+    }
+
+    if(droppedFiles != NULL) {
+        free(droppedFiles);
+        droppedFiles = NULL;
+    }
+
     gchar **filenames = NULL;
     filenames = g_uri_list_extract_uris((const gchar *)gtk_selection_data_get_data(seldata));
     if (filenames == NULL) // If unable to retrieve filenames:
     {
         g_strfreev(filenames);
-        gtk_drag_finish(context, FALSE, FALSE, time); // Drag and drop was a failure.
         return;
     }
 
-    int resLen = gtk_selection_data_get_length(seldata)+3;
-    char *res[resLen];
-    char prefix[] = "DD";
-    strncpy(res, prefix, sizeof(prefix));
+    droppedFiles = calloc((size_t)gtk_selection_data_get_length(seldata), 1);
 
     int iter = 0;
     while(filenames[iter] != NULL) // The last URI list element is NULL.
     {
         if(iter != 0)
         {
-            strncat(res, "\n", 1);
+            strncat(droppedFiles, "\n", 1);
         }
         char *filename = g_filename_from_uri(filenames[iter], NULL, NULL);
-        strncat(res, filename, strlen(filename));
+        strncat(droppedFiles, filename, strlen(filename));
+
+        free(filename);
         iter++;
     }
-    strncat(res, "\0", 1);
-
-	processMessage(res);
 
     g_strfreev(filenames);
-    gtk_drag_finish(context, TRUE, FALSE, time); // Drag and drop was successful!
+}
+
+static gboolean onDragDrop (GtkWidget* self, GdkDragContext* context, gint x, gint y, guint time, gpointer user_data)
+{
+    if(droppedFiles == NULL)
+    {
+        return FALSE;
+    }
+
+    size_t resLen = strlen(droppedFiles)+(sizeof(gint)*2)+6;
+    char *res = calloc(resLen, 1);
+
+    snprintf(res, resLen, "DD:%d:%d:%s", x, y, droppedFiles);
+
+    if(droppedFiles != NULL) {
+        free(droppedFiles);
+        droppedFiles = NULL;
+    }
+
+    processMessage(res);
+    return FALSE;
+}
+
+gboolean onDragFailed(GtkWidget* self, GdkDragContext* context, GtkDragResult result, gpointer user_data)
+{
+    if(droppedFiles != NULL) {
+        free(droppedFiles);
+        droppedFiles = NULL;
+    }
+    return FALSE;
 }
 
 // WebView
@@ -479,15 +515,16 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
     webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
     g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webviewLoadChanged), NULL);
 
-    if(disableWebViewDragAndDrop || enableDragAndDrop)
+    if(disableWebViewDragAndDrop)
     {
         gtk_drag_dest_unset(G_OBJECT(webview));
     }
 
     if(enableDragAndDrop)
     {
-        gtk_drag_dest_set(G_OBJECT(window), GTK_DEST_DEFAULT_ALL, targetentries, 1, GDK_ACTION_COPY);
-        g_signal_connect(G_OBJECT(window), "drag-data-received", G_CALLBACK(onDragDataReceived), NULL);
+        g_signal_connect(G_OBJECT(webview), "drag-data-received", G_CALLBACK(onDragDataReceived), NULL);
+        g_signal_connect(G_OBJECT(webview), "drag-drop", G_CALLBACK(onDragDrop), NULL);
+        g_signal_connect(G_OBJECT(webview), "drag-failed", G_CALLBACK(onDragFailed), NULL);
     }
 
     if (hideWindowOnClose)

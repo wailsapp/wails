@@ -1,13 +1,33 @@
 package runtime
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 // HandleDragAndDrop returns a slice of file path strings when a drop is finished.
-func HandleDragAndDrop(ctx context.Context, callback func(paths ...string)) {
+func HandleDragAndDrop(ctx context.Context, callback func(x, y int, paths []string)) {
 	EventsOn(ctx, "wails.dnd.drop", func(optionalData ...interface{}) {
+
+		if len(optionalData) != 3 {
+			callback(0, 0, nil)
+			return
+		}
+
 		if callback != nil && len(optionalData) > 0 {
-			paths := optionalData[0].([]string)
-			callback(paths...)
+			x, ok := optionalData[0].(int)
+			if !ok {
+				LogError(ctx, fmt.Sprintf("invalid x coordinate in drag and drop: %v", optionalData[0]))
+			}
+			y, ok := optionalData[1].(int)
+			if !ok {
+				LogError(ctx, fmt.Sprintf("invalid y coordinate in drag and drop: %v", optionalData[1]))
+			}
+			paths, ok := optionalData[2].([]string)
+			if !ok {
+				LogError(ctx, fmt.Sprintf("invalid path data in drag and drop: %v", optionalData[2]))
+			}
+			callback(x, y, paths)
 		}
 	})
 }
