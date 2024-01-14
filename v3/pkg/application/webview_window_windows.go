@@ -1453,7 +1453,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 			// Parse the port
 			parsedURL, err := url.Parse(devServerURL)
 			if err != nil {
-				globalApplication.fatal("Error parsing environment variable 'WAILS_DEVSERVER_URL`: " + err.Error())
+				globalApplication.fatal("Error parsing environment variable 'FRONTEND_DEVSERVER_URL`: " + err.Error() + ". Please check your `Taskfile.yml` file")
 			}
 			port := parsedURL.Port()
 			if port != "" {

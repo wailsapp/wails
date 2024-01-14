@@ -7,5 +7,5 @@ import (
 )
 
 func GetDevServerURL() string {
-	return os.Getenv("WAILS_DEVSERVER_URL")
+	return os.Getenv("FRONTEND_DEVSERVER_URL")
 }
