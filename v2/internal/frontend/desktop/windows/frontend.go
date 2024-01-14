@@ -762,8 +762,6 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 			y = coords[1]
 		}
 
-		log.Println(len(coords))
-
 		go f.dispatchMessage(fmt.Sprintf("DD:%s:%s:%s", x, y, strings.Join(files, "\n")))
 		return
 	}
