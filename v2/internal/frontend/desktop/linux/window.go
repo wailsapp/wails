@@ -101,8 +101,8 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 		result.asGTKWindow(),
 		bool2Cint(appoptions.HideWindowOnClose),
 		C.int(webviewGpuPolicy),
-		bool2Cint(appoptions.DisableWebviewDragAndDrop),
-		bool2Cint(appoptions.EnableDragAndDrop),
+		bool2Cint(appoptions.DragAndDrop.Disable),
+		bool2Cint(appoptions.DragAndDrop.EnableWails),
 	)
 	result.webview = unsafe.Pointer(webview)
 	buttonPressedName := C.CString("button-press-event")

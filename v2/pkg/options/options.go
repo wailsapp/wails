@@ -96,14 +96,8 @@ type App struct {
 	// Debug options for debug builds. These options will be ignored in a production build.
 	Debug Debug
 
-	// EnableDragAndDrop disables the webview's default drag and drop functionality and enables wails's custom
-	//drag and drop events and handlers.
-	EnableDragAndDrop bool
-
-	// DisableWebviewDragAndDrop disables the webview's default drag and drop functionality.
-	//
-	// It can be used to prevent accidental file opening of dragged in files in the webview, when there is no need for drag and drop.
-	DisableWebviewDragAndDrop bool
+	// DragAndDrop options for drag and drop behavior
+	DragAndDrop DragAndDrop
 }
 
 type ErrorFormatter func(error) any
@@ -159,6 +153,12 @@ func MergeDefaults(appoptions *App) {
 	if appoptions.CSSDragValue == "" {
 		appoptions.CSSDragValue = "drag"
 	}
+	if appoptions.DragAndDrop.CSSDropProperty == "" {
+		appoptions.DragAndDrop.CSSDropProperty = "--wails-drop-target"
+	}
+	if appoptions.DragAndDrop.CSSDropValue == "" {
+		appoptions.DragAndDrop.CSSDropValue = "drop"
+	}
 	if appoptions.BackgroundColour == nil {
 		appoptions.BackgroundColour = &RGBA{
 			R: 255,
@@ -187,6 +187,23 @@ type SingleInstanceLock struct {
 type SecondInstanceData struct {
 	Args             []string
 	WorkingDirectory string
+}
+
+type DragAndDrop struct {
+
+	// EnableWails enables wails' drag and drop functionality that returns the dropped in files' absolute paths.
+	EnableWails bool
+
+	// Disable webview's drag and drop functionality.
+	//
+	// It can be used to prevent accidental file opening of dragged in files in the webview, when there is no need for drag and drop.
+	Disable bool
+
+	// CSS property to test for drag and drop target elements. Default "--wails-drop-target"
+	CSSDropProperty string
+
+	// The CSS Value that the CSSDropProperty must have to be a valid drop target. Default "drop"
+	CSSDropValue string
 }
 
 func NewSecondInstanceData() (*SecondInstanceData, error) {

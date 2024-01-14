@@ -13,40 +13,22 @@ The electron alternative for Go
 import {EventsOn} from "./events";
 
 /**
- * Callback for DragAndDropOnMotion returns X and Y coordinates of the mouse position inside the window while it is dragging something.
+ * postMessageWithAdditionalObjects checks the browser's capability of sending postMessageWithAdditionalObjects
  *
- * @export
- * @callback DragAndDropOnMotionCallback
- * @param {int} x - coordinate of mouse position inside the window.
- * @param {int} y - coordinate of mouse position inside the window.
+ * @returns {boolean}
+ * @constructor
  */
-
-/**
- * DragAndDropOnMotion calls a callback with X and Y coordinates of the mouse position inside the window while it is dragging something.
- *
- * @export
- * @param {DragAndDropOnMotionCallback} callback
- * @returns {function} - A function to cancel the listener
- */
-export function DragAndDropOnMotion(callback) {
-    return EventsOn("wails.dnd.motion", callback);
+export function CanResolveFilePaths() {
+    return window.chrome?.webview?.postMessageWithAdditionalObjects != null;
 }
 
-/**
- * Callback for DragAndDropOnDrop returns a slice of file path strings when a drop is finished.
- *
- * @export
- * @callback DragAndDropOnDropCallback
- * @param {String[]} paths - A list of file paths.
- */
+export function ResolveFilePaths(files) {
+    // Only for windows webview2 >= 1.0.1774.30
+    // https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2webmessagereceivedeventargs2?view=webview2-1.0.1823.32#applies-to
+    if (!window.chrome?.webview?.postMessageWithAdditionalObjects) {
+        reject(new Error("Unsupported Platform"));
+        return;
+    }
 
-/**
- * DragAndDropOnDrop calls a callback with slice of file path strings when a drop is finished.
- *
- * @export
- * @param {DragAndDropOnDropCallback} callback
- * @returns {function} - A function to cancel the listener
- */
-export function DragAndDropOnDrop(callback) {
-    return EventsOn("wails.dnd.drop", callback);
+    chrome.webview.postMessageWithAdditionalObjects(`file:drop:`, files);
 }

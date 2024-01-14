@@ -435,25 +435,6 @@ gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void *data)
     return TRUE;
 }
 
-int onDragMotionThrottleCounter = 0;
-
-static gboolean onDragMotion(GtkWidget *widget, GdkDragContext *context, gint x, gint y, guint t, gpointer user_data)
-{
-        onDragMotionThrottleCounter++;
-        if(onDragMotionThrottleCounter % 10 != 0)
-        {
-            return  FALSE;
-        }
-        onDragMotionThrottleCounter = 0;
-
-        int resLen = snprintf(NULL, 0, "%d%d", x, y) + 4;
-        char* res[resLen];
-        snprintf(res, resLen, "DM%d:%d", x, y);
-
-        processMessage(res);
-        return  FALSE;
-}
-
 static void onDragDataReceived(GtkWidget *wgt, GdkDragContext *context, gint x, gint y, GtkSelectionData *seldata, guint info, guint time, gpointer data)
 {
     gchar **filenames = NULL;
@@ -506,7 +487,6 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
     if(enableDragAndDrop)
     {
         gtk_drag_dest_set(G_OBJECT(window), GTK_DEST_DEFAULT_ALL, targetentries, 1, GDK_ACTION_COPY);
-        g_signal_connect(G_OBJECT(window), "drag-motion", G_CALLBACK (onDragMotion), NULL);
         g_signal_connect(G_OBJECT(window), "drag-data-received", G_CALLBACK(onDragDataReceived), NULL);
     }
 
