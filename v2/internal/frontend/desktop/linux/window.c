@@ -475,6 +475,7 @@ static void onDragDataReceived(GtkWidget *self, GdkDragContext *context, gint x,
     size_t resLen = strlen(droppedFiles)+(sizeof(gint)*2)+6;
     char *res = calloc(resLen, 1);
     snprintf(res, resLen, "DH:%d:%d:%s", x, y, droppedFiles);
+
     processMessage(res);
 
     g_strfreev(filenames);

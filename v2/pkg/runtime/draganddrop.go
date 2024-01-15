@@ -9,6 +9,7 @@ func processDropData(ctx context.Context, data ...interface{}) (int, int, []stri
 	if len(data) != 3 {
 		return 0, 0, nil
 	}
+
 	x, ok := data[0].(int)
 	if !ok {
 		LogError(ctx, fmt.Sprintf("invalid x coordinate in drag and drop: %v", data[0]))
@@ -28,7 +29,7 @@ func processDropData(ctx context.Context, data ...interface{}) (int, int, []stri
 func OnFileDropHover(ctx context.Context, callback func(x, y int, paths []string)) {
 	EventsOn(ctx, "wails:file-drop-hover", func(optionalData ...interface{}) {
 		if callback != nil && len(optionalData) == 3 {
-			callback(processDropData(ctx, optionalData))
+			callback(processDropData(ctx, optionalData...))
 			return
 		}
 		callback(0, 0, nil)
@@ -39,7 +40,7 @@ func OnFileDropHover(ctx context.Context, callback func(x, y int, paths []string
 func OnFileDrop(ctx context.Context, callback func(x, y int, paths []string)) {
 	EventsOn(ctx, "wails:file-drop", func(optionalData ...interface{}) {
 		if callback != nil && len(optionalData) == 3 {
-			callback(processDropData(ctx, optionalData))
+			callback(processDropData(ctx, optionalData...))
 			return
 		}
 		callback(0, 0, nil)

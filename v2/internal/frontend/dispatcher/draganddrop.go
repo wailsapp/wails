@@ -2,7 +2,6 @@ package dispatcher
 
 import (
 	"errors"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -10,7 +9,6 @@ import (
 func (d *Dispatcher) processDragAndDropMessage(message string) (string, error) {
 	switch message[1] {
 	case 'H':
-		log.Println(message)
 		x, y, paths, err := formatDragData(message)
 		if err != nil {
 			return "", err
@@ -50,6 +48,5 @@ func formatDragData(message string) (int, int, []string, error) {
 	if err != nil {
 		return 0, 0, nil, errors.New("Invalid y coordinate in drag and drop drop Event Message: " + message)
 	}
-	log.Println(x, y, paths)
 	return x, y, paths, nil
 }
