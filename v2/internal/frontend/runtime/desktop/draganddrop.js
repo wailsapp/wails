@@ -20,6 +20,9 @@ const flags = {
 };
 
 function onDragOver(e) {
+    if (!window.wails.flags.enableWailsDragAndDrop) {
+        return;
+    }
     e.preventDefault();
     e.stopPropagation();
 
@@ -58,6 +61,9 @@ function onDragOver(e) {
 }
 
 function onDragLeave(e) {
+    if (!window.wails.flags.enableWailsDragAndDrop) {
+        return;
+    }
     e.preventDefault();
     e.stopPropagation();
 
@@ -77,6 +83,9 @@ function onDragLeave(e) {
 }
 
 function onDrop(e) {
+    if (!window.wails.flags.enableWailsDragAndDrop) {
+        return;
+    }
     e.preventDefault();
     e.stopPropagation();
 
@@ -164,7 +173,8 @@ export function ResolveFilePaths(x, y, files) {
  * @param {boolean} [useDropTarget=true] - Only call the callback when the drop finished on an element that has the drop target style. (--wails-drop-target)
  */
 export function DragAndDropOn(callback, useDropTarget) {
-    if (!window.wails.flags.enableWailsDragAndDrop || typeof callback !== "function") {
+    if (typeof callback !== "function") {
+        console.error("DragAndDropCallback is not a function");
         return;
     }
 
