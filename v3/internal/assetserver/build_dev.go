@@ -1,28 +1,48 @@
-//go:build dev
-// +build dev
+//go:build !production
 
 package assetserver
 
 import (
+	_ "embed"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 )
 
-func NewExternalAssetsHandler(logger *slog.Logger, options Options, url *url.URL) http.Handler {
-	baseHandler := options.Handler
+//go:embed defaultindex.html
+var defaultHTML []byte
+
+func defaultIndexHTML() []byte {
+	return defaultHTML
+}
+
+func (a *AssetServer) setupHandler() (http.Handler, error) {
+
+	// Do we have an external dev server URL?
+	a.devServerURL = GetDevServerURL()
+	if a.devServerURL == "" {
+		return NewDefaultAssetHandler(a.options)
+	}
+
+	// Parse the URL
+	parsedURL, err := url.Parse(a.devServerURL)
+	if err != nil {
+		return nil, fmt.Errorf("invalid FRONTEND_DEVSERVER_URL. Should be valid URL: %s", err.Error())
+	}
+
+	baseHandler := a.options.Handler
 
 	errSkipProxy := fmt.Errorf("skip proxying")
 
-	proxy := httputil.NewSingleHostReverseProxy(url)
+	proxy := httputil.NewSingleHostReverseProxy(parsedURL)
 	baseDirector := proxy.Director
 	proxy.Director = func(r *http.Request) {
 		baseDirector(r)
-		if logger != nil {
-			logger.Debug("[ExternalAssetHandler] Loading '%s'", r.URL)
+		if a.options.Logger != nil {
+			a.options.Logger.Debug("[ExternalAssetHandler] Loading '%s'", r.URL)
 		}
 	}
 
@@ -44,13 +64,13 @@ func NewExternalAssetsHandler(logger *slog.Logger, options Options, url *url.URL
 
 	proxy.ErrorHandler = func(rw http.ResponseWriter, r *http.Request, err error) {
 		if baseHandler != nil && errors.Is(err, errSkipProxy) {
-			if logger != nil {
-				logger.Debug("[ExternalAssetHandler] Loading '%s' failed, using original AssetHandler", r.URL)
+			if a.options.Logger != nil {
+				a.options.Logger.Debug("[ExternalAssetHandler] Loading '%s' failed, using original AssetHandler", r.URL)
 			}
 			baseHandler.ServeHTTP(rw, r)
 		} else {
-			if logger != nil {
-				logger.Error("[ExternalAssetHandler] Proxy error: %v", err)
+			if a.options.Logger != nil {
+				a.options.Logger.Error("[ExternalAssetHandler] Proxy error: %v", err)
 			}
 			rw.WriteHeader(http.StatusBadGateway)
 		}
@@ -71,9 +91,13 @@ func NewExternalAssetsHandler(logger *slog.Logger, options Options, url *url.URL
 			rw.WriteHeader(http.StatusMethodNotAllowed)
 		})
 
-	if middleware := options.Middleware; middleware != nil {
+	if middleware := a.options.Middleware; middleware != nil {
 		result = middleware(result)
 	}
 
-	return result
+	return result, nil
+}
+
+func GetDevServerURL() string {
+	return os.Getenv("FRONTEND_DEVSERVER_URL")
 }

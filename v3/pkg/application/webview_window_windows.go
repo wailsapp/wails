@@ -5,6 +5,7 @@ package application
 import (
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"net/url"
 	"path"
 	"strconv"
@@ -17,7 +18,6 @@ import (
 
 	"github.com/bep/debounce"
 	"github.com/wailsapp/go-webview2/webviewloader"
-	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 
@@ -306,6 +306,7 @@ func (w *windowsWebviewWindow) run() {
 		w.minimise()
 	case WindowStateFullscreen:
 		w.fullscreen()
+	case WindowStateNormal:
 	}
 
 	// Process window mask
@@ -1231,9 +1232,18 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 	if reqHeaders, err := req.GetHeaders(); err == nil {
 		useragent, _ := reqHeaders.GetHeader(assetserver.HeaderUserAgent)
 		useragent = strings.Join([]string{useragent, assetserver.WailsUserAgentValue}, " ")
-		reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
-		reqHeaders.SetHeader(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(w.parent.id), 10))
-		reqHeaders.Release()
+		err = reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
+		if err != nil {
+			globalApplication.fatal("Error setting UserAgent header: " + err.Error())
+		}
+		err = reqHeaders.SetHeader(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(w.parent.id), 10))
+		if err != nil {
+			globalApplication.fatal("Error setting WindowId header: " + err.Error())
+		}
+		err = reqHeaders.Release()
+		if err != nil {
+			globalApplication.fatal("Error releasing headers: " + err.Error())
+		}
 	}
 
 	if globalApplication.assets == nil {
@@ -1603,7 +1613,12 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 			return
 		}
 
-		defer objs.Release()
+		defer func() {
+			err = objs.Release()
+			if err != nil {
+				globalApplication.error("Error releasing objects: " + err.Error())
+			}
+		}()
 
 		count, err := objs.GetCount()
 		if err != nil {
@@ -1620,6 +1635,8 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 			}
 
 			file := (*edge.ICoreWebView2File)(unsafe.Pointer(_file))
+
+			// TODO: Fix this
 			defer file.Release()
 
 			filepath, err := file.GetPath()

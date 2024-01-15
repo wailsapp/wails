@@ -38,7 +38,10 @@ func NewMessageProcessor(logger *slog.Logger) *MessageProcessor {
 func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, args ...any) {
 	m.Error(message, args...)
 	rw.WriteHeader(http.StatusBadRequest)
-	rw.Write([]byte(fmt.Sprintf(message, args...)))
+	_, err := rw.Write([]byte(fmt.Sprintf(message, args...)))
+	if err != nil {
+		m.Error("Unable to write error message: %s", err)
+	}
 }
 
 func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
@@ -63,7 +66,7 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 	return targetWindow, windowID
 }
 
-func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Request) {
+func (m *MessageProcessor) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	object := r.URL.Query().Get("object")
 	if object == "" {
 		m.httpError(rw, "Invalid runtime call")

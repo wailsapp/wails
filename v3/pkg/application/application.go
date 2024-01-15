@@ -18,7 +18,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
-	wailsruntime "github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/icons"
 )
@@ -69,38 +68,36 @@ func New(appOptions Options) *App {
 	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
 
 	opts := &assetserver.Options{
-		Assets:     appOptions.Assets.FS,
-		Handler:    appOptions.Assets.Handler,
-		Middleware: assetserver.Middleware(appOptions.Assets.Middleware),
+		Assets:         appOptions.Assets.FS,
+		Handler:        appOptions.Assets.Handler,
+		Middleware:     assetserver.Middleware(appOptions.Assets.Middleware),
+		Logger:         result.Logger,
+		IsDebug:        result.isDebugMode,
+		RuntimeHandler: NewMessageProcessor(result.Logger),
+		GetCapabilities: func() []byte {
+			return globalApplication.capabilities.AsBytes()
+		},
+		GetFlags: func() []byte {
+			updatedOptions := result.impl.GetFlags(appOptions)
+			flags, err := json.Marshal(updatedOptions)
+			if err != nil {
+				log.Fatal("Invalid flags provided to application: ", err.Error())
+			}
+			return flags
+		},
 	}
 
-	assetLogger := result.Logger
 	if appOptions.Assets.DisableLogging {
-		assetLogger = slog.New(slog.NewTextHandler(io.Discard, nil))
+		opts.Logger = slog.New(slog.NewTextHandler(io.Discard, nil))
 	}
 
-	srv, err := assetserver.NewAssetServer(opts, false, assetLogger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode, NewMessageProcessor(result.Logger))
+	srv, err := assetserver.NewAssetServer(opts)
 	if err != nil {
 		result.Logger.Error("Fatal error in application initialisation: " + err.Error())
 		os.Exit(1)
 	}
 
-	// Pass through the capabilities
-	srv.GetCapabilities = func() []byte {
-		return globalApplication.capabilities.AsBytes()
-	}
-
-	srv.GetFlags = func() []byte {
-		updatedOptions := result.impl.GetFlags(appOptions)
-		flags, err := json.Marshal(updatedOptions)
-		if err != nil {
-			log.Fatal("Invalid flags provided to application: ", err.Error())
-		}
-		return flags
-	}
-
 	result.assets = srv
-
 	result.assets.LogDetails()
 
 	result.bindings, err = NewBindings(appOptions.Bind, appOptions.BindAliases)
@@ -679,6 +676,8 @@ func WarningDialog() *MessageDialog {
 func ErrorDialog() *MessageDialog {
 	return newMessageDialog(ErrorDialogType)
 }
+
+// TODO: Why isn't this used?
 
 func OpenDirectoryDialog() *MessageDialog {
 	return newMessageDialog(OpenDirectoryDialogType)
