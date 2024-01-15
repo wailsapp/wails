@@ -569,13 +569,13 @@
         callback(x, y, paths);
       };
     }
-    EventsOn("wails:dnd:drop", cb);
+    EventsOn("wails:file-drop", cb);
   }
   function DragAndDropOff() {
     window.removeEventListener("dragover", onDragOver);
     window.removeEventListener("dragleave", onDragLeave);
     window.removeEventListener("drop", onDrop);
-    EventsOff("wails:dnd:drop");
+    EventsOff("wails:file-drop");
     flags.registered = false;
   }
 

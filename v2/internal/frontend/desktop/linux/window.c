@@ -15,11 +15,6 @@ static float yroot = 0.0f;
 static int dragTime = -1;
 static uint mouseButton = 0;
 
-GtkTargetEntry targetentries[] =
-{
-    { "text/uri-list", 0, 0}
-};
-
 // casts
 void ExecuteOnMainThread(void *f, gpointer jscallback)
 {
@@ -437,9 +432,9 @@ gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void *data)
 
 char *droppedFiles = NULL;
 
-static void onDragDataReceived(GtkWidget *self, GdkDragContext *context, gint x, gint y, GtkSelectionData *seldata, guint info, guint time, gpointer data)
+static void onDragDataReceived(GtkWidget *self, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data, guint target_type, guint time, gpointer data)
 {
-    if(info != 2)
+    if(selection_data == NULL || (gtk_selection_data_get_length(selection_data) <= 0) || target_type != 2)
     {
         return;
     }
@@ -450,14 +445,14 @@ static void onDragDataReceived(GtkWidget *self, GdkDragContext *context, gint x,
     }
 
     gchar **filenames = NULL;
-    filenames = g_uri_list_extract_uris((const gchar *)gtk_selection_data_get_data(seldata));
+    filenames = g_uri_list_extract_uris((const gchar *)gtk_selection_data_get_data(selection_data));
     if (filenames == NULL) // If unable to retrieve filenames:
     {
         g_strfreev(filenames);
         return;
     }
 
-    droppedFiles = calloc((size_t)gtk_selection_data_get_length(seldata), 1);
+    droppedFiles = calloc((size_t)gtk_selection_data_get_length(selection_data), 1);
 
     int iter = 0;
     while(filenames[iter] != NULL) // The last URI list element is NULL.
@@ -467,16 +462,25 @@ static void onDragDataReceived(GtkWidget *self, GdkDragContext *context, gint x,
             strncat(droppedFiles, "\n", 1);
         }
         char *filename = g_filename_from_uri(filenames[iter], NULL, NULL);
+        if (filename == NULL)
+        {
+            break;
+        }
         strncat(droppedFiles, filename, strlen(filename));
 
         free(filename);
         iter++;
     }
 
+    size_t resLen = strlen(droppedFiles)+(sizeof(gint)*2)+6;
+    char *res = calloc(resLen, 1);
+    snprintf(res, resLen, "DH:%d:%d:%s", x, y, droppedFiles);
+    processMessage(res);
+
     g_strfreev(filenames);
 }
 
-static gboolean onDragDrop (GtkWidget* self, GdkDragContext* context, gint x, gint y, guint time, gpointer user_data)
+static gboolean onDragDrop(GtkWidget* self, GdkDragContext* context, gint x, gint y, guint time, gpointer user_data)
 {
     if(droppedFiles == NULL)
     {
@@ -497,8 +501,17 @@ static gboolean onDragDrop (GtkWidget* self, GdkDragContext* context, gint x, gi
     return FALSE;
 }
 
-gboolean onDragFailed(GtkWidget* self, GdkDragContext* context, GtkDragResult result, gpointer user_data)
+static void onDragLeave(GtkWidget *widget, GdkDragContext *context, guint time, gpointer user_data)
 {
+    if (time == 0)
+    {
+        processMessage("DC");
+    }
+}
+
+static gboolean onDragFailed(GtkWidget* self, GdkDragContext* context, GtkDragResult result, gpointer user_data)
+{
+    processMessage("DC");
     if(droppedFiles != NULL) {
         free(droppedFiles);
         droppedFiles = NULL;
@@ -524,6 +537,7 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
     {
         g_signal_connect(G_OBJECT(webview), "drag-data-received", G_CALLBACK(onDragDataReceived), NULL);
         g_signal_connect(G_OBJECT(webview), "drag-drop", G_CALLBACK(onDragDrop), NULL);
+        g_signal_connect(G_OBJECT(webview), "drag-leave", G_CALLBACK(onDragLeave), NULL);
         g_signal_connect(G_OBJECT(webview), "drag-failed", G_CALLBACK(onDragFailed), NULL);
     }
 
