@@ -472,12 +472,6 @@ static void onDragDataReceived(GtkWidget *self, GdkDragContext *context, gint x,
         iter++;
     }
 
-    size_t resLen = strlen(droppedFiles)+(sizeof(gint)*2)+6;
-    char *res = calloc(resLen, 1);
-    snprintf(res, resLen, "DH:%d:%d:%s", x, y, droppedFiles);
-
-    processMessage(res);
-
     g_strfreev(filenames);
 }
 
@@ -502,24 +496,6 @@ static gboolean onDragDrop(GtkWidget* self, GdkDragContext* context, gint x, gin
     return FALSE;
 }
 
-static void onDragLeave(GtkWidget *widget, GdkDragContext *context, guint time, gpointer user_data)
-{
-    if (time == 0)
-    {
-        processMessage("DC");
-    }
-}
-
-static gboolean onDragFailed(GtkWidget* self, GdkDragContext* context, GtkDragResult result, gpointer user_data)
-{
-    processMessage("DC");
-    if(droppedFiles != NULL) {
-        free(droppedFiles);
-        droppedFiles = NULL;
-    }
-    return FALSE;
-}
-
 // WebView
 GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowOnClose, int gpuPolicy, int disableWebViewDragAndDrop, int enableDragAndDrop)
 {
@@ -538,8 +514,6 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
     {
         g_signal_connect(G_OBJECT(webview), "drag-data-received", G_CALLBACK(onDragDataReceived), NULL);
         g_signal_connect(G_OBJECT(webview), "drag-drop", G_CALLBACK(onDragDrop), NULL);
-        g_signal_connect(G_OBJECT(webview), "drag-leave", G_CALLBACK(onDragLeave), NULL);
-        g_signal_connect(G_OBJECT(webview), "drag-failed", G_CALLBACK(onDragFailed), NULL);
     }
 
     if (hideWindowOnClose)

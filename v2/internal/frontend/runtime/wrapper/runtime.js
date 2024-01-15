@@ -201,12 +201,32 @@ export function ClipboardSetText(text) {
     return window.runtime.ClipboardSetText(text);
 }
 
-export function DragAndDropOn(callback, useDropTarget) {
-    return window.runtime.DragAndDropOn(callback, useDropTarget);
+/**
+ * Callback for OnFileDrop returns a slice of file path strings when a drop is finished.
+ *
+ * @export
+ * @callback OnFileDropCallback
+ * @param {number} x - x coordinate of the drop
+ * @param {number} y - y coordinate of the drop
+ * @param {string[]} paths - A list of file paths.
+ */
+
+/**
+ * OnFileDrop listens to drag and drop events and calls the callback with the coordinates of the drop and an array of path strings.
+ *
+ * @export
+ * @param {OnFileDropCallback} callback - Callback for OnFileDrop returns a slice of file path strings when a drop is finished.
+ * @param {boolean} [useDropTarget=true] - Only call the callback when the drop finished on an element that has the drop target style. (--wails-drop-target)
+ */
+export function OnFileDrop(callback, useDropTarget) {
+    return window.runtime.OnFileDrop(callback, useDropTarget);
 }
 
-export function DragAndDropOff() {
-    return window.runtime.DragAndDropOff();
+/**
+ * OnFileDropOff removes the drag and drop listeners and handlers.
+ */
+export function OnFileDropOff() {
+    return window.runtime.OnFileDropOff();
 }
 
 export function CanResolveFilePaths() {

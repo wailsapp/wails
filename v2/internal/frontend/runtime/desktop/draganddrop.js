@@ -24,7 +24,6 @@ function onDragOver(e) {
         return;
     }
     e.preventDefault();
-    e.stopPropagation();
 
     if (!flags.useDropTarget) {
         return;
@@ -60,34 +59,11 @@ function onDragOver(e) {
     flags.prevElement = targetElement;
 }
 
-function onDragLeave(e) {
-    if (!window.wails.flags.enableWailsDragAndDrop) {
-        return;
-    }
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!flags.useDropTarget) {
-        return;
-    }
-
-    let targetElement = document.elementFromPoint(e.x, e.y);
-    let cssDropValue = window.getComputedStyle(targetElement).getPropertyValue(window.wails.flags.cssDropProperty);
-    if (cssDropValue) {
-        cssDropValue = cssDropValue.trim();
-    }
-    if (cssDropValue !== window.wails.flags.cssDropValue && flags.prevElement) {
-        targetElement.classList.remove("wails-drop-target-active");
-        flags.prevElement.classList.remove("wails-drop-target-active");
-    }
-}
-
 function onDrop(e) {
     if (!window.wails.flags.enableWailsDragAndDrop) {
         return;
     }
     e.preventDefault();
-    e.stopPropagation();
 
     if (!flags.useDropTarget) {
         return;
@@ -126,6 +102,26 @@ function onDrop(e) {
     }
 }
 
+function onDragLeave(e) {
+    if (!window.wails.flags.enableWailsDragAndDrop) {
+        return;
+    }
+    e.preventDefault();
+
+    if (!flags.useDropTarget) {
+        return;
+    }
+
+    let targetElement = document.elementFromPoint(e.x, e.y);
+    let cssDropValue = window.getComputedStyle(targetElement).getPropertyValue(window.wails.flags.cssDropProperty);
+    if (cssDropValue) {
+        cssDropValue = cssDropValue.trim();
+    }
+    if (cssDropValue !== window.wails.flags.cssDropValue && flags.prevElement) {
+        targetElement.classList.remove("wails-drop-target-active");
+        flags.prevElement.classList.remove("wails-drop-target-active");
+    }
+}
 
 /**
  * postMessageWithAdditionalObjects checks the browser's capability of sending postMessageWithAdditionalObjects
@@ -140,9 +136,9 @@ export function CanResolveFilePaths() {
 /**
  * ResolveFilePaths sends drop events to the GO side to resolve file paths on windows.
  *
- * @param x
- * @param y
- * @param files
+ * @param {number} x
+ * @param {number} y
+ * @param {any[]} files
  * @constructor
  */
 export function ResolveFilePaths(x, y, files) {
@@ -150,29 +146,27 @@ export function ResolveFilePaths(x, y, files) {
     // https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2webmessagereceivedeventargs2?view=webview2-1.0.1823.32#applies-to
     if (window.chrome?.webview?.postMessageWithAdditionalObjects) {
         chrome.webview.postMessageWithAdditionalObjects(`file:drop:${x}:${y}`, files);
-        return;
     }
-    console.warn("unsupported platform");
 }
 
 /**
- * Callback for DragAndDropOn returns a slice of file path strings when a drop is finished.
+ * Callback for OnFileDrop returns a slice of file path strings when a drop is finished.
  *
  * @export
- * @callback DragAndDropCallback
+ * @callback OnFileDropCallback
  * @param {number} x - x coordinate of the drop
  * @param {number} y - y coordinate of the drop
  * @param {string[]} paths - A list of file paths.
  */
 
 /**
- * DragAndDropOn listens to drag and drop events and calls the callback with the coordinates of the drop and an array of path strings.
+ * OnFileDrop listens to drag and drop events and calls the callback with the coordinates of the drop and an array of path strings.
  *
  * @export
- * @param {DragAndDropCallback} callback - Callback for DragAndDropOn returns a slice of file path strings when a drop is finished.
+ * @param {OnFileDropCallback} callback - Callback for OnFileDrop returns a slice of file path strings when a drop is finished.
  * @param {boolean} [useDropTarget=true] - Only call the callback when the drop finished on an element that has the drop target style. (--wails-drop-target)
  */
-export function DragAndDropOn(callback, useDropTarget) {
+export function OnFileDrop(callback, useDropTarget) {
     if (typeof callback !== "function") {
         console.error("DragAndDropCallback is not a function");
         return;
@@ -212,9 +206,9 @@ export function DragAndDropOn(callback, useDropTarget) {
 }
 
 /**
- * DragAndDropOff removes the drag and drop listeners and handlers.
+ * OnFileDropOff removes the drag and drop listeners and handlers.
  */
-export function DragAndDropOff() {
+export function OnFileDropOff() {
     window.removeEventListener('dragover', onDragOver);
     window.removeEventListener('dragleave', onDragLeave);
     window.removeEventListener('drop', onDrop);
