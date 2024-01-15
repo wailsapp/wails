@@ -715,7 +715,7 @@ func (f *Frontend) processMessage(message string) {
 
 func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
 	if strings.HasPrefix(message, "file:drop") {
-		if !f.frontendOptions.DragAndDrop.EnableWails {
+		if !f.frontendOptions.DragAndDrop.EnableFileDrop {
 			return
 		}
 		objs, err := args.GetAdditionalObjects()
@@ -830,7 +830,7 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 		f.ExecJS("window.wails.flags.enableResize = true;")
 	}
 
-	if f.frontendOptions.DragAndDrop.EnableWails {
+	if f.frontendOptions.DragAndDrop.EnableFileDrop {
 		f.ExecJS("window.wails.flags.enableWailsDragAndDrop = true;")
 	}
 

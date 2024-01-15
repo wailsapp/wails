@@ -191,8 +191,8 @@ type SecondInstanceData struct {
 
 type DragAndDrop struct {
 
-	// EnableWails enables wails' drag and drop functionality that returns the dropped in files' absolute paths.
-	EnableWails bool
+	// EnableFileDrop enables wails' drag and drop functionality that returns the dropped in files' absolute paths.
+	EnableFileDrop bool
 
 	// Disable webview's drag and drop functionality.
 	//

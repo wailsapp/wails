@@ -456,7 +456,7 @@ func (f *Frontend) processMessage(message string) {
 			f.ExecJS("window.wails.flags.enableResize = true;")
 		}
 
-		if f.frontendOptions.DragAndDrop.EnableWails {
+		if f.frontendOptions.DragAndDrop.EnableFileDrop {
 			f.ExecJS("window.wails.flags.enableWailsDragAndDrop = true;")
 		}
 
