@@ -199,7 +199,7 @@ static gboolean setTitle(gpointer data)
 
 void SetTitle(GtkWindow *window, char *title)
 {
-    SetTitleArgs *args = (char *)malloc(sizeof(SetTitleArgs));
+    SetTitleArgs *args = malloc(sizeof(SetTitleArgs));
     args->window = window;
     args->title = title;
     ExecuteOnMainThread(setTitle, (gpointer)args);
