@@ -201,8 +201,12 @@ export function ClipboardSetText(text) {
     return window.runtime.ClipboardSetText(text);
 }
 
-export function HandleDragAndDrop(callback) {
-    return EventsOn("wails.dnd.drop", callback);
+export function DragAndDropOn(callback, useDropTarget) {
+    return window.runtime.DragAndDropOn(callback, useDropTarget);
+}
+
+export function DragAndDropOff() {
+    return window.runtime.DragAndDropOff();
 }
 
 export function CanResolveFilePaths() {

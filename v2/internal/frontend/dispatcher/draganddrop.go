@@ -23,12 +23,11 @@ func (d *Dispatcher) processDragAndDropMessage(message string) (string, error) {
 			return "", errors.New("Invalid x coordinate in drag and drop drop Event Message: " + message)
 		}
 
-		y, err := strconv.Atoi(msg[0])
+		y, err := strconv.Atoi(msg[1])
 		if err != nil {
 			return "", errors.New("Invalid y coordinate in drag and drop drop Event Message: " + message)
 		}
-
-		d.events.Emit("wails.dnd.drop", x, y, paths)
+		d.events.Emit("wails:dnd:drop", x, y, paths)
 	default:
 		return "", errors.New("Invalid drag and drop drop Event Message: " + message)
 	}

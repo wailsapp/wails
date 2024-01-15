@@ -234,9 +234,13 @@ export function ClipboardGetText(): Promise<string>;
 // Sets a text on the clipboard
 export function ClipboardSetText(text: string): Promise<boolean>;
 
-// [HandleDragAndDrop](https://wails.io/docs/reference/runtime/draganddrop#handledraganddrop)
-// Calls a callback with slice of file path strings when a drop is finished.
-export function HandleDragAndDrop(callback: (x: number, y: number ,paths: string[]) => void): () => void;
+// [DragAndDropOn](https://wails.io/docs/reference/runtime/draganddrop#dragandddropon)
+// DragAndDropOn listens to drag and drop events and calls the callback with the coordinates of the drop and an array of path strings.
+export function DragAndDropOn(callback: (x: number, y: number ,paths: string[]) => void, useDropTarget: boolean) :void
+
+// [DragAndDropOff](https://wails.io/docs/reference/runtime/draganddrop#dragandddropoff)
+// DragAndDropOff removes the drag and drop listeners and handlers.
+export function DragAndDropOff() :void
 
 // Check if the file path resolver is available
 export function CanResolveFilePaths(): boolean;

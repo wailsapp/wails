@@ -5,9 +5,9 @@ import (
 	"fmt"
 )
 
-// HandleDragAndDrop returns a slice of file path strings when a drop is finished.
-func HandleDragAndDrop(ctx context.Context, callback func(x, y int, paths []string)) {
-	EventsOn(ctx, "wails.dnd.drop", func(optionalData ...interface{}) {
+// DragAndDropOn returns a slice of file path strings when a drop is finished.
+func DragAndDropOn(ctx context.Context, callback func(x, y int, paths []string)) {
+	EventsOn(ctx, "wails:dnd:drop", func(optionalData ...interface{}) {
 
 		if len(optionalData) != 3 {
 			callback(0, 0, nil)
@@ -30,4 +30,9 @@ func HandleDragAndDrop(ctx context.Context, callback func(x, y int, paths []stri
 			callback(x, y, paths)
 		}
 	})
+}
+
+// DragAndDropOff removes the drag and drop listeners and handlers.
+func DragAndDropOff(ctx context.Context) {
+	EventsOff(ctx, "wails:dnd:drop")
 }

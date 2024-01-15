@@ -19,7 +19,6 @@ import * as Clipboard from "./clipboard";
 import * as DragAndDrop from "./draganddrop";
 import * as ContextMenu from "./contextmenu";
 
-
 export function Quit() {
     window.WailsInvoke('Q');
 }
@@ -75,7 +74,6 @@ window.wails = {
         cssDropProperty: "--wails-drop-target",
         cssDropValue: "drop",
         enableWailsDragAndDrop: false,
-        wailsDropPreviousElement: null,
     }
 };
 
@@ -205,83 +203,6 @@ window.addEventListener('contextmenu', function (e) {
         e.preventDefault();
     } else {
         ContextMenu.processDefaultContextMenu(e);
-    }
-});
-
-window.addEventListener('dragover', function (e) {
-    if (!window.wails.flags.enableWailsDragAndDrop) {
-        return;
-    }
-    e.preventDefault();
-    let targetElement = document.elementFromPoint(e.x, e.y);
-    if (targetElement === window.wails.flags.wailsDropPreviousElement) {
-        return;
-    }
-    const style = targetElement.style;
-    let cssDropValue = null;
-    if (Object.keys(style).findIndex(key => style[key] === window.wails.flags.cssDropProperty) < 0) {
-        targetElement = targetElement.closest(`[style*='${window.wails.flags.cssDropProperty}']`);
-    }
-    if (targetElement == null) {
-        return;
-    }
-    cssDropValue = window.getComputedStyle(targetElement).getPropertyValue(window.wails.flags.cssDropProperty);
-    if (cssDropValue) {
-        cssDropValue = cssDropValue.trim();
-    }
-
-    if (cssDropValue === window.wails.flags.cssDropValue) {
-        targetElement.classList.add("wails-drop-target-active");
-    } else if (window.wails.flags.wailsDropPreviousElement) {
-        window.wails.flags.wailsDropPreviousElement.classList.remove("wails-drop-target-active");
-    }
-    window.wails.flags.wailsDropPreviousElement = targetElement;
-})
-
-window.addEventListener('dragleave', function (e) {
-    if (!window.wails.flags.enableWailsDragAndDrop) {
-        return;
-    }
-    e.preventDefault();
-
-    let targetElement = document.elementFromPoint(e.x, e.y);
-    let cssDropValue = window.getComputedStyle(targetElement).getPropertyValue(window.wails.flags.cssDropProperty);
-    if (cssDropValue) {
-        cssDropValue = cssDropValue.trim();
-    }
-    if (cssDropValue !== window.wails.flags.cssDropValue && window.wails.flags.wailsDropPreviousElement) {
-        window.wails.flags.wailsDropPreviousElement.classList.remove("wails-drop-target-active");
-    }
-});
-
-window.addEventListener('drop', function (e) {
-    if (!window.wails.flags.enableWailsDragAndDrop) {
-        return;
-    }
-    e.preventDefault();
-    let targetElement = document.elementFromPoint(e.x, e.y);
-    let cssDropValue = window.getComputedStyle(targetElement).getPropertyValue(window.wails.flags.cssDropProperty);
-    if (cssDropValue) {
-        cssDropValue = cssDropValue.trim();
-    }
-    if (cssDropValue !== window.wails.flags.cssDropValue) {
-        return;
-    }
-    // process files
-    let files = [];
-    if (e.dataTransfer.items) {
-        files = [...e.dataTransfer.items].map((item, i) => {
-            if (item.kind === 'file') {
-                return item.getAsFile();
-            }
-        });
-    } else {
-        files = [...e.dataTransfer.files];
-    }
-
-    window.runtime.ResolveFilePaths(e.x, e.y, files);
-    if(window.wails.flags.wailsDropPreviousElement) {
-        window.wails.flags.wailsDropPreviousElement.classList.remove("wails-drop-target-active");
     }
 });
 
