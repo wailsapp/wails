@@ -1,8 +1,8 @@
 package application
 
 import (
+	"encoding/json"
 	"fmt"
-	jsoniter "github.com/json-iterator/go"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -135,7 +135,7 @@ func (m *MessageProcessor) json(rw http.ResponseWriter, data any) {
 	var jsonPayload = []byte("{}")
 	var err error
 	if data != nil {
-		jsonPayload, err = jsoniter.Marshal(data)
+		jsonPayload, err = json.Marshal(data)
 		if err != nil {
 			m.Error("Unable to convert data to JSON. Please report this to the Wails team! Error: %s", err)
 			return
