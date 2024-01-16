@@ -67,6 +67,8 @@ github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5/go.mod h1:wHh0iHkY
 github.com/atomicgo/cursor v0.0.1/go.mod h1:cBON2QmmrysudxNBFthvMtN32r3jxVRIvzkUiF/RuIk=
 github.com/atterpac/refresh v0.2.4 h1:rTD9qchbLa0qPIVr+qpyqkePe6+1Cs14ETXDguEvttI=
 github.com/atterpac/refresh v0.2.4/go.mod h1:KiBQUk5h76Z3Yvw/k3Ys2JGDrKmKmflwS9XB6B5N9qY=
+github.com/atterpac/refresh v0.4.29 h1:ObGnm1AxV3WWBXHFWlyOTNT/cPyLDtMW8JkexoXKdG4=
+github.com/atterpac/refresh v0.4.29/go.mod h1:nwaO4jT1N3pscamqKFExmlYi8K+kfgRFSmzwxFRJRKQ=
 github.com/bep/debounce v1.2.1 h1:v67fRdBA9UQu2NhLFXrSg0Brw7CexQekrBwDMM8bzeY=
 github.com/bep/debounce v1.2.1/go.mod h1:H8yggRPQKLUhUoqrJC1bO2xNya7vanpDl7xR3ISbCJ0=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=

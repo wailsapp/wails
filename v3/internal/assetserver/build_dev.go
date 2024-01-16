@@ -42,7 +42,7 @@ func (a *AssetServer) setupHandler() (http.Handler, error) {
 	proxy.Director = func(r *http.Request) {
 		baseDirector(r)
 		if a.options.Logger != nil {
-			a.options.Logger.Debug("[ExternalAssetHandler] Loading '%s'", r.URL)
+			a.options.Logger.Debug("ExternalAssetHandler: loading", "url", r.URL)
 		}
 	}
 
@@ -65,12 +65,12 @@ func (a *AssetServer) setupHandler() (http.Handler, error) {
 	proxy.ErrorHandler = func(rw http.ResponseWriter, r *http.Request, err error) {
 		if baseHandler != nil && errors.Is(err, errSkipProxy) {
 			if a.options.Logger != nil {
-				a.options.Logger.Debug("[ExternalAssetHandler] Loading '%s' failed, using original AssetHandler", r.URL)
+				a.options.Logger.Debug("ExternalAssetHandler: Loading file failed, using original AssetHandler", "url", r.URL)
 			}
 			baseHandler.ServeHTTP(rw, r)
 		} else {
 			if a.options.Logger != nil {
-				a.options.Logger.Error("[ExternalAssetHandler] Proxy error: %v", err)
+				a.options.Logger.Error("ExternalAssetHandler: Proxy error", "error", err.Error())
 			}
 			rw.WriteHeader(http.StatusBadGateway)
 		}
