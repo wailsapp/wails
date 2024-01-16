@@ -266,6 +266,7 @@ func (s *SystemTray) WindowDebounce(debounce time.Duration) *SystemTray {
 
 func (s *SystemTray) defaultClickHandler() {
 	if s.attachedWindow.Window == nil {
+		s.OpenMenu()
 		return
 	}
 
