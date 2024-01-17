@@ -3,14 +3,17 @@ package application
 import (
 	"embed"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"runtime"
 	"strconv"
 	"sync"
+	"syscall"
 
 	"github.com/pkg/browser"
 	"github.com/samber/lo"
@@ -65,6 +68,10 @@ func New(appOptions Options) *App {
 
 	result.logStartup()
 	result.logPlatformInfo()
+
+	if !appOptions.DisableDefaultSignalHandler {
+		result.setupDefaultSignalHandler()
+	}
 
 	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
 
@@ -875,4 +882,28 @@ func (a *App) shouldQuit() bool {
 		return a.options.ShouldQuit()
 	}
 	return true
+}
+
+func (a *App) setupDefaultSignalHandler() {
+	const maxSignal = 3
+
+	ctrlC := make(chan os.Signal, maxSignal)
+	signal.Notify(ctrlC, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		for i := 1; i <= maxSignal; i++ {
+			sig := <-ctrlC
+
+			if i == 1 {
+				fmt.Printf("Received signal: %v. Quitting...\n", sig)
+				go a.Quit()
+			} else if i < maxSignal {
+				fmt.Printf("Received signal: %v. Press CTRL+C %d more times to force quit...\n", sig, maxSignal-i)
+				continue
+			} else {
+				fmt.Printf("Received signal: %v. Force quitting...\n", sig)
+				os.Exit(1)
+			}
+		}
+	}()
 }

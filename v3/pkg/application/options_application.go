@@ -46,8 +46,11 @@ type Options struct {
 	// This is also used by Wails to provide information to the frontend.
 	Flags map[string]any
 
-	// PanicHandler is a way to register a custom panic handler
+	// PanicHandler is called when a panic occurs
 	PanicHandler func(any)
+
+	// DisableDefaultSignalHandler disables the default signal handler
+	DisableDefaultSignalHandler bool
 
 	// KeyBindings is a map of key bindings to functions
 	KeyBindings map[string]func(window *WebviewWindow)
