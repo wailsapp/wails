@@ -3,11 +3,12 @@
 package application
 
 import (
+	"path/filepath"
+	"strings"
+
 	"github.com/wailsapp/wails/v3/internal/go-common-file-dialog/cfd"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 	"golang.org/x/sys/windows"
-	"path/filepath"
-	"strings"
 )
 
 func (m *windowsApp) showAboutDialog(title string, message string, _ []byte) {
@@ -169,8 +170,8 @@ func (m *windowSaveFileDialog) show() (chan string, error) {
 	}
 
 	// Original PR for v2 by @almas1992: https://github.com/wailsapp/wails/pull/3205
-	if len(options.Filters) > 0 {
-		config.DefaultExtension = strings.TrimPrefix(strings.Split(options.Filters[0].Pattern, ";")[0], "*")
+	if len(m.dialog.filters) > 0 {
+		config.DefaultExtension = strings.TrimPrefix(strings.Split(m.dialog.filters[0].Pattern, ";")[0], "*")
 	}
 
 	result, err := showCfdDialog(
