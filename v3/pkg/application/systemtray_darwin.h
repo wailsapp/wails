@@ -12,7 +12,6 @@ void* createAttributedString(char *title, char *FG, char *BG);
 void* appendAttributedString(void* original, char* label, char* fg, char* bg);
 NSImage* imageFromBytes(const unsigned char *bytes, int length);
 void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isTemplate);
-void systemTraySetMenu(void* nsStatusItem, void* nsMenu);
 void systemTrayDestroy(void* nsStatusItem);
 void showMenu(void* nsStatusItem, void *nsMenu);
 void systemTrayGetBounds(void* nsStatusItem, NSRect *rect);

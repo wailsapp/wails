@@ -6,8 +6,8 @@ import (
 	"runtime"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/icons"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/icons"
 )
 
 func main() {
@@ -44,7 +44,6 @@ func main() {
 		systemTray.SetTemplateIcon(icons.SystrayMacTemplate)
 	}
 
-
 	// Click Dock icon tigger application show
 	app.On(events.Mac.ApplicationShouldHandleReopen, func(event *application.Event) {
 		println("reopen")
@@ -62,7 +61,7 @@ func main() {
 
 	systemTray.SetMenu(myMenu)
 	systemTray.OnClick(func() {
-		app.CurrentWindow().Show()
+		window.Show()
 	})
 
 	err := app.Run()

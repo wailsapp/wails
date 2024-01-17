@@ -130,16 +130,6 @@ void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isT
 	});
 }
 
-// Add menu to system tray
-void systemTraySetMenu(void* nsStatusItem, void* nsMenu) {
-	// Set the menu on the main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-		NSMenu *menu = (NSMenu *)nsMenu;
-		statusItem.menu = menu;
-	});
-}
-
 // Destroy system tray
 void systemTrayDestroy(void* nsStatusItem) {
 	// Remove the status item from the status bar and its associated menu
