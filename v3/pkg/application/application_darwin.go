@@ -334,9 +334,15 @@ func processMenuItemClick(menuID C.uint) {
 	menuItemClicked <- uint(menuID)
 }
 
-//export quitApplication
-func quitApplication() {
-	globalApplication.Quit()
+//export shouldQuitApplication
+func shouldQuitApplication() C.bool {
+	// TODO: This should be configurable
+	return C.bool(globalApplication.shouldQuit())
+}
+
+//export cleanup
+func cleanup() {
+	globalApplication.cleanup()
 }
 
 func (a *App) logPlatformInfo() {

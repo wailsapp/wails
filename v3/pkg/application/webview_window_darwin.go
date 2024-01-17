@@ -956,7 +956,14 @@ func (w *macosWebviewWindow) setEnabled(enabled bool) {
 }
 
 func (w *macosWebviewWindow) execJS(js string) {
+
 	InvokeAsync(func() {
+		if globalApplication.performingShutdown {
+			return
+		}
+		if w.nsWindow == nil {
+			return
+		}
 		C.windowExecJS(w.nsWindow, C.CString(js))
 	})
 }

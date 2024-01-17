@@ -21,7 +21,7 @@ func main() {
 		Description: "A demo of the WebviewWindow API",
 		Assets:      application.AlphaAssets,
 		Mac: application.MacOptions{
-			ApplicationShouldTerminateAfterLastWindowClosed: false,
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 	app.On(events.Mac.ApplicationDidFinishLaunching, func(event *application.Event) {
@@ -40,8 +40,11 @@ func main() {
 
 	// Create a custom menu
 	menu := app.NewMenu()
-	menu.AddRole(application.AppMenu)
-
+	if runtime.GOOS == "darwin" {
+		menu.AddRole(application.AppMenu)
+	} else {
+		menu.AddRole(application.FileMenu)
+	}
 	windowCounter := 1
 
 	// Let's make a "Demo" menu

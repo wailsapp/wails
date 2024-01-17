@@ -2,7 +2,8 @@
 #import "application_darwin_delegate.h"
 #import "../events/events_darwin.h"
 extern bool hasListeners(unsigned int);
-extern void quitApplication();
+extern bool shouldQuitApplication();
+extern void cleanup();
 
 @implementation AppDelegate
 - (void)dealloc
@@ -20,8 +21,14 @@ extern void quitApplication();
     }
 }
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
-    quitApplication();
-    return NSTerminateCancel;
+    if( ! shouldQuitApplication() ) {
+        return NSTerminateCancel;
+    }
+    if( !self.shuttingDown ) {
+        self.shuttingDown = true;
+        cleanup();
+    }
+    return NSTerminateNow;
 }
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app
 {

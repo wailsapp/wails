@@ -297,6 +297,7 @@ type App struct {
 
 	// Shutdown
 	performingShutdown bool
+
 	// Shutdown tasks are run when the application is shutting down.
 	// They are run in the order they are added and run on the main thread.
 	// The application option `OnShutdown` is run first.
@@ -617,12 +618,11 @@ func (a *App) OnShutdown(f func()) {
 	a.shutdownTasks = append(a.shutdownTasks, f)
 }
 
-func (a *App) Quit() {
+func (a *App) cleanup() {
 	if a.performingShutdown {
 		return
 	}
 	a.performingShutdown = true
-	// Run the shutdown tasks
 	for _, shutdownTask := range a.shutdownTasks {
 		InvokeSync(shutdownTask)
 	}
@@ -639,11 +639,13 @@ func (a *App) Quit() {
 		}
 		a.systemTrays = nil
 		a.systemTraysLock.Unlock()
-		if a.impl != nil {
-			a.impl.destroy()
-			a.impl = nil
-		}
 	})
+}
+
+func (a *App) Quit() {
+	if a.impl != nil {
+		InvokeSync(a.impl.destroy)
+	}
 }
 
 func (a *App) SetIcon(icon []byte) {
@@ -866,4 +868,11 @@ func (a *App) Environment() EnvironmentInfo {
 		Arch:  runtime.GOARCH,
 		Debug: a.isDebugMode,
 	}
+}
+
+func (a *App) shouldQuit() bool {
+	if a.options.ShouldQuit != nil {
+		return a.options.ShouldQuit()
+	}
+	return true
 }

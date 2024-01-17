@@ -190,8 +190,10 @@ func newDeleteMenuItem() *MenuItem {
 }
 
 func newQuitMenuItem() *MenuItem {
-	panic("implement me")
-
+	return newMenuItem("Quit").
+		OnClick(func(ctx *Context) {
+			globalApplication.Quit()
+		})
 }
 
 func newSelectAllMenuItem() *MenuItem {
