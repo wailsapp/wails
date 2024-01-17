@@ -168,6 +168,11 @@ func (m *windowSaveFileDialog) show() (chan string, error) {
 		Folder:      defaultFolder,
 	}
 
+	// Original PR for v2 by @almas1992: https://github.com/wailsapp/wails/pull/3205
+	if len(options.Filters) > 0 {
+		config.DefaultExtension = strings.TrimPrefix(strings.Split(options.Filters[0].Pattern, ";")[0], "*")
+	}
+
 	result, err := showCfdDialog(
 		func() (cfd.Dialog, error) {
 			return cfd.NewSaveFileDialog(config)
