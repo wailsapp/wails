@@ -3,6 +3,9 @@ package application
 import (
 	"embed"
 	"encoding/json"
+	"github.com/pkg/browser"
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/signal"
 	"io"
 	"log"
 	"log/slog"
@@ -12,13 +15,9 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/pkg/browser"
-	"github.com/samber/lo"
-
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
-	wailsruntime "github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/icons"
 )
@@ -63,44 +62,50 @@ func New(appOptions Options) *App {
 		}
 	}
 
+	if !appOptions.DisableDefaultSignalHandler {
+		result.signalHandler = signal.NewSignalHandler(result.Quit)
+		result.signalHandler.Logger = result.Logger
+		result.signalHandler.ExitMessage = func(sig os.Signal) string {
+			return "Quitting application..."
+		}
+	}
+
 	result.logStartup()
 	result.logPlatformInfo()
 
 	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
 
 	opts := &assetserver.Options{
-		Assets:     appOptions.Assets.FS,
-		Handler:    appOptions.Assets.Handler,
-		Middleware: assetserver.Middleware(appOptions.Assets.Middleware),
+		Assets:         appOptions.Assets.FS,
+		Handler:        appOptions.Assets.Handler,
+		Middleware:     assetserver.Middleware(appOptions.Assets.Middleware),
+		Logger:         result.Logger,
+		IsDebug:        result.isDebugMode,
+		RuntimeHandler: NewMessageProcessor(result.Logger),
+		GetCapabilities: func() []byte {
+			return globalApplication.capabilities.AsBytes()
+		},
+		GetFlags: func() []byte {
+			updatedOptions := result.impl.GetFlags(appOptions)
+			flags, err := json.Marshal(updatedOptions)
+			if err != nil {
+				log.Fatal("Invalid flags provided to application: ", err.Error())
+			}
+			return flags
+		},
 	}
 
-	assetLogger := result.Logger
 	if appOptions.Assets.DisableLogging {
-		assetLogger = slog.New(slog.NewTextHandler(io.Discard, nil))
+		opts.Logger = slog.New(slog.NewTextHandler(io.Discard, nil))
 	}
 
-	srv, err := assetserver.NewAssetServer(opts, false, assetLogger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode, NewMessageProcessor(result.Logger))
+	srv, err := assetserver.NewAssetServer(opts)
 	if err != nil {
 		result.Logger.Error("Fatal error in application initialisation: " + err.Error())
 		os.Exit(1)
 	}
 
-	// Pass through the capabilities
-	srv.GetCapabilities = func() []byte {
-		return globalApplication.capabilities.AsBytes()
-	}
-
-	srv.GetFlags = func() []byte {
-		updatedOptions := result.impl.GetFlags(appOptions)
-		flags, err := json.Marshal(updatedOptions)
-		if err != nil {
-			log.Fatal("Invalid flags provided to application: ", err.Error())
-		}
-		return flags
-	}
-
 	result.assets = srv
-
 	result.assets.LogDetails()
 
 	result.bindings, err = NewBindings(appOptions.Bind, appOptions.BindAliases)
@@ -302,6 +307,9 @@ type App struct {
 	// They are run in the order they are added and run on the main thread.
 	// The application option `OnShutdown` is run first.
 	shutdownTasks []func()
+
+	// signalHandler is used to handle signals
+	signalHandler *signal.SignalHandler
 }
 
 func (a *App) init() {
@@ -448,6 +456,12 @@ func (a *App) Run() error {
 	// Setup panic handler
 	defer processPanicHandlerRecover()
 
+	// Call post-create hooks
+	err := a.preRun()
+	if err != nil {
+		return err
+	}
+
 	a.impl = newPlatformApp(a)
 	go func() {
 		for {
@@ -509,7 +523,7 @@ func (a *App) Run() error {
 	}
 	a.impl.setIcon(a.options.Icon)
 
-	err := a.impl.run()
+	err = a.impl.run()
 	if err != nil {
 		return err
 	}
@@ -681,6 +695,8 @@ func WarningDialog() *MessageDialog {
 func ErrorDialog() *MessageDialog {
 	return newMessageDialog(ErrorDialogType)
 }
+
+// TODO: Why isn't this used?
 
 func OpenDirectoryDialog() *MessageDialog {
 	return newMessageDialog(OpenDirectoryDialogType)

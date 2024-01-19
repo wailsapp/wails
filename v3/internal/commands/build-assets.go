@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -18,6 +19,7 @@ var buildAssets embed.FS
 type BuildAssetsOptions struct {
 	Dir                string `description:"The directory to generate the files into" default:"build"`
 	Name               string `description:"The name of the project"`
+	Binary             string `description:"The name of the binary"`
 	ProductName        string `description:"The name of the product" default:"My Product"`
 	ProductDescription string `description:"The description of the product" default:"My Product Description"`
 	ProductVersion     string `description:"The version of the product" default:"0.1.0"`
@@ -50,6 +52,13 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 
 	if options.ProductIdentifier == "" {
 		options.ProductIdentifier = "com.wails." + normaliseName(options.Name)
+	}
+
+	if options.Binary == "" {
+		options.Binary = normaliseName(options.Name)
+		if runtime.GOOS == "windows" {
+			options.Binary += ".exe"
+		}
 	}
 
 	tfs, err := fs.Sub(buildAssets, "build_assets")

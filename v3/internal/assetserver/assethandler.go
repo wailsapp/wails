@@ -14,9 +14,6 @@ import (
 	"strings"
 )
 
-//go:embed defaultindex.html
-var defaultHTML []byte
-
 const (
 	indexHTML = "index.html"
 )
@@ -30,7 +27,7 @@ type assetHandler struct {
 	retryMissingFiles bool
 }
 
-func NewAssetHandler(options *Options, log *slog.Logger) (http.Handler, error) {
+func NewDefaultAssetHandler(options *Options) (http.Handler, error) {
 
 	vfs := options.Assets
 	if vfs != nil {
@@ -62,7 +59,7 @@ func NewAssetHandler(options *Options, log *slog.Logger) (http.Handler, error) {
 	var result http.Handler = &assetHandler{
 		fs:      vfs,
 		handler: options.Handler,
-		logger:  log,
+		logger:  options.Logger,
 	}
 
 	if middleware := options.Middleware; middleware != nil {

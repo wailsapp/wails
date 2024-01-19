@@ -2,6 +2,7 @@ package assetserver
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -10,18 +11,18 @@ import (
 )
 
 // FindEmbedRootPath finds the root path in the embed FS. It's the directory which contains all the files.
-func FindEmbedRootPath(fsys embed.FS) (string, error) {
+func FindEmbedRootPath(fileSystem embed.FS) (string, error) {
 	stopErr := fmt.Errorf("files or multiple dirs found")
 
 	fPath := ""
-	err := fs.WalkDir(fsys, ".", func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
 		if d.IsDir() {
 			fPath = path
-			if entries, dErr := fs.ReadDir(fsys, path); dErr != nil {
+			if entries, dErr := fs.ReadDir(fileSystem, path); dErr != nil {
 				return dErr
 			} else if len(entries) <= 1 {
 				return nil
@@ -31,20 +32,20 @@ func FindEmbedRootPath(fsys embed.FS) (string, error) {
 		return stopErr
 	})
 
-	if err != nil && err != stopErr {
+	if err != nil && !errors.Is(err, stopErr) {
 		return "", err
 	}
 
 	return fPath, nil
 }
 
-func FindPathToFile(fsys fs.FS, file string) (string, error) {
-	stat, _ := fs.Stat(fsys, file)
+func FindPathToFile(fileSystem fs.FS, file string) (string, error) {
+	stat, _ := fs.Stat(fileSystem, file)
 	if stat != nil {
 		return ".", nil
 	}
 	var indexFiles []string
-	err := fs.WalkDir(fsys, ".", func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
