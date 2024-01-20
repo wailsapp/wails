@@ -1,4 +1,15 @@
 /**
+ * Sets up event callbacks for Wails.
+ *
+ * @function setupEventCallbacks
+ *
+ * @description This method is responsible for setting up event callbacks for Wails. It checks if the global object `_wails` exists on the `window` object, and if not, initializes it
+ *. It then assigns the `dispatchWailsEvent` function as a property on the `_wails` object.
+ *
+ * @returns {undefined} Returns nothing.
+ */
+export function setupEventCallbacks(): undefined;
+/**
  * Register a callback function to be called multiple times for a specific event.
  *
  * @param {string} eventName - The name of the event to register the callback for.
@@ -20,9 +31,9 @@ export function On(eventName: string, callback: Function): Function;
  *
  * @param {string} eventName - The name of the event.
  * @param {function} callback - The function to be executed when the event occurs.
- * @return {void@return {function} - A function that, when called, will unregister the callback from the event.
+ * @return {function} - A function that, when called, will unregister the callback from the event.
  */
-export function Once(eventName: string, callback: Function): void;
+export function Once(eventName: string, callback: Function): Function;
 /**
  * Removes event listeners for the specified event names.
  *
@@ -80,15 +91,6 @@ export const Types: {
         ApplicationDidChangeIcon: string;
         ApplicationDidChangeOcclusionState: string;
         ApplicationDidChangeScreenParameters: string;
-        /**
-         * Register a callback function to be called multiple times for a specific event.
-         *
-         * @param {string} eventName - The name of the event to register the callback for.
-         * @param {function} callback - The callback function to be called when the event is triggered.
-         * @param {number} maxCallbacks - The maximum number of times the callback can be called for the event. Once the maximum number is reached, the callback will no longer be called.
-         *
-         @return {function} - A function that, when called, will unregister the callback from the event.
-         */
         ApplicationDidChangeStatusBarFrame: string;
         ApplicationDidChangeStatusBarOrientation: string;
         ApplicationDidFinishLaunching: string;
@@ -103,7 +105,6 @@ export const Types: {
         ApplicationWillTerminate: string;
         ApplicationWillUnhide: string;
         ApplicationWillUpdate: string;
-        ApplicationTerminate: string;
         ApplicationDidChangeTheme: string;
         ApplicationShouldHandleReopen: string;
         WindowDidBecomeKey: string;
@@ -124,6 +125,12 @@ export const Types: {
         WindowDidChangeSharingType: string;
         WindowDidChangeSpace: string;
         WindowDidChangeSpaceOrderingMode: string;
+        /**
+         * Removes the specified listener from the event listeners collection.
+         * If all listeners for the event are removed, the event key is deleted from the collection.
+         *
+         * @param {Object} listener - The listener to be removed.
+         */
         WindowDidChangeTitle: string;
         WindowDidChangeToolbar: string;
         WindowDidChangeVisibility: string;
@@ -133,6 +140,13 @@ export const Types: {
         WindowDidEnterVersionBrowser: string;
         WindowDidExitFullScreen: string;
         WindowDidExitVersionBrowser: string;
+        /**
+         * Removes event listeners for the specified event names.
+         *
+         * @param {string} eventName - The name of the event to remove listeners for.
+         * @param {...string} additionalEventNames - Additional event names to remove listeners for.
+         * @return {undefined}
+         */
         WindowDidExpose: string;
         WindowDidFocus: string;
         WindowDidMiniaturize: string;
@@ -233,7 +247,6 @@ export const Types: {
         WindowDPIChanged: string;
         WindowFilesDropped: string;
         ThemeChanged: string;
-        ApplicationTerminate: string;
     };
 };
 export class WailsEvent {

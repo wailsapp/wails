@@ -42,9 +42,20 @@ export class WailsEvent {
     }
 }
 
-
-window._wails = window._wails || {};
-window._wails.dispatchWailsEvent = dispatchWailsEvent;
+/**
+ * Sets up event callbacks for Wails.
+ *
+ * @function setupEventCallbacks
+ *
+ * @description This method is responsible for setting up event callbacks for Wails. It checks if the global object `_wails` exists on the `window` object, and if not, initializes it
+ *. It then assigns the `dispatchWailsEvent` function as a property on the `_wails` object.
+ *
+ * @returns {undefined} Returns nothing.
+ */
+export function setupEventCallbacks() {
+    window._wails = window._wails || {};
+    window._wails.dispatchWailsEvent = dispatchWailsEvent;
+}
 
 function dispatchWailsEvent(event) {
     let listeners = eventListeners.get(event.name);
@@ -91,7 +102,7 @@ export function On(eventName, callback) { return OnMultiple(eventName, callback,
  *
  * @param {string} eventName - The name of the event.
  * @param {function} callback - The function to be executed when the event occurs.
- * @return {void@return {function} - A function that, when called, will unregister the callback from the event.
+ * @return {function} - A function that, when called, will unregister the callback from the event.
  */
 export function Once(eventName, callback) { return OnMultiple(eventName, callback, 1); }
 

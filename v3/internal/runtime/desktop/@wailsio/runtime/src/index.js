@@ -74,5 +74,6 @@ function whenReady(fn) {
 whenReady(() => {
     setupContextMenus();
     setupDrag();
+    setupEventCallbacks();
     WML.Reload();
 });
