@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix replace line in `go.mod` to use relative paths. Fixes Windows paths with spaces - @leaanthony.
 - Fix MacOS systray click handling when no attached window by [thomas-senechal](https://github.com/thomas-senechal) in PR [#3207](https://github.com/wailsapp/wails/pull/3207)
 - Fix failing Windows build due to unknown option by [thomas-senechal](https://github.com/thomas-senechal) in PR [#3208](https://github.com/wailsapp/wails/pull/3208)
+- Fix failing Windows build due to undefined options by [aenmo][https://github.com/aenmo] in PR [#3213](https://github.com/wailsapp/wails/pull/3213)
 
 ### Changed
 
