@@ -169,6 +169,7 @@ func (a *AssetServer) AddPluginScript(pluginName string, script string) {
 }
 
 func GetStartURL(userURL string) (string, error) {
+	startURL := ""
 	devServerURL := GetDevServerURL()
 	if devServerURL != "" {
 		// Parse the port
