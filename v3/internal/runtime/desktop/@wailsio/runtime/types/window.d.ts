@@ -28,16 +28,6 @@ export function SetSize(width: number, height: number): void;
  * Gets the size of the window.
  */
 export function Size(): any;
-export type Size = {
-    /**
-     * - The width.
-     */
-    X: number;
-    /**
-     * - The height.
-     */
-    Y: number;
-};
 /**
  * Sets the maximum size of the window.
  * @param {number} width - The maximum width of the window.
@@ -148,35 +138,3 @@ export function GetZoomLevel(): any;
  * @param {number} zoomLevel - The zoom level to set.
  */
 export function SetZoomLevel(zoomLevel: number): void;
-export type Position = {
-    /**
-     * - The X coordinate.
-     */
-    X: number;
-    /**
-     * - The Y coordinate.
-     */
-    Y: number;
-};
-export type Rect = {
-    /**
-     * - The X coordinate of the top-left corner.
-     */
-    X: number;
-    /**
-     * - The Y coordinate of the top-left corner.
-     */
-    Y: number;
-    /**
-     * - The width of the rectangle.
-     */
-    Width: number;
-    /**
-     * - The height of the rectangle.
-     */
-    Height: number;
-};
-/**
- * The rotation of the screen. Can be one of 'Zero', 'Ninety', 'OneEighty', 'TwoSeventy'.
- */
-export type Rotation = ('Zero' | 'Ninety' | 'OneEighty' | 'TwoSeventy');
