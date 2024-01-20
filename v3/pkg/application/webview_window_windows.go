@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"net/url"
-	"path"
 	"strconv"
 	"strings"
 	"sync"
@@ -1457,35 +1456,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.Init(script)
 		chromium.NavigateToString(w.parent.options.HTML)
 	} else {
-		var startURL = "http://wails.localhost"
-		devServerURL := assetserver.GetDevServerURL()
-		if devServerURL != "" {
-			// Parse the port
-			parsedURL, err := url.Parse(devServerURL)
-			if err != nil {
-				globalApplication.fatal("Error parsing environment variable 'FRONTEND_DEVSERVER_URL`: " + err.Error() + ". Please check your `Taskfile.yml` file")
-			}
-			port := parsedURL.Port()
-			if port != "" {
-				startURL += ":" + port
-			}
-		} else {
-			if w.parent.options.URL != "" {
-				// parse the url
-				parsedURL, err := url.Parse(w.parent.options.URL)
-				if err != nil {
-					globalApplication.fatal("Error parsing URL: " + err.Error())
-				}
-				if parsedURL.Scheme == "" {
-					startURL = path.Join(startURL, w.parent.options.URL)
-					// if the original URL had a trailing slash, add it back
-					if strings.HasSuffix(w.parent.options.URL, "/") {
-						startURL = startURL + "/"
-					}
-				} else {
-					startURL = w.parent.options.URL
-				}
-			}
+		startURL, err := assetserver.GetStartURL(w.parent.options.URL)
+		if err != nil {
+			globalApplication.fatal(err.Error())
 		}
 		chromium.Navigate(startURL)
 	}

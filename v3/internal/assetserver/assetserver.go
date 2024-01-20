@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
+	"net/url"
+	"path"
 	"strings"
 	"time"
 )
@@ -164,4 +166,37 @@ func (a *AssetServer) AddPluginScript(pluginName string, script string) {
 	pluginName = html.EscapeString(pluginName)
 	pluginScriptName := fmt.Sprintf("/wails/plugin/%s.js", pluginName)
 	a.pluginScripts[pluginScriptName] = script
+}
+
+func GetStartURL(userURL string) (string, error) {
+	devServerURL := GetDevServerURL()
+	if devServerURL != "" {
+		// Parse the port
+		parsedURL, err := url.Parse(devServerURL)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing environment variable 'FRONTEND_DEVSERVER_URL`: " + err.Error() + ". Please check your `Taskfile.yml` file")
+		}
+		port := parsedURL.Port()
+		if port != "" {
+			startURL += ":" + port
+		}
+	} else {
+		if userURL != "" {
+			// parse the url
+			parsedURL, err := url.Parse(userURL)
+			if err != nil {
+				return "", fmt.Errorf("Error parsing URL: " + err.Error())
+			}
+			if parsedURL.Scheme == "" {
+				startURL = path.Join(startURL, userURL)
+				// if the original URL had a trailing slash, add it back
+				if strings.HasSuffix(userURL, "/") {
+					startURL = startURL + "/"
+				}
+			} else {
+				startURL = userURL
+			}
+		}
+	}
+	return startURL, nil
 }
