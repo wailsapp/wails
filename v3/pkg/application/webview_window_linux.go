@@ -4,9 +4,8 @@ package application
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
-	"net/url"
-
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -249,15 +248,6 @@ func (w *linuxWebviewWindow) execJS(js string) {
 }
 
 func (w *linuxWebviewWindow) setURL(uri string) {
-	if uri != "" {
-		url, err := url.Parse(uri)
-		if err == nil && url.Scheme == "" && url.Host == "" {
-			// TODO handle this in a central location, the scheme and host might be platform dependant.
-			url.Scheme = "wails"
-			url.Host = "wails"
-			uri = url.String()
-		}
-	}
 	windowSetURL(w.webview, uri)
 }
 
@@ -407,9 +397,12 @@ func (w *linuxWebviewWindow) run() {
 		w.fullscreen()
 	}
 
-	if w.parent.options.URL != "" {
-		w.setURL(w.parent.options.URL)
+	startURL, err := assetserver.GetStartURL(w.parent.options.URL)
+	if err != nil {
+		globalApplication.fatal(err.Error())
 	}
+
+	w.setURL(startURL)
 	// We need to wait for the HTML to load before we can execute the javascript
 	// FIXME: What event is this?  DomReady?
 	w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {

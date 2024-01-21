@@ -56,6 +56,8 @@ func GenerateAppImage(options *GenerateAppImageOptions) error {
 		return err
 	}
 
+	pterm.Println(pterm.LightYellow("AppImage Generator v1.0.0"))
+
 	return generateAppImage(options)
 }
 
@@ -155,7 +157,7 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	}
 	// Run linuxdeploy to bundle the application
 	s.CD(options.BuildDir)
-	log(p, "Generating AppImage (This may take a while...)")
+	//log(p, "Generating AppImage (This may take a while...)")
 	cmd := fmt.Sprintf("./linuxdeploy-x86_64.AppImage --appimage-extract-and-run --appdir %s --output appimage --plugin gtk", appDir)
 	s.SETENV("DEPLOY_GTK_VERSION", DeployGtkVersion)
 	output, err := s.EXEC(cmd)
