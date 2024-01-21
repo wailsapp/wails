@@ -56,7 +56,7 @@ func (a *AssetServer) processWebViewRequest(r webview.Request) {
 	uri, _ := r.URL()
 	a.processWebViewRequestInternal(r)
 	if err := r.Close(); err != nil {
-		a.options.Logger.Error("Unable to call close for request for uri '%s'", uri)
+		a.options.Logger.Error("Unable to call close for request for uri.", "uri", uri)
 	}
 }
 
@@ -137,7 +137,7 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	if req.ContentLength == 0 {
 		req.ContentLength, _ = strconv.ParseInt(req.Header.Get(HeaderContentLength), 10, 64)
 	} else {
-		req.Header.Set(HeaderContentLength, fmt.Sprintf("%a", req.ContentLength))
+		req.Header.Set(HeaderContentLength, fmt.Sprintf("%d", req.ContentLength))
 	}
 
 	if host := req.Header.Get(HeaderHost); host != "" {
