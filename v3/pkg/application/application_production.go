@@ -14,3 +14,5 @@ func newApplication(options Options) *App {
 func (a *App) logStartup() {}
 
 func (a *App) preRun() error { return nil }
+
+func (a *App) postQuit() error { return nil }

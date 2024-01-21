@@ -80,7 +80,6 @@ func New(appOptions Options) *App {
 		Handler:        appOptions.Assets.Handler,
 		Middleware:     assetserver.Middleware(appOptions.Assets.Middleware),
 		Logger:         result.Logger,
-		IsDebug:        result.isDebugMode,
 		RuntimeHandler: NewMessageProcessor(result.Logger),
 		GetCapabilities: func() []byte {
 			return globalApplication.capabilities.AsBytes()
@@ -102,7 +101,6 @@ func New(appOptions Options) *App {
 	srv, err := assetserver.NewAssetServer(opts)
 	if err != nil {
 		result.Logger.Error("Fatal error in application initialisation: " + err.Error())
-		os.Exit(1)
 	}
 
 	result.assets = srv
@@ -111,20 +109,17 @@ func New(appOptions Options) *App {
 	result.bindings, err = NewBindings(appOptions.Bind, appOptions.BindAliases)
 	if err != nil {
 		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
-		os.Exit(1)
 	}
 
 	result.plugins = NewPluginManager(appOptions.Plugins, srv)
 	err = result.plugins.Init()
 	if err != nil {
-		result.Quit()
-		os.Exit(1)
+		globalApplication.fatal("Fatal error in plugins initialisation: " + err.Error())
 	}
 
 	err = result.bindings.AddPlugins(appOptions.Plugins)
 	if err != nil {
 		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
-		os.Exit(1)
 	}
 
 	// Process keybindings
@@ -407,7 +402,7 @@ func (a *App) debug(message string, args ...any) {
 func (a *App) fatal(message string, args ...any) {
 	msg := "A FATAL ERROR HAS OCCURRED: " + message
 	if a.Logger != nil {
-		go a.Logger.Error(msg, args...)
+		a.Logger.Error(msg, args...)
 	} else {
 		println(msg)
 	}
@@ -659,6 +654,7 @@ func (a *App) cleanup() {
 func (a *App) Quit() {
 	if a.impl != nil {
 		InvokeSync(a.impl.destroy)
+		a.postQuit()
 	}
 }
 

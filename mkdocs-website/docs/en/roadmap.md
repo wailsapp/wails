@@ -68,9 +68,13 @@ Basically, try to break it and let us know if you find any issues! :smile:
 
 {{ read_csv("alpha4-wails3-dev.csv") }}
 
-- Windows does work, with the following caveats
-    - Sometimes the main app is built twice on change
-    - Closing the main window does not terminate the dev process, requiring ctrl-c to terminate
+- Windows is partially working:
+  - Frontend changes work as expected
+  - Go changes cause the application to be built twice
+
+- Mac is partially working:
+  - Frontend changes work as expectedFrontend changes work as expected
+  - Go changes terminates the vite process
 
 `wails3 package` command:
 

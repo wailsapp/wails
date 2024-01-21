@@ -38,8 +38,6 @@ var edgeMap = map[string]uintptr{
 	"nw-resize": w32.HTTOPLEFT,
 }
 
-var showDevTools = func(chromium *edge.Chromium) {}
-
 type windowsWebviewWindow struct {
 	windowImpl               unsafe.Pointer
 	parent                   *WebviewWindow
@@ -405,10 +403,6 @@ func (w *windowsWebviewWindow) reload() {
 func (w *windowsWebviewWindow) forceReload() {
 	//TODO implement me
 	panic("implement me")
-}
-
-func (w *windowsWebviewWindow) toggleDevTools() {
-	showDevTools(w.chromium)
 }
 
 func (w *windowsWebviewWindow) zoomReset() {
@@ -1409,10 +1403,8 @@ func (w *windowsWebviewWindow) setupChromium() {
 	if err != nil {
 		globalApplication.fatal(err.Error())
 	}
-	err = settings.PutAreDevToolsEnabled(debugMode || w.parent.options.DevToolsEnabled)
-	if err != nil {
-		globalApplication.fatal(err.Error())
-	}
+
+	w.enableDevTools(settings)
 
 	if w.parent.options.Zoom > 0.0 {
 		chromium.PutZoomFactor(w.parent.options.Zoom)

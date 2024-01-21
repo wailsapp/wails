@@ -23,6 +23,7 @@ import * as WML from './wml';
 import * as Events from "./events";
 import * as Dialogs from "./dialogs";
 import * as Call from "./calls";
+import {setupEventCallbacks} from "./events";
 
 export { Application, Browser, Call, Clipboard, Dialogs, Events, Flags, Screens, System, Window, WML};
 

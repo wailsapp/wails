@@ -36,7 +36,7 @@ const (
 	Close              Role = iota
 	Reload             Role = iota
 	ForceReload        Role = iota
-	ToggleDevTools     Role = iota
+	ShowDevTools       Role = iota
 	ResetZoom          Role = iota
 	ZoomIn             Role = iota
 	ZoomOut            Role = iota
@@ -76,7 +76,7 @@ func newViewMenu() *MenuItem {
 	viewMenu := NewMenu()
 	viewMenu.AddRole(Reload)
 	viewMenu.AddRole(ForceReload)
-	viewMenu.AddRole(ToggleDevTools)
+	addDevToolMenuItem(viewMenu)
 	viewMenu.AddSeparator()
 	viewMenu.AddRole(ResetZoom)
 	viewMenu.AddRole(ZoomIn)

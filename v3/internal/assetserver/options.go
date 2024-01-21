@@ -46,9 +46,6 @@ type Options struct {
 
 	// GetFlags returns the application flags
 	GetFlags func() []byte
-
-	// IsDebug is true if the server is running in debug mode
-	IsDebug bool
 }
 
 // Validate the options

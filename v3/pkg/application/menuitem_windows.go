@@ -4,6 +4,7 @@ package application
 
 import (
 	"github.com/wailsapp/wails/v3/pkg/w32"
+	"runtime"
 	"unsafe"
 )
 
@@ -209,54 +210,116 @@ func newAboutMenuItem() *MenuItem {
 }
 
 func newCloseMenuItem() *MenuItem {
-	panic("implement me")
-
+	return newMenuItem("Close").
+		SetAccelerator("CmdOrCtrl+w").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.Close()
+			}
+		})
 }
-
 func newReloadMenuItem() *MenuItem {
-	panic("implement me")
-
+	return newMenuItem("Reload").
+		SetAccelerator("CmdOrCtrl+r").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.Reload()
+			}
+		})
 }
 
 func newForceReloadMenuItem() *MenuItem {
-	panic("implement me")
-
+	return newMenuItem("Force Reload").
+		SetAccelerator("CmdOrCtrl+Shift+r").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.ForceReload()
+			}
+		})
 }
 
 func newToggleFullscreenMenuItem() *MenuItem {
-	panic("implement me")
-
-}
-
-func newToggleDevToolsMenuItem() *MenuItem {
-	panic("implement me")
+	result := newMenuItem("Toggle Full Screen").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.ToggleFullscreen()
+			}
+		})
+	if runtime.GOOS == "darwin" {
+		result.SetAccelerator("Ctrl+Command+F")
+	} else {
+		result.SetAccelerator("F11")
+	}
+	return result
 }
 
 func newZoomResetMenuItem() *MenuItem {
-	panic("implement me")
-
+	// reset zoom menu item
+	return newMenuItem("Actual Size").
+		SetAccelerator("CmdOrCtrl+0").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.ZoomReset()
+			}
+		})
 }
 
 func newZoomInMenuItem() *MenuItem {
-	panic("implement me")
-
+	return newMenuItem("Zoom In").
+		SetAccelerator("CmdOrCtrl+plus").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.ZoomIn()
+			}
+		})
 }
 
 func newZoomOutMenuItem() *MenuItem {
-	panic("implement me")
-
-}
-
-func newMinimizeMenuItem() *MenuItem {
-	panic("implement me")
-}
-
-func newZoomMenuItem() *MenuItem {
-	panic("implement me")
+	return newMenuItem("Zoom Out").
+		SetAccelerator("CmdOrCtrl+-").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.ZoomOut()
+			}
+		})
 }
 
 func newFullScreenMenuItem() *MenuItem {
-	panic("implement me")
+	return newMenuItem("Fullscreen").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.Fullscreen()
+			}
+		})
+}
+
+func newMinimizeMenuItem() *MenuItem {
+	return newMenuItem("Minimize").
+		SetAccelerator("CmdOrCtrl+M").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.Minimise()
+			}
+		})
+}
+
+func newZoomMenuItem() *MenuItem {
+	return newMenuItem("Zoom").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.Zoom()
+			}
+		})
 }
 
 // ---------- unsupported on windows ----------

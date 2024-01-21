@@ -1,15 +1,13 @@
-//go:build windows && (!production || devtools)
+//go:build windows && production && !devtools
 
 package application
 
 import "github.com/wailsapp/go-webview2/pkg/edge"
 
-func (w *windowsWebviewWindow) toggleDevTools() {
-	w.chromium.OpenDevToolsWindow()
-}
+func (w *windowsWebviewWindow) toggleDevTools() {}
 
 func (w *windowsWebviewWindow) enableDevTools(settings *edge.ICoreWebViewSettings) {
-	err := settings.PutAreDevToolsEnabled(true)
+	err := settings.PutAreDevToolsEnabled(false)
 	if err != nil {
 		globalApplication.fatal(err.Error())
 	}

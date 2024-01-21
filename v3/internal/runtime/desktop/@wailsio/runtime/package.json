@@ -1,6 +1,6 @@
 {
   "name": "@wailsio/runtime",
-  "version": "3.0.0-alpha.16",
+  "version": "3.0.0-alpha.17",
   "description": "Wails Runtime",
   "main": "src/index.js",
   "types": "types/index.d.ts",
