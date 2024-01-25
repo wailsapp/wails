@@ -12,13 +12,15 @@ The electron alternative for Go
 import { newRuntimeCallerWithID, objectNames } from "./runtime";
 import { nanoid } from 'nanoid/non-secure';
 
-const CallBinding = 0;
-const call = newRuntimeCallerWithID(objectNames.Call, '');
-let callResponses = new Map();
-
+// Setup
 window._wails = window._wails || {};
 window._wails.callResultHandler = resultHandler;
 window._wails.callErrorHandler = errorHandler;
+
+
+const CallBinding = 0;
+const call = newRuntimeCallerWithID(objectNames.Call, '');
+let callResponses = new Map();
 
 /**
  * Generates a unique ID using the nanoid library.

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/runtime"
 	"net/url"
 	"strconv"
 	"strings"
@@ -138,7 +139,7 @@ func (w *windowsWebviewWindow) setURL(url string) {
 
 func (w *windowsWebviewWindow) setResizable(resizable bool) {
 	w.setStyle(resizable, w32.WS_THICKFRAME)
-	w.execJS(fmt.Sprintf("window._wails.setResizable(%v);", resizable))
+	w.execJS(fmt.Sprintf("window._wails.drag.resizable(%v);", resizable))
 }
 
 func (w *windowsWebviewWindow) setMinSize(width, height int) {
@@ -1487,6 +1488,10 @@ func (w *windowsWebviewWindow) flash(enabled bool) {
 }
 
 func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
+
+	// Install the runtime core
+	println("runtime core = ", runtime.Core())
+	w.execJS(runtime.Core())
 
 	// Emit DomReady Event
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}

@@ -25,6 +25,7 @@ type commonEvents struct {
 	WindowHide         WindowEventType
 	WindowDPIChanged   WindowEventType
 	WindowFilesDropped WindowEventType
+	WindowRuntimeReady WindowEventType
 	ThemeChanged       ApplicationEventType
 }
 
@@ -49,7 +50,8 @@ func newCommonEvents() commonEvents {
 		WindowHide:         1190,
 		WindowDPIChanged:   1191,
 		WindowFilesDropped: 1192,
-		ThemeChanged:       1193,
+		WindowRuntimeReady: 1193,
+		ThemeChanged:       1194,
 	}
 }
 
@@ -557,5 +559,6 @@ var eventToJS = map[uint]string{
 	1190: "common:WindowHide",
 	1191: "common:WindowDPIChanged",
 	1192: "common:WindowFilesDropped",
-	1193: "common:ThemeChanged",
+	1193: "common:WindowRuntimeReady",
+	1194: "common:ThemeChanged",
 }

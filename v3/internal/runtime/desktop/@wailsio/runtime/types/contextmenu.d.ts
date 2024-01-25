@@ -1,1 +1,1 @@
-export function setupContextMenus(): void;
+export {};

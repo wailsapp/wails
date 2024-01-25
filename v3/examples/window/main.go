@@ -21,7 +21,7 @@ func main() {
 		Description: "A demo of the WebviewWindow API",
 		Assets:      application.AlphaAssets,
 		Mac: application.MacOptions{
-			ApplicationShouldTerminateAfterLastWindowClosed: true,
+			ApplicationShouldTerminateAfterLastWindowClosed: false,
 		},
 	})
 	app.On(events.Mac.ApplicationDidFinishLaunching, func(event *application.Event) {

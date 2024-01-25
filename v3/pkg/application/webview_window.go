@@ -126,6 +126,12 @@ type WebviewWindow struct {
 	// Indicates that the window is destroyed
 	destroyed     bool
 	destroyedLock sync.RWMutex
+
+	// Flags for managing the runtime
+	// runtimeLoaded indicates that the runtime has been loaded
+	runtimeLoaded bool
+	// pendingJS holds JS that was sent to the window before the runtime was loaded
+	pendingJS []string
 }
 
 var windowID uint
@@ -496,7 +502,11 @@ func (w *WebviewWindow) ExecJS(_callID, js string) {
 	if w.impl == nil && !w.isDestroyed() {
 		return
 	}
-	w.impl.execJS(js)
+	if w.runtimeLoaded {
+		w.impl.execJS(js)
+	} else {
+		w.pendingJS = append(w.pendingJS, js)
+	}
 }
 
 // Fullscreen sets the window to fullscreen mode. Min/Max size constraints are disabled.
@@ -598,7 +608,8 @@ func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window {
 
 func (w *WebviewWindow) HandleMessage(message string) {
 	// Check for special messages
-	if message == "drag" {
+	switch true {
+	case message == "drag":
 		if !w.IsFullscreen() {
 			InvokeSync(func() {
 				err := w.startDrag()
@@ -607,8 +618,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 				}
 			})
 		}
-	}
-	if strings.HasPrefix(message, "resize:") {
+	case strings.HasPrefix(message, "resize:"):
 		if !w.IsFullscreen() {
 			sl := strings.Split(message, ":")
 			if len(sl) != 2 {
@@ -620,7 +630,12 @@ func (w *WebviewWindow) HandleMessage(message string) {
 				w.Error(err.Error())
 			}
 		}
-		return
+	case message == "wails:runtime:ready":
+		w.emit(events.Common.WindowRuntimeReady)
+		w.runtimeLoaded = true
+		for _, js := range w.pendingJS {
+			w.ExecJS("", js)
+		}
 	}
 }
 

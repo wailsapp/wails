@@ -18,6 +18,10 @@ import {newRuntimeCallerWithID, objectNames} from "./runtime";
 import {EventTypes} from "./event_types";
 export const Types = EventTypes;
 
+// Setup
+window._wails = window._wails || {};
+window._wails.dispatchWailsEvent = dispatchWailsEvent;
+
 const call = newRuntimeCallerWithID(objectNames.Events, '');
 const EmitMethod = 0;
 const eventListeners = new Map();
@@ -42,19 +46,7 @@ export class WailsEvent {
     }
 }
 
-/**
- * Sets up event callbacks for Wails.
- *
- * @function setupEventCallbacks
- *
- * @description This method is responsible for setting up event callbacks for Wails. It checks if the global object `_wails` exists on the `window` object, and if not, initializes it
- *. It then assigns the `dispatchWailsEvent` function as a property on the `_wails` object.
- *
- * @returns {undefined} Returns nothing.
- */
-export function setupEventCallbacks() {
-    window._wails = window._wails || {};
-    window._wails.dispatchWailsEvent = dispatchWailsEvent;
+export function setup() {
 }
 
 function dispatchWailsEvent(event) {

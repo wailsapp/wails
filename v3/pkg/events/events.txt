@@ -167,4 +167,5 @@ common:WindowShow
 common:WindowHide
 common:WindowDPIChanged
 common:WindowFilesDropped
+common:WindowRuntimeReady
 common:ThemeChanged

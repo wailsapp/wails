@@ -728,6 +728,7 @@ void windowFocus(void *window) {
 import "C"
 import (
 	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/runtime"
 	"sync"
 	"unsafe"
 
@@ -973,6 +974,9 @@ func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
 	result := &macosWebviewWindow{
 		parent: parent,
 	}
+	result.parent.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(event *WindowEvent) {
+		result.execJS(runtime.Core())
+	})
 	return result
 }
 
@@ -1101,6 +1105,7 @@ func (w *macosWebviewWindow) run() {
 		case MacBackdropTranslucent:
 			C.windowSetTranslucent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
+		case MacBackdropNormal:
 		}
 
 		if options.IgnoreMouseEvents {
@@ -1133,7 +1138,7 @@ func (w *macosWebviewWindow) run() {
 			w.minimise()
 		case WindowStateFullscreen:
 			w.fullscreen()
-
+		case WindowStateNormal:
 		}
 		C.windowCenter(w.nsWindow)
 

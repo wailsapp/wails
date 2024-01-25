@@ -8,26 +8,22 @@ The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
 
-// Setup
-window.wails = window.wails || {};
+import {debugLog} from "../@wailsio/runtime/src/log";
+
 window._wails = window._wails || {};
 
-import * as Application from "./application";
-import * as Browser from "./browser";
-import * as Clipboard from "./clipboard";
-import * as Flags from "./flags";
-import * as Screens from "./screens";
-import * as System from "./system";
-import * as Window from "./window";
-import * as WML from './wml';
-import * as Events from "./events";
-import * as Dialogs from "./dialogs";
-import * as Call from "./calls";
-import {invoke} from "./system";
-
-
-export { Application, Browser, Call, Clipboard, Dialogs, Events, Flags, Screens, System, Window, WML};
-
+import * as Application from "../@wailsio/runtime/src/application";
+import * as Browser from "../@wailsio/runtime/src/browser";
+import * as Clipboard from "../@wailsio/runtime/src/clipboard";
+import * as Flags from "../@wailsio/runtime/src/flags";
+import * as Screens from "../@wailsio/runtime/src/screens";
+import * as System from "../@wailsio/runtime/src/system";
+import * as Window from "../@wailsio/runtime/src/window";
+import * as WML from '../@wailsio/runtime/src/wml';
+import * as Events from "../@wailsio/runtime/src/events";
+import * as Dialogs from "../@wailsio/runtime/src/dialogs";
+import * as Call from "../@wailsio/runtime/src/calls";
+import {invoke} from "../@wailsio/runtime/src/system";
 
 /***
  This technique for proper load detection is taken from HTMX:
@@ -60,24 +56,29 @@ export { Application, Browser, Call, Clipboard, Dialogs, Events, Flags, Screens,
 
  ***/
 
-window.wails = {
-    Application,
-    Browser,
-    Call,
-    Clipboard,
-    Dialogs,
-    Events,
-    Flags,
-    Screens,
-    System,
-    Window,
-    WML,
-};
-invoke('wails:runtime:ready');
+window._wails.invoke=invoke;
 
-let isReady = false;
+window.wails = window.wails || {};
+window.wails.Application = Application;
+window.wails.Browser = Browser;
+window.wails.Call = Call;
+window.wails.Clipboard = Clipboard;
+window.wails.Dialogs = Dialogs;
+window.wails.Events = Events;
+window.wails.Flags = Flags;
+window.wails.Screens = Screens;
+window.wails.System = System;
+window.wails.Window = Window;
+window.wails.WML = WML;
+
+
+let isReady = false
 document.addEventListener('DOMContentLoaded', function() {
     isReady = true
+    window._wails.invoke('wails:runtime:ready');
+    if(DEBUG) {
+        debugLog("Wails Runtime Loaded");
+    }
 })
 
 function whenReady(fn) {

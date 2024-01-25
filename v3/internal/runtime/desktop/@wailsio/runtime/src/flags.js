@@ -10,48 +10,6 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
-let flags = new Map();
-
-function convertToMap(obj) {
-    const map = new Map();
-
-    for (const [key, value] of Object.entries(obj)) {
-        if (typeof value === 'object' && value !== null) {
-            map.set(key, convertToMap(value)); // Recursively convert nested object
-        } else {
-            map.set(key, value);
-        }
-    }
-
-    return map;
-}
-
-fetch("/wails/flags").then((response) => {
-    response.json().then((data) => {
-        flags = convertToMap(data);
-    });
-});
-
-
-function getValueFromMap(keyString) {
-    const keys = keyString.split('.');
-    let value = flags;
-
-    for (const key of keys) {
-        if (value instanceof Map) {
-            value = value.get(key);
-        } else {
-            value = value[key];
-        }
-
-        if (value === undefined) {
-            break;
-        }
-    }
-
-    return value;
-}
-
 /**
  * Retrieves the value associated with the specified key from the flag map.
  *
@@ -59,5 +17,9 @@ function getValueFromMap(keyString) {
  * @return {*} - The value associated with the specified key.
  */
 export function GetFlag(keyString) {
-    return getValueFromMap(keyString);
+    try {
+        return window._wails.flags[keyString];
+    } catch (e) {
+        throw new Error("Unable to retrieve flag '" + keyString + "': " + e);
+    }
 }
