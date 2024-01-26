@@ -1,0 +1,27 @@
+# CFNトラッカー
+
+```mdx-code-block
+<p style={{ "text-align": "center" }}>
+  <img src={require("@site/static/img/showcase/cfntracker.webp").default} />
+  <br />
+</p>
+```
+
+[CFN Tracker](https://github.com/williamsjokvist/cfn-tracker) - ストリートファイター 6 または V CFN プロフィールのライブマッチを追跡します。 開始するには、[Web サイト](https://cfn.williamsjokvist.se/) を確認してください。
+
+## 特徴
+- リアルタイムの試合追跡
+- 試合ログと統計の保存
+- ブラウザソース経由でOBSにライブ統計を表示するためのサポート
+- SF6とSFVの両方をサポート
+- ユーザーが CSS を使用して独自の OBS ブラウザ テーマを作成できる機能
+
+### Wails とともに使用される主要なテクノロジー
+- [タスク](https://github.com/go-task/task) - Wails CLI をラップして一般的なコマンドを使いやすくする
+- [React](https://github.com/facebook/react) - 豊富なエコシステム (基数、フレーマーモーション) で選ばれました
+- [Bun](https://github.com/oven-sh/bun) - 依存関係の高速解決とビルド時間に使用されます。
+- [Rod](https://github.com/go-rod/rod) - 認証とポーリングの変更のためのヘッドレスブラウザ自動化
+- [SQLite](https://github.com/mattn/go-sqlite3) - 一致、セッション、プロファイルの保存に使用されます
+- [サーバー送信イベント](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) - 追跡更新を OBS ブラウザ ソースに送信するための http ストリーム
+- [i18next](https://github.com/i18next/) - Go レイヤーからローカリゼーション オブジェクトを提供するバックエンド コネクタを使用
+- [xstate](https://github.com/statelyai/xstate) - 認証プロセスと追跡のためのステート マシン
