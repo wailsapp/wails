@@ -19,7 +19,7 @@ export function invoke(msg) {
     if(window.chrome) {
         return window.chrome.webview.postMessage(msg);
     }
-    return window.webkit.messageHandlers.external.postMessage;
+    return window.webkit.messageHandlers.external.postMessage(msg);
 }
 
 /**
