@@ -2,7 +2,7 @@
 root_path = ".."
 # debug | info | warn | error | mute
 # Defaults to Info if not provided
-log_level = "info"
+log_level = "warn"
 # Debounce setting for ignoring reptitive file system notifications
 debounce = 1000 # Milliseconds
 # Sets what files the watcher should ignore

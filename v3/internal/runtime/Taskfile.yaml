@@ -35,6 +35,9 @@ tasks:
       - build:production
 
     cmds:
+      - cmd: wails3 tool cp ../commands/build_assets/runtime/runtime.js ../../examples/wml/assets/runtime.js
+      - cmd: wails3 tool cp ../commands/build_assets/runtime/runtime.js ../../internal/commands/build_assets/runtime/runtime.js
+      - cmd: wails3 tool cp ../commands/build_assets/runtime/runtime.js ../../pkg/application/assets/alpha/runtime.js
       - cmd: echo "Build Complete."
 
   build:

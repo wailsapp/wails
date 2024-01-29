@@ -12,16 +12,18 @@ type WatcherOptions struct {
 
 func Watcher(options *WatcherOptions) error {
 	stopChan := make(chan struct{})
-	watcherEngine := engine.NewEngineFromTOML(options.Config)
+	watcherEngine, err := engine.NewEngineFromTOML(options.Config)
+	if err != nil {
+		return err
+	}
 	signalHandler := signal.NewSignalHandler(func() {
-		watcherEngine.Stop()
 		stopChan <- struct{}{}
 	})
 	signalHandler.ExitMessage = func(sig os.Signal) string {
 		return ""
 	}
 	signalHandler.Start()
-	err := watcherEngine.Start()
+	err = watcherEngine.Start()
 	if err != nil {
 		return err
 	}

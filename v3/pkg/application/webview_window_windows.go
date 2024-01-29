@@ -1490,7 +1490,6 @@ func (w *windowsWebviewWindow) flash(enabled bool) {
 func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
 
 	// Install the runtime core
-	println("runtime core = ", runtime.Core())
 	w.execJS(runtime.Core())
 
 	// Emit DomReady Event
