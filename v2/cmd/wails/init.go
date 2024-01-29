@@ -230,6 +230,7 @@ func findAuthorDetails(options *templates.Options) {
 		name, err := git.Name()
 		if err == nil {
 			options.AuthorName = strings.TrimSpace(name)
+			options.AuthorName = strings.Replace(options.AuthorName, "\\", "", -1)
 		}
 
 		email, err := git.Email()
