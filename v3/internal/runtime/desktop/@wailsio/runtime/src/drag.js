@@ -21,6 +21,7 @@ window.addEventListener('mousedown', onMouseDown);
 window.addEventListener('mousemove', onMouseMove);
 window.addEventListener('mouseup', onMouseUp);
 
+
 let shouldDrag = false;
 let resizeEdge = null;
 let resizable = false;

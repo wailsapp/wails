@@ -81,15 +81,6 @@ export const Types: {
         ApplicationDidChangeIcon: string;
         ApplicationDidChangeOcclusionState: string;
         ApplicationDidChangeScreenParameters: string;
-        /**
-         * Register a callback function to be called multiple times for a specific event.
-         *
-         * @param {string} eventName - The name of the event to register the callback for.
-         * @param {function} callback - The callback function to be called when the event is triggered.
-         * @param {number} maxCallbacks - The maximum number of times the callback can be called for the event. Once the maximum number is reached, the callback will no longer be called.
-         *
-         @return {function} - A function that, when called, will unregister the callback from the event.
-         */
         ApplicationDidChangeStatusBarFrame: string;
         ApplicationDidChangeStatusBarOrientation: string;
         ApplicationDidFinishLaunching: string;

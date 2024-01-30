@@ -3,7 +3,6 @@ import {Emit, WailsEvent} from "./events";
 import {Question} from "./dialogs";
 import {Get} from "./window";
 import {OpenURL} from "./browser";
-import {debugLog} from "./log";
 
 /**
  * Sends an event with the given name and optional data.
@@ -145,9 +144,6 @@ function addWMLOpenBrowserListener() {
  * @return {void}
  */
 export function Reload() {
-    if(DEBUG) {
-        debugLog("Reloading WML");
-    }
     addWMLEventListeners();
     addWMLWindowListeners();
     addWMLOpenBrowserListener();

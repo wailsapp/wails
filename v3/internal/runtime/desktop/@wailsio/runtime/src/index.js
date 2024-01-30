@@ -15,6 +15,7 @@ window._wails = window._wails || {};
 import * as Application from "./application";
 import * as Browser from "./browser";
 import * as Clipboard from "./clipboard";
+import * as ContextMenu from "./contextmenu";
 import * as Flags from "./flags";
 import * as Screens from "./screens";
 import * as System from "./system";
@@ -23,6 +24,7 @@ import * as WML from './wml';
 import * as Events from "./events";
 import * as Dialogs from "./dialogs";
 import * as Call from "./calls";
+import * as Drag from "./drag";
 import {invoke} from "./system";
 
 
