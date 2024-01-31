@@ -633,6 +633,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 	case message == "wails:runtime:ready":
 		w.emit(events.Common.WindowRuntimeReady)
 		w.runtimeLoaded = true
+		w.SetResizable(!w.options.DisableResize)
 		for _, js := range w.pendingJS {
 			w.ExecJS("", js)
 		}

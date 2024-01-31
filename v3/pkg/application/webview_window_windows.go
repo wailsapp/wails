@@ -139,7 +139,7 @@ func (w *windowsWebviewWindow) setURL(url string) {
 
 func (w *windowsWebviewWindow) setResizable(resizable bool) {
 	w.setStyle(resizable, w32.WS_THICKFRAME)
-	w.execJS(fmt.Sprintf("window._wails.drag.resizable(%v);", resizable))
+	w.execJS(fmt.Sprintf("window._wails.setResizable(%v);", resizable))
 }
 
 func (w *windowsWebviewWindow) setMinSize(width, height int) {
