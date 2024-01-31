@@ -32,7 +32,7 @@ Please note that this is an alpha version of Wails v3. Features may be added, re
 
 ## Feedback and Contributions
 
-Your feedback is vital to making Wails better. If you encounter any issues or have suggestions, please let us know through our [GitHub repository](https://github.com/wailsapp/wails). Contributions to the project are also welcome!
+Your feedback is vital to making Wails better. If you encounter any issues or have suggestions, please use our [Feedback process](getting-started/feedback.md). Contributions to the project are also welcome!
 
 Thank you for trying out Wails v3 Alpha!
 
