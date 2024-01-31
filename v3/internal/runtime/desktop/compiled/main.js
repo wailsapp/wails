@@ -15,6 +15,8 @@ window._wails = window._wails || {};
 import * as Application from "../@wailsio/runtime/src/application";
 import * as Browser from "../@wailsio/runtime/src/browser";
 import * as Clipboard from "../@wailsio/runtime/src/clipboard";
+import * as ContextMenu from "../@wailsio/runtime/src/contextmenu";
+import * as Drag from "../@wailsio/runtime/src/drag";
 import * as Flags from "../@wailsio/runtime/src/flags";
 import * as Screens from "../@wailsio/runtime/src/screens";
 import * as System from "../@wailsio/runtime/src/system";
