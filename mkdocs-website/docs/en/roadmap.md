@@ -14,11 +14,14 @@ we are aiming to achieve. These are subject to change.
 
 #### Goals
 
-- [ ] Get Linux to Alpha 4 parity 
-- [ ] Keyboard shortcuts
-  - Window Level shortcuts
-  - Application Level shortcuts (applies to all windows)
-  - Ensure Keydown/Keyup events are sent to JS if not handled by Go
+The Alpha 5 cycle aims to bring Linux to parity (Alpha 4)with the other platforms.
+
+#### How Can I Help?
+
+!!! note
+Report any issues you find using [this guide](./getting-started/feedback.md).
+
+- Test all the things on Linux!
 
 ## Upcoming milestones
 
