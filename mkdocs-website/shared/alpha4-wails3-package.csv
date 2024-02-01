@@ -1,5 +1,4 @@
 " ",Mac,Windows,Linux
-Standard Executable," "," "," "
-macOS Application Bundle," ",:material-cancel:,:material-cancel:
-NSIS," "," "," "
-macOS DMG," ",:material-cancel:,:material-cancel:
+Standard Executable,:material-check-bold:,:material-check-bold:,:material-check-bold:
+macOS Application Bundle,:material-check-bold:,:material-cancel:,:material-cancel:
+NSIS,:material-cancel:,:material-check-bold:,:material-cancel:

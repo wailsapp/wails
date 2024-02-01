@@ -3,7 +3,7 @@ package runtime
 import _ "embed"
 
 //go:embed runtime.js
-var runtimeJS []byte
+var RuntimeJS []byte
 
 //go:embed runtime.debug.js
-var runtimeDebugJS []byte
+var RuntimeDebugJS []byte

@@ -10,7 +10,23 @@ we are aiming to achieve. These are subject to change.
 
 ## Alpha milestones
 
-### Current: Alpha 4
+### Current: Alpha 5
+
+#### Goals
+
+- [ ] Get Linux to Alpha 4 parity 
+- [ ] Keyboard shortcuts
+  - Window Level shortcuts
+  - Application Level shortcuts (applies to all windows)
+  - Ensure Keydown/Keyup events are sent to JS if not handled by Go
+
+## Upcoming milestones
+
+## Alpha 6
+
+## Previous milestones
+
+### Alpha 4 - Completed 2024-02-01
 
 #### Goals
 
@@ -134,24 +150,6 @@ Models:
 Examples:
 
 - [ ] All examples working on Linux
-
-## Upcoming milestones
-
-### Alpha 4
-
-#### Goals
-
-
-### Alpha 5
-
-#### Goals
-
-- [ ] Keyboard shortcuts
-    - Window Level shortcuts
-    - Application Level shortcuts (applies to all windows)
-    - Ensure Keydown/Keyup events are sent to JS if not handled by Go
-
-## Previous milestones
 
 ### Alpha 2
 

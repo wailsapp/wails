@@ -150,6 +150,8 @@ nav:
 #    - Links: community/links.md
     - Your First Application: getting-started/your-first-app.md
     - Next Steps: getting-started/next-steps.md
+    - Learn More:
+        - Runtime: getting-started/learn.md
     - Feedback: getting-started/feedback.md
   - Feedback: getting-started/feedback.md
   - What's New in v3?: whats-new.md
