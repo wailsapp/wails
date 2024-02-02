@@ -56,7 +56,7 @@ The `wails package` command should do the following:
     Report any issues you find using [this guide](./getting-started/feedback.md).
 
 
-- Install the CLI using the instructions [here](./getting-started/installation).
+- Install the CLI using the instructions [here](./getting-started/installation.md).
 - Run `wails3 doctor` and ensure that all dependencies are installed. 
 - Generate a new project using `wails3 init`.
 
