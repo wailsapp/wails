@@ -44,9 +44,8 @@ following command:
 wails3 generate runtime
 ```
 
-This will generate a `runtime.js` (and `runtime.debug.js`) file in the current directory. Move this to the `frontend` directory of your project. 
-This file can be included in your assets directory and used in your application by adding it to your assets 
-directory (normally `frontend/dist`) and then including it in your HTML:
+This will generate a `runtime.js` (and `runtime.debug.js`) file in the current directory.
+This file can be used by your application by adding it to your assets directory (normally `frontend/dist`) and then including it in your HTML:
 
 ```html
 <html>
