@@ -8,6 +8,7 @@ import (
 // OnFileDrop returns a slice of file path strings when a drop is finished.
 func OnFileDrop(ctx context.Context, callback func(x, y int, paths []string)) {
 	if callback == nil {
+		LogError(ctx, "OnFileDrop called with a nil callback")
 		return
 	}
 	EventsOn(ctx, "wails:file-drop", func(optionalData ...interface{}) {
