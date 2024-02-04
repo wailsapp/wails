@@ -7,17 +7,17 @@ import (
 	"sync"
 )
 
-func (m *linuxApp) getPrimaryScreen() (*Screen, error) {
+func (l *linuxApp) getPrimaryScreen() (*Screen, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
-func (m *linuxApp) getScreens() ([]*Screen, error) {
+func (l *linuxApp) getScreens() ([]*Screen, error) {
 	var wg sync.WaitGroup
 	var screens []*Screen
 	var err error
 	wg.Add(1)
 	InvokeSync(func() {
-		screens, err = getScreens(m.application)
+		screens, err = getScreens(l.application)
 		wg.Done()
 	})
 	wg.Wait()

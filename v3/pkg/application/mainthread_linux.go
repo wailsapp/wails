@@ -2,7 +2,7 @@
 
 package application
 
-func (m *linuxApp) dispatchOnMainThread(id uint) {
+func (l *linuxApp) dispatchOnMainThread(id uint) {
 	dispatchOnMainThread(id)
 }
 
