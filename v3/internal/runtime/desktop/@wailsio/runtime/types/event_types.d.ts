@@ -155,6 +155,9 @@ export declare const EventTypes: {
 	},
 	Linux: {
 		SystemThemeChanged: string,
+		WindowLoadChanged: string,
+		WindowDeleteEvent: string,
+		ApplicationStartup: string,
 	},
 	Common: {
 		ApplicationStarted: string,

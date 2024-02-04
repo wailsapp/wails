@@ -1,4 +1,7 @@
 linux:SystemThemeChanged
+linux:WindowLoadChanged
+linux:WindowDeleteEvent
+linux:ApplicationStartup
 mac:ApplicationDidBecomeActive
 mac:ApplicationDidChangeBackingProperties
 mac:ApplicationDidChangeEffectiveAppearance

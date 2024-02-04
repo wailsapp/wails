@@ -58,8 +58,10 @@ typedef struct WindowEvent {
 // exported below
 void activateLinux(gpointer data);
 extern void emit(WindowEvent* data);
+extern gboolean handleDeleteEvent(GtkWidget*, GdkEvent*, uintptr_t);
+extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
 void handleClick(void*);
-extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern void onDragNDrop(
    void         *target,
    GdkDragContext* context,
@@ -69,7 +71,7 @@ extern void onDragNDrop(
    guint        info,
    guint        time,
    gpointer     data);
-extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, uintptr_t user_data);
 extern void onProcessRequest(void *request, gpointer user_data);
 extern void sendMessageToBackend(WebKitUserContentManager *contentManager, WebKitJavascriptResult *result, void *data);
 // exported below (end)
@@ -144,6 +146,31 @@ static int GetNumScreens(){
 }
 */
 import "C"
+
+// Calloc handles alloc/dealloc of C data
+type Calloc struct {
+	pool []unsafe.Pointer
+}
+
+// NewCalloc creates a new allocator
+func NewCalloc() Calloc {
+	return Calloc{}
+}
+
+// String creates a new C string and retains a reference to it
+func (c Calloc) String(in string) *C.char {
+	result := C.CString(in)
+	c.pool = append(c.pool, unsafe.Pointer(result))
+	return result
+}
+
+// Free frees all allocated C memory
+func (c Calloc) Free() {
+	for _, str := range c.pool {
+		C.free(str)
+	}
+	c.pool = []unsafe.Pointer{}
+}
 
 type windowPointer *C.GtkWindow
 type identifier C.uint
@@ -910,36 +937,36 @@ func emit(we *C.WindowEvent) {
 	}
 }
 
-func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func(e events.WindowEventType)) {
-	event := C.CString("delete-event")
-	defer C.free(unsafe.Pointer(event))
-	wEvent := C.WindowEvent{
-		id:    C.uint(windowId),
-		event: C.uint(events.Common.WindowClosing),
+//export handleDeleteEvent
+func handleDeleteEvent(widget *C.GtkWidget, event *C.GdkEvent, data C.uintptr_t) C.gboolean {
+	processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDeleteEvent))
+	return C.gboolean(0)
+}
+
+//export handleLoadChanged
+func handleLoadChanged(webview *C.WebKitWebView, event C.WebKitLoadEvent, data C.uintptr_t) {
+	switch event {
+	case C.WEBKIT_LOAD_FINISHED:
+		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadChanged))
 	}
-	C.signal_connect(unsafe.Pointer(window), event, C.emit, unsafe.Pointer(&wEvent))
+}
+
+func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func(e events.WindowEventType)) {
+
+	c := NewCalloc()
+	defer c.Free()
+
+	winID := unsafe.Pointer(uintptr(C.uint(windowId)))
+
+	// Set up the window close event
+	C.signal_connect(unsafe.Pointer(window), c.String("delete-event"), C.handleDeleteEvent, winID)
+	C.signal_connect(unsafe.Pointer(webview), c.String("load-changed"), C.handleLoadChanged, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager((*C.WebKitWebView)(webview))
-	event = C.CString("script-message-received::external")
-	defer C.free(unsafe.Pointer(event))
-	C.signal_connect(unsafe.Pointer(contentManager), event, C.sendMessageToBackend, nil)
-
-	/*
-		event = C.CString("load-changed")
-		defer C.free(unsafe.Pointer(event))
-		C.signal_connect(webview, event, C.webviewLoadChanged, unsafe.Pointer(&w.parent.id))
-	*/
-	id := C.uint(windowId)
-	event = C.CString("button-press-event")
-	C.signal_connect(unsafe.Pointer(webview), event, C.onButtonEvent, unsafe.Pointer(&id))
-	C.free(unsafe.Pointer(event))
-	event = C.CString("button-release-event")
-	defer C.free(unsafe.Pointer(event))
-	C.signal_connect(unsafe.Pointer(webview), event, C.onButtonEvent, unsafe.Pointer(&id))
-
-	event = C.CString("key-press-event")
-	defer C.free(unsafe.Pointer(event))
-	C.signal_connect(unsafe.Pointer(webview), event, C.onKeyPressEvent, unsafe.Pointer(&id))
+	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, nil)
+	C.signal_connect(unsafe.Pointer(webview), c.String("button-press-event"), C.onButtonEvent, winID)
+	C.signal_connect(unsafe.Pointer(webview), c.String("button-release-event"), C.onButtonEvent, winID)
+	C.signal_connect(unsafe.Pointer(webview), c.String("key-press-event"), C.onKeyPressEvent, winID)
 }
 
 func windowShowDevTools(webview pointer) {
@@ -1004,13 +1031,13 @@ func windowMove(window pointer, x, y int) {
 // FIXME Change this to reflect mouse button!
 //
 //export onButtonEvent
-func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data unsafe.Pointer) C.gboolean {
+func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t) C.gboolean {
 	// Constants (defined here to be easier to use with purego)
 	GdkButtonPress := C.GDK_BUTTON_PRESS     // 4
 	Gdk2ButtonPress := C.GDK_2BUTTON_PRESS   // 5 for double-click
 	GdkButtonRelease := C.GDK_BUTTON_RELEASE // 7
 
-	windowId := uint(*((*C.uint)(data)))
+	windowId := uint(C.uint(data))
 	window := globalApplication.getWindowForID(windowId)
 	if window == nil {
 		return C.gboolean(0)
@@ -1068,8 +1095,8 @@ func onDragNDrop(target unsafe.Pointer, context *C.GdkDragContext, x C.gint, y C
 }
 
 //export onKeyPressEvent
-func onKeyPressEvent(widget *C.GtkWidget, event *C.GdkEventKey, userData unsafe.Pointer) C.gboolean {
-	windowID := uint(*((*C.uint)(userData)))
+func onKeyPressEvent(widget *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t) C.gboolean {
+	windowID := uint(C.uint(userData))
 	accelerator, ok := getKeyboardState(event)
 	if !ok {
 		return C.gboolean(1)

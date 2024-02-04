@@ -4,7 +4,6 @@
 extern bool hasListeners(unsigned int);
 extern bool shouldQuitApplication();
 extern void cleanup();
-
 @implementation AppDelegate
 - (void)dealloc
 {
