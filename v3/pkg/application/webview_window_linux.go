@@ -5,11 +5,12 @@ package application
 import "C"
 import (
 	"fmt"
+	"math"
+
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
-	"math"
 )
 
 type dragInfo struct {
