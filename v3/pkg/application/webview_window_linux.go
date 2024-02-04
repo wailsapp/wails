@@ -259,11 +259,12 @@ func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 	//	(*C.struct__GtkWidget)(m.native)
 	//var menubar *C.struct__GtkWidget
-	return &linuxWebviewWindow{
+	result := &linuxWebviewWindow{
 		application: getNativeApplication().application,
 		parent:      parent,
 		//		menubar:     menubar,
 	}
+	return result
 }
 
 func (w *linuxWebviewWindow) setTitle(title string) {
@@ -405,9 +406,7 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	w.setURL(startURL)
-	// We need to wait for the HTML to load before we can execute the javascript
-	// FIXME: What event is this?  DomReady?
-	w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
+	w.parent.On(events.Linux.WindowLoadChanged, func(_ *WindowEvent) {
 		if w.parent.options.JS != "" {
 			w.execJS(w.parent.options.JS)
 		}
@@ -415,6 +414,9 @@ func (w *linuxWebviewWindow) run() {
 			js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();", w.parent.options.CSS)
 			w.execJS(js)
 		}
+	})
+	w.parent.On(events.Linux.WindowDeleteEvent, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowClosing)
 	})
 	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
 		w.execJS(runtime.Core())

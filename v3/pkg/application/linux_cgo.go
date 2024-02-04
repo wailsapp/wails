@@ -206,7 +206,36 @@ func dispatchOnMainThreadCallback(callbackID C.uint) {
 
 //export activateLinux
 func activateLinux(data pointer) {
-	// NOOP: Callback for now
+	processApplicationEvent(C.uint(events.Linux.ApplicationStartup), data)
+}
+
+//export processApplicationEvent
+func processApplicationEvent(eventID C.uint, data pointer) {
+	event := newApplicationEvent(events.ApplicationEventType(eventID))
+
+	//if data != nil {
+	//	dataCStrJSON := C.serializationNSDictionary(data)
+	//	if dataCStrJSON != nil {
+	//		defer C.free(unsafe.Pointer(dataCStrJSON))
+	//
+	//		dataJSON := C.GoString(dataCStrJSON)
+	//		var result map[string]any
+	//		err := json.Unmarshal([]byte(dataJSON), &result)
+	//
+	//		if err != nil {
+	//			panic(err)
+	//		}
+	//
+	//		event.Context().setData(result)
+	//	}
+	//}
+
+	switch event.Id {
+	case uint(events.Linux.SystemThemeChanged):
+		isDark := globalApplication.IsDarkMode()
+		event.Context().setIsDarkMode(isDark)
+	}
+	applicationEvents <- event
 }
 
 func isOnMainThread() bool {
@@ -236,17 +265,12 @@ func appNew(name string) pointer {
 
 func appRun(app pointer) error {
 	application := (*C.GApplication)(app)
+	//TODO: Only set this if we configure it to do so
 	C.g_application_hold(application) // allows it to run without a window
 
 	signal := C.CString("activate")
 	defer C.free(unsafe.Pointer(signal))
-	C.g_signal_connect_data(
-		C.gpointer(application),
-		signal,
-		C.GCallback(C.activateLinux),
-		nil,
-		nil,
-		0)
+	C.signal_connect(unsafe.Pointer(application), signal, C.activateLinux, nil)
 	status := C.g_application_run(application, 0, nil)
 	C.g_application_release(application)
 	C.g_object_unref(C.gpointer(app))

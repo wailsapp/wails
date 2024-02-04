@@ -35,7 +35,7 @@ type linuxApp struct {
 	theme string
 }
 
-func (m *linuxApp) GetFlags(options Options) map[string]any {
+func (l *linuxApp) GetFlags(options Options) map[string]any {
 	if options.Flags == nil {
 		options.Flags = make(map[string]any)
 	}
@@ -46,30 +46,30 @@ func getNativeApplication() *linuxApp {
 	return globalApplication.impl.(*linuxApp)
 }
 
-func (m *linuxApp) hide() {
-	hideAllWindows(m.application)
+func (l *linuxApp) hide() {
+	hideAllWindows(l.application)
 }
 
-func (m *linuxApp) show() {
-	showAllWindows(m.application)
+func (l *linuxApp) show() {
+	showAllWindows(l.application)
 }
 
-func (m *linuxApp) on(eventID uint) {
+func (l *linuxApp) on(eventID uint) {
 	// TODO: What do we need to do here?
 	log.Println("linuxApp.on()", eventID)
 }
 
-func (m *linuxApp) setIcon(icon []byte) {
+func (l *linuxApp) setIcon(icon []byte) {
 
 	log.Println("linuxApp.setIcon", "not implemented")
 }
 
-func (m *linuxApp) name() string {
+func (l *linuxApp) name() string {
 	return appName()
 }
 
-func (m *linuxApp) getCurrentWindowID() uint {
-	return getCurrentWindowID(m.application, m.windows)
+func (l *linuxApp) getCurrentWindowID() uint {
+	return getCurrentWindowID(l.application, l.windows)
 }
 
 type rnr struct {
@@ -80,9 +80,9 @@ func (r rnr) run() {
 	r.f()
 }
 
-func (m *linuxApp) getApplicationMenu() pointer {
-	if m.applicationMenu != nilPointer {
-		return m.applicationMenu
+func (l *linuxApp) getApplicationMenu() pointer {
+	if l.applicationMenu != nilPointer {
+		return l.applicationMenu
 	}
 
 	menu := globalApplication.ApplicationMenu
@@ -90,12 +90,12 @@ func (m *linuxApp) getApplicationMenu() pointer {
 		InvokeSync(func() {
 			menu.Update()
 		})
-		m.applicationMenu = (menu.impl).(*linuxMenu).native
+		l.applicationMenu = (menu.impl).(*linuxMenu).native
 	}
-	return m.applicationMenu
+	return l.applicationMenu
 }
 
-func (m *linuxApp) setApplicationMenu(menu *Menu) {
+func (l *linuxApp) setApplicationMenu(menu *Menu) {
 	// FIXME: How do we avoid putting a menu?
 	if menu == nil {
 		// Create a default menu
@@ -104,46 +104,44 @@ func (m *linuxApp) setApplicationMenu(menu *Menu) {
 	}
 }
 
-func (m *linuxApp) run() error {
+func (l *linuxApp) run() error {
 
-	// Add a hook to the ApplicationDidFinishLaunching event
-	// FIXME: add Wails specific events - i.e. Shouldn't platform specific ones be translated to Wails events?
-	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func(evt *Event) {
-		// Do we need to do anything now?
-		fmt.Println("events.Mac.ApplicationDidFinishLaunching received!")
+	l.parent.On(events.Linux.ApplicationStartup, func(evt *Event) {
+		fmt.Println("events.Linux.ApplicationStartup received!")
 	})
-	m.monitorThemeChanges()
-	return appRun(m.application)
+	l.setupCommonEvents()
+	l.monitorThemeChanges()
+	return appRun(l.application)
 }
 
-func (m *linuxApp) destroy() {
+func (l *linuxApp) destroy() {
 	if !globalApplication.shouldQuit() {
 		return
 	}
 	globalApplication.cleanup()
-	appDestroy(m.application)
+	appDestroy(l.application)
 }
 
-func (m *linuxApp) isOnMainThread() bool {
+func (l *linuxApp) isOnMainThread() bool {
 	return isOnMainThread()
 }
 
 // register our window to our parent mapping
-func (m *linuxApp) registerWindow(window pointer, id uint) {
-	m.windowsLock.Lock()
-	m.windows[windowPointer(window)] = id
-	m.windowsLock.Unlock()
+func (l *linuxApp) registerWindow(window pointer, id uint) {
+	l.windowsLock.Lock()
+	l.windows[windowPointer(window)] = id
+	l.windowsLock.Unlock()
 }
 
-func (m *linuxApp) isDarkMode() bool {
-	return strings.Contains(m.theme, "dark")
+func (l *linuxApp) isDarkMode() bool {
+	return strings.Contains(l.theme, "dark")
 }
 
-func (m *linuxApp) monitorThemeChanges() {
+func (l *linuxApp) monitorThemeChanges() {
 	go func() {
 		conn, err := dbus.ConnectSessionBus()
 		if err != nil {
-			m.parent.info("[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:", err)
+			l.parent.info("[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:", err)
 			return
 		}
 		defer conn.Close()
@@ -176,10 +174,10 @@ func (m *linuxApp) monitorThemeChanges() {
 				continue
 			}
 
-			if theme != m.theme {
-				m.theme = theme
+			if theme != l.theme {
+				l.theme = theme
 				event := newApplicationEvent(events.Common.ThemeChanged)
-				event.Context().setIsDarkMode(m.isDarkMode())
+				event.Context().setIsDarkMode(l.isDarkMode())
 				applicationEvents <- event
 			}
 
