@@ -34,7 +34,7 @@ type linuxApp struct {
 	theme string
 }
 
-func (a *linuxApp) GetFlags(options Options) map[string]any {
+func (l *linuxApp) GetFlags(options Options) map[string]any {
 	if options.Flags == nil {
 		options.Flags = make(map[string]any)
 	}
@@ -45,26 +45,29 @@ func getNativeApplication() *linuxApp {
 	return globalApplication.impl.(*linuxApp)
 }
 
-func (a *linuxApp) hide() {
-	a.hideAllWindows()
+func (l *linuxApp) hide() {
+	hideAllWindows(l.application)
 }
 
-func (a *linuxApp) show() {
-	a.showAllWindows()
+func (l *linuxApp) show() {
+	showAllWindows(l.application)
 }
 
-func (a *linuxApp) on(eventID uint) {
-	// TODO: Test register/unregister events
-	//C.registerApplicationEvent(l.application, C.uint(eventID))
+func (l *linuxApp) on(eventID uint) {
+	// TODO: What do we need to do here?
+	log.Println("linuxApp.on()", eventID)
 }
 
-func (a *linuxApp) setIcon(icon []byte) {
-
+func (l *linuxApp) setIcon(icon []byte) {
 	log.Println("linuxApp.setIcon", "not implemented")
 }
 
-func (a *linuxApp) name() string {
+func (l *linuxApp) name() string {
 	return appName()
+}
+
+func (l *linuxApp) getCurrentWindowID() uint {
+	return getCurrentWindowID(l.application, l.windows)
 }
 
 type rnr struct {
@@ -75,7 +78,22 @@ func (r rnr) run() {
 	r.f()
 }
 
-func (a *linuxApp) setApplicationMenu(menu *Menu) {
+func (l *linuxApp) getApplicationMenu() pointer {
+	if l.applicationMenu != nilPointer {
+		return l.applicationMenu
+	}
+
+	menu := globalApplication.ApplicationMenu
+	if menu != nil {
+		InvokeSync(func() {
+			menu.Update()
+		})
+		l.applicationMenu = (menu.impl).(*linuxMenu).native
+	}
+	return l.applicationMenu
+}
+
+func (l *linuxApp) setApplicationMenu(menu *Menu) {
 	// FIXME: How do we avoid putting a menu?
 	if menu == nil {
 		// Create a default menu
@@ -84,55 +102,44 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 	}
 }
 
-func (a *linuxApp) run() error {
+func (l *linuxApp) run() error {
 
-	a.parent.On(events.Linux.ApplicationStartup, func(evt *Event) {
+	l.parent.On(events.Linux.ApplicationStartup, func(evt *Event) {
 		fmt.Println("events.Linux.ApplicationStartup received!")
 	})
-	a.setupCommonEvents()
-	a.monitorThemeChanges()
-	return appRun(a.application)
+	l.setupCommonEvents()
+	l.monitorThemeChanges()
+	return appRun(l.application)
 }
 
-func (a *linuxApp) unregisterWindow(w windowPointer) {
-	a.windowMapLock.Lock()
-	delete(a.windowMap, w)
-	a.windowMapLock.Unlock()
-
-	// If this was the last window...
-	if len(a.windowMap) == 0 && !a.parent.options.Linux.DisableQuitOnLastWindowClosed {
-		a.destroy()
-	}
-}
-
-func (a *linuxApp) destroy() {
+func (l *linuxApp) destroy() {
 	if !globalApplication.shouldQuit() {
 		return
 	}
 	globalApplication.cleanup()
-	appDestroy(a.application)
+	appDestroy(l.application)
 }
 
-func (a *linuxApp) isOnMainThread() bool {
+func (l *linuxApp) isOnMainThread() bool {
 	return isOnMainThread()
 }
 
 // register our window to our parent mapping
-func (a *linuxApp) registerWindow(window pointer, id uint) {
-	a.windowMapLock.Lock()
-	a.windowMap[windowPointer(window)] = id
-	a.windowMapLock.Unlock()
+func (l *linuxApp) registerWindow(window pointer, id uint) {
+	l.windowsLock.Lock()
+	l.windows[windowPointer(window)] = id
+	l.windowsLock.Unlock()
 }
 
-func (a *linuxApp) isDarkMode() bool {
-	return strings.Contains(a.theme, "dark")
+func (l *linuxApp) isDarkMode() bool {
+	return strings.Contains(l.theme, "dark")
 }
 
-func (a *linuxApp) monitorThemeChanges() {
+func (l *linuxApp) monitorThemeChanges() {
 	go func() {
 		conn, err := dbus.ConnectSessionBus()
 		if err != nil {
-			a.parent.info("[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:", err)
+			l.parent.info("[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:", err)
 			return
 		}
 		defer conn.Close()
@@ -165,10 +172,10 @@ func (a *linuxApp) monitorThemeChanges() {
 				continue
 			}
 
-			if theme != a.theme {
-				a.theme = theme
+			if theme != l.theme {
+				l.theme = theme
 				event := newApplicationEvent(events.Common.ThemeChanged)
-				event.Context().setIsDarkMode(a.isDarkMode())
+				event.Context().setIsDarkMode(l.isDarkMode())
 				applicationEvents <- event
 			}
 

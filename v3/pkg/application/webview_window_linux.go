@@ -161,6 +161,16 @@ func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 	return result
 }
 
+func (w *linuxWebviewWindow) setTitle(title string) {
+	if !w.parent.options.Frameless {
+		windowSetTitle(w.window, title)
+	}
+}
+
+func (w *linuxWebviewWindow) setSize(width, height int) {
+	windowResize(w.window, width, height)
+}
+
 func (w *linuxWebviewWindow) setMinMaxSize(minWidth, minHeight, maxWidth, maxHeight int) {
 	if minWidth == 0 {
 		minWidth = -1
