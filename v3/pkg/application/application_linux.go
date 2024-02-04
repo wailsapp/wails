@@ -2,6 +2,7 @@
 
 package application
 
+import "C"
 import (
 	"fmt"
 	"log"
@@ -212,4 +213,12 @@ func (a *App) logPlatformInfo() {
 	platformInfo = append(platformInfo, "Webkit2Gtk", wkVersion)
 
 	a.info("Platform Info:", platformInfo...)
+}
+
+//export processWindowEvent
+func processWindowEvent(windowID C.uint, eventID C.uint) {
+	windowEvents <- &windowEvent{
+		WindowID: uint(windowID),
+		EventID:  uint(eventID),
+	}
 }

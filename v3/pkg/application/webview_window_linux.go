@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -395,6 +396,7 @@ func (w *linuxWebviewWindow) run() {
 		w.minimise()
 	case WindowStateFullscreen:
 		w.fullscreen()
+	case WindowStateNormal:
 	}
 
 	startURL, err := assetserver.GetStartURL(w.parent.options.URL)
@@ -413,6 +415,9 @@ func (w *linuxWebviewWindow) run() {
 			js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();", w.parent.options.CSS)
 			w.execJS(js)
 		}
+	})
+	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
+		w.execJS(runtime.Core())
 	})
 	if w.parent.options.HTML != "" {
 		w.setHTML(w.parent.options.HTML)
