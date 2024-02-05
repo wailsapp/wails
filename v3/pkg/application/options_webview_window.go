@@ -100,6 +100,9 @@ type WebviewWindowOptions struct {
 	// Windows options
 	Windows WindowsWindow
 
+	// Linux options
+	Linux LinuxWindow
+
 	// ShouldClose is called when the window is about to close.
 	// Return true to allow the window to close, or false to prevent it from closing.
 	ShouldClose func(window *WebviewWindow) bool

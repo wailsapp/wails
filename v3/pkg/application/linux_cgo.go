@@ -793,7 +793,7 @@ func windowMinimize(window pointer) {
 	C.gtk_window_iconify((*C.GtkWindow)(window))
 }
 
-func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy int) (window, webview, vbox pointer) {
+func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox pointer) {
 	window = pointer(C.gtk_application_window_new((*C.GtkApplication)(application)))
 	C.g_object_ref_sink(C.gpointer(window))
 	webview = windowNewWebview(windowId, gpuPolicy)
@@ -810,45 +810,39 @@ func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy int) 
 	return
 }
 
-func windowNewWebview(parentId uint, gpuPolicy int) pointer {
+func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
+	c := NewCalloc()
+	defer c.Free()
 	manager := C.webkit_user_content_manager_new()
-	external := C.CString("external")
-	C.webkit_user_content_manager_register_script_message_handler(manager, external)
-	C.free(unsafe.Pointer(external))
-	webview := C.webkit_web_view_new_with_user_content_manager(manager)
+	C.webkit_user_content_manager_register_script_message_handler(manager, c.String("external"))
+	webView := C.webkit_web_view_new_with_user_content_manager(manager)
 	id := C.uint(parentId)
 	if !registered {
-		wails := C.CString("wails")
 		C.webkit_web_context_register_uri_scheme(
 			C.webkit_web_context_get_default(),
-			wails,
+			c.String("wails"),
 			C.WebKitURISchemeRequestCallback(C.onProcessRequest),
 			C.gpointer(&id),
 			nil)
 		registered = true
-		C.free(unsafe.Pointer(wails))
 	}
-	settings := C.webkit_web_view_get_settings((*C.WebKitWebView)(unsafe.Pointer(webview)))
-	wails_io := C.CString("wails.io")
-	empty := C.CString("")
-	defer C.free(unsafe.Pointer(wails_io))
-	defer C.free(unsafe.Pointer(empty))
-	C.webkit_settings_set_user_agent_with_application_details(settings, wails_io, empty)
+	settings := C.webkit_web_view_get_settings((*C.WebKitWebView)(unsafe.Pointer(webView)))
+	C.webkit_settings_set_user_agent_with_application_details(settings, c.String("wails.io"), c.String(""))
 
 	switch gpuPolicy {
-	case 0:
+	case WebviewGpuPolicyAlways:
 		C.webkit_settings_set_hardware_acceleration_policy(settings, C.WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS)
 		break
-	case 1:
+	case WebviewGpuPolicyOnDemand:
 		C.webkit_settings_set_hardware_acceleration_policy(settings, C.WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND)
 		break
-	case 2:
+	case WebviewGpuPolicyNever:
 		C.webkit_settings_set_hardware_acceleration_policy(settings, C.WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER)
 		break
 	default:
 		C.webkit_settings_set_hardware_acceleration_policy(settings, C.WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND)
 	}
-	return pointer(webview)
+	return pointer(webView)
 }
 
 func windowPresent(window pointer) {

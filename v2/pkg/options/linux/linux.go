@@ -4,10 +4,10 @@ package linux
 type WebviewGpuPolicy int
 
 const (
-	// WebviewGpuPolicyAlways Hardware acceleration is always enabled.
-	WebviewGpuPolicyAlways WebviewGpuPolicy = iota
 	// WebviewGpuPolicyOnDemand Hardware acceleration is enabled/disabled as request by web contents.
-	WebviewGpuPolicyOnDemand
+	WebviewGpuPolicyOnDemand WebviewGpuPolicy = iota
+	// WebviewGpuPolicyAlways Hardware acceleration is always enabled.
+	WebviewGpuPolicyAlways
 	// WebviewGpuPolicyNever Hardware acceleration is always disabled.
 	WebviewGpuPolicyNever
 )
