@@ -29,8 +29,8 @@ type linuxApp struct {
 	startupActions []func()
 
 	// Native -> uint
-	windows     map[windowPointer]uint
-	windowsLock sync.Mutex
+	windowMap     map[windowPointer]uint
+	windowMapLock sync.Mutex
 
 	theme string
 }
@@ -69,7 +69,7 @@ func (l *linuxApp) name() string {
 }
 
 func (l *linuxApp) getCurrentWindowID() uint {
-	return getCurrentWindowID(l.application, l.windows)
+	return getCurrentWindowID(l.application, l.windowMap)
 }
 
 type rnr struct {
@@ -114,6 +114,17 @@ func (l *linuxApp) run() error {
 	return appRun(l.application)
 }
 
+func (l *linuxApp) unregisterWindow(w windowPointer) {
+	l.windowMapLock.Lock()
+	delete(l.windowMap, w)
+	l.windowMapLock.Unlock()
+
+	// If this was the last window...
+	if len(l.windowMap) == 0 && !l.parent.options.Linux.DisableQuitOnLastWindowClosed {
+		l.destroy()
+	}
+}
+
 func (l *linuxApp) destroy() {
 	if !globalApplication.shouldQuit() {
 		return
@@ -128,9 +139,9 @@ func (l *linuxApp) isOnMainThread() bool {
 
 // register our window to our parent mapping
 func (l *linuxApp) registerWindow(window pointer, id uint) {
-	l.windowsLock.Lock()
-	l.windows[windowPointer(window)] = id
-	l.windowsLock.Unlock()
+	l.windowMapLock.Lock()
+	l.windowMap[windowPointer(window)] = id
+	l.windowMapLock.Unlock()
 }
 
 func (l *linuxApp) isDarkMode() bool {
@@ -193,7 +204,7 @@ func newPlatformApp(parent *App) *linuxApp {
 	app := &linuxApp{
 		parent:      parent,
 		application: appNew(name),
-		windows:     map[windowPointer]uint{},
+		windowMap:   map[windowPointer]uint{},
 	}
 	return app
 }
