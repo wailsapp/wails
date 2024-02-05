@@ -237,7 +237,7 @@ func (w *linuxWebviewWindow) run() {
 		w.gtkmenu = (menu.impl).(*linuxMenu).native
 	}
 
-	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
+	w.window, w.webview, w.vbox = windowNew(app.application, menu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
 	app.registerWindow(w.window, w.parent.id) // record our mapping
 	w.connectSignals()
 	if w.parent.options.EnableDragAndDrop {
