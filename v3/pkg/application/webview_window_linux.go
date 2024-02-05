@@ -110,6 +110,24 @@ func (w *linuxWebviewWindow) disableSizeConstraints() {
 	w.setMinMaxSize(x, y, width*scale, height*scale)
 }
 
+func (w *linuxWebviewWindow) unfullscreen() {
+	windowUnfullscreen(w.window)
+	w.unmaximise()
+}
+
+func (w *linuxWebviewWindow) fullscreen() {
+	w.maximise()
+	//w.lastWidth, w.lastHeight = w.size()
+	x, y, width, height, scale := windowGetCurrentMonitorGeometry(w.window)
+	if x == -1 && y == -1 && width == -1 && height == -1 {
+		return
+	}
+	w.setMinMaxSize(0, 0, width*scale, height*scale)
+	w.setSize(width*scale, height*scale)
+	windowFullscreen(w.window)
+	w.setRelativePosition(0, 0)
+}
+
 func (w *linuxWebviewWindow) unminimise() {
 	w.present()
 }
@@ -125,6 +143,27 @@ func (w *linuxWebviewWindow) zoom() {
 
 func (w *linuxWebviewWindow) windowZoom() {
 	w.zoom() // FIXME> This should be removed
+}
+
+func (w *linuxWebviewWindow) close() {
+	windowClose(w.window)
+	getNativeApplication().unregisterWindow(windowPointer(w.window))
+}
+
+func (w *linuxWebviewWindow) zoomIn() {
+	windowZoomIn(w.webview)
+}
+
+func (w *linuxWebviewWindow) zoomOut() {
+	windowZoomOut(w.webview)
+}
+
+func (w *linuxWebviewWindow) zoomReset() {
+	windowZoomSet(w.webview, 1.0)
+}
+
+func (w *linuxWebviewWindow) reload() {
+	windowReload(w.webview, "wails://")
 }
 
 func (w *linuxWebviewWindow) forceReload() {
