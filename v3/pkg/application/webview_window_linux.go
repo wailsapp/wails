@@ -21,18 +21,19 @@ type dragInfo struct {
 }
 
 type linuxWebviewWindow struct {
-	id          uint
-	application pointer
-	window      pointer
-	webview     pointer
-	parent      *WebviewWindow
-	menubar     pointer
-	vbox        pointer
-	menu        *Menu
-	accels      pointer
-	lastWidth   int
-	lastHeight  int
-	drag        dragInfo
+	id           uint
+	application  pointer
+	window       pointer
+	webview      pointer
+	parent       *WebviewWindow
+	menubar      pointer
+	vbox         pointer
+	menu         *Menu
+	accels       pointer
+	lastWidth    int
+	lastHeight   int
+	drag         dragInfo
+	lastX, lastY int
 }
 
 var (
@@ -109,9 +110,12 @@ func (w *linuxWebviewWindow) focus() {
 
 func (w *linuxWebviewWindow) show() {
 	windowShow(w.window)
+	w.setAbsolutePosition(w.lastX, w.lastY)
 }
 
 func (w *linuxWebviewWindow) hide() {
+	// save position
+	w.lastX, w.lastY = windowGetAbsolutePosition(w.window)
 	windowHide(w.window)
 }
 
@@ -140,7 +144,7 @@ func (w *linuxWebviewWindow) unfullscreen() {
 
 func (w *linuxWebviewWindow) fullscreen() {
 	w.maximise()
-	w.lastWidth, w.lastHeight = w.size()
+	//w.lastWidth, w.lastHeight = w.size()
 	x, y, width, height, scale := windowGetCurrentMonitorGeometry(w.window)
 	if x == -1 && y == -1 && width == -1 && height == -1 {
 		return
@@ -172,9 +176,7 @@ func (w *linuxWebviewWindow) flash(enabled bool) {
 }
 
 func (w *linuxWebviewWindow) on(eventID uint) {
-	// Don't think this is correct!
-	// GTK Events are strings
-	fmt.Println("on()", eventID)
+	// TODO: Test register/unregister listener for linux events
 	//C.registerListener(C.uint(eventID))
 }
 
@@ -188,6 +190,7 @@ func (w *linuxWebviewWindow) windowZoom() {
 
 func (w *linuxWebviewWindow) close() {
 	windowClose(w.window)
+	getNativeApplication().unregisterWindow(windowPointer(w.window))
 }
 
 func (w *linuxWebviewWindow) zoomIn() {
@@ -388,7 +391,6 @@ func (w *linuxWebviewWindow) run() {
 	if w.parent.options.X != 0 || w.parent.options.Y != 0 {
 		w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
 	} else {
-		fmt.Println("attempting to set in the center")
 		w.center()
 	}
 	switch w.parent.options.StartState {

@@ -24,6 +24,9 @@ type Options struct {
 	// Windows is the Windows specific configuration for Windows builds
 	Windows WindowsOptions
 
+	// Linux is the Linux specific configuration for Linux builds
+	Linux LinuxOptions
+
 	// Bind allows you to bind Go methods to the frontend.
 	Bind []any
 
