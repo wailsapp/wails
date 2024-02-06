@@ -332,3 +332,29 @@ func (m *MenuItem) setContextData(data *ContextMenuData) {
 		m.submenu.setContextData(data)
 	}
 }
+
+// clone returns a deep copy of the MenuItem
+func (m *MenuItem) clone() *MenuItem {
+	result := &MenuItem{
+		id:       m.id,
+		label:    m.label,
+		tooltip:  m.tooltip,
+		disabled: m.disabled,
+		checked:  m.checked,
+		hidden:   m.hidden,
+		bitmap:   m.bitmap,
+		callback: m.callback,
+		itemType: m.itemType,
+		role:     m.role,
+	}
+	if m.submenu != nil {
+		result.submenu = m.submenu.clone()
+	}
+	if m.accelerator != nil {
+		result.accelerator = m.accelerator.clone()
+	}
+	if m.contextMenuData != nil {
+		result.contextMenuData = m.contextMenuData.clone()
+	}
+	return result
+}

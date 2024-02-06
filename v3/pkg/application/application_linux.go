@@ -22,9 +22,8 @@ func init() {
 }
 
 type linuxApp struct {
-	application     pointer
-	applicationMenu pointer
-	parent          *App
+	application pointer
+	parent      *App
 
 	startupActions []func()
 
@@ -55,8 +54,8 @@ func (l *linuxApp) show() {
 }
 
 func (l *linuxApp) on(eventID uint) {
-	// TODO: What do we need to do here?
-	log.Println("linuxApp.on()", eventID)
+	// TODO: Test register/unregister events
+	//C.registerApplicationEvent(l.application, C.uint(eventID))
 }
 
 func (l *linuxApp) setIcon(icon []byte) {
@@ -78,21 +77,6 @@ type rnr struct {
 
 func (r rnr) run() {
 	r.f()
-}
-
-func (l *linuxApp) getApplicationMenu() pointer {
-	if l.applicationMenu != nilPointer {
-		return l.applicationMenu
-	}
-
-	menu := globalApplication.ApplicationMenu
-	if menu != nil {
-		InvokeSync(func() {
-			menu.Update()
-		})
-		l.applicationMenu = (menu.impl).(*linuxMenu).native
-	}
-	return l.applicationMenu
 }
 
 func (l *linuxApp) setApplicationMenu(menu *Menu) {
