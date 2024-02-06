@@ -34,6 +34,7 @@ type linuxWebviewWindow struct {
 	lastHeight   int
 	drag         dragInfo
 	lastX, lastY int
+	gtkmenu      pointer
 }
 
 var (
@@ -357,8 +358,19 @@ func (w *linuxWebviewWindow) run() {
 
 	app := getNativeApplication()
 
-	menu := app.getApplicationMenu()
-	w.window, w.webview, w.vbox = windowNew(app.application, menu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
+	var menu = w.menu
+	if menu == nil && globalApplication.ApplicationMenu != nil {
+		menu = globalApplication.ApplicationMenu.clone()
+	}
+	if menu != nil {
+		InvokeSync(func() {
+			menu.Update()
+		})
+		w.menu = menu
+		w.gtkmenu = (menu.impl).(*linuxMenu).native
+	}
+
+	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
 	app.registerWindow(w.window, w.parent.id) // record our mapping
 	w.connectSignals()
 	if w.parent.options.EnableDragAndDrop {
@@ -402,6 +414,10 @@ func (w *linuxWebviewWindow) run() {
 		w.fullscreen()
 	case WindowStateNormal:
 	}
+
+	//if w.parent.options.IgnoreMouseEvents {
+	//	windowIgnoreMouseEvents(w.window, w.webview, true)
+	//}
 
 	startURL, err := assetserver.GetStartURL(w.parent.options.URL)
 	if err != nil {
@@ -459,6 +475,11 @@ func (w *linuxWebviewWindow) relativePosition() (int, int) {
 
 func (w *linuxWebviewWindow) destroy() {
 	w.parent.markAsDestroyed()
+	// Free menu
+	if w.gtkmenu != nil {
+		menuDestroy(w.gtkmenu)
+		w.gtkmenu = nil
+	}
 	windowDestroy(w.window)
 }
 

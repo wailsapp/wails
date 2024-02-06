@@ -13,7 +13,7 @@ import (
 )
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0 javascriptcoregtk-4.1
+#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0 javascriptcoregtk-4.1 gdk-3.0
 
 #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
@@ -697,6 +697,10 @@ func windowDestroy(window pointer) {
 	//C.gtk_widget_destroy((*C.GtkWidget)(window))
 }
 
+func menuDestroy(gtkMenu pointer) {
+	C.gtk_widget_destroy((*C.GtkWidget)(gtkMenu))
+}
+
 func windowFullscreen(window pointer) {
 	C.gtk_window_fullscreen((*C.GtkWindow)(window))
 }
@@ -865,6 +869,16 @@ func windowResize(window pointer, width, height int) {
 
 func windowShow(window pointer) {
 	C.gtk_widget_show_all((*C.GtkWidget)(window))
+}
+
+func windowIgnoreMouseEvents(window pointer, webview pointer, ignore bool) {
+	var enable C.int
+	if ignore {
+		enable = 1
+	}
+	gdkWindow := (*C.GdkWindow)(window)
+	C.gdk_window_set_pass_through(gdkWindow, enable)
+	C.webkit_web_view_set_editable((*C.WebKitWebView)(webview), C.gboolean(enable))
 }
 
 func windowSetBackgroundColour(vbox, webview pointer, colour RGBA) {
