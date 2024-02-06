@@ -2,7 +2,6 @@ package dispatcher
 
 import (
 	"context"
-
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -47,6 +46,8 @@ func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (s
 		return d.processWindowMessage(message, sender)
 	case 'B':
 		return d.processBrowserMessage(message, sender)
+	case 'D':
+		return d.processDragAndDropMessage(message)
 	case 'Q':
 		sender.Quit()
 		return "", nil
