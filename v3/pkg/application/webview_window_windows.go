@@ -237,6 +237,10 @@ func (w *windowsWebviewWindow) run() {
 
 	w.setSize(options.Width, options.Height)
 
+	// Min/max buttons
+	w.setStyle(!options.Windows.DisableMinimiseButton, w32.WS_MINIMIZEBOX)
+	w.setStyle(!options.Windows.DisableMaximiseButton, w32.WS_MAXIMIZEBOX)
+
 	// Register the window with the application
 	getNativeApplication().registerWindow(w)
 

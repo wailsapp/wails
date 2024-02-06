@@ -117,6 +117,12 @@ type WindowsWindow struct {
 
 	// Permissions map for WebView2. If empty, default permissions will be granted.
 	Permissions map[CoreWebView2PermissionKind]CoreWebView2PermissionState
+
+	// Disables the minimise button
+	DisableMinimiseButton bool
+
+	// Disables the maximise button
+	DisableMaximiseButton bool
 }
 
 type Theme int

@@ -60,6 +60,35 @@ func main() {
 				Show()
 			windowCounter++
 		})
+	if runtime.GOOS != "linux" {
+		myMenu.Add("New WebviewWindow (Disable Minimise)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					Windows: application.WindowsWindow{
+						DisableMinimiseButton: true,
+					},
+				}).
+					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
+					SetURL("https://wails.io").
+					Show()
+				windowCounter++
+			})
+		myMenu.Add("New WebviewWindow (Disable Maximise)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					Windows: application.WindowsWindow{
+						DisableMaximiseButton: true,
+					},
+				}).
+					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
+					SetURL("https://wails.io").
+					Show()
+				windowCounter++
+			})
+
+	}
 	myMenu.Add("New WebviewWindow (Hides on Close one time)").
 		SetAccelerator("CmdOrCtrl+H").
 		OnClick(func(ctx *application.Context) {
