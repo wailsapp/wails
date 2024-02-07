@@ -1005,23 +1005,23 @@ func handleLoadChanged(webview *C.WebKitWebView, event C.WebKitLoadEvent, data C
 	}
 }
 
-func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func(e events.WindowEventType)) {
+func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventType)) {
 
 	c := NewCalloc()
 	defer c.Free()
 
-	winID := unsafe.Pointer(uintptr(C.uint(windowId)))
+	winID := unsafe.Pointer(uintptr(C.uint(w.parent.ID())))
 
 	// Set up the window close event
-	C.signal_connect(unsafe.Pointer(window), c.String("delete-event"), C.handleDeleteEvent, winID)
-	C.signal_connect(unsafe.Pointer(webview), c.String("load-changed"), C.handleLoadChanged, winID)
+	wv := unsafe.Pointer(w.webview)
+	C.signal_connect(unsafe.Pointer(w.window), c.String("delete-event"), C.handleDeleteEvent, winID)
+	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
 
-	contentManager := C.webkit_web_view_get_user_content_manager((*C.WebKitWebView)(webview))
+	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, nil)
 	C.signal_connect(unsafe.Pointer(webview), c.String("button-press-event"), C.onButtonEvent, winID)
 	C.signal_connect(unsafe.Pointer(webview), c.String("button-release-event"), C.onButtonEvent, winID)
 	C.signal_connect(unsafe.Pointer(webview), c.String("key-press-event"), C.onKeyPressEvent, winID)
-
 }
 
 //export handleLoadChanged

@@ -1,7 +1,7 @@
 package application
 
-func (l *linuxApp) showAboutDialog(title string, message string, icon []byte) {
-	window := globalApplication.getWindowForID(l.getCurrentWindowID())
+func (a *linuxApp) showAboutDialog(title string, message string, icon []byte) {
+	window := globalApplication.getWindowForID(a.getCurrentWindowID())
 	var parent uintptr
 	if window != nil {
 		parent, _ = window.(*WebviewWindow).NativeWindowHandle()

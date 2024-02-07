@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"math"
 
+	"math"
+
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
@@ -102,15 +104,10 @@ func (w *linuxWebviewWindow) disableSizeConstraints() {
 	w.setMinMaxSize(x, y, width*scale, height*scale)
 }
 
-func (w *linuxWebviewWindow) unfullscreen() {
-	windowUnfullscreen(w.window)
-	w.unmaximise()
-}
-
 func (w *linuxWebviewWindow) fullscreen() {
 	w.maximise()
 	//w.lastWidth, w.lastHeight = w.size()
-	x, y, width, height, scale := windowGetCurrentMonitorGeometry(w.window)
+	x, y, width, height, scale := w.getCurrentMonitorGeometry()
 	if x == -1 && y == -1 && width == -1 && height == -1 {
 		return
 	}
@@ -135,27 +132,6 @@ func (w *linuxWebviewWindow) zoom() {
 
 func (w *linuxWebviewWindow) windowZoom() {
 	w.zoom() // FIXME> This should be removed
-}
-
-func (w *linuxWebviewWindow) close() {
-	windowClose(w.window)
-	getNativeApplication().unregisterWindow(windowPointer(w.window))
-}
-
-func (w *linuxWebviewWindow) zoomIn() {
-	windowZoomIn(w.webview)
-}
-
-func (w *linuxWebviewWindow) zoomOut() {
-	windowZoomOut(w.webview)
-}
-
-func (w *linuxWebviewWindow) zoomReset() {
-	windowZoomSet(w.webview, 1.0)
-}
-
-func (w *linuxWebviewWindow) reload() {
-	windowReload(w.webview, "wails://")
 }
 
 func (w *linuxWebviewWindow) forceReload() {
@@ -190,16 +166,6 @@ func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 		//		menubar:     menubar,
 	}
 	return result
-}
-
-func (w *linuxWebviewWindow) setTitle(title string) {
-	if !w.parent.options.Frameless {
-		windowSetTitle(w.window, title)
-	}
-}
-
-func (w *linuxWebviewWindow) setSize(width, height int) {
-	windowResize(w.window, width, height)
 }
 
 func (w *linuxWebviewWindow) setMinMaxSize(minWidth, minHeight, maxWidth, maxHeight int) {
@@ -355,6 +321,20 @@ func (w *linuxWebviewWindow) run() {
 			w.openDevTools()
 		}
 	}
+}
+
+func (w *linuxWebviewWindow) destroy() {
+	w.parent.markAsDestroyed()
+	// Free menu
+	if w.gtkmenu != nil {
+		menuDestroy(w.gtkmenu)
+		w.gtkmenu = nil
+	}
+	windowDestroy(w.window)
+}
+
+func (w *linuxWebviewWindow) setEnabled(enabled bool) {
+	widgetSetSensitive(w.window, enabled)
 }
 
 func (w *linuxWebviewWindow) startResize(border string) error {
