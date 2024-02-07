@@ -34,7 +34,7 @@ type linuxApp struct {
 	theme string
 }
 
-func (l *linuxApp) GetFlags(options Options) map[string]any {
+func (a *linuxApp) GetFlags(options Options) map[string]any {
 	if options.Flags == nil {
 		options.Flags = make(map[string]any)
 	}
@@ -45,29 +45,25 @@ func getNativeApplication() *linuxApp {
 	return globalApplication.impl.(*linuxApp)
 }
 
-func (l *linuxApp) hide() {
-	hideAllWindows(l.application)
+func (a *linuxApp) hide() {
+	a.hideAllWindows()
 }
 
-func (l *linuxApp) show() {
-	showAllWindows(l.application)
+func (a *linuxApp) show() {
+	a.showAllWindows()
 }
 
-func (l *linuxApp) on(eventID uint) {
+func (a *linuxApp) on(eventID uint) {
 	// TODO: Test register/unregister events
 	//C.registerApplicationEvent(l.application, C.uint(eventID))
 }
 
-func (l *linuxApp) setIcon(icon []byte) {
+func (a *linuxApp) setIcon(icon []byte) {
 	log.Println("linuxApp.setIcon", "not implemented")
 }
 
-func (l *linuxApp) name() string {
+func (a *linuxApp) name() string {
 	return appName()
-}
-
-func (l *linuxApp) getCurrentWindowID() uint {
-	return getCurrentWindowID(l.application, l.windowMap)
 }
 
 type rnr struct {
@@ -78,7 +74,7 @@ func (r rnr) run() {
 	r.f()
 }
 
-func (l *linuxApp) setApplicationMenu(menu *Menu) {
+func (a *linuxApp) setApplicationMenu(menu *Menu) {
 	// FIXME: How do we avoid putting a menu?
 	if menu == nil {
 		// Create a default menu
@@ -87,55 +83,55 @@ func (l *linuxApp) setApplicationMenu(menu *Menu) {
 	}
 }
 
-func (l *linuxApp) run() error {
+func (a *linuxApp) run() error {
 
-	l.parent.On(events.Linux.ApplicationStartup, func(evt *Event) {
+	a.parent.On(events.Linux.ApplicationStartup, func(evt *Event) {
 		fmt.Println("events.Linux.ApplicationStartup received!")
 	})
-	l.setupCommonEvents()
-	l.monitorThemeChanges()
-	return appRun(l.application)
+	a.setupCommonEvents()
+	a.monitorThemeChanges()
+	return appRun(a.application)
 }
 
-func (l *linuxApp) unregisterWindow(w windowPointer) {
-	l.windowMapLock.Lock()
-	delete(l.windowMap, w)
-	l.windowMapLock.Unlock()
+func (a *linuxApp) unregisterWindow(w windowPointer) {
+	a.windowMapLock.Lock()
+	delete(a.windowMap, w)
+	a.windowMapLock.Unlock()
 
 	// If this was the last window...
-	if len(l.windowMap) == 0 && !l.parent.options.Linux.DisableQuitOnLastWindowClosed {
-		l.destroy()
+	if len(a.windowMap) == 0 && !a.parent.options.Linux.DisableQuitOnLastWindowClosed {
+		a.destroy()
 	}
 }
 
-func (l *linuxApp) destroy() {
+func (a *linuxApp) destroy() {
 	if !globalApplication.shouldQuit() {
 		return
 	}
 	globalApplication.cleanup()
-	appDestroy(l.application)
+	appDestroy(a.application)
 }
 
-func (l *linuxApp) isOnMainThread() bool {
+func (a *linuxApp) isOnMainThread() bool {
 	return isOnMainThread()
 }
 
 // register our window to our parent mapping
-func (l *linuxApp) registerWindow(window pointer, id uint) {
-	l.windowMapLock.Lock()
-	l.windowMap[windowPointer(window)] = id
-	l.windowMapLock.Unlock()
+func (a *linuxApp) registerWindow(window pointer, id uint) {
+	a.windowMapLock.Lock()
+	a.windowMap[windowPointer(window)] = id
+	a.windowMapLock.Unlock()
 }
 
-func (l *linuxApp) isDarkMode() bool {
-	return strings.Contains(l.theme, "dark")
+func (a *linuxApp) isDarkMode() bool {
+	return strings.Contains(a.theme, "dark")
 }
 
-func (l *linuxApp) monitorThemeChanges() {
+func (a *linuxApp) monitorThemeChanges() {
 	go func() {
 		conn, err := dbus.ConnectSessionBus()
 		if err != nil {
-			l.parent.info("[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:", err)
+			a.parent.info("[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:", err)
 			return
 		}
 		defer conn.Close()
@@ -168,10 +164,10 @@ func (l *linuxApp) monitorThemeChanges() {
 				continue
 			}
 
-			if theme != l.theme {
-				l.theme = theme
+			if theme != a.theme {
+				a.theme = theme
 				event := newApplicationEvent(events.Common.ThemeChanged)
-				event.Context().setIsDarkMode(l.isDarkMode())
+				event.Context().setIsDarkMode(a.isDarkMode())
 				applicationEvents <- event
 			}
 
