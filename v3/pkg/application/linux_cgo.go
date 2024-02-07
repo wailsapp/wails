@@ -286,13 +286,13 @@ func appDestroy(application pointer) {
 	C.g_application_quit((*C.GApplication)(application))
 }
 
-func contextMenuShow(window pointer, menu pointer, data *ContextMenuData) {
+func (w *linuxWebviewWindow) contextMenuShow(menu pointer, data *ContextMenuData) {
 	geometry := C.GdkRectangle{
 		x: C.int(data.X),
 		y: C.int(data.Y),
 	}
 	event := C.GdkEvent{}
-	gdkWindow := C.gtk_widget_get_window((*C.GtkWidget)(window))
+	gdkWindow := C.gtk_widget_get_window(w.gtkWidget())
 	C.gtk_menu_popup_at_rect(
 		(*C.GtkMenu)(menu),
 		gdkWindow,
@@ -303,13 +303,13 @@ func contextMenuShow(window pointer, menu pointer, data *ContextMenuData) {
 	)
 }
 
-func getCurrentWindowID(application pointer, windows map[windowPointer]uint) uint {
+func (a *linuxApp) getCurrentWindowID() uint {
 	// TODO: Add extra metadata to window and use it!
-	window := (*C.GtkWindow)(C.gtk_application_get_active_window((*C.GtkApplication)(application)))
+	window := (*C.GtkWindow)(C.gtk_application_get_active_window((*C.GtkApplication)(a.application)))
 	if window == nil {
 		return uint(1)
 	}
-	identifier, ok := windows[window]
+	identifier, ok := a.windowMap[window]
 	if ok {
 		return identifier
 	}
@@ -317,9 +317,9 @@ func getCurrentWindowID(application pointer, windows map[windowPointer]uint) uin
 	return uint(1)
 }
 
-func getWindows(application pointer) []pointer {
+func (a *linuxApp) getWindows() []pointer {
 	result := []pointer{}
-	windows := C.gtk_application_get_windows((*C.GtkApplication)(application))
+	windows := C.gtk_application_get_windows((*C.GtkApplication)(a.application))
 	for {
 		result = append(result, pointer(windows.data))
 		windows = windows.next
@@ -329,14 +329,14 @@ func getWindows(application pointer) []pointer {
 	}
 }
 
-func hideAllWindows(application pointer) {
-	for _, window := range getWindows(application) {
+func (a *linuxApp) hideAllWindows() {
+	for _, window := range a.getWindows() {
 		C.gtk_widget_hide((*C.GtkWidget)(window))
 	}
 }
 
-func showAllWindows(application pointer) {
-	for _, window := range getWindows(application) {
+func (a *linuxApp) showAllWindows() {
+	for _, window := range a.getWindows() {
 		C.gtk_window_present((*C.GtkWindow)(window))
 	}
 }
@@ -661,26 +661,27 @@ func widgetSetVisible(widget pointer, hidden bool) {
 	}
 }
 
-// window related functions
-func windowClose(window pointer) {
-	C.gtk_window_close((*C.GtkWindow)(window))
+func (w *linuxWebviewWindow) close() {
+	C.gtk_window_close((*C.GtkWindow)(w.window))
+	getNativeApplication().unregisterWindow(windowPointer(w.window))
 }
 
-func windowEnableDND(id uint, webview pointer) {
+func (w *linuxWebviewWindow) enableDND() {
+	id := w.parent.id
 	dnd := C.CString("text/uri-list")
 	defer C.free(unsafe.Pointer(dnd))
 	targetentry := C.gtk_target_entry_new(dnd, 0, C.guint(id))
 	defer C.gtk_target_entry_free(targetentry)
-	C.gtk_drag_dest_set((*C.GtkWidget)(webview), C.GTK_DEST_DEFAULT_DROP, targetentry, 1, C.GDK_ACTION_COPY)
+	C.gtk_drag_dest_set((*C.GtkWidget)(w.webview), C.GTK_DEST_DEFAULT_DROP, targetentry, 1, C.GDK_ACTION_COPY)
 	event := C.CString("drag-data-received")
 	defer C.free(unsafe.Pointer(event))
 	windowId := C.uint(id)
-	C.signal_connect(unsafe.Pointer(webview), event, C.onDragNDrop, unsafe.Pointer(C.gpointer(&windowId)))
+	C.signal_connect(unsafe.Pointer(w.webview), event, C.onDragNDrop, unsafe.Pointer(C.gpointer(&windowId)))
 }
 
-func windowExecJS(webview pointer, js string) {
+func (w *linuxWebviewWindow) execJS(js string) {
 	value := C.CString(js)
-	C.webkit_web_view_evaluate_javascript((*C.WebKitWebView)(webview),
+	C.webkit_web_view_evaluate_javascript((*C.WebKitWebView)(w.webview),
 		value,
 		C.long(len(js)),
 		nil,
@@ -715,8 +716,8 @@ func windowGetCurrentMonitor(window pointer) *C.GdkMonitor {
 	return C.gdk_display_get_monitor_at_window(display, gdk_window)
 }
 
-func windowGetCurrentMonitorGeometry(window pointer) (x int, y int, width int, height int, scale int) {
-	monitor := windowGetCurrentMonitor(window)
+func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width int, height int, scale int) {
+	monitor := windowGetCurrentMonitor(w.window)
 	if monitor == nil {
 		return -1, -1, -1, -1, 1
 	}
@@ -726,13 +727,6 @@ func windowGetCurrentMonitorGeometry(window pointer) (x int, y int, width int, h
 	return int(result.x), int(result.y), int(result.width), int(result.height), scale
 }
 
-func windowGetAbsolutePosition(window pointer) (int, int) {
-	var x C.int
-	var y C.int
-	C.gtk_window_get_position((*C.GtkWindow)(window), &x, &y)
-	return int(x), int(y)
-}
-
 func windowGetSize(window pointer) (int, int) {
 	var windowWidth C.int
 	var windowHeight C.int
@@ -740,11 +734,11 @@ func windowGetSize(window pointer) (int, int) {
 	return int(windowWidth), int(windowHeight)
 }
 
-func windowGetRelativePosition(window pointer) (int, int) {
-	x, y := windowGetAbsolutePosition(window)
+func (w *linuxWebviewWindow) relativePosition() (int, int) {
+	x, y := w.absolutePosition()
 	// The position must be relative to the screen it is on
 	// We need to get the screen it is on
-	monitor := windowGetCurrentMonitor(window)
+	monitor := windowGetCurrentMonitor(w.window)
 	geometry := C.GdkRectangle{}
 	C.gdk_monitor_get_geometry(monitor, &geometry)
 	x = x - int(geometry.x)
@@ -755,46 +749,52 @@ func windowGetRelativePosition(window pointer) (int, int) {
 	return x, y
 }
 
-func windowHide(window pointer) {
-	C.gtk_widget_hide((*C.GtkWidget)(window))
+func (w *linuxWebviewWindow) gtkWidget() *C.GtkWidget {
+	return (*C.GtkWidget)(w.window)
 }
 
-func windowIsFullscreen(window pointer) bool {
-	gdkwindow := C.gtk_widget_get_window((*C.GtkWidget)(window))
-	state := C.gdk_window_get_state(gdkwindow)
+func (w *linuxWebviewWindow) hide() {
+	// save position
+	w.lastX, w.lastY = w.absolutePosition()
+	C.gtk_widget_hide(w.gtkWidget())
+}
+
+func (w *linuxWebviewWindow) isFullscreen() bool {
+	gdkWindow := C.gtk_widget_get_window((*C.GtkWidget)(w.window))
+	state := C.gdk_window_get_state(gdkWindow)
 	return state&C.GDK_WINDOW_STATE_FULLSCREEN > 0
 }
 
-func windowIsFocused(window pointer) bool {
+func (w *linuxWebviewWindow) isFocused() bool {
 	// returns true if window is focused
-	return C.gtk_window_has_toplevel_focus((*C.GtkWindow)(window)) == 1
+	return C.gtk_window_has_toplevel_focus((*C.GtkWindow)(w.window)) == 1
 }
 
-func windowIsMaximized(window pointer) bool {
-	gdkwindow := C.gtk_widget_get_window((*C.GtkWidget)(window))
+func (w *linuxWebviewWindow) isMaximised() bool {
+	gdkwindow := C.gtk_widget_get_window((*C.GtkWidget)(w.window))
 	state := C.gdk_window_get_state(gdkwindow)
 	return state&C.GDK_WINDOW_STATE_MAXIMIZED > 0 && state&C.GDK_WINDOW_STATE_FULLSCREEN == 0
 }
 
-func windowIsMinimized(window pointer) bool {
-	gdkwindow := C.gtk_widget_get_window((*C.GtkWidget)(window))
+func (w *linuxWebviewWindow) isMinimised() bool {
+	gdkwindow := C.gtk_widget_get_window((*C.GtkWidget)(w.window))
 	state := C.gdk_window_get_state(gdkwindow)
 	return state&C.GDK_WINDOW_STATE_ICONIFIED > 0
 }
 
-func windowIsVisible(window pointer) bool {
-	if C.gtk_widget_is_visible((*C.GtkWidget)(window)) == 1 {
+func (w *linuxWebviewWindow) isVisible() bool {
+	if C.gtk_widget_is_visible(w.gtkWidget()) == 1 {
 		return true
 	}
 	return false
 }
 
-func windowMaximize(window pointer) {
-	C.gtk_window_maximize((*C.GtkWindow)(window))
+func (w *linuxWebviewWindow) maximise() {
+	C.gtk_window_maximize((*C.GtkWindow)(w.window))
 }
 
-func windowMinimize(window pointer) {
-	C.gtk_window_iconify((*C.GtkWindow)(window))
+func (w *linuxWebviewWindow) minimise() {
+	C.gtk_window_iconify((*C.GtkWindow)(w.window))
 }
 
 func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox pointer) {
@@ -849,26 +849,24 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	return pointer(webView)
 }
 
-func windowPresent(window pointer) {
-	C.gtk_window_present((*C.GtkWindow)(window))
+func (w *linuxWebviewWindow) present() {
+	C.gtk_window_present((*C.GtkWindow)(w.window))
 	// gtk_window_unminimize ((*C.GtkWindow)(w.window)) /// gtk4
 }
 
-func windowReload(webview pointer, address string) {
-	uri := C.CString(address)
-	C.webkit_web_view_load_uri((*C.WebKitWebView)(webview), uri)
-	C.free(unsafe.Pointer(uri))
-}
-
-func windowResize(window pointer, width, height int) {
+func (w *linuxWebviewWindow) setSize(width, height int) {
 	C.gtk_window_resize(
-		(*C.GtkWindow)(window),
+		w.gtkWindow(),
 		C.gint(width),
 		C.gint(height))
 }
 
-func windowShow(window pointer) {
-	C.gtk_widget_show_all((*C.GtkWidget)(window))
+func (w *linuxWebviewWindow) show() {
+	if w.gtkWidget() == nil {
+		return
+	}
+	C.gtk_widget_show_all(w.gtkWidget())
+	w.setAbsolutePosition(w.lastX, w.lastY)
 }
 
 func windowIgnoreMouseEvents(window pointer, webview pointer, ignore bool) {
@@ -881,15 +879,27 @@ func windowIgnoreMouseEvents(window pointer, webview pointer, ignore bool) {
 	C.webkit_web_view_set_editable((*C.WebKitWebView)(webview), C.gboolean(enable))
 }
 
-func windowSetBackgroundColour(vbox, webview pointer, colour RGBA) {
+func (w *linuxWebviewWindow) webKitWebView() *C.WebKitWebView {
+	return (*C.WebKitWebView)(w.webview)
+}
+
+func (w *linuxWebviewWindow) setBorderless(borderless bool) {
+	C.gtk_window_set_decorated(w.gtkWindow(), gtkBool(!borderless))
+}
+
+func (w *linuxWebviewWindow) setResizable(resizable bool) {
+	C.gtk_window_set_resizable(w.gtkWindow(), gtkBool(resizable))
+}
+
+func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	rgba := C.GdkRGBA{C.double(colour.Red) / 255.0, C.double(colour.Green) / 255.0, C.double(colour.Blue) / 255.0, C.double(colour.Alpha) / 255.0}
-	C.webkit_web_view_set_background_color((*C.WebKitWebView)(webview), &rgba)
+	C.webkit_web_view_set_background_color((*C.WebKitWebView)(w.webview), &rgba)
 
 	colour.Alpha = 255
 	cssStr := C.CString(fmt.Sprintf("#webview-box {background-color: rgba(%d, %d, %d, %1.1f);}", colour.Red, colour.Green, colour.Blue, float32(colour.Alpha)/255.0))
 	provider := C.gtk_css_provider_new()
 	C.gtk_style_context_add_provider(
-		C.gtk_widget_get_style_context((*C.GtkWidget)(vbox)),
+		C.gtk_widget_get_style_context((*C.GtkWidget)(w.vbox)),
 		(*C.GtkStyleProvider)(unsafe.Pointer(provider)),
 		C.GTK_STYLE_PROVIDER_PRIORITY_USER)
 	C.g_object_unref(C.gpointer(provider))
@@ -907,14 +917,14 @@ func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHe
 	C.gtk_window_set_geometry_hints((*C.GtkWindow)(window), nil, &size, C.GDK_HINT_MAX_SIZE|C.GDK_HINT_MIN_SIZE)
 }
 
-func windowSetFrameless(window pointer, frameless bool) {
-	C.gtk_window_set_decorated((*C.GtkWindow)(window), gtkBool(!frameless))
+func (w *linuxWebviewWindow) setFrameless(frameless bool) {
+	C.gtk_window_set_decorated(w.gtkWindow(), gtkBool(!frameless))
 	// TODO: Deal with transparency for the titlebar if possible when !frameless
 	//       Perhaps we just make it undecorated and add a menu bar inside?
 }
 
 // TODO: confirm this is working properly
-func windowSetHTML(webview pointer, html string) {
+func (w *linuxWebviewWindow) setHTML(html string) {
 	cHTML := C.CString(html)
 	uri := C.CString("wails://")
 	empty := C.CString("")
@@ -922,39 +932,41 @@ func windowSetHTML(webview pointer, html string) {
 	defer C.free(unsafe.Pointer(uri))
 	defer C.free(unsafe.Pointer(empty))
 	C.webkit_web_view_load_alternate_html(
-		(*C.WebKitWebView)(webview),
+		w.webKitWebView(),
 		cHTML,
 		uri,
 		empty)
 }
 
-func windowSetKeepAbove(window pointer, alwaysOnTop bool) {
-	C.gtk_window_set_keep_above((*C.GtkWindow)(window), gtkBool(alwaysOnTop))
+func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
+	C.gtk_window_set_keep_above((*C.GtkWindow)(w.window), gtkBool(alwaysOnTop))
 }
 
-func windowSetResizable(window pointer, resizable bool) {
-	C.gtk_window_set_resizable((*C.GtkWindow)(window), gtkBool(resizable))
-}
-
-func windowSetTitle(window pointer, title string) {
-	cTitle := C.CString(title)
-	C.gtk_window_set_title((*C.GtkWindow)(window), cTitle)
-	C.free(unsafe.Pointer(cTitle))
-}
-
-func windowSetTransparent(window pointer) {
-	screen := C.gtk_widget_get_screen((*C.GtkWidget)(window))
-	visual := C.gdk_screen_get_rgba_visual(screen)
-
-	if visual != nil && C.gdk_screen_is_composited(screen) == C.int(1) {
-		C.gtk_widget_set_app_paintable((*C.GtkWidget)(window), C.gboolean(1))
-		C.gtk_widget_set_visual((*C.GtkWidget)(window), visual)
+func (w *linuxWebviewWindow) setTitle(title string) {
+	if !w.parent.options.Frameless {
+		cTitle := C.CString(title)
+		C.gtk_window_set_title(w.gtkWindow(), cTitle)
+		C.free(unsafe.Pointer(cTitle))
 	}
 }
 
-func windowSetURL(webview pointer, uri string) {
+func (w *linuxWebviewWindow) gtkWindow() *C.GtkWindow {
+	return (*C.GtkWindow)(w.window)
+}
+
+func (w *linuxWebviewWindow) setTransparent() {
+	screen := C.gtk_widget_get_screen(w.gtkWidget())
+	visual := C.gdk_screen_get_rgba_visual(screen)
+
+	if visual != nil && C.gdk_screen_is_composited(screen) == C.int(1) {
+		C.gtk_widget_set_app_paintable(w.gtkWidget(), C.gboolean(1))
+		C.gtk_widget_set_visual(w.gtkWidget(), visual)
+	}
+}
+
+func (w *linuxWebviewWindow) setURL(uri string) {
 	target := C.CString(uri)
-	C.webkit_web_view_load_uri((*C.WebKitWebView)(webview), target)
+	C.webkit_web_view_load_uri((*C.WebKitWebView)(w.webview), target)
 	C.free(unsafe.Pointer(target))
 }
 
@@ -983,22 +995,23 @@ func handleLoadChanged(webview *C.WebKitWebView, event C.WebKitLoadEvent, data C
 	}
 }
 
-func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func(e events.WindowEventType)) {
+func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventType)) {
 
 	c := NewCalloc()
 	defer c.Free()
 
-	winID := unsafe.Pointer(uintptr(C.uint(windowId)))
+	winID := unsafe.Pointer(uintptr(C.uint(w.parent.ID())))
 
 	// Set up the window close event
-	C.signal_connect(unsafe.Pointer(window), c.String("delete-event"), C.handleDeleteEvent, winID)
-	C.signal_connect(unsafe.Pointer(webview), c.String("load-changed"), C.handleLoadChanged, winID)
+	wv := unsafe.Pointer(w.webview)
+	C.signal_connect(unsafe.Pointer(w.window), c.String("delete-event"), C.handleDeleteEvent, winID)
+	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
 
-	contentManager := C.webkit_web_view_get_user_content_manager((*C.WebKitWebView)(webview))
+	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, nil)
-	C.signal_connect(unsafe.Pointer(webview), c.String("button-press-event"), C.onButtonEvent, winID)
-	C.signal_connect(unsafe.Pointer(webview), c.String("button-release-event"), C.onButtonEvent, winID)
-	C.signal_connect(unsafe.Pointer(webview), c.String("key-press-event"), C.onKeyPressEvent, winID)
+	C.signal_connect(wv, c.String("button-press-event"), C.onButtonEvent, winID)
+	C.signal_connect(wv, c.String("button-release-event"), C.onButtonEvent, winID)
+	C.signal_connect(wv, c.String("key-press-event"), C.onKeyPressEvent, winID)
 }
 
 func windowShowDevTools(webview pointer) {
@@ -1006,13 +1019,14 @@ func windowShowDevTools(webview pointer) {
 	C.webkit_web_inspector_show(inspector)
 }
 
-func windowStartDrag(window pointer, button uint, xroot int, yroot int, dragTime uint32) {
+func (w *linuxWebviewWindow) startDrag() error {
 	C.gtk_window_begin_move_drag(
-		(*C.GtkWindow)(window),
-		C.int(button),
-		C.int(xroot),
-		C.int(yroot),
-		C.uint32_t(dragTime))
+		(*C.GtkWindow)(w.window),
+		C.int(w.drag.MouseButton),
+		C.int(w.drag.XRoot),
+		C.int(w.drag.YRoot),
+		C.uint32_t(w.drag.DragTime))
+	return nil
 }
 
 func windowToggleDevTools(webview pointer) {
@@ -1027,37 +1041,56 @@ func windowToggleDevTools(webview pointer) {
 	C.webkit_settings_set_enable_developer_extras(settings, enabled)
 }
 
-func windowUnfullscreen(window pointer) {
-	C.gtk_window_unfullscreen((*C.GtkWindow)(window))
+func (w *linuxWebviewWindow) unfullscreen() {
+	C.gtk_window_unfullscreen((*C.GtkWindow)(w.window))
+	w.unmaximise()
 }
 
-func windowUnmaximize(window pointer) {
-	C.gtk_window_unmaximize((*C.GtkWindow)(window))
+func (w *linuxWebviewWindow) unmaximise() {
+	C.gtk_window_unmaximize((*C.GtkWindow)(w.window))
 }
 
-func windowZoom(webview pointer) float64 {
-	return float64(C.webkit_web_view_get_zoom_level((*C.WebKitWebView)(webview)))
+func (w *linuxWebviewWindow) getZoom() float64 {
+	return float64(C.webkit_web_view_get_zoom_level(w.webKitWebView()))
 }
 
-// FIXME: ZoomIn/Out is assumed to be incorrect!
-func windowZoomIn(webview pointer) {
+func (w *linuxWebviewWindow) zoomIn() {
+	// FIXME: ZoomIn/Out is assumed to be incorrect!
 	ZoomInFactor := 1.10
-	windowZoomSet(webview, windowZoom(webview)*ZoomInFactor)
-}
-func windowZoomOut(webview pointer) {
-	ZoomOutFactor := -1.10
-	windowZoomSet(webview, windowZoom(webview)*ZoomOutFactor)
+	w.setZoom(w.getZoom() * ZoomInFactor)
 }
 
-func windowZoomSet(webview pointer, zoom float64) {
+func (w *linuxWebviewWindow) zoomOut() {
+	ZoomInFactor := -1.10
+	w.setZoom(w.getZoom() * ZoomInFactor)
+}
+
+func (w *linuxWebviewWindow) zoomReset() {
+	w.setZoom(1.0)
+}
+
+func (w *linuxWebviewWindow) reload() {
+	uri := C.CString("wails://")
+	C.webkit_web_view_load_uri((*C.WebKitWebView)(w.webview), uri)
+	C.free(unsafe.Pointer(uri))
+}
+
+func (w *linuxWebviewWindow) setZoom(zoom float64) {
 	if zoom < 1 { // 1.0 is the smallest allowable
 		zoom = 1
 	}
-	C.webkit_web_view_set_zoom_level((*C.WebKitWebView)(webview), C.double(zoom))
+	C.webkit_web_view_set_zoom_level(w.webKitWebView(), C.double(zoom))
 }
 
-func windowMove(window pointer, x, y int) {
-	C.gtk_window_move((*C.GtkWindow)(window), C.int(x), C.int(y))
+func (w *linuxWebviewWindow) move(x, y int) {
+	C.gtk_window_move((*C.GtkWindow)(w.window), C.int(x), C.int(y))
+}
+
+func (w *linuxWebviewWindow) absolutePosition() (int, int) {
+	var x C.int
+	var y C.int
+	C.gtk_window_get_position((*C.GtkWindow)(w.window), &x, &y)
+	return int(x), int(y)
 }
 
 // FIXME Change this to reflect mouse button!
