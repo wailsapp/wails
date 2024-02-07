@@ -67,6 +67,9 @@ func main() {
 					Windows: application.WindowsWindow{
 						DisableMinimiseButton: true,
 					},
+					Mac: application.MacWindow{
+						DisableMinimiseButton: true,
+					},
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
@@ -80,6 +83,24 @@ func main() {
 					Windows: application.WindowsWindow{
 						DisableMaximiseButton: true,
 					},
+					Mac: application.MacWindow{
+						DisableMaximiseButton: true,
+					},
+				}).
+					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
+					SetURL("https://wails.io").
+					Show()
+				windowCounter++
+			})
+	}
+	if runtime.GOOS == "darwin" {
+		myMenu.Add("New WebviewWindow (Disable Close)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					Mac: application.MacWindow{
+						DisableCloseButton: true,
+					},
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
@@ -89,6 +110,7 @@ func main() {
 			})
 
 	}
+
 	myMenu.Add("New WebviewWindow (Hides on Close one time)").
 		SetAccelerator("CmdOrCtrl+H").
 		OnClick(func(ctx *application.Context) {

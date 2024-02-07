@@ -634,6 +634,24 @@ static void windowHide(void *window) {
 	[(WebviewWindow*)window orderOut:nil];
 }
 
+static void enableMinimiseButton(void *window, bool enabled) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	NSButton *minimiseButton = [nsWindow standardWindowButton:NSWindowMiniaturizeButton];
+	minimiseButton.enabled = enabled;
+}
+
+static void enableMaximiseButton(void *window, bool enabled) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	NSButton *maximiseButton = [nsWindow standardWindowButton:NSWindowZoomButton];
+	maximiseButton.enabled = enabled;
+}
+
+static void enableCloseButton(void *window, bool enabled) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	NSButton *closeButton = [nsWindow standardWindowButton:NSWindowCloseButton];
+	closeButton.enabled = enabled;
+}
+
 // windowShowMenu opens an NSMenu at the given coordinates
 static void windowShowMenu(void *window, void *menu, int x, int y) {
 	NSMenu* nsMenu = (NSMenu*)menu;
@@ -1106,6 +1124,16 @@ func (w *macosWebviewWindow) run() {
 			C.windowSetTranslucent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
 		case MacBackdropNormal:
+		}
+
+		if macOptions.DisableMinimiseButton {
+			C.enableMinimiseButton(w.nsWindow, C.bool(false))
+		}
+		if macOptions.DisableMaximiseButton {
+			C.enableMaximiseButton(w.nsWindow, C.bool(false))
+		}
+		if macOptions.DisableCloseButton {
+			C.enableCloseButton(w.nsWindow, C.bool(false))
 		}
 
 		if options.IgnoreMouseEvents {
