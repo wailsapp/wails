@@ -207,44 +207,43 @@ func buildApplication(f *flags.Build) error {
 			pterm.Warning.Println("obfuscated flag overrides skipbindings flag.")
 			buildOptions.SkipBindings = false
 		}
-	}
 
-	if !f.DryRun {
-		// Start Time
-		start := time.Now()
-
-		compiledBinary, err := build.Build(buildOptions)
-		if err != nil {
-			pterm.Error.Println(err.Error())
-			return err
+		if !f.DryRun {
+			// Start Time
+			start := time.Now()
+	
+			compiledBinary, err := build.Build(buildOptions)
+			if err != nil {
+				pterm.Error.Println(err.Error())
+				return err
+			}
+	
+			buildOptions.IgnoreFrontend = true
+			buildOptions.CleanBinDirectory = false
+	
+			// Output stats
+			buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", compiledBinary, time.Since(start).Round(time.Millisecond).String()))
+	
+			outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = compiledBinary
+		} else {
+			pterm.Info.Println("Dry run: skipped build.")
 		}
-
-		buildOptions.IgnoreFrontend = true
-		buildOptions.CleanBinDirectory = false
-
-		// Output stats
-		buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", compiledBinary, time.Since(start).Round(time.Millisecond).String()))
-
-		outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = compiledBinary
-	} else {
-		pterm.Info.Println("Dry run: skipped build.")
-	}
-
-	if f.DryRun {
-		return nil
-	}
-
-	if f.NSIS {
-		amd64Binary := outputBinaries["windows/amd64"]
-		arm64Binary := outputBinaries["windows/arm64"]
-		if amd64Binary == "" && arm64Binary == "" {
-			return fmt.Errorf("cannot build nsis installer - no windows targets")
+	
+		if f.DryRun {
+			return nil
 		}
-
-		if err := build.GenerateNSISInstaller(buildOptions, amd64Binary, arm64Binary); err != nil {
-			return err
+	
+		if f.NSIS {
+			amd64Binary := outputBinaries["windows/amd64"]
+			arm64Binary := outputBinaries["windows/arm64"]
+			if amd64Binary == "" && arm64Binary == "" {
+				return fmt.Errorf("cannot build nsis installer - no windows targets")
+			}
+	
+			if err := build.GenerateNSISInstaller(buildOptions, amd64Binary, arm64Binary); err != nil {
+				return err
+			}
 		}
 	}
-
 	return nil
 }
