@@ -62,42 +62,21 @@ func (t Target) String() string {
 	return t.Platform
 }
 
-func parseTargets(platform string) TargetsCollection {
-	allowedPlatforms := map[string]bool{
-		"windows": true,
-		"linux":   true,
-		"darwin":  true,
+func parseTargets(platforms string) TargetsCollection {
+	platformList := strings.Split(platforms, ",")
+
+	var targets []Target
+
+	for _, platform := range platformList {
+		parts := strings.Split(platform, "/")
+		if len(parts) == 1 {
+			architecture := defaultTarget().Arch
+			targets = append(targets, Target{Platform: parts[0], Arch: architecture})
+		} else if len(parts) == 2 {
+			targets = append(targets, Target{Platform: parts[0], Arch: parts[1]})
+		}
 	}
 
-	if !allowedPlatforms[platform] {
-		pterm.Error.Println("platform argument must be one of 'windows', 'linux', or 'darwin'")
-		os.Exit(1)
-	}
-
-	var result []Target
-	var targets slicer.StringSlicer
-
-	targets.AddSlice(strings.Split(platform, ","))
-	targets.Deduplicate()
-
-	targets.Each(func(platform string) {
-		target := Target{
-			Platform: "",
-			Arch:     "",
-		}
-
-		platformSplit := strings.Split(platform, "/")
-
-		target.Platform = platformSplit[0]
-
-		if len(platformSplit) > 1 {
-			target.Arch = platformSplit[1]
-		} else {
-			target.Arch = defaultTarget().Arch
-		}
-
-		result = append(result, target)
-	})
-
-	return result
+	return targets
 }
+
