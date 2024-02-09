@@ -4,11 +4,11 @@ package application
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"regexp"
 	"strings"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -72,13 +72,17 @@ extern void onDragNDrop(
    guint        time,
    gpointer     data);
 extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, uintptr_t user_data);
-extern void onProcessRequest(void *request, gpointer user_data);
+extern void onProcessRequest(WebKitURISchemeRequest *request, uintptr_t user_data);
 extern void sendMessageToBackend(WebKitUserContentManager *contentManager, WebKitJavascriptResult *result, void *data);
 // exported below (end)
 
 static void signal_connect(void *widget, char *event, void *cb, void* data) {
    // g_signal_connect is a macro and can't be called directly
    g_signal_connect(widget, event, cb, data);
+}
+
+static WebKitWebView* webkit_web_view(GtkWidget *webview) {
+	return WEBKIT_WEB_VIEW(webview);
 }
 
 static void* new_message_dialog(GtkWindow *parent, const gchar *msg, int dialogType, bool hasButtons) {
@@ -682,7 +686,7 @@ func (w *linuxWebviewWindow) enableDND() {
 
 func (w *linuxWebviewWindow) execJS(js string) {
 	value := C.CString(js)
-	C.webkit_web_view_evaluate_javascript((*C.WebKitWebView)(w.webview),
+	C.webkit_web_view_evaluate_javascript(w.webKitWebView(),
 		value,
 		C.long(len(js)),
 		nil,
@@ -770,24 +774,24 @@ func (w *linuxWebviewWindow) hide() {
 }
 
 func (w *linuxWebviewWindow) isFullscreen() bool {
-	gdkWindow := C.gtk_widget_get_window((*C.GtkWidget)(w.window))
+	gdkWindow := C.gtk_widget_get_window(w.gtkWidget())
 	state := C.gdk_window_get_state(gdkWindow)
 	return state&C.GDK_WINDOW_STATE_FULLSCREEN > 0
 }
 
 func (w *linuxWebviewWindow) isFocused() bool {
 	// returns true if window is focused
-	return C.gtk_window_has_toplevel_focus((*C.GtkWindow)(w.window)) == 1
+	return C.gtk_window_has_toplevel_focus(w.gtkWindow()) == 1
 }
 
 func (w *linuxWebviewWindow) isMaximised() bool {
-	gdkwindow := C.gtk_widget_get_window((*C.GtkWidget)(w.window))
+	gdkwindow := C.gtk_widget_get_window(w.gtkWidget())
 	state := C.gdk_window_get_state(gdkwindow)
 	return state&C.GDK_WINDOW_STATE_MAXIMIZED > 0 && state&C.GDK_WINDOW_STATE_FULLSCREEN == 0
 }
 
 func (w *linuxWebviewWindow) isMinimised() bool {
-	gdkwindow := C.gtk_widget_get_window((*C.GtkWidget)(w.window))
+	gdkwindow := C.gtk_widget_get_window(w.gtkWidget())
 	state := C.gdk_window_get_state(gdkwindow)
 	return state&C.GDK_WINDOW_STATE_ICONIFIED > 0
 }
@@ -800,11 +804,11 @@ func (w *linuxWebviewWindow) isVisible() bool {
 }
 
 func (w *linuxWebviewWindow) maximise() {
-	C.gtk_window_maximize((*C.GtkWindow)(w.window))
+	C.gtk_window_maximize(w.gtkWindow())
 }
 
 func (w *linuxWebviewWindow) minimise() {
-	C.gtk_window_iconify((*C.GtkWindow)(w.window))
+	C.gtk_window_iconify(w.gtkWindow())
 }
 
 func windowNew(application pointer, menu pointer, windowId uint, gpuPolicy WebviewGpuPolicy) (window, webview, vbox pointer) {
@@ -830,16 +834,15 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	manager := C.webkit_user_content_manager_new()
 	C.webkit_user_content_manager_register_script_message_handler(manager, c.String("external"))
 	webView := C.webkit_web_view_new_with_user_content_manager(manager)
-	id := C.uint(parentId)
-	if !registered {
-		C.webkit_web_context_register_uri_scheme(
-			C.webkit_web_context_get_default(),
-			c.String("wails"),
-			C.WebKitURISchemeRequestCallback(C.onProcessRequest),
-			C.gpointer(&id),
-			nil)
-		registered = true
-	}
+	winID := unsafe.Pointer(uintptr(C.uint(parentId)))
+	C.g_object_set_data((*C.GObject)(unsafe.Pointer(webView)), c.String("windowid"), C.gpointer(winID))
+	context := C.webkit_web_view_get_context(C.webkit_web_view(webView))
+	C.webkit_web_context_register_uri_scheme(
+		context,
+		c.String("wails"),
+		C.WebKitURISchemeRequestCallback(C.onProcessRequest),
+		nil,
+		nil)
 	settings := C.webkit_web_view_get_settings((*C.WebKitWebView)(unsafe.Pointer(webView)))
 	C.webkit_settings_set_user_agent_with_application_details(settings, c.String("wails.io"), c.String(""))
 
@@ -860,8 +863,8 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 }
 
 func (w *linuxWebviewWindow) present() {
-	C.gtk_window_present((*C.GtkWindow)(w.window))
-	// gtk_window_unminimize ((*C.GtkWindow)(w.window)) /// gtk4
+	C.gtk_window_present(w.gtkWindow())
+	// gtk_window_unminimize (w.gtkWindow()) /// gtk4
 }
 
 func (w *linuxWebviewWindow) setSize(width, height int) {
@@ -949,7 +952,7 @@ func (w *linuxWebviewWindow) setHTML(html string) {
 }
 
 func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
-	C.gtk_window_set_keep_above((*C.GtkWindow)(w.window), gtkBool(alwaysOnTop))
+	C.gtk_window_set_keep_above(w.gtkWindow(), gtkBool(alwaysOnTop))
 }
 
 func (w *linuxWebviewWindow) setTitle(title string) {
@@ -976,7 +979,7 @@ func (w *linuxWebviewWindow) setTransparent() {
 
 func (w *linuxWebviewWindow) setURL(uri string) {
 	target := C.CString(uri)
-	C.webkit_web_view_load_uri((*C.WebKitWebView)(w.webview), target)
+	C.webkit_web_view_load_uri(w.webKitWebView(), target)
 	C.free(unsafe.Pointer(target))
 }
 
@@ -1108,7 +1111,7 @@ func (w *linuxWebviewWindow) zoomReset() {
 
 func (w *linuxWebviewWindow) reload() {
 	uri := C.CString("wails://")
-	C.webkit_web_view_load_uri((*C.WebKitWebView)(w.webview), uri)
+	C.webkit_web_view_load_uri(w.webKitWebView(), uri)
 	C.free(unsafe.Pointer(uri))
 }
 
@@ -1238,10 +1241,11 @@ func getKeyboardState(event *C.GdkEventKey) (string, bool) {
 }
 
 //export onProcessRequest
-func onProcessRequest(request unsafe.Pointer, data unsafe.Pointer) {
-	windowId := uint(*((*C.uint)(data)))
+func onProcessRequest(request *C.WebKitURISchemeRequest, data C.uintptr_t) {
+	webView := C.webkit_uri_scheme_request_get_web_view(request)
+	windowId := uint(uintptr(C.g_object_get_data((*C.GObject)(unsafe.Pointer(webView)), C.CString("windowid"))))
 	webviewRequests <- &webViewAssetRequest{
-		Request:    webview.NewRequest(request),
+		Request:    webview.NewRequest(unsafe.Pointer(request)),
 		windowId:   windowId,
 		windowName: globalApplication.getWindowForID(windowId).Name(),
 	}
