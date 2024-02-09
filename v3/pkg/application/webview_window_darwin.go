@@ -256,13 +256,6 @@ void windowSetMaxSize(void* nsWindow, int width, int height) {
 	[window setMaxSize:size];
 }
 
-// Enable NSWindow devtools
-void windowEnableDevTools(void* nsWindow) {
-	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// Enable devtools in webview
-	[window.webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
-}
-
 // windowZoomReset
 void windowZoomReset(void* nsWindow) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
@@ -641,6 +634,24 @@ static void windowHide(void *window) {
 	[(WebviewWindow*)window orderOut:nil];
 }
 
+static void enableMinimiseButton(void *window, bool enabled) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	NSButton *minimiseButton = [nsWindow standardWindowButton:NSWindowMiniaturizeButton];
+	minimiseButton.enabled = enabled;
+}
+
+static void enableMaximiseButton(void *window, bool enabled) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	NSButton *maximiseButton = [nsWindow standardWindowButton:NSWindowZoomButton];
+	maximiseButton.enabled = enabled;
+}
+
+static void enableCloseButton(void *window, bool enabled) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	NSButton *closeButton = [nsWindow standardWindowButton:NSWindowCloseButton];
+	closeButton.enabled = enabled;
+}
+
 // windowShowMenu opens an NSMenu at the given coordinates
 static void windowShowMenu(void *window, void *menu, int x, int y) {
 	NSMenu* nsMenu = (NSMenu*)menu;
@@ -734,7 +745,8 @@ void windowFocus(void *window) {
 */
 import "C"
 import (
-	"net/url"
+	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/runtime"
 	"sync"
 	"unsafe"
 
@@ -956,21 +968,19 @@ func (w *macosWebviewWindow) setEnabled(enabled bool) {
 }
 
 func (w *macosWebviewWindow) execJS(js string) {
+
 	InvokeAsync(func() {
+		if globalApplication.performingShutdown {
+			return
+		}
+		if w.nsWindow == nil {
+			return
+		}
 		C.windowExecJS(w.nsWindow, C.CString(js))
 	})
 }
 
 func (w *macosWebviewWindow) setURL(uri string) {
-	if uri != "" {
-		parsedURL, err := url.Parse(uri)
-		if err == nil && parsedURL.Scheme == "" && parsedURL.Host == "" {
-			// TODO handle this in a central location, the scheme and host might be platform dependant.
-			parsedURL.Scheme = "wails"
-			parsedURL.Host = "wails"
-			uri = parsedURL.String()
-		}
-	}
 	C.navigationLoadURL(w.nsWindow, C.CString(uri))
 }
 
@@ -982,6 +992,9 @@ func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
 	result := &macosWebviewWindow{
 		parent: parent,
 	}
+	result.parent.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(event *WindowEvent) {
+		result.execJS(runtime.Core())
+	})
 	return result
 }
 
@@ -1009,9 +1022,6 @@ func (w *macosWebviewWindow) setMaxSize(width, height int) {
 
 func (w *macosWebviewWindow) setResizable(resizable bool) {
 	C.windowSetResizable(w.nsWindow, C.bool(resizable))
-}
-func (w *macosWebviewWindow) enableDevTools() {
-	C.windowEnableDevTools(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) size() (int, int) {
@@ -1102,9 +1112,8 @@ func (w *macosWebviewWindow) run() {
 			w.setMaxSize(options.MaxWidth, options.MaxHeight)
 		}
 		//w.setZoom(options.Zoom)
-		if globalApplication.isDebugMode || options.DevToolsEnabled {
-			w.enableDevTools()
-		}
+		w.enableDevTools()
+
 		w.setBackgroundColour(options.BackgroundColour)
 
 		switch macOptions.Backdrop {
@@ -1114,6 +1123,17 @@ func (w *macosWebviewWindow) run() {
 		case MacBackdropTranslucent:
 			C.windowSetTranslucent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
+		case MacBackdropNormal:
+		}
+
+		if macOptions.DisableMinimiseButton {
+			C.enableMinimiseButton(w.nsWindow, C.bool(false))
+		}
+		if macOptions.DisableMaximiseButton {
+			C.enableMaximiseButton(w.nsWindow, C.bool(false))
+		}
+		if macOptions.DisableCloseButton {
+			C.enableCloseButton(w.nsWindow, C.bool(false))
 		}
 
 		if options.IgnoreMouseEvents {
@@ -1146,21 +1166,38 @@ func (w *macosWebviewWindow) run() {
 			w.minimise()
 		case WindowStateFullscreen:
 			w.fullscreen()
-
+		case WindowStateNormal:
 		}
 		C.windowCenter(w.nsWindow)
 
-		if options.URL != "" {
-			w.setURL(options.URL)
+		startURL, err := assetserver.GetStartURL(options.URL)
+		if err != nil {
+			globalApplication.fatal(err.Error())
 		}
+
+		w.setURL(startURL)
+
 		// We need to wait for the HTML to load before we can execute the javascript
 		w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
-			if options.JS != "" {
-				w.execJS(options.JS)
-			}
-			if options.CSS != "" {
-				C.windowInjectCSS(w.nsWindow, C.CString(options.CSS))
-			}
+			InvokeAsync(func() {
+				if options.JS != "" {
+					w.execJS(options.JS)
+				}
+				if options.CSS != "" {
+					C.windowInjectCSS(w.nsWindow, C.CString(options.CSS))
+				}
+				if options.Hidden == false {
+					C.windowShow(w.nsWindow)
+					w.setHasShadow(!options.Mac.DisableShadow)
+				} else {
+					// We have to wait until the window is shown before we can remove the shadow
+					var cancel func()
+					cancel = w.parent.On(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
+						w.setHasShadow(!options.Mac.DisableShadow)
+						cancel()
+					})
+				}
+			})
 		})
 
 		// Translate ShouldClose to common WindowClosing event
@@ -1178,17 +1215,6 @@ func (w *macosWebviewWindow) run() {
 
 		if options.HTML != "" {
 			w.setHTML(options.HTML)
-		}
-		if options.Hidden == false {
-			C.windowShow(w.nsWindow)
-			w.setHasShadow(!options.Mac.DisableShadow)
-		} else {
-			// We have to wait until the window is shown before we can remove the shadow
-			var cancel func()
-			cancel = w.parent.On(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
-				w.setHasShadow(!options.Mac.DisableShadow)
-				cancel()
-			})
 		}
 
 	})

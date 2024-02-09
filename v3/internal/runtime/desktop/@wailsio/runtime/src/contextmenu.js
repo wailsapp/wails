@@ -13,15 +13,14 @@ The electron alternative for Go
 import {newRuntimeCallerWithID, objectNames} from "./runtime";
 import {IsDebug} from "./system";
 
+// setup
+window.addEventListener('contextmenu', contextMenuHandler);
+
 const call = newRuntimeCallerWithID(objectNames.ContextMenu, '');
 const ContextMenuOpen = 0;
 
 function openContextMenu(id, x, y, data) {
     void call(ContextMenuOpen, {id, x, y, data});
-}
-
-export function setupContextMenus() {
-    window.addEventListener('contextmenu', contextMenuHandler);
 }
 
 function contextMenuHandler(event) {

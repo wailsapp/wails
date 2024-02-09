@@ -8,13 +8,14 @@ The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
 
-import {setupContextMenus} from "./contextmenu";
-import {setupDrag} from "./drag";
-import {ByID, ByName, Plugin} from "./calls";
+// Setup
+window.wails = window.wails || {};
+window._wails = window._wails || {};
 
 import * as Application from "./application";
 import * as Browser from "./browser";
 import * as Clipboard from "./clipboard";
+import * as ContextMenu from "./contextmenu";
 import * as Flags from "./flags";
 import * as Screens from "./screens";
 import * as System from "./system";
@@ -23,6 +24,9 @@ import * as WML from './wml';
 import * as Events from "./events";
 import * as Dialogs from "./dialogs";
 import * as Call from "./calls";
+import * as Drag from "./drag";
+import {invoke} from "./system";
+
 
 export { Application, Browser, Call, Clipboard, Dialogs, Events, Flags, Screens, System, Window, WML};
 
@@ -58,7 +62,22 @@ export { Application, Browser, Call, Clipboard, Dialogs, Events, Flags, Screens,
 
  ***/
 
-let isReady = false
+window.wails = {
+    Application,
+    Browser,
+    Call,
+    Clipboard,
+    Dialogs,
+    Events,
+    Flags,
+    Screens,
+    System,
+    Window,
+    WML,
+};
+invoke('wails:runtime:ready');
+
+let isReady = false;
 document.addEventListener('DOMContentLoaded', function() {
     isReady = true
 })
@@ -72,7 +91,5 @@ function whenReady(fn) {
 }
 
 whenReady(() => {
-    setupContextMenus();
-    setupDrag();
     WML.Reload();
 });

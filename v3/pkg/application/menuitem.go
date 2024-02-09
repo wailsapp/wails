@@ -167,8 +167,8 @@ func newRole(role Role) *MenuItem {
 		return newForceReloadMenuItem()
 	case ToggleFullscreen:
 		return newToggleFullscreenMenuItem()
-	case ToggleDevTools:
-		return newToggleDevToolsMenuItem()
+	case ShowDevTools:
+		return newShowDevToolsMenuItem()
 	case ResetZoom:
 		return newZoomResetMenuItem()
 	case ZoomIn:

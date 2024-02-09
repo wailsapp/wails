@@ -14,6 +14,7 @@ package application
 extern void openFileDialogCallback(uint id, char* path);
 extern void openFileDialogCallbackEnd(uint id);
 extern void saveFileDialogCallback(uint id, char* path);
+extern void dialogCallback(int id, int buttonPressed);
 
 static void showAboutBox(char* title, char *message, void *icon, int length) {
 
@@ -66,42 +67,38 @@ static void* createAlert(int alertType, char* title, char *message, void *icon, 
 
 }
 
-// Run the dialog
-static int dialogRunModal(void *dialog, void *parent) {
-	NSAlert *alert = (__bridge NSAlert *)dialog;
+static int getButtonNumber(NSModalResponse response) {
+	int buttonNumber = 0;
+	if( response == NSAlertFirstButtonReturn ) {
+		buttonNumber = 0;
+	}
+	else if( response == NSAlertSecondButtonReturn ) {
+		buttonNumber = 1;
+	}
+	else if( response == NSAlertThirdButtonReturn ) {
+		buttonNumber = 2;
+	} else {
+		buttonNumber = 3;
+	}
+	return buttonNumber;
+}
 
-    __block long response;
-	//if( parent != NULL ) {
-	//	NSWindow *window = (__bridge NSWindow *)parent;
-	//	response = [alert runModalSheetForWindow:window];
-	//} else {
-	//	response = [alert runModal];
-	//}
+// Run the dialog
+static void dialogRunModal(void *dialog, void *parent, int callBackID) {
+	NSAlert *alert = (__bridge NSAlert *)dialog;
 
 	// If the parent is NULL, we are running a modal dialog, otherwise attach the alert to the parent
 	if( parent == NULL ) {
-		response = [alert runModal];
+		NSModalResponse response = [alert runModal];
+		int returnCode = getButtonNumber(response);
+		dialogCallback(callBackID, returnCode);
 	} else {
 		NSWindow *window = (__bridge NSWindow *)parent;
-		[alert beginSheetModalForWindow:window completionHandler:^(NSModalResponse returnCode) {
-			response = returnCode;
+		[alert beginSheetModalForWindow:window completionHandler:^(NSModalResponse response) {
+			int returnCode = getButtonNumber(response);
+			dialogCallback(callBackID, returnCode);
 		}];
 	}
-
-    int result;
-
-    if( response == NSAlertFirstButtonReturn ) {
-        result = 0;
-    }
-    else if( response == NSAlertSecondButtonReturn ) {
-        result = 1;
-    }
-    else if( response == NSAlertThirdButtonReturn ) {
-        result = 2;
-    } else {
-        result = 3;
-    }
-	return result;
 }
 
 // Release the dialog
@@ -296,6 +293,7 @@ static void showSaveFileDialog(unsigned int dialogID,
 import "C"
 import (
 	"strings"
+	"sync"
 	"unsafe"
 )
 
@@ -308,6 +306,53 @@ var alertTypeMap = map[DialogType]C.int{
 	InfoDialogType:     NSAlertStyleInformational,
 	ErrorDialogType:    NSAlertStyleCritical,
 	QuestionDialogType: NSAlertStyleInformational,
+}
+
+type dialogResultCallback func(int)
+
+var (
+	callbacks = make(map[int]dialogResultCallback)
+	mutex     = &sync.Mutex{}
+)
+
+func addDialogCallback(callback dialogResultCallback) int {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Find the first free integer key
+	var id int
+	for {
+		if _, exists := callbacks[id]; !exists {
+			break
+		}
+		id++
+	}
+
+	// Save the function in the map using the integer key
+	callbacks[id] = callback
+
+	// Return the key
+	return id
+}
+
+func removeDialogCallback(id int) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	delete(callbacks, id)
+}
+
+//export dialogCallback
+func dialogCallback(id C.int, buttonPressed C.int) {
+	mutex.Lock()
+	callback, exists := callbacks[int(id)]
+	mutex.Unlock()
+
+	if !exists {
+		return
+	}
+
+	// Call the function with the button number
+	callback(int(buttonPressed)) // Replace nil with the actual slice of buttons
 }
 
 func (m *macosApp) showAboutDialog(title string, message string, icon []byte) {
@@ -381,13 +426,19 @@ func (m *macosDialog) show() {
 			count++
 		}
 
-		buttonPressed := int(C.dialogRunModal(m.nsDialog, parent))
-		if len(m.dialog.Buttons) > buttonPressed {
-			button := reversedButtons[buttonPressed]
-			if button.Callback != nil {
-				button.Callback()
+		var callBackID int
+		callBackID = addDialogCallback(func(buttonPressed int) {
+			if len(m.dialog.Buttons) > buttonPressed {
+				button := reversedButtons[buttonPressed]
+				if button.Callback != nil {
+					button.Callback()
+				}
 			}
-		}
+			removeDialogCallback(callBackID)
+		})
+
+		C.dialogRunModal(m.nsDialog, parent, C.int(callBackID))
+
 	})
 
 }

@@ -73,6 +73,11 @@ The electron alternative for Go
  * @property {string} [Pattern] - Pattern to match for the filter, e.g. "*.txt;*.md" for text markdown files.
  */
 
+// setup
+window._wails = window._wails || {};
+window._wails.dialogErrorCallback = dialogErrorCallback;
+window._wails.dialogResultCallback = dialogResultCallback;
+
 import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
 import { nanoid } from 'nanoid/non-secure';
@@ -117,10 +122,6 @@ function dialog(type, options = {}) {
         });
     });
 }
-
-window._wails = window._wails || {};
-window._wails.dialogErrorCallback = dialogErrorCallback;
-window._wails.dialogResultCallback = dialogResultCallback;
 
 /**
  * Handles the callback from a dialog.

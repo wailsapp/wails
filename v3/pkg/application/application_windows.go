@@ -192,6 +192,10 @@ func (m *windowsApp) run() error {
 }
 
 func (m *windowsApp) destroy() {
+	if !globalApplication.shouldQuit() {
+		return
+	}
+	globalApplication.cleanup()
 	// Post a quit message to the main thread
 	w32.PostQuitMessage(0)
 }

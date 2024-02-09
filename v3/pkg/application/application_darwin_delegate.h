@@ -7,6 +7,7 @@
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 @property bool shouldTerminateWhenLastWindowClosed;
+@property bool shuttingDown;
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app;
 @end
 

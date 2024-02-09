@@ -10,6 +10,33 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
+/**
+ * @typedef {Object} Position
+ * @property {number} X - The X coordinate.
+ * @property {number} Y - The Y coordinate.
+ */
+
+/**
+ * @typedef {Object} Size
+ * @property {number} X - The width.
+ * @property {number} Y - The height.
+ */
+
+
+/**
+ * @typedef {Object} Rect
+ * @property {number} X - The X coordinate of the top-left corner.
+ * @property {number} Y - The Y coordinate of the top-left corner.
+ * @property {number} Width - The width of the rectangle.
+ * @property {number} Height - The height of the rectangle.
+ */
+
+
+/**
+ * @typedef {('Zero'|'Ninety'|'OneEighty'|'TwoSeventy')} Rotation
+ * The rotation of the screen. Can be one of 'Zero', 'Ninety', 'OneEighty', 'TwoSeventy'.
+ */
+
 
 /**
  * @typedef {Object} Screen

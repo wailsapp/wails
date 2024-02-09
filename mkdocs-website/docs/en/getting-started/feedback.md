@@ -15,8 +15,8 @@ posts before creating new ones. Here are the different ways to provide feedback:
       - Open a [PR](https://github.com/wailsapp/wails/pulls) with the title `[v3 alpha test] <description of bug>`.
       - Please include a link to the PR in your post.
 
-!!! warning
-    *Remember*, unexpected behaviour isn't necessarily a bug - it might just not do what you expect it to do. Use [Suggestions](#suggestions) for this.
+    !!! warning
+        *Remember*, unexpected behaviour isn't necessarily a bug - it might just not do what you expect it to do. Use [Suggestions](#suggestions) for this.
 
 
 === "Fixes"

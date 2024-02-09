@@ -165,7 +165,7 @@ func TestParseEnum(t *testing.T) {
 			for packageName, packageData := range tt.wantBoundMethods {
 				for structName, wantBoundMethods := range packageData {
 					gotBoundMethods := got.BoundMethods[packageName][structName]
-					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods); diff != "" {
+					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods, cmp.AllowUnexported(Parameter{})); diff != "" {
 						t.Errorf("ParseDirectory() failed:\n" + diff)
 					}
 				}
@@ -181,7 +181,7 @@ func TestParseEnum(t *testing.T) {
 				}
 			}
 
-			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods); diff != "" {
+			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods, cmp.AllowUnexported(Parameter{})); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
 			if !reflect.DeepEqual(tt.wantModels, got.Models) {

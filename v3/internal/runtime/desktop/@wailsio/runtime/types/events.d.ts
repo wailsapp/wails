@@ -1,3 +1,4 @@
+export function setup(): void;
 /**
  * Register a callback function to be called multiple times for a specific event.
  *
@@ -20,9 +21,9 @@ export function On(eventName: string, callback: Function): Function;
  *
  * @param {string} eventName - The name of the event.
  * @param {function} callback - The function to be executed when the event occurs.
- * @return {void@return {function} - A function that, when called, will unregister the callback from the event.
+ * @return {function} - A function that, when called, will unregister the callback from the event.
  */
-export function Once(eventName: string, callback: Function): void;
+export function Once(eventName: string, callback: Function): Function;
 /**
  * Removes event listeners for the specified event names.
  *
@@ -80,15 +81,6 @@ export const Types: {
         ApplicationDidChangeIcon: string;
         ApplicationDidChangeOcclusionState: string;
         ApplicationDidChangeScreenParameters: string;
-        /**
-         * Register a callback function to be called multiple times for a specific event.
-         *
-         * @param {string} eventName - The name of the event to register the callback for.
-         * @param {function} callback - The callback function to be called when the event is triggered.
-         * @param {number} maxCallbacks - The maximum number of times the callback can be called for the event. Once the maximum number is reached, the callback will no longer be called.
-         *
-         @return {function} - A function that, when called, will unregister the callback from the event.
-         */
         ApplicationDidChangeStatusBarFrame: string;
         ApplicationDidChangeStatusBarOrientation: string;
         ApplicationDidFinishLaunching: string;
@@ -103,7 +95,6 @@ export const Types: {
         ApplicationWillTerminate: string;
         ApplicationWillUnhide: string;
         ApplicationWillUpdate: string;
-        ApplicationTerminate: string;
         ApplicationDidChangeTheme: string;
         ApplicationShouldHandleReopen: string;
         WindowDidBecomeKey: string;
@@ -232,8 +223,8 @@ export const Types: {
         WindowHide: string;
         WindowDPIChanged: string;
         WindowFilesDropped: string;
+        WindowRuntimeReady: string;
         ThemeChanged: string;
-        ApplicationTerminate: string;
     };
 };
 export class WailsEvent {

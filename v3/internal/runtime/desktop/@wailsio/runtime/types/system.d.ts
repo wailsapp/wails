@@ -1,3 +1,4 @@
+export function invoke(msg: any): any;
 /**
  * @function
  * Retrieves the system dark mode status.
@@ -59,7 +60,6 @@ export function IsARM(): boolean;
  */
 export function IsARM64(): boolean;
 export function IsDebug(): boolean;
-export let invoke: any;
 export type EnvironmentInfo = {
     /**
      * - The operating system in use.

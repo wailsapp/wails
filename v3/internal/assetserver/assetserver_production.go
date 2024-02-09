@@ -2,6 +2,4 @@
 
 package assetserver
 
-func GetDevServerURL() string {
-	return ""
-}
+func (a *AssetServer) LogDetails() {}

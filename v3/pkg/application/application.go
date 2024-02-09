@@ -3,6 +3,9 @@ package application
 import (
 	"embed"
 	"encoding/json"
+	"github.com/pkg/browser"
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/signal"
 	"io"
 	"log"
 	"log/slog"
@@ -12,13 +15,9 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/pkg/browser"
-	"github.com/samber/lo"
-
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
-	wailsruntime "github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/icons"
 )
@@ -63,68 +62,73 @@ func New(appOptions Options) *App {
 		}
 	}
 
+	if !appOptions.DisableDefaultSignalHandler {
+		result.signalHandler = signal.NewSignalHandler(result.Quit)
+		result.signalHandler.Logger = result.Logger
+		result.signalHandler.ExitMessage = func(sig os.Signal) string {
+			return "Quitting application..."
+		}
+	}
+
 	result.logStartup()
 	result.logPlatformInfo()
 
 	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
 
 	opts := &assetserver.Options{
-		Assets:     appOptions.Assets.FS,
-		Handler:    appOptions.Assets.Handler,
-		Middleware: assetserver.Middleware(appOptions.Assets.Middleware),
+		Assets:         appOptions.Assets.FS,
+		Handler:        appOptions.Assets.Handler,
+		Middleware:     assetserver.Middleware(appOptions.Assets.Middleware),
+		Logger:         result.Logger,
+		RuntimeHandler: NewMessageProcessor(result.Logger),
+		GetCapabilities: func() []byte {
+			return globalApplication.capabilities.AsBytes()
+		},
+		GetFlags: func() []byte {
+			updatedOptions := result.impl.GetFlags(appOptions)
+			flags, err := json.Marshal(updatedOptions)
+			if err != nil {
+				log.Fatal("Invalid flags provided to application: ", err.Error())
+			}
+			return flags
+		},
 	}
 
-	assetLogger := result.Logger
 	if appOptions.Assets.DisableLogging {
-		assetLogger = slog.New(slog.NewTextHandler(io.Discard, nil))
+		opts.Logger = slog.New(slog.NewTextHandler(io.Discard, nil))
 	}
 
-	srv, err := assetserver.NewAssetServer(opts, false, assetLogger, wailsruntime.RuntimeAssetsBundle, result.isDebugMode, NewMessageProcessor(result.Logger))
+	srv, err := assetserver.NewAssetServer(opts)
 	if err != nil {
 		result.Logger.Error("Fatal error in application initialisation: " + err.Error())
-		os.Exit(1)
-	}
-
-	// Pass through the capabilities
-	srv.GetCapabilities = func() []byte {
-		return globalApplication.capabilities.AsBytes()
-	}
-
-	srv.GetFlags = func() []byte {
-		updatedOptions := result.impl.GetFlags(appOptions)
-		flags, err := json.Marshal(updatedOptions)
-		if err != nil {
-			log.Fatal("Invalid flags provided to application: ", err.Error())
-		}
-		return flags
 	}
 
 	result.assets = srv
-
 	result.assets.LogDetails()
 
 	result.bindings, err = NewBindings(appOptions.Bind, appOptions.BindAliases)
 	if err != nil {
 		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
-		os.Exit(1)
 	}
 
 	result.plugins = NewPluginManager(appOptions.Plugins, srv)
 	err = result.plugins.Init()
 	if err != nil {
-		result.Quit()
-		os.Exit(1)
+		globalApplication.fatal("Fatal error in plugins initialisation: " + err.Error())
 	}
 
 	err = result.bindings.AddPlugins(appOptions.Plugins)
 	if err != nil {
 		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
-		os.Exit(1)
 	}
 
 	// Process keybindings
 	if result.options.KeyBindings != nil {
 		result.keyBindings = processKeyBindingOptions(result.options.KeyBindings)
+	}
+
+	if appOptions.OnShutdown != nil {
+		result.OnShutdown(appOptions.OnShutdown)
 	}
 
 	return result
@@ -291,7 +295,16 @@ type App struct {
 	// Keybindings
 	keyBindings map[string]func(window *WebviewWindow)
 
+	// Shutdown
 	performingShutdown bool
+
+	// Shutdown tasks are run when the application is shutting down.
+	// They are run in the order they are added and run on the main thread.
+	// The application option `OnShutdown` is run first.
+	shutdownTasks []func()
+
+	// signalHandler is used to handle signals
+	signalHandler *signal.SignalHandler
 }
 
 func (a *App) init() {
@@ -389,7 +402,7 @@ func (a *App) debug(message string, args ...any) {
 func (a *App) fatal(message string, args ...any) {
 	msg := "A FATAL ERROR HAS OCCURRED: " + message
 	if a.Logger != nil {
-		go a.Logger.Error(msg, args...)
+		a.Logger.Error(msg, args...)
 	} else {
 		println(msg)
 	}
@@ -437,6 +450,12 @@ func (a *App) Run() error {
 
 	// Setup panic handler
 	defer processPanicHandlerRecover()
+
+	// Call post-create hooks
+	err := a.preRun()
+	if err != nil {
+		return err
+	}
 
 	a.impl = newPlatformApp(a)
 	go func() {
@@ -499,7 +518,7 @@ func (a *App) Run() error {
 	}
 	a.impl.setIcon(a.options.Icon)
 
-	err := a.impl.run()
+	err = a.impl.run()
 	if err != nil {
 		return err
 	}
@@ -600,13 +619,21 @@ func (a *App) CurrentWindow() *WebviewWindow {
 	return result.(*WebviewWindow)
 }
 
-func (a *App) Quit() {
+// OnShutdown adds a function to be run when the application is shutting down.
+func (a *App) OnShutdown(f func()) {
+	if f == nil {
+		return
+	}
+	a.shutdownTasks = append(a.shutdownTasks, f)
+}
+
+func (a *App) cleanup() {
 	if a.performingShutdown {
 		return
 	}
 	a.performingShutdown = true
-	if a.options.OnShutdown != nil {
-		a.options.OnShutdown()
+	for _, shutdownTask := range a.shutdownTasks {
+		InvokeSync(shutdownTask)
 	}
 	InvokeSync(func() {
 		a.windowsLock.RLock()
@@ -621,11 +648,14 @@ func (a *App) Quit() {
 		}
 		a.systemTrays = nil
 		a.systemTraysLock.Unlock()
-		if a.impl != nil {
-			a.impl.destroy()
-			a.impl = nil
-		}
 	})
+}
+
+func (a *App) Quit() {
+	if a.impl != nil {
+		InvokeSync(a.impl.destroy)
+		a.postQuit()
+	}
 }
 
 func (a *App) SetIcon(icon []byte) {
@@ -661,6 +691,8 @@ func WarningDialog() *MessageDialog {
 func ErrorDialog() *MessageDialog {
 	return newMessageDialog(ErrorDialogType)
 }
+
+// TODO: Why isn't this used?
 
 func OpenDirectoryDialog() *MessageDialog {
 	return newMessageDialog(OpenDirectoryDialogType)
@@ -848,4 +880,11 @@ func (a *App) Environment() EnvironmentInfo {
 		Arch:  runtime.GOARCH,
 		Debug: a.isDebugMode,
 	}
+}
+
+func (a *App) shouldQuit() bool {
+	if a.options.ShouldQuit != nil {
+		return a.options.ShouldQuit()
+	}
+	return true
 }

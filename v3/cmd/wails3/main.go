@@ -25,7 +25,7 @@ func init() {
 }
 
 func main() {
-	app := clir.NewCli("wails", "The Wails CLI", "v3")
+	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
 	app.NewSubCommandFunction("build", "Build the project", commands.Build)
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
@@ -37,7 +37,7 @@ func main() {
 	task.Action(func() error {
 		return commands.RunTask(&taskFlags, task.OtherArgs())
 	})
-	task.LongDescription("\nUsage: wails task [taskname] [flags]\n\nTasks are defined in the `Taskfile.yaml` file. See https://taskfile.dev for more information.")
+	task.LongDescription("\nUsage: wails3 task [taskname] [flags]\n\nTasks are defined in the `Taskfile.yaml` file. See https://taskfile.dev for more information.")
 	generate := app.NewSubCommand("generate", "Generation tools")
 	generate.NewSubCommandFunction("build-assets", "Generate build assets", commands.GenerateBuildAssets)
 	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
@@ -46,6 +46,7 @@ func main() {
 	generate.NewSubCommandFunction("constants", "Generate JS constants from Go", commands.GenerateConstants)
 	generate.NewSubCommandFunction(".desktop", "Generate .desktop file", commands.GenerateDotDesktop)
 	generate.NewSubCommandFunction("appimage", "Generate Linux AppImage", commands.GenerateAppImage)
+	generate.NewSubCommandFunction("runtime", "Generate the latest compiled runtime", commands.GenerateRuntime)
 
 	plugin := app.NewSubCommand("plugin", "Plugin tools")
 	//plugin.NewSubCommandFunction("list", "List plugins", commands.PluginList)
@@ -54,6 +55,7 @@ func main() {
 	tool := app.NewSubCommand("tool", "Various tools")
 	tool.NewSubCommandFunction("checkport", "Checks if a port is open. Useful for testing if vite is running.", commands.ToolCheckPort)
 	tool.NewSubCommandFunction("watcher", "Watches files and runs a command when they change", commands.Watcher)
+	tool.NewSubCommandFunction("cp", "Copy files", commands.Cp)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 

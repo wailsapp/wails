@@ -431,21 +431,8 @@ tasks:
 
   dev:
     summary: Runs the application in development mode
-    preconditions:
-      - sh: wails3 tool checkport -u {{ "\"$FRONTEND_DEVSERVER_URL\"" }}
-        msg: 'Cannot connect to frontend dev server ({{ "$FRONTEND_DEVSERVER_URL" }}). Please ensure you have run `wails3 dev:frontend` in another terminal.'
     cmds:
-      - wails3 tool watcher -path {{ "{{.PATH}}" }} -preexec {{ "\"{{.PREEXEC}}\""}} {{ "{{.PREWAIT}}" }} -postexec {{ "\"{{.POSTEXEC}}\"" }} -ignorefiles {{ "{{.IGNOREFILES}}" }} -ignoredirs {{ "{{.IGNOREDIRS}}" }} -ignoreextensions {{ "{{.IGNOREEXTENSIONS}}" }} -exec {{ "\"{{.EXEC}}\"" }} -debounce {{ "{{.DEBOUNCE}}" }}
-    vars:
-      PATH: '.'
-      PREEXEC: 'wails3 task build'
-      PREWAIT: '-prewait true'
-      EXEC: 'wails3 task run'
-      POSTEXEC: ''
-      IGNOREFILES: 'Taskfile.yml'
-      IGNOREDIRS: '.git,frontend,.idea,.vscode,bin'
-      IGNOREEXTENSIONS: '.exe,.syso'
-      DEBOUNCE: 1000
+      - wails3 tool watcher -config ./build/devmode.config.toml
     env:
       # This is the default vite dev server port
       FRONTEND_DEVSERVER_URL: 'http://localhost:5173'

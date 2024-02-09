@@ -66,15 +66,22 @@ type EnumValue struct {
 }
 
 type Parameter struct {
-	Name string
-	Type *ParameterType
+	Name    string
+	Type    *ParameterType
+	project *Project
 }
 
 func (p *Parameter) NamespacedStructType(pkgName string) string {
 	var typeName string
-	if p.Type.Package != "" && p.Type.Package != pkgName {
-		parts := strings.Split(p.Type.Package, "/")
-		typeName = parts[len(parts)-1] + "."
+	thisPkg := p.project.packageCache[pkgName]
+	pkgInfo := p.project.packageCache[p.Type.Package]
+	if pkgInfo.Name != "" && pkgInfo.Path != thisPkg.Path {
+		typeName = pkgInfo.Name
+	} else {
+		if p.Type.Package != "" && p.Type.Package != pkgName {
+			parts := strings.Split(p.Type.Package, "/")
+			typeName = parts[len(parts)-1] + "."
+		}
 	}
 	return typeName + p.Type.Name
 }

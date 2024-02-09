@@ -142,14 +142,7 @@ func (s *macosSystemTray) run() {
 			s.menu.Update()
 			// Convert impl to macosMenu object
 			s.nsMenu = (s.menu.impl).(*macosMenu).nsMenu
-			// We only set the tray menu if we don't have an attached
-			// window. If we do, then we manually operate the menu using
-			// the right mouse button
-			if s.parent.attachedWindow.Window == nil {
-				C.systemTraySetMenu(s.nsStatusItem, s.nsMenu)
-			}
 		}
-
 	})
 }
 

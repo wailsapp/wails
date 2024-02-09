@@ -58,28 +58,7 @@ describe('Once', () => {
     cancel();
   })
 })
-//
-// describe('EventsNotify', () => {
-//   it('should inform a listener', () => {
-//     const cb = vi.fn()
-//     EventsOn('a', cb)
-//     EventsNotify(JSON.stringify({name: 'a', data: ["one", "two", "three"]}))
-//     expect(cb).toBeCalledTimes(1);
-//     expect(cb).toHaveBeenLastCalledWith("one", "two", "three");
-//     expect(window.WailsInvoke).toBeCalledTimes(0);
-//   })
-// })
-//
-// describe('EventsEmit', () => {
-//   it('should emit an event', () => {
-//     EventsEmit('a', 'one', 'two', 'three')
-//     expect(window.WailsInvoke).toBeCalledTimes(1);
-//     const calledWith = window.WailsInvoke.calls[0][0];
-//     expect(calledWith.slice(0, 2)).toBe('EE')
-//     expect(JSON.parse(calledWith.slice(2))).toStrictEqual({data: ["one", "two", "three"], name: "a"})
-//   })
-// })
-//
+
 describe('Off', () => {
   beforeEach(() => {
     On('a', () => {})

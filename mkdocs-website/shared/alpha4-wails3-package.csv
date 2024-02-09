@@ -1,0 +1,4 @@
+" ",Mac,Windows,Linux
+Standard Executable,:material-check-bold:,:material-check-bold:,:material-check-bold:
+macOS Application Bundle,:material-check-bold:,:material-cancel:,:material-cancel:
+NSIS,:material-cancel:,:material-check-bold:,:material-cancel:

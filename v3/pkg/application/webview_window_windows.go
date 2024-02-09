@@ -5,8 +5,9 @@ package application
 import (
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/runtime"
 	"net/url"
-	"path"
 	"strconv"
 	"strings"
 	"sync"
@@ -17,7 +18,6 @@ import (
 
 	"github.com/bep/debounce"
 	"github.com/wailsapp/go-webview2/webviewloader"
-	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 
@@ -38,8 +38,6 @@ var edgeMap = map[string]uintptr{
 	"w-resize":  w32.HTLEFT,
 	"nw-resize": w32.HTTOPLEFT,
 }
-
-var showDevTools = func(chromium *edge.Chromium) {}
 
 type windowsWebviewWindow struct {
 	windowImpl               unsafe.Pointer
@@ -239,6 +237,10 @@ func (w *windowsWebviewWindow) run() {
 
 	w.setSize(options.Width, options.Height)
 
+	// Min/max buttons
+	w.setStyle(!options.Windows.DisableMinimiseButton, w32.WS_MINIMIZEBOX)
+	w.setStyle(!options.Windows.DisableMaximiseButton, w32.WS_MAXIMIZEBOX)
+
 	// Register the window with the application
 	getNativeApplication().registerWindow(w)
 
@@ -306,6 +308,7 @@ func (w *windowsWebviewWindow) run() {
 		w.minimise()
 	case WindowStateFullscreen:
 		w.fullscreen()
+	case WindowStateNormal:
 	}
 
 	// Process window mask
@@ -405,10 +408,6 @@ func (w *windowsWebviewWindow) reload() {
 func (w *windowsWebviewWindow) forceReload() {
 	//TODO implement me
 	panic("implement me")
-}
-
-func (w *windowsWebviewWindow) toggleDevTools() {
-	showDevTools(w.chromium)
 }
 
 func (w *windowsWebviewWindow) zoomReset() {
@@ -1231,9 +1230,18 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 	if reqHeaders, err := req.GetHeaders(); err == nil {
 		useragent, _ := reqHeaders.GetHeader(assetserver.HeaderUserAgent)
 		useragent = strings.Join([]string{useragent, assetserver.WailsUserAgentValue}, " ")
-		reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
-		reqHeaders.SetHeader(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(w.parent.id), 10))
-		reqHeaders.Release()
+		err = reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
+		if err != nil {
+			globalApplication.fatal("Error setting UserAgent header: " + err.Error())
+		}
+		err = reqHeaders.SetHeader(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(w.parent.id), 10))
+		if err != nil {
+			globalApplication.fatal("Error setting WindowId header: " + err.Error())
+		}
+		err = reqHeaders.Release()
+		if err != nil {
+			globalApplication.fatal("Error releasing headers: " + err.Error())
+		}
 	}
 
 	if globalApplication.assets == nil {
@@ -1400,10 +1408,8 @@ func (w *windowsWebviewWindow) setupChromium() {
 	if err != nil {
 		globalApplication.fatal(err.Error())
 	}
-	err = settings.PutAreDevToolsEnabled(debugMode || w.parent.options.DevToolsEnabled)
-	if err != nil {
-		globalApplication.fatal(err.Error())
-	}
+
+	w.enableDevTools(settings)
 
 	if w.parent.options.Zoom > 0.0 {
 		chromium.PutZoomFactor(w.parent.options.Zoom)
@@ -1447,35 +1453,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.Init(script)
 		chromium.NavigateToString(w.parent.options.HTML)
 	} else {
-		var startURL = "http://wails.localhost"
-		devServerURL := assetserver.GetDevServerURL()
-		if devServerURL != "" {
-			// Parse the port
-			parsedURL, err := url.Parse(devServerURL)
-			if err != nil {
-				globalApplication.fatal("Error parsing environment variable 'WAILS_DEVSERVER_URL`: " + err.Error())
-			}
-			port := parsedURL.Port()
-			if port != "" {
-				startURL += ":" + port
-			}
-		} else {
-			if w.parent.options.URL != "" {
-				// parse the url
-				parsedURL, err := url.Parse(w.parent.options.URL)
-				if err != nil {
-					globalApplication.fatal("Error parsing URL: " + err.Error())
-				}
-				if parsedURL.Scheme == "" {
-					startURL = path.Join(startURL, w.parent.options.URL)
-					// if the original URL had a trailing slash, add it back
-					if strings.HasSuffix(w.parent.options.URL, "/") {
-						startURL = startURL + "/"
-					}
-				} else {
-					startURL = w.parent.options.URL
-				}
-			}
+		startURL, err := assetserver.GetStartURL(w.parent.options.URL)
+		if err != nil {
+			globalApplication.fatal(err.Error())
 		}
 		chromium.Navigate(startURL)
 	}
@@ -1512,6 +1492,9 @@ func (w *windowsWebviewWindow) flash(enabled bool) {
 }
 
 func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
+
+	// Install the runtime core
+	w.execJS(runtime.Core())
 
 	// Emit DomReady Event
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
@@ -1603,7 +1586,12 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 			return
 		}
 
-		defer objs.Release()
+		defer func() {
+			err = objs.Release()
+			if err != nil {
+				globalApplication.error("Error releasing objects: " + err.Error())
+			}
+		}()
 
 		count, err := objs.GetCount()
 		if err != nil {
@@ -1620,6 +1608,8 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 			}
 
 			file := (*edge.ICoreWebView2File)(unsafe.Pointer(_file))
+
+			// TODO: Fix this
 			defer file.Release()
 
 			filepath, err := file.GetPath()

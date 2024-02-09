@@ -52,6 +52,15 @@ type MacWindow struct {
 
 	// WebviewPreferences contains preferences for the webview
 	WebviewPreferences MacWebviewPreferences
+
+	// Disables the minimise button
+	DisableMinimiseButton bool
+
+	// Disables the maximise button
+	DisableMaximiseButton bool
+
+	// Disables the close button
+	DisableCloseButton bool
 }
 
 // MacWebviewPreferences contains preferences for the Mac webview

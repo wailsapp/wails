@@ -15,6 +15,13 @@ let call = newRuntimeCallerWithID(objectNames.System, '');
 const systemIsDarkMode = 0;
 const environment = 1;
 
+export function invoke(msg) {
+    if(window.chrome) {
+        return window.chrome.webview.postMessage(msg);
+    }
+    return window.webkit.messageHandlers.external.postMessage(msg);
+}
+
 /**
  * @function
  * Retrieves the system dark mode status.
@@ -24,7 +31,6 @@ export function IsDarkMode() {
     return call(systemIsDarkMode);
 }
 
-
 /**
  * Fetches the capabilities of the application from the server.
  *
@@ -32,7 +38,7 @@ export function IsDarkMode() {
  * @function Capabilities
  * @returns {Promise<Object>} A promise that resolves to an object containing the capabilities.
  */
-export async function Capabilities() {
+export function Capabilities() {
     let response = fetch("/wails/capabilities");
     return response.json();
 }
@@ -52,25 +58,13 @@ export function Environment() {
     return call(environment);
 }
 
-export let invoke = null;
-let environmentCache = null;
-
-Environment()
-    .then(result => {
-        environmentCache = result;
-        invoke = IsWindows() ? window.chrome.webview.postMessage : window.webkit.messageHandlers.external.postMessage;
-    })
-    .catch(error => {
-        console.error(`Error getting Environment: ${error}`);
-    });
-
 /**
  * Checks if the current operating system is Windows.
  *
  * @return {boolean} True if the operating system is Windows, otherwise false.
  */
 export function IsWindows() {
-    return environmentCache.OS === "windows";
+    return window._wails.environment.OS === "windows";
 }
 
 /**
@@ -79,7 +73,7 @@ export function IsWindows() {
  * @returns {boolean} Returns true if the current operating system is Linux, false otherwise.
  */
 export function IsLinux() {
-    return environmentCache.OS === "linux";
+    return window._wails.environment.OS === "linux";
 }
 
 /**
@@ -88,7 +82,7 @@ export function IsLinux() {
  * @returns {boolean} True if the environment is macOS, false otherwise.
  */
 export function IsMac() {
-    return environmentCache.OS === "darwin";
+    return window._wails.environment.OS === "darwin";
 }
 
 /**
@@ -96,7 +90,7 @@ export function IsMac() {
  * @returns {boolean} True if the current environment architecture is AMD64, false otherwise.
  */
 export function IsAMD64() {
-    return environmentCache.Arch === "amd64";
+    return window._wails.environment.Arch === "amd64";
 }
 
 /**
@@ -105,7 +99,7 @@ export function IsAMD64() {
  * @returns {boolean} True if the current architecture is ARM, false otherwise.
  */
 export function IsARM() {
-    return environmentCache.Arch === "arm";
+    return window._wails.environment.Arch === "arm";
 }
 
 /**
@@ -114,9 +108,10 @@ export function IsARM() {
  * @returns {boolean} - Returns true if the environment is ARM64 architecture, otherwise returns false.
  */
 export function IsARM64() {
-    return environmentCache.Arch === "arm64";
+    return window._wails.environment.Arch === "arm64";
 }
 
 export function IsDebug() {
-    return environmentCache.Debug === true;
+    return window._wails.environment.Debug === true;
 }
+

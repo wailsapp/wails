@@ -1,8 +1,8 @@
 package application
 
 import (
+	"encoding/json"
 	"fmt"
-	jsoniter "github.com/json-iterator/go"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -38,7 +38,10 @@ func NewMessageProcessor(logger *slog.Logger) *MessageProcessor {
 func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, args ...any) {
 	m.Error(message, args...)
 	rw.WriteHeader(http.StatusBadRequest)
-	rw.Write([]byte(fmt.Sprintf(message, args...)))
+	_, err := rw.Write([]byte(fmt.Sprintf(message, args...)))
+	if err != nil {
+		m.Error("Unable to write error message: %s", err)
+	}
 }
 
 func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
@@ -63,7 +66,7 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 	return targetWindow, windowID
 }
 
-func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Request) {
+func (m *MessageProcessor) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	object := r.URL.Query().Get("object")
 	if object == "" {
 		m.httpError(rw, "Invalid runtime call")
@@ -132,7 +135,7 @@ func (m *MessageProcessor) json(rw http.ResponseWriter, data any) {
 	var jsonPayload = []byte("{}")
 	var err error
 	if data != nil {
-		jsonPayload, err = jsoniter.Marshal(data)
+		jsonPayload, err = json.Marshal(data)
 		if err != nil {
 			m.Error("Unable to convert data to JSON. Please report this to the Wails team! Error: %s", err)
 			return

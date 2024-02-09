@@ -18,6 +18,10 @@ import {newRuntimeCallerWithID, objectNames} from "./runtime";
 import {EventTypes} from "./event_types";
 export const Types = EventTypes;
 
+// Setup
+window._wails = window._wails || {};
+window._wails.dispatchWailsEvent = dispatchWailsEvent;
+
 const call = newRuntimeCallerWithID(objectNames.Events, '');
 const EmitMethod = 0;
 const eventListeners = new Map();
@@ -42,9 +46,8 @@ export class WailsEvent {
     }
 }
 
-
-window._wails = window._wails || {};
-window._wails.dispatchWailsEvent = dispatchWailsEvent;
+export function setup() {
+}
 
 function dispatchWailsEvent(event) {
     let listeners = eventListeners.get(event.name);
@@ -91,7 +94,7 @@ export function On(eventName, callback) { return OnMultiple(eventName, callback,
  *
  * @param {string} eventName - The name of the event.
  * @param {function} callback - The function to be executed when the event occurs.
- * @return {void@return {function} - A function that, when called, will unregister the callback from the event.
+ * @return {function} - A function that, when called, will unregister the callback from the event.
  */
 export function Once(eventName, callback) { return OnMultiple(eventName, callback, 1); }
 

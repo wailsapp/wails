@@ -3,6 +3,7 @@ package assetserver
 import (
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"net/http"
 )
 
@@ -33,6 +34,18 @@ type Options struct {
 	// Multiple Middlewares can be chained together with:
 	//   ChainMiddleware(middleware ...Middleware) Middleware
 	Middleware Middleware
+
+	// Logger is the logger used by the AssetServer. If not defined, no logging will be done.
+	Logger *slog.Logger
+
+	// RuntimeHandler is the handler used for the runtime calls.
+	RuntimeHandler http.Handler
+
+	// GetCapabilities returns the capabilities of the runtime
+	GetCapabilities func() []byte
+
+	// GetFlags returns the application flags
+	GetFlags func() []byte
 }
 
 // Validate the options

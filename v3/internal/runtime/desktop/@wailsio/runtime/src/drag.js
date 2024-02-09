@@ -13,15 +13,21 @@ The electron alternative for Go
 import {invoke, IsWindows} from "./system";
 import {GetFlag} from "./flags";
 
+// Setup
+window._wails = window._wails || {};
+window._wails.setResizable = setResizable;
+window._wails.endDrag = endDrag;
+window.addEventListener('mousedown', onMouseDown);
+window.addEventListener('mousemove', onMouseMove);
+window.addEventListener('mouseup', onMouseUp);
+
+
 let shouldDrag = false;
 let resizeEdge = null;
 let resizable = false;
 let defaultCursor = "auto";
-window._wails = window._wails || {};
-window._wails.setResizable = setResizable;
-window._wails.endDrag = endDrag;
 
-export function dragTest(e) {
+function dragTest(e) {
     let val = window.getComputedStyle(e.target).getPropertyValue("--webkit-app-region");
     if (!val || val === "" || val.trim() !== "drag" || e.buttons !== 1) {
         return false;
@@ -29,17 +35,11 @@ export function dragTest(e) {
     return e.detail === 1;
 }
 
-export function setupDrag() {
-    window.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-}
-
-export function setResizable(value) {
+function setResizable(value) {
     resizable = value;
 }
 
-export function endDrag() {
+function endDrag() {
     document.body.style.cursor = 'default';
     shouldDrag = false;
 }

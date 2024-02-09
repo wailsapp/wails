@@ -144,7 +144,6 @@ function addWMLOpenBrowserListener() {
  * @return {void}
  */
 export function Reload() {
-    console.log("Reloading WML");
     addWMLEventListeners();
     addWMLWindowListeners();
     addWMLOpenBrowserListener();

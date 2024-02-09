@@ -209,7 +209,7 @@ func TestParseFunction(t *testing.T) {
 			for packageName, packageData := range tt.wantBoundMethods {
 				for structName, wantBoundMethods := range packageData {
 					gotBoundMethods := got.BoundMethods[packageName][structName]
-					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods); diff != "" {
+					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods, cmp.AllowUnexported(Parameter{})); diff != "" {
 						t.Errorf("ParseDirectory() failed:\n" + diff)
 					}
 				}
@@ -226,7 +226,7 @@ func TestParseFunction(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(tt.wantBoundMethods, got.BoundMethods) {
-				t.Errorf("ParseDirectory() failed:\n" + cmp.Diff(tt.wantBoundMethods, got.BoundMethods))
+				t.Errorf("ParseDirectory() failed:\n" + cmp.Diff(tt.wantBoundMethods, got.BoundMethods, cmp.AllowUnexported(Parameter{})))
 				//spew.Dump(tt.wantBoundMethods)
 				//spew.Dump(got.BoundMethods)
 			}
