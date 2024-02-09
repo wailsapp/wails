@@ -1066,11 +1066,6 @@ func (w *linuxWebviewWindow) startDrag() error {
 	return nil
 }
 
-func (w *linuxWebviewWindow) flash(enabled bool) {
-	// Flash the window to get the user's attention
-	C.gtk_window_set_urgency_hint(w.gtkWindow(), gtkBool(enabled))
-}
-
 func enableDevTools(webview pointer) {
 	settings := C.webkit_web_view_get_settings((*C.WebKitWebView)(webview))
 	enabled := C.webkit_settings_get_enable_developer_extras(settings)
