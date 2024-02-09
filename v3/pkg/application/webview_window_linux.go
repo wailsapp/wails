@@ -12,8 +12,6 @@ import (
 	"math"
 )
 
-var showDevTools = func(window pointer) {}
-
 type dragInfo struct {
 	XRoot       int
 	YRoot       int
@@ -103,19 +101,6 @@ func (w *linuxWebviewWindow) disableSizeConstraints() {
 	w.setMinMaxSize(x, y, width*scale, height*scale)
 }
 
-func (w *linuxWebviewWindow) fullscreen() {
-	w.maximise()
-	//w.lastWidth, w.lastHeight = w.size()
-	x, y, width, height, scale := w.getCurrentMonitorGeometry()
-	if x == -1 && y == -1 && width == -1 && height == -1 {
-		return
-	}
-	w.setMinMaxSize(0, 0, width*scale, height*scale)
-	w.setSize(width*scale, height*scale)
-	windowFullscreen(w.window)
-	w.setRelativePosition(0, 0)
-}
-
 func (w *linuxWebviewWindow) unminimise() {
 	w.present()
 }
@@ -146,7 +131,7 @@ func (w *linuxWebviewWindow) center() {
 	if x == -1 && y == -1 && width == -1 && height == -1 {
 		return
 	}
-	windowWidth, windowHeight := windowGetSize(w.window)
+	windowWidth, windowHeight := w.size()
 
 	newX := ((width - windowWidth) / 2) + x
 	newY := ((height - windowHeight) / 2) + y
@@ -193,18 +178,6 @@ func (w *linuxWebviewWindow) setMinSize(width, height int) {
 
 func (w *linuxWebviewWindow) setMaxSize(width, height int) {
 	w.setMinMaxSize(w.parent.options.MinWidth, w.parent.options.MinHeight, width, height)
-}
-
-func (w *linuxWebviewWindow) showDevTools() {
-	windowShowDevTools(w.webview)
-}
-
-func (w *linuxWebviewWindow) toggleDevTools() {
-	showDevTools(w.webview)
-}
-
-func (w *linuxWebviewWindow) size() (int, int) {
-	return windowGetSize(w.window)
 }
 
 func (w *linuxWebviewWindow) setRelativePosition(x, y int) {
@@ -331,25 +304,11 @@ func (w *linuxWebviewWindow) run() {
 		}
 	}
 	if w.parent.options.DevToolsEnabled || globalApplication.isDebugMode {
-		w.toggleDevTools()
+		w.enableDevTools()
 		if w.parent.options.OpenInspectorOnStartup {
-			w.showDevTools()
+			w.openDevTools()
 		}
 	}
-}
-
-func (w *linuxWebviewWindow) destroy() {
-	w.parent.markAsDestroyed()
-	// Free menu
-	if w.gtkmenu != nil {
-		menuDestroy(w.gtkmenu)
-		w.gtkmenu = nil
-	}
-	windowDestroy(w.window)
-}
-
-func (w *linuxWebviewWindow) setEnabled(enabled bool) {
-	widgetSetSensitive(w.window, enabled)
 }
 
 func (w *linuxWebviewWindow) startResize(border string) error {

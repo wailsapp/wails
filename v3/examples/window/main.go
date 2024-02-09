@@ -439,6 +439,11 @@ func main() {
 			w.SetEnabled(true)
 		})
 	})
+	stateMenu.Add("Open Dev Tools").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.OpenDevTools()
+		})
+	})
 
 	if runtime.GOOS == "windows" {
 		stateMenu.Add("Flash Start").OnClick(func(ctx *application.Context) {

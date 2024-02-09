@@ -644,13 +644,14 @@ func getScreens(app pointer) ([]*Screen, error) {
 }
 
 // widgets
-func widgetSetSensitive(widget pointer, enabled bool) {
-	value := C.int(0)
+
+func (w *linuxWebviewWindow) setEnabled(enabled bool) {
+	var value C.int
 	if enabled {
 		value = C.int(1)
 	}
 
-	C.gtk_widget_set_sensitive((*C.GtkWidget)(widget), value)
+	C.gtk_widget_set_sensitive(w.gtkWidget(), value)
 }
 
 func widgetSetVisible(widget pointer, hidden bool) {
@@ -692,32 +693,41 @@ func (w *linuxWebviewWindow) execJS(js string) {
 	C.free(unsafe.Pointer(value))
 }
 
-func windowDestroy(window pointer) {
-	// Should this truly 'destroy' ?
-	C.gtk_window_close((*C.GtkWindow)(window))
-	//C.gtk_widget_destroy((*C.GtkWidget)(window))
+func (w *linuxWebviewWindow) destroy() {
+	w.parent.markAsDestroyed()
+	// Free menu
+	if w.gtkmenu != nil {
+		C.gtk_widget_destroy((*C.GtkWidget)(w.gtkmenu))
+		w.gtkmenu = nil
+	}
+	w.destroy()
 }
 
-func menuDestroy(gtkMenu pointer) {
-	C.gtk_widget_destroy((*C.GtkWidget)(gtkMenu))
+func (w *linuxWebviewWindow) fullscreen() {
+	w.maximise()
+	//w.lastWidth, w.lastHeight = w.size()
+	x, y, width, height, scale := w.getCurrentMonitorGeometry()
+	if x == -1 && y == -1 && width == -1 && height == -1 {
+		return
+	}
+	w.setMinMaxSize(0, 0, width*scale, height*scale)
+	w.setSize(width*scale, height*scale)
+	C.gtk_window_fullscreen(w.gtkWindow())
+	w.setRelativePosition(0, 0)
 }
 
-func windowFullscreen(window pointer) {
-	C.gtk_window_fullscreen((*C.GtkWindow)(window))
-}
-
-func windowGetCurrentMonitor(window pointer) *C.GdkMonitor {
+func (w *linuxWebviewWindow) getCurrentMonitor() *C.GdkMonitor {
 	// Get the monitor that the window is currently on
-	display := C.gtk_widget_get_display((*C.GtkWidget)(window))
-	gdk_window := C.gtk_widget_get_window((*C.GtkWidget)(window))
-	if gdk_window == nil {
+	display := C.gtk_widget_get_display(w.gtkWidget())
+	gdkWindow := C.gtk_widget_get_window(w.gtkWidget())
+	if gdkWindow == nil {
 		return nil
 	}
-	return C.gdk_display_get_monitor_at_window(display, gdk_window)
+	return C.gdk_display_get_monitor_at_window(display, gdkWindow)
 }
 
 func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width int, height int, scale int) {
-	monitor := windowGetCurrentMonitor(w.window)
+	monitor := w.getCurrentMonitor()
 	if monitor == nil {
 		return -1, -1, -1, -1, 1
 	}
@@ -727,10 +737,10 @@ func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width in
 	return int(result.x), int(result.y), int(result.width), int(result.height), scale
 }
 
-func windowGetSize(window pointer) (int, int) {
+func (w *linuxWebviewWindow) size() (int, int) {
 	var windowWidth C.int
 	var windowHeight C.int
-	C.gtk_window_get_size((*C.GtkWindow)(window), &windowWidth, &windowHeight)
+	C.gtk_window_get_size(w.gtkWindow(), &windowWidth, &windowHeight)
 	return int(windowWidth), int(windowHeight)
 }
 
@@ -738,7 +748,7 @@ func (w *linuxWebviewWindow) relativePosition() (int, int) {
 	x, y := w.absolutePosition()
 	// The position must be relative to the screen it is on
 	// We need to get the screen it is on
-	monitor := windowGetCurrentMonitor(w.window)
+	monitor := w.getCurrentMonitor()
 	geometry := C.GdkRectangle{}
 	C.gdk_monitor_get_geometry(monitor, &geometry)
 	x = x - int(geometry.x)
@@ -1014,7 +1024,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	C.signal_connect(wv, c.String("key-press-event"), C.onKeyPressEvent, winID)
 }
 
-func windowShowDevTools(webview pointer) {
+func openDevTools(webview pointer) {
 	inspector := C.webkit_web_view_get_inspector((*C.WebKitWebView)(webview))
 	C.webkit_web_inspector_show(inspector)
 }
@@ -1029,7 +1039,7 @@ func (w *linuxWebviewWindow) startDrag() error {
 	return nil
 }
 
-func windowToggleDevTools(webview pointer) {
+func enableDevTools(webview pointer) {
 	settings := C.webkit_web_view_get_settings((*C.WebKitWebView)(webview))
 	enabled := C.webkit_settings_get_enable_developer_extras(settings)
 	switch enabled {
