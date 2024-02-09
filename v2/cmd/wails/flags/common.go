@@ -1,5 +1,16 @@
 package flags
 
+import (
+	"fmt"
+	"os"
+	"runtime"
+	"strings"
+
+	"github.com/leaanthony/slicer"
+	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v2/internal/system"
+)
+
 type Common struct {
 	NoColour bool `description:"Disable colour in output"`
 }
@@ -68,3 +79,4 @@ func parseTargets(platforms string) TargetsCollection {
 
 	return targets
 }
+
