@@ -104,19 +104,6 @@ func (w *linuxWebviewWindow) disableSizeConstraints() {
 	w.setMinMaxSize(x, y, width*scale, height*scale)
 }
 
-func (w *linuxWebviewWindow) fullscreen() {
-	w.maximise()
-	//w.lastWidth, w.lastHeight = w.size()
-	x, y, width, height, scale := w.getCurrentMonitorGeometry()
-	if x == -1 && y == -1 && width == -1 && height == -1 {
-		return
-	}
-	w.setMinMaxSize(0, 0, width*scale, height*scale)
-	w.setSize(width*scale, height*scale)
-	windowFullscreen(w.window)
-	w.setRelativePosition(0, 0)
-}
-
 func (w *linuxWebviewWindow) unminimise() {
 	w.present()
 }
@@ -321,20 +308,6 @@ func (w *linuxWebviewWindow) run() {
 			w.openDevTools()
 		}
 	}
-}
-
-func (w *linuxWebviewWindow) destroy() {
-	w.parent.markAsDestroyed()
-	// Free menu
-	if w.gtkmenu != nil {
-		menuDestroy(w.gtkmenu)
-		w.gtkmenu = nil
-	}
-	windowDestroy(w.window)
-}
-
-func (w *linuxWebviewWindow) setEnabled(enabled bool) {
-	widgetSetSensitive(w.window, enabled)
 }
 
 func (w *linuxWebviewWindow) startResize(border string) error {
