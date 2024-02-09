@@ -1,0 +1,853 @@
+---
+sidebar_position: 3
+---
+
+# オプション
+
+## アプリケーションオプション
+
+`Options.App`構造体には、アプリケーションの構成設定が含まれています。 これを`wails.Run()`メソッドに渡してください:
+
+```go title="Example"
+import (
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "github.com/wailsapp/wails/v2/pkg/options/linux"
+    "github.com/wailsapp/wails/v2/pkg/options/mac"
+    "github.com/wailsapp/wails/v2/pkg/options/windows"
+)
+
+func main() {
+
+    err := wails.Run(&options.App{
+        Title:              "Menus Demo",
+        Width:              800,
+        Height:             600,
+        DisableResize:      false,
+        Fullscreen:         false,
+        WindowStartState:   options.Maximised,
+        Frameless:          true,
+        MinWidth:           400,
+        MinHeight:          400,
+        MaxWidth:           1280,
+        MaxHeight:          1024,
+        StartHidden:        false,
+        HideWindowOnClose:  false,
+        BackgroundColour:   &options.RGBA{R: 0, G: 0, B: 0, A: 255},
+        AlwaysOnTop:        false,
+        AssetServer: &assetserver.Options{
+            Assets:     assets,
+            Handler:    assetsHandler,
+            Middleware: assetsMidldeware,
+        },
+        Menu:               app.applicationMenu(),
+        Logger:             nil,
+        LogLevel:           logger.DEBUG,
+        LogLevelProduction: logger.ERROR,
+        OnStartup:          app.startup,
+        OnDomReady:         app.domready,
+        OnShutdown:         app.shutdown,
+        OnBeforeClose:      app.beforeClose,
+        CSSDragProperty:   "--wails-draggable",
+        CSSDragValue:      "drag",
+        EnableDefaultContextMenu: false,
+        EnableFraudulentWebsiteDetection: false,
+        ZoomFactor:           1.0,
+        IsZoomControlEnabled: false,
+        Bind: []interface{}{
+            app,
+        },
+        ErrorFormatter: func(err error) any { return err.Error() },
+        Windows: &windows.Options{
+            WebviewIsTransparent:              false,
+            WindowIsTranslucent:               false,
+            BackdropType:                      windows.Mica,
+            DisableWindowIcon:                 false,
+            DisableFramelessWindowDecorations: false,
+            WebviewUserDataPath:               "",
+            WebviewBrowserPath:                "",
+            Theme:                             windows.SystemDefault,
+            CustomTheme: &windows.ThemeSettings{
+                DarkModeTitleBar:   windows.RGB(20, 20, 20),
+                DarkModeTitleText:  windows.RGB(200, 200, 200),
+                DarkModeBorder:     windows.RGB(20, 0, 20),
+                LightModeTitleBar:  windows.RGB(200, 200, 200),
+                LightModeTitleText: windows.RGB(20, 20, 20),
+                LightModeBorder:    windows.RGB(200, 200, 200),
+            },
+            // ユーザへのメッセージをカスタマイズします
+            Messages *windows.Messages
+            // OnSuspendはWindowsが省電力モードに移行した場合に呼び出されます
+            OnSuspend func()
+            // OnResumeはWindowsが省電力モードから復帰した場合に呼び出されます
+            OnResume func(),
+            WebviewGpuDisabled: false,
+        },
+        Mac: &mac.Options{
+            TitleBar: &mac.TitleBar{
+                TitlebarAppearsTransparent: true,
+                HideTitle:                  false,
+                HideTitleBar:               false,
+                FullSizeContent:            false,
+                UseToolbar:                 false,
+                HideToolbarSeparator:       true,
+            },
+            Appearance:           mac.NSAppearanceNameDarkAqua,
+            WebviewIsTransparent: true,
+            WindowIsTranslucent:  false,
+            About: &mac.AboutInfo{
+                Title:   "My Application",
+                Message: "© 2021 Me",
+                Icon:    icon,
+            },
+        },
+        Linux: &linux.Options{
+            Icon: icon,
+            WindowIsTranslucent: false,
+            WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
+            ProgramName: "wails"
+        },
+        Debug: options.Debug{
+            OpenInspectorOnStartup: false,
+        },
+    })
+
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+```
+
+### Title
+
+ウィンドウのタイトルバーに表示されるテキストです。
+
+名前: Title<br/> データ型: `string`
+
+### Width
+
+ウィンドウの初期幅です。
+
+名前: Width<br/> データ型: `int`<br/> デフォルト値: 1024
+
+### Height
+
+ウィンドウの初期の高さです。
+
+名前: Height<br/> データ型: `int`<br/> デフォルト値: 768
+
+### DisableResize
+
+デフォルトでは、メインウィンドウのサイズは自在に変更することができます。 この設定を`true`にすると、サイズが固定されます。
+
+名前: DisableResize<br/> データ型: `bool`
+
+### Fullscreen
+
+非推奨: 代わりに[WindowStartState](#windowstartstate)を使用してください。
+
+### WindowStartState
+
+起動時にウィンドウをどのように表示させるかを定義します。
+
+| 値          | Win | Mac | Lin |
+| ---------- | --- | --- | --- |
+| Fullscreen | ✅   | ✅   | ✅   |
+| Maximised  | ✅   | ✅   | ✅   |
+| Minimised  | ✅   | ❌   | ✅   |
+
+名前: WindowStartState<br/> データ型: `options.WindowStartState`
+
+### Frameless
+
+この設定を`true`にすると、ウィンドウに境界線やタイトルバーが表示されなくなります。 詳しくは[フレームレスウィンドウ](../guides/frameless.mdx)をご覧ください。
+
+名前: Frameless<br/> データ型: `bool`
+
+### MinWidth
+
+ウィンドウの最小幅を設定します。 `Width`の値がこの値より小さい場合、ウィンドウ幅はデフォルトで`MinWidth`の値となります。
+
+名前: MinWidth<br/> データ型: `int`
+
+### MinHeight
+
+ウィンドウの最小の高さを設定します。 `Height`の値がこの値より小さい場合、ウィンドウの高さはデフォルトで`MinHeight`の値となります。
+
+名前: MinHeight<br/> データ型: `int`
+
+### MaxWidth
+
+ウィンドウの最大幅を設定します。 `Width`の値がこの値より大きい場合、ウィンドウ幅はデフォルトで`MaxWidth`の値となります。
+
+名前: MaxWidth<br/> データ型: `int`
+
+### MaxHeight
+
+ウィンドウの最大の高さを設定します。 `Height`の値がこの値より大きい場合、ウィンドウの高さはデフォルトで`MaxHeight`の値となります。
+
+名前: MaxHeight<br/> データ型: `int`
+
+### StartHidden
+
+`true`に設定すると、アプリケーションは[WindowShow](../reference/runtime/window.mdx#windowshow)が呼び出されるまで非表示となります。
+
+名前: StartHidden<br/> データ型: `bool`
+
+### HideWindowOnClose
+
+デフォルトでは、ウィンドウを閉じるとアプリケーションが終了します。 この設定を`true`にすると、ウィンドウを閉じる操作をした際に、
+
+ウィンドウが非表示の状態になります。
+
+名前: HideWindowOnClose<br/> データ型: `bool`
+
+### BackgroundColour
+
+ウィンドウのデフォルトの背景色です。 例: options.NewRGBA(255,0,0,128) - 50%透過された赤色
+
+名前: BackgroundColour<br/> データ型: `*options.RGBA`<br/> デフォルト値: white
+
+### AlwaysOnTop
+
+ウィンドウへのフォーカスが無くなっても、他ウィンドウより手前側にウィンドウを表示させるかを設定します。
+
+名前: AlwaysOnTop<br/> データ型: `bool`
+
+### Assets
+
+非推奨: 代わりに[AssetServerの固有オプション](#assetserver)であるAssetsオプションを使用してください。
+
+### AssetsHandler
+
+非推奨: 代わりに[AssetServerの固有オプション](#assetserver)であるAssetsHandlerオプションを使用してください。
+
+### AssetServer
+
+AssetServerの固有オプションを定義します。 静的なアセットでAssetServerをカスタマイズしたり、`http.Handler`で動的なアセットを提供したり、`assetserver.Middleware`でリクエストチェーンにフックしたりすることができます。
+
+現在のところ、`http.Request`のすべての機能がサポートされているわけではありません。次の機能マトリクスを確認してください:
+
+| 機能                      | Win | Mac | Lin    |
+| ----------------------- | --- | --- | ------ |
+| GET                     | ✅   | ✅   | ✅      |
+| POST                    | ✅   | ✅   | ✅ [^1] |
+| PUT                     | ✅   | ✅   | ✅ [^1] |
+| PATCH                   | ✅   | ✅   | ✅ [^1] |
+| DELETE                  | ✅   | ✅   | ✅ [^1] |
+| Request Headers         | ✅   | ✅   | ✅ [^1] |
+| Request Body            | ✅   | ✅   | ✅ [^2] |
+| Request Body Streaming  | ✅   | ✅   | ✅ [^2] |
+| Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
+| Response Headers        | ✅   | ✅   | ✅ [^1] |
+| Response Body           | ✅   | ✅   | ✅      |
+| Response Body Streaming | ❌   | ✅   | ✅      |
+| WebSockets              | ❌   | ❌   | ❌      |
+| HTTP Redirects 30x      | ✅   | ❌   | ❌      |
+
+名前: AssetServer<br/> データ型: `*assetserver.Options`
+
+#### Assets
+
+アプリケーションのフロントエンドで使用される静的アセットです。
+
+GETリクエストが要求された場合、まず初めに、この`fs.FS`からのアセット提供を試みます。 `fs.FS`から、当該ファイルが存在しない旨の`os.ErrNotExist`エラーが返された場合、このリクエストは[Handler](#handler)へフォールバックされ、ハンドラ側でGETリクエストへの応答を試みます。
+
+nilがセットされている場合、GETリクエストに常に[Handler](#handler)へ転送されます。
+
+名前: Assets<br/> データ型: `fs.FS`
+
+#### Handler
+
+アセットハンドラは、アセットが見つからなかった場合のフォールバック処理を担う、ジェネリックな`http.Handler`です。
+
+[Assets](#assets)内で`os.ErrNotExist`エラーが発生したことにより、アセットを提供できないと判断されたすべてのGETリクエストによって、このハンドラが呼び出されます。 また、GET以外のすべての種類のリクエストは、常にこのハンドラから応答が返されます。 ハンドラが定義されていない状態で、ハンドラが呼び出された場合、次の応答が返されます:
+
+- GETリクエスト: `http.StatusNotFound`
+- その他のリクエスト: `http.StatusMethodNotAllowed`
+
+注意: フロントエンド側の開発サーバと組み合わせて使用すると、一部制限がかかる場合があります。 Viteは、拡張子を含まないパスに対して、常にindex.htmlを返します。
+
+名前: AssetsHandler<br/> データ型: `http.Handler`
+
+#### Middleware
+
+MiddlewareはHTTPミドルウェアで、AssetServerのリクエストチェーンをフックすることができます。 例えば、特殊なルーティングを実装したいときなど、デフォルトのリクエストハンドラを動的にスキップさせることができます。 Middlewareは、AssetSeverが使用する新しい`http.Handler`を生成するために呼び出されます。引数では、AssetServerがデフォルトで使用するハンドラを受け取ります。
+
+Middlewareが定義されていない場合、デフォルトのAssetServerのリクエストチェーンが実行されます。
+
+名前: Middleware<br/> データ型: `assetserver.Middleware`
+
+### Menu
+
+アプリケーションで使用されるメニューです。 メニューについて詳しくは、[メニューのリファレンス](../reference/runtime/menu.mdx)をご覧ください。
+
+:::note
+
+Macでは、メニューが指定されていない場合、デフォルトメニューが作成されます。
+
+:::
+
+名前: Menu<br/> データ型: `*menu.Menu`
+
+### Logger
+
+アプリケーションで使用するロガーです。 ロギングについて詳しくは、[ログのリファレンス](../reference/runtime/log.mdx)をご覧ください。
+
+名前: Logger<br/> データ型: `logger.Logger`<br/> デフォルト値: 標準出力へのロガー
+
+### LogLevel
+
+デフォルトのログレベルです。 ロギングについて詳しくは、[ログのリファレンス](../reference/runtime/log.mdx)をご覧ください。
+
+名前: LogLevel<br/> データ型: `logger.LogLevel`<br/> デフォルト値: 開発モードの場合は`Info`、本番モードの場合は`Error`
+
+### LogLevelProduction
+
+本番ビルド時のデフォルトのログレベルです。 ロギングについて詳しくは、[ログのリファレンス](../reference/runtime/log.mdx)をご覧ください。
+
+名前: LogLevelProduction<br/> データ型: `logger.LogLevel`<br/> デフォルト値: `Error`
+
+### OnStartup
+
+フロントエンド作成後、`index.html`が読み込まれる前に呼び出されるコールバックです。 アプリケーションのcontextが渡されます。
+
+名前: OnStartup<br/> データ型: `func(ctx context.Context)`
+
+### OnDomReady
+
+フロントエンドが`index.html`とそのリソースを読み込んだ後に呼び出されるコールバックです。 アプリケーションのcontextが渡されます。
+
+名前: OnDomReady<br/> データ型: `func(ctx context.Context)`
+
+### OnShutdown
+
+フロントエンドが破棄され、アプリケーションが終了する直前に呼び出されるコールバックです。 アプリケーションのcontextが渡されます。
+
+名前: OnShutdown<br/> データ型: `func(ctx context.Context)`
+
+### OnBeforeClose
+
+ウィンドウの閉じるボタンをクリックするか、`runtime.Quit`が呼ばれて、アプリケーションが終了されそうになっているときに呼び出されるコールバックです。 trueを返すとアプリケーションはそのまま維持され、falseを返すと通常どおりシャットダウンされます。 ユーザに対してプログラムの終了を確認したいときは、このコールバックを使うのが良いでしょう。
+
+例:
+
+```go title=windowsapp.go
+func (b *App) beforeClose(ctx context.Context) (prevent bool) {
+    dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
+        Type:          runtime.QuestionDialog,
+        Title:         "Quit?",
+        Message:       "Are you sure you want to quit?",
+    })
+
+    if err != nil {
+        return false
+    }
+    return dialog != "Yes"
+}
+```
+
+名前: OnBeforeClose<br/> データ型: `func(ctx context.Context) bool`
+
+### CSSDragProperty
+
+ウィンドウをドラッグできる要素を特定するためのCSSプロパティ名を設定します。 デフォルト値: `--wails-draggable`
+
+名前: CSSDragProperty<br/> データ型: `string`
+
+### CSSDragValue
+
+ウィンドウのドラッグを有効にするために、`CSSDragProperty`スタイルが持つべき値を設定します。 デフォルト値: `drag`
+
+名前: CSSDragValue<br/> データ型: `string`
+
+### EnableDefaultContextMenu
+
+EnableDefaultContextMenuは、本番環境において、ブラウザのデフォルトコンテキストメニューを有効にします。
+
+By default, the browser's default context-menu is only available in development and in a `-debug` [build](../reference/cli.mdx#build) along with the devtools inspector, Using this option you can enable the default context-menu in `production` while the devtools inspector won't be available unless the `-devtools` build flag is used.
+
+このオプションを有効にすると、デフォルトでは、テキストに関するコンテキスト(切り取り/コピー/貼り付け) のみがコンテキストメニューに表示されます。この動作をオーバーライドするには、`--default-contextmenu`というCSSプロパティを任意のHTML要素(`body`含む) で以下の値と共に使用してください:
+
+| CSSスタイル                        | 動作                                                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `--default-contextmenu: auto;` | (**デフォルト**) 次の場合にのみデフォルトのコンテキストメニューを表示します:<br/> contentEditableがtrueである、またはテキストが選択されている、またはinput要素/textarea要素であるとき |
+| `--default-contextmenu: show;` | 常にデフォルトのコンテキストメニューを表示します                                                                                                 |
+| `--default-contextmenu: hide;` | 常にデフォルトのコンテキストメニューを非表示にします                                                                                               |
+
+このルールは通常のCSSルールと同様に継承されるため、ネストも期待どおりに動作します。
+
+:::note
+このフィルタリング機能は本番環境でのみ有効であり、開発・デバッグビルドでは、フルコンテキストメニューが常に使用できます。
+:::
+
+:::warning
+このフィルタリング機能はセキュリティ対策として使用することはできません。開発者は、画像のダウンロード、リロード、ウェブページの保存といったコマンドを含むフルコンテキストメニューが常にリークされる可能性を考慮すべきです。この点が気になる場合、開発者はデフォルトのコンテキストメニューを有効にするべきではありません。
+:::
+
+
+名前: EnableDefaultContextMenu<br/> データ型: `bool`
+
+### EnableFraudulentWebsiteDetection
+
+EnableFraudulentWebsiteDetectionは、マルウェアやフィッシング詐欺などの不正コンテンツのスキャンサービスを有効にします。 これらのサービスは、ナビゲートされたURLやその他コンテンツ情報を、アプリからAppleおよびMicrosoftのクラウドサービスに送信する可能性があります。
+
+名前: EnableFraudulentWebsiteDetection<br/> データ型: `bool`
+
+### ZoomFactor
+
+名前: ZoomFactor<br/> データ型: `float64`
+
+WebView2の拡大率を定義します。 これは、Edgeのユーザによるズームインまたはズームアウトに対応するオプションです。
+
+### IsZoomControlEnabled
+
+名前: IsZoomControlEnabled<br/> データ型: `bool`
+
+このオプションを有効にすると、拡大率をユーザによって変更することができます。 拡大率の変更がユーザに許可されていない間は、オプションで拡大率を設定することができますのでご注意ください (例:  キオスクアプリケーションなど)。
+
+### Bind
+
+フロントエンドにバインドする必要があるメソッドが定義された、構造体インスタンスのスライスです。
+
+名前: Bind<br/> データ型: `[]interface{}`
+
+### ErrorFormatter
+
+JSからGoへ呼び出されたメソッドがエラーを返す際に、エラーをフォーマットする関数です。 返り値はJSONとして変換されます。
+
+名前: ErrorFormatter<br/> データ型: `func (error) any`
+
+### Windows
+
+[Windows固有のオプション](#windows)を定義します。
+
+名前: Windows<br/> データ型: `*windows.Options`
+
+#### WebviewIsTransparent
+
+この値を`true`に設定すると、アルファ値が`0`の際に、WebViewの背景が透明になります。 つまり、CSSで`background-color`に`rgba(0,0,0,0)`を設定すると、ホストウィンドウが透けて見えるようになります。 多くの場合、[WindowIsTranslucent](#WindowIsTranslucent)と組み合わて、霜のように見えるアプリケーションを作成する際に使用します。
+
+名前: WebviewIsTransparent<br/> データ型: `bool`
+
+#### WindowIsTranslucent
+
+この値を`true`に設定すると、ウィンドウの背景が半透明になります。 多くの場合、[WebviewIsTransparent](#WebviewIsTransparent)と組み合わせて使用されます。
+
+ビルド22621より前のWindows 11の場合、半透明を実現させるために[BlurBehind](https://learn.microsoft.com/ja-jp/windows/win32/dwm/blur-ovw)メソッドを使用するため、処理が遅くなる可能性があります。 ビルド22621以降のWindows 11では、より高速な、新しい半透明タイプが有効になります。 デフォルトで使用される半透明タイプは、Windowsにより決定されます。 このタイプを設定するには、[BackdropType](#BackdropType)オプションを使用してください。
+
+名前: WindowIsTranslucent<br/> データ型: `bool`
+
+#### BackdropType
+
+:::note
+
+この設定を適用するには、Windows 11 ビルド22621以降が必要です。
+
+:::
+
+ウィンドウの半透明タイプを設定します。 この設定は、[WindowIsTranslucent](#WindowIsTranslucent)が`true`に設定されている場合にのみ適用されます。
+
+名前: BackdropType<br/> データ型: `windows.BackdropType`
+
+値は次のいずれかを指定してください:
+
+| 値       | 説明                                                                                  |
+| ------- | ----------------------------------------------------------------------------------- |
+| Auto    | Windowsに背景を決定させる                                                                    |
+| None    | 半透明にしない                                                                             |
+| Acrylic | [アクリル](https://learn.microsoft.com/ja-jp/windows/apps/design/style/acrylic)の効果を使用する |
+| Mica    | [マイカ](https://learn.microsoft.com/ja-jp/windows/apps/design/style/mica)の効果を使用する     |
+| Tabbed  | タブを使用する。 これはマイカに似ている背景です。                                                           |
+
+#### DisableWindowIcon
+
+この設定を`true`にすると、タイトルバーの左上隅のアイコンが消去されます。
+
+名前: DisableWindowIcon<br/> データ型: `bool`
+
+#### DisableFramelessWindowDecorations
+
+この設定を`true`にすると、[フレームレス](#Frameless)モードでのウィンドウデコレーションが消去されます。 つまり、'Aero Shadow'および'Rounded Corners'がウィンドウに適用されなくなります。 なお、'Rounded Corners'はWindows 11でのみサポートされていますのでご注意ください。
+
+名前: DisableFramelessWindowDecorations<br/> データ型: `bool`
+
+#### WebviewUserDataPath
+
+WebView2が、ユーザデータを格納するパスを設定します。 空の場合は、`%APPDATA%\[BinaryName.exe]`が使用されます。
+
+名前: WebviewUserDataPath<br/> データ型: `string`
+
+#### WebviewBrowserPath
+
+WebView2の実行ファイルおよびライブラリが存在するディレクトリへのパスを設定します。 空の場合、システムにインストールされているWebView2が使用されます。
+
+固定バージョンランタイムディストリビューションに関する重要情報:
+
+- [ランタイムの取得および展開方法](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode)
+- [固定バージョンに関する既知の問題](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#known-issues-for-fixed-version)
+- [WenView2ランタイムの固定バージョンのパスに、\Edge\Application\ を含めてはいけません](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
+
+名前: WebviewBrowserPath<br/> データ型: `string`
+
+#### Theme
+
+サポートされるWindowsの最小バージョン: Windows 10 2004/20H1
+
+アプリケーションが使用するテーマを設定します:
+
+| 値             | 説明                                                                                       |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| SystemDefault | _デフォルト値_です。 テーマは、システムのデフォルト設定に基づきます。 ユーザがシステムのテーマ設定を変更した場合、アプリケーションは新しい設定を使用するように更新されます。 |
+| Dark          | アプリケーションはダークテーマのみを使用します。                                                                 |
+| Light         | アプリケーションはライトテーマのみを使用します。                                                                 |
+
+名前: Theme<br/> データ型: `windows.Theme`
+
+#### CustomTheme
+
+:::note
+
+サポートされるWindowsの最小バージョン: Windows 10/11 2009/21H2 ビルド22000
+
+:::
+
+ウィンドウがアクティブまたは非アクティブのときに、ライトモード・ダークモードのそれぞれにおいて、タイトルバー、タイトルテキスト、ボーダーのカスタムカラーを設定できます。
+
+名前: CustomTheme<br/> データ型: `windows.CustomTheme`
+
+##### CustomTheme 型
+
+CustomTheme構造体は、`int32`型で色の値を指定します。 これは`0x00BBGGAA`で表されるWindowsの標準フォーマットで指定します。 RGBの値をこのフォーマットに変換するために、`windows.RGB(r,g,b uint8)`のようなヘルパー関数が用意されています。
+
+注意: 指定されていない値はデフォルトで黒色になります。
+
+```go
+type ThemeSettings struct {
+    DarkModeTitleBar           int32
+    DarkModeTitleBarInactive   int32
+    DarkModeTitleText          int32
+    DarkModeTitleTextInactive  int32
+    DarkModeBorder             int32
+    DarkModeBorderInactive     int32
+    LightModeTitleBar          int32
+    LightModeTitleBarInactive  int32
+    LightModeTitleText         int32
+    LightModeTitleTextInactive int32
+    LightModeBorder            int32
+    LightModeBorderInactive    int32
+}
+```
+
+例:
+
+```go
+    CustomTheme: &windows.ThemeSettings{
+        // Theme to use when window is active
+        DarkModeTitleBar:   windows.RGB(255, 0, 0),   // Red
+        DarkModeTitleText:  windows.RGB(0, 255, 0),   // Green
+        DarkModeBorder:     windows.RGB(0, 0, 255),   // Blue
+        LightModeTitleBar:  windows.RGB(200, 200, 200),
+        LightModeTitleText: windows.RGB(20, 20, 20),
+        LightModeBorder:    windows.RGB(200, 200, 200),
+        // Theme to use when window is inactive
+        DarkModeTitleBarInactive:   windows.RGB(128, 0, 0),
+        DarkModeTitleTextInactive:  windows.RGB(0, 128, 0),
+        DarkModeBorderInactive:     windows.RGB(0, 0, 128),
+        LightModeTitleBarInactive:  windows.RGB(100, 100, 100),
+        LightModeTitleTextInactive: windows.RGB(10, 10, 10),
+        LightModeBorderInactive:    windows.RGB(100, 100, 100),
+    },
+```
+
+#### Messages
+
+利用可能なWebView2ランタイムが見つからなかったときに表示する、WebView2インストーラに関するメッセージ文字列を設定します。
+
+名前: Messages<br/> データ型: `*windows.Messages`
+
+プロジェクトがサポートする言語にあわせて、この設定をカスタマイズしてください。
+
+#### ResizeDebounceMS
+
+ResizeDebounceMSは、ウィンドウサイズが変更されたときに、WebView2の再描画を実行するまでの時間です。 デフォルト値(0) は、できるだけ早く再描画を実行します。
+
+名前: ResizeDebounceMS<br/> データ型: `uint16`
+
+#### OnSuspend
+
+Windowsがローパワーモード(サスペンド/休止状態) に切り替わると呼び出されるコールバックを設定します。
+
+名前: OnSuspend<br/> データ型: `func()`
+
+#### OnResume
+
+Windowsがローパワーモード(サスペンド/休止状態) から復帰したときに呼び出されるコールバックを設定します。
+
+名前: OnResume<br/> データ型: `func()`
+
+#### WebviewGpuIsDisabled
+
+`true`に設定すると、webviewのGPUハードウェアアクセラレーションが無効化されます。
+
+名前: WebviewGpuIsDisabled<br/> データ型: `bool`
+
+#### EnableSwipeGestures
+
+Setting this to `true` will enable swipe gestures for the webview.
+
+Name: EnableSwipeGestures<br/> Type: `bool`
+
+### Mac
+
+[Mac固有のオプション](#mac)を定義します。
+
+名前: Mac<br/> データ定義: `*mac.Options`
+
+#### TitleBar
+
+TitleBar構造体は、タイトルバーのルック・アンド・フィールを設定する機能を提供します。
+
+名前: TitleBar<br/> データ型: [`*mac.TitleBar`](#titlebar-struct)
+
+##### Titlebar 構造体
+
+アプリケーションのタイトルバーは、TitleBarオプションを使用することでカスタマイズできます:
+
+```go
+type TitleBar struct {
+    TitlebarAppearsTransparent bool
+    HideTitle                  bool
+    HideTitleBar               bool
+    FullSizeContent            bool
+    UseToolbar                 bool
+    HideToolbarSeparator       bool
+}
+```
+
+| 名前                         | 説明                                                                                                                                                                                 |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TitlebarAppearsTransparent | タイトルバーを透明にします。 これにより、タイトルバーが非表示になり、コンテンツがウィンドウ全体に表示されます。 [Appleドキュメント](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc) |
+| HideTitle                  | ウィンドウタイトルを非表示にします。 [Appleドキュメント](https://developer.apple.com/documentation/appkit/nswindowtitlevisibility?language=objc)                                                           |
+| HideTitleBar               | スタイルマスクから[NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)を消去します。                                             |
+| FullSizeContent            | WebViewをウィンドウ全体に表示します。 [Appleドキュメント](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemaskfullsizecontentview)                                      |
+| UseToolbar                 | ウィンドウにデフォルトツールバーを追加します。 [Appleドキュメント](https://developer.apple.com/documentation/appkit/nstoolbar?language=objc)                                                                    |
+| HideToolbarSeparator       | ツールバーの下側の線を消去します。 [Appleドキュメント](https://developer.apple.com/documentation/appkit/nstoolbar/1516954-showsbaselineseparator?language=objc)                                           |
+
+事前設定されたタイトルバー構成を利用することも可能です:
+
+| 設定                          | 例                                              |
+| --------------------------- | ---------------------------------------------- |
+| `mac.TitleBarDefault()`     | ![](/img/reference/titlebar-default.webp)      |
+| `mac.TitleBarHidden()`      | ![](/img/reference/titlebar-hidden.webp)       |
+| `mac.TitleBarHiddenInset()` | ![](/img/reference/titlebar-hidden-inset.webp) |
+
+例:
+
+```go
+Mac: &mac.Options{
+    TitleBar:     mac.TitleBarHiddenInset(),
+}
+```
+
+タイトルバーのカスタマイズに関してインスピレーションを得たい場合は[こちら](https://github.com/lukakerr/NSWindowStyles)をご覧ください。
+
+#### Appearance
+
+Appearanceは、Appleの[NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc)Nameに従って、アプリケーションのスタイルを設定するために使用します。
+
+名前: Appearance<br/> データ型: [`mac.AppearanceType`](#appearance-type)
+
+##### Appearance 型
+
+アプリケーションの[外観](https://developer.apple.com/documentation/appkit/nsappearance?language=objc)を指定します。
+
+| 値                                                     | 説明                                    |
+| ----------------------------------------------------- | ------------------------------------- |
+| DefaultAppearance                                     | DefaultAppearanceは、システムのデフォルト値を使用します。 |
+| NSAppearanceNameAqua                                  | システムの標準的なライト外観                        |
+| NSAppearanceNameDarkAqua                              | システムの標準的なダーク外観                        |
+| NSAppearanceNameVibrantLight                          | より鮮やかなライト外観                           |
+| NSAppearanceNameAccessibilityHighContrastAqua         | システムの標準的なライト外観のハイコントラスト版              |
+| NSAppearanceNameAccessibilityHighContrastDarkAqua     | システムの標準的なダーク外観のハイコントラスト版              |
+| NSAppearanceNameAccessibilityHighContrastVibrantLight | より鮮やかなライト外観のハイコントラスト版                 |
+| NSAppearanceNameAccessibilityHighContrastVibrantDark  | より鮮やかなダーク外観のハイコントラスト版                 |
+
+例:
+
+```go
+Mac: &mac.Options{
+    Appearance: mac.NSAppearanceNameDarkAqua,
+}
+```
+
+#### WebviewIsTransparent
+
+この値を`true`に設定すると、アルファ値が`0`の際に、WebViewの背景が透明になります。 つまり、CSSで`background-color`に`rgba(0,0,0,0)`を設定すると、ホストウィンドウが透けて見えるようになります。 多くの場合、[WindowIsTranslucent](#WindowIsTranslucent)と組み合わて、霜のように見えるアプリケーションを作成する際に使用します。
+
+名前: WebviewIsTransparent<br/> データ型: `bool`
+
+#### WindowIsTranslucent
+
+この値を`true`に設定すると、ウィンドウの背景が半透明になります。 多くの場合、[WebviewIsTransparent](#WebviewIsTransparent)と組み合わて、霜のように見えるアプリケーションを作成する際に使用します。
+
+名前: WindowIsTranslucent<br/> データ型: `bool`
+
+#### Preferences
+
+The Preferences struct provides the ability to configure the Webview preferences.
+
+Name: Preferences<br/> Type: [`*mac.Preferences`](#preferences-struct)
+
+##### Preferences struct
+
+You can specify the webview preferences.
+
+```go
+type Preferences struct {
+    TabFocusesLinks        u.Bool
+    TextInteractionEnabled u.Bool
+    FullscreenEnabled      u.Bool 
+}
+```
+
+| 名前                     | 説明                                                                                                                                                                                                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TabFocusesLinks        | A Boolean value that indicates whether pressing the tab key changes the focus to links and form controls. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/2818595-tabfocuseslinks?language=objc) |
+| TextInteractionEnabled | A Boolean value that indicates whether to allow people to select or otherwise interact with text. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3727362-textinteractionenabled?language=objc)  |
+| FullscreenEnabled      | A Boolean value that indicates whether a web view can display content full screen. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3917769-elementfullscreenenabled?language=objc)               |
+
+例:
+
+```go
+Mac: &mac.Options{
+    Preferences: &mac.Preferences{
+        TabFocusesLinks:        mac.Enabled,
+        TextInteractionEnabled: mac.Disabled,
+        FullscreenEnabled:      mac.Enabled,
+    }
+}
+```
+
+#### About
+
+"AppMenu"ロールで作成されたアプリケーションメニューの中にある"About"メニュー項目において、タイトル、メッセージ、アイコンを設定できます。
+
+名前: About<br/> データ型: [`*mac.AboutInfo`](#about-struct)
+
+##### About 構造体
+
+```go
+
+type AboutInfo struct {
+    Title   string
+    Message string
+    Icon    []byte
+}
+```
+
+これらの設定が定義されている場合、`AppMenu`ロールが使用されていれば、アプリケーションメニュー内に"About"メニューが表示されます。 例えば以下のように設定すると:
+
+```go
+//go:embed build/appicon.png
+var icon []byte
+
+func main() {
+    err := wails.Run(&options.App{
+        ...
+        Mac: &mac.Options{
+            About: &mac.AboutInfo{
+                Title:   "My Application",
+                Message: "© 2021 Me",
+                Icon:    icon,
+            },
+        },
+    })
+```
+
+アプリケーションメニューに"About"メニュー項目が表示されます:
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/reference/about-menu.webp").default}
+    class="screenshot"
+  />
+</div>
+<br />
+```
+
+クリックすると、アプリケーション概要メッセージボックスが開かれます:
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/reference/about-dialog.webp").default}
+    width="40%"
+    class="screenshot"
+  />
+</div>
+<br />
+```
+
+### Linux
+
+[Linux固有のオプション](#linux)を定義します。
+
+名前: Linux<br/> データ型: `*linux.Options`
+
+#### Icon
+
+ウィンドウを示すアイコンを設定します。 このアイコンは、ウィンドウが最小化されたときに使用されます(iconifiedと呼ばれます)。
+
+名前: Icon<br/> データ型: `[]byte`
+
+一部のウィンドウマネージャやデスクトップ環境では、ウィンドウフレームに配置されたり、他のコンテキストで表示される場合もあります。 反対に、環境によっては全くアイコンが使用されないこともありますのでご注意ください。
+
+注意: 少なくともWayland上のGnomeでは、このアイコンは表示されません。 アプリケーションアイコンを表示させるには、`.desktop`ファイルを使用する必要があります。 KDEの場合は正常に表示されるはずです。
+
+アイコンは、何の加工もされていないサイズで用意してください。つまり、拡大/縮小された画像は使用しないでください。 最高品質を確保するために、拡大/縮小は、最終的な目的サイズがはっきりするまで待ってください。
+
+#### WindowIsTranslucent
+
+この値を`true`に設定すると、ウィンドウの背景が半透明になります。 ウィンドウマネージャによっては、この設定を無視したり、ブラックウィンドウになる場合があります。
+
+名前: WindowIsTranslucent<br/> データ型: `bool`
+
+#### WebviewGpuPolicy
+
+このオプションでは、webviewのハードウェアアクセラレーションポリシーを指定することができます。
+
+名前: WebviewGpuPolicy<br/> データ型: [`options.WebviewGpuPolicy`](#webviewgpupolicy-type)<br/> デフォルト値: `WebviewGpuPolicyAlways`
+
+##### WebviewGpuPolicy型
+
+| 値                        | 説明                                            |
+| ------------------------ | --------------------------------------------- |
+| WebviewGpuPolicyAlways   | ハードウェアアクセラレーションを常に有効にする                       |
+| WebviewGpuPolicyOnDemand | Webコンテンツからの要求に応じて、ハードウェアアクセラレーションの有効/無効を切り替える |
+| WebviewGpuPolicyNever    | ハードウェアアクセラレーションを常に無効にする                       |
+
+#### ProgramName
+
+このオプションでは、GTKのg_set_prgname() を使用し、ウィンドウマネージャのプログラム名を設定することができます。 ただし、ローカライズされた名前を設定すべきではありません。詳しくは[ドキュメント](https://docs.gtk.org/glib/func.set_prgname.html)をご覧ください。
+
+.desktopファイルが作成される際、.desktopファイルの`Name`オプションと実行ファイルのファイル名が異なる場合に、ウィンドウのグループ化およびデスクトップアイコンの表示に、本オプションは役立ちます。
+
+名前: ProgramName<br/> データ型: string<br/>
+
+### Debug
+
+デバッグビルド時に適用される[デバッグ固有のオプション](#Debug)を定義します。
+
+名前: Debug<br/> データ型: `options.Debug`
+
+#### OpenInspectorOnStartup
+
+このオプションを`true`に設定すると、アプリケーション起動時にWeb開発者ツールが表示されます。
+
+名前: OpenInspectorOnStartup<br/> データ型: `bool`
+
+[^1]: この機能の動作には、WebKit2GTK 2.36以上が必要となるため、機能を確実に対応させたい場合は、アプリビルド時にビルドタグ`webkit2_36`を付与してください。 これにより、アプリに必要なWebKit2GTKの最小バージョン要件が2.36に引き上げられます。
+[^2]: この機能の動作には、WebKit2GTK 2.40以上が必要となるため、機能を確実に対応させたい場合は、アプリビルド時にビルドタグ`webkit2_40`を付与してください。 これにより、アプリに必要なWebKit2GTKの最小バージョン要件が2.40に引き上げられます。
