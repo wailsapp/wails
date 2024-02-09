@@ -445,11 +445,13 @@ func main() {
 		})
 	})
 
-	if runtime.GOOS == "windows" {
-		stateMenu.Add("Flash Start").OnClick(func(ctx *application.Context) {
+	if runtime.GOOS != "darwin" {
+		stateMenu.Add("Flash for 5s").OnClick(func(ctx *application.Context) {
 			currentWindow(func(w *application.WebviewWindow) {
 				time.Sleep(2 * time.Second)
 				w.Flash(true)
+				time.Sleep(5 * time.Second)
+				w.Flash(false)
 			})
 		})
 	}

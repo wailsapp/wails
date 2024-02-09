@@ -64,6 +64,8 @@ type (
 		isVisible() bool
 		isFocused() bool
 		setFullscreenButtonEnabled(enabled bool)
+		setMinimiseButtonEnabled(enabled bool)
+		setMaximiseButtonEnabled(enabled bool)
 		focus()
 		show()
 		hide()
@@ -527,6 +529,26 @@ func (w *WebviewWindow) SetFullscreenButtonEnabled(enabled bool) Window {
 	if w.impl != nil {
 		InvokeSync(func() {
 			w.impl.setFullscreenButtonEnabled(enabled)
+		})
+	}
+	return w
+}
+
+func (w *WebviewWindow) SetMinimiseButtonEnabled(enabled bool) Window {
+	w.options.FullscreenButtonEnabled = enabled
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setMinimiseButtonEnabled(enabled)
+		})
+	}
+	return w
+}
+
+func (w *WebviewWindow) SetMaximiseButtonEnabled(enabled bool) Window {
+	w.options.FullscreenButtonEnabled = enabled
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setMaximiseButtonEnabled(enabled)
 		})
 	}
 	return w
