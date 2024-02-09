@@ -238,8 +238,12 @@ func (w *windowsWebviewWindow) run() {
 	w.setSize(options.Width, options.Height)
 
 	// Min/max buttons
-	w.setStyle(!options.Windows.DisableMinimiseButton, w32.WS_MINIMIZEBOX)
-	w.setStyle(!options.Windows.DisableMaximiseButton, w32.WS_MAXIMIZEBOX)
+	if !options.Windows.DisableMinimiseButton {
+		w.setMinimiseButtonEnabled(false)
+	}
+	if !options.Windows.DisableMaximiseButton {
+		w.setMaximiseButtonEnabled(false)
+	}
 
 	// Register the window with the application
 	getNativeApplication().registerWindow(w)
@@ -1624,6 +1628,14 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 		addDragAndDropMessage(w.parent.id, filenames)
 		return
 	}
+}
+
+func (w *windowsWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
+	w.setStyle(enabled, w32.WS_MINIMIZEBOX)
+}
+
+func (w *windowsWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
+	w.setStyle(enabled, w32.WS_MAXIMIZEBOX)
 }
 
 func ScaleWithDPI(pixels int, dpi uint) int {

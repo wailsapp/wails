@@ -36,6 +36,14 @@ type linuxWebviewWindow struct {
 	gtkmenu      pointer
 }
 
+func (w *linuxWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
+	// Not available in Linux
+}
+
+func (w *linuxWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
+	// Not available in Linux
+}
+
 var (
 	registered bool = false // avoid 'already registered message' about 'wails://'
 )
@@ -103,10 +111,6 @@ func (w *linuxWebviewWindow) disableSizeConstraints() {
 
 func (w *linuxWebviewWindow) unminimise() {
 	w.present()
-}
-
-func (w *linuxWebviewWindow) flash(enabled bool) {
-	// Not supported on linux
 }
 
 func (w *linuxWebviewWindow) on(eventID uint) {

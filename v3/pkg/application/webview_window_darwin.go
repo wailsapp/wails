@@ -1132,13 +1132,13 @@ func (w *macosWebviewWindow) run() {
 		}
 
 		if macOptions.DisableMinimiseButton {
-			C.enableMinimiseButton(w.nsWindow, C.bool(false))
+			w.setMinimiseButtonEnabled(w.nsWindow, false)
 		}
 		if macOptions.DisableMaximiseButton {
-			C.enableMaximiseButton(w.nsWindow, C.bool(false))
+			w.setMaximiseButtonEnabled(w.nsWindow, false)
 		}
 		if macOptions.DisableCloseButton {
-			C.enableCloseButton(w.nsWindow, C.bool(false))
+			w.enableCloseButton(w.nsWindow, false)
 		}
 
 		if options.IgnoreMouseEvents {
@@ -1268,4 +1268,16 @@ func (w *macosWebviewWindow) setHTML(html string) {
 func (w *macosWebviewWindow) startDrag() error {
 	C.startDrag(w.nsWindow)
 	return nil
+}
+
+func (w *macosWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
+	C.enableMinimiseButton(w.nsWindow, C.bool(enabled))
+}
+
+func (w *macosWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
+	C.enableMaximiseButton(w.nsWindow, C.bool(enabled))
+}
+
+func (w *macosWebviewWindow) setCloseButtonEnabled(enabled bool) {
+	C.enableCloseButton(w.nsWindow, C.bool(enabled))
 }
