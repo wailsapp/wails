@@ -2,13 +2,13 @@
 
 package application
 
-func newShowDevToolsMenuItem() *MenuItem {
-	return newMenuItem("Show Developer Tools").
+func newOpenDevToolsMenuItem() *MenuItem {
+	return newMenuItem("Open Developer Tools").
 		SetAccelerator("Alt+Command+I").
 		OnClick(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
-				currentWindow.ToggleDevTools()
+				currentWindow.OpenDevTools()
 			}
 		})
 }

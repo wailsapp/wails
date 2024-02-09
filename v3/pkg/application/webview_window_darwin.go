@@ -761,8 +761,6 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
-var showDevTools = func(window unsafe.Pointer) {}
-
 type macosWebviewWindow struct {
 	nsWindow unsafe.Pointer
 	parent   *WebviewWindow
@@ -906,8 +904,8 @@ func (w *macosWebviewWindow) zoomReset() {
 	C.windowZoomReset(w.nsWindow)
 }
 
-func (w *macosWebviewWindow) toggleDevTools() {
-	showDevTools(w.nsWindow)
+func (w *macosWebviewWindow) openDevTools() {
+	openDevTools(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) reload() {

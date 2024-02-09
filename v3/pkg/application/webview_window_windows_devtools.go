@@ -4,7 +4,7 @@ package application
 
 import "github.com/wailsapp/go-webview2/pkg/edge"
 
-func (w *windowsWebviewWindow) toggleDevTools() {
+func (w *windowsWebviewWindow) openDevTools() {
 	w.chromium.OpenDevToolsWindow()
 }
 

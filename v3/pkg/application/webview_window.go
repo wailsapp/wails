@@ -40,7 +40,7 @@ type (
 		destroy()
 		reload()
 		forceReload()
-		toggleDevTools()
+		openDevTools()
 		zoomReset()
 		zoomIn()
 		zoomOut()
@@ -817,11 +817,11 @@ func (w *WebviewWindow) ToggleMaximise() {
 	})
 }
 
-func (w *WebviewWindow) ToggleDevTools() {
+func (w *WebviewWindow) OpenDevTools() {
 	if w.impl == nil && !w.isDestroyed() {
 		return
 	}
-	InvokeSync(w.impl.toggleDevTools)
+	InvokeSync(w.impl.openDevTools)
 }
 
 // ZoomReset resets the zoom level of the webview content to 100%
