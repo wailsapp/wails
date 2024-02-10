@@ -7,6 +7,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"regexp"
 	"strings"
+	"sync"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -191,6 +192,8 @@ var (
 	gtkSignalToMenuItem map[uint]*MenuItem
 	mainThreadId        *C.GThread
 )
+
+var registerURIScheme sync.Once
 
 func init() {
 	gtkSignalToMenuItem = map[uint]*MenuItem{}
@@ -840,13 +843,15 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	C.g_object_set_data((*C.GObject)(unsafe.Pointer(webView)), c.String("windowid"), C.gpointer(winID))
 	C.g_object_set_data((*C.GObject)(unsafe.Pointer(manager)), c.String("windowid"), C.gpointer(winID))
 
-	context := C.webkit_web_view_get_context(C.webkit_web_view(webView))
-	C.webkit_web_context_register_uri_scheme(
-		context,
-		c.String("wails"),
-		C.WebKitURISchemeRequestCallback(C.onProcessRequest),
-		nil,
-		nil)
+	registerURIScheme.Do(func() {
+		context := C.webkit_web_view_get_context(C.webkit_web_view(webView))
+		C.webkit_web_context_register_uri_scheme(
+			context,
+			c.String("wails"),
+			C.WebKitURISchemeRequestCallback(C.onProcessRequest),
+			nil,
+			nil)
+	})
 	settings := C.webkit_web_view_get_settings((*C.WebKitWebView)(unsafe.Pointer(webView)))
 	C.webkit_settings_set_user_agent_with_application_details(settings, c.String("wails.io"), c.String(""))
 
