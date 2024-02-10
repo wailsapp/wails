@@ -23,6 +23,16 @@ Report any issues you find using [this guide](./getting-started/feedback.md).
 
 - Test all the things on Linux!
 
+#### Status
+
+Linux examples:
+
+- :material-check-bold: - Working
+- :material-minus: - Partially working
+- :material-close: - Not working
+
+{{ read_csv("alpha5.csv") }}
+
 ## Upcoming milestones
 
 ## Alpha 6
