@@ -835,7 +835,11 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	C.webkit_user_content_manager_register_script_message_handler(manager, c.String("external"))
 	webView := C.webkit_web_view_new_with_user_content_manager(manager)
 	winID := unsafe.Pointer(uintptr(C.uint(parentId)))
+
+	// attach window id to both the webview and contentmanager
 	C.g_object_set_data((*C.GObject)(unsafe.Pointer(webView)), c.String("windowid"), C.gpointer(winID))
+	C.g_object_set_data((*C.GObject)(unsafe.Pointer(manager)), c.String("windowid"), C.gpointer(winID))
+
 	context := C.webkit_web_view_get_context(C.webkit_web_view(webView))
 	C.webkit_web_context_register_uri_scheme(
 		context,
@@ -1255,13 +1259,16 @@ func onProcessRequest(request *C.WebKitURISchemeRequest, data C.uintptr_t) {
 func sendMessageToBackend(contentManager *C.WebKitUserContentManager, result *C.WebKitJavascriptResult,
 	data unsafe.Pointer) {
 
+	// Get the windowID from the contentManager
+	windowID := uint(uintptr(C.g_object_get_data((*C.GObject)(unsafe.Pointer(contentManager)), C.CString("windowid"))))
+
 	var msg string
 	value := C.webkit_javascript_result_get_js_value(result)
 	message := C.jsc_value_to_string(value)
 	msg = C.GoString(message)
 	defer C.g_free(C.gpointer(message))
 	windowMessageBuffer <- &windowMessage{
-		windowId: uint(windowID),
+		windowId: windowID,
 		message:  msg,
 	}
 }
