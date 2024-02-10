@@ -667,7 +667,7 @@ func widgetSetVisible(widget pointer, hidden bool) {
 }
 
 func (w *linuxWebviewWindow) close() {
-	C.gtk_window_close((*C.GtkWindow)(w.window))
+	C.gtk_widget_destroy(w.gtkWidget())
 	getNativeApplication().unregisterWindow(windowPointer(w.window))
 }
 
@@ -1001,7 +1001,7 @@ func emit(we *C.WindowEvent) {
 //export handleDeleteEvent
 func handleDeleteEvent(widget *C.GtkWidget, event *C.GdkEvent, data C.uintptr_t) C.gboolean {
 	processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDeleteEvent))
-	return C.gboolean(0)
+	return C.gboolean(1)
 }
 
 //export handleLoadChanged
