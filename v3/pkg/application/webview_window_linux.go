@@ -95,8 +95,7 @@ func (w *linuxWebviewWindow) isNormal() bool {
 }
 
 func (w *linuxWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	//	C.setFullscreenButtonEnabled(w.nsWindow, C.bool(enabled))
-	fmt.Println("setFullscreenButtonEnabled - not implemented")
+	// Not implemented
 }
 
 func (w *linuxWebviewWindow) disableSizeConstraints() {
@@ -156,17 +155,13 @@ func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 }
 
 func (w *linuxWebviewWindow) setMinMaxSize(minWidth, minHeight, maxWidth, maxHeight int) {
-	if minWidth == 0 {
-		minWidth = -1
-	}
-	if minHeight == 0 {
-		minHeight = -1
-	}
+	// Get current screen for window
+	_, _, monitorwidth, monitorheight, _ := w.getCurrentMonitorGeometry()
 	if maxWidth == 0 {
-		maxWidth = math.MaxInt
+		maxWidth = monitorwidth
 	}
 	if maxHeight == 0 {
-		maxHeight = math.MaxInt
+		maxHeight = monitorheight
 	}
 	windowSetGeometryHints(w.window, minWidth, minHeight, maxWidth, maxHeight)
 }
