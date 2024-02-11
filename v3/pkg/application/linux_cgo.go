@@ -618,9 +618,10 @@ func getScreenByIndex(display *C.struct__GdkDisplay, index int) *Screen {
 	if C.gdk_monitor_is_primary(monitor) == 1 {
 		primary = true
 	}
+	name := C.gdk_monitor_get_model(monitor)
 	return &Screen{
 		ID:        fmt.Sprintf("%d", index),
-		Name:      fmt.Sprintf("Screen %d", index),
+		Name:      C.GoString(name),
 		IsPrimary: primary,
 		Scale:     float32(C.gdk_monitor_get_scale_factor(monitor)),
 		X:         int(geometry.x),
@@ -731,6 +732,25 @@ func (w *linuxWebviewWindow) getCurrentMonitor() *C.GdkMonitor {
 		return nil
 	}
 	return C.gdk_display_get_monitor_at_window(display, gdkWindow)
+}
+
+func (w *linuxWebviewWindow) getScreen() (*Screen, error) {
+	// Get the current screen for the window
+	monitor := w.getCurrentMonitor()
+	name := C.gdk_monitor_get_model(monitor)
+	mx, my, width, height, scale := w.getCurrentMonitorGeometry()
+	return &Screen{
+		ID:        fmt.Sprintf("%d", w.id),            // A unique identifier for the display
+		Name:      C.GoString(name),                   // The name of the display
+		Scale:     float32(scale),                     // The scale factor of the display
+		X:         mx,                                 // The x-coordinate of the top-left corner of the rectangle
+		Y:         my,                                 // The y-coordinate of the top-left corner of the rectangle
+		Size:      Size{Width: width, Height: height}, // The size of the display
+		Bounds:    Rect{},                             // The bounds of the display
+		WorkArea:  Rect{},                             // The work area of the display
+		IsPrimary: false,                              // Whether this is the primary display
+		Rotation:  0.0,                                // The rotation of the display
+	}, nil
 }
 
 func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width int, height int, scale int) {
@@ -927,6 +947,34 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	C.g_object_unref(C.gpointer(provider))
 	C.gtk_css_provider_load_from_data(provider, cssStr, -1, nil)
 	C.free(unsafe.Pointer(cssStr))
+}
+
+func getPrimaryScreen() (*Screen, error) {
+	display := C.gdk_display_get_default()
+	monitor := C.gdk_display_get_primary_monitor(display)
+	geometry := C.GdkRectangle{}
+	C.gdk_monitor_get_geometry(monitor, &geometry)
+	scale := int(C.gdk_monitor_get_scale_factor(monitor))
+	// get the name for the screen
+	name := C.gdk_monitor_get_model(monitor)
+	return &Screen{
+		ID:        "0",
+		Name:      C.GoString(name),
+		IsPrimary: true,
+		X:         int(geometry.x),
+		Y:         int(geometry.y),
+		Size: Size{
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		Bounds: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		Scale: float32(scale),
+	}, nil
 }
 
 func windowSetGeometryHints(window pointer, minWidth, minHeight, maxWidth, maxHeight int) {
