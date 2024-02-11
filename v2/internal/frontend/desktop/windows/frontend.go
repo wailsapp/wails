@@ -462,7 +462,7 @@ func (f *Frontend) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
-	if f.frontendOptions.DragAndDrop.Disable {
+	if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.DisableWebViewDrop {
 		if err := chromium.AllowExternalDrag(false); err != nil {
 			f.logger.Warning("WebView failed to set AllowExternalDrag to false!")
 		}
@@ -830,7 +830,7 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 		f.ExecJS("window.wails.flags.enableResize = true;")
 	}
 
-	if f.frontendOptions.DragAndDrop.EnableFileDrop {
+	if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.EnableFileDrop {
 		f.ExecJS("window.wails.flags.enableWailsDragAndDrop = true;")
 	}
 
