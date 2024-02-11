@@ -64,12 +64,12 @@ func main() {
           UniqueId:               "c9c8fd93-6758-4144-87d1-34bdb0a8bd60",
           OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
         },
-		DragAndDrop: options.DragAndDrop{
-			EnableFileDrop:  false,
-			Disable:         false,
-			CSSDropProperty: "--wails-drop-target",
-			CSSDropValue:    "drop",
-		},
+        DragAndDrop: &options.DragAndDrop{
+          EnableFileDrop:  false,
+          Disable:         false,
+          CSSDropProperty: "--wails-drop-target",
+          CSSDropValue:    "drop",
+        },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
@@ -561,13 +561,13 @@ Name: EnableFileDrop<br/>
 Type: `bool`<br/>
 Default: `false`
 
-#### Disable
+#### DisableWebViewDrop
 
 Disables the webview's drag and drop functionality.
 
 It can be used to prevent accidental opening of dragged in files in the webview, when there is no need for drag and drop.
 
-Name: Disable<br/>
+Name: DisableWebViewDrop<br/>
 Type: `bool`<br/>
 Default: `false`
 
