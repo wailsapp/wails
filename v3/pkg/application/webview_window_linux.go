@@ -70,22 +70,6 @@ func (w *linuxWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) 
 	w.contextMenuShow(native, data)
 }
 
-func (w *linuxWebviewWindow) getScreen() (*Screen, error) {
-	mx, my, width, height, scale := w.getCurrentMonitorGeometry()
-	return &Screen{
-		ID:        fmt.Sprintf("%d", w.id),            // A unique identifier for the display
-		Name:      w.parent.Name(),                    // The name of the display
-		Scale:     float32(scale),                     // The scale factor of the display
-		X:         mx,                                 // The x-coordinate of the top-left corner of the rectangle
-		Y:         my,                                 // The y-coordinate of the top-left corner of the rectangle
-		Size:      Size{Width: width, Height: height}, // The size of the display
-		Bounds:    Rect{},                             // The bounds of the display
-		WorkArea:  Rect{},                             // The work area of the display
-		IsPrimary: false,                              // Whether this is the primary display
-		Rotation:  0.0,                                // The rotation of the display
-	}, nil
-}
-
 func (w *linuxWebviewWindow) focus() {
 	w.present()
 }
