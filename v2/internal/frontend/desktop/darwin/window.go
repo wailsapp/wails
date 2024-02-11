@@ -83,6 +83,9 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 
 	enableFraudulentWebsiteWarnings := C.bool(frontendOptions.EnableFraudulentWebsiteDetection)
 
+	enableDragAndDrop := C.bool(frontendOptions.DragAndDrop != nil && frontendOptions.DragAndDrop.EnableFileDrop)
+	disableWebViewDragAndDrop := C.bool(frontendOptions.DragAndDrop != nil && frontendOptions.DragAndDrop.DisableWebViewDrop)
+
 	if frontendOptions.Mac != nil {
 		mac := frontendOptions.Mac
 		if mac.TitleBar != nil {
@@ -117,7 +120,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
 		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenuEnabled,
 		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings,
-		preferences, singleInstanceEnabled, singleInstanceUniqueId,
+		preferences, singleInstanceEnabled, singleInstanceUniqueId, enableDragAndDrop, disableWebViewDragAndDrop,
 	)
 
 	// Create menu

@@ -10,7 +10,7 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
-import {EventsOn} from "./events";
+import {EventsOn, EventsOff} from "./events";
 
 const flags = {
     registered: false,
@@ -78,6 +78,7 @@ function onDrop(e) {
         if (flags.prevElement) {
             targetElement.classList.remove("wails-drop-target-active");
             flags.prevElement.classList.remove("wails-drop-target-active");
+            flags.prevElement = null;
         }
         return;
     }
@@ -99,6 +100,7 @@ function onDrop(e) {
 
     if (flags.prevElement) {
         flags.prevElement.classList.remove("wails-drop-target-active");
+        flags.prevElement = null;
     }
 }
 
@@ -120,6 +122,8 @@ function onDragLeave(e) {
     if (cssDropValue !== window.wails.flags.cssDropValue && flags.prevElement) {
         targetElement.classList.remove("wails-drop-target-active");
         flags.prevElement.classList.remove("wails-drop-target-active");
+        // remove element as otherwise we will not update the class on the next dragover
+        flags.prevElement = null;
     }
 }
 
