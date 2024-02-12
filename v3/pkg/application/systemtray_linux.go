@@ -24,6 +24,8 @@ const (
 )
 
 type linuxSystemTray struct {
+	parent *SystemTray
+
 	id    uint
 	label string
 	icon  []byte
@@ -39,6 +41,11 @@ type linuxSystemTray struct {
 
 	menuVersion uint32 // need to bump this anytime we change anything
 	itemMap     map[int32]*systrayMenuItem
+}
+
+func (s *linuxSystemTray) getScreen() (*Screen, error) {
+	_, _, result := getMousePosition()
+	return result, nil
 }
 
 // dbusMenu is a named struct to map into generated bindings.
@@ -182,6 +189,22 @@ func (s *linuxSystemTray) refresh() {
 }
 
 func (s *linuxSystemTray) setMenu(menu *Menu) {
+	if s.parent.attachedWindow.Window != nil {
+		temp := menu
+		menu = NewMenu()
+		title := "Open"
+		if s.parent.attachedWindow.Window.Name() != "" {
+			title += " " + s.parent.attachedWindow.Window.Name()
+		} else {
+			title += " window"
+		}
+		openMenuItem := menu.Add(title)
+		openMenuItem.OnClick(func(*Context) {
+			s.parent.clickHandler()
+		})
+		menu.AddSeparator()
+		menu.Append(temp)
+	}
 	s.itemMap = map[int32]*systrayMenuItem{}
 	// our root menu element
 	s.itemMap[0] = &systrayMenuItem{
@@ -198,16 +221,47 @@ func (s *linuxSystemTray) setMenu(menu *Menu) {
 }
 
 func (s *linuxSystemTray) positionWindow(window *WebviewWindow, offset int) error {
+	// Get the mouse location on the screen
+	mouseX, mouseY, currentScreen := getMousePosition()
+	screenBounds := currentScreen.Size
+
+	// Calculate new X position
+	newX := mouseX - (window.Width() / 2)
+
+	// Check if the window goes out of the screen bounds on the left side
+	if newX < 0 {
+		newX = 0
+	}
+
+	// Check if the window goes out of the screen bounds on the right side
+	if newX+window.Width() > screenBounds.Width {
+		newX = screenBounds.Width - window.Width()
+	}
+
+	// Calculate new Y position
+	newY := mouseY - (window.Height() / 2)
+
+	// Check if the window goes out of the screen bounds on the top
+	if newY < 0 {
+		newY = 0
+	}
+
+	// Check if the window goes out of the screen bounds on the bottom
+	if newY+window.Height() > screenBounds.Height {
+		newY = screenBounds.Height - window.Height() - offset
+	}
+
+	// Set the new position of the window
+	window.SetAbsolutePosition(newX, newY)
 	return nil
 }
 
-func (s *linuxSystemTray) getScreen() (*Screen, error) {
-	// FIXME: How do we get the screen we are on?
-	return &Screen{}, nil
-}
-
 func (s *linuxSystemTray) bounds() (*Rect, error) {
+
+	// Best effort guess at the screen bounds
+
 	return &Rect{}, nil
+
 }
 
 func (s *linuxSystemTray) run() {
@@ -354,6 +408,7 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 	}
 
 	return &linuxSystemTray{
+		parent:         s,
 		id:             s.id,
 		label:          label,
 		icon:           s.icon,
@@ -572,6 +627,16 @@ func (s *linuxSystemTray) Event(id int32, eventID string, data dbus.Variant, tim
 			InvokeAsync(item.menuItem.handleClick)
 		}
 	}
+	if eventID == "opened" {
+		if s.parent.onMenuOpen != nil {
+			s.parent.onMenuOpen()
+		}
+	}
+	if eventID == "closed" {
+		if s.parent.onMenuClose != nil {
+			s.parent.onMenuClose()
+		}
+	}
 	return
 }
 
@@ -583,6 +648,7 @@ func (s *linuxSystemTray) EventGroup(events []struct {
 	V3 uint32
 }) (idErrors []int32, err *dbus.Error) {
 	for _, event := range events {
+		fmt.Printf("EventGroup: %v, %v, %v, %v\n", event.V0, event.V1, event.V2, event.V3)
 		if event.V1 == "clicked" {
 			item, ok := s.itemMap[event.V0]
 			if ok {

@@ -157,6 +157,8 @@ export const EventTypes = {
 		SystemThemeChanged: "linux:SystemThemeChanged",
 		WindowLoadChanged: "linux:WindowLoadChanged",
 		WindowDeleteEvent: "linux:WindowDeleteEvent",
+		WindowFocusIn: "linux:WindowFocusIn",
+		WindowFocusOut: "linux:WindowFocusOut",
 		ApplicationStartup: "linux:ApplicationStartup",
 	},
 	Common: {

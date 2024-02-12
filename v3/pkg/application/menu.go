@@ -106,6 +106,10 @@ func (m *Menu) clone() *Menu {
 	return result
 }
 
+func (m *Menu) Append(in *Menu) {
+	m.items = append(m.items, in.items...)
+}
+
 func (a *App) NewMenu() *Menu {
 	return &Menu{}
 }

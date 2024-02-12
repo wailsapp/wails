@@ -157,6 +157,8 @@ export declare const EventTypes: {
 		SystemThemeChanged: string,
 		WindowLoadChanged: string,
 		WindowDeleteEvent: string,
+		WindowFocusIn: string,
+		WindowFocusOut: string,
 		ApplicationStartup: string,
 	},
 	Common: {

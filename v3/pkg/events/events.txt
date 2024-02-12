@@ -1,6 +1,8 @@
 linux:SystemThemeChanged
 linux:WindowLoadChanged
 linux:WindowDeleteEvent
+linux:WindowFocusIn
+linux:WindowFocusOut
 linux:ApplicationStartup
 mac:ApplicationDidBecomeActive
 mac:ApplicationDidChangeBackingProperties
