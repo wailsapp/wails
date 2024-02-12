@@ -60,6 +60,7 @@ typedef struct WindowEvent {
 void activateLinux(gpointer data);
 extern void emit(WindowEvent* data);
 extern gboolean handleDeleteEvent(GtkWidget*, GdkEvent*, uintptr_t);
+extern gboolean handleFocusEvent(GtkWidget*, GdkEvent*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
 void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
@@ -701,6 +702,31 @@ func (w *linuxWebviewWindow) execJS(js string) {
 	C.free(unsafe.Pointer(value))
 }
 
+func getMousePosition() (int, int, *Screen) {
+	var x, y C.gint
+	var screen *C.GdkScreen
+	defaultDisplay := C.gdk_display_get_default()
+	device := C.gdk_seat_get_pointer(C.gdk_display_get_default_seat(defaultDisplay))
+	C.gdk_device_get_position(device, &screen, &x, &y)
+	// Get Monitor for screen
+	monitor := C.gdk_display_get_monitor_at_point(defaultDisplay, x, y)
+	geometry := C.GdkRectangle{}
+	C.gdk_monitor_get_geometry(monitor, &geometry)
+	scale := int(C.gdk_monitor_get_scale_factor(monitor))
+	return int(x), int(y), &Screen{
+		ID:        fmt.Sprintf("%d", 0),                                           // A unique identifier for the display
+		Name:      C.GoString(C.gdk_monitor_get_model(monitor)),                   // The name of the display
+		Scale:     float32(scale),                                                 // The scale factor of the display
+		X:         int(geometry.x),                                                // The x-coordinate of the top-left corner of the rectangle
+		Y:         int(geometry.y),                                                // The y-coordinate of the top-left corner of the rectangle
+		Size:      Size{Width: int(geometry.width), Height: int(geometry.height)}, // The size of the display
+		Bounds:    Rect{},                                                         // The bounds of the display
+		WorkArea:  Rect{},                                                         // The work area of the display
+		IsPrimary: false,                                                          // Whether this is the primary display
+		Rotation:  0.0,                                                            // The rotation of the display
+	}
+}
+
 func (w *linuxWebviewWindow) destroy() {
 	w.parent.markAsDestroyed()
 	// Free menu
@@ -708,7 +734,8 @@ func (w *linuxWebviewWindow) destroy() {
 		C.gtk_widget_destroy((*C.GtkWidget)(w.gtkmenu))
 		w.gtkmenu = nil
 	}
-	w.destroy()
+	// Free window
+	C.gtk_widget_destroy(w.gtkWidget())
 }
 
 func (w *linuxWebviewWindow) fullscreen() {
@@ -908,7 +935,7 @@ func (w *linuxWebviewWindow) show() {
 		return
 	}
 	C.gtk_widget_show_all(w.gtkWidget())
-	w.setAbsolutePosition(w.lastX, w.lastY)
+	//w.setAbsolutePosition(w.lastX, w.lastY)
 }
 
 func windowIgnoreMouseEvents(window pointer, webview pointer, ignore bool) {
@@ -1057,6 +1084,19 @@ func handleDeleteEvent(widget *C.GtkWidget, event *C.GdkEvent, data C.uintptr_t)
 	return C.gboolean(1)
 }
 
+//export handleFocusEvent
+func handleFocusEvent(widget *C.GtkWidget, event *C.GdkEvent, data C.uintptr_t) C.gboolean {
+	focusEvent := (*C.GdkEventFocus)(unsafe.Pointer(event))
+	if focusEvent._type == C.GDK_FOCUS_CHANGE {
+		if focusEvent.in == C.TRUE {
+			processWindowEvent(C.uint(data), C.uint(events.Linux.WindowFocusIn))
+		} else {
+			processWindowEvent(C.uint(data), C.uint(events.Linux.WindowFocusOut))
+		}
+	}
+	return C.gboolean(0)
+}
+
 //export handleLoadChanged
 func handleLoadChanged(webview *C.WebKitWebView, event C.WebKitLoadEvent, data C.uintptr_t) {
 	switch event {
@@ -1075,6 +1115,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	// Set up the window close event
 	wv := unsafe.Pointer(w.webview)
 	C.signal_connect(unsafe.Pointer(w.window), c.String("delete-event"), C.handleDeleteEvent, winID)
+	C.signal_connect(unsafe.Pointer(w.window), c.String("focus-out-event"), C.handleFocusEvent, winID)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
@@ -1109,6 +1150,14 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	C.signal_connect(wv, c.String("button-press-event"), C.onButtonEvent, winID)
 	C.signal_connect(wv, c.String("button-release-event"), C.onButtonEvent, winID)
 	C.signal_connect(wv, c.String("key-press-event"), C.onKeyPressEvent, winID)
+}
+
+func getMouseButtons() (bool, bool, bool) {
+	var pointer *C.GdkDevice
+	var state C.GdkModifierType
+	pointer = C.gdk_seat_get_pointer(C.gdk_display_get_default_seat(C.gdk_display_get_default()))
+	C.gdk_device_get_state(pointer, nil, nil, &state)
+	return state&C.GDK_BUTTON1_MASK > 0, state&C.GDK_BUTTON2_MASK > 0, state&C.GDK_BUTTON3_MASK > 0
 }
 
 func openDevTools(webview pointer) {
@@ -1180,7 +1229,8 @@ func (w *linuxWebviewWindow) setZoom(zoom float64) {
 }
 
 func (w *linuxWebviewWindow) move(x, y int) {
-	C.gtk_window_move((*C.GtkWindow)(w.window), C.int(x), C.int(y))
+	// Move the window to these coordinates
+	C.gtk_window_move(w.gtkWindow(), C.int(x), C.int(y))
 }
 
 func (w *linuxWebviewWindow) absolutePosition() (int, int) {
@@ -1380,7 +1430,7 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 
 	gtkFilters := []*C.GtkFileFilter{}
 	for _, filter := range filters {
-		f := (C.gtk_file_filter_new())
+		f := C.gtk_file_filter_new()
 		displayStr := C.CString(filter.DisplayName)
 		C.gtk_file_filter_set_name(f, displayStr)
 		C.free(unsafe.Pointer(displayStr))

@@ -264,6 +264,12 @@ func (w *linuxWebviewWindow) run() {
 			w.execJS(js)
 		}
 	})
+	w.parent.On(events.Linux.WindowFocusIn, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowFocus)
+	})
+	w.parent.On(events.Linux.WindowFocusOut, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowLostFocus)
+	})
 	w.parent.On(events.Linux.WindowDeleteEvent, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowClosing)
 	})

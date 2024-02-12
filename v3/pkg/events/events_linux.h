@@ -9,9 +9,11 @@ extern void processWindowEvent(unsigned int, unsigned int);
 #define EventSystemThemeChanged 1024
 #define EventWindowLoadChanged 1025
 #define EventWindowDeleteEvent 1026
-#define EventApplicationStartup 1027
+#define EventWindowFocusIn 1027
+#define EventWindowFocusOut 1028
+#define EventApplicationStartup 1029
 
-#define MAX_EVENTS 1028
+#define MAX_EVENTS 1030
 
 
 #endif

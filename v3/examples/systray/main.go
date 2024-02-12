@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
 	"log"
 	"runtime"
 
@@ -25,6 +24,7 @@ func main() {
 	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Width:         500,
 		Height:        800,
+		Name:          "Systray Demo Window",
 		Frameless:     true,
 		AlwaysOnTop:   true,
 		Hidden:        true,
@@ -79,7 +79,6 @@ func main() {
 	radioCallback := func(ctx *application.Context) {
 		menuItem := ctx.ClickedMenuItem()
 		menuItem.SetLabel(menuItem.Label() + "!")
-		fmt.Println("radioCallback: ")
 	}
 
 	// Radio groups are created implicitly by placing radio items next to each other in a menu
