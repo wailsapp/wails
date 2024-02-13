@@ -14,9 +14,8 @@ import (
 )
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0 javascriptcoregtk-4.1 gdk-3.0
+#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0  gdk-3.0
 
-#include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <webkit2/webkit2.h>
