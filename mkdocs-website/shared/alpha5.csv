@@ -6,11 +6,11 @@ context menus," "
 dialogs," "
 drag-n-drop," "
 events,:material-check-bold:
-frameless," "
-keybindings," "
+frameless,:material-check-bold:
+keybindings,:material-check-bold:
 plain," "
-screen," "
+screen,:material-check-bold:
 systray,:material-check-bold:
-video," "
+video,:material-check-bold:
 window,:material-check-bold:
 wml,:material-check-bold:
