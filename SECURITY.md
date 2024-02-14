@@ -17,7 +17,7 @@ Before reporting though, please review our security policy below.
 
 ### How to Report
 
-To report a security vulnerability, please send an email to `security@wails.io`. If possible, please include as much information as possible. 
+To report a security vulnerability, please use GitHub's [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability) feature. If possible, please include as much information as possible. 
 This may include steps to reproduce, impact of the vulnerability, and anything else you believe would help us understand the problem.
 **Please do not include any sensitive or personal information in your report**.
 
