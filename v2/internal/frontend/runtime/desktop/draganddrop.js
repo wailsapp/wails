@@ -114,12 +114,24 @@ function onDragLeave(e) {
         return;
     }
 
-    if (e.target.classList.contains("wails-drop-target-active")) {
-      e.target.classList.remove("wails-drop-target-active");
-      if (flags.prevElement) {
-        flags.prevElement.classList.remove("wails-drop-target-active");
-        flags.prevElement = null;
-      }
+    const targetElement = e.target.classList.contains("wails-drop-target-active") ? e.target : e.target.closest(`[class*='wails-drop-target-active']`)
+
+    if (targetElement === null) {
+      return
+    }
+
+    // if we still in the box of element that has the drop target class, do nothing
+    const rect = targetElement.getBoundingClientRect();
+    if (e.x > rect.x && e.x < rect.x + rect.width && e.y > rect.y && e.y < rect.y + rect.height
+      // event is inside window
+      && e.x > 0 && e.x < window.innerWidth && e.y > 0 && e.y < window.innerHeight) {
+      return
+    }
+
+    targetElement.classList.remove("wails-drop-target-active");
+    if (flags.prevElement) {
+      flags.prevElement.classList.remove("wails-drop-target-active");
+      flags.prevElement = null;
     }
 }
 
