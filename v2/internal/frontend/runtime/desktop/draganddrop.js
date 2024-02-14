@@ -114,16 +114,12 @@ function onDragLeave(e) {
         return;
     }
 
-    let targetElement = document.elementFromPoint(e.x, e.y);
-    let cssDropValue = window.getComputedStyle(targetElement).getPropertyValue(window.wails.flags.cssDropProperty);
-    if (cssDropValue) {
-        cssDropValue = cssDropValue.trim();
-    }
-    if (cssDropValue !== window.wails.flags.cssDropValue && flags.prevElement) {
-        targetElement.classList.remove("wails-drop-target-active");
+    if (e.target.classList.contains("wails-drop-target-active")) {
+      e.target.classList.remove("wails-drop-target-active");
+      if (flags.prevElement) {
         flags.prevElement.classList.remove("wails-drop-target-active");
-        // remove element as otherwise we will not update the class on the next dragover
         flags.prevElement = null;
+      }
     }
 }
 
