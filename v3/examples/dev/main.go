@@ -16,7 +16,7 @@ func main() {
 		Name:        "dev",
 		Description: "A demo of using raw HTML & CSS",
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.AssetFileServerFS(assets),
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,

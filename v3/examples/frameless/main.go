@@ -17,7 +17,7 @@ func main() {
 		Name:        "Frameless Demo",
 		Description: "A demo of frameless windows",
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.AssetFileServerFS(assets),
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,

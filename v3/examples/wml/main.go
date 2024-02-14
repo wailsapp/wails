@@ -20,7 +20,7 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.AssetFileServerFS(assets),
 		},
 	})
 

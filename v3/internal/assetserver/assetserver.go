@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"net/http/httputil"
 	"net/url"
 	"path"
 	"strings"
@@ -29,26 +28,32 @@ type RuntimeHandler interface {
 type AssetServer struct {
 	options *Options
 
-	handler   http.Handler
-	wsHandler *httputil.ReverseProxy
+	handler http.Handler
 
 	pluginScripts map[string]string
-
-	devServerURL string
 
 	assetServerWebView
 }
 
 func NewAssetServer(options *Options) (*AssetServer, error) {
-	result := &AssetServer{
-		options: options,
+	result := &AssetServer{options: options}
+
+	userHandler := options.Handler
+	if userHandler == nil {
+		userHandler = http.NotFoundHandler()
 	}
 
-	var err error
-	result.handler, err = result.setupHandler()
-	if err != nil {
-		return nil, err
+	handler := http.Handler(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				result.serveHTTP(w, r, userHandler)
+			}))
+
+	if middleware := options.Middleware; middleware != nil {
+		handler = middleware(handler)
 	}
+
+	result.handler = handler
 
 	return result, nil
 }
@@ -56,7 +61,10 @@ func NewAssetServer(options *Options) (*AssetServer, error) {
 func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	start := time.Now()
 	wrapped := &contentTypeSniffer{rw: rw}
-	a.serveHTTP(wrapped, req)
+
+	req = req.WithContext(contextWithLogger(req.Context(), a.options.Logger))
+	a.handler.ServeHTTP(wrapped, req)
+
 	a.options.Logger.Info(
 		"Asset Request:",
 		"windowName", req.Header.Get(webViewRequestHeaderWindowName),
@@ -68,17 +76,11 @@ func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	)
 }
 
-func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request) {
-
-	if a.wsHandler != nil {
-		a.wsHandler.ServeHTTP(rw, req)
+func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userHandler http.Handler) {
+	if isWebSocket(req) {
+		// WebSockets are not supported by the AssetServer
+		rw.WriteHeader(http.StatusNotImplemented)
 		return
-	} else {
-		if isWebSocket(req) {
-			// WebSockets are not supported by the AssetServer
-			rw.WriteHeader(http.StatusNotImplemented)
-			return
-		}
 	}
 
 	header := rw.Header()
@@ -91,7 +93,7 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request) {
 	switch path {
 	case "", "/", "/index.html":
 		recorder := httptest.NewRecorder()
-		a.handler.ServeHTTP(recorder, req)
+		userHandler.ServeHTTP(recorder, req)
 		for k, v := range recorder.Result().Header {
 			header[k] = v
 		}
@@ -126,7 +128,7 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request) {
 		if script, ok := a.pluginScripts[path]; ok {
 			a.writeBlob(rw, path, []byte(script))
 		} else {
-			a.handler.ServeHTTP(rw, req)
+			userHandler.ServeHTTP(rw, req)
 			return
 		}
 	}

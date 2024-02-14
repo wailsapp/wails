@@ -46,7 +46,7 @@ func main() {
 			"start_at_login": start_at_login.NewPlugin(start_at_login.Config{}),
 		},
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.AssetFileServerFS(assets),
 		},
 	})
 

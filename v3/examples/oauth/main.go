@@ -3,12 +3,13 @@ package main
 import (
 	"embed"
 	_ "embed"
+	"log"
+	"os"
+
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/github"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/plugins/oauth"
-	"log"
-	"os"
 )
 
 //go:embed assets
@@ -34,7 +35,7 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.AssetFileServerFS(assets),
 		},
 		Plugins: map[string]application.Plugin{
 			"github.com/wailsapp/wails/v3/plugins/oauth": oAuthPlugin,

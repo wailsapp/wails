@@ -30,7 +30,7 @@ func main() {
 			}),
 		},
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.AssetFileServerFS(assets),
 		},
 	})
 	go func() {

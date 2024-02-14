@@ -26,7 +26,7 @@ func main() {
 			WebviewBrowserPath:            "",
 		},
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.AssetFileServerFS(assets),
 		},
 	})
 

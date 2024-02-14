@@ -2,12 +2,13 @@ package assetserver
 
 import (
 	"bytes"
+	"context"
 	"embed"
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	iofs "io/fs"
-	"log/slog"
 	"net/http"
 	"os"
 	"path"
@@ -18,91 +19,53 @@ const (
 	indexHTML = "index.html"
 )
 
-type assetHandler struct {
-	fs      iofs.FS
-	handler http.Handler
-
-	logger *slog.Logger
-
-	retryMissingFiles bool
+type assetFileServer struct {
+	fs  iofs.FS
+	err error
 }
 
-func NewDefaultAssetHandler(options *Options) (http.Handler, error) {
-
-	vfs := options.Assets
-	if vfs != nil {
-		if _, err := vfs.Open("."); err != nil {
-			return nil, err
-		}
-
-		subDir, err := FindPathToFile(vfs, indexHTML)
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				msg := "no `index.html` could be found in your Assets fs.FS"
-				if embedFs, isEmbedFs := vfs.(embed.FS); isEmbedFs {
-					rootFolder, _ := FindEmbedRootPath(embedFs)
-					msg += fmt.Sprintf(", please make sure the embedded directory '%s' is correct and contains your assets", rootFolder)
-				}
-
-				return nil, fmt.Errorf(msg)
+func newAssetFileServerFS(vfs fs.FS) http.Handler {
+	subDir, err := findPathToFile(vfs, indexHTML)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			msg := "no `index.html` could be found in your Assets fs.FS"
+			if embedFs, isEmbedFs := vfs.(embed.FS); isEmbedFs {
+				rootFolder, _ := findEmbedRootPath(embedFs)
+				msg += fmt.Sprintf(", please make sure the embedded directory '%s' is correct and contains your assets", rootFolder)
 			}
 
-			return nil, err
+			err = fmt.Errorf(msg)
 		}
-
-		vfs, err = iofs.Sub(vfs, path.Clean(subDir))
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	var result http.Handler = &assetHandler{
-		fs:      vfs,
-		handler: options.Handler,
-		logger:  options.Logger,
-	}
-
-	if middleware := options.Middleware; middleware != nil {
-		result = middleware(result)
-	}
-
-	return result, nil
-}
-
-func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	url := req.URL.Path
-	handler := d.handler
-	if strings.EqualFold(req.Method, http.MethodGet) {
-		filename := path.Clean(strings.TrimPrefix(url, "/"))
-
-		d.logInfo("Handling request", "url", url, "file", filename)
-		if err := d.serveFSFile(rw, req, filename); err != nil {
-			if os.IsNotExist(err) {
-				if handler != nil {
-					d.logInfo("File not found. Deferring to AssetHandler", "filename", filename, "url", url)
-					handler.ServeHTTP(rw, req)
-					err = nil
-				} else {
-					rw.WriteHeader(http.StatusNotFound)
-					err = nil
-				}
-			}
-
-			if err != nil {
-				d.logError("Unable to handle request '%s': %s", url, err)
-				http.Error(rw, err.Error(), http.StatusInternalServerError)
-			}
-		}
-	} else if handler != nil {
-		d.logInfo("Non-GET request. Deferring to AssetHandler", "url", url)
-		handler.ServeHTTP(rw, req)
 	} else {
-		rw.WriteHeader(http.StatusMethodNotAllowed)
+		vfs, err = iofs.Sub(vfs, path.Clean(subDir))
+	}
+
+	return &assetFileServer{fs: vfs, err: err}
+}
+
+func (d *assetFileServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
+	url := req.URL.Path
+
+	err := d.err
+	if err == nil {
+		filename := path.Clean(strings.TrimPrefix(url, "/"))
+		d.logInfo(ctx, "Handling request", "url", url, "file", filename)
+		err = d.serveFSFile(rw, req, filename)
+		if os.IsNotExist(err) {
+			rw.WriteHeader(http.StatusNotFound)
+			return
+		}
+	}
+
+	if err != nil {
+		d.logError(ctx, "Unable to handle request", "url", url, "err", err)
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 // serveFile will try to load the file from the fs.FS and write it to the response
-func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, filename string) error {
+func (d *assetFileServer) serveFSFile(rw http.ResponseWriter, req *http.Request, filename string) error {
 	if d.fs == nil {
 		return os.ErrNotExist
 	}
@@ -182,10 +145,10 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 	return err
 }
 
-func (d *assetHandler) logInfo(message string, args ...interface{}) {
-	d.logger.Debug("[AssetHandler] "+message, args...)
+func (d *assetFileServer) logInfo(ctx context.Context, message string, args ...interface{}) {
+	logInfo(ctx, "[AssetFileServerFS] "+message, args...)
 }
 
-func (d *assetHandler) logError(message string, args ...interface{}) {
-	d.logger.Error("[AssetHandler] "+message, args...)
+func (d *assetFileServer) logError(ctx context.Context, message string, args ...interface{}) {
+	logError(ctx, "[AssetFileServerFS] "+message, args...)
 }

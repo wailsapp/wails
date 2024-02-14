@@ -19,7 +19,7 @@ func main() {
 		Name:        "Events Demo",
 		Description: "A demo of the Events API",
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.AssetFileServerFS(assets),
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,

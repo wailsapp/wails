@@ -4,6 +4,8 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
 
 type Options struct {
@@ -68,25 +70,15 @@ type Options struct {
 
 // AssetOptions defines the configuration of the AssetServer.
 type AssetOptions struct {
-	// FS defines the static assets to be used. A GET request is first tried to be served from this FS. If the FS returns
-	// `os.ErrNotExist` for that file, the request handling will fallback to the Handler and tries to serve the GET
-	// request from it.
-	//
-	// If set to nil, all GET requests will be forwarded to Handler.
-	FS fs.FS
-
-	// Handler will be called for every GET request that can't be served from FS, due to `os.ErrNotExist`. Furthermore all
-	// non GET requests will always be served from this Handler.
-	//
-	// If not defined, the result is the following in cases where the Handler would have been called:
-	//   GET request:   `http.StatusNotFound`
-	//   Other request: `http.StatusMethodNotAllowed`
+	// Handler which serves all the content to the WebView.
 	Handler http.Handler
 
-	// Middleware is HTTP Middleware which allows to hook into the AssetServer request chain. It allows to skip the default
+	// Middleware is a HTTP Middleware which allows to hook into the AssetServer request chain. It allows to skip the default
 	// request handler dynamically, e.g. implement specialized Routing etc.
 	// The Middleware is called to build a new `http.Handler` used by the AssetSever and it also receives the default
 	// handler used by the AssetServer as an argument.
+	//
+	// This middleware injects itself before any of Wails internal middlewares.
 	//
 	// If not defined, the default AssetServer request chain is executed.
 	//
@@ -111,4 +103,11 @@ func ChainMiddleware(middleware ...Middleware) Middleware {
 		}
 		return h
 	}
+}
+
+// AssetFileServerFS returns a http handler which serves the assets from the fs.FS.
+// If an external devserver has been provided 'FRONTEND_DEVSERVER_URL' the files are being served
+// from the external server, ignoring the `assets`.
+func AssetFileServerFS(assets fs.FS) http.Handler {
+	return assetserver.NewAssetFileServer(assets)
 }
