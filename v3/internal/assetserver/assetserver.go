@@ -13,10 +13,6 @@ import (
 )
 
 const (
-	runtimePath      = "/wails/runtime"
-	capabilitiesPath = "/wails/capabilities"
-	flagsPath        = "/wails/flags"
-
 	webViewRequestHeaderWindowId   = "x-wails-window-id"
 	webViewRequestHeaderWindowName = "x-wails-window-name"
 )
@@ -107,21 +103,7 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 
 		default:
 			rw.WriteHeader(recorder.Code)
-
 		}
-		return
-
-	case capabilitiesPath:
-		var data = a.options.GetCapabilities()
-		a.writeBlob(rw, path, data)
-
-	case flagsPath:
-		var data = a.options.GetFlags()
-		a.writeBlob(rw, path, data)
-
-	case runtimePath:
-		a.options.RuntimeHandler.ServeHTTP(rw, req)
-		return
 
 	default:
 		// Check if this is a plugin script
@@ -129,13 +111,12 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 			a.writeBlob(rw, path, []byte(script))
 		} else {
 			userHandler.ServeHTTP(rw, req)
-			return
 		}
 	}
 }
 
 func (a *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {
-	err := serveFile(rw, filename, blob)
+	err := ServeFile(rw, filename, blob)
 	if err != nil {
 		a.serveError(rw, err, "Unable to write content %s", filename)
 	}

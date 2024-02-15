@@ -26,7 +26,7 @@ var (
 	assetServerLogger = struct{}{}
 )
 
-func serveFile(rw http.ResponseWriter, filename string, blob []byte) error {
+func ServeFile(rw http.ResponseWriter, filename string, blob []byte) error {
 	header := rw.Header()
 	header.Set(HeaderContentLength, fmt.Sprintf("%d", len(blob)))
 	if mimeType := header.Get(HeaderContentType); mimeType == "" {
