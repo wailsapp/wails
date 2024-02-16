@@ -314,14 +314,6 @@ If not defined, the result is the following in cases where the Handler would hav
 - GET request: `http.StatusNotFound`
 - Other request: `http.StatusMethodNotAllowed`
 
-NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html
-on every path, that does not contain a file extension.
-
-Name: AssetsHandler<br/>
-Type: `http.Handler`
-
-#### Middleware
-
 :::info
 
 This does not work with vite v5.0.0+ and wails v2 due to changes in vite. 
@@ -330,6 +322,14 @@ If you need this feature, stay with vite v4.0.0+.
 See [issue 3240](https://github.com/wailsapp/wails/issues/3240) for details
 
 :::
+
+NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html
+on every path, that does not contain a file extension.
+
+Name: AssetsHandler<br/>
+Type: `http.Handler`
+
+#### Middleware
 
 Middleware is a HTTP Middleware which allows to hook into the AssetServer request chain. It allows to skip the default
 request handler dynamically, e.g. implement specialized Routing etc.
