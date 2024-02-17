@@ -286,6 +286,7 @@ tasks:
         vars:
           PRODUCTION: "true"
     cmds:
+      - task: create:rpm
       - task: create:appimage
 
   create:appimage:
@@ -300,11 +301,48 @@ tasks:
     cmds:
       # Copy binary + icon to appimage dir
       - cp {{ "{{.APP_BINARY}}" }} {{ "{{.APP_NAME}}" }}
-      - cp ../appicon.png appicon.png
+      - cp ../appicon.png '{{ "{{.APP_NAME}}" }}'.png
       # Generate AppImage
       - wails3 generate appimage -binary {{ "{{.APP_NAME}}" }} -icon {{ "{{.ICON}}" }} -desktopfile {{ "{{.DESKTOP_FILE}}" }} -outputdir {{ "{{.OUTPUT_DIR}}" }} -builddir {{ "{{.ROOT_DIR}}" }}/build/appimage
     vars:
       APP_NAME: '{{ "{{.APP_NAME}}" }}'
+      APP_BINARY: '../../bin/{{ "{{.APP_NAME}}" }}'
+      ICON: '../appicon.png'
+      DESKTOP_FILE: '{{ "{{.APP_NAME}}" }}.desktop'
+      OUTPUT_DIR: '../../bin'
+
+  create:rpm:
+    summary: Creates a RPM package
+    dir: build/rpm
+    platforms: [ linux ]
+    deps:
+      - task: build:linux
+        vars:
+          PRODUCTION: "true"
+      - task: generate:linux:dotdesktop
+    cmds:
+      # Copy binary + icon to rpmbuild dir
+      - cp {{ "{{.APP_BINARY}}" }} {{ "{{.APP_NAME}}" }}
+      - cp ../appicon.png '{{ "{{.APP_NAME}}" }}'.png
+      - cp ../rpm/app.spec '{{ "{{.APP_NAME}}" }}'.spec
+      - sed -i -e 's/@NAME@/{{ "{{.APP_NAME}}" }}/g'
+              -e 's/@SUMMARY@/{{ "{{.APP_SUMMARY}}" }}/g'
+              -e 's/@VERSION@/{{ "{{.APP_VERSION}}" }}/g'
+              -e 's/@DESCRIPTION@/{{ "{{.APP_DESC}}" }}/g'
+              -e 's/@AUTHOR@/{{ "{{.APP_AUTHOR}}" }}/g'
+              -e 's/@AUTHOR_EMAIL@/{{ "{{.AUTHOR_EMAIL}}" }}/g'
+              {{ "{{.APP_NAME}}" }}.spec
+      # Generate RPM
+      - wails3 generate rpm -binary {{ "{{.APP_NAME}}" }} -icon {{ "{{.ICON}}" }} -desktopfile {{ "{{.DESKTOP_FILE}}" }} -outputdir {{ "{{.OUTPUT_DIR}}" }} -builddir {{ "{{.ROOT_DIR}}" }}/build/rpm
+      - mv {{ "{{.ROOT_DIR}}" }}/build/rpm/$(uname -m)/*.rpm {{ "{{.OUTPUT_DIR}}" }}
+    vars:
+      APP_NAME: '{{ "{{.APP_NAME}}" }}'
+      APP_SUMMARY: 'Hello Wails'
+      APP_VERSION: '1.0.0'
+      APP_DESC: 'Hello Wails is demo application developed on Wails.'
+      APP_URL: 'https://github.com/wailsapp/wails'
+      APP_AUTHOR: "Lea Anthony"
+      AUTHOR_EMAIL: "lea.anthony@gmail.com"
       APP_BINARY: '../../bin/{{ "{{.APP_NAME}}" }}'
       ICON: '../appicon.png'
       DESKTOP_FILE: '{{ "{{.APP_NAME}}" }}.desktop'
@@ -317,10 +355,12 @@ tasks:
         - "appicon.png"
     generates:
         - '{{ "{{.ROOT_DIR}}"}}/build/appimage/{{ "{{.APP_NAME}}" }}.desktop'
+        - '{{ "{{.ROOT_DIR}}"}}/build/rpm/{{ "{{.APP_NAME}}" }}.desktop'
     cmds:
-      - mkdir -p {{ "{{.ROOT_DIR}}"}}/build/appimage
+      - mkdir -p {{ "{{.ROOT_DIR}}"}}/build/{appimage,rpm}
       # Run `wails3 generate .desktop -help` for all the options
       - wails3 generate .desktop -name "{{ "{{.APP_NAME}}" }}" -exec "{{ "{{.EXEC}}" }}" -icon "{{ "{{.ICON}}" }}" -outputfile {{ "{{.ROOT_DIR}}"}}/build/appimage/{{ "{{.APP_NAME}}" }}.desktop -categories "{{ "{{.CATEGORIES}}" }}"
+      - wails3 generate .desktop -name "{{ "{{.APP_NAME}}" }}" -exec "{{ "{{.EXEC}}" }}" -icon "{{ "{{.ICON}}" }}" -outputfile {{ "{{.ROOT_DIR}}"}}/build/rpm/{{ "{{.APP_NAME}}" }}.desktop -categories "{{ "{{.CATEGORIES}}" }}"
       # -comment "A comment"
       # -terminal "true"
       # -version "1.0"
@@ -332,7 +372,7 @@ tasks:
     vars:
       APP_NAME: '{{ "{{.APP_NAME}}" }}'
       EXEC: '{{ "{{.APP_NAME}}" }}'
-      ICON: 'appicon'
+      ICON: '{{ "{{.APP_NAME}}" }}'
       CATEGORIES: 'Development;'
       OUTPUTFILE: '{{ "{{.ROOT_DIR}}"}}/build/appimage/{{ "{{.APP_NAME}}" }}.desktop'
 
