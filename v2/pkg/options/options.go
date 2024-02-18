@@ -97,7 +97,7 @@ type App struct {
 	Debug Debug
 
 	// DragAndDrop options for drag and drop behavior
-	DragAndDrop DragAndDrop
+	DragAndDrop *DragAndDrop
 }
 
 type ErrorFormatter func(error) any
@@ -153,6 +153,9 @@ func MergeDefaults(appoptions *App) {
 	if appoptions.CSSDragValue == "" {
 		appoptions.CSSDragValue = "drag"
 	}
+	if appoptions.DragAndDrop == nil {
+		appoptions.DragAndDrop = &DragAndDrop{}
+	}
 	if appoptions.DragAndDrop.CSSDropProperty == "" {
 		appoptions.DragAndDrop.CSSDropProperty = "--wails-drop-target"
 	}
@@ -197,7 +200,7 @@ type DragAndDrop struct {
 	// Disable webview's drag and drop functionality.
 	//
 	// It can be used to prevent accidental file opening of dragged in files in the webview, when there is no need for drag and drop.
-	Disable bool
+	DisableWebViewDrop bool
 
 	// CSS property to test for drag and drop target elements. Default "--wails-drop-target"
 	CSSDropProperty string

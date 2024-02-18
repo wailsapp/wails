@@ -364,6 +364,11 @@ func (f *Frontend) processMessage(message string) {
 	if message == "runtime:ready" {
 		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
 		f.ExecJS(cmd)
+
+		if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.EnableFileDrop {
+			f.ExecJS("window.wails.flags.enableWailsDragAndDrop = true;")
+		}
+
 		return
 	}
 
