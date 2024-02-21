@@ -59,15 +59,16 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) er
 	newX := screenBounds.Width - window.Width()
 	newY := screenBounds.Height - window.Height()
 
-	iconIsInFlyout, err := s.iconIsInFlyout()
+	// systray icons in windows can either be in the taskbar
+	// or in a flyout menu.
+	iconIsInTrayBounds, err := s.iconIsInTrayBounds()
 	if err != nil {
 		return err
 	}
 
+	// we only need the traybounds if the icon is in the tray
 	var trayBounds *Rect
-
-	if iconIsInFlyout {
-		// Get the trayBounds of this system tray
+	if iconIsInTrayBounds {
 		trayBounds, err = s.bounds()
 		if err != nil {
 			return err
@@ -75,24 +76,28 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) er
 	}
 
 	taskbarBounds := w32.GetTaskbarPosition()
+
+	// Set the window position based on the icon location
+	// if the icon is in the taskbar (traybounds) then we need
+	// to adjust the position so the window is centered on the icon
 	switch taskbarBounds.UEdge {
 	case w32.ABE_LEFT:
-		if iconIsInFlyout && trayBounds.Y-(window.Height()/2) >= 0 {
+		if iconIsInTrayBounds && trayBounds.Y-(window.Height()/2) >= 0 {
 			newY = trayBounds.Y - (window.Height() / 2)
 		}
 		window.SetRelativePosition(offset, newY)
 	case w32.ABE_TOP:
-		if iconIsInFlyout && trayBounds.X-(window.Width()/2) <= newX {
+		if iconIsInTrayBounds && trayBounds.X-(window.Width()/2) <= newX {
 			newX = trayBounds.X - (window.Width() / 2)
 		}
 		window.SetRelativePosition(newX, offset)
 	case w32.ABE_RIGHT:
-		if iconIsInFlyout && trayBounds.Y-(window.Height()/2) <= newY {
+		if iconIsInTrayBounds && trayBounds.Y-(window.Height()/2) <= newY {
 			newY = trayBounds.Y - (window.Height() / 2)
 		}
 		window.SetRelativePosition(screenBounds.Width-window.Width()-offset, newY)
 	case w32.ABE_BOTTOM:
-		if iconIsInFlyout && trayBounds.X-(window.Width()/2) <= newX {
+		if iconIsInTrayBounds && trayBounds.X-(window.Width()/2) <= newX {
 			newX = trayBounds.X - (window.Width() / 2)
 		}
 		window.SetRelativePosition(newX, screenBounds.Height-window.Height()-offset)
@@ -119,7 +124,7 @@ func (s *windowsSystemTray) bounds() (*Rect, error) {
 	}, nil
 }
 
-func (s *windowsSystemTray) iconIsInFlyout() (bool, error) {
+func (s *windowsSystemTray) iconIsInTrayBounds() (bool, error) {
 	bounds, err := w32.GetSystrayBounds(s.hwnd, s.uid)
 	if err != nil {
 		return false, err
@@ -127,8 +132,8 @@ func (s *windowsSystemTray) iconIsInFlyout() (bool, error) {
 
 	taskbarRect := w32.GetTaskbarPosition()
 
-	flyoutOpen := !w32.RectInRect(bounds, &taskbarRect.Rc)
-	if flyoutOpen {
+	inTasksBar := w32.RectInRect(bounds, &taskbarRect.Rc)
+	if inTasksBar {
 		return true, nil
 	}
 
