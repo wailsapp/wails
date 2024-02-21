@@ -4,9 +4,10 @@ package application
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/icons"
 	"syscall"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/pkg/icons"
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -99,14 +100,6 @@ func (s *windowsSystemTray) bounds() (*Rect, error) {
 	monitor := w32.MonitorFromWindow(s.hwnd, w32.MONITOR_DEFAULTTONEAREST)
 	if monitor == 0 {
 		return nil, fmt.Errorf("failed to get monitor")
-	}
-
-	// Get the taskbar rect
-	taskbarRect := w32.GetTaskbarPosition()
-
-	flyoutOpen := !w32.RectInRect(bounds, &taskbarRect.Rc)
-	if flyoutOpen {
-		return nil, nil
 	}
 
 	return &Rect{
