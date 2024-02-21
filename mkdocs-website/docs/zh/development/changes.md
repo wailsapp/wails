@@ -141,7 +141,7 @@ window.go.main = {
 			2: 4021313248,
 		},
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.AssetFileServerFS(assets),
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
