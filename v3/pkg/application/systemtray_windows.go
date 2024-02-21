@@ -48,12 +48,6 @@ func (s *windowsSystemTray) openMenu() {
 
 func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) error {
 
-	// Get the trayBounds of this system tray
-	trayBounds, err := s.bounds()
-	if err != nil {
-		return err
-	}
-
 	// Get the current screen trayBounds
 	currentScreen, err := s.getScreen()
 	if err != nil {
@@ -68,6 +62,16 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) er
 	iconIsInFlyout, err := s.iconIsInFlyout()
 	if err != nil {
 		return err
+	}
+
+	var trayBounds *Rect
+
+	if iconIsInFlyout {
+		// Get the trayBounds of this system tray
+		trayBounds, err = s.bounds()
+		if err != nil {
+			return err
+		}
 	}
 
 	taskbarBounds := w32.GetTaskbarPosition()
