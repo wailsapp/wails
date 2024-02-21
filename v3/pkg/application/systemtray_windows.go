@@ -65,25 +65,30 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) er
 	newX := screenBounds.Width - window.Width()
 	newY := screenBounds.Height - window.Height()
 
+	iconIsInFlyout, err := s.iconIsInFlyout()
+	if err != nil {
+		return err
+	}
+
 	taskbarBounds := w32.GetTaskbarPosition()
 	switch taskbarBounds.UEdge {
 	case w32.ABE_LEFT:
-		if trayBounds != nil && trayBounds.Y-(window.Height()/2) >= 0 {
+		if iconIsInFlyout && trayBounds.Y-(window.Height()/2) >= 0 {
 			newY = trayBounds.Y - (window.Height() / 2)
 		}
 		window.SetRelativePosition(offset, newY)
 	case w32.ABE_TOP:
-		if trayBounds != nil && trayBounds.X-(window.Width()/2) <= newX {
+		if iconIsInFlyout && trayBounds.X-(window.Width()/2) <= newX {
 			newX = trayBounds.X - (window.Width() / 2)
 		}
 		window.SetRelativePosition(newX, offset)
 	case w32.ABE_RIGHT:
-		if trayBounds != nil && trayBounds.Y-(window.Height()/2) <= newY {
+		if iconIsInFlyout && trayBounds.Y-(window.Height()/2) <= newY {
 			newY = trayBounds.Y - (window.Height() / 2)
 		}
 		window.SetRelativePosition(screenBounds.Width-window.Width()-offset, newY)
 	case w32.ABE_BOTTOM:
-		if trayBounds != nil && trayBounds.X-(window.Width()/2) <= newX {
+		if iconIsInFlyout && trayBounds.X-(window.Width()/2) <= newX {
 			newX = trayBounds.X - (window.Width() / 2)
 		}
 		window.SetRelativePosition(newX, screenBounds.Height-window.Height()-offset)
@@ -108,6 +113,22 @@ func (s *windowsSystemTray) bounds() (*Rect, error) {
 		Width:  int(bounds.Right - bounds.Left),
 		Height: int(bounds.Bottom - bounds.Top),
 	}, nil
+}
+
+func (s *windowsSystemTray) iconIsInFlyout() (bool, error) {
+	bounds, err := w32.GetSystrayBounds(s.hwnd, s.uid)
+	if err != nil {
+		return false, err
+	}
+
+	taskbarRect := w32.GetTaskbarPosition()
+
+	flyoutOpen := !w32.RectInRect(bounds, &taskbarRect.Rc)
+	if flyoutOpen {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func (s *windowsSystemTray) getScreen() (*Screen, error) {
