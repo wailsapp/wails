@@ -60,10 +60,12 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 		return err
 	}
 
-	// Run go mod tidy to ensure we're up-to-date
-	err = runCommand(cwd, false, f.Compiler, "mod", "tidy")
-	if err != nil {
-		return err
+	if !f.SkipModTidy {
+		// Run go mod tidy to ensure we're up-to-date
+		err = runCommand(cwd, false, f.Compiler, "mod", "tidy")
+		if err != nil {
+			return err
+		}
 	}
 
 	buildOptions := f.GenerateBuildOptions()
