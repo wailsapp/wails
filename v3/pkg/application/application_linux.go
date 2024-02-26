@@ -177,7 +177,6 @@ func (a *linuxApp) monitorThemeChanges() {
 
 func newPlatformApp(parent *App) *linuxApp {
 
-	C.install_signal_handlers()
 	name := strings.ToLower(strings.Replace(parent.options.Name, " ", "", -1))
 	if name == "" {
 		name = "undefined"

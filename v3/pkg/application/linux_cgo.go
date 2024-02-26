@@ -4,11 +4,12 @@ package application
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"regexp"
 	"strings"
 	"sync"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -317,6 +318,8 @@ func appName() string {
 }
 
 func appNew(name string) pointer {
+	C.install_signal_handlers()
+
 	// prevent leading number
 	if matched, _ := regexp.MatchString(`^\d+`, name); matched {
 		name = fmt.Sprintf("_%s", name)
