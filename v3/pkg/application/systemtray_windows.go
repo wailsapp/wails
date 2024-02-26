@@ -43,11 +43,9 @@ func (s *windowsSystemTray) openMenu() {
 
 	// Show the menu at the tray bounds
 	s.menu.ShowAt(trayBounds.X, trayBounds.Y)
-
 }
 
 func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) error {
-
 	// Get the current screen trayBounds
 	currentScreen, err := s.getScreen()
 	if err != nil {
@@ -211,7 +209,7 @@ func (s *windowsSystemTray) run() {
 	if s.parent.rightClickHandler == nil {
 		s.parent.rightClickHandler = func() {
 			if s.menu != nil {
-				s.menu.ShowAtCursor()
+				s.openMenu()
 			}
 		}
 	}
@@ -226,11 +224,9 @@ func (s *windowsSystemTray) run() {
 
 	// Register the system tray
 	getNativeApplication().registerSystemTray(s)
-
 }
 
 func (s *windowsSystemTray) updateIcon() {
-
 	var newIcon w32.HICON
 	if w32.IsCurrentlyDarkMode() {
 		newIcon = s.darkModeIcon
@@ -275,6 +271,7 @@ func (s *windowsSystemTray) setIcon(icon []byte) {
 	// Update the icon
 	s.updateIcon()
 }
+
 func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
 	var err error
 	s.darkModeIcon, err = w32.CreateSmallHIconFromImage(icon)
@@ -324,7 +321,7 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 				s.parent.mouseLeaveHandler()
 			}
 		}
-		//println(w32.WMMessageToString(msg))
+		// println(w32.WMMessageToString(msg))
 
 	// Menu processing
 	case w32.WM_COMMAND:
@@ -334,8 +331,8 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 			s.menu.ProcessCommand(cmdMsgID)
 		}
 	default:
-		//msg := int(wParam & 0xffff)
-		//println(w32.WMMessageToString(uintptr(msg)))
+		// msg := int(wParam & 0xffff)
+		// println(w32.WMMessageToString(uintptr(msg)))
 	}
 
 	return w32.DefWindowProc(s.hwnd, msg, wParam, lParam)
