@@ -948,10 +948,10 @@ func (w *WebviewWindow) Restore() {
 	InvokeSync(func() {
 		if w.IsMinimised() {
 			w.UnMinimise()
-		} else if w.IsMaximised() {
-			w.UnMaximise()
 		} else if w.IsFullscreen() {
 			w.UnFullscreen()
+		} else if w.IsMaximised() {
+			w.UnMaximise()
 		}
 		w.emit(events.Common.WindowRestore)
 	})
