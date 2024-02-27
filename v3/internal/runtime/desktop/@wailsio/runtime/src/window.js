@@ -119,6 +119,13 @@ export function Fullscreen() {
 }
 
 /**
+ * Restores the previous window dimensions and position prior to fullscreen.
+ */
+export function UnFullscreen() {
+    thisWindow.UnFullscreen();
+}
+
+/**
  * Sets the size of the window.
  * @param {number} width - The width of the window.
  * @param {number} height - The height of the window.

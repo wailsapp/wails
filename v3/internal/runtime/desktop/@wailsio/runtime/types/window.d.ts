@@ -19,6 +19,10 @@ export function SetTitle(title: string): void;
  */
 export function Fullscreen(): void;
 /**
+ * Restores the previous window dimensions and position prior to fullscreen.
+ */
+export function UnFullscreen(): void;
+/**
  * Sets the size of the window.
  * @param {number} width - The width of the window.
  * @param {number} height - The height of the window.
