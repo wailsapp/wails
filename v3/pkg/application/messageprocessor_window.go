@@ -123,6 +123,9 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowUnMaximise:
 		window.UnMaximise()
 		m.ok(rw)
+	case WindowToggleMaximise:
+		window.ToggleMaximise()
+		m.ok(rw)
 	case WindowRestore:
 		window.Restore()
 		m.ok(rw)
