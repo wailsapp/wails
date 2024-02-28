@@ -298,6 +298,7 @@ import "github.com/wailsapp/wails/v3/pkg/application"
   - [func \(w \*WebviewWindow\) Size\(\) \(int, int\)](#WebviewWindow.Size)
   - [func \(w \*WebviewWindow\) ToggleDevTools\(\)](#WebviewWindow.ToggleDevTools)
   - [func \(w \*WebviewWindow\) ToggleFullscreen\(\)](#WebviewWindow.ToggleFullscreen)
+  - [func \(w \*WebviewWindow\) ToggleMaximise\(\)](#WebviewWindow.ToggleMaximise)
   - [func \(w \*WebviewWindow\) UnFullscreen\(\)](#WebviewWindow.UnFullscreen)
   - [func \(w \*WebviewWindow\) UnMaximise\(\)](#WebviewWindow.UnMaximise)
   - [func \(w \*WebviewWindow\) UnMinimise\(\)](#WebviewWindow.UnMinimise)
@@ -3714,6 +3715,16 @@ func (w *WebviewWindow) ToggleFullscreen()
 ```
 
 ToggleFullscreen toggles the window between fullscreen and normal
+
+<a name="WebviewWindow.ToggleMaximise"></a>
+
+### func \(\*WebviewWindow\) [ToggleMaximise](https://github.com/wailsapp/wails/blob/master/v3/pkg/application/webview_window.go#L720)
+
+```go
+func (w *WebviewWindow) ToggleMaximise()
+```
+
+ToggleMaximise toggles the window between maximised and normal
 
 <a name="WebviewWindow.UnFullscreen"></a>
 

@@ -217,6 +217,8 @@ func (w Window) ToggleDevTools() {
 
 func (w Window) ToggleFullscreen() {}
 
+func (w Window) ToggleMaximise() {}
+
 func (w Window) UnFullscreen() {}
 
 func (w Window) UnMaximise() {}
