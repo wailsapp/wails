@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [linux] add task `run:linux` by [@marcus-crane](https://github.com/marcus-crane) in [#3146](https://github.com/wailsapp/wails/pull/3146)
 - export `SetIcon` method by  @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3147)
 - Improve `OnShutdown` by  @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3189)
+- restore `ToggleMaximise` method in `Window` interface by [@fbbdev](https://github.com/fbbdev) in [#3281](https://github.com/wailsapp/wails/pull/3281)
 
 ### Fixed
 
