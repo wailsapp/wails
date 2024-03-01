@@ -12,16 +12,16 @@ import (
 // as parameter through every function call.
 
 const (
-	callRequest        int = 0
-	clipboardRequest       = 1
-	applicationRequest     = 2
-	eventsRequest          = 3
-	contextMenuRequest     = 4
-	dialogRequest          = 5
-	windowRequest          = 6
-	screensRequest         = 7
-	systemRequest          = 8
-	browserRequest         = 9
+	callRequest        = 0
+	clipboardRequest   = 1
+	applicationRequest = 2
+	eventsRequest      = 3
+	contextMenuRequest = 4
+	dialogRequest      = 5
+	windowRequest      = 6
+	screensRequest     = 7
+	systemRequest      = 8
+	browserRequest     = 9
 )
 
 type MessageProcessor struct {
