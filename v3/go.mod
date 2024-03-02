@@ -32,7 +32,6 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.51
-	github.com/rjeczalik/notify v0.9.3
 	github.com/samber/lo v1.38.1
 	github.com/tc-hib/winres v0.1.6
 	github.com/wailsapp/go-webview2 v1.0.9
@@ -84,6 +83,7 @@ require (
 	github.com/radovskyb/watcher v1.0.7 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/rjeczalik/notify v0.9.3 // indirect
 	github.com/sajari/fuzzy v1.0.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/skeema/knownhosts v1.2.1 // indirect

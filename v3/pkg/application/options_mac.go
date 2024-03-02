@@ -1,7 +1,9 @@
 package application
 
-import "github.com/wailsapp/wails/v3/pkg/events"
-import "github.com/leaanthony/u"
+import (
+	"github.com/leaanthony/u"
+	"github.com/wailsapp/wails/v3/pkg/events"
+)
 
 // MacBackdrop is the backdrop type for macOS
 type MacBackdrop int
@@ -87,6 +89,8 @@ type MacTitleBar struct {
 	UseToolbar bool
 	// HideToolbarSeparator will hide the toolbar separator
 	HideToolbarSeparator bool
+	// ShowToolbarWhenFullscreen will keep the toolbar visible when the window is in fullscreen mode
+	ShowToolbarWhenFullscreen bool
 	// ToolbarStyle is the style of toolbar to use
 	ToolbarStyle MacToolbarStyle
 }
