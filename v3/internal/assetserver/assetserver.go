@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"path"
 	"strings"
 	"time"
 )
@@ -160,8 +159,7 @@ func GetStartURL(userURL string) (string, error) {
 				return "", fmt.Errorf("Error parsing URL: " + err.Error())
 			}
 			if parsedURL.Scheme == "" {
-				baseURL.Path = path.Join(baseURL.Path, userURL)
-				startURL = baseURL.String()
+				startURL = baseURL.ResolveReference(&url.URL{Path: userURL}).String()
 				// if the original URL had a trailing slash, add it back
 				if strings.HasSuffix(userURL, "/") && !strings.HasSuffix(startURL, "/") {
 					startURL = startURL + "/"
