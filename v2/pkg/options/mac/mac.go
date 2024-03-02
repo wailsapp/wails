@@ -21,6 +21,7 @@ type Options struct {
 	WebviewIsTransparent bool
 	WindowIsTranslucent  bool
 	Preferences          *Preferences
+	DisableZoom          bool
 	// ActivationPolicy     ActivationPolicy
 	About      *AboutInfo
 	OnFileOpen func(filePath string) `json:"-"`
