@@ -1760,6 +1760,8 @@ type MacTitleBar struct {
     UseToolbar bool
     // HideToolbarSeparator will hide the toolbar separator
     HideToolbarSeparator bool
+    // ShowToolbarWhenFullscreen will keep the toolbar visible when the window is in fullscreen mode
+	ShowToolbarWhenFullscreen bool
     // ToolbarStyle is the style of toolbar to use
     ToolbarStyle MacToolbarStyle
 }
