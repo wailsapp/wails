@@ -1,9 +1,9 @@
 Example,Linux
 binding," "
-build," "
+build,:material-check-bold:
 clipboard,:material-check-bold:
-context menus," "
-dialogs," "
+context menus,:material-minus:
+dialogs,:material-minus:
 drag-n-drop," "
 events,:material-check-bold:
 frameless,:material-check-bold:
