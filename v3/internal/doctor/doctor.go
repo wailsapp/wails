@@ -2,19 +2,44 @@ package doctor
 
 import (
 	"fmt"
-	"path/filepath"
-	"runtime"
-	"runtime/debug"
-	"slices"
-	"strconv"
-
 	"github.com/go-git/go-git/v5"
 	"github.com/jaypipes/ghw"
 	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
+	"os/exec"
+	"path/filepath"
+	"regexp"
+	"runtime"
+	"runtime/debug"
+	"slices"
+	"strconv"
 )
+
+func getTaskVersion() (string, bool) {
+
+	var taskVersion string = ""
+
+	// Execute task
+	output, err := exec.Command("task", "--version").Output()
+	if err != nil {
+		taskVersion = "Not Installed"
+		return taskVersion, false
+	}
+
+	// Extract the version using regular expression
+	match := regexp.MustCompile(`v(\d+\.\d+\.\d+)`).FindStringSubmatch(string(output))
+
+	// Check if the version is found
+	if match != nil {
+		taskVersion = match[1]
+	} else {
+		taskVersion = "Unknown"
+	}
+
+	return taskVersion, true
+}
 
 func Run() (err error) {
 
@@ -132,6 +157,10 @@ func Run() (err error) {
 		{pterm.Sprint("Platform"), runtime.GOOS},
 		{pterm.Sprint("Architecture"), runtime.GOARCH},
 	}
+
+	/* Task (Taskfile) */
+	taskVersion, ok := getTaskVersion()
+	systemTabledata = append(systemTabledata, []string{"Task", taskVersion})
 
 	mapKeys = lo.Keys(platformExtras)
 	slices.Sort(mapKeys)
