@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -72,6 +73,8 @@ type BoundMethod struct {
 	PackageName string
 	StructName  string
 	PackagePath string
+
+	needsContext bool
 }
 
 type Bindings struct {
@@ -232,6 +235,8 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 	structTypeString := structType.String()
 	baseName := structTypeString[1:]
 
+	ctxType := reflect.TypeOf((*context.Context)(nil)).Elem()
+
 	// Process Methods
 	for i := 0; i < structType.NumMethod(); i++ {
 		methodDef := structType.Method(i)
@@ -273,6 +278,9 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 		var inputs []*Parameter
 		for inputIndex := 0; inputIndex < inputParamCount; inputIndex++ {
 			input := methodType.In(inputIndex)
+			if inputIndex == 0 && input.AssignableTo(ctxType) {
+				boundMethod.needsContext = true
+			}
 			thisParam := newParameter("", input)
 			inputs = append(inputs, thisParam)
 		}
@@ -296,7 +304,7 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 }
 
 // Call will attempt to call this bound method with the given args
-func (b *BoundMethod) Call(args []interface{}) (returnValue interface{}, err error) {
+func (b *BoundMethod) Call(ctx context.Context, args []interface{}) (returnValue interface{}, err error) {
 
 	// Use a defer statement to capture panics
 	defer func() {
@@ -316,6 +324,10 @@ func (b *BoundMethod) Call(args []interface{}) (returnValue interface{}, err err
 			err = fmt.Errorf("%v", r)
 		}
 	}()
+
+	if b.needsContext {
+		args = append([]any{ctx}, args...)
+	}
 
 	// Check inputs
 	expectedInputLength := len(b.Inputs)

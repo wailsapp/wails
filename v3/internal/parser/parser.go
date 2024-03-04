@@ -3,7 +3,6 @@ package parser
 import (
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/flags"
 	"go/ast"
 	"go/build"
 	"go/parser"
@@ -15,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/wailsapp/wails/v3/internal/flags"
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/hash"
@@ -136,6 +137,16 @@ type BoundMethod struct {
 	Outputs    []*Parameter
 	ID         uint32
 	Alias      *uint32
+}
+
+func (m BoundMethod) JSInputs() []*Parameter {
+	if len(m.Inputs) > 0 {
+		if firstArg := m.Inputs[0]; isContext(firstArg) {
+			return m.Inputs[1:]
+		}
+	}
+
+	return m.Inputs
 }
 
 func (m BoundMethod) IDAsString() string {

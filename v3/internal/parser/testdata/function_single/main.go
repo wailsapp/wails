@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	_ "embed"
-	"github.com/wailsapp/wails/v3/pkg/application"
 	"log"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // GreetService is great
@@ -14,6 +16,11 @@ type GreetService struct {
 
 // Greet someone
 func (*GreetService) Greet(name string) string {
+	return "Hello " + name
+}
+
+// Greet someone
+func (*GreetService) GreetWithContext(ctx context.Context, name string) string {
 	return "Hello " + name
 }
 

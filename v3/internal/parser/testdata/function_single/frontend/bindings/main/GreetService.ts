@@ -7,3 +7,8 @@ export async function Greet(name: string) : Promise<string> {
 	return Call.ByID(1411160069, name);
 }
 
+// Greet someone
+export async function GreetWithContext(name: string) : Promise<string> {
+	return Call.ByID(1310150960, name);
+}
+

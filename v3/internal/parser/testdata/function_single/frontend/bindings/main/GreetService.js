@@ -13,3 +13,13 @@ import {Call} from '@wailsio/runtime';
 export async function Greet(name) {
 	return Call.ByID(1411160069, ...Array.prototype.slice.call(arguments, 0));
 }
+
+/**
+ * Greet someone 
+ * @function GreetWithContext
+ * @param name {string}
+ * @returns {Promise<string>}
+ **/
+export async function GreetWithContext(name) {
+	return Call.ByID(1310150960, ...Array.prototype.slice.call(arguments, 0));
+}
