@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"log"
 
@@ -15,6 +16,11 @@ type GreetService struct {
 
 // Greet someone
 func (*GreetService) Greet(name string) string {
+	return "Hello " + name
+}
+
+// Greet someone
+func (*GreetService) GreetWithContext(ctx context.Context, name string) string {
 	return "Hello " + name
 }
 

@@ -7,8 +7,3 @@ export async function Greet(name: string) : Promise<string> {
 	return Call.ByName("main.GreetService.Greet", name);
 }
 
-// Greet someone
-export async function GreetWithContext(name: string) : Promise<string> {
-	return Call.ByName("main.GreetService.GreetWithContext", name);
-}
-

@@ -13,3 +13,13 @@ import {Call} from '@wailsio/runtime';
 export async function Greet(name) {
 	return Call.ByName("main.GreetService.Greet", ...Array.prototype.slice.call(arguments, 0));
 }
+
+/**
+ * Greet someone 
+ * @function GreetWithContext
+ * @param name {string}
+ * @returns {Promise<string>}
+ **/
+export async function GreetWithContext(name) {
+	return Call.ByName("main.GreetService.GreetWithContext", ...Array.prototype.slice.call(arguments, 0));
+}
