@@ -75,8 +75,20 @@ func (w *linuxWebviewWindow) isNormal() bool {
 	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
 }
 
+func (w *linuxWebviewWindow) setCloseButtonEnabled(enabled bool) {
+	//	C.enableCloseButton(w.nsWindow, C.bool(enabled))
+}
+
 func (w *linuxWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
 	// Not implemented
+}
+
+func (w *linuxWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
+	//C.enableMinimiseButton(w.nsWindow, C.bool(enabled))
+}
+
+func (w *linuxWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
+	//C.enableMaximiseButton(w.nsWindow, C.bool(enabled))
 }
 
 func (w *linuxWebviewWindow) disableSizeConstraints() {

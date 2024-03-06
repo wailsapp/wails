@@ -1100,6 +1100,10 @@ func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 	C.gtk_window_set_keep_above(w.gtkWindow(), gtkBool(alwaysOnTop))
 }
 
+func (w *linuxWebviewWindow) flash(_ bool) {
+	// Not supported on Linux
+}
+
 func (w *linuxWebviewWindow) setTitle(title string) {
 	if !w.parent.options.Frameless {
 		cTitle := C.CString(title)
@@ -1181,9 +1185,9 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, nil)
-	C.signal_connect(unsafe.Pointer(webview), c.String("button-press-event"), C.onButtonEvent, winID)
-	C.signal_connect(unsafe.Pointer(webview), c.String("button-release-event"), C.onButtonEvent, winID)
-	C.signal_connect(unsafe.Pointer(webview), c.String("key-press-event"), C.onKeyPressEvent, winID)
+	C.signal_connect(unsafe.Pointer(w.webview), c.String("button-press-event"), C.onButtonEvent, winID)
+	C.signal_connect(unsafe.Pointer(w.webview), c.String("button-release-event"), C.onButtonEvent, winID)
+	C.signal_connect(unsafe.Pointer(w.webview), c.String("key-press-event"), C.onKeyPressEvent, winID)
 }
 
 func getMouseButtons() (bool, bool, bool) {
