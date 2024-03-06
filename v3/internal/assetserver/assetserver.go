@@ -154,20 +154,12 @@ func GetStartURL(userURL string) (string, error) {
 	}
 
 	if userURL != "" {
-		// parse the url
-		parsedURL, err := url.Parse(userURL)
+		parsedURL, err := baseURL.Parse(userURL)
 		if err != nil {
 			return "", fmt.Errorf("Error parsing URL: " + err.Error())
 		}
-		if parsedURL.Scheme == "" {
-			startURL = baseURL.ResolveReference(&url.URL{Path: userURL}).String()
-			// if the original URL had a trailing slash, add it back
-			if strings.HasSuffix(userURL, "/") && !strings.HasSuffix(startURL, "/") {
-				startURL = startURL + "/"
-			}
-		} else {
-			startURL = userURL
-		}
+
+		startURL = parsedURL.String()
 	}
 
 	return startURL, nil
