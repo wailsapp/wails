@@ -148,7 +148,7 @@ func GetStartURL(userURL string) (string, error) {
 		}
 		port := parsedURL.Port()
 		if port != "" {
-			baseURL.Host = net.JoinHostPort(baseURL.Host, port)
+			baseURL.Host = net.JoinHostPort(baseURL.Hostname(), port)
 			startURL = baseURL.String()
 		}
 	} else {
