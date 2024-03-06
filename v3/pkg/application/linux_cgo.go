@@ -1186,33 +1186,6 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	C.signal_connect(unsafe.Pointer(webview), c.String("key-press-event"), C.onKeyPressEvent, winID)
 }
 
-//export handleLoadChanged
-func handleLoadChanged(webview *C.WebKitWebView, event C.WebKitLoadEvent, data C.uintptr_t) {
-	switch event {
-	case C.WEBKIT_LOAD_FINISHED:
-		processWindowEvent(C.uint(data), C.uint(events.Linux.WindowLoadChanged))
-	}
-}
-
-func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventType)) {
-
-	c := NewCalloc()
-	defer c.Free()
-
-	winID := unsafe.Pointer(uintptr(C.uint(w.parent.ID())))
-
-	// Set up the window close event
-	wv := unsafe.Pointer(w.webview)
-	C.signal_connect(unsafe.Pointer(w.window), c.String("delete-event"), C.handleDeleteEvent, winID)
-	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
-
-	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
-	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, nil)
-	C.signal_connect(wv, c.String("button-press-event"), C.onButtonEvent, winID)
-	C.signal_connect(wv, c.String("button-release-event"), C.onButtonEvent, winID)
-	C.signal_connect(wv, c.String("key-press-event"), C.onKeyPressEvent, winID)
-}
-
 func getMouseButtons() (bool, bool, bool) {
 	var pointer *C.GdkDevice
 	var state C.GdkModifierType

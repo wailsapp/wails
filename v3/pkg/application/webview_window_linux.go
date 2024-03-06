@@ -5,9 +5,6 @@ package application
 import "C"
 import (
 	"fmt"
-	"math"
-
-	"math"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
