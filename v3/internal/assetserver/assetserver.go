@@ -151,23 +151,24 @@ func GetStartURL(userURL string) (string, error) {
 			baseURL.Host = net.JoinHostPort(baseURL.Hostname(), port)
 			startURL = baseURL.String()
 		}
-	} else {
-		if userURL != "" {
-			// parse the url
-			parsedURL, err := url.Parse(userURL)
-			if err != nil {
-				return "", fmt.Errorf("Error parsing URL: " + err.Error())
+	}
+
+	if userURL != "" {
+		// parse the url
+		parsedURL, err := url.Parse(userURL)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing URL: " + err.Error())
+		}
+		if parsedURL.Scheme == "" {
+			startURL = baseURL.ResolveReference(&url.URL{Path: userURL}).String()
+			// if the original URL had a trailing slash, add it back
+			if strings.HasSuffix(userURL, "/") && !strings.HasSuffix(startURL, "/") {
+				startURL = startURL + "/"
 			}
-			if parsedURL.Scheme == "" {
-				startURL = baseURL.ResolveReference(&url.URL{Path: userURL}).String()
-				// if the original URL had a trailing slash, add it back
-				if strings.HasSuffix(userURL, "/") && !strings.HasSuffix(startURL, "/") {
-					startURL = startURL + "/"
-				}
-			} else {
-				startURL = userURL
-			}
+		} else {
+			startURL = userURL
 		}
 	}
+
 	return startURL, nil
 }
