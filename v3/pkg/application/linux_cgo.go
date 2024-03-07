@@ -1185,9 +1185,9 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, nil)
-	C.signal_connect(unsafe.Pointer(w.webview), c.String("button-press-event"), C.onButtonEvent, winID)
-	C.signal_connect(unsafe.Pointer(w.webview), c.String("button-release-event"), C.onButtonEvent, winID)
-	C.signal_connect(unsafe.Pointer(w.webview), c.String("key-press-event"), C.onKeyPressEvent, winID)
+	C.signal_connect(wv, c.String("button-press-event"), C.onButtonEvent, winID)
+	C.signal_connect(wv, c.String("button-release-event"), C.onButtonEvent, winID)
+	C.signal_connect(wv, c.String("key-press-event"), C.onKeyPressEvent, winID)
 }
 
 func getMouseButtons() (bool, bool, bool) {
@@ -1347,15 +1347,13 @@ func onDragNDrop(target unsafe.Pointer, context *C.GdkDragContext, x C.gint, y C
 //export onKeyPressEvent
 func onKeyPressEvent(widget *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t) C.gboolean {
 	windowID := uint(C.uint(userData))
-	accelerator, ok := getKeyboardState(event)
-	if !ok {
-		return C.gboolean(1)
+	if accelerator, ok := getKeyboardState(event); ok {
+		windowKeyEvents <- &windowKeyEvent{
+			windowId:          windowID,
+			acceleratorString: accelerator,
+		}
 	}
-	windowKeyEvents <- &windowKeyEvent{
-		windowId:          windowID,
-		acceleratorString: accelerator,
-	}
-	return C.gboolean(1)
+	return C.gboolean(0)
 }
 
 func getKeyboardState(event *C.GdkEventKey) (string, bool) {
