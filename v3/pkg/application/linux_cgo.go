@@ -1353,7 +1353,7 @@ func onKeyPressEvent(widget *C.GtkWidget, event *C.GdkEventKey, userData C.uintp
 			acceleratorString: accelerator,
 		}
 	}
-	return C.gboolean(0)
+	return C.gboolean(1)
 }
 
 func getKeyboardState(event *C.GdkEventKey) (string, bool) {
