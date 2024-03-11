@@ -11,6 +11,7 @@ type Init struct {
 	InitGit      bool   `name:"g" description:"Initialise git repository"`
 	IDE          string `name:"ide" description:"Generate IDE project files"`
 	List         bool   `name:"l" description:"List templates"`
+	InitModule   bool   `name:"m" description:"Change Default go.mod module name to project Name. default: changeme"`
 }
 
 func (i *Init) Default() *Init {

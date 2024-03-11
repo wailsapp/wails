@@ -62,6 +62,28 @@ func SyncGoMod(logger *clilogger.CLILogger, updateWailsVersion bool) error {
 	return nil
 }
 
+func ChangeModuleName(newModuleName string) error {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	gomodFilename := fs.FindFileInParents(cwd, "go.mod")
+	if gomodFilename == "" {
+		return fmt.Errorf("no go.mod file found")
+	}
+	gomodData, err := os.ReadFile(gomodFilename)
+	if err != nil {
+		return err
+	}
+
+	gomodData, err = gomod.UpdateGoModuleName(gomodData, newModuleName)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(gomodFilename, gomodData, 0o755)
+}
+
 func LogGreen(message string, args ...interface{}) {
 	text := fmt.Sprintf(message, args...)
 	println(colour.Green(text))

@@ -112,3 +112,13 @@ func SyncGoVersion(goModText []byte, goVersion string) ([]byte, bool, error) {
 
 	return goModText, true, nil
 }
+
+func UpdateGoModuleName(goModText []byte, newModuleName string) ([]byte, error) {
+	file, err := modfile.Parse("", goModText, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	file.Module.Syntax.Token[1] = newModuleName
+	return file.Format()
+}

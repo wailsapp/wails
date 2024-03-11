@@ -137,3 +137,44 @@ func TestUpdateGoModGoVersion(t *testing.T) {
 		})
 	}
 }
+
+const beforeGoModName string = `module changeme
+
+go 1.19
+
+require github.com/wailsapp/wails/v2 v2.0.0-beta.7
+`
+
+const afterGoModName string = `module myproject
+
+go 1.19
+
+require github.com/wailsapp/wails/v2 v2.0.0-beta.7
+`
+
+func TestUpdateGoModName(t *testing.T) {
+	is2 := is.New(t)
+
+	type args struct {
+		goModText     []byte
+		changeModName string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []byte
+	}{
+		{"default1", args{[]byte(beforeGoModName), "myproject"}, []byte(afterGoModName)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := UpdateGoModuleName(tt.args.goModText, tt.args.changeModName)
+			if err != nil {
+				t.Errorf("UpdateGoModuleName() error = %v", err)
+				return
+			}
+			is2.Equal(got, tt.want)
+		})
+	}
+}
