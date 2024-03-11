@@ -14,7 +14,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/gomod"
 	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/pkg/buildassets"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
@@ -128,7 +127,13 @@ func initProject(f *flags.Init) error {
 
 	if f.InitModule {
 		// Change the module name to project name
-		err = gomod.ChangeModuleName(options.ProjectName)
+		cmd := exec.Command("go", "mod", "edit", "-module", options.ProjectName)
+		cmd.Dir = options.TargetDir
+		cmd.Stderr = os.Stderr
+		if !quiet {
+			cmd.Stdout = os.Stdout
+		}
+		err = cmd.Run()
 		if err != nil {
 			return err
 		}
