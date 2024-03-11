@@ -298,6 +298,7 @@ import "github.com/wailsapp/wails/v3/pkg/application"
   - [func \(w \*WebviewWindow\) Size\(\) \(int, int\)](#WebviewWindow.Size)
   - [func \(w \*WebviewWindow\) ToggleDevTools\(\)](#WebviewWindow.ToggleDevTools)
   - [func \(w \*WebviewWindow\) ToggleFullscreen\(\)](#WebviewWindow.ToggleFullscreen)
+  - [func \(w \*WebviewWindow\) ToggleMaximise\(\)](#WebviewWindow.ToggleMaximise)
   - [func \(w \*WebviewWindow\) UnFullscreen\(\)](#WebviewWindow.UnFullscreen)
   - [func \(w \*WebviewWindow\) UnMaximise\(\)](#WebviewWindow.UnMaximise)
   - [func \(w \*WebviewWindow\) UnMinimise\(\)](#WebviewWindow.UnMinimise)
@@ -1205,31 +1206,21 @@ AssetOptions defines the configuration of the AssetServer.
 
 ```go
 type AssetOptions struct {
-    // FS defines the static assets to be used. A GET request is first tried to be served from this FS. If the FS returns
-    // `os.ErrNotExist` for that file, the request handling will fallback to the Handler and tries to serve the GET
-    // request from it.
-    //
-    // If set to nil, all GET requests will be forwarded to Handler.
-    FS  fs.FS
+    // Handler which serves all the content to the WebView.
+	Handler http.Handler
 
-    // Handler will be called for every GET request that can't be served from FS, due to `os.ErrNotExist`. Furthermore all
-    // non GET requests will always be served from this Handler.
-    //
-    // If not defined, the result is the following in cases where the Handler would have been called:
-    //   GET request:   `http.StatusNotFound`
-    //   Other request: `http.StatusMethodNotAllowed`
-    Handler http.Handler
-
-    // Middleware is HTTP Middleware which allows to hook into the AssetServer request chain. It allows to skip the default
-    // request handler dynamically, e.g. implement specialized Routing etc.
-    // The Middleware is called to build a new `http.Handler` used by the AssetSever and it also receives the default
-    // handler used by the AssetServer as an argument.
-    //
-    // If not defined, the default AssetServer request chain is executed.
-    //
-    // Multiple Middlewares can be chained together with:
-    //   ChainMiddleware(middleware ...Middleware) Middleware
-    Middleware Middleware
+	// Middleware is a HTTP Middleware which allows to hook into the AssetServer request chain. It allows to skip the default
+	// request handler dynamically, e.g. implement specialized Routing etc.
+	// The Middleware is called to build a new `http.Handler` used by the AssetSever and it also receives the default
+	// handler used by the AssetServer as an argument.
+	//
+	// This middleware injects itself before any of Wails internal middlewares.
+	//
+	// If not defined, the default AssetServer request chain is executed.
+	//
+	// Multiple Middlewares can be chained together with:
+	//   ChainMiddleware(middleware ...Middleware) Middleware
+	Middleware Middleware
 
     // External URL can be set to a development server URL so that all requests are forwarded to it. This is useful
     // when using a development server like `vite` or `snowpack` which serves the assets on a different port.
@@ -1769,6 +1760,8 @@ type MacTitleBar struct {
     UseToolbar bool
     // HideToolbarSeparator will hide the toolbar separator
     HideToolbarSeparator bool
+    // ShowToolbarWhenFullscreen will keep the toolbar visible when the window is in fullscreen mode
+	ShowToolbarWhenFullscreen bool
     // ToolbarStyle is the style of toolbar to use
     ToolbarStyle MacToolbarStyle
 }
@@ -3724,6 +3717,16 @@ func (w *WebviewWindow) ToggleFullscreen()
 ```
 
 ToggleFullscreen toggles the window between fullscreen and normal
+
+<a name="WebviewWindow.ToggleMaximise"></a>
+
+### func \(\*WebviewWindow\) [ToggleMaximise](https://github.com/wailsapp/wails/blob/master/v3/pkg/application/webview_window.go#L720)
+
+```go
+func (w *WebviewWindow) ToggleMaximise()
+```
+
+ToggleMaximise toggles the window between maximised and normal
 
 <a name="WebviewWindow.UnFullscreen"></a>
 

@@ -155,7 +155,7 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 	}
 	result = strings.ReplaceAll(result, "Comments", comments)
 	var params string
-	for _, input := range method.Inputs {
+	for _, input := range method.JSInputs() {
 		input.project = p
 		inputName := sanitiseJSVarName(input.Name)
 		pkgName := getPackageName(input)
@@ -181,7 +181,7 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 	//}
 	result = strings.ReplaceAll(result, "* @param names {string}", params)
 	var inputs string
-	for _, input := range method.Inputs {
+	for _, input := range method.JSInputs() {
 		pkgName := getPackageName(input)
 		if pkgName != "" {
 			models = append(models, pkgName)
@@ -256,7 +256,7 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 	}
 	result = strings.ReplaceAll(result, "Comments", comments)
 	var params string
-	for _, input := range method.Inputs {
+	for _, input := range method.JSInputs() {
 		input.project = p
 		inputName := sanitiseJSVarName(input.Name)
 		pkgName := getPackageName(input)
@@ -279,7 +279,7 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 	//	params = "\n" + params
 	//}
 	var inputs string
-	for _, input := range method.Inputs {
+	for _, input := range method.JSInputs() {
 		pkgName := getPackageName(input)
 		if pkgName != "" {
 			models = append(models, pkgName)
@@ -339,6 +339,10 @@ func getPackageName(input *Parameter) string {
 		result = "main"
 	}
 	return result
+}
+
+func isContext(input *Parameter) bool {
+	return input.Type.Package == "context" && input.Type.Name == "Context"
 }
 
 func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod, useIDs bool, useTypescript bool) map[string]map[string]string {

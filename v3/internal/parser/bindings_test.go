@@ -2,11 +2,12 @@ package parser
 
 import (
 	"embed"
-	"github.com/google/go-cmp/cmp"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 //go:embed testdata
@@ -618,6 +619,48 @@ func TestGenerateBindings(t *testing.T) {
 				"main": {
 					"GreetService": getFile("testdata/struct_literal_multiple_files/frontend/bindings/main/GreetService.name.ts"),
 					"OtherService": getFile("testdata/struct_literal_multiple_files/frontend/bindings/main/OtherService.name.ts"),
+				},
+			},
+			useIDs:        false,
+			useTypescript: true,
+		},
+		{
+			name: "function_single_context",
+			dir:  "testdata/function_single_context",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/function_single_context/frontend/bindings/main/GreetService.js"),
+				},
+			},
+			useIDs: true,
+		},
+		{
+			name: "function_single_context",
+			dir:  "testdata/function_single_context",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/function_single_context/frontend/bindings/main/GreetService.name.js"),
+				},
+			},
+			useIDs: false,
+		},
+		{
+			name: "function single - Typescript - CallByID",
+			dir:  "testdata/function_single_context",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/function_single_context/frontend/bindings/main/GreetService.ts"),
+				},
+			},
+			useIDs:        true,
+			useTypescript: true,
+		},
+		{
+			name: "function single - Typescript - CallByName",
+			dir:  "testdata/function_single_context",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/function_single_context/frontend/bindings/main/GreetService.name.ts"),
 				},
 			},
 			useIDs:        false,

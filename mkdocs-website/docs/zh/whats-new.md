@@ -24,7 +24,7 @@ func main() {
         app := application.New(application.Options{
                 Name:        "多窗口演示",
                 Assets: application.AssetOptions{
-                        FS: assets,
+                        Handler: application.AssetFileServerFS(assets),
                 },
         })
 
@@ -233,7 +233,7 @@ func main() {
 		Name:        "Events Demo",
 		Description: "Events API演示",
 		Assets: application.AssetOptions{
-			FS: assets,
+			Handler: application.AssetFileServerFS(assets),
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,

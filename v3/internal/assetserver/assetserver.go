@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"path"
 	"strings"
 	"time"
 )
@@ -149,27 +148,19 @@ func GetStartURL(userURL string) (string, error) {
 		}
 		port := parsedURL.Port()
 		if port != "" {
-			baseURL.Host = net.JoinHostPort(baseURL.Host, port)
+			baseURL.Host = net.JoinHostPort(baseURL.Hostname(), port)
 			startURL = baseURL.String()
 		}
-	} else {
-		if userURL != "" {
-			// parse the url
-			parsedURL, err := url.Parse(userURL)
-			if err != nil {
-				return "", fmt.Errorf("Error parsing URL: " + err.Error())
-			}
-			if parsedURL.Scheme == "" {
-				baseURL.Path = path.Join(baseURL.Path, userURL)
-				startURL = baseURL.String()
-				// if the original URL had a trailing slash, add it back
-				if strings.HasSuffix(userURL, "/") && !strings.HasSuffix(startURL, "/") {
-					startURL = startURL + "/"
-				}
-			} else {
-				startURL = userURL
-			}
-		}
 	}
+
+	if userURL != "" {
+		parsedURL, err := baseURL.Parse(userURL)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing URL: " + err.Error())
+		}
+
+		startURL = parsedURL.String()
+	}
+
 	return startURL, nil
 }

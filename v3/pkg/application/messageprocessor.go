@@ -1,37 +1,44 @@
 package application
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
 // TODO maybe we could use a new struct that has the targetWindow as an attribute so we could get rid of passing the targetWindow
 // as parameter through every function call.
 
 const (
-	callRequest        int = 0
-	clipboardRequest       = 1
-	applicationRequest     = 2
-	eventsRequest          = 3
-	contextMenuRequest     = 4
-	dialogRequest          = 5
-	windowRequest          = 6
-	screensRequest         = 7
-	systemRequest          = 8
-	browserRequest         = 9
+	callRequest        = 0
+	clipboardRequest   = 1
+	applicationRequest = 2
+	eventsRequest      = 3
+	contextMenuRequest = 4
+	dialogRequest      = 5
+	windowRequest      = 6
+	screensRequest     = 7
+	systemRequest      = 8
+	browserRequest     = 9
+	cancelCallRequesst = 10
 )
 
 type MessageProcessor struct {
 	pluginManager *PluginManager
 	logger        *slog.Logger
+
+	runningCalls map[string]context.CancelFunc
+	l            sync.Mutex
 }
 
 func NewMessageProcessor(logger *slog.Logger) *MessageProcessor {
 	return &MessageProcessor{
-		logger: logger,
+		logger:       logger,
+		runningCalls: map[string]context.CancelFunc{},
 	}
 }
 
@@ -116,6 +123,8 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *h
 		m.processSystemMethod(method, rw, r, targetWindow, params)
 	case browserRequest:
 		m.processBrowserMethod(method, rw, r, targetWindow, params)
+	case cancelCallRequesst:
+		m.processCallCancelMethod(method, rw, r, targetWindow, params)
 	default:
 		m.httpError(rw, "Unknown runtime call: %d", object)
 	}

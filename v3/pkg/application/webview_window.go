@@ -803,6 +803,20 @@ func (w *WebviewWindow) ToggleFullscreen() {
 	})
 }
 
+// ToggleMaximise toggles the window between maximised and normal
+func (w *WebviewWindow) ToggleMaximise() {
+	if w.impl == nil && !w.isDestroyed() {
+		return
+	}
+	InvokeSync(func() {
+		if w.IsMaximised() {
+			w.UnMaximise()
+		} else {
+			w.Maximise()
+		}
+	})
+}
+
 func (w *WebviewWindow) ToggleDevTools() {
 	if w.impl == nil && !w.isDestroyed() {
 		return
@@ -948,10 +962,10 @@ func (w *WebviewWindow) Restore() {
 	InvokeSync(func() {
 		if w.IsMinimised() {
 			w.UnMinimise()
-		} else if w.IsMaximised() {
-			w.UnMaximise()
 		} else if w.IsFullscreen() {
 			w.UnFullscreen()
+		} else if w.IsMaximised() {
+			w.UnMaximise()
 		}
 		w.emit(events.Common.WindowRestore)
 	})
