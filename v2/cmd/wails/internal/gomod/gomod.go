@@ -81,7 +81,7 @@ func ChangeModuleName(newModuleName string) error {
 		return err
 	}
 
-	return os.WriteFile(gomodFilename, gomodData, 0o755)
+	return os.WriteFile(gomodFilename, gomodData, 0o644)
 }
 
 func LogGreen(message string, args ...interface{}) {
