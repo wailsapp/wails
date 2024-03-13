@@ -49,7 +49,7 @@ void windowEnableDevTools(void* nsWindow) {
 import "C"
 
 func (w *macosWebviewWindow) openDevTools() {
-	openDevTools(w.nsWindow)
+	C.openDevTools(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) enableDevTools() {

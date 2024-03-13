@@ -904,10 +904,6 @@ func (w *macosWebviewWindow) zoomReset() {
 	C.windowZoomReset(w.nsWindow)
 }
 
-func (w *macosWebviewWindow) openDevTools() {
-	openDevTools(w.nsWindow)
-}
-
 func (w *macosWebviewWindow) reload() {
 	//TODO: Implement
 	globalApplication.debug("reload called on WebviewWindow", "parentID", w.parent.id)
@@ -1132,13 +1128,13 @@ func (w *macosWebviewWindow) run() {
 		}
 
 		if macOptions.DisableMinimiseButton {
-			w.setMinimiseButtonEnabled(w.nsWindow, false)
+			w.setMinimiseButtonEnabled(false)
 		}
 		if macOptions.DisableMaximiseButton {
-			w.setMaximiseButtonEnabled(w.nsWindow, false)
+			w.setMaximiseButtonEnabled(false)
 		}
 		if macOptions.DisableCloseButton {
-			w.enableCloseButton(w.nsWindow, false)
+			w.setCloseButtonEnabled(false)
 		}
 
 		if options.IgnoreMouseEvents {
