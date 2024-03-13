@@ -3,8 +3,8 @@
 Name: @NAME@
 Summary: @SUMMARY@
 Version: @VERSION@
-Release: 1%{?dist}
-License: MIT
+Release: @RPM_RELEASE@%{?dist}
+License: @LICENSE@
 
 Source0: %{name}
 Source1: %{name}.desktop
@@ -36,5 +36,5 @@ update-desktop-database &> /dev/null || :
 
 
 %changelog
-* Sat Feb 17 2024 @AUTHOR@ <@AUTHOR_EMAIL@> - %{version}-1
+* @RELEASE_DATE@ @AUTHOR@ <@AUTHOR_EMAIL@> - %{version}-%{release}
 - Initial build

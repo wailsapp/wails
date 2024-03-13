@@ -301,7 +301,7 @@ tasks:
     cmds:
       # Copy binary + icon to appimage dir
       - cp {{ "{{.APP_BINARY}}" }} {{ "{{.APP_NAME}}" }}
-      - cp ../appicon.png '{{ "{{.APP_NAME}}" }}'.png
+      - cp ../appicon.png '{{ "{{.APP_NAME}}" }}.png'
       # Generate AppImage
       - wails3 generate appimage -binary {{ "{{.APP_NAME}}" }} -icon {{ "{{.ICON}}" }} -desktopfile {{ "{{.DESKTOP_FILE}}" }} -outputdir {{ "{{.OUTPUT_DIR}}" }} -builddir {{ "{{.ROOT_DIR}}" }}/build/appimage
     vars:
@@ -323,27 +323,32 @@ tasks:
     cmds:
       # Copy binary + icon to rpmbuild dir
       - cp {{ "{{.APP_BINARY}}" }} {{ "{{.APP_NAME}}" }}
-      - cp ../appicon.png '{{ "{{.APP_NAME}}" }}'.png
-      - cp ../rpm/app.spec '{{ "{{.APP_NAME}}" }}'.spec
+      - cp ../appicon.png '{{ "{{.APP_NAME}}" }}.png'
+      - cp ../rpm/app.spec '{{ "{{.APP_NAME}}" }}.spec'
       - sed -i -e 's/@NAME@/{{ "{{.APP_NAME}}" }}/g'
               -e 's/@SUMMARY@/{{ "{{.APP_SUMMARY}}" }}/g'
               -e 's/@VERSION@/{{ "{{.APP_VERSION}}" }}/g'
+              -e 's/@RPM_RELEASE@/{{ "{{.RPM_RELEASE}}" }}/g'
               -e 's/@DESCRIPTION@/{{ "{{.APP_DESC}}" }}/g'
               -e 's/@AUTHOR@/{{ "{{.APP_AUTHOR}}" }}/g'
               -e 's/@AUTHOR_EMAIL@/{{ "{{.AUTHOR_EMAIL}}" }}/g'
+              -e 's/@LICENSE@/{{ "{{.APP_LICENSE}}" }}/g'
+              -e 's/@RELEASE_DATE@/{{ "{{.RELEASE_DATE}}" }}/g'
               {{ "{{.APP_NAME}}" }}.spec
       # Generate RPM
       - wails3 generate rpm -binary {{ "{{.APP_NAME}}" }} -icon {{ "{{.ICON}}" }} -desktopfile {{ "{{.DESKTOP_FILE}}" }} -outputdir {{ "{{.OUTPUT_DIR}}" }} -builddir {{ "{{.ROOT_DIR}}" }}/build/rpm
       - mv {{ "{{.ROOT_DIR}}" }}/build/rpm/$(uname -m)/*.rpm {{ "{{.OUTPUT_DIR}}" }}
     vars:
-      APP_NAME: '{{ "{{.APP_NAME}}" }}'
       APP_SUMMARY: 'Hello Wails'
       APP_VERSION: '1.0.0'
+      RPM_RELEASE: '1'
       APP_DESC: 'Hello Wails is demo application developed on Wails.'
       APP_URL: 'https://github.com/wailsapp/wails'
       APP_AUTHOR: "Lea Anthony"
       AUTHOR_EMAIL: "lea.anthony@gmail.com"
+      APP_LICENSE: "MIT"
       APP_BINARY: '../../bin/{{ "{{.APP_NAME}}" }}'
+      RELEASE_DATE: {{ "'{{now | date \"Mon Jan 02 2006\"}}'" }}
       ICON: '../appicon.png'
       DESKTOP_FILE: '{{ "{{.APP_NAME}}" }}.desktop'
       OUTPUT_DIR: '../../bin'
