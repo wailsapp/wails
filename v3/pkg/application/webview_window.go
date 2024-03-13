@@ -500,7 +500,7 @@ func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) Window {
 }
 
 // ExecJS executes the given javascript in the context of the window.
-func (w *WebviewWindow) ExecJS(_callID, js string) {
+func (w *WebviewWindow) ExecJS(js string) {
 	if w.impl == nil && !w.isDestroyed() {
 		return
 	}
@@ -657,7 +657,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		w.runtimeLoaded = true
 		w.SetResizable(!w.options.DisableResize)
 		for _, js := range w.pendingJS {
-			w.ExecJS("", js)
+			w.ExecJS(js)
 		}
 	}
 }
@@ -1042,7 +1042,7 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 
 func (w *WebviewWindow) DispatchWailsEvent(event *WailsEvent) {
 	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON())
-	w.ExecJS("", msg)
+	w.ExecJS(msg)
 }
 
 func (w *WebviewWindow) dispatchWindowEvent(id uint) {
