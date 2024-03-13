@@ -65,7 +65,7 @@ type Window interface {
 	SetZoom(magnification float64) Window
 	Show() Window
 	Size() (width int, height int)
-	ToggleDevTools()
+	OpenDevTools()
 	ToggleFullscreen()
 	ToggleMaximise()
 	UnFullscreen()

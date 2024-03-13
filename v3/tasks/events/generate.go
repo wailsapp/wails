@@ -61,7 +61,19 @@ $$EVENTTOJS}
 
 `
 
-var eventsH = `//go:build darwin
+var darwinEventsH = `//go:build darwin
+
+#ifndef _events_h
+#define _events_h
+
+extern void processApplicationEvent(unsigned int, void* data);
+extern void processWindowEvent(unsigned int, unsigned int);
+
+$$CHEADEREVENTS
+
+#endif`
+
+var linuxEventsH = `//go:build linux
 
 #ifndef _events_h
 #define _events_h
@@ -108,10 +120,11 @@ func main() {
 
 	linuxEventsDecl := bytes.NewBufferString("")
 	linuxEventsValues := bytes.NewBufferString("")
+	linuxCHeaderEvents := bytes.NewBufferString("")
 
 	macEventsDecl := bytes.NewBufferString("")
 	macEventsValues := bytes.NewBufferString("")
-	cHeaderEvents := bytes.NewBufferString("")
+	macCHeaderEvents := bytes.NewBufferString("")
 	windowDelegateEvents := bytes.NewBufferString("")
 	applicationDelegateEvents := bytes.NewBufferString("")
 	webviewDelegateEvents := bytes.NewBufferString("")
@@ -137,6 +150,7 @@ func main() {
 	var id int
 	//	var maxLinuxEvents int
 	var maxMacEvents int
+	var maxLinuxEvents int
 	var line []byte
 	// Loop over each line in the file
 	for id, line = range bytes.Split(eventNames, []byte{'\n'}) {
@@ -179,7 +193,8 @@ func main() {
 			linuxJSEvents.WriteString("\t\t" + event + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
 			linuxTSEvents.WriteString("\t\t" + event + ": string,\n")
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
-			//maxLinuxEvents = id
+			maxLinuxEvents = id
+			linuxCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
 		case "mac":
 			eventType := "ApplicationEventType"
 			if strings.HasPrefix(event, "Window") {
@@ -192,7 +207,7 @@ func main() {
 			macEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			macJSEvents.WriteString("\t\t" + event + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
 			macTSEvents.WriteString("\t\t" + event + ": string,\n")
-			cHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
+			macCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
 			maxMacEvents = id
 			if ignoreEvent {
@@ -258,7 +273,8 @@ func main() {
 		}
 	}
 
-	cHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxMacEvents+1) + "\n")
+	macCHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxMacEvents+1) + "\n")
+	linuxCHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxLinuxEvents+1) + "\n")
 
 	// Save the eventsGo template substituting the values and decls
 	templateToWrite := strings.ReplaceAll(eventsGo, "$$LINUXEVENTSDECL", linuxEventsDecl.String())
@@ -296,9 +312,16 @@ func main() {
 		panic(err)
 	}
 
-	// Save the eventsH template substituting the values and decls
-	templateToWrite = strings.ReplaceAll(eventsH, "$$CHEADEREVENTS", cHeaderEvents.String())
+	// Save the darwinEventsH template substituting the values and decls
+	templateToWrite = strings.ReplaceAll(darwinEventsH, "$$CHEADEREVENTS", macCHeaderEvents.String())
 	err = os.WriteFile("../../pkg/events/events_darwin.h", []byte(templateToWrite), 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	// Save the linuxEventsH template substituting the values and decls
+	templateToWrite = strings.ReplaceAll(linuxEventsH, "$$CHEADEREVENTS", linuxCHeaderEvents.String())
+	err = os.WriteFile("../../pkg/events/events_linux.h", []byte(templateToWrite), 0644)
 	if err != nil {
 		panic(err)
 	}

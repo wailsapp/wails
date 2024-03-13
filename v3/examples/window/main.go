@@ -24,7 +24,7 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: false,
 		},
 	})
-	app.On(events.Mac.ApplicationDidFinishLaunching, func(event *application.Event) {
+	app.On(events.Common.ApplicationStarted, func(event *application.Event) {
 		log.Println("ApplicationDidFinishLaunching")
 	})
 
@@ -154,21 +154,23 @@ func main() {
 			}).Show()
 			windowCounter++
 		})
-	myMenu.Add("New WebviewWindow (ignores mouse events").
-		SetAccelerator("CmdOrCtrl+F").
-		OnClick(func(ctx *application.Context) {
-			app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-				HTML:              "<div style='width: 100%; height: 95%; border: 3px solid red; background-color: \"0000\";'></div>",
-				X:                 rand.Intn(1000),
-				Y:                 rand.Intn(800),
-				IgnoreMouseEvents: true,
-				BackgroundType:    application.BackgroundTypeTransparent,
-				Mac: application.MacWindow{
-					InvisibleTitleBarHeight: 50,
-				},
-			}).Show()
-			windowCounter++
-		})
+	if runtime.GOOS != "linux" {
+		myMenu.Add("New WebviewWindow (ignores mouse events)").
+			SetAccelerator("CmdOrCtrl+F").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					HTML:              "<div style='width: 100%; height: 95%; border: 3px solid red; background-color: \"0000\";'></div>",
+					X:                 rand.Intn(1000),
+					Y:                 rand.Intn(800),
+					IgnoreMouseEvents: true,
+					BackgroundType:    application.BackgroundTypeTransparent,
+					Mac: application.MacWindow{
+						InvisibleTitleBarHeight: 50,
+					},
+				}).Show()
+				windowCounter++
+			})
+	}
 	if runtime.GOOS == "darwin" {
 		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInset)").
 			OnClick(func(ctx *application.Context) {
@@ -437,12 +439,19 @@ func main() {
 			w.SetEnabled(true)
 		})
 	})
+	stateMenu.Add("Open Dev Tools").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.OpenDevTools()
+		})
+	})
 
-	if runtime.GOOS == "windows" {
-		stateMenu.Add("Flash Start").OnClick(func(ctx *application.Context) {
+	if runtime.GOOS != "darwin" {
+		stateMenu.Add("Flash for 5s").OnClick(func(ctx *application.Context) {
 			currentWindow(func(w *application.WebviewWindow) {
 				time.Sleep(2 * time.Second)
 				w.Flash(true)
+				time.Sleep(5 * time.Second)
+				w.Flash(false)
 			})
 		})
 	}

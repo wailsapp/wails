@@ -40,7 +40,7 @@ type (
 		destroy()
 		reload()
 		forceReload()
-		toggleDevTools()
+		openDevTools()
 		zoomReset()
 		zoomIn()
 		zoomOut()
@@ -64,6 +64,8 @@ type (
 		isVisible() bool
 		isFocused() bool
 		setFullscreenButtonEnabled(enabled bool)
+		setMinimiseButtonEnabled(enabled bool)
+		setMaximiseButtonEnabled(enabled bool)
 		focus()
 		show()
 		hide()
@@ -532,6 +534,26 @@ func (w *WebviewWindow) SetFullscreenButtonEnabled(enabled bool) Window {
 	return w
 }
 
+func (w *WebviewWindow) SetMinimiseButtonEnabled(enabled bool) Window {
+	w.options.FullscreenButtonEnabled = enabled
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setMinimiseButtonEnabled(enabled)
+		})
+	}
+	return w
+}
+
+func (w *WebviewWindow) SetMaximiseButtonEnabled(enabled bool) Window {
+	w.options.FullscreenButtonEnabled = enabled
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setMaximiseButtonEnabled(enabled)
+		})
+	}
+	return w
+}
+
 // Flash flashes the window's taskbar button/icon.
 // Useful to indicate that attention is required. Windows only.
 func (w *WebviewWindow) Flash(enabled bool) {
@@ -817,11 +839,11 @@ func (w *WebviewWindow) ToggleMaximise() {
 	})
 }
 
-func (w *WebviewWindow) ToggleDevTools() {
+func (w *WebviewWindow) OpenDevTools() {
 	if w.impl == nil && !w.isDestroyed() {
 		return
 	}
-	InvokeSync(w.impl.toggleDevTools)
+	InvokeSync(w.impl.openDevTools)
 }
 
 // ZoomReset resets the zoom level of the webview content to 100%

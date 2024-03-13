@@ -1,9 +1,5 @@
 Scenario,Windows,Mac,Linux
-Same package,:	clipboardLock.RLock()
-              	defer clipboardLock.RUnlock()
-              	clipboardText := C.getClipboardText()
-              	result := C.GoString(clipboardText)
-              	return result, true:,:material-check-bold:,:material-check-bold:
+Same package,:material-check-bold,:material-check-bold:,:material-check-bold:
 Different package,:material-check-bold:,:material-check-bold:,:material-check-bold:
 Different package with same name,"on hold","on hold","on hold"
 Containing another struct from same package,:material-check-bold:,:material-check-bold:,:material-check-bold:

@@ -19,15 +19,7 @@ package application
 - (_WKInspector *)_inspector;
 @end
 
-//void showDevTools(void *window) {
-//    // get main window
-//    WebviewWindow* nsWindow = (WebviewWindow*)window;
-//    dispatch_async(dispatch_get_main_queue(), ^{
-//        [nsWindow.webView._inspector show];
-//    });
-//}
-
-void showDevTools(void *window) {
+void openDevTools(void *window) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 120000
     dispatch_async(dispatch_get_main_queue(), ^{
 		if (@available(macOS 12.0, *)) {
@@ -55,12 +47,9 @@ void windowEnableDevTools(void* nsWindow) {
 
 */
 import "C"
-import "unsafe"
 
-func init() {
-	showDevTools = func(window unsafe.Pointer) {
-		C.showDevTools(window)
-	}
+func (w *macosWebviewWindow) openDevTools() {
+	openDevTools(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) enableDevTools() {

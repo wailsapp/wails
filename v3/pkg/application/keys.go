@@ -70,6 +70,11 @@ type accelerator struct {
 	Modifiers []modifier
 }
 
+func (a *accelerator) clone() *accelerator {
+	result := *a
+	return &result
+}
+
 func (a *accelerator) String() string {
 	var result []string
 	// Sort modifiers
