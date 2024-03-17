@@ -5,7 +5,7 @@ go 1.21.1
 toolchain go1.21.4
 
 require (
-	github.com/atterpac/refresh v0.5.11
+	github.com/atterpac/refresh v0.6.2
 	github.com/bep/debounce v1.2.1
 	github.com/ebitengine/purego v0.4.0-alpha.4
 	github.com/go-git/go-git/v5 v5.11.0
@@ -49,7 +49,6 @@ require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
-	github.com/alexbrainman/ps v0.0.0-20171229230509-b3e1b4a15894 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
@@ -117,3 +116,5 @@ require (
 	modernc.org/token v1.0.1 // indirect
 	mvdan.cc/sh/v3 v3.7.0 // indirect
 )
+
+replace github.com/wailsapp/wails/v3 => ./
