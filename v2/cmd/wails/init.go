@@ -125,20 +125,6 @@ func initProject(f *flags.Init) error {
 		return err
 	}
 
-	if f.InitModule {
-		// Change the module name to project name
-		cmd := exec.Command("go", "mod", "edit", "-module", options.ProjectName)
-		cmd.Dir = options.TargetDir
-		cmd.Stderr = os.Stderr
-		if !quiet {
-			cmd.Stdout = os.Stdout
-		}
-		err = cmd.Run()
-		if err != nil {
-			return err
-		}
-	}
-
 	if !f.CIMode {
 		// Run `go mod tidy` to ensure `go.sum` is up to date
 		cmd := exec.Command("go", "mod", "tidy")
