@@ -186,6 +186,11 @@ func newPlatformApp(parent *App) *linuxApp {
 		application: appNew(name),
 		windowMap:   map[windowPointer]uint{},
 	}
+
+	if parent.options.Linux.ProgramName != "" {
+		setProgramName(parent.options.Linux.ProgramName)
+	}
+
 	return app
 }
 

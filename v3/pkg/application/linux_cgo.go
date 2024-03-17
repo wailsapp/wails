@@ -332,6 +332,12 @@ func appNew(name string) pointer {
 	return pointer(C.gtk_application_new(nameC, C.APPLICATION_DEFAULT_FLAGS))
 }
 
+func setProgramName(prgName string) {
+	cPrgName := C.CString(prgName)
+	defer C.free(unsafe.Pointer(cPrgName))
+	C.g_set_prgname(cPrgName)
+}
+
 func appRun(app pointer) error {
 	application := (*C.GApplication)(app)
 	//TODO: Only set this if we configure it to do so
