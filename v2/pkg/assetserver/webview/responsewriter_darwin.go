@@ -69,14 +69,8 @@ import "C"
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"unsafe"
-)
-
-var (
-	errRequestStopped   = errors.New("request has been stopped")
-	errResponseFinished = errors.New("response has been finished")
 )
 
 var _ ResponseWriter = &responseWriter{}

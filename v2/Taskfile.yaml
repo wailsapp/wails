@@ -1,0 +1,28 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  download:
+    summary: Run go mod tidy
+    cmds:
+      - go mod tidy
+
+  lint:
+    summary: Run golangci-lint
+    cmds:
+      - golangci-lint run ./... --timeout=3m -v
+
+  release:
+    summary: Release a new version of Task. Call with `task v2:release -- <version>`
+    dir: tools/release
+    cmds:
+      - go run release.go {{.CLI_ARGS}}
+
+  format:md:
+    cmds:
+      - npx prettier --write "**/*.md"
+
+  format:
+    cmds:
+      - task: format:md

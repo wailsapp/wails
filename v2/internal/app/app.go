@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
@@ -19,6 +20,9 @@ type App struct {
 
 	// Indicates if the app is in debug mode
 	debug bool
+
+	// Indicates if the devtools is enabled
+	devtoolsEnabled bool
 
 	// OnStartup/OnShutdown
 	startupCallback  func(ctx context.Context)

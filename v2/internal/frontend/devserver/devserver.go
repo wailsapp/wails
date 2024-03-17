@@ -10,13 +10,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 
@@ -62,9 +60,12 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		return err
 	}
 
-	var assetHandler http.Handler
+	var myLogger assetserver.Logger
+	if _logger := ctx.Value("logger"); _logger != nil {
+		myLogger = _logger.(*logger.Logger)
+	}
+
 	var wsHandler http.Handler
-	var myLogger *logger.Logger
 
 	_fronendDevServerURL, _ := ctx.Value("frontenddevserverurl").(string)
 	if _fronendDevServerURL == "" {
@@ -73,34 +74,21 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 			return c.String(http.StatusOK, assetdir)
 		})
 
-		if _logger := ctx.Value("logger"); _logger != nil {
-			myLogger = _logger.(*logger.Logger)
-		}
-		var err error
-		assetHandler, err = assetserver.NewAssetHandler(assetServerConfig, myLogger)
-		if err != nil {
-			log.Fatal(err)
-		}
 	} else {
 		externalURL, err := url.Parse(_fronendDevServerURL)
 		if err != nil {
 			return err
 		}
 
-		if externalURL.Host == "" {
-			return fmt.Errorf("Invalid frontend:dev:serverUrl missing protocol scheme?")
-		}
-
-		waitCb := func() { d.LogDebug("Waiting for frontend DevServer '%s' to be ready", externalURL) }
-		if !checkPortIsOpen(externalURL.Host, time.Minute, waitCb) {
-			d.logger.Error("Timeout waiting for frontend DevServer")
-		}
-
-		assetHandler = newExternalDevServerAssetHandler(d.logger, externalURL, assetServerConfig)
 		// WebSockets aren't currently supported in prod mode, so a WebSocket connection is the result of the
 		// FrontendDevServer e.g. Vite to support auto reloads.
 		// Therefore we direct WebSockets directly to the FrontendDevServer instead of returning a NotImplementedStatus.
 		wsHandler = httputil.NewSingleHostReverseProxy(externalURL)
+	}
+
+	assetHandler, err := assetserver.NewAssetHandler(assetServerConfig, myLogger)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	// Setup internal dev server
@@ -109,13 +97,17 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		log.Fatal(err)
 	}
 
-	assetServer, err := assetserver.NewDevAssetServer(assetHandler, wsHandler, bindingsJSON, ctx.Value("assetdir") != nil, myLogger, runtime.RuntimeAssetsBundle)
+	assetServer, err := assetserver.NewDevAssetServer(assetHandler, bindingsJSON, ctx.Value("assetdir") != nil, myLogger, runtime.RuntimeAssetsBundle)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	d.server.Any("/*", func(c echo.Context) error {
-		assetServer.ServeHTTP(c.Response(), c.Request())
+		if c.IsWebSocket() {
+			wsHandler.ServeHTTP(c.Response(), c.Request())
+		} else {
+			assetServer.ServeHTTP(c.Response(), c.Request())
+		}
 		return nil
 	})
 
@@ -305,23 +297,4 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	result.server.HideBanner = true
 	result.server.HidePort = true
 	return result
-}
-
-func checkPortIsOpen(host string, timeout time.Duration, waitCB func()) (ret bool) {
-	if timeout == 0 {
-		timeout = time.Minute
-	}
-
-	deadline := time.Now().Add(timeout)
-	for time.Now().Before(deadline) {
-		conn, _ := net.DialTimeout("tcp", host, 2*time.Second)
-		if conn != nil {
-			conn.Close()
-			return true
-		}
-
-		waitCB()
-		time.Sleep(1 * time.Second)
-	}
-	return false
 }

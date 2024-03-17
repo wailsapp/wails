@@ -1,7 +1,18 @@
 package webview
 
 import (
+	"errors"
 	"net/http"
+)
+
+const (
+	HeaderContentLength = "Content-Length"
+	HeaderContentType   = "Content-Type"
+)
+
+var (
+	errRequestStopped   = errors.New("request has been stopped")
+	errResponseFinished = errors.New("response has been finished")
 )
 
 // A ResponseWriter interface is used by an HTTP handler to
@@ -9,6 +20,6 @@ import (
 type ResponseWriter interface {
 	http.ResponseWriter
 
-	// Finish the response and flush all data.
+	// Finish the response and flush all data. A Finish after the request has already been finished has no effect.
 	Finish() error
 }

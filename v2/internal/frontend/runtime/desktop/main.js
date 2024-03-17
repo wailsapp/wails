@@ -16,6 +16,7 @@ import * as Window from "./window";
 import * as Screen from "./screen";
 import * as Browser from "./browser";
 import * as Clipboard from "./clipboard";
+import * as ContextMenu from "./contextmenu";
 
 
 export function Quit() {
@@ -61,12 +62,12 @@ window.wails = {
     callbacks,
     flags: {
         disableScrollbarDrag: false,
-        disableWailsDefaultContextMenu: false,
+        disableDefaultContextMenu: false,
         enableResize: false,
         defaultCursor: null,
         borderThickness: 6,
         shouldDrag: false,
-        deferDragToMouseMove: false,
+        deferDragToMouseMove: true,
         cssDragProperty: "--wails-draggable",
         cssDragValue: "drag",
     }
@@ -78,10 +79,8 @@ if (window.wailsbindings) {
     delete window.wails.SetBindings;
 }
 
-// This is evaluated at build time in package.json
-// const dev = 0;
-// const production = 1;
-if (ENV === 1) {
+// (bool) This is evaluated at build time in package.json
+if (!DEBUG) {
     delete window.wailsbindings;
 }
 
@@ -130,7 +129,7 @@ window.addEventListener('mousedown', (e) => {
             }
         }
         if (window.wails.flags.deferDragToMouseMove) {
-           window.wails.flags.shouldDrag = true;
+            window.wails.flags.shouldDrag = true;
         } else {
             e.preventDefault()
             window.WailsInvoke("drag");
@@ -152,10 +151,9 @@ function setResize(cursor) {
 
 window.addEventListener('mousemove', function (e) {
     if (window.wails.flags.shouldDrag) {
+        window.wails.flags.shouldDrag = false;
         let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
-        if(mousePressed <= 0) {
-            window.wails.flags.shouldDrag = false;
-        } else {
+        if (mousePressed > 0) {
             window.WailsInvoke("drag");
             return;
         }
@@ -190,8 +188,13 @@ window.addEventListener('mousemove', function (e) {
 
 // Setup context menu hook
 window.addEventListener('contextmenu', function (e) {
-    if (window.wails.flags.disableWailsDefaultContextMenu) {
+    // always show the contextmenu in debug & dev
+    if (DEBUG) return;
+
+    if (window.wails.flags.disableDefaultContextMenu) {
         e.preventDefault();
+    } else {
+        ContextMenu.processDefaultContextMenu(e);
     }
 });
 

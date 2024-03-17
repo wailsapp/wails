@@ -5,6 +5,8 @@ import (
 	"html"
 	"io/fs"
 	"net/http"
+	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -26,8 +28,7 @@ const (
 	Fullscreen WindowStartState = 3
 )
 
-type Experimental struct {
-}
+type Experimental struct{}
 
 // App contains options for creating the App
 type App struct {
@@ -62,7 +63,11 @@ type App struct {
 	OnShutdown         func(ctx context.Context)                `json:"-"`
 	OnBeforeClose      func(ctx context.Context) (prevent bool) `json:"-"`
 	Bind               []interface{}
+	EnumBind           []interface{}
 	WindowStartState   WindowStartState
+
+	// ErrorFormatter overrides the formatting of errors returned by backend methods
+	ErrorFormatter ErrorFormatter
 
 	// CSS property to test for draggable elements. Default "--wails-draggable"
 	CSSDragProperty string
@@ -70,10 +75,16 @@ type App struct {
 	// The CSS Value that the CSSDragProperty must have to be draggable, EG: "drag"
 	CSSDragValue string
 
+	// EnableDefaultContextMenu enables the browser's default context-menu in production
+	// This menu is already enabled in development and debug builds
+	EnableDefaultContextMenu bool
+
 	// EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts.
 	// These services might send information from your app like URLs navigated to and possibly other content to cloud
 	// services of Apple and Microsoft.
 	EnableFraudulentWebsiteDetection bool
+
+	SingleInstanceLock *SingleInstanceLock
 
 	Windows *windows.Options
 	Mac     *mac.Options
@@ -85,6 +96,8 @@ type App struct {
 	// Debug options for debug builds. These options will be ignored in a production build.
 	Debug Debug
 }
+
+type ErrorFormatter func(error) any
 
 type RGBA struct {
 	R uint8 `json:"r"`
@@ -156,14 +169,42 @@ func MergeDefaults(appoptions *App) {
 	processDragOptions(appoptions)
 }
 
+type SingleInstanceLock struct {
+	// uniqueId that will be used for setting up messaging between instances
+	UniqueId               string
+	OnSecondInstanceLaunch func(secondInstanceData SecondInstanceData)
+}
+
+type SecondInstanceData struct {
+	Args             []string
+	WorkingDirectory string
+}
+
+func NewSecondInstanceData() (*SecondInstanceData, error) {
+	ex, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+	workingDirectory := filepath.Dir(ex)
+
+	return &SecondInstanceData{
+		Args:             os.Args[1:],
+		WorkingDirectory: workingDirectory,
+	}, nil
+}
+
 func processMenus(appoptions *App) {
 	switch runtime.GOOS {
 	case "darwin":
 		if appoptions.Menu == nil {
-			appoptions.Menu = menu.NewMenuFromItems(
-				menu.AppMenu(),
+			items := []*menu.MenuItem{
 				menu.EditMenu(),
-			)
+			}
+			if !appoptions.Frameless {
+				items = append(items, menu.WindowMenu()) // Current options in Window Menu only work if not frameless
+			}
+
+			appoptions.Menu = menu.NewMenuFromItems(menu.AppMenu(), items...)
 		}
 	}
 }

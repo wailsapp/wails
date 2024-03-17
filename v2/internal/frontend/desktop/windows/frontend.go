@@ -7,22 +7,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
-	"net/http/httptest"
+	"net"
 	"net/url"
+	"os"
 	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"text/template"
 	"time"
 
 	"github.com/bep/debounce"
+	"github.com/wailsapp/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
@@ -30,11 +28,14 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 const startURL = "http://wails.localhost/"
+
+var secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
 
 type Screen = frontend.Screen
 
@@ -47,6 +48,7 @@ type Frontend struct {
 	logger          *logger.Logger
 	chromium        *edge.Chromium
 	debug           bool
+	devtoolsEnabled bool
 
 	// Assets
 	assets   *assetserver.AssetServer
@@ -92,6 +94,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		return result
 	}
 
+	if port, _ := ctx.Value("assetserverport").(string); port != "" {
+		result.startURL.Host = net.JoinHostPort(result.startURL.Host, port)
+	}
+
 	var bindings string
 	var err error
 	if _obfuscated, _ := ctx.Value("obfuscated").(bool); !_obfuscated {
@@ -108,6 +114,8 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		log.Fatal(err)
 	}
 	result.assets = assets
+
+	go result.startSecondInstanceProcessor()
 
 	return result
 }
@@ -133,12 +141,21 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 	f.chromium = edge.NewChromium()
 
+	if f.frontendOptions.SingleInstanceLock != nil {
+		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
+	}
+
 	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo, f.chromium)
 	f.mainWindow = mainWindow
 
 	var _debug = ctx.Value("debug")
+	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
+
 	if _debug != nil {
 		f.debug = _debug.(bool)
+	}
+	if _devtoolsEnabled != nil {
+		f.devtoolsEnabled = _devtoolsEnabled.(bool)
 	}
 
 	f.WindowCenter()
@@ -202,6 +219,7 @@ func (f *Frontend) WindowCenter() {
 
 func (f *Frontend) WindowSetAlwaysOnTop(b bool) {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.mainWindow.SetAlwaysOnTop(b)
 }
 
@@ -414,6 +432,10 @@ func (f *Frontend) Quit() {
 	f.mainWindow.Invoke(winc.Exit)
 }
 
+func (f *Frontend) WindowPrint() {
+	f.ExecJS("window.print();")
+}
+
 func (f *Frontend) setupChromium() {
 	chromium := f.chromium
 
@@ -429,6 +451,9 @@ func (f *Frontend) setupChromium() {
 		if opts.WebviewGpuIsDisabled {
 			chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
 		}
+		if opts.WebviewDisableRendererCodeIntegrity {
+			disableFeatues = append(disableFeatues, "RendererCodeIntegrity")
+		}
 	}
 
 	if len(disableFeatues) > 0 {
@@ -440,21 +465,72 @@ func (f *Frontend) setupChromium() {
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
+		if vkey == w32.VK_F12 && f.devtoolsEnabled {
+			var keyState [256]byte
+			if w32.GetKeyboardState(keyState[:]) {
+				// Check if CTRL is pressed
+				if keyState[w32.VK_CONTROL]&0x80 != 0 && keyState[w32.VK_SHIFT]&0x80 != 0 {
+					chromium.OpenDevToolsWindow()
+					return true
+				}
+			} else {
+				f.logger.Error("Call to GetKeyboardState failed")
+			}
+		}
 		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
 		return false
 	}
+	chromium.ProcessFailedCallback = func(sender *edge.ICoreWebView2, args *edge.ICoreWebView2ProcessFailedEventArgs) {
+		kind, err := args.GetProcessFailedKind()
+		if err != nil {
+			f.logger.Error("GetProcessFailedKind: %s", err)
+			return
+		}
+
+		f.logger.Error("WebVie2wProcess failed with kind %d", kind)
+		switch kind {
+		case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED:
+			// => The app has to recreate a new WebView to recover from this failure.
+			messages := windows.DefaultMessages()
+			if f.frontendOptions.Windows != nil && f.frontendOptions.Windows.Messages != nil {
+				messages = f.frontendOptions.Windows.Messages
+			}
+			winc.Errorf(f.mainWindow, messages.WebView2ProcessCrash)
+			os.Exit(-1)
+		case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_EXITED,
+			edge.COREWEBVIEW2_PROCESS_FAILED_KIND_FRAME_RENDER_PROCESS_EXITED:
+			// => A new render process is created automatically and navigated to an error page.
+			// => Make sure that the error page is shown.
+			if !f.hasStarted {
+				// NavgiationCompleted didn't come in, make sure the chromium is shown
+				chromium.Show()
+			}
+			if !f.mainWindow.hasBeenShown {
+				// The window has never been shown, make sure to show it
+				f.ShowWindow()
+			}
+		}
+	}
 
 	chromium.Embed(f.mainWindow.Handle())
+
+	if chromium.HasCapability(edge.SwipeNavigation) {
+		swipeGesturesEnabled := f.frontendOptions.Windows != nil && f.frontendOptions.Windows.EnableSwipeGestures
+		err := chromium.PutIsSwipeNavigationEnabled(swipeGesturesEnabled)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutAreDefaultContextMenusEnabled(f.debug)
+	err = settings.PutAreDefaultContextMenusEnabled(f.debug || f.frontendOptions.EnableDefaultContextMenu)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutAreDevToolsEnabled(f.debug)
+	err = settings.PutAreDevToolsEnabled(f.devtoolsEnabled)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -467,6 +543,10 @@ func (f *Frontend) setupChromium() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		err = settings.PutIsPinchZoomEnabled(!opts.DisablePinchZoom)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	err = settings.PutIsStatusBarEnabled(false)
@@ -474,10 +554,6 @@ func (f *Frontend) setupChromium() {
 		log.Fatal(err)
 	}
 	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = settings.PutIsSwipeNavigationEnabled(false)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -547,28 +623,31 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 		return
 	}
 
-	rw := httptest.NewRecorder()
-	f.assets.ProcessHTTPRequestLegacy(rw, coreWebview2RequestToHttpRequest(req))
+	webviewRequest, err := webview.NewRequest(
+		f.chromium.Environment(),
+		args,
+		func(fn func()) {
+			runtime.LockOSThread()
+			defer runtime.UnlockOSThread()
+			if f.mainWindow.InvokeRequired() {
+				var wg sync.WaitGroup
+				wg.Add(1)
+				f.mainWindow.Invoke(func() {
+					fn()
+					wg.Done()
+				})
+				wg.Wait()
+			} else {
+				fn()
+			}
+		})
 
-	headers := []string{}
-	for k, v := range rw.Header() {
-		headers = append(headers, fmt.Sprintf("%s: %s", k, strings.Join(v, ",")))
-	}
-
-	env := f.chromium.Environment()
-	response, err := env.CreateWebResourceResponse(rw.Body.Bytes(), rw.Code, http.StatusText(rw.Code), strings.Join(headers, "\n"))
 	if err != nil {
-		f.logger.Error("CreateWebResourceResponse Error: %s", err)
+		f.logger.Error("%s: NewRequest failed: %s", uri, err)
 		return
 	}
-	defer response.Release()
 
-	// Send response back
-	err = args.PutResponse(response)
-	if err != nil {
-		f.logger.Error("PutResponse Error: %s", err)
-		return
-	}
+	f.assets.ServeWebViewRequest(webviewRequest)
 }
 
 var edgeMap = map[string]uintptr{
@@ -637,8 +716,12 @@ func (f *Frontend) processMessage(message string) {
 }
 
 func (f *Frontend) Callback(message string) {
+	escaped, err := json.Marshal(message)
+	if err != nil {
+		panic(err)
+	}
 	f.mainWindow.Invoke(func() {
-		f.chromium.Eval(`window.wails.Callback(` + strconv.Quote(message) + `);`)
+		f.chromium.Eval(`window.wails.Callback(` + string(escaped) + `);`)
 	})
 }
 
@@ -756,86 +839,11 @@ func (f *Frontend) onFocus(arg *winc.Event) {
 	f.chromium.Focus()
 }
 
-func coreWebview2RequestToHttpRequest(coreReq *edge.ICoreWebView2WebResourceRequest) func() (*http.Request, error) {
-	return func() (r *http.Request, err error) {
-		header := http.Header{}
-		headers, err := coreReq.GetHeaders()
-		if err != nil {
-			return nil, fmt.Errorf("GetHeaders Error: %s", err)
+func (f *Frontend) startSecondInstanceProcessor() {
+	for secondInstanceData := range secondInstanceBuffer {
+		if f.frontendOptions.SingleInstanceLock != nil &&
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
+			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch(secondInstanceData)
 		}
-		defer headers.Release()
-
-		headersIt, err := headers.GetIterator()
-		if err != nil {
-			return nil, fmt.Errorf("GetIterator Error: %s", err)
-		}
-		defer headersIt.Release()
-
-		for {
-			has, err := headersIt.HasCurrentHeader()
-			if err != nil {
-				return nil, fmt.Errorf("HasCurrentHeader Error: %s", err)
-			}
-			if !has {
-				break
-			}
-
-			name, value, err := headersIt.GetCurrentHeader()
-			if err != nil {
-				return nil, fmt.Errorf("GetCurrentHeader Error: %s", err)
-			}
-
-			header.Set(name, value)
-			if _, err := headersIt.MoveNext(); err != nil {
-				return nil, fmt.Errorf("MoveNext Error: %s", err)
-			}
-		}
-
-		method, err := coreReq.GetMethod()
-		if err != nil {
-			return nil, fmt.Errorf("GetMethod Error: %s", err)
-		}
-
-		uri, err := coreReq.GetUri()
-		if err != nil {
-			return nil, fmt.Errorf("GetUri Error: %s", err)
-		}
-
-		var body io.ReadCloser
-		if content, err := coreReq.GetContent(); err != nil {
-			return nil, fmt.Errorf("GetContent Error: %s", err)
-		} else if content != nil {
-			body = &iStreamReleaseCloser{stream: content}
-		}
-
-		req, err := http.NewRequest(method, uri, body)
-		if err != nil {
-			if body != nil {
-				body.Close()
-			}
-			return nil, err
-		}
-		req.Header = header
-		return req, nil
 	}
-}
-
-type iStreamReleaseCloser struct {
-	stream *edge.IStream
-	closed bool
-}
-
-func (i *iStreamReleaseCloser) Read(p []byte) (int, error) {
-	if i.closed {
-		return 0, io.ErrClosedPipe
-	}
-	return i.stream.Read(p)
-}
-
-func (i *iStreamReleaseCloser) Close() error {
-	if i.closed {
-		return nil
-	}
-	i.closed = true
-	return i.stream.Release()
 }

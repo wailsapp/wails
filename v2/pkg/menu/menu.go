@@ -17,9 +17,7 @@ func (m *Menu) Append(item *MenuItem) {
 // Merge will append the items in the given menu
 // into this menu
 func (m *Menu) Merge(menu *Menu) {
-	for _, item := range menu.Items {
-		m.Items = append(m.Items, item)
-	}
+	m.Items = append(m.Items, menu.Items...)
 }
 
 // AddText adds a TextMenu item to the menu
@@ -61,8 +59,7 @@ func (m *Menu) Prepend(item *MenuItem) {
 }
 
 func NewMenuFromItems(first *MenuItem, rest ...*MenuItem) *Menu {
-
-	var result = NewMenu()
+	result := NewMenu()
 	result.Append(first)
 	for _, item := range rest {
 		result.Append(item)

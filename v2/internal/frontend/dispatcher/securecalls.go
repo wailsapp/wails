@@ -3,6 +3,7 @@ package dispatcher
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/wailsapp/wails/v2/internal/frontend"
 )
 
@@ -13,7 +14,6 @@ type secureCallMessage struct {
 }
 
 func (d *Dispatcher) processSecureCallMessage(message string, sender frontend.Frontend) (string, error) {
-
 	var payload secureCallMessage
 	err := json.Unmarshal([]byte(message[1:]), &payload)
 	if err != nil {

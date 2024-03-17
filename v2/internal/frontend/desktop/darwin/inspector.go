@@ -1,4 +1,4 @@
-//go:build darwin && !(dev || debug)
+//go:build darwin && !(dev || debug || devtools)
 
 package darwin
 
@@ -6,6 +6,5 @@ import (
 	"unsafe"
 )
 
-func showInspector(context unsafe.Pointer) {
-
+func showInspector(_ unsafe.Pointer) {
 }

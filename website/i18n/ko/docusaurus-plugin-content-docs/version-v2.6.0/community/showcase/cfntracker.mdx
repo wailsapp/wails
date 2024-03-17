@@ -1,0 +1,39 @@
+# CFN Tracker
+
+```mdx-code-block
+<p style={{ "text-align": "center" }}>
+  <img src={require("@site/static/img/showcase/cfntracker.webp").default} />
+  <br />
+</p>
+```
+
+[CFN 추적기](https://github.com/williamsjokvist/cfn-tracker) - Street Fighter 6
+또는 V CFN 프로필의 실시간 경기를 추적하세요. 시작하려면
+[웹사이트](https://cfn.williamsjokvist.se/)를 확인하세요.
+
+## 특징
+
+- 실시간 경기 추적
+- 경기 로그 및 통계 저장
+- 브라우저 소스를 통해 OBS에 실시간 통계 표시 지원
+- SF6 및 SFV 모두 지원
+- 사용자가 CSS를 사용하여 자신만의 OBS 브라우저 테마를 만들 수 있는 기능
+
+### 웨일스와 함께 사용되는 주요 기술
+
+- [작업](https://github.com/go-task/task) - 일반적인 명령을 쉽게 사용할 수 있도
+  록 Wails CLI를 래핑합니다.
+- [React](https://github.com/facebook/react) - 풍부한 생태계(radix, 프레이머-모
+  션)로 인해 선택됨
+- [Bun](https://github.com/oven-sh/bun) - 빠른 종속성 해결 및 빌드 시간에 사용됩
+  니다.
+- [Rod](https://github.com/go-rod/rod) - 인증 및 폴링 변경을 위한 헤드리스 브라
+  우저 자동화
+- [SQLite](https://github.com/mattn/go-sqlite3) - 경기, 세션 및 프로필을 저장하
+  는 데 사용됩니다.
+- [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) -
+  OBS 브라우저 소스에 추적 업데이트를 보내는 http 스트림
+- [i18next](https://github.com/i18next/) - Go 레이어에서 현지화 개체를 제공하기
+  위한 백엔드 커넥터 포함
+- [xstate](https://github.com/statelyai/xstate) - 인증 프로세스 및 추적을 위한
+  상태 머신

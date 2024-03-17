@@ -1,0 +1,41 @@
+name: Upload Source Documents
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  push_files_to_crowdin:
+    name: Push files to Crowdin
+    if: github.repository == 'wailsapp/wails'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Verify Changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            website/**/*.mdx
+            website/**/*.md
+            website/**/*.json
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+
+      - name: Setup Task
+        uses: arduino/setup-task@v1
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload source documents
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+        working-directory: ./website
+        run: task crowdin:push

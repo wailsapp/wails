@@ -16,7 +16,7 @@ const (
 	// ShiftKey represents the shift key on all systems
 	ShiftKey Modifier = "shift"
 	// SuperKey represents Command on Mac and the Windows key on the other platforms
-	//SuperKey Modifier = "super"
+	// SuperKey Modifier = "super"
 	// ControlKey represents the control key on all systems
 	ControlKey Modifier = "ctrl"
 )
@@ -99,8 +99,6 @@ func Combo(key string, modifier1 Modifier, modifier2 Modifier, rest ...Modifier)
 		Key:       key,
 		Modifiers: []Modifier{modifier1, modifier2},
 	}
-	for _, extra := range rest {
-		result.Modifiers = append(result.Modifiers, extra)
-	}
+	result.Modifiers = append(result.Modifiers, rest...)
 	return result
 }

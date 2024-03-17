@@ -25,7 +25,6 @@ type Build struct {
 	BuildCommon
 
 	NoPackage               bool   `name:"noPackage" description:"Skips platform specific packaging"`
-	SkipModTidy             bool   `name:"m" description:"Skip mod tidy before compile"`
 	Upx                     bool   `description:"Compress final binary with UPX (if installed)"`
 	UpxFlags                string `description:"Flags to pass to upx"`
 	Platform                string `description:"Platform to target. Comma separate multiple platforms"`
@@ -35,6 +34,7 @@ type Build struct {
 	ForceBuild              bool   `name:"f" description:"Force build of application"`
 	UpdateWailsVersionGoMod bool   `name:"u" description:"Updates go.mod to use the same Wails version as the CLI"`
 	Debug                   bool   `description:"Builds the application in debug mode"`
+	Devtools                bool   `description:"Enable Devtools in productions, Already enabled in debug mode (-debug)"`
 	NSIS                    bool   `description:"Generate NSIS installer for Windows"`
 	TrimPath                bool   `description:"Remove all file system paths from the resulting executable"`
 	WindowsConsole          bool   `description:"Keep the console when building for Windows"`

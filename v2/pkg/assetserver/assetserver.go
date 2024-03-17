@@ -2,10 +2,13 @@ package assetserver
 
 import (
 	"bytes"
+	"fmt"
+	"math/rand"
 	"net/http"
-	"net/http/httptest"
+	"strings"
 
 	"golang.org/x/net/html"
+	"html/template"
 
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -29,7 +32,6 @@ type RuntimeHandler interface {
 
 type AssetServer struct {
 	handler   http.Handler
-	wsHandler http.Handler
 	runtimeJS []byte
 	ipcJS     func(*http.Request) []byte
 
@@ -41,6 +43,9 @@ type AssetServer struct {
 
 	// Use http based runtime
 	runtimeHandler RuntimeHandler
+
+	// plugin scripts
+	pluginScripts map[string]string
 
 	assetServerWebView
 }
@@ -63,9 +68,11 @@ func NewAssetServer(bindingsJSON string, options assetserver.Options, servingFro
 }
 
 func NewAssetServerWithHandler(handler http.Handler, bindingsJSON string, servingFromDisk bool, logger Logger, runtime RuntimeAssets) (*AssetServer, error) {
+
 	var buffer bytes.Buffer
 	if bindingsJSON != "" {
-		buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
+		escapedBindingsJSON := template.JSEscapeString(bindingsJSON)
+		buffer.WriteString(`window.wailsbindings='` + escapedBindingsJSON + `';` + "\n")
 	}
 	buffer.Write(runtime.RuntimeDesktopJS())
 
@@ -89,34 +96,75 @@ func (d *AssetServer) UseRuntimeHandler(handler RuntimeHandler) {
 	d.runtimeHandler = handler
 }
 
+func (d *AssetServer) AddPluginScript(pluginName string, script string) {
+	if d.pluginScripts == nil {
+		d.pluginScripts = make(map[string]string)
+	}
+	pluginName = strings.ReplaceAll(pluginName, "/", "_")
+	pluginName = html.EscapeString(pluginName)
+	pluginScriptName := fmt.Sprintf("/plugin_%s_%d.js", pluginName, rand.Intn(100000))
+	d.pluginScripts[pluginScriptName] = script
+}
+
 func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if isWebSocket(req) {
-		// Forward WebSockets to the distinct websocket handler if it exists
-		if wsHandler := d.wsHandler; wsHandler != nil {
-			wsHandler.ServeHTTP(rw, req)
-		} else {
-			rw.WriteHeader(http.StatusNotImplemented)
-		}
+		// WebSockets are not supported by the AssetServer
+		rw.WriteHeader(http.StatusNotImplemented)
 		return
 	}
 
-	header := rw.Header()
 	if d.servingFromDisk {
-		header.Add(HeaderCacheControl, "no-cache")
+		rw.Header().Add(HeaderCacheControl, "no-cache")
+	}
+
+	handler := d.handler
+	if req.Method != http.MethodGet {
+		handler.ServeHTTP(rw, req)
+		return
 	}
 
 	path := req.URL.Path
-	switch path {
-	case "", "/", "/index.html":
-		recorder := httptest.NewRecorder()
-		d.handler.ServeHTTP(recorder, req)
-		for k, v := range recorder.HeaderMap {
-			header[k] = v
+	if path == runtimeJSPath {
+		d.writeBlob(rw, path, d.runtimeJS)
+	} else if path == runtimePath && d.runtimeHandler != nil {
+		d.runtimeHandler.HandleRuntimeCall(rw, req)
+	} else if path == ipcJSPath {
+		content := d.runtime.DesktopIPC()
+		if d.ipcJS != nil {
+			content = d.ipcJS(req)
+		}
+		d.writeBlob(rw, path, content)
+
+	} else if script, ok := d.pluginScripts[path]; ok {
+		d.writeBlob(rw, path, []byte(script))
+	} else if d.isRuntimeInjectionMatch(path) {
+		recorder := &bodyRecorder{
+			ResponseWriter: rw,
+			doRecord: func(code int, h http.Header) bool {
+				if code == http.StatusNotFound {
+					return true
+				}
+
+				if code != http.StatusOK {
+					return false
+				}
+
+				return strings.Contains(h.Get(HeaderContentType), "text/html")
+			},
 		}
 
-		switch recorder.Code {
+		handler.ServeHTTP(recorder, req)
+
+		body := recorder.Body()
+		if body == nil {
+			// The body has been streamed and not recorded, we are finished
+			return
+		}
+
+		code := recorder.Code()
+		switch code {
 		case http.StatusOK:
-			content, err := d.processIndexHTML(recorder.Body.Bytes())
+			content, err := d.processIndexHTML(body.Bytes())
 			if err != nil {
 				d.serveError(rw, err, "Unable to processIndexHTML")
 				return
@@ -127,29 +175,12 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			d.writeBlob(rw, indexHTML, defaultHTML)
 
 		default:
-			rw.WriteHeader(recorder.Code)
+			rw.WriteHeader(code)
 
 		}
 
-	case runtimeJSPath:
-		d.writeBlob(rw, path, d.runtimeJS)
-
-	case runtimePath:
-		if d.runtimeHandler != nil {
-			d.runtimeHandler.HandleRuntimeCall(rw, req)
-		} else {
-			d.handler.ServeHTTP(rw, req)
-		}
-
-	case ipcJSPath:
-		content := d.runtime.DesktopIPC()
-		if d.ipcJS != nil {
-			content = d.ipcJS(req)
-		}
-		d.writeBlob(rw, path, content)
-
-	default:
-		d.handler.ServeHTTP(rw, req)
+	} else {
+		handler.ServeHTTP(rw, req)
 	}
 }
 
@@ -172,6 +203,13 @@ func (d *AssetServer) processIndexHTML(indexHTML []byte) ([]byte, error) {
 
 	if err := insertScriptInHead(htmlNode, ipcJSPath); err != nil {
 		return nil, err
+	}
+
+	// Inject plugins
+	for scriptName := range d.pluginScripts {
+		if err := insertScriptInHead(htmlNode, scriptName); err != nil {
+			return nil, err
+		}
 	}
 
 	var buffer bytes.Buffer
@@ -205,4 +243,13 @@ func (d *AssetServer) logError(message string, args ...interface{}) {
 	if d.logger != nil {
 		d.logger.Error("[AssetServer] "+message, args...)
 	}
+}
+
+func (AssetServer) isRuntimeInjectionMatch(path string) bool {
+	if path == "" {
+		path = "/"
+	}
+
+	return strings.HasSuffix(path, "/") ||
+		strings.HasSuffix(path, "/"+indexHTML)
 }

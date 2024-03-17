@@ -3,9 +3,9 @@
 package windows
 
 import (
+	"github.com/wailsapp/go-webview2/pkg/edge"
+	"sync"
 	"unsafe"
-
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
@@ -322,4 +322,15 @@ func (w *Window) SetTheme(theme winoptions.Theme) {
 	w.Invoke(func() {
 		w.UpdateTheme()
 	})
+}
+
+func invokeSync[T any](cba *Window, fn func() (T, error)) (res T, err error) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	cba.Invoke(func() {
+		res, err = fn()
+		wg.Done()
+	})
+	wg.Wait()
+	return res, err
 }

@@ -18,7 +18,6 @@ import (
 )
 
 func buildApplication(f *flags.Build) error {
-
 	if f.NoColour {
 		pterm.DisableColor()
 		colour.ColourEnabled = false
@@ -50,6 +49,16 @@ func buildApplication(f *flags.Build) error {
 		return err
 	}
 
+	// Set obfuscation from project file
+	if projectOptions.Obfuscated {
+		f.Obfuscated = projectOptions.Obfuscated
+	}
+
+	// Set garble args from project file
+	if projectOptions.GarbleArgs != "" {
+		f.GarbleArgs = projectOptions.GarbleArgs
+	}
+
 	// Create BuildOptions
 	buildOptions := &build.Options{
 		Logger:            logger,
@@ -57,6 +66,7 @@ func buildApplication(f *flags.Build) error {
 		OutputFile:        f.OutputFilename,
 		CleanBinDirectory: f.Clean,
 		Mode:              f.GetBuildMode(),
+		Devtools:          f.Debug || f.Devtools,
 		Pack:              !f.NoPackage,
 		LDFlags:           f.LdFlags,
 		Compiler:          f.Compiler,
@@ -82,6 +92,7 @@ func buildApplication(f *flags.Build) error {
 		{"Compiler", f.GetCompilerPath()},
 		{"Skip Bindings", bool2Str(f.SkipBindings)},
 		{"Build Mode", f.GetBuildModeAsString()},
+		{"Devtools", bool2Str(buildOptions.Devtools)},
 		{"Frontend Directory", projectOptions.GetFrontendDir()},
 		{"Obfuscated", bool2Str(f.Obfuscated)},
 	}
@@ -253,5 +264,4 @@ func buildApplication(f *flags.Build) error {
 	}
 
 	return nil
-
 }

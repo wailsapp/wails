@@ -117,7 +117,7 @@ Wails requires that you pass in an _instance_ of the struct for it to bind it co
 
 In this example, we create a new `App` instance and then add this instance to the `Bind` option in `wails.Run`:
 
-```go {16,24} title="main.go"
+```go {17,27} title="main.go"
 package main
 
 import (
@@ -164,7 +164,7 @@ func (a *App) Greet(name string) string {
 
 You may bind as many structs as you like. Just make sure you create an instance of it and pass it in `Bind`:
 
-```go {8-10}
+```go {10-12}
     //...
     err := wails.Run(&options.App{
         Title:  "Basic Demo",
@@ -236,7 +236,7 @@ All data types are correctly translated between Go and JavaScript. Even structs.
 
 :::info Note
 
-Struct fields *must* have a valid `json` tag to be included in the generated TypeScript.
+Struct fields _must_ have a valid `json` tag to be included in the generated TypeScript.
 
 Anonymous nested structs are not supported at this time.
 

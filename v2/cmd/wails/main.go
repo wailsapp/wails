@@ -41,7 +41,7 @@ func printBulletPoint(text string, args ...any) {
 		fatal(err.Error())
 	}
 	t = strings.Trim(t, "\n\r")
-	pterm.Printf(t, args...)
+	pterm.Printfln(t, args...)
 }
 
 func printFooter() {
@@ -66,7 +66,6 @@ func bool2Str(b bool) string {
 var app *clir.Cli
 
 func main() {
-
 	var err error
 
 	app = clir.NewCli("Wails", "Go/HTML Appkit", internal.Version)

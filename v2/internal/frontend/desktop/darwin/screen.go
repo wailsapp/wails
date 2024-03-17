@@ -18,6 +18,8 @@ typedef struct Screen {
 	int isPrimary;
 	int height;
 	int width;
+	int pHeight;
+	int pWidth;
 } Screen;
 
 
@@ -48,14 +50,43 @@ Screen GetNthScreen(int nth, void *inctx){
 	returnScreen.isPrimary = nth==0;
 	returnScreen.height = (int) nthScreen.frame.size.height;
 	returnScreen.width =  (int) nthScreen.frame.size.width;
+
+	returnScreen.pWidth = 0;
+	returnScreen.pHeight = 0;
+
+	// https://stackoverflow.com/questions/13859109/how-to-programmatically-determine-native-pixel-resolution-of-retina-macbook-pro
+	CGDirectDisplayID sid = ((NSNumber *)[nthScreen.deviceDescription
+    	objectForKey:@"NSScreenNumber"]).unsignedIntegerValue;
+
+	CFArrayRef ms = CGDisplayCopyAllDisplayModes(sid, NULL);
+	CFIndex n = CFArrayGetCount(ms);
+	for (int i = 0; i < n; i++) {
+		CGDisplayModeRef m = (CGDisplayModeRef) CFArrayGetValueAtIndex(ms, i);
+		if (CGDisplayModeGetIOFlags(m) & kDisplayModeNativeFlag) {
+			// This corresponds with "System Settings" -> General -> About -> Displays
+			returnScreen.pWidth = CGDisplayModeGetPixelWidth(m);
+			returnScreen.pHeight = CGDisplayModeGetPixelHeight(m);
+			break;
+		}
+	}
+	CFRelease(ms);
+
+	if (returnScreen.pWidth == 0 || returnScreen.pHeight == 0) {
+		// If there was no native resolution take a best fit approach and use the backing pixel size.
+		NSRect pSize = [nthScreen convertRectToBacking:nthScreen.frame];
+		returnScreen.pHeight = (int) pSize.size.height;
+		returnScreen.pWidth = (int) pSize.size.width;
+	}
 	return returnScreen;
 }
 
 */
 import "C"
+
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v2/internal/frontend"
 )
 
 func GetAllScreens(wailsContext unsafe.Pointer) ([]frontend.Screen, error) {
@@ -65,11 +96,21 @@ func GetAllScreens(wailsContext unsafe.Pointer) ([]frontend.Screen, error) {
 	for screeNum := 0; screeNum < numScreens; screeNum++ {
 		screenNumC := C.int(screeNum)
 		cScreen := C.GetNthScreen(screenNumC, wailsContext)
+
 		screen := frontend.Screen{
 			Height:    int(cScreen.height),
 			Width:     int(cScreen.width),
 			IsCurrent: cScreen.isCurrent == C.int(1),
 			IsPrimary: cScreen.isPrimary == C.int(1),
+
+			Size: frontend.ScreenSize{
+				Height: int(cScreen.height),
+				Width:  int(cScreen.width),
+			},
+			PhysicalSize: frontend.ScreenSize{
+				Height: int(cScreen.pHeight),
+				Width:  int(cScreen.pWidth),
+			},
 		}
 		screens = append(screens, screen)
 	}

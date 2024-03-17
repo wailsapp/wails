@@ -8,6 +8,7 @@ package webview
 
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
+#include <string.h>
 
 static void URLSchemeTaskRetain(void *wkUrlSchemeTask) {
 	id<WKURLSchemeTask> urlSchemeTask = (id<WKURLSchemeTask>) wkUrlSchemeTask;
@@ -44,9 +45,7 @@ static const char * URLSchemeTaskRequestHeadersJSON(void *wkUrlSchemeTask) {
 		NSString* headerString = [[[NSString alloc] initWithData:headerData encoding:NSUTF8StringEncoding] autorelease];
 		const char * headerJSON = [headerString UTF8String];
 
-		char * headersOut = malloc(strlen(headerJSON));
-		strcpy(headersOut, headerJSON);
-		return headersOut;
+		return strdup(headerJSON);
 	}
 }
 
@@ -118,11 +117,9 @@ import (
 )
 
 // NewRequest creates as new WebViewRequest based on a pointer to an `id<WKURLSchemeTask>`
-//
-// Please make sure to call Release() when finished using the request.
 func NewRequest(wkURLSchemeTask unsafe.Pointer) Request {
 	C.URLSchemeTaskRetain(wkURLSchemeTask)
-	return &request{task: wkURLSchemeTask}
+	return newRequestFinalizer(&request{task: wkURLSchemeTask})
 }
 
 var _ Request = &request{}
@@ -133,16 +130,6 @@ type request struct {
 	header http.Header
 	body   io.ReadCloser
 	rw     *responseWriter
-}
-
-func (r *request) AddRef() error {
-	C.URLSchemeTaskRetain(r.task)
-	return nil
-}
-
-func (r *request) Release() error {
-	C.URLSchemeTaskRelease(r.task)
-	return nil
 }
 
 func (r *request) URL() (string, error) {
@@ -203,6 +190,19 @@ func (r *request) Response() ResponseWriter {
 
 	r.rw = &responseWriter{r: r}
 	return r.rw
+}
+
+func (r *request) Close() error {
+	var err error
+	if r.body != nil {
+		err = r.body.Close()
+	}
+	err = r.Response().Finish()
+	if err != nil {
+		return err
+	}
+	C.URLSchemeTaskRelease(r.task)
+	return err
 }
 
 var _ io.ReadCloser = &requestBodyStreamReader{}

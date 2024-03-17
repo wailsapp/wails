@@ -1,0 +1,184 @@
+---
+slug: the-road-to-wails-v3
+title: A Estrada para Wails v3
+authors:
+  - leaanthony
+tags:
+  - wails
+  - v3
+---
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/blog/multiwindow.webp").default}
+    width="90%"
+  />
+</div>
+<br />
+```
+
+# Introdução
+
+Wails é um projeto que simplifica a capacidade de escrever aplicativos de desktop multiplataforma usando Ir. Ele usa componentes nativos do webview para o frontend (não os navegadores incorporados), trazendo o poder do sistema de interface de usuário mais popular do mundo, enquanto permanece leve.
+
+A versão 2 foi lançada no dia 22 de setembro de 2022 e trouxe uma série de aprimoramentos incluindo:
+
+- Desenvolvimento ao vivo, aproveitando o projeto popular Vite
+- Funcionalidade rica para gerenciar janelas e criar menus
+- Microsoft's WebView2 component
+- Geração de modelos de Typescript que espelham suas construções em Go
+- Criação do NSIS Installer
+- Compilações ofuscadas
+
+No momento, o Wails v2 fornece ferramentas poderosas para a criação de ‘desktops’ ricos e multiplataforma. Formulários. Ir.
+
+Este post de blog visa ver onde o projeto está no momento e o que podemos melhorar ao avançar.
+
+# Em que ponto estamos agora?
+
+Tem sido incrível ver a popularidade das Wails aumentar desde o lançamento v2. Estou constantemente maravilhados com a criatividade da comunidade e com as coisas maravilhosas que estão sendo construídas com ela. Com mais popularidade, vem mais olhos para o projeto. E com isso, mais solicitações de recursos e relatórios de bugs.
+
+Ao longo do tempo, consegui identificar alguns dos problemas mais prementes enfrentados pelo projeto. Eu também fui capaz de identificar algumas das coisas que estão segurando o projeto de volta.
+
+## Problemas atuais
+
+Eu identifiquei as seguintes áreas que sinto que estão segurando o projeto de volta:
+
+- A API
+- Geração de Atalhos
+- O Sistema de Compilação
+
+### A API
+
+A API para criar um aplicativo Wails atualmente consiste de 2 partes:
+
+- A API do Aplicativo
+- A API Runtime
+
+A aplicação API famosamente tem apenas 1 função: `Run()` que dá um monte de opções que governam como a aplicação vai funcionar. Embora isso seja muito simples de usar, é também muito limitado. É uma abordagem "declarativa" que esconde muita da complexidade subjacente. Por exemplo, não há nenhum identificador para a janela principal, então você não pode interagir diretamente com ele. Para isso, você precisa usar a API Runtime. Este é um problema quando você começar a fazer coisas mais complexas como criar múltiplas janelas.
+
+A API do Runtime fornece um monte de funções de utilidade para o desenvolvedor. Isso inclui:
+
+- Gestão de janelas
+- Caixa de diálogo
+- Menus
+- Eventos
+- Logs
+
+Há várias coisas que eu não estou feliz com a API de Runtime. O primeiro é que ele requer um "contexto" para ser passado. Isto é frustrante e confuso para novos desenvolvedores que passam em um contexto e depois recebem um erro de tempo de execução.
+
+O maior problema com a API de Runtime é que ela foi projetada para aplicativos que só usam uma única janela. Ao longo do tempo, a demanda por várias janelas cresceu e a API é não adequada a isso.
+
+### Pensamentos na API v3
+
+Não seria ótimo se pudéssemos fazer algo assim?
+
+```go
+func main() {
+    app := wails.NewApplication(options.App{})
+    myWindow := app.NewWindow(options.Window{})
+    myWindow.SetTitle("My Window")
+    myWindow.On(events.Window.Close, func() {
+        app.Quit()
+    })
+    app.Run()
+}
+```
+
+Esta abordagem programática é muito mais intuitiva e permite que o desenvolvedor interaja com os elementos do aplicativo diretamente. Todos os métodos atuais de tempo de execução para o windows seriam simplesmente métodos no objeto da janela. Para os outros métodos de execução, poderíamos mover eles para o objeto do aplicativo assim:
+
+```go
+app := wails.NewApplication(options.App{})
+app.NewInfoDialog(options.InfoDialog{})
+app.Log.Info("Hello World")
+```
+
+Esta é uma API muito mais poderosa que permitirá a criação de aplicações mais complexas. Ele também permite a criação de múltiplas janelas, [o recurso mais votado para cima no GitHub](https://github.com/wailsapp/wails/issues/1480):
+
+```go
+func main() {
+    app := wails.NewApplication(options.App{})
+    myWindow := app.NewWindow(options.Window{})
+    myWindow.SetTitle("My Window")
+    myWindow.On(events.Window.Close, func() {
+        app.Quit()
+    })
+    myWindow2 := app.NewWindow(options.Window{})
+    myWindow2.SetTitle("My Window 2")
+    myWindow2.On(events.Window.Close, func() {
+        app.Quit()
+    })
+    app.Run()
+}
+```
+
+### Geração de Atalhos
+
+Uma das principais características das Wails é gerar ligações para seus métodos Go para que possam ser chamadas a partir de Javascript. O método atual para fazer isso é um pouco hackeado. Ele envolve construir o aplicativo com uma bandeira especial e, em seguida, executar o binário resultante que usa reflexão para determinar o que foi vinculado. Isso leva a um pouco de galinha e ovo situação: você não pode construir o aplicativo sem as ligações e não pode gerar o vinculações sem compilar o aplicativo. Há muitas maneiras em torno disso, mas a melhor seria não usar essa abordagem de todo.
+
+Houve uma série de tentativas de escrever um analisador estático para projetos Wails, mas eles não chegaram muito longe. Em tempos mais recentes, tornou-se um pouco mais fácil fazer isso com mais material disponível sobre o assunto.
+
+Comparada à reflexão, a abordagem AST é muito mais rápida, porém é significativamente mais complicado. Para começar, podemos precisar impor certas restrições de como especificar ligações no código. O objetivo é suportar os casos de uso mais comuns e, em seguida, expandir mais tarde.
+
+### O Sistema de Compilação
+
+Como a abordagem declarativa para a API, o sistema de compilação foi criado para ocultar as complexidades da construção de um aplicativo desktop. Quando você executa `wails build`, ele faz um muitas coisas nos bastidores:
+- Constrói o binário de back-end para ligações e gera as ligações
+- Instala as dependências de frontend
+- Constrói os assets do frontend
+- Determina se o ícone da aplicação está presente e, se sim, incorpora-o
+- Constrói o binário final
+- Se a compilação for para `darwin/universal` compila 2 binários, um para `darwin/amd64` e um para `darwin/arm64` e então cria um binário gordo usando `lipo`
+- Se a compressão é necessária, ela compacta o binário com UPX
+- Determina se este binário deve ser empacotado e, se isso acontecer:
+  - Garante que o ícone e manifesto da aplicação são compilados em binário (Windows)
+  - Constrói o pacote de aplicativos, gera o pacote de ícones e copia-lo, o binário e o Info.plist para o pacote de aplicações (Mac)
+- Se um instalador do NSIS for necessário, ele será compilado
+
+Todo este processo, apesar de muito poderoso, é também muito opaco. É muito difícil personalize-o e é muito difícil de depurar.
+
+Para abordar esta questão na v3, gostaria de passar para um sistema de construção que existe fora das Wails. Depois de usar [Tarefa](https://taskfile.dev/) por um tempo, eu sou um grande fã dela. É uma ótima ferramenta para configurar sistemas de construção e deve ser razoavelmente familiar para qualquer um que tenha usado Makefiles.
+
+O sistema de compilação seria configurado usando um arquivo `Taskfile.yml` que seria gerado por padrão com qualquer um dos modelos suportados. Isto teria todas as etapas necessárias para realizar todas as tarefas atuais, como construir ou embalar a aplicação, permitindo fácil personalização.
+
+É muito difícil personalizar e é muito difícil de purificar. Isso significa que você ainda pode usar `wails build` e ele fará tudo o que faz hoje. No entanto, se você deseja personalizar o processo de construção, você pode fazê-lo editando o arquivo `Taskfile.yml`. Isso também significa que você pode facilmente entender as etapas de compilação e usar seu próprio sistema de compilação se desejar.
+
+A peça que falta no quebra-cabeça da construção são as operações atómicas no processo de construção, como geração, compactação e empacotamento de ícones. Para exigir um monte de ferramentas externas não seria uma ótima experiência para o desenvolvedor. Para resolver isso, a CLI do Wails fornecerá todos esses recursos como parte da CLI. Isso significa que as compilações ainda funcionam como esperado, sem ferramenta externa extra, no entanto você pode substituir qualquer passo da compilação por qualquer ferramenta que você goste.
+
+Este será um sistema de compilação muito mais transparente que permitirá uma personalização mais fácil e resolverá muitas das questões que foram levantadas em torno dele.
+
+## A Recompensa
+
+Estas mudanças positivas serão um grande benefício para o projeto:
+- A nova API será muito mais intuitiva e permitirá a criação de aplicativos mais complexos.
+- Usar análise estática para geração de ligações será muito mais rápido e reduzirá muito da complexidade em torno do processo atual.
+- Usando um sistema de compilação externa estabelecido tornará o processo de construção completamente transparente, permitindo uma personalização poderosa.
+
+Os benefícios para os mantenedores do projeto são:
+
+- A nova API será muito mais fácil de manter e adaptar a novos recursos e plataformas.
+- O novo sistema de construção será muito mais fácil de manter e alargar. Espero que isto conduza a um novo ecossistema de gasodutos de construção orientados pela comunidade.
+- Melhor separação das preocupações no âmbito do projecto. Isso facilitará a adição de novos recursos e plataformas.
+
+## O Plano
+
+Muitos dos experimentos já foram feitos e estão bons. Não há um cronograma atual para este trabalho, mas espero que até o final do primeiro trimestre de 2023, haja será uma versão alfa para Mac para permitir que a comunidade teste, experimente e dar uma resposta.
+
+## Resumo
+
+- A API v2 é declarativa, esconde muito do desenvolvedor e não é adequada para recursos, como múltiplas janelas. Será criada uma nova API que será mais simples, intuitiva e mais poderosa.
+- O sistema de construção é opaco e difícil de personalizar, pelo que passaremos a um sistema de construção externa que o irá abrir.
+- A geração de bindings é lenta e complexa, pelo que avançaremos para uma análise estática, que removerá grande parte da complexidade do método atual.
+
+Tem havido muito trabalho colocado nas entranhas da v2 e é sólido. Agora é hora de abordar a camada acima dela e torná-la uma experiência muito melhor para o desenvolvedor.
+
+Espero que você esteja tão empolgado com isso quanto eu. Estou ansioso em ouvir os seus pensamentos e sugestões.
+
+Cumprimentos,
+
+&dash; Lea
+
+PS: Se você ou sua empresa consideram o Wails útil, considere [patrocinar o projeto](https://github.com/sponsors/leaanthony). Obrigado!
+
+PPS: Sim, esse é um genuíno screenshot de um aplicativo com várias janelas construído com Wails. Não é uma simulação. É real. É impressionante. Está chegando.

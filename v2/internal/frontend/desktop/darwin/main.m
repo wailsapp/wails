@@ -203,6 +203,7 @@ int main(int argc, const char * argv[]) {
     // insert code here...
     int frameless = 0;
     int resizable = 1;
+    int zoomable = 0;
     int fullscreen = 1;
     int fullSizeContent = 1;
     int hideTitleBar = 0;
@@ -215,10 +216,11 @@ int main(int argc, const char * argv[]) {
     int hideWindowOnClose = 0;
     const char* appearance = "NSAppearanceNameDarkAqua";
     int windowIsTranslucent = 1;
-    int debug = 1;
+    int devtoolsEnabled = 1;
+    int defaultContextMenuEnabled = 1;
     int windowStartState = 0;
     int startsHidden = 0;
-    WailsContext *result = Create("OI OI!",400,400, frameless,  resizable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug, windowStartState,
+    WailsContext *result = Create("OI OI!",400,400, frameless, resizable, zoomable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenuEnabled, windowStartState,
                                   startsHidden, 400, 400, 600, 600, false);
     SetBackgroundColour(result, 255, 0, 0, 255);
     void *m = NewMenu("");

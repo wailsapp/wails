@@ -24,8 +24,8 @@
   <a href="https://github.com/avelino/awesome-go" rel="nofollow">
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
   </a>
-  <a href="https://app.slack.com/client/T029RQSE6/CJ4P9F7MZ">
-    <img alt="Slack" src="https://img.shields.io/badge/slack-gophers%2Fwails%20-blue?logo=slack"/>
+  <a href="https://discord.gg/BrRSWTaxVK">
+    <img alt="Discord" src="https://dcbadge.vercel.app/api/server/BrRSWTaxVK?style=flat"/>
   </a>
   <br/>
   <a href="https://github.com/wailsapp/wails/actions/workflows/build-and-test.yml" rel="nofollow">
@@ -40,7 +40,9 @@
 <strong>
 <samp>
 
-[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
+[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
+[한국어](README.ko.md) · [Español](README.es.md) · [Português](README.pt-br.md) ·
+[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md)
 
 </samp>
 </strong>
@@ -55,6 +57,7 @@
 - [Getting Started](#getting-started)
 - [Sponsors](#sponsors)
 - [FAQ](#faq)
+- [Stargazers over time](#stargazers-over-time)
 - [Contributors](#contributors)
 - [License](#license)
 - [Inspiration](#inspiration)
@@ -91,12 +94,13 @@ The installation instructions are on the [official website](https://wails.io/doc
 
 ## Sponsors
 
-
 This project is supported by these kind people / companies:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
+
 <p align="center">
 <img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
+
 ## FAQ
 
 - Is this an alternative to Electron?
@@ -118,7 +122,13 @@ This project is supported by these kind people / companies:
 
 ## Stargazers over time
 
-[![Star History Chart](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
+<a href="https://star-history.com/#wailsapp/wails&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
+  </picture>
+</a>
 
 ## Contributors
 

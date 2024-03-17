@@ -42,14 +42,13 @@ func (c *Command) Run() error {
 func (c *Command) Stdout() string {
 	return c.stdo.String()
 }
+
 func (c *Command) Stderr() string {
 	return c.stde.String()
 }
 
 func (c *Command) AddArgs(args []string) {
-	for _, arg := range args {
-		c.args = append(c.args, arg)
-	}
+	c.args = append(c.args, args...)
 }
 
 // CreateCommand returns a *Cmd struct that when run, will run the given command + args in the given directory
@@ -95,8 +94,5 @@ func RunCommandVerbose(directory string, command string, args ...string) error {
 // CommandExists returns true if the given command can be found on the shell
 func CommandExists(name string) bool {
 	_, err := exec.LookPath(name)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }

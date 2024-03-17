@@ -18,7 +18,6 @@ type Watcher interface {
 
 // initialiseWatcher creates the project directory watcher that will trigger recompile
 func initialiseWatcher(cwd string) (*fsnotify.Watcher, error) {
-
 	// Ignore dot files, node_modules and build directories by default
 	ignoreDirs := getIgnoreDirs(cwd)
 
@@ -38,21 +37,22 @@ func initialiseWatcher(cwd string) (*fsnotify.Watcher, error) {
 		if err != nil {
 			return nil, err
 		}
-		println("watching: " + dir)
 	}
 	return watcher, nil
 }
 
 func getIgnoreDirs(cwd string) []string {
 	ignoreDirs := []string{filepath.Join(cwd, "build/*"), ".*", "node_modules"}
-
+	baseDir := filepath.Base(cwd)
 	// Read .gitignore into ignoreDirs
 	f, err := os.Open(filepath.Join(cwd, ".gitignore"))
 	if err == nil {
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
 			line := scanner.Text()
-			ignoreDirs = append(ignoreDirs, line)
+			if line != baseDir {
+				ignoreDirs = append(ignoreDirs, line)
+			}
 		}
 	}
 

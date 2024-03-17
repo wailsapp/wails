@@ -48,8 +48,21 @@ const (
 type Screen struct {
 	IsCurrent bool `json:"isCurrent"`
 	IsPrimary bool `json:"isPrimary"`
-	Width     int  `json:"width"`
-	Height    int  `json:"height"`
+
+	// Deprecated: Please use Size and PhysicalSize
+	Width int `json:"width"`
+	// Deprecated: Please use Size and PhysicalSize
+	Height int `json:"height"`
+
+	// Size is the size of the screen in logical pixel space, used when setting sizes in Wails
+	Size ScreenSize `json:"size"`
+	// PhysicalSize is the physical size of the screen in pixels
+	PhysicalSize ScreenSize `json:"physicalSize"`
+}
+
+type ScreenSize struct {
+	Width  int `json:"width"`
+	Height int `json:"height"`
 }
 
 // MessageDialogOptions contains the options for the Message dialogs, EG Info, Warning, etc runtime methods
@@ -64,7 +77,7 @@ type MessageDialogOptions struct {
 }
 
 type Frontend interface {
-	Run(context.Context) error
+	Run(ctx context.Context) error
 	RunMainLoop()
 	ExecJS(js string)
 	Hide()
@@ -108,8 +121,9 @@ type Frontend interface {
 	WindowIsNormal() bool
 	WindowIsFullscreen() bool
 	WindowClose()
+	WindowPrint()
 
-	//Screen
+	// Screen
 	ScreenGetAll() ([]Screen, error)
 
 	// Menus

@@ -1,4 +1,4 @@
-//go:build darwin && (dev || debug)
+//go:build darwin && (dev || debug || devtools)
 
 package darwin
 
@@ -11,6 +11,8 @@ package darwin
 #import <Foundation/Foundation.h>
 #import "WailsContext.h"
 
+extern void processMessage(const char *message);
+
 @interface _WKInspector : NSObject
 - (void)show;
 - (void)detach;
@@ -21,34 +23,55 @@ package darwin
 @end
 
 void showInspector(void *inctx) {
-	if (@available(macOS 12.0, *)) {
-		WailsContext *ctx = (__bridge WailsContext*) inctx;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120000
+    ON_MAIN_THREAD(
+		if (@available(macOS 12.0, *)) {
+			WailsContext *ctx = (__bridge WailsContext*) inctx;
 
-		@try {
-			[ctx.webview._inspector show];
-		} @catch (NSException *exception) {
-			NSLog(@"Opening the inspector failed: %@", exception.reason);
-			return;
-		}
-
-		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC);
-		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-			// Detach must be deferred a little bit and is ignored directly after a show.
 			@try {
-				[ctx.webview._inspector detach];
+				[ctx.webview._inspector show];
 			} @catch (NSException *exception) {
-				NSLog(@"Detaching the inspector failed: %@", exception.reason);
+				NSLog(@"Opening the inspector failed: %@", exception.reason);
+				return;
 			}
-		});
-	} else {
-		NSLog(@"Opening the inspector needs at least MacOS 12");
-	}
+
+			dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC);
+			dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+				// Detach must be deferred a little bit and is ignored directly after a show.
+				@try {
+					[ctx.webview._inspector detach];
+				} @catch (NSException *exception) {
+					NSLog(@"Detaching the inspector failed: %@", exception.reason);
+				}
+			});
+		} else {
+			NSLog(@"Opening the inspector needs at least MacOS 12");
+		}
+    );
+#endif
+}
+
+void setupF12hotkey() {
+	[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
+		if (event.keyCode == 111 &&
+				event.modifierFlags & NSEventModifierFlagFunction &&
+				event.modifierFlags & NSEventModifierFlagCommand &&
+				event.modifierFlags & NSEventModifierFlagShift) {
+			processMessage("wails:openInspector");
+			return nil;
+		}
+		return event;
+	}];
 }
 */
 import "C"
 import (
 	"unsafe"
 )
+
+func init() {
+	C.setupF12hotkey()
+}
 
 func showInspector(context unsafe.Pointer) {
 	C.showInspector(context)

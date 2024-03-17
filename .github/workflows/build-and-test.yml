@@ -2,7 +2,7 @@ name: Build + Test v2
 
 on:
   push:
-    branches: [release/*, master]
+    branches: [release/*, master, bugfix/*]
   workflow_dispatch:
 
 jobs:
@@ -12,31 +12,32 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        go-version: [1.18, 1.19]
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-11]
+        go-version: ['1.20']
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install linux dependencies
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
 
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
+          cache-dependency-path: ./v2/go.sum
 
       - name: Run tests (mac)
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-latest' || matrix.os == 'macos-11'
         env:
           CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
         working-directory: ./v2
         run: go test -v ./...
 
       - name: Run tests (!mac)
-        if: matrix.os != 'macos-latest'
+        if: matrix.os != 'macos-latest' && matrix.os != 'macos-11'
         working-directory: ./v2
         run: go test -v ./...
 
@@ -50,7 +51,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -89,15 +90,16 @@ jobs:
             vanilla-ts,
             plain,
           ]
-        go-version: [1.18, 1.19]
+        go-version: ['1.20']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
+          cache-dependency-path: ./v2/go.sum
 
       - name: Build Wails CLI
         run: |

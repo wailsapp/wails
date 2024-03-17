@@ -1,0 +1,184 @@
+---
+slug: the-road-to-wails-v3
+title: Wails v3 ロードマップ
+authors:
+  - leaanthony
+tags:
+  - wails
+  - v3
+---
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/blog/multiwindow.webp").default}
+    width="90%"
+  />
+</div>
+<br />
+```
+
+# イントロダクション
+
+Wailsは、Goを使用してクロスプラットフォームなデスクトップアプリケーションを簡単に開発できるようにするプロジェクトです。 フロントエンドに (埋め込みブラウザではなく) ネイティブなWebViewコンポーネントを採用し、軽量でありながら、世界で最も人気のあるUIシステムのパワーをGoにもたらしています。
+
+バージョン2は2022年9月22日にリリースされ、次のような多くの機能強化が行われました:
+
+- ポピュラーなViteプロジェクトを活用したライブ開発
+- ウィンドウの管理やメニュー作成のための豊富な機能
+- MicrosoftのWebView2の採用
+- Go構造体をミラーリングしたTypeScript型定義の生成
+- NSISインストーラの作成
+- 難読化ビルド
+
+現在、Wails v2は、リッチでクロスプラットフォームなデスクトップアプリケーションを作成するための、強力なツールを提供しています。
+
+この記事は、プロジェクトが現在どのような状況にあるのか、そして、今後どう改善していくべきなのかを検討するために投稿されました。
+
+# 私たちは今どういう状況なのか?
+
+v2をリリースして以降、信じられないほどWailsの人気は上昇しています。 コミュニティの創造性と、それをもとに構築された素晴らしいものには、私はいつも驚かされています。 人気が高まるにつれて、このプロジェクトへの注目度も高まっています。 よって、機能リクエストやバグレポートの件数も増えてきています。
+
+時間が経つにつれて、私は、プロジェクトが直面しているいくつかの重要な課題を特定することができました。 また、プロジェクトの進行を妨げている要因についても特定することができました。
+
+## 現在の課題
+
+プロジェクトの妨げになっていると考えられる要素は次のとおりです:
+
+- API
+- バインディングの生成
+- ビルドシステム
+
+### API
+
+Wailsのアプリケーションを構築するためのAPIは、現在、2つの種類で構成されています:
+
+- アプリケーションAPI
+- ランタイムAPI
+
+ご存じのとおり、アプリケーションAPIは`Run()`という1つの関数しかなく、アプリケーションの動作を制御するたくさんのオプションを引数で指定します。 これはシンプルで使いやすい反面、制限の多々あります。 要因としてあるのは、これが根本的な複雑さを隠してしまう"宣言的"アプローチであるという点です。 たとえば、メインウィンドウのハンドルが存在しないため、メインウィンドウを直接操作することはできません。 操作するには、ランタイムAPIを使用する必要があります。 この仕様は、複数のウィンドウを作成するときなど、より複雑なことをしたいときに課題となります。
+
+ランタイムAPIは、開発者に多くのユーティリティ関数を提供します。 次のようなものです:
+
+- ウィンドウ管理
+- ダイアログ
+- メニュー
+- イベント
+- ログ
+
+ランタイムAPIには、不満な点がいくつかあります。 その1つは、"context"を渡す必要があるということです。 これは、contextを渡して実行時エラーを発生させてしまう新しい開発者をイライラさせるだけでなく、混乱を招くもとでもあります。
+
+そして、ランタイムAPIの最大の問題は、APIが1つのウィンドウのみを使用するアプリケーション向けに設計されているということです。 時が経つにつれて、複数ウィンドウに対する需要は多くなってきており、現在のAPIはこれにあまり適していません。
+
+### v3 APIの考え方
+
+こんなことができたら素晴らしいと思いませんか?
+
+```go
+func main() {
+    app := wails.NewApplication(options.App{})
+    myWindow := app.NewWindow(options.Window{})
+    myWindow.SetTitle("My Window")
+    myWindow.On(events.Window.Close, func() {
+        app.Quit()
+    })
+    app.Run()
+}
+```
+
+この手続き型のアプローチははるかに直感的で、開発者はアプリケーションの要素を直接操作することができます。 ウィンドウ向けのすべてのランタイムメソッドは、単純なウィンドウオブジェクトのメソッドにかわります。 他のランタイムメソッドは、次のようにアプリケーションオブジェクトに移動されます:
+
+```go
+app := wails.NewApplication(options.App{})
+app.NewInfoDialog(options.InfoDialog{})
+app.Log.Info("Hello World")
+```
+
+これは、より複雑なアプリケーションの構築を可能にする、より強力なAPIとなります。 そして、[GitHubで最も待ち望まれていた機能である](https://github.com/wailsapp/wails/issues/1480)、複数のウィンドウの作成も可能となります:
+
+```go
+func main() {
+    app := wails.NewApplication(options.App{})
+    myWindow := app.NewWindow(options.Window{})
+    myWindow.SetTitle("My Window")
+    myWindow.On(events.Window.Close, func() {
+        app.Quit()
+    })
+    myWindow2 := app.NewWindow(options.Window{})
+    myWindow2.SetTitle("My Window 2")
+    myWindow2.On(events.Window.Close, func() {
+        app.Quit()
+    })
+    app.Run()
+}
+```
+
+### バインディングの生成
+
+One of the key features of Wails is generating bindings for your Go methods so they may be called from Javascript. The current method for doing this is a bit of a hack. It involves building the application with a special flag and then running the resultant binary which uses reflection to determine what has been bound. This leads to a bit of a chicken and egg situation: You can't build the application without the bindings and you can't generate the bindings without building the application. There are many ways around this but the best one would be not to use this approach at all.
+
+There was a number of attempts at writing a static analyser for Wails projects but they didn't get very far. In more recent times, it has become slightly easier to do this with more material available on the subject.
+
+Compared to reflection, the AST approach is much faster however it is significantly more complicated. To start with, we may need to impose certain constraints on how to specify bindings in the code. The goal is to support the most common use cases and then expand it later on.
+
+### ビルドシステム
+
+Like the declarative approach to the API, the build system was created to hide the complexities of building a desktop application. When you run `wails build`, it does a lot of things behind the scenes:
+- Builds the backend binary for bindings and generates the bindings
+- Installs the frontend dependencies
+- Builds the frontend assets
+- Determines if the application icon is present and if so, embeds it
+- Builds the final binary
+- If the build is for `darwin/universal` it builds 2 binaries, one for `darwin/amd64` and one for `darwin/arm64` and then creates a fat binary using `lipo`
+- If compression is required, it compresses the binary with UPX
+- Determines if this binary is to be packaged and if so:
+  - Ensures the icon and application manifest are compiled into the binary (Windows)
+  - Builds out the application bundle, generates the icon bundle and copies it, the binary and Info.plist to the application bundle (Mac)
+- If an NSIS installer is required, it builds it
+
+This entire process, whilst very powerful, is also very opaque. It is very difficult to customise it and it is very difficult to debug.
+
+To address this in v3, I would like to move to a build system that exists outside of Wails. After using [Task](https://taskfile.dev/) for a while, I am a big fan of it. It is a great tool for configuring build systems and should be reasonably familiar to anyone who has used Makefiles.
+
+The build system would be configured using a `Taskfile.yml` file which would be generated by default with any of the supported templates. This would have all of the steps required to do all the current tasks, such as building or packaging the application, allowing for easy customisation.
+
+There will be no external requirement for this tooling as it would form part of the Wails CLI. This means that you can still use `wails build` and it will do all the things it does today. However, if you want to customise the build process, you can do so by editing the `Taskfile.yml` file. It also means you can easily understand the build steps and use your own build system if you wish.
+
+The missing piece in the build puzzle is the atomic operations in the build process, such as icon generation, compression and packaging. To require a bunch of external tooling would not be a great experience for the developer. To address this, the Wails CLI will provide all these capabilities as part of the CLI. This means that the builds still work as expected, with no extra external tooling, however you can replace any step of the build with any tool you like.
+
+This will be a much more transparent build system which will allow for easier customisation and address a lot of the issues that have been raised around it.
+
+## The Payoff
+
+These positive changes will be a huge benefit to the project:
+- The new API will be much more intuitive and will allow for more complex applications to be built.
+- Using static analysis for bindings generation will be much faster and reduce a lot of the complexity around the current process.
+- Using an established, external build system will make the build process completely transparent, allowing for powerful customisation.
+
+Benefits to the project maintainers are:
+
+- The new API will be much easier to maintain and adapt to new features and platforms.
+- The new build system will be much easier to maintain and extend. I hope this will lead to a new ecosystem of community driven build pipelines.
+- Better separation of concerns within the project. This will make it easier to add new features and platforms.
+
+## 計画
+
+A lot of the experimentation for this has already been done and it's looking good. There is no current timeline for this work but I'm hoping by the end of Q1 2023, there will be an alpha release for Mac to allow the community to test, experiment with and provide feedback.
+
+## まとめ
+
+- The v2 API is declarative, hides a lot from the developer and not suitable for features such as multiple windows. A new API will be created which will be simpler, intuitive and more powerful.
+- The build system is opaque and difficult to customise so we will move to an external build system which will open it all up.
+- The bindings generation is slow and complex so we will move to static analysis which will remove a lot of the complexity the current method has.
+
+There has been a lot of work put into the guts of v2 and it's solid. It's now time to address the layer on top of it and make it a much better experience for the developer.
+
+I hope you are as excited about this as I am. I'm looking forward to hearing your thoughts and feedback.
+
+Regards,
+
+&dash; Lea
+
+PS: If you or your company find Wails useful, please consider [sponsoring the project](https://github.com/sponsors/leaanthony). Thanks!
+
+PPS: Yes, that's a genuine screenshot of a multi-window application built with Wails. It's not a mockup. It's real. It's awesome. It's coming soon.

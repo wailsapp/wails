@@ -50,11 +50,14 @@ func main() {
         OnBeforeClose:      app.beforeClose,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        EnableDefaultContextMenu: false,
+        EnableFraudulentWebsiteDetection: false,
         ZoomFactor:           1.0,
         IsZoomControlEnabled: false,
         Bind: []interface{}{
             app,
         },
+        ErrorFormatter: func(err error) any { return err.Error() },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
@@ -77,7 +80,8 @@ func main() {
             // OnSuspend is called when Windows enters low power mode
             OnSuspend func()
             // OnResume is called when Windows resumes from low power mode
-            OnResume func()
+            OnResume func(),
+            WebviewGpuDisabled: false,
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -100,6 +104,8 @@ func main() {
         Linux: &linux.Options{
             Icon: icon,
             WindowIsTranslucent: false,
+            WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
+            ProgramName: "wails"
         },
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
@@ -231,12 +237,12 @@ Not all features of an `http.Request` are currently supported, please see the fo
 | PATCH                   | ✅   | ✅   | ✅ [^1] |
 | DELETE                  | ✅   | ✅   | ✅ [^1] |
 | Request Headers         | ✅   | ✅   | ✅ [^1] |
-| Request Body            | ✅   | ✅   | ❌      |
-| Request Body Streaming  | ❌   | ❌   | ❌      |
+| Request Body            | ✅   | ✅   | ✅ [^2] |
+| Request Body Streaming  | ✅   | ✅   | ✅ [^2] |
 | Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
 | Response Headers        | ✅   | ✅   | ✅ [^1] |
 | Response Body           | ✅   | ✅   | ✅      |
-| Response Body Streaming | ❌   | ❌   | ✅      |
+| Response Body Streaming | ❌   | ✅   | ✅      |
 | WebSockets              | ❌   | ❌   | ❌      |
 | HTTP Redirects 30x      | ✅   | ❌   | ❌      |
 
@@ -356,6 +362,39 @@ Indicates what value the `CSSDragProperty` style should have to drag the window.
 
 Name: CSSDragValue<br/> Type: `string`
 
+### EnableDefaultContextMenu
+
+EnableDefaultContextMenu enables the browser's default context-menu in production.
+
+By default, the browser's default context-menu is only available in development and in a `-debug` [build](../reference/cli.mdx#build) along with the devtools inspector, Using this option you can enable the default context-menu in `production` while the devtools inspector won't be available unless the `-devtools` build flag is used.
+
+When this option is enabled, by default the context-menu will only be shown for text contexts (where Cut/Copy/Paste is needed), to override this behavior, you can use the CSS property `--default-contextmenu` on any HTML element (including the `body`) with the following values :
+
+| CSS Style                      | Behavior                                                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--default-contextmenu: auto;` | (**default**) will show the default context menu only if :<br/> contentEditable is true OR text has been selected OR element is input or textarea |
+| `--default-contextmenu: show;` | will always show the default context menu                                                                                                               |
+| `--default-contextmenu: hide;` | will always hide the default context menu                                                                                                               |
+
+This rule is inherited like any normal CSS rule, so nesting works as expected.
+
+:::note
+This filtering functionality is only enabled in production, so in development and in debug build, the full context-menu is always available everywhere.
+:::
+
+:::warning
+This filtering functionality is NOT a security measure, the developer should expect that the full context-menu could be leaked anytime which could contain commands like (Download image, Reload, Save webpage), if this is a concern, the developer SHOULD NOT enable the default context-menu.
+:::
+
+
+Name: EnableDefaultContextMenu<br/> Type: `bool`
+
+### EnableFraudulentWebsiteDetection
+
+EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts. These services might send information from your app like URLs navigated to and possibly other content to cloud services of Apple and Microsoft.
+
+Name: EnableFraudulentWebsiteDetection<br/> Type: `bool`
+
 ### ZoomFactor
 
 Name: ZoomFactor<br/> Type: `float64`
@@ -373,6 +412,12 @@ This enables the zoom factor to be changed by the user. Please note that the zoo
 A slice of struct instances defining methods that need to be bound to the frontend.
 
 Name: Bind<br/> Type: `[]interface{}`
+
+### ErrorFormatter
+
+A function that determines how errors are formatted when returned by a JS-to-Go method call. The returned value will be marshalled as JSON.
+
+Name: ErrorFormatter<br/> Type: `func (error) any`
 
 ### Windows
 
@@ -542,6 +587,18 @@ If set, this function will be called when Windows resumes from low power mode (s
 
 Name: OnResume<br/> Type: `func()`
 
+#### WebviewGpuIsDisabled
+
+Setting this to `true` will disable GPU hardware acceleration for the webview.
+
+Name: WebviewGpuIsDisabled<br/> Type: `bool`
+
+#### EnableSwipeGestures
+
+Setting this to `true` will enable swipe gestures for the webview.
+
+Name: EnableSwipeGestures<br/> Type: `bool`
+
 ### Mac
 
 This defines [Mac specific options](#mac).
@@ -637,6 +694,42 @@ Setting this to `true` will make the window background translucent. Often combin
 
 Name: WindowIsTranslucent<br/> Type: `bool`
 
+#### Preferences
+
+The Preferences struct provides the ability to configure the Webview preferences.
+
+Name: Preferences<br/> Type: [`*mac.Preferences`](#preferences-struct)
+
+##### Preferences struct
+
+You can specify the webview preferences.
+
+```go
+type Preferences struct {
+    TabFocusesLinks        u.Bool
+    TextInteractionEnabled u.Bool
+    FullscreenEnabled      u.Bool 
+}
+```
+
+| Name                   | Description                                                                                                                                                                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TabFocusesLinks        | A Boolean value that indicates whether pressing the tab key changes the focus to links and form controls. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/2818595-tabfocuseslinks?language=objc) |
+| TextInteractionEnabled | A Boolean value that indicates whether to allow people to select or otherwise interact with text. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3727362-textinteractionenabled?language=objc)  |
+| FullscreenEnabled      | A Boolean value that indicates whether a web view can display content full screen. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3917769-elementfullscreenenabled?language=objc)               |
+
+Example:
+
+```go
+Mac: &mac.Options{
+    Preferences: &mac.Preferences{
+        TabFocusesLinks:        mac.Enabled,
+        TextInteractionEnabled: mac.Disabled,
+        FullscreenEnabled:      mac.Enabled,
+    }
+}
+```
+
 #### About
 
 This configuration lets you set the title, message and icon for the "About" menu item in the app menu created by the "AppMenu" role.
@@ -722,6 +815,28 @@ Setting this to `true` will make the window background translucent. Some window 
 
 Name: WindowIsTranslucent<br/> Type: `bool`
 
+#### WebviewGpuPolicy
+
+This option is used for determining the webview's hardware acceleration policy.
+
+Name: WebviewGpuPolicy<br/> Type: [`options.WebviewGpuPolicy`](#webviewgpupolicy-type)<br/> Default: `WebviewGpuPolicyAlways`
+
+##### WebviewGpuPolicy type
+
+| Value                    | Description                                                          |
+| ------------------------ | -------------------------------------------------------------------- |
+| WebviewGpuPolicyAlways   | Hardware acceleration is always enabled                              |
+| WebviewGpuPolicyOnDemand | Hardware acceleration is enabled/disabled as request by web contents |
+| WebviewGpuPolicyNever    | Hardware acceleration is always disabled                             |
+
+#### ProgramName
+
+This option is used to set the program's name for the window manager via GTK's g_set_prgname(). This name should not be localized, [see the docs](https://docs.gtk.org/glib/func.set_prgname.html).
+
+When a .desktop file is created this value helps with window grouping and desktop icons when the .desktop file's `Name` property differs form the executable's filename.
+
+Name: ProgramName<br/> Type: string<br/>
+
 ### Debug
 
 This defines [Debug specific options](#Debug) that apply to debug builds.
@@ -734,4 +849,5 @@ Setting this to `true` will open the WebInspector on startup of the application.
 
 Name: OpenInspectorOnStartup<br/> Type: `bool`
 
-[^1]: This requires WebKit2GTK 2.36+ support and your app needs to be build with the  build tag `webkit2_36` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.36 for your app.
+[^1]: This requires WebKit2GTK 2.36+ support and your app needs to be build with the build tag `webkit2_36` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.36 for your app.
+[^2]: This requires WebKit2GTK 2.40+ support and your app needs to be build with the build tag `webkit2_40` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.40 for your app.

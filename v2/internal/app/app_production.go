@@ -34,7 +34,9 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	options.MergeDefaults(appoptions)
 
 	debug := IsDebug()
+	devtoolsEnabled := IsDevtoolsEnabled()
 	ctx = context.WithValue(ctx, "debug", debug)
+	ctx = context.WithValue(ctx, "devtoolsEnabled", devtoolsEnabled)
 
 	// Set up logger
 	myLogger := logger.New(appoptions.Logger)
@@ -70,7 +72,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		appoptions.OnDomReady,
 		appoptions.OnBeforeClose,
 	}
-	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions, IsObfuscated())
+	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions, IsObfuscated(), appoptions.EnumBind)
 	eventHandler := runtime.NewEvents(myLogger)
 	ctx = context.WithValue(ctx, "events", eventHandler)
 	// Attach logger to context
@@ -80,7 +82,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		ctx = context.WithValue(ctx, "buildtype", "production")
 	}
 
-	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler)
+	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler, appoptions.ErrorFormatter)
 	appFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)
 	eventHandler.AddFrontend(appFrontend)
 
@@ -93,6 +95,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		startupCallback:  appoptions.OnStartup,
 		shutdownCallback: appoptions.OnShutdown,
 		debug:            debug,
+		devtoolsEnabled:  devtoolsEnabled,
 		options:          appoptions,
 	}
 

@@ -4,7 +4,7 @@
 package system
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webviewloader"
+	"github.com/wailsapp/go-webview2/webviewloader"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 )
@@ -19,6 +19,7 @@ func (i *Info) discover() error {
 	i.OS = osinfo
 
 	i.Dependencies = append(i.Dependencies, checkWebView2())
+	i.Dependencies = append(i.Dependencies, checkNodejs())
 	i.Dependencies = append(i.Dependencies, checkNPM())
 	i.Dependencies = append(i.Dependencies, checkUPX())
 	i.Dependencies = append(i.Dependencies, checkNSIS())

@@ -26,8 +26,8 @@
   <a href="https://github.com/avelino/awesome-go" rel="nofollow">
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
   </a>
-  <a href="https://app.slack.com/client/T029RQSE6/CJ4P9F7MZ">
-    <img alt="Slack" src="https://img.shields.io/badge/slack-gophers%2Fwails%20-blue?logo=slack"/>
+  <a href="https://discord.gg/BrRSWTaxVK">
+    <img alt="Discord" src="https://dcbadge.vercel.app/api/server/BrRSWTaxVK?style=flat"/>
   </a>
   <br/>
   <a href="https://github.com/wailsapp/wails/actions/workflows/build-and-test.yml" rel="nofollow">
@@ -42,7 +42,9 @@
 <strong>
 <samp>
 
-[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
+[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
+[한국어](README.ko.md) · [Español](README.es.md) · [Português](README.pt-br.md) ·
+[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md)
 
 </samp>
 </strong>
@@ -57,6 +59,7 @@
 - [시작하기](#시작하기)
 - [스폰서](#스폰서)
 - [FAQ](#faq)
+- [Stargazers 성장 추세](#stargazers-성장-추세)
 - [기여자](#기여자)
 - [라이센스](#라이센스)
 - [영감](#영감)

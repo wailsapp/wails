@@ -2,14 +2,15 @@ package flags
 
 import (
 	"fmt"
-	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v2/internal/project"
-	"github.com/wailsapp/wails/v2/pkg/commands/build"
 	"net"
 	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/internal/project"
+	"github.com/wailsapp/wails/v2/pkg/commands/build"
 )
 
 type Dev struct {
@@ -21,6 +22,7 @@ type Dev struct {
 	Browser              bool   `flag:"browser" description:"Open the application in a browser"`
 	NoReload             bool   `flag:"noreload" description:"Disable reload on asset change"`
 	NoColour             bool   `flag:"nocolor" description:"Disable colour in output"`
+	NoGoRebuild          bool   `flag:"nogorebuild" description:"Disable automatic rebuilding on backend file changes/additions"`
 	WailsJSDir           string `flag:"wailsjsdir" description:"Directory to generate the Wails JS modules"`
 	LogLevel             string `flag:"loglevel" description:"LogLevel to use - Trace, Debug, Info, Warning, Error)"`
 	ForceBuild           bool   `flag:"f" description:"Force build of application"`
@@ -45,7 +47,6 @@ func (*Dev) Default() *Dev {
 }
 
 func (d *Dev) Process() error {
-
 	var err error
 	err = d.loadAndMergeProjectConfig()
 	if err != nil {
@@ -111,7 +112,6 @@ func (d *Dev) loadAndMergeProjectConfig() error {
 	}
 
 	return nil
-
 }
 
 // GenerateBuildOptions creates a build.Options using the flags
@@ -119,6 +119,7 @@ func (d *Dev) GenerateBuildOptions() *build.Options {
 	result := &build.Options{
 		OutputType:     "dev",
 		Mode:           build.Dev,
+		Devtools:       true,
 		Arch:           runtime.GOARCH,
 		Pack:           true,
 		Platform:       runtime.GOOS,
@@ -126,6 +127,7 @@ func (d *Dev) GenerateBuildOptions() *build.Options {
 		Compiler:       d.Compiler,
 		ForceBuild:     d.ForceBuild,
 		IgnoreFrontend: d.SkipFrontend,
+		SkipBindings:   d.SkipBindings,
 		Verbosity:      d.Verbosity,
 		WailsJSDir:     d.WailsJSDir,
 		RaceDetector:   d.RaceDetector,

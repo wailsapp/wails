@@ -1,0 +1,23 @@
+---
+sidebar_position: 8
+---
+
+# Clipboard  剪切板
+
+运行时的这一部分提供了对操作系统剪贴板的访问。<br/> 当前实现仅处理文本。
+
+### ClipboardGetText  剪贴板获取文本
+
+从剪切板读取当前存储的文本。
+
+Go: `ClipboardGetText(ctx context.Context) (string, error)`<br/> 返回: 一个字符串（如果剪贴板为空，将返回一个空字符串）或一个错误。
+
+JS: `ClipboardGetText(): Promise<string>`<br/> 返回: 带有字符串结果的 Promise（如果剪贴板为空，将返回空字符串）。
+
+### ClipboardSetText  剪贴板设置文本
+
+将文本写入剪切板。
+
+Go: `ClipboardSetText(ctx context.Context, text string) error`<br/> 返回: 如果存在错误，则会出现错误。
+
+JS: `ClipboardSetText(text: string): Promise<boolean>`<br/> 返回值: 一个Promise，如果文本成功地设置在剪贴板上，结果为 true，否则为 false。

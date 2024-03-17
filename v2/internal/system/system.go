@@ -1,19 +1,18 @@
 package system
 
 import (
+	"os/exec"
+	"strings"
+
 	"github.com/wailsapp/wails/v2/internal/shell"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
-	"os/exec"
-	"strings"
 )
 
-var (
-	IsAppleSilicon bool
-)
+var IsAppleSilicon bool
 
 // Info holds information about the current operating system,
-// package manager and required dependancies
+// package manager and required dependencies
 type Info struct {
 	OS           *operatingsystem.OS
 	PM           packagemanager.PackageManager
@@ -22,7 +21,7 @@ type Info struct {
 
 // GetInfo scans the system for operating system details,
 // the system package manager and the status of required
-// dependancies.
+// dependencies.
 func GetInfo() (*Info, error) {
 	var result Info
 	err := result.discover()
@@ -32,8 +31,30 @@ func GetInfo() (*Info, error) {
 	return &result, nil
 }
 
-func checkNPM() *packagemanager.Dependency {
+func checkNodejs() *packagemanager.Dependency {
+	// Check for Nodejs
+	output, err := exec.Command("node", "-v").Output()
+	installed := true
+	version := ""
+	if err != nil {
+		installed = false
+	} else {
+		if len(output) > 0 {
+			version = strings.TrimSpace(strings.Split(string(output), "\n")[0])[1:]
+		}
+	}
+	return &packagemanager.Dependency{
+		Name:           "Nodejs",
+		PackageName:    "N/A",
+		Installed:      installed,
+		InstallCommand: "Available at https://nodejs.org/en/download/",
+		Version:        version,
+		Optional:       false,
+		External:       false,
+	}
+}
 
+func checkNPM() *packagemanager.Dependency {
 	// Check for npm
 	output, err := exec.Command("npm", "-version").Output()
 	installed := true
@@ -55,7 +76,6 @@ func checkNPM() *packagemanager.Dependency {
 }
 
 func checkUPX() *packagemanager.Dependency {
-
 	// Check for npm
 	output, err := exec.Command("upx", "-V").Output()
 	installed := true
@@ -77,7 +97,6 @@ func checkUPX() *packagemanager.Dependency {
 }
 
 func checkNSIS() *packagemanager.Dependency {
-
 	// Check for nsis installer
 	output, err := exec.Command("makensis", "-VERSION").Output()
 	installed := true
@@ -116,7 +135,6 @@ func checkLibrary(name string) func() *packagemanager.Dependency {
 }
 
 func checkDocker() *packagemanager.Dependency {
-
 	// Check for npm
 	output, err := exec.Command("docker", "version").Output()
 	installed := true
