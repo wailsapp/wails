@@ -115,6 +115,15 @@ func AssetFileServerFS(assets fs.FS) http.Handler {
 	return assetserver.NewAssetFileServer(assets)
 }
 
+// BundledAssetFileServer returns a http handler which serves the assets from the fs.FS.
+// If an external devserver has been provided 'FRONTEND_DEVSERVER_URL' the files are being served
+// from the external server, ignoring the `assets`.
+// It also serves the compiled runtime.js file at `/wails/runtime.js`.
+// It will provide the production runtime.js file from the embedded assets if the `production` tag is used.
+func BundledAssetFileServer(assets fs.FS) http.Handler {
+	return assetserver.NewBundledAssetFileServer(assets)
+}
+
 /******** Mac Options ********/
 
 // ActivationPolicy is the activation policy for the application.

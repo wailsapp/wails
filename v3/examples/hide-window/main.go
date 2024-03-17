@@ -16,7 +16,6 @@ func main() {
 		Description: "A test of Hidden window and display it",
 		Assets:      application.AlphaAssets,
 		Mac: application.MacOptions{
-			// ActivationPolicy: application.ActivationPolicyAccessory,
 			ApplicationShouldTerminateAfterLastWindowClosed: false,
 		},
 	})

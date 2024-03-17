@@ -18,7 +18,7 @@ func main() {
 		Name:        "Drag-n-drop Demo",
 		Description: "A demo of the Drag-n-drop API",
 		Assets: application.AssetOptions{
-			Handler: application.AssetFileServerFS(assets),
+			Handler: application.BundledAssetFileServer(assets),
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,

@@ -30,7 +30,7 @@ var globalApplication *App
 
 // AlphaAssets is the default assets for the alpha application
 var AlphaAssets = AssetOptions{
-	Handler: AssetFileServerFS(alphaAssets),
+	Handler: BundledAssetFileServer(alphaAssets),
 }
 
 func init() {
