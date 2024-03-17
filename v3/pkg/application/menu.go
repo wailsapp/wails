@@ -95,6 +95,21 @@ func (m *Menu) setContextData(data *ContextMenuData) {
 	}
 }
 
+// Clone recursively clones the menu and all its submenus.
+func (m *Menu) clone() *Menu {
+	result := &Menu{
+		label: m.label,
+	}
+	for _, item := range m.items {
+		result.items = append(result.items, item.clone())
+	}
+	return result
+}
+
+func (m *Menu) Append(in *Menu) {
+	m.items = append(m.items, in.items...)
+}
+
 func (a *App) NewMenu() *Menu {
 	return &Menu{}
 }

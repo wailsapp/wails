@@ -21,7 +21,7 @@ type Window interface {
 	DispatchWailsEvent(event *WailsEvent)
 	EnableSizeConstraints()
 	Error(message string, args ...any)
-	ExecJS(callID, js string)
+	ExecJS(js string)
 	Focus()
 	ForceReload()
 	Fullscreen() Window
@@ -65,7 +65,7 @@ type Window interface {
 	SetZoom(magnification float64) Window
 	Show() Window
 	Size() (width int, height int)
-	ToggleDevTools()
+	OpenDevTools()
 	ToggleFullscreen()
 	ToggleMaximise()
 	UnFullscreen()

@@ -761,8 +761,6 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
-var showDevTools = func(window unsafe.Pointer) {}
-
 type macosWebviewWindow struct {
 	nsWindow unsafe.Pointer
 	parent   *WebviewWindow
@@ -904,10 +902,6 @@ func (w *macosWebviewWindow) zoomOut() {
 
 func (w *macosWebviewWindow) zoomReset() {
 	C.windowZoomReset(w.nsWindow)
-}
-
-func (w *macosWebviewWindow) toggleDevTools() {
-	showDevTools(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) reload() {
@@ -1134,13 +1128,13 @@ func (w *macosWebviewWindow) run() {
 		}
 
 		if macOptions.DisableMinimiseButton {
-			C.enableMinimiseButton(w.nsWindow, C.bool(false))
+			w.setMinimiseButtonEnabled(false)
 		}
 		if macOptions.DisableMaximiseButton {
-			C.enableMaximiseButton(w.nsWindow, C.bool(false))
+			w.setMaximiseButtonEnabled(false)
 		}
 		if macOptions.DisableCloseButton {
-			C.enableCloseButton(w.nsWindow, C.bool(false))
+			w.setCloseButtonEnabled(false)
 		}
 
 		if options.IgnoreMouseEvents {
@@ -1270,4 +1264,16 @@ func (w *macosWebviewWindow) setHTML(html string) {
 func (w *macosWebviewWindow) startDrag() error {
 	C.startDrag(w.nsWindow)
 	return nil
+}
+
+func (w *macosWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
+	C.enableMinimiseButton(w.nsWindow, C.bool(enabled))
+}
+
+func (w *macosWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
+	C.enableMaximiseButton(w.nsWindow, C.bool(enabled))
+}
+
+func (w *macosWebviewWindow) setCloseButtonEnabled(enabled bool) {
+	C.enableCloseButton(w.nsWindow, C.bool(enabled))
 }

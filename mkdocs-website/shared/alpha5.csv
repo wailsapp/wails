@@ -1,0 +1,16 @@
+Example,Linux
+binding," "
+build,:material-check-bold:
+clipboard,:material-check-bold:
+context menus,:material-minus:
+dialogs,:material-minus:
+drag-n-drop," "
+events,:material-check-bold:
+frameless,:material-check-bold:
+keybindings,:material-check-bold:
+plain," "
+screen,:material-check-bold:
+systray,:material-check-bold:
+video,:material-check-bold:
+window,:material-check-bold:
+wml,:material-check-bold:

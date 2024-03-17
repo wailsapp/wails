@@ -976,7 +976,7 @@ func windowSetupSignalHandlers(windowId uint, window, webview pointer, emit func
 	*/
 }
 
-func windowToggleDevTools(webview pointer) {
+func windowOpenDevTools(webview pointer) {
 	settings := webkitWebViewGetSettings(pointer(webview))
 	webkitSettingsSetEnableDeveloperExtras(
 		settings,
