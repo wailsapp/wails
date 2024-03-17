@@ -3,7 +3,7 @@ module github.com/wailsapp/wails/v3
 go 1.22
 
 require (
-	github.com/atterpac/refresh v0.5.11
+	github.com/atterpac/refresh v0.6.2
 	github.com/bep/debounce v1.2.1
 	github.com/ebitengine/purego v0.4.0-alpha.4
 	github.com/go-git/go-git/v5 v5.11.0
@@ -115,3 +115,5 @@ require (
 	modernc.org/token v1.0.1 // indirect
 	mvdan.cc/sh/v3 v3.7.0 // indirect
 )
+
+replace github.com/wailsapp/wails/v3 => ./
