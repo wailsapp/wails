@@ -2,12 +2,15 @@ package commands
 
 import (
 	_ "embed"
+	"errors"
 	"fmt"
-	"github.com/pterm/pterm"
-	"github.com/wailsapp/wails/v3/internal/s"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
+
+	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/s"
 )
 
 //go:embed linuxdeploy-plugin-gtk.sh
@@ -110,9 +113,10 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	wg.Wait()
 
 	log(p, "Processing GTK files.")
-	files := s.FINDFILES("/usr/lib", "WebKitNetworkProcess", "WebKitWebProcess", "libwebkit2gtkinjectedbundle.so")
-	if len(files) != 3 {
-		return fmt.Errorf("unable to locate all WebKit libraries")
+	filesNeeded := []string{"WebKitWebProcess", "WebKitNetworkProcess", "libwebkit2gtkinjectedbundle.so"}
+	files, err := findGTKFiles(filesNeeded)
+	if err != nil {
+		return err
 	}
 	s.CD(appDir)
 	for _, file := range files {
@@ -130,7 +134,7 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 		s.COPY(file, targetDir)
 	}
 	// Copy GTK Plugin
-	err := os.WriteFile(filepath.Join(options.BuildDir, "linuxdeploy-plugin-gtk.sh"), gtkPlugin, 0755)
+	err = os.WriteFile(filepath.Join(options.BuildDir, "linuxdeploy-plugin-gtk.sh"), gtkPlugin, 0755)
 	if err != nil {
 		return err
 	}
@@ -172,4 +176,49 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 
 	log(p, "AppImage created: "+targetFile)
 	return nil
+}
+
+func findGTKFiles(files []string) ([]string, error) {
+    notFound := []string{}
+    found := []string{}
+    err := filepath.Walk("/usr/", func(path string, info os.FileInfo, err error) error {
+        if err != nil {
+			if os.IsPermission(err) {
+				return nil
+			}
+            return err
+        }
+
+        if info.IsDir() {
+            return nil
+        }
+
+        for _, fileName := range files {
+            if strings.HasSuffix(path, fileName) {
+                found = append(found, path)
+                break
+            }
+        }
+
+        return nil
+    })
+    if err != nil {
+        return nil, err
+    }
+    for _, fileName := range files {
+        fileFound := false
+        for _, foundPath := range found {
+            if strings.HasSuffix(foundPath, fileName) {
+                fileFound = true
+                break
+            }
+        }
+        if !fileFound {
+            notFound = append(notFound, fileName)
+        }
+    }
+    if len(notFound) > 0 {
+        return nil, errors.New("Unable to locate all required files: " + strings.Join(notFound, ", "))
+    }
+    return found, nil
 }
