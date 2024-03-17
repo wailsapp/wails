@@ -1021,6 +1021,10 @@ func (w *linuxWebviewWindow) setResizable(resizable bool) {
 	C.gtk_window_set_resizable(w.gtkWindow(), gtkBool(resizable))
 }
 
+func (w *linuxWebviewWindow) setDefaultSize(width int, height int) {
+	C.gtk_window_set_default_size(w.gtkWindow(), C.gint(width), C.gint(height))
+}
+
 func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	rgba := C.GdkRGBA{C.double(colour.Red) / 255.0, C.double(colour.Green) / 255.0, C.double(colour.Blue) / 255.0, C.double(colour.Alpha) / 255.0}
 	C.webkit_web_view_set_background_color((*C.WebKitWebView)(w.webview), &rgba)

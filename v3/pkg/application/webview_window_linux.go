@@ -230,6 +230,7 @@ func (w *linuxWebviewWindow) run() {
 			w.parent.options.MaxHeight,
 		)
 	}
+	w.setDefaultSize(w.parent.options.Width, w.parent.options.Height)
 	w.setSize(w.parent.options.Width, w.parent.options.Height)
 	w.setZoom(w.parent.options.Zoom)
 	if w.parent.options.BackgroundType != BackgroundTypeSolid {
