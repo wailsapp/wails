@@ -46,7 +46,6 @@ func main() {
 	generate.NewSubCommandFunction("constants", "Generate JS constants from Go", commands.GenerateConstants)
 	generate.NewSubCommandFunction(".desktop", "Generate .desktop file", commands.GenerateDotDesktop)
 	generate.NewSubCommandFunction("appimage", "Generate Linux AppImage", commands.GenerateAppImage)
-	generate.NewSubCommandFunction("runtime", "Generate the latest compiled runtime", commands.GenerateRuntime)
 
 	plugin := app.NewSubCommand("plugin", "Plugin tools")
 	//plugin.NewSubCommandFunction("list", "List plugins", commands.PluginList)
