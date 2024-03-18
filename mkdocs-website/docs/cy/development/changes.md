@@ -1,7 +1,7 @@
-# Changes for v3
+# Newidiadau ar gyfer v3
 
 !!! note 
-    This is currently an unsorted brain dump of changes. It will be organised into a more readable format soon.
+    Mae hwn ar hyn o bryd yn ddampio meddwl heb ei drefnu o newidiadau. Bydd yn cael ei drefnu i fformat mwy darllenadwy yn fuan.
 
 --8<--
 ./docs/en/development/changes_events.md
@@ -18,5 +18,3 @@
 ./docs/en/development/changes_logging.md
 ./docs/en/development/changes_misc.md
 --8<--
-
-

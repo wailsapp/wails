@@ -74,7 +74,7 @@ API: `GetScreen() (*Screen, error)`
 
 `GetScreen` method returns the screen on which the window is displayed.
 
-#### SetFrameless
+### SetFrameless
 
 API: `SetFrameless(frameless bool) *WebviewWindow`
 
@@ -82,32 +82,32 @@ This function is used to remove the window frame and title bar. It toggles the
 framelessness of the window according to the boolean value provided (true for
 frameless, false for framed).
 
-#### RegisterContextMenu
+### RegisterContextMenu
 
 API: `RegisterContextMenu(name string, menu *Menu)`
 
 This function is used to register a context menu and assigns it the given name.
 
-#### NativeWindowHandle
+### NativeWindowHandle
 
 API: `NativeWindowHandle() (uintptr, error)`
 
 This function is used to fetch the platform native window handle for the window.
 
-#### Focus
+### Focus
 
 API: `Focus()`
 
 This function is used to focus the window.
 
-#### SetEnabled
+### SetEnabled
 
 API: `SetEnabled(enabled bool)`
 
 This function is used to enable/disable the window based on the provided boolean
 value.
 
-#### SetAbsolutePosition
+### SetAbsolutePosition
 
 API: `SetAbsolutePosition(x int, y int)`
 
