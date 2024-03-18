@@ -93,11 +93,11 @@ plugins:
                 - Gosod: getting-started/installation.md
                 - Eich Cais Cyntaf: getting-started/your-first-app.md
                 - Camau Nesaf: getting-started/next-steps.md
-            - Dysgu Rhagor:
-                - Runtime: learn/runtime.md
+                - Dysgu Rhagor:
+                    - Runtime: learn/runtime.md
                 - Adborth: getting-started/feedback.md
-                - Adborth: getting-started/feedback.md
-                - Beth sydd Newydd yn v3?: whats-new.md
+            - Adborth: getting-started/feedback.md
+            - Beth sydd Newydd yn v3?: whats-new.md
             - API:
                 - Cais: API/application.md
                 - Ffenestr: API/window.md
@@ -108,8 +108,8 @@ plugins:
                 - Cyflwyniad: development/introduction.md
                 - Status: development/status.md
                 - Newidiadau v3: development/changes.md
-                - Cynllun Ffordd Ymlaen: roadmap.md
-                - Cofnod Newidiadau: changelog.md
+            - Cynllun Ffordd Ymlaen: roadmap.md
+            - Cofnod Newidiadau: changelog.md
             - Noddwr❤️: https://github.com/sponsors/leaanthony
 
 
