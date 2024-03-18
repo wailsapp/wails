@@ -8,6 +8,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
 
+// Options contains the options for the application
 type Options struct {
 	// Name is the name of the application (used in the default about box)
 	Name string
@@ -115,6 +116,15 @@ func AssetFileServerFS(assets fs.FS) http.Handler {
 	return assetserver.NewAssetFileServer(assets)
 }
 
+// BundledAssetFileServer returns a http handler which serves the assets from the fs.FS.
+// If an external devserver has been provided 'FRONTEND_DEVSERVER_URL' the files are being served
+// from the external server, ignoring the `assets`.
+// It also serves the compiled runtime.js file at `/wails/runtime.js`.
+// It will provide the production runtime.js file from the embedded assets if the `production` tag is used.
+func BundledAssetFileServer(assets fs.FS) http.Handler {
+	return assetserver.NewBundledAssetFileServer(assets)
+}
+
 /******** Mac Options ********/
 
 // ActivationPolicy is the activation policy for the application.
@@ -166,4 +176,13 @@ type WindowsOptions struct {
 type LinuxOptions struct {
 	// DisableQuitOnLastWindowClosed disables the auto quit of the application if the last window has been closed.
 	DisableQuitOnLastWindowClosed bool
+
+	// ProgramName is used to set the program's name for the window manager via GTK's g_set_prgname().
+	//This name should not be localized. [see the docs]
+	//
+	//When a .desktop file is created this value helps with window grouping and desktop icons when the .desktop file's Name
+	//property differs form the executable's filename.
+	//
+	//[see the docs]: https://docs.gtk.org/glib/func.set_prgname.html
+	ProgramName string
 }

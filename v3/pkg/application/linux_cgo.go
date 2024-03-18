@@ -332,6 +332,12 @@ func appNew(name string) pointer {
 	return pointer(C.gtk_application_new(nameC, C.APPLICATION_DEFAULT_FLAGS))
 }
 
+func setProgramName(prgName string) {
+	cPrgName := C.CString(prgName)
+	defer C.free(unsafe.Pointer(cPrgName))
+	C.g_set_prgname(cPrgName)
+}
+
 func appRun(app pointer) error {
 	application := (*C.GApplication)(app)
 	//TODO: Only set this if we configure it to do so
@@ -1019,6 +1025,10 @@ func (w *linuxWebviewWindow) setBorderless(borderless bool) {
 
 func (w *linuxWebviewWindow) setResizable(resizable bool) {
 	C.gtk_window_set_resizable(w.gtkWindow(), gtkBool(resizable))
+}
+
+func (w *linuxWebviewWindow) setDefaultSize(width int, height int) {
+	C.gtk_window_set_default_size(w.gtkWindow(), C.gint(width), C.gint(height))
 }
 
 func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {

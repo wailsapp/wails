@@ -513,13 +513,4 @@ type LinuxWindow struct {
 	// Client code may override this behavior by passing a non-nil Options and set
 	// WebviewGpuPolicy as needed.
 	WebviewGpuPolicy WebviewGpuPolicy
-
-	// ProgramName is used to set the program's name for the window manager via GTK's g_set_prgname().
-	//This name should not be localized. [see the docs]
-	//
-	//When a .desktop file is created this value helps with window grouping and desktop icons when the .desktop file's Name
-	//property differs form the executable's filename.
-	//
-	//[see the docs]: https://docs.gtk.org/glib/func.set_prgname.html
-	ProgramName string
 }

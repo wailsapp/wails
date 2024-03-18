@@ -17,7 +17,7 @@ func main() {
 		Name:        "Context Menu Demo",
 		Description: "A demo of the Context Menu API",
 		Assets: application.AssetOptions{
-			Handler: application.AssetFileServerFS(assets),
+			Handler: application.BundledAssetFileServer(assets),
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
