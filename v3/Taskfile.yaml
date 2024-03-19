@@ -155,7 +155,6 @@ tasks:
         keybindings
         menu
         plain
-        plugins
         screen
         systray
         window
