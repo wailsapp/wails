@@ -52,10 +52,6 @@ export type Rect = {
      */
     Height: number;
 };
-/**
- * The rotation of the screen. Can be one of 'Zero', 'Ninety', 'OneEighty', 'TwoSeventy'.
- */
-export type Rotation = ('Zero' | 'Ninety' | 'OneEighty' | 'TwoSeventy');
 export type Screen = {
     /**
      * - Unique identifier for the screen.
@@ -92,5 +88,5 @@ export type Screen = {
     /**
      * - The rotation of the screen.
      */
-    Rotation: Rotation;
+    Rotation: number;
 };

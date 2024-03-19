@@ -7,6 +7,6 @@ import * as Events from "./events";
 import * as Flags from "./flags";
 import * as Screens from "./screens";
 import * as System from "./system";
-import * as Window from "./window";
-import * as WML from './wml';
+import Window from "./window";
+import * as WML from "./wml";
 export { Application, Browser, Call, Clipboard, Dialogs, Events, Flags, Screens, System, Window, WML };
