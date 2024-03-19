@@ -3,7 +3,6 @@ package application
 import (
 	"embed"
 	"encoding/json"
-	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"io"
 	"log"
 	"log/slog"
@@ -12,6 +11,8 @@ import (
 	"runtime"
 	"strconv"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
 	"github.com/pkg/browser"
 	"github.com/samber/lo"
