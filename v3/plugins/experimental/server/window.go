@@ -100,6 +100,10 @@ func (w Window) Hide() application.Window {
 	return w
 }
 
+func (w Window) IsFocused() bool {
+	return false
+}
+
 func (w Window) IsFullscreen() bool {
 	return false
 }
