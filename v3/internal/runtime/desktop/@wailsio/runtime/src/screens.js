@@ -33,12 +33,6 @@ The electron alternative for Go
 
 
 /**
- * @typedef {('Zero'|'Ninety'|'OneEighty'|'TwoSeventy')} Rotation
- * The rotation of the screen. Can be one of 'Zero', 'Ninety', 'OneEighty', 'TwoSeventy'.
- */
-
-
-/**
  * @typedef {Object} Screen
  * @property {string} Id - Unique identifier for the screen.
  * @property {string} Name - Human readable name of the screen.
@@ -48,7 +42,7 @@ The electron alternative for Go
  * @property {Rect} Bounds - Contains the bounds of the screen in terms of X, Y, Width, and Height.
  * @property {Rect} WorkArea - Contains the area of the screen that is actually usable (excluding taskbar and other system UI).
  * @property {boolean} IsPrimary - True if this is the primary monitor selected by the user in the operating system.
- * @property {Rotation} Rotation - The rotation of the screen.
+ * @property {number} Rotation - The rotation of the screen.
  */
 
 
