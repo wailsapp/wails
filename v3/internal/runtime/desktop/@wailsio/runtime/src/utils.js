@@ -1,3 +1,13 @@
+/*
+ _     __     _ __
+| |  / /___ _(_) /____
+| | /| / / __ `/ / / ___/
+| |/ |/ / /_/ / / (__  )
+|__/|__/\__,_/_/_/____/
+The electron alternative for Go
+(c) Lea Anthony 2019-present
+*/
+
 /**
  * Logs a message to the console with custom formatting.
  * @param {string} message - The message to be logged.
@@ -10,6 +20,27 @@ export function debugLog(message) {
         'background: #aa0000; color: #fff; border-radius: 3px 0px 0px 3px; padding: 1px; font-size: 0.7rem',
         'background: #009900; color: #fff; border-radius: 0px 3px 3px 0px; padding: 1px; font-size: 0.7rem'
     );
+}
+
+/**
+ * Checks whether the browser supports removing listeners by triggering an AbortSignal
+ * (see https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#signal)
+ *
+ * @return {boolean}
+ */
+export function canAbortListeners() {
+    if (!EventTarget || !AbortSignal || !AbortController)
+        return false;
+
+    let result = true;
+
+    const target = new EventTarget();
+    const controller = new AbortController();
+    target.addEventListener('test', () => { result = false; }, { signal: controller.signal });
+    controller.abort();
+    target.dispatchEvent(new CustomEvent('test'));
+
+    return result;
 }
 
 /***
