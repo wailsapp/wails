@@ -355,3 +355,7 @@ func (a *App) logPlatformInfo() {
 	a.info("Platform Info:", info.AsLogSlice()...)
 
 }
+
+func (a *App) platformEnvironment() map[string]any {
+	return map[string]any{}
+}
