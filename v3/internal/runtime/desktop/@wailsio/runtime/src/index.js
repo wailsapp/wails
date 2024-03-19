@@ -24,7 +24,7 @@ import * as Events from "./events";
 import * as Flags from "./flags";
 import * as Screens from "./screens";
 import * as System from "./system";
-import * as Window from "./window";
+import Window from "./window";
 import * as WML from "./wml";
 
 export {
