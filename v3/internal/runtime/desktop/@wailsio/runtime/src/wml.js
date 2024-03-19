@@ -1,8 +1,8 @@
-
-import {Emit, WailsEvent} from "./events";
-import {Question} from "./dialogs";
-import {Get} from "./window";
 import {OpenURL} from "./browser";
+import {Question} from "./dialogs";
+import {Emit, WailsEvent} from "./events";
+import {whenReady} from "./utils";
+import {Get} from "./window";
 
 /**
  * Sends an event with the given name and optional data.
@@ -136,6 +136,15 @@ function addWMLOpenBrowserListener() {
         // Add new listener
         element.addEventListener(trigger, callback);
     });
+}
+
+/**
+ * Schedules an automatic reload of WML to be performed as soon as the document is fully loaded.
+ *
+ * @return {void}
+ */
+export function Enable() {
+    whenReady(Reload);
 }
 
 /**
