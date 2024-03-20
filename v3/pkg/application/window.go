@@ -34,6 +34,7 @@ type Window interface {
 	Hide() Window
 	ID() uint
 	Info(message string, args ...any)
+	IsFocused() bool
 	IsFullscreen() bool
 	IsMaximised() bool
 	IsMinimised() bool

@@ -33,11 +33,12 @@
 
         }
     </style>
-    <script src="/wails/runtime.js"></script>
 </head>
 <body>
 
-<script>
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
     let environment = wails.System.Environment();
     environment.then((result) => {
         console.log({result})

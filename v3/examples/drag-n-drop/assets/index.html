@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>body{ text-align: center; color: white; background-color: #191919; user-select: none; -ms-user-select: none; -webkit-user-select: none; }</style>
-    <script src="/wails/runtime.js"></script>
 </head>
 <body>
 <h1>Drag-n-drop Demo</h1>
@@ -13,7 +12,9 @@ Drop Files onto this window...
 <div id="results"></div>
 </body>
 
-<script>
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
     document.body.addEventListener('drop', function(e) {
         // Note that postMessageWithAdditionalObjects does not accept a single object,
         // but only accepts an ArrayLike object.
