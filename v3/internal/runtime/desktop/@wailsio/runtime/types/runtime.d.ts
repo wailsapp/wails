@@ -25,5 +25,6 @@ export namespace objectNames {
     let Screens: number;
     let System: number;
     let Browser: number;
+    let CancelCall: number;
 }
 export let clientId: string;

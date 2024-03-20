@@ -19,8 +19,10 @@
     <h3 id="name" style="padding-top: 10px"></h3>
     <a wml-event="github-logout" class="btn btn-primary"><span class="fa fa-github" style="color: #FFF"></span> Logout </a>
 </div>
-<script>
-    window.wails.Events.On("wails:oauth:success", (event) => {
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
+    wails.Events.On("wails:oauth:success", (event) => {
         document.getElementById("main").style.display = "none";
         document.getElementById("details").style.display = "block";
         document.getElementById("name").innerText = event.data.Name;
@@ -28,7 +30,7 @@
         document.body.style.backgroundColor = "#000";
         document.body.style.color = "#FFF";
     });
-    window.wails.Events.On("wails:oauth:loggedout", (event) => {
+    wails.Events.On("wails:oauth:loggedout", (event) => {
         document.getElementById("details").style.display = "none";
         document.getElementById("main").style.display = "block";
         document.body.style.backgroundColor = "#FFF";
