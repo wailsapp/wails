@@ -13,6 +13,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 )
 
+var fixupXattrs func(string)
+
 // Options for generating bindings
 type Options struct {
 	Filename         string
@@ -58,12 +60,9 @@ func GenerateBindings(options Options) (string, error) {
 		return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 	}
 
-	if runtime.GOOS == "darwin" {
-		// Remove quarantine attribute
-		stdout, stderr, err = shell.RunCommand(workingDirectory, "xattr", "-rc", filename)
-		if err != nil {
-			return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
-		}
+	// Fix up xattrs if required
+	if fixupXattrs != nil {
+		fixupXattrs(filename)
 	}
 
 	defer func() {
