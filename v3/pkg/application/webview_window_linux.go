@@ -20,20 +20,21 @@ type dragInfo struct {
 }
 
 type linuxWebviewWindow struct {
-	id           uint
-	application  pointer
-	window       pointer
-	webview      pointer
-	parent       *WebviewWindow
-	menubar      pointer
-	vbox         pointer
-	menu         *Menu
-	accels       pointer
-	lastWidth    int
-	lastHeight   int
-	drag         dragInfo
-	lastX, lastY int
-	gtkmenu      pointer
+	id            uint
+	application   pointer
+	window        pointer
+	webview       pointer
+	parent        *WebviewWindow
+	menubar       pointer
+	vbox          pointer
+	menu          *Menu
+	accels        pointer
+	lastWidth     int
+	lastHeight    int
+	drag          dragInfo
+	lastX, lastY  int
+	gtkmenu       pointer
+	ctxMenuOpened bool
 }
 
 var (
@@ -61,6 +62,9 @@ func (w *linuxWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) 
 	}
 	if menu.impl == nil {
 		ctxMenu.update()
+
+		native := ctxMenu.menu.impl.(*linuxMenu).native
+		w.contextMenuSignals(native)
 	}
 
 	native := ctxMenu.menu.impl.(*linuxMenu).native
