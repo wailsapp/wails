@@ -351,27 +351,32 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 	if err != nil {
 		return p, err
 	}
+
 	p.outputDirectory = options.OutputDirectory
+
 	for _, pkg := range p.BoundMethods {
 		for _, boundMethods := range pkg {
 			p.Stats.NumMethods += len(boundMethods)
 		}
 	}
+
 	generatedMethods := p.GenerateBindings(p.BoundMethods, options.ModelsFilename, options.UseIDs, options.TS)
-	for pkg, structs := range generatedMethods {
+	for pkgDir, structs := range generatedMethods {
 		// Write the directory
-		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkg), 0755)
+		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkgDir), 0755)
 		if err != nil && !os.IsExist(err) {
 			return p, err
 		}
 		// Write the files
 		for structName, text := range structs {
 			p.Stats.NumStructs++
-			filename := structName + ".js"
+			var filename string
 			if options.TS {
 				filename = structName + ".ts"
+			} else {
+				filename = structName + ".js"
 			}
-			err = os.WriteFile(filepath.Join(options.OutputDirectory, pkg, filename), []byte(text), 0644)
+			err = os.WriteFile(filepath.Join(options.OutputDirectory, pkgDir, filename), []byte(text), 0644)
 			if err != nil {
 				return p, err
 			}
@@ -387,12 +392,20 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 		if err != nil {
 			return p, err
 		}
-		for pkg, text := range generatedModels {
-			// Get directory for package
-			pkgInfo := p.packageCache[pkg]
-			relativePackageDir := p.RelativeBindingsDir(pkgInfo, pkgInfo)
+		for pkgDir, text := range generatedModels {
 			// Write the directory
-			err = os.WriteFile(filepath.Join(options.OutputDirectory, relativePackageDir, options.ModelsFilename), []byte(text), 0644)
+			err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkgDir), 0755)
+			if err != nil && !os.IsExist(err) {
+				return p, err
+			}
+			// Write the file
+			var filename string
+			if options.TS {
+				filename = options.ModelsFilename + ".ts"
+			} else {
+				filename = options.ModelsFilename + ".js"
+			}
+			err = os.WriteFile(filepath.Join(options.OutputDirectory, pkgDir, filename), []byte(text), 0644)
 		}
 		if err != nil {
 			return p, err
