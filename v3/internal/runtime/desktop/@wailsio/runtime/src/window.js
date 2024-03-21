@@ -85,13 +85,12 @@ const ZoomInMethod                      = 45;
 const ZoomOutMethod                     = 46;
 const ZoomResetMethod                   = 47;
 
-class Window {
-    /**
-     * @private
-     * @type {(...args: any[]) => any}
-     */
-    #call = null;
+/**
+ * @type {symbol}
+ */
+const caller = Symbol();
 
+class Window {
     /**
      * Initialises a window object with the specified name.
      *
@@ -99,7 +98,12 @@ class Window {
      * @param {string} name - The name of the target window.
      */
     constructor(name = '') {
-        this.#call = newRuntimeCallerWithID(objectNames.Window, name)
+        /**
+         * @private
+         * @name {@link caller}
+         * @type {(...args: any[]) => any}
+         */
+        this[caller] = newRuntimeCallerWithID(objectNames.Window, name)
 
         // bind instance method to make them easily usable in event handlers
         for (const method of Object.getOwnPropertyNames(Window.prototype)) {
@@ -130,7 +134,7 @@ class Window {
      * @return {Promise<Position>} - The current absolute position of the window.
      */
     AbsolutePosition() {
-        return this.#call(AbsolutePositionMethod);
+        return this[caller](AbsolutePositionMethod);
     }
 
     /**
@@ -140,7 +144,7 @@ class Window {
      * @return {Promise<void>}
      */
     Center() {
-        return this.#call(CenterMethod);
+        return this[caller](CenterMethod);
     }
 
     /**
@@ -150,7 +154,7 @@ class Window {
      * @return {Promise<void>}
      */
     Close() {
-        return this.#call(CloseMethod);
+        return this[caller](CloseMethod);
     }
 
     /**
@@ -160,7 +164,7 @@ class Window {
      * @return {Promise<void>}
      */
     DisableSizeConstraints() {
-        return this.#call(DisableSizeConstraintsMethod);
+        return this[caller](DisableSizeConstraintsMethod);
     }
 
     /**
@@ -170,7 +174,7 @@ class Window {
      * @return {Promise<void>}
      */
     EnableSizeConstraints() {
-        return this.#call(EnableSizeConstraintsMethod);
+        return this[caller](EnableSizeConstraintsMethod);
     }
 
     /**
@@ -180,7 +184,7 @@ class Window {
      * @return {Promise<void>}
      */
     Focus() {
-        return this.#call(FocusMethod);
+        return this[caller](FocusMethod);
     }
 
     /**
@@ -190,7 +194,7 @@ class Window {
      * @return {Promise<void>}
      */
     ForceReload() {
-        return this.#call(ForceReloadMethod);
+        return this[caller](ForceReloadMethod);
     }
 
     /**
@@ -200,7 +204,7 @@ class Window {
      * @return {Promise<void>}
      */
     Fullscreen() {
-        return this.#call(FullscreenMethod);
+        return this[caller](FullscreenMethod);
     }
 
     /**
@@ -210,7 +214,7 @@ class Window {
      * @return {Promise<Screen>} - The screen the window is currently on
      */
     GetScreen() {
-        return this.#call(GetScreenMethod);
+        return this[caller](GetScreenMethod);
     }
 
     /**
@@ -220,7 +224,7 @@ class Window {
      * @return {Promise<number>} - The current zoom level
      */
     GetZoom() {
-        return this.#call(GetZoomMethod);
+        return this[caller](GetZoomMethod);
     }
 
     /**
@@ -230,7 +234,7 @@ class Window {
      * @return {Promise<number>} - The current height of the window
      */
     Height() {
-        return this.#call(HeightMethod);
+        return this[caller](HeightMethod);
     }
 
     /**
@@ -240,7 +244,7 @@ class Window {
      * @return {Promise<void>}
      */
     Hide() {
-        return this.#call(HideMethod);
+        return this[caller](HideMethod);
     }
 
     /**
@@ -250,7 +254,7 @@ class Window {
      * @return {Promise<boolean>} - Whether the window is currently focused
      */
     IsFocused() {
-        return this.#call(IsFocusedMethod);
+        return this[caller](IsFocusedMethod);
     }
 
     /**
@@ -260,7 +264,7 @@ class Window {
      * @return {Promise<boolean>} - Whether the window is currently fullscreen
      */
     IsFullscreen() {
-        return this.#call(IsFullscreenMethod);
+        return this[caller](IsFullscreenMethod);
     }
 
     /**
@@ -270,7 +274,7 @@ class Window {
      * @return {Promise<boolean>} - Whether the window is currently maximised
      */
     IsMaximised() {
-        return this.#call(IsMaximisedMethod);
+        return this[caller](IsMaximisedMethod);
     }
 
     /**
@@ -280,7 +284,7 @@ class Window {
      * @return {Promise<boolean>} - Whether the window is currently minimised
      */
     IsMinimised() {
-        return this.#call(IsMinimisedMethod);
+        return this[caller](IsMinimisedMethod);
     }
 
     /**
@@ -290,7 +294,7 @@ class Window {
      * @return {Promise<void>}
      */
     Maximise() {
-        return this.#call(MaximiseMethod);
+        return this[caller](MaximiseMethod);
     }
 
     /**
@@ -300,7 +304,7 @@ class Window {
      * @return {Promise<void>}
      */
     Minimise() {
-        return this.#call(MinimiseMethod);
+        return this[caller](MinimiseMethod);
     }
 
     /**
@@ -310,7 +314,7 @@ class Window {
      * @return {Promise<string>} - The name of the window
      */
     Name() {
-        return this.#call(NameMethod);
+        return this[caller](NameMethod);
     }
 
     /**
@@ -320,7 +324,7 @@ class Window {
      * @return {Promise<void>}
      */
     OpenDevTools() {
-        return this.#call(OpenDevToolsMethod);
+        return this[caller](OpenDevToolsMethod);
     }
 
     /**
@@ -330,7 +334,7 @@ class Window {
      * @return {Promise<Position>} - The current relative position of the window
      */
     RelativePosition() {
-        return this.#call(RelativePositionMethod);
+        return this[caller](RelativePositionMethod);
     }
 
     /**
@@ -340,7 +344,7 @@ class Window {
      * @return {Promise<void>}
      */
     Reload() {
-        return this.#call(ReloadMethod);
+        return this[caller](ReloadMethod);
     }
 
     /**
@@ -350,7 +354,7 @@ class Window {
      * @return {Promise<boolean>} - Whether the window is currently resizable
      */
     Resizable() {
-        return this.#call(ResizableMethod);
+        return this[caller](ResizableMethod);
     }
 
     /**
@@ -360,7 +364,7 @@ class Window {
      * @return {Promise<void>}
      */
     Restore() {
-        return this.#call(RestoreMethod);
+        return this[caller](RestoreMethod);
     }
 
     /**
@@ -372,7 +376,7 @@ class Window {
      * @return {Promise<void>}
      */
     SetAbsolutePosition(x, y) {
-        return this.#call(SetAbsolutePositionMethod, { x, y });
+        return this[caller](SetAbsolutePositionMethod, { x, y });
     }
 
     /**
@@ -383,7 +387,7 @@ class Window {
      * @return {Promise<void>}
      */
     SetAlwaysOnTop(alwaysOnTop) {
-        return this.#call(SetAlwaysOnTopMethod, { alwaysOnTop });
+        return this[caller](SetAlwaysOnTopMethod, { alwaysOnTop });
     }
 
     /**
@@ -397,7 +401,7 @@ class Window {
      * @return {Promise<void>}
      */
     SetBackgroundColour(r, g, b, a) {
-        return this.#call(SetBackgroundColourMethod, { r, g, b, a });
+        return this[caller](SetBackgroundColourMethod, { r, g, b, a });
     }
 
     /**
@@ -408,7 +412,7 @@ class Window {
      * @return {Promise<void>}
      */
     SetFrameless(frameless) {
-        return this.#call(SetFramelessMethod, { frameless });
+        return this[caller](SetFramelessMethod, { frameless });
     }
 
     /**
@@ -419,7 +423,7 @@ class Window {
      * @return {Promise<void>}
      */
     SetFullscreenButtonEnabled(enabled) {
-        return this.#call(SetFullscreenButtonEnabledMethod, { enabled });
+        return this[caller](SetFullscreenButtonEnabledMethod, { enabled });
     }
 
     /**
@@ -431,7 +435,7 @@ class Window {
      * @return {Promise<void>}
      */
     SetMaxSize(width, height) {
-        return this.#call(SetMaxSizeMethod, { width, height });
+        return this[caller](SetMaxSizeMethod, { width, height });
     }
 
     /**
@@ -443,7 +447,7 @@ class Window {
      * @return {Promise<void>}
      */
     SetMinSize(width, height) {
-        return this.#call(SetMinSizeMethod, { width, height });
+        return this[caller](SetMinSizeMethod, { width, height });
     }
 
     /**
@@ -455,7 +459,7 @@ class Window {
      * @return {Promise<void>}
      */
     SetRelativePosition(x, y) {
-        return this.#call(SetRelativePositionMethod, { x, y });
+        return this[caller](SetRelativePositionMethod, { x, y });
     }
 
     /**
@@ -466,7 +470,7 @@ class Window {
      * @return {Promise<void>}
      */
     SetResizable(resizable) {
-        return this.#call(SetResizableMethod, { resizable });
+        return this[caller](SetResizableMethod, { resizable });
     }
 
     /**
@@ -478,7 +482,7 @@ class Window {
      * @return {Promise<void>}
      */
     SetSize(width, height) {
-        return this.#call(SetSizeMethod, { width, height });
+        return this[caller](SetSizeMethod, { width, height });
     }
 
     /**
@@ -489,7 +493,7 @@ class Window {
      * @return {Promise<void>}
      */
     SetTitle(title) {
-        return this.#call(SetTitleMethod, { title });
+        return this[caller](SetTitleMethod, { title });
     }
 
     /**
@@ -500,7 +504,7 @@ class Window {
      * @return {Promise<void>}
      */
     SetZoom(zoom) {
-        return this.#call(SetZoomMethod, { zoom });
+        return this[caller](SetZoomMethod, { zoom });
     }
 
     /**
@@ -510,7 +514,7 @@ class Window {
      * @return {Promise<void>}
      */
     Show() {
-        return this.#call(ShowMethod);
+        return this[caller](ShowMethod);
     }
 
     /**
@@ -520,7 +524,7 @@ class Window {
      * @return {Promise<Size>} - The current size of the window
      */
     Size() {
-        return this.#call(SizeMethod);
+        return this[caller](SizeMethod);
     }
 
     /**
@@ -530,7 +534,7 @@ class Window {
      * @return {Promise<void>}
      */
     ToggleFullscreen() {
-        return this.#call(ToggleFullscreenMethod);
+        return this[caller](ToggleFullscreenMethod);
     }
 
     /**
@@ -540,7 +544,7 @@ class Window {
      * @return {Promise<void>}
      */
     ToggleMaximise() {
-        return this.#call(ToggleMaximiseMethod);
+        return this[caller](ToggleMaximiseMethod);
     }
 
     /**
@@ -550,7 +554,7 @@ class Window {
      * @return {Promise<void>}
      */
     UnFullscreen() {
-        return this.#call(UnFullscreenMethod);
+        return this[caller](UnFullscreenMethod);
     }
 
     /**
@@ -560,7 +564,7 @@ class Window {
      * @return {Promise<void>}
      */
     UnMaximise() {
-        return this.#call(UnMaximiseMethod);
+        return this[caller](UnMaximiseMethod);
     }
 
     /**
@@ -570,7 +574,7 @@ class Window {
      * @return {Promise<void>}
      */
     UnMinimise() {
-        return this.#call(UnMinimiseMethod);
+        return this[caller](UnMinimiseMethod);
     }
 
     /**
@@ -580,7 +584,7 @@ class Window {
      * @return {Promise<number>} - The current width of the window
      */
     Width() {
-        return this.#call(WidthMethod);
+        return this[caller](WidthMethod);
     }
 
     /**
@@ -590,7 +594,7 @@ class Window {
      * @return {Promise<void>}
      */
     Zoom() {
-        return this.#call(ZoomMethod);
+        return this[caller](ZoomMethod);
     }
 
     /**
@@ -600,7 +604,7 @@ class Window {
      * @return {Promise<void>}
      */
     ZoomIn() {
-        return this.#call(ZoomInMethod);
+        return this[caller](ZoomInMethod);
     }
 
     /**
@@ -610,7 +614,7 @@ class Window {
      * @return {Promise<void>}
      */
     ZoomOut() {
-        return this.#call(ZoomOutMethod);
+        return this[caller](ZoomOutMethod);
     }
 
     /**
@@ -620,7 +624,7 @@ class Window {
      * @return {Promise<void>}
      */
     ZoomReset() {
-        return this.#call(ZoomResetMethod);
+        return this[caller](ZoomResetMethod);
     }
 }
 
