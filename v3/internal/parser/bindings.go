@@ -20,7 +20,7 @@ const headerTypescript = `// Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â M
 `
 
 const bindingTemplate = `
-/**Comments 
+/**Comments
  * @function {{methodName}}* @param names {string}
  * @returns {Promise<string>}
  **/
@@ -345,7 +345,7 @@ func isContext(input *Parameter) bool {
 	return input.Type.Package == "context" && input.Type.Name == "Context"
 }
 
-func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod, useIDs bool, useTypescript bool) map[string]map[string]string {
+func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod, modelsFilename string, useIDs bool, useTypescript bool) map[string]map[string]string {
 
 	var result = make(map[string]map[string]string)
 
@@ -405,7 +405,7 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 						sort.Strings(namespacedStructNames)
 						for _, thisStructName := range namespacedStructNames {
 							structInfo := namespacedStruct[thisStructName]
-							typedefs += " * @typedef {import('" + relativePackageDir + "/models')." + thisStructName + "} " + namePrefix + structInfo.Name + "\n"
+							typedefs += " * @typedef {import('" + relativePackageDir + "/" + modelsFilename + "')." + thisStructName + "} " + namePrefix + structInfo.Name + "\n"
 						}
 					}
 					typedefs += " */\n"
@@ -429,7 +429,7 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 							if namePrefix != "" {
 								imports += "import {" + thisStructName + " as " + namePrefix + structInfo.Name + "} from '" + relativePackageDir + "/models';\n"
 							} else {
-								imports += "import {" + thisStructName + "} from '" + relativePackageDir + "/models';\n"
+								imports += "import {" + thisStructName + "} from '" + relativePackageDir + "/" + modelsFilename + "';\n"
 							}
 						}
 					}

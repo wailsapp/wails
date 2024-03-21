@@ -357,7 +357,7 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 			p.Stats.NumMethods += len(boundMethods)
 		}
 	}
-	generatedMethods := p.GenerateBindings(p.BoundMethods, options.UseIDs, options.TS)
+	generatedMethods := p.GenerateBindings(p.BoundMethods, options.ModelsFilename, options.UseIDs, options.TS)
 	for pkg, structs := range generatedMethods {
 		// Write the directory
 		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkg), 0755)
@@ -1175,25 +1175,35 @@ func (p *Project) parseTypes(pkgs map[string]*ParsedPackage) {
 }
 
 func (p *Project) RelativeBindingsDir(dir *ParsedPackage, dir2 *ParsedPackage) string {
-
 	if dir.Dir == dir2.Dir {
 		return "."
 	}
 
-	// Calculate the relative path from the bindings directory to the package directory
-	absoluteSourceDir := dir.Dir
-	if absoluteSourceDir == p.Path {
+	// Calculate the relative path from the bindings directory of dir to that of dir2
+	var (
+		absoluteSourceDir string
+		absoluteTargetDir string
+	)
+
+	if dir.Dir == p.Path {
 		absoluteSourceDir = filepath.Join(p.Path, p.outputDirectory, "main")
 	} else {
-		absoluteSourceDir = dir.Dir
+		relativeSourceDir := strings.TrimPrefix(dir.Dir, p.Path)
+		absoluteSourceDir = filepath.Join(p.Path, p.outputDirectory, relativeSourceDir)
 	}
-	targetRelativeDir := strings.TrimPrefix(dir2.Dir, p.Path)
-	targetBindingsDir := filepath.Join(p.Path, p.outputDirectory, targetRelativeDir)
-	// Calculate the relative path from the source directory to the target directory
-	relativePath, err := filepath.Rel(absoluteSourceDir, targetBindingsDir)
+
+	if dir2.Dir == p.Path {
+		absoluteTargetDir = filepath.Join(p.Path, p.outputDirectory, "main")
+	} else {
+		relativeTargetDir := strings.TrimPrefix(dir2.Dir, p.Path)
+		absoluteTargetDir = filepath.Join(p.Path, p.outputDirectory, relativeTargetDir)
+	}
+
+	relativePath, err := filepath.Rel(absoluteSourceDir, absoluteTargetDir)
 	if err != nil {
 		panic(err)
 	}
+
 	return filepath.ToSlash(relativePath)
 }
 
