@@ -360,7 +360,7 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 		}
 	}
 
-	generatedMethods := p.GenerateBindings(p.BoundMethods, options.ModelsFilename, options.UseIDs, options.TS)
+	generatedMethods := p.GenerateBindings(p.BoundMethods, options.ModelsFilename, options.UseIDs, options.TS, options.UseBundledRuntime)
 	for pkgDir, structs := range generatedMethods {
 		// Write the directory
 		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkgDir), 0755)

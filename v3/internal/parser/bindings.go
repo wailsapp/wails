@@ -345,7 +345,7 @@ func isContext(input *Parameter) bool {
 	return input.Type.Package == "context" && input.Type.Name == "Context"
 }
 
-func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod, modelsFilename string, useIDs bool, useTypescript bool) map[string]map[string]string {
+func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod, modelsFilename string, useIDs bool, useTypescript bool, useBundledRuntime bool) map[string]map[string]string {
 
 	var result = make(map[string]map[string]string)
 
@@ -374,7 +374,11 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 			var models []string
 			var mainImports = ""
 			if len(methods) > 0 {
-				mainImports = "import {Call} from '@wailsio/runtime';\n"
+				if useBundledRuntime {
+					mainImports = "import {Call} from '/wails/runtime.js';\n"
+				} else {
+					mainImports = "import {Call} from '@wailsio/runtime';\n"
+				}
 			}
 			for _, method := range methods {
 				if useTypescript {
