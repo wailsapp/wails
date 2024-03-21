@@ -7,7 +7,7 @@ import {Call} from '@wailsio/runtime';
  * @typedef {import('./models').Person} Person
  */
 
-/** 
+/**
  * @function ArrayInt
  * @param _in {number[]}
  * @returns {Promise<void>}
@@ -16,7 +16,7 @@ export async function ArrayInt(_in) {
 	return Call.ByName("main.GreetService.ArrayInt", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function BoolInBoolOut
  * @param _in {boolean}
  * @returns {Promise<boolean>}
@@ -25,7 +25,7 @@ export async function BoolInBoolOut(_in) {
 	return Call.ByName("main.GreetService.BoolInBoolOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function Float32InFloat32Out
  * @param _in {number}
  * @returns {Promise<number>}
@@ -34,7 +34,7 @@ export async function Float32InFloat32Out(_in) {
 	return Call.ByName("main.GreetService.Float32InFloat32Out", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function Float64InFloat64Out
  * @param _in {number}
  * @returns {Promise<number>}
@@ -44,7 +44,7 @@ export async function Float64InFloat64Out(_in) {
 }
 
 /**
- * Greet someone 
+ * Greet someone
  * @function Greet
  * @param name {string}
  * @returns {Promise<string>}
@@ -53,7 +53,7 @@ export async function Greet(name) {
 	return Call.ByName("main.GreetService.Greet", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function Int16InIntOut
  * @param _in {number}
  * @returns {Promise<number>}
@@ -62,7 +62,7 @@ export async function Int16InIntOut(_in) {
 	return Call.ByName("main.GreetService.Int16InIntOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function Int16PointerInAndOutput
  * @param _in {number | null}
  * @returns {Promise<number | null>}
@@ -71,7 +71,7 @@ export async function Int16PointerInAndOutput(_in) {
 	return Call.ByName("main.GreetService.Int16PointerInAndOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function Int32InIntOut
  * @param _in {number}
  * @returns {Promise<number>}
@@ -80,7 +80,7 @@ export async function Int32InIntOut(_in) {
 	return Call.ByName("main.GreetService.Int32InIntOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function Int32PointerInAndOutput
  * @param _in {number | null}
  * @returns {Promise<number | null>}
@@ -89,7 +89,7 @@ export async function Int32PointerInAndOutput(_in) {
 	return Call.ByName("main.GreetService.Int32PointerInAndOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function Int64InIntOut
  * @param _in {number}
  * @returns {Promise<number>}
@@ -98,7 +98,7 @@ export async function Int64InIntOut(_in) {
 	return Call.ByName("main.GreetService.Int64InIntOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function Int64PointerInAndOutput
  * @param _in {number | null}
  * @returns {Promise<number | null>}
@@ -107,7 +107,7 @@ export async function Int64PointerInAndOutput(_in) {
 	return Call.ByName("main.GreetService.Int64PointerInAndOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function Int8InIntOut
  * @param _in {number}
  * @returns {Promise<number>}
@@ -116,7 +116,7 @@ export async function Int8InIntOut(_in) {
 	return Call.ByName("main.GreetService.Int8InIntOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function Int8PointerInAndOutput
  * @param _in {number | null}
  * @returns {Promise<number | null>}
@@ -125,7 +125,7 @@ export async function Int8PointerInAndOutput(_in) {
 	return Call.ByName("main.GreetService.Int8PointerInAndOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function IntInIntOut
  * @param _in {number}
  * @returns {Promise<number>}
@@ -134,7 +134,7 @@ export async function IntInIntOut(_in) {
 	return Call.ByName("main.GreetService.IntInIntOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function IntPointerInAndOutput
  * @param _in {number | null}
  * @returns {Promise<number | null>}
@@ -143,7 +143,7 @@ export async function IntPointerInAndOutput(_in) {
 	return Call.ByName("main.GreetService.IntPointerInAndOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function IntPointerInputNamedOutputs
  * @param _in {number | null}
  * @returns {Promise<number | null, void>}
@@ -152,7 +152,7 @@ export async function IntPointerInputNamedOutputs(_in) {
 	return Call.ByName("main.GreetService.IntPointerInputNamedOutputs", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function MapIntInt
  * @param _in {map}
  * @returns {Promise<void>}
@@ -161,7 +161,7 @@ export async function MapIntInt(_in) {
 	return Call.ByName("main.GreetService.MapIntInt", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function MapIntPointerInt
  * @param _in {map}
  * @returns {Promise<void>}
@@ -170,7 +170,7 @@ export async function MapIntPointerInt(_in) {
 	return Call.ByName("main.GreetService.MapIntPointerInt", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function MapIntSliceInt
  * @param _in {map}
  * @returns {Promise<void>}
@@ -179,7 +179,7 @@ export async function MapIntSliceInt(_in) {
 	return Call.ByName("main.GreetService.MapIntSliceInt", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function MapIntSliceIntInMapIntSliceIntOut
  * @param _in {map}
  * @returns {Promise<map>}
@@ -188,7 +188,7 @@ export async function MapIntSliceIntInMapIntSliceIntOut(_in) {
 	return Call.ByName("main.GreetService.MapIntSliceIntInMapIntSliceIntOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function NoInputsStringOut
  * @returns {Promise<string>}
  **/
@@ -196,7 +196,7 @@ export async function NoInputsStringOut() {
 	return Call.ByName("main.GreetService.NoInputsStringOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function PointerBoolInBoolOut
  * @param _in {boolean | null}
  * @returns {Promise<boolean | null>}
@@ -205,7 +205,7 @@ export async function PointerBoolInBoolOut(_in) {
 	return Call.ByName("main.GreetService.PointerBoolInBoolOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function PointerFloat32InFloat32Out
  * @param _in {number | null}
  * @returns {Promise<number | null>}
@@ -214,7 +214,7 @@ export async function PointerFloat32InFloat32Out(_in) {
 	return Call.ByName("main.GreetService.PointerFloat32InFloat32Out", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function PointerFloat64InFloat64Out
  * @param _in {number | null}
  * @returns {Promise<number | null>}
@@ -223,7 +223,7 @@ export async function PointerFloat64InFloat64Out(_in) {
 	return Call.ByName("main.GreetService.PointerFloat64InFloat64Out", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function PointerMapIntInt
  * @param _in {map | null}
  * @returns {Promise<void>}
@@ -232,7 +232,7 @@ export async function PointerMapIntInt(_in) {
 	return Call.ByName("main.GreetService.PointerMapIntInt", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function PointerStringInStringOut
  * @param _in {string | null}
  * @returns {Promise<string | null>}
@@ -241,7 +241,7 @@ export async function PointerStringInStringOut(_in) {
 	return Call.ByName("main.GreetService.PointerStringInStringOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function StringArrayInputNamedOutput
  * @param _in {string[]}
  * @returns {Promise<string[]>}
@@ -250,7 +250,7 @@ export async function StringArrayInputNamedOutput(_in) {
 	return Call.ByName("main.GreetService.StringArrayInputNamedOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function StringArrayInputNamedOutputs
  * @param _in {string[]}
  * @returns {Promise<string[], void>}
@@ -259,7 +259,7 @@ export async function StringArrayInputNamedOutputs(_in) {
 	return Call.ByName("main.GreetService.StringArrayInputNamedOutputs", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function StringArrayInputStringArrayOut
  * @param _in {string[]}
  * @returns {Promise<string[]>}
@@ -268,7 +268,7 @@ export async function StringArrayInputStringArrayOut(_in) {
 	return Call.ByName("main.GreetService.StringArrayInputStringArrayOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function StringArrayInputStringOut
  * @param _in {string[]}
  * @returns {Promise<string>}
@@ -277,7 +277,7 @@ export async function StringArrayInputStringOut(_in) {
 	return Call.ByName("main.GreetService.StringArrayInputStringOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function StructInputStructOutput
  * @param _in {Person}
  * @returns {Promise<Person>}
@@ -286,7 +286,7 @@ export async function StructInputStructOutput(_in) {
 	return Call.ByName("main.GreetService.StructInputStructOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function StructPointerInputErrorOutput
  * @param _in {Person | null}
  * @returns {Promise<void>}
@@ -295,7 +295,7 @@ export async function StructPointerInputErrorOutput(_in) {
 	return Call.ByName("main.GreetService.StructPointerInputErrorOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function StructPointerInputStructPointerOutput
  * @param _in {Person | null}
  * @returns {Promise<Person>}
@@ -304,7 +304,7 @@ export async function StructPointerInputStructPointerOutput(_in) {
 	return Call.ByName("main.GreetService.StructPointerInputStructPointerOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function UInt16InUIntOut
  * @param _in {number}
  * @returns {Promise<number>}
@@ -313,7 +313,7 @@ export async function UInt16InUIntOut(_in) {
 	return Call.ByName("main.GreetService.UInt16InUIntOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function UInt16PointerInAndOutput
  * @param _in {number | null}
  * @returns {Promise<number | null>}
@@ -322,7 +322,7 @@ export async function UInt16PointerInAndOutput(_in) {
 	return Call.ByName("main.GreetService.UInt16PointerInAndOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function UInt32InUIntOut
  * @param _in {number}
  * @returns {Promise<number>}
@@ -331,7 +331,7 @@ export async function UInt32InUIntOut(_in) {
 	return Call.ByName("main.GreetService.UInt32InUIntOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function UInt32PointerInAndOutput
  * @param _in {number | null}
  * @returns {Promise<number | null>}
@@ -340,7 +340,7 @@ export async function UInt32PointerInAndOutput(_in) {
 	return Call.ByName("main.GreetService.UInt32PointerInAndOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function UInt64InUIntOut
  * @param _in {number}
  * @returns {Promise<number>}
@@ -349,7 +349,7 @@ export async function UInt64InUIntOut(_in) {
 	return Call.ByName("main.GreetService.UInt64InUIntOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function UInt64PointerInAndOutput
  * @param _in {number | null}
  * @returns {Promise<number | null>}
@@ -358,7 +358,7 @@ export async function UInt64PointerInAndOutput(_in) {
 	return Call.ByName("main.GreetService.UInt64PointerInAndOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function UInt8InUIntOut
  * @param _in {number}
  * @returns {Promise<number>}
@@ -367,7 +367,7 @@ export async function UInt8InUIntOut(_in) {
 	return Call.ByName("main.GreetService.UInt8InUIntOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function UInt8PointerInAndOutput
  * @param _in {number | null}
  * @returns {Promise<number | null>}
@@ -376,7 +376,7 @@ export async function UInt8PointerInAndOutput(_in) {
 	return Call.ByName("main.GreetService.UInt8PointerInAndOutput", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function UIntInUIntOut
  * @param _in {number}
  * @returns {Promise<number>}
@@ -385,7 +385,7 @@ export async function UIntInUIntOut(_in) {
 	return Call.ByName("main.GreetService.UIntInUIntOut", ...Array.prototype.slice.call(arguments, 0));
 }
 
-/** 
+/**
  * @function UIntPointerInAndOutput
  * @param _in {number | null}
  * @returns {Promise<number | null>}
