@@ -22,8 +22,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
 
-var fixupXattrs func(string)
-
 // Mode is the type used to indicate the build modes
 type Mode int
 
@@ -328,11 +326,6 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		// Remove quarantine attribute
 		if _, err := os.Stat(options.CompiledBinary); os.IsNotExist(err) {
 			return "", fmt.Errorf("compiled binary does not exist at path: %s", options.CompiledBinary)
-		}
-		if fixupXattrs != nil {
-			os.Chdir(options.BinDirectory)
-			fixupXattrs(options.CompiledBinary)
-			os.Chdir(options.ProjectData.Path)
 		}
 		stdout, stderr, err := shell.RunCommand(options.BinDirectory, "xattr", "-rc", options.CompiledBinary)
 		if err != nil {
