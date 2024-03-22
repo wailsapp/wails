@@ -4,7 +4,7 @@
 
 import {Call} from '@wailsio/runtime';
 
-/** 
+/**
  * @function Greet
  * @param name {string}
  * @returns {Promise<string>}
