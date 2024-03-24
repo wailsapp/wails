@@ -1,5 +1,8 @@
 INHERIT: mkdocs.yml
 plugins:
   - search
-  - social
+#  - social:
+#      debug: true
+#      cards_layout_options:
+#        font_family: Roboto
   - tags

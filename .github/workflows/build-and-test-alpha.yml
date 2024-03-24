@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        go-version: [1.21]
+        go-version: [1.22]
 
     steps:
       - name: Checkout code
@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [20.x]
 
     steps:
       - name: Checkout code
@@ -100,7 +100,7 @@ jobs:
             vanilla,
             vanilla-ts,
           ]
-        go-version: [1.21]
+        go-version: [1.22]
     steps:
       - name: Checkout
         uses: actions/checkout@v3

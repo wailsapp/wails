@@ -1,8 +1,6 @@
 package main
 
-type Person struct {
-	name string
-}
+import "github.com/wailsapp/wails/v3/examples/binding/data"
 
 // GreetService is a service that greets people
 type GreetService struct {
@@ -14,6 +12,6 @@ func (*GreetService) Greet(name string) string {
 }
 
 // GreetPerson greets a person
-func (*GreetService) GreetPerson(person Person) string {
-	return "Hello " + person.name
+func (*GreetService) GreetPerson(person data.Person) string {
+	return "Hello " + person.Name
 }

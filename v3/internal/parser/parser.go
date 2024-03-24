@@ -3,7 +3,6 @@ package parser
 import (
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/flags"
 	"go/ast"
 	"go/build"
 	"go/parser"
@@ -15,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/wailsapp/wails/v3/internal/flags"
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/hash"
@@ -136,6 +137,16 @@ type BoundMethod struct {
 	Outputs    []*Parameter
 	ID         uint32
 	Alias      *uint32
+}
+
+func (m BoundMethod) JSInputs() []*Parameter {
+	if len(m.Inputs) > 0 {
+		if firstArg := m.Inputs[0]; isContext(firstArg) {
+			return m.Inputs[1:]
+		}
+	}
+
+	return m.Inputs
 }
 
 func (m BoundMethod) IDAsString() string {
@@ -340,27 +351,32 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 	if err != nil {
 		return p, err
 	}
+
 	p.outputDirectory = options.OutputDirectory
+
 	for _, pkg := range p.BoundMethods {
 		for _, boundMethods := range pkg {
 			p.Stats.NumMethods += len(boundMethods)
 		}
 	}
-	generatedMethods := p.GenerateBindings(p.BoundMethods, options.UseIDs, options.TS)
-	for pkg, structs := range generatedMethods {
+
+	generatedMethods := p.GenerateBindings(p.BoundMethods, options.ModelsFilename, options.UseIDs, options.TS, options.UseBundledRuntime)
+	for pkgDir, structs := range generatedMethods {
 		// Write the directory
-		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkg), 0755)
+		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkgDir), 0755)
 		if err != nil && !os.IsExist(err) {
 			return p, err
 		}
 		// Write the files
 		for structName, text := range structs {
 			p.Stats.NumStructs++
-			filename := structName + ".js"
+			var filename string
 			if options.TS {
 				filename = structName + ".ts"
+			} else {
+				filename = structName + ".js"
 			}
-			err = os.WriteFile(filepath.Join(options.OutputDirectory, pkg, filename), []byte(text), 0644)
+			err = os.WriteFile(filepath.Join(options.OutputDirectory, pkgDir, filename), []byte(text), 0644)
 			if err != nil {
 				return p, err
 			}
@@ -376,12 +392,20 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 		if err != nil {
 			return p, err
 		}
-		for pkg, text := range generatedModels {
-			// Get directory for package
-			pkgInfo := p.packageCache[pkg]
-			relativePackageDir := p.RelativeBindingsDir(pkgInfo, pkgInfo)
+		for pkgDir, text := range generatedModels {
 			// Write the directory
-			err = os.WriteFile(filepath.Join(options.OutputDirectory, relativePackageDir, options.ModelsFilename), []byte(text), 0644)
+			err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkgDir), 0755)
+			if err != nil && !os.IsExist(err) {
+				return p, err
+			}
+			// Write the file
+			var filename string
+			if options.TS {
+				filename = options.ModelsFilename + ".ts"
+			} else {
+				filename = options.ModelsFilename + ".js"
+			}
+			err = os.WriteFile(filepath.Join(options.OutputDirectory, pkgDir, filename), []byte(text), 0644)
 		}
 		if err != nil {
 			return p, err
@@ -1164,25 +1188,35 @@ func (p *Project) parseTypes(pkgs map[string]*ParsedPackage) {
 }
 
 func (p *Project) RelativeBindingsDir(dir *ParsedPackage, dir2 *ParsedPackage) string {
-
 	if dir.Dir == dir2.Dir {
 		return "."
 	}
 
-	// Calculate the relative path from the bindings directory to the package directory
-	absoluteSourceDir := dir.Dir
-	if absoluteSourceDir == p.Path {
+	// Calculate the relative path from the bindings directory of dir to that of dir2
+	var (
+		absoluteSourceDir string
+		absoluteTargetDir string
+	)
+
+	if dir.Dir == p.Path {
 		absoluteSourceDir = filepath.Join(p.Path, p.outputDirectory, "main")
 	} else {
-		absoluteSourceDir = dir.Dir
+		relativeSourceDir := strings.TrimPrefix(dir.Dir, p.Path)
+		absoluteSourceDir = filepath.Join(p.Path, p.outputDirectory, relativeSourceDir)
 	}
-	targetRelativeDir := strings.TrimPrefix(dir2.Dir, p.Path)
-	targetBindingsDir := filepath.Join(p.Path, p.outputDirectory, targetRelativeDir)
-	// Calculate the relative path from the source directory to the target directory
-	relativePath, err := filepath.Rel(absoluteSourceDir, targetBindingsDir)
+
+	if dir2.Dir == p.Path {
+		absoluteTargetDir = filepath.Join(p.Path, p.outputDirectory, "main")
+	} else {
+		relativeTargetDir := strings.TrimPrefix(dir2.Dir, p.Path)
+		absoluteTargetDir = filepath.Join(p.Path, p.outputDirectory, relativeTargetDir)
+	}
+
+	relativePath, err := filepath.Rel(absoluteSourceDir, absoluteTargetDir)
 	if err != nil {
 		panic(err)
 	}
+
 	return filepath.ToSlash(relativePath)
 }
 

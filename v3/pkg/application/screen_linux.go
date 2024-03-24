@@ -3,21 +3,29 @@
 package application
 
 import (
-	"fmt"
 	"sync"
 )
 
-func (m *linuxApp) getPrimaryScreen() (*Screen, error) {
-	return nil, fmt.Errorf("not implemented")
+func (a *linuxApp) getPrimaryScreen() (*Screen, error) {
+	var wg sync.WaitGroup
+	var screen *Screen
+	var err error
+	wg.Add(1)
+	InvokeSync(func() {
+		screen, err = getPrimaryScreen()
+		wg.Done()
+	})
+	wg.Wait()
+	return screen, err
 }
 
-func (m *linuxApp) getScreens() ([]*Screen, error) {
+func (a *linuxApp) getScreens() ([]*Screen, error) {
 	var wg sync.WaitGroup
 	var screens []*Screen
 	var err error
 	wg.Add(1)
 	InvokeSync(func() {
-		screens, err = getScreens(m.application)
+		screens, err = getScreens(a.application)
 		wg.Done()
 	})
 	wg.Wait()

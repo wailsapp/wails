@@ -350,3 +350,11 @@ func (a *App) logPlatformInfo() {
 
 	a.info("Platform Info:", args...)
 }
+
+func (a *App) platformEnvironment() map[string]any {
+	result := map[string]any{}
+	webviewVersion, _ := webviewloader.GetAvailableCoreWebView2BrowserVersionString(a.options.Windows.WebviewBrowserPath)
+	result["Go-WebView2Loader"] = webviewloader.UsingGoWebview2Loader
+	result["WebView2"] = webviewVersion
+	return result
+}

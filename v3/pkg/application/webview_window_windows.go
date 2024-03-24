@@ -193,6 +193,7 @@ func (w *windowsWebviewWindow) run() {
 		exStyle |= w32.WS_EX_APPWINDOW
 	}
 
+	// ToDo: X, Y should also be scaled, should it be always relative to the main monitor?
 	var startX, _ = lo.Coalesce(options.X, w32.CW_USEDEFAULT)
 	var startY, _ = lo.Coalesce(options.Y, w32.CW_USEDEFAULT)
 
@@ -222,8 +223,8 @@ func (w *windowsWebviewWindow) run() {
 		style,
 		startX,
 		startY,
-		options.Width,
-		options.Height,
+		w32.CW_USEDEFAULT,
+		w32.CW_USEDEFAULT,
 		parent,
 		appMenu,
 		w32.GetModuleHandle(""),
@@ -233,13 +234,17 @@ func (w *windowsWebviewWindow) run() {
 		panic("Unable to create window")
 	}
 
-	w.setupChromium()
-
 	w.setSize(options.Width, options.Height)
 
+	w.setupChromium()
+
 	// Min/max buttons
-	w.setStyle(!options.Windows.DisableMinimiseButton, w32.WS_MINIMIZEBOX)
-	w.setStyle(!options.Windows.DisableMaximiseButton, w32.WS_MAXIMIZEBOX)
+	if !options.Windows.DisableMinimiseButton {
+		w.setMinimiseButtonEnabled(false)
+	}
+	if !options.Windows.DisableMaximiseButton {
+		w.setMaximiseButtonEnabled(false)
+	}
 
 	// Register the window with the application
 	getNativeApplication().registerWindow(w)
@@ -1279,7 +1284,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 	webviewRequests <- &webViewAssetRequest{
 		Request:    webviewRequest,
 		windowId:   w.parent.id,
-		windowName: globalApplication.getWindowForID(w.parent.id).Name(),
+		windowName: w.parent.options.Name,
 	}
 }
 
@@ -1624,6 +1629,14 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 		addDragAndDropMessage(w.parent.id, filenames)
 		return
 	}
+}
+
+func (w *windowsWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
+	w.setStyle(enabled, w32.WS_MINIMIZEBOX)
+}
+
+func (w *windowsWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
+	w.setStyle(enabled, w32.WS_MAXIMIZEBOX)
 }
 
 func ScaleWithDPI(pixels int, dpi uint) int {

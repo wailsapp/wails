@@ -36,7 +36,7 @@ const (
 	Close              Role = iota
 	Reload             Role = iota
 	ForceReload        Role = iota
-	ShowDevTools       Role = iota
+	OpenDevTools       Role = iota
 	ResetZoom          Role = iota
 	ZoomIn             Role = iota
 	ZoomOut            Role = iota

@@ -129,7 +129,7 @@
             font-size: large;
         }
     </style>
-    <script src="runtime.js"></script>
+    <script type="module" src="/wails/runtime.js"></script>
 </head>
 <body style="--webkit-app-region: drag;">
 <img class="logo"
@@ -147,7 +147,11 @@
 </div>
 <div>
     <p class="blue-button-42" onclick="wails.Window.ToggleMaximise()">ToggleMaximise</p>
+    <p class="blue-button-42" onclick="wails.Window.IsFocused().then((result) => document.getElementById('result').textContent = `IsFocused: ${result}`)">IsFocused</p>
+    <p class="blue-button-42" onclick="wails.Window.IsMaximised().then((result) => document.getElementById('result').textContent = `IsMaximised: ${result}`)">IsMaximised</p>
+    <p class="blue-button-42" onclick="wails.Window.IsFullscreen().then((result) => document.getElementById('result').textContent = `IsFullscreen: ${result}`)">IsFullscreen</p>
 </div>
+<div id="result"></div>
 </body>
 </html>
 

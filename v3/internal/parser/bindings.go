@@ -20,7 +20,7 @@ const headerTypescript = `// Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â M
 `
 
 const bindingTemplate = `
-/**Comments 
+/**Comments
  * @function {{methodName}}* @param names {string}
  * @returns {Promise<string>}
  **/
@@ -155,7 +155,7 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 	}
 	result = strings.ReplaceAll(result, "Comments", comments)
 	var params string
-	for _, input := range method.Inputs {
+	for _, input := range method.JSInputs() {
 		input.project = p
 		inputName := sanitiseJSVarName(input.Name)
 		pkgName := getPackageName(input)
@@ -181,7 +181,7 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 	//}
 	result = strings.ReplaceAll(result, "* @param names {string}", params)
 	var inputs string
-	for _, input := range method.Inputs {
+	for _, input := range method.JSInputs() {
 		pkgName := getPackageName(input)
 		if pkgName != "" {
 			models = append(models, pkgName)
@@ -256,7 +256,7 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 	}
 	result = strings.ReplaceAll(result, "Comments", comments)
 	var params string
-	for _, input := range method.Inputs {
+	for _, input := range method.JSInputs() {
 		input.project = p
 		inputName := sanitiseJSVarName(input.Name)
 		pkgName := getPackageName(input)
@@ -279,7 +279,7 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 	//	params = "\n" + params
 	//}
 	var inputs string
-	for _, input := range method.Inputs {
+	for _, input := range method.JSInputs() {
 		pkgName := getPackageName(input)
 		if pkgName != "" {
 			models = append(models, pkgName)
@@ -341,7 +341,11 @@ func getPackageName(input *Parameter) string {
 	return result
 }
 
-func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod, useIDs bool, useTypescript bool) map[string]map[string]string {
+func isContext(input *Parameter) bool {
+	return input.Type.Package == "context" && input.Type.Name == "Context"
+}
+
+func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod, modelsFilename string, useIDs bool, useTypescript bool, useBundledRuntime bool) map[string]map[string]string {
 
 	var result = make(map[string]map[string]string)
 
@@ -370,7 +374,11 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 			var models []string
 			var mainImports = ""
 			if len(methods) > 0 {
-				mainImports = "import {Call} from '@wailsio/runtime';\n"
+				if useBundledRuntime {
+					mainImports = "import {Call} from '/wails/runtime.js';\n"
+				} else {
+					mainImports = "import {Call} from '@wailsio/runtime';\n"
+				}
 			}
 			for _, method := range methods {
 				if useTypescript {
@@ -401,7 +409,7 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 						sort.Strings(namespacedStructNames)
 						for _, thisStructName := range namespacedStructNames {
 							structInfo := namespacedStruct[thisStructName]
-							typedefs += " * @typedef {import('" + relativePackageDir + "/models')." + thisStructName + "} " + namePrefix + structInfo.Name + "\n"
+							typedefs += " * @typedef {import('" + relativePackageDir + "/" + modelsFilename + "')." + thisStructName + "} " + namePrefix + structInfo.Name + "\n"
 						}
 					}
 					typedefs += " */\n"
@@ -425,7 +433,7 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 							if namePrefix != "" {
 								imports += "import {" + thisStructName + " as " + namePrefix + structInfo.Name + "} from '" + relativePackageDir + "/models';\n"
 							} else {
-								imports += "import {" + thisStructName + "} from '" + relativePackageDir + "/models';\n"
+								imports += "import {" + thisStructName + "} from '" + relativePackageDir + "/" + modelsFilename + "';\n"
 							}
 						}
 					}

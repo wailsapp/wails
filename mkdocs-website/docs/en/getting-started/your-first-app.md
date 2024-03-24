@@ -57,13 +57,17 @@ You can run this like you would any normal application:
 
 You'll see a simple UI, the starting point for your application. As it is the debug version, you'll also see logs in the console window. This is useful for debugging purposes.
 
-## Step 4: Making Changes
+## Step 4: Dev Mode
 
-Now, let's make a small change:
+We can also run the application in development mode. This mode allows you to make changes to your frontend code and see the changes reflected in the running application without having to rebuild the entire application.
 
-1. Open `frontend/main.js`.
-2. Change the line that has `<h1>Hello Wails!</h1>` to `<h1>Hello World!</h1>`.
-3. Save the file.
+1. Open a new terminal window.
+2. Run `wails3 dev`.
+3. Open `frontend/main.js`.
+4. Change the line that has `<h1>Hello Wails!</h1>` to `<h1>Hello World!</h1>`.
+5. Save the file.
+
+The application will update automatically, and you'll see the changes reflected in the running application. 
 
 ## Step 5: Building the Application Again
 

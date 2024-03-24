@@ -11,6 +11,15 @@ type ContextMenuData struct {
 	Data any    `json:"data"`
 }
 
+func (d ContextMenuData) clone() *ContextMenuData {
+	return &ContextMenuData{
+		Id:   d.Id,
+		X:    d.X,
+		Y:    d.Y,
+		Data: d.Data,
+	}
+}
+
 const (
 	ContextMenuOpen = 0
 )

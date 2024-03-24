@@ -20,6 +20,7 @@ window._wails.callErrorHandler = errorHandler;
 
 const CallBinding = 0;
 const call = newRuntimeCallerWithID(objectNames.Call, '');
+const cancelCall = newRuntimeCallerWithID(objectNames.CancelCall, '');
 let callResponses = new Map();
 
 /**
@@ -84,18 +85,36 @@ function getAndDeleteResponse(id) {
  *
  * @param {string|number} type - The type of call to execute.
  * @param {Object} [options={}] - Additional options for the call.
- * @return {Promise} - A promise that will be resolved or rejected based on the result of the call.
+ * @return {Promise} - A promise that will be resolved or rejected based on the result of the call. It also has a cancel method to cancel a long running request.
  */
 function callBinding(type, options = {}) {
-    return new Promise((resolve, reject) => {
-        const id = generateID();
+    const id = generateID();
+    const doCancel = () => { cancelCall(type, {"call-id": id}) };
+    var queuedCancel = false, callRunning = false;
+    var p = new Promise((resolve, reject) => {
         options["call-id"] = id;
         callResponses.set(id, { resolve, reject });
-        call(type, options).catch((error) => {
-            reject(error);
-            callResponses.delete(id);
-        });
+        call(type, options).
+            then((_) => {
+                callRunning = true;
+                if (queuedCancel) {
+                    doCancel();
+                }
+            }).
+            catch((error) => {
+                reject(error);
+                callResponses.delete(id);
+            });
     });
+    p.cancel = () => {
+        if (callRunning) {
+            doCancel();
+        } else {
+            queuedCancel = true;
+        }
+    };
+    
+    return p;
 }
 
 /**

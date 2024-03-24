@@ -9,7 +9,7 @@ import {Call} from '@wailsio/runtime';
  */
 
 /**
- * Greet does XYZ 
+ * Greet does XYZ
  * @function Greet
  * @param name {string}
  * @param title {Title}
@@ -20,7 +20,7 @@ export async function Greet(name, title) {
 }
 
 /**
- * NewPerson creates a new person 
+ * NewPerson creates a new person
  * @function NewPerson
  * @param name {string}
  * @returns {Promise<Person>}

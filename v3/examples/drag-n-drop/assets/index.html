@@ -12,7 +12,9 @@ Drop Files onto this window...
 <div id="results"></div>
 </body>
 
-<script>
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
     document.body.addEventListener('drop', function(e) {
         // Note that postMessageWithAdditionalObjects does not accept a single object,
         // but only accepts an ArrayLike object.

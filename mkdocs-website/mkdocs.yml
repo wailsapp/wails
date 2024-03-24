@@ -48,129 +48,6 @@ theme:
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
-
-plugins:
-  - table-reader:
-      data_path: "shared"
-      allow_missing_files: False
-  - i18n:
-      docs_structure: folder
-      languages:
-        - locale: en
-          default: true
-          name: English
-          build: true
-#        - locale: zh
-#          name: 简体中文
-#          build: true
-#          site_description: Wails 项目 - 使用 Go 构建美观的跨平台应用程序
-#          extra:
-#            announcement: 这些文档是自动生成的。 如有错误，请告知我们。
-#          nav:
-#            - 主页: index.md
-#            - 入门:
-#              #    - 介绍: introduction.md
-#              - 安装: getting-started/installation.md
-#              #    - 创建项目: getting-started/creating-a-project.md
-#              #    - 它是如何工作的: how-does-it-work.md
-#              #    - 开发您的应用程序: getting-started/developing-your-application.md
-#              #    - 编译您的项目: getting-started/compiling-your-project.md
-#              #  - API 参考:
-#              #    - 运行时:
-#              #      - 介绍: reference/runtime/introduction.md
-#              #    - CLI: reference/cli.md
-#              #  - 社区:
-#              #    - 模板: community/templates.md
-#              #    - 指南:
-#              #      - Angular: guides/angular.md
-#              #    - 展示:
-#              #      - Emaillit: community/showcase/emailit.md
-#              #    - 贡献: community/contributing.md
-#              #    - 链接: community/links.md
-#              - 下一步: getting-started/next-steps.md
-#              - 反馈: getting-started/feedback.md
-#            - 反馈: getting-started/feedback.md
-#            - v3 版本中的新内容是什么?: whats-new.md
-#            - API:
-#                - 应用程序: API/application.md
-#                - 窗口: API/window.md
-#                - 系统托盘: API/systray.md
-#                - 菜单: API/menu.md
-#                - 主线程: API/mainthread.md
-#                - 完整 API: API/fullapi.md
-#            - 开发:
-#                - 介绍: development/introduction.md
-#                - 状态: development/status.md
-#                - v3 变更: development/changes.md
-#            - 路线图: roadmap.md
-#            - 更改日志: changelog.md
-#            - 赞助❤️: https://github.com/sponsors/leaanthony
-
-
-extra:
-#  alternate:
-#    - name: English
-#      link: /
-#      lang: en
-#    - name: 简体中文
-#      link: /zh/
-#      lang: zh
-      
-  social:
-    - icon: fontawesome/brands/github-alt
-      link: https://github.com/wailsapp/wails
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/wailsapp
-    - icon: fontawesome/brands/discord
-      link: https://discord.gg/JDdSxwjhGf
-
-extra_css:
-  - stylesheets/extra.css
-
-nav:
-  - Home: index.md
-  - Getting started:
-#    - Introduction: introduction.md
-    - Installation: getting-started/installation.md
-#    - Creating a Project: getting-started/creating-a-project.md
-#    - How does it work: how-does-it-work.md
-#    - Developing your Application: getting-started/developing-your-application.md
-#    - Compiling your Project: getting-started/compiling-your-project.md
-#  - API Reference:
-#    - Runtime:
-#      - Introduction: reference/runtime/introduction.md
-#    - CLI: reference/cli.md
-#  - Community:
-#    - Template: community/templates.md
-#    - Guides:
-#      - Angular: guides/angular.md
-#    - Showcase:
-#      - Emaillit: community/showcase/emailit.md
-#    - Contributing: community/contributing.md
-#    - Links: community/links.md
-    - Your First Application: getting-started/your-first-app.md
-    - Next Steps: getting-started/next-steps.md
-    - Learn More:
-        - Runtime: learn/runtime.md
-    - Feedback: getting-started/feedback.md
-  - Feedback: getting-started/feedback.md
-  - What's New in v3?: whats-new.md
-  - API:
-      - Application: API/application.md
-      - Window: API/window.md
-      - System Tray: API/systray.md
-      - Menu: API/menu.md
-      - Main Thread: API/mainthread.md
-      - Full API: API/fullapi.md
-  - Development:
-    - Introduction: development/introduction.md
-    - Status: development/status.md
-    - v3 Changes: development/changes.md
-  - Roadmap: roadmap.md
-  - Change Log: changelog.md
-  - Sponsor❤️: https://github.com/sponsors/leaanthony
-
-
 markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true
@@ -192,6 +69,95 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - table-reader:
+      data_path: "shared"
+      allow_missing_files: False
+  - i18n:
+      docs_structure: folder
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: cy
+          name: Cymraeg
+          build: true
+          site_description: Y Prosiect Wails - Adeiladu cymwysiadau croesrwyd hardd gan ddefnyddio Go
+          extra:
+            announcement: Mae'r wefan hon wedi'i chyfieithu'n awtomatig. Rhowch wybod i ni os oes unrhyw gamgymeriadau.
+          nav:
+            - Cartref: index.md
+            - Cychwyn:
+                - Gosod: getting-started/installation.md
+                - Eich Cais Cyntaf: getting-started/your-first-app.md
+                - Camau Nesaf: getting-started/next-steps.md
+                - Dysgu Rhagor:
+                    - Runtime: learn/runtime.md
+                - Adborth: getting-started/feedback.md
+            - Adborth: getting-started/feedback.md
+            - Beth sydd Newydd yn v3?: whats-new.md
+            - API:
+                - Cais: API/application.md
+                - Ffenestr: API/window.md
+                - Bar Tasg: API/systray.md
+                - Dewislen: API/menu.md
+                - Prif Linell: API/mainthread.md
+            - Datblygu:
+                - Cyflwyniad: development/introduction.md
+                - Status: development/status.md
+                - Newidiadau v3: development/changes.md
+            - Cynllun Ffordd Ymlaen: roadmap.md
+            - Cofnod Newidiadau: changelog.md
+            - Noddwr❤️: https://github.com/sponsors/leaanthony
+
+
+extra:
+  alternate:
+    - name: English
+      link: /
+      lang: en
+    - name: Cymraeg
+      link: /cy/
+      lang: cy
+      
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/wailsapp/wails
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/wailsapp
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/JDdSxwjhGf
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Getting started:
+    - Installation: getting-started/installation.md
+    - Your First Application: getting-started/your-first-app.md
+    - Next Steps: getting-started/next-steps.md
+    - Learn More:
+        - Runtime: learn/runtime.md
+    - Feedback: getting-started/feedback.md
+  - Feedback: getting-started/feedback.md
+  - What's New in v3?: whats-new.md
+  - API:
+      - Application: API/application.md
+      - Window: API/window.md
+      - System Tray: API/systray.md
+      - Menu: API/menu.md
+      - Main Thread: API/mainthread.md
+  - Development:
+    - Introduction: development/introduction.md
+    - Status: development/status.md
+    - v3 Changes: development/changes.md
+  - Roadmap: roadmap.md
+  - Change Log: changelog.md
+  - Sponsor❤️: https://github.com/sponsors/leaanthony
+
 watch:
   - overrides
   - shared

@@ -576,17 +576,6 @@ func newToggleFullscreenMenuItem() *MenuItem {
 	return result
 }
 
-func newToggleDevToolsMenuItem() *MenuItem {
-	return newMenuItem("Toggle Developer Tools").
-		SetAccelerator("Alt+Command+I").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.ToggleDevTools()
-			}
-		})
-}
-
 func newZoomResetMenuItem() *MenuItem {
 	// reset zoom menu item
 	return newMenuItem("Actual Size").

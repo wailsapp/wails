@@ -2,11 +2,12 @@ package parser
 
 import (
 	"embed"
-	"github.com/google/go-cmp/cmp"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 //go:embed testdata
@@ -623,6 +624,48 @@ func TestGenerateBindings(t *testing.T) {
 			useIDs:        false,
 			useTypescript: true,
 		},
+		{
+			name: "function_single_context",
+			dir:  "testdata/function_single_context",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/function_single_context/frontend/bindings/main/GreetService.js"),
+				},
+			},
+			useIDs: true,
+		},
+		{
+			name: "function_single_context",
+			dir:  "testdata/function_single_context",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/function_single_context/frontend/bindings/main/GreetService.name.js"),
+				},
+			},
+			useIDs: false,
+		},
+		{
+			name: "function single - Typescript - CallByID",
+			dir:  "testdata/function_single_context",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/function_single_context/frontend/bindings/main/GreetService.ts"),
+				},
+			},
+			useIDs:        true,
+			useTypescript: true,
+		},
+		{
+			name: "function single - Typescript - CallByName",
+			dir:  "testdata/function_single_context",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/function_single_context/frontend/bindings/main/GreetService.name.ts"),
+				},
+			},
+			useIDs:        false,
+			useTypescript: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -641,7 +684,7 @@ func TestGenerateBindings(t *testing.T) {
 			project.outputDirectory = "frontend/bindings"
 
 			// Generate Bindings
-			got := project.GenerateBindings(project.BoundMethods, tt.useIDs, tt.useTypescript)
+			got := project.GenerateBindings(project.BoundMethods, "models", tt.useIDs, tt.useTypescript, false)
 
 			for dirName, structDetails := range got {
 				// iterate the struct names in structDetails
