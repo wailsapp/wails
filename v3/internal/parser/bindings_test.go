@@ -684,7 +684,7 @@ func TestGenerateBindings(t *testing.T) {
 			project.outputDirectory = "frontend/bindings"
 
 			// Generate Bindings
-			got := project.GenerateBindings(project.BoundMethods, tt.useIDs, tt.useTypescript)
+			got := project.GenerateBindings(project.BoundMethods, "models", tt.useIDs, tt.useTypescript, false)
 
 			for dirName, structDetails := range got {
 				// iterate the struct names in structDetails

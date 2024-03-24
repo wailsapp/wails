@@ -152,13 +152,18 @@ tasks:
         drag-n-drop
         events
         frameless
+        hide-window
         keybindings
         menu
+        oauth
         plain
-        plugins
         screen
+        server
+        show-macos-toolbar
         systray
+        video
         window
+        window-api
         wml
     cmds:
       - for: { var: EXAMPLEDIRS }

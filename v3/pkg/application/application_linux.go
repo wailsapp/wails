@@ -2,6 +2,17 @@
 
 package application
 
+/*
+	#include "gtk/gtk.h"
+	#include "webkit2/webkit2.h"
+	static guint get_compiled_gtk_major_version() { return GTK_MAJOR_VERSION; }
+	static guint get_compiled_gtk_minor_version() { return GTK_MINOR_VERSION; }
+	static guint get_compiled_gtk_micro_version() { return GTK_MICRO_VERSION; }
+	static guint get_compiled_webkit_major_version() { return WEBKIT_MAJOR_VERSION; }
+	static guint get_compiled_webkit_minor_version() { return WEBKIT_MINOR_VERSION; }
+	static guint get_compiled_webkit_micro_version() { return WEBKIT_MICRO_VERSION; }
+*/
+import "C"
 import (
 	"fmt"
 	"log"
@@ -21,20 +32,19 @@ func init() {
 }
 
 type linuxApp struct {
-	application     pointer
-	applicationMenu pointer
-	parent          *App
+	application pointer
+	parent      *App
 
 	startupActions []func()
 
 	// Native -> uint
-	windows     map[windowPointer]uint
-	windowsLock sync.Mutex
+	windowMap     map[windowPointer]uint
+	windowMapLock sync.Mutex
 
 	theme string
 }
 
-func (m *linuxApp) GetFlags(options Options) map[string]any {
+func (a *linuxApp) GetFlags(options Options) map[string]any {
 	if options.Flags == nil {
 		options.Flags = make(map[string]any)
 	}
@@ -45,30 +55,25 @@ func getNativeApplication() *linuxApp {
 	return globalApplication.impl.(*linuxApp)
 }
 
-func (m *linuxApp) hide() {
-	hideAllWindows(m.application)
+func (a *linuxApp) hide() {
+	a.hideAllWindows()
 }
 
-func (m *linuxApp) show() {
-	showAllWindows(m.application)
+func (a *linuxApp) show() {
+	a.showAllWindows()
 }
 
-func (m *linuxApp) on(eventID uint) {
-	// TODO: What do we need to do here?
-	log.Println("linuxApp.on()", eventID)
+func (a *linuxApp) on(eventID uint) {
+	// TODO: Test register/unregister events
+	//C.registerApplicationEvent(l.application, C.uint(eventID))
 }
 
-func (m *linuxApp) setIcon(icon []byte) {
-
+func (a *linuxApp) setIcon(icon []byte) {
 	log.Println("linuxApp.setIcon", "not implemented")
 }
 
-func (m *linuxApp) name() string {
+func (a *linuxApp) name() string {
 	return appName()
-}
-
-func (m *linuxApp) getCurrentWindowID() uint {
-	return getCurrentWindowID(m.application, m.windows)
 }
 
 type rnr struct {
@@ -79,22 +84,7 @@ func (r rnr) run() {
 	r.f()
 }
 
-func (m *linuxApp) getApplicationMenu() pointer {
-	if m.applicationMenu != nilPointer {
-		return m.applicationMenu
-	}
-
-	menu := globalApplication.ApplicationMenu
-	if menu != nil {
-		InvokeSync(func() {
-			menu.Update()
-		})
-		m.applicationMenu = (menu.impl).(*linuxMenu).native
-	}
-	return m.applicationMenu
-}
-
-func (m *linuxApp) setApplicationMenu(menu *Menu) {
+func (a *linuxApp) setApplicationMenu(menu *Menu) {
 	// FIXME: How do we avoid putting a menu?
 	if menu == nil {
 		// Create a default menu
@@ -103,46 +93,55 @@ func (m *linuxApp) setApplicationMenu(menu *Menu) {
 	}
 }
 
-func (m *linuxApp) run() error {
+func (a *linuxApp) run() error {
 
-	// Add a hook to the ApplicationDidFinishLaunching event
-	// FIXME: add Wails specific events - i.e. Shouldn't platform specific ones be translated to Wails events?
-	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func(evt *Event) {
-		// Do we need to do anything now?
-		fmt.Println("events.Mac.ApplicationDidFinishLaunching received!")
+	a.parent.On(events.Linux.ApplicationStartup, func(evt *Event) {
+		fmt.Println("events.Linux.ApplicationStartup received!")
 	})
-	m.monitorThemeChanges()
-	return appRun(m.application)
+	a.setupCommonEvents()
+	a.monitorThemeChanges()
+	return appRun(a.application)
 }
 
-func (m *linuxApp) destroy() {
+func (a *linuxApp) unregisterWindow(w windowPointer) {
+	a.windowMapLock.Lock()
+	delete(a.windowMap, w)
+	a.windowMapLock.Unlock()
+
+	// If this was the last window...
+	if len(a.windowMap) == 0 && !a.parent.options.Linux.DisableQuitOnLastWindowClosed {
+		a.destroy()
+	}
+}
+
+func (a *linuxApp) destroy() {
 	if !globalApplication.shouldQuit() {
 		return
 	}
 	globalApplication.cleanup()
-	appDestroy(m.application)
+	appDestroy(a.application)
 }
 
-func (m *linuxApp) isOnMainThread() bool {
+func (a *linuxApp) isOnMainThread() bool {
 	return isOnMainThread()
 }
 
 // register our window to our parent mapping
-func (m *linuxApp) registerWindow(window pointer, id uint) {
-	m.windowsLock.Lock()
-	m.windows[windowPointer(window)] = id
-	m.windowsLock.Unlock()
+func (a *linuxApp) registerWindow(window pointer, id uint) {
+	a.windowMapLock.Lock()
+	a.windowMap[windowPointer(window)] = id
+	a.windowMapLock.Unlock()
 }
 
-func (m *linuxApp) isDarkMode() bool {
-	return strings.Contains(m.theme, "dark")
+func (a *linuxApp) isDarkMode() bool {
+	return strings.Contains(a.theme, "dark")
 }
 
-func (m *linuxApp) monitorThemeChanges() {
+func (a *linuxApp) monitorThemeChanges() {
 	go func() {
 		conn, err := dbus.ConnectSessionBus()
 		if err != nil {
-			m.parent.info("[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:", err)
+			a.parent.info("[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:", err)
 			return
 		}
 		defer conn.Close()
@@ -175,10 +174,10 @@ func (m *linuxApp) monitorThemeChanges() {
 				continue
 			}
 
-			if theme != m.theme {
-				m.theme = theme
+			if theme != a.theme {
+				a.theme = theme
 				event := newApplicationEvent(events.Common.ThemeChanged)
-				event.Context().setIsDarkMode(m.isDarkMode())
+				event.Context().setIsDarkMode(a.isDarkMode())
 				applicationEvents <- event
 			}
 
@@ -187,6 +186,7 @@ func (m *linuxApp) monitorThemeChanges() {
 }
 
 func newPlatformApp(parent *App) *linuxApp {
+
 	name := strings.ToLower(strings.Replace(parent.options.Name, " ", "", -1))
 	if name == "" {
 		name = "undefined"
@@ -194,8 +194,13 @@ func newPlatformApp(parent *App) *linuxApp {
 	app := &linuxApp{
 		parent:      parent,
 		application: appNew(name),
-		windows:     map[windowPointer]uint{},
+		windowMap:   map[windowPointer]uint{},
 	}
+
+	if parent.options.Linux.ProgramName != "" {
+		setProgramName(parent.options.Linux.ProgramName)
+	}
+
 	return app
 }
 
@@ -212,4 +217,42 @@ func (a *App) logPlatformInfo() {
 	platformInfo = append(platformInfo, "Webkit2Gtk", wkVersion)
 
 	a.info("Platform Info:", platformInfo...)
+}
+
+//export processWindowEvent
+func processWindowEvent(windowID C.uint, eventID C.uint) {
+	windowEvents <- &windowEvent{
+		WindowID: uint(windowID),
+		EventID:  uint(eventID),
+	}
+}
+
+func buildVersionString(major, minor, micro C.uint) string {
+	return fmt.Sprintf("%d.%d.%d", uint(major), uint(minor), uint(micro))
+}
+
+func (a *App) platformEnvironment() map[string]any {
+	result := map[string]any{}
+	result["gtk3-compiled"] = buildVersionString(
+		C.get_compiled_gtk_major_version(),
+		C.get_compiled_gtk_minor_version(),
+		C.get_compiled_gtk_micro_version(),
+	)
+	result["gtk3-runtime"] = buildVersionString(
+		C.gtk_get_major_version(),
+		C.gtk_get_minor_version(),
+		C.gtk_get_micro_version(),
+	)
+
+	result["webkit2gtk-compiled"] = buildVersionString(
+		C.get_compiled_webkit_major_version(),
+		C.get_compiled_webkit_minor_version(),
+		C.get_compiled_webkit_micro_version(),
+	)
+	result["webkit2gtk-runtime"] = buildVersionString(
+		C.webkit_get_major_version(),
+		C.webkit_get_minor_version(),
+		C.webkit_get_micro_version(),
+	)
+	return result
 }

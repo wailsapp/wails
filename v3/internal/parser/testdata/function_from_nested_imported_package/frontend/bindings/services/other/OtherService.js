@@ -8,7 +8,7 @@ import {Call} from '@wailsio/runtime';
  */
 
 /**
- * Yay does this and that 
+ * Yay does this and that
  * @function Yay
  * @returns {Promise<Address>}
  **/

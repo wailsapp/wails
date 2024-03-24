@@ -46,7 +46,9 @@
 </head>
 <body>
 
-<script>
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
     let monitors = wails.Screens.GetAll();
     monitors.then((result) => {
         console.log({result})

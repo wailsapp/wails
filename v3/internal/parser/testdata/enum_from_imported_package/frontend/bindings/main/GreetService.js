@@ -8,7 +8,7 @@ import {Call} from '@wailsio/runtime';
  */
 
 /**
- * Greet does XYZ 
+ * Greet does XYZ
  * @function Greet
  * @param name {string}
  * @param title {servicesTitle}

@@ -14,9 +14,19 @@ export function IsDarkMode(): Promise<boolean>;
  */
 export function Capabilities(): Promise<any>;
 /**
- * @typedef {object} EnvironmentInfo
- * @property {string} OS - The operating system in use.
+ * @typedef {Object} OSInfo
+ * @property {string} Branding - The branding of the OS.
+ * @property {string} ID - The ID of the OS.
+ * @property {string} Name - The name of the OS.
+ * @property {string} Version - The version of the OS.
+ */
+/**
+ * @typedef {Object} EnvironmentInfo
  * @property {string} Arch - The architecture of the system.
+ * @property {boolean} Debug - True if the application is running in debug mode, otherwise false.
+ * @property {string} OS - The operating system in use.
+ * @property {OSInfo} OSInfo - Details of the operating system.
+ * @property {Object} PlatformInfo - Additional platform information.
  */
 /**
  * @function
@@ -60,13 +70,43 @@ export function IsARM(): boolean;
  */
 export function IsARM64(): boolean;
 export function IsDebug(): boolean;
+export type OSInfo = {
+    /**
+     * - The branding of the OS.
+     */
+    Branding: string;
+    /**
+     * - The ID of the OS.
+     */
+    ID: string;
+    /**
+     * - The name of the OS.
+     */
+    Name: string;
+    /**
+     * - The version of the OS.
+     */
+    Version: string;
+};
 export type EnvironmentInfo = {
+    /**
+     * - The architecture of the system.
+     */
+    Arch: string;
+    /**
+     * - True if the application is running in debug mode, otherwise false.
+     */
+    Debug: boolean;
     /**
      * - The operating system in use.
      */
     OS: string;
     /**
-     * - The architecture of the system.
+     * - Details of the operating system.
      */
-    Arch: string;
+    OSInfo: OSInfo;
+    /**
+     * - Additional platform information.
+     */
+    PlatformInfo: any;
 };

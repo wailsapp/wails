@@ -21,12 +21,12 @@ tasks:
   build:debug:
     internal: true
     cmds:
-      - npx esbuild@latest desktop/compiled/main.js --bundle --tree-shaking=true --sourcemap=inline --outfile=../commands/build_assets/runtime/runtime.debug.js --define:DEBUG=true
+      - npx esbuild@latest desktop/@wailsio/runtime/src/index.js --inject:desktop/compiled/main.js --format=esm --bundle --tree-shaking=true --sourcemap=inline --outfile=../assetserver/bundledassets/runtime.debug.js --define:DEBUG=true
 
   build:production:
     internal: true
     cmds:
-      - npx esbuild@latest desktop/compiled/main.js --bundle --tree-shaking=true --minify --outfile=../commands/build_assets/runtime/runtime.js --define:DEBUG=false --drop:console
+      - npx esbuild@latest desktop/@wailsio/runtime/src/index.js --inject:desktop/compiled/main.js --format=esm --bundle --tree-shaking=true --minify --outfile=../assetserver/bundledassets/runtime.js --define:DEBUG=false --drop:console
 
   build:all:
     internal: true
@@ -35,12 +35,6 @@ tasks:
       - build:production
 
     cmds:
-      - cmd: wails3 tool cp ../commands/build_assets/runtime/runtime.js ../../examples/binding/assets/runtime.js
-      - cmd: wails3 tool cp ../commands/build_assets/runtime/runtime.js ../../examples/frameless/assets/runtime.js
-      - cmd: wails3 tool cp ../commands/build_assets/runtime/runtime.js ../../examples/window-api/assets/runtime.js
-      - cmd: wails3 tool cp ../commands/build_assets/runtime/runtime.js ../../examples/wml/assets/runtime.js
-      - cmd: wails3 tool cp ../commands/build_assets/runtime/runtime.js ../../internal/commands/build_assets/runtime/runtime.js
-      - cmd: wails3 tool cp ../commands/build_assets/runtime/runtime.js ../../pkg/application/assets/alpha/runtime.js
       - cmd: echo "Build Complete."
 
   build:

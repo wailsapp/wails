@@ -35,14 +35,6 @@ func main() {
 		URL: "/",
 	})
 
-	//app.On(events.Common.ThemeChanged, func(e *application.Event) {
-	//	if app.IsDarkMode() {
-	//		log.Println("Dark mode!")
-	//	} else {
-	//		log.Println("Light mode!")
-	//	}
-	//})
-
 	err := app.Run()
 
 	if err != nil {

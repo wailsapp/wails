@@ -1,5 +1,5 @@
 [config]
-root_path = ".."
+root_path = "."
 # debug | info | warn | error | mute
 # Defaults to Info if not provided
 log_level = "warn"

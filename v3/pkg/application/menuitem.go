@@ -167,8 +167,8 @@ func newRole(role Role) *MenuItem {
 		return newForceReloadMenuItem()
 	case ToggleFullscreen:
 		return newToggleFullscreenMenuItem()
-	case ShowDevTools:
-		return newShowDevToolsMenuItem()
+	case OpenDevTools:
+		return newOpenDevToolsMenuItem()
 	case ResetZoom:
 		return newZoomResetMenuItem()
 	case ZoomIn:
@@ -331,4 +331,30 @@ func (m *MenuItem) setContextData(data *ContextMenuData) {
 	if m.submenu != nil {
 		m.submenu.setContextData(data)
 	}
+}
+
+// clone returns a deep copy of the MenuItem
+func (m *MenuItem) clone() *MenuItem {
+	result := &MenuItem{
+		id:       m.id,
+		label:    m.label,
+		tooltip:  m.tooltip,
+		disabled: m.disabled,
+		checked:  m.checked,
+		hidden:   m.hidden,
+		bitmap:   m.bitmap,
+		callback: m.callback,
+		itemType: m.itemType,
+		role:     m.role,
+	}
+	if m.submenu != nil {
+		result.submenu = m.submenu.clone()
+	}
+	if m.accelerator != nil {
+		result.accelerator = m.accelerator.clone()
+	}
+	if m.contextMenuData != nil {
+		result.contextMenuData = m.contextMenuData.clone()
+	}
+	return result
 }

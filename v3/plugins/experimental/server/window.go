@@ -1,3 +1,5 @@
+//go:build ignore
+
 package server
 
 import (
@@ -98,6 +100,10 @@ func (w Window) Height() int {
 
 func (w Window) Hide() application.Window {
 	return w
+}
+
+func (w Window) IsFocused() bool {
+	return false
 }
 
 func (w Window) IsFullscreen() bool {

@@ -78,18 +78,17 @@
 <div class="result" id="result">Please enter your name below 👇</div>
 <div class="input-box" id="input">
     <input autofocus autocomplete="off" class="input" id="name" type="text"/>
-    <button class="btn" onclick="greet()">Greet</button>
+    <button class="btn" id="greet-btn">Greet</button>
 </div>
-<script src='runtime.js'></script>
-<script src='bindings_main.js'></script>
-<script>
-  let resultText = "";
-  let name = "";
+<script type="module">
+    import * as GreetService from "./bindings/main/GreetService.js";
 
-  function greet() {
-	  window.go.main.GreetService.Greet(document.getElementById("name").value).then((result) =>
-          document.getElementById("result").innerHTML = result);
-  }
+    async function greet() {
+        document.getElementById("result").innerHTML =
+            await GreetService.Greet(document.getElementById("name").value);
+    }
+
+    document.getElementById("greet-btn").onclick = greet;
 </script>
 </body>
 </html>
