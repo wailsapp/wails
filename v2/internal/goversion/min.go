@@ -1,3 +1,3 @@
 package goversion
 
-const MinRequirement string = "1.18"
+const MinRequirement string = "1.20"
