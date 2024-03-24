@@ -91,20 +91,24 @@ function onWMLTriggered(ev) {
 }
 
 /**
+ * @type {symbol}
+ */
+const controller = Symbol();
+
+/**
  * AbortControllerRegistry does not actually remember active event listeners: instead
  * it ties them to an AbortSignal and uses an AbortController to remove them all at once.
  */
 class AbortControllerRegistry {
-    /**
-     * Stores the AbortController that can be used to remove all currently active listeners.
-     *
-     * @private
-     * @type {AbortController}
-     */
-    #controller;
-
     constructor() {
-        this.#controller = new AbortController();
+        /**
+         * Stores the AbortController that can be used to remove all currently active listeners.
+         *
+         * @private
+         * @name {@link controller}
+         * @member {AbortController}
+         */
+        this[controller] = new AbortController();
     }
 
     /**
@@ -116,7 +120,7 @@ class AbortControllerRegistry {
      * @returns {AddEventListenerOptions}
      */
     set(element, triggers) {
-        return { signal: this.#controller.signal };
+        return { signal: this[controller].signal };
     }
 
     /**
@@ -125,10 +129,20 @@ class AbortControllerRegistry {
      * @returns {void}
      */
     reset() {
-        this.#controller.abort();
-        this.#controller = new AbortController();
+        this[controller].abort();
+        this[controller] = new AbortController();
     }
 }
+
+/**
+ * @type {symbol}
+ */
+const triggerMap = Symbol();
+
+/**
+ * @type {symbol}
+ */
+const elementCount = Symbol();
 
 /**
  * WeakMapRegistry maps active trigger events to each DOM element through a WeakMap.
@@ -136,24 +150,24 @@ class AbortControllerRegistry {
  * collection of the involved elements.
  */
 class WeakMapRegistry {
-    /**
-     * Stores the current element-to-trigger mapping.
-     *
-     * @private
-     * @type {WeakMap<HTMLElement, string[]>}
-     */
-    #triggerMap;
-
-    /**
-     * Counts the number of elements with active WML triggers.
-     *
-     * @private
-     * @type {number}
-     */
-    #elementCount = 0;
-
     constructor() {
-        this.#triggerMap = new WeakMap();
+        /**
+         * Stores the current element-to-trigger mapping.
+         *
+         * @private
+         * @name {@link triggerMap}
+         * @member {WeakMap<HTMLElement, string[]>}
+         */
+        this[triggerMap] = new WeakMap();
+
+        /**
+         * Counts the number of elements with active WML triggers.
+         *
+         * @private
+         * @name {@link elementCount}
+         * @member {number}
+         */
+        this[elementCount] = 0;
     }
 
     /**
@@ -164,8 +178,8 @@ class WeakMapRegistry {
      * @returns {AddEventListenerOptions}
      */
     set(element, triggers) {
-        this.#elementCount += !this.#triggerMap.has(element);
-        this.#triggerMap.set(element, triggers);
+        this[elementCount] += !this[triggerMap].has(element);
+        this[triggerMap].set(element, triggers);
         return {};
     }
 
@@ -175,22 +189,22 @@ class WeakMapRegistry {
      * @returns {void}
      */
     reset() {
-        if (this.#elementCount <= 0)
+        if (this[elementCount] <= 0)
             return;
 
         for (const element of document.body.querySelectorAll('*')) {
-            if (this.#elementCount <= 0)
+            if (this[elementCount] <= 0)
                 break;
 
-            const triggers = this.#triggerMap.get(element);
-            this.#elementCount -= (typeof triggers !== "undefined");
+            const triggers = this[triggerMap].get(element);
+            this[elementCount] -= (typeof triggers !== "undefined");
 
             for (const trigger of triggers || [])
                 element.removeEventListener(trigger, onWMLTriggered);
         }
 
-        this.#triggerMap = new WeakMap();
-        this.#elementCount = 0;
+        this[triggerMap] = new WeakMap();
+        this[elementCount] = 0;
     }
 }
 
