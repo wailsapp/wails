@@ -1,0 +1,40 @@
+# Builds ofuscadas
+
+Wails inclui suporte para ofuscar a sua aplicação usando [garble](https://github.com/burrowers/garble).
+
+Para produzir uma compilação ofuscada, você pode usar o sinalizador `-obfuscate` com o comando `wails build`:
+
+```bash
+wails build -obfuscated
+```
+
+Para personalizar a configuração de ofuscação, pode-se utilizar a flag: `-garbleargs`:
+
+```bash
+wails build -obfuscated -garbleargs "-literals -tiny -seed=myrandomseed"
+```
+
+Essas configurações podem estar persistentes na configuração do seu [projeto](../reference/project-config).
+
+## Como funciona
+
+Em uma compilação padrão, todos os métodos vinculados estão disponíveis no frontend sob a variável `window.go`. Quando esses métodos são chamados, o método backend correspondente é chamado usando o nome da função totalmente qualificada. Quando usando uma compilação ofuscada, os métodos são vinculados usando um ID em vez de um nome. Os bindings gerados no diretório `wailsjs` usam esses IDs para chamar as funções de backend.
+
+:::note
+
+Para garantir que o seu aplicativo irá funcionar no modo ofuscado, você deve usar os bindings geradas sob o diretório `wailsjs` no seu aplicativo.
+
+:::
+
+## Exemplo
+
+Importing the "Greet" method from the bindings like this:
+
+```js
+import { Greet } from "../../wailsjs/go/main/App";
+
+// snip
+Greet("World");
+```
+
+irá garantir que o método funcionará corretamente no modo ofuscado, como os bindings serão regenerados com IDs e o mecanismo de chamada atualizado.

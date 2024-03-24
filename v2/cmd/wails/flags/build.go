@@ -2,10 +2,13 @@ package flags
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 
 	"github.com/leaanthony/slicer"
+	"github.com/wailsapp/wails/v2/internal/system"
 	"github.com/wailsapp/wails/v2/pkg/commands/build"
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 )
@@ -22,7 +25,6 @@ type Build struct {
 	BuildCommon
 
 	NoPackage               bool   `name:"noPackage" description:"Skips platform specific packaging"`
-	SkipModTidy             bool   `name:"m" description:"Skip mod tidy before compile"`
 	Upx                     bool   `description:"Compress final binary with UPX (if installed)"`
 	UpxFlags                string `description:"Flags to pass to upx"`
 	Platform                string `description:"Platform to target. Comma separate multiple platforms"`
@@ -46,15 +48,29 @@ type Build struct {
 	compilerPath  string
 	userTags      []string
 	wv2rtstrategy string // WebView2 runtime strategy
+	defaultArch   string // Default architecture
 }
 
 func (b *Build) Default() *Build {
-	target := defaultTarget()
+	defaultPlatform := os.Getenv("GOOS")
+	if defaultPlatform == "" {
+		defaultPlatform = runtime.GOOS
+	}
+	defaultArch := os.Getenv("GOARCH")
+	if defaultArch == "" {
+		if system.IsAppleSilicon {
+			defaultArch = "arm64"
+		} else {
+			defaultArch = runtime.GOARCH
+		}
+	}
 
 	result := &Build{
-		Platform:   target.Platform,
+		Platform:   defaultPlatform + "/" + defaultArch,
 		WebView2:   "download",
 		GarbleArgs: "-literals -tiny -seed=random",
+
+		defaultArch: defaultArch,
 	}
 	result.BuildCommon = result.BuildCommon.Default()
 	return result
@@ -71,8 +87,11 @@ func (b *Build) GetWebView2Strategy() string {
 	return b.wv2rtstrategy
 }
 
-func (b *Build) GetTargets() TargetsCollection {
-	return parseTargets(b.Platform)
+func (b *Build) GetTargets() *slicer.StringSlicer {
+	var targets slicer.StringSlicer
+	targets.AddSlice(strings.Split(b.Platform, ","))
+	targets.Deduplicate()
+	return &targets
 }
 
 func (b *Build) GetCompilerPath() string {
@@ -122,6 +141,10 @@ func (b *Build) GetBuildModeAsString() string {
 		return "debug"
 	}
 	return "production"
+}
+
+func (b *Build) GetDefaultArch() string {
+	return b.defaultArch
 }
 
 /*
