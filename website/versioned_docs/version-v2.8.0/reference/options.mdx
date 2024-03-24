@@ -109,6 +109,7 @@ func main() {
 			Appearance:           mac.NSAppearanceNameDarkAqua,
             WebviewIsTransparent: true,
             WindowIsTranslucent:  false,
+            DisableZoom:          false,
             About: &mac.AboutInfo{
                 Title:   "My Application",
                 Message: "© 2021 Me",
@@ -896,6 +897,13 @@ Mac: &mac.Options{
 	}
 }
 ```
+
+#### DisableZoom
+
+By default, the window is zoomable. Setting this to `true` will disable the zoom button (green button).
+
+Name: DisableZoom<br/>
+Type: `bool`
 
 #### About
 

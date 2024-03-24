@@ -25,7 +25,6 @@ type Build struct {
 	BuildCommon
 
 	NoPackage               bool   `name:"noPackage" description:"Skips platform specific packaging"`
-	SkipModTidy             bool   `name:"m" description:"Skip mod tidy before compile"`
 	Upx                     bool   `description:"Compress final binary with UPX (if installed)"`
 	UpxFlags                string `description:"Flags to pass to upx"`
 	Platform                string `description:"Platform to target. Comma separate multiple platforms"`
