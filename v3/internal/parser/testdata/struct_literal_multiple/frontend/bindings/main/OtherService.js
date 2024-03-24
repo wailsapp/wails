@@ -4,7 +4,7 @@
 
 import {Call} from '@wailsio/runtime';
 
-/** 
+/**
  * @function Hello
  * @returns {Promise<void>}
  **/

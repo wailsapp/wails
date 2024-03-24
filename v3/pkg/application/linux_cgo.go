@@ -64,6 +64,7 @@ extern gboolean handleFocusEvent(GtkWidget*, GdkEvent*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
 void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
+extern gboolean onMenuButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern void onDragNDrop(
    void         *target,
    GdkDragContext* context,
@@ -361,6 +362,13 @@ func appDestroy(application pointer) {
 	C.g_application_quit((*C.GApplication)(application))
 }
 
+func (w *linuxWebviewWindow) contextMenuSignals(menu pointer) {
+	c := NewCalloc()
+	defer c.Free()
+	winID := unsafe.Pointer(uintptr(C.uint(w.parent.ID())))
+	C.signal_connect(unsafe.Pointer(menu), c.String("button-release-event"), C.onMenuButtonEvent, winID)
+}
+
 func (w *linuxWebviewWindow) contextMenuShow(menu pointer, data *ContextMenuData) {
 	geometry := C.GdkRectangle{
 		x: C.int(data.X),
@@ -376,6 +384,7 @@ func (w *linuxWebviewWindow) contextMenuShow(menu pointer, data *ContextMenuData
 		C.GDK_GRAVITY_NORTH_WEST,
 		(*C.GdkEvent)(&event),
 	)
+	w.ctxMenuOpened = true
 }
 
 func (a *linuxApp) getCurrentWindowID() uint {
@@ -1324,6 +1333,30 @@ func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t) C.
 		// do we need something here?
 	case GdkButtonRelease:
 		lw.endDrag(uint(event.button), int(event.x_root), int(event.y_root))
+	}
+
+	return C.gboolean(0)
+}
+
+//export onMenuButtonEvent
+func onMenuButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t) C.gboolean {
+	// Constants (defined here to be easier to use with purego)
+	GdkButtonRelease := C.GDK_BUTTON_RELEASE // 7
+
+	windowId := uint(C.uint(data))
+	window := globalApplication.getWindowForID(windowId)
+	if window == nil {
+		return C.gboolean(0)
+	}
+	lw, ok := (window.(*WebviewWindow).impl).(*linuxWebviewWindow)
+	if !ok {
+		return C.gboolean(0)
+	}
+
+	// prevent custom context menu from closing immediately
+	if event.button == 3 && int(event._type) == GdkButtonRelease && lw.ctxMenuOpened {
+		lw.ctxMenuOpened = false
+		return C.gboolean(1)
 	}
 
 	return C.gboolean(0)

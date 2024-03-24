@@ -23,9 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [darwin] add option for showing the toolbar in fullscreen mode on macOS by [@fbbdev](https://github.com/fbbdev) in [#3282](https://github.com/wailsapp/wails/pull/3282)
 - [linux] add onKeyPress logic to convert linux keypress into an accelerator @[Atterpac](https://github.com/Atterpac) in[#3022](https://github.com/wailsapp/wails/pull/3022])
 - [linux] add task `run:linux` by [@marcus-crane](https://github.com/marcus-crane) in [#3146](https://github.com/wailsapp/wails/pull/3146)
-- export `SetIcon` method by  @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3147)
+- Export `SetIcon` method by  @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3147)
 - Improve `OnShutdown` by  @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3189)
-- restore `ToggleMaximise` method in `Window` interface by [@fbbdev](https://github.com/fbbdev) in [#3281](https://github.com/wailsapp/wails/pull/3281)
+- Restore `ToggleMaximise` method in `Window` interface by [@fbbdev](https://github.com/fbbdev) in [#3281](https://github.com/wailsapp/wails/pull/3281)
+- Added more information to `Environment()`. By @leaanthony in [aba82cc](https://github.com/wailsapp/wails/commit/aba82cc52787c97fb99afa58b8b63a0004b7ff6c) based on [PR](https://github.com/wailsapp/wails/pull/2044) by @Mai-Lapyst
+- Expose the `WebviewWindow.IsFocused` method on the `Window` interface by [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
+- Support multiple space-separated trigger events in the WML system by [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
+- Add ESM exports from the bundled JS runtime script by [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
+- Add binding generator flag for using the bundled JS runtime script instead of the npm package by [@fbbdev](https://github.com/fbbdev) in [#3334](https://github.com/wailsapp/wails/pull/3334)
 
 ### Fixed
 
@@ -42,11 +47,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix replace line in `go.mod` to use relative paths. Fixes Windows paths with spaces - @leaanthony.
 - Fix MacOS systray click handling when no attached window by [thomas-senechal](https://github.com/thomas-senechal) in PR [#3207](https://github.com/wailsapp/wails/pull/3207)
 - Fix failing Windows build due to unknown option by [thomas-senechal](https://github.com/thomas-senechal) in PR [#3208](https://github.com/wailsapp/wails/pull/3208)
+- Fix crash on windows left clicking the systray icon when not having an attached window [tw1nk](https://github.com/tw1nk) in PR [#3271](https://github.com/wailsapp/wails/pull/3271)
 - Fix wrong baseURL when open window twice by @5aaee9 in PR [#3273](https://github.com/wailsapp/wails/pull/3273)
 - Fix ordering of if branches in `WebviewWindow.Restore` method by [@fbbdev](https://github.com/fbbdev) in [#3279](https://github.com/wailsapp/wails/pull/3279)
 - Correctly compute `startURL` across multiple `GetStartURL` invocations when `FRONTEND_DEVSERVER_URL` is present. [#3299](https://github.com/wailsapp/wails/pull/3299)
+- Fix the JS type of the `Screen` struct to match its Go counterpart by [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
+- Fix the `WML.Reload` method to ensure proper cleanup of registered event listeners by [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
+- Fix custom context menu closing immediately on linux by [@abichinger](https://github.com/abichinger) in [#3330](https://github.com/wailsapp/wails/pull/3330)
+- Fix the output path and extension of model files produced by the binding generator by [@fbbdev](https://github.com/fbbdev) in [#3334](https://github.com/wailsapp/wails/pull/3334)
+- Fix the import paths of model files in JS code produced by the binding generator by [@fbbdev](https://github.com/fbbdev) in [#3334](https://github.com/wailsapp/wails/pull/3334)
 
 ### Changed
+
+- The bundled JS runtime script is now an ESM module: script tags importing it must have the `type="module"` attribute. By [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
+- The `@wailsio/runtime` package does not publish its API on the `window.wails` object, and does not start the WML system. This has been done to improve encapsulation. The WML system can be started manually if desired by calling the new `WML.Enable` method. The bundled JS runtime script still performs both operations automatically. By [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
+- The Window API module `@wailsio/runtime/src/window` now exposes the containing window object as a default export. It is not possible anymore to import individual methods through ESM named or namespace import syntax.
+- The JS window API has been updated to match the current Go `WebviewWindow` API. Some methods have changed name or prototype, specifically: `Screen` becomes `GetScreen`; `GetZoomLevel`/`SetZoomLevel` become `GetZoom`/`SetZoom`; `GetZoom`, `Width` and `Height` now return values directly instead of wrapping them within objects. By [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
 
 ### Removed
 

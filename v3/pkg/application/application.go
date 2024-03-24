@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/wailsapp/wails/v3/internal/operatingsystem"
+
 	"github.com/pkg/browser"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/signal"
@@ -891,11 +893,15 @@ func (a *App) BrowserOpenFile(path string) error {
 }
 
 func (a *App) Environment() EnvironmentInfo {
-	return EnvironmentInfo{
-		OS:    runtime.GOOS,
-		Arch:  runtime.GOARCH,
-		Debug: a.isDebugMode,
+	info, _ := operatingsystem.Info()
+	result := EnvironmentInfo{
+		OS:     runtime.GOOS,
+		Arch:   runtime.GOARCH,
+		Debug:  a.isDebugMode,
+		OSInfo: info,
 	}
+	result.PlatformInfo = a.platformEnvironment()
+	return result
 }
 
 func (a *App) shouldQuit() bool {

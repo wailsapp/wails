@@ -44,9 +44,20 @@ export function Capabilities() {
 }
 
 /**
- * @typedef {object} EnvironmentInfo
- * @property {string} OS - The operating system in use.
+ * @typedef {Object} OSInfo
+ * @property {string} Branding - The branding of the OS.
+ * @property {string} ID - The ID of the OS.
+ * @property {string} Name - The name of the OS.
+ * @property {string} Version - The version of the OS.
+ */
+
+/**
+ * @typedef {Object} EnvironmentInfo
  * @property {string} Arch - The architecture of the system.
+ * @property {boolean} Debug - True if the application is running in debug mode, otherwise false.
+ * @property {string} OS - The operating system in use.
+ * @property {OSInfo} OSInfo - Details of the operating system.
+ * @property {Object} PlatformInfo - Additional platform information.
  */
 
 /**

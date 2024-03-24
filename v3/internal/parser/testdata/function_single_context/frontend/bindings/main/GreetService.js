@@ -5,7 +5,7 @@
 import {Call} from '@wailsio/runtime';
 
 /**
- * Greet someone 
+ * Greet someone
  * @function Greet
  * @param name {string}
  * @returns {Promise<string>}
@@ -15,7 +15,7 @@ export async function Greet(name) {
 }
 
 /**
- * Greet someone 
+ * Greet someone
  * @function GreetWithContext
  * @param name {string}
  * @returns {Promise<string>}
