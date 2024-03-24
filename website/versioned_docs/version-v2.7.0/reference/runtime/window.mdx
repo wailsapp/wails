@@ -32,7 +32,7 @@ JS: `WindowUnfullscreen()`
 Returns true if the window is full screen.
 
 Go: `WindowIsFullscreen(ctx context.Context) bool`<br/>
-JS: `WindowIsFullscreen() bool`
+JS: `WindowIsFullscreen() Promise<boolean>`
 
 ### WindowCenter
 
@@ -110,7 +110,7 @@ JS: `WindowHide()`
 Returns true if the window not minimised, maximised or fullscreen.
 
 Go: `WindowIsNormal(ctx context.Context) bool`<br/>
-JS: `WindowIsNormal() bool`
+JS: `WindowIsNormal() Promise<boolean>`
 
 ### WindowSetSize
 
@@ -124,7 +124,7 @@ JS: `WindowSetSize(width: number, height: number)`
 Gets the width and height of the window.
 
 Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/>
-JS: `WindowGetSize() : Size`
+JS: `WindowGetSize(): Promise<Size>`
 
 ### WindowSetMinSize
 
@@ -151,7 +151,7 @@ JS: `WindowSetMaxSize(width: number, height: number)`
 Sets the window AlwaysOnTop or not on top.
 
 Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/>
-JS: `WindowSetAlwaysOnTop(b: Boolen)`
+JS: `WindowSetAlwaysOnTop(b: boolean)`
 
 ### WindowSetPosition
 
@@ -165,7 +165,7 @@ JS: `WindowSetPosition(x: number, y: number)`
 Gets the window position relative to the monitor the window is currently on.
 
 Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/>
-JS: `WindowGetPosition() : Position`
+JS: `WindowGetPosition(): Promise<Position>`
 
 ### WindowMaximise
 
@@ -186,7 +186,7 @@ JS: `WindowUnmaximise()`
 Returns true if the window is maximised.
 
 Go: `WindowIsMaximised(ctx context.Context) bool`<br/>
-JS: `WindowIsMaximised() bool`
+JS: `WindowIsMaximised() Promise<boolean>`
 
 ### WindowToggleMaximise
 
@@ -214,7 +214,7 @@ JS: `WindowUnminimise()`
 Returns true if the window is minimised.
 
 Go: `WindowIsMinimised(ctx context.Context) bool`<br/>
-JS: `WindowIsMinimised() bool`
+JS: `WindowIsMinimised() Promise<boolean>`
 
 ### WindowSetBackgroundColour
 
