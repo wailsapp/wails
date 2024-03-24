@@ -330,7 +330,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		if _, err := os.Stat(options.CompiledBinary); os.IsNotExist(err) {
 			return "", fmt.Errorf("compiled binary does not exist at path: %s", options.CompiledBinary)
 		}
-		stdout, stderr, err := shell.RunCommand(options.BinDirectory, "xattr", "-rc", options.CompiledBinary)
+		stdout, stderr, err := shell.RunCommand(options.BinDirectory, "/usr/bin/xattr", "-rc", options.CompiledBinary)
 		if err != nil {
 			return "", fmt.Errorf("%s - %s", err.Error(), stderr)
 		}

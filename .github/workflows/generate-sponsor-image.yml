@@ -16,7 +16,7 @@ jobs:
       - name: Set Node
         uses: actions/setup-node@v2
         with:
-          node-version: 16.x
+          node-version: 20.x
 
       - name: Update Sponsors
         run: cd scripts/sponsors && chmod 755 ./generate-sponsor-image.sh && ./generate-sponsor-image.sh

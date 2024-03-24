@@ -253,6 +253,7 @@ module.exports = async function configCreatorAsync() {
         prism: {
           theme: lightCodeTheme,
           darkTheme: darkCodeTheme,
+          additionalLanguages: ["json5"],
         },
         colorMode: {
           defaultMode: "light",
