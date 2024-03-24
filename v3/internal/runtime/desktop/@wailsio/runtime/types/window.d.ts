@@ -404,5 +404,4 @@ declare class Window {
      * @return {Promise<void>}
      */
     public ZoomReset(): Promise<void>;
-    #private;
 }

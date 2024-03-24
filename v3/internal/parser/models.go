@@ -3,11 +3,12 @@ package parser
 import (
 	"bytes"
 	"embed"
-	"github.com/wailsapp/wails/v3/internal/flags"
 	"io"
 	"sort"
 	"strings"
 	"text/template"
+
+	"github.com/wailsapp/wails/v3/internal/flags"
 )
 
 //go:embed templates
@@ -36,7 +37,7 @@ func (p *Project) GenerateModel(wr io.Writer, def *ModelDefinitions, options *fl
 
 	tmpl, err := template.New(templateName).ParseFS(templates, "templates/"+templateName)
 	if err != nil {
-		println("Unable to create class template: " + err.Error())
+		println("Unable to initialize model template: " + err.Error())
 		return err
 	}
 
