@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix replace line in `go.mod` to use relative paths. Fixes Windows paths with spaces - @leaanthony.
 - Fix MacOS systray click handling when no attached window by [thomas-senechal](https://github.com/thomas-senechal) in PR [#3207](https://github.com/wailsapp/wails/pull/3207)
 - Fix failing Windows build due to unknown option by [thomas-senechal](https://github.com/thomas-senechal) in PR [#3208](https://github.com/wailsapp/wails/pull/3208)
+- Fix crash on windows left clicking the systray icon when not having an attached window [tw1nk](https://github.com/tw1nk) in PR [#3271](https://github.com/wailsapp/wails/pull/3271)
 - Fix wrong baseURL when open window twice by @5aaee9 in PR [#3273](https://github.com/wailsapp/wails/pull/3273)
 - Fix ordering of if branches in `WebviewWindow.Restore` method by [@fbbdev](https://github.com/fbbdev) in [#3279](https://github.com/wailsapp/wails/pull/3279)
 - Correctly compute `startURL` across multiple `GetStartURL` invocations when `FRONTEND_DEVSERVER_URL` is present. [#3299](https://github.com/wailsapp/wails/pull/3299)
