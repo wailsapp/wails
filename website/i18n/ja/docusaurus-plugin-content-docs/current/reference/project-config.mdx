@@ -8,79 +8,117 @@ sidebar_position: 5
 
 ```json5
 {
-  // プロジェクト構成のバージョン。
+  // Project config version
   "version": "",
-  // プロジェクト名。
+  // The project name
   "name": "",
-  // コンパイルされたアセットディレクトリへの相対パス。通常は自動的に推測されるため、空で構いません。
+  // Relative path to the directory containing the compiled assets, this is normally inferred and could be left empty
   "assetdir": "",
-  // 再読み込みのトリガーとなる追加のディレクトリ(カンマ区切り)。高度なアセット構成をとる場合にのみ使用します。
+  // Additional directories to trigger reloads (comma separated), this is only used for some advanced asset configurations
   "reloaddirs": "",
-  // ビルドファイルが存在するディレクトリ。 デフォルトは'build'です。
+  // The directory where the build files reside. Defaults to 'build'
   "build:dir": "",
-  // フロントエンドディレクトリの相対パス。 デフォルトは'frontend'です。
+  // Relative path to the frontend directory. Defaults to 'frontend'
   "frontend:dir": "",
-  // node依存関係をインストールするために、フロントエンドディレクトリで実行するコマンド。一般的には`npm install`です。
+  // The command to install node dependencies, run in the frontend directory - often `npm install`
   "frontend:install": "",
-  // アセットをビルドするために、フロントエンドディレクトリで実行するコマンド。一般的には`npm run build`です。
+  // The command to build the assets, run in the frontend directory - often `npm run build`
   "frontend:build": "",
-  // このコマンドはfrontend:dev:buildへ置換されました。 frontend:dev:buildが指定されていない場合は、代わりにこのコマンドが実行されます。 このコマンドも指定されていない場合は、代わりにfrontend:buildが実行されます。
+  // This command has been replaced by frontend:dev:build. If frontend:dev:build is not specified will falls back to this command. \nIf this command is also not specified will falls back to frontend:build
   "frontend:dev": "",
-  // 開発モードにおけるfrontend:buildと同様のコマンド。 指定されていない場合は、代わりにfrontend:devが実行されます。
+  // This command is the dev equivalent of frontend:build. If not specified falls back to frontend:dev
   "frontend:dev:build": "",
-  // 開発モードにおけるfrontend:installと同様のコマンド。 指定されていない場合は、代わりにfrontend:installが実行されます。
+  // This command is the dev equivalent of frontend:install. If not specified falls back to frontend:install
   "frontend:dev:install": "",
-  // `wails dev`実行時に別プロセスで実行するコマンド。 サードパーティ製のウォッチャや開発サーバを起動したい場合に便利です。
+  // This command is run in a separate process on `wails dev`. Useful for 3rd party watchers or starting 3d party dev servers
   "frontend:dev:watcher": "",
-  // Viteなど、アセットを提供するサードパーティ製の開発サーバのURL。 'auto'に設定すると、Viteの出力から自動的に開発サーバURLを推測します。
+  // URL to a 3rd party dev server to be used to serve assets, EG Vite. \nIf this is set to 'auto' then the devServerUrl will be inferred from the Vite output
   "frontend:dev:serverUrl": "",
-  // 自動生成されるJSモジュールを出力するディレクトリへの相対パス。
+  // Relative path to the directory that the auto-generated JS modules will be created
   "wailsjsdir": "",
-  // 出力バイナリのファイル名
+  // The name of the binary
   "outputfilename": "",
-  // アセットファイルに変更があった場合に、開発サーバが再読み込みを行うまでのデフォルトの待ち時間。
+  // The default time the dev server waits to reload when it detects a change in assets
   "debounceMS": 100,
-  // Wailsの開発サーバをバインドするアドレス。 デフォルト値: localhost:34115
+  // Address to bind the wails dev sever to. Default: localhost:34115
   "devServer": "",
-  // 開発モードのときに、アプリケーションに渡されるシェルスタイルの引数。
+  // Arguments passed to the application in shell style when in dev mode
   "appargs": "",
-  // ホストOS以外のOS用にビルドフックが定義されている場合、それらを実行するかどうか。
+  // Defines if build hooks should be run though they are defined for an OS other than the host OS.
   "runNonNativeBuildHooks": false,
   "preBuildHooks": {
-    // 指定されたGOOS/GOARCHのビルドの前に実行されるコマンド。${platform}は'GOOS/GOARCH'に置換されます。 'GOOS/GOARCH'フックは、'GOOS/*'および'*/*'フックの前に実行されます。
+    // The command that will be executed before a build of the specified GOOS/GOARCH: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.
     "GOOS/GOARCH": "",
-    // 指定されたGOOSのビルド前に実行されるコマンド。${platform}は'GOOS/GOARCH'に置換されます。 'GOOS/*'フックは、'*/*'フックの前に実行されます。
+    // The command that will be executed before a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/*" hook is executed before the "*/*" hook.
     "GOOS/*": "",
-    // 毎回のビルドの前に実行されるコマンド。${platform}は'GOOS/GOARCH'に置換されます。
+    // The command that will be executed before every build: ${platform} is replaced with the "GOOS/GOARCH".
     "*/*": ""
   },
   "postBuildHooks": {
-    // 指定されたGOOS/GOARCHのビルドの後に実行されるコマンド。${platform}は'GOOS/GOARCH'に置換され、${bin}はコンパイル済みバイナリへのパスに置換されます。 'GOOS/GOARCH'フックは、'GOOS/*'および'*/*'フックの前に実行されます。
+    // The command that will be executed after a build of the specified GOOS/GOARCH: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary. The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.
     "GOOS/GOARCH": "",
-    // 指定されたGOOSのビルド後に実行されるコマンド。${platform}は'GOOS/GOARCH'に置換され、${bin}はコンパイル済みバイナリへのパスに置換されます。 'GOOS/*'フックは、'*/*'フックの前に実行されます。
+    // The command that will be executed after a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary. The "GOOS/*" hook is executed before the "*/*" hook.
     "GOOS/*": "",
-    // 毎回のビルドの後に実行されるコマンド。${platform}は'GOOS/GOARCH'に置換され、${bin}はコンパイル済みバイナリへのパスに置換されます。
+    // The command that will be executed after every build: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary.
     "*/*": ""
   },
-  // マニフェストやバージョン情報で使用されるデータ。
+  // Data used to populate manifests and version info.
   "info": {
-    // 会社名。 デフォルト値: [プロジェクト名]
+    // The company name. Default: [The project name]
     "companyName": "",
-    // 製品名。 デフォルト値: [プロジェクト名]
+    // The product name. Default: [The project name]
     "productName": "",
-    // 製品バージョン。 デフォルト値: '1.0.0']
+    // The version of the product. Default: '1.0.0'
     "productVersion": "",
-    // 製品の著作権。 デフォルト値: 'Copyright.........'
+    // The copyright of the product. Default: 'Copyright.........'
     "copyright": "",
-    // アプリケーションの説明。 デフォルト値: 'Built using Wails (https://wails.app)'
-    "comments": ""
+    // A short comment of the app. Default: 'Built using Wails (https://wails.app)'
+    "comments": "",
+    // File associations for the app
+    "fileAssociations": [
+      {
+        // The extension (minus the leading period). e.g. png
+        "ext": "wails",
+        // The name. e.g. PNG File
+        "name": "Wails",
+        // Windows-only. The description. It is displayed on the `Type` column on Windows Explorer.
+        "description": "Wails file",
+        // The icon name without extension. Icons should be located in build folder. Proper icons will be generated from .png file for both macOS and Windows)
+        "iconName": "fileIcon",
+        // macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.
+        "role": "Editor"
+      },
+    ],
+    // Custom URI protocols that should be opened by the application
+    "protocols": [
+      {
+        // protocol scheme. e.g. myapp
+        "scheme": "myapp",
+        // Windows-only. The description. It is displayed on the `Type` column on Windows Explorer.
+        "description": "Myapp protocol",
+        // macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.
+        "role": "Editor"
+      }
+    ]
   },
-  // 'multiple': アーキテクチャごとに1つのインストーラ。 'single': ビルドした全アーキテクチャに対応する単一ユニバーサルインストーラ。 デフォルト値: 'multiple'
+  // 'multiple': One installer per architecture. 'single': Single universal installer for all architectures being built. Default: 'multiple'
   "nsisType": "",
-  // アプリ難読化を実行するかどうか。 デフォルト値: false
+  // Whether the app should be obfuscated. Default: false
   "obfuscated": "",
-  // obfuscatedフラグがtrueの際に、garbleコマンドへ渡す引数。
-  "garbleargs": ""
+  // The arguments to pass to the garble command when using the obfuscated flag
+  "garbleargs": "",
+  // Bindings configurations
+  "bindings": {
+    // model.ts file generation config
+    "ts_generation": {
+      // All generated JavaScript entities will be prefixed with this value
+      "prefix": "",
+      // All generated JavaScript entities will be suffixed with this value
+      "suffix": "",
+      // Type of output to generate (classes|interfaces)
+      "outputType": "classes",
+    }
+  }
 }
 ```
 

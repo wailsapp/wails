@@ -226,6 +226,11 @@ For more details on creating templates, consult the [Templates guide](../guides/
 
 The `wails generate module` command allows you to manually generate the `wailsjs` directory for your application.
 
+| Flag                 | Description                                                 | Default |
+|:-------------------- |:----------------------------------------------------------- |:------- |
+| -compiler "compiler" | Use a different go compiler to build, eg go1.15beta1        | go      |
+| -tags "extra tags"   | Build tags to pass to compiler (quoted and space separated) |         |
+
 ## update
 
 `wails update` will update the version of the Wails CLI.

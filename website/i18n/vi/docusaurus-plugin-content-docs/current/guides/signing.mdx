@@ -211,7 +211,7 @@ jobs:
           path: build/bin/*
 ```
 
-For code signing on macOS, [gon](https://github.com/mitchellh/gon) is a very handy tool for code signing and communicating with Apple servers, also written in Go, and will be used in this guide.
+For code signing on macOS, [gon](https://github.com/Bearer/gon) is a very handy tool for code signing and communicating with Apple servers, also written in Go, and will be used in this guide.
 
 After the `Build Wails app` step, add the following to the workflow:
 
@@ -219,7 +219,7 @@ After the `Build Wails app` step, add the following to the workflow:
 - name: MacOS download gon for code signing and app notarization
   if: matrix.platform == 'macos-latest'
   run: |
-    brew install mitchellh/gon/gon
+    brew install Bearer/tap/gon
 ```
 
 Now we need to configure some gon config files in our `build/darwin` directory:
@@ -232,18 +232,30 @@ Now we need to configure some gon config files in our `build/darwin` directory:
   "bundle_id": "app.myapp",
   "apple_id": {
     "username": "my-appleid@email.com",
-    "password": "@env:APPLE_PASSWORD"
+    "password": "@env:APPLE_PASSWORD",
+    "provider": "ABCDE12345"
   },
   "sign": {
-    "application_identity": "Developer ID Application: My Name"
+    "application_identity": "Developer ID Application: Human User"
   }
 }
 ```
 
-Where `source` is your Wails binary, `bundle_id` is your bundle ID, `apple_id` contains your Apple ID username and App-Specific password which you created earlier, and `sign.application_identity` is your identity which you can find by running the following command:
+Here is a brief break down of the above fields:
+
+- `source`: The location of your wails binary to be signed
+- `apple_id`:
+  - `username`: Your Apple ID email address
+  - `password`: Your app-specific password, referenced using Gon's environment variable syntax
+  - `provider`: Your team ID for your App Store Connect account
+- `sign`:
+  - `application_identity`: Your Apple developer identity
+
+Your developer identity and team ID can both by found on macOS by running the following command:
 
 ```bash
-security find-identity -v -p codesigning
+$ security find-identity -v -p codesigning
+  1) 00000000000000000000000000000000000000000 "Developer ID Application: Human User (ABCDE12345)"
 ```
 
 2. entitlements.plist:
@@ -345,7 +357,7 @@ jobs:
       - name: MacOS download gon for code signing and app notarization
         if: matrix.platform == 'macos-latest'
         run: |
-          brew install mitchellh/gon/gon
+          brew install Bearer/tap/gon
       - name: Import Code-Signing Certificates for macOS
         if: matrix.platform == 'macos-latest'
         uses: Apple-Actions/import-codesign-certs@v1

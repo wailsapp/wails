@@ -1,17 +1,17 @@
 # Templates
 
-Wails generates projects from pre-created templates. In v1, this was a difficult to maintain set of projects that were subject to going out of date. In v2, to empower the community, a couple of new features have been added for templates:
+Wails génère des projets à partir de modèles pré-créés. Dans la v1, c'était difficile de maintenir un ensemble de projets pour qu'ils restent toujours à jour. Dans v2, pour augmenter l'impact de la communauté sur le projet, quelques nouvelles fonctionnalités ont été ajoutées pour les modèles :
 
-- Ability to generate projects from [Remote Templates](../reference/cli.mdx#remote-templates)
-- Tooling to help create your own templates
+- Possibilité de générer des projets à partir de [Modèles à distance](../reference/cli.mdx#remote-templates)
+- Outils pour aider à créer vos propres modèles
 
-## Creating Templates
+## Création de modèles
 
-To create a template, you can use the `wails generate template` command. To generate a default template, run:
+Pour créer un modèle, vous pouvez utiliser la commande `wails generate template`. Pour générer un modèle par défaut, exécutez :
 
 `wails generate template -name mytemplate`
 
-This creates the directory "mytemplate" with default files:
+Cela crée le répertoire "mytemplate" avec les fichiers par défaut :
 
 ```shell title=mytemplate/
 .
@@ -35,31 +35,31 @@ This creates the directory "mytemplate" with default files:
 `-- wails.tmpl.json
 ```
 
-### Template Overview
+### Vue d'ensemble du modèle
 
-The default template consists of the following files and directories:
+Le modèle par défaut consiste en l'ensemble des fichiers et répertoires suivants :
 
-| Filename / Dir  | Description                                  |
-| --------------- | -------------------------------------------- |
-| NEXTSTEPS.md    | Instructions on how to complete the template |
-| README.md       | The README published with the template       |
-| app.tmpl.go     | `app.go` template file                       |
-| frontend/       | The directory containing frontend assets     |
-| go.mod.tmpl     | `go.mod` template file                       |
-| main.tmpl.go    | `main.go` template file                      |
-| template.json   | The template metadata                        |
-| wails.tmpl.json | `wails.json` template file                   |
+| Nom du fichier / dossier | Description                                      |
+| ------------------------ | ------------------------------------------------ |
+| NEXTSTEPS.md             | Instructions sur la façon de compléter le modèle |
+| README.md                | Le README publié avec le modèle                  |
+| app.tmpl.go              | Fichier modèle `app.go`                          |
+| frontend/                | Le répertoire contenant les assets du frontend   |
+| go.mod.tmpl              | Fichier modèle `go.mod`                          |
+| main.tmpl.go             | Fichier modèle `main.go`                         |
+| template.json            | Template des metadonnées du projet               |
+| wails.tmpl.json          | Fichier modèle `wails.json`                      |
 
-At this point it is advisable to follow the steps in `NEXTSTEPS.md`.
+À ce stade, il est conseillé de suivre les étapes dans `NEXTSTEPS.md`.
 
-## Creating a Template from an Existing Project
+## Créer un modèle à partir d'un projet existant
 
-It's possible to create a template from an existing frontend project by passing the path to the project when generating the template. We will now walk through how to create a Vue 3 template:
+Il est possible de créer un modèle à partir d'un projet frontend déjà existant, en passant le chemin du projet lors de la génération du template. Nous allons maintenant parcourir comment créer un modèle Vue 3 :
 
-- Install the vue cli: `npm install -g @vue/cli`
-- Create the default project: `vue create vue3-base`
-  - Select `Default (Vue 3) ([Vue 3] babel, eslint)`
-- After the project has been generated, run:
+- Installez le CLI Vue: `npm install -g @vue/cli`
+- Créer le projet par défaut : `vue create vue3-base`
+  - Sélectionnez `Default (Vue 3) ([Vue 3] babel, eslint)`
+- Une fois le projet généré, exécutez :
 
 ```shell
 > wails generate template -name wails-vue3-template -frontend .\vue3-base\
@@ -71,11 +71,11 @@ Updating package-lock.json data...
 Renaming package-lock.json -> package-lock.tmpl.json...
 ```
 
-- The template may now be customised as specified in the `NEXTSTEPS.md` file
-- Once the files are ready, it can be tested by running: `wails init -n my-vue3-project -t .\wails-vue3-template\`
-- To test the new project, run: `cd my-vue3-project` then `wails build`
-- Once the project has compiled, run it: `.\build\bin\my-vue3-project.exe`
-- You should have a fully functioning Vue3 application:
+- Le modèle peut maintenant être personnalisé comme spécifié dans le fichier `NEXTSTEPS.md`
+- Une fois les fichiers prêts, il peut être testé en exécutant : `wails init -n my-vue3-project -t .\wails-vue3-template\`
+- Pour tester le nouveau projet, exécutez : `cd my-vue3-project` puis `wails build`
+- Une fois que le projet est compilé, exécutez-le : `.\build\bin\my-vue3-project.exe`
+- Vous devriez avoir une application Vue3 pleinement fonctionnelle :
 
 ```mdx-code-block
 <div className="text--center">
@@ -86,12 +86,12 @@ Renaming package-lock.json -> package-lock.tmpl.json...
 </div>
 ```
 
-## Publishing Templates
+## Publication de modèles
 
-Publishing a template is simply pushing the files to GitHub. The following best practice is encouraged:
+Pour publier un modèle, il vous faut simplement pousser les fichiers dans GitHub. Les bonnes pratiques suivantes sont encouragées :
 
-- Remove any unwanted files and directories (such as `.git`) from your frontend directory
-- Ensure that `template.json` is complete, especially `helpurl`
-- Push the files to GitHub
-- Create a PR on the [Community Templates](../community/templates.mdx) page
-- Announce the template on the [Template Announcement](https://github.com/wailsapp/wails/discussions/825) discussion board
+- Supprimer tous les fichiers et répertoires indésirables (comme `.git`) de votre répertoire frontend
+- Assurez-vous que le fichier `template.json` est complet, spécifiquement `helpurl`.
+- Envoyer les fichiers vers GitHub
+- Créez un PR sur la page [Community Templates](../community/templates.mdx)
+- Annoncer le modèle sur le forum de discussion [Template Announcement](https://github.com/wailsapp/wails/discussions/825)

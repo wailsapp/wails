@@ -1,15 +1,15 @@
 
 # Visual Studio Code
 
-This page is for miscellaneous tips and tricks when using Visual Studio Code with Wails.
+Cette page est destinée à divers trucs et astuces lors de l'utilisation de Visual Studio Code avec Wails.
 
-## Vetur Configuration
+## Configuration Vetur
 
-Many thanks to [@Lyimmi](https://github.com/Lyimmi) for this tip. Originally posted [here](https://github.com/wailsapp/wails/issues/1791#issuecomment-1228158349).
+Un grand merci à [@Lyimmi](https://github.com/Lyimmi) pour ce conseil. A initialement posté [ici](https://github.com/wailsapp/wails/issues/1791#issuecomment-1228158349).
 
-Vetur is a popular plugin for Visual Studio Code that provides syntax highlighting and code completion for Vue projects. When loading a Wails project in VSCode, Vetur will throw an error as it is expecting to find the frontend project in the root directory. To fix this, you can do the following:
+Vetur est un plugin populaire pour Visual Studio Code qui fournit la coloration syntaxique et la complétion du code pour les projets Vue. Lors du chargement d'un projet Wails en VSCode, Vetur lancera une erreur car il attend de trouver le projet frontend dans le répertoire racine. Pour résoudre ce problème, vous pouvez faire ce qui suit :
 
-Create a file named `vetur.config.js` in the project's root.
+Créer un fichier nommé `vetur.config.js` à la racine du projet.
 
 ```javascript
 // vetur.config.js
@@ -56,7 +56,7 @@ module.exports = {
 }
 ```
 
-Next, configure `frontend/tsconfig.json`:
+Ensuite, configurez `frontend/tsconfig.json`:
 
 ```javascript
 {
@@ -79,4 +79,4 @@ Next, configure `frontend/tsconfig.json`:
   ]
 }
 ```
-This should enable you to now use Vetur as expected.
+Cela devrait vous permettre d'utiliser Vetur comme prévu.

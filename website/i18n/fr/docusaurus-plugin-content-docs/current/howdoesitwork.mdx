@@ -182,6 +182,56 @@ Vous pouvez lier autant de structures que vous le souhaitez. Assurez-vous juste 
 
 ```
 
+You may bind enums types as well. In that case you should create array that will contain all possible enum values, instrument enum type and bind it to the app via `EnumBind`:
+
+```go {16-18} title="app.go"
+type Weekday string
+
+const (
+    Sunday    Weekday = "Sunday"
+    Monday    Weekday = "Monday"
+    Tuesday   Weekday = "Tuesday"
+    Wednesday Weekday = "Wednesday"
+    Thursday  Weekday = "Thursday"
+    Friday    Weekday = "Friday"
+    Saturday  Weekday = "Saturday"
+)
+
+var AllWeekdays = []struct {
+    Value  Weekday
+    TSName string
+}{
+    {Sunday, "SUNDAY"},
+    {Monday, "MONDAY"},
+    {Tuesday, "TUESDAY"},
+    {Wednesday, "WEDNESDAY"},
+    {Thursday, "THURSDAY"},
+    {Friday, "FRIDAY"},
+    {Saturday, "SATURDAY"},
+}
+```
+
+```go {10-12}
+    //...
+    err := wails.Run(&options.App{
+        Title:  "Basic Demo",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
+        Bind: []interface{}{
+            app,
+            &mystruct1{},
+            &mystruct2{},
+        },
+    EnumBind: []interface{}{
+        AllWeekdays,
+    },
+    })
+
+```
+
 Lorsque vous exécutez `wails dev` (ou `wails generate module`), un module frontend sera généré contenant les éléments suivants :
 
 - JavaScript bindings pour toutes les méthodes liées

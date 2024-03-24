@@ -52,16 +52,22 @@ func main() {
         CSSDragValue:      "drag",
         EnableDefaultContextMenu: false,
         EnableFraudulentWebsiteDetection: false,
-        ZoomFactor:           1.0,
-        IsZoomControlEnabled: false,
         Bind: []interface{}{
             app,
         },
+        EnumBind: []interface{}{
+            AllWeekdays,
+        },
         ErrorFormatter: func(err error) any { return err.Error() },
+        SingleInstanceLock: &options.SingleInstanceLock{
+          UniqueId:               "c9c8fd93-6758-4144-87d1-34bdb0a8bd60",
+          OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+        },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
             BackdropType:                      windows.Mica,
+            DisablePinchZoom:               false,
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
@@ -75,12 +81,17 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
+            // ZoomFactor is the zoom factor for the WebView2. Il s'agit de l'option correspondant au zoom avant ou arrière défini par l'utilisateur.
+            ZoomFactor:           float64,
+            // IsZoomControlEnabled enables the zoom factor to be changed by the user.
+            IsZoomControlEnabled: bool,
             // User messages that can be customised
-            Messages *windows.Messages
+            Messages: *windows.Messages
             // OnSuspend is called when Windows enters low power mode
-            OnSuspend func()
+            OnSuspend: func()
             // OnResume is called when Windows resumes from low power mode
-            OnResume func(),
+            OnResume: func(),
+            // Disable GPU hardware acceleration for the webview
             WebviewGpuDisabled: false,
         },
         Mac: &mac.Options{
@@ -91,6 +102,8 @@ func main() {
                 FullSizeContent:            false,
                 UseToolbar:                 false,
                 HideToolbarSeparator:       true,
+                OnFileOpen: app.onFileOpen,
+                      OnUrlOpen:  app.onUrlOpen,
             },
             Appearance:           mac.NSAppearanceNameDarkAqua,
             WebviewIsTransparent: true,
@@ -267,6 +280,12 @@ Le gestionnaire sera appelé pour chaque requête GET qui ne peut pas être serv
 - Requête GET : `http.StatusNotFound`
 - Autre requête : `http.StatusMethodNotAllowed`
 
+:::info
+
+This does not work with vite v5.0.0+ and wails v2 due to changes in vite. Changes are planned in v3 to support similar functionality under vite v5.0.0+. If you need this feature, stay with vite v4.0.0+. See [issue 3240](https://github.com/wailsapp/wails/issues/3240) for details
+
+:::
+
 REMARQUE : Lorsqu'il est utilisé en combinaison avec un serveur de développement Frontend, il peut y avoir des limitations, par exemple. Vite affiche l'index.html sur chaque chemin qui ne contient pas d'extension de fichier.
 
 Nom: AssetsHandler<br/> Type: `http.Handler`
@@ -366,7 +385,7 @@ Nom: CSSDragValue<br/> Type: `string`
 
 EnableDefaultContextMenu active le menu contextuel par défaut du navigateur en production.
 
-By default, the browser's default context-menu is only available in development and in a `-debug` [build](../reference/cli.mdx#build) along with the devtools inspector, Using this option you can enable the default context-menu in `production` while the devtools inspector won't be available unless the `-devtools` build flag is used.
+Par défaut, le menu contextuel par défaut du navigateur n'est disponible qu'en développement et dans un `-debug` ou [build](../reference/cli.mdx#build) avec l'inspecteur de devtools. En utilisant cette option, vous pouvez activer le menu contextuel par défaut en `production`, alors que l'inspecteur devtools ne sera pas disponible à moins que l'option `-devtools` ne soit utilisée.
 
 Lorsque cette option est activée, par défaut, le menu contextuel ne sera affiché que pour du texte (où Couper/Copier/Coller est nécessaire), pour remplacer ce comportement, vous pouvez utiliser la propriété CSS `--default-contextmenu` sur n'importe quel élément HTML (y compris le corps ``) avec les valeurs suivantes :
 
@@ -413,11 +432,36 @@ La liste des structs Go définissant des méthodes qui doivent être liées au f
 
 Nom: Bind<br/> Type: `[]interface{}`
 
+### EnumBind
+
+A slice of Enum arrays that need to be bound to the frontend.
+
+Name: EnumBind<br/> Type: `[]interface{}`
+
 ### ErrorFormatter
 
 Une fonction qui détermine comment les erreurs sont formatées lorsqu'elles sont retournées par un appel de méthode JS-to-Go. La valeur retournée sera sous format JSON.
 
 Nom: ErrorFormatter<br/> Type: `func (error) any`
+
+### SingleInstanceLock
+
+Enables single instance locking. This means that only one instance of your application can be running at a time.
+
+Name: SingleInstanceLock<br/> Type: `*options.SingleInstanceLock`
+
+#### UniqueId
+
+This id is used to generate the mutex name on Windows and macOS and the dbus name on Linux. Use a UUID to ensure that the id is unique.
+
+Name: UniqueId<br/> Type: `string`
+
+#### OnSecondInstanceLaunch
+
+Callback that is called when a second instance of your app is launched.
+
+Name: OnSecondInstanceLaunch<br/> Type: `func(secondInstanceData SecondInstanceData)`
+
 
 ### Windows
 
@@ -460,6 +504,12 @@ La valeur peut être l'une des valeurs suivantes :
 | Acrylic | Utilisez l'effet [Acrylique](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) |
 | Mica    | Utiliser l'effet [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica)         |
 | Tabbed  | Utiliser Tabbed. C'est un arrière-plan qui est similaire à Mica.                                  |
+
+#### DisablePinchZoom
+
+Setting this to `true` will disable pinch zoom gestures.
+
+Name: DisablePinchZoom<br/> Type: `bool`
 
 #### DisableWindowIcon
 
@@ -595,9 +645,9 @@ Nom: WebviewGpuIsDisabled<br/> Type: `bool`
 
 #### EnableSwipeGestures
 
-Setting this to `true` will enable swipe gestures for the webview.
+Définir à `true` activera les gestes de balayage pour la webview.
 
-Name: EnableSwipeGestures<br/> Type: `bool`
+Nom: EnableSwipeGestures<br/> Type: `bool`
 
 ### Mac
 
@@ -694,29 +744,41 @@ Définir ceci à `true` rendra l'arrière-plan de la fenêtre translucide. Souve
 
 Nom: WindowIsTranslucent<br/> Type: `bool`
 
+#### OnFileOpen
+
+Callback that is called when a file is opened with the application.
+
+Name: OnFileOpen<br/> Type: `func(filePath string)`
+
+#### OnUrlOpen
+
+Callback that is called when a URL is opened with the application.
+
+Name: OnUrlOpen<br/> Type: `func(filePath string)`
+
 #### Preferences
 
-The Preferences struct provides the ability to configure the Webview preferences.
+Preferences fournit la possibilité de configurer les préférences de la Webview.
 
-Name: Preferences<br/> Type: [`*mac.Preferences`](#preferences-struct)
+Nom: Preferences<br/> Type: [`*mac.Preferences`](#preferences-struct)
 
-##### Preferences struct
+##### Preferences
 
-You can specify the webview preferences.
+Vous pouvez spécifier les préférences de la webview.
 
 ```go
 type Preferences struct {
     TabFocusesLinks        u.Bool
     TextInteractionEnabled u.Bool
-    FullscreenEnabled      u.Bool 
+    FullscreenEnabled      u.Bool
 }
 ```
 
-| Nom                    | Description                                                                                                                                                                                                                  |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TabFocusesLinks        | A Boolean value that indicates whether pressing the tab key changes the focus to links and form controls. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/2818595-tabfocuseslinks?language=objc) |
-| TextInteractionEnabled | A Boolean value that indicates whether to allow people to select or otherwise interact with text. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3727362-textinteractionenabled?language=objc)  |
-| FullscreenEnabled      | A Boolean value that indicates whether a web view can display content full screen. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3917769-elementfullscreenenabled?language=objc)               |
+| Nom                    | Description                                                                                                                                                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TabFocusesLinks        | Un booléen qui indique si la touche de tabulation change le focus vers liens et les boutons des formulaires. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/2818595-tabfocuseslinks?language=objc)       |
+| TextInteractionEnabled | Un booléen qui indique s'il faut permettre aux gens de sélectionner ou d'interagir autrement avec le texte. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3727362-textinteractionenabled?language=objc) |
+| FullscreenEnabled      | Un booléen qui indique si le contenu peut être affiché en plein écran. [Apple Docs](https://developer.apple.com/documentation/webkit/wkpreferences/3917769-elementfullscreenenabled?language=objc)                                    |
 
 Exemple:
 
@@ -831,11 +893,11 @@ Nom: WebviewGpuPolicy<br/> Type: [`options.WebviewGpuPolicy`](#webviewgpupolicy-
 
 #### ProgramName
 
-This option is used to set the program's name for the window manager via GTK's g_set_prgname(). This name should not be localized, [see the docs](https://docs.gtk.org/glib/func.set_prgname.html).
+Cette option est utilisée pour définir le nom du programme pour le gestionnaire de fenêtres via la fonction g_set_prgname(). Ce nom ne doit pas être localisé, [voir la documentation](https://docs.gtk.org/glib/func.set_prgname.html).
 
-When a .desktop file is created this value helps with window grouping and desktop icons when the .desktop file's `Name` property differs form the executable's filename.
+Quand un fichier .desktop est créé, cette valeur aide avec le groupement de fenêtres et les icônes de bureau quand la propriété `Nom` est différente du nom de fichier de l'exécutable.
 
-Name: ProgramName<br/> Type: string<br/>
+Nom: ProgramName<br/> Type: string<br/>
 
 ### Debug
 

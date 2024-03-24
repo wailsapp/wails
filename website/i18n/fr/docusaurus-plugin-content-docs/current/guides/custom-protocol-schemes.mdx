@@ -25,15 +25,15 @@ For example:
 }
 ```
 
-| Property    | Description                                                                           |
-| :---------- | :------------------------------------------------------------------------------------ |
-| scheme      | Custom Protocol scheme. e.g. myapp                                                    |
-| description | Windows-only. The description.                                                        |
-| role        | macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole. |
+| Propriété    | Description                                                                                 |
+| :----------- | :------------------------------------------------------------------------------------------ |
+| scheme       | Custom Protocol scheme. e.g. myapp                                                          |
+| description  | Windows seulement. La description.                                                          |
+| role         | macOS uniquement. The app’s role with respect to the type. Corresponds to CFBundleTypeRole. |
 
-## Platform Specifics:
+## Spécificités par platefome :
 
-### macOS
+### MacOS
 
 When you open custom protocol with your app, the system will launch your app and call the `OnUrlOpen` function in your Wails app. Example:
 

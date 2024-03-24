@@ -1,5 +1,11 @@
 # Recursos Dinâmicos
 
+:::info
+
+This does not work with vite v5.0.0+ and wails v2 due to changes in vite. Changes are planned in v3 to support similar functionality under vite v5.0.0+. If you need this feature, stay with vite v4.0.0+. See [issue 3240](https://github.com/wailsapp/wails/issues/3240) for details
+
+:::
+
 Se você deseja carregar ou gerar assets para seu frontend de forma dinâmica, você pode conseguir isso usando a opção [AssetsHandler](../reference/options#assetshandler). O AssetsHandler é um `http.Handler` genérico que irá ser chamado para qualquer solicitação não GET no servidor de ativos e para solicitações GET que não podem ser atendidas pelo ativos agrupados porque o arquivo não foi encontrado.
 
 Ao instalar um AssetsHandler personalizado, você pode servir seus próprios assets usando um servidor de arquivos personalizado.
