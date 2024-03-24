@@ -60,7 +60,7 @@ func GenerateBindings(options Options) (string, error) {
 
 	if runtime.GOOS == "darwin" {
 		// Remove quarantine attribute
-		stdout, stderr, err = shell.RunCommand(workingDirectory, "xattr", "-rc", filename)
+		stdout, stderr, err = shell.RunCommand(workingDirectory, "/usr/bin/xattr", "-rc", filename)
 		if err != nil {
 			return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 		}
