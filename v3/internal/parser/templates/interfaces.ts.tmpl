@@ -38,6 +38,6 @@ export interface {{$def.Name}} {
      * {{jsdoc .DocComment}}
      */
     {{- end}}
-    {{.JSName}}: {{.JSType $pkg}};{{if not .Exported}} // Warning: this is unexported in the Go struct.{{end}}{{end}}
+    {{.JSName}}: {{.Type.JS $pkg}};{{if not .Exported}} // Warning: this is unexported in the Go struct.{{end}}{{end}}
 }
 {{end -}}

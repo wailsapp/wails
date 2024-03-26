@@ -25,15 +25,13 @@ func TestParseFunction(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
-							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet someone",
 							Inputs: []*Parameter{
 								{
 									Name: "name",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
@@ -41,8 +39,7 @@ func TestParseFunction(t *testing.T) {
 								{
 									Name: "",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
@@ -60,15 +57,13 @@ func TestParseFunction(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
-							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet does XYZ",
 							Inputs: []*Parameter{
 								{
 									Name: "name",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
@@ -76,23 +71,20 @@ func TestParseFunction(t *testing.T) {
 								{
 									Name: "",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
 							ID: 1411160069,
 						},
 						{
-							Package:    "main",
 							Name:       "NewPerson",
 							DocComment: "NewPerson creates a new person",
 							Inputs: []*Parameter{
 								{
 									Name: "name",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
@@ -100,7 +92,6 @@ func TestParseFunction(t *testing.T) {
 								{
 									Name: "",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "Person",
 										IsPointer: true,
 										IsStruct:  true,
@@ -114,7 +105,6 @@ func TestParseFunction(t *testing.T) {
 				"github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services": {
 					"OtherService": {
 						{
-							Package:    "github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services",
 							Name:       "Yay",
 							DocComment: "Yay does this and that",
 							Outputs: []*Parameter{
@@ -123,7 +113,6 @@ func TestParseFunction(t *testing.T) {
 										Name:      "Address",
 										IsStruct:  true,
 										IsPointer: true,
-										Package:   "github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services",
 									},
 								},
 							},
@@ -141,8 +130,7 @@ func TestParseFunction(t *testing.T) {
 							{
 								Name: "Name",
 								Type: &ParameterType{
-									Package: "main",
-									Name:    "string",
+									Name: "string",
 								},
 							},
 							{
@@ -151,7 +139,6 @@ func TestParseFunction(t *testing.T) {
 									Name:      "Address",
 									IsStruct:  true,
 									IsPointer: true,
-									Package:   "github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services",
 								},
 							},
 						},
@@ -164,22 +151,19 @@ func TestParseFunction(t *testing.T) {
 							{
 								Name: "Street",
 								Type: &ParameterType{
-									Package: "github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services",
-									Name:    "string",
+									Name: "string",
 								},
 							},
 							{
 								Name: "State",
 								Type: &ParameterType{
-									Package: "github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services",
-									Name:    "string",
+									Name: "string",
 								},
 							},
 							{
 								Name: "Country",
 								Type: &ParameterType{
-									Package: "github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services",
-									Name:    "string",
+									Name: "string",
 								},
 							},
 						},
@@ -196,14 +180,7 @@ func TestParseFunction(t *testing.T) {
 				return
 			}
 
-			// Patch the PackageDir in the wantBoundMethods
-			for _, packageData := range got.BoundMethods {
-				for _, boundMethods := range packageData {
-					for _, boundMethod := range boundMethods {
-						boundMethod.PackageDir = ""
-					}
-				}
-			}
+			patchParserOutput(got)
 
 			// Loop over the things we want
 			for packageName, packageData := range tt.wantBoundMethods {
@@ -211,16 +188,6 @@ func TestParseFunction(t *testing.T) {
 					gotBoundMethods := got.BoundMethods[packageName][structName]
 					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods, cmp.AllowUnexported(Parameter{})); diff != "" {
 						t.Errorf("ParseDirectory() failed:\n" + diff)
-					}
-				}
-			}
-
-			// Loop over the models
-			for _, packageData := range got.Models {
-				for _, wantModel := range packageData {
-					// Loop over the Fields
-					for _, field := range wantModel.Fields {
-						field.Project = nil
 					}
 				}
 			}
