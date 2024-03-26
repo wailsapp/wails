@@ -5,15 +5,22 @@
 import * as services from "../services/models";
 
 export class Person {
-    name: string;
-    address: services.Address;
+    "Name": string;
+    "Address": services.Address | null;
 
+    /** Creates a new Person instance. */
     constructor(source: Partial<Person> = {}) {
-        const {name = "", address = null} = source;
-        this.name = name;
-        this.address = address;
+        if (!("Name" in source)) {
+            this["Name"] = "";
+        }
+        if (!("Address" in source)) {
+            this["Address"] = null;
+        }
+
+        Object.assign(this, source);
     }
 
+    /** Creates a new Person instance from a string or object. */
     static createFrom(source: string | object = {}): Person {
         let parsedSource = typeof source === 'string' ? JSON.parse(source) : source;
         return new Person(parsedSource as Partial<Person>);

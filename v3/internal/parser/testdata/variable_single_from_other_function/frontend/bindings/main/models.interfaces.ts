@@ -4,9 +4,11 @@
 
 import * as services from "../services/models";
 
-// Person is a person!
-// They have a name and an address
+/**
+ * Person is a person!
+ * They have a name and an address
+ */
 export interface Person {
-    name: string;
-    address: services.Address;
+    "Name": string;
+    "Address": services.Address | null;
 }

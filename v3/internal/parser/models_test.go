@@ -1,12 +1,13 @@
 package parser
 
 import (
-	"github.com/google/go-cmp/cmp"
-	"github.com/wailsapp/wails/v3/internal/flags"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/wailsapp/wails/v3/internal/flags"
 )
 
 func TestGenerateModels(t *testing.T) {
@@ -70,6 +71,35 @@ func TestGenerateModels(t *testing.T) {
 			want: map[string]string{
 				"main":     getFile("testdata/function_from_imported_package/frontend/bindings/main/models.js"),
 				"services": getFile("testdata/function_from_imported_package/frontend/bindings/services/models.js"),
+			},
+			useTypescript: false,
+		},
+		// function from nested imported package
+		{
+			name: "function from nested imported package - Typescript",
+			dir:  "testdata/function_from_nested_imported_package",
+			want: map[string]string{
+				"main":           getFile("testdata/function_from_nested_imported_package/frontend/bindings/main/models.ts"),
+				"services/other": getFile("testdata/function_from_nested_imported_package/frontend/bindings/services/other/models.ts"),
+			},
+			useTypescript: true,
+		},
+		{
+			name: "function from nested imported package - Typescript interfaces",
+			dir:  "testdata/function_from_nested_imported_package",
+			want: map[string]string{
+				"main":           getFile("testdata/function_from_nested_imported_package/frontend/bindings/main/models.interfaces.ts"),
+				"services/other": getFile("testdata/function_from_nested_imported_package/frontend/bindings/services/other/models.interfaces.ts"),
+			},
+			useTypescript: true,
+			useInterface:  true,
+		},
+		{
+			name: "function from nested imported package - Javascript",
+			dir:  "testdata/function_from_nested_imported_package",
+			want: map[string]string{
+				"main":           getFile("testdata/function_from_nested_imported_package/frontend/bindings/main/models.js"),
+				"services/other": getFile("testdata/function_from_nested_imported_package/frontend/bindings/services/other/models.js"),
 			},
 			useTypescript: false,
 		},
@@ -199,6 +229,7 @@ func TestGenerateModels(t *testing.T) {
 				"services": getFile("testdata/enum_from_imported_package/frontend/bindings/services/models.interfaces.ts"),
 			},
 			useTypescript: true,
+			useInterface:  true,
 		},
 		{
 			name: "enum from imported package - Javascript",

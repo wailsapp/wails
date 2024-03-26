@@ -5,6 +5,6 @@
 import * as services from "../services/models";
 
 export interface Person {
-    name: string;
-    address: services.Address;
+    "Name": string;
+    "Address": services.Address | null;
 }
