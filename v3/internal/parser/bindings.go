@@ -168,7 +168,6 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 	var params, inputs, args string
 	for index, input := range method.JSInputs() {
 		input.project = p
-		inputName := sanitiseJSVarName(index, input.Name)
 
 		if input.Type.IsStruct || input.Type.IsEnum {
 			if _, ok := externalStructs[input.Type.Package]; !ok {
@@ -180,8 +179,10 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 			}
 		}
 
-		inputType := input.JSType(packageName)
-		params += "\n * @param " + inputName + " {" + inputType + "}"
+		inputName := sanitiseJSVarName(index, input.Name)
+		inputType := input.JSType(method.Package)
+
+		params += "\n * @param {" + inputType + "} " + inputName
 
 		if input.Type.IsVariadic {
 			inputs += "..."
@@ -207,11 +208,8 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 		returns = " * @returns {Promise<"
 		for _, output := range method.Outputs {
 			output.project = p
-			jsType := output.JSType(packageName)
-			if jsType == "error" {
-				jsType = "void"
-			}
-			if output.Type.IsStruct {
+
+			if output.Type.IsStruct || output.Type.IsEnum {
 				if _, ok := externalStructs[output.Type.Package]; !ok {
 					externalStructs[output.Type.Package] = make(map[string]*ExternalStruct)
 				}
@@ -219,10 +217,16 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 					Package: output.Type.Package,
 					Name:    output.Type.Name,
 				}
-				jsType = output.NamespacedStructVariable(output.Type.Package)
 			}
-			returns += jsType + ", "
+
+			outputType := output.JSType(method.Package)
+			if outputType == "error" {
+				returns += "void, "
+			} else {
+				returns += outputType + ", "
+			}
 		}
+
 		returns = strings.TrimSuffix(returns, ", ")
 		returns += ">}"
 	}
@@ -257,7 +261,6 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 	var inputs, args string
 	for index, input := range method.JSInputs() {
 		input.project = p
-		inputName := sanitiseJSVarName(index, input.Name)
 
 		if input.Type.IsStruct || input.Type.IsEnum {
 			if _, ok := externalStructs[input.Type.Package]; !ok {
@@ -269,10 +272,13 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 			}
 		}
 
+		inputName := sanitiseJSVarName(index, input.Name)
+		inputType := input.JSType(method.Package)
+
 		if input.Type.IsVariadic {
 			inputs += "..."
 		}
-		inputs += inputName + ": " + input.JSType(packageName) + ", "
+		inputs += inputName + ": " + inputType + ", "
 
 		args += ", " + inputName
 	}
@@ -290,11 +296,8 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 		returns = "Promise<"
 		for _, output := range method.Outputs {
 			output.project = p
-			jsType := output.JSType(packageName)
-			if jsType == "error" {
-				jsType = "void"
-			}
-			if output.Type.IsStruct {
+
+			if output.Type.IsStruct || output.Type.IsEnum {
 				if _, ok := externalStructs[output.Type.Package]; !ok {
 					externalStructs[output.Type.Package] = make(map[string]*ExternalStruct)
 				}
@@ -302,9 +305,14 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 					Package: output.Type.Package,
 					Name:    output.Type.Name,
 				}
-				jsType = output.NamespacedStructVariable(output.Type.Package)
 			}
-			returns += jsType + ", "
+
+			outputType := output.JSType(method.Package)
+			if outputType == "error" {
+				returns += "void, "
+			} else {
+				returns += outputType + ", "
+			}
 		}
 		returns = strings.TrimSuffix(returns, ", ")
 		returns += ">"
