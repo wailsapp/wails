@@ -19,6 +19,58 @@ func TestGenerateModels(t *testing.T) {
 		useInterface  bool
 		useTypescript bool
 	}{
+		// complex JSON
+		{
+			name: "complex_json - Typescript",
+			dir:  "testdata/complex_json",
+			want: map[string]string{
+				"main": getFile("testdata/complex_json/frontend/bindings/main/models.ts"),
+			},
+			useTypescript: true,
+		},
+		{
+			name: "complex_json - Javascript",
+			dir:  "testdata/complex_json",
+			want: map[string]string{
+				"main": getFile("testdata/complex_json/frontend/bindings/main/models.js"),
+			},
+			useTypescript: false,
+		},
+		{
+			name: "complex_json - Typescript interfaces",
+			dir:  "testdata/complex_json",
+			want: map[string]string{
+				"main": getFile("testdata/complex_json/frontend/bindings/main/models.interfaces.ts"),
+			},
+			useTypescript: true,
+			useInterface:  true,
+		},
+		// complex method
+		{
+			name: "complex_method - Typescript",
+			dir:  "testdata/complex_method",
+			want: map[string]string{
+				"main": getFile("testdata/complex_method/frontend/bindings/main/models.ts"),
+			},
+			useTypescript: true,
+		},
+		{
+			name: "complex_method - Javascript",
+			dir:  "testdata/complex_method",
+			want: map[string]string{
+				"main": getFile("testdata/complex_method/frontend/bindings/main/models.js"),
+			},
+			useTypescript: false,
+		},
+		{
+			name: "complex_method - Typescript interfaces",
+			dir:  "testdata/complex_method",
+			want: map[string]string{
+				"main": getFile("testdata/complex_method/frontend/bindings/main/models.interfaces.ts"),
+			},
+			useTypescript: true,
+			useInterface:  true,
+		},
 		// enum
 		{
 			name: "enum - Typescript",

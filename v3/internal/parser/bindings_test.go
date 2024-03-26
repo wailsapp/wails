@@ -33,6 +33,90 @@ func TestGenerateBindings(t *testing.T) {
 		useTypescript bool
 	}{
 		{
+			name: "complex_json",
+			dir:  "testdata/complex_json",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_json/frontend/bindings/main/GreetService.name.js"),
+				},
+			},
+			useIDs: false,
+		},
+		{
+			name: "complex_json",
+			dir:  "testdata/complex_json",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_json/frontend/bindings/main/GreetService.js"),
+				},
+			},
+			useIDs: true,
+		},
+		{
+			name: "complex_json - Typescript - CallByID",
+			dir:  "testdata/complex_json",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_json/frontend/bindings/main/GreetService.ts"),
+				},
+			},
+			useIDs:        true,
+			useTypescript: true,
+		},
+		{
+			name: "complex_json - Typescript - CallByName",
+			dir:  "testdata/complex_json",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_json/frontend/bindings/main/GreetService.name.ts"),
+				},
+			},
+			useIDs:        false,
+			useTypescript: true,
+		},
+		{
+			name: "complex_method",
+			dir:  "testdata/complex_method",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_method/frontend/bindings/main/GreetService.name.js"),
+				},
+			},
+			useIDs: false,
+		},
+		{
+			name: "complex_method",
+			dir:  "testdata/complex_method",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_method/frontend/bindings/main/GreetService.js"),
+				},
+			},
+			useIDs: true,
+		},
+		{
+			name: "complex_method - Typescript - CallByID",
+			dir:  "testdata/complex_method",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_method/frontend/bindings/main/GreetService.ts"),
+				},
+			},
+			useIDs:        true,
+			useTypescript: true,
+		},
+		{
+			name: "complex_method - Typescript - CallByName",
+			dir:  "testdata/complex_method",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_method/frontend/bindings/main/GreetService.name.ts"),
+				},
+			},
+			useIDs:        false,
+			useTypescript: true,
+		},
+		{
 			name: "enum",
 			dir:  "testdata/enum",
 			want: map[string]map[string]string{
