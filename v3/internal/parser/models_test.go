@@ -221,34 +221,53 @@ func TestGenerateModels(t *testing.T) {
 
 			// Generate Models
 			allModels, err := project.GenerateModels(project.Models, project.Types, &flags.GenerateBindingsOptions{
-				UseInterfaces: tt.useInterface,
-				TS:            tt.useTypescript,
+				TS:             tt.useTypescript,
+				UseInterfaces:  tt.useInterface,
+				ModelsFilename: "models",
 			})
 			if err != nil {
 				t.Fatalf("GenerateModels() error = %v", err)
 			}
+
 			for pkgDir, got := range allModels {
-				// convert all line endings to \n
-				got = convertLineEndings(got)
 				want, ok := tt.want[pkgDir]
 				if !ok {
-					t.Fatalf("GenerateModels() missing package: %s", pkgDir)
+					t.Errorf("GenerateModels() unexpected package = %v", pkgDir)
+					continue
 				}
-				want = convertLineEndings(want)
-				if diff := cmp.Diff(want, got); diff != "" {
-					gotFilename := "models.got.js"
-					if tt.useTypescript {
-						gotFilename = "models.got.ts"
-					}
-					// Get relative package path
-					//relativeBindingsDir := project.RelativeBindingsDir(project.packageCache[pkgDir])
 
-					err = os.WriteFile(filepath.Join(tt.dir, project.outputDirectory, pkgDir, gotFilename), []byte(got), 0644)
+				// convert all line endings to \n
+				got = convertLineEndings(got)
+				want = convertLineEndings(want)
+
+				if diff := cmp.Diff(want, got); diff != "" {
+					originalFilename := "models"
+					if tt.useTypescript && tt.useInterface {
+						originalFilename += ".interfaces"
+					}
+					outFileName := originalFilename + ".got"
+					if tt.useTypescript {
+						originalFilename += ".ts"
+						outFileName += ".ts"
+					} else {
+						originalFilename += ".js"
+						outFileName += ".js"
+					}
+
+					originalFile := filepath.Join(tt.dir, project.outputDirectory, pkgDir, originalFilename)
+					// Check if file exists
+					if _, err := os.Stat(originalFile); err != nil {
+						outFileName = originalFilename
+					}
+
+					outFile := filepath.Join(tt.dir, project.outputDirectory, pkgDir, outFileName)
+					err = os.WriteFile(outFile, []byte(got), 0644)
 					if err != nil {
 						t.Errorf("os.WriteFile() error = %v", err)
-						return
+						continue
 					}
-					t.Fatalf("GenerateModels() mismatch (-want +got):\n%s", diff)
+
+					t.Errorf("GenerateModels() mismatch (-want +got):\n%s", diff)
 				}
 			}
 		})
