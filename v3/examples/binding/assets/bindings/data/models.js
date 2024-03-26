@@ -8,11 +8,13 @@ export const Person = class {
      * Creates a new Person instance.
      * @constructor
      * @param {Object} source - The source object to create the Person.
-     * @param {string} source.Name
+     * @param {string} [source.name] - Warning: this is unexported in the Go struct.
+     * @param {number[]} [source.counts] - Warning: this is unexported in the Go struct.
      */
     constructor(source = {}) {
-        const { name = "" } = source;        
+        const { name = "", counts = 0 } = source;        
         this.name = name;
+        this.counts = counts;
     }
 
     /**

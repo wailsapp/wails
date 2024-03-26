@@ -43,14 +43,15 @@ func (s *StructDef) DefaultValueList() string {
 }
 
 type ParameterType struct {
-	Name      string
-	IsStruct  bool
-	IsSlice   bool
-	IsPointer bool
-	IsEnum    bool
-	MapKey    *ParameterType
-	MapValue  *ParameterType
-	Package   string
+	Name       string
+	IsStruct   bool
+	IsSlice    bool
+	IsPointer  bool
+	IsEnum     bool
+	IsVariadic bool
+	MapKey     *ParameterType
+	MapValue   *ParameterType
+	Package    string
 }
 
 type EnumDef struct {
@@ -125,6 +126,11 @@ func (p *Parameter) JSType(pkgName string) string {
 		typeName += " | null"
 	}
 
+	// Add variadic slice suffix
+	if p.Type.IsVariadic {
+		typeName = "(" + typeName + ")[]"
+	}
+
 	return typeName
 }
 
@@ -177,73 +183,72 @@ func (f *Field) TSBuild(pkg string) string {
 	return fmt.Sprintf("%s.%s.createFrom(source['%s'])", pkgAlias(f.Type.Package), f.Type.Name, f.JSName())
 }
 
-func (f *Field) JSDef(pkg string) string {
-	var jsType string
+func (f *Field) Exported() bool {
+	return ast.IsExported(f.Name)
+}
+
+func (f *Field) TSType(pkg string) string {
+	var typeName string
 	switch f.Type.Name {
 	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
-		jsType = "number"
+		typeName = "number"
 	case "string":
-		jsType = "string"
+		typeName = "string"
 	case "bool":
-		jsType = "boolean"
+		typeName = "boolean"
 	default:
-		jsType = f.Type.Name
+		typeName = f.Type.Name
 	}
 
-	var result string
-	isExternalStruct := f.Type.Package != "" && f.Type.Package != pkg && f.Type.IsStruct
-	if f.Type.Package == "" || f.Type.Package == pkg || !isExternalStruct {
-		result += fmt.Sprintf("%s: %s;", f.JSName(), jsType)
-	} else {
+	// If the type is from another package, it needs to be adjusted
+	if f.Type.Package != "" && f.Type.Package != pkg && (f.Type.IsStruct || f.Type.IsEnum) {
 		parts := strings.Split(f.Type.Package, "/")
-		result += fmt.Sprintf("%s: %s.%s;", f.JSName(), parts[len(parts)-1], jsType)
+		typeName = parts[len(parts)-1] + "." + typeName
 	}
 
-	if !ast.IsExported(f.Name) {
-		result += " // Warning: this is unexported in the Go struct."
+	// Add slice suffix
+	if f.Type.IsSlice {
+		typeName += "[]"
 	}
 
-	return result
+	// Add pointer suffix
+	if f.Type.IsPointer {
+		typeName += " | null"
+	}
+
+	return typeName
 }
 
 func (f *Field) JSDocType(pkg string) string {
-	var jsType string
+	var typeName string
 	switch f.Type.Name {
 	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
-		jsType = "number"
+		typeName = "number"
 	case "string":
-		jsType = "string"
+		typeName = "string"
 	case "bool":
-		jsType = "boolean"
+		typeName = "boolean"
 	default:
-		jsType = f.Type.Name
+		typeName = f.Type.Name
 	}
 
-	// If we are the same package, just return the type
-	externalPkgInfo := f.Project.packageCache[f.Type.Package]
-	if externalPkgInfo.Name == pkg {
-		return jsType
+	// If the type is from another package, it needs to be adjusted
+	if f.Type.Package != "" && f.Type.Package != pkg && (f.Type.IsStruct || f.Type.IsEnum) {
+		parts := strings.Split(f.Type.Package, "/")
+		typeName = parts[len(parts)-1] + typeName
 	}
 
-	var result string
-	isExternalStruct := f.Type.Package != "" && f.Type.Package != pkg && f.Type.IsStruct
-	if f.Type.Package == "" || !isExternalStruct {
-		if f.Type.IsStruct || f.Type.IsEnum {
-			// get the relative package directory
-			result = fmt.Sprintf("%s%s", externalPkgInfo.Name, f.Type.Name)
-		} else {
-			result = jsType
-		}
-	} else {
-		// get the relative package directory
-		result = fmt.Sprintf("%s%s", externalPkgInfo.Name, f.Type.Name)
+	// Add slice suffix
+	if f.Type.IsSlice {
+		typeName += "[]"
 	}
 
-	if !ast.IsExported(f.Name) {
-		result += " // Warning: this is unexported in the Go struct."
+	// Add pointer suffix
+	if f.Type.IsPointer {
+		typeName += " | null"
 	}
 
-	return result
+	return typeName
 }
 
 func (f *Field) DefaultValue() string {
@@ -669,7 +674,7 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 }
 
 func (p *Project) addTypes(packagePath string, types map[string]*TypeDef) {
-	if types == nil || len(types) == 0 {
+	if len(types) == 0 {
 		return
 	}
 	if p.Types == nil {
@@ -758,8 +763,11 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 		}
 		result.Package = extPackage.Path
 	case *ast.ArrayType:
+		result = p.parseParameterType(&ast.Field{Type: t.Elt}, pkg)
 		result.IsSlice = true
-		result.IsStruct = isStructType(t.Elt)
+	case *ast.Ellipsis:
+		result = p.parseParameterType(&ast.Field{Type: t.Elt}, pkg)
+		result.IsVariadic = true
 	case *ast.MapType:
 		tempfield := &ast.Field{Type: t.Key}
 		result.MapKey = p.parseParameterType(tempfield, pkg)
@@ -767,6 +775,7 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 		result.MapValue = p.parseParameterType(tempfield, pkg)
 	default:
 	}
+
 	if result.IsStruct {
 		p.getStructDef(result.Name, pkg)
 		if result.Package == "" {
