@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"go/ast"
@@ -54,12 +55,13 @@ func (t *ParameterType) namespace(pkg *ParsedPackage) string {
 	}
 }
 
-func (t *ParameterType) JS(pkg *ParsedPackage) string {
+func (t *ParameterType) JS(pkg *ParsedPackage, quoted bool) string {
 	// Convert type to javascript equivalent type
 	var typeName string
 	switch t.Name {
 	case "":
 		typeName = "any"
+		quoted = false
 	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
 		typeName = "number"
 	case "string":
@@ -68,14 +70,26 @@ func (t *ParameterType) JS(pkg *ParsedPackage) string {
 		typeName = "boolean"
 	case "map":
 		// encoding/json always serializes map keys as strings
-		typeName = "{ [_: string]: " + t.MapValue.JS(pkg) + " }"
+		typeName = "{ [_: string]: " + t.MapValue.JS(pkg, false) + " }"
+		quoted = false
 	default:
 		typeName = t.Name
+		quoted = false
 	}
 
 	// if the type is an external struct or enum, we need to add the package name
 	if t.IsStruct || t.IsEnum {
 		typeName = t.namespace(pkg) + typeName
+		quoted = false
+	}
+
+	// use Typescript template literal types to type encoding/json quoted fields
+	if quoted {
+		if typeName == "string" {
+			typeName = "`\"${" + typeName + "}\"`"
+		} else {
+			typeName = "`${" + typeName + "}`"
+		}
 	}
 
 	needsParentheses := false
@@ -127,15 +141,6 @@ type Parameter struct {
 	Type *ParameterType
 }
 
-func (p *Parameter) JSName() string {
-	// if the name is a reserved word, prefix with a dollar sign
-	if slices.Contains(reservedWords, p.Name) {
-		return "$" + p.Name
-	} else {
-		return p.Name
-	}
-}
-
 type BoundMethod struct {
 	Name       string
 	DocComment string
@@ -171,14 +176,14 @@ type Field struct {
 	Name       string
 	Type       *ParameterType
 	DocComment string
-}
 
-func (f *Field) JSName() string {
-	return strings.ToLower(f.Name[0:1]) + f.Name[1:]
-}
+	// JSON tag options
+	Optional bool
+	Quoted   bool
 
-func (f *Field) Exported() bool {
-	return ast.IsExported(f.Name)
+	// Implementation details for JSON field visibility
+	nameFromTag bool
+	path        []int
 }
 
 func (f *Field) DefaultValue(pkg *ParsedPackage) string {
@@ -190,16 +195,28 @@ func (f *Field) DefaultValue(pkg *ParsedPackage) string {
 	} else if f.Type.MapKey != nil {
 		return "{}"
 	} else if f.Type.IsStruct {
-		return "(new " + f.Type.JS(pkg) + "())"
+		return "(new " + f.Type.JS(pkg, f.Quoted) + "())"
 	}
 
 	switch f.Type.Name {
 	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uintptr", "float32", "float64", "uint64":
-		return "0"
+		if f.Quoted {
+			return `"0"`
+		} else {
+			return "0"
+		}
 	case "string":
-		return `""`
+		if f.Quoted {
+			return `"\"\""`
+		} else {
+			return `""`
+		}
 	case "bool":
-		return "false"
+		if f.Quoted {
+			return "false"
+		} else {
+			return `"false"`
+		}
 	default:
 		return "null"
 	}
@@ -603,6 +620,8 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 						for index, param := range method.Inputs {
 							if param.Name == "" || param.Name == "_" {
 								param.Name = "$" + strconv.Itoa(index)
+							} else if slices.Contains(reservedWords, param.Name) {
+								param.Name = "$" + param.Name
 							}
 						}
 					}
@@ -770,40 +789,236 @@ func (p *Project) getStructDef(name string, pkg *ParsedPackage) bool {
 
 func (p *Project) parseStructFields(structType *ast.StructType, pkg *ParsedPackage) []*Field {
 	var result []*Field
+
+	var index = -1
+	var embeddedStructs = make(embeddedStructMap)
+
+	var theseFields []*Field
+	var embedded []bool
+
 	for _, field := range structType.Fields.List {
-		var theseFields []*Field
+		// clear temporary storage
+		theseFields = theseFields[:0]
+		embedded = embedded[:0]
+
 		comment := strings.TrimSpace(field.Doc.Text())
+
+		jsonName, optional, quoted, visible := parseTag(field.Tag)
+		if !visible {
+			continue
+		}
+
 		if len(field.Names) > 0 {
 			for _, name := range field.Names {
+				// encoding/json ignores all unexported fields
+				if !ast.IsExported(name.Name) {
+					continue
+				}
+
 				theseFields = append(theseFields, &Field{
-					Name:       name.Name,
+					Name:       selectFieldName(jsonName, name.Name),
 					DocComment: comment,
+					Optional:   optional,
+					Quoted:     quoted,
+
+					nameFromTag: jsonName != "",
 				})
+
+				embedded = append(embedded, false)
 			}
 		} else {
 			theseFields = append(theseFields, &Field{
-				Name:       "",
+				Name:       selectFieldName(jsonName, ""),
 				DocComment: comment,
+				Optional:   optional,
+				Quoted:     quoted,
+
+				nameFromTag: jsonName != "",
 			})
+
+			embedded = append(embedded, true)
 		}
+
 		// loop over fields
-		for _, thisField := range theseFields {
+		for i, thisField := range theseFields {
+			// track field index within top-level definition
+			index++
+
 			paramType := p.parseParameterType(field, pkg)
-			if paramType.IsStruct {
-				_, ok := pkg.StructCache[paramType.Name]
-				if !ok {
-					p.getStructDef(paramType.Name, pkg)
-				}
-			}
+			var paramStruct *StructDef
+
 			if paramType.Package == nil {
 				paramType.Package = pkg
 			}
 
+			if paramType.IsStruct {
+				p.getStructDef(paramType.Name, paramType.Package)
+				paramStruct = paramType.Package.StructCache[paramType.Name]
+			}
+
+			// process embedded fields
+			if embedded[i] {
+				if paramType.IsPointer || paramType.IsSlice {
+					// we can safely ignore such fields as the code won't compile anyways
+					continue
+				}
+
+				if paramType.IsStruct && thisField.Name == "" {
+					// schedule embedded struct fields for later
+					embeddedStructs.Add(paramStruct, index)
+					continue
+				} else if !paramType.IsStruct {
+					// embedded fields whose type is not a struct
+					// and whose _type_ name is not exported
+					// are ignored by encoding/json
+					// even when they have a json tag
+					if !ast.IsExported(paramType.Name) {
+						continue
+					}
+
+					if thisField.Name == "" {
+						thisField.Name = paramType.Name
+					}
+				}
+			}
+
 			thisField.Type = paramType
+			thisField.path = []int{index}
 			result = append(result, thisField)
 		}
 	}
-	return result
+
+	// add embedded fields
+	for structDef, info := range embeddedStructs {
+		for _, field := range structDef.Fields {
+			// clone field to current struct def
+			embeddedField := &Field{}
+			*embeddedField = *field
+
+			// extend field path
+			embeddedField.path = make([]int, 1+len(field.path))
+			embeddedField.path[0] = info.index
+			copy(embeddedField.path[1:], field.path)
+
+			result = append(result, embeddedField)
+			// if the struct occurs more than once add a duplicate field
+			if info.count > 1 {
+				result = append(result, embeddedField)
+			}
+		}
+	}
+
+	// sort fields
+	slices.SortFunc(result, func(f1 *Field, f2 *Field) int {
+		// sort by name first
+		if diff := strings.Compare(f1.Name, f2.Name); diff != 0 {
+			return diff
+		}
+
+		// break ties by depth of occurrence
+		if diff := cmp.Compare(len(f1.path), len(f2.path)); diff != 0 {
+			return diff
+		}
+
+		// break ties by presence of json tag (prioritize presence)
+		if f1.nameFromTag != f2.nameFromTag {
+			if f1.nameFromTag {
+				return -1
+			} else {
+				return 1
+			}
+		}
+
+		// break ties by order of occurrence
+		return slices.Compare(f1.path, f2.path)
+	})
+
+	count := 0
+
+	// keep for each name the dominant field, drop those for which ties
+	// still exist (ignoring order of occurrence)
+	for i, j := 0, 1; j <= len(result); j++ {
+		if j < len(result) && result[i].Name == result[j].Name {
+			continue
+		}
+
+		// if there is only one field with the current name, or there is a dominant one, keep it
+		if i+1 == j || len(result[i].path) != len(result[i+1].path) || result[i].nameFromTag != result[i+1].nameFromTag {
+			result[count] = result[i]
+			count++
+		}
+
+		i = j
+	}
+
+	result = result[:count]
+
+	// sort by order of occurrence
+	slices.SortFunc(result, func(f1 *Field, f2 *Field) int {
+		return slices.Compare(f1.path, f2.path)
+	})
+
+	return slices.Clip(result)
+}
+
+func selectFieldName(jsonName string, fieldName string) string {
+	if jsonName != "" {
+		return jsonName
+	} else {
+		return fieldName
+	}
+}
+
+func parseTag(astTag *ast.BasicLit) (name string, optional bool, quoted bool, visible bool) {
+	jsonTag := ""
+
+	if astTag != nil {
+		tag, err := strconv.Unquote(astTag.Value)
+		if err != nil {
+			log.Fatal(err)
+		}
+		jsonTag = reflect.StructTag(tag).Get("json")
+	}
+
+	if jsonTag == "-" {
+		return "", false, false, false
+	} else {
+		visible = true
+	}
+
+	parts := strings.Split(jsonTag, ",")
+
+	name = parts[0]
+
+	for _, option := range parts[1:] {
+		switch option {
+		case "omitempty":
+			optional = true
+		case "string":
+			quoted = true
+		}
+	}
+
+	return
+}
+
+type embeddedStructMap map[*StructDef]struct {
+	index int // Index of first occurrence
+	count int // Number of occurrences
+}
+
+func (em *embeddedStructMap) Add(def *StructDef, index int) {
+	if def == nil {
+		return
+	}
+
+	info := (*em)[def]
+	info.count++
+	// track only the first occurrence of any embedded struct
+	if info.count == 1 {
+		info.index = index
+	}
+	(*em)[def] = info
 }
 
 func (p *Project) getParsedPackageFromName(packageName string, currentPackage *ParsedPackage) (*ParsedPackage, error) {

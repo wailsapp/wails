@@ -10,7 +10,7 @@ import * as {{$name}} from "{{$path}}/{{$models}}.js";
 {{- range $enumindex, $enumdef := .Enums}}
 /**
 {{- if $enumdef.DocComment}}
- * {{jsdoc $enumdef.DocComment}}
+ * {{jsdoc $enumdef.DocComment ""}}
 {{- end}}
  * @readonly
  * @enum
@@ -20,7 +20,7 @@ export const {{$enumdef.Name}} = {
     {{- if $constdef.DocComment}}{{if gt $constindex 0}}
 {{end}}
     /**
-     * {{jsdoc $constdef.DocComment}}
+     * {{jsdoc $constdef.DocComment "    "}}
      */
     {{- end}}
     {{$constdef.Name}}: {{$constdef.Value}},{{end}}
@@ -29,28 +29,37 @@ export const {{$enumdef.Name}} = {
 {{- range $name, $def := .Models}}
 {{- if $def.DocComment}}
 /**
- * {{jsdoc $def.DocComment}}
+ * {{jsdoc $def.DocComment ""}}
  */
 {{- end}}
 export class {{$def.Name}} {
     /**
      * Creates a new {{$def.Name}} instance.
-     * @param {Object} source - The source object to create the {{$def.Name}}.
-    {{- range $def.Fields}}
-     * @param { {{- .Type.JS $pkg -}} } [source.{{.JSName}}]
-        {{- if or .DocComment (not .Exported)}} - {{end}}
-        {{- if .DocComment}}{{paramdoc .DocComment}}{{end}}
-        {{- if not .Exported}} (Warning: this is unexported in the Go struct.){{end}}
-    {{- end}}
+     * @param {Partial<{{$def.Name}}>} [source = {}] - The source object to create the {{$def.Name}}.
      */
     constructor(source = {}) {
-        const { {{range $fieldindex, $field := $def.Fields}}
-            {{- if gt $fieldindex 0}}, {{end}}
-            {{- .JSName}} = {{.DefaultValue $pkg}}
-        {{- end}} } = source;
-        {{- range $def.Fields}}
-        this.{{.JSName}} = {{.JSName}};
-        {{- end}}
+    {{- range $def.Fields}}
+        {{- /*
+            In JS we need to set all properties explicitly
+            because JSDoc has no support for arbitrary property names yet.
+            See https://github.com/jsdoc/jsdoc/issues/1468
+
+            For optional fields we make the initialization code unreachable
+            and cast the false condition to any to prevent any complaint from Typescript.
+        */}}
+        if ({{if .Optional}}/** @type {any} */(false){{else}}!("{{js .Name}}" in source){{end}}) {
+            /**
+            {{- if .DocComment}}
+             * {{jsdoc .DocComment "            "}}
+            {{- end}}
+             * @member
+             * @type { {{- .Type.JS $pkg .Quoted}}{{if .Optional}} | undefined{{end -}} }
+             */
+            this["{{js .Name}}"] = {{.DefaultValue $pkg}};
+        }
+    {{- end}}
+
+        Object.assign(this, source);
     }
 
     /**

@@ -21,29 +21,29 @@ import {
 {{- range .Methods}}
 {{- if .DocComment}}
 /**
- * {{jsdoc .DocComment}}
+ * {{jsdoc .DocComment ""}}
  */
 {{- end}}
 export function {{.Name}}({{range $inputindex, $inputdef := .JSInputs -}}
     {{- if gt $inputindex 0}}, {{end}}
     {{- if .Type.IsVariadic}}...{{end}}
-    {{- .JSName}}: {{.Type.JS $pkg}}
+    {{- .Name}}: {{.Type.JS $pkg false}}
 {{- end}}): Promise<
     {{- $outputs := .JSOutputs}}
     {{- if eq 0 (len $outputs) -}}
         void
     {{- else if eq 1 (len $outputs)}}
-        {{- (index $outputs 0).Type.JS $pkg}}
+        {{- (index $outputs 0).Type.JS $pkg false}}
     {{- else -}}
         [{{range $outputindex, $outputdef := $outputs}}
             {{- if gt $outputindex 0}}, {{end}}
-            {{- .Type.JS $pkg}}
+            {{- .Type.JS $pkg false}}
         {{- end}}]
     {{- end}}> {
     {{if $useIDs -}}
         return Call.ByID({{.ID}}
     {{- else -}}
         return Call.ByName("{{$struct}}.{{.Name}}"
-    {{- end}}{{range .JSInputs}}, {{.JSName}}{{end}});
+    {{- end}}{{range .JSInputs}}, {{.Name}}{{end}});
 }
 {{end -}}

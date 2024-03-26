@@ -10,7 +10,7 @@ import * as {{$name}} from "{{$path}}/{{$models}}";
 {{- range $enumindex, $enumdef := .Enums}}
 {{- if $enumdef.DocComment}}
 /**
- * {{jsdoc $enumdef.DocComment}}
+ * {{jsdoc $enumdef.DocComment ""}}
  */
 {{- end}}
 export enum {{$enumdef.Name}} {
@@ -18,7 +18,7 @@ export enum {{$enumdef.Name}} {
     {{- if $constdef.DocComment}}{{if gt $constindex 0}}
 {{end}}
     /**
-     * {{jsdoc $constdef.DocComment}}
+     * {{jsdoc $constdef.DocComment "    "}}
      */
     {{- end}}
     {{$constdef.Name}} = {{$constdef.Value}},{{end}}
@@ -27,7 +27,7 @@ export enum {{$enumdef.Name}} {
 {{- range $name, $def := .Models}}
 {{- if $def.DocComment}}
 /**
- * {{jsdoc $def.DocComment}}
+ * {{jsdoc $def.DocComment ""}}
  */
 {{- end}}
 export interface {{$def.Name}} {
@@ -35,9 +35,9 @@ export interface {{$def.Name}} {
     {{- if .DocComment}}{{if gt $fieldindex 0}}
 {{end}}
     /**
-     * {{jsdoc .DocComment}}
+     * {{jsdoc .DocComment "    "}}
      */
     {{- end}}
-    {{.JSName}}: {{.Type.JS $pkg}};{{if not .Exported}} // Warning: this is unexported in the Go struct.{{end}}{{end}}
+    "{{js .Name}}"{{if .Optional}}?{{end}}: {{.Type.JS $pkg .Quoted}};{{end}}
 }
 {{end -}}
