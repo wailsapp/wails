@@ -38,7 +38,7 @@ export class {{$def.Name}} {
 
     /** Creates a new {{$def.Name}} instance. */
     constructor(source: Partial<{{$def.Name}}> = {}) {
-        const { {{- $def.DefaultValueList -}} } = source;
+        const { {{- $def.DefaultValueList $pkg -}} } = source;
 {{- range $def.Fields}}
         this.{{.JSName}} = {{.JSName}};{{end}}
     }
