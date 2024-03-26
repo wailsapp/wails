@@ -198,7 +198,6 @@ static int GetNumScreens()
 	return 0;
 }
 
-gboolean on_drop(GtkWidget *widget, GdkDragContext *context, gint x, gint y, guint time, gpointer user_data);
 void on_data_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
 					  GtkSelectionData *selection_data, guint target_type, guint time,
 					  gpointer data);
