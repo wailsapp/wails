@@ -53,7 +53,7 @@ func (kvs *KeyValueStore) Name() string {
 
 // Init is called when the plugin is loaded. It is passed the application.App
 // instance. This is where you should do any setup.
-func (kvs *KeyValueStore) Init() error {
+func (kvs *KeyValueStore) Init(api application.PluginAPI) error {
 	err := kvs.open(kvs.config.Filename)
 	if err != nil {
 		return err

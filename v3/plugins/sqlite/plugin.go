@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v3/pkg/application"
 	_ "modernc.org/sqlite"
 	"strings"
 )
@@ -60,7 +61,7 @@ func (p *Plugin) Name() string {
 
 // Init is called when the app is starting up. You can use this to
 // initialise any resources you need.
-func (p *Plugin) Init() error {
+func (p *Plugin) Init(api application.PluginAPI) error {
 	p.callableMethods = []string{"Execute", "Select"}
 	p.js = executeselectjs
 	if p.config.CanOpenFromJS {
