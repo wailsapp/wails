@@ -56,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix custom context menu closing immediately on linux by [@abichinger](https://github.com/abichinger) in [#3330](https://github.com/wailsapp/wails/pull/3330)
 - Fix the output path and extension of model files produced by the binding generator by [@fbbdev](https://github.com/fbbdev) in [#3334](https://github.com/wailsapp/wails/pull/3334)
 - Fix the import paths of model files in JS code produced by the binding generator by [@fbbdev](https://github.com/fbbdev) in [#3334](https://github.com/wailsapp/wails/pull/3334)
+- Fix drag-n-drop on some linux distros by [@abichinger](https://github.com/abichinger) in [#3346](https://github.com/wailsapp/wails/pull/3346)
 
 ### Changed
 
