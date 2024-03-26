@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -13,20 +14,20 @@ import (
 )
 
 type CallOptions struct {
-	MethodID    uint32 `json:"methodID"`
-	PackageName string `json:"packageName"`
-	StructName  string `json:"structName"`
-	MethodName  string `json:"methodName"`
-	Args        []any  `json:"args"`
+	MethodID    uint32            `json:"methodID"`
+	PackageName string            `json:"packageName"`
+	StructName  string            `json:"structName"`
+	MethodName  string            `json:"methodName"`
+	Args        []json.RawMessage `json:"args"`
 }
 
-func (c CallOptions) Name() string {
+func (c *CallOptions) Name() string {
 	return fmt.Sprintf("%s.%s.%s", c.PackageName, c.StructName, c.MethodName)
 }
 
 type PluginCallOptions struct {
-	Name string `json:"name"`
-	Args []any  `json:"args"`
+	Name string            `json:"name"`
+	Args []json.RawMessage `json:"args"`
 }
 
 var reservedPluginMethods = []string{
@@ -235,7 +236,7 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 	structTypeString := structType.String()
 	baseName := structTypeString[1:]
 
-	ctxType := reflect.TypeOf((*context.Context)(nil)).Elem()
+	ctxType := reflect.TypeFor[context.Context]()
 
 	// Process Methods
 	for i := 0; i < structType.NumMethod(); i++ {
@@ -304,8 +305,7 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 }
 
 // Call will attempt to call this bound method with the given args
-func (b *BoundMethod) Call(ctx context.Context, args []interface{}) (returnValue interface{}, err error) {
-
+func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnValue interface{}, err error) {
 	// Use a defer statement to capture panics
 	defer func() {
 		if r := recover(); r != nil {
@@ -325,55 +325,57 @@ func (b *BoundMethod) Call(ctx context.Context, args []interface{}) (returnValue
 		}
 	}()
 
+	argCount := len(args)
 	if b.needsContext {
-		args = append([]any{ctx}, args...)
+		argCount++
 	}
 
-	// Check inputs
-	expectedInputLength := len(b.Inputs)
-	actualInputLength := len(args)
-
-	// If the method is variadic, we need to check the minimum number of inputs
-	if b.Method.Type().IsVariadic() {
-		if actualInputLength < expectedInputLength-1 {
-			return nil, fmt.Errorf("%s takes at least %d inputs. Received %d", b.Name, expectedInputLength, actualInputLength)
-		}
-	} else {
-		if expectedInputLength != actualInputLength {
-			return nil, fmt.Errorf("%s takes %d inputs. Received %d", b.Name, expectedInputLength, actualInputLength)
-		}
+	if argCount != len(b.Inputs) {
+		err = fmt.Errorf("%s expects %d arguments, received %d", b.Name, len(b.Inputs), argCount)
+		return
 	}
 
-	/** Convert inputs to reflect values **/
+	// Convert inputs to values of appropriate type
 
-	// Create slice for the input arguments to the method call
-	callArgs := make([]reflect.Value, actualInputLength)
+	callArgs := make([]reflect.Value, argCount)
+	base := 0
+
+	if b.needsContext {
+		callArgs[0] = reflect.ValueOf(ctx)
+		base++
+	}
 
 	// Iterate over given arguments
 	for index, arg := range args {
-		// Save the converted argument
-		if arg == nil {
-			callArgs[index] = reflect.Zero(b.Inputs[index].ReflectType)
-			continue
+		value := reflect.New(b.Inputs[base+index].ReflectType)
+		err = json.Unmarshal(arg, value.Interface())
+		if err != nil {
+			err = fmt.Errorf("could not parse argument #%d: %w", index, err)
+			return
 		}
-		callArgs[index] = reflect.ValueOf(arg)
+		callArgs[base+index] = value.Elem()
 	}
 
 	// Do the call
-	callResults := b.Method.Call(callArgs)
+	var callResults []reflect.Value
+	if b.Method.Type().IsVariadic() {
+		callResults = b.Method.CallSlice(callArgs)
+	} else {
+		callResults = b.Method.Call(callArgs)
+	}
 
-	//** Check results **//
+	// Check results
 	switch len(b.Outputs) {
 	case 1:
 		// Loop over results and determine if the result
 		// is an error or not
 		for _, result := range callResults {
-			interfac := result.Interface()
-			temp, ok := interfac.(error)
+			iface := result.Interface()
+			temp, ok := iface.(error)
 			if ok {
 				err = temp
 			} else {
-				returnValue = interfac
+				returnValue = iface
 			}
 		}
 	case 2:
@@ -383,7 +385,7 @@ func (b *BoundMethod) Call(ctx context.Context, args []interface{}) (returnValue
 		}
 	}
 
-	return returnValue, err
+	return
 }
 
 // isStructPtr returns true if the value given is a
