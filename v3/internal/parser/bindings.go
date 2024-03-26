@@ -2,7 +2,9 @@ package parser
 
 import (
 	"fmt"
+	"slices"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/samber/lo"
@@ -28,24 +30,24 @@ const bindingTemplate = `
 const bindingTemplateTypescript = `Comments`
 
 const callByIDTypescript = `export async function {{methodName}}({{inputs}}) : {{ReturnType}} {
-	return Call.ByID({{ID}}{{params}});
+	return Call.ByID({{ID}}{{args}});
 }
 
 `
 
 const callByNameTypescript = `export async function {{methodName}}({{inputs}}) : {{ReturnType}} {
-	return Call.ByName("{{Name}}"{{params}});
+	return Call.ByName("{{Name}}"{{args}});
 }
 
 `
 
 const callByID = `export async function {{methodName}}({{inputs}}) {
-	return Call.ByID({{ID}}, ...Array.prototype.slice.call(arguments, 0));
+	return Call.ByID({{ID}}{{args}});
 }
 `
 
 const callByName = `export async function {{methodName}}({{inputs}}) {
-	return Call.ByName("{{Name}}", ...Array.prototype.slice.call(arguments, 0));
+	return Call.ByName("{{Name}}"{{args}});
 }
 `
 
@@ -117,12 +119,21 @@ var reservedWords = []string{
 	"object",
 }
 
-func sanitiseJSVarName(name string) string {
-	// if the name is a reserved word, prefix with an
-	// underscore
-	if lo.Contains(reservedWords, name) {
-		return "_" + name
+func sanitiseJSVarName(index int, name string) string {
+	// identifiers in Go may not start with a dollar sign, but this is allowed
+	// in JS, meaning that we can avoid collisions by prefixing all generated
+	// identifiers with dollar signs
+
+	// if the name is empty or an underscore, return a dollar sign followed by argument index
+	if name == "" || name == "_" {
+		return "$" + strconv.Itoa(index)
 	}
+
+	// if the name is a reserved word, prefix with a dollar sign
+	if slices.Contains(reservedWords, name) {
+		return "$" + name
+	}
+
 	return name
 }
 
@@ -131,9 +142,8 @@ type ExternalStruct struct {
 	Name    string
 }
 
-func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, useIDs bool) (string, []string, map[packagePath]map[string]*ExternalStruct) {
+func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, useIDs bool) (string, map[packagePath]map[string]*ExternalStruct) {
 	var externalStructs = make(map[packagePath]map[string]*ExternalStruct)
-	var models []string
 	template := bindingTemplate
 	if useIDs {
 		template += callByID
@@ -154,14 +164,12 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 		comments = "\n * " + comments
 	}
 	result = strings.ReplaceAll(result, "Comments", comments)
-	var params string
-	for _, input := range method.JSInputs() {
+
+	var params, inputs, args string
+	for index, input := range method.JSInputs() {
 		input.project = p
-		inputName := sanitiseJSVarName(input.Name)
-		pkgName := getPackageName(input)
-		if pkgName != "" {
-			models = append(models, pkgName)
-		}
+		inputName := sanitiseJSVarName(index, input.Name)
+
 		if input.Type.IsStruct || input.Type.IsEnum {
 			if _, ok := externalStructs[input.Type.Package]; !ok {
 				externalStructs[input.Type.Package] = make(map[string]*ExternalStruct)
@@ -174,26 +182,21 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 
 		inputType := input.JSType(packageName)
 		params += "\n * @param " + inputName + " {" + inputType + "}"
-	}
-	params = strings.TrimSuffix(params, "\n")
-	//if len(params) > 0 {
-	//	params = "\n" + params
-	//}
-	result = strings.ReplaceAll(result, "* @param names {string}", params)
-	var inputs string
-	for _, input := range method.JSInputs() {
-		pkgName := getPackageName(input)
-		if pkgName != "" {
-			models = append(models, pkgName)
+
+		if input.Type.IsVariadic {
+			inputs += "..."
 		}
-		inputs += sanitiseJSVarName(input.Name) + ", "
+		inputs += inputName + ", "
+
+		args += ", " + inputName
 	}
+
+	params = strings.TrimSuffix(params, "\n")
+	result = strings.ReplaceAll(result, "* @param names {string}", params)
+
 	inputs = strings.TrimSuffix(inputs, ", ")
-	args := inputs
-	if len(args) > 0 {
-		args = ", " + args
-	}
 	result = strings.ReplaceAll(result, "{{inputs}}", inputs)
+
 	result = strings.ReplaceAll(result, "{{args}}", args)
 
 	// outputs
@@ -204,11 +207,7 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 		returns = " * @returns {Promise<"
 		for _, output := range method.Outputs {
 			output.project = p
-			pkgName := getPackageName(output)
-			if pkgName != "" {
-				models = append(models, pkgName)
-			}
-			jsType := output.JSType(pkgName)
+			jsType := output.JSType(packageName)
 			if jsType == "error" {
 				jsType = "void"
 			}
@@ -229,12 +228,11 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 	}
 	result = strings.ReplaceAll(result, " * @returns {Promise<string>}", returns)
 
-	return result, lo.Uniq(models), externalStructs
+	return result, externalStructs
 }
 
-func (p *Project) GenerateBindingTypescript(thisStructName string, method *BoundMethod, useIDs bool) (string, []string, map[packagePath]map[string]*ExternalStruct) {
+func (p *Project) GenerateBindingTypescript(thisStructName string, method *BoundMethod, useIDs bool) (string, map[packagePath]map[string]*ExternalStruct) {
 	var externalStructs = make(map[packagePath]map[string]*ExternalStruct)
-	var models []string
 	template := bindingTemplateTypescript
 	if useIDs {
 		template += callByIDTypescript
@@ -255,14 +253,12 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 		comments = "// " + comments + "\n"
 	}
 	result = strings.ReplaceAll(result, "Comments", comments)
-	var params string
-	for _, input := range method.JSInputs() {
+
+	var inputs, args string
+	for index, input := range method.JSInputs() {
 		input.project = p
-		inputName := sanitiseJSVarName(input.Name)
-		pkgName := getPackageName(input)
-		if pkgName != "" {
-			models = append(models, pkgName)
-		}
+		inputName := sanitiseJSVarName(index, input.Name)
+
 		if input.Type.IsStruct || input.Type.IsEnum {
 			if _, ok := externalStructs[input.Type.Package]; !ok {
 				externalStructs[input.Type.Package] = make(map[string]*ExternalStruct)
@@ -272,26 +268,18 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 				Name:    input.Type.Name,
 			}
 		}
-		params += ", " + inputName
-	}
-	result = strings.ReplaceAll(result, "{{params}}", params)
-	//if len(params) > 0 {
-	//	params = "\n" + params
-	//}
-	var inputs string
-	for _, input := range method.JSInputs() {
-		pkgName := getPackageName(input)
-		if pkgName != "" {
-			models = append(models, pkgName)
+
+		if input.Type.IsVariadic {
+			inputs += "..."
 		}
-		inputs += sanitiseJSVarName(input.Name) + ": " + input.JSType(packageName) + ", "
+		inputs += inputName + ": " + input.JSType(packageName) + ", "
+
+		args += ", " + inputName
 	}
+
 	inputs = strings.TrimSuffix(inputs, ", ")
-	args := inputs
-	if len(args) > 0 {
-		args = ", " + args
-	}
 	result = strings.ReplaceAll(result, "{{inputs}}", inputs)
+
 	result = strings.ReplaceAll(result, "{{args}}", args)
 
 	// outputs
@@ -302,11 +290,7 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 		returns = "Promise<"
 		for _, output := range method.Outputs {
 			output.project = p
-			pkgName := getPackageName(output)
-			if pkgName != "" {
-				models = append(models, pkgName)
-			}
-			jsType := output.JSType(pkgName)
+			jsType := output.JSType(packageName)
 			if jsType == "error" {
 				jsType = "void"
 			}
@@ -327,18 +311,7 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 	}
 	result = strings.ReplaceAll(result, "{{ReturnType}}", returns)
 
-	return result, lo.Uniq(models), externalStructs
-}
-
-func getPackageName(input *Parameter) string {
-	if !input.Type.IsStruct {
-		return ""
-	}
-	result := input.Type.Package
-	if result == "" {
-		result = "main"
-	}
-	return result
+	return result, externalStructs
 }
 
 func isContext(input *Parameter) bool {
@@ -353,8 +326,6 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 	packageNames := lo.Keys(bindings)
 	sort.Strings(packageNames)
 	for _, packageName := range packageNames {
-		var allModels []string
-
 		packageBindings := bindings[packageName]
 		structNames := lo.Keys(packageBindings)
 		relativePackageDir := p.RelativePackageDir(packageName)
@@ -371,7 +342,6 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 			var allNamespacedStructs map[packagePath]map[string]*ExternalStruct
 			var namespacedStructs map[packagePath]map[string]*ExternalStruct
 			var thisBinding string
-			var models []string
 			var mainImports = ""
 			if len(methods) > 0 {
 				if useBundledRuntime {
@@ -382,13 +352,12 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 			}
 			for _, method := range methods {
 				if useTypescript {
-					thisBinding, models, namespacedStructs = p.GenerateBindingTypescript(structName, method, useIDs)
+					thisBinding, namespacedStructs = p.GenerateBindingTypescript(structName, method, useIDs)
 				} else {
-					thisBinding, models, namespacedStructs = p.GenerateBinding(structName, method, useIDs)
+					thisBinding, namespacedStructs = p.GenerateBinding(structName, method, useIDs)
 				}
 				// Merge the namespaced structs
 				allNamespacedStructs = mergeNamespacedStructs(allNamespacedStructs, namespacedStructs)
-				allModels = append(allModels, models...)
 				result[relativePackageDir][structName] += thisBinding
 			}
 

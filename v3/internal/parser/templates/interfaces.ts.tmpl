@@ -21,6 +21,6 @@ export enum {{$enumdef.Name}} {
 {{- end }}
 {{- end}}
 export interface {{$def.Name}} { {{- range $def.Fields}}
-    {{.JSDef $pkg}}{{end}}
+    {{.JSName}}: {{.TSType $pkg}};{{if .Exported}} // Warning: this is unexported in the Go struct.{{end}}{{end}}
 }
 {{end}}

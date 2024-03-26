@@ -31,8 +31,8 @@ export const {{$def.Name}} = class {
      * Creates a new {{$def.Name}} instance.
      * @constructor
      * @param {Object} source - The source object to create the {{$def.Name}}.
-{{- range $field := $def.Fields}}
-     * @param { {{- .JSDocType $pkg -}} } source.{{$field.Name}}{{end}}
+{{- range $def.Fields}}
+     * @param { {{- .JSDocType $pkg -}} } [source.{{.JSName}}]{{if .Exported}} - Warning: this is unexported in the Go struct.{{end}}{{end}}
      */
     constructor(source = {}) {
         const { {{$def.DefaultValueList}} } = source;        {{range $def.Fields}}
