@@ -25,15 +25,13 @@ func TestParseStructLiteralSingle(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
-							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet someone",
 							Inputs: []*Parameter{
 								{
 									Name: "name",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
@@ -41,15 +39,13 @@ func TestParseStructLiteralSingle(t *testing.T) {
 								{
 									Name: "",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
 							ID: 1411160069,
 						},
 						{
-							Package:    "main",
 							Name:       "NoInputsStringOut",
 							DocComment: "",
 							Inputs:     nil,
@@ -57,21 +53,18 @@ func TestParseStructLiteralSingle(t *testing.T) {
 								{
 									Name: "",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
 							ID: 1075577233,
 						},
 						{
-							Package: "main",
-							Name:    "StringArrayInputStringOut",
+							Name: "StringArrayInputStringOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
 										Name:    "string",
 										IsSlice: true,
 									},
@@ -80,21 +73,18 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
 							ID: 1091960237,
 						},
 						{
-							Package: "main",
-							Name:    "StringArrayInputStringArrayOut",
+							Name: "StringArrayInputStringArrayOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
 										Name:    "string",
 										IsSlice: true,
 									},
@@ -103,7 +93,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
 										Name:    "string",
 										IsSlice: true,
 									},
@@ -112,13 +101,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 383995060,
 						},
 						{
-							Package: "main",
-							Name:    "StringArrayInputNamedOutput",
+							Name: "StringArrayInputNamedOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
 										Name:    "string",
 										IsSlice: true,
 									},
@@ -128,7 +115,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 								{
 									Name: "output",
 									Type: &ParameterType{
-										Package: "main",
 										Name:    "string",
 										IsSlice: true,
 									},
@@ -137,13 +123,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 3678582682,
 						},
 						{
-							Package: "main",
-							Name:    "StringArrayInputNamedOutputs",
+							Name: "StringArrayInputNamedOutputs",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
 										Name:    "string",
 										IsSlice: true,
 									},
@@ -153,7 +137,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 								{
 									Name: "output",
 									Type: &ParameterType{
-										Package: "main",
 										Name:    "string",
 										IsSlice: true,
 									},
@@ -161,21 +144,18 @@ func TestParseStructLiteralSingle(t *testing.T) {
 								{
 									Name: "err",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "error",
+										Name: "error",
 									},
 								},
 							},
 							ID: 319259595,
 						},
 						{
-							Package: "main",
-							Name:    "IntPointerInputNamedOutputs",
+							Name: "IntPointerInputNamedOutputs",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "int",
 										IsPointer: true,
 									},
@@ -185,7 +165,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 								{
 									Name: "output",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "int",
 										IsPointer: true,
 									},
@@ -193,20 +172,17 @@ func TestParseStructLiteralSingle(t *testing.T) {
 								{
 									Name: "err",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "error",
+										Name: "error",
 									}},
 							},
 							ID: 2718999663,
 						},
 						{
-							Package: "main",
-							Name:    "UIntPointerInAndOutput",
+							Name: "UIntPointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "uint",
 										IsPointer: true,
 									},
@@ -215,7 +191,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "uint",
 										IsPointer: true,
 									},
@@ -224,13 +199,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 1367187362,
 						},
 						{
-							Package: "main",
-							Name:    "UInt8PointerInAndOutput",
+							Name: "UInt8PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "uint8",
 										IsPointer: true,
 									},
@@ -239,7 +212,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "uint8",
 										IsPointer: true,
 									},
@@ -248,13 +220,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 518250834,
 						},
 						{
-							Package: "main",
-							Name:    "UInt16PointerInAndOutput",
+							Name: "UInt16PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "uint16",
 										IsPointer: true,
 									},
@@ -263,7 +233,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "uint16",
 										IsPointer: true,
 									},
@@ -272,13 +241,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 1236957573,
 						},
 						{
-							Package: "main",
-							Name:    "UInt32PointerInAndOutput",
+							Name: "UInt32PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "uint32",
 										IsPointer: true,
 									},
@@ -287,7 +254,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "uint32",
 										IsPointer: true,
 									},
@@ -296,13 +262,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 1739300671,
 						},
 						{
-							Package: "main",
-							Name:    "UInt64PointerInAndOutput",
+							Name: "UInt64PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "uint64",
 										IsPointer: true,
 									},
@@ -311,7 +275,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "uint64",
 										IsPointer: true,
 									},
@@ -320,13 +283,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 1403757716,
 						},
 						{
-							Package: "main",
-							Name:    "IntPointerInAndOutput",
+							Name: "IntPointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "int",
 										IsPointer: true,
 									},
@@ -335,7 +296,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "int",
 										IsPointer: true,
 									},
@@ -344,13 +304,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 1066151743,
 						},
 						{
-							Package: "main",
-							Name:    "Int8PointerInAndOutput",
+							Name: "Int8PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "int8",
 										IsPointer: true,
 									},
@@ -359,7 +317,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "int8",
 										IsPointer: true,
 									},
@@ -368,13 +325,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 2189402897,
 						},
 						{
-							Package: "main",
-							Name:    "Int16PointerInAndOutput",
+							Name: "Int16PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "int16",
 										IsPointer: true,
 									},
@@ -383,7 +338,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "int16",
 										IsPointer: true,
 									},
@@ -392,13 +346,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 1754277916,
 						},
 						{
-							Package: "main",
-							Name:    "Int32PointerInAndOutput",
+							Name: "Int32PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "int32",
 										IsPointer: true,
 									},
@@ -407,7 +359,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "int32",
 										IsPointer: true,
 									},
@@ -416,13 +367,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 4251088558,
 						},
 						{
-							Package: "main",
-							Name:    "Int64PointerInAndOutput",
+							Name: "Int64PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "int64",
 										IsPointer: true,
 									},
@@ -431,7 +380,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "int64",
 										IsPointer: true,
 									},
@@ -440,277 +388,239 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 2205561041,
 						},
 						{
-							Package: "main",
-							Name:    "IntInIntOut",
+							Name: "IntInIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "int",
+										Name: "int",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "int",
+										Name: "int",
 									},
 								},
 							},
 							ID: 642881729,
 						},
 						{
-							Package: "main",
-							Name:    "Int8InIntOut",
+							Name: "Int8InIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "int8",
+										Name: "int8",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "int8",
+										Name: "int8",
 									},
 								},
 							},
 							ID: 572240879,
 						},
 						{
-							Package: "main",
-							Name:    "Int16InIntOut",
+							Name: "Int16InIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "int16",
+										Name: "int16",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "int16",
+										Name: "int16",
 									},
 								},
 							},
 							ID: 3306292566,
 						},
 						{
-							Package: "main",
-							Name:    "Int32InIntOut",
+							Name: "Int32InIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "int32",
+										Name: "int32",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "int32",
+										Name: "int32",
 									},
 								},
 							},
 							ID: 1909469092,
 						},
 						{
-							Package: "main",
-							Name:    "Int64InIntOut",
+							Name: "Int64InIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "int64",
+										Name: "int64",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "int64",
+										Name: "int64",
 									},
 								},
 							},
 							ID: 1343888303,
 						},
 						{
-							Package: "main",
-							Name:    "UIntInUIntOut",
+							Name: "UIntInUIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "uint",
+										Name: "uint",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "uint",
+										Name: "uint",
 									},
 								},
 							},
 							ID: 2836661285,
 						},
 						{
-							Package: "main",
-							Name:    "UInt8InUIntOut",
+							Name: "UInt8InUIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "uint8",
+										Name: "uint8",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "uint8",
+										Name: "uint8",
 									},
 								},
 							},
 							ID: 2988345717,
 						},
 						{
-							Package: "main",
-							Name:    "UInt16InUIntOut",
+							Name: "UInt16InUIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "uint16",
+										Name: "uint16",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "uint16",
+										Name: "uint16",
 									},
 								},
 							},
 							ID: 3401034892,
 						},
 						{
-							Package: "main",
-							Name:    "UInt32InUIntOut",
+							Name: "UInt32InUIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "uint32",
+										Name: "uint32",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "uint32",
+										Name: "uint32",
 									},
 								},
 							},
 							ID: 1160383782,
 						},
 						{
-							Package: "main",
-							Name:    "UInt64InUIntOut",
+							Name: "UInt64InUIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "uint64",
+										Name: "uint64",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "uint64",
+										Name: "uint64",
 									},
 								},
 							},
 							ID: 793803239,
 						},
 						{
-							Package: "main",
-							Name:    "Float32InFloat32Out",
+							Name: "Float32InFloat32Out",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "float32",
+										Name: "float32",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "float32",
+										Name: "float32",
 									},
 								},
 							},
 							ID: 3132595881,
 						},
 						{
-							Package: "main",
-							Name:    "Float64InFloat64Out",
+							Name: "Float64InFloat64Out",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "float64",
+										Name: "float64",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "float64",
+										Name: "float64",
 									},
 								},
 							},
 							ID: 2182412247,
 						},
 						{
-							Package: "main",
-							Name:    "PointerFloat32InFloat32Out",
+							Name: "PointerFloat32InFloat32Out",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "float32",
 										IsPointer: true,
 									},
@@ -719,7 +629,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "float32",
 										IsPointer: true,
 									},
@@ -728,13 +637,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 224675106,
 						},
 						{
-							Package: "main",
-							Name:    "PointerFloat64InFloat64Out",
+							Name: "PointerFloat64InFloat64Out",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "float64",
 										IsPointer: true,
 									},
@@ -743,7 +650,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "float64",
 										IsPointer: true,
 									},
@@ -752,35 +658,30 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 2124953624,
 						},
 						{
-							Package: "main",
-							Name:    "BoolInBoolOut",
+							Name: "BoolInBoolOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "bool",
+										Name: "bool",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "bool",
+										Name: "bool",
 									},
 								},
 							},
 							ID: 2424639793,
 						},
 						{
-							Package: "main",
-							Name:    "PointerBoolInBoolOut",
+							Name: "PointerBoolInBoolOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "bool",
 										IsPointer: true,
 									},
@@ -789,7 +690,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "bool",
 										IsPointer: true,
 									},
@@ -798,13 +698,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 3589606958,
 						},
 						{
-							Package: "main",
-							Name:    "PointerStringInStringOut",
+							Name: "PointerStringInStringOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "string",
 										IsPointer: true,
 									},
@@ -813,7 +711,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "string",
 										IsPointer: true,
 									},
@@ -822,13 +719,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 229603958,
 						},
 						{
-							Package: "main",
-							Name:    "StructPointerInputErrorOutput",
+							Name: "StructPointerInputErrorOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "Person",
 										IsPointer: true,
 										IsStruct:  true,
@@ -838,21 +733,18 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "error",
+										Name: "error",
 									},
 								},
 							},
 							ID: 2447692557,
 						},
 						{
-							Package: "main",
-							Name:    "StructInputStructOutput",
+							Name: "StructInputStructOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:  "main",
 										Name:     "Person",
 										IsStruct: true,
 									},
@@ -861,7 +753,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:  "main",
 										Name:     "Person",
 										IsStruct: true,
 									},
@@ -870,13 +761,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 3835643147,
 						},
 						{
-							Package: "main",
-							Name:    "StructPointerInputStructPointerOutput",
+							Name: "StructPointerInputStructPointerOutput",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "Person",
 										IsPointer: true,
 										IsStruct:  true,
@@ -886,7 +775,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "Person",
 										IsPointer: true,
 										IsStruct:  true,
@@ -896,21 +784,17 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 2943477349,
 						},
 						{
-							Package: "main",
-							Name:    "MapIntInt",
+							Name: "MapIntInt",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "map",
+										Name: "map",
 										MapKey: &ParameterType{
-											Name:    "int",
-											Package: "main",
+											Name: "int",
 										},
 										MapValue: &ParameterType{
-											Name:    "int",
-											Package: "main",
+											Name: "int",
 										},
 									},
 								},
@@ -918,22 +802,18 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 2386486356,
 						},
 						{
-							Package: "main",
-							Name:    "PointerMapIntInt",
+							Name: "PointerMapIntInt",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "map",
 										IsPointer: true,
 										MapKey: &ParameterType{
-											Name:    "int",
-											Package: "main",
+											Name: "int",
 										},
 										MapValue: &ParameterType{
-											Name:    "int",
-											Package: "main",
+											Name: "int",
 										},
 									},
 								},
@@ -941,22 +821,18 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 3516977899,
 						},
 						{
-							Package: "main",
-							Name:    "MapIntPointerInt",
+							Name: "MapIntPointerInt",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "map",
+										Name: "map",
 										MapKey: &ParameterType{
 											Name:      "int",
 											IsPointer: true,
-											Package:   "main",
 										},
 										MapValue: &ParameterType{
-											Name:    "int",
-											Package: "main",
+											Name: "int",
 										},
 									},
 								},
@@ -964,22 +840,18 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 550413585,
 						},
 						{
-							Package: "main",
-							Name:    "MapIntSliceInt",
+							Name: "MapIntSliceInt",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "map",
+										Name: "map",
 										MapKey: &ParameterType{
-											Name:    "int",
-											Package: "main",
+											Name: "int",
 										},
 										MapValue: &ParameterType{
 											Name:    "int",
 											IsSlice: true,
-											Package: "main",
 										},
 									},
 								},
@@ -987,22 +859,18 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 2900172572,
 						},
 						{
-							Package: "main",
-							Name:    "MapIntSliceIntInMapIntSliceIntOut",
+							Name: "MapIntSliceIntInMapIntSliceIntOut",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "map",
+										Name: "map",
 										MapKey: &ParameterType{
-											Name:    "int",
-											Package: "main",
+											Name: "int",
 										},
 										MapValue: &ParameterType{
 											Name:    "int",
 											IsSlice: true,
-											Package: "main",
 										},
 									},
 								},
@@ -1011,16 +879,13 @@ func TestParseStructLiteralSingle(t *testing.T) {
 								{
 									Name: "out",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "map",
+										Name: "map",
 										MapKey: &ParameterType{
-											Name:    "int",
-											Package: "main",
+											Name: "int",
 										},
 										MapValue: &ParameterType{
 											Name:    "int",
 											IsSlice: true,
-											Package: "main",
 										},
 									},
 								},
@@ -1028,13 +893,11 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							ID: 881980169,
 						},
 						{
-							Package: "main",
-							Name:    "ArrayInt",
+							Name: "ArrayInt",
 							Inputs: []*Parameter{
 								{
 									Name: "in",
 									Type: &ParameterType{
-										Package: "main",
 										Name:    "int",
 										IsSlice: true,
 									},
@@ -1053,14 +916,12 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							{
 								Name: "Name",
 								Type: &ParameterType{
-									Package: "main",
-									Name:    "string",
+									Name: "string",
 								},
 							},
 							{
 								Name: "Parent",
 								Type: &ParameterType{
-									Package:   "main",
 									Name:      "Person",
 									IsStruct:  true,
 									IsPointer: true,
@@ -1069,7 +930,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							{
 								Name: "Details",
 								Type: &ParameterType{
-									Package:  "main",
 									Name:     "anon1",
 									IsStruct: true,
 								},
@@ -1082,14 +942,12 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							{
 								Name: "Age",
 								Type: &ParameterType{
-									Package: "main",
-									Name:    "int",
+									Name: "int",
 								},
 							},
 							{
 								Name: "Address",
 								Type: &ParameterType{
-									Package:  "main",
 									Name:     "anon2",
 									IsStruct: true,
 								},
@@ -1102,8 +960,7 @@ func TestParseStructLiteralSingle(t *testing.T) {
 							{
 								Name: "Street",
 								Type: &ParameterType{
-									Package: "main",
-									Name:    "string",
+									Name: "string",
 								},
 							},
 						},
@@ -1121,14 +978,7 @@ func TestParseStructLiteralSingle(t *testing.T) {
 				return
 			}
 
-			// Patch the PackageDir in the wantBoundMethods
-			for _, packageData := range got.BoundMethods {
-				for _, boundMethods := range packageData {
-					for _, boundMethod := range boundMethods {
-						boundMethod.PackageDir = ""
-					}
-				}
-			}
+			patchParserOutput(got)
 
 			// Loop over the things we want
 			for packageName, packageData := range tt.wantBoundMethods {
@@ -1136,16 +986,6 @@ func TestParseStructLiteralSingle(t *testing.T) {
 					gotBoundMethods := got.BoundMethods[packageName][structName]
 					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods, cmp.AllowUnexported(Parameter{})); diff != "" {
 						t.Errorf("ParseDirectory() failed:\n" + diff)
-					}
-				}
-			}
-
-			// Loop over the models
-			for _, packageData := range got.Models {
-				for _, wantModel := range packageData {
-					// Loop over the Fields
-					for _, field := range wantModel.Fields {
-						field.Project = nil
 					}
 				}
 			}

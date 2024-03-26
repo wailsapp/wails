@@ -12,7 +12,7 @@ import (
 )
 
 type BindingDefinitions struct {
-	Package      string
+	Package      *ParsedPackage
 	Imports      map[string]string
 	LocalImports []structName
 
@@ -42,7 +42,8 @@ func (p *Project) GenerateBindings(bindings map[packagePath]map[structName][]*Bo
 	result = make(map[string]map[string]string)
 
 	for pkg, structs := range bindings {
-		var pkgBindings = make(map[string]string)
+		pkgInfo := p.packageCache[pkg]
+		pkgBindings := make(map[string]string)
 
 		for structName, methods := range structs {
 			slices.SortFunc(methods, func(m1, m2 *BoundMethod) int {
@@ -51,9 +52,9 @@ func (p *Project) GenerateBindings(bindings map[packagePath]map[structName][]*Bo
 
 			var buffer bytes.Buffer
 			err = p.GenerateBinding(&buffer, &BindingDefinitions{
-				Package:      pkg,
-				Imports:      p.calculateBindingImports(pkg, methods),
-				LocalImports: p.calculateBindingLocalImports(pkg, methods),
+				Package:      pkgInfo,
+				Imports:      p.calculateBindingImports(pkgInfo, methods),
+				LocalImports: p.calculateBindingLocalImports(pkgInfo, methods),
 
 				Struct:  pkgAlias(pkg) + "." + structName,
 				Methods: methods,
@@ -78,24 +79,21 @@ func (p *Project) GenerateBindings(bindings map[packagePath]map[structName][]*Bo
 	return
 }
 
-func (p *Project) calculateBindingImports(pkg string, methods []*BoundMethod) map[string]string {
+func (p *Project) calculateBindingImports(pkg *ParsedPackage, methods []*BoundMethod) map[string]string {
 	result := make(map[string]string)
-	pkgInfo := p.packageCache[pkg]
 
 	for _, method := range methods {
 		for _, param := range method.JSInputs() {
-			if param.Type.Package != pkg {
-				paramPkgInfo := p.packageCache[param.Type.Package]
+			if param.Type.Package.Path != pkg.Path {
 				// Find the relative path from the source directory to the target directory
-				result[paramPkgInfo.Name] = p.RelativeBindingsDir(pkgInfo, paramPkgInfo)
+				result[param.Type.Package.Name] = p.RelativeBindingsDir(pkg, param.Type.Package)
 			}
 		}
 
 		for _, param := range method.JSOutputs() {
-			if param.Type.Package != pkg {
-				paramPkgInfo := p.packageCache[param.Type.Package]
+			if param.Type.Package.Path != pkg.Path {
 				// Find the relative path from the source directory to the target directory
-				result[paramPkgInfo.Name] = p.RelativeBindingsDir(pkgInfo, paramPkgInfo)
+				result[param.Type.Package.Name] = p.RelativeBindingsDir(pkg, param.Type.Package)
 			}
 		}
 	}
@@ -103,18 +101,18 @@ func (p *Project) calculateBindingImports(pkg string, methods []*BoundMethod) ma
 	return result
 }
 
-func (p *Project) calculateBindingLocalImports(pkg string, methods []*BoundMethod) []structName {
+func (p *Project) calculateBindingLocalImports(pkg *ParsedPackage, methods []*BoundMethod) []structName {
 	requiredTypes := make(map[structName]bool)
 
 	for _, method := range methods {
 		for _, param := range method.JSInputs() {
-			if param.Type.Package == pkg && (param.Type.IsStruct || param.Type.IsEnum) {
+			if param.Type.Package.Path == pkg.Path && (param.Type.IsStruct || param.Type.IsEnum) {
 				requiredTypes[param.Type.Name] = true
 			}
 		}
 
 		for _, param := range method.JSOutputs() {
-			if param.Type.Package == pkg && (param.Type.IsStruct || param.Type.IsEnum) {
+			if param.Type.Package.Path == pkg.Path && (param.Type.IsStruct || param.Type.IsEnum) {
 				requiredTypes[param.Type.Name] = true
 			}
 		}

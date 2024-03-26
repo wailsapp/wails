@@ -25,18 +25,18 @@ import {
  * {{jsdoc .DocComment}}
 {{- end}}
 {{- range $inputindex, $inputdef := .JSInputs}}
- * @param { {{- .JSType $pkg -}} } {{.JSName}}
+ * @param { {{- .Type.JS $pkg -}} } {{.JSName}}
 {{- end}}
  * @returns {Promise<
     {{- $outputs := .JSOutputs}}
     {{- if eq 0 (len $outputs) -}}
         void
     {{- else if eq 1 (len $outputs)}}
-        {{- (index $outputs 0).JSType $pkg}}
+        {{- (index $outputs 0).Type.JS $pkg}}
     {{- else -}}
         [{{range $outputindex, $outputdef := $outputs}}
             {{- if gt $outputindex 0}}, {{end}}
-            {{- .JSType $pkg}}
+            {{- .Type.JS $pkg}}
         {{- end}}]
     {{- end}}>}
  */
