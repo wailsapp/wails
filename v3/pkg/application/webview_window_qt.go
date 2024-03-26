@@ -1,10 +1,13 @@
-//go:build linux && !qt
+//go:build linux && qt
 
 package application
 
+// #include "qt_lib.hpp"
 import "C"
+
 import (
 	"fmt"
+	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
@@ -22,7 +25,7 @@ type dragInfo struct {
 type linuxWebviewWindow struct {
 	id            uint
 	application   pointer
-	window        pointer
+	window        *C.Window
 	webview       pointer
 	parent        *WebviewWindow
 	menubar       pointer
@@ -143,9 +146,16 @@ func (w *linuxWebviewWindow) restore() {
 func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 	//	(*C.struct__GtkWidget)(m.native)
 	//var menubar *C.struct__GtkWidget
+
+	url := C.CString("https://example.com")
+	defer C.cfree(unsafe.Pointer(url))
+
+	win := C.Window_new(unsafe.Pointer(getNativeApplication().application), url)
+
 	result := &linuxWebviewWindow{
 		application: getNativeApplication().application,
 		parent:      parent,
+		window:      win,
 		//		menubar:     menubar,
 	}
 	return result
@@ -315,7 +325,7 @@ func (w *linuxWebviewWindow) startResize(border string) error {
 }
 
 func (w *linuxWebviewWindow) nativeWindowHandle() uintptr {
-	return uintptr(w.window)
+	return uintptr(unsafe.Pointer(w.window))
 }
 
 func (w *linuxWebviewWindow) print() error {

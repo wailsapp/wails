@@ -1,22 +1,13 @@
-//go:build linux && !qt
+//go:build linux && qt
 
 package application
 
-/*
-	#include "gtk/gtk.h"
-	#include "webkit2/webkit2.h"
-	static guint get_compiled_gtk_major_version() { return GTK_MAJOR_VERSION; }
-	static guint get_compiled_gtk_minor_version() { return GTK_MINOR_VERSION; }
-	static guint get_compiled_gtk_micro_version() { return GTK_MICRO_VERSION; }
-	static guint get_compiled_webkit_major_version() { return WEBKIT_MAJOR_VERSION; }
-	static guint get_compiled_webkit_minor_version() { return WEBKIT_MINOR_VERSION; }
-	static guint get_compiled_webkit_micro_version() { return WEBKIT_MICRO_VERSION; }
-*/
+// #include "qt_lib.hpp"
 import "C"
+
 import (
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"sync"
 
@@ -24,12 +15,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
-
-func init() {
-	// FIXME: This should be handled appropriately in the individual files most likely.
-	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
-	_ = os.Setenv("GDK_BACKEND", "x11")
-}
 
 type linuxApp struct {
 	application pointer
@@ -127,7 +112,7 @@ func (a *linuxApp) isOnMainThread() bool {
 }
 
 // register our window to our parent mapping
-func (a *linuxApp) registerWindow(window pointer, id uint) {
+func (a *linuxApp) registerWindow(window *C.Window, id uint) {
 	a.windowMapLock.Lock()
 	a.windowMap[windowPointer(window)] = id
 	a.windowMapLock.Unlock()
@@ -233,26 +218,26 @@ func buildVersionString(major, minor, micro C.uint) string {
 
 func (a *App) platformEnvironment() map[string]any {
 	result := map[string]any{}
-	result["gtk3-compiled"] = buildVersionString(
-		C.get_compiled_gtk_major_version(),
-		C.get_compiled_gtk_minor_version(),
-		C.get_compiled_gtk_micro_version(),
-	)
-	result["gtk3-runtime"] = buildVersionString(
-		C.gtk_get_major_version(),
-		C.gtk_get_minor_version(),
-		C.gtk_get_micro_version(),
-	)
-
-	result["webkit2gtk-compiled"] = buildVersionString(
-		C.get_compiled_webkit_major_version(),
-		C.get_compiled_webkit_minor_version(),
-		C.get_compiled_webkit_micro_version(),
-	)
-	result["webkit2gtk-runtime"] = buildVersionString(
-		C.webkit_get_major_version(),
-		C.webkit_get_minor_version(),
-		C.webkit_get_micro_version(),
-	)
+	//result["gtk3-compiled"] = buildVersionString(
+	//	C.get_compiled_gtk_major_version(),
+	//	C.get_compiled_gtk_minor_version(),
+	//	C.get_compiled_gtk_micro_version(),
+	//)
+	//result["gtk3-runtime"] = buildVersionString(
+	//	C.gtk_get_major_version(),
+	//	C.gtk_get_minor_version(),
+	//	C.gtk_get_micro_version(),
+	//)
+	//
+	//result["webkit2gtk-compiled"] = buildVersionString(
+	//	C.get_compiled_webkit_major_version(),
+	//	C.get_compiled_webkit_minor_version(),
+	//	C.get_compiled_webkit_micro_version(),
+	//)
+	//result["webkit2gtk-runtime"] = buildVersionString(
+	//	C.webkit_get_major_version(),
+	//	C.webkit_get_minor_version(),
+	//	C.webkit_get_micro_version(),
+	//)
 	return result
 }
