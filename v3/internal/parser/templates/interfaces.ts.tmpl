@@ -1,26 +1,39 @@
-{{- $pkg := .Package}}{{- range .Imports}}
-import * as {{.PackageName}} from "{{.Path}}/models";{{- end}}
+{{- $pkg := .Package}}
+{{- range .Imports}}
+import * as {{.PackageName}} from "{{.Path}}/models";
+{{- end}}{{if .Imports}}
+{{end}}
 {{- range $enumindex, $enumdef := .Enums}}
-{{- range $commentindex, $commentdef := $enumdef.DocComments}}
-{{$commentdef -}}
+{{- if $enumdef.DocComment}}
+/**
+ * {{jsdoc $enumdef.DocComment}}
+ */
 {{- end}}
 export enum {{$enumdef.Name}} {
     {{- range $constindex, $constdef := .Consts}}
-    {{- if $constdef.DocComments}}
-    {{- range $commentindex, $commentdef := $constdef.DocComments}}
-    {{$commentdef -}}
-    {{- end }}
+    {{- if $constdef.DocComment}}{{if gt $constindex 0}}
+{{end}}
+    /**
+     * {{jsdoc $constdef.DocComment}}
+     */
     {{- end}}
     {{$constdef.Name}} = {{$constdef.Value}},{{end}}
 }
-{{- end}}
-{{range $name, $def := .Models}}
-{{- if $def.DocComments}}
-{{- range $commentindex, $commentdef := $def.DocComments}}
-{{$commentdef -}}
-{{- end }}
-{{- end}}
-export interface {{$def.Name}} { {{- range $def.Fields}}
-    {{.JSName}}: {{.TSType $pkg}};{{if .Exported}} // Warning: this is unexported in the Go struct.{{end}}{{end}}
-}
 {{end}}
+{{- range $name, $def := .Models}}
+{{- if $def.DocComment}}
+/**
+ * {{jsdoc $def.DocComment}}
+ */
+{{- end}}
+export interface {{$def.Name}} {
+    {{- range $fieldindex, $fielddef := $def.Fields}}
+    {{- if .DocComment}}{{if gt $fieldindex 0}}
+{{end}}
+    /**
+     * {{jsdoc .DocComment}}
+     */
+    {{- end}}
+    {{.JSName}}: {{.TSType $pkg}};{{if not .Exported}} // Warning: this is unexported in the Go struct.{{end}}{{end}}
+}
+{{end -}}
