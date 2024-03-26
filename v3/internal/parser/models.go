@@ -13,7 +13,7 @@ import (
 
 type ModelDefinitions struct {
 	Package string
-	Imports []*ImportDef
+	Imports map[string]string
 
 	Models map[string]*StructDef
 	Enums  map[string]*TypeDef
@@ -55,23 +55,28 @@ func (p *Project) GenerateModels(models map[packagePath]map[structName]*StructDe
 
 	result = make(map[string]string)
 
-	// sort pkgs by alias (e.g. services) instead of full pkg name (e.g. github.com/wailsapp/wails/somedir/services)
+	// merge package lists by alias (e.g. services) instead of full pkg name (e.g. github.com/wailsapp/wails/somedir/services)
+
 	var keys = lo.Keys(models)
 	keys = append(keys, lo.Keys(enums)...)
-	keys = lo.Uniq(keys)
 
 	slices.SortFunc(keys, func(key1, key2 string) int {
 		return strings.Compare(pkgAlias(key1), pkgAlias(key2))
 	})
+	keys = slices.CompactFunc(keys, func(key1, key2 string) bool {
+		return pkgAlias(key1) == pkgAlias(key2)
+	})
 
 	for _, pkg := range keys {
+		pkgModels, pkgEnums := models[pkg], enums[pkg]
+
 		var buffer bytes.Buffer
 		err = p.GenerateModel(&buffer, &ModelDefinitions{
 			Package: pkg,
-			Imports: p.calculateModelImports(pkg, models[pkg]),
+			Imports: p.calculateModelImports(pkg, pkgModels),
 
-			Models: models[pkg],
-			Enums:  enums[pkg],
+			Models: pkgModels,
+			Enums:  pkgEnums,
 
 			ModelsFilename: options.ModelsFilename,
 		}, options)
@@ -88,31 +93,19 @@ func (p *Project) GenerateModels(models map[packagePath]map[structName]*StructDe
 	return
 }
 
-func (p *Project) calculateModelImports(pkg string, m map[structName]*StructDef) []*ImportDef {
-	var result []*ImportDef
-	var seen = make(map[string]bool)
-
+func (p *Project) calculateModelImports(pkg string, m map[structName]*StructDef) map[string]string {
+	result := make(map[string]string)
 	pkgInfo := p.packageCache[pkg]
 
 	for _, structDef := range m {
 		for _, field := range structDef.Fields {
 			if field.Type.Package != pkg {
-				// Find the relative path from the source directory to the target directory
 				fieldPkgInfo := p.packageCache[field.Type.Package]
-				relativePath := p.RelativeBindingsDir(pkgInfo, fieldPkgInfo)
-
-				// Deduplicate imports
-				if _, ok := seen[relativePath]; ok {
-					continue
-				}
-				seen[relativePath] = true
-
-				result = append(result, &ImportDef{
-					PackageName: fieldPkgInfo.Name,
-					Path:        relativePath,
-				})
+				// Find the relative path from the source directory to the target directory
+				result[fieldPkgInfo.Name] = p.RelativeBindingsDir(pkgInfo, fieldPkgInfo)
 			}
 		}
 	}
+
 	return result
 }
