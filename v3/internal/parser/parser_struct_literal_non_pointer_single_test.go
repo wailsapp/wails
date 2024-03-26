@@ -1,10 +1,10 @@
 package parser
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestParseStructLiteralNonPointerSingle(t *testing.T) {
@@ -62,7 +62,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "StringArrayInputStringOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:    "string",
 										IsSlice: true,
@@ -82,7 +82,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "StringArrayInputStringArrayOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:    "string",
 										IsSlice: true,
@@ -103,7 +103,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "StringArrayInputNamedOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:    "string",
 										IsSlice: true,
@@ -125,7 +125,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "StringArrayInputNamedOutputs",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:    "string",
 										IsSlice: true,
@@ -153,7 +153,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "IntPointerInputNamedOutputs",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "int",
 										IsPointer: true,
@@ -180,7 +180,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "UIntPointerInAndOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "uint",
 										IsPointer: true,
@@ -201,7 +201,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "UInt8PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "uint8",
 										IsPointer: true,
@@ -222,7 +222,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "UInt16PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "uint16",
 										IsPointer: true,
@@ -243,7 +243,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "UInt32PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "uint32",
 										IsPointer: true,
@@ -264,7 +264,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "UInt64PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "uint64",
 										IsPointer: true,
@@ -285,7 +285,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "IntPointerInAndOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "int",
 										IsPointer: true,
@@ -306,7 +306,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "Int8PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "int8",
 										IsPointer: true,
@@ -327,7 +327,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "Int16PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "int16",
 										IsPointer: true,
@@ -348,7 +348,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "Int32PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "int32",
 										IsPointer: true,
@@ -369,7 +369,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "Int64PointerInAndOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "int64",
 										IsPointer: true,
@@ -390,7 +390,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "IntInIntOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "int",
 									},
@@ -409,7 +409,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "Int8InIntOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "int8",
 									},
@@ -428,7 +428,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "Int16InIntOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "int16",
 									},
@@ -447,7 +447,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "Int32InIntOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "int32",
 									},
@@ -466,7 +466,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "Int64InIntOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "int64",
 									},
@@ -485,7 +485,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "UIntInUIntOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "uint",
 									},
@@ -504,7 +504,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "UInt8InUIntOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "uint8",
 									},
@@ -523,7 +523,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "UInt16InUIntOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "uint16",
 									},
@@ -542,7 +542,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "UInt32InUIntOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "uint32",
 									},
@@ -561,7 +561,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "UInt64InUIntOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "uint64",
 									},
@@ -580,7 +580,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "Float32InFloat32Out",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "float32",
 									},
@@ -599,7 +599,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "Float64InFloat64Out",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "float64",
 									},
@@ -618,7 +618,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "PointerFloat32InFloat32Out",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "float32",
 										IsPointer: true,
@@ -639,7 +639,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "PointerFloat64InFloat64Out",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "float64",
 										IsPointer: true,
@@ -660,7 +660,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "BoolInBoolOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "bool",
 									},
@@ -679,7 +679,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "PointerBoolInBoolOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "bool",
 										IsPointer: true,
@@ -700,7 +700,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "PointerStringInStringOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "string",
 										IsPointer: true,
@@ -721,7 +721,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "StructPointerInputErrorOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "Person",
 										IsPointer: true,
@@ -742,7 +742,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "StructInputStructOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:     "Person",
 										IsStruct: true,
@@ -763,7 +763,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "StructPointerInputStructPointerOutput",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "Person",
 										IsPointer: true,
@@ -786,7 +786,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "MapIntInt",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "map",
 										MapKey: &ParameterType{
@@ -804,7 +804,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "PointerMapIntInt",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:      "map",
 										IsPointer: true,
@@ -823,7 +823,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "MapIntPointerInt",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "map",
 										MapKey: &ParameterType{
@@ -842,7 +842,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "MapIntSliceInt",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "map",
 										MapKey: &ParameterType{
@@ -861,7 +861,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "MapIntSliceIntInMapIntSliceIntOut",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name: "map",
 										MapKey: &ParameterType{
@@ -895,7 +895,7 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							Name: "ArrayInt",
 							Inputs: []*Parameter{
 								{
-									Name: "in",
+									Name: "$in",
 									Type: &ParameterType{
 										Name:    "int",
 										IsSlice: true,
@@ -929,14 +929,14 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							{
 								Name: "Details",
 								Type: &ParameterType{
-									Name:     "anon1",
+									Name:     "$anon1",
 									IsStruct: true,
 								},
 							},
 						},
 					},
-					"anon1": {
-						Name: "anon1",
+					"$anon1": {
+						Name: "$anon1",
 						Fields: []*Field{
 							{
 								Name: "Age",
@@ -947,14 +947,14 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 							{
 								Name: "Address",
 								Type: &ParameterType{
-									Name:     "anon2",
+									Name:     "$anon2",
 									IsStruct: true,
 								},
 							},
 						},
 					},
-					"anon2": {
-						Name: "anon2",
+					"$anon2": {
+						Name: "$anon2",
 						Fields: []*Field{
 							{
 								Name: "Street",
@@ -977,25 +977,28 @@ func TestParseStructLiteralNonPointerSingle(t *testing.T) {
 				return
 			}
 
-			patchParserOutput(got)
+			cmpOptions := []cmp.Option{
+				cmpopts.IgnoreTypes(Project{}, &Project{}, ParsedPackage{}, &ParsedPackage{}),
+				cmpopts.IgnoreUnexported(Field{}),
+			}
 
 			// Loop over the things we want
 			for packageName, packageData := range tt.wantBoundMethods {
 				for structName, wantBoundMethods := range packageData {
 					gotBoundMethods := got.BoundMethods[packageName][structName]
-					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods, cmp.AllowUnexported(Parameter{})); diff != "" {
+					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods, cmpOptions...); diff != "" {
 						t.Errorf("ParseDirectory() failed:\n" + diff)
 					}
 				}
 			}
 
-			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods, cmp.AllowUnexported(Parameter{})); diff != "" {
+			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods, cmpOptions...); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
-			if !reflect.DeepEqual(tt.wantModels, got.Models) {
-				t.Errorf("ParseDirectory() failed:\n" + cmp.Diff(tt.wantModels, got.Models))
+			if diff := cmp.Diff(tt.wantModels, got.Models, cmpOptions...); diff != "" {
+				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
-			if diff := cmp.Diff(tt.wantTypes, got.Types); diff != "" {
+			if diff := cmp.Diff(tt.wantTypes, got.Types, cmpOptions...); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
 		})

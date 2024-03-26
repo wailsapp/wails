@@ -2,8 +2,9 @@ package main
 
 import (
 	_ "embed"
-	"github.com/wailsapp/wails/v3/internal/parser/testdata/enum_from_imported_package/services"
 	"log"
+
+	"github.com/wailsapp/wails/v3/internal/parser/testdata/enum_from_imported_package/services"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
