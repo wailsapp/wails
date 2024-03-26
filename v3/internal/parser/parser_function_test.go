@@ -1,10 +1,10 @@
 package parser
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestParseFunction(t *testing.T) {
@@ -25,15 +25,13 @@ func TestParseFunction(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
-							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet someone",
 							Inputs: []*Parameter{
 								{
 									Name: "name",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
@@ -41,8 +39,7 @@ func TestParseFunction(t *testing.T) {
 								{
 									Name: "",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
@@ -60,15 +57,13 @@ func TestParseFunction(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
-							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet does XYZ",
 							Inputs: []*Parameter{
 								{
 									Name: "name",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
@@ -76,23 +71,20 @@ func TestParseFunction(t *testing.T) {
 								{
 									Name: "",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
 							ID: 1411160069,
 						},
 						{
-							Package:    "main",
 							Name:       "NewPerson",
 							DocComment: "NewPerson creates a new person",
 							Inputs: []*Parameter{
 								{
 									Name: "name",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
@@ -100,7 +92,6 @@ func TestParseFunction(t *testing.T) {
 								{
 									Name: "",
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "Person",
 										IsPointer: true,
 										IsStruct:  true,
@@ -114,7 +105,6 @@ func TestParseFunction(t *testing.T) {
 				"github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services": {
 					"OtherService": {
 						{
-							Package:    "github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services",
 							Name:       "Yay",
 							DocComment: "Yay does this and that",
 							Outputs: []*Parameter{
@@ -123,7 +113,6 @@ func TestParseFunction(t *testing.T) {
 										Name:      "Address",
 										IsStruct:  true,
 										IsPointer: true,
-										Package:   "github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services",
 									},
 								},
 							},
@@ -135,14 +124,13 @@ func TestParseFunction(t *testing.T) {
 			wantModels: map[string]map[string]*StructDef{
 				"main": {
 					"Person": {
-						Name:        "Person",
-						DocComments: []string{"// Person is a person"},
+						Name:       "Person",
+						DocComment: "Person is a person",
 						Fields: []*Field{
 							{
 								Name: "Name",
 								Type: &ParameterType{
-									Package: "main",
-									Name:    "string",
+									Name: "string",
 								},
 							},
 							{
@@ -151,7 +139,6 @@ func TestParseFunction(t *testing.T) {
 									Name:      "Address",
 									IsStruct:  true,
 									IsPointer: true,
-									Package:   "github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services",
 								},
 							},
 						},
@@ -164,22 +151,19 @@ func TestParseFunction(t *testing.T) {
 							{
 								Name: "Street",
 								Type: &ParameterType{
-									Package: "github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services",
-									Name:    "string",
+									Name: "string",
 								},
 							},
 							{
 								Name: "State",
 								Type: &ParameterType{
-									Package: "github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services",
-									Name:    "string",
+									Name: "string",
 								},
 							},
 							{
 								Name: "Country",
 								Type: &ParameterType{
-									Package: "github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_imported_package/services",
-									Name:    "string",
+									Name: "string",
 								},
 							},
 						},
@@ -196,44 +180,28 @@ func TestParseFunction(t *testing.T) {
 				return
 			}
 
-			// Patch the PackageDir in the wantBoundMethods
-			for _, packageData := range got.BoundMethods {
-				for _, boundMethods := range packageData {
-					for _, boundMethod := range boundMethods {
-						boundMethod.PackageDir = ""
-					}
-				}
+			cmpOptions := []cmp.Option{
+				cmpopts.IgnoreTypes(Project{}, &Project{}, ParsedPackage{}, &ParsedPackage{}),
+				cmpopts.IgnoreUnexported(Field{}),
 			}
 
 			// Loop over the things we want
 			for packageName, packageData := range tt.wantBoundMethods {
 				for structName, wantBoundMethods := range packageData {
 					gotBoundMethods := got.BoundMethods[packageName][structName]
-					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods, cmp.AllowUnexported(Parameter{})); diff != "" {
+					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods, cmpOptions...); diff != "" {
 						t.Errorf("ParseDirectory() failed:\n" + diff)
 					}
 				}
 			}
 
-			// Loop over the models
-			for _, packageData := range got.Models {
-				for _, wantModel := range packageData {
-					// Loop over the Fields
-					for _, field := range wantModel.Fields {
-						field.Project = nil
-					}
-				}
+			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods, cmpOptions...); diff != "" {
+				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
-
-			if !reflect.DeepEqual(tt.wantBoundMethods, got.BoundMethods) {
-				t.Errorf("ParseDirectory() failed:\n" + cmp.Diff(tt.wantBoundMethods, got.BoundMethods, cmp.AllowUnexported(Parameter{})))
-				//spew.Dump(tt.wantBoundMethods)
-				//spew.Dump(got.BoundMethods)
+			if diff := cmp.Diff(tt.wantModels, got.Models, cmpOptions...); diff != "" {
+				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
-			if !reflect.DeepEqual(tt.wantModels, got.Models) {
-				t.Errorf("ParseDirectory() failed:\n" + cmp.Diff(tt.wantModels, got.Models))
-			}
-			if diff := cmp.Diff(tt.wantTypes, got.Types); diff != "" {
+			if diff := cmp.Diff(tt.wantTypes, got.Types, cmpOptions...); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
 		})

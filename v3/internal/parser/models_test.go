@@ -1,12 +1,13 @@
 package parser
 
 import (
-	"github.com/google/go-cmp/cmp"
-	"github.com/wailsapp/wails/v3/internal/flags"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/wailsapp/wails/v3/internal/flags"
 )
 
 func TestGenerateModels(t *testing.T) {
@@ -18,6 +19,58 @@ func TestGenerateModels(t *testing.T) {
 		useInterface  bool
 		useTypescript bool
 	}{
+		// complex JSON
+		{
+			name: "complex_json - Typescript",
+			dir:  "testdata/complex_json",
+			want: map[string]string{
+				"main": getFile("testdata/complex_json/frontend/bindings/main/models.ts"),
+			},
+			useTypescript: true,
+		},
+		{
+			name: "complex_json - Javascript",
+			dir:  "testdata/complex_json",
+			want: map[string]string{
+				"main": getFile("testdata/complex_json/frontend/bindings/main/models.js"),
+			},
+			useTypescript: false,
+		},
+		{
+			name: "complex_json - Typescript interfaces",
+			dir:  "testdata/complex_json",
+			want: map[string]string{
+				"main": getFile("testdata/complex_json/frontend/bindings/main/models.interfaces.ts"),
+			},
+			useTypescript: true,
+			useInterface:  true,
+		},
+		// complex method
+		{
+			name: "complex_method - Typescript",
+			dir:  "testdata/complex_method",
+			want: map[string]string{
+				"main": getFile("testdata/complex_method/frontend/bindings/main/models.ts"),
+			},
+			useTypescript: true,
+		},
+		{
+			name: "complex_method - Javascript",
+			dir:  "testdata/complex_method",
+			want: map[string]string{
+				"main": getFile("testdata/complex_method/frontend/bindings/main/models.js"),
+			},
+			useTypescript: false,
+		},
+		{
+			name: "complex_method - Typescript interfaces",
+			dir:  "testdata/complex_method",
+			want: map[string]string{
+				"main": getFile("testdata/complex_method/frontend/bindings/main/models.interfaces.ts"),
+			},
+			useTypescript: true,
+			useInterface:  true,
+		},
 		// enum
 		{
 			name: "enum - Typescript",
@@ -70,6 +123,35 @@ func TestGenerateModels(t *testing.T) {
 			want: map[string]string{
 				"main":     getFile("testdata/function_from_imported_package/frontend/bindings/main/models.js"),
 				"services": getFile("testdata/function_from_imported_package/frontend/bindings/services/models.js"),
+			},
+			useTypescript: false,
+		},
+		// function from nested imported package
+		{
+			name: "function from nested imported package - Typescript",
+			dir:  "testdata/function_from_nested_imported_package",
+			want: map[string]string{
+				"main":           getFile("testdata/function_from_nested_imported_package/frontend/bindings/main/models.ts"),
+				"services/other": getFile("testdata/function_from_nested_imported_package/frontend/bindings/services/other/models.ts"),
+			},
+			useTypescript: true,
+		},
+		{
+			name: "function from nested imported package - Typescript interfaces",
+			dir:  "testdata/function_from_nested_imported_package",
+			want: map[string]string{
+				"main":           getFile("testdata/function_from_nested_imported_package/frontend/bindings/main/models.interfaces.ts"),
+				"services/other": getFile("testdata/function_from_nested_imported_package/frontend/bindings/services/other/models.interfaces.ts"),
+			},
+			useTypescript: true,
+			useInterface:  true,
+		},
+		{
+			name: "function from nested imported package - Javascript",
+			dir:  "testdata/function_from_nested_imported_package",
+			want: map[string]string{
+				"main":           getFile("testdata/function_from_nested_imported_package/frontend/bindings/main/models.js"),
+				"services/other": getFile("testdata/function_from_nested_imported_package/frontend/bindings/services/other/models.js"),
 			},
 			useTypescript: false,
 		},
@@ -199,6 +281,7 @@ func TestGenerateModels(t *testing.T) {
 				"services": getFile("testdata/enum_from_imported_package/frontend/bindings/services/models.interfaces.ts"),
 			},
 			useTypescript: true,
+			useInterface:  true,
 		},
 		{
 			name: "enum from imported package - Javascript",
@@ -221,34 +304,53 @@ func TestGenerateModels(t *testing.T) {
 
 			// Generate Models
 			allModels, err := project.GenerateModels(project.Models, project.Types, &flags.GenerateBindingsOptions{
-				UseInterfaces: tt.useInterface,
-				TS:            tt.useTypescript,
+				TS:             tt.useTypescript,
+				UseInterfaces:  tt.useInterface,
+				ModelsFilename: "models",
 			})
 			if err != nil {
 				t.Fatalf("GenerateModels() error = %v", err)
 			}
+
 			for pkgDir, got := range allModels {
-				// convert all line endings to \n
-				got = convertLineEndings(got)
 				want, ok := tt.want[pkgDir]
 				if !ok {
-					t.Fatalf("GenerateModels() missing package: %s", pkgDir)
+					t.Errorf("GenerateModels() unexpected package = %v", pkgDir)
+					continue
 				}
-				want = convertLineEndings(want)
-				if diff := cmp.Diff(want, got); diff != "" {
-					gotFilename := "models.got.js"
-					if tt.useTypescript {
-						gotFilename = "models.got.ts"
-					}
-					// Get relative package path
-					//relativeBindingsDir := project.RelativeBindingsDir(project.packageCache[pkgDir])
 
-					err = os.WriteFile(filepath.Join(tt.dir, project.outputDirectory, pkgDir, gotFilename), []byte(got), 0644)
+				// convert all line endings to \n
+				got = convertLineEndings(got)
+				want = convertLineEndings(want)
+
+				if diff := cmp.Diff(want, got); diff != "" {
+					originalFilename := "models"
+					if tt.useTypescript && tt.useInterface {
+						originalFilename += ".interfaces"
+					}
+					outFileName := originalFilename + ".got"
+					if tt.useTypescript {
+						originalFilename += ".ts"
+						outFileName += ".ts"
+					} else {
+						originalFilename += ".js"
+						outFileName += ".js"
+					}
+
+					originalFile := filepath.Join(tt.dir, project.outputDirectory, pkgDir, originalFilename)
+					// Check if file exists
+					if _, err := os.Stat(originalFile); err != nil {
+						outFileName = originalFilename
+					}
+
+					outFile := filepath.Join(tt.dir, project.outputDirectory, pkgDir, outFileName)
+					err = os.WriteFile(outFile, []byte(got), 0644)
 					if err != nil {
 						t.Errorf("os.WriteFile() error = %v", err)
-						return
+						continue
 					}
-					t.Fatalf("GenerateModels() mismatch (-want +got):\n%s", diff)
+
+					t.Errorf("GenerateModels() mismatch (-want +got):\n%s", diff)
 				}
 			}
 		})

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/wailsapp/wails/v3/internal/flags"
 )
 
 //go:embed testdata
@@ -31,6 +32,100 @@ func TestGenerateBindings(t *testing.T) {
 		useIDs        bool
 		useTypescript bool
 	}{
+		{
+			name: "complex_json",
+			dir:  "testdata/complex_json",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_json/frontend/bindings/main/GreetService.name.js"),
+				},
+			},
+			useIDs: false,
+		},
+		{
+			name: "complex_json",
+			dir:  "testdata/complex_json",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_json/frontend/bindings/main/GreetService.js"),
+				},
+			},
+			useIDs: true,
+		},
+		{
+			name: "complex_json - Typescript - CallByID",
+			dir:  "testdata/complex_json",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_json/frontend/bindings/main/GreetService.ts"),
+				},
+			},
+			useIDs:        true,
+			useTypescript: true,
+		},
+		{
+			name: "complex_json - Typescript - CallByName",
+			dir:  "testdata/complex_json",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_json/frontend/bindings/main/GreetService.name.ts"),
+				},
+			},
+			useIDs:        false,
+			useTypescript: true,
+		},
+		{
+			name: "complex_method",
+			dir:  "testdata/complex_method",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_method/frontend/bindings/main/GreetService.name.js"),
+				},
+			},
+			useIDs: false,
+		},
+		{
+			name: "complex_method",
+			dir:  "testdata/complex_method",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_method/frontend/bindings/main/GreetService.js"),
+				},
+			},
+			useIDs: true,
+		},
+		{
+			name: "complex_method - Typescript - CallByID",
+			dir:  "testdata/complex_method",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_method/frontend/bindings/main/GreetService.ts"),
+				},
+			},
+			useIDs:        true,
+			useTypescript: true,
+		},
+		{
+			name: "complex_method - Typescript - CallByName",
+			dir:  "testdata/complex_method",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/complex_method/frontend/bindings/main/GreetService.name.ts"),
+				},
+			},
+			useIDs:        false,
+			useTypescript: true,
+		},
+		{
+			name: "enum",
+			dir:  "testdata/enum",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/enum/frontend/bindings/main/GreetService.name.js"),
+				},
+			},
+			useIDs: false,
+		},
 		{
 			name: "enum",
 			dir:  "testdata/enum",
@@ -684,38 +779,24 @@ func TestGenerateBindings(t *testing.T) {
 			project.outputDirectory = "frontend/bindings"
 
 			// Generate Bindings
-			got := project.GenerateBindings(project.BoundMethods, "models", tt.useIDs, tt.useTypescript, false)
+			got, err := project.GenerateBindings(project.BoundMethods, &flags.GenerateBindingsOptions{
+				ModelsFilename: "models",
+				UseIDs:         tt.useIDs,
+				TS:             tt.useTypescript,
+			})
+			if err != nil {
+				t.Fatalf("GenerateBindings() error = %v", err)
+			}
 
 			for dirName, structDetails := range got {
 				// iterate the struct names in structDetails
 				for name, binding := range structDetails {
 					expected, ok := tt.want[dirName][name]
 					if !ok {
-						outFileName := name + ".got.js"
-						originalFilename := name + ".js"
-						if tt.useTypescript {
-							if tt.useIDs {
-								originalFilename = name + ".ts"
-							} else {
-								originalFilename = name + ".name.ts"
-							}
-							outFileName = name + ".got.ts"
-						}
-						originalFile := filepath.Join(tt.dir, project.outputDirectory, dirName, originalFilename)
-						// Check if file exists
-						if _, err := os.Stat(originalFile); err != nil {
-							outFileName = originalFilename
-						}
-
-						outFile := filepath.Join(tt.dir, project.outputDirectory, dirName, outFileName)
-						err = os.WriteFile(outFile, []byte(binding), 0644)
-						if err != nil {
-							t.Errorf("os.WriteFile() error = %v", err)
-							continue
-						}
-						t.Errorf("GenerateBindings() unexpected binding = %v", name)
+						t.Errorf("GenerateBindings() unexpected binding = %v/%v", dirName, name)
 						continue
 					}
+
 					// compare the binding
 
 					// convert all line endings to \n
@@ -723,12 +804,11 @@ func TestGenerateBindings(t *testing.T) {
 					expected = convertLineEndings(expected)
 
 					if diff := cmp.Diff(expected, binding); diff != "" {
-						outFileName := name + ".got.js"
 						originalFilename := name
 						if !tt.useIDs {
 							originalFilename += ".name"
 						}
-						outFileName = originalFilename + ".got"
+						outFileName := originalFilename + ".got"
 						if tt.useTypescript {
 							originalFilename += ".ts"
 							outFileName += ".ts"
@@ -749,6 +829,7 @@ func TestGenerateBindings(t *testing.T) {
 							t.Errorf("os.WriteFile() error = %v", err)
 							continue
 						}
+
 						t.Errorf("GenerateBindings() mismatch (-want +got):\n%s", diff)
 					}
 				}

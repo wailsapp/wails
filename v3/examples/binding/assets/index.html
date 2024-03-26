@@ -79,16 +79,45 @@
 <div class="input-box" id="input">
     <input autofocus autocomplete="off" class="input" id="name" type="text"/>
     <button class="btn" id="greet-btn">Greet</button>
+    <button class="btn" id="greetperson-btn">GreetPerson</button>
 </div>
 <script type="module">
     import * as GreetService from "./bindings/main/GreetService.js";
+    import * as data from "./bindings/data/models.js";
+
+    let greetCount = 0, greetPersonCount = 0;
 
     async function greet() {
-        document.getElementById("result").innerHTML =
-            await GreetService.Greet(document.getElementById("name").value);
+        ++greetCount;
+        if (greetPersonCount < 1) {
+            if (greetCount < 2) {
+                document.getElementById("result").innerHTML =
+                    await GreetService.Greet(document.getElementById("name").value);
+            } else {
+                document.getElementById("result").innerHTML =
+                    await GreetService.Greet(document.getElementById("name").value, greetCount);
+            }
+        } else {
+            document.getElementById("result").innerHTML =
+                    await GreetService.Greet(document.getElementById("name").value, greetCount, greetPersonCount);
+        }
+    }
+
+    async function greetPerson() {
+        ++greetPersonCount;
+
+        const person = new data.Person({ name: document.getElementById("name").value });
+
+        if (greetCount > 0)
+            person.counts.push(greetCount);
+        if (greetCount > 0 || greetPersonCount > 1)
+            person.counts.push(greetPersonCount);
+
+        document.getElementById("result").innerHTML = await GreetService.GreetPerson(person);
     }
 
     document.getElementById("greet-btn").onclick = greet;
+    document.getElementById("greetperson-btn").onclick = greetPerson;
 </script>
 </body>
 </html>

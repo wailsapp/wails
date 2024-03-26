@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"go/ast"
@@ -11,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -28,109 +30,118 @@ type structName = string
 var ErrNoBindingsFound = errors.New("no bound structs found")
 
 type StructDef struct {
-	Name        string
-	DocComments []string
-	Fields      []*Field
-}
-
-func (s *StructDef) DefaultValueList() string {
-	var allFields []string
-	for _, field := range s.Fields {
-		thisFieldWithDefaultValue := fmt.Sprintf("%s = %s", field.JSName(), field.DefaultValue())
-		allFields = append(allFields, thisFieldWithDefaultValue)
-	}
-	return strings.Join(allFields, ", ")
+	Name       string
+	DocComment string
+	Fields     []*Field
 }
 
 type ParameterType struct {
-	Name      string
-	IsStruct  bool
-	IsSlice   bool
-	IsPointer bool
-	IsEnum    bool
-	MapKey    *ParameterType
-	MapValue  *ParameterType
-	Package   string
+	Name       string
+	IsStruct   bool
+	IsSlice    bool
+	IsPointer  bool
+	IsEnum     bool
+	IsVariadic bool
+	MapKey     *ParameterType
+	MapValue   *ParameterType
+	Package    *ParsedPackage
 }
 
-type EnumDef struct {
-	Name        string
-	Filename    string
-	DocComments []string
-	Values      []*EnumValue
-}
-
-type EnumValue struct {
-	Name        string
-	Value       string
-	DocComments []string
-}
-
-type Parameter struct {
-	Name    string
-	Type    *ParameterType
-	project *Project
-}
-
-func (p *Parameter) NamespacedStructType(pkgName string) string {
-	var typeName string
-	thisPkg := p.project.packageCache[pkgName]
-	pkgInfo := p.project.packageCache[p.Type.Package]
-	if pkgInfo.Name != "" && pkgInfo.Path != thisPkg.Path {
-		typeName = pkgInfo.Name
+func (t *ParameterType) namespace(pkg *ParsedPackage) string {
+	if t.Package.Name != "" && t.Package.Path != pkg.Path {
+		return t.Package.Name + "."
 	} else {
-		if p.Type.Package != "" && p.Type.Package != pkgName {
-			parts := strings.Split(p.Type.Package, "/")
-			typeName = parts[len(parts)-1] + "."
-		}
+		return ""
 	}
-	return typeName + p.Type.Name
-}
-func (p *Parameter) NamespacedStructVariable(pkgName string) string {
-	var typeName string
-	if p.Type.Package != "" && p.Type.Package != pkgName {
-		parts := strings.Split(p.Type.Package, "/")
-		typeName = parts[len(parts)-1]
-	}
-	return typeName + p.Type.Name
 }
 
-func (p *Parameter) JSType(pkgName string) string {
+func (t *ParameterType) JS(pkg *ParsedPackage, quoted bool) string {
 	// Convert type to javascript equivalent type
 	var typeName string
-	switch p.Type.Name {
+	switch t.Name {
+	case "":
+		typeName = "any"
+		quoted = false
 	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
 		typeName = "number"
 	case "string":
 		typeName = "string"
 	case "bool":
 		typeName = "boolean"
+	case "map":
+		// encoding/json always serializes map keys as strings
+		typeName = "{ [_: string]: " + t.MapValue.JS(pkg, false) + " }"
+		quoted = false
 	default:
-		typeName = p.Type.Name
+		typeName = t.Name
+		quoted = false
 	}
 
-	// if the type is a struct, we need to add the package name
-	if p.Type.IsStruct || p.Type.IsEnum {
-		typeName = p.NamespacedStructType(pkgName)
-		typeName = strings.ReplaceAll(typeName, ".", "")
+	// if the type is an external struct or enum, we need to add the package name
+	if t.IsStruct || t.IsEnum {
+		typeName = t.namespace(pkg) + typeName
+		quoted = false
+	}
+
+	// use Typescript template literal types to type encoding/json quoted fields
+	if quoted {
+		if typeName == "string" {
+			typeName = "`\"${" + typeName + "}\"`"
+		} else {
+			typeName = "`${" + typeName + "}`"
+		}
+	}
+
+	needsParentheses := false
+
+	// Add pointer suffix
+	if t.IsPointer {
+		typeName += " | null"
+		needsParentheses = true
 	}
 
 	// Add slice suffix
-	if p.Type.IsSlice {
-		typeName += "[]"
+	if t.IsSlice {
+		if needsParentheses {
+			typeName = "(" + typeName + ")[]"
+		} else {
+			typeName += "[]"
+		}
+		needsParentheses = false
 	}
 
-	// Add pointer suffix
-	if p.Type.IsPointer {
-		typeName += " | null"
+	// Add variadic slice suffix
+	if t.IsVariadic {
+		if needsParentheses {
+			typeName = "(" + typeName + ")[]"
+		} else {
+			typeName += "[]"
+		}
+		needsParentheses = false
 	}
 
 	return typeName
 }
 
+type EnumDef struct {
+	Name       string
+	Filename   string
+	DocComment string
+	Values     []*EnumValue
+}
+
+type EnumValue struct {
+	Name       string
+	Value      string
+	DocComment string
+}
+
+type Parameter struct {
+	Name string
+	Type *ParameterType
+}
+
 type BoundMethod struct {
-	Package    string
-	PackageDir string
 	Name       string
 	DocComment string
 	Inputs     []*Parameter
@@ -139,9 +150,9 @@ type BoundMethod struct {
 	Alias      *uint32
 }
 
-func (m BoundMethod) JSInputs() []*Parameter {
+func (m *BoundMethod) JSInputs() []*Parameter {
 	if len(m.Inputs) > 0 {
-		if firstArg := m.Inputs[0]; isContext(firstArg) {
+		if firstArg := m.Inputs[0]; firstArg.Type.Package.Path == "context" && firstArg.Type.Name == "Context" {
 			return m.Inputs[1:]
 		}
 	}
@@ -149,126 +160,77 @@ func (m BoundMethod) JSInputs() []*Parameter {
 	return m.Inputs
 }
 
-func (m BoundMethod) IDAsString() string {
-	return strconv.Itoa(int(m.ID))
+func (m *BoundMethod) JSOutputs() []*Parameter {
+	jsOutputs := make([]*Parameter, 0, len(m.Outputs))
+
+	for _, output := range m.Outputs {
+		if output.Type.Name != "error" || output.Type.IsStruct || output.Type.IsEnum {
+			jsOutputs = append(jsOutputs, output)
+		}
+	}
+
+	return jsOutputs
 }
 
 type Field struct {
-	Name    string
-	Type    *ParameterType
-	Project *Project
+	Name       string
+	Type       *ParameterType
+	DocComment string
+
+	// JSON tag options
+	Optional bool
+	Quoted   bool
+
+	// Implementation details for JSON field visibility
+	nameFromTag bool
+	path        []int
 }
 
-func (f *Field) JSName() string {
-	return strings.ToLower(f.Name[0:1]) + f.Name[1:]
-}
-
-// TSBuild contains the typescript to build a field for a JS object
-// via assignment for simple types or constructors for structs
-func (f *Field) TSBuild(pkg string) string {
-	if !f.Type.IsStruct {
-		return fmt.Sprintf("safeSource['%s']", f.JSName())
-	}
-
-	if f.Type.Package == "" || f.Type.Package == pkg {
-		return fmt.Sprintf("%s.createFrom(source['%s'])", f.Type.Name, f.JSName())
-	}
-
-	return fmt.Sprintf("%s.%s.createFrom(source['%s'])", pkgAlias(f.Type.Package), f.Type.Name, f.JSName())
-}
-
-func (f *Field) JSDef(pkg string) string {
-	var jsType string
-	switch f.Type.Name {
-	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
-		jsType = "number"
-	case "string":
-		jsType = "string"
-	case "bool":
-		jsType = "boolean"
-	default:
-		jsType = f.Type.Name
-	}
-
-	var result string
-	isExternalStruct := f.Type.Package != "" && f.Type.Package != pkg && f.Type.IsStruct
-	if f.Type.Package == "" || f.Type.Package == pkg || !isExternalStruct {
-		result += fmt.Sprintf("%s: %s;", f.JSName(), jsType)
-	} else {
-		parts := strings.Split(f.Type.Package, "/")
-		result += fmt.Sprintf("%s: %s.%s;", f.JSName(), parts[len(parts)-1], jsType)
-	}
-
-	if !ast.IsExported(f.Name) {
-		result += " // Warning: this is unexported in the Go struct."
-	}
-
-	return result
-}
-
-func (f *Field) JSDocType(pkg string) string {
-	var jsType string
-	switch f.Type.Name {
-	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
-		jsType = "number"
-	case "string":
-		jsType = "string"
-	case "bool":
-		jsType = "boolean"
-	default:
-		jsType = f.Type.Name
-	}
-
-	// If we are the same package, just return the type
-	externalPkgInfo := f.Project.packageCache[f.Type.Package]
-	if externalPkgInfo.Name == pkg {
-		return jsType
-	}
-
-	var result string
-	isExternalStruct := f.Type.Package != "" && f.Type.Package != pkg && f.Type.IsStruct
-	if f.Type.Package == "" || !isExternalStruct {
-		if f.Type.IsStruct || f.Type.IsEnum {
-			// get the relative package directory
-			result = fmt.Sprintf("%s%s", externalPkgInfo.Name, f.Type.Name)
-		} else {
-			result = jsType
-		}
-	} else {
-		// get the relative package directory
-		result = fmt.Sprintf("%s%s", externalPkgInfo.Name, f.Type.Name)
-	}
-
-	if !ast.IsExported(f.Name) {
-		result += " // Warning: this is unexported in the Go struct."
-	}
-
-	return result
-}
-
-func (f *Field) DefaultValue() string {
+func (f *Field) DefaultValue(pkg *ParsedPackage) string {
 	// Return the default value of the typescript version of the type as a string
+	if f.Type.IsSlice {
+		return "[]"
+	} else if f.Type.IsPointer {
+		return "null"
+	} else if f.Type.MapKey != nil {
+		return "{}"
+	} else if f.Type.IsStruct {
+		return "(new " + f.Type.JS(pkg, f.Quoted) + "())"
+	}
+
 	switch f.Type.Name {
 	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uintptr", "float32", "float64", "uint64":
-		return "0"
+		if f.Quoted {
+			return `"0"`
+		} else {
+			return "0"
+		}
 	case "string":
-		return `""`
+		if f.Quoted {
+			return `"\"\""`
+		} else {
+			return `""`
+		}
 	case "bool":
-		return "false"
+		if f.Quoted {
+			return "false"
+		} else {
+			return `"false"`
+		}
 	default:
 		return "null"
 	}
 }
 
 type ConstDef struct {
-	Name        string
-	DocComments []string
-	Value       string
+	Name       string
+	DocComment string
+	Value      string
 }
 
 type TypeDef struct {
 	Name           string
-	DocComments    []string
+	DocComment     string
 	Type           string
 	Consts         []*ConstDef
 	ShouldGenerate bool
@@ -360,7 +322,11 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 		}
 	}
 
-	generatedMethods := p.GenerateBindings(p.BoundMethods, options.ModelsFilename, options.UseIDs, options.TS, options.UseBundledRuntime)
+	generatedMethods, err := p.GenerateBindings(p.BoundMethods, options)
+	if err != nil {
+		return p, err
+	}
+
 	for pkgDir, structs := range generatedMethods {
 		// Write the directory
 		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkgDir), 0755)
@@ -469,13 +435,10 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 				if ok {
 					switch genDecl.Tok {
 					case token.TYPE:
-						var comments []string
-						if genDecl.Doc != nil {
-							comments = CommentGroupToText(genDecl.Doc)
-						}
+						comment := strings.TrimSpace(genDecl.Doc.Text())
 						for _, spec := range genDecl.Specs {
 							if typeSpec, ok := spec.(*ast.TypeSpec); ok {
-								p.parseTypeDeclaration(typeSpec, pkg, comments)
+								p.parseTypeDeclaration(typeSpec, pkg, comment)
 							}
 						}
 					case token.CONST:
@@ -606,7 +569,7 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 	for _, file := range pkg.Pkg.Files {
 		// Iterate over all declarations in the file
 		for _, decl := range file.Decls {
-			// Check if the declaration is a type declaration
+			// Check if the declaration is a function declaration
 			if funcDecl, ok := decl.(*ast.FuncDecl); ok && funcDecl.Recv != nil && funcDecl.Name.IsExported() {
 				var ident *ast.Ident
 				var ok bool
@@ -643,8 +606,6 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 					}
 
 					method := &BoundMethod{
-						Package:    pkg.Path,
-						PackageDir: pkg.Dir,
 						ID:         id,
 						Name:       funcDecl.Name.Name,
 						DocComment: strings.TrimSpace(funcDecl.Doc.Text()),
@@ -653,6 +614,16 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 
 					if funcDecl.Type.Params != nil {
 						method.Inputs = p.parseParameters(funcDecl.Type.Params, pkg)
+
+						// assign generated names to anonymous parameters
+						// prefix with a dollar so that no collision may ensue with Go identifiers
+						for index, param := range method.Inputs {
+							if param.Name == "" || param.Name == "_" {
+								param.Name = "$" + strconv.Itoa(index)
+							} else if slices.Contains(reservedWords, param.Name) {
+								param.Name = "$" + param.Name
+							}
+						}
 					}
 					if funcDecl.Type.Results != nil {
 						method.Outputs = p.parseParameters(funcDecl.Type.Results, pkg)
@@ -669,7 +640,7 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 }
 
 func (p *Project) addTypes(packagePath string, types map[string]*TypeDef) {
-	if types == nil || len(types) == 0 {
+	if len(types) == 0 {
 		return
 	}
 	if p.Types == nil {
@@ -708,8 +679,9 @@ func (p *Project) parseParameters(params *ast.FieldList, pkg *ParsedPackage) []*
 
 func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *ParameterType {
 	result := &ParameterType{
-		Package: pkg.Path,
+		Package: pkg,
 	}
+
 	result.Name = getTypeString(field.Type)
 	switch t := field.Type.(type) {
 	case *ast.Ident:
@@ -732,8 +704,8 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 			result.Name = p.anonymousStructID()
 			// Create a new struct definition
 			result := &StructDef{
-				Name:        result.Name,
-				DocComments: CommentGroupToText(field.Doc),
+				Name:       result.Name,
+				DocComment: strings.TrimSpace(field.Doc.Text()),
 			}
 			pkg.StructCache[result.Name] = result
 			// Parse the fields
@@ -756,10 +728,13 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 				result.IsEnum = true
 			}
 		}
-		result.Package = extPackage.Path
+		result.Package = extPackage
 	case *ast.ArrayType:
+		result = p.parseParameterType(&ast.Field{Type: t.Elt}, pkg)
 		result.IsSlice = true
-		result.IsStruct = isStructType(t.Elt)
+	case *ast.Ellipsis:
+		result = p.parseParameterType(&ast.Field{Type: t.Elt}, pkg)
+		result.IsVariadic = true
 	case *ast.MapType:
 		tempfield := &ast.Field{Type: t.Key}
 		result.MapKey = p.parseParameterType(tempfield, pkg)
@@ -767,10 +742,11 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 		result.MapValue = p.parseParameterType(tempfield, pkg)
 	default:
 	}
+
 	if result.IsStruct {
 		p.getStructDef(result.Name, pkg)
-		if result.Package == "" {
-			result.Package = pkg.Path
+		if result.Package == nil {
+			result.Package = pkg
 		}
 	}
 	return result
@@ -794,8 +770,8 @@ func (p *Project) getStructDef(name string, pkg *ParsedPackage) bool {
 							if structType, ok := typeSpec.Type.(*ast.StructType); ok {
 								if typeSpec.Name.Name == name {
 									result := &StructDef{
-										Name:        name,
-										DocComments: CommentGroupToText(typeDecl.Doc),
+										Name:       name,
+										DocComment: strings.TrimSpace(typeDecl.Doc.Text()),
 									}
 									pkg.StructCache[name] = result
 									result.Fields = p.parseStructFields(structType, pkg)
@@ -813,38 +789,236 @@ func (p *Project) getStructDef(name string, pkg *ParsedPackage) bool {
 
 func (p *Project) parseStructFields(structType *ast.StructType, pkg *ParsedPackage) []*Field {
 	var result []*Field
+
+	var index = -1
+	var embeddedStructs = make(embeddedStructMap)
+
+	var theseFields []*Field
+	var embedded []bool
+
 	for _, field := range structType.Fields.List {
-		var theseFields []*Field
+		// clear temporary storage
+		theseFields = theseFields[:0]
+		embedded = embedded[:0]
+
+		comment := strings.TrimSpace(field.Doc.Text())
+
+		jsonName, optional, quoted, visible := parseTag(field.Tag)
+		if !visible {
+			continue
+		}
+
 		if len(field.Names) > 0 {
 			for _, name := range field.Names {
+				// encoding/json ignores all unexported fields
+				if !ast.IsExported(name.Name) {
+					continue
+				}
+
 				theseFields = append(theseFields, &Field{
-					Project: p,
-					Name:    name.Name,
+					Name:       selectFieldName(jsonName, name.Name),
+					DocComment: comment,
+					Optional:   optional,
+					Quoted:     quoted,
+
+					nameFromTag: jsonName != "",
 				})
+
+				embedded = append(embedded, false)
 			}
 		} else {
 			theseFields = append(theseFields, &Field{
-				Project: p,
-				Name:    "",
+				Name:       selectFieldName(jsonName, ""),
+				DocComment: comment,
+				Optional:   optional,
+				Quoted:     quoted,
+
+				nameFromTag: jsonName != "",
 			})
+
+			embedded = append(embedded, true)
 		}
+
 		// loop over fields
-		for _, thisField := range theseFields {
+		for i, thisField := range theseFields {
+			// track field index within top-level definition
+			index++
+
 			paramType := p.parseParameterType(field, pkg)
+			var paramStruct *StructDef
+
+			if paramType.Package == nil {
+				paramType.Package = pkg
+			}
+
 			if paramType.IsStruct {
-				_, ok := pkg.StructCache[paramType.Name]
-				if !ok {
-					p.getStructDef(paramType.Name, pkg)
+				p.getStructDef(paramType.Name, paramType.Package)
+				paramStruct = paramType.Package.StructCache[paramType.Name]
+			}
+
+			// process embedded fields
+			if embedded[i] {
+				if paramType.IsPointer || paramType.IsSlice {
+					// we can safely ignore such fields as the code won't compile anyways
+					continue
+				}
+
+				if paramType.IsStruct && thisField.Name == "" {
+					// schedule embedded struct fields for later
+					embeddedStructs.Add(paramStruct, index)
+					continue
+				} else if !paramType.IsStruct {
+					// embedded fields whose type is not a struct
+					// and whose _type_ name is not exported
+					// are ignored by encoding/json
+					// even when they have a json tag
+					if !ast.IsExported(paramType.Name) {
+						continue
+					}
+
+					if thisField.Name == "" {
+						thisField.Name = paramType.Name
+					}
 				}
 			}
-			if paramType.Package == "" {
-				paramType.Package = pkg.Path
-			}
+
 			thisField.Type = paramType
+			thisField.path = []int{index}
 			result = append(result, thisField)
 		}
 	}
-	return result
+
+	// add embedded fields
+	for structDef, info := range embeddedStructs {
+		for _, field := range structDef.Fields {
+			// clone field to current struct def
+			embeddedField := &Field{}
+			*embeddedField = *field
+
+			// extend field path
+			embeddedField.path = make([]int, 1+len(field.path))
+			embeddedField.path[0] = info.index
+			copy(embeddedField.path[1:], field.path)
+
+			result = append(result, embeddedField)
+			// if the struct occurs more than once add a duplicate field
+			if info.count > 1 {
+				result = append(result, embeddedField)
+			}
+		}
+	}
+
+	// sort fields
+	slices.SortFunc(result, func(f1 *Field, f2 *Field) int {
+		// sort by name first
+		if diff := strings.Compare(f1.Name, f2.Name); diff != 0 {
+			return diff
+		}
+
+		// break ties by depth of occurrence
+		if diff := cmp.Compare(len(f1.path), len(f2.path)); diff != 0 {
+			return diff
+		}
+
+		// break ties by presence of json tag (prioritize presence)
+		if f1.nameFromTag != f2.nameFromTag {
+			if f1.nameFromTag {
+				return -1
+			} else {
+				return 1
+			}
+		}
+
+		// break ties by order of occurrence
+		return slices.Compare(f1.path, f2.path)
+	})
+
+	count := 0
+
+	// keep for each name the dominant field, drop those for which ties
+	// still exist (ignoring order of occurrence)
+	for i, j := 0, 1; j <= len(result); j++ {
+		if j < len(result) && result[i].Name == result[j].Name {
+			continue
+		}
+
+		// if there is only one field with the current name, or there is a dominant one, keep it
+		if i+1 == j || len(result[i].path) != len(result[i+1].path) || result[i].nameFromTag != result[i+1].nameFromTag {
+			result[count] = result[i]
+			count++
+		}
+
+		i = j
+	}
+
+	result = result[:count]
+
+	// sort by order of occurrence
+	slices.SortFunc(result, func(f1 *Field, f2 *Field) int {
+		return slices.Compare(f1.path, f2.path)
+	})
+
+	return slices.Clip(result)
+}
+
+func selectFieldName(jsonName string, fieldName string) string {
+	if jsonName != "" {
+		return jsonName
+	} else {
+		return fieldName
+	}
+}
+
+func parseTag(astTag *ast.BasicLit) (name string, optional bool, quoted bool, visible bool) {
+	jsonTag := ""
+
+	if astTag != nil {
+		tag, err := strconv.Unquote(astTag.Value)
+		if err != nil {
+			log.Fatal(err)
+		}
+		jsonTag = reflect.StructTag(tag).Get("json")
+	}
+
+	if jsonTag == "-" {
+		return "", false, false, false
+	} else {
+		visible = true
+	}
+
+	parts := strings.Split(jsonTag, ",")
+
+	name = parts[0]
+
+	for _, option := range parts[1:] {
+		switch option {
+		case "omitempty":
+			optional = true
+		case "string":
+			quoted = true
+		}
+	}
+
+	return
+}
+
+type embeddedStructMap map[*StructDef]struct {
+	index int // Index of first occurrence
+	count int // Number of occurrences
+}
+
+func (em *embeddedStructMap) Add(def *StructDef, index int) {
+	if def == nil {
+		return
+	}
+
+	info := (*em)[def]
+	info.count++
+	// track only the first occurrence of any embedded struct
+	if info.count == 1 {
+		info.index = index
+	}
+	(*em)[def] = info
 }
 
 func (p *Project) getParsedPackageFromName(packageName string, currentPackage *ParsedPackage) (*ParsedPackage, error) {
@@ -909,7 +1083,8 @@ func (p *Project) getPackageFromPath(packagedir string, packagepath string) (*as
 
 func (p *Project) anonymousStructID() string {
 	p.anonymousStructIDCounter++
-	return fmt.Sprintf("anon%d", p.anonymousStructIDCounter)
+	// use $ prefix so that no valid Go identifier may collide with this
+	return fmt.Sprintf("$anon%d", p.anonymousStructIDCounter)
 }
 
 func (p *Project) parseBoundExpression(elt ast.Expr, pkg *ParsedPackage) (bool, bool) {
@@ -1066,7 +1241,7 @@ func (p *Project) getFunctionFromName(name string, parsedPackage *ParsedPackage)
 	return nil, fmt.Errorf("function not found")
 }
 
-func (p *Project) parseTypeDeclaration(decl *ast.TypeSpec, pkg *ParsedPackage, comments []string) {
+func (p *Project) parseTypeDeclaration(decl *ast.TypeSpec, pkg *ParsedPackage, comment string) {
 	switch t := decl.Type.(type) {
 	case *ast.Ident:
 		switch t.Name {
@@ -1074,9 +1249,9 @@ func (p *Project) parseTypeDeclaration(decl *ast.TypeSpec, pkg *ParsedPackage, c
 			"uintptr", "float32", "float64", "string", "bool":
 			// Store this in the type cache
 			pkg.TypeCache[decl.Name.Name] = &TypeDef{
-				Name:        decl.Name.Name,
-				Type:        t.Name,
-				DocComments: TrimSlice(comments),
+				Name:       decl.Name.Name,
+				Type:       t.Name,
+				DocComment: comment,
 			}
 		}
 	}
@@ -1125,7 +1300,7 @@ func (p *Project) parseConstDeclaration(decl *ast.GenDecl, pkg *ParsedPackage) {
 			}
 
 			if valueSpec.Doc != nil {
-				constDecl.DocComments = CommentGroupToText(valueSpec.Doc)
+				constDecl.DocComment = strings.TrimSpace(valueSpec.Doc.Text())
 			}
 			typeDecl.Consts = append(typeDecl.Consts, constDecl)
 		}
@@ -1163,13 +1338,10 @@ func (p *Project) parseTypes(pkgs map[string]*ParsedPackage) {
 				if ok {
 					switch genDecl.Tok {
 					case token.TYPE:
-						var comments []string
-						if genDecl.Doc != nil {
-							comments = CommentGroupToText(genDecl.Doc)
-						}
+						comment := strings.TrimSpace(genDecl.Doc.Text())
 						for _, spec := range genDecl.Specs {
 							if typeSpec, ok := spec.(*ast.TypeSpec); ok {
-								p.parseTypeDeclaration(typeSpec, pkg, comments)
+								p.parseTypeDeclaration(typeSpec, pkg, comment)
 							}
 						}
 					case token.CONST:
@@ -1218,33 +1390,6 @@ func (p *Project) RelativeBindingsDir(dir *ParsedPackage, dir2 *ParsedPackage) s
 	}
 
 	return filepath.ToSlash(relativePath)
-}
-
-type ImportDef struct {
-	Name        string
-	Path        string
-	VarName     string
-	PackageName string
-}
-
-func (p *Project) calculateImports(pkg string, m map[structName]*StructDef) []*ImportDef {
-	var result []*ImportDef
-	for _, structDef := range m {
-		for _, field := range structDef.Fields {
-			if field.Type.Package != pkg {
-				// Find the relative path from the source directory to the target directory
-				fieldPkgInfo := p.packageCache[field.Type.Package]
-				relativePath := p.RelativeBindingsDir(p.packageCache[pkg], fieldPkgInfo)
-				result = append(result, &ImportDef{
-					PackageName: fieldPkgInfo.Name,
-					Name:        field.Name,
-					Path:        relativePath,
-					VarName:     fieldPkgInfo.Name + field.Name,
-				})
-			}
-		}
-	}
-	return result
 }
 
 func getTypeString(expr ast.Expr) string {
@@ -1298,20 +1443,75 @@ func getDirectoryForPackage(pkg *ast.Package) string {
 	return ""
 }
 
-func CommentGroupToText(comments *ast.CommentGroup) []string {
-	if comments == nil {
-		return nil
-	}
-	var result []string
-	for _, comment := range comments.List {
-		result = append(result, strings.TrimSpace(comment.Text))
-	}
-	return result
+func pkgAlias(fullPkg string) string {
+	pkgParts := strings.Split(fullPkg, "/")
+	return pkgParts[len(pkgParts)-1]
 }
 
-func TrimSlice(comments []string) []string {
-	for i, comment := range comments {
-		comments[i] = strings.TrimSpace(comment)
-	}
-	return comments
+var reservedWords = []string{
+	"abstract",
+	"arguments",
+	"await",
+	"boolean",
+	"break",
+	"byte",
+	"case",
+	"catch",
+	"char",
+	"class",
+	"const",
+	"continue",
+	"debugger",
+	"default",
+	"delete",
+	"do",
+	"double",
+	"else",
+	"enum",
+	"eval",
+	"export",
+	"extends",
+	"false",
+	"final",
+	"finally",
+	"float",
+	"for",
+	"function",
+	"goto",
+	"if",
+	"implements",
+	"import",
+	"in",
+	"instanceof",
+	"int",
+	"interface",
+	"let",
+	"long",
+	"native",
+	"new",
+	"null",
+	"package",
+	"private",
+	"protected",
+	"public",
+	"return",
+	"short",
+	"static",
+	"super",
+	"switch",
+	"synchronized",
+	"this",
+	"throw",
+	"throws",
+	"transient",
+	"true",
+	"try",
+	"typeof",
+	"var",
+	"void",
+	"volatile",
+	"while",
+	"with",
+	"yield",
+	"object",
 }

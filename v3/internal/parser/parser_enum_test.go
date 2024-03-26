@@ -1,10 +1,10 @@
 package parser
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestParseEnum(t *testing.T) {
@@ -25,23 +25,20 @@ func TestParseEnum(t *testing.T) {
 				"main": {
 					"GreetService": {
 						{
-							Package:    "main",
 							Name:       "Greet",
 							DocComment: "Greet does XYZ",
 							Inputs: []*Parameter{
 								{
 									Name: "name",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 								{
 									Name: "title",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "Title",
-										IsEnum:  true,
+										Name:   "Title",
+										IsEnum: true,
 									},
 								},
 							},
@@ -49,30 +46,26 @@ func TestParseEnum(t *testing.T) {
 								{
 									Name: "",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
 							ID: 1411160069,
 						},
 						{
-							Package:    "main",
 							Name:       "NewPerson",
 							DocComment: "NewPerson creates a new person",
 							Inputs: []*Parameter{
 								{
 									Name: "name",
 									Type: &ParameterType{
-										Package: "main",
-										Name:    "string",
+										Name: "string",
 									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Package:   "main",
 										Name:      "Person",
 										IsStruct:  true,
 										IsPointer: true,
@@ -87,14 +80,14 @@ func TestParseEnum(t *testing.T) {
 			wantTypes: map[string]map[string]*TypeDef{
 				"main": {
 					"Title": {
-						Name:        "Title",
-						DocComments: []string{"// Title is a title"},
-						Type:        "string",
+						Name:       "Title",
+						DocComment: "Title is a title",
+						Type:       "string",
 						Consts: []*ConstDef{
 							{
-								Name:        "Mister",
-								DocComments: []string{"// Mister is a title"},
-								Value:       `"Mr"`,
+								Name:       "Mister",
+								DocComment: "Mister is a title",
+								Value:      `"Mr"`,
 							},
 							{
 								Name:  "Miss",
@@ -120,22 +113,20 @@ func TestParseEnum(t *testing.T) {
 			wantModels: map[string]map[string]*StructDef{
 				"main": {
 					"Person": {
-						Name:        "Person",
-						DocComments: []string{"// Person represents a person"},
+						Name:       "Person",
+						DocComment: "Person represents a person",
 						Fields: []*Field{
 							{
 								Name: "Title",
 								Type: &ParameterType{
-									Package: "main",
-									Name:    "Title",
-									IsEnum:  true,
+									Name:   "Title",
+									IsEnum: true,
 								},
 							},
 							{
 								Name: "Name",
 								Type: &ParameterType{
-									Package: "main",
-									Name:    "string",
+									Name: "string",
 								},
 							},
 						},
@@ -152,42 +143,28 @@ func TestParseEnum(t *testing.T) {
 				return
 			}
 
-			// Patch the PackageDir in the wantBoundMethods
-			for _, packageData := range got.BoundMethods {
-				for _, boundMethods := range packageData {
-					for _, boundMethod := range boundMethods {
-						boundMethod.PackageDir = ""
-					}
-				}
+			cmpOptions := []cmp.Option{
+				cmpopts.IgnoreTypes(Project{}, &Project{}, ParsedPackage{}, &ParsedPackage{}),
+				cmpopts.IgnoreUnexported(Field{}),
 			}
 
 			// Loop over the things we want
 			for packageName, packageData := range tt.wantBoundMethods {
 				for structName, wantBoundMethods := range packageData {
 					gotBoundMethods := got.BoundMethods[packageName][structName]
-					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods, cmp.AllowUnexported(Parameter{})); diff != "" {
+					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods, cmpOptions...); diff != "" {
 						t.Errorf("ParseDirectory() failed:\n" + diff)
 					}
 				}
 			}
 
-			// Loop over the models
-			for _, packageData := range got.Models {
-				for _, wantModel := range packageData {
-					// Loop over the Fields
-					for _, field := range wantModel.Fields {
-						field.Project = nil
-					}
-				}
-			}
-
-			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods, cmp.AllowUnexported(Parameter{})); diff != "" {
+			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods, cmpOptions...); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
-			if !reflect.DeepEqual(tt.wantModels, got.Models) {
-				t.Errorf("ParseDirectory() failed:\n" + cmp.Diff(tt.wantModels, got.Models))
+			if diff := cmp.Diff(tt.wantModels, got.Models, cmpOptions...); diff != "" {
+				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
-			if diff := cmp.Diff(tt.wantTypes, got.Types); diff != "" {
+			if diff := cmp.Diff(tt.wantTypes, got.Types, cmpOptions...); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
 		})
