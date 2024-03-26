@@ -45,10 +45,11 @@ func NewPlugin(config *Config) *Plugin {
 
 // Shutdown is called when the app is shutting down
 // You can use this to clean up any resources you have allocated
-func (p *Plugin) Shutdown() {
+func (p *Plugin) Shutdown() error {
 	if p.conn != nil {
-		p.conn.Close()
+		return p.conn.Close()
 	}
+	return nil
 }
 
 // Name returns the name of the plugin.

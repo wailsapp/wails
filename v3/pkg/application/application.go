@@ -130,9 +130,12 @@ func New(appOptions Options) *App {
 	}
 
 	result.plugins = NewPluginManager(appOptions.Plugins, srv)
-	err = result.plugins.Init()
-	if err != nil {
-		globalApplication.fatal("Fatal error in plugins initialisation: " + err.Error())
+	errors := result.plugins.Init()
+	if len(errors) > 0 {
+		for _, err := range errors {
+			globalApplication.error("Error initialising plugin: " + err.Error())
+		}
+		globalApplication.fatal("Fatal error in plugins initialisation")
 	}
 
 	err = result.bindings.AddPlugins(appOptions.Plugins)
@@ -541,7 +544,12 @@ func (a *App) Run() error {
 		return err
 	}
 
-	a.plugins.Shutdown()
+	errors := a.plugins.Shutdown()
+	if len(errors) > 0 {
+		for _, err := range errors {
+			a.error("Error shutting down plugin: " + err.Error())
+		}
+	}
 
 	return nil
 }
