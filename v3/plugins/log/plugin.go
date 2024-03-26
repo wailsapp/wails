@@ -49,7 +49,7 @@ func NewPlugin() *Plugin {
 
 // Shutdown is called when the app is shutting down
 // You can use this to clean up any resources you have allocated
-func (p *Plugin) Shutdown() {}
+func (p *Plugin) Shutdown() error { return nil }
 
 // Name returns the name of the plugin.
 // You should use the go module format e.g. github.com/myuser/myplugin
