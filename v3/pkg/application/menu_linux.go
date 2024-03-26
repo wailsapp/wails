@@ -30,41 +30,41 @@ func (m *linuxMenu) processMenu(menu *Menu) {
 			native: menuNew(),
 		}
 	}
-	var currentRadioGroup GSListPointer
+	//var currentRadioGroup GSListPointer
 
-	for _, item := range menu.items {
-		// drop the group if we have run out of radio items
-		if item.itemType != radio {
-			currentRadioGroup = nilRadioGroup
-		}
-
-		switch item.itemType {
-		case submenu:
-			menuItem := newMenuItemImpl(item)
-			item.impl = menuItem
-			m.processMenu(item.submenu)
-			m.addSubMenuToItem(item.submenu, item)
-			m.addMenuItem(menu, item)
-		case text, checkbox:
-			menuItem := newMenuItemImpl(item)
-			item.impl = menuItem
-			m.addMenuItem(menu, item)
-		case radio:
-			menuItem := newRadioItemImpl(item, currentRadioGroup)
-			item.impl = menuItem
-			m.addMenuItem(menu, item)
-			currentRadioGroup = menuGetRadioGroup(menuItem)
-		case separator:
-			m.addMenuSeparator(menu)
-		}
-
-	}
-
-	for _, item := range menu.items {
-		if item.callback != nil {
-			m.attachHandler(item)
-		}
-	}
+	//for _, item := range menu.items {
+	//	// drop the group if we have run out of radio items
+	//	if item.itemType != radio {
+	//		currentRadioGroup = nilRadioGroup
+	//	}
+	//
+	//	switch item.itemType {
+	//	case submenu:
+	//		menuItem := newMenuItemImpl(item)
+	//		item.impl = menuItem
+	//		m.processMenu(item.submenu)
+	//		m.addSubMenuToItem(item.submenu, item)
+	//		m.addMenuItem(menu, item)
+	//	case text, checkbox:
+	//		menuItem := newMenuItemImpl(item)
+	//		item.impl = menuItem
+	//		m.addMenuItem(menu, item)
+	//	case radio:
+	//		menuItem := newRadioItemImpl(item, currentRadioGroup)
+	//		item.impl = menuItem
+	//		m.addMenuItem(menu, item)
+	//		currentRadioGroup = menuGetRadioGroup(menuItem)
+	//	case separator:
+	//		m.addMenuSeparator(menu)
+	//	}
+	//
+	//}
+	//
+	//for _, item := range menu.items {
+	//	if item.callback != nil {
+	//		m.attachHandler(item)
+	//	}
+	//}
 
 }
 
