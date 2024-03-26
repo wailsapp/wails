@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -304,6 +305,8 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 	return result, nil
 }
 
+var errorType = reflect.TypeFor[error]()
+
 // Call will attempt to call this bound method with the given args
 func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnValue interface{}, err error) {
 	// Use a defer statement to capture panics
@@ -364,25 +367,27 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnV
 		callResults = b.Method.Call(callArgs)
 	}
 
-	// Check results
-	switch len(b.Outputs) {
-	case 1:
-		// Loop over results and determine if the result
-		// is an error or not
-		for _, result := range callResults {
-			iface := result.Interface()
-			temp, ok := iface.(error)
-			if ok {
-				err = temp
-			} else {
-				returnValue = iface
+	var nonErrorOutputs = make([]any, 0, len(callResults))
+	var errorOutputs []error
+
+	for _, result := range callResults {
+		if result.Type() == errorType {
+			if errorOutputs == nil {
+				errorOutputs = make([]error, 0, len(callResults)-len(nonErrorOutputs))
+				nonErrorOutputs = nil
 			}
+			errorOutputs = append(errorOutputs, result.Interface().(error))
+		} else if nonErrorOutputs != nil {
+			nonErrorOutputs = append(nonErrorOutputs, result.Interface())
 		}
-	case 2:
-		returnValue = callResults[0].Interface()
-		if temp, ok := callResults[1].Interface().(error); ok {
-			err = temp
-		}
+	}
+
+	if errorOutputs != nil {
+		err = errors.Join(errorOutputs...)
+	} else if len(nonErrorOutputs) == 1 {
+		returnValue = nonErrorOutputs[0]
+	} else if len(nonErrorOutputs) > 1 {
+		returnValue = nonErrorOutputs
 	}
 
 	return
