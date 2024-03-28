@@ -1105,7 +1105,14 @@ func (p *Project) parseBoundExpression(elt ast.Expr, pkg *ParsedPackage) (bool, 
 
 func (p *Project) parseBoundIdent(ident *ast.Ident, pkg *ParsedPackage) (bool, bool) {
 	if ident.Obj == nil {
-		return false, true
+		decl, err := p.getFunctionFromName(ident.Name, pkg)
+		if decl == nil || err != nil {
+			return false, true
+		}
+
+		ident.Obj = ast.NewObj(ast.Fun, ident.Name)
+		ident.Obj.Decl = decl
+		ident.Obj.Type = decl.Type
 	}
 	switch t := ident.Obj.Decl.(type) {
 	//case *ast.StructType:
@@ -1170,7 +1177,14 @@ func (p *Project) parseBoundCallExpression(callExpr *ast.CallExpr, pkg *ParsedPa
 	switch t := callExpr.Fun.(type) {
 	case *ast.Ident:
 		if t.Obj == nil {
-			return false, true
+			decl, err := p.getFunctionFromName(t.Name, pkg)
+			if decl == nil || err != nil {
+				return false, true
+			}
+
+			t.Obj = ast.NewObj(ast.Fun, t.Name)
+			t.Obj.Decl = decl
+			t.Obj.Type = decl.Type
 		}
 		switch t := t.Obj.Decl.(type) {
 		case *ast.FuncDecl:
