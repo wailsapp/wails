@@ -3,9 +3,6 @@
 
 import {Call} from "@wailsio/runtime";
 
-/**
- * Greet someone
- */
 export function Greet(name: string): Promise<string> {
     return Call.ByName("main.GreetService.Greet", name);
 }

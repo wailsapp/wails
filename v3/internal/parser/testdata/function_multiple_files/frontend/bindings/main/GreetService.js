@@ -5,7 +5,6 @@
 import {Call} from "@wailsio/runtime";
 
 /**
- * Greet someone
  * @param {string} name
  * @returns {Promise<string>}
  */
