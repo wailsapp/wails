@@ -242,6 +242,48 @@ func TestGenerateBindings(t *testing.T) {
 			useTypescript: true,
 		},
 		{
+			name: "function_multiple_files",
+			dir:  "testdata/function_multiple_files",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/function_multiple_files/frontend/bindings/main/GreetService.js"),
+				},
+			},
+			useIDs: true,
+		},
+		{
+			name: "function_multiple_files",
+			dir:  "testdata/function_multiple_files",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/function_multiple_files/frontend/bindings/main/GreetService.name.js"),
+				},
+			},
+			useIDs: false,
+		},
+		{
+			name: "function_multiple_files - Typescript - CallByID",
+			dir:  "testdata/function_multiple_files",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/function_multiple_files/frontend/bindings/main/GreetService.ts"),
+				},
+			},
+			useIDs:        true,
+			useTypescript: true,
+		},
+		{
+			name: "function_multiple_files - Typescript - CallByName",
+			dir:  "testdata/function_multiple_files",
+			want: map[string]map[string]string{
+				"main": {
+					"GreetService": getFile("testdata/function_multiple_files/frontend/bindings/main/GreetService.name.ts"),
+				},
+			},
+			useIDs:        false,
+			useTypescript: true,
+		},
+		{
 			name: "function_from_imported_package - CallByName",
 			dir:  "testdata/function_from_imported_package",
 			want: map[string]map[string]string{
@@ -786,6 +828,17 @@ func TestGenerateBindings(t *testing.T) {
 			})
 			if err != nil {
 				t.Fatalf("GenerateBindings() error = %v", err)
+			}
+
+			// check if bindings are missing
+			for dirName, structDetails := range tt.want {
+				for name, _ := range structDetails {
+					_, ok := got[dirName][name]
+					if !ok {
+						t.Errorf("GenerateBindings() missing binding = %v/%v", dirName, name)
+						continue
+					}
+				}
 			}
 
 			for dirName, structDetails := range got {
