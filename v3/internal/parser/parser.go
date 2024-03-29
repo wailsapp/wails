@@ -213,9 +213,9 @@ func (f *Field) DefaultValue(pkg *ParsedPackage) string {
 		}
 	case "bool":
 		if f.Quoted {
-			return "false"
-		} else {
 			return `"false"`
+		} else {
+			return "false"
 		}
 	default:
 		return "null"
