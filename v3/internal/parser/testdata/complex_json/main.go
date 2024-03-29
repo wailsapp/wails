@@ -90,7 +90,7 @@ type Person struct {
 
 type embedded4 struct {
 	// NamingThingsIsHard is a law of programming
-	NamingThingsIsHard bool
+	NamingThingsIsHard bool `json:",string"`
 
 	// Friends should not be shadowed in Person as embedded4 is not embedded
 	// from encoding/json's point of view;
