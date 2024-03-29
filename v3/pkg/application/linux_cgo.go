@@ -1131,6 +1131,12 @@ func (w *linuxWebviewWindow) setTitle(title string) {
 	}
 }
 
+func (w *linuxWebviewWindow) setIcon(icon *C.GdkPixbuf) {
+	if icon != nil {
+		C.gtk_window_set_icon(w.gtkWindow(), icon)
+	}
+}
+
 func (w *linuxWebviewWindow) gtkWindow() *C.GtkWindow {
 	return (*C.GtkWindow)(w.window)
 }
