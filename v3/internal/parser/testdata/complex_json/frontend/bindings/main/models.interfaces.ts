@@ -38,7 +38,7 @@ export interface Embedded1 {
     /**
      * NamingThingsIsHard is a law of programming
      */
-    "NamingThingsIsHard": boolean;
+    "NamingThingsIsHard": `${boolean}`;
 }
 
 export interface Embedded2 {
@@ -77,7 +77,7 @@ export interface Person {
     /**
      * NamingThingsIsHard is a law of programming
      */
-    "NamingThingsIsHard": boolean;
+    "NamingThingsIsHard": `${boolean}`;
 
     /**
      * StillThereButRenamed should shadow in Person the other field with same depth and no json tag
@@ -119,7 +119,7 @@ export interface embedded4 {
     /**
      * NamingThingsIsHard is a law of programming
      */
-    "NamingThingsIsHard": boolean;
+    "NamingThingsIsHard": `${boolean}`;
 
     /**
      * Friends should not be shadowed in Person as embedded4 is not embedded

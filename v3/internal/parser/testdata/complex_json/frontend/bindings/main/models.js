@@ -59,7 +59,7 @@ export class Embedded1 {
             /**
              * NamingThingsIsHard is a law of programming
              * @member
-             * @type {boolean}
+             * @type {`${boolean}`}
              */
             this["NamingThingsIsHard"] = "false";
         }
@@ -90,7 +90,7 @@ export class Embedded2 {
              * @member
              * @type {boolean}
              */
-            this["Vanish"] = "false";
+            this["Vanish"] = false;
         }
         if (!("StillThere" in source)) {
             /**
@@ -160,7 +160,7 @@ export class Person {
             /**
              * NamingThingsIsHard is a law of programming
              * @member
-             * @type {boolean}
+             * @type {`${boolean}`}
              */
             this["NamingThingsIsHard"] = "false";
         }
@@ -245,7 +245,7 @@ export class embedded4 {
             /**
              * NamingThingsIsHard is a law of programming
              * @member
-             * @type {boolean}
+             * @type {`${boolean}`}
              */
             this["NamingThingsIsHard"] = "false";
         }
@@ -257,7 +257,7 @@ export class embedded4 {
              * @member
              * @type {boolean}
              */
-            this["Friends"] = "false";
+            this["Friends"] = false;
         }
 
         Object.assign(this, source);
