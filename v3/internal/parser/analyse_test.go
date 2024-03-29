@@ -72,6 +72,17 @@ func TestFindServices(t *testing.T) {
 			},
 		},
 		{
+			pkg: "slice_expressions",
+			want: []string{
+				"github.com/wailsapp/wails/v3/internal/parser/testdata/slice_expressions.Service1",
+				"github.com/wailsapp/wails/v3/internal/parser/testdata/slice_expressions.Service2",
+				"github.com/wailsapp/wails/v3/internal/parser/testdata/slice_expressions.Service3",
+				"github.com/wailsapp/wails/v3/internal/parser/testdata/slice_expressions.Service4",
+				"github.com/wailsapp/wails/v3/internal/parser/testdata/slice_expressions.Service5",
+				"github.com/wailsapp/wails/v3/internal/parser/testdata/slice_expressions.Service6",
+			},
+		},
+		{
 			pkg: "struct_literal_multiple",
 			want: []string{
 				"github.com/wailsapp/wails/v3/internal/parser/testdata/struct_literal_multiple.GreetService",
