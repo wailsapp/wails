@@ -372,6 +372,9 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnV
 
 	for _, result := range callResults {
 		if result.Type() == errorType {
+			if result.IsNil() {
+				continue
+			}
 			if errorOutputs == nil {
 				errorOutputs = make([]error, 0, len(callResults)-len(nonErrorOutputs))
 				nonErrorOutputs = nil
