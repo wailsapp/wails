@@ -240,10 +240,10 @@ func (w *windowsWebviewWindow) run() {
 
 	// Min/max buttons
 	if !options.Windows.DisableMinimiseButton {
-		w.setMinimiseButtonEnabled(false)
+		w.setMinimiseButtonEnabled(true)
 	}
 	if !options.Windows.DisableMaximiseButton {
-		w.setMaximiseButtonEnabled(false)
+		w.setMaximiseButtonEnabled(true)
 	}
 
 	// Register the window with the application
