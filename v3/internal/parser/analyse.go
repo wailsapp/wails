@@ -482,6 +482,8 @@ func (analyser *bindingAnalyser) analyseFieldExpr(pkg *packages.Package, expr as
 			}
 
 		case *ast.CompositeLit:
+			// If the expression is a composite literal, analyse the elements
+
 			for _, elt := range x.Elts {
 				if kv, ok := elt.(*ast.KeyValueExpr); ok {
 					analyser.analyseServiceExpr(pkg, kv.Value)
@@ -493,15 +495,21 @@ func (analyser *bindingAnalyser) analyseFieldExpr(pkg *packages.Package, expr as
 			return
 
 		case *ast.SliceExpr:
+			// If the expression is a slice expr, analyse its subject
+
 			expr = x.X
 			continue // Recurse
 
 		case *ast.CallExpr:
+			// If the expression is a call expr, handle functions
+			// whose behaviour is known and standardised
+
 			callee := typeutil.Callee(pkg.TypesInfo, x)
 			if callee == nil {
 				break
 			}
 
+			// Handle make and append builtins
 			switch callee {
 			case types.Universe.Lookup("make"):
 				return
@@ -532,6 +540,7 @@ func (analyser *bindingAnalyser) analyseFieldExpr(pkg *packages.Package, expr as
 				break
 			}
 
+			// Handle functions from the slices standard package
 			switch callee.Name() {
 			case "Clip", "Clone", "Compact", "CompactFunc", "Delete", "DeleteFunc", "Grow":
 				if len(x.Args) < 1 {
@@ -603,6 +612,7 @@ func (analyser *bindingAnalyser) analyseFieldExpr(pkg *packages.Package, expr as
 			}
 		}
 
+		// Report failure
 		pterm.Warning.Printfln(
 			"%s: ignoring unsupported expression assigned (directly or indirectly) to field application.Options.Bind",
 			pkg.Fset.PositionFor(expr.Pos(), true),
@@ -612,8 +622,11 @@ func (analyser *bindingAnalyser) analyseFieldExpr(pkg *packages.Package, expr as
 	}
 }
 
+// analyseServiceExpr deduces the type of expressions used as elements
+// of the Bind slice, verifies them and records them
 func (analyser *bindingAnalyser) analyseServiceExpr(pkg *packages.Package, expr ast.Expr) {
-	// Unwrap conversions and assertions to interface types
+	// Unwrap conversions and assertions to interface types:
+	// we might be able to reach an expression with concrete type
 unwrap:
 	for {
 		expr = ast.Unparen(expr)
@@ -652,6 +665,7 @@ unwrap:
 		}
 	}
 
+	// Retrieve the type of the expression
 	tv, ok := pkg.TypesInfo.Types[expr]
 	if !ok {
 		pterm.Warning.Printfln(
@@ -661,6 +675,7 @@ unwrap:
 		return
 	}
 
+	// Unalias and validate type
 	typ := types.Unalias(tv.Type)
 	if typ == nil || types.Identical(typ, types.Typ[types.Invalid]) {
 		pterm.Warning.Printfln(
@@ -670,10 +685,12 @@ unwrap:
 		return
 	}
 
+	// Accept nil silently
 	if types.Identical(typ, types.Typ[types.UntypedNil]) {
 		return
 	}
 
+	// Ensure the concrete type is a pointer
 	ptr, ok := typ.(*types.Pointer)
 	if !ok {
 		pterm.Warning.Printfln(
@@ -684,51 +701,57 @@ unwrap:
 		return
 	}
 
+	// Retrieve, unalias and validate the element type
 	elem := types.Unalias(ptr.Elem())
 	if elem == nil || types.Identical(elem, types.Typ[types.Invalid]) {
 		pterm.Warning.Printfln(
-			"%s: ignoring service expression with invalid type",
+			"%s: ignoring service expression with invalid element type",
 			pkg.Fset.PositionFor(expr.Pos(), true),
 		)
 		return
 	}
 
+	// Ensure the element type is not anonymous
 	srv, ok := elem.(*types.Named)
 	if !ok {
 		pterm.Warning.Printfln(
-			"%s: ignoring service expression with anonymous or basic type %s",
+			"%s: ignoring service expression with anonymous or basic element type %s",
 			pkg.Fset.PositionFor(expr.Pos(), true),
 			elem,
 		)
 		return
 	}
 
+	// Validate named type
 	srvu := srv.Underlying()
 	if srvu == nil || types.Identical(srvu, types.Typ[types.Invalid]) {
 		pterm.Warning.Printfln(
-			"%s: ignoring service expression with invalid type",
+			"%s: ignoring service expression with invalid element type",
 			pkg.Fset.PositionFor(expr.Pos(), true),
 		)
 		return
 	}
 
+	// Ensure it is a struct type
 	if _, ok := srvu.(*types.Struct); !ok {
 		pterm.Warning.Printfln(
-			"%s: ignoring service expression with non-struct type %s",
+			"%s: ignoring service expression with non-struct element type %s",
 			pkg.Fset.PositionFor(expr.Pos(), true),
 			elem,
 		)
 		return
 	}
 
+	// Ensure it is not generic
 	if srv.TypeParams() != nil {
 		pterm.Warning.Printfln(
-			"%s: ignoring service expression with generic struct type %s",
+			"%s: ignoring service expression with generic element type %s",
 			pkg.Fset.PositionFor(expr.Pos(), true),
 			elem,
 		)
 		return
 	}
 
+	// Record service type
 	analyser.found[srv.Obj()] = true
 }

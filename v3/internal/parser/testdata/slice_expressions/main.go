@@ -25,10 +25,10 @@ func main() {
 	services = append(services, &Service2{}, nil)
 	services[2] = &Service3{}
 
-	options := application.Options{}
+	var options application.Options
 
 	copy(options.Bind, []any{&Service4{}})
-	(options.Bind) = append((options).Bind, slices.Insert(services, 1, GlobalServices[2:]...)...)
+	(options.Bind) = append(options.Bind, slices.Insert(services, 1, GlobalServices[2:]...)...)
 
 	app := application.New(options)
 
