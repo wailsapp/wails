@@ -248,7 +248,7 @@ func (tv *TreeView) OnViewChange() *EventManager {
 	return &tv.onViewChange
 }
 
-// Message processer
+// Message processor
 func (tv *TreeView) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	switch msg {
 	case w32.WM_NOTIFY:

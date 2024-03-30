@@ -245,7 +245,7 @@ void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_wid
     gtk_window_set_geometry_hints(window, NULL, &size, flags);
 }
 
-// function to disable the context menu but propogate the event
+// function to disable the context menu but propagate the event
 static gboolean disableContextMenu(GtkWidget *widget, WebKitContextMenu *context_menu, GdkEvent *event, WebKitHitTestResult *hit_test_result, gpointer data)
 {
     // return true to disable the context menu
@@ -254,7 +254,7 @@ static gboolean disableContextMenu(GtkWidget *widget, WebKitContextMenu *context
 
 void DisableContextMenu(void *webview)
 {
-    // Disable the context menu but propogate the event
+    // Disable the context menu but propagate the event
     g_signal_connect(WEBKIT_WEB_VIEW(webview), "context-menu", G_CALLBACK(disableContextMenu), NULL);
 }
 

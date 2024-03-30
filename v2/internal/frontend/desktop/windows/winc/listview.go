@@ -438,7 +438,7 @@ func (lv *ListView) OnEndScroll() *EventManager {
 	return &lv.onEndScroll
 }
 
-// Message processer
+// Message processor
 func (lv *ListView) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	switch msg {
 	/*case w32.WM_ERASEBKGND:
