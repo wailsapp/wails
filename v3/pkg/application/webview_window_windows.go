@@ -271,14 +271,13 @@ func (w *windowsWebviewWindow) run() {
 	if !options.Windows.DisableIcon {
 		// App icon ID is 3
 		icon, err := NewIconFromResource(w32.GetModuleHandle(""), uint16(3))
-		if err == nil {
-			w.setIcon(icon)
-		} else {
-			// Load the icon from the application icon bytes
+		if err != nil {
 			icon, err = w32.CreateLargeHIconFromImage(globalApplication.options.Icon)
-			if err == nil {
-				w.setIcon(icon)
-			}
+		}
+		if err != nil {
+			globalApplication.Logger.Warn("Failed to load icon: %v", err)
+		} else {
+			w.setIcon(icon)
 		}
 	} else {
 		w.disableIcon()
