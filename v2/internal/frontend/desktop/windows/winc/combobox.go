@@ -54,7 +54,7 @@ func (cb *ComboBox) OnSelectedChange() *EventManager {
 	return &cb.onSelectedChange
 }
 
-// Message processer
+// Message processor
 func (cb *ComboBox) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	switch msg {
 	case w32.WM_COMMAND:
