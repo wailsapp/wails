@@ -273,6 +273,12 @@ func (w *windowsWebviewWindow) run() {
 		icon, err := NewIconFromResource(w32.GetModuleHandle(""), uint16(3))
 		if err == nil {
 			w.setIcon(icon)
+		} else {
+			// Load the icon from the application icon bytes
+			icon, err = w32.CreateLargeHIconFromImage(globalApplication.options.Icon)
+			if err == nil {
+				w.setIcon(icon)
+			}
 		}
 	} else {
 		w.disableIcon()
@@ -862,7 +868,7 @@ func (w *windowsWebviewWindow) setBackdropType(backdropType BackdropType) {
 }
 
 func (w *windowsWebviewWindow) setIcon(icon w32.HICON) {
-	w32.SendMessage(w.hwnd, w32.BM_SETIMAGE, w32.IMAGE_ICON, icon)
+	w32.SendMessage(w.hwnd, w32.WM_SETICON, w32.ICON_BIG, icon)
 }
 
 func (w *windowsWebviewWindow) disableIcon() {
