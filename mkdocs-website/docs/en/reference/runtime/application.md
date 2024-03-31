@@ -1,170 +1,151 @@
 # Application
 
-![Application API Image](application_api.png)
+The application API assists in creating an application using the Wails
+framework.
 
-The Application API provides access to the main application and its functionalities. 
+### New
 
-### `New(appOptions Options) *App`
+API: `New(appOptions Options) *App`
 
-The `New()` function is used to create a new Wails application with the provided options. This is the entry point for creating a Wails app.
+`New(appOptions Options)` creates a new application using the given application
+options . It applies default values for unspecified options, merges them with
+the provided ones, initializes and returns an instance of the application.
 
-```go
-app := application.New(wails.Options{
-    Name:     "My Wails App",
-    Width:    800,
-    Height:   600,
-    Resizable: true,
-})
-```
+In case of an error during initialization, the application is stopped with the
+error message provided.
 
-### `Run() error`
+It should be noted that if a global application instance already exists, that
+instance will be returned instead of creating a new one.
 
-The `Run()` method starts the main event loop of the Wails application. This should be called after all windows, system trays, and other components have been set up.
+```go title="main.go" hl_lines="6-9"
+package main
 
-```go
-err := app.Run()
-if err != nil {
-    // Handle error
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "WebviewWindow Demo",
+		// Other options
+    })
+
+	// Rest of application
 }
 ```
 
-### `Quit()`
+### Get
 
-The `Quit()` method gracefully shuts down the Wails application.
-
-```go
-app.Quit()
-```
-
-### `SetIcon(icon []byte)`
-
-The `SetIcon()` method sets the icon for the Wails application.
+`Get()` returns the global application instance. It's useful when you need to
+access the application from different parts of your code.
 
 ```go
-app.SetIcon(iconData)
+    // Get the application instance
+    app := application.Get()
 ```
 
-### `SetMenu(menu *Menu)`
+### Capabilities
 
-The `SetMenu()` method sets the main application menu.
+API: `Capabilities() capabilities.Capabilities`
+
+`Capabilities()` retrieves a map of capabilities that the application currently
+has. Capabilities can be about different features the operating system provides,
+like webview features.
 
 ```go
-menu := app.NewMenu()
-menu.Append(&wails.MenuItem{
-    Label: "File",
-    Submenu: [...],
-})
-app.SetMenu(menu)
+    // Get the application capabilities
+    capabilities := app.Capabilities()
+	if capabilities.HasNativeDrag {
+		// Do something
+    }
 ```
 
-### `ShowAboutDialog()`
+### GetPID
 
-The `ShowAboutDialog()` method displays the application's about dialog.
+API: `GetPID() int`
+
+`GetPID()` returns the Process ID of the application.
 
 ```go
-app.ShowAboutDialog()
+    pid := app.GetPID()
 ```
 
-### `CurrentWindow() *WebviewWindow`
+### Run
 
-The `CurrentWindow()` method returns the current application window.
+API: `Run() error`
+
+`Run()` starts the execution of the application and its components.
 
 ```go
-currentWindow := app.CurrentWindow()
+    app := application.New(application.Options{
+	    //options
+	})
+    // Run the application
+    err := application.Run()
+    if err != nil {
+        // Handle error
+    }
 ```
 
-### `NewWebviewWindow() *WebviewWindow`
+### Quit
 
-The `NewWebviewWindow()` method creates a new Webview window.
+API: `Quit()`
+
+`Quit()` quits the application by destroying windows and potentially other
+components.
 
 ```go
-window := app.NewWebviewWindow()
+    // Quit the application
+    app.Quit()
 ```
 
-### `NewSystemTray() *SystemTray`
+### IsDarkMode
 
-The `NewSystemTray()` method creates a new system tray.
+API: `IsDarkMode() bool`
+
+`IsDarkMode()` checks if the application is running in dark mode. It returns a
+boolean indicating whether dark mode is enabled.
 
 ```go
-systemTray := app.NewSystemTray()
+    // Check if dark mode is enabled
+    if app.IsDarkMode() {
+        // Do something
+    }
 ```
 
-### `Clipboard() *Clipboard`
+### Hide
 
-The `Clipboard()` method returns the application's clipboard instance, which can be used to read and write to the system clipboard.
+API: `Hide()`
+
+`Hide()` hides the application window.
 
 ```go
-clipboard := app.Clipboard()
-clipboard.Write("Hello, world!")
+    // Hide the application window
+    app.Hide()
 ```
 
-### `Environment() EnvironmentInfo`
+### Show
 
-The `Environment()` method returns information about the current operating system and runtime environment.
+API: `Show()`
+
+`Show()` shows the application window.
 
 ```go
-env := app.Environment()
-fmt.Println(env.OS, env.Arch, env.Debug)
+    // Show the application window
+    app.Show()
 ```
 
-### `OnShutdown(f func())`
+--8<--
+./docs/en/API/application_window.md
+./docs/en/API/application_menu.md
+./docs/en/API/application_dialogs.md
+./docs/en/API/application_events.md
+./docs/en/API/application_screens.md
+--8<--
 
-The `OnShutdown()` method adds a method to be run when the application is shutting down.
 
-```go
-app.OnShutdown(func() {
-    // Cleanup resources
-})
-```
+## Options
 
-### `BrowserOpenURL(url string) error`
-
-The `BrowserOpenURL()` method opens the default system browser and navigates to the specified URL.
-
-```go
-err := app.BrowserOpenURL("https://www.example.com")
-if err != nil {
-    // Handle error
-}
-```
-
-### `BrowserOpenFile(path string) error`
-
-The `BrowserOpenFile()` method opens the default system application associated with the specified file.
-
-```go
-err := app.BrowserOpenFile("/path/to/file.pdf")
-if err != nil {
-    // Handle error
-}
-```
-
-### `RegisterContextMenu(name string, menu *Menu)`
-
-The `RegisterContextMenu()` method registers a context menu with the given name. This menu can be referenced by the 
-frontend to display custom context menus.
-
-```go
-contextMenu := app.NewMenu()
-// Add menu items
-app.RegisterContextMenu("my-context-menu", contextMenu)
-```
-
-### `GetWindowByName(name string) Window`
-
-The `GetWindowByName()` method returns the window with the given name.
-
-```go
-window := app.GetWindowByName("My Window")
-```
-
-### `OnWindowCreation(callback func(window Window))`
-
-The `OnWindowCreation()` method registers a callback to be called when a new window is created.
-
-```go
-app.OnWindowCreation(func(window Window) {
-    // Handle window creation
-})
-```
+```go title="pkg/application/application_options.go"
+--8<--
+../v3/pkg/application/application_options.go
+--8<--
 ```

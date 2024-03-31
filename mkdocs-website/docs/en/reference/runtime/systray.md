@@ -1,98 +1,112 @@
-# System Tray API
+# System Tray
 
-The System Tray API provides a way to create and manage system tray icons for your Wails application.
+The system tray houses notification area on a desktop environment, which can
+contain both icons of currently-running applications and specific system
+notifications.
 
-## `newSystemTray(id uint) *SystemTray`
-
-The `newSystemTray()` function creates a new system tray instance.
-
-```go
-systemTray := application.newSystemTray(1)
-```
-
-### `SetLabel(label string)`
-
-The `SetLabel()` method sets the label for the system tray icon.
+You create a system tray by calling `app.NewSystemTray()`:
 
 ```go
-systemTray.SetLabel("My App")
+    // Create a new system tray
+tray := app.NewSystemTray()
 ```
 
-### `Run()`
+The following methods are available on the `SystemTray` type:
 
-The `Run()` method starts the system tray. This happens automatically when the application is run and only needs
-to be called if the system tray is dynamically created after the main application is running.
+### SetLabel
 
-```go
-systemTray.Run()
-```
+API: `SetLabel(label string)`
 
-### `SetIcon(icon []byte) *SystemTray`
+The `SetLabel` method sets the tray's label.
 
-The `SetIcon()` method sets the icon for the system tray. Should be in PNG format.
+### Label
 
-```go
-systemTray.SetIcon(iconData)
-```
+API: `Label() string`
 
-### `SetDarkModeIcon(icon []byte) *SystemTray`
+The `Label` method retrieves the tray's label.
 
-The `SetDarkModeIcon()` method sets the icon to be used in dark mode. Should be in PNG format.
+### PositionWindow
 
-```go
-systemTray.SetDarkModeIcon(darkModeIconData)
-```
+API: `PositionWindow(*WebviewWindow, offset int) error`
 
-### `SetMenu(menu *Menu) *SystemTray`
+The `PositionWindow` method calls both `AttachWindow` and `WindowOffset`
+methods.
 
-The `SetMenu()` method sets the context menu for the system tray.
+### SetIcon
 
-```go
-menu := application.NewMenu()
-systemTray.SetMenu(menu)
-```
+API: `SetIcon(icon []byte) *SystemTray`
 
-### `SetIconPosition(iconPosition int) *SystemTray`
+The `SetIcon` method sets the system tray's icon.
 
-The `SetIconPosition()` method sets the position of the icon relative to the label (Mac Only).
+### SetDarkModeIcon
 
-```go
-systemTray.SetIconPosition(application.NSImageLeading)
-```
+API: `SetDarkModeIcon(icon []byte) *SystemTray`
 
-### `SetTemplateIcon(icon []byte) *SystemTray`
+The `SetDarkModeIcon` method sets the system tray's icon when in dark mode.
 
-The `SetTemplateIcon()` method sets a template icon that can be used to change the icon color (Mac Only). 
+### SetMenu
 
-```go
-systemTray.SetTemplateIcon(templateIconData)
-```
+API: `SetMenu(menu *Menu) *SystemTray`
 
-### `Destroy()`
+The `SetMenu` method sets the system tray's menu.
 
-The `Destroy()` method destroys the system tray.
+### Destroy
 
-```go
-systemTray.Destroy()
-```
+API: `Destroy()`
 
-### `OnClick(handler func()) *SystemTray`
+The `Destroy` method destroys the system tray instance.
 
-The `OnClick()` method sets the click handler for the system tray icon.
+### OnClick
 
-```go
-systemTray.OnClick(func() {
-    // Handle click
-})
-```
+API: `OnClick(handler func()) *SystemTray`
 
-### `AttachWindow(window *WebviewWindow) *SystemTray`
+The `OnClick` method sets the function to execute when the tray icon is clicked.
 
-The `AttachWindow()` method attaches a window to the system tray. The window will be shown centered to the system tray 
-when the system tray icon is clicked.
+### OnRightClick
 
-```go
-window := application.NewWebviewWindow()
-systemTray.AttachWindow(window)
-```
+API: `OnRightClick(handler func()) *SystemTray`
 
+The `OnRightClick` method sets the function to execute when right-clicking the
+tray icon.
+
+### OnDoubleClick
+
+API: `OnDoubleClick(handler func()) *SystemTray`
+
+The `OnDoubleClick` method sets the function to execute when double-clicking the
+tray icon.
+
+### OnRightDoubleClick
+
+API: `OnRightDoubleClick(handler func()) *SystemTray`
+
+The `OnRightDoubleClick` method sets the function to execute when right
+double-clicking the tray icon.
+
+### AttachWindow
+
+API: `AttachWindow(window *WebviewWindow) *SystemTray`
+
+The `AttachWindow` method attaches a window to the system tray. The window will
+be shown when the system tray icon is clicked.
+
+### WindowOffset
+
+API: `WindowOffset(offset int) *SystemTray`
+
+The `WindowOffset` method sets the gap in pixels between the system tray and the
+window.
+
+### WindowDebounce
+
+API: `WindowDebounce(debounce time.Duration) *SystemTray`
+
+The `WindowDebounce` method sets a debounce time. In the context of Windows,
+this is used to specify how long to wait before responding to a mouse up event
+on the notification icon.
+
+### OpenMenu
+
+API: `OpenMenu()`
+
+The `OpenMenu` method opens the menu associated with the system tray.

@@ -1,159 +1,69 @@
 # Menu
 
-The Menu API provides a way to create and manage application menus.
+Menus can be created and added to the application. They can be used to create
+context menus, system tray menus and application menus.
 
-## `NewMenu() *Menu`
-
-The `NewMenu()` function creates a new Menu instance.
-
-```go
-menu := application.NewMenu()
-```
-
-### `Add(label string) *MenuItem`
-
-The `Add()` method adds a new menu item to the menu and returns the menu item.
+To create a new menu, call:
 
 ```go
-menuItem := menu.Add("File")
+    // Create a new menu
+    menu := app.NewMenu()
 ```
 
-### `AddSeparator()`
+The following operations are then available on the `Menu` type:
 
-The `AddSeparator()` method adds a separator to the menu.
+### Add
 
-```go
-menu.AddSeparator()
-```
+API: `Add(label string) *MenuItem`
 
-### `AddCheckbox(label string, enabled bool) *MenuItem`
+This method takes a `label` of type `string` as an input and adds a new
+`MenuItem` with the given label to the menu. It returns the `MenuItem` added.
 
-The `AddCheckbox()` method adds a checkbox menu item to the menu.
+### AddSeparator
 
-```go
-checkboxItem := menu.AddCheckbox("Option", true)
-```
+API: `AddSeparator()`
 
-### `AddRadio(label string, enabled bool) *MenuItem`
+This method adds a new separator `MenuItem` to the menu.
 
-The `AddRadio()` method adds a radio menu item to the menu.
+### AddCheckbox
 
-```go
-radioItem := menu.AddRadio("Option", true)
-```
+API: `AddCheckbox(label string, enabled bool) *MenuItem`
 
-### `AddSubmenu(label string) *Menu`
+This method takes a `label` of type `string` and `enabled` of type `bool` as
+inputs and adds a new checkbox `MenuItem` with the given label and enabled state
+to the menu. It returns the `MenuItem` added.
 
-The `AddSubmenu()` method adds a new submenu to the menu.
+### AddRadio
 
-```go
-submenu := menu.AddSubmenu("Submenu")
-```
+API: `AddRadio(label string, enabled bool) *MenuItem`
 
-### `AddRole(role Role) *Menu`
+This method takes a `label` of type `string` and `enabled` of type `bool` as
+inputs and adds a new radio `MenuItem` with the given label and enabled state to
+the menu. It returns the `MenuItem` added.
 
-The `AddRole()` method adds a predefined menu role to the menu.
+### Update
 
-```go
-menu.AddRole(application.RoleAbout)
-```
+API: `Update()`
 
-### `Update()`
+This method processes any radio groups and updates the menu if a menu
+implementation is not initialized.
 
-The `Update()` method updates the menu, applying any changes made to the menu items.
+### AddSubmenu
 
-```go
-menu.Update()
-```
+API: `AddSubmenu(s string) *Menu`
 
-### `SetLabel(label string)`
+This method takes a `s` of type `string` as input and adds a new submenu
+`MenuItem` with the given label to the menu. It returns the submenu added.
 
-The `SetLabel()` method sets the label for the menu.
+### AddRole
 
-```go
-menu.SetLabel("My Menu")
-```
+API: `AddRole(role Role) *Menu`
 
-### `Append(in *Menu)`
+This method takes `role` of type `Role` as input, adds it to the menu if it is
+not `nil` and returns the `Menu`.
 
-The `Append()` method appends the items of one menu to another.
+### SetLabel
 
-```go
-menu.Append(anotherMenu)
-```
+API: `SetLabel(label string)`
 
-The Menu API provides a flexible and extensible way to create and manage application menus in your Wails application.
-```
-
-```
-# MenuItem
-
-The MenuItem API provides a way to create and manage menu items in your Wails application. This is
-used in conjunction with the Menu API.
-
-## `SetTooltip(tooltip string) *MenuItem`
-
-The `SetTooltip()` method sets the tooltip for the menu item.
-
-```go
-menuItem.SetTooltip("Open a file")
-```
-
-### `SetLabel(label string) *MenuItem`
-
-The `SetLabel()` method sets the label for the menu item.
-
-```go
-menuItem.SetLabel("Open")
-```
-
-### `SetEnabled(enabled bool) *MenuItem`
-
-The `SetEnabled()` method sets the enabled state of the menu item.
-
-```go
-menuItem.SetEnabled(true)
-```
-
-### `SetBitmap(bitmap []byte) *MenuItem`
-
-The `SetBitmap()` method sets the bitmap for the menu item.
-
-```go
-menuItem.SetBitmap(bitmapData)
-```
-
-### `SetChecked(checked bool) *MenuItem`
-
-The `SetChecked()` method sets the checked state of the menu item.
-
-```go
-menuItem.SetChecked(true)
-```
-
-### `SetHidden(hidden bool) *MenuItem`
-
-The `SetHidden()` method sets the hidden state of the menu item.
-
-```go
-menuItem.SetHidden(false)
-```
-
-### `OnClick(callback func(*Context)) *MenuItem`
-
-The `OnClick()` method sets the click handler for the menu item.
-
-```go
-menuItem.OnClick(func(ctx *application.Context) {
-// Handle click
-})
-```
-
-### `SetAccelerator(shortcut string) *MenuItem`
-
-The `SetAccelerator()` method sets the accelerator (keyboard shortcut) for the menu item.
-
-```go
-menuItem.SetAccelerator("Ctrl+O")
-```
-
+This method sets the `label` of the `Menu`.

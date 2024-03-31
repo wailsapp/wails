@@ -1,375 +1,114 @@
-# Window API
+# Window
 
-The Window API provides a way to create and manage windows in your Wails application.
+To create a window, use
+[Application.NewWebviewWindow](application.md#newwebviewwindow) or
+[Application.NewWebviewWindowWithOptions](application.md#newwebviewwindowwithoptions).
+The former creates a window with default options, while the latter allows you to
+specify custom options.
 
-## `NewWindow(options WebviewWindowOptions) *WebviewWindow`
+These methods are callable on the returned WebviewWindow object:
 
-The `NewWindow()` function creates a new window with the specified options.
+### SetTitle
 
-```go
-window := application.NewWindow(wails.WebviewWindowOptions{
-    Width:  800,
-    Height: 600,
-    URL:    "/",
-})
-```
+API: `SetTitle(title string) *WebviewWindow`
 
-## `SetTitle(title string) Window`
+This method updates the window title to the provided string. It returns the
+WebviewWindow object, allowing for method chaining.
 
-The `SetTitle()` method sets the title of the window.
+### Name
 
-```go
-window.SetTitle("My Window")
-```
+API: `Name() string`
 
-## `SetSize(width, height int) Window`
+This function returns the name of the WebviewWindow.
 
-The `SetSize()` method sets the size of the window.
+### SetSize
 
-```go
-window.SetSize(1024, 768)
-```
+API: `SetSize(width, height int) *WebviewWindow`
 
-## `SetAlwaysOnTop(b bool) Window`
+This method sets the size of the WebviewWindow to the provided width and height
+parameters. If the dimensions provided exceed the constraints, they are adjusted
+appropriately.
 
-The `SetAlwaysOnTop()` method sets the window to be always on top.
+### SetAlwaysOnTop
 
-```go
-window.SetAlwaysOnTop(true)
-```
+API: `SetAlwaysOnTop(b bool) *WebviewWindow`
 
-## `Show() Window`
+This function sets the window to stay on top based on the boolean flag provided.
 
-The `Show()` method displays the window.
+### Show
 
-```go
-window.Show()
-```
+API: `Show() *WebviewWindow`
 
-## `Hide() Window`
+`Show` method is used to make the window visible. If the window is not running,
+it first invokes the `run` method to start the window and then makes it visible.
 
-The `Hide()` method hides the window.
+### Hide
 
-```go
-window.Hide()
-```
+API: `Hide() *WebviewWindow`
 
-## `SetURL(s string) Window`
+`Hide` method is used to hide the window. It sets the hidden status of the
+window to true and emits the window hide event.
 
-The `SetURL()` method sets the URL to be displayed in the window.
+### SetURL
 
-```go
-window.SetURL("https://www.example.com")
-```
+API: `SetURL(s string) *WebviewWindow`
 
-## `SetZoom(magnification float64) Window`
+`SetURL` method is used to set the URL of the window to the given URL string.
 
-The `SetZoom()` method sets the zoom level of the window.
+### SetZoom
 
-```go
-window.SetZoom(1.5)
-```
+API: `SetZoom(magnification float64) *WebviewWindow`
 
-## `GetZoom() float64`
+`SetZoom` method sets the zoom level of the window content to the provided
+magnification level.
 
-The `GetZoom()` method returns the current zoom level of the window.
+### GetZoom
 
-```go
-zoom := window.GetZoom()
-```
+API: `GetZoom() float64`
 
-## `SetResizable(b bool) Window`
+`GetZoom` function returns the current zoom level of the window content.
 
-The `SetResizable()` method sets whether the window is resizable.
+### GetScreen
 
-```go
-window.SetResizable(true)
-```
+API: `GetScreen() (*Screen, error)`
 
-## `Resizable() bool`
+`GetScreen` method returns the screen on which the window is displayed.
 
-The `Resizable()` method returns whether the window is resizable.
+### SetFrameless
 
-```go
-isResizable := window.Resizable()
-```
+API: `SetFrameless(frameless bool) *WebviewWindow`
 
-## `SetMinSize(minWidth, minHeight int) Window`
+This function is used to remove the window frame and title bar. It toggles the
+framelessness of the window according to the boolean value provided (true for
+frameless, false for framed).
 
-The `SetMinSize()` method sets the minimum size of the window.
+### RegisterContextMenu
 
-```go
-window.SetMinSize(400, 300)
-```
+API: `RegisterContextMenu(name string, menu *Menu)`
 
-## `SetMaxSize(maxWidth, maxHeight int) Window`
+This function is used to register a context menu and assigns it the given name.
 
-The `SetMaxSize()` method sets the maximum size of the window.
+### NativeWindowHandle
 
-```go
-window.SetMaxSize(1920, 1080)
-```
+API: `NativeWindowHandle() (uintptr, error)`
 
-## `ExecJS(js string)`
+This function is used to fetch the platform native window handle for the window.
 
-The `ExecJS()` method executes the given JavaScript in the context of the window.
+### Focus
 
-```go
-window.ExecJS("console.log('Hello, World!')")
-```
+API: `Focus()`
 
-## `Fullscreen() Window`
+This function is used to focus the window.
 
-The `Fullscreen()` method sets the window to fullscreen mode.
+### SetEnabled
 
-```go
-window.Fullscreen()
-```
+API: `SetEnabled(enabled bool)`
 
-## `Flash(enabled bool)`
+This function is used to enable/disable the window based on the provided boolean
+value.
 
-The `Flash()` method flashes the window's taskbar button/icon to indicate that attention is required (Windows only).
+### SetAbsolutePosition
 
-```go
-window.Flash(true)
-```
+API: `SetAbsolutePosition(x int, y int)`
 
-## `IsMinimised() bool`
-
-The `IsMinimised()` method returns whether the window is minimised.
-
-```go
-isMinimised := window.IsMinimised()
-```
-
-## `IsVisible() bool`
-
-The `IsVisible()` method returns whether the window is visible.
-
-```go
-isVisible := window.IsVisible()
-```
-
-## `IsMaximised() bool`
-
-The `IsMaximised()` method returns whether the window is maximised.
-
-```go
-isMaximised := window.IsMaximised()
-```
-
-## `IsFocused() bool`
-
-The `IsFocused()` method returns whether the window is currently focused.
-
-```go
-isFocused := window.IsFocused()
-```
-
-## `IsFullscreen() bool`
-
-The `IsFullscreen()` method returns whether the window is in fullscreen mode.
-
-```go
-isFullscreen := window.IsFullscreen()
-```
-
-## `SetBackgroundColour(colour RGBA) Window`
-
-The `SetBackgroundColour()` method sets the background color of the window.
-
-```go
-window.SetBackgroundColour(wails.RGBA{R: 255, G: 255, B: 255})
-```
-
-## `Destroy()`
-
-The `Destroy()` method destroys the window.
-
-```go
-window.Destroy()
-```
-
-## `Reload()`
-
-The `Reload()` method reloads the page assets.
-
-```go
-window.Reload()
-```
-
-## `ForceReload()`
-
-The `ForceReload()` method forces the window to reload the page assets.
-
-```go
-window.ForceReload()
-```
-
-## `OpenDevTools()`
-
-The `OpenDevTools()` method opens the developer tools for the window.
-
-```go
-window.OpenDevTools()
-```
-
-## `ZoomReset() Window`
-
-The `ZoomReset()` method resets the zoom level of the window to 100%.
-
-```go
-window.ZoomReset()
-```
-
-## `ZoomIn()`
-
-The `ZoomIn()` method increases the zoom level of the window.
-
-```go
-window.ZoomIn()
-```
-
-## `ZoomOut()`
-
-The `ZoomOut()` method decreases the zoom level of the window.
-
-```go
-window.ZoomOut()
-```
-
-## `Close()`
-
-The `Close()` method closes the window.
-
-```go
-window.Close()
-```
-
-## `SetHTML(html string) Window`
-
-The `SetHTML()` method sets the HTML content of the window.
-
-```go
-window.SetHTML("<h1>Hello, World!</h1>")
-```
-
-## `SetRelativePosition(x, y int) Window`
-
-The `SetRelativePosition()` method sets the position of the window relative to the screen.
-
-```go
-window.SetRelativePosition(100, 100)
-```
-
-## `Minimise() Window`
-
-The `Minimise()` method minimises the window.
-
-```go
-window.Minimise()
-```
-
-## `Maximise() Window`
-
-The `Maximise()` method maximises the window.
-
-```go
-window.Maximise()
-```
-
-## `UnMinimise()`
-
-The `UnMinimise()` method un-minimises the window.
-
-```go
-window.UnMinimise()
-```
-
-## `UnMaximise()`
-
-The `UnMaximise()` method un-maximises the window.
-
-```go
-window.UnMaximise()
-```
-
-## `UnFullscreen()`
-
-The `UnFullscreen()` method un-fullscreens the window.
-
-```go
-window.UnFullscreen()
-```
-
-## `Restore()`
-
-The `Restore()` method restores the window to its previous state (minimised, maximised, or fullscreen).
-
-```go
-window.Restore()
-```
-
-## `GetScreen() (*Screen, error)`
-
-The `GetScreen()` method returns the screen that the window is on.
-
-```go
-screen, err := window.GetScreen()
-if err != nil {
-    // Handle error
-}
-```
-
-## `SetFrameless(frameless bool) Window`
-
-The `SetFrameless()` method sets the window to be frameless (without a title bar or window controls).
-
-```go
-window.SetFrameless(true)
-```
-
-## `On(eventType events.WindowEventType, callback func(event *WindowEvent)) func()`
-
-The `On()` method registers a callback for the specified window event.
-
-```go
-window.On(events.Common.WindowFocus, func(event *application.WindowEvent) {
-    // Handle window focus event
-})
-```
-
-## `RegisterHook(eventType events.WindowEventType, callback func(event *WindowEvent)) func()`
-
-The `RegisterHook()` method registers a hook for the specified window event. Hooks are called before the event listeners and can cancel the event.
-
-```go
-window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
-    // Handle window closing event
-    event.Cancel()
-})
-```
-
-## `RegisterContextMenu(name string, menu *Menu)`
-
-The `RegisterContextMenu()` method registers a context menu with the given name.
-
-```go
-contextMenu := application.NewMenu()
-// Add menu items
-window.RegisterContextMenu("my-context-menu", contextMenu)
-```
-
-## `NativeWindowHandle() (uintptr, error)`
-
-The `NativeWindowHandle()` method returns the platform-specific native window handle for the window.
-
-```go
-handle, err := window.NativeWindowHandle()
-if err != nil {
-    // Handle error
-}
-```
-
-The Window API provides a powerful and flexible way to create and manage windows in your Wails application.
-```
+This function sets the absolute position of the window in the screen.
