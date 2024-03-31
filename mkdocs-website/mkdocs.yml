@@ -150,6 +150,16 @@ nav:
         - Binding Models: guides/bindings/models.md
         - Enums: guides/bindings/enums.md
         - Typescript: guides/bindings/typescript.md
+  - Reference:
+      - Runtime:
+          - Introduction: reference/runtime/intro.md
+          - Application: reference/runtime/application.md
+          - Window: reference/runtime/window.md
+          - System Tray: reference/runtime/systray.md
+          - Menu: reference/runtime/menu.md
+          - Dialogs: reference/runtime/dialogs.md
+          - Clipboard: reference/runtime/clipboard.md
+
   - What's New in v3?: whats-new.md
   - API:
       - Application: API/application.md
