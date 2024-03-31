@@ -7,10 +7,10 @@ tasks:
   setup:
     summary: Setup the project
     preconditions:
-      - sh: python{{exeExt}} --version
-        msg: "Looks like Python isn't installed. Python is required to build the documentation: https://www.python.org/downloads/"
+      - sh: docker version
+        msg: "Looks like docker isn't installed. Visit https://www.docker.com to download and install."
     cmds:
-      - python -m pip install -r requirements.txt --user
+      - docker build -t squidfunk/mkdocs-material .
 
   setup:insiders:
     summary: Setup the project (insiders)
@@ -31,18 +31,54 @@ tasks:
   build:
     summary: Builds the documentation
     preconditions:
-      - sh: mkdocs --version
-        msg: "Looks like mkdocs isn't installed. Run `wails3 task setup` or `task setup` in the documentation directory to install it."
+      - sh: docker version
+        msg: "Looks like docker isn't installed. Visit https://www.docker.com to download and install."
     cmds:
-      - mkdocs build
+      - build:windows
+      - build:unix
+
+  build:windows:
+    summary: Builds the documentation (Windows)
+    internal: true
+    platforms:
+      - windows
+    cmds:
+      - docker run --rm -v "%cd%":/docs squidfunk/mkdocs-material build
+
+  build:unix:
+    summary: Builds the documentation (Unix)
+    internal: true
+    platforms:
+      - darwin
+      - linux
+    cmds:
+      - docker run --rm -v "$(pwd)":/docs squidfunk/mkdocs-material build
 
   serve:
     summary: Builds the documentation and serves it locally
     preconditions:
-      - sh: mkdocs --version
-        msg: "Looks like mkdocs isn't installed. Run `wails3 task setup` or `task setup` in the documentation directory to install it."
+      - sh: docker version
+        msg: "Looks like docker isn't installed. Visit https://www.docker.com to download and install."
     cmds:
-      - mkdocs serve
+      - task: serve:windows
+      - task: serve:unix
+
+  serve:windows:
+    summary: Builds the documentation and serves it locally (Windows)
+    internal: true
+    platforms:
+      - windows
+    cmds:
+      - docker run --rm -it -p 8000:8000 -v "%cd%":/docs squidfunk/mkdocs-material
+
+  serve:unix:
+    summary: Builds the documentation and serves it locally (Unix)
+    internal: true
+    platforms:
+      - darwin
+      - linux
+    cmds:
+      - docker run --rm -it -p 8000:8000 -v "$(pwd)":/docs squidfunk/mkdocs-material
 
   serve:insiders:
     summary: Builds the documentation and serves it locally

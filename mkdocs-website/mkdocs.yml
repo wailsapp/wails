@@ -143,6 +143,13 @@ nav:
         - Runtime: learn/runtime.md
     - Feedback: getting-started/feedback.md
   - Feedback: getting-started/feedback.md
+  - Guides:
+      - Bindings:
+        - Introduction: guides/bindings/intro.md
+        - Binding Structs: guides/bindings/structs.md
+        - Binding Models: guides/bindings/models.md
+        - Enums: guides/bindings/enums.md
+        - Typescript: guides/bindings/typescript.md
   - What's New in v3?: whats-new.md
   - API:
       - Application: API/application.md
@@ -156,7 +163,7 @@ nav:
     - v3 Changes: development/changes.md
   - Roadmap: roadmap.md
   - Change Log: changelog.md
-  - Sponsor❤️: https://github.com/sponsors/leaanthony
+  - Sponsor ❤️: https://github.com/sponsors/leaanthony
 
 watch:
   - overrides
