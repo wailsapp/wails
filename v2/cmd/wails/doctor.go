@@ -67,7 +67,7 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 		wailsTableData = append(wailsTableData, []string{"Package Manager", info.PM.Name()})
 	}
 
-	err = pterm.DefaultTable.WithData(wailsTableData).Render()
+	err = pterm.DefaultTable.WithBoxed().WithData(wailsTableData).Render()
 	if err != nil {
 		return err
 	}
