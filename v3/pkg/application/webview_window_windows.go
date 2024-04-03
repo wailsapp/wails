@@ -240,10 +240,10 @@ func (w *windowsWebviewWindow) run() {
 
 	// Min/max buttons
 	if !options.Windows.DisableMinimiseButton {
-		w.setMinimiseButtonEnabled(false)
+		w.setMinimiseButtonEnabled(true)
 	}
 	if !options.Windows.DisableMaximiseButton {
-		w.setMaximiseButtonEnabled(false)
+		w.setMaximiseButtonEnabled(true)
 	}
 
 	// Register the window with the application
@@ -271,7 +271,12 @@ func (w *windowsWebviewWindow) run() {
 	if !options.Windows.DisableIcon {
 		// App icon ID is 3
 		icon, err := NewIconFromResource(w32.GetModuleHandle(""), uint16(3))
-		if err == nil {
+		if err != nil {
+			icon, err = w32.CreateLargeHIconFromImage(globalApplication.options.Icon)
+		}
+		if err != nil {
+			globalApplication.Logger.Warn("Failed to load icon: %v", err)
+		} else {
 			w.setIcon(icon)
 		}
 	} else {
@@ -862,7 +867,7 @@ func (w *windowsWebviewWindow) setBackdropType(backdropType BackdropType) {
 }
 
 func (w *windowsWebviewWindow) setIcon(icon w32.HICON) {
-	w32.SendMessage(w.hwnd, w32.BM_SETIMAGE, w32.IMAGE_ICON, icon)
+	w32.SendMessage(w.hwnd, w32.WM_SETICON, w32.ICON_BIG, icon)
 }
 
 func (w *windowsWebviewWindow) disableIcon() {

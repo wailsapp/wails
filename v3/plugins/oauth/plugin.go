@@ -26,6 +26,7 @@ type Plugin struct {
 	config Config
 	server *http.Server
 	router *pat.Router
+	api    application.PluginAPI
 }
 
 type Config struct {
@@ -69,18 +70,19 @@ func NewPlugin(config Config) *Plugin {
 	return result
 }
 
-func (p *Plugin) Shutdown() {
+func (p *Plugin) Shutdown() error {
 	if p.server != nil {
-		p.server.Close()
+		return p.server.Close()
 	}
+	return nil
 }
 
 func (p *Plugin) Name() string {
 	return "github.com/wailsapp/wails/v3/plugins/oauth"
 }
 
-func (p *Plugin) Init() error {
-
+func (p *Plugin) Init(api application.PluginAPI) error {
+	p.api = api
 	store := sessions.NewCookieStore([]byte(p.config.SessionSecret))
 	store.MaxAge(p.config.MaxAge)
 	store.Options.Path = "/"

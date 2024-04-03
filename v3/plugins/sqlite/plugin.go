@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v3/pkg/application"
 	_ "modernc.org/sqlite"
 	"strings"
 )
@@ -45,10 +46,11 @@ func NewPlugin(config *Config) *Plugin {
 
 // Shutdown is called when the app is shutting down
 // You can use this to clean up any resources you have allocated
-func (p *Plugin) Shutdown() {
+func (p *Plugin) Shutdown() error {
 	if p.conn != nil {
-		p.conn.Close()
+		return p.conn.Close()
 	}
+	return nil
 }
 
 // Name returns the name of the plugin.
@@ -59,7 +61,7 @@ func (p *Plugin) Name() string {
 
 // Init is called when the app is starting up. You can use this to
 // initialise any resources you need.
-func (p *Plugin) Init() error {
+func (p *Plugin) Init(api application.PluginAPI) error {
 	p.callableMethods = []string{"Execute", "Select"}
 	p.js = executeselectjs
 	if p.config.CanOpenFromJS {

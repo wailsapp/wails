@@ -55,7 +55,7 @@ func (p *Plugin) IsStartAtLogin() (bool, error) {
 	return result, nil
 }
 
-func (p Plugin) autostartFile() string {
+func (p *Plugin) autostartFile() string {
 	homedir, _ := os.UserHomeDir()
 	exe, _ := os.Executable()
 	name := filepath.Base(exe)
@@ -63,7 +63,7 @@ func (p Plugin) autostartFile() string {
 	return strings.Join([]string{homedir, ".config", "autostart", autostartFile}, "/")
 }
 
-func (p Plugin) createAutoStartFile(filename string, enabled bool) {
+func (p *Plugin) createAutoStartFile(filename string, enabled bool) {
 	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0600)
 	defer file.Close()
 
@@ -73,7 +73,7 @@ func (p Plugin) createAutoStartFile(filename string, enabled bool) {
 	}
 	exe, _ := os.Executable()
 	input := startTpl{
-		Name:    filepath.Base(exe)	,
+		Name:    filepath.Base(exe),
 		Cmd:     exe,
 		Enabled: enabled,
 	}

@@ -1,13 +1,17 @@
 package application
 
 import (
+	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
 
+type PluginAPI interface {
+}
+
 type Plugin interface {
 	Name() string
-	Init() error
-	Shutdown()
+	Init(api PluginAPI) error
+	Shutdown() error
 	CallableByJS() []string
 	InjectJS() string
 }
@@ -26,13 +30,14 @@ func NewPluginManager(plugins map[string]Plugin, assetServer *assetserver.AssetS
 	return result
 }
 
-func (p *PluginManager) Init() error {
+func (p *PluginManager) Init() []error {
+
+	api := newPluginAPI()
 	for _, plugin := range p.plugins {
-		err := plugin.Init()
+		err := plugin.Init(api)
 		if err != nil {
 			globalApplication.error("Plugin failed to initialise:", "plugin", plugin.Name(), "error", err.Error())
-			p.Shutdown()
-			return err
+			return p.Shutdown()
 		}
 		p.initialisedPlugins = append(p.initialisedPlugins, plugin)
 		injectJS := plugin.InjectJS()
@@ -44,9 +49,15 @@ func (p *PluginManager) Init() error {
 	return nil
 }
 
-func (p *PluginManager) Shutdown() {
+func (p *PluginManager) Shutdown() []error {
+	var errs []error
 	for _, plugin := range p.initialisedPlugins {
-		plugin.Shutdown()
+		err := plugin.Shutdown()
 		globalApplication.debug("Plugin shutdown: " + plugin.Name())
+		if err != nil {
+			err = errors.Wrap(err, "Plugin failed to shutdown: "+plugin.Name())
+			errs = append(errs, err)
+		}
 	}
+	return errs
 }

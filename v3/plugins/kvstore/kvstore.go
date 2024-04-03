@@ -2,6 +2,7 @@ package kvstore
 
 import (
 	"encoding/json"
+	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"io"
 	"os"
@@ -35,13 +36,14 @@ func NewPlugin(config *Config) *KeyValueStore {
 }
 
 // Shutdown will save the store to disk if there are unsaved changes.
-func (kvs *KeyValueStore) Shutdown() {
+func (kvs *KeyValueStore) Shutdown() error {
 	if kvs.unsaved {
 		err := kvs.Save()
 		if err != nil {
-			application.Get().Logger.Error("Error saving store: " + err.Error())
+			return errors.Wrap(err, "Error saving store")
 		}
 	}
+	return nil
 }
 
 // Name returns the name of the plugin.
@@ -51,7 +53,7 @@ func (kvs *KeyValueStore) Name() string {
 
 // Init is called when the plugin is loaded. It is passed the application.App
 // instance. This is where you should do any setup.
-func (kvs *KeyValueStore) Init() error {
+func (kvs *KeyValueStore) Init(api application.PluginAPI) error {
 	err := kvs.open(kvs.config.Filename)
 	if err != nil {
 		return err

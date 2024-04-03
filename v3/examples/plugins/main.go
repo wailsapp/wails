@@ -6,7 +6,6 @@ import (
 	"plugin_demo/plugins/hashes"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/plugins/experimental/server"
 	"github.com/wailsapp/wails/v3/plugins/kvstore"
 	"github.com/wailsapp/wails/v3/plugins/log"
 	"github.com/wailsapp/wails/v3/plugins/single_instance"
@@ -35,10 +34,10 @@ func main() {
 				Filename: "store.json",
 				AutoSave: true,
 			}),
-			"server": server.NewPlugin(&server.Config{
-				Enabled: true,
-				Port:    34115,
-			}),
+			//"server": server.NewPlugin(&server.Config{
+			//	Enabled: true,
+			//	Port:    34115,
+			//}),
 			"single_instance": single_instance.NewPlugin(&single_instance.Config{
 				// When true, the original app will be activated when a second instance is launched
 				ActivateAppOnSubsequentLaunch: true,
@@ -46,7 +45,7 @@ func main() {
 			"start_at_login": start_at_login.NewPlugin(start_at_login.Config{}),
 		},
 		Assets: application.AssetOptions{
-			Handler: application.AssetFileServerFS(assets),
+			Handler: application.BundledAssetFileServer(assets),
 		},
 	})
 
