@@ -18,10 +18,6 @@ func getInfo() (map[string]string, bool) {
 		webviewVersion = "Error:" + err.Error()
 	}
 	result["WebView2 Version"] = webviewVersion
-
-	// add nsis
-	result["NSIS"] = getNSISVersion()
-
 	return result, ok
 }
 
@@ -32,4 +28,10 @@ func getNSISVersion() string {
 		return "Not Installed"
 	}
 	return string(output)
+}
+
+func checkPlatformDependencies(result map[string]string, ok *bool) {
+	checkCommonDependencies(result, ok)
+	// add nsis
+	result["NSIS"] = getNSISVersion()
 }
