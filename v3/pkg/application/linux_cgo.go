@@ -425,6 +425,20 @@ func (a *linuxApp) showAllWindows() {
 	}
 }
 
+func (a *linuxApp) setIcon(icon []byte) {
+	gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&icon[0])), C.ulong(len(icon)))
+	stream := C.g_memory_input_stream_new_from_bytes(gbytes)
+	var gerror *C.GError
+	pixbuf := C.gdk_pixbuf_new_from_stream(stream, nil, &gerror)
+	if gerror != nil {
+		a.parent.error("Failed to load application icon: " + C.GoString(gerror.message))
+		C.g_error_free(gerror)
+		return
+	}
+
+	a.icon = pointer(pixbuf)
+}
+
 // Clipboard
 func clipboardGet() string {
 	clip := C.gtk_clipboard_get(C.GDK_SELECTION_CLIPBOARD)
@@ -1131,9 +1145,9 @@ func (w *linuxWebviewWindow) setTitle(title string) {
 	}
 }
 
-func (w *linuxWebviewWindow) setIcon(icon *C.GdkPixbuf) {
+func (w *linuxWebviewWindow) setIcon(icon pointer) {
 	if icon != nil {
-		C.gtk_window_set_icon(w.gtkWindow(), icon)
+		C.gtk_window_set_icon(w.gtkWindow(), (*C.GdkPixbuf)(icon))
 	}
 }
 

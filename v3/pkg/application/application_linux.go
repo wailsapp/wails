@@ -18,7 +18,6 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"unsafe"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -43,7 +42,7 @@ type linuxApp struct {
 
 	theme string
 
-	icon *C.GdkPixbuf
+	icon pointer
 }
 
 func (a *linuxApp) GetFlags(options Options) map[string]any {
@@ -68,20 +67,6 @@ func (a *linuxApp) show() {
 func (a *linuxApp) on(eventID uint) {
 	// TODO: Test register/unregister events
 	//C.registerApplicationEvent(l.application, C.uint(eventID))
-}
-
-func (a *linuxApp) setIcon(icon []byte) {
-	gbytes := C.g_bytes_new_static(C.gconstpointer(unsafe.Pointer(&icon[0])), C.ulong(len(icon)))
-	stream := C.g_memory_input_stream_new_from_bytes(gbytes)
-	var gerror *C.GError
-	pixbuf := C.gdk_pixbuf_new_from_stream(stream, nil, &gerror)
-	if gerror != nil {
-		a.parent.error("Failed to load application icon: " + C.GoString(gerror.message))
-		C.g_error_free(gerror)
-		return
-	}
-
-	a.icon = pixbuf
 }
 
 func (a *linuxApp) name() string {
