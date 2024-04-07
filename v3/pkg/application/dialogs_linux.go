@@ -10,10 +10,15 @@ func (a *linuxApp) showAboutDialog(title string, message string, icon []byte) {
 	about.SetTitle(title).
 		SetMessage(message).
 		SetIcon(icon)
-	runQuestionDialog(
-		pointer(parent),
-		about,
-	)
+	InvokeAsync(func() {
+		response := runQuestionDialog(pointer(parent), about)
+		if response >= 0 && response < len(about.Buttons) {
+			button := about.Buttons[response]
+			if button.Callback != nil {
+				go button.Callback()
+			}
+		}
+	})
 }
 
 type linuxDialog struct {
@@ -27,14 +32,15 @@ func (m *linuxDialog) show() {
 	if window != nil {
 		parent, _ = window.(*WebviewWindow).NativeWindowHandle()
 	}
-
-	response := runQuestionDialog(pointer(parent), m.dialog)
-	if response >= 0 && response < len(m.dialog.Buttons) {
-		button := m.dialog.Buttons[response]
-		if button.Callback != nil {
-			go button.Callback()
+	InvokeAsync(func() {
+		response := runQuestionDialog(pointer(parent), m.dialog)
+		if response >= 0 && response < len(m.dialog.Buttons) {
+			button := m.dialog.Buttons[response]
+			if button.Callback != nil {
+				go button.Callback()
+			}
 		}
-	}
+	})
 }
 
 func newDialogImpl(d *MessageDialog) *linuxDialog {

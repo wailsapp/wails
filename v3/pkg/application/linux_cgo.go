@@ -1505,7 +1505,11 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 		cancelStr,
 		acceptLabelStr)
 
-	C.gtk_file_chooser_set_action((*C.GtkFileChooser)(fc), C.GtkFileChooserAction(action))
+	if action == C.GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER {
+		C.gtk_file_chooser_set_action((*C.GtkFileChooser)(fc), C.GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER)
+	} else {
+		C.gtk_file_chooser_set_action((*C.GtkFileChooser)(fc), C.GtkFileChooserAction(action))
+	}
 
 	gtkFilters := []*C.GtkFileFilter{}
 	for _, filter := range filters {
@@ -1519,6 +1523,7 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 		C.gtk_file_chooser_add_filter((*C.GtkFileChooser)(fc), f)
 		gtkFilters = append(gtkFilters, f)
 	}
+
 	C.gtk_file_chooser_set_select_multiple(
 		(*C.GtkFileChooser)(fc),
 		gtkBool(allowMultiple))
@@ -1554,11 +1559,14 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 	}
 
 	selections := make(chan string)
-	// run this on the gtk thread
-	InvokeAsync(func() {
-		response := C.gtk_dialog_run((*C.GtkDialog)(fc))
-		go func() {
-			if response == C.GTK_RESPONSE_ACCEPT {
+
+	handleReponse := func(response C.gint) {
+		switch response {
+		case C.GTK_RESPONSE_ACCEPT:
+			if action == C.GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER {
+				folder := C.gtk_file_chooser_get_filename((*C.GtkFileChooser)(fc))
+				selections <- buildStringAndFree(C.gpointer(folder))
+			} else {
 				filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
 				iter := filenames
 				count := 0
@@ -1570,11 +1578,30 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 					}
 					count++
 				}
-				close(selections)
-				C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
 			}
+		case C.GTK_RESPONSE_CANCEL:
+			// Canceled
+		}
+	}
+
+	// If multiselect
+	if allowMultiple {
+		// Multi-select is ran in main thread in an upstream function with error return
+		response := C.gtk_dialog_run((*C.GtkDialog)(fc))
+		go func() {
+			handleReponse(response)
 		}()
-	})
+		C.gtk_widget_destroy((*C.GtkWidget)(fc))
+	} else {
+		// Single select needs to be on main thread
+		InvokeAsync(func() {
+			response := C.gtk_dialog_run((*C.GtkDialog)(fc))
+			go func() {
+				handleReponse(response)
+			}()
+			C.gtk_widget_destroy((*C.GtkWidget)(fc))
+		})
+	}
 	return selections, nil
 }
 
@@ -1659,11 +1686,12 @@ func runQuestionDialog(parent pointer, options *MessageDialog) int {
 		C.gtk_dialog_add_button(
 			(*C.GtkDialog)(dialog), cLabel, index)
 		if button.IsDefault {
+			println("Cancel")
 			C.gtk_dialog_set_default_response((*C.GtkDialog)(dialog), index)
 		}
 	}
 
-	defer C.gtk_widget_destroy((*C.GtkWidget)(dialog))
+	defer C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(dialog)))
 	return int(C.gtk_dialog_run((*C.GtkDialog)(unsafe.Pointer(dialog))))
 }
 
@@ -1684,5 +1712,6 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
 		buttonText,
 		dialog.filters)
 
+	close(results)
 	return results, err
 }
