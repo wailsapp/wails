@@ -1579,7 +1579,13 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 }
 
 func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
-	const GtkFileChooserActionOpen = C.GTK_FILE_CHOOSER_ACTION_OPEN
+	var action int
+
+	if dialog.canChooseDirectories {
+		action = C.GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER
+	} else {
+		action = C.GTK_FILE_CHOOSER_ACTION_OPEN
+	}
 
 	window := nilPointer
 	if dialog.window != nil {
@@ -1598,7 +1604,7 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
 		dialog.showHiddenFiles,
 		dialog.directory,
 		dialog.title,
-		GtkFileChooserActionOpen,
+		action,
 		buttonText,
 		dialog.filters)
 }
