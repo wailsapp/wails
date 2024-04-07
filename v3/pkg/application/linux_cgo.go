@@ -1583,25 +1583,17 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 			// Canceled
 		}
 	}
+	var response C.gint
 
-	// If multiselect
 	if allowMultiple {
-		// Multi-select is ran in main thread in an upstream function with error return
-		response := C.gtk_dialog_run((*C.GtkDialog)(fc))
-		go func() {
-			handleReponse(response)
-		}()
-		C.gtk_widget_destroy((*C.GtkWidget)(fc))
+		response = C.gtk_dialog_run((*C.GtkDialog)(fc))
 	} else {
-		// Single select needs to be on main thread
 		InvokeAsync(func() {
-			response := C.gtk_dialog_run((*C.GtkDialog)(fc))
-			go func() {
-				handleReponse(response)
-			}()
-			C.gtk_widget_destroy((*C.GtkWidget)(fc))
+			response = C.gtk_dialog_run((*C.GtkDialog)(fc))
 		})
 	}
+	go handleReponse(response)
+	C.gtk_widget_destroy((*C.GtkWidget)(fc))
 	return selections, nil
 }
 
@@ -1712,6 +1704,5 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
 		buttonText,
 		dialog.filters)
 
-	close(results)
 	return results, err
 }
