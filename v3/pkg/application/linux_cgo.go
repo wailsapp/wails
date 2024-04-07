@@ -1556,8 +1556,8 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 	selections := make(chan string)
 	// run this on the gtk thread
 	InvokeAsync(func() {
+		response := C.gtk_dialog_run((*C.GtkDialog)(fc))
 		go func() {
-			response := C.gtk_dialog_run((*C.GtkDialog)(fc))
 			if response == C.GTK_RESPONSE_ACCEPT {
 				filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
 				iter := filenames
