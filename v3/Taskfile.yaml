@@ -158,7 +158,6 @@ tasks:
         oauth
         plain
         screen
-        server
         show-macos-toolbar
         systray
         video
