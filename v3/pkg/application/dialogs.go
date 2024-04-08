@@ -272,6 +272,7 @@ func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error) {
 	if err == nil {
 		result = <-selections
 	}
+	close(selections)
 
 	return result, err
 }
