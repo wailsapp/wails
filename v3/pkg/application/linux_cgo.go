@@ -1556,8 +1556,8 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 	selections := make(chan string)
 	// run this on the gtk thread
 	InvokeAsync(func() {
+		response := C.gtk_dialog_run((*C.GtkDialog)(fc))
 		go func() {
-			response := C.gtk_dialog_run((*C.GtkDialog)(fc))
 			if response == C.GTK_RESPONSE_ACCEPT {
 				filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
 				iter := filenames
@@ -1570,16 +1570,21 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 					}
 					count++
 				}
-				close(selections)
-				C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
 			}
 		}()
 	})
+	C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
 	return selections, nil
 }
 
 func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
-	const GtkFileChooserActionOpen = C.GTK_FILE_CHOOSER_ACTION_OPEN
+	var action int
+
+	if dialog.canChooseDirectories {
+		action = C.GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER
+	} else {
+		action = C.GTK_FILE_CHOOSER_ACTION_OPEN
+	}
 
 	window := nilPointer
 	if dialog.window != nil {
@@ -1598,7 +1603,7 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
 		dialog.showHiddenFiles,
 		dialog.directory,
 		dialog.title,
-		GtkFileChooserActionOpen,
+		action,
 		buttonText,
 		dialog.filters)
 }
