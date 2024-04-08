@@ -2,13 +2,17 @@
 
 package doctor
 
+import (
+	"github.com/wailsapp/wails/v3/internal/doctor/packagemanager"
+	"github.com/wailsapp/wails/v3/internal/operatingsystem"
+)
+
 func getInfo() (map[string]string, bool) {
 	result := make(map[string]string)
 	return result, true
 }
 
 func checkPlatformDependencies(result map[string]string, ok *bool) {
-	result := make(map[string]string)
 	info, _ := operatingsystem.Info()
 
 	pm := packagemanager.Find(info.ID)
