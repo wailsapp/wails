@@ -1570,11 +1570,10 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 					}
 					count++
 				}
-				close(selections)
-				C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
 			}
 		}()
 	})
+	C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))
 	return selections, nil
 }
 
