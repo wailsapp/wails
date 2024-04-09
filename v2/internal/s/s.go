@@ -152,6 +152,7 @@ func COPY(source string, target string) {
 	defer closefile(src)
 	d, err := os.Create(target)
 	checkError(err)
+	defer closefile(d)
 	_, err = io.Copy(d, src)
 	checkError(err)
 }
