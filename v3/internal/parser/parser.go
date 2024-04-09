@@ -10,21 +10,41 @@ import (
 	"strings"
 	"time"
 
+	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"golang.org/x/tools/go/packages"
 )
 
 type Project struct {
-	pkgs             []*packages.Package
-	options          *flags.GenerateBindingsOptions
+	pkgs  []*Package
+	Stats Stats
+}
+
+type Package struct {
+	*packages.Package
 	services         []*Service
 	anonymousStructs map[string]string
-	Stats            Stats
+}
+
+func WrapPackages(pkgs []*packages.Package, services []*Service) []*Package {
+	pkgMap := make(map[*types.Package]*Package)
+
+	for _, pkg := range pkgs {
+		pkgMap[pkg.Types] = &Package{
+			Package:          pkg,
+			services:         []*Service{},
+			anonymousStructs: make(map[string]string),
+		}
+	}
+
+	for _, service := range services {
+		pkgMap[service.Pkg()].addService(service)
+	}
+	return lo.Values(pkgMap)
 }
 
 type Service struct {
 	*types.TypeName
-	Parent *Project
 }
 
 func (s *Service) Methods() (methods []*BoundMethod) {
@@ -64,23 +84,22 @@ func ParseProject(patterns []string, options *flags.GenerateBindingsOptions) (*P
 		return nil, err
 	}
 
+	services, err := Services(pkgs)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Project{
-		pkgs:             pkgs,
-		options:          options,
-		anonymousStructs: make(map[string]string),
+		pkgs: WrapPackages(pkgs, services),
 	}, nil
 }
 
-func (p *Project) Services() (services []*Service, err error) {
-	if p.services != nil {
-		return p.services, nil
-	}
-
+func Services(pkgs []*packages.Package) (services []*Service, err error) {
 	var app *packages.Package
-	pkgs := append(make([]*packages.Package, 0, len(p.pkgs)), p.pkgs...)
-	if index := slices.IndexFunc(p.pkgs, func(pkg *packages.Package) bool { return pkg.PkgPath == WailsAppPkgPath }); index >= 0 {
-		app = p.pkgs[index]
-		p.pkgs = slices.Delete(p.pkgs, index, index+1)
+	otherPkgs := append(make([]*packages.Package, 0, len(pkgs)), pkgs...)
+	if index := slices.IndexFunc(pkgs, func(pkg *packages.Package) bool { return pkg.PkgPath == WailsAppPkgPath }); index >= 0 {
+		app = pkgs[index]
+		otherPkgs = slices.Delete(otherPkgs, index, index+1)
 	}
 
 	if app == nil {
@@ -88,19 +107,18 @@ func (p *Project) Services() (services []*Service, err error) {
 		return
 	}
 
-	found, err := FindServices(app, pkgs)
+	found, err := FindServices(app, otherPkgs)
 	if err != nil {
 		return
 	}
 
 	for _, service := range found {
-		services = append(services, &Service{service, p})
+		services = append(services, &Service{service})
 	}
-	p.services = services
 	return
 }
 
-func (p *Project) anonymousStructID(s *types.Struct) string {
+func (p *Package) anonymousStructID(s *types.Struct) string {
 	key := s.String()
 
 	if _, ok := p.anonymousStructs[key]; !ok {
@@ -133,16 +151,10 @@ func RelativeBindingsDir(base *types.Package, target *types.Package) string {
 }
 
 // Credit: https://stackoverflow.com/a/70999797/3140799
-func (p *Project) constantsOf(t *types.Named) (values map[string]*types.Const) {
+func (p *Package) constantsOf(t *types.Named) (values map[string]*types.Const) {
 	values = make(map[string]*types.Const)
 
-	pkgIndex := slices.IndexFunc(p.pkgs, func(pkg *packages.Package) bool { return pkg.Types == t.Obj().Pkg() })
-	if pkgIndex < 0 {
-		return
-	}
-	pkg := p.pkgs[pkgIndex]
-
-	for _, file := range pkg.Syntax {
+	for _, file := range p.Syntax {
 		for _, decl := range file.Decls {
 			genDecl, ok := decl.(*ast.GenDecl)
 			if !ok {
@@ -154,7 +166,7 @@ func (p *Project) constantsOf(t *types.Named) (values map[string]*types.Const) {
 					continue
 				}
 				for _, name := range valueSpec.Names {
-					c := pkg.TypesInfo.ObjectOf(name).(*types.Const)
+					c := p.TypesInfo.ObjectOf(name).(*types.Const)
 					if strings.HasSuffix(c.Type().String(), t.Obj().Name()) {
 						values[name.Name] = c
 					}

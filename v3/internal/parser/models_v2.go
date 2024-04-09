@@ -10,15 +10,12 @@ import (
 	"github.com/wailsapp/wails/v3/internal/parser/templates"
 )
 
-func (p *Parameter) Models() map[*types.Named]bool {
-	return p.modelsIn(p.Type())
+func (p *Parameter) Models(pkg *Package) map[*types.Named]bool {
+	return modelsIn(p.Type(), pkg)
 }
 
-func (p *Parameter) modelsIn(t types.Type) (models map[*types.Named]bool) {
+func modelsIn(t types.Type, pkg *Package) (models map[*types.Named]bool) {
 	models = make(map[*types.Named]bool)
-	method := p.Parent
-	project := method.Parent.Parent
-
 	for {
 		switch x := t.(type) {
 		case *types.Basic:
@@ -32,12 +29,12 @@ func (p *Parameter) modelsIn(t types.Type) (models map[*types.Named]bool) {
 				return
 			}
 			models[x] = true
-			maps.Copy(models, p.modelsInNamed(x))
+			maps.Copy(models, modelsInNamed(x, pkg))
 			return
 		case *types.Struct:
-			named := types.NewNamed(types.NewTypeName(0, method.Pkg(), project.anonymousStructID(x), nil), x, nil)
+			named := types.NewNamed(types.NewTypeName(0, pkg.Types, pkg.anonymousStructID(x), nil), x, nil)
 			models[named] = true
-			maps.Copy(models, p.modelsInStruct(x))
+			maps.Copy(models, modelsInStruct(x, pkg))
 			return
 		case *types.Pointer:
 			t = x.Elem()
@@ -48,46 +45,41 @@ func (p *Parameter) modelsIn(t types.Type) (models map[*types.Named]bool) {
 	}
 }
 
-func (p *Parameter) modelsInNamed(n *types.Named) (models map[*types.Named]bool) {
+func modelsInNamed(n *types.Named, pkg *Package) (models map[*types.Named]bool) {
 	models = make(map[*types.Named]bool)
 	switch x := n.Underlying().(type) {
 	case *types.Struct:
-		maps.Copy(models, p.modelsInStruct(x))
+		maps.Copy(models, modelsInStruct(x, pkg))
 	}
 	return
 }
 
-func (p *Parameter) modelsInStruct(s *types.Struct) (models map[*types.Named]bool) {
+func modelsInStruct(s *types.Struct, pkg *Package) (models map[*types.Named]bool) {
 	models = make(map[*types.Named]bool)
 	for i := 0; i < s.NumFields(); i++ {
 		field := s.Field(i)
-		maps.Copy(models, p.modelsIn(field.Type()))
+		maps.Copy(models, modelsIn(field.Type(), pkg))
 	}
 	return
 }
 
-func (m *BoundMethod) Models() (models map[*types.Named]bool) {
+func (m *BoundMethod) Models(pkg *Package) (models map[*types.Named]bool) {
 	models = make(map[*types.Named]bool)
 	for _, param := range m.JSInputs() {
-		maps.Copy(models, param.Models())
+		maps.Copy(models, param.Models(pkg))
 	}
 	for _, param := range m.JSOutputs() {
-		maps.Copy(models, param.Models())
+		maps.Copy(models, param.Models(pkg))
 	}
 	return
 }
 
-func (s *Service) Models() (models map[*types.Named]bool) {
+func (s *Service) Models(pkg *Package) (models map[*types.Named]bool) {
 	models = make(map[*types.Named]bool)
 	for _, method := range s.Methods() {
-		maps.Copy(models, method.Models())
+		maps.Copy(models, method.Models(pkg))
 	}
 	return
-}
-
-type Package struct {
-	*types.Package
-	services []*Service
 }
 
 func (p *Package) addService(s *Service) {
@@ -98,7 +90,7 @@ func (p *Package) Models() (models map[*types.Named]bool) {
 	models = make(map[*types.Named]bool)
 
 	for _, s := range p.services {
-		maps.Copy(models, s.Models())
+		maps.Copy(models, s.Models(p))
 	}
 	return
 }
@@ -146,7 +138,7 @@ func (e *EnumDef) DocComment() string {
 }
 
 type ModelDefinitions struct {
-	Project *Project
+	Package *Package
 	Imports map[string]string
 
 	Structs map[string]*StructDef
@@ -182,24 +174,7 @@ func (p *Project) generateModel(wr io.Writer, def *ModelDefinitions, options *fl
 func (p *Project) GenerateModels(options *flags.GenerateBindingsOptions) (result map[string]string, err error) {
 	result = make(map[string]string)
 
-	services, err := p.Services()
-	if err != nil {
-		return
-	}
-
-	pkgs := make(map[*types.Package]*Package)
-	for _, service := range services {
-		if pkg, ok := pkgs[service.Pkg()]; ok {
-			pkg.addService(service)
-		} else {
-			pkgs[service.Pkg()] = &Package{
-				service.Pkg(),
-				[]*Service{service},
-			}
-		}
-	}
-
-	for _, pkg := range pkgs {
+	for _, pkg := range p.pkgs {
 
 		models := pkg.Models()
 
@@ -213,7 +188,7 @@ func (p *Project) GenerateModels(options *flags.GenerateBindingsOptions) (result
 			switch t := model.Underlying().(type) {
 			case *types.Basic:
 				consts := []*ConstDef{}
-				for name, c := range p.constantsOf(model) {
+				for name, c := range pkg.constantsOf(model) {
 					consts = append(consts, &ConstDef{Name: name, Const: c})
 				}
 
@@ -235,7 +210,7 @@ func (p *Project) GenerateModels(options *flags.GenerateBindingsOptions) (result
 		// generate model
 		var buffer bytes.Buffer
 		err = p.generateModel(&buffer, &ModelDefinitions{
-			Project: p,
+			Package: pkg,
 			Imports: pkg.calculateModelImports(structDefs),
 
 			Structs: structDefs,
@@ -253,7 +228,7 @@ func (p *Project) GenerateModels(options *flags.GenerateBindingsOptions) (result
 		//relativePackageDir := RelativePackageDir(p.)
 		// result[relativePackageDir] = buffer.String()
 
-		result[pkg.Name()] = buffer.String()
+		result[pkg.Name] = buffer.String()
 	}
 
 	return
@@ -265,9 +240,9 @@ func (p *Package) calculateModelImports(m map[string]*StructDef) map[string]stri
 	for _, structDef := range m {
 		for i := 0; i < structDef.NumFields(); i++ {
 			field := structDef.Field(i)
-			if field.Pkg() != p.Package {
+			if field.Pkg() != p.Types {
 				// Find the relative path from the source directory to the target directory
-				result[field.Pkg().Name()] = RelativeBindingsDir(p.Package, field.Pkg())
+				result[field.Pkg().Name()] = RelativeBindingsDir(p.Types, field.Pkg())
 			}
 		}
 	}

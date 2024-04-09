@@ -59,7 +59,7 @@ func (p *Parameter) Variadic() bool {
 	return s.Variadic() && p.index == s.Params().Len()-1
 }
 
-func (p *Project) js(t types.Type) string {
+func JSType(t types.Type, pkg *Package) string {
 
 	switch x := t.(type) {
 	case *types.Basic:
@@ -74,22 +74,22 @@ func (p *Project) js(t types.Type) string {
 			return "any"
 		}
 	case *types.Slice:
-		return p.js(x.Elem()) + "[]"
+		return JSType(x.Elem(), pkg) + "[]"
 	case *types.Named:
 		// TODO: add package name for non-local imports, add namespace method
 		return x.Obj().Name()
 	case *types.Map:
-		return "{ [_: string]: " + p.js(x.Elem()) + " }"
+		return "{ [_: string]: " + JSType(x.Elem(), pkg) + " }"
 	case *types.Pointer:
-		return "(" + p.js(x.Elem()) + " | null)"
+		return "(" + JSType(x.Elem(), pkg) + " | null)"
 	case *types.Struct:
-		return p.anonymousStructID(x)
+		return pkg.anonymousStructID(x)
 	}
 	return "any"
 }
 
-func (p *Parameter) JSType(project *Project) string {
-	return project.js(p.Type())
+func (p *Parameter) JSType(pkg *Package) string {
+	return JSType(p.Type(), pkg)
 }
 
 type BoundMethod struct {
@@ -163,7 +163,7 @@ func (m *BoundMethod) JSOutputs() (outputs []*Parameter) {
 }
 
 type BindingDefinitions struct {
-	Project      *Project
+	Package      *Package
 	Imports      map[string]string
 	LocalImports []string
 
@@ -191,21 +191,29 @@ func generateBinding(wr io.Writer, def *BindingDefinitions, options *flags.Gener
 
 func (p *Project) GenerateBindings(options *flags.GenerateBindingsOptions) (result map[string]map[string]string, err error) {
 	result = make(map[string]map[string]string)
-	services, err := p.Services()
-	if err != nil {
-		return
-	}
 
-	for _, service := range services {
+	for _, pkg := range p.pkgs {
+		bindings, err := pkg.GenerateBindings(options)
+		if err != nil {
+			return nil, err
+		}
+		result[pkg.Name] = bindings
+	}
+	return
+}
+
+func (p *Package) GenerateBindings(options *flags.GenerateBindingsOptions) (result map[string]string, err error) {
+	result = make(map[string]string)
+
+	for _, service := range p.services {
 		structName := service.Name()
-		pkgName := service.Pkg().Name()
 		methods := service.Methods()
 
 		var buffer bytes.Buffer
 		err = generateBinding(&buffer, &BindingDefinitions{
-			Project:      p,
+			Package:      p,
 			Imports:      service.calculateBindingImports(),
-			LocalImports: service.calculateBindingLocalImports(),
+			LocalImports: service.calculateBindingLocalImports(p),
 
 			// Struct:  pkgAlias(pkg) + "." + structName,
 			Methods: methods,
@@ -219,11 +227,7 @@ func (p *Project) GenerateBindings(options *flags.GenerateBindingsOptions) (resu
 			return
 		}
 
-		if _, ok := result[pkgName]; !ok {
-			result[pkgName] = make(map[string]string)
-		}
-
-		result[pkgName][structName] = buffer.String()
+		result[structName] = buffer.String()
 	}
 	return
 }
@@ -251,16 +255,15 @@ func (s *Service) calculateBindingImports() map[string]string {
 	return result
 }
 
-func (s *Service) bindingLocalImportsOf(params []*Parameter) map[string]bool {
+func (s *Service) bindingLocalImportsOf(params []*Parameter, pkg *Package) map[string]bool {
 	requiredTypes := make(map[string]bool)
-	project := s.Parent
 
 	for _, param := range params {
 		if param.Pkg() == s.Pkg() {
-			models := param.Models()
+			models := param.Models(pkg)
 			for model := range models {
 				if s, ok := model.Underlying().(*types.Struct); ok && model.Obj() == nil {
-					requiredTypes[project.anonymousStructID(s)] = true
+					requiredTypes[pkg.anonymousStructID(s)] = true
 				} else {
 					requiredTypes[model.Obj().Name()] = true
 				}
@@ -270,12 +273,12 @@ func (s *Service) bindingLocalImportsOf(params []*Parameter) map[string]bool {
 	return requiredTypes
 }
 
-func (s *Service) calculateBindingLocalImports() []string {
+func (s *Service) calculateBindingLocalImports(pkg *Package) []string {
 	requiredTypes := make(map[string]bool)
 
 	for _, method := range s.Methods() {
-		maps.Copy(requiredTypes, s.bindingLocalImportsOf(method.JSInputs()))
-		maps.Copy(requiredTypes, s.bindingLocalImportsOf(method.JSOutputs()))
+		maps.Copy(requiredTypes, s.bindingLocalImportsOf(method.JSInputs(), pkg))
+		maps.Copy(requiredTypes, s.bindingLocalImportsOf(method.JSOutputs(), pkg))
 	}
 
 	result := lo.Keys(requiredTypes)
