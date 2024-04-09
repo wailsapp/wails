@@ -10,12 +10,13 @@ import (
 	"github.com/wailsapp/wails/v3/internal/parser/templates"
 )
 
-func (p *Parameter) Models(pkg *Package) map[*types.Named]bool {
-	return modelsIn(p.Type(), pkg)
+func (p *Parameter) Models(pkg *Package) (models map[*types.Named]bool) {
+	models = make(map[*types.Named]bool)
+	modelsIn(p.Type(), pkg, models)
+	return
 }
 
-func modelsIn(t types.Type, pkg *Package) (models map[*types.Named]bool) {
-	models = make(map[*types.Named]bool)
+func modelsIn(t types.Type, pkg *Package, models map[*types.Named]bool) {
 	for {
 		switch x := t.(type) {
 		case *types.Basic:
@@ -29,12 +30,12 @@ func modelsIn(t types.Type, pkg *Package) (models map[*types.Named]bool) {
 				return
 			}
 			models[x] = true
-			maps.Copy(models, modelsInNamed(x, pkg))
+			modelsInNamed(x, pkg, models)
 			return
 		case *types.Struct:
 			named := types.NewNamed(types.NewTypeName(0, pkg.Types, pkg.anonymousStructID(x), nil), x, nil)
 			models[named] = true
-			maps.Copy(models, modelsInStruct(x, pkg))
+			modelsInStruct(x, pkg, models)
 			return
 		case *types.Pointer:
 			t = x.Elem()
@@ -45,20 +46,18 @@ func modelsIn(t types.Type, pkg *Package) (models map[*types.Named]bool) {
 	}
 }
 
-func modelsInNamed(n *types.Named, pkg *Package) (models map[*types.Named]bool) {
-	models = make(map[*types.Named]bool)
+func modelsInNamed(n *types.Named, pkg *Package, models map[*types.Named]bool) {
 	switch x := n.Underlying().(type) {
 	case *types.Struct:
-		maps.Copy(models, modelsInStruct(x, pkg))
+		modelsInStruct(x, pkg, models)
 	}
 	return
 }
 
-func modelsInStruct(s *types.Struct, pkg *Package) (models map[*types.Named]bool) {
-	models = make(map[*types.Named]bool)
+func modelsInStruct(s *types.Struct, pkg *Package, models map[*types.Named]bool) {
 	for i := 0; i < s.NumFields(); i++ {
 		field := s.Field(i)
-		maps.Copy(models, modelsIn(field.Type(), pkg))
+		modelsIn(field.Type(), pkg, models)
 	}
 	return
 }
