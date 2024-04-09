@@ -19,9 +19,10 @@ import {
 } from "./{{$models}}";
 {{end}}
 {{- range .Methods}}
-{{- if .DocComment}}
+{{- $doc := .DocComment $pkg }}
+{{- if $doc}}
 /**
- * {{jsdoc .DocComment ""}}
+ * {{jsdoc $doc ""}}
  */
 {{- end}}
 export function {{.Name}}({{range $inputindex, $inputdef := .JSInputs -}}

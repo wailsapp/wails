@@ -107,11 +107,6 @@ func (s *StructDef) Fields() (fields []*Parameter) {
 	return
 }
 
-func (s *StructDef) DocComment() string {
-	// TODO
-	return ""
-}
-
 type ConstDef struct {
 	*types.Const
 	Name string
@@ -121,20 +116,10 @@ func (c *ConstDef) Value() string {
 	return c.Val().String()
 }
 
-func (c *ConstDef) DocComment() string {
-	// TODO
-	return ""
-}
-
 type EnumDef struct {
 	Name   string
 	Type   *types.Basic
 	Consts []*ConstDef
-}
-
-func (e *EnumDef) DocComment() string {
-	// TODO
-	return ""
 }
 
 type ModelDefinitions struct {

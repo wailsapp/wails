@@ -3,6 +3,7 @@ package parser
 import (
 	"errors"
 	"go/ast"
+	"go/doc"
 	"go/types"
 	"path/filepath"
 	"slices"
@@ -24,6 +25,7 @@ type Package struct {
 	*packages.Package
 	services         []*Service
 	anonymousStructs map[string]string
+	doc              *doc.Package
 }
 
 func WrapPackages(pkgs []*packages.Package, services []*Service) []*Package {
@@ -34,6 +36,7 @@ func WrapPackages(pkgs []*packages.Package, services []*Service) []*Package {
 			Package:          pkg,
 			services:         []*Service{},
 			anonymousStructs: make(map[string]string),
+			doc:              NewDoc(pkg),
 		}
 	}
 
@@ -53,8 +56,8 @@ func (s *Service) Methods() (methods []*BoundMethod) {
 			methods = append(methods, &BoundMethod{
 				Func: named.Method(i),
 				//TODO assign ID
-				ID:     0,
-				Parent: s,
+				ID:      0,
+				Service: s,
 			})
 		}
 	}

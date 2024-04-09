@@ -39,11 +39,6 @@ func (p *Parameter) Name() (name string) {
 	return
 }
 
-func (p *Parameter) DocComment() string {
-	// TODO
-	return ""
-}
-
 func (p *Parameter) Optional() bool {
 	// TODO
 	return false
@@ -96,7 +91,7 @@ type BoundMethod struct {
 	*types.Func
 	ID uint32
 
-	Parent *Service
+	Service *Service
 
 	// Name       string
 	// DocComment string
@@ -104,11 +99,6 @@ type BoundMethod struct {
 	// Outputs    []*Parameter
 	// ID         uint32
 	// Alias      *uint32
-}
-
-func (m *BoundMethod) DocComment() string {
-	// TODO
-	return ""
 }
 
 func (m *BoundMethod) embedTuple(tuple *types.Tuple) (result []*Parameter) {
