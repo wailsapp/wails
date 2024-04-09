@@ -15,7 +15,6 @@ package application
 import "C"
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -42,6 +41,8 @@ type linuxApp struct {
 	windowMapLock sync.Mutex
 
 	theme string
+
+	icon pointer
 }
 
 func (a *linuxApp) GetFlags(options Options) map[string]any {
@@ -66,10 +67,6 @@ func (a *linuxApp) show() {
 func (a *linuxApp) on(eventID uint) {
 	// TODO: Test register/unregister events
 	//C.registerApplicationEvent(l.application, C.uint(eventID))
-}
-
-func (a *linuxApp) setIcon(icon []byte) {
-	log.Println("linuxApp.setIcon", "not implemented")
 }
 
 func (a *linuxApp) name() string {

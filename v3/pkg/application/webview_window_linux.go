@@ -220,6 +220,7 @@ func (w *linuxWebviewWindow) run() {
 		w.enableDND()
 	}
 	w.setTitle(w.parent.options.Title)
+	w.setIcon(app.icon)
 	w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
 	w.setResizable(!w.parent.options.DisableResize)
 	// only set min/max size if actually set
