@@ -19,7 +19,7 @@ func isFunction(value interface{}) bool {
 	return reflect.ValueOf(value).Kind() == reflect.Func
 }
 
-// isStructPtr returns true if the value given is a struct
+// isStruct returns true if the value given is a struct
 func isStruct(value interface{}) bool {
 	return reflect.ValueOf(value).Kind() == reflect.Struct
 }
