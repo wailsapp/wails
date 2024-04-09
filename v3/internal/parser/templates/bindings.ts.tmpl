@@ -3,7 +3,6 @@
 
 import {Call} from {{if .UseBundledRuntime}}"/wails/runtime.js"{{else}}"@wailsio/runtime"{{end}};
 {{$pkg := .Package}}
-{{- $struct := .Struct}}
 {{- $models := .ModelsFilename}}
 {{- $useNames := .UseNames}}
 {{- range $name, $path := .Imports}}
@@ -42,7 +41,7 @@ export function {{.Name}}({{range $inputindex, $inputdef := .JSInputs -}}
         {{- end}}]
     {{- end}}> {
     {{if $useNames -}}
-        return Call.ByName("{{$struct}}.{{.Name}}"
+        return Call.ByName("{{.FQN}}"
     {{- else -}}
         return Call.ByID({{.ID}}
     {{- end}}{{range .JSInputs}}, {{.Name}}{{end}});

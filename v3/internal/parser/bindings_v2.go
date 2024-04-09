@@ -89,7 +89,8 @@ func (p *Parameter) JSType(pkg *Package) string {
 
 type BoundMethod struct {
 	*types.Func
-	ID uint32
+	ID  uint32
+	FQN string
 
 	Service *Service
 
@@ -205,7 +206,6 @@ func (p *Package) GenerateBindings(options *flags.GenerateBindingsOptions) (resu
 			Imports:      service.calculateBindingImports(),
 			LocalImports: service.calculateBindingLocalImports(p),
 
-			// Struct:  pkgAlias(pkg) + "." + structName,
 			Methods: methods,
 
 			ModelsFilename:    options.ModelsFilename,

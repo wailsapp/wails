@@ -2,6 +2,7 @@ package parser
 
 import (
 	"errors"
+	"fmt"
 	"go/ast"
 	"go/doc"
 	"go/types"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/hash"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -53,10 +55,17 @@ type Service struct {
 func (s *Service) Methods() (methods []*BoundMethod) {
 	if named, ok := s.Type().(*types.Named); ok {
 		for i := 0; i < named.NumMethods(); i++ {
+			fqn := fmt.Sprintf("%s.%s.%s", s.Pkg().Name(), s.Name(), named.Method(i).Name())
+
+			id, err := hash.Fnv(fqn)
+			if err != nil {
+				panic("Failed to hash fqn")
+			}
+
 			methods = append(methods, &BoundMethod{
-				Func: named.Method(i),
-				//TODO assign ID
-				ID:      0,
+				Func:    named.Method(i),
+				FQN:     fqn,
+				ID:      id,
 				Service: s,
 			})
 		}
