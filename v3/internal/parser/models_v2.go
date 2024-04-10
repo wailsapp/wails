@@ -10,13 +10,29 @@ import (
 	"github.com/wailsapp/wails/v3/internal/parser/templates"
 )
 
-func (p *Parameter) Models(pkg *Package) (models map[*types.Named]bool) {
-	models = make(map[*types.Named]bool)
-	modelsIn(p.Type(), pkg, models)
-	return
+func (p *Parameter) Models(pkg *Package, includeFields bool) (models map[*types.Named]bool) {
+	analyzer := &VarAnalyzer{
+		pkg:           pkg,
+		parameter:     p,
+		includeFields: includeFields,
+	}
+	return analyzer.FindModels()
 }
 
-func modelsIn(t types.Type, pkg *Package, models map[*types.Named]bool) {
+type VarAnalyzer struct {
+	pkg           *Package
+	parameter     *Parameter
+	models        map[*types.Named]bool
+	includeFields bool
+}
+
+func (a *VarAnalyzer) FindModels() (models map[*types.Named]bool) {
+	a.models = make(map[*types.Named]bool)
+	a.findModels(a.parameter.Type())
+	return a.models
+}
+
+func (a *VarAnalyzer) findModels(t types.Type) {
 	for {
 		switch x := t.(type) {
 		case *types.Basic:
@@ -26,16 +42,21 @@ func modelsIn(t types.Type, pkg *Package, models map[*types.Named]bool) {
 		case *types.Map:
 			t = x.Elem()
 		case *types.Named:
-			if _, ok := models[x]; ok {
+			if _, ok := a.models[x]; ok {
 				return
 			}
-			models[x] = true
-			modelsInNamed(x, pkg, models)
+			a.models[x] = true
+			if a.includeFields {
+				a.findModelsOfNamed(x)
+			}
+
 			return
 		case *types.Struct:
-			named := types.NewNamed(types.NewTypeName(0, pkg.Types, pkg.anonymousStructID(x), nil), x, nil)
-			models[named] = true
-			modelsInStruct(x, pkg, models)
+			named := types.NewNamed(types.NewTypeName(0, a.pkg.Types, a.pkg.anonymousStructID(x), nil), x, nil)
+			a.models[named] = true
+			if a.includeFields {
+				a.findModelsOfStruct(x)
+			}
 			return
 		case *types.Pointer:
 			t = x.Elem()
@@ -46,18 +67,18 @@ func modelsIn(t types.Type, pkg *Package, models map[*types.Named]bool) {
 	}
 }
 
-func modelsInNamed(n *types.Named, pkg *Package, models map[*types.Named]bool) {
+func (a *VarAnalyzer) findModelsOfNamed(n *types.Named) {
 	switch x := n.Underlying().(type) {
 	case *types.Struct:
-		modelsInStruct(x, pkg, models)
+		a.findModelsOfStruct(x)
 	}
 	return
 }
 
-func modelsInStruct(s *types.Struct, pkg *Package, models map[*types.Named]bool) {
+func (a *VarAnalyzer) findModelsOfStruct(s *types.Struct) {
 	for i := 0; i < s.NumFields(); i++ {
 		field := s.Field(i)
-		modelsIn(field.Type(), pkg, models)
+		a.findModels(field.Type())
 	}
 	return
 }
@@ -65,10 +86,10 @@ func modelsInStruct(s *types.Struct, pkg *Package, models map[*types.Named]bool)
 func (m *BoundMethod) Models(pkg *Package) (models map[*types.Named]bool) {
 	models = make(map[*types.Named]bool)
 	for _, param := range m.JSInputs() {
-		maps.Copy(models, param.Models(pkg))
+		maps.Copy(models, param.Models(pkg, true))
 	}
 	for _, param := range m.JSOutputs() {
-		maps.Copy(models, param.Models(pkg))
+		maps.Copy(models, param.Models(pkg, true))
 	}
 	return
 }

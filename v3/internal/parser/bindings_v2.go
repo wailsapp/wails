@@ -250,7 +250,7 @@ func (s *Service) bindingLocalImportsOf(params []*Parameter, pkg *Package) map[s
 
 	for _, param := range params {
 		if param.Pkg() == s.Pkg() {
-			models := param.Models(pkg)
+			models := param.Models(pkg, false)
 			for model := range models {
 				if s, ok := model.Underlying().(*types.Struct); ok && model.Obj() == nil {
 					requiredTypes[pkg.anonymousStructID(s)] = true
