@@ -79,6 +79,8 @@ func JSType(t types.Type, pkg *Package) string {
 		}
 	case *types.Slice:
 		return JSType(x.Elem(), pkg) + "[]"
+	case *types.Array:
+		return JSType(x.Elem(), pkg) + "[]"
 	case *types.Named:
 		return pkg.namespaceOf(x.Obj()) + x.Obj().Name()
 	case *types.Map:
@@ -139,12 +141,14 @@ func (m *BoundMethod) Results() []*Parameter {
 func (m *BoundMethod) JSInputs() []*Parameter {
 	params := m.Params()
 
-	// TODO
-	// if len(params) > 0 {
-	// 	if firstArg := params[0]; firstArg.Type.Package.Path == "context" && firstArg.Type.Name == "Context" {
-	// 		return params[1:]
-	// 	}
-	// }
+	if len(params) > 0 {
+		if named, ok := params[0].Type().(*types.Named); ok && named.Obj() != nil {
+			if named.Obj().Name() == "Context" && named.Obj().Pkg().Name() == "context" {
+				return params[1:]
+			}
+		}
+	}
+
 	return params
 }
 
