@@ -48,7 +48,7 @@ export class {{$def.Name}} {
     constructor(source: Partial<{{$def.Name}}> = {}) {
     {{- range $def.Fields}}{{if not .Optional}}
         if (!("{{js .Name}}" in source)) {
-            this["{{js .Name}}"] = {{.DefaultValue}};
+            this["{{js .Name}}"] = {{.DefaultValue $pkg}};
         }
     {{- end}}{{end}}
 

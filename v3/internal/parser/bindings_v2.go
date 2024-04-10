@@ -46,9 +46,44 @@ func (p *Parameter) Optional() bool {
 	return false
 }
 
-func (p *Parameter) DefaultValue() string {
-	// TODO
+func DefaultValue(t types.Type, pkg *Package) string {
+	switch x := t.(type) {
+	case *types.Basic:
+		switch x.Kind() {
+		case types.String:
+			return "\"\""
+		case types.Int, types.Int8, types.Int16, types.Int32, types.Int64, types.Uint, types.Uint8, types.Uint16, types.Uint32, types.Uint64, types.Uintptr, types.Float32, types.Float64:
+			return "0"
+		case types.Bool:
+			return "false"
+		default:
+			return "null"
+		}
+	case *types.Slice, *types.Array:
+		return "[]"
+	case *types.Named:
+		switch y := x.Underlying().(type) {
+		case *types.Struct:
+			if x.Obj() != nil {
+				return "(new " + x.Obj().Name() + "())"
+			} else {
+				return "(new " + pkg.anonymousStructID(y) + "())"
+			}
+		case *types.Basic:
+			return DefaultValue(y, pkg)
+		}
+	case *types.Map:
+		return "{}"
+	case *types.Pointer:
+		return "null"
+	case *types.Struct:
+		return "(new " + pkg.anonymousStructID(x) + "())"
+	}
 	return "null"
+}
+
+func (p *Parameter) DefaultValue(pkg *Package) string {
+	return DefaultValue(p.Type(), pkg)
 }
 
 func (p *Parameter) Variadic() bool {
