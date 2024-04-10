@@ -24,7 +24,7 @@ func LoadPackages(buildFlags []string, full bool, patterns ...string) ([]*packag
 		rewrittenPatterns[i] = "pattern=" + pattern
 	}
 
-	loadMode := packages.NeedName | packages.NeedSyntax | packages.NeedTypes | packages.NeedCompiledGoFiles
+	loadMode := packages.NeedName | packages.NeedSyntax | packages.NeedTypes | packages.NeedCompiledGoFiles | packages.NeedImports
 	if full {
 		loadMode |= packages.NeedTypesInfo
 	}

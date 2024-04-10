@@ -30,22 +30,32 @@ type Package struct {
 	doc              *doc.Package
 }
 
-func WrapPackages(pkgs []*packages.Package, services []*Service) []*Package {
-	pkgMap := make(map[*types.Package]*Package)
+func BuildPackages(pkgs []*packages.Package, services []*Service) []*Package {
+	pkgMap := make(map[*types.Package]*packages.Package)
+	result := make(map[*types.Package]*Package)
 
 	for _, pkg := range pkgs {
-		pkgMap[pkg.Types] = &Package{
-			Package:          pkg,
-			services:         []*Service{},
-			anonymousStructs: make(map[string]string),
-			doc:              NewDoc(pkg),
+		pkgMap[pkg.Types] = pkg
+		for _, imported := range pkg.Imports {
+			pkgMap[imported.Types] = imported
 		}
 	}
 
 	for _, service := range services {
-		pkgMap[service.Pkg()].addService(service)
+		if pkg, ok := result[service.Pkg()]; ok {
+			pkg.addService(service)
+		} else if pkg, ok := pkgMap[service.Pkg()]; ok {
+			result[service.Pkg()] = &Package{
+				Package:          pkg,
+				services:         []*Service{service},
+				anonymousStructs: make(map[string]string),
+				doc:              NewDoc(pkg),
+			}
+		} else {
+			panic("package not found")
+		}
 	}
-	return lo.Values(pkgMap)
+	return lo.Values(result)
 }
 
 type Service struct {
@@ -102,7 +112,7 @@ func ParseProject(patterns []string, options *flags.GenerateBindingsOptions) (*P
 	}
 
 	return &Project{
-		pkgs: WrapPackages(pkgs, services),
+		pkgs: BuildPackages(pkgs, services),
 	}, nil
 }
 
