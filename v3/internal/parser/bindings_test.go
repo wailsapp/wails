@@ -1,5 +1,3 @@
-//go:build ignore
-
 package parser
 
 import (
@@ -814,27 +812,29 @@ func TestGenerateBindings(t *testing.T) {
 				t.Errorf("filepath.Abs() error = %v", err)
 				return
 			}
-			project, err := ParseProject(absDir)
+
+			options := &flags.GenerateBindingsOptions{
+				ModelsFilename:  "models",
+				UseNames:        !tt.useIDs,
+				TS:              tt.useTypescript,
+				OutputDirectory: "frontend/bindings",
+			}
+
+			project, err := ParseProject([]string{absDir}, options)
 			if err != nil {
 				t.Errorf("ParseProject() error = %v", err)
 				return
 			}
 
-			project.outputDirectory = "frontend/bindings"
-
 			// Generate Bindings
-			got, err := project.GenerateBindings(project.BoundMethods, &flags.GenerateBindingsOptions{
-				ModelsFilename: "models",
-				UseIDs:         tt.useIDs,
-				TS:             tt.useTypescript,
-			})
+			got, err := project.GenerateBindings(options)
 			if err != nil {
 				t.Fatalf("GenerateBindings() error = %v", err)
 			}
 
 			// check if bindings are missing
 			for dirName, structDetails := range tt.want {
-				for name, _ := range structDetails {
+				for name := range structDetails {
 					_, ok := got[dirName][name]
 					if !ok {
 						t.Errorf("GenerateBindings() missing binding = %v/%v", dirName, name)
@@ -872,13 +872,13 @@ func TestGenerateBindings(t *testing.T) {
 							outFileName += ".js"
 						}
 
-						originalFile := filepath.Join(tt.dir, project.outputDirectory, dirName, originalFilename)
+						originalFile := filepath.Join(tt.dir, options.OutputDirectory, dirName, originalFilename)
 						// Check if file exists
 						if _, err := os.Stat(originalFile); err != nil {
 							outFileName = originalFilename
 						}
 
-						outFile := filepath.Join(tt.dir, project.outputDirectory, dirName, outFileName)
+						outFile := filepath.Join(tt.dir, options.OutputDirectory, dirName, outFileName)
 						err = os.WriteFile(outFile, []byte(binding), 0644)
 						if err != nil {
 							t.Errorf("os.WriteFile() error = %v", err)

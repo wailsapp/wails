@@ -1,5 +1,3 @@
-//go:build ignore
-
 package parser
 
 import (
@@ -297,19 +295,27 @@ func TestGenerateModels(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Run parser on directory
-			project, err := ParseProject(tt.dir)
+			absDir, err := filepath.Abs(tt.dir)
 			if err != nil {
-				t.Fatalf("ParseProject() error = %v", err)
+				t.Errorf("filepath.Abs() error = %v", err)
+				return
 			}
 
-			project.outputDirectory = "frontend/bindings"
+			options := &flags.GenerateBindingsOptions{
+				TS:              tt.useTypescript,
+				UseInterfaces:   tt.useInterface,
+				ModelsFilename:  "models",
+				OutputDirectory: "frontend/bindings",
+			}
+
+			project, err := ParseProject([]string{absDir}, options)
+			if err != nil {
+				t.Errorf("ParseProject() error = %v", err)
+				return
+			}
 
 			// Generate Models
-			allModels, err := project.GenerateModels(project.Models, project.Types, &flags.GenerateBindingsOptions{
-				TS:             tt.useTypescript,
-				UseInterfaces:  tt.useInterface,
-				ModelsFilename: "models",
-			})
+			allModels, err := project.GenerateModels(options)
 			if err != nil {
 				t.Fatalf("GenerateModels() error = %v", err)
 			}
@@ -339,13 +345,13 @@ func TestGenerateModels(t *testing.T) {
 						outFileName += ".js"
 					}
 
-					originalFile := filepath.Join(tt.dir, project.outputDirectory, pkgDir, originalFilename)
+					originalFile := filepath.Join(tt.dir, options.OutputDirectory, pkgDir, originalFilename)
 					// Check if file exists
 					if _, err := os.Stat(originalFile); err != nil {
 						outFileName = originalFilename
 					}
 
-					outFile := filepath.Join(tt.dir, project.outputDirectory, pkgDir, outFileName)
+					outFile := filepath.Join(tt.dir, options.OutputDirectory, pkgDir, outFileName)
 					err = os.WriteFile(outFile, []byte(got), 0644)
 					if err != nil {
 						t.Errorf("os.WriteFile() error = %v", err)
