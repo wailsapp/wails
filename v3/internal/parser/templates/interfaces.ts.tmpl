@@ -8,36 +8,40 @@ import * as {{$name}} from "{{$path}}/{{$models}}";
 {{- end}}{{if .Imports}}
 {{end}}
 {{- range $enumindex, $enumdef := .Enums}}
-{{- if $enumdef.DocComment}}
+{{- $doc := .DocComment $pkg}} 
+{{- if $doc}}
 /**
- * {{jsdoc $enumdef.DocComment ""}}
+ * {{jsdoc $doc ""}}
  */
 {{- end}}
 export enum {{$enumdef.Name}} {
     {{- range $constindex, $constdef := .Consts}}
-    {{- if $constdef.DocComment}}{{if gt $constindex 0}}
+    {{- $doc := .DocComment $pkg $enumdef}} 
+    {{- if $doc}}{{if gt $constindex 0}}
 {{end}}
     /**
-     * {{jsdoc $constdef.DocComment "    "}}
+     * {{jsdoc $doc "    "}}
      */
     {{- end}}
     {{$constdef.Name}} = {{$constdef.Value}},{{end}}
 }
 {{end}}
-{{- range $name, $def := .Models}}
-{{- if $def.DocComment}}
+{{- range $name, $def := .Structs}}
+{{- $doc := .DocComment $pkg}} 
+{{- if $doc}}
 /**
- * {{jsdoc $def.DocComment ""}}
+ * {{jsdoc $doc ""}}
  */
 {{- end}}
 export interface {{$def.Name}} {
     {{- range $fieldindex, $fielddef := $def.Fields}}
-    {{- if .DocComment}}{{if gt $fieldindex 0}}
+    {{- $doc := .DocComment $pkg}} 
+    {{- if $doc}}{{if gt $fieldindex 0}}
 {{end}}
     /**
-     * {{jsdoc .DocComment "    "}}
+     * {{jsdoc $doc "    "}}
      */
     {{- end}}
-    "{{js .Name}}"{{if .Optional}}?{{end}}: {{.Type.JS $pkg .Quoted}};{{end}}
+    "{{js .Name}}"{{if .Optional}}?{{end}}: {{.JSType $pkg}};{{end}}
 }
 {{end -}}

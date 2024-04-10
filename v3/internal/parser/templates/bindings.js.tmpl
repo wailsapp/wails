@@ -4,9 +4,8 @@
 
 import {Call} from {{if .UseBundledRuntime}}"/wails/runtime.js"{{else}}"@wailsio/runtime"{{end}};
 {{$pkg := .Package}}
-{{- $struct := .Struct}}
 {{- $models := .ModelsFilename}}
-{{- $useIDs := .UseIDs}}
+{{- $useNames := .UseNames}}
 {{- range $name, $path := .Imports}}
 import * as {{$name}} from "{{$path}}/{{$models}}.js";
 {{- end}}{{if .Imports}}
@@ -21,34 +20,35 @@ import {
 {{end}}
 {{- range .Methods}}
 /**
-{{- if .DocComment}}
- * {{jsdoc .DocComment ""}}
+{{- $doc := .DocComment $pkg }}
+{{- if $doc}}
+ * {{jsdoc $doc ""}}
 {{- end}}
 {{- range $inputindex, $inputdef := .JSInputs}}
- * @param { {{- .Type.JS $pkg false -}} } {{.Name}}
+ * @param { {{- .JSType $pkg -}} } {{.Name}}
 {{- end}}
  * @returns {Promise<
     {{- $outputs := .JSOutputs}}
     {{- if eq 0 (len $outputs) -}}
         void
     {{- else if eq 1 (len $outputs)}}
-        {{- (index $outputs 0).Type.JS $pkg false}}
+        {{- (index $outputs 0).JSType $pkg}}
     {{- else -}}
         [{{range $outputindex, $outputdef := $outputs}}
             {{- if gt $outputindex 0}}, {{end}}
-            {{- .Type.JS $pkg false}}
+            {{- .JSType $pkg}}
         {{- end}}]
     {{- end}}>}
  */
 export function {{.Name}}({{range $inputindex, $inputdef := .JSInputs -}}
     {{- if gt $inputindex 0}}, {{end}}
-    {{- if .Type.IsVariadic}}...{{end}}
+    {{- if .Variadic}}...{{end}}
     {{- .Name}}
 {{- end}}) {
-    {{if $useIDs -}}
-        return Call.ByID({{.ID}}
+    {{if $useNames -}}
+        return Call.ByName("{{.FQN}}"
     {{- else -}}
-        return Call.ByName("{{$struct}}.{{.Name}}"
+        return Call.ByID({{.ID}}
     {{- end}}{{range .JSInputs}}, {{.Name}}{{end}});
 }
 {{end -}}
