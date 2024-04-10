@@ -72,7 +72,6 @@ func (a *VarAnalyzer) findModelsOfNamed(n *types.Named) {
 	case *types.Struct:
 		a.findModelsOfStruct(x)
 	}
-	return
 }
 
 func (a *VarAnalyzer) findModelsOfStruct(s *types.Struct) {
@@ -80,7 +79,6 @@ func (a *VarAnalyzer) findModelsOfStruct(s *types.Struct) {
 		field := s.Field(i)
 		a.findModels(field.Type())
 	}
-	return
 }
 
 func (m *BoundMethod) Models(pkg *Package) (models map[*types.Named]bool) {

@@ -35,6 +35,8 @@ func (p *Parameter) Name() (name string) {
 	name = p.Var.Name()
 	if name == "" || name == "_" {
 		return "$" + strconv.Itoa(p.index)
+	} else if slices.Contains(reservedWords, name) {
+		return "$" + name
 	}
 	return
 }
@@ -78,7 +80,6 @@ func JSType(t types.Type, pkg *Package) string {
 	case *types.Slice:
 		return JSType(x.Elem(), pkg) + "[]"
 	case *types.Named:
-		// TODO: add package name for non-local imports, add namespace method
 		return pkg.namespaceOf(x.Obj()) + x.Obj().Name()
 	case *types.Map:
 		return "{ [_: string]: " + JSType(x.Elem(), pkg) + " }"
