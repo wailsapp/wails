@@ -52,6 +52,7 @@ jobs:
   test_go:
     name: Run Go Tests
     runs-on: ${{ matrix.os }}
+    if: github.event.review.state == 'approved'
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
