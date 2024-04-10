@@ -63,38 +63,51 @@ func (p *Package) namespaceOf(t *types.TypeName) string {
 	return t.Pkg().Name() + "."
 }
 
-func JSType(t types.Type, pkg *Package) string {
+// JSTypes returns the corresponding javascript type to the given types.Type
+// The second return value indicates whether parentheses are needed
+func JSType(t types.Type, pkg *Package) (string, bool) {
 
 	switch x := t.(type) {
 	case *types.Basic:
 		switch x.Kind() {
 		case types.String:
-			return "string"
+			return "string", false
 		case types.Int, types.Int8, types.Int16, types.Int32, types.Int64, types.Uint, types.Uint8, types.Uint16, types.Uint32, types.Uint64, types.Uintptr, types.Float32, types.Float64:
-			return "number"
+			return "number", false
 		case types.Bool:
-			return "boolean"
+			return "boolean", false
 		default:
-			return "any"
+			return "any", false
 		}
 	case *types.Slice:
-		return JSType(x.Elem(), pkg) + "[]"
+		jstype, needsParentheses := JSType(x.Elem(), pkg)
+		if needsParentheses {
+			return "(" + jstype + ")[]", false
+		}
+		return jstype + "[]", false
 	case *types.Array:
-		return JSType(x.Elem(), pkg) + "[]"
+		jstype, needsParentheses := JSType(x.Elem(), pkg)
+		if needsParentheses {
+			return "(" + jstype + ")[]", false
+		}
+		return jstype + "[]", false
 	case *types.Named:
-		return pkg.namespaceOf(x.Obj()) + x.Obj().Name()
+		return pkg.namespaceOf(x.Obj()) + x.Obj().Name(), false
 	case *types.Map:
-		return "{ [_: string]: " + JSType(x.Elem(), pkg) + " }"
+		jstype, _ := JSType(x.Elem(), pkg)
+		return "{ [_: string]: " + jstype + " }", false
 	case *types.Pointer:
-		return "(" + JSType(x.Elem(), pkg) + " | null)"
+		jstype, _ := JSType(x.Elem(), pkg)
+		return jstype + " | null", true
 	case *types.Struct:
-		return pkg.anonymousStructID(x)
+		return pkg.anonymousStructID(x), false
 	}
-	return "any"
+	return "any", false
 }
 
 func (p *Parameter) JSType(pkg *Package) string {
-	return JSType(p.Type(), pkg)
+	jstype, _ := JSType(p.Type(), pkg)
+	return jstype
 }
 
 type BoundMethod struct {
