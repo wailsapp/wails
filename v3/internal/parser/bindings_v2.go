@@ -54,6 +54,13 @@ func (p *Parameter) Variadic() bool {
 	return s.Variadic() && p.index == s.Params().Len()-1
 }
 
+func (p *Package) namespaceOf(t *types.TypeName) string {
+	if p.Types == t.Pkg() {
+		return ""
+	}
+	return t.Pkg().Name() + "."
+}
+
 func JSType(t types.Type, pkg *Package) string {
 
 	switch x := t.(type) {
@@ -72,7 +79,7 @@ func JSType(t types.Type, pkg *Package) string {
 		return JSType(x.Elem(), pkg) + "[]"
 	case *types.Named:
 		// TODO: add package name for non-local imports, add namespace method
-		return x.Obj().Name()
+		return pkg.namespaceOf(x.Obj()) + x.Obj().Name()
 	case *types.Map:
 		return "{ [_: string]: " + JSType(x.Elem(), pkg) + " }"
 	case *types.Pointer:
@@ -141,8 +148,6 @@ func (m *BoundMethod) JSInputs() []*Parameter {
 }
 
 func (m *BoundMethod) JSOutputs() (outputs []*Parameter) {
-
-	// TODO
 	for _, output := range m.Results() {
 		if types.TypeString(output.Var.Type(), nil) == "error" {
 			continue
@@ -203,7 +208,7 @@ func (p *Package) GenerateBindings(options *flags.GenerateBindingsOptions) (resu
 		var buffer bytes.Buffer
 		err = generateBinding(&buffer, &BindingDefinitions{
 			Package:      p,
-			Imports:      service.calculateBindingImports(),
+			Imports:      service.calculateBindingImports(p),
 			LocalImports: service.calculateBindingLocalImports(p),
 
 			Methods: methods,
@@ -222,24 +227,27 @@ func (p *Package) GenerateBindings(options *flags.GenerateBindingsOptions) (resu
 	return
 }
 
-func (s *Service) bindingImportsOf(params []*Parameter) map[string]string {
+func (s *Service) bindingImportsOf(params []*Parameter, pkg *Package) map[string]string {
 	result := make(map[string]string)
 
 	for _, param := range params {
-		if param.Pkg() != s.Pkg() {
-			// Find the relative path from the source package to the target package
-			result[param.Pkg().Name()] = RelativeBindingsDir(s.Pkg(), param.Pkg())
+		models := param.Models(pkg, false)
+		for model := range models {
+			if model.Obj() != nil && model.Obj().Pkg() != s.Pkg() {
+				otherPkg := model.Obj().Pkg()
+				result[otherPkg.Name()] = RelativeBindingsDir(s.Pkg(), otherPkg)
+			}
 		}
 	}
 	return result
 }
 
-func (s *Service) calculateBindingImports() map[string]string {
+func (s *Service) calculateBindingImports(pkg *Package) map[string]string {
 	result := make(map[string]string)
 
 	for _, method := range s.Methods() {
-		maps.Copy(result, s.bindingImportsOf(method.JSInputs()))
-		maps.Copy(result, s.bindingImportsOf(method.JSOutputs()))
+		maps.Copy(result, s.bindingImportsOf(method.JSInputs(), pkg))
+		maps.Copy(result, s.bindingImportsOf(method.JSOutputs(), pkg))
 	}
 
 	return result
@@ -249,14 +257,12 @@ func (s *Service) bindingLocalImportsOf(params []*Parameter, pkg *Package) map[s
 	requiredTypes := make(map[string]bool)
 
 	for _, param := range params {
-		if param.Pkg() == s.Pkg() {
-			models := param.Models(pkg, false)
-			for model := range models {
-				if s, ok := model.Underlying().(*types.Struct); ok && model.Obj() == nil {
-					requiredTypes[pkg.anonymousStructID(s)] = true
-				} else {
-					requiredTypes[model.Obj().Name()] = true
-				}
+		models := param.Models(pkg, false)
+		for model := range models {
+			if structType, ok := model.Underlying().(*types.Struct); ok && model.Obj() == nil {
+				requiredTypes[pkg.anonymousStructID(structType)] = true
+			} else if model.Obj().Pkg() == s.Pkg() {
+				requiredTypes[model.Obj().Name()] = true
 			}
 		}
 	}
