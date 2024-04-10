@@ -10,6 +10,13 @@ import (
 	"github.com/wailsapp/wails/v3/internal/parser/templates"
 )
 
+type VarAnalyzer struct {
+	pkg           *Package
+	parameter     *Parameter
+	models        map[*types.Named]bool
+	includeFields bool
+}
+
 func (p *Parameter) Models(pkg *Package, includeFields bool) (models map[*types.Named]bool) {
 	analyzer := &VarAnalyzer{
 		pkg:           pkg,
@@ -17,13 +24,6 @@ func (p *Parameter) Models(pkg *Package, includeFields bool) (models map[*types.
 		includeFields: includeFields,
 	}
 	return analyzer.FindModels()
-}
-
-type VarAnalyzer struct {
-	pkg           *Package
-	parameter     *Parameter
-	models        map[*types.Named]bool
-	includeFields bool
 }
 
 func (a *VarAnalyzer) FindModels() (models map[*types.Named]bool) {
@@ -98,10 +98,6 @@ func (s *Service) Models(pkg *Package) (models map[*types.Named]bool) {
 		maps.Copy(models, method.Models(pkg))
 	}
 	return
-}
-
-func (p *Package) addService(s *Service) {
-	p.services = append(p.services, s)
 }
 
 func (p *Package) Models() (models map[*types.Named]bool) {
