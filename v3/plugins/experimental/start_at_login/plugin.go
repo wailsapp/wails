@@ -1,6 +1,9 @@
 package start_at_login
 
-import "github.com/wailsapp/wails/v3/pkg/application"
+import (
+	"github.com/wailsapp/wails/v3/pkg/application"
+	"io/fs"
+)
 
 type Plugin struct {
 	disabled bool
@@ -45,6 +48,6 @@ func (p *Plugin) CallableByJS() []string {
 	}
 }
 
-func (p *Plugin) InjectJS() string {
-	return ""
+func (p *Plugin) Assets() fs.FS {
+	return nil
 }

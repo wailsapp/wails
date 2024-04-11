@@ -2,6 +2,7 @@ package single_instance
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -24,8 +25,8 @@ func (p *Plugin) CallableByJS() []string {
 	return []string{}
 }
 
-func (p *Plugin) InjectJS() string {
-	return ""
+func (p *Plugin) Assets() fs.FS {
+	return nil
 }
 
 func NewPlugin(config *Config) *Plugin {
