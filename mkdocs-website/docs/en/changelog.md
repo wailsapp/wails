@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support multiple space-separated trigger events in the WML system by [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
 - Add ESM exports from the bundled JS runtime script by [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
 - Add binding generator flag for using the bundled JS runtime script instead of the npm package by [@fbbdev](https://github.com/fbbdev) in [#3334](https://github.com/wailsapp/wails/pull/3334)
+- Implement `setIcon` on linux by [@abichinger](https://github.com/abichinger) in [#3354](https://github.com/wailsapp/wails/pull/3354)
 
 ### Fixed
 
