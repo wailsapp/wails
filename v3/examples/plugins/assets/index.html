@@ -7,23 +7,26 @@
     <script type="module" src="/wails/runtime.js"></script>
     <script type="module">
         import * as sqlite from '/wails/plugin/sqlite/sqlite.js';
-        let dbOpen = false;
-        function toggleDB(event) {
-            if (dbOpen) {
-                sqlite.Close();
-                dbOpen = false;
-                event.target.innerText = "Open DB";
-            } else {
-                sqlite.Open("test.db");
-                dbOpen = true;
-                event.target.innerText = "Close DB";
-            }
-        }
         function runSelect() {
-            let query = document.getElementById("selectquery").value;
-            sqlite.Select(query).then((result) => {
+            let query = document.getElementById("query").value;
+            // If it starts with "select ", run `sqlite.Select` otherwise run `sqlite.Exec`
+            let method = sqlite.Execute;
+            let isSelect = false;
+            if (query.toLowerCase().startsWith("select ")) {
+                method = sqlite.Select;
+                isSelect = true;
+            }
+            method(query).then((result) => {
                 let results = document.getElementById("sqlresults");
                 results.innerHTML = "";
+                if(!isSelect) {
+                    let message = "Query executed successfully";
+                    if (result.length > 0) {
+                        message += " - " + result;
+                    }
+                    results.innerHTML = message;
+                    return;
+                }
                 if (result.length === 0) {
                     results.innerHTML = "No results";
                     return;
@@ -51,8 +54,7 @@
                 document.getElementById("sqlresults").innerHTML = "<p class='error-message'>"+err+"</p>";
             });
         }
-        document.getElementById("openclose").addEventListener('click', toggleDB);
-        document.getElementById("runselect").addEventListener('click', runSelect);
+        document.getElementById("runquery").addEventListener('click', runSelect);
     </script>
     <script>
         window.onload = function() {
@@ -90,11 +92,12 @@
 
     <div id="sqlite" class="tabcontent">
         <p>The sqlite plugin provides easy integration with sqlite dbs.</p>
+        <p>The demo DB has a single table: Users.</p>
+        <p>Enter a query below and hit the "Run" button.</p>
         <div>
-            <p id="openclose" class="button-42">Open DB</p>
-            <div style="border: 1px solid #888">
-                <input type="text" id="selectquery" value="select * from Users where age > 20"><br/>
-                <p id="runselect" class="button-42">Select</p>
+            <div style="display: flex;justify-content: space-around;">
+                <input style="width:90%" type="text" id="query" value="select * from Users where age > 20"><br/>
+                <button type="button" id="runquery">Run</button>
             </div>
             <div id="sqlresults">
             </div>
