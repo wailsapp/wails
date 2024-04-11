@@ -1,0 +1,28 @@
+---
+sidebar_position: 8
+---
+
+# Clipboard
+
+This part of the runtime provides access to the operating system's clipboard.<br/> 
+The current implementation only handles text.
+
+### ClipboardGetText
+
+This method reads the currently stored text from the clipboard.
+
+Go: `ClipboardGetText(ctx context.Context) (string, error)`<br/>
+Returns: a string (if the clipboard is empty an empty string will be returned) or an error.
+
+JS: `ClipboardGetText(): Promise<string>`<br/>
+Returns: a promise with a string result (if the clipboard is empty an empty string will be returned).
+
+### ClipboardSetText
+
+This method writes a text to the clipboard.
+
+Go: `ClipboardSetText(ctx context.Context, text string) error`<br/>
+Returns: an error if there is any.
+
+JS: `ClipboardSetText(text: string): Promise<boolean>`<br/>
+Returns: a promise with true result if the text was successfully set on the clipboard, false otherwise.
