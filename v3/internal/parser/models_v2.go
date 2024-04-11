@@ -5,6 +5,7 @@ import (
 	"go/types"
 	"io"
 	"maps"
+	"path/filepath"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/parser/templates"
@@ -222,12 +223,8 @@ func (p *Project) GenerateModels(options *flags.GenerateBindingsOptions) (result
 			return
 		}
 
-		// Get the relative package path
-		// TODO: get path of main package
-		//relativePackageDir := RelativePackageDir(p.)
-		// result[relativePackageDir] = buffer.String()
-
-		result[pkg.Name] = buffer.String()
+		relativePackageDir := filepath.Join("main", RelativeBindingsDir(p.main.Types, pkg.Types))
+		result[relativePackageDir] = buffer.String()
 	}
 
 	return

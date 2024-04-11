@@ -5,6 +5,7 @@ import (
 	"go/types"
 	"io"
 	"maps"
+	"path/filepath"
 	"slices"
 
 	"github.com/samber/lo"
@@ -43,20 +44,20 @@ func (p *Project) GenerateBindings(options *flags.GenerateBindingsOptions) (resu
 	result = make(map[string]map[string]string)
 
 	for _, pkg := range p.pkgs {
-		bindings, err := pkg.GenerateBindings(options)
+		bindings, err := pkg.GenerateBindings(p, options)
 		if err != nil {
 			return nil, err
 		}
-		result[pkg.Name] = bindings
+		relativePackageDir := filepath.Join("main", RelativeBindingsDir(p.main.Types, pkg.Types))
+		result[relativePackageDir] = bindings
 	}
 	return
 }
 
-func (p *Package) GenerateBindings(options *flags.GenerateBindingsOptions) (result map[string]string, err error) {
+func (p *Package) GenerateBindings(project *Project, options *flags.GenerateBindingsOptions) (result map[string]string, err error) {
 	result = make(map[string]string)
 
 	for _, service := range p.services {
-		structName := service.Name()
 		methods := service.Methods()
 
 		var buffer bytes.Buffer
@@ -76,7 +77,7 @@ func (p *Package) GenerateBindings(options *flags.GenerateBindingsOptions) (resu
 			return
 		}
 
-		result[structName] = buffer.String()
+		result[service.Name()] = buffer.String()
 	}
 	return
 }

@@ -256,7 +256,7 @@ func BuildPackages(buildFlags []string, pkgs []*packages.Package, services []*Se
 				Package:          pPkg,
 				services:         []*Service{service},
 				anonymousStructs: make(map[string]string),
-				doc: NewDoc(pPkg),
+				doc:              NewDoc(pPkg),
 			}
 		}
 	}
@@ -315,6 +315,7 @@ type Stats struct {
 
 type Project struct {
 	pkgs  []*Package
+	main  *Package
 	Stats Stats
 }
 
@@ -324,20 +325,31 @@ func ParseProject(patterns []string, options *flags.GenerateBindingsOptions) (*P
 		return nil, err
 	}
 
-	pkgs, err := LoadPackages(buildFlags, true,
+	pPkgs, err := LoadPackages(buildFlags, true,
 		append(patterns, WailsAppPkgPath)...,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	services, err := Services(pkgs)
+	services, err := Services(pPkgs)
 	if err != nil {
 		return nil, err
 	}
 
+	pkgs, err := BuildPackages(buildFlags, pPkgs, services)
+	if err != nil {
+		return nil, err
+	}
+
+	mainIndex := slices.IndexFunc(pkgs, func(pkg *Package) bool { return pkg.Name == "main" })
+	if mainIndex == -1 {
+		return nil, errors.New("application.App must be inside main package")
+	}
+
 	return &Project{
-		pkgs: BuildPackages(pkgs, services),
+		pkgs: pkgs,
+		main: pkgs[mainIndex],
 	}, nil
 }
 

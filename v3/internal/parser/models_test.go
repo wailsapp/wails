@@ -320,6 +320,13 @@ func TestGenerateModels(t *testing.T) {
 				t.Fatalf("GenerateModels() error = %v", err)
 			}
 
+			// Ceck if models are missing
+			for pkgDir := range tt.want {
+				if _, ok := allModels[pkgDir]; !ok {
+					t.Errorf("GenerateModels() missing model = %v", pkgDir)
+				}
+			}
+
 			for pkgDir, got := range allModels {
 				want, ok := tt.want[pkgDir]
 				if !ok {
