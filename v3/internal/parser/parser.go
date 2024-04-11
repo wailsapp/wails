@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"go/ast"
-	"go/doc"
 	"go/types"
 	"path/filepath"
 	"slices"
@@ -227,7 +226,7 @@ type Package struct {
 	*packages.Package
 	services         []*Service
 	anonymousStructs map[string]string
-	doc              *doc.Package
+	doc              *Doc
 }
 
 func BuildPackages(buildFlags []string, pkgs []*packages.Package, services []*Service) ([]*Package, error) {
@@ -330,6 +329,9 @@ func ParseProject(patterns []string, options *flags.GenerateBindingsOptions) (*P
 	)
 	if err != nil {
 		return nil, err
+	}
+	if n := packages.PrintErrors(pPkgs); n > 0 {
+		return nil, errors.New("error while loading packages")
 	}
 
 	services, err := Services(pPkgs)

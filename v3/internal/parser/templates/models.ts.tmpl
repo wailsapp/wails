@@ -35,7 +35,7 @@ export enum {{$enumdef.Name}} {
 {{- end}}
 export class {{$def.Name}} {
     {{- range $fieldindex, $fielddef := $def.Fields}}
-    {{- $doc := .DocComment $pkg}} 
+    {{- $doc := .DocComment $pkg $def}} 
     {{- if $doc}}{{if gt $fieldindex 0}}
 {{end}}
     /**

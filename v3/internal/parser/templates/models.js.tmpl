@@ -52,7 +52,7 @@ export class {{$def.Name}} {
         */}}
         if ({{if .Optional}}/** @type {any} */(false){{else}}!("{{js .Name}}" in source){{end}}) {
             /**
-            {{- $doc := .DocComment $pkg}}
+            {{- $doc := .DocComment $pkg $def}}
             {{- if $doc}}
              * {{jsdoc $doc "            "}}
             {{- end}}
