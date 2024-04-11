@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"io"
+	"io/fs"
 	"os"
 	"sync"
 )
@@ -70,8 +71,8 @@ func (kvs *KeyValueStore) CallableByJS() []string {
 	}
 }
 
-func (p *Plugin) InjectJS() string {
-	return ""
+func (kvs *KeyValueStore) Assets() fs.FS {
+	return nil
 }
 
 // ---------------- Plugin Methods ----------------

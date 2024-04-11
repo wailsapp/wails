@@ -3,6 +3,7 @@ package log
 import (
 	_ "embed"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"io/fs"
 	"log/slog"
 )
 
@@ -72,8 +73,8 @@ func (p *Plugin) CallableByJS() []string {
 	}
 }
 
-func (p *Plugin) InjectJS() string {
-	return pluginJS
+func (p *Plugin) Assets() fs.FS {
+	return nil
 }
 
 // ---------------- Plugin Methods ----------------

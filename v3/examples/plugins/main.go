@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"log/slog"
 	"os"
 	"plugin_demo/plugins/hashes"
 
@@ -24,6 +25,7 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		LogLevel: slog.LevelDebug,
 		Plugins: map[string]application.Plugin{
 			"hashes": hashes.NewPlugin(),
 			"log":    log.NewPlugin(),
@@ -50,8 +52,8 @@ func main() {
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		DevToolsEnabled:        true,
-		OpenInspectorOnStartup: true,
+		Width:  1024,
+		Height: 768,
 	})
 
 	err := app.Run()
