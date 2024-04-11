@@ -2,6 +2,7 @@ package parser
 
 import (
 	"cmp"
+	"errors"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -24,7 +25,7 @@ func LoadPackages(buildFlags []string, full bool, patterns ...string) ([]*packag
 		rewrittenPatterns[i] = "pattern=" + pattern
 	}
 
-	loadMode := packages.NeedName | packages.NeedSyntax | packages.NeedTypes | packages.NeedCompiledGoFiles | packages.NeedImports
+	loadMode := packages.NeedName | packages.NeedSyntax | packages.NeedTypes | packages.NeedCompiledGoFiles
 	if full {
 		loadMode |= packages.NeedTypesInfo
 	}
@@ -49,4 +50,15 @@ func LoadPackages(buildFlags []string, full bool, patterns ...string) ([]*packag
 	}
 
 	return pkgs, err
+}
+
+func LoadPackage(buildFlags []string, full bool, pattern string) (*packages.Package, error) {
+	pkgs, err := LoadPackages(buildFlags, full, pattern)
+	if err != nil {
+		return nil, err
+	}
+	if len(pkgs) <= 0 {
+		return nil, errors.New("package not found: " + pattern)
+	}
+	return pkgs[0], nil
 }

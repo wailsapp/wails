@@ -86,7 +86,7 @@ func (p *Parameter) Variadic() bool {
 }
 
 func (p *Package) namespaceOf(t *types.TypeName) string {
-	if p.Types == t.Pkg() {
+	if p.Types.String() == t.Pkg().String() {
 		return ""
 	}
 	return t.Pkg().Name() + "."
@@ -230,35 +230,37 @@ type Package struct {
 	doc              *doc.Package
 }
 
-func BuildPackages(pkgs []*packages.Package, services []*Service) []*Package {
-	pkgMap := make(map[*types.Package]*packages.Package)
+func BuildPackages(buildFlags []string, pkgs []*packages.Package, services []*Service) ([]*Package, error) {
+	pPkgMap := make(map[*types.Package]*packages.Package)
 	result := make(map[*types.Package]*Package)
 
 	for _, pkg := range pkgs {
-		pkgMap[pkg.Types] = pkg
-		for _, imported := range pkg.Imports {
-			pkgMap[imported.Types] = imported
-		}
+		pPkgMap[pkg.Types] = pkg
 	}
 
 	for _, service := range services {
 		if pkg, ok := result[service.Pkg()]; ok {
 			pkg.addService(service)
-		} else if pkg, ok := pkgMap[service.Pkg()]; ok {
+		} else {
+			pPkg, ok := pPkgMap[service.Pkg()]
+			if !ok {
+				var err error
+				pPkg, err = LoadPackage(buildFlags, true, service.Pkg().Path())
+				if err != nil {
+					return nil, err
+				}
+				pPkgMap[service.Pkg()] = pPkg
+			}
+
 			result[service.Pkg()] = &Package{
-				Package:          pkg,
+				Package:          pPkg,
 				services:         []*Service{service},
 				anonymousStructs: make(map[string]string),
-				// FIX ME: documentation of imported packages is empty
-				// one option would be to set LoadMode.NeedDeps, but that's a big performance hit
-				// maybe it is faster to load the needed packages manually
-				doc: NewDoc(pkg),
+				doc: NewDoc(pPkg),
 			}
-		} else {
-			panic("package not found")
 		}
 	}
-	return lo.Values(result)
+	return lo.Values(result), nil
 }
 
 func (p *Package) addService(s *Service) {
