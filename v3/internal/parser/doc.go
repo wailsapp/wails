@@ -89,7 +89,7 @@ func (c *ConstDef) DocComment(pkg *Package, enum *EnumDef) string {
 	return ""
 }
 
-func (p *Parameter) DocComment(pkg *Package, structDef *StructDef) string {
+func (f *Field) DocComment(pkg *Package, structDef *StructDef) string {
 	structType, ok := pkg.doc.Types[structDef.Name]
 	if !ok {
 		return ""
@@ -97,17 +97,17 @@ func (p *Parameter) DocComment(pkg *Package, structDef *StructDef) string {
 	for _, spec := range structType.Decl.Specs {
 		if spec, ok := spec.(*ast.TypeSpec); ok {
 			if t, ok := spec.Type.(*ast.StructType); ok {
-				return p.docComment(t)
+				return f.docComment(t)
 			}
 		}
 	}
 	return ""
 }
 
-func (p *Parameter) docComment(structType *ast.StructType) string {
+func (f *Field) docComment(structType *ast.StructType) string {
 	for _, field := range structType.Fields.List {
 		for _, ident := range field.Names {
-			if ident.Name == p.Name() {
+			if ident.Name == f.Name() {
 				return strings.TrimSpace(field.Doc.Text())
 			}
 		}

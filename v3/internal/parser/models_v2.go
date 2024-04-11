@@ -6,14 +6,19 @@ import (
 	"io"
 	"maps"
 	"path/filepath"
+	"reflect"
+	"slices"
+	"strconv"
+	"strings"
 
+	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/parser/templates"
 )
 
 type VarAnalyzer struct {
 	pkg           *Package
-	parameter     *Parameter
+	Var           *types.Var
 	models        map[*types.Named]bool
 	includeFields bool
 }
@@ -21,15 +26,24 @@ type VarAnalyzer struct {
 func (p *Parameter) Models(pkg *Package, includeFields bool) (models map[*types.Named]bool) {
 	analyzer := &VarAnalyzer{
 		pkg:           pkg,
-		parameter:     p,
+		Var:           p.Var,
 		includeFields: includeFields,
+	}
+	return analyzer.FindModels()
+}
+
+func (f *Field) Models(pkg *Package) (models map[*types.Named]bool) {
+	analyzer := &VarAnalyzer{
+		pkg:           pkg,
+		Var:           f.Var,
+		includeFields: false,
 	}
 	return analyzer.FindModels()
 }
 
 func (a *VarAnalyzer) FindModels() (models map[*types.Named]bool) {
 	a.models = make(map[*types.Named]bool)
-	a.findModels(a.parameter.Type())
+	a.findModels(a.Var.Type())
 	return a.models
 }
 
@@ -110,14 +124,106 @@ func (p *Package) Models() (models map[*types.Named]bool) {
 	return
 }
 
+func (p *Project) Models() (models map[*types.Named]bool) {
+	models = make(map[*types.Named]bool)
+
+	for _, pkg := range p.pkgs {
+		maps.Copy(models, pkg.Models())
+	}
+	return
+}
+
+type JsonTag struct {
+	name     string
+	optional bool
+	quoted   bool
+	visible  bool
+}
+
+func parseTag(tag string) *JsonTag {
+	tag = reflect.StructTag(tag).Get("json")
+	if tag == "-" {
+		return &JsonTag{
+			"", false, false, false,
+		}
+	}
+
+	parts := strings.Split(tag, ",")
+	jsonTag := &JsonTag{
+		name:    parts[0],
+		visible: true,
+	}
+
+	for _, option := range parts[1:] {
+		switch option {
+		case "omitempty":
+			jsonTag.optional = true
+		case "string":
+			jsonTag.quoted = true
+		}
+	}
+
+	return jsonTag
+}
+
+type Field struct {
+	*types.Var
+	index   int
+	jsonTag *JsonTag
+}
+
+func (f *Field) Name() string {
+	var name string
+	if len(f.jsonTag.name) > 0 {
+		name = f.jsonTag.name
+	} else {
+		name = f.Var.Name()
+	}
+
+	if name == "" || name == "_" {
+		return "$" + strconv.Itoa(f.index)
+	} else if slices.Contains(reservedWords, name) {
+		return "$" + name
+	}
+	return name
+}
+
+func (f *Field) JSType(pkg *Package) string {
+	jstype, _ := JSType(f.Type(), pkg)
+	return jstype
+}
+
+func (f *Field) DefaultValue(pkg *Package) string {
+	return DefaultValue(f.Type(), pkg)
+}
+
+func (f *Field) Exported() bool {
+	return f.Var.Exported() && f.jsonTag.visible
+}
+
+func (f *Field) Optional() bool {
+	return f.jsonTag.optional
+}
+
+func (f *Field) Quoted() bool {
+	return f.jsonTag.quoted
+}
+
 type StructDef struct {
 	*types.Struct
 	Name string
 }
 
-func (s *StructDef) Fields() (fields []*Parameter) {
+func (s *StructDef) Fields() (fields []*Field) {
 	for i := 0; i < s.NumFields(); i++ {
-		fields = append(fields, &Parameter{index: i, Var: s.Field(i)})
+		field := &Field{
+			Var:     s.Field(i),
+			index:   i,
+			jsonTag: parseTag(s.Tag(i)),
+		}
+		if field.Exported() {
+			fields = append(fields, field)
+		}
 	}
 	return
 }
@@ -174,15 +280,28 @@ func (p *Project) generateModel(wr io.Writer, def *ModelDefinitions, options *fl
 func (p *Project) GenerateModels(options *flags.GenerateBindingsOptions) (result map[string]string, err error) {
 	result = make(map[string]string)
 
+	allModels := lo.Keys(p.Models())
+
+	// split models into packages
+	pkgModels := make(map[string][]*types.Named)
+	for _, model := range allModels {
+		pkgName := model.Obj().Pkg().String()
+		if models, ok := pkgModels[pkgName]; ok {
+			pkgModels[pkgName] = append(models, model)
+		} else {
+			pkgModels[pkgName] = []*types.Named{model}
+		}
+	}
+
 	for _, pkg := range p.pkgs {
 
-		models := pkg.Models()
+		models := pkgModels[pkg.Types.String()]
 
 		// split models into structs and enums
 		structDefs := make(map[string]*StructDef)
 		enumDefs := make(map[string]*EnumDef)
 
-		for model := range models {
+		for _, model := range models {
 			modelName := model.Obj().Name()
 
 			switch t := model.Underlying().(type) {
@@ -232,13 +351,19 @@ func (p *Project) GenerateModels(options *flags.GenerateBindingsOptions) (result
 
 func (p *Package) calculateModelImports(m map[string]*StructDef) map[string]string {
 	result := make(map[string]string)
+	pkg := p.Types
 
 	for _, structDef := range m {
-		for i := 0; i < structDef.NumFields(); i++ {
-			field := structDef.Field(i)
-			if field.Pkg() != p.Types {
-				// Find the relative path from the source directory to the target directory
-				result[field.Pkg().Name()] = RelativeBindingsDir(p.Types, field.Pkg())
+		for _, field := range structDef.Fields() {
+			models := field.Models(p)
+			if len(models) > 1 {
+				panic("expected at most one model")
+			}
+			for model := range models {
+				otherPkg := model.Obj().Pkg()
+				if otherPkg.String() != pkg.String() {
+					result[otherPkg.Name()] = RelativeBindingsDir(pkg, otherPkg)
+				}
 			}
 		}
 	}

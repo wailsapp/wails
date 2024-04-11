@@ -26,17 +26,13 @@ type Parameter struct {
 
 func (p *Parameter) Name() (name string) {
 	name = p.Var.Name()
+
 	if name == "" || name == "_" {
 		return "$" + strconv.Itoa(p.index)
 	} else if slices.Contains(reservedWords, name) {
 		return "$" + name
 	}
-	return
-}
-
-func (p *Parameter) Optional() bool {
-	// TODO
-	return false
+	return name
 }
 
 func DefaultValue(t types.Type, pkg *Package) string {
@@ -73,10 +69,6 @@ func DefaultValue(t types.Type, pkg *Package) string {
 		return "(new " + pkg.anonymousStructID(x) + "())"
 	}
 	return "null"
-}
-
-func (p *Parameter) DefaultValue(pkg *Package) string {
-	return DefaultValue(p.Type(), pkg)
 }
 
 func (p *Parameter) Variadic() bool {
@@ -152,7 +144,11 @@ func (m *BoundMethod) embedTuple(tuple *types.Tuple) (result []*Parameter) {
 	}
 
 	for i := 0; i < tuple.Len(); i++ {
-		result = append(result, &Parameter{tuple.At(i), i, m})
+		result = append(result, &Parameter{
+			Var:    tuple.At(i),
+			index:  i,
+			Parent: m,
+		})
 	}
 	return
 }
