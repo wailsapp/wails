@@ -900,13 +900,14 @@ func TestGenerateBindings(t *testing.T) {
 			}
 
 			options := &flags.GenerateBindingsOptions{
-				ModelsFilename:  "models",
-				UseNames:        !tt.useIDs,
-				TS:              tt.useTypescript,
-				OutputDirectory: "frontend/bindings",
+				ModelsFilename:   "models",
+				UseNames:         !tt.useIDs,
+				TS:               tt.useTypescript,
+				OutputDirectory:  "frontend/bindings",
+				ProjectDirectory: absDir,
 			}
 
-			project, err := ParseProject([]string{absDir}, options)
+			project, err := ParseProject(options)
 			if err != nil {
 				t.Errorf("ParseProject() error = %v", err)
 				return

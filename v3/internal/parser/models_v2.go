@@ -345,6 +345,9 @@ func (p *Project) GenerateModels() (result map[string]string, err error) {
 			}
 		}
 
+		p.Stats.NumModels = len(structDefs)
+		p.Stats.NumEnums = len(enumDefs)
+
 		// generate model
 		var buffer bytes.Buffer
 		err = p.generateModel(&buffer, &ModelDefinitions{

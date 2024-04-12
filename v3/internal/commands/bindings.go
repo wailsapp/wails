@@ -3,10 +3,11 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
+
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/parser"
-	"path/filepath"
 )
 
 func GenerateBindings(options *flags.GenerateBindingsOptions) error {
@@ -18,8 +19,8 @@ func GenerateBindings(options *flags.GenerateBindingsOptions) error {
 
 	project, err := parser.GenerateBindingsAndModels(options)
 	if err != nil {
-		if errors.Is(err, parser.ErrNoBindingsFound) {
-			pterm.Info.Println("No bindings found")
+		if errors.Is(err, parser.ErrBadApplicationOptions) {
+			pterm.Warning.Println(err.Error())
 			return nil
 		} else {
 			return err

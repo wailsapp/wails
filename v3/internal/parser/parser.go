@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/types"
+	"os"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -332,14 +333,14 @@ type Project struct {
 	Stats   Stats
 }
 
-func ParseProject(patterns []string, options *flags.GenerateBindingsOptions) (*Project, error) {
+func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 	buildFlags, err := options.BuildFlags()
 	if err != nil {
 		return nil, err
 	}
 
 	pPkgs, err := LoadPackages(buildFlags, true,
-		append(patterns, WailsAppPkgPath)...,
+		options.ProjectDirectory, WailsAppPkgPath,
 	)
 	if err != nil {
 		return nil, err
@@ -368,6 +369,77 @@ func ParseProject(patterns []string, options *flags.GenerateBindingsOptions) (*P
 		main:    pPkgs[mainIndex],
 		options: options,
 	}, nil
+}
+
+func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project, error) {
+	p, err := ParseProject(options)
+	if err != nil {
+		return p, err
+	}
+
+	if NumMethods := len(p.BoundMethods()); NumMethods == 0 {
+		return p, nil
+	} else {
+		p.Stats.NumMethods += NumMethods
+	}
+
+	err = os.MkdirAll(options.OutputDirectory, 0755)
+	if err != nil {
+		return p, err
+	}
+
+	generatedMethods, err := p.GenerateBindings()
+	if err != nil {
+		return p, err
+	}
+	for pkgDir, structs := range generatedMethods {
+		// Write the directory
+		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkgDir), 0755)
+		if err != nil && !os.IsExist(err) {
+			return p, err
+		}
+		// Write the files
+		for structName, text := range structs {
+			p.Stats.NumStructs++
+			var filename string
+			if options.TS {
+				filename = structName + ".ts"
+			} else {
+				filename = structName + ".js"
+			}
+			err = os.WriteFile(filepath.Join(options.OutputDirectory, pkgDir, filename), []byte(text), 0644)
+			if err != nil {
+				return p, err
+			}
+		}
+	}
+
+	generatedModels, err := p.GenerateModels()
+	if err != nil {
+		return p, err
+	}
+	for pkgDir, text := range generatedModels {
+		// Write the directory
+		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkgDir), 0755)
+		if err != nil && !os.IsExist(err) {
+			return p, err
+		}
+		// Write the file
+		var filename string
+		if options.TS {
+			filename = options.ModelsFilename + ".ts"
+		} else {
+			filename = options.ModelsFilename + ".js"
+		}
+		err = os.WriteFile(filepath.Join(options.OutputDirectory, pkgDir, filename), []byte(text), 0644)
+	}
+	if err != nil {
+		return p, err
+	}
+
+	p.Stats.EndTime = time.Now()
+
+	return p, nil
 }
 
 func Services(pkgs []*packages.Package) (services []*Service, err error) {
@@ -427,6 +499,17 @@ func (p *Project) RelativePackageDir(base *types.Package, target *types.Package)
 	}
 
 	return filepath.ToSlash(relativePath)
+}
+
+func (p *Project) BoundMethods() []*BoundMethod {
+	methods := []*BoundMethod{}
+
+	for _, pkg := range p.pkgs {
+		for _, service := range pkg.services {
+			methods = append(methods, service.Methods...)
+		}
+	}
+	return methods
 }
 
 var reservedWords = []string{

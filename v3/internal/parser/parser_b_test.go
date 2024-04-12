@@ -21,16 +21,15 @@ func BenchmarkParser(b *testing.B) {
 	for _, bench := range benchmarks {
 
 		options := &flags.GenerateBindingsOptions{
-			ModelsFilename: "models",
-			TS:             true,
+			ModelsFilename:   "models",
+			TS:               true,
+			ProjectDirectory: "github.com/wailsapp/wails/v3/internal/parser/testdata/" + bench.pkg,
 		}
-
-		pattern := "github.com/wailsapp/wails/v3/internal/parser/testdata/" + bench.pkg
 
 		b.Run(bench.pkg+"/load", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				LoadPackages(nil, true,
-					pattern,
+					options.ProjectDirectory,
 					WailsAppPkgPath,
 				)
 			}
@@ -38,7 +37,7 @@ func BenchmarkParser(b *testing.B) {
 		})
 
 		pPkgs, err := LoadPackages(nil, true,
-			pattern, WailsAppPkgPath,
+			options.ProjectDirectory, WailsAppPkgPath,
 		)
 		if err != nil {
 			b.Fatal(err)
@@ -50,7 +49,7 @@ func BenchmarkParser(b *testing.B) {
 			}
 		})
 
-		project, err := ParseProject([]string{pattern}, options)
+		project, err := ParseProject(options)
 		if err != nil {
 			b.Fatal(err)
 		}
