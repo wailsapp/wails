@@ -193,8 +193,8 @@ func (f *Field) JSType(pkg *Package) string {
 	return jstype
 }
 
-func (f *Field) DefaultValue(pkg *Package) string {
-	return DefaultValue(f.Type(), pkg)
+func (f *Field) DefaultValue(pkg *Package, mDef *ModelDefinitions) string {
+	return DefaultValue(f.Type(), pkg, mDef)
 }
 
 func (f *Field) Exported() bool {
@@ -241,6 +241,19 @@ type EnumDef struct {
 	Name   string
 	Type   *types.Basic
 	Consts []*ConstDef
+}
+
+func (e *EnumDef) DefaultValue(fieldType types.Type, pkg *Package) string {
+	jstype, _ := JSType(fieldType, pkg)
+
+	// FIXME: order of e.Consts is not guaranteed
+	// the default value may change between model generations
+	return jstype + "." + e.Consts[0].Name
+}
+
+func (e *EnumDef) JSType(pkg *Package) string {
+	jstype, _ := JSType(e.Type, pkg)
+	return jstype
 }
 
 type ModelDefinitions struct {
@@ -309,6 +322,10 @@ func (p *Project) GenerateModels(options *flags.GenerateBindingsOptions) (result
 				consts := []*ConstDef{}
 				for name, c := range pkg.constantsOf(model) {
 					consts = append(consts, &ConstDef{Name: name, Const: c})
+				}
+
+				if len(consts) == 0 {
+					continue
 				}
 
 				def := &EnumDef{

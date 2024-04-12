@@ -35,7 +35,7 @@ func (p *Parameter) Name() (name string) {
 	return name
 }
 
-func DefaultValue(t types.Type, pkg *Package) string {
+func DefaultValue(t types.Type, pkg *Package, mDef *ModelDefinitions) string {
 	switch x := t.(type) {
 	case *types.Basic:
 		switch x.Kind() {
@@ -59,7 +59,11 @@ func DefaultValue(t types.Type, pkg *Package) string {
 				return "(new " + pkg.anonymousStructID(y) + "())"
 			}
 		case *types.Basic:
-			return DefaultValue(y, pkg)
+			if enum, ok := mDef.Enums[x.Obj().Name()]; ok {
+				return enum.DefaultValue(t, pkg)
+			} else {
+				return DefaultValue(y, pkg, mDef)
+			}
 		}
 	case *types.Map:
 		return "{}"
