@@ -291,6 +291,32 @@ func TestGenerateModels(t *testing.T) {
 			},
 			useTypescript: false,
 		},
+		// nested types
+		{
+			name: "nested_types - Typescript",
+			dir:  "testdata/nested_types",
+			want: map[string]string{
+				"main": getFile("testdata/nested_types/frontend/bindings/services/models.ts"),
+			},
+			useTypescript: true,
+		},
+		{
+			name: "nested_types - Typescript interfaces",
+			dir:  "testdata/nested_types",
+			want: map[string]string{
+				"main": getFile("testdata/nested_types/frontend/bindings/services/models.interfaces.ts"),
+			},
+			useTypescript: true,
+			useInterface:  true,
+		},
+		{
+			name: "nested_types - Javascript",
+			dir:  "testdata/nested_types",
+			want: map[string]string{
+				"main": getFile("testdata/nested_types/frontend/bindings/services/models.js"),
+			},
+			useTypescript: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

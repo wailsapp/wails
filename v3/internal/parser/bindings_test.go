@@ -803,6 +803,92 @@ func TestGenerateBindings(t *testing.T) {
 			useIDs:        false,
 			useTypescript: true,
 		},
+		// nested_types
+		{
+			name: "nested_types - CallByID",
+			dir:  "testdata/nested_types",
+			want: map[string]map[string]string{
+				"main": {
+					"OtherService": getFile("testdata/nested_types/frontend/bindings/main/OtherService.js"),
+				},
+			},
+			useIDs: true,
+		},
+		{
+			name: "nested_types - CallByName",
+			dir:  "testdata/nested_types",
+			want: map[string]map[string]string{
+				"main": {
+					"OtherService": getFile("testdata/nested_types/frontend/bindings/main/OtherService.name.js"),
+				},
+			},
+			useIDs: false,
+		},
+		{
+			name: "nested_types - Typescript - CallByID",
+			dir:  "testdata/nested_types",
+			want: map[string]map[string]string{
+				"main": {
+					"OtherService": getFile("testdata/nested_types/frontend/bindings/main/OtherService.ts"),
+				},
+			},
+			useIDs:        true,
+			useTypescript: true,
+		},
+		{
+			name: "nested_types - Typescript - CallByName",
+			dir:  "testdata/nested_types",
+			want: map[string]map[string]string{
+				"main": {
+					"OtherService": getFile("testdata/nested_types/frontend/bindings/main/OtherService.name.ts"),
+				},
+			},
+			useIDs:        false,
+			useTypescript: true,
+		},
+		// function_from_standard_package
+		{
+			name: "function_from_standard_package - CallByID",
+			dir:  "testdata/function_from_standard_package",
+			want: map[string]map[string]string{
+				"log": {
+					"Logger": getFile("testdata/function_from_standard_package/frontend/bindings/main/Logger.js"),
+				},
+			},
+			useIDs: true,
+		},
+		{
+			name: "function_from_standard_package - CallByName",
+			dir:  "testdata/function_from_standard_package",
+			want: map[string]map[string]string{
+				"log": {
+					"Logger": getFile("testdata/function_from_standard_package/frontend/bindings/main/Logger.name.js"),
+				},
+			},
+			useIDs: false,
+		},
+		{
+			name: "function_from_standard_package - Typescript - CallByID",
+			dir:  "testdata/function_from_standard_package",
+			want: map[string]map[string]string{
+				"log": {
+					"Logger": getFile("testdata/function_from_standard_package/frontend/bindings/main/Logger.ts"),
+				},
+			},
+			useIDs:        true,
+			useTypescript: true,
+		},
+		{
+			name: "function_from_standard_package - Typescript - CallByName",
+			dir:  "testdata/function_from_standard_package",
+			want: map[string]map[string]string{
+				"log": {
+					"Logger": getFile("testdata/function_from_standard_package/frontend/bindings/main/Logger.name.ts"),
+				},
+			},
+			useIDs:        false,
+			useTypescript: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
