@@ -827,7 +827,7 @@ func TestGenerateBindings(t *testing.T) {
 			}
 
 			// Generate Bindings
-			got, err := project.GenerateBindings(options)
+			got, err := project.GenerateBindings()
 			if err != nil {
 				t.Fatalf("GenerateBindings() error = %v", err)
 			}

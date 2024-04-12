@@ -290,7 +290,7 @@ func (p *Project) generateModel(wr io.Writer, def *ModelDefinitions, options *fl
 	return nil
 }
 
-func (p *Project) GenerateModels(options *flags.GenerateBindingsOptions) (result map[string]string, err error) {
+func (p *Project) GenerateModels() (result map[string]string, err error) {
 	result = make(map[string]string)
 
 	allModels := lo.Keys(p.Models())
@@ -352,8 +352,8 @@ func (p *Project) GenerateModels(options *flags.GenerateBindingsOptions) (result
 			Structs: structDefs,
 			Enums:   enumDefs,
 
-			ModelsFilename: options.ModelsFilename,
-		}, options)
+			ModelsFilename: p.options.ModelsFilename,
+		}, p.options)
 
 		if err != nil {
 			return

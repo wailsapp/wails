@@ -57,13 +57,13 @@ func BenchmarkParser(b *testing.B) {
 
 		b.Run(bench.pkg+"/bindings", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				project.GenerateBindings(options)
+				project.GenerateBindings()
 			}
 		})
 
 		b.Run(bench.pkg+"/models", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				project.GenerateModels(options)
+				project.GenerateModels()
 			}
 		})
 	}

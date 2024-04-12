@@ -315,7 +315,7 @@ func TestGenerateModels(t *testing.T) {
 			}
 
 			// Generate Models
-			allModels, err := project.GenerateModels(options)
+			allModels, err := project.GenerateModels()
 			if err != nil {
 				t.Fatalf("GenerateModels() error = %v", err)
 			}

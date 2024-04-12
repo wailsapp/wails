@@ -313,9 +313,10 @@ type Stats struct {
 }
 
 type Project struct {
-	pkgs  []*Package
-	main  *Package
-	Stats Stats
+	pkgs    []*Package
+	main    *Package
+	options *flags.GenerateBindingsOptions
+	Stats   Stats
 }
 
 func ParseProject(patterns []string, options *flags.GenerateBindingsOptions) (*Project, error) {
@@ -350,8 +351,9 @@ func ParseProject(patterns []string, options *flags.GenerateBindingsOptions) (*P
 	}
 
 	return &Project{
-		pkgs: pkgs,
-		main: pkgs[mainIndex],
+		pkgs:    pkgs,
+		main:    pkgs[mainIndex],
+		options: options,
 	}, nil
 }
 

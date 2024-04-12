@@ -41,11 +41,11 @@ func generateBinding(wr io.Writer, def *BindingDefinitions, options *flags.Gener
 	return nil
 }
 
-func (p *Project) GenerateBindings(options *flags.GenerateBindingsOptions) (result map[string]map[string]string, err error) {
+func (p *Project) GenerateBindings() (result map[string]map[string]string, err error) {
 	result = make(map[string]map[string]string)
 
 	for _, pkg := range p.pkgs {
-		bindings, err := pkg.GenerateBindings(p, options)
+		bindings, err := pkg.GenerateBindings(p.options)
 		if err != nil {
 			return nil, err
 		}
@@ -55,7 +55,7 @@ func (p *Project) GenerateBindings(options *flags.GenerateBindingsOptions) (resu
 	return
 }
 
-func (p *Package) GenerateBindings(project *Project, options *flags.GenerateBindingsOptions) (result map[string]string, err error) {
+func (p *Package) GenerateBindings(options *flags.GenerateBindingsOptions) (result map[string]string, err error) {
 	result = make(map[string]string)
 
 	for _, service := range p.services {
