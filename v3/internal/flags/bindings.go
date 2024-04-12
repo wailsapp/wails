@@ -11,7 +11,7 @@ type GenerateBindingsOptions struct {
 	BuildFlagsString  string `name:"f" description:"Provide a list of additional space-separated Go build flags. Flags can be wrapped (even partially) in single or double quotes to include spaces"`
 	ProjectDirectory  string `name:"p" description:"The project directory" default:"."`
 	OutputDirectory   string `name:"d" description:"The output directory" default:"assets/bindings"`
-	ModelsFilename    string `name:"m" description:"The filename for the models file, excluding the extension" default:"$models"`
+	ModelsFilename    string `name:"m" description:"The filename for the models file, excluding the extension" default:"models"`
 	TS                bool   `name:"ts" description:"Generate Typescript bindings"`
 	UseInterfaces     bool   `name:"i" description:"Generate Typescript interfaces instead of classes"`
 	UseBundledRuntime bool   `name:"b" description:"Use the bundled runtime instead of importing the npm package"`

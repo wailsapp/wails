@@ -205,8 +205,13 @@ type Service struct {
 func BoundMethods(service *types.TypeName) (methods []*BoundMethod) {
 	if named, ok := service.Type().(*types.Named); ok {
 		for i := 0; i < named.NumMethods(); i++ {
+			fn := named.Method(i)
+			if !fn.Exported() {
+				continue
+			}
+
 			// TODO replace with named.Method(i).String() ???
-			fqn := fmt.Sprintf("%s.%s.%s", service.Pkg().Name(), service.Name(), named.Method(i).Name())
+			fqn := fmt.Sprintf("%s.%s.%s", service.Pkg().Name(), service.Name(), fn.Name())
 
 			id, err := hash.Fnv(fqn)
 			if err != nil {
@@ -214,7 +219,7 @@ func BoundMethods(service *types.TypeName) (methods []*BoundMethod) {
 			}
 
 			method := &BoundMethod{
-				Func: named.Method(i),
+				Func: fn,
 				FQN:  fqn,
 				ID:   id,
 			}

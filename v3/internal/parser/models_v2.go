@@ -312,6 +312,10 @@ func (p *Project) GenerateModels() (result map[string]string, err error) {
 
 		models := pkgModels[pkg.Types.String()]
 
+		if len(models) == 0 {
+			continue
+		}
+
 		// split models into structs and enums
 		structDefs := make(map[string]*StructDef)
 		enumDefs := make(map[string]*EnumDef)
