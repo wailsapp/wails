@@ -7,6 +7,7 @@ import (
 	"maps"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/flags"
@@ -59,6 +60,9 @@ func (p *Package) GenerateBindings(project *Project, options *flags.GenerateBind
 
 	for _, service := range p.services {
 		methods := service.Methods()
+		slices.SortFunc(methods, func(m1, m2 *BoundMethod) int {
+			return strings.Compare(m1.Name(), m2.Name())
+		})
 
 		var buffer bytes.Buffer
 		err = generateBinding(&buffer, &BindingDefinitions{
