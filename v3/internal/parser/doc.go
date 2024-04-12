@@ -40,8 +40,8 @@ func NewDoc(pkg *packages.Package) *Doc {
 	}
 }
 
-func (m *BoundMethod) DocComment(pkg *Package) string {
-	serviceType, ok := pkg.doc.Types[m.Service.Name()]
+func (m *BoundMethod) DocComment(pkg *Package, service *Service) string {
+	serviceType, ok := pkg.doc.Types[service.Name()]
 	if !ok {
 		return ""
 	}

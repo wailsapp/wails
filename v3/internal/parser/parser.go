@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/hash"
@@ -138,8 +139,6 @@ type BoundMethod struct {
 	*types.Func
 	ID  uint32
 	FQN string
-
-	Service *Service
 }
 
 func (m *BoundMethod) embedTuple(tuple *types.Tuple) (result []*Parameter) {
@@ -199,24 +198,38 @@ func (m *BoundMethod) JSOutputs() (outputs []*Parameter) {
 
 type Service struct {
 	*types.TypeName
+	Methods []*BoundMethod
 }
 
-func (s *Service) Methods() (methods []*BoundMethod) {
-	if named, ok := s.Type().(*types.Named); ok {
+func BoundMethods(service *types.TypeName) (methods []*BoundMethod) {
+	if named, ok := service.Type().(*types.Named); ok {
 		for i := 0; i < named.NumMethods(); i++ {
-			fqn := fmt.Sprintf("%s.%s.%s", s.Pkg().Name(), s.Name(), named.Method(i).Name())
+			// TODO replace with named.Method(i).String() ???
+			fqn := fmt.Sprintf("%s.%s.%s", service.Pkg().Name(), service.Name(), named.Method(i).Name())
 
 			id, err := hash.Fnv(fqn)
 			if err != nil {
 				panic("Failed to hash fqn")
 			}
 
-			methods = append(methods, &BoundMethod{
-				Func:    named.Method(i),
-				FQN:     fqn,
-				ID:      id,
-				Service: s,
-			})
+			method := &BoundMethod{
+				Func: named.Method(i),
+				FQN:  fqn,
+				ID:   id,
+			}
+
+			interfaceFound := false
+			for param := range method.Models(nil, false) {
+				if types.IsInterface(param.Obj().Type()) {
+					interfaceFound = true
+					pterm.Warning.Printf("can't bind method %v with interface %v\n", fqn, param.Obj().Name())
+				}
+			}
+			if interfaceFound {
+				continue
+			}
+
+			methods = append(methods, method)
 		}
 	}
 	return
@@ -314,7 +327,7 @@ type Stats struct {
 
 type Project struct {
 	pkgs    []*Package
-	main    *Package
+	main    *packages.Package
 	options *flags.GenerateBindingsOptions
 	Stats   Stats
 }
@@ -335,6 +348,11 @@ func ParseProject(patterns []string, options *flags.GenerateBindingsOptions) (*P
 		return nil, errors.New("error while loading packages")
 	}
 
+	mainIndex := slices.IndexFunc(pPkgs, func(pkg *packages.Package) bool { return pkg.Name == "main" })
+	if mainIndex == -1 {
+		return nil, errors.New("application.New() must be inside main package")
+	}
+
 	services, err := Services(pPkgs)
 	if err != nil {
 		return nil, err
@@ -345,14 +363,9 @@ func ParseProject(patterns []string, options *flags.GenerateBindingsOptions) (*P
 		return nil, err
 	}
 
-	mainIndex := slices.IndexFunc(pkgs, func(pkg *Package) bool { return pkg.Name == "main" })
-	if mainIndex == -1 {
-		return nil, errors.New("application.App must be inside main package")
-	}
-
 	return &Project{
 		pkgs:    pkgs,
-		main:    pkgs[mainIndex],
+		main:    pPkgs[mainIndex],
 		options: options,
 	}, nil
 }
@@ -376,25 +389,37 @@ func Services(pkgs []*packages.Package) (services []*Service, err error) {
 	}
 
 	for _, service := range found {
-		services = append(services, &Service{service})
+		services = append(services, &Service{
+			TypeName: service,
+			Methods:  BoundMethods(service),
+		})
 	}
 	return
 }
 
-func RelativeBindingsDir(base *types.Package, target *types.Package) string {
+func (p *Project) PackageDir(pkg *types.Package) string {
+	root := p.main.Types.Path()
+	if pkg.Path() == root {
+		return "main"
+	}
+
+	if strings.HasPrefix(pkg.Path(), root) {
+		path, err := filepath.Rel(root, pkg.Path())
+		if err != nil {
+			panic(err)
+		}
+		return filepath.ToSlash(path)
+	}
+	return strings.ReplaceAll(pkg.Path(), "/", "-")
+}
+
+func (p *Project) RelativePackageDir(base *types.Package, target *types.Package) string {
 	if base == target {
 		return "."
 	}
 
-	basePath := base.Path()
-	if base.Name() == "main" {
-		basePath = filepath.Join(basePath, "main")
-	}
-
-	targetPath := target.Path()
-	if target.Name() == "main" {
-		targetPath = filepath.Join(targetPath, "main")
-	}
+	basePath := p.PackageDir(base)
+	targetPath := p.PackageDir(target)
 
 	relativePath, err := filepath.Rel(basePath, targetPath)
 	if err != nil {

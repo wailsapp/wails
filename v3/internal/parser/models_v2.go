@@ -5,7 +5,6 @@ import (
 	"go/types"
 	"io"
 	"maps"
-	"path/filepath"
 	"reflect"
 	"slices"
 	"strconv"
@@ -17,26 +16,26 @@ import (
 )
 
 type VarAnalyzer struct {
-	pkg           *Package
-	Var           *types.Var
-	models        map[*types.Named]bool
-	includeFields bool
+	pkg       *Package
+	Var       *types.Var
+	models    map[*types.Named]bool
+	recursive bool
 }
 
-func (p *Parameter) Models(pkg *Package, includeFields bool) (models map[*types.Named]bool) {
+func (p *Parameter) Models(pkg *Package, recursive bool) (models map[*types.Named]bool) {
 	analyzer := &VarAnalyzer{
-		pkg:           pkg,
-		Var:           p.Var,
-		includeFields: includeFields,
+		pkg:       pkg,
+		Var:       p.Var,
+		recursive: recursive,
 	}
 	return analyzer.FindModels()
 }
 
 func (f *Field) Models(pkg *Package) (models map[*types.Named]bool) {
 	analyzer := &VarAnalyzer{
-		pkg:           pkg,
-		Var:           f.Var,
-		includeFields: false,
+		pkg:       pkg,
+		Var:       f.Var,
+		recursive: false,
 	}
 	return analyzer.FindModels()
 }
@@ -61,15 +60,18 @@ func (a *VarAnalyzer) findModels(t types.Type) {
 				return
 			}
 			a.models[x] = true
-			if a.includeFields {
+			if a.recursive {
 				a.findModelsOfNamed(x)
 			}
 
 			return
 		case *types.Struct:
+			if a.pkg == nil {
+				return
+			}
 			named := types.NewNamed(types.NewTypeName(0, a.pkg.Types, a.pkg.anonymousStructID(x), nil), x, nil)
 			a.models[named] = true
-			if a.includeFields {
+			if a.recursive {
 				a.findModelsOfStruct(x)
 			}
 			return
@@ -96,21 +98,21 @@ func (a *VarAnalyzer) findModelsOfStruct(s *types.Struct) {
 	}
 }
 
-func (m *BoundMethod) Models(pkg *Package) (models map[*types.Named]bool) {
+func (m *BoundMethod) Models(pkg *Package, recursive bool) (models map[*types.Named]bool) {
 	models = make(map[*types.Named]bool)
 	for _, param := range m.JSInputs() {
-		maps.Copy(models, param.Models(pkg, true))
+		maps.Copy(models, param.Models(pkg, recursive))
 	}
 	for _, param := range m.JSOutputs() {
-		maps.Copy(models, param.Models(pkg, true))
+		maps.Copy(models, param.Models(pkg, recursive))
 	}
 	return
 }
 
 func (s *Service) Models(pkg *Package) (models map[*types.Named]bool) {
 	models = make(map[*types.Named]bool)
-	for _, method := range s.Methods() {
-		maps.Copy(models, method.Models(pkg))
+	for _, method := range s.Methods {
+		maps.Copy(models, method.Models(pkg, true))
 	}
 	return
 }
@@ -347,7 +349,7 @@ func (p *Project) GenerateModels() (result map[string]string, err error) {
 		var buffer bytes.Buffer
 		err = p.generateModel(&buffer, &ModelDefinitions{
 			Package: pkg,
-			Imports: pkg.calculateModelImports(structDefs),
+			Imports: pkg.calculateModelImports(structDefs, p),
 
 			Structs: structDefs,
 			Enums:   enumDefs,
@@ -359,14 +361,14 @@ func (p *Project) GenerateModels() (result map[string]string, err error) {
 			return
 		}
 
-		relativePackageDir := filepath.Join("main", RelativeBindingsDir(p.main.Types, pkg.Types))
-		result[relativePackageDir] = buffer.String()
+		packageDir := p.PackageDir(pkg.Types)
+		result[packageDir] = buffer.String()
 	}
 
 	return
 }
 
-func (p *Package) calculateModelImports(m map[string]*StructDef) map[string]string {
+func (p *Package) calculateModelImports(m map[string]*StructDef, project *Project) map[string]string {
 	result := make(map[string]string)
 	pkg := p.Types
 
@@ -379,7 +381,7 @@ func (p *Package) calculateModelImports(m map[string]*StructDef) map[string]stri
 			for model := range models {
 				otherPkg := model.Obj().Pkg()
 				if otherPkg.String() != pkg.String() {
-					result[otherPkg.Name()] = RelativeBindingsDir(pkg, otherPkg)
+					result[otherPkg.Name()] = project.RelativePackageDir(pkg, otherPkg)
 				}
 			}
 		}

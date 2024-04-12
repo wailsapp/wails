@@ -5,7 +5,6 @@ import (
 	"go/types"
 	"io"
 	"maps"
-	"path/filepath"
 	"slices"
 	"strings"
 
@@ -16,6 +15,7 @@ import (
 
 type BindingDefinitions struct {
 	Package      *Package
+	Service      *Service
 	Imports      map[string]string
 	LocalImports []string
 
@@ -45,21 +45,22 @@ func (p *Project) GenerateBindings() (result map[string]map[string]string, err e
 	result = make(map[string]map[string]string)
 
 	for _, pkg := range p.pkgs {
-		bindings, err := pkg.GenerateBindings(p.options)
+		bindings, err := pkg.GenerateBindings(p)
 		if err != nil {
 			return nil, err
 		}
-		relativePackageDir := filepath.Join("main", RelativeBindingsDir(p.main.Types, pkg.Types))
-		result[relativePackageDir] = bindings
+		packageDir := p.PackageDir(pkg.Types)
+		result[packageDir] = bindings
 	}
 	return
 }
 
-func (p *Package) GenerateBindings(options *flags.GenerateBindingsOptions) (result map[string]string, err error) {
+func (p *Package) GenerateBindings(project *Project) (result map[string]string, err error) {
 	result = make(map[string]string)
+	options := project.options
 
 	for _, service := range p.services {
-		methods := service.Methods()
+		methods := service.Methods
 		slices.SortFunc(methods, func(m1, m2 *BoundMethod) int {
 			return strings.Compare(m1.Name(), m2.Name())
 		})
@@ -67,7 +68,8 @@ func (p *Package) GenerateBindings(options *flags.GenerateBindingsOptions) (resu
 		var buffer bytes.Buffer
 		err = generateBinding(&buffer, &BindingDefinitions{
 			Package:      p,
-			Imports:      service.calculateBindingImports(p),
+			Service:      service,
+			Imports:      service.calculateBindingImports(p, project),
 			LocalImports: service.calculateBindingLocalImports(p),
 
 			Methods: methods,
@@ -86,7 +88,7 @@ func (p *Package) GenerateBindings(options *flags.GenerateBindingsOptions) (resu
 	return
 }
 
-func (s *Service) bindingImportsOf(params []*Parameter, pkg *Package) map[string]string {
+func (s *Service) bindingImportsOf(params []*Parameter, pkg *Package, project *Project) map[string]string {
 	result := make(map[string]string)
 
 	for _, param := range params {
@@ -94,19 +96,19 @@ func (s *Service) bindingImportsOf(params []*Parameter, pkg *Package) map[string
 		for model := range models {
 			if model.Obj() != nil && model.Obj().Pkg() != s.Pkg() {
 				otherPkg := model.Obj().Pkg()
-				result[otherPkg.Name()] = RelativeBindingsDir(s.Pkg(), otherPkg)
+				result[otherPkg.Name()] = project.RelativePackageDir(s.Pkg(), otherPkg)
 			}
 		}
 	}
 	return result
 }
 
-func (s *Service) calculateBindingImports(pkg *Package) map[string]string {
+func (s *Service) calculateBindingImports(pkg *Package, project *Project) map[string]string {
 	result := make(map[string]string)
 
-	for _, method := range s.Methods() {
-		maps.Copy(result, s.bindingImportsOf(method.JSInputs(), pkg))
-		maps.Copy(result, s.bindingImportsOf(method.JSOutputs(), pkg))
+	for _, method := range s.Methods {
+		maps.Copy(result, s.bindingImportsOf(method.JSInputs(), pkg, project))
+		maps.Copy(result, s.bindingImportsOf(method.JSOutputs(), pkg, project))
 	}
 
 	return result
@@ -131,7 +133,7 @@ func (s *Service) bindingLocalImportsOf(params []*Parameter, pkg *Package) map[s
 func (s *Service) calculateBindingLocalImports(pkg *Package) []string {
 	requiredTypes := make(map[string]bool)
 
-	for _, method := range s.Methods() {
+	for _, method := range s.Methods {
 		maps.Copy(requiredTypes, s.bindingLocalImportsOf(method.JSInputs(), pkg))
 		maps.Copy(requiredTypes, s.bindingLocalImportsOf(method.JSOutputs(), pkg))
 	}

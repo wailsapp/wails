@@ -3,6 +3,7 @@
 
 import {Call} from {{if .UseBundledRuntime}}"/wails/runtime.js"{{else}}"@wailsio/runtime"{{end}};
 {{$pkg := .Package}}
+{{- $service := .Service}}
 {{- $models := .ModelsFilename}}
 {{- $useNames := .UseNames}}
 {{- range $name, $path := .Imports}}
@@ -18,7 +19,7 @@ import {
 } from "./{{$models}}";
 {{end}}
 {{- range .Methods}}
-{{- $doc := .DocComment $pkg }}
+{{- $doc := .DocComment $pkg $service}}
 {{- if $doc}}
 /**
  * {{jsdoc $doc ""}}
