@@ -86,6 +86,8 @@ type Person struct {
 
 	// embedded4 should be optional and appear with key "emb4"
 	embedded4 `json:"emb4,omitempty"`
+
+	vault Vault
 }
 
 type embedded4 struct {
@@ -99,6 +101,11 @@ type embedded4 struct {
 
 	// Embedded string should be invisible because it's unexported
 	string
+}
+
+// Vault should not be visible at all
+type Vault struct {
+	Secret string
 }
 
 // Greet does XYZ

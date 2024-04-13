@@ -5,7 +5,7 @@
 /**
  * Title is a title
  * @readonly
- * @enum
+ * @enum {string}
  */
 export const Title = {
     /**
@@ -32,7 +32,7 @@ export class Person {
              * @member
              * @type {Title}
              */
-            this["Title"] = null;
+            this["Title"] = Title.Mister;
         }
         if (!("Name" in source)) {
             /**

@@ -26,7 +26,7 @@ export class Person {
     /** Creates a new Person instance. */
     constructor(source: Partial<Person> = {}) {
         if (!("Title" in source)) {
-            this["Title"] = null;
+            this["Title"] = Title.Mister;
         }
         if (!("Name" in source)) {
             this["Name"] = "";

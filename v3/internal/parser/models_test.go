@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,313 +13,160 @@ import (
 
 func TestGenerateModels(t *testing.T) {
 
+	options := []struct {
+		name          string
+		useInterface  bool
+		useTypescript bool
+		ext           string
+	}{
+		{
+			name:          "Typescript",
+			useInterface:  false,
+			useTypescript: true,
+			ext:           "ts",
+		},
+		{
+			name:          "Javascript",
+			useInterface:  false,
+			useTypescript: false,
+			ext:           "js",
+		},
+		{
+			name:          "Typescript interfaces",
+			useInterface:  true,
+			useTypescript: true,
+			ext:           "interfaces.ts",
+		},
+	}
+
 	tests := []struct {
+		name string
+		dir  string
+		want map[string]bool
+	}{
+		{
+			name: "complex_json",
+			dir:  "testdata/complex_json",
+			want: map[string]bool{
+				"main": true,
+			},
+		},
+		{
+			name: "complex_method",
+			dir:  "testdata/complex_method",
+			want: map[string]bool{
+				"main": true,
+			},
+		},
+		{
+			name: "enum",
+			dir:  "testdata/enum",
+			want: map[string]bool{
+				"main": true,
+			},
+		},
+		{
+			name: "function_from_imported_package",
+			dir:  "testdata/function_from_imported_package",
+			want: map[string]bool{
+				"main":     true,
+				"services": true,
+			},
+		},
+		{
+			name: "function_from_nested_imported_package",
+			dir:  "testdata/function_from_nested_imported_package",
+			want: map[string]bool{
+				"main":           true,
+				"services/other": true,
+			},
+		},
+		{
+			name: "variable_single_from_other_function",
+			dir:  "testdata/variable_single_from_other_function",
+			want: map[string]bool{
+				"main":     true,
+				"services": true,
+			},
+		},
+		{
+			name: "struct_literal_single",
+			dir:  "testdata/struct_literal_single",
+			want: map[string]bool{
+				"main": true,
+			},
+		},
+
+		{
+			name: "struct_literal_multiple_other",
+			dir:  "testdata/struct_literal_multiple_other",
+			want: map[string]bool{
+				"main":     true,
+				"services": true,
+			},
+		},
+		{
+			name: "struct_literal_non_pointer_single",
+			dir:  "testdata/struct_literal_non_pointer_single",
+			want: map[string]bool{
+				"main": true,
+			},
+		},
+
+		{
+			name: "enum_from_imported_package",
+			dir:  "testdata/enum_from_imported_package",
+			want: map[string]bool{
+				"services": true,
+			},
+		},
+		{
+			name: "nested_types",
+			dir:  "testdata/nested_types",
+			want: map[string]bool{
+				"main": true,
+			},
+		},
+		{
+			name: "multiple_packages",
+			dir:  "testdata/multiple_packages",
+			want: map[string]bool{
+				"runtime-debug": true,
+				"other":         true,
+				"other/other":   true,
+			},
+		},
+	}
+
+	type Test struct {
 		name          string
 		dir           string
 		want          map[string]string
-		useInterface  bool
 		useTypescript bool
-	}{
-		// complex JSON
-		{
-			name: "complex_json - Typescript",
-			dir:  "testdata/complex_json",
-			want: map[string]string{
-				"main": getFile("testdata/complex_json/frontend/bindings/main/models.ts"),
-			},
-			useTypescript: true,
-		},
-		{
-			name: "complex_json - Javascript",
-			dir:  "testdata/complex_json",
-			want: map[string]string{
-				"main": getFile("testdata/complex_json/frontend/bindings/main/models.js"),
-			},
-			useTypescript: false,
-		},
-		{
-			name: "complex_json - Typescript interfaces",
-			dir:  "testdata/complex_json",
-			want: map[string]string{
-				"main": getFile("testdata/complex_json/frontend/bindings/main/models.interfaces.ts"),
-			},
-			useTypescript: true,
-			useInterface:  true,
-		},
-		// complex method
-		{
-			name: "complex_method - Typescript",
-			dir:  "testdata/complex_method",
-			want: map[string]string{
-				"main": getFile("testdata/complex_method/frontend/bindings/main/models.ts"),
-			},
-			useTypescript: true,
-		},
-		{
-			name: "complex_method - Javascript",
-			dir:  "testdata/complex_method",
-			want: map[string]string{
-				"main": getFile("testdata/complex_method/frontend/bindings/main/models.js"),
-			},
-			useTypescript: false,
-		},
-		{
-			name: "complex_method - Typescript interfaces",
-			dir:  "testdata/complex_method",
-			want: map[string]string{
-				"main": getFile("testdata/complex_method/frontend/bindings/main/models.interfaces.ts"),
-			},
-			useTypescript: true,
-			useInterface:  true,
-		},
-		// enum
-		{
-			name: "enum - Typescript",
-			dir:  "testdata/enum",
-			want: map[string]string{
-				"main": getFile("testdata/enum/frontend/bindings/main/models.ts"),
-			},
-			useTypescript: true,
-		},
-		{
-			name: "enum - Javascript",
-			dir:  "testdata/enum",
-			want: map[string]string{
-				"main": getFile("testdata/enum/frontend/bindings/main/models.js"),
-			},
-			useTypescript: false,
-		},
-		{
-			name: "enum - Typescript interfaces",
-			dir:  "testdata/enum",
-			want: map[string]string{
-				"main": getFile("testdata/enum/frontend/bindings/main/models.interfaces.ts"),
-			},
-			useTypescript: true,
-			useInterface:  true,
-		},
-		// function from imported package
-		{
-			name: "function from imported package - Typescript",
-			dir:  "testdata/function_from_imported_package",
-			want: map[string]string{
-				"main":     getFile("testdata/function_from_imported_package/frontend/bindings/main/models.ts"),
-				"services": getFile("testdata/function_from_imported_package/frontend/bindings/services/models.ts"),
-			},
-			useTypescript: true,
-		},
-		{
-			name: "function from imported package - Typescript interfaces",
-			dir:  "testdata/function_from_imported_package",
-			want: map[string]string{
-				"main":     getFile("testdata/function_from_imported_package/frontend/bindings/main/models.interfaces.ts"),
-				"services": getFile("testdata/function_from_imported_package/frontend/bindings/services/models.interfaces.ts"),
-			},
-			useTypescript: true,
-			useInterface:  true,
-		},
-		{
-			name: "function from imported package - Javascript",
-			dir:  "testdata/function_from_imported_package",
-			want: map[string]string{
-				"main":     getFile("testdata/function_from_imported_package/frontend/bindings/main/models.js"),
-				"services": getFile("testdata/function_from_imported_package/frontend/bindings/services/models.js"),
-			},
-			useTypescript: false,
-		},
-		// function from nested imported package
-		{
-			name: "function from nested imported package - Typescript",
-			dir:  "testdata/function_from_nested_imported_package",
-			want: map[string]string{
-				"main":           getFile("testdata/function_from_nested_imported_package/frontend/bindings/main/models.ts"),
-				"services/other": getFile("testdata/function_from_nested_imported_package/frontend/bindings/services/other/models.ts"),
-			},
-			useTypescript: true,
-		},
-		{
-			name: "function from nested imported package - Typescript interfaces",
-			dir:  "testdata/function_from_nested_imported_package",
-			want: map[string]string{
-				"main":           getFile("testdata/function_from_nested_imported_package/frontend/bindings/main/models.interfaces.ts"),
-				"services/other": getFile("testdata/function_from_nested_imported_package/frontend/bindings/services/other/models.interfaces.ts"),
-			},
-			useTypescript: true,
-			useInterface:  true,
-		},
-		{
-			name: "function from nested imported package - Javascript",
-			dir:  "testdata/function_from_nested_imported_package",
-			want: map[string]string{
-				"main":           getFile("testdata/function_from_nested_imported_package/frontend/bindings/main/models.js"),
-				"services/other": getFile("testdata/function_from_nested_imported_package/frontend/bindings/services/other/models.js"),
-			},
-			useTypescript: false,
-		},
-		// variable single from other function
-		{
-			name: "variable single from other function - Typescript",
-			dir:  "testdata/variable_single_from_other_function",
-			want: map[string]string{
-				"main":     getFile("testdata/variable_single_from_other_function/frontend/bindings/main/models.ts"),
-				"services": getFile("testdata/variable_single_from_other_function/frontend/bindings/services/models.ts"),
-			},
-			useTypescript: true,
-		},
-		{
-			name: "variable single from other function - Typescript interfaces",
-			dir:  "testdata/variable_single_from_other_function",
-			want: map[string]string{
-				"main":     getFile("testdata/variable_single_from_other_function/frontend/bindings/main/models.interfaces.ts"),
-				"services": getFile("testdata/variable_single_from_other_function/frontend/bindings/services/models.interfaces.ts"),
-			},
-			useTypescript: true,
-			useInterface:  true,
-		},
-		{
-			name: "variable single from other function - Javascript",
-			dir:  "testdata/variable_single_from_other_function",
-			want: map[string]string{
-				"main":     getFile("testdata/variable_single_from_other_function/frontend/bindings/main/models.js"),
-				"services": getFile("testdata/variable_single_from_other_function/frontend/bindings/services/models.js"),
-			},
-			useTypescript: false,
-		},
-		// struct literal single
-		{
-			name: "struct literal single - Typescript",
-			dir:  "testdata/struct_literal_single",
-			want: map[string]string{
-				"main": getFile("testdata/struct_literal_single/frontend/bindings/main/models.ts"),
-			},
-			useTypescript: true,
-		},
-		{
-			name: "struct literal single - Typescript interfaces",
-			dir:  "testdata/struct_literal_single",
-			want: map[string]string{
-				"main": getFile("testdata/struct_literal_single/frontend/bindings/main/models.interfaces.ts"),
-			},
-			useTypescript: true,
-			useInterface:  true,
-		},
-		{
-			name: "struct literal single - Javascript",
-			dir:  "testdata/struct_literal_single",
-			want: map[string]string{
-				"main": getFile("testdata/struct_literal_single/frontend/bindings/main/models.js"),
-			},
-			useTypescript: false,
-		},
-		// struct literal multiple other
-		{
-			name: "struct literal multiple other - Typescript",
-			dir:  "testdata/struct_literal_multiple_other",
-			want: map[string]string{
-				"main":     getFile("testdata/struct_literal_multiple_other/frontend/bindings/main/models.ts"),
-				"services": getFile("testdata/struct_literal_multiple_other/frontend/bindings/services/models.ts"),
-			},
-			useTypescript: true,
-		},
-		{
-			name: "struct literal multiple other - Typescript interfaces",
-			dir:  "testdata/struct_literal_multiple_other",
-			want: map[string]string{
-				"main":     getFile("testdata/struct_literal_multiple_other/frontend/bindings/main/models.interfaces.ts"),
-				"services": getFile("testdata/struct_literal_multiple_other/frontend/bindings/services/models.interfaces.ts"),
-			},
-			useTypescript: true,
-			useInterface:  true,
-		},
-		{
-			name: "struct literal multiple other - Javascript",
-			dir:  "testdata/struct_literal_multiple_other",
-			want: map[string]string{
-				"main":     getFile("testdata/struct_literal_multiple_other/frontend/bindings/main/models.js"),
-				"services": getFile("testdata/struct_literal_multiple_other/frontend/bindings/services/models.js"),
-			},
-			useTypescript: false,
-		},
-		// struct literal non pointer single
-		{
-			name: "struct literal non pointer single - Typescript",
-			dir:  "testdata/struct_literal_non_pointer_single",
-			want: map[string]string{
-				"main": getFile("testdata/struct_literal_non_pointer_single/frontend/bindings/main/models.ts"),
-			},
-			useTypescript: true,
-		},
-		{
-			name: "struct literal non pointer single - Typescript interfaces",
-			dir:  "testdata/struct_literal_non_pointer_single",
-			want: map[string]string{
-				"main": getFile("testdata/struct_literal_non_pointer_single/frontend/bindings/main/models.interfaces.ts"),
-			},
-			useTypescript: true,
-			useInterface:  true,
-		},
-		{
-			name: "struct literal non pointer single - Javascript",
-			dir:  "testdata/struct_literal_non_pointer_single",
-			want: map[string]string{
-				"main": getFile("testdata/struct_literal_non_pointer_single/frontend/bindings/main/models.js"),
-			},
-			useTypescript: false,
-		},
-		// enum from imported package
-		{
-			name: "enum from imported package - Typescript",
-			dir:  "testdata/enum_from_imported_package",
-			want: map[string]string{
-				"services": getFile("testdata/enum_from_imported_package/frontend/bindings/services/models.ts"),
-			},
-			useTypescript: true,
-		},
-		{
-			name: "enum from imported package - Typescript interfaces",
-			dir:  "testdata/enum_from_imported_package",
-			want: map[string]string{
-				"services": getFile("testdata/enum_from_imported_package/frontend/bindings/services/models.interfaces.ts"),
-			},
-			useTypescript: true,
-			useInterface:  true,
-		},
-		{
-			name: "enum from imported package - Javascript",
-			dir:  "testdata/enum_from_imported_package",
-			want: map[string]string{
-				"services": getFile("testdata/enum_from_imported_package/frontend/bindings/services/models.js"),
-			},
-			useTypescript: false,
-		},
-		// nested types
-		{
-			name: "nested_types - Typescript",
-			dir:  "testdata/nested_types",
-			want: map[string]string{
-				"main": getFile("testdata/nested_types/frontend/bindings/services/models.ts"),
-			},
-			useTypescript: true,
-		},
-		{
-			name: "nested_types - Typescript interfaces",
-			dir:  "testdata/nested_types",
-			want: map[string]string{
-				"main": getFile("testdata/nested_types/frontend/bindings/services/models.interfaces.ts"),
-			},
-			useTypescript: true,
-			useInterface:  true,
-		},
-		{
-			name: "nested_types - Javascript",
-			dir:  "testdata/nested_types",
-			want: map[string]string{
-				"main": getFile("testdata/nested_types/frontend/bindings/services/models.js"),
-			},
-			useTypescript: false,
-		},
+		useInterface  bool
 	}
+
+	allTests := []Test{}
 	for _, tt := range tests {
+		for _, option := range options {
+			want := make(map[string]string)
+
+			for pkgDir := range tt.want {
+				want[pkgDir] = getFile(fmt.Sprintf("%s/frontend/bindings/%s/models.%s", tt.dir, pkgDir, option.ext))
+			}
+
+			allTests = append(allTests, Test{
+				name:          tt.name + " - " + option.name,
+				dir:           tt.dir,
+				want:          want,
+				useTypescript: option.useTypescript,
+				useInterface:  option.useInterface,
+			})
+		}
+
+	}
+
+	for _, tt := range allTests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Run parser on directory
 			absDir, err := filepath.Abs(tt.dir)
@@ -379,13 +227,19 @@ func TestGenerateModels(t *testing.T) {
 						outFileName += ".js"
 					}
 
-					originalFile := filepath.Join(tt.dir, options.OutputDirectory, pkgDir, originalFilename)
+					outDir := filepath.Join(tt.dir, options.OutputDirectory, pkgDir)
+					originalFile := filepath.Join(outDir, originalFilename)
 					// Check if file exists
 					if _, err := os.Stat(originalFile); err != nil {
 						outFileName = originalFilename
 					}
 
-					outFile := filepath.Join(tt.dir, options.OutputDirectory, pkgDir, outFileName)
+					outFile := filepath.Join(outDir, outFileName)
+					os.MkdirAll(outDir, 0755)
+					if err != nil {
+						t.Errorf("os.MkdirAll() error = %v", err)
+						continue
+					}
 					err = os.WriteFile(outFile, []byte(got), 0644)
 					if err != nil {
 						t.Errorf("os.WriteFile() error = %v", err)

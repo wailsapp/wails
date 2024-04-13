@@ -3,11 +3,6 @@
 
 import {Call} from "@wailsio/runtime";
 
-import {Address} from "./models";
-
-/**
- * Yay does this and that
- */
-export function Yay(): Promise<Address | null> {
-    return Call.ByID(2383998499);
+export function Greet(name: string): Promise<string> {
+    return Call.ByID(1411160069, name);
 }
