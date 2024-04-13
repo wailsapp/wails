@@ -8,6 +8,15 @@
 import * as {{$name}} from "{{$path}}/{{$models}}.js";
 {{- end}}{{if .Imports}}
 {{end}}
+{{- range .BasicTypes}}
+/**
+{{- $doc := .DocComment $pkg}} 
+{{- if $doc}}
+ * {{jsdoc $doc ""}}
+{{- end}}
+ * @typedef { {{- .JSType $pkg -}} } {{.Name}}
+ */
+{{end}}
 {{- range $enumindex, $enumdef := .Enums}}
 /**
 {{- $doc := .DocComment $pkg}}
@@ -51,16 +60,16 @@ export class {{$def.Name}} {
             For optional fields we make the initialization code unreachable
             and cast the false condition to any to prevent any complaint from Typescript.
         */}}
-        if ({{if .Optional}}/** @type {any} */(false){{else}}!("{{js .Name}}" in source){{end}}) {
+        if ({{if .Optional}}/** @type {any} */(false){{else}}!("{{js .JSName}}" in source){{end}}) {
             /**
-            {{- $doc := .DocComment $pkg $def}}
+            {{- $doc := .DocComment $pkg}}
             {{- if $doc}}
              * {{jsdoc $doc "            "}}
             {{- end}}
              * @member
              * @type { {{- .JSType $pkg}}{{if .Optional}} | undefined{{end -}} }
              */
-            this["{{js .Name}}"] = {{.DefaultValue $pkg $mDef}};
+            this["{{js .JSName}}"] = {{.DefaultValue $pkg $mDef}};
         }
     {{- end}}
 

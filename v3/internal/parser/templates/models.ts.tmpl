@@ -8,6 +8,15 @@
 import * as {{$name}} from "{{$path}}/{{$models}}";
 {{- end}}{{if .Imports}}
 {{end}}
+{{- range .BasicTypes}}
+{{- $doc := .DocComment $pkg}} 
+{{- if $doc}}
+/**
+ * {{jsdoc $doc ""}}
+ */
+{{- end}}
+type {{.Name}} = {{.JSType $pkg}};
+{{end}}
 {{- range $enumindex, $enumdef := .Enums}}
 {{- $doc := .DocComment $pkg}} 
 {{- if $doc}}
@@ -36,20 +45,20 @@ export enum {{$enumdef.Name}} {
 {{- end}}
 export class {{$def.Name}} {
     {{- range $fieldindex, $fielddef := $def.Fields}}
-    {{- $doc := .DocComment $pkg $def}} 
+    {{- $doc := .DocComment $pkg}} 
     {{- if $doc}}{{if gt $fieldindex 0}}
 {{end}}
     /**
      * {{jsdoc $doc "    "}}
      */
     {{- end}}
-    "{{js .Name}}"{{if .Optional}}?{{end}}: {{.JSType $pkg}};{{end}}
+    "{{js .JSName}}"{{if .Optional}}?{{end}}: {{.JSType $pkg}};{{end}}
 
     /** Creates a new {{$def.Name}} instance. */
     constructor(source: Partial<{{$def.Name}}> = {}) {
     {{- range $def.Fields}}{{if not .Optional}}
-        if (!("{{js .Name}}" in source)) {
-            this["{{js .Name}}"] = {{.DefaultValue $pkg $mDef}};
+        if (!("{{js .JSName}}" in source)) {
+            this["{{js .JSName}}"] = {{.DefaultValue $pkg $mDef}};
         }
     {{- end}}{{end}}
 

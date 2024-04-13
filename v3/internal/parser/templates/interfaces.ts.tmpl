@@ -7,6 +7,15 @@
 import * as {{$name}} from "{{$path}}/{{$models}}";
 {{- end}}{{if .Imports}}
 {{end}}
+{{- range .BasicTypes}}
+{{- $doc := .DocComment $pkg}} 
+{{- if $doc}}
+/**
+ * {{jsdoc $doc ""}}
+ */
+{{- end}}
+type {{.Name}} = {{.JSType $pkg}};
+{{end}}
 {{- range $enumindex, $enumdef := .Enums}}
 {{- $doc := .DocComment $pkg}} 
 {{- if $doc}}
@@ -42,6 +51,6 @@ export interface {{$def.Name}} {
      * {{jsdoc $doc "    "}}
      */
     {{- end}}
-    "{{js .Name}}"{{if .Optional}}?{{end}}: {{.JSType $pkg}};{{end}}
+    "{{js .JSName}}"{{if .Optional}}?{{end}}: {{.JSType $pkg}};{{end}}
 }
 {{end -}}

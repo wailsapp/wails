@@ -295,8 +295,8 @@ func (p *Package) anonymousStructID(s *types.Struct) string {
 }
 
 // Credit: https://stackoverflow.com/a/70999797/3140799
-func (p *Package) constantsOf(t *types.Named) (values map[string]*types.Const) {
-	values = make(map[string]*types.Const)
+func (p *Package) constantsOf(t *types.Named) []*ConstDef {
+	values := []*ConstDef{}
 
 	for _, file := range p.Syntax {
 		for _, decl := range file.Decls {
@@ -312,13 +312,13 @@ func (p *Package) constantsOf(t *types.Named) (values map[string]*types.Const) {
 				for _, name := range valueSpec.Names {
 					c := p.TypesInfo.ObjectOf(name).(*types.Const)
 					if strings.HasSuffix(c.Type().String(), t.Obj().Name()) {
-						values[name.Name] = c
+						values = append(values, &ConstDef{Name: name.Name, Const: c})
 					}
 				}
 			}
 		}
 	}
-	return
+	return values
 }
 
 type Stats struct {

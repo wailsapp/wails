@@ -2,14 +2,15 @@ package parser
 
 import (
 	"bytes"
+	"cmp"
 	"go/types"
 	"io"
 	"maps"
 	"reflect"
 	"slices"
-	"strconv"
 	"strings"
 
+	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/parser/templates"
@@ -170,37 +171,56 @@ func parseTag(tag string) *JsonTag {
 
 type Field struct {
 	*types.Var
-	index   int
+	path    []int
 	jsonTag *JsonTag
+	origin  *StructDef
 }
 
-func (f *Field) Name() string {
-	var name string
+func (f *Field) JSName() string {
 	if len(f.jsonTag.name) > 0 {
-		name = f.jsonTag.name
-	} else {
-		name = f.Var.Name()
+		return f.jsonTag.name
 	}
+	return f.Var.Name()
+}
 
-	if name == "" || name == "_" {
-		return "$" + strconv.Itoa(f.index)
-	} else if slices.Contains(reservedWords, name) {
-		return "$" + name
-	}
-	return name
+func (f *Field) nameFromTag() bool {
+	return len(f.jsonTag.name) > 0
 }
 
 func (f *Field) JSType(pkg *Package) string {
 	jstype, _ := JSType(f.Type(), pkg)
+
+	// use Typescript template literal types to type encoding/json quoted fields
+	if f.Quoted() {
+		if jstype == "string" {
+			jstype = "`\"${" + jstype + "}\"`"
+		} else {
+			jstype = "`${" + jstype + "}`"
+		}
+	}
+
 	return jstype
 }
 
 func (f *Field) DefaultValue(pkg *Package, mDef *ModelDefinitions) string {
-	return DefaultValue(f.Type(), pkg, mDef)
+	value := DefaultValue(f.Type(), pkg, mDef)
+
+	if f.Quoted() {
+		value = `"` + value + `"`
+	}
+
+	return value
 }
 
 func (f *Field) Exported() bool {
-	return f.Var.Exported() && f.jsonTag.visible
+	if !f.jsonTag.visible {
+		return false
+	}
+	if f.Embedded() && f.nameFromTag() {
+		return true
+	}
+
+	return f.Var.Exported()
 }
 
 func (f *Field) Optional() bool {
@@ -216,18 +236,95 @@ type StructDef struct {
 	Name string
 }
 
-func (s *StructDef) Fields() (fields []*Field) {
+func (s *StructDef) allFields() []*Field {
+	fields := []*Field{}
+
 	for i := 0; i < s.NumFields(); i++ {
 		field := &Field{
 			Var:     s.Field(i),
-			index:   i,
+			path:    []int{i},
 			jsonTag: parseTag(s.Tag(i)),
+			origin:  s,
 		}
-		if field.Exported() {
+		if field.Embedded() && !field.nameFromTag() {
+			switch fieldType := field.Type().Underlying().(type) {
+			case *types.Struct:
+				embDef := &StructDef{
+					Name:   field.Type().(*types.Named).Obj().Name(),
+					Struct: fieldType,
+				}
+				embeddedFields := embDef.allFields()
+				for _, embeddedField := range embeddedFields {
+					embeddedField.path = append([]int{i}, embeddedField.path...)
+					fields = append(fields, embeddedField)
+				}
+			case *types.Basic:
+				if field.Exported() {
+					fields = append(fields, field)
+				}
+			case *types.Interface:
+				pterm.Warning.Printfln("ignoring interface %v", fieldType)
+			}
+		} else if field.Exported() {
 			fields = append(fields, field)
 		}
 	}
-	return
+	return fields
+}
+
+func (s *StructDef) Fields() []*Field {
+	fields := s.allFields()
+
+	// sort fields
+	slices.SortFunc(fields, func(f1 *Field, f2 *Field) int {
+		// sort by name first
+		if diff := strings.Compare(f1.JSName(), f2.JSName()); diff != 0 {
+			return diff
+		}
+
+		// break ties by depth of occurrence
+		if diff := cmp.Compare(len(f1.path), len(f2.path)); diff != 0 {
+			return diff
+		}
+
+		// break ties by presence of json tag (prioritize presence)
+		if f1.nameFromTag() != f2.nameFromTag() {
+			if f1.nameFromTag() {
+				return -1
+			} else {
+				return 1
+			}
+		}
+
+		// break ties by order of occurrence
+		return slices.Compare(f1.path, f2.path)
+	})
+
+	count := 0
+
+	// keep for each name the dominant field, drop those for which ties
+	// still exist (ignoring order of occurrence)
+	for i, j := 0, 1; j <= len(fields); j++ {
+		if j < len(fields) && fields[i].JSName() == fields[j].JSName() {
+			continue
+		}
+
+		// if there is only one field with the current name, or there is a dominant one, keep it
+		if i+1 == j || len(fields[i].path) != len(fields[i+1].path) || fields[i].nameFromTag() != fields[i+1].nameFromTag() {
+			fields[count] = fields[i]
+			count++
+		}
+
+		i = j
+	}
+	result := fields[:count]
+
+	// sort by order of occurrence
+	slices.SortFunc(result, func(f1 *Field, f2 *Field) int {
+		return slices.Compare(f1.path, f2.path)
+	})
+
+	return result
 }
 
 type ConstDef struct {
@@ -247,9 +344,6 @@ type EnumDef struct {
 
 func (e *EnumDef) DefaultValue(fieldType types.Type, pkg *Package) string {
 	jstype, _ := JSType(fieldType, pkg)
-
-	// FIXME: order of e.Consts is not guaranteed
-	// the default value may change between model generations
 	return jstype + "." + e.Consts[0].Name
 }
 
@@ -258,12 +352,23 @@ func (e *EnumDef) JSType(pkg *Package) string {
 	return jstype
 }
 
+type BasicType struct {
+	Type *types.Basic
+	Name string
+}
+
+func (b *BasicType) JSType(pkg *Package) string {
+	jstype, _ := JSType(b.Type, pkg)
+	return jstype
+}
+
 type ModelDefinitions struct {
 	Package *Package
 	Imports map[string]string
 
-	Structs map[string]*StructDef
-	Enums   map[string]*EnumDef
+	Structs    map[string]*StructDef
+	Enums      map[string]*EnumDef
+	BasicTypes map[string]*BasicType
 
 	ModelsFilename string
 }
@@ -316,36 +421,36 @@ func (p *Project) GenerateModels() (result map[string]string, err error) {
 			continue
 		}
 
-		// split models into structs and enums
+		// split models into structs, enums and basic types
 		structDefs := make(map[string]*StructDef)
 		enumDefs := make(map[string]*EnumDef)
+		basicTypes := make(map[string]*BasicType)
 
 		for _, model := range models {
 			modelName := model.Obj().Name()
 
 			switch t := model.Underlying().(type) {
 			case *types.Basic:
-				consts := []*ConstDef{}
-				for name, c := range pkg.constantsOf(model) {
-					consts = append(consts, &ConstDef{Name: name, Const: c})
-				}
+				consts := pkg.constantsOf(model)
 
 				if len(consts) == 0 {
-					continue
+					basicTypes[modelName] = &BasicType{
+						Name: modelName,
+						Type: t,
+					}
+				} else {
+					enumDefs[modelName] = &EnumDef{
+						Name:   modelName,
+						Type:   t,
+						Consts: consts,
+					}
 				}
 
-				def := &EnumDef{
-					Name:   modelName,
-					Type:   t,
-					Consts: consts,
-				}
-				enumDefs[modelName] = def
 			case *types.Struct:
-				def := &StructDef{
+				structDefs[modelName] = &StructDef{
 					Name:   modelName,
 					Struct: t,
 				}
-				structDefs[modelName] = def
 			}
 		}
 
@@ -358,8 +463,9 @@ func (p *Project) GenerateModels() (result map[string]string, err error) {
 			Package: pkg,
 			Imports: pkg.calculateModelImports(structDefs, p),
 
-			Structs: structDefs,
-			Enums:   enumDefs,
+			Structs:    structDefs,
+			Enums:      enumDefs,
+			BasicTypes: basicTypes,
 
 			ModelsFilename: p.options.ModelsFilename,
 		}, p.options)

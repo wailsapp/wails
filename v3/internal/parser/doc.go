@@ -27,7 +27,7 @@ func NewDoc(pkg *packages.Package) *Doc {
 	pkgDoc := doc.New(&ast.Package{
 		Name:  pkg.Name,
 		Files: files,
-	}, pkg.PkgPath, doc.PreserveAST)
+	}, pkg.PkgPath, doc.PreserveAST|doc.AllDecls)
 
 	types := make(map[string]*doc.Type)
 	for _, t := range pkgDoc.Types {
@@ -56,6 +56,13 @@ func (m *BoundMethod) DocComment(pkg *Package, service *Service) string {
 func (e *EnumDef) DocComment(pkg *Package) string {
 	if enumType, ok := pkg.doc.Types[e.Name]; ok {
 		return strings.TrimSpace(enumType.Doc)
+	}
+	return ""
+}
+
+func (b *BasicType) DocComment(pkg *Package) string {
+	if basic, ok := pkg.doc.Types[b.Name]; ok {
+		return strings.TrimSpace(basic.Doc)
 	}
 	return ""
 }
@@ -89,8 +96,8 @@ func (c *ConstDef) DocComment(pkg *Package, enum *EnumDef) string {
 	return ""
 }
 
-func (f *Field) DocComment(pkg *Package, structDef *StructDef) string {
-	structType, ok := pkg.doc.Types[structDef.Name]
+func (f *Field) DocComment(pkg *Package) string {
+	structType, ok := pkg.doc.Types[f.origin.Name]
 	if !ok {
 		return ""
 	}
@@ -106,6 +113,11 @@ func (f *Field) DocComment(pkg *Package, structDef *StructDef) string {
 
 func (f *Field) docComment(structType *ast.StructType) string {
 	for _, field := range structType.Fields.List {
+		// comment of embedded basic type
+		if fieldType, ok := field.Type.(*ast.Ident); ok && len(field.Names) == 0 && fieldType.Name == f.Name() {
+			return strings.TrimSpace(field.Doc.Text())
+		}
+
 		for _, ident := range field.Names {
 			if ident.Name == f.Name() {
 				return strings.TrimSpace(field.Doc.Text())
