@@ -339,6 +339,8 @@ type Project struct {
 }
 
 func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
+	startTime := time.Now()
+
 	buildFlags, err := options.BuildFlags()
 	if err != nil {
 		return nil, err
@@ -373,6 +375,10 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 		pkgs:    pkgs,
 		main:    pPkgs[mainIndex],
 		options: options,
+		Stats: Stats{
+			StartTime:   startTime,
+			NumPackages: len(pkgs),
+		},
 	}, nil
 }
 
