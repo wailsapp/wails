@@ -89,9 +89,17 @@
             if (defaultOpen.length > 0) {
                 defaultOpen[0].click();
             }
+
+            // Add event listeners to the tab buttons
+            let tablinks = document.getElementsByClassName("tablinks");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].addEventListener('click', function() {
+                    openTab(this.getAttribute('onclick').split("'")[1]);
+                });
+            }
         }
 
-        function openTab(ev, tabName) {
+        function openTab(tabName) {
             let i, tabcontent, tablinks;
             tabcontent = document.getElementsByClassName("tabcontent");
             for (i = 0; i < tabcontent.length; i++) {
@@ -103,7 +111,7 @@
             }
             document.getElementById(tabName).style.display = "block";
             /* add "active" class name to event target */
-            ev.currentTarget.className += " active";
+            window.event.currentTarget.className += " active";
         }
     </script>
 </head>
@@ -111,9 +119,9 @@
 <h2>Plugins</h2>
 <div>
     <div class="tab" style="--wails-draggable: drag">
-        <button class="tablinks defaultOpen" onclick="openTab(event, 'sqlite')">SQLite</button>
-        <button class="tablinks" onclick="openTab(event, 'hashes')">Hashes</button>
-        <button class="tablinks" onclick="openTab(event, 'Demo3')">Demo 3</button>
+        <button class="tablinks defaultOpen" onclick="openTab('sqlite')">SQLite</button>
+        <button class="tablinks" onclick="openTab('hashes')">Hashes</button>
+        <button class="tablinks" onclick="openTab('Demo3')">Demo 3</button>
     </div>
 
     <div id="sqlite" class="tabcontent">
