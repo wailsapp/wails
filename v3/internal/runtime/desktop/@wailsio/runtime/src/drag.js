@@ -56,8 +56,7 @@ function onMouseDown(e) {
         if (e.offsetX > e.target.clientWidth || e.offsetY > e.target.clientHeight) {
             return;
         }
-        e.preventDefault()
-        invoke("drag");
+        shouldDrag = true;
     } else {
         shouldDrag = false;
     }
