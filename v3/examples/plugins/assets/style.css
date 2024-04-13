@@ -158,35 +158,31 @@ p {
     padding: 6px 12px;
     border-top: none;
 }
-#sqlresults {
+#sqlresults, #hashresults {
     font-family: 'Courier New', Courier, monospace;
     min-height: 100px;
 }
 #selectquery {
     width: 90%;
 }
-#sqlresults table {
+table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
 
-#sqlresults th, #sqlresults td {
+th, td {
     border: 1px solid #ddd;
     padding: 8px;
     text-align: left;
 }
 
-#sqlresults th {
+th {
     background-color: #005467;
     color: white;
 }
 
-#sqlresults tr:nth-child(even) {
-    background-color: rgba(154, 139, 139, 0.67);
-}
-
-#sqlresults tr:hover {
+tr:hover {
     background-color: #888;
 }
 

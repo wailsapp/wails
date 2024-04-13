@@ -7,6 +7,31 @@
     <script type="module" src="/wails/runtime.js"></script>
     <script type="module">
         import * as sqlite from '/wails/plugin/sqlite/sqlite.js';
+        import {Call} from "/wails/runtime.js";
+
+        function runHash() {
+            let hashstring = document.getElementById("hashstring").value;
+            Call.Plugin("hashes","Generate",hashstring).then((result) => {
+                // Result is an object with the hash and the algorithm used is the key
+                // Output a table with the field name in the left cell and the value in the right
+                let table = document.createElement("table");
+                for (let key in result) {
+                    let tr = document.createElement("tr");
+                    let th = document.createElement("th");
+                    th.innerText = key;
+                    let td = document.createElement("td");
+                    td.innerText = result[key];
+                    tr.appendChild(th);
+                    tr.appendChild(td);
+                    table.appendChild(tr);
+                }
+                document.getElementById("hashresults").innerHTML = "";
+                document.getElementById("hashresults").appendChild(table);
+            }).catch((err) => {
+                document.getElementById("hashresults").innerHTML = "<p class='error-message'>"+err+"</p>";
+            });
+        }
+
         function runSelect() {
             let query = document.getElementById("query").value;
             // If it starts with "select ", run `sqlite.Select` otherwise run `sqlite.Exec`
@@ -55,6 +80,7 @@
             });
         }
         document.getElementById("runquery").addEventListener('click', runSelect);
+        document.getElementById("runhash").addEventListener('click', runHash);
     </script>
     <script>
         window.onload = function() {
@@ -86,7 +112,7 @@
 <div>
     <div class="tab" style="--wails-draggable: drag">
         <button class="tablinks defaultOpen" onclick="openTab(event, 'sqlite')">SQLite</button>
-        <button class="tablinks" onclick="openTab(event, 'Demo2')">Demo 2</button>
+        <button class="tablinks" onclick="openTab(event, 'hashes')">Hashes</button>
         <button class="tablinks" onclick="openTab(event, 'Demo3')">Demo 3</button>
     </div>
 
@@ -104,9 +130,16 @@
         </div>
     </div>
 
-    <div id="Demo2" class="tabcontent">
-        <h5>Demo 2</h5>
-        <p>Content for Demo 2.</p>
+    <div id="hashes" class="tabcontent">
+        <p>The hashes plugin provides hashing functions.</p>
+        <div>
+            <div style="display: flex;justify-content: space-around;">
+                <input style="width:90%" type="text" id="hashstring" placeholder="Type any string here..."><br/>
+                <button type="button" id="runhash">Hash</button>
+            </div>
+            <div id="hashresults">
+            </div>
+        </div>
     </div>
 
     <div id="Demo3" class="tabcontent">
