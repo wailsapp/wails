@@ -249,35 +249,63 @@ type Package struct {
 }
 
 func BuildPackages(buildFlags []string, pkgs []*packages.Package, services []*Service) ([]*Package, error) {
-	pPkgMap := make(map[*types.Package]*packages.Package)
-	result := make(map[*types.Package]*Package)
+	result := make(map[string]*Package)
 
-	for _, pkg := range pkgs {
-		pPkgMap[pkg.Types] = pkg
-	}
-
-	for _, service := range services {
-		if pkg, ok := result[service.Pkg()]; ok {
-			pkg.addService(service)
-		} else {
-			pPkg, ok := pPkgMap[service.Pkg()]
-			if !ok {
-				var err error
-				pPkg, err = LoadPackage(buildFlags, true, service.Pkg().Path())
-				if err != nil {
-					return nil, err
-				}
-				pPkgMap[service.Pkg()] = pPkg
-			}
-
-			result[service.Pkg()] = &Package{
-				Package:          pPkg,
-				services:         []*Service{service},
-				anonymousStructs: make(map[string]string),
-				doc:              NewDoc(pPkg),
-			}
+	// wrap types.Package
+	for _, pPkg := range pkgs {
+		result[pPkg.Types.Path()] = &Package{
+			Package:          pPkg,
+			services:         []*Service{},
+			anonymousStructs: make(map[string]string),
+			doc:              NewDoc(pPkg),
 		}
 	}
+
+	// helper function to load missing packages
+	loadPackage := func(pkgPath string, services []*Service) (*Package, error) {
+		pPkg, err := LoadPackage(buildFlags, true, pkgPath)
+		if err != nil {
+			return nil, err
+		}
+
+		return &Package{
+			Package:          pPkg,
+			services:         services,
+			anonymousStructs: make(map[string]string),
+			doc:              NewDoc(pPkg),
+		}, nil
+	}
+
+	// add services to packages
+	for _, service := range services {
+		if pkg, ok := result[service.Pkg().Path()]; ok {
+			pkg.addService(service)
+		} else {
+			// load missing packages of service
+			pkg, err := loadPackage(service.Pkg().Path(), []*Service{service})
+			if err != nil {
+				return nil, err
+			}
+			result[service.Pkg().Path()] = pkg
+		}
+	}
+
+	// load missing packages of models
+	allModels := []*types.Named{}
+	for _, pkg := range result {
+		allModels = append(allModels, lo.Keys(pkg.Models())...)
+	}
+	for _, model := range allModels {
+		pkgPath := model.Obj().Pkg().Path()
+		if _, ok := result[pkgPath]; !ok {
+			pkg, err := loadPackage(pkgPath, []*Service{})
+			if err != nil {
+				return nil, err
+			}
+			result[pkgPath] = pkg
+		}
+	}
+
 	return lo.Values(result), nil
 }
 
