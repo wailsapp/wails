@@ -195,3 +195,8 @@ tr:hover {
     border-radius: 5px; /* Rounded corners */
     text-align: center; /* Center the text */
 }
+
+.narrowColumn {
+    width: 1%;  /* Adjust as needed */
+    white-space: nowrap;
+}

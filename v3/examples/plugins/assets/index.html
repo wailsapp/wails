@@ -8,10 +8,11 @@
     <script type="module">
         import * as sqlite from '/wails/plugin/sqlite/sqlite.js';
         import {Call} from "/wails/runtime.js";
+        import * as kvpairs from '/wails/plugin/kvstore/kvstore.js';
 
         function runHash() {
             let hashstring = document.getElementById("hashstring").value;
-            Call.Plugin("hashes","Generate",hashstring).then((result) => {
+            Call.Plugin("hashes", "Generate", hashstring).then((result) => {
                 // Result is an object with the hash and the algorithm used is the key
                 // Output a table with the field name in the left cell and the value in the right
                 let table = document.createElement("table");
@@ -28,7 +29,7 @@
                 document.getElementById("hashresults").innerHTML = "";
                 document.getElementById("hashresults").appendChild(table);
             }).catch((err) => {
-                document.getElementById("hashresults").innerHTML = "<p class='error-message'>"+err+"</p>";
+                document.getElementById("hashresults").innerHTML = "<p class='error-message'>" + err + "</p>";
             });
         }
 
@@ -44,7 +45,7 @@
             method(query).then((result) => {
                 let results = document.getElementById("sqlresults");
                 results.innerHTML = "";
-                if(!isSelect) {
+                if (!isSelect) {
                     let message = "Query executed successfully";
                     if (result.length > 0) {
                         message += " - " + result;
@@ -76,14 +77,96 @@
                 results.appendChild(table);
             }).catch((err) => {
                 // Put error in results
-                document.getElementById("sqlresults").innerHTML = "<p class='error-message'>"+err+"</p>";
+                document.getElementById("sqlresults").innerHTML = "<p class='error-message'>" + err + "</p>";
             });
         }
+
+        function deleteKVPair(key) {
+            kvpairs.Delete(key).then(() => {
+                getKVStoreValues();
+            }).catch((err) => {
+                document.getElementById("kvstoreresults").innerHTML = err;
+            });
+        }
+        function getKVStoreValues() {
+            kvpairs.Get().then((result) => {
+                let kvstoreresults = document.getElementById('kvstoreresults');
+                kvstoreresults.innerHTML = '';
+                let table = document.createElement('table');
+                let headerRow = document.createElement('tr');
+                let header1 = document.createElement('th');
+                header1.innerText = 'Key';
+                headerRow.appendChild(header1);
+
+                let header2 = document.createElement('th');
+                header2.innerText = 'Value';
+                headerRow.appendChild(header2);
+
+                // Add an empty header for the delete column
+                let header3 = document.createElement('th');
+                headerRow.appendChild(header3);
+
+                table.appendChild(headerRow);
+                for (let key in result) {
+                    let row = document.createElement('tr');
+                    let keyCell = document.createElement('td');
+                    keyCell.innerText = key;
+                    row.appendChild(keyCell);
+                    let valueCell = document.createElement('td');
+                    valueCell.innerText = result[key];
+                    row.appendChild(valueCell);
+
+                    // Create the delete button
+                    let deleteButton = document.createElement('button');
+                    deleteButton.innerText = 'Delete';
+                    deleteButton.addEventListener('click', function () {
+                        deleteKVPair(key);
+                    });
+
+                    // Add the delete button to the row
+                    let deleteCell = document.createElement('td');
+                    deleteCell.className = 'narrowColumn';
+                    deleteCell.appendChild(deleteButton);
+                    row.appendChild(deleteCell);
+
+                    table.appendChild(row);
+                }
+                let header = document.createElement('h2');
+                header.innerText = 'Store State';
+                kvstoreresults.appendChild(header);
+                kvstoreresults.appendChild(table);
+            }).catch((err) => {
+                document.getElementById("kvstoreresults").innerHTML = err;
+            });
+        }
+
         document.getElementById("runquery").addEventListener('click', runSelect);
         document.getElementById("runhash").addEventListener('click', runHash);
+        window.addEventListener('load', function () {
+            getKVStoreValues();
+        });
+        document.getElementById('kvForm').addEventListener('submit', function (event) {
+            // Prevent the form from being submitted normally
+            event.preventDefault();
+
+            // Get the key and value from the form
+            let key = document.getElementById('key').value;
+            let value = document.getElementById('value').value;
+
+            // Validate the key and value
+            if (key) {
+                // Call the Set method
+                kvpairs.Set(key, value);
+                // Get all values from the kvstore
+                getKVStoreValues();
+            } else {
+                // Show an error message if the key is missing
+                alert('Key is required.');
+            }
+        });
     </script>
     <script>
-        window.onload = function() {
+        window.onload = function () {
             // Get the element with class="defaultOpen" and click on it
             let defaultOpen = document.getElementsByClassName("defaultOpen");
             if (defaultOpen.length > 0) {
@@ -93,7 +176,7 @@
             // Add event listeners to the tab buttons
             let tablinks = document.getElementsByClassName("tablinks");
             for (let i = 0; i < tablinks.length; i++) {
-                tablinks[i].addEventListener('click', function() {
+                tablinks[i].addEventListener('click', function () {
                     openTab(this.getAttribute('onclick').split("'")[1]);
                 });
             }
@@ -121,7 +204,7 @@
     <div class="tab" style="--wails-draggable: drag">
         <button class="tablinks defaultOpen" onclick="openTab('sqlite')">SQLite</button>
         <button class="tablinks" onclick="openTab('hashes')">Hashes</button>
-        <button class="tablinks" onclick="openTab('Demo3')">Demo 3</button>
+        <button class="tablinks" onclick="openTab('kvstore')">K/V Store</button>
     </div>
 
     <div id="sqlite" class="tabcontent">
@@ -137,7 +220,6 @@
             </div>
         </div>
     </div>
-
     <div id="hashes" class="tabcontent">
         <p>The hashes plugin provides hashing functions.</p>
         <div>
@@ -149,10 +231,19 @@
             </div>
         </div>
     </div>
-
-    <div id="Demo3" class="tabcontent">
-        <h5>Demo 3</h5>
-        <p>Content for Demo 3.</p>
+    <div id="kvstore" class="tabcontent">
+        <p>The kvstore plugin provides a means for reading and writing to a json file.</p>
+        <p>Enter a key/value pair in the form below to add it to the file.</p>
+        <p>A blank value will remove the key.</p>
+        <div>
+            <form id="kvForm">
+                <input type="text" id="key" placeholder="Enter key">
+                <input type="text" id="value" placeholder="Enter value">
+                <input type="submit" value="Save">
+            </form>
+            <div id="kvstoreresults">
+            </div>
+        </div>
     </div>
 </div>
 </body>
