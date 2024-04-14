@@ -8,7 +8,7 @@
 import * as {{$name}} from "{{$path}}/{{$models}}";
 {{- end}}{{if .Imports}}
 {{end}}
-{{- range .BasicTypes}}
+{{- range .Aliases}}
 {{- $doc := .DocComment $pkg}} 
 {{- if $doc}}
 /**

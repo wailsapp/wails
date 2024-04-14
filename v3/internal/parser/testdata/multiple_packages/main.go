@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"runtime/debug"
 
+	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/parser/testdata/multiple_packages/other"
 	otherother "github.com/wailsapp/wails/v3/internal/parser/testdata/multiple_packages/other/other"
@@ -24,6 +25,10 @@ func (g *GreetService) Greet(name string) string {
 
 func (g *GreetService) BuildInfo() (*debug.BuildInfo, bool) {
 	return debug.ReadBuildInfo()
+}
+
+func (g *GreetService) UUID() uuid.UUID {
+	return uuid.New()
 }
 
 //go:embed frontend/*

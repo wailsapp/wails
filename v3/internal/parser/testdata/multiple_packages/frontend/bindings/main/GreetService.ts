@@ -4,6 +4,7 @@
 import {Call} from "/wails/runtime.js";
 
 import * as debug from "../runtime-debug/models";
+import * as uuid from "../github.com-google-uuid/models";
 
 export function BuildInfo(): Promise<[debug.BuildInfo | null, boolean]> {
     return Call.ByID(2776941280);
@@ -11,4 +12,8 @@ export function BuildInfo(): Promise<[debug.BuildInfo | null, boolean]> {
 
 export function Greet(name: string): Promise<string> {
     return Call.ByID(1411160069, name);
+}
+
+export function UUID(): Promise<uuid.UUID> {
+    return Call.ByID(478608279);
 }

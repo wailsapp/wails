@@ -371,10 +371,48 @@ type Project struct {
 	main    *packages.Package
 	options *flags.GenerateBindingsOptions
 	Stats   Stats
+
+	marshaler     *types.Interface
+	textMarshaler *types.Interface
+}
+
+func loadMarshalerInterface() (*types.Interface, *types.Interface, error) {
+	var marshaler, textMarshaler *types.Interface
+
+	pkg, err := LoadPackage(nil, true, "encoding/json")
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, t := range pkg.TypesInfo.Types {
+		switch i := t.Type.Underlying().(type) {
+		case *types.Interface:
+			if named, ok := t.Type.(*types.Named); ok {
+				if named.Obj().Name() == "Marshaler" {
+					marshaler = i
+				} else if named.Obj().Name() == "TextMarshaler" {
+					textMarshaler = i
+				}
+
+			}
+		}
+	}
+	if marshaler == nil {
+		return nil, nil, errors.New("could not find interface json.Marshaler")
+	}
+	if textMarshaler == nil {
+		return nil, nil, errors.New("could not find interface encoding.TextMarshaler")
+	}
+	return marshaler, textMarshaler, nil
 }
 
 func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 	startTime := time.Now()
+
+	// load json interfaces
+	marshaler, textMarshaler, err := loadMarshalerInterface()
+	if err != nil {
+		return nil, err
+	}
 
 	buildFlags, err := options.BuildFlags()
 	if err != nil {
@@ -407,9 +445,11 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 	}
 
 	return &Project{
-		pkgs:    pkgs,
-		main:    pPkgs[mainIndex],
-		options: options,
+		pkgs:          pkgs,
+		main:          pPkgs[mainIndex],
+		options:       options,
+		marshaler:     marshaler,
+		textMarshaler: textMarshaler,
 		Stats: Stats{
 			StartTime:   startTime,
 			NumPackages: len(pkgs),
@@ -434,6 +474,7 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 		return p, err
 	}
 
+	// generate bindings
 	generatedMethods, err := p.GenerateBindings()
 	if err != nil {
 		return p, err
@@ -460,6 +501,7 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 		}
 	}
 
+	// generate models
 	generatedModels, err := p.GenerateModels()
 	if err != nil {
 		return p, err

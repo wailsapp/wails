@@ -352,13 +352,13 @@ func (e *EnumDef) JSType(pkg *Package) string {
 	return jstype
 }
 
-type BasicType struct {
-	Type *types.Basic
+type AliasDef struct {
 	Name string
+	Type types.Type
 }
 
-func (b *BasicType) JSType(pkg *Package) string {
-	jstype, _ := JSType(b.Type, pkg)
+func (a *AliasDef) JSType(pkg *Package) string {
+	jstype, _ := JSType(a.Type.Underlying(), pkg)
 	return jstype
 }
 
@@ -366,9 +366,9 @@ type ModelDefinitions struct {
 	Package *Package
 	Imports map[string]string
 
-	Structs    map[string]*StructDef
-	Enums      map[string]*EnumDef
-	BasicTypes map[string]*BasicType
+	Structs map[string]*StructDef
+	Enums   map[string]*EnumDef
+	Aliases map[string]*AliasDef
 
 	ModelsFilename string
 }
@@ -424,19 +424,30 @@ func (p *Project) GenerateModels() (result map[string]string, err error) {
 		// split models into structs, enums and basic types
 		structDefs := make(map[string]*StructDef)
 		enumDefs := make(map[string]*EnumDef)
-		basicTypes := make(map[string]*BasicType)
+		aliases := make(map[string]*AliasDef)
 
 		for _, model := range models {
 			modelName := model.Obj().Name()
+
+			if types.Implements(model, p.marshaler) {
+				pterm.Warning.Printfln("Generator can not predict json keys of model %s, because it implements json.Marshaler", model.String())
+			}
+
+			if types.Implements(model, p.textMarshaler) {
+				aliases[modelName] = &AliasDef{
+					Name: modelName,
+					Type: types.Typ[types.String],
+				}
+			}
 
 			switch t := model.Underlying().(type) {
 			case *types.Basic:
 				consts := pkg.constantsOf(model)
 
 				if len(consts) == 0 {
-					basicTypes[modelName] = &BasicType{
+					aliases[modelName] = &AliasDef{
 						Name: modelName,
-						Type: t,
+						Type: model,
 					}
 				} else {
 					enumDefs[modelName] = &EnumDef{
@@ -463,9 +474,9 @@ func (p *Project) GenerateModels() (result map[string]string, err error) {
 			Package: pkg,
 			Imports: pkg.calculateModelImports(structDefs, p),
 
-			Structs:    structDefs,
-			Enums:      enumDefs,
-			BasicTypes: basicTypes,
+			Structs: structDefs,
+			Enums:   enumDefs,
+			Aliases: aliases,
 
 			ModelsFilename: p.options.ModelsFilename,
 		}, p.options)

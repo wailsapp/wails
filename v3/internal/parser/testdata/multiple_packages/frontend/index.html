@@ -39,7 +39,8 @@
             await Logger.Println("Calling some methods by id ...");
             await Logger.Println(await GreetService.Greet("Alice"));
             // await Logger.Println(await Greeter.Greet("Alice"));
-            await Logger.Println(await OtherService.Greet(new Person({Name: "Bob"})));
+            let uuid = await GreetService.UUID()
+            await Logger.Println(await OtherService.Greet(new Person({Name: "Bob", UUID: uuid})));
             await Logger.Println(
                 await OtherOtherService.Greet(new PersonWithTitle({Name: "Bob", Title: "Sir"}))
             );
@@ -52,7 +53,8 @@
             await Logger.Println("Calling some methods by name ...");
             await NLogger.Println(await NGreetService.Greet("Alice"));
             // await NLogger.Println(await NGreeter.Greet("Alice"));
-            await NLogger.Println(await NOtherService.Greet(new Person({Name: "Bob"})));
+            let uuid = await GreetService.UUID()
+            await NLogger.Println(await NOtherService.Greet(new Person({Name: "Bob", UUID: uuid})));
             await NLogger.Println(
                 await NOtherOtherService.Greet(new PersonWithTitle({Name: "Bob", Title: "Sir"}))
             );

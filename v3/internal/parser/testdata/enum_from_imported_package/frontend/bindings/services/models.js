@@ -4,7 +4,7 @@
 
 /**
  * @readonly
- * @enum
+ * @enum {string}
  */
 export const Title = {
     /**

@@ -60,8 +60,8 @@ func (e *EnumDef) DocComment(pkg *Package) string {
 	return ""
 }
 
-func (b *BasicType) DocComment(pkg *Package) string {
-	if basic, ok := pkg.doc.Types[b.Name]; ok {
+func (a *AliasDef) DocComment(pkg *Package) string {
+	if basic, ok := pkg.doc.Types[a.Name]; ok {
 		return strings.TrimSpace(basic.Doc)
 	}
 	return ""

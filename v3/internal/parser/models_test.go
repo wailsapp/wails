@@ -131,9 +131,10 @@ func TestGenerateModels(t *testing.T) {
 			name: "multiple_packages",
 			dir:  "testdata/multiple_packages",
 			want: map[string]bool{
-				"runtime-debug": true,
-				"other":         true,
-				"other/other":   true,
+				"github.com-google-uuid": true,
+				"runtime-debug":          true,
+				"other":                  true,
+				"other/other":            true,
 			},
 		},
 	}
