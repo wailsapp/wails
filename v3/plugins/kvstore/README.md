@@ -27,6 +27,18 @@ func main() {
 
 ```
 
+### Options
+
+```go
+type Config struct {
+    Filename string
+    AutoSave bool
+}
+```
+
+- `Filename` - The name of the file to store the key/value pairs in. This file will be created in the application's data directory.
+- `AutoSave` - If true, the store will be saved to disk after every change. If false, you will need to call `Save()` to persist the changes.
+
 ## Usage
 
 ### Go
@@ -34,11 +46,19 @@ func main() {
 You can call the methods exported by the plugin directly:
 
 ```go
+    // Set a key
     err := kvstore.Set("url", "https://www.google.com")
     if err != nil {
         // handle error
     }
+	// Get a key
     url := kvstore.Get("url").(string)
+	
+	// Delete a key
+    err = kvstore.Delete("url")
+    if err != nil {
+        // handle error
+    }
     
 	// If you have not enables AutoSave, you will need to call Save() to persist the changes
     err = kvstore.Save()
@@ -54,7 +74,10 @@ You can call the methods from the frontend using the Plugin method:
 ```js
     wails.Plugin("kvstore","Set", "url", "https://www.google.com")
     wails.Plugin("kvstore","Get", "url").then((url) => {
-        
+    
+    })
+    wails.Plugin("kvstore","Delete", "url").then((url) => {
+    
     })
     
     // or

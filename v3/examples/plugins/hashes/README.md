@@ -15,7 +15,8 @@ Add the plugin to the `Plugins` option in the Applications options:
 You can then call the Generate method from the frontend:
 
 ```js
-    wails.Plugin("hashes","Generate","hello world").then((result) => console.log(result))
+    import {Call} from "/wails/runtime.js";
+    Call.Plugin("hashes","Generate","hello world").then((result) => console.log(result))
 ```
 
 This method returns a struct with the following fields:

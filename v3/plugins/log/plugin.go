@@ -1,13 +1,15 @@
 package log
 
 import (
+	"embed"
 	_ "embed"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"io/fs"
 	"log/slog"
 )
 
-//go:embed plugin.js
-var pluginJS string
+//go:embed assets/*
+var assets embed.FS
 
 // ---------------- Plugin Setup ----------------
 // This is the main plugin struct. It can be named anything you like.
@@ -72,8 +74,8 @@ func (p *Plugin) CallableByJS() []string {
 	}
 }
 
-func (p *Plugin) InjectJS() string {
-	return pluginJS
+func (p *Plugin) Assets() fs.FS {
+	return assets
 }
 
 // ---------------- Plugin Methods ----------------
