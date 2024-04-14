@@ -66,14 +66,15 @@ void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern gboolean onMenuButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern void onDragNDrop(
-   void         *target,
-   GdkDragContext* context,
-   gint         x,
-   gint         y,
-   gpointer     seldata,
-   guint        info,
-   guint        time,
-   gpointer     data);
+    GtkWidget* widget,
+    GdkDragContext* context,
+    gint x,
+    gint y,
+    GtkSelectionData* seldata,
+    guint info,
+    guint time,
+    gpointer data
+);
 extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, uintptr_t user_data);
 extern void onProcessRequest(WebKitURISchemeRequest *request, uintptr_t user_data);
 extern void sendMessageToBackend(WebKitUserContentManager *contentManager, WebKitJavascriptResult *result, void *data);
@@ -1383,7 +1384,7 @@ func onMenuButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t
 }
 
 //export onDragNDrop
-func onDragNDrop(target unsafe.Pointer, context *C.GdkDragContext, x C.gint, y C.gint, seldata unsafe.Pointer, info C.guint, time C.guint, data unsafe.Pointer) {
+func onDragNDrop(widget *C.GtkWidget, context *C.GdkDragContext, x C.gint, y C.gint, seldata *C.GtkSelectionData, info C.guint, time C.guint, data C.gpointer) {
 	var length C.gint
 	selection := unsafe.Pointer(C.gtk_selection_data_get_data_with_length((*C.GtkSelectionData)(seldata), &length))
 	extracted := C.g_uri_list_extract_uris((*C.char)(selection))
