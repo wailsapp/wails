@@ -202,7 +202,7 @@ type Service struct {
 	Methods []*BoundMethod
 }
 
-func BoundMethods(service *types.TypeName) (methods []*BoundMethod) {
+func getMethods(service *types.TypeName, main *packages.Package) (methods []*BoundMethod) {
 	if named, ok := service.Type().(*types.Named); ok {
 		for i := 0; i < named.NumMethods(); i++ {
 			fn := named.Method(i)
@@ -210,8 +210,15 @@ func BoundMethods(service *types.TypeName) (methods []*BoundMethod) {
 				continue
 			}
 
-			// TODO replace with named.Method(i).String() ???
-			fqn := fmt.Sprintf("%s.%s.%s", service.Pkg().Name(), service.Name(), fn.Name())
+			packagePath := service.Pkg().Path()
+			// use "main" as package path if service is inside main package,
+			// because reflect.Type.PkgPath() == "main"
+			// https://github.com/golang/go/issues/8559
+			if packagePath == main.Types.Path() {
+				packagePath = "main"
+			}
+
+			fqn := fmt.Sprintf("%s.%s.%s", packagePath, service.Name(), fn.Name())
 
 			id, err := hash.Fnv(fqn)
 			if err != nil {
@@ -389,7 +396,7 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 		return nil, errors.New("application.New() must be inside main package")
 	}
 
-	services, err := Services(pPkgs)
+	services, err := Services(pPkgs, pPkgs[mainIndex])
 	if err != nil {
 		return nil, err
 	}
@@ -481,7 +488,7 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 	return p, nil
 }
 
-func Services(pkgs []*packages.Package) (services []*Service, err error) {
+func Services(pkgs []*packages.Package, main *packages.Package) (services []*Service, err error) {
 	var app *packages.Package
 	otherPkgs := append(make([]*packages.Package, 0, len(pkgs)), pkgs...)
 	if index := slices.IndexFunc(pkgs, func(pkg *packages.Package) bool { return pkg.PkgPath == WailsAppPkgPath }); index >= 0 {
@@ -502,7 +509,7 @@ func Services(pkgs []*packages.Package) (services []*Service, err error) {
 	for _, service := range found {
 		services = append(services, &Service{
 			TypeName: service,
-			Methods:  BoundMethods(service),
+			Methods:  getMethods(service, main),
 		})
 	}
 	return

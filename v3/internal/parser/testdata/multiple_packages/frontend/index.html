@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head></head>
+<body style="--webkit-app-region: drag;">
+    <script type="module">
+
+        async function callByName () {
+            await Logger.Println(await GreetService.Greet("Alice"));
+            // await Logger.Println(await Greeter.Greet("Alice"));
+            await Logger.Println(await OtherService.Greet(new Person({Name: "Bob"})));
+            await Logger.Println(
+                await OtherOtherService.Greet(new PersonWithTitle({Name: "Bob", Title: "Sir"}))
+            );
+            let buildInfo = (await GreetService.BuildInfo())[0];
+            await Logger.Println("GoVersion", buildInfo.GoVersion, "Path", buildInfo.Path);
+            await Logger.Println("Calls have been successful!");
+        }
+
+    </script>
+    <script type="module">
+        import { Application } from "/wails/runtime.js";
+
+        import * as GreetService from "./bindings/main/GreetService.js";
+        import * as Greeter from "./bindings/main/Greeter.js";
+        import * as OtherService from "./bindings/other/OtherService.js";
+        import * as OtherOtherService from "./bindings/other/other/OtherService.js";
+        import * as Logger from "./bindings/log/Logger.js";
+
+        import * as NGreetService from "./bindings/main/GreetService.name.js";
+        import * as NGreeter from "./bindings/main/Greeter.name.js";
+        import * as NOtherService from "./bindings/other/OtherService.name.js";
+        import * as NOtherOtherService from "./bindings/other/other/OtherService.name.js";
+        import * as NLogger from "./bindings/log/Logger.name.js";
+
+        import { Person } from "./bindings/other/models.js";
+        import { Person as PersonWithTitle } from "./bindings/other/other/models.js";
+
+        async function callById () {
+            await Logger.Println("Calling some methods by id ...");
+            await Logger.Println(await GreetService.Greet("Alice"));
+            // await Logger.Println(await Greeter.Greet("Alice"));
+            await Logger.Println(await OtherService.Greet(new Person({Name: "Bob"})));
+            await Logger.Println(
+                await OtherOtherService.Greet(new PersonWithTitle({Name: "Bob", Title: "Sir"}))
+            );
+            let buildInfo = (await GreetService.BuildInfo())[0];
+            await Logger.Println("GoVersion", buildInfo.GoVersion, "Path", buildInfo.Path);
+            await Logger.Println("Calls have been successful!");
+        }
+
+        async function callByName () {
+            await Logger.Println("Calling some methods by name ...");
+            await NLogger.Println(await NGreetService.Greet("Alice"));
+            // await NLogger.Println(await NGreeter.Greet("Alice"));
+            await NLogger.Println(await NOtherService.Greet(new Person({Name: "Bob"})));
+            await NLogger.Println(
+                await NOtherOtherService.Greet(new PersonWithTitle({Name: "Bob", Title: "Sir"}))
+            );
+            let buildInfo = (await NGreetService.BuildInfo())[0];
+            await NLogger.Println("GoVersion", buildInfo.GoVersion, "Path", buildInfo.Path);
+            await NLogger.Println("Calls have been successful!");
+        }
+
+        async function main () {
+            await callById()
+            await callByName()
+
+            Application.Quit()
+        }
+
+        main().catch((err) => {
+            console.error(err);
+            if (err.name === undefined) {
+                Logger.Fatal(err)
+            } else {
+                Logger.Fatal(`${err.name}: ${err.message}\n${err.stack}`)
+            }
+            
+            
+        });
+    </script>
+</body>
+</html>

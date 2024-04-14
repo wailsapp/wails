@@ -136,14 +136,11 @@ export function Call(options) {
  * @returns {*} The result of the method execution.
  */
 export function ByName(name, ...args) {
-    if (typeof name !== "string" || name.split(".").length !== 3) {
+    if (typeof name !== "string" || name.split(".").length < 3) {
         throw new Error("CallByName requires a string in the format 'package.struct.method'");
     }
-    let [packageName, structName, methodName] = name.split(".");
     return callBinding(CallBinding, {
-        packageName,
-        structName,
-        methodName,
+        methodName: name,
         args
     });
 }

@@ -11,5 +11,5 @@ import {Address} from "./models.js";
  * @returns {Promise<Address | null>}
  */
 export function Yay() {
-    return Call.ByName("services.OtherService.Yay");
+    return Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testdata/variable_single_from_other_function/services.OtherService.Yay");
 }

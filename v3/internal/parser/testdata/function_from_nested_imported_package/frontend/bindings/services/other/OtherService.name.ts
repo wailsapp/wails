@@ -9,5 +9,5 @@ import {Address} from "./models";
  * Yay does this and that
  */
 export function Yay(): Promise<Address | null> {
-    return Call.ByName("other.OtherService.Yay");
+    return Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testdata/function_from_nested_imported_package/services/other.OtherService.Yay");
 }

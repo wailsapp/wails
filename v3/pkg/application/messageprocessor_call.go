@@ -63,18 +63,9 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			m.callErrorCallback(window, "Error parsing call options: %s", callID, err)
 			return
 		}
-		var boundMethod *BoundMethod
-		if options.PackageName != "" {
-			boundMethod = globalApplication.bindings.Get(&options)
-			if boundMethod == nil {
-				m.callErrorCallback(window, "Error getting binding for method: %s", callID, fmt.Errorf("method '%s' not found", options.Name()))
-				return
-			}
-		} else {
-			boundMethod = globalApplication.bindings.GetByID(options.MethodID)
-		}
+		boundMethod := globalApplication.bindings.Get(&options)
 		if boundMethod == nil {
-			m.callErrorCallback(window, "Error getting binding for method: %s", callID, fmt.Errorf("method ID '%s' not found", options.Name()))
+			m.callErrorCallback(window, "Error getting binding for method: %s", callID, fmt.Errorf("method '%s' not found", options.String()))
 			return
 		}
 

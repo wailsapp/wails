@@ -1,7 +1,9 @@
 package main
 
 import (
+	"embed"
 	"log"
+	"log/slog"
 	"runtime/debug"
 
 	"github.com/samber/lo"
@@ -24,6 +26,9 @@ func (g *GreetService) BuildInfo() (*debug.BuildInfo, bool) {
 	return debug.ReadBuildInfo()
 }
 
+//go:embed frontend/*
+var assets embed.FS
+
 func main() {
 	tupel := lo.T2(0, 1)
 
@@ -34,15 +39,22 @@ func main() {
 				ServiceName: "GreetService",
 			},
 			&Greeter{
-				ServiceName: "GreetService",
+				ServiceName: "Greeter",
 			},
 			&other.OtherService{},
 			&otherother.OtherService{},
 			&tupel,
 		},
+		Assets: application.AssetOptions{
+			Handler: application.BundledAssetFileServer(assets),
+		},
+		LogLevel: slog.LevelWarn,
 	})
 
-	app.NewWebviewWindow()
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+		URL:             "/",
+		DevToolsEnabled: true,
+	})
 
 	err := app.Run()
 

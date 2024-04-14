@@ -59,9 +59,10 @@ func TestGenerateBindings(t *testing.T) {
 	}
 
 	tests := []struct {
-		name string
-		dir  string
-		want map[string]map[string]bool
+		name              string
+		dir               string
+		want              map[string]map[string]bool
+		useBundledRuntime bool
 	}{
 		{
 			name: "complex_json",
@@ -272,15 +273,17 @@ func TestGenerateBindings(t *testing.T) {
 				// 	"Tupel2": true,
 				// },
 			},
+			useBundledRuntime: true,
 		},
 	}
 
 	type Test struct {
-		name          string
-		dir           string
-		want          map[string]map[string]string
-		useNames      bool
-		useTypescript bool
+		name              string
+		dir               string
+		want              map[string]map[string]string
+		useNames          bool
+		useTypescript     bool
+		useBundledRuntime bool
 	}
 
 	allTests := []Test{}
@@ -300,11 +303,12 @@ func TestGenerateBindings(t *testing.T) {
 			}
 
 			allTests = append(allTests, Test{
-				name:          tt.name + " - " + option.name,
-				dir:           tt.dir,
-				want:          want,
-				useNames:      option.useNames,
-				useTypescript: option.useTypescript,
+				name:              tt.name + " - " + option.name,
+				dir:               tt.dir,
+				want:              want,
+				useNames:          option.useNames,
+				useTypescript:     option.useTypescript,
+				useBundledRuntime: tt.useBundledRuntime,
 			})
 		}
 	}
@@ -319,11 +323,12 @@ func TestGenerateBindings(t *testing.T) {
 			}
 
 			options := &flags.GenerateBindingsOptions{
-				ModelsFilename:   "models",
-				UseNames:         tt.useNames,
-				TS:               tt.useTypescript,
-				OutputDirectory:  "frontend/bindings",
-				ProjectDirectory: absDir,
+				ModelsFilename:    "models",
+				UseNames:          tt.useNames,
+				TS:                tt.useTypescript,
+				OutputDirectory:   "frontend/bindings",
+				ProjectDirectory:  absDir,
+				UseBundledRuntime: tt.useBundledRuntime,
 			}
 
 			project, err := ParseProject(options)

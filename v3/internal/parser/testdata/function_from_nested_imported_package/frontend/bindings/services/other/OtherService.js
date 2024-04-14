@@ -11,5 +11,5 @@ import {Address} from "./models.js";
  * @returns {Promise<Address | null>}
  */
 export function Yay() {
-    return Call.ByID(2020829923);
+    return Call.ByID(2189323817);
 }
