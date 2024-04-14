@@ -10,7 +10,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-//go:embed js/*
+//go:embed assets/*
 var assets embed.FS
 
 // ---------------- Plugin Setup ----------------

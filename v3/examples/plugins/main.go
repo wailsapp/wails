@@ -4,7 +4,7 @@ import (
 	"embed"
 	"log/slog"
 	"os"
-	"plugin_demo/plugins/hashes"
+	"plugin_demo/hashes"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/plugins/kvstore"
@@ -36,10 +36,6 @@ func main() {
 				Filename: "store.json",
 				AutoSave: true,
 			}),
-			//"server": server.NewPlugin(&server.Config{
-			//	Enabled: true,
-			//	Port:    34115,
-			//}),
 			"single_instance": single_instance.NewPlugin(&single_instance.Config{
 				// When true, the original app will be activated when a second instance is launched
 				ActivateAppOnSubsequentLaunch: true,

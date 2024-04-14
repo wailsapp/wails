@@ -9,9 +9,11 @@
         import * as sqlite from '/wails/plugin/sqlite/sqlite.js';
         import {Call} from "/wails/runtime.js";
         import * as kvpairs from '/wails/plugin/kvstore/kvstore.js';
+        import {Debug, Info, Warning, Error} from '/wails/plugin/log/log.js';
 
         function runHash() {
             let hashstring = document.getElementById("hashstring").value;
+            // Plugin methods can be called by name using the Plugin method
             Call.Plugin("hashes", "Generate", hashstring).then((result) => {
                 // Result is an object with the hash and the algorithm used is the key
                 // Output a table with the field name in the left cell and the value in the right
@@ -140,6 +142,23 @@
             });
         }
 
+        function log(logLevel, message) {
+            // Call the appropriate logging function based on the log level
+            switch(logLevel) {
+                case 'Debug':
+                    Debug(message);
+                    break;
+                case 'Info':
+                    Info(message);
+                    break;
+                case 'Warning':
+                    Warning(message);
+                    break;
+                case 'Error':
+                    Error(message);
+                    break;
+            }
+        }
         document.getElementById("runquery").addEventListener('click', runSelect);
         document.getElementById("runhash").addEventListener('click', runHash);
         window.addEventListener('load', function () {
@@ -163,6 +182,12 @@
                 // Show an error message if the key is missing
                 alert('Key is required.');
             }
+        });
+        document.getElementById('logForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // prevent the form from submitting normally
+            let logLevel = document.getElementById('logLevel').value;
+            let message = document.getElementById('message').value;
+            log(logLevel, message);
         });
     </script>
     <script>
@@ -205,6 +230,7 @@
         <button class="tablinks defaultOpen" onclick="openTab('sqlite')">SQLite</button>
         <button class="tablinks" onclick="openTab('hashes')">Hashes</button>
         <button class="tablinks" onclick="openTab('kvstore')">K/V Store</button>
+        <button class="tablinks" onclick="openTab('log')">Log</button>
     </div>
 
     <div id="sqlite" class="tabcontent">
@@ -244,6 +270,20 @@
             <div id="kvstoreresults">
             </div>
         </div>
+    </div>
+    <div id="log" class="tabcontent">
+        <p>The log plugin provides a means for sending frontend logs to a Go logger.</p>
+        <p>Enter some text below, press submit and check your console logs.</p>
+        <form id="logForm">
+            <select id="logLevel">
+                <option value="Debug">Debug</option>
+                <option value="Info">Info</option>
+                <option value="Warning">Warning</option>
+                <option value="Error">Error</option>
+            </select>
+            <input type="text" id="message" placeholder="Enter message">
+            <input type="submit" value="Log">
+        </form>
     </div>
 </div>
 </body>

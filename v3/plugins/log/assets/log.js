@@ -2,6 +2,8 @@
 // This file should contain helper functions for the that can be used by the frontend.
 // Below are examples of how to use JSDoc to define the Hashes struct and the exported functions.
 
+import {Call} from '/wails/runtime.js';
+
 /**
  * Log at the Debug level.
  * @param input {string} - The message in printf format.
@@ -9,8 +11,8 @@
  * @returns {Promise<void|Error>}
  */
 
-function Debug(input, ...args) {
-    return wails.CallByID(4111675027, input, ...args);
+export function Debug(input, ...args) {
+    return Call.ByID(4111675027, input, ...args);
 }
 
 /**
@@ -19,8 +21,8 @@ function Debug(input, ...args) {
  * @param args {...any} - The arguments for the log message.
  * @returns {Promise<void|Error>}
  */
-function Info(input, ...args) {
-    return wails.CallByID(2391172776, input, ...args);
+export function Info(input, ...args) {
+    return Call.ByID(2391172776, input, ...args);
 }
 
 /**
@@ -29,8 +31,8 @@ function Info(input, ...args) {
  * @param args {...any} - The arguments for the log message.
  * @returns {Promise<void|Error>}
  */
-function Warning(input, ...args) {
-    return wails.CallByID(2762394760, input, ...args);
+export function Warning(input, ...args) {
+    return Call.ByID(2762394760, input, ...args);
 }
 
 /**
@@ -39,14 +41,14 @@ function Warning(input, ...args) {
  * @param args {...any} - The arguments for the log message.
  * @returns {Promise<void|Error>}
  */
-function Error(input, ...args) {
-    return wails.CallByID(878590242, input, ...args);
+export function Error(input, ...args) {
+    return Call.ByID(878590242, input, ...args);
 }
 
-const LevelDebug  = -4
-const LevelInfo   = 0
-const LevelWarn   = 4
-const LevelError  = 8
+export const LevelDebug  = -4
+export const LevelInfo   = 0
+export const LevelWarn   = 4
+export const LevelError  = 8
 
 
 /**
@@ -54,6 +56,6 @@ const LevelError  = 8
  * @param level {LogLevel} - The log level to set.
  * @returns {Promise<void|Error>}
  */
-function SetLogLevel(level) {
-    return wails.CallByID(2758810652, level);
+export function SetLogLevel(level) {
+    return Call.ByID(2758810652, level);
 }

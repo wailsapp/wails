@@ -22,10 +22,6 @@ type KeyValueStore struct {
 	lock     sync.RWMutex
 }
 
-func (kvs *KeyValueStore) InjectJS() string {
-	return ""
-}
-
 type Config struct {
 	Filename string
 	AutoSave bool
