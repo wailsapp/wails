@@ -22,24 +22,6 @@ type VarAnalyzer struct {
 	recursive bool
 }
 
-func (p *Parameter) Models(pkg *Package, recursive bool) (models map[*types.Named]bool) {
-	analyzer := &VarAnalyzer{
-		pkg:       pkg,
-		Var:       p.Var,
-		recursive: recursive,
-	}
-	return analyzer.FindModels()
-}
-
-func (f *Field) Models(pkg *Package) (models map[*types.Named]bool) {
-	analyzer := &VarAnalyzer{
-		pkg:       pkg,
-		Var:       f.Var,
-		recursive: false,
-	}
-	return analyzer.FindModels()
-}
-
 func (a *VarAnalyzer) FindModels() (models map[*types.Named]bool) {
 	a.models = make(map[*types.Named]bool)
 	a.findModels(a.Var.Type())
@@ -98,6 +80,24 @@ func (a *VarAnalyzer) findModelsOfStruct(s *types.Struct) {
 	for _, field := range structDef.Fields() {
 		a.findModels(field.Type())
 	}
+}
+
+func (p *Parameter) Models(pkg *Package, recursive bool) (models map[*types.Named]bool) {
+	analyzer := &VarAnalyzer{
+		pkg:       pkg,
+		Var:       p.Var,
+		recursive: recursive,
+	}
+	return analyzer.FindModels()
+}
+
+func (f *Field) Models(pkg *Package) (models map[*types.Named]bool) {
+	analyzer := &VarAnalyzer{
+		pkg:       pkg,
+		Var:       f.Var,
+		recursive: false,
+	}
+	return analyzer.FindModels()
 }
 
 func (m *BoundMethod) Models(pkg *Package, recursive bool) (models map[*types.Named]bool) {
@@ -192,6 +192,33 @@ func (f *Field) JSType(pkg *Package) string {
 	}
 
 	return jstype
+}
+
+func DefaultValue(t types.Type, pkg *Package) string {
+	switch x := t.(type) {
+	case *types.Basic:
+		switch x.Kind() {
+		case types.String:
+			return "\"\""
+		case types.Int, types.Int8, types.Int16, types.Int32, types.Int64, types.Uint, types.Uint8, types.Uint16, types.Uint32, types.Uint64, types.Uintptr, types.Float32, types.Float64:
+			return "0"
+		case types.Bool:
+			return "false"
+		default:
+			return "null"
+		}
+	case *types.Slice, *types.Array:
+		return "[]"
+	case *types.Named:
+		return pkg.DefaultValue(x)
+	case *types.Map:
+		return "{}"
+	case *types.Pointer:
+		return "null"
+	case *types.Struct:
+		return "(new " + pkg.anonymousStructID(x) + "())"
+	}
+	return "null"
 }
 
 func (f *Field) DefaultValue(pkg *Package) string {
@@ -361,14 +388,14 @@ func (a *AliasDef) JSType(pkg *Package) string {
 	return jstype
 }
 
+type Model interface {
+	DefaultValue(pkg *Package) string
+}
+
 type Models struct {
 	Structs map[string]*StructDef
 	Enums   map[string]*EnumDef
 	Aliases map[string]*AliasDef
-}
-
-type Model interface {
-	DefaultValue(pkg *Package) string
 }
 
 func NewModels() *Models {
@@ -473,12 +500,6 @@ func (p *Project) generateModel(wr io.Writer, def *ModelDefinitions, options *fl
 			template = templates.ModelsTS
 		}
 	}
-
-	// TODO
-	// Fix up TS names
-	// for _, model := range def.Models {
-	// 	model.Name = options.TSPrefix + model.Name + options.TSSuffix
-	// }
 
 	if err := template.Execute(wr, def); err != nil {
 		println("Problem executing template: " + err.Error())

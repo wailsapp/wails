@@ -37,33 +37,6 @@ func (p *Parameter) Name() (name string) {
 	return name
 }
 
-func DefaultValue(t types.Type, pkg *Package) string {
-	switch x := t.(type) {
-	case *types.Basic:
-		switch x.Kind() {
-		case types.String:
-			return "\"\""
-		case types.Int, types.Int8, types.Int16, types.Int32, types.Int64, types.Uint, types.Uint8, types.Uint16, types.Uint32, types.Uint64, types.Uintptr, types.Float32, types.Float64:
-			return "0"
-		case types.Bool:
-			return "false"
-		default:
-			return "null"
-		}
-	case *types.Slice, *types.Array:
-		return "[]"
-	case *types.Named:
-		return pkg.DefaultValue(x)
-	case *types.Map:
-		return "{}"
-	case *types.Pointer:
-		return "null"
-	case *types.Struct:
-		return "(new " + pkg.anonymousStructID(x) + "())"
-	}
-	return "null"
-}
-
 func (p *Parameter) Variadic() bool {
 	s := p.Parent.Signature()
 	return s.Variadic() && p.index == s.Params().Len()-1
@@ -76,7 +49,7 @@ func (p *Package) namespaceOf(t *types.TypeName) string {
 	return t.Pkg().Name() + "."
 }
 
-// JSTypes returns the corresponding javascript type to the given types.Type
+// JSTypes returns the javascript type for the given types.Type
 // The second return value indicates whether parentheses are needed
 func JSType(t types.Type, pkg *Package) (string, bool) {
 
@@ -378,7 +351,7 @@ type Project struct {
 	textMarshaler *types.Interface
 }
 
-func loadMarshalerInterface() (*types.Interface, *types.Interface, error) {
+func loadMarshalerInterfaces() (*types.Interface, *types.Interface, error) {
 	var marshaler, textMarshaler *types.Interface
 
 	pkg, err := LoadPackage(nil, true, "encoding/json")
@@ -411,7 +384,7 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 	startTime := time.Now()
 
 	// load json interfaces
-	marshaler, textMarshaler, err := loadMarshalerInterface()
+	marshaler, textMarshaler, err := loadMarshalerInterfaces()
 	if err != nil {
 		return nil, err
 	}
