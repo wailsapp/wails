@@ -65,15 +65,7 @@ extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
 void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern gboolean onMenuButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
-extern void onDragNDrop(
-   void         *target,
-   GdkDragContext* context,
-   gint         x,
-   gint         y,
-   gpointer     seldata,
-   guint        info,
-   guint        time,
-   gpointer     data);
+extern void onUriList(char **extracted, gpointer data);
 extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, uintptr_t user_data);
 extern void onProcessRequest(WebKitURISchemeRequest *request, uintptr_t user_data);
 extern void sendMessageToBackend(WebKitUserContentManager *contentManager, WebKitJavascriptResult *result, void *data);
@@ -209,6 +201,36 @@ static void install_signal_handlers() {
 
 static int GetNumScreens(){
     return 0;
+}
+
+static void on_data_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
+                      GtkSelectionData *selection_data, guint target_type, guint time,
+                      gpointer data)
+{
+    gint length = gtk_selection_data_get_length(selection_data);
+
+    if (length < 0)
+    {
+        g_print("DnD failed!\n");
+        gtk_drag_finish(context, FALSE, FALSE, time);
+    }
+
+    gchar *uri_data = (gchar *)gtk_selection_data_get_data(selection_data);
+    gchar **uri_list = g_uri_list_extract_uris(uri_data);
+
+    onUriList(uri_list, data);
+
+    g_strfreev(uri_list);
+    gtk_drag_finish(context, TRUE, TRUE, time);
+}
+
+// drag and drop tutorial: https://wiki.gnome.org/Newcomers/OldDragNDropTutorial
+static void enableDND(GtkWidget *widget, gpointer data)
+{
+    GtkTargetEntry *target = gtk_target_entry_new("text/uri-list", 0, 0);
+    gtk_drag_dest_set(widget, GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_HIGHLIGHT | GTK_DEST_DEFAULT_DROP, target, 1, GDK_ACTION_COPY);
+
+    signal_connect(widget, "drag-data-received", on_data_received, data);
 }
 */
 import "C"
@@ -767,16 +789,10 @@ func (w *linuxWebviewWindow) close() {
 }
 
 func (w *linuxWebviewWindow) enableDND() {
-	id := w.parent.id
-	dnd := C.CString("text/uri-list")
-	defer C.free(unsafe.Pointer(dnd))
-	targetentry := C.gtk_target_entry_new(dnd, 0, C.guint(id))
-	defer C.gtk_target_entry_free(targetentry)
-	C.gtk_drag_dest_set((*C.GtkWidget)(w.webview), C.GTK_DEST_DEFAULT_DROP, targetentry, 1, C.GDK_ACTION_COPY)
-	event := C.CString("drag-data-received")
-	defer C.free(unsafe.Pointer(event))
-	windowId := C.uint(id)
-	C.signal_connect(unsafe.Pointer(w.webview), event, C.onDragNDrop, unsafe.Pointer(C.gpointer(&windowId)))
+	C.gtk_drag_dest_unset((*C.GtkWidget)(w.webview))
+
+	windowId := C.uint(w.parent.id)
+	C.enableDND((*C.GtkWidget)(w.vbox), C.gpointer(&windowId))
 }
 
 func (w *linuxWebviewWindow) execJS(js string) {
@@ -1382,29 +1398,20 @@ func onMenuButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t
 	return C.gboolean(0)
 }
 
-//export onDragNDrop
-func onDragNDrop(target unsafe.Pointer, context *C.GdkDragContext, x C.gint, y C.gint, seldata unsafe.Pointer, info C.guint, time C.guint, data unsafe.Pointer) {
-	var length C.gint
-	selection := unsafe.Pointer(C.gtk_selection_data_get_data_with_length((*C.GtkSelectionData)(seldata), &length))
-	extracted := C.g_uri_list_extract_uris((*C.char)(selection))
-	defer C.g_strfreev(extracted)
-
-	uris := unsafe.Slice(
-		(**C.char)(unsafe.Pointer(extracted)),
-		int(length))
-
-	var filenames []string
-	for _, uri := range uris {
-		if uri == nil {
-			break
-		}
-		filenames = append(filenames, strings.TrimPrefix(C.GoString(uri), "file://"))
+//export onUriList
+func onUriList(extracted **C.char, data unsafe.Pointer) {
+	// Credit: https://groups.google.com/g/golang-nuts/c/bI17Bpck8K4/m/DVDa7EMtDAAJ
+	offset := unsafe.Sizeof(uintptr(0))
+	filenames := []string{}
+	for *extracted != nil {
+		filenames = append(filenames, strings.TrimPrefix(C.GoString(*extracted), "file://"))
+		extracted = (**C.char)(unsafe.Pointer(uintptr(unsafe.Pointer(extracted)) + offset))
 	}
+
 	windowDragAndDropBuffer <- &dragAndDropMessage{
 		windowId:  uint(*((*C.uint)(data))),
 		filenames: filenames,
 	}
-	C.gtk_drag_finish(context, C.true, C.false, time)
 }
 
 //export onKeyPressEvent
