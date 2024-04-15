@@ -58,7 +58,7 @@ export class Embedded1 {
              * @member
              * @type {`${boolean}`}
              */
-            this["NamingThingsIsHard"] = "false";
+            this["NamingThingsIsHard"] = `false`;
         }
 
         Object.assign(this, source);
@@ -159,7 +159,7 @@ export class Person {
              * @member
              * @type {`${boolean}`}
              */
-            this["NamingThingsIsHard"] = "false";
+            this["NamingThingsIsHard"] = `false`;
         }
         if (!("StillThere" in source)) {
             /**
@@ -191,7 +191,7 @@ export class Person {
              * @member
              * @type {`${number}`}
              */
-            this["StrangerNumber"] = "0";
+            this["StrangerNumber"] = `0`;
         }
         if (/** @type {any} */(false)) {
             /**
@@ -199,7 +199,7 @@ export class Person {
              * @member
              * @type {`"${string}"` | undefined}
              */
-            this["StrangestString"] = "\"\"";
+            this["StrangestString"] = `""`;
         }
         if (/** @type {any} */(false)) {
             /**
@@ -207,7 +207,7 @@ export class Person {
              * @member
              * @type {`"${string}"` | undefined}
              */
-            this["StringStrangest"] = "\"\"";
+            this["StringStrangest"] = `""`;
         }
         if (/** @type {any} */(false)) {
             /**
@@ -244,7 +244,7 @@ export class embedded4 {
              * @member
              * @type {`${boolean}`}
              */
-            this["NamingThingsIsHard"] = "false";
+            this["NamingThingsIsHard"] = `false`;
         }
         if (!("Friends" in source)) {
             /**

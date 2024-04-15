@@ -15,7 +15,7 @@ export class Person {
              * @member
              * @type {uuid.UUID}
              */
-            this["UUID"] = null;
+            this["UUID"] = "";
         }
         if (!("Name" in source)) {
             /**

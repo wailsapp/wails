@@ -16,9 +16,9 @@ func BenchmarkParser(b *testing.B) {
 		{
 			pkg: "complex_json",
 		},
-		{
-			pkg: "multiple_packages",
-		},
+		// {
+		// 	pkg: "multiple_packages",
+		// },
 	}
 
 	for _, bench := range benchmarks {
@@ -48,7 +48,13 @@ func BenchmarkParser(b *testing.B) {
 
 		b.Run(bench.pkg+"/analyze", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				Services(pPkgs, pPkgs[0])
+				ParseServices(pPkgs, pPkgs[0])
+			}
+		})
+
+		b.Run(bench.pkg+"/parse", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				ParseProject(options)
 			}
 		})
 

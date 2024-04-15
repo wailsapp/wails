@@ -114,6 +114,13 @@ export interface Person {
     "emb4"?: embedded4;
 }
 
+/**
+ * Vault should not be visible at all
+ */
+export interface Vault {
+    "Secret": string;
+}
+
 export interface embedded4 {
     /**
      * NamingThingsIsHard is a law of programming

@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/pterm/pterm"
-	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/parser/templates"
 )
@@ -127,15 +126,6 @@ func (p *Package) Models() (models map[*types.Named]bool) {
 	return
 }
 
-func (p *Project) Models() (models map[*types.Named]bool) {
-	models = make(map[*types.Named]bool)
-
-	for _, pkg := range p.pkgs {
-		maps.Copy(models, pkg.Models())
-	}
-	return
-}
-
 type JsonTag struct {
 	name     string
 	optional bool
@@ -202,11 +192,11 @@ func (f *Field) JSType(pkg *Package) string {
 	return jstype
 }
 
-func (f *Field) DefaultValue(pkg *Package, mDef *ModelDefinitions) string {
-	value := DefaultValue(f.Type(), pkg, mDef)
+func (f *Field) DefaultValue(pkg *Package) string {
+	value := DefaultValue(f.Type(), pkg)
 
 	if f.Quoted() {
-		value = `"` + value + `"`
+		value = "`" + value + "`"
 	}
 
 	return value
@@ -234,6 +224,10 @@ func (f *Field) Quoted() bool {
 type StructDef struct {
 	*types.Struct
 	Name string
+}
+
+func (s *StructDef) DefaultValue(pkg *Package) string {
+	return "(new " + s.Name + "())"
 }
 
 func (s *StructDef) allFields() []*Field {
@@ -342,9 +336,8 @@ type EnumDef struct {
 	Consts []*ConstDef
 }
 
-func (e *EnumDef) DefaultValue(fieldType types.Type, pkg *Package) string {
-	jstype, _ := JSType(fieldType, pkg)
-	return jstype + "." + e.Consts[0].Name
+func (e *EnumDef) DefaultValue(pkg *Package) string {
+	return e.Name + "." + e.Consts[0].Name
 }
 
 func (e *EnumDef) JSType(pkg *Package) string {
@@ -357,9 +350,88 @@ type AliasDef struct {
 	Type types.Type
 }
 
+func (a *AliasDef) DefaultValue(pkg *Package) string {
+	return DefaultValue(a.Type.Underlying(), pkg)
+}
+
 func (a *AliasDef) JSType(pkg *Package) string {
 	jstype, _ := JSType(a.Type.Underlying(), pkg)
 	return jstype
+}
+
+type Models struct {
+	Structs map[string]*StructDef
+	Enums   map[string]*EnumDef
+	Aliases map[string]*AliasDef
+}
+
+type Model interface {
+	DefaultValue(pkg *Package) string
+}
+
+func NewModels() *Models {
+	return &Models{
+		Structs: make(map[string]*StructDef),
+		Enums:   make(map[string]*EnumDef),
+		Aliases: make(map[string]*AliasDef),
+	}
+}
+
+func (m *Models) Length() int {
+	return len(m.Structs) + len(m.Enums) + len(m.Aliases)
+}
+
+func (p *Package) addModel(model *types.Named, marshaler, textMarshaler *types.Interface) {
+
+	modelName := model.Obj().Name()
+	models := p.models
+
+	if types.Implements(model, marshaler) {
+		pterm.Warning.Printfln("Generator can not predict json keys of model %s, because it implements json.Marshaler", model.String())
+	}
+
+	if types.Implements(model, textMarshaler) {
+		models.Aliases[modelName] = &AliasDef{
+			Name: modelName,
+			Type: types.Typ[types.String],
+		}
+	}
+
+	switch t := model.Underlying().(type) {
+	case *types.Basic:
+		consts := p.constantsOf(model)
+
+		if len(consts) == 0 {
+			models.Aliases[modelName] = &AliasDef{
+				Name: modelName,
+				Type: model,
+			}
+		} else {
+			models.Enums[modelName] = &EnumDef{
+				Name:   modelName,
+				Type:   t,
+				Consts: consts,
+			}
+		}
+
+	case *types.Struct:
+		models.Structs[modelName] = &StructDef{
+			Name:   modelName,
+			Struct: t,
+		}
+	}
+
+}
+
+func (p *Package) DefaultValue(named *types.Named) string {
+	pkgPath := named.Obj().Pkg().Path()
+	modelName := named.Obj().Name()
+	model := p.project.getModel(pkgPath, modelName)
+	if model != nil {
+		return model.DefaultValue(p)
+	}
+
+	return DefaultValue(named.Underlying(), p)
 }
 
 type ModelDefinitions struct {
@@ -371,6 +443,23 @@ type ModelDefinitions struct {
 	Aliases map[string]*AliasDef
 
 	ModelsFilename string
+}
+
+func (p *Project) getModel(pkgPath, modelName string) Model {
+	for _, pkg := range p.pkgs {
+		if pkg.Package.PkgPath == pkgPath {
+			if structDef, ok := pkg.models.Structs[modelName]; ok {
+				return structDef
+			}
+			if enum, ok := pkg.models.Enums[modelName]; ok {
+				return enum
+			}
+			if alias, ok := pkg.models.Aliases[modelName]; ok {
+				return alias
+			}
+		}
+	}
+	return nil
 }
 
 func (p *Project) generateModel(wr io.Writer, def *ModelDefinitions, options *flags.GenerateBindingsOptions) error {
@@ -400,83 +489,28 @@ func (p *Project) generateModel(wr io.Writer, def *ModelDefinitions, options *fl
 func (p *Project) GenerateModels() (result map[string]string, err error) {
 	result = make(map[string]string)
 
-	allModels := lo.Keys(p.Models())
-
-	// split models into packages
-	pkgModels := make(map[string][]*types.Named)
-	for _, model := range allModels {
-		pkgName := model.Obj().Pkg().String()
-		if models, ok := pkgModels[pkgName]; ok {
-			pkgModels[pkgName] = append(models, model)
-		} else {
-			pkgModels[pkgName] = []*types.Named{model}
-		}
-	}
-
 	for _, pkg := range p.pkgs {
 
-		models := pkgModels[pkg.Types.String()]
+		models := pkg.models
 
-		if len(models) == 0 {
+		if models.Length() == 0 {
 			continue
 		}
 
-		// split models into structs, enums and basic types
-		structDefs := make(map[string]*StructDef)
-		enumDefs := make(map[string]*EnumDef)
-		aliases := make(map[string]*AliasDef)
-
-		for _, model := range models {
-			modelName := model.Obj().Name()
-
-			if types.Implements(model, p.marshaler) {
-				pterm.Warning.Printfln("Generator can not predict json keys of model %s, because it implements json.Marshaler", model.String())
-			}
-
-			if types.Implements(model, p.textMarshaler) {
-				aliases[modelName] = &AliasDef{
-					Name: modelName,
-					Type: types.Typ[types.String],
-				}
-			}
-
-			switch t := model.Underlying().(type) {
-			case *types.Basic:
-				consts := pkg.constantsOf(model)
-
-				if len(consts) == 0 {
-					aliases[modelName] = &AliasDef{
-						Name: modelName,
-						Type: model,
-					}
-				} else {
-					enumDefs[modelName] = &EnumDef{
-						Name:   modelName,
-						Type:   t,
-						Consts: consts,
-					}
-				}
-
-			case *types.Struct:
-				structDefs[modelName] = &StructDef{
-					Name:   modelName,
-					Struct: t,
-				}
-			}
-		}
-
-		p.Stats.NumModels = len(structDefs)
-		p.Stats.NumEnums = len(enumDefs)
+		// update stats
+		p.Stats.NumModels += len(models.Structs)
+		p.Stats.NumEnums += len(models.Enums)
+		p.Stats.NumAliases += len(models.Aliases)
 
 		// generate model
 		var buffer bytes.Buffer
 		err = p.generateModel(&buffer, &ModelDefinitions{
 			Package: pkg,
-			Imports: pkg.calculateModelImports(structDefs, p),
+			Imports: pkg.calculateModelImports(models.Structs, p),
 
-			Structs: structDefs,
-			Enums:   enumDefs,
-			Aliases: aliases,
+			Structs: models.Structs,
+			Enums:   models.Enums,
+			Aliases: models.Aliases,
 
 			ModelsFilename: p.options.ModelsFilename,
 		}, p.options)

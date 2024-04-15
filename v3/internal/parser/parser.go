@@ -37,7 +37,7 @@ func (p *Parameter) Name() (name string) {
 	return name
 }
 
-func DefaultValue(t types.Type, pkg *Package, mDef *ModelDefinitions) string {
+func DefaultValue(t types.Type, pkg *Package) string {
 	switch x := t.(type) {
 	case *types.Basic:
 		switch x.Kind() {
@@ -53,20 +53,7 @@ func DefaultValue(t types.Type, pkg *Package, mDef *ModelDefinitions) string {
 	case *types.Slice, *types.Array:
 		return "[]"
 	case *types.Named:
-		switch y := x.Underlying().(type) {
-		case *types.Struct:
-			if x.Obj() != nil {
-				return "(new " + x.Obj().Name() + "())"
-			} else {
-				return "(new " + pkg.anonymousStructID(y) + "())"
-			}
-		case *types.Basic:
-			if enum, ok := mDef.Enums[x.Obj().Name()]; ok {
-				return enum.DefaultValue(t, pkg)
-			} else {
-				return DefaultValue(y, pkg, mDef)
-			}
-		}
+		return pkg.DefaultValue(x)
 	case *types.Map:
 		return "{}"
 	case *types.Pointer:
@@ -202,7 +189,7 @@ type Service struct {
 	Methods []*BoundMethod
 }
 
-func getMethods(service *types.TypeName, main *packages.Package) (methods []*BoundMethod) {
+func ParseMethods(service *types.TypeName, main *packages.Package) (methods []*BoundMethod) {
 	if named, ok := service.Type().(*types.Named); ok {
 		for i := 0; i < named.NumMethods(); i++ {
 			fn := named.Method(i)
@@ -250,26 +237,30 @@ func getMethods(service *types.TypeName, main *packages.Package) (methods []*Bou
 
 type Package struct {
 	*packages.Package
+	project          *Project
 	services         []*Service
+	models           *Models
 	anonymousStructs map[string]string
 	doc              *Doc
 }
 
-func BuildPackages(buildFlags []string, pkgs []*packages.Package, services []*Service) ([]*Package, error) {
+func ParsePackages(pPkgs []*packages.Package, project *Project, buildFlags []string) ([]*Package, error) {
 	result := make(map[string]*Package)
 
 	// wrap types.Package
-	for _, pPkg := range pkgs {
+	for _, pPkg := range pPkgs {
 		result[pPkg.Types.Path()] = &Package{
 			Package:          pPkg,
+			project:          project,
 			services:         []*Service{},
+			models:           NewModels(),
 			anonymousStructs: make(map[string]string),
 			doc:              NewDoc(pPkg),
 		}
 	}
 
 	// helper function to load missing packages
-	loadPackage := func(pkgPath string, services []*Service) (*Package, error) {
+	loadPackage := func(pkgPath string) (*Package, error) {
 		pPkg, err := LoadPackage(buildFlags, true, pkgPath)
 		if err != nil {
 			return nil, err
@@ -277,40 +268,50 @@ func BuildPackages(buildFlags []string, pkgs []*packages.Package, services []*Se
 
 		return &Package{
 			Package:          pPkg,
-			services:         services,
+			project:          project,
+			services:         []*Service{},
+			models:           NewModels(),
 			anonymousStructs: make(map[string]string),
 			doc:              NewDoc(pPkg),
 		}, nil
 	}
 
 	// add services to packages
+	services, err := ParseServices(pPkgs, project.main)
+	if err != nil {
+		return nil, err
+	}
 	for _, service := range services {
 		if pkg, ok := result[service.Pkg().Path()]; ok {
 			pkg.addService(service)
 		} else {
 			// load missing packages of service
-			pkg, err := loadPackage(service.Pkg().Path(), []*Service{service})
+			pkg, err := loadPackage(service.Pkg().Path())
 			if err != nil {
 				return nil, err
 			}
+			pkg.addService(service)
 			result[service.Pkg().Path()] = pkg
 		}
 	}
 
-	// load missing packages of models
+	// add models to packages
 	allModels := []*types.Named{}
 	for _, pkg := range result {
 		allModels = append(allModels, lo.Keys(pkg.Models())...)
 	}
 	for _, model := range allModels {
 		pkgPath := model.Obj().Pkg().Path()
-		if _, ok := result[pkgPath]; !ok {
-			pkg, err := loadPackage(pkgPath, []*Service{})
+		pkg, ok := result[pkgPath]
+		if !ok {
+			// load missing packages of models
+			pkg, err = loadPackage(pkgPath)
 			if err != nil {
 				return nil, err
 			}
 			result[pkgPath] = pkg
 		}
+		pkg.addModel(model, project.marshaler, project.textMarshaler)
 	}
 
 	return lo.Values(result), nil
@@ -358,10 +359,11 @@ func (p *Package) constantsOf(t *types.Named) []*ConstDef {
 
 type Stats struct {
 	NumPackages int
-	NumStructs  int
+	NumServices int
 	NumMethods  int
-	NumEnums    int
 	NumModels   int
+	NumEnums    int
+	NumAliases  int
 	StartTime   time.Time
 	EndTime     time.Time
 }
@@ -434,27 +436,23 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 		return nil, errors.New("application.New() must be inside main package")
 	}
 
-	services, err := Services(pPkgs, pPkgs[mainIndex])
-	if err != nil {
-		return nil, err
-	}
-
-	pkgs, err := BuildPackages(buildFlags, pPkgs, services)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Project{
-		pkgs:          pkgs,
+	project := &Project{
 		main:          pPkgs[mainIndex],
 		options:       options,
 		marshaler:     marshaler,
 		textMarshaler: textMarshaler,
 		Stats: Stats{
-			StartTime:   startTime,
-			NumPackages: len(pkgs),
+			StartTime: startTime,
 		},
-	}, nil
+	}
+
+	project.pkgs, err = ParsePackages(pPkgs, project, buildFlags)
+	if err != nil {
+		return project, err
+	}
+
+	project.Stats.NumPackages = len(project.pkgs)
+	return project, nil
 }
 
 func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project, error) {
@@ -487,7 +485,7 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 		}
 		// Write the files
 		for structName, text := range structs {
-			p.Stats.NumStructs++
+			p.Stats.NumServices++
 			var filename string
 			if options.TS {
 				filename = structName + ".ts"
@@ -530,7 +528,7 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 	return p, nil
 }
 
-func Services(pkgs []*packages.Package, main *packages.Package) (services []*Service, err error) {
+func ParseServices(pkgs []*packages.Package, main *packages.Package) (services []*Service, err error) {
 	var app *packages.Package
 	otherPkgs := append(make([]*packages.Package, 0, len(pkgs)), pkgs...)
 	if index := slices.IndexFunc(pkgs, func(pkg *packages.Package) bool { return pkg.PkgPath == WailsAppPkgPath }); index >= 0 {
@@ -551,7 +549,7 @@ func Services(pkgs []*packages.Package, main *packages.Package) (services []*Ser
 	for _, service := range found {
 		services = append(services, &Service{
 			TypeName: service,
-			Methods:  getMethods(service, main),
+			Methods:  ParseMethods(service, main),
 		})
 	}
 	return

@@ -51,7 +51,7 @@ export class Embedded1 {
             this["StillThere"] = "";
         }
         if (!("NamingThingsIsHard" in source)) {
-            this["NamingThingsIsHard"] = "false";
+            this["NamingThingsIsHard"] = `false`;
         }
 
         Object.assign(this, source);
@@ -167,7 +167,7 @@ export class Person {
             this["Friends"] = [];
         }
         if (!("NamingThingsIsHard" in source)) {
-            this["NamingThingsIsHard"] = "false";
+            this["NamingThingsIsHard"] = `false`;
         }
         if (!("StillThere" in source)) {
             this["StillThere"] = null;
@@ -179,7 +179,7 @@ export class Person {
             this["Embedded3"] = "";
         }
         if (!("StrangerNumber" in source)) {
-            this["StrangerNumber"] = "0";
+            this["StrangerNumber"] = `0`;
         }
 
         Object.assign(this, source);
@@ -208,7 +208,7 @@ export class embedded4 {
     /** Creates a new embedded4 instance. */
     constructor(source: Partial<embedded4> = {}) {
         if (!("NamingThingsIsHard" in source)) {
-            this["NamingThingsIsHard"] = "false";
+            this["NamingThingsIsHard"] = `false`;
         }
         if (!("Friends" in source)) {
             this["Friends"] = false;

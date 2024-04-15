@@ -11,7 +11,7 @@ export class Person {
     /** Creates a new Person instance. */
     constructor(source: Partial<Person> = {}) {
         if (!("UUID" in source)) {
-            this["UUID"] = null;
+            this["UUID"] = "";
         }
         if (!("Name" in source)) {
             this["Name"] = "";
