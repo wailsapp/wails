@@ -3,6 +3,7 @@ package application
 import (
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"io/fs"
 )
 
 type PluginAPI interface {
@@ -13,7 +14,7 @@ type Plugin interface {
 	Init(api PluginAPI) error
 	Shutdown() error
 	CallableByJS() []string
-	InjectJS() string
+	Assets() fs.FS
 }
 
 type PluginManager struct {
@@ -33,16 +34,19 @@ func NewPluginManager(plugins map[string]Plugin, assetServer *assetserver.AssetS
 func (p *PluginManager) Init() []error {
 
 	api := newPluginAPI()
-	for _, plugin := range p.plugins {
+	for id, plugin := range p.plugins {
 		err := plugin.Init(api)
 		if err != nil {
 			globalApplication.error("Plugin failed to initialise:", "plugin", plugin.Name(), "error", err.Error())
 			return p.Shutdown()
 		}
 		p.initialisedPlugins = append(p.initialisedPlugins, plugin)
-		injectJS := plugin.InjectJS()
-		if injectJS != "" {
-			p.assetServer.AddPluginScript(plugin.Name(), injectJS)
+		assets := plugin.Assets()
+		if assets != nil {
+			err = p.assetServer.AddPluginAssets(id, assets)
+			if err != nil {
+				return []error{errors.Wrap(err, "Failed to add plugin assets: "+plugin.Name())}
+			}
 		}
 		globalApplication.debug("Plugin initialised: " + plugin.Name())
 	}

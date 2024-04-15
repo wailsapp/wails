@@ -1,13 +1,18 @@
 package kvstore
 
 import (
+	"embed"
 	"encoding/json"
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"io"
+	"io/fs"
 	"os"
 	"sync"
 )
+
+//go:embed assets/*
+var assets embed.FS
 
 type KeyValueStore struct {
 	config   *Config
@@ -15,10 +20,6 @@ type KeyValueStore struct {
 	data     map[string]any
 	unsaved  bool
 	lock     sync.RWMutex
-}
-
-func (kvs *KeyValueStore) InjectJS() string {
-	return ""
 }
 
 type Config struct {
@@ -66,12 +67,13 @@ func (kvs *KeyValueStore) CallableByJS() []string {
 	return []string{
 		"Set",
 		"Get",
+		"Delete",
 		"Save",
 	}
 }
 
-func (p *Plugin) InjectJS() string {
-	return ""
+func (kvs *KeyValueStore) Assets() fs.FS {
+	return assets
 }
 
 // ---------------- Plugin Methods ----------------
@@ -146,11 +148,24 @@ func (kvs *KeyValueStore) Get(key string) any {
 // Set sets the value for the given key. If AutoSave is true, the store is saved to disk.
 func (kvs *KeyValueStore) Set(key string, value any) error {
 	kvs.lock.Lock()
-	if value == nil {
-		delete(kvs.data, key)
+	kvs.data[key] = value
+	kvs.lock.Unlock()
+	if kvs.config.AutoSave {
+		err := kvs.Save()
+		if err != nil {
+			return err
+		}
+		kvs.unsaved = false
 	} else {
-		kvs.data[key] = value
+		kvs.unsaved = true
 	}
+	return nil
+}
+
+// Delete deletes the key from the store. If AutoSave is true, the store is saved to disk.
+func (kvs *KeyValueStore) Delete(key string) error {
+	kvs.lock.Lock()
+	delete(kvs.data, key)
 	kvs.lock.Unlock()
 	if kvs.config.AutoSave {
 		err := kvs.Save()

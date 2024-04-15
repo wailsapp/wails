@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"io/fs"
 )
 
 // ---------------- Plugin Setup ----------------
@@ -32,8 +33,8 @@ func (r *Plugin) CallableByJS() []string {
 	}
 }
 
-func (r *Plugin) InjectJS() string {
-	return ""
+func (r *Plugin) Assets() fs.FS {
+	return nil
 }
 
 // ---------------- Plugin Methods ----------------
