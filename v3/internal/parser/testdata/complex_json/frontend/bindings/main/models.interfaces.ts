@@ -40,18 +40,6 @@ export interface Embedded1 {
     "NamingThingsIsHard": `${boolean}`;
 }
 
-export interface Embedded2 {
-    /**
-     * Vanish should be omitted from Person because there is another field with same depth and no tag
-     */
-    "Vanish": boolean;
-
-    /**
-     * StillThereButRenamed should shadow in Person the other field with same depth and no json tag
-     */
-    "StillThere": Embedded3 | null;
-}
-
 /**
  * Person represents a person
  */
@@ -112,13 +100,6 @@ export interface Person {
      * embedded4 should be optional and appear with key "emb4"
      */
     "emb4"?: embedded4;
-}
-
-/**
- * Vault should not be visible at all
- */
-export interface Vault {
-    "Secret": string;
 }
 
 export interface embedded4 {

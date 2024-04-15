@@ -92,8 +92,10 @@ func (a *VarAnalyzer) findModelsOfNamed(n *types.Named) {
 }
 
 func (a *VarAnalyzer) findModelsOfStruct(s *types.Struct) {
-	for i := 0; i < s.NumFields(); i++ {
-		field := s.Field(i)
+	structDef := &StructDef{
+		Struct: s,
+	}
+	for _, field := range structDef.Fields() {
 		a.findModels(field.Type())
 	}
 }

@@ -75,43 +75,6 @@ export class Embedded1 {
     }
 };
 
-export class Embedded2 {
-    /**
-     * Creates a new Embedded2 instance.
-     * @param {Partial<Embedded2>} [source = {}] - The source object to create the Embedded2.
-     */
-    constructor(source = {}) {
-        if (!("Vanish" in source)) {
-            /**
-             * Vanish should be omitted from Person because there is another field with same depth and no tag
-             * @member
-             * @type {boolean}
-             */
-            this["Vanish"] = false;
-        }
-        if (!("StillThere" in source)) {
-            /**
-             * StillThereButRenamed should shadow in Person the other field with same depth and no json tag
-             * @member
-             * @type {Embedded3 | null}
-             */
-            this["StillThere"] = null;
-        }
-
-        Object.assign(this, source);
-    }
-
-    /**
-     * Creates a new Embedded2 instance from a string or object.
-     * @param {string|object} source - The source data to create a Embedded2 instance from.
-     * @returns {Embedded2} A new Embedded2 instance.
-     */
-    static createFrom(source) {
-        let parsedSource = typeof source === 'string' ? JSON.parse(source) : source;
-        return new Embedded2(parsedSource);
-    }
-};
-
 /**
  * Person represents a person
  */

@@ -64,36 +64,6 @@ export class Embedded1 {
     }
 }
 
-export class Embedded2 {
-    /**
-     * Vanish should be omitted from Person because there is another field with same depth and no tag
-     */
-    "Vanish": boolean;
-
-    /**
-     * StillThereButRenamed should shadow in Person the other field with same depth and no json tag
-     */
-    "StillThere": Embedded3 | null;
-
-    /** Creates a new Embedded2 instance. */
-    constructor(source: Partial<Embedded2> = {}) {
-        if (!("Vanish" in source)) {
-            this["Vanish"] = false;
-        }
-        if (!("StillThere" in source)) {
-            this["StillThere"] = null;
-        }
-
-        Object.assign(this, source);
-    }
-
-    /** Creates a new Embedded2 instance from a string or object. */
-    static createFrom(source: string | object = {}): Embedded2 {
-        let parsedSource = typeof source === 'string' ? JSON.parse(source) : source;
-        return new Embedded2(parsedSource as Partial<Embedded2>);
-    }
-}
-
 /**
  * Person represents a person
  */

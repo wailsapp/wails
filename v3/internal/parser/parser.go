@@ -129,7 +129,7 @@ type BoundMethod struct {
 	FQN string
 }
 
-func (m *BoundMethod) embedTuple(tuple *types.Tuple) (result []*Parameter) {
+func (m *BoundMethod) ParseTuple(tuple *types.Tuple) (result []*Parameter) {
 	if tuple == nil {
 		return
 	}
@@ -151,12 +151,12 @@ func (m *BoundMethod) Signature() *types.Signature {
 
 func (m *BoundMethod) Params() []*Parameter {
 	tuple := m.Signature().Params()
-	return m.embedTuple(tuple)
+	return m.ParseTuple(tuple)
 }
 
 func (m *BoundMethod) Results() []*Parameter {
 	tuple := m.Signature().Results()
-	return m.embedTuple(tuple)
+	return m.ParseTuple(tuple)
 }
 
 func (m *BoundMethod) JSInputs() []*Parameter {
