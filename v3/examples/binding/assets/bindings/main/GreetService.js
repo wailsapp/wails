@@ -13,7 +13,7 @@ import * as data from "../data/models.js";
  * @returns {Promise<string>}
  */
 export function Greet(name, ...counts) {
-    return Call.ByName("main.GreetService.Greet", name, counts);
+    return Call.ByID(1411160069, name, counts);
 }
 
 /**
@@ -22,5 +22,5 @@ export function Greet(name, ...counts) {
  * @returns {Promise<string>}
  */
 export function GreetPerson(person) {
-    return Call.ByName("main.GreetService.GreetPerson", person);
+    return Call.ByID(4021313248, person);
 }
