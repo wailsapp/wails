@@ -1,10 +1,10 @@
-//go:build ignore
-
 package parser
 
 import (
 	"bytes"
+	"go/types"
 	"io"
+	"maps"
 	"slices"
 	"strings"
 
@@ -14,19 +14,20 @@ import (
 )
 
 type BindingDefinitions struct {
-	Package      *ParsedPackage
+	Package      *Package
+	Service      *Service
 	Imports      map[string]string
-	LocalImports []structName
+	LocalImports []string
 
 	Struct  string
 	Methods []*BoundMethod
 
 	ModelsFilename    string
 	UseBundledRuntime bool
-	UseIDs            bool
+	UseNames          bool
 }
 
-func (p *Project) GenerateBinding(wr io.Writer, def *BindingDefinitions, options *flags.GenerateBindingsOptions) error {
+func generateBinding(wr io.Writer, def *BindingDefinitions, options *flags.GenerateBindingsOptions) error {
 	template := templates.BindingsJS
 	if options.TS {
 		template = templates.BindingsTS
@@ -40,84 +41,101 @@ func (p *Project) GenerateBinding(wr io.Writer, def *BindingDefinitions, options
 	return nil
 }
 
-func (p *Project) GenerateBindings(bindings map[packagePath]map[structName][]*BoundMethod, options *flags.GenerateBindingsOptions) (result map[string]map[string]string, err error) {
+func (p *Project) GenerateBindings() (result map[string]map[string]string, err error) {
 	result = make(map[string]map[string]string)
 
-	for pkg, structs := range bindings {
-		pkgInfo := p.packageCache[pkg]
-		pkgBindings := make(map[string]string)
-
-		for structName, methods := range structs {
-			slices.SortFunc(methods, func(m1, m2 *BoundMethod) int {
-				return strings.Compare(m1.Name, m2.Name)
-			})
-
-			var buffer bytes.Buffer
-			err = p.GenerateBinding(&buffer, &BindingDefinitions{
-				Package:      pkgInfo,
-				Imports:      p.calculateBindingImports(pkgInfo, methods),
-				LocalImports: p.calculateBindingLocalImports(pkgInfo, methods),
-
-				Struct:  pkgAlias(pkg) + "." + structName,
-				Methods: methods,
-
-				ModelsFilename:    options.ModelsFilename,
-				UseBundledRuntime: options.UseBundledRuntime,
-				UseIDs:            options.UseIDs,
-			}, options)
-
-			if err != nil {
-				return
-			}
-
-			pkgBindings[structName] = buffer.String()
+	for _, pkg := range p.pkgs {
+		bindings, err := pkg.GenerateBindings(p)
+		if err != nil {
+			return nil, err
 		}
-
-		// Get the relative package path
-		relativePackageDir := p.RelativePackageDir(pkg)
-		result[relativePackageDir] = pkgBindings
+		packageDir := p.PackageDir(pkg.Types)
+		result[packageDir] = bindings
 	}
-
 	return
 }
 
-func (p *Project) calculateBindingImports(pkg *ParsedPackage, methods []*BoundMethod) map[string]string {
+func (p *Package) GenerateBindings(project *Project) (result map[string]string, err error) {
+	result = make(map[string]string)
+	options := project.options
+
+	for _, service := range p.services {
+		methods := service.Methods
+		slices.SortFunc(methods, func(m1, m2 *BoundMethod) int {
+			return strings.Compare(m1.Name(), m2.Name())
+		})
+
+		var buffer bytes.Buffer
+		err = generateBinding(&buffer, &BindingDefinitions{
+			Package:      p,
+			Service:      service,
+			Imports:      service.calculateBindingImports(p, project),
+			LocalImports: service.calculateBindingLocalImports(p),
+
+			Methods: methods,
+
+			ModelsFilename:    options.ModelsFilename,
+			UseBundledRuntime: options.UseBundledRuntime,
+			UseNames:          options.UseNames,
+		}, options)
+
+		if err != nil {
+			return
+		}
+
+		result[service.Name()] = buffer.String()
+	}
+	return
+}
+
+func (s *Service) bindingImportsOf(params []*Parameter, pkg *Package, project *Project) map[string]string {
 	result := make(map[string]string)
 
-	for _, method := range methods {
-		for _, param := range method.JSInputs() {
-			if param.Type.Package.Path != pkg.Path {
-				// Find the relative path from the source directory to the target directory
-				result[param.Type.Package.Name] = p.RelativeBindingsDir(pkg, param.Type.Package)
+	for _, param := range params {
+		models := param.Models(pkg, false)
+		for model := range models {
+			if model.Obj() != nil && model.Obj().Pkg() != s.Pkg() {
+				otherPkg := model.Obj().Pkg()
+				result[otherPkg.Name()] = project.RelativePackageDir(s.Pkg(), otherPkg)
 			}
 		}
+	}
+	return result
+}
 
-		for _, param := range method.JSOutputs() {
-			if param.Type.Package.Path != pkg.Path {
-				// Find the relative path from the source directory to the target directory
-				result[param.Type.Package.Name] = p.RelativeBindingsDir(pkg, param.Type.Package)
-			}
-		}
+func (s *Service) calculateBindingImports(pkg *Package, project *Project) map[string]string {
+	result := make(map[string]string)
+
+	for _, method := range s.Methods {
+		maps.Copy(result, s.bindingImportsOf(method.JSInputs(), pkg, project))
+		maps.Copy(result, s.bindingImportsOf(method.JSOutputs(), pkg, project))
 	}
 
 	return result
 }
 
-func (p *Project) calculateBindingLocalImports(pkg *ParsedPackage, methods []*BoundMethod) []structName {
-	requiredTypes := make(map[structName]bool)
+func (s *Service) bindingLocalImportsOf(params []*Parameter, pkg *Package) map[string]bool {
+	requiredTypes := make(map[string]bool)
 
-	for _, method := range methods {
-		for _, param := range method.JSInputs() {
-			if param.Type.Package.Path == pkg.Path && (param.Type.IsStruct || param.Type.IsEnum) {
-				requiredTypes[param.Type.Name] = true
+	for _, param := range params {
+		models := param.Models(pkg, false)
+		for model := range models {
+			if structType, ok := model.Underlying().(*types.Struct); ok && model.Obj() == nil {
+				requiredTypes[pkg.anonymousStructID(structType)] = true
+			} else if model.Obj().Pkg() == s.Pkg() {
+				requiredTypes[model.Obj().Name()] = true
 			}
 		}
+	}
+	return requiredTypes
+}
 
-		for _, param := range method.JSOutputs() {
-			if param.Type.Package.Path == pkg.Path && (param.Type.IsStruct || param.Type.IsEnum) {
-				requiredTypes[param.Type.Name] = true
-			}
-		}
+func (s *Service) calculateBindingLocalImports(pkg *Package) []string {
+	requiredTypes := make(map[string]bool)
+
+	for _, method := range s.Methods {
+		maps.Copy(requiredTypes, s.bindingLocalImportsOf(method.JSInputs(), pkg))
+		maps.Copy(requiredTypes, s.bindingLocalImportsOf(method.JSOutputs(), pkg))
 	}
 
 	result := lo.Keys(requiredTypes)
