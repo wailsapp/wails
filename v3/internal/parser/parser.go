@@ -222,6 +222,10 @@ func ParsePackages(pPkgs []*packages.Package, project *Project, buildFlags []str
 
 	// wrap types.Package
 	for _, pPkg := range pPkgs {
+		if pPkg.PkgPath == WailsAppPkgPath {
+			continue
+		}
+
 		result[pPkg.Types.Path()] = &Package{
 			Package:          pPkg,
 			project:          project,
