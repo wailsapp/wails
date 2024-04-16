@@ -3,31 +3,19 @@ package parser
 import (
 	"go/ast"
 	"go/doc"
-	"path"
 	"strings"
-
-	"golang.org/x/tools/go/packages"
 )
 
 type Doc struct {
 	*doc.Package
 	Types map[string]*doc.Type
-
-	// Methods map[*doc.Type]map[string]string
-	// Fields  map[*doc.Type]map[string]string
-	// Consts  map[*doc.Type]map[string]string
 }
 
-func NewDoc(pkg *packages.Package) *Doc {
-	files := make(map[string]*ast.File)
-	for i, f := range pkg.Syntax {
-		files[path.Base(pkg.CompiledGoFiles[i])] = f
-	}
-
+func NewDoc(pkg *Package) *Doc {
 	pkgDoc := doc.New(&ast.Package{
-		Name:  pkg.Name,
-		Files: files,
-	}, pkg.PkgPath, doc.PreserveAST|doc.AllDecls)
+		Name:  pkg.Name(),
+		Files: pkg.files,
+	}, pkg.Path(), doc.PreserveAST|doc.AllDecls)
 
 	types := make(map[string]*doc.Type)
 	for _, t := range pkgDoc.Types {

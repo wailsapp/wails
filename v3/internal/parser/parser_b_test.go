@@ -1,6 +1,10 @@
 package parser
 
 import (
+	"fmt"
+	"go/parser"
+	"go/token"
+	"path/filepath"
 	"testing"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
@@ -48,7 +52,7 @@ func BenchmarkParser(b *testing.B) {
 
 		b.Run(bench.pkg+"/analyze", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				ParseServices(pPkgs, pPkgs[0])
+				ParseServices(pPkgs[1], pPkgs[0])
 			}
 		})
 
@@ -75,4 +79,50 @@ func BenchmarkParser(b *testing.B) {
 			}
 		})
 	}
+}
+
+func BenchmarkLoad(b *testing.B) {
+
+	benchmarks := []struct {
+		pkg string
+	}{
+		{
+			pkg: "struct_literal_single",
+		},
+		{
+			pkg: "complex_json",
+		},
+	}
+
+	for _, bench := range benchmarks {
+
+		dir := "testdata/" + bench.pkg
+		absDir, err := filepath.Abs(dir)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		b.Run(bench.pkg+"/packages.Load", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				pkgs, err := LoadPackages(nil, true, absDir)
+				if err != nil {
+					b.Fatal(err)
+				}
+				fmt.Println(len(pkgs[0].Syntax))
+			}
+		})
+
+		b.Run(bench.pkg+"/parser.ParseFile", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				fset := token.NewFileSet()
+				_, err := parser.ParseDir(fset, absDir, nil, parser.AllErrors|parser.ParseComments|parser.SkipObjectResolution)
+				if err != nil {
+					b.Fatal(err)
+				}
+			}
+
+		})
+
+	}
+
 }

@@ -51,7 +51,7 @@ func (a *VarAnalyzer) findModels(t types.Type) {
 			if a.pkg == nil {
 				return
 			}
-			named := types.NewNamed(types.NewTypeName(0, a.pkg.Types, a.pkg.anonymousStructID(x), nil), x, nil)
+			named := types.NewNamed(types.NewTypeName(0, a.pkg.Package, a.pkg.anonymousStructID(x), nil), x, nil)
 			a.models[named] = true
 			if a.recursive {
 				a.findModelsOfStruct(x)
@@ -351,12 +351,8 @@ func (s *StructDef) Fields() []*Field {
 }
 
 type ConstDef struct {
-	*types.Const
-	Name string
-}
-
-func (c *ConstDef) Value() string {
-	return c.Val().String()
+	Value string
+	Name  string
 }
 
 type EnumDef struct {
@@ -476,7 +472,7 @@ type ModelDefinitions struct {
 
 func (p *Project) getModel(pkgPath, modelName string) Model {
 	for _, pkg := range p.pkgs {
-		if pkg.Package.PkgPath == pkgPath {
+		if pkg.Package.Path() == pkgPath {
 			if structDef, ok := pkg.models.Structs[modelName]; ok {
 				return structDef
 			}
@@ -542,7 +538,7 @@ func (p *Project) GenerateModels() (result map[string]string, err error) {
 			return
 		}
 
-		packageDir := p.PackageDir(pkg.Types)
+		packageDir := p.PackageDir(pkg.Package)
 		result[packageDir] = buffer.String()
 	}
 
@@ -551,7 +547,7 @@ func (p *Project) GenerateModels() (result map[string]string, err error) {
 
 func (p *Package) calculateModelImports(m map[string]*StructDef, project *Project) map[string]string {
 	result := make(map[string]string)
-	pkg := p.Types
+	pkg := p.Package
 
 	for _, structDef := range m {
 		for _, field := range structDef.Fields() {

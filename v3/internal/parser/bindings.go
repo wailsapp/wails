@@ -49,7 +49,7 @@ func (p *Project) GenerateBindings() (result map[string]map[string]string, err e
 		if err != nil {
 			return nil, err
 		}
-		packageDir := p.PackageDir(pkg.Types)
+		packageDir := p.PackageDir(pkg.Package)
 		result[packageDir] = bindings
 	}
 	return

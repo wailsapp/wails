@@ -25,9 +25,9 @@ func LoadPackages(buildFlags []string, full bool, patterns ...string) ([]*packag
 		rewrittenPatterns[i] = "pattern=" + pattern
 	}
 
-	loadMode := packages.NeedName | packages.NeedSyntax | packages.NeedTypes | packages.NeedCompiledGoFiles
+	loadMode := packages.NeedName | packages.NeedSyntax | packages.NeedCompiledGoFiles
 	if full {
-		loadMode |= packages.NeedTypesInfo
+		loadMode |= packages.NeedTypesInfo | packages.NeedTypes
 	}
 
 	pkgs, err := packages.Load(&packages.Config{
@@ -61,4 +61,46 @@ func LoadPackage(buildFlags []string, full bool, pattern string) (*packages.Pack
 		return nil, errors.New("package not found: " + pattern)
 	}
 	return pkgs[0], nil
+}
+
+func LoadPackagesParallel(buildFlags []string, full bool, patterns ...string) ([]*packages.Package, error) {
+
+	type Result struct {
+		pkg *packages.Package
+		err error
+	}
+
+	jobs := make(chan string, len(patterns))
+	results := make(chan Result, len(patterns))
+
+	worker := func() {
+		for pattern := range jobs {
+			pkg, err := LoadPackage(buildFlags, full, pattern)
+			results <- Result{
+				pkg: pkg,
+				err: err,
+			}
+		}
+	}
+
+	for i := 0; i < 5; i++ {
+		go worker()
+	}
+
+	for _, pattern := range patterns {
+		jobs <- pattern
+	}
+	close(jobs)
+
+	pkgs := []*packages.Package{}
+	for i := 0; i < len(patterns); i++ {
+		res := <-results
+		if res.err != nil {
+			return nil, res.err
+		}
+		pkgs = append(pkgs, res.pkg)
+	}
+	close(results)
+
+	return pkgs, nil
 }

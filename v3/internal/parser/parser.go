@@ -19,6 +19,8 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+const JsonPkgPath = "github.com/wailsapp/wails/v3/internal/parser/json"
+
 type Parameter struct {
 	*types.Var
 	index int
@@ -43,7 +45,7 @@ func (p *Parameter) Variadic() bool {
 }
 
 func (p *Package) namespaceOf(t *types.TypeName) string {
-	if p.Types.String() == t.Pkg().String() {
+	if p.Package.String() == t.Pkg().String() {
 		return ""
 	}
 	return t.Pkg().Name() + "."
@@ -209,7 +211,8 @@ func ParseMethods(service *types.TypeName, main *packages.Package) (methods []*B
 }
 
 type Package struct {
-	*packages.Package
+	*types.Package
+	files            map[string]*ast.File
 	project          *Project
 	services         []*Service
 	models           *Models
@@ -217,81 +220,76 @@ type Package struct {
 	doc              *Doc
 }
 
-func ParsePackages(pPkgs []*packages.Package, project *Project, buildFlags []string) ([]*Package, error) {
-	result := make(map[string]*Package)
+func ParsePackages(app *packages.Package, project *Project, buildFlags []string) ([]*Package, error) {
+	requiredPackages := make(map[*types.Package]*Package)
 
-	// wrap types.Package
-	for _, pPkg := range pPkgs {
-		if pPkg.PkgPath == WailsAppPkgPath {
-			continue
+	// helper function to add new packages
+	getOrCreatePackage := func(tPkg *types.Package) *Package {
+		if _, ok := requiredPackages[tPkg]; !ok {
+			requiredPackages[tPkg] = &Package{
+				Package:          tPkg,
+				files:            make(map[string]*ast.File),
+				project:          project,
+				services:         []*Service{},
+				models:           NewModels(),
+				anonymousStructs: make(map[string]string),
+			}
 		}
-
-		result[pPkg.Types.Path()] = &Package{
-			Package:          pPkg,
-			project:          project,
-			services:         []*Service{},
-			models:           NewModels(),
-			anonymousStructs: make(map[string]string),
-			doc:              NewDoc(pPkg),
-		}
-	}
-
-	// helper function to load missing packages
-	loadPackage := func(pkgPath string) (*Package, error) {
-		pPkg, err := LoadPackage(buildFlags, true, pkgPath)
-		if err != nil {
-			return nil, err
-		}
-
-		return &Package{
-			Package:          pPkg,
-			project:          project,
-			services:         []*Service{},
-			models:           NewModels(),
-			anonymousStructs: make(map[string]string),
-			doc:              NewDoc(pPkg),
-		}, nil
+		return requiredPackages[tPkg]
 	}
 
 	// add services to packages
-	services, err := ParseServices(pPkgs, project.main)
+	services, err := ParseServices(app, project.main)
 	if err != nil {
 		return nil, err
 	}
 	for _, service := range services {
-		if pkg, ok := result[service.Pkg().Path()]; ok {
-			pkg.addService(service)
-		} else {
-			// load missing packages of service
-			pkg, err := loadPackage(service.Pkg().Path())
-			if err != nil {
-				return nil, err
+		tPkg := service.Pkg()
+		pkg := getOrCreatePackage(tPkg)
+		pkg.addService(service)
+	}
+
+	// find all required models
+	allModels := []*types.Named{}
+	for _, pkg := range requiredPackages {
+		allModels = append(allModels, lo.Keys(pkg.Models())...)
+	}
+	for _, model := range allModels {
+		tPkg := model.Obj().Pkg()
+		getOrCreatePackage(tPkg)
+	}
+
+	// load documentation for each package
+	patterns := lo.Map(lo.Keys(requiredPackages), func(pkg *types.Package, i int) string { return pkg.Path() })
+	patterns = lo.Filter(patterns, func(pattern string, i int) bool { return pattern != project.main.PkgPath })
+	pPkgs, err := LoadPackagesParallel(buildFlags, false, patterns...)
+	pPkgs = append(pPkgs, project.main)
+	if err != nil {
+		return nil, err
+	}
+	for _, pkg := range requiredPackages {
+		for _, pPkg := range pPkgs {
+			if pPkg.PkgPath == pkg.Path() {
+
+				for i, file := range pPkg.Syntax {
+					pkg.files[pPkg.CompiledGoFiles[i]] = file
+				}
+
+				pkg.doc = NewDoc(pkg)
+				break
 			}
-			pkg.addService(service)
-			result[service.Pkg().Path()] = pkg
 		}
 	}
 
 	// add models to packages
-	allModels := []*types.Named{}
-	for _, pkg := range result {
-		allModels = append(allModels, lo.Keys(pkg.Models())...)
-	}
+	// must be done after documentation is loaded, otherwise EnumDef.Consts can't be resolved
 	for _, model := range allModels {
-		pkgPath := model.Obj().Pkg().Path()
-		pkg, ok := result[pkgPath]
-		if !ok {
-			// load missing packages of models
-			pkg, err = loadPackage(pkgPath)
-			if err != nil {
-				return nil, err
-			}
-			result[pkgPath] = pkg
-		}
+		tPkg := model.Obj().Pkg()
+		pkg := getOrCreatePackage(tPkg)
 		pkg.addModel(model, project.marshaler, project.textMarshaler)
 	}
 
-	return lo.Values(result), nil
+	return lo.Values(requiredPackages), nil
 }
 
 func (p *Package) addService(s *Service) {
@@ -308,24 +306,20 @@ func (p *Package) anonymousStructID(s *types.Struct) string {
 }
 
 // Credit: https://stackoverflow.com/a/70999797/3140799
-func (p *Package) constantsOf(t *types.Named) []*ConstDef {
+func (p *Package) constantsOf(enum *types.Named) []*ConstDef {
 	values := []*ConstDef{}
 
-	for _, file := range p.Syntax {
-		for _, decl := range file.Decls {
-			genDecl, ok := decl.(*ast.GenDecl)
-			if !ok {
-				continue
-			}
-			for _, specs := range genDecl.Specs {
-				valueSpec, ok := specs.(*ast.ValueSpec)
-				if !ok {
-					continue
-				}
-				for _, name := range valueSpec.Names {
-					c := p.TypesInfo.ObjectOf(name).(*types.Const)
-					if strings.HasSuffix(c.Type().String(), t.Obj().Name()) {
-						values = append(values, &ConstDef{Name: name.Name, Const: c})
+	enumType, ok := p.doc.Types[enum.Obj().Name()]
+	if !ok {
+		return values
+	}
+
+	for _, c := range enumType.Consts {
+		for _, spec := range c.Decl.Specs {
+			if spec, ok := spec.(*ast.ValueSpec); ok {
+				for i, value := range spec.Values {
+					if value, ok := value.(*ast.BasicLit); ok {
+						values = append(values, &ConstDef{Value: value.Value, Name: spec.Names[i].Name})
 					}
 				}
 			}
@@ -355,23 +349,18 @@ type Project struct {
 	textMarshaler *types.Interface
 }
 
-func loadMarshalerInterfaces() (*types.Interface, *types.Interface, error) {
+func loadMarshalerInterfaces(jsonPkg *packages.Package) (*types.Interface, *types.Interface, error) {
 	var marshaler, textMarshaler *types.Interface
 
-	pkg, err := LoadPackage(nil, true, "encoding/json")
-	if err != nil {
-		return nil, nil, err
-	}
-	for _, t := range pkg.TypesInfo.Types {
-		switch i := t.Type.Underlying().(type) {
-		case *types.Interface:
-			if named, ok := t.Type.(*types.Named); ok {
-				if named.Obj().Name() == "Marshaler" {
+	for _, t := range jsonPkg.TypesInfo.Defs {
+		switch obj := t.(type) {
+		case *types.TypeName:
+			if i, ok := obj.Type().Underlying().(*types.Interface); ok {
+				if obj.Name() == "Marshaler" {
 					marshaler = i
-				} else if named.Obj().Name() == "TextMarshaler" {
+				} else if obj.Name() == "TextMarshaler" {
 					textMarshaler = i
 				}
-
 			}
 		}
 	}
@@ -387,25 +376,34 @@ func loadMarshalerInterfaces() (*types.Interface, *types.Interface, error) {
 func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 	startTime := time.Now()
 
-	// load json interfaces
-	marshaler, textMarshaler, err := loadMarshalerInterfaces()
-	if err != nil {
-		return nil, err
-	}
-
 	buildFlags, err := options.BuildFlags()
 	if err != nil {
 		return nil, err
 	}
 
 	pPkgs, err := LoadPackages(buildFlags, true,
-		options.ProjectDirectory, WailsAppPkgPath,
+		options.ProjectDirectory, WailsAppPkgPath, JsonPkgPath,
 	)
 	if err != nil {
 		return nil, err
 	}
 	if n := packages.PrintErrors(pPkgs); n > 0 {
 		return nil, errors.New("error while loading packages")
+	}
+
+	appIndex := slices.IndexFunc(pPkgs, func(pkg *packages.Package) bool { return pkg.PkgPath == WailsAppPkgPath })
+	if appIndex == -1 {
+		return nil, errors.New("LoadPackages() did not load the application package")
+	}
+
+	// load json interfaces
+	jsonIndex := slices.IndexFunc(pPkgs, func(pkg *packages.Package) bool { return pkg.PkgPath == JsonPkgPath })
+	if jsonIndex == -1 {
+		return nil, fmt.Errorf("LoadPackages() did not load package %s", JsonPkgPath)
+	}
+	marshaler, textMarshaler, err := loadMarshalerInterfaces(pPkgs[jsonIndex])
+	if err != nil {
+		return nil, err
 	}
 
 	mainIndex := slices.IndexFunc(pPkgs, func(pkg *packages.Package) bool { return pkg.Name == "main" })
@@ -423,7 +421,7 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 		},
 	}
 
-	project.pkgs, err = ParsePackages(pPkgs, project, buildFlags)
+	project.pkgs, err = ParsePackages(pPkgs[appIndex], project, buildFlags)
 	if err != nil {
 		return project, err
 	}
@@ -505,20 +503,8 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 	return p, nil
 }
 
-func ParseServices(pkgs []*packages.Package, main *packages.Package) (services []*Service, err error) {
-	var app *packages.Package
-	otherPkgs := append(make([]*packages.Package, 0, len(pkgs)), pkgs...)
-	if index := slices.IndexFunc(pkgs, func(pkg *packages.Package) bool { return pkg.PkgPath == WailsAppPkgPath }); index >= 0 {
-		app = pkgs[index]
-		otherPkgs = slices.Delete(otherPkgs, index, index+1)
-	}
-
-	if app == nil {
-		err = errors.New("LoadPackages() did not load the application package")
-		return
-	}
-
-	found, err := FindServices(app, otherPkgs)
+func ParseServices(app *packages.Package, main *packages.Package) (services []*Service, err error) {
+	found, err := FindServices(app, []*packages.Package{main})
 	if err != nil {
 		return
 	}
