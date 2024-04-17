@@ -24,6 +24,16 @@ func getFile(filename string) string {
 	return string(file)
 }
 
+func ParseProjectAndPkgs(options *flags.GenerateBindingsOptions) (*Project, error) {
+	project, err := ParseProject(options)
+	if err != nil {
+		return project, err
+	}
+
+	project.pkgs, err = ParsePackages(project)
+	return project, err
+}
+
 func TestGenerateBindings(t *testing.T) {
 
 	testOptions := []struct {
@@ -331,9 +341,9 @@ func TestGenerateBindings(t *testing.T) {
 				UseBundledRuntime: tt.useBundledRuntime,
 			}
 
-			project, err := ParseProject(options)
+			project, err := ParseProjectAndPkgs(options)
 			if err != nil {
-				t.Errorf("ParseProject() error = %v", err)
+				t.Errorf("ParseProjectAndPkgs() error = %v", err)
 				return
 			}
 

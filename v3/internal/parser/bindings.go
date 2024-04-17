@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"go/types"
 	"io"
-	"maps"
 	"slices"
 	"strings"
 
@@ -65,12 +64,14 @@ func (p *Package) GenerateBindings(project *Project) (result map[string]string, 
 			return strings.Compare(m1.Name(), m2.Name())
 		})
 
+		models := lo.Keys(service.FindModels(p, false))
+
 		var buffer bytes.Buffer
 		err = generateBinding(&buffer, &BindingDefinitions{
 			Package:      p,
 			Service:      service,
-			Imports:      service.calculateBindingImports(p, project),
-			LocalImports: service.calculateBindingLocalImports(p),
+			Imports:      service.calculateBindingImports(models, p, project),
+			LocalImports: service.calculateBindingLocalImports(models, p),
 
 			Methods: methods,
 
@@ -88,54 +89,28 @@ func (p *Package) GenerateBindings(project *Project) (result map[string]string, 
 	return
 }
 
-func (s *Service) bindingImportsOf(params []*Parameter, pkg *Package, project *Project) map[string]string {
+func (s *Service) calculateBindingImports(models []*types.Named, pkg *Package, project *Project) map[string]string {
 	result := make(map[string]string)
 
-	for _, param := range params {
-		models := param.Models(pkg, false)
-		for model := range models {
-			if model.Obj() != nil && model.Obj().Pkg() != s.Pkg() {
-				otherPkg := model.Obj().Pkg()
-				result[otherPkg.Name()] = project.RelativePackageDir(s.Pkg(), otherPkg)
-			}
+	for _, model := range models {
+		if model.Obj() != nil && model.Obj().Pkg() != s.Pkg() {
+			otherPkg := model.Obj().Pkg()
+			result[otherPkg.Name()] = project.RelativePackageDir(s.Pkg(), otherPkg)
 		}
-	}
-	return result
-}
-
-func (s *Service) calculateBindingImports(pkg *Package, project *Project) map[string]string {
-	result := make(map[string]string)
-
-	for _, method := range s.Methods {
-		maps.Copy(result, s.bindingImportsOf(method.JSInputs(), pkg, project))
-		maps.Copy(result, s.bindingImportsOf(method.JSOutputs(), pkg, project))
 	}
 
 	return result
 }
 
-func (s *Service) bindingLocalImportsOf(params []*Parameter, pkg *Package) map[string]bool {
+func (s *Service) calculateBindingLocalImports(models []*types.Named, pkg *Package) []string {
 	requiredTypes := make(map[string]bool)
 
-	for _, param := range params {
-		models := param.Models(pkg, false)
-		for model := range models {
-			if structType, ok := model.Underlying().(*types.Struct); ok && model.Obj() == nil {
-				requiredTypes[pkg.anonymousStructID(structType)] = true
-			} else if model.Obj().Pkg() == s.Pkg() {
-				requiredTypes[model.Obj().Name()] = true
-			}
+	for _, model := range models {
+		if structType, ok := model.Underlying().(*types.Struct); ok && model.Obj() == nil {
+			requiredTypes[pkg.anonymousStructID(structType)] = true
+		} else if model.Obj().Pkg() == s.Pkg() {
+			requiredTypes[model.Obj().Name()] = true
 		}
-	}
-	return requiredTypes
-}
-
-func (s *Service) calculateBindingLocalImports(pkg *Package) []string {
-	requiredTypes := make(map[string]bool)
-
-	for _, method := range s.Methods {
-		maps.Copy(requiredTypes, s.bindingLocalImportsOf(method.JSInputs(), pkg))
-		maps.Copy(requiredTypes, s.bindingLocalImportsOf(method.JSOutputs(), pkg))
 	}
 
 	result := lo.Keys(requiredTypes)

@@ -5,7 +5,6 @@ import (
 	"cmp"
 	"go/types"
 	"io"
-	"maps"
 	"reflect"
 	"slices"
 	"strings"
@@ -20,12 +19,6 @@ type VarAnalyzer struct {
 	Var       *types.Var
 	models    map[*types.Named]bool
 	recursive bool
-}
-
-func (a *VarAnalyzer) FindModels() (models map[*types.Named]bool) {
-	a.models = make(map[*types.Named]bool)
-	a.findModels(a.Var.Type())
-	return a.models
 }
 
 func (a *VarAnalyzer) findModels(t types.Type) {
@@ -82,50 +75,65 @@ func (a *VarAnalyzer) findModelsOfStruct(s *types.Struct) {
 	}
 }
 
-func (p *Parameter) Models(pkg *Package, recursive bool) (models map[*types.Named]bool) {
+func (p *Parameter) findModels(found map[*types.Named]bool, pkg *Package, recursive bool) {
 	analyzer := &VarAnalyzer{
 		pkg:       pkg,
 		Var:       p.Var,
 		recursive: recursive,
+		models:    found,
 	}
-	return analyzer.FindModels()
+	analyzer.findModels(p.Var.Type())
 }
 
-func (f *Field) Models(pkg *Package) (models map[*types.Named]bool) {
+func (f *Field) FindModels(pkg *Package) map[*types.Named]bool {
 	analyzer := &VarAnalyzer{
 		pkg:       pkg,
 		Var:       f.Var,
 		recursive: false,
+		models:    make(map[*types.Named]bool),
 	}
-	return analyzer.FindModels()
+	analyzer.findModels(f.Var.Type())
+	return analyzer.models
 }
 
-func (m *BoundMethod) Models(pkg *Package, recursive bool) (models map[*types.Named]bool) {
-	models = make(map[*types.Named]bool)
+func (m *BoundMethod) findModels(found map[*types.Named]bool, pkg *Package, recursive bool) {
 	for _, param := range m.JSInputs() {
-		maps.Copy(models, param.Models(pkg, recursive))
+		param.findModels(found, pkg, recursive)
 	}
 	for _, param := range m.JSOutputs() {
-		maps.Copy(models, param.Models(pkg, recursive))
+		param.findModels(found, pkg, recursive)
 	}
-	return
 }
 
-func (s *Service) Models(pkg *Package) (models map[*types.Named]bool) {
-	models = make(map[*types.Named]bool)
+func (m *BoundMethod) FindModels(pkg *Package, recursive bool) map[*types.Named]bool {
+	models := make(map[*types.Named]bool)
+	m.findModels(models, pkg, recursive)
+	return models
+}
+
+func (s *Service) findModels(found map[*types.Named]bool, pkg *Package, recursive bool) {
 	for _, method := range s.Methods {
-		maps.Copy(models, method.Models(pkg, true))
+		method.findModels(found, pkg, recursive)
 	}
-	return
 }
 
-func (p *Package) Models() (models map[*types.Named]bool) {
+func (s *Service) FindModels(pkg *Package, recursive bool) map[*types.Named]bool {
+	models := make(map[*types.Named]bool)
+	s.findModels(models, pkg, recursive)
+	return models
+}
+
+func FindModels(pkgs []*Package) (models map[*types.Named]bool) {
 	models = make(map[*types.Named]bool)
 
-	for _, s := range p.services {
-		maps.Copy(models, s.Models(p))
+	for _, pkg := range pkgs {
+		for _, s := range pkg.services {
+			for _, method := range s.Methods {
+				method.findModels(models, pkg, true)
+			}
+		}
 	}
-	return
+	return models
 }
 
 type JsonTag struct {
@@ -551,7 +559,7 @@ func (p *Package) calculateModelImports(m map[string]*StructDef, project *Projec
 
 	for _, structDef := range m {
 		for _, field := range structDef.Fields() {
-			models := field.Models(p)
+			models := field.FindModels(p)
 			if len(models) > 1 {
 				panic("expected at most one model")
 			}

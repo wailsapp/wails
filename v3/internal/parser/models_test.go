@@ -184,9 +184,9 @@ func TestGenerateModels(t *testing.T) {
 				ProjectDirectory: absDir,
 			}
 
-			project, err := ParseProject(options)
+			project, err := ParseProjectAndPkgs(options)
 			if err != nil {
-				t.Errorf("ParseProject() error = %v", err)
+				t.Errorf("ParseProjectAndPkgs() error = %v", err)
 				return
 			}
 

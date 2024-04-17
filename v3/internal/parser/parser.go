@@ -194,7 +194,7 @@ func ParseMethods(service *types.TypeName, main *packages.Package) (methods []*B
 			}
 
 			interfaceFound := false
-			for param := range method.Models(nil, false) {
+			for param := range method.FindModels(nil, false) {
 				if types.IsInterface(param.Obj().Type()) {
 					interfaceFound = true
 					pterm.Warning.Printf("can't bind method %v with interface %v\n", fqn, param.Obj().Name())
@@ -220,7 +220,7 @@ type Package struct {
 	doc              *Doc
 }
 
-func ParsePackages(project *Project, buildFlags []string) ([]*Package, error) {
+func ParsePackages(project *Project) ([]*Package, error) {
 	requiredPackages := make(map[*types.Package]*Package)
 
 	// helper function to add new packages
@@ -250,11 +250,8 @@ func ParsePackages(project *Project, buildFlags []string) ([]*Package, error) {
 	}
 
 	// find all required models
-	allModels := []*types.Named{}
-	for _, pkg := range requiredPackages {
-		allModels = append(allModels, lo.Keys(pkg.Models())...)
-	}
-	for _, model := range allModels {
+	allModels := FindModels(lo.Values(requiredPackages))
+	for model := range allModels {
 		tPkg := model.Obj().Pkg()
 		getOrCreatePackage(tPkg)
 	}
@@ -287,7 +284,7 @@ func ParsePackages(project *Project, buildFlags []string) ([]*Package, error) {
 
 	// add models to packages
 	// must be done after documentation is loaded, otherwise EnumDef.Consts can not be resolved
-	for _, model := range allModels {
+	for model := range allModels {
 		tPkg := model.Obj().Pkg()
 		pkg := getOrCreatePackage(tPkg)
 		pkg.addModel(model, project.marshaler, project.textMarshaler)
@@ -416,7 +413,7 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 		return nil, errors.New("application.New() must be inside main package")
 	}
 
-	project := &Project{
+	return &Project{
 		main:          pPkgs[mainIndex],
 		app:           pPkgs[appIndex],
 		options:       options,
@@ -425,15 +422,7 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 		Stats: Stats{
 			StartTime: startTime,
 		},
-	}
-
-	project.pkgs, err = ParsePackages(project, buildFlags)
-	if err != nil {
-		return project, err
-	}
-
-	project.Stats.NumPackages = len(project.pkgs)
-	return project, nil
+	}, nil
 }
 
 func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project, error) {
@@ -441,6 +430,12 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 	if err != nil {
 		return p, err
 	}
+
+	p.pkgs, err = ParsePackages(p)
+	if err != nil {
+		return p, err
+	}
+	p.Stats.NumPackages = len(p.pkgs)
 
 	if NumMethods := len(p.BoundMethods()); NumMethods == 0 {
 		return p, nil
