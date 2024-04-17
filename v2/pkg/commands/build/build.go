@@ -258,7 +258,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 
 		// When we finish, we will want to remove the syso file
 		defer func() {
-			err := os.Remove(filepath.Join(options.ProjectData.Path, options.ProjectData.Name+"-res.syso"))
+			err := os.Remove(filepath.Join(options.ProjectData.Path, strings.ReplaceAll(options.ProjectData.Name, " ", "_")+"-res.syso"))
 			if err != nil {
 				fatal(err.Error())
 			}

@@ -6,6 +6,7 @@ import (
 	"image"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/leaanthony/winicon"
 	"github.com/tc-hib/winres"
@@ -274,7 +275,7 @@ func compileResources(options *Options) error {
 		rs.SetVersionInfo(v)
 	}
 
-	targetFile := filepath.Join(options.ProjectData.Path, options.ProjectData.Name+"-res.syso")
+	targetFile := filepath.Join(options.ProjectData.Path, strings.ReplaceAll(options.ProjectData.Name, " ", "_")+"-res.syso")
 	fout, err := os.Create(targetFile)
 	if err != nil {
 		return err
