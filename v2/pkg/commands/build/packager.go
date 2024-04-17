@@ -275,6 +275,7 @@ func compileResources(options *Options) error {
 		rs.SetVersionInfo(v)
 	}
 
+	// replace spaces with underscores as go build behaves weirdly with spaces in syso filename
 	targetFile := filepath.Join(options.ProjectData.Path, strings.ReplaceAll(options.ProjectData.Name, " ", "_")+"-res.syso")
 	fout, err := os.Create(targetFile)
 	if err != nil {
