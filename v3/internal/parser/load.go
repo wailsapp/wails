@@ -1,11 +1,15 @@
 package parser
 
 import (
+	"bytes"
 	"cmp"
+	"encoding/json"
 	"errors"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os/exec"
+	"path/filepath"
 	"slices"
 
 	"github.com/pterm/pterm"
@@ -103,4 +107,64 @@ func LoadPackagesParallel(buildFlags []string, full bool, patterns ...string) ([
 	close(results)
 
 	return pkgs, nil
+}
+
+type ListPackage struct {
+	Name    string
+	Dir     string
+	GoFiles []string
+}
+
+// CREDIT: https://cs.opensource.google/go/x/tools/+/refs/tags/v0.20.0:go/packages/golist.go;l=359
+func LoadAstPackages(patterns ...string) (map[string]*ast.Package, error) {
+	result := make(map[string]*ast.Package)
+	if len(patterns) == 0 {
+		return result, nil
+	}
+
+	// find go files
+	listargs := append([]string{"list", "-json=Name,Dir,GoFiles"}, patterns...)
+	cmd := exec.Command("go", listargs...)
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+	lPkgs := []*ListPackage{}
+	buf := bytes.NewBufferString(string(output))
+	for dec := json.NewDecoder(buf); dec.More(); {
+		p := new(ListPackage)
+		err := dec.Decode(p)
+		if err != nil {
+			return nil, err
+		}
+		lPkgs = append(lPkgs, p)
+	}
+
+	// load packages
+	for i, lPkg := range lPkgs {
+		astPkg, err := LoadAstPackage(lPkg)
+		if err != nil {
+			return result, err
+		}
+		result[patterns[i]] = astPkg
+	}
+
+	return result, nil
+}
+
+func LoadAstPackage(pkg *ListPackage) (*ast.Package, error) {
+	fset := token.NewFileSet()
+	files := make(map[string]*ast.File)
+	for _, filename := range pkg.GoFiles {
+		goFilePath := filepath.Join(pkg.Dir, filename)
+		file, err := parser.ParseFile(fset, goFilePath, nil, parser.AllErrors|parser.ParseComments|parser.SkipObjectResolution)
+		if err != nil {
+			return nil, err
+		}
+		files[goFilePath] = file
+	}
+	return &ast.Package{
+		Name:  pkg.Name,
+		Files: files,
+	}, nil
 }

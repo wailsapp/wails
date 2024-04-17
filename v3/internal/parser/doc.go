@@ -11,11 +11,8 @@ type Doc struct {
 	Types map[string]*doc.Type
 }
 
-func NewDoc(pkg *Package) *Doc {
-	pkgDoc := doc.New(&ast.Package{
-		Name:  pkg.Name(),
-		Files: pkg.files,
-	}, pkg.Path(), doc.PreserveAST|doc.AllDecls)
+func NewDoc(pkgPath string, pkg *ast.Package) *Doc {
+	pkgDoc := doc.New(pkg, pkgPath, doc.PreserveAST|doc.AllDecls)
 
 	types := make(map[string]*doc.Type)
 	for _, t := range pkgDoc.Types {

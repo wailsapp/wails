@@ -220,7 +220,7 @@ type Package struct {
 	doc              *Doc
 }
 
-func ParsePackages(app *packages.Package, project *Project, buildFlags []string) ([]*Package, error) {
+func ParsePackages(project *Project, buildFlags []string) ([]*Package, error) {
 	requiredPackages := make(map[*types.Package]*Package)
 
 	// helper function to add new packages
@@ -239,7 +239,7 @@ func ParsePackages(app *packages.Package, project *Project, buildFlags []string)
 	}
 
 	// add services to packages
-	services, err := ParseServices(app, project.main)
+	services, err := ParseServices(project.app, project.main)
 	if err != nil {
 		return nil, err
 	}
@@ -259,37 +259,41 @@ func ParsePackages(app *packages.Package, project *Project, buildFlags []string)
 		getOrCreatePackage(tPkg)
 	}
 
+	result := lo.Values(requiredPackages)
+
 	// load documentation for each package
-	patterns := lo.Map(lo.Keys(requiredPackages), func(pkg *types.Package, i int) string { return pkg.Path() })
-	patterns = lo.Filter(patterns, func(pattern string, i int) bool { return pattern != project.main.PkgPath })
-	pPkgs, err := LoadPackagesParallel(buildFlags, false, patterns...)
-	pPkgs = append(pPkgs, project.main)
-	if err != nil {
-		return nil, err
-	}
-	for _, pkg := range requiredPackages {
-		for _, pPkg := range pPkgs {
-			if pPkg.PkgPath == pkg.Path() {
-
-				for i, file := range pPkg.Syntax {
-					pkg.files[pPkg.CompiledGoFiles[i]] = file
-				}
-
-				pkg.doc = NewDoc(pkg)
-				break
+	for tPkg, pkg := range requiredPackages {
+		if tPkg == project.main.Types {
+			files := make(map[string]*ast.File)
+			for i, file := range project.main.Syntax {
+				files[project.main.CompiledGoFiles[i]] = file
 			}
+			pkg.doc = NewDoc(pkg.Path(), &ast.Package{
+				Files: files,
+				Name:  pkg.Name(),
+			})
 		}
 	}
 
+	pkgsNoDoc := lo.Filter(result, func(pkg *Package, i int) bool { return pkg.doc == nil })
+	patterns := lo.Map(pkgsNoDoc, func(pkg *Package, i int) string { return pkg.Path() })
+	astPkgs, err := LoadAstPackages(patterns...)
+	if err != nil {
+		return result, err
+	}
+	for i, pattern := range patterns {
+		pkgsNoDoc[i].doc = NewDoc(pkgsNoDoc[i].Path(), astPkgs[pattern])
+	}
+
 	// add models to packages
-	// must be done after documentation is loaded, otherwise EnumDef.Consts can't be resolved
+	// must be done after documentation is loaded, otherwise EnumDef.Consts can not be resolved
 	for _, model := range allModels {
 		tPkg := model.Obj().Pkg()
 		pkg := getOrCreatePackage(tPkg)
 		pkg.addModel(model, project.marshaler, project.textMarshaler)
 	}
 
-	return lo.Values(requiredPackages), nil
+	return result, nil
 }
 
 func (p *Package) addService(s *Service) {
@@ -342,6 +346,7 @@ type Stats struct {
 type Project struct {
 	pkgs    []*Package
 	main    *packages.Package
+	app     *packages.Package
 	options *flags.GenerateBindingsOptions
 	Stats   Stats
 
@@ -413,6 +418,7 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 
 	project := &Project{
 		main:          pPkgs[mainIndex],
+		app:           pPkgs[appIndex],
 		options:       options,
 		marshaler:     marshaler,
 		textMarshaler: textMarshaler,
@@ -421,7 +427,7 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 		},
 	}
 
-	project.pkgs, err = ParsePackages(pPkgs[appIndex], project, buildFlags)
+	project.pkgs, err = ParsePackages(project, buildFlags)
 	if err != nil {
 		return project, err
 	}
