@@ -1,12 +1,14 @@
 package parser
 
 import (
-	"fmt"
+	"encoding/json"
 	"go/parser"
 	"go/token"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
+	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 )
 
@@ -20,10 +22,13 @@ func BenchmarkParser(b *testing.B) {
 		{
 			pkg: "complex_json",
 		},
-		// {
-		// 	pkg: "multiple_packages",
-		// },
+		{
+			pkg: "multiple_packages",
+		},
 	}
+
+	// suppress warnings
+	pterm.Warning.Debugger = true
 
 	for _, bench := range benchmarks {
 
@@ -33,32 +38,26 @@ func BenchmarkParser(b *testing.B) {
 			ProjectDirectory: "github.com/wailsapp/wails/v3/internal/parser/testdata/" + bench.pkg,
 		}
 
-		b.Run(bench.pkg+"/load", func(b *testing.B) {
+		// b.Run(bench.pkg+"/LoadPackages", func(b *testing.B) {
+		// 	buildFlags, err := options.BuildFlags()
+		// 	if err != nil {
+		// 		b.Fatal(err)
+		// 	}
+
+		// 	for i := 0; i < b.N; i++ {
+		// 		_, err := LoadPackages(buildFlags, true, options.ProjectDirectory, WailsAppPkgPath, JsonPkgPath)
+		// 		if err != nil {
+		// 			b.Fatal(err)
+		// 		}
+		// 	}
+		// })
+
+		b.Run(bench.pkg+"/ParseProject", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				LoadPackages(nil, true,
-					options.ProjectDirectory,
-					WailsAppPkgPath,
-				)
-			}
-
-		})
-
-		pPkgs, err := LoadPackages(nil, true,
-			options.ProjectDirectory, WailsAppPkgPath,
-		)
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		b.Run(bench.pkg+"/analyze", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				ParseServices(pPkgs[1], pPkgs[0])
-			}
-		})
-
-		b.Run(bench.pkg+"/parse", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				ParseProject(options)
+				_, err := ParseProject(options)
+				if err != nil {
+					b.Fatal(err)
+				}
 			}
 		})
 
@@ -67,58 +66,87 @@ func BenchmarkParser(b *testing.B) {
 			b.Fatal(err)
 		}
 
-		b.Run(bench.pkg+"/bindings", func(b *testing.B) {
+		b.Run(bench.pkg+"/ParsePackages", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				project.GenerateBindings()
+				_, err := ParsePackages(project)
+				if err != nil {
+					b.Fatal(err)
+				}
 			}
 		})
 
-		b.Run(bench.pkg+"/models", func(b *testing.B) {
+		project.pkgs, err = ParsePackages(project)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		b.Run(bench.pkg+"/GenerateBindings", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				project.GenerateModels()
+				_, err := project.GenerateBindings()
+				if err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+
+		b.Run(bench.pkg+"/GenerateModels", func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				_, err := project.GenerateModels()
+				if err != nil {
+					b.Fatal(err)
+				}
 			}
 		})
 	}
 }
 
-func BenchmarkLoad(b *testing.B) {
+func BenchmarkLoadPackage(b *testing.B) {
 
 	benchmarks := []struct {
 		pkg string
 	}{
 		{
-			pkg: "struct_literal_single",
-		},
-		{
-			pkg: "complex_json",
+			pkg: "fmt",
 		},
 	}
 
 	for _, bench := range benchmarks {
 
-		dir := "testdata/" + bench.pkg
-		absDir, err := filepath.Abs(dir)
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		b.Run(bench.pkg+"/packages.Load", func(b *testing.B) {
+		b.Run(bench.pkg+"/LoadPackage", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				pkgs, err := LoadPackages(nil, true, absDir)
+				_, err := LoadPackage(nil, true, bench.pkg)
 				if err != nil {
 					b.Fatal(err)
 				}
-				fmt.Println(len(pkgs[0].Syntax))
 			}
 		})
 
-		b.Run(bench.pkg+"/parser.ParseFile", func(b *testing.B) {
+		b.Run(bench.pkg+"/ParseFile", func(b *testing.B) {
+			type Package struct {
+				Dir     string
+				GoFiles []string
+			}
+
 			for i := 0; i < b.N; i++ {
-				fset := token.NewFileSet()
-				_, err := parser.ParseDir(fset, absDir, nil, parser.AllErrors|parser.ParseComments|parser.SkipObjectResolution)
+				cmd := exec.Command("go", "list", "-json=Dir,GoFiles", bench.pkg)
+				buf, err := cmd.Output()
 				if err != nil {
 					b.Fatal(err)
 				}
+
+				var p Package
+				if err := json.Unmarshal(buf, &p); err != nil {
+					b.Fatal(err)
+				}
+
+				fset := token.NewFileSet()
+				for _, filename := range p.GoFiles {
+					_, err := parser.ParseFile(fset, filepath.Join(p.Dir, filename), nil, parser.AllErrors|parser.ParseComments|parser.SkipObjectResolution)
+					if err != nil {
+						b.Fatal(err)
+					}
+				}
+
 			}
 
 		})
