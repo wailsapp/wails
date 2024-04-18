@@ -139,7 +139,6 @@ func TestFindServices(t *testing.T) {
 		t.Run(tt.pkg, func(t *testing.T) {
 			pkgs, err := LoadPackages(nil, true,
 				"github.com/wailsapp/wails/v3/internal/parser/testdata/"+tt.pkg,
-				WailsAppPkgPath,
 			)
 			if err != nil {
 				t.Fatal(err)
@@ -147,17 +146,7 @@ func TestFindServices(t *testing.T) {
 
 			packages.PrintErrors(pkgs)
 
-			var app *packages.Package
-			if index := slices.IndexFunc(pkgs, func(pkg *packages.Package) bool { return pkg.PkgPath == WailsAppPkgPath }); index >= 0 {
-				app = pkgs[index]
-				pkgs = slices.Delete(pkgs, index, index+1)
-			}
-
-			if app == nil {
-				t.Fatal("LoadPackages() did not load the application package")
-			}
-
-			services, err := FindServices(app, pkgs)
+			services, err := FindServices(pkgs)
 			if err != nil {
 				t.Fatal(err)
 			}

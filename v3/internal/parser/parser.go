@@ -239,7 +239,7 @@ func ParsePackages(project *Project) ([]*Package, error) {
 	}
 
 	// add services to packages
-	services, err := ParseServices(project.app, project.main)
+	services, err := ParseServices(project.main)
 	if err != nil {
 		return nil, err
 	}
@@ -343,7 +343,6 @@ type Stats struct {
 type Project struct {
 	pkgs    []*Package
 	main    *packages.Package
-	app     *packages.Package
 	options *flags.GenerateBindingsOptions
 	Stats   Stats
 
@@ -384,18 +383,13 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 	}
 
 	pPkgs, err := LoadPackages(buildFlags, true,
-		options.ProjectDirectory, WailsAppPkgPath, JsonPkgPath,
+		options.ProjectDirectory, JsonPkgPath,
 	)
 	if err != nil {
 		return nil, err
 	}
 	if n := packages.PrintErrors(pPkgs); n > 0 {
 		return nil, errors.New("error while loading packages")
-	}
-
-	appIndex := slices.IndexFunc(pPkgs, func(pkg *packages.Package) bool { return pkg.PkgPath == WailsAppPkgPath })
-	if appIndex == -1 {
-		return nil, errors.New("LoadPackages() did not load the application package")
 	}
 
 	// load json interfaces
@@ -415,7 +409,6 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 
 	return &Project{
 		main:          pPkgs[mainIndex],
-		app:           pPkgs[appIndex],
 		options:       options,
 		marshaler:     marshaler,
 		textMarshaler: textMarshaler,
@@ -504,8 +497,8 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 	return p, nil
 }
 
-func ParseServices(app *packages.Package, main *packages.Package) (services []*Service, err error) {
-	found, err := FindServices(app, []*packages.Package{main})
+func ParseServices(main *packages.Package) (services []*Service, err error) {
+	found, err := FindServices([]*packages.Package{main})
 	if err != nil {
 		return
 	}

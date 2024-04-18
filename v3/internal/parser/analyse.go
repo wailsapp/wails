@@ -14,12 +14,15 @@ import (
 	"golang.org/x/tools/go/types/typeutil"
 )
 
+// WailsAppOptions is the import path of Wails v3's application.Options
+const WailsAppOptions = WailsAppPkgPath + ".Options"
+
 var ErrBadApplicationOptions = errors.New("could not find field Bind of struct application.Options: is the wails v3 module properly installed?")
 
 // FindServices finds all named types that are listed in the Bind field
 // of the Wails application.Options struct in the given packages.
 //
-// app must describe the Wails application package (github.com/wailsapp/wails/v3/pkg/application).
+// each pkg must import the Wails application package (github.com/wailsapp/wails/v3/pkg/application).
 //
 // As a precondition, the Syntax field of each package object in pkgs
 // must be sorted by file start position, ascending. The condition
@@ -29,10 +32,14 @@ var ErrBadApplicationOptions = errors.New("could not find field Bind of struct a
 //
 // FindServices supports only some kind of expressions,
 // but emits warnings for unsupported forms.
-func FindServices(app *packages.Package, pkgs []*packages.Package) ([]*types.TypeName, error) {
+func FindServices(pkgs []*packages.Package) ([]*types.TypeName, error) {
+	if len(pkgs) == 0 {
+		return []*types.TypeName{}, nil
+	}
+
 	// Analyse uses of the field application.Options.Bind
 
-	analyser, err := newBindFieldAnalyser(app)
+	analyser, err := newBindFieldAnalyser(pkgs[0])
 	if err != nil {
 		return nil, err
 	}
@@ -96,58 +103,45 @@ type bindingAnalyser struct {
 // newBindFieldAnalyser constructs an analyser
 // for the struct field application.Options.Bind.
 //
-// app must describe the Wails application package.
-func newBindFieldAnalyser(app *packages.Package) (*bindingAnalyser, error) {
-	info := types.Info{
-		Selections: make(map[*ast.SelectorExpr]*types.Selection),
-	}
+// pkg must import the Wails application package.
+func newBindFieldAnalyser(pkg *packages.Package) (*bindingAnalyser, error) {
 
-	// Typecheck expression "Options{}.Bind" within app
-	expr := &ast.SelectorExpr{
-		X:   &ast.CompositeLit{Type: &ast.Ident{Name: "Options"}},
-		Sel: &ast.Ident{Name: "Bind"},
+	// Retrieve type of application.Options
+	var options *types.Named
+	for _, tv := range pkg.TypesInfo.Types {
+		named, ok := tv.Type.(*types.Named)
+		if ok && tv.Type.String() == WailsAppOptions {
+			options = named
+			break
+		}
 	}
-
-	if err := types.CheckExpr(app.Fset, app.Types, token.NoPos, expr, &info); err != nil {
-		return nil, errors.Join(err, ErrBadApplicationOptions)
-	}
-
-	// Retrieve selection result
-	sel := info.Selections[expr]
-	if sel == nil {
+	if options == nil {
 		return nil, ErrBadApplicationOptions
 	}
 
-	// Retrieve selected field
-	field, ok := sel.Obj().(*types.Var)
+	// Retrieve underlying struct
+	fieldStruct, ok := options.Underlying().(*types.Struct)
 	if !ok {
 		return nil, ErrBadApplicationOptions
 	}
 
-	// Retrieve selected struct
-	fieldStruct := sel.Recv()
-	if fieldStruct == nil {
-		return nil, ErrBadApplicationOptions
+	// Retrieve field Options.Bind
+	var field *types.Var
+	fieldIndex := 0
+	for ; fieldIndex < fieldStruct.NumFields(); fieldIndex++ {
+		field = fieldStruct.Field(fieldIndex)
+		if field.Name() == "Bind" {
+			break
+		}
 	}
-
-	// If the field came from an embedded type, find its closest ancestor
-	index := sel.Index()
-	for ; len(index) > 1; index = index[1:] {
-		def, ok := fieldStruct.Underlying().(*types.Struct)
-		if !ok {
-			return nil, ErrBadApplicationOptions
-		}
-
-		fieldStruct = def.Field(index[0]).Type()
-		if fieldStruct == nil {
-			return nil, ErrBadApplicationOptions
-		}
+	if field.Name() != "Bind" {
+		return nil, ErrBadApplicationOptions
 	}
 
 	return &bindingAnalyser{
 		field,
 		fieldStruct,
-		index[0],
+		fieldIndex,
 		make(map[*types.TypeName]bool),
 		make(map[*types.Var]bool),
 		make(map[*types.Var]bool),
