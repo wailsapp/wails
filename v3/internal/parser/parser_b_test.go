@@ -1,11 +1,6 @@
 package parser
 
 import (
-	"encoding/json"
-	"go/parser"
-	"go/token"
-	"os/exec"
-	"path/filepath"
 	"testing"
 
 	"github.com/pterm/pterm"
@@ -98,59 +93,4 @@ func BenchmarkParser(b *testing.B) {
 			}
 		})
 	}
-}
-
-func BenchmarkLoadPackage(b *testing.B) {
-
-	benchmarks := []struct {
-		pkg string
-	}{
-		{
-			pkg: "fmt",
-		},
-	}
-
-	for _, bench := range benchmarks {
-
-		b.Run(bench.pkg+"/LoadPackage", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				_, err := LoadPackage(nil, true, bench.pkg)
-				if err != nil {
-					b.Fatal(err)
-				}
-			}
-		})
-
-		b.Run(bench.pkg+"/ParseFile", func(b *testing.B) {
-			type Package struct {
-				Dir     string
-				GoFiles []string
-			}
-
-			for i := 0; i < b.N; i++ {
-				cmd := exec.Command("go", "list", "-json=Dir,GoFiles", bench.pkg)
-				buf, err := cmd.Output()
-				if err != nil {
-					b.Fatal(err)
-				}
-
-				var p Package
-				if err := json.Unmarshal(buf, &p); err != nil {
-					b.Fatal(err)
-				}
-
-				fset := token.NewFileSet()
-				for _, filename := range p.GoFiles {
-					_, err := parser.ParseFile(fset, filepath.Join(p.Dir, filename), nil, parser.AllErrors|parser.ParseComments|parser.SkipObjectResolution)
-					if err != nil {
-						b.Fatal(err)
-					}
-				}
-
-			}
-
-		})
-
-	}
-
 }

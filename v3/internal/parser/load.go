@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"cmp"
 	"encoding/json"
-	"errors"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"sync"
 
 	"github.com/pterm/pterm"
 	"golang.org/x/tools/go/packages"
@@ -56,63 +56,16 @@ func LoadPackages(buildFlags []string, full bool, patterns ...string) ([]*packag
 	return pkgs, err
 }
 
-func LoadPackage(buildFlags []string, full bool, pattern string) (*packages.Package, error) {
-	pkgs, err := LoadPackages(buildFlags, full, pattern)
-	if err != nil {
-		return nil, err
-	}
-	if len(pkgs) <= 0 {
-		return nil, errors.New("package not found: " + pattern)
-	}
-	return pkgs[0], nil
-}
-
-func LoadPackagesParallel(buildFlags []string, full bool, patterns ...string) ([]*packages.Package, error) {
-
-	type Result struct {
-		pkg *packages.Package
-		err error
-	}
-
-	jobs := make(chan string, len(patterns))
-	results := make(chan Result, len(patterns))
-
-	worker := func() {
-		for pattern := range jobs {
-			pkg, err := LoadPackage(buildFlags, full, pattern)
-			results <- Result{
-				pkg: pkg,
-				err: err,
-			}
-		}
-	}
-
-	for i := 0; i < 5; i++ {
-		go worker()
-	}
-
-	for _, pattern := range patterns {
-		jobs <- pattern
-	}
-	close(jobs)
-
-	pkgs := []*packages.Package{}
-	for i := 0; i < len(patterns); i++ {
-		res := <-results
-		if res.err != nil {
-			return nil, res.err
-		}
-		pkgs = append(pkgs, res.pkg)
-	}
-	close(results)
-
-	return pkgs, nil
-}
-
-type ListPackage struct {
+type listPackage struct {
 	Name    string
 	Dir     string
 	GoFiles []string
+}
+
+type loaderPackage struct {
+	listPkg *listPackage
+	astPkg  *ast.Package
+	err     error
 }
 
 // CREDIT: https://cs.opensource.google/go/x/tools/+/refs/tags/v0.20.0:go/packages/golist.go;l=359
@@ -123,36 +76,48 @@ func LoadAstPackages(patterns ...string) (map[string]*ast.Package, error) {
 	}
 
 	// find go files
-	listargs := append([]string{"list", "-json=Name,Dir,GoFiles"}, patterns...)
+	listargs := append([]string{"list", "-find", "-json=Name,Dir,GoFiles"}, patterns...)
 	cmd := exec.Command("go", listargs...)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}
-	lPkgs := []*ListPackage{}
+	lPkgs := []*loaderPackage{}
 	buf := bytes.NewBufferString(string(output))
 	for dec := json.NewDecoder(buf); dec.More(); {
-		p := new(ListPackage)
+		p := new(listPackage)
 		err := dec.Decode(p)
 		if err != nil {
 			return nil, err
 		}
-		lPkgs = append(lPkgs, p)
+		lPkgs = append(lPkgs, &loaderPackage{
+			listPkg: p,
+		})
 	}
+
+	// load packages concurrently
+	var wg sync.WaitGroup
+	for _, lPkg := range lPkgs {
+		wg.Add(1)
+		go func(lPkg *loaderPackage) {
+			lPkg.astPkg, lPkg.err = LoadAstPackage(lPkg.listPkg)
+			wg.Done()
+		}(lPkg)
+	}
+	wg.Wait()
 
 	// load packages
 	for i, lPkg := range lPkgs {
-		astPkg, err := LoadAstPackage(lPkg)
-		if err != nil {
-			return result, err
+		if lPkg.err != nil {
+			return result, lPkg.err
 		}
-		result[patterns[i]] = astPkg
+		result[patterns[i]] = lPkg.astPkg
 	}
 
 	return result, nil
 }
 
-func LoadAstPackage(pkg *ListPackage) (*ast.Package, error) {
+func LoadAstPackage(pkg *listPackage) (*ast.Package, error) {
 	fset := token.NewFileSet()
 	files := make(map[string]*ast.File)
 	for _, filename := range pkg.GoFiles {
