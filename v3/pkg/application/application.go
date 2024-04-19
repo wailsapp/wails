@@ -789,7 +789,7 @@ func (a *App) dispatchEventToListeners(event *WailsEvent) {
 	listeners := a.wailsEventListeners
 
 	for _, window := range a.windows {
-		listeners = append(listeners, window)
+		window.DispatchWailsEvent(event)
 	}
 
 	for _, listener := range listeners {
