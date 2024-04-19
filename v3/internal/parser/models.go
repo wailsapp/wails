@@ -52,6 +52,10 @@ func (a *VarAnalyzer) findModels(t types.Type) {
 			return
 		case *types.Pointer:
 			t = x.Elem()
+		case *types.Alias:
+			// Note: at the moment it is not possible to access the RHS of an alias
+			// https://github.com/golang/go/issues/66559
+			t = aliasToNamed(x)
 		default:
 			return
 		}
@@ -225,6 +229,8 @@ func DefaultValue(t types.Type, pkg *Package) string {
 		return "null"
 	case *types.Struct:
 		return "(new " + pkg.anonymousStructID(x) + "())"
+	case *types.Alias:
+		return DefaultValue(aliasToNamed(x), pkg)
 	}
 	return "null"
 }
@@ -428,6 +434,7 @@ func (p *Package) addModel(model *types.Named, marshaler, textMarshaler *types.I
 			Name: modelName,
 			Type: types.Typ[types.String],
 		}
+		return
 	}
 
 	switch t := model.Underlying().(type) {
@@ -451,6 +458,11 @@ func (p *Package) addModel(model *types.Named, marshaler, textMarshaler *types.I
 		models.Structs[modelName] = &StructDef{
 			Name:   modelName,
 			Struct: t,
+		}
+	default:
+		models.Aliases[modelName] = &AliasDef{
+			Name: modelName,
+			Type: model,
 		}
 	}
 

@@ -89,6 +89,9 @@ func JSType(t types.Type, pkg *Package) (string, bool) {
 		return jstype + " | null", true
 	case *types.Struct:
 		return pkg.anonymousStructID(x), false
+	case *types.Alias:
+		jstype, _ := JSType(aliasToNamed(x), pkg)
+		return jstype, false
 	}
 	return "any", false
 }

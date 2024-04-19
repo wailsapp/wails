@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"go/ast"
 	"go/token"
+	"go/types"
 	"slices"
 
 	"golang.org/x/tools/go/ast/astutil"
@@ -48,4 +49,8 @@ func Reparen(path []ast.Node) []ast.Node {
 	}
 
 	return path
+}
+
+func aliasToNamed(alias *types.Alias) *types.Named {
+	return types.NewNamed(alias.Obj(), alias.Underlying(), nil)
 }

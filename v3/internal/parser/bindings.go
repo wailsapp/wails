@@ -70,7 +70,7 @@ func (p *Package) GenerateBindings(project *Project) (result map[string]string, 
 		err = generateBinding(&buffer, &BindingDefinitions{
 			Package:      p,
 			Service:      service,
-			Imports:      service.calculateBindingImports(models, p, project),
+			Imports:      service.calculateBindingImports(models, project),
 			LocalImports: service.calculateBindingLocalImports(models, p),
 
 			Methods: methods,
@@ -89,7 +89,7 @@ func (p *Package) GenerateBindings(project *Project) (result map[string]string, 
 	return
 }
 
-func (s *Service) calculateBindingImports(models []*types.Named, pkg *Package, project *Project) map[string]string {
+func (s *Service) calculateBindingImports(models []*types.Named, project *Project) map[string]string {
 	result := make(map[string]string)
 
 	for _, model := range models {
