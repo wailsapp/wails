@@ -23,7 +23,7 @@ const flags = {
 const DROP_TARGET_ACTIVE = "wails-drop-target-active";
 
 /**
- * checkStyleDropTarget checks if the styke has the drop target attribute
+ * checkStyleDropTarget checks if the style has the drop target attribute
  * 
  * @param {CSSStyleDeclaration} style 
  * @returns 
