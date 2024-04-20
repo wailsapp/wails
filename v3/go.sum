@@ -71,6 +71,8 @@ github.com/atterpac/refresh v0.7.1 h1:uErxSypivvUZeSn1uYKbfRtsE/Bju0ErST9sBCivZE
 github.com/atterpac/refresh v0.7.1/go.mod h1:fJpWySLdpbANS8Ej5OvfZVZIVvi/9bmnhTjKS5EjQes=
 github.com/atterpac/refresh v0.7.2 h1:GBAe7J9WntEV+mPGHnbDLk5gaykqk9T0SH97oyCHkrg=
 github.com/atterpac/refresh v0.7.2/go.mod h1:fJpWySLdpbANS8Ej5OvfZVZIVvi/9bmnhTjKS5EjQes=
+github.com/atterpac/refresh v0.7.3 h1:k/YX9BUP0MKqk5C1OJm3vm1jpjznLMdhCEIDad0Hnf8=
+github.com/atterpac/refresh v0.7.3/go.mod h1:fJpWySLdpbANS8Ej5OvfZVZIVvi/9bmnhTjKS5EjQes=
 github.com/bep/debounce v1.2.1 h1:v67fRdBA9UQu2NhLFXrSg0Brw7CexQekrBwDMM8bzeY=
 github.com/bep/debounce v1.2.1/go.mod h1:H8yggRPQKLUhUoqrJC1bO2xNya7vanpDl7xR3ISbCJ0=
 github.com/bwesterb/go-ristretto v1.2.3/go.mod h1:fUIoIZaG73pV5biE2Blr2xEzDoMj7NFEuV9ekS419A0=
