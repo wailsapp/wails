@@ -301,12 +301,12 @@ func (s *StructDef) allFields() []*Field {
 					fields = append(fields, field)
 				}
 			case *types.Interface:
-				pterm.Warning.Printfln("interface as field: ignoring field %s.%s of type %s", s.Name, field.Name(), field.Type().String())
+				filteredWarning.Printfln("interface as field: ignoring field %s.%s of type %s", s.Name, field.Name(), field.Type().String())
 			}
 		} else if field.Exported() {
 			switch field.Type().Underlying().(type) {
 			case *types.Interface:
-				pterm.Warning.Printfln("interface as field: ignoring field %s.%s of type %s", s.Name, field.Name(), field.Type().String())
+				filteredWarning.Printfln("interface as field: ignoring field %s.%s of type %s", s.Name, field.Name(), field.Type().String())
 			default:
 				fields = append(fields, field)
 			}

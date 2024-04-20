@@ -2,11 +2,13 @@ package parser
 
 import (
 	"cmp"
+	"fmt"
 	"go/ast"
 	"go/token"
 	"go/types"
 	"slices"
 
+	"github.com/pterm/pterm"
 	"golang.org/x/tools/go/ast/astutil"
 	"golang.org/x/tools/go/packages"
 )
@@ -54,3 +56,27 @@ func Reparen(path []ast.Node) []ast.Node {
 func aliasToNamed(alias *types.Alias) *types.Named {
 	return types.NewNamed(alias.Obj(), alias.Underlying(), nil)
 }
+
+// filteredPrefixPrinter is used to remove duplicate output of (pterm.PrefixPrinter)s
+type filteredPrefixPrinter struct {
+	printer  *pterm.PrefixPrinter
+	messages map[string]bool
+}
+
+func newFilteredPrefixPrinter(printer *pterm.PrefixPrinter) *filteredPrefixPrinter {
+	return &filteredPrefixPrinter{
+		printer:  printer,
+		messages: make(map[string]bool),
+	}
+}
+
+func (p *filteredPrefixPrinter) Printfln(format string, a ...interface{}) *pterm.TextPrinter {
+	message := fmt.Sprintf(format, a...)
+	if _, ok := p.messages[message]; ok {
+		return nil
+	}
+	p.messages[message] = true
+	return p.printer.Println(message)
+}
+
+var filteredWarning = newFilteredPrefixPrinter(&pterm.Warning)

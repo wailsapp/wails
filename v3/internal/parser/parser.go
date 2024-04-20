@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/hash"
@@ -200,7 +199,7 @@ func ParseMethods(service *types.TypeName, main *packages.Package) (methods []*B
 			for param := range method.FindModels(nil, false) {
 				if types.IsInterface(param.Obj().Type()) {
 					interfaceFound = true
-					pterm.Warning.Printfln("interface as parameter: ignoring %s.%s with interface %s", service.Name(), param.Obj().Name(), param.String())
+					filteredWarning.Printfln("interface as parameter: ignoring %s.%s with interface %s", service.Name(), param.Obj().Name(), param.String())
 				}
 			}
 			if interfaceFound {
