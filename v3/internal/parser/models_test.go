@@ -137,6 +137,20 @@ func TestGenerateModels(t *testing.T) {
 				"other/other":            true,
 			},
 		},
+		{
+			name: "type_alias",
+			dir:  "testdata/type_alias",
+			want: map[string]bool{
+				"main": true,
+			},
+		},
+		{
+			name: "interfaces",
+			dir:  "testdata/interfaces",
+			want: map[string]bool{
+				"main": true,
+			},
+		},
 	}
 
 	type Test struct {

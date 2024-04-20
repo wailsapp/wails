@@ -285,6 +285,33 @@ func TestGenerateBindings(t *testing.T) {
 			},
 			useBundledRuntime: true,
 		},
+		{
+			name: "renamed_import",
+			dir:  "testdata/renamed_import",
+			want: map[string]map[string]bool{
+				"main": {
+					"GreetService": true,
+				},
+			},
+		},
+		{
+			name: "type_alias",
+			dir:  "testdata/type_alias",
+			want: map[string]map[string]bool{
+				"main": {
+					"GreetService": true,
+				},
+			},
+		},
+		{
+			name: "interfaces",
+			dir:  "testdata/interfaces",
+			want: map[string]map[string]bool{
+				"main": {
+					"GreetService": true,
+				},
+			},
+		},
 	}
 
 	type Test struct {
