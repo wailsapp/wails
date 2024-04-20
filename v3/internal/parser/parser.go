@@ -200,7 +200,7 @@ func ParseMethods(service *types.TypeName, main *packages.Package) (methods []*B
 			for param := range method.FindModels(nil, false) {
 				if types.IsInterface(param.Obj().Type()) {
 					interfaceFound = true
-					pterm.Warning.Printf("can't bind method %v with interface %v\n", fqn, param.Obj().Name())
+					pterm.Warning.Printfln("interface as parameter: ignoring %s.%s with interface %s", service.Name(), param.Obj().Name(), param.String())
 				}
 			}
 			if interfaceFound {

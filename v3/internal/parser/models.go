@@ -47,7 +47,7 @@ func (a *VarAnalyzer) findModels(t types.Type) {
 			named := types.NewNamed(types.NewTypeName(0, a.pkg.Package, a.pkg.anonymousStructID(x), nil), x, nil)
 			a.models[named] = true
 			if a.recursive {
-				a.findModelsOfStruct(x)
+				a.findModelsOfStruct(named.Obj().Name(), x)
 			}
 			return
 		case *types.Pointer:
@@ -66,12 +66,13 @@ func (a *VarAnalyzer) findModels(t types.Type) {
 func (a *VarAnalyzer) findModelsOfNamed(n *types.Named) {
 	switch x := n.Underlying().(type) {
 	case *types.Struct:
-		a.findModelsOfStruct(x)
+		a.findModelsOfStruct(n.Obj().Name(), x)
 	}
 }
 
-func (a *VarAnalyzer) findModelsOfStruct(s *types.Struct) {
+func (a *VarAnalyzer) findModelsOfStruct(name string, s *types.Struct) {
 	structDef := &StructDef{
+		Name:   name,
 		Struct: s,
 	}
 	for _, field := range structDef.Fields() {
@@ -300,10 +301,16 @@ func (s *StructDef) allFields() []*Field {
 					fields = append(fields, field)
 				}
 			case *types.Interface:
-				pterm.Warning.Printfln("ignoring interface %v", fieldType)
+				pterm.Warning.Printfln("interface as field: ignoring field %s.%s of type %s", s.Name, field.Name(), field.Type().String())
 			}
 		} else if field.Exported() {
-			fields = append(fields, field)
+			switch field.Type().Underlying().(type) {
+			case *types.Interface:
+				pterm.Warning.Printfln("interface as field: ignoring field %s.%s of type %s", s.Name, field.Name(), field.Type().String())
+			default:
+				fields = append(fields, field)
+			}
+
 		}
 	}
 	return fields
