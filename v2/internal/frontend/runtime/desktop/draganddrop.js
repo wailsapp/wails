@@ -16,9 +16,37 @@ const flags = {
     registered: false,
     defaultUseDropTarget: true,
     useDropTarget: true,
-    prevElement: null
+    nextDeactivate: null,
+    nextDeactivateTimeout: null,
 };
 
+const DROP_TARGET_ACTIVE = "wails-drop-target-active";
+
+/**
+ * checkStyleDropTarget checks if the styke has the drop target attribute
+ * 
+ * @param {CSSStyleDeclaration} style 
+ * @returns 
+ */
+function checkStyleDropTarget(style) {
+    const cssDropValue = style.getPropertyValue(window.wails.flags.cssDropProperty).trim();
+    if (cssDropValue) {
+        if (cssDropValue === window.wails.flags.cssDropValue) {
+            return true;
+        }
+        // if the element has the drop target attribute, but 
+        // the value is not correct, terminate finding process.
+        // This can be useful to block some child elements from being drop targets.
+        return false;
+    }
+    return false;
+}
+
+/**
+ * onDragOver is called when the dragover event is emitted.
+ * @param {DragEvent} e 
+ * @returns 
+ */
 function onDragOver(e) {
     if (!window.wails.flags.enableWailsDragAndDrop) {
         return;
@@ -29,36 +57,73 @@ function onDragOver(e) {
         return;
     }
 
-    let targetElement = document.elementFromPoint(e.x, e.y);
+    const element = e.target;
 
-    if (targetElement === flags.prevElement) {
+    // Trigger debounce function to deactivate drop targets
+    if(flags.nextDeactivate) flags.nextDeactivate();
+
+    // if the element is null or element is not child of drop target element
+    if (!element || !checkStyleDropTarget(getComputedStyle(element))) {
         return;
     }
 
-    const style = targetElement.style;
-    let cssDropValue = null;
-    if (Object.keys(style).findIndex(key => style[key] === window.wails.flags.cssDropProperty) < 0) {
-        targetElement = targetElement.closest(`[style*='${window.wails.flags.cssDropProperty}']`);
+    let currentElement = element;
+    while (currentElement) {
+        // check if currentElement is drop target element
+        if (checkStyleDropTarget(currentElement.style)) {
+            currentElement.classList.add(DROP_TARGET_ACTIVE);
+        }
+        currentElement = currentElement.parentElement;
     }
-
-    if (targetElement === null) {
-        return;
-    }
-
-    cssDropValue = window.getComputedStyle(targetElement).getPropertyValue(window.wails.flags.cssDropProperty);
-    if (cssDropValue) {
-        cssDropValue = cssDropValue.trim();
-    }
-
-    if (cssDropValue === window.wails.flags.cssDropValue) {
-        targetElement.classList.add("wails-drop-target-active");
-    } else if (flags.prevElement) {
-        targetElement.classList.remove("wails-drop-target-active");
-        flags.prevElement.classList.remove("wails-drop-target-active");
-    }
-    flags.prevElement = targetElement;
 }
 
+/**
+ * onDragLeave is called when the dragleave event is emitted.
+ * @param {DragEvent} e 
+ * @returns 
+ */
+function onDragLeave(e) {
+    if (!window.wails.flags.enableWailsDragAndDrop) {
+        return;
+    }
+    e.preventDefault();
+
+    if (!flags.useDropTarget) {
+        return;
+    }
+
+    // Find the close drop target element
+    if (!e.target || !checkStyleDropTarget(getComputedStyle(e.target))) {
+        return null;
+    }
+
+    // Trigger debounce function to deactivate drop targets
+    if(flags.nextDeactivate) flags.nextDeactivate();
+    
+    // Use debounce technique to tacle dragleave events on overlapping elements and drop target elements
+    flags.nextDeactivate = () => {
+        // Deactivate all drop targets, new drop target will be activated on next dragover event
+        Array.from(document.getElementsByClassName(DROP_TARGET_ACTIVE)).forEach(el => el.classList.remove(DROP_TARGET_ACTIVE));
+        // Reset nextDeactivate
+        flags.nextDeactivate = null;
+        // Clear timeout
+        if (flags.nextDeactivateTimeout) {
+            clearTimeout(flags.nextDeactivateTimeout);
+            flags.nextDeactivateTimeout = null;
+        }
+    }
+
+    // Set timeout to deactivate drop targets if not triggered by next drag event
+    flags.nextDeactivateTimeout = setTimeout(() => {
+        if(flags.nextDeactivate) flags.nextDeactivate();
+    }, 50);
+}
+
+/**
+ * onDrop is called when the drop event is emitted.
+ * @param {DragEvent} e 
+ * @returns 
+ */
 function onDrop(e) {
     if (!window.wails.flags.enableWailsDragAndDrop) {
         return;
@@ -69,19 +134,11 @@ function onDrop(e) {
         return;
     }
 
-    let targetElement = document.elementFromPoint(e.x, e.y);
-    let cssDropValue = window.getComputedStyle(targetElement).getPropertyValue(window.wails.flags.cssDropProperty);
-    if (cssDropValue) {
-        cssDropValue = cssDropValue.trim();
-    }
-    if (cssDropValue !== window.wails.flags.cssDropValue) {
-        if (flags.prevElement) {
-            targetElement.classList.remove("wails-drop-target-active");
-            flags.prevElement.classList.remove("wails-drop-target-active");
-            flags.prevElement = null;
-        }
-        return;
-    }
+    // Trigger debounce function to deactivate drop targets
+    if(flags.nextDeactivate) flags.nextDeactivate();
+
+    // Deactivate all drop targets
+    Array.from(document.getElementsByClassName(DROP_TARGET_ACTIVE)).forEach(el => el.classList.remove(DROP_TARGET_ACTIVE));
 
     if (CanResolveFilePaths()) {
         // process files
@@ -96,42 +153,6 @@ function onDrop(e) {
             files = [...e.dataTransfer.files];
         }
         window.runtime.ResolveFilePaths(e.x, e.y, files);
-    }
-
-    if (flags.prevElement) {
-        flags.prevElement.classList.remove("wails-drop-target-active");
-        flags.prevElement = null;
-    }
-}
-
-function onDragLeave(e) {
-    if (!window.wails.flags.enableWailsDragAndDrop) {
-        return;
-    }
-    e.preventDefault();
-
-    if (!flags.useDropTarget) {
-        return;
-    }
-
-    const targetElement = e.target.classList.contains("wails-drop-target-active") ? e.target : e.target.closest(`[class*='wails-drop-target-active']`)
-
-    if (targetElement === null) {
-      return
-    }
-
-    // if we still in the box of element that has the drop target class, do nothing
-    const rect = targetElement.getBoundingClientRect();
-    if (e.x > rect.x && e.x < rect.x + rect.width && e.y > rect.y && e.y < rect.y + rect.height
-      // event is inside window
-      && e.x > 0 && e.x < window.innerWidth && e.y > 0 && e.y < window.innerHeight) {
-      return
-    }
-
-    targetElement.classList.remove("wails-drop-target-active");
-    if (flags.prevElement) {
-      flags.prevElement.classList.remove("wails-drop-target-active");
-      flags.prevElement = null;
     }
 }
 
@@ -189,7 +210,6 @@ export function OnFileDrop(callback, useDropTarget) {
     }
     flags.registered = true;
 
-
     const uDTPT = typeof useDropTarget;
     flags.useDropTarget = uDTPT === "undefined" || uDTPT !== "boolean" ? flags.defaultUseDropTarget : useDropTarget;
     window.addEventListener('dragover', onDragOver);
@@ -199,16 +219,10 @@ export function OnFileDrop(callback, useDropTarget) {
     let cb = callback;
     if (flags.useDropTarget) {
         cb = function (x, y, paths) {
-            let targetElement = document.elementFromPoint(x, y);
-            if (!targetElement) {
-                return;
-            }
-            let cssDropValue = window.getComputedStyle(targetElement).getPropertyValue(window.wails.flags.cssDropProperty);
-            if (cssDropValue) {
-                cssDropValue = cssDropValue.trim();
-            }
-            if (cssDropValue !== window.wails.flags.cssDropValue) {
-                return;
+            const element = document.elementFromPoint(x, y)
+            // if the element is null or element is not child of drop target element, return null
+            if (!element || !checkStyleDropTarget(getComputedStyle(element))) {
+                return null;
             }
             callback(x, y, paths);
         }
