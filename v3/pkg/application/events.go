@@ -60,6 +60,12 @@ func (e WailsEvent) ToJSON() string {
 	return string(marshal)
 }
 
+// WailsEventListener is an interface that can be implemented to listen for Wails events
+// It is used by the RegisterListener method of the Application.
+type WailsEventListener interface {
+	DispatchWailsEvent(event *WailsEvent)
+}
+
 type hook struct {
 	callback func(*WailsEvent)
 }

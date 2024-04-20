@@ -76,7 +76,7 @@ func New(appOptions Options) *App {
 	result.logStartup()
 	result.logPlatformInfo()
 
-	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
+	result.Events = NewWailsEventProcessor(result.dispatchEventToListeners)
 
 	messageProc := NewMessageProcessor(result.Logger)
 	opts := &assetserver.Options{
@@ -326,6 +326,10 @@ type App struct {
 
 	// signalHandler is used to handle signals
 	signalHandler *signal.SignalHandler
+
+	// Wails Event Listener related
+	wailsEventListenerLock sync.Mutex
+	wailsEventListeners    []WailsEventListener
 }
 
 func (a *App) init() {
@@ -336,6 +340,7 @@ func (a *App) init() {
 	a.keyBindings = make(map[string]func(window *WebviewWindow))
 	a.Logger = a.options.Logger
 	a.pid = os.Getpid()
+	a.wailsEventListeners = make([]WailsEventListener, 0)
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -398,6 +403,12 @@ func (a *App) RegisterHook(eventType events.ApplicationEventType, callback func(
 		a.applicationEventHooks[eventID] = lo.Without(a.applicationEventHooks[eventID], thisHook)
 		a.applicationEventHooksLock.Unlock()
 	}
+}
+
+func (a *App) RegisterListener(listener WailsEventListener) {
+	a.wailsEventListenerLock.Lock()
+	a.wailsEventListeners = append(a.wailsEventListeners, listener)
+	a.wailsEventListenerLock.Unlock()
 }
 
 func (a *App) NewWebviewWindow() *WebviewWindow {
@@ -774,9 +785,15 @@ func SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialogStruct {
 	return result
 }
 
-func (a *App) dispatchEventToWindows(event *WailsEvent) {
+func (a *App) dispatchEventToListeners(event *WailsEvent) {
+	listeners := a.wailsEventListeners
+
 	for _, window := range a.windows {
 		window.DispatchWailsEvent(event)
+	}
+
+	for _, listener := range listeners {
+		listener.DispatchWailsEvent(event)
 	}
 }
 
