@@ -312,6 +312,21 @@ func TestGenerateBindings(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "app_outside_main",
+			dir:  "testdata/app_outside_main/app",
+			want: map[string]map[string]bool{
+				"app": {
+					"GreetService": true,
+				},
+				"services": {
+					"OtherService": true,
+				},
+				"github.com/wailsapp/wails/v3/internal/parser/testdata/app_outside_main/other": {
+					"OtherService": true,
+				},
+			},
+		},
 	}
 
 	type Test struct {
@@ -366,6 +381,8 @@ func TestGenerateBindings(t *testing.T) {
 				OutputDirectory:   "frontend/bindings",
 				ProjectDirectory:  absDir,
 				UseBundledRuntime: tt.useBundledRuntime,
+				BasePath:          ".",
+				UseBaseName:       true,
 			}
 
 			project, err := ParseProjectAndPkgs(options)

@@ -3,8 +3,8 @@
 
 import {Call} from "/wails/runtime.js";
 
-import * as debug from "../runtime-debug/models";
-import * as uuid from "../github.com-google-uuid/models";
+import * as debug from "../runtime/debug/models";
+import * as uuid from "../github.com/google/uuid/models";
 
 export function BuildInfo(): Promise<[debug.BuildInfo | null, boolean]> {
     return Call.ByName("main.GreetService.BuildInfo");

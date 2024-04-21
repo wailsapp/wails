@@ -4,8 +4,8 @@
 
 import {Call} from "/wails/runtime.js";
 
-import * as debug from "../runtime-debug/models.js";
-import * as uuid from "../github.com-google-uuid/models.js";
+import * as debug from "../runtime/debug/models.js";
+import * as uuid from "../github.com/google/uuid/models.js";
 
 /**
  * @returns {Promise<[debug.BuildInfo | null, boolean]>}

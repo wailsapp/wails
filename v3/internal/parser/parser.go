@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/hash"
@@ -166,7 +167,7 @@ type Service struct {
 	Methods []*BoundMethod
 }
 
-func ParseMethods(service *types.TypeName, main *packages.Package) (methods []*BoundMethod) {
+func ParseMethods(service *types.TypeName) (methods []*BoundMethod) {
 	if named, ok := service.Type().(*types.Named); ok {
 		for i := 0; i < named.NumMethods(); i++ {
 			fn := named.Method(i)
@@ -178,7 +179,7 @@ func ParseMethods(service *types.TypeName, main *packages.Package) (methods []*B
 			// use "main" as package path if service is inside main package,
 			// because reflect.Type.PkgPath() == "main"
 			// https://github.com/golang/go/issues/8559
-			if packagePath == main.Types.Path() {
+			if service.Pkg().Name() == "main" {
 				packagePath = "main"
 			}
 
@@ -241,7 +242,7 @@ func ParsePackages(project *Project) ([]*Package, error) {
 	}
 
 	// add services to packages
-	services, err := ParseServices(project.main)
+	services, err := ParseServices(project.pPkgs)
 	if err != nil {
 		return nil, err
 	}
@@ -261,11 +262,11 @@ func ParsePackages(project *Project) ([]*Package, error) {
 	result := lo.Values(requiredPackages)
 
 	// load documentation for each package
-	for tPkg, pkg := range requiredPackages {
-		if tPkg == project.main.Types {
+	for _, pPkg := range project.pPkgs {
+		if pkg, ok := requiredPackages[pPkg.Types]; ok {
 			files := make(map[string]*ast.File)
-			for i, file := range project.main.Syntax {
-				files[project.main.CompiledGoFiles[i]] = file
+			for i, file := range pPkg.Syntax {
+				files[pPkg.CompiledGoFiles[i]] = file
 			}
 			pkg.doc = NewDoc(pkg.Path(), &ast.Package{
 				Files: files,
@@ -343,10 +344,12 @@ type Stats struct {
 }
 
 type Project struct {
-	pkgs    []*Package
-	main    *packages.Package
-	options *flags.GenerateBindingsOptions
-	Stats   Stats
+	pkgs     []*Package
+	pPkgs    []*packages.Package
+	options  *flags.GenerateBindingsOptions
+	Stats    Stats
+	basePath string
+	baseName string
 
 	marshaler     *types.Interface
 	textMarshaler *types.Interface
@@ -404,19 +407,47 @@ func ParseProject(options *flags.GenerateBindingsOptions) (*Project, error) {
 		return nil, err
 	}
 
-	mainIndex := slices.IndexFunc(pPkgs, func(pkg *packages.Package) bool { return pkg.Name == "main" })
-	if mainIndex == -1 {
-		return nil, errors.New("application.New() must be inside main package")
+	// retrive base of package paths
+	baseIndex := -1
+	basePath := options.BasePath
+	if basePath == "." || basePath == "./" {
+		baseIndex = slices.IndexFunc(pPkgs, func(pkg *packages.Package) bool {
+			absDir, _ := filepath.Abs(options.ProjectDirectory)
+
+			if pkg.PkgPath == options.ProjectDirectory || pkg.PkgPath == absDir {
+				return true
+			}
+			if len(pkg.CompiledGoFiles) > 0 && filepath.Dir(pkg.CompiledGoFiles[0]) == absDir {
+				return true
+			}
+			return false
+		})
+		if baseIndex == -1 {
+			return nil, fmt.Errorf("package not found: %s", options.ProjectDirectory)
+		}
+		basePath = pPkgs[baseIndex].PkgPath
+	}
+
+	// retrive base name
+	baseName := ""
+	if options.UseBaseName {
+		if baseIndex != -1 {
+			baseName = pPkgs[baseIndex].Types.Name()
+		} else {
+			pterm.Warning.Printfln("base name not found: UseBaseName can only be used with BasePath=\".\"")
+		}
 	}
 
 	return &Project{
-		main:          pPkgs[mainIndex],
+		pPkgs:         pPkgs,
 		options:       options,
 		marshaler:     marshaler,
 		textMarshaler: textMarshaler,
 		Stats: Stats{
 			StartTime: startTime,
 		},
+		basePath: basePath,
+		baseName: baseName,
 	}, nil
 }
 
@@ -499,8 +530,8 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 	return p, nil
 }
 
-func ParseServices(main *packages.Package) (services []*Service, err error) {
-	found, err := FindServices([]*packages.Package{main})
+func ParseServices(pkgs []*packages.Package) (services []*Service, err error) {
+	found, err := FindServices(pkgs)
 	if err != nil {
 		return
 	}
@@ -508,26 +539,25 @@ func ParseServices(main *packages.Package) (services []*Service, err error) {
 	for _, service := range found {
 		services = append(services, &Service{
 			TypeName: service,
-			Methods:  ParseMethods(service, main),
+			Methods:  ParseMethods(service),
 		})
 	}
 	return
 }
 
 func (p *Project) PackageDir(pkg *types.Package) string {
-	root := p.main.Types.Path()
-	if pkg.Path() == root {
-		return "main"
+	if p.baseName != "" && pkg.Path() == p.basePath {
+		return p.baseName
 	}
 
-	if strings.HasPrefix(pkg.Path(), root) {
-		path, err := filepath.Rel(root, pkg.Path())
+	if strings.HasPrefix(pkg.Path(), p.basePath) {
+		path, err := filepath.Rel(p.basePath, pkg.Path())
 		if err != nil {
 			panic(err)
 		}
 		return filepath.ToSlash(path)
 	}
-	return strings.ReplaceAll(pkg.Path(), "/", "-")
+	return pkg.Path()
 }
 
 func (p *Project) RelativePackageDir(base *types.Package, target *types.Package) string {

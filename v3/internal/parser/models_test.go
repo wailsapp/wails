@@ -131,8 +131,8 @@ func TestGenerateModels(t *testing.T) {
 			name: "multiple_packages",
 			dir:  "testdata/multiple_packages",
 			want: map[string]bool{
-				"github.com-google-uuid": true,
-				"runtime-debug":          true,
+				"github.com/google/uuid": true,
+				"runtime/debug":          true,
 				"other":                  true,
 				"other/other":            true,
 			},
@@ -149,6 +149,14 @@ func TestGenerateModels(t *testing.T) {
 			dir:  "testdata/interfaces",
 			want: map[string]bool{
 				"main": true,
+			},
+		},
+		{
+			name: "app_outside_main",
+			dir:  "testdata/app_outside_main/app",
+			want: map[string]bool{
+				"app":    true,
+				"models": true,
 			},
 		},
 	}
@@ -196,6 +204,8 @@ func TestGenerateModels(t *testing.T) {
 				ModelsFilename:   "models",
 				OutputDirectory:  "frontend/bindings",
 				ProjectDirectory: absDir,
+				BasePath:         ".",
+				UseBaseName:      true,
 			}
 
 			project, err := ParseProjectAndPkgs(options)
@@ -210,7 +220,7 @@ func TestGenerateModels(t *testing.T) {
 				t.Fatalf("GenerateModels() error = %v", err)
 			}
 
-			// Ceck if models are missing
+			// Check if models are missing
 			for pkgDir := range tt.want {
 				if _, ok := allModels[pkgDir]; !ok {
 					t.Errorf("GenerateModels() missing model = %v", pkgDir)
