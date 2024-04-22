@@ -31,5 +31,5 @@ blocking = true
 cmd = "KILL_STALE"
 
 [[config.executes]]
-cmd = "./bin/{{.Binary}}"
+cmd = "wails3 task run"
 primary = true
