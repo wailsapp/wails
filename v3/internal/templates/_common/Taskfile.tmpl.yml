@@ -421,6 +421,10 @@ tasks:
     cmds:
       - {{ "'{{.BIN_DIR}}/{{.APP_NAME}}'" }}
 
+  run:darwin:
+    cmds:
+      - {{ "'{{.BIN_DIR}}/{{.APP_NAME}}'" }}
+
   dev:frontend:
     summary: Runs the frontend in development mode
     dir: frontend
