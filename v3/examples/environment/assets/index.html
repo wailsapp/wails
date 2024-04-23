@@ -7,7 +7,8 @@
         body {
             padding-top: 75px;
             margin: 0 auto;
-            color: white;
+            background-color: white;
+            color: black;
             text-align: -webkit-center;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif
         }
@@ -54,9 +55,7 @@
         html += "<tr><td>Debug</td><td>"+ result.Debug +"</td></tr>";
         if(result.PlatformInfo) {
             for (let key in result.PlatformInfo) {
-                if (obj.hasOwnProperty(key)) {
                     html += "<tr><td>"+key+"</td><td>"+ result.PlatformInfo[key] +"</td></tr>";
-                }
             }
         }
         html += "</table>";
