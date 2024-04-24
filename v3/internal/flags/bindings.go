@@ -12,7 +12,7 @@ type GenerateBindingsOptions struct {
 	ProjectDirectory  string `name:"p" description:"The project directory. Must contain a source file with application.New" default:"."`
 	BasePath          string `name:"base" description:"The base package path" default:"."`
 	UseBaseName       bool   `name:"n" description:"Place the base package bindings inside a directory with the base package name"`
-	OutputDirectory   string `name:"d" description:"The output directory" default:"assets/bindings"`
+	OutputDirectory   string `name:"d" description:"The output directory" default:"frontend/bindings"`
 	ModelsFilename    string `name:"m" description:"The filename for the models file, excluding the extension" default:"models"`
 	TS                bool   `name:"ts" description:"Generate Typescript bindings"`
 	UseInterfaces     bool   `name:"i" description:"Generate Typescript interfaces instead of classes"`
