@@ -2,6 +2,8 @@ package logger
 
 import (
 	"os"
+
+	"github.com/fatih/color"
 )
 
 // DefaultLogger is a utility to log messages to a number of destinations
@@ -24,26 +26,31 @@ func (l *DefaultLogger) Trace(message string) {
 
 // Debug level logging. Works like Sprintf.
 func (l *DefaultLogger) Debug(message string) {
-	println("DEB | " + message)
+	c := color.New(color.FgHiGreen).SprintFunc()
+	println(c("DEB |"), message)
 }
 
 // Info level logging. Works like Sprintf.
 func (l *DefaultLogger) Info(message string) {
-	println("INF | " + message)
+	c := color.New(color.FgBlue).Add(color.Underline).SprintFunc()
+	println(c("INF |"), message)
 }
 
 // Warning level logging. Works like Sprintf.
 func (l *DefaultLogger) Warning(message string) {
-	println("WAR | " + message)
+	c := color.New(color.FgHiYellow).Add(color.Bold).SprintFunc()
+	println(c("WAR |"), message)
 }
 
 // Error level logging. Works like Sprintf.
 func (l *DefaultLogger) Error(message string) {
-	println("ERR | " + message)
+	c := color.New(color.FgRed).Add(color.Bold).SprintFunc()
+	println(c("ERR |"), message)
 }
 
 // Fatal level logging. Works like Sprintf.
 func (l *DefaultLogger) Fatal(message string) {
-	println("FAT | " + message)
+	c := color.New(color.BgRed).Add(color.Bold).SprintFunc()
+	println(c("FAT |"), message)
 	os.Exit(1)
 }
