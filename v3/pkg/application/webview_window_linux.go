@@ -167,6 +167,10 @@ func (w *linuxWebviewWindow) setMinSize(width, height int) {
 	w.setMinMaxSize(width, height, w.parent.options.MaxWidth, w.parent.options.MaxHeight)
 }
 
+func (w *linuxWebviewWindow) getBorderSizes() *LRTB {
+	return &LRTB{}
+}
+
 func (w *linuxWebviewWindow) setMaxSize(width, height int) {
 	w.setMinMaxSize(w.parent.options.MinWidth, w.parent.options.MinHeight, width, height)
 }
