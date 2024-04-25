@@ -90,7 +90,10 @@ func (w *windowsWebviewWindow) setAbsolutePosition(x int, y int) {
 
 func (w *windowsWebviewWindow) absolutePosition() (int, int) {
 	rect := w32.GetWindowRect(w.hwnd)
-	left, right := w.scaleToDefaultDPI(int(rect.Left), int(rect.Right))
+	borderSizes := w.getBorderSizes()
+	x := int(rect.Left) + borderSizes.Left
+	y := int(rect.Top) + borderSizes.Top
+	left, right := w.scaleToDefaultDPI(x, y)
 	return left, right
 }
 
@@ -414,6 +417,10 @@ func (w *windowsWebviewWindow) relativePosition() (int, int) {
 	// Calculate relative position
 	x := int(rect.Left) - int(monitorInfo.RcWork.Left)
 	y := int(rect.Top) - int(monitorInfo.RcWork.Top)
+
+	borderSize := w.getBorderSizes()
+	x += borderSize.Left
+	y += borderSize.Top
 
 	return w.scaleToDefaultDPI(x, y)
 }
