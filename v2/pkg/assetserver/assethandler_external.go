@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
@@ -67,7 +68,7 @@ func NewExternalAssetsHandler(logger Logger, options assetserver.Options, url *u
 
 	var result http.Handler = http.HandlerFunc(
 		func(rw http.ResponseWriter, req *http.Request) {
-			if req.Method == http.MethodGet {
+			if runtime.GOOS == "darwin" || req.Method == http.MethodGet {
 				proxy.ServeHTTP(rw, req)
 				return
 			}
