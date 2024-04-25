@@ -333,6 +333,7 @@ type App struct {
 }
 
 func (a *App) init() {
+	a.applicationEventHooks = make(map[uint][]*eventHook)
 	a.applicationEventListeners = make(map[uint][]*EventListener)
 	a.windows = make(map[uint]Window)
 	a.systemTrays = make(map[uint]*SystemTray)
