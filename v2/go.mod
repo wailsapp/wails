@@ -10,6 +10,7 @@ require (
 	github.com/bep/debounce v1.2.1
 	github.com/bitfield/script v0.19.0
 	github.com/charmbracelet/glamour v0.5.0
+	github.com/fatih/color v1.16.0
 	github.com/flytam/filenamify v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-git/go-git/v5 v5.11.0
@@ -63,7 +64,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
-	github.com/fatih/color v1.16.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
