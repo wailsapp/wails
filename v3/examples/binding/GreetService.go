@@ -1,17 +1,21 @@
 package main
 
-import "github.com/wailsapp/wails/v3/examples/binding/data"
+import (
+	"context"
+	"github.com/wailsapp/wails/v3/pkg/application"
+)
 
 // GreetService is a service that greets people
 type GreetService struct {
 }
 
 // Greet greets a person
-func (*GreetService) Greet(name string) string {
-	return "Hello " + name
+func (*GreetService) Greet(win application.Window, name string) string {
+	return "Hello " + name + " on " + win.Name()
 }
 
-// GreetPerson greets a person
-func (*GreetService) GreetPerson(person data.Person) string {
-	return "Hello " + person.Name
+// GreetWithCtx greets a person
+func (*GreetService) GreetWithCtx(ctx context.Context, name string) string {
+	win := ctx.Value("window").(application.Window)
+	return "[ctx] Hello " + name + " on " + win.Name()
 }

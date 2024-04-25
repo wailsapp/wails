@@ -83,9 +83,17 @@
 <script type="module">
     import * as GreetService from "./bindings/main/GreetService.js";
 
+    let useCtx = false;
     async function greet() {
-        document.getElementById("result").innerHTML =
-            await GreetService.Greet(document.getElementById("name").value);
+        if( useCtx ) {
+            document.getElementById("result").innerHTML =
+                await GreetService.GreetWithCtx(document.getElementById("name").value);
+            useCtx = false;
+        } else {
+            document.getElementById("result").innerHTML =
+                await GreetService.Greet(document.getElementById("name").value);
+            useCtx = true;
+        }
     }
 
     document.getElementById("greet-btn").onclick = greet;
