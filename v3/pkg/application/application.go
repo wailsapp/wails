@@ -397,6 +397,9 @@ func (a *App) RegisterHook(eventType events.ApplicationEventType, callback func(
 		callback: callback,
 	}
 	a.applicationEventHooks[eventID] = append(a.applicationEventHooks[eventID], thisHook)
+	if a.impl != nil {
+		go a.impl.on(eventID)
+	}
 
 	return func() {
 		a.applicationEventHooksLock.Lock()
