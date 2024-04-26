@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"strconv"
 
@@ -19,6 +20,7 @@ type DevOptions struct {
 }
 
 func Dev(options *DevOptions) error {
+	host := "localhost"
 
 	// flag takes precedence over environment variable
 	var port int
@@ -30,11 +32,20 @@ func Dev(options *DevOptions) error {
 		port = defaultVitePort
 	}
 
+	// check if port is already in use
+	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", host, port))
+	if err != nil {
+		return err
+	}
+	if err = l.Close(); err != nil {
+		return err
+	}
+
 	// Set environment variable for the dev:frontend task
 	os.Setenv(wailsVitePort, strconv.Itoa(port))
 
 	// Set url of frontend dev server
-	os.Setenv("FRONTEND_DEVSERVER_URL", fmt.Sprintf("http://%s:%d", "localhost", port))
+	os.Setenv("FRONTEND_DEVSERVER_URL", fmt.Sprintf("http://%s:%d", host, port))
 
 	return Watcher(&WatcherOptions{
 		Config: options.Config,
