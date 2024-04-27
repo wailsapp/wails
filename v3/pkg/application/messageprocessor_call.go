@@ -107,10 +107,14 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			}()
 
 			// Check if the first or second bound method parameter is a Window interface
-			if len(boundMethod.Inputs) > 1 && (boundMethod.Inputs[0].ReflectType == reflect.TypeFor[Window]() ||
-				boundMethod.Inputs[1].ReflectType == reflect.TypeFor[Window]()) {
-				// Prepend the options.Args with the current window
-				options.Args = append([]interface{}{window}, options.Args...)
+			if len(boundMethod.Inputs) > 0 {
+				if boundMethod.Inputs[0].ReflectType == reflect.TypeFor[Window]() {
+					// Prepend the options.Args with the current window
+					options.Args = append([]interface{}{window}, options.Args...)
+				} else if len(boundMethod.Inputs) > 1 && boundMethod.Inputs[1].ReflectType == reflect.TypeFor[Window]() {
+					// Prepend the options.Args with the current window
+					options.Args = append([]interface{}{window}, options.Args...)
+				}
 			}
 			result, err := boundMethod.Call(ctx, options.Args)
 			if err != nil {
