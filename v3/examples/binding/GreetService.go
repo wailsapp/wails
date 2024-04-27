@@ -19,3 +19,8 @@ func (*GreetService) GreetWithCtx(ctx context.Context, name string) string {
 	win := ctx.Value("window").(application.Window)
 	return "[ctx] Hello " + name + " on " + win.Name()
 }
+
+// GreetWithCtx greets a person
+func (*GreetService) GreetWithBoth(_ context.Context, win application.Window, name string) string {
+	return "[ctx+win] Hello " + name + " on " + win.Name()
+}

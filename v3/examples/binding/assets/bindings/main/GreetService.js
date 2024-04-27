@@ -26,3 +26,13 @@ export async function Greet(name) {
 export async function GreetWithCtx(name) {
 	return Call.ByName("main.GreetService.GreetWithCtx", ...Array.prototype.slice.call(arguments, 0));
 }
+
+/**
+ * GreetPerson greets a person
+ * @function GreetWithBoth
+ * @param name {string}
+ * @returns {Promise<string>}
+ **/
+export async function GreetWithBoth(name) {
+	return Call.ByName("main.GreetService.GreetWithBoth", ...Array.prototype.slice.call(arguments, 0));
+}
