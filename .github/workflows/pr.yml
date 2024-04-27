@@ -6,6 +6,15 @@ on:
     types: [submitted]
 
 jobs:
+  debug_context:
+    name: Debug Context
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print GitHub Context
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+
   check_docs:
     name: Check Docs
     if: ${{github.repository == 'wailsapp/wails' && contains(github.head_ref,'feature/')}}
