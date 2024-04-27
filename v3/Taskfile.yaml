@@ -138,6 +138,10 @@ tasks:
       - echo "Building example {{.DIR}}"
       - go mod tidy
       - go build -o "testbuild-{{.DIR}}{{exeExt}}"
+    env:
+      CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
+      CGO_CFLAGS: -mmacosx-version-min=10.13
+
 
   test:examples:
     summary: Builds the examples
@@ -155,7 +159,6 @@ tasks:
         hide-window
         keybindings
         menu
-        oauth
         plain
         screen
         show-macos-toolbar
