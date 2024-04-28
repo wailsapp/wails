@@ -79,7 +79,6 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 		}
 
 		ctx, cancel := context.WithCancel(context.WithoutCancel(r.Context()))
-		ctx = context.WithValue(ctx, "window", window)
 
 		ambiguousID := false
 		m.l.Lock()
