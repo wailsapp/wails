@@ -169,16 +169,19 @@ func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
 
 	for _, embedDetail := range embedDetails {
 		fullPath := embedDetail.GetFullPath()
-		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			err := os.MkdirAll(fullPath, 0o755)
-			if err != nil {
-				return err
+		// assumes path is directory only if it has no extension
+		if filepath.Ext(fullPath) == "" {
+			if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+				err := os.MkdirAll(fullPath, 0755)
+				if err != nil {
+					return err
+				}
+				f, err := os.Create(filepath.Join(fullPath, "gitkeep"))
+				if err != nil {
+					return err
+				}
+				_ = f.Close()
 			}
-			f, err := os.Create(filepath.Join(fullPath, "gitkeep"))
-			if err != nil {
-				return err
-			}
-			_ = f.Close()
 		}
 	}
 
