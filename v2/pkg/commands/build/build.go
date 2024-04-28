@@ -172,7 +172,7 @@ func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
 		// assumes path is directory only if it has no extension
 		if filepath.Ext(fullPath) == "" {
 			if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-				err := os.MkdirAll(fullPath, 0755)
+				err := os.MkdirAll(fullPath, 0o755)
 				if err != nil {
 					return err
 				}
