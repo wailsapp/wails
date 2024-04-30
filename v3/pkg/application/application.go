@@ -893,23 +893,6 @@ func (a *App) AssetServerHandler() func(rw http.ResponseWriter, req *http.Reques
 	return a.assets.ServeHTTP
 }
 
-func (a *App) RegisterWindow(window Window) uint {
-	id := getWindowID()
-	if a.windows == nil {
-		a.windows = make(map[uint]Window)
-	}
-	a.windowsLock.Lock()
-	defer a.windowsLock.Unlock()
-	a.windows[id] = window
-	return id
-}
-
-func (a *App) UnregisterWindow(id uint) {
-	a.windowsLock.Lock()
-	defer a.windowsLock.Unlock()
-	delete(a.windows, id)
-}
-
 func (a *App) BrowserOpenURL(url string) error {
 	return browser.OpenURL(url)
 }
