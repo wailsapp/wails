@@ -3,6 +3,7 @@ version: '3'
 vars:
   APP_NAME: "{{.ProjectName}}"
   BIN_DIR: "bin"
+  VITE_PORT: {{ "'{{.WAILS_VITE_PORT | default 9245}}'" }}
 
 tasks:
 
@@ -431,15 +432,12 @@ tasks:
     deps:
       - task: install:frontend:deps
     cmds:
-      - npm run dev
+      - npm run dev -- --port {{ "{{.VITE_PORT}}" }} --strictPort
 
   dev:
     summary: Runs the application in development mode
     cmds:
-      - wails3 tool watcher -config ./build/devmode.config.toml
-    env:
-      # This is the default vite dev server port
-      FRONTEND_DEVSERVER_URL: 'http://localhost:5173'
+      - wails3 dev -config ./build/devmode.config.toml -port {{ "{{.VITE_PORT}}" }}
 
   dev:reload:
     summary: Reloads the application
