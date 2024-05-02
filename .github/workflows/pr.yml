@@ -72,25 +72,27 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Run tests (mac) | v2
-        if: ${{ matrix.os == 'macos-latest' && github.base_ref == 'master' }}
+        if: ${{ matrix.os == 'macos-latest' && github.event.pull_request.base.ref == 'master' }}
         env:
           CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
+          CGO_CFLAGS: -mmacosx-version-min=10.13
         working-directory: ./v2
         run: go test -v ./...
 
       - name: Run tests (!mac) | v2
-        if: ${{ matrix.os != 'macos-latest' && github.base_ref == 'master' }}
+        if: ${{ matrix.os != 'macos-latest' && github.event.pull_request.base.ref == 'master' }}
         working-directory:  ./v2
         run: go test -v ./...
 
       - name: Run tests (mac) | v3
-        if: ${{ matrix.os == 'macos-latest' && github.base_ref == 'v3-alpha' }}
+        if: ${{ matrix.os == 'macos-latest' && github.event.pull_request.base.ref == 'v3-alpha' }}
         env:
           CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
+          CGO_CFLAGS: -mmacosx-version-min=10.13
         working-directory: ./v3
         run: go test -v ./...
 
       - name: Run tests (!mac) | v3
-        if: ${{ matrix.os != 'macos-latest' && github.base_ref == 'v3-alpha' }}
+        if: ${{ matrix.os != 'macos-latest' && github.event.pull_request.base.ref == 'v3-alpha' }}
         working-directory:  ./v3
         run: go test -v ./...

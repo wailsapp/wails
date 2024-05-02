@@ -20,6 +20,14 @@ var Enabled = u.True
 // Disabled means the feature should be disabled
 var Disabled = u.False
 
+// LRTB is a struct that holds Left, Right, Top, Bottom values
+type LRTB struct {
+	Left   int
+	Right  int
+	Top    int
+	Bottom int
+}
+
 type (
 	webviewWindowImpl interface {
 		setTitle(title string)
@@ -81,6 +89,7 @@ type (
 		setAbsolutePosition(x int, y int)
 		flash(enabled bool)
 		handleKeyEvent(acceleratorString string)
+		getBorderSizes() *LRTB
 	}
 )
 
@@ -398,6 +407,13 @@ func (w *WebviewWindow) SetURL(s string) Window {
 		})
 	}
 	return w
+}
+
+func (w *WebviewWindow) GetBorderSizes() *LRTB {
+	if w.impl != nil {
+		return InvokeSyncWithResult(w.impl.getBorderSizes)
+	}
+	return &LRTB{}
 }
 
 // SetZoom sets the zoom level of the window.

@@ -776,6 +776,10 @@ func (w *macosWebviewWindow) handleKeyEvent(acceleratorString string) {
 	w.parent.processKeyBinding(accelerator.String())
 }
 
+func (w *macosWebviewWindow) getBorderSizes() *LRTB {
+	return &LRTB{}
+}
+
 func (w *macosWebviewWindow) isFocused() bool {
 	return bool(C.windowIsFocused(w.nsWindow))
 }
