@@ -93,7 +93,7 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 func (a *linuxApp) run() error {
 
 	a.parent.On(events.Linux.ApplicationStartup, func(evt *Event) {
-		fmt.Println("events.Linux.ApplicationStartup received!")
+		// TODO: What should happen here?
 	})
 	a.setupCommonEvents()
 	a.monitorThemeChanges()
