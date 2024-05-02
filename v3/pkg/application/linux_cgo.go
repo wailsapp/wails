@@ -1446,7 +1446,6 @@ func getKeyboardState(event *C.GdkEventKey) (string, bool) {
 	}
 	keyString, ok := VirtualKeyCodes[keyCode]
 	if !ok {
-		fmt.Println("Error Could not find key code: ", keyCode)
 		return "", false
 	}
 	acc.Key = keyString
