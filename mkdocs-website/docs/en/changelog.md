@@ -61,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix the import paths of model files in JS code produced by the binding generator by [@fbbdev](https://github.com/fbbdev) in [#3334](https://github.com/wailsapp/wails/pull/3334)
 - Fix drag-n-drop on some linux distros by [@abichinger](https://github.com/abichinger) in [#3346](https://github.com/wailsapp/wails/pull/3346)
 - Fix missing task for macOS when using `wails3 task dev` by [@hfoxy](https://github.com/hfoxy) in [#3417](https://github.com/wailsapp/wails/pull/3417)
+- Fix registering events causing a nil map assignment by [@hfoxy](https://github.com/hfoxy) in [#3426](https://github.com/wailsapp/wails/pull/3426)
 - Fix unmarshaling of bound method parameters by [@fbbdev](https://github.com/fbbdev) in [#3431](https://github.com/wailsapp/wails/pull/3431)
 - Fix handling of multiple return values from bound methods by [@fbbdev](https://github.com/fbbdev) in [#3431](https://github.com/wailsapp/wails/pull/3431)
 
