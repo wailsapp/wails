@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add ESM exports from the bundled JS runtime script by [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
 - Add binding generator flag for using the bundled JS runtime script instead of the npm package by [@fbbdev](https://github.com/fbbdev) in [#3334](https://github.com/wailsapp/wails/pull/3334)
 - Implement `setIcon` on linux by [@abichinger](https://github.com/abichinger) in [#3354](https://github.com/wailsapp/wails/pull/3354)
+- Add flag `-port` to dev command and support environment variable `WAILS_VITE_PORT` by [@abichinger](https://github.com/abichinger) in [#3429](https://github.com/wailsapp/wails/pull/3429)
+- Add tests for bound method calls by [@abichinger](https://github.com/abichinger) in [#3431](https://github.com/wailsapp/wails/pull/3431)
 
 ### Fixed
 
@@ -60,6 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix drag-n-drop on some linux distros by [@abichinger](https://github.com/abichinger) in [#3346](https://github.com/wailsapp/wails/pull/3346)
 - Fix missing task for macOS when using `wails3 task dev` by [@hfoxy](https://github.com/hfoxy) in [#3417](https://github.com/wailsapp/wails/pull/3417)
 - Fix registering events causing a nil map assignment by [@hfoxy](https://github.com/hfoxy) in [#3426](https://github.com/wailsapp/wails/pull/3426)
+- Fix unmarshaling of bound method parameters by [@fbbdev](https://github.com/fbbdev) in [#3431](https://github.com/wailsapp/wails/pull/3431)
+- Fix handling of multiple return values from bound methods by [@fbbdev](https://github.com/fbbdev) in [#3431](https://github.com/wailsapp/wails/pull/3431)
 
 ### Changed
 

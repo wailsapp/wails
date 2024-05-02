@@ -12,7 +12,7 @@
     "emitDeclarationOnly": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "outDir": "dist",
     "strict": true,
     "target": "es6",

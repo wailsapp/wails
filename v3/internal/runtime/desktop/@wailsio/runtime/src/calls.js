@@ -89,16 +89,16 @@ function getAndDeleteResponse(id) {
  */
 function callBinding(type, options = {}) {
     const id = generateID();
-    const doCancel = () => { cancelCall(type, {"call-id": id}) };
-    var queuedCancel = false, callRunning = false;
-    var p = new Promise((resolve, reject) => {
+    const doCancel = () => { return cancelCall(type, {"call-id": id}) };
+    let queuedCancel = false, callRunning = false;
+    let p = new Promise((resolve, reject) => {
         options["call-id"] = id;
         callResponses.set(id, { resolve, reject });
         call(type, options).
             then((_) => {
                 callRunning = true;
                 if (queuedCancel) {
-                    doCancel();
+                    return doCancel();
                 }
             }).
             catch((error) => {
@@ -108,7 +108,7 @@ function callBinding(type, options = {}) {
     });
     p.cancel = () => {
         if (callRunning) {
-            doCancel();
+            return doCancel();
         } else {
             queuedCancel = true;
         }

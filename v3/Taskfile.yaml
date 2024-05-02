@@ -132,12 +132,28 @@ tasks:
       - task: format
 #      - task: docs:update:api
 
-  test:example:
+  test:example:darwin:
     dir: 'examples/{{.DIR}}'
+    platforms:
+      - darwin
     cmds:
       - echo "Building example {{.DIR}}"
       - go mod tidy
       - go build -o "testbuild-{{.DIR}}{{exeExt}}"
+    env:
+      CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
+      CGO_CFLAGS: -mmacosx-version-min=10.13
+
+  test:example:notdarwin:
+    dir: 'examples/{{.DIR}}'
+    platforms:
+      - linux
+      - windows
+    cmds:
+      - echo "Building example {{.DIR}}"
+      - go mod tidy
+      - go build -o "testbuild-{{.DIR}}{{exeExt}}"
+
 
   test:examples:
     summary: Builds the examples
@@ -155,7 +171,6 @@ tasks:
         hide-window
         keybindings
         menu
-        oauth
         plain
         screen
         show-macos-toolbar
@@ -166,6 +181,10 @@ tasks:
         wml
     cmds:
       - for: { var: EXAMPLEDIRS }
-        task: test:example
+        task: test:example:darwin
+        vars:
+          DIR: "{{.ITEM}}"
+      - for: { var: EXAMPLEDIRS }
+        task: test:example:notdarwin
         vars:
           DIR: "{{.ITEM}}"
