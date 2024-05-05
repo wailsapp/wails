@@ -12,7 +12,7 @@ type WatcherOptions struct {
 
 func Watcher(options *WatcherOptions) error {
 	stopChan := make(chan struct{})
-	watcherEngine, err := engine.NewEngineFromTOML(options.Config)
+	watcherEngine, err := engine.NewEngineFromYAML(options.Config)
 	if err != nil {
 		return err
 	}

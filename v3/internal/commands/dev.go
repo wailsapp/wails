@@ -15,7 +15,7 @@ const wailsVitePort = "WAILS_VITE_PORT"
 type DevOptions struct {
 	flags.Common
 
-	Config   string `description:"The config file including path" default:"./build/devmode.config.toml"`
+	Config   string `description:"The config file including path" default:"./build/devmode.config.yaml"`
 	VitePort int    `name:"port" description:"Specify the vite dev server port"`
 }
 
