@@ -256,12 +256,8 @@ func (w *windowsWebviewWindow) run() {
 	w.setupChromium()
 
 	// Min/max buttons
-	if !options.Windows.DisableMinimiseButton {
-		w.setMinimiseButtonEnabled(true)
-	}
-	if !options.Windows.DisableMaximiseButton {
-		w.setMaximiseButtonEnabled(true)
-	}
+	w.setMinimiseButtonEnabled(!options.Windows.DisableMinimiseButton)
+	w.setMaximiseButtonEnabled(!options.Windows.DisableMaximiseButton)
 
 	// Register the window with the application
 	getNativeApplication().registerWindow(w)
@@ -1661,11 +1657,11 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 }
 
 func (w *windowsWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
-	w.setStyle(enabled, w32.WS_MINIMIZEBOX)
+	w.setStyle(enabled, w32.WS_MAXIMIZEBOX)
 }
 
 func (w *windowsWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
-	w.setStyle(enabled, w32.WS_MAXIMIZEBOX)
+	w.setStyle(enabled, w32.WS_MINIMIZEBOX)
 }
 
 func ScaleWithDPI(pixels int, dpi uint) int {
