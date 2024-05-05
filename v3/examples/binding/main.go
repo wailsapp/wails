@@ -26,6 +26,8 @@ func main() {
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		URL:             "/",
+		Name:            "Window 1",
+		Title:           "Window 1",
 		DevToolsEnabled: true,
 	})
 
