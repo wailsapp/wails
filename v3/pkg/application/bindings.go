@@ -308,7 +308,7 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 var errorType = reflect.TypeFor[error]()
 
 // Call will attempt to call this bound method with the given args
-func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnValue interface{}, err error) {
+func (b *BoundMethod) Call(ctx context.Context, window Window, args []json.RawMessage) (returnValue interface{}, err error) {
 	// Use a defer statement to capture panics
 	defer func() {
 		if r := recover(); r != nil {
@@ -333,19 +333,30 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnV
 		argCount++
 	}
 
-	if argCount != len(b.Inputs) {
-		err = fmt.Errorf("%s expects %d arguments, received %d", b.Name, len(b.Inputs), argCount)
-		return
-	}
-
 	// Convert inputs to values of appropriate type
-
-	callArgs := make([]reflect.Value, argCount)
+	callArgs := make([]reflect.Value, len(b.Inputs))
 	base := 0
 
 	if b.needsContext {
 		callArgs[0] = reflect.ValueOf(ctx)
 		base++
+	}
+
+	firstArgIsWindow := len(b.Inputs) > 0 && b.Inputs[0].ReflectType == reflect.TypeFor[Window]()
+	secondArgIsWindow := len(b.Inputs) > 1 && b.Inputs[1].ReflectType == reflect.TypeFor[Window]()
+	if secondArgIsWindow && !b.needsContext {
+		return nil, fmt.Errorf("second argument is a Window but first argument is not a context")
+	}
+	if firstArgIsWindow || (b.needsContext && secondArgIsWindow) {
+		// Create a reflect.Value from the window interface
+		callArgs[base] = reflect.ValueOf(window)
+		base++
+		argCount++
+	}
+
+	if argCount != len(b.Inputs) {
+		err = fmt.Errorf("%s expects %d arguments, received %d", b.Name, len(b.Inputs), argCount)
+		return
 	}
 
 	// Iterate over given arguments
