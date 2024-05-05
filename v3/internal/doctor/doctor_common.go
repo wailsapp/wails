@@ -23,6 +23,8 @@ func checkCommonDependencies(result map[string]string, ok *bool) {
 			if major < 7 {
 				*ok = false
 				npmVersion = append(npmVersion, []byte(". Installed, but requires npm >= 7.0.0")...)
+			} else {
+				*ok = true
 			}
 		}
 	}
