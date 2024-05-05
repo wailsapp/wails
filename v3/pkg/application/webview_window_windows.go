@@ -69,14 +69,31 @@ func (w *windowsWebviewWindow) handleKeyEvent(_ string) {
 	// Unused on windows
 }
 
+// getBorderSizes returns the extended border size for the window
+func (w *windowsWebviewWindow) getBorderSizes() *LRTB {
+	var result LRTB
+	var frame w32.RECT
+	w32.DwmGetWindowAttribute(w.hwnd, w32.DWMWA_EXTENDED_FRAME_BOUNDS, unsafe.Pointer(&frame), unsafe.Sizeof(frame))
+	rect := w32.GetWindowRect(w.hwnd)
+	result.Left = int(frame.Left - rect.Left)
+	result.Top = int(frame.Top - rect.Top)
+	result.Right = int(rect.Right - frame.Right)
+	result.Bottom = int(rect.Bottom - frame.Bottom)
+	return &result
+}
+
 func (w *windowsWebviewWindow) setAbsolutePosition(x int, y int) {
 	// Set the window's absolute position
-	w32.SetWindowPos(w.hwnd, 0, x, y, 0, 0, w32.SWP_NOSIZE|w32.SWP_NOZORDER)
+	borderSize := w.getBorderSizes()
+	w32.SetWindowPos(w.hwnd, 0, x-borderSize.Left, y-borderSize.Top, 0, 0, w32.SWP_NOSIZE|w32.SWP_NOZORDER)
 }
 
 func (w *windowsWebviewWindow) absolutePosition() (int, int) {
 	rect := w32.GetWindowRect(w.hwnd)
-	left, right := w.scaleToDefaultDPI(int(rect.Left), int(rect.Right))
+	borderSizes := w.getBorderSizes()
+	x := int(rect.Left) + borderSizes.Left
+	y := int(rect.Top) + borderSizes.Top
+	left, right := w.scaleToDefaultDPI(x, y)
 	return left, right
 }
 
@@ -240,10 +257,10 @@ func (w *windowsWebviewWindow) run() {
 
 	// Min/max buttons
 	if !options.Windows.DisableMinimiseButton {
-		w.setMinimiseButtonEnabled(false)
+		w.setMinimiseButtonEnabled(true)
 	}
 	if !options.Windows.DisableMaximiseButton {
-		w.setMaximiseButtonEnabled(false)
+		w.setMaximiseButtonEnabled(true)
 	}
 
 	// Register the window with the application
@@ -271,7 +288,12 @@ func (w *windowsWebviewWindow) run() {
 	if !options.Windows.DisableIcon {
 		// App icon ID is 3
 		icon, err := NewIconFromResource(w32.GetModuleHandle(""), uint16(3))
-		if err == nil {
+		if err != nil {
+			icon, err = w32.CreateLargeHIconFromImage(globalApplication.options.Icon)
+		}
+		if err != nil {
+			globalApplication.Logger.Warn("Failed to load icon: %v", err)
+		} else {
 			w.setIcon(icon)
 		}
 	} else {
@@ -396,6 +418,10 @@ func (w *windowsWebviewWindow) relativePosition() (int, int) {
 	x := int(rect.Left) - int(monitorInfo.RcWork.Left)
 	y := int(rect.Top) - int(monitorInfo.RcWork.Top)
 
+	borderSize := w.getBorderSizes()
+	x += borderSize.Left
+	y += borderSize.Top
+
 	return w.scaleToDefaultDPI(x, y)
 }
 
@@ -477,6 +503,9 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 	//x, y = w.scaleWithWindowDPI(x, y)
 	info := w32.GetMonitorInfoForWindow(w.hwnd)
 	workRect := info.RcWork
+	borderSize := w.getBorderSizes()
+	x -= borderSize.Left
+	y -= borderSize.Top
 	w32.SetWindowPos(w.hwnd, w32.HWND_TOP, int(workRect.Left)+x, int(workRect.Top)+y, 0, 0, w32.SWP_NOSIZE)
 }
 
@@ -862,7 +891,7 @@ func (w *windowsWebviewWindow) setBackdropType(backdropType BackdropType) {
 }
 
 func (w *windowsWebviewWindow) setIcon(icon w32.HICON) {
-	w32.SendMessage(w.hwnd, w32.BM_SETIMAGE, w32.IMAGE_ICON, icon)
+	w32.SendMessage(w.hwnd, w32.WM_SETICON, w32.ICON_BIG, icon)
 }
 
 func (w *windowsWebviewWindow) disableIcon() {

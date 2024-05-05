@@ -2,21 +2,16 @@ package sqlite
 
 import (
 	"database/sql"
+	"embed"
 	_ "embed"
 	"errors"
-	"fmt"
+	"github.com/wailsapp/wails/v3/pkg/application"
+	"io/fs"
 	_ "modernc.org/sqlite"
-	"strings"
 )
 
-//go:embed sqlite_close.js
-var closejs string
-
-//go:embed sqlite_open.js
-var openjs string
-
-//go:embed sqlite_execute_select.js
-var executeselectjs string
+//go:embed assets/*
+var assets embed.FS
 
 // ---------------- Plugin Setup ----------------
 // This is the main plugin struct. It can be named anything you like.
@@ -24,10 +19,9 @@ var executeselectjs string
 // Both the Init() and Shutdown() methods are called synchronously when the app starts and stops.
 
 type Config struct {
-	// Add any configuration options here
-	CanOpenFromJS  bool
-	CanCloseFromJS bool
-	DBFile         string
+	DBFile       string
+	CanCallOpen  bool
+	CanCallClose bool
 }
 
 type Plugin struct {
@@ -45,10 +39,11 @@ func NewPlugin(config *Config) *Plugin {
 
 // Shutdown is called when the app is shutting down
 // You can use this to clean up any resources you have allocated
-func (p *Plugin) Shutdown() {
+func (p *Plugin) Shutdown() error {
 	if p.conn != nil {
-		p.conn.Close()
+		return p.conn.Close()
 	}
+	return nil
 }
 
 // Name returns the name of the plugin.
@@ -59,16 +54,13 @@ func (p *Plugin) Name() string {
 
 // Init is called when the app is starting up. You can use this to
 // initialise any resources you need.
-func (p *Plugin) Init() error {
+func (p *Plugin) Init(api application.PluginAPI) error {
 	p.callableMethods = []string{"Execute", "Select"}
-	p.js = executeselectjs
-	if p.config.CanOpenFromJS {
+	if p.config.CanCallOpen {
 		p.callableMethods = append(p.callableMethods, "Open")
-		p.js += openjs
 	}
-	if p.config.CanCloseFromJS {
+	if p.config.CanCallClose {
 		p.callableMethods = append(p.callableMethods, "Close")
-		p.js += closejs
 	}
 	if p.config.DBFile == "" {
 		return errors.New(`no database file specified. Please set DBFile in the config to either a filename or use ":memory:" to use an in-memory database`)
@@ -78,7 +70,6 @@ func (p *Plugin) Init() error {
 		return err
 	}
 
-	p.js += fmt.Sprintf("\nwindow.sqlite = { %s };", strings.Join(p.callableMethods, ", "))
 	return nil
 }
 
@@ -87,8 +78,8 @@ func (p *Plugin) CallableByJS() []string {
 	return p.callableMethods
 }
 
-func (p *Plugin) InjectJS() string {
-	return p.js
+func (p *Plugin) Assets() fs.FS {
+	return assets
 }
 
 // ---------------- Plugin Methods ----------------
@@ -155,15 +146,15 @@ func (p *Plugin) Select(query string, args ...any) ([]map[string]any, error) {
 	return results, nil
 }
 
-func (p *Plugin) Close() error {
+func (p *Plugin) Close() (string, error) {
 	if p.conn == nil {
-		return errors.New("no open database connection")
+		return "", errors.New("no open database connection")
 	}
 
 	err := p.conn.Close()
 	if err != nil {
-		return err
+		return "", err
 	}
 	p.conn = nil
-	return nil
+	return "Database connection closed", nil
 }

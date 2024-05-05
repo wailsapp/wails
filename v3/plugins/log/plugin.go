@@ -1,13 +1,15 @@
 package log
 
 import (
+	"embed"
 	_ "embed"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"io/fs"
 	"log/slog"
 )
 
-//go:embed plugin.js
-var pluginJS string
+//go:embed assets/*
+var assets embed.FS
 
 // ---------------- Plugin Setup ----------------
 // This is the main plugin struct. It can be named anything you like.
@@ -49,7 +51,7 @@ func NewPlugin() *Plugin {
 
 // Shutdown is called when the app is shutting down
 // You can use this to clean up any resources you have allocated
-func (p *Plugin) Shutdown() {}
+func (p *Plugin) Shutdown() error { return nil }
 
 // Name returns the name of the plugin.
 // You should use the go module format e.g. github.com/myuser/myplugin
@@ -57,7 +59,7 @@ func (p *Plugin) Name() string {
 	return "github.com/wailsapp/wails/v3/plugins/log"
 }
 
-func (p *Plugin) Init() error {
+func (p *Plugin) Init(api application.PluginAPI) error {
 	return nil
 }
 
@@ -72,8 +74,8 @@ func (p *Plugin) CallableByJS() []string {
 	}
 }
 
-func (p *Plugin) InjectJS() string {
-	return pluginJS
+func (p *Plugin) Assets() fs.FS {
+	return assets
 }
 
 // ---------------- Plugin Methods ----------------

@@ -167,6 +167,10 @@ func (w *linuxWebviewWindow) setMinSize(width, height int) {
 	w.setMinMaxSize(width, height, w.parent.options.MaxWidth, w.parent.options.MaxHeight)
 }
 
+func (w *linuxWebviewWindow) getBorderSizes() *LRTB {
+	return &LRTB{}
+}
+
 func (w *linuxWebviewWindow) setMaxSize(width, height int) {
 	w.setMinMaxSize(w.parent.options.MinWidth, w.parent.options.MinHeight, width, height)
 }
@@ -220,6 +224,7 @@ func (w *linuxWebviewWindow) run() {
 		w.enableDND()
 	}
 	w.setTitle(w.parent.options.Title)
+	w.setIcon(app.icon)
 	w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
 	w.setResizable(!w.parent.options.DisableResize)
 	// only set min/max size if actually set

@@ -113,7 +113,7 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 	}
 
 	var result []string
-	if m.dialog.allowsMultipleSelection {
+	if m.dialog.allowsMultipleSelection && !m.dialog.canChooseDirectories {
 		temp, err := showCfdDialog(
 			func() (cfd.Dialog, error) {
 				return cfd.NewOpenMultipleFilesDialog(config)
@@ -123,14 +123,25 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 		}
 		result = temp.([]string)
 	} else {
-		temp, err := showCfdDialog(
-			func() (cfd.Dialog, error) {
-				return cfd.NewOpenFileDialog(config)
-			}, false)
-		if err != nil {
-			return nil, err
+		if m.dialog.canChooseDirectories {
+			temp, err := showCfdDialog(
+				func() (cfd.Dialog, error) {
+					return cfd.NewSelectFolderDialog(config)
+				}, false)
+			if err != nil {
+				return nil, err
+			}
+			result = []string{temp.(string)}
+		} else {
+			temp, err := showCfdDialog(
+				func() (cfd.Dialog, error) {
+					return cfd.NewOpenFileDialog(config)
+				}, false)
+			if err != nil {
+				return nil, err
+			}
+			result = []string{temp.(string)}
 		}
-		result = []string{temp.(string)}
 	}
 
 	files := make(chan string)
@@ -202,6 +213,7 @@ func calculateMessageDialogFlags(options MessageDialogOptions) uint32 {
 		}
 	case WarningDialogType:
 		flags = windows.MB_OK | windows.MB_ICONWARNING
+	case OpenDirectoryDialogType:
 	}
 
 	return flags

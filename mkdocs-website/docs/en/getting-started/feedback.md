@@ -5,7 +5,7 @@ posts before creating new ones. Here are the different ways to provide feedback:
 
 === "Bugs"
 
-    If you find a bug, please let us know by posting into the [v3 Alpha Feedback](https://discord.gg/3mgVyGua) channel on Discord. 
+    If you find a bug, please let us know by posting into the [v3 Alpha Feedback](https://discord.gg/Vgff2p8gsy) channel on Discord. 
     
     - The post should clearly state what the bug is and have a simple reproducible example. If the docs are unclear what *should* happen, please include that in the post.
     - The post should be given the `Bug` tag.
@@ -24,17 +24,17 @@ posts before creating new ones. Here are the different ways to provide feedback:
     If you have a fix for a bug or an update for documentation, please do the following:
 
     - Open a pull request on the [Wails repository](https://github.com/wailsapp/wails). The title of the PR should start with `[v3 alpha]`.
-    - Create a post in the [v3 Alpha Feedback](https://discord.gg/3mgVyGua) channel.
+    - Create a post in the [v3 Alpha Feedback](https://discord.gg/Vgff2p8gsy) channel.
     - The post should be given the `PR` tag.
     - Please include a link to the PR in your post.
 
 === "Suggestions"
 
-    If you have a suggestion, please let us know by posting into the [v3 Alpha Feedback](https://discord.gg/3mgVyGua) channel on Discord:
+    If you have a suggestion, please let us know by posting into the [v3 Alpha Feedback](https://discord.gg/Vgff2p8gsy) channel on Discord:
 
     - The post should be given the `Suggestion` tag.
 
-    Please feel free to reach out to us on [Discord](https://discord.gg/3mgVyGua) if you have any questions.
+    Please feel free to reach out to us on [Discord](https://discord.gg/Vgff2p8gsy) if you have any questions.
 
 === "Upvoting"
 

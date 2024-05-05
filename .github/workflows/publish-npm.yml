@@ -1,0 +1,20 @@
+on:
+  push:
+    branches: ['v3-alpha']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+      - run: npm ci
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+
+      - uses: JS-DevTools/npm-publish@v3
+        with:
+          package: v3/internal/runtime/desktop/@wailsio/runtime
+          access: public
+          token: ${{ secrets.NPM_TOKEN }}

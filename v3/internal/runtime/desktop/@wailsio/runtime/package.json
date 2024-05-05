@@ -1,6 +1,6 @@
 {
   "name": "@wailsio/runtime",
-  "version": "3.0.0-alpha.20",
+  "version": "3.0.0-alpha.22",
   "description": "Wails Runtime",
   "main": "src/index.js",
   "types": "types/index.d.ts",
@@ -27,5 +27,8 @@
     "typedoc": "^0.25.7",
     "typedoc-plugin-markdown": "^3.17.1",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "nanoid": "^5.0.7"
   }
 }

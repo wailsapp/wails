@@ -1,12 +1,14 @@
 package assetserver
 
 import (
+	"embed"
 	"fmt"
-	"html"
+	"io/fs"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"path"
 	"strings"
 	"time"
 )
@@ -14,6 +16,7 @@ import (
 const (
 	webViewRequestHeaderWindowId   = "x-wails-window-id"
 	webViewRequestHeaderWindowName = "x-wails-window-name"
+	pluginPrefix                   = "/wails/plugin"
 )
 
 type RuntimeHandler interface {
@@ -25,13 +28,17 @@ type AssetServer struct {
 
 	handler http.Handler
 
-	pluginScripts map[string]string
+	//pluginScripts map[string]string
 
 	assetServerWebView
+	pluginAssets map[string]fs.FS
 }
 
 func NewAssetServer(options *Options) (*AssetServer, error) {
-	result := &AssetServer{options: options}
+	result := &AssetServer{
+		options:      options,
+		pluginAssets: make(map[string]fs.FS),
+	}
 
 	userHandler := options.Handler
 	if userHandler == nil {
@@ -84,8 +91,8 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 	//	header.Add(HeaderCacheControl, "no-cache")
 	//}
 
-	path := req.URL.Path
-	switch path {
+	reqPath := req.URL.Path
+	switch reqPath {
 	case "", "/", "/index.html":
 		recorder := httptest.NewRecorder()
 		userHandler.ServeHTTP(recorder, req)
@@ -105,9 +112,34 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 		}
 
 	default:
-		// Check if this is a plugin script
-		if script, ok := a.pluginScripts[path]; ok {
-			a.writeBlob(rw, path, []byte(script))
+
+		// Check if this is a plugin asset
+		if !strings.HasPrefix(reqPath, pluginPrefix) {
+			userHandler.ServeHTTP(rw, req)
+			return
+		}
+
+		// Ensure there is 4 parts to the reqPath
+		parts := strings.SplitN(reqPath, "/", 5)
+		if len(parts) < 5 {
+			rw.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		// Get the first 3 parts of the reqPath
+		pluginPath := "/" + path.Join(parts[1], parts[2], parts[3])
+		// Get the remaining part of the reqPath
+		fileName := parts[4]
+
+		// Check if this is a registered plugin asset
+		if assetFS, ok := a.pluginAssets[pluginPath]; ok {
+			// Check if the file exists
+			file, err := fs.ReadFile(assetFS, fileName)
+			if err != nil {
+				a.serveError(rw, err, "Unable to read file %s", reqPath)
+				return
+			}
+			a.writeBlob(rw, reqPath, file)
 		} else {
 			userHandler.ServeHTTP(rw, req)
 		}
@@ -127,14 +159,28 @@ func (a *AssetServer) serveError(rw http.ResponseWriter, err error, msg string, 
 	rw.WriteHeader(http.StatusInternalServerError)
 }
 
-func (a *AssetServer) AddPluginScript(pluginName string, script string) {
-	if a.pluginScripts == nil {
-		a.pluginScripts = make(map[string]string)
+//func (a *AssetServer) AddPluginScript(pluginName string, script string) {
+//	if a.pluginScripts == nil {
+//		a.pluginScripts = make(map[string]string)
+//	}
+//	pluginName = strings.ReplaceAll(pluginName, "/", "_")
+//	pluginName = html.EscapeString(pluginName)
+//	pluginScriptName := fmt.Sprintf("/wails/plugin/%s.js", pluginName)
+//	a.pluginScripts[pluginScriptName] = script
+//}
+
+func (a *AssetServer) AddPluginAssets(pluginPath string, vfs fs.FS) error {
+	pluginPath = path.Join(pluginPrefix, pluginPath)
+	_, exists := a.pluginAssets[pluginPath]
+	if exists {
+		return fmt.Errorf("plugin path already exists: %s", pluginPath)
 	}
-	pluginName = strings.ReplaceAll(pluginName, "/", "_")
-	pluginName = html.EscapeString(pluginName)
-	pluginScriptName := fmt.Sprintf("/wails/plugin/%s.js", pluginName)
-	a.pluginScripts[pluginScriptName] = script
+	if embedFs, isEmbedFs := vfs.(embed.FS); isEmbedFs {
+		rootFolder, _ := findEmbedRootPath(embedFs)
+		vfs, _ = fs.Sub(vfs, path.Clean(rootFolder))
+	}
+	a.pluginAssets[pluginPath] = vfs
+	return nil
 }
 
 func GetStartURL(userURL string) (string, error) {

@@ -15,7 +15,6 @@ package application
 import "C"
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -42,6 +41,8 @@ type linuxApp struct {
 	windowMapLock sync.Mutex
 
 	theme string
+
+	icon pointer
 }
 
 func (a *linuxApp) GetFlags(options Options) map[string]any {
@@ -68,10 +69,6 @@ func (a *linuxApp) on(eventID uint) {
 	//C.registerApplicationEvent(l.application, C.uint(eventID))
 }
 
-func (a *linuxApp) setIcon(icon []byte) {
-	log.Println("linuxApp.setIcon", "not implemented")
-}
-
 func (a *linuxApp) name() string {
 	return appName()
 }
@@ -96,7 +93,7 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 func (a *linuxApp) run() error {
 
 	a.parent.On(events.Linux.ApplicationStartup, func(evt *Event) {
-		fmt.Println("events.Linux.ApplicationStartup received!")
+		// TODO: What should happen here?
 	})
 	a.setupCommonEvents()
 	a.monitorThemeChanges()

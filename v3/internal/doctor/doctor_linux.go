@@ -9,8 +9,10 @@ import (
 
 func getInfo() (map[string]string, bool) {
 	result := make(map[string]string)
-	ok := true
+	return result, true
+}
 
+func checkPlatformDependencies(result map[string]string, ok *bool) {
 	info, _ := operatingsystem.Info()
 
 	pm := packagemanager.Find(info.ID)
@@ -23,7 +25,7 @@ func getInfo() (map[string]string, bool) {
 			if dep.Optional {
 				status = "[Optional] "
 			} else {
-				ok = false
+				*ok = false
 			}
 			status += "not installed."
 			if dep.InstallCommand != "" {
@@ -36,5 +38,5 @@ func getInfo() (map[string]string, bool) {
 		result[dep.Name] = status
 	}
 
-	return result, ok
+	checkCommonDependencies(result, ok)
 }
