@@ -1,0 +1,94 @@
+# TypeScript
+
+This guide provides tips to generate TypeScript types for your bound Go structs.
+
+## Background
+
+As described in [How does it work?](https://wails.io/docs/howdoesitwork), structs can be passed from Go functions to the frontend 
+and vice versa. These structs take the form of JSON objects in transit. In order to take advantage of TypeScript's type safety features, 
+Wails will generate equivalent TypeScript classes for each struct during compilation. These generated classes can be imported from 
+`frontend/wailsjs/go/models.ts`.
+
+## TypeScript Generator
+
+Wails includes a TypeScript type generator based on [typescriptify](https://github.com/tkrajina/typescriptify-golang-structs). 
+Go's numerics, booleans, and strings as well as slices, arrays, structs, and maps will be automatically converted to their
+TypeScript equivalents. The following is a dictionary of common Go types:
+
+| Go Type                             | TypeScript Equivalent |
+| ----------------------------------- | --------------------- |
+| int, int8, int16, int32, int64      | number                |
+| uint, uint8, uint16, uint32, uint64 | number                |
+| byte, rune                          | number                |
+| float32, float64                    | number                |
+| bool                                | boolean               |
+| string                              | string                |
+| interface{}                         | any                   |
+| map[string]T                        | {[key: string]: T}    |
+| []T  (slice)                        | T[]                   |
+| [n]T (array)                        | T[]                   |
+| struct                              | class                 |
+
+:::warning
+
+The numerics `complex64` and `complex128` are currently unsupported and any structs containing 
+these types will fail to generate. You must use the [**ts type**](#ts_type) struct tag on these fields.
+
+:::
+
+The majority of structs will generate appropriate TypeScript bindings without modification. 
+For custom types or types that require additional transformations when converted from JSON, Wails provides two struct tags.
+
+## Struct Tags
+
+### ts_type
+
+If your struct field needs a custom TypeScript type but can be constructed from JSON as-is, you can use the `ts_type` tag. 
+For example: 
+
+```go
+type Data struct {
+    Counters map[string]int `json:"counters" ts_type:"CustomType"`
+}
+```
+
+will generate:
+
+```ts
+export class Data {
+    counters: CustomType;
+}
+```
+
+### ts_transform
+
+If your struct field needs special handling to be converted to a JavaScript object such as a call to the object's contructor, 
+you can use the `ts_transform` tag. 
+For example:
+
+```go
+type Data struct {
+    Time time.Time `json:"time" ts_type:"Date" ts_transform:"new Date(__VALUE__)"`
+}
+```
+
+will generate:
+
+```ts
+export class Date {
+	time: Date;
+
+    constructor(source: any = {}) {
+        if ('string' === typeof source) source = JSON.parse(source);
+        this.time = new Date(source["time"]);
+    }
+}
+```
+
+There is currently no way to import external TypeScript types or functions to your bindings.
+
+## Additional Considerations
+
+We've just discussed how to modify the unmarshalling behavior from Go to your TypeScript bindings, but what if you want to change 
+the unmarshalling behavior from JS/TypeScript to your Go structs? This can be done by implementing an override for the function 
+`UnmarshalJSON()` as defined in [encoding/json](https://pkg.go.dev/encoding/json).
