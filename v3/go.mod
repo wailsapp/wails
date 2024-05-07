@@ -1,6 +1,6 @@
 module github.com/wailsapp/wails/v3
 
-go 1.21
+go 1.22
 
 require (
 	github.com/atterpac/refresh v0.8.0
