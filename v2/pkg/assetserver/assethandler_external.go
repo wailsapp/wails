@@ -1,5 +1,5 @@
-//go:build dev
-// +build dev
+//go:build dev || hybrid || server
+// +build dev hybrid server
 
 package assetserver
 
