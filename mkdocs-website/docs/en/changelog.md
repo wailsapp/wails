@@ -68,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- The linux webkit decency to webkit2gtk-4.1 over webkitgtk2-4.0 to support Ubuntu 24.04 LTS by [atterpac](https://github.com/atterpac) in [#3461](https://github.com/wailsapp/wails/pull/3461)
+- Update linux webkit dependency to webkit2gtk-4.1 over webkitgtk2-4.0 to support Ubuntu 24.04 LTS by [atterpac](https://github.com/atterpac) in [#3461](https://github.com/wailsapp/wails/pull/3461)
 - The bundled JS runtime script is now an ESM module: script tags importing it must have the `type="module"` attribute. By [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
 - The `@wailsio/runtime` package does not publish its API on the `window.wails` object, and does not start the WML system. This has been done to improve encapsulation. The WML system can be started manually if desired by calling the new `WML.Enable` method. The bundled JS runtime script still performs both operations automatically. By [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
 - The Window API module `@wailsio/runtime/src/window` now exposes the containing window object as a default export. It is not possible anymore to import individual methods through ESM named or namespace import syntax.
