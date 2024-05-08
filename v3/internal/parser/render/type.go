@@ -55,6 +55,11 @@ func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.C
 			return renderType(t.Underlying(), imports, collector, false)
 		}
 
+		if t.TypeParams() != nil {
+			// We do not support generic types yet.
+			break
+		}
+
 		if t.Obj().Pkg().Path() == imports.Self {
 			return jsid(t.Obj().Name()), false
 		} else {
@@ -81,7 +86,7 @@ func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.C
 		return renderStructType(t, imports, collector), false
 	}
 
-	// Give up.
+	// Fall back to untyped mode.
 	return "any", false
 }
 
@@ -111,6 +116,7 @@ func renderBasicType(typ *types.Basic, quoted bool) string {
 		}
 	}
 
+	// Fall back to untyped mode.
 	return "any"
 }
 
@@ -122,17 +128,22 @@ func renderMapType(typ *types.Map, imports *collect.ImportMap, collector *collec
 	// Test whether we can upgrade key rendering.
 	switch k := typ.Key().(type) {
 	case *types.Basic:
-		if collect.IsMapKey(k) {
+		if k.Info()&types.IsString == 0 && collect.IsMapKey(k) {
+			// Render non-string basic type in quoted mode.
 			key = renderBasicType(k, true)
 		}
 
 	case *types.Alias, *types.Named:
-		if collect.IsAlwaysTextMarshaler(k) && !collect.MaybeJSONMarshaler(k) {
+		if collect.IsString(typ) {
+			// Named type is a string alias and therefore
+			// safe to use as a JS object key.
 			key, _ = renderType(k, imports, collector, false)
 		}
 
 	case *types.Pointer:
-		if collect.IsAlwaysTextMarshaler(k) && !collect.MaybeJSONMarshaler(k) {
+		if collect.IsMapKey(typ) && collect.IsString(typ.Elem()) {
+			// Base type is a string alias and therefore
+			// safe to use as a JS object key.
 			key, _ = renderType(k.Elem(), imports, collector, false)
 		}
 	}

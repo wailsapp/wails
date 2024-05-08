@@ -151,22 +151,28 @@ func NewPackageInfo(path string, source any) *PackageInfo {
 	}
 }
 
-// AddBindings adds the given bound types
+// AddBindings adds the given bound type objects
 // to the list of bindings generated for this package.
 //
 // This method is safe to call even if [PackageInfo.Collect]
 // has not been called yet.
+//
+// It is an error to pass in here a type whose parent package
+// is not the one described by the receiver.
 func (info *PackageInfo) AddBindings(bindings ...*types.TypeName) {
 	info.mu.Lock()
 	info.bindings = append(info.bindings, bindings...)
 	info.mu.Unlock()
 }
 
-// AddModels adds the given model identifiers
+// AddModels adds the given model type objects
 // to the list of models generated for this package.
 //
 // This method is safe to call even if [PackageInfo.Collect]
 // has not been called yet.
+//
+// It is an error to pass in here a type whose parent package
+// is not the one described by the receiver.
 func (info *PackageInfo) AddModels(models ...*types.TypeName) {
 	info.mu.Lock()
 	info.models = append(info.models, models...)

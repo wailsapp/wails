@@ -180,7 +180,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 		}
 
 		// Record type dependencies.
-		imports.AddType(collector, param.Type())
+		imports.AddType(param.Type(), collector)
 
 		// Record parameter.
 		info.Params = append(info.Params, &ParamInfo{
@@ -204,7 +204,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 		}
 
 		// Record type dependencies.
-		imports.AddType(collector, result.Type())
+		imports.AddType(result.Type(), collector)
 
 		// Record result.
 		info.Results = append(info.Results, result.Type())

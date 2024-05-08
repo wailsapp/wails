@@ -25,18 +25,18 @@ import * as {{jsimport .}} from "{{.RelPath}}/{{$models}}";
 {{- if $imports.Models}}
 import {
     {{- $first := true}}
-    {{- range $model, $typedef := $imports.Models}}
+    {{- range $model, $class := $imports.Models}}
         {{- if $first}}, {{$first = false}}{{end}}
-        {{- if or $useInterfaces $typedef}}type {{end}}{{jsid $model}}
+        {{- if or $useInterfaces (not $class)}}type {{end}}{{jsid $model}}
     {{- end -}}
 } from "./{{$models}}";
 {{end}}
 {{- if $imports.Internal}}
 import {
     {{- $first := true}}
-    {{- range $model, $typedef := $imports.Internal}}
+    {{- range $model, $class := $imports.Internal}}
         {{- if $first}}, {{$first = false}}{{end}}
-        {{- if or $useInterfaces $typedef}}type {{end}}{{jsid $model}}
+        {{- if or $useInterfaces (not $class)}}type {{end}}{{jsid $model}}
     {{- end -}}
 } from "./{{$internal}}";
 {{end}}

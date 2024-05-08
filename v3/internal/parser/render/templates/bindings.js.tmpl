@@ -26,44 +26,44 @@ import * as {{jsimport .}} from "{{.RelPath}}/{{$models}}";
 {{- $typedefs := false}}
 import {
     {{- $first := true}}
-    {{- range $model, $typedef := $imports.Models}}
-        {{- if $typedef}}
-            {{- $typedefs = true}}
-        {{- else}}
+    {{- range $model, $class := $imports.Models}}
+        {{- if $class}}
             {{- if $first}}, {{$first = false}}{{end}}
             {{- jsid $model}}
+        {{- else}}
+            {{- $typedefs = true}}
         {{- end}}
     {{- end -}}
 } from "./{{$models}}";
 {{- if $typedefs}}
 
-{{range $model, $typedef := $imports.Models}}
+{{range $model, $class := $imports.Models}}{{if not $class}}
 /**
  * @typedef {import("./{{$models}}").{{jsid $model -}} } {{jsid $model}}
  */
-{{- end}}
+{{- end}}{{end}}
 {{- end}}
 {{end}}
 {{- if $imports.Internal}}
 {{- $typedefs := false}}
 import {
     {{- $first := true}}
-    {{- range $model, $typedef := $imports.Internal}}
-        {{- if $typedef}}
-            {{- $typedefs = true}}
-        {{- else}}
+    {{- range $model, $class := $imports.Internal}}
+        {{- if $class}}
             {{- if $first}}, {{$first = false}}{{end}}
             {{- jsid $model}}
+        {{- else}}
+            {{- $typedefs = true}}
         {{- end}}
     {{- end -}}
 } from "./{{$internal}}";
 {{- if $typedefs}}
 
-{{range $model, $typedef := $imports.Internal}}
+{{range $model, $class := $imports.Internal}}{{if not $class}}
 /**
  * @typedef {import("./{{$internal}}").{{jsid $model -}} } {{jsid $model}}
  */
-{{- end}}
+{{- end}}{{end}}
 {{- end}}
 {{end}}
 {{- range .Methods}}

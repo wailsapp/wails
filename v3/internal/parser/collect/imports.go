@@ -17,11 +17,11 @@ type (
 		Self string
 
 		// Models records required exported models from self.
-		// Values are true for typedefs.
+		// Values are true for classes.
 		Models map[string]bool
 
 		// Internal records required unexported models from Self.
-		// Values are true for typedefs.
+		// Values are true for classes.
 		Internal map[string]bool
 
 		// External records information about each imported package,
@@ -83,8 +83,8 @@ func (imports *ImportMap) Add(pkg *PackageInfo) {
 // and marks all referenced named types as models.
 //
 // Add DOES NOT support unsynchronised concurrent calls.
-func (imports *ImportMap) AddType(collector *Collector, typ types.Type) {
-	for {
+func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
+	for { // Avoid recursion where possible.
 		switch t := typ.(type) {
 		case *types.Basic:
 			if t.Info()&types.IsComplex != 0 {
@@ -102,9 +102,9 @@ func (imports *ImportMap) AddType(collector *Collector, typ types.Type) {
 			// Record used types from self.
 			if t.Obj().Pkg().Path() == imports.Self {
 				if t.Obj().Exported() {
-					imports.Models[t.Obj().Name()] = true
+					imports.Models[t.Obj().Name()] = IsClass(t)
 				} else {
-					imports.Internal[t.Obj().Name()] = true
+					imports.Internal[t.Obj().Name()] = IsClass(t)
 				}
 			}
 
@@ -122,10 +122,10 @@ func (imports *ImportMap) AddType(collector *Collector, typ types.Type) {
 
 		case *types.Map:
 			if IsMapKey(t.Key()) {
-				if IsAlwaysTextMarshaler(t.Key()) && !MaybeJSONMarshaler(t.Key()) {
-					// This type is always rendered as a string,
-					// hence we can use it safely as an object key type.
-					imports.AddType(collector, t.Key())
+				if IsString(t.Key()) {
+					// This model type is always rendered as a string alias,
+					// hence we can generate it and use it as a type for JS object keys.
+					imports.AddType(t.Key(), collector)
 				}
 			} else {
 				pterm.Warning.Printfln(
@@ -143,17 +143,17 @@ func (imports *ImportMap) AddType(collector *Collector, typ types.Type) {
 			}
 
 			if t.TypeParams() != nil {
+				// Warn about generic types.
 				collector.genericWarning()
 				return
 			}
 
 			// Record used types from self.
 			if t.Obj().Pkg().Path() == imports.Self {
-				isTypedef := IsAlwaysTextMarshaler(t) || MaybeJSONMarshaler(t)
 				if t.Obj().Exported() {
-					imports.Models[t.Obj().Name()] = isTypedef
+					imports.Models[t.Obj().Name()] = IsClass(t)
 				} else {
-					imports.Internal[t.Obj().Name()] = isTypedef
+					imports.Internal[t.Obj().Name()] = IsClass(t)
 				}
 			}
 
@@ -189,7 +189,7 @@ func (imports *ImportMap) AddType(collector *Collector, typ types.Type) {
 
 			// Add field dependencies.
 			for i := range len(info.Fields) - 1 {
-				imports.AddType(collector, info.Fields[i].Type)
+				imports.AddType(info.Fields[i].Type, collector)
 			}
 
 			// Process last field without recursion.
