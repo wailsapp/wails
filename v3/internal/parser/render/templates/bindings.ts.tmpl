@@ -70,7 +70,7 @@ export function {{.Name}}({{range $i, $param := .Params -}}
     let $resultPromise = $Call.ByID({{.ID}}
     {{- end}}{{range $i, $param := .Params}}, {{jsparam $i .}}{{end}});
     {{- if or $useInterfaces (not .Results)}}
-    return /** @type {any} */($resultPromise);
+    return $resultPromise as any;
     {{- else}}
     let $typingPromise = $resultPromise.then(($result) => {
     {{- if eq 1 (len .Results)}}
@@ -82,7 +82,7 @@ export function {{.Name}}({{range $i, $param := .Params -}}
         return $result;
     });
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return /** @type {any} */($typingPromise);
+    return $typingPromise as any;
     {{- end}}
 }
 {{end -}}

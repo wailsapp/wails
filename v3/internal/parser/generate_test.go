@@ -23,7 +23,7 @@ func configString(options *flags.GenerateBindingsOptions) string {
 	}
 }
 
-func TestGenerateBindings(t *testing.T) {
+func TestGenerator(t *testing.T) {
 	const (
 		useNamesBit = 1 << iota
 		tsBit
