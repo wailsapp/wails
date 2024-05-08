@@ -266,39 +266,6 @@ func (analyser *bindingAnalyser) Analyse(pkg *packages.Package) {
 // or variable under analysis, looking for assignments, copies,
 // and element assignments.
 func (analyser *bindingAnalyser) analyseReference(pkg *packages.Package, path []ast.Node) {
-	path = Reparen(path)
-	if len(path) < 2 {
-		return
-	}
-
-	switch ref := path[1].(type) {
-	case *ast.KeyValueExpr:
-		// The context is a KeyValue expr: if our field is initialised here,
-		// explore the assigned value; otherwise ignore it silently
-
-		if analyser.fieldOrVar.IsField() && ref.Key != path[0] {
-			return
-		}
-
-		analyser.analyseFieldExpr(pkg, ref.Value)
-		return
-
-	case *ast.SelectorExpr:
-		// The context is a selector expr: if it selects our field,
-		// travel one step up the path and analyse further
-
-		if ref.Sel != path[0] {
-			return
-		}
-
-		path = path[1:]
-
-	default:
-		// All other reference contexts (e.g. as callee in a function call)
-		// are ignored silently
-		return
-	}
-
 	// Remember whether we traversed a slice expression
 	sliceExpr := false
 
@@ -310,6 +277,29 @@ func (analyser *bindingAnalyser) analyseReference(pkg *packages.Package, path []
 		}
 
 		switch ctx := path[1].(type) {
+		case *ast.KeyValueExpr:
+			// The context is a KeyValue expr: if our field is the key,
+			// analyse the assigned value; otherwise ignore it silently.
+			// If the current target is not a field, this is a map entry
+			// and must be ignored.
+
+			if ctx.Key != path[0] || !analyser.fieldOrVar.IsField() {
+				return
+			}
+
+			analyser.analyseFieldExpr(pkg, ctx.Value)
+			return
+
+		case *ast.SelectorExpr:
+			// The context is a selector expr: if it selects our field or var,
+			// travel one step up the path and repeat the analysis
+			if ctx.Sel != path[0] {
+				return
+			}
+
+			path = path[1:]
+			continue // Recurse
+
 		case *ast.AssignStmt:
 			// If the reference is assigned to, analyse its value;
 			// otherwise it is an assignee and we ignore it silently
