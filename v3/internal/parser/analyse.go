@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"errors"
 	"fmt"
 	"go/token"
 	"go/types"
@@ -13,13 +12,6 @@ import (
 // WailsAppPkgPath is the official import path of Wails v3's application package
 const WailsAppPkgPath = "github.com/wailsapp/wails/v3/pkg/application"
 
-// ErrBadApplicationPackage indicates that
-// the Wails application package has invalid content.
-var ErrBadApplicationPackage = errors.New(WailsAppPkgPath + ": function NewService has wrong signature: is the Wails v3 module properly installed?")
-
-// ErrNoBoundTypes indicates that no valid bound types were found.
-var ErrNoBoundTypes = errors.New("no valid bound types found")
-
 // FindServices scans the given packages for invocations
 // of the NewService function from the Wails application package.
 //
@@ -27,8 +19,15 @@ var ErrNoBoundTypes = errors.New("no valid bound types found")
 // is a valid service type, the corresponding named type object
 // is passed to yield.
 //
-// If yield returns false, FindServices returns immediately.
-func FindServices(pkgs []*packages.Package, logger config.Logger, yield func(*types.TypeName) bool) error {
+// The wailsAppPkgPath parameter should be set to the resolved version
+// of the canonical path of the wails application package.
+// The resolved path  should be obtained by passing the [WailsAppPkgPath]
+// constant to [ResolvePatterns], with the same build flags
+// that were used to load the given set of packages.
+// This is required to handle vendored packages correctly.
+//
+// If yield returns false, FindBoundTypes returns immediately.
+func FindServices(pkgs []*packages.Package, wailsAppPkgPath string, logger config.Logger, yield func(*types.TypeName) bool) error {
 	type instanceInfo struct {
 		args *types.TypeList
 		pos  token.Position
@@ -121,7 +120,7 @@ func FindServices(pkgs []*packages.Package, logger config.Logger, yield func(*ty
 				continue
 			}
 
-			if fn.Name() == "NewService" && fn.Pkg().Path() == WailsAppPkgPath {
+			if fn.Name() == "NewService" && fn.Pkg().Path() == wailsAppPkgPath {
 				// Check signature.
 				signature := fn.Type().(*types.Signature)
 				if signature.Params().Len() != 1 || signature.Results().Len() != 1 || tp.Len() != 1 || tp.At(0).Obj() == nil {

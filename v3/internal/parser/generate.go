@@ -104,8 +104,22 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		}
 	}()
 
+	// Resolve wails app pkg path.
+	wailsAppPkgPaths, err := ResolvePatterns(buildFlags, WailsAppPkgPath)
+	if err != nil {
+		return
+	}
+
+	if len(wailsAppPkgPaths) < 1 {
+		err = ErrNoApplicationPackage
+		return
+	} else if len(wailsAppPkgPaths) > 1 {
+		// This should never happen...
+		panic("wails application package path matched multiple packages")
+	}
+
 	// Load initial packages.
-	pkgs, err := LoadPackages(buildFlags, true, patterns...)
+	pkgs, err := LoadPackages(buildFlags, patterns...)
 
 	// Suppress package loading feedback.
 	lpkgMutex.Lock()
@@ -135,7 +149,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	bindingsFound := sync.OnceFunc(func() { generator.controller.Statusf("Generating bindings...") })
 
 	// Run static analysis and schedule binding code generation for each result.
-	err = FindServices(pkgs, &generator.controller, func(typ *types.TypeName) bool {
+	err = FindServices(pkgs, wailsAppPkgPaths[0], &generator.controller, func(typ *types.TypeName) bool {
 		bindingsFound()
 
 		generator.controller.Schedule(func() {
@@ -283,7 +297,7 @@ type controller struct {
 // Load loads the given package path in syntax-only mode.
 // In case of errors, it returns nil and adds them to the error report.
 func (ctrl *controller) Load(path string) *packages.Package {
-	pkgs, err := LoadPackages(ctrl.buildFlags, false, path)
+	pkgs, err := LoadPackages(ctrl.buildFlags, path)
 	if err != nil {
 		ctrl.Errorf("%v", err)
 		return nil

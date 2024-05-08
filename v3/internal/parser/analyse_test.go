@@ -74,15 +74,29 @@ func TestAnalyser(t *testing.T) {
 		tests = append(tests, all)
 	}
 
+	// Resolve wails app pkg path.
+	wailsAppPkgPaths, err := ResolvePatterns(nil, WailsAppPkgPath)
+	if err != nil {
+		return
+	}
+
+	if len(wailsAppPkgPaths) < 1 {
+		t.Fatal(ErrNoApplicationPackage)
+	} else if len(wailsAppPkgPaths) > 1 {
+		// This should never happen...
+		t.Fatal("wails application package path matched multiple packages")
+	}
+
 	for _, test := range tests {
 		pkgPattern := "github.com/wailsapp/wails/v3/internal/parser/testcases/"
-		if test.name != "all" {
-			pkgPattern += test.name + "/"
+		if test.name == "all" {
+			pkgPattern += "..."
+		} else {
+			pkgPattern += test.name
 		}
-		pkgPattern += "..."
 
 		t.Run("pkg="+test.name, func(t *testing.T) {
-			pkgs, err := LoadPackages(nil, true, pkgPattern)
+			pkgs, err := LoadPackages(nil, pkgPattern)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -95,7 +109,7 @@ func TestAnalyser(t *testing.T) {
 
 			got := make([]string, 0)
 
-			err = FindServices(pkgs, config.DefaultPtermLogger(nil), func(tn *types.TypeName) bool {
+			err = FindServices(pkgs, wailsAppPkgPaths[0], config.DefaultPtermLogger(nil), func(tn *types.TypeName) bool {
 				got = append(got, types.TypeString(tn.Type(), nil))
 				return true
 			})

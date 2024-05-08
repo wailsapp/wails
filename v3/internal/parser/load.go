@@ -8,29 +8,54 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// LoadPackages loads the packages specified by the given patterns.
-//
-// The resulting package instances include syntax trees and types.
-// If full is true, they also include detailed type information.
-func LoadPackages(buildFlags []string, full bool, patterns ...string) ([]*packages.Package, error) {
+// ResolvePatterns returns a slice containing all package paths
+// that match the given patterns, according to the underlying build tool
+// and within the context of the current working directory.
+func ResolvePatterns(buildFlags []string, patterns ...string) (paths []string, err error) {
 	rewrittenPatterns := make([]string, len(patterns))
 	for i, pattern := range patterns {
 		rewrittenPatterns[i] = "pattern=" + pattern
 	}
 
-	// Global file set for syntax-only mode.
-	var fset *token.FileSet
+	pkgs, err := packages.Load(&packages.Config{
+		Mode:       packages.NeedName,
+		BuildFlags: buildFlags,
+	}, rewrittenPatterns...)
 
-	loadMode := packages.NeedName | packages.NeedCompiledGoFiles | packages.NeedSyntax
-	if full {
-		loadMode |= packages.NeedTypes | packages.NeedTypesInfo
-	} else {
-		fset = token.NewFileSet()
+	for _, pkg := range pkgs {
+		paths = append(paths, pkg.PkgPath)
 	}
 
-	pkgs, err := packages.Load(&packages.Config{
-		Mode:       loadMode,
-		Logf:       nil,
+	return
+}
+
+// LoadPackages loads the packages specified by the given patterns
+// and their whole dependency tree. It returns a slice containing
+// all packages that match the given patterns and all of their direct
+// and indirect dependencies.
+//
+// The returned slice is in post-order w.r.t. the dependency relation,
+// i.e. if package A depends on package B, then package B precedes package A.
+//
+// All returned package instances include syntax trees and full type information.
+//
+// Syntax is loaded in the context of a global [token.FileSet],
+// which is available through the field [packages.Package.Fset]
+// on each returned package. Therefore, source positions
+// are canonical across all loaded packages.
+func LoadPackages(buildFlags []string, patterns ...string) (pkgs []*packages.Package, err error) {
+	rewrittenPatterns := make([]string, len(patterns))
+	for i, pattern := range patterns {
+		rewrittenPatterns[i] = "pattern=" + pattern
+	}
+
+	// Global file set.
+	fset := token.NewFileSet()
+
+	roots, err := packages.Load(&packages.Config{
+		// NOTE: some Go maintainers now believe deprecation was an error and recommend using Load* modes
+		// (see e.g. https://github.com/golang/go/issues/48226#issuecomment-1948792315).
+		Mode:       packages.LoadAllSyntax,
 		BuildFlags: buildFlags,
 		Fset:       fset,
 		ParseFile: func(fset *token.FileSet, filename string, src []byte) (file *ast.File, err error) {
@@ -39,12 +64,13 @@ func LoadPackages(buildFlags []string, full bool, patterns ...string) ([]*packag
 		},
 	}, rewrittenPatterns...)
 
-	// If in syntax only mode, add global file set to each package.
-	if !full {
-		for _, pkg := range pkgs {
-			pkg.Fset = fset
+	// Flatten dependency tree.
+	packages.Visit(roots, nil, func(pkg *packages.Package) {
+		if pkg.Fset != fset {
+			panic("fileset missing or not the global one")
 		}
-	}
+		pkgs = append(pkgs, pkg)
+	})
 
-	return pkgs, err
+	return
 }
