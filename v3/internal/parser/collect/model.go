@@ -119,7 +119,21 @@ func (info *ModelInfo) Collect() *ModelInfo {
 		// Check marshalers and detect enums.
 		var constants []*types.Const
 
-		if named, ok := obj.Type().(*types.Named); ok {
+		var isGeneric bool
+		if generic, ok := obj.Type().(interface{ TypeParams() *types.TypeParamList }); ok {
+			// Record type parameter names.
+			tparams := generic.TypeParams()
+			isGeneric = tparams != nil
+
+			if isGeneric && tparams.Len() > 0 {
+				info.TypeParams = make([]string, tparams.Len())
+				for i := range tparams.Len() {
+					info.TypeParams[i] = tparams.At(i).Obj().Name()
+				}
+			}
+		}
+
+		if _, isNamed := obj.Type().(*types.Named); isNamed {
 			// Model is a named type.
 			// Check whether it implements marshaler interfaces
 			// or has defined constants.
@@ -133,18 +147,9 @@ func (info *ModelInfo) Collect() *ModelInfo {
 				return
 			}
 
-			// Store type parameter names.
-			tp := named.TypeParams()
-			if tp != nil && tp.Len() > 0 {
-				info.TypeParams = make([]string, tp.Len())
-				for i := range tp.Len() {
-					info.TypeParams[i] = tp.At(i).Obj().Name()
-				}
-			}
-
 			// Test for enums (excluding generic types).
 			basic, ok := typ.Underlying().(*types.Basic)
-			if ok && tp == nil && basic.Info()&types.IsConstType != 0 && basic.Info()&types.IsComplex == 0 {
+			if ok && !isGeneric && basic.Info()&types.IsConstType != 0 && basic.Info()&types.IsComplex == 0 {
 				// Named type is defined as a representable constant type:
 				// look for defined constants of that named type.
 				for _, name := range obj.Pkg().Scope().Names() {

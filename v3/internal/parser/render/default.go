@@ -17,27 +17,10 @@ import (
 // if imports.AddType has not been called for the given type.
 func (m *module) JSDefault(typ types.Type, quoted bool) (result string) {
 	switch t := typ.(type) {
-	case *types.Alias:
-		if t.Obj().Pkg() == nil {
-			// Builtin alias: render underlying type.
-			return m.JSDefault(t.Underlying(), quoted)
-		}
-
-		if collect.IsClass(typ) {
-			if t.Obj().Pkg().Path() == m.Imports.Self {
-				prefix := ""
-				if t.Obj().Exported() && m.Imports.ImportModels {
-					prefix = "$models."
-				} else if !t.Obj().Exported() && m.Imports.ImportInternal {
-					prefix = "$internal."
-				}
-
-				return fmt.Sprintf("(new %s%s())", prefix, jsid(t.Obj().Name()))
-			} else {
-				return fmt.Sprintf("(new %s.%s())", jsimport(m.Imports.External[t.Obj().Pkg().Path()]), jsid(t.Obj().Name()))
-			}
-		} else {
-			return m.JSDefault(types.Unalias(t), quoted)
+	case *types.Alias, *types.Named:
+		result, ok := m.renderNamedDefault(t.(aliasOrNamed), quoted)
+		if ok {
+			return result
 		}
 
 	case *types.Array:
@@ -53,12 +36,6 @@ func (m *module) JSDefault(typ types.Type, quoted bool) (result string) {
 
 	case *types.Map:
 		return "{}"
-
-	case *types.Named:
-		result, ok := m.renderNamedDefault(t, quoted)
-		if ok {
-			return result
-		}
 
 	case *types.Pointer:
 		return "null"
@@ -116,20 +93,20 @@ func (*module) renderBasicDefault(typ *types.Basic, quoted bool) string {
 }
 
 // renderNamedDefault outputs the Javascript representation
-// of the zero value for the given named type.
+// of the zero value for the given alias or named type.
 // The result field named 'ok' is true when the resulting code is valid.
 // If false, it must be discarded.
-func (m *module) renderNamedDefault(named *types.Named, quoted bool) (result string, ok bool) {
-	if named.Obj().Pkg() == nil {
-		// Builtin named type: render underlying type.
-		return m.JSDefault(named.Underlying(), quoted), true
+func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result string, ok bool) {
+	if typ.Obj().Pkg() == nil {
+		// Builtin alias or named type: render underlying type.
+		return m.JSDefault(typ.Underlying(), quoted), true
 	}
 
 	if quoted {
 		// WARN: Do not test with IsString here!! We only want to catch marshalers.
-		if !collect.IsAny(named) && !collect.MaybeTextMarshaler(named) {
-			if basic, ok := named.Underlying().(*types.Basic); ok {
-				// Quoted mode for basic named type that is not a marshaler: render underlying type.
+		if !collect.IsAny(typ) && !collect.MaybeTextMarshaler(typ) {
+			if basic, ok := typ.Underlying().(*types.Basic); ok {
+				// Quoted mode for basic alias/named type that is not a marshaler: delegate.
 				return m.renderBasicDefault(basic, quoted), true
 			}
 			// No need to handle typeparams: they are initialised to null anyways.
@@ -137,37 +114,39 @@ func (m *module) renderNamedDefault(named *types.Named, quoted bool) (result str
 	}
 
 	prefix := ""
-	if named.Obj().Exported() && m.Imports.ImportModels {
+	if typ.Obj().Exported() && m.Imports.ImportModels {
 		prefix = "$models."
-	} else if !named.Obj().Exported() && m.Imports.ImportInternal {
+	} else if !typ.Obj().Exported() && m.Imports.ImportInternal {
 		prefix = "$internal."
 	}
 
-	if collect.IsAny(named) {
+	if collect.IsAny(typ) {
 		return "", false
-	} else if collect.IsString(named) {
+	} else if collect.IsString(typ) {
 		return `""`, true
-	} else if collect.IsClass(named) {
-		if named.Obj().Pkg().Path() == m.Imports.Self {
-			return fmt.Sprintf("(new %s%s())", prefix, jsid(named.Obj().Name())), true
+	} else if collect.IsClass(typ) {
+		if typ.Obj().Pkg().Path() == m.Imports.Self {
+			return fmt.Sprintf("(new %s%s())", prefix, jsid(typ.Obj().Name())), true
 		} else {
-			return fmt.Sprintf("(new %s.%s())", jsimport(m.Imports.External[named.Obj().Pkg().Path()]), jsid(named.Obj().Name())), true
+			return fmt.Sprintf("(new %s.%s())", jsimport(m.Imports.External[typ.Obj().Pkg().Path()]), jsid(typ.Obj().Name())), true
 		}
+	} else if _, isAlias := typ.(*types.Alias); isAlias {
+		return m.JSDefault(types.Unalias(typ), quoted), true
 	} else {
 		// Inject a type assertion in case we are breaking an enum.
 		// Using the true Go zero value is preferrable to selecting an arbitrary enum value.
-		value := m.JSDefault(named.Underlying(), quoted)
-		if named.Obj().Pkg().Path() == m.Imports.Self {
+		value := m.JSDefault(typ.Underlying(), quoted)
+		if typ.Obj().Pkg().Path() == m.Imports.Self {
 			if m.TS {
-				return fmt.Sprintf("(%s as %s%s)", value, prefix, jsid(named.Obj().Name())), true
+				return fmt.Sprintf("(%s as %s%s)", value, prefix, jsid(typ.Obj().Name())), true
 			} else {
-				return fmt.Sprintf("(/** @type {%s%s} */(%s))", prefix, jsid(named.Obj().Name()), value), true
+				return fmt.Sprintf("(/** @type {%s%s} */(%s))", prefix, jsid(typ.Obj().Name()), value), true
 			}
 		} else {
 			if m.TS {
-				return fmt.Sprintf("(%s as %s.%s)", value, jsimport(m.Imports.External[named.Obj().Pkg().Path()]), jsid(named.Obj().Name())), true
+				return fmt.Sprintf("(%s as %s.%s)", value, jsimport(m.Imports.External[typ.Obj().Pkg().Path()]), jsid(typ.Obj().Name())), true
 			} else {
-				return fmt.Sprintf("(/** @type {%s.%s} */(%s))", jsimport(m.Imports.External[named.Obj().Pkg().Path()]), jsid(named.Obj().Name()), value), true
+				return fmt.Sprintf("(/** @type {%s.%s} */(%s))", jsimport(m.Imports.External[typ.Obj().Pkg().Path()]), jsid(typ.Obj().Name()), value), true
 			}
 		}
 	}

@@ -5,7 +5,6 @@ import (
 	"go/types"
 	"io"
 	"os"
-	"reflect"
 	"slices"
 	"strings"
 	"sync"
@@ -81,23 +80,15 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	stats.Start()
 	defer stats.Stop()
 
-	// Configure type-checker.
-	if _, genericAlias := reflect.TypeFor[*types.Alias]().MethodByName("TypeParams"); genericAlias {
-		// Guard against upcoming spec change; see:
-		//   - https://github.com/golang/go/issues/67143
-		//   - https://github.com/golang/go/issues/46477
-		generator.logger.Warningf("go spec may have changed to allow generic type aliases: type alias support is disabled for this Go version; please report this to Wails maintainers")
-	} else {
-		// Enable type aliases.
-		// This should become unnecessary with Go 1.23.
-		goDebug := os.Getenv("GODEBUG")
-		defer os.Setenv("GODEBUG", goDebug)
-		settings := slices.DeleteFunc(strings.Split(goDebug, ","), func(setting string) bool {
-			return strings.HasPrefix(setting, "gotypesalias=")
-		})
-		settings = append(settings, "gotypesalias=1")
-		os.Setenv("GODEBUG", strings.Join(settings, ","))
-	}
+	// Enable type aliases.
+	// This should become unnecessary from Go 1.23 onwards.
+	goDebug := os.Getenv("GODEBUG")
+	defer os.Setenv("GODEBUG", goDebug)
+	settings := slices.DeleteFunc(strings.Split(goDebug, ","), func(setting string) bool {
+		return strings.HasPrefix(setting, "gotypesalias=")
+	})
+	settings = append(settings, "gotypesalias=1")
+	os.Setenv("GODEBUG", strings.Join(settings, ","))
 
 	// Validate file names.
 	err = generator.validateFileNames()

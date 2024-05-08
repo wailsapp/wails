@@ -9,6 +9,12 @@ import (
 	"github.com/wailsapp/wails/v3/internal/parser/collect"
 )
 
+// aliasOrNamed is a common interface for *types.Alias and *types.Named.
+type aliasOrNamed interface {
+	types.Type
+	Obj() *types.TypeName
+}
+
 // JSType renders a Go type to its TypeScript representation,
 // using the receiver's import map to resolve dependencies.
 //
@@ -34,49 +40,28 @@ func (m *module) JSFieldType(field *collect.StructField) string {
 // the resulting expression describes a nullable type.
 func (m *module) renderType(typ types.Type, quoted bool) (result string, nullable bool) {
 	switch t := typ.(type) {
-	case *types.Alias:
-		if t.Obj().Pkg() == nil {
-			// Builtin alias: render underlying type.
-			return m.renderType(t.Underlying(), quoted)
+	case *types.Alias, *types.Named:
+		return m.renderNamedType(typ.(aliasOrNamed), quoted)
+
+	case *types.Array, *types.Slice:
+		elem := typ.(interface{ Elem() types.Type }).Elem()
+
+		null := ""
+		if _, isSlice := typ.(*types.Slice); isSlice && m.UseInterfaces {
+			// In interface mode, record the fact that encoding/json marshals nil slices as null.
+			null = " | null"
 		}
 
-		if quoted {
-			if _, isBasic := t.Underlying().(*types.Basic); isBasic {
-				switch u := types.Unalias(t).(type) {
-				case *types.Basic:
-					// Quoted mode for alias of basic type: render underlying type.
-					return m.renderBasicType(u, quoted), false
-				case *types.Named:
-					// Quoted mode for alias of named type: delegate.
-					return m.renderType(u, quoted)
-				}
-			}
+		if types.Identical(elem, types.Universe.Lookup("byte").Type()) {
+			// encoding/json marshals byte arrays/slices as base64 strings
+			return "string" + null, null != ""
 		}
 
-		if t.Obj().Pkg().Path() == m.Imports.Self {
-			prefix := ""
-			if t.Obj().Exported() && m.Imports.ImportModels {
-				prefix = "$models."
-			} else if !t.Obj().Exported() && m.Imports.ImportInternal {
-				prefix = "$internal."
-			}
-
-			return prefix + jsid(t.Obj().Name()), false
-		} else {
-			return fmt.Sprintf("%s.%s", jsimport(m.Imports.External[t.Obj().Pkg().Path()]), jsid(t.Obj().Name())), false
-		}
-
-	case *types.Array:
-		if types.Identical(t.Elem(), types.Universe.Lookup("byte").Type()) {
-			// encoding/json marshals byte arrays as base64 strings
-			return "string", false
-		}
-
-		elem, ptr := m.renderType(t.Elem(), false)
+		elemr, ptr := m.renderType(elem, false)
 		if ptr {
-			return fmt.Sprintf("(%s)[]", elem), false
+			return fmt.Sprintf("(%s)[]%s", elemr, null), null != ""
 		} else {
-			return fmt.Sprintf("%s[]", elem), false
+			return fmt.Sprintf("%s[]%s", elemr, null), null != ""
 		}
 
 	case *types.Basic:
@@ -85,80 +70,12 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 	case *types.Map:
 		return m.renderMapType(t)
 
-	case *types.Named:
-		if t.Obj().Pkg() == nil {
-			// Builtin named type: render underlying type.
-			return m.renderType(t.Underlying(), quoted)
-		}
-
-		if quoted {
-			// WARN: Do not test with IsString here!! We only want to catch marshalers.
-			if !collect.IsAny(typ) && !collect.MaybeTextMarshaler(typ) {
-				// Named type is not a marshaler.
-				switch u := t.Underlying().(type) {
-				case *types.Basic:
-					// Quoted mode for basic named type that is not a marshaler: render quoted underlying type.
-					return m.renderBasicType(u, quoted), false
-				case *types.TypeParam:
-					// Quoted mode for generic type that maps to typeparam: render quoted typeparam.
-					return m.renderType(u, quoted)
-				}
-			}
-		}
-
-		var builder strings.Builder
-
-		if t.Obj().Pkg().Path() == m.Imports.Self {
-			if t.Obj().Exported() && m.Imports.ImportModels {
-				builder.WriteString("$models.")
-			} else if !t.Obj().Exported() && m.Imports.ImportInternal {
-				builder.WriteString("$internal.")
-			}
-		} else {
-			builder.WriteString(jsimport(m.Imports.External[t.Obj().Pkg().Path()]))
-			builder.WriteRune('.')
-		}
-		builder.WriteString(jsid(t.Obj().Name()))
-
-		if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
-			builder.WriteRune('<')
-			for i := range t.TypeArgs().Len() {
-				if i > 0 {
-					builder.WriteString(", ")
-				}
-				arg, _ := m.renderType(t.TypeArgs().At(i), false)
-				builder.WriteString(arg)
-			}
-			builder.WriteRune('>')
-		}
-
-		return builder.String(), false
-
 	case *types.Pointer:
 		elem, ptr := m.renderType(t.Elem(), false)
 		if ptr {
 			return elem, true
 		} else {
 			return fmt.Sprintf("%s | null", elem), true
-		}
-
-	case *types.Slice:
-		null := ""
-		if m.UseInterfaces {
-			// In interface mode, record the fact that encoding/json marshals nil slices as null.
-			null = " | null"
-		}
-
-		if types.Identical(t.Elem(), types.Universe.Lookup("byte").Type()) {
-			// encoding/json marshals byte slices as base64 strings
-			return "string" + null, m.UseInterfaces
-		}
-
-		elem, ptr := m.renderType(t.Elem(), false)
-		if ptr {
-			return fmt.Sprintf("(%s)[]%s", elem, null), m.UseInterfaces
-		} else {
-			return fmt.Sprintf("%s[]%s", elem, null), m.UseInterfaces
 		}
 
 	case *types.Struct:
@@ -245,6 +162,72 @@ func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
 	}
 
 	return fmt.Sprintf("{ [_: %s]: %s }%s", key, elem, null), m.UseInterfaces
+}
+
+// renderNamedType outputs the TS representation
+// of the given named or alias type.
+func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, nullable bool) {
+	if typ.Obj().Pkg() == nil {
+		// Builtin alias or named type: render underlying type.
+		return m.renderType(typ.Underlying(), quoted)
+	}
+
+	if quoted {
+		switch a := types.Unalias(typ).(type) {
+		case *types.Basic:
+			// Quoted mode for (alias of?) basic type: delegate.
+			return m.renderBasicType(a, quoted), false
+		case *types.TypeParam:
+			// Quoted mode for (alias of?) typeparam: delegate.
+			return m.renderType(a, quoted)
+		case *types.Named:
+			// Quoted mode for (alias of?) named type.
+			// WARN: Do not test with IsString here!! We only want to catch marshalers.
+			if !collect.IsAny(typ) && !collect.MaybeTextMarshaler(typ) {
+				// No custom marshaling for this type.
+				switch u := a.Underlying().(type) {
+				case *types.Basic:
+					// Quoted mode for basic named type that is not a marshaler: delegate.
+					return m.renderBasicType(u, quoted), false
+				case *types.TypeParam:
+					// Quoted mode for generic type that maps to typeparam: delegate.
+					return m.renderType(u, quoted)
+				}
+			}
+		}
+	}
+
+	var builder strings.Builder
+
+	if typ.Obj().Pkg().Path() == m.Imports.Self {
+		if typ.Obj().Exported() && m.Imports.ImportModels {
+			builder.WriteString("$models.")
+		} else if !typ.Obj().Exported() && m.Imports.ImportInternal {
+			builder.WriteString("$internal.")
+		}
+	} else {
+		builder.WriteString(jsimport(m.Imports.External[typ.Obj().Pkg().Path()]))
+		builder.WriteRune('.')
+	}
+	builder.WriteString(jsid(typ.Obj().Name()))
+
+	instance, _ := typ.(interface{ TypeArgs() *types.TypeList })
+	if instance != nil {
+		// Render type arguments.
+		if targs := instance.TypeArgs(); targs != nil && targs.Len() > 0 {
+			builder.WriteRune('<')
+			for i := range targs.Len() {
+				if i > 0 {
+					builder.WriteString(", ")
+				}
+				arg, _ := m.renderType(targs.At(i), false)
+				builder.WriteString(arg)
+			}
+			builder.WriteRune('>')
+		}
+	}
+
+	return builder.String(), false
 }
 
 // renderStructType outputs the TS representation

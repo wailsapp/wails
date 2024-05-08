@@ -132,22 +132,17 @@ func (imports *ImportMap) AddType(typ types.Type) {
 
 	for { // Avoid recursion where possible.
 		switch t := typ.(type) {
-		case *types.Basic:
-			if t.Info()&types.IsComplex != 0 {
-				// Complex types are not supported by encoding/json
-				collector.logger.Warningf("complex types are not supported by encoding/json")
-			}
-			return
+		case *types.Alias, *types.Named:
+			obj := typ.(interface{ Obj() *types.TypeName }).Obj()
 
-		case *types.Alias:
-			if t.Obj().Pkg() == nil {
+			if obj.Pkg() == nil {
 				// Ignore universe type.
 				return
 			}
 
-			if t.Obj().Pkg().Path() == imports.Self {
+			if obj.Pkg().Path() == imports.Self {
 				// Record self import.
-				if t.Obj().Exported() {
+				if obj.Exported() {
 					imports.ImportModels = true
 				} else {
 					imports.ImportInternal = true
@@ -155,17 +150,45 @@ func (imports *ImportMap) AddType(typ types.Type) {
 			}
 
 			// Record model.
-			collector.Model(t.Obj())
+			imports.collector.Model(obj)
 
 			// Import parent package.
-			imports.Add(collector.Package(t.Obj().Pkg()))
+			imports.Add(collector.Package(obj.Pkg()))
 
-			// The aliased type might be needed during
-			// JS value creation and initialisation.
-			typ = types.Unalias(typ)
+			instance, _ := t.(interface{ TypeArgs() *types.TypeList })
+			if instance != nil {
+				// Record type argument dependencies.
+				if targs := instance.TypeArgs(); targs != nil {
+					for i := range targs.Len() {
+						imports.AddType(targs.At(i))
+					}
+				}
+			}
 
-		case *types.Array:
-			typ = t.Elem()
+			if _, isAlias := t.(*types.Alias); isAlias {
+				// Aliased type might be needed during
+				// JS value creation and initialisation.
+				typ = types.Unalias(typ)
+				break
+			}
+
+			if IsClass(typ) || IsString(typ) || IsAny(typ) {
+				return
+			}
+
+			// If named type does not map to a class, string or unknown type,
+			// its underlying type may be needed during JS value creation.
+			typ = typ.Underlying()
+
+		case *types.Basic:
+			if t.Info()&types.IsComplex != 0 {
+				// Complex types are not supported by encoding/json
+				collector.logger.Warningf("complex types are not supported by encoding/json")
+			}
+			return
+
+		case *types.Array, *types.Pointer, *types.Slice:
+			typ = typ.(interface{ Elem() types.Type }).Elem()
 
 		case *types.Chan:
 			collector.logger.Warningf("channel types are not supported by encoding/json")
@@ -187,44 +210,9 @@ func (imports *ImportMap) AddType(typ types.Type) {
 
 			typ = t.Elem()
 
-		case *types.Named:
-			if t.Obj().Pkg() == nil {
-				// Ignore universe type.
-				return
-			}
-
-			if t.Obj().Pkg().Path() == imports.Self {
-				// Record self import.
-				if t.Obj().Exported() {
-					imports.ImportModels = true
-				} else {
-					imports.ImportInternal = true
-				}
-			}
-
-			// Record model.
-			imports.collector.Model(t.Obj())
-
-			// Import parent package.
-			imports.Add(collector.Package(t.Obj().Pkg()))
-
-			if IsClass(typ) || IsString(typ) || IsAny(typ) {
-				return
-			}
-
-			// If named type does not map to a class, string or unknown type,
-			// its underlying type may be needed during JS value creation.
-			typ = t.Underlying()
-
-		case *types.Pointer:
-			typ = t.Elem()
-
 		case *types.Signature:
 			collector.logger.Warningf("function types are not supported by encoding/json")
 			return
-
-		case *types.Slice:
-			typ = t.Elem()
 
 		case *types.Struct:
 			if t.NumFields() == 0 {
@@ -249,7 +237,7 @@ func (imports *ImportMap) AddType(typ types.Type) {
 			typ = info.Fields[len(info.Fields)-1].Type
 
 		case *types.Interface, *types.TypeParam:
-			// Rendered as any.
+			// No dependencies.
 			return
 
 		default:

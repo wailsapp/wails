@@ -22,24 +22,11 @@ func (m *module) SkipCreate(ts []types.Type) bool {
 // NeedsCreate returns true if the given type needs some creation code.
 func (m *module) NeedsCreate(typ types.Type) bool {
 	switch t := typ.(type) {
-	case *types.Alias:
-		if t.Obj().Pkg() == nil {
-			// Builtin alias: render underlying type.
-			return m.NeedsCreate(t.Underlying())
-		}
+	case *types.Alias, *types.Named:
+		obj := typ.(interface{ Obj() *types.TypeName }).Obj()
 
-		if collect.IsClass(t) {
-			return true
-		} else {
-			return m.NeedsCreate(types.Unalias(t))
-		}
-
-	case *types.Array, *types.Map, *types.Slice:
-		return true
-
-	case *types.Named:
-		if t.Obj().Pkg() == nil {
-			// Builtin named type: render underlying type.
+		if obj.Pkg() == nil {
+			// Builtin alias or named type: render underlying type.
 			return m.NeedsCreate(t.Underlying())
 		}
 
@@ -47,9 +34,14 @@ func (m *module) NeedsCreate(typ types.Type) bool {
 			break
 		} else if collect.IsClass(t) {
 			return true
+		} else if _, isAlias := typ.(*types.Alias); isAlias {
+			return m.NeedsCreate(types.Unalias(t))
 		} else {
 			return m.NeedsCreate(t.Underlying())
 		}
+
+	case *types.Array, *types.Map, *types.Slice:
+		return true
 
 	case *types.Pointer:
 		return m.NeedsCreate(t.Elem())
@@ -99,7 +91,7 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 			return m.JSCreateWithParams(t.Underlying(), params)
 		}
 
-		return m.JSCreateWithParams(types.Unalias(t), params)
+		return m.JSCreateWithParams(types.Unalias(typ), params)
 
 	case *types.Array:
 		pp, ok := m.postponedCreates.At(typ).(*postponed)
@@ -128,9 +120,9 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 			return m.JSCreateWithParams(t.Underlying(), params)
 		}
 
-		if collect.IsAny(t) || collect.IsString(t) {
+		if collect.IsAny(typ) || collect.IsString(typ) {
 			break
-		} else if !collect.IsClass(t) {
+		} else if !collect.IsClass(typ) {
 			return m.JSCreateWithParams(t.Underlying(), params)
 		}
 
@@ -307,28 +299,33 @@ type postponed struct {
 // hasTypeParams returns true if the given type depends upon type parameters.
 func (m *module) hasTypeParams(typ types.Type) bool {
 	switch t := typ.(type) {
-	case *types.Array:
-		return m.hasTypeParams(t.Elem())
+	case *types.Alias:
+		if t.Obj().Pkg() == nil {
+			// Builtin alias: these are never rendered as templates.
+			return false
+		}
+
+		return m.hasTypeParams(types.Unalias(typ))
+
+	case *types.Array, *types.Pointer, *types.Slice:
+		return m.hasTypeParams(typ.(interface{ Elem() types.Type }).Elem())
 
 	case *types.Map:
 		return m.hasTypeParams(t.Key()) || m.hasTypeParams(t.Elem())
 
 	case *types.Named:
-		if t.TypeArgs() == nil || t.TypeArgs().Len() <= 0 {
+		if t.Obj().Pkg() == nil {
+			// Builtin named type: these are never rendered as templates.
 			return false
 		}
 
-		for i := range t.TypeArgs().Len() {
-			if m.hasTypeParams(t.TypeArgs().At(i)) {
-				return true
+		if targs := t.TypeArgs(); targs != nil {
+			for i := range targs.Len() {
+				if m.hasTypeParams(targs.At(i)) {
+					return true
+				}
 			}
 		}
-
-	case *types.Pointer:
-		return m.hasTypeParams(t.Elem())
-
-	case *types.Slice:
-		return m.hasTypeParams(t.Elem())
 
 	case *types.Struct:
 		info := m.collector.Struct(t)
