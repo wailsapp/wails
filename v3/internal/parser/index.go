@@ -31,7 +31,7 @@ func (generator *Generator) generateIndex(index collect.PackageIndex) {
 
 // generateGlobalIndex generates a global index file from the given import map,
 // as well as shortcut files for each package named by the input patterns.
-func (generator *Generator) generateGlobalIndex(imports []*collect.PackageInfo, initial map[string]bool) {
+func (generator *Generator) generateGlobalIndex(imports []*collect.PackageInfo) {
 	defer generator.wg.Done()
 
 	// Sort imported packages by path
@@ -48,10 +48,8 @@ func (generator *Generator) generateGlobalIndex(imports []*collect.PackageInfo, 
 
 	// Schedule shortcut generation.
 	for _, info := range importMap.External {
-		if initial[info.RelPath[2:]] {
-			generator.wg.Add(1)
-			go generator.generateShortcut(info)
-		}
+		generator.wg.Add(1)
+		go generator.generateShortcut(info)
 	}
 
 	file, err := generator.creator.Create(filepath.Join(generator.renderer.IndexFile()))

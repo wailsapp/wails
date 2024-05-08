@@ -130,12 +130,8 @@ func (generator *Generator) Generate(patterns ...string) error {
 		return ErrNoInitialPackages
 	}
 
-	// A set to record which package path were selected by the input patterns.
-	initial := make(map[string]bool, len(pkgs))
-
 	// Report parsing/type-checking errors and record initial packages.
 	for _, pkg := range pkgs {
-		initial[pkg.PkgPath] = true
 		for _, err := range pkg.Errors {
 			pterm.Warning.Println(err)
 		}
@@ -182,7 +178,7 @@ func (generator *Generator) Generate(patterns ...string) error {
 	// Generate global index and shortcuts.
 	if len(globalImports) > 0 {
 		generator.wg.Add(1)
-		go generator.generateGlobalIndex(globalImports, initial)
+		go generator.generateGlobalIndex(globalImports)
 	}
 
 	// Wait until all models and indices have been generated.
