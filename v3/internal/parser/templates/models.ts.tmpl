@@ -10,7 +10,7 @@ import * as {{$name}} from "{{$path}}/{{$models}}";
 {{- range $enumindex, $enumdef := .Enums}}
 {{- if $enumdef.DocComment}}
 /**
- * {{jsdoc $enumdef.DocComment}}
+ * {{jsdoc $enumdef.DocComment ""}}
  */
 {{- end}}
 export enum {{$enumdef.Name}} {
@@ -18,7 +18,7 @@ export enum {{$enumdef.Name}} {
     {{- if $constdef.DocComment}}{{if gt $constindex 0}}
 {{end}}
     /**
-     * {{jsdoc $constdef.DocComment}}
+     * {{jsdoc $constdef.DocComment "    "}}
      */
     {{- end}}
     {{$constdef.Name}} = {{$constdef.Value}},{{end}}
@@ -27,7 +27,7 @@ export enum {{$enumdef.Name}} {
 {{- range $name, $def := .Models}}
 {{- if $def.DocComment}}
 /**
- * {{jsdoc $def.DocComment}}
+ * {{jsdoc $def.DocComment ""}}
  */
 {{- end}}
 export class {{$def.Name}} {
@@ -35,19 +35,20 @@ export class {{$def.Name}} {
     {{- if .DocComment}}{{if gt $fieldindex 0}}
 {{end}}
     /**
-     * {{jsdoc .DocComment}}
+     * {{jsdoc .DocComment "    "}}
      */
     {{- end}}
-    {{.JSName}}: {{.Type.JS $pkg}};{{if not .Exported}} // Warning: this is unexported in the Go struct.{{end}}{{end}}
+    "{{js .Name}}"{{if .Optional}}?{{end}}: {{.Type.JS $pkg .Quoted}};{{end}}
 
     /** Creates a new {{$def.Name}} instance. */
     constructor(source: Partial<{{$def.Name}}> = {}) {
-        const { {{range $fieldindex, $field := $def.Fields}}
-            {{- if gt $fieldindex 0}}, {{end}}
-            {{- .JSName}} = {{.DefaultValue $pkg}}
-        {{- end}} } = source;
-{{- range $def.Fields}}
-        this.{{.JSName}} = {{.JSName}};{{end}}
+    {{- range $def.Fields}}{{if not .Optional}}
+        if (!("{{js .Name}}" in source)) {
+            this["{{js .Name}}"] = {{.DefaultValue $pkg}};
+        }
+    {{- end}}{{end}}
+
+        Object.assign(this, source);
     }
 
     /** Creates a new {{$def.Name}} instance from a string or object. */

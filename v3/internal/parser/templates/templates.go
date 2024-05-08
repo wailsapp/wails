@@ -10,8 +10,8 @@ import (
 var templates embed.FS
 
 var functions = template.FuncMap{
-	"jsdoc": func(comment string) string {
-		return strings.ReplaceAll(strings.ReplaceAll(comment, "*/", "*\\/"), "\n", "\n * ")
+	"jsdoc": func(comment string, indent string) string {
+		return strings.ReplaceAll(strings.ReplaceAll(comment, "*/", "*\\/"), "\n", "\n"+indent+" * ")
 	},
 	"paramdoc": func(comment string) string {
 		return strings.ReplaceAll(strings.ReplaceAll(comment, "*/", "*\\/"), "\n", " ")
