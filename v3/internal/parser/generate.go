@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"errors"
 	"fmt"
 	"go/types"
 	"io"
@@ -158,7 +159,9 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	generator.scheduler.Wait()
 
 	// Check for analyser errors.
-	if err != nil {
+	if errors.Is(err, ErrNoServices) {
+		err = nil
+	} else if err != nil {
 		return
 	}
 
