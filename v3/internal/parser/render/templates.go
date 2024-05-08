@@ -12,9 +12,9 @@ type tmplLanguage bool
 
 const tmplJS, tmplTS tmplLanguage = false, true
 
-var tmplBindings = map[tmplLanguage]*template.Template{
-	tmplJS: template.Must(template.New("bindings.js.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/bindings.js.tmpl")),
-	tmplTS: template.Must(template.New("bindings.ts.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/bindings.ts.tmpl")),
+var tmplService = map[tmplLanguage]*template.Template{
+	tmplJS: template.Must(template.New("service.js.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/service.js.tmpl")),
+	tmplTS: template.Must(template.New("service.ts.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/service.ts.tmpl")),
 }
 
 var tmplModels = map[tmplLanguage]*template.Template{

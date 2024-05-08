@@ -192,7 +192,7 @@ func (m *module) renderStructDefault(typ *types.Struct) string {
 		}
 
 		builder.WriteRune('"')
-		template.JSEscape(&builder, []byte(field.Name))
+		template.JSEscape(&builder, []byte(field.JsonName))
 		builder.WriteRune('"')
 
 		builder.WriteString(": ")

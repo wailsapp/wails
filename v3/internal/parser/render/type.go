@@ -24,7 +24,7 @@ func (m *module) JSType(typ types.Type) string {
 //
 // JSFieldType's output may be incorrect if m.Imports.AddType
 // has not been called for the given type.
-func (m *module) JSFieldType(field *collect.FieldInfo) string {
+func (m *module) JSFieldType(field *collect.StructField) string {
 	result, _ := m.renderType(field.Type, field.Quoted)
 	return result
 }
@@ -262,7 +262,7 @@ func (m *module) renderStructType(typ *types.Struct) string {
 		}
 
 		builder.WriteRune('"')
-		template.JSEscape(&builder, []byte(field.Name))
+		template.JSEscape(&builder, []byte(field.JsonName))
 		builder.WriteRune('"')
 
 		if field.Optional {

@@ -48,10 +48,10 @@ import * as $internal from "./{{js $internal}}";
     {{- $createParamList = (printf "%s)" $createParamList)}}
 {{- end}}
 
-{{- if or $typeParamList $model.Group.Doc $model.Doc $isEnum $isTypeAlias $isInterface}}
+{{- if or $typeParamList $model.Decl.Doc $model.Doc $isEnum $isTypeAlias $isInterface}}
 /**
-{{- if $model.Group.Doc}}
-{{- jsdoc $model.Group.Doc.Text ""}}{{if $model.Doc}}
+{{- if $model.Decl.Doc}}
+{{- jsdoc $model.Decl.Doc.Text ""}}{{if $model.Doc}}
  *{{end}}
 {{- end}}
 {{- if $model.Doc}}
@@ -67,8 +67,8 @@ import * as $internal from "./{{js $internal}}";
  * @typedef { {{- $module.JSType $model.Type -}} } {{jsid $model.Name}}
 {{- else if $isInterface}}
  * @typedef { {
-{{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
- *     "{{js $field.Name}}"{{if $field.Optional}}?{{end}}: {{$module.JSFieldType $field.FieldInfo}},
+{{- range $i, $decl := $model.Fields}}{{range $j, $field := $decl}}
+ *     "{{js $field.JsonName}}"{{if $field.Optional}}?{{end}}: {{$module.JSFieldType $field.StructField}},
 {{- end}}{{end}}
  * } } {{jsid $model.Name}}
 {{- end}}
@@ -76,23 +76,19 @@ import * as $internal from "./{{js $internal}}";
 {{- end}}
 {{- if $isEnum}}
 export const {{jsid $model.Name}} = {
-    {{- range $i, $group := $model.Values}}{{range $j, $sgroup := $group}}{{range $k, $value := $sgroup}}
+    {{- range $i, $decl := $model.Values}}{{range $j, $spec := $decl}}{{range $k, $value := $spec}}
     {{- if and (ne $i 0) (eq $j 0) (eq $k 0)}}
 {{end}}
-    {{- if or (and (eq $j 0) (eq $k 0) $value.Group.Group.Doc) (and (eq $k 0) $value.Group.Doc) $value.Doc}}
-    {{- if or (gt $j 0) (gt $k 0)}}
+    {{- if or (and (eq $j 0) (eq $k 0) $value.Decl.Doc) (and (eq $k 0) $value.Spec.Doc)}}
+    {{- if gt $j 0}}
 {{end}}
     /**
-    {{- if and (eq $j 0) (eq $k 0) $value.Group.Group.Doc}}
-    {{- jsdoc $value.Group.Group.Doc.Text "    "}}{{if or (and (eq $k 0) $value.Group.Doc) $value.Doc}}
+    {{- if and (eq $j 0) (eq $k 0) $value.Decl.Doc}}
+    {{- jsdoc $value.Decl.Doc.Text "    "}}{{if and (eq $k 0) $value.Spec.Doc}}
      *{{end}}
     {{- end}}
-    {{- if and (eq $k 0) $value.Group.Doc}}
-    {{- jsdoc $value.Group.Doc.Text "    "}}{{if $value.Doc}}
-     *{{end}}
-    {{- end}}
-    {{- if $value.Doc}}
-    {{- jsdoc $value.Doc.Text "    "}}
+    {{- if and (eq $k 0) $value.Spec.Doc}}
+    {{- jsdoc $value.Spec.Doc.Text "    "}}
     {{- end}}
      */
     {{- end}}
@@ -103,8 +99,8 @@ export const {{jsid $model.Name}} = {
 export const {{jsid $model.Name}} = {{$module.JSType $model.Type.Origin}};
 
 /**
-{{- if $model.Group.Doc}}
-{{- jsdoc $model.Group.Doc.Text ""}}{{if $model.Doc}}
+{{- if $model.Decl.Doc}}
+{{- jsdoc $model.Decl.Doc.Text ""}}{{if $model.Doc}}
  *{{end}}
 {{- end}}
 {{- if $model.Doc}}
@@ -122,7 +118,7 @@ export class {{jsid $model.Name}} {
      * @param {Partial<{{jsid $model.Name}}{{$typeParamList}}>} [$$source = {}] - The source object to create the {{jsid $model.Name}}.
      */
     constructor($$source = {}) {
-    {{- range $group := $model.Fields}}{{range $i, $field := $group}}
+    {{- range $decl := $model.Fields}}{{range $j, $field := $decl}}
         {{- /*
             In JS we need to set all properties explicitly
             because JSDoc has no support for arbitrary property names yet.
@@ -131,19 +127,15 @@ export class {{jsid $model.Name}} {
             For optional fields we make the initialization code unreachable
             and cast the false condition to any to prevent any complaint from Typescript.
         */}}
-        if ({{if $field.Optional}}/** @type {any} */(false){{else}}!("{{js $field.Name}}" in $$source){{end}}) {
+        if ({{if $field.Optional}}/** @type {any} */(false){{else}}!("{{js $field.JsonName}}" in $$source){{end}}) {
             /**
-            {{- if and (eq $i 0) $field.Group.Doc}}
-            {{- jsdoc $field.Group.Doc.Text "            "}}{{if $field.Doc}}
-             *{{end}}
-            {{- end}}
-            {{- if $field.Doc}}
-            {{- jsdoc $field.Doc.Text "            "}}
+            {{- if and (eq $j 0) $field.Decl.Doc}}
+            {{- jsdoc $field.Decl.Doc.Text "            "}}
             {{- end}}
              * @member
-             * @type { {{- $module.JSFieldType $field.FieldInfo}}{{if .Optional}} | undefined{{end -}} }
+             * @type { {{- $module.JSFieldType $field.StructField}}{{if .Optional}} | undefined{{end -}} }
              */
-            this["{{js $field.Name}}"] = {{$module.JSDefault $field.Type $field.Quoted}};
+            this["{{js $field.JsonName}}"] = {{$module.JSDefault $field.Type $field.Quoted}};
         }
     {{- end}}{{end}}
 
@@ -168,7 +160,7 @@ export class {{jsid $model.Name}} {
     {{- end}}
      */
     static createFrom{{if $typeParamList}}{{$createParamList}}{{else}}($$source = {}){{end}} {
-        {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
+        {{- range $i, $spec := $model.Fields}}{{range $j, $field := $spec}}
             {{- $create := ($module.JSCreateWithParams $field.Type $createParamList)}}
             {{- if ne $create "$Create.Any"}}
         const $$createField{{$i}}_{{$j}} = {{$create}};
@@ -180,10 +172,10 @@ export class {{jsid $model.Name}} {
         return ($$source = {}) => {
         {{- end}}
         {{$indent}}let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
-        {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
+        {{- range $i, $spec := $model.Fields}}{{range $j, $field := $spec}}
             {{- if $module.NeedsCreate $field.Type}}
-        {{$indent}}if ("{{js $field.Name}}" in $$parsedSource) {
-        {{$indent}}    $$parsedSource["{{js $field.Name}}"] = $$createField{{$i}}_{{$j}}($$parsedSource["{{js $field.Name}}"]);
+        {{$indent}}if ("{{js $field.JsonName}}" in $$parsedSource) {
+        {{$indent}}    $$parsedSource["{{js $field.JsonName}}"] = $$createField{{$i}}_{{$j}}($$parsedSource["{{js $field.JsonName}}"]);
         {{$indent -}} }
             {{- end}}
         {{- end}}{{end}}

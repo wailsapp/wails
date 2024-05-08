@@ -11,10 +11,10 @@ import (
 // generateIndex generates an index file from the given index information.
 // A call to index.Info.Collect must complete before entering generateIndex.
 func (generator *Generator) generateIndex(index collect.PackageIndex) {
-	file, err := generator.creator.Create(filepath.Join(index.Info.Path, generator.renderer.IndexFile()))
+	file, err := generator.creator.Create(filepath.Join(index.Package.Path, generator.renderer.IndexFile()))
 	if err != nil {
 		generator.controller.Errorf("%v", err)
-		generator.controller.Errorf("package %s: index generation failed", index.Info.Path)
+		generator.controller.Errorf("package %s: index generation failed", index.Package.Path)
 		return
 	}
 	defer file.Close()
@@ -22,7 +22,7 @@ func (generator *Generator) generateIndex(index collect.PackageIndex) {
 	err = generator.renderer.Index(file, &index)
 	if err != nil {
 		generator.controller.Errorf("%v", err)
-		generator.controller.Errorf("package %s: index generation failed", index.Info.Path)
+		generator.controller.Errorf("package %s: index generation failed", index.Package.Path)
 	}
 }
 

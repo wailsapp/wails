@@ -16,8 +16,8 @@ type Renderer struct {
 
 	ext string
 
-	bindings *template.Template
-	models   *template.Template
+	service *template.Template
+	models  *template.Template
 }
 
 // NewRenderer initialises a code renderer
@@ -34,14 +34,14 @@ func NewRenderer(options *flags.GenerateBindingsOptions, collector *collect.Coll
 
 		ext: ext,
 
-		bindings: tmplBindings[tmplLanguage(options.TS)],
-		models:   tmplModels[tmplLanguage(options.TS)],
+		service: tmplService[tmplLanguage(options.TS)],
+		models:  tmplModels[tmplLanguage(options.TS)],
 	}
 }
 
-// BindingsFile returns the standard name of a bindings file
+// ServiceFile returns the standard name of a service file
 // for the given struct name, with the appropriate extension.
-func (renderer *Renderer) BindingsFile(name string) string {
+func (renderer *Renderer) ServiceFile(name string) string {
 	return name + renderer.ext
 }
 
@@ -69,11 +69,11 @@ func (renderer *Renderer) ShortcutFile(name string) string {
 	return name + renderer.ext
 }
 
-// Bindings renders bindings code for the given bound type to w.
-func (renderer *Renderer) Bindings(w io.Writer, info *collect.BoundTypeInfo) error {
-	return renderer.bindings.Execute(w, &struct {
+// Service renders binding code for the given service type to w.
+func (renderer *Renderer) Service(w io.Writer, info *collect.ServiceInfo) error {
+	return renderer.service.Execute(w, &struct {
 		module
-		BoundType *collect.BoundTypeInfo
+		Service *collect.ServiceInfo
 	}{
 		module{
 			Renderer:                renderer,

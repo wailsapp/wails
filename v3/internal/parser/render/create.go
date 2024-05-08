@@ -278,7 +278,7 @@ func (m *module) PostponedCreates() []string {
 				}
 
 				builder.WriteString("\n    \"")
-				template.JSEscape(&builder, []byte(field.Name))
+				template.JSEscape(&builder, []byte(field.JsonName))
 				builder.WriteString("\": ")
 				builder.WriteString(createField)
 				builder.WriteRune(',')

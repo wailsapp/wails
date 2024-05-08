@@ -274,7 +274,7 @@ func (generator *Generator) reportDualRoles(index collect.PackageIndex) {
 		} else {
 			generator.controller.Warningf(
 				"package %s: type %s has been marked both as a bound type and as a model; shadowing between the two may take place when importing generated JS indexes",
-				index.Info.Path,
+				index.Package.Path,
 				bindings[0].Name,
 			)
 
