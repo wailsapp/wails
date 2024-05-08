@@ -10,7 +10,7 @@ import * as {{$name}} from "{{$path}}/{{$models}}.js";
 {{- range $enumindex, $enumdef := .Enums}}
 /**
 {{- if $enumdef.DocComment}}
- * {{jsdoc $enumdef.DocComment ""}}
+{{- jsdoc $enumdef.DocComment ""}}
 {{- end}}
  * @readonly
  * @enum
@@ -20,7 +20,7 @@ export const {{$enumdef.Name}} = {
     {{- if $constdef.DocComment}}{{if gt $constindex 0}}
 {{end}}
     /**
-     * {{jsdoc $constdef.DocComment "    "}}
+    {{- jsdoc $constdef.DocComment "    "}}
      */
     {{- end}}
     {{$constdef.Name}}: {{$constdef.Value}},{{end}}
@@ -29,7 +29,7 @@ export const {{$enumdef.Name}} = {
 {{- range $name, $def := .Models}}
 {{- if $def.DocComment}}
 /**
- * {{jsdoc $def.DocComment ""}}
+{{- jsdoc $def.DocComment ""}}
  */
 {{- end}}
 export class {{$def.Name}} {
@@ -50,7 +50,7 @@ export class {{$def.Name}} {
         if ({{if .Optional}}/** @type {any} */(false){{else}}!("{{js .Name}}" in source){{end}}) {
             /**
             {{- if .DocComment}}
-             * {{jsdoc .DocComment "            "}}
+            {{- jsdoc .DocComment "            "}}
             {{- end}}
              * @member
              * @type { {{- .Type.JS $pkg .Quoted}}{{if .Optional}} | undefined{{end -}} }

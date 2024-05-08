@@ -22,7 +22,7 @@ import {
 {{- range .Methods}}
 /**
 {{- if .DocComment}}
- * {{jsdoc .DocComment ""}}
+{{- jsdoc .DocComment ""}}
 {{- end}}
 {{- range $inputindex, $inputdef := .JSInputs}}
  * @param { {{- .Type.JS $pkg false -}} } {{.Name}}
