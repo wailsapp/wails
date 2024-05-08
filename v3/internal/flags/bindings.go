@@ -8,15 +8,15 @@ import (
 )
 
 type GenerateBindingsOptions struct {
-	BuildFlagsString  string `name:"f" description:"Provide a list of additional space-separated Go build flags. Flags can be wrapped (even partially) in single or double quotes to include spaces"`
+	BuildFlagsString  string `name:"f" description:"A list of additional space-separated Go build flags. Flags (or parts of them) can be wrapped in single or double quotes to include spaces"`
 	OutputDirectory   string `name:"d" description:"The output directory" default:"assets/bindings"`
-	ModelsFilename    string `name:"m" description:"The filename for the models file, excluding the extension" default:"$models"`
 	TS                bool   `name:"ts" description:"Generate Typescript bindings"`
 	UseInterfaces     bool   `name:"i" description:"Generate Typescript interfaces instead of classes"`
 	UseBundledRuntime bool   `name:"b" description:"Use the bundled runtime instead of importing the npm package"`
 	UseNames          bool   `name:"names" description:"Use names instead of IDs for the binding calls"`
+	NoIndex           bool   `name:"noindex" description:"Do not generate JS/TS index files"`
 	Silent            bool   `name:"silent" description:"Silent mode"`
-	Verbose           bool   `name:"v" description:"Enable debugging output from the Go package loader"`
+	Verbose           bool   `name:"v" description:"Enable debug output"`
 }
 
 var ErrUnmatchedQuote = errors.New("build flags contain an unmatched quote")

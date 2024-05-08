@@ -62,6 +62,13 @@ func (analyser *Analyser) Results() []Result {
 // If yield returns false, the analyser stops immediately.
 // This allows consumers to start processing results
 // before the analysis is finished.
+//
+// During the warm-up phase, Run sorts the Syntax slices of all input packages,
+// hence concurrent reads will result in data races.
+// After yield is called for the first time, the analyser
+// will never again modify any field of the input package structs,
+// hence concurrent reads (but not writes) become safe.
+// Writes become safe again only after Run returns.
 func (analyser *Analyser) Run(yield func(Result) bool) (err error) {
 	stop := false
 	defer func() {

@@ -28,7 +28,7 @@ func (set Set[T]) Add(element T) (added bool) {
 // Union adds all elements from the argument to the receiver
 // and returns the number of newly added elements.
 func (set Set[T]) Union(other Set[T]) (added int) {
-	for el, _ := range other {
+	for el := range other {
 		if set.Add(el) {
 			added++
 		}
