@@ -62,12 +62,22 @@ func renderCreate(depth int, target string, source string, typ types.Type, impor
 		}
 
 	case *types.Array:
+		if types.Identical(t.Elem(), types.Universe.Lookup("byte").Type()) {
+			// encoding/json marshals byte arrays as base64 strings
+			return fmt.Sprintf("\n%s%s = (%s === null) ? \"\" : %s;", indent, target, source, source)
+		}
+
 		tmp := fmt.Sprintf("index$$%d", depth)
 		elTgt, elSrc := fmt.Sprintf("%s[%s]", target, tmp), fmt.Sprintf("%s[%s]", source, tmp)
 		createElement := renderCreate(depth+1, elTgt, elSrc, t.Elem(), imports, collector, false, typeScript, indent+"    ")
 		// Avoid unnecessary work.
-		if createElement != "" {
-			return fmt.Sprintf("\n%sfor (const %s in %s) {%s\n%s}", indent, tmp, source, createElement, indent)
+		if createElement == "" {
+			return fmt.Sprintf("\n%s%s = (%s === null) ? [] : %s;", indent, target, source, source)
+		} else {
+			return fmt.Sprintf(
+				"\n%sif (%s === null) {\n%s    %s = [];\n%s} else for (const %s in %s) {%s\n%s}",
+				indent, source, indent, target, indent, tmp, source, createElement, indent,
+			)
 		}
 
 	case *types.Basic:
@@ -112,12 +122,22 @@ func renderCreate(depth int, target string, source string, typ types.Type, impor
 		}
 
 	case *types.Slice:
+		if types.Identical(t.Elem(), types.Universe.Lookup("byte").Type()) {
+			// encoding/json marshals byte arrays as base64 strings
+			return fmt.Sprintf("\n%s%s = (%s === null) ? \"\" : %s;", indent, target, source, source)
+		}
+
 		tmp := fmt.Sprintf("index$$%d", depth)
 		elTgt, elSrc := fmt.Sprintf("%s[%s]", target, tmp), fmt.Sprintf("%s[%s]", source, tmp)
 		createElement := renderCreate(depth+1, elTgt, elSrc, t.Elem(), imports, collector, false, typeScript, indent+"    ")
 		// Avoid unnecessary work.
-		if createElement != "" {
-			return fmt.Sprintf("\n%sfor (const %s in %s) {%s\n%s}", indent, tmp, source, createElement, indent)
+		if createElement == "" {
+			return fmt.Sprintf("\n%s%s = (%s === null) ? [] : %s;", indent, target, source, source)
+		} else {
+			return fmt.Sprintf(
+				"\n%sif (%s === null) {\n%s    %s = [];\n%s} else for (const %s in %s) {%s\n%s}",
+				indent, source, indent, target, indent, tmp, source, createElement, indent,
+			)
 		}
 
 	case *types.Struct:

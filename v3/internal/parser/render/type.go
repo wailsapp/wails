@@ -49,6 +49,11 @@ func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.C
 		}
 
 	case *types.Array:
+		if types.Identical(t.Elem(), types.Universe.Lookup("byte").Type()) {
+			// encoding/json marshals byte arrays as base64 strings
+			return "string", false
+		}
+
 		elem, ptr := renderType(t.Elem(), imports, collector, false)
 		if ptr {
 			return fmt.Sprintf("(%s)[]", elem), false
@@ -90,6 +95,11 @@ func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.C
 		}
 
 	case *types.Slice:
+		if types.Identical(t.Elem(), types.Universe.Lookup("byte").Type()) {
+			// encoding/json marshals byte slices as base64 strings
+			return "string", false
+		}
+
 		elem, ptr := renderType(t.Elem(), imports, collector, false)
 		if ptr {
 			return fmt.Sprintf("(%s)[]", elem), false

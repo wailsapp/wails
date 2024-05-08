@@ -32,8 +32,13 @@ func RenderDefault(typ types.Type, imports *collect.ImportMap, collector *collec
 			return RenderDefault(types.Unalias(t), imports, collector, quoted, typeScript)
 		}
 
-	case *types.Array, *types.Slice:
-		return "[]"
+	case *types.Array:
+		if types.Identical(t.Elem(), types.Universe.Lookup("byte").Type()) {
+			// encoding/json marshals byte arrays as base64 strings
+			return `""`
+		} else {
+			return "[]"
+		}
 
 	case *types.Basic:
 		return renderBasicDefault(t, quoted)
@@ -50,12 +55,21 @@ func RenderDefault(typ types.Type, imports *collect.ImportMap, collector *collec
 	case *types.Pointer:
 		return "null"
 
+	case *types.Slice:
+		if types.Identical(t.Elem(), types.Universe.Lookup("byte").Type()) {
+			// encoding/json marshals byte slices as base64 strings
+			return `""`
+		} else {
+			return "[]"
+		}
+
 	case *types.Struct:
 		return renderStructDefault(t, imports, collector, typeScript)
 	}
 
-	// Fall back to undefined.
-	return "(void(0))"
+	// Fall back to null.
+	// encoding/json ignores null values so this is safe.
+	return "null"
 }
 
 // renderBasicDefault outputs the Javascript representation
@@ -88,7 +102,8 @@ func renderBasicDefault(typ *types.Basic, quoted bool) string {
 	if quoted {
 		return `""`
 	} else {
-		return "(void(0))"
+		// encoding/json ignores null values so this is safe.
+		return "null"
 	}
 }
 
