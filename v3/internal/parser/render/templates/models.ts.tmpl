@@ -12,23 +12,11 @@ import {Create as $Create} from "{{js $runtime}}";
 import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{- end}}{{if $imports.External}}
 {{end}}
-{{- if $imports.Models}}
-import {
-    {{- $first := true}}
-    {{- range $model, $class := $imports.Models}}
-        {{- if not $first}}, {{end}}{{$first = false}}
-        {{- if or $useInterfaces (not $class)}}type {{end}}{{jsid $model}}
-    {{- end -}}
-} from "./{{js $models}}";
-{{end}}
-{{- if $imports.Internal}}
-import {
-    {{- $first := true}}
-    {{- range $model, $class := $imports.Internal}}
-        {{- if not $first}}, {{end}}{{$first = false}}
-        {{- if or $useInterfaces (not $class)}}type {{end}}{{jsid $model}}
-    {{- end -}}
-} from "./{{js $internal}}";
+{{- if $imports.ImportModels}}
+import * as $models from "./{{js $models}}";{{if not $imports.ImportInternal}}
+{{end}}{{end}}
+{{- if $imports.ImportInternal}}
+import * as $internal from "./{{js $internal}}";
 {{end}}
 {{- range $model := .Models}}
 

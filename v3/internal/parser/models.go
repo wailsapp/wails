@@ -21,9 +21,9 @@ func (generator *Generator) generateModels(info *collect.PackageInfo, models []*
 
 	// Clear irrelevant imports.
 	if internal {
-		clear(imports.Internal)
+		imports.ImportInternal = false
 	} else {
-		clear(imports.Models)
+		imports.ImportModels = false
 	}
 
 	// Retrieve appropriate file name.

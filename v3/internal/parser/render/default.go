@@ -25,7 +25,14 @@ func (m *module) JSDefault(typ types.Type, quoted bool) (result string) {
 
 		if collect.IsClass(typ) {
 			if t.Obj().Pkg().Path() == m.Imports.Self {
-				return fmt.Sprintf("(new %s())", jsid(t.Obj().Name()))
+				prefix := ""
+				if t.Obj().Exported() && m.Imports.ImportModels {
+					prefix = "$models."
+				} else if !t.Obj().Exported() && m.Imports.ImportInternal {
+					prefix = "$internal."
+				}
+
+				return fmt.Sprintf("(new %s%s())", prefix, jsid(t.Obj().Name()))
 			} else {
 				return fmt.Sprintf("(new %s.%s())", jsimport(m.Imports.External[t.Obj().Pkg().Path()]), jsid(t.Obj().Name()))
 			}
@@ -125,13 +132,20 @@ func (m *module) renderNamedDefault(named *types.Named, quoted bool) (result str
 		}
 	}
 
+	prefix := ""
+	if named.Obj().Exported() && m.Imports.ImportModels {
+		prefix = "$models."
+	} else if !named.Obj().Exported() && m.Imports.ImportInternal {
+		prefix = "$internal."
+	}
+
 	if collect.IsAny(named) {
 		return "", false
 	} else if collect.IsString(named) {
 		return `""`, true
 	} else if collect.IsClass(named) {
 		if named.Obj().Pkg().Path() == m.Imports.Self {
-			return fmt.Sprintf("(new %s())", jsid(named.Obj().Name())), true
+			return fmt.Sprintf("(new %s%s())", prefix, jsid(named.Obj().Name())), true
 		} else {
 			return fmt.Sprintf("(new %s.%s())", jsimport(m.Imports.External[named.Obj().Pkg().Path()]), jsid(named.Obj().Name())), true
 		}
@@ -141,9 +155,9 @@ func (m *module) renderNamedDefault(named *types.Named, quoted bool) (result str
 		value := m.JSDefault(named.Underlying(), quoted)
 		if named.Obj().Pkg().Path() == m.Imports.Self {
 			if m.TS {
-				return fmt.Sprintf("(%s as %s)", value, jsid(named.Obj().Name())), true
+				return fmt.Sprintf("(%s as %s%s)", value, prefix, jsid(named.Obj().Name())), true
 			} else {
-				return fmt.Sprintf("(/** @type {%s} */(%s))", jsid(named.Obj().Name()), value), true
+				return fmt.Sprintf("(/** @type {%s%s} */(%s))", prefix, jsid(named.Obj().Name()), value), true
 			}
 		} else {
 			if m.TS {

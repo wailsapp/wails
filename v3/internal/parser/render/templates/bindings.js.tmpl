@@ -27,47 +27,11 @@ import {Call as $Call, Create as $Create} from "{{js $runtime}}";
 import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{- end}}{{if $imports.External}}
 {{end}}
-{{- if $imports.Models}}
-{{- $typedefs := false}}
-import {
-    {{- $first := true}}
-    {{- range $model, $class := $imports.Models}}
-        {{- if $class}}
-            {{- if not $first}}, {{end}}{{$first = false}}
-            {{- jsid $model}}
-        {{- else}}
-            {{- $typedefs = true}}
-        {{- end}}
-    {{- end -}}
-} from "./{{js $models}}";
-{{- if $typedefs}}
-{{range $model, $class := $imports.Models}}{{if not $class}}
-/**
- * @typedef {import("./{{js $models}}").{{jsid $model -}} } {{jsid $model}}
- */
-{{- end}}{{end}}
-{{- end}}
-{{end}}
-{{- if $imports.Internal}}
-{{- $typedefs := false}}
-import {
-    {{- $first := true}}
-    {{- range $model, $class := $imports.Internal}}
-        {{- if $class}}
-            {{- if not $first}}, {{end}}{{$first = false}}
-            {{- jsid $model}}
-        {{- else}}
-            {{- $typedefs = true}}
-        {{- end}}
-    {{- end -}}
-} from "./{{js $internal}}";
-{{- if $typedefs}}
-{{range $model, $class := $imports.Internal}}{{if not $class}}
-/**
- * @typedef {import("./{{js $internal}}").{{jsid $model -}} } {{jsid $model}}
- */
-{{- end}}{{end}}
-{{- end}}
+{{- if $imports.ImportModels}}
+import * as $models from "./{{js $models}}";{{if not $imports.ImportInternal}}
+{{end}}{{end}}
+{{- if $imports.ImportInternal}}
+import * as $internal from "./{{js $internal}}";
 {{end}}
 {{- range .Methods}}
 /**

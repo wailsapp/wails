@@ -231,7 +231,13 @@ func (m *module) PostponedCreates() []string {
 
 			builder.WriteString(pre)
 
-			if t.Obj().Pkg().Path() != m.Imports.Self {
+			if t.Obj().Pkg().Path() == m.Imports.Self {
+				if t.Obj().Exported() && m.Imports.ImportModels {
+					builder.WriteString("$models.")
+				} else if !t.Obj().Exported() && m.Imports.ImportInternal {
+					builder.WriteString("$internal.")
+				}
+			} else {
 				builder.WriteString(jsimport(m.Imports.External[t.Obj().Pkg().Path()]))
 				builder.WriteRune('.')
 			}

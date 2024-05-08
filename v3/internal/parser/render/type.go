@@ -54,7 +54,14 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 		}
 
 		if t.Obj().Pkg().Path() == m.Imports.Self {
-			return jsid(t.Obj().Name()), false
+			prefix := ""
+			if t.Obj().Exported() && m.Imports.ImportModels {
+				prefix = "$models."
+			} else if !t.Obj().Exported() && m.Imports.ImportInternal {
+				prefix = "$internal."
+			}
+
+			return prefix + jsid(t.Obj().Name()), false
 		} else {
 			return fmt.Sprintf("%s.%s", jsimport(m.Imports.External[t.Obj().Pkg().Path()]), jsid(t.Obj().Name())), false
 		}
@@ -93,7 +100,13 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 
 		var builder strings.Builder
 
-		if t.Obj().Pkg().Path() != m.Imports.Self {
+		if t.Obj().Pkg().Path() == m.Imports.Self {
+			if t.Obj().Exported() && m.Imports.ImportModels {
+				builder.WriteString("$models.")
+			} else if !t.Obj().Exported() && m.Imports.ImportInternal {
+				builder.WriteString("$internal.")
+			}
+		} else {
 			builder.WriteString(jsimport(m.Imports.External[t.Obj().Pkg().Path()]))
 			builder.WriteRune('.')
 		}

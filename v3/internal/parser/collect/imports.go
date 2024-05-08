@@ -2,7 +2,6 @@ package collect
 
 import (
 	"go/types"
-	"maps"
 	"path"
 	"strings"
 )
@@ -15,13 +14,10 @@ type (
 		// Self records the path of the importing package.
 		Self string
 
-		// Models records required exported models from self.
-		// Values are true for classes.
-		Models map[string]bool
-
-		// Internal records required unexported models from Self.
-		// Values are true for classes.
-		Internal map[string]bool
+		// ImportModels records whether models from the current package may be needed.
+		ImportModels bool
+		// ImportInternal records whether internal models from the current package may be needed.
+		ImportInternal bool
 
 		// External records information about each imported package,
 		// keyed by package path.
@@ -43,8 +39,6 @@ type (
 func NewImportMap(importer *PackageInfo) *ImportMap {
 	return &ImportMap{
 		Self:     importer.Path,
-		Models:   make(map[string]bool),
-		Internal: make(map[string]bool),
 		External: make(map[string]ImportInfo),
 		counters: make(map[string]int),
 	}
@@ -57,8 +51,12 @@ func (imports *ImportMap) Merge(other *ImportMap) {
 		panic("cannot merge import maps with different importing package")
 	}
 
-	maps.Copy(imports.Models, other.Models)
-	maps.Copy(imports.Internal, other.Internal)
+	if other.ImportModels {
+		imports.ImportModels = true
+	}
+	if other.ImportInternal {
+		imports.ImportInternal = true
+	}
 
 	for path, info := range other.External {
 		if _, ok := imports.External[path]; ok {
@@ -131,9 +129,9 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 			// Record used types from self.
 			if t.Obj().Pkg().Path() == imports.Self {
 				if t.Obj().Exported() {
-					imports.Models[t.Obj().Name()] = IsClass(t)
+					imports.ImportModels = true
 				} else {
-					imports.Internal[t.Obj().Name()] = IsClass(t)
+					imports.ImportInternal = true
 				}
 			}
 
@@ -177,9 +175,9 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 			// Record used types from self.
 			if t.Obj().Pkg().Path() == imports.Self {
 				if t.Obj().Exported() {
-					imports.Models[t.Obj().Name()] = IsClass(t)
+					imports.ImportModels = true
 				} else {
-					imports.Internal[t.Obj().Name()] = IsClass(t)
+					imports.ImportInternal = true
 				}
 			}
 
