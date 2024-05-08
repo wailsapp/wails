@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+	"slices"
 	"sync"
 
 	"golang.org/x/tools/go/packages"
@@ -79,8 +80,15 @@ func (info *TypeDefInfo) Fields() map[string]*FieldDefInfo {
 		info.fields = make(map[string]*FieldDefInfo)
 
 		for _, field := range def.Fields.List {
-
 			doc := field.Doc
+			if doc == nil {
+				doc = field.Comment
+			} else if field.Comment != nil {
+				doc = &ast.CommentGroup{
+					List: slices.Concat(field.Doc.List, field.Comment.List),
+				}
+			}
+
 			group := &GroupInfo{
 				Doc:   doc,
 				Group: nil,

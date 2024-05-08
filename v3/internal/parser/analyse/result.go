@@ -26,14 +26,14 @@ func (analyser *Analyser) reportResult(pkgi int, pos token.Pos, typ types.Type) 
 			named = elem
 		} else {
 			analyser.logger.Warningf(
-				"%s: ignoring binding expression with non-named element type %s",
+				"%s: ignoring binding expression with anonymous element type %s",
 				analyser.pkgs[pkgi].Fset.Position(pos),
 				t.Elem(),
 			)
 		}
 	default:
 		analyser.logger.Warningf(
-			"%s: ignoring binding expression with non-named type %s",
+			"%s: ignoring binding expression with anonymous type %s",
 			analyser.pkgs[pkgi].Fset.Position(pos),
 			typ,
 		)

@@ -333,6 +333,34 @@ func (info *PackageInfo) Collect() bool {
 							}
 
 							info.Types[tspec.Name.Name] = newTypeDefInfo(pkg, fileInfo, group, tspec)
+
+							if iface, ok := tspec.Type.(*ast.InterfaceType); ok {
+								// Collect interface methods.
+								mmap := methods[tspec.Name.Name]
+								if mmap == nil {
+									mmap = make(map[string]*MethodInfo)
+									methods[tspec.Name.Name] = mmap
+								}
+
+								for _, field := range iface.Methods.List {
+									for _, name := range field.Names {
+										if _, present := mmap[name.Name]; !present {
+											doc := field.Doc
+											if doc == nil {
+												doc = field.Comment
+											} else if field.Comment != nil {
+												doc = &ast.CommentGroup{
+													List: slices.Concat(field.Doc.List, field.Comment.List),
+												}
+											}
+											mmap[name.Name] = &MethodInfo{
+												Name: name.Name,
+												Doc:  doc,
+											}
+										}
+									}
+								}
+							}
 						}
 
 					case token.CONST:

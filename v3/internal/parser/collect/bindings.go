@@ -129,24 +129,55 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 	signature := method.Type().(*types.Signature)
 
 	// Retrieve original receiver type.
-	var recv *types.TypeName
+	// This might be either a named type, a pointer to named type
+	// or an interface.
+	// If it is an interface, then the method comes from
+	// an anonymous interface embedded arbitrarily deep
+	// within a named interface.
+	// Recovering its definition is too hard in that case.
 
-	switch rtype := signature.Recv().Type().(type) {
+	var recv *types.TypeName
+	switch rtype := types.Unalias(signature.Recv().Type()).(type) {
 	case *types.Named:
 		recv = rtype.Obj()
 	case *types.Pointer:
 		recv = rtype.Elem().(*types.Named).Obj()
 	}
 
-	// Retrieve original receiver type information.
-	recvInfo := pkg.Types[recv.Name()]
-	if recvInfo == nil {
-		collector.controller.Errorf(
-			"package %s: type %s not found; try cleaning the build cache (go clean -cache)",
-			pkg.Path,
-			recv.Name(),
-		)
-		return nil
+	var recvInfo *TypeDefInfo
+
+	if recv != nil {
+		// Retrieve and check type information for actual receiver.
+		recvInfo = pkg.Types[recv.Name()]
+		if recvInfo == nil {
+			collector.controller.Errorf(
+				"package %s: type %s not found; try cleaning the build cache (go clean -cache)",
+				pkg.Path,
+				recv.Name(),
+			)
+		}
+	}
+
+	var methodInfo *MethodInfo
+	if recvInfo != nil {
+		// Retrieve and check method information.
+		methodInfo = recvInfo.Methods[method.Name()]
+		if methodInfo == nil {
+			collector.controller.Errorf(
+				"package %s: method %s.%s not found; try cleaning the build cache (go clean -cache)",
+				pkg.Path,
+				recv.Name(),
+				method.Name(),
+			)
+		}
+	}
+
+	if methodInfo == nil {
+		// Syntesize missing type information.
+		methodInfo = &MethodInfo{
+			Name: method.Name(),
+			Doc:  nil,
+		}
 	}
 
 	// Compute fully qualified name.
@@ -162,22 +193,11 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 	id, _ := hash.Fnv(fqn)
 
 	info := &BoundMethodInfo{
-		MethodInfo: recvInfo.Methods[method.Name()],
+		MethodInfo: methodInfo,
 		FQN:        fqn,
 		ID:         strconv.FormatUint(uint64(id), 10),
 		Params:     make([]*ParamInfo, 0, signature.Params().Len()),
 		Results:    make([]types.Type, 0, signature.Results().Len()),
-	}
-
-	// Check method information.
-	if info.MethodInfo == nil {
-		collector.controller.Errorf(
-			"package %s: method %s.%s not found; try cleaning the build cache (go clean -cache)",
-			pkg.Path,
-			recv.Name(),
-			method.Name(),
-		)
-		return nil
 	}
 
 	// Find ID alias directive.
