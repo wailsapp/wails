@@ -136,19 +136,24 @@ func (collector *Collector) findDeclaration(obj types.Object) (path []ast.Node) 
 
 		if len(field.Names) == 0 {
 			// Handle embedded field.
-			ftype := field.Type
+			ftype := ast.Unparen(field.Type)
+
+			// Unwrap pointer.
+			if ptr, ok := ftype.(*ast.StarExpr); ok {
+				ftype = ast.Unparen(ptr.X)
+			}
 
 			// Unwrap generic instantiation.
 			switch t := field.Type.(type) {
 			case *ast.IndexExpr:
-				ftype = t.X
+				ftype = ast.Unparen(t.X)
 			case *ast.IndexListExpr:
-				ftype = t.X
+				ftype = ast.Unparen(t.X)
 			}
 
-			// Unwrap pointer.
-			if ptr, ok := ftype.(*ast.StarExpr); ok {
-				ftype = ptr.X
+			// Unwrap selector.
+			if sel, ok := ftype.(*ast.SelectorExpr); ok {
+				ftype = sel.Sel
 			}
 
 			// ftype must now be an identifier.
@@ -187,7 +192,7 @@ func (collector *Collector) findDeclaration(obj types.Object) (path []ast.Node) 
 		if len(field.Names) == 0 {
 			// Handle embedded interface.
 			var ok bool
-			iface, ok = field.Type.(*ast.InterfaceType)
+			iface, ok = ast.Unparen(field.Type).(*ast.InterfaceType)
 			if !ok {
 				// Not embedded interface, ignore.
 				return nil
