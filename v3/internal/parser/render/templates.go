@@ -31,10 +31,9 @@ var tmplModels = map[tmplLanguage]map[tmplMode]*template.Template{
 	},
 }
 
-var tmplIndex = map[tmplLanguage]*template.Template{
-	tmplJS: template.Must(template.New("index.js.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/index.js.tmpl")),
-	tmplTS: template.Must(template.New("index.ts.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/index.ts.tmpl")),
-}
+var tmplIndex = template.Must(template.New("index.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/index.tmpl"))
+var tmplGlobalIndex = template.Must(template.New("global.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/global.tmpl"))
+var tmplShortcut = template.Must(template.New("shortcut.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/shortcut.tmpl"))
 
 var tmplStruct *template.Template
 

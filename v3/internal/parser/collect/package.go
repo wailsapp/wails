@@ -151,7 +151,7 @@ func NewPackageInfo(path string, source any) *PackageInfo {
 	}
 }
 
-// AddBindings adds the given binding identifiers
+// AddBindings adds the given bound types
 // to the list of bindings generated for this package.
 //
 // This method is safe to call even if [PackageInfo.Collect]
@@ -171,6 +171,18 @@ func (info *PackageInfo) AddModels(models ...*types.TypeName) {
 	info.mu.Lock()
 	info.models = append(info.models, models...)
 	info.mu.Unlock()
+}
+
+// IsEmpty retuns true if no bindings and models
+// were generated for this package.
+//
+// This method is safe to call even if [PackageInfo.Collect]
+// has not been called yet.
+func (info *PackageInfo) IsEmpty() bool {
+	info.mu.Lock()
+	result := len(info.bindings) == 0 && len(info.models) == 0
+	info.mu.Unlock()
+	return result
 }
 
 // Index computes a [PackageIndex] from the list
@@ -230,7 +242,11 @@ func (info *PackageInfo) Collect() bool {
 			}
 		}
 
+		// Discard package source.
 		info.source = nil
+
+		// Record package name.
+		info.Name = pkg.Name
 
 		info.Types = make(map[string]*TypeDefInfo)
 		info.Consts = make(map[string]*ConstInfo)

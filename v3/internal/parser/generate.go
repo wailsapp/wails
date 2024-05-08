@@ -71,7 +71,7 @@ type Generator struct {
 	buildFlags []string
 
 	collector *collect.Collector
-	renderer  render.Renderer
+	renderer  *render.Renderer
 
 	wg sync.WaitGroup
 }
@@ -116,6 +116,11 @@ func (generator *Generator) Generate(patterns ...string) error {
 		generator.collector = collect.NewCollector(collect.LoaderFunc(generator.loadAdditionalPackage))
 	}
 
+	// Initialise renderer.
+	if generator.renderer == nil {
+		generator.renderer = render.NewRenderer(generator.options)
+	}
+
 	// Load initial packages.
 	pkgs, err := LoadPackages(buildFlags, true, patterns...)
 	if err != nil {
@@ -125,8 +130,12 @@ func (generator *Generator) Generate(patterns ...string) error {
 		return ErrNoInitialPackages
 	}
 
-	// Report parsing/type-checking errors.
+	// A set to record which package path were selected by the input patterns.
+	initial := make(analyse.Set[string], len(pkgs))
+
+	// Report parsing/type-checking errors and record initial packages.
 	for _, pkg := range pkgs {
+		initial.Add(pkg.PkgPath)
 		for _, err := range pkg.Errors {
 			pterm.Warning.Println(err)
 		}
@@ -151,14 +160,42 @@ func (generator *Generator) Generate(patterns ...string) error {
 	// Wait until all bindings have been generated and all models collected.
 	generator.wg.Wait()
 
+	// Create an import map to record all packages
+	// that should be added to the global index
+	var globalImports *collect.ImportMap
+	if !generator.options.NoIndex {
+		globalImports = collect.NewImportMap(generator.collector.Package(""))
+	}
+
 	// Schedule models and index generation for each package.
 	generator.collector.All(func(info *collect.PackageInfo) bool {
+		if info.IsEmpty() {
+			return true
+		}
+
+		if !generator.options.NoIndex {
+			globalImports.Add(info)
+		}
+
 		generator.wg.Add(1)
 		go generator.generateModelsAndIndex(info)
 		return true
 	})
 
-	// Wait until all models have been generated.
+	// Generate global index and shortcuts.
+	if !generator.options.NoIndex && len(globalImports.External) > 0 {
+		generator.wg.Add(1)
+		go generator.generateGlobalIndex(globalImports)
+
+		for _, info := range globalImports.External {
+			if initial[info.RelPath[2:]] {
+				generator.wg.Add(1)
+				go generator.generateShortcut(info)
+			}
+		}
+	}
+
+	// Wait until all models and indices have been generated.
 	generator.wg.Wait()
 
 	return nil
@@ -188,34 +225,37 @@ func (generator *Generator) loadAdditionalPackage(path string) *packages.Package
 }
 
 // generateModelsAndIndex schedules generation of public/private model files
-// and if required by the options, of index files
+// and if required by the options, of index files.
 // for the given package.
 func (generator *Generator) generateModelsAndIndex(info *collect.PackageInfo) {
-	index := info.Index()
-	writeIndex := !generator.options.NoIndex && len(index.Bindings) > 0 && len(index.Models) > 0
+	defer generator.wg.Done()
 
-	// Collect package information if it is going to be consumed below.
-	if len(index.Models) > 0 || len(index.Internal) > 0 || writeIndex {
-		if !info.Collect() {
-			pterm.Error.Printfln("package %s: models and index generation failed", info.Path)
-			return
-		}
+	index := info.Index()
+	empty := len(index.Bindings) == 0
+
+	// Collect package information.
+	if !info.Collect() {
+		pterm.Error.Printfln("package %s: models and index generation failed", info.Path)
+		return
 	}
 
 	// Now that Collect has been called, goroutines spawned below
 	// can access package information freely.
 
 	if len(index.Models) > 0 {
+		empty = false
 		generator.wg.Add(1)
 		go generator.generateModels(info, index.Models, false)
 	}
 
 	if len(index.Internal) > 0 {
+		empty = false
 		generator.wg.Add(1)
 		go generator.generateModels(info, index.Internal, true)
 	}
 
-	if writeIndex {
+	if !(generator.options.NoIndex || empty) {
+		generator.wg.Add(1)
 		generator.generateIndex(index)
 	}
 }

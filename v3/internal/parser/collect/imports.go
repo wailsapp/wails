@@ -227,6 +227,10 @@ func computeImportPath(importer string, imported string) string {
 		slash = i
 	}
 
+	if slash == -1 {
+		return "./" + imported
+	}
+
 	// Build path from the right number of parent steps plus suffix.
 	var builder strings.Builder
 

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"go/types"
 	"slices"
 	"strconv"
 	"strings"
@@ -20,7 +21,10 @@ var tmplFunctions = template.FuncMap{
 	"jsimport": jsimport,
 	"jsparam":  jsparam,
 	"jstype":   RenderType,
-	"jsqtype":  renderType,
+	"jsqtype": func(typ types.Type, imports *collect.ImportMap, collector *collect.Collector, quoted bool) string {
+		result, _ := renderType(typ, imports, collector, quoted)
+		return result
+	},
 }
 
 // jsimport formats an external import name

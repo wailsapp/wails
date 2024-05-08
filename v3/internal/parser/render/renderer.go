@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"io"
 	"text/template"
 
@@ -20,18 +21,17 @@ type Renderer struct {
 	modelsFile   string
 	internalFile string
 
-	index     *template.Template
 	indexFile string
 }
 
 // NewRenderer initialises a renderer for the given configuration.
-func NewRenderer(options *flags.GenerateBindingsOptions) Renderer {
+func NewRenderer(options *flags.GenerateBindingsOptions) *Renderer {
 	ext := ".js"
 	if options.TS {
 		ext = ".ts"
 	}
 
-	return Renderer{
+	return &Renderer{
 		options: options,
 
 		bindings: tmplBindings[tmplLanguage(options.TS)],
@@ -41,7 +41,6 @@ func NewRenderer(options *flags.GenerateBindingsOptions) Renderer {
 		modelsFile:   "models" + ext,
 		internalFile: "internal" + ext,
 
-		index:     tmplIndex[tmplLanguage(options.TS)],
 		indexFile: "index" + ext,
 	}
 }
@@ -81,11 +80,55 @@ func (renderer *Renderer) InternalFile() string {
 
 // Index renders the given package index to w.
 func (renderer *Renderer) Index(w io.Writer, index *collect.PackageIndex) error {
-	return renderer.index.Execute(w, index)
+	return tmplIndex.Execute(w, &struct {
+		*collect.PackageIndex
+		*Renderer
+		*flags.GenerateBindingsOptions
+	}{
+		index,
+		renderer,
+		renderer.options,
+	})
 }
 
 // IndexFile returns the standard name of a package index file
 // with the appropriate extension.
 func (renderer *Renderer) IndexFile() string {
 	return renderer.indexFile
+}
+
+// GlobalIndex renders the given import map as a global package index to w.
+func (renderer *Renderer) GlobalIndex(w io.Writer, imports *collect.ImportMap) error {
+	return tmplGlobalIndex.Execute(w, &struct {
+		*collect.ImportMap
+		*Renderer
+		*flags.GenerateBindingsOptions
+	}{
+		imports,
+		renderer,
+		renderer.options,
+	})
+}
+
+// GlobalIndex renders a shortcut file for the given import to w.
+func (renderer *Renderer) Shortcut(w io.Writer, info collect.ImportInfo) error {
+	return tmplShortcut.Execute(w, &struct {
+		collect.ImportInfo
+		*Renderer
+		*flags.GenerateBindingsOptions
+	}{
+		info,
+		renderer,
+		renderer.options,
+	})
+}
+
+// ShortcutFile returns the standard name of an import shortcut file
+// with the appropriate extension.
+func (renderer *Renderer) ShortcutFile(info collect.ImportInfo) string {
+	if info.Index > 0 || info.Name == "index" {
+		return fmt.Sprintf("%s.%d%s", info.Name, info.Index, renderer.ext)
+	} else {
+		return info.Name + renderer.ext
+	}
 }
