@@ -21,8 +21,8 @@ import (
 func TestGenerator(t *testing.T) {
 	const (
 		useNamesBit = 1 << iota
-		tsBit
 		useInterfacesBit
+		tsBit
 	)
 
 	type configParams struct {
@@ -31,14 +31,14 @@ func TestGenerator(t *testing.T) {
 	}
 
 	// Generate configuration matrix.
-	configs := make([]configParams, (1<<1)+(1<<2))
+	configs := make([]configParams, 1<<3)
 	for i := range configs {
 		options := &flags.GenerateBindingsOptions{
 			ModelsFilename:   "models",
 			InternalFilename: "internal",
 			IndexFilename:    "index",
 
-			TS:            i&(tsBit|useInterfacesBit) != 0,
+			TS:            i&tsBit != 0,
 			UseInterfaces: i&useInterfacesBit != 0,
 			UseNames:      i&useNamesBit != 0,
 		}
@@ -159,11 +159,11 @@ func TestGenerator(t *testing.T) {
 
 // configString computes a subtest name from the given configuration.
 func configString(options *flags.GenerateBindingsOptions) string {
+	lang := "JS"
 	if options.TS {
-		return fmt.Sprintf("lang=TS/UseInterfaces=%v/UseNames=%v", options.UseInterfaces, options.UseNames)
-	} else {
-		return fmt.Sprintf("lang=JS/UseNames=%v", options.UseNames)
+		lang = "TS"
 	}
+	return fmt.Sprintf("lang=%s/UseInterfaces=%v/UseNames=%v", lang, options.UseInterfaces, options.UseNames)
 }
 
 // outputCreator returns a FileCreator that detects want/got pairs

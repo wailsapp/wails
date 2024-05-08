@@ -2,6 +2,7 @@
 {{- $runtime := $module.Runtime}}
 {{- $models := $module.ModelsFile}}
 {{- $internal := $module.InternalFile}}
+{{- $useInterfaces := .UseInterfaces}}
 {{- $imports := $module.Imports -}}
 // @ts-check
 // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL
@@ -21,10 +22,10 @@ import * as $internal from "./{{js $internal}}";
 {{- range $model := .Models}}
 
 {{- $isEnum := $model.Values}}
-{{- $isClassAlias := and $model.Type (isclass $model.Type)}}
-{{- $isTypeAlias := and $model.Type (not (isclass $model.Type))}}
-{{- $isStructAlias := and $model.Fields $model.Alias}}
-{{- $isClass := and $model.Fields (not $model.Alias)}}
+{{- $isClassAlias := and $model.Type (not $useInterfaces) (isclass $model.Type)}}
+{{- $isTypeAlias := and $model.Type (or $useInterfaces (not (isclass $model.Type)))}}
+{{- $isClassOrInterface := $model.Fields}}
+{{- $isInterface := and $isClassOrInterface (or $useInterfaces $model.Alias)}}
 
 {{- /* Build type parameter list */}}
 {{- $typeParams := ""}}
@@ -47,7 +48,7 @@ import * as $internal from "./{{js $internal}}";
     {{- $createParamList = (printf "%s)" $createParamList)}}
 {{- end}}
 
-{{- if or $typeParamList $model.Group.Doc $model.Doc $isEnum $isTypeAlias $isStructAlias}}
+{{- if or $typeParamList $model.Group.Doc $model.Doc $isEnum $isTypeAlias $isInterface}}
 /**
 {{- if $model.Group.Doc}}
 {{- jsdoc $model.Group.Doc.Text ""}}{{if $model.Doc}}
@@ -66,19 +67,19 @@ import * as $internal from "./{{js $internal}}";
  * @extends { {{- $module.JSType $model.Type -}} }
 {{- else if $isTypeAlias}}
  * @typedef { {{- $module.JSType $model.Type -}} } {{jsid $model.Name}}
-{{- else if $isStructAlias}}
- * @typedef { { {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
- {{- if and (ne $i 0) (eq $j 0)}}
- *{{end}}
+{{- else if $isInterface}}
+ * @typedef { {
+{{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
  *     "{{js $field.Name}}"{{if $field.Optional}}?{{end}}: {{$module.JSFieldType $field.FieldInfo}},
- * } }{{end}}{{end}} {{jsid $model.Name}}
+{{- end}}{{end}}
+ * } } {{jsid $model.Name}}
 {{- end}}
  */
 {{- end}}
 {{- if $isEnum}}
 export const {{jsid $model.Name}} = {
     {{- range $i, $group := $model.Values}}{{range $j, $sgroup := $group}}{{range $k, $value := $sgroup}}
-    {{- if and (ne $i 0) (ne $j 0) (eq $k 0)}}
+    {{- if and (ne $i 0) (eq $j 0) (eq $k 0)}}
 {{end}}
     {{- if or (and (eq $j 0) (eq $k 0) $value.Group.Group.Doc) (and (eq $k 0) $value.Group.Doc) $value.Doc}}
     {{- if or (gt $j 0) (gt $k 0)}}
@@ -135,7 +136,7 @@ export class {{jsid $model.Name}} extends {{$module.JSType $model.Type.Origin}} 
                 $$createSuper($$source, $$class);
     }
 }
-{{else if $isClass}}
+{{else if and $isClassOrInterface (not $isInterface)}}
 export class {{jsid $model.Name}} {
     /**
      * Creates a new {{jsid $model.Name}} instance.

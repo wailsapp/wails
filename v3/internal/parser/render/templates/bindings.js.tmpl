@@ -3,6 +3,7 @@
 {{- $models := $module.ModelsFile}}
 {{- $internal := $module.InternalFile}}
 {{- $useNames := $module.UseNames}}
+{{- $useInterfaces := $module.UseInterfaces}}
 {{- $imports := $module.Imports}}
 {{- with .BoundType -}}
 // @ts-check
@@ -63,7 +64,7 @@ export function {{.Name}}({{range $i, $param := .Params -}}
     {{- else}}
     let $resultPromise = $Call.ByID({{.ID}}
     {{- end}}{{range $i, $param := .Params}}, {{jsparam $i .}}{{end}});
-    {{- if or (not .Results) ($module.SkipCreate .Results)}}
+    {{- if or $useInterfaces (not .Results) ($module.SkipCreate .Results)}}
     return /** @type {any} */($resultPromise);
     {{- else}}
     let $typingPromise = $resultPromise.then(($result) => {

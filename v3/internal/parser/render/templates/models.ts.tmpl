@@ -58,7 +58,7 @@ import * as $internal from "./{{js $internal}}";
 {{- if $isEnum}}
 export enum {{jsid $model.Name}} {
     {{- range $i, $group := $model.Values}}{{range $j, $sgroup := $group}}{{range $k, $value := $sgroup}}
-    {{- if and (ne $i 0) (ne $j 0) (eq $k 0)}}
+    {{- if and (ne $i 0) (eq $j 0) (eq $k 0)}}
 {{end}}
     {{- if or (and (eq $j 0) (eq $k 0) $value.Group.Group.Doc) (and (eq $k 0) $value.Group.Doc) $value.Doc}}
     {{- if or (gt $j 0) (gt $k 0)}}
@@ -114,10 +114,8 @@ export type {{jsid $model.Name}}{{$typeParamList}} = {{$module.JSType $model.Typ
 {{else if $isClassOrInterface}}
 export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$typeParamList}} {
     {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
-    {{- if and (ne $i 0) (eq $j 0)}}
-{{end}}
     {{- if or (and (eq $j 0) $field.Group.Doc) $field.Doc}}
-    {{- if gt $j 0}}
+    {{- if or (gt $i 0) (gt $j 0)}}
 {{end}}
     /**
     {{- if and (eq $j 0) $field.Group.Doc}}

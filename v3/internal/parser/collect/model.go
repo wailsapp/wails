@@ -144,6 +144,10 @@ func (info *ModelInfo) Collect() {
 			if def == nil {
 				def = typ.Underlying()
 			}
+			if IsClass(typ) {
+				// Skip alias chains for classes.
+				def = types.Unalias(def)
+			}
 
 			// Test for enums (excluding generic types).
 			basic, ok := typ.Underlying().(*types.Basic)
