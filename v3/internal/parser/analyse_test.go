@@ -12,7 +12,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/pterm/pterm"
-	"github.com/wailsapp/wails/v3/internal/parser/analyse"
 	"github.com/wailsapp/wails/v3/internal/parser/config"
 )
 
@@ -94,17 +93,16 @@ func TestAnalyser(t *testing.T) {
 				}
 			}
 
-			analyser := analyse.NewAnalyser(pkgs, config.DefaultPtermLogger(nil))
-			if err := analyser.Run(nil); err != nil && !errors.Is(err, analyse.ErrNoApplicationPackage) {
-				t.Fatal(err)
+			got := make([]string, 0)
+
+			err = FindServices(pkgs, config.DefaultPtermLogger(nil), func(tn *types.TypeName) bool {
+				got = append(got, types.TypeString(tn.Type(), nil))
+				return true
+			})
+			if err != nil && !errors.Is(err, ErrNoBoundTypes) {
+				t.Error(err)
 			}
 
-			services := analyser.Results()
-
-			got := make([]string, len(services))
-			for i, srv := range services {
-				got[i] = types.TypeString(srv.Type(), nil)
-			}
 			slices.Sort(got)
 
 			if diff := cmp.Diff(test.want, got); diff != "" {

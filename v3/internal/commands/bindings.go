@@ -8,7 +8,6 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/parser"
-	"github.com/wailsapp/wails/v3/internal/parser/analyse"
 	"github.com/wailsapp/wails/v3/internal/parser/config"
 )
 
@@ -69,9 +68,8 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		case errors.Is(err, parser.ErrNoInitialPackages):
 			// Convert to informational message.
 			pterm.Info.Println(err)
-		case errors.Is(err, analyse.ErrNoApplicationPackage):
-			// Convert to informational message.
-			pterm.Info.Println("Input packages do not load the Wails application package")
+		case errors.Is(err, parser.ErrNoBoundTypes):
+			pterm.Info.Println("Input packages do not contain any bound types")
 		case errors.As(err, &report):
 			if report.HasErrors() {
 				// Report error count.

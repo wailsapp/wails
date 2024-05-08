@@ -2,12 +2,12 @@ package parser
 
 import (
 	"errors"
+	"go/types"
 	"io"
 	"sync"
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
-	"github.com/wailsapp/wails/v3/internal/parser/analyse"
 	"github.com/wailsapp/wails/v3/internal/parser/collect"
 	"github.com/wailsapp/wails/v3/internal/parser/config"
 	"github.com/wailsapp/wails/v3/internal/parser/render"
@@ -134,12 +134,12 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	generator.controller.Statusf("Looking for bound types...")
 	bindingsFound := sync.OnceFunc(func() { generator.controller.Statusf("Generating bindings...") })
 
-	// Run analyser and schedule bindings generation for each result.
-	err = analyse.NewAnalyser(pkgs, &generator.controller).Run(func(result analyse.Result) bool {
+	// Run static analysis and schedule binding code generation for each result.
+	err = FindServices(pkgs, &generator.controller, func(typ *types.TypeName) bool {
 		bindingsFound()
 
 		generator.controller.Schedule(func() {
-			generator.generateBindings(result)
+			generator.generateBindings(typ)
 		})
 
 		return true
