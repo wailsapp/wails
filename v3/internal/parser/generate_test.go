@@ -14,6 +14,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/parser/analyse"
 	"github.com/wailsapp/wails/v3/internal/parser/config"
 )
 
@@ -141,7 +142,7 @@ func TestGenerator(t *testing.T) {
 						} else if report.HasWarnings() {
 							pterm.Warning.Println(report)
 						}
-					} else if err != nil {
+					} else if err != nil && !errors.Is(err, analyse.ErrNoApplicationPackage) {
 						t.Error(err)
 					}
 

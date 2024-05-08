@@ -5,6 +5,7 @@ import (
 	"errors"
 	"go/types"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -41,17 +42,19 @@ func TestAnalyser(t *testing.T) {
 
 		want, err := os.Open(filepath.Join("testcases", entry.Name(), "bound_types.json"))
 		if err != nil {
-			t.Fatal(err)
-		}
-
-		err = json.NewDecoder(want).Decode(&test.want)
-		want.Close()
-		if err != nil {
-			t.Fatal(err)
+			if !errors.Is(err, os.ErrNotExist) {
+				t.Fatal(err)
+			}
+		} else {
+			err = json.NewDecoder(want).Decode(&test.want)
+			want.Close()
+			if err != nil {
+				t.Fatal(err)
+			}
 		}
 
 		for i := range test.want {
-			test.want[i] = "github.com/wailsapp/wails/v3/internal/parser/testcases/" + test.name + test.want[i]
+			test.want[i] = path.Clean("github.com/wailsapp/wails/v3/internal/parser/testcases/" + test.name + test.want[i])
 		}
 		slices.Sort(test.want)
 
