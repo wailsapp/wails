@@ -50,49 +50,42 @@ func TestGenerator(t *testing.T) {
 
 	type testParams struct {
 		name string
-		pkgs []string
 		want map[string]map[string]bool
 	}
 
-	entries, err := os.ReadDir("testdata")
+	// Gather tests from cases directory.
+	entries, err := os.ReadDir("testcases")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Gather tests from data directory.
+	// Add global test.
+	entries = append(entries, nil)
+
 	tests := make([]testParams, 0, len(entries))
-	all := -1
 
 	for _, entry := range entries {
-		name := entry.Name()
+		name := "all"
+		if entry != nil {
+			name = entry.Name()
 
-		if !entry.IsDir() {
-			continue
-		}
-
-		// Remember position of 'all' test.
-		if name == "all" {
-			all = len(tests)
+			if !entry.IsDir() {
+				continue
+			}
 		}
 
 		test := testParams{
 			name: name,
-			pkgs: []string{"github.com/wailsapp/wails/v3/internal/parser/testdata/" + name},
 			want: make(map[string]map[string]bool),
 		}
 
-		// Fix complex_expressions test by hand.
-		if name == "complex_expressions" {
-			test.pkgs = append(test.pkgs, "github.com/wailsapp/wails/v3/internal/parser/testdata/complex_expressions/config")
-		}
-
 		// Fill wanted file maps.
-		for _, conf := range configs {
+		for _, config := range configs {
 			want := make(map[string]bool)
-			test.want[conf.name] = want
+			test.want[config.name] = want
 
 			// Compute output dir and create it.
-			outputDir := filepath.Join("testdata", name, "assets/bindings", conf.name)
+			outputDir := filepath.Join("testdata", name, config.name)
 			if err := os.MkdirAll(outputDir, 0777); err != nil {
 				t.Fatal(err)
 			}
@@ -122,17 +115,15 @@ func TestGenerator(t *testing.T) {
 		tests = append(tests, test)
 	}
 
-	// Setup 'all' test.
-	if all >= 0 {
-		tests[all].pkgs = nil
-		for _, test := range tests {
-			tests[all].pkgs = append(tests[all].pkgs, test.pkgs...)
-		}
-	}
-
 	// Run tests.
 	for _, test := range tests {
 		t.Run("pkg="+test.name, func(t *testing.T) {
+			pkgPattern := "github.com/wailsapp/wails/v3/internal/parser/testcases/"
+			if test.name != "all" {
+				pkgPattern += test.name + "/"
+			}
+			pkgPattern += "..."
+
 			for _, conf := range configs {
 				t.Run(conf.name, func(t *testing.T) {
 					want := test.want[conf.name]
@@ -143,7 +134,7 @@ func TestGenerator(t *testing.T) {
 						config.DefaultPtermLogger,
 					)
 
-					_, err := generator.Generate(test.pkgs...)
+					_, err := generator.Generate(pkgPattern)
 					if report := (*ErrorReport)(nil); errors.As(err, &report) {
 						if report.HasErrors() {
 							t.Error(report)
@@ -152,6 +143,12 @@ func TestGenerator(t *testing.T) {
 						}
 					} else if err != nil {
 						t.Error(err)
+					}
+
+					for path, present := range want {
+						if !present {
+							t.Errorf("Missing output file '%s'", path)
+						}
 					}
 				})
 			}
@@ -174,7 +171,7 @@ func configString(options *flags.GenerateBindingsOptions) string {
 // If no corresponding want file exists, it is created and reported.
 func outputCreator(t *testing.T, testName, configName string, want map[string]bool) config.FileCreator {
 	var mu sync.Mutex
-	outputDir := filepath.Join("testdata", testName, "assets/bindings", configName)
+	outputDir := filepath.Join("testdata", testName, configName)
 	return config.FileCreatorFunc(func(path string) (io.WriteCloser, error) {
 		path = filepath.Clean(path)
 		prefixedPath := filepath.Join(outputDir, path)
