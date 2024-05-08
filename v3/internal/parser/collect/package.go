@@ -3,7 +3,6 @@ package collect
 import (
 	"cmp"
 	"go/ast"
-	"go/parser"
 	"go/token"
 	"go/types"
 	"path/filepath"
@@ -70,7 +69,6 @@ type PackageInfo struct {
 	stats atomic.Pointer[Stats]
 
 	collector *Collector
-	goFiles   []string
 	once      sync.Once
 }
 
@@ -86,7 +84,6 @@ func newPackageInfo(pkg *packages.Package, collector *Collector) *PackageInfo {
 		Files: pkg.Syntax,
 
 		collector: collector,
-		goFiles:   pkg.GoFiles,
 	}
 }
 
@@ -144,30 +141,26 @@ func (info *PackageInfo) Collect() *PackageInfo {
 		}
 
 		var packageNameFound bool
-		fset := token.NewFileSet()
 
 		// Collect docs and parse packageName/include directives.
-		// Here we can't use info.Files because
-		//   - they are loaded from CompiledGoFiles, hence some file might be missing;
-		//   - there is no robust way to retrieve their file path on disk;
-		// instead, we range over GoFiles and parse their package clause only,
-		// which should be fast enough.
-		for _, goFile := range info.goFiles {
-			file, err := parser.ParseFile(fset, goFile, nil, parser.PackageClauseOnly|parser.ParseComments)
-			if err != nil {
-				// Ignore failures silently:
-				// they have been already reported by packages.Load.
-				continue
-			}
-
+		for _, file := range info.Files {
 			if file.Doc == nil {
 				continue
 			}
 
 			info.Docs = append(info.Docs, file.Doc)
 
+			// Retrieve file directory.
+			pos := info.Fset.Position(file.Pos())
+			if !pos.IsValid() {
+				collector.logger.Errorf(
+					"package %s: found AST file with unknown path: `wails:include` directives from that file will be ignored",
+					info.Path,
+				)
+			}
+			dir := filepath.Dir(pos.Filename)
+
 			// Parse directives.
-			dir := filepath.Dir(goFile)
 			info.Includes = make(map[string]string)
 			for _, comment := range file.Doc.List {
 				switch {
@@ -180,7 +173,7 @@ func (info *PackageInfo) Collect() *PackageInfo {
 					if err != nil {
 						collector.logger.Errorf(
 							"%s: in `wails:inject` directive: %v",
-							fset.Position(comment.Pos()),
+							info.Fset.Position(comment.Pos()),
 							err,
 						)
 						continue
@@ -193,13 +186,13 @@ func (info *PackageInfo) Collect() *PackageInfo {
 					// Record injected line.
 					info.Injections = append(info.Injections, line)
 
-				case IsDirective(comment.Text, "include"):
+				case pos.IsValid() && IsDirective(comment.Text, "include"):
 					// Check condition.
 					pattern, cond, err := ParseCondition(ParseDirective(comment.Text, "include"))
 					if err != nil {
 						collector.logger.Errorf(
 							"%s: in `wails:include` directive: %v",
-							fset.Position(comment.Pos()),
+							info.Fset.Position(comment.Pos()),
 							err,
 						)
 						continue
@@ -214,7 +207,7 @@ func (info *PackageInfo) Collect() *PackageInfo {
 					if err != nil {
 						collector.logger.Errorf(
 							"%s: invalid pattern '%s' in `wails:include` directive: %v",
-							fset.Position(comment.Pos()),
+							info.Fset.Position(comment.Pos()),
 							pattern,
 							err,
 						)
@@ -222,7 +215,7 @@ func (info *PackageInfo) Collect() *PackageInfo {
 					} else if len(paths) == 0 {
 						collector.logger.Warningf(
 							"%s: pattern '%s' in `wails:include` directive matched no files",
-							fset.Position(comment.Pos()),
+							info.Fset.Position(comment.Pos()),
 							pattern,
 						)
 						continue
@@ -234,7 +227,7 @@ func (info *PackageInfo) Collect() *PackageInfo {
 						if old, ok := info.Includes[name]; ok {
 							collector.logger.Errorf(
 								"%s: duplicate included file name '%s' in package %s; old path: '%s'; new path: '%s'",
-								fset.Position(comment.Pos()),
+								info.Fset.Position(comment.Pos()),
 								name,
 								info.Path,
 								old,
@@ -258,7 +251,7 @@ func (info *PackageInfo) Collect() *PackageInfo {
 					if !token.IsIdentifier(packageName) {
 						collector.logger.Errorf(
 							"%s: invalid value in `wails:name` directive: '%s': expected a valid Go identifier",
-							fset.Position(comment.Pos()),
+							info.Fset.Position(comment.Pos()),
 							packageName,
 						)
 						continue
@@ -276,9 +269,6 @@ func (info *PackageInfo) Collect() *PackageInfo {
 				}
 			}
 		}
-
-		// Discard file path list.
-		info.goFiles = nil
 	})
 
 	return info
