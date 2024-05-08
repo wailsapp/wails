@@ -74,26 +74,15 @@ type Parameter struct {
 }
 
 func (p *Parameter) NamespacedStructType(pkgName string) string {
-	var typeName string
 	thisPkg := p.project.packageCache[pkgName]
 	pkgInfo := p.project.packageCache[p.Type.Package]
+
+	var namespace string
 	if pkgInfo.Name != "" && pkgInfo.Path != thisPkg.Path {
-		typeName = pkgInfo.Name
-	} else {
-		if p.Type.Package != "" && p.Type.Package != pkgName {
-			parts := strings.Split(p.Type.Package, "/")
-			typeName = parts[len(parts)-1] + "."
-		}
+		namespace = pkgInfo.Name
 	}
-	return typeName + p.Type.Name
-}
-func (p *Parameter) NamespacedStructVariable(pkgName string) string {
-	var typeName string
-	if p.Type.Package != "" && p.Type.Package != pkgName {
-		parts := strings.Split(p.Type.Package, "/")
-		typeName = parts[len(parts)-1]
-	}
-	return typeName + p.Type.Name
+
+	return namespace + p.Type.Name
 }
 
 func (p *Parameter) JSType(pkgName string) string {
@@ -110,10 +99,9 @@ func (p *Parameter) JSType(pkgName string) string {
 		typeName = p.Type.Name
 	}
 
-	// if the type is a struct, we need to add the package name
+	// if the type is an external struct or enum, we need to add the package name
 	if p.Type.IsStruct || p.Type.IsEnum {
 		typeName = p.NamespacedStructType(pkgName)
-		typeName = strings.ReplaceAll(typeName, ".", "")
 	}
 
 	// Add slice suffix
@@ -187,7 +175,19 @@ func (f *Field) Exported() bool {
 	return ast.IsExported(f.Name)
 }
 
-func (f *Field) TSType(pkg string) string {
+func (f *Field) NamespacedStructType(pkgName string) string {
+	thisPkg := f.Project.packageCache[pkgName]
+	pkgInfo := f.Project.packageCache[f.Type.Package]
+
+	var namespace string
+	if pkgInfo.Name != "" && pkgInfo.Path != thisPkg.Path {
+		namespace = pkgInfo.Name + "."
+	}
+
+	return namespace + f.Type.Name
+}
+
+func (f *Field) TSType(pkgName string) string {
 	var typeName string
 	switch f.Type.Name {
 	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
@@ -201,9 +201,8 @@ func (f *Field) TSType(pkg string) string {
 	}
 
 	// If the type is from another package, it needs to be adjusted
-	if f.Type.Package != "" && f.Type.Package != pkg && (f.Type.IsStruct || f.Type.IsEnum) {
-		parts := strings.Split(f.Type.Package, "/")
-		typeName = parts[len(parts)-1] + "." + typeName
+	if f.Type.IsStruct || f.Type.IsEnum {
+		typeName = f.NamespacedStructType(pkgName)
 	}
 
 	// Add slice suffix
@@ -219,7 +218,7 @@ func (f *Field) TSType(pkg string) string {
 	return typeName
 }
 
-func (f *Field) JSDocType(pkg string) string {
+func (f *Field) JSDocType(pkgName string) string {
 	var typeName string
 	switch f.Type.Name {
 	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
@@ -233,9 +232,9 @@ func (f *Field) JSDocType(pkg string) string {
 	}
 
 	// If the type is from another package, it needs to be adjusted
-	if f.Type.Package != "" && f.Type.Package != pkg && (f.Type.IsStruct || f.Type.IsEnum) {
-		parts := strings.Split(f.Type.Package, "/")
-		typeName = parts[len(parts)-1] + typeName
+	if f.Type.IsStruct || f.Type.IsEnum {
+		typeName = f.NamespacedStructType(pkgName)
+		typeName = strings.ReplaceAll(typeName, ".", "")
 	}
 
 	// Add slice suffix
