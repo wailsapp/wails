@@ -201,9 +201,5 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 		}
 	}
 
-	if len(found) > 0 {
-		return nil
-	} else {
-		return ErrNoServices
-	}
+	return nil
 }

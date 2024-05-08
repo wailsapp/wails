@@ -65,7 +65,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	if err != nil {
 		var report *parser.ErrorReport
 		switch {
-		case errors.Is(err, parser.ErrNoPackages), errors.Is(err, parser.ErrNoServices):
+		case errors.Is(err, parser.ErrNoPackages):
 			// Convert to warning message.
 			pterm.Warning.Println(err)
 		case errors.As(err, &report):
