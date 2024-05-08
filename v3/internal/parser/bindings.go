@@ -30,7 +30,7 @@ func (generator *Generator) generateBindings(typ *types.TypeName) {
 	}
 
 	if len(info.Methods) == 0 {
-		pterm.Error.Printfln(
+		pterm.Info.Printfln(
 			"package %s: type %s: bound type has no exported methods, skipping",
 			typ.Pkg().Path(),
 			typ.Name(),

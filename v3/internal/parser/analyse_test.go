@@ -16,7 +16,6 @@ func TestAnalyser(t *testing.T) {
 	tests := []struct {
 		name string
 		pkgs []string
-		dir  string
 		want []string
 	}{
 		{
