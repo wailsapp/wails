@@ -17,6 +17,15 @@ import (
 	"github.com/wailsapp/wails/v3/internal/parser/config"
 )
 
+const testcases = "github.com/wailsapp/wails/v3/internal/parser/testcases/..."
+
+type testParams struct {
+	name      string
+	options   *flags.GenerateBindingsOptions
+	outputDir string
+	want      map[string]bool
+}
+
 func TestGenerator(t *testing.T) {
 	const (
 		useNamesBit = 1 << iota
@@ -24,133 +33,83 @@ func TestGenerator(t *testing.T) {
 		tsBit
 	)
 
-	type configParams struct {
-		name string
-		*flags.GenerateBindingsOptions
-	}
-
 	// Generate configuration matrix.
-	configs := make([]configParams, 1<<3)
-	for i := range configs {
+	tests := make([]*testParams, 1<<3)
+	for i := range tests {
 		options := &flags.GenerateBindingsOptions{
 			ModelsFilename:   "models",
 			InternalFilename: "internal",
 			IndexFilename:    "index",
+
+			UseBundledRuntime: true,
 
 			TS:            i&tsBit != 0,
 			UseInterfaces: i&useInterfacesBit != 0,
 			UseNames:      i&useNamesBit != 0,
 		}
 
-		configs[i] = configParams{
-			name:                    configString(options),
-			GenerateBindingsOptions: options,
+		name := configString(options)
+
+		tests[i] = &testParams{
+			name:      name,
+			options:   options,
+			outputDir: filepath.Join("testdata", name),
+			want:      make(map[string]bool),
 		}
 	}
 
-	type testParams struct {
-		name string
-		want map[string]map[string]bool
-	}
-
-	// Gather tests from cases directory.
-	entries, err := os.ReadDir("testcases")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Add global test.
-	entries = append(entries, nil)
-
-	tests := make([]testParams, 0, len(entries))
-
-	for _, entry := range entries {
-		name := "all"
-		if entry != nil {
-			name = entry.Name()
-
-			if !entry.IsDir() {
-				continue
-			}
+	for _, test := range tests {
+		// Create output dir.
+		if err := os.MkdirAll(test.outputDir, 0777); err != nil {
+			t.Fatal(err)
 		}
 
-		test := testParams{
-			name: name,
-			want: make(map[string]map[string]bool),
-		}
-
-		// Fill wanted file maps.
-		for _, config := range configs {
-			want := make(map[string]bool)
-			test.want[config.name] = want
-
-			// Compute output dir and create it.
-			outputDir := filepath.Join("testdata", name, config.name)
-			if err := os.MkdirAll(outputDir, 0777); err != nil {
-				t.Fatal(err)
-			}
-
-			// Walk output dir.
-			err := filepath.WalkDir(outputDir, func(path string, d fs.DirEntry, err error) error {
-				// Skip directories.
-				if d.IsDir() {
-					return nil
-				}
-
-				// Skip got files.
-				if strings.HasSuffix(d.Name(), ".got.js") || strings.HasSuffix(d.Name(), ".got.ts") {
-					return nil
-				}
-
-				// Record file.
-				want[filepath.Clean(path[len(outputDir)+1:])] = false
+		// Walk output dir.
+		err := filepath.WalkDir(test.outputDir, func(path string, d fs.DirEntry, err error) error {
+			// Skip directories.
+			if d.IsDir() {
 				return nil
-			})
-
-			if err != nil {
-				t.Fatal(err)
 			}
-		}
 
-		tests = append(tests, test)
+			// Skip got files.
+			if strings.HasSuffix(d.Name(), ".got.js") || strings.HasSuffix(d.Name(), ".got.ts") {
+				return nil
+			}
+
+			// Record file.
+			test.want[filepath.Clean("."+path[len(test.outputDir):])] = false
+			return nil
+		})
+
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	// Run tests.
 	for _, test := range tests {
-		pkgPattern := "github.com/wailsapp/wails/v3/internal/parser/testcases/"
-		if test.name != "all" {
-			pkgPattern += test.name + "/"
-		}
-		pkgPattern += "..."
+		t.Run(test.name, func(t *testing.T) {
+			generator := NewGenerator(
+				test.options,
+				outputCreator(t, test),
+				config.DefaultPtermLogger(nil),
+			)
 
-		t.Run("pkg="+test.name, func(t *testing.T) {
-			for _, conf := range configs {
-				t.Run(conf.name, func(t *testing.T) {
-					want := test.want[conf.name]
+			_, err := generator.Generate(testcases)
+			if report := (*ErrorReport)(nil); errors.As(err, &report) {
+				if report.HasErrors() {
+					t.Error(report)
+				} else if report.HasWarnings() {
+					pterm.Warning.Println(report)
+				}
+			} else if err != nil && !errors.Is(err, ErrNoServices) {
+				t.Error(err)
+			}
 
-					generator := NewGenerator(
-						conf.GenerateBindingsOptions,
-						outputCreator(t, test.name, conf.name, want),
-						config.DefaultPtermLogger(nil),
-					)
-
-					_, err := generator.Generate(pkgPattern)
-					if report := (*ErrorReport)(nil); errors.As(err, &report) {
-						if report.HasErrors() {
-							t.Error(report)
-						} else if report.HasWarnings() {
-							pterm.Warning.Println(report)
-						}
-					} else if err != nil && !errors.Is(err, ErrNoServices) {
-						t.Error(err)
-					}
-
-					for path, present := range want {
-						if !present {
-							t.Errorf("Missing output file '%s'", path)
-						}
-					}
-				})
+			for path, present := range test.want {
+				if !present {
+					t.Errorf("Missing output file '%s'", path)
+				}
 			}
 		})
 	}
@@ -169,23 +128,22 @@ func configString(options *flags.GenerateBindingsOptions) string {
 // and schedules them for comparison.
 //
 // If no corresponding want file exists, it is created and reported.
-func outputCreator(t *testing.T, testName, configName string, want map[string]bool) config.FileCreator {
+func outputCreator(t *testing.T, params *testParams) config.FileCreator {
 	var mu sync.Mutex
-	outputDir := filepath.Join("testdata", testName, configName)
 	return config.FileCreatorFunc(func(path string) (io.WriteCloser, error) {
 		path = filepath.Clean(path)
-		prefixedPath := filepath.Join(outputDir, path)
+		prefixedPath := filepath.Join(params.outputDir, path)
 
 		// Protect want map accesses.
 		mu.Lock()
 		defer mu.Unlock()
 
-		if seen, ok := want[path]; ok {
+		if seen, ok := params.want[path]; ok {
 			// File exists: mark as seen and compare.
 			if seen {
 				t.Errorf("Duplicate output file '%s'", path)
 			}
-			want[path] = true
+			params.want[path] = true
 
 			// Open want file.
 			wf, err := os.Open(prefixedPath)
@@ -205,7 +163,7 @@ func outputCreator(t *testing.T, testName, configName string, want map[string]bo
 		} else {
 			// File does not exist: create it.
 			t.Errorf("Unexpected output file '%s'", path)
-			want[path] = true
+			params.want[path] = true
 
 			if err := os.MkdirAll(filepath.Dir(prefixedPath), 0777); err != nil {
 				return nil, err
