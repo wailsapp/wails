@@ -5,7 +5,6 @@ import (
 	"go/token"
 	"go/types"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -36,22 +35,20 @@ type (
 
 		Docs []*ast.CommentGroup
 
-		Imports map[*ast.File]*FileImports
-		Types   map[string]*TypeDefInfo
-		Consts  map[string]*ConstInfo
-
-		// The next two fields record generated bindings for this package.
-		// We use a slice behind a lock because it is much faster
-		// than [sync.Map] in write-heavy scenarios like this one.
-		mu       sync.Mutex
-		bindings []*BoundTypeInfo
+		Types  map[string]*TypeDefInfo
+		Consts map[string]*ConstInfo
 
 		// models records the models that have to be generated for this package.
-		// We use [sync.Map] for atomic swapping.
+		// We rely upon [sync.Map] for atomic swapping support.
 		models sync.Map
 
+		// mu protects access to bindings and stats.
+		mu sync.Mutex
+		// bindings record generated bindings for this package.
+		// We use a slice behind a lock because it is much faster
+		// than [sync.Map] in write-heavy scenarios like this one.
+		bindings []*BoundTypeInfo
 		// stats caches statistics about this package.
-		// Mutex mu must be locked before accessing this field.
 		stats *Stats
 
 		// collector holds a pointer to the parent [Collector].
@@ -61,14 +58,6 @@ type (
 		// or a [Controller] instance that may be used to load the package.
 		source any
 		once   sync.Once
-	}
-
-	// FileImports records information
-	// about import declarations in an [ast.File].
-	FileImports struct {
-		Unnamed []string
-		Dot     []string
-		Named   map[string]string
 	}
 
 	// GroupInfo records information about a group
@@ -179,45 +168,44 @@ func (info *PackageInfo) IsEmpty() bool {
 // This method is safe to call even if [PackageInfo.Collect]
 // has not been called yet.
 func (info *PackageInfo) Index() (index PackageIndex) {
+	// Acquire bindings slice + stats and defer release.
+	info.mu.Lock()
+	defer info.mu.Unlock()
+
 	// Init stats
-	stats := &Stats{
+	info.stats = &Stats{
 		NumPackages: 1,
 	}
 
-	// Acquire bindings slice.
-	info.mu.Lock()
-
 	// Sort bindings by name, then deduplicate.
-	// If [Generator.Generate] is called multiple times,
+	// If [Collector.BoundType] is called multiple times for the same type
 	// there might be distinct objects with the same name,
 	// hence we can't just compare pointers.
 	slices.SortFunc(info.bindings, func(b1 *BoundTypeInfo, b2 *BoundTypeInfo) int {
 		return strings.Compare(b1.Name, b2.Name)
 	})
 	info.bindings = slices.CompactFunc(info.bindings, func(b1 *BoundTypeInfo, b2 *BoundTypeInfo) bool {
-		// If the pointers are equal, so must be the names.
+		// If the pointers are equal, then so must be the names;
+		// otherwise test for name equality.
 		return b1 == b2 || b1.Name == b2.Name
 	})
 
 	// Clone bindings into result.
 	index.Bindings = slices.Clone(info.bindings)
 
-	// Release bindings slice.
-	info.mu.Unlock()
-
 	// Update bound type stats.
-	stats.NumTypes = len(index.Bindings)
+	info.stats.NumTypes = len(index.Bindings)
 	for _, b := range index.Bindings {
-		stats.NumMethods += len(b.Methods)
+		info.stats.NumMethods += len(b.Methods)
 	}
 
 	// Gather models.
 	info.models.Range(func(key, value any) bool {
 		model := value.(*ModelInfo)
 		if len(model.Values) > 0 {
-			stats.NumEnums++
+			info.stats.NumEnums++
 		} else {
-			stats.NumModels++
+			info.stats.NumModels++
 		}
 		index.Models = append(index.Models, model)
 		return true
@@ -252,11 +240,6 @@ func (info *PackageInfo) Index() (index PackageIndex) {
 
 	// Store package info.
 	index.Info = info
-
-	// Cache stats.
-	info.mu.Lock()
-	info.stats = stats
-	info.mu.Unlock()
 
 	return
 }
@@ -306,7 +289,6 @@ func (info *PackageInfo) Collect() bool {
 		info.Name = pkg.Name
 
 		// Initialise maps
-		info.Imports = make(map[*ast.File]*FileImports)
 		info.Types = make(map[string]*TypeDefInfo)
 		info.Consts = make(map[string]*ConstInfo)
 
@@ -325,29 +307,7 @@ func (info *PackageInfo) Collect() bool {
 				info.Docs = append(info.Docs, file.Doc)
 			}
 
-			// Record file imports.
-			imports := &FileImports{
-				Named: make(map[string]string),
-			}
-			info.Imports[file] = imports
-			for _, spec := range file.Imports {
-				path, err := strconv.Unquote(spec.Path.Value)
-				if err == nil {
-					continue
-				}
-
-				if spec.Name == nil {
-					imports.Unnamed = append(imports.Unnamed, path)
-				} else if spec.Name.Name == "." {
-					imports.Dot = append(imports.Dot, path)
-				} else if spec.Name.Name == "_" {
-					continue
-				} else {
-					if _, present := imports.Named[spec.Name.Name]; !present {
-						imports.Named[spec.Name.Name] = path
-					}
-				}
-			}
+			fileInfo := newFileInfo(pkg, file, info.collector.controller)
 
 			for _, decl := range file.Decls {
 				switch decl := decl.(type) {
@@ -372,7 +332,7 @@ func (info *PackageInfo) Collect() bool {
 								continue
 							}
 
-							info.Types[tspec.Name.Name] = newTypeDefInfo(info, file, group, tspec)
+							info.Types[tspec.Name.Name] = newTypeDefInfo(pkg, fileInfo, group, tspec)
 						}
 
 					case token.CONST:
@@ -495,37 +455,19 @@ func (info *PackageInfo) recordBoundType(boundType *BoundTypeInfo) {
 // It is an error to pass in here a type whose parent package
 // is not the one described by the receiver.
 func (info *PackageInfo) recordModel(modelType *types.TypeName) *ModelInfo {
-	if !info.Collect() {
-		return nil
-	}
-
-	model := &ModelInfo{
+	// Add if not already present, then fetch current value.
+	imodel, loaded := info.models.LoadOrStore(modelType.Name(), &ModelInfo{
 		obj: modelType,
 		pkg: info,
+	})
+
+	// Assert to actual type.
+	model := imodel.(*ModelInfo)
+
+	if !loaded {
+		// Model has just been discovered: schedule collection activity.
+		info.collector.controller.Schedule(model.Collect)
 	}
 
-	// CAS loop.
-	for {
-		prev, loaded := info.models.LoadOrStore(modelType.Name(), model)
-		if !loaded {
-			// Successfully added.
-			break
-		}
-
-		prevModel := prev.(*ModelInfo)
-		if prevModel.obj == modelType {
-			// Successfully loaded.
-			return prevModel
-		}
-
-		// Existing data is out of date (from a previous call
-		// to [Generator.Generate]): attempt a swap.
-		if info.models.CompareAndSwap(modelType.Name(), prev, model) {
-			// Successfully swapped.
-			break
-		}
-	}
-
-	info.collector.controller.Schedule(model.Collect)
 	return model
 }

@@ -18,18 +18,33 @@ func LoadPackages(buildFlags []string, full bool, patterns ...string) ([]*packag
 		rewrittenPatterns[i] = "pattern=" + pattern
 	}
 
+	// Global file set for syntax-only mode.
+	var fset *token.FileSet
+
 	loadMode := packages.NeedName | packages.NeedCompiledGoFiles | packages.NeedSyntax
 	if full {
 		loadMode |= packages.NeedTypes | packages.NeedTypesInfo
+	} else {
+		fset = token.NewFileSet()
 	}
 
-	return packages.Load(&packages.Config{
+	pkgs, err := packages.Load(&packages.Config{
 		Mode:       loadMode,
 		Logf:       nil,
 		BuildFlags: buildFlags,
+		Fset:       fset,
 		ParseFile: func(fset *token.FileSet, filename string, src []byte) (file *ast.File, err error) {
 			file, err = parser.ParseFile(fset, filename, src, parser.ParseComments|parser.SkipObjectResolution)
 			return
 		},
 	}, rewrittenPatterns...)
+
+	// If in syntax only mode, add global file set to each package.
+	if !full {
+		for _, pkg := range pkgs {
+			pkg.Fset = fset
+		}
+	}
+
+	return pkgs, err
 }

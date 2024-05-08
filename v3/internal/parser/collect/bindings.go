@@ -58,7 +58,7 @@ func (collector *Collector) BoundType(typ *types.TypeName) *BoundTypeInfo {
 	// Check type def information.
 	if info.TypeDefInfo == nil {
 		collector.controller.Errorf(
-			"package %s: type %s not found; try clearing the build cache (go clean -cache)",
+			"package %s: type %s not found; try cleaning the build cache (go clean -cache)",
 			pkg.Path,
 			typ.Name(),
 		)
@@ -142,7 +142,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 	recvInfo := pkg.Types[recv.Name()]
 	if recvInfo == nil {
 		collector.controller.Errorf(
-			"package %s: type %s not found; try clearing the build cache (go clean -cache)",
+			"package %s: type %s not found; try cleaning the build cache (go clean -cache)",
 			pkg.Path,
 			recv.Name(),
 		)
@@ -172,7 +172,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 	// Check method information.
 	if info.MethodInfo == nil {
 		collector.controller.Errorf(
-			"package %s: method %s.%s not found; try clearing the build cache (go clean -cache)",
+			"package %s: method %s.%s not found; try cleaning the build cache (go clean -cache)",
 			pkg.Path,
 			recv.Name(),
 			method.Name(),

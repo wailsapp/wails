@@ -52,12 +52,11 @@ func NewGenerator(options *flags.GenerateBindingsOptions, creator config.FileCre
 	}
 }
 
-// Generate generates bindings for the packages specified by the given patterns.
-// Generate can be called multiple times with different or even overlapping
-// sets of packages; however, changes to package files that happen
-// between calls to Generate may not be detected.
+// Generate runs the binding generation process
+// for the packages specified by the given patterns.
 //
-// Concurrent calls to Generate are not allowed.
+// Concurrent or repeated calls to Generate with the same receiver
+// are not allowed.
 //
 // The stats return field is never nil.
 //
@@ -82,20 +81,19 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		return
 	}
 
+	// Panic on repeated calls.
+	if generator.collector != nil {
+		panic("Generate() must not be called more than once on the same receiver")
+	}
+
 	// Cache reconstructed build flags.
 	generator.controller.buildFlags = buildFlags
 
-	// Initialise collector.
-	if generator.collector == nil {
-		generator.collector = collect.NewCollector(&generator.controller)
-	}
+	// Initialise components.
+	generator.collector = collect.NewCollector(&generator.controller)
+	generator.renderer = render.NewRenderer(generator.options, generator.collector)
 
-	// Initialise renderer.
-	if generator.renderer == nil {
-		generator.renderer = render.NewRenderer(generator.options, generator.collector)
-	}
-
-	// Update status.
+	// Package loading feedback.
 	var lpkgMutex sync.Mutex
 	generator.controller.Statusf("Loading packages...")
 	go func() {
@@ -109,7 +107,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	// Load initial packages.
 	pkgs, err := LoadPackages(buildFlags, true, patterns...)
 
-	// Prevent long running message.
+	// Suppress package loading feedback.
 	lpkgMutex.Lock()
 	defer lpkgMutex.Unlock()
 
@@ -122,7 +120,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		return
 	}
 
-	// Report parsing/type-checking errors and record initial packages.
+	// Report parsing/type-checking errors.
 	for _, pkg := range pkgs {
 		for _, err := range pkg.Errors {
 			generator.controller.Warningf("%v", err)
@@ -133,15 +131,12 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	generator.collector.Preload(pkgs...)
 
 	// Update status.
-	found := false
 	generator.controller.Statusf("Looking for bound types...")
+	bindingsFound := sync.OnceFunc(func() { generator.controller.Statusf("Generating bindings...") })
 
 	// Run analyser and schedule bindings generation for each result.
 	err = analyse.NewAnalyser(pkgs, &generator.controller).Run(func(result analyse.Result) bool {
-		if !found {
-			generator.controller.Statusf("Generating bindings...")
-			found = true
-		}
+		bindingsFound()
 
 		generator.controller.Schedule(func() {
 			generator.generateBindings(result)
@@ -150,11 +145,10 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		return true
 	})
 
-	// Discard unneeded packages.
+	// Discard initial packages.
 	pkgs = nil
 
 	// Wait until all bindings have been generated and all models collected.
-	generator.controller.Statusf("Collecting models...")
 	generator.controller.Wait()
 
 	// Check for analyser errors.
@@ -162,7 +156,8 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		return
 	}
 
-	// Record all packages that should be added to the global index.
+	// globalImports records all packages
+	// that should be added to the global index.
 	var globalImports []*collect.PackageInfo
 
 	// Update status.

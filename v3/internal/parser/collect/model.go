@@ -2,7 +2,9 @@ package collect
 
 import (
 	"cmp"
+	"go/ast"
 	"go/constant"
+	"go/token"
 	"go/types"
 	"slices"
 	"strings"
@@ -81,6 +83,8 @@ func (info *ModelInfo) Collect() {
 
 	info.once.Do(func() {
 		pkg := info.pkg
+		pkg.Collect()
+
 		obj := info.obj
 		typ := obj.Type()
 
@@ -90,7 +94,7 @@ func (info *ModelInfo) Collect() {
 		// Check type def information.
 		if info.TypeDefInfo == nil {
 			pkg.collector.controller.Errorf(
-				"package %s: type %s not found; try clearing the build cache (go clean -cache)",
+				"package %s: type %s not found; try cleaning the build cache (go clean -cache)",
 				pkg.Path,
 				obj.Name(),
 			)
@@ -109,7 +113,10 @@ func (info *ModelInfo) Collect() {
 		// Retrieve type denotation.
 		var def types.Type
 		if obj.IsAlias() {
-			def = types.Unalias(typ)
+			def = info.TypeDefInfo.Rhs(obj)
+			if def == nil {
+				def = types.Unalias(typ)
+			}
 		} else {
 			// This is a named type.
 			// Check whether it implements marshaler interfaces
@@ -133,10 +140,18 @@ func (info *ModelInfo) Collect() {
 				}
 			}
 
-			def = typ.Underlying()
+			// We can handle non-generic class aliases
+			// and generic non-class aliases
+			// but not generic class aliases.
+			if tp == nil || !IsClass(typ) {
+				def = info.TypeDefInfo.Rhs(obj)
+			}
+			if def == nil {
+				def = typ.Underlying()
+			}
 
 			// Test for enums (excluding generic types).
-			basic, ok := def.(*types.Basic)
+			basic, ok := typ.Underlying().(*types.Basic)
 			if ok && tp == nil && basic.Info()&types.IsConstType != 0 && basic.Info()&types.IsComplex == 0 {
 				// Named type is defined as a representable constant type:
 				// look for defined constants of that named type.
@@ -173,6 +188,8 @@ func (info *ModelInfo) Collect() {
 		// Collect information about struct fields.
 		info.collectStruct(strct)
 		info.Type = nil
+
+		info.pkg, info.obj = nil, nil
 	})
 }
 
@@ -199,7 +216,7 @@ func (info *ModelInfo) collectEnum(constants []*types.Const) {
 				Group: dummyGroup,
 			}
 			pkg.collector.controller.Warningf(
-				"package %s: could not retrieve definition for constant %s; try clearing the build cache (go clean -cache)",
+				"package %s: could not retrieve definition for constant %s; try cleaning the build cache (go clean -cache)",
 				pkg.Path,
 				cnst.Name(),
 			)
@@ -265,7 +282,15 @@ func (info *ModelInfo) collectStruct(strct *types.Struct) {
 	structInfo.Collect()
 
 	// Cache resolved TypeDefInfo for embedded struct types.
-	rootTypeInfo := info.resolveTypeInfo(nil)
+	rootTypeInfo := info.resolveTypeInfo(info.obj)
+	if rootTypeInfo == nil {
+		pkg.collector.controller.Warningf(
+			"package %s: could not resolve definition for type %s; try cleaning the build cache (go clean -cache)",
+			info.pkg.Path,
+			info.Name,
+		)
+	}
+
 	embeddedInfo := map[*types.TypeName]*TypeDefInfo{
 		nil:      rootTypeInfo,
 		info.obj: rootTypeInfo,
@@ -291,7 +316,7 @@ func (info *ModelInfo) collectStruct(strct *types.Struct) {
 			// Report errors
 			if typeInfo == nil {
 				pkg.collector.controller.Warningf(
-					"package %s: could not resolve definition for type %s; try clearing the build cache (go clean -cache)",
+					"package %s: could not resolve definition for type %s; try cleaning the build cache (go clean -cache)",
 					field.Parent.Pkg().Path(),
 					field.Parent.Name(),
 				)
@@ -304,11 +329,17 @@ func (info *ModelInfo) collectStruct(strct *types.Struct) {
 
 		if mfield.FieldDefInfo == nil {
 			mfield.FieldDefInfo = dummyFieldDef
+
+			parent := field.Parent
+			if parent == nil {
+				parent = info.obj
+			}
 			pkg.collector.controller.Warningf(
-				"package %s: type %s: could not retrieve definition for field %s; try clearing the build cache (go clean -cache)",
-				field.Parent.Pkg().Path(),
-				field.Parent.Name(),
+				"package %s: type %s: could not retrieve definition for field %s; loading package %s explicitly might solve the issue",
+				parent.Pkg().Path(),
+				parent.Name(),
 				field.Field.Name(),
+				parent.Pkg().Path(),
 			)
 		}
 
@@ -335,17 +366,28 @@ func (info *ModelInfo) collectStruct(strct *types.Struct) {
 // that defines its fields.
 //
 // It returns nil on failure.
-func (info *ModelInfo) resolveTypeInfo(typ *types.TypeName) *TypeDefInfo {
+func (info *ModelInfo) resolveTypeInfo(obj *types.TypeName) *TypeDefInfo {
 	pkg := info.pkg
 
+	if obj == nil {
+		obj = info.obj
+	}
+
 	for {
+		// Fast path for aliases of named types.
+		if obj.IsAlias() {
+			if named, ok := types.Unalias(obj.Type()).(*types.Named); ok {
+				obj = named.Obj()
+			}
+		}
+
 		var typeInfo *TypeDefInfo
-		if typ == nil || typ == info.obj {
+		if obj == info.obj {
 			typeInfo = info.TypeDefInfo
 		} else {
-			tpkg := pkg.collector.Package(typ.Pkg().Path())
+			tpkg := pkg.collector.Package(obj.Pkg().Path())
 			if tpkg.Collect() {
-				typeInfo = tpkg.Types[typ.Name()]
+				typeInfo = tpkg.Types[obj.Name()]
 			}
 		}
 
@@ -354,12 +396,36 @@ func (info *ModelInfo) resolveTypeInfo(typ *types.TypeName) *TypeDefInfo {
 			return nil
 		}
 
-		// Follow aliases and named types, stop if there are no more.
-		switch rhs := typeInfo.Rhs(typ).(type) {
+		// Follow aliases and named types, stop when there are no more.
+		switch rhs := typeInfo.Rhs(obj).(type) {
 		case *types.Alias:
-			typ = rhs.Obj()
+			obj = rhs.Obj()
 		case *types.Named:
-			typ = rhs.Obj()
+			obj = rhs.Obj()
+		case nil:
+			// Lookup failed.
+			// One last desperate attempt:
+			// we might be dealing with an unexported named type.
+			def := typeInfo.def
+
+			// Unwrap generic type instantiations.
+			switch d := def.(type) {
+			case *ast.IndexExpr:
+				def = d.X
+			case *ast.IndexListExpr:
+				def = d.X
+			}
+
+			ident, ok := def.(*ast.Ident)
+			if !ok || ident.IsExported() {
+				// We can't do anything more: give up.
+				return typeInfo
+			}
+
+			// Feed a fake object to the next iteration.
+			fake := types.NewTypeName(token.NoPos, obj.Pkg(), ident.Name, nil)
+			types.NewNamed(fake, obj.Type().Underlying(), nil)
+			obj = fake
 		default:
 			return typeInfo
 		}
