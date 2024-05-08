@@ -13,20 +13,22 @@ type (
 	BoundTypeInfo struct {
 		*TypeDefInfo
 		Imports *ImportMap
-		Methods map[string]*BoundMethodInfo
+		Methods []*BoundMethodInfo
 	}
 
 	BoundMethodInfo struct {
 		*MethodInfo
 		FQN     string
 		ID      string
-		Params  []ParamInfo
+		Params  []*ParamInfo
 		Results []types.Type
 	}
 
 	ParamInfo struct {
-		Name string
-		Type types.Type
+		Name     string
+		Type     types.Type
+		Blank    bool
+		Variadic bool
 	}
 )
 
@@ -35,6 +37,8 @@ type (
 //
 // If package loading or object lookup fails at any point, BoundType returns nil.
 // Errors are printed directly to the pterm Error logger.
+//
+// BoundType is safe for concurrent use.
 func (collector *Collector) BoundType(typ *types.TypeName) *BoundTypeInfo {
 	// Collect package information.
 	pkg := collector.Package(typ.Pkg().Path())
@@ -45,7 +49,6 @@ func (collector *Collector) BoundType(typ *types.TypeName) *BoundTypeInfo {
 	info := &BoundTypeInfo{
 		TypeDefInfo: pkg.Types[typ.Name()],
 		Imports:     NewImportMap(pkg),
-		Methods:     make(map[string]*BoundMethodInfo),
 	}
 
 	// Check type def information.
@@ -79,22 +82,26 @@ func (collector *Collector) BoundType(typ *types.TypeName) *BoundTypeInfo {
 	//     which should be far from average.
 	mset := typeutil.IntuitiveMethodSet(realType.Type(), nil)
 
+	info.Methods = make([]*BoundMethodInfo, 0, len(mset))
 	for _, sel := range mset {
 		if !sel.Obj().Exported() {
 			// Ignore unexported methods
 			continue
 		}
 
-		methodInfo := collector.BoundMethod(realType, sel.Obj().(*types.Func))
+		methodInfo := collector.BoundMethod(realType, info.Imports, sel.Obj().(*types.Func))
 		if methodInfo == nil {
 			return nil
 		}
 
-		info.Methods[methodInfo.Name] = methodInfo
+		info.Methods = append(info.Methods, methodInfo)
 	}
 
 	// Record generated bindings.
-	pkg.AddBindings(typ)
+	if len(info.Methods) > 0 {
+		pkg.AddBindings(typ)
+	}
+
 	return info
 }
 
@@ -106,7 +113,9 @@ var typeError = types.Universe.Lookup("error").Type()
 //
 // If package loading or object lookup fails at any point, BoundMethod returns nil.
 // Errors are printed directly to the pterm Error logger.
-func (collector *Collector) BoundMethod(typ *types.TypeName, method *types.Func) *BoundMethodInfo {
+//
+// BoundMethod is safe for concurrent use.
+func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap, method *types.Func) *BoundMethodInfo {
 	// Collect package information.
 	pkg := collector.Package(method.Pkg().Path())
 	if !pkg.Collect() {
@@ -144,7 +153,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, method *types.Func)
 		MethodInfo: recvInfo.Methods[method.Name()],
 		FQN:        fqn,
 		ID:         strconv.FormatUint(uint64(id), 10),
-		Params:     make([]ParamInfo, signature.Params().Len()),
+		Params:     make([]*ParamInfo, 0, signature.Params().Len()),
 		Results:    make([]types.Type, 0, signature.Results().Len()),
 	}
 
@@ -162,10 +171,27 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, method *types.Func)
 	// Collect parameters.
 	for i := range signature.Params().Len() {
 		param := signature.Params().At(i)
-		info.Params[i] = ParamInfo{
-			Name: param.Name(),
-			Type: param.Type(),
+
+		if i == 0 {
+			// Skip first parameter if it has context type.
+			if named, ok := param.Type().(*types.Named); ok && named.Obj().Pkg().Path() == "context" && named.Obj().Name() == "Context" {
+				continue
+			}
 		}
+
+		// Record type dependencies.
+		imports.AddType(collector, param.Type())
+
+		// Record parameter.
+		info.Params = append(info.Params, &ParamInfo{
+			Name:  param.Name(),
+			Type:  param.Type(),
+			Blank: param.Name() == "" || param.Name() == "_",
+		})
+	}
+
+	if signature.Variadic() {
+		info.Params[len(info.Params)-1].Variadic = true
 	}
 
 	// Collect results.
@@ -177,6 +203,10 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, method *types.Func)
 			continue
 		}
 
+		// Record type dependencies.
+		imports.AddType(collector, result.Type())
+
+		// Record result.
 		info.Results = append(info.Results, result.Type())
 	}
 

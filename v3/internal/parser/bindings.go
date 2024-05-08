@@ -29,6 +29,16 @@ func (generator *Generator) generateBindings(typ *types.TypeName) {
 		return
 	}
 
+	if len(info.Methods) == 0 {
+		pterm.Error.Printfln(
+			"package %s: type %s: bound type has no exported methods, skipping",
+			typ.Pkg().Path(),
+			typ.Name(),
+		)
+		success = true
+		return
+	}
+
 	// Create binding file.
 	file, err := generator.creator.Create(filepath.Join(info.Imports.Self, generator.renderer.BindingsFile(info.Name)))
 	if err != nil {
@@ -38,7 +48,7 @@ func (generator *Generator) generateBindings(typ *types.TypeName) {
 	defer file.Close()
 
 	// Render bound type.
-	err = generator.renderer.Bindings(file, info)
+	err = generator.renderer.Bindings(file, info, generator.collector)
 	if err != nil {
 		pterm.Error.Println(err)
 		return

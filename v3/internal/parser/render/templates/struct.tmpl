@@ -1,0 +1,6 @@
+{{- $imports := .Imports}}
+{{- $collector := .Collector}}
+{{- range $i, $field := .Fields}}{
+    {{- if gt $i 0}}, {{end}}
+    "{{js .Name}}"{{if .Optional}}?{{end}}: {{jsqtype .Type $imports $collector .Quoted -}}
+}{{end -}}

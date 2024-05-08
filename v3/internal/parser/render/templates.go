@@ -36,6 +36,11 @@ var tmplIndex = map[tmplLanguage]*template.Template{
 	tmplTS: template.Must(template.New("index.ts.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/index.ts.tmpl")),
 }
 
+var tmplStruct *template.Template
+
 func init() {
 	tmplModels[tmplJS][tmplInterfaces] = tmplModels[tmplJS][tmplClasses]
+
+	// Init struct template here to break initialisation cycle.
+	tmplStruct = template.Must(template.New("struct.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/struct.tmpl"))
 }

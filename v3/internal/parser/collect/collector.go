@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"golang.org/x/tools/go/packages"
+	"golang.org/x/tools/go/types/typeutil"
 )
 
 // Loader abstracts the process of loading single packages.
@@ -25,45 +26,30 @@ func (f LoaderFunc) Load(path string) *packages.Package {
 type Collector struct {
 	loader Loader
 	pkgs   sync.Map
+
+	// mu protects access to the structs map.
+	mu sync.Mutex
+	// structs maps struct types to their [StructInfo].
+	structs typeutil.Map
+
+	// the omonymous package-level functions wrapped by sync.OnceFunc
+	complexWarning func()
+	chanWarning    func()
+	funcWarning    func()
+	genericWarning func()
+
+	// wg is used to wait until concurrent model collection is complete.
+	wg sync.WaitGroup
 }
 
 // NewCollector initialises a new Collector instance.
 func NewCollector(loader Loader) *Collector {
 	return &Collector{
 		loader: loader,
+
+		complexWarning: sync.OnceFunc(complexWarning),
+		chanWarning:    sync.OnceFunc(chanWarning),
+		funcWarning:    sync.OnceFunc(funcWarning),
+		genericWarning: sync.OnceFunc(genericWarning),
 	}
-}
-
-// Preload adds the given package descriptors to the collector,
-// so that the loading step may be skipped when collecting information
-// about each of those packages.
-//
-// Preload is safe for concurrent use.
-func (collector *Collector) Preload(pkgs ...*packages.Package) {
-	for _, pkg := range pkgs {
-		collector.pkgs.LoadOrStore(pkg.PkgPath, NewPackageInfo(pkg.PkgPath, pkg))
-	}
-}
-
-// Package retrieves from the the unique [PackageInfo] instance
-// associated to the given path within a Collector.
-// If none is present, a new one is initialised.
-//
-// Package is safe for concurrent use.
-func (collector *Collector) Package(path string) *PackageInfo {
-	info, _ := collector.pkgs.LoadOrStore(path, NewPackageInfo(path, collector.loader))
-	return info.(*PackageInfo)
-}
-
-// All calls yield sequentially for each [PackageInfo] instance
-// present in the collector. If yield returns false, All stops the iteration.
-//
-// All may be O(N) with the number of packages in the collector
-// even if yield returns false after a constant number of calls.
-//
-// Package is safe for concurrent use.
-func (collector *Collector) All(yield func(pkg *PackageInfo) bool) {
-	collector.pkgs.Range(func(key, value any) bool {
-		return yield(value.(*PackageInfo))
-	})
 }

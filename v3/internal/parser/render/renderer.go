@@ -5,11 +5,14 @@ import (
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/parser/collect"
 )
 
 // Renderer holds the template set for a given configuration.
 // It provides methods for rendering various output modules.
 type Renderer struct {
+	options *flags.GenerateBindingsOptions
+
 	bindings *template.Template
 	ext      string
 
@@ -29,6 +32,8 @@ func NewRenderer(options *flags.GenerateBindingsOptions) Renderer {
 	}
 
 	return Renderer{
+		options: options,
+
 		bindings: tmplBindings[tmplLanguage(options.TS)],
 		ext:      ext,
 
@@ -41,9 +46,19 @@ func NewRenderer(options *flags.GenerateBindingsOptions) Renderer {
 	}
 }
 
-// Bindings renders the given binding data to w.
-func (renderer *Renderer) Bindings(w io.Writer, data any) error {
-	return renderer.bindings.Execute(w, data)
+// Bindings renders bindings for the given bound type to w.
+func (renderer *Renderer) Bindings(w io.Writer, info *collect.BoundTypeInfo, collector *collect.Collector) error {
+	return renderer.bindings.Execute(w, &struct {
+		*collect.BoundTypeInfo
+		*Renderer
+		*flags.GenerateBindingsOptions
+		Collector *collect.Collector
+	}{
+		info,
+		renderer,
+		renderer.options,
+		collector,
+	})
 }
 
 // BindingsFile returns the standard name of a bindings file
@@ -64,9 +79,9 @@ func (renderer *Renderer) InternalFile() string {
 	return renderer.internalFile
 }
 
-// Index renders the given package index data to w.
-func (renderer *Renderer) Index(w io.Writer, data any) error {
-	return renderer.index.Execute(w, data)
+// Index renders the given package index to w.
+func (renderer *Renderer) Index(w io.Writer, index *collect.PackageIndex) error {
+	return renderer.index.Execute(w, index)
 }
 
 // IndexFile returns the standard name of a package index file
