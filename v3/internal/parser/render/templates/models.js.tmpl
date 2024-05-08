@@ -82,8 +82,12 @@ import {
     {{- $typeParamList = (printf "%s>" $typeParamList)}}
 {{- end}}
 
-{{- if or $typeParams $model.Doc $isEnum $isTypeAlias $isStructAlias}}
+{{- if or $typeParams $model.Group.Doc $model.Doc $isEnum $isTypeAlias $isStructAlias}}
 /**
+{{- if $model.Group.Doc}}
+{{- jsdoc $model.Group.Doc.Text ""}}{{if $model.Doc}}
+ *{{end}}
+{{- end}}
 {{- if $model.Doc}}
 {{- jsdoc $model.Doc.Text ""}}
 {{- end}}
