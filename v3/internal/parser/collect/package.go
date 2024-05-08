@@ -509,7 +509,7 @@ func (info *PackageInfo) recordModel(modelType *types.TypeName) *ModelInfo {
 	}
 
 	model := &ModelInfo{
-		typ: modelType,
+		obj: modelType,
 		pkg: info,
 	}
 
@@ -522,7 +522,7 @@ func (info *PackageInfo) recordModel(modelType *types.TypeName) *ModelInfo {
 		}
 
 		prevModel := prev.(*ModelInfo)
-		if prevModel.typ == modelType {
+		if prevModel.obj == modelType {
 			// Successfully loaded.
 			return prevModel
 		}

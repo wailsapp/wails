@@ -143,12 +143,7 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 			pkg.recordModel(t.Obj())
 			imports.Add(pkg)
 
-			if IsClass(typ) {
-				return
-			}
-
-			// If alias does not map to a class type,
-			// the aliased type may be needed during
+			// The aliased type may be needed during
 			// JS value creation and initialisation.
 			typ = types.Unalias(typ)
 

@@ -224,7 +224,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 
 		if i == 0 {
 			// Skip first parameter if it has context type.
-			if named, ok := param.Type().(*types.Named); ok && named.Obj().Pkg().Path() == "context" && named.Obj().Name() == "Context" {
+			if named, ok := types.Unalias(param.Type()).(*types.Named); ok && named.Obj().Pkg().Path() == "context" && named.Obj().Name() == "Context" {
 				continue
 			}
 		}

@@ -39,7 +39,6 @@ type Collector struct {
 	complexWarning func()
 	chanWarning    func()
 	funcWarning    func()
-	genericWarning func()
 }
 
 // NewCollector initialises a new Collector instance.
@@ -50,6 +49,5 @@ func NewCollector(loader Loader) *Collector {
 		complexWarning: sync.OnceFunc(complexWarning),
 		chanWarning:    sync.OnceFunc(chanWarning),
 		funcWarning:    sync.OnceFunc(funcWarning),
-		genericWarning: sync.OnceFunc(genericWarning),
 	}
 }

@@ -38,6 +38,23 @@ import {
 {{- $isClassOrInterface := $model.Fields}}
 {{- $isInterface := or $useInterfaces $model.Alias}}
 
+{{- /* Build type parameter list */}}
+{{- $typeParamList := ""}}
+{{- range $i, $param := $model.TypeParams}}
+    {{- if or (eq $param "") (eq $param "_")}}
+        {{- $param = (printf "T$$%d" $i)}}
+    {{- end}}
+    {{- $param = (jsid $param)}}
+    {{- if eq $i 0}}
+        {{- $typeParamList = (printf "<%s" $param)}}
+    {{- else}}
+        {{- $typeParamList = (printf "%s, %s" $typeParamList $param)}}
+    {{- end}}
+{{- end}}
+{{- if $typeParamList}}
+    {{- $typeParamList = (printf "%s>" $typeParamList)}}
+{{- end}}
+
 {{- if $model.Doc}}
 /**
 {{- jsdoc $model.Doc.Text ""}}
@@ -71,9 +88,9 @@ export enum {{jsid $model.Name}} {
 {{else if $isClassAlias}}
 export const {{jsid $model.Name}} = {{$module.JSType $model.Type}};
 {{else if $isTypeAlias}}
-type {{jsid $model.Name}} = {{$module.JSType $model.Type}};
+export type {{jsid $model.Name}}{{$typeParamList}} = {{$module.JSType $model.Type}};
 {{else if $isClassOrInterface}}
-export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}} {
+export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$typeParamList}} {
     {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
     {{- if and (ne $i 0) (eq $j 0)}}
 {{end}}
@@ -90,33 +107,43 @@ export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}} {
     {{- end}}
      */
     {{- end}}
-    "{{js $field.Name}}"{{if $field.Optional}}?{{end}}: {{$module.JSType $field.Type}};
+    "{{js $field.Name}}"{{if $field.Optional}}?{{end}}: {{$module.JSFieldType $field.FieldInfo}};
     {{- end}}{{end}}
 {{- if not $isInterface}}
 
     /** Creates a new {{jsid $model.Name}} instance. */
-    constructor(source: Partial<{{jsid $model.Name}}> = {}) {
+    constructor($$source: Partial<{{jsid $model.Name}}{{$typeParamList}}> = {}) {
     {{- range $group := $model.Fields}}{{range $i, $field := $group}}{{if not .Optional}}
-        if (!("{{js $field.Name}}" in source)) {
+        if (!("{{js $field.Name}}" in $$source)) {
             this["{{js $field.Name}}"] = {{$module.JSDefault $field.Type $field.Quoted}};
         }
     {{- end}}{{end}}{{end}}
 
-        Object.assign(this, source);
+        Object.assign(this, $$source);
     }
 
-    /** Creates a new {{jsid $model.Name}} instance from a string or object. */
-    static createFrom(source: string | object = {}): {{jsid $model.Name}} {
-        let parsedSource = typeof source === 'string' ? JSON.parse(source) : source;
+    /**
+     * Creates a new {{jsid $model.Name}} instance from a string or object.
+     * Generic types also need creation functions for each type parameter.
+     */
+    static createFrom{{$typeParamList}}(
+            {{- range $i, $param := $model.TypeParams}}
+                {{- if or (eq $param "") (eq $param "_")}}
+                    {{- $param = (printf "T$$%d" $i)}}
+                {{- end}}
+                {{- $param = (jsid $param) -}}
+                $$create{{$param}}: (any) => {{$param}}, {{end -}}
+            $$source: any = {}): {{jsid $model.Name}}{{$typeParamList}} {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
         {{- $create := ($module.JSCreate $field.Type)}}
         {{- if ne $create "$Create.Any"}}
-        if ("{{js $field.Name}}" in parsedSource) {
-            parsedSource["{{js $field.Name}}"] = {{$create}}(parsedSource["{{js $field.Name}}"]);
+        if ("{{js $field.Name}}" in $$parsedSource) {
+            $$parsedSource["{{js $field.Name}}"] = {{$create}}($$parsedSource["{{js $field.Name}}"]);
         }
         {{- end}}
         {{- end}}{{end}}
-        return new this(parsedSource as Partial<{{jsid $model.Name}}>) as {{jsid $model.Name}};
+        return new {{jsid $model.Name}}{{$typeParamList}}($$parsedSource as Partial<{{jsid $model.Name}}{{$typeParamList}}>);
     }
 {{- end}}
 }

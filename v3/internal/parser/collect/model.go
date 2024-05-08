@@ -38,7 +38,10 @@ type (
 		// by their declaring [ast.GenDecl] and [ast.ValueSpec].
 		Values [][][]*EnumValueInfo
 
-		typ  *types.TypeName
+		// TypeParams records type parameter names for generic models.
+		TypeParams []string
+
+		obj  *types.TypeName
 		pkg  *PackageInfo
 		once sync.Once
 	}
@@ -86,7 +89,7 @@ func (info *ModelInfo) Collect() {
 
 	info.once.Do(func() {
 		pkg := info.pkg
-		obj := info.typ
+		obj := info.obj
 		typ := obj.Type()
 
 		// Retrieve type def information.
@@ -129,11 +132,20 @@ func (info *ModelInfo) Collect() {
 				return
 			}
 
+			// Store type parameter names.
+			tp := typ.(*types.Named).TypeParams()
+			if tp != nil && tp.Len() > 0 {
+				info.TypeParams = make([]string, tp.Len())
+				for i, length := 0, tp.Len(); i < length; i++ {
+					info.TypeParams[i] = tp.At(i).Obj().Name()
+				}
+			}
+
 			def = typ.Underlying()
 
-			// Test for enums.
+			// Test for enums (excluding generic types).
 			basic, ok := def.(*types.Basic)
-			if ok && basic.Info()&types.IsConstType != 0 && basic.Info()&types.IsComplex == 0 {
+			if ok && tp == nil && basic.Info()&types.IsConstType != 0 && basic.Info()&types.IsComplex == 0 {
 				// Named type is defined as a representable constant type:
 				// look for defined constants of that named type.
 				for _, name := range obj.Pkg().Scope().Names() {
@@ -166,11 +178,8 @@ func (info *ModelInfo) Collect() {
 			return
 		}
 
-		// Resolve type info for struct.
-		typeInfo := info.resolveTypeInfo(obj)
-
 		// Collect information about struct fields.
-		info.collectStruct(strct, typeInfo)
+		info.collectStruct(strct)
 		info.Type = nil
 	})
 }
@@ -253,7 +262,7 @@ func (info *ModelInfo) collectEnum(constants []*types.Const) {
 }
 
 // collectStruct collects information about struct fields and their declarations.
-func (info *ModelInfo) collectStruct(strct *types.Struct, typeInfo *TypeDefInfo) {
+func (info *ModelInfo) collectStruct(strct *types.Struct) {
 	pkg := info.pkg
 	dummyFieldDef := &FieldDefInfo{
 		Group: &GroupInfo{},
@@ -264,9 +273,10 @@ func (info *ModelInfo) collectStruct(strct *types.Struct, typeInfo *TypeDefInfo)
 	structInfo.Collect()
 
 	// Cache resolved TypeDefInfo for embedded struct types.
+	rootTypeInfo := info.resolveTypeInfo(nil)
 	embeddedInfo := map[*types.TypeName]*TypeDefInfo{
-		nil:      typeInfo,
-		info.typ: typeInfo,
+		nil:      rootTypeInfo,
+		info.obj: rootTypeInfo,
 	}
 
 	// Allocate result slice.
@@ -338,7 +348,7 @@ func (info *ModelInfo) resolveTypeInfo(typ *types.TypeName) *TypeDefInfo {
 
 	for {
 		var typeInfo *TypeDefInfo
-		if typ == nil || typ == info.typ {
+		if typ == nil || typ == info.obj {
 			typeInfo = info.TypeDefInfo
 		} else {
 			tpkg := pkg.collector.Package(typ.Pkg().Path())

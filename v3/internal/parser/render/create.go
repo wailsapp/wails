@@ -81,15 +81,7 @@ func (m *module) JSCreate(typ types.Type) string {
 			return m.JSCreate(t.Underlying())
 		}
 
-		if collect.IsClass(t) {
-			if t.Obj().Pkg().Path() == m.Imports.Self {
-				return fmt.Sprintf("%s.createFrom", jsid(t.Obj().Name()))
-			} else {
-				return fmt.Sprintf("%s.%s.createFrom", jsimport(m.Imports.External[t.Obj().Pkg().Path()]), jsid(t.Obj().Name()))
-			}
-		} else {
-			return m.JSCreate(types.Unalias(t))
-		}
+		return m.JSCreate(types.Unalias(t))
 
 	case *types.Array:
 		id, ok := m.postponedCreates.At(typ).(int)
@@ -109,15 +101,29 @@ func (m *module) JSCreate(typ types.Type) string {
 
 		if collect.IsAny(t) || collect.IsString(t) {
 			break
-		} else if collect.IsClass(t) {
-			if t.Obj().Pkg().Path() == m.Imports.Self {
-				return fmt.Sprintf("%s.createFrom", jsid(t.Obj().Name()))
-			} else {
-				return fmt.Sprintf("%s.%s.createFrom", jsimport(m.Imports.External[t.Obj().Pkg().Path()]), jsid(t.Obj().Name()))
-			}
-		} else {
+		} else if !collect.IsClass(t) {
 			return m.JSCreate(t.Underlying())
 		}
+
+		var builder strings.Builder
+
+		if t.Obj().Pkg().Path() != m.Imports.Self {
+			builder.WriteString(jsimport(m.Imports.External[t.Obj().Pkg().Path()]))
+			builder.WriteRune('.')
+		}
+		builder.WriteString(jsid(t.Obj().Name()))
+		builder.WriteString(".createFrom")
+
+		if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
+			builder.WriteString(".bind(null")
+			for i, length := 0, t.TypeArgs().Len(); i < length; i++ {
+				builder.WriteString(", ")
+				builder.WriteString(m.JSCreate(t.TypeArgs().At(i)))
+			}
+			builder.WriteString(")")
+		}
+
+		return builder.String()
 
 	case *types.Map:
 		id, ok := m.postponedCreates.At(typ).(int)
@@ -173,6 +179,13 @@ func (m *module) JSCreate(typ types.Type) string {
 			id = m.postponedCreates.Len()
 			m.postponedCreates.Set(typ, id)
 			return fmt.Sprintf("$$createType%d", id)
+		}
+
+	case *types.TypeParam:
+		if t.Obj().Name() == "" || t.Obj().Name() == "_" {
+			return fmt.Sprintf("$$createT$$%d", t.Index())
+		} else {
+			return fmt.Sprintf("$$create%s", jsid(t.Obj().Name()))
 		}
 	}
 

@@ -81,15 +81,9 @@ func IsString(typ types.Type) bool {
 		typ = ptr.Elem()
 	}
 
-	switch t := typ.(type) {
-	case *types.Alias:
-		// Aliases might be rendered as string aliases.
-	case *types.Named:
-		// Named types might be rendered as string aliases
-		// unless they're generic.
-		if t.TypeParams() != nil {
-			return false
-		}
+	switch typ.(type) {
+	case *types.Alias, *types.Named:
+		// Aliases and named types might be rendered as string aliases.
 	default:
 		// Not a model type.
 		return false
@@ -122,8 +116,8 @@ func IsClass(typ types.Type) bool {
 	// Follow alias chain.
 	typ = types.Unalias(typ)
 
-	if named, isNamed := typ.(*types.Named); !isNamed || named.TypeParams() != nil {
-		// Not a model type, or generic.
+	if _, isNamed := typ.(*types.Named); !isNamed {
+		// Not a model type.
 		return false
 	}
 
@@ -143,13 +137,6 @@ func IsAny(typ types.Type) bool {
 
 	if MaybeTextMarshaler(typ) {
 		return false
-	}
-
-	if named, ok := typ.(*types.Named); ok {
-		if named.TypeParams() != nil {
-			// Generic types are not supported yet.
-			return true
-		}
 	}
 
 	// Retrieve underlying type

@@ -62,10 +62,33 @@ import {
 {{- $isStructAlias := and $model.Fields $model.Alias}}
 {{- $isClass := and $model.Fields (not $model.Alias)}}
 
-{{- if or $model.Doc $isEnum $isTypeAlias $isStructAlias}}
+{{- /* Build type parameter list */}}
+{{- $typeParams := ""}}
+{{- $typeParamList := ""}}
+{{- range $i, $param := $model.TypeParams}}
+    {{- if or (eq $param "") (eq $param "_")}}
+        {{- $param = (printf "T$$%d" $i)}}
+    {{- end}}
+    {{- $param = (jsid $param)}}
+    {{- if eq $i 0}}
+        {{- $typeParams = $param}}
+        {{- $typeParamList = (printf "<%s" $param)}}
+    {{- else}}
+        {{- $typeParams = (printf "%s,%s" $typeParams $param)}}
+        {{- $typeParamList = (printf "%s, %s" $typeParamList $param)}}
+    {{- end}}
+{{- end}}
+{{- if $typeParamList}}
+    {{- $typeParamList = (printf "%s>" $typeParamList)}}
+{{- end}}
+
+{{- if or $typeParams $model.Doc $isEnum $isTypeAlias $isStructAlias}}
 /**
 {{- if $model.Doc}}
 {{- jsdoc $model.Doc.Text ""}}
+{{- end}}
+{{- if $typeParams}}
+ * @template {{$typeParams}}
 {{- end}}
 {{- if $isEnum}}
  * @readonly
@@ -76,7 +99,7 @@ import {
  * @typedef { { {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
  {{- if and (ne $i 0) (eq $j 0)}}
  *{{end}}
- *     "{{js $field.Name}}"{{if $field.Optional}}?{{end}}: {{$module.JSType $field.Type}},
+ *     "{{js $field.Name}}"{{if $field.Optional}}?{{end}}: {{$module.JSFieldType $field.FieldInfo}},
  * } }{{end}}{{end}} {{jsid $model.Name}}
 {{- end}}
  */
@@ -107,14 +130,18 @@ export const {{jsid $model.Name}} = {
     {{- end}}{{end}}{{end}}
 };
 {{else if $isClassAlias}}
+{{- if and $model.Type.TypeParams (gt $model.Type.TypeParams.Len 0)}}
+export const {{jsid $model.Name}} = /** @type {typeof {{$module.JSType $model.Type -}} } */({{$module.JSType $model.Type.Origin}});
+{{- else}}
 export const {{jsid $model.Name}} = {{$module.JSType $model.Type}};
+{{- end}}
 {{else if $isClass}}
 export class {{jsid $model.Name}} {
     /**
      * Creates a new {{jsid $model.Name}} instance.
-     * @param {Partial<{{jsid $model.Name}}>} [source = {}] - The source object to create the {{jsid $model.Name}}.
+     * @param {Partial<{{jsid $model.Name}}{{$typeParamList}}>} [$$source = {}] - The source object to create the {{jsid $model.Name}}.
      */
-    constructor(source = {}) {
+    constructor($$source = {}) {
     {{- range $group := $model.Fields}}{{range $i, $field := $group}}
         {{- /*
             In JS we need to set all properties explicitly
@@ -124,7 +151,7 @@ export class {{jsid $model.Name}} {
             For optional fields we make the initialization code unreachable
             and cast the false condition to any to prevent any complaint from Typescript.
         */}}
-        if ({{if $field.Optional}}/** @type {any} */(false){{else}}!("{{js $field.Name}}" in source){{end}}) {
+        if ({{if $field.Optional}}/** @type {any} */(false){{else}}!("{{js $field.Name}}" in $$source){{end}}) {
             /**
             {{- if and (eq $i 0) $field.Group.Doc}}
             {{- jsdoc $field.Group.Doc.Text "            "}}{{if $field.Doc}}
@@ -134,31 +161,48 @@ export class {{jsid $model.Name}} {
             {{- jsdoc $field.Doc.Text "            "}}
             {{- end}}
              * @member
-             * @type { {{- $module.JSType $field.Type}}{{if .Optional}} | undefined{{end -}} }
+             * @type { {{- $module.JSFieldType $field.FieldInfo}}{{if .Optional}} | undefined{{end -}} }
              */
             this["{{js $field.Name}}"] = {{$module.JSDefault $field.Type $field.Quoted}};
         }
     {{- end}}{{end}}
 
-        Object.assign(this, source);
+        Object.assign(this, $$source);
     }
 
     /**
      * Creates a new {{jsid $model.Name}} instance from a string or object.
-     * @param {any} source
-     * @returns { {{- jsid $model.Name -}} }
+     * Generic types also need creation functions for each type parameter.
+    {{- if $typeParams}}
+     * @template {{$typeParams}}
+    {{- end}}
+    {{- range $i, $param := $model.TypeParams}}
+        {{- if or (eq $param "") (eq $param "_")}}
+            {{- $param = (printf "T$$%d" $i)}}
+        {{- end}}
+        {{- $param = (jsid $param)}}
+     * @param {(any) => {{$param -}} } $$create{{$param}}
+    {{- end}}
+     * @param {any} [$$source = {}]
+     * @returns { {{- jsid $model.Name -}}{{$typeParamList}} }
      */
-    static createFrom(source = {}) {
-        let parsedSource = typeof source === 'string' ? JSON.parse(source) : source;
+    static createFrom({{range $i, $param := $model.TypeParams}}
+                {{- if or (eq $param "") (eq $param "_")}}
+                    {{- $param = (printf "T$$%d" $i)}}
+                {{- end}}
+                {{- $param = (jsid $param) -}}
+                $$create{{$param}}, {{end -}}
+            $$source = {}) {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
         {{- $create := ($module.JSCreate $field.Type)}}
         {{- if ne $create "$Create.Any"}}
-        if ("{{js $field.Name}}" in parsedSource) {
-            parsedSource["{{js $field.Name}}"] = {{$create}}(parsedSource["{{js $field.Name}}"]);
+        if ("{{js $field.Name}}" in $$parsedSource) {
+            $$parsedSource["{{js $field.Name}}"] = {{$create}}($$parsedSource["{{js $field.Name}}"]);
         }
         {{- end}}
         {{- end}}{{end}}
-        return new {{jsid $model.Name}}(/** @type {Partial<{{jsid $model.Name}}>} */(parsedSource));
+        return new {{jsid $model.Name}}(/** @type {Partial<{{jsid $model.Name}}{{$typeParamList}}>} */($$parsedSource));
     }
 }
 {{else}}

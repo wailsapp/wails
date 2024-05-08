@@ -121,6 +121,8 @@ var commentTerminator = []byte("*/")
 // reservedWords is a list of JS + TS reserved or special meaning words.
 // Keep in ascending lexicographical order for best startup performance.
 var reservedWords = []string{
+	"JSON",
+	"Object",
 	"any",
 	"arguments",
 	"as",

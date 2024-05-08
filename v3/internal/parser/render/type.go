@@ -19,10 +19,20 @@ func (m *module) JSType(typ types.Type) string {
 	return result
 }
 
+// JSFieldType renders a struct field type to its TypeScript representation,
+// using the receiver's import map to resolve dependencies.
+//
+// JSFieldType's output may be incorrect if m.Imports.AddType
+// has not been called for the given type.
+func (m *module) JSFieldType(field *collect.FieldInfo) string {
+	result, _ := m.renderType(field.Type, field.Quoted)
+	return result
+}
+
 // renderType provides the actual implementation of [module.Type].
 // It returns the rendered type and a boolean indicating whether
-// the resulting expression describes a pointer type.
-func (m *module) renderType(typ types.Type, quoted bool) (result string, ptr bool) {
+// the resulting expression describes a nullable type.
+func (m *module) renderType(typ types.Type, quoted bool) (result string, nullable bool) {
 	switch t := typ.(type) {
 	case *types.Alias:
 		if t.Obj().Pkg() == nil {
@@ -81,11 +91,27 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, ptr boo
 			}
 		}
 
-		if t.Obj().Pkg().Path() == m.Imports.Self {
-			return jsid(t.Obj().Name()), false
-		} else {
-			return fmt.Sprintf("%s.%s", jsimport(m.Imports.External[t.Obj().Pkg().Path()]), jsid(t.Obj().Name())), false
+		var builder strings.Builder
+
+		if t.Obj().Pkg().Path() != m.Imports.Self {
+			builder.WriteString(jsimport(m.Imports.External[t.Obj().Pkg().Path()]))
+			builder.WriteRune('.')
 		}
+		builder.WriteString(jsid(t.Obj().Name()))
+
+		if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
+			builder.WriteRune('<')
+			for i, length := 0, t.TypeArgs().Len(); i < length; i++ {
+				if i > 0 {
+					builder.WriteString(", ")
+				}
+				arg, _ := m.renderType(t.TypeArgs().At(i), false)
+				builder.WriteString(arg)
+			}
+			builder.WriteRune('>')
+		}
+
+		return builder.String(), false
 
 	case *types.Pointer:
 		elem, ptr := m.renderType(t.Elem(), false)
@@ -110,6 +136,18 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, ptr boo
 
 	case *types.Struct:
 		return m.renderStructType(t), false
+
+	case *types.TypeParam:
+		str := ""
+		if quoted {
+			str = "| string "
+		}
+
+		if t.Obj().Name() == "" || t.Obj().Name() == "_" {
+			return fmt.Sprintf("T$$%d %s| null", t.Index(), str), true
+		} else {
+			return fmt.Sprintf("%s %s| null", jsid(t.Obj().Name()), str), true
+		}
 	}
 
 	// Fall back to untyped mode.
@@ -204,9 +242,7 @@ func (m *module) renderStructType(typ *types.Struct) string {
 		}
 
 		builder.WriteString(": ")
-
-		fieldType, _ := m.renderType(field.Type, field.Quoted)
-		builder.WriteString(fieldType)
+		builder.WriteString(m.JSFieldType(field))
 	}
 	builder.WriteRune('}')
 

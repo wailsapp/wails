@@ -16,9 +16,3 @@ func chanWarning() {
 func funcWarning() {
 	pterm.Warning.Println("function types in models or bound method signatures are not supported")
 }
-
-// genericWarning warns about unsupported use of generics.
-// TODO: implement support for generics.
-func genericWarning() {
-	pterm.Warning.Println("generic types in models or bound method signatures are not fully supported yet")
-}
