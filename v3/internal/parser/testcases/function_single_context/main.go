@@ -24,13 +24,13 @@ func (*GreetService) GreetWithContext(ctx context.Context, name string) string {
 	return "Hello " + name
 }
 
-func NewGreetService() *GreetService {
-	return &GreetService{}
+func NewGreetService() application.Service {
+	return application.NewService(&GreetService{})
 }
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []interface{}{
+		Bind: []application.Service{
 			NewGreetService(),
 		},
 	})

@@ -16,15 +16,15 @@ type Service4 struct{}
 type Service5 struct{}
 type Service6 struct{}
 
-var GlobalServices []any
+var GlobalServices []application.Service
 
 func main() {
-	services := []any{
-		&Service1{},
+	services := []application.Service{
+		application.NewService(&Service1{}),
 	}
 
-	services = append(services, &Service2{}, nil, nil)
-	services[2] = &Service3{}
+	services = append(services, application.NewService(&Service2{}), application.Service{}, application.Service{})
+	services[2] = application.NewService(&Service3{})
 
 	var options = application.Options{
 		Bind: config.Services,
@@ -38,7 +38,7 @@ func main() {
 	// Method resolution should work here just like above.
 	config.NewProviderInitialiser().InitProvider(&services[3])
 
-	copy(options.Bind, []any{&Service4{}, provider.HeresAnotherOne, provider.OtherService})
+	copy(options.Bind, []application.Service{application.NewService(&Service4{}), provider.HeresAnotherOne, provider.OtherService.(application.Service)})
 	(options.Bind) = append(options.Bind, slices.Insert(services, 1, GlobalServices[2:]...)...)
 
 	app := application.New(options)
@@ -54,10 +54,13 @@ func main() {
 }
 
 func init() {
-	var global = make([]any, 4)
+	var global = make([]application.Service, 4)
 
-	global[0] = &Service5{}
-	global = slices.Replace(global, 1, 4, any(&Service6{}), any(config.MoreServices().TM2Service))
+	global[0] = application.NewService(&Service5{})
+	global = slices.Replace(global, 1, 4,
+		application.NewService(&Service6{}),
+		config.MoreServices().AService,
+	)
 
 	GlobalServices = slices.Clip(global)
 }

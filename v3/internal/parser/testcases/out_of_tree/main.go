@@ -27,12 +27,12 @@ func (*GreetService) Greet(string) {}
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []interface{}{
-			new(GreetService),
-			&EmbedService{},
-			&EmbedOther{},
-			&nobindingshere.SomeMethods{},
-			&other.OtherMethods{},
+		Bind: []application.Service{
+			application.NewService(new(GreetService)),
+			application.NewService(&EmbedService{}),
+			application.NewService(&EmbedOther{}),
+			application.NewService(&nobindingshere.SomeMethods{}),
+			application.NewService(&other.OtherMethods{}),
 		},
 	})
 

@@ -1,5 +1,7 @@
 package config
 
+import "github.com/wailsapp/wails/v3/pkg/application"
+
 type Service7 struct{}
 type Service8 struct{}
 type Service9 struct{}
@@ -11,23 +13,19 @@ func (*Service7) TestMethod() {}
 
 func (*Service9) TestMethod2() {}
 
-func NewService7() interface{ TestMethod() } {
-	return new(Service7)
+func NewService7() application.Service {
+	return application.NewService(new(Service7))
 }
 
-func NewService8() (result any) {
-	result = &Service8{}
+func NewService8() (result application.Service) {
+	result = application.NewService(&Service8{})
 	return
 }
 
-type TM2 interface {
-	TestMethod2()
-}
-
 type ServiceProvider struct {
-	TM2Service TM2
+	AService application.Service
 	*ProviderWithMethod
-	HeresAnotherOne any
+	HeresAnotherOne application.Service
 }
 
 type ProviderWithMethod struct {
@@ -35,18 +33,18 @@ type ProviderWithMethod struct {
 }
 
 func (pm *ProviderWithMethod) Init() {
-	pm.OtherService = &Service10{}
+	pm.OtherService = application.NewService(&Service10{})
 }
 
-var Services []any
+var Services []application.Service
 
 func init() {
-	var ourServices = []any{
+	var ourServices = []application.Service{
 		NewService7(),
 		NewService8(),
 	}
 
-	Services = make([]any, len(ourServices))
+	Services = make([]application.Service, len(ourServices))
 
 	for i, el := range ourServices {
 		Services[len(ourServices)-i] = el
@@ -56,7 +54,7 @@ func init() {
 func MoreServices() ServiceProvider {
 	var provider ServiceProvider
 
-	provider.TM2Service = &Service9{}
+	provider.AService = application.NewService(&Service9{})
 	provider.ProviderWithMethod = new(ProviderWithMethod)
 
 	return provider
@@ -75,10 +73,10 @@ func NewProviderInitialiser() ProviderInitialiser {
 func (internalProviderInitialiser) InitProvider(provider any) {
 	switch p := provider.(type) {
 	case *ServiceProvider:
-		p.HeresAnotherOne = &Service11{}
+		p.HeresAnotherOne = application.NewService(&Service11{})
 	default:
 		if anyp, ok := p.(*any); ok {
-			*anyp = &Service12{}
+			*anyp = application.NewService(&Service12{})
 		}
 	}
 }

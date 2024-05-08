@@ -9,9 +9,9 @@ import (
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []interface{}{
-			&GreetService{},
-			&OtherService{},
+		Bind: []application.Service{
+			application.NewService(&GreetService{}),
+			application.NewService(&OtherService{}),
 		},
 	})
 

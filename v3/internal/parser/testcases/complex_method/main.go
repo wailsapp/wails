@@ -27,8 +27,8 @@ func (*GreetService) Greet(str string, people []Person, _ struct {
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []interface{}{
-			&GreetService{},
+		Bind: []application.Service{
+			application.NewService(&GreetService{}),
 		},
 	})
 

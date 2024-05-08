@@ -1,5 +1,7 @@
 package other
 
+import "github.com/wailsapp/wails/v3/pkg/application"
+
 // OtherService is a struct
 // that does things
 type OtherService struct {
@@ -21,6 +23,6 @@ func (o *OtherService) Yay() *Address {
 	}
 }
 
-func NewOtherService() *OtherService {
-	return &OtherService{}
+func NewOtherService() application.Service {
+	return application.NewService(&OtherService{})
 }

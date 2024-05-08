@@ -35,8 +35,8 @@ type InterfaceAlias = interface {
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []interface{}{
-			&GreetService{},
+		Bind: []application.Service{
+			application.NewService(&GreetService{}),
 		},
 	})
 

@@ -108,8 +108,8 @@ func (*GreetService) Greet(person Person, emb Embedded1) string {
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []interface{}{
-			&GreetService{},
+		Bind: []application.Service{
+			application.NewService(&GreetService{}),
 		},
 	})
 

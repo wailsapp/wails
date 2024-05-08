@@ -29,13 +29,13 @@ func (GreetService) GetButDifferent() Person[bool] {
 	return Person[bool]{true, 13}
 }
 
-func NewGreetService() *GreetService {
-	return new(GreetService)
+func NewGreetService() application.Service {
+	return application.NewService(new(GreetService))
 }
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []interface{}{
+		Bind: []application.Service{
 			NewGreetService(),
 		},
 	})

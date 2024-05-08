@@ -2,6 +2,8 @@ package main
 
 import (
 	_ "embed"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type GreetService struct {
@@ -13,6 +15,6 @@ func (*GreetService) Greet(name string) string {
 	return "Hello " + name
 }
 
-func NewGreetService() *GreetService {
-	return &GreetService{}
+func NewGreetService() application.Service {
+	return application.NewService(&GreetService{})
 }

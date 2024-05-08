@@ -9,7 +9,7 @@ import (
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []interface{}{
+		Bind: []application.Service{
 			NewGreetService(),
 		},
 	})

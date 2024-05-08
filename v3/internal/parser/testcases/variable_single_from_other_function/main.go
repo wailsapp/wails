@@ -36,8 +36,8 @@ func (*GreetService) NewPerson(name string) *Person {
 func main() {
 	otherService := services.NewOtherService()
 	app := application.New(application.Options{
-		Bind: []interface{}{
-			&GreetService{},
+		Bind: []application.Service{
+			application.NewService(&GreetService{}),
 			otherService,
 		},
 	})

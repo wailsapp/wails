@@ -189,8 +189,8 @@ func (*GreetService) ArrayInt(in [4]int) {
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []interface{}{
-			&GreetService{},
+		Bind: []application.Service{
+			application.NewService(&GreetService{}),
 		},
 	})
 
