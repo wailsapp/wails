@@ -80,36 +80,22 @@ export enum {{jsid $model.Name}} {
     {{jsid $value.Name}} = {{jsvalue $value.Value}},
     {{- end}}{{end}}{{end}}
 };
-{{else if and $isClassAlias}}
-export class {{jsid $model.Name}}{{$typeParamList}} extends {{$module.JSType $model.Type}} {
-    /** Creates a new {{jsid $model.Name}} instance. */
-    constructor($$source: Partial<{{jsid $model.Name}}{{$typeParamList}}> = {}) {
-        super($$source);
-    }
+{{else if $isClassAlias}}
+export const {{jsid $model.Name}} = {{$module.JSType $model.Type.Origin}};
+{{- if or $model.Group.Doc $model.Doc}}
 
-    /**
-    {{- if $typeParamList}}
-     * Given creation functions for each type parameter,
-     * returns a creation function for a concrete instance
-     * of the generic class {{jsid $model.Name}}.
-    {{- else}}
-     * Creates a new {{jsid $model.Name}} instance from a string or object.
-    {{- end}}
-     */
-    static createFrom{{$typeParamList}}({{if $typeParamList}}
-            {{- range $i, $param := $model.TypeParams}}
-                {{- $param = (typeparam $i $param)}}
-                {{- if gt $i 0}}, {{end -}}
-                $$createParam{{$param}}: (any) => {{$param}}{{end -}}
-            {{else}}$$source: any = {}, $$class: any = {{jsid $model.Name}}{{end}}):
-                {{- if $typeParamList}} ($$source?: any, $$class?: any) =>{{end}} any {
-        const $$createSuper = {{$module.JSCreateWithParams $model.Type $createParamList}};
-        return {{if $typeParamList -}}
-            ($$source = {}, $$class = {{jsid $model.Name}}) => {{end -}}
-                $$createSuper($$source, $$class);
-    }
-}
-{{else if or $isTypeAlias}}
+/**
+{{- if $model.Group.Doc}}
+{{- jsdoc $model.Group.Doc.Text ""}}{{if $model.Doc}}
+ *{{end}}
+{{- end}}
+{{- if $model.Doc}}
+{{- jsdoc $model.Doc.Text ""}}
+{{- end}}
+ */
+{{- end}}
+export type {{jsid $model.Name}}{{$typeParamList}} = {{$module.JSType $model.Type}};
+{{else if $isTypeAlias}}
 export type {{jsid $model.Name}}{{$typeParamList}} = {{$module.JSType $model.Type}};
 {{else if $isClassOrInterface}}
 export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$typeParamList}} {
@@ -156,8 +142,8 @@ export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$t
                 {{- $param = (typeparam $i $param)}}
                 {{- if gt $i 0}}, {{end -}}
                 $$createParam{{$param}}: (any) => {{$param}}{{end -}}
-            {{else}}$$source: any = {}, $$class: any = {{jsid $model.Name}}{{end}}):
-                {{- if $typeParamList}} ($$source?: any, $$class?: any) =>{{end}} {{jsid $model.Name}}{{$typeParamList}} {
+            {{else}}$$source: any = {}{{end}}):
+                {{- if $typeParamList}} ($$source?: any) =>{{end}} {{jsid $model.Name}}{{$typeParamList}} {
         {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
             {{- $create := ($module.JSCreateWithParams $field.Type $createParamList)}}
             {{- if ne $create "$Create.Any"}}
@@ -167,7 +153,7 @@ export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$t
         {{- $indent := ""}}
         {{- if $typeParamList}}
             {{- $indent = "    "}}
-        return ($$source: any = {}, $$class: any = {{jsid $model.Name}}) => {
+        return ($$source: any = {}) => {
         {{- end}}
         {{$indent}}let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
