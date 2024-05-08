@@ -3,41 +3,53 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
+
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/parser"
-	"path/filepath"
+	"github.com/wailsapp/wails/v3/internal/parser/analyse"
 )
 
-func GenerateBindings(options *flags.GenerateBindingsOptions) error {
-
+func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string) error {
 	if options.Silent {
 		pterm.DisableOutput()
 		defer pterm.EnableOutput()
+	} else if options.Verbose {
+		pterm.EnableDebugMessages()
+		defer pterm.DisableDebugMessages()
 	}
 
-	project, err := parser.GenerateBindingsAndModels(options)
+	if len(patterns) == 0 {
+		// No input pattern, load package from current directory.
+		patterns = []string{"."}
+	}
+
+	generator := parser.NewGenerator(options, nil)
+	stats, err := generator.Generate(patterns...)
 	if err != nil {
-		if errors.Is(err, parser.ErrNoBindingsFound) {
-			pterm.Info.Println("No bindings found")
-			return nil
-		} else {
+		switch {
+		case errors.Is(err, parser.ErrNoInitialPackages):
+			pterm.Info.Println(err)
+		case errors.Is(err, analyse.ErrNoApplicationPackage):
+			pterm.Info.Println("Input packages do not load the Wails application package")
+		default:
 			return err
 		}
 	}
+
+	pterm.Info.Printf("Processed: %s, %s, %s, %s, %s in %s.\n",
+		pluralise(stats.NumPackages, "Package"),
+		pluralise(stats.NumTypes, "Bound Type"),
+		pluralise(stats.NumMethods, "Method"),
+		pluralise(stats.NumEnums, "Enum"),
+		pluralise(stats.NumModels, "Model"),
+		stats.Elapsed().String())
 
 	absPath, err := filepath.Abs(options.OutputDirectory)
 	if err != nil {
 		return err
 	}
-
-	pterm.Info.Printf("Processed: %s, %s, %s, %s, %s in %s.\n",
-		pluralise(project.Stats.NumPackages, "Package"),
-		pluralise(project.Stats.NumStructs, "Struct"),
-		pluralise(project.Stats.NumMethods, "Method"),
-		pluralise(project.Stats.NumEnums, "Enum"),
-		pluralise(project.Stats.NumModels, "Model"),
-		project.Stats.EndTime.Sub(project.Stats.StartTime).String())
 
 	pterm.Info.Printf("Output directory: %s\n", absPath)
 

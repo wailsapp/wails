@@ -1,13 +1,15 @@
 package main
 
 import (
-	"github.com/pterm/pterm"
-	"github.com/samber/lo"
 	"os"
 	"runtime/debug"
 
+	"github.com/pterm/pterm"
+	"github.com/samber/lo"
+
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v3/internal/commands"
+	"github.com/wailsapp/wails/v3/internal/flags"
 )
 
 func init() {
@@ -42,7 +44,13 @@ func main() {
 	generate.NewSubCommandFunction("build-assets", "Generate build assets", commands.GenerateBuildAssets)
 	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
 	generate.NewSubCommandFunction("syso", "Generate Windows .syso file", commands.GenerateSyso)
-	generate.NewSubCommandFunction("bindings", "Generate bindings + models", commands.GenerateBindings)
+	bindgen := generate.NewSubCommand("bindings", "Generate bindings + models")
+	var bindgenFlags flags.GenerateBindingsOptions
+	bindgen.AddFlags(&bindgenFlags)
+	bindgen.Action(func() error {
+		return commands.GenerateBindings(&bindgenFlags, bindgen.OtherArgs())
+	})
+	bindgen.LongDescription("\nUsage: wails3 generate bindings [flags] [patterns...]\n\nPatterns match packages to scan for bound types.\nPattern format is analogous to that of the Go build tool,\ne.g. './...' matches packages in the current directory and all descendants.\nIf no pattern is given, the tool will fall back to the current directory.")
 	generate.NewSubCommandFunction("constants", "Generate JS constants from Go", commands.GenerateConstants)
 	generate.NewSubCommandFunction(".desktop", "Generate .desktop file", commands.GenerateDotDesktop)
 	generate.NewSubCommandFunction("appimage", "Generate Linux AppImage", commands.GenerateAppImage)
