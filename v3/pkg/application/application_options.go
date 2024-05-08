@@ -8,6 +8,23 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
 
+// Service wraps a bound type instance.
+// The zero value of Service is invalid.
+// Valid values may only be obtained by calling [NewService].
+type Service struct {
+	instance any
+}
+
+// NewService returns a Service value wrapping the given pointer.
+// If T is not a named type, the returned value is invalid.
+func NewService[T any](instance *T) Service {
+	return Service{instance}
+}
+
+func (s Service) Instance() any {
+	return s.instance
+}
+
 // Options contains the options for the application
 type Options struct {
 	// Name is the name of the application (used in the default about box)
@@ -29,7 +46,7 @@ type Options struct {
 	Linux LinuxOptions
 
 	// Bind allows you to bind Go methods to the frontend.
-	Bind []any
+	Bind []Service
 
 	// BindAliases allows you to specify alias IDs for your bound methods.
 	// Example: `BindAliases: map[uint32]uint32{1: 1411160069}` states that alias ID 1 maps to the Go method with ID 1411160069.

@@ -84,14 +84,14 @@ type Bindings struct {
 	methodAliases map[uint32]uint32
 }
 
-func NewBindings(structs []any, aliases map[uint32]uint32) (*Bindings, error) {
+func NewBindings(instances []Service, aliases map[uint32]uint32) (*Bindings, error) {
 	b := &Bindings{
 		boundMethods:  make(map[string]map[string]map[string]*BoundMethod),
 		boundByID:     make(map[uint32]*BoundMethod),
 		methodAliases: aliases,
 	}
-	for _, binding := range structs {
-		err := b.Add(binding)
+	for _, binding := range instances {
+		err := b.Add(binding.Instance())
 		if err != nil {
 			return nil, err
 		}
@@ -101,7 +101,6 @@ func NewBindings(structs []any, aliases map[uint32]uint32) (*Bindings, error) {
 
 // Add the given named type pointer methods to the Bindings
 func (b *Bindings) Add(namedPtr interface{}) error {
-
 	methods, err := b.getMethods(namedPtr, false)
 	if err != nil {
 		return fmt.Errorf("cannot bind value to app: %s", err.Error())

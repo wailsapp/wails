@@ -160,8 +160,8 @@ func TestBoundMethodCall(t *testing.T) {
 	_ = application.New(application.Options{})
 
 	bindings, err := application.NewBindings(
-		[]any{
-			&TestService{},
+		[]application.Service{
+			application.NewService(&TestService{}),
 		}, make(map[uint32]uint32),
 	)
 	if err != nil {
