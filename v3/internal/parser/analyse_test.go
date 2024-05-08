@@ -63,7 +63,7 @@ func TestAnalyser(t *testing.T) {
 	// Add global test.
 	{
 		all := testParams{
-			name: "all",
+			name: "...",
 		}
 
 		for _, test := range tests {
@@ -81,12 +81,7 @@ func TestAnalyser(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		pkgPattern := "github.com/wailsapp/wails/v3/internal/parser/testcases/"
-		if test.name == "all" {
-			pkgPattern += "..."
-		} else {
-			pkgPattern += test.name
-		}
+		pkgPattern := "github.com/wailsapp/wails/v3/internal/parser/testcases/" + test.name
 
 		t.Run("pkg="+test.name, func(t *testing.T) {
 			pkgs, err := LoadPackages(nil, pkgPattern)
