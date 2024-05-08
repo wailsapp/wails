@@ -16,27 +16,45 @@ export interface AliasStruct {
     /**
      * A field with a comment.
      */
-    "Foo": number;
+    "Foo": number[] | null;
 
     /**
      * Definitely not Foo.
      */
     "Bar"?: string;
     "Baz"?: string;
+
+    /**
+     * A nested alias struct.
+     */
+    "Other": OtherAliasStruct;
 }
 
 /**
  * An empty struct alias.
  */
+export interface EmptyAliasStruct {
+}
+
 /**
  * An empty struct.
  */
+export interface EmptyStruct {
+}
+
 /**
  * A generic struct containing an alias
  */
 export interface GenericPerson<T> {
     "Name": T | null;
     "AliasedField": Alias;
+}
+
+/**
+ * Another struct alias.
+ */
+export interface OtherAliasStruct {
+    "NoMoreIdeas": number[] | null;
 }
 
 /**

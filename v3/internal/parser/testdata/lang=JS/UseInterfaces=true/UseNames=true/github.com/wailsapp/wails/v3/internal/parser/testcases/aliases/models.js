@@ -13,9 +13,10 @@ import {Create as $Create} from "/wails/runtime.js";
  * A struct alias.
  * This should be rendered as a typedef or interface in every mode.
  * @typedef {Object} AliasStruct
- * @property {number} Foo - A field with a comment.
+ * @property {number[] | null} Foo - A field with a comment.
  * @property {string} [Bar] - Definitely not Foo.
  * @property {string} [Baz] - Definitely not Foo.
+ * @property {OtherAliasStruct} Other - A nested alias struct.
  */
 
 /**
@@ -36,6 +37,12 @@ import {Create as $Create} from "/wails/runtime.js";
  * @typedef {Object} GenericPerson
  * @property {T | null} Name
  * @property {Alias} AliasedField
+ */
+
+/**
+ * Another struct alias.
+ * @typedef {Object} OtherAliasStruct
+ * @property {number[] | null} NoMoreIdeas
  */
 
 /**

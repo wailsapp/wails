@@ -16,21 +16,46 @@ export interface AliasStruct {
     /**
      * A field with a comment.
      */
-    "Foo": number;
+    "Foo": number[];
 
     /**
      * Definitely not Foo.
      */
     "Bar"?: string;
     "Baz"?: string;
+
+    /**
+     * A nested alias struct.
+     */
+    "Other": OtherAliasStruct;
 }
 
 /**
  * An empty struct alias.
  */
+export interface EmptyAliasStruct {
+}
+
 /**
  * An empty struct.
  */
+export class EmptyStruct {
+
+    /** Creates a new EmptyStruct instance. */
+    constructor($$source: Partial<EmptyStruct> = {}) {
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new EmptyStruct instance from a string or object.
+     */
+    static createFrom($$source: any = {}): EmptyStruct {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new EmptyStruct($$parsedSource as Partial<EmptyStruct>);
+    }
+}
+
 /**
  * A generic struct containing an alias
  */
@@ -65,6 +90,13 @@ export class GenericPerson<T> {
             return new GenericPerson<T>($$parsedSource as Partial<GenericPerson<T>>);
         };
     }
+}
+
+/**
+ * Another struct alias.
+ */
+export interface OtherAliasStruct {
+    "NoMoreIdeas": number[];
 }
 
 /**

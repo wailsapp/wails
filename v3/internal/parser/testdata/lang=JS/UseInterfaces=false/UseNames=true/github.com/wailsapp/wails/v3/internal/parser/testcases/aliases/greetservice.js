@@ -41,15 +41,27 @@ export function GetButDifferent() {
 /**
  * Greet a lot of unusual things.
  * @param {$models.EmptyAliasStruct} $0
- * @param {$models.AliasStruct} $1
- * @param {$models.EmptyStruct} $2
- * @returns {Promise<void> & { cancel(): void }}
+ * @param {$models.EmptyStruct} $1
+ * @returns {Promise<$models.AliasStruct> & { cancel(): void }}
  */
-export function Greet($0, $1, $2) {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", $0, $1, $2);
-    return /** @type {any} */($resultPromise);
+export function Greet($0, $1) {
+    let $resultPromise = $Call.ByName("main.GreetService.Greet", $0, $1);
+    let $typingPromise = $resultPromise.then(($result) => {
+        return $$createType5($result);
+    });
+    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
+    return /** @type {any} */($typingPromise);
 }
 
 // Private type creation functions
 const $$createType0 = $models.Person.createFrom;
 const $$createType1 = $models.GenericPerson.createFrom($Create.Any);
+const $$createType2 = $Create.Array($Create.Any);
+const $$createType3 = $Create.Array($Create.Any);
+const $$createType4 = $Create.Struct({
+    "NoMoreIdeas": $$createType3,
+});
+const $$createType5 = $Create.Struct({
+    "Foo": $$createType2,
+    "Other": $$createType4,
+});

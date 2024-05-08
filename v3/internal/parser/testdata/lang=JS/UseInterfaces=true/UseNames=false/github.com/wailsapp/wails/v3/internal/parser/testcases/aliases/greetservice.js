@@ -33,11 +33,10 @@ export function GetButDifferent() {
 /**
  * Greet a lot of unusual things.
  * @param {$models.EmptyAliasStruct} $0
- * @param {$models.AliasStruct} $1
- * @param {$models.EmptyStruct} $2
- * @returns {Promise<void> & { cancel(): void }}
+ * @param {$models.EmptyStruct} $1
+ * @returns {Promise<$models.AliasStruct> & { cancel(): void }}
  */
-export function Greet($0, $1, $2) {
-    let $resultPromise = $Call.ByID(1411160069, $0, $1, $2);
+export function Greet($0, $1) {
+    let $resultPromise = $Call.ByID(1411160069, $0, $1);
     return /** @type {any} */($resultPromise);
 }

@@ -29,7 +29,7 @@ export function GetButDifferent(): Promise<$models.GenericPerson<boolean>> & { c
 /**
  * Greet a lot of unusual things.
  */
-export function Greet($0: $models.EmptyAliasStruct, $1: $models.AliasStruct, $2: $models.EmptyStruct): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", $0, $1, $2);
+export function Greet($0: $models.EmptyAliasStruct, $1: $models.EmptyStruct): Promise<$models.AliasStruct> & { cancel(): void } {
+    let $resultPromise = $Call.ByName("main.GreetService.Greet", $0, $1);
     return $resultPromise as any;
 }
