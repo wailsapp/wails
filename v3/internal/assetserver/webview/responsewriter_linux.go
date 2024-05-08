@@ -3,7 +3,9 @@
 package webview
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.1 gio-unix-2.0
+#cgo linux pkg-config: gtk+-3.0 gio-unix-2.0
+#cgo webkit2_40 pkg-config: webkit2gtk-4.0 libsoup-2.4
+#cgo webkit2_41 pkg-config: webkit2gtk-4.1 libsoup-3.0
 
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
