@@ -9,9 +9,6 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// WailsAppPkgPath is the official import path of Wails v3's application package
-const WailsAppPkgPath = "github.com/wailsapp/wails/v3/pkg/application"
-
 // FindServices scans the given packages for invocations
 // of the NewService function from the Wails application package.
 //
@@ -27,7 +24,7 @@ const WailsAppPkgPath = "github.com/wailsapp/wails/v3/pkg/application"
 // This is required to handle vendored packages correctly.
 //
 // If yield returns false, FindBoundTypes returns immediately.
-func FindServices(pkgs []*packages.Package, wailsAppPkgPath string, logger config.Logger, yield func(*types.TypeName) bool) error {
+func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, logger config.Logger, yield func(*types.TypeName) bool) error {
 	type instanceInfo struct {
 		args *types.TypeList
 		pos  token.Position
@@ -120,7 +117,7 @@ func FindServices(pkgs []*packages.Package, wailsAppPkgPath string, logger confi
 				continue
 			}
 
-			if fn.Name() == "NewService" && fn.Pkg().Path() == wailsAppPkgPath {
+			if fn.Name() == "NewService" && fn.Pkg().Path() == systemPaths.ApplicationPackage {
 				// Check signature.
 				signature := fn.Type().(*types.Signature)
 				if signature.Params().Len() != 1 || signature.Results().Len() != 1 || tp.Len() != 1 || tp.At(0).Obj() == nil {

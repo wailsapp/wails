@@ -5,8 +5,42 @@ import (
 	"go/parser"
 	"go/token"
 
+	"github.com/wailsapp/wails/v3/internal/parser/config"
 	"golang.org/x/tools/go/packages"
 )
+
+// ResolveSystemPaths resolves paths for the Wails system
+func ResolveSystemPaths(buildFlags []string) (paths *config.SystemPaths, err error) {
+	// Resolve context pkg path.
+	contextPkgPaths, err := ResolvePatterns(buildFlags, "context")
+	if err != nil {
+		return
+	} else if len(contextPkgPaths) < 1 {
+		err = ErrNoContextPackage
+		return
+	} else if len(contextPkgPaths) > 1 {
+		// This should never happen...
+		panic("context package path matched multiple packages")
+	}
+
+	// Resolve wails app pkg path.
+	wailsAppPkgPaths, err := ResolvePatterns(buildFlags, config.WailsAppPkgPath)
+	if err != nil {
+		return
+	} else if len(wailsAppPkgPaths) < 1 {
+		err = ErrNoApplicationPackage
+		return
+	} else if len(wailsAppPkgPaths) > 1 {
+		// This should never happen...
+		panic("wails application package path matched multiple packages")
+	}
+
+	paths = &config.SystemPaths{
+		ContextPackage:     contextPkgPaths[0],
+		ApplicationPackage: wailsAppPkgPaths[0],
+	}
+	return
+}
 
 // ResolvePatterns returns a slice containing all package paths
 // that match the given patterns, according to the underlying build tool

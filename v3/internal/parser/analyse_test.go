@@ -74,17 +74,10 @@ func TestAnalyser(t *testing.T) {
 		tests = append(tests, all)
 	}
 
-	// Resolve wails app pkg path.
-	wailsAppPkgPaths, err := ResolvePatterns(nil, WailsAppPkgPath)
+	// Resolve system package paths.
+	systemPaths, err := ResolveSystemPaths(nil)
 	if err != nil {
-		return
-	}
-
-	if len(wailsAppPkgPaths) < 1 {
-		t.Fatal(ErrNoApplicationPackage)
-	} else if len(wailsAppPkgPaths) > 1 {
-		// This should never happen...
-		t.Fatal("wails application package path matched multiple packages")
+		t.Fatal(err)
 	}
 
 	for _, test := range tests {
@@ -109,7 +102,7 @@ func TestAnalyser(t *testing.T) {
 
 			got := make([]string, 0)
 
-			err = FindServices(pkgs, wailsAppPkgPaths[0], config.DefaultPtermLogger(nil), func(tn *types.TypeName) bool {
+			err = FindServices(pkgs, systemPaths, config.DefaultPtermLogger(nil), func(tn *types.TypeName) bool {
 				got = append(got, types.TypeString(tn.Type(), nil))
 				return true
 			})

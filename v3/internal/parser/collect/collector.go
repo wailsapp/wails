@@ -39,19 +39,19 @@ type Collector struct {
 	// and declaration groups. Elements are [Info] instances.
 	cache sync.Map
 
-	// wailsAppPkgPath stores the resolved path of the Wails application package.
-	wailsAppPkgPath string
+	// systemPaths holds resolved paths of required system packages.
+	systemPaths *config.SystemPaths
 
 	scheduler Scheduler
 	logger    config.Logger
 }
 
 // NewCollector initialises a new Collector instance for the given package set.
-func NewCollector(pkgs []*packages.Package, wailsAppPkgPath string, scheduler Scheduler, logger config.Logger) *Collector {
+func NewCollector(pkgs []*packages.Package, systemPaths *config.SystemPaths, scheduler Scheduler, logger config.Logger) *Collector {
 	collector := &Collector{
 		pkgs: make(map[*types.Package]*PackageInfo, len(pkgs)),
 
-		wailsAppPkgPath: wailsAppPkgPath,
+		systemPaths: systemPaths,
 
 		scheduler: scheduler,
 		logger:    logger,

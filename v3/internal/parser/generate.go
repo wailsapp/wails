@@ -95,16 +95,9 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		}
 	}()
 
-	// Resolve wails app pkg path.
-	wailsAppPkgPaths, err := ResolvePatterns(buildFlags, WailsAppPkgPath)
+	systemPaths, err := ResolveSystemPaths(buildFlags)
 	if err != nil {
 		return
-	} else if len(wailsAppPkgPaths) < 1 {
-		err = ErrNoApplicationPackage
-		return
-	} else if len(wailsAppPkgPaths) > 1 {
-		// This should never happen...
-		panic("wails application package path matched multiple packages")
 	}
 
 	// Load initial packages.
@@ -135,7 +128,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	}
 
 	// Initialise subcomponents.
-	generator.collector = collect.NewCollector(pkgs, wailsAppPkgPaths[0], &generator.scheduler, generator.logger)
+	generator.collector = collect.NewCollector(pkgs, systemPaths, &generator.scheduler, generator.logger)
 	generator.renderer = render.NewRenderer(generator.options, generator.collector)
 
 	// Kickstart package data collection.
@@ -150,7 +143,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	serviceFound := sync.OnceFunc(func() { generator.logger.Statusf("Generating service bindings...") })
 
 	// Run static analysis and schedule service code generation for each result.
-	err = FindServices(pkgs, wailsAppPkgPaths[0], generator.logger, func(obj *types.TypeName) bool {
+	err = FindServices(pkgs, systemPaths, generator.logger, func(obj *types.TypeName) bool {
 		serviceFound()
 		generator.scheduler.Schedule(func() {
 			generator.generateService(obj)

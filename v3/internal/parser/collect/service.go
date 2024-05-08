@@ -264,7 +264,7 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 		if i == 0 {
 			// Skip first parameter if it has context type.
 			named, ok := types.Unalias(param.Type()).(*types.Named)
-			if ok && named.Obj().Pkg().Path() == "context" && named.Obj().Name() == "Context" {
+			if ok && named.Obj().Pkg().Path() == collector.systemPaths.ContextPackage && named.Obj().Name() == "Context" {
 				needsContext = true
 				continue
 			}
@@ -274,7 +274,7 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 			// Skip first parameter if it has window type,
 			// or second parameter if it has window type and first is context.
 			named, ok := types.Unalias(param.Type()).(*types.Named)
-			if ok && named.Obj().Pkg().Path() == collector.wailsAppPkgPath && named.Obj().Name() == "Window" {
+			if ok && named.Obj().Pkg().Path() == collector.systemPaths.ApplicationPackage && named.Obj().Name() == "Window" {
 				continue
 			}
 		}
