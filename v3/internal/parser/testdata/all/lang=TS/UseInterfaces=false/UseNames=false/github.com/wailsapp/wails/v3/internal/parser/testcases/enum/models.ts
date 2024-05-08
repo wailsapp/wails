@@ -35,13 +35,12 @@ export class Person {
  * Title is a title
  */
 export enum Title {
-    Dr = "Dr",
-    Miss = "Miss",
-
     /**
      * Mister is a title
      */
     Mister = "Mr",
-    Mrs = "Mrs",
+    Miss = "Miss",
     Ms = "Ms",
+    Mrs = "Mrs",
+    Dr = "Dr",
 };

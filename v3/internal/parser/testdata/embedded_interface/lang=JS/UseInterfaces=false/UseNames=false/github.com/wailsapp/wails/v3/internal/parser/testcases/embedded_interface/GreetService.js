@@ -38,6 +38,7 @@ export function Method3() {
 }
 
 /**
+ * Comment 4.
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Method4() {
@@ -46,6 +47,7 @@ export function Method4() {
 }
 
 /**
+ * Comment 5.
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Method5() {

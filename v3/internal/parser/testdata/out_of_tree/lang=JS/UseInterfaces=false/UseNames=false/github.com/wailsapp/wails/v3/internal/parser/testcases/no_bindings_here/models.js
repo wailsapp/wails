@@ -6,6 +6,8 @@ import {Create as $Create} from "@wailsio/runtime";
 
 import * as other$0 from "./other/models.js";
 
+import * as $internal from "./internal.js";
+
 /**
  * HowDifferent is a curious kind of person
  * that lets other people decide how they are different.
@@ -64,39 +66,9 @@ export class Person {
 /**
  * PrivatePerson gets their fields from hidden sources.
  */
-export class PrivatePerson {
-    /**
-     * Creates a new PrivatePerson instance.
-     * @param {Partial<PrivatePerson>} [$$source = {}] - The source object to create the PrivatePerson.
-     */
-    constructor($$source = {}) {
-        if (!("Nickname" in $$source)) {
-            /**
-             * Nickname conceals a person's identity.
-             * @member
-             * @type {string}
-             */
-            this["Nickname"] = "";
-        }
-        if (!("Name" in $$source)) {
-            /**
-             * They have a name.
-             * @member
-             * @type {string}
-             */
-            this["Name"] = "";
-        }
+export const PrivatePerson = $internal.personImpl;
 
-        Object.assign(this, $$source);
-    }
-
-    /**
-     * Creates a new PrivatePerson instance from a string or object.
-     * @param {any} [$$source = {}]
-     * @returns {PrivatePerson}
-     */
-    static createFrom($$source = {}) {
-        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
-        return new PrivatePerson(/** @type {Partial<PrivatePerson>} */($$parsedSource));
-    }
-}
+/**
+ * PrivatePerson gets their fields from hidden sources.
+ * @typedef {$internal.personImpl} PrivatePerson
+ */

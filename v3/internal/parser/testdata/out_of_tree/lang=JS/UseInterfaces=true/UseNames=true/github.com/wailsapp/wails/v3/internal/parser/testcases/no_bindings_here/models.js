@@ -6,6 +6,8 @@ import {Create as $Create} from "@wailsio/runtime";
 
 import * as other$0 from "./other/models.js";
 
+import * as $internal from "./internal.js";
+
 /**
  * HowDifferent is a curious kind of person
  * that lets other people decide how they are different.
@@ -27,8 +29,5 @@ import * as other$0 from "./other/models.js";
 
 /**
  * PrivatePerson gets their fields from hidden sources.
- * @typedef { {
- *     "Nickname": string,
- *     "Name": string,
- * } } PrivatePerson
+ * @typedef {$internal.personImpl} PrivatePerson
  */

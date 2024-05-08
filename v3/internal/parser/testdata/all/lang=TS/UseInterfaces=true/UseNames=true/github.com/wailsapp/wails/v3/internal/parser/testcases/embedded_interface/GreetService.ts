@@ -33,11 +33,17 @@ export function Method3(): Promise<void> & { cancel(): void } {
     return $resultPromise as any;
 }
 
+/**
+ * Comment 4.
+ */
 export function Method4(): Promise<void> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.Method4");
     return $resultPromise as any;
 }
 
+/**
+ * Comment 5.
+ */
 export function Method5(): Promise<void> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.Method5");
     return $resultPromise as any;

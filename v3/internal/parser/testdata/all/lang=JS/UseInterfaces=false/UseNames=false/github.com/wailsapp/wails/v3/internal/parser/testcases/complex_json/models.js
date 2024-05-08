@@ -209,15 +209,14 @@ export class Person {
  * @enum {string}
  */
 export const Title = {
-    Dr: "Dr",
-    Miss: "Miss",
-
     /**
      * Mister is a title
      */
     Mister: "Mr",
-    Mrs: "Mrs",
+    Miss: "Miss",
     Ms: "Ms",
+    Mrs: "Mrs",
+    Dr: "Dr",
 };
 
 // Private type creation functions

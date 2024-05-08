@@ -4,13 +4,12 @@
 import {Create as $Create} from "@wailsio/runtime";
 
 export enum Title {
-    Dr = "Dr",
-    Miss = "Miss",
-
     /**
      * Mister is a title
      */
     Mister = "Mr",
-    Mrs = "Mrs",
+    Miss = "Miss",
     Ms = "Ms",
+    Mrs = "Mrs",
+    Dr = "Dr",
 };

@@ -5,6 +5,8 @@ import {Create as $Create} from "@wailsio/runtime";
 
 import * as other$0 from "./other/models.ts";
 
+import * as $internal from "./internal.ts";
+
 /**
  * HowDifferent is a curious kind of person
  * that lets other people decide how they are different.
@@ -29,14 +31,4 @@ export interface Person {
 /**
  * PrivatePerson gets their fields from hidden sources.
  */
-export interface PrivatePerson {
-    /**
-     * Nickname conceals a person's identity.
-     */
-    "Nickname": string;
-
-    /**
-     * They have a name.
-     */
-    "Name": string;
-}
+export type PrivatePerson = $internal.personImpl;
