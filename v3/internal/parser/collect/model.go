@@ -121,10 +121,10 @@ func (info *ModelInfo) Collect() {
 			// or has defined constants.
 
 			if IsAny(typ) {
-				// No idea what this type marhals to.
+				// Type marshals to a custom value of unknown shape.
 				return
-			} else if IsString(typ) {
-				// This type always marshals to a string.
+			} else if MaybeTextMarshaler(typ) {
+				// Type marshals to a custom string of unknown shape.
 				info.Type = types.Typ[types.String]
 				return
 			}

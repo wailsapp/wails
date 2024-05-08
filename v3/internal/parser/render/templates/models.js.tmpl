@@ -23,7 +23,6 @@ import {
     {{- end -}}
 } from "./{{$models}}";
 {{- if $typedefs}}
-
 {{range $model, $class := $imports.Models}}{{if not $class}}
 /**
  * @typedef {import("./{{$models}}").{{jsid $model -}} } {{jsid $model}}
@@ -45,7 +44,6 @@ import {
     {{- end -}}
 } from "./{{$internal}}";
 {{- if $typedefs}}
-
 {{range $model, $class := $imports.Internal}}{{if not $class}}
 /**
  * @typedef {import("./{{$internal}}").{{jsid $model -}} } {{jsid $model}}
@@ -85,10 +83,11 @@ export const {{jsid $model.Name}} = {
     {{- range $i, $group := $model.Values}}{{range $j, $sgroup := $group}}{{range $k, $value := $sgroup}}
     {{- if and (ne $i 0) (ne $j 0) (eq $k 0)}}
 {{end}}
-    {{- if or (and (eq $j 0) (eq $k 0) $value.Group.Group.Doc) (and (eq $k 0) $value.Group.Doc) $value.Doc}}{{if gt $k 0}}
+    {{- if or (and (eq $j 0) (eq $k 0) $value.Group.Group.Doc) (and (eq $k 0) $value.Group.Doc) $value.Doc}}
+    {{- if or (gt $j 0) (gt $k 0)}}
 {{end}}
     /**
-    {{- if and (eq $j 0) $value.Group.Group.Doc}}
+    {{- if and (eq $j 0) (eq $k 0) $value.Group.Group.Doc}}
     {{- jsdoc $value.Group.Group.Doc.Text "    "}}{{if or (and (eq $k 0) $value.Group.Doc) $value.Doc}}
      *{{end}}
     {{- end}}

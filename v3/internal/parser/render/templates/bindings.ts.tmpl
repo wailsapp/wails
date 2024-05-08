@@ -61,7 +61,7 @@ export function {{.Name}}({{range $i, $param := .Params -}}
     {{- else -}}
         [{{range $i, $result := .Results}}
             {{- if gt $i 0}}, {{end}}
-            {{- jstype .Type $imports $collector}}
+            {{- jstype $result $imports $collector}}
         {{- end}}]
     {{- end}}> {
     {{- if $useNames}}

@@ -39,7 +39,6 @@ import {
     {{- end -}}
 } from "./{{$models}}";
 {{- if $typedefs}}
-
 {{range $model, $class := $imports.Models}}{{if not $class}}
 /**
  * @typedef {import("./{{$models}}").{{jsid $model -}} } {{jsid $model}}
@@ -61,7 +60,6 @@ import {
     {{- end -}}
 } from "./{{$internal}}";
 {{- if $typedefs}}
-
 {{range $model, $class := $imports.Internal}}{{if not $class}}
 /**
  * @typedef {import("./{{$internal}}").{{jsid $model -}} } {{jsid $model}}
@@ -104,10 +102,10 @@ export function {{.Name}}({{range $i, $param := .Params -}}
     {{- else}}
     let $typingPromise = $resultPromise.then(($result) => {
     {{- if eq 1 (len .Results)}}
-        {{- jscreate "" "$result" "$result" (index .Results 0) $imports $collector false false "            "}}
+        {{- jscreate "" "$result" "$result" (index .Results 0) $imports $collector false false "        "}}
     {{- else}}{{range $i, $type := .Results}}
         {{- $tgt := (printf "$result[%d]" $i)}}
-        {{- jscreate "" $tgt $tgt $type $imports $collector false false "            "}}
+        {{- jscreate "" $tgt $tgt $type $imports $collector false false "        "}}
     {{- end}}{{end}}
         return $result;
     });
