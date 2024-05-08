@@ -1,18 +1,13 @@
 package parser
 
 import (
-	"cmp"
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"slices"
 
 	"github.com/pterm/pterm"
 	"golang.org/x/tools/go/packages"
 )
-
-// WailsAppPkgPath is the official import path of Wails v3's application package
-const WailsAppPkgPath = "github.com/wailsapp/wails/v3/pkg/application"
 
 // LoadPackages loads the packages specified by the given patterns.
 //
@@ -24,12 +19,12 @@ func LoadPackages(buildFlags []string, full bool, patterns ...string) ([]*packag
 		rewrittenPatterns[i] = "pattern=" + pattern
 	}
 
-	loadMode := packages.NeedName | packages.NeedSyntax | packages.NeedTypes
+	loadMode := packages.NeedName | packages.NeedCompiledGoFiles | packages.NeedSyntax
 	if full {
-		loadMode |= packages.NeedTypesInfo
+		loadMode |= packages.NeedTypes | packages.NeedTypesInfo
 	}
 
-	pkgs, err := packages.Load(&packages.Config{
+	return packages.Load(&packages.Config{
 		Mode: loadMode,
 		Logf: func(format string, args ...interface{}) {
 			pterm.Debug.Printf(format+"\n", args...)
@@ -40,13 +35,4 @@ func LoadPackages(buildFlags []string, full bool, patterns ...string) ([]*packag
 			return
 		},
 	}, rewrittenPatterns...)
-
-	// Sort (*ast.File)s by start position, ascending
-	for _, pkg := range pkgs {
-		slices.SortFunc(pkg.Syntax, func(f1 *ast.File, f2 *ast.File) int {
-			return cmp.Compare(f1.FileStart, f2.FileStart)
-		})
-	}
-
-	return pkgs, err
 }
