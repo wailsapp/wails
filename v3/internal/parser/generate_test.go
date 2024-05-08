@@ -141,7 +141,7 @@ func TestGenerator(t *testing.T) {
 						} else if report.HasWarnings() {
 							pterm.Warning.Println(report)
 						}
-					} else if err != nil && !errors.Is(err, ErrNoBoundTypes) {
+					} else if err != nil && !errors.Is(err, ErrNoServices) {
 						t.Error(err)
 					}
 

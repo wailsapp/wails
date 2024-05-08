@@ -113,7 +113,7 @@ func TestAnalyser(t *testing.T) {
 				got = append(got, types.TypeString(tn.Type(), nil))
 				return true
 			})
-			if err != nil && !errors.Is(err, ErrNoBoundTypes) {
+			if err != nil && !errors.Is(err, ErrNoServices) {
 				t.Error(err)
 			}
 

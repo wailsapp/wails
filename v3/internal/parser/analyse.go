@@ -207,6 +207,6 @@ func FindServices(pkgs []*packages.Package, wailsAppPkgPath string, logger confi
 	if len(found) > 0 {
 		return nil
 	} else {
-		return ErrNoBoundTypes
+		return ErrNoServices
 	}
 }

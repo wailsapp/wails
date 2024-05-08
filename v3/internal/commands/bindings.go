@@ -51,7 +51,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	spinner.Info(fmt.Sprintf(
 		"Processed: %s, %s, %s, %s, %s in %s.",
 		pluralise(stats.NumPackages, "Package"),
-		pluralise(stats.NumTypes, "Bound Type"),
+		pluralise(stats.NumServices, "Service"),
 		pluralise(stats.NumMethods, "Method"),
 		pluralise(stats.NumEnums, "Enum"),
 		pluralise(stats.NumModels, "Model"),
@@ -65,11 +65,9 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	if err != nil {
 		var report *parser.ErrorReport
 		switch {
-		case errors.Is(err, parser.ErrNoInitialPackages):
-			// Convert to informational message.
-			pterm.Info.Println(err)
-		case errors.Is(err, parser.ErrNoBoundTypes):
-			pterm.Info.Println("Input packages do not contain any bound types")
+		case errors.Is(err, parser.ErrNoPackages), errors.Is(err, parser.ErrNoServices):
+			// Convert to warning message.
+			pterm.Warning.Println(err)
 		case errors.As(err, &report):
 			if report.HasErrors() {
 				// Report error count.

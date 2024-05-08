@@ -8,10 +8,10 @@ import (
 
 // generateModels generates a JS/TS model file for the given list of models.
 //
-// If internal is true, the generated file is named "internal"
+// If internal is true, the generated file is named by Renderer.InternalFile
 // and the types declared therein are not exported by the package index file.
 //
-// A call to index.Info.Collect must complete before entering generateModels.
+// A call to info.Collect must complete before entering generateModels.
 func (generator *Generator) generateModels(info *collect.PackageInfo, models []*collect.ModelInfo, internal bool) {
 	// Merge all import maps.
 	imports := collect.NewImportMap(info)
@@ -36,25 +36,25 @@ func (generator *Generator) generateModels(info *collect.PackageInfo, models []*
 
 	file, err := generator.creator.Create(filepath.Join(info.Path, filename))
 	if err != nil {
-		generator.controller.Errorf("%v", err)
+		generator.logger.Errorf("%v", err)
 
 		var prefix string
 		if internal {
 			prefix = "internal "
 		}
-		generator.controller.Errorf("package %s: %smodels generation failed", info.Path, prefix)
+		generator.logger.Errorf("package %s: %smodels generation failed", info.Path, prefix)
 		return
 	}
 	defer file.Close()
 
 	err = generator.renderer.Models(file, imports, models)
 	if err != nil {
-		generator.controller.Errorf("%v", err)
+		generator.logger.Errorf("%v", err)
 
 		var prefix string
 		if internal {
 			prefix = "internal "
 		}
-		generator.controller.Errorf("package %s: %smodels generation failed", info.Path, prefix)
+		generator.logger.Errorf("package %s: %smodels generation failed", info.Path, prefix)
 	}
 }

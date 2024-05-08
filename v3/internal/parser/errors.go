@@ -18,8 +18,12 @@ var ErrNoApplicationPackage = errors.New("Wails application package not found at
 // the Wails application package has invalid content.
 var ErrBadApplicationPackage = errors.New("package " + WailsAppPkgPath + ": function NewService has wrong signature: is the Wails v3 module properly installed?")
 
-// ErrNoBoundTypes indicates that no valid bound types were found.
-var ErrNoBoundTypes = errors.New("no valid bound types found")
+// ErrNoPackages is returned by [Generator.Generate]
+// when [LoadPackages] returns no error and no packages.
+var ErrNoPackages = errors.New("the given patterns matched no packages")
+
+// ErrNoServices indicates that no valid service types were found.
+var ErrNoServices = errors.New("no valid service types found")
 
 // ErrorReport accumulates and logs error
 // and warning messages, with deduplication.
