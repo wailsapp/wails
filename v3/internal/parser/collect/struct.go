@@ -109,7 +109,7 @@ func (info *StructInfo) Collect() *StructInfo {
 
 		// Queued embedded types for current and next level.
 		current := make([]fieldData, 0, info.typ.NumFields())
-		next := make([]fieldData, 1, info.typ.NumFields())
+		next := make([]fieldData, 1, max(1, info.typ.NumFields()))
 
 		// Count of queued embedded types for current and next level.
 		count := make(map[*types.Struct]int)
