@@ -17,7 +17,7 @@ import (
 /*
 #cgo linux pkg-config: gdk-3.0 gtk+-3.0
 #cgo webkit2_40 pkg-config: webkit2gtk-4.0
-#cgo webkit2_41 pkg-config: webkit2gtk-4.1
+#cgo !webkit2_40 pkg-config: webkit2gtk-4.1
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
