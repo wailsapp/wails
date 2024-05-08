@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -31,15 +32,6 @@ type StructDef struct {
 	Name       string
 	DocComment string
 	Fields     []*Field
-}
-
-func (s *StructDef) DefaultValueList(pkgName string) string {
-	var allFields []string
-	for _, field := range s.Fields {
-		thisFieldWithDefaultValue := fmt.Sprintf("%s = %s", field.JSName(), field.DefaultValue(pkgName))
-		allFields = append(allFields, thisFieldWithDefaultValue)
-	}
-	return strings.Join(allFields, ", ")
 }
 
 type ParameterType struct {
@@ -70,16 +62,25 @@ type EnumValue struct {
 type Parameter struct {
 	Name    string
 	Type    *ParameterType
-	project *Project
+	Project *Project
+}
+
+func (p *Parameter) JSName() string {
+	// if the name is a reserved word, prefix with a dollar sign
+	if slices.Contains(reservedWords, p.Name) {
+		return "$" + p.Name
+	} else {
+		return p.Name
+	}
 }
 
 func (p *Parameter) NamespacedStructType(pkgName string) string {
-	thisPkg := p.project.packageCache[pkgName]
-	pkgInfo := p.project.packageCache[p.Type.Package]
+	thisPkg := p.Project.packageCache[pkgName]
+	pkgInfo := p.Project.packageCache[p.Type.Package]
 
 	var namespace string
 	if pkgInfo.Name != "" && pkgInfo.Path != thisPkg.Path {
-		namespace = pkgInfo.Name
+		namespace = pkgInfo.Name + "."
 	}
 
 	return namespace + p.Type.Name
@@ -133,9 +134,9 @@ type BoundMethod struct {
 	Alias      *uint32
 }
 
-func (m BoundMethod) JSInputs() []*Parameter {
+func (m *BoundMethod) JSInputs() []*Parameter {
 	if len(m.Inputs) > 0 {
-		if firstArg := m.Inputs[0]; isContext(firstArg) {
+		if firstArg := m.Inputs[0]; firstArg.Type.Package == "context" && firstArg.Type.Name == "Context" {
 			return m.Inputs[1:]
 		}
 	}
@@ -143,8 +144,16 @@ func (m BoundMethod) JSInputs() []*Parameter {
 	return m.Inputs
 }
 
-func (m BoundMethod) IDAsString() string {
-	return strconv.Itoa(int(m.ID))
+func (m *BoundMethod) JSOutputs() []*Parameter {
+	jsOutputs := make([]*Parameter, 0, len(m.Outputs))
+
+	for _, output := range m.Outputs {
+		if output.Type.Name != "error" || output.Type.IsStruct || output.Type.IsEnum {
+			jsOutputs = append(jsOutputs, output)
+		}
+	}
+
+	return jsOutputs
 }
 
 type Field struct {
@@ -156,20 +165,6 @@ type Field struct {
 
 func (f *Field) JSName() string {
 	return strings.ToLower(f.Name[0:1]) + f.Name[1:]
-}
-
-// TSBuild contains the typescript to build a field for a JS object
-// via assignment for simple types or constructors for structs
-func (f *Field) TSBuild(pkg string) string {
-	if !f.Type.IsStruct {
-		return fmt.Sprintf("safeSource['%s']", f.JSName())
-	}
-
-	if f.Type.Package == "" || f.Type.Package == pkg {
-		return fmt.Sprintf("%s.createFrom(source['%s'])", f.Type.Name, f.JSName())
-	}
-
-	return fmt.Sprintf("%s.%s.createFrom(source['%s'])", pkgAlias(f.Type.Package), f.Type.Name, f.JSName())
 }
 
 func (f *Field) Exported() bool {
@@ -188,7 +183,7 @@ func (f *Field) NamespacedStructType(pkgName string) string {
 	return namespace + f.Type.Name
 }
 
-func (f *Field) TSType(pkgName string) string {
+func (f *Field) JSType(pkgName string) string {
 	var typeName string
 	switch f.Type.Name {
 	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
@@ -204,38 +199,6 @@ func (f *Field) TSType(pkgName string) string {
 	// If the type is from another package, it needs to be adjusted
 	if f.Type.IsStruct || f.Type.IsEnum {
 		typeName = f.NamespacedStructType(pkgName)
-	}
-
-	// Add slice suffix
-	if f.Type.IsSlice {
-		typeName += "[]"
-	}
-
-	// Add pointer suffix
-	if f.Type.IsPointer {
-		typeName += " | null"
-	}
-
-	return typeName
-}
-
-func (f *Field) JSDocType(pkgName string) string {
-	var typeName string
-	switch f.Type.Name {
-	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
-		typeName = "number"
-	case "string":
-		typeName = "string"
-	case "bool":
-		typeName = "boolean"
-	default:
-		typeName = f.Type.Name
-	}
-
-	// If the type is from another package, it needs to be adjusted
-	if f.Type.IsStruct || f.Type.IsEnum {
-		typeName = f.NamespacedStructType(pkgName)
-		typeName = strings.ReplaceAll(typeName, ".", "")
 	}
 
 	// Add slice suffix
@@ -260,7 +223,7 @@ func (f *Field) DefaultValue(pkgName string) string {
 	} else if f.Type.MapKey != nil {
 		return "{}"
 	} else if f.Type.IsStruct {
-		return "(new " + f.JSDocType(pkgName) + "())"
+		return "(new " + f.JSType(pkgName) + "())"
 	}
 
 	switch f.Type.Name {
@@ -375,7 +338,11 @@ func GenerateBindingsAndModels(options *flags.GenerateBindingsOptions) (*Project
 		}
 	}
 
-	generatedMethods := p.GenerateBindings(p.BoundMethods, options.ModelsFilename, options.UseIDs, options.TS, options.UseBundledRuntime)
+	generatedMethods, err := p.GenerateBindings(p.BoundMethods, options)
+	if err != nil {
+		return p, err
+	}
+
 	for pkgDir, structs := range generatedMethods {
 		// Write the directory
 		err = os.MkdirAll(filepath.Join(options.OutputDirectory, pkgDir), 0755)
@@ -618,7 +585,7 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 	for _, file := range pkg.Pkg.Files {
 		// Iterate over all declarations in the file
 		for _, decl := range file.Decls {
-			// Check if the declaration is a type declaration
+			// Check if the declaration is a function declaration
 			if funcDecl, ok := decl.(*ast.FuncDecl); ok && funcDecl.Recv != nil && funcDecl.Name.IsExported() {
 				var ident *ast.Ident
 				var ok bool
@@ -665,6 +632,14 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 
 					if funcDecl.Type.Params != nil {
 						method.Inputs = p.parseParameters(funcDecl.Type.Params, pkg)
+
+						// assign generated names to anonymous parameters
+						// prefix with a dollar so that no collision may ensue with Go identifiers
+						for index, param := range method.Inputs {
+							if param.Name == "" || param.Name == "_" {
+								param.Name = "$" + strconv.Itoa(index)
+							}
+						}
 					}
 					if funcDecl.Type.Results != nil {
 						method.Outputs = p.parseParameters(funcDecl.Type.Results, pkg)
@@ -701,12 +676,14 @@ func (p *Project) parseParameters(params *ast.FieldList, pkg *ParsedPackage) []*
 		if len(field.Names) > 0 {
 			for _, name := range field.Names {
 				theseFields = append(theseFields, &Parameter{
-					Name: name.Name,
+					Name:    name.Name,
+					Project: p,
 				})
 			}
 		} else {
 			theseFields = append(theseFields, &Parameter{
-				Name: "",
+				Name:    "",
+				Project: p,
 			})
 		}
 		// loop over fields
@@ -1238,30 +1215,8 @@ func (p *Project) RelativeBindingsDir(dir *ParsedPackage, dir2 *ParsedPackage) s
 }
 
 type ImportDef struct {
-	Name        string
 	Path        string
-	VarName     string
 	PackageName string
-}
-
-func (p *Project) calculateImports(pkg string, m map[structName]*StructDef) []*ImportDef {
-	var result []*ImportDef
-	for _, structDef := range m {
-		for _, field := range structDef.Fields {
-			if field.Type.Package != pkg {
-				// Find the relative path from the source directory to the target directory
-				fieldPkgInfo := p.packageCache[field.Type.Package]
-				relativePath := p.RelativeBindingsDir(p.packageCache[pkg], fieldPkgInfo)
-				result = append(result, &ImportDef{
-					PackageName: fieldPkgInfo.Name,
-					Name:        field.Name,
-					Path:        relativePath,
-					VarName:     fieldPkgInfo.Name + field.Name,
-				})
-			}
-		}
-	}
-	return result
 }
 
 func getTypeString(expr ast.Expr) string {
@@ -1313,4 +1268,77 @@ func getDirectoryForPackage(pkg *ast.Package) string {
 		return abs
 	}
 	return ""
+}
+
+func pkgAlias(fullPkg string) string {
+	pkgParts := strings.Split(fullPkg, "/")
+	return pkgParts[len(pkgParts)-1]
+}
+
+var reservedWords = []string{
+	"abstract",
+	"arguments",
+	"await",
+	"boolean",
+	"break",
+	"byte",
+	"case",
+	"catch",
+	"char",
+	"class",
+	"const",
+	"continue",
+	"debugger",
+	"default",
+	"delete",
+	"do",
+	"double",
+	"else",
+	"enum",
+	"eval",
+	"export",
+	"extends",
+	"false",
+	"final",
+	"finally",
+	"float",
+	"for",
+	"function",
+	"goto",
+	"if",
+	"implements",
+	"import",
+	"in",
+	"instanceof",
+	"int",
+	"interface",
+	"let",
+	"long",
+	"native",
+	"new",
+	"null",
+	"package",
+	"private",
+	"protected",
+	"public",
+	"return",
+	"short",
+	"static",
+	"super",
+	"switch",
+	"synchronized",
+	"this",
+	"throw",
+	"throws",
+	"transient",
+	"true",
+	"try",
+	"typeof",
+	"var",
+	"void",
+	"volatile",
+	"while",
+	"with",
+	"yield",
+	"object",
 }
