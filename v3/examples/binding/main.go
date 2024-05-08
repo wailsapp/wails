@@ -12,8 +12,8 @@ var assets embed.FS
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []any{
-			&GreetService{},
+		Bind: []application.Service{
+			application.NewService(&GreetService{}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.BundledAssetFileServer(assets),
