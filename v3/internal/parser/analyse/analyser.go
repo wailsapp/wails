@@ -84,7 +84,7 @@ func (analyser *Analyser) Run(yield func(Result) bool) (err error) {
 	// Setup yield function.
 	if yield != nil {
 		analyser.yield = func(result Result) {
-			stop = yield(result)
+			stop = !yield(result)
 			if stop {
 				panic("stop requested by consumer")
 			}
