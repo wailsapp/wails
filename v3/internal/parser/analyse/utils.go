@@ -1,4 +1,4 @@
-package analyser
+package analyse
 
 import (
 	"cmp"

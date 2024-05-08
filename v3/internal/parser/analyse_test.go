@@ -9,7 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pterm/pterm"
 	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v3/internal/parser/analyser"
+	"github.com/wailsapp/wails/v3/internal/parser/analyse"
 )
 
 func TestAnalyser(t *testing.T) {
@@ -198,12 +198,12 @@ func TestAnalyser(t *testing.T) {
 				}
 			}
 
-			a := analyser.New(pkgs)
-			if err := a.Run(nil); err != nil && !errors.Is(err, analyser.ErrNoApplicationPackage) {
+			analyser := analyse.NewAnalyser(pkgs)
+			if err := analyser.Run(nil); err != nil && !errors.Is(err, analyse.ErrNoApplicationPackage) {
 				t.Fatal(err)
 			}
 
-			services := a.Results()
+			services := analyser.Results()
 
 			got := make([]string, len(services))
 			for i, srv := range services {

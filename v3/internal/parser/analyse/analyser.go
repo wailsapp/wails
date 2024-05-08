@@ -1,4 +1,4 @@
-package analyser
+package analyse
 
 import (
 	"go/types"
@@ -37,7 +37,7 @@ type Analyser struct {
 
 // New allocates and initialises a static analyser instance
 // for the given set of packages.
-func New(pkgs []*packages.Package) *Analyser {
+func NewAnalyser(pkgs []*packages.Package) *Analyser {
 	return &Analyser{pkgs: pkgs}
 }
 
