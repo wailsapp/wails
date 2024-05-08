@@ -467,6 +467,13 @@ func (info *PackageInfo) recordModel(modelType *types.TypeName) *ModelInfo {
 	if !loaded {
 		// Model has just been discovered: schedule collection activity.
 		info.collector.controller.Schedule(model.Collect)
+
+		// Emit debug message.
+		info.collector.controller.Debugf(
+			"discovered model type %s from package %s",
+			modelType.Name(),
+			modelType.Pkg().Path(),
+		)
 	}
 
 	return model
