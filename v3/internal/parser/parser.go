@@ -33,10 +33,10 @@ type StructDef struct {
 	Fields     []*Field
 }
 
-func (s *StructDef) DefaultValueList() string {
+func (s *StructDef) DefaultValueList(pkgName string) string {
 	var allFields []string
 	for _, field := range s.Fields {
-		thisFieldWithDefaultValue := fmt.Sprintf("%s = %s", field.JSName(), field.DefaultValue())
+		thisFieldWithDefaultValue := fmt.Sprintf("%s = %s", field.JSName(), field.DefaultValue(pkgName))
 		allFields = append(allFields, thisFieldWithDefaultValue)
 	}
 	return strings.Join(allFields, ", ")
@@ -251,8 +251,18 @@ func (f *Field) JSDocType(pkgName string) string {
 	return typeName
 }
 
-func (f *Field) DefaultValue() string {
+func (f *Field) DefaultValue(pkgName string) string {
 	// Return the default value of the typescript version of the type as a string
+	if f.Type.IsPointer {
+		return "null"
+	} else if f.Type.IsSlice {
+		return "[]"
+	} else if f.Type.MapKey != nil {
+		return "{}"
+	} else if f.Type.IsStruct {
+		return "(new " + f.JSDocType(pkgName) + "())"
+	}
+
 	switch f.Type.Name {
 	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uintptr", "float32", "float64", "uint64":
 		return "0"

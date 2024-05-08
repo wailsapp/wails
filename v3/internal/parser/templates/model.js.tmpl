@@ -44,7 +44,7 @@ export class {{$def.Name}} {
     {{- end}}
      */
     constructor(source = {}) {
-        const { {{$def.DefaultValueList}} } = source;
+        const { {{$def.DefaultValueList $pkg}} } = source;
         {{- range $def.Fields}}
         this.{{.JSName}} = {{.JSName}};
         {{- end}}
