@@ -86,11 +86,6 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 
 	switch t := typ.(type) {
 	case *types.Alias:
-		if t.Obj().Pkg() == nil {
-			// Builtin alias: render underlying type.
-			return m.JSCreateWithParams(t.Underlying(), params)
-		}
-
 		return m.JSCreateWithParams(types.Unalias(typ), params)
 
 	case *types.Array:

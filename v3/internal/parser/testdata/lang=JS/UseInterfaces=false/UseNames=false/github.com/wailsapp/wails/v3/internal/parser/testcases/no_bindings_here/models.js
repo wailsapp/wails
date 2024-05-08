@@ -11,15 +11,53 @@ import * as $internal from "./internal.js";
 /**
  * HowDifferent is a curious kind of person
  * that lets other people decide how they are different.
- */
-export const HowDifferent = other$0.OtherPerson;
-
-/**
- * HowDifferent is a curious kind of person
- * that lets other people decide how they are different.
  * @template How
- * @typedef {other$0.OtherPerson<{ [_: string]: How | null }>} HowDifferent
  */
+export class HowDifferent {
+    /**
+     * Creates a new HowDifferent instance.
+     * @param {Partial<HowDifferent<How>>} [$$source = {}] - The source object to create the HowDifferent.
+     */
+    constructor($$source = {}) {
+        if (!("Name" in $$source)) {
+            /**
+             * They have a name as well.
+             * @member
+             * @type {string}
+             */
+            this["Name"] = "";
+        }
+        if (!("Differences" in $$source)) {
+            /**
+             * But they may have many differences.
+             * @member
+             * @type {{ [_: string]: How | null }[]}
+             */
+            this["Differences"] = [];
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Given creation functions for each type parameter,
+     * returns a creation function for a concrete instance
+     * of the generic class HowDifferent.
+     * @template How
+     * @param {(any) => How} $$createParamHow
+     * @returns {($$source?: any) => HowDifferent<How>}
+     */
+    static createFrom($$createParamHow) {
+        const $$createField1_0 = $$createType1($$createParamHow);
+        return ($$source = {}) => {
+            let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+            if ("Differences" in $$parsedSource) {
+                $$parsedSource["Differences"] = $$createField1_0($$parsedSource["Differences"]);
+            }
+            return new HowDifferent(/** @type {Partial<HowDifferent<How>>} */($$parsedSource));
+        };
+    }
+}
 
 /**
  * Impersonator gets their fields from other people.
@@ -72,3 +110,7 @@ export const PrivatePerson = $internal.personImpl;
  * PrivatePerson gets their fields from hidden sources.
  * @typedef {$internal.personImpl} PrivatePerson
  */
+
+// Private type creation functions
+const $$createType0 = ($$createParamHow) => $Create.Map($Create.Any, $$createParamHow);
+const $$createType1 = ($$createParamHow) => $Create.Array($$createType0($$createParamHow));

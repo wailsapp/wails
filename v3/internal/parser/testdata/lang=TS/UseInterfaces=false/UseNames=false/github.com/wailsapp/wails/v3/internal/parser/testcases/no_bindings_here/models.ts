@@ -11,13 +11,45 @@ import * as $internal from "./internal.ts";
  * HowDifferent is a curious kind of person
  * that lets other people decide how they are different.
  */
-export const HowDifferent = other$0.OtherPerson;
+export class HowDifferent<How> {
+    /**
+     * They have a name as well.
+     */
+    "Name": string;
 
-/**
- * HowDifferent is a curious kind of person
- * that lets other people decide how they are different.
- */
-export type HowDifferent<How> = other$0.OtherPerson<{ [_: string]: How | null }>;
+    /**
+     * But they may have many differences.
+     */
+    "Differences": { [_: string]: How | null }[];
+
+    /** Creates a new HowDifferent instance. */
+    constructor($$source: Partial<HowDifferent<How>> = {}) {
+        if (!("Name" in $$source)) {
+            this["Name"] = "";
+        }
+        if (!("Differences" in $$source)) {
+            this["Differences"] = [];
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Given creation functions for each type parameter,
+     * returns a creation function for a concrete instance
+     * of the generic class HowDifferent.
+     */
+    static createFrom<How>($$createParamHow: (any) => How): ($$source?: any) => HowDifferent<How> {
+        const $$createField1_0 = $$createType1($$createParamHow);
+        return ($$source: any = {}) => {
+            let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+            if ("Differences" in $$parsedSource) {
+                $$parsedSource["Differences"] = $$createField1_0($$parsedSource["Differences"]);
+            }
+            return new HowDifferent<How>($$parsedSource as Partial<HowDifferent<How>>);
+        };
+    }
+}
 
 /**
  * Impersonator gets their fields from other people.
@@ -65,3 +97,7 @@ export const PrivatePerson = $internal.personImpl;
  * PrivatePerson gets their fields from hidden sources.
  */
 export type PrivatePerson = $internal.personImpl;
+
+// Private type creation functions
+const $$createType0 = ($$createParamHow) => $Create.Map($Create.Any, $$createParamHow);
+const $$createType1 = ($$createParamHow) => $Create.Array($$createType0($$createParamHow));

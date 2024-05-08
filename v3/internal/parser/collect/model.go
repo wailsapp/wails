@@ -145,6 +145,11 @@ func (info *ModelInfo) Collect() *ModelInfo {
 				// Type marshals to a custom string of unknown shape.
 				info.Type = types.Typ[types.String]
 				return
+			} else if isGeneric && !collector.options.UseInterfaces && IsClass(typ) {
+				// Generic classes cannot be defined in terms of other generic classes.
+				// That would break class creation code,
+				// and I (@fbbdev) couldn't find any other satisfying workaround.
+				def = typ.Underlying()
 			}
 
 			// Test for enums (excluding generic types).
@@ -160,11 +165,6 @@ func (info *ModelInfo) Collect() *ModelInfo {
 					}
 				}
 			}
-		}
-
-		if IsClass(typ) {
-			// Skip alias chains for classes.
-			def = types.Unalias(def)
 		}
 
 		// Record required imports.
