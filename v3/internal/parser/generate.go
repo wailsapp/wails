@@ -190,9 +190,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 
 	// Generate global index and shortcuts.
 	if len(globalImports) > 0 {
-		generator.controller.Schedule(func() {
-			generator.generateGlobalIndex(globalImports)
-		})
+		generator.generateGlobalIndex(globalImports)
 	}
 
 	// Wait until all models and indices have been generated.

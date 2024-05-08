@@ -178,11 +178,6 @@ func (info *PackageInfo) IsEmpty() bool {
 //
 // This method is safe to call even if [PackageInfo.Collect]
 // has not been called yet.
-//
-// The result might be incomplete if bindings or models
-// are still being processed in the background.
-// Call [Collector.WaitForModels] to wait
-// until all model collection activity is complete.
 func (info *PackageInfo) Index() (index PackageIndex) {
 	// Init stats
 	stats := &Stats{
@@ -267,15 +262,11 @@ func (info *PackageInfo) Index() (index PackageIndex) {
 }
 
 // Stats returns statistics for this package.
-// If they are not cached yet, they are generated first.
+// If no stats have been cached yet, they are generated anew.
+// If they are out of date, call [PackageInfo.Index] to regenerate them.
 //
 // This method is safe to call even if [PackageInfo.Collect]
 // has not been called yet.
-//
-// The result might be incomplete if bindings or models
-// are still being processed in the background.
-// Call [Collector.WaitForModels] to wait
-// until all model collection activity is complete.
 func (info *PackageInfo) Stats() *Stats {
 	var result = &Stats{}
 	info.mu.Lock()
