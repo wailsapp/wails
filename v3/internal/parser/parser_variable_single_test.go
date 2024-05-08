@@ -170,8 +170,8 @@ func TestParseVariableSingle(t *testing.T) {
 			wantModels: map[string]map[string]*StructDef{
 				"main": {
 					"Person": {
-						Name:        "Person",
-						DocComments: []string{"// Person is a person!", "// They have a name and an address"},
+						Name:       "Person",
+						DocComment: "Person is a person!\nThey have a name and an address",
 						Fields: []*Field{
 							{
 								Name: "Name",

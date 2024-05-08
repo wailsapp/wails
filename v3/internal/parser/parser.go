@@ -28,9 +28,9 @@ type structName = string
 var ErrNoBindingsFound = errors.New("no bound structs found")
 
 type StructDef struct {
-	Name        string
-	DocComments []string
-	Fields      []*Field
+	Name       string
+	DocComment string
+	Fields     []*Field
 }
 
 func (s *StructDef) DefaultValueList() string {
@@ -55,16 +55,16 @@ type ParameterType struct {
 }
 
 type EnumDef struct {
-	Name        string
-	Filename    string
-	DocComments []string
-	Values      []*EnumValue
+	Name       string
+	Filename   string
+	DocComment string
+	Values     []*EnumValue
 }
 
 type EnumValue struct {
-	Name        string
-	Value       string
-	DocComments []string
+	Name       string
+	Value      string
+	DocComment string
 }
 
 type Parameter struct {
@@ -148,9 +148,10 @@ func (m BoundMethod) IDAsString() string {
 }
 
 type Field struct {
-	Name    string
-	Type    *ParameterType
-	Project *Project
+	Name       string
+	Type       *ParameterType
+	DocComment string
+	Project    *Project
 }
 
 func (f *Field) JSName() string {
@@ -265,14 +266,14 @@ func (f *Field) DefaultValue() string {
 }
 
 type ConstDef struct {
-	Name        string
-	DocComments []string
-	Value       string
+	Name       string
+	DocComment string
+	Value      string
 }
 
 type TypeDef struct {
 	Name           string
-	DocComments    []string
+	DocComment     string
 	Type           string
 	Consts         []*ConstDef
 	ShouldGenerate bool
@@ -473,13 +474,10 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 				if ok {
 					switch genDecl.Tok {
 					case token.TYPE:
-						var comments []string
-						if genDecl.Doc != nil {
-							comments = CommentGroupToText(genDecl.Doc)
-						}
+						comment := strings.TrimSpace(genDecl.Doc.Text())
 						for _, spec := range genDecl.Specs {
 							if typeSpec, ok := spec.(*ast.TypeSpec); ok {
-								p.parseTypeDeclaration(typeSpec, pkg, comments)
+								p.parseTypeDeclaration(typeSpec, pkg, comment)
 							}
 						}
 					case token.CONST:
@@ -736,8 +734,8 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 			result.Name = p.anonymousStructID()
 			// Create a new struct definition
 			result := &StructDef{
-				Name:        result.Name,
-				DocComments: CommentGroupToText(field.Doc),
+				Name:       result.Name,
+				DocComment: strings.TrimSpace(field.Doc.Text()),
 			}
 			pkg.StructCache[result.Name] = result
 			// Parse the fields
@@ -802,8 +800,8 @@ func (p *Project) getStructDef(name string, pkg *ParsedPackage) bool {
 							if structType, ok := typeSpec.Type.(*ast.StructType); ok {
 								if typeSpec.Name.Name == name {
 									result := &StructDef{
-										Name:        name,
-										DocComments: CommentGroupToText(typeDecl.Doc),
+										Name:       name,
+										DocComment: strings.TrimSpace(typeDecl.Doc.Text()),
 									}
 									pkg.StructCache[name] = result
 									result.Fields = p.parseStructFields(structType, pkg)
@@ -823,17 +821,20 @@ func (p *Project) parseStructFields(structType *ast.StructType, pkg *ParsedPacka
 	var result []*Field
 	for _, field := range structType.Fields.List {
 		var theseFields []*Field
+		comment := strings.TrimSpace(field.Doc.Text())
 		if len(field.Names) > 0 {
 			for _, name := range field.Names {
 				theseFields = append(theseFields, &Field{
-					Project: p,
-					Name:    name.Name,
+					Project:    p,
+					Name:       name.Name,
+					DocComment: comment,
 				})
 			}
 		} else {
 			theseFields = append(theseFields, &Field{
-				Project: p,
-				Name:    "",
+				Project:    p,
+				Name:       "",
+				DocComment: comment,
 			})
 		}
 		// loop over fields
@@ -917,7 +918,8 @@ func (p *Project) getPackageFromPath(packagedir string, packagepath string) (*as
 
 func (p *Project) anonymousStructID() string {
 	p.anonymousStructIDCounter++
-	return fmt.Sprintf("anon%d", p.anonymousStructIDCounter)
+	// use $ prefix so that no valid Go identifier may collide with this
+	return fmt.Sprintf("$anon%d", p.anonymousStructIDCounter)
 }
 
 func (p *Project) parseBoundExpression(elt ast.Expr, pkg *ParsedPackage) (bool, bool) {
@@ -1074,7 +1076,7 @@ func (p *Project) getFunctionFromName(name string, parsedPackage *ParsedPackage)
 	return nil, fmt.Errorf("function not found")
 }
 
-func (p *Project) parseTypeDeclaration(decl *ast.TypeSpec, pkg *ParsedPackage, comments []string) {
+func (p *Project) parseTypeDeclaration(decl *ast.TypeSpec, pkg *ParsedPackage, comment string) {
 	switch t := decl.Type.(type) {
 	case *ast.Ident:
 		switch t.Name {
@@ -1082,9 +1084,9 @@ func (p *Project) parseTypeDeclaration(decl *ast.TypeSpec, pkg *ParsedPackage, c
 			"uintptr", "float32", "float64", "string", "bool":
 			// Store this in the type cache
 			pkg.TypeCache[decl.Name.Name] = &TypeDef{
-				Name:        decl.Name.Name,
-				Type:        t.Name,
-				DocComments: TrimSlice(comments),
+				Name:       decl.Name.Name,
+				Type:       t.Name,
+				DocComment: comment,
 			}
 		}
 	}
@@ -1133,7 +1135,7 @@ func (p *Project) parseConstDeclaration(decl *ast.GenDecl, pkg *ParsedPackage) {
 			}
 
 			if valueSpec.Doc != nil {
-				constDecl.DocComments = CommentGroupToText(valueSpec.Doc)
+				constDecl.DocComment = strings.TrimSpace(valueSpec.Doc.Text())
 			}
 			typeDecl.Consts = append(typeDecl.Consts, constDecl)
 		}
@@ -1171,13 +1173,10 @@ func (p *Project) parseTypes(pkgs map[string]*ParsedPackage) {
 				if ok {
 					switch genDecl.Tok {
 					case token.TYPE:
-						var comments []string
-						if genDecl.Doc != nil {
-							comments = CommentGroupToText(genDecl.Doc)
-						}
+						comment := strings.TrimSpace(genDecl.Doc.Text())
 						for _, spec := range genDecl.Specs {
 							if typeSpec, ok := spec.(*ast.TypeSpec); ok {
-								p.parseTypeDeclaration(typeSpec, pkg, comments)
+								p.parseTypeDeclaration(typeSpec, pkg, comment)
 							}
 						}
 					case token.CONST:
@@ -1304,22 +1303,4 @@ func getDirectoryForPackage(pkg *ast.Package) string {
 		return abs
 	}
 	return ""
-}
-
-func CommentGroupToText(comments *ast.CommentGroup) []string {
-	if comments == nil {
-		return nil
-	}
-	var result []string
-	for _, comment := range comments.List {
-		result = append(result, strings.TrimSpace(comment.Text))
-	}
-	return result
-}
-
-func TrimSlice(comments []string) []string {
-	for i, comment := range comments {
-		comments[i] = strings.TrimSpace(comment)
-	}
-	return comments
 }

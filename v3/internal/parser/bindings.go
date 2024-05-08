@@ -22,23 +22,25 @@ const headerTypescript = `// Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â M
 `
 
 const bindingTemplate = `
-/**Comments
- * @function {{methodName}}* @param names {string}
+/**
+ * Comments
+ * @function {{methodName}}
+ * @param {types} names
  * @returns {Promise<string>}
  **/
 `
-const bindingTemplateTypescript = `Comments`
+const bindingTemplateTypescript = `
+Comments
+`
 
 const callByIDTypescript = `export async function {{methodName}}({{inputs}}) : {{ReturnType}} {
 	return Call.ByID({{ID}}{{args}});
 }
-
 `
 
 const callByNameTypescript = `export async function {{methodName}}({{inputs}}) : {{ReturnType}} {
 	return Call.ByName("{{Name}}"{{args}});
 }
-
 `
 
 const callByID = `export async function {{methodName}}({{inputs}}) {
@@ -144,12 +146,14 @@ type ExternalStruct struct {
 
 func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, useIDs bool) (string, map[packagePath]map[string]*ExternalStruct) {
 	var externalStructs = make(map[packagePath]map[string]*ExternalStruct)
+
 	template := bindingTemplate
 	if useIDs {
 		template += callByID
 	} else {
 		template += callByName
 	}
+
 	result := strings.ReplaceAll(template, "{{structName}}", thisStructName)
 	result = strings.ReplaceAll(result, "{{methodName}}", method.Name)
 	result = strings.ReplaceAll(result, "{{ID}}", fmt.Sprintf("%v", method.ID))
@@ -159,11 +163,14 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 	packageName := parts[len(parts)-1]
 
 	result = strings.ReplaceAll(result, "{{Name}}", fmt.Sprintf("%v.%v.%v", packageName, thisStructName, method.Name))
+
 	comments := strings.TrimSpace(method.DocComment)
+	comments = strings.ReplaceAll(comments, "*/", "*\\/")
+	comments = strings.ReplaceAll(comments, "\n", "\n * ")
 	if comments != "" {
 		comments = "\n * " + comments
 	}
-	result = strings.ReplaceAll(result, "Comments", comments)
+	result = strings.ReplaceAll(result, "\n * Comments", comments)
 
 	var params, inputs, args string
 	for index, input := range method.JSInputs() {
@@ -193,7 +200,7 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 	}
 
 	params = strings.TrimSuffix(params, "\n")
-	result = strings.ReplaceAll(result, "* @param names {string}", params)
+	result = strings.ReplaceAll(result, "\n * @param {types} names", params)
 
 	inputs = strings.TrimSuffix(inputs, ", ")
 	result = strings.ReplaceAll(result, "{{inputs}}", inputs)
@@ -237,12 +244,14 @@ func (p *Project) GenerateBinding(thisStructName string, method *BoundMethod, us
 
 func (p *Project) GenerateBindingTypescript(thisStructName string, method *BoundMethod, useIDs bool) (string, map[packagePath]map[string]*ExternalStruct) {
 	var externalStructs = make(map[packagePath]map[string]*ExternalStruct)
+
 	template := bindingTemplateTypescript
 	if useIDs {
 		template += callByIDTypescript
 	} else {
 		template += callByNameTypescript
 	}
+
 	result := strings.ReplaceAll(template, "{{structName}}", thisStructName)
 	result = strings.ReplaceAll(result, "{{methodName}}", method.Name)
 	result = strings.ReplaceAll(result, "{{ID}}", fmt.Sprintf("%v", method.ID))
@@ -252,9 +261,12 @@ func (p *Project) GenerateBindingTypescript(thisStructName string, method *Bound
 	packageName := parts[len(parts)-1]
 
 	result = strings.ReplaceAll(result, "{{Name}}", fmt.Sprintf("%v.%v.%v", packageName, thisStructName, method.Name))
+
 	comments := strings.TrimSpace(method.DocComment)
+	comments = strings.ReplaceAll(comments, "*/", "*\\/")
+	comments = strings.ReplaceAll(comments, "\n", "\n * ")
 	if comments != "" {
-		comments = "// " + comments + "\n"
+		comments = "/**\n * " + comments + "\n */"
 	}
 	result = strings.ReplaceAll(result, "Comments", comments)
 
@@ -414,7 +426,6 @@ func (p *Project) GenerateBindings(bindings map[string]map[string][]*BoundMethod
 							}
 						}
 					}
-					imports += "\n"
 					result[relativePackageDir][structName] = imports + result[relativePackageDir][structName]
 				}
 			}

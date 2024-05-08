@@ -87,14 +87,14 @@ func TestParseEnum(t *testing.T) {
 			wantTypes: map[string]map[string]*TypeDef{
 				"main": {
 					"Title": {
-						Name:        "Title",
-						DocComments: []string{"// Title is a title"},
-						Type:        "string",
+						Name:       "Title",
+						DocComment: "Title is a title",
+						Type:       "string",
 						Consts: []*ConstDef{
 							{
-								Name:        "Mister",
-								DocComments: []string{"// Mister is a title"},
-								Value:       `"Mr"`,
+								Name:       "Mister",
+								DocComment: "Mister is a title",
+								Value:      `"Mr"`,
 							},
 							{
 								Name:  "Miss",
@@ -120,8 +120,8 @@ func TestParseEnum(t *testing.T) {
 			wantModels: map[string]map[string]*StructDef{
 				"main": {
 					"Person": {
-						Name:        "Person",
-						DocComments: []string{"// Person represents a person"},
+						Name:       "Person",
+						DocComment: "Person represents a person",
 						Fields: []*Field{
 							{
 								Name: "Title",

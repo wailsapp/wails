@@ -21,6 +21,15 @@ type ModelDefinitions struct {
 	Imports []*ImportDef
 }
 
+var funcMap = template.FuncMap{
+	"jsdoc": func(comment string) string {
+		return strings.ReplaceAll(strings.ReplaceAll(comment, "*/", "*\\/"), "\n", "\n * ")
+	},
+	"paramdoc": func(comment string) string {
+		return strings.ReplaceAll(strings.ReplaceAll(comment, "*/", "*\\/"), "\n", " ")
+	},
+}
+
 func (p *Project) GenerateModel(wr io.Writer, def *ModelDefinitions, options *flags.GenerateBindingsOptions) error {
 	templateName := "model.js.tmpl"
 	if options.TS {
@@ -35,7 +44,7 @@ func (p *Project) GenerateModel(wr io.Writer, def *ModelDefinitions, options *fl
 		model.Name = options.TSPrefix + model.Name + options.TSSuffix
 	}
 
-	tmpl, err := template.New(templateName).ParseFS(templates, "templates/"+templateName)
+	tmpl, err := template.New(templateName).Funcs(funcMap).ParseFS(templates, "templates/"+templateName)
 	if err != nil {
 		println("Unable to initialize model template: " + err.Error())
 		return err

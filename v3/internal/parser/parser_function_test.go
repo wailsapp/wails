@@ -135,8 +135,8 @@ func TestParseFunction(t *testing.T) {
 			wantModels: map[string]map[string]*StructDef{
 				"main": {
 					"Person": {
-						Name:        "Person",
-						DocComments: []string{"// Person is a person"},
+						Name:       "Person",
+						DocComment: "Person is a person",
 						Fields: []*Field{
 							{
 								Name: "Name",

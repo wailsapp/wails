@@ -1,5 +1,5 @@
 {{$pkg := .Package}}
-{{- if .Imports }}
+{{- if .Imports}}
 /**
 {{- range .Imports}}
  * @typedef {import('{{.Path}}/models').{{.Name -}} } {{.VarName}}
@@ -7,36 +7,47 @@
  */
 {{end}}
 {{- range $enumindex, $enumdef := .Enums}}
-{{- range $commentindex, $commentdef := $enumdef.DocComments}}
-{{$commentdef -}}
+/**
+{{- if $enumdef.DocComment}}
+ * {{jsdoc $enumdef.DocComment}}
 {{- end}}
+ * @readonly
+ * @enum
+ */
 export const {{$enumdef.Name}} = {
     {{- range $constindex, $constdef := .Consts}}
-    {{- if $constdef.DocComments}}
-    {{- range $commentindex, $commentdef := $constdef.DocComments}}
-    {{$commentdef -}}
-    {{- end }}
+    {{- if $constdef.DocComment}}{{if gt $constindex 0}}
+{{end}}
+    /**
+     * {{jsdoc $constdef.DocComment}}
+     */
     {{- end}}
     {{$constdef.Name}}: {{$constdef.Value}},{{end}}
 };
 {{end}}
 {{- range $name, $def := .Models}}
-{{- if $def.DocComments}}
-{{- range $commentindex, $commentdef := $def.DocComments}}
-{{$commentdef -}}
-{{- end }}
+{{- if $def.DocComment}}
+/**
+ * {{jsdoc $def.DocComment}}
+ */
 {{- end}}
-export const {{$def.Name}} = class {
+export class {{$def.Name}} {
     /**
      * Creates a new {{$def.Name}} instance.
      * @constructor
      * @param {Object} source - The source object to create the {{$def.Name}}.
-{{- range $def.Fields}}
-     * @param { {{- .JSDocType $pkg -}} } [source.{{.JSName}}]{{if .Exported}} - Warning: this is unexported in the Go struct.{{end}}{{end}}
+    {{- range $def.Fields}}
+     * @param { {{- .JSDocType $pkg -}} } [source.{{.JSName}}]
+        {{- if or .DocComment (not .Exported)}} - {{end}}
+        {{- if .DocComment}}{{paramdoc .DocComment}}{{end}}
+        {{- if not .Exported}} (Warning: this is unexported in the Go struct.){{end}}
+    {{- end}}
      */
     constructor(source = {}) {
-        const { {{$def.DefaultValueList}} } = source;        {{range $def.Fields}}
-        this.{{.JSName}} = {{.JSName}};{{end}}
+        const { {{$def.DefaultValueList}} } = source;
+        {{- range $def.Fields}}
+        this.{{.JSName}} = {{.JSName}};
+        {{- end}}
     }
 
     /**
@@ -49,4 +60,4 @@ export const {{$def.Name}} = class {
         return new {{$def.Name}}(parsedSource);
     }
 };
-{{end}}
+{{end -}}
