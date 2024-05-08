@@ -92,9 +92,17 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 		}
 
 		if quoted {
-			if basic, ok := t.Underlying().(*types.Basic); ok && !collect.IsAny(typ) && !collect.MaybeTextMarshaler(typ) {
-				// Quoted mode for basic named type that is not a marshaler: render underlying type.
-				return m.renderBasicType(basic, quoted), false
+			// WARN: Do not test with IsString here!! We only want to catch marshalers.
+			if !collect.IsAny(typ) && !collect.MaybeTextMarshaler(typ) {
+				// Named type is not a marshaler.
+				switch u := t.Underlying().(type) {
+				case *types.Basic:
+					// Quoted mode for basic named type that is not a marshaler: render quoted underlying type.
+					return m.renderBasicType(u, quoted), false
+				case *types.TypeParam:
+					// Quoted mode for generic type that maps to typeparam: render quoted typeparam.
+					return m.renderType(u, quoted)
+				}
 			}
 		}
 

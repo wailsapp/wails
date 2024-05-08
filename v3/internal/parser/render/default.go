@@ -126,9 +126,13 @@ func (m *module) renderNamedDefault(named *types.Named, quoted bool) (result str
 	}
 
 	if quoted {
-		if basic, ok := named.Underlying().(*types.Basic); ok && !collect.IsAny(named) && !collect.MaybeTextMarshaler(named) {
-			// Quoted mode for basic named type that is not a marshaler: render underlying type.
-			return m.renderBasicDefault(basic, quoted), true
+		// WARN: Do not test with IsString here!! We only want to catch marshalers.
+		if !collect.IsAny(named) && !collect.MaybeTextMarshaler(named) {
+			if basic, ok := named.Underlying().(*types.Basic); ok {
+				// Quoted mode for basic named type that is not a marshaler: render underlying type.
+				return m.renderBasicDefault(basic, quoted), true
+			}
+			// No need to handle typeparams: they are initialised to null anyways.
 		}
 	}
 
