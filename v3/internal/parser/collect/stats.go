@@ -4,7 +4,7 @@ import "time"
 
 type Stats struct {
 	NumPackages int
-	NumTypes    int
+	NumServices int
 	NumMethods  int
 	NumEnums    int
 	NumModels   int
@@ -27,7 +27,7 @@ func (stats *Stats) Elapsed() time.Duration {
 
 func (stats *Stats) Add(other *Stats) {
 	stats.NumPackages += other.NumPackages
-	stats.NumTypes += other.NumTypes
+	stats.NumServices += other.NumServices
 	stats.NumMethods += other.NumMethods
 	stats.NumEnums += other.NumEnums
 	stats.NumModels += other.NumModels

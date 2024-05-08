@@ -2,7 +2,6 @@ package collect
 
 import (
 	"go/types"
-	"path"
 	"strings"
 )
 
@@ -24,7 +23,8 @@ type (
 		External map[string]ImportInfo
 
 		// counters holds the occurence count for each package name in External.
-		counters map[string]int
+		counters  map[string]int
+		collector *Collector
 	}
 
 	// ImportInfo records information about a single import.
@@ -36,11 +36,25 @@ type (
 )
 
 // NewImportMap initialises an import map for the given importer package.
+// The argument may be nil, in which case import paths will be relative
+// to the root output directory.
 func NewImportMap(importer *PackageInfo) *ImportMap {
+	var (
+		self      string
+		collector *Collector
+	)
+	if importer != nil {
+		self = importer.Path
+		collector = importer.collector
+	}
+
 	return &ImportMap{
-		Self:     importer.Path,
+		Self: self,
+
 		External: make(map[string]ImportInfo),
-		counters: make(map[string]int),
+
+		counters:  make(map[string]int),
+		collector: collector,
 	}
 }
 
@@ -77,7 +91,8 @@ func (imports *ImportMap) Merge(other *ImportMap) {
 // Add adds the given package to the import map if not already present,
 // choosing import names so as to avoid collisions.
 //
-// Add DOES NOT support unsynchronised concurrent calls.
+// Add does not support unsynchronised concurrent calls
+// on the same receiver.
 func (imports *ImportMap) Add(pkg *PackageInfo) {
 	if pkg.Path == imports.Self {
 		// Do not import self.
@@ -89,11 +104,9 @@ func (imports *ImportMap) Add(pkg *PackageInfo) {
 		return
 	}
 
-	name := path.Base(pkg.Path)
-	if pkg.Collect() {
-		name = pkg.Name
-	}
+	name := pkg.Collect().Name
 
+	// Fetch and update counter for name.
 	counter := imports.counters[name]
 	imports.counters[name] = counter + 1
 
@@ -108,15 +121,23 @@ func (imports *ImportMap) Add(pkg *PackageInfo) {
 // AddType adds all dependencies of the given type to the import map
 // and marks all referenced named types as models.
 //
+// It is a runtime error to call AddType on an ImportMap
+// created with nil importing package.
+//
 // Add does not support unsynchronised concurrent calls
 // on the same receiver.
-func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
+func (imports *ImportMap) AddType(typ types.Type) {
+	collector := imports.collector
+	if collector == nil {
+		panic("AddType called on ImportMap with nil importing package")
+	}
+
 	for { // Avoid recursion where possible.
 		switch t := typ.(type) {
 		case *types.Basic:
 			if t.Info()&types.IsComplex != 0 {
 				// Complex types are not supported by encoding/json
-				collector.controller.Warningf("complex types are not supported by encoding/json")
+				collector.logger.Warningf("complex types are not supported by encoding/json")
 			}
 			return
 
@@ -135,11 +156,10 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 				}
 			}
 
-			pkg := collector.Package(t.Obj().Pkg().Path())
-			pkg.recordModel(t.Obj())
-			imports.Add(pkg)
+			collector.Model(t.Obj())
+			imports.Add(collector.Package(t.Obj().Pkg()))
 
-			// The aliased type may be needed during
+			// The aliased type might be needed during
 			// JS value creation and initialisation.
 			typ = types.Unalias(typ)
 
@@ -147,7 +167,7 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 			typ = t.Elem()
 
 		case *types.Chan:
-			collector.controller.Warningf("channel types are not supported by encoding/json")
+			collector.logger.Warningf("channel types are not supported by encoding/json")
 			return
 
 		case *types.Map:
@@ -155,10 +175,10 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 				if IsString(t.Key()) {
 					// This model type is always rendered as a string alias,
 					// hence we can generate it and use it as a type for JS object keys.
-					imports.AddType(t.Key(), collector)
+					imports.AddType(t.Key())
 				}
 			} else {
-				collector.controller.Warningf(
+				collector.logger.Warningf(
 					"%s is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors",
 					types.TypeString(t.Key(), nil),
 				)
@@ -181,9 +201,8 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 				}
 			}
 
-			pkg := collector.Package(t.Obj().Pkg().Path())
-			pkg.recordModel(t.Obj())
-			imports.Add(pkg)
+			imports.collector.Model(t.Obj())
+			imports.Add(collector.Package(t.Obj().Pkg()))
 
 			if IsClass(typ) || IsString(typ) || IsAny(typ) {
 				return
@@ -197,7 +216,7 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 			typ = t.Elem()
 
 		case *types.Signature:
-			collector.controller.Warningf("function types are not supported by encoding/json")
+			collector.logger.Warningf("function types are not supported by encoding/json")
 			return
 
 		case *types.Slice:
@@ -209,9 +228,8 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 				return
 			}
 
-			// Retrieve struct info and ensure it is initialised.
-			info := collector.Struct(t)
-			info.Collect()
+			// Retrieve struct info and ensure it is complete.
+			info := collector.Struct(t).Collect()
 
 			if len(info.Fields) == 0 {
 				// No visible fields.
@@ -219,15 +237,19 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 			}
 
 			// Add field dependencies.
-			for i := 0; i < len(info.Fields)-1; i++ {
-				imports.AddType(info.Fields[i].Type, collector)
+			for i, length := 0, len(info.Fields)-1; i < length; i++ {
+				imports.AddType(info.Fields[i].Type)
 			}
 
 			// Process last field without recursion.
 			typ = info.Fields[len(info.Fields)-1].Type
 
+		case *types.Interface, *types.TypeParam:
+			// Rendered as any.
+			return
+
 		default:
-			// Atomic type
+			collector.logger.Warningf("unknown type %s: please report this to Wails maintainers", typ)
 			return
 		}
 	}

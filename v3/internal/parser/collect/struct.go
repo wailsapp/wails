@@ -2,6 +2,7 @@ package collect
 
 import (
 	"cmp"
+	"go/ast"
 	"go/types"
 	"reflect"
 	"slices"
@@ -22,25 +23,32 @@ type (
 	// for example by calling it in the accessing goroutine
 	// or before spawning the accessing goroutine.
 	StructInfo struct {
-		Fields []*FieldInfo
+		Fields []*StructField
 
-		typ       *types.Struct
+		typ *types.Struct
+
 		collector *Collector
 		once      sync.Once
 	}
 
-	// FieldInfo represents a single field found in a struct.
-	FieldInfo struct {
-		Name     string
+	// FieldInfo represents a single field in a struct.
+	StructField struct {
+		JsonName string // Avoid collisions with [FieldInfo.Name].
 		Type     types.Type
 		Optional bool
 		Quoted   bool
 
-		// Parent is the embedded named type (if any) this field came from.
-		Parent *types.TypeName
-		Field  *types.Var
+		// Object holds the described type-checker object.
+		Object *types.Var
 	}
 )
+
+func newStructInfo(collector *Collector, typ *types.Struct) *StructInfo {
+	return &StructInfo{
+		typ:       typ,
+		collector: collector,
+	}
+}
 
 // Struct retrieves the the unique [StructInfo] instance
 // associated to the given type within a Collector.
@@ -48,25 +56,24 @@ type (
 //
 // Struct is safe for concurrent use.
 func (collector *Collector) Struct(typ *types.Struct) *StructInfo {
-	if typ == nil {
-		panic("typ cannot be nil")
-	}
+	// Cache by type pointer, do not use a typeutil.Map:
+	//   - for models, it may result in incorrect comments;
+	//   - for anonymous structs, it would probably bring little benefit
+	//     because the probability of repetitions is much lower.
 
-	collector.mu.Lock()
-	if info := collector.structs.At(typ); info != nil {
-		collector.mu.Unlock()
-		return info.(*StructInfo)
-	}
+	return collector.fromCache(typ).(*StructInfo)
+}
 
-	info := &StructInfo{
-		typ:       typ,
-		collector: collector,
-	}
+func (*StructInfo) Object() types.Object {
+	return nil
+}
 
-	collector.structs.Set(typ, info)
-	collector.mu.Unlock()
+func (info *StructInfo) Type() types.Type {
+	return info.typ
+}
 
-	return info
+func (*StructInfo) Node() ast.Node {
+	return nil
 }
 
 // Collect gathers information for the structure described by its receiver.
@@ -77,12 +84,19 @@ func (collector *Collector) Struct(typ *types.Struct) *StructInfo {
 // by the same flattening algorithm employed by encoding/json.
 // JSON struct tags are accounted for.
 //
+// Collect returns the receiver for chaining.
+// It is safe to call Collect with nil receiver.
+//
 // After Collect returns, the calling goroutine and all goroutines
 // it might spawn afterwards are free to access
 // the receiver's fields indefinitely.
-func (info *StructInfo) Collect() {
-	type extField struct {
-		*FieldInfo
+func (info *StructInfo) Collect() *StructInfo {
+	if info == nil {
+		return nil
+	}
+
+	type fieldData struct {
+		*StructField
 
 		// Data for the encoding/json flattening algorithm.
 		nameFromTag bool
@@ -92,11 +106,11 @@ func (info *StructInfo) Collect() {
 
 	info.once.Do(func() {
 		// Flattened list of fields with additional information.
-		fields := make([]extField, 0, info.typ.NumFields())
+		fields := make([]fieldData, 0, info.typ.NumFields())
 
 		// Queued embedded types for current and next level.
-		current := make([]extField, 0, info.typ.NumFields())
-		next := make([]extField, 1, info.typ.NumFields())
+		current := make([]fieldData, 0, info.typ.NumFields())
+		next := make([]fieldData, 1, info.typ.NumFields())
 
 		// Count of queued embedded types for current and next level.
 		count := make(map[*StructInfo]int)
@@ -106,8 +120,8 @@ func (info *StructInfo) Collect() {
 		visited := make(map[*StructInfo]bool)
 
 		nextCount[info]++
-		next[0] = extField{
-			FieldInfo: &FieldInfo{
+		next[0] = fieldData{
+			StructField: &StructField{
 				Type: info.typ,
 			},
 			info: info,
@@ -124,19 +138,10 @@ func (info *StructInfo) Collect() {
 				}
 				visited[embedded.info] = true
 
-				// WARNING: DO NOT EVER CALL einfo.Collect HERE.
+				// WARNING: DO NOT EVER CALL embedded.info.Collect HERE.
 				// First, it may deadlock on cyclic types.
 				// Second, reusing other structs _after_ flattening
 				// may lead to incorrect results for subtle reasons.
-
-				// Retrieve named type of embedded field, if any.
-				var parent *types.TypeName
-				switch t := embedded.Type.(type) {
-				case *types.Alias:
-					parent = t.Obj()
-				case *types.Named:
-					parent = t.Obj()
-				}
 
 				// Scan embedded type for fields to include.
 				estruct := embedded.Type.Underlying().(*types.Struct)
@@ -192,22 +197,21 @@ func (info *StructInfo) Collect() {
 						// or field is not structure:
 						// add to field list.
 
-						finfo := extField{
-							FieldInfo: &FieldInfo{
-								Name:     name,
+						finfo := fieldData{
+							StructField: &StructField{
+								JsonName: name,
 								Type:     field.Type(),
 								Optional: optional,
 								Quoted:   quoted,
 
-								Parent: parent,
-								Field:  field,
+								Object: field,
 							},
 							nameFromTag: name != "",
 							index:       index,
 						}
 
 						if name == "" {
-							finfo.Name = field.Name()
+							finfo.JsonName = field.Name()
 						}
 
 						fields = append(fields, finfo)
@@ -229,8 +233,8 @@ func (info *StructInfo) Collect() {
 					fsinfo := info.collector.Struct(fstruct)
 					nextCount[fsinfo]++
 					if nextCount[fsinfo] == 1 {
-						next = append(next, extField{
-							FieldInfo: &FieldInfo{
+						next = append(next, fieldData{
+							StructField: &StructField{
 								Type: ftype,
 							},
 							index: index,
@@ -242,9 +246,9 @@ func (info *StructInfo) Collect() {
 		}
 
 		// Prepare for field selection phase.
-		slices.SortFunc(fields, func(f1 extField, f2 extField) int {
+		slices.SortFunc(fields, func(f1 fieldData, f2 fieldData) int {
 			// Sort by name first.
-			if diff := strings.Compare(f1.Name, f2.Name); diff != 0 {
+			if diff := strings.Compare(f1.JsonName, f2.JsonName); diff != 0 {
 				return diff
 			}
 
@@ -271,7 +275,7 @@ func (info *StructInfo) Collect() {
 		// Keep for each name the dominant field, drop those for which ties
 		// still exist (ignoring order of occurrence).
 		for i, j := 0, 1; j <= len(fields); j++ {
-			if j < len(fields) && fields[i].Name == fields[j].Name {
+			if j < len(fields) && fields[i].JsonName == fields[j].JsonName {
 				continue
 			}
 
@@ -288,19 +292,20 @@ func (info *StructInfo) Collect() {
 		fields = fields[:fieldCount]
 
 		// Sort by order of occurrence.
-		slices.SortFunc(fields, func(f1 extField, f2 extField) int {
+		slices.SortFunc(fields, func(f1 fieldData, f2 fieldData) int {
 			return slices.Compare(f1.index, f2.index)
 		})
 
 		// Copy selected fields to receiver.
-		info.Fields = make([]*FieldInfo, len(fields))
+		info.Fields = make([]*StructField, len(fields))
 		for i, field := range fields {
-			info.Fields[i] = field.FieldInfo
+			info.Fields[i] = field.StructField
 		}
 
 		info.typ = nil
-		info.collector = nil
 	})
+
+	return info
 }
 
 // parseTag parses a json field tag and extracts
