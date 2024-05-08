@@ -38,7 +38,7 @@ export class Embedded1 {
     /**
      * NamingThingsIsHard is a law of programming
      */
-    "NamingThingsIsHard": boolean;
+    "NamingThingsIsHard": `${boolean}`;
 
     /** Creates a new Embedded1 instance. */
     constructor(source: Partial<Embedded1> = {}) {
@@ -79,7 +79,7 @@ export class Embedded2 {
     /** Creates a new Embedded2 instance. */
     constructor(source: Partial<Embedded2> = {}) {
         if (!("Vanish" in source)) {
-            this["Vanish"] = "false";
+            this["Vanish"] = false;
         }
         if (!("StillThere" in source)) {
             this["StillThere"] = null;
@@ -119,7 +119,7 @@ export class Person {
     /**
      * NamingThingsIsHard is a law of programming
      */
-    "NamingThingsIsHard": boolean;
+    "NamingThingsIsHard": `${boolean}`;
 
     /**
      * StillThereButRenamed should shadow in Person the other field with same depth and no json tag
@@ -197,7 +197,7 @@ export class embedded4 {
     /**
      * NamingThingsIsHard is a law of programming
      */
-    "NamingThingsIsHard": boolean;
+    "NamingThingsIsHard": `${boolean}`;
 
     /**
      * Friends should not be shadowed in Person as embedded4 is not embedded
@@ -212,7 +212,7 @@ export class embedded4 {
             this["NamingThingsIsHard"] = "false";
         }
         if (!("Friends" in source)) {
-            this["Friends"] = "false";
+            this["Friends"] = false;
         }
 
         Object.assign(this, source);
