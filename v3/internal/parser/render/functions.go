@@ -1,14 +1,9 @@
 package render
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
-	"go/ast"
 	"math/big"
-	"slices"
 	"strconv"
-	"strings"
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/parser/collect"
@@ -17,68 +12,17 @@ import (
 // tmplFunctions holds a map of utility functions
 // that should be available in every template.
 var tmplFunctions = template.FuncMap{
-	"isclass":   collect.IsClass,
-	"hasdoc":    hasdoc,
-	"jsdoc":     jsdoc,
-	"jsid":      jsid,
-	"jsimport":  jsimport,
-	"jsparam":   jsparam,
-	"jsvalue":   jsvalue,
-	"typeparam": typeparam,
-}
-
-// hasdoc checks whether the given comment group contains actual doc comments.
-func hasdoc(group *ast.CommentGroup) bool {
-	if group == nil {
-		return false
-	}
-
-	// TODO: this is horrible, make it more efficient?
-	text := group.Text()
-	return text != "" && text != "\n"
-}
-
-// jsdoc splits the given comment into lines and rewrites it as follows:
-//   - first, line terminators are stripped;
-//   - then a line terminator, the indent string and ' * '
-//     are prepended to each line;
-//   - occurrences of the comment terminator '*/' are replaced with '* /'
-//     to avoid accidentally terminating the surrounding comment.
-//
-// All lines thus modified are joined back together.
-//
-// The returned string can be inserted in a multiline JSDoc comment
-// with the given indentation.
-func jsdoc(comment string, indent string) string {
-	var builder strings.Builder
-	prefix := []byte("\n" + indent + " * ")
-
-	scanner := bufio.NewScanner(bytes.NewReader([]byte(comment)))
-	for scanner.Scan() {
-		builder.Write(prefix)
-
-		line := scanner.Bytes()
-
-		// Escape comment terminators.
-		for t := bytes.Index(line, commentTerminator); t >= 0; t = bytes.Index(line, commentTerminator) {
-			builder.Write(line[:t+1])
-			builder.WriteRune(' ')
-			line = line[t+1:]
-		}
-
-		builder.Write(line)
-	}
-
-	return builder.String()
-}
-
-// jsid escapes identifiers that match JS/TS reserved words
-// by prepending a dollar sign.
-func jsid(ident string) string {
-	if _, reserved := slices.BinarySearch(reservedWords, ident); reserved {
-		return "$" + ident
-	}
-	return ident
+	"hasdoc":     hasdoc,
+	"isclass":    collect.IsClass,
+	"isjsdocid":  isjsdocid,
+	"isjsdocobj": isjsdocobj,
+	"jsdoc":      jsdoc,
+	"jsdocline":  jsdocline,
+	"jsid":       jsid,
+	"jsimport":   jsimport,
+	"jsparam":    jsparam,
+	"jsvalue":    jsvalue,
+	"typeparam":  typeparam,
 }
 
 // jsimport formats an external import name
@@ -135,83 +79,4 @@ func jsvalue(value any) string {
 
 	// Fall back to undefined.
 	return "(void(0))"
-}
-
-func init() {
-	// Ensure reserved words are sorted in ascending lexicographical order.
-	slices.Sort(reservedWords)
-}
-
-var commentTerminator = []byte("*/")
-
-// reservedWords is a list of JS + TS reserved or special meaning words.
-// Keep in ascending lexicographical order for best startup performance.
-var reservedWords = []string{
-	"JSON",
-	"Object",
-	"any",
-	"arguments",
-	"as",
-	"async",
-	"await",
-	"boolean",
-	"break",
-	"case",
-	"catch",
-	"class",
-	"const",
-	"constructor",
-	"continue",
-	"debugger",
-	"declare",
-	"default",
-	"delete",
-	"do",
-	"else",
-	"enum",
-	"export",
-	"extends",
-	"false",
-	"finally",
-	"for",
-	"from",
-	"function",
-	"get",
-	"if",
-	"implements",
-	"import",
-	"in",
-	"instanceof",
-	"interface",
-	"let",
-	"module",
-	"namespace",
-	"new",
-	"null",
-	"number",
-	"of",
-	"package",
-	"private",
-	"protected",
-	"public",
-	"require",
-	"return",
-	"set",
-	"static",
-	"string",
-	"super",
-	"switch",
-	"symbol",
-	"this",
-	"throw",
-	"true",
-	"try",
-	"type",
-	"typeof",
-	"undefined",
-	"var",
-	"void",
-	"while",
-	"with",
-	"yield",
 }

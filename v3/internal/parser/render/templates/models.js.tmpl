@@ -24,7 +24,7 @@ import * as $internal from "./{{js $internal}}";
 {{- $isEnum := $model.Values}}
 {{- $isClassAlias := and $model.Type (not $useInterfaces) (isclass $model.Type)}}
 {{- $isTypeAlias := and $model.Type (or $useInterfaces (not (isclass $model.Type)))}}
-{{- $isClassOrInterface := $model.Fields}}
+{{- $isClassOrInterface := and (not $model.Type) (not $model.Values)}}
 {{- $isInterface := and $isClassOrInterface (or $useInterfaces $model.Alias)}}
 
 {{- /* Build type parameter list */}}
@@ -66,11 +66,20 @@ import * as $internal from "./{{js $internal}}";
 {{- else if $isTypeAlias}}
  * @typedef { {{- $module.JSType $model.Type -}} } {{jsid $model.Name}}
 {{- else if $isInterface}}
+{{- if isjsdocobj $model}}
+ * @typedef {Object} {{jsid $model.Name}}
+{{- range $i, $decl := $model.Fields}}{{range $j, $field := $decl}}
+ * @property { {{- $module.JSFieldType $field.StructField -}} }
+    {{- if $field.Optional}} [{{else}} {{end}}{{$field.JsonName}}{{if $field.Optional}}]{{end}}
+    {{- if hasdoc $field.Decl.Doc}} - {{jsdocline $field.Decl.Doc.Text}}{{end}}
+{{- end}}{{end}}
+{{- else}}
  * @typedef { {
 {{- range $i, $decl := $model.Fields}}{{range $j, $field := $decl}}
  *     "{{js $field.JsonName}}"{{if $field.Optional}}?{{end}}: {{$module.JSFieldType $field.StructField}},
 {{- end}}{{end}}
  * } } {{jsid $model.Name}}
+{{- end}}
 {{- end}}
  */
 {{- end}}
