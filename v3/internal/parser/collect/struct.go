@@ -101,7 +101,6 @@ func (info *StructInfo) Collect() *StructInfo {
 		// Data for the encoding/json flattening algorithm.
 		nameFromTag bool
 		index       []int
-		info        *StructInfo
 	}
 
 	info.once.Do(func() {
@@ -113,18 +112,16 @@ func (info *StructInfo) Collect() *StructInfo {
 		next := make([]fieldData, 1, info.typ.NumFields())
 
 		// Count of queued embedded types for current and next level.
-		count := make(map[*StructInfo]int)
-		nextCount := make(map[*StructInfo]int)
+		count := make(map[*types.Struct]int)
+		nextCount := make(map[*types.Struct]int)
 
 		// Set of visited types to avoid duplicating work.
-		visited := make(map[*StructInfo]bool)
+		visited := make(map[*types.Struct]bool)
 
-		nextCount[info]++
 		next[0] = fieldData{
 			StructField: &StructField{
 				Type: info.typ,
 			},
-			info: info,
 		}
 
 		for len(next) > 0 {
@@ -133,18 +130,17 @@ func (info *StructInfo) Collect() *StructInfo {
 			clear(nextCount)
 
 			for _, embedded := range current {
-				if visited[embedded.info] {
-					continue
-				}
-				visited[embedded.info] = true
-
-				// WARNING: DO NOT EVER CALL embedded.info.Collect HERE.
-				// First, it may deadlock on cyclic types.
-				// Second, reusing other structs _after_ flattening
-				// may lead to incorrect results for subtle reasons.
-
 				// Scan embedded type for fields to include.
 				estruct := embedded.Type.Underlying().(*types.Struct)
+
+				// Skip previously visited structs
+				if visited[estruct] {
+					continue
+				}
+				visited[estruct] = true
+
+				// WARNING: do not reuse cached info for embedded structs.
+				// It may lead to incorrect results for subtle reasons.
 
 				for i := 0; i < estruct.NumFields(); i++ {
 					field := estruct.Field(i)
@@ -215,7 +211,7 @@ func (info *StructInfo) Collect() *StructInfo {
 						}
 
 						fields = append(fields, finfo)
-						if count[embedded.info] > 1 {
+						if count[estruct] > 1 {
 							// The struct we are scanning
 							// appears multiple times at the current level.
 							// This means that all its fields are ambiguous
@@ -230,15 +226,13 @@ func (info *StructInfo) Collect() *StructInfo {
 
 					// Queue embedded field for next level.
 					// If it has been queued already, do not duplicate it.
-					fsinfo := info.collector.Struct(fstruct)
-					nextCount[fsinfo]++
-					if nextCount[fsinfo] == 1 {
+					nextCount[fstruct]++
+					if nextCount[fstruct] == 1 {
 						next = append(next, fieldData{
 							StructField: &StructField{
 								Type: ftype,
 							},
 							index: index,
-							info:  fsinfo,
 						})
 					}
 				}
