@@ -34,7 +34,8 @@ func NewRenderer(options *flags.GenerateBindingsOptions, collector *collect.Coll
 	}
 
 	return &Renderer{
-		options: options,
+		options:   options,
+		collector: collector,
 
 		bindings: tmplBindings[tmplLanguage(options.TS)],
 		ext:      ext,

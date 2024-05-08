@@ -184,7 +184,7 @@ export class {{jsid $model.Name}} {
      * @param {(any) => {{$param -}} } $$create{{$param}}
     {{- end}}
      * @param {any} [$$source = {}]
-     * @returns { {{- jsid $model.Name -}}{{$typeParamList}} }
+     * @returns { {{- jsid $model.Name}}{{$typeParamList -}} }
      */
     static createFrom({{range $i, $param := $model.TypeParams}}
                 {{- if or (eq $param "") (eq $param "_")}}
