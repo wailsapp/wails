@@ -82,8 +82,8 @@
     <button class="btn" id="greetperson-btn">GreetPerson</button>
 </div>
 <script type="module">
-    import * as GreetService from "./bindings/main/GreetService.js";
-    import * as data from "./bindings/data/models.js";
+    import {GreetService} from "./bindings/main.js";
+    import * as data from "./bindings/data.js";
 
     let greetCount = 0, greetPersonCount = 0;
 
@@ -106,7 +106,14 @@
     async function greetPerson() {
         ++greetPersonCount;
 
-        const person = new data.Person({ name: document.getElementById("name").value });
+        const name = document.getElementById("name").value;
+
+        let person;
+        if (name === "Quincy") {
+            person = await GreetService.GetPerson(name);
+        } else {
+            person = new data.Person({ name });
+        }
 
         if (greetCount > 0)
             person.counts.push(greetCount);

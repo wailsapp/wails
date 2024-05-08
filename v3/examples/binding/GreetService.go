@@ -32,3 +32,8 @@ func (*GreetService) Greet(name string, counts ...int) string {
 func (srv *GreetService) GreetPerson(person data.Person) string {
 	return srv.Greet(person.Name, person.Counts...)
 }
+
+// GetPerson returns a person with the given name.
+func (srv *GreetService) GetPerson(name string) data.Person {
+	return data.Person{Name: name}
+}
