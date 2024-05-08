@@ -257,6 +257,29 @@ func (generator *Generator) generateModelsAndIndex(info *collect.PackageInfo) {
 
 	if !(generator.options.NoIndex || empty) {
 		generator.wg.Add(1)
-		generator.generateIndex(index)
+		go generator.generateIndex(index)
+		reportDualRoles(index)
+	}
+}
+
+// reportDualRoles checks for models that are also bound types
+// and emits a warning.
+func reportDualRoles(index collect.PackageIndex) {
+	bindings, models := index.Bindings, index.Models
+	for len(bindings) > 0 && len(models) > 0 {
+		if bindings[0].Name < models[0].Name {
+			bindings = bindings[1:]
+		} else if bindings[0].Name > models[0].Name {
+			models = models[1:]
+		} else {
+			pterm.Warning.Printfln(
+				"package %s: type %s has been marked both as a bound type and as a model; shadowing between the two may take place when importing generated JS indexes",
+				index.Info.Path,
+				bindings[0].Name,
+			)
+
+			bindings = bindings[1:]
+			models = models[1:]
+		}
 	}
 }
