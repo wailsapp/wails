@@ -117,13 +117,13 @@ func TestGenerator(t *testing.T) {
 
 	// Run tests.
 	for _, test := range tests {
-		t.Run("pkg="+test.name, func(t *testing.T) {
-			pkgPattern := "github.com/wailsapp/wails/v3/internal/parser/testcases/"
-			if test.name != "all" {
-				pkgPattern += test.name + "/"
-			}
-			pkgPattern += "..."
+		pkgPattern := "github.com/wailsapp/wails/v3/internal/parser/testcases/"
+		if test.name != "all" {
+			pkgPattern += test.name + "/"
+		}
+		pkgPattern += "..."
 
+		t.Run("pkg="+test.name, func(t *testing.T) {
 			for _, conf := range configs {
 				t.Run(conf.name, func(t *testing.T) {
 					want := test.want[conf.name]
