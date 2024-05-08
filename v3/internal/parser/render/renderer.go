@@ -15,14 +15,10 @@ type Renderer struct {
 	options   *flags.GenerateBindingsOptions
 	collector *collect.Collector
 
+	ext string
+
 	bindings *template.Template
-	ext      string
-
-	models       *template.Template
-	modelsFile   string
-	internalFile string
-
-	indexFile string
+	models   *template.Template
 }
 
 // NewRenderer initialises a code renderer
@@ -37,14 +33,10 @@ func NewRenderer(options *flags.GenerateBindingsOptions, collector *collect.Coll
 		options:   options,
 		collector: collector,
 
+		ext: ext,
+
 		bindings: tmplBindings[tmplLanguage(options.TS)],
-		ext:      ext,
-
-		models:       tmplModels[tmplLanguage(options.TS)],
-		modelsFile:   "models" + ext,
-		internalFile: "internal" + ext,
-
-		indexFile: "index" + ext,
+		models:   tmplModels[tmplLanguage(options.TS)],
 	}
 }
 
@@ -57,19 +49,19 @@ func (renderer *Renderer) BindingsFile(name string) string {
 // ModelsFile returns the standard name of a models file
 // with the appropriate extension.
 func (renderer *Renderer) ModelsFile() string {
-	return renderer.modelsFile
+	return renderer.options.ModelsFilename + renderer.ext
 }
 
 // InternalFile returns the standard name of an internal model file
 // with the appropriate extension.
 func (renderer *Renderer) InternalFile() string {
-	return renderer.internalFile
+	return renderer.options.InternalFilename + renderer.ext
 }
 
 // IndexFile returns the standard name of a package index file
 // with the appropriate extension.
 func (renderer *Renderer) IndexFile() string {
-	return renderer.indexFile
+	return renderer.options.IndexFilename + renderer.ext
 }
 
 // ShortcutFile returns the standard name of an import shortcut file
