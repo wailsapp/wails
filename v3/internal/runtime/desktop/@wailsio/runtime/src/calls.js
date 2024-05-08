@@ -150,7 +150,7 @@ export function ByName(name, ...args) {
     }
 
     const packagePath = name.slice(0, structDot),
-          structName = name.slice(0, structDot + 1, methodDot),
+          structName = name.slice(structDot + 1, methodDot),
           methodName = name.slice(methodDot + 1);
 
     return callBinding(CallBinding, {
