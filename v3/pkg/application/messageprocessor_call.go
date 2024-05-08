@@ -64,7 +64,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			return
 		}
 		var boundMethod *BoundMethod
-		if options.PackageName != "" {
+		if options.PackagePath != "" {
 			boundMethod = globalApplication.bindings.Get(&options)
 			if boundMethod == nil {
 				m.callErrorCallback(window, "Error getting binding for method: %s", callID, fmt.Errorf("method '%s' not found", options.Name()))

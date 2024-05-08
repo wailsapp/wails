@@ -171,7 +171,7 @@ func TestBoundMethodCall(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			callOptions := &application.CallOptions{
-				PackageName: "application_test",
+				PackagePath: "application_test",
 				StructName:  "TestService",
 				MethodName:  tt.method,
 			}

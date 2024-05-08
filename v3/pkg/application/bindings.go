@@ -16,14 +16,14 @@ import (
 
 type CallOptions struct {
 	MethodID    uint32            `json:"methodID"`
-	PackageName string            `json:"packageName"`
+	PackagePath string            `json:"packagePath"`
 	StructName  string            `json:"structName"`
 	MethodName  string            `json:"methodName"`
 	Args        []json.RawMessage `json:"args"`
 }
 
 func (c *CallOptions) Name() string {
-	return fmt.Sprintf("%s.%s.%s", c.PackageName, c.StructName, c.MethodName)
+	return fmt.Sprintf("%s.%s.%s", c.PackagePath, c.StructName, c.MethodName)
 }
 
 type PluginCallOptions struct {
@@ -72,7 +72,6 @@ type BoundMethod struct {
 	Outputs     []*Parameter  `json:"outputs,omitempty"`
 	Comments    string        `json:"comments,omitempty"`
 	Method      reflect.Value `json:"-"`
-	PackageName string
 	StructName  string
 	PackagePath string
 
@@ -109,18 +108,27 @@ func (b *Bindings) Add(structPtr interface{}) error {
 	}
 
 	for _, method := range methods {
-		packageName := method.PackageName
+		packagePath := method.PackagePath
 		structName := method.StructName
 		methodName := method.Name
 
 		// Add it as a regular method
-		if _, ok := b.boundMethods[packageName]; !ok {
-			b.boundMethods[packageName] = make(map[string]map[string]*BoundMethod)
+		if _, ok := b.boundMethods[packagePath]; !ok {
+			b.boundMethods[packagePath] = make(map[string]map[string]*BoundMethod)
 		}
-		if _, ok := b.boundMethods[packageName][structName]; !ok {
-			b.boundMethods[packageName][structName] = make(map[string]*BoundMethod)
+		if _, ok := b.boundMethods[packagePath][structName]; !ok {
+			b.boundMethods[packagePath][structName] = make(map[string]*BoundMethod)
 		}
-		b.boundMethods[packageName][structName][methodName] = method
+		b.boundMethods[packagePath][structName][methodName] = method
+
+		if prev, ok := b.boundByID[method.ID]; ok {
+			return fmt.Errorf(
+				"bound method ID collision: methods %s.%s.%s and %s.%s.%s hash to the same ID %d",
+				prev.PackagePath, prev.StructName, prev.Name,
+				method.PackagePath, method.StructName, method.Name,
+			)
+		}
+
 		b.boundByID[method.ID] = method
 	}
 	return nil
@@ -144,18 +152,18 @@ func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
 			if !lo.Contains(exportedMethods, method.Name) {
 				continue
 			}
-			packageName := "wails-plugins"
+			packagePath := "wails-plugins"
 			structName := pluginID
 			methodName := method.Name
 
 			// Add it as a regular method
-			if _, ok := b.boundMethods[packageName]; !ok {
-				b.boundMethods[packageName] = make(map[string]map[string]*BoundMethod)
+			if _, ok := b.boundMethods[packagePath]; !ok {
+				b.boundMethods[packagePath] = make(map[string]map[string]*BoundMethod)
 			}
-			if _, ok := b.boundMethods[packageName][structName]; !ok {
-				b.boundMethods[packageName][structName] = make(map[string]*BoundMethod)
+			if _, ok := b.boundMethods[packagePath][structName]; !ok {
+				b.boundMethods[packagePath][structName] = make(map[string]*BoundMethod)
 			}
-			b.boundMethods[packageName][structName][methodName] = method
+			b.boundMethods[packagePath][structName][methodName] = method
 			b.boundByID[method.ID] = method
 			globalApplication.debug("Added plugin method: "+structName+"."+methodName, "id", method.ID)
 		}
@@ -165,15 +173,15 @@ func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
 
 // Get returns the bound method with the given name
 func (b *Bindings) Get(options *CallOptions) *BoundMethod {
-	_, ok := b.boundMethods[options.PackageName]
+	_, ok := b.boundMethods[options.PackagePath]
 	if !ok {
 		return nil
 	}
-	_, ok = b.boundMethods[options.PackageName][options.StructName]
+	_, ok = b.boundMethods[options.PackagePath][options.StructName]
 	if !ok {
 		return nil
 	}
-	method, ok := b.boundMethods[options.PackageName][options.StructName][options.MethodName]
+	method, ok := b.boundMethods[options.PackagePath][options.StructName][options.MethodName]
 	if !ok {
 		return nil
 	}
@@ -207,7 +215,7 @@ func (b *Bindings) GenerateID(name string) (uint32, error) {
 }
 
 func (b *BoundMethod) String() string {
-	return fmt.Sprintf("%s.%s.%s", b.PackageName, b.StructName, b.Name)
+	return fmt.Sprintf("%s.%s.%s", b.PackagePath, b.StructName, b.Name)
 }
 
 func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod, error) {
@@ -232,10 +240,14 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 	}
 
 	// Process Struct
-	structType := reflect.TypeOf(value)
 	structValue := reflect.ValueOf(value)
-	structTypeString := structType.String()
-	baseName := structTypeString[1:]
+	structType := structValue.Elem().Type()
+	structName := structType.Name()
+	packagePath := structType.PkgPath()
+
+	if strings.Contains(structType.String(), "[") {
+		return nil, fmt.Errorf("%s.%s is a generic struct. Generic bound types are not supported", packagePath, structName)
+	}
 
 	ctxType := reflect.TypeFor[context.Context]()
 
@@ -243,14 +255,11 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 	for i := 0; i < structType.NumMethod(); i++ {
 		methodDef := structType.Method(i)
 		methodName := methodDef.Name
-		packageName, structName, _ := strings.Cut(baseName, ".")
 		method := structValue.MethodByName(methodName)
-		packagePath, _ := lo.Coalesce(structType.PkgPath(), "main")
 
 		// Create new method
 		boundMethod := &BoundMethod{
 			Name:        methodName,
-			PackageName: packageName,
 			PackagePath: packagePath,
 			StructName:  structName,
 			Inputs:      nil,

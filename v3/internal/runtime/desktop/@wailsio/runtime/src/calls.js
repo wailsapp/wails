@@ -113,7 +113,7 @@ function callBinding(type, options = {}) {
             queuedCancel = true;
         }
     };
-    
+
     return p;
 }
 
@@ -136,12 +136,25 @@ export function Call(options) {
  * @returns {*} The result of the method execution.
  */
 export function ByName(name, ...args) {
-    if (typeof name !== "string" || name.split(".").length !== 3) {
-        throw new Error("CallByName requires a string in the format 'package.struct.method'");
+    // Package paths may contain dots: split with custom code
+    // to ensure only the last two dots are taken into account.
+    let methodDot = -1, structDot = -1;
+    if (typeof name === "string") {
+        methodDot = name.lastIndexOf(".");
+        if (methodDot > 0)
+            structDot = name.lastIndexOf(".", methodDot - 1);
     }
-    let [packageName, structName, methodName] = name.split(".");
+
+    if (methodDot < 0 || structDot < 0) {
+        throw new Error("CallByName requires a string in the format 'packagePath.struct.method'");
+    }
+
+    const packagePath = name.slice(0, structDot),
+          structName = name.slice(0, structDot + 1, methodDot),
+          methodName = name.slice(methodDot + 1);
+
     return callBinding(CallBinding, {
-        packageName,
+        packagePath,
         structName,
         methodName,
         args
