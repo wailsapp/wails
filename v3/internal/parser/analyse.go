@@ -16,12 +16,7 @@ import (
 // is a valid service type, the corresponding named type object
 // is passed to yield.
 //
-// The wailsAppPkgPath parameter should be set to the resolved version
-// of the canonical path of the wails application package.
-// The resolved path  should be obtained by passing the [WailsAppPkgPath]
-// constant to [ResolvePatterns], with the same build flags
-// that were used to load the given set of packages.
-// This is required to handle vendored packages correctly.
+// Results are deduplicated, i.e. yield is called at most once per object.
 //
 // If yield returns false, FindBoundTypes returns immediately.
 func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, logger config.Logger, yield func(*types.TypeName) bool) error {
@@ -92,7 +87,7 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 			}
 
 			// Add type params to owner map.
-			for i, length := 0, tp.Len(); i < length; i++ {
+			for i := range tp.Len() {
 				if param := tp.At(i).Obj(); param != nil {
 					owner[param] = obj
 				}
@@ -101,9 +96,9 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 			// Process methods.
 			if recv != nil && recv.NumMethods() > 0 {
 				// Register receiver type params.
-				for i, length := 0, recv.NumMethods(); i < length; i++ {
+				for i := range recv.NumMethods() {
 					tp := recv.Method(i).Type().(*types.Signature).RecvTypeParams()
-					for j, tplen := 0, tp.Len(); j < tplen; j++ {
+					for j := range tp.Len() {
 						if param := tp.At(j).Obj(); param != nil {
 							owner[param] = obj
 						}
@@ -111,12 +106,17 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 				}
 			}
 
-			// Detect application.NewService
+			if len(next) > 0 {
+				// application.NewService has been found already.
+				continue
+			}
+
 			fn, ok := obj.(*types.Func)
 			if !ok {
 				continue
 			}
 
+			// Detect application.NewService
 			if fn.Name() == "NewService" && fn.Pkg().Path() == systemPaths.ApplicationPackage {
 				// Check signature.
 				signature := fn.Type().(*types.Signature)

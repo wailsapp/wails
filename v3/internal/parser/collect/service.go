@@ -240,7 +240,7 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 	var needsContext bool
 
 	// Collect parameters.
-	for i, length := 0, signature.Params().Len(); i < length; i++ {
+	for i := range signature.Params().Len() {
 		param := signature.Params().At(i)
 
 		if i == 0 {
@@ -291,7 +291,7 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 	}
 
 	// Collect results.
-	for i, length := 0, signature.Results().Len(); i < length; i++ {
+	for i := range signature.Results().Len() {
 		result := signature.Results().At(i)
 
 		if types.Identical(result.Type(), typeError) {

@@ -73,11 +73,11 @@ func IsMapKey(typ types.Type) bool {
 // IsString returns true if the given type (or element type for pointers)
 // will be rendered as an alias for the TS string type.
 func IsString(typ types.Type) bool {
+	// Unwrap at most one pointer.
+	// NOTE: do not unalias typ before testing:
+	// aliases whose underlying type is a pointer
+	// are _never_ rendered as strings.
 	if ptr, ok := typ.(*types.Pointer); ok {
-		// Unwrap at most one pointer.
-		// NOTE: do not unalias typ before testing:
-		// aliases whose underlying type is a pointer
-		// are not rendered as strings.
 		typ = ptr.Elem()
 	}
 

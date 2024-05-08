@@ -137,7 +137,7 @@ func (info *ModelInfo) Collect() *ModelInfo {
 			tp := named.TypeParams()
 			if tp != nil && tp.Len() > 0 {
 				info.TypeParams = make([]string, tp.Len())
-				for i, length := 0, tp.Len(); i < length; i++ {
+				for i := range tp.Len() {
 					info.TypeParams[i] = tp.At(i).Obj().Name()
 				}
 			}

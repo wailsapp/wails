@@ -145,8 +145,8 @@ func (imports *ImportMap) AddType(typ types.Type) {
 				return
 			}
 
-			// Record used types from self.
 			if t.Obj().Pkg().Path() == imports.Self {
+				// Record self import.
 				if t.Obj().Exported() {
 					imports.ImportModels = true
 				} else {
@@ -154,7 +154,10 @@ func (imports *ImportMap) AddType(typ types.Type) {
 				}
 			}
 
+			// Record model.
 			collector.Model(t.Obj())
+
+			// Import parent package.
 			imports.Add(collector.Package(t.Obj().Pkg()))
 
 			// The aliased type might be needed during
@@ -190,8 +193,8 @@ func (imports *ImportMap) AddType(typ types.Type) {
 				return
 			}
 
-			// Record used types from self.
 			if t.Obj().Pkg().Path() == imports.Self {
+				// Record self import.
 				if t.Obj().Exported() {
 					imports.ImportModels = true
 				} else {
@@ -199,7 +202,10 @@ func (imports *ImportMap) AddType(typ types.Type) {
 				}
 			}
 
+			// Record model.
 			imports.collector.Model(t.Obj())
+
+			// Import parent package.
 			imports.Add(collector.Package(t.Obj().Pkg()))
 
 			if IsClass(typ) || IsString(typ) || IsAny(typ) {
@@ -235,7 +241,7 @@ func (imports *ImportMap) AddType(typ types.Type) {
 			}
 
 			// Add field dependencies.
-			for i, length := 0, len(info.Fields)-1; i < length; i++ {
+			for i := range len(info.Fields) - 1 {
 				imports.AddType(info.Fields[i].Type)
 			}
 

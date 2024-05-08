@@ -138,7 +138,7 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 		if !ok {
 			if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
 				// Postpone type args.
-				for i, length := 0, t.TypeArgs().Len(); i < length; i++ {
+				for i := range t.TypeArgs().Len() {
 					m.JSCreateWithParams(t.TypeArgs().At(i), params)
 				}
 			}
@@ -246,7 +246,7 @@ func (m *module) PostponedCreates() []string {
 
 			if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
 				builder.WriteString("(")
-				for i, length := 0, t.TypeArgs().Len(); i < length; i++ {
+				for i := range t.TypeArgs().Len() {
 					if i > 0 {
 						builder.WriteString(", ")
 					}
@@ -318,7 +318,7 @@ func (m *module) hasTypeParams(typ types.Type) bool {
 			return false
 		}
 
-		for i, length := 0, t.TypeArgs().Len(); i < length; i++ {
+		for i := range t.TypeArgs().Len() {
 			if m.hasTypeParams(t.TypeArgs().At(i)) {
 				return true
 			}

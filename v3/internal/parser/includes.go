@@ -14,8 +14,6 @@ import (
 // for the package summarised by the given index.
 func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 	for name, path := range index.Package.Includes {
-		name, path := name, path // Redeclare in loop-local scope.
-
 		// Validate filename.
 		switch name {
 		case generator.renderer.ModelsFile():

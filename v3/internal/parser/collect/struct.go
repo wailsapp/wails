@@ -142,7 +142,7 @@ func (info *StructInfo) Collect() *StructInfo {
 				// WARNING: do not reuse cached info for embedded structs.
 				// It may lead to incorrect results for subtle reasons.
 
-				for i := 0; i < estruct.NumFields(); i++ {
+				for i := range estruct.NumFields() {
 					field := estruct.Field(i)
 
 					// Retrieve type of field, following aliases conservatively

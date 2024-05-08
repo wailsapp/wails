@@ -122,7 +122,7 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 
 		if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
 			builder.WriteRune('<')
-			for i, length := 0, t.TypeArgs().Len(); i < length; i++ {
+			for i := range t.TypeArgs().Len() {
 				if i > 0 {
 					builder.WriteString(", ")
 				}
