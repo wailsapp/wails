@@ -5,8 +5,6 @@ import {Create as $Create} from "@wailsio/runtime";
 
 export interface Address {
     "Street": string;
-
     "State": string;
-
     "Country": string;
 }

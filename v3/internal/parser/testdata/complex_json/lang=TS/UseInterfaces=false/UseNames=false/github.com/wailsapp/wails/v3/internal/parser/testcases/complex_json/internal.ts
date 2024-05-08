@@ -30,7 +30,6 @@ export class embedded4 {
 
     /**
      * Creates a new embedded4 instance from a string or object.
-     * Generic types also need creation functions for each type parameter.
      */
     static createFrom($$source: any = {}): embedded4 {
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;

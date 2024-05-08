@@ -5,9 +5,11 @@ import {Create as $Create} from "@wailsio/runtime";
 
 import * as services$0 from "./services/models.ts";
 
+/**
+ * Person is a person
+ */
 export class Person {
     "Name": string;
-
     "Address": services$0.Address | null;
 
     /** Creates a new Person instance. */
@@ -24,16 +26,17 @@ export class Person {
 
     /**
      * Creates a new Person instance from a string or object.
-     * Generic types also need creation functions for each type parameter.
      */
     static createFrom($$source: any = {}): Person {
+        const $$createField1_0 = $$createType1;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("Address" in $$parsedSource) {
-            $$parsedSource["Address"] = $$createType0($$parsedSource["Address"]);
+            $$parsedSource["Address"] = $$createField1_0($$parsedSource["Address"]);
         }
         return new Person($$parsedSource as Partial<Person>);
     }
 }
 
-// Internal type creation functions
-const $$createType0 = $Create.Nullable(services$0.Address.createFrom);
+// Private type creation functions
+const $$createType0 = services$0.Address.createFrom;
+const $$createType1 = $Create.Nullable($$createType0);

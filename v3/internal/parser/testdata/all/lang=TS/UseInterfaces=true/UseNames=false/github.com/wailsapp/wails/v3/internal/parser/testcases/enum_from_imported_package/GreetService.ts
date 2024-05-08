@@ -13,7 +13,7 @@ import * as services$0 from "./services/models.ts";
 /**
  * Greet does XYZ
  */
-export function Greet(name: string, title: services$0.Title): Promise<string> {
+export function Greet(name: string, title: services$0.Title): Promise<string> & { cancel(): void } {
     let $resultPromise = $Call.ByID(1411160069, name, title);
     return $resultPromise as any;
 }

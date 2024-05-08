@@ -8,23 +8,24 @@
 
 import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
-import {Person} from "./models.ts";
+import * as $models from "./models.ts";
 
 /**
  * Greet does XYZ
  * It has a multiline doc comment
  * The comment has even some * / traps!!
  */
-export function Greet(str: string, people: Person[], $2: {"AnotherCount": number, "AnotherOne": Person | null}, assoc: { [_: `${number}`]: boolean | null }, $4: (number | null)[], ...other: string[]): Promise<[Person, any, number[]]> {
+export function Greet(str: string, people: $models.Person[], $2: {"AnotherCount": number, "AnotherOne": $models.Person | null}, assoc: { [_: `${number}`]: boolean | null }, $4: (number | null)[], ...other: string[]): Promise<[$models.Person, any, number[]]> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.Greet", str, people, $2, assoc, $4, other);
     let $typingPromise = $resultPromise.then(($result) => {
-        $result[0] = Person.createFrom($result[0]);
-        $result[2] = $$createType0($result[2]);
+        $result[0] = $$createType0($result[0]);
+        $result[2] = $$createType1($result[2]);
         return $result;
     });
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
     return $typingPromise as any;
 }
 
-// Internal type creation functions
-const $$createType0 = $Create.Array($Create.Any);
+// Private type creation functions
+const $$createType0 = $models.Person.createFrom;
+const $$createType1 = $Create.Array($Create.Any);

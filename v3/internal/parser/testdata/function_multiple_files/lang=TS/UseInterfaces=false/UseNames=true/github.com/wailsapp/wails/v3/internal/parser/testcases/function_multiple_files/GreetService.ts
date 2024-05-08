@@ -3,7 +3,7 @@
 
 import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
-export function Greet(name: string): Promise<string> {
+export function Greet(name: string): Promise<string> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.Greet", name);
     return $resultPromise as any;
 }

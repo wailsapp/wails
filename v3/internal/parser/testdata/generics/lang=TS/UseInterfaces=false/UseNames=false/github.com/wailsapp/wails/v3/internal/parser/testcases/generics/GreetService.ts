@@ -8,15 +8,15 @@
 
 import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
-import {Person} from "./models.ts";
+import * as $models from "./models.ts";
 
 /**
  * Get someone
  */
-export function Get(): Promise<Person<string>> {
+export function Get(): Promise<$models.Person<string>> & { cancel(): void } {
     let $resultPromise = $Call.ByID(1928502664);
     let $typingPromise = $resultPromise.then(($result) => {
-        return (($$source) => Person.createFrom($Create.Any, $$source))($result);
+        return $$createType0($result);
     });
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
     return $typingPromise as any;
@@ -25,11 +25,15 @@ export function Get(): Promise<Person<string>> {
 /**
  * Get someone quite different
  */
-export function GetButDifferent(): Promise<Person<boolean>> {
+export function GetButDifferent(): Promise<$models.Person<boolean>> & { cancel(): void } {
     let $resultPromise = $Call.ByID(2240931744);
     let $typingPromise = $resultPromise.then(($result) => {
-        return (($$source) => Person.createFrom($Create.Any, $$source))($result);
+        return $$createType1($result);
     });
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
     return $typingPromise as any;
 }
+
+// Private type creation functions
+const $$createType0 = $models.Person.createFrom($Create.Any);
+const $$createType1 = $models.Person.createFrom($Create.Any);

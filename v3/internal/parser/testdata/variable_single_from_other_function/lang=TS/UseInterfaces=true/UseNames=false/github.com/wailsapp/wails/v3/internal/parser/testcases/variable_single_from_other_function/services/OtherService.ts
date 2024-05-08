@@ -9,12 +9,12 @@
 
 import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
-import {type Address} from "./models.ts";
+import * as $models from "./models.ts";
 
 /**
  * Yay does this and that
  */
-export function Yay(): Promise<Address | null> {
+export function Yay(): Promise<$models.Address | null> & { cancel(): void } {
     let $resultPromise = $Call.ByID(1576942712);
     return $resultPromise as any;
 }

@@ -9,19 +9,20 @@
 
 import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
-import {Address} from "./models.ts";
+import * as $models from "./models.ts";
 
 /**
  * Yay does this and that
  */
-export function Yay(): Promise<Address | null> {
+export function Yay(): Promise<$models.Address | null> & { cancel(): void } {
     let $resultPromise = $Call.ByID(1867255695);
     let $typingPromise = $resultPromise.then(($result) => {
-        return $$createType0($result);
+        return $$createType1($result);
     });
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
     return $typingPromise as any;
 }
 
-// Internal type creation functions
-const $$createType0 = $Create.Nullable(Address.createFrom);
+// Private type creation functions
+const $$createType0 = $models.Address.createFrom;
+const $$createType1 = $Create.Nullable($$createType0);

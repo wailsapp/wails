@@ -3,12 +3,17 @@
 
 import {Create as $Create} from "@wailsio/runtime";
 
+/**
+ * Person represents a person
+ */
 export interface Person {
     "Title": Title;
-
     "Name": string;
 }
 
+/**
+ * Title is a title
+ */
 export enum Title {
     Dr = "Dr",
     Miss = "Miss",

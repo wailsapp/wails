@@ -8,14 +8,14 @@
 
 import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
-import {type Person} from "./models.ts";
+import * as $models from "./models.ts";
 
 /**
  * Greet does XYZ
  * It has a multiline doc comment
  * The comment has even some * / traps!!
  */
-export function Greet(str: string, people: Person[], $2: {"AnotherCount": number, "AnotherOne": Person | null}, assoc: { [_: `${number}`]: boolean | null }, $4: (number | null)[], ...other: string[]): Promise<[Person, any, number[]]> {
+export function Greet(str: string, people: $models.Person[] | null, $2: {"AnotherCount": number, "AnotherOne": $models.Person | null}, assoc: { [_: `${number}`]: boolean | null } | null, $4: (number | null)[] | null, ...other: string[] | null): Promise<[$models.Person, any, number[] | null]> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.Greet", str, people, $2, assoc, $4, other);
     return $resultPromise as any;
 }

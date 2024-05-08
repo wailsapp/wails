@@ -3,7 +3,7 @@
 
 import {Create as $Create} from "@wailsio/runtime";
 
-import {type embedded4} from "./internal.ts";
+import * as $internal from "./internal.ts";
 
 export interface Embedded1 {
     /**
@@ -29,24 +29,26 @@ export interface Embedded1 {
 
 export type Embedded3 = string;
 
+/**
+ * Person represents a person
+ */
 export interface Person {
     /**
      * Titles is optional in JSON
      */
-    "Titles"?: Title[];
+    "Titles"?: Title[] | null;
 
     /**
      * Names has a
      * multiline comment
      */
-    "Names": string[];
+    "Names": string[] | null;
 
     /**
      * Partner has a custom and complex JSON key
      */
     "Partner": Person | null;
-
-    "Friends": (Person | null)[];
+    "Friends": (Person | null)[] | null;
 
     /**
      * NamingThingsIsHard is a law of programming
@@ -86,9 +88,12 @@ export interface Person {
     /**
      * embedded4 should be optional and appear with key "emb4"
      */
-    "emb4"?: embedded4;
+    "emb4"?: $internal.embedded4;
 }
 
+/**
+ * Title is a title
+ */
 export enum Title {
     Dr = "Dr",
     Miss = "Miss",

@@ -5,9 +5,7 @@ import {Create as $Create} from "@wailsio/runtime";
 
 export class Person {
     "Name": string;
-
     "Parent": Person | null;
-
     "Details": {"Age": number, "Address": {"Street": string}};
 
     /** Creates a new Person instance. */
@@ -27,16 +25,17 @@ export class Person {
 
     /**
      * Creates a new Person instance from a string or object.
-     * Generic types also need creation functions for each type parameter.
      */
     static createFrom($$source: any = {}): Person {
+        const $$createField1_0 = $$createType1;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("Parent" in $$parsedSource) {
-            $$parsedSource["Parent"] = $$createType0($$parsedSource["Parent"]);
+            $$parsedSource["Parent"] = $$createField1_0($$parsedSource["Parent"]);
         }
         return new Person($$parsedSource as Partial<Person>);
     }
 }
 
-// Internal type creation functions
-const $$createType0 = $Create.Nullable(Person.createFrom);
+// Private type creation functions
+const $$createType0 = Person.createFrom;
+const $$createType1 = $Create.Nullable($$createType0);

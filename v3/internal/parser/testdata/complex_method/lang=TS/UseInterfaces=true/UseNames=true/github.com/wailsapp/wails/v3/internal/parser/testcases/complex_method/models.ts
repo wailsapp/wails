@@ -3,6 +3,9 @@
 
 import {Create as $Create} from "@wailsio/runtime";
 
+/**
+ * Person represents a person
+ */
 export interface Person {
     "Name": string;
 }

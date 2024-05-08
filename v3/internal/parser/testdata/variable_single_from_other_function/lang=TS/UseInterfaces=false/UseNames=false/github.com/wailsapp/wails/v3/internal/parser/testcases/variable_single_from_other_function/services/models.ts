@@ -5,9 +5,7 @@ import {Create as $Create} from "@wailsio/runtime";
 
 export class Address {
     "Street": string;
-
     "State": string;
-
     "Country": string;
 
     /** Creates a new Address instance. */
@@ -27,7 +25,6 @@ export class Address {
 
     /**
      * Creates a new Address instance from a string or object.
-     * Generic types also need creation functions for each type parameter.
      */
     static createFrom($$source: any = {}): Address {
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;

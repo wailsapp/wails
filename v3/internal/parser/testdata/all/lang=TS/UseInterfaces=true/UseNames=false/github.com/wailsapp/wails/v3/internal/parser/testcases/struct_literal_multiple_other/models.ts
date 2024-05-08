@@ -7,6 +7,5 @@ import * as services$0 from "./services/models.ts";
 
 export interface Person {
     "Name": string;
-
     "Address": services$0.Address | null;
 }

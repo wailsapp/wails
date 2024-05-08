@@ -11,7 +11,7 @@ import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 /**
  * Greet someone
  */
-export function Greet(name: string): Promise<string> {
+export function Greet(name: string): Promise<string> & { cancel(): void } {
     let $resultPromise = $Call.ByID(1411160069, name);
     return $resultPromise as any;
 }

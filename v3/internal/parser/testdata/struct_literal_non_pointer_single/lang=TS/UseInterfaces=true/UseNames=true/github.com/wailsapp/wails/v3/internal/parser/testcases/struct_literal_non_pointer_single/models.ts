@@ -5,8 +5,6 @@ import {Create as $Create} from "@wailsio/runtime";
 
 export interface Person {
     "Name": string;
-
     "Parent": Person | null;
-
     "Details": {"Age": number, "Address": {"Street": string}};
 }

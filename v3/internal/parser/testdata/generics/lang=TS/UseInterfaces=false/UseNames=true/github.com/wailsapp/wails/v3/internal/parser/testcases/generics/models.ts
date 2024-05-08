@@ -3,9 +3,11 @@
 
 import {Create as $Create} from "@wailsio/runtime";
 
+/**
+ * A generic struct
+ */
 export class Person<T> {
     "Name": T | null;
-
     "AliasedField": number;
 
     /** Creates a new Person instance. */
@@ -21,14 +23,18 @@ export class Person<T> {
     }
 
     /**
-     * Creates a new Person instance from a string or object.
-     * Generic types also need creation functions for each type parameter.
+     * Given creation functions for each type parameter,
+     * returns a creation function for a concrete instance
+     * of the generic class Person.
      */
-    static createFrom<T>($$createT: (any) => T, $$source: any = {}): Person<T> {
-        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
-        if ("Name" in $$parsedSource) {
-            $$parsedSource["Name"] = $$createT($$parsedSource["Name"]);
-        }
-        return new Person<T>($$parsedSource as Partial<Person<T>>);
+    static createFrom<T>($$createParamT: (any) => T): ($$source?: any) => Person<T> {
+        const $$createField0_0 = $$createParamT;
+        return ($$source: any = {}) => {
+            let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+            if ("Name" in $$parsedSource) {
+                $$parsedSource["Name"] = $$createField0_0($$parsedSource["Name"]);
+            }
+            return new Person<T>($$parsedSource as Partial<Person<T>>);
+        };
     }
 }

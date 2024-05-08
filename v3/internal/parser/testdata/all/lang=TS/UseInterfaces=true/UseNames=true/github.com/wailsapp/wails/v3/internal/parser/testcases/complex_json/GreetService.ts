@@ -8,12 +8,12 @@
 
 import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
-import {type Embedded1, type Person} from "./models.ts";
+import * as $models from "./models.ts";
 
 /**
  * Greet does XYZ
  */
-export function Greet(person: Person, emb: Embedded1): Promise<string> {
+export function Greet(person: $models.Person, emb: $models.Embedded1): Promise<string> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.Greet", person, emb);
     return $resultPromise as any;
 }

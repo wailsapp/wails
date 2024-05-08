@@ -3,8 +3,10 @@
 
 import {Create as $Create} from "@wailsio/runtime";
 
+/**
+ * A generic struct
+ */
 export interface Person<T> {
     "Name": T | null;
-
     "AliasedField": number;
 }

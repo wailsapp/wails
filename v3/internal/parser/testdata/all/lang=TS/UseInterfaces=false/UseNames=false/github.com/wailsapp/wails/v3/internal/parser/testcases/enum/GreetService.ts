@@ -8,12 +8,12 @@
 
 import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
-import {Person, type Title} from "./models.ts";
+import * as $models from "./models.ts";
 
 /**
  * Greet does XYZ
  */
-export function Greet(name: string, title: Title): Promise<string> {
+export function Greet(name: string, title: $models.Title): Promise<string> & { cancel(): void } {
     let $resultPromise = $Call.ByID(1411160069, name, title);
     return $resultPromise as any;
 }
@@ -21,14 +21,15 @@ export function Greet(name: string, title: Title): Promise<string> {
 /**
  * NewPerson creates a new person
  */
-export function NewPerson(name: string): Promise<Person | null> {
+export function NewPerson(name: string): Promise<$models.Person | null> & { cancel(): void } {
     let $resultPromise = $Call.ByID(1661412647, name);
     let $typingPromise = $resultPromise.then(($result) => {
-        return $$createType0($result);
+        return $$createType1($result);
     });
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
     return $typingPromise as any;
 }
 
-// Internal type creation functions
-const $$createType0 = $Create.Nullable(Person.createFrom);
+// Private type creation functions
+const $$createType0 = $models.Person.createFrom;
+const $$createType1 = $Create.Nullable($$createType0);

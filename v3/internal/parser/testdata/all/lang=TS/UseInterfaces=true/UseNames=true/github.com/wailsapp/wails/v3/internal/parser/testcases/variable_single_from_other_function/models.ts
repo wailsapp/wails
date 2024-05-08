@@ -5,8 +5,11 @@ import {Create as $Create} from "@wailsio/runtime";
 
 import * as services$0 from "./services/models.ts";
 
+/**
+ * Person is a person!
+ * They have a name and an address
+ */
 export interface Person {
     "Name": string;
-
     "Address": services$0.Address | null;
 }

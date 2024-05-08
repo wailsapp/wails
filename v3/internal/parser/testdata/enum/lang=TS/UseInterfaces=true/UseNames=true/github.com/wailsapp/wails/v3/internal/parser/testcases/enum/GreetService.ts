@@ -8,12 +8,12 @@
 
 import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
-import {type Person, type Title} from "./models.ts";
+import * as $models from "./models.ts";
 
 /**
  * Greet does XYZ
  */
-export function Greet(name: string, title: Title): Promise<string> {
+export function Greet(name: string, title: $models.Title): Promise<string> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.Greet", name, title);
     return $resultPromise as any;
 }
@@ -21,7 +21,7 @@ export function Greet(name: string, title: Title): Promise<string> {
 /**
  * NewPerson creates a new person
  */
-export function NewPerson(name: string): Promise<Person | null> {
+export function NewPerson(name: string): Promise<$models.Person | null> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.NewPerson", name);
     return $resultPromise as any;
 }

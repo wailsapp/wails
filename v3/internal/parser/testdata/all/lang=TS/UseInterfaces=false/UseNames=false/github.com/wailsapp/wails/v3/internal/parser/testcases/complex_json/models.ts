@@ -3,7 +3,7 @@
 
 import {Create as $Create} from "@wailsio/runtime";
 
-import {embedded4} from "./internal.ts";
+import * as $internal from "./internal.ts";
 
 export class Embedded1 {
     /**
@@ -46,7 +46,6 @@ export class Embedded1 {
 
     /**
      * Creates a new Embedded1 instance from a string or object.
-     * Generic types also need creation functions for each type parameter.
      */
     static createFrom($$source: any = {}): Embedded1 {
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
@@ -56,6 +55,9 @@ export class Embedded1 {
 
 export type Embedded3 = string;
 
+/**
+ * Person represents a person
+ */
 export class Person {
     /**
      * Titles is optional in JSON
@@ -72,7 +74,6 @@ export class Person {
      * Partner has a custom and complex JSON key
      */
     "Partner": Person | null;
-
     "Friends": (Person | null)[];
 
     /**
@@ -113,7 +114,7 @@ export class Person {
     /**
      * embedded4 should be optional and appear with key "emb4"
      */
-    "emb4"?: embedded4;
+    "emb4"?: $internal.embedded4;
 
     /** Creates a new Person instance. */
     constructor($$source: Partial<Person> = {}) {
@@ -147,29 +148,36 @@ export class Person {
 
     /**
      * Creates a new Person instance from a string or object.
-     * Generic types also need creation functions for each type parameter.
      */
     static createFrom($$source: any = {}): Person {
+        const $$createField0_0 = $$createType0;
+        const $$createField1_0 = $$createType1;
+        const $$createField2_0 = $$createType3;
+        const $$createField3_0 = $$createType4;
+        const $$createField11_0 = $$createType5;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("Titles" in $$parsedSource) {
-            $$parsedSource["Titles"] = $$createType0($$parsedSource["Titles"]);
+            $$parsedSource["Titles"] = $$createField0_0($$parsedSource["Titles"]);
         }
         if ("Names" in $$parsedSource) {
-            $$parsedSource["Names"] = $$createType1($$parsedSource["Names"]);
+            $$parsedSource["Names"] = $$createField1_0($$parsedSource["Names"]);
         }
         if ("Partner" in $$parsedSource) {
-            $$parsedSource["Partner"] = $$createType2($$parsedSource["Partner"]);
+            $$parsedSource["Partner"] = $$createField2_0($$parsedSource["Partner"]);
         }
         if ("Friends" in $$parsedSource) {
-            $$parsedSource["Friends"] = $$createType3($$parsedSource["Friends"]);
+            $$parsedSource["Friends"] = $$createField3_0($$parsedSource["Friends"]);
         }
         if ("emb4" in $$parsedSource) {
-            $$parsedSource["emb4"] = embedded4.createFrom($$parsedSource["emb4"]);
+            $$parsedSource["emb4"] = $$createField11_0($$parsedSource["emb4"]);
         }
         return new Person($$parsedSource as Partial<Person>);
     }
 }
 
+/**
+ * Title is a title
+ */
 export enum Title {
     Dr = "Dr",
     Miss = "Miss",
@@ -182,8 +190,10 @@ export enum Title {
     Ms = "Ms",
 };
 
-// Internal type creation functions
+// Private type creation functions
 const $$createType0 = $Create.Array($Create.Any);
 const $$createType1 = $Create.Array($Create.Any);
-const $$createType2 = $Create.Nullable(Person.createFrom);
-const $$createType3 = $Create.Array($$createType2);
+const $$createType2 = Person.createFrom;
+const $$createType3 = $Create.Nullable($$createType2);
+const $$createType4 = $Create.Array($$createType3);
+const $$createType5 = $internal.embedded4.createFrom;

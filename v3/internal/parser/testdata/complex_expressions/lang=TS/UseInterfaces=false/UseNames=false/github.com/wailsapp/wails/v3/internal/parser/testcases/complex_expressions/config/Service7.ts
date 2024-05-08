@@ -3,12 +3,7 @@
 
 import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
-export function OtherHiddenMethod(): Promise<string> {
-    let $resultPromise = $Call.ByID(322109877);
-    return $resultPromise as any;
-}
-
-export function TestMethod(): Promise<void> {
+export function TestMethod(): Promise<void> & { cancel(): void } {
     let $resultPromise = $Call.ByID(377450695);
     return $resultPromise as any;
 }

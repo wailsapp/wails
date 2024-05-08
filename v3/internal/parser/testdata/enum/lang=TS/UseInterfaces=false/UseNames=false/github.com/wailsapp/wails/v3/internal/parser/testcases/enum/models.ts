@@ -3,9 +3,11 @@
 
 import {Create as $Create} from "@wailsio/runtime";
 
+/**
+ * Person represents a person
+ */
 export class Person {
     "Title": Title;
-
     "Name": string;
 
     /** Creates a new Person instance. */
@@ -22,7 +24,6 @@ export class Person {
 
     /**
      * Creates a new Person instance from a string or object.
-     * Generic types also need creation functions for each type parameter.
      */
     static createFrom($$source: any = {}): Person {
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
@@ -30,6 +31,9 @@ export class Person {
     }
 }
 
+/**
+ * Title is a title
+ */
 export enum Title {
     Dr = "Dr",
     Miss = "Miss",

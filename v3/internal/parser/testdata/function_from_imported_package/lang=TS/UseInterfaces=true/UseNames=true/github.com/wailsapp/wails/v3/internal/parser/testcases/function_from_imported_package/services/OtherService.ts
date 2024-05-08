@@ -9,12 +9,12 @@
 
 import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
-import {type Address} from "./models.ts";
+import * as $models from "./models.ts";
 
 /**
  * Yay does this and that
  */
-export function Yay(): Promise<Address | null> {
+export function Yay(): Promise<$models.Address | null> & { cancel(): void } {
     let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/function_from_imported_package/services.OtherService.Yay");
     return $resultPromise as any;
 }
