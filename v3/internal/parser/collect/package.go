@@ -417,9 +417,20 @@ func (info *PackageInfo) Collect() bool {
 
 					var recv string
 
-					switch expr := decl.Recv.List[0].Type.(type) {
+					recvExpr := decl.Recv.List[0].Type
+
+					// Unwrap generic instantiations.
+					switch expr := recvExpr.(type) {
+					case *ast.IndexExpr:
+						recvExpr = expr.X
+					case *ast.IndexListExpr:
+						recvExpr = expr.X
+					}
+
+					switch expr := recvExpr.(type) {
 					case *ast.Ident:
 						recv = expr.Name
+
 					case *ast.StarExpr:
 						ident, ok := expr.X.(*ast.Ident)
 						if !ok {
