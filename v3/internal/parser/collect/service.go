@@ -23,17 +23,12 @@ type (
 	ServiceInfo struct {
 		*TypeInfo
 
-		// Internal is true if the service has been marked as internal.
-		Internal bool
-
 		Imports *ImportMap
 		Methods []*ServiceMethodInfo
 
 		// Injections stores a list of JS code lines
 		// that should be injected into the generated file.
-		Injections      []string
-		NumJSInjections int
-		NumTSInjections int
+		Injections []string
 
 		collector *Collector
 		once      sync.Once
@@ -86,8 +81,7 @@ func (collector *Collector) Service(obj *types.TypeName) *ServiceInfo {
 func (info *ServiceInfo) IsEmpty(TS bool) bool {
 	// Ensure information has been collected.
 	info.Collect()
-	noInjections := (!TS && info.NumJSInjections == 0) || (TS && info.NumTSInjections == 0)
-	return noInjections && len(info.Methods) == 0
+	return len(info.Injections) == 0 && len(info.Methods) == 0
 }
 
 // Collect gathers information about the service described by its receiver.
@@ -143,11 +137,7 @@ func (info *ServiceInfo) Collect() *ServiceInfo {
 				continue
 			}
 			for _, comment := range doc.List {
-				switch {
-				case IsDirective(comment.Text, "internal"):
-					info.Internal = true
-
-				case IsDirective(comment.Text, "inject"):
+				if IsDirective(comment.Text, "inject") {
 					// Check condition.
 					line, cond, err := ParseCondition(ParseDirective(comment.Text, "inject"))
 					if err != nil {

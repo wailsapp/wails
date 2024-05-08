@@ -44,7 +44,7 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 	info.services.Range(func(key, value any) bool {
 		service := value.(*ServiceInfo)
 		if !service.IsEmpty(TS) {
-			if !service.Internal {
+			if service.Object().Exported() {
 				// Publish non-internal service on the local index.
 				index.Services = append(index.Services, service)
 			}
