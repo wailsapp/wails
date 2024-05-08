@@ -35,11 +35,20 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 
 	stats, err := generator.Generate(patterns...)
 	if err != nil {
+		var report *parser.ErrorReport
 		switch {
 		case errors.Is(err, parser.ErrNoInitialPackages):
 			pterm.Info.Println(err)
 		case errors.Is(err, analyse.ErrNoApplicationPackage):
 			pterm.Info.Println("Input packages do not load the Wails application package")
+		case errors.As(err, &report):
+			if report.HasErrors() {
+				// Report error count.
+				return err
+			} else if report.HasWarnings() {
+				// Report warning count.
+				pterm.Warning.Println(report)
+			}
 		default:
 			return err
 		}

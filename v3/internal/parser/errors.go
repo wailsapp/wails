@@ -44,11 +44,31 @@ func (report *ErrorReport) Error() string {
 	defer report.mu.Unlock()
 
 	if len(report.errors) > 0 && len(report.warnings) == 0 {
-		return fmt.Sprintf("%d errors emitted", len(report.errors))
+		var plural string
+		if len(report.errors) > 1 {
+			plural = "s"
+		}
+		return fmt.Sprintf("%d error%s emitted", len(report.errors), plural)
+
 	} else if len(report.errors) == 0 && len(report.warnings) > 0 {
-		return fmt.Sprintf("%d warnings emitted", len(report.warnings))
+		var plural string
+		if len(report.warnings) > 1 {
+			plural = "s"
+		}
+
+		return fmt.Sprintf("%d warning%s emitted", len(report.warnings), plural)
+
 	} else if len(report.errors) > 0 && len(report.warnings) > 0 {
-		return fmt.Sprintf("%d errors and %d warnings emitted", len(report.errors), len(report.warnings))
+		var eplural, wplural string
+		if len(report.errors) > 1 {
+			eplural = "s"
+		}
+		if len(report.warnings) > 1 {
+			wplural = "s"
+		}
+
+		return fmt.Sprintf("%d error%s and %d warning%s emitted", len(report.errors), eplural, len(report.warnings), wplural)
+
 	} else {
 		return "no errors or warnings emitted"
 	}

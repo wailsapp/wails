@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/parser/config"
 )
@@ -146,6 +147,8 @@ func TestGenerator(t *testing.T) {
 					if report := (*ErrorReport)(nil); errors.As(err, &report) {
 						if report.HasErrors() {
 							t.Error(report)
+						} else if report.HasWarnings() {
+							pterm.Warning.Println(report)
 						}
 					} else if err != nil {
 						t.Error(err)
