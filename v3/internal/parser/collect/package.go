@@ -7,6 +7,7 @@ import (
 	"go/types"
 	"path/filepath"
 	"slices"
+	"strings"
 	"sync"
 	"sync/atomic"
 
@@ -56,10 +57,12 @@ type PackageInfo struct {
 
 	// services records service types that have to be generated for this package.
 	// We rely upon [sync.Map] for atomic swapping support.
+	// Keys are *types.TypeName, values are *ServiceInfo.
 	services sync.Map
 
 	// models records model types that have to be generated for this package.
 	// We rely upon [sync.Map] for atomic swapping support.
+	// Keys are *types.TypeName, values are *ModelInfo.
 	models sync.Map
 
 	// stats caches statistics about this package.
@@ -221,7 +224,7 @@ func (info *PackageInfo) Collect() *PackageInfo {
 
 					// Announce and record matching files.
 					for _, path := range paths {
-						name := filepath.Base(path)
+						name := strings.ToLower(filepath.Base(path))
 						if old, ok := info.Includes[name]; ok {
 							collector.logger.Errorf(
 								"%s: duplicate included file name '%s' in package %s; old path: '%s'; new path: '%s'",

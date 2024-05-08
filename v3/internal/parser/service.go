@@ -8,11 +8,11 @@ import (
 // generateService collects information
 // and generates JS/TS binding code
 // for the given service type object.
-func (generator *Generator) generateService(typ *types.TypeName) {
+func (generator *Generator) generateService(obj *types.TypeName) {
 	generator.logger.Debugf(
 		"discovered service type %s from package %s",
-		typ.Name(),
-		typ.Pkg().Path(),
+		obj.Name(),
+		obj.Pkg().Path(),
 	)
 
 	success := false
@@ -20,14 +20,14 @@ func (generator *Generator) generateService(typ *types.TypeName) {
 		if !success {
 			generator.logger.Errorf(
 				"package %s: type %s: service code generation failed",
-				typ.Pkg().Path(),
-				typ.Name(),
+				obj.Pkg().Path(),
+				obj.Name(),
 			)
 		}
 	}()
 
 	// Collect service information.
-	info := generator.collector.Service(typ).Collect()
+	info := generator.collector.Service(obj).Collect()
 	if info == nil {
 		return
 	}
@@ -35,29 +35,29 @@ func (generator *Generator) generateService(typ *types.TypeName) {
 	if info.IsEmpty(generator.options.TS) {
 		generator.logger.Infof(
 			"package %s: type %s: service has no valid exported methods, skipping",
-			typ.Pkg().Path(),
-			typ.Name(),
+			obj.Pkg().Path(),
+			obj.Name(),
 		)
 		success = true
 		return
 	}
 
-	// Check for file name collisions.
+	// Check for standard filename collisions.
 	filename := generator.renderer.ServiceFile(info.Name)
 	switch filename {
 	case generator.renderer.ModelsFile():
 		generator.logger.Errorf(
 			"package %s: type %s: service filename collides with models filename; please rename the type or choose a different filename for models",
-			typ.Pkg().Path(),
-			typ.Name(),
+			obj.Pkg().Path(),
+			obj.Name(),
 		)
 		return
 
 	case generator.renderer.InternalFile():
 		generator.logger.Errorf(
 			"package %s: type %s: service filename collides with internal models filename; please rename the type or choose a different filename for internal models",
-			typ.Pkg().Path(),
-			typ.Name(),
+			obj.Pkg().Path(),
+			obj.Name(),
 		)
 		return
 
@@ -65,15 +65,27 @@ func (generator *Generator) generateService(typ *types.TypeName) {
 		if !generator.options.NoIndex {
 			generator.logger.Errorf(
 				"package %s: type %s: service filename collides with JS/TS index filename; please rename the type or choose a different filename for JS/TS indexes",
-				typ.Pkg().Path(),
-				typ.Name(),
+				obj.Pkg().Path(),
+				obj.Name(),
 			)
 			return
 		}
 	}
 
+	// Check for upper/lower-case filename collisions.
+	path := filepath.Join(info.Imports.Self, filename)
+	if other, present := generator.serviceFiles.LoadOrStore(path, obj); present {
+		generator.logger.Errorf(
+			"package %s: type %s: service filename collides with filename for service %s; please avoid multiple services whose names differ only in case",
+			obj.Pkg().Path(),
+			obj.Name(),
+			other.(*types.TypeName).Name(),
+		)
+		return
+	}
+
 	// Create service file.
-	file, err := generator.creator.Create(filepath.Join(info.Imports.Self, filename))
+	file, err := generator.creator.Create(path)
 	if err != nil {
 		generator.logger.Errorf("%v", err)
 		return

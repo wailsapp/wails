@@ -20,8 +20,8 @@ type Person[T any] struct {
 }
 
 // Get someone
-func (GreetService) Get() Person[string] {
-	return Person[string]{"hello", 0}
+func (GreetService) Get(aliasValue Alias) Person[string] {
+	return Person[string]{"hello", aliasValue}
 }
 
 // Get someone quite different

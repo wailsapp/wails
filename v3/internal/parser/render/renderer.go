@@ -2,6 +2,7 @@ package render
 
 import (
 	"io"
+	"strings"
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
@@ -42,7 +43,7 @@ func NewRenderer(options *flags.GenerateBindingsOptions, collector *collect.Coll
 // ServiceFile returns the standard name of a service file
 // for the given struct name, with the appropriate extension.
 func (renderer *Renderer) ServiceFile(name string) string {
-	return name + renderer.ext
+	return strings.ToLower(name) + renderer.ext
 }
 
 // ModelsFile returns the standard name of a models file
