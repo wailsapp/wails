@@ -151,7 +151,15 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 	}
 
 	// Compute fully qualified name.
-	fqn := typ.Pkg().Path() + "." + typ.Name() + "." + method.Name()
+	path := typ.Pkg().Path()
+	if typ.Pkg().Name() == "main" {
+		// reflect.Method.PkgPath is always "main" for the main package.
+		// This should not cause collisions because
+		// other main packages are not importable.
+		path = "main"
+	}
+
+	fqn := path + "." + typ.Name() + "." + method.Name()
 	id, _ := hash.Fnv(fqn)
 
 	info := &BoundMethodInfo{
