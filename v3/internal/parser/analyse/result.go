@@ -10,7 +10,7 @@ import (
 // Result is an alias for the type of a single output from the analyser.
 type Result = *types.TypeName
 
-// reportResult checks whether a service type is valid and newly discovered;
+// reportResult checks whether a bound type is valid and newly discovered;
 // if both checks succeed, the type is added to the result set
 // and reported to the consumer callback.
 func (analyser *Analyser) reportResult(pkgi int, pos token.Pos, typ types.Type) {
@@ -18,20 +18,24 @@ func (analyser *Analyser) reportResult(pkgi int, pos token.Pos, typ types.Type) 
 
 	switch t := types.Unalias(typ).(type) {
 	case *types.Named:
-		named = t
+		pterm.Warning.Printfln(
+			"%s: ignoring binding expression with non-pointer named type %s",
+			analyser.pkgs[pkgi].Fset.Position(pos),
+			t,
+		)
 	case *types.Pointer:
 		if elem, ok := types.Unalias(t.Elem()).(*types.Named); ok {
 			named = elem
 		} else {
 			pterm.Warning.Printfln(
-				"%s: ignoring service expression with non-named element type %s",
+				"%s: ignoring binding expression with non-named element type %s",
 				analyser.pkgs[pkgi].Fset.Position(pos),
 				t.Elem(),
 			)
 		}
 	default:
 		pterm.Warning.Printfln(
-			"%s: ignoring service expression with non-named type %s",
+			"%s: ignoring binding expression with non-named type %s",
 			analyser.pkgs[pkgi].Fset.Position(pos),
 			typ,
 		)
@@ -43,7 +47,7 @@ func (analyser *Analyser) reportResult(pkgi int, pos token.Pos, typ types.Type) 
 
 	if named.TypeParams() != nil {
 		pterm.Warning.Printfln(
-			"%s: ignoring service expression with generic named type %s",
+			"%s: ignoring binding expression with generic named type %s",
 			analyser.pkgs[pkgi].Fset.Position(pos),
 			typ,
 		)
