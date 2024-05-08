@@ -53,7 +53,7 @@ export function {{.Name}}({{range $i, $param := .Params -}}
             {{- if gt $i 0}}, {{end}}
             {{- $module.JSType $result}}
         {{- end}}]
-    {{- end}}> {
+    {{- end}}> & { cancel(): void } {
     {{- if $useNames}}
     let $resultPromise = $Call.ByName("{{js .FQN}}"
     {{- else}}
