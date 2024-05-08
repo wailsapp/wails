@@ -4,8 +4,6 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
-
-	"github.com/pterm/pterm"
 )
 
 // processExpression analyses an AST expression
@@ -316,7 +314,7 @@ mainloop:
 		}
 	}
 
-	pterm.Warning.Printfln(
+	analyser.logger.Warningf(
 		"%s: unsupported expression has been marked as a binding source",
 		pkg.Fset.Position(expr.Pos()),
 	)

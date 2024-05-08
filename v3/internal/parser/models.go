@@ -3,7 +3,6 @@ package parser
 import (
 	"path/filepath"
 
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/parser/collect"
 )
 
@@ -14,20 +13,20 @@ import (
 //
 // A call to index.Info.Collect must complete before entering generateModels.
 func (generator *Generator) generateModels(info *collect.PackageInfo, models []*collect.ModelInfo, internal bool) {
-	defer generator.wg.Done()
-
 	// Merge all import maps.
 	imports := collect.NewImportMap(info)
 	for _, model := range models {
 		imports.Merge(model.Imports)
 	}
 
+	// Clear irrelevant imports.
 	if internal {
 		clear(imports.Internal)
 	} else {
 		clear(imports.Models)
 	}
 
+	// Retrieve appropriate file name.
 	var filename string
 	if internal {
 		filename = generator.renderer.InternalFile()
@@ -37,25 +36,25 @@ func (generator *Generator) generateModels(info *collect.PackageInfo, models []*
 
 	file, err := generator.creator.Create(filepath.Join(info.Path, filename))
 	if err != nil {
-		pterm.Error.Println(err)
+		generator.controller.Errorf("%v", err)
 
 		var prefix string
 		if internal {
 			prefix = "internal "
 		}
-		pterm.Error.Printfln("package %s: %smodels generation failed", info.Path, prefix)
+		generator.controller.Errorf("package %s: %smodels generation failed", info.Path, prefix)
 		return
 	}
 	defer file.Close()
 
 	err = generator.renderer.Models(file, imports, models)
 	if err != nil {
-		pterm.Error.Println(err)
+		generator.controller.Errorf("%v", err)
 
 		var prefix string
 		if internal {
 			prefix = "internal "
 		}
-		pterm.Error.Printfln("package %s: %smodels generation failed", info.Path, prefix)
+		generator.controller.Errorf("package %s: %smodels generation failed", info.Path, prefix)
 	}
 }

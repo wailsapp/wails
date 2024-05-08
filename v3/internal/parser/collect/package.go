@@ -58,7 +58,7 @@ type (
 		collector *Collector
 
 		// source holds either a pointer to [packages.Package],
-		// or a [Loader] instance that may be used to load the package.
+		// or a [Controller] instance that may be used to load the package.
 		source any
 		once   sync.Once
 	}
@@ -128,7 +128,7 @@ func (collector *Collector) Package(path string) *PackageInfo {
 	info, _ := collector.pkgs.LoadOrStore(path, &PackageInfo{
 		Path:      path,
 		collector: collector,
-		source:    collector.loader,
+		source:    collector.controller,
 	})
 	return info.(*PackageInfo)
 }
@@ -302,7 +302,7 @@ func (info *PackageInfo) Collect() bool {
 	info.once.Do(func() {
 		pkg, ok := info.source.(*packages.Package)
 		if !ok {
-			pkg = info.source.(Loader).Load(info.Path)
+			pkg = info.source.(Controller).Load(info.Path)
 			if pkg == nil {
 				return
 			}
@@ -535,6 +535,6 @@ func (info *PackageInfo) recordModel(modelType *types.TypeName) *ModelInfo {
 		}
 	}
 
-	info.collector.scheduleModelCollection(model)
+	info.collector.controller.Schedule(model.Collect)
 	return model
 }

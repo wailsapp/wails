@@ -15,6 +15,7 @@ type GenerateBindingsOptions struct {
 	UseBundledRuntime bool   `name:"b" description:"Use the bundled runtime instead of importing the npm package"`
 	UseNames          bool   `name:"names" description:"Use names instead of IDs for the binding calls"`
 	NoIndex           bool   `name:"noindex" description:"Do not generate JS/TS index files"`
+	DryRun            bool   `name:"dry" description:"Do not write output files"`
 	Silent            bool   `name:"silent" description:"Silent mode"`
 	Verbose           bool   `name:"v" description:"Enable debug output"`
 }

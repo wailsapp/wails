@@ -10,6 +10,7 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/parser/analyse"
+	"github.com/wailsapp/wails/v3/internal/parser/config"
 )
 
 func TestAnalyser(t *testing.T) {
@@ -200,11 +201,11 @@ func TestAnalyser(t *testing.T) {
 
 			for _, pkg := range pkgs {
 				for _, err := range pkg.Errors {
-					pterm.Error.Println(err)
+					pterm.Warning.Println(err)
 				}
 			}
 
-			analyser := analyse.NewAnalyser(pkgs)
+			analyser := analyse.NewAnalyser(pkgs, config.DefaultPtermLogger)
 			if err := analyser.Run(nil); err != nil && !errors.Is(err, analyse.ErrNoApplicationPackage) {
 				t.Fatal(err)
 			}

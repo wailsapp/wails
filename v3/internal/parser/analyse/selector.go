@@ -3,8 +3,6 @@ package analyse
 import (
 	"go/ast"
 	"go/types"
-
-	"github.com/pterm/pterm"
 )
 
 // processSelectorSink handles a selector expression
@@ -168,7 +166,7 @@ func (analyser *Analyser) processSelectorSource(pkgi int, selExpr *ast.SelectorE
 
 			if sel.Kind() == types.MethodExpr {
 				// Interface method expr not supported: emit a warning and stop here.
-				pterm.Warning.Printfln(
+				analyser.logger.Warningf(
 					"%s: method expressions with interface receiver are not supported",
 					pkg.Fset.Position(selExpr.Pos()),
 				)
@@ -192,7 +190,7 @@ func (analyser *Analyser) processSelectorSource(pkgi int, selExpr *ast.SelectorE
 				if path.At(1) == -1 && len(sel.Index()) > 1 {
 					// Embedded method expr with receiver target is not supported:
 					// emit a warning and stop here.
-					pterm.Warning.Printfln(
+					analyser.logger.Warningf(
 						"%s: receiver of embedded method expression has been marked as a binding source: this is not supported",
 						pkg.Fset.Position(selExpr.Pos()),
 					)

@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/parser/config"
 	"golang.org/x/tools/go/packages"
 	"golang.org/x/tools/go/types/typeutil"
 )
@@ -33,12 +34,18 @@ type Analyser struct {
 	found Set[Result]
 	// yield is invoked immediately (if non-nil) when a new result is found.
 	yield func(Result)
+
+	// logger is used to report warning messages.
+	logger config.Logger
 }
 
 // New allocates and initialises a static analyser instance
 // for the given set of packages.
-func NewAnalyser(pkgs []*packages.Package) *Analyser {
-	return &Analyser{pkgs: pkgs}
+func NewAnalyser(pkgs []*packages.Package, logger config.Logger) *Analyser {
+	return &Analyser{
+		pkgs:   pkgs,
+		logger: logger,
+	}
 }
 
 // SetHasher sets the type hasher used by the internal [PathSet].

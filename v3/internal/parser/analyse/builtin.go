@@ -3,8 +3,6 @@ package analyse
 import (
 	"go/ast"
 	"go/types"
-
-	"github.com/pterm/pterm"
 )
 
 // processBuiltinSink handles a call to a builtin function
@@ -93,7 +91,7 @@ func (analyser *Analyser) processBuiltinSink(pkgi int, callee types.Object, call
 		stop = false // Let processReference process the surrounding expression.
 
 	case types.Universe.Lookup("panic"):
-		pterm.Warning.Printfln(
+		analyser.logger.Warningf(
 			"%s: use of panic and recover to provide bindings is not supported",
 			pkg.Fset.Position(call.Pos()),
 		)
@@ -157,7 +155,7 @@ func (analyser *Analyser) processBuiltinSource(pkgi int, callee types.Object, ca
 		stop = false
 
 	case types.Universe.Lookup("recover"):
-		pterm.Warning.Printfln(
+		analyser.logger.Warningf(
 			"%s: use of panic and recover to provide bindings is not supported",
 			pkg.Fset.Position(call.Pos()),
 		)

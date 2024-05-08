@@ -7,8 +7,6 @@ import (
 	"slices"
 	"strings"
 	"sync"
-
-	"github.com/pterm/pterm"
 )
 
 type (
@@ -62,17 +60,11 @@ type (
 // If none is present, a new one is initialised.
 //
 // If the model's declaring package fails to load, Model returns nil.
-// Errors are printed directly to the pterm Error logger.
+// Errors are reported through the controller associated to the collector.
 //
 // Model is safe for concurrent use.
 func (collector *Collector) Model(typ *types.TypeName) *ModelInfo {
 	return collector.Package(typ.Pkg().Path()).recordModel(typ)
-}
-
-// WaitForModels blocks the calling goroutine until all background
-// model collection activity is complete.
-func (collector *Collector) WaitForModels() {
-	collector.wg.Wait()
 }
 
 // Collect gathers information for the model described by its receiver.
@@ -97,7 +89,7 @@ func (info *ModelInfo) Collect() {
 
 		// Check type def information.
 		if info.TypeDefInfo == nil {
-			pterm.Error.Printfln(
+			pkg.collector.controller.Errorf(
 				"package %s: type %s not found; try clearing the build cache (go clean -cache)",
 				pkg.Path,
 				obj.Name(),
@@ -206,7 +198,7 @@ func (info *ModelInfo) collectEnum(constants []*types.Const) {
 				Name:  cnst.Name(),
 				Group: dummyGroup,
 			}
-			pterm.Warning.Printfln(
+			pkg.collector.controller.Warningf(
 				"package %s: could not retrieve definition for constant %s; try clearing the build cache (go clean -cache)",
 				pkg.Path,
 				cnst.Name(),
@@ -298,7 +290,7 @@ func (info *ModelInfo) collectStruct(strct *types.Struct) {
 
 			// Report errors
 			if typeInfo == nil {
-				pterm.Warning.Printfln(
+				pkg.collector.controller.Warningf(
 					"package %s: could not resolve definition for type %s; try clearing the build cache (go clean -cache)",
 					field.Parent.Pkg().Path(),
 					field.Parent.Name(),
@@ -312,7 +304,7 @@ func (info *ModelInfo) collectStruct(strct *types.Struct) {
 
 		if mfield.FieldDefInfo == nil {
 			mfield.FieldDefInfo = dummyFieldDef
-			pterm.Warning.Printfln(
+			pkg.collector.controller.Warningf(
 				"package %s: type %s: could not retrieve definition for field %s; try clearing the build cache (go clean -cache)",
 				field.Parent.Pkg().Path(),
 				field.Parent.Name(),
@@ -372,14 +364,4 @@ func (info *ModelInfo) resolveTypeInfo(typ *types.TypeName) *TypeDefInfo {
 			return typeInfo
 		}
 	}
-}
-
-// scheduleModelCollection starts background collection activity
-// for the given model.
-func (collector *Collector) scheduleModelCollection(model *ModelInfo) {
-	collector.wg.Add(1)
-	go func() {
-		defer collector.wg.Done()
-		model.Collect()
-	}()
 }

@@ -7,7 +7,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/hash"
 	"golang.org/x/tools/go/types/typeutil"
 )
@@ -41,7 +40,7 @@ type (
 // for which bindings have to be generated.
 //
 // If package loading or object lookup fails at any point, BoundType returns nil.
-// Errors are printed directly to the pterm Error logger.
+// Errors are reported through the controller associated to the collector.
 //
 // BoundType is safe for concurrent use.
 func (collector *Collector) BoundType(typ *types.TypeName) *BoundTypeInfo {
@@ -58,7 +57,7 @@ func (collector *Collector) BoundType(typ *types.TypeName) *BoundTypeInfo {
 
 	// Check type def information.
 	if info.TypeDefInfo == nil {
-		pterm.Error.Printfln(
+		collector.controller.Errorf(
 			"package %s: type %s not found; try clearing the build cache (go clean -cache)",
 			pkg.Path,
 			typ.Name(),
@@ -117,7 +116,7 @@ var typeError = types.Universe.Lookup("error").Type()
 // for which bindings have to be generated.
 //
 // If package loading or object lookup fails at any point, BoundMethod returns nil.
-// Errors are printed directly to the pterm Error logger.
+// Errors are reported through the controller associated to the collector.
 //
 // BoundMethod is safe for concurrent use.
 func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap, method *types.Func) *BoundMethodInfo {
@@ -142,7 +141,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 	// Retrieve original receiver type information.
 	recvInfo := pkg.Types[recv.Name()]
 	if recvInfo == nil {
-		pterm.Error.Printfln(
+		collector.controller.Errorf(
 			"package %s: type %s not found; try clearing the build cache (go clean -cache)",
 			pkg.Path,
 			recv.Name(),
@@ -172,7 +171,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 
 	// Check method information.
 	if info.MethodInfo == nil {
-		pterm.Error.Printfln(
+		collector.controller.Errorf(
 			"package %s: method %s.%s not found; try clearing the build cache (go clean -cache)",
 			pkg.Path,
 			recv.Name(),
@@ -193,7 +192,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 				idString := strings.TrimSpace(comment.Text[16:])
 				idValue, err := strconv.ParseUint(idString, 10, 32)
 				if err != nil {
-					pterm.Warning.Printfln(
+					collector.controller.Errorf(
 						"package %s: method %s.%s: invalid value in `wails:methodID` directive: '%s'. Expected a valid uint32 value",
 						pkg.Path,
 						recv.Name(),
@@ -204,7 +203,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 				}
 
 				// Announce and record alias.
-				pterm.Info.Printfln(
+				collector.controller.Infof(
 					"package %s: method %s.%s: default ID %s aliased as %d",
 					pkg.Path,
 					recv.Name(),

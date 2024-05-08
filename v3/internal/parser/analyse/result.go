@@ -3,8 +3,6 @@ package analyse
 import (
 	"go/token"
 	"go/types"
-
-	"github.com/pterm/pterm"
 )
 
 // Result is an alias for the type of a single output from the analyser.
@@ -18,7 +16,7 @@ func (analyser *Analyser) reportResult(pkgi int, pos token.Pos, typ types.Type) 
 
 	switch t := types.Unalias(typ).(type) {
 	case *types.Named:
-		pterm.Warning.Printfln(
+		analyser.logger.Warningf(
 			"%s: ignoring binding expression with non-pointer named type %s",
 			analyser.pkgs[pkgi].Fset.Position(pos),
 			t,
@@ -27,14 +25,14 @@ func (analyser *Analyser) reportResult(pkgi int, pos token.Pos, typ types.Type) 
 		if elem, ok := types.Unalias(t.Elem()).(*types.Named); ok {
 			named = elem
 		} else {
-			pterm.Warning.Printfln(
+			analyser.logger.Warningf(
 				"%s: ignoring binding expression with non-named element type %s",
 				analyser.pkgs[pkgi].Fset.Position(pos),
 				t.Elem(),
 			)
 		}
 	default:
-		pterm.Warning.Printfln(
+		analyser.logger.Warningf(
 			"%s: ignoring binding expression with non-named type %s",
 			analyser.pkgs[pkgi].Fset.Position(pos),
 			typ,
@@ -46,7 +44,7 @@ func (analyser *Analyser) reportResult(pkgi int, pos token.Pos, typ types.Type) 
 	}
 
 	if named.TypeParams() != nil {
-		pterm.Warning.Printfln(
+		analyser.logger.Warningf(
 			"%s: ignoring binding expression with generic named type %s",
 			analyser.pkgs[pkgi].Fset.Position(pos),
 			typ,

@@ -3,51 +3,45 @@ package collect
 import (
 	"sync"
 
+	"github.com/wailsapp/wails/v3/internal/parser/config"
 	"golang.org/x/tools/go/packages"
 	"golang.org/x/tools/go/types/typeutil"
 )
 
-// Loader abstracts the process of loading single packages.
-// Only syntax is required. In case of errors, Load should return nil.
-type Loader interface {
+// A Controller instance provides package loading, task scheduling
+// and message logging. All Controller methods may be called
+// concurrently by a [Collector].
+type Controller interface {
+	config.Logger
+
+	// Load should load the given package path in syntax-only mode.
+	// In case of errors, it should return nil and handle them internally.
 	Load(path string) *packages.Package
-}
 
-// LoaderFunc is an adapter to allow the use of ordinary functions as loaders.
-type LoaderFunc func(path string) *packages.Package
-
-// Load calls f(path).
-func (f LoaderFunc) Load(path string) *packages.Package {
-	return f(path)
+	// Schedule should run the given function concurrently.
+	// It gives the controller an opportunity
+	// to track the progress of collection activities.
+	Schedule(task func())
 }
 
 // Collector wraps all bookkeeping data structures that are needed
 // to collect data about a set of packages, bindings and models.
 type Collector struct {
-	loader Loader
-	pkgs   sync.Map
+	controller Controller
+
+	// pkgs caches packages that have been registered for collection.
+	// The element type must be *PackageInfo.
+	pkgs sync.Map
 
 	// mu protects access to the structs map.
 	mu sync.Mutex
-	// structs maps struct types to their [StructInfo].
+	// structs maps struct types to their [*StructInfo].
 	structs typeutil.Map
-
-	// wg is used to wait until concurrent model collection is complete.
-	wg sync.WaitGroup
-
-	// the omonymous package-level functions wrapped by sync.OnceFunc
-	complexWarning func()
-	chanWarning    func()
-	funcWarning    func()
 }
 
 // NewCollector initialises a new Collector instance.
-func NewCollector(loader Loader) *Collector {
+func NewCollector(controller Controller) *Collector {
 	return &Collector{
-		loader: loader,
-
-		complexWarning: sync.OnceFunc(complexWarning),
-		chanWarning:    sync.OnceFunc(chanWarning),
-		funcWarning:    sync.OnceFunc(funcWarning),
+		controller: controller,
 	}
 }

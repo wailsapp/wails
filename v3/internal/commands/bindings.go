@@ -9,6 +9,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/parser"
 	"github.com/wailsapp/wails/v3/internal/parser/analyse"
+	"github.com/wailsapp/wails/v3/internal/parser/config"
 )
 
 func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string) error {
@@ -25,7 +26,13 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		patterns = []string{"."}
 	}
 
-	generator := parser.NewGenerator(options, nil)
+	var creator config.FileCreator
+	if !options.DryRun {
+		creator = config.DirCreator(options.OutputDirectory)
+	}
+
+	generator := parser.NewGenerator(options, creator, config.DefaultPtermLogger)
+
 	stats, err := generator.Generate(patterns...)
 	if err != nil {
 		switch {

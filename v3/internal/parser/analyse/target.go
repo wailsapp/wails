@@ -3,8 +3,6 @@ package analyse
 import (
 	"go/types"
 	"slices"
-
-	"github.com/pterm/pterm"
 )
 
 // target represents an additional discovered target for static analysis.
@@ -73,7 +71,7 @@ func (analyser *Analyser) processTarget(tgt target) {
 	if tgt.pkgi < 0 && !defInPkgs {
 		// The defining package for an exported global target
 		// is not under analysis: emit a warning.
-		pterm.Warning.Printfln(
+		analyser.logger.Warningf(
 			"global %s might provide bound services, but its declaring package is not under analysis",
 			types.ObjectString(tgt.variable, nil),
 		)

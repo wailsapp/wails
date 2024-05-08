@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -12,16 +13,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/parser/config"
 )
-
-// configString computes a subtest name from the given configuration.
-func configString(options *flags.GenerateBindingsOptions) string {
-	if options.TS {
-		return fmt.Sprintf("lang=TS/UseInterfaces=%v/UseNames=%v", options.UseInterfaces, options.UseNames)
-	} else {
-		return fmt.Sprintf("lang=JS/UseNames=%v", options.UseNames)
-	}
-}
 
 func TestGenerator(t *testing.T) {
 	const (
@@ -39,6 +32,10 @@ func TestGenerator(t *testing.T) {
 	configs := make([]configParams, (1<<1)+(1<<2))
 	for i := range configs {
 		options := &flags.GenerateBindingsOptions{
+			ModelsFilename:   "models",
+			InternalFilename: "internal",
+			IndexFilename:    "index",
+
 			TS:            i&(tsBit|useInterfacesBit) != 0,
 			UseInterfaces: i&useInterfacesBit != 0,
 			UseNames:      i&useNamesBit != 0,
@@ -89,12 +86,12 @@ func TestGenerator(t *testing.T) {
 		}
 
 		// Fill wanted file maps.
-		for _, config := range configs {
+		for _, conf := range configs {
 			want := make(map[string]bool)
-			test.want[config.name] = want
+			test.want[conf.name] = want
 
 			// Compute output dir and create it.
-			outputDir := filepath.Join("testdata", name, "assets/bindings", config.name)
+			outputDir := filepath.Join("testdata", name, "assets/bindings", conf.name)
 			if err := os.MkdirAll(outputDir, 0777); err != nil {
 				t.Fatal(err)
 			}
@@ -135,15 +132,22 @@ func TestGenerator(t *testing.T) {
 	// Run tests.
 	for _, test := range tests {
 		t.Run("pkg="+test.name, func(t *testing.T) {
-			for _, config := range configs {
-				t.Run(config.name, func(t *testing.T) {
+			for _, conf := range configs {
+				t.Run(conf.name, func(t *testing.T) {
+					want := test.want[conf.name]
+
 					generator := NewGenerator(
-						config.GenerateBindingsOptions,
-						outputCreator(t, test.name, config.name, test.want[config.name]),
+						conf.GenerateBindingsOptions,
+						outputCreator(t, test.name, conf.name, want),
+						config.DefaultPtermLogger,
 					)
 
 					_, err := generator.Generate(test.pkgs...)
-					if err != nil {
+					if report := (*ErrorReport)(nil); errors.As(err, &report) {
+						if report.HasErrors() {
+							t.Error(report)
+						}
+					} else if err != nil {
 						t.Error(err)
 					}
 				})
@@ -152,10 +156,23 @@ func TestGenerator(t *testing.T) {
 	}
 }
 
-func outputCreator(t *testing.T, testName, configName string, want map[string]bool) FileCreator {
+// configString computes a subtest name from the given configuration.
+func configString(options *flags.GenerateBindingsOptions) string {
+	if options.TS {
+		return fmt.Sprintf("lang=TS/UseInterfaces=%v/UseNames=%v", options.UseInterfaces, options.UseNames)
+	} else {
+		return fmt.Sprintf("lang=JS/UseNames=%v", options.UseNames)
+	}
+}
+
+// outputCreator returns a FileCreator that detects want/got pairs
+// and schedules them for comparison.
+//
+// If no corresponding want file exists, it is created and reported.
+func outputCreator(t *testing.T, testName, configName string, want map[string]bool) config.FileCreator {
 	var mu sync.Mutex
 	outputDir := filepath.Join("testdata", testName, "assets/bindings", configName)
-	return FileCreatorFunc(func(path string) (io.WriteCloser, error) {
+	return config.FileCreatorFunc(func(path string) (io.WriteCloser, error) {
 		path = filepath.Clean(path)
 		prefixedPath := filepath.Join(outputDir, path)
 
@@ -164,39 +181,33 @@ func outputCreator(t *testing.T, testName, configName string, want map[string]bo
 		defer mu.Unlock()
 
 		if seen, ok := want[path]; ok {
-			// File exists: compare and mark as seen.
+			// File exists: mark as seen and compare.
 			if seen {
-				err := fmt.Errorf("Duplicate output file '%s'", path)
-				t.Error(err)
-				return nil, err
-			} else {
-				want[path] = true
-
-				// Open want file.
-				wf, err := os.Open(prefixedPath)
-				if err != nil {
-					t.Error(err)
-					return nil, err
-				}
-
-				// Create or truncate got file.
-				ext := filepath.Ext(prefixedPath)
-				gf, err := os.Create(fmt.Sprintf("%s.got%s", prefixedPath[:len(prefixedPath)-len(ext)], ext))
-				if err != nil {
-					t.Error(err)
-					return nil, err
-				}
-
-				// Initialise comparer.
-				return &outputComparer{t, path, wf, gf}, nil
+				t.Errorf("Duplicate output file '%s'", path)
 			}
+			want[path] = true
+
+			// Open want file.
+			wf, err := os.Open(prefixedPath)
+			if err != nil {
+				return nil, err
+			}
+
+			// Create or truncate got file.
+			ext := filepath.Ext(prefixedPath)
+			gf, err := os.Create(fmt.Sprintf("%s.got%s", prefixedPath[:len(prefixedPath)-len(ext)], ext))
+			if err != nil {
+				return nil, err
+			}
+
+			// Initialise comparer.
+			return &outputComparer{t, path, wf, gf}, nil
 		} else {
 			// File does not exist: create it.
 			t.Errorf("Unexpected output file '%s'", path)
 			want[path] = true
 
 			if err := os.MkdirAll(filepath.Dir(prefixedPath), 0777); err != nil {
-				t.Error(err)
 				return nil, err
 			}
 
@@ -205,6 +216,10 @@ func outputCreator(t *testing.T, testName, configName string, want map[string]bo
 	})
 }
 
+// outputComparer is a io.WriteCloser that writes to got.
+//
+// When Close is called, it compares want to got; if they are identical,
+// it deletes got; otherwise it reports a testing error.
 type outputComparer struct {
 	t    *testing.T
 	path string
@@ -226,13 +241,13 @@ func (comparer *outputComparer) Close() error {
 	want, err := io.ReadAll(comparer.want)
 	if err != nil {
 		comparer.t.Error(err)
-		return err
+		return nil
 	}
 
 	got, err := io.ReadAll(comparer.got)
 	if err != nil {
 		comparer.t.Error(err)
-		return err
+		return nil
 	}
 
 	if diff := cmp.Diff(want, got); diff != "" {
@@ -242,7 +257,6 @@ func (comparer *outputComparer) Close() error {
 		comparer.got.Close()
 		if err := os.Remove(comparer.got.Name()); err != nil {
 			comparer.t.Error(err)
-			return err
 		}
 	}
 

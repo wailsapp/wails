@@ -5,7 +5,6 @@ import (
 	"go/parser"
 	"go/token"
 
-	"github.com/pterm/pterm"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -25,10 +24,8 @@ func LoadPackages(buildFlags []string, full bool, patterns ...string) ([]*packag
 	}
 
 	return packages.Load(&packages.Config{
-		Mode: loadMode,
-		Logf: func(format string, args ...interface{}) {
-			pterm.Debug.Printf(format+"\n", args...)
-		},
+		Mode:       loadMode,
+		Logf:       nil,
 		BuildFlags: buildFlags,
 		ParseFile: func(fset *token.FileSet, filename string, src []byte) (file *ast.File, err error) {
 			file, err = parser.ParseFile(fset, filename, src, parser.ParseComments|parser.SkipObjectResolution)

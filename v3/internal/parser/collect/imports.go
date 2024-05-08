@@ -5,8 +5,6 @@ import (
 	"maps"
 	"path"
 	"strings"
-
-	"github.com/pterm/pterm"
 )
 
 type (
@@ -120,7 +118,7 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 		case *types.Basic:
 			if t.Info()&types.IsComplex != 0 {
 				// Complex types are not supported by encoding/json
-				collector.complexWarning()
+				collector.controller.Warningf("complex types are not supported by encoding/json")
 			}
 			return
 
@@ -151,7 +149,7 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 			typ = t.Elem()
 
 		case *types.Chan:
-			collector.chanWarning()
+			collector.controller.Warningf("channel types are not supported by encoding/json")
 			return
 
 		case *types.Map:
@@ -162,7 +160,7 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 					imports.AddType(t.Key(), collector)
 				}
 			} else {
-				pterm.Warning.Printfln(
+				collector.controller.Warningf(
 					"%s is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors",
 					types.TypeString(t.Key(), nil),
 				)
@@ -201,7 +199,7 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 			typ = t.Elem()
 
 		case *types.Signature:
-			collector.funcWarning()
+			collector.controller.Warningf("function types are not supported by encoding/json")
 			return
 
 		case *types.Slice:

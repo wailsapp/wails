@@ -6,7 +6,6 @@ import (
 	"go/types"
 	"slices"
 
-	"github.com/pterm/pterm"
 	"golang.org/x/tools/go/ast/astutil"
 	"golang.org/x/tools/go/types/typeutil"
 )
@@ -65,14 +64,14 @@ func (analyser *Analyser) processCallSink(pkgi int, call *ast.CallExpr, param as
 
 		if types.Identical(tv.Type, types.Typ[types.UnsafePointer]) {
 			// Conversion to unsafe pointer: emit a warning and stop here.
-			pterm.Warning.Printfln(
+			analyser.logger.Warningf(
 				"%s: use of unsafe features to provide bindings is not supported",
 				pkg.Fset.Position(call.Pos()),
 			)
 			return
 		} else if types.Identical(typ, types.Typ[types.UnsafePointer]) {
 			// Conversion from unsafe pointer: emit a warning and stop here.
-			pterm.Warning.Printfln(
+			analyser.logger.Warningf(
 				"%s: use of unsafe features to provide bindings is not supported",
 				pkg.Fset.Position(param.Pos()),
 			)
@@ -236,13 +235,13 @@ func (analyser *Analyser) processParamOrResultDefinition(pkgi int, variable *typ
 		if !path.HasWeakRef() {
 			// We are tracking assignments to a function parameter: emit a warning.
 			if ident == nil {
-				pterm.Warning.Printfln(
+				analyser.logger.Warningf(
 					"%s: function parameter #%d is a binding source: values passed at call sites may not be detected",
 					pkg.Fset.Position(field.Pos()),
 					index,
 				)
 			} else {
-				pterm.Warning.Printfln(
+				analyser.logger.Warningf(
 					"%s: function parameter '%s' is a binding source: values passed at call sites may not be detected",
 					pkg.Fset.Position(ident.Pos()),
 					ident.Name,
@@ -272,13 +271,13 @@ func (analyser *Analyser) processParamOrResultDefinition(pkgi int, variable *typ
 	if path.HasWeakRef() {
 		// Function returns a reference to a binding source: emit a warning.
 		if ident == nil {
-			pterm.Warning.Printfln(
+			analyser.logger.Warningf(
 				"%s: function result #%d references a binding source: uses at call sites may not be detected",
 				pkg.Fset.Position(field.Pos()),
 				index,
 			)
 		} else {
-			pterm.Warning.Printfln(
+			analyser.logger.Warningf(
 				"%s: function result '%s' references a binding source: uses at call sites may not be detected",
 				pkg.Fset.Position(ident.Pos()),
 				ident.Name,
@@ -332,13 +331,13 @@ func (analyser *Analyser) processCallSource(pkgi int, exprType types.Type, call 
 
 		if types.Identical(exprType, types.Typ[types.UnsafePointer]) {
 			// Conversion to unsafe pointer: emit a warning and stop here.
-			pterm.Warning.Printfln(
+			analyser.logger.Warningf(
 				"%s: use of unsafe features to provide bindings is not supported",
 				pkg.Fset.Position(call.Pos()),
 			)
 		} else if types.Identical(pkg.TypesInfo.TypeOf(expr), types.Typ[types.UnsafePointer]) {
 			// Conversion from unsafe pointer: emit a warning and stop here.
-			pterm.Warning.Printfln(
+			analyser.logger.Warningf(
 				"%s: use of unsafe features to provide bindings is not supported",
 				pkg.Fset.Position(expr.Pos()),
 			)
@@ -404,14 +403,14 @@ func (analyser *Analyser) processFunc(pkgi int, pos token.Pos, fn *types.Func, p
 
 	if fn.Pkg().Path() == "reflect" {
 		// Warn about unsupported use of reflection and stop.
-		pterm.Warning.Printfln(
+		analyser.logger.Warningf(
 			"%s: use of reflection to provide bindings is not supported",
 			analyser.pkgs[pkgi].Fset.Position(pos),
 		)
 		return
 	} else if fn.Pkg() == types.Unsafe {
 		// Warn about unsupported use of unsafe features and stop.
-		pterm.Warning.Printfln(
+		analyser.logger.Warningf(
 			"%s: use of unsafe features to provide bindings is not supported",
 			analyser.pkgs[pkgi].Fset.Position(pos),
 		)
@@ -433,7 +432,7 @@ func (analyser *Analyser) processSignature(pkgi int, pos token.Pos, signature *t
 
 	if signature.TypeParams() != nil || signature.RecvTypeParams() != nil {
 		// We cannot always handle generic functions correctly: emit a warning.
-		pterm.Warning.Printfln(
+		analyser.logger.Warningf(
 			"%s: parameters or results of generic function have been marked as binding sources: this case is not fully supported",
 			pkg.Fset.Position(pos),
 		)
@@ -472,7 +471,7 @@ func (analyser *Analyser) processSignature(pkgi int, pos token.Pos, signature *t
 		analyser.schedule(tgt)
 	} else {
 		// This should only happen when targeting a function parameter.
-		pterm.Warning.Printfln(
+		analyser.logger.Warningf(
 			"%s: parameters or results of function have been marked as binding sources, but its declaring package is not under analysis",
 			pkg.Fset.Position(pos),
 		)

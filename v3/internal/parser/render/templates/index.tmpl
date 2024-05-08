@@ -13,9 +13,9 @@
 {{$renderer := .}}
 {{- $models := .ModelsFile}}
 {{- range .Bindings}}
-export * as {{jsid .Name}} from "./{{$renderer.BindingsFile .Name}}";
+export * as {{jsid .Name}} from "./{{js ($renderer.BindingsFile .Name)}}";
 {{- end}}{{if .Bindings}}
 {{end}}
 {{- if .Models}}
-export * from "./{{$models}}";
+export * from "./{{js $models}}";
 {{- end}}
