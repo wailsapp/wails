@@ -1,75 +1,97 @@
 package collect
 
 import (
+	"cmp"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"go/types"
 	"path/filepath"
 	"slices"
+	"strings"
 	"sync"
 	"sync/atomic"
 
 	"golang.org/x/tools/go/packages"
 )
 
-// PackageInfo records information about a package.
-//
-// Read accesses to its fields are safe at any time
-// without any synchronisation, except for
-// Name, Files, Docs, Includes and Injections.
-//
-// Read accesses to the fields listed above are only safe
-// if a call to [PackageInfo.Collect] has completed before the access,
-// for example by calling it in the accessing goroutine
-// or before spawning the accessing goroutine.
-//
-// Concurrent write accesses are only allowed through the provided methods.
-type PackageInfo struct {
-	// Path holds the canonical path of the described package.
-	Path string
+type (
+	// PackageInfo records information about a package.
+	//
+	// Read accesses to fields Path, Types, TypesInfo, Fset
+	// are safe at any time without any synchronisation.
+	//
+	// Read accesses to all other fields are only safe
+	// if a call to [PackageInfo.Collect] has completed before the access,
+	// for example by calling it in the accessing goroutine
+	// or before spawning the accessing goroutine.
+	//
+	// Concurrent write accesses are only allowed through the provided methods.
+	PackageInfo struct {
+		// Path holds the canonical path of the described package.
+		Path string
 
-	// Name holds the default import name of the described package.
-	Name string
+		// Name holds the (possibly aliased) import name of the described package.
+		Name string
 
-	// Types and TypesInfo hold type information for this package.
-	Types     *types.Package
-	TypesInfo *types.Info
+		// Types and TypesInfo hold type information for this package.
+		Types     *types.Package
+		TypesInfo *types.Info
 
-	// Fset holds the FileSet that was used to parse this package.
-	Fset *token.FileSet
+		// Fset holds the FileSet that was used to parse this package.
+		Fset *token.FileSet
 
-	// Files holds parsed files for this package,
-	// ordered by start position to support binary search.
-	Files []*ast.File
+		// Files holds parsed files for this package,
+		// ordered by start position to support binary search.
+		Files []*ast.File
 
-	// Docs holds package doc comments.
-	Docs []*ast.CommentGroup
+		// Docs holds package doc comments.
+		Docs []*ast.CommentGroup
 
-	// Includes holds a list of additional js files to include
-	// with the generated bindings.
-	// It maps file names to their paths on disk.
-	Includes map[string]string
+		// Internal is true if the package has been marked as internal.
+		Internal bool
 
-	// Injections holds a list of JS code lines to be injected
-	// into the package index file.
-	Injections []string
+		// Includes holds a list of additional files to include
+		// with the generated bindings.
+		// It maps file names to their paths on disk and additional options.
+		Includes map[string]IncludeInfo
 
-	// models records service types that have to be generated for this package.
-	// We rely upon [sync.Map] for atomic swapping support.
-	services sync.Map
+		// Injections holds a list of code lines to be injected
+		// into the package index file.
+		Injections      []InjectionInfo
+		NumJSInjections int
+		NumTSInjections int
 
-	// models records model types that have to be generated for this package.
-	// We rely upon [sync.Map] for atomic swapping support.
-	models sync.Map
+		// models records service types that have to be generated for this package.
+		// We rely upon [sync.Map] for atomic swapping support.
+		services sync.Map
 
-	// stats caches statistics about this package.
-	stats atomic.Pointer[Stats]
+		// models records model types that have to be generated for this package.
+		// We rely upon [sync.Map] for atomic swapping support.
+		models sync.Map
 
-	collector *Collector
-	goFiles   []string
-	once      sync.Once
-}
+		// stats caches statistics about this package.
+		stats atomic.Pointer[Stats]
+
+		collector *Collector
+		goFiles   []string
+		once      sync.Once
+	}
+
+	// IncludeInfo records information about an included file.
+	IncludeInfo struct {
+		Path string
+		JS   bool
+		TS   bool
+	}
+
+	// InjectionInfo records information about an injected line.
+	InjectionInfo struct {
+		Code string
+		JS   bool
+		TS   bool
+	}
+)
 
 func newPackageInfo(pkg *packages.Package, collector *Collector) *PackageInfo {
 	return &PackageInfo{
@@ -109,18 +131,11 @@ func (collector *Collector) Iterate(yield func(pkg *PackageInfo) bool) {
 }
 
 // Stats returns cached statistics for this package.
-// If no stats have been cached yet, they are generated.
-// If they are out of date, call [PackageInfo.Index] to regenerate them.
+// If [PackageInfo.Index] has not been called yet, it returns nil.
 //
 // Stats is safe for unsynchronised concurrent calls.
 func (info *PackageInfo) Stats() *Stats {
-	stats := info.stats.Load()
-	if stats == nil {
-		info.Index()
-		stats = info.stats.Load()
-	}
-
-	return stats
+	return info.stats.Load()
 }
 
 // Collect gathers information about the package described by its receiver.
@@ -139,6 +154,8 @@ func (info *PackageInfo) Collect() *PackageInfo {
 	}
 
 	info.once.Do(func() {
+		collector := info.collector
+
 		// Sort files by source position.
 		if !slices.IsSortedFunc(info.Files, compareAstFiles) {
 			info.Files = slices.Clone(info.Files)
@@ -151,7 +168,9 @@ func (info *PackageInfo) Collect() *PackageInfo {
 		// Collect docs and parse packageName/include directives.
 		// Here we can't use info.Files because
 		//   - they are loaded from CompiledGoFiles, hence some file might be missing;
-		//   - there is no way to retrieve their file path on disk.
+		//   - there is no robust way to retrieve their file path on disk;
+		// instead, we range over GoFiles and parse their package clause only,
+		// which should be fast enough.
 		for _, goFile := range info.goFiles {
 			file, err := parser.ParseFile(fset, goFile, nil, parser.PackageClauseOnly|parser.ParseComments)
 			if err != nil {
@@ -166,20 +185,70 @@ func (info *PackageInfo) Collect() *PackageInfo {
 
 			info.Docs = append(info.Docs, file.Doc)
 
+			// Parse directives.
 			dir := filepath.Dir(goFile)
-
+			info.Includes = make(map[string]IncludeInfo)
 			for _, comment := range file.Doc.List {
 				switch {
+				case IsDirective(comment.Text, "internal"):
+					info.Internal = true
+
 				case IsDirective(comment.Text, "inject"):
 					// Record injected line.
-					info.Injections = append(info.Injections, ParseDirective(comment.Text, "inject"))
+					info.NumJSInjections++
+					info.NumTSInjections++
+					info.Injections = append(info.Injections, InjectionInfo{
+						Code: ParseDirective(comment.Text, "inject"),
+						JS:   true,
+						TS:   true,
+					})
+
+				case IsDirective(comment.Text, "inject:js"):
+					// Record injected line.
+					info.NumJSInjections++
+					info.Injections = append(info.Injections, InjectionInfo{
+						Code: ParseDirective(comment.Text, "inject"),
+						JS:   true,
+						TS:   false,
+					})
+
+				case IsDirective(comment.Text, "inject:ts"):
+					// Record injected line.
+					info.NumTSInjections++
+					info.Injections = append(info.Injections, InjectionInfo{
+						Code: ParseDirective(comment.Text, "inject"),
+						JS:   false,
+						TS:   true,
+					})
 
 				case IsDirective(comment.Text, "include"):
 					// Collect matching files.
 					pattern := ParseDirective(comment.Text, "include")
+
+					// Detect conditions.
+					includeWithJS, includeWithTS := true, true
+					if cond, rest, hasCond := strings.Cut(pattern, ":"); hasCond {
+						pattern = rest
+						switch cond {
+						case "js":
+							includeWithTS = false
+						case "ts":
+							includeWithJS = false
+						default:
+							collector.logger.Errorf(
+								"%s: invalid condition '%s:' in `wails:include` directive: expected either 'js:' or 'ts:'",
+								fset.Position(comment.Pos()),
+								cond,
+								err,
+							)
+							continue
+						}
+					}
+
+					// Match files.
 					paths, err := filepath.Glob(filepath.Join(dir, pattern))
 					if err != nil {
-						info.collector.logger.Errorf(
+						collector.logger.Errorf(
 							"%s: invalid pattern '%s' in `wails:include` directive: %v",
 							fset.Position(comment.Pos()),
 							pattern,
@@ -187,7 +256,7 @@ func (info *PackageInfo) Collect() *PackageInfo {
 						)
 						continue
 					} else if len(paths) == 0 {
-						info.collector.logger.Warningf(
+						collector.logger.Warningf(
 							"%s: pattern '%s' in `wails:include` directive matched no files",
 							fset.Position(comment.Pos()),
 							pattern,
@@ -199,7 +268,7 @@ func (info *PackageInfo) Collect() *PackageInfo {
 					for _, path := range paths {
 						name := filepath.Base(path)
 						if old, ok := info.Includes[name]; ok {
-							info.collector.logger.Errorf(
+							collector.logger.Errorf(
 								"%s: duplicate included file name '%s' in package %s; old path: '%s'; new path: '%s'",
 								fset.Position(comment.Pos()),
 								name,
@@ -210,21 +279,25 @@ func (info *PackageInfo) Collect() *PackageInfo {
 							continue
 						}
 
-						info.collector.logger.Debugf(
+						collector.logger.Debugf(
 							"including file '%s' as '%s' in package %s",
 							path,
 							name,
 							info.Path,
 						)
 
-						info.Includes[name] = path
+						info.Includes[name] = IncludeInfo{
+							Path: path,
+							JS:   includeWithJS,
+							TS:   includeWithTS,
+						}
 					}
 
-				case !packageNameFound && IsDirective(comment.Text, "packageName"):
-					packageName := ParseDirective(comment.Text, "packageName")
+				case !packageNameFound && IsDirective(comment.Text, "name"):
+					packageName := ParseDirective(comment.Text, "name")
 					if !token.IsIdentifier(packageName) {
-						info.collector.logger.Errorf(
-							"%s: invalid value in `wails:packageName` directive: '%s': expected a valid Go identifier",
+						collector.logger.Errorf(
+							"%s: invalid value in `wails:name` directive: '%s': expected a valid Go identifier",
 							fset.Position(comment.Pos()),
 							packageName,
 						)
@@ -232,8 +305,8 @@ func (info *PackageInfo) Collect() *PackageInfo {
 					}
 
 					// Announce and record alias.
-					info.collector.logger.Infof(
-						"package %s: default name '%s' replaced by '%s'",
+					collector.logger.Infof(
+						"package %s: default package name '%s' replaced by '%s'",
 						info.Path,
 						info.Name,
 						packageName,
@@ -286,4 +359,9 @@ func (info *PackageInfo) recordModel(obj *types.TypeName) (model *ModelInfo, pre
 		imodel, present = info.models.LoadOrStore(obj, newModelInfo(info.collector, obj))
 	}
 	return imodel.(*ModelInfo), present
+}
+
+// compareAstFiles compares two AST files by starting position.
+func compareAstFiles(f1 *ast.File, f2 *ast.File) int {
+	return cmp.Compare(f1.FileStart, f2.FileStart)
 }

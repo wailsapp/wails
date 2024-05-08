@@ -32,9 +32,10 @@ import * as $models from "./{{js $models}}";{{if not $imports.ImportInternal}}
 {{- if $imports.ImportInternal}}
 import * as $internal from "./{{js $internal}}";
 {{end}}
-{{- range .Injections}}
-{{.}}
-{{- end}}{{if .Injections}}
+{{- if .NumJSInjections}}
+{{- range .Injections}}{{if .JS}}
+{{.Code}}
+{{- end}}{{end}}
 {{end}}
 {{- range .Methods}}
 /**
@@ -60,7 +61,7 @@ import * as $internal from "./{{js $internal}}";
         {{- end}}]
     {{- end}}> & { cancel(): void }}
  */
-export function {{.Name}}({{range $i, $param := .Params -}}
+{{if not .Internal}}export {{end}}function {{.Name}}({{range $i, $param := .Params -}}
     {{- if gt $i 0}}, {{end}}
     {{- if .Variadic}}...{{end}}
     {{- jsparam $i .}}

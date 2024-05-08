@@ -194,7 +194,9 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		generator.scheduler.Schedule(func() {
 			defer globalWg.Done()
 
-			if generator.generateModelsIndexIncludes(info) {
+			if generator.generateModelsIndexIncludes(info) && !info.Internal {
+				// Index has been generated and package is not internal:
+				// publish it on the global index.
 				globalMu.Lock()
 				defer globalMu.Unlock()
 				globalImports = append(globalImports, info)
@@ -236,7 +238,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 //
 // It returns true if an index file has been generated.
 func (generator *Generator) generateModelsIndexIncludes(info *collect.PackageInfo) bool {
-	index := info.Index()
+	index := info.Index(generator.options.TS)
 
 	// info.Index implies info.Collect: goroutines spawned below
 	// can access package information freely.

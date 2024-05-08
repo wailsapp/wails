@@ -1,8 +1,6 @@
 package collect
 
 import (
-	"cmp"
-	"go/ast"
 	"slices"
 	"strings"
 )
@@ -18,20 +16,23 @@ type PackageIndex struct {
 	Services []*ServiceInfo
 	Models   []*ModelInfo
 	Internal []*ModelInfo
+
+	typeScript bool
 }
 
-// Index computes a [PackageIndex] from the list
-// of generated services and models, and regenerates cached stats.
+// Index computes a [PackageIndex] for the selected language from the list
+// of generated services and models and regenerates cached stats.
 //
 // Services and models appear at most once in the returned slices,
 // which are sorted by name.
 //
 // Index calls info.Collect, and therefore provides the same guarantees.
 // It is safe for concurrent use.
-func (info *PackageInfo) Index() (index *PackageIndex) {
+func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 	// Init index.
 	index = &PackageIndex{
-		Package: info.Collect(),
+		Package:    info.Collect(),
+		typeScript: TS,
 	}
 
 	// Init stats
@@ -42,8 +43,11 @@ func (info *PackageInfo) Index() (index *PackageIndex) {
 	// Gather services.
 	info.services.Range(func(key, value any) bool {
 		service := value.(*ServiceInfo)
-		if !service.IsEmpty() {
-			index.Services = append(index.Services, service)
+		if !service.IsEmpty(TS) {
+			if !service.Internal {
+				// Publish non-internal service on the local index.
+				index.Services = append(index.Services, service)
+			}
 			// Update service stats.
 			stats.NumServices++
 			stats.NumMethods += len(service.Methods)
@@ -72,15 +76,14 @@ func (info *PackageInfo) Index() (index *PackageIndex) {
 		return true
 	})
 
-	// Sort models by exported property (exported first), then by name.
+	// Sort models by internal property (non-internal first), then by name.
 	slices.SortFunc(index.Models, func(m1 *ModelInfo, m2 *ModelInfo) int {
 		if m1 == m2 {
 			return 0
 		}
 
-		m1e, m2e := ast.IsExported(m1.Name), ast.IsExported(m2.Name)
-		if m1e != m2e {
-			if m1e {
+		if m1.Internal != m2.Internal {
+			if !m1.Internal {
 				return -1
 			} else {
 				return 1
@@ -90,16 +93,16 @@ func (info *PackageInfo) Index() (index *PackageIndex) {
 		return strings.Compare(m1.Name, m2.Name)
 	})
 
-	// Find first unexported model.
+	// Find first internal model.
 	split, _ := slices.BinarySearchFunc(index.Models, struct{}{}, func(m *ModelInfo, _ struct{}) int {
-		if ast.IsExported(m.Name) {
+		if !m.Internal {
 			return -1
 		} else {
 			return 1
 		}
 	})
 
-	// Separate unexported and exported models.
+	// Separate internal and non-internal models.
 	index.Internal = index.Models[split:]
 	index.Models = index.Models[:split]
 
@@ -109,12 +112,9 @@ func (info *PackageInfo) Index() (index *PackageIndex) {
 	return
 }
 
-// IsEmpty returns true if the given index contains no data.
+// IsEmpty returns true if the given index
+// contains no data for the selected language.
 func (index *PackageIndex) IsEmpty() bool {
-	return len(index.Package.Injections) == 0 && len(index.Services) == 0 && len(index.Models) == 0
-}
-
-// compareAstFiles compares two AST files by starting position.
-func compareAstFiles(f1 *ast.File, f2 *ast.File) int {
-	return cmp.Compare(f1.FileStart, f2.FileStart)
+	noInjections := (!index.typeScript && index.Package.NumJSInjections == 0) || (index.typeScript && index.Package.NumTSInjections == 0)
+	return noInjections && len(index.Services) == 0 && len(index.Models) == 0
 }

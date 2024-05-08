@@ -22,12 +22,17 @@ type (
 	ServiceInfo struct {
 		*TypeInfo
 
+		// Internal is true if the service has been marked as internal.
+		Internal bool
+
 		Imports *ImportMap
 		Methods []*ServiceMethodInfo
 
 		// Injections stores a list of JS code lines
 		// that should be injected into the generated file.
-		Injections []string
+		Injections      []InjectionInfo
+		NumJSInjections int
+		NumTSInjections int
 
 		collector *Collector
 		once      sync.Once
@@ -37,10 +42,11 @@ type (
 	// to render JS/TS code for a service method.
 	ServiceMethodInfo struct {
 		*MethodInfo
-		FQN     string
-		ID      string
-		Params  []*ParamInfo
-		Results []types.Type
+		FQN      string
+		ID       string
+		Internal bool
+		Params   []*ParamInfo
+		Results  []types.Type
 	}
 
 	// ParamInfo records all information that is required
@@ -75,11 +81,12 @@ func (collector *Collector) Service(obj *types.TypeName) *ServiceInfo {
 }
 
 // IsEmpty returns true if no methods or code injections
-// are present for this service.
-func (info *ServiceInfo) IsEmpty() bool {
+// are present for this service, for the selected language.
+func (info *ServiceInfo) IsEmpty(TS bool) bool {
 	// Ensure information has been collected.
 	info.Collect()
-	return len(info.Methods) == 0 && len(info.Injections) == 0
+	noInjections := (!TS && info.NumJSInjections == 0) || (TS && info.NumTSInjections == 0)
+	return noInjections && len(info.Methods) == 0
 }
 
 // Collect gathers information about the service described by its receiver.
@@ -135,9 +142,37 @@ func (info *ServiceInfo) Collect() *ServiceInfo {
 
 		// Parse directives.
 		for _, comment := range info.Doc.List {
-			if IsDirective(comment.Text, "inject") {
+			switch {
+			case IsDirective(comment.Text, "internal"):
+				info.Internal = true
+
+			case IsDirective(comment.Text, "inject"):
 				// Record injected line.
-				info.Injections = append(info.Injections, ParseDirective(comment.Text, "inject"))
+				info.NumJSInjections++
+				info.NumTSInjections++
+				info.Injections = append(info.Injections, InjectionInfo{
+					Code: ParseDirective(comment.Text, "inject"),
+					JS:   true,
+					TS:   true,
+				})
+
+			case IsDirective(comment.Text, "inject:js"):
+				// Record injected line.
+				info.NumJSInjections++
+				info.Injections = append(info.Injections, InjectionInfo{
+					Code: ParseDirective(comment.Text, "inject"),
+					JS:   true,
+					TS:   false,
+				})
+
+			case IsDirective(comment.Text, "inject:ts"):
+				// Record injected line.
+				info.NumTSInjections++
+				info.Injections = append(info.Injections, InjectionInfo{
+					Code: ParseDirective(comment.Text, "inject"),
+					JS:   false,
+					TS:   true,
+				})
 			}
 		}
 	})
@@ -185,15 +220,21 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 	}
 
 	// Parse directives.
-	if info.Doc != nil {
-		for _, comment := range info.Doc.List {
-			if IsDirective(comment.Text, "methodID") {
-				idString := ParseDirective(comment.Text, "methodID")
+	if methodInfo.Doc != nil {
+		var methodIdFound bool
+
+		for _, comment := range methodInfo.Doc.List {
+			switch {
+			case IsDirective(comment.Text, "internal"):
+				methodInfo.Internal = true
+
+			case !methodIdFound && IsDirective(comment.Text, "id"):
+				idString := ParseDirective(comment.Text, "id")
 				idValue, err := strconv.ParseUint(idString, 10, 32)
 
 				if err != nil {
 					collector.logger.Errorf(
-						"%s: invalid value '%s' in `wails:methodID` directive: expected a valid uint32 value",
+						"%s: invalid value '%s' in `wails:id` directive: expected a valid uint32 value",
 						info.methodErrorLocation(method, comment.Pos()),
 						idString,
 					)
@@ -210,7 +251,6 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 					idValue,
 				)
 				methodInfo.ID = strconv.FormatUint(idValue, 10)
-				break
 			}
 		}
 	}
