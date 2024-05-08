@@ -104,12 +104,14 @@ func (analyser *Analyser) Run(yield func(Result) bool) (err error) {
 	analyser.refs = make([]RefMap, len(analyser.pkgs))
 
 	for i, pkg := range analyser.pkgs {
+		// Instantiate new variables for the closures below.
+		ii, ppkg := i, pkg
 		go func() {
-			SortAstFiles(pkg)
+			SortAstFiles(ppkg)
 			wg.Done()
 		}()
 		go func() {
-			analyser.refs[i] = BuildRefMap(pkg)
+			analyser.refs[ii] = BuildRefMap(ppkg)
 			wg.Done()
 		}()
 	}

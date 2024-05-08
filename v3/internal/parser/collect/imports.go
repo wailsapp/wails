@@ -228,7 +228,7 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 			}
 
 			// Add field dependencies.
-			for i := range len(info.Fields) - 1 {
+			for i := 0; i < len(info.Fields)-1; i++ {
 				imports.AddType(info.Fields[i].Type, collector)
 			}
 

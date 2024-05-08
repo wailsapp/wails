@@ -174,7 +174,7 @@ func (info *PackageInfo) IsEmpty() bool {
 // and regenerates cached stats.
 //
 // Bindings and models appear at most once
-// in the returned structure.
+// in the returned structure and are sorted by name.
 //
 // This method is safe to call even if [PackageInfo.Collect]
 // has not been called yet.

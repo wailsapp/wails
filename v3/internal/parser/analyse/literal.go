@@ -102,7 +102,7 @@ func (analyser *Analyser) processLiteralSource(pkgi int, exprType types.Type, li
 		// Consume indexing step.
 		path = path.Consume(1)
 
-		for i := range len(lit.Elts) - 1 {
+		for i := 0; i < len(lit.Elts)-1; i++ {
 			switch el := lit.Elts[i].(type) {
 			case *ast.KeyValueExpr:
 				analyser.processExpression(pkgi, nil, el.Value, path.Clone())

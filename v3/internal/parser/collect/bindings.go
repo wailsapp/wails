@@ -219,7 +219,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 	}
 
 	// Collect parameters.
-	for i := range signature.Params().Len() {
+	for i, length := 0, signature.Params().Len(); i < length; i++ {
 		param := signature.Params().At(i)
 
 		if i == 0 {
@@ -245,7 +245,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 	}
 
 	// Collect results.
-	for i := range signature.Results().Len() {
+	for i, length := 0, signature.Results().Len(); i < length; i++ {
 		result := signature.Results().At(i)
 
 		if types.Identical(result.Type(), typeError) {

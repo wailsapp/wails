@@ -249,7 +249,7 @@ func (analyser *Analyser) processSliceFuncSource(pkgi int, callee types.Object, 
 			if tuple, ok := pkg.TypesInfo.TypeOf(call.Args[0]).(*types.Tuple); ok {
 				// Unique argument is a multi-value expression:
 				// use processTuple to analyse each element.
-				for i := range tuple.Len() - 1 {
+				for i := 0; i < tuple.Len()-1; i++ {
 					analyser.processTuple(pkgi, call.Args, nil, i, tuple.Len(), path.Clone())
 				}
 				// Save one clone operation

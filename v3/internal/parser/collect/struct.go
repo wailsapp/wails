@@ -141,7 +141,7 @@ func (info *StructInfo) Collect() {
 				// Scan embedded type for fields to include.
 				estruct := embedded.Type.Underlying().(*types.Struct)
 
-				for i := range estruct.NumFields() {
+				for i := 0; i < estruct.NumFields(); i++ {
 					field := estruct.Field(i)
 
 					// Retrieve type of field, following aliases conservatively
