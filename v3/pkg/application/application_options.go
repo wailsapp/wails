@@ -70,6 +70,11 @@ type Options struct {
 	// If the function returns true, the application will quit.
 	// If the function returns false, the application will not quit.
 	ShouldQuit func() bool
+
+	// This blank field ensures types from other packages
+	// are never convertible to Options.
+	// This property, in turn, improves the accuracy of the binding generator.
+	_ struct{}
 }
 
 // AssetOptions defines the configuration of the AssetServer.
