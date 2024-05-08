@@ -613,6 +613,45 @@ func (analyser *bindingAnalyser) analyseFieldExpr(pkg *packages.Package, expr as
 }
 
 func (analyser *bindingAnalyser) analyseServiceExpr(pkg *packages.Package, expr ast.Expr) {
+	// Unwrap conversions and assertions to interface types
+unwrap:
+	for {
+		expr = ast.Unparen(expr)
+
+		switch x := expr.(type) {
+		case *ast.CallExpr:
+			tv, ok := pkg.TypesInfo.Types[x.Fun]
+			if !ok || !tv.IsType() {
+				break unwrap
+			}
+
+			if _, ok := tv.Type.Underlying().(*types.Interface); !ok {
+				return
+			}
+
+			if len(x.Args) != 1 {
+				break unwrap
+			}
+
+			expr = x.Args[0]
+
+		case *ast.TypeAssertExpr:
+			tv, ok := pkg.TypesInfo.Types[x.Type]
+			if !ok || !tv.IsType() {
+				break unwrap
+			}
+
+			if _, ok := tv.Type.Underlying().(*types.Interface); !ok {
+				return
+			}
+
+			expr = x.X
+
+		default:
+			break unwrap
+		}
+	}
+
 	tv, ok := pkg.TypesInfo.Types[expr]
 	if !ok {
 		pterm.Warning.Printfln(
@@ -628,6 +667,10 @@ func (analyser *bindingAnalyser) analyseServiceExpr(pkg *packages.Package, expr 
 			"%s: ignoring service expression with invalid type",
 			pkg.Fset.PositionFor(expr.Pos(), true),
 		)
+		return
+	}
+
+	if types.Identical(typ, types.Typ[types.UntypedNil]) {
 		return
 	}
 
