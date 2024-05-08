@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"go/ast"
 	"math/big"
 	"slices"
 	"strconv"
@@ -17,12 +18,24 @@ import (
 // that should be available in every template.
 var tmplFunctions = template.FuncMap{
 	"isclass":   collect.IsClass,
+	"hasdoc":    hasdoc,
 	"jsdoc":     jsdoc,
 	"jsid":      jsid,
 	"jsimport":  jsimport,
 	"jsparam":   jsparam,
 	"jsvalue":   jsvalue,
 	"typeparam": typeparam,
+}
+
+// hasdoc checks whether the given comment group contains actual doc comments.
+func hasdoc(group *ast.CommentGroup) bool {
+	if group == nil {
+		return false
+	}
+
+	// TODO: this is horrible, make it more efficient?
+	text := group.Text()
+	return text != "" && text != "\n"
 }
 
 // jsdoc splits the given comment into lines and rewrites it as follows:

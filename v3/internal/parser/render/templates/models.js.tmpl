@@ -48,13 +48,13 @@ import * as $internal from "./{{js $internal}}";
     {{- $createParamList = (printf "%s)" $createParamList)}}
 {{- end}}
 
-{{- if or $typeParamList $model.Decl.Doc $model.Doc $isEnum $isTypeAlias $isInterface}}
+{{- if or $typeParamList (hasdoc $model.Decl.Doc) (hasdoc $model.Doc) $isEnum $isTypeAlias $isInterface}}
 /**
-{{- if $model.Decl.Doc}}
-{{- jsdoc $model.Decl.Doc.Text ""}}{{if $model.Doc}}
+{{- if hasdoc $model.Decl.Doc}}
+{{- jsdoc $model.Decl.Doc.Text ""}}{{if hasdoc $model.Doc}}
  *{{end}}
 {{- end}}
-{{- if $model.Doc}}
+{{- if hasdoc $model.Doc}}
 {{- jsdoc $model.Doc.Text ""}}
 {{- end}}
 {{- if and $typeParamList (not $isClassAlias)}}
@@ -79,15 +79,15 @@ export const {{jsid $model.Name}} = {
     {{- range $i, $decl := $model.Values}}{{range $j, $spec := $decl}}{{range $k, $value := $spec}}
     {{- if and (ne $i 0) (eq $j 0) (eq $k 0)}}
 {{end}}
-    {{- if or (and (eq $j 0) (eq $k 0) $value.Decl.Doc) (and (eq $k 0) $value.Spec.Doc)}}
+    {{- if or (and (eq $j 0) (eq $k 0) (hasdoc $value.Decl.Doc)) (and (eq $k 0) (hasdoc $value.Spec.Doc))}}
     {{- if gt $j 0}}
 {{end}}
     /**
-    {{- if and (eq $j 0) (eq $k 0) $value.Decl.Doc}}
-    {{- jsdoc $value.Decl.Doc.Text "    "}}{{if and (eq $k 0) $value.Spec.Doc}}
+    {{- if and (eq $j 0) (eq $k 0) (hasdoc $value.Decl.Doc)}}
+    {{- jsdoc $value.Decl.Doc.Text "    "}}{{if and (eq $k 0) (hasdoc $value.Spec.Doc)}}
      *{{end}}
     {{- end}}
-    {{- if and (eq $k 0) $value.Spec.Doc}}
+    {{- if and (eq $k 0) (hasdoc $value.Spec.Doc)}}
     {{- jsdoc $value.Spec.Doc.Text "    "}}
     {{- end}}
      */
@@ -99,11 +99,11 @@ export const {{jsid $model.Name}} = {
 export const {{jsid $model.Name}} = {{$module.JSType $model.Type.Origin}};
 
 /**
-{{- if $model.Decl.Doc}}
-{{- jsdoc $model.Decl.Doc.Text ""}}{{if $model.Doc}}
+{{- if hasdoc $model.Decl.Doc}}
+{{- jsdoc $model.Decl.Doc.Text ""}}{{if hasdoc $model.Doc}}
  *{{end}}
 {{- end}}
-{{- if $model.Doc}}
+{{- if hasdoc $model.Doc}}
 {{- jsdoc $model.Doc.Text ""}}
 {{- end}}
 {{- if $typeParamList}}
@@ -129,7 +129,7 @@ export class {{jsid $model.Name}} {
         */}}
         if ({{if $field.Optional}}/** @type {any} */(false){{else}}!("{{js $field.JsonName}}" in $$source){{end}}) {
             /**
-            {{- if and (eq $j 0) $field.Decl.Doc}}
+            {{- if and (eq $j 0) (hasdoc $field.Decl.Doc)}}
             {{- jsdoc $field.Decl.Doc.Text "            "}}
             {{- end}}
              * @member

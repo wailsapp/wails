@@ -128,7 +128,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	}
 
 	// Initialise subcomponents.
-	generator.collector = collect.NewCollector(pkgs, systemPaths, &generator.scheduler, generator.logger)
+	generator.collector = collect.NewCollector(pkgs, systemPaths, generator.options, &generator.scheduler, generator.logger)
 	generator.renderer = render.NewRenderer(generator.options, generator.collector)
 
 	// Kickstart package data collection.
@@ -262,7 +262,8 @@ func (generator *Generator) generateModelsIndexIncludes(info *collect.PackageInf
 		return true
 	}
 
-	return false
+	_, includesIndex := index.Package.Includes[generator.renderer.IndexFile()]
+	return includesIndex
 }
 
 // validateFileNames validates user-provided filenames.

@@ -82,8 +82,9 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 			return 0
 		}
 
-		if m1.Internal != m2.Internal {
-			if !m1.Internal {
+		m1e, m2e := m1.Object().Exported(), m2.Object().Exported()
+		if m1e != m2e {
+			if m1e {
 				return -1
 			} else {
 				return 1
@@ -95,7 +96,7 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 
 	// Find first internal model.
 	split, _ := slices.BinarySearchFunc(index.Models, struct{}{}, func(m *ModelInfo, _ struct{}) int {
-		if !m.Internal {
+		if m.Object().Exported() {
 			return -1
 		} else {
 			return 1
@@ -115,6 +116,5 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 // IsEmpty returns true if the given index
 // contains no data for the selected language.
 func (index *PackageIndex) IsEmpty() bool {
-	noInjections := (!index.typeScript && index.Package.NumJSInjections == 0) || (index.typeScript && index.Package.NumTSInjections == 0)
-	return noInjections && len(index.Services) == 0 && len(index.Models) == 0
+	return len(index.Package.Injections) == 0 && len(index.Services) == 0 && len(index.Models) == 0
 }

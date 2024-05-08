@@ -13,11 +13,8 @@ import (
 // generateIncludes copies included files to the package directory
 // for the package summarised by the given index.
 func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
-	for name, info := range index.Package.Includes {
-		if !(!generator.options.TS && info.JS) && !(generator.options.TS && info.TS) {
-			// Include not enabled for current language.
-			continue
-		}
+	for name, path := range index.Package.Includes {
+		name, path := name, path // Redeclare in loop-local scope.
 
 		// Validate filename.
 		switch name {
@@ -26,7 +23,7 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 				generator.logger.Errorf(
 					"package %s: included file '%s' collides with models filename; please rename the file or choose a different filename for models",
 					index.Package.Path,
-					info.Path,
+					path,
 				)
 				return
 			}
@@ -36,7 +33,7 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 				generator.logger.Errorf(
 					"package %s: included file '%s' collides with internal models filename; please rename the file or choose a different filename for internal models",
 					index.Package.Path,
-					info.Path,
+					path,
 				)
 				return
 			}
@@ -46,7 +43,7 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 				generator.logger.Errorf(
 					"package %s: included file '%s' collides with JS/TS index filename; please rename the file or choose a different filename for JS/TS indexes",
 					index.Package.Path,
-					info.Path,
+					path,
 				)
 				return
 			}
@@ -60,17 +57,18 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 			generator.logger.Errorf(
 				"package %s: included file '%s' collides with filename for service %s; please rename either the file or the service",
 				index.Package.Path,
-				info.Path,
+				path,
 				index.Services[service].Name,
 			)
 			return
 		}
 
-		func() { // Scoped defer pattern.
-			src, err := os.Open(info.Path)
+		// Copy file to destination in separate goroutine.
+		generator.scheduler.Schedule(func() {
+			src, err := os.Open(path)
 			if err != nil {
 				generator.logger.Errorf("%v", err)
-				generator.logger.Errorf("package %s: could not read included file '%s'", index.Package.Path, info.Path)
+				generator.logger.Errorf("package %s: could not read included file '%s'", index.Package.Path, path)
 				return
 			}
 			defer src.Close()
@@ -78,7 +76,7 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 			stat, err := src.Stat()
 			if err != nil {
 				generator.logger.Errorf("%v", err)
-				generator.logger.Errorf("package %s: could not read included file '%s'", index.Package.Path, info.Path)
+				generator.logger.Errorf("package %s: could not read included file '%s'", index.Package.Path, path)
 				return
 			}
 
@@ -86,7 +84,7 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 				generator.logger.Errorf(
 					"package %s: included file '%s' is a directory; please glob or list all descendants explicitly",
 					index.Package.Path,
-					info.Path,
+					path,
 				)
 				return
 			}
@@ -104,6 +102,6 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 				generator.logger.Errorf("%v", err)
 				generator.logger.Errorf("package %s: could not copy included file '%s'", index.Package.Path, name)
 			}
-		}()
+		})
 	}
 }

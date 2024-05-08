@@ -2,6 +2,7 @@ package collect
 
 import (
 	"fmt"
+	"go/ast"
 	"go/token"
 	"go/types"
 	"strconv"
@@ -30,7 +31,7 @@ type (
 
 		// Injections stores a list of JS code lines
 		// that should be injected into the generated file.
-		Injections      []InjectionInfo
+		Injections      []string
 		NumJSInjections int
 		NumTSInjections int
 
@@ -136,43 +137,35 @@ func (info *ServiceInfo) Collect() *ServiceInfo {
 			}
 		}
 
-		if info.Doc == nil {
-			return
-		}
-
 		// Parse directives.
-		for _, comment := range info.Doc.List {
-			switch {
-			case IsDirective(comment.Text, "internal"):
-				info.Internal = true
+		for _, doc := range []*ast.CommentGroup{info.Doc, info.Decl.Doc} {
+			if doc == nil {
+				continue
+			}
+			for _, comment := range doc.List {
+				switch {
+				case IsDirective(comment.Text, "internal"):
+					info.Internal = true
 
-			case IsDirective(comment.Text, "inject"):
-				// Record injected line.
-				info.NumJSInjections++
-				info.NumTSInjections++
-				info.Injections = append(info.Injections, InjectionInfo{
-					Code: ParseDirective(comment.Text, "inject"),
-					JS:   true,
-					TS:   true,
-				})
+				case IsDirective(comment.Text, "inject"):
+					// Check condition.
+					line, cond, err := ParseCondition(ParseDirective(comment.Text, "inject"))
+					if err != nil {
+						collector.logger.Errorf(
+							"%s: in `wails:inject` directive: %v",
+							info.serviceErrorLocation(comment.Pos()),
+							err,
+						)
+						continue
+					}
 
-			case IsDirective(comment.Text, "inject:js"):
-				// Record injected line.
-				info.NumJSInjections++
-				info.Injections = append(info.Injections, InjectionInfo{
-					Code: ParseDirective(comment.Text, "inject"),
-					JS:   true,
-					TS:   false,
-				})
+					if !cond.Satisfied(collector.options) {
+						continue
+					}
 
-			case IsDirective(comment.Text, "inject:ts"):
-				// Record injected line.
-				info.NumTSInjections++
-				info.Injections = append(info.Injections, InjectionInfo{
-					Code: ParseDirective(comment.Text, "inject"),
-					JS:   false,
-					TS:   true,
-				})
+					// Record injected line.
+					info.Injections = append(info.Injections, line)
+				}
 			}
 		}
 	})
@@ -325,6 +318,22 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 	}
 
 	return methodInfo
+}
+
+// serviceErrorLocation computes a sensible location
+// to display in service-related error messages.
+func (info *ServiceInfo) serviceErrorLocation(pos token.Pos) any {
+	if pkg := info.collector.Package(info.Object().Pkg()); pkg != nil {
+		// FileSet is available: compute source location.
+		return pkg.Fset.Position(pos)
+	}
+
+	// FileSet not available: fall back to package/method coordinates.
+	return fmt.Sprintf(
+		"package %s: service %s",
+		info.Object().Pkg().Path(),
+		info.Name,
+	)
 }
 
 // methodErrorLocation computes a sensible location

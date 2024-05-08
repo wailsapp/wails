@@ -44,13 +44,13 @@ import * as $internal from "./{{js $internal}}";
     {{- $createParamList = (printf "%s)" $createParamList)}}
 {{- end}}
 
-{{- if or $model.Decl.Doc $model.Doc}}
+{{- if or (hasdoc $model.Decl.Doc) (hasdoc $model.Doc)}}
 /**
-{{- if $model.Decl.Doc}}
-{{- jsdoc $model.Decl.Doc.Text ""}}{{if $model.Doc}}
+{{- if hasdoc $model.Decl.Doc}}
+{{- jsdoc $model.Decl.Doc.Text ""}}{{if hasdoc $model.Doc}}
  *{{end}}
 {{- end}}
-{{- if $model.Doc}}
+{{- if hasdoc $model.Doc}}
 {{- jsdoc $model.Doc.Text ""}}
 {{- end}}
  */
@@ -60,15 +60,15 @@ export enum {{jsid $model.Name}} {
     {{- range $i, $decl := $model.Values}}{{range $j, $spec := $decl}}{{range $k, $value := $spec}}
     {{- if and (ne $i 0) (eq $j 0) (eq $k 0)}}
 {{end}}
-    {{- if or (and (eq $j 0) (eq $k 0) $value.Decl.Doc) (and (eq $k 0) $value.Spec.Doc)}}
+    {{- if or (and (eq $j 0) (eq $k 0) (hasdoc $value.Decl.Doc)) (and (eq $k 0) (hasdoc $value.Spec.Doc))}}
     {{- if gt $j 0}}
 {{end}}
     /**
-    {{- if and (eq $j 0) (eq $k 0) $value.Decl.Doc}}
-    {{- jsdoc $value.Decl.Doc.Text "    "}}{{if and (eq $k 0) $value.Spec.Doc}}
+    {{- if and (eq $j 0) (eq $k 0) (hasdoc $value.Decl.Doc)}}
+    {{- jsdoc $value.Decl.Doc.Text "    "}}{{if and (eq $k 0) (hasdoc $value.Spec.Doc)}}
      *{{end}}
     {{- end}}
-    {{- if and (eq $k 0) $value.Spec.Doc}}
+    {{- if and (eq $k 0) (hasdoc $value.Spec.Doc)}}
     {{- jsdoc $value.Spec.Doc.Text "    "}}
     {{- end}}
      */
@@ -78,14 +78,14 @@ export enum {{jsid $model.Name}} {
 };
 {{else if $isClassAlias}}
 export const {{jsid $model.Name}} = {{$module.JSType $model.Type.Origin}};
-{{- if or $model.Decl.Doc $model.Doc}}
+{{- if or (hasdoc $model.Decl.Doc) (hasdoc $model.Doc)}}
 
 /**
-{{- if $model.Decl.Doc}}
-{{- jsdoc $model.Decl.Doc.Text ""}}{{if $model.Doc}}
+{{- if hasdoc $model.Decl.Doc}}
+{{- jsdoc $model.Decl.Doc.Text ""}}{{if hasdoc $model.Doc}}
  *{{end}}
 {{- end}}
-{{- if $model.Doc}}
+{{- if hasdoc $model.Doc}}
 {{- jsdoc $model.Doc.Text ""}}
 {{- end}}
  */
@@ -96,7 +96,7 @@ export type {{jsid $model.Name}}{{$typeParamList}} = {{$module.JSType $model.Typ
 {{else if $isClassOrInterface}}
 export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$typeParamList}} {
     {{- range $i, $decl := $model.Fields}}{{range $j, $field := $decl}}
-    {{- if and (eq $j 0) $field.Decl.Doc}}
+    {{- if and (eq $j 0) (hasdoc $field.Decl.Doc)}}
     {{- if gt $i 0}}
 {{end}}
     /**

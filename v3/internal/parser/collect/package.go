@@ -8,90 +8,71 @@ import (
 	"go/types"
 	"path/filepath"
 	"slices"
-	"strings"
 	"sync"
 	"sync/atomic"
 
 	"golang.org/x/tools/go/packages"
 )
 
-type (
-	// PackageInfo records information about a package.
-	//
-	// Read accesses to fields Path, Types, TypesInfo, Fset
-	// are safe at any time without any synchronisation.
-	//
-	// Read accesses to all other fields are only safe
-	// if a call to [PackageInfo.Collect] has completed before the access,
-	// for example by calling it in the accessing goroutine
-	// or before spawning the accessing goroutine.
-	//
-	// Concurrent write accesses are only allowed through the provided methods.
-	PackageInfo struct {
-		// Path holds the canonical path of the described package.
-		Path string
+// PackageInfo records information about a package.
+//
+// Read accesses to fields Path, Types, TypesInfo, Fset
+// are safe at any time without any synchronisation.
+//
+// Read accesses to all other fields are only safe
+// if a call to [PackageInfo.Collect] has completed before the access,
+// for example by calling it in the accessing goroutine
+// or before spawning the accessing goroutine.
+//
+// Concurrent write accesses are only allowed through the provided methods.
+type PackageInfo struct {
+	// Path holds the canonical path of the described package.
+	Path string
 
-		// Name holds the (possibly aliased) import name of the described package.
-		Name string
+	// Name holds the (possibly aliased) import name of the described package.
+	Name string
 
-		// Types and TypesInfo hold type information for this package.
-		Types     *types.Package
-		TypesInfo *types.Info
+	// Types and TypesInfo hold type information for this package.
+	Types     *types.Package
+	TypesInfo *types.Info
 
-		// Fset holds the FileSet that was used to parse this package.
-		Fset *token.FileSet
+	// Fset holds the FileSet that was used to parse this package.
+	Fset *token.FileSet
 
-		// Files holds parsed files for this package,
-		// ordered by start position to support binary search.
-		Files []*ast.File
+	// Files holds parsed files for this package,
+	// ordered by start position to support binary search.
+	Files []*ast.File
 
-		// Docs holds package doc comments.
-		Docs []*ast.CommentGroup
+	// Docs holds package doc comments.
+	Docs []*ast.CommentGroup
 
-		// Internal is true if the package has been marked as internal.
-		Internal bool
+	// Internal is true if the package has been marked as internal.
+	Internal bool
 
-		// Includes holds a list of additional files to include
-		// with the generated bindings.
-		// It maps file names to their paths on disk and additional options.
-		Includes map[string]IncludeInfo
+	// Includes holds a list of additional files to include
+	// with the generated bindings.
+	// It maps file names to their paths on disk and additional options.
+	Includes map[string]string
 
-		// Injections holds a list of code lines to be injected
-		// into the package index file.
-		Injections      []InjectionInfo
-		NumJSInjections int
-		NumTSInjections int
+	// Injections holds a list of code lines to be injected
+	// into the package index file.
+	Injections []string
 
-		// models records service types that have to be generated for this package.
-		// We rely upon [sync.Map] for atomic swapping support.
-		services sync.Map
+	// models records service types that have to be generated for this package.
+	// We rely upon [sync.Map] for atomic swapping support.
+	services sync.Map
 
-		// models records model types that have to be generated for this package.
-		// We rely upon [sync.Map] for atomic swapping support.
-		models sync.Map
+	// models records model types that have to be generated for this package.
+	// We rely upon [sync.Map] for atomic swapping support.
+	models sync.Map
 
-		// stats caches statistics about this package.
-		stats atomic.Pointer[Stats]
+	// stats caches statistics about this package.
+	stats atomic.Pointer[Stats]
 
-		collector *Collector
-		goFiles   []string
-		once      sync.Once
-	}
-
-	// IncludeInfo records information about an included file.
-	IncludeInfo struct {
-		Path string
-		JS   bool
-		TS   bool
-	}
-
-	// InjectionInfo records information about an injected line.
-	InjectionInfo struct {
-		Code string
-		JS   bool
-		TS   bool
-	}
-)
+	collector *Collector
+	goFiles   []string
+	once      sync.Once
+}
 
 func newPackageInfo(pkg *packages.Package, collector *Collector) *PackageInfo {
 	return &PackageInfo{
@@ -187,65 +168,48 @@ func (info *PackageInfo) Collect() *PackageInfo {
 
 			// Parse directives.
 			dir := filepath.Dir(goFile)
-			info.Includes = make(map[string]IncludeInfo)
+			info.Includes = make(map[string]string)
 			for _, comment := range file.Doc.List {
 				switch {
 				case IsDirective(comment.Text, "internal"):
 					info.Internal = true
 
 				case IsDirective(comment.Text, "inject"):
-					// Record injected line.
-					info.NumJSInjections++
-					info.NumTSInjections++
-					info.Injections = append(info.Injections, InjectionInfo{
-						Code: ParseDirective(comment.Text, "inject"),
-						JS:   true,
-						TS:   true,
-					})
-
-				case IsDirective(comment.Text, "inject:js"):
-					// Record injected line.
-					info.NumJSInjections++
-					info.Injections = append(info.Injections, InjectionInfo{
-						Code: ParseDirective(comment.Text, "inject"),
-						JS:   true,
-						TS:   false,
-					})
-
-				case IsDirective(comment.Text, "inject:ts"):
-					// Record injected line.
-					info.NumTSInjections++
-					info.Injections = append(info.Injections, InjectionInfo{
-						Code: ParseDirective(comment.Text, "inject"),
-						JS:   false,
-						TS:   true,
-					})
-
-				case IsDirective(comment.Text, "include"):
-					// Collect matching files.
-					pattern := ParseDirective(comment.Text, "include")
-
-					// Detect conditions.
-					includeWithJS, includeWithTS := true, true
-					if cond, rest, hasCond := strings.Cut(pattern, ":"); hasCond {
-						pattern = rest
-						switch cond {
-						case "js":
-							includeWithTS = false
-						case "ts":
-							includeWithJS = false
-						default:
-							collector.logger.Errorf(
-								"%s: invalid condition '%s:' in `wails:include` directive: expected either 'js:' or 'ts:'",
-								fset.Position(comment.Pos()),
-								cond,
-								err,
-							)
-							continue
-						}
+					// Check condition.
+					line, cond, err := ParseCondition(ParseDirective(comment.Text, "inject"))
+					if err != nil {
+						collector.logger.Errorf(
+							"%s: in `wails:inject` directive: %v",
+							fset.Position(comment.Pos()),
+							err,
+						)
+						continue
 					}
 
-					// Match files.
+					if !cond.Satisfied(collector.options) {
+						continue
+					}
+
+					// Record injected line.
+					info.Injections = append(info.Injections, line)
+
+				case IsDirective(comment.Text, "include"):
+					// Check condition.
+					pattern, cond, err := ParseCondition(ParseDirective(comment.Text, "include"))
+					if err != nil {
+						collector.logger.Errorf(
+							"%s: in `wails:include` directive: %v",
+							fset.Position(comment.Pos()),
+							err,
+						)
+						continue
+					}
+
+					if !cond.Satisfied(collector.options) {
+						continue
+					}
+
+					// Collect matching files.
 					paths, err := filepath.Glob(filepath.Join(dir, pattern))
 					if err != nil {
 						collector.logger.Errorf(
@@ -286,11 +250,7 @@ func (info *PackageInfo) Collect() *PackageInfo {
 							info.Path,
 						)
 
-						info.Includes[name] = IncludeInfo{
-							Path: path,
-							JS:   includeWithJS,
-							TS:   includeWithTS,
-						}
+						info.Includes[name] = path
 					}
 
 				case !packageNameFound && IsDirective(comment.Text, "name"):

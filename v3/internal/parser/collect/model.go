@@ -20,9 +20,6 @@ type (
 	ModelInfo struct {
 		*TypeInfo
 
-		// Internal is true if the model is unexported.
-		Internal bool
-
 		// Imports records dependencies for this model.
 		Imports *ImportMap
 
@@ -110,9 +107,6 @@ func (info *ModelInfo) Collect() *ModelInfo {
 		// Collect type information.
 		info.TypeInfo.Collect()
 
-		// Detect unexported models.
-		info.Internal = !info.TypeInfo.Object().Exported()
-
 		// Initialise import map.
 		info.Imports = NewImportMap(collector.Package(obj.Pkg()))
 
@@ -137,9 +131,6 @@ func (info *ModelInfo) Collect() *ModelInfo {
 				// Type marshals to a custom string of unknown shape.
 				info.Type = types.Typ[types.String]
 				return
-			} else if IsClass(typ) {
-				// For classes, skip alias chains.
-				def = types.Unalias(def)
 			}
 
 			// Store type parameter names.
