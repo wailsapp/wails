@@ -78,19 +78,32 @@ func (t *ParameterType) JS(pkg *ParsedPackage) string {
 		typeName = t.namespace(pkg) + typeName
 	}
 
-	// Add slice suffix
-	if t.IsSlice {
-		typeName += "[]"
-	}
+	needsParentheses := false
 
 	// Add pointer suffix
 	if t.IsPointer {
 		typeName += " | null"
+		needsParentheses = true
+	}
+
+	// Add slice suffix
+	if t.IsSlice {
+		if needsParentheses {
+			typeName = "(" + typeName + ")[]"
+		} else {
+			typeName += "[]"
+		}
+		needsParentheses = false
 	}
 
 	// Add variadic slice suffix
 	if t.IsVariadic {
-		typeName = "(" + typeName + ")[]"
+		if needsParentheses {
+			typeName = "(" + typeName + ")[]"
+		} else {
+			typeName += "[]"
+		}
+		needsParentheses = false
 	}
 
 	return typeName
@@ -170,10 +183,10 @@ func (f *Field) Exported() bool {
 
 func (f *Field) DefaultValue(pkg *ParsedPackage) string {
 	// Return the default value of the typescript version of the type as a string
-	if f.Type.IsPointer {
-		return "null"
-	} else if f.Type.IsSlice {
+	if f.Type.IsSlice {
 		return "[]"
+	} else if f.Type.IsPointer {
+		return "null"
 	} else if f.Type.MapKey != nil {
 		return "{}"
 	} else if f.Type.IsStruct {
