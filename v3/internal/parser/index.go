@@ -41,15 +41,22 @@ func (generator *Generator) generateGlobalIndex(imports []*collect.PackageInfo) 
 		importMap.Add(pkg)
 	}
 
-	// Schedule shortcut generation.
+	// Schedule shortcut generation and detect name collisions.
 	for _, info := range importMap.External {
-		localInfo := info // Redeclare in loop-local scope
-		generator.controller.Schedule(func() {
-			generator.generateShortcut(localInfo)
-		})
+		if info.Index == 0 {
+			name := info.Name // Declare in loop-local scope
+			generator.controller.Schedule(func() {
+				generator.generateShortcut(importMap, name)
+			})
+		} else if info.Index == 1 {
+			generator.controller.Warningf(
+				"package name '%s' appears more than once in global index; shadowing may take place between identically named exports",
+				info.Name,
+			)
+		}
 	}
 
-	file, err := generator.creator.Create(filepath.Join(generator.renderer.IndexFile()))
+	file, err := generator.creator.Create(generator.renderer.IndexFile())
 	if err != nil {
 		generator.controller.Errorf("%v", err)
 		generator.controller.Errorf("global index generation failed")
@@ -65,18 +72,36 @@ func (generator *Generator) generateGlobalIndex(imports []*collect.PackageInfo) 
 }
 
 // generateShortcut generates a shortcut file for the given import.
-func (generator *Generator) generateShortcut(info collect.ImportInfo) {
-	file, err := generator.creator.Create(filepath.Join(generator.renderer.ShortcutFile(info)))
+func (generator *Generator) generateShortcut(imports *collect.ImportMap, name string) {
+	filename := generator.renderer.ShortcutFile(name)
+	if filename == generator.renderer.IndexFile() {
+		generator.controller.Errorf(
+			"package name '%s': shortcut filename collides with JS/TS index filename; please rename all such packages or choose a different filename for JS/TS indexes",
+			name,
+		)
+
+		for _, info := range imports.External {
+			if info.Name == name {
+				generator.controller.Errorf(
+					"package %s: invalid package name '%s'",
+					info.Name,
+					name,
+				)
+			}
+		}
+	}
+
+	file, err := generator.creator.Create(filename)
 	if err != nil {
 		generator.controller.Errorf("%v", err)
-		generator.controller.Errorf("package %s: shortcut file generation failed", info.RelPath[2:])
+		generator.controller.Errorf("package name '%s': shortcut file generation failed", name)
 		return
 	}
 	defer file.Close()
 
-	err = generator.renderer.Shortcut(file, info)
+	err = generator.renderer.Shortcut(file, imports, name)
 	if err != nil {
 		generator.controller.Errorf("%v", err)
-		generator.controller.Errorf("package %s: shortcut file generation failed", info.RelPath[2:])
+		generator.controller.Errorf("package name '%s': shortcut file generation failed", name)
 	}
 }

@@ -1,7 +1,6 @@
 package render
 
 import (
-	"fmt"
 	"io"
 	"text/template"
 
@@ -64,14 +63,10 @@ func (renderer *Renderer) IndexFile() string {
 	return renderer.options.IndexFilename + renderer.ext
 }
 
-// ShortcutFile returns the standard name of an import shortcut file
+// ShortcutFile returns the standard name of a package shortcut file
 // with the appropriate extension.
-func (renderer *Renderer) ShortcutFile(info collect.ImportInfo) string {
-	if info.Index > 0 || info.Name == "index" {
-		return fmt.Sprintf("%s.%d%s", info.Name, info.Index, renderer.ext)
-	} else {
-		return info.Name + renderer.ext
-	}
+func (renderer *Renderer) ShortcutFile(name string) string {
+	return name + renderer.ext
 }
 
 // Bindings renders bindings code for the given bound type to w.
@@ -130,15 +125,17 @@ func (renderer *Renderer) GlobalIndex(w io.Writer, imports *collect.ImportMap) e
 	})
 }
 
-// GlobalIndex renders a shortcut file for the given import to w.
-func (renderer *Renderer) Shortcut(w io.Writer, info collect.ImportInfo) error {
+// GlobalIndex renders a shortcut file for the given package name to w.
+func (renderer *Renderer) Shortcut(w io.Writer, imports *collect.ImportMap, name string) error {
 	return tmplShortcut.Execute(w, &struct {
-		collect.ImportInfo
+		*collect.ImportMap
 		*Renderer
 		*flags.GenerateBindingsOptions
+		Name string
 	}{
-		info,
+		imports,
 		renderer,
 		renderer.options,
+		name,
 	})
 }

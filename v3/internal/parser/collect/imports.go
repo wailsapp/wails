@@ -34,7 +34,7 @@ type (
 	// ImportInfo records information about a single import.
 	ImportInfo struct {
 		Name    string
-		Index   int // Identically named imports always get distinct indices.
+		Index   int // Progressive number for identically named imports, starting from 0 for each distinct name.
 		RelPath string
 	}
 )
