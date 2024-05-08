@@ -11,10 +11,11 @@ import {Call} from '/wails/runtime.js';
  * Greet greets a person
  * @function Greet
  * @param name {string}
+ * @param counts {(number)[]}
  * @returns {Promise<string>}
  **/
-export async function Greet(name) {
-	return Call.ByName("main.GreetService.Greet", ...Array.prototype.slice.call(arguments, 0));
+export async function Greet(name, ...counts) {
+	return Call.ByName("main.GreetService.Greet", name, counts);
 }
 
 /**
@@ -24,5 +25,5 @@ export async function Greet(name) {
  * @returns {Promise<string>}
  **/
 export async function GreetPerson(person) {
-	return Call.ByName("main.GreetService.GreetPerson", ...Array.prototype.slice.call(arguments, 0));
+	return Call.ByName("main.GreetService.GreetPerson", person);
 }

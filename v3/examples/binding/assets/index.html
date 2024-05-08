@@ -79,16 +79,27 @@
 <div class="input-box" id="input">
     <input autofocus autocomplete="off" class="input" id="name" type="text"/>
     <button class="btn" id="greet-btn">Greet</button>
+    <button class="btn" id="greetperson-btn">GreetPerson</button>
 </div>
 <script type="module">
     import * as GreetService from "./bindings/main/GreetService.js";
+    import * as data from "./bindings/data/models.js";
 
     async function greet() {
         document.getElementById("result").innerHTML =
-            await GreetService.Greet(document.getElementById("name").value);
+            await GreetService.Greet(document.getElementById("name").value, 12, 7);
+    }
+
+    async function greetPerson() {
+        document.getElementById("result").innerHTML =
+            await GreetService.GreetPerson(new data.Person({
+                name: document.getElementById("name").value,
+                counts: [13, 41, 2]
+            }));
     }
 
     document.getElementById("greet-btn").onclick = greet;
+    document.getElementById("greetperson-btn").onclick = greetPerson;
 </script>
 </body>
 </html>

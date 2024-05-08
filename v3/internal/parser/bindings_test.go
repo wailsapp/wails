@@ -723,12 +723,11 @@ func TestGenerateBindings(t *testing.T) {
 					expected = convertLineEndings(expected)
 
 					if diff := cmp.Diff(expected, binding); diff != "" {
-						outFileName := name + ".got.js"
 						originalFilename := name
 						if !tt.useIDs {
 							originalFilename += ".name"
 						}
-						outFileName = originalFilename + ".got"
+						outFileName := originalFilename + ".got"
 						if tt.useTypescript {
 							originalFilename += ".ts"
 							outFileName += ".ts"

@@ -22,7 +22,7 @@ export enum {{$enumdef.Name}} {
 {{- end}}
 export class {{$def.Name}} {
     {{- range $def.Fields}}
-    {{.JSDef $pkg}}{{end}}
+    {{.JSName}}: {{.TSType $pkg}};{{if .Exported}} // Warning: this is unexported in the Go struct.{{end}}{{end}}
 
     constructor(source: Partial<{{$def.Name}}> = {}) {
         const { {{- $def.DefaultValueList -}} } = source;
