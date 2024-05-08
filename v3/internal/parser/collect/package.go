@@ -15,7 +15,7 @@ import (
 
 // PackageInfo records information about a package.
 //
-// Read accesses to fields Path, Types, TypesInfo, Fset
+// Read accesses to fields Path, Name, Types, TypesInfo, Fset
 // are safe at any time without any synchronisation.
 //
 // Read accesses to all other fields are only safe
@@ -28,7 +28,7 @@ type PackageInfo struct {
 	// Path holds the canonical path of the described package.
 	Path string
 
-	// Name holds the (possibly aliased) import name of the described package.
+	// Name holds the import name of the described package.
 	Name string
 
 	// Types and TypesInfo hold type information for this package.
@@ -44,9 +44,6 @@ type PackageInfo struct {
 
 	// Docs holds package doc comments.
 	Docs []*ast.CommentGroup
-
-	// Internal is true if the package has been marked as internal.
-	Internal bool
 
 	// Includes holds a list of additional files to include
 	// with the generated bindings.
@@ -140,8 +137,6 @@ func (info *PackageInfo) Collect() *PackageInfo {
 			slices.SortFunc(info.Files, compareAstFiles)
 		}
 
-		var packageNameFound bool
-
 		// Collect docs and parse directives.
 		for _, file := range info.Files {
 			if file.Doc == nil {
@@ -166,9 +161,6 @@ func (info *PackageInfo) Collect() *PackageInfo {
 			}
 			for _, comment := range file.Doc.List {
 				switch {
-				case IsDirective(comment.Text, "internal"):
-					info.Internal = true
-
 				case IsDirective(comment.Text, "inject"):
 					// Check condition.
 					line, cond, err := ParseCondition(ParseDirective(comment.Text, "inject"))
@@ -251,31 +243,6 @@ func (info *PackageInfo) Collect() *PackageInfo {
 
 						info.Includes[name] = path
 					}
-
-				case IsDirective(comment.Text, "name"):
-					if packageNameFound {
-						continue
-					}
-
-					packageName := ParseDirective(comment.Text, "name")
-					if !token.IsIdentifier(packageName) {
-						collector.logger.Errorf(
-							"%s: invalid value in `wails:name` directive: '%s': expected a valid Go identifier",
-							info.Fset.Position(comment.Pos()),
-							packageName,
-						)
-						continue
-					}
-
-					// Announce and record alias.
-					collector.logger.Infof(
-						"package %s: default package name '%s' replaced by '%s'",
-						info.Path,
-						info.Name,
-						packageName,
-					)
-					info.Name = packageName
-					packageNameFound = true
 				}
 			}
 		}

@@ -171,12 +171,6 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	//   - ModelInfo.Collect has been called on all discovered models, and therefore
 	//   - all required models have been discovered.
 
-	// globalImports records all packages
-	// that should be added to the global index.
-	var globalImports []*collect.PackageInfo
-	var globalMu sync.Mutex
-	var globalWg sync.WaitGroup
-
 	// Update status.
 	if generator.options.NoIndex {
 		generator.logger.Statusf("Generating models...")
@@ -186,29 +180,11 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 
 	// Schedule models, index and included files generation for each package.
 	generator.collector.Iterate(func(info *collect.PackageInfo) bool {
-		globalWg.Add(1)
 		generator.scheduler.Schedule(func() {
-			defer globalWg.Done()
-
-			if generator.generateModelsIndexIncludes(info) && !info.Internal {
-				// Index has been generated and package is not internal:
-				// publish it on the global index.
-				globalMu.Lock()
-				defer globalMu.Unlock()
-				globalImports = append(globalImports, info)
-			}
+			generator.generateModelsIndexIncludes(info)
 		})
-
 		return true
 	})
-
-	// Wait until global imports slice is complete.
-	globalWg.Wait()
-
-	// Generate global index and shortcuts.
-	if len(globalImports) > 0 {
-		generator.generateGlobalIndex(globalImports)
-	}
 
 	// Wait until all models and indices have been generated.
 	generator.scheduler.Wait()
@@ -229,11 +205,9 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 }
 
 // generateModelsIndexIncludes schedules generation of public/private model files,
-// included files and, if allowed by the options, of an index file
-// for the given package.
-//
-// It returns true if an index file has been generated.
-func (generator *Generator) generateModelsIndexIncludes(info *collect.PackageInfo) bool {
+// included files and, if allowed by the options,
+// of an index file for the given package.
+func (generator *Generator) generateModelsIndexIncludes(info *collect.PackageInfo) {
 	index := info.Index(generator.options.TS)
 
 	// info.Index implies info.Collect: goroutines spawned below
@@ -258,15 +232,8 @@ func (generator *Generator) generateModelsIndexIncludes(info *collect.PackageInf
 	}
 
 	if !generator.options.NoIndex && !index.IsEmpty() {
-		generator.scheduler.Schedule(func() {
-			generator.generateIndex(index)
-		})
-
-		return true
+		generator.generateIndex(index)
 	}
-
-	_, includesIndex := index.Package.Includes[generator.renderer.IndexFile()]
-	return includesIndex
 }
 
 // validateFileNames validates user-provided filenames.

@@ -23,5 +23,3 @@ var tmplModels = map[tmplLanguage]*template.Template{
 }
 
 var tmplIndex = template.Must(template.New("index.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/index.tmpl"))
-var tmplGlobalIndex = template.Must(template.New("global.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/global.tmpl"))
-var tmplShortcut = template.Must(template.New("shortcut.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/shortcut.tmpl"))

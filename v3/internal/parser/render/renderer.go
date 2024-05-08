@@ -63,12 +63,6 @@ func (renderer *Renderer) IndexFile() string {
 	return renderer.options.IndexFilename + renderer.ext
 }
 
-// ShortcutFile returns the standard name of a package shortcut file
-// with the appropriate extension.
-func (renderer *Renderer) ShortcutFile(name string) string {
-	return name + renderer.ext
-}
-
 // Service renders binding code for the given service type to w.
 func (renderer *Renderer) Service(w io.Writer, info *collect.ServiceInfo) error {
 	return renderer.service.Execute(w, &struct {
@@ -109,33 +103,5 @@ func (renderer *Renderer) Index(w io.Writer, index *collect.PackageIndex) error 
 		index,
 		renderer,
 		renderer.options,
-	})
-}
-
-// GlobalIndex renders the given import map as a global package index to w.
-func (renderer *Renderer) GlobalIndex(w io.Writer, imports *collect.ImportMap) error {
-	return tmplGlobalIndex.Execute(w, &struct {
-		*collect.ImportMap
-		*Renderer
-		*flags.GenerateBindingsOptions
-	}{
-		imports,
-		renderer,
-		renderer.options,
-	})
-}
-
-// GlobalIndex renders a shortcut file for the given package name to w.
-func (renderer *Renderer) Shortcut(w io.Writer, imports *collect.ImportMap, name string) error {
-	return tmplShortcut.Execute(w, &struct {
-		*collect.ImportMap
-		*Renderer
-		*flags.GenerateBindingsOptions
-		Name string
-	}{
-		imports,
-		renderer,
-		renderer.options,
-		name,
 	})
 }

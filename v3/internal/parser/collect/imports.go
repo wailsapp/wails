@@ -104,15 +104,13 @@ func (imports *ImportMap) Add(pkg *PackageInfo) {
 		return
 	}
 
-	name := pkg.Collect().Name
-
 	// Fetch and update counter for name.
-	counter := imports.counters[name]
-	imports.counters[name] = counter + 1
+	counter := imports.counters[pkg.Name]
+	imports.counters[pkg.Name] = counter + 1
 
 	// Always add counters to
 	imports.External[pkg.Path] = ImportInfo{
-		Name:    name,
+		Name:    pkg.Name,
 		Index:   counter,
 		RelPath: computeImportPath(imports.Self, pkg.Path),
 	}
