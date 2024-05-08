@@ -5,6 +5,7 @@ import (
 	"go/token"
 	"go/types"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -25,7 +26,7 @@ type (
 	// Read accesses to the Path field are safe at any time
 	// without any synchronisation.
 	// Read accesses to all other exported fields are only safe
-	// if a call to [PackageInfo.Collect] has been sequenced before the access,
+	// if a call to [PackageInfo.Collect] has been completed before the access,
 	// for example by calling it in the accessing goroutine
 	// or before spawning the accessing goroutine.
 	//
@@ -36,47 +37,52 @@ type (
 
 		Docs []*ast.CommentGroup
 
-		Groups []*GroupInfo
-		Types  map[string]*TypeDefInfo
-		Consts map[string]*ConstInfo
+		Imports map[*ast.File]*FileImports
+		Types   map[string]*TypeDefInfo
+		Consts  map[string]*ConstInfo
 
+		// The next two fields record generated bindings for this package.
+		// We use a slice behind a lock because it is much faster
+		// than [sync.Map] in write-heavy scenarios like this one.
 		mu       sync.Mutex
-		bindings []*types.TypeName
-		models   []*types.TypeName
+		bindings []*BoundTypeInfo
 
+		// models records the models that have to be generated for this package.
+		// We use [sync.Map] for atomic swapping.
+		models sync.Map
+
+		// collector holds a pointer to the parent [Collector].
+		collector *Collector
+
+		// source holds either a pointer to [packages.Package],
+		// or a [Loader] instance that may be used to load the package.
 		source any
 		once   sync.Once
 	}
 
+	// FileImports records information
+	// about import declarations in an [ast.File].
+	FileImports struct {
+		Unnamed []string
+		Dot     []string
+		Named   map[string]string
+	}
+
 	// GroupInfo records information about a group
-	// of type or constant declarations.
+	// of type, field or constant declarations.
 	// This may be either a list of distinct specifications
 	// wrapped in parentheses, or a single specification
-	// declaring multiple constants.
+	// declaring multiple fields or constants.
 	GroupInfo struct {
+		Pos   token.Pos
 		Doc   *ast.CommentGroup
 		Group *GroupInfo
-	}
-
-	// TypeDefInfo records information about a single type specification.
-	TypeDefInfo struct {
-		Name    string
-		Doc     *ast.CommentGroup
-		Group   *GroupInfo
-		Alias   bool
-		Def     ast.Expr
-		Methods map[string]*MethodInfo
-	}
-
-	// MethodInfo records information about a method declaration.
-	MethodInfo struct {
-		Name string
-		Doc  *ast.CommentGroup
 	}
 
 	// ConstInfo records information about a constant declaration.
 	ConstInfo struct {
 		Name  string
+		Pos   token.Pos
 		Doc   *ast.CommentGroup
 		Group *GroupInfo
 	}
@@ -89,9 +95,9 @@ type (
 	PackageIndex struct {
 		Info *PackageInfo
 
-		Bindings []*types.TypeName
-		Models   []*types.TypeName
-		Internal []*types.TypeName
+		Bindings []*BoundTypeInfo
+		Models   []*ModelInfo
+		Internal []*ModelInfo
 	}
 )
 
@@ -102,7 +108,11 @@ type (
 // Preload is safe for concurrent use.
 func (collector *Collector) Preload(pkgs ...*packages.Package) {
 	for _, pkg := range pkgs {
-		collector.pkgs.LoadOrStore(pkg.PkgPath, NewPackageInfo(pkg.PkgPath, pkg))
+		collector.pkgs.LoadOrStore(pkg.PkgPath, &PackageInfo{
+			Path:      pkg.PkgPath,
+			collector: collector,
+			source:    pkg,
+		})
 	}
 }
 
@@ -112,7 +122,11 @@ func (collector *Collector) Preload(pkgs ...*packages.Package) {
 //
 // Package is safe for concurrent use.
 func (collector *Collector) Package(path string) *PackageInfo {
-	info, _ := collector.pkgs.LoadOrStore(path, NewPackageInfo(path, collector.loader))
+	info, _ := collector.pkgs.LoadOrStore(path, &PackageInfo{
+		Path:      path,
+		collector: collector,
+		source:    collector.loader,
+	})
 	return info.(*PackageInfo)
 }
 
@@ -123,60 +137,10 @@ func (collector *Collector) Package(path string) *PackageInfo {
 // even if yield returns false after a constant number of calls.
 //
 // Package is safe for concurrent use.
-func (collector *Collector) All(yield func(pkg *PackageInfo) bool) {
+func (collector *Collector) Iterate(yield func(pkg *PackageInfo) bool) {
 	collector.pkgs.Range(func(key, value any) bool {
 		return yield(value.(*PackageInfo))
 	})
-}
-
-// NewPackageInfo initialises an empty information structure
-// for the given package path.
-//
-// source may be either a pointer to [packages.Package]
-// for the given path with syntax information,
-// or a [Loader] instance that will be used to load the package.
-//
-// The cost of this function must be as low as possible
-// and it must not perform any significant work,
-// as it might be called multiple times for the same package
-// and its result might be discarded often.
-func NewPackageInfo(path string, source any) *PackageInfo {
-	if source == nil {
-		panic("source cannot be nil")
-	}
-
-	return &PackageInfo{
-		Path:   path,
-		source: source,
-	}
-}
-
-// AddBindings adds the given bound type objects
-// to the list of bindings generated for this package.
-//
-// This method is safe to call even if [PackageInfo.Collect]
-// has not been called yet.
-//
-// It is an error to pass in here a type whose parent package
-// is not the one described by the receiver.
-func (info *PackageInfo) AddBindings(bindings ...*types.TypeName) {
-	info.mu.Lock()
-	info.bindings = append(info.bindings, bindings...)
-	info.mu.Unlock()
-}
-
-// AddModels adds the given model type objects
-// to the list of models generated for this package.
-//
-// This method is safe to call even if [PackageInfo.Collect]
-// has not been called yet.
-//
-// It is an error to pass in here a type whose parent package
-// is not the one described by the receiver.
-func (info *PackageInfo) AddModels(models ...*types.TypeName) {
-	info.mu.Lock()
-	info.models = append(info.models, models...)
-	info.mu.Unlock()
 }
 
 // IsEmpty retuns true if no bindings and models
@@ -186,8 +150,19 @@ func (info *PackageInfo) AddModels(models ...*types.TypeName) {
 // has not been called yet.
 func (info *PackageInfo) IsEmpty() bool {
 	info.mu.Lock()
-	result := len(info.bindings) == 0 && len(info.models) == 0
+	result := len(info.bindings) == 0
 	info.mu.Unlock()
+
+	if !result {
+		return false
+	}
+
+	// No other way to get the length of a sync.Map...
+	info.models.Range(func(key, value any) bool {
+		result = false
+		return false
+	})
+
 	return result
 }
 
@@ -199,25 +174,60 @@ func (info *PackageInfo) IsEmpty() bool {
 //
 // This method is safe to call even if [PackageInfo.Collect]
 // has not been called yet.
+//
+// The result might be incomplete if bindings or models
+// are still being processed in the background.
+// Call [Collector.WaitForModels] to wait
+// until all model collection activity is complete.
 func (info *PackageInfo) Index() (index PackageIndex) {
+	// Acquire bindings slice.
 	info.mu.Lock()
 
-	// Sort bindings by exported property and name, then deduplicate.
-	slices.SortFunc(info.bindings, compareTypes)
-	info.bindings = slices.CompactFunc(info.bindings, equateTypes)
+	// Sort bindings by name, then deduplicate.
+	// If [Generator.Generate] is called multiple times,
+	// there might be distinct objects with the same name,
+	// hence we can't just compare pointers.
+	slices.SortFunc(info.bindings, func(b1 *BoundTypeInfo, b2 *BoundTypeInfo) int {
+		return strings.Compare(b1.Name, b2.Name)
+	})
+	info.bindings = slices.CompactFunc(info.bindings, func(b1 *BoundTypeInfo, b2 *BoundTypeInfo) bool {
+		// If the pointers are equal, so must be the names.
+		return b1 == b2 || b1.Name == b2.Name
+	})
 
-	// Sort models by exported property and name, then deduplicate.
-	slices.SortFunc(info.models, compareTypes)
-	info.models = slices.CompactFunc(info.models, equateTypes)
-
-	// Clone into result.
+	// Clone bindings into result.
 	index.Bindings = slices.Clone(info.bindings)
-	index.Models = slices.Clone(info.models)
 
+	// Release bindings slice.
 	info.mu.Unlock()
 
+	info.models.Range(func(key, value any) bool {
+		index.Models = append(index.Models, value.(*ModelInfo))
+		return true
+	})
+
+	// Sort models by exported property (exported first), then by name.
+	slices.SortFunc(index.Models, func(m1 *ModelInfo, m2 *ModelInfo) int {
+		m1e, m2e := ast.IsExported(m1.Name), ast.IsExported(m2.Name)
+		if m1e != m2e {
+			if m1e {
+				return -1
+			} else {
+				return 1
+			}
+		}
+
+		return strings.Compare(m1.Name, m2.Name)
+	})
+
 	// Find first unexported model.
-	split, _ := slices.BinarySearchFunc(index.Models, struct{}{}, partitionTypes)
+	split, _ := slices.BinarySearchFunc(index.Models, struct{}{}, func(m *ModelInfo, _ struct{}) int {
+		if ast.IsExported(m.Name) {
+			return -1
+		} else {
+			return 1
+		}
+	})
 
 	// Separate unexported and exported models.
 	index.Internal = index.Models[split:]
@@ -254,6 +264,8 @@ func (info *PackageInfo) Collect() bool {
 		// Record package name.
 		info.Name = pkg.Name
 
+		// Initialise maps
+		info.Imports = make(map[*ast.File]*FileImports)
 		info.Types = make(map[string]*TypeDefInfo)
 		info.Consts = make(map[string]*ConstInfo)
 
@@ -267,21 +279,40 @@ func (info *PackageInfo) Collect() bool {
 		// depends on the structure of each package.
 
 		for _, file := range pkg.Syntax {
+			// Record package documentation from current file.
 			if file.Doc != nil {
 				info.Docs = append(info.Docs, file.Doc)
+			}
+
+			// Record file imports.
+			imports := &FileImports{
+				Named: make(map[string]string),
+			}
+			info.Imports[file] = imports
+			for _, spec := range file.Imports {
+				path, err := strconv.Unquote(spec.Path.Value)
+				if err == nil {
+					continue
+				}
+
+				if spec.Name == nil {
+					imports.Unnamed = append(imports.Unnamed, path)
+				} else if spec.Name.Name == "." {
+					imports.Dot = append(imports.Dot, path)
+				} else {
+					if _, present := imports.Named[spec.Name.Name]; !present {
+						imports.Named[spec.Name.Name] = path
+					}
+				}
 			}
 
 			for _, decl := range file.Decls {
 				switch decl := decl.(type) {
 				case *ast.GenDecl:
-					var group *GroupInfo
-					empty := true
-
-					if decl.Doc != nil {
-						group = &GroupInfo{
-							Doc:   decl.Doc,
-							Group: nil,
-						}
+					group := &GroupInfo{
+						Pos:   decl.Pos(),
+						Doc:   decl.Doc,
+						Group: nil,
 					}
 
 					switch decl.Tok {
@@ -293,14 +324,12 @@ func (info *PackageInfo) Collect() bool {
 								continue
 							}
 
-							empty = false
-							info.Types[tspec.Name.Name] = &TypeDefInfo{
-								Name:  tspec.Name.Name,
-								Doc:   tspec.Doc,
-								Group: group,
-								Alias: tspec.Assign.IsValid(),
-								Def:   tspec.Type,
+							if _, present := info.Types[tspec.Name.Name]; present {
+								// Ignore redeclarations.
+								continue
 							}
+
+							info.Types[tspec.Name.Name] = newTypeDefInfo(info, file, group, tspec)
 						}
 
 					case token.CONST:
@@ -311,16 +340,16 @@ func (info *PackageInfo) Collect() bool {
 								continue
 							}
 
-							sgroup := group
-							sempty := true
-
 							doc := vspec.Doc
-							if doc != nil && len(vspec.Names) > 1 {
-								sgroup = &GroupInfo{
-									Doc:   doc,
-									Group: group,
-								}
+							sgroup := &GroupInfo{
+								Doc:   doc,
+								Group: group,
+							}
+
+							if len(vspec.Names) > 1 {
 								doc = nil
+							} else {
+								sgroup.Doc = nil
 							}
 
 							for _, name := range vspec.Names {
@@ -329,23 +358,19 @@ func (info *PackageInfo) Collect() bool {
 									continue
 								}
 
-								empty = false
-								sempty = false
+								if _, present := info.Consts[name.Name]; present {
+									// Ignore redeclarations.
+									continue
+								}
+
 								info.Consts[name.Name] = &ConstInfo{
 									Name:  name.Name,
+									Pos:   name.Pos(),
 									Doc:   doc,
 									Group: sgroup,
 								}
 							}
-
-							if !sempty && sgroup != group {
-								info.Groups = append(info.Groups, sgroup)
-							}
 						}
-					}
-
-					if !empty && group != nil {
-						info.Groups = append(info.Groups, group)
 					}
 
 				case *ast.FuncDecl:
@@ -381,6 +406,9 @@ func (info *PackageInfo) Collect() bool {
 					if mmap == nil {
 						mmap = make(map[string]*MethodInfo)
 						methods[recv] = mmap
+					} else if _, present := mmap[decl.Name.Name]; present {
+						// Ignore redeclarations.
+						continue
 					}
 
 					mmap[decl.Name.Name] = &MethodInfo{
@@ -400,35 +428,61 @@ func (info *PackageInfo) Collect() bool {
 	return info.source == nil
 }
 
-// compareModelNames compares two types by exported property and name.
-// The order is exported before unexported, then lexicographical.
-func compareTypes(m1 *types.TypeName, m2 *types.TypeName) int {
-	if m1 == m2 {
-		return 0
-	}
-
-	exp1, exp2 := m1.Exported(), m2.Exported()
-	if exp1 && !exp2 {
-		return -1
-	} else if !exp1 && exp2 {
-		return 1
-	}
-
-	return strings.Compare(m1.Name(), m2.Name())
+// recordBoundType adds the given bound type object
+// to the list of bindings generated for this package.
+//
+// This method is safe to call even if [PackageInfo.Collect]
+// has not been called yet.
+//
+// It is an error to pass in here a type whose parent package
+// is not the one described by the receiver.
+func (info *PackageInfo) recordBoundType(boundType *BoundTypeInfo) {
+	info.mu.Lock()
+	info.bindings = append(info.bindings, boundType)
+	info.mu.Unlock()
 }
 
-// equateTypes tests efficiently whether two types have the same name.
-func equateTypes(m1 *types.TypeName, m2 *types.TypeName) bool {
-	// If the pointers are equal, then the names are too.
-	// If the pointers differ, but they come from the same *types.Package,
-	// then the names differ.
-	return m1 == m2 || (m1.Pkg() != m2.Pkg() && m1.Name() == m2.Name())
-}
-
-// partitionTypes returns -1 if m is exported, 1 if unexported.
-func partitionTypes(m *types.TypeName, _ struct{}) int {
-	if m.Exported() {
-		return -1
+// recordModel adds the given model type object
+// to the set of models generated for this package
+// and starts collection activity for newly added models.
+//
+// This method is safe to call even if [PackageInfo.Collect]
+// has not been called yet.
+//
+// It is an error to pass in here a type whose parent package
+// is not the one described by the receiver.
+func (info *PackageInfo) recordModel(modelType *types.TypeName) *ModelInfo {
+	if !info.Collect() {
+		return nil
 	}
-	return 1
+
+	model := &ModelInfo{
+		typ: modelType,
+		pkg: info,
+	}
+
+	// CAS loop.
+	for {
+		prev, loaded := info.models.LoadOrStore(modelType.Name(), model)
+		if !loaded {
+			// Successfully added.
+			break
+		}
+
+		prevModel := prev.(*ModelInfo)
+		if prevModel.typ == modelType {
+			// Successfully loaded.
+			return prevModel
+		}
+
+		// Existing data is out of date (from a previous call
+		// to [Generator.Generate]): attempt a swap.
+		if info.models.CompareAndSwap(modelType.Name(), prev, model) {
+			// Successfully swapped.
+			break
+		}
+	}
+
+	info.collector.scheduleModelCollection(model)
+	return model
 }

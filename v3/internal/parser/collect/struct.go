@@ -18,7 +18,7 @@ type (
 	// upon calling [StructInfo.Collect] for the first time.
 	//
 	// Read accesses to the field list are only safe
-	// if a call to [StructInfo.Collect] has completed before the access,
+	// if a call to [StructInfo.Collect] has been completed before the access,
 	// for example by calling it in the accessing goroutine
 	// or before spawning the accessing goroutine.
 	StructInfo struct {
@@ -31,20 +31,27 @@ type (
 
 	// FieldInfo represents a single field found in a struct.
 	FieldInfo struct {
-		Field    *types.Var
 		Name     string
 		Type     types.Type
 		Optional bool
 		Quoted   bool
+
+		// Parent is the embedded named type (if any) this field came from.
+		Parent *types.TypeName
+		Field  *types.Var
 	}
 )
 
-// Package retrieves the the unique [StructInfo] instance
+// Struct retrieves the the unique [StructInfo] instance
 // associated to the given type within a Collector.
 // If none is present, a new one is initialised.
 //
 // Struct is safe for concurrent use.
 func (collector *Collector) Struct(typ *types.Struct) *StructInfo {
+	if typ == nil {
+		panic("typ cannot be nil")
+	}
+
 	collector.mu.Lock()
 	if info := collector.structs.At(typ); info != nil {
 		collector.mu.Unlock()
@@ -98,7 +105,13 @@ func (info *StructInfo) Collect() {
 		// Set of visited types to avoid duplicating work.
 		visited := make(map[*StructInfo]bool)
 
-		next[0].Type = info.typ
+		nextCount[info]++
+		next[0] = extField{
+			FieldInfo: &FieldInfo{
+				Type: info.typ,
+			},
+			info: info,
+		}
 
 		for len(next) > 0 {
 			current, next = next, current[:0]
@@ -116,19 +129,33 @@ func (info *StructInfo) Collect() {
 				// Second, reusing other structs _after_ flattening
 				// may lead to incorrect results for subtle reasons.
 
+				// Retrieve named type of embedded field, if any.
+				var parent *types.TypeName
+				switch t := embedded.Type.(type) {
+				case *types.Alias:
+					parent = t.Obj()
+				case *types.Named:
+					parent = t.Obj()
+				}
+
 				// Scan embedded type for fields to include.
-				estruct := embedded.Type.(*types.Struct)
+				estruct := embedded.Type.Underlying().(*types.Struct)
+
 				for i := range estruct.NumFields() {
 					field := estruct.Field(i)
 
-					// If the underlying type is a struct, extract it.
-					var fstruct *types.Struct
-					{
-						ftype := types.Unalias(field.Type())
-						if ptr, ok := ftype.(*types.Pointer); ok {
-							ftype = types.Unalias(ptr.Elem())
-						}
+					// Retrieve type of field, following aliases conservatively
+					// and unwrapping exactly one pointer.
+					ftype := field.Type()
+					if ptr, ok := types.Unalias(ftype).(*types.Pointer); ok {
+						ftype = ptr.Elem()
+					}
 
+					// Detect struct alias and keep it.
+					fstruct, _ := types.Unalias(ftype).(*types.Struct)
+					if fstruct == nil {
+						// Not a struct alias, follow alias chain.
+						ftype = types.Unalias(ftype)
 						fstruct, _ = ftype.Underlying().(*types.Struct)
 					}
 
@@ -167,11 +194,13 @@ func (info *StructInfo) Collect() {
 
 						finfo := extField{
 							FieldInfo: &FieldInfo{
-								Field:    field,
 								Name:     name,
 								Type:     field.Type(),
 								Optional: optional,
 								Quoted:   quoted,
+
+								Parent: parent,
+								Field:  field,
 							},
 							nameFromTag: name != "",
 							index:       index,
@@ -202,7 +231,7 @@ func (info *StructInfo) Collect() {
 					if nextCount[fsinfo] == 1 {
 						next = append(next, extField{
 							FieldInfo: &FieldInfo{
-								Type: fstruct,
+								Type: ftype,
 							},
 							index: index,
 							info:  fsinfo,

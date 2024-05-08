@@ -2,6 +2,8 @@ package parser
 
 import (
 	"path/filepath"
+	"slices"
+	"strings"
 
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/parser/collect"
@@ -27,9 +29,30 @@ func (generator *Generator) generateIndex(index collect.PackageIndex) {
 	}
 }
 
-// generateGlobalIndex generates a global index file from the given import map.
-func (generator *Generator) generateGlobalIndex(imports *collect.ImportMap) {
+// generateGlobalIndex generates a global index file from the given import map,
+// as well as shortcut files for each package named by the input patterns.
+func (generator *Generator) generateGlobalIndex(imports []*collect.PackageInfo, initial map[string]bool) {
 	defer generator.wg.Done()
+
+	// Sort imported packages by path
+	// to ensure name collisions are resolved deterministically.
+	slices.SortFunc(imports, func(p1 *collect.PackageInfo, p2 *collect.PackageInfo) int {
+		return strings.Compare(p1.Path, p2.Path)
+	})
+
+	// Initialise import map with fake root package.
+	importMap := collect.NewImportMap(generator.collector.Package(""))
+	for _, pkg := range imports {
+		importMap.Add(pkg)
+	}
+
+	// Schedule shortcut generation.
+	for _, info := range importMap.External {
+		if initial[info.RelPath[2:]] {
+			generator.wg.Add(1)
+			go generator.generateShortcut(info)
+		}
+	}
 
 	file, err := generator.creator.Create(filepath.Join(generator.renderer.IndexFile()))
 	if err != nil {
@@ -39,7 +62,7 @@ func (generator *Generator) generateGlobalIndex(imports *collect.ImportMap) {
 	}
 	defer file.Close()
 
-	err = generator.renderer.GlobalIndex(file, imports)
+	err = generator.renderer.GlobalIndex(file, importMap)
 	if err != nil {
 		pterm.Error.Println(err)
 		pterm.Error.Printfln("global index generation failed")

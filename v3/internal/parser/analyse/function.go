@@ -409,7 +409,7 @@ func (analyser *Analyser) processFunc(pkgi int, pos token.Pos, fn *types.Func, p
 			analyser.pkgs[pkgi].Fset.Position(pos),
 		)
 		return
-	} else if fn.Pkg().Path() == "unsafe" {
+	} else if fn.Pkg() == types.Unsafe {
 		// Warn about unsupported use of unsafe features and stop.
 		pterm.Warning.Printfln(
 			"%s: use of unsafe features to provide bindings is not supported",

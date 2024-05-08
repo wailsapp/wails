@@ -32,14 +32,14 @@ type Collector struct {
 	// structs maps struct types to their [StructInfo].
 	structs typeutil.Map
 
+	// wg is used to wait until concurrent model collection is complete.
+	wg sync.WaitGroup
+
 	// the omonymous package-level functions wrapped by sync.OnceFunc
 	complexWarning func()
 	chanWarning    func()
 	funcWarning    func()
 	genericWarning func()
-
-	// wg is used to wait until concurrent model collection is complete.
-	wg sync.WaitGroup
 }
 
 // NewCollector initialises a new Collector instance.

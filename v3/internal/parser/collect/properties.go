@@ -43,15 +43,6 @@ func MaybeTextMarshaler(typ types.Type) bool {
 	return IsTextMarshaler(typ)
 }
 
-// AlwaysTextMarshaler tests whether the given type implements
-// the encoding.TextMarshaler interface for all receiver forms.
-func AlwaysTextMarshaler(typ types.Type) bool {
-	if ptr, ok := types.Unalias(typ).(*types.Pointer); ok {
-		typ = ptr.Elem()
-	}
-	return types.Implements(typ, ifaceTextMarshaler)
-}
-
 // IsJSONMarshaler tests whether the given type implements
 // the json.Marshaler interface.
 func IsJSONMarshaler(typ types.Type) bool {
@@ -68,9 +59,9 @@ func MaybeJSONMarshaler(typ types.Type) bool {
 }
 
 // IsMapKey returns true if the given type
-// is acceptable as a map key by encoding/json.
+// is accepted as a map key by encoding/json.
 func IsMapKey(typ types.Type) bool {
-	if basic, ok := types.Unalias(typ).(*types.Basic); ok {
+	if basic, ok := typ.Underlying().(*types.Basic); ok {
 		return basic.Info()&(types.IsInteger|types.IsString) != 0
 	}
 
@@ -79,38 +70,8 @@ func IsMapKey(typ types.Type) bool {
 	return IsTextMarshaler(typ)
 }
 
-// IsClass returns true if the given type (or element type for pointers)
-// will be rendered as a JS/TS model class (or interface).
-func IsClass(typ types.Type) bool {
-	if ptr, _ := typ.(*types.Pointer); ptr != nil {
-		// Unwrap at most one pointer.
-		// NOTE: do not unalias typ before testing:
-		// aliases whose underlying type is a pointer
-		// are not rendered as classes.
-		typ = ptr.Elem()
-	}
-
-	// Follow alias chain.
-	typ = types.Unalias(typ)
-
-	if _, isNamed := typ.(*types.Named); !isNamed {
-		// Not a model type.
-		return false
-	}
-
-	// JSONMarshalers can only be rendered as any.
-	// TextMarshalers are rendered as strings if they are not JSONMarshalers.
-	if MaybeJSONMarshaler(typ) || MaybeTextMarshaler(typ) {
-		return false
-	}
-
-	// Struct types without custom marshaling are rendered as classes.
-	_, isStruct := typ.Underlying().(*types.Struct)
-	return isStruct
-}
-
 // IsString returns true if the given type (or element type for pointers)
-// will be rendered as an alias for the JS string type.
+// will be rendered as an alias for the TS string type.
 func IsString(typ types.Type) bool {
 	if ptr, ok := typ.(*types.Pointer); ok {
 		// Unwrap at most one pointer.
@@ -120,9 +81,15 @@ func IsString(typ types.Type) bool {
 		typ = ptr.Elem()
 	}
 
-	switch typ.(type) {
-	case *types.Alias, *types.Named:
-		// Aliases and named types might be rendered as string aliases.
+	switch t := typ.(type) {
+	case *types.Alias:
+		// Aliases might be rendered as string aliases.
+	case *types.Named:
+		// Named types might be rendered as string aliases
+		// unless they're generic.
+		if t.TypeParams() != nil {
+			return false
+		}
 	default:
 		// Not a model type.
 		return false
@@ -137,6 +104,62 @@ func IsString(typ types.Type) bool {
 	}
 
 	// JSONMarshalers can only be rendered as any.
-	// TextMarshalers are rendered as strings if they are not JSONMarshalers.
-	return !MaybeJSONMarshaler(typ) && MaybeTextMarshaler(typ)
+	// TextMarshalers that aren't JSONMarshalers render as strings.
+	if MaybeJSONMarshaler(typ) {
+		return false
+	} else if MaybeTextMarshaler(typ) {
+		return true
+	}
+
+	// Named types whose underlying type is a string are rendered as strings.
+	basic, ok := typ.Underlying().(*types.Basic)
+	return ok && basic.Info()&types.IsString != 0
+}
+
+// IsClass returns true if the given type will be rendered
+// as a JS/TS model class (or interface).
+func IsClass(typ types.Type) bool {
+	// Follow alias chain.
+	typ = types.Unalias(typ)
+
+	if named, isNamed := typ.(*types.Named); !isNamed || named.TypeParams() != nil {
+		// Not a model type, or generic.
+		return false
+	}
+
+	// Struct types without custom marshaling are rendered as classes.
+	_, isStruct := typ.Underlying().(*types.Struct)
+	return isStruct && !MaybeJSONMarshaler(typ) && !MaybeTextMarshaler(typ)
+}
+
+// IsAny returns true if the given type will be rendered as a TS any type.
+func IsAny(typ types.Type) bool {
+	// Follow alias chain.
+	typ = types.Unalias(typ)
+
+	if MaybeJSONMarshaler(typ) {
+		return true
+	}
+
+	if MaybeTextMarshaler(typ) {
+		return false
+	}
+
+	if named, ok := typ.(*types.Named); ok {
+		if named.TypeParams() != nil {
+			// Generic types are not supported yet.
+			return true
+		}
+	}
+
+	// Retrieve underlying type
+	switch t := typ.Underlying().(type) {
+	case *types.Basic:
+		// Complex types are not supported.
+		return t.Info()&types.IsComplex != 0
+	case *types.Chan, *types.Signature, *types.Interface:
+		return true
+	}
+
+	return false
 }

@@ -2,6 +2,7 @@ package collect
 
 import (
 	"go/types"
+	"maps"
 	"path"
 	"strings"
 
@@ -28,13 +29,14 @@ type (
 		// keyed by package path.
 		External map[string]ImportInfo
 
+		// counters holds the occurence count for each package name in External.
 		counters map[string]int
 	}
 
 	// ImportInfo records information about a single import.
 	ImportInfo struct {
 		Name    string
-		Index   int // Identically named imports always have distinct indexes.
+		Index   int // Identically named imports always get distinct indices.
 		RelPath string
 	}
 )
@@ -43,8 +45,36 @@ type (
 func NewImportMap(importer *PackageInfo) *ImportMap {
 	return &ImportMap{
 		Self:     importer.Path,
+		Models:   make(map[string]bool),
+		Internal: make(map[string]bool),
 		External: make(map[string]ImportInfo),
 		counters: make(map[string]int),
+	}
+}
+
+// Merge merges the given import map into the receiver.
+// The importing package must be the same.
+func (imports *ImportMap) Merge(other *ImportMap) {
+	if other.Self != imports.Self {
+		panic("cannot merge import maps with different importing package")
+	}
+
+	maps.Copy(imports.Models, other.Models)
+	maps.Copy(imports.Internal, other.Internal)
+
+	for path, info := range other.External {
+		if _, ok := imports.External[path]; ok {
+			continue
+		}
+
+		counter := imports.counters[info.Name]
+		imports.counters[info.Name] = counter + 1
+
+		imports.External[path] = ImportInfo{
+			Name:    info.Name,
+			Index:   counter,
+			RelPath: info.RelPath,
+		}
 	}
 }
 
@@ -82,7 +112,8 @@ func (imports *ImportMap) Add(pkg *PackageInfo) {
 // AddType adds all dependencies of the given type to the import map
 // and marks all referenced named types as models.
 //
-// Add DOES NOT support unsynchronised concurrent calls.
+// Add does not support unsynchronised concurrent calls
+// on the same receiver.
 func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 	for { // Avoid recursion where possible.
 		switch t := typ.(type) {
@@ -95,7 +126,7 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 
 		case *types.Alias:
 			if t.Obj().Pkg() == nil {
-				// Universe type
+				// Ignore universe type.
 				return
 			}
 
@@ -109,9 +140,17 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 			}
 
 			pkg := collector.Package(t.Obj().Pkg().Path())
-			pkg.AddModels(t.Obj())
+			pkg.recordModel(t.Obj())
 			imports.Add(pkg)
-			return
+
+			if IsClass(typ) {
+				return
+			}
+
+			// If alias does not map to a class type,
+			// the aliased type may be needed during
+			// JS value creation and initialisation.
+			typ = types.Unalias(typ)
 
 		case *types.Array:
 			typ = t.Elem()
@@ -138,13 +177,7 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 
 		case *types.Named:
 			if t.Obj().Pkg() == nil {
-				// Universe type
-				return
-			}
-
-			if t.TypeParams() != nil {
-				// Warn about generic types.
-				collector.genericWarning()
+				// Ignore universe type.
 				return
 			}
 
@@ -158,9 +191,16 @@ func (imports *ImportMap) AddType(typ types.Type, collector *Collector) {
 			}
 
 			pkg := collector.Package(t.Obj().Pkg().Path())
-			pkg.AddModels(t.Obj())
+			pkg.recordModel(t.Obj())
 			imports.Add(pkg)
-			return
+
+			if IsClass(typ) || IsString(typ) || IsAny(typ) {
+				return
+			}
+
+			// If named type does not map to a class, string or unknown type,
+			// its underlying type may be needed during JS value creation.
+			typ = t.Underlying()
 
 		case *types.Pointer:
 			typ = t.Elem()

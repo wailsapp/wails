@@ -11,8 +11,8 @@ import (
 // RenderType renders a Go type to its TypeScript representation,
 // using the given import map to resolve dependencies.
 //
-// RenderType's behaviour is undefined if imports.AddType has not been
-// called for the rendered type.
+// RenderType's output may be incorrect
+// if imports.AddType has not been called for the given type.
 func RenderType(typ types.Type, imports *collect.ImportMap, collector *collect.Collector) string {
 	result, _ := renderType(typ, imports, collector, false)
 	return result
@@ -25,8 +25,21 @@ func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.C
 	switch t := typ.(type) {
 	case *types.Alias:
 		if t.Obj().Pkg() == nil {
-			// Builtin alias, render underlying type
-			return renderType(t.Underlying(), imports, collector, false)
+			// Builtin alias: render underlying type.
+			return renderType(t.Underlying(), imports, collector, quoted)
+		}
+
+		if quoted {
+			if _, isBasic := t.Underlying().(*types.Basic); isBasic {
+				switch u := types.Unalias(t).(type) {
+				case *types.Basic:
+					// Quoted mode for alias of basic type: render underlying type.
+					return renderBasicType(u, quoted), false
+				case *types.Named:
+					// Quoted mode for alias of named type: delegate.
+					return renderType(u, imports, collector, quoted)
+				}
+			}
 		}
 
 		if t.Obj().Pkg().Path() == imports.Self {
@@ -51,13 +64,15 @@ func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.C
 
 	case *types.Named:
 		if t.Obj().Pkg() == nil {
-			// Builtin named type, render underlying type
-			return renderType(t.Underlying(), imports, collector, false)
+			// Builtin named type: render underlying type.
+			return renderType(t.Underlying(), imports, collector, quoted)
 		}
 
-		if t.TypeParams() != nil {
-			// We do not support generic types yet.
-			break
+		if quoted {
+			if basic, ok := t.Underlying().(*types.Basic); ok && !collect.IsAny(typ) && !collect.MaybeTextMarshaler(typ) {
+				// Quoted mode for basic named type that is not a marshaler: render underlying type.
+				return renderBasicType(basic, quoted), false
+			}
 		}
 
 		if t.Obj().Pkg().Path() == imports.Self {
@@ -117,7 +132,11 @@ func renderBasicType(typ *types.Basic, quoted bool) string {
 	}
 
 	// Fall back to untyped mode.
-	return "any"
+	if quoted {
+		return "string"
+	} else {
+		return "any"
+	}
 }
 
 // renderMapType outputs the TypeScript representation of the given map type.
@@ -151,13 +170,14 @@ func renderMapType(typ *types.Map, imports *collect.ImportMap, collector *collec
 	return fmt.Sprintf("{ [_: %s]: %s }", key, elem)
 }
 
-// renderStructType outputs the typescript representation of the given struct type.
+// renderStructType outputs the TS representation
+// of the given anonymous struct type.
 func renderStructType(typ *types.Struct, imports *collect.ImportMap, collector *collect.Collector) string {
 	info := collector.Struct(typ)
 	info.Collect()
 
 	var builder strings.Builder
-	tmplStruct.Execute(&builder, &struct {
+	tmplStructType.Execute(&builder, &struct {
 		*collect.StructInfo
 		Imports   *collect.ImportMap
 		Collector *collect.Collector

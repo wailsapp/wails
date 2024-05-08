@@ -37,7 +37,7 @@ func NewRenderer(options *flags.GenerateBindingsOptions) *Renderer {
 		bindings: tmplBindings[tmplLanguage(options.TS)],
 		ext:      ext,
 
-		models:       tmplModels[tmplLanguage(options.TS)][tmplMode(options.UseInterfaces)],
+		models:       tmplModels[tmplLanguage(options.TS)],
 		modelsFile:   "models" + ext,
 		internalFile: "internal" + ext,
 
@@ -45,7 +45,7 @@ func NewRenderer(options *flags.GenerateBindingsOptions) *Renderer {
 	}
 }
 
-// Bindings renders bindings for the given bound type to w.
+// Bindings renders bindings code for the given bound type to w.
 func (renderer *Renderer) Bindings(w io.Writer, info *collect.BoundTypeInfo, collector *collect.Collector) error {
 	return renderer.bindings.Execute(w, &struct {
 		*collect.BoundTypeInfo
@@ -64,6 +64,23 @@ func (renderer *Renderer) Bindings(w io.Writer, info *collect.BoundTypeInfo, col
 // for the given struct name, with the appropriate extension.
 func (renderer *Renderer) BindingsFile(name string) string {
 	return name + renderer.ext
+}
+
+// Models renders models code for the given list of models.
+func (renderer *Renderer) Models(w io.Writer, imports *collect.ImportMap, models []*collect.ModelInfo, collector *collect.Collector) error {
+	return renderer.models.Execute(w, &struct {
+		Imports *collect.ImportMap
+		Models  []*collect.ModelInfo
+		*Renderer
+		*flags.GenerateBindingsOptions
+		Collector *collect.Collector
+	}{
+		imports,
+		models,
+		renderer,
+		renderer.options,
+		collector,
+	})
 }
 
 // ModelsFile returns the standard name of a models file

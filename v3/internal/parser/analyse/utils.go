@@ -8,7 +8,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/samber/lo"
 	"golang.org/x/tools/go/ast/astutil"
 	"golang.org/x/tools/go/packages"
 )
@@ -23,22 +22,6 @@ func (set Set[T]) Add(element T) (added bool) {
 	added = !set[element]
 	set[element] = true
 	return
-}
-
-// Union adds all elements from the argument to the receiver
-// and returns the number of newly added elements.
-func (set Set[T]) Union(other Set[T]) (added int) {
-	for el := range other {
-		if set.Add(el) {
-			added++
-		}
-	}
-	return
-}
-
-// Elements returns a slice containing all elements in the given set.
-func (set Set[T]) Elements() []T {
-	return lo.Keys(set)
 }
 
 // IsStdImportPath returns true if path has the shape of a Go standard import path,

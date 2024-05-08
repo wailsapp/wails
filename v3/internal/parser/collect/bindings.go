@@ -3,6 +3,9 @@ package collect
 import (
 	"go/types"
 	"strconv"
+	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/hash"
@@ -10,6 +13,8 @@ import (
 )
 
 type (
+	// BoundTypeInfo records all information that is required
+	// to render JS/TS code for a bound type.
 	BoundTypeInfo struct {
 		*TypeDefInfo
 		Imports *ImportMap
@@ -54,7 +59,7 @@ func (collector *Collector) BoundType(typ *types.TypeName) *BoundTypeInfo {
 	// Check type def information.
 	if info.TypeDefInfo == nil {
 		pterm.Error.Printfln(
-			"package %s: type %s not found; try cleaning the build cache (go clean -cache)",
+			"package %s: type %s not found; try clearing the build cache (go clean -cache)",
 			pkg.Path,
 			typ.Name(),
 		)
@@ -99,7 +104,7 @@ func (collector *Collector) BoundType(typ *types.TypeName) *BoundTypeInfo {
 
 	// Record generated bindings.
 	if len(info.Methods) > 0 {
-		pkg.AddBindings(typ)
+		pkg.recordBoundType(info)
 	}
 
 	return info
@@ -138,7 +143,7 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 	recvInfo := pkg.Types[recv.Name()]
 	if recvInfo == nil {
 		pterm.Error.Printfln(
-			"package %s: type %s not found; try cleaning the build cache (go clean -cache)",
+			"package %s: type %s not found; try clearing the build cache (go clean -cache)",
 			pkg.Path,
 			recv.Name(),
 		)
@@ -160,12 +165,49 @@ func (collector *Collector) BoundMethod(typ *types.TypeName, imports *ImportMap,
 	// Check method information.
 	if info.MethodInfo == nil {
 		pterm.Error.Printfln(
-			"package %s: method %s.%s not found; try cleaning the build cache (go clean -cache)",
+			"package %s: method %s.%s not found; try clearing the build cache (go clean -cache)",
 			pkg.Path,
 			recv.Name(),
 			method.Name(),
 		)
 		return nil
+	}
+
+	// Find ID alias directive.
+	if info.Doc != nil {
+		for _, comment := range info.Doc.List {
+			if strings.HasPrefix(comment.Text, "//wails:methodID") {
+				if next, _ := utf8.DecodeRuneInString(comment.Text[16:]); len(comment.Text) > 16 && !unicode.IsSpace(next) {
+					// Not a methodID directive.
+					continue
+				}
+
+				idString := strings.TrimSpace(comment.Text[16:])
+				idValue, err := strconv.ParseUint(idString, 10, 32)
+				if err != nil {
+					pterm.Warning.Printfln(
+						"package %s: method %s.%s: invalid value in `wails:methodID` directive: '%s'. Expected a valid uint32 value",
+						pkg.Path,
+						recv.Name(),
+						method.Name(),
+						idString,
+					)
+					continue
+				}
+
+				// Announce and record alias.
+				pterm.Info.Printfln(
+					"package %s: method %s.%s: default ID %s aliased as %d",
+					pkg.Path,
+					recv.Name(),
+					method.Name(),
+					info.ID,
+					idValue,
+				)
+				info.ID = strconv.FormatUint(idValue, 10)
+				break
+			}
+		}
 	}
 
 	// Collect parameters.

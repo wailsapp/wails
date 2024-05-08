@@ -20,5 +20,5 @@ func funcWarning() {
 // genericWarning warns about unsupported use of generics.
 // TODO: implement support for generics.
 func genericWarning() {
-	pterm.Warning.Println("generic types in models or bound method signatures are not supported yet")
+	pterm.Warning.Println("generic types in models or bound method signatures are not fully supported yet")
 }

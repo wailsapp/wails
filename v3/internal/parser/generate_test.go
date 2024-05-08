@@ -14,9 +14,10 @@ import (
 func ExampleGenerator() {
 	generator := NewGenerator(&flags.GenerateBindingsOptions{
 		UseBundledRuntime: true,
+		TS:                true,
 	}, FileCreatorFunc(dummyBufferCreator))
 
-	err := generator.Generate("github.com/wailsapp/wails/v3/internal/parser/testdata/function_single")
+	err := generator.Generate("github.com/wailsapp/wails/v3/internal/parser/testdata/complex_json")
 	if err != nil {
 		pterm.Error.Println(err)
 	}

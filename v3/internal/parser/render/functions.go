@@ -16,15 +16,20 @@ import (
 // tmplFunctions holds a map of utility functions
 // that should be available in every template.
 var tmplFunctions = template.FuncMap{
+	"isclass":  collect.IsClass,
 	"jsdoc":    jsdoc,
 	"jsid":     jsid,
 	"jsimport": jsimport,
 	"jsparam":  jsparam,
 	"jstype":   RenderType,
-	"jsqtype": func(typ types.Type, imports *collect.ImportMap, collector *collect.Collector, quoted bool) string {
+	"jstypeq": func(typ types.Type, imports *collect.ImportMap, collector *collect.Collector, quoted bool) string {
 		result, _ := renderType(typ, imports, collector, quoted)
 		return result
 	},
+	"jsvalue":   RenderValue,
+	"jsdefault": RenderDefault,
+	"jscreate":  RenderCreate,
+	"jscreated": renderConditionalCreate,
 }
 
 // jsimport formats an external import name
@@ -158,6 +163,7 @@ var reservedWords = []string{
 	"try",
 	"type",
 	"typeof",
+	"undefined",
 	"var",
 	"void",
 	"while",

@@ -131,11 +131,11 @@ func (generator *Generator) Generate(patterns ...string) error {
 	}
 
 	// A set to record which package path were selected by the input patterns.
-	initial := make(analyse.Set[string], len(pkgs))
+	initial := make(map[string]bool, len(pkgs))
 
 	// Report parsing/type-checking errors and record initial packages.
 	for _, pkg := range pkgs {
-		initial.Add(pkg.PkgPath)
+		initial[pkg.PkgPath] = true
 		for _, err := range pkg.Errors {
 			pterm.Warning.Println(err)
 		}
@@ -159,22 +159,19 @@ func (generator *Generator) Generate(patterns ...string) error {
 
 	// Wait until all bindings have been generated and all models collected.
 	generator.wg.Wait()
+	generator.collector.WaitForModels()
 
-	// Create an import map to record all packages
-	// that should be added to the global index
-	var globalImports *collect.ImportMap
-	if !generator.options.NoIndex {
-		globalImports = collect.NewImportMap(generator.collector.Package(""))
-	}
+	// Record all packages that should be added to the global index.
+	var globalImports []*collect.PackageInfo
 
 	// Schedule models and index generation for each package.
-	generator.collector.All(func(info *collect.PackageInfo) bool {
+	generator.collector.Iterate(func(info *collect.PackageInfo) bool {
 		if info.IsEmpty() {
 			return true
 		}
 
 		if !generator.options.NoIndex {
-			globalImports.Add(info)
+			globalImports = append(globalImports, info)
 		}
 
 		generator.wg.Add(1)
@@ -183,16 +180,9 @@ func (generator *Generator) Generate(patterns ...string) error {
 	})
 
 	// Generate global index and shortcuts.
-	if !generator.options.NoIndex && len(globalImports.External) > 0 {
+	if len(globalImports) > 0 {
 		generator.wg.Add(1)
-		go generator.generateGlobalIndex(globalImports)
-
-		for _, info := range globalImports.External {
-			if initial[info.RelPath[2:]] {
-				generator.wg.Add(1)
-				go generator.generateShortcut(info)
-			}
-		}
+		go generator.generateGlobalIndex(globalImports, initial)
 	}
 
 	// Wait until all models and indices have been generated.

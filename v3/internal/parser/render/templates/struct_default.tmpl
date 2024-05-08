@@ -1,0 +1,7 @@
+{{- $TS := .TS}}
+{{- $imports := .Imports}}
+{{- $collector := .Collector}}{
+{{- range $i, $field := .Fields}}{{if not .Optional}}
+    {{- if gt $i 0}}, {{end -}}
+    "{{js .Name}}": {{jsdefault .Type $imports $collector .Quoted $TS}}
+{{- end}}{{end -}} }{{print "" -}}
