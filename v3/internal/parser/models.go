@@ -48,7 +48,7 @@ func (generator *Generator) generateModels(info *collect.PackageInfo, models []*
 	}
 	defer file.Close()
 
-	err = generator.renderer.Models(file, imports, models, generator.collector)
+	err = generator.renderer.Models(file, imports, models)
 	if err != nil {
 		pterm.Error.Println(err)
 

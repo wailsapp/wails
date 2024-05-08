@@ -12,7 +12,8 @@ import (
 // Renderer holds the template set for a given configuration.
 // It provides methods for rendering various output modules.
 type Renderer struct {
-	options *flags.GenerateBindingsOptions
+	options   *flags.GenerateBindingsOptions
+	collector *collect.Collector
 
 	bindings *template.Template
 	ext      string
@@ -24,8 +25,9 @@ type Renderer struct {
 	indexFile string
 }
 
-// NewRenderer initialises a renderer for the given configuration.
-func NewRenderer(options *flags.GenerateBindingsOptions) *Renderer {
+// NewRenderer initialises a code renderer
+// for the given configuration and data collector.
+func NewRenderer(options *flags.GenerateBindingsOptions, collector *collect.Collector) *Renderer {
 	ext := ".js"
 	if options.TS {
 		ext = ".ts"
@@ -45,42 +47,10 @@ func NewRenderer(options *flags.GenerateBindingsOptions) *Renderer {
 	}
 }
 
-// Bindings renders bindings code for the given bound type to w.
-func (renderer *Renderer) Bindings(w io.Writer, info *collect.BoundTypeInfo, collector *collect.Collector) error {
-	return renderer.bindings.Execute(w, &struct {
-		*collect.BoundTypeInfo
-		*Renderer
-		*flags.GenerateBindingsOptions
-		Collector *collect.Collector
-	}{
-		info,
-		renderer,
-		renderer.options,
-		collector,
-	})
-}
-
 // BindingsFile returns the standard name of a bindings file
 // for the given struct name, with the appropriate extension.
 func (renderer *Renderer) BindingsFile(name string) string {
 	return name + renderer.ext
-}
-
-// Models renders models code for the given list of models.
-func (renderer *Renderer) Models(w io.Writer, imports *collect.ImportMap, models []*collect.ModelInfo, collector *collect.Collector) error {
-	return renderer.models.Execute(w, &struct {
-		Imports *collect.ImportMap
-		Models  []*collect.ModelInfo
-		*Renderer
-		*flags.GenerateBindingsOptions
-		Collector *collect.Collector
-	}{
-		imports,
-		models,
-		renderer,
-		renderer.options,
-		collector,
-	})
 }
 
 // ModelsFile returns the standard name of a models file
@@ -89,10 +59,56 @@ func (renderer *Renderer) ModelsFile() string {
 	return renderer.modelsFile
 }
 
-// ModelsFile returns the standard name of an internal model file
+// InternalFile returns the standard name of an internal model file
 // with the appropriate extension.
 func (renderer *Renderer) InternalFile() string {
 	return renderer.internalFile
+}
+
+// IndexFile returns the standard name of a package index file
+// with the appropriate extension.
+func (renderer *Renderer) IndexFile() string {
+	return renderer.indexFile
+}
+
+// ShortcutFile returns the standard name of an import shortcut file
+// with the appropriate extension.
+func (renderer *Renderer) ShortcutFile(info collect.ImportInfo) string {
+	if info.Index > 0 || info.Name == "index" {
+		return fmt.Sprintf("%s.%d%s", info.Name, info.Index, renderer.ext)
+	} else {
+		return info.Name + renderer.ext
+	}
+}
+
+// Bindings renders bindings code for the given bound type to w.
+func (renderer *Renderer) Bindings(w io.Writer, info *collect.BoundTypeInfo) error {
+	return renderer.bindings.Execute(w, &struct {
+		module
+		BoundType *collect.BoundTypeInfo
+	}{
+		module{
+			Renderer:                renderer,
+			GenerateBindingsOptions: renderer.options,
+			Imports:                 info.Imports,
+		},
+		info,
+	})
+}
+
+// Models renders models code for the given list of models.
+func (renderer *Renderer) Models(w io.Writer, imports *collect.ImportMap, models []*collect.ModelInfo) error {
+	return renderer.models.Execute(w, &struct {
+		module
+		Models []*collect.ModelInfo
+	}{
+		module{
+			Renderer:                renderer,
+			GenerateBindingsOptions: renderer.options,
+			Imports:                 imports,
+		},
+		models,
+	})
 }
 
 // Index renders the given package index to w.
@@ -106,12 +122,6 @@ func (renderer *Renderer) Index(w io.Writer, index *collect.PackageIndex) error 
 		renderer,
 		renderer.options,
 	})
-}
-
-// IndexFile returns the standard name of a package index file
-// with the appropriate extension.
-func (renderer *Renderer) IndexFile() string {
-	return renderer.indexFile
 }
 
 // GlobalIndex renders the given import map as a global package index to w.
@@ -138,14 +148,4 @@ func (renderer *Renderer) Shortcut(w io.Writer, info collect.ImportInfo) error {
 		renderer,
 		renderer.options,
 	})
-}
-
-// ShortcutFile returns the standard name of an import shortcut file
-// with the appropriate extension.
-func (renderer *Renderer) ShortcutFile(info collect.ImportInfo) string {
-	if info.Index > 0 || info.Name == "index" {
-		return fmt.Sprintf("%s.%d%s", info.Name, info.Index, renderer.ext)
-	} else {
-		return info.Name + renderer.ext
-	}
 }

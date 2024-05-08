@@ -4,29 +4,30 @@ import (
 	"fmt"
 	"go/types"
 	"strings"
+	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/parser/collect"
 )
 
-// RenderType renders a Go type to its TypeScript representation,
-// using the given import map to resolve dependencies.
+// JSType renders a Go type to its TypeScript representation,
+// using the receiver's import map to resolve dependencies.
 //
-// RenderType's output may be incorrect
-// if imports.AddType has not been called for the given type.
-func RenderType(typ types.Type, imports *collect.ImportMap, collector *collect.Collector) string {
-	result, _ := renderType(typ, imports, collector, false)
+// JSType's output may be incorrect if m.Imports.AddType
+// has not been called for the given type.
+func (m *module) JSType(typ types.Type) string {
+	result, _ := m.renderType(typ, false)
 	return result
 }
 
-// renderType provides the actual implementation of [RenderType].
+// renderType provides the actual implementation of [module.Type].
 // It returns the rendered type and a boolean indicating whether
 // the resulting expression describes a pointer type.
-func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.Collector, quoted bool) (result string, ptr bool) {
+func (m *module) renderType(typ types.Type, quoted bool) (result string, ptr bool) {
 	switch t := typ.(type) {
 	case *types.Alias:
 		if t.Obj().Pkg() == nil {
 			// Builtin alias: render underlying type.
-			return renderType(t.Underlying(), imports, collector, quoted)
+			return m.renderType(t.Underlying(), quoted)
 		}
 
 		if quoted {
@@ -34,18 +35,18 @@ func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.C
 				switch u := types.Unalias(t).(type) {
 				case *types.Basic:
 					// Quoted mode for alias of basic type: render underlying type.
-					return renderBasicType(u, quoted), false
+					return m.renderBasicType(u, quoted), false
 				case *types.Named:
 					// Quoted mode for alias of named type: delegate.
-					return renderType(u, imports, collector, quoted)
+					return m.renderType(u, quoted)
 				}
 			}
 		}
 
-		if t.Obj().Pkg().Path() == imports.Self {
+		if t.Obj().Pkg().Path() == m.Imports.Self {
 			return jsid(t.Obj().Name()), false
 		} else {
-			return fmt.Sprintf("%s.%s", jsimport(imports.External[t.Obj().Pkg().Path()]), jsid(t.Obj().Name())), false
+			return fmt.Sprintf("%s.%s", jsimport(m.Imports.External[t.Obj().Pkg().Path()]), jsid(t.Obj().Name())), false
 		}
 
 	case *types.Array:
@@ -54,7 +55,7 @@ func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.C
 			return "string", false
 		}
 
-		elem, ptr := renderType(t.Elem(), imports, collector, false)
+		elem, ptr := m.renderType(t.Elem(), false)
 		if ptr {
 			return fmt.Sprintf("(%s)[]", elem), false
 		} else {
@@ -62,32 +63,32 @@ func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.C
 		}
 
 	case *types.Basic:
-		return renderBasicType(t, quoted), false
+		return m.renderBasicType(t, quoted), false
 
 	case *types.Map:
-		return renderMapType(t, imports, collector), false
+		return m.renderMapType(t), false
 
 	case *types.Named:
 		if t.Obj().Pkg() == nil {
 			// Builtin named type: render underlying type.
-			return renderType(t.Underlying(), imports, collector, quoted)
+			return m.renderType(t.Underlying(), quoted)
 		}
 
 		if quoted {
 			if basic, ok := t.Underlying().(*types.Basic); ok && !collect.IsAny(typ) && !collect.MaybeTextMarshaler(typ) {
 				// Quoted mode for basic named type that is not a marshaler: render underlying type.
-				return renderBasicType(basic, quoted), false
+				return m.renderBasicType(basic, quoted), false
 			}
 		}
 
-		if t.Obj().Pkg().Path() == imports.Self {
+		if t.Obj().Pkg().Path() == m.Imports.Self {
 			return jsid(t.Obj().Name()), false
 		} else {
-			return fmt.Sprintf("%s.%s", jsimport(imports.External[t.Obj().Pkg().Path()]), jsid(t.Obj().Name())), false
+			return fmt.Sprintf("%s.%s", jsimport(m.Imports.External[t.Obj().Pkg().Path()]), jsid(t.Obj().Name())), false
 		}
 
 	case *types.Pointer:
-		elem, ptr := renderType(t.Elem(), imports, collector, false)
+		elem, ptr := m.renderType(t.Elem(), false)
 		if ptr {
 			return elem, true
 		} else {
@@ -100,7 +101,7 @@ func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.C
 			return "string", false
 		}
 
-		elem, ptr := renderType(t.Elem(), imports, collector, false)
+		elem, ptr := m.renderType(t.Elem(), false)
 		if ptr {
 			return fmt.Sprintf("(%s)[]", elem), false
 		} else {
@@ -108,7 +109,7 @@ func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.C
 		}
 
 	case *types.Struct:
-		return renderStructType(t, imports, collector), false
+		return m.renderStructType(t), false
 	}
 
 	// Fall back to untyped mode.
@@ -117,7 +118,7 @@ func renderType(typ types.Type, imports *collect.ImportMap, collector *collect.C
 
 // renderBasicType outputs the TypeScript representation
 // of the given basic type.
-func renderBasicType(typ *types.Basic, quoted bool) string {
+func (*module) renderBasicType(typ *types.Basic, quoted bool) string {
 	switch {
 	case typ.Info()&types.IsBoolean != 0:
 		if quoted {
@@ -150,30 +151,30 @@ func renderBasicType(typ *types.Basic, quoted bool) string {
 }
 
 // renderMapType outputs the TypeScript representation of the given map type.
-func renderMapType(typ *types.Map, imports *collect.ImportMap, collector *collect.Collector) string {
+func (m *module) renderMapType(typ *types.Map) string {
 	key := "string"
-	elem, _ := renderType(typ.Elem(), imports, collector, false)
+	elem, _ := m.renderType(typ.Elem(), false)
 
 	// Test whether we can upgrade key rendering.
 	switch k := typ.Key().(type) {
 	case *types.Basic:
 		if k.Info()&types.IsString == 0 && collect.IsMapKey(k) {
 			// Render non-string basic type in quoted mode.
-			key = renderBasicType(k, true)
+			key = m.renderBasicType(k, true)
 		}
 
 	case *types.Alias, *types.Named:
 		if collect.IsString(typ) {
 			// Named type is a string alias and therefore
 			// safe to use as a JS object key.
-			key, _ = renderType(k, imports, collector, false)
+			key, _ = m.renderType(k, false)
 		}
 
 	case *types.Pointer:
 		if collect.IsMapKey(typ) && collect.IsString(typ.Elem()) {
 			// Base type is a string alias and therefore
 			// safe to use as a JS object key.
-			key, _ = renderType(k.Elem(), imports, collector, false)
+			key, _ = m.renderType(k.Elem(), false)
 		}
 	}
 
@@ -182,18 +183,32 @@ func renderMapType(typ *types.Map, imports *collect.ImportMap, collector *collec
 
 // renderStructType outputs the TS representation
 // of the given anonymous struct type.
-func renderStructType(typ *types.Struct, imports *collect.ImportMap, collector *collect.Collector) string {
-	info := collector.Struct(typ)
+func (m *module) renderStructType(typ *types.Struct) string {
+	info := m.collector.Struct(typ)
 	info.Collect()
 
 	var builder strings.Builder
-	tmplStructType.Execute(&builder, &struct {
-		*collect.StructInfo
-		Imports   *collect.ImportMap
-		Collector *collect.Collector
-	}{
-		info, imports, collector,
-	})
+
+	builder.WriteRune('{')
+	for i, field := range info.Fields {
+		if i > 0 {
+			builder.WriteString(", ")
+		}
+
+		builder.WriteRune('"')
+		template.JSEscape(&builder, []byte(field.Name))
+		builder.WriteRune('"')
+
+		if field.Optional {
+			builder.WriteRune('?')
+		}
+
+		builder.WriteString(": ")
+
+		fieldType, _ := m.renderType(field.Type, field.Quoted)
+		builder.WriteString(fieldType)
+	}
+	builder.WriteRune('}')
 
 	return builder.String()
 }

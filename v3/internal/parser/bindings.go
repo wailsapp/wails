@@ -48,7 +48,7 @@ func (generator *Generator) generateBindings(typ *types.TypeName) {
 	defer file.Close()
 
 	// Render bound type.
-	err = generator.renderer.Bindings(file, info, generator.collector)
+	err = generator.renderer.Bindings(file, info)
 	if err != nil {
 		pterm.Error.Println(err)
 		return

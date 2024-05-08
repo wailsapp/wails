@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"go/types"
+	"math/big"
 	"slices"
 	"strconv"
 	"strings"
@@ -21,43 +21,7 @@ var tmplFunctions = template.FuncMap{
 	"jsid":     jsid,
 	"jsimport": jsimport,
 	"jsparam":  jsparam,
-	"jstype":   RenderType,
-	"jstypeq": func(typ types.Type, imports *collect.ImportMap, collector *collect.Collector, quoted bool) string {
-		result, _ := renderType(typ, imports, collector, quoted)
-		return result
-	},
-	"jsvalue":   RenderValue,
-	"jsdefault": RenderDefault,
-	"jscreate":  RenderCreate,
-	"jscreated": renderConditionalCreate,
-}
-
-// jsimport formats an external import name
-// by joining the name with its occurrence index.
-// Names are modified even when the index is 0
-// to avoid collisions with Go identifiers.
-func jsimport(info collect.ImportInfo) string {
-	return fmt.Sprintf("%s$%d", info.Name, info.Index)
-}
-
-// jsid escapes identifiers that match JS/TS reserved words
-// by prepending a dollar sign.
-func jsid(ident string) string {
-	if _, reserved := slices.BinarySearch(reservedWords, ident); reserved {
-		return "$" + ident
-	}
-	return ident
-}
-
-// jsparam renders the JS name of a parameter.
-// Blank parameters are replaced with a dollar sign followed by the given index.
-// Non-blank parameters are escaped by [jsid].
-func jsparam(index int, param *collect.ParamInfo) string {
-	if param.Blank {
-		return "$" + strconv.Itoa(index)
-	} else {
-		return jsid(param.Name)
-	}
+	"jsvalue":  jsvalue,
 }
 
 // jsdoc splits the given comment into lines and rewrites it as follows:
@@ -92,6 +56,59 @@ func jsdoc(comment string, indent string) string {
 	}
 
 	return builder.String()
+}
+
+// jsid escapes identifiers that match JS/TS reserved words
+// by prepending a dollar sign.
+func jsid(ident string) string {
+	if _, reserved := slices.BinarySearch(reservedWords, ident); reserved {
+		return "$" + ident
+	}
+	return ident
+}
+
+// jsimport formats an external import name
+// by joining the name with its occurrence index.
+// Names are modified even when the index is 0
+// to avoid collisions with Go identifiers.
+func jsimport(info collect.ImportInfo) string {
+	return fmt.Sprintf("%s$%d", info.Name, info.Index)
+}
+
+// jsparam renders the JS name of a parameter.
+// Blank parameters are replaced with a dollar sign followed by the given index.
+// Non-blank parameters are escaped by [jsid].
+func jsparam(index int, param *collect.ParamInfo) string {
+	if param.Blank {
+		return "$" + strconv.Itoa(index)
+	} else {
+		return jsid(param.Name)
+	}
+}
+
+// jsvalue renders a Go constant value to its Javascript representation.
+func jsvalue(value any) string {
+	switch v := value.(type) {
+	case bool:
+		if v {
+			return "true"
+		} else {
+			return "false"
+		}
+	case string:
+		return fmt.Sprintf(`"%s"`, template.JSEscapeString(v))
+	case int64:
+		return strconv.FormatInt(v, 10)
+	case *big.Int:
+		return v.String()
+	case *big.Float:
+		return v.Text('e', -1)
+	case *big.Rat:
+		return v.RatString()
+	}
+
+	// Fall back to undefined.
+	return "(void(0))"
 }
 
 func init() {

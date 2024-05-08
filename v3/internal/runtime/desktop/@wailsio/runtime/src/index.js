@@ -19,6 +19,7 @@ import * as Application from "./application";
 import * as Browser from "./browser";
 import * as Call from "./calls";
 import * as Clipboard from "./clipboard";
+import * as Create from "./create";
 import * as Dialogs from "./dialogs";
 import * as Events from "./events";
 import * as Flags from "./flags";
@@ -32,6 +33,7 @@ export {
     Browser,
     Call,
     Clipboard,
+    Create,
     Dialogs,
     Events,
     Flags,

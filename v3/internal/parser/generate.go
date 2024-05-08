@@ -122,7 +122,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 
 	// Initialise renderer.
 	if generator.renderer == nil {
-		generator.renderer = render.NewRenderer(generator.options)
+		generator.renderer = render.NewRenderer(generator.options, generator.collector)
 	}
 
 	// Load initial packages.

@@ -25,12 +25,3 @@ var tmplModels = map[tmplLanguage]*template.Template{
 var tmplIndex = template.Must(template.New("index.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/index.tmpl"))
 var tmplGlobalIndex = template.Must(template.New("global.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/global.tmpl"))
 var tmplShortcut = template.Must(template.New("shortcut.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/shortcut.tmpl"))
-
-var tmplStructType, tmplStructDefault, tmplStructCreate *template.Template
-
-func init() {
-	// Init struct templates here to break initialisation cycle.
-	tmplStructType = template.Must(template.New("struct_type.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/struct_type.tmpl"))
-	tmplStructDefault = template.Must(template.New("struct_default.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/struct_default.tmpl"))
-	tmplStructCreate = template.Must(template.New("struct_create.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/struct_create.tmpl"))
-}
