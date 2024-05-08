@@ -31,8 +31,7 @@ func (analyser *Analyser) processSelectorSink(pkgi int, selExpr *ast.SelectorExp
 	// Consume matching initial segment from path and continue.
 	for ; len(index) > 1; index = index[1:] {
 		if path.At(0).IsIndirection() {
-			// Allow one automatic pointer indirection
-			// for each field selection step.
+			// Allow one implicit pointer indirection before each field selection step.
 			path = path.Consume(1)
 		}
 
@@ -47,8 +46,7 @@ func (analyser *Analyser) processSelectorSink(pkgi int, selExpr *ast.SelectorExp
 	if sel.Kind() == types.FieldVal {
 		// Selector selects a struct field, consume last field index.
 		if path.At(0).IsIndirection() {
-			// Allow one automatic pointer indirection
-			// for each field selection step.
+			// Allow one implicit pointer indirection before each field selection step.
 			path = path.Consume(1)
 		}
 
@@ -60,24 +58,51 @@ func (analyser *Analyser) processSelectorSink(pkgi int, selExpr *ast.SelectorExp
 		path = path.Consume(1)
 	} else {
 		// Selector selects a concrete or abstract method.
-		if !path.HasRef() {
-			// Receiver path does not have reference semantics: stop here.
-			return
-		}
 
 		// Check receiver type.
 		recv := sel.Obj().(*types.Func).Type().(*types.Signature).Recv()
-		if recv != nil && types.IsInterface(recv.Type()) && path.At(0) != TypeAssertionStep {
-			// Selector selects an abstract method.
-			// Interface targets may occur in four situations:
-			//   - when resolving the type of a binding expression;
-			//   - when resolving an abstract method;
-			//   - when a concrete target has been assigned
-			//     to an interface variable or field;
-			//   - when a binding expression contains a type assertion.
-			// We only care about the last two cases,
-			// which are characterised by the presence
-			// of a type assertion on the path.
+		if recv != nil {
+			if types.IsInterface(recv.Type()) && path.At(0) != TypeAssertionStep {
+				// Selector selects an abstract method.
+				// Interface targets may occur in four situations:
+				//   - when resolving the type of a binding expression;
+				//   - when resolving an abstract method;
+				//   - when a concrete target has been assigned
+				//     to an interface variable or field;
+				//   - when a binding expression contains a type assertion.
+				// We only care about the last two cases,
+				// which are characterised by the presence
+				// of a type assertion on the path.
+				return
+			}
+
+			// Here we must handle a tedious but important case:
+			// Go may implicitly take the address
+			// of references to non-pointer types
+			// and pass it to methods with pointer receiver.
+			//
+			// When this happens, we need to inject
+			// an additional indirection step.
+			//
+			// We do not want to visit the type tree;
+			// instead we check whether the number of possible
+			// consecutive indirections from the receiver
+			// exceeds the number of indirections on the current path.
+
+			count := 0
+			ptr, ok := recv.Type().(*types.Pointer)
+			for ok {
+				if !path.At(count).IsIndirection() {
+					path = path.Prepend(WeakIndirectionStep)
+					break
+				}
+				count++
+				ptr, ok = ptr.Elem().Underlying().(*types.Pointer)
+			}
+		}
+
+		if !path.HasRef() {
+			// Receiver path does not have reference semantics: stop here.
 			return
 		}
 
@@ -193,26 +218,36 @@ func (analyser *Analyser) processSelectorSource(pkgi int, selExpr *ast.SelectorE
 	}
 
 	recv := sel.Recv()
-	if ptr, ok := recv.Underlying().(*types.Pointer); ok {
-		// Record one implicit pointer dereference before next selection.
-		recv = ptr.Elem()
-		prefix = append(prefix, indirection)
-	}
 
 	for ; len(index) > 1; index = index[1:] {
-		recv = recv.Underlying().(*types.Struct).Field(index[0]).Type()
-		prefix = append(prefix, Step(index[0]))
-
-		if ptr, ok := recv.(*types.Pointer); ok {
+		if ptr, ok := recv.Underlying().(*types.Pointer); ok {
 			// Record one implicit pointer dereference before next selection.
 			recv = ptr.Elem()
 			prefix = append(prefix, indirection)
 		}
+
+		recv = recv.Underlying().(*types.Struct).Field(index[0]).Type()
+		prefix = append(prefix, Step(index[0]))
 	}
 
 	if !types.IsInterface(recv) {
 		// Selector selects a struct field, append last field index to prefix.
+		if ptr, ok := recv.Underlying().(*types.Pointer); ok {
+			// Record one implicit pointer dereference before last selection.
+			recv = ptr.Elem()
+			prefix = append(prefix, indirection)
+		}
+
 		prefix = append(prefix, Step(index[0]))
+	} else {
+		// Selector selects a method.
+		if ptr, ok := recv.(*types.Pointer); ok {
+			// Record one implicit pointer dereference if immediate type is a pointer.
+			// NOTE: If underlying type is a pointer but immediate type is not,
+			// this is not allowed.
+			recv = ptr.Elem()
+			prefix = append(prefix, indirection)
+		}
 	}
 
 	// Record selection on path and analyse receiver.
