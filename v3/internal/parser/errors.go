@@ -13,6 +13,8 @@ import (
 //
 // It implements the error interface; the Error method
 // returns a report counting messages emitted so far.
+//
+// It also implements the interface [config.Logger] for convenience.
 type ErrorReport struct {
 	logger config.Logger
 
@@ -158,4 +160,12 @@ func (report *ErrorReport) Infof(format string, a ...any) {
 // This method is here just for convenience and performs no deduplication.
 func (report *ErrorReport) Debugf(format string, a ...any) {
 	report.logger.Debugf(format, a...)
+}
+
+// Statusf forwards the given status message
+// to the logger instance provided during initialisation.
+//
+// This method is here just for convenience and performs no deduplication.
+func (report *ErrorReport) Statusf(format string, a ...any) {
+	report.logger.Statusf(format, a...)
 }

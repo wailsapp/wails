@@ -26,20 +26,51 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		patterns = []string{"."}
 	}
 
-	var creator config.FileCreator
-	if !options.DryRun {
-		creator = config.DirCreator(options.OutputDirectory)
+	// Compute absolute path of output directory.
+	absPath, err := filepath.Abs(options.OutputDirectory)
+	if err != nil {
+		return err
 	}
 
-	generator := parser.NewGenerator(options, creator, config.DefaultPtermLogger)
+	// Initialise file creator.
+	var creator config.FileCreator
+	if !options.DryRun {
+		creator = config.DirCreator(absPath)
+	}
 
-	stats, err := generator.Generate(patterns...)
+	// Start a spinner for progress messages.
+	spinner, _ := pterm.DefaultSpinner.Start("Initialising...")
+
+	// Initialise and run generator.
+	stats, err := parser.NewGenerator(
+		options,
+		creator,
+		config.DefaultPtermLogger(spinner),
+	).Generate(patterns...)
+
+	// Resolve spinner.
+	spinner.Info(fmt.Sprintf(
+		"Processed: %s, %s, %s, %s, %s in %s.",
+		pluralise(stats.NumPackages, "Package"),
+		pluralise(stats.NumTypes, "Bound Type"),
+		pluralise(stats.NumMethods, "Method"),
+		pluralise(stats.NumEnums, "Enum"),
+		pluralise(stats.NumModels, "Model"),
+		stats.Elapsed().String(),
+	))
+
+	// Report output directory.
+	pterm.Info.Printfln("Output directory: %s", absPath)
+
+	// Process generator error.
 	if err != nil {
 		var report *parser.ErrorReport
 		switch {
 		case errors.Is(err, parser.ErrNoInitialPackages):
+			// Convert to informational message.
 			pterm.Info.Println(err)
 		case errors.Is(err, analyse.ErrNoApplicationPackage):
+			// Convert to informational message.
 			pterm.Info.Println("Input packages do not load the Wails application package")
 		case errors.As(err, &report):
 			if report.HasErrors() {
@@ -50,24 +81,10 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 				pterm.Warning.Println(report)
 			}
 		default:
+			// Report error.
 			return err
 		}
 	}
-
-	pterm.Info.Printf("Processed: %s, %s, %s, %s, %s in %s.\n",
-		pluralise(stats.NumPackages, "Package"),
-		pluralise(stats.NumTypes, "Bound Type"),
-		pluralise(stats.NumMethods, "Method"),
-		pluralise(stats.NumEnums, "Enum"),
-		pluralise(stats.NumModels, "Model"),
-		stats.Elapsed().String())
-
-	absPath, err := filepath.Abs(options.OutputDirectory)
-	if err != nil {
-		return err
-	}
-
-	pterm.Info.Printf("Output directory: %s\n", absPath)
 
 	return nil
 }

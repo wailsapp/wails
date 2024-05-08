@@ -131,7 +131,7 @@ func TestGenerator(t *testing.T) {
 					generator := NewGenerator(
 						conf.GenerateBindingsOptions,
 						outputCreator(t, test.name, conf.name, want),
-						config.DefaultPtermLogger,
+						config.DefaultPtermLogger(nil),
 					)
 
 					_, err := generator.Generate(pkgPattern)

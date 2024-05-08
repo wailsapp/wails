@@ -91,7 +91,7 @@ func TestAnalyser(t *testing.T) {
 				}
 			}
 
-			analyser := analyse.NewAnalyser(pkgs, config.DefaultPtermLogger)
+			analyser := analyse.NewAnalyser(pkgs, config.DefaultPtermLogger(nil))
 			if err := analyser.Run(nil); err != nil && !errors.Is(err, analyse.ErrNoApplicationPackage) {
 				t.Fatal(err)
 			}

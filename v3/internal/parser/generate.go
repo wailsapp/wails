@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"sync"
+	"time"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/parser/analyse"
@@ -58,8 +59,15 @@ func NewGenerator(options *flags.GenerateBindingsOptions, creator config.FileCre
 //
 // Concurrent calls to Generate are not allowed.
 //
-// The error return may either report errors that occured while loading
-// the initial set of packages, or be an [config.ErrorReport] instance.
+// The stats return field is never nil.
+//
+// The error return field is nil in case of complete success (no warning).
+// Otherwise, it may either report errors that occured while loading
+// the initial set of packages, or errors returned by the static analyser,
+// or be an [ErrorReport] instance.
+//
+// If error is an ErrorReport, it may have accumulated no errors, just warnings.
+// When this is the case, all bindings have been generated successfully.
 //
 // Parsing/type-checking errors or errors encountered while writing
 // individual files will be printed directly to the [config.Logger] instance
@@ -87,8 +95,25 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		generator.renderer = render.NewRenderer(generator.options, generator.collector)
 	}
 
+	// Update status.
+	var lpkgMutex sync.Mutex
+	generator.controller.Statusf("Loading packages...")
+	go func() {
+		time.Sleep(5 * time.Second)
+		if lpkgMutex.TryLock() {
+			generator.controller.Statusf("Loading packages... (this may take a long time)")
+			lpkgMutex.Unlock()
+		}
+	}()
+
 	// Load initial packages.
 	pkgs, err := LoadPackages(buildFlags, true, patterns...)
+
+	// Prevent long running message.
+	lpkgMutex.Lock()
+	defer lpkgMutex.Unlock()
+
+	// Check for loading errors.
 	if err != nil {
 		return
 	}
@@ -107,11 +132,21 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	// Warmup collector.
 	generator.collector.Preload(pkgs...)
 
+	// Update status.
+	found := false
+	generator.controller.Statusf("Looking for bound types...")
+
 	// Run analyser and schedule bindings generation for each result.
 	err = analyse.NewAnalyser(pkgs, &generator.controller).Run(func(result analyse.Result) bool {
+		if !found {
+			generator.controller.Statusf("Generating bindings...")
+			found = true
+		}
+
 		generator.controller.Schedule(func() {
 			generator.generateBindings(result)
 		})
+
 		return true
 	})
 
@@ -119,6 +154,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	pkgs = nil
 
 	// Wait until all bindings have been generated and all models collected.
+	generator.controller.Statusf("Collecting models...")
 	generator.controller.Wait()
 
 	// Check for analyser errors.
@@ -128,6 +164,13 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 
 	// Record all packages that should be added to the global index.
 	var globalImports []*collect.PackageInfo
+
+	// Update status.
+	if generator.options.NoIndex {
+		generator.controller.Statusf("Generating models...")
+	} else {
+		generator.controller.Statusf("Generating models and index files...")
+	}
 
 	// Schedule models and index generation for each package.
 	generator.collector.Iterate(func(info *collect.PackageInfo) bool {
@@ -156,6 +199,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	generator.controller.Wait()
 
 	// Populate stats.
+	generator.controller.Statusf("Collecting stats...")
 	generator.collector.Iterate(func(info *collect.PackageInfo) bool {
 		if info.IsEmpty() {
 			stats.NumPackages++
