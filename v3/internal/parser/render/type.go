@@ -83,7 +83,7 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 		return m.renderBasicType(t, quoted), false
 
 	case *types.Map:
-		return m.renderMapType(t), false
+		return m.renderMapType(t)
 
 	case *types.Named:
 		if t.Obj().Pkg() == nil {
@@ -135,16 +135,22 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 		}
 
 	case *types.Slice:
+		null := ""
+		if m.UseInterfaces {
+			// In interface mode, record the fact that encoding/json marshals nil slices as null.
+			null = " | null"
+		}
+
 		if types.Identical(t.Elem(), types.Universe.Lookup("byte").Type()) {
 			// encoding/json marshals byte slices as base64 strings
-			return "string", false
+			return "string" + null, m.UseInterfaces
 		}
 
 		elem, ptr := m.renderType(t.Elem(), false)
 		if ptr {
-			return fmt.Sprintf("(%s)[]", elem), false
+			return fmt.Sprintf("(%s)[]%s", elem, null), m.UseInterfaces
 		} else {
-			return fmt.Sprintf("%s[]", elem), false
+			return fmt.Sprintf("%s[]%s", elem, null), m.UseInterfaces
 		}
 
 	case *types.Struct:
@@ -197,7 +203,13 @@ func (*module) renderBasicType(typ *types.Basic, quoted bool) string {
 }
 
 // renderMapType outputs the TypeScript representation of the given map type.
-func (m *module) renderMapType(typ *types.Map) string {
+func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
+	null := ""
+	if m.UseInterfaces {
+		// In interface mode, record the fact that encoding/json marshals nil slices as null.
+		null = " | null"
+	}
+
 	key := "string"
 	elem, _ := m.renderType(typ.Elem(), false)
 
@@ -224,7 +236,7 @@ func (m *module) renderMapType(typ *types.Map) string {
 		}
 	}
 
-	return fmt.Sprintf("{ [_: %s]: %s }", key, elem)
+	return fmt.Sprintf("{ [_: %s]: %s }%s", key, elem, null), m.UseInterfaces
 }
 
 // renderStructType outputs the TS representation
