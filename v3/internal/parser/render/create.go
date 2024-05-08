@@ -107,6 +107,10 @@ func (m *module) JSCreate(typ types.Type) string {
 
 		var builder strings.Builder
 
+		if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
+			builder.WriteString("(($$source) => ")
+		}
+
 		if t.Obj().Pkg().Path() != m.Imports.Self {
 			builder.WriteString(jsimport(m.Imports.External[t.Obj().Pkg().Path()]))
 			builder.WriteRune('.')
@@ -115,12 +119,12 @@ func (m *module) JSCreate(typ types.Type) string {
 		builder.WriteString(".createFrom")
 
 		if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
-			builder.WriteString(".bind(null")
+			builder.WriteString("(")
 			for i, length := 0, t.TypeArgs().Len(); i < length; i++ {
-				builder.WriteString(", ")
 				builder.WriteString(m.JSCreate(t.TypeArgs().At(i)))
+				builder.WriteString(", ")
 			}
-			builder.WriteString(")")
+			builder.WriteString("$$source))")
 		}
 
 		return builder.String()
