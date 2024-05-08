@@ -102,10 +102,14 @@ func NewGenerator(options *flags.GenerateBindingsOptions, creator FileCreator) *
 //
 // Parsing/type-checking errors or errors encountered while writing
 // individual files will be printed directly to the pterm Error logger.
-func (generator *Generator) Generate(patterns ...string) error {
+func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, err error) {
+	stats = &collect.Stats{}
+	stats.Start()
+	defer stats.Stop()
+
 	buildFlags, err := generator.options.BuildFlags()
 	if err != nil {
-		return err
+		return
 	}
 
 	// Cache reconstructed build flags.
@@ -124,10 +128,11 @@ func (generator *Generator) Generate(patterns ...string) error {
 	// Load initial packages.
 	pkgs, err := LoadPackages(buildFlags, true, patterns...)
 	if err != nil {
-		return err
+		return
 	}
 	if len(patterns) > 0 && len(pkgs) == 0 {
-		return ErrNoInitialPackages
+		err = ErrNoInitialPackages
+		return
 	}
 
 	// Report parsing/type-checking errors and record initial packages.
@@ -147,7 +152,7 @@ func (generator *Generator) Generate(patterns ...string) error {
 		return true
 	})
 	if err != nil {
-		return err
+		return
 	}
 
 	// Discard unneeded packages.
@@ -184,7 +189,17 @@ func (generator *Generator) Generate(patterns ...string) error {
 	// Wait until all models and indices have been generated.
 	generator.wg.Wait()
 
-	return nil
+	// Populate stats.
+	generator.collector.Iterate(func(info *collect.PackageInfo) bool {
+		if info.IsEmpty() {
+			stats.NumPackages++
+		} else {
+			stats.Add(info.Stats())
+		}
+		return true
+	})
+
+	return
 }
 
 // loadAdditionalPackage loads syntax for the specified package path.

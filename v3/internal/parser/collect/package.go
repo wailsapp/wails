@@ -13,11 +13,10 @@ import (
 )
 
 type (
-	// PackageInfo records the following information about a package:
-	// path, name, declaration groups with their doc comments,
-	// type declarations with their doc comments and parent group,
-	// constant declarations with their doc comments and parent group,
-	// generated bindings and models.
+	// PackageInfo records information about a package;
+	// in particular, it holds precomputed maps that speed up access
+	// to the syntax constructs that declare types, fields,
+	// constants and methods.
 	//
 	// A dummy PackageInfo can be initialised with just the path;
 	// all other fields will be populated upon calling [PackageInfo.Collect]
@@ -50,6 +49,10 @@ type (
 		// models records the models that have to be generated for this package.
 		// We use [sync.Map] for atomic swapping.
 		models sync.Map
+
+		// stats caches statistics about this package.
+		// Mutex mu must be locked before accessing this field.
+		stats *Stats
 
 		// collector holds a pointer to the parent [Collector].
 		collector *Collector
@@ -167,9 +170,10 @@ func (info *PackageInfo) IsEmpty() bool {
 }
 
 // Index computes a [PackageIndex] from the list
-// of generated bindings and models.
+// of generated bindings and models
+// and regenerates cached stats.
 //
-// Binding and model names appear at most once
+// Bindings and models appear at most once
 // in the returned structure.
 //
 // This method is safe to call even if [PackageInfo.Collect]
@@ -180,6 +184,11 @@ func (info *PackageInfo) IsEmpty() bool {
 // Call [Collector.WaitForModels] to wait
 // until all model collection activity is complete.
 func (info *PackageInfo) Index() (index PackageIndex) {
+	// Init stats
+	stats := &Stats{
+		NumPackages: 1,
+	}
+
 	// Acquire bindings slice.
 	info.mu.Lock()
 
@@ -201,8 +210,21 @@ func (info *PackageInfo) Index() (index PackageIndex) {
 	// Release bindings slice.
 	info.mu.Unlock()
 
+	// Update bound type stats.
+	stats.NumTypes = len(index.Bindings)
+	for _, b := range index.Bindings {
+		stats.NumMethods += len(b.Methods)
+	}
+
+	// Gather models.
 	info.models.Range(func(key, value any) bool {
-		index.Models = append(index.Models, value.(*ModelInfo))
+		model := value.(*ModelInfo)
+		if len(model.Values) > 0 {
+			stats.NumEnums++
+		} else {
+			stats.NumModels++
+		}
+		index.Models = append(index.Models, model)
 		return true
 	})
 
@@ -236,7 +258,35 @@ func (info *PackageInfo) Index() (index PackageIndex) {
 	// Store package info.
 	index.Info = info
 
+	// Cache stats.
+	info.mu.Lock()
+	info.stats = stats
+	info.mu.Unlock()
+
 	return
+}
+
+// Stats returns statistics for this package.
+// If they are not cached yet, they are generated first.
+//
+// This method is safe to call even if [PackageInfo.Collect]
+// has not been called yet.
+//
+// The result might be incomplete if bindings or models
+// are still being processed in the background.
+// Call [Collector.WaitForModels] to wait
+// until all model collection activity is complete.
+func (info *PackageInfo) Stats() *Stats {
+	var result = &Stats{}
+	info.mu.Lock()
+	if info.stats == nil {
+		info.mu.Unlock()
+		info.Index()
+		info.mu.Lock()
+	}
+	*result = *info.stats
+	info.mu.Unlock()
+	return result
 }
 
 // Collect gathers information for the package described by its receiver.
@@ -299,6 +349,8 @@ func (info *PackageInfo) Collect() bool {
 					imports.Unnamed = append(imports.Unnamed, path)
 				} else if spec.Name.Name == "." {
 					imports.Dot = append(imports.Dot, path)
+				} else if spec.Name.Name == "_" {
+					continue
 				} else {
 					if _, present := imports.Named[spec.Name.Name]; !present {
 						imports.Named[spec.Name.Name] = path

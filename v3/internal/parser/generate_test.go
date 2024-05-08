@@ -142,7 +142,7 @@ func TestGenerateBindings(t *testing.T) {
 						outputCreator(t, test.name, config.name, test.want[config.name]),
 					)
 
-					err := generator.Generate(test.pkgs...)
+					_, err := generator.Generate(test.pkgs...)
 					if err != nil {
 						t.Error(err)
 					}
