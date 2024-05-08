@@ -13,8 +13,8 @@ import * as $models from "./models.js";
 
 /**
  * Get someone
- * @param {number} aliasValue
- * @returns {Promise<$models.Person<string>> & { cancel(): void }}
+ * @param {$models.Alias} aliasValue
+ * @returns {Promise<$models.Person> & { cancel(): void }}
  */
 export function Get(aliasValue) {
     let $resultPromise = $Call.ByID(1928502664, aliasValue);
@@ -27,7 +27,7 @@ export function Get(aliasValue) {
 
 /**
  * Get someone quite different
- * @returns {Promise<$models.Person<boolean>> & { cancel(): void }}
+ * @returns {Promise<$models.GenericPerson<boolean>> & { cancel(): void }}
  */
 export function GetButDifferent() {
     let $resultPromise = $Call.ByID(2240931744);
@@ -38,6 +38,18 @@ export function GetButDifferent() {
     return /** @type {any} */($typingPromise);
 }
 
+/**
+ * Greet a lot of unusual things.
+ * @param {$models.EmptyAliasStruct} $0
+ * @param {$models.AliasStruct} $1
+ * @param {$models.EmptyStruct} $2
+ * @returns {Promise<void> & { cancel(): void }}
+ */
+export function Greet($0, $1, $2) {
+    let $resultPromise = $Call.ByID(1411160069, $0, $1, $2);
+    return /** @type {any} */($resultPromise);
+}
+
 // Private type creation functions
-const $$createType0 = $models.Person.createFrom($Create.Any);
-const $$createType1 = $models.Person.createFrom($Create.Any);
+const $$createType0 = $models.Person.createFrom;
+const $$createType1 = $models.GenericPerson.createFrom($Create.Any);

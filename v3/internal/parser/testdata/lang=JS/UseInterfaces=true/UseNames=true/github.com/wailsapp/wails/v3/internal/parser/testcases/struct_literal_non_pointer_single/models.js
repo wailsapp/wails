@@ -5,9 +5,8 @@
 import {Create as $Create} from "/wails/runtime.js";
 
 /**
- * @typedef { {
- *     "Name": string,
- *     "Parent": Person | null,
- *     "Details": {"Age": number, "Address": {"Street": string}},
- * } } Person
+ * @typedef {Object} Person
+ * @property {string} Name
+ * @property {Person | null} Parent
+ * @property {{"Age": number, "Address": {"Street": string}}} Details
  */

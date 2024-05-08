@@ -22,9 +22,8 @@ import * as $internal from "./internal.js";
 
 /**
  * Person is not a number.
- * @typedef { {
- *     "Name": string,
- * } } Person
+ * @typedef {Object} Person
+ * @property {string} Name - They have a name.
  */
 
 /**

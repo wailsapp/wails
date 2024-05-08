@@ -7,12 +7,11 @@ import {Create as $Create} from "/wails/runtime.js";
 import * as $internal from "./internal.js";
 
 /**
- * @typedef { {
- *     "Friends": number,
- *     "Vanish": number,
- *     "StillThere": string,
- *     "NamingThingsIsHard": `${boolean}`,
- * } } Embedded1
+ * @typedef {Object} Embedded1
+ * @property {number} Friends - Friends should be shadowed in Person by a field of lesser depth
+ * @property {number} Vanish - Vanish should be omitted from Person because there is another field with same depth and no tag
+ * @property {string} StillThere - StillThere should be shadowed in Person by other field with same depth and a json tag
+ * @property {`${boolean}`} NamingThingsIsHard - NamingThingsIsHard is a law of programming
  */
 
 /**

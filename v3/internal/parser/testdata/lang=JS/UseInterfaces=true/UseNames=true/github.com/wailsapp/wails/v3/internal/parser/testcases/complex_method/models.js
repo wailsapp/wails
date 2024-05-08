@@ -6,7 +6,6 @@ import {Create as $Create} from "/wails/runtime.js";
 
 /**
  * Person represents a person
- * @typedef { {
- *     "Name": string,
- * } } Person
+ * @typedef {Object} Person
+ * @property {string} Name
  */

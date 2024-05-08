@@ -5,8 +5,7 @@
 import {Create as $Create} from "/wails/runtime.js";
 
 /**
- * @typedef { {
- *     "NamingThingsIsHard": `${boolean}`,
- *     "Friends": boolean,
- * } } embedded4
+ * @typedef {Object} embedded4
+ * @property {`${boolean}`} NamingThingsIsHard - NamingThingsIsHard is a law of programming
+ * @property {boolean} Friends - Friends should not be shadowed in Person as embedded4 is not embedded from encoding/json's point of view; however, it should be shadowed in Embedded1
  */

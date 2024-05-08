@@ -7,7 +7,7 @@
  * @module
  */
 
-import { Call as $Call, Create as $Create } from "/wails/runtime.js";
+import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
 import * as data$0 from "./data/models.js";
 

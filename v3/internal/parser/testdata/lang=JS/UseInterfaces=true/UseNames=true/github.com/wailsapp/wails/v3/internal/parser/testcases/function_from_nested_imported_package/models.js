@@ -7,8 +7,7 @@ import {Create as $Create} from "/wails/runtime.js";
 import * as other$0 from "./services/other/models.js";
 
 /**
- * @typedef { {
- *     "Name": string,
- *     "Address": other$0.Address | null,
- * } } Person
+ * @typedef {Object} Person
+ * @property {string} Name
+ * @property {other$0.Address | null} Address
  */

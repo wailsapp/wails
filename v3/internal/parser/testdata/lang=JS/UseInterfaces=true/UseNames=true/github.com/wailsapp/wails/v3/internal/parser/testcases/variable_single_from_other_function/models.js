@@ -9,8 +9,7 @@ import * as services$0 from "./services/models.js";
 /**
  * Person is a person!
  * They have a name and an address
- * @typedef { {
- *     "Name": string,
- *     "Address": services$0.Address | null,
- * } } Person
+ * @typedef {Object} Person
+ * @property {string} Name
+ * @property {services$0.Address | null} Address
  */

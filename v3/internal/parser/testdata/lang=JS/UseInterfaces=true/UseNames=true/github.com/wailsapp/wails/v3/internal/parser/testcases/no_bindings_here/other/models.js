@@ -7,8 +7,7 @@ import {Create as $Create} from "/wails/runtime.js";
 /**
  * OtherPerson is like a person, but different.
  * @template T
- * @typedef { {
- *     "Name": string,
- *     "Differences": (T | null)[] | null,
- * } } OtherPerson
+ * @typedef {Object} OtherPerson
+ * @property {string} Name - They have a name as well.
+ * @property {(T | null)[] | null} Differences - But they may have many differences.
  */

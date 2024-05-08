@@ -5,8 +5,7 @@
 import {Create as $Create} from "/wails/runtime.js";
 
 /**
- * @typedef { {
- *     "Nickname": string,
- *     "Name": string,
- * } } personImpl
+ * @typedef {Object} personImpl
+ * @property {string} Nickname - Nickname conceals a person's identity.
+ * @property {string} Name - They have a name.
  */
