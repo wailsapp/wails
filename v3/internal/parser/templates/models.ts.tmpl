@@ -38,7 +38,7 @@ export class {{$def.Name}} {
      * {{jsdoc .DocComment}}
      */
     {{- end}}
-    {{.JSName}}: {{.JSType $pkg}};{{if not .Exported}} // Warning: this is unexported in the Go struct.{{end}}{{end}}
+    {{.JSName}}: {{.Type.JS $pkg}};{{if not .Exported}} // Warning: this is unexported in the Go struct.{{end}}{{end}}
 
     /** Creates a new {{$def.Name}} instance. */
     constructor(source: Partial<{{$def.Name}}> = {}) {

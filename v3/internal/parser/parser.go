@@ -43,7 +43,57 @@ type ParameterType struct {
 	IsVariadic bool
 	MapKey     *ParameterType
 	MapValue   *ParameterType
-	Package    string
+	Package    *ParsedPackage
+}
+
+func (t *ParameterType) namespace(pkg *ParsedPackage) string {
+	if t.Package.Name != "" && t.Package.Path != pkg.Path {
+		return t.Package.Name + "."
+	} else {
+		return ""
+	}
+}
+
+func (t *ParameterType) JS(pkg *ParsedPackage) string {
+	// Convert type to javascript equivalent type
+	var typeName string
+	switch t.Name {
+	case "":
+		typeName = "any"
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
+		typeName = "number"
+	case "string":
+		typeName = "string"
+	case "bool":
+		typeName = "boolean"
+	case "map":
+		// encoding/json always serializes map keys as strings
+		typeName = "{ [_: string]: " + t.MapValue.JS(pkg) + " }"
+	default:
+		typeName = t.Name
+	}
+
+	// if the type is an external struct or enum, we need to add the package name
+	if t.IsStruct || t.IsEnum {
+		typeName = t.namespace(pkg) + typeName
+	}
+
+	// Add slice suffix
+	if t.IsSlice {
+		typeName += "[]"
+	}
+
+	// Add pointer suffix
+	if t.IsPointer {
+		typeName += " | null"
+	}
+
+	// Add variadic slice suffix
+	if t.IsVariadic {
+		typeName = "(" + typeName + ")[]"
+	}
+
+	return typeName
 }
 
 type EnumDef struct {
@@ -60,9 +110,8 @@ type EnumValue struct {
 }
 
 type Parameter struct {
-	Name    string
-	Type    *ParameterType
-	Project *Project
+	Name string
+	Type *ParameterType
 }
 
 func (p *Parameter) JSName() string {
@@ -74,58 +123,7 @@ func (p *Parameter) JSName() string {
 	}
 }
 
-func (p *Parameter) NamespacedStructType(pkgName string) string {
-	thisPkg := p.Project.packageCache[pkgName]
-	pkgInfo := p.Project.packageCache[p.Type.Package]
-
-	var namespace string
-	if pkgInfo.Name != "" && pkgInfo.Path != thisPkg.Path {
-		namespace = pkgInfo.Name + "."
-	}
-
-	return namespace + p.Type.Name
-}
-
-func (p *Parameter) JSType(pkgName string) string {
-	// Convert type to javascript equivalent type
-	var typeName string
-	switch p.Type.Name {
-	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
-		typeName = "number"
-	case "string":
-		typeName = "string"
-	case "bool":
-		typeName = "boolean"
-	default:
-		typeName = p.Type.Name
-	}
-
-	// if the type is an external struct or enum, we need to add the package name
-	if p.Type.IsStruct || p.Type.IsEnum {
-		typeName = p.NamespacedStructType(pkgName)
-	}
-
-	// Add slice suffix
-	if p.Type.IsSlice {
-		typeName += "[]"
-	}
-
-	// Add pointer suffix
-	if p.Type.IsPointer {
-		typeName += " | null"
-	}
-
-	// Add variadic slice suffix
-	if p.Type.IsVariadic {
-		typeName = "(" + typeName + ")[]"
-	}
-
-	return typeName
-}
-
 type BoundMethod struct {
-	Package    string
-	PackageDir string
 	Name       string
 	DocComment string
 	Inputs     []*Parameter
@@ -136,7 +134,7 @@ type BoundMethod struct {
 
 func (m *BoundMethod) JSInputs() []*Parameter {
 	if len(m.Inputs) > 0 {
-		if firstArg := m.Inputs[0]; firstArg.Type.Package == "context" && firstArg.Type.Name == "Context" {
+		if firstArg := m.Inputs[0]; firstArg.Type.Package.Path == "context" && firstArg.Type.Name == "Context" {
 			return m.Inputs[1:]
 		}
 	}
@@ -160,7 +158,6 @@ type Field struct {
 	Name       string
 	Type       *ParameterType
 	DocComment string
-	Project    *Project
 }
 
 func (f *Field) JSName() string {
@@ -171,50 +168,7 @@ func (f *Field) Exported() bool {
 	return ast.IsExported(f.Name)
 }
 
-func (f *Field) NamespacedStructType(pkgName string) string {
-	thisPkg := f.Project.packageCache[pkgName]
-	pkgInfo := f.Project.packageCache[f.Type.Package]
-
-	var namespace string
-	if pkgInfo.Name != "" && pkgInfo.Path != thisPkg.Path {
-		namespace = pkgInfo.Name + "."
-	}
-
-	return namespace + f.Type.Name
-}
-
-func (f *Field) JSType(pkgName string) string {
-	var typeName string
-	switch f.Type.Name {
-	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
-		typeName = "number"
-	case "string":
-		typeName = "string"
-	case "bool":
-		typeName = "boolean"
-	default:
-		typeName = f.Type.Name
-	}
-
-	// If the type is from another package, it needs to be adjusted
-	if f.Type.IsStruct || f.Type.IsEnum {
-		typeName = f.NamespacedStructType(pkgName)
-	}
-
-	// Add slice suffix
-	if f.Type.IsSlice {
-		typeName += "[]"
-	}
-
-	// Add pointer suffix
-	if f.Type.IsPointer {
-		typeName += " | null"
-	}
-
-	return typeName
-}
-
-func (f *Field) DefaultValue(pkgName string) string {
+func (f *Field) DefaultValue(pkg *ParsedPackage) string {
 	// Return the default value of the typescript version of the type as a string
 	if f.Type.IsPointer {
 		return "null"
@@ -223,7 +177,7 @@ func (f *Field) DefaultValue(pkgName string) string {
 	} else if f.Type.MapKey != nil {
 		return "{}"
 	} else if f.Type.IsStruct {
-		return "(new " + f.JSType(pkgName) + "())"
+		return "(new " + f.Type.JS(pkg) + "())"
 	}
 
 	switch f.Type.Name {
@@ -622,8 +576,6 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 					}
 
 					method := &BoundMethod{
-						Package:    pkg.Path,
-						PackageDir: pkg.Dir,
 						ID:         id,
 						Name:       funcDecl.Name.Name,
 						DocComment: strings.TrimSpace(funcDecl.Doc.Text()),
@@ -676,14 +628,12 @@ func (p *Project) parseParameters(params *ast.FieldList, pkg *ParsedPackage) []*
 		if len(field.Names) > 0 {
 			for _, name := range field.Names {
 				theseFields = append(theseFields, &Parameter{
-					Name:    name.Name,
-					Project: p,
+					Name: name.Name,
 				})
 			}
 		} else {
 			theseFields = append(theseFields, &Parameter{
-				Name:    "",
-				Project: p,
+				Name: "",
 			})
 		}
 		// loop over fields
@@ -697,8 +647,9 @@ func (p *Project) parseParameters(params *ast.FieldList, pkg *ParsedPackage) []*
 
 func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *ParameterType {
 	result := &ParameterType{
-		Package: pkg.Path,
+		Package: pkg,
 	}
+
 	result.Name = getTypeString(field.Type)
 	switch t := field.Type.(type) {
 	case *ast.Ident:
@@ -745,7 +696,7 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 				result.IsEnum = true
 			}
 		}
-		result.Package = extPackage.Path
+		result.Package = extPackage
 	case *ast.ArrayType:
 		result = p.parseParameterType(&ast.Field{Type: t.Elt}, pkg)
 		result.IsSlice = true
@@ -762,8 +713,8 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 
 	if result.IsStruct {
 		p.getStructDef(result.Name, pkg)
-		if result.Package == "" {
-			result.Package = pkg.Path
+		if result.Package == nil {
+			result.Package = pkg
 		}
 	}
 	return result
@@ -812,14 +763,12 @@ func (p *Project) parseStructFields(structType *ast.StructType, pkg *ParsedPacka
 		if len(field.Names) > 0 {
 			for _, name := range field.Names {
 				theseFields = append(theseFields, &Field{
-					Project:    p,
 					Name:       name.Name,
 					DocComment: comment,
 				})
 			}
 		} else {
 			theseFields = append(theseFields, &Field{
-				Project:    p,
 				Name:       "",
 				DocComment: comment,
 			})
@@ -833,9 +782,10 @@ func (p *Project) parseStructFields(structType *ast.StructType, pkg *ParsedPacka
 					p.getStructDef(paramType.Name, pkg)
 				}
 			}
-			if paramType.Package == "" {
-				paramType.Package = pkg.Path
+			if paramType.Package == nil {
+				paramType.Package = pkg
 			}
+
 			thisField.Type = paramType
 			result = append(result, thisField)
 		}

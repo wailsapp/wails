@@ -37,7 +37,7 @@ export class {{$def.Name}} {
      * Creates a new {{$def.Name}} instance.
      * @param {Object} source - The source object to create the {{$def.Name}}.
     {{- range $def.Fields}}
-     * @param { {{- .JSType $pkg -}} } [source.{{.JSName}}]
+     * @param { {{- .Type.JS $pkg -}} } [source.{{.JSName}}]
         {{- if or .DocComment (not .Exported)}} - {{end}}
         {{- if .DocComment}}{{paramdoc .DocComment}}{{end}}
         {{- if not .Exported}} (Warning: this is unexported in the Go struct.){{end}}

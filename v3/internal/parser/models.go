@@ -12,7 +12,7 @@ import (
 )
 
 type ModelDefinitions struct {
-	Package string
+	Package *ParsedPackage
 	Imports map[string]string
 
 	Models map[string]*StructDef
@@ -68,12 +68,13 @@ func (p *Project) GenerateModels(models map[packagePath]map[structName]*StructDe
 	})
 
 	for _, pkg := range keys {
+		pkgInfo := p.packageCache[pkg]
 		pkgModels, pkgEnums := models[pkg], enums[pkg]
 
 		var buffer bytes.Buffer
 		err = p.GenerateModel(&buffer, &ModelDefinitions{
-			Package: pkg,
-			Imports: p.calculateModelImports(pkg, pkgModels),
+			Package: pkgInfo,
+			Imports: p.calculateModelImports(pkgInfo, pkgModels),
 
 			Models: pkgModels,
 			Enums:  pkgEnums,
@@ -93,16 +94,14 @@ func (p *Project) GenerateModels(models map[packagePath]map[structName]*StructDe
 	return
 }
 
-func (p *Project) calculateModelImports(pkg string, m map[structName]*StructDef) map[string]string {
+func (p *Project) calculateModelImports(pkg *ParsedPackage, m map[structName]*StructDef) map[string]string {
 	result := make(map[string]string)
-	pkgInfo := p.packageCache[pkg]
 
 	for _, structDef := range m {
 		for _, field := range structDef.Fields {
-			if field.Type.Package != pkg {
-				fieldPkgInfo := p.packageCache[field.Type.Package]
+			if field.Type.Package.Path != pkg.Path {
 				// Find the relative path from the source directory to the target directory
-				result[fieldPkgInfo.Name] = p.RelativeBindingsDir(pkgInfo, fieldPkgInfo)
+				result[field.Type.Package.Name] = p.RelativeBindingsDir(pkg, field.Type.Package)
 			}
 		}
 	}

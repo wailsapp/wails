@@ -27,17 +27,17 @@ import {
 export function {{.Name}}({{range $inputindex, $inputdef := .JSInputs -}}
     {{- if gt $inputindex 0}}, {{end}}
     {{- if .Type.IsVariadic}}...{{end}}
-    {{- .JSName}}: {{.JSType $pkg}}
+    {{- .JSName}}: {{.Type.JS $pkg}}
 {{- end}}): Promise<
     {{- $outputs := .JSOutputs}}
     {{- if eq 0 (len $outputs) -}}
         void
     {{- else if eq 1 (len $outputs)}}
-        {{- (index $outputs 0).JSType $pkg}}
+        {{- (index $outputs 0).Type.JS $pkg}}
     {{- else -}}
         [{{range $outputindex, $outputdef := $outputs}}
             {{- if gt $outputindex 0}}, {{end}}
-            {{- .JSType $pkg}}
+            {{- .Type.JS $pkg}}
         {{- end}}]
     {{- end}}> {
     {{if $useIDs -}}
