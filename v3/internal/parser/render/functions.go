@@ -16,12 +16,13 @@ import (
 // tmplFunctions holds a map of utility functions
 // that should be available in every template.
 var tmplFunctions = template.FuncMap{
-	"isclass":  collect.IsClass,
-	"jsdoc":    jsdoc,
-	"jsid":     jsid,
-	"jsimport": jsimport,
-	"jsparam":  jsparam,
-	"jsvalue":  jsvalue,
+	"isclass":   collect.IsClass,
+	"jsdoc":     jsdoc,
+	"jsid":      jsid,
+	"jsimport":  jsimport,
+	"jsparam":   jsparam,
+	"jsvalue":   jsvalue,
+	"typeparam": typeparam,
 }
 
 // jsdoc splits the given comment into lines and rewrites it as follows:
@@ -83,6 +84,18 @@ func jsparam(index int, param *collect.ParamInfo) string {
 		return "$" + strconv.Itoa(index)
 	} else {
 		return jsid(param.Name)
+	}
+}
+
+// typeparam renders the TS name of a type parameter.
+// Blank parameters are replaced with a double dollar sign
+// followed by the given index.
+// Non-blank parameters are escaped with jsid.
+func typeparam(index int, param string) string {
+	if param == "" || param == "_" {
+		return "$$" + strconv.Itoa(index)
+	} else {
+		return jsid(param)
 	}
 }
 

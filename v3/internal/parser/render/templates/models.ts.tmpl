@@ -40,19 +40,20 @@ import {
 
 {{- /* Build type parameter list */}}
 {{- $typeParamList := ""}}
+{{- $createParamList := ""}}
 {{- range $i, $param := $model.TypeParams}}
-    {{- if or (eq $param "") (eq $param "_")}}
-        {{- $param = (printf "T$$%d" $i)}}
-    {{- end}}
-    {{- $param = (jsid $param)}}
+    {{- $param = (typeparam $i $param)}}
     {{- if eq $i 0}}
         {{- $typeParamList = (printf "<%s" $param)}}
+        {{- $createParamList = (printf "($$createParam%s" $param)}}
     {{- else}}
         {{- $typeParamList = (printf "%s, %s" $typeParamList $param)}}
+        {{- $createParamList = (printf "%s, $$createParam%s" $createParamList $param)}}
     {{- end}}
 {{- end}}
 {{- if $typeParamList}}
     {{- $typeParamList = (printf "%s>" $typeParamList)}}
+    {{- $createParamList = (printf "%s)" $createParamList)}}
 {{- end}}
 
 {{- if or $model.Group.Doc $model.Doc}}
@@ -129,27 +130,43 @@ export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$t
     }
 
     /**
+    {{- if $typeParamList}}
+     * Given creation functions for each type parameter,
+     * returns a creation function for a concrete instance
+     * of the generic class {{jsid $model.Name}}.
+    {{- else}}
      * Creates a new {{jsid $model.Name}} instance from a string or object.
-     * Generic types also need creation functions for each type parameter.
+    {{- end}}
      */
-    static createFrom{{$typeParamList}}(
+    static createFrom{{$typeParamList}}({{if $typeParamList}}
             {{- range $i, $param := $model.TypeParams}}
-                {{- if or (eq $param "") (eq $param "_")}}
-                    {{- $param = (printf "T$$%d" $i)}}
-                {{- end}}
-                {{- $param = (jsid $param) -}}
-                $$create{{$param}}: (any) => {{$param}}, {{end -}}
-            $$source: any = {}): {{jsid $model.Name}}{{$typeParamList}} {
-        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+                {{- $param = (typeparam $i $param)}}
+                {{- if gt $i 0}}, {{end -}}
+                $$createParam{{$param}}: (any) => {{$param}}{{end -}}
+            {{else}}$$source: any = {}{{end}}): {{if $typeParamList}}(any) => {{end}}{{jsid $model.Name}}{{$typeParamList}} {
         {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
-        {{- $create := ($module.JSCreate $field.Type)}}
-        {{- if ne $create "$Create.Any"}}
-        if ("{{js $field.Name}}" in $$parsedSource) {
-            $$parsedSource["{{js $field.Name}}"] = {{$create}}($$parsedSource["{{js $field.Name}}"]);
-        }
-        {{- end}}
+            {{- $create := ($module.JSCreateWithParams $field.Type $createParamList)}}
+            {{- if ne $create "$Create.Any"}}
+        const $$createField{{$i}}_{{$j}} = {{$create}};
+            {{- end}}
         {{- end}}{{end}}
-        return new {{jsid $model.Name}}{{$typeParamList}}($$parsedSource as Partial<{{jsid $model.Name}}{{$typeParamList}}>);
+        {{- $indent := ""}}
+        {{- if $typeParamList}}
+            {{- $indent = "    "}}
+        return ($$source) => {
+        {{- end}}
+        {{$indent}}let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
+            {{- if $module.NeedsCreate $field.Type}}
+        {{$indent}}if ("{{js $field.Name}}" in $$parsedSource) {
+        {{$indent}}    $$parsedSource["{{js $field.Name}}"] = $$createField{{$i}}_{{$j}}($$parsedSource["{{js $field.Name}}"]);
+        {{$indent -}} }
+            {{- end}}
+        {{- end}}{{end}}
+        {{$indent}}return new {{jsid $model.Name}}{{$typeParamList}}($$parsedSource as Partial<{{jsid $model.Name}}{{$typeParamList}}>);
+        {{- if $typeParamList}}
+        };
+        {{- end}}
     }
 {{- end}}
 }
@@ -157,7 +174,7 @@ export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$t
 {{- end}}
 {{- $postponed := $module.PostponedCreates}}
 {{- if $postponed}}
-// Internal type creation functions
+// Private type creation functions
 {{- range $i, $create := $postponed}}
 const $$createType{{$i}} = {{$create}};
 {{- end}}

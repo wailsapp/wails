@@ -65,24 +65,25 @@ import {
 {{- /* Build type parameter list */}}
 {{- $typeParams := ""}}
 {{- $typeParamList := ""}}
+{{- $createParamList := ""}}
 {{- range $i, $param := $model.TypeParams}}
-    {{- if or (eq $param "") (eq $param "_")}}
-        {{- $param = (printf "T$$%d" $i)}}
-    {{- end}}
-    {{- $param = (jsid $param)}}
+    {{- $param = (typeparam $i $param)}}
     {{- if eq $i 0}}
         {{- $typeParams = $param}}
         {{- $typeParamList = (printf "<%s" $param)}}
+        {{- $createParamList = (printf "($$createParam%s" $param)}}
     {{- else}}
         {{- $typeParams = (printf "%s,%s" $typeParams $param)}}
         {{- $typeParamList = (printf "%s, %s" $typeParamList $param)}}
+        {{- $createParamList = (printf "%s, $$createParam%s" $createParamList $param)}}
     {{- end}}
 {{- end}}
 {{- if $typeParamList}}
     {{- $typeParamList = (printf "%s>" $typeParamList)}}
+    {{- $createParamList = (printf "%s)" $createParamList)}}
 {{- end}}
 
-{{- if or $typeParams $model.Group.Doc $model.Doc $isEnum $isTypeAlias $isStructAlias}}
+{{- if or $typeParamList $model.Group.Doc $model.Doc $isEnum $isTypeAlias $isStructAlias}}
 /**
 {{- if $model.Group.Doc}}
 {{- jsdoc $model.Group.Doc.Text ""}}{{if $model.Doc}}
@@ -91,7 +92,7 @@ import {
 {{- if $model.Doc}}
 {{- jsdoc $model.Doc.Text ""}}
 {{- end}}
-{{- if $typeParams}}
+{{- if $typeParamList}}
  * @template {{$typeParams}}
 {{- end}}
 {{- if $isEnum}}
@@ -175,38 +176,46 @@ export class {{jsid $model.Name}} {
     }
 
     /**
-     * Creates a new {{jsid $model.Name}} instance from a string or object.
-     * Generic types also need creation functions for each type parameter.
-    {{- if $typeParams}}
+    {{- if $typeParamList}}
+     * Given creation functions for each type parameter,
+     * returns a creation function for a concrete instance
+     * of the generic class {{jsid $model.Name}}.
      * @template {{$typeParams}}
-    {{- end}}
     {{- range $i, $param := $model.TypeParams}}
-        {{- if or (eq $param "") (eq $param "_")}}
-            {{- $param = (printf "T$$%d" $i)}}
-        {{- end}}
-        {{- $param = (jsid $param)}}
-     * @param {(any) => {{$param -}} } $$create{{$param}}
+        {{- $param = (typeparam $i $param)}}
+     * @param {(any) => {{$param -}} } $$createParam{{$param}}
+     * @returns {(any) => {{jsid $model.Name}}{{$typeParamList -}} }
     {{- end}}
+    {{- else}}
+     * Creates a new {{jsid $model.Name}} instance from a string or object.
      * @param {any} [$$source = {}]
-     * @returns { {{- jsid $model.Name}}{{$typeParamList -}} }
+     * @returns { {{- jsid $model.Name -}} }
+    {{- end}}
      */
-    static createFrom({{range $i, $param := $model.TypeParams}}
-                {{- if or (eq $param "") (eq $param "_")}}
-                    {{- $param = (printf "T$$%d" $i)}}
-                {{- end}}
-                {{- $param = (jsid $param) -}}
-                $$create{{$param}}, {{end -}}
-            $$source = {}) {
-        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+    static createFrom{{if $typeParamList}}{{$createParamList}}{{else}}($$source = {}){{end}} {
         {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
-        {{- $create := ($module.JSCreate $field.Type)}}
-        {{- if ne $create "$Create.Any"}}
-        if ("{{js $field.Name}}" in $$parsedSource) {
-            $$parsedSource["{{js $field.Name}}"] = {{$create}}($$parsedSource["{{js $field.Name}}"]);
-        }
-        {{- end}}
+            {{- $create := ($module.JSCreateWithParams $field.Type $createParamList)}}
+            {{- if ne $create "$Create.Any"}}
+        const $$createField{{$i}}_{{$j}} = {{$create}};
+            {{- end}}
         {{- end}}{{end}}
-        return new {{jsid $model.Name}}(/** @type {Partial<{{jsid $model.Name}}{{$typeParamList}}>} */($$parsedSource));
+        {{- $indent := ""}}
+        {{- if $typeParamList}}
+            {{- $indent = "    "}}
+        return ($$source) => {
+        {{- end}}
+        {{$indent}}let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
+            {{- if $module.NeedsCreate $field.Type}}
+        {{$indent}}if ("{{js $field.Name}}" in $$parsedSource) {
+        {{$indent}}    $$parsedSource["{{js $field.Name}}"] = $$createField{{$i}}_{{$j}}($$parsedSource["{{js $field.Name}}"]);
+        {{$indent -}} }
+            {{- end}}
+        {{- end}}{{end}}
+        {{$indent}}return new {{jsid $model.Name}}(/** @type {Partial<{{jsid $model.Name}}{{$typeParamList}}>} */($$parsedSource));
+        {{- if $typeParamList}}
+        };
+        {{- end}}
     }
 }
 {{else}}
@@ -215,7 +224,7 @@ export class {{jsid $model.Name}} {
 {{- end}}
 {{- $postponed := $module.PostponedCreates}}
 {{- if $postponed}}
-// Internal type creation functions
+// Private type creation functions
 {{- range $i, $create := $postponed}}
 const $$createType{{$i}} = {{$create}};
 {{- end}}

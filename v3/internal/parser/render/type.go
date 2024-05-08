@@ -142,12 +142,7 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 		if quoted {
 			str = "| string "
 		}
-
-		if t.Obj().Name() == "" || t.Obj().Name() == "_" {
-			return fmt.Sprintf("T$$%d %s| null", t.Index(), str), true
-		} else {
-			return fmt.Sprintf("%s %s| null", jsid(t.Obj().Name()), str), true
-		}
+		return fmt.Sprintf("%s %s| null", typeparam(t.Index(), t.Obj().Name()), str), true
 	}
 
 	// Fall back to untyped mode.

@@ -8,6 +8,6 @@ type SomeMethods struct {
 }
 
 // LikeThisOne is an example method that does nothing.
-func (SomeMethods) LikeThisOne(Person, Impersonator, HowDifferent[bool]) PrivatePerson {
-	return PrivatePerson{}
+func (SomeMethods) LikeThisOne() (_ Person, _ Impersonator, _ HowDifferent[bool], _ PrivatePerson) {
+	return
 }

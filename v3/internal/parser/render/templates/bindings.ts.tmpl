@@ -93,7 +93,7 @@ export function {{.Name}}({{range $i, $param := .Params -}}
 {{end}}
 {{- $postponed := $module.PostponedCreates}}
 {{- if $postponed}}
-// Internal type creation functions
+// Private type creation functions
 {{- range $i, $create := $postponed}}
 const $$createType{{$i}} = {{$create}};
 {{- end}}
