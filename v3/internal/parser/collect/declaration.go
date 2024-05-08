@@ -23,8 +23,6 @@ import (
 //     map to *ast.FuncDecl nodes;
 //   - interface methods from global interfaces (*types.Func)
 //     map to *ast.Field nodes within their interface expression;
-//   - parameter/result fields from global signatures (*types.Var)
-//     map to *ast.Field nodes within their func expression;
 //   - struct fields from global structs (*types.Var)
 //     map to *ast.Field nodes within their struct expression;
 //   - global constants and variables map to *ast.ValueSpec nodes;
