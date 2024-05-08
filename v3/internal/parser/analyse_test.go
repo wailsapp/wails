@@ -105,6 +105,13 @@ func TestAnalyser(t *testing.T) {
 			},
 		},
 		{
+			name: "generics",
+			pkgs: []string{"generics"},
+			want: []string{
+				"github.com/wailsapp/wails/v3/internal/parser/testdata/generics.GreetService",
+			},
+		},
+		{
 			name: "struct_literal_multiple",
 			pkgs: []string{"struct_literal_multiple"},
 			want: []string{
