@@ -183,11 +183,7 @@ func (info *PackageInfo) Collect() *PackageInfo {
 					// Record injected line.
 					info.Injections = append(info.Injections, line)
 
-				case IsDirective(comment.Text, "include"):
-					if !pos.IsValid() {
-						continue
-					}
-
+				case pos.IsValid() && IsDirective(comment.Text, "include"):
 					// Check condition.
 					pattern, cond, err := ParseCondition(ParseDirective(comment.Text, "include"))
 					if err != nil {

@@ -3,7 +3,6 @@ package collect
 import (
 	"fmt"
 	"go/ast"
-	"go/token"
 	"go/types"
 	"strconv"
 	"sync"
@@ -143,7 +142,7 @@ func (info *ServiceInfo) Collect() *ServiceInfo {
 					if err != nil {
 						collector.logger.Errorf(
 							"%s: in `wails:inject` directive: %v",
-							info.serviceErrorLocation(comment.Pos()),
+							collector.Package(obj.Pkg()).Fset.Position(comment.Pos()),
 							err,
 						)
 						continue
@@ -218,7 +217,7 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 				if err != nil {
 					collector.logger.Errorf(
 						"%s: invalid value '%s' in `wails:id` directive: expected a valid uint32 value",
-						info.methodErrorLocation(method, comment.Pos()),
+						collector.Package(method.Pkg()).Fset.Position(comment.Pos()),
 						idString,
 					)
 					continue
@@ -270,7 +269,7 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 
 			collector.logger.Warningf(
 				"%s: parameter %s has non-empty interface type %s: this is not supported by encoding/json and will likely result in runtime errors",
-				info.methodErrorLocation(method, param.Pos()),
+				collector.Package(method.Pkg()).Fset.Position(param.Pos()),
 				paramName,
 				param.Type(),
 			)
@@ -308,37 +307,4 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 	}
 
 	return methodInfo
-}
-
-// serviceErrorLocation computes a sensible location
-// to display in service-related error messages.
-func (info *ServiceInfo) serviceErrorLocation(pos token.Pos) any {
-	if pkg := info.collector.Package(info.Object().Pkg()); pkg != nil {
-		// FileSet is available: compute source location.
-		return pkg.Fset.Position(pos)
-	}
-
-	// FileSet not available: fall back to package/method coordinates.
-	return fmt.Sprintf(
-		"package %s: service %s",
-		info.Object().Pkg().Path(),
-		info.Name,
-	)
-}
-
-// methodErrorLocation computes a sensible location
-// to display in method-related error messages.
-func (info *ServiceInfo) methodErrorLocation(method *types.Func, pos token.Pos) any {
-	if pkg := info.collector.Package(method.Pkg()); pkg != nil {
-		// FileSet is available: compute source location.
-		return pkg.Fset.Position(pos)
-	}
-
-	// FileSet not available: fall back to package/method coordinates.
-	return fmt.Sprintf(
-		"package %s: method %s.%s",
-		method.Pkg().Path(),
-		method.Type().(*types.Signature).Recv().Type(),
-		method.Name(),
-	)
 }
