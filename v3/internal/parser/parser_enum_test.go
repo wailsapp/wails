@@ -1,10 +1,10 @@
 package parser
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestParseEnum(t *testing.T) {
@@ -143,25 +143,28 @@ func TestParseEnum(t *testing.T) {
 				return
 			}
 
-			patchParserOutput(got)
+			cmpOptions := []cmp.Option{
+				cmpopts.IgnoreTypes(Project{}, &Project{}, ParsedPackage{}, &ParsedPackage{}),
+				cmpopts.IgnoreUnexported(Field{}),
+			}
 
 			// Loop over the things we want
 			for packageName, packageData := range tt.wantBoundMethods {
 				for structName, wantBoundMethods := range packageData {
 					gotBoundMethods := got.BoundMethods[packageName][structName]
-					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods, cmp.AllowUnexported(Parameter{})); diff != "" {
+					if diff := cmp.Diff(wantBoundMethods, gotBoundMethods, cmpOptions...); diff != "" {
 						t.Errorf("ParseDirectory() failed:\n" + diff)
 					}
 				}
 			}
 
-			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods, cmp.AllowUnexported(Parameter{})); diff != "" {
+			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods, cmpOptions...); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
-			if !reflect.DeepEqual(tt.wantModels, got.Models) {
-				t.Errorf("ParseDirectory() failed:\n" + cmp.Diff(tt.wantModels, got.Models))
+			if diff := cmp.Diff(tt.wantModels, got.Models, cmpOptions...); diff != "" {
+				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
-			if diff := cmp.Diff(tt.wantTypes, got.Types); diff != "" {
+			if diff := cmp.Diff(tt.wantTypes, got.Types, cmpOptions...); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
 		})
