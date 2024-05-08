@@ -51,7 +51,7 @@ func (analyser *Analyser) reportResult(pkgi int, pos token.Pos, typ types.Type) 
 	}
 
 	result := named.Obj()
-	if analyser.found.Mark(result) {
+	if analyser.found.Add(result) {
 		if analyser.yield != nil {
 			analyser.yield(result)
 		}

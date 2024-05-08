@@ -26,7 +26,7 @@ type target struct {
 // schedule adds the given target to the analyser queue
 // only if it has never been scheduled before.
 func (analyser *Analyser) schedule(tgt target) {
-	if analyser.scheduled.Mark(tgt) {
+	if analyser.scheduled.Add(tgt) {
 		analyser.queue = append(analyser.queue, tgt)
 
 		// Target analysis with a strong path yields
@@ -36,7 +36,7 @@ func (analyser *Analyser) schedule(tgt target) {
 		// mark the weak version as done too.
 		if tgt.path.StrongRef() {
 			tgt.path = analyser.paths.Get(tgt.path.Path().Weaken())
-			if !analyser.scheduled.Mark(tgt) {
+			if !analyser.scheduled.Add(tgt) {
 				analyser.queue = slices.DeleteFunc(analyser.queue, func(t target) bool {
 					return t == tgt
 				})
