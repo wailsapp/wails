@@ -7,8 +7,8 @@ import {Call} from {{if .UseBundledRuntime}}"/wails/runtime.js"{{else}}"@wailsio
 {{- $struct := .Struct}}
 {{- $models := .ModelsFilename}}
 {{- $useIDs := .UseIDs}}
-{{- range .Imports}}
-import * as {{.PackageName}} from "{{.Path}}/{{$models}}.js";
+{{- range $name, $path := .Imports}}
+import * as {{$name}} from "{{$path}}/{{$models}}.js";
 {{- end}}{{if .Imports}}
 {{end}}
 {{- if .LocalImports}}

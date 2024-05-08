@@ -6,13 +6,14 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/parser/templates"
 )
 
 type BindingDefinitions struct {
 	Package      string
-	Imports      []*ImportDef
+	Imports      map[string]string
 	LocalImports []structName
 
 	Struct  string
@@ -77,37 +78,25 @@ func (p *Project) GenerateBindings(bindings map[packagePath]map[structName][]*Bo
 	return
 }
 
-func (p *Project) calculateBindingImports(pkg string, methods []*BoundMethod) []*ImportDef {
-	var result []*ImportDef
-	var seen = make(map[string]bool)
-
+func (p *Project) calculateBindingImports(pkg string, methods []*BoundMethod) map[string]string {
+	result := make(map[string]string)
 	pkgInfo := p.packageCache[pkg]
-
-	var processParameter = func(param *Parameter) {
-		if param.Type.Package != pkg {
-			// Find the relative path from the source directory to the target directory
-			paramPkgInfo := p.packageCache[param.Type.Package]
-			relativePath := p.RelativeBindingsDir(pkgInfo, paramPkgInfo)
-
-			// Deduplicate imports
-			if _, ok := seen[relativePath]; ok {
-				return
-			}
-			seen[relativePath] = true
-
-			result = append(result, &ImportDef{
-				PackageName: paramPkgInfo.Name,
-				Path:        relativePath,
-			})
-		}
-	}
 
 	for _, method := range methods {
 		for _, param := range method.JSInputs() {
-			processParameter(param)
+			if param.Type.Package != pkg {
+				paramPkgInfo := p.packageCache[param.Type.Package]
+				// Find the relative path from the source directory to the target directory
+				result[paramPkgInfo.Name] = p.RelativeBindingsDir(pkgInfo, paramPkgInfo)
+			}
 		}
+
 		for _, param := range method.JSOutputs() {
-			processParameter(param)
+			if param.Type.Package != pkg {
+				paramPkgInfo := p.packageCache[param.Type.Package]
+				// Find the relative path from the source directory to the target directory
+				result[paramPkgInfo.Name] = p.RelativeBindingsDir(pkgInfo, paramPkgInfo)
+			}
 		}
 	}
 
@@ -115,29 +104,24 @@ func (p *Project) calculateBindingImports(pkg string, methods []*BoundMethod) []
 }
 
 func (p *Project) calculateBindingLocalImports(pkg string, methods []*BoundMethod) []structName {
-	var result []structName
-	var seen = make(map[string]bool)
-
-	var processParameter = func(param *Parameter) {
-		if param.Type.Package == pkg && (param.Type.IsStruct || param.Type.IsEnum) {
-			// Deduplicate imports
-			if _, ok := seen[param.Type.Name]; ok {
-				return
-			}
-			seen[param.Type.Name] = true
-
-			result = append(result, param.Type.Name)
-		}
-	}
+	requiredTypes := make(map[structName]bool)
 
 	for _, method := range methods {
 		for _, param := range method.JSInputs() {
-			processParameter(param)
+			if param.Type.Package == pkg && (param.Type.IsStruct || param.Type.IsEnum) {
+				requiredTypes[param.Type.Name] = true
+			}
 		}
+
 		for _, param := range method.JSOutputs() {
-			processParameter(param)
+			if param.Type.Package == pkg && (param.Type.IsStruct || param.Type.IsEnum) {
+				requiredTypes[param.Type.Name] = true
+			}
 		}
 	}
+
+	result := lo.Keys(requiredTypes)
+	slices.Sort(result)
 
 	return result
 }

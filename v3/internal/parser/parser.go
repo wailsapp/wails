@@ -1214,11 +1214,6 @@ func (p *Project) RelativeBindingsDir(dir *ParsedPackage, dir2 *ParsedPackage) s
 	return filepath.ToSlash(relativePath)
 }
 
-type ImportDef struct {
-	Path        string
-	PackageName string
-}
-
 func getTypeString(expr ast.Expr) string {
 	switch t := expr.(type) {
 	case *ast.Ident:
