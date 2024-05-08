@@ -140,12 +140,7 @@ func (info *ModelInfo) Collect() {
 				}
 			}
 
-			// We can handle non-generic class aliases
-			// and generic non-class aliases
-			// but not generic class aliases.
-			if tp == nil || !IsClass(typ) {
-				def = info.TypeDefInfo.Rhs(obj)
-			}
+			def = info.TypeDefInfo.Rhs(obj)
 			if def == nil {
 				def = typ.Underlying()
 			}

@@ -62,6 +62,8 @@ import * as $internal from "./{{js $internal}}";
 {{- if $isEnum}}
  * @readonly
  * @enum { {{- $module.JSType $model.Type -}} }
+{{- else if $isClassAlias}}
+ * @extends { {{- $module.JSType $model.Type -}} }
 {{- else if $isTypeAlias}}
  * @typedef { {{- $module.JSType $model.Type -}} } {{jsid $model.Name}}
 {{- else if $isStructAlias}}
@@ -99,11 +101,40 @@ export const {{jsid $model.Name}} = {
     {{- end}}{{end}}{{end}}
 };
 {{else if $isClassAlias}}
-{{- if and $model.Type.TypeParams (gt $model.Type.TypeParams.Len 0)}}
-export const {{jsid $model.Name}} = /** @type {typeof {{$module.JSType $model.Type -}} } */({{$module.JSType $model.Type.Origin}});
-{{- else}}
-export const {{jsid $model.Name}} = {{$module.JSType $model.Type}};
-{{- end}}
+export class {{jsid $model.Name}} extends {{$module.JSType $model.Type.Origin}} {
+    /**
+     * Creates a new {{jsid $model.Name}} instance.
+     * @param {Partial<{{jsid $model.Name}}{{$typeParamList}}>} [$$source = {}] - The source object to create the {{jsid $model.Name}}.
+     */
+    constructor($$source = {}) {
+        super($$source);
+    }
+
+    /**
+    {{- if $typeParamList}}
+     * Given creation functions for each type parameter,
+     * returns a creation function for a concrete instance
+     * of the generic class {{jsid $model.Name}}.
+     * @template {{$typeParams}}
+    {{- range $i, $param := $model.TypeParams}}
+        {{- $param = (typeparam $i $param)}}
+     * @param {(any) => {{$param -}} } $$createParam{{$param}}
+    {{- end}}
+     * @returns {($$source?: any, $$class?: any) => any }
+    {{- else}}
+     * Creates a new {{jsid $model.Name}} instance from a string or object.
+     * @param {any} [$$source = {}]
+     * @param {any} [$$class = {{jsid $model.Name}}]
+     * @returns {any}
+    {{- end}}
+     */
+    static createFrom{{if $typeParamList}}{{$createParamList}}{{else}}($$source = {}, $$class = {{jsid $model.Name}}){{end}} {
+        const $$createSuper = {{$module.JSCreateWithParams $model.Type $createParamList}};
+        return {{if $typeParamList -}}
+            ($$source = {}, $$class = {{jsid $model.Name}}) => {{end -}}
+                $$createSuper($$source, $$class);
+    }
+}
 {{else if $isClass}}
 export class {{jsid $model.Name}} {
     /**
@@ -148,15 +179,16 @@ export class {{jsid $model.Name}} {
     {{- range $i, $param := $model.TypeParams}}
         {{- $param = (typeparam $i $param)}}
      * @param {(any) => {{$param -}} } $$createParam{{$param}}
-     * @returns {(any) => {{jsid $model.Name}}{{$typeParamList -}} }
     {{- end}}
+     * @returns {($$source?: any, $$class?: any) => {{jsid $model.Name}}{{$typeParamList -}} }
     {{- else}}
      * Creates a new {{jsid $model.Name}} instance from a string or object.
      * @param {any} [$$source = {}]
+     * @param {any} [$$class = {{jsid $model.Name}}]
      * @returns { {{- jsid $model.Name -}} }
     {{- end}}
      */
-    static createFrom{{if $typeParamList}}{{$createParamList}}{{else}}($$source = {}){{end}} {
+    static createFrom{{if $typeParamList}}{{$createParamList}}{{else}}($$source = {}, $$class = {{jsid $model.Name}}){{end}} {
         {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
             {{- $create := ($module.JSCreateWithParams $field.Type $createParamList)}}
             {{- if ne $create "$Create.Any"}}
@@ -166,7 +198,7 @@ export class {{jsid $model.Name}} {
         {{- $indent := ""}}
         {{- if $typeParamList}}
             {{- $indent = "    "}}
-        return ($$source) => {
+        return ($$source = {}, $$class = {{jsid $model.Name}}) => {
         {{- end}}
         {{$indent}}let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         {{- range $i, $group := $model.Fields}}{{range $j, $field := $group}}
@@ -176,7 +208,7 @@ export class {{jsid $model.Name}} {
         {{$indent -}} }
             {{- end}}
         {{- end}}{{end}}
-        {{$indent}}return new {{jsid $model.Name}}(/** @type {Partial<{{jsid $model.Name}}{{$typeParamList}}>} */($$parsedSource));
+        {{$indent}}return new $$class(/** @type {Partial<{{jsid $model.Name}}{{$typeParamList}}>} */($$parsedSource));
         {{- if $typeParamList}}
         };
         {{- end}}
