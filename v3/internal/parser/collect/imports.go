@@ -2,7 +2,7 @@ package collect
 
 import (
 	"go/types"
-	"strings"
+	"path/filepath"
 )
 
 type (
@@ -261,47 +261,16 @@ func (imports *ImportMap) AddType(typ types.Type) {
 
 // computeImportPath returns the shortest relative import path
 // through which the importer package can reference the imported one.
-//
-// We provide a custom implementation to work around
-// the fact that filepath.Rel may change separators
-// plus we know that loaded package paths are well-formed.
 func computeImportPath(importer string, imported string) string {
-	// Find longest common prefix.
-	i, slash := 0, -1
-	for ; i < len(importer) && i < len(imported); i++ {
-		if importer[i] != imported[i] {
-			break
-		}
-
-		if importer[i] == '/' {
-			slash = i
-		}
+	rel, err := filepath.Rel(importer, imported)
+	if err != nil {
+		panic(err)
 	}
 
-	// One path is a prefix of the other, seen as strings:
-	// check if the extension starts with a slash.
-	if (i == len(importer) && i < len(imported) && imported[i] == '/') || (i == len(imported) && i < len(importer) && importer[i] == '/') {
-		slash = i
-	}
-
-	if slash == -1 {
-		return "./" + imported
-	}
-
-	// Build path from the right number of parent steps plus suffix.
-	var builder strings.Builder
-
-	back := strings.Count(importer[slash:], "/")
-	if back == 0 {
-		builder.WriteByte('.')
+	rel = filepath.ToSlash(rel)
+	if rel[0] == '.' {
+		return rel
 	} else {
-		builder.WriteString("..")
-		for back--; back > 0; back-- {
-			builder.WriteString("/..")
-		}
+		return "./" + rel
 	}
-
-	builder.WriteString(imported[slash:])
-
-	return builder.String()
 }
