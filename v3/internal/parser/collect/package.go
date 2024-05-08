@@ -50,14 +50,14 @@ type PackageInfo struct {
 
 	// Includes holds a list of additional files to include
 	// with the generated bindings.
-	// It maps file names to their paths on disk and additional options.
+	// It maps file names to their paths on disk.
 	Includes map[string]string
 
 	// Injections holds a list of code lines to be injected
 	// into the package index file.
 	Injections []string
 
-	// models records service types that have to be generated for this package.
+	// services records service types that have to be generated for this package.
 	// We rely upon [sync.Map] for atomic swapping support.
 	services sync.Map
 
@@ -142,7 +142,7 @@ func (info *PackageInfo) Collect() *PackageInfo {
 
 		var packageNameFound bool
 
-		// Collect docs and parse packageName/include directives.
+		// Collect docs and parse directives.
 		for _, file := range info.Files {
 			if file.Doc == nil {
 				continue
@@ -161,7 +161,9 @@ func (info *PackageInfo) Collect() *PackageInfo {
 			dir := filepath.Dir(pos.Filename)
 
 			// Parse directives.
-			info.Includes = make(map[string]string)
+			if info.Includes == nil {
+				info.Includes = make(map[string]string)
+			}
 			for _, comment := range file.Doc.List {
 				switch {
 				case IsDirective(comment.Text, "internal"):
@@ -186,7 +188,11 @@ func (info *PackageInfo) Collect() *PackageInfo {
 					// Record injected line.
 					info.Injections = append(info.Injections, line)
 
-				case pos.IsValid() && IsDirective(comment.Text, "include"):
+				case IsDirective(comment.Text, "include"):
+					if !pos.IsValid() {
+						continue
+					}
+
 					// Check condition.
 					pattern, cond, err := ParseCondition(ParseDirective(comment.Text, "include"))
 					if err != nil {
@@ -246,7 +252,11 @@ func (info *PackageInfo) Collect() *PackageInfo {
 						info.Includes[name] = path
 					}
 
-				case !packageNameFound && IsDirective(comment.Text, "name"):
+				case IsDirective(comment.Text, "name"):
+					if packageNameFound {
+						continue
+					}
+
 					packageName := ParseDirective(comment.Text, "name")
 					if !token.IsIdentifier(packageName) {
 						collector.logger.Errorf(
