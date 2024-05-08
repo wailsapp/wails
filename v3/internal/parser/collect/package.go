@@ -1,7 +1,6 @@
-package parser
+package collect
 
 import (
-	"fmt"
 	"go/ast"
 	"go/token"
 	"go/types"
@@ -13,11 +12,7 @@ import (
 )
 
 type (
-	// PackageMap maps package paths to their unique [PackageInfo] instances.
-	// It is safe for concurrent use.
-	PackageMap sync.Map
-
-	// PackageInfo collects the following information about a package:
+	// PackageInfo records the following information about a package:
 	// path, name, declaration groups with their doc comments,
 	// type declarations with their doc comments and parent group,
 	// constant declarations with their doc comments and parent group,
@@ -42,24 +37,29 @@ type (
 		Docs []*ast.CommentGroup
 
 		Groups []*GroupInfo
-		Types  map[string]*TypeInfo
+		Types  map[string]*TypeDefInfo
 		Consts map[string]*ConstInfo
 
 		mu       sync.Mutex
-		bindings []string
+		bindings []*types.TypeName
 		models   []*types.TypeName
 
-		pkg  *packages.Package
-		err  error
-		once sync.Once
+		source any
+		once   sync.Once
 	}
 
+	// GroupInfo records information about a group
+	// of type or constant declarations.
+	// This may be either a list of distinct specifications
+	// wrapped in parentheses, or a single specification
+	// declaring multiple constants.
 	GroupInfo struct {
 		Doc   *ast.CommentGroup
 		Group *GroupInfo
 	}
 
-	TypeInfo struct {
+	// TypeDefInfo records information about a single type specification.
+	TypeDefInfo struct {
 		Name    string
 		Doc     *ast.CommentGroup
 		Group   *GroupInfo
@@ -68,11 +68,13 @@ type (
 		Methods map[string]*MethodInfo
 	}
 
+	// MethodInfo records information about a method declaration.
 	MethodInfo struct {
 		Name string
 		Doc  *ast.CommentGroup
 	}
 
+	// ConstInfo records information about a constant declaration.
 	ConstInfo struct {
 		Name  string
 		Doc   *ast.CommentGroup
@@ -87,51 +89,31 @@ type (
 	PackageIndex struct {
 		Info *PackageInfo
 
-		Bindings []string
+		Bindings []*types.TypeName
 		Models   []*types.TypeName
 		Internal []*types.TypeName
 	}
 )
 
-// Preload adds the given package descriptor to the map,
-// so that the loading step may be skipped when collecting information.
-func (m *PackageMap) Preload(pkg *packages.Package) {
-	(*sync.Map)(m).LoadOrStore(pkg.PkgPath, NewPackageInfo(pkg.PkgPath, pkg))
-}
-
-// Get retrieves from the map the unique
-// [PackageInfo] instance associated to the given path.
-// If none is present, a new one is initialised and added to the map.
-func (m *PackageMap) Get(path string) *PackageInfo {
-	info, _ := (*sync.Map)(m).LoadOrStore(path, NewPackageInfo(path, nil))
-	return info.(*PackageInfo)
-}
-
-// Range calls yield sequentially for each [PackageInfo] instance
-// present in the map. If yield returns false, Range stops the iteration.
-//
-// For more details, see [sync.Map.Range].
-func (m *PackageMap) Range(yield func(pkg *PackageInfo) bool) {
-	(*sync.Map)(m).Range(func(key, value any) bool {
-		return yield(value.(*PackageInfo))
-	})
-}
-
 // NewPackageInfo initialises an empty information structure
 // for the given package path.
 //
-// If pkg is not nil, the Collect method will use it
-// to get syntax information instead of loading the package
-// from disk.
+// source may be either a pointer to [packages.Package]
+// for the given path with syntax information,
+// or a [Loader] instance that will be used to load the package.
 //
 // The cost of this function must be as low as possible
 // and it must not perform any significant work,
 // as it might be called multiple times for the same package
 // and its result might be discarded often.
-func NewPackageInfo(path string, pkg *packages.Package) *PackageInfo {
+func NewPackageInfo(path string, source any) *PackageInfo {
+	if source == nil {
+		panic("source cannot be nil")
+	}
+
 	return &PackageInfo{
-		Path: path,
-		pkg:  pkg,
+		Path:   path,
+		source: source,
 	}
 }
 
@@ -140,7 +122,7 @@ func NewPackageInfo(path string, pkg *packages.Package) *PackageInfo {
 //
 // This method is safe to call even if [PackageInfo.Collect]
 // has not been called yet.
-func (info *PackageInfo) AddBindings(bindings ...string) {
+func (info *PackageInfo) AddBindings(bindings ...*types.TypeName) {
 	info.mu.Lock()
 	info.bindings = append(info.bindings, bindings...)
 	info.mu.Unlock()
@@ -168,13 +150,13 @@ func (info *PackageInfo) AddModels(models ...*types.TypeName) {
 func (info *PackageInfo) Index() (index PackageIndex) {
 	info.mu.Lock()
 
-	// Sort bindings by name, then deduplicate.
-	slices.Sort(info.bindings)
-	info.bindings = slices.Compact(info.bindings)
+	// Sort bindings by exported property and name, then deduplicate.
+	slices.SortFunc(info.bindings, compareTypes)
+	info.bindings = slices.CompactFunc(info.bindings, equateTypes)
 
 	// Sort models by exported property and name, then deduplicate.
-	slices.SortFunc(info.models, compareModels)
-	info.models = slices.CompactFunc(info.models, equateModels)
+	slices.SortFunc(info.models, compareTypes)
+	info.models = slices.CompactFunc(info.models, equateTypes)
 
 	// Clone into result.
 	index.Bindings = slices.Clone(info.bindings)
@@ -183,7 +165,7 @@ func (info *PackageInfo) Index() (index PackageIndex) {
 	info.mu.Unlock()
 
 	// Find first unexported model.
-	split, _ := slices.BinarySearchFunc(index.Models, struct{}{}, partitionModels)
+	split, _ := slices.BinarySearchFunc(index.Models, struct{}{}, partitionTypes)
 
 	// Separate unexported and exported models.
 	index.Internal = index.Models[split:]
@@ -199,34 +181,24 @@ func (info *PackageInfo) Index() (index PackageIndex) {
 // It can be called concurrently by multiple goroutines;
 // the computation will be performed just once.
 //
-// If the package has not been loaded yet,
-// it will be loaded with the specified build flags.
+// Collect returns true on success, false if the package failed to load.
 //
 // After Collect returns, the calling goroutine and all goroutines
 // it might spawn afterwards are free to access
 // the receiver's fields indefinitely.
-func (info *PackageInfo) Collect(buildFlags []string) error {
+func (info *PackageInfo) Collect() bool {
 	info.once.Do(func() {
-		pkg := info.pkg
-		info.pkg = nil
-
-		if pkg == nil {
-			pkgs, err := LoadPackages(buildFlags, false, info.Path)
-			if err != nil {
-				info.err = err
-				return
-			} else if len(pkgs) < 1 {
-				info.err = fmt.Errorf("%s: package not found", info.Path)
-				return
-			} else if len(pkgs) > 1 {
-				info.err = fmt.Errorf("%s: multiple packages loaded for the same path", info.Path)
+		pkg, ok := info.source.(*packages.Package)
+		if !ok {
+			pkg = info.source.(Loader).Load(info.Path)
+			if pkg == nil {
 				return
 			}
-
-			pkg = pkgs[0]
 		}
 
-		info.Types = make(map[string]*TypeInfo)
+		info.source = nil
+
+		info.Types = make(map[string]*TypeDefInfo)
 		info.Consts = make(map[string]*ConstInfo)
 
 		// Collect all methods here temporarily.
@@ -266,7 +238,7 @@ func (info *PackageInfo) Collect(buildFlags []string) error {
 							}
 
 							empty = false
-							info.Types[tspec.Name.Name] = &TypeInfo{
+							info.Types[tspec.Name.Name] = &TypeDefInfo{
 								Name:  tspec.Name.Name,
 								Doc:   tspec.Doc,
 								Group: group,
@@ -368,12 +340,13 @@ func (info *PackageInfo) Collect(buildFlags []string) error {
 			info.Methods = methods[name]
 		}
 	})
-	return info.err
+
+	return info.source == nil
 }
 
-// compareModelNames compares two models by exported property and name.
+// compareModelNames compares two types by exported property and name.
 // The order is exported before unexported, then lexicographical.
-func compareModels(m1 *types.TypeName, m2 *types.TypeName) int {
+func compareTypes(m1 *types.TypeName, m2 *types.TypeName) int {
 	if m1 == m2 {
 		return 0
 	}
@@ -388,16 +361,16 @@ func compareModels(m1 *types.TypeName, m2 *types.TypeName) int {
 	return strings.Compare(m1.Name(), m2.Name())
 }
 
-// equateModels tests whether two models have the same name.
-func equateModels(m1 *types.TypeName, m2 *types.TypeName) bool {
+// equateTypes tests efficiently whether two types have the same name.
+func equateTypes(m1 *types.TypeName, m2 *types.TypeName) bool {
 	// If the pointers are equal, then the names are too.
 	// If the pointers differ, but they come from the same *types.Package,
 	// then the names differ.
 	return m1 == m2 || (m1.Pkg() != m2.Pkg() && m1.Name() == m2.Name())
 }
 
-// partitionModelNames returns -1 if m is exported, 1 if unexported.
-func partitionModels(m *types.TypeName, _ struct{}) int {
+// partitionTypes returns -1 if m is exported, 1 if unexported.
+func partitionTypes(m *types.TypeName, _ struct{}) int {
 	if m.Exported() {
 		return -1
 	}

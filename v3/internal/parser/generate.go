@@ -10,58 +10,83 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/parser/analyse"
+	"github.com/wailsapp/wails/v3/internal/parser/collect"
+	"github.com/wailsapp/wails/v3/internal/parser/render"
+	"golang.org/x/tools/go/packages"
 )
 
 // ErrNoInitialPackages is returned by [Generator.Generate]
 // when [LoadPackages] returns no error and no packages.
 var ErrNoInitialPackages = errors.New("the given patterns matched no packages")
 
-// CreateFileFunc abstracts away file and directory creation.
+// FileCreator abstracts away file and directory creation.
 // We use this to implement tests cleanly.
 //
 // The default implementation creates a file with the given path
 // by calling first [os.MkdirAll] on the directory part
 // then [os.Create] on the full path.
 //
-// A CreateFileFunc must allow concurrent calls transparently.
-// Each [io.WriteCloser] instance returned by a call to CreateFileFunc
+// Paths are always relative to the output directory.
+//
+// A FileCreator must allow concurrent calls to Create transparently.
+// Each [io.WriteCloser] instance returned by a call to Create
 // will be used by one goroutine at a time; but distinct instances
-// must allow be concurrent use by distinct goroutines.
-type CreateFileFunc func(path string) (io.WriteCloser, error)
+// must support concurrent use by distinct goroutines.
+type FileCreator interface {
+	Create(path string) (io.WriteCloser, error)
+}
 
-func defaultCreate(path string) (io.WriteCloser, error) {
-	if err := os.MkdirAll(filepath.Dir(path), 0o777); err != nil {
-		return nil, err
-	}
-	return os.Create(path)
+// FileCreatorFunc is an adapter to allow
+// the use of ordinary functions as file creators.
+type FileCreatorFunc func(path string) (io.WriteCloser, error)
+
+// Create calls f(path).
+func (f FileCreatorFunc) Create(path string) (io.WriteCloser, error) {
+	return f(path)
+}
+
+// defaultCreator implements the default file creation strategy.
+// It joins the output directory and the given path,
+// calls [os.MkdirAll] on the directory part,
+// then [os.Create] on the full path.
+func defaultCreator(outputDir string) FileCreator {
+	return FileCreatorFunc(func(path string) (io.WriteCloser, error) {
+		path = filepath.Join(outputDir, path)
+
+		if err := os.MkdirAll(filepath.Dir(path), 0o777); err != nil {
+			return nil, err
+		}
+
+		return os.Create(path)
+	})
 }
 
 // Generator wraps all bookkeeping data structures that are needed
 // to generate bindings for a set of packages.
 type Generator struct {
 	options *flags.GenerateBindingsOptions
-	create  CreateFileFunc
+	creator FileCreator
 
-	// buildFlags caches build flags for use in the [PackageInfo.Collect] method.
+	// buildFlags caches parsed build flags from the options struct.
 	buildFlags []string
 
-	// pkgs maps package paths to their unique [PackageInfo] instances.
-	pkgs PackageMap
+	collector *collect.Collector
+	renderer  render.Renderer
 
 	wg sync.WaitGroup
 }
 
 // NewGenerator configures a new generator instance.
 // The options argument must not be nil.
-// If create is nil, it will use the default implementation.
-func NewGenerator(options *flags.GenerateBindingsOptions, create CreateFileFunc) *Generator {
-	if create == nil {
-		create = defaultCreate
+// If creator is nil, the default implementation will be used.
+func NewGenerator(options *flags.GenerateBindingsOptions, creator FileCreator) *Generator {
+	if creator == nil {
+		creator = defaultCreator(options.OutputDirectory)
 	}
 
 	return &Generator{
 		options: options,
-		create:  create,
+		creator: creator,
 	}
 }
 
@@ -86,24 +111,29 @@ func (generator *Generator) Generate(patterns ...string) error {
 	// Cache reconstructed build flags.
 	generator.buildFlags = buildFlags
 
+	// Initialise collector.
+	if generator.collector == nil {
+		generator.collector = collect.NewCollector(collect.LoaderFunc(generator.loadAdditionalPackage))
+	}
+
 	// Load initial packages.
 	pkgs, err := LoadPackages(buildFlags, true, patterns...)
 	if err != nil {
 		return err
 	}
-
 	if len(patterns) > 0 && len(pkgs) == 0 {
 		return ErrNoInitialPackages
 	}
 
-	// Report parsing/type-checking errors
-	// and initialise package map.
+	// Report parsing/type-checking errors.
 	for _, pkg := range pkgs {
-		generator.pkgs.Preload(pkg)
 		for _, err := range pkg.Errors {
 			pterm.Warning.Println(err)
 		}
 	}
+
+	// Warmup collector.
+	generator.collector.Preload(pkgs...)
 
 	// Run analyser and schedule bindings generation for each result.
 	err = analyse.NewAnalyser(pkgs).Run(func(result analyse.Result) bool {
@@ -122,7 +152,7 @@ func (generator *Generator) Generate(patterns ...string) error {
 	generator.wg.Wait()
 
 	// Schedule models and index generation for each package.
-	generator.pkgs.Range(func(info *PackageInfo) bool {
+	generator.collector.All(func(info *collect.PackageInfo) bool {
 		generator.wg.Add(1)
 		go generator.generateModelsAndIndex(info)
 		return true
@@ -134,23 +164,45 @@ func (generator *Generator) Generate(patterns ...string) error {
 	return nil
 }
 
+// loadAdditionalPackage loads syntax for the specified package path.
+// Errors are printed to the pterm Error logger.
+// When an error occurs, loadAdditionalPackage returns nil.
+func (generator *Generator) loadAdditionalPackage(path string) *packages.Package {
+	pkgs, err := LoadPackages(generator.buildFlags, false, path)
+	if err != nil {
+		pterm.Error.Println(err)
+		return nil
+	} else if len(pkgs) < 1 {
+		pterm.Error.Printfln("%s: package not found", path)
+		return nil
+	} else if len(pkgs) > 1 {
+		pterm.Error.Printfln("%s: multiple packages loaded for the same path", path)
+		return nil
+	}
+
+	for _, err := range pkgs[0].Errors {
+		pterm.Warning.Println(err)
+	}
+
+	return pkgs[0]
+}
+
 // generateModelsAndIndex schedules generation of public/private model files
 // and if required by the options, of index files
 // for the given package.
-func (generator *Generator) generateModelsAndIndex(info *PackageInfo) {
+func (generator *Generator) generateModelsAndIndex(info *collect.PackageInfo) {
 	index := info.Index()
 	writeIndex := !generator.options.NoIndex && len(index.Bindings) > 0 && len(index.Models) > 0
 
 	// Collect package information if it is going to be consumed below.
-	if writeIndex || len(index.Models) > 0 || len(index.Internal) > 0 {
-		if err := info.Collect(generator.buildFlags); err != nil {
-			pterm.Error.Println(err)
+	if len(index.Models) > 0 || len(index.Internal) > 0 || writeIndex {
+		if !info.Collect() {
 			pterm.Error.Printfln("package %s: models and index generation failed", info.Path)
 			return
 		}
 	}
 
-	// Now that Collect has been called, the goroutines spawned below
+	// Now that Collect has been called, goroutines spawned below
 	// can access package information freely.
 
 	if len(index.Models) > 0 {
@@ -166,6 +218,4 @@ func (generator *Generator) generateModelsAndIndex(info *PackageInfo) {
 	if writeIndex {
 		generator.generateIndex(index)
 	}
-
-	generator.wg.Done()
 }

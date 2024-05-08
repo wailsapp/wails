@@ -31,7 +31,7 @@ func LoadPackages(buildFlags []string, full bool, patterns ...string) ([]*packag
 		},
 		BuildFlags: buildFlags,
 		ParseFile: func(fset *token.FileSet, filename string, src []byte) (file *ast.File, err error) {
-			file, err = parser.ParseFile(fset, filename, src, parser.AllErrors|parser.ParseComments|parser.SkipObjectResolution)
+			file, err = parser.ParseFile(fset, filename, src, parser.ParseComments|parser.SkipObjectResolution)
 			return
 		},
 	}, rewrittenPatterns...)

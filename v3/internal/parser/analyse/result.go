@@ -20,7 +20,7 @@ func (analyser *Analyser) reportResult(pkgi int, pos token.Pos, typ types.Type) 
 	case *types.Named:
 		named = t
 	case *types.Pointer:
-		if elem, ok := t.Elem().(*types.Named); ok {
+		if elem, ok := types.Unalias(t.Elem()).(*types.Named); ok {
 			named = elem
 		} else {
 			pterm.Warning.Printfln(
@@ -50,7 +50,13 @@ func (analyser *Analyser) reportResult(pkgi int, pos token.Pos, typ types.Type) 
 		return
 	}
 
+	// Retrieve type object.
+	// If original type was an alias, use its object.
 	result := named.Obj()
+	if alias, ok := typ.(*types.Alias); ok {
+		result = alias.Obj()
+	}
+
 	if analyser.found.Add(result) {
 		if analyser.yield != nil {
 			analyser.yield(result)

@@ -98,7 +98,7 @@ func Reparen(path []ast.Node) []ast.Node {
 }
 
 // LongestCommonPrefix computes the length
-// of the longest common prefix of two slices of integers.
+// of the longest common prefix of two slices of comparable values.
 func LongestCommonPrefix[S ~[]E, E comparable](p1 S, p2 S) (length int) {
 	for length = 0; length < len(p1) && length < len(p2); length++ {
 		if p1[length] != p2[length] {

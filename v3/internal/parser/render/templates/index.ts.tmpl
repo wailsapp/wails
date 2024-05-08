@@ -1,4 +1,3 @@
-// @ts-check
 /**
 {{- range .Info.Docs}}
 {{- jsdoc .Text ""}}
@@ -10,9 +9,9 @@
  * @module {{.Info.Path}}
  */
 {{range .Bindings}}
-export * as {{jsid .}} from "./{{.}}.js";
+export * as {{jsid .Name}} from "./{{.Name}}.ts";
 {{- end}}{{if .Bindings}}
 {{end}}
 {{- if .Models}}
-export * from "./models.js";
+export * from "./models.ts";
 {{- end}}

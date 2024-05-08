@@ -1,8 +1,48 @@
 package parser
 
-import "go/types"
+import (
+	"go/types"
+	"path/filepath"
 
-// generateBindings generates JS/TS bindings for the given type.
-func (generator *Generator) generateBindings(boundType *types.TypeName) {
-	panic("binding generation not implemented yet")
+	"github.com/pterm/pterm"
+)
+
+// generateBindings collects information
+// and generates JS/TS bindings for the given type.
+func (generator *Generator) generateBindings(typ *types.TypeName) {
+	defer generator.wg.Done()
+
+	success := false
+	defer func() {
+		if !success {
+			pterm.Error.Printfln(
+				"package %s: type %s: bindings generation failed",
+				typ.Pkg().Path(),
+				typ.Name(),
+			)
+		}
+	}()
+
+	// Collect bound type information.
+	info := generator.collector.BoundType(typ)
+	if info == nil {
+		return
+	}
+
+	// Create binding file.
+	file, err := generator.creator.Create(filepath.Join(info.Imports.Self, generator.renderer.BindingsFile(info.Name)))
+	if err != nil {
+		pterm.Error.Println(err)
+		return
+	}
+	defer file.Close()
+
+	// Render bound type.
+	err = generator.renderer.Bindings(file, info)
+	if err != nil {
+		pterm.Error.Println(err)
+		return
+	}
+
+	success = true
 }
