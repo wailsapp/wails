@@ -15,15 +15,9 @@ import (
 )
 
 type CallOptions struct {
-	MethodID    uint32            `json:"methodID"`
-	PackagePath string            `json:"packagePath"`
-	StructName  string            `json:"structName"`
-	MethodName  string            `json:"methodName"`
-	Args        []json.RawMessage `json:"args"`
-}
-
-func (c *CallOptions) Name() string {
-	return fmt.Sprintf("%s.%s.%s", c.PackagePath, c.StructName, c.MethodName)
+	MethodID   uint32            `json:"methodID"`
+	MethodName string            `json:"methodName"`
+	Args       []json.RawMessage `json:"args"`
 }
 
 type PluginCallOptions struct {
@@ -79,14 +73,14 @@ type BoundMethod struct {
 }
 
 type Bindings struct {
-	boundMethods  map[string]map[string]map[string]*BoundMethod
+	boundMethods  map[string]*BoundMethod
 	boundByID     map[uint32]*BoundMethod
 	methodAliases map[uint32]uint32
 }
 
 func NewBindings(instances []Service, aliases map[uint32]uint32) (*Bindings, error) {
 	b := &Bindings{
-		boundMethods:  make(map[string]map[string]map[string]*BoundMethod),
+		boundMethods:  make(map[string]*BoundMethod),
 		boundByID:     make(map[uint32]*BoundMethod),
 		methodAliases: aliases,
 	}
@@ -107,18 +101,8 @@ func (b *Bindings) Add(namedPtr interface{}) error {
 	}
 
 	for _, method := range methods {
-		packagePath := method.PackagePath
-		structName := method.TypeName
-		methodName := method.Name
-
 		// Add it as a regular method
-		if _, ok := b.boundMethods[packagePath]; !ok {
-			b.boundMethods[packagePath] = make(map[string]map[string]*BoundMethod)
-		}
-		if _, ok := b.boundMethods[packagePath][structName]; !ok {
-			b.boundMethods[packagePath][structName] = make(map[string]*BoundMethod)
-		}
-		b.boundMethods[packagePath][structName][methodName] = method
+		b.boundMethods[method.String()] = method
 		b.boundByID[method.ID] = method
 	}
 	return nil
@@ -142,20 +126,11 @@ func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
 			if !lo.Contains(exportedMethods, method.Name) {
 				continue
 			}
-			packagePath := "wails-plugins"
-			structName := pluginID
-			methodName := method.Name
 
 			// Add it as a regular method
-			if _, ok := b.boundMethods[packagePath]; !ok {
-				b.boundMethods[packagePath] = make(map[string]map[string]*BoundMethod)
-			}
-			if _, ok := b.boundMethods[packagePath][structName]; !ok {
-				b.boundMethods[packagePath][structName] = make(map[string]*BoundMethod)
-			}
-			b.boundMethods[packagePath][structName][methodName] = method
+			b.boundMethods[fmt.Sprintf("wails-plugins.%s.%s", pluginID, method.Name)] = method
 			b.boundByID[method.ID] = method
-			globalApplication.debug("Added plugin method: "+structName+"."+methodName, "id", method.ID)
+			globalApplication.debug("Added plugin method: "+pluginID+"."+method.Name, "id", method.ID)
 		}
 	}
 	return nil
@@ -163,15 +138,7 @@ func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
 
 // Get returns the bound method with the given name
 func (b *Bindings) Get(options *CallOptions) *BoundMethod {
-	_, ok := b.boundMethods[options.PackagePath]
-	if !ok {
-		return nil
-	}
-	_, ok = b.boundMethods[options.PackagePath][options.StructName]
-	if !ok {
-		return nil
-	}
-	method, ok := b.boundMethods[options.PackagePath][options.StructName][options.MethodName]
+	method, ok := b.boundMethods[options.MethodName]
 	if !ok {
 		return nil
 	}

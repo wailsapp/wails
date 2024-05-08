@@ -130,32 +130,13 @@ export function Call(options) {
 /**
  * Executes a method by name.
  *
- * @param {string} name - The name of the method in the format 'package.struct.method'.
+ * @param {string} methodName - The name of the method in the format 'package.struct.method'.
  * @param {...*} args - The arguments to pass to the method.
  * @throws {Error} If the name is not a string or is not in the correct format.
  * @returns {*} The result of the method execution.
  */
-export function ByName(name, ...args) {
-    // Package paths may contain dots: split with custom code
-    // to ensure only the last two dots are taken into account.
-    let methodDot = -1, structDot = -1;
-    if (typeof name === "string") {
-        methodDot = name.lastIndexOf(".");
-        if (methodDot > 0)
-            structDot = name.lastIndexOf(".", methodDot - 1);
-    }
-
-    if (methodDot < 0 || structDot < 0) {
-        throw new Error("CallByName requires a string in the format 'packagePath.struct.method'");
-    }
-
-    const packagePath = name.slice(0, structDot),
-          structName = name.slice(structDot + 1, methodDot),
-          methodName = name.slice(methodDot + 1);
-
+export function ByName(methodName, ...args) {
     return callBinding(CallBinding, {
-        packagePath,
-        structName,
         methodName,
         args
     });
