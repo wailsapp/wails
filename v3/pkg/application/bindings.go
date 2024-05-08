@@ -72,7 +72,7 @@ type BoundMethod struct {
 	Outputs     []*Parameter  `json:"outputs,omitempty"`
 	Comments    string        `json:"comments,omitempty"`
 	Method      reflect.Value `json:"-"`
-	StructName  string
+	TypeName    string
 	PackagePath string
 
 	needsContext bool
@@ -99,17 +99,17 @@ func NewBindings(structs []any, aliases map[uint32]uint32) (*Bindings, error) {
 	return b, nil
 }
 
-// Add the given struct methods to the Bindings
-func (b *Bindings) Add(structPtr interface{}) error {
+// Add the given named type pointer methods to the Bindings
+func (b *Bindings) Add(namedPtr interface{}) error {
 
-	methods, err := b.getMethods(structPtr, false)
+	methods, err := b.getMethods(namedPtr, false)
 	if err != nil {
 		return fmt.Errorf("cannot bind value to app: %s", err.Error())
 	}
 
 	for _, method := range methods {
 		packagePath := method.PackagePath
-		structName := method.StructName
+		structName := method.TypeName
 		methodName := method.Name
 
 		// Add it as a regular method
@@ -120,15 +120,6 @@ func (b *Bindings) Add(structPtr interface{}) error {
 			b.boundMethods[packagePath][structName] = make(map[string]*BoundMethod)
 		}
 		b.boundMethods[packagePath][structName][methodName] = method
-
-		if prev, ok := b.boundByID[method.ID]; ok {
-			return fmt.Errorf(
-				"bound method ID collision: methods %s.%s.%s and %s.%s.%s hash to the same ID %d",
-				prev.PackagePath, prev.StructName, prev.Name,
-				method.PackagePath, method.StructName, method.Name,
-			)
-		}
-
 		b.boundByID[method.ID] = method
 	}
 	return nil
@@ -215,60 +206,56 @@ func (b *Bindings) GenerateID(name string) (uint32, error) {
 }
 
 func (b *BoundMethod) String() string {
-	return fmt.Sprintf("%s.%s.%s", b.PackagePath, b.StructName, b.Name)
+	return fmt.Sprintf("%s.%s.%s", b.PackagePath, b.TypeName, b.Name)
 }
 
 func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod, error) {
-
 	// Create result placeholder
 	var result []*BoundMethod
 
 	// Check type
-	if !isStructPtr(value) {
-
-		if isStruct(value) {
-			name := reflect.ValueOf(value).Type().Name()
-			return nil, fmt.Errorf("%s is a struct, not a pointer to a struct", name)
-		}
-
+	if !isNamed(value) {
 		if isFunction(value) {
 			name := runtime.FuncForPC(reflect.ValueOf(value).Pointer()).Name()
-			return nil, fmt.Errorf("%s is a function, not a pointer to a struct. Wails v2 has deprecated the binding of functions. Please wrap your functions up in a struct and bind a pointer to that struct", name)
+			return nil, fmt.Errorf("%s is a function, not a pointer to named type. Wails v2 has deprecated the binding of functions. Please define your functions as methods on a struct and bind a pointer to that struct", name)
 		}
 
-		return nil, fmt.Errorf("not a pointer to a struct")
+		return nil, fmt.Errorf("%s is not a pointer to named type", reflect.ValueOf(value).Type().String())
+	} else if !isPtr(value) {
+		return nil, fmt.Errorf("%s is a named type, not a pointer to named type", reflect.ValueOf(value).Type().String())
 	}
 
-	// Process Struct
-	structValue := reflect.ValueOf(value)
-	structType := structValue.Elem().Type()
-	structName := structType.Name()
-	packagePath := structType.PkgPath()
+	// Process Named Type
+	namedValue := reflect.ValueOf(value)
+	ptrType := namedValue.Type()
+	namedType := ptrType.Elem()
+	typeName := namedType.Name()
+	packagePath := namedType.PkgPath()
 
-	if strings.Contains(structType.String(), "[") {
-		return nil, fmt.Errorf("%s.%s is a generic struct. Generic bound types are not supported", packagePath, structName)
+	if strings.Contains(namedType.String(), "[") {
+		return nil, fmt.Errorf("%s.%s is a generic type. Generic bound types are not supported", packagePath, namedType.String())
 	}
 
 	ctxType := reflect.TypeFor[context.Context]()
 
 	// Process Methods
-	for i := 0; i < structType.NumMethod(); i++ {
-		methodDef := structType.Method(i)
+	for i := 0; i < ptrType.NumMethod(); i++ {
+		methodDef := ptrType.Method(i)
 		methodName := methodDef.Name
-		method := structValue.MethodByName(methodName)
+		method := namedValue.MethodByName(methodName)
 
 		// Create new method
 		boundMethod := &BoundMethod{
 			Name:        methodName,
 			PackagePath: packagePath,
-			StructName:  structName,
+			TypeName:    typeName,
 			Inputs:      nil,
 			Outputs:     nil,
 			Comments:    "",
 			Method:      method,
 		}
 		var err error
-		boundMethod.ID, err = hash.Fnv(boundMethod.String())
+		boundMethod.ID, err = b.GenerateID(boundMethod.String())
 		if err != nil {
 			return nil, err
 		}
@@ -405,11 +392,9 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnV
 	return
 }
 
-// isStructPtr returns true if the value given is a
-// pointer to a struct
-func isStructPtr(value interface{}) bool {
-	return reflect.ValueOf(value).Kind() == reflect.Ptr &&
-		reflect.ValueOf(value).Elem().Kind() == reflect.Struct
+// isPtr returns true if the value given is a pointer.
+func isPtr(value interface{}) bool {
+	return reflect.ValueOf(value).Kind() == reflect.Ptr
 }
 
 // isFunction returns true if the given value is a function
@@ -417,7 +402,13 @@ func isFunction(value interface{}) bool {
 	return reflect.ValueOf(value).Kind() == reflect.Func
 }
 
-// isStructPtr returns true if the value given is a struct
-func isStruct(value interface{}) bool {
-	return reflect.ValueOf(value).Kind() == reflect.Struct
+// isNamed returns true if the given value is of named type
+// or pointer to named type.
+func isNamed(value interface{}) bool {
+	rv := reflect.ValueOf(value)
+	if rv.Kind() == reflect.Ptr {
+		rv = rv.Elem()
+	}
+
+	return rv.Type().Name() != ""
 }
