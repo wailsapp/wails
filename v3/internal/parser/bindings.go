@@ -41,8 +41,38 @@ func (generator *Generator) generateBindings(typ *types.TypeName) {
 		return
 	}
 
+	// Check for naming collisions.
+	filename := generator.renderer.BindingsFile(info.Name)
+	switch filename {
+	case generator.renderer.IndexFile():
+		if !generator.options.NoIndex {
+			generator.controller.Errorf(
+				"package %s: type %s: bound type filename collides with JS/TS index filename; please change the name of the type or choose a different filename for JS/TS indexes",
+				typ.Pkg().Path(),
+				typ.Name(),
+			)
+			return
+		}
+
+	case generator.renderer.ModelsFile():
+		generator.controller.Errorf(
+			"package %s: type %s: bound type filename collides with models filename; please change the name of the type or choose a different filename for models",
+			typ.Pkg().Path(),
+			typ.Name(),
+		)
+		return
+
+	case generator.renderer.InternalFile():
+		generator.controller.Errorf(
+			"package %s: type %s: bound type filename collides with internal models filename; please change the name of the type or choose a different filename for internal models",
+			typ.Pkg().Path(),
+			typ.Name(),
+		)
+		return
+	}
+
 	// Create binding file.
-	file, err := generator.creator.Create(filepath.Join(info.Imports.Self, generator.renderer.BindingsFile(info.Name)))
+	file, err := generator.creator.Create(filepath.Join(info.Imports.Self, filename))
 	if err != nil {
 		generator.controller.Errorf("%v", err)
 		return
