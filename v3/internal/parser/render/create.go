@@ -273,7 +273,7 @@ func (m *module) PostponedCreates() []string {
 
 			for _, field := range info.Fields {
 				createField := m.JSCreateWithParams(field.Type, pp.params)
-				if createField == "" {
+				if createField == "$Create.Any" {
 					continue
 				}
 

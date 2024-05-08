@@ -23,7 +23,7 @@ import * as $internal from "./{{js $internal}}";
 {{- $isEnum := $model.Values}}
 {{- $isClassAlias := and $model.Type (not $useInterfaces) (isclass $model.Type)}}
 {{- $isTypeAlias := and $model.Type (or $useInterfaces (not (isclass $model.Type)))}}
-{{- $isClassOrInterface := $model.Fields}}
+{{- $isClassOrInterface := and (not $model.Type) (not $model.Values)}}
 {{- $isInterface := or $useInterfaces $model.Alias}}
 
 {{- /* Build type parameter list */}}

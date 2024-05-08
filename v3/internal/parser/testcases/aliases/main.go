@@ -20,8 +20,15 @@ type EmptyAliasStruct = struct{}
 // This should be rendered as a typedef or interface in every mode.
 type AliasStruct = struct {
 	// A field with a comment.
-	Foo      int
+	Foo      []int
 	Bar, Baz string `json:",omitempty"` // Definitely not Foo.
+
+	Other OtherAliasStruct // A nested alias struct.
+}
+
+// Another struct alias.
+type OtherAliasStruct = struct {
+	NoMoreIdeas []rune
 }
 
 // An empty struct.
@@ -50,7 +57,9 @@ func (GreetService) GetButDifferent() GenericPerson[bool] {
 }
 
 // Greet a lot of unusual things.
-func (GreetService) Greet(EmptyAliasStruct, AliasStruct, EmptyStruct) {}
+func (GreetService) Greet(EmptyAliasStruct, EmptyStruct) AliasStruct {
+	return AliasStruct{}
+}
 
 func NewGreetService() application.Service {
 	return application.NewService(new(GreetService))
