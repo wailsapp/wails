@@ -894,7 +894,7 @@ func (t *typeScriptClassBuilder) addField(fld, fldType string, isAnyType bool) {
 	isOptional := strings.HasSuffix(fld, "?")
 	strippedFieldName := strings.ReplaceAll(fld, "?", "")
 	if !regexp.MustCompile(jsVariableNameRegex).Match([]byte(strippedFieldName)) {
-		fld = fmt.Sprintf(`"%s"`, fld)
+		fld = fmt.Sprintf(`"%s"`, strippedFieldName)
 		if isOptional {
 			fld += "?"
 		}

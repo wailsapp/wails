@@ -48,6 +48,7 @@ func TestBindings_GenerateModels(t *testing.T) {
 		AnonymousSubStructMultiLevelTest,
 		GeneratedJsEntityWithNestedStructTest,
 		EntityWithDiffNamespaces,
+		SpecialCharacterFieldTest,
 	}
 
 	testLogger := &logger.Logger{}
