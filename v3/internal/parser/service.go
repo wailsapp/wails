@@ -32,7 +32,7 @@ func (generator *Generator) generateService(obj *types.TypeName) {
 		return
 	}
 
-	if info.IsEmpty(generator.options.TS) {
+	if info.IsEmpty() {
 		generator.logger.Infof(
 			"package %s: type %s: service has no valid exported methods, skipping",
 			obj.Pkg().Path(),

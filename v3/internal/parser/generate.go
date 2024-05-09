@@ -149,13 +149,6 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	generator.collector = collect.NewCollector(pkgs, systemPaths, generator.options, &generator.scheduler, generator.logger)
 	generator.renderer = render.NewRenderer(generator.options, generator.collector)
 
-	// Kickstart package data collection.
-	generator.logger.Statusf("Collecting package data...")
-	generator.collector.Iterate(func(pkg *collect.PackageInfo) bool {
-		generator.scheduler.Schedule(func() { pkg.Collect() })
-		return true
-	})
-
 	// Update status.
 	generator.logger.Statusf("Looking for services...")
 	serviceFound := sync.OnceFunc(func() { generator.logger.Statusf("Generating service bindings...") })
@@ -181,7 +174,6 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	}
 
 	// Invariants:
-	//   - PackageInfo.Collect has been called on all registered packages;
 	//   - Service files have been generated for all discovered services;
 	//   - ModelInfo.Collect has been called on all discovered models, and therefore
 	//   - all required models have been discovered.

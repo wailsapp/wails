@@ -148,10 +148,20 @@ func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
 		}
 
 	case *types.Alias, *types.Named:
-		if collect.IsString(typ) {
-			// Named type is a string alias and therefore
-			// safe to use as a JS object key.
-			key, _ = m.renderType(k, false)
+		if collect.IsMapKey(typ) {
+			if collect.IsString(typ) {
+				// Alias or named type is a string and therefore
+				// safe to use as a JS object key.
+				if ptr, ok := k.(*types.Pointer); ok {
+					// Unwrap pointer to named string type, but not pointer aliases.
+					key, _ = m.renderType(ptr.Elem(), false)
+				} else {
+					key, _ = m.renderType(k, false)
+				}
+			} else if basic, ok := typ.Underlying().(*types.Basic); ok && basic.Info()&types.IsString == 0 {
+				// Render non-string basic type in quoted mode.
+				key = m.renderBasicType(basic, true)
+			}
 		}
 
 	case *types.Pointer:

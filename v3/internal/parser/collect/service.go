@@ -77,7 +77,7 @@ func (collector *Collector) Service(obj *types.TypeName) *ServiceInfo {
 
 // IsEmpty returns true if no methods or code injections
 // are present for this service, for the selected language.
-func (info *ServiceInfo) IsEmpty(TS bool) bool {
+func (info *ServiceInfo) IsEmpty() bool {
 	// Ensure information has been collected.
 	info.Collect()
 	return len(info.Injections) == 0 && len(info.Methods) == 0

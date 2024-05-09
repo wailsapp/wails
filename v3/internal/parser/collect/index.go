@@ -16,8 +16,6 @@ type PackageIndex struct {
 	Services []*ServiceInfo
 	Models   []*ModelInfo
 	Internal []*ModelInfo
-
-	typeScript bool
 }
 
 // Index computes a [PackageIndex] for the selected language from the list
@@ -31,8 +29,7 @@ type PackageIndex struct {
 func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 	// Init index.
 	index = &PackageIndex{
-		Package:    info.Collect(),
-		typeScript: TS,
+		Package: info.Collect(),
 	}
 
 	// Init stats
@@ -43,7 +40,7 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 	// Gather services.
 	info.services.Range(func(key, value any) bool {
 		service := value.(*ServiceInfo)
-		if !service.IsEmpty(TS) {
+		if !service.IsEmpty() {
 			if service.Object().Exported() {
 				// Publish non-internal service on the local index.
 				index.Services = append(index.Services, service)
