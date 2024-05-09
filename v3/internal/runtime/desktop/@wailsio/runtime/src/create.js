@@ -21,6 +21,16 @@ export function Any(source) {
 }
 
 /**
+ * ByteSlice is a creation function that replaces
+ * null strings with empty strings.
+ * @param {any} source
+ * @returns {string}
+ */
+export function ByteSlice(source) {
+    return /** @type {any} */((source == null) ? "" : source);
+}
+
+/**
  * Array takes a creation function for an arbitrary type
  * and returns an in-place creation function for an array
  * whose elements are of that type.

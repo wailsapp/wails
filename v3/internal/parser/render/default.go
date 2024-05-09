@@ -23,9 +23,8 @@ func (m *module) JSDefault(typ types.Type, quoted bool) (result string) {
 			return result
 		}
 
-	case *types.Array:
-		if types.Identical(t.Elem(), types.Universe.Lookup("byte").Type()) {
-			// encoding/json marshals byte arrays as base64 strings
+	case *types.Array, *types.Slice:
+		if types.Identical(typ, typeByteSlice) {
 			return `""`
 		} else {
 			return "[]"
@@ -39,14 +38,6 @@ func (m *module) JSDefault(typ types.Type, quoted bool) (result string) {
 
 	case *types.Pointer:
 		return "null"
-
-	case *types.Slice:
-		if types.Identical(t.Elem(), types.Universe.Lookup("byte").Type()) {
-			// encoding/json marshals byte slices as base64 strings
-			return `""`
-		} else {
-			return "[]"
-		}
 
 	case *types.Struct:
 		return m.renderStructDefault(t)

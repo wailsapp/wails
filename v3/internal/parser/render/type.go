@@ -15,6 +15,9 @@ type aliasOrNamed interface {
 	Obj() *types.TypeName
 }
 
+// typeByteSlice caches the type-checker type for a slice of bytes.
+var typeByteSlice = types.NewSlice(types.Universe.Lookup("byte").Type())
+
 // JSType renders a Go type to its TypeScript representation,
 // using the receiver's import map to resolve dependencies.
 //
@@ -44,24 +47,22 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 		return m.renderNamedType(typ.(aliasOrNamed), quoted)
 
 	case *types.Array, *types.Slice:
-		elem := typ.(interface{ Elem() types.Type }).Elem()
-
 		null := ""
 		if _, isSlice := typ.(*types.Slice); isSlice && m.UseInterfaces {
 			// In interface mode, record the fact that encoding/json marshals nil slices as null.
 			null = " | null"
 		}
 
-		if types.Identical(elem, types.Universe.Lookup("byte").Type()) {
+		if types.Identical(typ, typeByteSlice) {
 			// encoding/json marshals byte arrays/slices as base64 strings
 			return "string" + null, null != ""
 		}
 
-		elemr, ptr := m.renderType(elem, false)
+		elem, ptr := m.renderType(typ.(interface{ Elem() types.Type }).Elem(), false)
 		if ptr {
-			return fmt.Sprintf("(%s)[]%s", elemr, null), null != ""
+			return fmt.Sprintf("(%s)[]%s", elem, null), null != ""
 		} else {
-			return fmt.Sprintf("%s[]%s", elemr, null), null != ""
+			return fmt.Sprintf("%s[]%s", elem, null), null != ""
 		}
 
 	case *types.Basic:

@@ -40,11 +40,11 @@ func (m *module) NeedsCreate(typ types.Type) bool {
 			return m.NeedsCreate(t.Underlying())
 		}
 
-	case *types.Array, *types.Map, *types.Slice:
-		return true
+	case *types.Array, *types.Pointer:
+		return m.NeedsCreate(typ.(interface{ Elem() types.Type }).Elem())
 
-	case *types.Pointer:
-		return m.NeedsCreate(t.Elem())
+	case *types.Map, *types.Slice:
+		return true
 
 	case *types.Struct:
 		info := m.collector.Struct(t)
@@ -88,15 +88,18 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 	case *types.Alias:
 		return m.JSCreateWithParams(types.Unalias(typ), params)
 
-	case *types.Array:
+	case *types.Array, *types.Pointer:
 		pp, ok := m.postponedCreates.At(typ).(*postponed)
-		if !ok {
-			m.JSCreateWithParams(t.Elem(), params)
-			pp = &postponed{m.postponedCreates.Len(), params}
-			m.postponedCreates.Set(typ, pp)
+		if ok {
+			return fmt.Sprintf("$$createType%d%s", pp.index, params)
 		}
 
-		return fmt.Sprintf("$$createType%d%s", pp.index, params)
+		createElement := m.JSCreateWithParams(typ.(interface{ Elem() types.Type }).Elem(), params)
+		if createElement != "$Create.Any" {
+			pp = &postponed{m.postponedCreates.Len(), params}
+			m.postponedCreates.Set(typ, pp)
+			return fmt.Sprintf("$$createType%d%s", pp.index, params)
+		}
 
 	case *types.Map:
 		pp, ok := m.postponedCreates.At(typ).(*postponed)
@@ -136,20 +139,11 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 
 		return fmt.Sprintf("$$createType%d%s", pp.index, params)
 
-	case *types.Pointer:
-		pp, ok := m.postponedCreates.At(typ).(*postponed)
-		if ok {
-			return fmt.Sprintf("$$createType%d%s", pp.index, params)
-		}
-
-		createElement := m.JSCreateWithParams(t.Elem(), params)
-		if createElement != "$Create.Any" {
-			pp = &postponed{m.postponedCreates.Len(), params}
-			m.postponedCreates.Set(typ, pp)
-			return fmt.Sprintf("$$createType%d%s", pp.index, params)
-		}
-
 	case *types.Slice:
+		if types.Identical(typ, typeByteSlice) {
+			return "$Create.ByteSlice"
+		}
+
 		pp, ok := m.postponedCreates.At(typ).(*postponed)
 		if !ok {
 			m.JSCreateWithParams(t.Elem(), params)
@@ -202,8 +196,8 @@ func (m *module) PostponedCreates() []string {
 		}
 
 		switch t := key.(type) {
-		case *types.Array:
-			result[pp.index] = fmt.Sprintf("%s$Create.Array(%s)", pre, m.JSCreateWithParams(t.Elem(), pp.params))
+		case *types.Array, *types.Slice:
+			result[pp.index] = fmt.Sprintf("%s$Create.Array(%s)", pre, m.JSCreateWithParams(t.(interface{ Elem() types.Type }).Elem(), pp.params))
 
 		case *types.Map:
 			result[pp.index] = fmt.Sprintf(
@@ -246,9 +240,6 @@ func (m *module) PostponedCreates() []string {
 
 		case *types.Pointer:
 			result[pp.index] = fmt.Sprintf("%s$Create.Nullable(%s)", pre, m.JSCreateWithParams(t.Elem(), pp.params))
-
-		case *types.Slice:
-			result[pp.index] = fmt.Sprintf("%s$Create.Array(%s)", pre, m.JSCreateWithParams(t.Elem(), pp.params))
 
 		case *types.Struct:
 			info := m.collector.Struct(t)
