@@ -17,9 +17,16 @@
 {{end}}
 {{- $renderer := .}}
 {{- $models := .ModelsFile}}
+{{- if .Services}}
 {{- range .Services}}
-export * as {{jsid .Name}} from "./{{js ($renderer.ServiceFile .Name)}}";
-{{- end}}{{if .Services}}
+import * as {{jsid .Name}} from "./{{js ($renderer.ServiceFile .Name)}}";
+{{- end}}
+export {
+{{- range $i, $service := .Services}}
+    {{- if gt $i 0}},{{end}}
+    {{jsid .Name}}
+{{- end}}
+};
 {{end}}
 {{- if .Models}}
 export * from "./{{js $models}}";
