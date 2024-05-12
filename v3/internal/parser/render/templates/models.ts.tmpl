@@ -166,6 +166,7 @@ export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$t
 {{- if $postponed}}
 // Private type creation functions
 {{- range $i, $create := $postponed}}
-const $$createType{{$i}} = {{$create}};
+{{if and (ge (len $create) 15) (eq (slice $create 0 15) "function $$init")}}var {{else}}const {{end -}}
+$$createType{{$i}} = {{$create}};
 {{- end}}
 {{end -}}

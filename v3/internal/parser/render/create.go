@@ -134,15 +134,15 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 
 		pp, ok := m.postponedCreates.At(typ).(*postponed)
 		if !ok {
-			pp = &postponed{m.postponedCreates.Len(), params}
-			m.postponedCreates.Set(typ, pp)
-
 			if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
 				// Postpone type args.
 				for i := range t.TypeArgs().Len() {
 					m.JSCreateWithParams(t.TypeArgs().At(i), params)
 				}
 			}
+
+			pp = &postponed{m.postponedCreates.Len(), params}
+			m.postponedCreates.Set(typ, pp)
 
 			if !collect.IsClass(typ) {
 				m.JSCreateWithParams(t.Underlying(), params)
@@ -221,7 +221,18 @@ func (m *module) PostponedCreates() []string {
 
 		case *types.Named:
 			if !collect.IsClass(key) {
-				result[pp.index] = m.JSCreateWithParams(t.Underlying(), pp.params)
+				result[pp.index] = fmt.Sprintf(`
+function $$initCreateType%d(...args) {
+    if ($$createType%d === $$initCreateType%d) {
+        $$createType%d = %s%s;
+    }
+	return $$createType%d(...args);
+}`,
+					pp.index,
+					pp.index, pp.index,
+					pp.index, pre, m.JSCreateWithParams(t.Underlying(), pp.params),
+					pp.index,
+				)[1:] // Remove initial newline.
 				break
 			}
 
