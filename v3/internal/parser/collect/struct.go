@@ -50,7 +50,7 @@ func newStructInfo(collector *Collector, typ *types.Struct) *StructInfo {
 	}
 }
 
-// Struct retrieves the the unique [StructInfo] instance
+// Struct retrieves the unique [StructInfo] instance
 // associated to the given type within a Collector.
 // If none is present, a new one is initialised.
 //
