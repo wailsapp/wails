@@ -20,7 +20,7 @@ import * as $models from "./models.js";
  * @param {{"AnotherCount": number, "AnotherOne": $models.Person | null}} $2
  * @param {{ [_: `${number}`]: boolean | null } | null} assoc
  * @param {(number | null)[] | null} $4
- * @param {string[] | null} other
+ * @param {string[]} other
  * @returns {Promise<[$models.Person, any, number[] | null]> & { cancel(): void }}
  */
 export function Greet(str, people, $2, assoc, $4, ...other) {
