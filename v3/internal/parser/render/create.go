@@ -226,7 +226,7 @@ function $$initCreateType%d(...args) {
     if ($$createType%d === $$initCreateType%d) {
         $$createType%d = %s%s;
     }
-	return $$createType%d(...args);
+    return $$createType%d(...args);
 }`,
 					pp.index,
 					pp.index, pp.index,
