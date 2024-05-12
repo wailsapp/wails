@@ -50,7 +50,7 @@ import * as $internal from "./{{js $internal}}";
 {{if not .Internal}}export {{end}}function {{.Name}}({{range $i, $param := .Params -}}
     {{- if gt $i 0}}, {{end}}
     {{- if .Variadic}}...{{end}}
-    {{- jsparam $i .}}: {{$module.JSType .Type}}
+    {{- jsparam $i .}}: {{$module.JSType .Type}}{{if .Variadic}}[]{{end}}
 {{- end}}): Promise<
     {{- if eq 0 (len .Results) -}}
         void

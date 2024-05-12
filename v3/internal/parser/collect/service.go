@@ -287,6 +287,7 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 	}
 
 	if signature.Variadic() {
+		methodInfo.Params[len(methodInfo.Params)-1].Type = methodInfo.Params[len(methodInfo.Params)-1].Type.(*types.Slice).Elem()
 		methodInfo.Params[len(methodInfo.Params)-1].Variadic = true
 	}
 

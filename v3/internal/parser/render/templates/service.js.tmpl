@@ -46,7 +46,7 @@ import * as $internal from "./{{js $internal}}";
 {{- jsdoc .Doc.Text ""}}
 {{- end}}
 {{- range $i, $param := .Params}}
- * @param { {{- $module.JSType .Type -}} } {{jsparam $i .}}
+ * @param { {{- $module.JSType .Type}}{{if .Variadic}}[]{{end -}} } {{jsparam $i .}}
 {{- end}}
  * @returns {Promise<
     {{- if eq 0 (len .Results) -}}
