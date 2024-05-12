@@ -18,8 +18,8 @@ import * as $models from "./models.js";
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function Greet(name, title) {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", name, title);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Greet", name, title));
+    return $resultPromise;
 }
 
 /**
@@ -28,6 +28,6 @@ export function Greet(name, title) {
  * @returns {Promise<$models.Person | null> & { cancel(): void }}
  */
 export function NewPerson(name) {
-    let $resultPromise = $Call.ByName("main.GreetService.NewPerson", name);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.NewPerson", name));
+    return $resultPromise;
 }

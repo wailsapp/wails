@@ -14,14 +14,14 @@ import * as $models from "./models.ts";
  * Make a cycle.
  */
 export function MakeCycles(): Promise<[$models.Cyclic, $models.GenericCyclic<$models.GenericCyclic<number>>]> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.MakeCycles");
+    let $resultPromise = $Call.ByName("main.GreetService.MakeCycles") as any;
     let $typingPromise = $resultPromise.then(($result) => {
         $result[0] = $$createType0($result[0]);
         $result[1] = $$createType9($result[1]);
         return $result;
-    });
+    }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise as any;
+    return $typingPromise;
 }
 
 // Private type creation functions

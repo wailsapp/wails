@@ -17,6 +17,6 @@ import * as $models from "./models.js";
  * @returns {Promise<$models.Address | null> & { cancel(): void }}
  */
 export function Yay() {
-    let $resultPromise = $Call.ByID(1956770239);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1956770239));
+    return $resultPromise;
 }

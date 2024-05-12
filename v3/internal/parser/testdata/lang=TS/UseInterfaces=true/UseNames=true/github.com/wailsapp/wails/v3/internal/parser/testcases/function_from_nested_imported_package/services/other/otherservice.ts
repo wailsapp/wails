@@ -15,6 +15,6 @@ import * as $models from "./models.ts";
  * Yay does this and that
  */
 export function Yay(): Promise<$models.Address | null> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/function_from_nested_imported_package/services/other.OtherService.Yay");
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/function_from_nested_imported_package/services/other.OtherService.Yay") as any;
+    return $resultPromise;
 }

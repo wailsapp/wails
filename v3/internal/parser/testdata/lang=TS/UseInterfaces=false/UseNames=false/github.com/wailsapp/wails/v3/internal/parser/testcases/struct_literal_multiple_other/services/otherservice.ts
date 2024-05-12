@@ -15,12 +15,12 @@ import * as $models from "./models.ts";
  * Yay does this and that
  */
 export function Yay(): Promise<$models.Address | null> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(1956770239);
+    let $resultPromise = $Call.ByID(1956770239) as any;
     let $typingPromise = $resultPromise.then(($result) => {
         return $$createType1($result);
-    });
+    }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise as any;
+    return $typingPromise;
 }
 
 // Private type creation functions

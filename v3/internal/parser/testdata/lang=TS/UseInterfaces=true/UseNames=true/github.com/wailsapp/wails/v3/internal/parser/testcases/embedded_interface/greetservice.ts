@@ -12,16 +12,16 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
  * Comment 1.
  */
 export function Method1(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Method1");
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("main.GreetService.Method1") as any;
+    return $resultPromise;
 }
 
 /**
  * Comment 2.
  */
 export function Method2(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Method2");
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("main.GreetService.Method2") as any;
+    return $resultPromise;
 }
 
 /**
@@ -29,22 +29,22 @@ export function Method2(): Promise<void> & { cancel(): void } {
  * Comment 3b.
  */
 export function Method3(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Method3");
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("main.GreetService.Method3") as any;
+    return $resultPromise;
 }
 
 /**
  * Comment 4.
  */
 export function Method4(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Method4");
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("main.GreetService.Method4") as any;
+    return $resultPromise;
 }
 
 /**
  * Comment 5.
  */
 export function Method5(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Method5");
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("main.GreetService.Method5") as any;
+    return $resultPromise;
 }

@@ -16,6 +16,6 @@ import * as $models from "./models.js";
  * @returns {Promise<[$models.Cyclic, $models.GenericCyclic<$models.GenericCyclic<number>>]> & { cancel(): void }}
  */
 export function MakeCycles() {
-    let $resultPromise = $Call.ByID(440020721);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(440020721));
+    return $resultPromise;
 }

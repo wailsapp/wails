@@ -14,6 +14,6 @@ import * as services$0 from "./services/models.ts";
  * Greet does XYZ
  */
 export function Greet(name: string, title: services$0.Title): Promise<string> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", name, title);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("main.GreetService.Greet", name, title) as any;
+    return $resultPromise;
 }

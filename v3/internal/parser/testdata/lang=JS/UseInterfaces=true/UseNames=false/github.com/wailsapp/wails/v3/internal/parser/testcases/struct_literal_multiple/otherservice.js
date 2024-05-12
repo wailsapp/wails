@@ -8,6 +8,6 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Hello() {
-    let $resultPromise = $Call.ByID(4249972365);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(4249972365));
+    return $resultPromise;
 }

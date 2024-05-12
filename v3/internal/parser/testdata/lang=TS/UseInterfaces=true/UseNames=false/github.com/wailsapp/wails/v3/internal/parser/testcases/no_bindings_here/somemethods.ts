@@ -14,14 +14,14 @@ import * as $models from "./models.ts";
  * LikeThisOne is an example method that does nothing.
  */
 export function LikeThisOne(): Promise<[$models.Person, $models.Impersonator, $models.HowDifferent<boolean>, $models.PrivatePerson]> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(3713567639);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(3713567639) as any;
+    return $resultPromise;
 }
 
 /**
  * LikeThisOtherOne does nothing as well, but is different.
  */
 export function LikeThisOtherOne(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(2115452599);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(2115452599) as any;
+    return $resultPromise;
 }

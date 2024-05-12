@@ -14,14 +14,14 @@ import * as $models from "./models.ts";
  * LikeThisOne is an example method that does nothing.
  */
 export function LikeThisOne(): Promise<[$models.Person, $models.Impersonator, $models.HowDifferent<boolean>, $models.PrivatePerson]> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here.SomeMethods.LikeThisOne");
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here.SomeMethods.LikeThisOne") as any;
+    return $resultPromise;
 }
 
 /**
  * LikeThisOtherOne does nothing as well, but is different.
  */
 export function LikeThisOtherOne(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here.SomeMethods.LikeThisOtherOne");
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here.SomeMethods.LikeThisOtherOne") as any;
+    return $resultPromise;
 }

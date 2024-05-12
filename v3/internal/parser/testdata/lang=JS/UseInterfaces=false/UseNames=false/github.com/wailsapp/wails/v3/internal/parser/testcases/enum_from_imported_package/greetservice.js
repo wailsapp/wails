@@ -18,6 +18,6 @@ import * as services$0 from "./services/models.js";
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function Greet(name, title) {
-    let $resultPromise = $Call.ByID(1411160069, name, title);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1411160069, name, title));
+    return $resultPromise;
 }

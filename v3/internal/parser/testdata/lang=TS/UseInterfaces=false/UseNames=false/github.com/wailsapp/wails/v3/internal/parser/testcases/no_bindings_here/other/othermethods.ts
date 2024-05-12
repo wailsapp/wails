@@ -12,6 +12,6 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
  * LikeThisOtherOne does nothing as well, but is different.
  */
 export function LikeThisOtherOne(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(1941812704);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(1941812704) as any;
+    return $resultPromise;
 }

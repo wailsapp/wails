@@ -12,16 +12,16 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
  * Comment 1.
  */
 export function Method1(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(841558284);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(841558284) as any;
+    return $resultPromise;
 }
 
 /**
  * Comment 2.
  */
 export function Method2(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(891891141);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(891891141) as any;
+    return $resultPromise;
 }
 
 /**
@@ -29,22 +29,22 @@ export function Method2(): Promise<void> & { cancel(): void } {
  * Comment 3b.
  */
 export function Method3(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(875113522);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(875113522) as any;
+    return $resultPromise;
 }
 
 /**
  * Comment 4.
  */
 export function Method4(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(791225427);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(791225427) as any;
+    return $resultPromise;
 }
 
 /**
  * Comment 5.
  */
 export function Method5(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(774447808);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(774447808) as any;
+    return $resultPromise;
 }

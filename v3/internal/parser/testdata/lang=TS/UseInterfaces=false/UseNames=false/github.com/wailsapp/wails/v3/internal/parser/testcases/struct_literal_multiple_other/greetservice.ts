@@ -14,20 +14,20 @@ import * as $models from "./models.ts";
  * Greet does XYZ
  */
 export function Greet(name: string): Promise<string> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(1411160069, name);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(1411160069, name) as any;
+    return $resultPromise;
 }
 
 /**
  * NewPerson creates a new person
  */
 export function NewPerson(name: string): Promise<$models.Person | null> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(1661412647, name);
+    let $resultPromise = $Call.ByID(1661412647, name) as any;
     let $typingPromise = $resultPromise.then(($result) => {
         return $$createType1($result);
-    });
+    }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise as any;
+    return $typingPromise;
 }
 
 // Private type creation functions

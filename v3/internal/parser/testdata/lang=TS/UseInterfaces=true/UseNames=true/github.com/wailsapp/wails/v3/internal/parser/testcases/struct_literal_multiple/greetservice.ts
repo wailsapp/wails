@@ -4,6 +4,6 @@
 import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
 export function Greet(name: string): Promise<string> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", name);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("main.GreetService.Greet", name) as any;
+    return $resultPromise;
 }

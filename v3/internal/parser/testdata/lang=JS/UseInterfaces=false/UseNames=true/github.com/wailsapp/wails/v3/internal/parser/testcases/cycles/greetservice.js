@@ -16,14 +16,14 @@ import * as $models from "./models.js";
  * @returns {Promise<[$models.Cyclic, $models.GenericCyclic<$models.GenericCyclic<number>>]> & { cancel(): void }}
  */
 export function MakeCycles() {
-    let $resultPromise = $Call.ByName("main.GreetService.MakeCycles");
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.MakeCycles"));
+    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
         $result[0] = $$createType0($result[0]);
         $result[1] = $$createType9($result[1]);
         return $result;
-    });
+    }));
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return /** @type {any} */($typingPromise);
+    return $typingPromise;
 }
 
 // Private type creation functions

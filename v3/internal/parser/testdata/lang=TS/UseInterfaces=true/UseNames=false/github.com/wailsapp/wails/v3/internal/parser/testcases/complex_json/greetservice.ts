@@ -14,6 +14,6 @@ import * as $models from "./models.ts";
  * Greet does XYZ
  */
 export function Greet(person: $models.Person, emb: $models.Embedded1): Promise<string> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(1411160069, person, emb);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(1411160069, person, emb) as any;
+    return $resultPromise;
 }

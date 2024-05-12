@@ -14,14 +14,14 @@ import * as nobindingshere$0 from "../no_bindings_here/models.ts";
  * LikeThisOne is an example method that does nothing.
  */
 export function LikeThisOne(): Promise<[nobindingshere$0.Person, nobindingshere$0.Impersonator, nobindingshere$0.HowDifferent<boolean>, nobindingshere$0.PrivatePerson]> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(2590614085);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(2590614085) as any;
+    return $resultPromise;
 }
 
 /**
  * LikeThisOtherOne does nothing as well, but is different.
  */
 export function LikeThisOtherOne(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(773650321);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(773650321) as any;
+    return $resultPromise;
 }

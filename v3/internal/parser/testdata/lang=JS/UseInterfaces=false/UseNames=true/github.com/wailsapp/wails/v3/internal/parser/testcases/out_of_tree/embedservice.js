@@ -16,16 +16,16 @@ import * as nobindingshere$0 from "../no_bindings_here/models.js";
  * @returns {Promise<[nobindingshere$0.Person, nobindingshere$0.Impersonator, nobindingshere$0.HowDifferent<boolean>, nobindingshere$0.PrivatePerson]> & { cancel(): void }}
  */
 export function LikeThisOne() {
-    let $resultPromise = $Call.ByName("main.EmbedService.LikeThisOne");
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $resultPromise = /** @type {any} */($Call.ByName("main.EmbedService.LikeThisOne"));
+    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
         $result[0] = $$createType0($result[0]);
         $result[1] = $$createType1($result[1]);
         $result[2] = $$createType2($result[2]);
         $result[3] = $$createType3($result[3]);
         return $result;
-    });
+    }));
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return /** @type {any} */($typingPromise);
+    return $typingPromise;
 }
 
 /**
@@ -33,8 +33,8 @@ export function LikeThisOne() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function LikeThisOtherOne() {
-    let $resultPromise = $Call.ByName("main.EmbedService.LikeThisOtherOne");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.EmbedService.LikeThisOtherOne"));
+    return $resultPromise;
 }
 
 // Private type creation functions

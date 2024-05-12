@@ -14,8 +14,8 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Method1() {
-    let $resultPromise = $Call.ByName("main.GreetService.Method1");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Method1"));
+    return $resultPromise;
 }
 
 /**
@@ -23,8 +23,8 @@ export function Method1() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Method2() {
-    let $resultPromise = $Call.ByName("main.GreetService.Method2");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Method2"));
+    return $resultPromise;
 }
 
 /**
@@ -33,8 +33,8 @@ export function Method2() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Method3() {
-    let $resultPromise = $Call.ByName("main.GreetService.Method3");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Method3"));
+    return $resultPromise;
 }
 
 /**
@@ -42,8 +42,8 @@ export function Method3() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Method4() {
-    let $resultPromise = $Call.ByName("main.GreetService.Method4");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Method4"));
+    return $resultPromise;
 }
 
 /**
@@ -51,6 +51,6 @@ export function Method4() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Method5() {
-    let $resultPromise = $Call.ByName("main.GreetService.Method5");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Method5"));
+    return $resultPromise;
 }

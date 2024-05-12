@@ -16,8 +16,8 @@ import * as $models from "./models.js";
  * @returns {Promise<[$models.Person, $models.Impersonator, $models.HowDifferent<boolean>, $models.PrivatePerson]> & { cancel(): void }}
  */
 export function LikeThisOne() {
-    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here.SomeMethods.LikeThisOne");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here.SomeMethods.LikeThisOne"));
+    return $resultPromise;
 }
 
 /**
@@ -25,6 +25,6 @@ export function LikeThisOne() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function LikeThisOtherOne() {
-    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here.SomeMethods.LikeThisOtherOne");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here.SomeMethods.LikeThisOtherOne"));
+    return $resultPromise;
 }

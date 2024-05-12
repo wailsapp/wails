@@ -15,12 +15,12 @@ import * as $models from "./models.ts";
  * Yay does this and that
  */
 export function Yay(): Promise<$models.Address | null> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/function_from_imported_package/services.OtherService.Yay");
+    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/function_from_imported_package/services.OtherService.Yay") as any;
     let $typingPromise = $resultPromise.then(($result) => {
         return $$createType1($result);
-    });
+    }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise as any;
+    return $typingPromise;
 }
 
 // Private type creation functions

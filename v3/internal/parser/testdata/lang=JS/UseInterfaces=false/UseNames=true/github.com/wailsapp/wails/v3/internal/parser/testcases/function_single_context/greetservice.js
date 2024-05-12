@@ -15,8 +15,8 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function Greet(name) {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", name);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Greet", name));
+    return $resultPromise;
 }
 
 /**
@@ -25,6 +25,6 @@ export function Greet(name) {
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function GreetWithContext(name) {
-    let $resultPromise = $Call.ByName("main.GreetService.GreetWithContext", name);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.GreetWithContext", name));
+    return $resultPromise;
 }

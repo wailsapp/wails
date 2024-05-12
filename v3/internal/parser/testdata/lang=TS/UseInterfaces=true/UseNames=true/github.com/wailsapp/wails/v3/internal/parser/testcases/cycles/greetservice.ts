@@ -14,6 +14,6 @@ import * as $models from "./models.ts";
  * Make a cycle.
  */
 export function MakeCycles(): Promise<[$models.Cyclic, $models.GenericCyclic<$models.GenericCyclic<number>>]> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.MakeCycles");
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("main.GreetService.MakeCycles") as any;
+    return $resultPromise;
 }

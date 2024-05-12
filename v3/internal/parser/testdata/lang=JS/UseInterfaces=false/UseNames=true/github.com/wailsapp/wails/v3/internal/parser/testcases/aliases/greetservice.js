@@ -17,12 +17,12 @@ import * as $models from "./models.js";
  * @returns {Promise<$models.Person> & { cancel(): void }}
  */
 export function Get(aliasValue) {
-    let $resultPromise = $Call.ByName("main.GreetService.Get", aliasValue);
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Get", aliasValue));
+    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
         return $$createType0($result);
-    });
+    }));
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return /** @type {any} */($typingPromise);
+    return $typingPromise;
 }
 
 /**
@@ -30,12 +30,12 @@ export function Get(aliasValue) {
  * @returns {Promise<$models.GenericPerson<boolean>> & { cancel(): void }}
  */
 export function GetButDifferent() {
-    let $resultPromise = $Call.ByName("main.GreetService.GetButDifferent");
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.GetButDifferent"));
+    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
         return $$createType1($result);
-    });
+    }));
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return /** @type {any} */($typingPromise);
+    return $typingPromise;
 }
 
 /**
@@ -45,12 +45,12 @@ export function GetButDifferent() {
  * @returns {Promise<$models.AliasStruct> & { cancel(): void }}
  */
 export function Greet($0, $1) {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", $0, $1);
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Greet", $0, $1));
+    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
         return $$createType5($result);
-    });
+    }));
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return /** @type {any} */($typingPromise);
+    return $typingPromise;
 }
 
 // Private type creation functions

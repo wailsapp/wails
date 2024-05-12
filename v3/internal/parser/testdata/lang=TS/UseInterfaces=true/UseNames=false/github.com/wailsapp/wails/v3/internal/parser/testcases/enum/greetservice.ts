@@ -14,14 +14,14 @@ import * as $models from "./models.ts";
  * Greet does XYZ
  */
 export function Greet(name: string, title: $models.Title): Promise<string> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(1411160069, name, title);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(1411160069, name, title) as any;
+    return $resultPromise;
 }
 
 /**
  * NewPerson creates a new person
  */
 export function NewPerson(name: string): Promise<$models.Person | null> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(1661412647, name);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(1661412647, name) as any;
+    return $resultPromise;
 }

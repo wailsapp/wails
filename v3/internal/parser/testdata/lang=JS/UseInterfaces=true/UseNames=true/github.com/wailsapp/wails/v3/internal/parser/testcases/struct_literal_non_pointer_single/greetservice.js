@@ -16,8 +16,8 @@ import * as $models from "./models.js";
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function ArrayInt($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.ArrayInt", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.ArrayInt", $in));
+    return $resultPromise;
 }
 
 /**
@@ -25,8 +25,8 @@ export function ArrayInt($in) {
  * @returns {Promise<boolean> & { cancel(): void }}
  */
 export function BoolInBoolOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.BoolInBoolOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.BoolInBoolOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -34,8 +34,8 @@ export function BoolInBoolOut($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function Float32InFloat32Out($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.Float32InFloat32Out", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Float32InFloat32Out", $in));
+    return $resultPromise;
 }
 
 /**
@@ -43,8 +43,8 @@ export function Float32InFloat32Out($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function Float64InFloat64Out($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.Float64InFloat64Out", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Float64InFloat64Out", $in));
+    return $resultPromise;
 }
 
 /**
@@ -53,8 +53,8 @@ export function Float64InFloat64Out($in) {
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function Greet(name) {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", name);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Greet", name));
+    return $resultPromise;
 }
 
 /**
@@ -62,8 +62,8 @@ export function Greet(name) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function Int16InIntOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.Int16InIntOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int16InIntOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -71,8 +71,8 @@ export function Int16InIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function Int16PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.Int16PointerInAndOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int16PointerInAndOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -80,8 +80,8 @@ export function Int16PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function Int32InIntOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.Int32InIntOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int32InIntOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -89,8 +89,8 @@ export function Int32InIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function Int32PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.Int32PointerInAndOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int32PointerInAndOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -98,8 +98,8 @@ export function Int32PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function Int64InIntOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.Int64InIntOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int64InIntOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -107,8 +107,8 @@ export function Int64InIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function Int64PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.Int64PointerInAndOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int64PointerInAndOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -116,8 +116,8 @@ export function Int64PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function Int8InIntOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.Int8InIntOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int8InIntOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -125,8 +125,8 @@ export function Int8InIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function Int8PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.Int8PointerInAndOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int8PointerInAndOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -134,8 +134,8 @@ export function Int8PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function IntInIntOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.IntInIntOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.IntInIntOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -143,8 +143,8 @@ export function IntInIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function IntPointerInAndOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.IntPointerInAndOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.IntPointerInAndOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -152,8 +152,8 @@ export function IntPointerInAndOutput($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function IntPointerInputNamedOutputs($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.IntPointerInputNamedOutputs", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.IntPointerInputNamedOutputs", $in));
+    return $resultPromise;
 }
 
 /**
@@ -161,8 +161,8 @@ export function IntPointerInputNamedOutputs($in) {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function MapIntInt($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.MapIntInt", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.MapIntInt", $in));
+    return $resultPromise;
 }
 
 /**
@@ -170,8 +170,8 @@ export function MapIntInt($in) {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function MapIntPointerInt($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.MapIntPointerInt", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.MapIntPointerInt", $in));
+    return $resultPromise;
 }
 
 /**
@@ -179,8 +179,8 @@ export function MapIntPointerInt($in) {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function MapIntSliceInt($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.MapIntSliceInt", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.MapIntSliceInt", $in));
+    return $resultPromise;
 }
 
 /**
@@ -188,16 +188,16 @@ export function MapIntSliceInt($in) {
  * @returns {Promise<{ [_: `${number}`]: number[] | null } | null> & { cancel(): void }}
  */
 export function MapIntSliceIntInMapIntSliceIntOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.MapIntSliceIntInMapIntSliceIntOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.MapIntSliceIntInMapIntSliceIntOut", $in));
+    return $resultPromise;
 }
 
 /**
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function NoInputsStringOut() {
-    let $resultPromise = $Call.ByName("main.GreetService.NoInputsStringOut");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.NoInputsStringOut"));
+    return $resultPromise;
 }
 
 /**
@@ -205,8 +205,8 @@ export function NoInputsStringOut() {
  * @returns {Promise<boolean | null> & { cancel(): void }}
  */
 export function PointerBoolInBoolOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.PointerBoolInBoolOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.PointerBoolInBoolOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -214,8 +214,8 @@ export function PointerBoolInBoolOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function PointerFloat32InFloat32Out($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.PointerFloat32InFloat32Out", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.PointerFloat32InFloat32Out", $in));
+    return $resultPromise;
 }
 
 /**
@@ -223,8 +223,8 @@ export function PointerFloat32InFloat32Out($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function PointerFloat64InFloat64Out($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.PointerFloat64InFloat64Out", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.PointerFloat64InFloat64Out", $in));
+    return $resultPromise;
 }
 
 /**
@@ -232,8 +232,8 @@ export function PointerFloat64InFloat64Out($in) {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function PointerMapIntInt($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.PointerMapIntInt", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.PointerMapIntInt", $in));
+    return $resultPromise;
 }
 
 /**
@@ -241,8 +241,8 @@ export function PointerMapIntInt($in) {
  * @returns {Promise<string | null> & { cancel(): void }}
  */
 export function PointerStringInStringOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.PointerStringInStringOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.PointerStringInStringOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -250,8 +250,8 @@ export function PointerStringInStringOut($in) {
  * @returns {Promise<string[] | null> & { cancel(): void }}
  */
 export function StringArrayInputNamedOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.StringArrayInputNamedOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StringArrayInputNamedOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -259,8 +259,8 @@ export function StringArrayInputNamedOutput($in) {
  * @returns {Promise<string[] | null> & { cancel(): void }}
  */
 export function StringArrayInputNamedOutputs($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.StringArrayInputNamedOutputs", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StringArrayInputNamedOutputs", $in));
+    return $resultPromise;
 }
 
 /**
@@ -268,8 +268,8 @@ export function StringArrayInputNamedOutputs($in) {
  * @returns {Promise<string[] | null> & { cancel(): void }}
  */
 export function StringArrayInputStringArrayOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.StringArrayInputStringArrayOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StringArrayInputStringArrayOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -277,8 +277,8 @@ export function StringArrayInputStringArrayOut($in) {
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function StringArrayInputStringOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.StringArrayInputStringOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StringArrayInputStringOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -286,8 +286,8 @@ export function StringArrayInputStringOut($in) {
  * @returns {Promise<$models.Person> & { cancel(): void }}
  */
 export function StructInputStructOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.StructInputStructOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StructInputStructOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -295,8 +295,8 @@ export function StructInputStructOutput($in) {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function StructPointerInputErrorOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.StructPointerInputErrorOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StructPointerInputErrorOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -304,8 +304,8 @@ export function StructPointerInputErrorOutput($in) {
  * @returns {Promise<$models.Person | null> & { cancel(): void }}
  */
 export function StructPointerInputStructPointerOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.StructPointerInputStructPointerOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StructPointerInputStructPointerOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -313,8 +313,8 @@ export function StructPointerInputStructPointerOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function UInt16InUIntOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.UInt16InUIntOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt16InUIntOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -322,8 +322,8 @@ export function UInt16InUIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function UInt16PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.UInt16PointerInAndOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt16PointerInAndOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -331,8 +331,8 @@ export function UInt16PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function UInt32InUIntOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.UInt32InUIntOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt32InUIntOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -340,8 +340,8 @@ export function UInt32InUIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function UInt32PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.UInt32PointerInAndOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt32PointerInAndOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -349,8 +349,8 @@ export function UInt32PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function UInt64InUIntOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.UInt64InUIntOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt64InUIntOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -358,8 +358,8 @@ export function UInt64InUIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function UInt64PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.UInt64PointerInAndOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt64PointerInAndOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -367,8 +367,8 @@ export function UInt64PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function UInt8InUIntOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.UInt8InUIntOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt8InUIntOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -376,8 +376,8 @@ export function UInt8InUIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function UInt8PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.UInt8PointerInAndOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt8PointerInAndOutput", $in));
+    return $resultPromise;
 }
 
 /**
@@ -385,8 +385,8 @@ export function UInt8PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function UIntInUIntOut($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.UIntInUIntOut", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UIntInUIntOut", $in));
+    return $resultPromise;
 }
 
 /**
@@ -394,6 +394,6 @@ export function UIntInUIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function UIntPointerInAndOutput($in) {
-    let $resultPromise = $Call.ByName("main.GreetService.UIntPointerInAndOutput", $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UIntPointerInAndOutput", $in));
+    return $resultPromise;
 }

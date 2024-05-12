@@ -16,8 +16,8 @@ import * as $models from "./models.js";
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function ArrayInt($in) {
-    let $resultPromise = $Call.ByID(3862002418, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(3862002418, $in));
+    return $resultPromise;
 }
 
 /**
@@ -25,8 +25,8 @@ export function ArrayInt($in) {
  * @returns {Promise<boolean> & { cancel(): void }}
  */
 export function BoolInBoolOut($in) {
-    let $resultPromise = $Call.ByID(2424639793, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2424639793, $in));
+    return $resultPromise;
 }
 
 /**
@@ -34,8 +34,8 @@ export function BoolInBoolOut($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function Float32InFloat32Out($in) {
-    let $resultPromise = $Call.ByID(3132595881, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(3132595881, $in));
+    return $resultPromise;
 }
 
 /**
@@ -43,8 +43,8 @@ export function Float32InFloat32Out($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function Float64InFloat64Out($in) {
-    let $resultPromise = $Call.ByID(2182412247, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2182412247, $in));
+    return $resultPromise;
 }
 
 /**
@@ -53,8 +53,8 @@ export function Float64InFloat64Out($in) {
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function Greet(name) {
-    let $resultPromise = $Call.ByID(1411160069, name);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1411160069, name));
+    return $resultPromise;
 }
 
 /**
@@ -62,8 +62,8 @@ export function Greet(name) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function Int16InIntOut($in) {
-    let $resultPromise = $Call.ByID(3306292566, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(3306292566, $in));
+    return $resultPromise;
 }
 
 /**
@@ -71,8 +71,8 @@ export function Int16InIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function Int16PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByID(1754277916, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1754277916, $in));
+    return $resultPromise;
 }
 
 /**
@@ -80,8 +80,8 @@ export function Int16PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function Int32InIntOut($in) {
-    let $resultPromise = $Call.ByID(1909469092, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1909469092, $in));
+    return $resultPromise;
 }
 
 /**
@@ -89,8 +89,8 @@ export function Int32InIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function Int32PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByID(4251088558, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(4251088558, $in));
+    return $resultPromise;
 }
 
 /**
@@ -98,8 +98,8 @@ export function Int32PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function Int64InIntOut($in) {
-    let $resultPromise = $Call.ByID(1343888303, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1343888303, $in));
+    return $resultPromise;
 }
 
 /**
@@ -107,8 +107,8 @@ export function Int64InIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function Int64PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByID(2205561041, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2205561041, $in));
+    return $resultPromise;
 }
 
 /**
@@ -116,8 +116,8 @@ export function Int64PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function Int8InIntOut($in) {
-    let $resultPromise = $Call.ByID(572240879, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(572240879, $in));
+    return $resultPromise;
 }
 
 /**
@@ -125,8 +125,8 @@ export function Int8InIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function Int8PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByID(2189402897, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2189402897, $in));
+    return $resultPromise;
 }
 
 /**
@@ -134,8 +134,8 @@ export function Int8PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function IntInIntOut($in) {
-    let $resultPromise = $Call.ByID(642881729, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(642881729, $in));
+    return $resultPromise;
 }
 
 /**
@@ -143,8 +143,8 @@ export function IntInIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function IntPointerInAndOutput($in) {
-    let $resultPromise = $Call.ByID(1066151743, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1066151743, $in));
+    return $resultPromise;
 }
 
 /**
@@ -152,8 +152,8 @@ export function IntPointerInAndOutput($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function IntPointerInputNamedOutputs($in) {
-    let $resultPromise = $Call.ByID(2718999663, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2718999663, $in));
+    return $resultPromise;
 }
 
 /**
@@ -161,8 +161,8 @@ export function IntPointerInputNamedOutputs($in) {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function MapIntInt($in) {
-    let $resultPromise = $Call.ByID(2386486356, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2386486356, $in));
+    return $resultPromise;
 }
 
 /**
@@ -170,8 +170,8 @@ export function MapIntInt($in) {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function MapIntPointerInt($in) {
-    let $resultPromise = $Call.ByID(550413585, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(550413585, $in));
+    return $resultPromise;
 }
 
 /**
@@ -179,8 +179,8 @@ export function MapIntPointerInt($in) {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function MapIntSliceInt($in) {
-    let $resultPromise = $Call.ByID(2900172572, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2900172572, $in));
+    return $resultPromise;
 }
 
 /**
@@ -188,16 +188,16 @@ export function MapIntSliceInt($in) {
  * @returns {Promise<{ [_: `${number}`]: number[] | null } | null> & { cancel(): void }}
  */
 export function MapIntSliceIntInMapIntSliceIntOut($in) {
-    let $resultPromise = $Call.ByID(881980169, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(881980169, $in));
+    return $resultPromise;
 }
 
 /**
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function NoInputsStringOut() {
-    let $resultPromise = $Call.ByID(1075577233);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1075577233));
+    return $resultPromise;
 }
 
 /**
@@ -205,8 +205,8 @@ export function NoInputsStringOut() {
  * @returns {Promise<boolean | null> & { cancel(): void }}
  */
 export function PointerBoolInBoolOut($in) {
-    let $resultPromise = $Call.ByID(3589606958, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(3589606958, $in));
+    return $resultPromise;
 }
 
 /**
@@ -214,8 +214,8 @@ export function PointerBoolInBoolOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function PointerFloat32InFloat32Out($in) {
-    let $resultPromise = $Call.ByID(224675106, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(224675106, $in));
+    return $resultPromise;
 }
 
 /**
@@ -223,8 +223,8 @@ export function PointerFloat32InFloat32Out($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function PointerFloat64InFloat64Out($in) {
-    let $resultPromise = $Call.ByID(2124953624, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2124953624, $in));
+    return $resultPromise;
 }
 
 /**
@@ -232,8 +232,8 @@ export function PointerFloat64InFloat64Out($in) {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function PointerMapIntInt($in) {
-    let $resultPromise = $Call.ByID(3516977899, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(3516977899, $in));
+    return $resultPromise;
 }
 
 /**
@@ -241,8 +241,8 @@ export function PointerMapIntInt($in) {
  * @returns {Promise<string | null> & { cancel(): void }}
  */
 export function PointerStringInStringOut($in) {
-    let $resultPromise = $Call.ByID(229603958, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(229603958, $in));
+    return $resultPromise;
 }
 
 /**
@@ -250,8 +250,8 @@ export function PointerStringInStringOut($in) {
  * @returns {Promise<string[] | null> & { cancel(): void }}
  */
 export function StringArrayInputNamedOutput($in) {
-    let $resultPromise = $Call.ByID(3678582682, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(3678582682, $in));
+    return $resultPromise;
 }
 
 /**
@@ -259,8 +259,8 @@ export function StringArrayInputNamedOutput($in) {
  * @returns {Promise<string[] | null> & { cancel(): void }}
  */
 export function StringArrayInputNamedOutputs($in) {
-    let $resultPromise = $Call.ByID(319259595, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(319259595, $in));
+    return $resultPromise;
 }
 
 /**
@@ -268,8 +268,8 @@ export function StringArrayInputNamedOutputs($in) {
  * @returns {Promise<string[] | null> & { cancel(): void }}
  */
 export function StringArrayInputStringArrayOut($in) {
-    let $resultPromise = $Call.ByID(383995060, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(383995060, $in));
+    return $resultPromise;
 }
 
 /**
@@ -277,8 +277,8 @@ export function StringArrayInputStringArrayOut($in) {
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function StringArrayInputStringOut($in) {
-    let $resultPromise = $Call.ByID(1091960237, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1091960237, $in));
+    return $resultPromise;
 }
 
 /**
@@ -286,8 +286,8 @@ export function StringArrayInputStringOut($in) {
  * @returns {Promise<$models.Person> & { cancel(): void }}
  */
 export function StructInputStructOutput($in) {
-    let $resultPromise = $Call.ByID(3835643147, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(3835643147, $in));
+    return $resultPromise;
 }
 
 /**
@@ -295,8 +295,8 @@ export function StructInputStructOutput($in) {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function StructPointerInputErrorOutput($in) {
-    let $resultPromise = $Call.ByID(2447692557, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2447692557, $in));
+    return $resultPromise;
 }
 
 /**
@@ -304,8 +304,8 @@ export function StructPointerInputErrorOutput($in) {
  * @returns {Promise<$models.Person | null> & { cancel(): void }}
  */
 export function StructPointerInputStructPointerOutput($in) {
-    let $resultPromise = $Call.ByID(2943477349, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2943477349, $in));
+    return $resultPromise;
 }
 
 /**
@@ -313,8 +313,8 @@ export function StructPointerInputStructPointerOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function UInt16InUIntOut($in) {
-    let $resultPromise = $Call.ByID(3401034892, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(3401034892, $in));
+    return $resultPromise;
 }
 
 /**
@@ -322,8 +322,8 @@ export function UInt16InUIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function UInt16PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByID(1236957573, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1236957573, $in));
+    return $resultPromise;
 }
 
 /**
@@ -331,8 +331,8 @@ export function UInt16PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function UInt32InUIntOut($in) {
-    let $resultPromise = $Call.ByID(1160383782, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1160383782, $in));
+    return $resultPromise;
 }
 
 /**
@@ -340,8 +340,8 @@ export function UInt32InUIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function UInt32PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByID(1739300671, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1739300671, $in));
+    return $resultPromise;
 }
 
 /**
@@ -349,8 +349,8 @@ export function UInt32PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function UInt64InUIntOut($in) {
-    let $resultPromise = $Call.ByID(793803239, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(793803239, $in));
+    return $resultPromise;
 }
 
 /**
@@ -358,8 +358,8 @@ export function UInt64InUIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function UInt64PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByID(1403757716, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1403757716, $in));
+    return $resultPromise;
 }
 
 /**
@@ -367,8 +367,8 @@ export function UInt64PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function UInt8InUIntOut($in) {
-    let $resultPromise = $Call.ByID(2988345717, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2988345717, $in));
+    return $resultPromise;
 }
 
 /**
@@ -376,8 +376,8 @@ export function UInt8InUIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function UInt8PointerInAndOutput($in) {
-    let $resultPromise = $Call.ByID(518250834, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(518250834, $in));
+    return $resultPromise;
 }
 
 /**
@@ -385,8 +385,8 @@ export function UInt8PointerInAndOutput($in) {
  * @returns {Promise<number> & { cancel(): void }}
  */
 export function UIntInUIntOut($in) {
-    let $resultPromise = $Call.ByID(2836661285, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2836661285, $in));
+    return $resultPromise;
 }
 
 /**
@@ -394,6 +394,6 @@ export function UIntInUIntOut($in) {
  * @returns {Promise<number | null> & { cancel(): void }}
  */
 export function UIntPointerInAndOutput($in) {
-    let $resultPromise = $Call.ByID(1367187362, $in);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1367187362, $in));
+    return $resultPromise;
 }

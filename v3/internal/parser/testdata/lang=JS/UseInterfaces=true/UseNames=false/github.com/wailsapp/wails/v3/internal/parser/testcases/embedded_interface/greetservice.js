@@ -14,8 +14,8 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Method1() {
-    let $resultPromise = $Call.ByID(841558284);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(841558284));
+    return $resultPromise;
 }
 
 /**
@@ -23,8 +23,8 @@ export function Method1() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Method2() {
-    let $resultPromise = $Call.ByID(891891141);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(891891141));
+    return $resultPromise;
 }
 
 /**
@@ -33,8 +33,8 @@ export function Method2() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Method3() {
-    let $resultPromise = $Call.ByID(875113522);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(875113522));
+    return $resultPromise;
 }
 
 /**
@@ -42,8 +42,8 @@ export function Method3() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Method4() {
-    let $resultPromise = $Call.ByID(791225427);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(791225427));
+    return $resultPromise;
 }
 
 /**
@@ -51,6 +51,6 @@ export function Method4() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Method5() {
-    let $resultPromise = $Call.ByID(774447808);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(774447808));
+    return $resultPromise;
 }

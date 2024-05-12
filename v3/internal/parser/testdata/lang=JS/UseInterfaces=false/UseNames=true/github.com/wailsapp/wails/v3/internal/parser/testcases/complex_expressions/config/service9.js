@@ -8,6 +8,6 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function TestMethod2() {
-    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/complex_expressions/config.Service9.TestMethod2");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/complex_expressions/config.Service9.TestMethod2"));
+    return $resultPromise;
 }

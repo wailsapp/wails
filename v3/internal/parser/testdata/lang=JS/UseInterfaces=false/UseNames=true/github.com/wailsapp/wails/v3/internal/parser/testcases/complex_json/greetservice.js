@@ -18,6 +18,6 @@ import * as $models from "./models.js";
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function Greet(person, emb) {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", person, emb);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Greet", person, emb));
+    return $resultPromise;
 }

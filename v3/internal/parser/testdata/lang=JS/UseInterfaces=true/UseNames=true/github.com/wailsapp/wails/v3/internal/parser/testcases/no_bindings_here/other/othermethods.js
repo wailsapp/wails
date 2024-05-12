@@ -14,6 +14,6 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function LikeThisOtherOne() {
-    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here/other.OtherMethods.LikeThisOtherOne");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here/other.OtherMethods.LikeThisOtherOne"));
+    return $resultPromise;
 }

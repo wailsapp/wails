@@ -14,36 +14,36 @@ import * as $models from "./models.ts";
  * Get someone
  */
 export function Get(aliasValue: $models.Alias): Promise<$models.Person> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(1928502664, aliasValue);
+    let $resultPromise = $Call.ByID(1928502664, aliasValue) as any;
     let $typingPromise = $resultPromise.then(($result) => {
         return $$createType0($result);
-    });
+    }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise as any;
+    return $typingPromise;
 }
 
 /**
  * Get someone quite different
  */
 export function GetButDifferent(): Promise<$models.GenericPerson<boolean>> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(2240931744);
+    let $resultPromise = $Call.ByID(2240931744) as any;
     let $typingPromise = $resultPromise.then(($result) => {
         return $$createType1($result);
-    });
+    }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise as any;
+    return $typingPromise;
 }
 
 /**
  * Greet a lot of unusual things.
  */
 export function Greet($0: $models.EmptyAliasStruct, $1: $models.EmptyStruct): Promise<$models.AliasStruct> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(1411160069, $0, $1);
+    let $resultPromise = $Call.ByID(1411160069, $0, $1) as any;
     let $typingPromise = $resultPromise.then(($result) => {
         return $$createType5($result);
-    });
+    }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise as any;
+    return $typingPromise;
 }
 
 // Private type creation functions

@@ -14,24 +14,24 @@ import * as $models from "./models.ts";
  * LikeThisOne is an example method that does nothing.
  */
 export function LikeThisOne(): Promise<[$models.Person, $models.Impersonator, $models.HowDifferent<boolean>, $models.PrivatePerson]> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here.SomeMethods.LikeThisOne");
+    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here.SomeMethods.LikeThisOne") as any;
     let $typingPromise = $resultPromise.then(($result) => {
         $result[0] = $$createType0($result[0]);
         $result[1] = $$createType1($result[1]);
         $result[2] = $$createType2($result[2]);
         $result[3] = $$createType3($result[3]);
         return $result;
-    });
+    }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise as any;
+    return $typingPromise;
 }
 
 /**
  * LikeThisOtherOne does nothing as well, but is different.
  */
 export function LikeThisOtherOne(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here.SomeMethods.LikeThisOtherOne");
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/no_bindings_here.SomeMethods.LikeThisOtherOne") as any;
+    return $resultPromise;
 }
 
 // Private type creation functions

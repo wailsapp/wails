@@ -24,6 +24,6 @@ import * as $models from "./models.js";
  * @returns {Promise<[$models.Person, any, number[] | null]> & { cancel(): void }}
  */
 export function Greet(str, people, $2, assoc, $4, ...other) {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", str, people, $2, assoc, $4, other);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Greet", str, people, $2, assoc, $4, other));
+    return $resultPromise;
 }

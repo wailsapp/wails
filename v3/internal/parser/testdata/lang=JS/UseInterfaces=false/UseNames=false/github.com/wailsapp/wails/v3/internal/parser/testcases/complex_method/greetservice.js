@@ -24,14 +24,14 @@ import * as $models from "./models.js";
  * @returns {Promise<[$models.Person, any, number[]]> & { cancel(): void }}
  */
 export function Greet(str, people, $2, assoc, $4, ...other) {
-    let $resultPromise = $Call.ByID(1411160069, str, people, $2, assoc, $4, other);
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $resultPromise = /** @type {any} */($Call.ByID(1411160069, str, people, $2, assoc, $4, other));
+    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
         $result[0] = $$createType0($result[0]);
         $result[2] = $$createType1($result[2]);
         return $result;
-    });
+    }));
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return /** @type {any} */($typingPromise);
+    return $typingPromise;
 }
 
 // Private type creation functions

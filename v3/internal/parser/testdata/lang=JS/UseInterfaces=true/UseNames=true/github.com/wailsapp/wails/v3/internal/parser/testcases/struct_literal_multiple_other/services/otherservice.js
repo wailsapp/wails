@@ -17,6 +17,6 @@ import * as $models from "./models.js";
  * @returns {Promise<$models.Address | null> & { cancel(): void }}
  */
 export function Yay() {
-    let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/struct_literal_multiple_other/services.OtherService.Yay");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("github.com/wailsapp/wails/v3/internal/parser/testcases/struct_literal_multiple_other/services.OtherService.Yay"));
+    return $resultPromise;
 }

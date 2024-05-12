@@ -15,6 +15,6 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function Greet($0) {
-    let $resultPromise = $Call.ByID(1411160069, $0);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1411160069, $0));
+    return $resultPromise;
 }

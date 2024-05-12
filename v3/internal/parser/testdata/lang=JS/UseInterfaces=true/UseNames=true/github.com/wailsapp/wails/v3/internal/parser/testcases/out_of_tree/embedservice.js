@@ -16,8 +16,8 @@ import * as nobindingshere$0 from "../no_bindings_here/models.js";
  * @returns {Promise<[nobindingshere$0.Person, nobindingshere$0.Impersonator, nobindingshere$0.HowDifferent<boolean>, nobindingshere$0.PrivatePerson]> & { cancel(): void }}
  */
 export function LikeThisOne() {
-    let $resultPromise = $Call.ByName("main.EmbedService.LikeThisOne");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.EmbedService.LikeThisOne"));
+    return $resultPromise;
 }
 
 /**
@@ -25,6 +25,6 @@ export function LikeThisOne() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function LikeThisOtherOne() {
-    let $resultPromise = $Call.ByName("main.EmbedService.LikeThisOtherOne");
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByName("main.EmbedService.LikeThisOtherOne"));
+    return $resultPromise;
 }

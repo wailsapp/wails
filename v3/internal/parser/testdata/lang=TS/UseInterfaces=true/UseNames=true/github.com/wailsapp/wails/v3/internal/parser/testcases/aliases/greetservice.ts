@@ -14,22 +14,22 @@ import * as $models from "./models.ts";
  * Get someone
  */
 export function Get(aliasValue: $models.Alias): Promise<$models.Person> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Get", aliasValue);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("main.GreetService.Get", aliasValue) as any;
+    return $resultPromise;
 }
 
 /**
  * Get someone quite different
  */
 export function GetButDifferent(): Promise<$models.GenericPerson<boolean>> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.GetButDifferent");
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("main.GreetService.GetButDifferent") as any;
+    return $resultPromise;
 }
 
 /**
  * Greet a lot of unusual things.
  */
 export function Greet($0: $models.EmptyAliasStruct, $1: $models.EmptyStruct): Promise<$models.AliasStruct> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", $0, $1);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByName("main.GreetService.Greet", $0, $1) as any;
+    return $resultPromise;
 }

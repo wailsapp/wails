@@ -17,12 +17,12 @@ import * as $models from "./models.js";
  * @returns {Promise<$models.Address | null> & { cancel(): void }}
  */
 export function Yay() {
-    let $resultPromise = $Call.ByID(1867255695);
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $resultPromise = /** @type {any} */($Call.ByID(1867255695));
+    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
         return $$createType1($result);
-    });
+    }));
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return /** @type {any} */($typingPromise);
+    return $typingPromise;
 }
 
 // Private type creation functions

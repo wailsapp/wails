@@ -15,6 +15,6 @@ import * as $models from "./models.ts";
  * Yay does this and that
  */
 export function Yay(): Promise<$models.Address | null> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(3249920254);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(3249920254) as any;
+    return $resultPromise;
 }

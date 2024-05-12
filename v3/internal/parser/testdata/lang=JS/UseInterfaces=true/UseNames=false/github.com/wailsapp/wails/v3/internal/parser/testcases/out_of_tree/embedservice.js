@@ -16,8 +16,8 @@ import * as nobindingshere$0 from "../no_bindings_here/models.js";
  * @returns {Promise<[nobindingshere$0.Person, nobindingshere$0.Impersonator, nobindingshere$0.HowDifferent<boolean>, nobindingshere$0.PrivatePerson]> & { cancel(): void }}
  */
 export function LikeThisOne() {
-    let $resultPromise = $Call.ByID(2590614085);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2590614085));
+    return $resultPromise;
 }
 
 /**
@@ -25,6 +25,6 @@ export function LikeThisOne() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function LikeThisOtherOne() {
-    let $resultPromise = $Call.ByID(773650321);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(773650321));
+    return $resultPromise;
 }

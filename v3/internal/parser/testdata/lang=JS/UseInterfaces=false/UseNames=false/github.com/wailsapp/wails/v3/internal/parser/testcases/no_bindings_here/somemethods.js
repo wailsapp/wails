@@ -16,16 +16,16 @@ import * as $models from "./models.js";
  * @returns {Promise<[$models.Person, $models.Impersonator, $models.HowDifferent<boolean>, $models.PrivatePerson]> & { cancel(): void }}
  */
 export function LikeThisOne() {
-    let $resultPromise = $Call.ByID(3713567639);
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $resultPromise = /** @type {any} */($Call.ByID(3713567639));
+    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
         $result[0] = $$createType0($result[0]);
         $result[1] = $$createType1($result[1]);
         $result[2] = $$createType2($result[2]);
         $result[3] = $$createType3($result[3]);
         return $result;
-    });
+    }));
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return /** @type {any} */($typingPromise);
+    return $typingPromise;
 }
 
 /**
@@ -33,8 +33,8 @@ export function LikeThisOne() {
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function LikeThisOtherOne() {
-    let $resultPromise = $Call.ByID(2115452599);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(2115452599));
+    return $resultPromise;
 }
 
 // Private type creation functions

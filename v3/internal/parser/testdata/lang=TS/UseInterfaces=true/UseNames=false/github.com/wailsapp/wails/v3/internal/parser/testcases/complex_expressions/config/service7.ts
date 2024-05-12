@@ -4,6 +4,6 @@
 import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
 export function TestMethod(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(377450695);
-    return $resultPromise as any;
+    let $resultPromise = $Call.ByID(377450695) as any;
+    return $resultPromise;
 }
