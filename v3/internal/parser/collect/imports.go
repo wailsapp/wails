@@ -122,9 +122,15 @@ func (imports *ImportMap) Add(pkg *PackageInfo) {
 // It is a runtime error to call AddType on an ImportMap
 // created with nil importing package.
 //
-// Add does not support unsynchronised concurrent calls
+// AddType does not support unsynchronised concurrent calls
 // on the same receiver.
 func (imports *ImportMap) AddType(typ types.Type) {
+	imports.addTypeImpl(typ, make(map[*types.TypeName]bool))
+}
+
+// addTypeImpl provides the actual implementation of AddType.
+// The visited parameter is used to break cycles.
+func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeName]bool) {
 	collector := imports.collector
 	if collector == nil {
 		panic("AddType called on ImportMap with nil importing package")
@@ -134,6 +140,10 @@ func (imports *ImportMap) AddType(typ types.Type) {
 		switch t := typ.(type) {
 		case *types.Alias, *types.Named:
 			obj := typ.(interface{ Obj() *types.TypeName }).Obj()
+			if visited[obj] {
+				return
+			}
+			visited[obj] = true
 
 			if obj.Pkg() == nil {
 				// Ignore universe type.
@@ -160,9 +170,14 @@ func (imports *ImportMap) AddType(typ types.Type) {
 				// Record type argument dependencies.
 				if targs := instance.TypeArgs(); targs != nil {
 					for i := range targs.Len() {
-						imports.AddType(targs.At(i))
+						imports.addTypeImpl(targs.At(i), visited)
 					}
 				}
+			}
+
+			if collector.options.UseInterfaces {
+				// No creation/initialisation code required.
+				return
 			}
 
 			if _, isAlias := t.(*types.Alias); isAlias {
@@ -199,7 +214,7 @@ func (imports *ImportMap) AddType(typ types.Type) {
 				if IsString(t.Key()) {
 					// This model type is always rendered as a string alias,
 					// hence we can generate it and use it as a type for JS object keys.
-					imports.AddType(t.Key())
+					imports.addTypeImpl(t.Key(), visited)
 				}
 			} else {
 				collector.logger.Warningf(
@@ -230,7 +245,7 @@ func (imports *ImportMap) AddType(typ types.Type) {
 
 			// Add field dependencies.
 			for i := range len(info.Fields) - 1 {
-				imports.AddType(info.Fields[i].Type)
+				imports.addTypeImpl(info.Fields[i].Type, visited)
 			}
 
 			// Process last field without recursion.

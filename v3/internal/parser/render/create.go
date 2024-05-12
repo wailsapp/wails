@@ -9,7 +9,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/parser/collect"
 )
 
-// NoCreate returns true if the given array of types needs no creation code.
+// SkipCreate returns true if the given array of types needs no creation code.
 func (m *module) SkipCreate(ts []types.Type) bool {
 	for _, typ := range ts {
 		if m.NeedsCreate(typ) {
@@ -21,13 +21,23 @@ func (m *module) SkipCreate(ts []types.Type) bool {
 
 // NeedsCreate returns true if the given type needs some creation code.
 func (m *module) NeedsCreate(typ types.Type) bool {
+	return m.needsCreateImpl(typ, make(map[*types.TypeName]bool))
+}
+
+// needsCreateImpl provides the actual implementation of NeedsCreate.
+// The visited parameter is used to break cycles.
+func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]bool) bool {
 	switch t := typ.(type) {
 	case *types.Alias, *types.Named:
 		obj := typ.(interface{ Obj() *types.TypeName }).Obj()
+		if visited[obj] {
+			return false
+		}
+		visited[obj] = true
 
 		if obj.Pkg() == nil {
 			// Builtin alias or named type: render underlying type.
-			return m.NeedsCreate(t.Underlying())
+			return m.needsCreateImpl(t.Underlying(), visited)
 		}
 
 		if collect.IsAny(t) || collect.IsString(t) {
@@ -35,13 +45,13 @@ func (m *module) NeedsCreate(typ types.Type) bool {
 		} else if collect.IsClass(t) {
 			return true
 		} else if _, isAlias := typ.(*types.Alias); isAlias {
-			return m.NeedsCreate(types.Unalias(t))
+			return m.needsCreateImpl(types.Unalias(t), visited)
 		} else {
-			return m.NeedsCreate(t.Underlying())
+			return m.needsCreateImpl(t.Underlying(), visited)
 		}
 
 	case *types.Array, *types.Pointer:
-		return m.NeedsCreate(typ.(interface{ Elem() types.Type }).Elem())
+		return m.needsCreateImpl(typ.(interface{ Elem() types.Type }).Elem(), visited)
 
 	case *types.Map, *types.Slice:
 		return true
@@ -51,7 +61,7 @@ func (m *module) NeedsCreate(typ types.Type) bool {
 		info.Collect()
 
 		for _, field := range info.Fields {
-			if m.NeedsCreate(field.Type) {
+			if m.needsCreateImpl(field.Type, visited) {
 				return true
 			}
 		}
@@ -118,14 +128,15 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 			return m.JSCreateWithParams(t.Underlying(), params)
 		}
 
-		if collect.IsAny(typ) || collect.IsString(typ) {
+		if collect.IsAny(typ) || collect.IsString(typ) || !m.NeedsCreate(typ) {
 			break
-		} else if !collect.IsClass(typ) {
-			return m.JSCreateWithParams(t.Underlying(), params)
 		}
 
 		pp, ok := m.postponedCreates.At(typ).(*postponed)
 		if !ok {
+			pp = &postponed{m.postponedCreates.Len(), params}
+			m.postponedCreates.Set(typ, pp)
+
 			if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
 				// Postpone type args.
 				for i := range t.TypeArgs().Len() {
@@ -133,8 +144,9 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 				}
 			}
 
-			pp = &postponed{m.postponedCreates.Len(), params}
-			m.postponedCreates.Set(typ, pp)
+			if !collect.IsClass(typ) {
+				m.JSCreateWithParams(t.Underlying(), params)
+			}
 		}
 
 		return fmt.Sprintf("$$createType%d%s", pp.index, params)
@@ -208,6 +220,11 @@ func (m *module) PostponedCreates() []string {
 			)
 
 		case *types.Named:
+			if !collect.IsClass(key) {
+				result[pp.index] = m.JSCreateWithParams(t.Underlying(), pp.params)
+				break
+			}
+
 			var builder strings.Builder
 
 			builder.WriteString(pre)
