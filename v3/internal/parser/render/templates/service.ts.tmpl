@@ -66,9 +66,9 @@ import * as $internal from "./{{js $internal}}";
     let $resultPromise = $Call.ByName("{{js .FQN}}"
     {{- else}}
     let $resultPromise = $Call.ByID({{.ID}}
-    {{- end}}{{range $i, $param := .Params}}, {{jsparam $i .}}{{end}});
+    {{- end}}{{range $i, $param := .Params}}, {{jsparam $i .}}{{end}}) as any;
     {{- if or $useInterfaces (not .Results) ($module.SkipCreate .Results)}}
-    return $resultPromise as any;
+    return $resultPromise;
     {{- else}}
     let $typingPromise = $resultPromise.then(($result) => {
     {{- if eq 1 (len .Results)}}
@@ -81,9 +81,9 @@ import * as $internal from "./{{js $internal}}";
         {{- end}}{{end}}
         return $result;
     {{- end}}
-    });
+    }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise as any;
+    return $typingPromise;
     {{- end}}
 }
 {{end}}
