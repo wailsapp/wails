@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed react template css to show footer by [atterpac](https://github.com/atterpac) in [#3477](https://github.com/wailsapp/wails/pull/3477)
 - Fixed zombie processes when working in devmode by updating to latest refresh by [Atterpac](https://github.com/atterpac) in [#3320](https://github.com/wailsapp/wails/pull/3320).
 - Fixed appimage webkit file sourcing by [Atterpac](https://github.com/atterpac) in [#3306](https://github.com/wailsapp/wails/pull/3306).
 - Fixed Doctor apt package verify by [Atterpac](https://github.com/Atterpac) in [#2972](https://github.com/wailsapp/wails/pull/2972).
