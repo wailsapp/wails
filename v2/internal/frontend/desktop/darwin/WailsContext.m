@@ -55,7 +55,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     
     NSScreen* screen = [self getCurrentScreen];
     NSRect windowFrame = [self.mainWindow frame];
-    NSRect screenFrame = [screen frame];
+    NSRect screenFrame = [screen visibleFrame];
     windowFrame.origin.x = screenFrame.origin.x + (float)x;
     windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
     
