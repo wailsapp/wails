@@ -3,7 +3,8 @@
 package linux
 
 /*
-#cgo linux pkg-config: webkit2gtk-4.0
+#cgo !webkit2_41 pkg-config: webkit2gtk-4.0
+#cgo webkit2_41 pkg-config: webkit2gtk-4.1
 #include "webkit2/webkit2.h"
 */
 import "C"

@@ -3,7 +3,7 @@ package typescriptify
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -394,7 +394,7 @@ func loadCustomCode(fileName string) (map[string]string, error) {
 	}
 	defer f.Close()
 
-	bytes, err := ioutil.ReadAll(f)
+	bytes, err := io.ReadAll(f)
 	if err != nil {
 		return result, err
 	}
@@ -430,7 +430,7 @@ func (t TypeScriptify) backup(fileName string) error {
 	}
 	defer fileIn.Close()
 
-	bytes, err := ioutil.ReadAll(fileIn)
+	bytes, err := io.ReadAll(fileIn)
 	if err != nil {
 		return err
 	}
@@ -440,7 +440,7 @@ func (t TypeScriptify) backup(fileName string) error {
 		backupFn = path.Join(t.BackupDir, backupFn)
 	}
 
-	return ioutil.WriteFile(backupFn, bytes, os.FileMode(0o700))
+	return os.WriteFile(backupFn, bytes, os.FileMode(0o700))
 }
 
 func (t TypeScriptify) ConvertToFile(fileName string, packageName string) error {
