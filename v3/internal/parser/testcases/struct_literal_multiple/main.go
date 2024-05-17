@@ -24,7 +24,7 @@ func (o *OtherService) Hello() {}
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []application.Service{
+		Services: []application.Service{
 			application.NewService(&GreetService{}),
 			application.NewService(&OtherService{}),
 		},

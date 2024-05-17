@@ -26,7 +26,7 @@ func main() {
 	otherFactory := other.NewFactory[Service3, Service4]()
 
 	app := application.New(application.Options{
-		Bind: append(append(
+		Services: append(append(
 			[]application.Service{
 				factory.Get(),
 				factory.GetU(),

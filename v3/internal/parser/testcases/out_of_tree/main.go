@@ -27,7 +27,7 @@ func (*GreetService) Greet(string) {}
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []application.Service{
+		Services: []application.Service{
 			application.NewService(new(GreetService)),
 			application.NewService(&EmbedService{}),
 			application.NewService(&EmbedOther{}),

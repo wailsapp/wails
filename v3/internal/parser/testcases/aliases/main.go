@@ -67,7 +67,7 @@ func NewGreetService() application.Service {
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []application.Service{
+		Services: []application.Service{
 			NewGreetService(),
 		},
 	})

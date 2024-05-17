@@ -27,7 +27,7 @@ func main() {
 	services[2] = application.NewService(&Service3{})
 
 	var options = application.Options{
-		Bind: config.Services,
+		Services: config.Services,
 	}
 
 	provider := config.MoreServices()
@@ -38,8 +38,8 @@ func main() {
 	// Method resolution should work here just like above.
 	config.NewProviderInitialiser().InitProvider(&services[3])
 
-	copy(options.Bind, []application.Service{application.NewService(&Service4{}), provider.HeresAnotherOne, provider.OtherService.(application.Service)})
-	(options.Bind) = append(options.Bind, slices.Insert(services, 1, GlobalServices[2:]...)...)
+	copy(options.Services, []application.Service{application.NewService(&Service4{}), provider.HeresAnotherOne, provider.OtherService.(application.Service)})
+	(options.Services) = append(options.Services, slices.Insert(services, 1, GlobalServices[2:]...)...)
 
 	app := application.New(options)
 

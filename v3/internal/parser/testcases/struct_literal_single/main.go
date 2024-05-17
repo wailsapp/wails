@@ -189,7 +189,7 @@ func (*GreetService) ArrayInt(in [4]int) {
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []application.Service{
+		Services: []application.Service{
 			application.NewService(&GreetService{}),
 		},
 	})
