@@ -17,12 +17,12 @@ import * as data$0 from "./data/models.js";
  * @returns {Promise<data$0.Person> & { cancel(): void }}
  */
 export function GetPerson(name) {
-    let $resultPromise = $Call.ByID(2952413357, name);
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $resultPromise = /** @type {any} */($Call.ByID(2952413357, name));
+    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
         return $$createType0($result);
-    });
+    }));
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return /** @type {any} */($typingPromise);
+    return $typingPromise;
 }
 
 /**
@@ -32,8 +32,8 @@ export function GetPerson(name) {
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function Greet(name, ...counts) {
-    let $resultPromise = $Call.ByID(1411160069, name, counts);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(1411160069, name, counts));
+    return $resultPromise;
 }
 
 /**
@@ -42,8 +42,8 @@ export function Greet(name, ...counts) {
  * @returns {Promise<string> & { cancel(): void }}
  */
 export function GreetPerson(person) {
-    let $resultPromise = $Call.ByID(4021313248, person);
-    return /** @type {any} */($resultPromise);
+    let $resultPromise = /** @type {any} */($Call.ByID(4021313248, person));
+    return $resultPromise;
 }
 
 // Private type creation functions
