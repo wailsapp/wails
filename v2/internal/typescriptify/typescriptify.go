@@ -586,9 +586,6 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		return "", nil
 	}
 	fields := t.deepFields(typeOf)
-	if len(fields) == 0 {
-		return "", nil
-	}
 	t.logf(depth, "Converting type %s", typeOf.String())
 	if differentNamespaces(t.Namespace, typeOf) {
 		return "", nil
