@@ -7,8 +7,8 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
-	"github.com/wailsapp/wails/v3/internal/parser"
-	"github.com/wailsapp/wails/v3/internal/parser/config"
+	"github.com/wailsapp/wails/v3/internal/generator"
+	"github.com/wailsapp/wails/v3/internal/generator/config"
 )
 
 func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string) error {
@@ -41,7 +41,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	spinner, _ := pterm.DefaultSpinner.Start("Initialising...")
 
 	// Initialise and run generator.
-	stats, err := parser.NewGenerator(
+	stats, err := generator.NewGenerator(
 		options,
 		creator,
 		config.DefaultPtermLogger(spinner),
@@ -63,9 +63,9 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 
 	// Process generator error.
 	if err != nil {
-		var report *parser.ErrorReport
+		var report *generator.ErrorReport
 		switch {
-		case errors.Is(err, parser.ErrNoPackages):
+		case errors.Is(err, generator.ErrNoPackages):
 			// Convert to warning message.
 			pterm.Warning.Println(err)
 		case errors.As(err, &report):
