@@ -104,7 +104,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 				m.l.Unlock()
 			}()
 
-			result, err := boundMethod.Call(ctx, options.Args)
+			result, err := boundMethod.Call(ctx, window, options.Args)
 			if err != nil {
 				m.callErrorCallback(window, "Error calling method: %s", callID, err)
 				return

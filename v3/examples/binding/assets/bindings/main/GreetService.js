@@ -19,10 +19,20 @@ export async function Greet(name) {
 
 /**
  * GreetPerson greets a person
- * @function GreetPerson
- * @param person {dataPerson}
+ * @function GreetWithCtx
+ * @param name {string}
  * @returns {Promise<string>}
  **/
-export async function GreetPerson(person) {
-	return Call.ByName("main.GreetService.GreetPerson", ...Array.prototype.slice.call(arguments, 0));
+export async function GreetWithCtx(name) {
+	return Call.ByName("main.GreetService.GreetWithCtx", ...Array.prototype.slice.call(arguments, 0));
+}
+
+/**
+ * GreetPerson greets a person
+ * @function GreetWithBoth
+ * @param name {string}
+ * @returns {Promise<string>}
+ **/
+export async function GreetWithBoth(name) {
+	return Call.ByName("main.GreetService.GreetWithBoth", ...Array.prototype.slice.call(arguments, 0));
 }

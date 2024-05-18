@@ -52,6 +52,27 @@ func (t *TestService) Slice(a []int) []int {
 	return a
 }
 
+func (t *TestService) WithWindow(window application.Window, s string) string {
+	_ = window
+	return s
+}
+
+func (t *TestService) WithContext(ctx context.Context, s string) string {
+	_ = ctx
+	return s
+}
+
+func (t *TestService) WithContextAndWindow(ctx context.Context, window application.Window, s string) string {
+	_ = ctx
+	_ = window
+	return s
+}
+
+func (t *TestService) WithBadWindow(s string, window application.Window) string {
+	_ = window
+	return s
+}
+
 func newArgs(jsonArgs ...string) []json.RawMessage {
 	args := []json.RawMessage{}
 
@@ -64,11 +85,12 @@ func newArgs(jsonArgs ...string) []json.RawMessage {
 func TestBoundMethodCall(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		method   string
-		args     []json.RawMessage
-		err      error
-		expected interface{}
+		name       string
+		method     string
+		args       []json.RawMessage
+		wantWindow bool
+		err        error
+		expected   interface{}
 	}{
 		{
 			name:     "nil",
@@ -154,10 +176,41 @@ func TestBoundMethodCall(t *testing.T) {
 			err:      nil,
 			expected: []int{1, 2, 3},
 		},
+		{
+			name:       "with window",
+			method:     "WithWindow",
+			args:       newArgs(`"foo"`),
+			wantWindow: true,
+			err:        nil,
+			expected:   "foo",
+		},
+		{
+			name:     "with context",
+			method:   "WithContext",
+			args:     newArgs(`"foo"`),
+			err:      nil,
+			expected: "foo",
+		},
+		{
+			name:       "with context and window",
+			method:     "WithContextAndWindow",
+			args:       newArgs(`"foo"`),
+			wantWindow: true,
+			err:        nil,
+			expected:   "foo",
+		},
+		{
+			name:       "with bad window",
+			method:     "WithBadWindow",
+			args:       newArgs(`"foo"`),
+			wantWindow: true,
+			err:        errors.New("second argument is a Window but first argument is not a context"),
+			expected:   nil,
+		},
 	}
 
 	// init globalApplication
-	_ = application.New(application.Options{})
+	app := application.New(application.Options{})
 
 	bindings, err := application.NewBindings(
 		[]any{
@@ -180,8 +233,12 @@ func TestBoundMethodCall(t *testing.T) {
 			if method == nil {
 				t.Fatalf("bound method not found: %s", callOptions.Name())
 			}
+			var window application.Window
+			if tt.wantWindow {
+				window = app.NewWebviewWindow()
+			}
 
-			result, err := method.Call(context.TODO(), tt.args)
+			result, err := method.Call(context.TODO(), window, tt.args)
 			if tt.err != err && (tt.err == nil || err == nil || !strings.Contains(err.Error(), tt.err.Error())) {
 				t.Fatalf("error: %v, expected error: %v", err, tt.err)
 			}
