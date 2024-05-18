@@ -62,7 +62,7 @@ type MenuItem struct {
 	radioGroupMembers []*MenuItem
 }
 
-func newMenuItem(label string) *MenuItem {
+func NewMenuItem(label string) *MenuItem {
 	result := &MenuItem{
 		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
 		label:    label,
@@ -72,7 +72,7 @@ func newMenuItem(label string) *MenuItem {
 	return result
 }
 
-func newMenuItemSeparator() *MenuItem {
+func NewMenuItemSeparator() *MenuItem {
 	result := &MenuItem{
 		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
 		itemType: separator,
@@ -80,7 +80,7 @@ func newMenuItemSeparator() *MenuItem {
 	return result
 }
 
-func newMenuItemCheckbox(label string, checked bool) *MenuItem {
+func NewMenuItemCheckbox(label string, checked bool) *MenuItem {
 	result := &MenuItem{
 		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
 		label:    label,
@@ -91,7 +91,7 @@ func newMenuItemCheckbox(label string, checked bool) *MenuItem {
 	return result
 }
 
-func newMenuItemRadio(label string, checked bool) *MenuItem {
+func NewMenuItemRadio(label string, checked bool) *MenuItem {
 	result := &MenuItem{
 		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
 		label:    label,
@@ -102,7 +102,7 @@ func newMenuItemRadio(label string, checked bool) *MenuItem {
 	return result
 }
 
-func newSubMenuItem(label string) *MenuItem {
+func NewSubMenuItem(label string) *MenuItem {
 	result := &MenuItem{
 		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
 		label:    label,
@@ -115,7 +115,7 @@ func newSubMenuItem(label string) *MenuItem {
 	return result
 }
 
-func newRole(role Role) *MenuItem {
+func NewRole(role Role) *MenuItem {
 	switch role {
 	case AppMenu:
 		return newAppMenu()
@@ -126,7 +126,7 @@ func newRole(role Role) *MenuItem {
 	case ViewMenu:
 		return newViewMenu()
 	case ServicesMenu:
-		return newServicesMenu()
+		return NewServicesMenu()
 	case SpeechMenu:
 		return newSpeechMenu()
 	case WindowMenu:
@@ -189,8 +189,8 @@ func newRole(role Role) *MenuItem {
 	return nil
 }
 
-func newServicesMenu() *MenuItem {
-	serviceMenu := newSubMenuItem("Services")
+func NewServicesMenu() *MenuItem {
+	serviceMenu := NewSubMenuItem("Services")
 	serviceMenu.role = ServicesMenu
 	return serviceMenu
 }
@@ -333,8 +333,8 @@ func (m *MenuItem) setContextData(data *ContextMenuData) {
 	}
 }
 
-// clone returns a deep copy of the MenuItem
-func (m *MenuItem) clone() *MenuItem {
+// Clone returns a deep copy of the MenuItem
+func (m *MenuItem) Clone() *MenuItem {
 	result := &MenuItem{
 		id:       m.id,
 		label:    m.label,
@@ -348,7 +348,7 @@ func (m *MenuItem) clone() *MenuItem {
 		role:     m.role,
 	}
 	if m.submenu != nil {
-		result.submenu = m.submenu.clone()
+		result.submenu = m.submenu.Clone()
 	}
 	if m.accelerator != nil {
 		result.accelerator = m.accelerator.clone()

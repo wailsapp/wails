@@ -169,7 +169,7 @@ func (m *windowsApp) getCurrentWindowID() uint {
 func (m *windowsApp) setApplicationMenu(menu *Menu) {
 	if menu == nil {
 		// Create a default menu for windows
-		menu = defaultApplicationMenu()
+		menu = DefaultApplicationMenu()
 	}
 	menu.Update()
 

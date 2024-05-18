@@ -67,7 +67,7 @@ func newFileMenu() *MenuItem {
 	} else {
 		fileMenu.AddRole(Quit)
 	}
-	subMenu := newSubMenuItem("File")
+	subMenu := NewSubMenuItem("File")
 	subMenu.submenu = fileMenu
 	return subMenu
 }
@@ -83,7 +83,7 @@ func newViewMenu() *MenuItem {
 	viewMenu.AddRole(ZoomOut)
 	viewMenu.AddSeparator()
 	viewMenu.AddRole(ToggleFullscreen)
-	subMenu := newSubMenuItem("View")
+	subMenu := NewSubMenuItem("View")
 	subMenu.submenu = viewMenu
 	return subMenu
 }
@@ -102,7 +102,7 @@ func newAppMenu() *MenuItem {
 	appMenu.AddRole(UnHide)
 	appMenu.AddSeparator()
 	appMenu.AddRole(Quit)
-	subMenu := newSubMenuItem(globalApplication.options.Name)
+	subMenu := NewSubMenuItem(globalApplication.options.Name)
 	subMenu.submenu = appMenu
 	return subMenu
 }
@@ -127,7 +127,7 @@ func newEditMenu() *MenuItem {
 		editMenu.AddSeparator()
 		editMenu.AddRole(SelectAll)
 	}
-	subMenu := newSubMenuItem("Edit")
+	subMenu := NewSubMenuItem("Edit")
 	subMenu.submenu = editMenu
 	return subMenu
 }
@@ -142,7 +142,7 @@ func newWindowMenu() *MenuItem {
 	} else {
 		menu.AddRole(Close)
 	}
-	subMenu := newSubMenuItem("Window")
+	subMenu := NewSubMenuItem("Window")
 	subMenu.submenu = menu
 	return subMenu
 }
@@ -152,7 +152,7 @@ func newHelpMenu() *MenuItem {
 	menu.Add("Learn More").OnClick(func(ctx *Context) {
 		globalApplication.CurrentWindow().SetURL("https://wails.io")
 	})
-	subMenu := newSubMenuItem("Help")
+	subMenu := NewSubMenuItem("Help")
 	subMenu.submenu = menu
 	return subMenu
 }

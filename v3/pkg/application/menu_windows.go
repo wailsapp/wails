@@ -113,7 +113,7 @@ func (w *windowsMenu) ProcessCommand(cmdMsgID int) {
 	item.handleClick()
 }
 
-func defaultApplicationMenu() *Menu {
+func DefaultApplicationMenu() *Menu {
 	menu := NewMenu()
 	menu.AddRole(FileMenu)
 	menu.AddRole(EditMenu)

@@ -210,7 +210,7 @@ func (m *macosApp) getCurrentWindowID() uint {
 func (m *macosApp) setApplicationMenu(menu *Menu) {
 	if menu == nil {
 		// Create a default menu for mac
-		menu = defaultApplicationMenu()
+		menu = DefaultApplicationMenu()
 	}
 	menu.Update()
 
