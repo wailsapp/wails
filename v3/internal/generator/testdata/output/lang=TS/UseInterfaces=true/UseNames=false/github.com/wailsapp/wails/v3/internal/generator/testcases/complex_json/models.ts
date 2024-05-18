@@ -3,7 +3,7 @@
 
 import {Create as $Create} from "/wails/runtime.js";
 
-import * as $internal from "./internal.ts";
+import * as $internal from "./internal.js";
 
 export interface Embedded1 {
     /**
@@ -95,6 +95,11 @@ export interface Person {
  * Title is a title
  */
 export enum Title {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = "",
+
     /**
      * Mister is a title
      */

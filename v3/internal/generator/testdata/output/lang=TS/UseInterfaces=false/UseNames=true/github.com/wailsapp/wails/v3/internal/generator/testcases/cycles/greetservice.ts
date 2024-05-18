@@ -8,7 +8,7 @@
 
 import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
-import * as $models from "./models.ts";
+import * as $models from "./models.js";
 
 /**
  * Make a cycle.
@@ -25,21 +25,21 @@ export function MakeCycles(): Promise<[$models.Cyclic, $models.GenericCyclic<$mo
 }
 
 // Private type creation functions
-var $$createType0 = function $$initCreateType0(...args) {
+var $$createType0 = (function $$initCreateType0(...args): any {
     if ($$createType0 === $$initCreateType0) {
         $$createType0 = $$createType3;
     }
     return $$createType0(...args);
-};
+});
 const $$createType1 = $Create.Nullable($$createType0);
 const $$createType2 = $Create.Map($Create.Any, $$createType1);
 const $$createType3 = $Create.Array($$createType2);
-var $$createType4 = function $$initCreateType4(...args) {
+var $$createType4 = (function $$initCreateType4(...args): any {
     if ($$createType4 === $$initCreateType4) {
         $$createType4 = $$createType8;
     }
     return $$createType4(...args);
-};
+});
 const $$createType5 = $Create.Nullable($$createType4);
 const $$createType6 = $Create.Array($Create.Any);
 const $$createType7 = $Create.Struct({
@@ -47,12 +47,12 @@ const $$createType7 = $Create.Struct({
     "Y": $$createType6,
 });
 const $$createType8 = $Create.Array($$createType7);
-var $$createType9 = function $$initCreateType9(...args) {
+var $$createType9 = (function $$initCreateType9(...args): any {
     if ($$createType9 === $$initCreateType9) {
         $$createType9 = $$createType13;
     }
     return $$createType9(...args);
-};
+});
 const $$createType10 = $Create.Nullable($$createType9);
 const $$createType11 = $Create.Array($$createType4);
 const $$createType12 = $Create.Struct({

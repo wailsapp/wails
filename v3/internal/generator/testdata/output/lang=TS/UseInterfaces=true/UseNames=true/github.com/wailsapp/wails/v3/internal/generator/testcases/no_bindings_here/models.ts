@@ -3,9 +3,9 @@
 
 import {Create as $Create} from "/wails/runtime.js";
 
-import * as other$0 from "./other/models.ts";
+import * as other$0 from "./other/models.js";
 
-import * as $internal from "./internal.ts";
+import * as $internal from "./internal.js";
 
 /**
  * HowDifferent is a curious kind of person

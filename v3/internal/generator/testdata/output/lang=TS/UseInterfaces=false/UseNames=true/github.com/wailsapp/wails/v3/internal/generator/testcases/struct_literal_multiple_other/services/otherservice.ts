@@ -9,7 +9,7 @@
 
 import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
-import * as $models from "./models.ts";
+import * as $models from "./models.js";
 
 /**
  * Yay does this and that

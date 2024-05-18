@@ -13,7 +13,7 @@ export class Person {
     /** Creates a new Person instance. */
     constructor($$source: Partial<Person> = {}) {
         if (!("Title" in $$source)) {
-            this["Title"] = "";
+            this["Title"] = ("" as Title);
         }
         if (!("Name" in $$source)) {
             this["Name"] = "";
@@ -35,6 +35,11 @@ export class Person {
  * Title is a title
  */
 export enum Title {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = "",
+
     /**
      * Mister is a title
      */

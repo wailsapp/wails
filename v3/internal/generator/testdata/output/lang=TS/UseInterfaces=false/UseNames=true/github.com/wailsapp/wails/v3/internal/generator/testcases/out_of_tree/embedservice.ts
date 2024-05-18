@@ -8,7 +8,7 @@
 
 import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
-import * as nobindingshere$0 from "../no_bindings_here/models.ts";
+import * as nobindingshere$0 from "../no_bindings_here/models.js";
 
 /**
  * LikeThisOne is an example method that does nothing.

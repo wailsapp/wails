@@ -3,7 +3,7 @@
 
 import {Create as $Create} from "/wails/runtime.js";
 
-import * as $internal from "./internal.ts";
+import * as $internal from "./internal.js";
 
 export class Embedded1 {
     /**
@@ -137,7 +137,7 @@ export class Person {
             this["-"] = 0;
         }
         if (!("Embedded3" in $$source)) {
-            this["Embedded3"] = "";
+            this["Embedded3"] = ("" as Embedded3);
         }
         if (!("StrangerNumber" in $$source)) {
             this["StrangerNumber"] = "0";
@@ -179,6 +179,11 @@ export class Person {
  * Title is a title
  */
 export enum Title {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = "",
+
     /**
      * Mister is a title
      */

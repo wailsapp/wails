@@ -5,6 +5,11 @@ import {Create as $Create} from "/wails/runtime.js";
 
 export enum Title {
     /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = "",
+
+    /**
      * Mister is a title
      */
     Mister = "Mr",

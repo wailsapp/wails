@@ -8,7 +8,7 @@
 
 import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
-import * as services$0 from "./services/models.ts";
+import * as services$0 from "./services/models.js";
 
 /**
  * Greet does XYZ

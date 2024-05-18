@@ -3,7 +3,7 @@
 
 import {Create as $Create} from "/wails/runtime.js";
 
-import * as other$0 from "./services/other/models.ts";
+import * as other$0 from "./services/other/models.js";
 
 export interface Person {
     "Name": string;

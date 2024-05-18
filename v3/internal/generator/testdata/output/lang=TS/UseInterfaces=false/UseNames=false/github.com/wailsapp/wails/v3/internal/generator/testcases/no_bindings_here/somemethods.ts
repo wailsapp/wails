@@ -8,7 +8,7 @@
 
 import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
-import * as $models from "./models.ts";
+import * as $models from "./models.js";
 
 /**
  * LikeThisOne is an example method that does nothing.

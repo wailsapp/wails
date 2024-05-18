@@ -8,7 +8,7 @@
 
 import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
-import * as $models from "./models.ts";
+import * as $models from "./models.js";
 
 export function ArrayInt($in: number[]): Promise<void> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.ArrayInt", $in) as any;

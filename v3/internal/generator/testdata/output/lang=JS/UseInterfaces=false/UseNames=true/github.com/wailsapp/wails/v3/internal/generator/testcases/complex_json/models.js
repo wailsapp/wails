@@ -134,7 +134,7 @@ export class Person {
              * @member
              * @type {Embedded3}
              */
-            this["Embedded3"] = "";
+            this["Embedded3"] = (/** @type {Embedded3} */(""));
         }
         if (!("StrangerNumber" in $$source)) {
             /**
@@ -209,6 +209,11 @@ export class Person {
  * @enum {string}
  */
 export const Title = {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero: "",
+
     /**
      * Mister is a title
      */

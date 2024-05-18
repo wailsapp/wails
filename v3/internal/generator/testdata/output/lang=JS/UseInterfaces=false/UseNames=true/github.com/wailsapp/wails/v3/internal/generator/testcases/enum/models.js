@@ -18,7 +18,7 @@ export class Person {
              * @member
              * @type {Title}
              */
-            this["Title"] = "";
+            this["Title"] = (/** @type {Title} */(""));
         }
         if (!("Name" in $$source)) {
             /**
@@ -48,6 +48,11 @@ export class Person {
  * @enum {string}
  */
 export const Title = {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero: "",
+
     /**
      * Mister is a title
      */
