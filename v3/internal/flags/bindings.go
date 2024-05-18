@@ -9,7 +9,7 @@ import (
 
 type GenerateBindingsOptions struct {
 	BuildFlagsString  string `name:"f" description:"A list of additional space-separated Go build flags. Flags (or parts of them) can be wrapped in single or double quotes to include spaces"`
-	OutputDirectory   string `name:"d" description:"The output directory" default:"assets/bindings"`
+	OutputDirectory   string `name:"d" description:"The output directory" default:"frontend/bindings"`
 	ModelsFilename    string `name:"models" description:"File name for exported JS/TS models (excluding the extension)" default:"models"`
 	InternalFilename  string `name:"internal" description:"File name for unexported JS/TS models (excluding the extension)" default:"internal"`
 	IndexFilename     string `name:"index" description:"File name for JS/TS package indexes (excluding the extension)" default:"index"`
