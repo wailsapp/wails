@@ -53,7 +53,7 @@ func TestGenerator(t *testing.T) {
 		tests[i] = &testParams{
 			name:      name,
 			options:   options,
-			outputDir: filepath.Join("testdata", name),
+			outputDir: filepath.Join("testdata/output", name),
 			want:      make(map[string]bool),
 		}
 	}

@@ -1,0 +1,55 @@
+# https://taskfile.dev
+
+version: "3"
+
+shopt: [globstar]
+
+tasks:
+  clean:
+    cmds:
+      - rm -rf ./testdata/output/**/*.got.[jt]s
+
+  test:
+    cmds:
+      - go test -v .
+      - task: test:check
+
+  test:analyse:
+    cmds:
+      - go test -v -run ^TestAnalyser .
+
+  test:constants:
+    cmds:
+      - go test -v -run ^TestGenerateConstants .
+
+  test:generate:
+    cmds:
+      - go test -v -run ^TestGenerator .
+      - task: test:check
+
+  test:regenerate:
+    cmds:
+      - cmd: rm -rf ./testdata/output/*
+      - cmd: go test -v -run ^TestGenerator .
+        ignore_error: true
+      - task: test:generate
+
+  test:check:
+    dir: ./testdata
+    deps:
+      - install-deps
+    cmds:
+      - npx tsc
+
+  install-deps:
+    internal: true
+    dir: ./testdata
+    sources:
+      - package.json
+    cmds:
+      - npm install
+
+  update:
+    dir: ./testdata
+    cmds:
+      - npx npm-check-updates -u

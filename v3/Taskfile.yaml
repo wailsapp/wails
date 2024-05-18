@@ -3,6 +3,10 @@
 version: "3"
 
 includes:
+  generator:
+    taskfile: ./internal/generator
+    dir: ./internal/generator
+
   runtime:
     taskfile: ./internal/runtime
     dir: ./internal/runtime
