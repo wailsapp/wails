@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {Greet} from '../bindings/main/GreetService';
+import {GreetService} from '../bindings/changeme';
 import {Events} from "@wailsio/runtime";
 
 /**
@@ -34,7 +34,7 @@ export class MyElement extends LitElement {
         if (!name) {
             name = 'anonymous';
         }
-        Greet(name).then((resultValue: string) => {
+        GreetService.Greet(name).then((resultValue: string) => {
             this.result = resultValue;
         }).catch((err: Error) => {
             console.log(err);
@@ -77,22 +77,22 @@ export class MyElement extends LitElement {
             padding: 2rem;
             text-align: center;
         }
-    
+
         h3 {
             font-size: 3em;
             line-height: 1.1;
         }
-        
+
         a {
             font-weight: 500;
             color: #646cff;
             text-decoration: inherit;
         }
-        
+
         a:hover {
             color: #535bf2;
         }
-        
+
         button {
             width: 60px;
             height: 30px;
@@ -110,40 +110,40 @@ export class MyElement extends LitElement {
             align-items: center;
             justify-content: center;
         }
-        
+
         .logo {
             height: 6em;
             padding: 1.5em;
             will-change: filter;
         }
-        
+
         .logo:hover {
             filter: drop-shadow(0 0 2em #e80000aa);
         }
-        
+
         .logo.lit:hover {
             filter: drop-shadow(0 0 2em #325cffaa);
         }
-        
+
         .result {
             height: 20px;
             line-height: 20px;
             margin: 1.5rem auto;
             text-align: center;
         }
-        
+
         .footer {
             margin-top: 1rem;
             align-content: center;
             text-align: center;
             color: rgba(255, 255, 255, 0.67);
         }
-        
+
         .input-box .btn:hover {
             background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
             color: #333333;
         }
-        
+
         .input-box .input {
             border: none;
             border-radius: 3px;
@@ -155,12 +155,12 @@ export class MyElement extends LitElement {
             background-color: rgba(240, 240, 240, 1);
             -webkit-font-smoothing: antialiased;
         }
-        
+
         .input-box .input:hover {
             border: none;
             background-color: rgba(255, 255, 255, 1);
         }
-        
+
         .input-box .input:focus {
             border: none;
             background-color: rgba(255, 255, 255, 1);

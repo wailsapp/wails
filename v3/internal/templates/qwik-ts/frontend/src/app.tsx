@@ -1,5 +1,5 @@
 import { component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
-import {Greet} from "../bindings/main/GreetService";
+import {GreetService} from "../bindings/changeme";
 import {Events, WML} from "@wailsio/runtime";
 
 export const App = component$(() => {
@@ -12,7 +12,7 @@ export const App = component$(() => {
     if (!localName) {
       localName = 'anonymous';
     }
-    Greet(localName).then((resultValue: string) => {
+    GreetService.Greet(localName).then((resultValue: string) => {
       result.value = resultValue;
     }).catch((err: any) => {
       console.log(err);

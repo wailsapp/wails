@@ -1,4 +1,4 @@
-import {Greet} from "../bindings/main/GreetService.js";
+import {GreetService} from "../bindings/changeme";
 import {Events} from "@wailsio/runtime";
 
 const greetButton = document.getElementById('greet')! as HTMLButtonElement;
@@ -11,7 +11,7 @@ greetButton.addEventListener('click', () => {
     if (!name) {
         name = 'anonymous';
     }
-    Greet(name).then((result: string) => {
+    GreetService.Greet(name).then((result: string) => {
         resultElement.innerText = result;
     }).catch((err: Error) => {
         console.log(err);

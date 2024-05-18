@@ -28,6 +28,8 @@ tasks:
     deps:
       - task: go:mod:tidy
       - task: build:frontend
+        vars:
+          BUILD_FLAGS: {{ "'{{.BUILD_FLAGS}}'" }}
       - task: generate:icons
       - task: generate:syso
         vars:
@@ -79,6 +81,8 @@ tasks:
     deps:
       - task: go:mod:tidy
       - task: build:frontend
+        vars:
+          BUILD_FLAGS: {{ "'{{.BUILD_FLAGS}}'" }}
       - task: generate:icons
     cmds:
       - go build {{ "{{.BUILD_FLAGS}}" }} -o {{ "{{.BIN_DIR}}" }}/{{ "{{.APP_NAME}}" }}
@@ -131,6 +135,8 @@ tasks:
     deps:
       - task: go:mod:tidy
       - task: build:frontend
+        vars:
+          BUILD_FLAGS: {{ "'{{.BUILD_FLAGS}}'" }}
       - task: generate:icons
         vars:
           ARCH: {{ "'{{.ARCH}}'" }}
@@ -377,7 +383,9 @@ tasks:
       - dist/*
     deps:
       - install:frontend:deps
-      - generate:bindings
+      - task: generate:bindings
+        vars:
+          BUILD_FLAGS: {{ "'{{.BUILD_FLAGS}}'" }}
     cmds:
       - npm run build -q
 
@@ -385,16 +393,13 @@ tasks:
     summary: Generates bindings for the frontend
     sources:
       - "**/*.go"
+      - go.mod
+      - go.sum
     generates:
       - "frontend/bindings/**/*"
     cmds:
-      {{- if .UseTypescript }}
       # For a complete list of options, run `wails3 generate bindings -help`
-      - wails3 generate bindings -silent -ts
-        {{- else }}
-      - wails3 generate bindings -silent
-      {{- end }}
-      # - wails3 generate bindings -silent
+      - wails3 generate bindings -f '{{ "{{.BUILD_FLAGS}}" }}'{{if .UseTypescript}} -ts{{end}}
 
   go:mod:tidy:
     summary: Runs `go mod tidy`
