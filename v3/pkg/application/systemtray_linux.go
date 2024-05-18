@@ -221,38 +221,34 @@ func (s *linuxSystemTray) setMenu(menu *Menu) {
 }
 
 func (s *linuxSystemTray) positionWindow(window *WebviewWindow, offset int) error {
-	// Get the mouse location on the screen
-	mouseX, mouseY, currentScreen := getMousePosition()
-	screenBounds := currentScreen.Size
-
-	// Calculate new X position
-	newX := mouseX - (window.Width() / 2)
-
-	// Check if the window goes out of the screen bounds on the left side
-	if newX < 0 {
-		newX = 0
+	// Get the trayBounds of this system tray
+	trayBounds, err := s.bounds()
+	if err != nil {
+		return err
 	}
 
-	// Check if the window goes out of the screen bounds on the right side
-	if newX+window.Width() > screenBounds.Width {
-		newX = screenBounds.Width - window.Width()
+	// Get the current screen trayBounds
+	currentScreen, err := s.getScreen()
+	if err != nil {
+		return err
 	}
+	screenBounds := currentScreen.Bounds
 
-	// Calculate new Y position
-	newY := mouseY - (window.Height() / 2)
+	// Get the center height of the window
+	windowWidthCenter := window.Width() / 2
 
-	// Check if the window goes out of the screen bounds on the top
-	if newY < 0 {
-		newY = 0
+	// Get the center height of the system tray
+	systemTrayWidthCenter := trayBounds.Width / 2
+
+	// The Y will be 0 and the X will make the center of the window line up with the center of the system tray
+	windowX := trayBounds.X + systemTrayWidthCenter - windowWidthCenter
+
+	// If the end of the window goes off-screen, move it back enough to be on screen
+	if windowX+window.Width() > screenBounds.Width {
+		windowX = screenBounds.Width - window.Width()
 	}
+	window.SetRelativePosition(windowX, offset)
 
-	// Check if the window goes out of the screen bounds on the bottom
-	if newY+window.Height() > screenBounds.Height {
-		newY = screenBounds.Height - window.Height() - offset
-	}
-
-	// Set the new position of the window
-	window.SetAbsolutePosition(newX, newY)
 	return nil
 }
 
