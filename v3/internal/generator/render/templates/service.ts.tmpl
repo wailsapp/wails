@@ -1,7 +1,7 @@
 {{$module := .}}
 {{- $runtime := $module.Runtime}}
-{{- $models := $module.ModelsFile}}
-{{- $internal := $module.InternalFile}}
+{{- $models := (fixext $module.ModelsFile)}}
+{{- $internal := (fixext $module.InternalFile)}}
 {{- $useNames := $module.UseNames}}
 {{- $useInterfaces := $module.UseInterfaces}}
 {{- $imports := $module.Imports}}

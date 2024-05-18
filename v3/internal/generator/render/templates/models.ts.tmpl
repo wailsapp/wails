@@ -1,7 +1,7 @@
 {{$module := .}}
 {{- $runtime := $module.Runtime}}
-{{- $models := $module.ModelsFile}}
-{{- $internal := $module.InternalFile}}
+{{- $models := (fixext $module.ModelsFile)}}
+{{- $internal := (fixext $module.InternalFile)}}
 {{- $useInterfaces := .UseInterfaces}}
 {{- $imports := $module.Imports -}}
 // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL

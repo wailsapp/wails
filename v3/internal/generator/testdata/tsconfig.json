@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "allowImportingTsExtensions": true,
         "allowJs": true,
         "esModuleInterop": true,
         "lib": ["ES6"],

@@ -1,4 +1,6 @@
-{{if not .TS -}}
+{{$renderer := .}}
+{{- $models := (fixext .ModelsFile)}}
+{{- if not .TS -}}
 // @ts-check
 {{end -}}
 // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL
@@ -15,11 +17,9 @@
  * @module
  */
 {{end}}
-{{- $renderer := .}}
-{{- $models := .ModelsFile}}
 {{- if .Services}}
 {{- range .Services}}
-import * as {{jsid .Name}} from "./{{js ($renderer.ServiceFile .Name)}}";
+import * as {{jsid .Name}} from "./{{js (fixext ($renderer.ServiceFile .Name))}}";
 {{- end}}
 export {
 {{- range $i, $service := .Services}}

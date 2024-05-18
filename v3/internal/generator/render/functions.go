@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"strconv"
+	"strings"
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/generator/collect"
@@ -12,6 +13,7 @@ import (
 // tmplFunctions holds a map of utility functions
 // that should be available in every template.
 var tmplFunctions = template.FuncMap{
+	"fixext":     fixext,
 	"hasdoc":     hasdoc,
 	"isclass":    collect.IsClass,
 	"isjsdocid":  isjsdocid,
@@ -23,6 +25,16 @@ var tmplFunctions = template.FuncMap{
 	"jsparam":    jsparam,
 	"jsvalue":    jsvalue,
 	"typeparam":  typeparam,
+}
+
+// fixext replaces a *.ts extension with *.js in the given string.
+// This is necessary to allow emitting javascript with the Typescript compiler.
+func fixext(path string) string {
+	if strings.HasSuffix(path, ".ts") {
+		return path[:len(path)-3] + ".js"
+	} else {
+		return path
+	}
 }
 
 // jsimport formats an external import name
