@@ -91,7 +91,7 @@ import * as $internal from "./{{js $internal}}";
 {{- if $postponed}}
 // Private type creation functions
 {{- range $i, $create := $postponed}}
-{{if and (ge (len $create) 15) (eq (slice $create 0 15) "function $$init")}}var {{else}}const {{end -}}
+{{if and (ge (len $create) 16) (eq (slice $create 1 16) "function $$init")}}var {{else}}const {{end -}}
 $$createType{{$i}} = {{$create}};
 {{- end}}
 {{end}}{{end -}}

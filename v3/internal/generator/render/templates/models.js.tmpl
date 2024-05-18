@@ -85,7 +85,11 @@ import * as $internal from "./{{js $internal}}";
 {{- end}}
 {{- if $isEnum}}
 export const {{jsid $model.Name}} = {
-    {{- range $i, $decl := $model.Values}}{{range $j, $spec := $decl}}{{range $k, $value := $spec}}
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero: {{$module.JSDefault $model.Type false}},
+{{range $i, $decl := $model.Values}}{{range $j, $spec := $decl}}{{range $k, $value := $spec}}
     {{- if and (ne $i 0) (eq $j 0) (eq $k 0)}}
 {{end}}
     {{- if or (and (eq $j 0) (eq $k 0) (hasdoc $value.Decl.Doc)) (and (eq $k 0) (hasdoc $value.Spec.Doc))}}
@@ -102,7 +106,7 @@ export const {{jsid $model.Name}} = {
      */
     {{- end}}
     {{jsid $value.Name}}: {{jsvalue $value.Value}},
-    {{- end}}{{end}}{{end}}
+{{- end}}{{end}}{{end}}
 };
 {{else if $isClassAlias}}
 export const {{jsid $model.Name}} = {{$module.JSType $model.Type.Origin}};
@@ -202,7 +206,7 @@ export class {{jsid $model.Name}} {
 {{- if $postponed}}
 // Private type creation functions
 {{- range $i, $create := $postponed}}
-{{if and (ge (len $create) 15) (eq (slice $create 0 15) "function $$init")}}var {{else}}const {{end -}}
+{{if and (ge (len $create) 54) (eq (slice $create 39 54) "function $$init")}}var {{else}}const {{end -}}
 $$createType{{$i}} = {{$create}};
 {{- end}}
 {{end -}}

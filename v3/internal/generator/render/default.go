@@ -113,7 +113,7 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 
 	if collect.IsAny(typ) {
 		return "", false
-	} else if collect.IsString(typ) {
+	} else if collect.MaybeTextMarshaler(typ) {
 		return `""`, true
 	} else if collect.IsClass(typ) {
 		if typ.Obj().Pkg().Path() == m.Imports.Self {

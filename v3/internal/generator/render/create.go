@@ -221,18 +221,31 @@ func (m *module) PostponedCreates() []string {
 
 		case *types.Named:
 			if !collect.IsClass(key) {
+				// Creation function for non-struct named types
+				// require an indirect assignment to break cycles.
+
+				// Typescript cannot infer the return type on its own: add hints.
+				cast, returnType := "", ""
+				if m.TS {
+					returnType = ": any"
+				} else {
+					cast = "/** @type {(...args: any[]) => any} */"
+				}
+
 				result[pp.index] = fmt.Sprintf(`
-function $$initCreateType%d(...args) {
+%s(function $$initCreateType%d(...args)%s {
     if ($$createType%d === $$initCreateType%d) {
         $$createType%d = %s%s;
     }
     return $$createType%d(...args);
-}`,
-					pp.index,
+})`,
+					cast, pp.index, returnType,
 					pp.index, pp.index,
 					pp.index, pre, m.JSCreateWithParams(t.Underlying(), pp.params),
 					pp.index,
 				)[1:] // Remove initial newline.
+
+				// We're done.
 				break
 			}
 
