@@ -119,6 +119,9 @@ func (m *Menu) RemoveMenuItem(target *MenuItem) {
 			m.items = append(m.items[:i], m.items[i+1:]...)
 			break
 		}
+		if item.submenu != nil {
+			item.submenu.RemoveMenuItem(target)
+		}
 	}
 }
 
