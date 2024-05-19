@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'preact/hooks'
-import {Greet} from "../bindings/main/GreetService.js";
+import {GreetService} from "../bindings/changeme";
 import {Events} from "@wailsio/runtime";
 
 export function App() {
@@ -12,7 +12,7 @@ export function App() {
     if (!localName) {
       localName = 'anonymous';
     }
-    Greet(localName).then((resultValue) => {
+    GreetService.Greet(localName).then((resultValue) => {
       setResult(resultValue);
     }).catch((err) => {
       console.log(err);

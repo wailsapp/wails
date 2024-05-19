@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	_ "embed"
 	"log"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -13,8 +12,8 @@ var assets embed.FS
 
 func main() {
 	app := application.New(application.Options{
-		Bind: []any{
-			&GreetService{},
+		Services: []application.Service{
+			application.NewService(&GreetService{}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.BundledAssetFileServer(assets),

@@ -113,7 +113,7 @@ function callBinding(type, options = {}) {
             queuedCancel = true;
         }
     };
-    
+
     return p;
 }
 
@@ -130,19 +130,13 @@ export function Call(options) {
 /**
  * Executes a method by name.
  *
- * @param {string} name - The name of the method in the format 'package.struct.method'.
+ * @param {string} methodName - The name of the method in the format 'package.struct.method'.
  * @param {...*} args - The arguments to pass to the method.
  * @throws {Error} If the name is not a string or is not in the correct format.
  * @returns {*} The result of the method execution.
  */
-export function ByName(name, ...args) {
-    if (typeof name !== "string" || name.split(".").length !== 3) {
-        throw new Error("CallByName requires a string in the format 'package.struct.method'");
-    }
-    let [packageName, structName, methodName] = name.split(".");
+export function ByName(methodName, ...args) {
     return callBinding(CallBinding, {
-        packageName,
-        structName,
         methodName,
         args
     });

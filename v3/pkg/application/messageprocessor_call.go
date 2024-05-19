@@ -64,17 +64,17 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			return
 		}
 		var boundMethod *BoundMethod
-		if options.PackageName != "" {
+		if options.MethodName != "" {
 			boundMethod = globalApplication.bindings.Get(&options)
 			if boundMethod == nil {
-				m.callErrorCallback(window, "Error getting binding for method: %s", callID, fmt.Errorf("method '%s' not found", options.Name()))
+				m.callErrorCallback(window, "Error getting binding for method: %s", callID, fmt.Errorf("method '%s' not found", options.MethodName))
 				return
 			}
 		} else {
 			boundMethod = globalApplication.bindings.GetByID(options.MethodID)
 		}
 		if boundMethod == nil {
-			m.callErrorCallback(window, "Error getting binding for method: %s", callID, fmt.Errorf("method ID '%s' not found", options.Name()))
+			m.callErrorCallback(window, "Error getting binding for method: %s", callID, fmt.Errorf("method ID %d not found", options.MethodID))
 			return
 		}
 

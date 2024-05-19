@@ -74,6 +74,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `@wailsio/runtime` package does not publish its API on the `window.wails` object, and does not start the WML system. This has been done to improve encapsulation. The WML system can be started manually if desired by calling the new `WML.Enable` method. The bundled JS runtime script still performs both operations automatically. By [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
 - The Window API module `@wailsio/runtime/src/window` now exposes the containing window object as a default export. It is not possible anymore to import individual methods through ESM named or namespace import syntax.
 - The JS window API has been updated to match the current Go `WebviewWindow` API. Some methods have changed name or prototype, specifically: `Screen` becomes `GetScreen`; `GetZoomLevel`/`SetZoomLevel` become `GetZoom`/`SetZoom`; `GetZoom`, `Width` and `Height` now return values directly instead of wrapping them within objects. By [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
+- The binding generator now uses calls by ID by default. The `-id` CLI option has been removed. Use the `-names` CLI option to switch back to calls by name. By [@fbbdev](https://github.com/fbbdev) in [#3468](https://github.com/wailsapp/wails/pull/3468)
+- New binding code layout: output files were previously organised in folders named after their containing package; now full Go import paths are used, including the module path. By [@fbbdev](https://github.com/fbbdev) in [#3468](https://github.com/wailsapp/wails/pull/3468)
+- The struct field `application.Options.Bind` has been renamed to `application.Options.Services`. By [@fbbdev](https://github.com/fbbdev) in [#3468](https://github.com/wailsapp/wails/pull/3468)
+- New syntax for binding services: service instances must now be wrapped in a call to `application.NewService`. By [@fbbdev](https://github.com/fbbdev) in [#3468](https://github.com/wailsapp/wails/pull/3468)
 
 ### Removed
 

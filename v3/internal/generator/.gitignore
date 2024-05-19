@@ -1,0 +1,3 @@
+.task
+node_modules
+testdata/output/**/*.got.[jt]s

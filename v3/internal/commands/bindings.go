@@ -3,43 +3,84 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
+
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
-	"github.com/wailsapp/wails/v3/internal/parser"
-	"path/filepath"
+	"github.com/wailsapp/wails/v3/internal/generator"
+	"github.com/wailsapp/wails/v3/internal/generator/config"
 )
 
-func GenerateBindings(options *flags.GenerateBindingsOptions) error {
-
+func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string) error {
 	if options.Silent {
 		pterm.DisableOutput()
 		defer pterm.EnableOutput()
+	} else if options.Verbose {
+		pterm.EnableDebugMessages()
+		defer pterm.DisableDebugMessages()
 	}
 
-	project, err := parser.GenerateBindingsAndModels(options)
-	if err != nil {
-		if errors.Is(err, parser.ErrNoBindingsFound) {
-			pterm.Info.Println("No bindings found")
-			return nil
-		} else {
-			return err
-		}
+	if len(patterns) == 0 {
+		// No input pattern, load package from current directory.
+		patterns = []string{"."}
 	}
 
+	// Compute absolute path of output directory.
 	absPath, err := filepath.Abs(options.OutputDirectory)
 	if err != nil {
 		return err
 	}
 
-	pterm.Info.Printf("Processed: %s, %s, %s, %s, %s in %s.\n",
-		pluralise(project.Stats.NumPackages, "Package"),
-		pluralise(project.Stats.NumStructs, "Struct"),
-		pluralise(project.Stats.NumMethods, "Method"),
-		pluralise(project.Stats.NumEnums, "Enum"),
-		pluralise(project.Stats.NumModels, "Model"),
-		project.Stats.EndTime.Sub(project.Stats.StartTime).String())
+	// Initialise file creator.
+	var creator config.FileCreator
+	if !options.DryRun {
+		creator = config.DirCreator(absPath)
+	}
 
-	pterm.Info.Printf("Output directory: %s\n", absPath)
+	// Start a spinner for progress messages.
+	spinner, _ := pterm.DefaultSpinner.Start("Initialising...")
+
+	// Initialise and run generator.
+	stats, err := generator.NewGenerator(
+		options,
+		creator,
+		config.DefaultPtermLogger(spinner),
+	).Generate(patterns...)
+
+	// Resolve spinner.
+	spinner.Info(fmt.Sprintf(
+		"Processed: %s, %s, %s, %s, %s in %s.",
+		pluralise(stats.NumPackages, "Package"),
+		pluralise(stats.NumServices, "Service"),
+		pluralise(stats.NumMethods, "Method"),
+		pluralise(stats.NumEnums, "Enum"),
+		pluralise(stats.NumModels, "Model"),
+		stats.Elapsed().String(),
+	))
+
+	// Report output directory.
+	pterm.Info.Printfln("Output directory: %s", absPath)
+
+	// Process generator error.
+	if err != nil {
+		var report *generator.ErrorReport
+		switch {
+		case errors.Is(err, generator.ErrNoPackages):
+			// Convert to warning message.
+			pterm.Warning.Println(err)
+		case errors.As(err, &report):
+			if report.HasErrors() {
+				// Report error count.
+				return err
+			} else if report.HasWarnings() {
+				// Report warning count.
+				pterm.Warning.Println(report)
+			}
+		default:
+			// Report error.
+			return err
+		}
+	}
 
 	return nil
 }

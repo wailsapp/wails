@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "esModuleInterop": true,
+        "lib": ["ES6"],
+        "noEmit": true,
+        "paths": {
+            "/wails/runtime.js": ["../../runtime/desktop/@wailsio/runtime/types/index.d.ts"]
+        }
+    },
+    "include": ["output/**/*"],
+    "exclude": ["output/**/*.got.?s"]
+}

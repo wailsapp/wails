@@ -1,4 +1,4 @@
-import {Greet} from "./bindings/main/GreetService.js";
+import {GreetService} from "./bindings/changeme";
 import {Events} from "@wailsio/runtime";
 
 const resultElement = document.getElementById('result');
@@ -9,7 +9,7 @@ window.doGreet = () => {
     if (!name) {
         name = 'anonymous';
     }
-    Greet(name).then((result) => {
+    GreetService.Greet(name).then((result) => {
         resultElement.innerText = result;
     }).catch((err) => {
         console.log(err);

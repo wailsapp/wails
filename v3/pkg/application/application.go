@@ -124,7 +124,7 @@ func New(appOptions Options) *App {
 	result.assets = srv
 	result.assets.LogDetails()
 
-	result.bindings, err = NewBindings(appOptions.Bind, appOptions.BindAliases)
+	result.bindings, err = NewBindings(appOptions.Services, appOptions.BindAliases)
 	if err != nil {
 		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
 	}

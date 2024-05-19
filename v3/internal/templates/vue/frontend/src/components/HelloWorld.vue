@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import {Greet} from "../../bindings/main/GreetService.js";
+import {GreetService} from "../../bindings/changeme";
 import {Events} from "@wailsio/runtime";
 
 const name = ref('')
@@ -12,7 +12,7 @@ const doGreet = () => {
   if (!localName) {
     localName = 'anonymous';
   }
-  Greet(localName).then((resultValue) => {
+  GreetService.Greet(localName).then((resultValue) => {
     result.value = resultValue;
   }).catch((err) => {
     console.log(err);

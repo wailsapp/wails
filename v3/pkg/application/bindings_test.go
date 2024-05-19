@@ -160,8 +160,8 @@ func TestBoundMethodCall(t *testing.T) {
 	_ = application.New(application.Options{})
 
 	bindings, err := application.NewBindings(
-		[]any{
-			&TestService{},
+		[]application.Service{
+			application.NewService(&TestService{}),
 		}, make(map[uint32]uint32),
 	)
 	if err != nil {
@@ -171,14 +171,12 @@ func TestBoundMethodCall(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			callOptions := &application.CallOptions{
-				PackageName: "application_test",
-				StructName:  "TestService",
-				MethodName:  tt.method,
+				MethodName: "github.com/wailsapp/wails/v3/pkg/application_test.TestService." + tt.method,
 			}
 
 			method := bindings.Get(callOptions)
 			if method == nil {
-				t.Fatalf("bound method not found: %s", callOptions.Name())
+				t.Fatalf("bound method not found: %s", callOptions.MethodName)
 			}
 
 			result, err := method.Call(context.TODO(), tt.args)
