@@ -47,6 +47,9 @@ func main() {
 	generate.NewSubCommandFunction(".desktop", "Generate .desktop file", commands.GenerateDotDesktop)
 	generate.NewSubCommandFunction("appimage", "Generate Linux AppImage", commands.GenerateAppImage)
 
+	service := app.NewSubCommand("service", "Service tools")
+	service.NewSubCommandFunction("create", "Create a new Service", commands.ServiceCreate)
+
 	plugin := app.NewSubCommand("plugin", "Plugin tools")
 	//plugin.NewSubCommandFunction("list", "List plugins", commands.PluginList)
 	plugin.NewSubCommandFunction("init", "Initialise a new plugin", commands.PluginInit)

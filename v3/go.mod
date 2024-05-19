@@ -17,11 +17,11 @@ require (
 	github.com/jaypipes/ghw v0.12.0
 	github.com/leaanthony/clir v1.6.0
 	github.com/leaanthony/go-ansi-parser v1.6.1
-	github.com/leaanthony/gosod v1.0.3
+	github.com/leaanthony/gosod v1.0.4
 	github.com/leaanthony/u v1.1.0
 	github.com/leaanthony/winicon v1.0.0
 	github.com/lmittmann/tint v1.0.4
-	github.com/matryer/is v1.4.0
+	github.com/matryer/is v1.4.1
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mattn/go-isatty v0.0.20
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8

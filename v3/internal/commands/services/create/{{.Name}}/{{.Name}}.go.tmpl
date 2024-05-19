@@ -1,0 +1,24 @@
+package {{.Name}}
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type {{.Name}} struct {
+    // Add service state here
+}
+
+// New{{.Name}} creates a new {{.Name}} service
+func New{{.Name}}() *{{.Name}} {
+    return &{{.Name}}{}
+}
+
+// Init is called on service startup
+// Setup your service and resources here
+func (s *{{.Name}}) Init() error {
+    // Initialise your service resources here
+}
+
+// Shutdown is called on service shutdown
+// Cleanup your service and resources here
+func (s *{{.Name}}) Shutdown() {
+    // Cleanup your service resources here
+}

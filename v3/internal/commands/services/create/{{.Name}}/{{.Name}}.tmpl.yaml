@@ -1,0 +1,7 @@
+# This file contains the service metadata
+
+service:
+    name: "{{.Name}}"
+    description: "{{.Description}}"
+    url: "{{.URL}}"
+    version: "{{.Version}}"
