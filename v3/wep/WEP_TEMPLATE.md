@@ -3,8 +3,6 @@
 ## Title
 
 **Author**: [Your Name]  
-**Status**: [Draft/Accepted/Implemented]  
-**Type**: [Feature/Enhancement]  
 **Created**: [YYYY-MM-DD]
 
 ## Summary
