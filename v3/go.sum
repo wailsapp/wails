@@ -31,8 +31,8 @@ github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be/go.mod h1:ySMOLuW
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPdPJAN/hZIm0C4OItdklCFmMRWYpio=
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5/go.mod h1:wHh0iHkYZB8zMSxRWpUBQtwG5a7fFgvEO+odwuTv2gs=
 github.com/atomicgo/cursor v0.0.1/go.mod h1:cBON2QmmrysudxNBFthvMtN32r3jxVRIvzkUiF/RuIk=
-github.com/atterpac/refresh v0.8.0 h1:KGMu60O/D1CxjvNwxcDJriCJo0CX9DLqY0lwLLaW4nE=
-github.com/atterpac/refresh v0.8.0/go.mod h1:fJpWySLdpbANS8Ej5OvfZVZIVvi/9bmnhTjKS5EjQes=
+github.com/atterpac/refresh v0.8.1 h1:igCKto56bB2q4uajNm5agYN1ZKH428LE97sKJaTJeg0=
+github.com/atterpac/refresh v0.8.1/go.mod h1:fJpWySLdpbANS8Ej5OvfZVZIVvi/9bmnhTjKS5EjQes=
 github.com/bep/debounce v1.2.1 h1:v67fRdBA9UQu2NhLFXrSg0Brw7CexQekrBwDMM8bzeY=
 github.com/bep/debounce v1.2.1/go.mod h1:H8yggRPQKLUhUoqrJC1bO2xNya7vanpDl7xR3ISbCJ0=
 github.com/bwesterb/go-ristretto v1.2.3/go.mod h1:fUIoIZaG73pV5biE2Blr2xEzDoMj7NFEuV9ekS419A0=
