@@ -11,7 +11,8 @@
     "esModuleInterop": true,
     "noEmit": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedParameters": false,
+    "noImplicitAny": false,
     "noImplicitReturns": true,
     "skipLibCheck": true
   },
