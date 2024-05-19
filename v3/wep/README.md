@@ -30,7 +30,7 @@ Following this structured approach ensures transparency, community involvement, 
 
 ### 3. Community Discussion
 
-- **Share Your Proposal**: Present your proposal to the Wails community. Try to get support for the proposal to increase the chances of acceptance.
+- **Share Your Proposal**: Present your proposal to the Wails community. Try to get support for the proposal to increase the chances of acceptance. If you are on the discord server, create a post in the [`#enhancement-proposals`](https://discord.gg/TA8kbQds95) channel.
 - **Gather Feedback**: Refine your proposal based on community input. All feedback should be added as comments in the PR.
 - **Show Support**: Agreement with the proposal should be indicated by adding a thumbs-up emoji to the PR. The more thumbs-up emojis, the more likely the proposal will be accepted.
 - **Iterate**: Make changes to the proposal based on feedback.
