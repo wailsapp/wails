@@ -3,7 +3,7 @@ module github.com/wailsapp/wails/v3
 go 1.22
 
 require (
-	github.com/atterpac/refresh v0.8.0
+	github.com/atterpac/refresh v0.8.1
 	github.com/bep/debounce v1.2.1
 	github.com/ebitengine/purego v0.4.0-alpha.4
 	github.com/go-git/go-git/v5 v5.11.0
