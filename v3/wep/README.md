@@ -23,8 +23,8 @@ Following this structured approach ensures transparency, community involvement, 
 
 ### 2. Submit Proposal
 
-- **Open a PR**:
-  - Submit a Pull Request (PR) for the proposal with the title `[WEP] <title>`.
+- **Open a DRAFT PR**:
+  - Submit a DRAFT Pull Request (PR) for the proposal with the title `[WEP] <title>`.
   - It should only contain the proposal file and any additional resources (images, diagrams, etc.).
   - Add a summary of the proposal in the PR description.
 
@@ -35,6 +35,7 @@ Following this structured approach ensures transparency, community involvement, 
 - **Show Support**: Agreement with the proposal should be indicated by adding a thumbs-up emoji to the PR. The more thumbs-up emojis, the more likely the proposal will be accepted.
 - **Iterate**: Make changes to the proposal based on feedback.
 - **Agree on an Implementor**: To avoid stagnant proposals, we require someone agree to implement it. This could be the proposer.
+- **Ready for Review**: Once the proposal is ready for review, change the PR status to `Ready for Review`.
 
 ### 4. Final Decision
 
