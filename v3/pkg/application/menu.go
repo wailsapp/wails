@@ -120,7 +120,6 @@ func (m *Menu) RemoveMenuItem(target *MenuItem) {
 			break
 		}
 	}
-	m.Update()
 }
 
 // ItemAt returns the menu item at the given index, or nil if the index is out of bounds.
