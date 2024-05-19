@@ -6,7 +6,9 @@
  * @module
  */
 
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import {Call as $Call} from "/wails/runtime.js";
 
 /**
  * Comment 1.

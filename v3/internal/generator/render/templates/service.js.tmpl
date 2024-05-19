@@ -21,15 +21,23 @@
  * @module
  */
 {{end}}
-import {Call as $Call, Create as $Create} from "{{js $runtime}}";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import {Call as $Call{{if not $useInterfaces}}, Create as $Create{{end -}} } from "{{js $runtime}}";
 {{range $imports.External}}
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
 import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{- end}}{{if $imports.External}}
 {{end}}
 {{- if $imports.ImportModels}}
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
 import * as $models from "./{{js $models}}";{{if not $imports.ImportInternal}}
 {{end}}{{end}}
 {{- if $imports.ImportInternal}}
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
 import * as $internal from "./{{js $internal}}";
 {{end}}
 {{- range .Injections}}

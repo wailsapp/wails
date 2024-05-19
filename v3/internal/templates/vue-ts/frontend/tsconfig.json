@@ -5,6 +5,8 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "strict": true,
+    "noUnusedParameters": false,
+    "noImplicitAny": false,
     "jsx": "preserve",
     "resolveJsonModule": true,
     "isolatedModules": true,

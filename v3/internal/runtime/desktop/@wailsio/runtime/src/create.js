@@ -35,8 +35,8 @@ export function ByteSlice(source) {
  * and returns an in-place creation function for an array
  * whose elements are of that type.
  * @template T
- * @param {(any) => T} element
- * @returns {(any) => T[]}
+ * @param {(source: any) => T} element
+ * @returns {(source: any) => T[]}
  */
 export function Array(element) {
     if (element === Any) {
@@ -59,9 +59,9 @@ export function Array(element) {
  * and returns an in-place creation function for an object
  * whose keys and values are of those types.
  * @template K, V
- * @param {(any) => K} key
- * @param {(any) => V} value
- * @returns {(any) => { [_: K]: V }}
+ * @param {(source: any) => K} key
+ * @param {(source: any) => V} value
+ * @returns {(source: any) => { [_: K]: V }}
  */
 export function Map(key, value) {
     if (value === Any) {
@@ -83,8 +83,8 @@ export function Map(key, value) {
  * Nullable takes a creation function for an arbitrary type
  * and returns a creation function for a nullable value of that type.
  * @template T
- * @param {(any) => T} element
- * @returns {(any) => (T | null)}
+ * @param {(source: any) => T} element
+ * @returns {(source: any) => (T | null)}
  */
 export function Nullable(element) {
     if (element === Any) {
@@ -97,10 +97,10 @@ export function Nullable(element) {
 /**
  * Struct takes an object mapping field names to creation functions
  * and returns an in-place creation function for a struct.
- * @template {{ [_: string]: ((any) => any) }} T
+ * @template {{ [_: string]: ((source: any) => any) }} T
  * @template {{ [Key in keyof T]?: ReturnType<T[Key]> }} U
  * @param {T} createField
- * @returns {(any) => U}
+ * @returns {(source: any) => U}
  */
 export function Struct(createField) {
     let allAny = true;

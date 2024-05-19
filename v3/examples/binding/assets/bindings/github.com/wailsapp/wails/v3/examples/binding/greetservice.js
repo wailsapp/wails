@@ -7,8 +7,12 @@
  * @module
  */
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
 import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
 import * as data$0 from "./data/models.js";
 
 /**
