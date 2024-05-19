@@ -17,8 +17,7 @@ func hasdoc(group *ast.CommentGroup) bool {
 	}
 
 	// TODO: this is horrible, make it more efficient?
-	text := group.Text()
-	return text != "" && text != "\n"
+	return strings.ContainsFunc(group.Text(), func(r rune) bool { return !unicode.IsSpace(r) })
 }
 
 var commentTerminator = []byte("*/")
@@ -36,7 +35,7 @@ var commentTerminator = []byte("*/")
 // with the given indentation.
 func jsdoc(comment string, indent string) string {
 	var builder strings.Builder
-	prefix := []byte("\n" + indent + " * ")
+	prefix := []byte(newline + indent + " * ")
 
 	scanner := bufio.NewScanner(bytes.NewReader([]byte(comment)))
 	for scanner.Scan() {

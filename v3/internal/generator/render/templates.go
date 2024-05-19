@@ -2,6 +2,7 @@ package render
 
 import (
 	"embed"
+	"strings"
 	"text/template"
 )
 
@@ -23,3 +24,16 @@ var tmplModels = map[tmplLanguage]*template.Template{
 }
 
 var tmplIndex = template.Must(template.New("index.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/index.tmpl"))
+
+var newline string
+
+func init() {
+	var builder strings.Builder
+
+	err := template.Must(template.New("newline.tmpl").ParseFS(templates, "templates/newline.tmpl")).Execute(&builder, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	newline = builder.String()
+}

@@ -315,6 +315,13 @@ func (m *module) PostponedCreates() []string {
 		}
 	})
 
+	if newline != "\n" {
+		// Replace newlines according to local git config.
+		for i := range result {
+			result[i] = strings.ReplaceAll(result[i], "\n", newline)
+		}
+	}
+
 	return result
 }
 
