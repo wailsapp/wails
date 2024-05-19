@@ -136,7 +136,7 @@ func newSpeechMenu() *MenuItem {
 		OnClick(func(ctx *Context) {
 			//			C.stopSpeaking()
 		})
-	subMenu := newSubMenuItem("Speech")
+	subMenu := NewSubMenuItem("Speech")
 	subMenu.submenu = speechMenu
 	return subMenu
 }

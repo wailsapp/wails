@@ -237,6 +237,17 @@ func (m *MenuItem) SetAccelerator(shortcut string) *MenuItem {
 	return m
 }
 
+func (m *MenuItem) GetAccelerator() string {
+	if m.accelerator == nil {
+		return ""
+	}
+	return m.accelerator.String()
+}
+
+func (m *MenuItem) RemoveAccelerator() {
+	m.accelerator = nil
+}
+
 func (m *MenuItem) SetTooltip(s string) *MenuItem {
 	m.tooltip = s
 	if m.impl != nil {

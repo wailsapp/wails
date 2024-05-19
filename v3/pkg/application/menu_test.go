@@ -109,3 +109,32 @@ func TestMenu_ItemAt(t *testing.T) {
 		})
 	}
 }
+
+func TestMenu_RemoveMenuItem(t *testing.T) {
+	itemToRemove := application.NewMenuItem("Target")
+	itemToKeep := application.NewMenuItem("Item 1")
+
+	tests := []struct {
+		name       string
+		menu       *application.Menu
+		item       *application.MenuItem
+		shouldFind bool
+	}{
+		{
+			name:       "Remove existing item",
+			menu:       application.NewMenuFromItems(itemToKeep, itemToRemove),
+			item:       itemToRemove,
+			shouldFind: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			test.menu.RemoveMenuItem(test.item)
+			found := test.menu.FindByLabel(test.item.Label())
+			if !test.shouldFind && found != nil {
+				t.Errorf("Expected item to be removed, but found %v", found)
+			}
+		})
+	}
+}

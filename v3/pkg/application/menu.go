@@ -112,6 +112,17 @@ func (m *Menu) FindByLabel(label string) *MenuItem {
 	return nil
 }
 
+func (m *Menu) RemoveMenuItem(target *MenuItem) {
+	for i, item := range m.items {
+		if item == target {
+			// Remove the item from the slice
+			m.items = append(m.items[:i], m.items[i+1:]...)
+			break
+		}
+	}
+	m.Update()
+}
+
 // ItemAt returns the menu item at the given index, or nil if the index is out of bounds.
 func (m *Menu) ItemAt(index int) *MenuItem {
 	if index < 0 || index >= len(m.items) {
