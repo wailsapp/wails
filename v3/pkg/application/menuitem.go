@@ -296,6 +296,12 @@ func (m *MenuItem) SetHidden(hidden bool) *MenuItem {
 	return m
 }
 
+// GetSubmenu returns the submenu of the MenuItem.
+// If the MenuItem is not a submenu, it returns nil.
+func (m *MenuItem) GetSubmenu() *Menu {
+	return m.submenu
+}
+
 func (m *MenuItem) Checked() bool {
 	return m.checked
 }
