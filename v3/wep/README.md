@@ -9,34 +9,40 @@ Welcome to the Wails Enhancement Proposal (WEP) process. This guide outlines the
 
 Following this structured approach ensures transparency, community involvement, and efficient enhancement of the Wails project.
 
+**NOTE**: This process is for proposing new functionality. For bug fixes, documentation improvements, and other minor changes, please follow the standard PR process.
+
 ## Submission of Proposal
 
 ### 1. Idea Initiation
 
-- **Document Your Idea**: Clearly document your feature idea using the provided template.
+- **Document Your Idea**: 
+  - Create a new directory: `v3/wep/proposals/<name of proposal>` with the name of your proposal. 
+  - Copy the WEP template located in `v3/wep/WEP_TEMPLATE.md` into `v3/wep/proposals/<name of proposal>/proposal.md`. 
+  - Include any additional resources (images, diagrams, etc.) in the proposal directory.
+  - Fill in the template with the details of your proposal. Do not remove any sections.
 
 ### 2. Submit Proposal
 
 - **Open a PR**:
-  - Copy the WEP template located in `v3/wep/WEP_TEMPLATE.md`.
-  - Fill in the details (do not remove any sections).
-  - Submit a Pull Request (PR) with the title `[WEP] <title>`.
+  - Submit a Pull Request (PR) for the proposal with the title `[WEP] <title>`.
+  - It should only contain the proposal file and any additional resources (images, diagrams, etc.).
+  - Add a summary of the proposal in the PR description.
 
 ### 3. Community Discussion
 
 - **Share Your Proposal**: Present your proposal to the Wails community. Try to get support for the proposal to increase the chances of acceptance.
 - **Gather Feedback**: Refine your proposal based on community input. All feedback should be added as comments in the PR.
 - **Show Support**: Agreement with the proposal should be indicated by adding a thumbs-up emoji to the PR. The more thumbs-up emojis, the more likely the proposal will be accepted.
-
-### 4. Assign Implementation
-
+- **Iterate**: Make changes to the proposal based on feedback.
 - **Agree on an Implementor**: To avoid stagnant proposals, we require someone agree to implement it. This could be the proposer.
 
-### 5. Final Decision
+### 4. Final Decision
 
-- **Decision**: The Wails maintainers will make a final decision on the proposal based on community feedback and the proposal's merits. If accepted, the proposal will be assigned a WEP number and the PR merged.
+- **Decision**: The Wails maintainers will make a final decision on the proposal based on community feedback and the proposal's merits. 
+  - If accepted, the proposal will be assigned a WEP number and the PR merged.
+  - If rejected, the reasons will be provided in the PR comments.
 
-*NOTE*: If a proposal has not met the required support or has been inactive for more than 2 months, it may be closed.
+*NOTE*: If a proposal has not met the required support or has been inactive for more than a month, it may be closed.
 
 ## Implementation of Proposal
 
