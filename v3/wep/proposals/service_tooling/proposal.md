@@ -45,7 +45,13 @@ The current system of using bound structs has several limitations, including dif
 
 `myservice.go` contains the service implementation. This will be named according to the service name.
 
-`service.yaml` contains metadata about the service.
+`service.yaml` contains metadata about the service. This will contain the following fields:
+   - Version - The Version of the service definition file
+   - Service - Fixed Key
+     - Name          - Name of the service
+     - Description   - Description of the service
+     - URL           - URL to get help on the service
+     - Version       - Version of the service
 
 `go.mod` is the standard Go module file.
 
