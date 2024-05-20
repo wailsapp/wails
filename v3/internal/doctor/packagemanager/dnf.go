@@ -25,11 +25,11 @@ func NewDnf(osid string) *Dnf {
 // They will potentially differ on different distributions or versions
 func (y *Dnf) Packages() Packagemap {
 	return Packagemap{
-		"libgtk-3": []*Package{
+		"gtk3": []*Package{
 			{Name: "gtk3-devel", SystemPackage: true, Library: true},
 		},
-		"libwebkit": []*Package{
-			{Name: "webkit2gtk4.0-devel", SystemPackage: true, Library: true},
+		"webkit2gtk": []*Package{
+			{Name: "webkit2gtk4.1-devel", SystemPackage: true, Library: true},
 			{Name: "webkit2gtk3-devel", SystemPackage: true, Library: true},
 			// {Name: "webkitgtk3-devel", SystemPackage: true, Library: true},
 		},
