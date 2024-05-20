@@ -144,20 +144,28 @@ nav:
         - Plugins: learn/plugins.md
     - Feedback: getting-started/feedback.md
   - Feedback: getting-started/feedback.md
+  - Guides:
+      - Bindings:
+        - Introduction: guides/bindings/intro.md
+        - Binding Structs: guides/bindings/structs.md
+        - Binding Models: guides/bindings/models.md
+        - Enums: guides/bindings/enums.md
+        - Typescript: guides/bindings/typescript.md
+  - Reference:
+      - Runtime:
+        - Application: reference/runtime/application.md
+        - Window: reference/runtime/window.md
+        - System Tray: reference/runtime/systray.md
+        - Menu: reference/runtime/menu.md
+        - Main Thread: reference/runtime/mainthread.md
   - What's New in v3?: whats-new.md
-  - API:
-      - Application: API/application.md
-      - Window: API/window.md
-      - System Tray: API/systray.md
-      - Menu: API/menu.md
-      - Main Thread: API/mainthread.md
   - Development:
     - Introduction: development/introduction.md
     - Status: development/status.md
     - v3 Changes: development/changes.md
   - Roadmap: roadmap.md
   - Change Log: changelog.md
-  - Sponsor❤️: https://github.com/sponsors/leaanthony
+  - Sponsor ❤️: https://github.com/sponsors/leaanthony
 
 watch:
   - overrides
