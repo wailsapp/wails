@@ -14,6 +14,14 @@ const (
 	WindowStateFullscreen
 )
 
+type ButtonState int
+
+const (
+	ButtonActive   ButtonState = 0
+	ButtonInactive ButtonState = 1
+	ButtonHidden   ButtonState = 2
+)
+
 type WebviewWindowOptions struct {
 	// Name is a unique identifier that can be given to a window.
 	Name string
@@ -107,6 +115,11 @@ type WebviewWindowOptions struct {
 
 	// Linux options
 	Linux LinuxWindow
+
+	// Toolbar button states
+	MinimiseButtonState ButtonState
+	MaximiseButtonState ButtonState
+	CloseButtonState    ButtonState
 
 	// ShouldClose is called when the window is about to close.
 	// Return true to allow the window to close, or false to prevent it from closing.
@@ -283,12 +296,6 @@ type WindowsWindow struct {
 
 	// Permissions map for WebView2. If empty, default permissions will be granted.
 	Permissions map[CoreWebView2PermissionKind]CoreWebView2PermissionState
-
-	// Disables the minimise button
-	DisableMinimiseButton bool
-
-	// Disables the maximise button
-	DisableMaximiseButton bool
 }
 
 type Theme int
@@ -370,15 +377,6 @@ type MacWindow struct {
 
 	// WebviewPreferences contains preferences for the webview
 	WebviewPreferences MacWebviewPreferences
-
-	// Disables the minimise button
-	DisableMinimiseButton bool
-
-	// Disables the maximise button
-	DisableMaximiseButton bool
-
-	// Disables the close button
-	DisableCloseButton bool
 }
 
 // MacWebviewPreferences contains preferences for the Mac webview

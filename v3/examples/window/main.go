@@ -64,12 +64,7 @@ func main() {
 		myMenu.Add("New WebviewWindow (Disable Minimise)").
 			OnClick(func(ctx *application.Context) {
 				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-					Windows: application.WindowsWindow{
-						DisableMinimiseButton: true,
-					},
-					Mac: application.MacWindow{
-						DisableMinimiseButton: true,
-					},
+					MinimiseButtonState: application.ButtonInactive,
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
@@ -80,12 +75,29 @@ func main() {
 		myMenu.Add("New WebviewWindow (Disable Maximise)").
 			OnClick(func(ctx *application.Context) {
 				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-					Windows: application.WindowsWindow{
-						DisableMaximiseButton: true,
-					},
-					Mac: application.MacWindow{
-						DisableMaximiseButton: true,
-					},
+					MaximiseButtonState: application.ButtonInactive,
+				}).
+					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
+					SetURL("https://wails.io").
+					Show()
+				windowCounter++
+			})
+		myMenu.Add("New WebviewWindow (Hide Minimise)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					MinimiseButtonState: application.ButtonHidden,
+				}).
+					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
+					SetURL("https://wails.io").
+					Show()
+				windowCounter++
+			})
+		myMenu.Add("New WebviewWindow (Hide Maximise)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					MaximiseButtonState: application.ButtonHidden,
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
@@ -98,9 +110,18 @@ func main() {
 		myMenu.Add("New WebviewWindow (Disable Close)").
 			OnClick(func(ctx *application.Context) {
 				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-					Mac: application.MacWindow{
-						DisableCloseButton: true,
-					},
+					CloseButtonState: application.ButtonInactive,
+				}).
+					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
+					SetURL("https://wails.io").
+					Show()
+				windowCounter++
+			})
+		myMenu.Add("New WebviewWindow (Hide Close)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					CloseButtonState: application.ButtonHidden,
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
@@ -278,12 +299,12 @@ func main() {
 			w.SetMinSize(200, 200)
 		})
 	})
-	sizeMenu.Add("Set Max Size (600,600)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
-			w.SetFullscreenButtonEnabled(false)
-			w.SetMaxSize(600, 600)
-		})
-	})
+	//sizeMenu.Add("Set Max Size (600,600)").OnClick(func(ctx *application.Context) {
+	//	currentWindow(func(w *application.WebviewWindow) {
+	//		w.SetFullscreenButtonEnabled(false)
+	//		w.SetMaxSize(600, 600)
+	//	})
+	//})
 	sizeMenu.Add("Get Current WebviewWindow Size").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			width, height := w.Size()
@@ -297,12 +318,12 @@ func main() {
 		})
 	})
 
-	sizeMenu.Add("Reset Max Size").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
-			w.SetMaxSize(0, 0)
-			w.SetFullscreenButtonEnabled(true)
-		})
-	})
+	//sizeMenu.Add("Reset Max Size").OnClick(func(ctx *application.Context) {
+	//	currentWindow(func(w *application.WebviewWindow) {
+	//		w.SetMaxSize(0, 0)
+	//		w.SetFullscreenButtonEnabled(true)
+	//	})
+	//})
 	positionMenu := menu.AddSubmenu("Position")
 	positionMenu.Add("Set Relative Position (0,0)").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
