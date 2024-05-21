@@ -299,12 +299,6 @@ func main() {
 			w.SetMinSize(200, 200)
 		})
 	})
-	//sizeMenu.Add("Set Max Size (600,600)").OnClick(func(ctx *application.Context) {
-	//	currentWindow(func(w *application.WebviewWindow) {
-	//		w.SetFullscreenButtonEnabled(false)
-	//		w.SetMaxSize(600, 600)
-	//	})
-	//})
 	sizeMenu.Add("Get Current WebviewWindow Size").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			width, height := w.Size()
@@ -318,12 +312,6 @@ func main() {
 		})
 	})
 
-	//sizeMenu.Add("Reset Max Size").OnClick(func(ctx *application.Context) {
-	//	currentWindow(func(w *application.WebviewWindow) {
-	//		w.SetMaxSize(0, 0)
-	//		w.SetFullscreenButtonEnabled(true)
-	//	})
-	//})
 	positionMenu := menu.AddSubmenu("Position")
 	positionMenu.Add("Set Relative Position (0,0)").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
@@ -365,6 +353,52 @@ func main() {
 	positionMenu.Add("Center").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			w.Center()
+		})
+	})
+	titleBarMenu := menu.AddSubmenu("TitleBar")
+	titleBarMenu.Add("Disable Minimise").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetMinimiseButtonState(application.ButtonInactive)
+		})
+	})
+	titleBarMenu.Add("Enable Minimise").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetMinimiseButtonState(application.ButtonActive)
+		})
+	})
+	titleBarMenu.Add("Hide Minimise").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetMinimiseButtonState(application.ButtonHidden)
+		})
+	})
+	titleBarMenu.Add("Disable Maximise").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetMaximiseButtonState(application.ButtonInactive)
+		})
+	})
+	titleBarMenu.Add("Enable Maximise").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetMaximiseButtonState(application.ButtonActive)
+		})
+	})
+	titleBarMenu.Add("Hide Maximise").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetMaximiseButtonState(application.ButtonHidden)
+		})
+	})
+	titleBarMenu.Add("Disable Close").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetCloseButtonState(application.ButtonInactive)
+		})
+	})
+	titleBarMenu.Add("Enable Close").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetCloseButtonState(application.ButtonActive)
+		})
+	})
+	titleBarMenu.Add("Hide Close").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetCloseButtonState(application.ButtonHidden)
 		})
 	})
 	stateMenu := menu.AddSubmenu("State")
