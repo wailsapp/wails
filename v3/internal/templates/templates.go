@@ -213,17 +213,20 @@ func Install(options *flags.Init) error {
 	}
 
 	// Calculate relative path from project directory to LocalModulePath
-	var relativePath string
-	relativePath, err = filepath.Rel(projectDir, debug.LocalModulePath)
-	if err != nil {
-		return err
+	var localModulePath string
+	if debug.LocalModulePath != "" {
+		relativePath, err := filepath.Rel(projectDir, debug.LocalModulePath)
+		if err != nil {
+			return err
+		}
+		localModulePath = filepath.ToSlash(relativePath + "/")
 	}
 
 	UseTypescript := strings.HasSuffix(options.TemplateName, "-ts")
 
 	templateData := TemplateOptions{
 		Init:            options,
-		LocalModulePath: filepath.ToSlash(relativePath + "/"),
+		LocalModulePath: localModulePath,
 		UseTypescript:   UseTypescript,
 	}
 
