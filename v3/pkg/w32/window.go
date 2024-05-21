@@ -14,6 +14,21 @@ import (
 )
 
 const (
+	SC_CLOSE    = 0xF060
+	SC_MOVE     = 0xF010
+	SC_MAXIMIZE = 0xF030
+	SC_MINIMIZE = 0xF020
+	SC_SIZE     = 0xF000
+	SC_RESTORE  = 0xF120
+)
+
+var (
+	user32         = syscall.NewLazyDLL("user32.dll")
+	getSystemMenu  = user32.NewProc("GetSystemMenu")
+	enableMenuItem = user32.NewProc("EnableMenuItem")
+)
+
+const (
 	GCLP_HBRBACKGROUND int32 = -10
 	GCLP_HICON         int32 = -14
 )
@@ -250,4 +265,32 @@ func FlashWindow(hwnd HWND, enabled bool) {
 func EnumChildWindows(hwnd HWND, callback func(hwnd HWND, lparam LPARAM) LRESULT) LRESULT {
 	r, _, _ := procEnumChildWindows.Call(hwnd, syscall.NewCallback(callback), 0)
 	return r
+}
+
+func DisableCloseButton(hwnd HWND) error {
+	hSysMenu, _, err := getSystemMenu.Call(hwnd, 0)
+	if hSysMenu == 0 {
+		return err
+	}
+
+	r1, _, err := enableMenuItem.Call(hSysMenu, SC_CLOSE, MF_BYCOMMAND|MF_DISABLED|MF_GRAYED)
+	if r1 == 0 {
+		return err
+	}
+
+	return nil
+}
+
+func EnableCloseButton(hwnd HWND) error {
+	hSysMenu, _, err := getSystemMenu.Call(hwnd, 0)
+	if hSysMenu == 0 {
+		return err
+	}
+
+	r1, _, err := enableMenuItem.Call(hSysMenu, SC_CLOSE, MF_BYCOMMAND|MF_ENABLED)
+	if r1 == 0 {
+		return err
+	}
+
+	return nil
 }

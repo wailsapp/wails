@@ -255,9 +255,10 @@ func (w *windowsWebviewWindow) run() {
 
 	w.setupChromium()
 
-	// Min/max buttons
-	w.setMinimiseButtonEnabled(!options.Windows.DisableMinimiseButton)
-	w.setMaximiseButtonEnabled(!options.Windows.DisableMaximiseButton)
+	// Initialise the window buttons
+	w.setMinimiseButtonState(options.MinimiseButtonState)
+	w.setMaximiseButtonState(options.MaximiseButtonState)
+	w.setCloseButtonState(options.CloseButtonState)
 
 	// Register the window with the application
 	getNativeApplication().registerWindow(w)
@@ -1679,4 +1680,43 @@ func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error
 		err = errors.New(fmt.Sprintf("Cannot load icon from resource with id %v", resId))
 	}
 	return result, err
+}
+
+func (w *windowsWebviewWindow) setMinimiseButtonState(state ButtonState) {
+	switch state {
+	case ButtonInactive:
+		w.setStyle(false, w32.WS_MINIMIZEBOX)
+	case ButtonHidden:
+		w.setGWLStyle(w32.WS_SYSMENU | w32.WS_CAPTION)
+	case ButtonActive:
+		w.setStyle(true, w32.WS_MINIMIZEBOX)
+
+	}
+}
+
+func (w *windowsWebviewWindow) setMaximiseButtonState(state ButtonState) {
+	switch state {
+	case ButtonInactive:
+		w.setStyle(false, w32.WS_MAXIMIZEBOX)
+	case ButtonHidden:
+		w.setGWLStyle(w32.WS_SYSMENU | w32.WS_CAPTION)
+	case ButtonActive:
+		w.setStyle(true, w32.WS_MAXIMIZEBOX)
+	}
+}
+
+func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
+	switch state {
+	case ButtonActive:
+		// Enable the close button
+		w32.EnableCloseButton(w.hwnd)
+	case ButtonInactive:
+		w32.DisableCloseButton(w.hwnd)
+	case ButtonHidden:
+		w.setStyle(false, w32.WS_SYSMENU)
+	}
+}
+
+func (w *windowsWebviewWindow) setGWLStyle(style int) {
+	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, uint32(style))
 }

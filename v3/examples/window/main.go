@@ -106,7 +106,7 @@ func main() {
 				windowCounter++
 			})
 	}
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
 		myMenu.Add("New WebviewWindow (Disable Close)").
 			OnClick(func(ctx *application.Context) {
 				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
