@@ -642,8 +642,8 @@ static void windowHide(void *window) {
 }
 
 // setButtonState sets the state of the given button
-// 0 = active
-// 1 = inactive
+// 0 = enabled
+// 1 = disabled
 // 2 = hidden
 static void setButtonState(void *button, int state) {
 	if (button == nil) {

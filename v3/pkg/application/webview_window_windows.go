@@ -1684,11 +1684,10 @@ func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error
 
 func (w *windowsWebviewWindow) setMinimiseButtonState(state ButtonState) {
 	switch state {
-	case ButtonInactive:
+	case ButtonDisabled, ButtonHidden:
 		w.setStyle(false, w32.WS_MINIMIZEBOX)
-	case ButtonHidden:
-		w.setGWLStyle(w32.WS_SYSMENU | w32.WS_CAPTION)
-	case ButtonActive:
+	case ButtonEnabled:
+		w.setStyle(true, w32.WS_SYSMENU)
 		w.setStyle(true, w32.WS_MINIMIZEBOX)
 
 	}
@@ -1696,22 +1695,22 @@ func (w *windowsWebviewWindow) setMinimiseButtonState(state ButtonState) {
 
 func (w *windowsWebviewWindow) setMaximiseButtonState(state ButtonState) {
 	switch state {
-	case ButtonInactive:
+	case ButtonDisabled, ButtonHidden:
 		w.setStyle(false, w32.WS_MAXIMIZEBOX)
-	case ButtonHidden:
-		w.setGWLStyle(w32.WS_SYSMENU | w32.WS_CAPTION)
-	case ButtonActive:
+	case ButtonEnabled:
+		w.setStyle(true, w32.WS_SYSMENU)
 		w.setStyle(true, w32.WS_MAXIMIZEBOX)
 	}
 }
 
 func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
 	switch state {
-	case ButtonActive:
-		// Enable the close button
-		w32.EnableCloseButton(w.hwnd)
-	case ButtonInactive:
-		w32.DisableCloseButton(w.hwnd)
+	case ButtonEnabled:
+		w.setStyle(true, w32.WS_SYSMENU)
+		_ = w32.EnableCloseButton(w.hwnd)
+	case ButtonDisabled:
+		w.setStyle(true, w32.WS_SYSMENU)
+		_ = w32.DisableCloseButton(w.hwnd)
 	case ButtonHidden:
 		w.setStyle(false, w32.WS_SYSMENU)
 	}

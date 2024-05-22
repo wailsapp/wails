@@ -1,0 +1,77 @@
+# Controlling Window Buttons in Wails
+
+Wails provides an API to control the appearance and functionality of the window buttons (minimise, maximise, and close) on the titlebar. This functionality is available on Windows and macOS, but not on Linux.
+
+## Button States
+
+The button states are defined by the `ButtonState` enum:
+
+```go
+type ButtonState int
+
+const (
+    ButtonEnabled   ButtonState = 0
+    ButtonDisabled ButtonState = 1
+    ButtonHidden   ButtonState = 2
+)
+```
+
+- `ButtonEnabled`: The button is enabled and visible.
+- `ButtonDisabled`: The button is visible but disabled (grayed out).
+- `ButtonHidden`: The button is hidden from the titlebar.
+
+## Setting Button States
+
+The button states can be set during window creation or at runtime.
+
+### Setting Button States During Window Creation
+
+When creating a new window, you can set the initial state of the buttons using the `WebviewWindowOptions` struct:
+
+```go
+package main
+
+import (
+	"github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+		Name:        "My Application",
+	})
+	
+    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        MinimiseButtonState: application.ButtonHidden,
+        MaximiseButtonState: application.ButtonDisabled,
+        CloseButtonState:    application.ButtonEnabled,
+	})
+	
+	app.Run()
+```
+
+In the example above, the minimise button is hidden, the maximise button is inactive (grayed out), and the close button is active.
+
+### Setting Button States at Runtime
+
+You can also change the button states at runtime using the following methods on the `Window` interface:
+
+```go
+window.SetMinimiseButtonState(wails.ButtonHidden)
+window.SetMaximiseButtonState(wails.ButtonEnabled)
+window.SetCloseButtonState(wails.ButtonDisabled)
+```
+
+## Platform Differences
+
+The button state functionality behaves slightly differently on Windows and macOS:
+
+|                       | Windows                | Mac                    |
+|-----------------------|------------------------|------------------------|
+| Disable Min/Max/Close | Disables Min/Max/Close | Disables Min/Max/Close |
+| Hide Min              | Disables Min           | Hides Min button       |
+| Hide Max              | Disables Max           | Hides Max button       |
+| Hide Close            | Hides all controls     | Hides Close            |
+
+Note: On Windows, it is not possible to hide the Min/Max buttons individually.
+However, disabling both will hide both of the controls and only show the
+close button.

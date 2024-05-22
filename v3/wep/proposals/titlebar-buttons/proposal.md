@@ -22,8 +22,8 @@ We currently do not fully support the ability to hide or disable the window butt
       type ButtonState int
 
       const (
-          ButtonActive   ButtonState = 0
-          ButtonInactive ButtonState = 1
+          ButtonEnabled  ButtonState = 0
+          ButtonDisabled ButtonState = 1
           ButtonHidden   ButtonState = 2
       )
 ```
@@ -57,22 +57,27 @@ The following options will be removed from the `MacWindow` options:
 
 The settings translate to the following functionality on each platform:
 
-|                       | Windows                      | Mac                    |
-|-----------------------|------------------------------|------------------------|
-| Disable Min/Max/Close | Disables Min/Max/Close       | Disables Min/Max/Close |
-| Hide Min              | Hides both Min + Max buttons | Hides Min button       |
-| Hide Max              | Hides both Min + Max buttons | Hides Max button       |
-| Hide Close            | Hides all buttons            | Hides Close            |
+|                       | Windows                | Mac                    |
+|-----------------------|------------------------|------------------------|
+| Disable Min/Max/Close | Disables Min/Max/Close | Disables Min/Max/Close |
+| Hide Min              | Disables Min           | Hides Min button       |
+| Hide Max              | Disables Max           | Hides Max button       |
+| Hide Close            | Hides all controls     | Hides Close            |
+
+Note: On Windows, it is not possible to hide the Min/Max buttons individually.
+However, disabling both will hide both of the controls and only show the 
+close button. 
 
 ## Pros/Cons
 
 ### Pros
 
-1. We can support everything that's possible on both macOS and Windows
+- We can support everything that's possible on both macOS and Windows
 
 ### Cons
 
-1. Windows works slightly different to macOS
+- Windows works slightly different to macOS
+- No Linux support (doesn't look like it's possible regardless of the solution)
 
 ## Alternatives Considered
 
@@ -80,11 +85,11 @@ The alternative is to draw your own titlebar, but this is a lot of work and ofte
 
 ## Backwards Compatibility
 
-This is not backwards compatible as we remove the old `Disable*Button` options.
+This is not backwards compatible as we remove the old button disable options.
 
 ## Test Plan
 
-As part of the implementation, an example will be created in `v3/examples` to test the functionality.
+As part of the implementation, the window example will be updated to test the functionality.
 
 ## Reference Implementation
 

@@ -17,8 +17,8 @@ const (
 type ButtonState int
 
 const (
-	ButtonActive   ButtonState = 0
-	ButtonInactive ButtonState = 1
+	ButtonEnabled  ButtonState = 0
+	ButtonDisabled ButtonState = 1
 	ButtonHidden   ButtonState = 2
 )
 
