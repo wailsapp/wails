@@ -296,6 +296,9 @@ type WindowsWindow struct {
 
 	// Permissions map for WebView2. If empty, default permissions will be granted.
 	Permissions map[CoreWebView2PermissionKind]CoreWebView2PermissionState
+
+	// ExStyle is the extended window style
+	ExStyle int
 }
 
 type Theme int

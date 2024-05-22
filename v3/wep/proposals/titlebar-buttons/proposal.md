@@ -1,20 +1,22 @@
 # Wails Enhancement Proposal (WEP)
 
-## Title
+## Customising Window Controls in Wails
 
 **Author**: Lea Anthony
 **Created**: 2024-05-20
 
 ## Summary
 
-Create a better API for controlling the appearance and functionality of window buttons in Wails.
+This is a proposal for an API to control the appearance and functionality of window controls in Wails.
 This will only be available on Windows and macOS.
 
 ## Motivation
 
-We currently do not fully support the ability to hide or disable the window buttons on the titlebar. 
+We currently do not fully support the ability to customise window controls. 
 
 ## Detailed Design
+
+### Controlling Button State
 
 1. A new enum will be added:
 
@@ -28,7 +30,7 @@ We currently do not fully support the ability to hide or disable the window butt
       )
 ```
 
-2. The following options will be added to the `WebviewWindowOptions` option struct:
+2. These options will be added to the `WebviewWindowOptions` option struct:
 
 ```go
    MinimiseButtonState ButtonState
@@ -36,18 +38,13 @@ We currently do not fully support the ability to hide or disable the window butt
    CloseButtonState    ButtonState
 ```
 
-The following options will be removed from the `WindowsWindow` options:
-
-- DisableMinimiseButton
-- DisableMaximiseButton
-
-The following options will be removed from the `MacWindow` options:
+3. These options will be removed from the current Windows/Mac options:
 
 - DisableMinimiseButton
 - DisableMaximiseButton
 - DisableCloseButton
 
-3. The following methods will be added to the `Window` interface:
+4. These methods will be added to the `Window` interface:
 
 ```go
    SetMinimizeButtonState(state ButtonState)
@@ -68,11 +65,46 @@ Note: On Windows, it is not possible to hide the Min/Max buttons individually.
 However, disabling both will hide both of the controls and only show the 
 close button. 
 
+### Controlling Window Style (Windows)
+
+As Windows currently does not have much in the way of controlling the style of the
+titlebar, a new option will be added to the `WebviewWindowOptions` option struct:
+
+```go
+   ExStyle int
+```
+
+If this is set, then the new Window will use the style specified in the `ExStyle` field.
+
+Example:
+```go
+package main
+
+import (
+	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/w32"
+)
+
+func main() {
+    app := application.New(application.Options{
+		Name:        "My Application",
+	})
+	
+    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Windows: application.WindowsWindow{
+            ExStyle: w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
+        },
+	})
+	
+	app.Run()
+}
+```
+
 ## Pros/Cons
 
 ### Pros
 
-- We can support everything that's possible on both macOS and Windows
+- We bring much needed customisation capabilities to both macOS and Windows
 
 ### Cons
 
@@ -85,7 +117,7 @@ The alternative is to draw your own titlebar, but this is a lot of work and ofte
 
 ## Backwards Compatibility
 
-This is not backwards compatible as we remove the old button disable options.
+This is not backwards compatible as we remove the old "disable button" options.
 
 ## Test Plan
 

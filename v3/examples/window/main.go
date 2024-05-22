@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"github.com/wailsapp/wails/v3/pkg/w32"
 	"log"
 	"math/rand"
 	"runtime"
@@ -130,6 +131,22 @@ func main() {
 				windowCounter++
 			})
 
+	}
+	if runtime.GOOS == "windows" {
+		myMenu.Add("New WebviewWindow (Custom ExStyle)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					Windows: application.WindowsWindow{
+						DisableMenu: true,
+						ExStyle:     w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
+					},
+				}).
+					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
+					SetURL("https://wails.io").
+					Show()
+				windowCounter++
+			})
 	}
 
 	myMenu.Add("New WebviewWindow (Hides on Close one time)").

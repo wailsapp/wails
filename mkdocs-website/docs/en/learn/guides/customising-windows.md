@@ -1,8 +1,9 @@
-# Controlling Window Buttons in Wails
+# Customising Window Controls in Wails
 
-Wails provides an API to control the appearance and functionality of the window buttons (minimise, maximise, and close) on the titlebar. This functionality is available on Windows and macOS, but not on Linux.
+Wails provides an API to control the appearance and functionality of the controls of a window. 
+This functionality is available on Windows and macOS, but not on Linux.
 
-## Button States
+## Setting the Window Button States
 
 The button states are defined by the `ButtonState` enum:
 
@@ -19,8 +20,6 @@ const (
 - `ButtonEnabled`: The button is enabled and visible.
 - `ButtonDisabled`: The button is visible but disabled (grayed out).
 - `ButtonHidden`: The button is hidden from the titlebar.
-
-## Setting Button States
 
 The button states can be set during window creation or at runtime.
 
@@ -47,6 +46,7 @@ func main() {
 	})
 	
 	app.Run()
+}
 ```
 
 In the example above, the minimise button is hidden, the maximise button is inactive (grayed out), and the close button is active.
@@ -61,7 +61,7 @@ window.SetMaximiseButtonState(wails.ButtonEnabled)
 window.SetCloseButtonState(wails.ButtonDisabled)
 ```
 
-## Platform Differences
+### Platform Differences
 
 The button state functionality behaves slightly differently on Windows and macOS:
 
@@ -75,3 +75,37 @@ The button state functionality behaves slightly differently on Windows and macOS
 Note: On Windows, it is not possible to hide the Min/Max buttons individually.
 However, disabling both will hide both of the controls and only show the
 close button.
+
+### Controlling Window Style (Windows)
+
+To control the style of the titlebar on Windows, you can use the `ExStyle` field in the `WebviewWindowOptions` struct:
+
+Example:
+```go
+package main
+
+import (
+	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/w32"
+)
+
+func main() {
+    app := application.New(application.Options{
+		Name: "My Application",
+	})
+	
+    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Windows: application.WindowsWindow{
+            ExStyle: w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
+        },
+	})
+	
+	app.Run()
+}
+```
+
+Other options that affect the Extended Style of a window will be overridden by this setting:
+- HiddenOnTaskbar
+- AlwaysOnTop
+- IgnoreMouseEvents
+- BackgroundType

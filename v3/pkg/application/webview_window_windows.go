@@ -192,8 +192,7 @@ func (w *windowsWebviewWindow) run() {
 
 	w.chromium = edge.NewChromium()
 
-	var exStyle uint
-	exStyle = w32.WS_EX_CONTROLPARENT
+	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
 		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		if w.parent.options.IgnoreMouseEvents {
@@ -208,6 +207,10 @@ func (w *windowsWebviewWindow) run() {
 		exStyle |= w32.WS_EX_TOOLWINDOW
 	} else {
 		exStyle |= w32.WS_EX_APPWINDOW
+	}
+
+	if options.Windows.ExStyle != 0 {
+		exStyle = options.Windows.ExStyle
 	}
 
 	// ToDo: X, Y should also be scaled, should it be always relative to the main monitor?
@@ -234,7 +237,7 @@ func (w *windowsWebviewWindow) run() {
 	var style uint = w32.WS_OVERLAPPEDWINDOW
 
 	w.hwnd = w32.CreateWindowEx(
-		exStyle,
+		uint(exStyle),
 		windowClassName,
 		w32.MustStringToUTF16Ptr(options.Title),
 		style,
