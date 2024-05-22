@@ -65,7 +65,7 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 		if windowsOptions.ToolWindow {
-			exStyle |= w32.WS_EX_TOOLWINDOW
+			exStyle = w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST
 		}
 	}
 	if appoptions.AlwaysOnTop {
