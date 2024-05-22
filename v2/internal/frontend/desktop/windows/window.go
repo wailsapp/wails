@@ -3,9 +3,10 @@
 package windows
 
 import (
-	"github.com/wailsapp/go-webview2/pkg/edge"
 	"sync"
 	"unsafe"
+
+	"github.com/wailsapp/go-webview2/pkg/edge"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
@@ -62,6 +63,9 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
 		if windowsOptions.WindowIsTranslucent {
 			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
+		}
+		if windowsOptions.ToolWindow {
+			exStyle |= w32.WS_EX_TOOLWINDOW
 		}
 	}
 	if appoptions.AlwaysOnTop {
