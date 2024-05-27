@@ -140,7 +140,7 @@ type ChildPackageEntity struct {
 	ImportedPackage binding_test_import.AWrapper `json:"importedPackage"`
 }
 
-var EntityWithDiffNamespaces = BindingTest{
+var EntityWithDiffNamespacesTest = BindingTest{
 	name: "EntityWithDiffNamespaces ",
 	structs: []interface{}{
 		&ParentPackageEntity{},
