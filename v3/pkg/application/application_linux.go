@@ -156,10 +156,10 @@ func (a *linuxApp) monitorThemeChanges() {
 			if len(body) < 2 {
 				return "", false
 			}
-			if body[0].(string) != "org.gnome.desktop.interface" {
+			if entry, ok := body[0].(string); !ok || entry != "org.gnome.desktop.interface" {
 				return "", false
 			}
-			if body[1].(string) == "color-scheme" {
+			if entry, ok := body[1].(string); ok && entry == "color-scheme" {
 				return body[2].(dbus.Variant).Value().(string), true
 			}
 			return "", false
