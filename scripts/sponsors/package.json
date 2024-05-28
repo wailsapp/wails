@@ -10,6 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "sponsorkit": "^0.8.2"
+    "sponsorkit": "^0.9.3"
   }
 }

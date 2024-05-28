@@ -55,7 +55,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
     NSScreen* screen = [self getCurrentScreen];
     NSRect windowFrame = [self.mainWindow frame];
-    NSRect screenFrame = [screen frame];
+    NSRect screenFrame = [screen visibleFrame];
     windowFrame.origin.x = screenFrame.origin.x + (float)x;
     windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
 
@@ -136,7 +136,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     return NO;
 }
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop {
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop  {
     NSWindowStyleMask styleMask = 0;
 
     if( !frameless ) {
@@ -158,7 +158,6 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
     self.mainWindow = [[WailsWindow alloc] initWithContentRect:NSMakeRect(0, 0, width, height)
                                                       styleMask:styleMask backing:NSBackingStoreBuffered defer:NO];
-
     if (!frameless && useToolbar) {
         id toolbar = [[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"];
         [toolbar autorelease];
@@ -186,6 +185,11 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     if (appearance != nil) {
         NSAppearance *nsAppearance = [NSAppearance appearanceNamed:appearance];
         [self.mainWindow setAppearance:nsAppearance];
+    }
+
+    if (!zoomable && resizable) {
+        NSButton *button = [self.mainWindow standardWindowButton:NSWindowZoomButton];
+        [button setEnabled: NO];
     }
 
 

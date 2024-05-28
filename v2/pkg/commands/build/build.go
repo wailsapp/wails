@@ -71,10 +71,6 @@ type Options struct {
 	SkipBindings      bool                 // Skip binding generation
 }
 
-func (o *Options) IsWindowsTargetPlatform() bool {
-	return strings.Contains(strings.ToLower(o.Platform), "windows")
-}
-
 // Build the project!
 func Build(options *Options) (string, error) {
 	// Extract logger
@@ -173,16 +169,19 @@ func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
 
 	for _, embedDetail := range embedDetails {
 		fullPath := embedDetail.GetFullPath()
-		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			err := os.MkdirAll(fullPath, 0o755)
-			if err != nil {
-				return err
+		// assumes path is directory only if it has no extension
+		if filepath.Ext(fullPath) == "" {
+			if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+				err := os.MkdirAll(fullPath, 0o755)
+				if err != nil {
+					return err
+				}
+				f, err := os.Create(filepath.Join(fullPath, "gitkeep"))
+				if err != nil {
+					return err
+				}
+				_ = f.Close()
 			}
-			f, err := os.Create(filepath.Join(fullPath, "gitkeep"))
-			if err != nil {
-				return err
-			}
-			_ = f.Close()
 		}
 	}
 
@@ -262,7 +261,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 
 		// When we finish, we will want to remove the syso file
 		defer func() {
-			err := os.Remove(filepath.Join(options.ProjectData.Path, options.ProjectData.Name+"-res.syso"))
+			err := os.Remove(filepath.Join(options.ProjectData.Path, strings.ReplaceAll(options.ProjectData.Name, " ", "_")+"-res.syso"))
 			if err != nil {
 				fatal(err.Error())
 			}
@@ -331,7 +330,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		if _, err := os.Stat(options.CompiledBinary); os.IsNotExist(err) {
 			return "", fmt.Errorf("compiled binary does not exist at path: %s", options.CompiledBinary)
 		}
-		stdout, stderr, err := shell.RunCommand(options.BinDirectory, "xattr", "-rc", options.CompiledBinary)
+		stdout, stderr, err := shell.RunCommand(options.BinDirectory, "/usr/bin/xattr", "-rc", options.CompiledBinary)
 		if err != nil {
 			return "", fmt.Errorf("%s - %s", err.Error(), stderr)
 		}

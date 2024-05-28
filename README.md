@@ -86,7 +86,7 @@ make this easy for you by handling project creation, compilation and bundling. A
 ### Roadmap
 
 The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
-this before open up an enhancement request.
+it before creating an enhancement request.
 
 ## Getting Started
 

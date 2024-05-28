@@ -80,7 +80,7 @@ type Project struct {
 	// The address to bind the wails dev server to. Default "localhost:34115"
 	DevServer string `json:"devServer"`
 
-	// Arguments that are forwared to the application in dev mode
+	// Arguments that are forward to the application in dev mode
 	AppArgs string `json:"appargs"`
 
 	// NSISType to be build

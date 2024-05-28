@@ -110,7 +110,7 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// serveFile will try to load the file from the fs.FS and write it to the response
+// serveFSFile will try to load the file from the fs.FS and write it to the response
 func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, filename string) error {
 	if d.fs == nil {
 		return os.ErrNotExist
