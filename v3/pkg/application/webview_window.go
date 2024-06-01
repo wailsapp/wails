@@ -1094,6 +1094,25 @@ func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
 	}
 }
 
+func (w *WebviewWindow) OpenContextMenu(data *ContextMenuData) {
+	menu, ok := w.contextMenus[data.Id]
+	if !ok {
+		// try application level context menu
+		menu, ok = globalApplication.getContextMenu(data.Id)
+		if !ok {
+			w.Error("No context menu found for id: %s", data.Id)
+			return
+		}
+	}
+	menu.setContextData(data)
+	if w.impl == nil && !w.isDestroyed() {
+		return
+	}
+	InvokeSync(func() {
+		w.impl.openContextMenu(menu, data)
+	})
+}
+
 // RegisterContextMenu registers a context menu and assigns it the given name.
 func (w *WebviewWindow) RegisterContextMenu(name string, menu *Menu) {
 	w.contextMenusLock.Lock()
