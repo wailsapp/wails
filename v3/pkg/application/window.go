@@ -44,7 +44,6 @@ type Window interface {
 	Minimise() Window
 	Name() string
 	On(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
-	OpenContextMenu(data *ContextMenuData)
 	RegisterContextMenu(name string, menu *Menu)
 	RelativePosition() (int, int)
 	Reload()
