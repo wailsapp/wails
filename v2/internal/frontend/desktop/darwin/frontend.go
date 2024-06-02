@@ -56,7 +56,7 @@ type Frontend struct {
 	debug           bool
 	devtoolsEnabled bool
 
-	// for MacOS. Keep single instance lock file, so that it will not be GC and lock will be removed
+	// Keep single instance lock file, so that it will not be GC and lock will exist while app is running
 	singleInstanceLockFile *os.File
 
 	// Assets
