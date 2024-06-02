@@ -56,7 +56,7 @@ var modifierMap = map[string]modifier{
 	"cmdorctrl":   CmdOrCtrlKey,
 	"cmd":         CmdOrCtrlKey,
 	"command":     CmdOrCtrlKey,
-	"ctrl":        CmdOrCtrlKey,
+	"ctrl":        ControlKey,
 	"optionoralt": OptionOrAltKey,
 	"alt":         OptionOrAltKey,
 	"option":      OptionOrAltKey,
