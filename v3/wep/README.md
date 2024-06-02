@@ -37,6 +37,8 @@ Following this structured approach ensures transparency, community involvement, 
 - **Agree on an Implementor**: To avoid stagnant proposals, we require someone agree to implement it. This could be the proposer.
 - **Ready for Review**: Once the proposal is ready for review, change the PR status to `Ready for Review`.
 
+A minimum of 2 weeks should be given for community feedback and discussion.
+
 ### 4. Final Decision
 
 - **Decision**: The Wails maintainers will make a final decision on the proposal based on community feedback and the proposal's merits. 
