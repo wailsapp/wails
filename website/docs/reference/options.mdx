@@ -65,10 +65,10 @@ func main() {
           OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
         },
         DragAndDrop: &options.DragAndDrop{
-          EnableFileDrop:  false,
-          Disable:         false,
-          CSSDropProperty: "--wails-drop-target",
-          CSSDropValue:    "drop",
+          EnableFileDrop:       false,
+          DisableWebViewDrop:   false,
+          CSSDropProperty:      "--wails-drop-target",
+          CSSDropValue:         "drop",
         },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
