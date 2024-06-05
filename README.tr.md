@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  Go va Web texnologiyalaridan foydalangan holda ish stoli ilovalarini yarating
+  Go ve Web Teknolojilerini kullanarak masaüstü uygulamaları oluşturun.
   <br/>
   <br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
@@ -42,107 +42,103 @@
 
 [English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
 [한국어](README.ko.md) · [Español](README.es.md) · [Português](README.pt-br.md) ·
-[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz) ·
+[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) ·
 [Türkçe](README.tr.md)
 
 </samp>
 </strong>
 </div>
 
-## Tarkib
+## İçerik
 
-- [Tarkib](#tarkib)
-- [Kirish](#kirish)
-- [Xususiyatlari](#xususiyatlari)
-  - [Yo'l xaritasi](#yol-xaritasi)
-- [Ishni boshlash](#ishni-boshlash)
-- [Homiylar](#homiylar)
-- [FAQ](#faq)
-- [Vaqt o'tishi bilan yulduzlar](#vaqt-otishi-bilan-yulduzlar)
-- [Ishtirokchilar](#homiylar)
-- [Litsenziya](#litsenziya)
-- [Ilhomlanish](#ilhomlanish)
+- [İçerik](#içerik)
+- [Giriş](#giriş)
+- [Özellikler](#özellikler)
+  - [Yol Haritası](#yol-haritası)
+- [Başlarken](#başlarken)
+- [Sponsorlar](#sponsorlar)
+- [Sıkça sorulan sorular](#sıkça-sorulan-sorular)
+- [Zaman içinda yıldızlayanlar](#zaman-içinde-yıldızlayanlar)
+- [Katkıda bulunanlar](#katkıda-bulunanlar)
+- [Lisans](#lisans)
+- [İlham](#ilham)
 
-## Kirish
+## Giriş
 
-Odatda, Go dasturlari uchun veb-interfeyslar o'rnatilgan veb-server va veb-brauzerdir.
-Walls boshqacha yondashuvni qo'llaydi: u Go kodini ham, veb-interfeysni ham bitta ikkilik (e.g: EXE)fayliga o'raydi.
-Loyihalarni yaratish, kompilyatsiya qilish va birlashtirishni boshqarish orqali ilovangizni yaratishni osonlashtiradi.
-Hamma narsa faqat sizning tasavvuringiz bilan cheklangan!
+Go programlarına web arayüzleri sağlamak için geleneksel yöntem, yerleşik bir web sunucusu kullanmaktır. Wails, farklı bir yaklaşım sunar: Hem Go kodunu hem de bir web ön yüzünü tek bir ikili dosyada paketleme yeteneği sağlar. Proje oluşturma, derleme ve paketleme işlemlerini kolaylaştıran araçlar sunar. Tek yapmanız gereken yaratıcı olmaktır!
 
-## Xususiyatlari
+## Özellikler
 
-- Backend uchun standart Go dan foydalaning
-- UI yaratish uchun siz allaqachon tanish bo'lgan har qanday frontend texnologiyasidan foydalaning
-- Oldindan tayyorlangan shablonlardan foydalanib, Go dasturlaringiz uchun tezda boy frontendlarni yarating
-- Javascriptdan Go methodlarini osongina chaqiring
-- Go struktura va methodlari uchun avtomatik yaratilgan Typescript ta'riflari
-- Mahalliy Dialoglar va Menyular
-- Mahalliy Dark / Light rejimini qo'llab-quvvatlash
-- Zamonaviy shaffoflik va "muzli oyna" effektlarini qo'llab-quvvatlaydi
-- Go va Javascript o'rtasidagi yagona hodisa tizimi
-- Loyihalaringizni tezda yaratish va qurish uchun kuchli cli vositasi
-- Ko'p platformali
-- Mahalliy renderlash mexanizmlaridan foydalanadi - _o'rnatilgan brauzer yo'q_!
+- Backend için standart Go kullanın
+- Kullanıcı arayüzünüzü oluşturmak için zaten aşina olduğunuz herhangi bir frontend teknolojisini kullanın
+- Hazır şablonlar kullanarak Go programlarınız için hızlıca zengin ön yüzler oluşturun
+- Javascript'ten Go metodlarını kolayca çağırın
+- Go yapı ve metodlarınız için otomatik oluşturulan Typescript tanımları
+- Yerel Diyaloglar ve Menüler
+- Yerel Karanlık / Aydınlık mod desteği
+- Modern saydamlık ve "buzlu cam" efektlerini destekler
+- Go ve Javascript arasında birleşik olay sistemi
+- Projelerinizi hızlıca oluşturmak ve derlemek için güçlü bir komut satırı aracı
+- Çoklu platform desteği
+- Yerel render motorlarını kullanır - _gömülü tarayıcı yok_!
 
-### Yo'l xaritasi
 
-Loyihaning yoʻl xaritasini [bu yerdan](https://github.com/wailsapp/wails/discussions/1484) topish mumkin. Iltimos, maslahatlashing
-Buni yaxshilash so'rovini ochishdan oldin.
+### Yol Haritesı
 
-## Ishni boshlash
+Proje yol haritasına [buradan](https://github.com/wailsapp/wails/discussions/1484) ulaşabilirsiniz. Lütfen bir iyileştirme talebi oluşturmadan önce danışın.
 
-O'rnatish bo'yicha ko'rsatmalar [Rasmiy veb saytda](https://wails.io/docs/gettingstarted/installation) mavjud.
 
-## Homiylar
+## Başlarken
 
-Ushbu loyiha quyidagi mehribon odamlar / kompaniyalar tomonidan qo'llab-quvvatlanadi:
+Kurulum talimatları [resmi web sitesinde](https://wails.io/docs/gettingstarted/installation) bulunmaktadır.
+
+
+## Sponsorlar
+
+Bu proje, aşağıdaki nazik insanlar / şirketler tarafından desteklenmektedir:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 <p align="center">
 <img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
 
-## FAQ
+## Sıkça Sorulan Sorular
 
-- Bu Elektronga muqobilmi?
+- Bu Electron'a alternatif mi?
 
-  Sizning talablaringizga bog'liq. Bu Go dasturchilariga yengil ish stoli yaratishni osonlashtirish uchun yaratilgan
-  ilovalar yoki ularning mavjud ilovalariga frontend qo'shing. Wails menyular kabi mahalliy elementlarni taklif qiladi
-  va dialoglar, shuning uchun uni yengil elektron muqobili deb hisoblash mumkin.
+  Gereksinimlerinize bağlıdır. Go programcılarının hafif masaüstü uygulamaları yapmasını veya mevcut uygulamalarına bir ön yüz eklemelerini kolaylaştırmak için tasarlanmıştır. Wails, menüler ve diyaloglar gibi yerel öğeler sunduğundan, hafif bir Electron alternatifi olarak kabul edilebilir.
 
-- Ushbu loyiha kimlar uchun?
+- Bu proje kimlere yöneliktir?
 
-  Server yaratmasdan va uni ko'rish uchun brauzerni ochmasdan, o'z ilovalari bilan HTML/JS/CSS orqali frontendini birlashtirmoqchi bo'lgan dasturchilar uchun.
+  HTML/JS/CSS ön yüzünü uygulamalarıyla birlikte paketlemek isteyen, ancak bir sunucu oluşturup bir tarayıcı açmaya başvurmadan bunu yapmak isteyen Go programcıları için.
 
-- Bu qanday nom?
+- İsmin anlamı nedir?
 
-  Men WebViewni ko'rganimda, men shunday deb o'yladim: "Menga WebView ilovasini yaratish uchun vositalar kerak.
-  biroz Rails for Rubyga o'xshaydi." Demak, dastlab bu so'zlar ustida o'yin edi (Railsda Webview). Shunday bo'ldi.
-  u men kelgan [Mamlakat](https://en.wikipedia.org/wiki/Wales)ning inglizcha nomining omofonidir.
+  WebView'i gördüğümde, "Aslında istediğim şey, WebView uygulaması oluşturmak için araçlar, biraz Rails'in Ruby için olduğu gibi" diye düşündüm. Bu nedenle başlangıçta kelime oyunu (Rails üzerinde Webview) olarak ortaya çıktı. Ayrıca, benim geldiğim [ülkenin](https://en.wikipedia.org/wiki/Wales) İngilizce adıyla homofon olması tesadüf oldu. Bu yüzden bu isim kaldı.
 
-## Vaqt o'tishi bilan yulduzlar
+
+## Zaman içinda yıldızlayanlar
 
 <a href="https://star-history.com/#wailsapp/wails&Date">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date&theme=dark" />
     <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-    <img alt="Yulduzlar tarixi jadvali" src="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
   </picture>
 </a>
 
-## Ishtirokchilar
+## Katkıda Bulunanlar
 
-Ishtirokchilar roʻyxati oʻqish uchun juda kattalashib bormoqda! Bunga hissa qo'shgan barcha ajoyib odamlarning
-loyihada o'z sahifasi bor [bu yerga](https://wails.io/credits#contributors).
+Katkıda bulunanların listesi, README için çok büyük hale geldi! Bu projeye katkıda bulunan tüm harika insanların kendi sayfaları [burada](https://wails.io/credits#contributors) bulunmaktadır.
 
-## Litsenziya
+
+## Lisans
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
 
-## Ilhomlanish
+## İlham
 
-Ushbu loyiha asosan quyidagi albomlar uchun kodlangan:
+Bu proje esas olarak aşağıdaki albümler dinlenilerek kodlandı:
 
 - [Manic Street Preachers - Resistance Is Futile](https://open.spotify.com/album/1R2rsEUqXjIvAbzM0yHrxA)
 - [Manic Street Preachers - This Is My Truth, Tell Me Yours](https://open.spotify.com/album/4VzCL9kjhgGQeKCiojK1YN)
@@ -157,3 +153,4 @@ Ushbu loyiha asosan quyidagi albomlar uchun kodlangan:
 - [Bloc Party - Silent Alarm](https://open.spotify.com/album/6SsIdN05HQg2GwYLfXuzLB)
 - [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
 - [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
+
