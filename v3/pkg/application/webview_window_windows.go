@@ -192,8 +192,7 @@ func (w *windowsWebviewWindow) run() {
 
 	w.chromium = edge.NewChromium()
 
-	var exStyle uint
-	exStyle = w32.WS_EX_CONTROLPARENT
+	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
 		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		if w.parent.options.IgnoreMouseEvents {
@@ -208,6 +207,10 @@ func (w *windowsWebviewWindow) run() {
 		exStyle |= w32.WS_EX_TOOLWINDOW
 	} else {
 		exStyle |= w32.WS_EX_APPWINDOW
+	}
+
+	if options.Windows.ExStyle != 0 {
+		exStyle = options.Windows.ExStyle
 	}
 
 	// ToDo: X, Y should also be scaled, should it be always relative to the main monitor?
@@ -234,7 +237,7 @@ func (w *windowsWebviewWindow) run() {
 	var style uint = w32.WS_OVERLAPPEDWINDOW
 
 	w.hwnd = w32.CreateWindowEx(
-		exStyle,
+		uint(exStyle),
 		windowClassName,
 		w32.MustStringToUTF16Ptr(options.Title),
 		style,
@@ -255,9 +258,10 @@ func (w *windowsWebviewWindow) run() {
 
 	w.setupChromium()
 
-	// Min/max buttons
-	w.setMinimiseButtonEnabled(!options.Windows.DisableMinimiseButton)
-	w.setMaximiseButtonEnabled(!options.Windows.DisableMaximiseButton)
+	// Initialise the window buttons
+	w.setMinimiseButtonState(options.MinimiseButtonState)
+	w.setMaximiseButtonState(options.MaximiseButtonState)
+	w.setCloseButtonState(options.CloseButtonState)
 
 	// Register the window with the application
 	getNativeApplication().registerWindow(w)
@@ -1679,4 +1683,42 @@ func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error
 		err = errors.New(fmt.Sprintf("Cannot load icon from resource with id %v", resId))
 	}
 	return result, err
+}
+
+func (w *windowsWebviewWindow) setMinimiseButtonState(state ButtonState) {
+	switch state {
+	case ButtonDisabled, ButtonHidden:
+		w.setStyle(false, w32.WS_MINIMIZEBOX)
+	case ButtonEnabled:
+		w.setStyle(true, w32.WS_SYSMENU)
+		w.setStyle(true, w32.WS_MINIMIZEBOX)
+
+	}
+}
+
+func (w *windowsWebviewWindow) setMaximiseButtonState(state ButtonState) {
+	switch state {
+	case ButtonDisabled, ButtonHidden:
+		w.setStyle(false, w32.WS_MAXIMIZEBOX)
+	case ButtonEnabled:
+		w.setStyle(true, w32.WS_SYSMENU)
+		w.setStyle(true, w32.WS_MAXIMIZEBOX)
+	}
+}
+
+func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
+	switch state {
+	case ButtonEnabled:
+		w.setStyle(true, w32.WS_SYSMENU)
+		_ = w32.EnableCloseButton(w.hwnd)
+	case ButtonDisabled:
+		w.setStyle(true, w32.WS_SYSMENU)
+		_ = w32.DisableCloseButton(w.hwnd)
+	case ButtonHidden:
+		w.setStyle(false, w32.WS_SYSMENU)
+	}
+}
+
+func (w *windowsWebviewWindow) setGWLStyle(style int) {
+	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, uint32(style))
 }

@@ -71,9 +71,6 @@ type (
 		isNormal() bool
 		isVisible() bool
 		isFocused() bool
-		setFullscreenButtonEnabled(enabled bool)
-		setMinimiseButtonEnabled(enabled bool)
-		setMaximiseButtonEnabled(enabled bool)
 		focus()
 		show()
 		hide()
@@ -90,6 +87,9 @@ type (
 		flash(enabled bool)
 		handleKeyEvent(acceleratorString string)
 		getBorderSizes() *LRTB
+		setMinimiseButtonState(state ButtonState)
+		setMaximiseButtonState(state ButtonState)
+		setCloseButtonState(state ButtonState)
 	}
 )
 
@@ -540,31 +540,31 @@ func (w *WebviewWindow) Fullscreen() Window {
 	return w
 }
 
-func (w *WebviewWindow) SetFullscreenButtonEnabled(enabled bool) Window {
-	w.options.FullscreenButtonEnabled = enabled
+func (w *WebviewWindow) SetMinimiseButtonState(state ButtonState) Window {
+	w.options.MinimiseButtonState = state
 	if w.impl != nil {
 		InvokeSync(func() {
-			w.impl.setFullscreenButtonEnabled(enabled)
+			w.impl.setMinimiseButtonState(state)
 		})
 	}
 	return w
 }
 
-func (w *WebviewWindow) SetMinimiseButtonEnabled(enabled bool) Window {
-	w.options.FullscreenButtonEnabled = enabled
+func (w *WebviewWindow) SetMaximiseButtonState(state ButtonState) Window {
+	w.options.MaximiseButtonState = state
 	if w.impl != nil {
 		InvokeSync(func() {
-			w.impl.setMinimiseButtonEnabled(enabled)
+			w.impl.setMaximiseButtonState(state)
 		})
 	}
 	return w
 }
 
-func (w *WebviewWindow) SetMaximiseButtonEnabled(enabled bool) Window {
-	w.options.FullscreenButtonEnabled = enabled
+func (w *WebviewWindow) SetCloseButtonState(state ButtonState) Window {
+	w.options.CloseButtonState = state
 	if w.impl != nil {
 		InvokeSync(func() {
-			w.impl.setMaximiseButtonEnabled(enabled)
+			w.impl.setCloseButtonState(state)
 		})
 	}
 	return w

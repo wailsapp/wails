@@ -641,22 +641,38 @@ static void windowHide(void *window) {
 	[(WebviewWindow*)window orderOut:nil];
 }
 
-static void enableMinimiseButton(void *window, bool enabled) {
+// setButtonState sets the state of the given button
+// 0 = enabled
+// 1 = disabled
+// 2 = hidden
+static void setButtonState(void *button, int state) {
+	if (button == nil) {
+		return;
+	}
+	NSButton *nsbutton = (NSButton*)button;
+	nsbutton.hidden = state == 2;
+	nsbutton.enabled = state != 1;
+}
+
+// setMinimiseButtonState sets the minimise button state
+static void setMinimiseButtonState(void *window, int state) {
 	WebviewWindow* nsWindow = (WebviewWindow*)window;
 	NSButton *minimiseButton = [nsWindow standardWindowButton:NSWindowMiniaturizeButton];
-	minimiseButton.enabled = enabled;
+	setButtonState(minimiseButton, state);
 }
 
-static void enableMaximiseButton(void *window, bool enabled) {
+// setMaximiseButtonState sets the maximise button state
+static void setMaximiseButtonState(void *window, int state) {
 	WebviewWindow* nsWindow = (WebviewWindow*)window;
 	NSButton *maximiseButton = [nsWindow standardWindowButton:NSWindowZoomButton];
-	maximiseButton.enabled = enabled;
+	setButtonState(maximiseButton, state);
 }
 
-static void enableCloseButton(void *window, bool enabled) {
+// setCloseButtonState sets the close button state
+static void setCloseButtonState(void *window, int state) {
 	WebviewWindow* nsWindow = (WebviewWindow*)window;
 	NSButton *closeButton = [nsWindow standardWindowButton:NSWindowCloseButton];
-	closeButton.enabled = enabled;
+	setButtonState(closeButton, state);
 }
 
 // windowShowMenu opens an NSMenu at the given coordinates
@@ -1131,15 +1147,10 @@ func (w *macosWebviewWindow) run() {
 		case MacBackdropNormal:
 		}
 
-		if macOptions.DisableMinimiseButton {
-			w.setMinimiseButtonEnabled(false)
-		}
-		if macOptions.DisableMaximiseButton {
-			w.setMaximiseButtonEnabled(false)
-		}
-		if macOptions.DisableCloseButton {
-			w.setCloseButtonEnabled(false)
-		}
+		// Initialise the window buttons
+		w.setMinimiseButtonState(options.MinimiseButtonState)
+		w.setMaximiseButtonState(options.MaximiseButtonState)
+		w.setCloseButtonState(options.CloseButtonState)
 
 		if options.IgnoreMouseEvents {
 			C.windowIgnoreMouseEvents(w.nsWindow, C.bool(true))
@@ -1270,14 +1281,14 @@ func (w *macosWebviewWindow) startDrag() error {
 	return nil
 }
 
-func (w *macosWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
-	C.enableMinimiseButton(w.nsWindow, C.bool(enabled))
+func (w *macosWebviewWindow) setMinimiseButtonState(state ButtonState) {
+	C.setMinimiseButtonState(w.nsWindow, C.int(state))
 }
 
-func (w *macosWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
-	C.enableMaximiseButton(w.nsWindow, C.bool(enabled))
+func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
+	C.setMaximiseButtonState(w.nsWindow, C.int(state))
 }
 
-func (w *macosWebviewWindow) setCloseButtonEnabled(enabled bool) {
-	C.enableCloseButton(w.nsWindow, C.bool(enabled))
+func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
+	C.setCloseButtonState(w.nsWindow, C.int(state))
 }

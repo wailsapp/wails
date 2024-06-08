@@ -55,8 +55,10 @@ type Window interface {
 	SetAlwaysOnTop(b bool) Window
 	SetBackgroundColour(colour RGBA) Window
 	SetFrameless(frameless bool) Window
-	SetFullscreenButtonEnabled(enabled bool) Window
 	SetHTML(html string) Window
+	SetMinimiseButtonState(state ButtonState) Window
+	SetMaximiseButtonState(state ButtonState) Window
+	SetCloseButtonState(state ButtonState) Window
 	SetMaxSize(maxWidth, maxHeight int) Window
 	SetMinSize(minWidth, minHeight int) Window
 	SetRelativePosition(x, y int) Window
