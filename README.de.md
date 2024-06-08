@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  Build desktop applications using Go & Web Technologies.
+Erschaffe Desktop Anwendungen mit Go & Web Technologien.
   <br/>
   <br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
@@ -42,60 +42,60 @@
 
 [English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
 [한국어](README.ko.md) · [Español](README.es.md) · [Português](README.pt-br.md) ·
-[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) · [Deutsch](README.de.md) ·
-[Türkçe](README.tr.md)
+[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) · [Deutsch](README.de.md)
 
 </samp>
 </strong>
 </div>
 
-## Table of Contents
+## Inhaltsverzeichnis
 
-- [Table of Contents](#table-of-contents)
-- [Introduction](#introduction)
-- [Features](#features)
+- [Inhaltsverzeichnis](#inhaltsverzeichnis)
+- [Einführung](#einführung)
+- [Funktionen](#funktionen)
   - [Roadmap](#roadmap)
-- [Getting Started](#getting-started)
-- [Sponsors](#sponsors)
+- [Loslegen](#loslegen)
+- [Sponsoren](#sponsoren)
 - [FAQ](#faq)
-- [Stargazers over time](#stargazers-over-time)
-- [Contributors](#contributors)
-- [License](#license)
+- [Sterne Überblick](#sterne-überblick)
+- [Mitwirkende](#mitwirkende)
+- [Lizenz](#lizenz)
 - [Inspiration](#inspiration)
 
-## Introduction
+## Einführung
 
-The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different
-approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to
-make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
+Die herkömmliche Methode zur Bereitstellung von Web-Interfaces für Go ist über einen eingebauten Webserver. 
+Wails nutzt einen anderen Weg. Es kann sowohl Go-Code als auch ein Web-Frontend in eine einzige Datei bauen.
+Beigelieferte Werkzeuge übernehmen die Projekterstellung, den Kompilierungsprozess und das bauen.
+Du musst nur kreativ werden.
 
-## Features
+## Funktionen
 
-- Use standard Go for the backend
-- Use any frontend technology you are already familiar with to build your UI
-- Quickly create rich frontends for your Go programs using pre-built templates
-- Easily call Go methods from Javascript
-- Auto-generated Typescript definitions for your Go structs and methods
-- Native Dialogs & Menus
-- Native Dark / Light mode support
-- Supports modern translucency and "frosted window" effects
-- Unified eventing system between Go and Javascript
-- Powerful cli tool to quickly generate and build your projects
-- Multiplatform
-- Uses native rendering engines - _no embedded browser_!
+- Nutze Standard Go für das Backend
+- Nutze eine Frontend Technologie mit der du dich bereits auskennst um dein UI zu bauen.
+- Erschaffe schnell und einfach Frontends mit vorgefertigten Vorlagen für deine Go-Programme
+- Nutze Javascript um Go Methoden aufzurufen
+- Automatisch generierte Typescript Definitionen für deine Go Strukturen und Methoden
+- Native Dialoge und Menüs
+- Native Dark-/Lightmode Unterstützung
+- Unterstützt moderne Transluzenz- und Milchglaseffekte
+- Vereinheitlichtes Eventsystem zwischen Go und Javascript
+- Leistungsstarkes CLI-Tool zum einfachen erstellen und bauen von Projekten
+- Multiplattformen
+- Nutze native Render-Engines - _keine eingebetteten Browser_!
 
 ### Roadmap
 
-The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
-it before creating an enhancement request.
+Die Projekt Roadmap kann [hier](https://github.com/wailsapp/wails/discussions/1484) gefunden werden. Bitte lies diese
+durch bevor du eine Idee vorschlägst
 
-## Getting Started
+## Loslegen
 
-The installation instructions are on the [official website](https://wails.io/docs/gettingstarted/installation).
+Die Installationsinstruktionen sind auf der [offiziellen Website](https://wails.io/docs/gettingstarted/installation).
 
-## Sponsors
+## Sponsoren
 
-This project is supported by these kind people / companies:
+Dieses Projekt wird von diesen freundlichen Leuten und Firmen unterstützt:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 <p align="center">
@@ -104,24 +104,25 @@ This project is supported by these kind people / companies:
 
 ## FAQ
 
-- Is this an alternative to Electron?
+- Ist das eine Alternative zu Electron?
 
-  Depends on your requirements. It's designed to make it easy for Go programmers to make lightweight desktop
-  applications or add a frontend to their existing applications. Wails does offer native elements such as menus
-  and dialogs, so it could be considered a lightweight electron alternative.
+  Hängt von deinen Anforderungen ab. Wails wurde entwickelt um das Go-Programmieren leicht zu machen und effiziente
+  Desktop-Anwendungen zu erstellen oder ein Frontend zu einer bestehenden Anwendung hinzuzufügen.
+  Wails bietet native Elemente wie Dialoge und Menüs und könnte somit als eine leichte effiziente Electron-Alternative
+  betrachtet werden.
 
-- Who is this project aimed at?
+- Für wen ist dieses projekt geeignet?
 
-  Go programmers who want to bundle an HTML/JS/CSS frontend with their applications, without resorting to creating a
-  server and opening a browser to view it.
+  Go Entwickler, die ein HTML/CSS/JS-Frontend in ihre Anwendung integrieren möchten, ohne einen Webserver zu erstellen und
+  einen Browser öffnen zu müssen, um dieses zu sehen
 
-- What's with the name?
+- Wie kam es zu diesem Namen?
 
-  When I saw WebView, I thought "What I really want is tooling around building a WebView app, a bit like Rails is to
-  Ruby". So initially it was a play on words (Webview on Rails). It just so happened to also be a homophone of the
-  English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
+  Als ich WebView sah dachte ich "Was ich wirklich will, ist ein Werkzeug für die Erstellung von WebView Anwendungen so wie Rails für Ruby".
+  Also war es zunächst ein Wortspiel (Webview on Rails). Zufälligerweise ist es auch ein Homophon des englischen Namens des [Landes](https://en.wikipedia.org/wiki/Wales), aus dem ich komme. 
+  Also ist es dabei geblieben.
 
-## Stargazers over time
+## Sterne Überblick
 
 <a href="https://star-history.com/#wailsapp/wails&Date">
   <picture>
@@ -131,18 +132,18 @@ This project is supported by these kind people / companies:
   </picture>
 </a>
 
-## Contributors
+## Mitwirkende
 
-The contributors list is getting too big for the readme! All the amazing people who have contributed to this
-project have their own page [here](https://wails.io/credits#contributors).
+Die Liste der Mitwirkenden wird zu groß für diese Readme. All die fantastischen Menschen, die zu diesem 
+Projekt beigetragen haben, haben [hier](https://wails.io/credits#contributors) ihre eigene Seite.
 
-## License
+## Lizenz
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
 
 ## Inspiration
 
-This project was mainly coded to the following albums:
+Dieses Projekt wurde hauptsächlich zu den folgenden Alben entwickelt
 
 - [Manic Street Preachers - Resistance Is Futile](https://open.spotify.com/album/1R2rsEUqXjIvAbzM0yHrxA)
 - [Manic Street Preachers - This Is My Truth, Tell Me Yours](https://open.spotify.com/album/4VzCL9kjhgGQeKCiojK1YN)
