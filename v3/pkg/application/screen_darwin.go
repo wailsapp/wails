@@ -68,10 +68,11 @@ Screen processScreen(NSScreen* screen){
 	double rotation = CGDisplayRotation(displayID);
 	returnScreen.rotation = rotation;
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
 	if( @available(macOS 10.15, *) ){
 		returnScreen.name = [screen.localizedName UTF8String];
 	}
-
+#endif
 	return returnScreen;
 }
 

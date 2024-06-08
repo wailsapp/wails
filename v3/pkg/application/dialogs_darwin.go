@@ -172,6 +172,7 @@ static void showOpenFileDialog(unsigned int dialogID,
 		delegate.allowedExtensions = [filterPatternsString componentsSeparatedByString:@";"];
 
 			// Use UTType if macOS 11 or higher to add file filters
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 		if (@available(macOS 11, *)) {
 			NSMutableArray *filterTypes = [NSMutableArray array];
 			// Iterate the filtertypes, create uti's that are limited to the file extensions then add
@@ -179,9 +180,10 @@ static void showOpenFileDialog(unsigned int dialogID,
 				[filterTypes addObject:[UTType typeWithFilenameExtension:filterType]];
 			}
 			[panel setAllowedContentTypes:filterTypes];
-		} else {
-			[panel setAllowedFileTypes:delegate.allowedExtensions];
 		}
+#else
+		[panel setAllowedFileTypes:delegate.allowedExtensions];
+#endif
 
 		// Free the memory
 		free(filterPatterns);

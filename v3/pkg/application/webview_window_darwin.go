@@ -62,11 +62,13 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		config.preferences.tabFocusesLinks = *preferences.TabFocusesLinks;
 	}
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110300
 	if (@available(macOS 11.3, *)) {
 		if (preferences.TextInteractionEnabled != NULL) {
 			config.preferences.textInteractionEnabled = *preferences.TextInteractionEnabled;
 		}
 	}
+#endif
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 120300
 	if (@available(macOS 12.3, *)) {
@@ -79,9 +81,12 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	config.suppressesIncrementalRendering = true;
     config.applicationNameForUserAgent = @"wails.io";
 	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
  	if (@available(macOS 10.15, *)) {
          config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
 	}
+#endif
 
 	// Setup user content controller
     WKUserContentController* userContentController = [WKUserContentController new];
@@ -457,8 +462,8 @@ void windowSetUseToolbar(void* nsWindow, bool useToolbar) {
 // Set window toolbar style
 void windowSetToolbarStyle(void* nsWindow, int style) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// use @available to check if the function is available
-	// if not, return
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 	if (@available(macOS 11.0, *)) {
 		NSToolbar* toolbar = [window toolbar];
 		if ( toolbar == nil ) {
@@ -466,8 +471,9 @@ void windowSetToolbarStyle(void* nsWindow, int style) {
 		}
 		[window setToolbarStyle:style];
 	}
-}
+#endif
 
+}
 // Set Hide Toolbar Separator
 void windowSetHideToolbarSeparator(void* nsWindow, bool hideSeparator) {
 	NSToolbar* toolbar = [(WebviewWindow*)nsWindow toolbar];
@@ -712,7 +718,7 @@ static void startDrag(void *window) {
 
 // Credit: https://stackoverflow.com/q/33319295
 static void windowPrint(void *window) {
-
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 	// Check if macOS 11.0 or newer
 	if (@available(macOS 11.0, *)) {
 		WebviewWindow* nsWindow = (WebviewWindow*)window;
@@ -744,6 +750,7 @@ static void windowPrint(void *window) {
 		// [printOperation runOperation] DOES NOT WORK WITH WKWEBVIEW, use
 		[po runOperationModalForWindow:window delegate:windowDelegate didRunSelector:nil contextInfo:nil];
 	}
+#endif
 }
 
 void setWindowEnabled(void *window, bool enabled) {
