@@ -22,7 +22,7 @@ go install
 
 Wails has a number of common dependencies that are required before installation:
 
-=== "Go 1.21+"
+=== "Go (At least 1.22.4)"
 
     Download Go from the [Go Downloads Page](https://go.dev/dl/).
 
