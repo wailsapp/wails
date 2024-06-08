@@ -354,7 +354,6 @@ tasks:
     generates:
       - "icons.icns"
       - "icons.ico"
-    method: timestamp
     cmds:
       # Generates both .ico and .icns files
       - wails3 generate icons -input appicon.png
