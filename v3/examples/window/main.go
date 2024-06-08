@@ -3,7 +3,6 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/w32"
 	"log"
 	"math/rand"
 	"runtime"
@@ -15,6 +14,11 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
+
+// This is a stub for non-windows platforms
+var getExStyle = func() int {
+	return 0
+}
 
 func main() {
 	app := application.New(application.Options{
@@ -138,7 +142,7 @@ func main() {
 				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 					Windows: application.WindowsWindow{
 						DisableMenu: true,
-						ExStyle:     w32.WS_EX_TOOLWINDOW | w32.WS_EX_NOREDIRECTIONBITMAP | w32.WS_EX_TOPMOST,
+						ExStyle:     getExStyle(),
 					},
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).

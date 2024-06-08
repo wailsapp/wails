@@ -135,7 +135,7 @@ func main() {
 	})
 	sizeMenu.Add("Set Max Size (600,600)").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
-			w.SetFullscreenButtonEnabled(false)
+			w.SetMaximiseButtonState(application.ButtonDisabled)
 			w.SetMaxSize(600, 600)
 		})
 	})
@@ -155,7 +155,7 @@ func main() {
 	sizeMenu.Add("Reset Max Size").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			w.SetMaxSize(0, 0)
-			w.SetFullscreenButtonEnabled(true)
+			w.SetMaximiseButtonState(application.ButtonEnabled)
 		})
 	})
 	positionMenu := menu.AddSubmenu("Position")
