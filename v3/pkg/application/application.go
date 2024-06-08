@@ -22,7 +22,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/pkg/events"
-	"github.com/wailsapp/wails/v3/pkg/icons"
 )
 
 //go:embed assets/*
@@ -161,9 +160,6 @@ func mergeApplicationDefaults(o *Options) {
 	}
 	if o.Description == "" {
 		o.Description = "An application written using Wails"
-	}
-	if o.Icon == nil {
-		o.Icon = icons.ApplicationLightMode256
 	}
 }
 
@@ -549,7 +545,9 @@ func (a *App) Run() error {
 	if runtime.GOOS == "darwin" {
 		a.impl.setApplicationMenu(a.ApplicationMenu)
 	}
-	a.impl.setIcon(a.options.Icon)
+	if a.options.Icon != nil {
+		a.impl.setIcon(a.options.Icon)
+	}
 
 	err = a.impl.run()
 	if err != nil {
