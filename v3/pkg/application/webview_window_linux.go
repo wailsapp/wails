@@ -339,16 +339,10 @@ func (w *linuxWebviewWindow) handleKeyEvent(acceleratorString string) {
 }
 
 // SetMinimiseButtonState is unsupported on Linux
-func (w *linuxWebviewWindow) SetMinimiseButtonState(state ButtonState) Window {
-	return w
-}
+func (w *linuxWebviewWindow) setMinimiseButtonState(state ButtonState) {}
 
 // SetMaximiseButtonState is unsupported on Linux
-func (w *linuxWebviewWindow) SetMaximiseButtonState(state ButtonState) Window {
-	return w
-}
+func (w *linuxWebviewWindow) setMaximiseButtonState(state ButtonState) {}
 
-// SetFullscreenButtonState is unsupported on Linux
-func (w *linuxWebviewWindow) SetCloseButtonState(state ButtonState) Window {
-	return w
-}
+// SetCloseButtonState is unsupported on Linux
+func (w *linuxWebviewWindow) setCloseButtonState(state ButtonState) {}
