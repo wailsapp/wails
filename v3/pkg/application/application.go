@@ -10,6 +10,7 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -612,8 +613,14 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 		log.Printf("WebviewWindow #%d not found", event.windowId)
 		return
 	}
-	// Get callback from window
-	window.HandleMessage(event.message)
+	// Check if the message starts with "wails:"
+	if strings.HasPrefix(event.message, "wails:") {
+		window.HandleMessage(event.message)
+	} else {
+		if a.options.RawMessageHandler != nil {
+			a.options.RawMessageHandler(window, event.message)
+		}
+	}
 }
 
 func (a *App) handleWebViewRequest(request *webViewAssetRequest) {

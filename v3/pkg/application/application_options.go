@@ -88,6 +88,10 @@ type Options struct {
 	// If the function returns false, the application will not quit.
 	ShouldQuit func() bool
 
+	// RawMessageHandler is called when the frontend sends a raw message.
+	// This is useful for implementing custom frontend-to-backend communication.
+	RawMessageHandler func(window Window, message string)
+
 	// This blank field ensures types from other packages
 	// are never convertible to Options.
 	// This property, in turn, improves the accuracy of the binding generator.

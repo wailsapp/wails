@@ -647,7 +647,7 @@ func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window {
 func (w *WebviewWindow) HandleMessage(message string) {
 	// Check for special messages
 	switch true {
-	case message == "drag":
+	case message == "wails:drag":
 		if !w.IsFullscreen() {
 			InvokeSync(func() {
 				err := w.startDrag()
@@ -656,7 +656,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 				}
 			})
 		}
-	case strings.HasPrefix(message, "resize:"):
+	case strings.HasPrefix(message, "wails:resize:"):
 		if !w.IsFullscreen() {
 			sl := strings.Split(message, ":")
 			if len(sl) != 2 {
@@ -675,6 +675,8 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		for _, js := range w.pendingJS {
 			w.ExecJS(js)
 		}
+	default:
+		w.Error("Unknown message sent via 'invoke' on frontend: %v", message)
 	}
 }
 

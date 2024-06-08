@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>body{ text-align: center; color: white; background-color: #191919; user-select: none; -ms-user-select: none; -webkit-user-select: none; }</style>
+    <script type="module">
+        import {System} from "/wails/runtime.js";
+
+        document.getElementById('sendrawmessage').addEventListener('click', function (event) {
+            let rawMessage = document.getElementById("message").value;
+            System.invoke(rawMessage);
+        });
+    </script>
+</head>
+<body>
+<h1>Raw Message Demo</h1>
+<br/>
+To send a raw message from this window, enter some text and click the button:
+<br/>
+<br/>
+<label for="message"></label><input type="text" id="message" placeholder="Enter message here"/>
+<button id="sendrawmessage">Send Raw Message</button>
+</body>
+</html>

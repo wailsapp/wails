@@ -46,7 +46,7 @@ function onMouseDown(e) {
 
     // Check for resizing
     if (resizeEdge) {
-        invoke("resize:" + resizeEdge);
+        invoke("wails:resize:" + resizeEdge);
         e.preventDefault();
         return;
     }
@@ -76,7 +76,7 @@ function onMouseMove(e) {
         shouldDrag = false;
         let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
         if (mousePressed > 0) {
-            invoke("drag");
+            invoke("wails:drag");
             return;
         }
     }
