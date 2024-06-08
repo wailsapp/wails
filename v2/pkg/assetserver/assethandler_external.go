@@ -3,12 +3,10 @@ package assetserver
 import (
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"runtime"
-
-	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
 func NewProxyServer(proxyURL string) http.Handler {
@@ -16,10 +14,7 @@ func NewProxyServer(proxyURL string) http.Handler {
 	if err != nil {
 		panic(err)
 	}
-	return NewExternalAssetsHandler(nil,
-		assetserver.Options{},
-		parsedURL)
-
+	return httputil.NewSingleHostReverseProxy(parsedURL)
 }
 
 func NewExternalAssetsHandler(logger Logger, options assetserver.Options, url *url.URL) http.Handler {
@@ -68,7 +63,7 @@ func NewExternalAssetsHandler(logger Logger, options assetserver.Options, url *u
 
 	var result http.Handler = http.HandlerFunc(
 		func(rw http.ResponseWriter, req *http.Request) {
-			if runtime.GOOS == "darwin" || req.Method == http.MethodGet {
+			if req.Method == http.MethodGet {
 				proxy.ServeHTTP(rw, req)
 				return
 			}
