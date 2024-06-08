@@ -249,14 +249,6 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 		}
 		window.SetFrameless(*frameless)
 		m.ok(rw)
-	//case WindowSetFullscreenButtonEnabled:
-	//	enabled := args.Bool("enabled")
-	//	if enabled == nil {
-	//		m.Error("Invalid SetFullscreenButtonEnabled Message: 'enabled' value required")
-	//		return
-	//	}
-	//	window.SetFullscreenButtonEnabled(*enabled)
-	//	m.ok(rw)
 	case WindowSetMaxSize:
 		width := args.Int("width")
 		if width == nil {
