@@ -68,13 +68,13 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		}
 	}
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120300
 	if (@available(macOS 12.3, *)) {
          if (preferences.FullscreenEnabled != NULL) {
              config.preferences.elementFullscreenEnabled = *preferences.FullscreenEnabled;
          }
      }
-
-
+#endif
 
 	config.suppressesIncrementalRendering = true;
     config.applicationNameForUserAgent = @"wails.io";
