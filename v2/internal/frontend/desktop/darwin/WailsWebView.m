@@ -48,6 +48,9 @@
   }
 
   NSString *joined=[files_strs componentsJoinedByString:@"\n"];
+  
+  // Release the array of file paths
+  [files_strs release];
 
   int	dragXLocation = [sender draggingLocation].x - [self frame].origin.x;
   int	dragYLocation = [self frame].size.height - [sender draggingLocation].y; // Y coordinate is inverted, so we need to subtract from the height
