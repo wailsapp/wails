@@ -38,7 +38,6 @@
   NSArray<NSURL*> *files = [pboard readObjectsForClasses:url_class options:options];
 
   // collecting all file paths
-  NSString *files_str = @"";
   NSMutableArray *files_strs = [[NSMutableArray alloc] init];
   for (NSURL *url in files)
   {
