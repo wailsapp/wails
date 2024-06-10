@@ -45,3 +45,24 @@ ReactDOM.render(
   root
 );
 ```
+
+## Svelte
+
+The recommended approach for routing in Svelte is [svelte-spa-router](https://github.com/ItalyPaleAle/svelte-spa-router):
+
+```svelte
+<script>
+    import Router from "svelte-spa-router";
+</script>
+
+<Router
+    routes={{
+        "/": Home,
+        "/products": wrap({
+            asyncComponent: () => import("./routes/Products.svelte"),
+        }),
+        "/settings": Settings,
+        "*": NotFound,
+    }}
+/>
+```

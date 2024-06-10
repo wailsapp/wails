@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  Build desktop applications using Go & Web Technologies.
+  Go ve Web Teknolojilerini kullanarak masaüstü uygulamaları oluşturun.
   <br/>
   <br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
@@ -42,86 +42,82 @@
 
 [English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
 [한국어](README.ko.md) · [Español](README.es.md) · [Português](README.pt-br.md) ·
-[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) · [Deutsch](README.de.md) ·
+[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) ·
 [Türkçe](README.tr.md)
 
 </samp>
 </strong>
 </div>
 
-## Table of Contents
+## İçerik
 
-- [Table of Contents](#table-of-contents)
-- [Introduction](#introduction)
-- [Features](#features)
-  - [Roadmap](#roadmap)
-- [Getting Started](#getting-started)
-- [Sponsors](#sponsors)
-- [FAQ](#faq)
-- [Stargazers over time](#stargazers-over-time)
-- [Contributors](#contributors)
-- [License](#license)
-- [Inspiration](#inspiration)
+- [İçerik](#içerik)
+- [Giriş](#giriş)
+- [Özellikler](#özellikler)
+  - [Yol Haritası](#yol-haritası)
+- [Başlarken](#başlarken)
+- [Sponsorlar](#sponsorlar)
+- [Sıkça sorulan sorular](#sıkça-sorulan-sorular)
+- [Zaman içinda yıldızlayanlar](#zaman-içinde-yıldızlayanlar)
+- [Katkıda bulunanlar](#katkıda-bulunanlar)
+- [Lisans](#lisans)
+- [İlham](#ilham)
 
-## Introduction
+## Giriş
 
-The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different
-approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to
-make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
+Go programlarına web arayüzleri sağlamak için geleneksel yöntem, yerleşik bir web sunucusu kullanmaktır. Wails, farklı bir yaklaşım sunar: Hem Go kodunu hem de bir web ön yüzünü tek bir ikili dosyada paketleme yeteneği sağlar. Proje oluşturma, derleme ve paketleme işlemlerini kolaylaştıran araçlar sunar. Tek yapmanız gereken yaratıcı olmaktır!
 
-## Features
+## Özellikler
 
-- Use standard Go for the backend
-- Use any frontend technology you are already familiar with to build your UI
-- Quickly create rich frontends for your Go programs using pre-built templates
-- Easily call Go methods from Javascript
-- Auto-generated Typescript definitions for your Go structs and methods
-- Native Dialogs & Menus
-- Native Dark / Light mode support
-- Supports modern translucency and "frosted window" effects
-- Unified eventing system between Go and Javascript
-- Powerful cli tool to quickly generate and build your projects
-- Multiplatform
-- Uses native rendering engines - _no embedded browser_!
+- Backend için standart Go kullanın
+- Kullanıcı arayüzünüzü oluşturmak için zaten aşina olduğunuz herhangi bir frontend teknolojisini kullanın
+- Hazır şablonlar kullanarak Go programlarınız için hızlıca zengin ön yüzler oluşturun
+- Javascript'ten Go metodlarını kolayca çağırın
+- Go yapı ve metodlarınız için otomatik oluşturulan Typescript tanımları
+- Yerel Diyaloglar ve Menüler
+- Yerel Karanlık / Aydınlık mod desteği
+- Modern saydamlık ve "buzlu cam" efektlerini destekler
+- Go ve Javascript arasında birleşik olay sistemi
+- Projelerinizi hızlıca oluşturmak ve derlemek için güçlü bir komut satırı aracı
+- Çoklu platform desteği
+- Yerel render motorlarını kullanır - _gömülü tarayıcı yok_!
 
-### Roadmap
 
-The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
-it before creating an enhancement request.
+### Yol Haritesı
 
-## Getting Started
+Proje yol haritasına [buradan](https://github.com/wailsapp/wails/discussions/1484) ulaşabilirsiniz. Lütfen bir iyileştirme talebi oluşturmadan önce danışın.
 
-The installation instructions are on the [official website](https://wails.io/docs/gettingstarted/installation).
 
-## Sponsors
+## Başlarken
 
-This project is supported by these kind people / companies:
+Kurulum talimatları [resmi web sitesinde](https://wails.io/docs/gettingstarted/installation) bulunmaktadır.
+
+
+## Sponsorlar
+
+Bu proje, aşağıdaki nazik insanlar / şirketler tarafından desteklenmektedir:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 <p align="center">
 <img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
 
-## FAQ
+## Sıkça Sorulan Sorular
 
-- Is this an alternative to Electron?
+- Bu Electron'a alternatif mi?
 
-  Depends on your requirements. It's designed to make it easy for Go programmers to make lightweight desktop
-  applications or add a frontend to their existing applications. Wails does offer native elements such as menus
-  and dialogs, so it could be considered a lightweight electron alternative.
+  Gereksinimlerinize bağlıdır. Go programcılarının hafif masaüstü uygulamaları yapmasını veya mevcut uygulamalarına bir ön yüz eklemelerini kolaylaştırmak için tasarlanmıştır. Wails, menüler ve diyaloglar gibi yerel öğeler sunduğundan, hafif bir Electron alternatifi olarak kabul edilebilir.
 
-- Who is this project aimed at?
+- Bu proje kimlere yöneliktir?
 
-  Go programmers who want to bundle an HTML/JS/CSS frontend with their applications, without resorting to creating a
-  server and opening a browser to view it.
+  HTML/JS/CSS ön yüzünü uygulamalarıyla birlikte paketlemek isteyen, ancak bir sunucu oluşturup bir tarayıcı açmaya başvurmadan bunu yapmak isteyen Go programcıları için.
 
-- What's with the name?
+- İsmin anlamı nedir?
 
-  When I saw WebView, I thought "What I really want is tooling around building a WebView app, a bit like Rails is to
-  Ruby". So initially it was a play on words (Webview on Rails). It just so happened to also be a homophone of the
-  English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
+  WebView'i gördüğümde, "Aslında istediğim şey, WebView uygulaması oluşturmak için araçlar, biraz Rails'in Ruby için olduğu gibi" diye düşündüm. Bu nedenle başlangıçta kelime oyunu (Rails üzerinde Webview) olarak ortaya çıktı. Ayrıca, benim geldiğim [ülkenin](https://en.wikipedia.org/wiki/Wales) İngilizce adıyla homofon olması tesadüf oldu. Bu yüzden bu isim kaldı.
 
-## Stargazers over time
+
+## Zaman içinda yıldızlayanlar
 
 <a href="https://star-history.com/#wailsapp/wails&Date">
   <picture>
@@ -131,18 +127,18 @@ This project is supported by these kind people / companies:
   </picture>
 </a>
 
-## Contributors
+## Katkıda Bulunanlar
 
-The contributors list is getting too big for the readme! All the amazing people who have contributed to this
-project have their own page [here](https://wails.io/credits#contributors).
+Katkıda bulunanların listesi, README için çok büyük hale geldi! Bu projeye katkıda bulunan tüm harika insanların kendi sayfaları [burada](https://wails.io/credits#contributors) bulunmaktadır.
 
-## License
+
+## Lisans
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
 
-## Inspiration
+## İlham
 
-This project was mainly coded to the following albums:
+Bu proje esas olarak aşağıdaki albümler dinlenilerek kodlandı:
 
 - [Manic Street Preachers - Resistance Is Futile](https://open.spotify.com/album/1R2rsEUqXjIvAbzM0yHrxA)
 - [Manic Street Preachers - This Is My Truth, Tell Me Yours](https://open.spotify.com/album/4VzCL9kjhgGQeKCiojK1YN)
@@ -157,3 +153,4 @@ This project was mainly coded to the following albums:
 - [Bloc Party - Silent Alarm](https://open.spotify.com/album/6SsIdN05HQg2GwYLfXuzLB)
 - [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
 - [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
+
