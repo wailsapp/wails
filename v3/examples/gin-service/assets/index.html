@@ -73,6 +73,7 @@
         <button id="getUsers">Get All Users</button>
         <button id="getUser">Get User by ID</button>
         <button id="createUser">Create User</button>
+        <button id="deleteUser">Delete User</button>
         
         <div id="apiResult" style="margin-top: 1rem;">
             <pre id="apiResponse">Results will appear here...</pre>
@@ -188,6 +189,27 @@
             }
         });
         
+        document.getElementById('deleteUser').addEventListener('click', async () => {
+            const userId = prompt('Enter user ID to delete:');
+            if (userId) {
+                try {
+                    await fetchAPI(`/users/${userId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    // Show success message
+                    document.getElementById('apiResponse').textContent = JSON.stringify({
+                        message: `User with ID ${userId} deleted successfully`
+                    }, null, 2);
+                    
+                    // Refresh the user list
+                    setTimeout(() => fetchAPI('/users'), 1000);
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                }
+            }
+        });
+        
         // Using Wails Events API for event communication
         document.getElementById('triggerEvent').addEventListener('click', async () => {
             // Display the event being sent
@@ -209,6 +231,14 @@
             // Register event listener using Wails runtime
             wails.Events.On("gin-api-response", (data) => {
                 document.getElementById('eventResponse').textContent = JSON.stringify(data, null, 2);
+            });
+            
+            // Also listen for user-created events
+            wails.Events.On("user-created", (data) => {
+                document.getElementById('eventResponse').textContent = JSON.stringify({
+                    event: "user-created",
+                    user: data
+                }, null, 2);
             });
             
             // Initial API call to get service info
