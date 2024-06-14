@@ -62,7 +62,7 @@ func NewAssetServer(options *Options) (*AssetServer, error) {
 
 func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	start := time.Now()
-	wrapped := &contentTypeSniffer{rw: rw}
+	wrapped := newContentTypeSniffer(rw)
 
 	req = req.WithContext(contextWithLogger(req.Context(), a.options.Logger))
 	a.handler.ServeHTTP(wrapped, req)
