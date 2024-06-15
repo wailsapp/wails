@@ -80,6 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New binding code layout: output files were previously organised in folders named after their containing package; now full Go import paths are used, including the module path. By [@fbbdev](https://github.com/fbbdev) in [#3468](https://github.com/wailsapp/wails/pull/3468)
 - The struct field `application.Options.Bind` has been renamed to `application.Options.Services`. By [@fbbdev](https://github.com/fbbdev) in [#3468](https://github.com/wailsapp/wails/pull/3468)
 - New syntax for binding services: service instances must now be wrapped in a call to `application.NewService`. By [@fbbdev](https://github.com/fbbdev) in [#3468](https://github.com/wailsapp/wails/pull/3468)
+- Modified the `contentTypeSniffer` struct to include the `http.CloseNotifier` interface. Now compatible with Gin framework. By [@AnalogJ](https://github.com/AnalogJ) in [#3537](https://github.com/wailsapp/wails/pull/3537)
 
 ### Removed
 
