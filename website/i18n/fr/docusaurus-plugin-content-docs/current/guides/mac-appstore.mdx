@@ -21,12 +21,12 @@ Cette page donne un bref aperçu de la façon de soumettre votre application Wai
 3. Remplissez votre application avec les bonnes captures d'écran, descriptions, etc. selon les besoins d'Apple
 4. Créer une nouvelle version de votre application
 
-#### Create Provisioning Profile
-1. Go to the [Apple Developer Profiles](https://developer.apple.com/account/resources/profiles/list) page
-2. Add a new provisioning profile for Mac App Store Distribution
-3. Set the Profile Type as Mac and select the App ID for the application created above
-4. Select the Mac App Distribution certificate
-5. Name the Provisioning Profile embedded and download the created profile.
+#### Créer un profil de provisioning
+1. Allez sur la page [Profils de Développeur Apple](https://developer.apple.com/account/resources/profiles/list)
+2. Ajouter un nouveau profil de provisioning pour la distribution Mac App Store
+3. Définissez le type de profil comme Mac et sélectionnez l'ID d'application pour l'application créée ci-dessus
+4. Sélectionnez le certificat de distribution Mac App
+5. Nommez le profil de provisioning intégré et téléchargez le profil créé.
 
 ## Processus Mac App Store
 
@@ -36,7 +36,7 @@ Les applications soumises au Mac App Store doivent tourner dans la [Sandbox](htt
 
 **Example de fichier Entitlements**
 
-Ceci est un exemple du fichier entitlements de l'application [RiftShare](https://github.com/achhabra2/riftshare). Pour référence, veuillez mettre dans les droits requis par votre application. Reportez-vous à [ce site](https://developer.apple.com/documentation/bundleresources/entitlements) pour plus d'informations. You will need to replace the Team ID and Application Name with the ones you registered above.
+Ceci est un exemple du fichier entitlements de l'application [RiftShare](https://github.com/achhabra2/riftshare). Pour référence, veuillez mettre dans les droits requis par votre application. Reportez-vous à [ce site](https://developer.apple.com/documentation/bundleresources/entitlements) pour plus d'informations. Vous devrez remplacer l'ID de l'équipe et le nom de l'application par ceux que vous avez enregistrés ci-dessus.
 
 ```xml title="entitlements.plist"
 <?xml version="1.0" encoding="UTF-8"?>
@@ -61,7 +61,7 @@ Ceci est un exemple du fichier entitlements de l'application [RiftShare](https:/
 </plist>
 ```
 
-**Add the Embedded Provisioning Profile** The Provisioning Profile created above needs to be added to the root of the applicaton. It needs to be named embedded.provisionprofile.
+**Ajouter le profil de provisionnement incorporé** Le profil de provisioning créé ci-dessus doit être ajouté à la racine de l'application. Il doit être nommé embedded.provisionprofile.
 
 #### Construire et signer le package de l'application
 
