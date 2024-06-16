@@ -213,7 +213,6 @@ func calculateMessageDialogFlags(options MessageDialogOptions) uint32 {
 		}
 	case WarningDialogType:
 		flags = windows.MB_OK | windows.MB_ICONWARNING
-	case OpenDirectoryDialogType:
 	}
 
 	return flags

@@ -735,12 +735,6 @@ func ErrorDialog() *MessageDialog {
 	return newMessageDialog(ErrorDialogType)
 }
 
-// TODO: Why isn't this used?
-
-func OpenDirectoryDialog() *MessageDialog {
-	return newMessageDialog(OpenDirectoryDialogType)
-}
-
 func OpenFileDialog() *OpenFileDialogStruct {
 	return newOpenFileDialog()
 }

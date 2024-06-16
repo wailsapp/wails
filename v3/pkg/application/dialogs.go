@@ -42,7 +42,6 @@ const (
 	QuestionDialogType
 	WarningDialogType
 	ErrorDialogType
-	OpenDirectoryDialogType
 )
 
 type Button struct {
