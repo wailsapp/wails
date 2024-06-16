@@ -15,16 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added Drag & Drop (files or folders) support for Windows and Linux. Added by [@lyimmi](https://github.com/lyimmi) in [PR](https://github.com/wailsapp/wails/pull/3203). Based on the work of [@ayatkyo](https://github.com/ayatkyo) for Windows in [PR](https://github.com/wailsapp/wails/pull/2774).
+- Added Drag & Drop (files or folders) support for macOS. Added by [@APshenkin](https://github.com/APshenkin) in [PR](https://github.com/wailsapp/wails/pull/3250).
 - Support for compiling with `libwebkit2gtk-4.1` instead of `4.0` to support latest Ubuntu release by [atterpac](https://github.com/atterpac) in [#3465](https://github.com/wailsapp/wails/pull/3465)
 - Extended Routing guide with Svelte example by [@stanislav-zeman](https://github.com/stanislav-zeman) in [#3481](https://github.com/wailsapp/wails/pull/3481)
 - Unit test for fix [#3476](https://github.com/wailsapp/wails/pull/3476) by [gjergj](https://github.com/Gjergj) in [#3485](https://github.com/wailsapp/wails/pull/3485)
-- German Readme Translation by [Zeiichenfolge](github.com/Zeiichenfolge) in [#3483](https://github.com/wailsapp/wails/pull/3483)
+- German Readme Translation by [Zeiichenfolge](https://github.com/Zeiichenfolge) in [#3483](https://github.com/wailsapp/wails/pull/3483)
+- Added support generating bindings for structs without fields. Added by [gjergj](https://github.com/Gjergj) in [PR](https://github.com/wailsapp/wails/pull/3489)
 
 ### Changed
 - Updated several broken links in the "How Does It Work?" page on the website. Changed by [@oguz-yilmaz](https://github.com/oguz-yilmaz) in [PR #3469](https://github.com/wailsapp/wails/pull/3469)
 - Upgraded Go version in CI to 1.22 by [@leaanthony](https://github.com/leaanthony) in [#3473](https://github.com/wailsapp/wails/pull/3473).
 
 ### Fixed
+- Fix Drag & Drop JS runtime. Added by [@jakubpeleska](https://github.com/jakubpeleska), provided by [Beam Transfer](https://beamtransfer.io) in [PR](https://github.com/wailsapp/wails/pull/3516).
 - Fixed optional type generation where an extra `?` would be placed inside the field name instead of outside the name `"field?"?` vs `"field"?`. Fixed  by [@atterpac](https://github.com/atterpac) in [#3476](https://github.com/wailsapp/wails/pull/3476)
 - Fixed an issue where `WindowGetPosition` and `WindowSetPosition` values were inconsistent on MacOS. Fixed by [@cenan](https://github.com/wailsapp/wails/pull/3479)
 - Fix scoop command usage typo. Fixed by [@fieu](https://github.com/fieu) in [#3501](https://github.com/wailsapp/wails/pull/3501)
@@ -37,7 +41,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Added support for proxying assets requests to an external server. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3463)
-- Added support generating bindings for structs without fields. Added by [gjergj](https://github.com/Gjergj) in [PR](https://github.com/wailsapp/wails/pull/3489)
 
 ### Fixed
 - Fixed an issue with missing icon for Windows. Fixed by [@APshenkin](https://github.com/wailsapp/wails/pull/3400)
@@ -72,10 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove quarantine attribute on macOS binaries. Changed by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3118)
 - Added documentation for a common GStreamer error on Linux systems. Changed by [@mkwsnyder](https://github.com/mkwsnyder) in [PR](https://github.com/wailsapp/wails/pull/3134)
 - Added documentation on explicity example of importing JS runtime. Changed by [@danawoodman](https://github.com/danawoodman) in [PR](https://github.com/wailsapp/wails/pull/3178)
-- Add  dock icon right-click exit handling by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3157)
-- Added Drag & Drop (files or folders) support for Windows and Linux. Added by [@lyimmi](https://github.com/lyimmi) in [PR](https://github.com/wailsapp/wails/pull/3203). Based on the work of [@ayatkyo](https://github.com/ayatkyo) for Windows in [PR](https://github.com/wailsapp/wails/pull/2774).
-- Added Drag & Drop (files or folders) support for macOS. Added by [@APshenkin](https://github.com/APshenkin) in [PR](https://github.com/wailsapp/wails/pull/3250).
-- Fix Drag & Drop JS runtime. Added by [@jakubpeleska](https://github.com/jakubpeleska), provided by [Beam Transfer](https://beamtransfer.io) in [PR](https://github.com/wailsapp/wails/pull/3516).
+- Add dock icon right-click exit handling by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3157)
 
 ### Fixed
 - Fixed vue-ts template build error. Fixed by @atterpac in
