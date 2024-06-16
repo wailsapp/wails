@@ -1,0 +1,18 @@
+# Linux
+
+このページでは、Linux向けのWailsアプリケーション開発に関する、様々なガイドを掲載しています。
+
+## videoタグが"ended"イベントを発火しない
+
+videoタグを使用している場合、ビデオの再生が終了しても"ended"イベントが発火しません。 これはWebkitのバグであり、次のような回避策を講じることで修正できます:
+
+```js
+videoTag.addEventListener("timeupdate", (event) => {
+  if (event.target.duration - event.target.currentTime < 0.2) {
+    let ended = new Event("ended");
+    event.target.dispatchEvent(ended);
+  }
+});
+```
+
+出典: [ディスカッションボード](https://github.com/wailsapp/wails/issues/1729#issuecomment-1212291275)における[Lyimmi](https://github.com/Lyimmi)のコメント

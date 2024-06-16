@@ -1,0 +1,35 @@
+# CFN Tracker
+
+```mdx-code-block
+<p style={{ "text-align": "center" }}>
+  <img src={require("@site/static/img/showcase/cfntracker.webp").default} />
+  <br />
+</p>
+```
+
+[CFN Tracker](https://github.com/williamsjokvist/cfn-tracker) - 跟踪任何《街头霸
+王 6》或 V CFN 个人资料的实时比赛。 检查[网站](https://cfn.williamsjokvist.se/)
+开始。
+
+## 特征
+
+- 实时比赛追踪
+- 存储比赛日志和统计数据
+- 支持通过浏览器源向 OBS 显示实时统计数据
+- 支持 SF6 和 SFV
+- 用户能够使用 CSS 创建自己的 OBS 浏览器主题
+
+### 与 Wails 一起使用的主要技术
+
+- [Task](https://github.com/go-task/task) - 包装 Wails CLI 以使常用命令易于使用
+- [React](https://github.com/facebook/react) - 因其丰富的生态系统而被选中
+  （radix、framer-motion）
+- [Bun](https://github.com/oven-sh/bun) - 用于快速依赖解析和构建时间
+- [Rod](https://github.com/go-rod/rod) - 用于身份验证和轮询更改的无头浏览器自动
+  化
+- [SQLite](https://github.com/mattn/go-sqlite3) - 用于存储匹配、会话和配置文件
+- [服务器发送事件](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) -
+  用于向 OBS 浏览器源发送跟踪更新的 http 流
+- [i18next](https://github.com/i18next/) - 使用后端连接器来服务来自 Go 层的本地
+  化对象
+- [xstate](https://github.com/statelyai/xstate) - 用于身份验证过程和跟踪的状态机
