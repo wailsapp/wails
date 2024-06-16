@@ -2,8 +2,6 @@ module github.com/wailsapp/wails/v2
 
 go 1.21
 
-toolchain go1.22.0
-
 require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d

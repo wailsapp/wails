@@ -12,6 +12,40 @@ Tất cả những thay đổi đáng chú ý sẽ được thêm vào tài li�
 - `Security` cho các trường hợp vá lỗ hổng bảo mật.
 
 ## [Unreleased]
+- Added docs to help fix NixOs/Wayland font-size css issue. Added by @atterpac in [PR](https://github.com/wailsapp/wails/pull/3268)
+- Added -m (skip `go mod tidy`) flag to dev command by @te5se in [PR](https://github.com/wailsapp/wails/pull/3275)
+- Added mac option `DisableZoom` to remove zoom button. Added by @wizzymore in [PR](https://github.com/wailsapp/wails/pull/3289)
+
+## v2.8.0 - 2024-02-08
+
+### Added
+
+- Added windows options supports `DisablePinchZoom` configuration. Added by @tuuzed in [PR](https://github.com/wailsapp/wails/pull/3115)
+- Add Apple Silicon hardware detection to `wails doctor`. Changed by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3129)
+- Remove quarantine attribute on macOS binaries. Changed by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3118)
+- Added documentation for a common GStreamer error on Linux systems. Changed by [@mkwsnyder](https://github.com/mkwsnyder) in [PR](https://github.com/wailsapp/wails/pull/3134)
+- Added documentation on explicity example of importing JS runtime. Changed by [@danawoodman](https://github.com/danawoodman) in [PR](https://github.com/wailsapp/wails/pull/3178)
+- Add  dock icon right-click exit handling by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3157)
+
+### Fixed
+- Fixed vue-ts template build error. Fixed by @atterpac in [PR](https://github.com/wailsapp/wails/pull/3243)
+- Docs for IsZoomControlEnabled and ZoomFactor. Fixed by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3137)
+- Fixed `-compiler` flag for `wails build`, `wails dev` and `wails generate module`. Fixed in [PR](https://github.com/wailsapp/wails/pull/3121) by [@xtrafrancyz](https://github.com/xtrafrancyz)
+- Fixed uninitialized `SecondInstanceData.WorkingDirectory` on linux and windows ([#3154](https://github.com/wailsapp/wails/pull/3154)).
+- Fixed save file dialog not appending file extension automatically on Windows by @almas1992 in [PR](https://github.com/wailsapp/wails/pull/3205)
+- Fixed compatibility for wails cli being built with go 1.22 and later. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/3244)
+
+## v2.7.1 - 2023-12-10
+
+### Fixed
+- Segfault in `wails doctor` when GPU device information is not provided. Thanks to [@atterpac](https://github.com/atterpac) for the fix ([#3108](https://github.com/wailsapp/wails/pull/3108)).
+- Fixed building on macOS 11. Updated other build guards. Fixed in [#3111](https://github.com/wailsapp/wails/pull/3108) by [@leaanthony](https://github.com/leaanthony).
+
+### Changed
+- Go 1.20 is now the minimum supported Go version.
+
+
+## v2.7.0 - 2023-12-09
 
 ### Added
 
@@ -26,7 +60,7 @@ Tất cả những thay đổi đáng chú ý sẽ được thêm vào tài li�
 - Added new community template wails-htmx-templ-chi-tailwind. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2984)
 - Added CPU/GPU/Memory detection for `wails doctor`. Added by @leaanthony in #d51268b8d0680430f3a614775b13e6cd2b906d1c
 - The [AssetServer](/docs/reference/options#assetserver) now injects the runtime/IPC into all index html files and into all html files returned when requesting a folder path. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2203)
-- Added Custom Protocol Schemes associations support for macOS and Windows. Added by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3000)
+- Added Custom Protocol Schemes associations support for macOS and Windows. Added by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3000) – Added support for TS interfaces generation as an option. Add support for Enums in TS types. Added by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3047)
 
 ### Changed
 
@@ -38,8 +72,10 @@ Tất cả những thay đổi đáng chú ý sẽ được thêm vào tài li�
 #### Fixed
 
 - Fixed typo on docs/reference/options page. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/2887)
-- Fixed issue with npm being called npm20 on openSUSE-Tumbleweed. Fixed by @TuffenDuffen in [PR] in (https://github.com/wailsapp/wails/pull/2941)
-- Fixed memory corruption on Windows when using accelerator keys. Fixed by @stffabi in [PR] in (https://github.com/wailsapp/wails/pull/3002)
+- Fixed issue with npm being called npm20 on openSUSE-Tumbleweed. Fixed by @TuffenDuffen in [PR](https://github.com/wailsapp/wails/pull/2941)
+- Fixed memory corruption on Windows when using accelerator keys. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/3002)
+- Fixed binding mapping for obfuscated build, when binding are in different structs. Fixed by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3071)
+- Fixed issue with obfuscation settings in wails.json. Fixed by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3080)
 
 ## v2.6.0 - 2023-09-06
 
