@@ -15,7 +15,7 @@
   },
   "engines": {
     "node": ">=18.14.0",
-    "pnpm": ">=8.0.0"
+    "pnpm": ">=8.3.1"
   },
   "dependencies": {
     "@crowdin/crowdin-api-client": "^1.33.1",
