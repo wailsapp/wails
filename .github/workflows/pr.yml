@@ -83,6 +83,11 @@ jobs:
         run: go test -v ./...
 
       - name: Run tests (!mac)
-        if: matrix.os != 'macos-latest'
+        if: matrix.os != 'macos-latest' && matrix.os != 'ubuntu-24.04'
         working-directory: ./v2
         run: go test -v ./...
+
+      - name: Run tests (Ubuntu 24.04)
+        if: matrix.os == 'ubuntu-24.04'
+        working-directory: ./v2
+        run: go test -v -tags webkit2_41 ./...
