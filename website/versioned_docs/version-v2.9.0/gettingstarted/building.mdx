@@ -7,6 +7,9 @@ sidebar_position: 6
 From the project directory, run `wails build`.
 This will compile your project and save the production-ready binary in the `build/bin` directory.
 
+::: warning
+    If you are using Ubuntu 22.04 (or any distribution that does not have webkit2gtk-4.0), you will need to add `-tags webkit2_41`.
+
 If you run the binary, you should see the default application:
 
 ```mdx-code-block
