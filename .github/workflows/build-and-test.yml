@@ -124,5 +124,15 @@ jobs:
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
           wails init -n ${{ matrix.template }} -t ${{ matrix.template }} -ci
+
+      - name: Build template '${{ matrix.template }}'
+        if: matrix.os != 'ubuntu-24.04'
+        run: |
           cd ${{ matrix.template }}
           wails build -v 2
+
+      - name: Build template '${{ matrix.template }}' (Ubuntu 24.04)
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          cd ${{ matrix.template }}
+          wails build -v 2 -tags webkit2_41
