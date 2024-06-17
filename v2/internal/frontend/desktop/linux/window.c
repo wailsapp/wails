@@ -507,7 +507,7 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
 
     if(disableWebViewDragAndDrop)
     {
-        gtk_drag_dest_unset(G_OBJECT(webview));
+        gtk_drag_dest_unset(webview);
     }
 
     if(enableDragAndDrop)
