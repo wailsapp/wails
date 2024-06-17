@@ -142,11 +142,14 @@ type WebviewWindow struct {
 	// runtimeLoaded indicates that the runtime has been loaded
 	runtimeLoaded bool
 	// pendingJS holds JS that was sent to the window before the runtime was loaded
-	pendingJS []string
+	pendingJS     []string
+	pendingJSLock sync.RWMutex
 }
 
-var windowID uint
-var windowIDLock sync.RWMutex
+var (
+	windowID     uint
+	windowIDLock sync.RWMutex
+)
 
 func getWindowID() uint {
 	windowIDLock.Lock()
@@ -170,7 +173,6 @@ func (w *WebviewWindow) markAsDestroyed() {
 }
 
 func (w *WebviewWindow) setupEventMapping() {
-
 	var mapping map[events.WindowEventType]events.WindowEventType
 	switch runtime.GOOS {
 	case "darwin":
@@ -322,8 +324,8 @@ func (w *WebviewWindow) SetSize(width, height int) Window {
 	w.options.Width = width
 	w.options.Height = height
 
-	var newMaxWidth = w.options.MaxWidth
-	var newMaxHeight = w.options.MaxHeight
+	newMaxWidth := w.options.MaxWidth
+	newMaxHeight := w.options.MaxHeight
 	if width > w.options.MaxWidth && w.options.MaxWidth != 0 {
 		newMaxWidth = width
 	}
@@ -335,8 +337,8 @@ func (w *WebviewWindow) SetSize(width, height int) Window {
 		w.SetMaxSize(newMaxWidth, newMaxHeight)
 	}
 
-	var newMinWidth = w.options.MinWidth
-	var newMinHeight = w.options.MinHeight
+	newMinWidth := w.options.MinWidth
+	newMinHeight := w.options.MinHeight
 	if width < w.options.MinWidth && w.options.MinWidth != 0 {
 		newMinWidth = width
 	}
@@ -523,7 +525,9 @@ func (w *WebviewWindow) ExecJS(js string) {
 	if w.runtimeLoaded {
 		w.impl.execJS(js)
 	} else {
+		w.pendingJSLock.Lock()
 		w.pendingJS = append(w.pendingJS, js)
+		w.pendingJSLock.Unlock()
 	}
 }
 
@@ -659,11 +663,11 @@ func (w *WebviewWindow) HandleMessage(message string) {
 	case strings.HasPrefix(message, "wails:resize:"):
 		if !w.IsFullscreen() {
 			sl := strings.Split(message, ":")
-			if len(sl) != 2 {
+			if len(sl) != 3 {
 				w.Error("Unknown message returned from dispatcher: %+v", message)
 				return
 			}
-			err := w.startResize(sl[1])
+			err := w.startResize(sl[len(sl)-1])
 			if err != nil {
 				w.Error(err.Error())
 			}
@@ -871,7 +875,6 @@ func (w *WebviewWindow) ZoomReset() Window {
 		w.emit(events.Common.WindowZoomReset)
 	}
 	return w
-
 }
 
 // ZoomIn increases the zoom level of the webview content
@@ -881,7 +884,6 @@ func (w *WebviewWindow) ZoomIn() {
 	}
 	InvokeSync(w.impl.zoomIn)
 	w.emit(events.Common.WindowZoomIn)
-
 }
 
 // ZoomOut decreases the zoom level of the webview content
