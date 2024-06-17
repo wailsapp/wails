@@ -48,7 +48,7 @@ jobs:
       - name: Run tests (Ubuntu 24.04)
         if: matrix.os == 'ubuntu-24.04'
         working-directory: ./v2
-        run: go test -v ./...-tags webkit2_41
+        run: go test -v ./... -tags webkit2_41
 
   test_js:
     name: Run JS Tests
