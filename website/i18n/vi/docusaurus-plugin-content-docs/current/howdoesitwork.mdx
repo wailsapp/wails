@@ -82,7 +82,7 @@ This example has the following options set:
 - `OnShutdown` - A callback for when the application is about to quit
 - `Bind` - A slice of struct instances that we wish to expose to the frontend
 
-A full list of application options can be found in the [Options Reference](reference/options).
+A full list of application options can be found in the [Options Reference](reference/options.mdx).
 
 #### Assets
 
@@ -369,7 +369,7 @@ export namespace main {
       if (!a) {
         return a;
       }
-      if (a.slice) {
+      if (a.slice && a.map) {
         return (a as any[]).map((elem) => this.convertValues(elem, classs));
       } else if ("object" === typeof a) {
         if (asMap) {
@@ -414,6 +414,6 @@ The JavaScript runtime is located at `window.runtime` and contains many methods 
 window.runtime.EventsEmit("my-event", 1);
 ```
 
-More details about the JS runtime can be found in the [Runtime Reference](reference/runtime/intro).
+More details about the JS runtime can be found in the [Runtime Reference](reference/runtime/intro.mdx).
 
 [^1]: There is a very small subset of libraries that use features unsupported in WebViews. There are often alternatives and workarounds for such cases.

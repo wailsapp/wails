@@ -82,7 +82,7 @@ Cet exemple a les options suivantes :
 - `OnShutdown` - Nom de la fonction à appeler quand la fenêtre est sur le point d'être fermée
 - `Bind` - La liste des structures Go à exposer au frontend
 
-Une liste complète des options d'application peut être trouvée dans la [Référence d'options](reference/options).
+A full list of application options can be found in the [Options Reference](reference/options.mdx).
 
 #### Ressources
 
@@ -369,7 +369,7 @@ export namespace main {
       if (!a) {
         return a;
       }
-      if (a.slice) {
+      if (a.slice && a.map) {
         return (a as any[]).map((elem) => this.convertValues(elem, classs));
       } else if ("object" === typeof a) {
         if (asMap) {
@@ -414,6 +414,6 @@ Le runtime JavaScript se trouve dans `window.runtime` et contient de nombreuses 
 window.runtime.EventsEmit("my-event", 1);
 ```
 
-Plus de détails sur l'exécutable JS peuvent être trouvés dans la [Référence d'exécution](reference/runtime/intro).
+More details about the JS runtime can be found in the [Runtime Reference](reference/runtime/intro.mdx).
 
 [^1]: Il y a un très petit sous-ensemble de bibliothèques qui utilisent des fonctionnalités non prises en charge dans WebViews. Il y a souvent des alternatives et des solutions de contournement pour de tels cas.

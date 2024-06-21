@@ -82,7 +82,7 @@ func (b *App) Greet(name string) string {
 - `OnShutdown` - 应用程序即将退出时的回调
 - `Bind` - 我们希望向前端暴露的一部分结构体实例
 
-完整的应用程序参数选项列表可以在 [参数选项](./reference/options) 中找到。
+A full list of application options can be found in the [Options Reference](reference/options.mdx).
 
 #### 资产
 
@@ -369,7 +369,7 @@ export namespace main {
       if (!a) {
         return a;
       }
-      if (a.slice) {
+      if (a.slice && a.map) {
         return (a as any[]).map((elem) => this.convertValues(elem, classs));
       } else if ("object" === typeof a) {
         if (asMap) {
@@ -414,6 +414,6 @@ JavaScript 运行时位于`window.runtime`并包含许多方法来执行各种�
 window.runtime.EventsEmit("my-event", 1);
 ```
 
-更多关于 JS 运行时的细节可以在 [运行时参考](reference/runtime/intro) 中找到。
+More details about the JS runtime can be found in the [Runtime Reference](reference/runtime/intro.mdx).
 
 [^1]: 有一小部分库使用了 WebView 中不支持的功能。 对于这种情况，通常有替代方案和解决方法。
