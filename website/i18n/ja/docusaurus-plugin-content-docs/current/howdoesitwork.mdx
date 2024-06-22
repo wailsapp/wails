@@ -82,7 +82,7 @@ func (b *App) Greet(name string) string {
 - `OnShutdown` - アプリを終了しようとするときのコールバック
 - `Bind` - フロントエンドにバインドさせたい構造体インスタンスのスライス
 
-設定可能なすべてのオプションについては、[オプションのリファレンス](reference/options)をご覧ください。
+A full list of application options can be found in the [Options Reference](reference/options.mdx).
 
 #### アセット
 
@@ -369,7 +369,7 @@ export namespace main {
       if (!a) {
         return a;
       }
-      if (a.slice) {
+      if (a.slice && a.map) {
         return (a as any[]).map((elem) => this.convertValues(elem, classs));
       } else if ("object" === typeof a) {
         if (asMap) {
@@ -414,6 +414,6 @@ Javascriptランタイムは`window.runtime`に存在し、イベント発行や
 window.runtime.EventsEmit("my-event", 1);
 ```
 
-Javascriptランタイムの詳細については、[ランタイムリファレンス](reference/runtime/intro)をご覧ください。
+More details about the JS runtime can be found in the [Runtime Reference](reference/runtime/intro.mdx).
 
 [^1]: まれに、WebViewでサポートされていない機能を使用するライブラリがあります。 ほとんどの場合、それらは代替手段や回避方法がありますので、それらを検討してください。

@@ -109,7 +109,7 @@ Currently, Wails doesn't support bundling for Linux. So, you need to create file
 For example if you distribute your app as a .deb package, you can create file associations by adding required files in you bundle.
 You can use [nfpm](https://nfpm.goreleaser.com/) to create .deb package for your app.
 
-1.  Create a .desktop file for your app and specify file associations there (note that `%u` is important in Exec). Example:
+1. Create a .desktop file for your app and specify file associations there (note that `%u` is important in Exec). Example:
 
 ```ini
 [Desktop Entry]
@@ -122,14 +122,14 @@ Type=Application
 MimeType=x-scheme-handler/myapp;
 ```
 
-2.  Prepare postInstall/postRemove scripts for your package. Example:
+2. Prepare postInstall/postRemove scripts for your package. Example:
 
 ```sh
 # reload desktop database to load app in list of available
 update-desktop-database /usr/share/applications
 ```
 
-3.  Configure nfpm to use your scripts and files. Example:
+3. Configure nfpm to use your scripts and files. Example:
 
 ```yaml
 name: "wails-open-file"
@@ -158,15 +158,15 @@ scripts:
   postremove: ./postRemove.sh
 ```
 
-6.  Build your .deb package using nfpm:
+6. Build your .deb package using nfpm:
 
 ```sh
 nfpm pkg --packager deb --target .
 ```
 
-7.  Now when your package is installed, your app will be associated with custom protocol scheme. When you open url with your app,
-    new instance of app is launched and file path is passed as argument to your app.
-    To handle this you should parse command line arguments in your app. Example:
+7. Now when your package is installed, your app will be associated with custom protocol scheme. When you open url with your app,
+   new instance of app is launched and file path is passed as argument to your app.
+   To handle this you should parse command line arguments in your app. Example:
 
 ```go title="main.go"
 func main() {

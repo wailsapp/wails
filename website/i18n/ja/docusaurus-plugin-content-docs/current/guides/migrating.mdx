@@ -91,7 +91,7 @@ func (b *Basic) startup(ctx context.Context) {
 
 ### ランタイム
 
-v2のランタイムはv1よりも非常に充実しており、メニュー、ウィンドウ操作、優れたダイアログをサポートしています。 メソッドのシグネチャが若干変更されていますので、詳しくは[ランタイムのリファレンス](../reference/runtime/intro.mdx)を参照してください。
+v2のランタイムはv1よりも非常に充実しており、メニュー、ウィンドウ操作、優れたダイアログをサポートしています。 The signature of the methods has changed slightly - please refer to the [Runtime Reference](../reference/runtime/intro.mdx).
 
 v1では、`WailsInit()`に渡された構造体を介して[ランタイム](../reference/runtime/intro.mdx)を利用できていました。 v2では、ランタイムは独自のパッケージとして移植されています。 ランタイムの各メソッドは、[OnStartup](../reference/options.mdx#onstartup)メソッドで受け渡される`context.Context`を引数に取ります。
 
