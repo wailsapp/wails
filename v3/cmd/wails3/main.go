@@ -30,6 +30,7 @@ func init() {
 func main() {
 	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
 	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
+	app.NewSubCommand("interactive", "Run in interactive mode").Action(interactive)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
 	app.NewSubCommandFunction("build", "Build the project", commands.Build)
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
@@ -78,7 +79,7 @@ func main() {
 }
 
 func printFooter() {
-	pterm.Println(pterm.LightGreen("\nDon't know what to do next? Run: ") + pterm.LightYellow("wails3 docs\n"))
+	pterm.Println(pterm.LightGreen("\nNeed documentation? Run: ") + pterm.LightYellow("wails3 docs\n"))
 	// Check if we're in a teminal
 	printer := pterm.PrefixPrinter{
 		MessageStyle: pterm.NewStyle(pterm.FgLightGreen),
