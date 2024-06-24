@@ -30,7 +30,6 @@ func init() {
 func main() {
 	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
 	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
-	app.NewSubCommand("interactive", "Run in interactive mode").Action(interactive)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
 	app.NewSubCommandFunction("build", "Build the project", commands.Build)
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
