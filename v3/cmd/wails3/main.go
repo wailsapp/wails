@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/pkg/browser"
 	"os"
 	"runtime/debug"
 
@@ -28,6 +29,7 @@ func init() {
 
 func main() {
 	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
+	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
 	app.NewSubCommandFunction("build", "Build the project", commands.Build)
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
@@ -65,10 +67,34 @@ func main() {
 	tool.NewSubCommandFunction("cp", "Copy files", commands.Cp)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
+	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
+	defer printFooter()
 
 	err := app.Run()
 	if err != nil {
 		pterm.Error.Println(err)
 		os.Exit(1)
 	}
+}
+
+func printFooter() {
+	pterm.Println(pterm.LightGreen("\nDon't know what to do next? Run: ") + pterm.LightYellow("wails3 docs\n"))
+	// Check if we're in a teminal
+	printer := pterm.PrefixPrinter{
+		MessageStyle: pterm.NewStyle(pterm.FgLightGreen),
+		Prefix: pterm.Prefix{
+			Style: pterm.NewStyle(pterm.FgRed, pterm.BgLightWhite),
+			Text:  "♥ ",
+		},
+	}
+
+	printer.Println("If Wails is useful to you or your company, please consider sponsoring the project: " + pterm.LightYellow("wails3 sponsor"))
+}
+
+func openDocs() error {
+	return browser.OpenURL("https://v3alpha.wails.io/getting-started/your-first-app/")
+}
+
+func openSponsor() error {
+	return browser.OpenURL("https://github.com/sponsors/leaanthony")
 }
