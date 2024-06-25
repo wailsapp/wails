@@ -29,9 +29,8 @@ func NewPluginManager() *PluginManager {
 var pluginReflector = reflect.TypeOf((*Plugin)(nil)).Elem()
 
 func (p *PluginManager) Init() []error {
-	globalApplication.info("Initialising plugins", "count", len(p.plugins))
 	for _, plugin := range p.plugins {
-		globalApplication.info("Initialising plugin: " + plugin.Name())
+		globalApplication.debug("Initialising plugin: " + plugin.Name())
 		err := plugin.Init()
 		if err != nil {
 			globalApplication.error("Plugin failed to initialise:", "plugin", plugin.Name(), "error", err.Error())
@@ -61,9 +60,7 @@ func (p *PluginManager) ProcessPlugins(services []Service) {
 		if reflect.TypeOf(service.instance).Implements(pluginReflector) {
 			found := service.instance.(Plugin)
 			p.AddPlugin(found)
-			globalApplication.info("Plugin found: " + found.Name())
 		}
-
 	}
 }
 
