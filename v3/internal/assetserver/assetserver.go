@@ -29,6 +29,7 @@ type AssetServer struct {
 	handler http.Handler
 
 	//pluginScripts map[string]string
+	plugins map[string]http.Handler
 
 	assetServerWebView
 	pluginAssets map[string]fs.FS
@@ -128,22 +129,22 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 
 		// Get the first 3 parts of the reqPath
 		pluginPath := "/" + path.Join(parts[1], parts[2], parts[3])
-		// Get the remaining part of the reqPath
-		fileName := parts[4]
 
 		// Check if this is a registered plugin asset
-		if assetFS, ok := a.pluginAssets[pluginPath]; ok {
+		if handler, ok := a.plugins[pluginPath]; ok {
 			// Check if the file exists
-			file, err := fs.ReadFile(assetFS, fileName)
-			if err != nil {
-				a.serveError(rw, err, "Unable to read file %s", reqPath)
-				return
-			}
-			a.writeBlob(rw, reqPath, file)
+			handler.ServeHTTP(rw, req)
 		} else {
 			userHandler.ServeHTTP(rw, req)
 		}
 	}
+}
+
+func (a *AssetServer) AttachPlugin(prefix string, handler http.Handler) {
+	if a.plugins == nil {
+		a.plugins = make(map[string]http.Handler)
+	}
+	a.plugins[prefix] = handler
 }
 
 func (a *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {

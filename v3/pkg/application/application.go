@@ -124,24 +124,27 @@ func New(appOptions Options) *App {
 	result.assets = srv
 	result.assets.LogDetails()
 
+
+
+
 	result.bindings, err = NewBindings(appOptions.Services, appOptions.BindAliases)
 	if err != nil {
 		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
 	}
 
-	result.plugins = NewPluginManager(appOptions.Plugins, srv)
-	errors := result.plugins.Init()
-	if len(errors) > 0 {
-		for _, err := range errors {
-			globalApplication.error("Error initialising plugin: " + err.Error())
-		}
-		globalApplication.fatal("Fatal error in plugins initialisation")
-	}
 
-	err = result.bindings.AddPlugins(appOptions.Plugins)
-	if err != nil {
-		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
+	result.plugins = NewPluginManager()
+	result.plugins.ProcessPlugins(appOptions.Services)
+	if len(result.plugins.plugins) > 0 {
+		errors := result.plugins.Init()
+		if len(errors) > 0 {
+			for _, err := range errors {
+				globalApplication.error("Error initialising plugin: " + err.Error())
+			}
+			globalApplication.fatal("Fatal error in plugins initialisation")
+		}
 	}
+	defer result.plugins.Shutdown()
 
 	// Process keybindings
 	if result.options.KeyBindings != nil {
@@ -407,6 +410,10 @@ func (a *App) RegisterListener(listener WailsEventListener) {
 	a.wailsEventListenerLock.Lock()
 	a.wailsEventListeners = append(a.wailsEventListeners, listener)
 	a.wailsEventListenerLock.Unlock()
+}
+
+func (a *App) RegisterPluginHandler(prefix string, handler http.Handler) {
+	a.assets.AttachPlugin(prefix, handler)
 }
 
 func (a *App) NewWebviewWindow() *WebviewWindow {

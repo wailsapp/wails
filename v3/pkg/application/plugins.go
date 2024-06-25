@@ -1,9 +1,9 @@
 package application
 
 import (
+	"reflect"
+
 	"github.com/pkg/errors"
-	"github.com/wailsapp/wails/v3/internal/assetserver"
-	"io/fs"
 )
 
 type PluginAPI interface {
@@ -11,43 +11,33 @@ type PluginAPI interface {
 
 type Plugin interface {
 	Name() string
-	Init(api PluginAPI) error
+	Init() error
 	Shutdown() error
-	CallableByJS() []string
-	Assets() fs.FS
 }
 
 type PluginManager struct {
 	plugins            map[string]Plugin
-	assetServer        *assetserver.AssetServer
 	initialisedPlugins []Plugin
 }
 
-func NewPluginManager(plugins map[string]Plugin, assetServer *assetserver.AssetServer) *PluginManager {
-	result := &PluginManager{
-		plugins:     plugins,
-		assetServer: assetServer,
+func NewPluginManager() *PluginManager {
+	return &PluginManager{
+		plugins: make(map[string]Plugin),
 	}
-	return result
 }
 
-func (p *PluginManager) Init() []error {
+var pluginReflector = reflect.TypeOf((*Plugin)(nil)).Elem()
 
-	api := newPluginAPI()
-	for id, plugin := range p.plugins {
-		err := plugin.Init(api)
+func (p *PluginManager) Init() []error {
+	globalApplication.info("Initialising plugins", "count", len(p.plugins))
+	for _, plugin := range p.plugins {
+		globalApplication.info("Initialising plugin: " + plugin.Name())
+		err := plugin.Init()
 		if err != nil {
 			globalApplication.error("Plugin failed to initialise:", "plugin", plugin.Name(), "error", err.Error())
 			return p.Shutdown()
 		}
 		p.initialisedPlugins = append(p.initialisedPlugins, plugin)
-		assets := plugin.Assets()
-		if assets != nil {
-			err = p.assetServer.AddPluginAssets(id, assets)
-			if err != nil {
-				return []error{errors.Wrap(err, "Failed to add plugin assets: "+plugin.Name())}
-			}
-		}
 		globalApplication.debug("Plugin initialised: " + plugin.Name())
 	}
 	return nil
@@ -64,4 +54,19 @@ func (p *PluginManager) Shutdown() []error {
 		}
 	}
 	return errs
+}
+
+func (p *PluginManager) ProcessPlugins(services []Service) {
+	for _, service := range services {
+		if reflect.TypeOf(service.instance).Implements(pluginReflector) {
+			found := service.instance.(Plugin)
+			p.AddPlugin(found)
+			globalApplication.info("Plugin found: " + found.Name())
+		}
+
+	}
+}
+
+func (p *PluginManager) AddPlugin(plugin Plugin) {
+	p.plugins[plugin.Name()] = plugin
 }
