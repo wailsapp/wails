@@ -1,8 +1,6 @@
 package application
 
 import (
-	"reflect"
-
 	"github.com/pkg/errors"
 )
 
@@ -25,8 +23,6 @@ func NewPluginManager() *PluginManager {
 		plugins: make(map[string]Plugin),
 	}
 }
-
-var pluginReflector = reflect.TypeOf((*Plugin)(nil)).Elem()
 
 func (p *PluginManager) Init() []error {
 	for _, plugin := range p.plugins {
@@ -57,8 +53,7 @@ func (p *PluginManager) Shutdown() []error {
 
 func (p *PluginManager) ProcessPlugins(services []Service) {
 	for _, service := range services {
-		if reflect.TypeOf(service.instance).Implements(pluginReflector) {
-			found := service.instance.(Plugin)
+		if found, ok := service.instance.(Plugin); ok {
 			p.AddPlugin(found)
 		}
 	}
