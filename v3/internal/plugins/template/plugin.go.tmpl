@@ -8,22 +8,11 @@ import (
 // This is the main plugin struct. It can be named anything you like.
 // It must implement the application.Plugin interface.
 // Both the Init() and Shutdown() methods are called synchronously when the app starts and stops.
-
-type Config struct {
-    // Add any configuration options here
-}
-
 // Changing the name of this struct will change the name of the plugins class in the frontend 
 // Bound methods will exist inside frontend/bindings/github.com/user/{{.Name}} under the name of the struct
 type Plugin struct{
-    config *Config
+    // Plugin Options
     app *application.App
-}
-
-func NewPlugin(config *Config) *Plugin {
-	return &Plugin{
-        config: config,
-    }
 }
 
 // Init is called when the app is starting up. You can use this to
