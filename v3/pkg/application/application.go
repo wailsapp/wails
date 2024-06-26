@@ -124,27 +124,23 @@ func New(appOptions Options) *App {
 	result.assets = srv
 	result.assets.LogDetails()
 
-
-
-
 	result.bindings, err = NewBindings(appOptions.Services, appOptions.BindAliases)
 	if err != nil {
 		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
 	}
 
-
-	result.plugins = NewPluginManager()
-	result.plugins.ProcessPlugins(appOptions.Services)
-	if len(result.plugins.plugins) > 0 {
-		errors := result.plugins.Init()
-		if len(errors) > 0 {
-			for _, err := range errors {
-				globalApplication.error("Error initialising plugin: " + err.Error())
+	for _, service := range appOptions.Services {
+		if plugin, ok := service.instance.(Plugin); ok {
+			globalApplication.debug("Initialising plugin: " + plugin.Name())
+			err := plugin.OnStartup()
+			if err != nil {
+				globalApplication.error("Plugin failed to initialise:", "plugin", plugin.Name(), "error", err.Error())
 			}
-			globalApplication.fatal("Fatal error in plugins initialisation")
+			result.plugins = append(result.plugins, plugin)
+			globalApplication.debug("Plugin initialised: " + plugin.Name())
 		}
 	}
-	globalApplication.info("Plugins initialised", "count", len(result.plugins.plugins))
+	globalApplication.info("Plugins initialised", "count", len(result.plugins))
 
 	// Process keybindings
 	if result.options.KeyBindings != nil {
@@ -287,7 +283,7 @@ type App struct {
 	pendingRun []runnable
 
 	bindings *Bindings
-	plugins  *PluginManager
+	plugins  []Plugin
 
 	// platform app
 	impl platformApp
@@ -412,8 +408,8 @@ func (a *App) RegisterListener(listener WailsEventListener) {
 	a.wailsEventListenerLock.Unlock()
 }
 
-func (a *App) RegisterPluginHandler(prefix string, handler http.Handler) {
-	a.assets.AttachPlugin(prefix, handler)
+func (a *App) RegisterServiceHandler(prefix string, handler http.Handler) {
+	a.assets.AttachServiceHandler(prefix, handler)
 }
 
 func (a *App) NewWebviewWindow() *WebviewWindow {
@@ -562,9 +558,9 @@ func (a *App) Run() error {
 		return err
 	}
 
-	errors := a.plugins.Shutdown()
-	if len(errors) > 0 {
-		for _, err := range errors {
+	for _, plugin := range a.plugins {
+		err := plugin.OnShutdown() 
+		if err != nil {
 			a.error("Error shutting down plugin: " + err.Error())
 		}
 	}
