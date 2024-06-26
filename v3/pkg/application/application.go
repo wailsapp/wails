@@ -474,12 +474,12 @@ func (a *App) RegisterApplicationEventHook(eventType events.ApplicationEventType
 	}
 }
 
-//func (a *App) RegisterListener(listener WailsEventListener) {
-//	a.wailsEventListenerLock.Lock()
-//	a.wailsEventListeners = append(a.wailsEventListeners, listener)
-//	a.wailsEventListenerLock.Unlock()
-//}
-//
+func (a *App) RegisterListener(listener WailsEventListener) {
+	a.wailsEventListenerLock.Lock()
+	a.wailsEventListeners = append(a.wailsEventListeners, listener)
+	a.wailsEventListenerLock.Unlock()
+}
+
 //func (a *App) RegisterServiceHandler(prefix string, handler http.Handler) {
 //	a.assets.AttachServiceHandler(prefix, handler)
 //}
