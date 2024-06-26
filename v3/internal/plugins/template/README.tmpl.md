@@ -4,11 +4,11 @@ This example plugin provides a way to generate hashes of strings.
 
 ## Installation
 
-Add the plugin to the `Plugins` option in the Applications options:
+Add the plugin to the `Services` option in the Applications options:
 
 ```go
-    Plugins: map[string]application.Plugin{
-        "{{.Name}}": {{.Name}}.NewPlugin(),
+    Services: []application.Service{
+        application.NewService({{.Name}}.NewPlugin()),
     },
 ```
 

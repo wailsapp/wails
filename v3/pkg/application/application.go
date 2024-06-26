@@ -129,19 +129,18 @@ func New(appOptions Options) *App {
 		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
 	}
 
-	result.plugins = NewPluginManager(appOptions.Plugins, srv)
-	errors := result.plugins.Init()
-	if len(errors) > 0 {
-		for _, err := range errors {
-			globalApplication.error("Error initialising plugin: " + err.Error())
+	for _, service := range appOptions.Services {
+		if plugin, ok := service.instance.(Plugin); ok {
+			globalApplication.debug("Initialising plugin: " + plugin.Name())
+			err := plugin.OnStartup()
+			if err != nil {
+				globalApplication.error("Plugin failed to initialise:", "plugin", plugin.Name(), "error", err.Error())
+			}
+			result.plugins = append(result.plugins, plugin)
+			globalApplication.debug("Plugin initialised: " + plugin.Name())
 		}
-		globalApplication.fatal("Fatal error in plugins initialisation")
 	}
-
-	err = result.bindings.AddPlugins(appOptions.Plugins)
-	if err != nil {
-		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
-	}
+	globalApplication.info("Plugins initialised", "count", len(result.plugins))
 
 	// Process keybindings
 	if result.options.KeyBindings != nil {
@@ -284,7 +283,7 @@ type App struct {
 	pendingRun []runnable
 
 	bindings *Bindings
-	plugins  *PluginManager
+	plugins  []Plugin
 
 	// platform app
 	impl platformApp
@@ -407,6 +406,10 @@ func (a *App) RegisterListener(listener WailsEventListener) {
 	a.wailsEventListenerLock.Lock()
 	a.wailsEventListeners = append(a.wailsEventListeners, listener)
 	a.wailsEventListenerLock.Unlock()
+}
+
+func (a *App) RegisterServiceHandler(prefix string, handler http.Handler) {
+	a.assets.AttachServiceHandler(prefix, handler)
 }
 
 func (a *App) NewWebviewWindow() *WebviewWindow {
@@ -555,9 +558,9 @@ func (a *App) Run() error {
 		return err
 	}
 
-	errors := a.plugins.Shutdown()
-	if len(errors) > 0 {
-		for _, err := range errors {
+	for _, plugin := range a.plugins {
+		err := plugin.OnShutdown() 
+		if err != nil {
 			a.error("Error shutting down plugin: " + err.Error())
 		}
 	}

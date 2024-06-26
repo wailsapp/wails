@@ -171,6 +171,10 @@ var typeAny = types.Universe.Lookup("any").Type().Underlying()
 // collectMethod collects and returns information about a service method.
 // It is intended to be called only by ServiceInfo.Collect.
 func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
+	if method.Name() == "OnStartup" || method.Name() == "OnShutdown" {
+		// Skip special methods.
+		return nil
+	}
 	collector := info.collector
 	obj := info.Object().(*types.TypeName)
 
