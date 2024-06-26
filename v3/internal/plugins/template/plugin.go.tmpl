@@ -18,14 +18,14 @@ type Plugin struct{
 // Init is called when the app is starting up. You can use this to
 // initialise any resources you need. You can also access the application
 // instance via the app property.
-func (p *Plugin) Init() error {
+func (p *Plugin) OnStartup() error {
     p.app = application.Get() // Allows for use of the application instance inside the plugin
 	return nil
 }
 
 // Shutdown is called when the app is shutting down via runtime.Quit() call
 // You can use this to clean up any resources you have allocated
-func (p *Plugin) Shutdown() error {}
+func (p *Plugin) OnShutdown() error {}
 
 // Name returns the name of the plugin.
 // You should use the go module format e.g. github.com/myuser/myplugin

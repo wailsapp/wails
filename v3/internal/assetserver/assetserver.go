@@ -1,9 +1,7 @@
 package assetserver
 
 import (
-	"embed"
 	"fmt"
-	"io/fs"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -16,7 +14,7 @@ import (
 const (
 	webViewRequestHeaderWindowId   = "x-wails-window-id"
 	webViewRequestHeaderWindowName = "x-wails-window-name"
-	pluginPrefix                   = "/wails/plugin"
+	servicePrefix                   = "/services"
 )
 
 type RuntimeHandler interface {
@@ -28,17 +26,14 @@ type AssetServer struct {
 
 	handler http.Handler
 
-	//pluginScripts map[string]string
-	plugins map[string]http.Handler
+	services map[string]http.Handler
 
 	assetServerWebView
-	pluginAssets map[string]fs.FS
 }
 
 func NewAssetServer(options *Options) (*AssetServer, error) {
 	result := &AssetServer{
 		options:      options,
-		pluginAssets: make(map[string]fs.FS),
 	}
 
 	userHandler := options.Handler
@@ -115,23 +110,23 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 	default:
 
 		// Check if this is a plugin asset
-		if !strings.HasPrefix(reqPath, pluginPrefix) {
+		if !strings.HasPrefix(reqPath, servicePrefix) {
 			userHandler.ServeHTTP(rw, req)
 			return
 		}
 
 		// Ensure there is 4 parts to the reqPath
-		parts := strings.SplitN(reqPath, "/", 5)
-		if len(parts) < 5 {
+		parts := strings.SplitN(reqPath, "/", 4)
+		if len(parts) < 4 {
 			rw.WriteHeader(http.StatusNotFound)
 			return
 		}
 
 		// Get the first 3 parts of the reqPath
-		pluginPath := "/" + path.Join(parts[1], parts[2], parts[3])
+		servicePath := "/" + path.Join(parts[1], parts[2], parts[3])
 
 		// Check if this is a registered plugin asset
-		if handler, ok := a.plugins[pluginPath]; ok {
+		if handler, ok := a.services[servicePath]; ok {
 			// Check if the file exists
 			handler.ServeHTTP(rw, req)
 		} else {
@@ -140,11 +135,11 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 	}
 }
 
-func (a *AssetServer) AttachPlugin(prefix string, handler http.Handler) {
-	if a.plugins == nil {
-		a.plugins = make(map[string]http.Handler)
+func (a *AssetServer) AttachServiceHandler(prefix string, handler http.Handler) {
+	if a.services == nil {
+		a.services = make(map[string]http.Handler)
 	}
-	a.plugins[prefix] = handler
+	a.services[prefix] = handler
 }
 
 func (a *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {
@@ -158,30 +153,6 @@ func (a *AssetServer) serveError(rw http.ResponseWriter, err error, msg string, 
 	args = append(args, err)
 	a.options.Logger.Error(msg+":", args...)
 	rw.WriteHeader(http.StatusInternalServerError)
-}
-
-//func (a *AssetServer) AddPluginScript(pluginName string, script string) {
-//	if a.pluginScripts == nil {
-//		a.pluginScripts = make(map[string]string)
-//	}
-//	pluginName = strings.ReplaceAll(pluginName, "/", "_")
-//	pluginName = html.EscapeString(pluginName)
-//	pluginScriptName := fmt.Sprintf("/wails/plugin/%s.js", pluginName)
-//	a.pluginScripts[pluginScriptName] = script
-//}
-
-func (a *AssetServer) AddPluginAssets(pluginPath string, vfs fs.FS) error {
-	pluginPath = path.Join(pluginPrefix, pluginPath)
-	_, exists := a.pluginAssets[pluginPath]
-	if exists {
-		return fmt.Errorf("plugin path already exists: %s", pluginPath)
-	}
-	if embedFs, isEmbedFs := vfs.(embed.FS); isEmbedFs {
-		rootFolder, _ := findEmbedRootPath(embedFs)
-		vfs, _ = fs.Sub(vfs, path.Clean(rootFolder))
-	}
-	a.pluginAssets[pluginPath] = vfs
-	return nil
 }
 
 func GetStartURL(userURL string) (string, error) {
