@@ -1017,3 +1017,11 @@ func (a *App) shouldQuit() bool {
 	}
 	return true
 }
+
+func (a *App) BoundMethod(options CallOptions) *BoundMethod {
+	method := a.bindings.Get(&options)
+	if method == nil {
+		method = a.bindings.GetByID(options.MethodID)
+	}
+	return method
+}
