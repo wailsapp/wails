@@ -1,13 +1,13 @@
 {
   "name": "sse",
   "version": "3.0.0",
-  "description": "Wails Server Plugin SSE",
+  "description": "Wails Server SSE",
   "main": "main.js",
   "scripts": {
     "build": "run-p build:*",
     "build:dev": "node build.js"
   },
-  "author": "Lea Anthony <lea.anthony@gmail.com>",
+  "author": "Lea Anthony <lea.anthony@gmail.com> | Travis McLane <tmclane@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "esbuild": "^0.12.17",

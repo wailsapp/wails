@@ -7,7 +7,7 @@ esbuild
         entryPoints: ["main.js"],
         bundle: true,
         minify: true,
-        outfile: "../ipc_websocket.js",
+        outfile: "../sse.js",
         plugins: [sveltePlugin({compileOptions: {css: true}})],
         logLevel: "info",
         sourcemap: "inline",

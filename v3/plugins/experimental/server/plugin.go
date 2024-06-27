@@ -9,7 +9,7 @@ import (
 //go:embed plugin.js
 var pluginJS string
 
-//go:embed ipc_websocket.js
+//go:embed sse.js
 var clientJS string
 
 type Config struct {
