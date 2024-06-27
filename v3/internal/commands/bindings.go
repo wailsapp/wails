@@ -53,26 +53,19 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	).Generate(patterns...)
 
 	// Resolve spinner.
+	resultMessage := fmt.Sprintf(
+		"Processed: %s, %s, %s, %s, %s in %s.",
+		pluralise(stats.NumPackages, "Package"),
+		pluralise(stats.NumServices, "Service"),
+		pluralise(stats.NumMethods, "Method"),
+		pluralise(stats.NumEnums, "Enum"),
+		pluralise(stats.NumModels, "Model"),
+		stats.Elapsed().String(),
+	)
 	if spinner != nil {
-		spinner.Info(fmt.Sprintf(
-			"Processed: %s, %s, %s, %s, %s in %s.",
-			pluralise(stats.NumPackages, "Package"),
-			pluralise(stats.NumServices, "Service"),
-			pluralise(stats.NumMethods, "Method"),
-			pluralise(stats.NumEnums, "Enum"),
-			pluralise(stats.NumModels, "Model"),
-			stats.Elapsed().String(),
-		))
+		spinner.Info(resultMessage)
 	} else {
-		pterm.Info.Println(fmt.Sprintf(
-			"Processed: %s, %s, %s, %s, %s in %s.",
-			pluralise(stats.NumPackages, "Package"),
-			pluralise(stats.NumServices, "Service"),
-			pluralise(stats.NumMethods, "Method"),
-			pluralise(stats.NumEnums, "Enum"),
-			pluralise(stats.NumModels, "Model"),
-			stats.Elapsed().String(),
-		))
+		pterm.Info.Println(resultMessage)
 	}
 
 	// Report output directory.
