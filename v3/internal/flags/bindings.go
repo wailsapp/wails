@@ -20,6 +20,7 @@ type GenerateBindingsOptions struct {
 	NoIndex           bool   `name:"noindex" description:"Do not generate JS/TS index files"`
 	DryRun            bool   `name:"dry" description:"Do not write output files"`
 	Silent            bool   `name:"silent" description:"Silent mode"`
+	NoSpinner         bool   `name:"nospinner" description:"Disable the spinner"`
 	Verbose           bool   `name:"v" description:"Enable debug output"`
 }
 

@@ -3,9 +3,11 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/pterm/pterm"
+
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
@@ -38,7 +40,10 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	}
 
 	// Start a spinner for progress messages.
-	spinner, _ := pterm.DefaultSpinner.Start("Initialising...")
+	var spinner *pterm.SpinnerPrinter
+	if !options.NoSpinner && (os.Getenv("CI") != "true") {
+		spinner, _ = pterm.DefaultSpinner.Start("Initialising...")
+	}
 
 	// Initialise and run generator.
 	stats, err := generator.NewGenerator(
@@ -48,15 +53,27 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	).Generate(patterns...)
 
 	// Resolve spinner.
-	spinner.Info(fmt.Sprintf(
-		"Processed: %s, %s, %s, %s, %s in %s.",
-		pluralise(stats.NumPackages, "Package"),
-		pluralise(stats.NumServices, "Service"),
-		pluralise(stats.NumMethods, "Method"),
-		pluralise(stats.NumEnums, "Enum"),
-		pluralise(stats.NumModels, "Model"),
-		stats.Elapsed().String(),
-	))
+	if spinner != nil {
+		spinner.Info(fmt.Sprintf(
+			"Processed: %s, %s, %s, %s, %s in %s.",
+			pluralise(stats.NumPackages, "Package"),
+			pluralise(stats.NumServices, "Service"),
+			pluralise(stats.NumMethods, "Method"),
+			pluralise(stats.NumEnums, "Enum"),
+			pluralise(stats.NumModels, "Model"),
+			stats.Elapsed().String(),
+		))
+	} else {
+		pterm.Info.Println(fmt.Sprintf(
+			"Processed: %s, %s, %s, %s, %s in %s.",
+			pluralise(stats.NumPackages, "Package"),
+			pluralise(stats.NumServices, "Service"),
+			pluralise(stats.NumMethods, "Method"),
+			pluralise(stats.NumEnums, "Enum"),
+			pluralise(stats.NumModels, "Model"),
+			stats.Elapsed().String(),
+		))
+	}
 
 	// Report output directory.
 	pterm.Info.Printfln("Output directory: %s", absPath)
