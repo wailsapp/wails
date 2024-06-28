@@ -39,3 +39,4 @@ v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 
 # Temporary called mkdocs, should be renamed to more standard -website or similar
 /mkdocs-website/site
+.aider*

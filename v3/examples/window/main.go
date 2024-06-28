@@ -136,6 +136,7 @@ func main() {
 			})
 
 	}
+
 	if runtime.GOOS == "windows" {
 		myMenu.Add("New WebviewWindow (Custom ExStyle)").
 			OnClick(func(ctx *application.Context) {
@@ -152,6 +153,23 @@ func main() {
 				windowCounter++
 			})
 	}
+	myMenu.Add("New WebviewWindow (Listen to Move)").
+		OnClick(func(ctx *application.Context) {
+			w := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+				Windows: application.WindowsWindow{
+					DisableMenu: true,
+				},
+			}).
+				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
+				SetURL("https://wails.io").
+				Show()
+			w.On(events.Windows.WindowDidMove, func(event *application.WindowEvent) {
+				x, y := w.AbsolutePosition()
+				fmt.Printf("WindowDidMove event triggered. New position: (%d, %d)\n", x, y)
+			})
+			windowCounter++
+		})
 
 	myMenu.Add("New WebviewWindow (Hides on Close one time)").
 		SetAccelerator("CmdOrCtrl+H").

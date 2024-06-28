@@ -26,6 +26,7 @@ export const EventTypes = {
 		WindowDragEnter: "windows:WindowDragEnter",
 		WindowDragLeave: "windows:WindowDragLeave",
 		WindowDragOver: "windows:WindowDragOver",
+		WindowDidMove: "windows:WindowDidMove",
 	},
 	Mac: {
 		ApplicationDidBecomeActive: "mac:ApplicationDidBecomeActive",
@@ -183,5 +184,6 @@ export const EventTypes = {
 		WindowFilesDropped: "common:WindowFilesDropped",
 		WindowRuntimeReady: "common:WindowRuntimeReady",
 		ThemeChanged: "common:ThemeChanged",
+		WindowDidMove: "common:WindowDidMove",
 	},
 };

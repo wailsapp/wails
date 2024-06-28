@@ -28,6 +28,10 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
+const (
+	windowDidMoveDebounceMS = 200
+)
+
 var edgeMap = map[string]uintptr{
 	"n-resize":  w32.HTTOP,
 	"ne-resize": w32.HTTOPRIGHT,
@@ -63,6 +67,9 @@ type windowsWebviewWindow struct {
 	focusingChromium   bool
 	dropTarget         *w32.DropTarget
 	onceDo             sync.Once
+
+	// Window move debouncer
+	moveDebouncer func(func())
 }
 
 func (w *windowsWebviewWindow) handleKeyEvent(_ string) {
@@ -989,6 +996,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		w.parent.emit(events.Windows.WindowSetFocus)
 	case w32.WM_MOVE, w32.WM_MOVING:
 		_ = w.chromium.NotifyParentWindowPositionChanged()
+		if w.moveDebouncer == nil {
+			w.moveDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
+		}
+		w.moveDebouncer(func() {
+			w.parent.emit(events.Windows.WindowDidMove)
+		})
 	// Check for keypress
 	case w32.WM_KEYDOWN:
 		w.processKeyBinding(uint(wparam))
@@ -1405,6 +1418,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 		w.dropTarget.OnOver = func() {
 			w.parent.emit(events.Windows.WindowDragOver)
 		}
+		w.parent.On(events.Windows.WindowDidMove, func(e *WindowEvent) {
+			w.parent.emit(events.Common.WindowDidMove)
+		})
 		// Enumerate all the child windows for this window and register them as drop targets
 		w32.EnumChildWindows(w.hwnd, func(hwnd w32.HWND, lparam w32.LPARAM) w32.LRESULT {
 			// Check if the window class is "Chrome_RenderWidgetHostHWND"

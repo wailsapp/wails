@@ -153,6 +153,7 @@ windows:WindowDragDrop
 windows:WindowDragEnter
 windows:WindowDragLeave
 windows:WindowDragOver
+windows:WindowDidMove
 common:ApplicationStarted
 common:WindowMaximise
 common:WindowUnMaximise
@@ -174,3 +175,4 @@ common:WindowDPIChanged
 common:WindowFilesDropped
 common:WindowRuntimeReady
 common:ThemeChanged
+common:WindowDidMove
