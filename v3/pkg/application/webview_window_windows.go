@@ -5,8 +5,6 @@ package application
 import (
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/assetserver"
-	"github.com/wailsapp/wails/v3/internal/runtime"
 	"net/url"
 	"strconv"
 	"strings"
@@ -1418,9 +1416,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 		w.dropTarget.OnOver = func() {
 			w.parent.emit(events.Windows.WindowDragOver)
 		}
-		w.parent.On(events.Windows.WindowDidMove, func(e *WindowEvent) {
-			w.parent.emit(events.Common.WindowDidMove)
-		})
 		// Enumerate all the child windows for this window and register them as drop targets
 		w32.EnumChildWindows(w.hwnd, func(hwnd w32.HWND, lparam w32.LPARAM) w32.LRESULT {
 			// Check if the window class is "Chrome_RenderWidgetHostHWND"
@@ -1437,6 +1432,11 @@ func (w *windowsWebviewWindow) setupChromium() {
 		})
 
 	}
+
+	// event mapping
+	w.parent.On(events.Windows.WindowDidMove, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDidMove)
+	})
 
 	// We will get round to this
 	//if chromium.HasCapability(edge.AllowExternalDrop) {
