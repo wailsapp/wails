@@ -311,6 +311,9 @@ func (w *linuxWebviewWindow) run() {
 	w.parent.On(events.Linux.WindowDidMove, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowDidMove)
 	})
+	w.parent.On(events.Linux.WindowDidResize, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDidResize)
+	})
 
 	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
 		w.execJS(runtime.Core())

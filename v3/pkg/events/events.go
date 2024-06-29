@@ -28,6 +28,7 @@ type commonEvents struct {
 	WindowRuntimeReady WindowEventType
 	ThemeChanged ApplicationEventType
 	WindowDidMove WindowEventType
+	WindowDidResize WindowEventType
 }
 
 func newCommonEvents() commonEvents {
@@ -54,6 +55,7 @@ func newCommonEvents() commonEvents {
 		WindowRuntimeReady: 1201,
 		ThemeChanged: 1202,
 		WindowDidMove: 1203,
+		WindowDidResize: 1204,
 	}
 }
 
@@ -588,5 +590,6 @@ var eventToJS = map[uint]string{
 	1201: "common:WindowRuntimeReady",
 	1202: "common:ThemeChanged",
 	1203: "common:WindowDidMove",
+	1204: "common:WindowDidResize",
 }
 

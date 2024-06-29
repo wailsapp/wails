@@ -187,5 +187,6 @@ export declare const EventTypes: {
 		WindowRuntimeReady: string,
 		ThemeChanged: string,
 		WindowDidMove: string,
+		WindowDidResize: string,
 	},
 };
