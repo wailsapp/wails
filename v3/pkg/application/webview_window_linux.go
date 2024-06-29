@@ -292,6 +292,10 @@ func (w *linuxWebviewWindow) run() {
 	w.parent.On(events.Linux.WindowDeleteEvent, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowClosing)
 	})
+	w.parent.On(events.Linux.WindowDidMove, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDidMove)
+	})
+
 	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
 		w.execJS(runtime.Core())
 	})

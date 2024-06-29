@@ -59,6 +59,7 @@ typedef struct WindowEvent {
 // exported below
 void activateLinux(gpointer data);
 extern void emit(WindowEvent* data);
+extern gboolean handleConfigureEvent(GtkWidget*, GdkEventConfigure*, uintptr_t);
 extern gboolean handleDeleteEvent(GtkWidget*, GdkEvent*, uintptr_t);
 extern gboolean handleFocusEvent(GtkWidget*, GdkEvent*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
@@ -1198,6 +1199,31 @@ func emit(we *C.WindowEvent) {
 	}
 }
 
+//export handleConfigureEvent
+func handleConfigureEvent(widget *C.GtkWidget, event *C.GdkEventConfigure, data C.uintptr_t) C.gboolean {
+	window := globalApplication.getWindowForID(uint(data))
+	if window != nil {
+		lw, ok := window.(*WebviewWindow).impl.(*linuxWebviewWindow)
+		if !ok {
+			return C.gboolean(1)
+		}
+		if lw.lastX != int(event.x) || lw.lastY != int(event.y) {
+			processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidMove))
+		}
+
+		if lw.lastWidth != int(event.width) || lw.lastHeight != int(event.height) {
+			processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidResize))
+		}
+
+		lw.lastX = int(event.x)
+		lw.lastY = int(event.y)
+		lw.lastWidth = int(event.width)
+		lw.lastHeight = int(event.height)
+	}
+
+	return C.gboolean(1)
+}
+
 //export handleDeleteEvent
 func handleDeleteEvent(widget *C.GtkWidget, event *C.GdkEvent, data C.uintptr_t) C.gboolean {
 	processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDeleteEvent))
@@ -1237,6 +1263,7 @@ func (w *linuxWebviewWindow) setupSignalHandlers(emit func(e events.WindowEventT
 	C.signal_connect(unsafe.Pointer(w.window), c.String("delete-event"), C.handleDeleteEvent, winID)
 	C.signal_connect(unsafe.Pointer(w.window), c.String("focus-out-event"), C.handleFocusEvent, winID)
 	C.signal_connect(wv, c.String("load-changed"), C.handleLoadChanged, winID)
+	C.signal_connect(unsafe.Pointer(w.window), c.String("configure-event"), C.handleConfigureEvent, winID)
 
 	contentManager := C.webkit_web_view_get_user_content_manager(w.webKitWebView())
 	C.signal_connect(unsafe.Pointer(contentManager), c.String("script-message-received::external"), C.sendMessageToBackend, nil)

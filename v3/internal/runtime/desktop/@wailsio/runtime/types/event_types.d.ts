@@ -158,6 +158,8 @@ export declare const EventTypes: {
 		SystemThemeChanged: string,
 		WindowLoadChanged: string,
 		WindowDeleteEvent: string,
+		WindowDidMove: string,
+		WindowDidResize: string,
 		WindowFocusIn: string,
 		WindowFocusOut: string,
 		ApplicationStartup: string,

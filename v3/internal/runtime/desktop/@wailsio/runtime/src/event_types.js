@@ -158,6 +158,8 @@ export const EventTypes = {
 		SystemThemeChanged: "linux:SystemThemeChanged",
 		WindowLoadChanged: "linux:WindowLoadChanged",
 		WindowDeleteEvent: "linux:WindowDeleteEvent",
+		WindowDidMove: "linux:WindowDidMove",
+		WindowDidResize: "linux:WindowDidResize",
 		WindowFocusIn: "linux:WindowFocusIn",
 		WindowFocusOut: "linux:WindowFocusOut",
 		ApplicationStartup: "linux:ApplicationStartup",

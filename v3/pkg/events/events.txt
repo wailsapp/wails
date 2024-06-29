@@ -1,6 +1,8 @@
 linux:SystemThemeChanged
 linux:WindowLoadChanged
 linux:WindowDeleteEvent
+linux:WindowDidMove
+linux:WindowDidResize
 linux:WindowFocusIn
 linux:WindowFocusOut
 linux:ApplicationStartup
