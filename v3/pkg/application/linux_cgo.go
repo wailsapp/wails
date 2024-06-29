@@ -1208,11 +1208,15 @@ func handleConfigureEvent(widget *C.GtkWidget, event *C.GdkEventConfigure, data 
 			return C.gboolean(1)
 		}
 		if lw.lastX != int(event.x) || lw.lastY != int(event.y) {
-			processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidMove))
+			lw.moveDebouncer(func() {
+				processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidMove))
+			})
 		}
 
 		if lw.lastWidth != int(event.width) || lw.lastHeight != int(event.height) {
-			processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidResize))
+			lw.resizeDebouncer(func() {
+				processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidResize))
+			})
 		}
 
 		lw.lastX = int(event.x)

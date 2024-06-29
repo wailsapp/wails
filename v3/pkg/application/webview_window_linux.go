@@ -5,11 +5,17 @@ package application
 import "C"
 import (
 	"fmt"
+	"time"
 
+	"github.com/bep/debounce"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
+)
+
+const (
+	windowDidMoveDebounceMS = 200
 )
 
 type dragInfo struct {
@@ -35,6 +41,9 @@ type linuxWebviewWindow struct {
 	lastX, lastY  int
 	gtkmenu       pointer
 	ctxMenuOpened bool
+
+	moveDebouncer   func(func())
+	resizeDebouncer func(func())
 }
 
 var (
@@ -198,6 +207,13 @@ func (w *linuxWebviewWindow) setAbsolutePosition(x int, y int) {
 func (w *linuxWebviewWindow) run() {
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
+	}
+
+	if w.moveDebouncer == nil {
+		w.moveDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
+	}
+	if w.resizeDebouncer == nil {
+		w.resizeDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
 	}
 
 	// Register the capabilities
