@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/pterm/pterm"
+	"golang.org/x/term"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator"
@@ -41,7 +42,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 
 	// Start a spinner for progress messages.
 	var spinner *pterm.SpinnerPrinter
-	if !options.NoSpinner && (os.Getenv("CI") != "true") {
+	if term.IsTerminal(int(os.Stdout.Fd())) && (os.Getenv("CI") != "true") {
 		spinner, _ = pterm.DefaultSpinner.Start("Initialising...")
 	}
 
