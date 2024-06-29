@@ -164,7 +164,7 @@ func main() {
 				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
 				Show()
-			w.On(events.Windows.WindowDidMove, func(event *application.WindowEvent) {
+			w.On(events.Common.WindowDidMove, func(event *application.WindowEvent) {
 				x, y := w.AbsolutePosition()
 				fmt.Printf("WindowDidMove event triggered. New position: (%d, %d)\n", x, y)
 			})
