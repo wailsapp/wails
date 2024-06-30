@@ -5,11 +5,17 @@ package application
 import "C"
 import (
 	"fmt"
+	"time"
 
+	"github.com/bep/debounce"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
+)
+
+const (
+	windowDidMoveDebounceMS = 200
 )
 
 type dragInfo struct {
@@ -35,6 +41,9 @@ type linuxWebviewWindow struct {
 	lastX, lastY  int
 	gtkmenu       pointer
 	ctxMenuOpened bool
+
+	moveDebouncer   func(func())
+	resizeDebouncer func(func())
 }
 
 var (
@@ -200,6 +209,13 @@ func (w *linuxWebviewWindow) run() {
 		w.on(eventId)
 	}
 
+	if w.moveDebouncer == nil {
+		w.moveDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
+	}
+	if w.resizeDebouncer == nil {
+		w.resizeDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
+	}
+
 	// Register the capabilities
 	globalApplication.capabilities = capabilities.NewCapabilities()
 
@@ -292,6 +308,13 @@ func (w *linuxWebviewWindow) run() {
 	w.parent.On(events.Linux.WindowDeleteEvent, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowClosing)
 	})
+	w.parent.On(events.Linux.WindowDidMove, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDidMove)
+	})
+	w.parent.On(events.Linux.WindowDidResize, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDidResize)
+	})
+
 	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
 		w.execJS(runtime.Core())
 	})

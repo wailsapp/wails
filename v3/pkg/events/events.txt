@@ -1,6 +1,8 @@
 linux:SystemThemeChanged
 linux:WindowLoadChanged
 linux:WindowDeleteEvent
+linux:WindowDidMove
+linux:WindowDidResize
 linux:WindowFocusIn
 linux:WindowFocusOut
 linux:ApplicationStartup
@@ -154,6 +156,7 @@ windows:WindowDragEnter
 windows:WindowDragLeave
 windows:WindowDragOver
 windows:WindowDidMove
+windows:WindowDidResize
 common:ApplicationStarted
 common:WindowMaximise
 common:WindowUnMaximise
@@ -176,3 +179,4 @@ common:WindowFilesDropped
 common:WindowRuntimeReady
 common:ThemeChanged
 common:WindowDidMove
+common:WindowDidResize

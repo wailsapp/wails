@@ -27,6 +27,7 @@ export const EventTypes = {
 		WindowDragLeave: "windows:WindowDragLeave",
 		WindowDragOver: "windows:WindowDragOver",
 		WindowDidMove: "windows:WindowDidMove",
+		WindowDidResize: "windows:WindowDidResize",
 	},
 	Mac: {
 		ApplicationDidBecomeActive: "mac:ApplicationDidBecomeActive",
@@ -158,6 +159,8 @@ export const EventTypes = {
 		SystemThemeChanged: "linux:SystemThemeChanged",
 		WindowLoadChanged: "linux:WindowLoadChanged",
 		WindowDeleteEvent: "linux:WindowDeleteEvent",
+		WindowDidMove: "linux:WindowDidMove",
+		WindowDidResize: "linux:WindowDidResize",
 		WindowFocusIn: "linux:WindowFocusIn",
 		WindowFocusOut: "linux:WindowFocusOut",
 		ApplicationStartup: "linux:ApplicationStartup",
@@ -185,5 +188,6 @@ export const EventTypes = {
 		WindowRuntimeReady: "common:WindowRuntimeReady",
 		ThemeChanged: "common:ThemeChanged",
 		WindowDidMove: "common:WindowDidMove",
+		WindowDidResize: "common:WindowDidResize",
 	},
 };

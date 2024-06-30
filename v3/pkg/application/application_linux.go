@@ -173,7 +173,7 @@ func (a *linuxApp) monitorThemeChanges() {
 
 			if theme != a.theme {
 				a.theme = theme
-				event := newApplicationEvent(events.Common.ThemeChanged)
+				event := newApplicationEvent(events.Linux.SystemThemeChanged)
 				event.Context().setIsDarkMode(a.isDarkMode())
 				applicationEvents <- event
 			}

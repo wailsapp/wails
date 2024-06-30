@@ -5,8 +5,6 @@ package application
 import (
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/assetserver"
-	"github.com/wailsapp/wails/v3/internal/runtime"
 	"net/url"
 	"strconv"
 	"strings"
@@ -18,8 +16,10 @@ import (
 
 	"github.com/bep/debounce"
 	"github.com/wailsapp/go-webview2/webviewloader"
+	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/internal/runtime"
 
 	"github.com/samber/lo"
 
@@ -1024,6 +1024,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				InvokeSync(func() {
 					w.chromium.Resize()
 				})
+				w.parent.emit(events.Windows.WindowDidResize)
 			})
 		} else {
 			w.chromium.Resize()
@@ -1418,9 +1419,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 		w.dropTarget.OnOver = func() {
 			w.parent.emit(events.Windows.WindowDragOver)
 		}
-		w.parent.On(events.Windows.WindowDidMove, func(e *WindowEvent) {
-			w.parent.emit(events.Common.WindowDidMove)
-		})
 		// Enumerate all the child windows for this window and register them as drop targets
 		w32.EnumChildWindows(w.hwnd, func(hwnd w32.HWND, lparam w32.LPARAM) w32.LRESULT {
 			// Check if the window class is "Chrome_RenderWidgetHostHWND"
@@ -1437,6 +1435,14 @@ func (w *windowsWebviewWindow) setupChromium() {
 		})
 
 	}
+
+	// event mapping
+	w.parent.On(events.Windows.WindowDidMove, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDidMove)
+	})
+	w.parent.On(events.Windows.WindowDidResize, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDidResize)
+	})
 
 	// We will get round to this
 	//if chromium.HasCapability(edge.AllowExternalDrop) {

@@ -164,13 +164,30 @@ func main() {
 				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
 				Show()
-			w.On(events.Windows.WindowDidMove, func(event *application.WindowEvent) {
+			w.On(events.Common.WindowDidMove, func(event *application.WindowEvent) {
 				x, y := w.AbsolutePosition()
 				fmt.Printf("WindowDidMove event triggered. New position: (%d, %d)\n", x, y)
 			})
 			windowCounter++
 		})
+	myMenu.Add("New WebviewWindow (Listen to Resize)").
+		OnClick(func(ctx *application.Context) {
+			w := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+				Windows: application.WindowsWindow{
+					DisableMenu: true,
+				},
+			}).
+				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
+				SetURL("https://wails.io").
+				Show()
+			w.On(events.Common.WindowDidResize, func(event *application.WindowEvent) {
+				width, height := w.Size()
 
+				fmt.Printf("WindowDidResize event triggered. New size: (%d, %d)\n", width, height)
+			})
+			windowCounter++
+		})
 	myMenu.Add("New WebviewWindow (Hides on Close one time)").
 		SetAccelerator("CmdOrCtrl+H").
 		OnClick(func(ctx *application.Context) {

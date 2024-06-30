@@ -1236,6 +1236,9 @@ func (w *macosWebviewWindow) run() {
 		w.parent.On(events.Mac.WindowDidResignMain, func(_ *WindowEvent) {
 			w.parent.emit(events.Common.WindowLostFocus)
 		})
+		w.parent.On(events.Mac.WindowDidResize, func(_ *WindowEvent) {
+			w.parent.emit(events.Common.WindowDidResize)
+		})
 
 		if options.HTML != "" {
 			w.setHTML(options.HTML)
