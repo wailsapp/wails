@@ -2,6 +2,10 @@
 
 package cfd
 
+import (
+	"os"
+)
+
 type FileFilter struct {
 	// The display name of the filter (That is shown to the user)
 	DisplayName string
@@ -67,6 +71,10 @@ func (config *DialogConfig) apply(dialog Dialog) (err error) {
 	}
 
 	if config.Folder != "" {
+		_, err = os.Stat(config.Folder)
+		if err != nil {
+			return
+		}
 		err = dialog.SetFolder(config.Folder)
 		if err != nil {
 			return
@@ -74,6 +82,10 @@ func (config *DialogConfig) apply(dialog Dialog) (err error) {
 	}
 
 	if config.DefaultFolder != "" {
+		_, err = os.Stat(config.DefaultFolder)
+		if err != nil {
+			return
+		}
 		err = dialog.SetDefaultFolder(config.DefaultFolder)
 		if err != nil {
 			return
