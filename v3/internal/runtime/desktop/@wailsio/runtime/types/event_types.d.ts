@@ -27,6 +27,7 @@ export declare const EventTypes: {
 		WindowDragLeave: string,
 		WindowDragOver: string,
 		WindowDidMove: string,
+		WindowDidResize: string,
 	},
 	Mac: {
 		ApplicationDidBecomeActive: string,

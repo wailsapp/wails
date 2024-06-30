@@ -27,6 +27,7 @@ export const EventTypes = {
 		WindowDragLeave: "windows:WindowDragLeave",
 		WindowDragOver: "windows:WindowDragOver",
 		WindowDidMove: "windows:WindowDidMove",
+		WindowDidResize: "windows:WindowDidResize",
 	},
 	Mac: {
 		ApplicationDidBecomeActive: "mac:ApplicationDidBecomeActive",

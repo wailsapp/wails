@@ -156,6 +156,7 @@ windows:WindowDragEnter
 windows:WindowDragLeave
 windows:WindowDragOver
 windows:WindowDidMove
+windows:WindowDidResize
 common:ApplicationStarted
 common:WindowMaximise
 common:WindowUnMaximise
