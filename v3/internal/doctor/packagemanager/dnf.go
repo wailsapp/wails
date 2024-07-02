@@ -43,6 +43,9 @@ func (y *Dnf) Packages() Packagemap {
 			{Name: "npm", SystemPackage: true},
 			{Name: "nodejs-npm", SystemPackage: true},
 		},
+		"rpm-build": []*Package{
+			{Name: "rpm-build", SystemPackage: true, Optional: true},
+		},
 	}
 }
 
