@@ -4,10 +4,18 @@ import (
 	"net/http"
 )
 
+func newContentTypeSniffer(rw http.ResponseWriter) *contentTypeSniffer {
+	return &contentTypeSniffer{
+		rw:           rw,
+		closeChannel: make(chan bool, 1),
+	}
+}
+
 type contentTypeSniffer struct {
-	rw          http.ResponseWriter
-	status      int
-	wroteHeader bool
+	rw           http.ResponseWriter
+	status       int
+	wroteHeader  bool
+	closeChannel chan bool
 }
 
 func (rw contentTypeSniffer) Header() http.Header {
@@ -39,4 +47,20 @@ func (rw *contentTypeSniffer) writeHeader(b []byte) {
 	}
 
 	rw.WriteHeader(http.StatusOK)
+}
+
+// CloseNotify implements the http.CloseNotifier interface.
+func (rw *contentTypeSniffer) CloseNotify() <-chan bool {
+	return rw.closeChannel
+}
+
+func (rw *contentTypeSniffer) closeClient() {
+	rw.closeChannel <- true
+}
+
+// Flush implements the http.Flusher interface.
+func (rw *contentTypeSniffer) Flush() {
+	if f, ok := rw.rw.(http.Flusher); ok {
+		f.Flush()
+	}
 }

@@ -74,8 +74,8 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 		}
 	}()
 
-	var rw http.ResponseWriter = &contentTypeSniffer{rw: wrw} // Make sure we have a Content-Type sniffer
-	defer rw.WriteHeader(http.StatusNotImplemented)           // This is a NOP when a handler has already written and set the status
+	var rw http.ResponseWriter = newContentTypeSniffer(wrw) // Make sure we have a Content-Type sniffer
+	defer rw.WriteHeader(http.StatusNotImplemented)         // This is a NOP when a handler has already written and set the status
 
 	uri, err = r.URL()
 	if err != nil {
