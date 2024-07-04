@@ -98,16 +98,28 @@ func (rw *responseWriter) Write(buf []byte) (int, error) {
 
 	rw.WriteHeader(http.StatusOK)
 
-	var content unsafe.Pointer
 	var contentLen int
 	if buf != nil {
-		content = unsafe.Pointer(&buf[0])
 		contentLen = len(buf)
 	}
 
-	if !C.URLSchemeTaskDidReceiveData(rw.r.task, content, C.int(contentLen)) {
-		return 0, errRequestStopped
+	if contentLen > 0 {
+		// Create a C array to hold the data
+		cBuf := C.malloc(C.size_t(contentLen))
+		defer C.free(cBuf)
+
+		// Copy the Go slice to the C array
+		C.memcpy(cBuf, unsafe.Pointer(&buf[0]), C.size_t(contentLen))
+
+		if !C.URLSchemeTaskDidReceiveData(rw.r.task, cBuf, C.int(contentLen)) {
+			return 0, errRequestStopped
+		}
+	} else {
+		if !C.URLSchemeTaskDidReceiveData(rw.r.task, nil, 0) {
+			return 0, errRequestStopped
+		}
 	}
+
 	return contentLen, nil
 }
 
