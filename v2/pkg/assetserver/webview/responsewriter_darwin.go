@@ -106,6 +106,9 @@ func (rw *responseWriter) Write(buf []byte) (int, error) {
 	if contentLen > 0 {
 		// Create a C array to hold the data
 		cBuf := C.malloc(C.size_t(contentLen))
+		if cBuf == nil {
+		    return 0, fmt.Errorf("memory allocation failed for %d bytes", contentLen)
+		}
 		defer C.free(cBuf)
 
 		// Copy the Go slice to the C array
