@@ -53,7 +53,11 @@ func GenerateBindings(options Options) (string, error) {
 		}
 	}
 
-	stdout, stderr, err = shell.RunCommand(workingDirectory, options.Compiler, "build", "-tags", tagString, "-o", filename)
+	// We compile an executable file and run it, so we need it to be suitable for this computer, not the current env.
+	env0 := os.Environ()
+	env0 = shell.SetEnv(env0, "GOOS", runtime.GOOS)
+	env0 = shell.SetEnv(env0, "GOARCH", runtime.GOARCH)
+	stdout, stderr, err = shell.RunCommandWithEnv(env0, workingDirectory, options.Compiler, "build", "-tags", tagString, "-o", filename)
 	if err != nil {
 		return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 	}
