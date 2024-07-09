@@ -1,17 +1,21 @@
-//go:build dev
-// +build dev
-
 package assetserver
 
 import (
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-
-	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
+
+func NewProxyServer(proxyURL string) http.Handler {
+	parsedURL, err := url.Parse(proxyURL)
+	if err != nil {
+		panic(err)
+	}
+	return httputil.NewSingleHostReverseProxy(parsedURL)
+}
 
 func NewExternalAssetsHandler(logger Logger, options assetserver.Options, url *url.URL) http.Handler {
 	baseHandler := options.Handler

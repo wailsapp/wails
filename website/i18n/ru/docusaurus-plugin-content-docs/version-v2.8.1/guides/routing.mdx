@@ -1,0 +1,47 @@
+# Маршрутизация
+
+Маршрутизация - это популярный способ переключения шаблонов в приложении. Эта страница предлагает некоторые рекомендации о том, как это сделать.
+
+## Vue
+
+Рекомендуемый подход к маршрутизации в Vue — [Hash Mode](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode):
+
+```js
+import { createRouter, createWebHashHistory } from "vue-router";
+
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes: [
+    //...
+  ],
+});
+```
+
+## Angular
+
+Рекомендуемый подход к маршрутизации в Angular - [HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies#_hashlocationstrategy):
+
+```ts
+RouterModule.forRoot(routes, { useHash: true });
+```
+
+## React
+
+The recommended approach for routing in React is [HashRouter](https://reactrouter.com/en/main/router-components/hash-router):
+
+```jsx
+import { HashRouter } from "react-router-dom";
+
+ReactDOM.render(
+  <HashRouter basename={"/"}>
+    {/* The rest of your app goes here */}
+    <Routes>
+      <Route path="/" element={<Page0 />} exact />
+      <Route path="/page1" element={<Page1 />} />
+      <Route path="/page2" element={<Page2 />} />
+      {/* more... */}
+    </Routes>
+  </HashRouter>,
+  root
+);
+```

@@ -45,6 +45,12 @@ Além disso, você deve especificar o caminho para a versão fixa do tempo de ex
 
 Observação: Quando `WebviewBrowserPath` é especificado a estratégia `error` seráforçada em caso de exigência de versão mínima ou erros na busca do runtime.
 
+The downloaded file will be compressed (extension `.cab`), so you must extract it before using it, according to the instructions on the [official site](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode) should run in a terminal the following command to extract the file:
+
+```
+expand {path to the package} -F:* {path to the destination folder}
+```
+
 ## Gerando outros programas
 
 Ao gerar outros programas, tais como scripts, você verá a janela aparecer na tela. Para ocultar a janela, você pode usar o seguinte código:

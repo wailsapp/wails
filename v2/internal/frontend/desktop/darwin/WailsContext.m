@@ -1,4 +1,3 @@
-//go:build darwin
 //
 //  WailsContext.m
 //  test
@@ -11,6 +10,7 @@
 #import "WailsContext.h"
 #import "WailsAlert.h"
 #import "WailsMenu.h"
+#import "WailsWebView.h"
 #import "WindowDelegate.h"
 #import "message.h"
 #import "Role.h"
@@ -39,9 +39,9 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 @implementation WailsContext
 
 - (void) SetSize:(int)width :(int)height {
-    
+
     if (self.shuttingDown) return;
-    
+
     NSRect frame = [self.mainWindow frame];
     frame.origin.y += frame.size.height - height;
     frame.size.width = width;
@@ -50,22 +50,22 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 }
 
 - (void) SetPosition:(int)x :(int)y {
-    
+
     if (self.shuttingDown) return;
-    
+
     NSScreen* screen = [self getCurrentScreen];
     NSRect windowFrame = [self.mainWindow frame];
-    NSRect screenFrame = [screen frame];
+    NSRect screenFrame = [screen visibleFrame];
     windowFrame.origin.x = screenFrame.origin.x + (float)x;
     windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
-    
+
     [self.mainWindow setFrame:windowFrame display:TRUE animate:FALSE];
 }
 
 - (void) SetMinSize:(int)minWidth :(int)minHeight {
-    
+
     if (self.shuttingDown) return;
-    
+
     NSSize size = { minWidth, minHeight };
     self.mainWindow.userMinSize = size;
     [self.mainWindow setMinSize:size];
@@ -74,14 +74,14 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
 
 - (void) SetMaxSize:(int)maxWidth :(int)maxHeight {
-    
+
     if (self.shuttingDown) return;
-    
+
     NSSize size = { FLT_MAX, FLT_MAX };
-    
+
     size.width = maxWidth > 0 ? maxWidth : FLT_MAX;
     size.height = maxHeight > 0 ? maxHeight : FLT_MAX;
-    
+
     self.mainWindow.userMaxSize = size;
     [self.mainWindow setMaxSize:size];
     [self adjustWindowSize];
@@ -89,18 +89,18 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
 
 - (void) adjustWindowSize {
-    
+
     if (self.shuttingDown) return;
-    
+
     NSRect currentFrame = [self.mainWindow frame];
-    
+
     if ( currentFrame.size.width > self.mainWindow.userMaxSize.width ) currentFrame.size.width = self.mainWindow.userMaxSize.width;
     if ( currentFrame.size.width < self.mainWindow.userMinSize.width ) currentFrame.size.width = self.mainWindow.userMinSize.width;
     if ( currentFrame.size.height > self.mainWindow.userMaxSize.height ) currentFrame.size.height = self.mainWindow.userMaxSize.height;
     if ( currentFrame.size.height < self.mainWindow.userMinSize.height ) currentFrame.size.height = self.mainWindow.userMinSize.height;
 
     [self.mainWindow setFrame:currentFrame display:YES animate:FALSE];
-    
+
 }
 
 - (void) dealloc {
@@ -136,16 +136,16 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     return NO;
 }
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences {
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop  {
     NSWindowStyleMask styleMask = 0;
-    
+
     if( !frameless ) {
         if (!hideTitleBar) {
             styleMask |= NSWindowStyleMaskTitled;
         }
         styleMask |= NSWindowStyleMaskClosable;
     }
-    
+
     styleMask |= NSWindowStyleMaskMiniaturizable;
 
     if( fullSizeContent || frameless || titlebarAppearsTransparent ) {
@@ -155,23 +155,22 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     if (resizable) {
         styleMask |= NSWindowStyleMaskResizable;
     }
-    
+
     self.mainWindow = [[WailsWindow alloc] initWithContentRect:NSMakeRect(0, 0, width, height)
                                                       styleMask:styleMask backing:NSBackingStoreBuffered defer:NO];
-        
     if (!frameless && useToolbar) {
         id toolbar = [[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"];
         [toolbar autorelease];
         [toolbar setShowsBaselineSeparator:!hideToolbarSeparator];
         [self.mainWindow setToolbar:toolbar];
-    
+
     }
-    
+
     [self.mainWindow setTitleVisibility:hideTitle];
     [self.mainWindow setTitlebarAppearsTransparent:titlebarAppearsTransparent];
-    
+
 //    [self.mainWindow canBecomeKeyWindow];
-    
+
     id contentView = [self.mainWindow contentView];
     if (windowIsTranslucent) {
         NSVisualEffectView *effectView = [NSVisualEffectView alloc];
@@ -182,12 +181,17 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         [effectView setState:NSVisualEffectStateActive];
         [contentView addSubview:effectView positioned:NSWindowBelow relativeTo:nil];
     }
-    
+
     if (appearance != nil) {
         NSAppearance *nsAppearance = [NSAppearance appearanceNamed:appearance];
         [self.mainWindow setAppearance:nsAppearance];
     }
-    
+
+    if (!zoomable && resizable) {
+        NSButton *button = [self.mainWindow standardWindowButton:NSWindowZoomButton];
+        [button setEnabled: NO];
+    }
+
 
     NSSize minSize = { minWidth, minHeight };
     NSSize maxSize = { maxWidth, maxHeight };
@@ -199,16 +203,16 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     }
     self.mainWindow.userMaxSize = maxSize;
     self.mainWindow.userMinSize = minSize;
-    
+
     if( !fullscreen ) {
         [self.mainWindow applyWindowConstraints];
     }
-    
+
     WindowDelegate *windowDelegate = [WindowDelegate new];
     windowDelegate.hideOnClose = hideWindowOnClose;
     windowDelegate.ctx = self;
     [self.mainWindow setDelegate:windowDelegate];
-    
+
     // Webview stuff here!
     WKWebViewConfiguration *config = [WKWebViewConfiguration new];
     config.suppressesIncrementalRendering = true;
@@ -258,25 +262,28 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
                   forMainFrameOnly:false];
         [userContentController addUserScript:initScript];
     }
-    
-    self.webview = [WKWebView alloc];
+
+    self.webview = [WailsWebView alloc];
+    self.webview.enableDragAndDrop = enableDragAndDrop;
+    self.webview.disableWebViewDragAndDrop = disableWebViewDragAndDrop;
+
     CGRect init = { 0,0,0,0 };
     [self.webview initWithFrame:init configuration:config];
     [contentView addSubview:self.webview];
     [self.webview setAutoresizingMask: NSViewWidthSizable|NSViewHeightSizable];
     CGRect contentViewBounds = [contentView bounds];
     [self.webview setFrame:contentViewBounds];
-    
+
     if (webviewIsTransparent) {
         [self.webview setValue:[NSNumber numberWithBool:!webviewIsTransparent] forKey:@"drawsBackground"];
     }
-    
+
     [self.webview setNavigationDelegate:self];
     self.webview.UIDelegate = self;
 
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:FALSE forKey:@"NSAutomaticQuoteSubstitutionEnabled"];
-    
+
     // Mouse monitors
     [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseDown handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
         id window = [event window];
@@ -285,7 +292,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         }
         return event;
     }];
-    
+
     [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseUp handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
         id window = [event window];
         if (window == self.mainWindow) {
@@ -294,9 +301,9 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         }
         return event;
     }];
-    
+
     self.applicationMenu = [NSMenu new];
-    
+
 }
 
 - (NSMenuItem*) newMenuItem :(NSString*)title :(SEL)selector :(NSString*)key :(NSEventModifierFlags)flags {
@@ -332,9 +339,9 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     float green = g/255.0;
     float blue = b/255.0;
     float alpha = a/255.0;
-    
+
     id colour = [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha ];
-    
+
     [self.mainWindow setBackgroundColor:colour];
 }
 
@@ -430,9 +437,9 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
    [self.webview evaluateJavaScript:script completionHandler:nil];
 }
 
-- (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters 
+- (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters
     initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
-    
+
     NSOpenPanel *openPanel = [NSOpenPanel openPanel];
     openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101400
@@ -440,7 +447,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         openPanel.canChooseDirectories = parameters.allowsDirectories;
     }
 #endif
-    [openPanel 
+    [openPanel
         beginSheetModalForWindow:webView.window
         completionHandler:^(NSInteger result) {
             if (result == NSModalResponseOK)
@@ -471,7 +478,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
     NSString *m = message.body;
-    
+
     // Check for drag
     if ( [m isEqualToString:@"drag"] ) {
         if( [self IsFullScreen] ) {
@@ -482,9 +489,9 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         }
         return;
     }
-    
+
     const char *_m = [m UTF8String];
-    
+
     processMessage(_m);
 }
 
@@ -493,7 +500,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 -(void) MessageDialog :(NSString*)dialogType :(NSString*)title :(NSString*)message :(NSString*)button1 :(NSString*)button2 :(NSString*)button3 :(NSString*)button4 :(NSString*)defaultButton :(NSString*)cancelButton :(void*)iconData :(int)iconDataLength {
 
     WailsAlert *alert = [WailsAlert new];
-    
+
     int style = NSAlertStyleInformational;
     if (dialogType != nil ) {
         if( [dialogType isEqualToString:@"warning"] ) {
@@ -510,12 +517,12 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     if( message != nil ) {
         [alert setInformativeText:message];
     }
-    
+
     [alert addButton:button1 :defaultButton :cancelButton];
     [alert addButton:button2 :defaultButton :cancelButton];
     [alert addButton:button3 :defaultButton :cancelButton];
     [alert addButton:button4 :defaultButton :cancelButton];
-    
+
     NSImage *icon = nil;
     if (iconData != nil) {
         NSData *imageData = [NSData dataWithBytes:iconData length:iconDataLength];
@@ -544,8 +551,8 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 }
 
 -(void) OpenFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)allowDirectories :(bool)allowFiles :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)resolveAliases :(bool)showHiddenFiles :(bool)allowMultipleSelection :(NSString*)filters {
-    
-    
+
+
     // Create the dialog
     NSOpenPanel *dialog = [NSOpenPanel openPanel];
 
@@ -585,7 +592,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         if( defaultFilename != nil ) {
             [dialog setNameFieldStringValue:defaultFilename];
         }
-        
+
         [dialog setAllowsMultipleSelection: allowMultipleSelection];
         [dialog setShowsHiddenFiles: showHiddenFiles];
 
@@ -621,19 +628,19 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         [nsjson release];
         [arr release];
     }];
-    
+
 }
 
 
 -(void) SaveFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)showHiddenFiles :(NSString*)filters; {
-    
-    
+
+
     // Create the dialog
     NSSavePanel *dialog = [NSSavePanel savePanel];
 
     // Do not hide extension
     [dialog setExtensionHidden:false];
-    
+
     // Valid but appears to do nothing.... :/
     if( title != nil ) {
         [dialog setTitle:title];
@@ -674,7 +681,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     if( defaultFilename != nil ) {
         [dialog setNameFieldStringValue:defaultFilename];
     }
-    
+
     // Default Directory
     if( defaultDirectory != nil ) {
         NSURL *url = [NSURL fileURLWithPath:defaultDirectory];
@@ -699,19 +706,19 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         }
         processSaveFileDialogResponse("");
     }];
-        
+
 }
 
 - (void) SetAbout :(NSString*)title :(NSString*)description :(void*)imagedata :(int)datalen {
     self.aboutTitle = title;
     self.aboutDescription = description;
-   
+
     NSData *imageData = [NSData dataWithBytes:imagedata length:datalen];
     self.aboutImage = [[NSImage alloc] initWithData:imageData];
 }
 
 -(void) About {
-    
+
     WailsAlert *alert = [WailsAlert new];
     [alert setAlertStyle:NSAlertStyleInformational];
     if( self.aboutTitle != nil ) {
@@ -720,8 +727,8 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     if( self.aboutDescription != nil ) {
         [alert setInformativeText:self.aboutDescription];
     }
-    
-    
+
+
     [alert.window setLevel:NSFloatingWindowLevel];
     if ( self.aboutImage != nil) {
         [alert setIcon:self.aboutImage];

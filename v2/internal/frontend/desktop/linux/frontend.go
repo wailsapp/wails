@@ -4,7 +4,9 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
+#cgo linux pkg-config: gtk+-3.0 
+#cgo !webkit2_41 pkg-config: webkit2gtk-4.0
+#cgo webkit2_41 pkg-config: webkit2gtk-4.1
 
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
@@ -442,12 +444,24 @@ func (f *Frontend) processMessage(message string) {
 	if message == "runtime:ready" {
 		cmd := fmt.Sprintf(
 			"window.wails.setCSSDragProperties('%s', '%s');\n"+
-				"window.wails.flags.deferDragToMouseMove = true;", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
+				"window.wails.setCSSDropProperties('%s', '%s');\n"+
+				"window.wails.flags.deferDragToMouseMove = true;",
+			f.frontendOptions.CSSDragProperty,
+			f.frontendOptions.CSSDragValue,
+			f.frontendOptions.DragAndDrop.CSSDropProperty,
+			f.frontendOptions.DragAndDrop.CSSDropValue,
+		)
+
 		f.ExecJS(cmd)
 
 		if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
 			f.ExecJS("window.wails.flags.enableResize = true;")
 		}
+
+		if f.frontendOptions.DragAndDrop.EnableFileDrop {
+			f.ExecJS("window.wails.flags.enableWailsDragAndDrop = true;")
+		}
+
 		return
 	}
 

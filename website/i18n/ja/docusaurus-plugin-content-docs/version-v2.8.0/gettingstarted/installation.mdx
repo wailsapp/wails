@@ -1,0 +1,89 @@
+---
+sidebar_position: 1
+---
+
+# インストール
+
+## サポートされているプラットフォーム
+
+- Windows 10/11 AMD64/ARM64
+- MacOS 10.13+ AMD64
+- MacOS 11.0+ ARM64
+- Linux AMD64/ARM64
+
+## 依存関係
+
+Wailsをインストールする前に、下記のものを導入しておく必要があります。
+
+- Go 1.18+
+- NPM (Node 15+)
+
+### Go
+
+[Goのダウンロードページ](https://go.dev/dl/)からGoをダウンロードしてください。
+
+公式の[Goインストール手順](https://go.dev/doc/install)に従って、Goをインストールしてください。 その際、`PATH`環境変数に`~/go/bin`ディレクトリへのパスが含まれていることも確認してください。 それらが終わったら、ターミナルを再起動し、以下の確認をしてください:
+
+- Goが正しくインストールされているかを確認する: `go version`
+- "~/go/bin"のディレクトリパスがPATH環境変数に含まれているか確認する: `echo $PATH | grep go/bin`
+
+### NPM
+
+[Nodeダウンロードページ](https://nodejs.org/ja/download/)からNPMをダウンロードしてください。 最新版を利用することをお勧めします。なぜなら、私たちは最新版に対してテストを実施しているためです。
+
+`npm --version`を実行して、インストールが完了しているかを確認してください。
+
+## プラットフォーム固有の依存関係
+
+開発作業を行うプラットフォームによって、必要な依存関係が存在します:
+
+```mdx-code-block
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+<Tabs
+  defaultValue="Windows"
+  values={[
+    { label: "Windows", value: "Windows" },
+    { label: "MacOS", value: "MacOS" },
+    { label: "Linux", value: "Linux" },
+  ]}
+>
+  <TabItem value="MacOS">
+    Wailsを使用するには、xcodeのコマンドラインツールがインストールされている必要があります。 <code>xcode-select --install</code>コマンドを実行することでインストールできます。
+  </TabItem>
+  <TabItem value="Windows">
+    Wailsを使用するには、<a href="https://developer.microsoft.com/en-us/microsoft-edge/webview2/">WebView2</a>ランタイムがインストールされている必要があります。 最新のWindowsでは、すでにインストールされている場合もあります。 <code>wails doctor</code>コマンドで、インストール状況を確認できます。
+  </TabItem>
+  <TabItem value={"Linux"}>
+    Linuxでは、標準の<code>gcc</code>ビルドツール、<code>libgtk3</code>、<code>libwebkit</code>が必要です。 Wailsは、様々なディストリビューション向けに大量のコマンドを列挙することはせず、現在使用されているディストリビューションのインストールコマンドを自動的に判定します。 Wailsをインストールした後に、<code>wails doctor</code>コマンドを実行して、別途インストールが必要な依存関係を確認してください。 あなたが利用しているディストリビューションやパッケージマネージャーがサポートされていない場合は、<a href={"/docs/guides/linux-distro-support"}>Linuxディストリビューションサポート</a>ガイドを参照してください。
+  </TabItem>
+</Tabs>
+```
+
+## 任意の依存関係
+
+- [UPX](https://upx.github.io/)を導入することで、構築したアプリを圧縮できます。
+- [NSIS](https://wails.io/docs/guides/windows-installer/)を導入することで、Windowsのインストーラを生成できます。
+
+## Wailsのインストール
+
+`go install github.com/wailsapp/wails/v2/cmd/wails@latest`を実行して、Wails CLIをインストールしてください。
+
+注意: 次のようなエラーが発生した場合:
+
+```shell
+....\Go\pkg\mod\github.com\wailsapp\wails\v2@v2.1.0\pkg\templates\templates.go:28:12: pattern all:ides/*: no matching files found
+```
+下記コマンドで、Go 1.18以上がインストールされているかを確認してください:
+```shell
+go version
+```
+
+## システムチェック
+
+`wails doctor`を実行すると、必要な依存関係が正しくインストールされているかを確認することができます。 正しくインストールされていない場合は、その内容をあなたにお知らせして、どうすれば解決できるかを教えてくれます。
+
+## `wails`コマンドが見つからないのですが?
+
+`wails`コマンドが見つからないとシステムに怒られた場合は、Goが、公式のGoインストール手順に従って導入されているかを確認してください。 コマンドが見つからないほとんどの理由は、あなたのホームディレクトリ配下にある`go/bin`ディレクトリのパスが、`PATH`環境変数に含まれていないからです。  また、インストールによって行われた環境変更を反映させるために、もともと開いていたコマンドプロンプト(ターミナル)がある場合はそれらをいったん閉じて、再度開きなおしてください。

@@ -1,5 +1,11 @@
 # Динамические ресурсы
 
+:::info
+
+This does not work with vite v5.0.0+ and wails v2 due to changes in vite. Changes are planned in v3 to support similar functionality under vite v5.0.0+. If you need this feature, stay with vite v4.0.0+. See [issue 3240](https://github.com/wailsapp/wails/issues/3240) for details
+
+:::
+
 Если вы хотите загрузить или генерировать ресурсы для вашего фронтенда динамически, вы можете это сделать, используя опцию [AssetsHandler](../reference/options#assetshandler). AssetsHandler это общий `http.Handler`, который будет вызываться для любого запроса, не являющегося GET, на сервере ресурсов и для запросов GET, которые не могут быть обработаны из бандла ресурсов, поскольку файл не найден.
 
 Установив пользовательские AssetsHandler, вы можете предоставлять свои собственные ресурсы с помощью пользовательского ресурсного сервера.
