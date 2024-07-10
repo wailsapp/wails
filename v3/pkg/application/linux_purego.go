@@ -665,7 +665,7 @@ func windowClose(window pointer) {
 	gtkWindowClose(window)
 }
 
-func windowEnableDND(id uint, webview pointer) {
+func windowEnableWindowDND(id uint, webview pointer) {
 	targetentry := gtkTargetEntryNew("text/uri-list", 0, id)
 	defer gtkTargetEntryFree(targetentry)
 

@@ -32,7 +32,7 @@ func main() {
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
 			InvisibleTitleBarHeight: 50,
 		},
-		EnableDragAndDrop: true,
+		DragAndDrop: application.DragAndDropTypeWindow,
 	})
 
 	window.On(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {

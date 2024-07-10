@@ -1412,7 +1412,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 			globalApplication.fatal(err.Error())
 		}
 	}
-	if w.parent.options.EnableDragAndDrop {
+	if w.parent.options.DragAndDrop == DragAndDropTypeWindow {
 		w.dropTarget = w32.NewDropTarget()
 		w.dropTarget.OnDrop = func(files []string) {
 			w.parent.emit(events.Windows.WindowDragDrop)
@@ -1445,7 +1445,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 			//if windowName == "Chrome_RenderWidgetHostHWND" {
 			err := w32.RegisterDragDrop(hwnd, w.dropTarget)
 			if err != nil && err != syscall.Errno(w32.DRAGDROP_E_ALREADYREGISTERED) {
-				globalApplication.error("Error registering drag and drop: " + err.Error())
+				globalApplication.error("Error registering window drag and drop: " + err.Error())
 			}
 			//}
 			return 1

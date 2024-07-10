@@ -20,10 +20,13 @@ struct WebviewPreferences {
     bool *FullscreenEnabled;
 };
 
+const int DragAndDropTypeWebview = 1;
+const int DragAndDropTypeWindow = 2;
+
 extern void registerListener(unsigned int event);
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, int dragAndDropType, struct WebviewPreferences preferences) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable;
@@ -106,7 +109,7 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	// Ensure webview resizes with the window
 	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
-	if( enableDragAndDrop ) {
+	if( dragAndDropType == DragAndDropTypeWindow ) {
 		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
 		[dragView autorelease];
 
@@ -1127,7 +1130,7 @@ func (w *macosWebviewWindow) run() {
 			C.int(options.Height),
 			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
 			C.bool(options.Frameless),
-			C.bool(options.EnableDragAndDrop),
+			C.int(options.DragAndDrop),
 			w.getWebviewPreferences(),
 		)
 		w.setTitle(options.Title)

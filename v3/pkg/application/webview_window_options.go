@@ -22,6 +22,14 @@ const (
 	ButtonHidden   ButtonState = 2
 )
 
+type DragAndDropType int
+
+const (
+	DragAndDropTypeNone    DragAndDropType = iota
+	DragAndDropTypeWebview                 // Drag and drop is handled by the webview
+	DragAndDropTypeWindow                  // Drag and drop is handled by the window
+)
+
 type WebviewWindowOptions struct {
 	// Name is a unique identifier that can be given to a window.
 	Name string
@@ -101,8 +109,8 @@ type WebviewWindowOptions struct {
 	// ZoomControlEnabled will enable the zoom control.
 	ZoomControlEnabled bool
 
-	// EnableDragAndDrop will enable drag and drop.
-	EnableDragAndDrop bool
+	// DragAndDrop will enable drag and drop.
+	DragAndDrop DragAndDropType
 
 	// OpenInspectorOnStartup will open the inspector when the window is first shown.
 	OpenInspectorOnStartup bool

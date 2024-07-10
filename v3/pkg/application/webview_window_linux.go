@@ -236,8 +236,8 @@ func (w *linuxWebviewWindow) run() {
 	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
 	app.registerWindow(w.window, w.parent.id) // record our mapping
 	w.connectSignals()
-	if w.parent.options.EnableDragAndDrop {
-		w.enableDND()
+	if w.parent.options.DragAndDrop == DragAndDropTypeWindow {
+		w.enableWindowDND()
 	}
 	w.setTitle(w.parent.options.Title)
 	w.setIcon(app.icon)

@@ -236,7 +236,7 @@ static void on_data_received(GtkWidget *widget, GdkDragContext *context, gint x,
 }
 
 // drag and drop tutorial: https://wiki.gnome.org/Newcomers/OldDragNDropTutorial
-static void enableDND(GtkWidget *widget, gpointer data)
+static void enableWindowDND(GtkWidget *widget, gpointer data)
 {
     GtkTargetEntry *target = gtk_target_entry_new("text/uri-list", 0, 0);
     gtk_drag_dest_set(widget, GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_HIGHLIGHT | GTK_DEST_DEFAULT_DROP, target, 1, GDK_ACTION_COPY);
@@ -799,11 +799,11 @@ func (w *linuxWebviewWindow) close() {
 	getNativeApplication().unregisterWindow(windowPointer(w.window))
 }
 
-func (w *linuxWebviewWindow) enableDND() {
+func (w *linuxWebviewWindow) enableWindowDND() {
 	C.gtk_drag_dest_unset((*C.GtkWidget)(w.webview))
 
 	windowId := C.uint(w.parent.id)
-	C.enableDND((*C.GtkWidget)(w.vbox), C.gpointer(&windowId))
+	C.enableWindowDND((*C.GtkWidget)(w.vbox), C.gpointer(&windowId))
 }
 
 func (w *linuxWebviewWindow) execJS(js string) {
