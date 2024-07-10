@@ -2,26 +2,132 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-    <style>body{ text-align: center; color: white; background-color: #191919; user-select: none; -ms-user-select: none; -webkit-user-select: none; }</style>
+    <title>Window Drag-n-drop Demo</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: white;
+            background-color: #191919;
+            user-select: none;
+            -ms-user-select: none;
+            -webkit-user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-sizing: border-box;
+            border: 2px dashed #4a90e2;
+            transition: all 0.3s ease;
+        }
+
+        .content {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .drop-message {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        #results {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            width: 100%;
+            overflow-y: auto;
+            text-align: left;
+            display: none;
+        }
+
+        #results:empty {
+            display: none;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle, rgba(74, 144, 226, 0.2) 0%, rgba(74, 144, 226, 0) 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        body:hover::before {
+            opacity: 1;
+        }
+
+        body.drag-active {
+            border-color: #2ecc71;
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+
+        body.drag-active::before {
+            background: radial-gradient(circle, rgba(46, 204, 113, 0.3) 0%, rgba(46, 204, 113, 0) 70%);
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
-<h1>Window Drag-n-drop Demo</h1>
-<br/>
-Drop Files onto this window...
-<div id="results"></div>
-</body>
+<div class="content">
+    <h1>Window Drag-n-drop Demo</h1>
+    <div class="icon">📁</div>
+    <p class="drop-message">Drop files anywhere on this window</p>
+    <div id="results"></div>
+</div>
 
 <script type="module">
     import * as wails from "/wails/runtime.js";
+    const winEvent = wails.Events.Types.Windows;
 
-    wails.Events.On("files", function(event) {
+    const resultsDiv = document.getElementById("results");
+
+    // Use the existing event system
+    wails.Events.On("files", (event) => {
         let resultsHTML = "";
         event.data.forEach(function(file) {
-            resultsHTML += "<br/>" + file;
+            resultsHTML += "<p>" + file + "</p>";
         });
-        document.getElementById("results").innerHTML = resultsHTML;
-    })
-</script>
+        resultsDiv.innerHTML = resultsHTML;
+        resultsDiv.style.display = 'block';
+    });
 
+    // Add visual feedback for drag events
+    wails.Events.On(winEvent.WindowDragEnter, () => {
+        document.body.classList.add('drag-active');
+    });
+
+    wails.Events.On(winEvent.WindowDragLeave, () => {
+        document.body.classList.remove('drag-active');
+    });
+
+    wails.Events.On(winEvent.WindowDragDrop, () => {
+        document.body.classList.remove('drag-active');
+    });
+
+</script>
+</body>
 </html>

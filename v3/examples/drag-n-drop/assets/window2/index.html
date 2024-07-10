@@ -2,30 +2,107 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-    <style>body {
-        text-align: center;
-        color: white;
-        background-color: #191919;
-        user-select: none;
-        -ms-user-select: none;
-        -webkit-user-select: none;
-    }</style>
+    <title>Webview Drag-n-drop Demo</title>
     <style>
+        body {
+            text-align: center;
+            color: white;
+            background-color: #191919;
+            user-select: none;
+            -ms-user-select: none;
+            -webkit-user-select: none;
+            font-family: Arial, sans-serif;
+        }
+
         .drop-zone {
             width: 300px;
             height: 200px;
-            border: 2px dashed #ccc;
+            border: 2px dashed #4a90e2;
             border-radius: 20px;
-            font-family: Arial, sans-serif;
             text-align: center;
             padding: 20px;
-            color: #ccc;
+            color: #4a90e2;
             box-sizing: border-box;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(74, 144, 226, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drop-zone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle, rgba(74, 144, 226, 0.2) 0%, rgba(74, 144, 226, 0) 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .drop-zone:hover::before {
+            opacity: 1;
+        }
+
+        .drop-zone p {
+            margin: 0;
+            font-size: 18px;
+            z-index: 1;
+        }
+
+        .drop-zone .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            z-index: 1;
         }
 
         .wails-drop-target-active {
-            background-color: rgb(0, 0, 255) !important;
+            border-color: #2ecc71;
+            background-color: rgba(46, 204, 113, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.5);
+        }
+
+        .wails-drop-target-active p,
+        .wails-drop-target-active .icon {
+            color: #2ecc71;
+        }
+
+        .wails-drop-target-active::before {
+            background: radial-gradient(circle, rgba(46, 204, 113, 0.3) 0%, rgba(46, 204, 113, 0) 70%);
+            opacity: 1;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.7;
+            }
+            50% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.95);
+                opacity: 0.7;
+            }
+        }
+
+        #results {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            width: 95%;
+            overflow-y: auto;
+            text-align: left;
+            display: none;
         }
     </style>
 </head>
@@ -34,6 +111,7 @@
 <br/>
 <div style="display: flex; justify-content: center; align-items: center;">
     <div class="drop-zone" style="--wails-drop-target: drop">
+        <div class="icon">📁</div>
         <p>Drag and drop files here</p>
     </div>
 </div>
@@ -43,6 +121,8 @@
 <script type="module">
     import * as wails from "/wails/runtime.js";
 
+    const resultsDiv = document.getElementById("results");
+
     wails.DragAndDrop.OnFileDrop((x, y, files) => {
         console.log("OnFileDrop", x, y, files);
         wails.Events.Emit("files", files);
@@ -51,9 +131,10 @@
     wails.Events.On("files", function (event) {
         let resultsHTML = "";
         event.data.forEach(function (file) {
-            resultsHTML += "<br/>" + file;
+            resultsHTML += "<p>" + file + "</p>";
         });
-        document.getElementById("results").innerHTML = resultsHTML;
+        resultsDiv.innerHTML = resultsHTML;
+        resultsDiv.style.display = 'block';
     })
 </script>
 

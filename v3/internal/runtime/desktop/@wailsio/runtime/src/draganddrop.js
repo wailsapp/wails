@@ -17,6 +17,7 @@ let initialised = false;
 let dropTargets = [];
 let currentDropTarget = null;
 let rafId = null;
+let observer = null;
 
 const DROP_TARGET_ACTIVE = "wails-drop-target-active";
 const CSS_DROP_PROPERTY = "--wails-drop-target";
@@ -28,7 +29,8 @@ window._wails.enableDragAndDrop = function(value) {
 };
 
 function initDropTargets() {
-    dropTargets = Array.from(document.querySelectorAll(`[style*="${CSS_DROP_PROPERTY}"]`))
+    const potentialTargets = document.querySelectorAll(`[style*="${CSS_DROP_PROPERTY}"]`);
+    dropTargets = Array.from(potentialTargets)
         .filter(el => getComputedStyle(el).getPropertyValue(CSS_DROP_PROPERTY).trim() === 'drop')
         .map(el => ({
             element: el,
@@ -61,6 +63,7 @@ function setDropTarget(target) {
             currentDropTarget.classList.remove(DROP_TARGET_ACTIVE);
         }
         if (target) {
+            console.log("Setting drop target to", target);
             target.classList.add(DROP_TARGET_ACTIVE);
         }
         currentDropTarget = target;
@@ -89,8 +92,6 @@ function onDrop(e) {
     const target = findDropTarget(e.clientX, e.clientY);
     if (!target) return;
 
-    setDropTarget(null);
-
     if (canResolveFilePaths()) {
         const files = e.dataTransfer.items
             ? Array.from(e.dataTransfer.items).filter(item => item.kind === 'file').map(item => item.getAsFile())
@@ -98,6 +99,11 @@ function onDrop(e) {
 
         resolveFilePaths(e.clientX, e.clientY, files);
     }
+
+    dropTargets.forEach(target => {
+        target.element.classList.remove(DROP_TARGET_ACTIVE);
+    });
+    currentDropTarget = null;
 }
 
 function canResolveFilePaths() {
@@ -110,6 +116,41 @@ function resolveFilePaths(x, y, files) {
     }
 }
 
+function setupMutationObserver() {
+    observer = new MutationObserver((mutations) => {
+        let needsRecalculation = false;
+        for (let mutation of mutations) {
+            if (mutation.type === 'childList') {
+                needsRecalculation = true;
+                break;
+            } else if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                const target = mutation.target;
+                const hasDropTarget = target.style.getPropertyValue(CSS_DROP_PROPERTY).trim() === 'drop';
+                const wasDropTarget = dropTargets.some(dt => dt.element === target);
+
+                if (hasDropTarget !== wasDropTarget) {
+                    needsRecalculation = true;
+                    break;
+                }
+            }
+        }
+        if (needsRecalculation) {
+            recalculateDropTargets();
+        }
+    });
+
+    observer.observe(document.body, {
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style'],
+        childList: true,
+    });
+}
+
+function recalculateDropTargets() {
+    initDropTargets();
+}
+
 export function OnFileDrop(callback) {
     if (typeof callback !== "function") {
         console.error("DragAndDropCallback is not a function");
@@ -120,6 +161,7 @@ export function OnFileDrop(callback) {
     initialised = true;
 
     initDropTargets();
+    setupMutationObserver();
 
     window.addEventListener('dragover', onDrag);
     window.addEventListener('drop', onDrop);
@@ -138,5 +180,9 @@ export function OnFileDropOff() {
     if (rafId) {
         cancelAnimationFrame(rafId);
         rafId = null;
+    }
+    if (observer) {
+        observer.disconnect();
+        observer = null;
     }
 }
