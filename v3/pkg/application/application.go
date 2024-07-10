@@ -216,14 +216,18 @@ var windowMessageBuffer = make(chan *windowMessage, 5)
 
 type dragAndDropMessage struct {
 	windowId  uint
+	x         int
+	y         int
 	filenames []string
 }
 
 var windowDragAndDropBuffer = make(chan *dragAndDropMessage, 5)
 
-func addDragAndDropMessage(windowId uint, filenames []string) {
+func addDragAndDropMessage(windowId uint, x int, y int, filenames []string) {
 	windowDragAndDropBuffer <- &dragAndDropMessage{
 		windowId:  windowId,
+		x:         x,
+		y:         y,
 		filenames: filenames,
 	}
 }
@@ -622,7 +626,7 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 		return
 	}
 	// Get callback from window
-	window.HandleDragAndDropMessage(event.filenames)
+	window.HandleDragAndDropMessage(event.x, event.y, event.filenames)
 }
 
 func (a *App) handleWindowMessage(event *windowMessage) {

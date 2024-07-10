@@ -1092,10 +1092,11 @@ func (w *WebviewWindow) Error(message string, args ...any) {
 	globalApplication.error(message, messageArgs...)
 }
 
-func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
+func (w *WebviewWindow) HandleDragAndDropMessage(x int, y int, filenames []string) {
 	thisEvent := NewWindowEvent()
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(filenames)
+	ctx.setLocation(x, y)
 	thisEvent.ctx = ctx
 	for _, listener := range w.eventListeners[uint(events.Common.WindowFilesDropped)] {
 		listener.callback(thisEvent)

@@ -27,7 +27,7 @@ type Window interface {
 	GetBorderSizes() *LRTB
 	GetScreen() (*Screen, error)
 	GetZoom() float64
-	HandleDragAndDropMessage(filenames []string)
+	HandleDragAndDropMessage(x int, y int, filenames []string)
 	HandleMessage(message string)
 	HandleWindowEvent(id uint)
 	Height() int

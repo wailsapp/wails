@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>body {
+        text-align: center;
+        color: white;
+        background-color: #191919;
+        user-select: none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+    }</style>
+    <style>
+        #drop-zone {
+            width: 300px;
+            height: 200px;
+            border: 2px dashed #ccc;
+            border-radius: 20px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            color: #ccc;
+            box-sizing: border-box;
+        }
+
+        .wails-drop-target-active {
+            background-color: rgb(0, 0, 255) !important;
+        }
+    </style>
+</head>
+<body>
+<h1>Webview Drag-n-drop Demo</h1>
+<br/>
+<div style="display: flex; justify-content: center; align-items: center;">
+    <div id="drop-zone" style="--wails-drop-target: drop">
+        <p>Drag and drop files here</p>
+    </div>
+</div>
+<div id="results"></div>
+</body>
+
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
+    wails.DragAndDrop.OnFileDrop((x, y, files) => {
+        console.log("OnFileDrop", x, y, files);
+        wails.Events.Emit("files", files);
+    })
+
+    wails.Events.On("files", function (event) {
+        let resultsHTML = "";
+        event.data.forEach(function (file) {
+            resultsHTML += "<br/>" + file;
+        });
+        document.getElementById("results").innerHTML = resultsHTML;
+    })
+</script>
+
+</html>

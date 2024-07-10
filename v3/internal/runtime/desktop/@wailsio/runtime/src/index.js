@@ -25,6 +25,7 @@ import * as Events from "./events";
 import * as Flags from "./flags";
 import * as Screens from "./screens";
 import * as System from "./system";
+import * as DragAndDrop from "./draganddrop";
 import Window from "./window";
 import * as WML from "./wml";
 
@@ -35,6 +36,7 @@ export {
     Clipboard,
     Create,
     Dialogs,
+    DragAndDrop,
     Events,
     Flags,
     Screens,

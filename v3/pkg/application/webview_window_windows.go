@@ -1407,17 +1407,24 @@ func (w *windowsWebviewWindow) setupChromium() {
 	}
 
 	if chromium.HasCapability(edge.AllowExternalDrop) {
-		err := chromium.AllowExternalDrag(false)
-		if err != nil {
-			globalApplication.fatal(err.Error())
+		if w.parent.options.DragAndDrop != DragAndDropTypeWebview {
+			err := chromium.AllowExternalDrag(false)
+			if err != nil {
+				globalApplication.fatal(err.Error())
+			}
 		}
 	}
 	if w.parent.options.DragAndDrop == DragAndDropTypeWindow {
 		w.dropTarget = w32.NewDropTarget()
 		w.dropTarget.OnDrop = func(files []string) {
 			w.parent.emit(events.Windows.WindowDragDrop)
+			// Get the mouse coordinates
+			_x, _y, _ := w32.GetCursorPos()
+			x, y, _ := w32.ScreenToClient(w.hwnd, _x, _y)
 			windowDragAndDropBuffer <- &dragAndDropMessage{
 				windowId:  windowID,
+				x:         x,
+				y:         y,
 				filenames: files,
 			}
 		}
@@ -1569,6 +1576,11 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	// Install the runtime core
 	w.execJS(runtime.Core())
 
+	// Enable DnD if we need to
+	if w.parent.options.DragAndDrop == DragAndDropTypeWebview {
+		w.execJS("window._wails.enableDragAndDrop(true);")
+	}
+
 	// Emit DomReady Event
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
 
@@ -1652,7 +1664,7 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 }
 
 func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
-	if strings.HasPrefix(message, "FilesDropped") {
+	if strings.HasPrefix(message, "wails:file:drop:") {
 		objs, err := args.GetAdditionalObjects()
 		if err != nil {
 			globalApplication.error(err.Error())
@@ -1672,7 +1684,7 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 			return
 		}
 
-		var filenames []string
+		files := make([]string, count)
 		for i := uint32(0); i < count; i++ {
 			_file, err := objs.GetValueAtIndex(i)
 			if err != nil {
@@ -1680,21 +1692,47 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 				return
 			}
 
+			if _file == nil {
+				// Ignore non-files
+				continue
+			}
+
 			file := (*edge.ICoreWebView2File)(unsafe.Pointer(_file))
 
 			// TODO: Fix this
-			defer file.Release()
-
 			filepath, err := file.GetPath()
+			file.Release()
+
 			if err != nil {
 				globalApplication.error("cannot get path for object at %d : %s", i, err.Error())
 				return
 			}
 
-			filenames = append(filenames, filepath)
+			files[i] = filepath
 		}
 
-		addDragAndDropMessage(w.parent.id, filenames)
+		var (
+			x = 0
+			y = 0
+		)
+		coords := strings.SplitN(message[16:], ":", 2)
+		if len(coords) == 2 {
+			_x := coords[0]
+			_y := coords[1]
+			// Convert to int
+			x, err = strconv.Atoi(_x)
+			if err != nil {
+				globalApplication.error("Error converting x to int: " + err.Error())
+				return
+			}
+			y, err = strconv.Atoi(_y)
+			if err != nil {
+				globalApplication.error("Error converting y to int: " + err.Error())
+				return
+			}
+		}
+
+		addDragAndDropMessage(w.parent.id, x, y, files)
 		return
 	}
 }
