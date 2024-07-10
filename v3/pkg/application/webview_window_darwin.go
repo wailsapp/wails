@@ -1242,6 +1242,15 @@ func (w *macosWebviewWindow) run() {
 		w.parent.On(events.Mac.WindowDidResize, func(_ *WindowEvent) {
 			w.parent.emit(events.Common.WindowDidResize)
 		})
+		w.parent.On(events.Mac.WindowFileDraggingEntered, func(_ *WindowEvent) {
+			w.parent.emit(events.Common.WindowDragEnter)
+		})
+		w.parent.On(events.Mac.WindowFileDraggingExited, func(_ *WindowEvent) {
+			w.parent.emit(events.Common.WindowDragLeave)
+		})
+		w.parent.On(events.Mac.WindowFileDraggingPerformed, func(_ *WindowEvent) {
+			w.parent.emit(events.Common.WindowDragDrop)
+		})
 
 		if options.HTML != "" {
 			w.setHTML(options.HTML)

@@ -6,7 +6,7 @@
 
 #import "../events/events_darwin.h"
 
-extern void processDragItems(unsigned int windowId, char** arr, int length);
+extern void processDragItems(unsigned int windowId, char** arr, int length, int x, int y);
 
 @implementation WebviewDrag
 
@@ -38,6 +38,14 @@ extern void processDragItems(unsigned int windowId, char** arr, int length);
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
+    // Get the mouse x and y
+    NSPoint mouseLocation = [sender draggingLocation];
+    // Translate mouse x and y to be relative to the window
+    mouseLocation = [self convertPoint:mouseLocation fromView:nil];
+    int x = (int)mouseLocation.x;
+    int y = (int)mouseLocation.y;
+    // Translate Y coordinate to be relative to the top left corner
+    y = self.frame.size.height - y;
     NSPasteboard *pasteboard = [sender draggingPasteboard];
     processWindowEvent(self.windowId, EventWindowFileDraggingPerformed);
     if ([[pasteboard types] containsObject:NSFilenamesPboardType]) {
@@ -48,7 +56,7 @@ extern void processDragItems(unsigned int windowId, char** arr, int length);
 			NSString* str = files[i];
 			cArray[i] = (char*)[str UTF8String];
 		}
-		processDragItems(self.windowId, cArray, (int)count);
+		processDragItems(self.windowId, cArray, (int)count, x, y);
 		free(cArray);
         return YES;
     }

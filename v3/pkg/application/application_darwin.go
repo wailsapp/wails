@@ -316,7 +316,7 @@ func processWindowKeyDownEvent(windowID C.uint, acceleratorString *C.char) {
 }
 
 //export processDragItems
-func processDragItems(windowID C.uint, arr **C.char, length C.int) {
+func processDragItems(windowID C.uint, arr **C.char, length C.int, x C.int, y C.int) {
 	var filenames []string
 	// Convert the C array to a Go slice
 	goSlice := (*[1 << 30]*C.char)(unsafe.Pointer(arr))[:length:length]
@@ -325,6 +325,8 @@ func processDragItems(windowID C.uint, arr **C.char, length C.int) {
 	}
 	windowDragAndDropBuffer <- &dragAndDropMessage{
 		windowId:  uint(windowID),
+		x:         int(x),
+		y:         int(y),
 		filenames: filenames,
 	}
 }
