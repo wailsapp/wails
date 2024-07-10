@@ -1467,6 +1467,18 @@ func (w *windowsWebviewWindow) setupChromium() {
 	w.parent.On(events.Windows.WindowDidResize, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowDidResize)
 	})
+	w.parent.On(events.Windows.WindowDragLeave, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDragLeave)
+	})
+	w.parent.On(events.Windows.WindowDragEnter, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDragEnter)
+	})
+	w.parent.On(events.Windows.WindowDragOver, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDragOver)
+	})
+	w.parent.On(events.Windows.WindowDragDrop, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDragDrop)
+	})
 
 	// We will get round to this
 	//if chromium.HasCapability(edge.AllowExternalDrop) {

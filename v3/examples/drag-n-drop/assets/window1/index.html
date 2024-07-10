@@ -101,7 +101,7 @@
 
 <script type="module">
     import * as wails from "/wails/runtime.js";
-    const winEvent = wails.Events.Types.Windows;
+    const commonEvents = wails.Events.Types.Common;
 
     const resultsDiv = document.getElementById("results");
 
@@ -116,15 +116,15 @@
     });
 
     // Add visual feedback for drag events
-    wails.Events.On(winEvent.WindowDragEnter, () => {
+    wails.Events.On(commonEvents.WindowDragEnter, () => {
         document.body.classList.add('drag-active');
     });
 
-    wails.Events.On(winEvent.WindowDragLeave, () => {
+    wails.Events.On(commonEvents.WindowDragLeave, () => {
         document.body.classList.remove('drag-active');
     });
 
-    wails.Events.On(winEvent.WindowDragDrop, () => {
+    wails.Events.On(commonEvents.WindowDragDrop, () => {
         document.body.classList.remove('drag-active');
     });
 

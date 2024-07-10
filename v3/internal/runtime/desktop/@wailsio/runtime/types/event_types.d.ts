@@ -189,5 +189,9 @@ export declare const EventTypes: {
 		ThemeChanged: string,
 		WindowDidMove: string,
 		WindowDidResize: string,
+		WindowDragDrop: string,
+		WindowDragEnter: string,
+		WindowDragLeave: string,
+		WindowDragOver: string,
 	},
 };

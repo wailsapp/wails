@@ -189,5 +189,9 @@ export const EventTypes = {
 		ThemeChanged: "common:ThemeChanged",
 		WindowDidMove: "common:WindowDidMove",
 		WindowDidResize: "common:WindowDidResize",
+		WindowDragDrop: "common:WindowDragDrop",
+		WindowDragEnter: "common:WindowDragEnter",
+		WindowDragLeave: "common:WindowDragLeave",
+		WindowDragOver: "common:WindowDragOver",
 	},
 };

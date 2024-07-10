@@ -180,3 +180,7 @@ common:WindowRuntimeReady
 common:ThemeChanged
 common:WindowDidMove
 common:WindowDidResize
+common:WindowDragDrop
+common:WindowDragEnter
+common:WindowDragLeave
+common:WindowDragOver
