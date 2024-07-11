@@ -17,6 +17,7 @@ type DevOptions struct {
 
 	Config   string `description:"The config file including path" default:"./build/devmode.config.yaml"`
 	VitePort int    `name:"port" description:"Specify the vite dev server port"`
+	Secure   bool   `name:"s" description:"Enable HTTPS"`
 }
 
 func Dev(options *DevOptions) error {
@@ -45,7 +46,11 @@ func Dev(options *DevOptions) error {
 	os.Setenv(wailsVitePort, strconv.Itoa(port))
 
 	// Set url of frontend dev server
-	os.Setenv("FRONTEND_DEVSERVER_URL", fmt.Sprintf("http://%s:%d", host, port))
+	if options.Secure {
+		os.Setenv("FRONTEND_DEVSERVER_URL", fmt.Sprintf("https://%s:%d", host, port))
+	} else {
+		os.Setenv("FRONTEND_DEVSERVER_URL", fmt.Sprintf("http://%s:%d", host, port))
+	}
 
 	return Watcher(&WatcherOptions{
 		Config: options.Config,
