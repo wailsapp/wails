@@ -36,6 +36,7 @@ v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 /v3/examples/build/bin/testapp
 /websitev3/site/
 /v3/examples/plugins/bin/testapp
+!/v3/internal/commands/build_assets/nsis/MicrosoftEdgeWebview2Setup.exe
 
 # Temporary called mkdocs, should be renamed to more standard -website or similar
 /mkdocs-website/site
