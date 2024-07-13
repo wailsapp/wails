@@ -74,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix doctor detection of npm that is not installed with system package manager by [@pekim](https://github.com/pekim) in [#3458](https://github.com/wailsapp/wails/pull/3458)
 - Fix missing MicrosoftEdgeWebview2Setup.exe. Thanks to [@robin-samuel](https://github.com/robin-samuel).
 - Fix random crash on linux due to window ID handling by @leaanthony. Based on PR [#3466](https://github.com/wailsapp/wails/pull/3622) by [@5aaee9](https://github.com/5aaee9).
+- [linux] Fix to run natively in wayland incorporated from [#1811](https://github.com/wailsapp/wails/pull/1811) in [#3614](https://github.com/wailsapp/wails/pull/3614) by [@stendler](https://github.com/stendler)
 
 ### Changed
 
