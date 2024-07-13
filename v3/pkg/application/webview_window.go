@@ -82,8 +82,8 @@ type (
 		startResize(border string) error
 		print() error
 		setEnabled(enabled bool)
-		absolutePosition() (int, int)
-		setAbsolutePosition(x int, y int)
+		position() (int, int)
+		setPosition(x int, y int)
 		flash(enabled bool)
 		handleKeyEvent(acceleratorString string)
 		getBorderSizes() *LRTB
@@ -788,14 +788,14 @@ func (w *WebviewWindow) RelativePosition() (int, int) {
 	return x, y
 }
 
-// AbsolutePosition returns the absolute position of the window to the screen
-func (w *WebviewWindow) AbsolutePosition() (int, int) {
+// Position returns the absolute position of the window to the screen
+func (w *WebviewWindow) Position() (int, int) {
 	if w.impl == nil && !w.isDestroyed() {
 		return 0, 0
 	}
 	var x, y int
 	InvokeSync(func() {
-		x, y = w.impl.absolutePosition()
+		x, y = w.impl.position()
 	})
 	return x, y
 }
@@ -1165,13 +1165,13 @@ func (w *WebviewWindow) SetEnabled(enabled bool) {
 	})
 }
 
-func (w *WebviewWindow) SetAbsolutePosition(x int, y int) {
+func (w *WebviewWindow) SetPosition(x int, y int) {
 	// set absolute position
 	if w.impl == nil && !w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
-		w.impl.setAbsolutePosition(x, y)
+		w.impl.setPosition(x, y)
 	})
 }
 

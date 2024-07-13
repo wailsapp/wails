@@ -703,7 +703,7 @@ func windowFullscreen(window pointer) {
 	gtkWindowFullScreen(window)
 }
 
-func windowGetAbsolutePosition(window pointer) (int, int) {
+func windowGetPosition(window pointer) (int, int) {
 	var x, y int
 	gtkWindowGetPosition(window, &x, &y)
 	return x, y
@@ -736,7 +736,7 @@ func windowGetCurrentMonitorGeometry(window pointer) (x int, y int, width int, h
 }
 
 func windowGetRelativePosition(window pointer) (int, int) {
-	absX, absY := windowGetAbsolutePosition(window)
+	absX, absY := windowGetPosition(window)
 	x, y, _, _, _ := windowGetCurrentMonitorGeometry(window)
 
 	relX := absX - x

@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	WindowAbsolutePosition           = 0
+	WindowPosition                   = 0
 	WindowCenter                     = 1
 	WindowClose                      = 2
 	WindowDisableSizeConstraints     = 3
@@ -29,7 +29,7 @@ const (
 	WindowReload                     = 21
 	WindowResizable                  = 22
 	WindowRestore                    = 23
-	WindowSetAbsolutePosition        = 24
+	WindowSetPosition                = 24
 	WindowSetAlwaysOnTop             = 25
 	WindowSetBackgroundColour        = 26
 	WindowSetFrameless               = 27
@@ -56,7 +56,7 @@ const (
 )
 
 var windowMethodNames = map[int]string{
-	WindowAbsolutePosition:           "AbsolutePosition",
+	WindowPosition:                   "Position",
 	WindowCenter:                     "Center",
 	WindowClose:                      "Close",
 	WindowDisableSizeConstraints:     "DisableSizeConstraints",
@@ -80,7 +80,7 @@ var windowMethodNames = map[int]string{
 	WindowReload:                     "Reload",
 	WindowResizable:                  "Resizable",
 	WindowRestore:                    "Restore",
-	WindowSetAbsolutePosition:        "SetAbsolutePosition",
+	WindowSetPosition:                "SetPosition",
 	WindowSetAlwaysOnTop:             "SetAlwaysOnTop",
 	WindowSetBackgroundColour:        "SetBackgroundColour",
 	WindowSetFrameless:               "SetFrameless",
@@ -115,8 +115,8 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	}
 
 	switch method {
-	case WindowAbsolutePosition:
-		x, y := window.AbsolutePosition()
+	case WindowPosition:
+		x, y := window.Position()
 		m.json(rw, map[string]interface{}{
 			"x": x,
 			"y": y,
@@ -194,16 +194,16 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowRestore:
 		window.Restore()
 		m.ok(rw)
-	case WindowSetAbsolutePosition:
+	case WindowSetPosition:
 		x := args.Int("x")
 		if x == nil {
-			m.Error("Invalid SetAbsolutePosition Message: 'x' value required")
+			m.Error("Invalid SetPosition Message: 'x' value required")
 		}
 		y := args.Int("y")
 		if y == nil {
-			m.Error("Invalid SetAbsolutePosition Message: 'y' value required")
+			m.Error("Invalid SetPosition Message: 'y' value required")
 		}
-		window.SetAbsolutePosition(*x, *y)
+		window.SetPosition(*x, *y)
 		m.ok(rw)
 	case WindowSetAlwaysOnTop:
 		alwaysOnTop := args.Bool("alwaysOnTop")
@@ -274,11 +274,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetRelativePosition:
 		x := args.Int("x")
 		if x == nil {
-			m.Error("Invalid SetAbsolutePosition Message: 'x' value required")
+			m.Error("Invalid SetRelativePosition Message: 'x' value required")
 		}
 		y := args.Int("y")
 		if y == nil {
-			m.Error("Invalid SetAbsolutePosition Message: 'y' value required")
+			m.Error("Invalid SetRelativePosition Message: 'y' value required")
 		}
 		window.SetRelativePosition(*x, *y)
 		m.ok(rw)

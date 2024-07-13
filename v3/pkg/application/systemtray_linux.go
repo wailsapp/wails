@@ -252,7 +252,7 @@ func (s *linuxSystemTray) positionWindow(window *WebviewWindow, offset int) erro
 	}
 
 	// Set the new position of the window
-	window.SetAbsolutePosition(newX, newY)
+	window.SetPosition(newX, newY)
 	return nil
 }
 

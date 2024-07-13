@@ -906,7 +906,7 @@ func (w *linuxWebviewWindow) size() (int, int) {
 }
 
 func (w *linuxWebviewWindow) relativePosition() (int, int) {
-	x, y := w.absolutePosition()
+	x, y := w.position()
 	// The position must be relative to the screen it is on
 	// We need to get the screen it is on
 	monitor := w.getCurrentMonitor()
@@ -926,7 +926,7 @@ func (w *linuxWebviewWindow) gtkWidget() *C.GtkWidget {
 
 func (w *linuxWebviewWindow) hide() {
 	// save position
-	w.lastX, w.lastY = w.absolutePosition()
+	w.lastX, w.lastY = w.position()
 	C.gtk_widget_hide(w.gtkWidget())
 }
 
@@ -1042,7 +1042,7 @@ func (w *linuxWebviewWindow) show() {
 		return
 	}
 	C.gtk_widget_show_all(w.gtkWidget())
-	//w.setAbsolutePosition(w.lastX, w.lastY)
+	//w.setPosition(w.lastX, w.lastY)
 }
 
 func windowIgnoreMouseEvents(window pointer, webview pointer, ignore bool) {
@@ -1357,7 +1357,7 @@ func (w *linuxWebviewWindow) move(x, y int) {
 	C.gtk_window_move(w.gtkWindow(), C.int(x), C.int(y))
 }
 
-func (w *linuxWebviewWindow) absolutePosition() (int, int) {
+func (w *linuxWebviewWindow) position() (int, int) {
 	var x C.int
 	var y C.int
 	C.gtk_window_get_position((*C.GtkWindow)(w.window), &x, &y)
