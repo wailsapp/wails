@@ -659,11 +659,11 @@ func (w *WebviewWindow) HandleMessage(message string) {
 	case strings.HasPrefix(message, "wails:resize:"):
 		if !w.IsFullscreen() {
 			sl := strings.Split(message, ":")
-			if len(sl) != 2 {
-				w.Error("Unknown message returned from dispatcher: %+v", message)
+			if len(sl) != 3 {
+				w.Error("Unknown message returned from dispatcher", "message", message)
 				return
 			}
-			err := w.startResize(sl[1])
+			err := w.startResize(sl[2])
 			if err != nil {
 				w.Error(err.Error())
 			}
