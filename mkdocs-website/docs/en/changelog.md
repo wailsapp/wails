@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed resize event messaging by [atterpac](https://github.com/atterpac) in [#3606](https://github.com/wailsapp/wails/pull/3606)
 - [linux] Fixed theme handling error on NixOS by [tmclane](https://github.com/tmclane) in [#3515)(https://github.com/wailsapp/wails/pull/3515)
 - Fixed cross volume project install for windows by [atterpac](https://github.com/atterac) in [#3512](https://github.com/wailsapp/wails/pull/3512)
 - Fixed react template css to show footer by [atterpac](https://github.com/atterpac) in [#3477](https://github.com/wailsapp/wails/pull/3477)
