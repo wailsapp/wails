@@ -1214,6 +1214,7 @@ func handleConfigureEvent(widget *C.GtkWidget, event *C.GdkEventConfigure, data 
 		}
 
 		if lw.lastWidth != int(event.width) || lw.lastHeight != int(event.height) {
+			C.gtk_widget_queue_resize(widget)
 			lw.resizeDebouncer(func() {
 				processWindowEvent(C.uint(data), C.uint(events.Linux.WindowDidResize))
 			})
