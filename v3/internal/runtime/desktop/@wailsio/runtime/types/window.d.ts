@@ -49,12 +49,12 @@ declare class Window {
      */
     public Get(name: string): Window;
     /**
-     * Returns the absolute position of the window to the screen.
+     * Returns the absolute position of the window.
      *
      * @public
      * @return {Promise<Position>} - The current absolute position of the window.
      */
-    public AbsolutePosition(): Promise<Position>;
+    public Position(): Promise<Position>;
     /**
      * Centers the window on the screen.
      *
@@ -217,14 +217,14 @@ declare class Window {
      */
     public Restore(): Promise<void>;
     /**
-     * Sets the absolute position of the window to the screen.
+     * Sets the absolute position of the window.
      *
      * @public
      * @param {number} x - The desired horizontal absolute position of the window
      * @param {number} y - The desired vertical absolute position of the window
      * @return {Promise<void>}
      */
-    public SetAbsolutePosition(x: number, y: number): Promise<void>;
+    public SetPosition(x: number, y: number): Promise<void>;
     /**
      * Sets the window to be always on top.
      *

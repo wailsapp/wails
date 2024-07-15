@@ -109,8 +109,8 @@ API: `SetEnabled(galluogwyd bool)`
 Mae'r swyddogaeth hon yn cael ei defnyddio i alluogi/analluogi'r ffenestr yn
 seiliedig ar y gwerth boolean a ddarperir.
 
-### SetAbsolutePosition
+### SetPosition
 
-API: `SetAbsolutePosition(x int, y int)`
+API: `SetPosition(x int, y int)`
 
 Mae'r swyddogaeth hon yn gosod y safle absoliwt o'r ffenestr yn y sgrin.

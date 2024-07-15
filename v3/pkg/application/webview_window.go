@@ -82,8 +82,8 @@ type (
 		startResize(border string) error
 		print() error
 		setEnabled(enabled bool)
-		absolutePosition() (int, int)
-		setAbsolutePosition(x int, y int)
+		position() (int, int)
+		setPosition(x int, y int)
 		flash(enabled bool)
 		handleKeyEvent(acceleratorString string)
 		getBorderSizes() *LRTB
@@ -659,11 +659,11 @@ func (w *WebviewWindow) HandleMessage(message string) {
 	case strings.HasPrefix(message, "wails:resize:"):
 		if !w.IsFullscreen() {
 			sl := strings.Split(message, ":")
-			if len(sl) != 2 {
-				w.Error("Unknown message returned from dispatcher: %+v", message)
+			if len(sl) != 3 {
+				w.Error("Unknown message returned from dispatcher", "message", message)
 				return
 			}
-			err := w.startResize(sl[1])
+			err := w.startResize(sl[2])
 			if err != nil {
 				w.Error(err.Error())
 			}
@@ -788,14 +788,14 @@ func (w *WebviewWindow) RelativePosition() (int, int) {
 	return x, y
 }
 
-// AbsolutePosition returns the absolute position of the window to the screen
-func (w *WebviewWindow) AbsolutePosition() (int, int) {
+// Position returns the absolute position of the window to the screen
+func (w *WebviewWindow) Position() (int, int) {
 	if w.impl == nil && !w.isDestroyed() {
 		return 0, 0
 	}
 	var x, y int
 	InvokeSync(func() {
-		x, y = w.impl.absolutePosition()
+		x, y = w.impl.position()
 	})
 	return x, y
 }
@@ -1165,13 +1165,13 @@ func (w *WebviewWindow) SetEnabled(enabled bool) {
 	})
 }
 
-func (w *WebviewWindow) SetAbsolutePosition(x int, y int) {
+func (w *WebviewWindow) SetPosition(x int, y int) {
 	// set absolute position
 	if w.impl == nil && !w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
-		w.impl.setAbsolutePosition(x, y)
+		w.impl.setPosition(x, y)
 	})
 }
 

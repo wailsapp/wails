@@ -199,7 +199,7 @@ func (w *linuxWebviewWindow) height() int {
 	return height
 }
 
-func (w *linuxWebviewWindow) setAbsolutePosition(x int, y int) {
+func (w *linuxWebviewWindow) setPosition(x int, y int) {
 	// Set the window's absolute position
 	w.move(x, y)
 }

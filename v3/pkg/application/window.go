@@ -13,7 +13,6 @@ type Callback interface {
 
 type Window interface {
 	Callback
-	AbsolutePosition() (int, int)
 	Center()
 	Close()
 	Destroy()
@@ -45,13 +44,14 @@ type Window interface {
 	Name() string
 	On(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
 	OpenContextMenu(data *ContextMenuData)
+	Position() (int, int)
 	RegisterContextMenu(name string, menu *Menu)
 	RelativePosition() (int, int)
 	Reload()
 	Resizable() bool
 	Restore()
 	Run()
-	SetAbsolutePosition(x, y int)
+	SetPosition(x, y int)
 	SetAlwaysOnTop(b bool) Window
 	SetBackgroundColour(colour RGBA) Window
 	SetFrameless(frameless bool) Window

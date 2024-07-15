@@ -3,7 +3,7 @@
 Mae'r API Ffenestr wedi aros yn yr un fath i raddau helaeth, fodd bynnag mae'r dulliau yn awr ar enghraifft o ffenestr yn hytrach na'r amser gweithredu. Rhai gwahaniaeth nodedig yw:
 
 - Mae gan Ffenestri nawr Enw sy'n eu hadnabod. Defnyddir hyn i adnabod y ffenestr wrth yrru digwyddiadau.
-- Mae gan Ffenestri lawer mwy o ddulliau ar y rhai nad oeddent ar gael o'r blaen, fel `AbsolutePosition` a `ToggleDevTools`.
+- Mae gan Ffenestri lawer mwy o ddulliau ar y rhai nad oeddent ar gael o'r blaen, fel `SetFrameless` a `ToggleDevTools`.
 - Gall Ffenestri nawr dderbyn ffeiliau drwy lusgo a gollwng brodorol. Gweler yr adran Lusgo a Gollwng am fwy o fanylion.
 
 ### ColourCefndir

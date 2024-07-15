@@ -36,7 +36,7 @@ The electron alternative for Go
 
 import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
-const AbsolutePositionMethod            = 0;
+const PositionMethod                    = 0;
 const CenterMethod                      = 1;
 const CloseMethod                       = 2;
 const DisableSizeConstraintsMethod      = 3;
@@ -60,7 +60,7 @@ const RelativePositionMethod            = 20;
 const ReloadMethod                      = 21;
 const ResizableMethod                   = 22;
 const RestoreMethod                     = 23;
-const SetAbsolutePositionMethod         = 24;
+const SetPositionMethod                 = 24;
 const SetAlwaysOnTopMethod              = 25;
 const SetBackgroundColourMethod         = 26;
 const SetFramelessMethod                = 27;
@@ -128,13 +128,13 @@ class Window {
     }
 
     /**
-     * Returns the absolute position of the window to the screen.
+     * Returns the absolute position of the window.
      *
      * @public
      * @return {Promise<Position>} - The current absolute position of the window.
      */
-    AbsolutePosition() {
-        return this[caller](AbsolutePositionMethod);
+    Position() {
+        return this[caller](PositionMethod);
     }
 
     /**
@@ -368,15 +368,15 @@ class Window {
     }
 
     /**
-     * Sets the absolute position of the window to the screen.
+     * Sets the absolute position of the window.
      *
      * @public
      * @param {number} x - The desired horizontal absolute position of the window
      * @param {number} y - The desired vertical absolute position of the window
      * @return {Promise<void>}
      */
-    SetAbsolutePosition(x, y) {
-        return this[caller](SetAbsolutePositionMethod, { x, y });
+    SetPosition(x, y) {
+        return this[caller](SetPositionMethod, { x, y });
     }
 
     /**

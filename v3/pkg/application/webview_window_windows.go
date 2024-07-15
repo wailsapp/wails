@@ -89,13 +89,13 @@ func (w *windowsWebviewWindow) getBorderSizes() *LRTB {
 	return &result
 }
 
-func (w *windowsWebviewWindow) setAbsolutePosition(x int, y int) {
+func (w *windowsWebviewWindow) setPosition(x int, y int) {
 	// Set the window's absolute position
 	borderSize := w.getBorderSizes()
 	w32.SetWindowPos(w.hwnd, 0, x-borderSize.Left, y-borderSize.Top, 0, 0, w32.SWP_NOSIZE|w32.SWP_NOZORDER)
 }
 
-func (w *windowsWebviewWindow) absolutePosition() (int, int) {
+func (w *windowsWebviewWindow) position() (int, int) {
 	rect := w32.GetWindowRect(w.hwnd)
 	borderSizes := w.getBorderSizes()
 	x := int(rect.Left) + borderSizes.Left
