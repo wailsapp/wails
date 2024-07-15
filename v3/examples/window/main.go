@@ -355,6 +355,12 @@ func main() {
 			w.SetMinSize(200, 200)
 		})
 	})
+	sizeMenu.Add("Set Max Size (600,600)").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetMaxSize(600, 600)
+			w.SetMaximiseButtonState(application.ButtonDisabled)
+		})
+	})
 	sizeMenu.Add("Get Current WebviewWindow Size").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			width, height := w.Size()
@@ -365,6 +371,12 @@ func main() {
 	sizeMenu.Add("Reset Min Size").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			w.SetMinSize(0, 0)
+		})
+	})
+	sizeMenu.Add("Reset Max Size").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetMaxSize(0, 0)
+			w.SetMaximiseButtonState(application.ButtonEnabled)
 		})
 	})
 
