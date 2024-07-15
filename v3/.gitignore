@@ -7,3 +7,4 @@ cmd/wails3/wails
 /examples/clipboard/clipboard
 /examples/plain/plain
 /cmd/wails3/ui/.task/
+!/v3/internal/commands/build_assets/nsis/MicrosoftEdgeWebview2Setup.exe
