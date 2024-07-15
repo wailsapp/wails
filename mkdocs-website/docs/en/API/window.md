@@ -107,8 +107,8 @@ API: `SetEnabled(enabled bool)`
 This function is used to enable/disable the window based on the provided boolean
 value.
 
-### SetAbsolutePosition
+### SetPosition
 
-API: `SetAbsolutePosition(x int, y int)`
+API: `SetPosition(x int, y int)`
 
 This function sets the absolute position of the window in the screen.

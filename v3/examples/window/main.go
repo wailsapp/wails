@@ -165,7 +165,7 @@ func main() {
 				SetURL("https://wails.io").
 				Show()
 			w.On(events.Common.WindowDidMove, func(event *application.WindowEvent) {
-				x, y := w.AbsolutePosition()
+				x, y := w.Position()
 				fmt.Printf("WindowDidMove event triggered. New position: (%d, %d)\n", x, y)
 			})
 			windowCounter++
@@ -381,6 +381,25 @@ func main() {
 	})
 
 	positionMenu := menu.AddSubmenu("Position")
+	positionMenu.Add("Set Position (0,0)").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetPosition(0, 0)
+		})
+	})
+
+	positionMenu.Add("Set Position (Random)").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			w.SetPosition(rand.Intn(1000), rand.Intn(800))
+		})
+	})
+
+	positionMenu.Add("Get Position").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.WebviewWindow) {
+			x, y := w.Position()
+			application.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
+		})
+	})
+
 	positionMenu.Add("Set Relative Position (0,0)").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			w.SetRelativePosition(0, 0)
@@ -395,25 +414,6 @@ func main() {
 	positionMenu.Add("Get Relative Position").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			x, y := w.RelativePosition()
-			application.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
-		})
-	})
-
-	positionMenu.Add("Set Absolute Position (0,0)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
-			w.SetAbsolutePosition(0, 0)
-		})
-	})
-
-	positionMenu.Add("Set Absolute Position (Random)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
-			w.SetAbsolutePosition(rand.Intn(1000), rand.Intn(800))
-		})
-	})
-
-	positionMenu.Add("Get Absolute Position").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
-			x, y := w.AbsolutePosition()
 			application.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
 		})
 	})
