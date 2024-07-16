@@ -1225,7 +1225,7 @@ func handleConfigureEvent(widget *C.GtkWidget, event *C.GdkEventConfigure, data 
 		lw.lastHeight = int(event.height)
 	}
 
-	return C.gboolean(1)
+	return C.gboolean(0)
 }
 
 //export handleDeleteEvent
