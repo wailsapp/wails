@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>No Drag-n-drop</title>
+    <style>
+        body {
+            text-align: center;
+            color: white;
+            background-color: #191919;
+            user-select: none;
+            -ms-user-select: none;
+            -webkit-user-select: none;
+            font-family: Arial, sans-serif;
+        }
+
+        #results {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            width: 95%;
+            overflow-y: auto;
+            text-align: left;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<h1>No Drag-n-drop</h1>
+<br/>
+<div id="results"></div>
+</body>
+
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
+    const resultsDiv = document.getElementById("results");
+
+    wails.DragAndDrop.OnFileDrop((x, y, files) => {
+        console.log("OnFileDrop", x, y, files);
+        wails.Events.Emit("files", files);
+    })
+
+    wails.Events.On("files", function (event) {
+        let resultsHTML = "";
+        event.data.forEach(function (file) {
+            resultsHTML += "<p>" + file + "</p>";
+        });
+        resultsDiv.innerHTML = resultsHTML;
+        resultsDiv.style.display = 'block';
+    })
+</script>
+
+</html>

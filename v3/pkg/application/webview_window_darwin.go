@@ -20,13 +20,10 @@ struct WebviewPreferences {
     bool *FullscreenEnabled;
 };
 
-const int DragAndDropTypeWebview = 1;
-const int DragAndDropTypeWindow = 2;
-
 extern void registerListener(unsigned int event);
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, int dragAndDropType, struct WebviewPreferences preferences) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, unsigned int dragAndDropType, struct WebviewPreferences preferences) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable;
@@ -98,9 +95,14 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
     [userContentController addScriptMessageHandler:delegate name:@"external"];
     config.userContentController = userContentController;
 
-	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
+	WailsWebView* webView = [WailsWebView alloc];
+	webView.windowId = id;
+	webView.dragAndDropType = dragAndDropType;
 	[webView autorelease];
-
+	CGRect init = { 0,0,0,0 };
+ 	[webView initWithFrame:init configuration:config];
+    CGRect contentViewBounds = [[window contentView] bounds];
+    [webView setFrame:contentViewBounds];
 	[view addSubview:webView];
 
     // support webview events
@@ -108,15 +110,6 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 	// Ensure webview resizes with the window
 	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-
-	if( dragAndDropType == DragAndDropTypeWindow ) {
-		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
-		[dragView autorelease];
-
-		[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-		[view addSubview:dragView];
-		dragView.windowId = id;
-	}
 
 	window.webView = webView;
 	return window;
@@ -1025,6 +1018,10 @@ func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
 	}
 	result.parent.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(event *WindowEvent) {
 		result.execJS(runtime.Core())
+		// Enable DnD if we need to
+		if result.parent.options.DragAndDrop == DragAndDropTypeWebview {
+			result.execJS("window._wails.enableDragAndDrop(true);")
+		}
 	})
 	return result
 }
@@ -1130,7 +1127,7 @@ func (w *macosWebviewWindow) run() {
 			C.int(options.Height),
 			C.bool(macOptions.EnableFraudulentWebsiteWarnings),
 			C.bool(options.Frameless),
-			C.int(options.DragAndDrop),
+			C.uint(options.DragAndDrop),
 			w.getWebviewPreferences(),
 		)
 		w.setTitle(options.Title)

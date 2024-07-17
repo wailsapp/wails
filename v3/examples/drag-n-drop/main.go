@@ -47,6 +47,17 @@ func main() {
 		DragAndDrop: application.DragAndDropTypeWebview,
 	})
 
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+		Title: "No Drag and Drop",
+		URL:   "/window3/index.html",
+		Mac: application.MacWindow{
+			Backdrop:                application.MacBackdropTranslucent,
+			TitleBar:                application.MacTitleBarHiddenInsetUnified,
+			InvisibleTitleBarHeight: 50,
+		},
+		DragAndDrop: application.DragAndDropTypeNone,
+	})
+
 	handleDraggedFiles := func(event *application.WindowEvent) {
 		ctx := event.Context()
 		files := ctx.DroppedFiles()
