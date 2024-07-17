@@ -47,8 +47,6 @@ extern void processDragItems(unsigned int windowId, char** arr, int length, int 
     mouseLocation = [self convertPoint:mouseLocation fromView:nil];
     int x = (int)mouseLocation.x;
     int y = (int)mouseLocation.y;
-    // Translate Y coordinate to be relative to the top left corner
-    y = self.frame.size.height - y;
     NSPasteboard *pasteboard = [sender draggingPasteboard];
     NSArray<NSPasteboardType> * types = [pasteboard types];
     if( !types ) {
