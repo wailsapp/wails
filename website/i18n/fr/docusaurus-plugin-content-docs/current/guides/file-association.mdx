@@ -120,7 +120,7 @@ Actuellement, Wails ne prend pas en charge l'association de fichiers pour Linux.
 Par exemple, si vous distribuez votre application en tant que package .deb, vous pouvez créer des associations de fichiers en ajoutant les fichiers requis dans votre bundle.
 Vous pouvez utiliser [nfpm](https://nfpm.goreleaser.com/) pour créer un package .deb pour votre application.
 
-1.  Créez un fichier .desktop pour votre application et spécifiez des associations de fichiers là-bas. Exemple:
+1. Créez un fichier .desktop pour votre application et spécifiez des associations de fichiers là-bas. Exemple:
 
 ```ini
 [Desktop Entry]
@@ -133,7 +133,7 @@ Type=Application
 MimeType=application/x-wails;application/x-test
 ```
 
-2.  Créer un fichier de type MIME. Exemple:
+2. Créer un fichier de type MIME. Exemple:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -145,8 +145,8 @@ MimeType=application/x-wails;application/x-test
 </mime-info>
 ```
 
-3.  Créez des icônes pour vos types de fichiers. Les icônes SVG sont recommandées.
-4.  Préparez les scripts postInstall/postRemove pour votre paquet. Exemple:
+3. Créez des icônes pour vos types de fichiers. Les icônes SVG sont recommandées.
+4. Préparez les scripts postInstall/postRemove pour votre paquet. Exemple:
 
 ```sh
 # Recharge les types MIME pour enregistrer votre association de fichiers
@@ -157,7 +157,7 @@ update-desktop-database /usr/share/applications
 update-icon-caches /usr/share/icons/*
 ```
 
-5.  Configurez nfpm pour utiliser vos scripts et fichiers. Exemple:
+5. Configurez nfpm pour utiliser vos scripts et fichiers. Exemple:
 
 ```yaml
 name: "wails-open-file"
@@ -198,14 +198,14 @@ scripts:
   postremove: ./postRemove.sh
 ```
 
-6.  Construisez votre paquet .deb en utilisant nfpm:
+6. Construisez votre paquet .deb en utilisant nfpm:
 
 ```sh
 nfpm pkg --packager deb --target .
 ```
 
-7.  Maintenant que votre paquet est installé, votre application sera associée aux types de fichiers qui ont été spécifiés. Lorsque vous ouvrez un fichier avec votre application, une nouvelle instance est lancée et le chemin du fichier est passé en argument à votre application.
-    Pour gérer cela, vous devez analyser les arguments de la ligne de commande dans votre application. Exemple:
+7. Maintenant que votre paquet est installé, votre application sera associée aux types de fichiers qui ont été spécifiés. Lorsque vous ouvrez un fichier avec votre application, une nouvelle instance est lancée et le chemin du fichier est passé en argument à votre application.
+   Pour gérer cela, vous devez analyser les arguments de la ligne de commande dans votre application. Exemple:
 
 ```go title="main.go"
 func main() {

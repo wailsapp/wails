@@ -63,6 +63,12 @@ func main() {
           UniqueId:               "c9c8fd93-6758-4144-87d1-34bdb0a8bd60",
           OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
         },
+        DragAndDrop: &options.DragAndDrop{
+          EnableFileDrop:       false,
+          DisableWebViewDrop:   false,
+          CSSDropProperty:      "--wails-drop-target",
+          CSSDropValue:         "drop",
+        },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
@@ -462,6 +468,41 @@ Callback that is called when a second instance of your app is launched.
 
 Name: OnSecondInstanceLaunch<br/> Type: `func(secondInstanceData SecondInstanceData)`
 
+### Drag and Drop
+
+Defines the behavior of drag and drop events on the window.
+
+Name: DragAndDrop<br/> Type: `options.DragAndDrop`
+
+#### EnableFileDrop
+
+EnableFileDrop enables wails' drag and drop functionality that returns the dropped in files' absolute paths.
+
+When it is set to `true` the [runtime methods](../reference/runtime/draganddrop.mdx) can be used. <br/> Or you can listen for the `wails:file-drop` event with [runtime EventsOn method](../reference/runtime/events.mdx#eventson) both on the Javascript and GO side to implement any functionality you would like.
+
+The event returns the coordinates of the drop and a file path slice.
+
+Name: EnableFileDrop<br/> Type: `bool`<br/> Default: `false`
+
+#### DisableWebViewDrop
+
+Disables the webview's drag and drop functionality.
+
+It can be used to prevent accidental opening of dragged in files in the webview, when there is no need for drag and drop.
+
+Name: DisableWebViewDrop<br/> Type: `bool`<br/> Default: `false`
+
+#### CSSDropProperty
+
+CSS property to test for drag and drop target elements.
+
+Name: CSSDropProperty<br/> Type: `string`<br/> Default: `--wails-drop-target`
+
+#### CSSDropValue
+
+The CSS Value that the CSSDropProperty must have to be a valid drop target. Default "drop"
+
+Name: CSSDropValue<br/> Type: `string`<br/> Default: `drop`
 
 ### Windows
 
