@@ -47,14 +47,13 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 	// Process Struct
 	structType := reflect.TypeOf(value)
 	structValue := reflect.ValueOf(value)
-	structTypeString := structType.String()
-	baseName := structTypeString[1:]
+	structName := structType.Elem().Name()
+	pkgPath := strings.TrimSuffix(structType.Elem().String(), structName)
 
 	// Process Methods
 	for i := 0; i < structType.NumMethod(); i++ {
 		methodDef := structType.Method(i)
 		methodName := methodDef.Name
-		fullMethodName := baseName + "." + methodName
 		method := structValue.MethodByName(methodName)
 
 		methodReflectName := runtime.FuncForPC(methodDef.Func.Pointer()).Name()
@@ -64,7 +63,11 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 
 		// Create new method
 		boundMethod := &BoundMethod{
-			Name:     fullMethodName,
+			Path: &BoundedMethodPath{
+				Package: pkgPath,
+				Struct:  structName,
+				Name:    methodName,
+			},
 			Inputs:   nil,
 			Outputs:  nil,
 			Comments: "",
