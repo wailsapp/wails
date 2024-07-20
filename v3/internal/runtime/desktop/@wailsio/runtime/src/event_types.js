@@ -163,6 +163,10 @@ export const EventTypes = {
 		WindowDidResize: "linux:WindowDidResize",
 		WindowFocusIn: "linux:WindowFocusIn",
 		WindowFocusOut: "linux:WindowFocusOut",
+		WindowDragDrop: "linux:WindowDragDrop",
+		WindowDragBegin: "linux:WindowDragBegin",
+		WindowDragEnd: "linux:WindowDragEnd",
+		WindowDragLeave: "linux:WindowDragLeave",
 		ApplicationStartup: "linux:ApplicationStartup",
 	},
 	Common: {

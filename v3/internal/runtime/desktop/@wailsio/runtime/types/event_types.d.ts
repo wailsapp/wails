@@ -163,6 +163,10 @@ export declare const EventTypes: {
 		WindowDidResize: string,
 		WindowFocusIn: string,
 		WindowFocusOut: string,
+		WindowDragDrop: string,
+		WindowDragBegin: string,
+		WindowDragEnd: string,
+		WindowDragLeave: string,
 		ApplicationStartup: string,
 	},
 	Common: {

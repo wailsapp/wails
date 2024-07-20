@@ -5,6 +5,10 @@ linux:WindowDidMove
 linux:WindowDidResize
 linux:WindowFocusIn
 linux:WindowFocusOut
+linux:WindowDragDrop
+linux:WindowDragBegin
+linux:WindowDragEnd
+linux:WindowDragLeave
 linux:ApplicationStartup
 mac:ApplicationDidBecomeActive
 mac:ApplicationDidChangeBackingProperties

@@ -13,9 +13,13 @@ extern void processWindowEvent(unsigned int, unsigned int);
 #define EventWindowDidResize 1028
 #define EventWindowFocusIn 1029
 #define EventWindowFocusOut 1030
-#define EventApplicationStartup 1031
+#define EventWindowDragDrop 1031
+#define EventWindowDragBegin 1032
+#define EventWindowDragEnd 1033
+#define EventWindowDragLeave 1034
+#define EventApplicationStartup 1035
 
-#define MAX_EVENTS 1032
+#define MAX_EVENTS 1036
 
 
 #endif
