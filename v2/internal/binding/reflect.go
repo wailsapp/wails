@@ -70,7 +70,6 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 	structName := structType.Elem().Name()
 	structNameNormalized := normalizeStructName(structName)
 	pkgPath := strings.TrimSuffix(structType.Elem().String(), fmt.Sprintf(".%s", structName))
-	fmt.Println(pkgPath, structType)
 
 	// Process Methods
 	for i := 0; i < structType.NumMethod(); i++ {
