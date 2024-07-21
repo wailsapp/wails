@@ -144,7 +144,7 @@ func New(appOptions Options) *App {
 			globalApplication.fatal("Fatal error in plugins initialisation")
 		}
 	}
-	defer result.plugins.Shutdown()
+	globalApplication.info("Plugins initialised", "count", len(result.plugins.plugins))
 
 	// Process keybindings
 	if result.options.KeyBindings != nil {
