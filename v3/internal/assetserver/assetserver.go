@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"path"
 	"strings"
 	"time"
 )
@@ -14,7 +13,7 @@ import (
 const (
 	webViewRequestHeaderWindowId   = "x-wails-window-id"
 	webViewRequestHeaderWindowName = "x-wails-window-name"
-	servicePrefix                   = "/services"
+	servicePrefix                   = "wails/services"
 )
 
 type RuntimeHandler interface {
@@ -108,26 +107,23 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 		}
 
 	default:
-
 		// Check if this is a plugin asset
 		if !strings.HasPrefix(reqPath, servicePrefix) {
 			userHandler.ServeHTTP(rw, req)
 			return
 		}
 
-		// Ensure there is 4 parts to the reqPath
-		parts := strings.SplitN(reqPath, "/", 4)
+		// Ensure there is at least 3 parts to the reqPath wails/services/<service>/<path>
+		parts := strings.Split(reqPath, "/")
 		if len(parts) < 4 {
 			rw.WriteHeader(http.StatusNotFound)
 			return
 		}
-
-		// Get the first 3 parts of the reqPath
-		servicePath := "/" + path.Join(parts[1], parts[2], parts[3])
-
 		// Check if this is a registered plugin asset
-		if handler, ok := a.services[servicePath]; ok {
+		if handler, ok := a.services[parts[3]]; ok {
 			// Check if the file exists
+			// Trim the service preifx
+			req.URL.Path = strings.Join(parts[4:], "/")
 			handler.ServeHTTP(rw, req)
 		} else {
 			userHandler.ServeHTTP(rw, req)

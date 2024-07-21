@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"reflect"
 	"runtime"
 	"strings"
@@ -79,12 +80,16 @@ type Bindings struct {
 }
 
 func NewBindings(instances []Service, aliases map[uint32]uint32) (*Bindings, error) {
+	app := Get()
 	b := &Bindings{
 		boundMethods:  make(map[string]*BoundMethod),
 		boundByID:     make(map[uint32]*BoundMethod),
 		methodAliases: aliases,
 	}
 	for _, binding := range instances {
+		if binding.instance.(http.Handler) != nil && binding.prefix != ""{
+			app.assets.AttachServiceHandler(binding.prefix, binding.instance.(http.Handler))
+		}
 		err := b.Add(binding.Instance())
 		if err != nil {
 			return nil, err
