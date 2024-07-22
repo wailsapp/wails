@@ -2,7 +2,7 @@ name: Build + Test v3 alpha
 
 on:
   push:
-    branches: [v3-alpha]
+    branches: [v3-alpha, v3/*, v3-*]
     paths-ignore:
       - 'mkdocs-website/**/*'
   workflow_dispatch:
@@ -10,7 +10,6 @@ on:
 jobs:
   test_go:
     name: Run Go Tests
-    if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -54,7 +53,6 @@ jobs:
 
   test_js:
     name: Run JS Tests
-    if: github.repository == 'wailsapp/wails'
     runs-on: ubuntu-latest
     strategy:
       matrix:
