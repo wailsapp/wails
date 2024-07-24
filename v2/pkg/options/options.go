@@ -49,11 +49,11 @@ type App struct {
 	// You can use the options.NewRGB and options.NewRGBA functions to create a new colour
 	BackgroundColour *RGBA
 	// Deprecated: Use AssetServer.Assets instead.
-	Assets fs.FS
+	Assets fs.FS `json:"-"`
 	// Deprecated: Use AssetServer.Handler instead.
-	AssetsHandler http.Handler
+	AssetsHandler http.Handler `json:"-"`
 	// AssetServer configures the Assets for the application
-	AssetServer        *assetserver.Options
+	AssetServer        *assetserver.Options `json:"-"`
 	Menu               *menu.Menu
 	Logger             logger.Logger `json:"-"`
 	LogLevel           logger.LogLevel
@@ -67,7 +67,7 @@ type App struct {
 	WindowStartState   WindowStartState
 
 	// ErrorFormatter overrides the formatting of errors returned by backend methods
-	ErrorFormatter ErrorFormatter
+	ErrorFormatter ErrorFormatter `json:"-"`
 
 	// CSS property to test for draggable elements. Default "--wails-draggable"
 	CSSDragProperty string
@@ -184,7 +184,7 @@ func MergeDefaults(appoptions *App) {
 type SingleInstanceLock struct {
 	// uniqueId that will be used for setting up messaging between instances
 	UniqueId               string
-	OnSecondInstanceLaunch func(secondInstanceData SecondInstanceData)
+	OnSecondInstanceLaunch func(secondInstanceData SecondInstanceData) `json:"-"`
 }
 
 type SecondInstanceData struct {
