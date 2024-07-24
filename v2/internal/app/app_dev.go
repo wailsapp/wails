@@ -24,6 +24,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
+	"github.com/wailsapp/wails/v2/internal/system"
 	pkglogger "github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -43,6 +44,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	var err error
 
 	ctx := context.Background()
+	system.GlobalOptions = *appoptions
 	ctx = context.WithValue(ctx, "debug", true)
 	ctx = context.WithValue(ctx, "devtoolsEnabled", true)
 

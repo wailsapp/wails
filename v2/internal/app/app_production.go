@@ -11,6 +11,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
+	"github.com/wailsapp/wails/v2/internal/system"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -29,6 +30,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	var err error
 
 	ctx := context.Background()
+	system.GlobalOptions = *appoptions
 
 	// Merge default options
 	options.MergeDefaults(appoptions)
