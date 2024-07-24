@@ -463,6 +463,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 }
 
 - (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
+    processURLRequestStop(self, urlSchemeTask);
     NSInputStream *stream = urlSchemeTask.request.HTTPBodyStream;
     if (stream) {
         NSStreamStatus status = stream.streamStatus;

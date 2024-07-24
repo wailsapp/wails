@@ -463,6 +463,17 @@ func processURLRequest(_ unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
 	requestBuffer <- webview.NewRequest(wkURLSchemeTask)
 }
 
+//export processURLRequestStop
+func processURLRequestStop(_ unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
+	r := webview.NewRequest(wkURLSchemeTask)
+	requestID, err := r.URL()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	assetserver.CancelRequest(requestID)
+}
+
 //export HandleOpenFile
 func HandleOpenFile(filePath *C.char) {
 	goFilepath := C.GoString(filePath)
