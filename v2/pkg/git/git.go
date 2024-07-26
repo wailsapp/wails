@@ -1,6 +1,8 @@
 package git
 
 import (
+	"encoding/json"
+	"fmt"
 	"html/template"
 	"runtime"
 	"strings"
@@ -31,7 +33,17 @@ func Email() (string, error) {
 // Name tries to retrieve the
 func Name() (string, error) {
 	stdout, _, err := shell.RunCommand(".", gitcommand(), "config", "user.name")
+	if err != nil {
+		return "", err
+	}
+
 	name := template.JSEscapeString(strings.TrimSpace(stdout))
+
+	// Check if username is JSON compliant
+	var js json.RawMessage
+	jsonVal := fmt.Sprintf(`{"name": "%s"}`, name)
+	err = json.Unmarshal([]byte(jsonVal), &js)
+
 	return name, err
 }
 
