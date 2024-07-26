@@ -32,9 +32,10 @@ func Email() (string, error) {
 
 // Name tries to retrieve the
 func Name() (string, error) {
+	errMsg := "failed to retrieve git user name: %w"
 	stdout, _, err := shell.RunCommand(".", gitcommand(), "config", "user.name")
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf(errMsg, err)
 	}
 
 	name := template.JSEscapeString(strings.TrimSpace(stdout))
@@ -42,7 +43,9 @@ func Name() (string, error) {
 	// Check if username is JSON compliant
 	var js json.RawMessage
 	jsonVal := fmt.Sprintf(`{"name": "%s"}`, name)
-	err = json.Unmarshal([]byte(jsonVal), &js)
+	if json.Unmarshal([]byte(jsonVal), &js) != nil {
+		return "", fmt.Errorf(errMsg, err)
+	}
 
 	return name, err
 }
