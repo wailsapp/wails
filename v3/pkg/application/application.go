@@ -311,7 +311,8 @@ type App struct {
 	isDebugMode  bool
 
 	// Keybindings
-	keyBindings map[string]func(window *WebviewWindow)
+	keyBindings     map[string]func(window *WebviewWindow)
+	keyBindingsLock sync.RWMutex
 
 	// Shutdown
 	performingShutdown bool
@@ -863,6 +864,9 @@ func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow)
 		return false
 	}
 
+	a.keyBindingsLock.RLock()
+	defer a.keyBindingsLock.RUnlock()
+
 	// Check key bindings
 	callback, ok := a.keyBindings[acceleratorString]
 	if !ok {
@@ -873,6 +877,18 @@ func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow)
 	go callback(window)
 
 	return true
+}
+
+func (a *App) addKeyBinding(acceleratorString string, callback func(window *WebviewWindow)) {
+	a.keyBindingsLock.Lock()
+	defer a.keyBindingsLock.Unlock()
+	a.keyBindings[acceleratorString] = callback
+}
+
+func (a *App) removeKeyBinding(acceleratorString string) {
+	a.keyBindingsLock.Lock()
+	defer a.keyBindingsLock.Unlock()
+	delete(a.keyBindings, acceleratorString)
 }
 
 func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {

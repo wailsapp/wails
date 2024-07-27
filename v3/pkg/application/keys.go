@@ -83,9 +83,9 @@ func (a *accelerator) String() string {
 	}
 	slices.Sort(result)
 	if len(a.Key) > 0 {
-		result = append(result, a.Key)
+		result = append(result, strings.ToUpper(a.Key))
 	}
-	return strings.ToLower(strings.Join(result, "+"))
+	return strings.Join(result, "+")
 }
 
 var namedKeys = map[string]struct{}{

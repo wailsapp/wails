@@ -7,7 +7,8 @@ import (
 )
 
 type windowsMenu struct {
-	menu *Menu
+	menu         *Menu
+	parentWindow *windowsWebviewWindow
 
 	hWnd          w32.HWND
 	hMenu         w32.HMENU
@@ -36,6 +37,13 @@ func (w *windowsMenu) update() {
 func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 	for _, item := range inputMenu.items {
 		if item.Hidden() {
+			if item.accelerator != nil && item.callback != nil {
+				if w.parentWindow != nil {
+					w.parentWindow.parent.removeMenuBinding(item.accelerator)
+				} else {
+					globalApplication.removeKeyBinding(item.accelerator.String())
+				}
+			}
 			continue
 		}
 		w.currentMenuID++
@@ -52,21 +60,6 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		if item.IsSeparator() {
 			flags = flags | w32.MF_SEPARATOR
 		}
-		//
-		//if item.IsCheckbox() {
-		//	w.checkboxItems[item] = append(w.checkboxItems[item], itemID)
-		//}
-		//if item.IsRadio() {
-		//	currentRadioGroup.Add(itemID, item)
-		//} else {
-		//	if len(currentRadioGroup) > 0 {
-		//		for _, radioMember := range currentRadioGroup {
-		//			currentRadioGroup := currentRadioGroup
-		//			p.radioGroups[radioMember.MenuItem] = append(p.radioGroups[radioMember.MenuItem], &currentRadioGroup)
-		//		}
-		//		currentRadioGroup = RadioGroup{}
-		//	}
-		//}
 
 		if item.submenu != nil {
 			flags = flags | w32.MF_POPUP
@@ -75,7 +68,18 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 			itemID = int(newSubmenu)
 		}
 
-		var menuText = w32.MustStringToUTF16Ptr(item.Label())
+		thisText := item.Label()
+		if item.accelerator != nil && item.callback != nil {
+			if w.parentWindow != nil {
+				w.parentWindow.parent.addMenuBinding(item.accelerator, item)
+			} else {
+				globalApplication.addKeyBinding(item.accelerator.String(), func(w *WebviewWindow) {
+					item.handleClick()
+				})
+			}
+			thisText = thisText + "\t" + item.accelerator.String()
+		}
+		var menuText = w32.MustStringToUTF16Ptr(thisText)
 
 		w32.AppendMenu(parentMenu, flags, uintptr(itemID), menuText)
 		if item.bitmap != nil {

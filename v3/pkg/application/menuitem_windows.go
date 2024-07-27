@@ -336,15 +336,12 @@ func (m *windowsMenuItem) getMenuInfo() *w32.MENUITEMINFO {
 		mii.FType = w32.MFT_SEPARATOR
 	} else {
 		mii.FType = w32.MFT_STRING
-		//var text string
-		//if s := a.shortcut; s.Key != 0 {
-		//	text = fmt.Sprintf("%s\t%s", a.text, s.String())
-		//	shortcut2Action[a.shortcut] = a
-		//} else {
-		//	text = a.text
-		//}
-		mii.DwTypeData = w32.MustStringToUTF16Ptr(m.label)
-		mii.Cch = uint32(len([]rune(m.label)))
+		thisText := m.label
+		if m.menuItem.accelerator != nil {
+			thisText += "\t" + m.menuItem.accelerator.String()
+		}
+		mii.DwTypeData = w32.MustStringToUTF16Ptr(thisText)
+		mii.Cch = uint32(len([]rune(thisText)))
 	}
 	mii.WID = uint32(m.id)
 	if m.Enabled() {

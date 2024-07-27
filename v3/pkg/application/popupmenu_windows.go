@@ -40,6 +40,7 @@ func (r *RadioGroup) MenuID(item *MenuItem) int {
 type Win32Menu struct {
 	isPopup       bool
 	menu          w32.HMENU
+	parentWindow  *windowsWebviewWindow
 	parent        w32.HWND
 	menuMapping   map[int]*MenuItem
 	checkboxItems map[*MenuItem][]int
@@ -61,6 +62,15 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 	var currentRadioGroup RadioGroup
 	for _, item := range inputMenu.items {
 		if item.Hidden() {
+			if item.accelerator != nil {
+				if p.parentWindow != nil {
+					// Remove the accelerator from the keybindings
+					p.parentWindow.parent.removeMenuBinding(item.accelerator)
+				} else {
+					// Remove the global keybindings
+					globalApplication.removeKeyBinding(item.accelerator.String())
+				}
+			}
 			continue
 		}
 		p.currentMenuID++
@@ -85,7 +95,9 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 			p.checkboxItems[item] = append(p.checkboxItems[item], itemID)
 		}
 		if item.IsRadio() {
-			currentRadioGroup.Add(itemID, item)
+			if currentRadioGroup != nil {
+				currentRadioGroup.Add(itemID, item)
+			}
 		} else {
 			if len(currentRadioGroup) > 0 {
 				for _, radioMember := range currentRadioGroup {
@@ -105,6 +117,18 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		}
 
 		var menuText = item.Label()
+		if item.accelerator != nil {
+			menuText = menuText + "\t" + item.accelerator.String()
+			if item.callback != nil {
+				if p.parentWindow != nil {
+					p.parentWindow.parent.addMenuBinding(item.accelerator, item)
+				} else {
+					globalApplication.addKeyBinding(item.accelerator.String(), func(w *WebviewWindow) {
+						item.handleClick()
+					})
+				}
+			}
+		}
 		ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), w32.MustStringToUTF16Ptr(menuText))
 		if !ok {
 			w32.Fatal(fmt.Sprintf("Error adding menu item: %s", menuText))
@@ -146,9 +170,10 @@ func NewPopupMenu(parent w32.HWND, inputMenu *Menu) *Win32Menu {
 	result.Update()
 	return result
 }
-func NewApplicationMenu(parent w32.HWND, inputMenu *Menu) *Win32Menu {
+func NewApplicationMenu(parent *windowsWebviewWindow, inputMenu *Menu) *Win32Menu {
 	result := &Win32Menu{
-		parent:        parent,
+		parentWindow:  parent,
+		parent:        parent.hwnd,
 		menuData:      inputMenu,
 		checkboxItems: make(map[*MenuItem][]int),
 		radioGroups:   make(map[*MenuItem][]*RadioGroup),
