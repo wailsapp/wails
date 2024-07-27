@@ -13,12 +13,17 @@ import (
 // Valid values may only be obtained by calling [NewService].
 type Service struct {
 	instance any
+	prefix string
 }
 
 // NewService returns a Service value wrapping the given pointer.
 // If T is not a named type, the returned value is invalid.
-func NewService[T any](instance *T) Service {
-	return Service{instance}
+// The prefix is used if Service implements a http.Handler only one allowed
+func NewService[T any](instance *T, prefix ...string) Service {
+	if len(prefix) == 1 {
+		return Service{instance, prefix[0]}
+	}
+	return Service{instance, ""}
 }
 
 func (s Service) Instance() any {

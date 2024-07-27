@@ -17,23 +17,13 @@ func NewPlugin() *Plugin {
 	return &Plugin{}
 }
 
-func (r *Plugin) Shutdown() error { return nil }
+func (r *Plugin) OnShutdown() error { return nil }
 
 func (r *Plugin) Name() string {
 	return "Hashes Plugin"
 }
 
-func (r *Plugin) Init(api application.PluginAPI) error {
-	return nil
-}
-
-func (r *Plugin) CallableByJS() []string {
-	return []string{
-		"Generate",
-	}
-}
-
-func (r *Plugin) Assets() fs.FS {
+func (r *Plugin) OnStartup() error {
 	return nil
 }
 

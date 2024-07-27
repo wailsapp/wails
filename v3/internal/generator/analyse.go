@@ -120,7 +120,8 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 			if fn.Name() == "NewService" && fn.Pkg().Path() == systemPaths.ApplicationPackage {
 				// Check signature.
 				signature := fn.Type().(*types.Signature)
-				if signature.Params().Len() != 1 || signature.Results().Len() != 1 || tp.Len() != 1 || tp.At(0).Obj() == nil {
+				if signature.Params().Len() > 2 || signature.Results().Len() != 1 || tp.Len() != 1 || tp.At(0).Obj() == nil {
+					logger.Warningf("Param Len: %d, Results Len: %d, tp.Len: %d, tp.At(0).Obj(): %v", signature.Params().Len(), signature.Results().Len(), tp.Len(), tp.At(0).Obj())
 					return ErrBadApplicationPackage
 				}
 
