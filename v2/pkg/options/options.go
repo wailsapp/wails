@@ -98,6 +98,9 @@ type App struct {
 
 	// DragAndDrop options for drag and drop behavior
 	DragAndDrop *DragAndDrop
+
+	// ErrorHandler is a function that will be called when an error is raised
+	ErrorHandler func(error)
 }
 
 type ErrorFormatter func(error) any

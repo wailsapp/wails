@@ -1,5 +1,4 @@
 //go:build windows
-// +build windows
 
 package windows
 
@@ -65,6 +64,9 @@ type Frontend struct {
 	// Windows build number
 	versionInfo     *operatingsystem.WindowsVersionInfo
 	resizeDebouncer func(f func())
+
+	// error handler
+	errorHandler func(err error)
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
@@ -79,6 +81,14 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		dispatcher:      dispatcher,
 		ctx:             ctx,
 		versionInfo:     versionInfo,
+		errorHandler: func(err error) {
+			if appoptions.ErrorHandler != nil {
+				appoptions.ErrorHandler(err)
+			} else {
+				log.Fatal("FATAL ERROR: ", err)
+			}
+			os.Exit(1)
+		},
 	}
 
 	if appoptions.Windows != nil {
@@ -104,7 +114,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	if _obfuscated, _ := ctx.Value("obfuscated").(bool); !_obfuscated {
 		bindings, err = appBindings.ToJSON()
 		if err != nil {
-			log.Fatal(err)
+			result.errorHandler(err)
 		}
 	} else {
 		appBindings.DB().UpdateObfuscatedCallMap()
@@ -112,7 +122,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	assets, err := assetserver.NewAssetServerMainPage(bindings, appoptions, ctx.Value("assetdir") != nil, myLogger, wailsruntime.RuntimeAssetsBundle)
 	if err != nil {
-		log.Fatal(err)
+		result.errorHandler(err)
 	}
 	result.assets = assets
 
@@ -141,6 +151,10 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
 
 	f.chromium = edge.NewChromium()
+
+	if f.frontendOptions.ErrorHandler != nil {
+		f.chromium.SetErrorCallback(f.frontendOptions.ErrorHandler)
+	}
 
 	if f.frontendOptions.SingleInstanceLock != nil {
 		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
@@ -380,7 +394,7 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 
 		err := controller2.PutDefaultBackgroundColor(backgroundCol)
 		if err != nil {
-			log.Fatal(err)
+			f.errorHandler(err)
 		}
 	})
 
@@ -482,7 +496,7 @@ func (f *Frontend) setupChromium() {
 					return true
 				}
 			} else {
-				f.logger.Error("Call to GetKeyboardState failed")
+				f.errorHandler(fmt.Errorf("GetKeyboardState failed"))
 			}
 		}
 		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
@@ -491,11 +505,11 @@ func (f *Frontend) setupChromium() {
 	chromium.ProcessFailedCallback = func(sender *edge.ICoreWebView2, args *edge.ICoreWebView2ProcessFailedEventArgs) {
 		kind, err := args.GetProcessFailedKind()
 		if err != nil {
+			f.errorHandler(err)
 			f.logger.Error("GetProcessFailedKind: %s", err)
 			return
 		}
 
-		f.logger.Error("WebVie2wProcess failed with kind %d", kind)
 		switch kind {
 		case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED:
 			// => The app has to recreate a new WebView to recover from this failure.
@@ -504,20 +518,23 @@ func (f *Frontend) setupChromium() {
 				messages = f.frontendOptions.Windows.Messages
 			}
 			winc.Errorf(f.mainWindow, messages.WebView2ProcessCrash)
-			os.Exit(-1)
 		case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_EXITED,
 			edge.COREWEBVIEW2_PROCESS_FAILED_KIND_FRAME_RENDER_PROCESS_EXITED:
 			// => A new render process is created automatically and navigated to an error page.
 			// => Make sure that the error page is shown.
 			if !f.hasStarted {
 				// NavgiationCompleted didn't come in, make sure the chromium is shown
-				chromium.Show()
+				err = chromium.Show()
+				if err != nil {
+					f.errorHandler(err)
+				}
 			}
 			if !f.mainWindow.hasBeenShown {
 				// The window has never been shown, make sure to show it
 				f.ShowWindow()
 			}
 		}
+		f.errorHandler(fmt.Errorf("WebVie2wProcess failed with kind %d", kind))
 	}
 
 	chromium.Embed(f.mainWindow.Handle())
@@ -526,21 +543,21 @@ func (f *Frontend) setupChromium() {
 		swipeGesturesEnabled := f.frontendOptions.Windows != nil && f.frontendOptions.Windows.EnableSwipeGestures
 		err := chromium.PutIsSwipeNavigationEnabled(swipeGesturesEnabled)
 		if err != nil {
-			log.Fatal(err)
+			f.errorHandler(err)
 		}
 	}
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
 	if err != nil {
-		log.Fatal(err)
+		f.errorHandler(err)
 	}
 	err = settings.PutAreDefaultContextMenusEnabled(f.debug || f.frontendOptions.EnableDefaultContextMenu)
 	if err != nil {
-		log.Fatal(err)
+		f.errorHandler(err)
 	}
 	err = settings.PutAreDevToolsEnabled(f.devtoolsEnabled)
 	if err != nil {
-		log.Fatal(err)
+		f.errorHandler(err)
 	}
 
 	if opts := f.frontendOptions.Windows; opts != nil {
@@ -549,21 +566,21 @@ func (f *Frontend) setupChromium() {
 		}
 		err = settings.PutIsZoomControlEnabled(opts.IsZoomControlEnabled)
 		if err != nil {
-			log.Fatal(err)
+			f.errorHandler(err)
 		}
 		err = settings.PutIsPinchZoomEnabled(!opts.DisablePinchZoom)
 		if err != nil {
-			log.Fatal(err)
+			f.errorHandler(err)
 		}
 	}
 
 	err = settings.PutIsStatusBarEnabled(false)
 	if err != nil {
-		log.Fatal(err)
+		f.errorHandler(err)
 	}
 	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
 	if err != nil {
-		log.Fatal(err)
+		f.errorHandler(err)
 	}
 
 	if f.debug && f.frontendOptions.Debug.OpenInspectorOnStartup {
@@ -606,8 +623,14 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	if reqHeaders, err := req.GetHeaders(); err == nil {
 		useragent, _ := reqHeaders.GetHeader(assetserver.HeaderUserAgent)
 		useragent = strings.Join([]string{useragent, assetserver.WailsUserAgentValue}, " ")
-		reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
-		reqHeaders.Release()
+		err = reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
+		if err != nil {
+			f.errorHandler(err)
+		}
+		err = reqHeaders.Release()
+		if err != nil {
+			f.errorHandler(err)
+		}
 	}
 
 	if f.assets == nil {
@@ -619,7 +642,7 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	uri, _ := req.GetUri()
 	reqUri, err := url.ParseRequestURI(uri)
 	if err != nil {
-		f.logger.Error("Unable to parse equest uri %s: %s", uri, err)
+		f.logger.Error("Unable to parse request uri %s: %s", uri, err)
 		return
 	}
 
@@ -701,8 +724,8 @@ func (f *Frontend) processMessage(message string) {
 				f.logger.Info("Unknown message returned from dispatcher: %+v", message)
 				return
 			}
-			edge := edgeMap[sl[1]]
-			err := f.startResize(edge)
+			thisEdge := edgeMap[sl[1]]
+			err := f.startResize(thisEdge)
 			if err != nil {
 				f.logger.Error(err.Error())
 			}
@@ -916,6 +939,12 @@ func (f *Frontend) onFocus(arg *winc.Event) {
 }
 
 func (f *Frontend) startSecondInstanceProcessor() {
+	defer func() {
+		// catch all panics
+		if r := recover(); r != nil {
+			f.errorHandler(fmt.Errorf("recovered from panic in second instance processor: %v", r))
+		}
+	}()
 	for secondInstanceData := range secondInstanceBuffer {
 		if f.frontendOptions.SingleInstanceLock != nil &&
 			f.frontendOptions.SingleInstanceLock.OnSecondInstanceLaunch != nil {
