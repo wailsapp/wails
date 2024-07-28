@@ -3,12 +3,15 @@ package application
 import (
 	"embed"
 	"encoding/json"
+	"fmt"
+	"github.com/wailsapp/wails/v3/pkg/w32"
 	"io"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -56,6 +59,7 @@ func New(appOptions Options) *App {
 
 	result := newApplication(appOptions)
 	globalApplication = result
+	w32.Fatal = result.handleFatalError
 
 	if result.Logger == nil {
 		if result.isDebugMode {
@@ -100,9 +104,12 @@ func New(appOptions Options) *App {
 						updatedOptions := result.impl.GetFlags(appOptions)
 						flags, err := json.Marshal(updatedOptions)
 						if err != nil {
-							log.Fatal("Invalid flags provided to application: ", err.Error())
+							result.handleFatalError(fmt.Errorf("invalid flags provided to application: %s", err.Error()))
 						}
-						assetserver.ServeFile(rw, path, flags)
+						err = assetserver.ServeFile(rw, path, flags)
+						if err != nil {
+							result.handleFatalError(fmt.Errorf("unable to serve flags: %s", err.Error()))
+						}
 					default:
 						next.ServeHTTP(rw, req)
 					}
@@ -118,7 +125,7 @@ func New(appOptions Options) *App {
 
 	srv, err := assetserver.NewAssetServer(opts)
 	if err != nil {
-		result.Logger.Error("Fatal error in application initialisation: " + err.Error())
+		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
 	}
 
 	result.assets = srv
@@ -126,21 +133,21 @@ func New(appOptions Options) *App {
 
 	result.bindings, err = NewBindings(appOptions.Services, appOptions.BindAliases)
 	if err != nil {
-		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
+		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
 	}
 
 	result.plugins = NewPluginManager(appOptions.Plugins, srv)
 	errors := result.plugins.Init()
 	if len(errors) > 0 {
 		for _, err := range errors {
-			globalApplication.error("Error initialising plugin: " + err.Error())
+			result.handleError(fmt.Errorf("Error initialising plugin: " + err.Error()))
 		}
-		globalApplication.fatal("Fatal error in plugins initialisation")
+		result.handleFatalError(fmt.Errorf("fatal error in plugins initialisation"))
 	}
 
 	err = result.bindings.AddPlugins(appOptions.Plugins)
 	if err != nil {
-		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
+		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
 	}
 
 	// Process keybindings
@@ -330,6 +337,27 @@ type App struct {
 	wailsEventListeners    []WailsEventListener
 }
 
+func (a *App) handleError(err error) {
+	if a.options.ErrorHandler != nil {
+		a.options.ErrorHandler(err)
+	} else {
+		a.Logger.Error(err.Error())
+	}
+}
+
+func (a *App) handleFatalError(err error) {
+	var buffer strings.Builder
+	buffer.WriteString("*********************** FATAL ***********************")
+	buffer.WriteString("There has been a catastrophic failure in your application.")
+	buffer.WriteString("Please report this error at https://github.com/wailsapp/wails/issues")
+	buffer.WriteString("******************** Error Details ******************")
+	buffer.WriteString(fmt.Sprintf("Message: " + err.Error()))
+	buffer.WriteString(fmt.Sprintf("Stack: " + string(debug.Stack())))
+	buffer.WriteString("*********************** FATAL ***********************")
+	a.handleError(fmt.Errorf(buffer.String()))
+	os.Exit(1)
+}
+
 func (a *App) init() {
 	a.applicationEventHooks = make(map[uint][]*eventHook)
 	a.applicationEventListeners = make(map[uint][]*EventListener)
@@ -431,19 +459,12 @@ func (a *App) debug(message string, args ...any) {
 }
 
 func (a *App) fatal(message string, args ...any) {
-	msg := "A FATAL ERROR HAS OCCURRED: " + message
-	if a.Logger != nil {
-		a.Logger.Error(msg, args...)
-	} else {
-		println(msg)
-	}
-	os.Exit(1)
+	err := fmt.Errorf(message, args...)
+	a.handleFatalError(err)
 }
 
 func (a *App) error(message string, args ...any) {
-	if a.Logger != nil {
-		go a.Logger.Error(message, args...)
-	}
+	a.handleError(fmt.Errorf(message, args...))
 }
 
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
