@@ -4,7 +4,6 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/w32"
 	"io"
 	"log"
 	"log/slog"
@@ -59,7 +58,7 @@ func New(appOptions Options) *App {
 
 	result := newApplication(appOptions)
 	globalApplication = result
-	w32.Fatal = result.handleFatalError
+	fatalHandler(result.handleFatalError)
 
 	if result.Logger == nil {
 		if result.isDebugMode {
