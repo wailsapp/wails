@@ -420,18 +420,6 @@ EnableFraudulentWebWebDetection permet de rechercher des contenus frauduleux, te
 
 Nom: EnableFraudulentWebsiteDetection<br/> Type: `bool`
 
-### ZoomFactor
-
-Nom: ZoomFactor<br/> Type: `float64`
-
-Ceci définit le facteur de zoom pour WebView2. Il s'agit de l'option correspondant au zoom avant ou arrière défini par l'utilisateur.
-
-### IsZoomControlEnabled
-
-Nom : IsZoomControlEnabled<br/> Type : `bool`
-
-Cela permet de modifier le facteur de zoom par l'utilisateur. Veuillez noter que le facteur de zoom peut être défini dans les options tandis que ne permet pas à l'utilisateur de le modifier à l'exécution (f.e. pour une application vitrine ou similaire).
-
 ### Bind
 
 La liste des structs Go définissant des méthodes qui doivent être liées au frontend.
@@ -545,6 +533,18 @@ La valeur peut être l'une des valeurs suivantes :
 | Acrylic | Utilisez l'effet [Acrylique](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) |
 | Mica    | Utiliser l'effet [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica)         |
 | Tabbed  | Utiliser Tabbed. C'est un arrière-plan qui est similaire à Mica.                                  |
+
+#### ZoomFactor
+
+Nom: ZoomFactor<br/> Type: `float64`
+
+Ceci définit le facteur de zoom pour WebView2. Il s'agit de l'option correspondant au zoom avant ou arrière défini par l'utilisateur.
+
+#### IsZoomControlEnabled
+
+Nom : IsZoomControlEnabled<br/> Type : `bool`
+
+Cela permet de modifier le facteur de zoom par l'utilisateur. Veuillez noter que le facteur de zoom peut être défini dans les options tandis que ne permet pas à l'utilisateur de le modifier à l'exécution (f.e. pour une application vitrine ou similaire).
 
 #### DisablePinchZoom
 
