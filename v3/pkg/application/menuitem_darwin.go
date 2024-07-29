@@ -284,9 +284,16 @@ static void cut(void) {
 	[NSApp sendAction:@selector(cut:) to:nil from:nil];
 }
 
+void performSelectorOnMainThreadForFirstResponder(SEL selector) {
+    NSWindow *activeWindow = [[NSApplication sharedApplication] keyWindow];
+    if (activeWindow) {
+		[activeWindow performSelectorOnMainThread:selector withObject:nil waitUntilDone:YES];
+    }
+}
+
 // Call selectAll selector to select all text
 static void selectAll(void) {
-	[NSApp sendAction:@selector(selectAll:) to:nil from:nil];
+	performSelectorOnMainThreadForFirstResponder(@selector(selectAll:));
 }
 
 // Call delete selector to delete text

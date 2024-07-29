@@ -15,6 +15,8 @@ import (
 )
 
 func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string) error {
+	DisableFooter = true
+
 	if options.Silent {
 		pterm.DisableOutput()
 		defer pterm.EnableOutput()

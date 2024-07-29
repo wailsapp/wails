@@ -11,6 +11,8 @@ import (
 	"github.com/pterm/pterm"
 )
 
+var DisableFooter bool
+
 func Init(options *flags.Init) error {
 
 	if options.List {

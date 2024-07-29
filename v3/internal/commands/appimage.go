@@ -31,9 +31,10 @@ type GenerateAppImageOptions struct {
 }
 
 func GenerateAppImage(options *GenerateAppImageOptions) error {
+	DisableFooter = true
 
 	defer func() {
-		pterm.DefaultSpinner.Stop()
+		_ = pterm.DefaultSpinner.Stop()
 	}()
 
 	if options.Binary == "" {
@@ -179,46 +180,46 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 }
 
 func findGTKFiles(files []string) ([]string, error) {
-    notFound := []string{}
-    found := []string{}
-    err := filepath.Walk("/usr/", func(path string, info os.FileInfo, err error) error {
-        if err != nil {
+	notFound := []string{}
+	found := []string{}
+	err := filepath.Walk("/usr/", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
 			if os.IsPermission(err) {
 				return nil
 			}
-            return err
-        }
+			return err
+		}
 
-        if info.IsDir() {
-            return nil
-        }
+		if info.IsDir() {
+			return nil
+		}
 
-        for _, fileName := range files {
-            if strings.HasSuffix(path, fileName) {
-                found = append(found, path)
-                break
-            }
-        }
+		for _, fileName := range files {
+			if strings.HasSuffix(path, fileName) {
+				found = append(found, path)
+				break
+			}
+		}
 
-        return nil
-    })
-    if err != nil {
-        return nil, err
-    }
-    for _, fileName := range files {
-        fileFound := false
-        for _, foundPath := range found {
-            if strings.HasSuffix(foundPath, fileName) {
-                fileFound = true
-                break
-            }
-        }
-        if !fileFound {
-            notFound = append(notFound, fileName)
-        }
-    }
-    if len(notFound) > 0 {
-        return nil, errors.New("Unable to locate all required files: " + strings.Join(notFound, ", "))
-    }
-    return found, nil
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	for _, fileName := range files {
+		fileFound := false
+		for _, foundPath := range found {
+			if strings.HasSuffix(foundPath, fileName) {
+				fileFound = true
+				break
+			}
+		}
+		if !fileFound {
+			notFound = append(notFound, fileName)
+		}
+	}
+	if len(notFound) > 0 {
+		return nil, errors.New("Unable to locate all required files: " + strings.Join(notFound, ", "))
+	}
+	return found, nil
 }
