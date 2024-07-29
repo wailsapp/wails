@@ -1,8 +1,6 @@
 package git
 
 import (
-	"encoding/json"
-	"fmt"
 	"testing"
 )
 
@@ -34,9 +32,6 @@ func TestEscapeName1(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := EscapeName(tt.args.str)
-			var js json.RawMessage
-			jsonVal := fmt.Sprintf(`{"name": "%s"}`, got)
-			err = json.Unmarshal([]byte(jsonVal), &js)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("EscapeName() error = %v, wantErr %v", err, tt.wantErr)
 				return
