@@ -130,6 +130,9 @@ extra:
     - icon: fontawesome/brands/discord
       link: https://discord.gg/JDdSxwjhGf
 
+  version:
+    provider: mike
+
 extra_css:
   - stylesheets/extra.css
 
