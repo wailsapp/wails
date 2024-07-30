@@ -76,6 +76,9 @@ cd v3/cmd/wails3
 go install
 ```
 
+When using the development version, all generated projects will use Go's [replace(https://go.dev/ref/mod#go-mod-file-replace) directive
+to ensure projects use the development version of Wails.
+
 ## System Check
 
 Running `wails3 doctor` will check if you have the correct dependencies
