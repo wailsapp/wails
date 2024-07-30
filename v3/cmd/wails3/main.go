@@ -65,6 +65,7 @@ func main() {
 	tool.NewSubCommandFunction("checkport", "Checks if a port is open. Useful for testing if vite is running.", commands.ToolCheckPort)
 	tool.NewSubCommandFunction("watcher", "Watches files and runs a command when they change", commands.Watcher)
 	tool.NewSubCommandFunction("cp", "Copy files", commands.Cp)
+	tool.NewSubCommandFunction("buildinfo", "Show Build Info", commands.BuildInfo)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)

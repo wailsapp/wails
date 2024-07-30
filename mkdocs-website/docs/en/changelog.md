@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v3.0.0-alpha.5 - 2024-07-30
+
 
 ### Added
 - [linux] WindowDidMove / WindowDidResize events in [#3580](https://github.com/wailsapp/wails/pull/3580)

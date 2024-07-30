@@ -4,6 +4,8 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/buildinfo"
+	"github.com/wailsapp/wails/v3/internal/version"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -72,6 +74,7 @@ type TemplateOptions struct {
 	*flags.Init
 	LocalModulePath string
 	UseTypescript   bool
+	WailsVersion    string
 }
 
 func getInternalTemplate(templateName string) (*Template, error) {
@@ -214,24 +217,35 @@ func Install(options *flags.Init) error {
 		return err
 	}
 
-	// Calculate relative path from project directory to LocalModulePath
-	var relativePath string
-	// Check if the project directory and LocalModulePath are in the same drive
-	if filepath.VolumeName(wd) != filepath.VolumeName(debug.LocalModulePath) {
-		relativePath = debug.LocalModulePath
-	} else {
-		relativePath, err = filepath.Rel(projectDir, debug.LocalModulePath)
-	}
+	buildInfo, err := buildinfo.Get()
 	if err != nil {
 		return err
 	}
 
+	// Calculate relative path from project directory to LocalModulePath
+	var localModulePath string
+
+	// Use module path if it is set
+	if buildInfo.Development {
+		var relativePath string
+		// Check if the project directory and LocalModulePath are in the same drive
+		if filepath.VolumeName(wd) != filepath.VolumeName(debug.LocalModulePath) {
+			relativePath = debug.LocalModulePath
+		} else {
+			relativePath, err = filepath.Rel(projectDir, debug.LocalModulePath)
+		}
+		if err != nil {
+			return err
+		}
+		localModulePath = filepath.ToSlash(relativePath + "/")
+	}
 	UseTypescript := strings.HasSuffix(options.TemplateName, "-ts")
 
 	templateData := TemplateOptions{
 		Init:            options,
-		LocalModulePath: filepath.ToSlash(relativePath + "/"),
+		LocalModulePath: localModulePath,
 		UseTypescript:   UseTypescript,
+		WailsVersion:    version.VersionString,
 	}
 
 	defer func() {
