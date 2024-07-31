@@ -118,9 +118,9 @@ extra:
     - name: English
       link: /
       lang: en
-    - name: Cymraeg
-      link: /cy/
-      lang: cy
+#    - name: Cymraeg
+#      link: /cy/
+#      lang: cy
       
   social:
     - icon: fontawesome/brands/github-alt
@@ -160,7 +160,7 @@ nav:
     - Introduction: development/introduction.md
     - Status: development/status.md
     - v3 Changes: development/changes.md
-  - Roadmap: roadmap.md
+  - Status: status.md
   - Change Log: changelog.md
   - Sponsor❤️: https://github.com/sponsors/leaanthony
 
