@@ -4,10 +4,6 @@
 
 Our goal is to reach Beta status. This roadmap outlines the key features and improvements we need to implement before transitioning to Beta. Please note that this is a living document and may be updated as priorities shift or new insights emerge.
 
-## Backlog
-
-<iframe src="https://github.com/orgs/wailsapp/projects/6" width="100%" height="1000px"></iframe>
-
 ## How You Can Contribute
 
 - Test the latest alpha release and report any issues
