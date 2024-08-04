@@ -37,7 +37,7 @@ func (p *PluginManager) Init() []error {
 	for id, plugin := range p.plugins {
 		err := plugin.Init(api)
 		if err != nil {
-			globalApplication.error("Plugin failed to initialise:", "plugin", plugin.Name(), "error", err.Error())
+			globalApplication.error("Plugin '%s' failed to initialise: %s", plugin.Name(), err.Error())
 			return p.Shutdown()
 		}
 		p.initialisedPlugins = append(p.initialisedPlugins, plugin)
