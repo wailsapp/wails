@@ -348,7 +348,7 @@ func cleanup() {
 func (a *App) logPlatformInfo() {
 	info, err := operatingsystem.Info()
 	if err != nil {
-		a.error("Error getting OS info", "error", err.Error())
+		a.error("Error getting OS info: %s", err.Error())
 		return
 	}
 
@@ -360,7 +360,6 @@ func (a *App) platformEnvironment() map[string]any {
 	return map[string]any{}
 }
 
-
 func fatalHandler(errFunc func(error)) {
-	return 
+	return
 }

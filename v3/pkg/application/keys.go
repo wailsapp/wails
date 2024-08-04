@@ -199,7 +199,7 @@ func parseAccelerator(shortcut string) (*accelerator, error) {
 			if !validKey {
 				return nil, fmt.Errorf("'%s' is not a valid key", component)
 			}
-			result.Key = processedKey
+			result.Key = strings.ToLower(processedKey)
 			continue
 		}
 
