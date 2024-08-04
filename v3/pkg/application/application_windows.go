@@ -318,7 +318,7 @@ func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
 func newPlatformApp(app *App) *windowsApp {
 	err := w32.SetProcessDPIAware()
 	if err != nil {
-		globalApplication.fatal("Fatal error in application initialisation: ", err.Error())
+		globalApplication.fatal("Fatal error in application initialisation: %s", err.Error())
 		os.Exit(1)
 	}
 
@@ -361,5 +361,5 @@ func (a *App) platformEnvironment() map[string]any {
 
 func fatalHandler(errFunc func(error)) {
 	w32.Fatal = errFunc
-	return 
+	return
 }

@@ -1318,7 +1318,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 	uri, _ := req.GetUri()
 	reqUri, err := url.ParseRequestURI(uri)
 	if err != nil {
-		globalApplication.error("Unable to parse request uri", "uri", uri, "error", err)
+		globalApplication.error("Unable to parse request uri: uri='%s' error='%s'", uri, err)
 		return
 	}
 

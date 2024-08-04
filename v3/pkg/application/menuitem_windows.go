@@ -114,7 +114,7 @@ func (m *windowsMenuItem) setBitmap(bitmap []byte) {
 	// Set the icon
 	err := w32.SetMenuIcons(m.hMenu, m.id, bitmap, nil)
 	if err != nil {
-		globalApplication.error("Unable to set bitmap on menu item", "error", err.Error())
+		globalApplication.error("Unable to set bitmap on menu item: %s", err.Error())
 		return
 	}
 	m.update()
