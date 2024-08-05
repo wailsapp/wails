@@ -621,10 +621,10 @@ func getScreenByIndex(display pointer, index int) *Screen {
 	}
 
 	return &Screen{
-		IsPrimary: primary,
-		Scale:     1.0,
-		X:         int(geometry.x),
-		Y:         int(geometry.y),
+		IsPrimary:   primary,
+		ScaleFactor: 1.0,
+		X:           int(geometry.x),
+		Y:           int(geometry.y),
 		Size: Size{
 			Height: int(geometry.height),
 			Width:  int(geometry.width),
@@ -719,7 +719,7 @@ func windowGetCurrentMonitor(window pointer) pointer {
 	return gdkDisplayGetMonitorAtWindow(display, window)
 }
 
-func windowGetCurrentMonitorGeometry(window pointer) (x int, y int, width int, height int, scale int) {
+func windowGetCurrentMonitorGeometry(window pointer) (x int, y int, width int, height int, scaleFactor int) {
 	monitor := windowGetCurrentMonitor(window)
 	if monitor == 0 {
 		return -1, -1, -1, -1, 1
