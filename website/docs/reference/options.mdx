@@ -485,21 +485,6 @@ services of Apple and Microsoft.
 Name: EnableFraudulentWebsiteDetection<br/>
 Type: `bool`
 
-### ZoomFactor
-
-Name: ZoomFactor<br/>
-Type: `float64`
-
-This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
-
-### IsZoomControlEnabled
-
-Name: IsZoomControlEnabled<br/>
-Type: `bool`
-
-This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while
-disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
-
 ### Bind
 
 A slice of struct instances defining methods that need to be bound to the frontend.
@@ -641,6 +626,21 @@ The value can be one of the following:
 | Acrylic | Use [Acrylic](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) effect |
 | Mica    | Use [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) effect       |
 | Tabbed  | Use Tabbed. This is a backdrop that is similar to Mica.                                   |
+
+#### ZoomFactor
+
+Name: ZoomFactor<br/>
+Type: `float64`
+
+This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+
+#### IsZoomControlEnabled
+
+Name: IsZoomControlEnabled<br/>
+Type: `bool`
+
+This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while
+disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
 
 #### DisablePinchZoom
 
