@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Window Demo</title>
+  <style>
+    body {
+      color: white;
+    }
+  </style>
+  <script src="/wails/runtime.js" type="module"></script>
+  <script>
+    async function callBinding(name, ...params) {
+      return wails.Call.ByName(name, ...params)
+    }
+  </script>
+</head>
+<body>
+  <div style="background-color: aquamarine; height: 50px;" onclick="showInfo = !showInfo">
+    <div style="background-color: rgb(57, 109, 92); width: 50%; height: 100%; position: relative;">
+      <span id="text" style="float: left; font-size: 1.5em;"></span>
+      <div style="background-color: rgb(237, 157, 66); width: 40px; height: 100%; opacity: 0.5; position: absolute; right: -20px;"></div>
+    </div>
+  </div>
+  <!-- ===================================================== -->
+  <hr>
+  <label>
+    &#10021;
+    <input id="step" type="number" value="50" style="width: 50px" title="Step, Arrow Move" onkeydown="arrowMove(event)">
+  </label>
+  &nbsp;X:
+  <button onclick="setPos(true, -step.value)">&lt;</button>
+  <button onclick="setPos(true, +step.value)">&gt;</button>
+  &nbsp;Width:
+  <button onclick="setSize(true, -step.value)">-</button>
+  <button onclick="setSize(true, +step.value)">+</button>
+  &nbsp;
+  <button onclick="getBounds()">getBounds</button>
+  <button onclick="getBounds().then(b => {x.value = b.x; y.value = b.y; w.value = b.width; h.value = b.height})">↡</button>
+  <div style="height: 10px"></div>
+  <input id="x" type="number" value="100" style="width: 50px" title="X">
+  <input id="y" type="number" value="100" style="width: 50px" title="Y">
+  <button onclick="setPos(false, +x.value, +y.value)">setPos</button>
+  &nbsp;
+  <input id="w" type="number" value="800" style="width: 50px" title="Width">
+  <input id="h" type="number" value="600" style="width: 50px" title="Height">
+  <button onclick="setSize(false, +w.value, +h.value)">setSize</button>
+  &nbsp;
+  <button onclick="setBounds(+x.value, +y.value, +w.value, +h.value)">setBounds</button>
+  <hr>
+  <!-- ===================================================== -->
+
+  <script>
+    function arrowMove(e) {
+      let x = 0, y = 0
+      if (e.key == 'ArrowLeft') x = -step.value
+      if (e.key == 'ArrowRight') x = +step.value
+      if (e.key == 'ArrowUp') y = -step.value
+      if (e.key == 'ArrowDown') y = +step.value
+      if (!(x || y)) return
+      e.preventDefault()
+      setPos(true, x, y)
+    }
+    function setPos(relative, x, y=0) {
+      callBinding('main.WindowService.SetPos', relative, x, y)
+    }
+    function setSize(relative, w, h=0) {
+      callBinding('main.WindowService.SetSize', relative, w, h)
+    }
+    function setBounds(x, y, w, h) {
+      callBinding('main.WindowService.SetBounds', x, y, w, h)
+    }
+    async function getBounds() {
+      const b = await callBinding('main.WindowService.GetBounds')
+      return {x: b.X, y: b.Y, width: b.Width, height: b.Height}
+    }
+    let showInfo = false
+    setInterval(async () => {
+      if (!showInfo) {
+        text.textContent = ''
+        return
+      }
+      const b = await getBounds()
+      text.textContent = `${b.x}, ${b.y} - ${b.width}, ${b.height}`
+    }, 100);
+  </script>
+
+</body>
+</html>

@@ -105,8 +105,8 @@ func (w *linuxWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
 }
 
 func (w *linuxWebviewWindow) disableSizeConstraints() {
-	x, y, width, height, scale := w.getCurrentMonitorGeometry()
-	w.setMinMaxSize(x, y, width*scale, height*scale)
+	x, y, width, height, scaleFactor := w.getCurrentMonitorGeometry()
+	w.setMinMaxSize(x, y, width*scaleFactor, height*scaleFactor)
 }
 
 func (w *linuxWebviewWindow) unminimise() {
@@ -202,6 +202,36 @@ func (w *linuxWebviewWindow) height() int {
 func (w *linuxWebviewWindow) setPosition(x int, y int) {
 	// Set the window's absolute position
 	w.move(x, y)
+}
+
+func (w *linuxWebviewWindow) bounds() Rect {
+	// DOTO: do it in a single step + proper DPI scaling
+	x, y := w.position()
+	width, height := w.size()
+
+	return Rect{
+		X:      x,
+		Y:      y,
+		Width:  width,
+		Height: height,
+	}
+}
+
+func (w *linuxWebviewWindow) setBounds(bounds Rect) {
+	// DOTO: do it in a single step + proper DPI scaling
+	w.move(bounds.X, bounds.Y)
+	w.setSize(bounds.Width, bounds.Height)
+
+}
+
+func (w *linuxWebviewWindow) physicalBounds() Rect {
+	// TODO: proper DPI scaling
+	return w.bounds()
+}
+
+func (w *linuxWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
+	// TODO: proper DPI scaling
+	w.setBounds(physicalBounds)
 }
 
 func (w *linuxWebviewWindow) run() {

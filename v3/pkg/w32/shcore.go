@@ -3,6 +3,7 @@
 package w32
 
 import (
+	"fmt"
 	"syscall"
 	"unsafe"
 )
@@ -10,8 +11,22 @@ import (
 var (
 	modshcore = syscall.NewLazyDLL("shcore.dll")
 
-	procGetDpiForMonitor = modshcore.NewProc("GetDpiForMonitor")
+	procGetDpiForMonitor       = modshcore.NewProc("GetDpiForMonitor")
+	procSetProcessDpiAwareness = modshcore.NewProc("SetProcessDpiAwareness")
 )
+
+func HasSetProcessDpiAwarenessFunc() bool {
+	err := procSetProcessDpiAwareness.Find()
+	return err == nil
+}
+
+func SetProcessDpiAwareness(val uint) error {
+	status, r, err := procSetProcessDpiAwareness.Call(uintptr(val))
+	if status != S_OK {
+		return fmt.Errorf("procSetProcessDpiAwareness failed %d: %v %v", status, r, err)
+	}
+	return nil
+}
 
 func HasGetDPIForMonitorFunc() bool {
 	err := procGetDpiForMonitor.Find()

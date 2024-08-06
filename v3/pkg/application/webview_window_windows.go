@@ -11,7 +11,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-	"unicode/utf16"
 	"unsafe"
 
 	"github.com/bep/debounce"
@@ -49,6 +48,7 @@ type windowsWebviewWindow struct {
 	hwnd                     w32.HWND
 	menu                     *Win32Menu
 	currentlyOpenContextMenu *Win32Menu
+	ignoreDPIChangeResizing  bool
 
 	// Fullscreen flags
 	isCurrentlyFullscreen   bool
@@ -74,34 +74,6 @@ type windowsWebviewWindow struct {
 
 func (w *windowsWebviewWindow) handleKeyEvent(_ string) {
 	// Unused on windows
-}
-
-// getBorderSizes returns the extended border size for the window
-func (w *windowsWebviewWindow) getBorderSizes() *LRTB {
-	var result LRTB
-	var frame w32.RECT
-	w32.DwmGetWindowAttribute(w.hwnd, w32.DWMWA_EXTENDED_FRAME_BOUNDS, unsafe.Pointer(&frame), unsafe.Sizeof(frame))
-	rect := w32.GetWindowRect(w.hwnd)
-	result.Left = int(frame.Left - rect.Left)
-	result.Top = int(frame.Top - rect.Top)
-	result.Right = int(rect.Right - frame.Right)
-	result.Bottom = int(rect.Bottom - frame.Bottom)
-	return &result
-}
-
-func (w *windowsWebviewWindow) setPosition(x int, y int) {
-	// Set the window's absolute position
-	borderSize := w.getBorderSizes()
-	w32.SetWindowPos(w.hwnd, 0, x-borderSize.Left, y-borderSize.Top, 0, 0, w32.SWP_NOSIZE|w32.SWP_NOZORDER)
-}
-
-func (w *windowsWebviewWindow) position() (int, int) {
-	rect := w32.GetWindowRect(w.hwnd)
-	borderSizes := w.getBorderSizes()
-	x := int(rect.Left) + borderSizes.Left
-	y := int(rect.Top) + borderSizes.Top
-	left, right := w.scaleToDefaultDPI(x, y)
-	return left, right
 }
 
 func (w *windowsWebviewWindow) setEnabled(enabled bool) {
@@ -137,13 +109,6 @@ func (w *windowsWebviewWindow) nativeWindowHandle() uintptr {
 
 func (w *windowsWebviewWindow) setTitle(title string) {
 	w32.SetWindowText(w.hwnd, title)
-}
-
-func (w *windowsWebviewWindow) setSize(width, height int) {
-	rect := w32.GetWindowRect(w.hwnd)
-	width, height = w.scaleWithWindowDPI(width, height)
-	w32.MoveWindow(w.hwnd, int(rect.Left), int(rect.Top), width, height, true)
-	w.chromium.Resize()
 }
 
 func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
@@ -223,9 +188,21 @@ func (w *windowsWebviewWindow) run() {
 		exStyle = options.Windows.ExStyle
 	}
 
-	// ToDo: X, Y should also be scaled, should it be always relative to the main monitor?
-	var startX, _ = lo.Coalesce(options.X, w32.CW_USEDEFAULT)
-	var startY, _ = lo.Coalesce(options.Y, w32.CW_USEDEFAULT)
+	bounds := Rect{
+		X:      options.X,
+		Y:      options.Y,
+		Width:  options.Width,
+		Height: options.Height,
+	}
+	initialScreen := ScreenNearestDipRect(bounds)
+	physicalBounds := initialScreen.dipToPhysicalRect(bounds)
+
+	// Default window position applied by the system
+	// TODO: provide a way to set (0,0) as an initial position?
+	if options.X == 0 && options.Y == 0 {
+		physicalBounds.X = w32.CW_USEDEFAULT
+		physicalBounds.Y = w32.CW_USEDEFAULT
+	}
 
 	var appMenu w32.HMENU
 
@@ -252,10 +229,10 @@ func (w *windowsWebviewWindow) run() {
 		windowClassName,
 		w32.MustStringToUTF16Ptr(options.Title),
 		style,
-		startX,
-		startY,
-		w32.CW_USEDEFAULT,
-		w32.CW_USEDEFAULT,
+		physicalBounds.X,
+		physicalBounds.Y,
+		physicalBounds.Width,
+		physicalBounds.Height,
 		parent,
 		appMenu,
 		w32.GetModuleHandle(""),
@@ -265,7 +242,12 @@ func (w *windowsWebviewWindow) run() {
 		panic("Unable to create window")
 	}
 
-	w.setSize(options.Width, options.Height)
+	// Ensure correct window size in case the scale factor of current screen is different from the initial one.
+	// This could happen when using the default window position and the window launches on a secondary monitor.
+	currentScreen, _ := w.getScreen()
+	if currentScreen.ScaleFactor != initialScreen.ScaleFactor {
+		w.setSize(options.Width, options.Height)
+	}
 
 	w.setupChromium()
 
@@ -393,48 +375,114 @@ func (w *windowsWebviewWindow) enableSizeConstraints() {
 	}
 }
 
-func (w *windowsWebviewWindow) size() (int, int) {
-	rect := w32.GetWindowRect(w.hwnd)
-	width := int(rect.Right - rect.Left)
-	height := int(rect.Bottom - rect.Top)
-	// Scaling appears to give invalid results...
-	//width, height = w.scaleToDefaultDPI(width, height)
-	return width, height
-}
-
 func (w *windowsWebviewWindow) update() {
 	w32.UpdateWindow(w.hwnd)
 }
 
+// getBorderSizes returns the extended border size for the window
+func (w *windowsWebviewWindow) getBorderSizes() *LRTB {
+	var result LRTB
+	var frame w32.RECT
+	w32.DwmGetWindowAttribute(w.hwnd, w32.DWMWA_EXTENDED_FRAME_BOUNDS, unsafe.Pointer(&frame), unsafe.Sizeof(frame))
+	rect := w32.GetWindowRect(w.hwnd)
+	result.Left = int(frame.Left - rect.Left)
+	result.Top = int(frame.Top - rect.Top)
+	result.Right = int(rect.Right - frame.Right)
+	result.Bottom = int(rect.Bottom - frame.Bottom)
+	return &result
+}
+
+func (w *windowsWebviewWindow) physicalBounds() Rect {
+	// var rect w32.RECT
+	// // Get the extended frame bounds instead of the window rect to offset the invisible borders in Windows 10
+	// w32.DwmGetWindowAttribute(w.hwnd, w32.DWMWA_EXTENDED_FRAME_BOUNDS, unsafe.Pointer(&rect), unsafe.Sizeof(rect))
+	rect := w32.GetWindowRect(w.hwnd)
+	return Rect{
+		X:      int(rect.Left),
+		Y:      int(rect.Top),
+		Width:  int(rect.Right - rect.Left),
+		Height: int(rect.Bottom - rect.Top),
+	}
+}
+
+func (w *windowsWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
+	// // Offset invisible borders
+	// borderSize := w.getBorderSizes()
+	// physicalBounds.X -= borderSize.Left
+	// physicalBounds.Y -= borderSize.Top
+	// physicalBounds.Width += borderSize.Left + borderSize.Right
+	// physicalBounds.Height += borderSize.Top + borderSize.Bottom
+
+	// Set flag to ignore resizing the window with DPI change because we already calculated the correct size
+	// for the target position, this prevents double resizing issue when the window is moved between screens
+	previousFlag := w.ignoreDPIChangeResizing
+	w.ignoreDPIChangeResizing = true
+	w32.SetWindowPos(w.hwnd, 0, physicalBounds.X, physicalBounds.Y, physicalBounds.Width, physicalBounds.Height, w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+	w.ignoreDPIChangeResizing = previousFlag
+}
+
+// Get window dip bounds
+func (w *windowsWebviewWindow) bounds() Rect {
+	return PhysicalToDipRect(w.physicalBounds())
+}
+
+// Set window dip bounds
+func (w *windowsWebviewWindow) setBounds(bounds Rect) {
+	w.setPhysicalBounds(DipToPhysicalRect(bounds))
+}
+
+func (w *windowsWebviewWindow) size() (int, int) {
+	bounds := w.bounds()
+	return bounds.Width, bounds.Height
+}
+
 func (w *windowsWebviewWindow) width() int {
-	width, _ := w.size()
-	return width
+	return w.bounds().Width
 }
 
 func (w *windowsWebviewWindow) height() int {
-	_, height := w.size()
-	return height
+	return w.bounds().Height
 }
 
+func (w *windowsWebviewWindow) setSize(width, height int) {
+	bounds := w.bounds()
+	bounds.Width = width
+	bounds.Height = height
+
+	w.setBounds(bounds)
+}
+
+func (w *windowsWebviewWindow) position() (int, int) {
+	bounds := w.bounds()
+	return bounds.X, bounds.Y
+}
+
+func (w *windowsWebviewWindow) setPosition(x int, y int) {
+	bounds := w.bounds()
+	bounds.X = x
+	bounds.Y = y
+
+	w.setBounds(bounds)
+}
+
+// Get window position relative to the screen WorkArea on which it is
 func (w *windowsWebviewWindow) relativePosition() (int, int) {
-	// Get monitor for window
-	monitor := w32.MonitorFromWindow(w.hwnd, w32.MONITOR_DEFAULTTONEAREST)
-	var monitorInfo w32.MONITORINFO
-	monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
-	w32.GetMonitorInfo(monitor, &monitorInfo)
+	screen, _ := w.getScreen()
+	pos := screen.absoluteToRelativeDipPoint(w.bounds().Origin())
+	// Relative to WorkArea origin
+	pos.X -= (screen.WorkArea.X - screen.X)
+	pos.Y -= (screen.WorkArea.Y - screen.Y)
+	return pos.X, pos.Y
+}
 
-	// Get window rect
-	rect := w32.GetWindowRect(w.hwnd)
-
-	// Calculate relative position
-	x := int(rect.Left) - int(monitorInfo.RcWork.Left)
-	y := int(rect.Top) - int(monitorInfo.RcWork.Top)
-
-	borderSize := w.getBorderSizes()
-	x += borderSize.Left
-	y += borderSize.Top
-
-	return w.scaleToDefaultDPI(x, y)
+// Set window position relative to the screen WorkArea on which it is
+func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
+	screen, _ := w.getScreen()
+	pos := screen.relativeToAbsoluteDipPoint(Point{X: x, Y: y})
+	// Relative to WorkArea origin
+	pos.X += (screen.WorkArea.X - screen.X)
+	pos.Y += (screen.WorkArea.Y - screen.Y)
+	w.setPosition(pos.X, pos.Y)
 }
 
 func (w *windowsWebviewWindow) destroy() {
@@ -509,16 +557,6 @@ func (w *windowsWebviewWindow) zoom() {
 func (w *windowsWebviewWindow) setHTML(html string) {
 	// Render the given HTML in the webview window
 	w.execJS(fmt.Sprintf("document.documentElement.innerHTML = %q;", html))
-}
-
-func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
-	//x, y = w.scaleWithWindowDPI(x, y)
-	info := w32.GetMonitorInfoForWindow(w.hwnd)
-	workRect := info.RcWork
-	borderSize := w.getBorderSizes()
-	x -= borderSize.Left
-	y -= borderSize.Top
-	w32.SetWindowPos(w.hwnd, w32.HWND_TOP, int(workRect.Left)+x, int(workRect.Top)+y, 0, 0, w32.SWP_NOSIZE)
 }
 
 // on is used to indicate that a particular event should be listened for
@@ -809,45 +847,9 @@ func (w *windowsWebviewWindow) hide() {
 	w32.ShowWindow(w.hwnd, w32.SW_HIDE)
 }
 
-func getScreen(hwnd w32.HWND) (*Screen, error) {
-	hMonitor := w32.MonitorFromWindow(hwnd, w32.MONITOR_DEFAULTTONEAREST)
-	var mi w32.MONITORINFOEX
-	mi.CbSize = uint32(unsafe.Sizeof(mi))
-	w32.GetMonitorInfoEx(hMonitor, &mi)
-	var thisScreen Screen
-	thisScreen.X = int(mi.RcMonitor.Left)
-	thisScreen.Y = int(mi.RcMonitor.Top)
-	thisScreen.Size = Size{
-		Width:  int(mi.RcMonitor.Right - mi.RcMonitor.Left),
-		Height: int(mi.RcMonitor.Bottom - mi.RcMonitor.Top),
-	}
-	thisScreen.Bounds = Rect{
-		X:      int(mi.RcMonitor.Left),
-		Y:      int(mi.RcMonitor.Top),
-		Width:  int(mi.RcMonitor.Right - mi.RcMonitor.Left),
-		Height: int(mi.RcMonitor.Bottom - mi.RcMonitor.Top),
-	}
-	thisScreen.WorkArea = Rect{
-		X:      int(mi.RcWork.Left),
-		Y:      int(mi.RcWork.Top),
-		Width:  int(mi.RcWork.Right - mi.RcWork.Left),
-		Height: int(mi.RcWork.Bottom - mi.RcWork.Top),
-	}
-	thisScreen.ID = strconv.Itoa(int(hMonitor))
-	thisScreen.Name = string(utf16.Decode(mi.SzDevice[:]))
-	var xdpi, ydpi w32.UINT
-	w32.GetDPIForMonitor(hMonitor, w32.MDT_EFFECTIVE_DPI, &xdpi, &ydpi)
-	thisScreen.Scale = float32(xdpi) / 96.0
-	thisScreen.IsPrimary = mi.DwFlags&w32.MONITORINFOF_PRIMARY != 0
-
-	// TODO: Get screen rotation
-
-	return &thisScreen, nil
-}
-
 // Get the screen for the current window
 func (w *windowsWebviewWindow) getScreen() (*Screen, error) {
-	return getScreen(w.hwnd)
+	return getScreenForWindow(w)
 }
 
 func (w *windowsWebviewWindow) setFrameless(b bool) {
@@ -1049,6 +1051,11 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		mmi := (*w32.MINMAXINFO)(unsafe.Pointer(lparam))
 		hasConstraints := false
 		options := w.parent.options
+		// Using ScreenManager to get the closest screen and scale according to its DPI is problematic
+		// here because in multi-monitor setup, when dragging the window between monitors with the mouse
+		// on the side with the higher DPI, the DPI change point is offset beyond the mid point, causing
+		// wrong scaling and unwanted resizing when using the monitor DPI. To avoid this issue, we use
+		// scaleWithWindowDPI() instead which retrieves the correct DPI with GetDpiForWindow().
 		if options.MinWidth > 0 || options.MinHeight > 0 {
 			hasConstraints = true
 
@@ -1076,14 +1083,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 
 	case w32.WM_DPICHANGED:
-		newWindowSize := (*w32.RECT)(unsafe.Pointer(lparam))
-		w32.SetWindowPos(w.hwnd,
-			uintptr(0),
-			int(newWindowSize.Left),
-			int(newWindowSize.Top),
-			int(newWindowSize.Right-newWindowSize.Left),
-			int(newWindowSize.Bottom-newWindowSize.Top),
-			w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+		if !w.ignoreDPIChangeResizing {
+			newWindowRect := (*w32.RECT)(unsafe.Pointer(lparam))
+			w32.SetWindowPos(w.hwnd,
+				uintptr(0),
+				int(newWindowRect.Left),
+				int(newWindowRect.Top),
+				int(newWindowRect.Right-newWindowRect.Left),
+				int(newWindowRect.Bottom-newWindowRect.Top),
+				w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+		}
 		w.parent.emit(events.Common.WindowDPIChanged)
 	}
 
@@ -1149,29 +1158,37 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 					// Make sure to use the provided RECT to get the monitor, because during maximizig there might be
 					// a wrong monitor returned in multiscreen mode when using MonitorFromWindow.
 					// See: https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
-					monitor := w32.MonitorFromRect(rgrc, w32.MONITOR_DEFAULTTONULL)
+					screen := ScreenNearestPhysicalRect(Rect{
+						X:      int(rgrc.Left),
+						Y:      int(rgrc.Top),
+						Width:  int(rgrc.Right - rgrc.Left),
+						Height: int(rgrc.Bottom - rgrc.Top),
+					})
 
-					var monitorInfo w32.MONITORINFO
-					monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
-					if monitor != 0 && w32.GetMonitorInfo(monitor, &monitorInfo) {
-						*rgrc = monitorInfo.RcWork
+					rect := screen.PhysicalWorkArea
 
-						maxWidth := options.MaxWidth
-						maxHeight := options.MaxHeight
-						if maxWidth > 0 || maxHeight > 0 {
-							var dpiX, dpiY uint
-							w32.GetDPIForMonitor(monitor, w32.MDT_EFFECTIVE_DPI, &dpiX, &dpiY)
+					maxWidth := options.MaxWidth
+					maxHeight := options.MaxHeight
 
-							maxWidth := int32(ScaleWithDPI(maxWidth, dpiX))
-							if maxWidth > 0 && rgrc.Right-rgrc.Left > maxWidth {
-								rgrc.Right = rgrc.Left + maxWidth
-							}
-
-							maxHeight := int32(ScaleWithDPI(maxHeight, dpiY))
-							if maxHeight > 0 && rgrc.Bottom-rgrc.Top > maxHeight {
-								rgrc.Bottom = rgrc.Top + maxHeight
-							}
+					if maxWidth > 0 {
+						maxWidth = screen.scale(maxWidth, false)
+						if rect.Width > maxWidth {
+							rect.Width = maxWidth
 						}
+					}
+
+					if maxHeight > 0 {
+						maxHeight = screen.scale(maxHeight, false)
+						if rect.Height > maxHeight {
+							rect.Height = maxHeight
+						}
+					}
+
+					*rgrc = w32.RECT{
+						Left:   int32(rect.X),
+						Top:    int32(rect.Y),
+						Right:  int32(rect.X + rect.Width),
+						Bottom: int32(rect.Y + rect.Height),
 					}
 					w.chromium.SetPadding(edge.Rect{})
 				} else {
@@ -1193,7 +1210,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 
 func (w *windowsWebviewWindow) DPI() (w32.UINT, w32.UINT) {
 	if w32.HasGetDpiForWindowFunc() {
-		// GetDpiForWindow is supported beginning with Windows 10, 1607 and is the most accureate
+		// GetDpiForWindow is supported beginning with Windows 10, 1607 and is the most accurate
 		// one, especially it is consistent with the WM_DPICHANGED event.
 		dpi := w32.GetDpiForWindow(w.hwnd)
 		return dpi, dpi
@@ -1226,12 +1243,8 @@ func (w *windowsWebviewWindow) scaleWithWindowDPI(width, height int) (int, int) 
 	return scaledWidth, scaledHeight
 }
 
-func (w *windowsWebviewWindow) scaleToDefaultDPI(width, height int) (int, int) {
-	dpix, dpiy := w.DPI()
-	scaledWidth := ScaleToDefaultDPI(width, dpix)
-	scaledHeight := ScaleToDefaultDPI(height, dpiy)
-
-	return scaledWidth, scaledHeight
+func ScaleWithDPI(pixels int, dpi uint) int {
+	return (pixels * int(dpi)) / 96
 }
 
 func (w *windowsWebviewWindow) setWindowMask(imageData []byte) {
@@ -1705,14 +1718,6 @@ func (w *windowsWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
 
 func (w *windowsWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
 	w.setStyle(enabled, w32.WS_MINIMIZEBOX)
-}
-
-func ScaleWithDPI(pixels int, dpi uint) int {
-	return (pixels * int(dpi)) / 96
-}
-
-func ScaleToDefaultDPI(pixels int, dpi uint) int {
-	return (pixels * 96) / int(dpi)
 }
 
 func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error) {

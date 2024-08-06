@@ -72,6 +72,23 @@ const (
 	IMAGE_ENHMETAFILE = 3
 )
 
+// SetProcessDpiAwareness constants
+const (
+	PROCESS_DPI_UNAWARE           = 0
+	PROCESS_SYSTEM_DPI_AWARE      = 1
+	PROCESS_PER_MONITOR_DPI_AWARE = 2
+)
+
+// SetProcessDpiAwarenessContext constants
+// Credit: https://github.com/ncruces/zenity
+const (
+	DPI_AWARENESS_CONTEXT_UNAWARE              = ^uintptr(1) + 1
+	DPI_AWARENESS_CONTEXT_SYSTEM_AWARE         = ^uintptr(2) + 1
+	DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE    = ^uintptr(3) + 1
+	DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = ^uintptr(4) + 1
+	DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED    = ^uintptr(5) + 1
+)
+
 // ShowWindow constants
 const (
 	SW_HIDE            = 0

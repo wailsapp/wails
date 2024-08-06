@@ -9,8 +9,9 @@ package w32
 
 import (
 	"fmt"
-	"golang.org/x/sys/windows"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 // From MSDN: Windows Data Types
@@ -678,6 +679,7 @@ type NOTIFYICONDATA struct {
 }
 
 const SPI_GETNOTIFYWINDOWRECT = 0x0040
+const SPI_SETWORKAREA = 0x002F
 
 // Taskbar constants
 const ABM_GETTASKBARPOS = 0x00000005
