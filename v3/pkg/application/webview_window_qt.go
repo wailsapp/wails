@@ -1,21 +1,18 @@
-//go:build linux && !qt
+//go:build linux && qt
 
 package application
 
+// #include "qt_lib.hpp"
 import "C"
+
 import (
 	"fmt"
-	"time"
+	"unsafe"
 
-	"github.com/bep/debounce"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
-)
-
-const (
-	windowDidMoveDebounceMS = 200
 )
 
 type dragInfo struct {
@@ -28,7 +25,7 @@ type dragInfo struct {
 type linuxWebviewWindow struct {
 	id            uint
 	application   pointer
-	window        pointer
+	window        *C.Window
 	webview       pointer
 	parent        *WebviewWindow
 	menubar       pointer
@@ -41,9 +38,6 @@ type linuxWebviewWindow struct {
 	lastX, lastY  int
 	gtkmenu       pointer
 	ctxMenuOpened bool
-
-	moveDebouncer   func(func())
-	resizeDebouncer func(func())
 }
 
 var (
@@ -152,9 +146,16 @@ func (w *linuxWebviewWindow) restore() {
 func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 	//	(*C.struct__GtkWidget)(m.native)
 	//var menubar *C.struct__GtkWidget
+
+	url := C.CString("https://example.com")
+	defer C.cfree(unsafe.Pointer(url))
+
+	win := C.Window_new(unsafe.Pointer(getNativeApplication().application), url)
+
 	result := &linuxWebviewWindow{
 		application: getNativeApplication().application,
 		parent:      parent,
+		window:      win,
 		//		menubar:     menubar,
 	}
 	return result
@@ -176,10 +177,6 @@ func (w *linuxWebviewWindow) setMinSize(width, height int) {
 	w.setMinMaxSize(width, height, w.parent.options.MaxWidth, w.parent.options.MaxHeight)
 }
 
-func (w *linuxWebviewWindow) getBorderSizes() *LRTB {
-	return &LRTB{}
-}
-
 func (w *linuxWebviewWindow) setMaxSize(width, height int) {
 	w.setMinMaxSize(w.parent.options.MinWidth, w.parent.options.MinHeight, width, height)
 }
@@ -199,7 +196,7 @@ func (w *linuxWebviewWindow) height() int {
 	return height
 }
 
-func (w *linuxWebviewWindow) setPosition(x int, y int) {
+func (w *linuxWebviewWindow) setAbsolutePosition(x int, y int) {
 	// Set the window's absolute position
 	w.move(x, y)
 }
@@ -209,13 +206,6 @@ func (w *linuxWebviewWindow) run() {
 		w.on(eventId)
 	}
 
-	if w.moveDebouncer == nil {
-		w.moveDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
-	}
-	if w.resizeDebouncer == nil {
-		w.resizeDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
-	}
-
 	// Register the capabilities
 	globalApplication.capabilities = capabilities.NewCapabilities()
 
@@ -223,7 +213,7 @@ func (w *linuxWebviewWindow) run() {
 
 	var menu = w.menu
 	if menu == nil && globalApplication.ApplicationMenu != nil {
-		menu = globalApplication.ApplicationMenu.Clone()
+		menu = globalApplication.ApplicationMenu.clone()
 	}
 	if menu != nil {
 		InvokeSync(func() {
@@ -240,7 +230,6 @@ func (w *linuxWebviewWindow) run() {
 		w.enableDND()
 	}
 	w.setTitle(w.parent.options.Title)
-	w.setIcon(app.icon)
 	w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
 	w.setResizable(!w.parent.options.DisableResize)
 	// only set min/max size if actually set
@@ -308,13 +297,6 @@ func (w *linuxWebviewWindow) run() {
 	w.parent.On(events.Linux.WindowDeleteEvent, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowClosing)
 	})
-	w.parent.On(events.Linux.WindowDidMove, func(e *WindowEvent) {
-		w.parent.emit(events.Common.WindowDidMove)
-	})
-	w.parent.On(events.Linux.WindowDidResize, func(e *WindowEvent) {
-		w.parent.emit(events.Common.WindowDidResize)
-	})
-
 	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
 		w.execJS(runtime.Core())
 	})
@@ -343,7 +325,7 @@ func (w *linuxWebviewWindow) startResize(border string) error {
 }
 
 func (w *linuxWebviewWindow) nativeWindowHandle() uintptr {
-	return uintptr(w.window)
+	return uintptr(unsafe.Pointer(w.window))
 }
 
 func (w *linuxWebviewWindow) print() error {
@@ -360,12 +342,3 @@ func (w *linuxWebviewWindow) handleKeyEvent(acceleratorString string) {
 	// }
 	w.parent.processKeyBinding(acceleratorString)
 }
-
-// SetMinimiseButtonState is unsupported on Linux
-func (w *linuxWebviewWindow) setMinimiseButtonState(state ButtonState) {}
-
-// SetMaximiseButtonState is unsupported on Linux
-func (w *linuxWebviewWindow) setMaximiseButtonState(state ButtonState) {}
-
-// SetCloseButtonState is unsupported on Linux
-func (w *linuxWebviewWindow) setCloseButtonState(state ButtonState) {}

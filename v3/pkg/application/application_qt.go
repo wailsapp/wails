@@ -1,21 +1,13 @@
-//go:build linux && !qt
+//go:build linux && qt
 
 package application
 
-/*
-	#include "gtk/gtk.h"
-	#include "webkit2/webkit2.h"
-	static guint get_compiled_gtk_major_version() { return GTK_MAJOR_VERSION; }
-	static guint get_compiled_gtk_minor_version() { return GTK_MINOR_VERSION; }
-	static guint get_compiled_gtk_micro_version() { return GTK_MICRO_VERSION; }
-	static guint get_compiled_webkit_major_version() { return WEBKIT_MAJOR_VERSION; }
-	static guint get_compiled_webkit_minor_version() { return WEBKIT_MINOR_VERSION; }
-	static guint get_compiled_webkit_micro_version() { return WEBKIT_MICRO_VERSION; }
-*/
+// #include "qt_lib.hpp"
 import "C"
+
 import (
 	"fmt"
-	"os"
+	"log"
 	"strings"
 	"sync"
 
@@ -23,12 +15,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
-
-func init() {
-	// FIXME: This should be handled appropriately in the individual files most likely.
-	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
-	_ = os.Setenv("GDK_BACKEND", "x11")
-}
 
 type linuxApp struct {
 	application pointer
@@ -41,8 +27,6 @@ type linuxApp struct {
 	windowMapLock sync.Mutex
 
 	theme string
-
-	icon pointer
 }
 
 func (a *linuxApp) GetFlags(options Options) map[string]any {
@@ -69,6 +53,10 @@ func (a *linuxApp) on(eventID uint) {
 	//C.registerApplicationEvent(l.application, C.uint(eventID))
 }
 
+func (a *linuxApp) setIcon(icon []byte) {
+	log.Println("linuxApp.setIcon", "not implemented")
+}
+
 func (a *linuxApp) name() string {
 	return appName()
 }
@@ -85,7 +73,7 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 	// FIXME: How do we avoid putting a menu?
 	if menu == nil {
 		// Create a default menu
-		menu = DefaultApplicationMenu()
+		menu = defaultApplicationMenu()
 		globalApplication.ApplicationMenu = menu
 	}
 }
@@ -93,7 +81,7 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 func (a *linuxApp) run() error {
 
 	a.parent.On(events.Linux.ApplicationStartup, func(evt *Event) {
-		// TODO: What should happen here?
+		fmt.Println("events.Linux.ApplicationStartup received!")
 	})
 	a.setupCommonEvents()
 	a.monitorThemeChanges()
@@ -124,7 +112,7 @@ func (a *linuxApp) isOnMainThread() bool {
 }
 
 // register our window to our parent mapping
-func (a *linuxApp) registerWindow(window pointer, id uint) {
+func (a *linuxApp) registerWindow(window *C.Window, id uint) {
 	a.windowMapLock.Lock()
 	a.windowMap[windowPointer(window)] = id
 	a.windowMapLock.Unlock()
@@ -156,10 +144,10 @@ func (a *linuxApp) monitorThemeChanges() {
 			if len(body) < 2 {
 				return "", false
 			}
-			if entry, ok := body[0].(string); !ok || entry != "org.gnome.desktop.interface" {
+			if body[0].(string) != "org.gnome.desktop.interface" {
 				return "", false
 			}
-			if entry, ok := body[1].(string); ok && entry == "color-scheme" {
+			if body[1].(string) == "color-scheme" {
 				return body[2].(dbus.Variant).Value().(string), true
 			}
 			return "", false
@@ -173,7 +161,7 @@ func (a *linuxApp) monitorThemeChanges() {
 
 			if theme != a.theme {
 				a.theme = theme
-				event := newApplicationEvent(events.Linux.SystemThemeChanged)
+				event := newApplicationEvent(events.Common.ThemeChanged)
 				event.Context().setIsDarkMode(a.isDarkMode())
 				applicationEvents <- event
 			}
@@ -205,7 +193,7 @@ func newPlatformApp(parent *App) *linuxApp {
 func (a *App) logPlatformInfo() {
 	info, err := operatingsystem.Info()
 	if err != nil {
-		a.error("Error getting OS info: %s", err.Error())
+		a.error("Error getting OS info", "error", err.Error())
 		return
 	}
 
@@ -230,31 +218,26 @@ func buildVersionString(major, minor, micro C.uint) string {
 
 func (a *App) platformEnvironment() map[string]any {
 	result := map[string]any{}
-	result["gtk3-compiled"] = buildVersionString(
-		C.get_compiled_gtk_major_version(),
-		C.get_compiled_gtk_minor_version(),
-		C.get_compiled_gtk_micro_version(),
-	)
-	result["gtk3-runtime"] = buildVersionString(
-		C.gtk_get_major_version(),
-		C.gtk_get_minor_version(),
-		C.gtk_get_micro_version(),
-	)
-
-	result["webkit2gtk-compiled"] = buildVersionString(
-		C.get_compiled_webkit_major_version(),
-		C.get_compiled_webkit_minor_version(),
-		C.get_compiled_webkit_micro_version(),
-	)
-	result["webkit2gtk-runtime"] = buildVersionString(
-		C.webkit_get_major_version(),
-		C.webkit_get_minor_version(),
-		C.webkit_get_micro_version(),
-	)
+	//result["gtk3-compiled"] = buildVersionString(
+	//	C.get_compiled_gtk_major_version(),
+	//	C.get_compiled_gtk_minor_version(),
+	//	C.get_compiled_gtk_micro_version(),
+	//)
+	//result["gtk3-runtime"] = buildVersionString(
+	//	C.gtk_get_major_version(),
+	//	C.gtk_get_minor_version(),
+	//	C.gtk_get_micro_version(),
+	//)
+	//
+	//result["webkit2gtk-compiled"] = buildVersionString(
+	//	C.get_compiled_webkit_major_version(),
+	//	C.get_compiled_webkit_minor_version(),
+	//	C.get_compiled_webkit_micro_version(),
+	//)
+	//result["webkit2gtk-runtime"] = buildVersionString(
+	//	C.webkit_get_major_version(),
+	//	C.webkit_get_minor_version(),
+	//	C.webkit_get_micro_version(),
+	//)
 	return result
-}
-
-func fatalHandler(errFunc func(error)) {
-	// Stub for windows function
-	return
 }
