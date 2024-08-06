@@ -1283,10 +1283,10 @@ func (w *macosWebviewWindow) bounds() Rect {
 	})
 
 	return Rect{
-		X:      x,
-		Y:      y,
-		Width:  width,
-		Height: height,
+		X:      int(x),
+		Y:      int(y),
+		Width:  int(width),
+		Height: int(height),
 	}
 }
 
