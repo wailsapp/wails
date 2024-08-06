@@ -760,6 +760,24 @@ func getScreenByIndex(display *C.struct__GdkDisplay, index int) *Screen {
 			Height: int(geometry.height),
 			Width:  int(geometry.width),
 		},
+		PhysicalBounds: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		WorkArea: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		PhysicalWorkArea: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
 	}
 }
 

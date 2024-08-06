@@ -137,7 +137,19 @@ func cScreenToScreen(screen C.Screen) *Screen {
 			Height: int(screen.height),
 			Width:  int(screen.width),
 		},
+		PhysicalBounds: Rect{
+			X:      int(screen.x),
+			Y:      int(screen.y),
+			Height: int(screen.height),
+			Width:  int(screen.width),
+		},
 		WorkArea: Rect{
+			X:      int(screen.w_x),
+			Y:      int(screen.w_y),
+			Height: int(screen.w_height),
+			Width:  int(screen.w_width),
+		},
+		PhysicalWorkArea: Rect{
 			X:      int(screen.w_x),
 			Y:      int(screen.w_y),
 			Height: int(screen.w_height),
