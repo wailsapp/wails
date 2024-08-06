@@ -18,7 +18,7 @@ JS: `EventsOn(eventName string, callback function(optionalData?: any)): () => vo
 
 ### EventsOff
 
-This method unregisters the listener for the given event name, optionally multiple listeneres can be unregistered via `additionalEventNames`.
+This method unregisters the listener for the given event name, optionally multiple listeners can be unregistered via `additionalEventNames`.
 
 Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...string)`<br/>
 JS: `EventsOff(eventName string, ...additionalEventNames)`
