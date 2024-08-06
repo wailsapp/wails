@@ -1761,3 +1761,18 @@ func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
 func (w *windowsWebviewWindow) setGWLStyle(style int) {
 	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, uint32(style))
 }
+
+func (w *windowsWebviewWindow) isIgnoreMouseEvents() bool {
+	exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE)
+	return exStyle&w32.WS_EX_TRANSPARENT != 0
+}
+
+func (w *windowsWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE)
+	if ignore {
+		exStyle |= w32.WS_EX_LAYERED | w32.WS_EX_TRANSPARENT
+	} else {
+		exStyle &^= w32.WS_EX_TRANSPARENT
+	}
+	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, uint32(exStyle))
+}
