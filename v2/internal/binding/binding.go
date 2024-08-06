@@ -14,6 +14,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/typescriptify"
 
 	"github.com/leaanthony/slicer"
+
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
 
@@ -73,13 +74,7 @@ func (b *Bindings) Add(structPtr interface{}) error {
 	}
 
 	for _, method := range methods {
-		splitName := strings.Split(method.Name, ".")
-		packageName := splitName[0]
-		structName := splitName[1]
-		methodName := splitName[2]
-
-		// Add it as a regular method
-		b.db.AddMethod(packageName, structName, methodName, method)
+		b.db.AddMethod(method.Path.Package, method.Path.Struct, method.Path.Name, method)
 	}
 	return nil
 }
