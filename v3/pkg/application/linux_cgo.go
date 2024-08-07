@@ -37,6 +37,7 @@ typedef struct CallbackID
 } CallbackID;
 
 extern void dispatchOnMainThreadCallback(unsigned int);
+extern void processDragItems(unsigned int windowId, char** arr, int length, int x, int y);
 
 static gboolean dispatchCallback(gpointer data) {
     struct CallbackID *args = data;
@@ -77,6 +78,7 @@ extern gboolean handleFocusEvent(GtkWidget*, GdkEvent*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
 void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
+static gboolean onDragDrop(GtkWidget* self, GdkDragContext* context, gint x, gint y, guint time, gpointer user_data);
 extern gboolean onMenuButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern void onUriList(char **extracted, gpointer data);
 extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, uintptr_t user_data);
@@ -267,7 +269,7 @@ static void enableWindowDND(GtkWidget *widget, gpointer data)
 	g_signal_connect(G_OBJECT(widget), "drag-drop", G_CALLBACK(onDragDrop), NULL);
 }
 
-extern void processDragItems(unsigned int windowId, char** arr, int length, int x, int y);
+
 static char *droppedFiles = NULL;
 static int numberOfDroppedFiles = 0;
 
@@ -325,7 +327,7 @@ static gboolean onDragDrop(GtkWidget* self, GdkDragContext* context, gint x, gin
 
 	uint windowID = get_window_id(self);
 	processWindowEvent(windowID, EventWindowDragDrop);
-	processDragItems(windowID, &droppedFiles, numberOfDroppedFiles, x, y);
+	//processDragItems(windowID, &droppedFiles, numberOfDroppedFiles, x, y);
 
     if(droppedFiles != NULL) {
         free(droppedFiles);
