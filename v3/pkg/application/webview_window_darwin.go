@@ -216,6 +216,15 @@ void windowSetAlwaysOnTop(void* nsWindow, bool alwaysOnTop) {
 	[(WebviewWindow*)nsWindow setLevel:alwaysOnTop ? NSFloatingWindowLevel : NSNormalWindowLevel];
 }
 
+void setNormalWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSNormalWindowLevel]; }
+void setFloatingWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSFloatingWindowLevel];}
+void setPopUpMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSPopUpMenuWindowLevel]; }
+void setMainMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSMainMenuWindowLevel]; }
+void setStatusWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSStatusWindowLevel]; }
+void setModalPanelWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSModalPanelWindowLevel]; }
+void setScreenSaverWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSScreenSaverWindowLevel]; }
+void setTornOffMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSTornOffMenuWindowLevel]; }
+
 // Load URL in NSWindow
 void navigationLoadURL(void* nsWindow, char* url) {
 	// Load URL on main thread
@@ -1068,6 +1077,27 @@ func (w *macosWebviewWindow) setRelativePosition(x, y int) {
 	C.windowSetRelativePosition(w.nsWindow, C.int(x), C.int(y))
 }
 
+func (w *macosWebviewWindow) setWindowLevel(level MacWindowLevel) {
+	switch level {
+	case MacWindowLevelNormal:
+		C.setNormalWindowLevel(w.nsWindow)
+	case MacWindowLevelFloating:
+		C.setFloatingWindowLevel(w.nsWindow)
+	case MacWindowLevelTornOffMenu:
+		C.setTornOffMenuWindowLevel(w.nsWindow)
+	case MacWindowLevelModalPanel:
+		C.setModalPanelWindowLevel(w.nsWindow)
+	case MacWindowLevelMainMenu:
+		C.setMainMenuWindowLevel(w.nsWindow)
+	case MacWindowLevelStatus:
+		C.setStatusWindowLevel(w.nsWindow)
+	case MacWindowLevelPopUpMenu:
+		C.setPopUpMenuWindowLevel(w.nsWindow)
+	case MacWindowLevelScreenSaver:
+		C.setScreenSaverWindowLevel(w.nsWindow)
+	}
+}
+
 func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
@@ -1153,6 +1183,11 @@ func (w *macosWebviewWindow) run() {
 			C.webviewSetTransparent(w.nsWindow)
 		case MacBackdropNormal:
 		}
+
+		if macOptions.WindowLevel == "" {
+			macOptions.WindowLevel = MacWindowLevelNormal
+		}
+		w.setWindowLevel(macOptions.WindowLevel)
 
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)
