@@ -1242,11 +1242,12 @@ func (w *WebviewWindow) IsIgnoreMouseEvents() bool {
 	return InvokeSyncWithResult(w.impl.isIgnoreMouseEvents)
 }
 
-func (w *WebviewWindow) SetIgnoreMouseEvents(ignore bool) {
+func (w *WebviewWindow) SetIgnoreMouseEvents(ignore bool) Window {
 	if w.impl == nil && !w.isDestroyed() {
-		return
+		return w
 	}
 	InvokeSync(func() {
 		w.impl.setIgnoreMouseEvents(ignore)
 	})
+	return w
 }

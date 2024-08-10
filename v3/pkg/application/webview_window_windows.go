@@ -279,6 +279,8 @@ func (w *windowsWebviewWindow) run() {
 
 	w.setResizable(!options.DisableResize)
 
+	w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
+
 	if options.Frameless {
 		// Inform the application of the frame change this is needed to trigger the WM_NCCALCSIZE event.
 		// => https://learn.microsoft.com/en-us/windows/win32/dwm/customframe#removing-the-standard-frame

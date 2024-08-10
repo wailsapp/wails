@@ -42,8 +42,9 @@ type linuxWebviewWindow struct {
 	gtkmenu       pointer
 	ctxMenuOpened bool
 
-	moveDebouncer   func(func())
-	resizeDebouncer func(func())
+	moveDebouncer     func(func())
+	resizeDebouncer   func(func())
+	ignoreMouseEvents bool
 }
 
 var (
@@ -280,9 +281,8 @@ func (w *linuxWebviewWindow) run() {
 	case WindowStateNormal:
 	}
 
-	//if w.parent.options.IgnoreMouseEvents {
-	//	windowIgnoreMouseEvents(w.window, w.webview, true)
-	//}
+	// Ignore mouse events if requested
+	w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
 
 	startURL, err := assetserver.GetStartURL(w.parent.options.URL)
 	if err != nil {
@@ -369,3 +369,17 @@ func (w *linuxWebviewWindow) setMaximiseButtonState(state ButtonState) {}
 
 // SetCloseButtonState is unsupported on Linux
 func (w *linuxWebviewWindow) setCloseButtonState(state ButtonState) {}
+
+func (w *linuxWebviewWindow) isIgnoreMouseEvents() bool {
+	return w.ignoreMouseEvents
+}
+
+func (w *linuxWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	w.ignoreMouseEvents = ignore
+
+	if ignore {
+		C.gtk_widget_set_events((*C.GtkWidget)(unsafe.Pointer(w.window)), C.GDK_ENTER_NOTIFY_MASK|C.GDK_LEAVE_NOTIFY_MASK)
+	} else {
+		C.gtk_widget_set_events((*C.GtkWidget)(unsafe.Pointer(w.window)), C.GDK_ALL_EVENTS_MASK)
+	}
+}

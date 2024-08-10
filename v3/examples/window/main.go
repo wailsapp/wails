@@ -217,7 +217,7 @@ func main() {
 				Show()
 			windowCounter++
 		})
-	myMenu.Add("New Frameless WebviewWindow").
+	myMenu.Add("New WebviewWindow (Frameless)").
 		SetAccelerator("CmdOrCtrl+F").
 		OnClick(func(ctx *application.Context) {
 			app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
@@ -231,23 +231,21 @@ func main() {
 			}).Show()
 			windowCounter++
 		})
-	if runtime.GOOS != "linux" {
-		myMenu.Add("New WebviewWindow (ignores mouse events)").
-			SetAccelerator("CmdOrCtrl+F").
-			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-					HTML:              "<div style='width: 100%; height: 95%; border: 3px solid red; background-color: \"0000\";'></div>",
-					X:                 rand.Intn(1000),
-					Y:                 rand.Intn(800),
-					IgnoreMouseEvents: true,
-					BackgroundType:    application.BackgroundTypeTransparent,
-					Mac: application.MacWindow{
-						InvisibleTitleBarHeight: 50,
-					},
-				}).Show()
-				windowCounter++
-			})
-	}
+	myMenu.Add("New WebviewWindow (Ignores mouse events)").
+		SetAccelerator("CmdOrCtrl+F").
+		OnClick(func(ctx *application.Context) {
+			app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+				HTML:              "<div style='width: 100%; height: 95%; border: 3px solid red; background-color: \"0000\";'></div>",
+				X:                 rand.Intn(1000),
+				Y:                 rand.Intn(800),
+				IgnoreMouseEvents: true,
+				BackgroundType:    application.BackgroundTypeTransparent,
+				Mac: application.MacWindow{
+					InvisibleTitleBarHeight: 50,
+				},
+			}).Show()
+			windowCounter++
+		})
 	if runtime.GOOS == "darwin" {
 		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInset)").
 			OnClick(func(ctx *application.Context) {
