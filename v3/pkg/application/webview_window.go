@@ -1243,6 +1243,7 @@ func (w *WebviewWindow) IsIgnoreMouseEvents() bool {
 }
 
 func (w *WebviewWindow) SetIgnoreMouseEvents(ignore bool) Window {
+	w.options.IgnoreMouseEvents = ignore
 	if w.impl == nil && !w.isDestroyed() {
 		return w
 	}
