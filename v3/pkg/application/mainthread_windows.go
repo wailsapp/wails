@@ -34,7 +34,7 @@ func (m *windowsApp) initMainLoop() {
 	// > Because the system directs messages to individual windows in an application, a thread must create at least one window before starting its message loop.
 	m.mainThreadWindowHWND = w32.CreateWindowEx(
 		0,
-		windowClassName,
+		w32.MustStringToUTF16Ptr(m.parent.options.Windows.WndClass),
 		w32.MustStringToUTF16Ptr("__wails_hidden_mainthread"),
 		w32.WS_DISABLED,
 		w32.CW_USEDEFAULT,

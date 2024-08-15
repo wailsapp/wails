@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- [windows] Window class name option by [windom](https://github.com/windom/) in [#3682](https://github.com/wailsapp/wails/pull/3682) 
+
 ### Fixed
 - [windows] Fixed syso icon file generation bug by [atterpac](https://github.com/atterpac) in [#3675](https://github.com/wailsapp/wails/pull/3675)
 

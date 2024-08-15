@@ -249,7 +249,7 @@ func (w *windowsWebviewWindow) run() {
 
 	w.hwnd = w32.CreateWindowEx(
 		uint(exStyle),
-		windowClassName,
+		w32.MustStringToUTF16Ptr(globalApplication.options.Windows.WndClass),
 		w32.MustStringToUTF16Ptr(options.Title),
 		style,
 		startX,
