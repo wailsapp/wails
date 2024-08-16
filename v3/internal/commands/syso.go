@@ -44,7 +44,7 @@ func GenerateSyso(options *SysoOptions) (err error) {
 	}
 	defer func() {
 		err2 := iconFile.Close()
-		if err2 != nil {
+		if err == nil && err2 != nil {
 			err = errors.Wrap(err, "error closing icon file: "+err2.Error())
 		}
 	}()
