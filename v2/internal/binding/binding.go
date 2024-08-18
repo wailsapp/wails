@@ -350,7 +350,10 @@ func (b *Bindings) hasExportedJSONFields(typeOf reflect.Type) bool {
 	for i := 0; i < typeOf.NumField(); i++ {
 		jsonFieldName := ""
 		f := typeOf.Field(i)
-		jsonTag := f.Tag.Get("json")
+		jsonTag, hasTag := f.Tag.Lookup("json")
+		if !hasTag && f.IsExported() {
+			return true
+		}
 		if len(jsonTag) == 0 {
 			continue
 		}

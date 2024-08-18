@@ -50,6 +50,7 @@ func TestBindings_GenerateModels(t *testing.T) {
 		EntityWithDiffNamespacesTest,
 		SpecialCharacterFieldTest,
 		WithoutFieldsTest,
+		NoFieldTagsTest,
 	}
 
 	testLogger := &logger.Logger{}
