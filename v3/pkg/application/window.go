@@ -36,6 +36,7 @@ type Window interface {
 	Info(message string, args ...any)
 	IsFocused() bool
 	IsFullscreen() bool
+	IsIgnoreMouseEvents() bool
 	IsMaximised() bool
 	IsMinimised() bool
 	HandleKeyEvent(acceleratorString string)
@@ -63,6 +64,7 @@ type Window interface {
 	SetMinSize(minWidth, minHeight int) Window
 	SetRelativePosition(x, y int) Window
 	SetResizable(b bool) Window
+	SetIgnoreMouseEvents(ignore bool) Window
 	SetSize(width, height int) Window
 	SetTitle(title string) Window
 	SetURL(s string) Window

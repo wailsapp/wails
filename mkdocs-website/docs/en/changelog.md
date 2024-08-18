@@ -22,8 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v3.0.0-alpha.6 - 2024-07-30
 
-### Fixed 
-- Module issues 
+### Fixed
+- Module issues
 
 ## v3.0.0-alpha.5 - 2024-07-30
 
@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement `setIcon` on linux by [@abichinger](https://github.com/abichinger) in [#3354](https://github.com/wailsapp/wails/pull/3354)
 - Add flag `-port` to dev command and support environment variable `WAILS_VITE_PORT` by [@abichinger](https://github.com/abichinger) in [#3429](https://github.com/wailsapp/wails/pull/3429)
 - Add tests for bound method calls by [@abichinger](https://github.com/abichinger) in [#3431](https://github.com/wailsapp/wails/pull/3431)
+- [windows] add `SetIgnoreMouseEvents` for already created window by [@bruxaodev](https://github.com/bruxaodev) in [#3667](https://github.com/wailsapp/wails/pull/3667)
 
 ### Fixed
 
