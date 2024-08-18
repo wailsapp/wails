@@ -740,6 +740,11 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 				return
 			}
 
+			if _file == nil {
+				f.logger.Warning("object at %d is not a file", i)
+				continue
+			}
+
 			file := (*edge.ICoreWebView2File)(unsafe.Pointer(_file))
 			defer file.Release()
 
