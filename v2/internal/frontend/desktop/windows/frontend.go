@@ -739,6 +739,9 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 				f.logger.Error("cannot get value at %d : %s", i, err.Error())
 				return
 			}
+			if _file == nil {
+				return
+			}
 
 			file := (*edge.ICoreWebView2File)(unsafe.Pointer(_file))
 			defer file.Release()
