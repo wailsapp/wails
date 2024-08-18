@@ -420,18 +420,6 @@ EnableFraudulentWebsiteDetection 启用针对欺诈内容（例如恶意软件�
 
 名称：EnableFraudulentWebsiteDetection<br/> 类型：`bool`
 
-### 缩放比例
-
-名称：ZoomFactor<br/> 类型：`float64`
-
-这定义了 WebView2 的缩放比例。 这是匹配 Edge 用户激活放大或缩小的选项
-
-### 启用缩放比例
-
-名称：IsZoomControlEnabled<br/> 类型：`bool`
-
-这将允许用户更改缩放比例。 请注意，可以在选项中设置缩放比例，但不允许在运行时更改它。 适用于屏幕固定的或类似的应用程序。
-
 ### 绑定
 
 定义需要绑定到前端的方法的结构实例切片。
@@ -545,6 +533,18 @@ Name: CSSDropValue<br/> Type: `string`<br/> Default: `drop`
 | Acrylic | 使用 [亚克力](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) 效果 |
 | Mica    | 使用 [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) 效果   |
 | Tabbed  | 使用 Tabbed。 这是一个类似于 Mica 的背景。                                                     |
+
+#### 缩放比例
+
+名称：ZoomFactor<br/> 类型：`float64`
+
+这定义了 WebView2 的缩放比例。 这是匹配 Edge 用户激活放大或缩小的选项
+
+#### 启用缩放比例
+
+名称：IsZoomControlEnabled<br/> 类型：`bool`
+
+这将允许用户更改缩放比例。 请注意，可以在选项中设置缩放比例，但不允许在运行时更改它。 适用于屏幕固定的或类似的应用程序。
 
 #### DisablePinchZoom
 
