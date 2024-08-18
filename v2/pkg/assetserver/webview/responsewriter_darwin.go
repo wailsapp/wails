@@ -69,6 +69,7 @@ import "C"
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"unsafe"
 )
@@ -107,7 +108,7 @@ func (rw *responseWriter) Write(buf []byte) (int, error) {
 		// Create a C array to hold the data
 		cBuf := C.malloc(C.size_t(contentLen))
 		if cBuf == nil {
-		    return 0, fmt.Errorf("memory allocation failed for %d bytes", contentLen)
+			return 0, fmt.Errorf("memory allocation failed for %d bytes", contentLen)
 		}
 		defer C.free(cBuf)
 
