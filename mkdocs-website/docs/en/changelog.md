@@ -19,8 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v3.0.0-alpha.6 - 2024-07-30
 
-### Fixed 
-- Module issues 
+### Fixed
+- Module issues
 
 ## v3.0.0-alpha.5 - 2024-07-30
 
@@ -82,6 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix missing MicrosoftEdgeWebview2Setup.exe. Thanks to [@robin-samuel](https://github.com/robin-samuel).
 - Fix random crash on linux due to window ID handling by @leaanthony. Based on PR [#3466](https://github.com/wailsapp/wails/pull/3622) by [@5aaee9](https://github.com/5aaee9).
 - Fix systemTray.setIcon crashing on Linux by [@windom](https://github.com/windom/) in [#3636](https://github.com/wailsapp/wails/pull/3636).
+- Fix Ensure Window Frame is Applied on First Call in `setFrameless` Function on Windows by [@bruxaodev](https://github.com/bruxaodev/) in [#3691](https://github.com/wailsapp/wails/pull/3691).
 
 ### Changed
 
