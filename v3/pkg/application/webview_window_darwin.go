@@ -698,12 +698,6 @@ static void windowShowMenu(void *window, void *menu, int x, int y) {
 	[nsMenu popUpMenuPositioningItem:nil atLocation:point inView:webView];
 }
 
-// windowIgnoreMouseEvents makes the window ignore mouse events
-static void windowIgnoreMouseEvents(void *window, bool ignore) {
-	WebviewWindow* nsWindow = (WebviewWindow*)window;
-	[nsWindow setIgnoresMouseEvents:ignore];
-}
-
 // Make the given window frameless
 static void windowSetFrameless(void *window, bool frameless) {
 	WebviewWindow* nsWindow = (WebviewWindow*)window;
@@ -779,6 +773,16 @@ void windowFocus(void *window) {
 	}
 	[nsWindow makeKeyAndOrderFront:nil];
 	[nsWindow makeKeyWindow];
+}
+
+static bool isIgnoreMouseEvents(void *nsWindow) {
+    NSWindow *window = (__bridge NSWindow *)nsWindow;
+    return [window ignoresMouseEvents];
+}
+
+static void setIgnoreMouseEvents(void *nsWindow, bool ignore) {
+    NSWindow *window = (__bridge NSWindow *)nsWindow;
+    [window setIgnoresMouseEvents:ignore];
 }
 
 */
@@ -1194,9 +1198,8 @@ func (w *macosWebviewWindow) run() {
 		w.setMaximiseButtonState(options.MaximiseButtonState)
 		w.setCloseButtonState(options.CloseButtonState)
 
-		if options.IgnoreMouseEvents {
-			C.windowIgnoreMouseEvents(w.nsWindow, C.bool(true))
-		}
+		// Ignore mouse events if requested
+		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
 
 		titleBarOptions := macOptions.TitleBar
 		if !w.parent.options.Frameless {
@@ -1336,4 +1339,12 @@ func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
 
 func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
 	C.setCloseButtonState(w.nsWindow, C.int(state))
+}
+
+func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {
+	return bool(C.isIgnoreMouseEvents(w.nsWindow))
+}
+
+func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	C.setIgnoreMouseEvents(w.nsWindow, C.bool(ignore))
 }
