@@ -857,6 +857,7 @@ func (w *windowsWebviewWindow) setFrameless(b bool) {
 	} else {
 		w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_OVERLAPPEDWINDOW)
 	}
+	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0, w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_FRAMECHANGED)
 }
 
 func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
