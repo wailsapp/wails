@@ -168,6 +168,9 @@ func mergeApplicationDefaults(o *Options) {
 	if o.Description == "" {
 		o.Description = "An application written using Wails"
 	}
+	if o.Windows.WndClass == "" {
+		o.Windows.WndClass = "WailsWebviewWindow"
+	}
 }
 
 type (

@@ -150,7 +150,7 @@ func (s *windowsSystemTray) setMenu(menu *Menu) {
 func (s *windowsSystemTray) run() {
 	s.hwnd = w32.CreateWindowEx(
 		0,
-		windowClassName,
+		w32.MustStringToUTF16Ptr(globalApplication.options.Windows.WndClass),
 		nil,
 		0,
 		0,

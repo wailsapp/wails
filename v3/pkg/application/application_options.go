@@ -182,6 +182,10 @@ type MacOptions struct {
 // WindowsOptions contains options for Windows applications.
 type WindowsOptions struct {
 
+	// Window class name
+	// Default: WailsWebviewWindow
+	WndClass string
+
 	// WndProcInterceptor is a function that will be called for every message sent in the application.
 	// Use this to hook into the main message loop. This is useful for handling custom window messages.
 	// If `shouldReturn` is `true` then `returnCode` will be returned by the main message loop.
