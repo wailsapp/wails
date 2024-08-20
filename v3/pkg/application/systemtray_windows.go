@@ -5,11 +5,13 @@ package application
 import (
 	"fmt"
 	"syscall"
+	"time"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/icons"
 
 	"github.com/samber/lo"
+
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
@@ -174,8 +176,16 @@ func (s *windowsSystemTray) run() {
 	}
 	nid.CbSize = uint32(unsafe.Sizeof(nid))
 
-	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
-		panic(syscall.GetLastError())
+	for retries := range 4 {
+		if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
+			if retries == 3 {
+				panic(syscall.GetLastError())
+			}
+
+			time.Sleep(2 * time.Second)
+			continue
+		}
+		break
 	}
 
 	nid.UVersion = w32.NOTIFYICON_VERSION
