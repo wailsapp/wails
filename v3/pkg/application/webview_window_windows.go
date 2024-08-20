@@ -226,7 +226,7 @@ func (w *windowsWebviewWindow) run() {
 
 	w.hwnd = w32.CreateWindowEx(
 		uint(exStyle),
-		windowClassName,
+		w32.MustStringToUTF16Ptr(globalApplication.options.Windows.WndClass),
 		w32.MustStringToUTF16Ptr(options.Title),
 		style,
 		physicalBounds.X,
@@ -260,6 +260,8 @@ func (w *windowsWebviewWindow) run() {
 	getNativeApplication().registerWindow(w)
 
 	w.setResizable(!options.DisableResize)
+
+	w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
 
 	if options.Frameless {
 		// Inform the application of the frame change this is needed to trigger the WM_NCCALCSIZE event.
@@ -859,6 +861,7 @@ func (w *windowsWebviewWindow) setFrameless(b bool) {
 	} else {
 		w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_OVERLAPPEDWINDOW)
 	}
+	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0, w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_FRAMECHANGED)
 }
 
 func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
@@ -1765,4 +1768,19 @@ func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
 
 func (w *windowsWebviewWindow) setGWLStyle(style int) {
 	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, uint32(style))
+}
+
+func (w *windowsWebviewWindow) isIgnoreMouseEvents() bool {
+	exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE)
+	return exStyle&w32.WS_EX_TRANSPARENT != 0
+}
+
+func (w *windowsWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE)
+	if ignore {
+		exStyle |= w32.WS_EX_LAYERED | w32.WS_EX_TRANSPARENT
+	} else {
+		exStyle &^= w32.WS_EX_TRANSPARENT
+	}
+	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, uint32(exStyle))
 }

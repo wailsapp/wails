@@ -94,6 +94,8 @@ type (
 		setMinimiseButtonState(state ButtonState)
 		setMaximiseButtonState(state ButtonState)
 		setCloseButtonState(state ButtonState)
+		isIgnoreMouseEvents() bool
+		setIgnoreMouseEvents(ignore bool)
 	}
 )
 
@@ -1279,4 +1281,22 @@ func (w *WebviewWindow) addMenuBinding(a *accelerator, menuItem *MenuItem) {
 	w.menuBindingsLock.Lock()
 	defer w.menuBindingsLock.Unlock()
 	w.menuBindings[a.String()] = menuItem
+}
+
+func (w *WebviewWindow) IsIgnoreMouseEvents() bool {
+	if w.impl == nil && !w.isDestroyed() {
+		return false
+	}
+	return InvokeSyncWithResult(w.impl.isIgnoreMouseEvents)
+}
+
+func (w *WebviewWindow) SetIgnoreMouseEvents(ignore bool) Window {
+	w.options.IgnoreMouseEvents = ignore
+	if w.impl == nil && !w.isDestroyed() {
+		return w
+	}
+	InvokeSync(func() {
+		w.impl.setIgnoreMouseEvents(ignore)
+	})
+	return w
 }
