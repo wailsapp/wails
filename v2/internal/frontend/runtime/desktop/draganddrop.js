@@ -10,7 +10,7 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
-import {EventsOn, EventsOff} from "./events";
+import {EventsOn, EventsOff, EventsOnce} from "./events";
 
 const flags = {
     registered: false,
@@ -241,3 +241,13 @@ export function OnFileDropOff() {
     EventsOff("wails:file-drop");
     flags.registered = false;
 }
+
+
+// registers drag and drop event listeners for the backend
+EventsOnce("wails:init-file-drop", () => {
+    if (window.wails.flags.enableWailsDragAndDrop) {
+      window.addEventListener("dragover", onDragOver);
+      window.addEventListener("dragleave", onDragLeave);
+      window.addEventListener("drop", onDrop);
+    }
+});
