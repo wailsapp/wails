@@ -454,6 +454,7 @@
     if (!window.wails.flags.enableWailsDragAndDrop) {
       return;
     }
+    e.dataTransfer.dropEffect = 'copy';
     e.preventDefault();
     if (!flags.useDropTarget) {
       return;
