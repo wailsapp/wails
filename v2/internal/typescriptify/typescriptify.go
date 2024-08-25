@@ -553,7 +553,13 @@ func (t *TypeScriptify) getFieldOptions(structType reflect.Type, field reflect.S
 
 func (t *TypeScriptify) getJSONFieldName(field reflect.StructField, isPtr bool) string {
 	jsonFieldName := ""
-	jsonTag := field.Tag.Get("json")
+	jsonTag, hasTag := field.Tag.Lookup("json")
+	if !hasTag && field.IsExported() {
+		jsonFieldName = field.Name
+		if isPtr {
+			jsonFieldName += "?"
+		}
+	}
 	if len(jsonTag) > 0 {
 		jsonTagParts := strings.Split(jsonTag, ",")
 		if len(jsonTagParts) > 0 {
