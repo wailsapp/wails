@@ -13,7 +13,7 @@ import (
 // Valid values may only be obtained by calling [NewService].
 type Service struct {
 	instance any
-	prefix string
+	prefix   string
 }
 
 // NewService returns a Service value wrapping the given pointer.
@@ -66,9 +66,6 @@ type Options struct {
 
 	// Assets are the application assets to be used.
 	Assets AssetOptions
-
-	// Plugins is a map of plugins used by the application
-	Plugins map[string]Plugin
 
 	// Flags are key value pairs that are available to the frontend.
 	// This is also used by Wails to provide information to the frontend.

@@ -87,7 +87,7 @@ func NewBindings(instances []Service, aliases map[uint32]uint32) (*Bindings, err
 		methodAliases: aliases,
 	}
 	for _, binding := range instances {
-		if binding.instance.(http.Handler) != nil && binding.prefix != ""{
+		if binding.instance.(http.Handler) != nil && binding.prefix != "" {
 			app.assets.AttachServiceHandler(binding.prefix, binding.instance.(http.Handler))
 		}
 		err := b.Add(binding.Instance())
@@ -112,34 +112,6 @@ func (b *Bindings) Add(namedPtr interface{}) error {
 	}
 	return nil
 }
-
-// func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
-// 	for pluginID, plugin := range plugins {
-// 		methods, err := b.getMethods(plugin, true)
-// 		if err != nil {
-// 			return fmt.Errorf("cannot add plugin '%s' to app: %s", pluginID, err.Error())
-// 		}
-//
-// 		exportedMethods := plugin.CallableByJS()
-//
-// 		for _, method := range methods {
-// 			// Do not expose reserved methods
-// 			if lo.Contains(reservedPluginMethods, method.Name) {
-// 				continue
-// 			}
-// 			// Do not expose methods that are not in the exported list
-// 			if !lo.Contains(exportedMethods, method.Name) {
-// 				continue
-// 			}
-//
-// 			// Add it as a regular method
-// 			b.boundMethods[fmt.Sprintf("wails-plugins.%s.%s", pluginID, method.Name)] = method
-// 			b.boundByID[method.ID] = method
-// 			globalApplication.debug("Added plugin method: "+pluginID+"."+method.Name, "id", method.ID)
-// 		}
-// 	}
-// 	return nil
-// }
 
 // Get returns the bound method with the given name
 func (b *Bindings) Get(options *CallOptions) *BoundMethod {

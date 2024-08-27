@@ -1,4 +1,4 @@
-package plugins
+package service
 
 import (
 	"embed"
@@ -15,19 +15,19 @@ import (
 )
 
 //go:embed template
-var pluginTemplate embed.FS
+var serviceTemplate embed.FS
 
 type TemplateOptions struct {
-	*flags.PluginInit
+	*flags.ServiceInit
 }
 
-func Install(options *flags.PluginInit) error {
+func Install(options *flags.ServiceInit) error {
 
 	if options.OutputDir == "." || options.OutputDir == "" {
 		options.OutputDir = filepath.Join(lo.Must(os.Getwd()), options.Name)
 	}
-	fmt.Printf("Creating plugin '%s' into '%s'\n", options.Name, options.OutputDir)
-	tfs, err := fs.Sub(pluginTemplate, "template")
+	fmt.Printf("Generating service '%s' into '%s'\n", options.Name, options.OutputDir)
+	tfs, err := fs.Sub(serviceTemplate, "template")
 	if err != nil {
 		return err
 	}

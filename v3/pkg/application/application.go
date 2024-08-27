@@ -130,17 +130,15 @@ func New(appOptions Options) *App {
 	}
 
 	for _, service := range appOptions.Services {
-		if plugin, ok := service.instance.(Plugin); ok {
-			globalApplication.debug("Initialising plugin: " + plugin.Name())
-			err := plugin.OnStartup()
+		if thisService, ok := service.instance.(ServiceStartup); ok {
+			err := thisService.OnStartup()
 			if err != nil {
-				globalApplication.error("Plugin failed to initialise:", "plugin", plugin.Name(), "error", err.Error())
+				name := getServiceName(service)
+				globalApplication.error("OnStartup() failed:", "service", name, "error", err.Error())
+				continue
 			}
-			result.plugins = append(result.plugins, plugin)
-			globalApplication.debug("Plugin initialised: " + plugin.Name())
 		}
 	}
-	globalApplication.info("Plugins initialised", "count", len(result.plugins))
 
 	// Process keybindings
 	if result.options.KeyBindings != nil {
@@ -283,7 +281,6 @@ type App struct {
 	pendingRun []runnable
 
 	bindings *Bindings
-	plugins  []Plugin
 
 	// platform app
 	impl platformApp
@@ -558,10 +555,13 @@ func (a *App) Run() error {
 		return err
 	}
 
-	for _, plugin := range a.plugins {
-		err := plugin.OnShutdown() 
-		if err != nil {
-			a.error("Error shutting down plugin: " + err.Error())
+	for _, service := range a.options.Services {
+		// If it conforms to the ServiceShutdown interface, call the Shutdown method
+		if thisService, ok := service.instance.(ServiceShutdown); ok {
+			err := thisService.OnShutdown()
+			if err != nil {
+				a.error("Error shutting down service: " + err.Error())
+			}
 		}
 	}
 

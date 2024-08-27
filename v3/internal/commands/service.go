@@ -2,7 +2,6 @@ package commands
 
 import (
 	"github.com/wailsapp/wails/v3/internal/flags"
-	"github.com/wailsapp/wails/v3/internal/plugins"
 	"strings"
 
 	"github.com/pterm/pterm"
@@ -31,7 +30,7 @@ func toCamelCasePlugin(s string) string {
 	return camelCase + "Plugin"
 }
 
-func PluginInit(options *flags.PluginInit) error {
+func ServiceInit(options *flags.ServiceInit) error {
 
 	if options.Quiet {
 		pterm.DisableOutput()
@@ -41,5 +40,5 @@ func PluginInit(options *flags.PluginInit) error {
 		options.PackageName = toCamelCasePlugin(options.Name)
 	}
 
-	return plugins.Install(options)
+	return service.Install(options)
 }

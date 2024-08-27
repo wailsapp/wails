@@ -1,10 +1,10 @@
-# {{.Name}} Plugin
+# {{.Name}} Service
 
-This example plugin provides a way to generate hashes of strings.
+This example service provides a way to generate hashes of strings.
 
 ## Installation
 
-Add the plugin to the `Services` option in the Applications options:
+Add the service to the `Services` option in the Applications options:
 
 ```go
     Services: []application.Service{

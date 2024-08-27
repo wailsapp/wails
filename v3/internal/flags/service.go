@@ -1,6 +1,6 @@
 package flags
 
-type PluginInit struct {
+type ServiceInit struct {
 	Name        string `name:"n" description:"Name of plugin" default:"example_plugin"`
 	Description string `name:"d" description:"Description of plugin" default:"Example plugin"`
 	PackageName string `name:"p" description:"Package name for plugin" default:""`
