@@ -1,5 +1,4 @@
 //go:build windows
-// +build windows
 
 package cfd
 
@@ -45,6 +44,15 @@ func (vtbl *iFileDialogVtbl) setFileTypes(objPtr unsafe.Pointer, filters []FileF
 			pszSpec: ole.SysAllocString(filter.Pattern),
 		}
 	}
+
+	// Ensure memory is freed after use
+	defer func() {
+		for _, spec := range comDlgFilterSpecs {
+			ole.SysFreeString(spec.pszName)
+			ole.SysFreeString(spec.pszSpec)
+		}
+	}()
+
 	ret, _, _ := syscall.SyscallN(vtbl.SetFileTypes,
 		uintptr(objPtr),
 		uintptr(cFileTypes),
@@ -133,6 +141,7 @@ func (vtbl *iFileDialogVtbl) setFolder(objPtr unsafe.Pointer, path string) error
 
 func (vtbl *iFileDialogVtbl) setTitle(objPtr unsafe.Pointer, title string) error {
 	titlePtr := ole.SysAllocString(title)
+	defer ole.SysFreeString(titlePtr) // Ensure the string is freed
 	ret, _, _ := syscall.SyscallN(vtbl.SetTitle,
 		uintptr(objPtr),
 		uintptr(unsafe.Pointer(titlePtr)))
@@ -177,6 +186,7 @@ func (vtbl *iFileDialogVtbl) setDefaultExtension(objPtr unsafe.Pointer, defaultE
 		defaultExtension = strings.TrimPrefix(defaultExtension, ".")
 	}
 	defaultExtensionPtr := ole.SysAllocString(defaultExtension)
+	defer ole.SysFreeString(defaultExtensionPtr) // Ensure the string is freed
 	ret, _, _ := syscall.SyscallN(vtbl.SetDefaultExtension,
 		uintptr(objPtr),
 		uintptr(unsafe.Pointer(defaultExtensionPtr)))
@@ -185,6 +195,7 @@ func (vtbl *iFileDialogVtbl) setDefaultExtension(objPtr unsafe.Pointer, defaultE
 
 func (vtbl *iFileDialogVtbl) setFileName(objPtr unsafe.Pointer, fileName string) error {
 	fileNamePtr := ole.SysAllocString(fileName)
+	defer ole.SysFreeString(fileNamePtr) // Ensure the string is freed
 	ret, _, _ := syscall.SyscallN(vtbl.SetFileName,
 		uintptr(objPtr),
 		uintptr(unsafe.Pointer(fileNamePtr)))
