@@ -30,6 +30,10 @@ type iShellItemVtbl struct {
 func newIShellItem(path string) (*iShellItem, error) {
 	var shellItem *iShellItem
 	pathPtr := ole.SysAllocString(path)
+	defer func(v *int16) {
+		_ = ole.SysFreeString(v)
+	}(pathPtr)
+
 	ret, _, _ := procSHCreateItemFromParsingName.Call(
 		uintptr(unsafe.Pointer(pathPtr)),
 		0,

@@ -175,21 +175,36 @@ func (vtbl *iFileDialogVtbl) getResultString(objPtr unsafe.Pointer) (string, err
 }
 
 func (vtbl *iFileDialogVtbl) setClientGuid(objPtr unsafe.Pointer, guid *ole.GUID) error {
+	// Ensure the GUID is not nil
+	if guid == nil {
+		return fmt.Errorf("guid cannot be nil")
+	}
+
+	// Call the SetClientGuid method
 	ret, _, _ := syscall.SyscallN(vtbl.SetClientGuid,
 		uintptr(objPtr),
 		uintptr(unsafe.Pointer(guid)))
+
+	// Convert the HRESULT to a Go error
 	return hresultToError(ret)
 }
 
 func (vtbl *iFileDialogVtbl) setDefaultExtension(objPtr unsafe.Pointer, defaultExtension string) error {
-	if defaultExtension[0] == '.' {
+	// Ensure the string is not empty before accessing the first character
+	if len(defaultExtension) > 0 && defaultExtension[0] == '.' {
 		defaultExtension = strings.TrimPrefix(defaultExtension, ".")
 	}
+
+	// Allocate memory for the default extension string
 	defaultExtensionPtr := ole.SysAllocString(defaultExtension)
 	defer ole.SysFreeString(defaultExtensionPtr) // Ensure the string is freed
+
+	// Call the SetDefaultExtension method
 	ret, _, _ := syscall.SyscallN(vtbl.SetDefaultExtension,
 		uintptr(objPtr),
 		uintptr(unsafe.Pointer(defaultExtensionPtr)))
+
+	// Convert the HRESULT to a Go error
 	return hresultToError(ret)
 }
 
