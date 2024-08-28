@@ -176,13 +176,13 @@ func (s *windowsSystemTray) run() {
 	}
 	nid.CbSize = uint32(unsafe.Sizeof(nid))
 
-	for retries := range 4 {
+	for retries := range 6 {
 		if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
-			if retries == 3 {
+			if retries == 5 {
 				panic(syscall.GetLastError())
 			}
 
-			time.Sleep(2 * time.Second)
+			time.Sleep(500 * time.Millisecond)
 			continue
 		}
 		break
