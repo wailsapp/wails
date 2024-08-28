@@ -76,7 +76,7 @@ func UTF16PtrToString(cstr *uint16) string {
 }
 
 func ComAddRef(unknown *IUnknown) int32 {
-	ret, _, _ := syscall.Syscall(uintptr(unknown.Vtbl.AddRef), 1,
+	ret, _, _ := syscall.SyscallN(uintptr(unknown.Vtbl.AddRef),
 		uintptr(unsafe.Pointer(unknown)),
 		0,
 		0)
@@ -84,7 +84,7 @@ func ComAddRef(unknown *IUnknown) int32 {
 }
 
 func ComRelease(unknown *IUnknown) int32 {
-	ret, _, _ := syscall.Syscall(uintptr(unknown.Vtbl.Release), 1,
+	ret, _, _ := syscall.SyscallN(uintptr(unknown.Vtbl.Release),
 		uintptr(unsafe.Pointer(unknown)),
 		0,
 		0)
@@ -93,7 +93,7 @@ func ComRelease(unknown *IUnknown) int32 {
 
 func ComQueryInterface(unknown *IUnknown, id *GUID) *IDispatch {
 	var disp *IDispatch
-	hr, _, _ := syscall.Syscall(uintptr(unknown.Vtbl.QueryInterface), 3,
+	hr, _, _ := syscall.SyscallN(uintptr(unknown.Vtbl.QueryInterface),
 		uintptr(unsafe.Pointer(unknown)),
 		uintptr(unsafe.Pointer(id)),
 		uintptr(unsafe.Pointer(&disp)))
@@ -109,7 +109,7 @@ func ComGetIDsOfName(disp *IDispatch, names []string) []int32 {
 	for i := 0; i < len(names); i++ {
 		wnames[i] = syscall.StringToUTF16Ptr(names[i])
 	}
-	hr, _, _ := syscall.Syscall6(disp.lpVtbl.pGetIDsOfNames, 6,
+	hr, _, _ := syscall.SyscallN(disp.lpVtbl.pGetIDsOfNames,
 		uintptr(unsafe.Pointer(disp)),
 		uintptr(unsafe.Pointer(IID_NULL)),
 		uintptr(unsafe.Pointer(&wnames[0])),
@@ -205,7 +205,7 @@ func ComInvoke(disp *IDispatch, dispid int32, dispatch int16, params ...interfac
 	var ret VARIANT
 	var excepInfo EXCEPINFO
 	VariantInit(&ret)
-	hr, _, _ := syscall.Syscall9(disp.lpVtbl.pInvoke, 8,
+	hr, _, _ := syscall.SyscallN(disp.lpVtbl.pInvoke,
 		uintptr(unsafe.Pointer(disp)),
 		uintptr(dispid),
 		uintptr(unsafe.Pointer(IID_NULL)),
