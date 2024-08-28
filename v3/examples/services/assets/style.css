@@ -7,6 +7,8 @@ html {
     -moz-user-select: none;
     -ms-user-select: none;
     -webkit-touch-callout: none;
+    height: 100vh;
+    width: 100%;
 }
 
 body {
@@ -16,6 +18,15 @@ body {
     "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
     overscroll-behavior: none;
+    overflow-y: hidden;
+    background-image: url("/files/images/eryri1.png");
+    background-color: rgba(33, 37, 43, 0.85);
+    background-blend-mode: overlay;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    width: 100%;
 }
 
 .logo {

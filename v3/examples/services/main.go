@@ -4,17 +4,21 @@ import (
 	"embed"
 	"github.com/wailsapp/wails/v3/examples/services/hashes"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/services/fileserver"
 	"github.com/wailsapp/wails/v3/pkg/services/kvstore"
 	"github.com/wailsapp/wails/v3/pkg/services/log"
 	"github.com/wailsapp/wails/v3/pkg/services/sqlite"
 	"log/slog"
 	"os"
+	"path/filepath"
 )
 
 //go:embed assets/*
 var assets embed.FS
 
 func main() {
+
+	rootPath, _ := filepath.Abs("./files")
 	app := application.New(application.Options{
 		Name:        "Plugin Demo",
 		Description: "A demo of the plugins API",
@@ -32,6 +36,11 @@ func main() {
 				AutoSave: true,
 			})),
 			application.NewService(log.New()),
+			application.NewService(fileserver.New(&fileserver.Config{
+				RootPath: rootPath,
+			}), application.ServiceOptions{
+				PathPrefix: "/files",
+			}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.BundledAssetFileServer(assets),

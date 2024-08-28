@@ -24,9 +24,9 @@ func New(config *Config) *Service {
 	}
 }
 
-// Shutdown is called when the app is shutting down
+// OnShutdown is called when the app is shutting down
 // You can use this to clean up any resources you have allocated
-func (s *Service) Shutdown() error {
+func (s *Service) OnShutdown() error {
 	if s.conn != nil {
 		return s.conn.Close()
 	}
@@ -39,7 +39,7 @@ func (s *Service) Name() string {
 	return "github.com/wailsapp/wails/v3/plugins/sqlite"
 }
 
-// Init is called when the app is starting up. You can use this to
+// OnStartup is called when the app is starting up. You can use this to
 // initialise any resources you need.
 func (s *Service) OnStartup() error {
 	if s.config.DBFile == "" {
