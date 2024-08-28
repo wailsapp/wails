@@ -164,8 +164,7 @@ func (fileOpenDialog *iFileOpenDialog) setIsMultiselect(isMultiselect bool) erro
 
 func (vtbl *iFileOpenDialogVtbl) getResults(objPtr unsafe.Pointer) (*iShellItemArray, error) {
 	var shellItemArray *iShellItemArray
-	ret, _, _ := syscall.Syscall(vtbl.GetResults,
-		1,
+	ret, _, _ := syscall.SyscallN(vtbl.GetResults,
 		uintptr(objPtr),
 		uintptr(unsafe.Pointer(&shellItemArray)),
 		0)
