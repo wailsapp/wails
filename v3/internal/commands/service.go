@@ -2,6 +2,7 @@ package commands
 
 import (
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/service"
 	"strings"
 
 	"github.com/pterm/pterm"

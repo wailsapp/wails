@@ -87,8 +87,9 @@ func NewBindings(instances []Service, aliases map[uint32]uint32) (*Bindings, err
 		methodAliases: aliases,
 	}
 	for _, binding := range instances {
-		if binding.instance.(http.Handler) != nil && binding.prefix != "" {
-			app.assets.AttachServiceHandler(binding.prefix, binding.instance.(http.Handler))
+		handler, ok := binding.Instance().(http.Handler)
+		if ok && binding.options.PathPrefix != "" {
+			app.assets.AttachServiceHandler(binding.options.PathPrefix, handler)
 		}
 		err := b.Add(binding.Instance())
 		if err != nil {
