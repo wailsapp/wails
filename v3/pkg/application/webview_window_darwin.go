@@ -216,6 +216,15 @@ void windowSetAlwaysOnTop(void* nsWindow, bool alwaysOnTop) {
 	[(WebviewWindow*)nsWindow setLevel:alwaysOnTop ? NSFloatingWindowLevel : NSNormalWindowLevel];
 }
 
+void setNormalWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSNormalWindowLevel]; }
+void setFloatingWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSFloatingWindowLevel];}
+void setPopUpMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSPopUpMenuWindowLevel]; }
+void setMainMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSMainMenuWindowLevel]; }
+void setStatusWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSStatusWindowLevel]; }
+void setModalPanelWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSModalPanelWindowLevel]; }
+void setScreenSaverWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSScreenSaverWindowLevel]; }
+void setTornOffMenuWindowLevel(void* nsWindow) { [(WebviewWindow*)nsWindow setLevel:NSTornOffMenuWindowLevel]; }
+
 // Load URL in NSWindow
 void navigationLoadURL(void* nsWindow, char* url) {
 	// Load URL on main thread
@@ -689,12 +698,6 @@ static void windowShowMenu(void *window, void *menu, int x, int y) {
 	[nsMenu popUpMenuPositioningItem:nil atLocation:point inView:webView];
 }
 
-// windowIgnoreMouseEvents makes the window ignore mouse events
-static void windowIgnoreMouseEvents(void *window, bool ignore) {
-	WebviewWindow* nsWindow = (WebviewWindow*)window;
-	[nsWindow setIgnoresMouseEvents:ignore];
-}
-
 // Make the given window frameless
 static void windowSetFrameless(void *window, bool frameless) {
 	WebviewWindow* nsWindow = (WebviewWindow*)window;
@@ -770,6 +773,16 @@ void windowFocus(void *window) {
 	}
 	[nsWindow makeKeyAndOrderFront:nil];
 	[nsWindow makeKeyWindow];
+}
+
+static bool isIgnoreMouseEvents(void *nsWindow) {
+    NSWindow *window = (__bridge NSWindow *)nsWindow;
+    return [window ignoresMouseEvents];
+}
+
+static void setIgnoreMouseEvents(void *nsWindow, bool ignore) {
+    NSWindow *window = (__bridge NSWindow *)nsWindow;
+    [window setIgnoresMouseEvents:ignore];
 }
 
 */
@@ -1068,6 +1081,27 @@ func (w *macosWebviewWindow) setRelativePosition(x, y int) {
 	C.windowSetRelativePosition(w.nsWindow, C.int(x), C.int(y))
 }
 
+func (w *macosWebviewWindow) setWindowLevel(level MacWindowLevel) {
+	switch level {
+	case MacWindowLevelNormal:
+		C.setNormalWindowLevel(w.nsWindow)
+	case MacWindowLevelFloating:
+		C.setFloatingWindowLevel(w.nsWindow)
+	case MacWindowLevelTornOffMenu:
+		C.setTornOffMenuWindowLevel(w.nsWindow)
+	case MacWindowLevelModalPanel:
+		C.setModalPanelWindowLevel(w.nsWindow)
+	case MacWindowLevelMainMenu:
+		C.setMainMenuWindowLevel(w.nsWindow)
+	case MacWindowLevelStatus:
+		C.setStatusWindowLevel(w.nsWindow)
+	case MacWindowLevelPopUpMenu:
+		C.setPopUpMenuWindowLevel(w.nsWindow)
+	case MacWindowLevelScreenSaver:
+		C.setScreenSaverWindowLevel(w.nsWindow)
+	}
+}
+
 func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
@@ -1154,14 +1188,18 @@ func (w *macosWebviewWindow) run() {
 		case MacBackdropNormal:
 		}
 
+		if macOptions.WindowLevel == "" {
+			macOptions.WindowLevel = MacWindowLevelNormal
+		}
+		w.setWindowLevel(macOptions.WindowLevel)
+
 		// Initialise the window buttons
 		w.setMinimiseButtonState(options.MinimiseButtonState)
 		w.setMaximiseButtonState(options.MaximiseButtonState)
 		w.setCloseButtonState(options.CloseButtonState)
 
-		if options.IgnoreMouseEvents {
-			C.windowIgnoreMouseEvents(w.nsWindow, C.bool(true))
-		}
+		// Ignore mouse events if requested
+		w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
 
 		titleBarOptions := macOptions.TitleBar
 		if !w.parent.options.Frameless {
@@ -1301,4 +1339,12 @@ func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
 
 func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
 	C.setCloseButtonState(w.nsWindow, C.int(state))
+}
+
+func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {
+	return bool(C.isIgnoreMouseEvents(w.nsWindow))
+}
+
+func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	C.setIgnoreMouseEvents(w.nsWindow, C.bool(ignore))
 }

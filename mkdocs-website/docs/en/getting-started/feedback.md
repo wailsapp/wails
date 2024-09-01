@@ -16,7 +16,7 @@ posts before creating new ones. Here are the different ways to provide feedback:
       - Please include a link to the PR in your post.
 
     !!! warning
-        *Remember*, unexpected behaviour isn't necessarily a bug - it might just not do what you expect it to do. Use [Suggestions](#suggestions) for this.
+        *Remember*, unexpected behaviour isn't necessarily a bug - it might just not do what you expect it to do. Use [Suggestions](#__tabbed_1_3) for this.
 
 
 === "Fixes"

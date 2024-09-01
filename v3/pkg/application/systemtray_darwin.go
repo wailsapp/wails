@@ -53,7 +53,7 @@ func systrayClickCallback(id C.long, buttonID C.int) {
 	// Get the system tray
 	systemTray := systemTrayMap[uint(id)]
 	if systemTray == nil {
-		globalApplication.error("system tray not found", "id", id)
+		globalApplication.error("system tray not found: %v", id)
 		return
 	}
 	systemTray.processClick(button(buttonID))

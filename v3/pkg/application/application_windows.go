@@ -16,11 +16,7 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-
-	"github.com/samber/lo"
 )
-
-var windowClassName = lo.Must(syscall.UTF16PtrFromString("WailsWebviewWindow"))
 
 type windowsApp struct {
 	parent *App
@@ -212,7 +208,7 @@ func (m *windowsApp) init() {
 	m.windowClass.Background = w32.COLOR_BTNFACE + 1
 	m.windowClass.Icon = icon
 	m.windowClass.Cursor = w32.LoadCursorWithResourceID(0, w32.IDC_ARROW)
-	m.windowClass.ClassName = windowClassName
+	m.windowClass.ClassName = w32.MustStringToUTF16Ptr(m.parent.options.Windows.WndClass)
 	m.windowClass.MenuName = nil
 	m.windowClass.IconSm = icon
 
@@ -318,7 +314,7 @@ func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
 func newPlatformApp(app *App) *windowsApp {
 	err := w32.SetProcessDPIAware()
 	if err != nil {
-		globalApplication.fatal("Fatal error in application initialisation: ", err.Error())
+		globalApplication.fatal("Fatal error in application initialisation: %s", err.Error())
 		os.Exit(1)
 	}
 
@@ -357,4 +353,9 @@ func (a *App) platformEnvironment() map[string]any {
 	result["Go-WebView2Loader"] = webviewloader.UsingGoWebview2Loader
 	result["WebView2"] = webviewVersion
 	return result
+}
+
+func fatalHandler(errFunc func(error)) {
+	w32.Fatal = errFunc
+	return
 }

@@ -4,12 +4,14 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -57,6 +59,7 @@ func New(appOptions Options) *App {
 
 	result := newApplication(appOptions)
 	globalApplication = result
+	fatalHandler(result.handleFatalError)
 
 	if result.Logger == nil {
 		if result.isDebugMode {
@@ -101,9 +104,12 @@ func New(appOptions Options) *App {
 						updatedOptions := result.impl.GetFlags(appOptions)
 						flags, err := json.Marshal(updatedOptions)
 						if err != nil {
-							log.Fatal("Invalid flags provided to application: ", err.Error())
+							result.handleFatalError(fmt.Errorf("invalid flags provided to application: %s", err.Error()))
 						}
-						assetserver.ServeFile(rw, path, flags)
+						err = assetserver.ServeFile(rw, path, flags)
+						if err != nil {
+							result.handleFatalError(fmt.Errorf("unable to serve flags: %s", err.Error()))
+						}
 					default:
 						next.ServeHTTP(rw, req)
 					}
@@ -119,7 +125,7 @@ func New(appOptions Options) *App {
 
 	srv, err := assetserver.NewAssetServer(opts)
 	if err != nil {
-		result.Logger.Error("Fatal error in application initialisation: " + err.Error())
+		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
 	}
 
 	result.assets = srv
@@ -127,7 +133,7 @@ func New(appOptions Options) *App {
 
 	result.bindings, err = NewBindings(appOptions.Services, appOptions.BindAliases)
 	if err != nil {
-		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
+		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
 	}
 
 	for _, service := range appOptions.Services {
@@ -162,6 +168,9 @@ func mergeApplicationDefaults(o *Options) {
 	}
 	if o.Description == "" {
 		o.Description = "An application written using Wails"
+	}
+	if o.Windows.WndClass == "" {
+		o.Windows.WndClass = "WailsWebviewWindow"
 	}
 }
 
@@ -313,7 +322,8 @@ type App struct {
 	isDebugMode  bool
 
 	// Keybindings
-	keyBindings map[string]func(window *WebviewWindow)
+	keyBindings     map[string]func(window *WebviewWindow)
+	keyBindingsLock sync.RWMutex
 
 	// Shutdown
 	performingShutdown bool
@@ -329,6 +339,27 @@ type App struct {
 	// Wails Event Listener related
 	wailsEventListenerLock sync.Mutex
 	wailsEventListeners    []WailsEventListener
+}
+
+func (a *App) handleError(err error) {
+	if a.options.ErrorHandler != nil {
+		a.options.ErrorHandler(err)
+	} else {
+		a.Logger.Error(err.Error())
+	}
+}
+
+func (a *App) handleFatalError(err error) {
+	var buffer strings.Builder
+	buffer.WriteString("*********************** FATAL ***********************")
+	buffer.WriteString("There has been a catastrophic failure in your application.")
+	buffer.WriteString("Please report this error at https://github.com/wailsapp/wails/issues")
+	buffer.WriteString("******************** Error Details ******************")
+	buffer.WriteString(fmt.Sprintf("Message: " + err.Error()))
+	buffer.WriteString(fmt.Sprintf("Stack: " + string(debug.Stack())))
+	buffer.WriteString("*********************** FATAL ***********************")
+	a.handleError(fmt.Errorf(buffer.String()))
+	os.Exit(1)
 }
 
 func (a *App) init() {
@@ -437,19 +468,12 @@ func (a *App) debug(message string, args ...any) {
 }
 
 func (a *App) fatal(message string, args ...any) {
-	msg := "A FATAL ERROR HAS OCCURRED: " + message
-	if a.Logger != nil {
-		a.Logger.Error(msg, args...)
-	} else {
-		println(msg)
-	}
-	os.Exit(1)
+	err := fmt.Errorf(message, args...)
+	a.handleFatalError(err)
 }
 
 func (a *App) error(message string, args ...any) {
-	if a.Logger != nil {
-		go a.Logger.Error(message, args...)
-	}
+	a.handleError(fmt.Errorf(message, args...))
 }
 
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
@@ -876,6 +900,9 @@ func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow)
 		return false
 	}
 
+	a.keyBindingsLock.RLock()
+	defer a.keyBindingsLock.RUnlock()
+
 	// Check key bindings
 	callback, ok := a.keyBindings[acceleratorString]
 	if !ok {
@@ -886,6 +913,18 @@ func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow)
 	go callback(window)
 
 	return true
+}
+
+func (a *App) addKeyBinding(acceleratorString string, callback func(window *WebviewWindow)) {
+	a.keyBindingsLock.Lock()
+	defer a.keyBindingsLock.Unlock()
+	a.keyBindings[acceleratorString] = callback
+}
+
+func (a *App) removeKeyBinding(acceleratorString string) {
+	a.keyBindingsLock.Lock()
+	defer a.keyBindingsLock.Unlock()
+	delete(a.keyBindings, acceleratorString)
 }
 
 func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {

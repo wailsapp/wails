@@ -31,6 +31,7 @@ type BuildAssetsOptions struct {
 }
 
 func GenerateBuildAssets(options *BuildAssetsOptions) error {
+	DisableFooter = true
 
 	var err error
 	options.Dir, err = filepath.Abs(options.Dir)

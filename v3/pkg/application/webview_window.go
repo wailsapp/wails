@@ -90,6 +90,8 @@ type (
 		setMinimiseButtonState(state ButtonState)
 		setMaximiseButtonState(state ButtonState)
 		setCloseButtonState(state ButtonState)
+		isIgnoreMouseEvents() bool
+		setIgnoreMouseEvents(ignore bool)
 	}
 )
 
@@ -132,7 +134,12 @@ type WebviewWindow struct {
 	cancellers     []func()
 
 	// keyBindings holds the keybindings for the window
-	keyBindings map[string]func(window *WebviewWindow)
+	keyBindings     map[string]func(*WebviewWindow)
+	keyBindingsLock sync.RWMutex
+
+	// menuBindings holds the menu bindings for the window
+	menuBindings     map[string]*MenuItem
+	menuBindingsLock sync.RWMutex
 
 	// Indicates that the window is destroyed
 	destroyed     bool
@@ -211,6 +218,7 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		eventListeners: make(map[uint][]*WindowEventListener),
 		contextMenus:   make(map[string]*Menu),
 		eventHooks:     make(map[uint][]*WindowEventListener),
+		menuBindings:   make(map[string]*MenuItem),
 	}
 
 	result.setupEventMapping()
@@ -1176,12 +1184,23 @@ func (w *WebviewWindow) SetPosition(x int, y int) {
 }
 
 func (w *WebviewWindow) processKeyBinding(acceleratorString string) bool {
+	// Check menu bindings
+	if w.menuBindings != nil {
+		w.menuBindingsLock.RLock()
+		defer w.menuBindingsLock.RUnlock()
+		if menuItem := w.menuBindings[acceleratorString]; menuItem != nil {
+			menuItem.handleClick()
+			return true
+		}
+	}
+
 	// Check key bindings
 	if w.keyBindings != nil {
+		w.keyBindingsLock.RLock()
+		defer w.keyBindingsLock.RUnlock()
 		if callback := w.keyBindings[acceleratorString]; callback != nil {
 			// Execute callback
 			go callback(w)
-
 			return true
 		}
 	}
@@ -1202,4 +1221,34 @@ func (w *WebviewWindow) isDestroyed() bool {
 	w.destroyedLock.RLock()
 	defer w.destroyedLock.RUnlock()
 	return w.destroyed
+}
+
+func (w *WebviewWindow) removeMenuBinding(a *accelerator) {
+	w.menuBindingsLock.Lock()
+	defer w.menuBindingsLock.Unlock()
+	w.menuBindings[a.String()] = nil
+}
+
+func (w *WebviewWindow) addMenuBinding(a *accelerator, menuItem *MenuItem) {
+	w.menuBindingsLock.Lock()
+	defer w.menuBindingsLock.Unlock()
+	w.menuBindings[a.String()] = menuItem
+}
+
+func (w *WebviewWindow) IsIgnoreMouseEvents() bool {
+	if w.impl == nil && !w.isDestroyed() {
+		return false
+	}
+	return InvokeSyncWithResult(w.impl.isIgnoreMouseEvents)
+}
+
+func (w *WebviewWindow) SetIgnoreMouseEvents(ignore bool) Window {
+	w.options.IgnoreMouseEvents = ignore
+	if w.impl == nil && !w.isDestroyed() {
+		return w
+	}
+	InvokeSync(func() {
+		w.impl.setIgnoreMouseEvents(ignore)
+	})
+	return w
 }

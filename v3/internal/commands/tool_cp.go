@@ -8,7 +8,9 @@ import (
 
 type CpOptions struct{}
 
-func Cp(options *CpOptions) error {
+func Cp(_ *CpOptions) error {
+	DisableFooter = true
+
 	// extract the source and destination from os.Args
 	if len(os.Args) != 5 {
 		return fmt.Errorf("cp requires a source and destination")

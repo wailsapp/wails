@@ -17,6 +17,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- [windows] Window class name option by [windom](https://github.com/windom/) in [#3682](https://github.com/wailsapp/wails/pull/3682) 
+
+### Fixed
+- [windows] Fixed syso icon file generation bug by [atterpac](https://github.com/atterpac) in [#3675](https://github.com/wailsapp/wails/pull/3675)
+- [linux] Fix to run natively in wayland incorporated from [#1811](https://github.com/wailsapp/wails/pull/1811) in [#3614](https://github.com/wailsapp/wails/pull/3614) by [@stendler](https://github.com/stendler)
+
+## v3.0.0-alpha.6 - 2024-07-30
+
+### Fixed
+- Module issues
+
+## v3.0.0-alpha.5 - 2024-07-30
+
 
 ### Added
 - [linux] WindowDidMove / WindowDidResize events in [#3580](https://github.com/wailsapp/wails/pull/3580)
@@ -37,6 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement `setIcon` on linux by [@abichinger](https://github.com/abichinger) in [#3354](https://github.com/wailsapp/wails/pull/3354)
 - Add flag `-port` to dev command and support environment variable `WAILS_VITE_PORT` by [@abichinger](https://github.com/abichinger) in [#3429](https://github.com/wailsapp/wails/pull/3429)
 - Add tests for bound method calls by [@abichinger](https://github.com/abichinger) in [#3431](https://github.com/wailsapp/wails/pull/3431)
+- [windows] add `SetIgnoreMouseEvents` for already created window by [@bruxaodev](https://github.com/bruxaodev) in [#3667](https://github.com/wailsapp/wails/pull/3667)
+- [darwin] Add ability to set a window's stacking level (order) by [@OlegGulevskyy](https://github.com/OlegGulevskyy) in [#3674](https://github.com/wailsapp/wails/pull/3674)
 
 ### Fixed
 
@@ -74,6 +90,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix doctor detection of npm that is not installed with system package manager by [@pekim](https://github.com/pekim) in [#3458](https://github.com/wailsapp/wails/pull/3458)
 - Fix missing MicrosoftEdgeWebview2Setup.exe. Thanks to [@robin-samuel](https://github.com/robin-samuel).
 - Fix random crash on linux due to window ID handling by @leaanthony. Based on PR [#3466](https://github.com/wailsapp/wails/pull/3622) by [@5aaee9](https://github.com/5aaee9).
+- Fix systemTray.setIcon crashing on Linux by [@windom](https://github.com/windom/) in [#3636](https://github.com/wailsapp/wails/pull/3636).
+- Fix Ensure Window Frame is Applied on First Call in `setFrameless` Function on Windows by [@bruxaodev](https://github.com/bruxaodev/) in [#3691](https://github.com/wailsapp/wails/pull/3691).
 
 ### Changed
 

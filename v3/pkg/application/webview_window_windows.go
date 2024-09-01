@@ -198,6 +198,9 @@ func (w *windowsWebviewWindow) run() {
 	options := w.parent.options
 
 	w.chromium = edge.NewChromium()
+	if globalApplication.options.ErrorHandler != nil {
+		w.chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
+	}
 
 	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
@@ -234,7 +237,8 @@ func (w *windowsWebviewWindow) run() {
 			theMenu = w.parent.options.Windows.Menu
 		}
 		if theMenu != nil {
-			w.menu = NewApplicationMenu(w.hwnd, theMenu)
+			w.menu = NewApplicationMenu(w, theMenu)
+			w.menu.parentWindow = w
 			appMenu = w.menu.menu
 		}
 	}
@@ -245,7 +249,7 @@ func (w *windowsWebviewWindow) run() {
 
 	w.hwnd = w32.CreateWindowEx(
 		uint(exStyle),
-		windowClassName,
+		w32.MustStringToUTF16Ptr(globalApplication.options.Windows.WndClass),
 		w32.MustStringToUTF16Ptr(options.Title),
 		style,
 		startX,
@@ -274,6 +278,8 @@ func (w *windowsWebviewWindow) run() {
 	getNativeApplication().registerWindow(w)
 
 	w.setResizable(!options.DisableResize)
+
+	w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
 
 	if options.Frameless {
 		// Inform the application of the frame change this is needed to trigger the WM_NCCALCSIZE event.
@@ -550,7 +556,10 @@ func (w *windowsWebviewWindow) fullscreen() {
 		return
 	}
 	if w.framelessWithDecorations() {
-		w32.ExtendFrameIntoClientArea(w.hwnd, false)
+		err := w32.ExtendFrameIntoClientArea(w.hwnd, false)
+		if err != nil {
+			globalApplication.handleFatalError(err)
+		}
 	}
 	w.disableSizeConstraints()
 	w.previousWindowStyle = uint32(w32.GetWindowLongPtr(w.hwnd, w32.GWL_STYLE))
@@ -582,7 +591,10 @@ func (w *windowsWebviewWindow) unfullscreen() {
 		return
 	}
 	if w.framelessWithDecorations() {
-		w32.ExtendFrameIntoClientArea(w.hwnd, true)
+		err := w32.ExtendFrameIntoClientArea(w.hwnd, true)
+		if err != nil {
+			globalApplication.handleFatalError(err)
+		}
 	}
 	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w.previousWindowStyle)
 	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, w.previousWindowExStyle)
@@ -847,6 +859,7 @@ func (w *windowsWebviewWindow) setFrameless(b bool) {
 	} else {
 		w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_OVERLAPPEDWINDOW)
 	}
+	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0, w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_FRAMECHANGED)
 }
 
 func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
@@ -979,7 +992,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// As a result we have hidden the titlebar but still have the default window frame styling.
 		// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
 		if w.framelessWithDecorations() {
-			w32.ExtendFrameIntoClientArea(w.hwnd, true)
+			err := w32.ExtendFrameIntoClientArea(w.hwnd, true)
+			if err != nil {
+				globalApplication.handleFatalError(err)
+			}
 		}
 	case w32.WM_CLOSE:
 		w.parent.emit(events.Windows.WindowClose)
@@ -1111,7 +1127,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			// As a result we have hidden the titlebar but still have the default window frame styling.
 			// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
 			if w.framelessWithDecorations() {
-				w32.ExtendFrameIntoClientArea(w.hwnd, true)
+				err := w32.ExtendFrameIntoClientArea(w.hwnd, true)
+				if err != nil {
+					globalApplication.handleFatalError(err)
+				}
 			}
 
 		case w32.WM_NCCALCSIZE:
@@ -1302,7 +1321,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 	uri, _ := req.GetUri()
 	reqUri, err := url.ParseRequestURI(uri)
 	if err != nil {
-		globalApplication.error("Unable to parse request uri", "uri", uri, "error", err)
+		globalApplication.error("Unable to parse request uri: uri='%s' error='%s'", uri, err)
 		return
 	}
 
@@ -1744,4 +1763,19 @@ func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
 
 func (w *windowsWebviewWindow) setGWLStyle(style int) {
 	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, uint32(style))
+}
+
+func (w *windowsWebviewWindow) isIgnoreMouseEvents() bool {
+	exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE)
+	return exStyle&w32.WS_EX_TRANSPARENT != 0
+}
+
+func (w *windowsWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE)
+	if ignore {
+		exStyle |= w32.WS_EX_LAYERED | w32.WS_EX_TRANSPARENT
+	} else {
+		exStyle &^= w32.WS_EX_TRANSPARENT
+	}
+	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, uint32(exStyle))
 }

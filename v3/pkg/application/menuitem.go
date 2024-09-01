@@ -227,7 +227,7 @@ func (m *MenuItem) handleClick() {
 func (m *MenuItem) SetAccelerator(shortcut string) *MenuItem {
 	accelerator, err := parseAccelerator(shortcut)
 	if err != nil {
-		globalApplication.error("invalid accelerator:", err.Error())
+		globalApplication.error("invalid accelerator. %v", err.Error())
 		return m
 	}
 	m.accelerator = accelerator

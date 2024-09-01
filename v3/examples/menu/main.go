@@ -16,7 +16,7 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Menu Demo",
 		Description: "A demo of the menu system",
-		//Assets:      application.AlphaAssets,
+		Assets:      application.AlphaAssets,
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
@@ -35,7 +35,7 @@ func main() {
 	myMenu.Add("Not Enabled").SetEnabled(false)
 
 	// Click callbacks
-	myMenu.Add("Click Me!").SetBitmap(clickBitmap).OnClick(func(ctx *application.Context) {
+	myMenu.Add("Click Me!").SetAccelerator("CmdOrCtrl+l").SetBitmap(clickBitmap).OnClick(func(ctx *application.Context) {
 		switch ctx.ClickedMenuItem().Label() {
 		case "Click Me!":
 			ctx.ClickedMenuItem().SetLabel("Thanks mate!")

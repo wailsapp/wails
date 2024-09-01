@@ -63,6 +63,7 @@ func main() {
 	tool.NewSubCommandFunction("checkport", "Checks if a port is open. Useful for testing if vite is running.", commands.ToolCheckPort)
 	tool.NewSubCommandFunction("watcher", "Watches files and runs a command when they change", commands.Watcher)
 	tool.NewSubCommandFunction("cp", "Copy files", commands.Cp)
+	tool.NewSubCommandFunction("buildinfo", "Show Build Info", commands.BuildInfo)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
@@ -76,23 +77,27 @@ func main() {
 }
 
 func printFooter() {
-	pterm.Println(pterm.LightGreen("\nNeed documentation? Run: ") + pterm.LightYellow("wails3 docs\n"))
-	// Check if we're in a teminal
-	printer := pterm.PrefixPrinter{
-		MessageStyle: pterm.NewStyle(pterm.FgLightGreen),
-		Prefix: pterm.Prefix{
-			Style: pterm.NewStyle(pterm.FgRed, pterm.BgLightWhite),
-			Text:  "♥ ",
-		},
-	}
+	if !commands.DisableFooter {
+		pterm.Println(pterm.LightGreen("\nNeed documentation? Run: ") + pterm.LightYellow("wails3 docs\n"))
+		// Check if we're in a teminal
+		printer := pterm.PrefixPrinter{
+			MessageStyle: pterm.NewStyle(pterm.FgLightGreen),
+			Prefix: pterm.Prefix{
+				Style: pterm.NewStyle(pterm.FgRed, pterm.BgLightWhite),
+				Text:  "♥ ",
+			},
+		}
 
-	printer.Println("If Wails is useful to you or your company, please consider sponsoring the project: " + pterm.LightYellow("wails3 sponsor"))
+		printer.Println("If Wails is useful to you or your company, please consider sponsoring the project: " + pterm.LightYellow("wails3 sponsor"))
+	}
 }
 
 func openDocs() error {
+	commands.DisableFooter = true
 	return browser.OpenURL("https://v3alpha.wails.io/getting-started/your-first-app/")
 }
 
 func openSponsor() error {
+	commands.DisableFooter = true
 	return browser.OpenURL("https://github.com/sponsors/leaanthony")
 }
