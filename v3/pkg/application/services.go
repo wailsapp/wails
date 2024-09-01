@@ -1,13 +1,16 @@
 package application
 
-import "reflect"
+import (
+	"context"
+	"reflect"
+)
 
 type ServiceName interface {
 	Name() string
 }
 
 type ServiceStartup interface {
-	OnStartup() error
+	OnStartup(ctx context.Context, options *ServiceOptions) error
 }
 
 type ServiceShutdown interface {

@@ -1,12 +1,14 @@
 package kvstore
 
 import (
+	"context"
 	"encoding/json"
-	"github.com/pkg/errors"
-	"github.com/wailsapp/wails/v3/pkg/application"
 	"io"
 	"os"
 	"sync"
+
+	"github.com/pkg/errors"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type KeyValueStore struct {
@@ -48,7 +50,7 @@ func (kvs *KeyValueStore) Name() string {
 }
 
 // OnStartup is called when the plugin is loaded. This is where you should do any setup.
-func (kvs *KeyValueStore) OnStartup() error {
+func (kvs *KeyValueStore) OnStartup(ctx context.Context, options *application.ServiceOptions) error {
 	err := kvs.open(kvs.config.Filename)
 	if err != nil {
 		return err

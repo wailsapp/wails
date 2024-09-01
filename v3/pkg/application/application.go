@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 	"io"
@@ -131,7 +132,7 @@ func New(appOptions Options) *App {
 
 	for _, service := range appOptions.Services {
 		if thisService, ok := service.instance.(ServiceStartup); ok {
-			err := thisService.OnStartup()
+			err := thisService.OnStartup(result.ctx, &service.options)
 			if err != nil {
 				name := getServiceName(service)
 				globalApplication.error("OnStartup() failed:", "service", name, "error", err.Error())
@@ -255,6 +256,8 @@ type eventHook struct {
 }
 
 type App struct {
+	ctx                           context.Context
+	cancel                        context.CancelFunc
 	options                       Options
 	applicationEventListeners     map[uint][]*EventListener
 	applicationEventListenersLock sync.RWMutex
@@ -326,6 +329,7 @@ type App struct {
 }
 
 func (a *App) init() {
+	a.ctx, a.cancel = context.WithCancel(context.Background())
 	a.applicationEventHooks = make(map[uint][]*eventHook)
 	a.applicationEventListeners = make(map[uint][]*EventListener)
 	a.windows = make(map[uint]Window)
@@ -554,6 +558,9 @@ func (a *App) Run() error {
 	if err != nil {
 		return err
 	}
+
+	// Cancel the context
+	a.cancel()
 
 	for _, service := range a.options.Services {
 		// If it conforms to the ServiceShutdown interface, call the Shutdown method

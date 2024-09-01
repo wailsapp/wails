@@ -1,9 +1,11 @@
 package log
 
 import (
+	"context"
 	_ "embed"
-	"github.com/wailsapp/wails/v3/pkg/application"
 	"log/slog"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type Config struct {
@@ -49,7 +51,8 @@ func (l *LoggerService) Name() string {
 	return "github.com/wailsapp/wails/v3/plugins/log"
 }
 
-func (l *LoggerService) OnStartup() error {
+func (l *LoggerService) OnStartup(ctx context.Context, options *application.ServiceOptions) error {
+	// Any initialization code here
 	return nil
 }
 
