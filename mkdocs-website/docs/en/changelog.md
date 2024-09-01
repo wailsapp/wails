@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - [windows] Fixed syso icon file generation bug by [atterpac](https://github.com/atterpac) in [#3675](https://github.com/wailsapp/wails/pull/3675)
 - [linux] Fix to run natively in wayland incorporated from [#1811](https://github.com/wailsapp/wails/pull/1811) in [#3614](https://github.com/wailsapp/wails/pull/3614) by [@stendler](https://github.com/stendler)
+- Do not bind internal service methods in [#3720](https://github.com/wailsapp/wails/pull/3720)
+  by [leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.6 - 2024-07-30
 
