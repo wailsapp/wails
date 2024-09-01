@@ -1,86 +1,129 @@
-# {{.Name}} Service
+# Wails v3 Service Template
 
-This service provides a simple URL shortener functionality within your Wails application.
+This README provides an overview of the Wails v3 service template and explains how to adapt it to create your own custom service.
 
-## Installation
+## Overview
 
-To use this service in your Wails v3 application, add it to the `Services` slice in your application options:
+The service template provides a basic structure for creating a Wails v3 service. A service in Wails v3 is a Go package that can be integrated into your Wails application to provide specific functionality, handle HTTP requests, and interact with the frontend.
+
+## Template Structure
+
+The template defines a `MyService` struct and several methods:
+
+### MyService Struct
 
 ```go
-import (
-    "github.com/wailsapp/wails/v3/pkg/application"
-    "path/to/{{.Name}}"
-)
-
-app := application.New(application.Options{
-    // ...
-    Services: []application.Service{
-        application.NewService({{.Name}}.New(), application.ServiceOptions{
-            Route: "/s",
-        }),
-    },
-    // ...
-})
+type MyService struct {
+    ctx context.Context
+    options application.ServiceOptions
+}
 ```
 
-## Usage
+This is the main service struct. You can rename it to better reflect your service's purpose. The struct holds a context and service options, which are set during startup.
 
-Once the service is registered, you can use it to shorten URLs and redirect to original URLs:
+### Name Method
 
-```javascript
-// Shorten a URL using the bound method
-const shortURL = await wails.Services.Service.ShortenURL("https://wails.io");
-console.log(shortURL); // Outputs: "/s/Ab3x5Y"
-
-// Alternatively, you can use fetch to create a short URL
-fetch('/s', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url: 'https://wails.io' })
-})
-.then(response => response.json())
-.then(data => console.log(data.shortURL));
-
-// To use a short URL, simply navigate to it or use it in an anchor tag
-document.getElementById('shortLink').href = shortURL;
+```go
+func (p *MyService) Name() string
 ```
 
-When a user visits the short URL (e.g., `/s/Ab3x5Y`), they will be redirected to the original URL.
+This method returns the name of the service. It's used to identify the service within the Wails application.
 
-## API Reference
+### OnStartup Method
 
-- `ShortenURL(url: string): Promise<string>`
-  Returns a shortened URL for the given original URL.
+```go
+func (p *MyService) OnStartup(ctx context.Context, options application.ServiceOptions) error
+```
 
-## HTTP Handling
+This method is called when the app is starting up. Use it to initialize resources, set up connections, or perform any necessary setup tasks. 
+It receives a context and service options, which are stored in the service struct.
 
-This service implements the `ServeHTTP(w http.ResponseWriter, r *http.Request)` method to handle two types of HTTP requests:
+### OnShutdown Method
 
-1. POST requests to create short URLs:
-    - Endpoint: `/s`
-    - Body: JSON object with a `url` field
-    - Response: JSON object with a `shortURL` field
+```go
+func (p *MyService) OnShutdown() error
+```
 
-2. GET requests to redirect to original URLs:
-    - Endpoint: `/s/{shortCode}`
-    - Action: Redirects to the original URL associated with the short code
+This method is called when the app is shutting down. Use it to clean up resources, close connections, or perform any necessary cleanup tasks.
 
-## Considerations
+### ServeHTTP Method
 
-- This is a simple in-memory URL shortener. In a production environment, you'd want to use a persistent storage solution.
-- There's no mechanism to prevent duplicate short codes. In a real-world scenario, you'd want to ensure uniqueness.
-- This service doesn't include features like custom short codes or expiration dates, which could be added for a more full-featured URL shortener.
+```go
+func (p *MyService) ServeHTTP(w http.ResponseWriter, r *http.Request)
+```
 
-## Support
+This method handles HTTP requests to the service. It's called when the frontend makes an HTTP request to the backend 
+at the path specified in the `Route` field of the service options.
 
-If you encounter any issues or have questions about this service, please raise a ticket in our [GitHub repository](https://github.com/path/to/repo/issues).
+### Service Methods
 
-Please note that this is a community-contributed service. While we appreciate the Wails team's efforts, direct your support requests to this service's maintainers rather than the core Wails team.
+```go
+func (p *MyService) Greet(name string) string
+```
 
-## License
+This is an example of a service method. You can add as many methods as you need. These methods can be called from the frontend.
 
-[Include license information here]
+## Adapting the Template
 
-## Contributing
+To create your own service:
 
-We welcome contributions to improve this service! Please see our [Contributing Guidelines](CONTRIBUTING.md) for more information on how to get started.
+1. Rename the `MyService` struct to reflect your service's purpose (e.g., `DatabaseService`, `AuthService`).
+2. Update the `Name` method to return your service's unique identifier.
+3. Implement the `OnStartup` method to initialize your service. This might include setting up database connections, loading configuration, etc.
+4. If needed, implement the `OnShutdown` method to properly clean up resources when the application closes.
+5. If your service needs to handle HTTP requests, implement the `ServeHTTP` method. Use this to create API endpoints, serve files, or handle any HTTP interactions.
+6. Add your own methods to the service. These can include database operations, business logic, or any functionality your service needs to provide.
+7. If your service requires configuration, consider adding a `Config` struct and a `New` function to create and configure your service.
+
+## Example: Database Service
+
+Here's how you might adapt the template for a database service:
+
+```go
+type DatabaseService struct {
+    ctx context.Context
+    options application.ServiceOptions
+    db *sql.DB
+}
+
+func (s *DatabaseService) Name() string {
+    return "github.com/myname/DatabaseService"
+}
+
+func (s *DatabaseService) OnStartup(ctx context.Context, options application.ServiceOptions) error {
+    s.ctx = ctx
+    s.options = options
+    // Initialize database connection
+    var err error
+    s.db, err = sql.Open("mysql", "user:password@/dbname")
+    return err
+}
+
+func (s *DatabaseService) OnShutdown() error {
+    return s.db.Close()
+}
+
+func (s *DatabaseService) GetUser(id int) (User, error) {
+    // Implement database query
+}
+
+// Add more methods as needed
+```
+
+## Long-running tasks
+
+If your service needs to perform long-running tasks, consider using goroutines and channels to manage these tasks.
+You can use the `context.Context` to listen for when the application shuts down:
+
+```go
+func (s *DatabaseService) longRunningTask() {
+    for {
+        select {
+        case <-s.ctx.Done():
+            // Cleanup and exit
+            return
+        // Perform long-running task
+        }   
+    }
+}
+```
