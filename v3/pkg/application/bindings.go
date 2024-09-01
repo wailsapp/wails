@@ -88,8 +88,8 @@ func NewBindings(instances []Service, aliases map[uint32]uint32) (*Bindings, err
 	}
 	for _, binding := range instances {
 		handler, ok := binding.Instance().(http.Handler)
-		if ok && binding.options.PathPrefix != "" {
-			app.assets.AttachServiceHandler(binding.options.PathPrefix, handler)
+		if ok && binding.options.Route != "" {
+			app.assets.AttachServiceHandler(binding.options.Route, handler)
 		}
 		err := b.Add(binding.Instance())
 		if err != nil {

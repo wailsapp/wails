@@ -17,12 +17,12 @@ type Service struct {
 }
 
 type ServiceOptions struct {
-	// PathPrefix is the path to the assets
-	PathPrefix string
+	// Route is the path to the assets
+	Route string
 }
 
 var DefaultServiceOptions = ServiceOptions{
-	PathPrefix: "",
+	Route: "",
 }
 
 // NewService returns a Service value wrapping the given pointer.

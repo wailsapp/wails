@@ -140,6 +140,7 @@ nav:
     - Your First Application: getting-started/your-first-app.md
     - Next Steps: getting-started/next-steps.md
     - Learn More:
+        - Services: learn/services.md
         - Runtime: learn/runtime.md
         - Plugins: learn/plugins.md
         - Guides:

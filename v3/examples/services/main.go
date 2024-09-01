@@ -39,7 +39,7 @@ func main() {
 			application.NewService(fileserver.New(&fileserver.Config{
 				RootPath: rootPath,
 			}), application.ServiceOptions{
-				PathPrefix: "/files",
+				Route: "/files",
 			}),
 		},
 		Assets: application.AssetOptions{
