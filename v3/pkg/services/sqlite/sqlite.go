@@ -44,7 +44,7 @@ func (s *Service) Name() string {
 
 // OnStartup is called when the app is starting up. You can use this to
 // initialise any resources you need.
-func (s *Service) OnStartup(ctx context.Context, options *application.ServiceOptions) error {
+func (s *Service) OnStartup(ctx context.Context, options application.ServiceOptions) error {
 	if s.config.DBFile == "" {
 		return errors.New(`no database file specified. Please set DBFile in the config to either a filename or use ":memory:" to use an in-memory database`)
 	}

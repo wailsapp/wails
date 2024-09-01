@@ -20,8 +20,8 @@ func main() {
 
 	rootPath, _ := filepath.Abs("./files")
 	app := application.New(application.Options{
-		Name:        "Plugin Demo",
-		Description: "A demo of the plugins API",
+		Name:        "Services Demo",
+		Description: "A demo of the services API",
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},

@@ -17,6 +17,9 @@ type Service struct {
 }
 
 type ServiceOptions struct {
+	// Name can be set to override the name of the service
+	// This is useful for logging and debugging purposes
+	Name string
 	// Route is the path to the assets
 	Route string
 }

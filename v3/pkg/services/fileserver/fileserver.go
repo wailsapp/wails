@@ -40,7 +40,7 @@ func (s *Service) Name() string {
 
 // OnStartup is called when the app is starting up. You can use this to
 // initialise any resources you need.
-func (s *Service) OnStartup(ctx context.Context, options *application.ServiceOptions) error {
+func (s *Service) OnStartup(ctx context.Context, options application.ServiceOptions) error {
 	// Any initialization code here
 	return nil
 }

@@ -47,10 +47,18 @@ app := application.New(application.Options{
 
 Services can implement optional methods to hook into the application lifecycle:
 
+### Name
+
+```go
+func (s *Service) Name() string
+```
+
+This method returns the name of the service. It is used for logging purposes only.
+
 ### OnStartup
 
 ```go
-func (s *Service) OnStartup(ctx context.Context, options *application.ServiceOptions) error
+func (s *Service) OnStartup(ctx context.Context, options application.ServiceOptions) error
 ```
 
 This method is called when the application is starting up. You can use it to initialize resources, set up connections, 
@@ -104,7 +112,7 @@ func (s *Service) Name() string {
     return "github.com/wailsapp/wails/v3/services/fileserver"
 }
 
-func (s *Service) OnStartup(ctx context.Context, options *application.ServiceOptions) error {
+func (s *Service) OnStartup(ctx context.Context, options application.ServiceOptions) error {
     // Any initialization code here
     return nil
 }

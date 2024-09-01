@@ -58,9 +58,7 @@ func main() {
 	generate.NewSubCommandFunction("appimage", "Generate Linux AppImage", commands.GenerateAppImage)
 
 	plugin := app.NewSubCommand("service", "Service tools")
-	//plugin.NewSubCommandFunction("list", "List plugins", commands.PluginList)
 	plugin.NewSubCommandFunction("init", "Initialise a new service", commands.ServiceInit)
-	//plugin.NewSubCommandFunction("add", "Add a plugin", commands.PluginAdd)
 	tool := app.NewSubCommand("tool", "Various tools")
 	tool.NewSubCommandFunction("checkport", "Checks if a port is open. Useful for testing if vite is running.", commands.ToolCheckPort)
 	tool.NewSubCommandFunction("watcher", "Watches files and runs a command when they change", commands.Watcher)

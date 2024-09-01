@@ -10,7 +10,7 @@ type ServiceName interface {
 }
 
 type ServiceStartup interface {
-	OnStartup(ctx context.Context, options *ServiceOptions) error
+	OnStartup(ctx context.Context, options ServiceOptions) error
 }
 
 type ServiceShutdown interface {

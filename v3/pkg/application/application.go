@@ -132,9 +132,12 @@ func New(appOptions Options) *App {
 
 	for _, service := range appOptions.Services {
 		if thisService, ok := service.instance.(ServiceStartup); ok {
-			err := thisService.OnStartup(result.ctx, &service.options)
+			err := thisService.OnStartup(result.ctx, service.options)
 			if err != nil {
-				name := getServiceName(service)
+				name := service.options.Name
+				if name == "" {
+					name = getServiceName(service)
+				}
 				globalApplication.error("OnStartup() failed:", "service", name, "error", err.Error())
 				continue
 			}

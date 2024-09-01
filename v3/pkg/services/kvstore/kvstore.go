@@ -50,7 +50,7 @@ func (kvs *KeyValueStore) Name() string {
 }
 
 // OnStartup is called when the plugin is loaded. This is where you should do any setup.
-func (kvs *KeyValueStore) OnStartup(ctx context.Context, options *application.ServiceOptions) error {
+func (kvs *KeyValueStore) OnStartup(ctx context.Context, options application.ServiceOptions) error {
 	err := kvs.open(kvs.config.Filename)
 	if err != nil {
 		return err

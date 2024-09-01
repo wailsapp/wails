@@ -51,7 +51,7 @@ func (l *LoggerService) Name() string {
 	return "github.com/wailsapp/wails/v3/plugins/log"
 }
 
-func (l *LoggerService) OnStartup(ctx context.Context, options *application.ServiceOptions) error {
+func (l *LoggerService) OnStartup(ctx context.Context, options application.ServiceOptions) error {
 	// Any initialization code here
 	return nil
 }
