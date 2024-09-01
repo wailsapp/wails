@@ -1,10 +1,12 @@
 package hashes
 
 import (
+	"context"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type Hashes struct {
@@ -35,6 +37,6 @@ func (h *Hashes) Name() string {
 	return "Hashes Service"
 }
 
-func (h *Hashes) OnStartup() error {
+func (h *Hashes) OnStartup(_ context.Context, _ application.ServiceOptions) error {
 	return nil
 }

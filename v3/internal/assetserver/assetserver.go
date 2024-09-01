@@ -112,8 +112,6 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 		for route, handler := range a.services {
 			if strings.HasPrefix(reqPath, route) {
 				req.URL.Path = strings.TrimPrefix(reqPath, route)
-				// Strip leading slash
-				req.URL.Path = strings.TrimPrefix(req.URL.Path, "/")
 				handler.ServeHTTP(rw, req)
 				return
 			}

@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 //go:embed assets/*
@@ -18,7 +19,13 @@ var assets embed.FS
 
 func main() {
 
-	rootPath, _ := filepath.Abs("./files")
+	// Get the local directory of this source file
+	// This isn't needed when running the example with `go run .`
+	// but is needed when running the example from an IDE
+	_, thisFile, _, _ := runtime.Caller(0)
+	localDir := filepath.Dir(thisFile)
+
+	rootPath := filepath.Join(localDir, "files")
 	app := application.New(application.Options{
 		Name:        "Services Demo",
 		Description: "A demo of the services API",
