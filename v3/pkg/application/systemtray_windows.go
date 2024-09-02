@@ -179,7 +179,7 @@ func (s *windowsSystemTray) run() {
 	for retries := range 6 {
 		if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
 			if retries == 5 {
-				panic(syscall.GetLastError())
+				globalApplication.fatal("Failed to register system tray icon: %v", syscall.GetLastError())
 			}
 
 			time.Sleep(500 * time.Millisecond)
