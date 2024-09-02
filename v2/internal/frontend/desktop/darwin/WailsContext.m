@@ -218,7 +218,12 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     config.suppressesIncrementalRendering = true;
     config.applicationNameForUserAgent = @"wails.io";
     [config setURLSchemeHandler:self forURLScheme:@"wails"];
-
+    
+    // Use the default persistent data store
+    config.websiteDataStore = [WKWebsiteDataStore defaultDataStore];
+    // Enable cookies
+    config.websiteDataStore.httpCookieStore.cookieAcceptPolicy = NSHTTPCookieAcceptPolicyAlways;
+    
     if (preferences.tabFocusesLinks != NULL) {
         config.preferences.tabFocusesLinks = *preferences.tabFocusesLinks;
     }
@@ -304,6 +309,16 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
     self.applicationMenu = [NSMenu new];
 
+}
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    // Always accept cookies
+    if (@available(macOS 10.13, *)) {
+        WKHTTPCookieStore *cookieStore = webView.configuration.websiteDataStore.httpCookieStore;
+        [cookieStore setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
+    }
+    
+    // Allow the navigation
+    decisionHandler(WKNavigationActionPolicyAllow);
 }
 
 - (NSMenuItem*) newMenuItem :(NSString*)title :(SEL)selector :(NSString*)key :(NSEventModifierFlags)flags {
