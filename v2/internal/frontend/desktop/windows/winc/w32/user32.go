@@ -639,7 +639,7 @@ func GetSysColorBrush(nIndex int) HBRUSH {
 
 		return HBRUSH(ret)
 	*/
-	ret, _, _ := syscall.Syscall(getSysColorBrush, 1,
+	ret, _, _ := syscall.SyscallN(getSysColorBrush,
 		uintptr(nIndex),
 		0,
 		0)
@@ -792,11 +792,9 @@ func CreateMenu() HMENU {
 }
 
 func SetMenu(hWnd HWND, hMenu HMENU) bool {
-	ret, _, _ := syscall.Syscall(setMenu, 2,
+	ret, _, _ := syscall.SyscallN(setMenu,
 		uintptr(hWnd),
-		uintptr(hMenu),
-		0)
-
+		uintptr(hMenu))
 	return ret != 0
 }
 
@@ -834,11 +832,7 @@ func TrackPopupMenuEx(hMenu HMENU, fuFlags uint32, x, y int32, hWnd HWND, lptpm 
 }
 
 func DrawMenuBar(hWnd HWND) bool {
-	ret, _, _ := syscall.Syscall(drawMenuBar, 1,
-		uintptr(hWnd),
-		0,
-		0)
-
+	ret, _, _ := syscall.SyscallN(drawMenuBar, hWnd)
 	return ret != 0
 }
 
@@ -1231,11 +1225,8 @@ func CallNextHookEx(hhk HHOOK, nCode int, wParam WPARAM, lParam LPARAM) LRESULT 
 }
 
 func GetKeyState(nVirtKey int32) int16 {
-	ret, _, _ := syscall.Syscall(getKeyState, 1,
-		uintptr(nVirtKey),
-		0,
-		0)
-
+	ret, _, _ := syscall.SyscallN(getKeyState,
+		uintptr(nVirtKey))
 	return int16(ret)
 }
 
@@ -1249,17 +1240,15 @@ func DestroyMenu(hMenu HMENU) bool {
 }
 
 func GetWindowPlacement(hWnd HWND, lpwndpl *WINDOWPLACEMENT) bool {
-	ret, _, _ := syscall.Syscall(getWindowPlacement, 2,
-		uintptr(hWnd),
-		uintptr(unsafe.Pointer(lpwndpl)),
-		0)
-
+	ret, _, _ := syscall.SyscallN(getWindowPlacement,
+		hWnd,
+		uintptr(unsafe.Pointer(lpwndpl)))
 	return ret != 0
 }
 
 func SetWindowPlacement(hWnd HWND, lpwndpl *WINDOWPLACEMENT) bool {
-	ret, _, _ := syscall.Syscall(setWindowPlacement, 2,
-		uintptr(hWnd),
+	ret, _, _ := syscall.SyscallN(setWindowPlacement,
+		hWnd,
 		uintptr(unsafe.Pointer(lpwndpl)),
 		0)
 
@@ -1279,7 +1268,7 @@ func SetScrollInfo(hwnd HWND, fnBar int32, lpsi *SCROLLINFO, fRedraw bool) int32
 }
 
 func GetScrollInfo(hwnd HWND, fnBar int32, lpsi *SCROLLINFO) bool {
-	ret, _, _ := syscall.Syscall(getScrollInfo, 3,
+	ret, _, _ := syscall.SyscallN(getScrollInfo,
 		hwnd,
 		uintptr(fnBar),
 		uintptr(unsafe.Pointer(lpsi)))
