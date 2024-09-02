@@ -1373,6 +1373,14 @@ func (w *linuxWebviewWindow) position() (int, int) {
 	return int(x), int(y)
 }
 
+func (w *linuxWebviewWindow) ignoreMouse(ignore bool) {
+	if ignore {
+		C.gtk_widget_set_events((*C.GtkWidget)(unsafe.Pointer(w.window)), C.GDK_ENTER_NOTIFY_MASK|C.GDK_LEAVE_NOTIFY_MASK)
+	} else {
+		C.gtk_widget_set_events((*C.GtkWidget)(unsafe.Pointer(w.window)), C.GDK_ALL_EVENTS_MASK)
+	}
+}
+
 // FIXME Change this to reflect mouse button!
 //
 //export onButtonEvent
