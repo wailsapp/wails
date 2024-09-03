@@ -17,7 +17,8 @@ type Window interface {
 	Close()
 	Destroy()
 	DisableSizeConstraints()
-	DispatchWailsEvent(event *WailsEvent)
+	DispatchWailsEvent(event *CustomEvent)
+	EmitEvent(name string, data ...any)
 	EnableSizeConstraints()
 	Error(message string, args ...any)
 	ExecJS(js string)
@@ -43,7 +44,7 @@ type Window interface {
 	Maximise() Window
 	Minimise() Window
 	Name() string
-	On(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
+	OnWindowEvent(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
 	OpenContextMenu(data *ContextMenuData)
 	Position() (int, int)
 	RegisterContextMenu(name string, menu *Menu)
