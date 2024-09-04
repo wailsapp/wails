@@ -13,7 +13,7 @@ package application
 #define unicode(input) [NSString stringWithFormat:@"%C", input]
 
 // Create menu item
-void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* tooltip) {
+void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* tooltip, char* selector) {
     MenuItem *menuItem = [MenuItem new];
 
     // Label
@@ -22,10 +22,16 @@ void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* too
 	if( disabled ) {
 		[menuItem setTarget:nil];
 	} else {
-		[menuItem setTarget:menuItem];
+		if (selector != NULL) {
+			menuItem.action = NSSelectorFromString([NSString stringWithUTF8String:selector]);
+			menuItem.target = nil; // Allow the action to be sent up the responder chain
+		} else {
+			menuItem.action = @selector(handleClick);
+			menuItem.target = menuItem;
+		}
 	}
     menuItem.menuItemID = menuItemID;
-    menuItem.action = @selector(handleClick);
+			
 	menuItem.enabled = !disabled;
 
 	// Tooltip
@@ -399,17 +405,25 @@ func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 		menuItem: item,
 	}
 
+	selector := getSelectorForRole(item.role)
+	if selector != nil {
+			defer C.free(unsafe.Pointer(selector))
+	}
+	result.nsMenuItem = unsafe.Pointer(C.newMenuItem(
+			C.uint(item.id),
+			C.CString(item.label),
+			C.bool(item.disabled),
+			C.CString(item.tooltip),
+			selector,
+	))
+
 	switch item.itemType {
-	case text, checkbox, submenu, radio:
-		result.nsMenuItem = unsafe.Pointer(C.newMenuItem(C.uint(item.id), C.CString(item.label), C.bool(item.disabled), C.CString(item.tooltip)))
-		if item.itemType == checkbox || item.itemType == radio {
+	case checkbox, radio:
 			C.setMenuItemChecked(result.nsMenuItem, C.bool(item.checked))
-		}
-		if item.accelerator != nil {
-			result.setAccelerator(item.accelerator)
-		}
-	default:
-		panic("WTF")
+	}
+	
+	if item.accelerator != nil {
+		result.setAccelerator(item.accelerator)
 	}
 	return result
 }
