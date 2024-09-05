@@ -2,8 +2,7 @@
 
 package application
 
-import "C"
-import (
+import ( 
 	"fmt"
 	"time"
 
@@ -282,7 +281,7 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	// Ignore mouse events if requested
-	w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
+	w.setIgnoreMouseEvents(w.parent.options.IgnoreMouseEvents)
 
 	startURL, err := assetserver.GetStartURL(w.parent.options.URL)
 	if err != nil {
@@ -375,11 +374,5 @@ func (w *linuxWebviewWindow) isIgnoreMouseEvents() bool {
 }
 
 func (w *linuxWebviewWindow) setIgnoreMouseEvents(ignore bool) {
-	w.ignoreMouseEvents = ignore
-
-	if ignore {
-		C.gtk_widget_set_events((*C.GtkWidget)(unsafe.Pointer(w.window)), C.GDK_ENTER_NOTIFY_MASK|C.GDK_LEAVE_NOTIFY_MASK)
-	} else {
-		C.gtk_widget_set_events((*C.GtkWidget)(unsafe.Pointer(w.window)), C.GDK_ALL_EVENTS_MASK)
-	}
+	w.ignoreMouse(w.ignoreMouseEvents)
 }
