@@ -152,6 +152,15 @@ type WebviewWindow struct {
 	pendingJS []string
 }
 
+// EmitEvent emits an event from the window
+func (w *WebviewWindow) EmitEvent(name string, data ...any) {
+	globalApplication.emitEvent(&CustomEvent{
+		Name:   name,
+		Data:   data,
+		Sender: w.Name(),
+	})
+}
+
 var windowID uint
 var windowIDLock sync.RWMutex
 
@@ -165,8 +174,8 @@ func getWindowID() uint {
 // FIXME: This should like be an interface method (TDM)
 // Use onApplicationEvent to register a callback for an application event from a window.
 // This will handle tidying up the callback when the window is destroyed
-func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func(*Event)) {
-	cancelFn := globalApplication.On(eventType, callback)
+func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func(*ApplicationEvent)) {
+	cancelFn := globalApplication.OnApplicationEvent(eventType, callback)
 	w.addCancellationFunction(cancelFn)
 }
 
@@ -194,7 +203,7 @@ func (w *WebviewWindow) setupEventMapping() {
 	for source, target := range mapping {
 		source := source
 		target := target
-		w.On(source, func(event *WindowEvent) {
+		w.OnWindowEvent(source, func(event *WindowEvent) {
 			w.emit(target)
 		})
 	}
@@ -212,6 +221,10 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		options.URL = "/"
 	}
 
+	if options.Name == "" {
+		options.Name = fmt.Sprintf("window-%d", getWindowID())
+	}
+
 	result := &WebviewWindow{
 		id:             getWindowID(),
 		options:        options,
@@ -224,7 +237,7 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	result.setupEventMapping()
 
 	// Listen for window closing events and de
-	result.On(events.Common.WindowClosing, func(event *WindowEvent) {
+	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
 		shouldClose := true
 		if result.options.ShouldClose != nil {
 			shouldClose = result.options.ShouldClose(result)
@@ -706,8 +719,8 @@ func (w *WebviewWindow) Center() {
 	InvokeSync(w.impl.center)
 }
 
-// On registers a callback for the given window event
-func (w *WebviewWindow) On(eventType events.WindowEventType, callback func(event *WindowEvent)) func() {
+// OnWindowEvent registers a callback for the given window event
+func (w *WebviewWindow) OnWindowEvent(eventType events.WindowEventType, callback func(event *WindowEvent)) func() {
 	eventID := uint(eventType)
 	w.eventListenersLock.Lock()
 	defer w.eventListenersLock.Unlock()
@@ -1066,7 +1079,7 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 	return w
 }
 
-func (w *WebviewWindow) DispatchWailsEvent(event *WailsEvent) {
+func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
 	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON())
 	w.ExecJS(msg)
 }
@@ -1074,7 +1087,7 @@ func (w *WebviewWindow) DispatchWailsEvent(event *WailsEvent) {
 func (w *WebviewWindow) dispatchWindowEvent(id uint) {
 	// TODO: Make this more efficient by keeping a list of which events have been registered
 	// and only dispatching those.
-	jsEvent := &WailsEvent{
+	jsEvent := &CustomEvent{
 		Name: events.JSEvent(id),
 	}
 	w.DispatchWailsEvent(jsEvent)

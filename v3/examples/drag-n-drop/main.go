@@ -35,9 +35,9 @@ func main() {
 		EnableDragAndDrop: true,
 	})
 
-	window.On(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+	window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
 		files := event.Context().DroppedFiles()
-		app.Events.Emit(&application.WailsEvent{
+		app.customEventProcessor.Emit(&application.CustomEvent{
 			Name: "files",
 			Data: files,
 		})
