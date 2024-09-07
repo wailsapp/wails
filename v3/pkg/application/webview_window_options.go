@@ -92,8 +92,8 @@ type WebviewWindowOptions struct {
 	// TODO: Move to mac window options
 	FullscreenButtonEnabled bool
 
-	// Hidden will hide the window when it is first created.
-	Hidden bool
+	// ShowState determine how and when the window is shown.
+	ShowState ShowState
 
 	// Zoom is the zoom level of the window.
 	Zoom float64
@@ -137,6 +137,14 @@ type WebviewWindowOptions struct {
 	// IgnoreMouseEvents will ignore mouse events in the window (Windows + Mac only)
 	IgnoreMouseEvents bool
 }
+
+type ShowState int
+
+const (
+	ShowOnLoadEvent ShowState = iota
+	ShowImmediately
+	StartHidden
+)
 
 var WebviewWindowDefaults = &WebviewWindowOptions{
 	Title:  "",

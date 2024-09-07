@@ -1248,10 +1248,19 @@ func (w *macosWebviewWindow) run() {
 				if options.CSS != "" {
 					C.windowInjectCSS(w.nsWindow, C.CString(options.CSS))
 				}
-				if !options.Hidden {
+
+				switch options.ShowState {
+				case ShowImmediately:
 					C.windowShow(w.nsWindow)
 					w.setHasShadow(!options.Mac.DisableShadow)
-				} else {
+				case ShowOnLoadEvent:
+					if w.parent.loadEventFired {
+						C.windowShow(w.nsWindow)
+						w.setHasShadow(!options.Mac.DisableShadow)
+					} else {
+						w.parent.showOnLoad = true
+					}
+				case StartHidden:
 					// We have to wait until the window is shown before we can remove the shadow
 					var cancel func()
 					cancel = w.parent.On(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {

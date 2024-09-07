@@ -10,6 +10,10 @@ The electron alternative for Go
 
 // Setup
 window._wails = window._wails || {};
+import * as System from "./system";
+window.addEventListener('load', function() {
+    System.invoke('wails:event:load');
+});
 
 import "./contextmenu";
 import "./drag";
@@ -24,7 +28,7 @@ import * as Dialogs from "./dialogs";
 import * as Events from "./events";
 import * as Flags from "./flags";
 import * as Screens from "./screens";
-import * as System from "./system";
+
 import Window from "./window";
 import * as WML from "./wml";
 

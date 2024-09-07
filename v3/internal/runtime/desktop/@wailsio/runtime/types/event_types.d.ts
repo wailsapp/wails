@@ -189,5 +189,7 @@ export declare const EventTypes: {
 		ThemeChanged: string,
 		WindowDidMove: string,
 		WindowDidResize: string,
+		WindowCreated: string,
+		WindowLoaded: string,
 	},
 };

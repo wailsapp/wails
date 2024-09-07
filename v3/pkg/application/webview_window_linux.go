@@ -2,7 +2,7 @@
 
 package application
 
-import ( 
+import (
 	"fmt"
 	"time"
 
@@ -320,13 +320,26 @@ func (w *linuxWebviewWindow) run() {
 	if w.parent.options.HTML != "" {
 		w.setHTML(w.parent.options.HTML)
 	}
-	if !w.parent.options.Hidden {
+	switch w.parent.options.ShowState {
+	case ShowImmediately:
 		w.show()
 		if w.parent.options.X != 0 || w.parent.options.Y != 0 {
 			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
 		} else {
 			w.center() // needs to be queued until after GTK starts up!
 		}
+	case ShowOnLoadEvent:
+		if w.parent.loadEventFired {
+			w.show()
+			if w.parent.options.X != 0 || w.parent.options.Y != 0 {
+				w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
+			} else {
+				w.center() // needs to be queued until after GTK starts up!
+			}
+		} else {
+			w.parent.showOnLoad = true
+		}
+	case StartHidden:
 	}
 	if w.parent.options.DevToolsEnabled || globalApplication.isDebugMode {
 		w.enableDevTools()

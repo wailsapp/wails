@@ -189,5 +189,7 @@ export const EventTypes = {
 		ThemeChanged: "common:ThemeChanged",
 		WindowDidMove: "common:WindowDidMove",
 		WindowDidResize: "common:WindowDidResize",
+		WindowCreated: "common:WindowCreated",
+		WindowLoaded: "common:WindowLoaded",
 	},
 };

@@ -370,9 +370,18 @@ func (w *windowsWebviewWindow) run() {
 		w.chromium.Resize()
 	}
 
-	if !options.Hidden {
+	switch options.ShowState {
+	case ShowImmediately:
 		w.show()
 		w.update()
+	case ShowOnLoadEvent:
+		if w.parent.loadEventFired {
+			w.show()
+			w.update()
+		} else {
+			w.parent.showOnLoad = true
+		}
+	case StartHidden:
 	}
 }
 

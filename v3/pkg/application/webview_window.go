@@ -149,7 +149,9 @@ type WebviewWindow struct {
 	// runtimeLoaded indicates that the runtime has been loaded
 	runtimeLoaded bool
 	// pendingJS holds JS that was sent to the window before the runtime was loaded
-	pendingJS []string
+	pendingJS      []string
+	loadEventFired bool
+	showOnLoad     bool
 }
 
 // EmitEvent emits an event from the window
@@ -412,7 +414,7 @@ func (w *WebviewWindow) Show() Window {
 
 // Hide hides the window.
 func (w *WebviewWindow) Hide() Window {
-	w.options.Hidden = true
+	w.options.ShowState = StartHidden
 	if w.impl != nil {
 		InvokeSync(w.impl.hide)
 		w.emit(events.Common.WindowHide)
@@ -668,6 +670,12 @@ func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window {
 func (w *WebviewWindow) HandleMessage(message string) {
 	// Check for special messages
 	switch true {
+	case message == "wails:event:load":
+		w.loadEventFired = true
+		w.emit(events.Common.WindowLoaded)
+		if w.showOnLoad {
+			w.Show()
+		}
 	case message == "wails:drag":
 		if !w.IsFullscreen() {
 			InvokeSync(func() {
