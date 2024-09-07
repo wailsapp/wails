@@ -27,7 +27,7 @@ func main() {
 		Height:        800,
 		Frameless:     false,
 		AlwaysOnTop:   false,
-		Hidden:        false,
+		ShowState:     application.StartHidden,
 		DisableResize: false,
 		ShouldClose: func(window *application.WebviewWindow) bool {
 			println("close")
