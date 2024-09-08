@@ -289,7 +289,7 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	w.setURL(startURL)
-	w.parent.On(events.Linux.WindowLoadChanged, func(_ *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowLoadChanged, func(_ *WindowEvent) {
 		if w.parent.options.JS != "" {
 			w.execJS(w.parent.options.JS)
 		}
@@ -298,19 +298,19 @@ func (w *linuxWebviewWindow) run() {
 			w.execJS(js)
 		}
 	})
-	w.parent.On(events.Linux.WindowFocusIn, func(e *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowFocusIn, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowFocus)
 	})
-	w.parent.On(events.Linux.WindowFocusOut, func(e *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowFocusOut, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowLostFocus)
 	})
-	w.parent.On(events.Linux.WindowDeleteEvent, func(e *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowDeleteEvent, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowClosing)
 	})
-	w.parent.On(events.Linux.WindowDidMove, func(e *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowDidMove, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowDidMove)
 	})
-	w.parent.On(events.Linux.WindowDidResize, func(e *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowDidResize, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowDidResize)
 	})
 
