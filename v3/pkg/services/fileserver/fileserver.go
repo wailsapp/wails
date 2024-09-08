@@ -47,6 +47,5 @@ func (s *Service) OnStartup(ctx context.Context, options application.ServiceOpti
 
 func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Create a new file server rooted at the given path
-	// Strip the base path out of the request path
 	s.fs.ServeHTTP(w, r)
 }
