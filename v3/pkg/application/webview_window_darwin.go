@@ -1240,7 +1240,7 @@ func (w *macosWebviewWindow) run() {
 		w.setURL(startURL)
 
 		// We need to wait for the HTML to load before we can execute the javascript
-		w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
+		w.parent.OnWindowEvent(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
 			InvokeAsync(func() {
 				if options.JS != "" {
 					w.execJS(options.JS)
@@ -1254,7 +1254,7 @@ func (w *macosWebviewWindow) run() {
 				} else {
 					// We have to wait until the window is shown before we can remove the shadow
 					var cancel func()
-					cancel = w.parent.On(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
+					cancel = w.parent.OnWindowEvent(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
 						w.setHasShadow(!options.Mac.DisableShadow)
 						cancel()
 					})
@@ -1263,18 +1263,18 @@ func (w *macosWebviewWindow) run() {
 		})
 
 		// Translate ShouldClose to common WindowClosing event
-		w.parent.On(events.Mac.WindowShouldClose, func(_ *WindowEvent) {
+		w.parent.OnWindowEvent(events.Mac.WindowShouldClose, func(_ *WindowEvent) {
 			w.parent.emit(events.Common.WindowClosing)
 		})
 
 		// Translate WindowDidResignKey to common WindowLostFocus event
-		w.parent.On(events.Mac.WindowDidResignKey, func(_ *WindowEvent) {
+		w.parent.OnWindowEvent(events.Mac.WindowDidResignKey, func(_ *WindowEvent) {
 			w.parent.emit(events.Common.WindowLostFocus)
 		})
-		w.parent.On(events.Mac.WindowDidResignMain, func(_ *WindowEvent) {
+		w.parent.OnWindowEvent(events.Mac.WindowDidResignMain, func(_ *WindowEvent) {
 			w.parent.emit(events.Common.WindowLostFocus)
 		})
-		w.parent.On(events.Mac.WindowDidResize, func(_ *WindowEvent) {
+		w.parent.OnWindowEvent(events.Mac.WindowDidResize, func(_ *WindowEvent) {
 			w.parent.emit(events.Common.WindowDidResize)
 		})
 

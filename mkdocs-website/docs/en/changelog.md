@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [windows] Window class name option by [windom](https://github.com/windom/) in [#3682](https://github.com/wailsapp/wails/pull/3682) 
 - Services have been expanded to provide plugin functionality. By [atterpac](https://github.com/atterpac) and [leaanthony](https://github.com/leaanthony) in [#3570](https://github.com/wailsapp/wails/pull/3570)
 
+### Changed
+- Events API change: `On`/`Emit` -> user events, `OnApplicationEvent` -> Application Events `OnWindowEvent` -> Window Events, by [leaanthony](https://github.com/leaanthony)
+- Fix for Events API on Linux by [TheGB0077](https://github.com/TheGB0077) in [#3734](https://github.com/wailsapp/wails/pull/3734)
+
 ### Fixed
 - [linux] Fixed linux compile error introduced by IgnoreMouseEvents addition by [atterpac](https://github.com/atterpac) in [#3721](https://github.com/wailsapp/wails/pull/3721)
 - [windows] Fixed syso icon file generation bug by [atterpac](https://github.com/atterpac) in [#3675](https://github.com/wailsapp/wails/pull/3675)
