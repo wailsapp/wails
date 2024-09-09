@@ -147,25 +147,6 @@ func (r Rect) IsEmpty() bool {
 	return r.Width <= 0 || r.Height <= 0
 }
 
-// Rotate the rect 90 deg in the coordinate plane about the origin
-func (r Rect) coordinateRotate90(clockwise bool) Rect {
-	if clockwise {
-		return Rect{
-			X:      -r.Y - r.Height,
-			Y:      r.X,
-			Width:  r.Height,
-			Height: r.Width,
-		}
-	} else {
-		return Rect{
-			X:      r.Y,
-			Y:      -r.X - r.Width,
-			Width:  r.Height,
-			Height: r.Width,
-		}
-	}
-}
-
 func (r Rect) Contains(pt Point) bool {
 	return pt.X >= r.X && pt.X < r.X+r.Width && pt.Y >= r.Y && pt.Y < r.Y+r.Height
 }
@@ -210,34 +191,8 @@ func (r Rect) distanceFromRectSquared(otherRect Rect) int {
 		return -(intersection.Width * intersection.Height)
 	}
 
-	var topRect, bottomRect Rect
-
-	// Arrange as top & bottom rects, rotate if needed to
-	// simplify calculating the distance from one direction
-	if r.bottom() <= otherRect.Y {
-		topRect = r
-		bottomRect = otherRect
-	} else if otherRect.bottom() <= r.Y {
-		topRect = otherRect
-		bottomRect = r
-	} else if otherRect.right() <= r.X {
-		// Rotate rects 90deg counterclockwise about the origin
-		topRect = r.coordinateRotate90(false)
-		bottomRect = otherRect.coordinateRotate90(false)
-	} else {
-		// Rotate rects 90deg clockwise about the origin
-		topRect = r.coordinateRotate90(true)
-		bottomRect = otherRect.coordinateRotate90(true)
-	}
-
-	dX := 0
-	dY := bottomRect.Y - topRect.bottom()
-
-	if topRect.right() < bottomRect.X {
-		dX = bottomRect.X - topRect.right()
-	} else if bottomRect.right() < topRect.X {
-		dX = topRect.X - bottomRect.right()
-	}
+	dX := max(0, max(r.X-otherRect.right(), otherRect.X-r.right()))
+	dY := max(0, max(r.Y-otherRect.bottom(), otherRect.Y-r.bottom()))
 
 	// Distance squared
 	return dX*dX + dY*dY
