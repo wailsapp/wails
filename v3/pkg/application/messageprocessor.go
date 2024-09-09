@@ -28,7 +28,6 @@ const (
 )
 
 type MessageProcessor struct {
-	pluginManager *PluginManager
 	logger        *slog.Logger
 
 	runningCalls map[string]context.CancelFunc

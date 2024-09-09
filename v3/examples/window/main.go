@@ -84,7 +84,7 @@ func main() {
 			application.NewService(&WindowService{}),
 		},
 	})
-	app.On(events.Common.ApplicationStarted, func(event *application.Event) {
+	app.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
 		log.Println("ApplicationDidFinishLaunching")
 	})
 
@@ -219,7 +219,7 @@ func main() {
 				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
 				Show()
-			w.On(events.Common.WindowDidMove, func(event *application.WindowEvent) {
+			w.OnWindowEvent(events.Common.WindowDidMove, func(event *application.WindowEvent) {
 				x, y := w.Position()
 				fmt.Printf("WindowDidMove event triggered. New position: (%d, %d)\n", x, y)
 			})
@@ -236,7 +236,7 @@ func main() {
 				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
 				Show()
-			w.On(events.Common.WindowDidResize, func(event *application.WindowEvent) {
+			w.OnWindowEvent(events.Common.WindowDidResize, func(event *application.WindowEvent) {
 				width, height := w.Size()
 
 				fmt.Printf("WindowDidResize event triggered. New size: (%d, %d)\n", width, height)

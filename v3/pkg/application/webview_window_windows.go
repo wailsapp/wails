@@ -300,7 +300,7 @@ func (w *windowsWebviewWindow) run() {
 	switch options.Windows.Theme {
 	case SystemDefault:
 		w.updateTheme(w32.IsCurrentlyDarkMode())
-		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*Event) {
+		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*ApplicationEvent) {
 			w.updateTheme(w32.IsCurrentlyDarkMode())
 		})
 	case Light:
@@ -1470,10 +1470,10 @@ func (w *windowsWebviewWindow) setupChromium() {
 	}
 
 	// event mapping
-	w.parent.On(events.Windows.WindowDidMove, func(e *WindowEvent) {
+	w.parent.OnWindowEvent(events.Windows.WindowDidMove, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowDidMove)
 	})
-	w.parent.On(events.Windows.WindowDidResize, func(e *WindowEvent) {
+	w.parent.OnWindowEvent(events.Windows.WindowDidResize, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowDidResize)
 	})
 
@@ -1585,7 +1585,7 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	// Install the runtime core
 	w.execJS(runtime.Core())
 
-	// Emit DomReady Event
+	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
 
 	if w.hasStarted {

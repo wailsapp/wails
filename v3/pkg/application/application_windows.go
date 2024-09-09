@@ -126,8 +126,8 @@ func (m *windowsApp) run() error {
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)
 	}
-	// Emit application started event
-	applicationEvents <- &Event{
+	// EmitEvent application started event
+	applicationEvents <- &ApplicationEvent{
 		Id:  uint(events.Windows.ApplicationStarted),
 		ctx: blankApplicationEventContext,
 	}
@@ -201,7 +201,7 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 			if isDarkMode != m.isCurrentlyDarkMode {
 				eventContext := newApplicationEventContext()
 				eventContext.setIsDarkMode(isDarkMode)
-				applicationEvents <- &Event{
+				applicationEvents <- &ApplicationEvent{
 					Id:  uint(events.Windows.SystemThemeChanged),
 					ctx: eventContext,
 				}

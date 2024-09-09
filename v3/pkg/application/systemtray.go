@@ -99,7 +99,7 @@ func (s *SystemTray) Run() {
 
 	if s.attachedWindow.Window != nil {
 		// Setup listener
-		s.attachedWindow.Window.On(events.Common.WindowLostFocus, func(event *WindowEvent) {
+		s.attachedWindow.Window.OnWindowEvent(events.Common.WindowLostFocus, func(event *WindowEvent) {
 			s.attachedWindow.Window.Hide()
 			// Special handler for Windows
 			if runtime.GOOS == "windows" {

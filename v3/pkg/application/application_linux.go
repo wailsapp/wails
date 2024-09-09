@@ -27,7 +27,9 @@ import (
 func init() {
 	// FIXME: This should be handled appropriately in the individual files most likely.
 	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
-	_ = os.Setenv("GDK_BACKEND", "x11")
+	if os.Getenv("GDK_BACKEND") == "" && (os.Getenv("XDG_SESSION_TYPE") == "" || os.Getenv("XDG_SESSION_TYPE") == "unspecified" || os.Getenv("XDG_SESSION_TYPE") == "x11") {
+		_ = os.Setenv("GDK_BACKEND", "x11")
+	}
 }
 
 type linuxApp struct {
@@ -92,7 +94,7 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 
 func (a *linuxApp) run() error {
 
-	a.parent.On(events.Linux.ApplicationStartup, func(evt *Event) {
+	a.parent.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
 		// TODO: What should happen here?
 	})
 	a.setupCommonEvents()

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"reflect"
 	"runtime"
 	"strings"
@@ -79,12 +80,17 @@ type Bindings struct {
 }
 
 func NewBindings(instances []Service, aliases map[uint32]uint32) (*Bindings, error) {
+	app := Get()
 	b := &Bindings{
 		boundMethods:  make(map[string]*BoundMethod),
 		boundByID:     make(map[uint32]*BoundMethod),
 		methodAliases: aliases,
 	}
 	for _, binding := range instances {
+		handler, ok := binding.Instance().(http.Handler)
+		if ok && binding.options.Route != "" {
+			app.assets.AttachServiceHandler(binding.options.Route, handler)
+		}
 		err := b.Add(binding.Instance())
 		if err != nil {
 			return nil, err
@@ -95,7 +101,7 @@ func NewBindings(instances []Service, aliases map[uint32]uint32) (*Bindings, err
 
 // Add the given named type pointer methods to the Bindings
 func (b *Bindings) Add(namedPtr interface{}) error {
-	methods, err := b.getMethods(namedPtr, false)
+	methods, err := b.getMethods(namedPtr)
 	if err != nil {
 		return fmt.Errorf("cannot bind value to app: %s", err.Error())
 	}
@@ -104,34 +110,6 @@ func (b *Bindings) Add(namedPtr interface{}) error {
 		// Add it as a regular method
 		b.boundMethods[method.String()] = method
 		b.boundByID[method.ID] = method
-	}
-	return nil
-}
-
-func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
-	for pluginID, plugin := range plugins {
-		methods, err := b.getMethods(plugin, true)
-		if err != nil {
-			return fmt.Errorf("cannot add plugin '%s' to app: %s", pluginID, err.Error())
-		}
-
-		exportedMethods := plugin.CallableByJS()
-
-		for _, method := range methods {
-			// Do not expose reserved methods
-			if lo.Contains(reservedPluginMethods, method.Name) {
-				continue
-			}
-			// Do not expose methods that are not in the exported list
-			if !lo.Contains(exportedMethods, method.Name) {
-				continue
-			}
-
-			// Add it as a regular method
-			b.boundMethods[fmt.Sprintf("wails-plugins.%s.%s", pluginID, method.Name)] = method
-			b.boundByID[method.ID] = method
-			globalApplication.debug("Added plugin method: "+pluginID+"."+method.Name, "id", method.ID)
-		}
 	}
 	return nil
 }
@@ -175,7 +153,7 @@ func (b *BoundMethod) String() string {
 	return fmt.Sprintf("%s.%s.%s", b.PackagePath, b.TypeName, b.Name)
 }
 
-func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod, error) {
+func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 	// Create result placeholder
 	var result []*BoundMethod
 
@@ -210,6 +188,10 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 		methodName := methodDef.Name
 		method := namedValue.MethodByName(methodName)
 
+		if b.internalMethod(methodDef) {
+			continue
+		}
+
 		// Create new method
 		boundMethod := &BoundMethod{
 			Name:        methodName,
@@ -226,16 +208,15 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 			return nil, err
 		}
 
-		if !isPlugin {
-			args := []any{"name", boundMethod, "id", boundMethod.ID}
-			if b.methodAliases != nil {
-				alias, found := lo.FindKey(b.methodAliases, boundMethod.ID)
-				if found {
-					args = append(args, "alias", alias)
-				}
+		args := []any{"name", boundMethod, "id", boundMethod.ID}
+		if b.methodAliases != nil {
+			alias, found := lo.FindKey(b.methodAliases, boundMethod.ID)
+			if found {
+				args = append(args, "alias", alias)
 			}
-			globalApplication.debug("Adding method:", args...)
 		}
+		globalApplication.debug("Adding method:", args...)
+
 		// Iterate inputs
 		methodType := method.Type()
 		inputParamCount := methodType.NumIn()
@@ -265,6 +246,33 @@ func (b *Bindings) getMethods(value interface{}, isPlugin bool) ([]*BoundMethod,
 
 	}
 	return result, nil
+}
+
+func (b *Bindings) internalMethod(def reflect.Method) bool {
+	// Get the receiver type
+	receiverType := def.Type.In(0)
+
+	// Create a new instance of the receiver type
+	instance := reflect.New(receiverType.Elem()).Interface()
+
+	// Check if the instance implements any of our service interfaces
+	// and if the method matches the interface method
+	switch def.Name {
+	case "Name":
+		if _, ok := instance.(ServiceName); ok {
+			return true
+		}
+	case "OnStartup":
+		if _, ok := instance.(ServiceStartup); ok {
+			return true
+		}
+	case "OnShutdown":
+		if _, ok := instance.(ServiceShutdown); ok {
+			return true
+		}
+	}
+
+	return false
 }
 
 var errorType = reflect.TypeFor[error]()

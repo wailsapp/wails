@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -42,7 +43,7 @@ func init() {
 }
 
 type EventListener struct {
-	callback func(app *Event)
+	callback func(app *ApplicationEvent)
 }
 
 func Get() *App {
@@ -79,7 +80,7 @@ func New(appOptions Options) *App {
 	result.logStartup()
 	result.logPlatformInfo()
 
-	result.Events = NewWailsEventProcessor(result.dispatchEventToListeners)
+	result.customEventProcessor = NewWailsEventProcessor(result.dispatchEventToListeners)
 
 	messageProc := NewMessageProcessor(result.Logger)
 	opts := &assetserver.Options{
@@ -135,18 +136,18 @@ func New(appOptions Options) *App {
 		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
 	}
 
-	result.plugins = NewPluginManager(appOptions.Plugins, srv)
-	errors := result.plugins.Init()
-	if len(errors) > 0 {
-		for _, err := range errors {
-			result.handleError(fmt.Errorf("Error initialising plugin: " + err.Error()))
+	for _, service := range appOptions.Services {
+		if thisService, ok := service.instance.(ServiceStartup); ok {
+			err := thisService.OnStartup(result.ctx, service.options)
+			if err != nil {
+				name := service.options.Name
+				if name == "" {
+					name = getServiceName(service)
+				}
+				globalApplication.error("OnStartup() failed:", "service", name, "error", err.Error())
+				continue
+			}
 		}
-		result.handleFatalError(fmt.Errorf("fatal error in plugins initialisation"))
-	}
-
-	err = result.bindings.AddPlugins(appOptions.Plugins)
-	if err != nil {
-		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
 	}
 
 	// Process keybindings
@@ -263,10 +264,12 @@ func (r *webViewAssetRequest) Header() (http.Header, error) {
 var webviewRequests = make(chan *webViewAssetRequest, 5)
 
 type eventHook struct {
-	callback func(event *Event)
+	callback func(event *ApplicationEvent)
 }
 
 type App struct {
+	ctx                           context.Context
+	cancel                        context.CancelFunc
 	options                       Options
 	applicationEventListeners     map[uint][]*EventListener
 	applicationEventListenersLock sync.RWMutex
@@ -296,7 +299,6 @@ type App struct {
 	pendingRun []runnable
 
 	bindings *Bindings
-	plugins  *PluginManager
 
 	// platform app
 	impl platformApp
@@ -304,9 +306,9 @@ type App struct {
 	// The main application menu
 	ApplicationMenu *Menu
 
-	clipboard *Clipboard
-	Events    *EventProcessor
-	Logger    *slog.Logger
+	clipboard            *Clipboard
+	customEventProcessor *EventProcessor
+	Logger               *slog.Logger
 
 	contextMenus     map[string]*Menu
 	contextMenusLock sync.Mutex
@@ -337,7 +339,7 @@ type App struct {
 	// signalHandler is used to handle signals
 	signalHandler *signal.SignalHandler
 
-	// Wails Event Listener related
+	// Wails ApplicationEvent Listener related
 	wailsEventListenerLock sync.Mutex
 	wailsEventListeners    []WailsEventListener
 }
@@ -348,6 +350,39 @@ func (a *App) handleError(err error) {
 	} else {
 		a.Logger.Error(err.Error())
 	}
+}
+
+// EmitEvent will emit an event
+func (a *App) EmitEvent(name string, data ...any) {
+	a.customEventProcessor.Emit(&CustomEvent{
+		Name: name,
+		Data: data,
+	})
+}
+
+// EmitEvent will emit an event
+func (a *App) emitEvent(event *CustomEvent) {
+	a.customEventProcessor.Emit(event)
+}
+
+// OnEvent will listen for events
+func (a *App) OnEvent(name string, callback func(event *CustomEvent)) func() {
+	return a.customEventProcessor.On(name, callback)
+}
+
+// OffEvent will remove an event listener
+func (a *App) OffEvent(name string) {
+	a.customEventProcessor.Off(name)
+}
+
+// OnMultipleEvent will listen for events a set number of times before unsubscribing.
+func (a *App) OnMultipleEvent(name string, callback func(event *CustomEvent), counter int) {
+	a.customEventProcessor.OnMultiple(name, callback, counter)
+}
+
+// ResetEvents will remove all event listeners and hooks
+func (a *App) ResetEvents() {
+	a.customEventProcessor.OffAll()
 }
 
 func (a *App) handleFatalError(err error) {
@@ -364,6 +399,7 @@ func (a *App) handleFatalError(err error) {
 }
 
 func (a *App) init() {
+	a.ctx, a.cancel = context.WithCancel(context.Background())
 	a.applicationEventHooks = make(map[uint][]*eventHook)
 	a.applicationEventListeners = make(map[uint][]*EventListener)
 	a.windows = make(map[uint]Window)
@@ -398,7 +434,7 @@ func (a *App) Capabilities() capabilities.Capabilities {
 	return a.capabilities
 }
 
-func (a *App) On(eventType events.ApplicationEventType, callback func(event *Event)) func() {
+func (a *App) OnApplicationEvent(eventType events.ApplicationEventType, callback func(event *ApplicationEvent)) func() {
 	eventID := uint(eventType)
 	a.applicationEventListenersLock.Lock()
 	defer a.applicationEventListenersLock.Unlock()
@@ -419,9 +455,10 @@ func (a *App) On(eventType events.ApplicationEventType, callback func(event *Eve
 	}
 }
 
-// RegisterHook registers a hook for the given event type. Hooks are called before the event listeners and can cancel the event.
+// RegisterApplicationEventHook registers a hook for the given application event.
+// Hooks are called before the event listeners and can cancel the event.
 // The returned function can be called to remove the hook.
-func (a *App) RegisterHook(eventType events.ApplicationEventType, callback func(event *Event)) func() {
+func (a *App) RegisterApplicationEventHook(eventType events.ApplicationEventType, callback func(event *ApplicationEvent)) func() {
 	eventID := uint(eventType)
 	a.applicationEventHooksLock.Lock()
 	defer a.applicationEventHooksLock.Unlock()
@@ -437,11 +474,15 @@ func (a *App) RegisterHook(eventType events.ApplicationEventType, callback func(
 	}
 }
 
-func (a *App) RegisterListener(listener WailsEventListener) {
-	a.wailsEventListenerLock.Lock()
-	a.wailsEventListeners = append(a.wailsEventListeners, listener)
-	a.wailsEventListenerLock.Unlock()
-}
+//func (a *App) RegisterListener(listener WailsEventListener) {
+//	a.wailsEventListenerLock.Lock()
+//	a.wailsEventListeners = append(a.wailsEventListeners, listener)
+//	a.wailsEventListenerLock.Unlock()
+//}
+//
+//func (a *App) RegisterServiceHandler(prefix string, handler http.Handler) {
+//	a.assets.AttachServiceHandler(prefix, handler)
+//}
 
 func (a *App) NewWebviewWindow() *WebviewWindow {
 	return a.NewWebviewWindowWithOptions(WebviewWindowOptions{})
@@ -582,17 +623,23 @@ func (a *App) Run() error {
 		return err
 	}
 
-	errors := a.plugins.Shutdown()
-	if len(errors) > 0 {
-		for _, err := range errors {
-			a.error("Error shutting down plugin: " + err.Error())
+	// Cancel the context
+	a.cancel()
+
+	for _, service := range a.options.Services {
+		// If it conforms to the ServiceShutdown interface, call the Shutdown method
+		if thisService, ok := service.instance.(ServiceShutdown); ok {
+			err := thisService.OnShutdown()
+			if err != nil {
+				a.error("Error shutting down service: " + err.Error())
+			}
 		}
 	}
 
 	return nil
 }
 
-func (a *App) handleApplicationEvent(event *Event) {
+func (a *App) handleApplicationEvent(event *ApplicationEvent) {
 	a.applicationEventListenersLock.RLock()
 	listeners, ok := a.applicationEventListeners[event.Id]
 	a.applicationEventListenersLock.RUnlock()
@@ -818,7 +865,7 @@ func SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialogStruct {
 	return result
 }
 
-func (a *App) dispatchEventToListeners(event *WailsEvent) {
+func (a *App) dispatchEventToListeners(event *CustomEvent) {
 	listeners := a.wailsEventListeners
 
 	for _, window := range a.windows {
