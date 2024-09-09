@@ -20,6 +20,8 @@ const (
 
 	Hide               Role = iota
 	HideOthers         Role = iota
+	ShowAll            Role = iota
+	BringAllToFront    Role = iota
 	UnHide             Role = iota
 	About              Role = iota
 	Undo               Role = iota
@@ -33,7 +35,7 @@ const (
 	SpeechMenu         Role = iota
 	Quit               Role = iota
 	FileMenu           Role = iota
-	Close              Role = iota
+	CloseWindow        Role = iota
 	Reload             Role = iota
 	ForceReload        Role = iota
 	OpenDevTools       Role = iota
@@ -45,25 +47,28 @@ const (
 	Minimize   Role = iota
 	Zoom       Role = iota
 	FullScreen Role = iota
-	//Front      Role = iota
-	//WindowRole Role = iota
 
-	//QuitRole               Role =
-	//TogglefullscreenRole   Role = "togglefullscreen"
-	//ViewMenuRole           Role = "viewMenu"
-	//WindowMenuRole         Role = "windowMenu"
-
-	//FrontRole              Role = "front"
-	//ZoomRole               Role = "zoom"
-	//WindowSubMenuRole      Role = "windowSubMenu"
-	//HelpSubMenuRole        Role = "helpSubMenu"
-	//SeparatorItemRole      Role = "separatorItem"
+	NewFile             Role = iota
+	Open                Role = iota
+	Save                Role = iota
+	SaveAs              Role = iota
+	StartSpeaking       Role = iota
+	StopSpeaking        Role = iota
+	Revert              Role = iota
+	Print               Role = iota
+	Find                Role = iota
+	FindAndReplace      Role = iota
+	FindNext            Role = iota
+	FindPrevious        Role = iota
+	Front               Role = iota
+	UseSelectionForFind Role = iota
+	Help                Role = iota
 )
 
 func newFileMenu() *MenuItem {
 	fileMenu := NewMenu()
 	if runtime.GOOS == "darwin" {
-		fileMenu.AddRole(Close)
+		fileMenu.AddRole(CloseWindow)
 	} else {
 		fileMenu.AddRole(Quit)
 	}
@@ -138,9 +143,11 @@ func newWindowMenu() *MenuItem {
 	menu.AddRole(Zoom)
 	if runtime.GOOS == "darwin" {
 		menu.AddSeparator()
-		menu.AddRole(FullScreen)
+		menu.AddRole(Front)
+		//menu.AddSeparator()
+		//menu.AddRole(Window)
 	} else {
-		menu.AddRole(Close)
+		menu.AddRole(CloseWindow)
 	}
 	subMenu := NewSubMenuItem("Window")
 	subMenu.submenu = menu

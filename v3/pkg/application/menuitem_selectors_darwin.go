@@ -4,65 +4,54 @@
 
 package application
 
-// #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
-// #cgo LDFLAGS: -framework Cocoa
-// #include <stdlib.h>
-// #include "menuitem_darwin.h"
 import "C"
-import "unsafe"
 
 var roleToSelector = map[Role]string{
-    AppMenuRole:              "",  // This is a special case, handled separately
-    AboutRole:                "orderFrontStandardAboutPanel:",
-    ServicesMenuRole:         "",  // This is a submenu, no direct selector
-    HideRole:                 "hide:",
-    HideOthersRole:           "hideOtherApplications:",
-    ShowAllRole:              "unhideAllApplications:",
-    QuitRole:                 "terminate:",
-    WindowMenuRole:           "",  // This is a submenu, no direct selector
-    MinimizeRole:             "performMiniaturize:",
-    ZoomRole:                 "performZoom:",
-    BringAllToFrontRole:      "arrangeInFront:",
-    CloseWindowRole:          "performClose:",
-    EditMenuRole:             "",  // This is a submenu, no direct selector
-    UndoRole:                 "undo:",
-    RedoRole:                 "redo:",
-    CutRole:                  "cut:",
-    CopyRole:                 "copy:",
-    PasteRole:                "paste:",
-    DeleteRole:               "delete:",
-    SelectAllRole:            "selectAll:",
-    FindMenuRole:             "",  // This is a submenu, no direct selector
-    FindRole:                 "performTextFinderAction:",
-    FindAndReplaceRole:       "performTextFinderAction:",
-    FindNextRole:             "performTextFinderAction:",
-    FindPreviousRole:         "performTextFinderAction:",
-    UseSelectionForFindRole:  "performTextFinderAction:",
-    ViewMenuRole:             "",  // This is a submenu, no direct selector
-    ToggleFullScreenRole:     "toggleFullScreen:",
-    FileMenuRole:             "",  // This is a submenu, no direct selector
-    NewRole:                  "newDocument:",
-    OpenRole:                 "openDocument:",
-    CloseRole:                "performClose:",
-    SaveRole:                 "saveDocument:",
-    SaveAsRole:               "saveDocumentAs:",
-    RevertRole:               "revertDocumentToSaved:",
-    PrintRole:                "printDocument:",
-    HelpMenuRole:             "",  // This is a submenu, no direct selector
-    HelpRole:                 "showHelp:",
-    NoRole:                   "",  // No specific selector for this role
+	//AppMenu:             "", // This is a special case, handled separately
+	About: "orderFrontStandardAboutPanel:",
+	//ServicesMenu:        "", // This is a submenu, no direct selector
+	Hide:       "hide:",
+	HideOthers: "hideOtherApplications:",
+	ShowAll:    "unhideAllApplications:",
+	Quit:       "terminate:",
+	//WindowMenu:          "", // This is a submenu, no direct selector
+	Minimize:        "performMiniaturize:",
+	Zoom:            "performZoom:",
+	BringAllToFront: "arrangeInFront:",
+	CloseWindow:     "performClose:",
+	//EditMenu:            "", // This is a submenu, no direct selector
+	Undo:      "undo:",
+	Redo:      "redo:",
+	Cut:       "cut:",
+	Copy:      "copy:",
+	Paste:     "paste:",
+	Delete:    "delete:",
+	SelectAll: "selectAll:",
+	//FindMenu:            "", // This is a submenu, no direct selector
+	Find:                "performTextFinderAction:",
+	FindAndReplace:      "performTextFinderAction:",
+	FindNext:            "performTextFinderAction:",
+	FindPrevious:        "performTextFinderAction:",
+	UseSelectionForFind: "performTextFinderAction:",
+	//ViewMenu:            "", // This is a submenu, no direct selector
+	ToggleFullscreen: "toggleFullScreen:",
+	//FileMenu:            "", // This is a submenu, no direct selector
+	NewFile:       "newDocument:",
+	Open:          "openDocument:",
+	Save:          "saveDocument:",
+	SaveAs:        "saveDocumentAs:",
+	StartSpeaking: "startSpeaking:",
+	StopSpeaking:  "stopSpeaking:",
+	Revert:        "revertDocumentToSaved:",
+	Print:         "printDocument:",
+	//HelpMenu:            "", // This is a submenu, no direct selector
+	Help: "showHelp:",
+	//No:                  "", // No specific selector for this role
 }
 
 func getSelectorForRole(role Role) *C.char {
-    if selector, ok := roleToSelector[role]; ok && selector != "" {
-        return C.CString(selector)
-    }
-    return nil
-}
-
-//export processMenuItemClick
-func processMenuItemClick(menuItemID C.uint) {
-    if menuItem := getMenuItemByID(uint(menuItemID)); menuItem != nil {
-        menuItem.handleClick()
-    }
+	if selector, ok := roleToSelector[role]; ok && selector != "" {
+		return C.CString(selector)
+	}
+	return nil
 }

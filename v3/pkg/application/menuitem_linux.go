@@ -141,6 +141,10 @@ func newSpeechMenu() *MenuItem {
 	return subMenu
 }
 
+func newFrontMenuItem() *MenuItem {
+	panic("implement me")
+}
+
 func newHideMenuItem() *MenuItem {
 	return NewMenuItem("Hide " + globalApplication.options.Name).
 		SetAccelerator("CmdOrCtrl+h").

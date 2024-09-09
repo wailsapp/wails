@@ -141,7 +141,10 @@ func newSpeechMenu() *MenuItem {
 
 func newHideMenuItem() *MenuItem {
 	panic("implement me")
+}
 
+func newFrontMenuItem() *MenuItem {
+	panic("implement me")
 }
 
 func newHideOthersMenuItem() *MenuItem {

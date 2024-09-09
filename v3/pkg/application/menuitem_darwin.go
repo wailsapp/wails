@@ -14,7 +14,8 @@ package application
 
 // Create menu item
 void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* tooltip, char* selector) {
-    MenuItem *menuItem = [MenuItem new];
+    NSLog(@"newMenuItem: %s, %s\n", label, selector);
+	MenuItem *menuItem = [MenuItem new];
 
     // Label
     menuItem.title = [NSString stringWithUTF8String:label];
@@ -31,7 +32,7 @@ void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* too
 		}
 	}
     menuItem.menuItemID = menuItemID;
-			
+
 	menuItem.enabled = !disabled;
 
 	// Tooltip
@@ -275,74 +276,11 @@ static char *pasteFromPasteboard(void) {
 	return strdup([text UTF8String]);
 }
 
-// Call paste selector to paste text
-static void paste(void) {
-	[NSApp sendAction:@selector(paste:) to:nil from:nil];
-}
-
-// Call copy selector to copy text
-static void copy(void) {
-	[NSApp sendAction:@selector(copy:) to:nil from:nil];
-}
-
-// Call cut selector to cut text
-static void cut(void) {
-	[NSApp sendAction:@selector(cut:) to:nil from:nil];
-}
-
 void performSelectorOnMainThreadForFirstResponder(SEL selector) {
     NSWindow *activeWindow = [[NSApplication sharedApplication] keyWindow];
     if (activeWindow) {
 		[activeWindow performSelectorOnMainThread:selector withObject:nil waitUntilDone:YES];
     }
-}
-
-// Call selectAll selector to select all text
-static void selectAll(void) {
-	performSelectorOnMainThreadForFirstResponder(@selector(selectAll:));
-}
-
-// Call delete selector to delete text
-static void delete(void) {
-	[NSApp sendAction:@selector(delete:) to:nil from:nil];
-}
-
-// Call undo selector to undo text
-static void undo(void) {
-	[NSApp sendAction:@selector(undo:) to:nil from:nil];
-}
-
-// Call redo selector to redo text
-static void redo(void) {
-	[NSApp sendAction:@selector(redo:) to:nil from:nil];
-}
-
-// Call startSpeaking selector to start speaking text
-static void startSpeaking(void) {
-	[NSApp sendAction:@selector(startSpeaking:) to:nil from:nil];
-}
-
-// Call stopSpeaking selector to stop speaking text
-static void stopSpeaking(void) {
-	[NSApp sendAction:@selector(stopSpeaking:) to:nil from:nil];
-}
-
-static void pasteAndMatchStyle(void) {
-	[NSApp sendAction:@selector(pasteAndMatchStyle:) to:nil from:nil];
-}
-
-static void hideApplication(void) {
-    [[NSApplication sharedApplication] hide:nil];
-}
-
-// hideOthers hides all other applications
-static void hideOthers(void) {
-	[[NSApplication sharedApplication] hideOtherApplications:nil];
-}
-
-// showAll shows all hidden applications
-static void showAll(void) {
-	[[NSApplication sharedApplication] unhideAllApplications:nil];
 }
 
 void setMenuItemBitmap(void* nsMenuItem, unsigned char *bitmap, int length) {
@@ -353,7 +291,6 @@ void setMenuItemBitmap(void* nsMenuItem, unsigned char *bitmap, int length) {
 */
 import "C"
 import (
-	"runtime"
 	"unsafe"
 )
 
@@ -407,21 +344,21 @@ func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 
 	selector := getSelectorForRole(item.role)
 	if selector != nil {
-			defer C.free(unsafe.Pointer(selector))
+		defer C.free(unsafe.Pointer(selector))
 	}
 	result.nsMenuItem = unsafe.Pointer(C.newMenuItem(
-			C.uint(item.id),
-			C.CString(item.label),
-			C.bool(item.disabled),
-			C.CString(item.tooltip),
-			selector,
+		C.uint(item.id),
+		C.CString(item.label),
+		C.bool(item.disabled),
+		C.CString(item.tooltip),
+		selector,
 	))
 
 	switch item.itemType {
 	case checkbox, radio:
-			C.setMenuItemChecked(result.nsMenuItem, C.bool(item.checked))
+		C.setMenuItemChecked(result.nsMenuItem, C.bool(item.checked))
 	}
-	
+
 	if item.accelerator != nil {
 		result.setAccelerator(item.accelerator)
 	}
@@ -432,14 +369,10 @@ func newSpeechMenu() *MenuItem {
 	speechMenu := NewMenu()
 	speechMenu.Add("Start Speaking").
 		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+.").
-		OnClick(func(ctx *Context) {
-			C.startSpeaking()
-		})
+		SetRole(StartSpeaking)
 	speechMenu.Add("Stop Speaking").
 		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+,").
-		OnClick(func(ctx *Context) {
-			C.stopSpeaking()
-		})
+		SetRole(StopSpeaking)
 	subMenu := NewSubMenuItem("Speech")
 	subMenu.submenu = speechMenu
 	return subMenu
@@ -448,81 +381,57 @@ func newSpeechMenu() *MenuItem {
 func newHideMenuItem() *MenuItem {
 	return NewMenuItem("Hide " + globalApplication.options.Name).
 		SetAccelerator("CmdOrCtrl+h").
-		OnClick(func(ctx *Context) {
-			C.hideApplication()
-		})
+		SetRole(Hide)
 }
 
 func newHideOthersMenuItem() *MenuItem {
 	return NewMenuItem("Hide Others").
 		SetAccelerator("CmdOrCtrl+OptionOrAlt+h").
-		OnClick(func(ctx *Context) {
-			C.hideOthers()
-		})
+		SetRole(HideOthers)
+}
+
+func newFrontMenuItem() *MenuItem {
+	return NewMenuItem("Bring All to Front")
 }
 
 func newUnhideMenuItem() *MenuItem {
-	return NewMenuItem("Show All").
-		OnClick(func(ctx *Context) {
-			C.showAll()
-		})
+	return NewMenuItem("Show All")
 }
 
 func newUndoMenuItem() *MenuItem {
 	return NewMenuItem("Undo").
-		SetAccelerator("CmdOrCtrl+z").
-		OnClick(func(ctx *Context) {
-			C.undo()
-		})
+		SetAccelerator("CmdOrCtrl+z")
 }
 
 // newRedoMenuItem creates a new menu item for redoing the last action
 func newRedoMenuItem() *MenuItem {
 	return NewMenuItem("Redo").
-		SetAccelerator("CmdOrCtrl+Shift+z").
-		OnClick(func(ctx *Context) {
-			C.redo()
-		})
+		SetAccelerator("CmdOrCtrl+Shift+z")
 }
 
 func newCutMenuItem() *MenuItem {
 	return NewMenuItem("Cut").
-		SetAccelerator("CmdOrCtrl+x").
-		OnClick(func(ctx *Context) {
-			C.cut()
-		})
+		SetAccelerator("CmdOrCtrl+x")
 }
 
 func newCopyMenuItem() *MenuItem {
 	return NewMenuItem("Copy").
-		SetAccelerator("CmdOrCtrl+c").
-		OnClick(func(ctx *Context) {
-			C.copy()
-		})
+		SetAccelerator("CmdOrCtrl+c")
 }
 
 func newPasteMenuItem() *MenuItem {
 	return NewMenuItem("Paste").
-		SetAccelerator("CmdOrCtrl+v").
-		OnClick(func(ctx *Context) {
-			C.paste()
-		})
+		SetAccelerator("CmdOrCtrl+v")
 }
 
 func newPasteAndMatchStyleMenuItem() *MenuItem {
 	return NewMenuItem("Paste and Match Style").
-		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+v").
-		OnClick(func(ctx *Context) {
-			C.pasteAndMatchStyle()
-		})
+		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+v")
 }
 
 func newDeleteMenuItem() *MenuItem {
 	return NewMenuItem("Delete").
-		SetAccelerator("backspace").
-		OnClick(func(ctx *Context) {
-			C.delete()
-		})
+		SetAccelerator("backspace")
 }
 
 func newQuitMenuItem() *MenuItem {
@@ -535,10 +444,7 @@ func newQuitMenuItem() *MenuItem {
 
 func newSelectAllMenuItem() *MenuItem {
 	return NewMenuItem("Select All").
-		SetAccelerator("CmdOrCtrl+a").
-		OnClick(func(ctx *Context) {
-			C.selectAll()
-		})
+		SetAccelerator("CmdOrCtrl+a")
 }
 
 func newAboutMenuItem() *MenuItem {
@@ -550,114 +456,49 @@ func newAboutMenuItem() *MenuItem {
 
 func newCloseMenuItem() *MenuItem {
 	return NewMenuItem("Close").
-		SetAccelerator("CmdOrCtrl+w").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.Close()
-			}
-		})
+		SetAccelerator("CmdOrCtrl+w")
 }
 
 func newReloadMenuItem() *MenuItem {
 	return NewMenuItem("Reload").
-		SetAccelerator("CmdOrCtrl+r").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.Reload()
-			}
-		})
+		SetAccelerator("CmdOrCtrl+r")
 }
 
 func newForceReloadMenuItem() *MenuItem {
 	return NewMenuItem("Force Reload").
-		SetAccelerator("CmdOrCtrl+Shift+r").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.ForceReload()
-			}
-		})
+		SetAccelerator("CmdOrCtrl+Shift+r")
 }
 
 func newToggleFullscreenMenuItem() *MenuItem {
-	result := NewMenuItem("Toggle Full Screen").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.ToggleFullscreen()
-			}
-		})
-	if runtime.GOOS == "darwin" {
-		result.SetAccelerator("Ctrl+Command+F")
-	} else {
-		result.SetAccelerator("F11")
-	}
-	return result
+	return NewMenuItem("Toggle Full Screen").
+		SetAccelerator("Ctrl+Command+F")
 }
 
 func newZoomResetMenuItem() *MenuItem {
 	// reset zoom menu item
 	return NewMenuItem("Actual Size").
-		SetAccelerator("CmdOrCtrl+0").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.ZoomReset()
-			}
-		})
+		SetAccelerator("CmdOrCtrl+0")
 }
 
 func newZoomInMenuItem() *MenuItem {
 	return NewMenuItem("Zoom In").
-		SetAccelerator("CmdOrCtrl+plus").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.ZoomIn()
-			}
-		})
+		SetAccelerator("CmdOrCtrl+plus")
 }
 
 func newZoomOutMenuItem() *MenuItem {
 	return NewMenuItem("Zoom Out").
-		SetAccelerator("CmdOrCtrl+-").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.ZoomOut()
-			}
-		})
+		SetAccelerator("CmdOrCtrl+-")
 }
 
 func newMinimizeMenuItem() *MenuItem {
 	return NewMenuItem("Minimize").
-		SetAccelerator("CmdOrCtrl+M").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.Minimise()
-			}
-		})
+		SetAccelerator("CmdOrCtrl+M")
 }
 
 func newZoomMenuItem() *MenuItem {
-	return NewMenuItem("Zoom").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.Zoom()
-			}
-		})
+	return NewMenuItem("Zoom")
 }
 
 func newFullScreenMenuItem() *MenuItem {
-	return NewMenuItem("Fullscreen").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.Fullscreen()
-			}
-		})
+	return NewMenuItem("Fullscreen")
 }
