@@ -1,6 +1,8 @@
 package main
 
 import (
+	"runtime"
+
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -61,6 +63,13 @@ func (s *ScreenService) transformPoint(point application.Point, toDIP bool) appl
 			return s.screenManager.DipToPhysicalPoint(point)
 		}
 	} else {
+		// =======================
+		// TODO: remove this block when DPI is implemented in Linux & Mac
+		if runtime.GOOS != "windows" {
+			println("DPI not implemented yet!")
+			return point
+		}
+		// =======================
 		if toDIP {
 			return application.PhysicalToDipPoint(point)
 		} else {
@@ -104,6 +113,13 @@ func (s *ScreenService) TransformRect(rect map[string]interface{}, toDIP bool) a
 			return s.screenManager.DipToPhysicalRect(r)
 		}
 	} else {
+		// =======================
+		// TODO: remove this block when DPI is implemented in Linux & Mac
+		if runtime.GOOS != "windows" {
+			println("DPI not implemented yet!")
+			return r
+		}
+		// =======================
 		if toDIP {
 			return application.PhysicalToDipRect(r)
 		} else {
