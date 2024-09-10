@@ -44,6 +44,7 @@ var roleToSelector = map[Role]string{
 	StopSpeaking:  "stopSpeaking:",
 	Revert:        "revertDocumentToSaved:",
 	Print:         "printDocument:",
+	PageLayout:    "runPageLayout:",
 	//HelpMenu:            "", // This is a submenu, no direct selector
 	Help: "showHelp:",
 	//No:                  "", // No specific selector for this role

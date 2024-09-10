@@ -48,21 +48,21 @@ const (
 	Zoom       Role = iota
 	FullScreen Role = iota
 
-	NewFile             Role = iota
-	Open                Role = iota
-	Save                Role = iota
-	SaveAs              Role = iota
-	StartSpeaking       Role = iota
-	StopSpeaking        Role = iota
-	Revert              Role = iota
-	Print               Role = iota
-	Find                Role = iota
-	FindAndReplace      Role = iota
-	FindNext            Role = iota
-	FindPrevious        Role = iota
-	Front               Role = iota
-	UseSelectionForFind Role = iota
-	Help                Role = iota
+	NewFile        Role = iota
+	Open           Role = iota
+	Save           Role = iota
+	SaveAs         Role = iota
+	StartSpeaking  Role = iota
+	StopSpeaking   Role = iota
+	Revert         Role = iota
+	Print          Role = iota
+	PageLayout     Role = iota
+	Find           Role = iota
+	FindAndReplace Role = iota
+	FindNext       Role = iota
+	FindPrevious   Role = iota
+	Front          Role = iota
+	Help           Role = iota
 )
 
 func newFileMenu() *MenuItem {

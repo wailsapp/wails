@@ -366,3 +366,67 @@ func (m *windowsMenuItem) getMenuInfo() *w32.MENUITEMINFO {
 	}
 	return &mii
 }
+
+func newPrintMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newPageLayoutMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newShowAllMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newBringAllToFrontMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newNewFileMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newOpenMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newSaveMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newSaveAsMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newStartSpeakingMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newStopSpeakingMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newRevertMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newFindMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newFindAndReplaceMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newFindNextMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newFindPreviousMenuItem() *MenuItem {
+	panic("Implement me")
+}
+
+func newHelpMenuItem() *MenuItem {
+	panic("Implement me")
+}

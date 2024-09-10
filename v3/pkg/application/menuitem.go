@@ -184,6 +184,39 @@ func NewRole(role Role) *MenuItem {
 		result = newZoomMenuItem()
 	case FullScreen:
 		result = newFullScreenMenuItem()
+	case Print:
+		result = newPrintMenuItem()
+	case PageLayout:
+		result = newPageLayoutMenuItem()
+	case NoRole:
+	case ShowAll:
+		result = newShowAllMenuItem()
+	case BringAllToFront:
+		result = newBringAllToFrontMenuItem()
+	case NewFile:
+		result = newNewFileMenuItem()
+	case Open:
+		result = newOpenMenuItem()
+	case Save:
+		result = newSaveMenuItem()
+	case SaveAs:
+		result = newSaveAsMenuItem()
+	case StartSpeaking:
+		result = newStartSpeakingMenuItem()
+	case StopSpeaking:
+		result = newStopSpeakingMenuItem()
+	case Revert:
+		result = newRevertMenuItem()
+	case Find:
+		result = newFindMenuItem()
+	case FindAndReplace:
+		result = newFindAndReplaceMenuItem()
+	case FindNext:
+		result = newFindNextMenuItem()
+	case FindPrevious:
+		result = newFindPreviousMenuItem()
+	case Help:
+		result = newHelpMenuItem()
 
 	default:
 		globalApplication.error(fmt.Sprintf("No support for role: %v", role))

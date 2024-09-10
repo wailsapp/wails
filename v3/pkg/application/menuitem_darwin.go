@@ -367,12 +367,8 @@ func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 
 func newSpeechMenu() *MenuItem {
 	speechMenu := NewMenu()
-	speechMenu.Add("Start Speaking").
-		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+.").
-		SetRole(StartSpeaking)
-	speechMenu.Add("Stop Speaking").
-		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+,").
-		SetRole(StopSpeaking)
+	speechMenu.AddRole(StartSpeaking)
+	speechMenu.AddRole(StopSpeaking)
 	subMenu := NewSubMenuItem("Speech")
 	subMenu.submenu = speechMenu
 	return subMenu
@@ -501,4 +497,84 @@ func newZoomMenuItem() *MenuItem {
 
 func newFullScreenMenuItem() *MenuItem {
 	return NewMenuItem("Fullscreen")
+}
+
+func newPrintMenuItem() *MenuItem {
+	return NewMenuItem("Print").
+		SetAccelerator("CmdOrCtrl+p")
+}
+
+func newPageLayoutMenuItem() *MenuItem {
+	return NewMenuItem("Page Setup...").
+		SetAccelerator("CmdOrCtrl+Shift+p")
+}
+
+// -----
+
+func newShowAllMenuItem() *MenuItem {
+	return NewMenuItem("Show All")
+}
+
+func newBringAllToFrontMenuItem() *MenuItem {
+	return NewMenuItem("Bring All to Front")
+}
+
+func newNewFileMenuItem() *MenuItem {
+	return NewMenuItem("New File").
+		SetAccelerator("CmdOrCtrl+n")
+}
+
+func newOpenMenuItem() *MenuItem {
+	return NewMenuItem("Open...").
+		SetAccelerator("CmdOrCtrl+o")
+}
+
+func newSaveMenuItem() *MenuItem {
+	return NewMenuItem("Save").
+		SetAccelerator("CmdOrCtrl+s")
+}
+
+func newSaveAsMenuItem() *MenuItem {
+	return NewMenuItem("Save As...").
+		SetAccelerator("CmdOrCtrl+Shift+s")
+}
+
+func newStartSpeakingMenuItem() *MenuItem {
+	return NewMenuItem("Start Speaking").
+		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+.")
+}
+
+func newStopSpeakingMenuItem() *MenuItem {
+	return NewMenuItem("Stop Speaking").
+		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+,")
+}
+
+func newRevertMenuItem() *MenuItem {
+	return NewMenuItem("Revert").
+		SetAccelerator("CmdOrCtrl+r")
+}
+
+func newFindMenuItem() *MenuItem {
+	return NewMenuItem("Find...").
+		SetAccelerator("CmdOrCtrl+f")
+}
+
+func newFindAndReplaceMenuItem() *MenuItem {
+	return NewMenuItem("Find and Replace...").
+		SetAccelerator("CmdOrCtrl+Shift+f")
+}
+
+func newFindNextMenuItem() *MenuItem {
+	return NewMenuItem("Find Next").
+		SetAccelerator("CmdOrCtrl+g")
+}
+
+func newFindPreviousMenuItem() *MenuItem {
+	return NewMenuItem("Find Previous").
+		SetAccelerator("CmdOrCtrl+Shift+g")
+}
+
+func newHelpMenuItem() *MenuItem {
+	return NewMenuItem("Help").
+		SetAccelerator("CmdOrCtrl+?")
 }
