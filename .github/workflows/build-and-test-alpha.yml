@@ -12,6 +12,7 @@ jobs:
     name: Run Go Tests
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
         go-version: [1.22]
@@ -80,7 +81,7 @@ jobs:
     needs: test_go
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         template:
