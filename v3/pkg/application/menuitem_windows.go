@@ -4,7 +4,6 @@ package application
 
 import (
 	"github.com/wailsapp/wails/v3/pkg/w32"
-	"runtime"
 	"unsafe"
 )
 
@@ -135,195 +134,125 @@ func newMenuItemImpl(item *MenuItem, parentMenu w32.HMENU, ID int) *windowsMenuI
 	return result
 }
 
-func newSpeechMenu() *MenuItem {
-	panic("implement me")
-}
-
-func newHideMenuItem() *MenuItem {
-	panic("implement me")
-}
-
-func newFrontMenuItem() *MenuItem {
-	panic("implement me")
-}
-
-func newHideOthersMenuItem() *MenuItem {
-	panic("implement me")
-
-}
-
-func newUnhideMenuItem() *MenuItem {
-	panic("implement me")
-
-}
-
-func newUndoMenuItem() *MenuItem {
-	panic("implement me")
-
-}
-
-// newRedoMenuItem creates a new menu item for redoing the last action
-func newRedoMenuItem() *MenuItem {
-	panic("implement me")
-
-}
-
-func newCutMenuItem() *MenuItem {
-	panic("implement me")
-
-}
-
-func newCopyMenuItem() *MenuItem {
-	panic("implement me")
-
-}
-
-func newPasteMenuItem() *MenuItem {
-	panic("implement me")
-
-}
-
-func newPasteAndMatchStyleMenuItem() *MenuItem {
-	panic("implement me")
-
-}
-
-func newDeleteMenuItem() *MenuItem {
-	panic("implement me")
-
-}
-
-func newQuitMenuItem() *MenuItem {
-	return NewMenuItem("Quit").
-		OnClick(func(ctx *Context) {
-			globalApplication.Quit()
-		})
-}
-
-func newSelectAllMenuItem() *MenuItem {
-	panic("implement me")
-
-}
-
-func newAboutMenuItem() *MenuItem {
-	return NewMenuItem("About " + globalApplication.options.Name).
-		OnClick(func(ctx *Context) {
-			globalApplication.ShowAboutDialog()
-		})
-}
-
-func newCloseMenuItem() *MenuItem {
-	return NewMenuItem("Close").
-		SetAccelerator("CmdOrCtrl+w").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.Close()
-			}
-		})
-}
-func newReloadMenuItem() *MenuItem {
-	return NewMenuItem("Reload").
-		SetAccelerator("CmdOrCtrl+r").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.Reload()
-			}
-		})
-}
-
-func newForceReloadMenuItem() *MenuItem {
-	return NewMenuItem("Force Reload").
-		SetAccelerator("CmdOrCtrl+Shift+r").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.ForceReload()
-			}
-		})
-}
-
-func newToggleFullscreenMenuItem() *MenuItem {
-	result := NewMenuItem("Toggle Full Screen").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.ToggleFullscreen()
-			}
-		})
-	if runtime.GOOS == "darwin" {
-		result.SetAccelerator("Ctrl+Command+F")
-	} else {
-		result.SetAccelerator("F11")
-	}
-	return result
-}
-
-func newZoomResetMenuItem() *MenuItem {
-	// reset zoom menu item
-	return NewMenuItem("Actual Size").
-		SetAccelerator("CmdOrCtrl+0").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.ZoomReset()
-			}
-		})
-}
-
-func newZoomInMenuItem() *MenuItem {
-	return NewMenuItem("Zoom In").
-		SetAccelerator("CmdOrCtrl+plus").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.ZoomIn()
-			}
-		})
-}
-
-func newZoomOutMenuItem() *MenuItem {
-	return NewMenuItem("Zoom Out").
-		SetAccelerator("CmdOrCtrl+-").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.ZoomOut()
-			}
-		})
-}
-
-func newFullScreenMenuItem() *MenuItem {
-	return NewMenuItem("Fullscreen").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.Fullscreen()
-			}
-		})
-}
-
-func newMinimizeMenuItem() *MenuItem {
-	return NewMenuItem("Minimize").
-		SetAccelerator("CmdOrCtrl+M").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.Minimise()
-			}
-		})
-}
-
-func newZoomMenuItem() *MenuItem {
-	return NewMenuItem("Zoom").
-		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
-			if currentWindow != nil {
-				currentWindow.Zoom()
-			}
-		})
-}
+//func newAboutMenuItem() *MenuItem {
+//	return NewMenuItem("About " + globalApplication.options.Name).
+//		OnClick(func(ctx *Context) {
+//			globalApplication.ShowAboutDialog()
+//		})
+//}
+//
+//func newCloseMenuItem() *MenuItem {
+//	return NewMenuItem("Close").
+//		SetAccelerator("CmdOrCtrl+w").
+//		OnClick(func(ctx *Context) {
+//			currentWindow := globalApplication.CurrentWindow()
+//			if currentWindow != nil {
+//				currentWindow.Close()
+//			}
+//		})
+//}
+//func newReloadMenuItem() *MenuItem {
+//	return NewMenuItem("Reload").
+//		SetAccelerator("CmdOrCtrl+r").
+//		OnClick(func(ctx *Context) {
+//			currentWindow := globalApplication.CurrentWindow()
+//			if currentWindow != nil {
+//				currentWindow.Reload()
+//			}
+//		})
+//}
+//
+//func newForceReloadMenuItem() *MenuItem {
+//	return NewMenuItem("Force Reload").
+//		SetAccelerator("CmdOrCtrl+Shift+r").
+//		OnClick(func(ctx *Context) {
+//			currentWindow := globalApplication.CurrentWindow()
+//			if currentWindow != nil {
+//				currentWindow.ForceReload()
+//			}
+//		})
+//}
+//
+//func newToggleFullscreenMenuItem() *MenuItem {
+//	result := NewMenuItem("Toggle Full Screen").
+//		OnClick(func(ctx *Context) {
+//			currentWindow := globalApplication.CurrentWindow()
+//			if currentWindow != nil {
+//				currentWindow.ToggleFullscreen()
+//			}
+//		})
+//	if runtime.GOOS == "darwin" {
+//		result.SetAccelerator("Ctrl+Command+F")
+//	} else {
+//		result.SetAccelerator("F11")
+//	}
+//	return result
+//}
+//
+//func newZoomResetMenuItem() *MenuItem {
+//	// reset zoom menu item
+//	return NewMenuItem("Actual Size").
+//		SetAccelerator("CmdOrCtrl+0").
+//		OnClick(func(ctx *Context) {
+//			currentWindow := globalApplication.CurrentWindow()
+//			if currentWindow != nil {
+//				currentWindow.ZoomReset()
+//			}
+//		})
+//}
+//
+//func newZoomInMenuItem() *MenuItem {
+//	return NewMenuItem("Zoom In").
+//		SetAccelerator("CmdOrCtrl+plus").
+//		OnClick(func(ctx *Context) {
+//			currentWindow := globalApplication.CurrentWindow()
+//			if currentWindow != nil {
+//				currentWindow.ZoomIn()
+//			}
+//		})
+//}
+//
+//func newZoomOutMenuItem() *MenuItem {
+//	return NewMenuItem("Zoom Out").
+//		SetAccelerator("CmdOrCtrl+-").
+//		OnClick(func(ctx *Context) {
+//			currentWindow := globalApplication.CurrentWindow()
+//			if currentWindow != nil {
+//				currentWindow.ZoomOut()
+//			}
+//		})
+//}
+//
+//func newFullScreenMenuItem() *MenuItem {
+//	return NewMenuItem("Fullscreen").
+//		OnClick(func(ctx *Context) {
+//			currentWindow := globalApplication.CurrentWindow()
+//			if currentWindow != nil {
+//				currentWindow.Fullscreen()
+//			}
+//		})
+//}
+//
+//func newMinimizeMenuItem() *MenuItem {
+//	return NewMenuItem("Minimize").
+//		SetAccelerator("CmdOrCtrl+M").
+//		OnClick(func(ctx *Context) {
+//			currentWindow := globalApplication.CurrentWindow()
+//			if currentWindow != nil {
+//				currentWindow.Minimise()
+//			}
+//		})
+//}
+//
+//func newZoomMenuItem() *MenuItem {
+//	return NewMenuItem("Zoom").
+//		OnClick(func(ctx *Context) {
+//			currentWindow := globalApplication.CurrentWindow()
+//			if currentWindow != nil {
+//				currentWindow.Zoom()
+//			}
+//		})
+//}
 
 // ---------- unsupported on windows ----------
 
@@ -365,68 +294,4 @@ func (m *windowsMenuItem) getMenuInfo() *w32.MENUITEMINFO {
 		mii.HSubMenu = m.submenu
 	}
 	return &mii
-}
-
-func newPrintMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newPageLayoutMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newShowAllMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newBringAllToFrontMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newNewFileMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newOpenMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newSaveMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newSaveAsMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newStartSpeakingMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newStopSpeakingMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newRevertMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newFindMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newFindAndReplaceMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newFindNextMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newFindPreviousMenuItem() *MenuItem {
-	panic("Implement me")
-}
-
-func newHelpMenuItem() *MenuItem {
-	panic("Implement me")
 }

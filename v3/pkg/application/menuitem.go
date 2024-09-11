@@ -119,104 +119,104 @@ func NewRole(role Role) *MenuItem {
 	var result *MenuItem
 	switch role {
 	case AppMenu:
-		result = newAppMenu()
+		result = NewAppMenu()
 	case EditMenu:
-		result = newEditMenu()
+		result = NewEditMenu()
 	case FileMenu:
-		result = newFileMenu()
+		result = NewFileMenu()
 	case ViewMenu:
-		result = newViewMenu()
+		result = NewViewMenu()
 	case ServicesMenu:
 		return NewServicesMenu()
 	case SpeechMenu:
-		result = newSpeechMenu()
+		result = NewSpeechMenu()
 	case WindowMenu:
-		result = newWindowMenu()
+		result = NewWindowMenu()
 	case HelpMenu:
-		result = newHelpMenu()
+		result = NewHelpMenu()
 	case Hide:
-		result = newHideMenuItem()
+		result = NewHideMenuItem()
 	case Front:
-		result = newFrontMenuItem()
+		result = NewFrontMenuItem()
 	case HideOthers:
-		result = newHideOthersMenuItem()
+		result = NewHideOthersMenuItem()
 	case UnHide:
-		result = newUnhideMenuItem()
+		result = NewUnhideMenuItem()
 	case Undo:
-		result = newUndoMenuItem()
+		result = NewUndoMenuItem()
 	case Redo:
-		result = newRedoMenuItem()
+		result = NewRedoMenuItem()
 	case Cut:
-		result = newCutMenuItem()
+		result = NewCutMenuItem()
 	case Copy:
-		result = newCopyMenuItem()
+		result = NewCopyMenuItem()
 	case Paste:
-		result = newPasteMenuItem()
+		result = NewPasteMenuItem()
 	case PasteAndMatchStyle:
-		result = newPasteAndMatchStyleMenuItem()
+		result = NewPasteAndMatchStyleMenuItem()
 	case SelectAll:
-		result = newSelectAllMenuItem()
+		result = NewSelectAllMenuItem()
 	case Delete:
-		result = newDeleteMenuItem()
+		result = NewDeleteMenuItem()
 	case Quit:
-		result = newQuitMenuItem()
+		result = NewQuitMenuItem()
 	case CloseWindow:
-		result = newCloseMenuItem()
+		result = NewCloseMenuItem()
 	case About:
-		result = newAboutMenuItem()
+		result = NewAboutMenuItem()
 	case Reload:
-		result = newReloadMenuItem()
+		result = NewReloadMenuItem()
 	case ForceReload:
-		result = newForceReloadMenuItem()
+		result = NewForceReloadMenuItem()
 	case ToggleFullscreen:
-		result = newToggleFullscreenMenuItem()
+		result = NewToggleFullscreenMenuItem()
 	case OpenDevTools:
-		result = newOpenDevToolsMenuItem()
+		result = NewOpenDevToolsMenuItem()
 	case ResetZoom:
-		result = newZoomResetMenuItem()
+		result = NewZoomResetMenuItem()
 	case ZoomIn:
-		result = newZoomInMenuItem()
+		result = NewZoomInMenuItem()
 	case ZoomOut:
-		result = newZoomOutMenuItem()
+		result = NewZoomOutMenuItem()
 	case Minimize:
-		result = newMinimizeMenuItem()
+		result = NewMinimizeMenuItem()
 	case Zoom:
-		result = newZoomMenuItem()
+		result = NewZoomMenuItem()
 	case FullScreen:
-		result = newFullScreenMenuItem()
+		result = NewFullScreenMenuItem()
 	case Print:
-		result = newPrintMenuItem()
+		result = NewPrintMenuItem()
 	case PageLayout:
-		result = newPageLayoutMenuItem()
+		result = NewPageLayoutMenuItem()
 	case NoRole:
 	case ShowAll:
-		result = newShowAllMenuItem()
+		result = NewShowAllMenuItem()
 	case BringAllToFront:
-		result = newBringAllToFrontMenuItem()
+		result = NewBringAllToFrontMenuItem()
 	case NewFile:
-		result = newNewFileMenuItem()
+		result = NewNewFileMenuItem()
 	case Open:
-		result = newOpenMenuItem()
+		result = NewOpenMenuItem()
 	case Save:
-		result = newSaveMenuItem()
+		result = NewSaveMenuItem()
 	case SaveAs:
-		result = newSaveAsMenuItem()
+		result = NewSaveAsMenuItem()
 	case StartSpeaking:
-		result = newStartSpeakingMenuItem()
+		result = NewStartSpeakingMenuItem()
 	case StopSpeaking:
-		result = newStopSpeakingMenuItem()
+		result = NewStopSpeakingMenuItem()
 	case Revert:
-		result = newRevertMenuItem()
+		result = NewRevertMenuItem()
 	case Find:
-		result = newFindMenuItem()
+		result = NewFindMenuItem()
 	case FindAndReplace:
-		result = newFindAndReplaceMenuItem()
+		result = NewFindAndReplaceMenuItem()
 	case FindNext:
-		result = newFindNextMenuItem()
+		result = NewFindNextMenuItem()
 	case FindPrevious:
-		result = newFindPreviousMenuItem()
+		result = NewFindPreviousMenuItem()
 	case Help:
-		result = newHelpMenuItem()
+		result = NewHelpMenuItem()
 
 	default:
 		globalApplication.error(fmt.Sprintf("No support for role: %v", role))

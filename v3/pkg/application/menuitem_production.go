@@ -2,6 +2,6 @@
 
 package application
 
-func newOpenDevToolsMenuItem() *MenuItem {
+func NewOpenDevToolsMenuItem() *MenuItem {
 	return nil
 }

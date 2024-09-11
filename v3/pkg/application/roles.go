@@ -65,7 +65,7 @@ const (
 	Help           Role = iota
 )
 
-func newFileMenu() *MenuItem {
+func NewFileMenu() *MenuItem {
 	fileMenu := NewMenu()
 	if runtime.GOOS == "darwin" {
 		fileMenu.AddRole(CloseWindow)
@@ -77,7 +77,7 @@ func newFileMenu() *MenuItem {
 	return subMenu
 }
 
-func newViewMenu() *MenuItem {
+func NewViewMenu() *MenuItem {
 	viewMenu := NewMenu()
 	viewMenu.AddRole(Reload)
 	viewMenu.AddRole(ForceReload)
@@ -93,7 +93,7 @@ func newViewMenu() *MenuItem {
 	return subMenu
 }
 
-func newAppMenu() *MenuItem {
+func NewAppMenu() *MenuItem {
 	if runtime.GOOS != "darwin" {
 		return nil
 	}
@@ -112,7 +112,7 @@ func newAppMenu() *MenuItem {
 	return subMenu
 }
 
-func newEditMenu() *MenuItem {
+func NewEditMenu() *MenuItem {
 	editMenu := NewMenu()
 	editMenu.AddRole(Undo)
 	editMenu.AddRole(Redo)
@@ -137,7 +137,7 @@ func newEditMenu() *MenuItem {
 	return subMenu
 }
 
-func newWindowMenu() *MenuItem {
+func NewWindowMenu() *MenuItem {
 	menu := NewMenu()
 	menu.AddRole(Minimize)
 	menu.AddRole(Zoom)
@@ -154,7 +154,7 @@ func newWindowMenu() *MenuItem {
 	return subMenu
 }
 
-func newHelpMenu() *MenuItem {
+func NewHelpMenu() *MenuItem {
 	menu := NewMenu()
 	menu.Add("Learn More").OnClick(func(ctx *Context) {
 		globalApplication.CurrentWindow().SetURL("https://wails.io")
