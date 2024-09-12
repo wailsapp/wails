@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"context"
 	"fmt"
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
@@ -26,7 +27,6 @@ type Plugin struct {
 	config Config
 	server *http.Server
 	router *pat.Router
-	api    application.PluginAPI
 }
 
 type Config struct {
@@ -81,8 +81,7 @@ func (p *Plugin) Name() string {
 	return "github.com/wailsapp/wails/v3/plugins/oauth"
 }
 
-func (p *Plugin) Init(api application.PluginAPI) error {
-	p.api = api
+func (p *Plugin) OnStartup(ctx context.Context, options application.ServiceOptions) error {
 	store := sessions.NewCookieStore([]byte(p.config.SessionSecret))
 	store.MaxAge(p.config.MaxAge)
 	store.Options.Path = "/"
