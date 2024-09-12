@@ -538,6 +538,7 @@ const (
 	WM_VSCROLLCLIPBOARD       = 778
 	WM_WINDOWPOSCHANGED       = 71
 	WM_WINDOWPOSCHANGING      = 70
+	WM_SELECTALL              = 0x00B1
 	WM_WININICHANGE           = 26
 	WM_KEYFIRST               = 256
 	WM_KEYLAST                = 264

@@ -116,77 +116,119 @@ func NewSubMenuItem(label string) *MenuItem {
 }
 
 func NewRole(role Role) *MenuItem {
+	var result *MenuItem
 	switch role {
 	case AppMenu:
-		return newAppMenu()
+		result = NewAppMenu()
 	case EditMenu:
-		return newEditMenu()
+		result = NewEditMenu()
 	case FileMenu:
-		return newFileMenu()
+		result = NewFileMenu()
 	case ViewMenu:
-		return newViewMenu()
+		result = NewViewMenu()
 	case ServicesMenu:
 		return NewServicesMenu()
 	case SpeechMenu:
-		return newSpeechMenu()
+		result = NewSpeechMenu()
 	case WindowMenu:
-		return newWindowMenu()
+		result = NewWindowMenu()
 	case HelpMenu:
-		return newHelpMenu()
+		result = NewHelpMenu()
 	case Hide:
-		return newHideMenuItem()
+		result = NewHideMenuItem()
+	case Front:
+		result = NewFrontMenuItem()
 	case HideOthers:
-		return newHideOthersMenuItem()
+		result = NewHideOthersMenuItem()
 	case UnHide:
-		return newUnhideMenuItem()
+		result = NewUnhideMenuItem()
 	case Undo:
-		return newUndoMenuItem()
+		result = NewUndoMenuItem()
 	case Redo:
-		return newRedoMenuItem()
+		result = NewRedoMenuItem()
 	case Cut:
-		return newCutMenuItem()
+		result = NewCutMenuItem()
 	case Copy:
-		return newCopyMenuItem()
+		result = NewCopyMenuItem()
 	case Paste:
-		return newPasteMenuItem()
+		result = NewPasteMenuItem()
 	case PasteAndMatchStyle:
-		return newPasteAndMatchStyleMenuItem()
+		result = NewPasteAndMatchStyleMenuItem()
 	case SelectAll:
-		return newSelectAllMenuItem()
+		result = NewSelectAllMenuItem()
 	case Delete:
-		return newDeleteMenuItem()
+		result = NewDeleteMenuItem()
 	case Quit:
-		return newQuitMenuItem()
-	case Close:
-		return newCloseMenuItem()
+		result = NewQuitMenuItem()
+	case CloseWindow:
+		result = NewCloseMenuItem()
 	case About:
-		return newAboutMenuItem()
+		result = NewAboutMenuItem()
 	case Reload:
-		return newReloadMenuItem()
+		result = NewReloadMenuItem()
 	case ForceReload:
-		return newForceReloadMenuItem()
+		result = NewForceReloadMenuItem()
 	case ToggleFullscreen:
-		return newToggleFullscreenMenuItem()
+		result = NewToggleFullscreenMenuItem()
 	case OpenDevTools:
-		return newOpenDevToolsMenuItem()
+		result = NewOpenDevToolsMenuItem()
 	case ResetZoom:
-		return newZoomResetMenuItem()
+		result = NewZoomResetMenuItem()
 	case ZoomIn:
-		return newZoomInMenuItem()
+		result = NewZoomInMenuItem()
 	case ZoomOut:
-		return newZoomOutMenuItem()
+		result = NewZoomOutMenuItem()
 	case Minimize:
-		return newMinimizeMenuItem()
+		result = NewMinimizeMenuItem()
 	case Zoom:
-		return newZoomMenuItem()
+		result = NewZoomMenuItem()
 	case FullScreen:
-		return newFullScreenMenuItem()
+		result = NewFullScreenMenuItem()
+	case Print:
+		result = NewPrintMenuItem()
+	case PageLayout:
+		result = NewPageLayoutMenuItem()
+	case NoRole:
+	case ShowAll:
+		result = NewShowAllMenuItem()
+	case BringAllToFront:
+		result = NewBringAllToFrontMenuItem()
+	case NewFile:
+		result = NewNewFileMenuItem()
+	case Open:
+		result = NewOpenMenuItem()
+	case Save:
+		result = NewSaveMenuItem()
+	case SaveAs:
+		result = NewSaveAsMenuItem()
+	case StartSpeaking:
+		result = NewStartSpeakingMenuItem()
+	case StopSpeaking:
+		result = NewStopSpeakingMenuItem()
+	case Revert:
+		result = NewRevertMenuItem()
+	case Find:
+		result = NewFindMenuItem()
+	case FindAndReplace:
+		result = NewFindAndReplaceMenuItem()
+	case FindNext:
+		result = NewFindNextMenuItem()
+	case FindPrevious:
+		result = NewFindPreviousMenuItem()
+	case Help:
+		result = NewHelpMenuItem()
 
 	default:
 		globalApplication.error(fmt.Sprintf("No support for role: %v", role))
 		os.Exit(1)
 	}
-	return nil
+
+	if result == nil {
+		return nil
+	}
+
+	result.role = role
+	return result
 }
 
 func NewServicesMenu() *MenuItem {
@@ -253,6 +295,11 @@ func (m *MenuItem) SetTooltip(s string) *MenuItem {
 	if m.impl != nil {
 		m.impl.setTooltip(s)
 	}
+	return m
+}
+
+func (m *MenuItem) SetRole(role Role) *MenuItem {
+	m.role = role
 	return m
 }
 

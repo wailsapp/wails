@@ -112,6 +112,23 @@ func (m *Menu) FindByLabel(label string) *MenuItem {
 	return nil
 }
 
+// FindByRole recursively searches for a menu item with the given role
+// and returns the first match, or nil if not found.
+func (m *Menu) FindByRole(role Role) *MenuItem {
+	for _, item := range m.items {
+		if item.role == role {
+			return item
+		}
+		if item.submenu != nil {
+			found := item.submenu.FindByRole(role)
+			if found != nil {
+				return found
+			}
+		}
+	}
+	return nil
+}
+
 func (m *Menu) RemoveMenuItem(target *MenuItem) {
 	for i, item := range m.items {
 		if item == target {
