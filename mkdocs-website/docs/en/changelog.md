@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix for Events API on Linux by [TheGB0077](https://github.com/TheGB0077) in [#3734](https://github.com/wailsapp/wails/pull/3734)
 
 ### Fixed
+- Fixed bug with usage of customEventProcessor in drag-n-drop example by [etesam913](https://github.com/etesam913) in [#3742](https://github.com/wailsapp/wails/pull/3742)
 - [linux] Fixed linux compile error introduced by IgnoreMouseEvents addition by [atterpac](https://github.com/atterpac) in [#3721](https://github.com/wailsapp/wails/pull/3721)
 - [windows] Fixed syso icon file generation bug by [atterpac](https://github.com/atterpac) in [#3675](https://github.com/wailsapp/wails/pull/3675)
 - [linux] Fix to run natively in wayland incorporated from [#1811](https://github.com/wailsapp/wails/pull/1811) in [#3614](https://github.com/wailsapp/wails/pull/3614) by [@stendler](https://github.com/stendler)

@@ -37,10 +37,7 @@ func main() {
 
 	window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
 		files := event.Context().DroppedFiles()
-		app.customEventProcessor.Emit(&application.CustomEvent{
-			Name: "files",
-			Data: files,
-		})
+		app.EmitEvent("files", files)
 		app.Logger.Info("Files Dropped!", "files", files)
 	})
 
