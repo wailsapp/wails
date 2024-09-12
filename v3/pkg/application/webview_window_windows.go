@@ -468,6 +468,8 @@ func (w *windowsWebviewWindow) destroy() {
 	if w.dropTarget != nil {
 		w.dropTarget.Release()
 	}
+	// Destroy the window
+	w32.DestroyWindow(w.hwnd)
 }
 
 func (w *windowsWebviewWindow) reload() {

@@ -192,6 +192,8 @@ func (m *windowsApp) destroy() {
 		return
 	}
 	globalApplication.cleanup()
+	// Destroy the main thread window
+	w32.DestroyWindow(m.mainThreadWindowHWND)
 	// Post a quit message to the main thread
 	w32.PostQuitMessage(0)
 }
