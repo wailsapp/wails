@@ -2,7 +2,7 @@
 
 package application
 
-import ( 
+import (
 	"fmt"
 	"time"
 
@@ -375,4 +375,22 @@ func (w *linuxWebviewWindow) isIgnoreMouseEvents() bool {
 
 func (w *linuxWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 	w.ignoreMouse(w.ignoreMouseEvents)
+}
+
+func (w *linuxWebviewWindow) cut() {
+}
+
+func (w *linuxWebviewWindow) paste() {
+}
+
+func (w *linuxWebviewWindow) copy() {
+}
+
+func (w *linuxWebviewWindow) selectAll() {
+}
+
+func (w *linuxWebviewWindow) undo() {
+}
+
+func (w *linuxWebviewWindow) delete() {
 }

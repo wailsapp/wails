@@ -44,7 +44,12 @@ func NewRedoMenuItem() *MenuItem {
 
 func NewCutMenuItem() *MenuItem {
 	return NewMenuItem("Cut").
-		SetAccelerator("CmdOrCtrl+x")
+		SetAccelerator("CmdOrCtrl+x").OnClick(func(ctx *Context) {
+		currentWindow := globalApplication.CurrentWindow()
+		if currentWindow != nil {
+			currentWindow.cut()
+		}
+	})
 }
 
 func NewCopyMenuItem() *MenuItem {
