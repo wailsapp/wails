@@ -79,7 +79,7 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 
 	uri, err = r.URL()
 	if err != nil {
-		a.options.Logger.Error("Error processing request, unable to get URL: %s (HttpResponse=500)", err)
+		a.options.Logger.Error(fmt.Sprintf("Error processing request, unable to get URL: %s (HttpResponse=500)", err))
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
