@@ -231,16 +231,13 @@ func (p *Plugin) start(provider string) error {
 	router := pat.New()
 	router.Get("/auth/{provider}/callback", func(res http.ResponseWriter, req *http.Request) {
 
-		event := &application.WailsEvent{Name: Success}
-
 		user, err := gothic.CompleteUserAuth(res, req)
 		if err != nil {
-			event.Data = err.Error()
-			event.Name = Error
+			application.Get().EmitEvent(Error, err.Error())
 		} else {
-			event.Data = user
+			application.Get().EmitEvent(Success, user)
 		}
-		application.Get().Events.Emit(event)
+
 		_ = p.server.Close()
 		p.server = nil
 	})
@@ -282,10 +279,10 @@ func (p *Plugin) start(provider string) error {
 	window := application.Get().NewWebviewWindowWithOptions(*p.config.WindowConfig)
 	window.Show()
 
-	application.Get().Events.On(Success, func(event *application.WailsEvent) {
+	application.Get().OnEvent(Success, func(event *application.CustomEvent) {
 		window.Close()
 	})
-	application.Get().Events.On(Error, func(event *application.WailsEvent) {
+	application.Get().OnEvent(Error, func(event *application.CustomEvent) {
 		window.Close()
 	})
 
@@ -300,12 +297,11 @@ func (p *Plugin) logout(provider string) error {
 	router := pat.New()
 	router.Get("/logout/{provider}", func(res http.ResponseWriter, req *http.Request) {
 		err := gothic.Logout(res, req)
-		event := &application.WailsEvent{Name: LoggedOut}
 		if err != nil {
-			event.Data = err.Error()
-			event.Name = Error
+			application.Get().EmitEvent(Error, err.Error())
+		} else {
+			application.Get().EmitEvent(LoggedOut)
 		}
-		application.Get().Events.Emit(event)
 		_ = p.server.Close()
 		p.server = nil
 	})
@@ -343,10 +339,10 @@ func (p *Plugin) logout(provider string) error {
 	window := application.Get().NewWebviewWindowWithOptions(*p.config.WindowConfig)
 	window.Show()
 
-	application.Get().Events.On(LoggedOut, func(event *application.WailsEvent) {
+	application.Get().OnEvent(LoggedOut, func(event *application.CustomEvent) {
 		window.Close()
 	})
-	application.Get().Events.On(Error, func(event *application.WailsEvent) {
+	application.Get().OnEvent(Error, func(event *application.CustomEvent) {
 		window.Close()
 	})
 
