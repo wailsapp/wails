@@ -1,0 +1,66 @@
+version: '3'
+
+includes:
+  common: Taskfile.common.yml
+
+tasks:
+  build:
+    summary: Builds the application for Linux
+    deps:
+      - task: common:go:mod:tidy
+      - task: common:build:frontend
+      - task: common:generate:icons
+    cmds:
+      - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}
+    vars:
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production -trimpath -ldflags="-w -s"{{else}}-gcflags=all="-l"{{end}}'
+    env:
+      GOOS: linux
+      CGO_ENABLED: 1
+      GOARCH: '{{.ARCH | default ARCH}}'
+      PRODUCTION: '{{.PRODUCTION | default "false"}}'
+
+  package:
+    summary: Packages a production build of the application for Linux
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+    cmds:
+      - task: create:appimage
+
+  create:appimage:
+    summary: Creates an AppImage
+    dir: build/appimage
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+      - task: generate:dotdesktop
+    cmds:
+      - cp {{.APP_BINARY}} {{.APP_NAME}}
+      - cp ../appicon.png appicon.png
+      - wails3 generate appimage -binary {{.APP_NAME}} -icon {{.ICON}} -desktopfile {{.DESKTOP_FILE}} -outputdir {{.OUTPUT_DIR}} -builddir {{.ROOT_DIR}}/build/appimage
+    vars:
+      APP_NAME: '{{.APP_NAME}}'
+      APP_BINARY: '../../bin/{{.APP_NAME}}'
+      ICON: '../appicon.png'
+      DESKTOP_FILE: '{{.APP_NAME}}.desktop'
+      OUTPUT_DIR: '../../bin'
+
+  generate:dotdesktop:
+    summary: Generates a `.desktop` file
+    dir: build
+    cmds:
+      - mkdir -p {{.ROOT_DIR}}/build/appimage
+      - wails3 generate .desktop -name "{{.APP_NAME}}" -exec "{{.EXEC}}" -icon "{{.ICON}}" -outputfile {{.ROOT_DIR}}/build/appimage/{{.APP_NAME}}.desktop -categories "{{.CATEGORIES}}"
+    vars:
+      APP_NAME: '{{.APP_NAME}}'
+      EXEC: '{{.APP_NAME}}'
+      ICON: 'appicon'
+      CATEGORIES: 'Development;'
+      OUTPUTFILE: '{{.ROOT_DIR}}/build/appimage/{{.APP_NAME}}.desktop'
+
+  run:
+    cmds:
+      - '{{.BIN_DIR}}/{{.APP_NAME}}'
