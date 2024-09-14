@@ -1,12 +1,15 @@
 version: '3'
 
+includes:
+  common: Taskfile.common.yml
+
 tasks:
   build:
     summary: Builds the application for Windows
     deps:
-      - task: go:mod:tidy
-      - task: build:frontend
-      - task: generate:icons
+      - task: common:go:mod:tidy
+      - task: common:build:frontend
+      - task: common:generate:icons
       - task: generate:syso
     cmds:
       - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}.exe
@@ -46,4 +49,4 @@ tasks:
 
   run:
     cmds:
-      - '{{.BIN_DIR}}\{{.APP_NAME}}.exe'
+      - '{{.BIN_DIR}}\\{{.APP_NAME}}.exe'
