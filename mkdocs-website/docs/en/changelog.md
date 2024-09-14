@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Events API change: `On`/`Emit` -> user events, `OnApplicationEvent` -> Application Events `OnWindowEvent` -> Window Events, by [leaanthony](https://github.com/leaanthony)
 - Fix for Events API on Linux by [TheGB0077](https://github.com/TheGB0077) in [#3734](https://github.com/wailsapp/wails/pull/3734)
+- [CI] improvements to actions & enable to run actions also in forks and branches prefixed with `v3/` or `v3-` by [stendler](https://github.com/stendler) in [#3747](https://github.com/wailsapp/wails/pull/3747)
 
 ### Fixed
 - Fixed bug with usage of customEventProcessor in drag-n-drop example by [etesam913](https://github.com/etesam913) in [#3742](https://github.com/wailsapp/wails/pull/3742)
