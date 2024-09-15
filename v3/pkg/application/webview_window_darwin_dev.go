@@ -55,3 +55,11 @@ func (w *macosWebviewWindow) openDevTools() {
 func (w *macosWebviewWindow) enableDevTools() {
 	C.windowEnableDevTools(w.nsWindow)
 }
+
+func (w *macosWebviewPanel) openDevTools() {
+	C.openDevTools(w.nsPanel)
+}
+
+func (w *macosWebviewPanel) enableDevTools() {
+	C.windowEnableDevTools(w.nsPanel)
+}

@@ -6,15 +6,17 @@
 #import <Cocoa/Cocoa.h>
 #import <WebKit/WebKit.h>
 
-@interface WebviewWindow : NSWindow
+@interface WebviewWindow : NSObject
 - (BOOL) canBecomeKeyWindow;
 - (BOOL) canBecomeMainWindow;
 - (BOOL) acceptsFirstResponder;
 - (BOOL) becomeFirstResponder;
 - (BOOL) resignFirstResponder;
-- (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+- (WebviewWindow*) initAsWindow:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+- (WebviewWindow *)initAsPanel:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 
-@property (assign) WKWebView* webView; // We already retain WKWebView since it's part of the Window.
+@property(assign) NSWindow *w;
+@property(assign) WKWebView *webView; // We already retain WKWebView since it's part of the Window.
 
 @end
 

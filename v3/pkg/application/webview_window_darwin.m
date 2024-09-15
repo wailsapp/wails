@@ -8,13 +8,28 @@ extern void processURLRequest(unsigned int, void *);
 extern void processWindowKeyDownEvent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 @implementation WebviewWindow
-- (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+- (WebviewWindow*) initAsWindow:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 {
-    self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
-    [self setAlphaValue:1.0];
-    [self setBackgroundColor:[NSColor clearColor]];
-    [self setOpaque:NO];
-    [self setMovableByWindowBackground:YES];
+    self = [super init];
+    self.w = [[NSWindow alloc] initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
+
+    [self.w setAlphaValue:1.0];
+    [self.w setBackgroundColor:[NSColor clearColor]];
+    [self.w setOpaque:NO];
+    [self.w setMovableByWindowBackground:YES];
+
+    return self;
+}
+- (WebviewWindow*) initAsPanel:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+{
+    self = [super init];
+    self.w = (NSWindow *) [[NSPanel alloc] initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
+
+    [self.w setAlphaValue:1.0];
+    [self.w setBackgroundColor:[NSColor clearColor]];
+    [self.w setOpaque:NO];
+    [self.w setMovableByWindowBackground:YES];
+
     return self;
 }
 - (void)keyDown:(NSEvent *)event {
@@ -41,7 +56,7 @@ extern bool hasListeners(unsigned int);
     // Combine the modifier strings with the key character
     NSString *keyEventString = [modifierStrings componentsJoinedByString:@"+"];
     const char* utf8String = [keyEventString UTF8String];
-    WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
+    WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.w.delegate;
     processWindowKeyDownEvent(delegate.windowId, utf8String);
 }
 - (NSString *)keyStringFromEvent:(NSEvent *)event {
@@ -182,15 +197,16 @@ extern bool hasListeners(unsigned int);
 }
 - (void) setDelegate:(id<NSWindowDelegate>) delegate {
     [delegate retain];
-    [super setDelegate: delegate];
+    [self.w setDelegate: delegate];
 }
 - (void) dealloc {
     // Remove the script handler, otherwise WebviewWindowDelegate won't get deallocated
     // See: https://stackoverflow.com/questions/26383031/wkwebview-causes-my-view-controller-to-leak
     [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"external"];
-    if (self.delegate) {
-        [self.delegate release];
+    if (self.w.delegate) {
+        [self.w.delegate release];
     }
+    [self.w dealloc];
     [super dealloc];
 }
 @end
@@ -205,7 +221,7 @@ extern bool hasListeners(unsigned int);
     [super dealloc];
 }
 - (void) startDrag:(WebviewWindow*)window {
-    [window performWindowDragWithEvent:self.leftMouseEvent];
+    [window.w performWindowDragWithEvent:self.leftMouseEvent];
 }
 // Handle script messages from the external bridge
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {

@@ -669,7 +669,7 @@ func (a *App) handleMenuItemClicked(menuItemID uint) {
 	menuItem.handleClick()
 }
 
-func (a *App) CurrentWindow() *WebviewWindow {
+func (a *App) CurrentWindow() Window {
 	if a.impl == nil {
 		return nil
 	}
@@ -680,7 +680,7 @@ func (a *App) CurrentWindow() *WebviewWindow {
 	if result == nil {
 		return nil
 	}
-	return result.(*WebviewWindow)
+	return result
 }
 
 // OnShutdown adds a function to be run when the application is shutting down.

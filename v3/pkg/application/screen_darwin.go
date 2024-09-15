@@ -173,6 +173,11 @@ func getScreenForWindow(window *macosWebviewWindow) (*Screen, error) {
 	return cScreenToScreen(cScreen), nil
 }
 
+func getScreenForPanel(window *macosWebviewPanel) (*Screen, error) {
+	cScreen := C.getScreenForWindow(window.nsPanel)
+	return cScreenToScreen(cScreen), nil
+}
+
 func getScreenForSystray(systray *macosSystemTray) (*Screen, error) {
 	// Get the Window for the status item
 	// https://stackoverflow.com/a/5875019/4188138
