@@ -28,11 +28,10 @@ var roleToSelector = map[Role]string{
 	Delete:    "delete:",
 	SelectAll: "selectAll:",
 	//FindMenu:            "", // This is a submenu, no direct selector
-	Find:                "performTextFinderAction:",
-	FindAndReplace:      "performTextFinderAction:",
-	FindNext:            "performTextFinderAction:",
-	FindPrevious:        "performTextFinderAction:",
-	UseSelectionForFind: "performTextFinderAction:",
+	Find:           "performTextFinderAction:",
+	FindAndReplace: "performTextFinderAction:",
+	FindNext:       "performTextFinderAction:",
+	FindPrevious:   "performTextFinderAction:",
 	//ViewMenu:            "", // This is a submenu, no direct selector
 	ToggleFullscreen: "toggleFullScreen:",
 	//FileMenu:            "", // This is a submenu, no direct selector
