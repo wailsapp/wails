@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Do not bind internal service methods in [#3720](https://github.com/wailsapp/wails/pull/3720) by [leaanthony](https://github.com/leaanthony)
 - [windows] Fixed system tray startup panic in [#3693](https://github.com/wailsapp/wails/issues/3693) by [@DeltaLaboratory](https://github.com/DeltaLaboratory)
 - Major menu item refactor and event handling. Mainly improves macOS for now. By [leaanthony](https://github.com/leaanthony)
+- Fix tests after plugins and event refactor in [#3746](https://github.com/wailsapp/wails/pull/3746) by [@stendler](https://github.com/stendler)
 - [windows] Fixed `Failed to unregister class Chrome_WidgetWin_0` warning. By [leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.6 - 2024-07-30
