@@ -1366,3 +1366,6 @@ func (w *macosWebviewWindow) undo() {
 
 func (w *macosWebviewWindow) delete() {
 }
+
+func (w *macosWebviewWindow) redo() {
+}

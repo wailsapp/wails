@@ -96,6 +96,9 @@ func (w *windowsWebviewWindow) delete() {
 	w32.Delete(w.hwnd)
 }
 
+func (w *windowsWebviewWindow) redo() {
+}
+
 func (w *windowsWebviewWindow) handleKeyEvent(_ string) {
 	// Unused on windows
 }

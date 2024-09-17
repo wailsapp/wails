@@ -98,6 +98,7 @@ type (
 		undo()
 		delete()
 		selectAll()
+		redo()
 	}
 )
 
