@@ -1787,7 +1787,6 @@ func (w *linuxWebviewWindow) undo() {
 }
 
 func (w *linuxWebviewWindow) redo() {
-	C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_REDO)
 }
 
 func (w *linuxWebviewWindow) delete() {
