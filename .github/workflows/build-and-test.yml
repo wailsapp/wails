@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04, windows-latest, macos-latest, macos-11]
+        os: [warp-ubuntu-latest-x64-2x, warp-ubuntu-2404-x64-2x, windows-11-large, warp-macos-14-arm64-6x]
         go-version: ['1.22']
 
     steps:
@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
 
       - uses: awalsh128/cache-apt-pkgs-action@latest
-        if: matrix.os == 'ubuntu-22.04'
+        if: matrix.os == 'warp-ubuntu-latest-x64-2x'
         with:
           packages: libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
           version: 1.0
@@ -38,14 +38,14 @@ jobs:
           cache-dependency-path: ./v2/go.sum
 
       - name: Run tests (mac)
-        if: matrix.os == 'macos-latest' || matrix.os == 'macos-11'
+        if: matrix.os == 'warp-macos-14-arm64-6x' || matrix.os == 'macos-11'
         env:
           CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
         working-directory: ./v2
         run: go test -v ./...
 
       - name: Run tests (!mac)
-        if: matrix.os != 'macos-latest' && matrix.os != 'macos-11' && matrix.os != 'ubuntu-24.04'
+        if: matrix.os != 'warp-macos-14-arm64-6x' && matrix.os != 'macos-11' && matrix.os != 'ubuntu-24.04'
         working-directory: ./v2
         run: go test -v ./...
 
@@ -87,7 +87,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-22.04, windows-latest, macos-latest, ubuntu-24.04, macos-11]
+        os: [warp-ubuntu-latest-x64-2x, windows-11-large, warp-macos-14-arm64-6x, ubuntu-24.04, macos-11]
         template:
           [
             svelte,
@@ -122,7 +122,7 @@ jobs:
           wails -help
 
       - name: Install linux dependencies ( 22.04 )
-        if: matrix.os == 'ubuntu-22.04'
+        if: matrix.os == 'warp-ubuntu-latest-x64-2x'
         run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
 
       - name: Install linux dependencies ( 24.04 )
