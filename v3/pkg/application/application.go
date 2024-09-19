@@ -683,7 +683,7 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.Unlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		a.error("DragAndDropMessage: WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Get callback from window
@@ -696,7 +696,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		a.error("WindowMessage: WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Check if the message starts with "wails:"
@@ -719,7 +719,7 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("Window #%d not found", event.WindowID)
+		a.error("WindowEvent %d: Window #%d not found", event.EventID, event.WindowID)
 		return
 	}
 	window.HandleWindowEvent(event.EventID)
@@ -982,7 +982,7 @@ func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		a.error("WindowKeyEvent: WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Get callback from window
