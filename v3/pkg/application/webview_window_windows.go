@@ -72,6 +72,33 @@ type windowsWebviewWindow struct {
 	moveDebouncer func(func())
 }
 
+func (w *windowsWebviewWindow) cut() {
+	w32.Cut(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) paste() {
+	w32.Paste(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) copy() {
+	w32.Copy(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) selectAll() {
+	w32.SelectAll(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) undo() {
+	w32.Undo(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) delete() {
+	w32.Delete(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) redo() {
+}
+
 func (w *windowsWebviewWindow) handleKeyEvent(_ string) {
 	// Unused on windows
 }
@@ -249,7 +276,7 @@ func (w *windowsWebviewWindow) run() {
 
 	w.hwnd = w32.CreateWindowEx(
 		uint(exStyle),
-		windowClassName,
+		w32.MustStringToUTF16Ptr(globalApplication.options.Windows.WndClass),
 		w32.MustStringToUTF16Ptr(options.Title),
 		style,
 		startX,
@@ -278,6 +305,8 @@ func (w *windowsWebviewWindow) run() {
 	getNativeApplication().registerWindow(w)
 
 	w.setResizable(!options.DisableResize)
+
+	w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
 
 	if options.Frameless {
 		// Inform the application of the frame change this is needed to trigger the WM_NCCALCSIZE event.
@@ -316,7 +345,7 @@ func (w *windowsWebviewWindow) run() {
 	switch options.Windows.Theme {
 	case SystemDefault:
 		w.updateTheme(w32.IsCurrentlyDarkMode())
-		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*Event) {
+		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*ApplicationEvent) {
 			w.updateTheme(w32.IsCurrentlyDarkMode())
 		})
 	case Light:
@@ -442,6 +471,8 @@ func (w *windowsWebviewWindow) destroy() {
 	if w.dropTarget != nil {
 		w.dropTarget.Release()
 	}
+	// Destroy the window
+	w32.DestroyWindow(w.hwnd)
 }
 
 func (w *windowsWebviewWindow) reload() {
@@ -857,6 +888,7 @@ func (w *windowsWebviewWindow) setFrameless(b bool) {
 	} else {
 		w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_OVERLAPPEDWINDOW)
 	}
+	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0, w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_FRAMECHANGED)
 }
 
 func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
@@ -1318,7 +1350,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 	uri, _ := req.GetUri()
 	reqUri, err := url.ParseRequestURI(uri)
 	if err != nil {
-		globalApplication.error("Unable to parse request uri", "uri", uri, "error", err)
+		globalApplication.error("Unable to parse request uri: uri='%s' error='%s'", uri, err)
 		return
 	}
 
@@ -1454,10 +1486,10 @@ func (w *windowsWebviewWindow) setupChromium() {
 	}
 
 	// event mapping
-	w.parent.On(events.Windows.WindowDidMove, func(e *WindowEvent) {
+	w.parent.OnWindowEvent(events.Windows.WindowDidMove, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowDidMove)
 	})
-	w.parent.On(events.Windows.WindowDidResize, func(e *WindowEvent) {
+	w.parent.OnWindowEvent(events.Windows.WindowDidResize, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowDidResize)
 	})
 
@@ -1569,7 +1601,7 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	// Install the runtime core
 	w.execJS(runtime.Core())
 
-	// Emit DomReady Event
+	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
 
 	if w.hasStarted {
@@ -1760,4 +1792,19 @@ func (w *windowsWebviewWindow) setCloseButtonState(state ButtonState) {
 
 func (w *windowsWebviewWindow) setGWLStyle(style int) {
 	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, uint32(style))
+}
+
+func (w *windowsWebviewWindow) isIgnoreMouseEvents() bool {
+	exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE)
+	return exStyle&w32.WS_EX_TRANSPARENT != 0
+}
+
+func (w *windowsWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE)
+	if ignore {
+		exStyle |= w32.WS_EX_LAYERED | w32.WS_EX_TRANSPARENT
+	} else {
+		exStyle &^= w32.WS_EX_TRANSPARENT
+	}
+	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, uint32(exStyle))
 }

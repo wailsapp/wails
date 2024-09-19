@@ -303,6 +303,27 @@ func (w *macosWebviewWindow) setRelativePosition(x, y int) {
 	C.windowSetRelativePosition(w.nsWindow, C.int(x), C.int(y))
 }
 
+func (w *macosWebviewWindow) setWindowLevel(level MacWindowLevel) {
+	switch level {
+	case MacWindowLevelNormal:
+		C.setNormalWindowLevel(w.nsWindow)
+	case MacWindowLevelFloating:
+		C.setFloatingWindowLevel(w.nsWindow)
+	case MacWindowLevelTornOffMenu:
+		C.setTornOffMenuWindowLevel(w.nsWindow)
+	case MacWindowLevelModalPanel:
+		C.setModalPanelWindowLevel(w.nsWindow)
+	case MacWindowLevelMainMenu:
+		C.setMainMenuWindowLevel(w.nsWindow)
+	case MacWindowLevelStatus:
+		C.setStatusWindowLevel(w.nsWindow)
+	case MacWindowLevelPopUpMenu:
+		C.setPopUpMenuWindowLevel(w.nsWindow)
+	case MacWindowLevelScreenSaver:
+		C.setScreenSaverWindowLevel(w.nsWindow)
+	}
+}
+
 func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
@@ -395,14 +416,18 @@ func (w *macosWebviewWindow) setup(options *WebviewWindowOptions, macOptions *Ma
 	case MacBackdropNormal:
 	}
 
+	if macOptions.WindowLevel == "" {
+		macOptions.WindowLevel = MacWindowLevelNormal
+	}
+	w.setWindowLevel(macOptions.WindowLevel)
+
 	// Initialise the window buttons
 	w.setMinimiseButtonState(options.MinimiseButtonState)
 	w.setMaximiseButtonState(options.MaximiseButtonState)
 	w.setCloseButtonState(options.CloseButtonState)
 
-	if options.IgnoreMouseEvents {
-		C.windowIgnoreMouseEvents(w.nsWindow, C.bool(true))
-	}
+	// Ignore mouse events if requested
+	w.setIgnoreMouseEvents(options.IgnoreMouseEvents)
 
 	titleBarOptions := macOptions.TitleBar
 	if !w.parent.options.Frameless {
@@ -443,7 +468,7 @@ func (w *macosWebviewWindow) setup(options *WebviewWindowOptions, macOptions *Ma
 	w.setURL(startURL)
 
 	// We need to wait for the HTML to load before we can execute the javascript
-	w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
+	w.parent.OnWindowEvent(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
 		InvokeAsync(func() {
 			if options.JS != "" {
 				w.execJS(options.JS)
@@ -457,7 +482,7 @@ func (w *macosWebviewWindow) setup(options *WebviewWindowOptions, macOptions *Ma
 			} else {
 				// We have to wait until the window is shown before we can remove the shadow
 				var cancel func()
-				cancel = w.parent.On(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
+				cancel = w.parent.OnWindowEvent(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
 					w.setHasShadow(!options.Mac.DisableShadow)
 					cancel()
 				})
@@ -466,18 +491,18 @@ func (w *macosWebviewWindow) setup(options *WebviewWindowOptions, macOptions *Ma
 	})
 
 	// Translate ShouldClose to common WindowClosing event
-	w.parent.On(events.Mac.WindowShouldClose, func(_ *WindowEvent) {
+	w.parent.OnWindowEvent(events.Mac.WindowShouldClose, func(_ *WindowEvent) {
 		w.parent.emit(events.Common.WindowClosing)
 	})
 
 	// Translate WindowDidResignKey to common WindowLostFocus event
-	w.parent.On(events.Mac.WindowDidResignKey, func(_ *WindowEvent) {
+	w.parent.OnWindowEvent(events.Mac.WindowDidResignKey, func(_ *WindowEvent) {
 		w.parent.emit(events.Common.WindowLostFocus)
 	})
-	w.parent.On(events.Mac.WindowDidResignMain, func(_ *WindowEvent) {
+	w.parent.OnWindowEvent(events.Mac.WindowDidResignMain, func(_ *WindowEvent) {
 		w.parent.emit(events.Common.WindowLostFocus)
 	})
-	w.parent.On(events.Mac.WindowDidResize, func(_ *WindowEvent) {
+	w.parent.OnWindowEvent(events.Mac.WindowDidResize, func(_ *WindowEvent) {
 		w.parent.emit(events.Common.WindowDidResize)
 	})
 
@@ -540,4 +565,33 @@ func (w *macosWebviewWindow) setMaximiseButtonState(state ButtonState) {
 
 func (w *macosWebviewWindow) setCloseButtonState(state ButtonState) {
 	C.setCloseButtonState(w.nsWindow, C.int(state))
+}
+
+func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {
+	return bool(C.isIgnoreMouseEvents(w.nsWindow))
+}
+
+func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	C.setIgnoreMouseEvents(w.nsWindow, C.bool(ignore))
+}
+
+func (w *macosWebviewWindow) cut() {
+}
+
+func (w *macosWebviewWindow) paste() {
+}
+
+func (w *macosWebviewWindow) copy() {
+}
+
+func (w *macosWebviewWindow) selectAll() {
+}
+
+func (w *macosWebviewWindow) undo() {
+}
+
+func (w *macosWebviewWindow) delete() {
+}
+
+func (w *macosWebviewWindow) redo() {
 }

@@ -1373,6 +1373,14 @@ func (w *linuxWebviewWindow) position() (int, int) {
 	return int(x), int(y)
 }
 
+func (w *linuxWebviewWindow) ignoreMouse(ignore bool) {
+	if ignore {
+		C.gtk_widget_set_events((*C.GtkWidget)(unsafe.Pointer(w.window)), C.GDK_ENTER_NOTIFY_MASK|C.GDK_LEAVE_NOTIFY_MASK)
+	} else {
+		C.gtk_widget_set_events((*C.GtkWidget)(unsafe.Pointer(w.window)), C.GDK_ALL_EVENTS_MASK)
+	}
+}
+
 // FIXME Change this to reflect mouse button!
 //
 //export onButtonEvent
@@ -1756,4 +1764,30 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
 		dialog.filters)
 
 	return results, err
+}
+
+func (w *linuxWebviewWindow) cut() {
+	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_CUT)
+}
+
+func (w *linuxWebviewWindow) paste() {
+	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_PASTE)
+}
+
+func (w *linuxWebviewWindow) copy() {
+	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_COPY)
+}
+
+func (w *linuxWebviewWindow) selectAll() {
+	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_SELECT_ALL)
+}
+
+func (w *linuxWebviewWindow) undo() {
+	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_UNDO)
+}
+
+func (w *linuxWebviewWindow) redo() {
+}
+
+func (w *linuxWebviewWindow) delete() {
 }

@@ -9,8 +9,7 @@
 #import <AppKit/AppKit.h>
 #import "webview_window_darwin_drag.h"
 
-struct WebviewPreferences
-{
+struct WebviewPreferences {
 	bool *TabFocusesLinks;
 	bool *TextInteractionEnabled;
 	bool *FullscreenEnabled;
@@ -18,34 +17,9 @@ struct WebviewPreferences
 
 extern void registerListener(unsigned int event);
 
-void *windowNew(
-	unsigned int id,
-	int width,
-	int height,
-	bool fraudulentWebsiteWarningEnabled,
-	bool frameless,
-	bool enableDragAndDrop,
-	struct WebviewPreferences preferences);
-
-void *panelNew(
-	unsigned int id,
-	int width,
-	int height,
-	bool fraudulentWebsiteWarningEnabled,
-	bool frameless,
-	bool enableDragAndDrop,
-	struct WebviewPreferences preferences);
-
-void *windowOrPanelNew(
-	bool isWindow,
-	unsigned int id,
-	int width,
-	int height,
-	bool fraudulentWebsiteWarningEnabled,
-	bool frameless,
-	bool enableDragAndDrop,
-	struct WebviewPreferences preferences);
-
+void *windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences);
+void *panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences);
+void *windowOrPanelNew(bool isWindow, unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences);
 void printWindowStyle(void *window);
 void setInvisibleTitleBarHeight(void *window, unsigned int height);
 void windowSetTransparent(void *nsWindow);
@@ -53,6 +27,14 @@ void windowSetInvisibleTitleBar(void *nsWindow, unsigned int height);
 void windowSetTitle(void *nsWindow, char *title);
 void windowSetSize(void *nsWindow, int width, int height);
 void windowSetAlwaysOnTop(void *nsWindow, bool alwaysOnTop);
+void setNormalWindowLevel(void *nsWindow);
+void setFloatingWindowLevel(void *nsWindow);
+void setPopUpMenuWindowLevel(void *nsWindow);
+void setMainMenuWindowLevel(void *nsWindow);
+void setStatusWindowLevel(void *nsWindow);
+void setModalPanelWindowLevel(void *nsWindow);
+void setScreenSaverWindowLevel(void *nsWindow);
+void setTornOffMenuWindowLevel(void *nsWindow);
 void navigationLoadURL(void *nsWindow, char *url);
 void windowSetResizable(void *nsWindow, bool resizable);
 void windowSetMinSize(void *nsWindow, int width, int height);
@@ -94,9 +76,6 @@ void windowGetPosition(void *nsWindow, int *x, int *y);
 void windowSetPosition(void *nsWindow, int x, int y);
 void windowDestroy(void *nsWindow);
 void windowSetShadow(void *nsWindow, bool hasShadow);
-void windowFocus(void *window);
-void windowSetEnabled(void *window, bool enabled);
-
 void windowClose(void *window);
 void windowZoom(void *window);
 void windowRenderHTML(void *window, const char *html);
@@ -116,9 +95,13 @@ void setMinimiseButtonState(void *window, int state);
 void setMaximiseButtonState(void *window, int state);
 void setCloseButtonState(void *window, int state);
 void windowShowMenu(void *window, void *menu, int x, int y);
-void windowIgnoreMouseEvents(void *window, bool ignore);
 void windowSetFrameless(void *window, bool frameless);
 void startDrag(void *window);
 void windowPrint(void *window);
+void setWindowEnabled(void *window, bool enabled);
+void windowSetEnabled(void *window, bool enabled);
+void windowFocus(void *window);
+bool isIgnoreMouseEvents(void *nsWindow);
+void setIgnoreMouseEvents(void *nsWindow, bool ignore);
 
 #endif // WEBVIEW_WINDOW_DARWIN_GO

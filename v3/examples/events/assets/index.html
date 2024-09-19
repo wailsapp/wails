@@ -20,6 +20,10 @@ To send an event from this window, click here: <button onclick="wails.Events.Emi
         let currentHTML = document.getElementById("results").innerHTML;
         document.getElementById("results").innerHTML = currentHTML + "<br/>" + JSON.stringify(data);
     })
+    wails.Events.On("windowevent", function(data) {
+        let currentHTML = document.getElementById("results").innerHTML;
+        document.getElementById("results").innerHTML = currentHTML + "<br/>" + JSON.stringify(data);
+    })
 </script>
 
 </html>

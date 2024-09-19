@@ -62,10 +62,7 @@ func main() {
 	go func() {
 		for {
 			now := time.Now().Format(time.RFC1123)
-			app.Events.Emit(&application.WailsEvent{
-				Name: "time",
-				Data: now,
-			})
+			app.EmitEvent("time", now)
 			time.Sleep(time.Second)
 		}
 	}()

@@ -13,7 +13,7 @@ func (m *windowsApp) setupCommonEvents() {
 	for sourceEvent, targetEvent := range commonApplicationEventMap {
 		sourceEvent := sourceEvent
 		targetEvent := targetEvent
-		m.parent.On(sourceEvent, func(event *Event) {
+		m.parent.OnApplicationEvent(sourceEvent, func(event *ApplicationEvent) {
 			event.Id = uint(targetEvent)
 			applicationEvents <- event
 		})

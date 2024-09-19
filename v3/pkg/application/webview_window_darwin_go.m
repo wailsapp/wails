@@ -213,6 +213,15 @@ void windowSetAlwaysOnTop(void* nsWindow, bool alwaysOnTop) {
 	[((WebviewWindow*)nsWindow).w setLevel:alwaysOnTop ? NSFloatingWindowLevel : NSNormalWindowLevel];
 }
 
+void setNormalWindowLevel(void* nsWindow) { [((WebviewWindow*)nsWindow).w setLevel:NSNormalWindowLevel]; }
+void setFloatingWindowLevel(void* nsWindow) { [((WebviewWindow*)nsWindow).w setLevel:NSFloatingWindowLevel];}
+void setPopUpMenuWindowLevel(void* nsWindow) { [((WebviewWindow*)nsWindow).w setLevel:NSPopUpMenuWindowLevel]; }
+void setMainMenuWindowLevel(void* nsWindow) { [((WebviewWindow*)nsWindow).w setLevel:NSMainMenuWindowLevel]; }
+void setStatusWindowLevel(void* nsWindow) { [((WebviewWindow*)nsWindow).w setLevel:NSStatusWindowLevel]; }
+void setModalPanelWindowLevel(void* nsWindow) { [((WebviewWindow*)nsWindow).w setLevel:NSModalPanelWindowLevel]; }
+void setScreenSaverWindowLevel(void* nsWindow) { [((WebviewWindow*)nsWindow).w setLevel:NSScreenSaverWindowLevel]; }
+void setTornOffMenuWindowLevel(void* nsWindow) { [((WebviewWindow*)nsWindow).w setLevel:NSTornOffMenuWindowLevel]; }
+
 // Load URL in NSWindow
 void navigationLoadURL(void* nsWindow, char* url) {
 	// Load URL on main thread
@@ -545,10 +554,12 @@ void windowGetPosition(void* nsWindow, int* x, int* y) {
 }
 
 void windowSetPosition(void* nsWindow, int x, int y) {
-	NSRect frame = [((WebviewWindow*)nsWindow).w frame];
+	NSWindow *window = ((WebviewWindow*)nsWindow).w;
+	
+	NSRect frame = [window frame];
 	frame.origin.x = x;
 	frame.origin.y = y;
-	[((WebviewWindow*)nsWindow).w setFrame:frame display:YES];
+	[window setFrame:frame display:YES];
 }
 
 // Destroy window
@@ -575,9 +586,8 @@ void windowZoom(void *window) {
 // webviewRenderHTML renders the given HTML
 void windowRenderHTML(void *window, const char *html) {
 	WebviewWindow *webviewWindow = (WebviewWindow *)window;
-	NSWindow* nsWindow = webviewWindow.w;
 	// get window delegate
-	WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
+	WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[webviewWindow.w delegate];
 	// render html
 	[webviewWindow.webView loadHTMLString:[NSString stringWithUTF8String:html] baseURL:nil];
 }
@@ -687,12 +697,6 @@ void windowShowMenu(void *window, void *menu, int x, int y) {
 	[nsMenu popUpMenuPositioningItem:nil atLocation:point inView:webView];
 }
 
-// windowIgnoreMouseEvents makes the window ignore mouse events
-void windowIgnoreMouseEvents(void *window, bool ignore) {
-	NSWindow* nsWindow = ((WebviewWindow *)window).w;
-	[nsWindow setIgnoresMouseEvents:ignore];
-}
-
 // Make the given window frameless
 void windowSetFrameless(void *window, bool frameless) {
 	NSWindow* nsWindow = ((WebviewWindow *)window).w;
@@ -706,11 +710,8 @@ void windowSetFrameless(void *window, bool frameless) {
 
 void startDrag(void *window) {
 	WebviewWindow *webviewWindow = (WebviewWindow*)window;
-	NSWindow* nsWindow = webviewWindow.w;
-
 	// Get delegate
-	WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
-
+	WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[webviewWindow.w delegate];
 	// start drag
 	[windowDelegate startDrag:webviewWindow];
 }
@@ -754,9 +755,13 @@ void windowPrint(void *window) {
 #endif
 }
 
-void windowSetEnabled(void *window, bool enabled) {
-	NSWindow* nsWindow = ((WebviewWindow *)window).w;
+void setWindowEnabled(void *window, bool enabled) {
+	NSWindow* nsWindow = ((WebviewWindow*)window).w;
 	[nsWindow setIgnoresMouseEvents:!enabled];
+}
+
+void windowSetEnabled(void *window, bool enabled) {
+	// TODO: Implement
 }
 
 void windowFocus(void *window) {
@@ -767,4 +772,14 @@ void windowFocus(void *window) {
 	}
 	[nsWindow makeKeyAndOrderFront:nil];
 	[nsWindow makeKeyWindow];
+}
+
+bool isIgnoreMouseEvents(void *nsWindow) {
+    NSWindow* window = ((WebviewWindow *)nsWindow).w;
+    return [window ignoresMouseEvents];
+}
+
+void setIgnoreMouseEvents(void *nsWindow, bool ignore) {
+    NSWindow* window = ((WebviewWindow *)nsWindow).w;
+    [window setIgnoresMouseEvents:ignore];
 }

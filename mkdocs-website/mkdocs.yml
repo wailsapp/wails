@@ -81,36 +81,36 @@ plugins:
           default: true
           name: English
           build: true
-        - locale: cy
-          name: Cymraeg
-          build: true
-          site_description: Y Prosiect Wails - Adeiladu cymwysiadau croesrwyd hardd gan ddefnyddio Go
-          extra:
-            announcement: Mae'r wefan hon wedi'i chyfieithu'n awtomatig. Rhowch wybod i ni os oes unrhyw gamgymeriadau.
-          nav:
-            - Cartref: index.md
-            - Cychwyn:
-                - Gosod: getting-started/installation.md
-                - Eich Cais Cyntaf: getting-started/your-first-app.md
-                - Camau Nesaf: getting-started/next-steps.md
-                - Dysgu Rhagor:
-                    - Runtime: learn/runtime.md
-                - Adborth: getting-started/feedback.md
-            - Adborth: getting-started/feedback.md
-            - Beth sydd Newydd yn v3?: whats-new.md
-            - API:
-                - Cais: API/application.md
-                - Ffenestr: API/window.md
-                - Bar Tasg: API/systray.md
-                - Dewislen: API/menu.md
-                - Prif Linell: API/mainthread.md
-            - Datblygu:
-                - Cyflwyniad: development/introduction.md
-                - Status: development/status.md
-                - Newidiadau v3: development/changes.md
-            - Cynllun Ffordd Ymlaen: roadmap.md
-            - Cofnod Newidiadau: changelog.md
-            - Noddwr❤️: https://github.com/sponsors/leaanthony
+#        - locale: cy
+#          name: Cymraeg
+#          build: true
+#          site_description: Y Prosiect Wails - Adeiladu cymwysiadau croesrwyd hardd gan ddefnyddio Go
+#          extra:
+#            announcement: Mae'r wefan hon wedi'i chyfieithu'n awtomatig. Rhowch wybod i ni os oes unrhyw gamgymeriadau.
+#          nav:
+#            - Cartref: index.md
+#            - Cychwyn:
+#                - Gosod: getting-started/installation.md
+#                - Eich Cais Cyntaf: getting-started/your-first-app.md
+#                - Camau Nesaf: getting-started/next-steps.md
+#                - Dysgu Rhagor:
+#                    - Runtime: learn/runtime.md
+#                - Adborth: getting-started/feedback.md
+#            - Adborth: getting-started/feedback.md
+#            - Beth sydd Newydd yn v3?: whats-new.md
+#            - API:
+#                - Cais: API/application.md
+#                - Ffenestr: API/window.md
+#                - Bar Tasg: API/systray.md
+#                - Dewislen: API/menu.md
+#                - Prif Linell: API/mainthread.md
+#            - Datblygu:
+#                - Cyflwyniad: development/introduction.md
+#                - Status: development/status.md
+#                - Newidiadau v3: development/changes.md
+#            - Cynllun Ffordd Ymlaen: roadmap.md
+#            - Cofnod Newidiadau: changelog.md
+#            - Noddwr❤️: https://github.com/sponsors/leaanthony
 
 
 extra:
@@ -118,9 +118,9 @@ extra:
     - name: English
       link: /
       lang: en
-    - name: Cymraeg
-      link: /cy/
-      lang: cy
+#    - name: Cymraeg
+#      link: /cy/
+#      lang: cy
       
   social:
     - icon: fontawesome/brands/github-alt
@@ -129,6 +129,9 @@ extra:
       link: https://twitter.com/wailsapp
     - icon: fontawesome/brands/discord
       link: https://discord.gg/JDdSxwjhGf
+
+  version:
+    provider: mike
 
 extra_css:
   - stylesheets/extra.css
@@ -140,6 +143,7 @@ nav:
     - Your First Application: getting-started/your-first-app.md
     - Next Steps: getting-started/next-steps.md
     - Learn More:
+        - Services: learn/services.md
         - Runtime: learn/runtime.md
         - Plugins: learn/plugins.md
         - Guides:
@@ -157,7 +161,7 @@ nav:
     - Introduction: development/introduction.md
     - Status: development/status.md
     - v3 Changes: development/changes.md
-  - Roadmap: roadmap.md
+  - Status: status.md
   - Change Log: changelog.md
   - Sponsor❤️: https://github.com/sponsors/leaanthony
 
@@ -165,4 +169,4 @@ watch:
   - overrides
   - shared
 copyright:
-  Copyright © 2023 Lea Anthony
+  Copyright © 2024 Lea Anthony

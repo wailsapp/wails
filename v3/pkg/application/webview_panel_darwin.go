@@ -63,7 +63,7 @@ func NewPanel(options WebviewPanelOptions) *WebviewPanel {
 	result.setupEventMapping()
 
 	// Listen for window closing events and de
-	result.On(events.Common.WindowClosing, func(event *WindowEvent) {
+	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
 		shouldClose := true
 		if result.options.ShouldClose != nil {
 			shouldClose = result.options.ShouldClose(result)

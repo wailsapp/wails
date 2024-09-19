@@ -380,7 +380,23 @@ type MacWindow struct {
 
 	// WebviewPreferences contains preferences for the webview
 	WebviewPreferences MacWebviewPreferences
+
+	// WindowLevel sets the window level to control the order of windows in the screen
+	WindowLevel MacWindowLevel
 }
+
+type MacWindowLevel string
+
+const (
+	MacWindowLevelNormal      MacWindowLevel = "normal"
+	MacWindowLevelFloating    MacWindowLevel = "floating"
+	MacWindowLevelTornOffMenu MacWindowLevel = "tornOffMenu"
+	MacWindowLevelModalPanel  MacWindowLevel = "modalPanel"
+	MacWindowLevelMainMenu    MacWindowLevel = "mainMenu"
+	MacWindowLevelStatus      MacWindowLevel = "status"
+	MacWindowLevelPopUpMenu   MacWindowLevel = "popUpMenu"
+	MacWindowLevelScreenSaver MacWindowLevel = "screenSaver"
+)
 
 // MacWebviewPreferences contains preferences for the Mac webview
 type MacWebviewPreferences struct {

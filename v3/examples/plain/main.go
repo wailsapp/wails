@@ -42,7 +42,7 @@ func main() {
 		JS:    `window.iamhere = function() { console.log("Hello World!"); }`,
 	})
 
-	app.Events.On("clicked", func(_ *application.WailsEvent) {
+	app.OnEvent("clicked", func(_ *application.CustomEvent) {
 		println("clicked")
 	})
 

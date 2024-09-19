@@ -16,11 +16,7 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-
-	"github.com/samber/lo"
 )
-
-var windowClassName = lo.Must(syscall.UTF16PtrFromString("WailsWebviewWindow"))
 
 type windowsApp struct {
 	parent *App
@@ -181,8 +177,8 @@ func (m *windowsApp) run() error {
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)
 	}
-	// Emit application started event
-	applicationEvents <- &Event{
+	// EmitEvent application started event
+	applicationEvents <- &ApplicationEvent{
 		Id:  uint(events.Windows.ApplicationStarted),
 		ctx: blankApplicationEventContext,
 	}
@@ -196,6 +192,8 @@ func (m *windowsApp) destroy() {
 		return
 	}
 	globalApplication.cleanup()
+	// Destroy the main thread window
+	w32.DestroyWindow(m.mainThreadWindowHWND)
 	// Post a quit message to the main thread
 	w32.PostQuitMessage(0)
 }
@@ -212,7 +210,7 @@ func (m *windowsApp) init() {
 	m.windowClass.Background = w32.COLOR_BTNFACE + 1
 	m.windowClass.Icon = icon
 	m.windowClass.Cursor = w32.LoadCursorWithResourceID(0, w32.IDC_ARROW)
-	m.windowClass.ClassName = windowClassName
+	m.windowClass.ClassName = w32.MustStringToUTF16Ptr(m.parent.options.Windows.WndClass)
 	m.windowClass.MenuName = nil
 	m.windowClass.IconSm = icon
 
@@ -246,7 +244,7 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 			if isDarkMode != m.isCurrentlyDarkMode {
 				eventContext := newApplicationEventContext()
 				eventContext.setIsDarkMode(isDarkMode)
-				applicationEvents <- &Event{
+				applicationEvents <- &ApplicationEvent{
 					Id:  uint(events.Windows.SystemThemeChanged),
 					ctx: eventContext,
 				}
@@ -318,7 +316,7 @@ func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
 func newPlatformApp(app *App) *windowsApp {
 	err := w32.SetProcessDPIAware()
 	if err != nil {
-		globalApplication.fatal("Fatal error in application initialisation: ", err.Error())
+		globalApplication.fatal("Fatal error in application initialisation: %s", err.Error())
 		os.Exit(1)
 	}
 
@@ -361,5 +359,5 @@ func (a *App) platformEnvironment() map[string]any {
 
 func fatalHandler(errFunc func(error)) {
 	w32.Fatal = errFunc
-	return 
+	return
 }
