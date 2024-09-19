@@ -235,13 +235,13 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 
 	// Process keybindings
 	if result.options.KeyBindings != nil {
-		result.keyBindings = processKeyBindingOptions(result.options.KeyBindings)
+		result.keyBindings = windowProcessKeyBindingOptions(result.options.KeyBindings)
 	}
 
 	return result
 }
 
-func processKeyBindingOptions(keyBindings map[string]func(window *WebviewWindow)) map[string]func(window *WebviewWindow) {
+func windowProcessKeyBindingOptions(keyBindings map[string]func(window *WebviewWindow)) map[string]func(window *WebviewWindow) {
 	result := make(map[string]func(window *WebviewWindow))
 	for key, callback := range keyBindings {
 		// Parse the key to an accelerator

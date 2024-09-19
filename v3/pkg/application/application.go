@@ -161,6 +161,21 @@ func New(appOptions Options) *App {
 	return result
 }
 
+func processKeyBindingOptions(keyBindings map[string]func(window Window)) map[string]func(window Window) {
+	result := make(map[string]func(window Window))
+	for key, callback := range keyBindings {
+		// Parse the key to an accelerator
+		acc, err := parseAccelerator(key)
+		if err != nil {
+			globalApplication.error("Invalid keybinding: %s", err.Error())
+			continue
+		}
+		result[acc.String()] = callback
+		globalApplication.debug("Added Keybinding", "accelerator", acc.String())
+	}
+	return result
+}
+
 func mergeApplicationDefaults(o *Options) {
 	if o.Name == "" {
 		o.Name = "My Wails Application"
@@ -317,7 +332,7 @@ type App struct {
 	isDebugMode  bool
 
 	// Keybindings
-	keyBindings     map[string]func(window *WebviewWindow)
+	keyBindings     map[string]func(window Window)
 	keyBindingsLock sync.RWMutex
 
 	// Shutdown
@@ -363,7 +378,7 @@ func (a *App) init() {
 	a.windows = make(map[uint]Window)
 	a.systemTrays = make(map[uint]*SystemTray)
 	a.contextMenus = make(map[string]*Menu)
-	a.keyBindings = make(map[string]func(window *WebviewWindow))
+	a.keyBindings = make(map[string]func(window Window))
 	a.Logger = a.options.Logger
 	a.pid = os.Getpid()
 	a.wailsEventListeners = make([]WailsEventListener, 0)
@@ -879,7 +894,7 @@ func (a *App) runOrDeferToAppRun(r runnable) {
 	}
 }
 
-func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow) bool {
+func (a *App) processKeyBinding(acceleratorString string, window Window) bool {
 	if len(a.keyBindings) == 0 {
 		return false
 	}
@@ -899,7 +914,7 @@ func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow)
 	return true
 }
 
-func (a *App) addKeyBinding(acceleratorString string, callback func(window *WebviewWindow)) {
+func (a *App) addKeyBinding(acceleratorString string, callback func(window Window)) {
 	a.keyBindingsLock.Lock()
 	defer a.keyBindingsLock.Unlock()
 	a.keyBindings[acceleratorString] = callback

@@ -75,8 +75,8 @@ func NewPanel(options WebviewPanelOptions) *WebviewPanel {
 	})
 
 	// Process keybindings
-	if result.options.KeyBindings != nil {
-		result.keyBindings = processKeyBindingOptionsForPanel(result.options.KeyBindings)
+	if result.options.KeyBindings != nil || result.options.WebviewWindowOptions.KeyBindings != nil {
+		result.keyBindings = processKeyBindingOptionsForPanel(result.options.KeyBindings, result.options.WebviewWindowOptions.KeyBindings)
 	}
 
 	return result
