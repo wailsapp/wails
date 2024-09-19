@@ -42,12 +42,6 @@ extern bool hasListeners(unsigned int);
     // Remove the script handler, otherwise WebviewWindowDelegate won't get deallocated
     // See: https://stackoverflow.com/questions/26383031/wkwebview-causes-my-view-controller-to-leak
     [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"external"];
-    [self.webView dealloc];
-    
-    [self.w dealloc];
-
-    [self.responder dealloc];
-
     [super dealloc];
 }
 @end
