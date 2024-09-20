@@ -363,21 +363,3 @@ func (a *App) platformEnvironment() map[string]any {
 func fatalHandler(errFunc func(error)) {
 	return
 }
-
-func (a *App) NewWebviewPanelWithOptions(panelOptions WebviewPanelOptions) *WebviewPanel {
-	newPanel := NewPanel(panelOptions)
-	id := newPanel.ID()
-
-	a.windowsLock.Lock()
-	a.windows[id] = newPanel
-	a.windowsLock.Unlock()
-
-	// Call hooks
-	for _, hook := range a.windowCreatedCallbacks {
-		hook(newPanel)
-	}
-
-	a.runOrDeferToAppRun(newPanel)
-
-	return newPanel
-}
