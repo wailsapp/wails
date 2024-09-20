@@ -22,6 +22,7 @@ type Window interface {
 	EnableSizeConstraints()
 	Error(message string, args ...any)
 	ExecJS(js string)
+	Flash(enabled bool)
 	Focus()
 	ForceReload()
 	Fullscreen() Window
@@ -47,12 +48,14 @@ type Window interface {
 	OnWindowEvent(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
 	OpenContextMenu(data *ContextMenuData)
 	Position() (int, int)
+	Print() error
 	RegisterContextMenu(name string, menu *Menu)
 	RelativePosition() (int, int)
 	Reload()
 	Resizable() bool
 	Restore()
 	Run()
+	SetEnabled(enabled bool)
 	SetPosition(x, y int)
 	SetAlwaysOnTop(b bool) Window
 	SetBackgroundColour(colour RGBA) Window
