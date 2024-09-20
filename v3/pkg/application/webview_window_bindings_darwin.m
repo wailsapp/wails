@@ -1,4 +1,4 @@
-#include "webview_window_darwin_go.h"
+#include "webview_window_bindings_darwin.h"
 
 // Create a new Window
 void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {

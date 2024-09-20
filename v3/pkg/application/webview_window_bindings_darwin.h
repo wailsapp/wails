@@ -1,5 +1,5 @@
-#ifndef WEBVIEW_WINDOW_DARWIN_GO
-#define WEBVIEW_WINDOW_DARWIN_GO
+#ifndef WEBVIEW_WINDOW_BINDINGS_DARWIN
+#define WEBVIEW_WINDOW_BINDINGS_DARWIN
 
 #include "application_darwin.h"
 #include "webview_window_darwin.h"
@@ -104,4 +104,4 @@ void windowFocus(void *window);
 bool isIgnoreMouseEvents(void *nsWindow);
 void setIgnoreMouseEvents(void *nsWindow, bool ignore);
 
-#endif // WEBVIEW_WINDOW_DARWIN_GO
+#endif // WEBVIEW_WINDOW_BINDINGS_DARWIN
