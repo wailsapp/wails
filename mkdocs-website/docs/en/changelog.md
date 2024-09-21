@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)
+- Upgrade to `go-webview2` v1.0.16 by [leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.7 - 2024-09-18
 
