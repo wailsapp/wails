@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)
+- Upgrade to `go-webview2` v1.0.16 by [leaanthony](https://github.com/leaanthony)
+
+## v3.0.0-alpha.7 - 2024-09-18
+
 ### Added
 - [windows] New DIP system for Enhanced High DPI Monitor Support by [mmghv](https://github.com/mmghv) in [#3665](https://github.com/wailsapp/wails/pull/3665)
 - [windows] Window class name option by [windom](https://github.com/windom/) in [#3682](https://github.com/wailsapp/wails/pull/3682) 
@@ -25,14 +31,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Events API change: `On`/`Emit` -> user events, `OnApplicationEvent` -> Application Events `OnWindowEvent` -> Window Events, by [leaanthony](https://github.com/leaanthony)
 - Fix for Events API on Linux by [TheGB0077](https://github.com/TheGB0077) in [#3734](https://github.com/wailsapp/wails/pull/3734)
+- [CI] improvements to actions & enable to run actions also in forks and branches prefixed with `v3/` or `v3-` by [stendler](https://github.com/stendler) in [#3747](https://github.com/wailsapp/wails/pull/3747)
 
 ### Fixed
+- Fixed bug with usage of customEventProcessor in drag-n-drop example by [etesam913](https://github.com/etesam913) in [#3742](https://github.com/wailsapp/wails/pull/3742)
 - [linux] Fixed linux compile error introduced by IgnoreMouseEvents addition by [atterpac](https://github.com/atterpac) in [#3721](https://github.com/wailsapp/wails/pull/3721)
 - [windows] Fixed syso icon file generation bug by [atterpac](https://github.com/atterpac) in [#3675](https://github.com/wailsapp/wails/pull/3675)
 - [linux] Fix to run natively in wayland incorporated from [#1811](https://github.com/wailsapp/wails/pull/1811) in [#3614](https://github.com/wailsapp/wails/pull/3614) by [@stendler](https://github.com/stendler)
-- Do not bind internal service methods in [#3720](https://github.com/wailsapp/wails/pull/3720)
-  by [leaanthony](https://github.com/leaanthony)
+- Do not bind internal service methods in [#3720](https://github.com/wailsapp/wails/pull/3720) by [leaanthony](https://github.com/leaanthony)
 - [windows] Fixed system tray startup panic in [#3693](https://github.com/wailsapp/wails/issues/3693) by [@DeltaLaboratory](https://github.com/DeltaLaboratory)
+- Do not bind internal service methods in [#3720](https://github.com/wailsapp/wails/pull/3720) by [leaanthony](https://github.com/leaanthony)
+- [windows] Fixed system tray startup panic in [#3693](https://github.com/wailsapp/wails/issues/3693) by [@DeltaLaboratory](https://github.com/DeltaLaboratory)
+- Major menu item refactor and event handling. Mainly improves macOS for now. By [leaanthony](https://github.com/leaanthony)
+- Fix tests after plugins and event refactor in [#3746](https://github.com/wailsapp/wails/pull/3746) by [@stendler](https://github.com/stendler)
+- [windows] Fixed `Failed to unregister class Chrome_WidgetWin_0` warning. By [leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.6 - 2024-07-30
 

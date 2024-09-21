@@ -72,6 +72,33 @@ type windowsWebviewWindow struct {
 	moveDebouncer func(func())
 }
 
+func (w *windowsWebviewWindow) cut() {
+	w32.Cut(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) paste() {
+	w32.Paste(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) copy() {
+	w32.Copy(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) selectAll() {
+	w32.SelectAll(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) undo() {
+	w32.Undo(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) delete() {
+	w32.Delete(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) redo() {
+}
+
 func (w *windowsWebviewWindow) handleKeyEvent(_ string) {
 	// Unused on windows
 }
@@ -492,6 +519,8 @@ func (w *windowsWebviewWindow) destroy() {
 	if w.dropTarget != nil {
 		w.dropTarget.Release()
 	}
+	// Destroy the window
+	w32.DestroyWindow(w.hwnd)
 }
 
 func (w *windowsWebviewWindow) reload() {

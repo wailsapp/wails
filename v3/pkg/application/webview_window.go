@@ -96,6 +96,13 @@ type (
 		setCloseButtonState(state ButtonState)
 		isIgnoreMouseEvents() bool
 		setIgnoreMouseEvents(ignore bool)
+		cut()
+		copy()
+		paste()
+		undo()
+		delete()
+		selectAll()
+		redo()
 	}
 )
 
@@ -1312,4 +1319,40 @@ func (w *WebviewWindow) SetIgnoreMouseEvents(ignore bool) Window {
 		w.impl.setIgnoreMouseEvents(ignore)
 	})
 	return w
+}
+
+func (w *WebviewWindow) cut() {
+	if w.impl == nil && !w.isDestroyed() {
+		w.impl.cut()
+	}
+}
+
+func (w *WebviewWindow) copy() {
+	if w.impl == nil && !w.isDestroyed() {
+		w.impl.copy()
+	}
+}
+
+func (w *WebviewWindow) paste() {
+	if w.impl == nil && !w.isDestroyed() {
+		w.impl.paste()
+	}
+}
+
+func (w *WebviewWindow) selectAll() {
+	if w.impl == nil && !w.isDestroyed() {
+		w.impl.selectAll()
+	}
+}
+
+func (w *WebviewWindow) undo() {
+	if w.impl == nil && !w.isDestroyed() {
+		w.impl.undo()
+	}
+}
+
+func (w *WebviewWindow) delete() {
+	if w.impl == nil && !w.isDestroyed() {
+		w.impl.delete()
+	}
 }

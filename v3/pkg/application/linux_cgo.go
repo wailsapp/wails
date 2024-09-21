@@ -1783,3 +1783,29 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
 
 	return results, err
 }
+
+func (w *linuxWebviewWindow) cut() {
+	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_CUT)
+}
+
+func (w *linuxWebviewWindow) paste() {
+	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_PASTE)
+}
+
+func (w *linuxWebviewWindow) copy() {
+	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_COPY)
+}
+
+func (w *linuxWebviewWindow) selectAll() {
+	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_SELECT_ALL)
+}
+
+func (w *linuxWebviewWindow) undo() {
+	//C.webkit_web_view_execute_editing_command(w.webview, C.WEBKIT_EDITING_COMMAND_UNDO)
+}
+
+func (w *linuxWebviewWindow) redo() {
+}
+
+func (w *linuxWebviewWindow) delete() {
+}

@@ -2,7 +2,7 @@ name: Build + Test v3 alpha
 
 on:
   push:
-    branches: [v3-alpha]
+    branches: [v3-alpha, v3/*, v3-*]
     paths-ignore:
       - 'mkdocs-website/**/*'
   workflow_dispatch:
@@ -10,28 +10,32 @@ on:
 jobs:
   test_go:
     name: Run Go Tests
-    if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
         go-version: [1.22]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install linux dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev javascriptcoregtk-4.1-dev build-essential pkg-config
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+          version: 1.0
 
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
+          cache-dependency-path: "v3/go.sum"
 
       - name: Install Task
-        uses: arduino/setup-task@v1
+        uses: arduino/setup-task@v2
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -54,7 +58,6 @@ jobs:
 
   test_js:
     name: Run JS Tests
-    if: github.repository == 'wailsapp/wails'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -62,10 +65,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -82,7 +85,7 @@ jobs:
     needs: test_go
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         template:
@@ -100,18 +103,19 @@ jobs:
             vanilla,
             vanilla-ts,
           ]
-        go-version: [1.22]
+        go-version: [1.23]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
+          cache-dependency-path: "v3/go.sum"
 
       - name: Setup Golang caches
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
@@ -121,8 +125,11 @@ jobs:
             ${{ runner.os }}-golang-
 
       - name: Install linux dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev javascriptcoregtk-4.1-dev build-essential pkg-config
+        with:
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+          version: 1.0
 
       - name: Build Wails3 CLI
         run: |

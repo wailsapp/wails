@@ -6,7 +6,7 @@ func CustomNewService[T any](srv T) application.Service {
 	return application.NewService(&srv)
 }
 
-func ServiceInitialiser[T any]() func(*T) application.Service {
+func ServiceInitialiser[T any]() func(*T, ...application.ServiceOptions) application.Service {
 	return application.NewService[T]
 }
 
