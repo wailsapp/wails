@@ -2,7 +2,7 @@
 
 package application
 
-import ( 
+import (
 	"fmt"
 	"time"
 
