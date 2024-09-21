@@ -32,6 +32,7 @@ theme:
     - content.tabs.annotation
     - content.tabs.copy
     - content.code.copy
+    - content.code.annotate
     - content.action.edit
   language: en
   palette:
@@ -64,6 +65,7 @@ markdown_extensions:
   - attr_list
   - admonition
   - footnotes
+  - md_in_html
   - toc:
       permalink: '#'
   - pymdownx.emoji:
@@ -145,7 +147,7 @@ nav:
     - Learn More:
         - Services: learn/services.md
         - Runtime: learn/runtime.md
-        - Plugins: learn/plugins.md
+        - Build System: learn/build.md
         - Guides:
             - Customising Windows: learn/guides/customising-windows.md
     - Feedback: getting-started/feedback.md
