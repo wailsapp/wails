@@ -276,6 +276,9 @@ type App struct {
 	applicationEventHooks         map[uint][]*eventHook
 	applicationEventHooksLock     sync.RWMutex
 
+	// Screens layout manager (handles DIP coordinate system)
+	screenManager ScreenManager
+
 	// Windows
 	windows     map[uint]Window
 	windowsLock sync.RWMutex
@@ -814,12 +817,18 @@ func SaveFileDialog() *SaveFileDialogStruct {
 	return newSaveFileDialog()
 }
 
-func (a *App) GetPrimaryScreen() (*Screen, error) {
-	return a.impl.getPrimaryScreen()
-}
-
+// NOTE: should use screenManager directly after DPI is implemented in all platforms
+// (should also get rid of the error return)
 func (a *App) GetScreens() ([]*Screen, error) {
 	return a.impl.getScreens()
+	// return a.screenManager.screens, nil
+}
+
+// NOTE: should use screenManager directly after DPI is implemented in all platforms
+// (should also get rid of the error return)
+func (a *App) GetPrimaryScreen() (*Screen, error) {
+	return a.impl.getPrimaryScreen()
+	// return a.screenManager.primaryScreen, nil
 }
 
 func (a *App) Clipboard() *Clipboard {
