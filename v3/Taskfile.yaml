@@ -176,13 +176,17 @@ tasks:
         contextmenus
         dialogs
         drag-n-drop
+        environment
         events
         frameless
         hide-window
+        ignore-mouse
         keybindings
         menu
         plain
+        raw-message
         screen
+        services
         show-macos-toolbar
         systray
         video

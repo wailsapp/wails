@@ -2,11 +2,15 @@
 
 ## Overview
 
-The Wails v3 build system is a flexible and powerful tool designed to streamline the build process for your Wails applications. It leverages Taskfile, a task runner that allows you to define and run tasks easily. While the v3 build system is the default, Wails encourages a "bring your own tooling" approach, allowing developers to customize their build process as needed.
+The Wails v3 build system is a flexible and powerful tool designed to streamline the build process for your Wails applications. 
+It leverages [Task](https://taskfile.dev), a task runner that allows you to define and run tasks easily. 
+While the v3 build system is the default, Wails encourages a "bring your own tooling" approach, allowing developers to customize their build process as needed.
 
-## Taskfile: The Heart of the Build System
+Learn more about how to use Task in the [official documentation](https://taskfile.dev/usage/).
 
-Taskfile is a modern alternative to Make, written in Go. It uses a YAML file to define tasks and their dependencies. In the Wails v3 build system, Taskfile plays a central role in orchestrating the build process.
+## Task: The Heart of the Build System
+
+[Task](https://taskfile.dev) is a modern alternative to Make, written in Go. It uses a YAML file to define tasks and their dependencies. In the Wails v3 build system, [Task](https://taskfile.dev) plays a central role in orchestrating the build process.
 
 The main `Taskfile.yml` is located in the project root, while platform-specific tasks are defined in `build/Taskfile.<platform>.yml` files.
 
@@ -71,7 +75,12 @@ tasks:
 
 ## Platform-Specific Taskfiles
 
-### Windows (Taskfile.windows.yml)
+Each platform has its own Taskfile, located in the `build` directory. These files define the core tasks for that
+platform. Each taskfile includes common tasks from the `Taskfile.common.yml` file.
+
+### Windows
+
+Location: `build/Taskfile.windows.yml`
 
 The Windows-specific Taskfile includes tasks for building, packaging, and running the application on Windows. Key features include:
 
@@ -79,7 +88,9 @@ The Windows-specific Taskfile includes tasks for building, packaging, and runnin
 - Generating Windows ``.syso`` file
 - Creating an NSIS installer for packaging
 
-### Linux (Taskfile.linux.yml)
+### Linux
+
+Location: `build/Taskfile.linux.yml`
 
 The Linux-specific Taskfile includes tasks for building, packaging, and running the application on Linux. Key features include:
 
@@ -87,7 +98,9 @@ The Linux-specific Taskfile includes tasks for building, packaging, and running 
 - Creating an AppImage for packaging
 - Generating ``.desktop`` file for Linux applications
 
-### macOS (Taskfile.darwin.yml)
+### macOS
+
+Location: `build/Taskfile.darwin.yml`
 
 The macOS-specific Taskfile includes tasks for building, packaging, and running the application on macOS. Key features include:
 
@@ -114,9 +127,9 @@ Across all platforms, the build process typically includes the following steps:
 4. Compiling the Go code with platform-specific flags
 5. Packaging the application (platform-specific)
 
-## Customizing the Build Process
+## Customising the Build Process
 
-While the v3 build system provides a solid default configuration, you can easily customize it to fit your project's needs. By modifying the `Taskfile.yml` and platform-specific Taskfiles, you can:
+While the v3 build system provides a solid default configuration, you can easily customise it to fit your project's needs. By modifying the `Taskfile.yml` and platform-specific Taskfiles, you can:
 
 - Add new tasks
 - Modify existing tasks
@@ -127,8 +140,76 @@ This flexibility allows you to tailor the build process to your specific require
 
 ## Development Mode
 
-The build system includes a `dev` task for running the application in development mode. This task uses the `wails3 dev` command with a configuration file and a specified Vite port.
+The Wails v3 build system includes a powerful development mode that enhances the developer experience by providing live reloading and hot module replacement. 
+This mode is activated using the `wails3 dev` command.
 
-## Conclusion
+### How It Works
 
-The Wails v3 build system, powered by Taskfile, offers a robust and flexible approach to building your Wails applications. By understanding its structure and flow, you can leverage its capabilities to create efficient and customized build processes for your projects across Windows, Linux, and macOS platforms.
+When you run `wails3 dev`, the following process occurs:
+
+1. The command checks for an available port, defaulting to 9245 if not specified.
+2. It sets up the environment variables for the frontend dev server (Vite).
+3. It starts the file watcher using the `refresh` library.
+
+The [refresh](https://github.com/atterpac/refresh) library is responsible for monitoring file changes and triggering rebuilds. 
+It uses a configuration file, typically located at `./build/devmode.config.yaml`, to determine which files to watch and what 
+actions to take when changes are detected.
+
+### Configuration
+
+The development mode can be configured using the `devmode.config.yaml` file. Here's an example of its structure:
+
+```yaml
+config:
+  root_path: .
+  log_level: warn
+  debounce: 1000
+  ignore:
+    dir:
+      - .git
+      - node_modules
+      - frontend
+      - bin
+    file:
+      - .DS_Store
+      - .gitignore
+      - .gitkeep
+    watched_extension:
+      - "*.go"
+    git_ignore: true
+  executes:
+    - cmd: wails3 task common:install:frontend:deps
+      type: once
+    - cmd: wails3 task common:dev:frontend
+      type: background
+    - cmd: go mod tidy
+      type: blocking
+    - cmd: wails3 task build
+      type: blocking
+    - cmd: wails3 task run
+      type: primary
+```
+
+This configuration file allows you to:
+
+- Set the root path for file watching
+- Configure logging level
+- Set a debounce time for file change events
+- Ignore specific directories, files, or file extensions
+- Define commands to execute on file changes
+
+### Customising Development Mode
+
+You can customise the development mode experience by modifying the `devmode.config.yaml` file. 
+
+Some ways to customise include:
+
+1. Changing the watched directories or files
+2. Adjusting the debounce time to control how quickly the system responds to changes
+3. Adding or modifying the execute commands to fit your project's needs
+
+You can also specify a custom configuration file and port:
+
+```shell
+wails3 dev -config ./path/to/custom/config.yaml -port 8080
+```

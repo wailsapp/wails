@@ -147,7 +147,6 @@ nav:
     - Learn More:
         - Services: learn/services.md
         - Runtime: learn/runtime.md
-        - Plugins: learn/plugins.md
         - Build System: learn/build.md
         - Guides:
             - Customising Windows: learn/guides/customising-windows.md
