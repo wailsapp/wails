@@ -10,7 +10,10 @@ type WebviewPanelOptions struct {
 	// Return true to allow the panel to close, or false to prevent it from closing.
 	ShouldClose func(panel *WebviewPanel) bool
 
-	// KeyBindings is a map of key bindings to functions
+	// KeyBindings is a map of key bindings to functions. Other key bindings provided from
+	// the embedded field [WebviewWindowOptions] are still valid and the two maps are merged
+	// together, with the [WebviewPanelOptions] values overriding the others if they have the
+	// same key.
 	KeyBindings map[string]func(panel *WebviewPanel)
 }
 

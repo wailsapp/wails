@@ -9,34 +9,29 @@ extern void processURLRequest(unsigned int, void *);
 extern bool hasListeners(unsigned int);
 
 @implementation WebviewWindow
-- (WebviewWindow *) initAsWindow:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
-{
+- (WebviewWindow *) initAsWindow:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation {
     self = [super init];
 
     self.w = [[NSWindow alloc] initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
-    [self.w setAlphaValue:1.0];
-    [self.w setBackgroundColor:[NSColor clearColor]];
-    [self.w setOpaque:NO];
-    [self.w setMovableByWindowBackground:YES];
-    
-    self.responder = [[WebviewResponder alloc] initAttachToWindow:self.w];
+    [self commonInitialization];
 
     return self;
 }
-- (WebviewWindow *) initAsPanel:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
-{
+- (WebviewWindow *) initAsPanel:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation {
     self = [super init];
-
+    
     self.w = (NSWindow *) [[NSPanel alloc] initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
+    [self commonInitialization];
 
+    return self;
+}
+- (void) commonInitialization {
     [self.w setAlphaValue:1.0];
     [self.w setBackgroundColor:[NSColor clearColor]];
     [self.w setOpaque:NO];
     [self.w setMovableByWindowBackground:YES];
 
     self.responder = [[WebviewResponder alloc] initAttachToWindow:self.w];
-
-    return self;
 }
 - (void) dealloc {
     // Remove the script handler, otherwise WebviewWindowDelegate won't get deallocated

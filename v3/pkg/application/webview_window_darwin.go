@@ -7,6 +7,10 @@ package application
 #cgo LDFLAGS: -framework Cocoa -framework WebKit
 
 #include "webview_window_bindings_darwin.h"
+
+void *windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
+	return createWindow(WindowTypeWindow, id, width, height, fraudulentWebsiteWarningEnabled, frameless, enableDragAndDrop, preferences);
+}
 */
 import "C"
 import (
@@ -194,7 +198,7 @@ func (w *macosWebviewWindow) isMaximised() bool {
 
 func (w *macosWebviewWindow) isFullscreen() bool {
 	return w.syncMainThreadReturningBool(func() bool {
-		return bool(C.windowIsFullscreen(w.nsWindow))
+		return bool(C.windowIsFullScreen(w.nsWindow))
 	})
 }
 
@@ -203,7 +207,7 @@ func (w *macosWebviewWindow) isNormal() bool {
 }
 
 func (w *macosWebviewWindow) isVisible() bool {
-	return bool(C.isVisible(w.nsWindow))
+	return bool(C.windowIsVisible(w.nsWindow))
 }
 
 func (w *macosWebviewWindow) syncMainThreadReturningBool(fn func() bool) bool {

@@ -6,6 +6,10 @@ package application
 
 #include "webview_window_bindings_darwin.h"
 
+void *panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
+	return createWindow(WindowTypePanel, id, width, height, fraudulentWebsiteWarningEnabled, frameless, enableDragAndDrop, preferences);
+}
+
 // Set NSPanel floating
 void panelSetFloating(void* nsPanel, bool floating) {
 	// Set panel floating on main thread

@@ -1,32 +1,28 @@
 #include "webview_window_bindings_darwin.h"
 
-// Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
-	return windowOrPanelNew(true, id, width, height, fraudulentWebsiteWarningEnabled, frameless, enableDragAndDrop, preferences);
-}
-
-// Create a new Panel
-void* panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
-	return windowOrPanelNew(false, id, width, height, fraudulentWebsiteWarningEnabled, frameless, enableDragAndDrop, preferences);
-}
-
-void* windowOrPanelNew(bool isWindow, unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
+void *createWindow(WindowType windowType, unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable;
 	}
 
 	WebviewWindow* webviewWindow;
-	if (isWindow) {
-		webviewWindow = [[WebviewWindow alloc] initAsWindow:NSMakeRect(0, 0, width-1, height-1)
-			styleMask:styleMask
-			backing:NSBackingStoreBuffered
-			defer:NO];
-	} else {
-		webviewWindow = [[WebviewWindow alloc] initAsPanel:NSMakeRect(0, 0, width-1, height-1)
-			styleMask:styleMask
-			backing:NSBackingStoreBuffered
-			defer:NO];
+	switch (windowType) {
+		case WindowTypeWindow:
+			webviewWindow = [[WebviewWindow alloc] initAsWindow:NSMakeRect(0, 0, width-1, height-1)
+				styleMask:styleMask
+				backing:NSBackingStoreBuffered
+				defer:NO];
+			break;
+		case WindowTypePanel:
+			webviewWindow = [[WebviewWindow alloc] initAsPanel:NSMakeRect(0, 0, width-1, height-1)
+				styleMask:styleMask
+				backing:NSBackingStoreBuffered
+				defer:NO];
+			break;
+		default:
+			NSLog(@"Invalid WindowType");
+			return nil;
 	}
 	
 	NSWindow *window = webviewWindow.w;
@@ -365,7 +361,7 @@ bool windowIsMaximised(void* nsWindow) {
 	return [((WebviewWindow*)nsWindow).w isZoomed];
 }
 
-bool windowIsFullscreen(void* nsWindow) {
+bool windowIsFullScreen (void* nsWindow) {
 	return [((WebviewWindow*)nsWindow).w styleMask] & NSWindowStyleMaskFullScreen;
 }
 
@@ -379,7 +375,7 @@ bool windowIsFocused(void* nsWindow) {
 
 // Set Window fullscreen
 void windowFullscreen(void* nsWindow) {
-	if( windowIsFullscreen(nsWindow) ) {
+	if( windowIsFullScreen (nsWindow) ) {
 		return;
 	}
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -387,7 +383,7 @@ void windowFullscreen(void* nsWindow) {
 	});}
 
 void windowUnFullscreen(void* nsWindow) {
-	if( !windowIsFullscreen(nsWindow) ) {
+	if( !windowIsFullScreen (nsWindow) ) {
 		return;
 	}
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -608,20 +604,14 @@ void windowMaximise(void *window) {
 	[((WebviewWindow*)window).w zoom:nil];
 }
 
-bool isFullScreen(void *window) {
-	NSWindow* nsWindow = ((WebviewWindow *)window).w;
-    long mask = [nsWindow styleMask];
-    return (mask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen;
-}
-
-bool isVisible(void *window) {
+bool windowIsVisible(void *window) {
 	NSWindow* nsWindow = ((WebviewWindow *)window).w;
     return (nsWindow.occlusionState & NSWindowOcclusionStateVisible) == NSWindowOcclusionStateVisible;
 }
 
 // windowSetFullScreen
 void windowSetFullScreen(void *window, bool fullscreen) {
-	if (isFullScreen(window)) {
+	if (windowIsFullScreen (window)) {
 		return;
 	}
 	NSWindow* nsWindow = ((WebviewWindow *)window).w;
@@ -755,13 +745,9 @@ void windowPrint(void *window) {
 #endif
 }
 
-void setWindowEnabled(void *window, bool enabled) {
+void windowSetEnabled(void *window, bool enabled) {
 	NSWindow* nsWindow = ((WebviewWindow*)window).w;
 	[nsWindow setIgnoresMouseEvents:!enabled];
-}
-
-void windowSetEnabled(void *window, bool enabled) {
-	// TODO: Implement
 }
 
 void windowFocus(void *window) {

@@ -1229,7 +1229,7 @@ func (w *WebviewWindow) processKeyBinding(acceleratorString string) bool {
 }
 
 func (w *WebviewWindow) HandleKeyEvent(acceleratorString string) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {

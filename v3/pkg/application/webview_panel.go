@@ -43,7 +43,7 @@ func NewPanel(options WebviewPanelOptions) *WebviewPanel {
 
 	result.setupEventMapping()
 
-	// Listen for window closing events and de
+	// Listen for window closing events and delete it
 	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
 		shouldClose := true
 		if result.options.ShouldClose != nil {
@@ -51,7 +51,9 @@ func NewPanel(options WebviewPanelOptions) *WebviewPanel {
 		}
 		if shouldClose {
 			globalApplication.deleteWindowByID(result.id)
-			InvokeSync(result.impl.close)
+			if result.impl != nil {
+				InvokeSync(result.impl.close)
+			}
 		}
 	})
 
@@ -86,7 +88,7 @@ func (p *WebviewPanel) SetFloating(b bool) Window {
 }
 
 func (p *WebviewPanel) HandleKeyEvent(acceleratorString string) {
-	if p.impl == nil && !p.isDestroyed() {
+	if p.impl == nil || p.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {

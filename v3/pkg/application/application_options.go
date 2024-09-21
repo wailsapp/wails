@@ -89,7 +89,10 @@ type Options struct {
 	// DisableDefaultSignalHandler disables the default signal handler
 	DisableDefaultSignalHandler bool
 
-	// KeyBindings is a map of key bindings to functions
+	// KeyBindings is a map of key bindings to functions. The function provides the [Window]
+	// interface, so if you need more granular control over the window (e.g. [*WebviewWindow]), it's possible
+	// to declare the key binding directly in the specific window options or switch over
+	// the types that implement the [Window] interface
 	KeyBindings map[string]func(window Window)
 
 	// OnShutdown is called when the application is about to terminate.

@@ -15,11 +15,14 @@ struct WebviewPreferences {
 	bool *FullscreenEnabled;
 };
 
+typedef enum {
+	WindowTypeWindow,
+	WindowTypePanel
+} WindowType;
+
 extern void registerListener(unsigned int event);
 
-void *windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences);
-void *panelNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences);
-void *windowOrPanelNew(bool isWindow, unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences);
+void *createWindow(WindowType windowType, unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, struct WebviewPreferences preferences);
 void printWindowStyle(void *window);
 void setInvisibleTitleBarHeight(void *window, unsigned int height);
 void windowSetTransparent(void *nsWindow);
@@ -51,7 +54,7 @@ void webviewSetTransparent(void *nsWindow);
 void webviewSetBackgroundColour(void *nsWindow, int r, int g, int b, int alpha);
 void windowSetBackgroundColour(void *nsWindow, int r, int g, int b, int alpha);
 bool windowIsMaximised(void *nsWindow);
-bool windowIsFullscreen(void *nsWindow);
+bool windowIsFullScreen (void *nsWindow);
 bool windowIsMinimised(void *nsWindow);
 bool windowIsFocused(void *nsWindow);
 void windowFullscreen(void *nsWindow);
@@ -82,8 +85,7 @@ void windowRenderHTML(void *window, const char *html);
 void windowInjectCSS(void *window, const char *css);
 void windowMinimise(void *window);
 void windowMaximise(void *window);
-bool isFullScreen(void *window);
-bool isVisible(void *window);
+bool windowIsVisible(void *window);
 void windowSetFullScreen(void *window, bool fullscreen);
 void windowUnminimise(void *window);
 void windowUnmaximise(void *window);
@@ -98,7 +100,6 @@ void windowShowMenu(void *window, void *menu, int x, int y);
 void windowSetFrameless(void *window, bool frameless);
 void startDrag(void *window);
 void windowPrint(void *window);
-void setWindowEnabled(void *window, bool enabled);
 void windowSetEnabled(void *window, bool enabled);
 void windowFocus(void *window);
 bool isIgnoreMouseEvents(void *nsWindow);
