@@ -1,7 +1,5 @@
 package application
 
-import "github.com/wailsapp/wails/v3/pkg/events"
-
 type webviewPanelImpl interface {
 	webviewWindowImpl
 	getWebviewWindowImpl() webviewWindowImpl
@@ -9,7 +7,7 @@ type webviewPanelImpl interface {
 }
 
 type WebviewPanel struct {
-	WebviewWindow
+	*WebviewWindow
 
 	options WebviewPanelOptions
 	impl    webviewPanelImpl
@@ -19,45 +17,15 @@ type WebviewPanel struct {
 
 // NewPanel creates a new panel with the given options
 func NewPanel(options WebviewPanelOptions) *WebviewPanel {
-	if options.Width == 0 {
-		options.Width = 800
-	}
-	if options.Height == 0 {
-		options.Height = 600
-	}
-	if options.URL == "" {
-		options.URL = "/"
-	}
+	window := NewWindow(options.WebviewWindowOptions)
+	options.WebviewWindowOptions = window.options
 
 	result := &WebviewPanel{
-		WebviewWindow: WebviewWindow{
-			id:             getWindowID(),
-			options:        options.WebviewWindowOptions,
-			eventListeners: make(map[uint][]*WindowEventListener),
-			contextMenus:   make(map[string]*Menu),
-			eventHooks:     make(map[uint][]*WindowEventListener),
-			menuBindings:   make(map[string]*MenuItem),
-		},
-		options:        options,
+		WebviewWindow: window,
+		options: options,
 	}
 
-	result.setupEventMapping()
-
-	// Listen for window closing events and delete it
-	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
-		shouldClose := true
-		if result.options.ShouldClose != nil {
-			shouldClose = result.options.ShouldClose(result)
-		}
-		if shouldClose {
-			globalApplication.deleteWindowByID(result.id)
-			if result.impl != nil {
-				InvokeSync(result.impl.close)
-			}
-		}
-	})
-
-	// Process keybindings
+	// Process keybindings specific to the WebviewPanel
 	if result.options.KeyBindings != nil || result.options.WebviewWindowOptions.KeyBindings != nil {
 		result.keyBindings = processKeyBindingOptionsForPanel(result.options.KeyBindings, result.options.WebviewWindowOptions.KeyBindings)
 	}
@@ -118,5 +86,5 @@ func (p *WebviewPanel) processKeyBinding(acceleratorString string) bool {
 		}
 	}
 
-	return globalApplication.processKeyBinding(acceleratorString, &p.WebviewWindow)
+	return globalApplication.processKeyBinding(acceleratorString, p.WebviewWindow)
 }

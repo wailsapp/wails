@@ -31,7 +31,7 @@ func processKeyBindingOptionsForPanel(keyBindings map[string]func(panel *Webview
 			continue
 		}
 		result[acc.String()] = func(panel *WebviewPanel) {
-			callback(&panel.WebviewWindow)
+			callback(panel.WebviewWindow)
 		}
 		globalApplication.debug("Added Keybinding", "accelerator", acc.String())
 	}

@@ -26,13 +26,10 @@ void panelSetFloating(void* nsPanel, bool floating) {
 import "C"
 import (
 	"unsafe"
-
-	"github.com/wailsapp/wails/v3/internal/runtime"
-	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type macosWebviewPanel struct {
-	macosWebviewWindow
+	*macosWebviewWindow
 
 	nsPanel unsafe.Pointer
 	parent  *WebviewPanel
@@ -40,19 +37,14 @@ type macosWebviewPanel struct {
 
 func newPanelImpl(parent *WebviewPanel) *macosWebviewPanel {
 	result := &macosWebviewPanel{
-		macosWebviewWindow: macosWebviewWindow{
-			parent: &parent.WebviewWindow,
-		},
+		macosWebviewWindow: newWindowImpl(parent.WebviewWindow),
 		parent: parent,
 	}
-	result.parent.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(event *WindowEvent) {
-		result.execJS(runtime.Core())
-	})
 	return result
 }
 
 func (p *macosWebviewPanel) getWebviewWindowImpl() webviewWindowImpl {
-	return &p.macosWebviewWindow
+	return p.macosWebviewWindow
 }
 
 func (p *macosWebviewPanel) run() {

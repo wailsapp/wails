@@ -2,6 +2,7 @@
 #define WEBVIEW_RESPONDER_DARWIN
 
 #import <Cocoa/Cocoa.h>
+#import <Carbon/Carbon.h>
 
 @interface WebviewResponder : NSResponder
 @property(assign) NSWindow *w;

@@ -527,38 +527,31 @@ func (a *App) error(message string, args ...any) {
 
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
 	newWindow := NewWindow(windowOptions)
-	id := newWindow.ID()
-
-	a.windowsLock.Lock()
-	a.windows[id] = newWindow
-	a.windowsLock.Unlock()
-
-	// Call hooks
-	for _, hook := range a.windowCreatedCallbacks {
-		hook(newWindow)
-	}
-
-	a.runOrDeferToAppRun(newWindow)
+	a.addNewWindow(newWindow)
 
 	return newWindow
 }
 
 func (a *App) NewWebviewPanelWithOptions(panelOptions WebviewPanelOptions) *WebviewPanel {
 	newPanel := NewPanel(panelOptions)
-	id := newPanel.ID()
-
-	a.windowsLock.Lock()
-	a.windows[id] = newPanel
-	a.windowsLock.Unlock()
-
-	// Call hooks
-	for _, hook := range a.windowCreatedCallbacks {
-		hook(newPanel)
-	}
-
-	a.runOrDeferToAppRun(newPanel)
+	a.addNewWindow(newPanel)
 
 	return newPanel
+}
+
+func (a *App) addNewWindow(newWindow Window) {
+    id := newWindow.ID()
+
+    a.windowsLock.Lock()
+    a.windows[id] = newWindow
+    a.windowsLock.Unlock()
+
+    // Call hooks
+    for _, hook := range a.windowCreatedCallbacks {
+        hook(newWindow)
+    }
+
+    a.runOrDeferToAppRun(newWindow)
 }
 
 func (a *App) NewSystemTray() *SystemTray {
