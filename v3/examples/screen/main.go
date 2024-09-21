@@ -2,8 +2,12 @@ package main
 
 import (
 	"embed"
-	_ "embed"
 	"log"
+	"log/slog"
+	"net/http"
+	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -25,8 +29,33 @@ func main() {
 			WebviewUserDataPath:           "",
 			WebviewBrowserPath:            "",
 		},
+		Services: []application.Service{
+			application.NewService(&ScreenService{}),
+		},
+		LogLevel: slog.LevelError,
 		Assets: application.AssetOptions{
 			Handler: application.BundledAssetFileServer(assets),
+			Middleware: func(next http.Handler) http.Handler {
+				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					// Disable caching
+					w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+					w.Header().Set("Pragma", "no-cache")
+					w.Header().Set("Expires", "0")
+
+					_, filename, _, _ := runtime.Caller(0)
+					dir := filepath.Dir(filename)
+					url := r.URL.Path
+					path := dir + "/assets" + url
+
+					if _, err := os.Stat(path); err == nil {
+						// Serve file from disk to make testing easy
+						http.ServeFile(w, r, path)
+					} else {
+						// Passthrough to the default asset handler if file not found on disk
+						next.ServeHTTP(w, r)
+					}
+				})
+			},
 		},
 	})
 

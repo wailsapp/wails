@@ -1312,6 +1312,38 @@ func (w *macosWebviewWindow) position() (int, int) {
 	return int(x), int(y)
 }
 
+func (w *macosWebviewWindow) bounds() Rect {
+	// DOTO: do it in a single step + proper DPI scaling
+	var x, y, width, height C.int
+	InvokeSync(func() {
+		C.windowGetPosition(w.nsWindow, &x, &y)
+		C.windowGetSize(w.nsWindow, &width, &height)
+	})
+
+	return Rect{
+		X:      int(x),
+		Y:      int(y),
+		Width:  int(width),
+		Height: int(height),
+	}
+}
+
+func (w *macosWebviewWindow) setBounds(bounds Rect) {
+	// DOTO: do it in a single step + proper DPI scaling
+	C.windowSetPosition(w.nsWindow, C.int(bounds.X), C.int(bounds.Y))
+	C.windowSetSize(w.nsWindow, C.int(bounds.Width), C.int(bounds.Height))
+}
+
+func (w *macosWebviewWindow) physicalBounds() Rect {
+	// TODO: proper DPI scaling
+	return w.bounds()
+}
+
+func (w *macosWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
+	// TODO: proper DPI scaling
+	w.setBounds(physicalBounds)
+}
+
 func (w *macosWebviewWindow) destroy() {
 	w.parent.markAsDestroyed()
 	C.windowDestroy(w.nsWindow)

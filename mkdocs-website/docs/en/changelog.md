@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v3.0.0-alpha.7 - 2024-09-18
 
 ### Added
+- [windows] New DIP system for Enhanced High DPI Monitor Support by [mmghv](https://github.com/mmghv) in [#3665](https://github.com/wailsapp/wails/pull/3665)
 - [windows] Window class name option by [windom](https://github.com/windom/) in [#3682](https://github.com/wailsapp/wails/pull/3682) 
 - Services have been expanded to provide plugin functionality. By [atterpac](https://github.com/atterpac) and [leaanthony](https://github.com/leaanthony) in [#3570](https://github.com/wailsapp/wails/pull/3570)
 

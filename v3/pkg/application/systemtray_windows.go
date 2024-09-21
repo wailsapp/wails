@@ -55,9 +55,10 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) er
 	}
 
 	screenBounds := currentScreen.WorkArea
+	windowBounds := window.Bounds()
 
-	newX := screenBounds.Width - window.Width()
-	newY := screenBounds.Height - window.Height()
+	newX := screenBounds.Width - windowBounds.Width - offset
+	newY := screenBounds.Height - windowBounds.Height - offset
 
 	// systray icons in windows can either be in the taskbar
 	// or in a flyout menu.
@@ -66,13 +67,18 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) er
 		return err
 	}
 
-	// we only need the traybounds if the icon is in the tray
 	var trayBounds *Rect
+	var centerAlignX, centerAlignY int
+
+	// we only need the traybounds if the icon is in the tray
 	if iconIsInTrayBounds {
 		trayBounds, err = s.bounds()
 		if err != nil {
 			return err
 		}
+		*trayBounds = PhysicalToDipRect(*trayBounds)
+		centerAlignX = trayBounds.X + (trayBounds.Width / 2) - (windowBounds.Width / 2)
+		centerAlignY = trayBounds.Y + (trayBounds.Height / 2) - (windowBounds.Height / 2)
 	}
 
 	taskbarBounds := w32.GetTaskbarPosition()
@@ -82,26 +88,28 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) er
 	// to adjust the position so the window is centered on the icon
 	switch taskbarBounds.UEdge {
 	case w32.ABE_LEFT:
-		if iconIsInTrayBounds && trayBounds.Y-(window.Height()/2) >= 0 {
-			newY = trayBounds.Y - (window.Height() / 2)
+		if iconIsInTrayBounds && centerAlignY <= newY {
+			newY = centerAlignY
 		}
-		window.SetRelativePosition(offset, newY)
+		newX = screenBounds.X + offset
 	case w32.ABE_TOP:
-		if iconIsInTrayBounds && trayBounds.X-(window.Width()/2) <= newX {
-			newX = trayBounds.X - (window.Width() / 2)
+		if iconIsInTrayBounds && centerAlignX <= newX {
+			newX = centerAlignX
 		}
-		window.SetRelativePosition(newX, offset)
+		newY = screenBounds.Y + offset
 	case w32.ABE_RIGHT:
-		if iconIsInTrayBounds && trayBounds.Y-(window.Height()/2) <= newY {
-			newY = trayBounds.Y - (window.Height() / 2)
+		if iconIsInTrayBounds && centerAlignY <= newY {
+			newY = centerAlignY
 		}
-		window.SetRelativePosition(screenBounds.Width-window.Width()-offset, newY)
 	case w32.ABE_BOTTOM:
-		if iconIsInTrayBounds && trayBounds.X-(window.Width()/2) <= newX {
-			newX = trayBounds.X - (window.Width() / 2)
+		if iconIsInTrayBounds && centerAlignX <= newX {
+			newX = centerAlignX
 		}
-		window.SetRelativePosition(newX, screenBounds.Height-window.Height()-offset)
 	}
+	newPos := currentScreen.relativeToAbsoluteDipPoint(Point{X: newX, Y: newY})
+	windowBounds.X = newPos.X
+	windowBounds.Y = newPos.Y
+	window.SetBounds(windowBounds)
 	return nil
 }
 
@@ -142,7 +150,7 @@ func (s *windowsSystemTray) iconIsInTrayBounds() (bool, error) {
 
 func (s *windowsSystemTray) getScreen() (*Screen, error) {
 	// Get the screen for this systray
-	return getScreen(s.hwnd)
+	return getScreenForWindowHwnd(s.hwnd)
 }
 
 func (s *windowsSystemTray) setMenu(menu *Menu) {
@@ -257,7 +265,6 @@ func (s *windowsSystemTray) updateIcon() {
 	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
 		panic(syscall.GetLastError())
 	}
-	return
 }
 
 func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {

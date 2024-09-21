@@ -138,19 +138,6 @@ type WebviewWindowOptions struct {
 	IgnoreMouseEvents bool
 }
 
-var WebviewWindowDefaults = &WebviewWindowOptions{
-	Title:  "",
-	Width:  800,
-	Height: 600,
-	URL:    "",
-	BackgroundColour: RGBA{
-		Red:   255,
-		Green: 255,
-		Blue:  255,
-		Alpha: 255,
-	},
-}
-
 type RGBA struct {
 	Red, Green, Blue, Alpha uint8
 }
