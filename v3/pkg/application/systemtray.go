@@ -129,6 +129,9 @@ func (s *SystemTray) PositionWindow(window *WebviewWindow, offset int) error {
 }
 
 func (s *SystemTray) SetIcon(icon []byte) *SystemTray {
+	if icon == nil {
+		return s
+	}
 	if s.impl == nil {
 		s.icon = icon
 	} else {
@@ -140,6 +143,9 @@ func (s *SystemTray) SetIcon(icon []byte) *SystemTray {
 }
 
 func (s *SystemTray) SetDarkModeIcon(icon []byte) *SystemTray {
+	if icon == nil {
+		return s
+	}
 	if s.impl == nil {
 		s.darkModeIcon = icon
 	} else {
@@ -151,6 +157,9 @@ func (s *SystemTray) SetDarkModeIcon(icon []byte) *SystemTray {
 }
 
 func (s *SystemTray) SetMenu(menu *Menu) *SystemTray {
+	if menu == nil {
+		return s
+	}
 	if s.impl == nil {
 		s.menu = menu
 	} else {
@@ -173,6 +182,9 @@ func (s *SystemTray) SetIconPosition(iconPosition int) *SystemTray {
 }
 
 func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray {
+	if icon == nil {
+		return s
+	}
 	if s.impl == nil {
 		s.icon = icon
 		s.isTemplateIcon = true

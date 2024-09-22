@@ -241,6 +241,7 @@ func (w *windowsWebviewWindow) run() {
 			theMenu = w.parent.options.Windows.Menu
 		}
 		if theMenu != nil {
+			theMenu.Update()
 			w.menu = NewApplicationMenu(w, theMenu)
 			w.menu.parentWindow = w
 			appMenu = w.menu.menu
