@@ -1425,20 +1425,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
-	if opts.GeneralAutofillEnabled {
-		err = chromium.PutIsGeneralAutofillEnabled(true)
-		if err != nil {
-			globalApplication.error(err.Error())
-		}
-	}
-
-	if opts.PasswordAutosaveEnabled {
-		err = chromium.PutIsPasswordAutosaveEnabled(true)
-		if err != nil {
-			globalApplication.error(err.Error())
-		}
-	}
-
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
 	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
 
@@ -1510,6 +1496,20 @@ func (w *windowsWebviewWindow) setupChromium() {
 			return 1
 		})
 
+	}
+
+	if opts.GeneralAutofillEnabled {
+		err = chromium.PutIsGeneralAutofillEnabled(true)
+		if err != nil {
+			globalApplication.error(err.Error())
+		}
+	}
+
+	if opts.PasswordAutosaveEnabled {
+		err = chromium.PutIsPasswordAutosaveEnabled(true)
+		if err != nil {
+			globalApplication.error(err.Error())
+		}
 	}
 
 	// event mapping
