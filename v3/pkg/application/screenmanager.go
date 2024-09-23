@@ -362,18 +362,17 @@ func (s *Screen) physicalToDipRect(physicalRect Rect) Rect {
 // Layout screens in the virtual space with DIP calculations and cache the screens
 // for future coordinate transformation between the physical and logical (DIP) space
 func (m *ScreenManager) LayoutScreens(screens []*Screen) error {
-  if screens == nil || len(screens) == 0 {
-    return fmt.Errorf("screens parameter is nil or empty")
-  }
-  m.screens = screens
+	if screens == nil || len(screens) == 0 {
+		return fmt.Errorf("screens parameter is nil or empty")
+	}
+	m.screens = screens
 
-  err := m.calculateScreensDipCoordinates()
-  if err != nil {
-    return err
-  }
+	err := m.calculateScreensDipCoordinates()
+	if err != nil {
+		return err
+	}
 
-  return nil
-}
+	return nil
 }
 
 func (m *ScreenManager) Screens() []*Screen {
