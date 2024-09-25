@@ -16,7 +16,6 @@ The electron alternative for Go
  * @property {number} Height - The height.
  */
 
-
 /**
  * @typedef {Object} Rect
  * @property {number} X - The X coordinate of the origin.
@@ -25,10 +24,9 @@ The electron alternative for Go
  * @property {number} Height - The height of the rectangle.
  */
 
-
 /**
  * @typedef {Object} Screen
- * @property {string} Id - Unique identifier for the screen.
+ * @property {string} ID - Unique identifier for the screen.
  * @property {string} Name - Human readable name of the screen.
  * @property {number} ScaleFactor - The scale factor of the screen (DPI/96). 1 = standard DPI, 2 = HiDPI (Retina), etc.
  * @property {number} X - The X coordinate of the screen.
@@ -42,9 +40,8 @@ The electron alternative for Go
  * @property {number} Rotation - The rotation of the screen.
  */
 
-
-import {newRuntimeCallerWithID, objectNames} from "./runtime";
-const call = newRuntimeCallerWithID(objectNames.Screens, '');
+import { newRuntimeCallerWithID, objectNames } from "./runtime";
+const call = newRuntimeCallerWithID(objectNames.Screens, "");
 
 const getAll = 0;
 const getPrimary = 1;

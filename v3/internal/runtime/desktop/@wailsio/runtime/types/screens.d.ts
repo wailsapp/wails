@@ -46,7 +46,7 @@ export type Screen = {
     /**
      * - Unique identifier for the screen.
      */
-    Id: string;
+    ID: string;
     /**
      * - Human readable name of the screen.
      */
