@@ -6,7 +6,7 @@
         <key>CFBundleName</key>
         <string>{{.Info.ProductName}}</string>
         <key>CFBundleExecutable</key>
-        <string>{{.Name}}</string>
+        <string>{{.OutputFilename}}</string>
         <key>CFBundleIdentifier</key>
         <string>com.wails.{{.Name}}</string>
         <key>CFBundleVersion</key>
