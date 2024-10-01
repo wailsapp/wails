@@ -231,6 +231,8 @@ func GenerateBindings(buildOptions *Options) error {
 		Compiler:     buildOptions.Compiler,
 		Tags:         buildOptions.UserTags,
 		GoModTidy:    !buildOptions.SkipModTidy,
+		Platform:     buildOptions.Platform,
+		Arch:         buildOptions.Arch,
 		TsPrefix:     buildOptions.ProjectData.Bindings.TsGeneration.Prefix,
 		TsSuffix:     buildOptions.ProjectData.Bindings.TsGeneration.Suffix,
 		TsOutputType: buildOptions.ProjectData.Bindings.TsGeneration.OutputType,
