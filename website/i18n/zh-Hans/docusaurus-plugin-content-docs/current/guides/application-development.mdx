@@ -235,7 +235,7 @@ Wails v2 处理资源的方式的伟大之处在于它不需要处理！ 您唯�
 
 ### 资产处理程序
 
-Wails v2 应用程序可以选择在 `options.App` 中定义一个 `http.Handler`，它允许连接到 AssetServer 以动态创建文件或处理 POST/PUT 请求。 GET 请求总是首先由 `assets` FS 处理。 如果 FS 没有找到请求的文件，请求将被转发到 `http.Handler` 服务。 如果指定，除了 GET 以外的任何请求都将由 `AssetsHandler` 直接处理。 也可以仅通过将 `nil` 指定为 `Assets` 选项来使用 `AssetsHandler`。
+Wails v2 应用程序可以选择在 `options.App` 中定义一个 `http.Handler`，它允许连接到 AssetServer 以动态创建文件或处理 POST/PUT 请求。 GET 请求总是首先由 `assets` FS 处理。 如果 FS 没有找到请求的文件，请求将被转发到 `http.Handler` 服务。 如果指定，除了 GET 以外的任何请求都将由 `AssetsHandler` 直接处理。 It's also possible to only use the `AssetsHandler` by specifying `nil` as the `Assets` option.
 
 ## 内置开发服务器
 
