@@ -91,3 +91,18 @@ If your system is reporting that the `wails` command is missing, make sure you h
 correctly. Normally, it means that the `go/bin` directory in your User's home directory is not in the `PATH` environment
 variable. You will also normally need to close and reopen any open command prompts so that changes to the environment
 made by the installer are reflected at the command prompt.
+
+
+If the problem still exists on the macOS operating system (`zsh: command not found`), it is probably because your file is in the `~/go/bin/wails` directory. To fix this, you can either copy the file to a directory that is already in your PATH:
+
+```shell
+cp ~/go/bin/wails /usr/local/go/bin/
+```
+
+or edit `~/.zshrc` file and add:
+
+```shell
+alias wails='/home/{user}/go/bin/wails'
+```
+
+[source](https://github.com/wailsapp/wails/issues/2046)
