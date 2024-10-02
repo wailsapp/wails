@@ -114,15 +114,15 @@ func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
 	return result
 }
 
-func newRadioItemImpl(item *MenuItem, group GSListPointer) *linuxMenuItem {
-	result := &linuxMenuItem{
-		menuItem: item,
-		native:   menuRadioItemNew(group, item.label),
-	}
-	result.setChecked(item.checked)
-	result.setDisabled(result.menuItem.disabled)
-	return result
-}
+//func newRadioItemImpl(item *MenuItem, group GSListPointer) *linuxMenuItem {
+//	result := &linuxMenuItem{
+//		menuItem: item,
+//		native:   menuRadioItemNew(group, item.label),
+//	}
+//	result.setChecked(item.checked)
+//	result.setDisabled(result.menuItem.disabled)
+//	return result
+//}
 
 func newSpeechMenu() *MenuItem {
 	speechMenu := NewMenu()
