@@ -34,13 +34,13 @@ For example:
 }
 ```
 
-| Property    | Description                                                                                                                                        |
-| :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Property    | Description                                                                                                                                                           |
+| :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | ext         | The extension (minus the leading period). e.g. png                                                                                                 |
-| name        | The name. e.g. PNG File                                                                                                                            |
-| iconName    | The icon name without extension. Icons should be located in build folder. Proper icons will be generated from .png file for both macOS and Windows |
-| description | Windows-only. The description. It is displayed on the `Type` column on Windows Explorer.                                                           |
-| role        | macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.                                                              |
+| name        | The name. e.g. PNG File                                                                                                                                               |
+| iconName    | The icon name without extension. Icons should be located in build folder. Proper icons will be generated from .png file for both macOS and Windows                    |
+| description | Windows-only. The description. It is displayed on the `Type` column on Windows Explorer.                                                                              |
+| role        | macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.                                                                                 |
 
 ## Platform Specifics:
 
@@ -120,7 +120,7 @@ Currently, Wails doesn't support bundling for Linux. So, you need to create file
 For example if you distribute your app as a .deb package, you can create file associations by adding required files in you bundle.
 You can use [nfpm](https://nfpm.goreleaser.com/) to create .deb package for your app.
 
-1.  Create a .desktop file for your app and specify file associations there. Example:
+1. Create a .desktop file for your app and specify file associations there. Example:
 
 ```ini
 [Desktop Entry]
@@ -133,7 +133,7 @@ Type=Application
 MimeType=application/x-wails;application/x-test
 ```
 
-2.  Create mime types file. Example:
+2. Create mime types file. Example:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -145,8 +145,8 @@ MimeType=application/x-wails;application/x-test
 </mime-info>
 ```
 
-3.  Create icons for your file types. SVG icons are recommended.
-4.  Prepare postInstall/postRemove scripts for your package. Example:
+3. Create icons for your file types. SVG icons are recommended.
+4. Prepare postInstall/postRemove scripts for your package. Example:
 
 ```sh
 # reload mime types to register file associations
@@ -157,7 +157,7 @@ update-desktop-database /usr/share/applications
 update-icon-caches /usr/share/icons/*
 ```
 
-5.  Configure nfpm to use your scripts and files. Example:
+5. Configure nfpm to use your scripts and files. Example:
 
 ```yaml
 name: "wails-open-file"
@@ -198,15 +198,15 @@ scripts:
   postremove: ./postRemove.sh
 ```
 
-6.  Build your .deb package using nfpm:
+6. Build your .deb package using nfpm:
 
 ```sh
 nfpm pkg --packager deb --target .
 ```
 
-7.  Now when your package is installed, your app will be associated with specified file types. When you open file with your app,
-    new instance of app is launched and file path is passed as argument to your app.
-    To handle this you should parse command line arguments in your app. Example:
+7. Now when your package is installed, your app will be associated with specified file types. When you open file with your app,
+   new instance of app is launched and file path is passed as argument to your app.
+   To handle this you should parse command line arguments in your app. Example:
 
 ```go title="main.go"
 func main() {

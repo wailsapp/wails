@@ -14,7 +14,7 @@ var eventsMethodNames = map[int]string{
 
 func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
 
-	var event WailsEvent
+	var event CustomEvent
 
 	switch method {
 	case EventsEmit:
@@ -28,7 +28,7 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 			return
 		}
 		event.Sender = window.Name()
-		globalApplication.Events.Emit(&event)
+		globalApplication.customEventProcessor.Emit(&event)
 		m.ok(rw)
 	default:
 		m.httpError(rw, "Unknown event method: %d", method)

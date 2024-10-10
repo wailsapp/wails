@@ -21,9 +21,9 @@ func main() {
 
 	systemTray := app.NewSystemTray()
 
-	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	_ = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Width:         500,
-		Height:        800,
+		Height:        500,
 		Name:          "Systray Demo Window",
 		Frameless:     true,
 		AlwaysOnTop:   true,
@@ -92,7 +92,8 @@ func main() {
 	})
 
 	systemTray.SetMenu(myMenu)
-	systemTray.AttachWindow(window).WindowOffset(5)
+
+	//systemTray.AttachWindow(window).WindowOffset(5)
 
 	err := app.Run()
 	if err != nil {

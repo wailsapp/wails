@@ -14,33 +14,23 @@ export function GetPrimary(): Promise<Screen>;
  * @returns {Promise<Screen>} A promise that resolves with the current active screen.
  */
 export function GetCurrent(): Promise<Screen>;
-export type Position = {
-    /**
-     * - The X coordinate.
-     */
-    X: number;
-    /**
-     * - The Y coordinate.
-     */
-    Y: number;
-};
 export type Size = {
     /**
      * - The width.
      */
-    X: number;
+    Width: number;
     /**
      * - The height.
      */
-    Y: number;
+    Height: number;
 };
 export type Rect = {
     /**
-     * - The X coordinate of the top-left corner.
+     * - The X coordinate of the origin.
      */
     X: number;
     /**
-     * - The Y coordinate of the top-left corner.
+     * - The Y coordinate of the origin.
      */
     Y: number;
     /**
@@ -56,19 +46,23 @@ export type Screen = {
     /**
      * - Unique identifier for the screen.
      */
-    Id: string;
+    ID: string;
     /**
      * - Human readable name of the screen.
      */
     Name: string;
     /**
-     * - The resolution scale of the screen. 1 = standard resolution, 2 = high (Retina), etc.
+     * - The scale factor of the screen (DPI/96). 1 = standard DPI, 2 = HiDPI (Retina), etc.
      */
-    Scale: number;
+    ScaleFactor: number;
     /**
-     * - Contains the X and Y coordinates of the screen's position.
+     * - The X coordinate of the screen.
      */
-    Position: Position;
+    X: number;
+    /**
+     * - The Y coordinate of the screen.
+     */
+    Y: number;
     /**
      * - Contains the width and height of the screen.
      */
@@ -78,9 +72,17 @@ export type Screen = {
      */
     Bounds: Rect;
     /**
+     * - Contains the physical bounds of the screen in terms of X, Y, Width, and Height (before scaling).
+     */
+    PhysicalBounds: Rect;
+    /**
      * - Contains the area of the screen that is actually usable (excluding taskbar and other system UI).
      */
     WorkArea: Rect;
+    /**
+     * - Contains the physical WorkArea of the screen (before scaling).
+     */
+    PhysicalWorkArea: Rect;
     /**
      * - True if this is the primary monitor selected by the user in the operating system.
      */

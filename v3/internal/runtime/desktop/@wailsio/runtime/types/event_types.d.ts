@@ -26,6 +26,8 @@ export declare const EventTypes: {
 		WindowDragEnter: string,
 		WindowDragLeave: string,
 		WindowDragOver: string,
+		WindowDidMove: string,
+		WindowDidResize: string,
 	},
 	Mac: {
 		ApplicationDidBecomeActive: string,
@@ -157,6 +159,8 @@ export declare const EventTypes: {
 		SystemThemeChanged: string,
 		WindowLoadChanged: string,
 		WindowDeleteEvent: string,
+		WindowDidMove: string,
+		WindowDidResize: string,
 		WindowFocusIn: string,
 		WindowFocusOut: string,
 		ApplicationStartup: string,
@@ -183,5 +187,7 @@ export declare const EventTypes: {
 		WindowFilesDropped: string,
 		WindowRuntimeReady: string,
 		ThemeChanged: string,
+		WindowDidMove: string,
+		WindowDidResize: string,
 	},
 };

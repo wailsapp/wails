@@ -1,0 +1,89 @@
+---
+sidebar_position: 1
+---
+
+# 설치하기
+
+## 지원되는 플랫폼
+
+- Windows 10/11 AMD64/ARM64
+- MacOS 10.13+ AMD64
+- MacOS 11.0+ ARM64
+- Linux AMD64/ARM64
+
+## 의존성
+
+Wails는 설치 전에 아래와 같은 몇 가지 공통적인 의존성이 필요합니다.
+
+- Go 1.18+
+- NPM (Node 15+)
+
+### Go
+
+[Go 다운로드 페이지](https://go.dev/dl/)에서 Go를 다운로드 합니다.
+
+공식 [Go 설치 지침](https://go.dev/doc/install)에 따라 진행하세요. 또한 `PATH` 환경 변수에 `~/go/bin` 디렉토리에 대한 경로도 포함되어 있는지 확인해야 합니다. 터미널을 다시 시작하고 아래 내용을 확인하세요.
+
+- Go가 정상적으로 설치되었는지 확인: `go version`
+- PATH 변수에 "~/go/bin" 확인: `echo $PATH | grep go/bin`
+
+### NPM
+
+[Node 다운로드 페이지](https://nodejs.org/en/download/)에서 NPM을 다운로드 합니다. 우리는 일반적으로 최신 버전에서 테스트를 진행하기 때문에 최신 버전 사용을 권장합니다.
+
+정상적으로 설치된 것을 확인하기 위해 `npm --version`을 실행합니다.
+
+## 플랫폼에 따른 의존성
+
+플랫폼별 의존 항목도 설치해야 합니다:
+
+```mdx-code-block
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+<Tabs
+  defaultValue="Windows"
+  values={[
+    { label: "Windows", value: "Windows" },
+    { label: "MacOS", value: "MacOS" },
+    { label: "Linux", value: "Linux" },
+  ]}
+>
+  <TabItem value="MacOS">
+    Wails 는 xcode line tools 설치를 필요로 합니다. <code>xcode-select --install</code>. 를 실행하여 수행할 수 있습니다.
+  </TabItem>
+  <TabItem value="Windows">
+    Wails 는 <a href="https://developer.microsoft.com/en-us/microsoft-edge/webview2/">WebView2</a> 런타임 설치를 필요로 합니다. 몇몇 Windows는 이미 설치되어 있습니다. <code>wails doctor</code> 명령을 사용하여 확인할 수 있습니다.
+  </TabItem>
+  <TabItem value={"Linux"}>
+    Linux requires the standard <code>gcc</code> build tools plus <code>libgtk3</code> and <code>libwebkit</code>. 다양한 배포판에 대한 수 많은 명령을 나열하는 대신 Wail는 특정 배포판에 대한 설치 명령이 무엇인지 결정할 수 있습니다. <code>wails doctor</code> 명령을 실행하면 설치 후 종속성을 설치하는 방법을 보여줍니다. 만약 배포판/패키지 매니저가 지원하지 않는다면, <a href={"/docs/guides/linux-distro-support"}> 를 통해 문의하세요. 리눅스 배포판</a> 추가 가이드
+  </TabItem>
+</Tabs>
+```
+
+## 선택 설치
+
+- [UPX](https://upx.github.io/) 는 애플리케이션 압축을 위함.
+- [NSIS](https://wails.io/docs/guides/windows-installer/) 는 윈도우 인스톨러를 생성하기 위함.
+
+## Wails 설치
+
+`go install github.com/wailsapp/wails/v2/cmd/wails@latest` 명령을 실행하여 Wails CLI를 설치합니다.
+
+참고: 다음과 비슷한 오류가 발생하는 경우:
+
+```shell
+....\Go\pkg\mod\github.com\wailsapp\wails\v2@v2.1.0\pkg\templates\templates.go:28:12: pattern all:ides/*: no matching files found
+```
+Go 1.18 이상의 버전이 설치되어 있는지 확인하세요:
+```shell
+go version
+```
+
+## 시스템 점검
+
+`wails doctor`를 실행하면 의존성이 올바르게 설치되어 있는지 점검할 수 있습니다. 문제가 있는 의존성에 대해서는 문제 해결을 위한 도움을 줄 수 있습니다.
+
+## `wails` 명령이 사라졌다고 나오나요?
+
+시스템에서 `wails` 명령이 누락되었다고 뜨는 경우 Go 설치 가이드를 바르게 따랐는지 확인하세요. 일반적으로, 사용자의 홈 디렉토리에 있는 `go/bin` 디렉토리가 `PATH` 환경 변수에 없음을 의미합니다. 또한, 설치 프로그램이 수행한 환경 변경 사항이 명령 프롬프트에 반영되도록 일반적으로 열려 있는 모든 명령 프롬프트를 닫았다가 다시 열어야합니다.

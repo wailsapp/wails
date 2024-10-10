@@ -5,8 +5,8 @@ instance of a window rather than the runtime. Some notable differences are:
 
 - Windows now have a Name that identifies them. This is used to identify the
   window when emitting events.
-- Windows have even more methods on the that were previously unavailable, such
-  as `AbsolutePosition` and `ToggleDevTools`.
+- Windows have even more methods that were previously unavailable, such
+  as `SetFrameless` and `ToggleDevTools`.
 - Windows can now accept files via native drag and drop. See the Drag and Drop
   section for more details.
 

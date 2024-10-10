@@ -73,20 +73,57 @@ La configuration du projet se trouve dans le fichier `wails.json` du répertoire
     // The copyright of the product. Default: 'Copyright.........'
     "copyright": "",
     // A short comment of the app. Default: 'Built using Wails (https://wails.app)'
-    "comments": ""
+    "comments": "",
+    // File associations for the app
+    "fileAssociations": [
+      {
+        // The extension (minus the leading period). e.g. png
+        "ext": "wails",
+        // The name. e.g. PNG File
+        "name": "Wails",
+        // Windows-only. The description. It is displayed on the `Type` column on Windows Explorer.
+        "description": "Wails file",
+        // The icon name without extension. Icons should be located in build folder. Proper icons will be generated from .png file for both macOS and Windows)
+        "iconName": "fileIcon",
+        // macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.
+        "role": "Editor"
+      },
+    ],
+    // Custom URI protocols that should be opened by the application
+    "protocols": [
+      {
+        // protocol scheme. e.g. myapp
+        "scheme": "myapp",
+        // Windows-only. The description. It is displayed on the `Type` column on Windows Explorer.
+        "description": "Myapp protocol",
+        // macOS-only. The app’s role with respect to the type. Corresponds to CFBundleTypeRole.
+        "role": "Editor"
+      }
+    ]
   },
   // 'multiple': One installer per architecture. 'single': Single universal installer for all architectures being built. Default: 'multiple'
   "nsisType": "",
   // Whether the app should be obfuscated. Default: false
   "obfuscated": "",
   // The arguments to pass to the garble command when using the obfuscated flag
-  "garbleargs": ""
+  "garbleargs": "",
+  // Bindings configurations
+  "bindings": {
+    // model.ts file generation config
+    "ts_generation": {
+      // All generated JavaScript entities will be prefixed with this value
+      "prefix": "",
+      // All generated JavaScript entities will be suffixed with this value
+      "suffix": "",
+      // Type of output to generate (classes|interfaces)
+      "outputType": "classes",
+    }
+  }
 }
 ```
 
-This file is read by the Wails CLI when running `wails build` or `wails dev`.
+Ce fichier est lu par le CLI Wails lorsque vous exécutez `wails build` ou `wails dev`.
 
-The `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS`, `devserver` and `frontenddevserverurl` flags in `wails build/dev` will update the project config
-and thus become defaults for subsequent runs.
+Les options `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS`, `devserver` et `frontenddevserverurl` dans `wails build/dev` vont mettre à jour les configs du projet et deviendront les valeurs par défaut des exécutions suivantes.
 
-The JSON Schema for this file is located [here](https://wails.io/schemas/config.v2.json).
+Le Schema JSON pour ce fichier se trouve [ici](https://wails.io/schemas/config.v2.json).

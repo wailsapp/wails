@@ -4,7 +4,9 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
+#cgo linux pkg-config: gtk+-3.0
+#cgo !webkit2_41 pkg-config: webkit2gtk-4.0
+#cgo webkit2_41 pkg-config: webkit2gtk-4.1
 
 #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
@@ -101,6 +103,8 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 		result.asGTKWindow(),
 		bool2Cint(appoptions.HideWindowOnClose),
 		C.int(webviewGpuPolicy),
+		bool2Cint(appoptions.DragAndDrop != nil && appoptions.DragAndDrop.DisableWebViewDrop),
+		bool2Cint(appoptions.DragAndDrop != nil && appoptions.DragAndDrop.EnableFileDrop),
 	)
 	result.webview = unsafe.Pointer(webview)
 	buttonPressedName := C.CString("button-press-event")

@@ -2,6 +2,7 @@ package doctor
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/buildinfo"
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
@@ -18,6 +19,12 @@ import (
 )
 
 func Run() (err error) {
+
+	get, err := buildinfo.Get()
+	if err != nil {
+		return err
+	}
+	_ = get
 
 	pterm.DefaultSection = *pterm.DefaultSection.
 		WithBottomPadding(0).

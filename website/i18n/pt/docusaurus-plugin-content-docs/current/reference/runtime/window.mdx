@@ -28,7 +28,7 @@ Go: `WindowUnfullscreen(ctx context.Context)`<br/> JS: `WindowUnfullscreen()`
 
 Retorna verdadeiro se a janela estiver em tela cheia.
 
-Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen() bool`
+Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen() Promise<boolean>`
 
 ### WindowCenter
 
@@ -96,7 +96,7 @@ Go: `WindowHide(ctx context.Context)`<br/> JS: `WindowHide()`
 
 Retorna verdadeiro se a janela não for minimizada, maximizada ou tela inteira.
 
-Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() bool`
+Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() Promise<boolean>`
 
 ### WindowSetSize
 
@@ -108,7 +108,7 @@ Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `Window
 
 Obtém a largura e a altura da janela.
 
-Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize() : Size`
+Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize(): Promise<Size>`
 
 ### WindowSetMinSize
 
@@ -130,7 +130,7 @@ Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `Win
 
 Define a janela sempreOnTop ou não no topo.
 
-Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: Boolen)`
+Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: boolean)`
 
 ### WindowSetPosition
 
@@ -142,7 +142,7 @@ Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPo
 
 Obtém a posição da janela em relação ao monitor que a janela está ativada.
 
-Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition() : Position`
+Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition(): Promise<Position>`
 
 ### WindowMaximise
 
@@ -160,7 +160,7 @@ Go: `WindowUnmaximise(ctx context.Context)`<br/> JS: `WindowUnmaximise()`
 
 Retorna verdadeiro se a janela for maximizada.
 
-Go: `WindowIsMaximised(ctx context.Context) bool`<br/> JS: `WindowIsMaximised() bool`
+Go: `WindowIsMaximised(ctx context.Context) bool`<br/> JS: `WindowIsMaximised() Promise<boolean>`
 
 ### WindowToggleMaximise
 
@@ -184,7 +184,7 @@ Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
 
 Retorna verdadeiro se a janela estiver minimizada.
 
-Go: `WindowIsMinimised(ctx context.Context) bool`<br/> JS: `WindowIsMinimised() bool`
+Go: `WindowIsMinimised(ctx context.Context) bool`<br/> JS: `WindowIsMinimised() Promise<boolean>`
 
 ### WindowSetBackgroundColour
 

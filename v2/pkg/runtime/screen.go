@@ -8,7 +8,7 @@ import (
 
 type Screen = frontend.Screen
 
-// ScreenGetAllScreens returns all screens
+// ScreenGetAll returns all screens
 func ScreenGetAll(ctx context.Context) ([]Screen, error) {
 	appFrontend := getFrontend(ctx)
 	return appFrontend.ScreenGetAll()

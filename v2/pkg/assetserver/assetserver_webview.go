@@ -60,7 +60,7 @@ func (d *AssetServer) processWebViewRequest(r webview.Request) {
 	}
 }
 
-// processHTTPRequest processes the HTTP Request by faking a golang HTTP Server.
+// processWebViewRequestInternal processes the HTTP Request by faking a golang HTTP Server.
 // The request will be finished with a StatusNotImplemented code if no handler has written to the response.
 func (d *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	uri := "unknown"
@@ -131,7 +131,7 @@ func (d *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	}
 
 	if req.ContentLength == 0 {
-		req.ContentLength, _ = strconv.ParseInt(req.Header.Get(HeaderContentLength), 10, 64)
+		req.ContentLength = -1
 	} else {
 		size := strconv.FormatInt(req.ContentLength, 10)
 		req.Header.Set(HeaderContentLength, size)

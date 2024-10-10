@@ -1,5 +1,11 @@
 # Dynamic Assets
 
+:::info
+
+This does not work with vite v5.0.0+ and wails v2 due to changes in vite. Changes are planned in v3 to support similar functionality under vite v5.0.0+. If you need this feature, stay with vite v4.0.0+. See [issue 3240](https://github.com/wailsapp/wails/issues/3240) for details
+
+:::
+
 If you want to load or generate assets for your frontend dynamically, you can achieve that using the [AssetsHandler](../reference/options#assetshandler) option. The AssetsHandler is a generic `http.Handler` which will be called for any non GET request on the assets server and for GET requests which can not be served from the bundled assets because the file is not found.
 
 By installing a custom AssetsHandler, you can serve your own assets using a custom asset server.

@@ -17,7 +17,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)
+- Upgrade to `go-webview2` v1.0.16 by [leaanthony](https://github.com/leaanthony)
+- Fixed `Screen` type to include `ID` not `Id` by [etesam913](https://github.com/etesam913) in [#3778](https://github.com/wailsapp/wails/pull/3778)
+
+## v3.0.0-alpha.7 - 2024-09-18
+
 ### Added
+- [windows] New DIP system for Enhanced High DPI Monitor Support by [mmghv](https://github.com/mmghv) in [#3665](https://github.com/wailsapp/wails/pull/3665)
+- [windows] Window class name option by [windom](https://github.com/windom/) in [#3682](https://github.com/wailsapp/wails/pull/3682)
+- Services have been expanded to provide plugin functionality. By [atterpac](https://github.com/atterpac) and [leaanthony](https://github.com/leaanthony) in [#3570](https://github.com/wailsapp/wails/pull/3570)
+
+### Changed
+- Events API change: `On`/`Emit` -> user events, `OnApplicationEvent` -> Application Events `OnWindowEvent` -> Window Events, by [leaanthony](https://github.com/leaanthony)
+- Fix for Events API on Linux by [TheGB0077](https://github.com/TheGB0077) in [#3734](https://github.com/wailsapp/wails/pull/3734)
+- [CI] improvements to actions & enable to run actions also in forks and branches prefixed with `v3/` or `v3-` by [stendler](https://github.com/stendler) in [#3747](https://github.com/wailsapp/wails/pull/3747)
+
+### Fixed
+- Fixed bug with usage of customEventProcessor in drag-n-drop example by [etesam913](https://github.com/etesam913) in [#3742](https://github.com/wailsapp/wails/pull/3742)
+- [linux] Fixed linux compile error introduced by IgnoreMouseEvents addition by [atterpac](https://github.com/atterpac) in [#3721](https://github.com/wailsapp/wails/pull/3721)
+- [windows] Fixed syso icon file generation bug by [atterpac](https://github.com/atterpac) in [#3675](https://github.com/wailsapp/wails/pull/3675)
+- [linux] Fix to run natively in wayland incorporated from [#1811](https://github.com/wailsapp/wails/pull/1811) in [#3614](https://github.com/wailsapp/wails/pull/3614) by [@stendler](https://github.com/stendler)
+- Do not bind internal service methods in [#3720](https://github.com/wailsapp/wails/pull/3720) by [leaanthony](https://github.com/leaanthony)
+- [windows] Fixed system tray startup panic in [#3693](https://github.com/wailsapp/wails/issues/3693) by [@DeltaLaboratory](https://github.com/DeltaLaboratory)
+- Do not bind internal service methods in [#3720](https://github.com/wailsapp/wails/pull/3720) by [leaanthony](https://github.com/leaanthony)
+- [windows] Fixed system tray startup panic in [#3693](https://github.com/wailsapp/wails/issues/3693) by [@DeltaLaboratory](https://github.com/DeltaLaboratory)
+- Major menu item refactor and event handling. Mainly improves macOS for now. By [leaanthony](https://github.com/leaanthony)
+- Fix tests after plugins and event refactor in [#3746](https://github.com/wailsapp/wails/pull/3746) by [@stendler](https://github.com/stendler)
+- [windows] Fixed `Failed to unregister class Chrome_WidgetWin_0` warning. By [leaanthony](https://github.com/leaanthony)
+
+## v3.0.0-alpha.6 - 2024-07-30
+
+### Fixed
+- Module issues
+
+## v3.0.0-alpha.5 - 2024-07-30
+
+
+### Added
+- [linux] WindowDidMove / WindowDidResize events in [#3580](https://github.com/wailsapp/wails/pull/3580)
+- [windows] WindowDidResize event in (https://github.com/wailsapp/wails/pull/3580)
 - [darwin] add Event ApplicationShouldHandleReopen to be able to handle dock icon click by @5aaee9 in [#2991](https://github.com/wailsapp/wails/pull/2991)
 - [darwin] add getPrimaryScreen/getScreens to impl by @tmclane in [#2618](https://github.com/wailsapp/wails/pull/2618)
 - [darwin] add option for showing the toolbar in fullscreen mode on macOS by [@fbbdev](https://github.com/fbbdev) in [#3282](https://github.com/wailsapp/wails/pull/3282)
@@ -34,9 +74,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement `setIcon` on linux by [@abichinger](https://github.com/abichinger) in [#3354](https://github.com/wailsapp/wails/pull/3354)
 - Add flag `-port` to dev command and support environment variable `WAILS_VITE_PORT` by [@abichinger](https://github.com/abichinger) in [#3429](https://github.com/wailsapp/wails/pull/3429)
 - Add tests for bound method calls by [@abichinger](https://github.com/abichinger) in [#3431](https://github.com/wailsapp/wails/pull/3431)
+- [windows] add `SetIgnoreMouseEvents` for already created window by [@bruxaodev](https://github.com/bruxaodev) in [#3667](https://github.com/wailsapp/wails/pull/3667)
+- [darwin] Add ability to set a window's stacking level (order) by [@OlegGulevskyy](https://github.com/OlegGulevskyy) in [#3674](https://github.com/wailsapp/wails/pull/3674)
 
 ### Fixed
 
+- Fixed resize event messaging by [atterpac](https://github.com/atterpac) in [#3606](https://github.com/wailsapp/wails/pull/3606)
 - [linux] Fixed theme handling error on NixOS by [tmclane](https://github.com/tmclane) in [#3515)(https://github.com/wailsapp/wails/pull/3515)
 - Fixed cross volume project install for windows by [atterpac](https://github.com/atterac) in [#3512](https://github.com/wailsapp/wails/pull/3512)
 - Fixed react template css to show footer by [atterpac](https://github.com/atterpac) in [#3477](https://github.com/wailsapp/wails/pull/3477)
@@ -44,8 +87,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed appimage webkit file sourcing by [Atterpac](https://github.com/atterpac) in [#3306](https://github.com/wailsapp/wails/pull/3306).
 - Fixed Doctor apt package verify by [Atterpac](https://github.com/Atterpac) in [#2972](https://github.com/wailsapp/wails/pull/2972).
 - Fixed application frozen when quit (Darwin) by @5aaee9 in [#2982](https://github.com/wailsapp/wails/pull/2982)
-- Fixed background colours of examples on Windows by [mmgvh](https://github.com/mmghv) in [#2750](https://github.com/wailsapp/wails/pull/2750).
-- Fixed default context menus by [mmgvh](https://github.com/mmghv) in [#2753](https://github.com/wailsapp/wails/pull/2753).
+- Fixed background colours of examples on Windows by [mmghv](https://github.com/mmghv) in [#2750](https://github.com/wailsapp/wails/pull/2750).
+- Fixed default context menus by [mmghv](https://github.com/mmghv) in [#2753](https://github.com/wailsapp/wails/pull/2753).
 - Fixed hex values for arrow keys on Darwin by [jaybeecave](https://github.com/jaybeecave) in [#3052](https://github.com/wailsapp/wails/pull/3052).
 - Set drag-n-drop for windows to working. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/3039)
 - Fixed bug for linux in doctor in the event user doesn't have proper drivers installed. Added by [@pylotlight](https://github.com/pylotlight) in [PR](https://github.com/wailsapp/wails/pull/3032)
@@ -68,9 +111,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix unmarshaling of bound method parameters by [@fbbdev](https://github.com/fbbdev) in [#3431](https://github.com/wailsapp/wails/pull/3431)
 - Fix handling of multiple return values from bound methods by [@fbbdev](https://github.com/fbbdev) in [#3431](https://github.com/wailsapp/wails/pull/3431)
 - Fix doctor detection of npm that is not installed with system package manager by [@pekim](https://github.com/pekim) in [#3458](https://github.com/wailsapp/wails/pull/3458)
+- Fix missing MicrosoftEdgeWebview2Setup.exe. Thanks to [@robin-samuel](https://github.com/robin-samuel).
+- Fix random crash on linux due to window ID handling by @leaanthony. Based on PR [#3466](https://github.com/wailsapp/wails/pull/3622) by [@5aaee9](https://github.com/5aaee9).
+- Fix systemTray.setIcon crashing on Linux by [@windom](https://github.com/windom/) in [#3636](https://github.com/wailsapp/wails/pull/3636).
+- Fix Ensure Window Frame is Applied on First Call in `setFrameless` Function on Windows by [@bruxaodev](https://github.com/bruxaodev/) in [#3691](https://github.com/wailsapp/wails/pull/3691).
 
 ### Changed
 
+- Renamed `AbsolutePosition()` to `Position()` by [mmghv](https://github.com/mmghv) in [#3611](https://github.com/wailsapp/wails/pull/3611)
 - Update linux webkit dependency to webkit2gtk-4.1 over webkitgtk2-4.0 to support Ubuntu 24.04 LTS by [atterpac](https://github.com/atterpac) in [#3461](https://github.com/wailsapp/wails/pull/3461)
 - The bundled JS runtime script is now an ESM module: script tags importing it must have the `type="module"` attribute. By [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
 - The `@wailsio/runtime` package does not publish its API on the `window.wails` object, and does not start the WML system. This has been done to improve encapsulation. The WML system can be started manually if desired by calling the new `WML.Enable` method. The bundled JS runtime script still performs both operations automatically. By [@fbbdev](https://github.com/fbbdev) in [#3295](https://github.com/wailsapp/wails/pull/3295)
@@ -80,6 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New binding code layout: output files were previously organised in folders named after their containing package; now full Go import paths are used, including the module path. By [@fbbdev](https://github.com/fbbdev) in [#3468](https://github.com/wailsapp/wails/pull/3468)
 - The struct field `application.Options.Bind` has been renamed to `application.Options.Services`. By [@fbbdev](https://github.com/fbbdev) in [#3468](https://github.com/wailsapp/wails/pull/3468)
 - New syntax for binding services: service instances must now be wrapped in a call to `application.NewService`. By [@fbbdev](https://github.com/fbbdev) in [#3468](https://github.com/wailsapp/wails/pull/3468)
+- Disable spinner on Non-Terminal or CI Environment by [@DeltaLaboratory](https://github.com/DeltaLaboratory) in [#3574](https://github.com/wailsapp/wails/pull/3574)
 
 ### Removed
 

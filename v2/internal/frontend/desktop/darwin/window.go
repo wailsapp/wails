@@ -60,7 +60,7 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	defaultContextMenuEnabled := bool2Cint(debug || frontendOptions.EnableDefaultContextMenu)
 	singleInstanceEnabled := bool2Cint(frontendOptions.SingleInstanceLock != nil)
 
-	var fullSizeContent, hideTitleBar, hideTitle, useToolbar, webviewIsTransparent C.int
+	var fullSizeContent, hideTitleBar, zoomable, hideTitle, useToolbar, webviewIsTransparent C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent C.int
 	var appearance, title *C.char
 	var preferences C.struct_Preferences
@@ -82,6 +82,9 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 	singleInstanceUniqueId := c.String(singleInstanceUniqueIdStr)
 
 	enableFraudulentWebsiteWarnings := C.bool(frontendOptions.EnableFraudulentWebsiteDetection)
+
+	enableDragAndDrop := C.bool(frontendOptions.DragAndDrop != nil && frontendOptions.DragAndDrop.EnableFileDrop)
+	disableWebViewDragAndDrop := C.bool(frontendOptions.DragAndDrop != nil && frontendOptions.DragAndDrop.DisableWebViewDrop)
 
 	if frontendOptions.Mac != nil {
 		mac := frontendOptions.Mac
@@ -108,16 +111,18 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 			}
 		}
 
+		zoomable = bool2Cint(!frontendOptions.Mac.DisableZoom)
+
 		windowIsTranslucent = bool2Cint(mac.WindowIsTranslucent)
 		webviewIsTransparent = bool2Cint(mac.WebviewIsTransparent)
 
 		appearance = c.String(string(mac.Appearance))
 	}
-	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent,
+	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, zoomable, fullscreen, fullSizeContent,
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
 		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, devtoolsEnabled, defaultContextMenuEnabled,
 		windowStartState, startsHidden, minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings,
-		preferences, singleInstanceEnabled, singleInstanceUniqueId,
+		preferences, singleInstanceEnabled, singleInstanceUniqueId, enableDragAndDrop, disableWebViewDragAndDrop,
 	)
 
 	// Create menu

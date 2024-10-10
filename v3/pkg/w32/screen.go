@@ -10,11 +10,12 @@ import (
 
 type Screen struct {
 	MONITORINFOEX
-	Name      string
-	IsPrimary bool
-	IsCurrent bool
-	Scale     float32
-	Rotation  float32
+	HMonitor    uintptr
+	Name        string
+	IsPrimary   bool
+	IsCurrent   bool
+	ScaleFactor float32
+	Rotation    float32
 }
 
 type DISPLAY_DEVICE struct {
@@ -71,8 +72,17 @@ func GetRotationForMonitor(displayName [32]uint16) (float32, error) {
 }
 
 func GetAllScreens() ([]*Screen, error) {
-	var monitorList []MONITORINFOEX
+	var result []*Screen
+	var errMessage string
 
+	// Get cursor position to determine the current monitor
+	var cursor POINT
+	ret, _, _ := procGetCursorPos.Call(uintptr(unsafe.Pointer(&cursor)))
+	if ret == 0 {
+		return nil, fmt.Errorf("GetCursorPos failed")
+	}
+
+	// Enumerate the monitors
 	enumFunc := func(hMonitor uintptr, hdc uintptr, lprcMonitor *RECT, lParam uintptr) uintptr {
 		monitor := MONITORINFOEX{
 			MONITORINFO: MONITORINFO{
@@ -82,72 +92,51 @@ func GetAllScreens() ([]*Screen, error) {
 		}
 		ret, _, _ := procGetMonitorInfo.Call(hMonitor, uintptr(unsafe.Pointer(&monitor)))
 		if ret == 0 {
-			return 1 // Continue enumeration
+			errMessage = "GetMonitorInfo failed"
+			return 0 // Stop enumeration
 		}
 
-		monitorList = append(monitorList, monitor)
-		return 1 // Continue enumeration
-	}
-
-	ret, _, _ := procEnumDisplayMonitors.Call(0, 0, syscall.NewCallback(enumFunc), 0)
-	if ret == 0 {
-		return nil, fmt.Errorf("EnumDisplayMonitors failed")
-	}
-
-	// Get the active screen
-	var pt POINT
-	ret, _, _ = procGetCursorPos.Call(uintptr(unsafe.Pointer(&pt)))
-	if ret == 0 {
-		return nil, fmt.Errorf("GetCursorPos failed")
-	}
-
-	hMonitor, _, _ := procMonitorFromPoint.Call(uintptr(unsafe.Pointer(&pt)), MONITOR_DEFAULTTONEAREST)
-	if hMonitor == 0 {
-		return nil, fmt.Errorf("MonitorFromPoint failed")
-	}
-
-	var monitorInfo MONITORINFO
-	monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
-	ret, _, _ = procGetMonitorInfo.Call(hMonitor, uintptr(unsafe.Pointer(&monitorInfo)))
-	if ret == 0 {
-		return nil, fmt.Errorf("GetMonitorInfo failed")
-	}
-
-	var result []*Screen
-
-	// Iterate through the screens and set the active one
-	for _, monitor := range monitorList {
-		thisContainer := &Screen{
+		screen := &Screen{
 			MONITORINFOEX: monitor,
+			HMonitor:      hMonitor,
+			IsPrimary:     monitor.DwFlags == MONITORINFOF_PRIMARY,
+			IsCurrent:     rectContainsPoint(monitor.RcMonitor, cursor),
 		}
-		thisContainer.IsCurrent = equalRect(monitor.RcMonitor, monitorInfo.RcMonitor)
-		thisContainer.IsPrimary = monitor.DwFlags == MONITORINFOF_PRIMARY
+
+		// Get monitor name
 		name, err := getMonitorName(syscall.UTF16ToString(monitor.SzDevice[:]))
-		if err != nil {
-			name = ""
+		if err == nil {
+			screen.Name = name
 		}
+
 		// Get DPI for monitor
 		var dpiX, dpiY uint
 		ret = GetDPIForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY)
 		if ret != S_OK {
-			return nil, fmt.Errorf("GetDpiForMonitor failed")
+			errMessage = "GetDpiForMonitor failed"
+			return 0 // Stop enumeration
 		}
-		// Convert to float32
-		thisContainer.Scale = float32(dpiX) / 96.0
+		// Convert to scale factor
+		screen.ScaleFactor = float32(dpiX) / 96.0
 
 		// Get rotation of monitor
 		rot, err := GetRotationForMonitor(monitor.SzDevice)
-		if err != nil {
-			rot = 0
+		if err == nil {
+			screen.Rotation = rot
 		}
-		thisContainer.Rotation = rot
-		thisContainer.Name = name
-		result = append(result, thisContainer)
+
+		result = append(result, screen)
+		return 1 // Continue enumeration
+	}
+
+	ret, _, _ = procEnumDisplayMonitors.Call(0, 0, syscall.NewCallback(enumFunc), 0)
+	if ret == 0 {
+		return nil, fmt.Errorf("EnumDisplayMonitors failed: %s", errMessage)
 	}
 
 	return result, nil
 }
 
-func equalRect(a RECT, b RECT) bool {
-	return a.Left == b.Left && a.Top == b.Top && a.Right == b.Right && a.Bottom == b.Bottom
+func rectContainsPoint(r RECT, p POINT) bool {
+	return p.X >= r.Left && p.X < r.Right && p.Y >= r.Top && p.Y < r.Bottom
 }

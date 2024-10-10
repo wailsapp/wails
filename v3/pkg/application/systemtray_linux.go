@@ -252,7 +252,7 @@ func (s *linuxSystemTray) positionWindow(window *WebviewWindow, offset int) erro
 	}
 
 	// Set the new position of the window
-	window.SetAbsolutePosition(newX, newY)
+	window.SetPosition(newX, newY)
 	return nil
 }
 
@@ -375,7 +375,7 @@ func (s *linuxSystemTray) setIcon(icon []byte) {
 		globalApplication.error("systray error: failed to convert icon to PX: %s\n", err)
 		return
 	}
-	s.props.SetMust("org.kde.StatusNotifierItem", "IconPixmap", iconPx)
+	s.props.SetMust("org.kde.StatusNotifierItem", "IconPixmap", []PX{iconPx})
 
 	if s.conn == nil {
 		return

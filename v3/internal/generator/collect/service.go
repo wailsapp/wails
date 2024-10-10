@@ -54,6 +54,22 @@ type (
 	}
 )
 
+func isInternalServiceMethod(method *types.Func) bool {
+	internalServiceMethods := []string{
+		"OnStartup",
+		"OnShutdown",
+		"ServeHTTP",
+	}
+	methodName := method.Name()
+	for _, name := range internalServiceMethods {
+		if name == methodName {
+			return true
+		}
+	}
+
+	return false
+}
+
 func newServiceInfo(collector *Collector, obj *types.TypeName) *ServiceInfo {
 	return &ServiceInfo{
 		TypeInfo:  collector.Type(obj),
@@ -171,6 +187,10 @@ var typeAny = types.Universe.Lookup("any").Type().Underlying()
 // collectMethod collects and returns information about a service method.
 // It is intended to be called only by ServiceInfo.Collect.
 func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
+	if isInternalServiceMethod(method) {
+		// Ignore internal methods.
+		return nil
+	}
 	collector := info.collector
 	obj := info.Object().(*types.TypeName)
 

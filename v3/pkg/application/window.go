@@ -13,12 +13,12 @@ type Callback interface {
 
 type Window interface {
 	Callback
-	AbsolutePosition() (int, int)
 	Center()
 	Close()
 	Destroy()
 	DisableSizeConstraints()
-	DispatchWailsEvent(event *WailsEvent)
+	DispatchWailsEvent(event *CustomEvent)
+	EmitEvent(name string, data ...any)
 	EnableSizeConstraints()
 	Error(message string, args ...any)
 	ExecJS(js string)
@@ -37,21 +37,23 @@ type Window interface {
 	Info(message string, args ...any)
 	IsFocused() bool
 	IsFullscreen() bool
+	IsIgnoreMouseEvents() bool
 	IsMaximised() bool
 	IsMinimised() bool
 	HandleKeyEvent(acceleratorString string)
 	Maximise() Window
 	Minimise() Window
 	Name() string
-	On(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
+	OnWindowEvent(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
 	OpenContextMenu(data *ContextMenuData)
+	Position() (int, int)
 	RegisterContextMenu(name string, menu *Menu)
 	RelativePosition() (int, int)
 	Reload()
 	Resizable() bool
 	Restore()
 	Run()
-	SetAbsolutePosition(x, y int)
+	SetPosition(x, y int)
 	SetAlwaysOnTop(b bool) Window
 	SetBackgroundColour(colour RGBA) Window
 	SetFrameless(frameless bool) Window
@@ -63,6 +65,7 @@ type Window interface {
 	SetMinSize(minWidth, minHeight int) Window
 	SetRelativePosition(x, y int) Window
 	SetResizable(b bool) Window
+	SetIgnoreMouseEvents(ignore bool) Window
 	SetSize(width, height int) Window
 	SetTitle(title string) Window
 	SetURL(s string) Window

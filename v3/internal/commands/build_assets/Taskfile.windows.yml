@@ -1,0 +1,52 @@
+version: '3'
+
+includes:
+  common: Taskfile.common.yml
+
+tasks:
+  build:
+    summary: Builds the application for Windows
+    deps:
+      - task: common:go:mod:tidy
+      - task: common:build:frontend
+      - task: common:generate:icons
+      - task: generate:syso
+    cmds:
+      - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}.exe
+    vars:
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production -trimpath -ldflags="-w -s -H windowsgui"{{else}}-gcflags=all="-l"{{end}}'
+    env:
+      GOOS: windows
+      CGO_ENABLED: 0
+      GOARCH: '{{.ARCH | default ARCH}}'
+      PRODUCTION: '{{.PRODUCTION | default "false"}}'
+
+  package:
+    summary: Packages a production build of the application into a `.exe` bundle
+    cmds:
+      - task: create:nsis:installer
+
+  generate:syso:
+    summary: Generates Windows `.syso` file
+    dir: build
+    cmds:
+      - wails3 generate syso -arch {{.ARCH}} -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+    vars:
+      ARCH: '{{.ARCH | default ARCH}}'
+
+  create:nsis:installer:
+    summary: Creates an NSIS installer
+    dir: build/nsis
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+    cmds:
+      - makensis -DARG_WAILS_{{.ARG_FLAG}}_BINARY="{{.ROOT_DIR}}\{{.BIN_DIR}}\{{.APP_NAME}}.exe" project.nsi
+    vars:
+      ARCH: '{{.ARCH | default ARCH}}'
+      ARG_FLAG: '{{if eq .ARCH "amd64"}}AMD64{{else}}ARM64{{end}}'
+
+  run:
+    cmds:
+      - '{{.BIN_DIR}}\\{{.APP_NAME}}.exe'

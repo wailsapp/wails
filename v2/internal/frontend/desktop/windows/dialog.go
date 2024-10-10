@@ -121,6 +121,10 @@ func (f *Frontend) SaveFileDialog(options frontend.SaveDialogOptions) (string, e
 		Folder:      defaultFolder,
 	}
 
+	if len(options.Filters) > 0 {
+		config.DefaultExtension = strings.TrimPrefix(strings.Split(options.Filters[0].Pattern, ";")[0], "*")
+	}
+
 	result, err := f.showCfdDialog(
 		func() (cfd.Dialog, error) {
 			return cfd.NewSaveFileDialog(config)

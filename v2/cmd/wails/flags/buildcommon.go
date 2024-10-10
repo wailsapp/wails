@@ -9,6 +9,7 @@ type BuildCommon struct {
 	Verbosity    int    `name:"v" description:"Verbosity level (0 = quiet, 1 = normal, 2 = verbose)"`
 	Tags         string `description:"Build tags to pass to Go compiler. Must be quoted. Space or comma (but not both) separated"`
 	NoSyncGoMod  bool   `description:"Don't sync go.mod"`
+	SkipModTidy  bool   `name:"m" description:"Skip mod tidy before compile"`
 }
 
 func (c BuildCommon) Default() BuildCommon {

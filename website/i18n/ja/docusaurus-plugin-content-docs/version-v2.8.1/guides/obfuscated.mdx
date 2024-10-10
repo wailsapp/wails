@@ -1,0 +1,40 @@
+# 難読化されたビルド
+
+Wailsでは、[garble](https://github.com/burrowers/garble)を使用したアプリケーションの難読化をサポートしています。
+
+`wails build`コマンドで`-obfuscate`フラグを使用することで、ビルド時に難読化を有効にすることができます:
+
+```bash
+wails build -obfuscated
+```
+
+また、難読化に関する設定をカスタマイズするために、`-garbleargs`フラグを使用できます:
+
+```bash
+wails build -obfuscated -garbleargs "-literals -tiny -seed=myrandomseed"
+```
+
+これらの設定は、[プロジェクト構成](../reference/project-config)で記述されている場合もあります。
+
+## 動作の仕組み
+
+標準のビルドでは、バインドされたすべてのメソッドは、フロントエンドの`window.go`変数から利用することができます。 これらのメソッドが呼び出されると、対応するバックエンドメソッドが完全修飾関数名で呼び出されます。 難読化ビルドの場合、メソッドは名前の代わりにIDでバインドされます。 `wailsjs`ディレクトリに生成されたバインディングは、このIDを使用してバックエンドの関数を呼び出します。
+
+:::note
+
+アプリケーションを難読化した状態で動作させるためには、`wailsjs`ディレクトリの配下に生成されたバインディングを使用する必要があります。
+
+:::
+
+## 例
+
+Importing the "Greet" method from the bindings like this:
+
+```js
+import { Greet } from "../../wailsjs/go/main/App";
+
+// snip
+Greet("World");
+```
+
+これは、バインディングがIDで再生成され、呼び出しメカニズムが更新されるため、難読化モードでメソッドが正しく動作することを保証します。

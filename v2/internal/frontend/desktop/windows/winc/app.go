@@ -37,7 +37,7 @@ func init() {
 	w32.InitCommonControlsEx(&initCtrls)
 }
 
-// SetAppIconID sets recource icon ID for the apps windows.
+// SetAppIcon sets resource icon ID for the apps windows.
 func SetAppIcon(appIconID int) {
 	AppIconID = appIconID
 }

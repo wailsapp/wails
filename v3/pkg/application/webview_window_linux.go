@@ -2,14 +2,19 @@
 
 package application
 
-import "C"
 import (
 	"fmt"
+	"time"
 
+	"github.com/bep/debounce"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
+)
+
+const (
+	windowDidMoveDebounceMS = 200
 )
 
 type dragInfo struct {
@@ -35,6 +40,10 @@ type linuxWebviewWindow struct {
 	lastX, lastY  int
 	gtkmenu       pointer
 	ctxMenuOpened bool
+
+	moveDebouncer     func(func())
+	resizeDebouncer   func(func())
+	ignoreMouseEvents bool
 }
 
 var (
@@ -96,8 +105,8 @@ func (w *linuxWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
 }
 
 func (w *linuxWebviewWindow) disableSizeConstraints() {
-	x, y, width, height, scale := w.getCurrentMonitorGeometry()
-	w.setMinMaxSize(x, y, width*scale, height*scale)
+	x, y, width, height, scaleFactor := w.getCurrentMonitorGeometry()
+	w.setMinMaxSize(x, y, width*scaleFactor, height*scaleFactor)
 }
 
 func (w *linuxWebviewWindow) unminimise() {
@@ -190,14 +199,51 @@ func (w *linuxWebviewWindow) height() int {
 	return height
 }
 
-func (w *linuxWebviewWindow) setAbsolutePosition(x int, y int) {
+func (w *linuxWebviewWindow) setPosition(x int, y int) {
 	// Set the window's absolute position
 	w.move(x, y)
+}
+
+func (w *linuxWebviewWindow) bounds() Rect {
+	// DOTO: do it in a single step + proper DPI scaling
+	x, y := w.position()
+	width, height := w.size()
+
+	return Rect{
+		X:      x,
+		Y:      y,
+		Width:  width,
+		Height: height,
+	}
+}
+
+func (w *linuxWebviewWindow) setBounds(bounds Rect) {
+	// DOTO: do it in a single step + proper DPI scaling
+	w.move(bounds.X, bounds.Y)
+	w.setSize(bounds.Width, bounds.Height)
+
+}
+
+func (w *linuxWebviewWindow) physicalBounds() Rect {
+	// TODO: proper DPI scaling
+	return w.bounds()
+}
+
+func (w *linuxWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
+	// TODO: proper DPI scaling
+	w.setBounds(physicalBounds)
 }
 
 func (w *linuxWebviewWindow) run() {
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
+	}
+
+	if w.moveDebouncer == nil {
+		w.moveDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
+	}
+	if w.resizeDebouncer == nil {
+		w.resizeDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
 	}
 
 	// Register the capabilities
@@ -264,9 +310,8 @@ func (w *linuxWebviewWindow) run() {
 	case WindowStateNormal:
 	}
 
-	//if w.parent.options.IgnoreMouseEvents {
-	//	windowIgnoreMouseEvents(w.window, w.webview, true)
-	//}
+	// Ignore mouse events if requested
+	w.setIgnoreMouseEvents(w.parent.options.IgnoreMouseEvents)
 
 	startURL, err := assetserver.GetStartURL(w.parent.options.URL)
 	if err != nil {
@@ -274,7 +319,7 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	w.setURL(startURL)
-	w.parent.On(events.Linux.WindowLoadChanged, func(_ *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowLoadChanged, func(_ *WindowEvent) {
 		if w.parent.options.JS != "" {
 			w.execJS(w.parent.options.JS)
 		}
@@ -283,15 +328,22 @@ func (w *linuxWebviewWindow) run() {
 			w.execJS(js)
 		}
 	})
-	w.parent.On(events.Linux.WindowFocusIn, func(e *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowFocusIn, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowFocus)
 	})
-	w.parent.On(events.Linux.WindowFocusOut, func(e *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowFocusOut, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowLostFocus)
 	})
-	w.parent.On(events.Linux.WindowDeleteEvent, func(e *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowDeleteEvent, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowClosing)
 	})
+	w.parent.OnWindowEvent(events.Linux.WindowDidMove, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDidMove)
+	})
+	w.parent.OnWindowEvent(events.Linux.WindowDidResize, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDidResize)
+	})
+
 	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
 		w.execJS(runtime.Core())
 	})
@@ -346,3 +398,11 @@ func (w *linuxWebviewWindow) setMaximiseButtonState(state ButtonState) {}
 
 // SetCloseButtonState is unsupported on Linux
 func (w *linuxWebviewWindow) setCloseButtonState(state ButtonState) {}
+
+func (w *linuxWebviewWindow) isIgnoreMouseEvents() bool {
+	return w.ignoreMouseEvents
+}
+
+func (w *linuxWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	w.ignoreMouse(w.ignoreMouseEvents)
+}

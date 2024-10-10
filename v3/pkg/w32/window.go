@@ -5,7 +5,6 @@ package w32
 import (
 	"fmt"
 	"github.com/samber/lo"
-	"log"
 	"strconv"
 	"strings"
 	"sync"
@@ -28,12 +27,14 @@ var (
 	enableMenuItem = user32.NewProc("EnableMenuItem")
 )
 
+var Fatal func(error)
+
 const (
 	GCLP_HBRBACKGROUND int32 = -10
 	GCLP_HICON         int32 = -14
 )
 
-func ExtendFrameIntoClientArea(hwnd uintptr, extend bool) {
+func ExtendFrameIntoClientArea(hwnd uintptr, extend bool) error {
 	// -1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11)
 	//     Also shows the caption buttons if transparent ant translucent but they don't work.
 	//  0: Adds the default frame styling but no aero shadow, does not show the caption buttons.
@@ -44,8 +45,9 @@ func ExtendFrameIntoClientArea(hwnd uintptr, extend bool) {
 		margins = MARGINS{1, 1, 1, 1} // Only extend 1 pixel to have the default frame styling but no caption buttons
 	}
 	if err := dwmExtendFrameIntoClientArea(hwnd, &margins); err != nil {
-		log.Fatal(fmt.Errorf("DwmExtendFrameIntoClientArea failed: %s", err))
+		return fmt.Errorf("DwmExtendFrameIntoClientArea failed: %s", err)
 	}
+	return nil
 }
 
 func IsVisible(hwnd uintptr) bool {
@@ -151,7 +153,7 @@ func MustStringToUTF16Ptr(input string) *uint16 {
 	input = stripNulls(input)
 	result, err := syscall.UTF16PtrFromString(input)
 	if err != nil {
-		Fatal(err.Error())
+		Fatal(err)
 	}
 	return result
 }

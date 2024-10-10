@@ -138,19 +138,6 @@ type WebviewWindowOptions struct {
 	IgnoreMouseEvents bool
 }
 
-var WebviewWindowDefaults = &WebviewWindowOptions{
-	Title:  "",
-	Width:  800,
-	Height: 600,
-	URL:    "",
-	BackgroundColour: RGBA{
-		Red:   255,
-		Green: 255,
-		Blue:  255,
-		Alpha: 255,
-	},
-}
-
 type RGBA struct {
 	Red, Green, Blue, Alpha uint8
 }
@@ -380,7 +367,23 @@ type MacWindow struct {
 
 	// WebviewPreferences contains preferences for the webview
 	WebviewPreferences MacWebviewPreferences
+
+	// WindowLevel sets the window level to control the order of windows in the screen
+	WindowLevel MacWindowLevel
 }
+
+type MacWindowLevel string
+
+const (
+	MacWindowLevelNormal      MacWindowLevel = "normal"
+	MacWindowLevelFloating    MacWindowLevel = "floating"
+	MacWindowLevelTornOffMenu MacWindowLevel = "tornOffMenu"
+	MacWindowLevelModalPanel  MacWindowLevel = "modalPanel"
+	MacWindowLevelMainMenu    MacWindowLevel = "mainMenu"
+	MacWindowLevelStatus      MacWindowLevel = "status"
+	MacWindowLevelPopUpMenu   MacWindowLevel = "popUpMenu"
+	MacWindowLevelScreenSaver MacWindowLevel = "screenSaver"
+)
 
 // MacWebviewPreferences contains preferences for the Mac webview
 type MacWebviewPreferences struct {

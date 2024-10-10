@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "AppDelegate.h"
+#import "message.h"
 
 @implementation AppDelegate
 -(BOOL)application:(NSApplication *)sender openFile:(NSString *)filename
@@ -20,6 +21,11 @@
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender {
     return NO;
+}
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+    processMessage("Q");
+    return NSTerminateCancel;
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification {

@@ -12,6 +12,7 @@ type GenerateConstantsOptions struct {
 }
 
 func GenerateConstants(options *GenerateConstantsOptions) error {
+	DisableFooter = true
 	goData, err := os.ReadFile(options.ConstantsFilename)
 	if err != nil {
 		return err

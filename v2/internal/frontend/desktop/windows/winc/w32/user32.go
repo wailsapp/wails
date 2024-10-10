@@ -639,7 +639,7 @@ func GetSysColorBrush(nIndex int) HBRUSH {
 
 		return HBRUSH(ret)
 	*/
-	ret, _, _ := syscall.Syscall(getSysColorBrush, 1,
+	ret, _, _ := syscall.SyscallN(getSysColorBrush,
 		uintptr(nIndex),
 		0,
 		0)

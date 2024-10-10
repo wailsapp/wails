@@ -28,6 +28,10 @@ func main() {
 	// Create a custom menu
 	menu := app.NewMenu()
 	menu.AddRole(application.AppMenu)
+	menu.AddRole(application.EditMenu)
+	menu.AddRole(application.WindowMenu)
+	menu.AddRole(application.ServicesMenu)
+	menu.AddRole(application.HelpMenu)
 
 	// Let's make a "Demo" menu
 	infoMenu := menu.AddSubmenu("Info")

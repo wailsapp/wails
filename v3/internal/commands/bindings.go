@@ -3,15 +3,20 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/pterm/pterm"
+	"golang.org/x/term"
+
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
 )
 
 func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string) error {
+	DisableFooter = true
+
 	if options.Silent {
 		pterm.DisableOutput()
 		defer pterm.EnableOutput()
@@ -38,7 +43,10 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	}
 
 	// Start a spinner for progress messages.
-	spinner, _ := pterm.DefaultSpinner.Start("Initialising...")
+	var spinner *pterm.SpinnerPrinter
+	if term.IsTerminal(int(os.Stdout.Fd())) && (os.Getenv("CI") != "true") {
+		spinner, _ = pterm.DefaultSpinner.Start("Initialising...")
+	}
 
 	// Initialise and run generator.
 	stats, err := generator.NewGenerator(
@@ -48,7 +56,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	).Generate(patterns...)
 
 	// Resolve spinner.
-	spinner.Info(fmt.Sprintf(
+	resultMessage := fmt.Sprintf(
 		"Processed: %s, %s, %s, %s, %s in %s.",
 		pluralise(stats.NumPackages, "Package"),
 		pluralise(stats.NumServices, "Service"),
@@ -56,7 +64,12 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		pluralise(stats.NumEnums, "Enum"),
 		pluralise(stats.NumModels, "Model"),
 		stats.Elapsed().String(),
-	))
+	)
+	if spinner != nil {
+		spinner.Info(resultMessage)
+	} else {
+		pterm.Info.Println(resultMessage)
+	}
 
 	// Report output directory.
 	pterm.Info.Printfln("Output directory: %s", absPath)

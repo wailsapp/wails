@@ -45,6 +45,12 @@
 
 注意：当 `WebviewBrowserPath` 指定时，`error` 策略将在最小要求版本不匹配或运行时路径无效的情况下被强制执行。
 
+The downloaded file will be compressed (extension `.cab`), so you must extract it before using it, according to the instructions on the [official site](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode) should run in a terminal the following command to extract the file:
+
+```
+expand {path to the package} -F:* {path to the destination folder}
+```
+
 ## 创建其他程序
 
 当生成其他程序（例如脚本）时，您将看到屏幕上出现该窗口。 要隐藏窗口，可以使用以下代码：

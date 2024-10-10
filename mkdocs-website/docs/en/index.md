@@ -6,6 +6,10 @@ Welcome to the Wails v3 Alpha documentation. This is your starting point for exp
 
 Wails v3 Alpha is the latest iteration of the Wails project, bringing new features and improvements to make desktop application development more efficient and enjoyable. This version is still in alpha, so some features might change before the final release.
 
+## Status
+
+Please consult our [Status Page](status.md) for up-to-date status.
+
 ## What's New
 
 Here are some of the exciting new features and improvements in Wails v3 Alpha:

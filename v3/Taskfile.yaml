@@ -56,6 +56,12 @@ tasks:
       - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old wailsjs.dev -new wails.io -ext .ts,.js,.html -ignore vite.config.js,vite.config.ts,vite-env.d.ts
       - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old "framework powered by Wails" -new "framework powered by Vite" -ext .ts,.js,.html,.svelte -ignore vite.config.js,vite.config.ts,vite-env.d.ts
 
+  release:
+    summary: Release a new version of Wails. Call with `task v3:release -- <version>`
+    dir: tasks/release
+    cmds:
+      - go run release.go {{.CLI_ARGS}}
+
   taskfile:upgrade:
     cmds:
       - go get -u github.com/go-task/task/v3
@@ -170,13 +176,17 @@ tasks:
         contextmenus
         dialogs
         drag-n-drop
+        environment
         events
         frameless
         hide-window
+        ignore-mouse
         keybindings
         menu
         plain
+        raw-message
         screen
+        services
         show-macos-toolbar
         systray
         video
