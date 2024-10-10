@@ -103,6 +103,13 @@ There are [issues](https://github.com/upx/upx/issues/446) with using UPX with Ap
 
 :::
 
+:::info Set minimal version for MacOS
+
+You can override default [minimal version](../gettingstarted/installation#supported-platforms) of macOS for your app by providing version via `CGO_CFLAGS` and `CGO_LDFLAGS` environment variables.
+e.g. `CGO_CFLAGS=-mmacosx-version-min=10.15.0 CGO_LDFLAGS=-mmacosx-version-min=10.15.0 wails build`
+
+:::
+
 :::info UPX on Windows
 
 Some Antivirus vendors false positively mark `upx` compressed binaries as virus, see [issue](https://github.com/upx/upx/issues/437).

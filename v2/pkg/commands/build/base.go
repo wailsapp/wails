@@ -307,7 +307,9 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 				if v != "" {
 					v += " "
 				}
-				v += "-mmacosx-version-min=10.13"
+				if !strings.Contains(v, "-mmacosx-version-min") {
+					v += "-mmacosx-version-min=10.13"
+				}
 			}
 			return v
 		})
@@ -344,7 +346,9 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 				if addUTIFramework {
 					v += "-framework UniformTypeIdentifiers "
 				}
-				v += "-mmacosx-version-min=10.13"
+				if !strings.Contains(v, "-mmacosx-version-min") {
+					v += "-mmacosx-version-min=10.13"
+				}
 
 				return v
 			})
