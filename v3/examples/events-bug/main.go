@@ -13,8 +13,8 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
-		KeyBindings: map[string]func(window *application.WebviewWindow){
-			"shift+ctrl+c": func(window *application.WebviewWindow) {
+		KeyBindings: map[string]func(window application.Window){
+			"shift+ctrl+c": func(window application.Window) {
 				selection, err := application.OpenFileDialog().
 					CanChooseFiles(true).
 					CanCreateDirectories(true).

@@ -223,6 +223,8 @@ func (w *WebviewWindow) setupEventMapping() {
 
 // NewWindow creates a new window with the given options
 func NewWindow(options WebviewWindowOptions) *WebviewWindow {
+	id := getWindowID()
+
 	if options.Width == 0 {
 		options.Width = 800
 	}
@@ -234,11 +236,11 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	}
 
 	if options.Name == "" {
-		options.Name = fmt.Sprintf("window-%d", getWindowID())
+		options.Name = fmt.Sprintf("Window %d", id)
 	}
 
 	result := &WebviewWindow{
-		id:             getWindowID(),
+		id:             id,
 		options:        options,
 		eventListeners: make(map[uint][]*WindowEventListener),
 		contextMenus:   make(map[string]*Menu),
@@ -262,13 +264,13 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 
 	// Process keybindings
 	if result.options.KeyBindings != nil {
-		result.keyBindings = processKeyBindingOptions(result.options.KeyBindings)
+		result.keyBindings = windowProcessKeyBindingOptions(result.options.KeyBindings)
 	}
 
 	return result
 }
 
-func processKeyBindingOptions(keyBindings map[string]func(window *WebviewWindow)) map[string]func(window *WebviewWindow) {
+func windowProcessKeyBindingOptions(keyBindings map[string]func(window *WebviewWindow)) map[string]func(window *WebviewWindow) {
 	result := make(map[string]func(window *WebviewWindow))
 	for key, callback := range keyBindings {
 		// Parse the key to an accelerator
@@ -1279,7 +1281,7 @@ func (w *WebviewWindow) processKeyBinding(acceleratorString string) bool {
 }
 
 func (w *WebviewWindow) HandleKeyEvent(acceleratorString string) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
