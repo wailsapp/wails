@@ -11,6 +11,7 @@ import (
 	"github.com/leaanthony/u"
 
 	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -432,10 +433,11 @@ func (w *WebviewWindow) Hide() Window {
 }
 
 func (w *WebviewWindow) SetURL(s string) Window {
-	w.options.URL = s
+	url, _ := assetserver.GetStartURL(s)
+	w.options.URL = url
 	if w.impl != nil {
 		InvokeSync(func() {
-			w.impl.setURL(s)
+			w.impl.setURL(url)
 		})
 	}
 	return w
