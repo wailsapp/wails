@@ -146,15 +146,38 @@ The `Path` type is an enum with the following values:
 
 ```go
     // Get the application data directory path
-    appDataPath := app.Path(application.AppData)
+    appDataPath, err := app.Path(application.AppData)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println("AppData path:", appDataPath)
+
+    // Output: AppData path: /home/username/.local/share  // Linux
+    // Output: AppData path: /Users/username/Library/Application Support  // macOS
+    // Output: AppData path: C:\Users\Username\AppData\Roaming  // Windows
 
     // Get the user cache directory path
-    userCachePath := app.Path(application.UserCache)
+    userCachePath, err := app.Path(application.UserCache)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println("UserCache path:", userCachePath)
+
+    // Output: UserCache path: /home/username/.cache  // Linux
+    // Output: UserCache path: /Users/username/Library/Caches  // macOS
+    // Output: UserCache path: C:\Users\Username\AppData\Local\Temp  // Windows
 
     // Get the user config directory path
-    userConfigPath := app.Path(application.UserConfig)
-```
+    userConfigPath, err := app.Path(application.UserConfig)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println("UserConfig path:", userConfigPath)
 
+    // Output: UserConfig path: /home/username/.config  // Linux
+    // Output: UserConfig path: /Users/username/Library/Preferences  // macOS
+    // Output: UserConfig path: C:\Users\Username\AppData\Local  // Windows
+```
 
 
 --8<--
