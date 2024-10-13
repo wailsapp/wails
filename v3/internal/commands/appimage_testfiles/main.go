@@ -28,9 +28,9 @@ func main() {
 		log.Println("ApplicationDidFinishLaunching")
 	})
 
-	var hiddenWindows []*application.WebviewWindow
+	var hiddenWindows []application.Window
 
-	currentWindow := func(fn func(window *application.WebviewWindow)) {
+	currentWindow := func(fn func(window application.Window)) {
 		if app.CurrentWindow() != nil {
 			fn(app.CurrentWindow())
 		} else {
@@ -66,7 +66,7 @@ func main() {
 				// If the user clicks the close button again, the window will
 				// close.
 				ShouldClose: func(window *application.WebviewWindow) bool {
-					if !lo.Contains(hiddenWindows, window) {
+					if !lo.Contains(hiddenWindows, application.Window(window)) {
 						hiddenWindows = append(hiddenWindows, window)
 						go func() {
 							time.Sleep(5 * time.Second)
@@ -76,7 +76,7 @@ func main() {
 						return false
 					}
 					// Remove the window from the hiddenWindows list
-					hiddenWindows = lo.Without(hiddenWindows, window)
+					hiddenWindows = lo.Without(hiddenWindows, application.Window(window))
 					return true
 				},
 			}).
@@ -207,141 +207,141 @@ func main() {
 
 	sizeMenu := menu.AddSubmenu("Size")
 	sizeMenu.Add("Set Size (800,600)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetSize(800, 600)
 		})
 	})
 
 	sizeMenu.Add("Set Size (Random)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetSize(rand.Intn(800)+200, rand.Intn(600)+200)
 		})
 	})
 	sizeMenu.Add("Set Min Size (200,200)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetMinSize(200, 200)
 		})
 	})
 	sizeMenu.Add("Set Max Size (600,600)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetMaximiseButtonState(application.ButtonDisabled)
 			w.SetMaxSize(600, 600)
 		})
 	})
 	sizeMenu.Add("Get Current WebviewWindow Size").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			width, height := w.Size()
 			application.InfoDialog().SetTitle("Current WebviewWindow Size").SetMessage("Width: " + strconv.Itoa(width) + " Height: " + strconv.Itoa(height)).Show()
 		})
 	})
 
 	sizeMenu.Add("Reset Min Size").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetMinSize(0, 0)
 		})
 	})
 
 	sizeMenu.Add("Reset Max Size").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetMaxSize(0, 0)
 			w.SetMaximiseButtonState(application.ButtonEnabled)
 		})
 	})
 	positionMenu := menu.AddSubmenu("Position")
 	positionMenu.Add("Set Relative Position (0,0)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetRelativePosition(0, 0)
 		})
 	})
 	positionMenu.Add("Set Relative Position (Random)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetRelativePosition(rand.Intn(1000), rand.Intn(800))
 		})
 	})
 
 	positionMenu.Add("Get Relative Position").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			x, y := w.RelativePosition()
 			application.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
 		})
 	})
 
 	positionMenu.Add("Set Position (0,0)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetPosition(0, 0)
 		})
 	})
 
 	positionMenu.Add("Set Position (Random)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetPosition(rand.Intn(1000), rand.Intn(800))
 		})
 	})
 
 	positionMenu.Add("Get Position").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			x, y := w.Position()
 			application.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
 		})
 	})
 
 	positionMenu.Add("Center").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.Center()
 		})
 	})
 	stateMenu := menu.AddSubmenu("State")
 	stateMenu.Add("Minimise (for 2 secs)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.Minimise()
 			time.Sleep(2 * time.Second)
 			w.Restore()
 		})
 	})
 	stateMenu.Add("Maximise").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.Maximise()
 		})
 	})
 	stateMenu.Add("Fullscreen").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.Fullscreen()
 		})
 	})
 	stateMenu.Add("UnFullscreen").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.UnFullscreen()
 		})
 	})
 	stateMenu.Add("Restore").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.Restore()
 		})
 	})
 	stateMenu.Add("Hide (for 2 seconds)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.Hide()
 			time.Sleep(2 * time.Second)
 			w.Show()
 		})
 	})
 	stateMenu.Add("Always on Top").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetAlwaysOnTop(true)
 		})
 	})
 	stateMenu.Add("Not always on Top").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetAlwaysOnTop(false)
 		})
 	})
 	stateMenu.Add("Google.com").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetURL("https://google.com")
 		})
 	})
 	stateMenu.Add("wails.io").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetURL("https://wails.io")
 		})
 	})
@@ -366,7 +366,7 @@ func main() {
 		}
 	})
 	stateMenu.Add("Get Screen for WebviewWindow").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			screen, err := w.GetScreen()
 			if err != nil {
 				application.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
@@ -377,7 +377,7 @@ func main() {
 		})
 	})
 	stateMenu.Add("Disable for 5s").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			w.SetEnabled(false)
 			time.Sleep(5 * time.Second)
 			w.SetEnabled(true)
@@ -386,7 +386,7 @@ func main() {
 
 	if runtime.GOOS == "windows" {
 		stateMenu.Add("Flash Start").OnClick(func(ctx *application.Context) {
-			currentWindow(func(w *application.WebviewWindow) {
+			currentWindow(func(w application.Window) {
 				time.Sleep(2 * time.Second)
 				w.Flash(true)
 			})
@@ -395,7 +395,7 @@ func main() {
 
 	printMenu := menu.AddSubmenu("Print")
 	printMenu.Add("Print").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			_ = w.Print()
 		})
 	})
