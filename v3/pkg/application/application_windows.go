@@ -4,6 +4,8 @@ package application
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -348,4 +350,19 @@ func (a *App) platformEnvironment() map[string]any {
 func fatalHandler(errFunc func(error)) {
 	w32.Fatal = errFunc
 	return
+}
+
+func (a *windowsApp) getAppDataPath() string {
+	path := os.Getenv("APPDATA")
+	return path
+}
+
+func (a *windowsApp) getUserCachePath() string {
+	path := filepath.Join(os.Getenv("LOCALAPPDATA"), "Temp")
+	return path
+}
+
+func (a *windowsApp) getUserConfigPath() string {
+	path := os.Getenv("LOCALAPPDATA")
+	return path
 }

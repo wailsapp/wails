@@ -133,6 +133,30 @@ API: `Show()`
     app.Show()
 ```
 
+### Path
+
+API: `Path(selector Path) string`
+
+`Path(selector Path)` returns the full path for the given path type. It provides a cross-platform way to access common application directories.
+
+The `Path` type is an enum with the following values:
+- `AppData`: Returns the path to the application data directory
+- `UserCache`: Returns the path to the user's cache directory
+- `UserConfig`: Returns the path to the user's configuration directory
+
+```go
+    // Get the application data directory path
+    appDataPath := app.Path(application.AppData)
+
+    // Get the user cache directory path
+    userCachePath := app.Path(application.UserCache)
+
+    // Get the user config directory path
+    userConfigPath := app.Path(application.UserConfig)
+```
+
+
+
 --8<--
 ./docs/en/API/application_window.md
 ./docs/en/API/application_menu.md

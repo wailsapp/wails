@@ -160,6 +160,8 @@ static const char* serializationNSDictionary(void *dict) {
 import "C"
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -362,4 +364,19 @@ func (a *App) platformEnvironment() map[string]any {
 
 func fatalHandler(errFunc func(error)) {
 	return
+}
+
+func (a *macosApp) getAppDataPath() string {
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, "Library", "Application Support")
+}
+
+func (a *macosApp) getUserCachePath() string {
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, "Library", "Caches")
+}
+
+func (a *macosApp) getUserConfigPath() string {
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, "Library", "Preferences")
 }

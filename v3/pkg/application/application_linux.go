@@ -16,6 +16,7 @@ import "C"
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -259,4 +260,19 @@ func (a *App) platformEnvironment() map[string]any {
 func fatalHandler(errFunc func(error)) {
 	// Stub for windows function
 	return
+}
+
+func (a *linuxApp) getAppDataPath() string {
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, ".local", "share")
+}
+
+func (a *linuxApp) getUserCachePath() string {
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, ".cache")
+}
+
+func (a *linuxApp) getUserConfigPath() string {
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, ".config")
 }
