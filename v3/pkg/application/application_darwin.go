@@ -160,8 +160,12 @@ static const char* serializationNSDictionary(void *dict) {
 import "C"
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
 	"unsafe"
 
+	"github.com/adrg/xdg"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
@@ -362,4 +366,50 @@ func (a *App) platformEnvironment() map[string]any {
 
 func fatalHandler(errFunc func(error)) {
 	return
+}
+
+func (a *macosApp) getAppDataPath() (string, error) {
+	path := filepath.Join(xdg.DataHome, "Application Support")
+	if _, err := os.Stat(path); err == nil {
+		return path, nil
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, "Library", "Application Support"), nil
+}
+
+func (a *macosApp) getUserCachePath() (string, error) {
+	if _, err := os.Stat(xdg.CacheHome); err == nil {
+		return xdg.CacheHome, nil
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, "Library", "Caches"), nil
+}
+
+func (a *macosApp) getUserConfigPath() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	userPrefDir := filepath.Join(home, "Library", "Preferences")
+
+	for _, dir := range xdg.ConfigDirs {
+		if dir == userPrefDir {
+			return dir, nil
+		}
+		if strings.HasSuffix(dir, "Library/Preferences") {
+			if strings.HasPrefix(dir, home) {
+				return dir, nil
+			}
+		}
+	}
+	return userPrefDir, nil
 }
