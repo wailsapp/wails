@@ -20,6 +20,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/adrg/xdg"
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -262,17 +263,35 @@ func fatalHandler(errFunc func(error)) {
 	return
 }
 
-func (a *linuxApp) getAppDataPath() string {
-	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".local", "share")
+func (a *linuxApp) getAppDataPath() (string, error) {
+	if xdg.DataHome != "" {
+		return xdg.DataHome, nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ".local", "share"), nil
 }
 
-func (a *linuxApp) getUserCachePath() string {
-	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".cache")
+func (a *linuxApp) getUserCachePath() (string, error) {
+	if xdg.CacheHome != "" {
+		return xdg.CacheHome, nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ".cache"), nil
 }
 
-func (a *linuxApp) getUserConfigPath() string {
-	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".config")
+func (a *linuxApp) getUserConfigPath() (string, error) {
+	if xdg.ConfigHome != "" {
+		return xdg.ConfigHome, nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ".config"), nil
 }

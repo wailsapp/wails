@@ -352,17 +352,26 @@ func fatalHandler(errFunc func(error)) {
 	return
 }
 
-func (a *windowsApp) getAppDataPath() string {
+func (a *windowsApp) getAppDataPath() (string, error) {
 	path := os.Getenv("APPDATA")
-	return path
+	if path == "" {
+		return "", fmt.Errorf("APPDATA environment variable is not set")
+	}
+	return path, nil
 }
 
-func (a *windowsApp) getUserCachePath() string {
-	path := filepath.Join(os.Getenv("LOCALAPPDATA"), "Temp")
-	return path
+func (a *windowsApp) getUserCachePath() (string, error) {
+	localAppData := os.Getenv("LOCALAPPDATA")
+	if localAppData == "" {
+		return "", fmt.Errorf("LOCALAPPDATA environment variable is not set")
+	}
+	return filepath.Join(localAppData, "Temp"), nil
 }
 
-func (a *windowsApp) getUserConfigPath() string {
+func (a *windowsApp) getUserConfigPath() (string, error) {
 	path := os.Getenv("LOCALAPPDATA")
-	return path
+	if path == "" {
+		return "", fmt.Errorf("LOCALAPPDATA environment variable is not set")
+	}
+	return path, nil
 }

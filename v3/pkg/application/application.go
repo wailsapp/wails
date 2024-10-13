@@ -200,9 +200,9 @@ type (
 		GetFlags(options Options) map[string]any
 		isOnMainThread() bool
 		isDarkMode() bool
-		getAppDataPath() string
-		getUserCachePath() string
-		getUserConfigPath() string
+		getAppDataPath() (string, error)
+		getUserCachePath() (string, error)
+		getUserConfigPath() (string, error)
 	}
 
 	runnable interface {
@@ -1027,7 +1027,7 @@ func (a *App) shouldQuit() bool {
 
 // Path returns the path for the given selector
 
-func (a *App) Path(selector Path) string {
+func (a *App) Path(selector Path) (string, error) {
 	switch selector {
 	case AppData:
 		return a.impl.getAppDataPath()
@@ -1036,6 +1036,6 @@ func (a *App) Path(selector Path) string {
 	case UserConfig:
 		return a.impl.getUserConfigPath()
 	default:
-		return ""
+		return "", fmt.Errorf("unknown path selector: %v", selector)
 	}
 }
