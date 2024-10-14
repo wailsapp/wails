@@ -70,8 +70,13 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 
 	var dwStyle = w32.WS_OVERLAPPEDWINDOW
 
-	winc.RegClassOnlyOnce("wailsWindow")
-	handle := winc.CreateWindow("wailsWindow", parent, uint(exStyle), uint(dwStyle))
+	windowClassName := "wailsWindow"
+	if windowsOptions != nil && windowsOptions.WindowClassName != "" {
+		windowClassName = windowsOptions.WindowClassName
+	}
+
+	winc.RegClassOnlyOnce(windowClassName)
+	handle := winc.CreateWindow(windowClassName, parent, uint(exStyle), uint(dwStyle))
 	result.SetHandle(handle)
 	winc.RegMsgHandler(result)
 	result.SetParent(parent)
