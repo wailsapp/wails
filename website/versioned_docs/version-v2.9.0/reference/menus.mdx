@@ -15,6 +15,9 @@ An example of how to create a menu:
     app := NewApp()
 
     AppMenu := menu.NewMenu()
+	if runtime.GOOS == "darwin" { // On macOS platform, this must be done right after `NewMenu()`
+		AppMenu.Append(menu.AppMenu())
+	}
     FileMenu := AppMenu.AddSubmenu("File")
     FileMenu.AddText("&Open", keys.CmdOrCtrl("o"), openFile)
     FileMenu.AddSeparator()
@@ -22,9 +25,9 @@ An example of how to create a menu:
         runtime.Quit(app.ctx)
     })
 
-    if runtime.GOOS == "darwin" {
-	AppMenu.Append(menu.EditMenu())  // on macos platform, we should append EditMenu to enable Cmd+C,Cmd+V,Cmd+Z... shortcut
-    }
+	if runtime.GOOS == "darwin" {
+		AppMenu.Append(menu.EditMenu()) // On macos platform, EditMenu should be appended enable Cmd+C, Cmd+V, Cmd+Z... shortcuts
+	}
 
     err := wails.Run(&options.App{
         Title:             "Menus Demo",
