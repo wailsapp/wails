@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)
 - Upgrade to `go-webview2` v1.0.16 by [leaanthony](https://github.com/leaanthony)
 - Fixed `Screen` type to include `ID` not `Id` by [etesam913](https://github.com/etesam913) in [#3778](https://github.com/wailsapp/wails/pull/3778)
+- Fixed service name determination by [windom](https://github.com/windom/) in [#3827](https://github.com/wailsapp/wails/pull/3827)
 - mkdocs serve now uses docker by [leaanthony](https://github.com/leaanthony)
 
 ### Fixed
