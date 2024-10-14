@@ -8,4 +8,5 @@ export default defineConfig({
       csr: true,
     }),
   ],
+  server: { port: 9245 }
 })
