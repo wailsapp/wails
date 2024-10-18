@@ -122,7 +122,6 @@ func NewEditMenu() *MenuItem {
 	editMenu.AddRole(Paste)
 	if runtime.GOOS == "darwin" {
 		editMenu.AddRole(PasteAndMatchStyle)
-		editMenu.AddRole(PasteAndMatchStyle)
 		editMenu.AddRole(Delete)
 		editMenu.AddRole(SelectAll)
 		editMenu.AddSeparator()
