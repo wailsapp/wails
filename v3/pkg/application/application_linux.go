@@ -16,7 +16,6 @@ import "C"
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -264,34 +263,13 @@ func fatalHandler(errFunc func(error)) {
 }
 
 func (a *linuxApp) getAppDataPath() (string, error) {
-	if xdg.DataHome != "" {
-		return xdg.DataHome, nil
-	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(home, ".local", "share"), nil
+	return xdg.DataHome, nil
 }
 
 func (a *linuxApp) getUserCachePath() (string, error) {
-	if xdg.CacheHome != "" {
-		return xdg.CacheHome, nil
-	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(home, ".cache"), nil
+	return xdg.CacheHome, nil
 }
 
 func (a *linuxApp) getUserConfigPath() (string, error) {
-	if xdg.ConfigHome != "" {
-		return xdg.ConfigHome, nil
-	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(home, ".config"), nil
+	return xdg.ConfigHome, nil
 }

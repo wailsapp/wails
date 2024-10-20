@@ -1028,6 +1028,9 @@ func (a *App) shouldQuit() bool {
 // Path returns the path for the given selector
 
 func (a *App) Path(selector Path) (string, error) {
+	if a.impl == nil {
+		return "", fmt.Errorf("application not initialized")
+	}
 	switch selector {
 	case AppData:
 		return a.impl.getAppDataPath()
