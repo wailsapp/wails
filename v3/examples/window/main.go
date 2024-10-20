@@ -154,6 +154,17 @@ func main() {
 					Show()
 				windowCounter++
 			})
+		myMenu.Add("New WebviewWindow (Always on top)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					AlwaysOnTop: true,
+				}).
+					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
+					SetURL("https://wails.io").
+					Show()
+				windowCounter++
+			})
 		myMenu.Add("New WebviewWindow (Hide Maximise)").
 			OnClick(func(ctx *application.Context) {
 				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
