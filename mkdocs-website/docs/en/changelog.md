@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upgrade to `go-webview2` v1.0.16 by [leaanthony](https://github.com/leaanthony)
 - Fixed `Screen` type to include `ID` not `Id` by [etesam913](https://github.com/etesam913) in [#3778](https://github.com/wailsapp/wails/pull/3778)
 
+### Fixed
+- Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony)
+  in [#3841](https://github.com/wailsapp/wails/pull/3841)
+
 ## v3.0.0-alpha.7 - 2024-09-18
 
 ### Added
