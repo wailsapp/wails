@@ -17,11 +17,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Templates for sveltekit and sveltekit-ts that are set for non-SSR development by [atterpac](https://github.com/atterpac) in [#3829](https://github.com/wailsapp/wails/pull/3829)
+
 ### Changed
 - Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)
 - Upgrade to `go-webview2` v1.0.16 by [leaanthony](https://github.com/leaanthony)
 - Fixed `Screen` type to include `ID` not `Id` by [etesam913](https://github.com/etesam913) in [#3778](https://github.com/wailsapp/wails/pull/3778)
 - Add `Path` method to `application` package by [ansxuman](https://github.com/ansxuman) in [#3823](https://github.com/wailsapp/wails/pull/3823)
+
+### Fixed
+- Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony)
+  in [#3841](https://github.com/wailsapp/wails/pull/3841)
 
 ## v3.0.0-alpha.7 - 2024-09-18
 
