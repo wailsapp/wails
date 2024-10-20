@@ -2,7 +2,7 @@
   "name": "React + SWC + Vite (Typescript)",
   "shortname": "react-swc-ts",
   "author": "Lea Anthony",
-  "description": "React + SWC + Vite development server",
+  "description": "React + TS + SWC + Vite development server",
   "helpurl": "https://wails.io",
   "version": 3
 }
