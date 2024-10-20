@@ -2,7 +2,7 @@
   "name": "SvelteKit Typescript + Vite",
   "shortname": "sveltekit-ts",
   "author": "Atterpac",
-  "description": "Svelte + Vite development server",
+  "description": "SvelteKit + Vite development server",
   "helpurl": "https://wails.io",
   "version": 3
 }
