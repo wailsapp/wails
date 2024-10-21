@@ -133,6 +133,53 @@ API: `Show()`
     app.Show()
 ```
 
+### Path
+
+API: `Path(selector Path) string`
+
+`Path(selector Path)` returns the full path for the given path type. It provides a cross-platform way to access common application directories.
+
+The `Path` type is an enum with the following values:
+- `AppData`: Returns the path to the application data directory
+- `UserCache`: Returns the path to the user's cache directory
+- `UserConfig`: Returns the path to the user's configuration directory
+
+```go
+    // Get the application data directory path
+    appDataPath, err := app.Path(application.AppData)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println("AppData path:", appDataPath)
+
+    // Output: AppData path: /home/username/.local/share  // Linux
+    // Output: AppData path: /Users/username/Library/Application Support  // macOS
+    // Output: AppData path: C:\Users\Username\AppData\Roaming  // Windows
+
+    // Get the user cache directory path
+    userCachePath, err := app.Path(application.UserCache)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println("UserCache path:", userCachePath)
+
+    // Output: UserCache path: /home/username/.cache  // Linux
+    // Output: UserCache path: /Users/username/Library/Caches  // macOS
+    // Output: UserCache path: C:\Users\Username\AppData\Local\Temp  // Windows
+
+    // Get the user config directory path
+    userConfigPath, err := app.Path(application.UserConfig)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println("UserConfig path:", userConfigPath)
+
+    // Output: UserConfig path: /home/username/.config  // Linux
+    // Output: UserConfig path: /Users/username/Library/Preferences  // macOS
+    // Output: UserConfig path: C:\Users\Username\AppData\Local  // Windows
+```
+
+
 --8<--
 ./docs/en/API/application_window.md
 ./docs/en/API/application_menu.md

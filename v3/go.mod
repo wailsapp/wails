@@ -31,7 +31,7 @@ require (
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/go-webview2 v1.0.16
 	github.com/wailsapp/mimetype v1.4.1
-	golang.org/x/sys v0.20.0
+	golang.org/x/sys v0.22.0
 	golang.org/x/term v0.20.0
 	golang.org/x/tools v0.21.0
 	modernc.org/sqlite v1.21.0
@@ -46,6 +46,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
+	github.com/adrg/xdg v0.5.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/containerd/console v1.0.4 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect

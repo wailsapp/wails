@@ -33,6 +33,14 @@ var alphaAssets embed.FS
 
 var globalApplication *App
 
+type Path int
+
+const (
+	AppData Path = iota
+	UserCache
+	UserConfig
+)
+
 // AlphaAssets is the default assets for the alpha application
 var AlphaAssets = AssetOptions{
 	Handler: BundledAssetFileServer(alphaAssets),
@@ -192,6 +200,9 @@ type (
 		GetFlags(options Options) map[string]any
 		isOnMainThread() bool
 		isDarkMode() bool
+		getAppDataPath() (string, error)
+		getUserCachePath() (string, error)
+		getUserConfigPath() (string, error)
 	}
 
 	runnable interface {
@@ -1012,4 +1023,22 @@ func (a *App) shouldQuit() bool {
 		return a.options.ShouldQuit()
 	}
 	return true
+}
+
+// Path returns the path for the given selector
+
+func (a *App) Path(selector Path) (string, error) {
+	if a.impl == nil {
+		return "", fmt.Errorf("application not initialized")
+	}
+	switch selector {
+	case AppData:
+		return a.impl.getAppDataPath()
+	case UserCache:
+		return a.impl.getUserCachePath()
+	case UserConfig:
+		return a.impl.getUserConfigPath()
+	default:
+		return "", fmt.Errorf("unknown path selector: %v", selector)
+	}
 }

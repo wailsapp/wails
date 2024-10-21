@@ -19,6 +19,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/adrg/xdg"
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -259,4 +260,16 @@ func (a *App) platformEnvironment() map[string]any {
 func fatalHandler(errFunc func(error)) {
 	// Stub for windows function
 	return
+}
+
+func (a *linuxApp) getAppDataPath() (string, error) {
+	return xdg.DataHome, nil
+}
+
+func (a *linuxApp) getUserCachePath() (string, error) {
+	return xdg.CacheHome, nil
+}
+
+func (a *linuxApp) getUserConfigPath() (string, error) {
+	return xdg.ConfigHome, nil
 }
