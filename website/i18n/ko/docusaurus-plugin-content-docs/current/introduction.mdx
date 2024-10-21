@@ -4,24 +4,24 @@ sidebar_position: 1
 
 # 소개
 
-Wails는 Go와 웹 기술을 사용하여 데스크톱 앱을 작성할 수 있게 해주는 프로젝트입니다.
+Wails is a project that enables you to write desktop apps using Go and web technologies.
 
-Go를 위한 가볍고 빠른 Electron 대안으로 생각하세요. 유연성과 강력한 Go의 힘을 결합한 풍부하고 현대적인 프론트엔드와 함께 쉽게 애플리케이션을 구축할 수 있습니다.
+Consider it a lightweight and fast Electron alternative for Go. You can easily build applications with the flexibility and power of Go, combined with a rich, modern frontend.
 
-### 특징
+### Features
 
-- 네이티브 메뉴, 대화 상자, 테마 및 반투명 효과
-- Windows, macOS 및 Linux 지원
-- Svelte, React, Preact, Vue, Lit 및 Vanilla JS용 내장 템플릿
-- JavaScript에서 Go 메서드를 쉽게 호출
-- 자동 Go 구조체에서 TypeScript 모델 생성
-- Windows에서 CGO 또는 외부 DLL 필요 없음
-- [Vite](https://vitejs.dev/)의 힘을 이용한 라이브 개발 가능
-- 애플리케이션을 쉽게 생성, 빌드 및 패키징할 수 있는 강력한 CLI
-- 풍부한 [런타임 라이브러리](/docs/reference/runtime/intro)
-- Wails로 빌드된 애플리케이션은 Apple 및 Microsoft Store 준수
+- Native Menus, Dialogs, Theming and Translucency
+- Windows, macOS and linux support
+- Built in templates for Svelte, React, Preact, Vue, Lit and Vanilla JS
+- Easily call Go methods from JavaScript
+- Automatic Go struct to TypeScript model generation
+- No CGO or external DLLs required on Windows
+- Live development mode using the power of [Vite](https://vitejs.dev/)
+- Powerful CLI to easily Create, Build and Package applications
+- A rich [runtime library](/docs/reference/runtime/intro)
+- Applications built with Wails are Apple & Microsoft Store compliant
 
-이것은 Wails를 사용하여 작성된 MacOS 및 Windows용 데스크톱 애플리케이션 varly입니다. 훌륭한 외관을 제공할 뿐만 아니라 네이티브 메뉴와 반투명 효과를 사용하여 현대적인 네이티브 앱에서 기대할 수 있는 모든 것을 제공합니다.
+This is varly - a desktop application for MacOS & Windows written using Wails. Not only does it look great, it uses native menus and translucency - everything you'd expect from a modern native app.
 
 ```mdx-code-block
 <p class="text--center">
@@ -32,42 +32,42 @@ Go를 위한 가볍고 빠른 Electron 대안으로 생각하세요. 유연성�
 </p>
 ```
 
-### 빠른 시작 템플릿
+### Quick Start Templates
 
-Wails는 애플리케이션을 빠르게 실행할 수 있게 해주는 사전 구성된 템플릿을 여러 개 제공합니다. 다음 프레임워크에 대한 템플릿이 있습니다: Svelte, React, Vue, Preact, Lit 및 Vanilla. 각 템플릿에는 JavaScript 및 TypeScript 버전이 모두 있습니다.
+Wails comes with a number of pre-configured templates that allow you to get your application up and running quickly. There are templates for the following frameworks: Svelte, React, Vue, Preact, Lit and Vanilla. There are both JavaScript and TypeScript versions for each template.
 
-### 네이티브 요소
+### Native Elements
 
-Wails는 윈도우, 메뉴, 대화 상자 등과 같은 네이티브 요소를 처리하기 위해 특별히 제작된 라이브러리를 사용하므로, 보기 좋고 기능이 풍부한 데스크톱 애플리케이션을 구축할 수 있습니다.
+Wails uses a purpose built library for handling native elements such as Window, Menus, Dialogs, etc, so you can build good-looking, feature rich desktop applications.
 
-**브라우저를 내장하지 않으므로**, 작은 런타임을 제공합니다. 대신 플랫폼의 네이티브 렌더링 엔진을 재사용합니다. Windows에서는 Chromium 기반의 새로운 Microsoft Webview2 라이브러리를 사용합니다.
+**It does not embed a browser**, so it delivers a small runtime. Instead, it reuses the native rendering engine for the platform. On Windows, this is the new Microsoft Webview2 library, built on Chromium.
 
-### Go & JavaScript 상호 작용
+### Go & JavaScript Interoperability
 
-Wails는 Go 메서드를 JavaScript에서 사용할 수 있게 자동으로 만들어 주므로 프론트엔드에서 이름으로 호출할 수 있습니다! Go 메서드에서 사용하는 구조체에 대한 TypeScript 모델도 생성하여 Go와 JavaScript 간에 동일한 데이터 구조를 전달할 수 있습니다.
+Wails automatically makes your Go methods available to JavaScript, so you can call them by name from your frontend! It even generates TypeScript models for the structs used by your Go methods, so you can pass the same data structures between Go and JavaScript.
 
-### 런타임 라이브러리
+### Runtime Library
 
-Wails는 Go와 JavaScript 모두를 위한 런타임 라이브러리를 제공하여 이벤트 처리, 로깅, 대화 상자 등과 같은 현대적인 애플리케이션이 필요로 하는 많은 기능을 처리합니다.
+Wails provides a runtime library, for both Go and JavaScript, that handles a lot of the things modern applications need, like Eventing, Logging, Dialogs, etc.
 
-### 라이브 개발 경험
+### Live Development Experience
 
-#### 자동 재빌드
+#### Automatic Rebuilds
 
-애플리케이션을 "개발" 모드에서 실행하면, Wails는 애플리케이션을 네이티브 데스크톱 애플리케이션으로 빌드하지만 에셋을 디스크에서 읽습니다. Go 코드의 변경 사항을 감지하고 자동으로 애플리케이션을 재빌드하고 재시작합니다.
+When you run your application in "dev" mode, Wails will build your application as a native desktop application, but will read your assets from disk. It will detect any changes to your Go code and automatically rebuild and relaunch your application.
 
-#### 자동 리로드
+#### Automatic Reloads
 
-애플리케이션 에셋의 변경 사항이 감지되면, 실행 중인 애플리케이션이 "리로드"되어 변경 사항을 거의 즉시 반영합니다.
+When changes to your application assets are detected, your running application will "reload", reflecting your changes almost immediately.
 
-#### 브라우저를 이용한 애플리케이션 개발
+#### Develop your application in a Browser
 
-디버그 및 개발을 브라우저에서 선호하는 경우, Wails는 이를 지원합니다. 실행 중인 애플리케이션은 연결된 모든 브라우저에서 애플리케이션을 실행할 웹 서버도 가지고 있습니다. 에셋이 디스크에서 변경되면 자동으로 리로드합니다.
+If you prefer to debug and develop in a browser then Wails has you covered. The running application also has a webserver that will run your application in any browser that connects to it. It will even refresh when your assets change on disk.
 
-### 프로덕션용 네이티브 바이너리
+### Production-ready Native Binaries
 
-애플리케이션의 최종 빌드를 준비하면, CLI는 모든 에셋이 포함된 단일 실행 파일로 컴파일합니다. Windows 및 MacOS에서는 배포를 위한 네이티브 패키지를 생성할 수 있습니다. 패키징에 사용되는 에셋(아이콘, info.plist, 매니페스트 파일 등)은 프로젝트의 일부이며 사용자 지정이 가능하여 애플리케이션 빌드 방식을 완벽하게 제어할 수 있습니다.
+When you're ready to do the final build of your application, the CLI will compile it down to a single executable, with all the assets bundled into it. On Windows and MacOS, it is possible to create a native package for distribution. The assets used in packaging (icon, info.plist, manifest file, etc) are part of your project and may be customised, giving you total control over how your applications are built.
 
-### 도구
+### Tooling
 
-Wails CLI는 애플리케이션을 생성, 빌드 및 번들링하는 번거로움 없는 방법을 제공합니다. 아이콘 생성, 최적 설정으로 애플리케이션 컴파일, 배포 가능한 프로덕션 준비 바이너리 제공 등의 무거운 작업을 수행합니다. 여러 시작 템플릿 중에서 선택하여 빠르게 시작하세요!
+The Wails CLI provides a hassle-free way to generate, build and bundle your applications. It will do the heavy lifting of creating icons, compiling your application with optimal settings and delivering a distributable, production ready binary. Choose from a number of starter templates to get up and running quickly!
