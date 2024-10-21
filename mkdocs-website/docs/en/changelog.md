@@ -27,8 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `Path` method to `application` package by [ansxuman](https://github.com/ansxuman) in [#3823](https://github.com/wailsapp/wails/pull/3823)
 
 ### Fixed
-- Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony)
-  in [#3841](https://github.com/wailsapp/wails/pull/3841)
+- Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony) in [#3841](https://github.com/wailsapp/wails/pull/3841)
+- [darwin]  Fixed `application.NewEditMenu` including a duplicate `PasteAndMatchStyle` role in the edit menu on Darwin by [johnmccabe](https://github.com/johnmccabe) in [#3839](https://github.com/wailsapp/wails/pull/3839)
 
 ## v3.0.0-alpha.7 - 2024-09-18
 
