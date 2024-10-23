@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Templates for sveltekit and sveltekit-ts that are set for non-SSR development by [atterpac](https://github.com/atterpac) in [#3829](https://github.com/wailsapp/wails/pull/3829)
+- Update build assets using new `wails3 update build-assets` command by [leaanthony](https://github.com/leaanthony).
 
 ### Changed
 - Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)

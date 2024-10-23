@@ -43,13 +43,13 @@ func Init(options *flags.Init) error {
 		Name:               options.ProjectName,
 		Dir:                filepath.Join(options.ProjectDir, "build"),
 		Silent:             true,
-		ProductComments:    options.ProductComments,
 		ProductCompany:     options.ProductCompany,
-		ProductDescription: options.ProductDescription,
 		ProductName:        options.ProductName,
+		ProductDescription: options.ProductDescription,
 		ProductVersion:     options.ProductVersion,
 		ProductIdentifier:  options.ProductIdentifier,
 		ProductCopyright:   options.ProductCopyright,
+		ProductComments:    options.ProductComments,
 	}
 	return GenerateBuildAssets(buildAssetsOptions)
 }
