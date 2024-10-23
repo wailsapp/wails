@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Templates for sveltekit and sveltekit-ts that are set for non-SSR development by [atterpac](https://github.com/atterpac) in [#3829](https://github.com/wailsapp/wails/pull/3829)
+
 ### Changed
 - Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)
 - Upgrade to `go-webview2` v1.0.16 by [leaanthony](https://github.com/leaanthony)
@@ -24,8 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update `go.mod.tmpl` wails version to support `application.ServiceOptions` by [northes](https://github.com/northes) in [#3836](https://github.com/wailsapp/wails/pull/3836)
 
 ### Fixed
-- Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony)
-  in [#3841](https://github.com/wailsapp/wails/pull/3841)
+- Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony) in [#3841](https://github.com/wailsapp/wails/pull/3841)
+- [darwin]  Fixed `application.NewEditMenu` including a duplicate `PasteAndMatchStyle` role in the edit menu on Darwin by [johnmccabe](https://github.com/johnmccabe) in [#3839](https://github.com/wailsapp/wails/pull/3839)
 
 ## v3.0.0-alpha.7 - 2024-09-18
 

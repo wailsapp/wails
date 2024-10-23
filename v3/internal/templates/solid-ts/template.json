@@ -2,7 +2,7 @@
   "name": "Solid + Vite (Typescript)",
   "shortname": "solid-ts",
   "author": "Lea Anthony",
-  "description": "Solid (Typescript) + Vite development server",
+  "description": "Solid + TS + Vite development server",
   "helpurl": "https://wails.io",
   "version": 3
 }
