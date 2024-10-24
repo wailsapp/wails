@@ -1166,6 +1166,7 @@ func (w *macosWebviewWindow) run() {
 		)
 		w.setTitle(options.Title)
 		w.setResizable(!options.DisableResize)
+		w.setPosition(options.X, options.Y)
 		if options.MinWidth != 0 || options.MinHeight != 0 {
 			w.setMinSize(options.MinWidth, options.MinHeight)
 		}
