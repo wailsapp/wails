@@ -32,7 +32,8 @@ func main() {
 			TitleBar:                application.MacTitleBarHiddenInset,
 		},
 
-		URL: "/",
+		URL:      "/",
+		Centered: true,
 	})
 
 	err := app.Run()

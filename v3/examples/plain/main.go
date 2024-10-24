@@ -32,14 +32,16 @@ func main() {
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
 		},
-		URL: "/",
+		URL:      "/",
+		Centered: true,
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title: "HTML TEST",
-		HTML:  "<h1>AWESOME!</h1>",
-		CSS:   `body { background-color: rgb(255, 0, 0); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; user-select: none; -ms-user-select: none; -webkit-user-select: none; } .main { color: white; margin: 20%; }`,
-		JS:    `window.iamhere = function() { console.log("Hello World!"); }`,
+		Title:    "HTML TEST",
+		HTML:     "<h1>AWESOME!</h1>",
+		CSS:      `body { background-color: rgb(255, 0, 0); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; user-select: none; -ms-user-select: none; -webkit-user-select: none; } .main { color: white; margin: 20%; }`,
+		JS:       `window.iamhere = function() { console.log("Hello World!"); }`,
+		Centered: true,
 	})
 
 	app.OnEvent("clicked", func(_ *application.CustomEvent) {
@@ -50,9 +52,10 @@ func main() {
 		time.Sleep(5 * time.Second)
 
 		app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-			Title:  "Plain Bundle new Window from GoRoutine",
-			Width:  500,
-			Height: 500,
+			Title:    "Plain Bundle new Window from GoRoutine",
+			Width:    500,
+			Height:   500,
+			Centered: true,
 			Mac: application.MacWindow{
 				Backdrop:                application.MacBackdropTranslucent,
 				TitleBar:                application.MacTitleBarHiddenInsetUnified,

@@ -27,6 +27,7 @@ func main() {
 				HideToolbarSeparator: true,
 			},
 		},
+		Centered: true,
 	})
 
 	// Create window
@@ -41,6 +42,7 @@ func main() {
 				ShowToolbarWhenFullscreen: true,
 			},
 		},
+		Centered: true,
 	})
 
 	err := app.Run()

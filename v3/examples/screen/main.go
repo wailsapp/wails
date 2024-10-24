@@ -60,9 +60,10 @@ func main() {
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title:  "Screen Demo",
-		Width:  800,
-		Height: 600,
+		Title:    "Screen Demo",
+		Width:    800,
+		Height:   600,
+		Centered: true,
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,

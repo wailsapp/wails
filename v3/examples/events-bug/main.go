@@ -37,6 +37,7 @@ func main() {
 				window.OpenDevTools()
 			},
 		},
+		Centered: true,
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
@@ -48,6 +49,7 @@ func main() {
 				println("Window 2: Toggle Dev Tools")
 			},
 		},
+		Centered: true,
 	})
 
 	err := app.Run()

@@ -33,6 +33,7 @@ func main() {
 			InvisibleTitleBarHeight: 50,
 		},
 		EnableDragAndDrop: true,
+		Centered:          true,
 	})
 
 	window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {

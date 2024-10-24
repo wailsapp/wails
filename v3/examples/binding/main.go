@@ -26,6 +26,7 @@ func main() {
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		URL:             "/",
 		DevToolsEnabled: true,
+		Centered:        true,
 	})
 
 	err := app.Run()

@@ -24,9 +24,10 @@ func main() {
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title:  "JS Window API Demo",
-		Width:  1280,
-		Height: 1024,
+		Title:    "JS Window API Demo",
+		Width:    1280,
+		Height:   1024,
+		Centered: true,
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,

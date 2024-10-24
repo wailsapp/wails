@@ -26,6 +26,7 @@ func main() {
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Frameless: true,
+		Centered:  true,
 	})
 
 	err := app.Run()

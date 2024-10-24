@@ -19,6 +19,7 @@ func main() {
 	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Width:             800,
 		Height:            600,
+		Centered:          true,
 		Title:             "Ignore Mouse Example",
 		URL:               "https://wails.io",
 		IgnoreMouseEvents: false,

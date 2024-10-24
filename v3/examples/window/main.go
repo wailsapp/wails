@@ -662,6 +662,7 @@ func main() {
 		Mac: application.MacWindow{
 			DisableShadow: true,
 		},
+		Centered: true,
 	})
 
 	app.SetMenu(menu)

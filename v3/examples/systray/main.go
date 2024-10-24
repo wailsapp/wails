@@ -24,6 +24,7 @@ func main() {
 	_ = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Width:         500,
 		Height:        500,
+		Centered:      true,
 		Name:          "Systray Demo Window",
 		Frameless:     true,
 		AlwaysOnTop:   true,

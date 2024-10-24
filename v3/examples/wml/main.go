@@ -25,9 +25,10 @@ func main() {
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title:  "Wails ML Demo",
-		Width:  1280,
-		Height: 1024,
+		Title:    "Wails ML Demo",
+		Width:    1280,
+		Height:   1024,
+		Centered: true,
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,

@@ -63,6 +63,7 @@ func main() {
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
 			InvisibleTitleBarHeight: 50,
 		},
+		Centered: true,
 	})
 
 	var countdown = 3
@@ -84,6 +85,7 @@ func main() {
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
 			InvisibleTitleBarHeight: 50,
 		},
+		Centered: true,
 	})
 
 	go func() {

@@ -55,8 +55,9 @@ func main() {
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Width:  1024,
-		Height: 768,
+		Width:    1024,
+		Height:   768,
+		Centered: true,
 	})
 
 	err := app.Run()

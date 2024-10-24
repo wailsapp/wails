@@ -34,6 +34,7 @@ func main() {
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
 			InvisibleTitleBarHeight: 50,
 		},
+		Centered: true,
 	})
 
 	err := app.Run()

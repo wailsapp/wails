@@ -35,7 +35,8 @@ func main() {
 				FullscreenEnabled: application.Enabled,
 			},
 		},
-		HTML: "<video controls width=\"500\" >\n        <source\n          src=\"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm\"\n          type=\"video/webm\"\n        />\n        <source\n          src=\"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4\"\n          type=\"video/mp4\"\n        />\n      </video>",
+		HTML:     "<video controls width=\"500\" >\n        <source\n          src=\"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm\"\n          type=\"video/webm\"\n        />\n        <source\n          src=\"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4\"\n          type=\"video/mp4\"\n        />\n      </video>",
+		Centered: true,
 	})
 
 	err := app.Run()
