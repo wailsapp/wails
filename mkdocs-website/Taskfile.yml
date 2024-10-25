@@ -20,6 +20,10 @@ tasks:
     cmds:
       - python3 -m pip install -r requirements.insiders.txt --user
 
+  build:docker:
+    cmds:
+      - docker build -t wailsapp/mkdocs .
+
   upgrade:insiders:
     summary: Upgrade the project (insiders)
     preconditions:
@@ -38,11 +42,8 @@ tasks:
 
   serve:
     summary: Builds the documentation and serves it locally
-    preconditions:
-      - sh: mkdocs --version
-        msg: "Looks like mkdocs isn't installed. Run `wails3 task setup` or `task setup` in the documentation directory to install it."
     cmds:
-      - mkdocs serve
+      - docker run --rm -it -p 8000:8000 -v $PWD:/docs wailsapp/mkdocs
 
   serve:insiders:
     summary: Builds the documentation and serves it locally

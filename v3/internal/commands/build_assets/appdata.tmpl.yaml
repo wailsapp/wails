@@ -1,0 +1,25 @@
+
+# The name of the company
+companyName: "{{.ProductCompany}}"
+
+# The name of the application
+productName: "{{.ProductName}}"
+
+# The unique product identifier
+productIdentifier: "{{.ProductIdentifier}}"
+
+# The application description
+description: "{{.ProductDescription}}"
+
+# The application version
+productVersion: "{{.ProductVersion}}"
+
+# Copyright text
+copyright: "{{.ProductCopyright}}"
+
+# Comments
+comments: "{{.ProductComments}}"
+
+# The name of the binary.
+# Only update this if you have changed it in `Taskfile.yml`
+binaryName: "{{.Name}}"
