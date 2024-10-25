@@ -565,6 +565,14 @@
     EventsOff("wails:file-drop");
     flags.registered = false;
   }
+  EventsOnce("wails:init-file-drop", () => {
+    if (window.wails.flags.enableWailsDragAndDrop) {
+      window.addEventListener("dragover", onDragOver);
+      window.addEventListener("dragleave", onDragLeave);
+      window.addEventListener("drop", onDrop);
+    }
+  });
+
 
   // desktop/contextmenu.js
   function processDefaultContextMenu(event) {
