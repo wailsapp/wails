@@ -23,7 +23,7 @@ var updatableBuildAssets embed.FS
 type BuildAssetsOptions struct {
 	Dir                string `description:"The directory to generate the files into" default:"."`
 	Name               string `description:"The name of the project"`
-	Binary             string `description:"The name of the binary"`
+	BinaryName         string `description:"The name of the binary"`
 	ProductName        string `description:"The name of the product" default:"My Product"`
 	ProductDescription string `description:"The description of the product" default:"My Product Description"`
 	ProductVersion     string `description:"The version of the product" default:"0.1.0"`
@@ -34,21 +34,24 @@ type BuildAssetsOptions struct {
 	Silent             bool   `description:"Suppress output to console"`
 }
 
-type UpdateBuildAssetsOptions struct {
-	Dir    string `description:"The directory to generate the files into" default:"build"`
-	Config string `description:"The config file to use" default:"appdata.yaml"`
-	Silent bool   `description:"Suppress output to console"`
+type BuildConfig struct {
+	BuildAssetsOptions
+	FileAssociations []FileAssociation `yaml:"fileAssociations"`
 }
 
-type Config struct {
-	Binary             string `yaml:"binaryName"`
-	ProductCompany     string `yaml:"companyName"`
-	ProductName        string `yaml:"productName"`
-	ProductIdentifier  string `yaml:"productIdentifier"`
-	ProductDescription string `yaml:"description"`
-	ProductVersion     string `yaml:"productVersion"`
-	ProductCopyright   string `yaml:"copyright"`
-	ProductComments    string `yaml:"comments"`
+type UpdateBuildAssetsOptions struct {
+	Dir                string `description:"The directory to generate the files into" default:"build"`
+	Name               string `description:"The name of the project"`
+	BinaryName         string `description:"The name of the binary"`
+	ProductName        string `description:"The name of the product" default:"My Product"`
+	ProductDescription string `description:"The description of the product" default:"My Product Description"`
+	ProductVersion     string `description:"The version of the product" default:"0.1.0"`
+	ProductCompany     string `description:"The company of the product" default:"My Company"`
+	ProductCopyright   string `description:"The copyright notice" default:"\u00a9 now, My Company"`
+	ProductComments    string `description:"Comments to add to the generated files" default:"This is a comment"`
+	ProductIdentifier  string `description:"The product identifier, e.g com.mycompany.myproduct"`
+	Config             string `description:"The path to the config file"`
+	Silent             bool   `description:"Suppress output to console"`
 }
 
 func GenerateBuildAssets(options *BuildAssetsOptions) error {
@@ -68,6 +71,8 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 		}
 	}
 
+	var config BuildConfig
+
 	if options.ProductComments == "" {
 		options.ProductComments = fmt.Sprintf("(c) %d %s", time.Now().Year(), options.ProductCompany)
 	}
@@ -76,12 +81,14 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 		options.ProductIdentifier = "com.wails." + normaliseName(options.Name)
 	}
 
-	if options.Binary == "" {
-		options.Binary = normaliseName(options.Name)
+	if options.BinaryName == "" {
+		options.BinaryName = normaliseName(options.Name)
 		if runtime.GOOS == "windows" {
-			options.Binary += ".exe"
+			options.BinaryName += ".exe"
 		}
 	}
+
+	config.BuildAssetsOptions = *options
 
 	tfs, err := fs.Sub(buildAssets, "build_assets")
 	if err != nil {
@@ -91,7 +98,7 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	if !options.Silent {
 		println("Generating build assets in " + options.Dir)
 	}
-	err = gosod.New(tfs).Extract(options.Dir, options)
+	err = gosod.New(tfs).Extract(options.Dir, config)
 	if err != nil {
 		return err
 	}
@@ -99,20 +106,42 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	if err != nil {
 		return err
 	}
-	return gosod.New(tfs).Extract(options.Dir, options)
+	return gosod.New(tfs).Extract(options.Dir, config)
+}
+
+type FileAssociation struct {
+	Ext         string `yaml:"ext"`
+	Name        string `yaml:"name"`
+	Description string `yaml:"description"`
+	IconName    string `yaml:"iconName"`
+	Role        string `yaml:"role"`
+}
+
+type UpdateConfig struct {
+	UpdateBuildAssetsOptions
+	FileAssociations []FileAssociation `yaml:"fileAssociations"`
 }
 
 func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 	DisableFooter = true
 
-	if options.Config == "" {
-		return fmt.Errorf("config file required for update")
-	}
-
 	var err error
 	options.Dir, err = filepath.Abs(options.Dir)
 	if err != nil {
 		return err
+	}
+
+	var config UpdateConfig
+
+	if options.Config != "" {
+		bytes, err := os.ReadFile(options.Config)
+		if err != nil {
+			return err
+		}
+		err = yaml.Unmarshal(bytes, &config)
+		if err != nil {
+			return err
+		}
 	}
 
 	// If directory doesn't exist, create it
@@ -128,25 +157,9 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 		return err
 	}
 
-	configFile := filepath.Join(options.Dir, options.Config)
-	if _, err := os.Stat(configFile); os.IsNotExist(err) {
-		return fmt.Errorf("config file %s does not exist", configFile)
-	}
+	config.UpdateBuildAssetsOptions = *options
 
-	config, err := os.ReadFile(configFile)
-	if err != nil {
-		return err
-	}
-
-	var configData Config
-	err = yaml.Unmarshal(config, &configData)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("%+v\n", configData)
-
-	err = gosod.New(tfs).Extract(options.Dir, configData)
+	err = gosod.New(tfs).Extract(options.Dir, config)
 	if err != nil {
 		return err
 	}
