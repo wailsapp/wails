@@ -4,6 +4,7 @@ var blankApplicationEventContext = &ApplicationEventContext{}
 
 const (
 	openedFiles = "openedFiles"
+	filename    = "filename"
 )
 
 type ApplicationEventContext struct {
@@ -53,6 +54,22 @@ func (c ApplicationEventContext) HasVisibleWindows() bool {
 
 func (c ApplicationEventContext) setData(data map[string]any) {
 	c.data = data
+}
+
+func (c ApplicationEventContext) setOpenedWithFile(filepath string) {
+	c.data[filename] = filepath
+}
+
+func (c ApplicationEventContext) Filename() string {
+	filename, ok := c.data[filename]
+	if !ok {
+		return ""
+	}
+	result, ok := filename.(string)
+	if !ok {
+		return ""
+	}
+	return result
 }
 
 func newApplicationEventContext() *ApplicationEventContext {
