@@ -282,7 +282,7 @@ func (s *Server) handleHTTP(rw http.ResponseWriter, req *http.Request) {
 
 // DispatchWailsEvent sends a WailsEvent to all connected clients
 // This implements the WailsEventListener interface.
-func (s *Server) DispatchWailsEvent(event *application.WailsEvent) {
+func (s *Server) DispatchWailsEvent(event *application.CustomEvent) {
 	s.sendToAllClients(
 		message{
 			Type: "wailsevent",

@@ -1,9 +1,12 @@
 package server
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"io/fs"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 //go:embed plugin.js
@@ -47,6 +50,12 @@ func (s *plugin) CallableByJS() []string {
 func (p *plugin) InjectJS() string {
 	return ""
 	//return clientJS
+}
+
+func (p *plugin) OnStartup(ctx context.Context, options application.ServiceOptions) error {
+	fmt.Println("Service::Server::OnStartup")
+	p.server.run()
+	return nil
 }
 
 // Init is called when the plugin is loaded. It is passed the application.App
