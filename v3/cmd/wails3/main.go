@@ -48,6 +48,7 @@ func main() {
 	generate.NewSubCommandFunction("build-assets", "Generate build assets", commands.GenerateBuildAssets)
 	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
 	generate.NewSubCommandFunction("syso", "Generate Windows .syso file", commands.GenerateSyso)
+	generate.NewSubCommandFunction("runtime", "Generate the pre-built version of the runtime", commands.GenerateRuntime)
 
 	update := app.NewSubCommand("update", "Update tools")
 	update.NewSubCommandFunction("build-assets", "Updates the build assets using the given config file", commands.UpdateBuildAssets)
