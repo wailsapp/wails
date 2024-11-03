@@ -150,6 +150,7 @@ nav:
         - Build System: learn/build.md
         - Guides:
             - Customising Windows: learn/guides/customising-windows.md
+            - File Associations: learn/guides/file-associations.md
     - Feedback: getting-started/feedback.md
   - Feedback: getting-started/feedback.md
   - What's New in v3?: whats-new.md
