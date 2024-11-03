@@ -1248,7 +1248,7 @@ func (w *macosWebviewWindow) run() {
 					C.windowInjectCSS(w.nsWindow, C.CString(options.CSS))
 				}
 				if !options.Hidden {
-					C.windowShow(w.nsWindow)
+					w.parent.Show()
 					w.setHasShadow(!options.Mac.DisableShadow)
 					w.setAlwaysOnTop(options.AlwaysOnTop)
 				} else {

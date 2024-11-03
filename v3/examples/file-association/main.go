@@ -43,16 +43,12 @@ func main() {
 		FileAssociations: []string{".wails"},
 	})
 
-	app.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
-		application.InfoDialog().SetMessage("Application opened with file:" + event.Context().Filename()).Show()
-	})
-
 	// Create a new window with the necessary options.
 	// 'Title' is the title of the window.
 	// 'Mac' options tailor the window when running on macOS.
 	// 'BackgroundColour' is the background colour of the window.
 	// 'URL' is the URL that will be loaded into the webview.
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Window 1",
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
@@ -61,6 +57,18 @@ func main() {
 		},
 		BackgroundColour: application.NewRGB(27, 38, 54),
 		URL:              "/",
+	})
+
+	var filename string
+	app.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
+		filename = event.Context().Filename()
+	})
+
+	window.OnWindowEvent(events.Common.WindowShow, func(event *application.WindowEvent) {
+		application.InfoDialog().
+			SetTitle("File Opened").
+			SetMessage("Application opened with file: " + filename).
+			Show()
 	})
 
 	// Create a goroutine that emits an event containing the current time every second.
