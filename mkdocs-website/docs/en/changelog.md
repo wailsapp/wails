@@ -20,11 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Templates for sveltekit and sveltekit-ts that are set for non-SSR development by [atterpac](https://github.com/atterpac) in [#3829](https://github.com/wailsapp/wails/pull/3829)
 - Update build assets using new `wails3 update build-assets` command by [leaanthony](https://github.com/leaanthony).
+- Example to test the HTML Drag and Drop API by [FerroO2000](https://github.com/FerroO2000) in [#3856](https://github.com/wailsapp/wails/pull/3856)
 
 ### Changed
 - Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)
 - Upgrade to `go-webview2` v1.0.16 by [leaanthony](https://github.com/leaanthony)
 - Fixed `Screen` type to include `ID` not `Id` by [etesam913](https://github.com/etesam913) in [#3778](https://github.com/wailsapp/wails/pull/3778)
+- Fixed service name determination by [windom](https://github.com/windom/) in [#3827](https://github.com/wailsapp/wails/pull/3827)
+- mkdocs serve now uses docker by [leaanthony](https://github.com/leaanthony)
 
 ### Fixed
 - Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony) in [#3841](https://github.com/wailsapp/wails/pull/3841)
