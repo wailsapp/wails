@@ -66,6 +66,7 @@ markdown_extensions:
   - admonition
   - footnotes
   - md_in_html
+  - def_list
   - toc:
       permalink: '#'
   - pymdownx.emoji:
@@ -156,6 +157,7 @@ nav:
   - API:
       - Application: API/application.md
       - Window: API/window.md
+      - Events: API/events.md
       - System Tray: API/systray.md
       - Menu: API/menu.md
       - Main Thread: API/mainthread.md
