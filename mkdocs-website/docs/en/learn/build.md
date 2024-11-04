@@ -213,3 +213,14 @@ You can also specify a custom configuration file and port:
 ```shell
 wails3 dev -config ./path/to/custom/config.yaml -port 8080
 ```
+
+### Using a browser for development
+
+Whilst v2 fully supported the use of a browser for development, it caused a lot of confusion. Applications that would
+work in the browser would not necessarily work in the desktop application, as not all browser APIs are available in 
+webviews. 
+
+For UI-focused development work, you still have the flexibility to use a browser in v3, by accessing the Vite URL at 
+http://localhost:9245 in dev mode. This gives you access to powerful browser dev tools while working on styling and 
+layout. When you're ready to test functionality like bindings and events, simply switch to the desktop view to ensure 
+everything works perfectly in the production environment.
