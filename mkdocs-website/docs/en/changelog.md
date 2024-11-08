@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `Screen` type to include `ID` not `Id` by [etesam913](https://github.com/etesam913) in [#3778](https://github.com/wailsapp/wails/pull/3778)
 - Fixed service name determination by [windom](https://github.com/windom/) in [#3827](https://github.com/wailsapp/wails/pull/3827)
 - mkdocs serve now uses docker by [leaanthony](https://github.com/leaanthony)
+- Consolidated dev config into `config.yml` by [leaanthony](https://github.com/leaanthony)
 
 ### Fixed
 - Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony) in [#3841](https://github.com/wailsapp/wails/pull/3841)
