@@ -1,4 +1,33 @@
 
+!!! warning "MacOS Dialogs and Application Lifecycle"
+
+    If you show dialogs during application startup or file open events, you should set `ApplicationShouldTerminateAfterLastWindowClosed` to `false` to prevent the application from terminating when those dialogs close. Otherwise, the application may quit before your main window appears.
+    
+    ```go
+    app := application.New(application.Options{
+        Mac: application.MacOptions{
+            ApplicationShouldTerminateAfterLastWindowClosed: false,
+        },
+        // ... rest of options
+    })
+    ```
+
+    Alternatively, you can show startup dialogs after the main window has been displayed:
+
+    ```go
+    var filename string
+	app.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
+		filename = event.Context().Filename()
+    })
+
+    window.OnWindowEvent(events.Common.WindowShow, func(event *application.WindowEvent) {
+        application.InfoDialog().
+            SetTitle("File Opened").
+            SetMessage("Application opened with file: " + filename).
+            Show()
+    })
+    ```
+
 ### ShowAboutDialog
 
 API: `ShowAboutDialog()`

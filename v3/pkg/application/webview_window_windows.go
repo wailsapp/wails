@@ -380,7 +380,7 @@ func (w *windowsWebviewWindow) run() {
 	}
 
 	if !options.Hidden {
-		w.show()
+		w.parent.Show()
 		w.update()
 	}
 }
