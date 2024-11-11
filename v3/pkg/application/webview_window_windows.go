@@ -370,8 +370,10 @@ func (w *windowsWebviewWindow) run() {
 		w.resizeDebouncer = debounce.New(time.Duration(options.Windows.ResizeDebounceMS) * time.Millisecond)
 	}
 
-	if options.Centered {
+	if options.InitialPosition == WindowCentered {
 		w.center()
+	} else {
+		w.setPosition(options.X, options.Y)
 	}
 
 	if options.Frameless {

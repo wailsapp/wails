@@ -1229,7 +1229,11 @@ func (w *macosWebviewWindow) run() {
 			w.fullscreen()
 		case WindowStateNormal:
 		}
-		C.windowCenter(w.nsWindow)
+		if w.parent.options.InitialPosition == WindowCentered {
+			C.windowCenter(w.nsWindow)
+		} else {
+			w.setPosition(options.X, options.Y)
+		}
 
 		startURL, err := assetserver.GetStartURL(options.URL)
 		if err != nil {
