@@ -189,7 +189,7 @@ func main() {
 				windowCounter++
 			})
 
-		myMenu.Add("New WebviewWindow (Position 100x100)").
+		myMenu.Add("New WebviewWindow (Position 100,100)").
 			OnClick(func(ctx *application.Context) {
 				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 					MaximiseButtonState: application.ButtonHidden,
