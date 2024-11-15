@@ -20,10 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Events documentation to the mkdocs webite by [atterpac](https://github.com/atterpac) in [#3867](https://github.com/wailsapp/wails/pull/3867)
 - Templates for sveltekit and sveltekit-ts that are set for non-SSR development by [atterpac](https://github.com/atterpac) in [#3829](https://github.com/wailsapp/wails/pull/3829)
-- Update build assets using new `wails3 update build-assets` command by [leaanthony](https://github.com/leaanthony).
+- Update build assets using new `wails3 update build-assets` command by [leaanthony](https://github.com/leaanthony)
 - Example to test the HTML Drag and Drop API by [FerroO2000](https://github.com/FerroO2000) in [#3856](https://github.com/wailsapp/wails/pull/3856)
 - File Association support by [leaanthony](https://github.com/leaanthony) in [#3873](https://github.com/wailsapp/wails/pull/3873)
 - New `wails3 generate runtime` command by [leaanthony](https://github.com/leaanthony)
+- New `InitialPosition` option to specify if the window should be centered or positioned at the given X/Y location by [leaanthony](https://github.com/leaanthony) in [#3885](https://github.com/wailsapp/wails/pull/3885)
 
 ### Changed
 - Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)
