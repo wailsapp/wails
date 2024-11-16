@@ -1013,3 +1013,13 @@ func (a *App) shouldQuit() bool {
 	}
 	return true
 }
+
+// Path returns the path for the given selector
+func (a *App) Path(selector Path) string {
+	return paths[selector]
+}
+
+// Paths returns the paths for the given selector
+func (a *App) Paths(selector Paths) []string {
+	return pathdirs[selector]
+}
