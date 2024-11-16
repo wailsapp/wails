@@ -137,47 +137,51 @@ API: `Show()`
 
 API: `Path(selector Path) string`
 
-`Path(selector Path)` returns the full path for the given path type. It provides a cross-platform way to access common application directories.
+`Path(selector Path)` returns the full path for the given path type. It provides a cross-platform way to query common application directories.
 
 The `Path` type is an enum with the following values:
-- `AppData`: Returns the path to the application data directory
-- `UserCache`: Returns the path to the user's cache directory
-- `UserConfig`: Returns the path to the user's configuration directory
+- `PathHome`: Returns the user's home directory
+- `PathDataHome`: Returns the path to the user's data directory
+- `PathConfigHome`: Returns the path to the user's configuration directory
+- `PathStateHome`: Returns the path to the user's state directory
+- `PathCacheHome`: Returns the path to the user's cache directory
+- `PathRuntimeDir`: Returns the path to the user's runtime directory
+- `PathDesktop`: Returns the path to the user's desktop directory
+- `PathDownload`: Returns the path to the user's download directory
+- `PathDocuments`: Returns the path to the user's documents directory
+- `PathMusic`: Returns the path to the user's music directory
+- `PathPictures`: Returns the path to the user's pictures directory
+- `PathVideos`: Returns the path to the user's videos directory
+- `PathTemplates`: Returns the path to the user's templates directory
+- `PathPublicShare`: Returns the path to the user's public share directory
 
 ```go
-    // Get the application data directory path
-    appDataPath, err := app.Path(application.AppData)
-    if err != nil {
-        log.Fatal(err)
-    }
-    fmt.Println("AppData path:", appDataPath)
+    // Get the data home directory path
+    dataHomePath := app.Path(application.PathDataHome)
+    fmt.Println("DataHome path:", dataHomePath)
 
-    // Output: AppData path: /home/username/.local/share  // Linux
-    // Output: AppData path: /Users/username/Library/Application Support  // macOS
-    // Output: AppData path: C:\Users\Username\AppData\Roaming  // Windows
+    // Output: DataHome path: /home/username/.local/share  // Linux
+    // Output: DataHome path: /Users/username/Library/Application Support  // macOS
+    // Output: DataHome path: C:\Users\Username\AppData\Roaming  // Windows
 
-    // Get the user cache directory path
-    userCachePath, err := app.Path(application.UserCache)
-    if err != nil {
-        log.Fatal(err)
-    }
-    fmt.Println("UserCache path:", userCachePath)
+    // Get the CacheHome directory path
+	cacheHomePath := app.Path(application.CacheHome)
+    fmt.Println("CacheHome path:", cacheHomePath)
 
-    // Output: UserCache path: /home/username/.cache  // Linux
-    // Output: UserCache path: /Users/username/Library/Caches  // macOS
-    // Output: UserCache path: C:\Users\Username\AppData\Local\Temp  // Windows
-
-    // Get the user config directory path
-    userConfigPath, err := app.Path(application.UserConfig)
-    if err != nil {
-        log.Fatal(err)
-    }
-    fmt.Println("UserConfig path:", userConfigPath)
-
-    // Output: UserConfig path: /home/username/.config  // Linux
-    // Output: UserConfig path: /Users/username/Library/Preferences  // macOS
-    // Output: UserConfig path: C:\Users\Username\AppData\Local  // Windows
+    // Output: CacheHome path: /home/username/.cache  // Linux
+    // Output: CacheHome path: /Users/username/Library/Caches  // macOS
+    // Output: CacheHome path: C:\Users\Username\AppData\Local\Temp  // Windows
 ```
+
+## Paths
+API: `Paths(selector Paths) []string`
+`Paths(selector Path)` returns a list of paths for the given path type. It provides a cross-platform way to query common directory paths.
+
+The `Paths` type is an enum with the following values:
+- `PathsDataDirs`: Returns the list of data directories
+- `PathsConfigDirs`: Returns the list of configuration directories
+- `PathsCacheDirs`: Returns the list of cache directories
+- `PathsRuntimeDirs`: Returns the list of runtime directories
 
 
 --8<--

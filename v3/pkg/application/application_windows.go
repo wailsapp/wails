@@ -4,8 +4,6 @@ package application
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -350,28 +348,4 @@ func (a *App) platformEnvironment() map[string]any {
 func fatalHandler(errFunc func(error)) {
 	w32.Fatal = errFunc
 	return
-}
-
-func (a *windowsApp) getAppDataPath() (string, error) {
-	path := os.Getenv("APPDATA")
-	if path == "" {
-		return "", fmt.Errorf("APPDATA environment variable is not set")
-	}
-	return path, nil
-}
-
-func (a *windowsApp) getUserCachePath() (string, error) {
-	localAppData := os.Getenv("LOCALAPPDATA")
-	if localAppData == "" {
-		return "", fmt.Errorf("LOCALAPPDATA environment variable is not set")
-	}
-	return filepath.Join(localAppData, "Temp"), nil
-}
-
-func (a *windowsApp) getUserConfigPath() (string, error) {
-	path := os.Getenv("LOCALAPPDATA")
-	if path == "" {
-		return "", fmt.Errorf("LOCALAPPDATA environment variable is not set")
-	}
-	return path, nil
 }

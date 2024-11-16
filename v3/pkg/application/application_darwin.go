@@ -160,10 +160,8 @@ static const char* serializationNSDictionary(void *dict) {
 import "C"
 import (
 	"encoding/json"
-	"strings"
 	"unsafe"
 
-	"github.com/adrg/xdg"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
@@ -364,21 +362,4 @@ func (a *App) platformEnvironment() map[string]any {
 
 func fatalHandler(errFunc func(error)) {
 	return
-}
-
-func (a *macosApp) getAppDataPath() (string, error) {
-	return xdg.DataHome, nil
-}
-
-func (a *macosApp) getUserCachePath() (string, error) {
-	return xdg.CacheHome, nil
-}
-
-func (a *macosApp) getUserConfigPath() (string, error) {
-	for _, dir := range xdg.ConfigDirs {
-		if strings.HasSuffix(dir, "Library/Preferences") {
-			return dir, nil
-		}
-	}
-	return "", nil
 }
