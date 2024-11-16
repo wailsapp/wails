@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New `wails3 generate runtime` command by [leaanthony](https://github.com/leaanthony)
 - New `InitialPosition` option to specify if the window should be centered or positioned at the given X/Y location by [leaanthony](https://github.com/leaanthony) in [#3885](https://github.com/wailsapp/wails/pull/3885)
 - Add `Path` & `Paths` methods to `application` package by [ansxuman](https://github.com/ansxuman) and [leaanthony](https://github.com/leaanthony) in [#3823](https://github.com/wailsapp/wails/pull/3823)
+- Added `GeneralAutofillEnabled` and `PasswordAutosaveEnabled` Windows options by [leaanthony](https://github.com/leaanthony) in [#3766](https://github.com/wailsapp/wails/pull/3766)
 
 ### Changed
 - Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)

@@ -293,6 +293,12 @@ type WindowsWindow struct {
 
 	// ExStyle is the extended window style
 	ExStyle int
+
+	// GeneralAutofillEnabled enables general autofill
+	GeneralAutofillEnabled bool
+
+	// PasswordAutosaveEnabled enables autosaving passwords
+	PasswordAutosaveEnabled bool
 }
 
 type Theme int

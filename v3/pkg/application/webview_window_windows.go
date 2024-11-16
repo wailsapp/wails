@@ -1500,6 +1500,20 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	}
 
+	if opts.GeneralAutofillEnabled {
+		err = chromium.PutIsGeneralAutofillEnabled(true)
+		if err != nil {
+			globalApplication.error(err.Error())
+		}
+	}
+
+	if opts.PasswordAutosaveEnabled {
+		err = chromium.PutIsPasswordAutosaveEnabled(true)
+		if err != nil {
+			globalApplication.error(err.Error())
+		}
+	}
+
 	// event mapping
 	w.parent.OnWindowEvent(events.Windows.WindowDidMove, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowDidMove)
