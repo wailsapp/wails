@@ -14,7 +14,7 @@ import (
 // made available to the frontend.
 // See https://pkg.go.dev/embed for more information.
 
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 
 // main function serves as the application's entry point. It initializes the application, creates a window,
