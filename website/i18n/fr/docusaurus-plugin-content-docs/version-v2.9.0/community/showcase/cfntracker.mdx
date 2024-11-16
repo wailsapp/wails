@@ -1,0 +1,42 @@
+# CFN Tracker
+
+```mdx-code-block
+<p style={{ "text-align": "center" }}>
+  <img src={require("@site/static/img/showcase/cfntracker.webp").default} />
+  <br />
+</p>
+```
+
+[CFN Tracker](https://github.com/williamsjokvist/cfn-tracker) - Suivez les
+matchs en direct de n'importe quel profil Street Fighter 6 ou V CFN. Consultez
+[le site Web](https://cfn.williamsjokvist.se/) pour commencer.
+
+## Caractéristiques
+
+- Suivi des matchs en temps réel
+- Stockage des journaux de match et des statistiques
+- Prise en charge de l'affichage des statistiques en direct sur OBS via la
+  source du navigateur
+- Prise en charge de SF6 et SFV
+- Possibilité pour les utilisateurs de créer leurs propres thèmes de navigateur
+  OBS avec CSS
+
+### Technologie majeure utilisée aux côtés de Wails
+
+- [Tâche](https://github.com/go-task/task) - encapsulation de la CLI Wails pour
+  rendre les commandes courantes faciles à utiliser
+- [React](https://github.com/facebook/react) - choisi pour son riche écosystème
+  (radix, framer-motion)
+- [Bun](https://github.com/oven-sh/bun) - utilisé pour sa résolution rapide des
+  dépendances et son temps de construction
+- [Rod](https://github.com/go-rod/rod) - automatisation du navigateur sans tête
+  pour les modifications d'authentification et d'interrogation
+- [SQLite](https://github.com/mattn/go-sqlite3) - utilisé pour stocker les
+  correspondances, les sessions et les profils
+- [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) -
+  un flux http pour envoyer des mises à jour de suivi aux sources du navigateur
+  OBS
+- [i18next](https://github.com/i18next/) - avec connecteur backend pour servir
+  les objets de localisation de la couche Go
+- [xstate](https://github.com/statelyai/xstate) - machines à états pour le
+  processus d'authentification et le suivi

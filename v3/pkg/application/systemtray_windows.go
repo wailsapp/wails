@@ -4,11 +4,14 @@ package application
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/icons"
 	"syscall"
+	"time"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v3/pkg/icons"
+
 	"github.com/samber/lo"
+
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
@@ -42,17 +45,9 @@ func (s *windowsSystemTray) openMenu() {
 
 	// Show the menu at the tray bounds
 	s.menu.ShowAt(trayBounds.X, trayBounds.Y)
-
 }
 
 func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) error {
-
-	// Get the trayBounds of this system tray
-	trayBounds, err := s.bounds()
-	if err != nil {
-		return err
-	}
-
 	// Get the current screen trayBounds
 	currentScreen, err := s.getScreen()
 	if err != nil {
@@ -60,33 +55,61 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) er
 	}
 
 	screenBounds := currentScreen.WorkArea
+	windowBounds := window.Bounds()
 
-	newX := screenBounds.Width - window.Width()
-	newY := screenBounds.Height - window.Height()
+	newX := screenBounds.Width - windowBounds.Width - offset
+	newY := screenBounds.Height - windowBounds.Height - offset
+
+	// systray icons in windows can either be in the taskbar
+	// or in a flyout menu.
+	iconIsInTrayBounds, err := s.iconIsInTrayBounds()
+	if err != nil {
+		return err
+	}
+
+	var trayBounds *Rect
+	var centerAlignX, centerAlignY int
+
+	// we only need the traybounds if the icon is in the tray
+	if iconIsInTrayBounds {
+		trayBounds, err = s.bounds()
+		if err != nil {
+			return err
+		}
+		*trayBounds = PhysicalToDipRect(*trayBounds)
+		centerAlignX = trayBounds.X + (trayBounds.Width / 2) - (windowBounds.Width / 2)
+		centerAlignY = trayBounds.Y + (trayBounds.Height / 2) - (windowBounds.Height / 2)
+	}
 
 	taskbarBounds := w32.GetTaskbarPosition()
+
+	// Set the window position based on the icon location
+	// if the icon is in the taskbar (traybounds) then we need
+	// to adjust the position so the window is centered on the icon
 	switch taskbarBounds.UEdge {
 	case w32.ABE_LEFT:
-		if trayBounds != nil && trayBounds.Y-(window.Height()/2) >= 0 {
-			newY = trayBounds.Y - (window.Height() / 2)
+		if iconIsInTrayBounds && centerAlignY <= newY {
+			newY = centerAlignY
 		}
-		window.SetRelativePosition(offset, newY)
+		newX = screenBounds.X + offset
 	case w32.ABE_TOP:
-		if trayBounds != nil && trayBounds.X-(window.Width()/2) <= newX {
-			newX = trayBounds.X - (window.Width() / 2)
+		if iconIsInTrayBounds && centerAlignX <= newX {
+			newX = centerAlignX
 		}
-		window.SetRelativePosition(newX, offset)
+		newY = screenBounds.Y + offset
 	case w32.ABE_RIGHT:
-		if trayBounds != nil && trayBounds.Y-(window.Height()/2) <= newY {
-			newY = trayBounds.Y - (window.Height() / 2)
+		if iconIsInTrayBounds && centerAlignY <= newY {
+			newY = centerAlignY
 		}
-		window.SetRelativePosition(screenBounds.Width-window.Width()-offset, newY)
 	case w32.ABE_BOTTOM:
-		if trayBounds != nil && trayBounds.X-(window.Width()/2) <= newX {
-			newX = trayBounds.X - (window.Width() / 2)
+		if iconIsInTrayBounds && centerAlignX <= newX {
+			newX = centerAlignX
 		}
-		window.SetRelativePosition(newX, screenBounds.Height-window.Height()-offset)
 	}
+	newPos := currentScreen.relativeToAbsoluteDipPoint(Point{X: newX, Y: newY})
+	windowBounds.X = newPos.X
+	windowBounds.Y = newPos.Y
+	window.SetBounds(windowBounds)
 	return nil
 }
 
@@ -101,14 +124,6 @@ func (s *windowsSystemTray) bounds() (*Rect, error) {
 		return nil, fmt.Errorf("failed to get monitor")
 	}
 
-	// Get the taskbar rect
-	taskbarRect := w32.GetTaskbarPosition()
-
-	flyoutOpen := !w32.RectInRect(bounds, &taskbarRect.Rc)
-	if flyoutOpen {
-		return nil, nil
-	}
-
 	return &Rect{
 		X:      int(bounds.Left),
 		Y:      int(bounds.Top),
@@ -117,9 +132,25 @@ func (s *windowsSystemTray) bounds() (*Rect, error) {
 	}, nil
 }
 
+func (s *windowsSystemTray) iconIsInTrayBounds() (bool, error) {
+	bounds, err := w32.GetSystrayBounds(s.hwnd, s.uid)
+	if err != nil {
+		return false, err
+	}
+
+	taskbarRect := w32.GetTaskbarPosition()
+
+	inTasksBar := w32.RectInRect(bounds, &taskbarRect.Rc)
+	if inTasksBar {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (s *windowsSystemTray) getScreen() (*Screen, error) {
 	// Get the screen for this systray
-	return getScreen(s.hwnd)
+	return getScreenForWindowHwnd(s.hwnd)
 }
 
 func (s *windowsSystemTray) setMenu(menu *Menu) {
@@ -129,7 +160,7 @@ func (s *windowsSystemTray) setMenu(menu *Menu) {
 func (s *windowsSystemTray) run() {
 	s.hwnd = w32.CreateWindowEx(
 		0,
-		windowClassName,
+		w32.MustStringToUTF16Ptr(globalApplication.options.Windows.WndClass),
 		nil,
 		0,
 		0,
@@ -153,8 +184,16 @@ func (s *windowsSystemTray) run() {
 	}
 	nid.CbSize = uint32(unsafe.Sizeof(nid))
 
-	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
-		panic(syscall.GetLastError())
+	for retries := range 6 {
+		if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
+			if retries == 5 {
+				globalApplication.fatal("Failed to register system tray icon: %v", syscall.GetLastError())
+			}
+
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+		break
 	}
 
 	nid.UVersion = w32.NOTIFYICON_VERSION
@@ -188,7 +227,7 @@ func (s *windowsSystemTray) run() {
 	if s.parent.rightClickHandler == nil {
 		s.parent.rightClickHandler = func() {
 			if s.menu != nil {
-				s.menu.ShowAtCursor()
+				s.openMenu()
 			}
 		}
 	}
@@ -197,17 +236,15 @@ func (s *windowsSystemTray) run() {
 	s.updateIcon()
 
 	// Listen for dark mode changes
-	globalApplication.On(events.Windows.SystemThemeChanged, func(event *Event) {
+	globalApplication.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *ApplicationEvent) {
 		s.updateIcon()
 	})
 
 	// Register the system tray
 	getNativeApplication().registerSystemTray(s)
-
 }
 
 func (s *windowsSystemTray) updateIcon() {
-
 	var newIcon w32.HICON
 	if w32.IsCurrentlyDarkMode() {
 		newIcon = s.darkModeIcon
@@ -228,7 +265,6 @@ func (s *windowsSystemTray) updateIcon() {
 	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
 		panic(syscall.GetLastError())
 	}
-	return
 }
 
 func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
@@ -252,6 +288,7 @@ func (s *windowsSystemTray) setIcon(icon []byte) {
 	// Update the icon
 	s.updateIcon()
 }
+
 func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
 	var err error
 	s.darkModeIcon, err = w32.CreateSmallHIconFromImage(icon)
@@ -301,7 +338,7 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 				s.parent.mouseLeaveHandler()
 			}
 		}
-		//println(w32.WMMessageToString(msg))
+		// println(w32.WMMessageToString(msg))
 
 	// Menu processing
 	case w32.WM_COMMAND:
@@ -311,8 +348,8 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 			s.menu.ProcessCommand(cmdMsgID)
 		}
 	default:
-		//msg := int(wParam & 0xffff)
-		//println(w32.WMMessageToString(uintptr(msg)))
+		// msg := int(wParam & 0xffff)
+		// println(w32.WMMessageToString(uintptr(msg)))
 	}
 
 	return w32.DefWindowProc(s.hwnd, msg, wParam, lParam)
@@ -342,7 +379,9 @@ func (s *windowsSystemTray) setIconPosition(position int) {
 func (s *windowsSystemTray) destroy() {
 	// Remove and delete the system tray
 	getNativeApplication().unregisterSystemTray(s)
-	s.menu.Destroy()
+	if s.menu != nil {
+		s.menu.Destroy()
+	}
 	w32.DestroyWindow(s.hwnd)
 	// Destroy the notification icon
 	nid := s.newNotifyIconData()

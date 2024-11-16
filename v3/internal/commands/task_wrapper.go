@@ -1,17 +1,14 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
-	"os"
 )
 
 func Build(_ *flags.Build) error {
 	return wrapTask("build")
-}
-
-func Dev(_ *flags.Dev) error {
-	return wrapTask("dev")
 }
 
 func Package(_ *flags.Package) error {

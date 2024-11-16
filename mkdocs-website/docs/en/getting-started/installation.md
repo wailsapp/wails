@@ -1,15 +1,6 @@
 # Installation
 
-To install the Wails CLI, ensure you have [Go 1.21+](https://go.dev/dl/)
-installed and run:
-
-```shell
-git clone https://github.com/wailsapp/wails.git
-cd wails
-git checkout v3-alpha
-cd v3/cmd/wails3
-go install
-```
+To install the Wails CLI, first ensure you have the correct dependencies installed:
 
 ## Supported Platforms
 
@@ -22,18 +13,20 @@ go install
 
 Wails has a number of common dependencies that are required before installation:
 
-=== "Go 1.21+"
+=== "Go (At least 1.22.4)"
 
     Download Go from the [Go Downloads Page](https://go.dev/dl/).
 
     Ensure that you follow the official [Go installation instructions](https://go.dev/doc/install). You will also need to ensure that your `PATH` environment variable also includes the path to your `~/go/bin` directory. Restart your terminal and do the following checks:
 
     - Check Go is installed correctly: `go version`
-    - Check `~/go/bin` is in your PATH variable: `echo $PATH | grep go/bin`
+    - Check `~/go/bin` is in your PATH variable
+        - Mac / Linux: `echo $PATH | grep go/bin`
+        - Windows: `$env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }`
 
 === "npm (Optional)"
 
-    Although Wails doesn't require npm to be installed, it is needed if you want to use the bundled templates.
+    Although Wails doesn't require npm to be installed, it is needed by most of the bundled templates.
 
     Download the latest node installer from the [Node Downloads Page](https://nodejs.org/en/download/). It is best to use the latest release as that is what we generally test against.
 
@@ -63,7 +56,28 @@ You will also need to install platform specific dependencies:
 
 === "Linux"
 
-    Linux requires the standard `gcc` build tools plus `libgtk3` and `libwebkit`. Rather than list a ton of commands for different distros, Wails can try to determine what the installation commands are for your specific distribution. Run <code>wails doctor</code> after installation to be shown how to install the dependencies. If your distro/package manager is not supported, please let us know on discord.
+    Linux requires the standard `gcc` build tools plus `gtk3` and `webkit2gtk`. Run <code>wails doctor</code> after installation to be shown how to install the dependencies. If your distro/package manager is not supported, please let us know on discord.
+
+## Installation
+
+To install the Wails CLI using Go Modules, run the following commands:
+
+```shell
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+```
+
+If you would like to install the latest development version, run the following commands:
+
+```shell
+git clone https://github.com/wailsapp/wails.git
+cd wails
+git checkout v3-alpha
+cd v3/cmd/wails3
+go install
+```
+
+When using the development version, all generated projects will use Go's [replace(https://go.dev/ref/mod#go-mod-file-replace) directive
+to ensure projects use the development version of Wails.
 
 ## System Check
 
@@ -76,6 +90,5 @@ any problems.
 If your system is reporting that the `wails3` command is missing, check the
 following:
 
-- Make sure you have followed the Go installation guide correctly.
-- Check that the `go/bin` directory is in the `PATH` environment variable.
+- Make sure you have followed the [Go installation guide](#__tabbed_1_1) correctly and that the `go/bin` directory is in the `PATH` environment variable.
 - Close/Reopen current terminals to pick up the new `PATH` variable.

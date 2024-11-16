@@ -1,0 +1,61 @@
+# Windows
+
+Esta página tem guias diversos relacionados ao desenvolvimento de aplicativos Wails para Windows.
+
+## Manipulando a dependência de runtime WebView2,
+
+Aplicativos de Wails feitos para Windows possuem uma exigência de tempo de execução na Microsoft [Runtime WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/). Windows 11 terá isto instalado por padrão, mas algumas máquinas não. O Wails oferece uma abordagem fácil para lidar com esta dependência.
+
+Usando a flag `-webview2` ao realizar o build, você pode decidir o que sua aplicação fará quando não for detectado um tempo de execução adequado (incluindo se o tempo de execução instalado for muito antigo). As quatro opções são:
+
+1. Baixar
+2. Incorporar
+3. Navegador
+4. Erro
+
+### Baixar
+
+Esta opção irá solicitar ao usuário que nenhum tempo de execução adequado foi encontrado e, em seguida, oferecer para baixar e executar o bootstrapper oficial no site WebView2 da Microsoft. Se o usuário continuar, o bootstrapper oficial será baixado e executado.
+
+### Incorporar
+
+Esta opção incorpora o bootstrapper oficial dentro do aplicativo. Se nenhum tempo de execução adequado for encontrado, o aplicativo oferecerá para executar o bootstrapper. Isto adiciona ~150k ao tamanho do binário.
+
+### Navegador
+
+Esta opção pedirá ao usuário que nenhum tempo de execução adequado foi encontrado e, em seguida, oferecerá para abrir um navegador na página oficial WebView2, onde o bootstrapper pode ser baixado e instalado. O aplicativo irá então sair, deixando a instalação para o usuário.
+
+### Erro
+
+Se não for encontrado um tempo de execução adequado, um erro é dado ao usuário e nenhuma ação foi feita.
+
+## Execução da versão fixa
+
+Outra forma de lidar com a dependência webview2 é enviando-a você mesmo. Você pode baixar [versão fixa em tempo de execução](https://developer.microsoft.com/microsoft-edge/webview2/#download-section) e empacotar ou baixá-lo com seu aplicativo.
+
+Além disso, você deve especificar o caminho para a versão fixa do tempo de execução webview2 nas `windows.Options` structure ao iniciar wails.
+
+```go
+    wails.Run(&options.App{
+        Windows: &windows.Options{
+            WebviewBrowserPath:  "",
+        },
+    })
+```
+
+Observação: Quando `WebviewBrowserPath` é especificado a estratégia `error` seráforçada em caso de exigência de versão mínima ou erros na busca do runtime.
+
+## Gerando outros programas
+
+Ao gerar outros programas, tais como scripts, você verá a janela aparecer na tela. Para ocultar a janela, você pode usar o seguinte código:
+
+```go
+cmd := exec.Command("your_script.exe")
+cmd.SysProcAttr = &syscall.SysProcAttr{
+    HideWindow:    true,
+    CreationFlags: 0x08000000,
+}
+cmd.Start()
+```
+
+Solução fornecida pelo [sithembiso](https://github.com/sithembiso) no [quadro de discussões](https://github.com/wailsapp/wails/discussions/1734#discussioncomment-3386172).

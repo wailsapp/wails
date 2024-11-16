@@ -27,10 +27,10 @@ func NewEopkg(osid string) *Eopkg {
 // They will potentially differ on different distributions or versions
 func (e *Eopkg) Packages() Packagemap {
 	return Packagemap{
-		"libgtk-3": []*Package{
+		"gtk3": []*Package{
 			{Name: "libgtk-3-devel", SystemPackage: true, Library: true},
 		},
-		"libwebkit": []*Package{
+		"webkit2gtk": []*Package{
 			{Name: "libwebkit-gtk-devel", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{

@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-// FindEmbedRootPath finds the root path in the embed FS. It's the directory which contains all the files.
-func FindEmbedRootPath(fileSystem embed.FS) (string, error) {
+// findEmbedRootPath finds the root path in the embed FS. It's the directory which contains all the files.
+func findEmbedRootPath(fileSystem embed.FS) (string, error) {
 	stopErr := fmt.Errorf("files or multiple dirs found")
 
 	fPath := ""
@@ -39,7 +39,7 @@ func FindEmbedRootPath(fileSystem embed.FS) (string, error) {
 	return fPath, nil
 }
 
-func FindPathToFile(fileSystem fs.FS, file string) (string, error) {
+func findPathToFile(fileSystem fs.FS, file string) (string, error) {
 	stat, _ := fs.Stat(fileSystem, file)
 	if stat != nil {
 		return ".", nil

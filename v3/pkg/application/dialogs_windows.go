@@ -42,15 +42,21 @@ func (m *windowsDialog) show() {
 	if m.dialog.window != nil {
 		parentWindow, err = m.dialog.window.NativeWindowHandle()
 		if err != nil {
-			w32.Fatal(err.Error())
+			globalApplication.fatal(err.Error())
 		}
 	}
 
 	if m.UseAppIcon || m.dialog.Icon != nil {
 		// 3 is the application icon
-		button, _ = w32.MessageBoxWithIcon(parentWindow, message, title, 3, windows.MB_OK|windows.MB_USERICON)
+		button, err = w32.MessageBoxWithIcon(parentWindow, message, title, 3, windows.MB_OK|windows.MB_USERICON)
+		if err != nil {
+			globalApplication.fatal(err.Error())
+		}
 	} else {
-		button, _ = windows.MessageBox(windows.HWND(parentWindow), message, title, flags|windows.MB_SYSTEMMODAL)
+		button, err = windows.MessageBox(windows.HWND(parentWindow), message, title, flags|windows.MB_SYSTEMMODAL)
+		if err != nil {
+			globalApplication.fatal(err.Error())
+		}
 	}
 	// This maps MessageBox return values to strings
 	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
@@ -59,10 +65,10 @@ func (m *windowsDialog) show() {
 		result = responses[button]
 	}
 	// Check if there's a callback for the button pressed
-	for _, button := range m.dialog.Buttons {
-		if button.Label == result {
-			if button.Callback != nil {
-				button.Callback()
+	for _, buttonInDialog := range m.dialog.Buttons {
+		if buttonInDialog.Label == result {
+			if buttonInDialog.Callback != nil {
+				buttonInDialog.Callback()
 			}
 		}
 	}
@@ -108,12 +114,12 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 	if m.dialog.window != nil {
 		config.ParentWindowHandle, err = m.dialog.window.NativeWindowHandle()
 		if err != nil {
-			w32.Fatal(err.Error())
+			globalApplication.fatal(err.Error())
 		}
 	}
 
 	var result []string
-	if m.dialog.allowsMultipleSelection {
+	if m.dialog.allowsMultipleSelection && !m.dialog.canChooseDirectories {
 		temp, err := showCfdDialog(
 			func() (cfd.Dialog, error) {
 				return cfd.NewOpenMultipleFilesDialog(config)
@@ -123,14 +129,25 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 		}
 		result = temp.([]string)
 	} else {
-		temp, err := showCfdDialog(
-			func() (cfd.Dialog, error) {
-				return cfd.NewOpenFileDialog(config)
-			}, false)
-		if err != nil {
-			return nil, err
+		if m.dialog.canChooseDirectories {
+			temp, err := showCfdDialog(
+				func() (cfd.Dialog, error) {
+					return cfd.NewSelectFolderDialog(config)
+				}, false)
+			if err != nil {
+				return nil, err
+			}
+			result = []string{temp.(string)}
+		} else {
+			temp, err := showCfdDialog(
+				func() (cfd.Dialog, error) {
+					return cfd.NewOpenFileDialog(config)
+				}, false)
+			if err != nil {
+				return nil, err
+			}
+			result = []string{temp.(string)}
 		}
-		result = []string{temp.(string)}
 	}
 
 	files := make(chan string)

@@ -4,6 +4,8 @@ package cfd
 
 import (
 	"reflect"
+	"fmt"
+	"os"
 )
 
 type FileFilter struct {
@@ -74,6 +76,10 @@ func (config *DialogConfig) apply(dialog Dialog) (err error) {
 	}
 
 	if config.Folder != "" {
+		_, err = os.Stat(config.Folder)
+		if err != nil {
+			return
+		}
 		err = dialog.SetFolder(config.Folder)
 		if err != nil {
 			return
@@ -81,6 +87,10 @@ func (config *DialogConfig) apply(dialog Dialog) (err error) {
 	}
 
 	if config.DefaultFolder != "" {
+		_, err = os.Stat(config.DefaultFolder)
+		if err != nil {
+			return
+		}
 		err = dialog.SetDefaultFolder(config.DefaultFolder)
 		if err != nil {
 			return
@@ -109,6 +119,10 @@ func (config *DialogConfig) apply(dialog Dialog) (err error) {
 		}
 
 		if config.SelectedFileFilterIndex != 0 {
+			if config.SelectedFileFilterIndex > uint(len(fileFilters)) {
+				err = fmt.Errorf("selected file filter index out of range")
+				return
+			}
 			err = dialog.SetSelectedFileFilterIndex(config.SelectedFileFilterIndex)
 			if err != nil {
 				return

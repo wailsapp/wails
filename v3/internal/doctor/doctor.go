@@ -2,11 +2,13 @@ package doctor
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/buildinfo"
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/jaypipes/ghw"
@@ -17,6 +19,12 @@ import (
 )
 
 func Run() (err error) {
+
+	get, err := buildinfo.Get()
+	if err != nil {
+		return err
+	}
+	_ = get
 
 	pterm.DefaultSection = *pterm.DefaultSection.
 		WithBottomPadding(0).
@@ -65,7 +73,7 @@ func Run() (err error) {
 		return dep.Path == "github.com/wailsapp/wails/v3"
 	})
 
-	wailsVersion := version.VersionString
+	wailsVersion := strings.TrimSpace(version.VersionString)
 	if wailsPackage != nil && wailsPackage.Replace != nil {
 		wailsVersion = "(local) => " + filepath.ToSlash(wailsPackage.Replace.Path)
 		// Get the latest commit hash
@@ -80,46 +88,12 @@ func Run() (err error) {
 
 	platformExtras, ok := getInfo()
 
+	dependencies := make(map[string]string)
+	checkPlatformDependencies(dependencies, &ok)
+
 	spinner.Success()
 
 	/** Output **/
-
-	pterm.DefaultSection.Println("Build Environment")
-
-	tableData := pterm.TableData{
-		{"Wails CLI", wailsVersion},
-		{"Go Version", runtime.Version()},
-	}
-
-	if buildInfo, _ := debug.ReadBuildInfo(); buildInfo != nil {
-		buildSettingToName := map[string]string{
-			"vcs.revision": "Revision",
-			"vcs.modified": "Modified",
-		}
-		for _, buildSetting := range buildInfo.Settings {
-			name := buildSettingToName[buildSetting.Key]
-			if name == "" {
-				continue
-			}
-			tableData = append(tableData, []string{name, buildSetting.Value})
-		}
-	}
-
-	mapKeys := lo.Keys(BuildSettings)
-	slices.Sort(mapKeys)
-	for _, key := range mapKeys {
-		tableData = append(tableData, []string{key, BuildSettings[key]})
-	}
-
-	//// Exit early if PM not found
-	//if info.PM != nil {
-	//	wailsTableData = append(wailsTableData, []string{"Package Manager", info.PM.Name()})
-	//}
-
-	err = pterm.DefaultTable.WithData(tableData).Render()
-	if err != nil {
-		return err
-	}
 
 	pterm.DefaultSection.Println("System")
 
@@ -133,7 +107,7 @@ func Run() (err error) {
 		{pterm.Sprint("Architecture"), runtime.GOARCH},
 	}
 
-	mapKeys = lo.Keys(platformExtras)
+	mapKeys := lo.Keys(platformExtras)
 	slices.Sort(mapKeys)
 	for _, key := range mapKeys {
 		systemTabledata = append(systemTabledata, []string{key, platformExtras[key]})
@@ -177,9 +151,64 @@ func Run() (err error) {
 
 	//systemTabledata = append(systemTabledata, []string{"CPU", cpu.Processors[0].Model})
 
-	err = pterm.DefaultTable.WithData(systemTabledata).Render()
+	err = pterm.DefaultTable.WithBoxed().WithData(systemTabledata).Render()
 	if err != nil {
 		return err
+	}
+
+	// Build Environment
+
+	pterm.DefaultSection.Println("Build Environment")
+
+	tableData := pterm.TableData{
+		{"Wails CLI", wailsVersion},
+		{"Go Version", runtime.Version()},
+	}
+
+	if buildInfo, _ := debug.ReadBuildInfo(); buildInfo != nil {
+		buildSettingToName := map[string]string{
+			"vcs.revision": "Revision",
+			"vcs.modified": "Modified",
+		}
+		for _, buildSetting := range buildInfo.Settings {
+			name := buildSettingToName[buildSetting.Key]
+			if name == "" {
+				continue
+			}
+			tableData = append(tableData, []string{name, buildSetting.Value})
+		}
+	}
+
+	mapKeys = lo.Keys(BuildSettings)
+	slices.Sort(mapKeys)
+	for _, key := range mapKeys {
+		tableData = append(tableData, []string{key, BuildSettings[key]})
+	}
+
+	err = pterm.DefaultTable.WithBoxed(true).WithData(tableData).Render()
+	if err != nil {
+		return err
+	}
+
+	// Dependencies
+	pterm.DefaultSection.Println("Dependencies")
+	dependenciesBox := pterm.DefaultBox.WithTitleBottomCenter().WithTitle(pterm.Gray("*") + " - Optional Dependency")
+	dependencyTableData := pterm.TableData{}
+	if len(dependencies) == 0 {
+		pterm.Info.Println("No dependencies found")
+	} else {
+		var optionals pterm.TableData
+		mapKeys = lo.Keys(dependencies)
+		for _, key := range mapKeys {
+			if strings.HasPrefix(dependencies[key], "*") {
+				optionals = append(optionals, []string{key, dependencies[key]})
+			} else {
+				dependencyTableData = append(dependencyTableData, []string{key, dependencies[key]})
+			}
+		}
+		dependencyTableData = append(dependencyTableData, optionals...)
+		dependenciesTableString, _ := pterm.DefaultTable.WithData(dependencyTableData).Srender()
+		dependenciesBox.Println(dependenciesTableString)
 	}
 
 	pterm.DefaultSection.Println("Diagnosis")

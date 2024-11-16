@@ -106,7 +106,7 @@ func (l *linuxMenu) createMenu(name string, items []*MenuItem) *Menu {
 	return menu
 }
 
-func defaultApplicationMenu() *Menu {
+func DefaultApplicationMenu() *Menu {
 	menu := NewMenu()
 	menu.AddRole(AppMenu)
 	menu.AddRole(FileMenu)

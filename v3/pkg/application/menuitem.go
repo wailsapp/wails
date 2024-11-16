@@ -62,7 +62,7 @@ type MenuItem struct {
 	radioGroupMembers []*MenuItem
 }
 
-func newMenuItem(label string) *MenuItem {
+func NewMenuItem(label string) *MenuItem {
 	result := &MenuItem{
 		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
 		label:    label,
@@ -72,7 +72,7 @@ func newMenuItem(label string) *MenuItem {
 	return result
 }
 
-func newMenuItemSeparator() *MenuItem {
+func NewMenuItemSeparator() *MenuItem {
 	result := &MenuItem{
 		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
 		itemType: separator,
@@ -80,7 +80,7 @@ func newMenuItemSeparator() *MenuItem {
 	return result
 }
 
-func newMenuItemCheckbox(label string, checked bool) *MenuItem {
+func NewMenuItemCheckbox(label string, checked bool) *MenuItem {
 	result := &MenuItem{
 		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
 		label:    label,
@@ -91,7 +91,7 @@ func newMenuItemCheckbox(label string, checked bool) *MenuItem {
 	return result
 }
 
-func newMenuItemRadio(label string, checked bool) *MenuItem {
+func NewMenuItemRadio(label string, checked bool) *MenuItem {
 	result := &MenuItem{
 		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
 		label:    label,
@@ -102,7 +102,7 @@ func newMenuItemRadio(label string, checked bool) *MenuItem {
 	return result
 }
 
-func newSubMenuItem(label string) *MenuItem {
+func NewSubMenuItem(label string) *MenuItem {
 	result := &MenuItem{
 		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
 		label:    label,
@@ -115,82 +115,124 @@ func newSubMenuItem(label string) *MenuItem {
 	return result
 }
 
-func newRole(role Role) *MenuItem {
+func NewRole(role Role) *MenuItem {
+	var result *MenuItem
 	switch role {
 	case AppMenu:
-		return newAppMenu()
+		result = NewAppMenu()
 	case EditMenu:
-		return newEditMenu()
+		result = NewEditMenu()
 	case FileMenu:
-		return newFileMenu()
+		result = NewFileMenu()
 	case ViewMenu:
-		return newViewMenu()
+		result = NewViewMenu()
 	case ServicesMenu:
-		return newServicesMenu()
+		return NewServicesMenu()
 	case SpeechMenu:
-		return newSpeechMenu()
+		result = NewSpeechMenu()
 	case WindowMenu:
-		return newWindowMenu()
+		result = NewWindowMenu()
 	case HelpMenu:
-		return newHelpMenu()
+		result = NewHelpMenu()
 	case Hide:
-		return newHideMenuItem()
+		result = NewHideMenuItem()
+	case Front:
+		result = NewFrontMenuItem()
 	case HideOthers:
-		return newHideOthersMenuItem()
+		result = NewHideOthersMenuItem()
 	case UnHide:
-		return newUnhideMenuItem()
+		result = NewUnhideMenuItem()
 	case Undo:
-		return newUndoMenuItem()
+		result = NewUndoMenuItem()
 	case Redo:
-		return newRedoMenuItem()
+		result = NewRedoMenuItem()
 	case Cut:
-		return newCutMenuItem()
+		result = NewCutMenuItem()
 	case Copy:
-		return newCopyMenuItem()
+		result = NewCopyMenuItem()
 	case Paste:
-		return newPasteMenuItem()
+		result = NewPasteMenuItem()
 	case PasteAndMatchStyle:
-		return newPasteAndMatchStyleMenuItem()
+		result = NewPasteAndMatchStyleMenuItem()
 	case SelectAll:
-		return newSelectAllMenuItem()
+		result = NewSelectAllMenuItem()
 	case Delete:
-		return newDeleteMenuItem()
+		result = NewDeleteMenuItem()
 	case Quit:
-		return newQuitMenuItem()
-	case Close:
-		return newCloseMenuItem()
+		result = NewQuitMenuItem()
+	case CloseWindow:
+		result = NewCloseMenuItem()
 	case About:
-		return newAboutMenuItem()
+		result = NewAboutMenuItem()
 	case Reload:
-		return newReloadMenuItem()
+		result = NewReloadMenuItem()
 	case ForceReload:
-		return newForceReloadMenuItem()
+		result = NewForceReloadMenuItem()
 	case ToggleFullscreen:
-		return newToggleFullscreenMenuItem()
-	case ShowDevTools:
-		return newShowDevToolsMenuItem()
+		result = NewToggleFullscreenMenuItem()
+	case OpenDevTools:
+		result = NewOpenDevToolsMenuItem()
 	case ResetZoom:
-		return newZoomResetMenuItem()
+		result = NewZoomResetMenuItem()
 	case ZoomIn:
-		return newZoomInMenuItem()
+		result = NewZoomInMenuItem()
 	case ZoomOut:
-		return newZoomOutMenuItem()
+		result = NewZoomOutMenuItem()
 	case Minimize:
-		return newMinimizeMenuItem()
+		result = NewMinimizeMenuItem()
 	case Zoom:
-		return newZoomMenuItem()
+		result = NewZoomMenuItem()
 	case FullScreen:
-		return newFullScreenMenuItem()
+		result = NewFullScreenMenuItem()
+	case Print:
+		result = NewPrintMenuItem()
+	case PageLayout:
+		result = NewPageLayoutMenuItem()
+	case NoRole:
+	case ShowAll:
+		result = NewShowAllMenuItem()
+	case BringAllToFront:
+		result = NewBringAllToFrontMenuItem()
+	case NewFile:
+		result = NewNewFileMenuItem()
+	case Open:
+		result = NewOpenMenuItem()
+	case Save:
+		result = NewSaveMenuItem()
+	case SaveAs:
+		result = NewSaveAsMenuItem()
+	case StartSpeaking:
+		result = NewStartSpeakingMenuItem()
+	case StopSpeaking:
+		result = NewStopSpeakingMenuItem()
+	case Revert:
+		result = NewRevertMenuItem()
+	case Find:
+		result = NewFindMenuItem()
+	case FindAndReplace:
+		result = NewFindAndReplaceMenuItem()
+	case FindNext:
+		result = NewFindNextMenuItem()
+	case FindPrevious:
+		result = NewFindPreviousMenuItem()
+	case Help:
+		result = NewHelpMenuItem()
 
 	default:
 		globalApplication.error(fmt.Sprintf("No support for role: %v", role))
 		os.Exit(1)
 	}
-	return nil
+
+	if result == nil {
+		return nil
+	}
+
+	result.role = role
+	return result
 }
 
-func newServicesMenu() *MenuItem {
-	serviceMenu := newSubMenuItem("Services")
+func NewServicesMenu() *MenuItem {
+	serviceMenu := NewSubMenuItem("Services")
 	serviceMenu.role = ServicesMenu
 	return serviceMenu
 }
@@ -227,7 +269,7 @@ func (m *MenuItem) handleClick() {
 func (m *MenuItem) SetAccelerator(shortcut string) *MenuItem {
 	accelerator, err := parseAccelerator(shortcut)
 	if err != nil {
-		globalApplication.error("invalid accelerator:", err.Error())
+		globalApplication.error("invalid accelerator. %v", err.Error())
 		return m
 	}
 	m.accelerator = accelerator
@@ -237,11 +279,27 @@ func (m *MenuItem) SetAccelerator(shortcut string) *MenuItem {
 	return m
 }
 
+func (m *MenuItem) GetAccelerator() string {
+	if m.accelerator == nil {
+		return ""
+	}
+	return m.accelerator.String()
+}
+
+func (m *MenuItem) RemoveAccelerator() {
+	m.accelerator = nil
+}
+
 func (m *MenuItem) SetTooltip(s string) *MenuItem {
 	m.tooltip = s
 	if m.impl != nil {
 		m.impl.setTooltip(s)
 	}
+	return m
+}
+
+func (m *MenuItem) SetRole(role Role) *MenuItem {
+	m.role = role
 	return m
 }
 
@@ -283,6 +341,12 @@ func (m *MenuItem) SetHidden(hidden bool) *MenuItem {
 		m.impl.setHidden(m.hidden)
 	}
 	return m
+}
+
+// GetSubmenu returns the submenu of the MenuItem.
+// If the MenuItem is not a submenu, it returns nil.
+func (m *MenuItem) GetSubmenu() *Menu {
+	return m.submenu
 }
 
 func (m *MenuItem) Checked() bool {
@@ -331,4 +395,30 @@ func (m *MenuItem) setContextData(data *ContextMenuData) {
 	if m.submenu != nil {
 		m.submenu.setContextData(data)
 	}
+}
+
+// Clone returns a deep copy of the MenuItem
+func (m *MenuItem) Clone() *MenuItem {
+	result := &MenuItem{
+		id:       m.id,
+		label:    m.label,
+		tooltip:  m.tooltip,
+		disabled: m.disabled,
+		checked:  m.checked,
+		hidden:   m.hidden,
+		bitmap:   m.bitmap,
+		callback: m.callback,
+		itemType: m.itemType,
+		role:     m.role,
+	}
+	if m.submenu != nil {
+		result.submenu = m.submenu.Clone()
+	}
+	if m.accelerator != nil {
+		result.accelerator = m.accelerator.clone()
+	}
+	if m.contextMenuData != nil {
+		result.contextMenuData = m.contextMenuData.clone()
+	}
+	return result
 }

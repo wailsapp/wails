@@ -45,6 +45,12 @@ Also, you should specify path to fixed version of webview2 runtime in the `windo
 
 Note: When `WebviewBrowserPath` is specified, `error` strategy will be forced in case of minimal required version mismatch or invalid path to a runtime.
 
+The downloaded file will be compressed (extension `.cab`), so you must extract it before using it, according to the instructions on the [official site](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode) should run in a terminal the following command to extract the file:
+
+```
+expand {path to the package} -F:* {path to the destination folder}
+```
+
 ## Spawning other programs
 
 When spawning other programs, such as scripts, you will see the window appear on the screen. To hide the window, you can use the following code:

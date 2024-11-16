@@ -26,11 +26,11 @@ func NewPacman(osid string) *Pacman {
 // They will potentially differ on different distributions or versions
 func (p *Pacman) Packages() Packagemap {
 	return Packagemap{
-		"libgtk-3": []*Package{
+		"gtk3": []*Package{
 			{Name: "gtk3", SystemPackage: true, Library: true},
 		},
-		"libwebkit": []*Package{
-			{Name: "webkit2gtk", SystemPackage: true, Library: true},
+		"webkit2gtk": []*Package{
+			{Name: "webkit2gtk-4.1", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
 			{Name: "gcc", SystemPackage: true},

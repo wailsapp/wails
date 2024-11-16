@@ -133,227 +133,70 @@ API: `Show()`
     app.Show()
 ```
 
-### NewWebviewWindow
+### Path
 
-API: `NewWebviewWindow() *WebviewWindow`
+API: `Path(selector Path) string`
 
-`NewWebviewWindow()` creates a new Webview window with default options, and
-returns it.
+`Path(selector Path)` returns the full path for the given path type. It provides a cross-platform way to query common application directories.
 
-```go
-    // Create a new webview window
-    window := app.NewWebviewWindow()
-```
-
-### NewWebviewWindowWithOptions
-
-API:
-`NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow`
-
-`NewWebviewWindowWithOptions()` creates a new webview window with custom
-options. The newly created window is added to a map of windows managed by the
-application.
-
-```go
-    // Create a new webview window with custom options
-    window := app.NewWebviewWindowWithOptions(WebviewWindowOptions{
-		Name: "Main",
-        Title: "My Window",
-        Width: 800,
-        Height: 600,
-    })
-```
-
-### OnWindowCreation
-
-API: `OnWindowCreation(callback func(window *WebviewWindow))`
-
-`OnWindowCreation()` registers a callback function to be called when a window is
-created.
+The `Path` type is an enum with the following values:
+- `PathHome`: Returns the user's home directory
+- `PathDataHome`: Returns the path to the user's data directory
+- `PathConfigHome`: Returns the path to the user's configuration directory
+- `PathStateHome`: Returns the path to the user's state directory
+- `PathCacheHome`: Returns the path to the user's cache directory
+- `PathRuntimeDir`: Returns the path to the user's runtime directory
+- `PathDesktop`: Returns the path to the user's desktop directory
+- `PathDownload`: Returns the path to the user's download directory
+- `PathDocuments`: Returns the path to the user's documents directory
+- `PathMusic`: Returns the path to the user's music directory
+- `PathPictures`: Returns the path to the user's pictures directory
+- `PathVideos`: Returns the path to the user's videos directory
+- `PathTemplates`: Returns the path to the user's templates directory
+- `PathPublicShare`: Returns the path to the user's public share directory
 
 ```go
-    // Register a callback to be called when a window is created
-    app.OnWindowCreation(func(window *WebviewWindow) {
-        // Do something
-    })
+    // Get the data home directory path
+    dataHomePath := app.Path(application.PathDataHome)
+    fmt.Println("DataHome path:", dataHomePath)
+
+    // Output: DataHome path: /home/username/.local/share  // Linux
+    // Output: DataHome path: /Users/username/Library/Application Support  // macOS
+    // Output: DataHome path: C:\Users\Username\AppData\Roaming  // Windows
+
+    // Get the CacheHome directory path
+	cacheHomePath := app.Path(application.CacheHome)
+    fmt.Println("CacheHome path:", cacheHomePath)
+
+    // Output: CacheHome path: /home/username/.cache  // Linux
+    // Output: CacheHome path: /Users/username/Library/Caches  // macOS
+    // Output: CacheHome path: C:\Users\Username\AppData\Local\Temp  // Windows
 ```
 
-### GetWindowByName
+## Paths
+API: `Paths(selector Paths) []string`
+`Paths(selector Path)` returns a list of paths for the given path type. It provides a cross-platform way to query common directory paths.
 
-API: `GetWindowByName(name string) *WebviewWindow`
+The `Paths` type is an enum with the following values:
+- `PathsDataDirs`: Returns the list of data directories
+- `PathsConfigDirs`: Returns the list of configuration directories
+- `PathsCacheDirs`: Returns the list of cache directories
+- `PathsRuntimeDirs`: Returns the list of runtime directories
 
-`GetWindowByName()` fetches and returns a window with a specific name.
 
-```go
-    // Get a window by name
-    window := app.GetWindowByName("Main")
-```
+--8<--
+./docs/en/API/application_window.md
+./docs/en/API/application_menu.md
+./docs/en/API/application_dialogs.md
+./docs/en/API/application_events.md
+./docs/en/API/application_screens.md
+--8<--
 
-### CurrentWindow
-
-API: `CurrentWindow() *WebviewWindow`
-
-`CurrentWindow()` fetches and returns a pointer to the currently active window
-in the application. If there is no window, it returns nil.
-
-```go
-    // Get the current window
-    window := app.CurrentWindow()
-```
-
-### RegisterContextMenu
-
-API: `RegisterContextMenu(name string, menu *Menu)`
-
-`RegisterContextMenu()` registers a context menu with a given name. This menu
-can be used later in the application.
-
-```go
-
-    // Create a new menu
-    ctxmenu := app.NewMenu()
-
-    // Register the menu as a context menu
-    app.RegisterContextMenu("MyContextMenu", ctxmenu)
-```
-
-### SetMenu
-
-API: `SetMenu(menu *Menu)`
-
-`SetMenu()` sets the menu for the application. On Mac, this will be the global
-menu. For Windows and Linux, this will be the default menu for any new window
-created.
-
-```go
-    // Create a new menu
-    menu := app.NewMenu()
-
-    // Set the menu for the application
-    app.SetMenu(menu)
-```
-
-### ShowAboutDialog
-
-API: `ShowAboutDialog()`
-
-`ShowAboutDialog()` shows an "About" dialog box. It can show the application's
-name, description and icon.
-
-```go
-    // Show the about dialog
-    app.ShowAboutDialog()
-```
-
-### Info
-
-API: `InfoDialog()`
-
-`InfoDialog()` creates and returns a new instance of `MessageDialog` with an
-`InfoDialogType`. This dialog is typically used to display informational
-messages to the user.
-
-### Question
-
-API: `QuestionDialog()`
-
-`QuestionDialog()` creates and returns a new instance of `MessageDialog` with a
-`QuestionDialogType`. This dialog is often used to ask a question to the user
-and expect a response.
-
-### Warning
-
-API: `WarningDialog()`
-
-`WarningDialog()` creates and returns a new instance of `MessageDialog` with a
-`WarningDialogType`. As the name suggests, this dialog is primarily used to
-display warning messages to the user.
-
-### Error
-
-API: `ErrorDialog()`
-
-`ErrorDialog()` creates and returns a new instance of `MessageDialog` with an
-`ErrorDialogType`. This dialog is designed to be used when you need to display
-an error message to the user.
-
-### OpenFile
-
-API: `OpenFileDialog()`
-
-`OpenFileDialog()` creates and returns a new `OpenFileDialogStruct`. This dialog
-prompts the user to select one or more files from their file system.
-
-### SaveFile
-
-API: `SaveFileDialog()`
-
-`SaveFileDialog()` creates and returns a new `SaveFileDialogStruct`. This dialog
-prompts the user to choose a location on their file system where a file should
-be saved.
-
-### OpenDirectory
-
-API: `OpenDirectoryDialog()`
-
-`OpenDirectoryDialog()` creates and returns a new instance of `MessageDialog`
-with an `OpenDirectoryDialogType`. This dialog enables the user to choose a
-directory from their file system.
-
-### On
-
-API:
-`On(eventType events.ApplicationEventType, callback func(event *Event)) func()`
-
-`On()` registers an event listener for specific application events. The callback
-function provided will be triggered when the corresponding event occurs. The
-function returns a function that can be called to remove the listener.
-
-### RegisterHook
-
-API:
-`RegisterHook(eventType events.ApplicationEventType, callback func(event *Event)) func()`
-
-`RegisterHook()` registers a callback to be run as a hook during specific
-events. These hooks are run before listeners attached with `On()`. The function
-returns a function that can be called to remove the hook.
-
-### GetPrimaryScreen
-
-API: `GetPrimaryScreen() (*Screen, error)`
-
-`GetPrimaryScreen()` returns the primary screen of the system.
-
-### GetScreens
-
-API: `GetScreens() ([]*Screen, error)`
-
-`GetScreens()` returns information about all screens attached to the system.
-
-This is a brief summary of the exported methods in the provided `App` struct. Do
-note that for more detailed functionality or considerations, refer to the actual
-Go code or further internal documentation.
 
 ## Options
 
-```go title="application_options.go"
+```go title="pkg/application/application_options.go"
 --8<--
-../v3/pkg/application/options_application.go
---8<--
-```
-
-### Windows Options
-
-```go title="application_options_windows.go"
---8<--
-../v3/pkg/application/options_application_win.go
---8<--
-```
-
-### Mac Options
-
-```go title="options_application_mac.go"
---8<--
-../v3/pkg/application/options_application_mac.go
+../v3/pkg/application/application_options.go
 --8<--
 ```

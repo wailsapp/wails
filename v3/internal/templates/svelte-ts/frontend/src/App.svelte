@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {Greet} from "../bindings/main/GreetService.js";
+  import {GreetService} from "../bindings/changeme";
   import {Events} from "@wailsio/runtime";
 
   let name: string = '';
@@ -11,7 +11,7 @@
     if (!localName) {
       localName = 'anonymous';
     }
-    Greet(localName).then((resultValue: string) => {
+    GreetService.Greet(localName).then((resultValue: string) => {
       result = resultValue;
     }).catch((err: any) => {
       console.log(err);

@@ -33,7 +33,7 @@ func (a *App) preRun() error {
 				a.Logger.Info("Retrying...")
 			}
 		}
-		a.fatal("unable to connect to frontend server. Please check it is running", "FRONTEND_DEVSERVER_URL", frontendURL)
+		a.fatal("unable to connect to frontend server. Please check it is running - FRONTEND_DEVSERVER_URL='%s'", frontendURL)
 	}
 	return nil
 }

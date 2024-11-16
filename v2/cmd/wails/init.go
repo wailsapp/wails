@@ -125,6 +125,12 @@ func initProject(f *flags.Init) error {
 		return err
 	}
 
+	// Change the module name to project name
+	err = updateModuleNameToProjectName(options, quiet)
+	if err != nil {
+		return err
+	}
+
 	if !f.CIMode {
 		// Run `go mod tidy` to ensure `go.sum` is up to date
 		cmd := exec.Command("go", "mod", "tidy")
@@ -275,4 +281,15 @@ func updateReplaceLine(targetPath string) {
 	if err != nil {
 		fatal(err.Error())
 	}
+}
+
+func updateModuleNameToProjectName(options *templates.Options, quiet bool) error {
+	cmd := exec.Command("go", "mod", "edit", "-module", options.ProjectName)
+	cmd.Dir = options.TargetDir
+	cmd.Stderr = os.Stderr
+	if !quiet {
+		cmd.Stdout = os.Stdout
+	}
+
+	return cmd.Run()
 }

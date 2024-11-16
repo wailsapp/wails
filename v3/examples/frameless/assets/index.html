@@ -20,14 +20,14 @@
             padding: 20px;
         }
     </style>
-    <script src="runtime.js"></script>
+    <script type="module" src="/wails/runtime.js"></script>
 </head>
 <body>
 <div class="container">
-    <div class="quarter" style="background-color: lightblue; --webkit-app-region: drag">Draggable</div>
+    <div class="quarter" style="background-color: lightblue; --wails-draggable: drag">Draggable</div>
     <div class="quarter" style="background-color: lightgreen;">Not Draggable</div>
     <div class="quarter" style="background-color: lightpink;">Not Draggable</div>
-    <div class="quarter" style="background-color: lightyellow; --webkit-app-region: drag">Draggable</div>
+    <div class="quarter" style="background-color: lightyellow; --wails-draggable: drag">Draggable</div>
 </div>
 </body>
 </html>

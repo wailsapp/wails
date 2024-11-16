@@ -27,10 +27,10 @@ func NewZypper(osid string) *Zypper {
 // They will potentially differ on different distributions or versions
 func (z *Zypper) Packages() Packagemap {
 	return Packagemap{
-		"libgtk-3": []*Package{
+		"gtk3": []*Package{
 			{Name: "gtk3-devel", SystemPackage: true, Library: true},
 		},
-		"libwebkit": []*Package{
+		"webkit2gtk": []*Package{
 			{Name: "webkit2gtk3-soup2-devel", SystemPackage: true, Library: true},
 			{Name: "webkit2gtk3-devel", SystemPackage: true, Library: true},
 		},

@@ -23,6 +23,7 @@ import (
 	"log"
 	"net"
 	"net/url"
+	"os"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
@@ -54,6 +55,9 @@ type Frontend struct {
 	logger          *logger.Logger
 	debug           bool
 	devtoolsEnabled bool
+
+	// Keep single instance lock file, so that it will not be GC and lock will exist while app is running
+	singleInstanceLockFile *os.File
 
 	// Assets
 	assets   *assetserver.AssetServer
@@ -186,7 +190,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
 
 	if f.frontendOptions.SingleInstanceLock != nil {
-		SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
+		f.singleInstanceLockFile = SetupSingleInstance(f.frontendOptions.SingleInstanceLock.UniqueId)
 	}
 
 	_debug := ctx.Value("debug")
@@ -364,6 +368,11 @@ func (f *Frontend) processMessage(message string) {
 	if message == "runtime:ready" {
 		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
 		f.ExecJS(cmd)
+
+		if f.frontendOptions.DragAndDrop != nil && f.frontendOptions.DragAndDrop.EnableFileDrop {
+			f.ExecJS("window.wails.flags.enableWailsDragAndDrop = true;")
+		}
+
 		return
 	}
 

@@ -3,6 +3,10 @@
 version: "3"
 
 includes:
+  generator:
+    taskfile: ./internal/generator
+    dir: ./internal/generator
+
   runtime:
     taskfile: ./internal/runtime
     dir: ./internal/runtime
@@ -51,6 +55,12 @@ tasks:
       - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old wails.svg -new wails.png -ext .ts,.js,.html -ignore vite.config.js,vite.config.ts,vite-env.d.ts
       - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old wailsjs.dev -new wails.io -ext .ts,.js,.html -ignore vite.config.js,vite.config.ts,vite-env.d.ts
       - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old "framework powered by Wails" -new "framework powered by Vite" -ext .ts,.js,.html,.svelte -ignore vite.config.js,vite.config.ts,vite-env.d.ts
+
+  release:
+    summary: Release a new version of Wails. Call with `task v3:release -- <version>`
+    dir: tasks/release
+    cmds:
+      - go run release.go {{.CLI_ARGS}}
 
   taskfile:upgrade:
     cmds:
@@ -132,12 +142,28 @@ tasks:
       - task: format
 #      - task: docs:update:api
 
-  test:example:
+  test:example:darwin:
     dir: 'examples/{{.DIR}}'
+    platforms:
+      - darwin
     cmds:
       - echo "Building example {{.DIR}}"
       - go mod tidy
       - go build -o "testbuild-{{.DIR}}{{exeExt}}"
+    env:
+      CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
+      CGO_CFLAGS: -mmacosx-version-min=10.13
+
+  test:example:notdarwin:
+    dir: 'examples/{{.DIR}}'
+    platforms:
+      - linux
+      - windows
+    cmds:
+      - echo "Building example {{.DIR}}"
+      - go mod tidy
+      - go build -o "testbuild-{{.DIR}}{{exeExt}}"
+
 
   test:examples:
     summary: Builds the examples
@@ -150,18 +176,29 @@ tasks:
         contextmenus
         dialogs
         drag-n-drop
+        environment
         events
         frameless
+        hide-window
+        ignore-mouse
         keybindings
         menu
         plain
-        plugins
+        raw-message
         screen
+        services
+        show-macos-toolbar
         systray
+        video
         window
+        window-api
         wml
     cmds:
       - for: { var: EXAMPLEDIRS }
-        task: test:example
+        task: test:example:darwin
+        vars:
+          DIR: "{{.ITEM}}"
+      - for: { var: EXAMPLEDIRS }
+        task: test:example:notdarwin
         vars:
           DIR: "{{.ITEM}}"

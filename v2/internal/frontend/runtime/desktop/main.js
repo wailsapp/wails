@@ -16,8 +16,8 @@ import * as Window from "./window";
 import * as Screen from "./screen";
 import * as Browser from "./browser";
 import * as Clipboard from "./clipboard";
+import * as DragAndDrop from "./draganddrop";
 import * as ContextMenu from "./contextmenu";
-
 
 export function Quit() {
     window.WailsInvoke('Q');
@@ -42,6 +42,7 @@ window.runtime = {
     ...Browser,
     ...Screen,
     ...Clipboard,
+    ...DragAndDrop,
     EventsOn,
     EventsOnce,
     EventsOnMultiple,
@@ -70,6 +71,9 @@ window.wails = {
         deferDragToMouseMove: true,
         cssDragProperty: "--wails-draggable",
         cssDragValue: "drag",
+        cssDropProperty: "--wails-drop-target",
+        cssDropValue: "drop",
+        enableWailsDragAndDrop: false,
     }
 };
 
@@ -112,8 +116,12 @@ window.wails.setCSSDragProperties = function (property, value) {
     window.wails.flags.cssDragValue = value;
 }
 
-window.addEventListener('mousedown', (e) => {
+window.wails.setCSSDropProperties = function (property, value) {
+    window.wails.flags.cssDropProperty = property;
+    window.wails.flags.cssDropValue = value;
+}
 
+window.addEventListener('mousedown', (e) => {
     // Check for resizing
     if (window.wails.flags.resizeEdge) {
         window.WailsInvoke("resize:" + window.wails.flags.resizeEdge);

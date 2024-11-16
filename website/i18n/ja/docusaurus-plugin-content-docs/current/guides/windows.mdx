@@ -45,6 +45,12 @@ WebView2の依存関係に対処するための別手段として、自身でラ
 
 注意: `WebviewBrowserPath`が指定されている場合、必要な最低バージョンを満たしていなかったり、ランタイムへのパスが無効であったりすると、強制的に`error`オプションの挙動となります。
 
+The downloaded file will be compressed (extension `.cab`), so you must extract it before using it, according to the instructions on the [official site](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode) should run in a terminal the following command to extract the file:
+
+```
+expand {path to the package} -F:* {path to the destination folder}
+```
+
 ## 他のプログラムの起動
 
 スクリプトなどの他のプログラムを起動すると、当該プログラムのウィンドウが画面に表示されます。 このウィンドウを表示させたくない場合は、次のコードを使用してください:

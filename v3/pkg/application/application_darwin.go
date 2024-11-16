@@ -210,7 +210,7 @@ func (m *macosApp) getCurrentWindowID() uint {
 func (m *macosApp) setApplicationMenu(menu *Menu) {
 	if menu == nil {
 		// Create a default menu for mac
-		menu = defaultApplicationMenu()
+		menu = DefaultApplicationMenu()
 	}
 	menu.Update()
 
@@ -221,7 +221,7 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 
 func (m *macosApp) run() error {
 	// Add a hook to the ApplicationDidFinishLaunching event
-	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func(*Event) {
+	m.parent.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*ApplicationEvent) {
 		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))
 		C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
 		C.activateIgnoringOtherApps()
@@ -348,10 +348,31 @@ func cleanup() {
 func (a *App) logPlatformInfo() {
 	info, err := operatingsystem.Info()
 	if err != nil {
-		a.error("Error getting OS info", "error", err.Error())
+		a.error("Error getting OS info: %s", err.Error())
 		return
 	}
 
 	a.info("Platform Info:", info.AsLogSlice()...)
 
+}
+
+func (a *App) platformEnvironment() map[string]any {
+	return map[string]any{}
+}
+
+func fatalHandler(errFunc func(error)) {
+	return
+}
+
+//export HandleOpenFile
+func HandleOpenFile(filePath *C.char) {
+	goFilepath := C.GoString(filePath)
+	// Create new application event context
+	eventContext := newApplicationEventContext()
+	eventContext.setOpenedWithFile(goFilepath)
+	// EmitEvent application started event
+	applicationEvents <- &ApplicationEvent{
+		Id:  uint(events.Common.ApplicationOpenedWithFile),
+		ctx: eventContext,
+	}
 }

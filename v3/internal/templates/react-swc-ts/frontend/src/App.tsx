@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import {Greet} from "../bindings/main/GreetService.js";
+import {GreetService} from "../bindings/changeme";
 import {Events, WML} from "@wailsio/runtime";
 
 function App() {
@@ -12,7 +12,7 @@ function App() {
     if (!localName) {
       localName = 'anonymous';
     }
-    Greet(localName).then((resultValue: string) => {
+    GreetService.Greet(localName).then((resultValue: string) => {
       setResult(resultValue);
     }).catch((err: any) => {
       console.log(err);

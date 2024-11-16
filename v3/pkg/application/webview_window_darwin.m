@@ -241,6 +241,13 @@ extern bool hasListeners(unsigned int);
         }
     }
 }
+- (NSApplicationPresentationOptions)window:(NSWindow *)window willUseFullScreenPresentationOptions:(NSApplicationPresentationOptions)proposedOptions {
+    if (self.showToolbarWhenFullscreen) {
+        return proposedOptions;
+    } else {
+        return proposedOptions | NSApplicationPresentationAutoHideToolbar;
+    }
+}
 // GENERATED EVENTS START
 - (void)windowDidBecomeKey:(NSNotification *)notification {
     if( hasListeners(EventWindowDidBecomeKey) ) {

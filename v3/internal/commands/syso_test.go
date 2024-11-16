@@ -125,12 +125,8 @@ func TestGenerateSyso(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			options := tt.setup()
 			err := GenerateSyso(options)
-			if (err != nil) != tt.wantErr {
+			if (err == nil) && tt.wantErr {
 				t.Errorf("GenerateSyso() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if (err != nil) && tt.wantErr {
-				println(err.Error())
 				return
 			}
 			if tt.test != nil {

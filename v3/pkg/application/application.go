@@ -1,25 +1,31 @@
 package application
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
-	"github.com/pkg/browser"
-	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v3/internal/signal"
+	"fmt"
 	"io"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"strconv"
+	"strings"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/internal/operatingsystem"
+
+	"github.com/pkg/browser"
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/signal"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/pkg/events"
-	"github.com/wailsapp/wails/v3/pkg/icons"
 )
 
 //go:embed assets/*
@@ -29,7 +35,7 @@ var globalApplication *App
 
 // AlphaAssets is the default assets for the alpha application
 var AlphaAssets = AssetOptions{
-	FS: alphaAssets,
+	Handler: BundledAssetFileServer(alphaAssets),
 }
 
 func init() {
@@ -37,7 +43,7 @@ func init() {
 }
 
 type EventListener struct {
-	callback func(app *Event)
+	callback func(app *ApplicationEvent)
 }
 
 func Get() *App {
@@ -53,6 +59,7 @@ func New(appOptions Options) *App {
 
 	result := newApplication(appOptions)
 	globalApplication = result
+	fatalHandler(result.handleFatalError)
 
 	if result.Logger == nil {
 		if result.isDebugMode {
@@ -73,25 +80,43 @@ func New(appOptions Options) *App {
 	result.logStartup()
 	result.logPlatformInfo()
 
-	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
+	result.customEventProcessor = NewWailsEventProcessor(result.dispatchEventToListeners)
 
+	messageProc := NewMessageProcessor(result.Logger)
 	opts := &assetserver.Options{
-		Assets:         appOptions.Assets.FS,
-		Handler:        appOptions.Assets.Handler,
-		Middleware:     assetserver.Middleware(appOptions.Assets.Middleware),
-		Logger:         result.Logger,
-		RuntimeHandler: NewMessageProcessor(result.Logger),
-		GetCapabilities: func() []byte {
-			return globalApplication.capabilities.AsBytes()
-		},
-		GetFlags: func() []byte {
-			updatedOptions := result.impl.GetFlags(appOptions)
-			flags, err := json.Marshal(updatedOptions)
-			if err != nil {
-				log.Fatal("Invalid flags provided to application: ", err.Error())
-			}
-			return flags
-		},
+		Handler: appOptions.Assets.Handler,
+		Middleware: assetserver.ChainMiddleware(
+			func(next http.Handler) http.Handler {
+				if m := appOptions.Assets.Middleware; m != nil {
+					return m(next)
+				}
+				return next
+			},
+			func(next http.Handler) http.Handler {
+				return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+					path := req.URL.Path
+					switch path {
+					case "/wails/runtime":
+						messageProc.ServeHTTP(rw, req)
+					case "/wails/capabilities":
+						assetserver.ServeFile(rw, path, globalApplication.capabilities.AsBytes())
+					case "/wails/flags":
+						updatedOptions := result.impl.GetFlags(appOptions)
+						flags, err := json.Marshal(updatedOptions)
+						if err != nil {
+							result.handleFatalError(fmt.Errorf("invalid flags provided to application: %s", err.Error()))
+						}
+						err = assetserver.ServeFile(rw, path, flags)
+						if err != nil {
+							result.handleFatalError(fmt.Errorf("unable to serve flags: %s", err.Error()))
+						}
+					default:
+						next.ServeHTTP(rw, req)
+					}
+				})
+			},
+		),
+		Logger: result.Logger,
 	}
 
 	if appOptions.Assets.DisableLogging {
@@ -100,26 +125,29 @@ func New(appOptions Options) *App {
 
 	srv, err := assetserver.NewAssetServer(opts)
 	if err != nil {
-		result.Logger.Error("Fatal error in application initialisation: " + err.Error())
+		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
 	}
 
 	result.assets = srv
 	result.assets.LogDetails()
 
-	result.bindings, err = NewBindings(appOptions.Bind, appOptions.BindAliases)
+	result.bindings, err = NewBindings(appOptions.Services, appOptions.BindAliases)
 	if err != nil {
-		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
+		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
 	}
 
-	result.plugins = NewPluginManager(appOptions.Plugins, srv)
-	err = result.plugins.Init()
-	if err != nil {
-		globalApplication.fatal("Fatal error in plugins initialisation: " + err.Error())
-	}
-
-	err = result.bindings.AddPlugins(appOptions.Plugins)
-	if err != nil {
-		globalApplication.fatal("Fatal error in application initialisation: " + err.Error())
+	for _, service := range appOptions.Services {
+		if thisService, ok := service.instance.(ServiceStartup); ok {
+			err := thisService.OnStartup(result.ctx, service.options)
+			if err != nil {
+				name := service.options.Name
+				if name == "" {
+					name = getServiceName(service.instance)
+				}
+				globalApplication.Logger.Error("OnStartup() failed:", "service", name, "error", err.Error())
+				continue
+			}
+		}
 	}
 
 	// Process keybindings
@@ -141,8 +169,8 @@ func mergeApplicationDefaults(o *Options) {
 	if o.Description == "" {
 		o.Description = "An application written using Wails"
 	}
-	if o.Icon == nil {
-		o.Icon = icons.ApplicationLightMode256
+	if o.Windows.WndClass == "" {
+		o.Windows.WndClass = "WailsWebviewWindow"
 	}
 }
 
@@ -236,15 +264,20 @@ func (r *webViewAssetRequest) Header() (http.Header, error) {
 var webviewRequests = make(chan *webViewAssetRequest, 5)
 
 type eventHook struct {
-	callback func(event *Event)
+	callback func(event *ApplicationEvent)
 }
 
 type App struct {
+	ctx                           context.Context
+	cancel                        context.CancelFunc
 	options                       Options
 	applicationEventListeners     map[uint][]*EventListener
 	applicationEventListenersLock sync.RWMutex
 	applicationEventHooks         map[uint][]*eventHook
 	applicationEventHooksLock     sync.RWMutex
+
+	// Screens layout manager (handles DIP coordinate system)
+	screenManager ScreenManager
 
 	// Windows
 	windows     map[uint]Window
@@ -266,7 +299,6 @@ type App struct {
 	pendingRun []runnable
 
 	bindings *Bindings
-	plugins  *PluginManager
 
 	// platform app
 	impl platformApp
@@ -274,9 +306,9 @@ type App struct {
 	// The main application menu
 	ApplicationMenu *Menu
 
-	clipboard *Clipboard
-	Events    *EventProcessor
-	Logger    *slog.Logger
+	clipboard            *Clipboard
+	customEventProcessor *EventProcessor
+	Logger               *slog.Logger
 
 	contextMenus     map[string]*Menu
 	contextMenusLock sync.Mutex
@@ -293,7 +325,8 @@ type App struct {
 	isDebugMode  bool
 
 	// Keybindings
-	keyBindings map[string]func(window *WebviewWindow)
+	keyBindings     map[string]func(window *WebviewWindow)
+	keyBindingsLock sync.RWMutex
 
 	// Shutdown
 	performingShutdown bool
@@ -305,9 +338,69 @@ type App struct {
 
 	// signalHandler is used to handle signals
 	signalHandler *signal.SignalHandler
+
+	// Wails ApplicationEvent Listener related
+	wailsEventListenerLock sync.Mutex
+	wailsEventListeners    []WailsEventListener
+}
+
+func (a *App) handleError(err error) {
+	if a.options.ErrorHandler != nil {
+		a.options.ErrorHandler(err)
+	} else {
+		a.Logger.Error(err.Error())
+	}
+}
+
+// EmitEvent will emit an event
+func (a *App) EmitEvent(name string, data ...any) {
+	a.customEventProcessor.Emit(&CustomEvent{
+		Name: name,
+		Data: data,
+	})
+}
+
+// EmitEvent will emit an event
+func (a *App) emitEvent(event *CustomEvent) {
+	a.customEventProcessor.Emit(event)
+}
+
+// OnEvent will listen for events
+func (a *App) OnEvent(name string, callback func(event *CustomEvent)) func() {
+	return a.customEventProcessor.On(name, callback)
+}
+
+// OffEvent will remove an event listener
+func (a *App) OffEvent(name string) {
+	a.customEventProcessor.Off(name)
+}
+
+// OnMultipleEvent will listen for events a set number of times before unsubscribing.
+func (a *App) OnMultipleEvent(name string, callback func(event *CustomEvent), counter int) {
+	a.customEventProcessor.OnMultiple(name, callback, counter)
+}
+
+// ResetEvents will remove all event listeners and hooks
+func (a *App) ResetEvents() {
+	a.customEventProcessor.OffAll()
+}
+
+func (a *App) handleFatalError(err error) {
+	var buffer strings.Builder
+	buffer.WriteString("*********************** FATAL ***********************")
+	buffer.WriteString("There has been a catastrophic failure in your application.")
+	buffer.WriteString("Please report this error at https://github.com/wailsapp/wails/issues")
+	buffer.WriteString("******************** Error Details ******************")
+	buffer.WriteString(fmt.Sprintf("Message: " + err.Error()))
+	buffer.WriteString(fmt.Sprintf("Stack: " + string(debug.Stack())))
+	buffer.WriteString("*********************** FATAL ***********************")
+	a.handleError(fmt.Errorf(buffer.String()))
+	os.Exit(1)
 }
 
 func (a *App) init() {
+	a.ctx, a.cancel = context.WithCancel(context.Background())
+	a.applicationEventHooks = make(map[uint][]*eventHook)
 	a.applicationEventListeners = make(map[uint][]*EventListener)
 	a.windows = make(map[uint]Window)
 	a.systemTrays = make(map[uint]*SystemTray)
@@ -315,6 +408,7 @@ func (a *App) init() {
 	a.keyBindings = make(map[string]func(window *WebviewWindow))
 	a.Logger = a.options.Logger
 	a.pid = os.Getpid()
+	a.wailsEventListeners = make([]WailsEventListener, 0)
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -340,7 +434,7 @@ func (a *App) Capabilities() capabilities.Capabilities {
 	return a.capabilities
 }
 
-func (a *App) On(eventType events.ApplicationEventType, callback func(event *Event)) func() {
+func (a *App) OnApplicationEvent(eventType events.ApplicationEventType, callback func(event *ApplicationEvent)) func() {
 	eventID := uint(eventType)
 	a.applicationEventListenersLock.Lock()
 	defer a.applicationEventListenersLock.Unlock()
@@ -361,9 +455,10 @@ func (a *App) On(eventType events.ApplicationEventType, callback func(event *Eve
 	}
 }
 
-// RegisterHook registers a hook for the given event type. Hooks are called before the event listeners and can cancel the event.
+// RegisterApplicationEventHook registers a hook for the given application event.
+// Hooks are called before the event listeners and can cancel the event.
 // The returned function can be called to remove the hook.
-func (a *App) RegisterHook(eventType events.ApplicationEventType, callback func(event *Event)) func() {
+func (a *App) RegisterApplicationEventHook(eventType events.ApplicationEventType, callback func(event *ApplicationEvent)) func() {
 	eventID := uint(eventType)
 	a.applicationEventHooksLock.Lock()
 	defer a.applicationEventHooksLock.Unlock()
@@ -378,6 +473,16 @@ func (a *App) RegisterHook(eventType events.ApplicationEventType, callback func(
 		a.applicationEventHooksLock.Unlock()
 	}
 }
+
+//func (a *App) RegisterListener(listener WailsEventListener) {
+//	a.wailsEventListenerLock.Lock()
+//	a.wailsEventListeners = append(a.wailsEventListeners, listener)
+//	a.wailsEventListenerLock.Unlock()
+//}
+//
+//func (a *App) RegisterServiceHandler(prefix string, handler http.Handler) {
+//	a.assets.AttachServiceHandler(prefix, handler)
+//}
 
 func (a *App) NewWebviewWindow() *WebviewWindow {
 	return a.NewWebviewWindowWithOptions(WebviewWindowOptions{})
@@ -400,19 +505,12 @@ func (a *App) debug(message string, args ...any) {
 }
 
 func (a *App) fatal(message string, args ...any) {
-	msg := "A FATAL ERROR HAS OCCURRED: " + message
-	if a.Logger != nil {
-		a.Logger.Error(msg, args...)
-	} else {
-		println(msg)
-	}
-	os.Exit(1)
+	err := fmt.Errorf(message, args...)
+	a.handleFatalError(err)
 }
 
 func (a *App) error(message string, args ...any) {
-	if a.Logger != nil {
-		go a.Logger.Error(message, args...)
-	}
+	a.handleError(fmt.Errorf(message, args...))
 }
 
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
@@ -516,19 +614,32 @@ func (a *App) Run() error {
 	if runtime.GOOS == "darwin" {
 		a.impl.setApplicationMenu(a.ApplicationMenu)
 	}
-	a.impl.setIcon(a.options.Icon)
+	if a.options.Icon != nil {
+		a.impl.setIcon(a.options.Icon)
+	}
 
 	err = a.impl.run()
 	if err != nil {
 		return err
 	}
 
-	a.plugins.Shutdown()
+	// Cancel the context
+	a.cancel()
+
+	for _, service := range a.options.Services {
+		// If it conforms to the ServiceShutdown interface, call the Shutdown method
+		if thisService, ok := service.instance.(ServiceShutdown); ok {
+			err := thisService.OnShutdown()
+			if err != nil {
+				a.error("Error shutting down service: " + err.Error())
+			}
+		}
+	}
 
 	return nil
 }
 
-func (a *App) handleApplicationEvent(event *Event) {
+func (a *App) handleApplicationEvent(event *ApplicationEvent) {
 	a.applicationEventListenersLock.RLock()
 	listeners, ok := a.applicationEventListeners[event.Id]
 	a.applicationEventListenersLock.RUnlock()
@@ -576,8 +687,14 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 		log.Printf("WebviewWindow #%d not found", event.windowId)
 		return
 	}
-	// Get callback from window
-	window.HandleMessage(event.message)
+	// Check if the message starts with "wails:"
+	if strings.HasPrefix(event.message, "wails:") {
+		window.HandleMessage(event.message)
+	} else {
+		if a.options.RawMessageHandler != nil {
+			a.options.RawMessageHandler(window, event.message)
+		}
+	}
 }
 
 func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
@@ -692,12 +809,6 @@ func ErrorDialog() *MessageDialog {
 	return newMessageDialog(ErrorDialogType)
 }
 
-// TODO: Why isn't this used?
-
-func OpenDirectoryDialog() *MessageDialog {
-	return newMessageDialog(OpenDirectoryDialogType)
-}
-
 func OpenFileDialog() *OpenFileDialogStruct {
 	return newOpenFileDialog()
 }
@@ -706,12 +817,18 @@ func SaveFileDialog() *SaveFileDialogStruct {
 	return newSaveFileDialog()
 }
 
-func (a *App) GetPrimaryScreen() (*Screen, error) {
-	return a.impl.getPrimaryScreen()
-}
-
+// NOTE: should use screenManager directly after DPI is implemented in all platforms
+// (should also get rid of the error return)
 func (a *App) GetScreens() ([]*Screen, error) {
 	return a.impl.getScreens()
+	// return a.screenManager.screens, nil
+}
+
+// NOTE: should use screenManager directly after DPI is implemented in all platforms
+// (should also get rid of the error return)
+func (a *App) GetPrimaryScreen() (*Screen, error) {
+	return a.impl.getPrimaryScreen()
+	// return a.screenManager.primaryScreen, nil
 }
 
 func (a *App) Clipboard() *Clipboard {
@@ -748,9 +865,15 @@ func SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialogStruct {
 	return result
 }
 
-func (a *App) dispatchEventToWindows(event *WailsEvent) {
+func (a *App) dispatchEventToListeners(event *CustomEvent) {
+	listeners := a.wailsEventListeners
+
 	for _, window := range a.windows {
 		window.DispatchWailsEvent(event)
+	}
+
+	for _, listener := range listeners {
+		listener.DispatchWailsEvent(event)
 	}
 }
 
@@ -820,6 +943,9 @@ func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow)
 		return false
 	}
 
+	a.keyBindingsLock.RLock()
+	defer a.keyBindingsLock.RUnlock()
+
 	// Check key bindings
 	callback, ok := a.keyBindings[acceleratorString]
 	if !ok {
@@ -830,6 +956,18 @@ func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow)
 	go callback(window)
 
 	return true
+}
+
+func (a *App) addKeyBinding(acceleratorString string, callback func(window *WebviewWindow)) {
+	a.keyBindingsLock.Lock()
+	defer a.keyBindingsLock.Unlock()
+	a.keyBindings[acceleratorString] = callback
+}
+
+func (a *App) removeKeyBinding(acceleratorString string) {
+	a.keyBindingsLock.Lock()
+	defer a.keyBindingsLock.Unlock()
+	delete(a.keyBindings, acceleratorString)
 }
 
 func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
@@ -849,23 +987,6 @@ func (a *App) AssetServerHandler() func(rw http.ResponseWriter, req *http.Reques
 	return a.assets.ServeHTTP
 }
 
-func (a *App) RegisterWindow(window Window) uint {
-	id := getWindowID()
-	if a.windows == nil {
-		a.windows = make(map[uint]Window)
-	}
-	a.windowsLock.Lock()
-	defer a.windowsLock.Unlock()
-	a.windows[id] = window
-	return id
-}
-
-func (a *App) UnregisterWindow(id uint) {
-	a.windowsLock.Lock()
-	defer a.windowsLock.Unlock()
-	delete(a.windows, id)
-}
-
 func (a *App) BrowserOpenURL(url string) error {
 	return browser.OpenURL(url)
 }
@@ -875,11 +996,15 @@ func (a *App) BrowserOpenFile(path string) error {
 }
 
 func (a *App) Environment() EnvironmentInfo {
-	return EnvironmentInfo{
-		OS:    runtime.GOOS,
-		Arch:  runtime.GOARCH,
-		Debug: a.isDebugMode,
+	info, _ := operatingsystem.Info()
+	result := EnvironmentInfo{
+		OS:     runtime.GOOS,
+		Arch:   runtime.GOARCH,
+		Debug:  a.isDebugMode,
+		OSInfo: info,
 	}
+	result.PlatformInfo = a.platformEnvironment()
+	return result
 }
 
 func (a *App) shouldQuit() bool {
@@ -887,4 +1012,14 @@ func (a *App) shouldQuit() bool {
 		return a.options.ShouldQuit()
 	}
 	return true
+}
+
+// Path returns the path for the given selector
+func (a *App) Path(selector Path) string {
+	return paths[selector]
+}
+
+// Paths returns the paths for the given selector
+func (a *App) Paths(selector Paths) []string {
+	return pathdirs[selector]
 }

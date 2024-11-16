@@ -1,0 +1,215 @@
+# アプリケーション開発
+
+Wailsでアプリケーションを作成する際に、厳格なルールはありませんが、基本的なガイドラインがいくつかあります。
+
+## アプリケーションセットアップ
+
+デフォルトのテンプレートを使用した場合、`main.go`にはアプリケーションの構成および起動コードが記述され、`app.go`にはアプリケーションのロジック定義が記述されています。
+
+`app.go`ファイルには、メインアプリケーションのフックとして機能する2つのメソッドを持った構造体を定義します。
+
+```go title="app.go"
+type App struct {
+    ctx context.Context
+}
+
+func NewApp() *App {
+    return &App{}
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+}
+
+func (a *App) shutdown(ctx context.Context) {
+}
+```
+
+- startupメソッドは、Wailsが起動時に、必要リソースの割り当てが完了した際にすぐに呼び出されます。このメソッド内は、リソースの作成、イベントリスナーの設定、その他アプリケーションに必要な初期処理を実施するのに適しています。 メソッド呼び出し時に与えられる`context.Context`は、通常は、構造体のフィールドに格納するようにしてください。 なぜならば、このcontextは[runtime](../reference/runtime/intro.mdx)を呼び出す際に必要なためです。 このstartupメソッドがエラーを返却した場合、アプリケーションは終了します。 開発モードの場合、コンソールにエラーが出力されます。
+
+- shutdownメソッドは、シャットダウンプロセスの最後に、Wailsによって呼び出されます。 このメソッド内は、メモリを解放し、任意のシャットダウンタスクを実施するのに適しています。
+
+通常、`main.go`ファイルでは、アプリケーション構成を受け取る`wails.Run()`メソッドを1回だけ呼び出すようにします。 テンプレートでは、`wails.Run()`を呼び出す前に、`app.go`で定義した構造体のインスタンスを作成して、`app`に格納しています。 アプリケーション構成では、コールバックを追加できます:
+
+```go {3,9,10} title="main.go"
+func main() {
+
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:             "My App",
+        Width:             800,
+        Height:            600,
+        OnStartup:  app.startup,
+        OnShutdown: app.shutdown,
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+```
+
+アプリケーションのライフサイクルフックについて詳しくは、[こちら](../howdoesitwork.mdx#application-lifecycle-callbacks)をご覧ください。
+
+## メソッドのバインディング
+
+フロントエンドからGoのメソッドを呼び出したいことがありますよね。 そのようなときは、`app.go`ですでに定義している構造体に、パブリックメソッドを追加しましょう:
+
+```go {16-18} title="app.go"
+type App struct {
+    ctx context.Context
+}
+
+func NewApp() *App {
+    return &App{}
+}
+
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+}
+
+func (a *App) shutdown(ctx context.Context) {
+}
+
+func (a *App) Greet(name string) string {
+    return fmt.Sprintf("Hello %s!", name)
+}
+```
+
+アプリケーション構成の`Bind`キーで、Wailsに何をバインドさせたいかを指定できます:
+
+```go {11-13} title="main.go"
+func main() {
+
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:             "My App",
+        Width:             800,
+        Height:            600,
+        OnStartup:  app.startup,
+        OnShutdown: app.shutdown,
+        Bind: []interface{}{
+            app,
+        },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+```
+
+これにより、`App`構造体のすべてのパブリックメソッドがバインドされます（startupメソッド・shutdownメソッドはバインドされません）。
+
+### 複数の構造体をバインドするときのcontextの扱い
+
+もし、複数の構造体のメソッドをバインドしたくて、かつ、各構造体でランタイム関数を呼び出せるようにcontextを共有したい場合は、`OnStartup`のコールバック内で、各構造体にcontextを渡してあげるのが良いでしょう:
+
+```go
+func main() {
+
+    app := NewApp()
+    otherStruct := NewOtherStruct()
+
+    err := wails.Run(&options.App{
+        Title:             "My App",
+        Width:             800,
+        Height:            600,
+        OnStartup:  func(ctx context.Context){
+            app.SetContext(ctx)
+            otherStruct.SetContext(ctx)
+        },
+        OnShutdown: app.shutdown,
+        Bind: []interface{}{
+            app,
+            otherStruct
+        },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+バインディングの詳細については、[こちら](../howdoesitwork.mdx#method-binding)をご覧ください。
+
+## アプリケーションメニュー
+
+Wailsでは、アプリケーションにメニューを追加することができます。 追加したい場合は、アプリケーション構成に[Menu](../reference/menus.mdx#menu)構造体を渡してください。 通常は、Menuを返すようなメソッドを使用するようにします。ライフサイクルフックに使用される`App`構造体のメソッドとして用意するのが良いでしょう。
+
+```go {11} title="main.go"
+func main() {
+
+    app := NewApp()
+
+    err := wails.Run(&options.App{
+        Title:             "My App",
+        Width:             800,
+        Height:            600,
+        OnStartup:  app.startup,
+        OnShutdown: app.shutdown,
+        Menu:       app.menu(),
+        Bind: []interface{}{
+            app,
+        },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+```
+
+## アセット
+
+Wails v2にアセットを処理させるための方法は複雑ではありません。 Wailsに与える必要があるのは、`embed.FS`だけです。 任意の方法で与えてあげてください。 バニラテンプレートで使用されているように、素のhtml/css/jsファイルをアセットとして使用できます。 もちろん、複雑なビルドシステムを使用することも可能ですが、必須要件ではありません。
+
+`wails build`コマンドを実行すると、プロジェクトルートディレクトリに存在するプロジェクト構成ファイルである`wails.json`のチェックが行われます。 プロジェクトファイルには、次の2つのキーを含めることができます:
+
+- "frontend:install"
+- "frontend:build"
+
+1番目のキーは、`frontend`ディレクトリにおいて、nodeモジュールをインストールするためのコマンドを指定します。 2番目のキーは、`frontend`ディレクトリにおいて、フロントエンドをビルドするためのコマンドを指定します。
+
+2つのキーのどちらともが指定されていない場合、Wailsはフロントエンドプロジェクトに対する操作を一切行いません。 `embed.FS`で指定されたディレクトリを参照するのみとなります。
+
+### アセットハンドラ
+
+Wails v2では必要に応じて、`options.App`の中に`http.Handler`を定義することができます。これにより、アセットサーバにフックして、その場でファイルを作成したり、POST/PUTリクエストを処理したりすることができます。 GETリクエストが要求されたときは、まず初めに、`assets` FSにハンドリングされます。 リクエストされたファイルをFSが見つけられなかった場合、そのリクエストは`http.Handler`に転送されます。 GET以外のリクエストは、`AssetsHandler`が指定されていれば、当該ハンドラによって直接処理されます。 なお、`Assets`オプションに`nil`を指定することで、`AssetsHandler`のみを使用することも可能です。
+
+## ビルトイン開発サーバ
+
+`wails dev`コマンドを実行すると、ビルトイン開発サーバが起動し、プロジェクトディレクトリ内のファイル監視が開始されます。 デフォルトでは、ファイルの中身が変更された場合、Wailsはそのファイルがアプリケーションファイルであるかどうかをチェックします(デフォルト: `.go`、 `-e`フラグで制御可能)。 アプリケーションファイルであった場合は、アプリケーションをリビルドして再起動します。 アセットディレクトリ内でファイルが変更された場合は、少し経ってからリロードが実行されます。
+
+開発サーバは"デバウンシング"と呼ばれるテクニックを使用しています。これにより、短時間で複数のファイルが更新されたとしても、すぐに再読み込みされることはありません。 トリガーが起動すると、再読み込みを実行する前に一定時間待機します。 待機中に別のトリガーが起動した場合、待機時間はリセットされます。 デフォルトでは、待機時間は`100ms`です。 この待機時間の値があなたのプロジェクトで適切ではない場合、`-debounce`フラグを使用して変更することができます。 このフラグを使用すると、値がプロジェクト構成ファイルに保存され、次回以降のデフォルト値となります。
+
+## 外部開発サーバ
+
+フレームワークによっては独自のライブリロードサーバが付属しているものがありますが、それらはWailsのGoバインディングを使用することができません。 このような場面では、Wailsが監視するビルドディレクトリ内で、プロジェクトをリビルドする監視スクリプトを実行すると良いでしょう。 例としては、[rollup](https://rollupjs.org/guide/en/)を使用するデフォルトのsvelteテンプレートをご覧ください。
+
+### Create React App
+
+The process for a Create-React-App project is slightly more complicated. In order to support live frontend reloading the following configuration needs to be added to your `wails.json`:
+
+```json
+  "frontend:dev:watcher": "yarn start",
+  "frontend:dev:serverUrl": "http://localhost:3000",
+```
+
+The `frontend:dev:watcher` command will start the Create-React-App development server (hosted on port `3000` typically). The `frontend:dev:serverUrl` command then instructs Wails to serve assets from the development server when loading the frontend rather than from the build folder. In addition to the above, the `index.html` needs to be updated with the following:
+
+```html
+    <head>
+        <meta name="wails-options" content="noautoinject" />
+        <script src="/wails/ipc.js"></script>
+        <script src="/wails/runtime.js"></script>
+    </head>
+```
+
+This is required as the watcher command that rebuilds the frontend prevents Wails from injecting the required scripts. This circumvents that issue by ensuring the scripts are always injected. With this configuration, `wails dev` can be run which will appropriately build the frontend and backend with hot-reloading enabled. Additionally, when accessing the application from a browser the React developer tools can now be used on a non-minified version of the application for straightforward debugging. Finally, for faster builds, `wails dev -s` can be run to skip the default building of the frontend by Wails as this is an unnecessary step.
+
+## Goモジュール
+
+デフォルトのWailsテンプレートは、モジュール名が"changeme"となっている`go.mod`ファイルを生成します。 プロジェクトの生成が完了したら、適切なモジュール名に変更してください。

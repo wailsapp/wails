@@ -1,4 +1,11 @@
 linux:SystemThemeChanged
+linux:WindowLoadChanged
+linux:WindowDeleteEvent
+linux:WindowDidMove
+linux:WindowDidResize
+linux:WindowFocusIn
+linux:WindowFocusOut
+linux:ApplicationStartup
 mac:ApplicationDidBecomeActive
 mac:ApplicationDidChangeBackingProperties
 mac:ApplicationDidChangeEffectiveAppearance
@@ -148,6 +155,8 @@ windows:WindowDragDrop
 windows:WindowDragEnter
 windows:WindowDragLeave
 windows:WindowDragOver
+windows:WindowDidMove
+windows:WindowDidResize
 common:ApplicationStarted
 common:WindowMaximise
 common:WindowUnMaximise
@@ -169,3 +178,6 @@ common:WindowDPIChanged
 common:WindowFilesDropped
 common:WindowRuntimeReady
 common:ThemeChanged
+common:WindowDidMove
+common:WindowDidResize
+common:ApplicationOpenedWithFile

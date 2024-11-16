@@ -1,6 +1,7 @@
 package assetserver
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -78,7 +79,7 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 
 	uri, err = r.URL()
 	if err != nil {
-		a.options.Logger.Error("Error processing request, unable to get URL: %s (HttpResponse=500)", err)
+		a.options.Logger.Error(fmt.Sprintf("Error processing request, unable to get URL: %s (HttpResponse=500)", err))
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -106,7 +107,10 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	}
 	defer body.Close()
 
-	req, err := http.NewRequest(method, uri, body)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, method, uri, body)
 	if err != nil {
 		a.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Request: %w", err))
 		return

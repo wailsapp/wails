@@ -25,6 +25,7 @@ export const objectNames = {
     Screens: 7,
     System: 8,
     Browser: 9,
+    CancelCall: 10,
 }
 export let clientId = nanoid();
 

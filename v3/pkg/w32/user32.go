@@ -9,10 +9,11 @@ package w32
 
 import (
 	"fmt"
-	"golang.org/x/sys/windows"
 	"runtime"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 var (
@@ -136,6 +137,7 @@ var (
 	procGetDpiForSystem               = moduser32.NewProc("GetDpiForSystem")
 	procGetDpiForWindow               = moduser32.NewProc("GetDpiForWindow")
 	procSetProcessDPIAware            = moduser32.NewProc("SetProcessDPIAware")
+	procSetProcessDpiAwarenessContext = moduser32.NewProc("SetProcessDpiAwarenessContext")
 	procEnumDisplayMonitors           = moduser32.NewProc("EnumDisplayMonitors")
 	procEnumDisplayDevices            = moduser32.NewProc("EnumDisplayDevicesW")
 	procEnumDisplaySettings           = moduser32.NewProc("EnumDisplaySettingsW")
@@ -360,6 +362,11 @@ func GetDpiForWindow(hwnd HWND) UINT {
 	return uint(dpi)
 }
 
+func HasSetProcessDPIAwareFunc() bool {
+	err := procSetProcessDPIAware.Find()
+	return err == nil
+}
+
 func GetClassName(hwnd HWND) string {
 	var buf [256]uint16
 	procGetClassName.Call(
@@ -374,6 +381,19 @@ func SetProcessDPIAware() error {
 	status, r, err := procSetProcessDPIAware.Call()
 	if status == 0 {
 		return fmt.Errorf("SetProcessDPIAware failed %d: %v %v", status, r, err)
+	}
+	return nil
+}
+
+func HasSetProcessDpiAwarenessContextFunc() bool {
+	err := procSetProcessDpiAwarenessContext.Find()
+	return err == nil
+}
+
+func SetProcessDpiAwarenessContext(ctx uintptr) error {
+	status, r, err := procSetProcessDpiAwarenessContext.Call(ctx)
+	if status == 0 {
+		return fmt.Errorf("SetProcessDpiAwarenessContext failed %d: %v %v", status, r, err)
 	}
 	return nil
 }

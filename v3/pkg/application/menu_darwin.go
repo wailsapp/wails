@@ -109,7 +109,7 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 	}
 }
 
-func defaultApplicationMenu() *Menu {
+func DefaultApplicationMenu() *Menu {
 	menu := NewMenu()
 	menu.AddRole(AppMenu)
 	menu.AddRole(FileMenu)

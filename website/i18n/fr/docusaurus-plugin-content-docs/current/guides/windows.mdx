@@ -1,12 +1,12 @@
 # Windows
 
-This page has miscellaneous guides related to developing Wails applications for Windows.
+Cette page a divers guides liés au développement d'applications Wails pour Windows.
 
-## Handling the WebView2 Runtime Dependency
+## Gestion de la dépendance d'exécution WebView2
 
-Wails applications built for Windows have a runtime requirement on the Microsoft [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/). Windows 11 will have this installed by default, but some machines won't. Wails offers an easy approach to dealing with this dependency.
+Les applications Wails construites pour Windows ont une exigence d'exécution sur le runtime Microsoft [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/). Par défaut, Windows 11 l'a d'installé mais certaines machines ne l'ont pas. Wails offre une approche facile pour gérer cette dépendance.
 
-By using the `-webview2` flag when building, you can decide what your application will do when a suitable runtime is not detected (including if the installed runtime is too old). The four options are:
+En utilisant l'option `-webview2` lors de la construction, vous pouvez décider ce que votre application fera quand un runtime approprié n'est pas détecté (y compris si le runtime installé est trop ancien). Les quatre options sont :
 
 1. Download
 2. Embed
@@ -15,25 +15,25 @@ By using the `-webview2` flag when building, you can decide what your applicatio
 
 ### Download
 
-This option will prompt the user that no suitable runtime has been found and then offer to download and run the official bootstrapper from Microsoft's WebView2 site. If the user proceeds, the official bootstrapper will be downloaded and run.
+Cette option demandera à l'utilisateur qu'aucun runtime approprié n'a été trouvé et proposera ensuite de télécharger et d'exécuter le bootstrapper officiel depuis le site WebView2 de Microsoft. Si l'utilisateur continue, le bootstrapper officiel sera téléchargé et exécuté.
 
 ### Embed
 
-This option embeds the official bootstrapper within the application. If no suitable runtime has been found, the application will offer to run the bootstrapper. This adds ~150k to the binary size.
+Cette option intègre le bootstrapper officiel dans l'application. Si aucun runtime approprié n'a été trouvé, l'application proposera d'exécuter le bootstrapper. Cela ajoute ~150k à la taille du binaire.
 
 ### Navigateur
 
-This option will prompt the user that no suitable runtime has been found and then offer to open a browser to the official WebView2 page where the bootstrapper can be downloaded and installed. The application will then exit, leaving the installation up to the user.
+Cette option demandera à l'utilisateur qu'aucun runtime approprié n'a été trouvé et proposera ensuite d'ouvrir un navigateur à la page officielle WebView2 où le bootstrapper peut être téléchargé et installé. L'application quittera alors en laissant l'installation à l'utilisateur.
 
 ### Error
 
-If no suitable runtime is found, an error is given to the user and no further action taken.
+Si aucun runtime approprié n'est trouvé, une erreur sera transmise à l'utilisateur et aucune autre action ne sera prise.
 
-## Fixed version runtime
+## Version du runtime fixe
 
-Another way of dealing with webview2 dependency is shipping it yourself. You can download [fixed version runtime](https://developer.microsoft.com/microsoft-edge/webview2/#download-section) and bundle or download it with your application.
+Une autre façon de gérer la dépendance de webview2 est de l'intégrer vous-même. Vous pouvez télécharger [une version du runtime](https://developer.microsoft.com/microsoft-edge/webview2/#download-section) et l'intégrer avec votre application.
 
-Also, you should specify path to fixed version of webview2 runtime in the `windows.Options` structure when launching wails.
+En outre, vous devez spécifier le chemin vers la version corrigée de webview2 runtime dans la structure `windows.Options` lors du lancement de wails.
 
 ```go
     wails.Run(&options.App{
@@ -43,11 +43,17 @@ Also, you should specify path to fixed version of webview2 runtime in the `windo
     })
 ```
 
-Note: When `WebviewBrowserPath` is specified, `error` strategy will be forced in case of minimal required version mismatch or invalid path to a runtime.
+Note: Quand `WebviewBrowserPath` est spécifié, une ` strategy error` sera lancée si la version minimale à utiliser n'est pas requise ou si le chemin vers le runtime est incorrect.
 
-## Spawning other programs
+The downloaded file will be compressed (extension `.cab`), so you must extract it before using it, according to the instructions on the [official site](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode) should run in a terminal the following command to extract the file:
 
-When spawning other programs, such as scripts, you will see the window appear on the screen. To hide the window, you can use the following code:
+```
+expand {path to the package} -F:* {path to the destination folder}
+```
+
+## Faire apparaître d'autres programmes
+
+Lorsque vous faites apparaître d'autres programmes, comme des scripts, vous verrez apparaître la fenêtre à l'écran. Pour masquer la fenêtre, vous pouvez utiliser le code suivant :
 
 ```go
 cmd := exec.Command("your_script.exe")
@@ -58,4 +64,4 @@ cmd.SysProcAttr = &syscall.SysProcAttr{
 cmd.Start()
 ```
 
-Solution provided by [sithembiso](https://github.com/sithembiso) on the [discussions board](https://github.com/wailsapp/wails/discussions/1734#discussioncomment-3386172).
+Solution fournie par [sithembiso](https://github.com/sithembiso) dans les [discussions GitHub](https://github.com/wailsapp/wails/discussions/1734#discussioncomment-3386172).

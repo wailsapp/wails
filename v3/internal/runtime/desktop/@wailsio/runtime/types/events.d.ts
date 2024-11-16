@@ -202,6 +202,11 @@ export const Types: {
     };
     Linux: {
         SystemThemeChanged: string;
+        WindowLoadChanged: string;
+        WindowDeleteEvent: string;
+        WindowFocusIn: string;
+        WindowFocusOut: string;
+        ApplicationStartup: string;
     };
     Common: {
         ApplicationStarted: string;

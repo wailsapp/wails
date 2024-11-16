@@ -19,23 +19,21 @@ extern void dialogCallback(int id, int buttonPressed);
 static void showAboutBox(char* title, char *message, void *icon, int length) {
 
 	// run on main thread
-    //	dispatch_async(dispatch_get_main_queue(), ^{
-		NSAlert *alert = [[NSAlert alloc] init];
-		if (title != NULL) {
-			[alert setMessageText:[NSString stringWithUTF8String:title]];
-			free(title);
-		}
-		if (message != NULL) {
-			[alert setInformativeText:[NSString stringWithUTF8String:message]];
-			free(message);
-		}
-		if (icon != NULL) {
-			NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:icon length:length]];
-			[alert setIcon:image];
-		}
-		[alert setAlertStyle:NSAlertStyleInformational];
-		[alert runModal];
-        //	});
+	NSAlert *alert = [[NSAlert alloc] init];
+	if (title != NULL) {
+		[alert setMessageText:[NSString stringWithUTF8String:title]];
+		free(title);
+	}
+	if (message != NULL) {
+		[alert setInformativeText:[NSString stringWithUTF8String:message]];
+		free(message);
+	}
+	if (icon != NULL) {
+		NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:icon length:length]];
+		[alert setIcon:image];
+	}
+	[alert setAlertStyle:NSAlertStyleInformational];
+	[alert runModal];
 }
 
 
@@ -172,6 +170,7 @@ static void showOpenFileDialog(unsigned int dialogID,
 		delegate.allowedExtensions = [filterPatternsString componentsSeparatedByString:@";"];
 
 			// Use UTType if macOS 11 or higher to add file filters
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 		if (@available(macOS 11, *)) {
 			NSMutableArray *filterTypes = [NSMutableArray array];
 			// Iterate the filtertypes, create uti's that are limited to the file extensions then add
@@ -179,9 +178,10 @@ static void showOpenFileDialog(unsigned int dialogID,
 				[filterTypes addObject:[UTType typeWithFilenameExtension:filterType]];
 			}
 			[panel setAllowedContentTypes:filterTypes];
-		} else {
-			[panel setAllowedFileTypes:delegate.allowedExtensions];
 		}
+#else
+		[panel setAllowedFileTypes:delegate.allowedExtensions];
+#endif
 
 		// Free the memory
 		free(filterPatterns);

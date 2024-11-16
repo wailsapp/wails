@@ -29,6 +29,8 @@ func isPortOpen(ip string, port int) bool {
 }
 
 func ToolCheckPort(options *ToolCheckPortOptions) error {
+	DisableFooter = true
+
 	if options.URL != "" {
 		// Parse URL
 		u, err := url.Parse(options.URL)

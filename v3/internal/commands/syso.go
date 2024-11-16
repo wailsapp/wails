@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"os"
 	"runtime"
 
@@ -23,7 +24,9 @@ func (i *SysoOptions) Default() *SysoOptions {
 	}
 }
 
-func GenerateSyso(options *SysoOptions) error {
+func GenerateSyso(options *SysoOptions) (err error) {
+
+	DisableFooter = true
 
 	if options.Manifest == "" {
 		return fmt.Errorf("manifest is required")
@@ -39,7 +42,12 @@ func GenerateSyso(options *SysoOptions) error {
 	if err != nil {
 		return err
 	}
-	defer iconFile.Close()
+	defer func() {
+		err2 := iconFile.Close()
+		if err == nil && err2 != nil {
+			err = errors.Wrap(err, "error closing icon file: "+err2.Error())
+		}
+	}()
 	ico, err := winres.LoadICO(iconFile)
 	if err != nil {
 		return fmt.Errorf("couldn't load icon '%s': %v", options.Icon, err)
@@ -62,7 +70,8 @@ func GenerateSyso(options *SysoOptions) error {
 	rs.SetManifest(xmlData)
 
 	if options.Info != "" {
-		infoData, err := os.ReadFile(options.Info)
+		var infoData []byte
+		infoData, err = os.ReadFile(options.Info)
 		if err != nil {
 			return err
 		}
@@ -79,23 +88,26 @@ func GenerateSyso(options *SysoOptions) error {
 	if targetFile == "" {
 		targetFile = "rsrc_windows_" + options.Arch + ".syso"
 	}
-	fout, err := os.Create(targetFile)
+	var outputFile *os.File
+	outputFile, err = os.Create(targetFile)
 	if err != nil {
 		return err
 	}
-	defer fout.Close()
+	defer func() {
+		err = outputFile.Close()
+	}()
 
-	archs := map[string]winres.Arch{
+	architecture := map[string]winres.Arch{
 		"amd64": winres.ArchAMD64,
 		"arm64": winres.ArchARM64,
 		"386":   winres.ArchI386,
 	}
-	targetArch, supported := archs[options.Arch]
+	targetArch, supported := architecture[options.Arch]
 	if !supported {
 		return fmt.Errorf("arch '%s' not supported", options.Arch)
 	}
 
-	err = rs.WriteObject(fout, targetArch)
+	err = rs.WriteObject(outputFile, targetArch)
 	if err != nil {
 		return err
 	}

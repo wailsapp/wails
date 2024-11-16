@@ -2,7 +2,7 @@
   "name": "Vue + Vite (Typescript)",
   "shortname": "vue-ts",
   "author": "Lea Anthony",
-  "description": "Vue + Vite development server",
+  "description": "Vue + TS + Vite development server",
   "helpurl": "https://wails.io",
   "version": 3
 }

@@ -1,7 +1,7 @@
 package application
 
-func (m *linuxApp) showAboutDialog(title string, message string, icon []byte) {
-	window := globalApplication.getWindowForID(m.getCurrentWindowID())
+func (a *linuxApp) showAboutDialog(title string, message string, icon []byte) {
+	window := globalApplication.getWindowForID(a.getCurrentWindowID())
 	var parent uintptr
 	if window != nil {
 		parent, _ = window.(*WebviewWindow).NativeWindowHandle()
@@ -10,10 +10,12 @@ func (m *linuxApp) showAboutDialog(title string, message string, icon []byte) {
 	about.SetTitle(title).
 		SetMessage(message).
 		SetIcon(icon)
-	runQuestionDialog(
-		pointer(parent),
-		about,
-	)
+	InvokeAsync(func() {
+		runQuestionDialog(
+			pointer(parent),
+			about,
+		)
+	})
 }
 
 type linuxDialog struct {
@@ -28,13 +30,15 @@ func (m *linuxDialog) show() {
 		parent, _ = window.(*WebviewWindow).NativeWindowHandle()
 	}
 
-	response := runQuestionDialog(pointer(parent), m.dialog)
-	if response >= 0 && response < len(m.dialog.Buttons) {
-		button := m.dialog.Buttons[response]
-		if button.Callback != nil {
-			go button.Callback()
+	InvokeAsync(func() {
+		response := runQuestionDialog(pointer(parent), m.dialog)
+		if response >= 0 && response < len(m.dialog.Buttons) {
+			button := m.dialog.Buttons[response]
+			if button.Callback != nil {
+				go button.Callback()
+			}
 		}
-	}
+	})
 }
 
 func newDialogImpl(d *MessageDialog) *linuxDialog {

@@ -57,6 +57,7 @@ func (d *DotDesktopOptions) asBytes() []byte {
 }
 
 func GenerateDotDesktop(options *DotDesktopOptions) error {
+	DisableFooter = true
 
 	if options.Name == "" {
 		return fmt.Errorf("name is required")

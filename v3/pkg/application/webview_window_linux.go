@@ -4,12 +4,18 @@ package application
 
 import (
 	"fmt"
+	"time"
+
+	"github.com/bep/debounce"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
+	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
-var showDevTools = func(window pointer) {}
+const (
+	windowDidMoveDebounceMS = 200
+)
 
 type dragInfo struct {
 	XRoot       int
@@ -19,28 +25,30 @@ type dragInfo struct {
 }
 
 type linuxWebviewWindow struct {
-	id          uint
-	application pointer
-	window      pointer
-	webview     pointer
-	parent      *WebviewWindow
-	menubar     pointer
-	vbox        pointer
-	menu        *Menu
-	accels      pointer
-	lastWidth   int
-	lastHeight  int
-	drag        dragInfo
+	id            uint
+	application   pointer
+	window        pointer
+	webview       pointer
+	parent        *WebviewWindow
+	menubar       pointer
+	vbox          pointer
+	menu          *Menu
+	accels        pointer
+	lastWidth     int
+	lastHeight    int
+	drag          dragInfo
+	lastX, lastY  int
+	gtkmenu       pointer
+	ctxMenuOpened bool
+
+	moveDebouncer     func(func())
+	resizeDebouncer   func(func())
+	ignoreMouseEvents bool
 }
 
 var (
 	registered bool = false // avoid 'already registered message' about 'wails://'
 )
-
-func (w *linuxWebviewWindow) startDrag() error {
-	windowStartDrag(w.window, w.drag.MouseButton, w.drag.XRoot, w.drag.YRoot, w.drag.DragTime)
-	return nil
-}
 
 func (w *linuxWebviewWindow) endDrag(button uint, x, y int) {
 	w.drag.XRoot = 0.0
@@ -48,15 +56,11 @@ func (w *linuxWebviewWindow) endDrag(button uint, x, y int) {
 	w.drag.DragTime = 0
 }
 
-func (w *linuxWebviewWindow) enableDND() {
-	windowEnableDND(w.parent.id, w.webview)
-}
-
 func (w *linuxWebviewWindow) connectSignals() {
 	cb := func(e events.WindowEventType) {
 		w.parent.emit(e)
 	}
-	windowSetupSignalHandlers(w.parent.id, w.window, w.webview, cb)
+	w.setupSignalHandlers(cb)
 }
 
 func (w *linuxWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
@@ -67,112 +71,50 @@ func (w *linuxWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) 
 	}
 	if menu.impl == nil {
 		ctxMenu.update()
+
+		native := ctxMenu.menu.impl.(*linuxMenu).native
+		w.contextMenuSignals(native)
 	}
 
 	native := ctxMenu.menu.impl.(*linuxMenu).native
-	contextMenuShow(w.window, native, data)
-}
-
-func (w *linuxWebviewWindow) getZoom() float64 {
-	return windowZoom(w.webview)
-}
-
-func (w *linuxWebviewWindow) setZoom(zoom float64) {
-	windowZoomSet(w.webview, zoom)
-}
-
-func (w *linuxWebviewWindow) setFrameless(frameless bool) {
-	windowSetFrameless(w.window, frameless)
-}
-
-func (w *linuxWebviewWindow) getScreen() (*Screen, error) {
-	mx, my, width, height, scale := windowGetCurrentMonitorGeometry(w.window)
-	return &Screen{
-		ID:        fmt.Sprintf("%d", w.id),            // A unique identifier for the display
-		Name:      w.parent.Name(),                    // The name of the display
-		Scale:     float32(scale),                     // The scale factor of the display
-		X:         mx,                                 // The x-coordinate of the top-left corner of the rectangle
-		Y:         my,                                 // The y-coordinate of the top-left corner of the rectangle
-		Size:      Size{Width: width, Height: height}, // The size of the display
-		Bounds:    Rect{},                             // The bounds of the display
-		WorkArea:  Rect{},                             // The work area of the display
-		IsPrimary: false,                              // Whether this is the primary display
-		Rotation:  0.0,                                // The rotation of the display
-	}, nil
+	w.contextMenuShow(native, data)
 }
 
 func (w *linuxWebviewWindow) focus() {
-	windowPresent(w.window)
-}
-
-func (w *linuxWebviewWindow) show() {
-	windowShow(w.window)
-}
-
-func (w *linuxWebviewWindow) hide() {
-	windowHide(w.window)
+	w.present()
 }
 
 func (w *linuxWebviewWindow) isNormal() bool {
 	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
 }
 
-func (w *linuxWebviewWindow) isVisible() bool {
-	return windowIsVisible(w.window)
+func (w *linuxWebviewWindow) setCloseButtonEnabled(enabled bool) {
+	//	C.enableCloseButton(w.nsWindow, C.bool(enabled))
 }
 
 func (w *linuxWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	//	C.setFullscreenButtonEnabled(w.nsWindow, C.bool(enabled))
-	fmt.Println("setFullscreenButtonEnabled - not implemented")
+	// Not implemented
+}
+
+func (w *linuxWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
+	//C.enableMinimiseButton(w.nsWindow, C.bool(enabled))
+}
+
+func (w *linuxWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
+	//C.enableMaximiseButton(w.nsWindow, C.bool(enabled))
 }
 
 func (w *linuxWebviewWindow) disableSizeConstraints() {
-	x, y, width, height, scale := windowGetCurrentMonitorGeometry(w.window)
-	w.setMinMaxSize(x, y, width*scale, height*scale)
-}
-
-func (w *linuxWebviewWindow) unfullscreen() {
-	windowUnfullscreen(w.window)
-	w.unmaximise()
-}
-
-func (w *linuxWebviewWindow) fullscreen() {
-	w.maximise()
-	w.lastWidth, w.lastHeight = w.size()
-	x, y, width, height, scale := windowGetCurrentMonitorGeometry(w.window)
-	if x == -1 && y == -1 && width == -1 && height == -1 {
-		return
-	}
-	w.setMinMaxSize(0, 0, width*scale, height*scale)
-	w.setSize(width*scale, height*scale)
-	windowFullscreen(w.window)
-	w.setRelativePosition(0, 0)
+	x, y, width, height, scaleFactor := w.getCurrentMonitorGeometry()
+	w.setMinMaxSize(x, y, width*scaleFactor, height*scaleFactor)
 }
 
 func (w *linuxWebviewWindow) unminimise() {
-	windowPresent(w.window)
-}
-
-func (w *linuxWebviewWindow) unmaximise() {
-	windowUnmaximize(w.window)
-}
-
-func (w *linuxWebviewWindow) maximise() {
-	windowMaximize(w.window)
-}
-
-func (w *linuxWebviewWindow) minimise() {
-	windowMinimize(w.window)
-}
-
-func (w *linuxWebviewWindow) flash(enabled bool) {
-	// Not supported on linux
+	w.present()
 }
 
 func (w *linuxWebviewWindow) on(eventID uint) {
-	// Don't think this is correct!
-	// GTK Events are strings
-	fmt.Println("on()", eventID)
+	// TODO: Test register/unregister listener for linux events
 	//C.registerListener(C.uint(eventID))
 }
 
@@ -184,58 +126,22 @@ func (w *linuxWebviewWindow) windowZoom() {
 	w.zoom() // FIXME> This should be removed
 }
 
-func (w *linuxWebviewWindow) close() {
-	windowClose(w.window)
-}
-
-func (w *linuxWebviewWindow) zoomIn() {
-	windowZoomIn(w.webview)
-}
-
-func (w *linuxWebviewWindow) zoomOut() {
-	windowZoomOut(w.webview)
-}
-
-func (w *linuxWebviewWindow) zoomReset() {
-	windowZoomSet(w.webview, 1.0)
-}
-
-func (w *linuxWebviewWindow) reload() {
-	windowReload(w.webview, "wails://")
-}
-
 func (w *linuxWebviewWindow) forceReload() {
 	w.reload()
 }
 
 func (w *linuxWebviewWindow) center() {
-	x, y, width, height, _ := windowGetCurrentMonitorGeometry(w.window)
+	x, y, width, height, _ := w.getCurrentMonitorGeometry()
 	if x == -1 && y == -1 && width == -1 && height == -1 {
 		return
 	}
-	windowWidth, windowHeight := windowGetSize(w.window)
+	windowWidth, windowHeight := w.size()
 
-	newX := ((width - int(windowWidth)) / 2) + x
-	newY := ((height - int(windowHeight)) / 2) + y
+	newX := ((width - windowWidth) / 2) + x
+	newY := ((height - windowHeight) / 2) + y
 
 	// Place the window at the center of the monitor
-	windowMove(w.window, newX, newY)
-}
-
-func (w *linuxWebviewWindow) isMinimised() bool {
-	return windowIsMinimized(w.window)
-}
-
-func (w *linuxWebviewWindow) isMaximised() bool {
-	return windowIsMaximized(w.window)
-}
-
-func (w *linuxWebviewWindow) isFocused() bool {
-	return windowIsFocused(w.window)
-}
-
-func (w *linuxWebviewWindow) isFullscreen() bool {
-	return windowIsFullscreen(w.window)
+	w.move(newX, newY)
 }
 
 func (w *linuxWebviewWindow) restore() {
@@ -243,50 +149,25 @@ func (w *linuxWebviewWindow) restore() {
 	// FIXME: never called!  - remove from webviewImpl interface
 }
 
-func (w *linuxWebviewWindow) execJS(js string) {
-	windowExecJS(w.webview, js)
-}
-
-func (w *linuxWebviewWindow) setURL(uri string) {
-	windowSetURL(w.webview, uri)
-}
-
-func (w *linuxWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
-	windowSetKeepAbove(w.window, alwaysOnTop)
-}
-
 func newWindowImpl(parent *WebviewWindow) *linuxWebviewWindow {
 	//	(*C.struct__GtkWidget)(m.native)
 	//var menubar *C.struct__GtkWidget
-	return &linuxWebviewWindow{
+	result := &linuxWebviewWindow{
 		application: getNativeApplication().application,
 		parent:      parent,
 		//		menubar:     menubar,
 	}
-}
-
-func (w *linuxWebviewWindow) setTitle(title string) {
-	if !w.parent.options.Frameless {
-		windowSetTitle(w.window, title)
-	}
-}
-
-func (w *linuxWebviewWindow) setSize(width, height int) {
-	windowResize(w.window, width, height)
+	return result
 }
 
 func (w *linuxWebviewWindow) setMinMaxSize(minWidth, minHeight, maxWidth, maxHeight int) {
-	if minWidth == 0 {
-		minWidth = -1
-	}
-	if minHeight == 0 {
-		minHeight = -1
-	}
+	// Get current screen for window
+	_, _, monitorwidth, monitorheight, _ := w.getCurrentMonitorGeometry()
 	if maxWidth == 0 {
-		maxWidth = -1
+		maxWidth = monitorwidth
 	}
 	if maxHeight == 0 {
-		maxHeight = -1
+		maxHeight = monitorheight
 	}
 	windowSetGeometryHints(w.window, minWidth, minHeight, maxWidth, maxHeight)
 }
@@ -295,29 +176,17 @@ func (w *linuxWebviewWindow) setMinSize(width, height int) {
 	w.setMinMaxSize(width, height, w.parent.options.MaxWidth, w.parent.options.MaxHeight)
 }
 
+func (w *linuxWebviewWindow) getBorderSizes() *LRTB {
+	return &LRTB{}
+}
+
 func (w *linuxWebviewWindow) setMaxSize(width, height int) {
 	w.setMinMaxSize(w.parent.options.MinWidth, w.parent.options.MinHeight, width, height)
 }
 
-func (w *linuxWebviewWindow) setResizable(resizable bool) {
-	windowSetResizable(w.window, resizable)
-}
-
-func (w *linuxWebviewWindow) showDevTools() {
-	windowShowDevTools(w.webview)
-}
-
-func (w *linuxWebviewWindow) toggleDevTools() {
-	showDevTools(w.webview)
-}
-
-func (w *linuxWebviewWindow) size() (int, int) {
-	return windowGetSize(w.window)
-}
-
 func (w *linuxWebviewWindow) setRelativePosition(x, y int) {
-	mx, my, _, _, _ := windowGetCurrentMonitorGeometry(w.window)
-	windowMove(w.window, x+mx, y+my)
+	mx, my, _, _, _ := w.getCurrentMonitorGeometry()
+	w.move(x+mx, y+my)
 }
 
 func (w *linuxWebviewWindow) width() int {
@@ -330,15 +199,39 @@ func (w *linuxWebviewWindow) height() int {
 	return height
 }
 
-func (w *linuxWebviewWindow) setAbsolutePosition(x int, y int) {
+func (w *linuxWebviewWindow) setPosition(x int, y int) {
 	// Set the window's absolute position
-	windowMove(w.window, x, y)
+	w.move(x, y)
 }
 
-func (w *linuxWebviewWindow) absolutePosition() (int, int) {
-	var x, y int
-	x, y = windowGetAbsolutePosition(w.window)
-	return x, y
+func (w *linuxWebviewWindow) bounds() Rect {
+	// DOTO: do it in a single step + proper DPI scaling
+	x, y := w.position()
+	width, height := w.size()
+
+	return Rect{
+		X:      x,
+		Y:      y,
+		Width:  width,
+		Height: height,
+	}
+}
+
+func (w *linuxWebviewWindow) setBounds(bounds Rect) {
+	// DOTO: do it in a single step + proper DPI scaling
+	w.move(bounds.X, bounds.Y)
+	w.setSize(bounds.Width, bounds.Height)
+
+}
+
+func (w *linuxWebviewWindow) physicalBounds() Rect {
+	// TODO: proper DPI scaling
+	return w.bounds()
+}
+
+func (w *linuxWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
+	// TODO: proper DPI scaling
+	w.setBounds(physicalBounds)
 }
 
 func (w *linuxWebviewWindow) run() {
@@ -346,19 +239,38 @@ func (w *linuxWebviewWindow) run() {
 		w.on(eventId)
 	}
 
+	if w.moveDebouncer == nil {
+		w.moveDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
+	}
+	if w.resizeDebouncer == nil {
+		w.resizeDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
+	}
+
 	// Register the capabilities
 	globalApplication.capabilities = capabilities.NewCapabilities()
 
 	app := getNativeApplication()
 
-	menu := app.getApplicationMenu()
-	w.window, w.webview, w.vbox = windowNew(app.application, menu, w.parent.id, 1)
+	var menu = w.menu
+	if menu == nil && globalApplication.ApplicationMenu != nil {
+		menu = globalApplication.ApplicationMenu.Clone()
+	}
+	if menu != nil {
+		InvokeSync(func() {
+			menu.Update()
+		})
+		w.menu = menu
+		w.gtkmenu = (menu.impl).(*linuxMenu).native
+	}
+
+	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
 	app.registerWindow(w.window, w.parent.id) // record our mapping
 	w.connectSignals()
 	if w.parent.options.EnableDragAndDrop {
 		w.enableDND()
 	}
 	w.setTitle(w.parent.options.Title)
+	w.setIcon(app.icon)
 	w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
 	w.setResizable(!w.parent.options.DisableResize)
 	// only set min/max size if actually set
@@ -373,6 +285,7 @@ func (w *linuxWebviewWindow) run() {
 			w.parent.options.MaxHeight,
 		)
 	}
+	w.setDefaultSize(w.parent.options.Width, w.parent.options.Height)
 	w.setSize(w.parent.options.Width, w.parent.options.Height)
 	w.setZoom(w.parent.options.Zoom)
 	if w.parent.options.BackgroundType != BackgroundTypeSolid {
@@ -382,12 +295,12 @@ func (w *linuxWebviewWindow) run() {
 
 	w.setFrameless(w.parent.options.Frameless)
 
-	if w.parent.options.X != 0 || w.parent.options.Y != 0 {
-		w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
+	if w.parent.options.InitialPosition == WindowCentered {
+		C.windowCenter(w.nsWindow)
 	} else {
-		fmt.Println("attempting to set in the center")
-		w.center()
+		w.setPosition(options.X, options.Y)
 	}
+
 	switch w.parent.options.StartState {
 	case WindowStateMaximised:
 		w.maximise()
@@ -395,7 +308,11 @@ func (w *linuxWebviewWindow) run() {
 		w.minimise()
 	case WindowStateFullscreen:
 		w.fullscreen()
+	case WindowStateNormal:
 	}
+
+	// Ignore mouse events if requested
+	w.setIgnoreMouseEvents(w.parent.options.IgnoreMouseEvents)
 
 	startURL, err := assetserver.GetStartURL(w.parent.options.URL)
 	if err != nil {
@@ -403,9 +320,7 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	w.setURL(startURL)
-	// We need to wait for the HTML to load before we can execute the javascript
-	// FIXME: What event is this?  DomReady?
-	w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
+	w.parent.OnWindowEvent(events.Linux.WindowLoadChanged, func(_ *WindowEvent) {
 		if w.parent.options.JS != "" {
 			w.execJS(w.parent.options.JS)
 		}
@@ -414,50 +329,42 @@ func (w *linuxWebviewWindow) run() {
 			w.execJS(js)
 		}
 	})
+	w.parent.OnWindowEvent(events.Linux.WindowFocusIn, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowFocus)
+	})
+	w.parent.OnWindowEvent(events.Linux.WindowFocusOut, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowLostFocus)
+	})
+	w.parent.OnWindowEvent(events.Linux.WindowDeleteEvent, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowClosing)
+	})
+	w.parent.OnWindowEvent(events.Linux.WindowDidMove, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDidMove)
+	})
+	w.parent.OnWindowEvent(events.Linux.WindowDidResize, func(e *WindowEvent) {
+		w.parent.emit(events.Common.WindowDidResize)
+	})
+
+	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
+		w.execJS(runtime.Core())
+	})
 	if w.parent.options.HTML != "" {
 		w.setHTML(w.parent.options.HTML)
 	}
 	if !w.parent.options.Hidden {
 		w.show()
-		if w.parent.options.X != 0 || w.parent.options.Y != 0 {
-			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
+		if w.parent.options.InitialPosition == WindowCentered {
+			w.center()
 		} else {
-			w.center() // needs to be queued until after GTK starts up!
+			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
 		}
 	}
 	if w.parent.options.DevToolsEnabled || globalApplication.isDebugMode {
-		w.toggleDevTools()
+		w.enableDevTools()
 		if w.parent.options.OpenInspectorOnStartup {
-			w.showDevTools()
+			w.openDevTools()
 		}
 	}
-}
-
-func (w *linuxWebviewWindow) setTransparent() {
-	windowSetTransparent(w.window)
-}
-
-func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
-	windowSetBackgroundColour(w.vbox, w.webview, colour)
-}
-
-func (w *linuxWebviewWindow) relativePosition() (int, int) {
-	var x, y int
-	x, y = windowGetRelativePosition(w.window)
-	return x, y
-}
-
-func (w *linuxWebviewWindow) destroy() {
-	w.parent.markAsDestroyed()
-	windowDestroy(w.window)
-}
-
-func (w *linuxWebviewWindow) setEnabled(enabled bool) {
-	widgetSetSensitive(w.window, enabled)
-}
-
-func (w *linuxWebviewWindow) setHTML(html string) {
-	windowSetHTML(w.webview, html)
 }
 
 func (w *linuxWebviewWindow) startResize(border string) error {
@@ -482,4 +389,21 @@ func (w *linuxWebviewWindow) handleKeyEvent(acceleratorString string) {
 	// 	return
 	// }
 	w.parent.processKeyBinding(acceleratorString)
+}
+
+// SetMinimiseButtonState is unsupported on Linux
+func (w *linuxWebviewWindow) setMinimiseButtonState(state ButtonState) {}
+
+// SetMaximiseButtonState is unsupported on Linux
+func (w *linuxWebviewWindow) setMaximiseButtonState(state ButtonState) {}
+
+// SetCloseButtonState is unsupported on Linux
+func (w *linuxWebviewWindow) setCloseButtonState(state ButtonState) {}
+
+func (w *linuxWebviewWindow) isIgnoreMouseEvents() bool {
+	return w.ignoreMouseEvents
+}
+
+func (w *linuxWebviewWindow) setIgnoreMouseEvents(ignore bool) {
+	w.ignoreMouse(w.ignoreMouseEvents)
 }

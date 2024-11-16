@@ -16,7 +16,7 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Menu Demo",
 		Description: "A demo of the menu system",
-		//Assets:      application.AlphaAssets,
+		Assets:      application.AlphaAssets,
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
@@ -27,6 +27,19 @@ func main() {
 	if runtime.GOOS == "darwin" {
 		menu.AddRole(application.AppMenu)
 	}
+	fileMenu := menu.AddRole(application.FileMenu)
+	_ = fileMenu
+	//fileMenu.FindByRole(application.Open).OnClick(func(context *application.Context) {
+	//	selection, err := application.OpenFileDialog().PromptForSingleSelection()
+	//	if err != nil {
+	//		println("Error: " + err.Error())
+	//		return
+	//	}
+	//	println("You selected: " + selection)
+	//})
+	menu.AddRole(application.EditMenu)
+	menu.AddRole(application.WindowMenu)
+	menu.AddRole(application.HelpMenu)
 
 	// Let's make a "Demo" menu
 	myMenu := menu.AddSubmenu("Demo")
@@ -35,7 +48,7 @@ func main() {
 	myMenu.Add("Not Enabled").SetEnabled(false)
 
 	// Click callbacks
-	myMenu.Add("Click Me!").SetBitmap(clickBitmap).OnClick(func(ctx *application.Context) {
+	myMenu.Add("Click Me!").SetAccelerator("CmdOrCtrl+l").SetBitmap(clickBitmap).OnClick(func(ctx *application.Context) {
 		switch ctx.ClickedMenuItem().Label() {
 		case "Click Me!":
 			ctx.ClickedMenuItem().SetLabel("Thanks mate!")

@@ -2,14 +2,17 @@
 
 package assetserver
 
-import "net/http"
+import (
+	"io/fs"
+	"net/http"
+)
 
 func defaultIndexHTML() []byte {
 	return []byte{}
 }
 
-func (a *AssetServer) setupHandler() (http.Handler, error) {
-	return NewDefaultAssetHandler(a.options)
+func NewAssetFileServer(vfs fs.FS) http.Handler {
+	return newAssetFileServerFS(vfs)
 }
 
 func GetDevServerURL() string {

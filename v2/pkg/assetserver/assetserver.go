@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"golang.org/x/net/html"
+	"html/template"
 
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -67,9 +68,11 @@ func NewAssetServer(bindingsJSON string, options assetserver.Options, servingFro
 }
 
 func NewAssetServerWithHandler(handler http.Handler, bindingsJSON string, servingFromDisk bool, logger Logger, runtime RuntimeAssets) (*AssetServer, error) {
+
 	var buffer bytes.Buffer
 	if bindingsJSON != "" {
-		buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
+		escapedBindingsJSON := template.JSEscapeString(bindingsJSON)
+		buffer.WriteString(`window.wailsbindings='` + escapedBindingsJSON + `';` + "\n")
 	}
 	buffer.Write(runtime.RuntimeDesktopJS())
 

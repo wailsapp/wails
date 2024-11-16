@@ -2,12 +2,16 @@ package commands
 
 import (
 	_ "embed"
+	"errors"
 	"fmt"
-	"github.com/pterm/pterm"
-	"github.com/wailsapp/wails/v3/internal/s"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"sync"
+
+	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/s"
 )
 
 //go:embed linuxdeploy-plugin-gtk.sh
@@ -28,9 +32,10 @@ type GenerateAppImageOptions struct {
 }
 
 func GenerateAppImage(options *GenerateAppImageOptions) error {
+	DisableFooter = true
 
 	defer func() {
-		pterm.DefaultSpinner.Stop()
+		_ = pterm.DefaultSpinner.Stop()
 	}()
 
 	if options.Binary == "" {
@@ -68,7 +73,18 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	// Get the last path of the binary and normalise the name
 	name := normaliseName(filepath.Base(options.Binary))
 
-	appDir := filepath.Join(options.BuildDir, name+"-x86_64.AppDir")
+	// Architecture-specific variables using a map
+	archDetails := map[string]string{
+		"arm64":  "aarch64",
+		"x86_64": "x86_64",
+	}
+
+	arch, exists := archDetails[runtime.GOARCH]
+	if !exists {
+		return fmt.Errorf("unsupported architecture: %s", runtime.GOARCH)
+	}
+
+	appDir := filepath.Join(options.BuildDir, fmt.Sprintf("%s-%s.AppDir", name, arch))
 	s.RMDIR(appDir)
 
 	log(p, "Preparing AppImage Directory: "+appDir)
@@ -88,40 +104,50 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	// Download linuxdeploy and make it executable
 	s.CD(options.BuildDir)
 
-	// Download necessary files
+	// Download URLs using a map based on architecture
+	urls := map[string]string{
+		"linuxdeploy": fmt.Sprintf("https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-%s.AppImage", arch),
+		"AppRun":      fmt.Sprintf("https://github.com/AppImage/AppImageKit/releases/download/continuous/AppRun-%s", arch),
+	}
+
+	// Download necessary files concurrently
 	log(p, "Downloading AppImage tooling")
 	var wg sync.WaitGroup
 	wg.Add(2)
+
 	go func() {
-		if !s.EXISTS(filepath.Join(options.BuildDir, "linuxdeploy-x86_64.AppImage")) {
-			s.DOWNLOAD("https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage", filepath.Join(options.BuildDir, "linuxdeploy-x86_64.AppImage"))
+		linuxdeployPath := filepath.Join(options.BuildDir, filepath.Base(urls["linuxdeploy"]))
+		if !s.EXISTS(linuxdeployPath) {
+			s.DOWNLOAD(urls["linuxdeploy"], linuxdeployPath)
 		}
-		s.CHMOD(filepath.Join(options.BuildDir, "linuxdeploy-x86_64.AppImage"), 0755)
+		s.CHMOD(linuxdeployPath, 0755)
 		wg.Done()
 	}()
+
 	go func() {
 		target := filepath.Join(appDir, "AppRun")
 		if !s.EXISTS(target) {
-			s.DOWNLOAD("https://github.com/AppImage/AppImageKit/releases/download/continuous/AppRun-x86_64", target)
+			s.DOWNLOAD(urls["AppRun"], target)
 		}
 		s.CHMOD(target, 0755)
 		wg.Done()
 	}()
+
 	wg.Wait()
 
+	// Processing GTK files
 	log(p, "Processing GTK files.")
-	files := s.FINDFILES("/usr/lib", "WebKitNetworkProcess", "WebKitWebProcess", "libwebkit2gtkinjectedbundle.so")
-	if len(files) != 3 {
-		return fmt.Errorf("unable to locate all WebKit libraries")
+	filesNeeded := []string{"WebKitWebProcess", "WebKitNetworkProcess", "libwebkit2gtkinjectedbundle.so"}
+	files, err := findGTKFiles(filesNeeded)
+	if err != nil {
+		return err
 	}
 	s.CD(appDir)
 	for _, file := range files {
 		targetDir := filepath.Dir(file)
-		// Strip leading forward slash
 		if targetDir[0] == '/' {
 			targetDir = targetDir[1:]
 		}
-		var err error
 		targetDir, err = filepath.Abs(targetDir)
 		if err != nil {
 			return err
@@ -129,14 +155,14 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 		s.MKDIR(targetDir)
 		s.COPY(file, targetDir)
 	}
+
 	// Copy GTK Plugin
-	err := os.WriteFile(filepath.Join(options.BuildDir, "linuxdeploy-plugin-gtk.sh"), gtkPlugin, 0755)
+	err = os.WriteFile(filepath.Join(options.BuildDir, "linuxdeploy-plugin-gtk.sh"), gtkPlugin, 0755)
 	if err != nil {
 		return err
 	}
 
 	// Determine GTK Version
-	// Run ldd on the binary and capture the output
 	targetBinary := filepath.Join(appDir, "usr", "bin", options.Binary)
 	lddOutput, err := s.EXEC(fmt.Sprintf("ldd %s", targetBinary))
 	if err != nil {
@@ -144,21 +170,23 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 		return err
 	}
 	lddString := string(lddOutput)
-	// Check if GTK3 is present
 	var DeployGtkVersion string
-	if s.CONTAINS(lddString, "libgtk-x11-2.0.so") {
+	switch {
+	case s.CONTAINS(lddString, "libgtk-x11-2.0.so"):
 		DeployGtkVersion = "2"
-	} else if s.CONTAINS(lddString, "libgtk-3.so") {
+	case s.CONTAINS(lddString, "libgtk-3.so"):
 		DeployGtkVersion = "3"
-	} else if s.CONTAINS(lddString, "libgtk-4.so") {
+	case s.CONTAINS(lddString, "libgtk-4.so"):
 		DeployGtkVersion = "4"
-	} else {
+	default:
 		return fmt.Errorf("unable to determine GTK version")
 	}
+
 	// Run linuxdeploy to bundle the application
 	s.CD(options.BuildDir)
-	//log(p, "Generating AppImage (This may take a while...)")
-	cmd := fmt.Sprintf("./linuxdeploy-x86_64.AppImage --appimage-extract-and-run --appdir %s --output appimage --plugin gtk", appDir)
+	linuxdeployAppImage := filepath.Join(options.BuildDir, fmt.Sprintf("linuxdeploy-%s.AppImage", arch))
+
+	cmd := fmt.Sprintf("%s --appimage-extract-and-run --appdir %s --output appimage --plugin gtk", linuxdeployAppImage, appDir)
 	s.SETENV("DEPLOY_GTK_VERSION", DeployGtkVersion)
 	output, err := s.EXEC(cmd)
 	if err != nil {
@@ -167,9 +195,54 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	}
 
 	// Move file to output directory
-	targetFile := filepath.Join(options.BuildDir, name+"-x86_64.AppImage")
+	targetFile := filepath.Join(options.BuildDir, fmt.Sprintf("%s-%s.AppImage", name, arch))
 	s.MOVE(targetFile, options.OutputDir)
 
 	log(p, "AppImage created: "+targetFile)
 	return nil
+}
+
+func findGTKFiles(files []string) ([]string, error) {
+	notFound := []string{}
+	found := []string{}
+	err := filepath.Walk("/usr/", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			if os.IsPermission(err) {
+				return nil
+			}
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		for _, fileName := range files {
+			if strings.HasSuffix(path, fileName) {
+				found = append(found, path)
+				break
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	for _, fileName := range files {
+		fileFound := false
+		for _, foundPath := range found {
+			if strings.HasSuffix(foundPath, fileName) {
+				fileFound = true
+				break
+			}
+		}
+		if !fileFound {
+			notFound = append(notFound, fileName)
+		}
+	}
+	if len(notFound) > 0 {
+		return nil, errors.New("Unable to locate all required files: " + strings.Join(notFound, ", "))
+	}
+	return found, nil
 }

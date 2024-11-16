@@ -16,7 +16,6 @@ func main() {
 		Description: "A test of Hidden window and display it",
 		Assets:      application.AlphaAssets,
 		Mac: application.MacOptions{
-			// ActivationPolicy: application.ActivationPolicyAccessory,
 			ApplicationShouldTerminateAfterLastWindowClosed: false,
 		},
 	})
@@ -45,7 +44,7 @@ func main() {
 	}
 
 	// Click Dock icon tigger application show
-	app.On(events.Mac.ApplicationShouldHandleReopen, func(event *application.Event) {
+	app.OnApplicationEvent(events.Mac.ApplicationShouldHandleReopen, func(event *application.ApplicationEvent) {
 		println("reopen")
 		window.Show()
 	})

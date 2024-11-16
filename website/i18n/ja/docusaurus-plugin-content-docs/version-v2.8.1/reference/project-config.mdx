@@ -1,0 +1,91 @@
+---
+sidebar_position: 5
+---
+
+# プロジェクト構成
+
+プロジェクト構成は、プロジェクトディレクトリ内の`wails.json`ファイルで設定します。 ファイルの構造は次のとおりです:
+
+```json5
+{
+  // プロジェクト構成のバージョン。
+  "version": "",
+  // プロジェクト名。
+  "name": "",
+  // コンパイルされたアセットディレクトリへの相対パス。通常は自動的に推測されるため、空で構いません。
+  "assetdir": "",
+  // 再読み込みのトリガーとなる追加のディレクトリ(カンマ区切り)。高度なアセット構成をとる場合にのみ使用します。
+  "reloaddirs": "",
+  // ビルドファイルが存在するディレクトリ。 デフォルトは'build'です。
+  "build:dir": "",
+  // フロントエンドディレクトリの相対パス。 デフォルトは'frontend'です。
+  "frontend:dir": "",
+  // node依存関係をインストールするために、フロントエンドディレクトリで実行するコマンド。一般的には`npm install`です。
+  "frontend:install": "",
+  // アセットをビルドするために、フロントエンドディレクトリで実行するコマンド。一般的には`npm run build`です。
+  "frontend:build": "",
+  // このコマンドはfrontend:dev:buildへ置換されました。 frontend:dev:buildが指定されていない場合は、代わりにこのコマンドが実行されます。 このコマンドも指定されていない場合は、代わりにfrontend:buildが実行されます。
+  "frontend:dev": "",
+  // 開発モードにおけるfrontend:buildと同様のコマンド。 指定されていない場合は、代わりにfrontend:devが実行されます。
+  "frontend:dev:build": "",
+  // 開発モードにおけるfrontend:installと同様のコマンド。 指定されていない場合は、代わりにfrontend:installが実行されます。
+  "frontend:dev:install": "",
+  // `wails dev`実行時に別プロセスで実行するコマンド。 サードパーティ製のウォッチャや開発サーバを起動したい場合に便利です。
+  "frontend:dev:watcher": "",
+  // Viteなど、アセットを提供するサードパーティ製の開発サーバのURL。 'auto'に設定すると、Viteの出力から自動的に開発サーバURLを推測します。
+  "frontend:dev:serverUrl": "",
+  // 自動生成されるJSモジュールを出力するディレクトリへの相対パス。
+  "wailsjsdir": "",
+  // 出力バイナリのファイル名
+  "outputfilename": "",
+  // アセットファイルに変更があった場合に、開発サーバが再読み込みを行うまでのデフォルトの待ち時間。
+  "debounceMS": 100,
+  // Wailsの開発サーバをバインドするアドレス。 デフォルト値: localhost:34115
+  "devServer": "",
+  // 開発モードのときに、アプリケーションに渡されるシェルスタイルの引数。
+  "appargs": "",
+  // ホストOS以外のOS用にビルドフックが定義されている場合、それらを実行するかどうか。
+  "runNonNativeBuildHooks": false,
+  "preBuildHooks": {
+    // 指定されたGOOS/GOARCHのビルドの前に実行されるコマンド。${platform}は'GOOS/GOARCH'に置換されます。 'GOOS/GOARCH'フックは、'GOOS/*'および'*/*'フックの前に実行されます。
+    "GOOS/GOARCH": "",
+    // 指定されたGOOSのビルド前に実行されるコマンド。${platform}は'GOOS/GOARCH'に置換されます。 'GOOS/*'フックは、'*/*'フックの前に実行されます。
+    "GOOS/*": "",
+    // 毎回のビルドの前に実行されるコマンド。${platform}は'GOOS/GOARCH'に置換されます。
+    "*/*": ""
+  },
+  "postBuildHooks": {
+    // 指定されたGOOS/GOARCHのビルドの後に実行されるコマンド。${platform}は'GOOS/GOARCH'に置換され、${bin}はコンパイル済みバイナリへのパスに置換されます。 'GOOS/GOARCH'フックは、'GOOS/*'および'*/*'フックの前に実行されます。
+    "GOOS/GOARCH": "",
+    // 指定されたGOOSのビルド後に実行されるコマンド。${platform}は'GOOS/GOARCH'に置換され、${bin}はコンパイル済みバイナリへのパスに置換されます。 'GOOS/*'フックは、'*/*'フックの前に実行されます。
+    "GOOS/*": "",
+    // 毎回のビルドの後に実行されるコマンド。${platform}は'GOOS/GOARCH'に置換され、${bin}はコンパイル済みバイナリへのパスに置換されます。
+    "*/*": ""
+  },
+  // マニフェストやバージョン情報で使用されるデータ。
+  "info": {
+    // 会社名。 デフォルト値: [プロジェクト名]
+    "companyName": "",
+    // 製品名。 デフォルト値: [プロジェクト名]
+    "productName": "",
+    // 製品バージョン。 デフォルト値: '1.0.0']
+    "productVersion": "",
+    // 製品の著作権。 デフォルト値: 'Copyright.........'
+    "copyright": "",
+    // アプリケーションの説明。 デフォルト値: 'Built using Wails (https://wails.app)'
+    "comments": ""
+  },
+  // 'multiple': アーキテクチャごとに1つのインストーラ。 'single': ビルドした全アーキテクチャに対応する単一ユニバーサルインストーラ。 デフォルト値: 'multiple'
+  "nsisType": "",
+  // アプリ難読化を実行するかどうか。 デフォルト値: false
+  "obfuscated": "",
+  // obfuscatedフラグがtrueの際に、garbleコマンドへ渡す引数。
+  "garbleargs": ""
+}
+```
+
+このファイルは、Wails CLIで `wails build` コマンドまたは `wails dev` コマンドを実行した際に読み込まれます。
+
+`wails build/dev` コマンドを実行時に、`assetdir`、`reloaddirs`、`wailsjsdir`、`debounceMS`、`devserver`、`frontenddevserverurl`フラグを使用すると、プロジェクト構成が更新され、次回以降コマンドを実行する際のデフォルト値となります。
+
+このファイルのJSONスキーマは、[こちら](https://wails.io/schemas/config.v2.json)にあります。

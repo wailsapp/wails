@@ -5,22 +5,18 @@ package application
 import (
 	"fmt"
 	"os"
-	"strconv"
+	"path/filepath"
+	"slices"
 	"sync"
 	"syscall"
 	"unsafe"
 
 	"github.com/wailsapp/go-webview2/webviewloader"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
-	"golang.org/x/sys/windows"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-
-	"github.com/samber/lo"
 )
-
-var windowClassName = lo.Must(syscall.UTF16PtrFromString("WailsWebviewWindow"))
 
 type windowsApp struct {
 	parent *App
@@ -75,54 +71,6 @@ func getNativeApplication() *windowsApp {
 	return globalApplication.impl.(*windowsApp)
 }
 
-func (m *windowsApp) getPrimaryScreen() (*Screen, error) {
-	screens, err := m.getScreens()
-	if err != nil {
-		return nil, err
-	}
-	for _, screen := range screens {
-		if screen.IsPrimary {
-			return screen, nil
-		}
-	}
-	return nil, fmt.Errorf("no primary screen found")
-}
-
-func (m *windowsApp) getScreens() ([]*Screen, error) {
-	allScreens, err := w32.GetAllScreens()
-	if err != nil {
-		return nil, err
-	}
-	// Convert result to []*Screen
-	screens := make([]*Screen, len(allScreens))
-	for id, screen := range allScreens {
-		x := int(screen.MONITORINFOEX.RcMonitor.Left)
-		y := int(screen.MONITORINFOEX.RcMonitor.Top)
-		right := int(screen.MONITORINFOEX.RcMonitor.Right)
-		bottom := int(screen.MONITORINFOEX.RcMonitor.Bottom)
-		width := right - x
-		height := bottom - y
-		screens[id] = &Screen{
-			ID:     strconv.Itoa(id),
-			Name:   windows.UTF16ToString(screen.MONITORINFOEX.SzDevice[:]),
-			X:      x,
-			Y:      y,
-			Size:   Size{Width: width, Height: height},
-			Bounds: Rect{X: x, Y: y, Width: width, Height: height},
-			WorkArea: Rect{
-				X:      int(screen.MONITORINFOEX.RcWork.Left),
-				Y:      int(screen.MONITORINFOEX.RcWork.Top),
-				Width:  int(screen.MONITORINFOEX.RcWork.Right - screen.MONITORINFOEX.RcWork.Left),
-				Height: int(screen.MONITORINFOEX.RcWork.Bottom - screen.MONITORINFOEX.RcWork.Top),
-			},
-			IsPrimary: screen.IsPrimary,
-			Scale:     screen.Scale,
-			Rotation:  0,
-		}
-	}
-	return screens, nil
-}
-
 func (m *windowsApp) hide() {
 	// Get the current focussed window
 	m.focusedWindow = w32.GetForegroundWindow()
@@ -169,7 +117,7 @@ func (m *windowsApp) getCurrentWindowID() uint {
 func (m *windowsApp) setApplicationMenu(menu *Menu) {
 	if menu == nil {
 		// Create a default menu for windows
-		menu = defaultApplicationMenu()
+		menu = DefaultApplicationMenu()
 	}
 	menu.Update()
 
@@ -181,11 +129,32 @@ func (m *windowsApp) run() error {
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)
 	}
-	// Emit application started event
-	applicationEvents <- &Event{
+	// EmitEvent application started event
+	applicationEvents <- &ApplicationEvent{
 		Id:  uint(events.Windows.ApplicationStarted),
 		ctx: blankApplicationEventContext,
 	}
+
+	// Check if there is 1 parameter passed to the application
+	// and if the extension matches the options.FileAssociations string
+	println("Checking args")
+	if len(os.Args) == 2 {
+		arg := os.Args[1]
+		ext := filepath.Ext(arg)
+		println("Got extension: ", ext)
+		if slices.Contains(m.parent.options.FileAssociations, ext) {
+			println("Slices contains")
+			eventContext := newApplicationEventContext()
+			eventContext.setOpenedWithFile(arg)
+			// EmitEvent application started event
+			println("sending event")
+			applicationEvents <- &ApplicationEvent{
+				Id:  uint(events.Common.ApplicationOpenedWithFile),
+				ctx: eventContext,
+			}
+		}
+	}
+
 	_ = m.runMainLoop()
 
 	return nil
@@ -196,6 +165,8 @@ func (m *windowsApp) destroy() {
 		return
 	}
 	globalApplication.cleanup()
+	// Destroy the main thread window
+	w32.DestroyWindow(m.mainThreadWindowHWND)
 	// Post a quit message to the main thread
 	w32.PostQuitMessage(0)
 }
@@ -212,7 +183,7 @@ func (m *windowsApp) init() {
 	m.windowClass.Background = w32.COLOR_BTNFACE + 1
 	m.windowClass.Icon = icon
 	m.windowClass.Cursor = w32.LoadCursorWithResourceID(0, w32.IDC_ARROW)
-	m.windowClass.ClassName = windowClassName
+	m.windowClass.ClassName = w32.MustStringToUTF16Ptr(m.parent.options.Windows.WndClass)
 	m.windowClass.MenuName = nil
 	m.windowClass.IconSm = icon
 
@@ -238,6 +209,16 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		}
 	}
 
+	// Reprocess and cache screens when display settings change
+	if hwnd == m.mainThreadWindowHWND {
+		if msg == w32.WM_DISPLAYCHANGE || (msg == w32.WM_SETTINGCHANGE && wParam == w32.SPI_SETWORKAREA) {
+			err := m.processAndCacheScreens()
+			if err != nil {
+				m.parent.error(err.Error())
+			}
+		}
+	}
+
 	switch msg {
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))
@@ -246,7 +227,7 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 			if isDarkMode != m.isCurrentlyDarkMode {
 				eventContext := newApplicationEventContext()
 				eventContext.setIsDarkMode(isDarkMode)
-				applicationEvents <- &Event{
+				applicationEvents <- &ApplicationEvent{
 					Id:  uint(events.Windows.SystemThemeChanged),
 					ctx: eventContext,
 				}
@@ -315,11 +296,35 @@ func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
 	}
 }
 
+func setupDPIAwareness() error {
+	// https://learn.microsoft.com/en-us/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
+	// https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
+
+	if w32.HasSetProcessDpiAwarenessContextFunc() {
+		// This is most recent version with the best results
+		// supported beginning with Windows 10, version 1703
+		return w32.SetProcessDpiAwarenessContext(w32.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)
+	}
+
+	if w32.HasSetProcessDpiAwarenessFunc() {
+		// Supported beginning with Windows 8.1
+		return w32.SetProcessDpiAwareness(w32.PROCESS_PER_MONITOR_DPI_AWARE)
+	}
+
+	if w32.HasSetProcessDPIAwareFunc() {
+		// If none of the above is supported, fallback to SetProcessDPIAware
+		// which is supported beginning with Windows Vista
+		return w32.SetProcessDPIAware()
+	}
+
+	return fmt.Errorf("no DPI awareness method supported")
+}
+
 func newPlatformApp(app *App) *windowsApp {
-	err := w32.SetProcessDPIAware()
+
+	err := setupDPIAwareness()
 	if err != nil {
-		globalApplication.fatal("Fatal error in application initialisation: ", err.Error())
-		os.Exit(1)
+		app.error(err.Error())
 	}
 
 	result := &windowsApp{
@@ -327,6 +332,11 @@ func newPlatformApp(app *App) *windowsApp {
 		instance:   w32.GetModuleHandle(""),
 		windowMap:  make(map[w32.HWND]*windowsWebviewWindow),
 		systrayMap: make(map[w32.HWND]*windowsSystemTray),
+	}
+
+	err = result.processAndCacheScreens()
+	if err != nil {
+		app.fatal(err.Error())
 	}
 
 	result.init()
@@ -349,4 +359,17 @@ func (a *App) logPlatformInfo() {
 	args = append(args, osInfo.AsLogSlice()...)
 
 	a.info("Platform Info:", args...)
+}
+
+func (a *App) platformEnvironment() map[string]any {
+	result := map[string]any{}
+	webviewVersion, _ := webviewloader.GetAvailableCoreWebView2BrowserVersionString(a.options.Windows.WebviewBrowserPath)
+	result["Go-WebView2Loader"] = webviewloader.UsingGoWebview2Loader
+	result["WebView2"] = webviewVersion
+	return result
+}
+
+func fatalHandler(errFunc func(error)) {
+	w32.Fatal = errFunc
+	return
 }

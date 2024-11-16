@@ -24,7 +24,7 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: false,
 		},
 	})
-	app.On(events.Mac.ApplicationDidFinishLaunching, func(event *application.Event) {
+	app.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(event *application.ApplicationEvent) {
 		log.Println("ApplicationDidFinishLaunching")
 	})
 
@@ -224,7 +224,7 @@ func main() {
 	})
 	sizeMenu.Add("Set Max Size (600,600)").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
-			w.SetFullscreenButtonEnabled(false)
+			w.SetMaximiseButtonState(application.ButtonDisabled)
 			w.SetMaxSize(600, 600)
 		})
 	})
@@ -244,7 +244,7 @@ func main() {
 	sizeMenu.Add("Reset Max Size").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			w.SetMaxSize(0, 0)
-			w.SetFullscreenButtonEnabled(true)
+			w.SetMaximiseButtonState(application.ButtonEnabled)
 		})
 	})
 	positionMenu := menu.AddSubmenu("Position")
@@ -266,21 +266,21 @@ func main() {
 		})
 	})
 
-	positionMenu.Add("Set Absolute Position (0,0)").OnClick(func(ctx *application.Context) {
+	positionMenu.Add("Set Position (0,0)").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
-			w.SetAbsolutePosition(0, 0)
+			w.SetPosition(0, 0)
 		})
 	})
 
-	positionMenu.Add("Set Absolute Position (Random)").OnClick(func(ctx *application.Context) {
+	positionMenu.Add("Set Position (Random)").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
-			w.SetAbsolutePosition(rand.Intn(1000), rand.Intn(800))
+			w.SetPosition(rand.Intn(1000), rand.Intn(800))
 		})
 	})
 
-	positionMenu.Add("Get Absolute Position").OnClick(func(ctx *application.Context) {
+	positionMenu.Add("Get Position").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
-			x, y := w.AbsolutePosition()
+			x, y := w.Position()
 			application.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
 		})
 	})

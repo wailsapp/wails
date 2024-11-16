@@ -39,10 +39,10 @@ func (s *SignalHandler) Start() {
 				s.cleanup()
 				break
 			} else if i < s.MaxSignal {
-				s.Logger.Info("Received signal: %v. Press CTRL+C %d more times to force quit...\n", sig, s.MaxSignal-i)
+				s.Logger.Info(fmt.Sprintf("Received signal: %v. Press CTRL+C %d more times to force quit...\n", sig, s.MaxSignal-i))
 				continue
 			} else {
-				s.Logger.Info("Received signal: %v. Force quitting...\n", sig)
+				s.Logger.Info(fmt.Sprintf("Received signal: %v. Force quitting...\n", sig))
 				os.Exit(1)
 			}
 		}

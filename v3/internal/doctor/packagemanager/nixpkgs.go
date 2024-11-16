@@ -40,10 +40,10 @@ func (n *Nixpkgs) Packages() Packagemap {
 	}
 
 	return Packagemap{
-		"libgtk-3": []*Package{
+		"gtk3": []*Package{
 			{Name: channel + ".gtk3", SystemPackage: true, Library: true},
 		},
-		"libwebkit": []*Package{
+		"webkit2gtk": []*Package{
 			{Name: channel + ".webkitgtk", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
