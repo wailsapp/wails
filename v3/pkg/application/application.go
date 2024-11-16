@@ -142,7 +142,7 @@ func New(appOptions Options) *App {
 			if err != nil {
 				name := service.options.Name
 				if name == "" {
-					name = getServiceName(service)
+					name = getServiceName(service.instance)
 				}
 				globalApplication.Logger.Error("OnStartup() failed:", "service", name, "error", err.Error())
 				continue

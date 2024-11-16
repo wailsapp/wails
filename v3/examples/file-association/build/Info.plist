@@ -4,17 +4,17 @@
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>CFBundleName</key>
-        <string>{{.ProductName}}</string>
+        <string>My Product</string>
         <key>CFBundleExecutable</key>
-        <string>{{.Name}}</string>
+        <string>fileassoc</string>
         <key>CFBundleIdentifier</key>
-        <string>{{.ProductIdentifier}}</string>
+        <string></string>
         <key>CFBundleVersion</key>
-        <string>{{.ProductVersion}}</string>
+        <string>0.1.0</string>
         <key>CFBundleGetInfoString</key>
-        <string>{{.ProductComments}}</string>
+        <string>This is a comment</string>
         <key>CFBundleShortVersionString</key>
-        <string>{{.ProductVersion}}</string>
+        <string>0.1.0</string>
         <key>CFBundleIconFile</key>
         <string>icons</string>
         <key>LSMinimumSystemVersion</key>
@@ -22,11 +22,6 @@
         <key>NSHighResolutionCapable</key>
         <string>true</string>
         <key>NSHumanReadableCopyright</key>
-        <string>{{.ProductCopyright}}</string>
-        <key>NSAppTransportSecurity</key>
-        <dict>
-            <key>NSAllowsLocalNetworking</key>
-            <true/>
-        </dict>
+        <string>© now, My Company</string>
     </dict>
 </plist>

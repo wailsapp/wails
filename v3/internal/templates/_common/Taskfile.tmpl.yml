@@ -30,4 +30,4 @@ tasks:
   dev:
     summary: Runs the application in development mode
     cmds:
-      - wails3 dev -config ./build/devmode.config.yaml -port {{ "{{.VITE_PORT}}" }}
+      - wails3 dev -config ./build/config.yml -port {{ "{{.VITE_PORT}}" }}

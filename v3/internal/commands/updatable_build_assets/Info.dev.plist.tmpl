@@ -6,7 +6,7 @@
         <key>CFBundleName</key>
         <string>{{.ProductName}}</string>
         <key>CFBundleExecutable</key>
-        <string>{{.Name}}</string>
+        <string>{{.BinaryName}}</string>
         <key>CFBundleIdentifier</key>
         <string>{{.ProductIdentifier}}</string>
         <key>CFBundleVersion</key>
@@ -23,5 +23,10 @@
         <string>true</string>
         <key>NSHumanReadableCopyright</key>
         <string>{{.ProductCopyright}}</string>
+        <key>NSAppTransportSecurity</key>
+        <dict>
+            <key>NSAllowsLocalNetworking</key>
+            <true/>
+        </dict>
     </dict>
 </plist>
