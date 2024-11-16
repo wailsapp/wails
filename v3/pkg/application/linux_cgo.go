@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
@@ -1480,8 +1481,22 @@ func onUriList(extracted **C.char, data unsafe.Pointer) {
 	}
 }
 
+var debounceTimer *time.Timer 
+var isDebouncing bool = false
 //export onKeyPressEvent
-func onKeyPressEvent(widget *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t) C.gboolean {
+func onKeyPressEvent(_ *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t) C.gboolean {
+	// Keypress re-emits if the key is pressed over a certain threshold so we need a debounce
+	if isDebouncing {
+		debounceTimer.Reset(50 * time.Millisecond)
+		return C.gboolean(0)
+	}
+
+	// Start the debounce
+	isDebouncing = true
+	debounceTimer = time.AfterFunc(50*time.Millisecond, func() {
+		isDebouncing = false
+	})
+
 	windowID := uint(C.uint(userData))
 	if accelerator, ok := getKeyboardState(event); ok {
 		windowKeyEvents <- &windowKeyEvent{

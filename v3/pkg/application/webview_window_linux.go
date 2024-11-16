@@ -295,11 +295,12 @@ func (w *linuxWebviewWindow) run() {
 
 	w.setFrameless(w.parent.options.Frameless)
 
-	if w.parent.options.X != 0 || w.parent.options.Y != 0 {
-		w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
+	if w.parent.options.InitialPosition == WindowCentered {
+		C.windowCenter(w.nsWindow)
 	} else {
-		w.center()
+		w.setPosition(options.X, options.Y)
 	}
+
 	switch w.parent.options.StartState {
 	case WindowStateMaximised:
 		w.maximise()
@@ -352,10 +353,10 @@ func (w *linuxWebviewWindow) run() {
 	}
 	if !w.parent.options.Hidden {
 		w.show()
-		if w.parent.options.X != 0 || w.parent.options.Y != 0 {
-			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
+		if w.parent.options.InitialPosition == WindowCentered {
+			w.center()
 		} else {
-			w.center() // needs to be queued until after GTK starts up!
+			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
 		}
 	}
 	if w.parent.options.DevToolsEnabled || globalApplication.isDebugMode {

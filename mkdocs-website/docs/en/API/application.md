@@ -133,6 +133,57 @@ API: `Show()`
     app.Show()
 ```
 
+### Path
+
+API: `Path(selector Path) string`
+
+`Path(selector Path)` returns the full path for the given path type. It provides a cross-platform way to query common application directories.
+
+The `Path` type is an enum with the following values:
+- `PathHome`: Returns the user's home directory
+- `PathDataHome`: Returns the path to the user's data directory
+- `PathConfigHome`: Returns the path to the user's configuration directory
+- `PathStateHome`: Returns the path to the user's state directory
+- `PathCacheHome`: Returns the path to the user's cache directory
+- `PathRuntimeDir`: Returns the path to the user's runtime directory
+- `PathDesktop`: Returns the path to the user's desktop directory
+- `PathDownload`: Returns the path to the user's download directory
+- `PathDocuments`: Returns the path to the user's documents directory
+- `PathMusic`: Returns the path to the user's music directory
+- `PathPictures`: Returns the path to the user's pictures directory
+- `PathVideos`: Returns the path to the user's videos directory
+- `PathTemplates`: Returns the path to the user's templates directory
+- `PathPublicShare`: Returns the path to the user's public share directory
+
+```go
+    // Get the data home directory path
+    dataHomePath := app.Path(application.PathDataHome)
+    fmt.Println("DataHome path:", dataHomePath)
+
+    // Output: DataHome path: /home/username/.local/share  // Linux
+    // Output: DataHome path: /Users/username/Library/Application Support  // macOS
+    // Output: DataHome path: C:\Users\Username\AppData\Roaming  // Windows
+
+    // Get the CacheHome directory path
+	cacheHomePath := app.Path(application.CacheHome)
+    fmt.Println("CacheHome path:", cacheHomePath)
+
+    // Output: CacheHome path: /home/username/.cache  // Linux
+    // Output: CacheHome path: /Users/username/Library/Caches  // macOS
+    // Output: CacheHome path: C:\Users\Username\AppData\Local\Temp  // Windows
+```
+
+## Paths
+API: `Paths(selector Paths) []string`
+`Paths(selector Path)` returns a list of paths for the given path type. It provides a cross-platform way to query common directory paths.
+
+The `Paths` type is an enum with the following values:
+- `PathsDataDirs`: Returns the list of data directories
+- `PathsConfigDirs`: Returns the list of configuration directories
+- `PathsCacheDirs`: Returns the list of cache directories
+- `PathsRuntimeDirs`: Returns the list of runtime directories
+
+
 --8<--
 ./docs/en/API/application_window.md
 ./docs/en/API/application_menu.md

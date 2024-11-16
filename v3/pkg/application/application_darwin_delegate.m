@@ -9,6 +9,12 @@ extern void cleanup();
 {
     [super dealloc];
 }
+-(BOOL)application:(NSApplication *)sender openFile:(NSString *)filename
+ {
+    const char* utf8FileName = filename.UTF8String;
+    HandleOpenFile((char*)utf8FileName);
+    return YES;
+ }
 // Create the applicationShouldTerminateAfterLastWindowClosed: method
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication
 {

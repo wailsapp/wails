@@ -66,6 +66,7 @@ markdown_extensions:
   - admonition
   - footnotes
   - md_in_html
+  - def_list
   - toc:
       permalink: '#'
   - pymdownx.emoji:
@@ -150,12 +151,14 @@ nav:
         - Build System: learn/build.md
         - Guides:
             - Customising Windows: learn/guides/customising-windows.md
+            - File Associations: learn/guides/file-associations.md
     - Feedback: getting-started/feedback.md
   - Feedback: getting-started/feedback.md
   - What's New in v3?: whats-new.md
   - API:
       - Application: API/application.md
       - Window: API/window.md
+      - Events: API/events.md
       - System Tray: API/systray.md
       - Menu: API/menu.md
       - Main Thread: API/mainthread.md

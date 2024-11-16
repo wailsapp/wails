@@ -35,6 +35,7 @@ func main() {
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
 	app.NewSubCommandFunction("package", "Package application", commands.Package)
 	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+
 	task := app.NewSubCommand("task", "Run and list tasks")
 	var taskFlags commands.RunTaskOptions
 	task.AddFlags(&taskFlags)
@@ -42,10 +43,16 @@ func main() {
 		return commands.RunTask(&taskFlags, task.OtherArgs())
 	})
 	task.LongDescription("\nUsage: wails3 task [taskname] [flags]\n\nTasks are defined in the `Taskfile.yaml` file. See https://taskfile.dev for more information.")
+
 	generate := app.NewSubCommand("generate", "Generation tools")
 	generate.NewSubCommandFunction("build-assets", "Generate build assets", commands.GenerateBuildAssets)
 	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
 	generate.NewSubCommandFunction("syso", "Generate Windows .syso file", commands.GenerateSyso)
+	generate.NewSubCommandFunction("runtime", "Generate the pre-built version of the runtime", commands.GenerateRuntime)
+
+	update := app.NewSubCommand("update", "Update tools")
+	update.NewSubCommandFunction("build-assets", "Updates the build assets using the given config file", commands.UpdateBuildAssets)
+
 	bindgen := generate.NewSubCommand("bindings", "Generate bindings + models")
 	var bindgenFlags flags.GenerateBindingsOptions
 	bindgen.AddFlags(&bindgenFlags)
@@ -59,6 +66,7 @@ func main() {
 
 	plugin := app.NewSubCommand("service", "Service tools")
 	plugin.NewSubCommandFunction("init", "Initialise a new service", commands.ServiceInit)
+
 	tool := app.NewSubCommand("tool", "Various tools")
 	tool.NewSubCommandFunction("checkport", "Checks if a port is open. Useful for testing if vite is running.", commands.ToolCheckPort)
 	tool.NewSubCommandFunction("watcher", "Watches files and runs a command when they change", commands.Watcher)
@@ -67,6 +75,7 @@ func main() {
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
+
 	defer printFooter()
 
 	err := app.Run()

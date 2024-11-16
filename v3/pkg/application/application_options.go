@@ -109,6 +109,11 @@ type Options struct {
 	// ErrorHandler is called when an error occurs
 	ErrorHandler func(err error)
 
+	// File extensions associated with the application
+	// Example: [".txt", ".md"]
+	// The '.' is required
+	FileAssociations []string
+
 	// This blank field ensures types from other packages
 	// are never convertible to Options.
 	// This property, in turn, improves the accuracy of the binding generator.

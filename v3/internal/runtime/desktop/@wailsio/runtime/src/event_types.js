@@ -189,5 +189,6 @@ export const EventTypes = {
 		ThemeChanged: "common:ThemeChanged",
 		WindowDidMove: "common:WindowDidMove",
 		WindowDidResize: "common:WindowDidResize",
+		ApplicationOpenedWithFile: "common:ApplicationOpenedWithFile",
 	},
 };

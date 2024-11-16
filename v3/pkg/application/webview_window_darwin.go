@@ -514,8 +514,21 @@ void windowSetAppearanceTypeByName(void* nsWindow, const char *appearanceName) {
 
 // Center window on current monitor
 void windowCenter(void* nsWindow) {
-	[(WebviewWindow*)nsWindow center];
+    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSScreen* screen = [window screen];
+    if (screen == NULL) {
+        screen = [NSScreen mainScreen];
+    }
+
+    NSRect screenFrame = [screen frame];
+    NSRect windowFrame = [window frame];
+
+    CGFloat x = screenFrame.origin.x + (screenFrame.size.width - windowFrame.size.width) / 2;
+    CGFloat y = screenFrame.origin.y + (screenFrame.size.height - windowFrame.size.height) / 2;
+
+    [window setFrame:NSMakeRect(x, y, windowFrame.size.width, windowFrame.size.height) display:YES];
 }
+
 
 // Get the current size of the window
 void windowGetSize(void* nsWindow, int* width, int* height) {
@@ -557,11 +570,17 @@ void windowGetPosition(void* nsWindow, int* x, int* y) {
 }
 
 void windowSetPosition(void* nsWindow, int x, int y) {
-	NSRect frame = [(WebviewWindow*)nsWindow frame];
-	frame.origin.x = x;
-	frame.origin.y = y;
-	[(WebviewWindow*)nsWindow setFrame:frame display:YES];
+    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSScreen* screen = [window screen];
+    if (screen == NULL) {
+        screen = [NSScreen mainScreen];
+    }
+    NSRect frame = [window frame];
+    frame.origin.x = x;
+    frame.origin.y = (screen.frame.size.height - frame.size.height) - y;
+    [window setFrame:frame display:YES];
 }
+
 
 // Destroy window
 void windowDestroy(void* nsWindow) {
@@ -1165,7 +1184,6 @@ func (w *macosWebviewWindow) run() {
 			w.getWebviewPreferences(),
 		)
 		w.setTitle(options.Title)
-		w.setAlwaysOnTop(options.AlwaysOnTop)
 		w.setResizable(!options.DisableResize)
 		if options.MinWidth != 0 || options.MinHeight != 0 {
 			w.setMinSize(options.MinWidth, options.MinHeight)
@@ -1230,7 +1248,11 @@ func (w *macosWebviewWindow) run() {
 			w.fullscreen()
 		case WindowStateNormal:
 		}
-		C.windowCenter(w.nsWindow)
+		if w.parent.options.InitialPosition == WindowCentered {
+			C.windowCenter(w.nsWindow)
+		} else {
+			w.setPosition(options.X, options.Y)
+		}
 
 		startURL, err := assetserver.GetStartURL(options.URL)
 		if err != nil {
@@ -1249,13 +1271,15 @@ func (w *macosWebviewWindow) run() {
 					C.windowInjectCSS(w.nsWindow, C.CString(options.CSS))
 				}
 				if !options.Hidden {
-					C.windowShow(w.nsWindow)
+					w.parent.Show()
 					w.setHasShadow(!options.Mac.DisableShadow)
+					w.setAlwaysOnTop(options.AlwaysOnTop)
 				} else {
 					// We have to wait until the window is shown before we can remove the shadow
 					var cancel func()
 					cancel = w.parent.OnWindowEvent(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
 						w.setHasShadow(!options.Mac.DisableShadow)
+						w.setAlwaysOnTop(options.AlwaysOnTop)
 						cancel()
 					})
 				}

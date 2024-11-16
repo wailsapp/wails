@@ -6,56 +6,58 @@ type WindowEventType uint
 var Common = newCommonEvents()
 
 type commonEvents struct {
-	ApplicationStarted ApplicationEventType
-	WindowMaximise     WindowEventType
-	WindowUnMaximise   WindowEventType
-	WindowFullscreen   WindowEventType
-	WindowUnFullscreen WindowEventType
-	WindowRestore      WindowEventType
-	WindowMinimise     WindowEventType
-	WindowUnMinimise   WindowEventType
-	WindowClosing      WindowEventType
-	WindowZoom         WindowEventType
-	WindowZoomIn       WindowEventType
-	WindowZoomOut      WindowEventType
-	WindowZoomReset    WindowEventType
-	WindowFocus        WindowEventType
-	WindowLostFocus    WindowEventType
-	WindowShow         WindowEventType
-	WindowHide         WindowEventType
-	WindowDPIChanged   WindowEventType
-	WindowFilesDropped WindowEventType
-	WindowRuntimeReady WindowEventType
-	ThemeChanged ApplicationEventType
-	WindowDidMove WindowEventType
-	WindowDidResize WindowEventType
+	ApplicationStarted        ApplicationEventType
+	WindowMaximise            WindowEventType
+	WindowUnMaximise          WindowEventType
+	WindowFullscreen          WindowEventType
+	WindowUnFullscreen        WindowEventType
+	WindowRestore             WindowEventType
+	WindowMinimise            WindowEventType
+	WindowUnMinimise          WindowEventType
+	WindowClosing             WindowEventType
+	WindowZoom                WindowEventType
+	WindowZoomIn              WindowEventType
+	WindowZoomOut             WindowEventType
+	WindowZoomReset           WindowEventType
+	WindowFocus               WindowEventType
+	WindowLostFocus           WindowEventType
+	WindowShow                WindowEventType
+	WindowHide                WindowEventType
+	WindowDPIChanged          WindowEventType
+	WindowFilesDropped        WindowEventType
+	WindowRuntimeReady        WindowEventType
+	ThemeChanged              ApplicationEventType
+	WindowDidMove             WindowEventType
+	WindowDidResize           WindowEventType
+	ApplicationOpenedWithFile ApplicationEventType
 }
 
 func newCommonEvents() commonEvents {
 	return commonEvents{
-		ApplicationStarted: 1183,
-		WindowMaximise: 1184,
-		WindowUnMaximise: 1185,
-		WindowFullscreen: 1186,
-		WindowUnFullscreen: 1187,
-		WindowRestore: 1188,
-		WindowMinimise: 1189,
-		WindowUnMinimise: 1190,
-		WindowClosing: 1191,
-		WindowZoom: 1192,
-		WindowZoomIn: 1193,
-		WindowZoomOut: 1194,
-		WindowZoomReset: 1195,
-		WindowFocus: 1196,
-		WindowLostFocus: 1197,
-		WindowShow: 1198,
-		WindowHide: 1199,
-		WindowDPIChanged: 1200,
-		WindowFilesDropped: 1201,
-		WindowRuntimeReady: 1202,
-		ThemeChanged: 1203,
-		WindowDidMove: 1204,
-		WindowDidResize: 1205,
+		ApplicationStarted:        1183,
+		WindowMaximise:            1184,
+		WindowUnMaximise:          1185,
+		WindowFullscreen:          1186,
+		WindowUnFullscreen:        1187,
+		WindowRestore:             1188,
+		WindowMinimise:            1189,
+		WindowUnMinimise:          1190,
+		WindowClosing:             1191,
+		WindowZoom:                1192,
+		WindowZoomIn:              1193,
+		WindowZoomOut:             1194,
+		WindowZoomReset:           1195,
+		WindowFocus:               1196,
+		WindowLostFocus:           1197,
+		WindowShow:                1198,
+		WindowHide:                1199,
+		WindowDPIChanged:          1200,
+		WindowFilesDropped:        1201,
+		WindowRuntimeReady:        1202,
+		ThemeChanged:              1203,
+		WindowDidMove:             1204,
+		WindowDidResize:           1205,
+		ApplicationOpenedWithFile: 1206,
 	}
 }
 
@@ -63,24 +65,24 @@ var Linux = newLinuxEvents()
 
 type linuxEvents struct {
 	SystemThemeChanged ApplicationEventType
-	WindowLoadChanged WindowEventType
-	WindowDeleteEvent WindowEventType
-	WindowDidMove WindowEventType
-	WindowDidResize WindowEventType
-	WindowFocusIn WindowEventType
-	WindowFocusOut WindowEventType
+	WindowLoadChanged  WindowEventType
+	WindowDeleteEvent  WindowEventType
+	WindowDidMove      WindowEventType
+	WindowDidResize    WindowEventType
+	WindowFocusIn      WindowEventType
+	WindowFocusOut     WindowEventType
 	ApplicationStartup ApplicationEventType
 }
 
 func newLinuxEvents() linuxEvents {
 	return linuxEvents{
 		SystemThemeChanged: 1024,
-		WindowLoadChanged: 1025,
-		WindowDeleteEvent: 1026,
-		WindowDidMove: 1027,
-		WindowDidResize: 1028,
-		WindowFocusIn: 1029,
-		WindowFocusOut: 1030,
+		WindowLoadChanged:  1025,
+		WindowDeleteEvent:  1026,
+		WindowDidMove:      1027,
+		WindowDidResize:    1028,
+		WindowFocusIn:      1029,
+		WindowFocusOut:     1030,
 		ApplicationStartup: 1031,
 	}
 }
@@ -216,130 +218,130 @@ type macEvents struct {
 
 func newMacEvents() macEvents {
 	return macEvents{
-		ApplicationDidBecomeActive: 1032,
-		ApplicationDidChangeBackingProperties: 1033,
-		ApplicationDidChangeEffectiveAppearance: 1034,
-		ApplicationDidChangeIcon: 1035,
-		ApplicationDidChangeOcclusionState: 1036,
-		ApplicationDidChangeScreenParameters: 1037,
-		ApplicationDidChangeStatusBarFrame: 1038,
+		ApplicationDidBecomeActive:               1032,
+		ApplicationDidChangeBackingProperties:    1033,
+		ApplicationDidChangeEffectiveAppearance:  1034,
+		ApplicationDidChangeIcon:                 1035,
+		ApplicationDidChangeOcclusionState:       1036,
+		ApplicationDidChangeScreenParameters:     1037,
+		ApplicationDidChangeStatusBarFrame:       1038,
 		ApplicationDidChangeStatusBarOrientation: 1039,
-		ApplicationDidFinishLaunching: 1040,
-		ApplicationDidHide: 1041,
-		ApplicationDidResignActiveNotification: 1042,
-		ApplicationDidUnhide: 1043,
-		ApplicationDidUpdate: 1044,
-		ApplicationWillBecomeActive: 1045,
-		ApplicationWillFinishLaunching: 1046,
-		ApplicationWillHide: 1047,
-		ApplicationWillResignActive: 1048,
-		ApplicationWillTerminate: 1049,
-		ApplicationWillUnhide: 1050,
-		ApplicationWillUpdate: 1051,
-		ApplicationDidChangeTheme: 1052,
-		ApplicationShouldHandleReopen: 1053,
-		WindowDidBecomeKey: 1054,
-		WindowDidBecomeMain: 1055,
-		WindowDidBeginSheet: 1056,
-		WindowDidChangeAlpha: 1057,
-		WindowDidChangeBackingLocation: 1058,
-		WindowDidChangeBackingProperties: 1059,
-		WindowDidChangeCollectionBehavior: 1060,
-		WindowDidChangeEffectiveAppearance: 1061,
-		WindowDidChangeOcclusionState: 1062,
-		WindowDidChangeOrderingMode: 1063,
-		WindowDidChangeScreen: 1064,
-		WindowDidChangeScreenParameters: 1065,
-		WindowDidChangeScreenProfile: 1066,
-		WindowDidChangeScreenSpace: 1067,
-		WindowDidChangeScreenSpaceProperties: 1068,
-		WindowDidChangeSharingType: 1069,
-		WindowDidChangeSpace: 1070,
-		WindowDidChangeSpaceOrderingMode: 1071,
-		WindowDidChangeTitle: 1072,
-		WindowDidChangeToolbar: 1073,
-		WindowDidChangeVisibility: 1074,
-		WindowDidDeminiaturize: 1075,
-		WindowDidEndSheet: 1076,
-		WindowDidEnterFullScreen: 1077,
-		WindowDidEnterVersionBrowser: 1078,
-		WindowDidExitFullScreen: 1079,
-		WindowDidExitVersionBrowser: 1080,
-		WindowDidExpose: 1081,
-		WindowDidFocus: 1082,
-		WindowDidMiniaturize: 1083,
-		WindowDidMove: 1084,
-		WindowDidOrderOffScreen: 1085,
-		WindowDidOrderOnScreen: 1086,
-		WindowDidResignKey: 1087,
-		WindowDidResignMain: 1088,
-		WindowDidResize: 1089,
-		WindowDidUpdate: 1090,
-		WindowDidUpdateAlpha: 1091,
-		WindowDidUpdateCollectionBehavior: 1092,
-		WindowDidUpdateCollectionProperties: 1093,
-		WindowDidUpdateShadow: 1094,
-		WindowDidUpdateTitle: 1095,
-		WindowDidUpdateToolbar: 1096,
-		WindowDidUpdateVisibility: 1097,
-		WindowShouldClose: 1098,
-		WindowWillBecomeKey: 1099,
-		WindowWillBecomeMain: 1100,
-		WindowWillBeginSheet: 1101,
-		WindowWillChangeOrderingMode: 1102,
-		WindowWillClose: 1103,
-		WindowWillDeminiaturize: 1104,
-		WindowWillEnterFullScreen: 1105,
-		WindowWillEnterVersionBrowser: 1106,
-		WindowWillExitFullScreen: 1107,
-		WindowWillExitVersionBrowser: 1108,
-		WindowWillFocus: 1109,
-		WindowWillMiniaturize: 1110,
-		WindowWillMove: 1111,
-		WindowWillOrderOffScreen: 1112,
-		WindowWillOrderOnScreen: 1113,
-		WindowWillResignMain: 1114,
-		WindowWillResize: 1115,
-		WindowWillUnfocus: 1116,
-		WindowWillUpdate: 1117,
-		WindowWillUpdateAlpha: 1118,
-		WindowWillUpdateCollectionBehavior: 1119,
-		WindowWillUpdateCollectionProperties: 1120,
-		WindowWillUpdateShadow: 1121,
-		WindowWillUpdateTitle: 1122,
-		WindowWillUpdateToolbar: 1123,
-		WindowWillUpdateVisibility: 1124,
-		WindowWillUseStandardFrame: 1125,
-		MenuWillOpen: 1126,
-		MenuDidOpen: 1127,
-		MenuDidClose: 1128,
-		MenuWillSendAction: 1129,
-		MenuDidSendAction: 1130,
-		MenuWillHighlightItem: 1131,
-		MenuDidHighlightItem: 1132,
-		MenuWillDisplayItem: 1133,
-		MenuDidDisplayItem: 1134,
-		MenuWillAddItem: 1135,
-		MenuDidAddItem: 1136,
-		MenuWillRemoveItem: 1137,
-		MenuDidRemoveItem: 1138,
-		MenuWillBeginTracking: 1139,
-		MenuDidBeginTracking: 1140,
-		MenuWillEndTracking: 1141,
-		MenuDidEndTracking: 1142,
-		MenuWillUpdate: 1143,
-		MenuDidUpdate: 1144,
-		MenuWillPopUp: 1145,
-		MenuDidPopUp: 1146,
-		MenuWillSendActionToItem: 1147,
-		MenuDidSendActionToItem: 1148,
-		WebViewDidStartProvisionalNavigation: 1149,
+		ApplicationDidFinishLaunching:            1040,
+		ApplicationDidHide:                       1041,
+		ApplicationDidResignActiveNotification:   1042,
+		ApplicationDidUnhide:                     1043,
+		ApplicationDidUpdate:                     1044,
+		ApplicationWillBecomeActive:              1045,
+		ApplicationWillFinishLaunching:           1046,
+		ApplicationWillHide:                      1047,
+		ApplicationWillResignActive:              1048,
+		ApplicationWillTerminate:                 1049,
+		ApplicationWillUnhide:                    1050,
+		ApplicationWillUpdate:                    1051,
+		ApplicationDidChangeTheme:                1052,
+		ApplicationShouldHandleReopen:            1053,
+		WindowDidBecomeKey:                       1054,
+		WindowDidBecomeMain:                      1055,
+		WindowDidBeginSheet:                      1056,
+		WindowDidChangeAlpha:                     1057,
+		WindowDidChangeBackingLocation:           1058,
+		WindowDidChangeBackingProperties:         1059,
+		WindowDidChangeCollectionBehavior:        1060,
+		WindowDidChangeEffectiveAppearance:       1061,
+		WindowDidChangeOcclusionState:            1062,
+		WindowDidChangeOrderingMode:              1063,
+		WindowDidChangeScreen:                    1064,
+		WindowDidChangeScreenParameters:          1065,
+		WindowDidChangeScreenProfile:             1066,
+		WindowDidChangeScreenSpace:               1067,
+		WindowDidChangeScreenSpaceProperties:     1068,
+		WindowDidChangeSharingType:               1069,
+		WindowDidChangeSpace:                     1070,
+		WindowDidChangeSpaceOrderingMode:         1071,
+		WindowDidChangeTitle:                     1072,
+		WindowDidChangeToolbar:                   1073,
+		WindowDidChangeVisibility:                1074,
+		WindowDidDeminiaturize:                   1075,
+		WindowDidEndSheet:                        1076,
+		WindowDidEnterFullScreen:                 1077,
+		WindowDidEnterVersionBrowser:             1078,
+		WindowDidExitFullScreen:                  1079,
+		WindowDidExitVersionBrowser:              1080,
+		WindowDidExpose:                          1081,
+		WindowDidFocus:                           1082,
+		WindowDidMiniaturize:                     1083,
+		WindowDidMove:                            1084,
+		WindowDidOrderOffScreen:                  1085,
+		WindowDidOrderOnScreen:                   1086,
+		WindowDidResignKey:                       1087,
+		WindowDidResignMain:                      1088,
+		WindowDidResize:                          1089,
+		WindowDidUpdate:                          1090,
+		WindowDidUpdateAlpha:                     1091,
+		WindowDidUpdateCollectionBehavior:        1092,
+		WindowDidUpdateCollectionProperties:      1093,
+		WindowDidUpdateShadow:                    1094,
+		WindowDidUpdateTitle:                     1095,
+		WindowDidUpdateToolbar:                   1096,
+		WindowDidUpdateVisibility:                1097,
+		WindowShouldClose:                        1098,
+		WindowWillBecomeKey:                      1099,
+		WindowWillBecomeMain:                     1100,
+		WindowWillBeginSheet:                     1101,
+		WindowWillChangeOrderingMode:             1102,
+		WindowWillClose:                          1103,
+		WindowWillDeminiaturize:                  1104,
+		WindowWillEnterFullScreen:                1105,
+		WindowWillEnterVersionBrowser:            1106,
+		WindowWillExitFullScreen:                 1107,
+		WindowWillExitVersionBrowser:             1108,
+		WindowWillFocus:                          1109,
+		WindowWillMiniaturize:                    1110,
+		WindowWillMove:                           1111,
+		WindowWillOrderOffScreen:                 1112,
+		WindowWillOrderOnScreen:                  1113,
+		WindowWillResignMain:                     1114,
+		WindowWillResize:                         1115,
+		WindowWillUnfocus:                        1116,
+		WindowWillUpdate:                         1117,
+		WindowWillUpdateAlpha:                    1118,
+		WindowWillUpdateCollectionBehavior:       1119,
+		WindowWillUpdateCollectionProperties:     1120,
+		WindowWillUpdateShadow:                   1121,
+		WindowWillUpdateTitle:                    1122,
+		WindowWillUpdateToolbar:                  1123,
+		WindowWillUpdateVisibility:               1124,
+		WindowWillUseStandardFrame:               1125,
+		MenuWillOpen:                             1126,
+		MenuDidOpen:                              1127,
+		MenuDidClose:                             1128,
+		MenuWillSendAction:                       1129,
+		MenuDidSendAction:                        1130,
+		MenuWillHighlightItem:                    1131,
+		MenuDidHighlightItem:                     1132,
+		MenuWillDisplayItem:                      1133,
+		MenuDidDisplayItem:                       1134,
+		MenuWillAddItem:                          1135,
+		MenuDidAddItem:                           1136,
+		MenuWillRemoveItem:                       1137,
+		MenuDidRemoveItem:                        1138,
+		MenuWillBeginTracking:                    1139,
+		MenuDidBeginTracking:                     1140,
+		MenuWillEndTracking:                      1141,
+		MenuDidEndTracking:                       1142,
+		MenuWillUpdate:                           1143,
+		MenuDidUpdate:                            1144,
+		MenuWillPopUp:                            1145,
+		MenuDidPopUp:                             1146,
+		MenuWillSendActionToItem:                 1147,
+		MenuDidSendActionToItem:                  1148,
+		WebViewDidStartProvisionalNavigation:     1149,
 		WebViewDidReceiveServerRedirectForProvisionalNavigation: 1150,
-		WebViewDidFinishNavigation: 1151,
-		WebViewDidCommitNavigation: 1152,
-		WindowFileDraggingEntered: 1153,
-		WindowFileDraggingPerformed: 1154,
-		WindowFileDraggingExited: 1155,
+		WebViewDidFinishNavigation:                              1151,
+		WebViewDidCommitNavigation:                              1152,
+		WindowFileDraggingEntered:                               1153,
+		WindowFileDraggingPerformed:                             1154,
+		WindowFileDraggingExited:                                1155,
 	}
 }
 
@@ -354,56 +356,56 @@ type windowsEvents struct {
 	APMPowerSettingChange      ApplicationEventType
 	ApplicationStarted         ApplicationEventType
 	WebViewNavigationCompleted WindowEventType
-	WindowInactive WindowEventType
-	WindowActive WindowEventType
-	WindowClickActive WindowEventType
-	WindowMaximise WindowEventType
-	WindowUnMaximise WindowEventType
-	WindowFullscreen WindowEventType
-	WindowUnFullscreen WindowEventType
-	WindowRestore WindowEventType
-	WindowMinimise WindowEventType
-	WindowUnMinimise WindowEventType
-	WindowClose WindowEventType
-	WindowSetFocus WindowEventType
-	WindowKillFocus WindowEventType
-	WindowDragDrop WindowEventType
-	WindowDragEnter WindowEventType
-	WindowDragLeave WindowEventType
-	WindowDragOver WindowEventType
-	WindowDidMove WindowEventType
-	WindowDidResize WindowEventType
+	WindowInactive             WindowEventType
+	WindowActive               WindowEventType
+	WindowClickActive          WindowEventType
+	WindowMaximise             WindowEventType
+	WindowUnMaximise           WindowEventType
+	WindowFullscreen           WindowEventType
+	WindowUnFullscreen         WindowEventType
+	WindowRestore              WindowEventType
+	WindowMinimise             WindowEventType
+	WindowUnMinimise           WindowEventType
+	WindowClose                WindowEventType
+	WindowSetFocus             WindowEventType
+	WindowKillFocus            WindowEventType
+	WindowDragDrop             WindowEventType
+	WindowDragEnter            WindowEventType
+	WindowDragLeave            WindowEventType
+	WindowDragOver             WindowEventType
+	WindowDidMove              WindowEventType
+	WindowDidResize            WindowEventType
 }
 
 func newWindowsEvents() windowsEvents {
 	return windowsEvents{
-		SystemThemeChanged: 1156,
-		APMPowerStatusChange: 1157,
-		APMSuspend: 1158,
-		APMResumeAutomatic: 1159,
-		APMResumeSuspend: 1160,
-		APMPowerSettingChange: 1161,
-		ApplicationStarted: 1162,
+		SystemThemeChanged:         1156,
+		APMPowerStatusChange:       1157,
+		APMSuspend:                 1158,
+		APMResumeAutomatic:         1159,
+		APMResumeSuspend:           1160,
+		APMPowerSettingChange:      1161,
+		ApplicationStarted:         1162,
 		WebViewNavigationCompleted: 1163,
-		WindowInactive: 1164,
-		WindowActive: 1165,
-		WindowClickActive: 1166,
-		WindowMaximise: 1167,
-		WindowUnMaximise: 1168,
-		WindowFullscreen: 1169,
-		WindowUnFullscreen: 1170,
-		WindowRestore: 1171,
-		WindowMinimise: 1172,
-		WindowUnMinimise: 1173,
-		WindowClose: 1174,
-		WindowSetFocus: 1175,
-		WindowKillFocus: 1176,
-		WindowDragDrop: 1177,
-		WindowDragEnter: 1178,
-		WindowDragLeave: 1179,
-		WindowDragOver: 1180,
-		WindowDidMove: 1181,
-		WindowDidResize: 1182,
+		WindowInactive:             1164,
+		WindowActive:               1165,
+		WindowClickActive:          1166,
+		WindowMaximise:             1167,
+		WindowUnMaximise:           1168,
+		WindowFullscreen:           1169,
+		WindowUnFullscreen:         1170,
+		WindowRestore:              1171,
+		WindowMinimise:             1172,
+		WindowUnMinimise:           1173,
+		WindowClose:                1174,
+		WindowSetFocus:             1175,
+		WindowKillFocus:            1176,
+		WindowDragDrop:             1177,
+		WindowDragEnter:            1178,
+		WindowDragLeave:            1179,
+		WindowDragOver:             1180,
+		WindowDidMove:              1181,
+		WindowDidResize:            1182,
 	}
 }
 
@@ -594,4 +596,5 @@ var eventToJS = map[uint]string{
 	1203: "common:ThemeChanged",
 	1204: "common:WindowDidMove",
 	1205: "common:WindowDidResize",
+	1206: "common:ApplicationOpenedWithFile",
 }
