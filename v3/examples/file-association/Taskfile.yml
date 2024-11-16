@@ -1,0 +1,33 @@
+version: '3'
+
+includes:
+  common: ./build/Taskfile.common.yml
+  windows: ./build/Taskfile.windows.yml
+  darwin: ./build/Taskfile.darwin.yml
+  linux: ./build/Taskfile.linux.yml
+
+vars:
+  APP_NAME: "fileassoc"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}

@@ -1,6 +1,6 @@
 # Roadmap
 
-## Current Status: Alpha 6
+## Current Status: Alpha 7
 
 Our goal is to reach Beta status. This roadmap outlines the key features and improvements we need to implement before transitioning to Beta. Please note that this is a living document and may be updated as priorities shift or new insights emerge.
 
@@ -20,5 +20,8 @@ The roadmap is a living document and is subject to change. If you have any
 suggestions, please open an issue. Each milestone will have a set of goals that
 we are aiming to achieve. These are subject to change.
 
-## Known Issues
+## Alpha 8 Status
+
+- In Progress: Add support for File Associations
+- In Progress: Drag and Drop support for Linux
 

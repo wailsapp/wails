@@ -19,23 +19,21 @@ extern void dialogCallback(int id, int buttonPressed);
 static void showAboutBox(char* title, char *message, void *icon, int length) {
 
 	// run on main thread
-    //	dispatch_async(dispatch_get_main_queue(), ^{
-		NSAlert *alert = [[NSAlert alloc] init];
-		if (title != NULL) {
-			[alert setMessageText:[NSString stringWithUTF8String:title]];
-			free(title);
-		}
-		if (message != NULL) {
-			[alert setInformativeText:[NSString stringWithUTF8String:message]];
-			free(message);
-		}
-		if (icon != NULL) {
-			NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:icon length:length]];
-			[alert setIcon:image];
-		}
-		[alert setAlertStyle:NSAlertStyleInformational];
-		[alert runModal];
-        //	});
+	NSAlert *alert = [[NSAlert alloc] init];
+	if (title != NULL) {
+		[alert setMessageText:[NSString stringWithUTF8String:title]];
+		free(title);
+	}
+	if (message != NULL) {
+		[alert setInformativeText:[NSString stringWithUTF8String:message]];
+		free(message);
+	}
+	if (icon != NULL) {
+		NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:icon length:length]];
+		[alert setIcon:image];
+	}
+	[alert setAlertStyle:NSAlertStyleInformational];
+	[alert runModal];
 }
 
 

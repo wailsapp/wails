@@ -180,3 +180,4 @@ common:WindowRuntimeReady
 common:ThemeChanged
 common:WindowDidMove
 common:WindowDidResize
+common:ApplicationOpenedWithFile

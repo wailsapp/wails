@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body{
+            background-color: white;
+        }
+
+        #draggable {
+            width: 100px;
+            height: 100px;
+            background-color: yellow;
+            text-align: center;
+        }
+
+        #dropTarget {
+            width: 200px;
+            height: 200px;
+            border: 2px solid red;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<h1>HTML Drag and Drop API Demo</h1>
+<br/>
+
+<div id="draggable" draggable="true" >draggable</div>
+
+<div id="dropTarget" >drop target</div>
+
+</body>
+
+<script type="module">
+    const draggable = document.getElementById('draggable');
+
+    draggable.addEventListener('dragstart', (event) => {
+        console.log('dragstart');
+        dropTarget.innerText = 'drop target';
+    });
+
+    draggable.addEventListener("drag", (event) => {
+        console.log('drag');
+    });
+
+    draggable.addEventListener("dragend", (event) => {
+        console.log('dragend');
+    });
+
+    const dropTarget = document.getElementById('dropTarget');
+
+    dropTarget.addEventListener('dragenter', (event) => {
+        console.log('dragenter');
+    });
+
+    dropTarget.addEventListener('dragleave', (event) => {
+        console.log('dragleave');
+        dropTarget.innerText = 'left drop target';
+    });
+
+    dropTarget.addEventListener('dragover', (event) => {
+        event.preventDefault()
+        console.log('dragover');
+        dropTarget.innerText = 'dragged over';
+    });
+
+    dropTarget.addEventListener('drop', (event) => {
+        console.log('drop');
+        dropTarget.innerText = 'dropped';
+    });
+</script>
+
+</html>
