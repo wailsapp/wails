@@ -5,10 +5,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface AppDelegate : NSObject <NSApplicationDelegate>
+@interface AppDelegate : NSResponder <NSApplicationDelegate>
 @property bool shouldTerminateWhenLastWindowClosed;
 @property bool shuttingDown;
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app;
 @end
+
+extern void HandleOpenFile(char *);
 
 #endif

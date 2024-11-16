@@ -176,6 +176,32 @@ func main() {
 					Show()
 				windowCounter++
 			})
+
+		myMenu.Add("New WebviewWindow (Centered)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					MaximiseButtonState: application.ButtonHidden,
+					InitialPosition:     application.WindowCentered,
+				}).
+					SetTitle("WebviewWindow " + strconv.Itoa(windowCounter)).
+					SetURL("https://wails.io").
+					Show()
+				windowCounter++
+			})
+
+		myMenu.Add("New WebviewWindow (Position 100,100)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					MaximiseButtonState: application.ButtonHidden,
+					X:                   100,
+					Y:                   100,
+					InitialPosition:     application.WindowXY,
+				}).
+					SetTitle("WebviewWindow " + strconv.Itoa(windowCounter)).
+					SetURL("https://wails.io").
+					Show()
+				windowCounter++
+			})
 	}
 	if runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
 		myMenu.Add("New WebviewWindow (Disable Close)").

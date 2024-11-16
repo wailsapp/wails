@@ -726,7 +726,7 @@ func (w *WebviewWindow) startResize(border string) error {
 // Center centers the window on the screen
 func (w *WebviewWindow) Center() {
 	if w.impl == nil && !w.isDestroyed() {
-		w.options.Centered = true
+		w.options.InitialPosition = WindowCentered
 		return
 	}
 	InvokeSync(w.impl.center)

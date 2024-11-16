@@ -3,6 +3,7 @@ module github.com/wailsapp/wails/v3
 go 1.22.4
 
 require (
+	github.com/adrg/xdg v0.5.0
 	github.com/atterpac/refresh v0.8.3
 	github.com/bep/debounce v1.2.1
 	github.com/ebitengine/purego v0.4.0-alpha.4
@@ -31,7 +32,7 @@ require (
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/go-webview2 v1.0.16
 	github.com/wailsapp/mimetype v1.4.1
-	golang.org/x/sys v0.20.0
+	golang.org/x/sys v0.22.0
 	golang.org/x/term v0.20.0
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d
 	gopkg.in/yaml.v3 v3.0.1
