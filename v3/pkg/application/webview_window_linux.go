@@ -296,9 +296,9 @@ func (w *linuxWebviewWindow) run() {
 	w.setFrameless(w.parent.options.Frameless)
 
 	if w.parent.options.InitialPosition == WindowCentered {
-		C.windowCenter(w.nsWindow)
+		w.center()
 	} else {
-		w.setPosition(options.X, options.Y)
+		w.setPosition(w.parent.options.X, w.parent.options.Y)
 	}
 
 	switch w.parent.options.StartState {
