@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `GeneralAutofillEnabled` and `PasswordAutosaveEnabled` Windows options by [leaanthony](https://github.com/leaanthony) in [#3766](https://github.com/wailsapp/wails/pull/3766)
 
 ### Changed
+- Asset embed to include `all:frontend/dist` to support frameworks that generate subfolders by @atterpac in [#3887](https://github.com/wailsapp/wails/pull/3887)
 - Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)
 - Upgrade to `go-webview2` v1.0.16 by [leaanthony](https://github.com/leaanthony)
 - Fixed `Screen` type to include `ID` not `Id` by [etesam913](https://github.com/etesam913) in [#3778](https://github.com/wailsapp/wails/pull/3778)
