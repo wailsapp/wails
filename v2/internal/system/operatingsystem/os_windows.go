@@ -31,7 +31,7 @@ func platformInfo() (*OS, error) {
 	// https://en.wikipedia.org/wiki/List_of_Microsoft_Windows_versions#Personal_computer_versions
 	if buildNum, err := strconv.Atoi(currentBuild); err == nil {
 		if buildNum >= 22000 {
-			productName = strings.Replace(productName, " 10", " 11", -1)
+			productName = strings.Replace(productName, "Windows 10", "Windows 11", -1)
 		}
 	}
 
