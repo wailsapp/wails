@@ -147,6 +147,7 @@ nav:
     - Next Steps: getting-started/next-steps.md
     - Learn More:
         - Services: learn/services.md
+        - Bindings: learn/bindings.md
         - Runtime: learn/runtime.md
         - Build System: learn/build.md
         - Guides:
