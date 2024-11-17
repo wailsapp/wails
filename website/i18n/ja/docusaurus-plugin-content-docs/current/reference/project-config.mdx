@@ -68,19 +68,57 @@ sidebar_position: 5
     "companyName": "",
     // 製品名。 デフォルト値: [プロジェクト名]
     "productName": "",
-    // 製品バージョン。 デフォルト値: '1.0.0']
+    // 製品バージョン。 デフォルト値: '1.0.0'
     "productVersion": "",
     // 製品の著作権。 デフォルト値: 'Copyright.........'
     "copyright": "",
     // アプリケーションの説明。 デフォルト値: 'Built using Wails (https://wails.app)'
-    "comments": ""
+    "comments": "",
+    // アプリケーションにおけるファイルの関連付け。
+    "fileAssociations": [
+      {
+        // 拡張子(先頭のピリオドを除く)。 例: png
+        "ext": "wails",
+        // 名前。 例: PNGファイル
+        "name": "Wails",
+        // (Windowsのみ) 説明。これはWindowsエクスプローラの `種類` 欄に表示されます。
+        "description": "Wails file",
+        // 拡張子を除外したアイコン名。アイコンはビルドファイルに配置してください。Windows向けおよびmacOS向けともに、.pngファイルから適切なアイコンが生成されます。
+        "iconName": "fileIcon",
+        // (macOSのみ) タイプに対するアプリの役割。これはCFBundleTypeRoleに対応します。
+        "role": "Editor"
+      },
+    ],
+    // アプリケーションによってオープンされるカスタムURIプロトコル。
+    "protocols": [
+      {
+        // プロトコルスキーマ。 例: myapp
+        "scheme": "myapp",
+        // (Windowsのみ) 説明。これはWindowsエクスプローラの `種類` 欄に表示されます。
+        "description": "Myapp protocol",
+        // (macOSのみ) タイプに対するアプリの役割。これはCFBundleTypeRoleに対応します。
+        "role": "Editor"
+      }
+    ]
   },
   // 'multiple': アーキテクチャごとに1つのインストーラ。 'single': ビルドした全アーキテクチャに対応する単一ユニバーサルインストーラ。 デフォルト値: 'multiple'
   "nsisType": "",
   // アプリ難読化を実行するかどうか。 デフォルト値: false
   "obfuscated": "",
   // obfuscatedフラグがtrueの際に、garbleコマンドへ渡す引数。
-  "garbleargs": ""
+  "garbleargs": "",
+  // バインディング構成。
+  "bindings": {
+    // model.tsファイルの生成に関する構成。
+    "ts_generation": {
+      // 生成されるすべてのJavaScriptエンティティに付与される接頭辞。
+      "prefix": "",
+      // 生成されるすべてのJavaScriptエンティティに付与される接尾辞。
+      "suffix": "",
+      // 生成されるエンティティの種類。(classes|interfaces)
+      "outputType": "classes",
+    }
+  }
 }
 ```
 

@@ -8,7 +8,7 @@ tasks:
     aliases: [i]
     cmds:
       - corepack enable
-      - corepack prepare pnpm@8.2.0 --activate
+      - corepack prepare pnpm@8.3.1 --activate
       - pnpm install
     sources:
       - package.json

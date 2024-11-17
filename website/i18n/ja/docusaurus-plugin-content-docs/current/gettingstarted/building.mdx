@@ -6,6 +6,10 @@ sidebar_position: 6
 
 プロジェクトディレクトリ上で、`wails build`コマンドを実行しましょう。 そうすることで、プロジェクトがコンパイルされ、`build/bin`ディレクトリ内に本番配布用のバイナリが出力されます。
 
+:::info Linux
+If you are using a Linux distribution that does not have webkit2gtk-4.0 (such as Ubuntu 24.04), you will need to add `-tags webkit2_41`.
+:::
+
 バイナリを起動すると、デフォルト仕様のアプリを確認することができます:
 
 ```mdx-code-block

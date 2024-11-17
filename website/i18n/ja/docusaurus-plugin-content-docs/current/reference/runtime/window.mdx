@@ -28,7 +28,7 @@ Go: `WindowUnfullscreen(ctx context.Context)`<br/> JS: `WindowUnfullscreen()`
 
 ウィンドウがフルスクリーンの場合は、trueを返します。
 
-Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen() bool`
+Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen() Promise<boolean>`
 
 ### WindowCenter
 
@@ -96,7 +96,7 @@ Go: `WindowHide(ctx context.Context)`<br/> JS: `WindowHide()`
 
 ウィンドウが最小化、最大化、またはフルスクリーンになっていない場合、trueを返します。
 
-Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() bool`
+Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() Promise<boolean>`
 
 ### WindowSetSize
 
@@ -108,7 +108,7 @@ Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `Window
 
 ウィンドウの幅と高さを取得します。
 
-Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize() : Size`
+Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize(): Promise<Size>`
 
 ### WindowSetMinSize
 
@@ -130,7 +130,7 @@ Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `Win
 
 ウィンドウを常に最前面に表示するかを切り替えます。
 
-Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: Boolen)`
+Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: boolean)`
 
 ### WindowSetPosition
 
@@ -142,7 +142,7 @@ Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPo
 
 現在ウィンドウが表示されているモニターに対する、相対的なウィンドウ位置を取得します。
 
-Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition() : Position`
+Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition(): Promise<Position>`
 
 ### WindowMaximise
 
@@ -160,7 +160,7 @@ Go: `WindowUnmaximise(ctx context.Context)`<br/> JS: `WindowUnmaximise()`
 
 ウィンドウが最大化している場合はtrueを返します。
 
-Go: `WindowIsMaximised(ctx context.Context) bool`<br/> JS: `WindowIsMaximised() bool`
+Go: `WindowIsMaximised(ctx context.Context) bool`<br/> JS: `WindowIsMaximised() Promise<boolean>`
 
 ### WindowToggleMaximise
 
@@ -184,7 +184,7 @@ Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
 
 ウィンドウが最小化している場合はtrueを返します。
 
-Go: `WindowIsMinimised(ctx context.Context) bool`<br/> JS: `WindowIsMinimised() bool`
+Go: `WindowIsMinimised(ctx context.Context) bool`<br/> JS: `WindowIsMinimised() Promise<boolean>`
 
 ### WindowSetBackgroundColour
 

@@ -22,10 +22,10 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
-func SetupSingleInstance(uniqueID string) {
+func SetupSingleInstance(uniqueID string) *os.File {
 	lockFilePath := getTempDir()
 	lockFileName := uniqueID + ".lock"
-	_, err := createLockFile(lockFilePath + "/" + lockFileName)
+	file, err := createLockFile(lockFilePath + "/" + lockFileName)
 	// if lockFile exist – send notification to second instance
 	if err != nil {
 		c := NewCalloc()
@@ -34,18 +34,20 @@ func SetupSingleInstance(uniqueID string) {
 
 		data, err := options.NewSecondInstanceData()
 		if err != nil {
-			return
+			return nil
 		}
 
 		serialized, err := json.Marshal(data)
 		if err != nil {
-			return
+			return nil
 		}
 
 		C.SendDataToFirstInstance(singleInstanceUniqueId, c.String(string(serialized)))
 
 		os.Exit(0)
 	}
+
+	return file
 }
 
 //export HandleSecondInstanceData

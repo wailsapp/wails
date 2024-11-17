@@ -169,16 +169,19 @@ func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
 
 	for _, embedDetail := range embedDetails {
 		fullPath := embedDetail.GetFullPath()
-		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			err := os.MkdirAll(fullPath, 0o755)
-			if err != nil {
-				return err
+		// assumes path is directory only if it has no extension
+		if filepath.Ext(fullPath) == "" {
+			if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+				err := os.MkdirAll(fullPath, 0o755)
+				if err != nil {
+					return err
+				}
+				f, err := os.Create(filepath.Join(fullPath, "gitkeep"))
+				if err != nil {
+					return err
+				}
+				_ = f.Close()
 			}
-			f, err := os.Create(filepath.Join(fullPath, "gitkeep"))
-			if err != nil {
-				return err
-			}
-			_ = f.Close()
 		}
 	}
 
@@ -228,6 +231,8 @@ func GenerateBindings(buildOptions *Options) error {
 		Compiler:     buildOptions.Compiler,
 		Tags:         buildOptions.UserTags,
 		GoModTidy:    !buildOptions.SkipModTidy,
+		Platform:     buildOptions.Platform,
+		Arch:         buildOptions.Arch,
 		TsPrefix:     buildOptions.ProjectData.Bindings.TsGeneration.Prefix,
 		TsSuffix:     buildOptions.ProjectData.Bindings.TsGeneration.Suffix,
 		TsOutputType: buildOptions.ProjectData.Bindings.TsGeneration.OutputType,
@@ -258,7 +263,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 
 		// When we finish, we will want to remove the syso file
 		defer func() {
-			err := os.Remove(filepath.Join(options.ProjectData.Path, options.ProjectData.Name+"-res.syso"))
+			err := os.Remove(filepath.Join(options.ProjectData.Path, strings.ReplaceAll(options.ProjectData.Name, " ", "_")+"-res.syso"))
 			if err != nil {
 				fatal(err.Error())
 			}

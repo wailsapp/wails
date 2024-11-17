@@ -64,6 +64,12 @@ func main() {
           UniqueId:               "c9c8fd93-6758-4144-87d1-34bdb0a8bd60",
           OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
         },
+        DragAndDrop: &options.DragAndDrop{
+          EnableFileDrop:       false,
+          DisableWebViewDrop:   false,
+          CSSDropProperty:      "--wails-drop-target",
+          CSSDropValue:         "drop",
+        },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
@@ -93,7 +99,9 @@ func main() {
             // OnResume is called when Windows resumes from low power mode
             OnResume: func(),
             // Disable GPU hardware acceleration for the webview
-			WebviewGpuDisabled: false,
+			      WebviewGpuDisabled: false,
+			      // Class name for the window. If empty, 'wailsWindow' will be used.
+			      WindowClassName: "MyWindow",
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -316,7 +324,7 @@ If not defined, the result is the following in cases where the Handler would hav
 
 :::info
 
-This does not work with vite v5.0.0+ and wails v2 due to changes in vite. 
+This does not work with vite v5.0.0+ and wails v2 due to changes in vite.
 Changes are planned in v3 to support similar functionality under vite v5.0.0+.
 If you need this feature, stay with vite v4.0.0+.
 See [issue 3240](https://github.com/wailsapp/wails/issues/3240) for details
@@ -479,21 +487,6 @@ services of Apple and Microsoft.
 Name: EnableFraudulentWebsiteDetection<br/>
 Type: `bool`
 
-### ZoomFactor
-
-Name: ZoomFactor<br/>
-Type: `float64`
-
-This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
-
-### IsZoomControlEnabled
-
-Name: IsZoomControlEnabled<br/>
-Type: `bool`
-
-This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while
-disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
-
 ### Bind
 
 A slice of struct instances defining methods that need to be bound to the frontend.
@@ -537,6 +530,52 @@ Callback that is called when a second instance of your app is launched.
 Name: OnSecondInstanceLaunch<br/>
 Type: `func(secondInstanceData SecondInstanceData)`
 
+### Drag and Drop
+
+Defines the behavior of drag and drop events on the window.
+
+Name: DragAndDrop<br/>
+Type: `options.DragAndDrop`
+
+#### EnableFileDrop
+
+EnableFileDrop enables wails' drag and drop functionality that returns the dropped in files' absolute paths.
+
+When it is set to `true` the [runtime methods](../reference/runtime/draganddrop.mdx) can be used. <br/>
+Or you can listen for the `wails:file-drop` event with [runtime EventsOn method](../reference/runtime/events.mdx#eventson) both on the
+Javascript and GO side to implement any functionality you would like.
+
+The event returns the coordinates of the drop and a file path slice.
+
+Name: EnableFileDrop<br/>
+Type: `bool`<br/>
+Default: `false`
+
+#### DisableWebViewDrop
+
+Disables the webview's drag and drop functionality.
+
+It can be used to prevent accidental opening of dragged in files in the webview, when there is no need for drag and drop.
+
+Name: DisableWebViewDrop<br/>
+Type: `bool`<br/>
+Default: `false`
+
+#### CSSDropProperty
+
+CSS property to test for drag and drop target elements.
+
+Name: CSSDropProperty<br/>
+Type: `string`<br/>
+Default: `--wails-drop-target`
+
+#### CSSDropValue
+
+The CSS Value that the CSSDropProperty must have to be a valid drop target. Default "drop"
+
+Name: CSSDropValue<br/>
+Type: `string`<br/>
+Default: `drop`
 
 ### Windows
 
@@ -589,6 +628,21 @@ The value can be one of the following:
 | Acrylic | Use [Acrylic](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) effect |
 | Mica    | Use [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) effect       |
 | Tabbed  | Use Tabbed. This is a backdrop that is similar to Mica.                                   |
+
+#### ZoomFactor
+
+Name: ZoomFactor<br/>
+Type: `float64`
+
+This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+
+#### IsZoomControlEnabled
+
+Name: IsZoomControlEnabled<br/>
+Type: `bool`
+
+This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while
+disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
 
 #### DisablePinchZoom
 
@@ -751,6 +805,13 @@ Setting this to `true` will enable swipe gestures for the webview.
 
 Name: EnableSwipeGestures<br/>
 Type: `bool`
+
+#### WindowClassName
+
+Class name for the window. If empty, 'wailsWindow' will be used.
+
+Name: WindowClassName<br/>
+Type: `string`
 
 ### Mac
 

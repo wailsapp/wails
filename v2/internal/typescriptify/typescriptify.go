@@ -3,7 +3,7 @@ package typescriptify
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -24,7 +24,7 @@ const (
 	if (!a) {
 		return a;
 	}
-	if (a.slice) {
+	if (a.slice && a.map) {
 		return (a as any[]).map(elem => this.convertValues(elem, classs));
 	} else if ("object" === typeof a) {
 		if (asMap) {
@@ -394,7 +394,7 @@ func loadCustomCode(fileName string) (map[string]string, error) {
 	}
 	defer f.Close()
 
-	bytes, err := ioutil.ReadAll(f)
+	bytes, err := io.ReadAll(f)
 	if err != nil {
 		return result, err
 	}
@@ -430,7 +430,7 @@ func (t TypeScriptify) backup(fileName string) error {
 	}
 	defer fileIn.Close()
 
-	bytes, err := ioutil.ReadAll(fileIn)
+	bytes, err := io.ReadAll(fileIn)
 	if err != nil {
 		return err
 	}
@@ -440,7 +440,7 @@ func (t TypeScriptify) backup(fileName string) error {
 		backupFn = path.Join(t.BackupDir, backupFn)
 	}
 
-	return ioutil.WriteFile(backupFn, bytes, os.FileMode(0o700))
+	return os.WriteFile(backupFn, bytes, os.FileMode(0o700))
 }
 
 func (t TypeScriptify) ConvertToFile(fileName string, packageName string) error {
@@ -553,7 +553,13 @@ func (t *TypeScriptify) getFieldOptions(structType reflect.Type, field reflect.S
 
 func (t *TypeScriptify) getJSONFieldName(field reflect.StructField, isPtr bool) string {
 	jsonFieldName := ""
-	jsonTag := field.Tag.Get("json")
+	jsonTag, hasTag := field.Tag.Lookup("json")
+	if !hasTag && field.IsExported() {
+		jsonFieldName = field.Name
+		if isPtr {
+			jsonFieldName += "?"
+		}
+	}
 	if len(jsonTag) > 0 {
 		jsonTagParts := strings.Split(jsonTag, ",")
 		if len(jsonTagParts) > 0 {
@@ -586,9 +592,6 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		return "", nil
 	}
 	fields := t.deepFields(typeOf)
-	if len(fields) == 0 {
-		return "", nil
-	}
 	t.logf(depth, "Converting type %s", typeOf.String())
 	if differentNamespaces(t.Namespace, typeOf) {
 		return "", nil
@@ -894,7 +897,7 @@ func (t *typeScriptClassBuilder) addField(fld, fldType string, isAnyType bool) {
 	isOptional := strings.HasSuffix(fld, "?")
 	strippedFieldName := strings.ReplaceAll(fld, "?", "")
 	if !regexp.MustCompile(jsVariableNameRegex).Match([]byte(strippedFieldName)) {
-		fld = fmt.Sprintf(`"%s"`, fld)
+		fld = fmt.Sprintf(`"%s"`, strippedFieldName)
 		if isOptional {
 			fld += "?"
 		}

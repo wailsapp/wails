@@ -118,6 +118,9 @@ type Options struct {
 
 	// Configure whether swipe gestures should be enabled
 	EnableSwipeGestures bool
+
+	// Class name for the window. If empty, 'wailsWindow' will be used.
+	WindowClassName string
 }
 
 func DefaultMessages() *Messages {

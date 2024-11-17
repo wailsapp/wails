@@ -6,6 +6,7 @@ import (
 	"image"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/leaanthony/winicon"
 	"github.com/tc-hib/winres"
@@ -82,10 +83,10 @@ func packageApplicationForDarwin(options *Options) error {
 		return err
 	}
 	// Copy binary
-	packedBinaryPath := filepath.Join(exeDir, options.ProjectData.Name)
+	packedBinaryPath := filepath.Join(exeDir, options.ProjectData.OutputFilename)
 	err = fs.MoveFile(options.CompiledBinary, packedBinaryPath)
 	if err != nil {
-		return errors.Wrap(err, "Cannot move file: "+options.ProjectData.OutputFilename)
+		return errors.Wrap(err, "Cannot move file: "+options.CompiledBinary)
 	}
 
 	// Generate Info.plist
@@ -274,7 +275,8 @@ func compileResources(options *Options) error {
 		rs.SetVersionInfo(v)
 	}
 
-	targetFile := filepath.Join(options.ProjectData.Path, options.ProjectData.Name+"-res.syso")
+	// replace spaces with underscores as go build behaves weirdly with spaces in syso filename
+	targetFile := filepath.Join(options.ProjectData.Path, strings.ReplaceAll(options.ProjectData.Name, " ", "_")+"-res.syso")
 	fout, err := os.Create(targetFile)
 	if err != nil {
 		return err

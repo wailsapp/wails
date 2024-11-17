@@ -42,7 +42,8 @@
 
 [English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
 [한국어](README.ko.md) · [Español](README.es.md) · [Português](README.pt-br.md) ·
-[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md)
+[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) · [Deutsch](README.de.md) ·
+[Türkçe](README.tr.md)
 
 </samp>
 </strong>
@@ -86,7 +87,7 @@ make this easy for you by handling project creation, compilation and bundling. A
 ### Roadmap
 
 The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
-this before open up an enhancement request.
+it before creating an enhancement request.
 
 ## Getting Started
 

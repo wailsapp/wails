@@ -28,7 +28,7 @@ Go: `WindowUnfullscreen(ctx context.Context)`<br/> JS: `WindowUnfullscreen()`
 
 창이 전체 화면이면 true를 반환합니다.
 
-Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen() bool`
+Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen() Promise<boolean>`
 
 ### WindowCenter
 
@@ -96,7 +96,7 @@ Go: `WindowHide(ctx context.Context)`<br/> JS: `WindowHide()`
 
 창이 최소화, 최대화 또는 전체 화면이 아닌 경우 true를 반환합니다.
 
-Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() bool`
+Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() Promise<boolean>`
 
 ### WindowSetSize
 
@@ -108,7 +108,7 @@ Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `Window
 
 창의 너비와 높이를 가져옵니다.
 
-Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize() : Size`
+Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize(): Promise<Size>`
 
 ### WindowSetMinSize
 
@@ -130,7 +130,7 @@ Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `Win
 
 창을 항상위 또는 맨 위에 놓지 않도록 설정합니다.
 
-Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: Boolen)`
+Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: boolean)`
 
 ### WindowSetPosition
 
@@ -142,7 +142,7 @@ Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPo
 
 창이 현재 있는 모니터에 상대적인 창 위치를 가져옵니다.
 
-Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition() : Position`
+Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition(): Promise<Position>`
 
 ### WindowMaximise
 
@@ -160,7 +160,7 @@ Go: `WindowUnmaximise(ctx context.Context)`<br/> JS: `WindowUnmaximise()`
 
 창이 최대화되면 true를 반환합니다.
 
-Go: `WindowIsMaximised(ctx context.Context) bool`<br/> JS: `WindowIsMaximised() bool`
+Go: `WindowIsMaximised(ctx context.Context) bool`<br/> JS: `WindowIsMaximised() Promise<boolean>`
 
 ### WindowToggleMaximise
 
@@ -184,7 +184,7 @@ Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
 
 창이 최소화된 경우 true를 반환합니다.
 
-Go: `WindowIsMinimised(ctx context.Context) bool`<br/> JS: `WindowIsMinimised() bool`
+Go: `WindowIsMinimised(ctx context.Context) bool`<br/> JS: `WindowIsMinimised() Promise<boolean>`
 
 ### WindowSetBackgroundColour
 
