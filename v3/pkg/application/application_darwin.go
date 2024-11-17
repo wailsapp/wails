@@ -91,6 +91,7 @@ static void run(void) {
     @autoreleasepool {
         [NSApp run];
         [appDelegate release];
+		[NSApp abortModal];
     }
 }
 
