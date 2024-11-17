@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Consolidated dev config into `config.yml` by [leaanthony](https://github.com/leaanthony)
 
 ### Fixed
+- Fixed Linux systray `OnClick` and `OnRightClick` implementation by @atterpac in [#3886](https://github.com/wailsapp/wails/pull/3886)
 - Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony) in [#3841](https://github.com/wailsapp/wails/pull/3841)
 - [darwin]  Fixed `application.NewEditMenu` including a duplicate `PasteAndMatchStyle` role in the edit menu on Darwin by [johnmccabe](https://github.com/johnmccabe) in [#3839](https://github.com/wailsapp/wails/pull/3839)
 - [linux] Fixed aarch64 compilation [#3840](https://github.com/wailsapp/wails/issues/3840) in [#3854](https://github.com/wailsapp/wails/pull/3854) by [kodflow](https://github.com/kodflow)

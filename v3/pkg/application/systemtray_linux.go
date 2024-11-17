@@ -698,7 +698,7 @@ func (s *linuxSystemTray) GetLayout(parentID int32, recursionDepth int32, proper
 
 // Activate implements org.kde.StatusNotifierItem.Activate method.
 func (s *linuxSystemTray) Activate(x int32, y int32) (err *dbus.Error) {
-	fmt.Println("Activate", x, y)
+	s.parent.clickHandler()
 	return
 }
 
@@ -715,7 +715,7 @@ func (s *linuxSystemTray) Scroll(delta int32, orientation string) (err *dbus.Err
 
 // SecondaryActivate implements org.kde.StatusNotifierItem.SecondaryActivate method.
 func (s *linuxSystemTray) SecondaryActivate(x int32, y int32) (err *dbus.Error) {
-	fmt.Println("SecondaryActivate", x, y)
+	s.parent.rightClickHandler()
 	return
 }
 
