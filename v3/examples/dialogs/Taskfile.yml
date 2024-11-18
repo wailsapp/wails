@@ -75,7 +75,7 @@ tasks:
     platforms:
       - windows
     cmds:
-      - wails3 generate syso -arch {{.GOARCH}} -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+      - wails3 generate syso -arch {{.GOARCH}} -icon icon.ico -manifest wails.exe.manifest -info info.json
     vars:
       GOARCH: '{{.GOARCH}}'
 
@@ -90,7 +90,7 @@ tasks:
         vars:
             GOARCH: amd64
       - go build -tags production -gcflags=all="-N -l" -o bin/{{.APP_NAME}}
-      - powershell Remove-item wails.syso
+      - powershell Remove-item *.syso
 
 
   package:windows:arm64:
@@ -102,6 +102,6 @@ tasks:
         vars:
           GOARCH: arm64
       - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/buildtest.arm64.exe
-      - powershell Remove-item wails.syso
+      - powershell Remove-item *.syso
     env:
       GOARCH: arm64
