@@ -7,8 +7,12 @@ import (
 	"net/http"
 )
 
+type contextKey string
+
 const (
-	CallBinding = 0
+	CallBinding              = 0
+	WindowNameKey contextKey = "WindowName"
+	WindowIDKey   contextKey = "WindowID"
 )
 
 func (m *MessageProcessor) callErrorCallback(window Window, message string, callID *string, err error) {
@@ -95,6 +99,12 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			return
 		}
 
+		// Set the context values for the window
+		if window != nil {
+			ctx = context.WithValue(ctx, WindowNameKey, window.Name())
+			ctx = context.WithValue(ctx, WindowIDKey, window.ID())
+		}
+
 		go func() {
 			defer func() {
 				cancel()
@@ -123,7 +133,11 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			var jsonArgs struct {
 				Args json.RawMessage `json:"args"`
 			}
-			params.ToStruct(&jsonArgs)
+			err = params.ToStruct(&jsonArgs)
+			if err != nil {
+				m.callErrorCallback(window, "Error parsing arguments: %s", callID, err)
+				return
+			}
 			m.Info("Call Binding:", "method", boundMethod, "args", string(jsonArgs.Args), "result", result)
 		}()
 		m.ok(rw)
