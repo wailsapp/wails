@@ -76,6 +76,7 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	// Architecture-specific variables using a map
 	archDetails := map[string]string{
 		"arm64":  "aarch64",
+		"amd64":  "x86_64",
 		"x86_64": "x86_64",
 	}
 
