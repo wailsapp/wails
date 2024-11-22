@@ -4,6 +4,8 @@ package operatingsystem
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"golang.org/x/sys/windows/registry"
 )
@@ -23,6 +25,15 @@ func platformInfo() (*OS, error) {
 	currentBuild, _, _ := key.GetStringValue("CurrentBuildNumber")
 	displayVersion, _, _ := key.GetStringValue("DisplayVersion")
 	releaseId, _, _ := key.GetStringValue("ReleaseId")
+
+	// Windows 10 and 11 both declare the product name as "Windows 10"
+	// We determine the difference using the build number:
+	// https://en.wikipedia.org/wiki/List_of_Microsoft_Windows_versions#Personal_computer_versions
+	if buildNum, err := strconv.Atoi(currentBuild); err == nil {
+		if buildNum >= 22000 {
+			productName = strings.Replace(productName, "Windows 10", "Windows 11", -1)
+		}
+	}
 
 	result.Name = productName
 	result.Version = fmt.Sprintf("%s (Build: %s)", releaseId, currentBuild)
