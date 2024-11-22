@@ -329,3 +329,50 @@ export class Person {
 ```
 
 Using TypeScript bindings provides type safety and improved IDE support when working with the generated code in your frontend.
+
+### Using `context.Context`
+
+When defining service methods in Go, you can include `context.Context` as the first parameter. The runtime will automatically provide a context when the method is called from the frontend.
+
+The context provides several powerful features:
+
+1. **Cancellation Support**: Long-running operations can be cancelled from the frontend, which will raise an error through the Promise chain.
+
+2. **Window Information**: You can determine which window made the call using these context keys:
+   - `application.WindowNameKey` - Returns the name of the calling window
+   - `application.WindowIDKey` - Returns the ID of the calling window
+
+Here are some examples:
+
+```go
+// Basic context usage with cancellation
+func (s *MyService) LongRunningTask(ctx context.Context, input string) (string, error) {
+    select {
+	// Check if the context has been cancelled from the frontend
+    case <-ctx.Done():
+        return "", ctx.Err()
+    default:
+        // Process task
+        return "completed", nil
+    }
+}
+
+// Getting caller window information
+func (s *MyService) WindowAwareMethod(ctx context.Context) (string, error) {
+    windowName := ctx.Value(application.WindowNameKey).(string)
+    windowID := ctx.Value(application.WindowIDKey).(string)
+    return fmt.Sprintf("Called from window: %s (ID: %s)", windowName, windowID), nil
+}
+```
+
+From the frontend, these methods can be called normally. If you need to cancel a long-running operation, the Promise will be rejected with the cancellation error:
+
+```javascript
+// Call the method
+const promise = MyService.LongRunningTask("input");
+
+// Cancel it later if needed
+// This will cause the context to be cancelled in the Go method
+promise.cancel();
+```
+
