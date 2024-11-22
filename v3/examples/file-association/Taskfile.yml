@@ -51,4 +51,4 @@ tasks:
     deps:
       - darwin:build:universal
     cmds:
-      - task: darwin:package
+      - task: darwin:create:app:bundle
