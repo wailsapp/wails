@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added Support for darwin universal builds and packages by [ansxuman](https://github.com/ansxuman) in [#3902](https://github.com/wailsapp/wails/pull/3902)
 - Events documentation to the mkdocs webite by [atterpac](https://github.com/atterpac) in [#3867](https://github.com/wailsapp/wails/pull/3867)
 - Templates for sveltekit and sveltekit-ts that are set for non-SSR development by [atterpac](https://github.com/atterpac) in [#3829](https://github.com/wailsapp/wails/pull/3829)
 - Update build assets using new `wails3 update build-assets` command by [leaanthony](https://github.com/leaanthony)
@@ -42,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed amd64 appimage compile by @atterpac in [#3898](https://github.com/wailsapp/wails/pull/3898)
-- Fixed build assets update by @ansxuman in [#3900](https://github.com/wailsapp/wails/pull/3900)
+- Fixed build assets update by @ansxuman in [#3901](https://github.com/wailsapp/wails/pull/3901)
 - Fixed Linux systray `OnClick` and `OnRightClick` implementation by @atterpac in [#3886](https://github.com/wailsapp/wails/pull/3886)
 - Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony) in [#3841](https://github.com/wailsapp/wails/pull/3841)
 - [darwin]  Fixed `application.NewEditMenu` including a duplicate `PasteAndMatchStyle` role in the edit menu on Darwin by [johnmccabe](https://github.com/johnmccabe) in [#3839](https://github.com/wailsapp/wails/pull/3839)
