@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Consolidated dev config into `config.yml` by [leaanthony](https://github.com/leaanthony)
 
 ### Fixed
+- Fixed amd64 appimage compile by @atterpac in [#3898](https://github.com/wailsapp/wails/pull/3898)
 - Fixed build assets update by @ansxuman in [#3900](https://github.com/wailsapp/wails/pull/3900)
 - Fixed Linux systray `OnClick` and `OnRightClick` implementation by @atterpac in [#3886](https://github.com/wailsapp/wails/pull/3886)
 - Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony) in [#3841](https://github.com/wailsapp/wails/pull/3841)
