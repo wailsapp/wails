@@ -122,6 +122,19 @@ type UpdateConfig struct {
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
 }
 
+type WailsConfig struct {
+	Info struct {
+		CompanyName       string `yaml:"companyName"`
+		ProductName       string `yaml:"productName"`
+		ProductIdentifier string `yaml:"productIdentifier"`
+		Description      string `yaml:"description"`
+		Copyright        string `yaml:"copyright"`
+		Comments         string `yaml:"comments"`
+		Version          string `yaml:"version"`
+	} `yaml:"info"`
+	FileAssociations []FileAssociation `yaml:"fileAssociations"`
+}
+
 func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 	DisableFooter = true
 
@@ -132,17 +145,28 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 	}
 
 	var config UpdateConfig
-
 	if options.Config != "" {
+		var wailsConfig WailsConfig
 		bytes, err := os.ReadFile(options.Config)
 		if err != nil {
 			return err
 		}
-		err = yaml.Unmarshal(bytes, &config)
+		err = yaml.Unmarshal(bytes, &wailsConfig)
 		if err != nil {
 			return err
 		}
+
+		options.ProductCompany = wailsConfig.Info.CompanyName
+		options.ProductName = wailsConfig.Info.ProductName
+		options.ProductIdentifier = wailsConfig.Info.ProductIdentifier
+		options.ProductDescription = wailsConfig.Info.Description
+		options.ProductCopyright = wailsConfig.Info.Copyright
+		options.ProductComments = wailsConfig.Info.Comments
+		options.ProductVersion = wailsConfig.Info.Version
+		config.FileAssociations = wailsConfig.FileAssociations
 	}
+
+	config.UpdateBuildAssetsOptions = *options
 
 	// If directory doesn't exist, create it
 	if _, err := os.Stat(options.Dir); os.IsNotExist(err) {
@@ -156,8 +180,6 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 	if err != nil {
 		return err
 	}
-
-	config.UpdateBuildAssetsOptions = *options
 
 	err = gosod.New(tfs).Extract(options.Dir, config)
 	if err != nil {
