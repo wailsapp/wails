@@ -28,9 +28,10 @@ tasks:
           PRODUCTION: "true"
     cmds:
       - task: create:appimage
-      - task: create:deb
-      - task: create:rpm
-      - task: create:aur
+      # Requires nfpm to be installed
+      # - task: create:deb
+      # - task: create:rpm
+      # - task: create:aur
 
   create:appimage:
     summary: Creates an AppImage
