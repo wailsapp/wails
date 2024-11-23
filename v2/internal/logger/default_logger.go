@@ -3,12 +3,15 @@ package logger
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/wailsapp/wails/v2/pkg/logger"
 )
 
 // LogLevel is an alias for the public LogLevel
 type LogLevel = logger.LogLevel
+
+var logLevelLock sync.Mutex
 
 // Logger is a utlility to log messages to a number of destinations
 type Logger struct {
@@ -45,6 +48,8 @@ func (l *Logger) HideLogLevel() {
 
 // SetLogLevel sets the minimum level of logs that will be output
 func (l *Logger) SetLogLevel(level LogLevel) {
+	logLevelLock.Lock()
+	defer logLevelLock.Unlock()
 	l.logLevel = level
 }
 
