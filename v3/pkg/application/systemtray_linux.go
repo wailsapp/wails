@@ -421,7 +421,7 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 }
 
 func (s *linuxSystemTray) openMenu() {
-	// FIXME: Use DBUS to open?
+	// FIXME: Emit com.canonical to open?
 	globalApplication.info("systray error: openMenu not implemented on Linux")
 }
 
@@ -622,17 +622,19 @@ func (s *linuxSystemTray) GetProperty(id int32, name string) (value dbus.Variant
 
 // Event is com.canonical.dbusmenu.Event method.
 func (s *linuxSystemTray) Event(id int32, eventID string, data dbus.Variant, timestamp uint32) (err *dbus.Error) {
-	if eventID == "clicked" {
+	switch eventID {
+	case "clicked":
 		if item, ok := s.itemMap[id]; ok {
 			InvokeAsync(item.menuItem.handleClick)
 		}
-	}
-	if eventID == "opened" {
+	case "opened":
+		if s.parent.clickHandler != nil {
+			s.parent.clickHandler()
+		}
 		if s.parent.onMenuOpen != nil {
 			s.parent.onMenuOpen()
 		}
-	}
-	if eventID == "closed" {
+	case "closed":
 		if s.parent.onMenuClose != nil {
 			s.parent.onMenuClose()
 		}
@@ -698,14 +700,16 @@ func (s *linuxSystemTray) GetLayout(parentID int32, recursionDepth int32, proper
 
 // Activate implements org.kde.StatusNotifierItem.Activate method.
 func (s *linuxSystemTray) Activate(x int32, y int32) (err *dbus.Error) {
-	s.parent.clickHandler()
+	if s.parent.doubleClickHandler != nil {
+		s.parent.doubleClickHandler()
+	}
 	return
 }
 
 // ContextMenu is org.kde.StatusNotifierItem.ContextMenu method
 func (s *linuxSystemTray) ContextMenu(x int32, y int32) (err *dbus.Error) {
 	fmt.Println("ContextMenu", x, y)
-	return
+	return nil
 }
 
 func (s *linuxSystemTray) Scroll(delta int32, orientation string) (err *dbus.Error) {
