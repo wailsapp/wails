@@ -27,4 +27,5 @@ type Options struct {
 	OnFileOpen func(filePath string) `json:"-"`
 	OnUrlOpen  func(filePath string) `json:"-"`
 	// URLHandlers          map[string]func(string)
+	EnableCookies bool
 }

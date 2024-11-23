@@ -14,7 +14,7 @@
 #import "WailsMenu.h"
 #import "WailsMenuItem.h"
 
-WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int zoomable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int devtoolsEnabled, int defaultContextMenuEnabled, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled, struct Preferences preferences, int singleInstanceLockEnabled, const char* singleInstanceUniqueId, bool enableDragAndDrop, bool disableWebViewDragAndDrop) {
+WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int zoomable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int devtoolsEnabled, int defaultContextMenuEnabled, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled, struct Preferences preferences, int singleInstanceLockEnabled, const char* singleInstanceUniqueId, bool enableDragAndDrop, bool disableWebViewDragAndDrop, int enableCookieManager) {
 
     [NSApplication sharedApplication];
 
@@ -27,7 +27,7 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
         fullscreen = 1;
     }
 
-    [result CreateWindow:width :height :frameless :resizable :zoomable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent :minWidth :minHeight :maxWidth :maxHeight :fraudulentWebsiteWarningEnabled :preferences :enableDragAndDrop :disableWebViewDragAndDrop];
+    [result CreateWindow:width :height :frameless :resizable :zoomable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent :minWidth :minHeight :maxWidth :maxHeight :fraudulentWebsiteWarningEnabled :preferences :enableDragAndDrop :disableWebViewDragAndDrop :enableCookieManager];
     [result SetTitle:safeInit(title)];
     [result Center];
 
@@ -360,8 +360,6 @@ void AppendSeparator(void* inMenu) {
     WailsMenu *menu = (__bridge WailsMenu*) inMenu;
     [menu AppendSeparator];
 }
-
-
 
 void Run(void *inctx, const char* url) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;

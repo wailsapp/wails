@@ -136,7 +136,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     return NO;
 }
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop  {
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop :(bool)enableCookieManager {
     NSWindowStyleMask styleMask = 0;
 
     if( !frameless ) {
@@ -218,6 +218,16 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     config.suppressesIncrementalRendering = true;
     config.applicationNameForUserAgent = @"wails.io";
     [config setURLSchemeHandler:self forURLScheme:@"wails"];
+
+    // Enable cookie API if requested
+    if (enableCookieManager) {
+        WKWebsiteDataStore *dataStore = [WKWebsiteDataStore defaultDataStore];
+        config.websiteDataStore = dataStore;
+        
+        // Enable cookie storage
+        NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+        [cookieStorage setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
+    }
 
     if (preferences.tabFocusesLinks != NULL) {
         config.preferences.tabFocusesLinks = *preferences.tabFocusesLinks;
@@ -497,6 +507,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
 
 /***** Dialogs ******/
+
 -(void) MessageDialog :(NSString*)dialogType :(NSString*)title :(NSString*)message :(NSString*)button1 :(NSString*)button2 :(NSString*)button3 :(NSString*)button4 :(NSString*)defaultButton :(NSString*)cancelButton :(void*)iconData :(int)iconDataLength {
 
     WailsAlert *alert = [WailsAlert new];
@@ -737,5 +748,85 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     [alert runModal];
 }
 
-@end
+- (void)setCookie:(NSString*)name value:(NSString*)value domain:(NSString*)domain path:(NSString*)path expiresDate:(NSDate*)expiresDate {
+    WKHTTPCookieStore *cookieStore = self.webview.configuration.websiteDataStore.httpCookieStore;
+    
+    NSMutableDictionary *properties = [NSMutableDictionary dictionary];
+    [properties setObject:name forKey:NSHTTPCookieName];
+    [properties setObject:value forKey:NSHTTPCookieValue];
+    [properties setObject:domain forKey:NSHTTPCookieDomain];
+    [properties setObject:path forKey:NSHTTPCookiePath];
+    if (expiresDate) {
+        [properties setObject:expiresDate forKey:NSHTTPCookieExpires];
+    }
+    
+    NSHTTPCookie *cookie = [NSHTTPCookie cookieWithProperties:properties];
+    [cookieStore setCookie:cookie completionHandler:nil];
+}
 
+- (void)deleteCookie:(NSString*)name domain:(NSString*)domain path:(NSString*)path {
+    WKHTTPCookieStore *cookieStore = self.webview.configuration.websiteDataStore.httpCookieStore;
+    
+    [cookieStore getAllCookies:^(NSArray<NSHTTPCookie *> *cookies) {
+        for (NSHTTPCookie *cookie in cookies) {
+            if ([cookie.name isEqualToString:name] &&
+                [cookie.domain isEqualToString:domain] &&
+                [cookie.path isEqualToString:path]) {
+                [cookieStore deleteCookie:cookie completionHandler:nil];
+            }
+        }
+    }];
+}
+
+- (void)clearAllCookies {
+    WKHTTPCookieStore *cookieStore = self.webview.configuration.websiteDataStore.httpCookieStore;
+    
+    [cookieStore getAllCookies:^(NSArray<NSHTTPCookie *> *cookies) {
+        for (NSHTTPCookie *cookie in cookies) {
+            [cookieStore deleteCookie:cookie completionHandler:nil];
+        }
+    }];
+}
+
+- (void)getCookies:(NSString*)domain :(NSString*)path :(void (^)(NSArray<NSHTTPCookie *> *cookies))completionHandler {
+    WKHTTPCookieStore *cookieStore = self.webview.configuration.websiteDataStore.httpCookieStore;
+    
+    [cookieStore getAllCookies:^(NSArray<NSHTTPCookie *> *allCookies) {
+        NSMutableArray *matchingCookies = [NSMutableArray array];
+        for (NSHTTPCookie *cookie in allCookies) {
+            if (([domain length] == 0 || [cookie.domain isEqualToString:domain]) &&
+                ([path length] == 0 || [cookie.path isEqualToString:path])) {
+                [matchingCookies addObject:cookie];
+            }
+        }
+        completionHandler(matchingCookies);
+    }];
+}
+
+- (void)deleteCookies:(NSString*)domain :(NSString*)path :(void (^)(void))completionHandler {
+    WKHTTPCookieStore *cookieStore = self.webview.configuration.websiteDataStore.httpCookieStore;
+    
+    [cookieStore getAllCookies:^(NSArray<NSHTTPCookie *> *cookies) {
+        dispatch_group_t group = dispatch_group_create();
+        
+        for (NSHTTPCookie *cookie in cookies) {
+            if (([domain length] == 0 || [cookie.domain isEqualToString:domain]) &&
+                ([path length] == 0 || [cookie.path isEqualToString:path])) {
+                dispatch_group_enter(group);
+                [cookieStore deleteCookie:cookie completionHandler:^{
+                    dispatch_group_leave(group);
+                }];
+            }
+        }
+        
+        dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+            if (completionHandler) {
+                completionHandler();
+            }
+        });
+        
+        dispatch_release(group);
+    }];
+}
+
+@end

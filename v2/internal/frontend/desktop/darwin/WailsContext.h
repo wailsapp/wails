@@ -65,7 +65,7 @@ struct Preferences {
   bool *fullscreenEnabled;
 };
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent  :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString *)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop;
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)zoomable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent  :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString *)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled :(struct Preferences)preferences :(bool)enableDragAndDrop :(bool)disableWebViewDragAndDrop :(bool)enableCookieManager;
 - (void) SetSize:(int)width :(int)height;
 - (void) SetPosition:(int)x :(int) y;
 - (void) SetMinSize:(int)minWidth :(int)minHeight;
@@ -102,6 +102,13 @@ struct Preferences {
 
 - (void) SetAbout :(NSString*)title :(NSString*)description :(void*)imagedata :(int)datalen;
 - (void) dealloc;
+
+// Cookie management methods
+- (void)setCookie:(NSString*)name value:(NSString*)value domain:(NSString*)domain path:(NSString*)path expiresDate:(NSDate*)expiresDate;
+- (void)deleteCookie:(NSString*)name domain:(NSString*)domain path:(NSString*)path;
+- (void)clearAllCookies;
+- (void)getCookies:(NSString*)domain :(NSString*)path :(void (^)(NSArray<NSHTTPCookie *> *cookies))completionHandler;
+- (void)deleteCookies:(NSString*)domain :(NSString*)path :(void (^)(void))completionHandler;
 
 @end
 
