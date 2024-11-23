@@ -134,6 +134,10 @@ func AppVersion(name string) string {
 		return npmVersion()
 	}
 
+	if name == "nfpm" {
+		return nfpmVersion()
+	}
+
 	return ""
 
 }
@@ -166,4 +170,21 @@ func pkgConfigVersion() string {
 func npmVersion() string {
 	version, _ := execCmd("npm", "--version")
 	return strings.TrimSpace(version)
+}
+
+func nfpmVersion() string {
+	output, _ := execCmd("nfpm", "--version")
+	lines := strings.Split(output, "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "GitVersion:") {
+			version := strings.TrimSpace(strings.TrimPrefix(line, "GitVersion:"))
+			return version
+		}
+	}
+	return "unknown"
+}
+
+func isNfpmInstalled() bool {
+	_, err := exec.LookPath("nfpm")
+	return err == nil
 }

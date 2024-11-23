@@ -41,6 +41,9 @@ func (e *Emerge) Packages() Packagemap {
 		"npm": []*Package{
 			{Name: "net-libs/nodejs", SystemPackage: true},
 		},
+		"nfpm": []*Package{
+			{Name: "nfpm", SystemPackage: false, InstallCheck: isNfpmInstalled, InstallCommand: "go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest", Optional: true},
+		},
 	}
 }
 
@@ -106,7 +109,7 @@ func (e *Emerge) PackageAvailable(pkg *Package) (bool, error) {
 // InstallCommand returns the package manager specific command to install a package
 func (e *Emerge) InstallCommand(pkg *Package) string {
 	if pkg.SystemPackage == false {
-		return pkg.InstallCommand[e.osid]
+		return pkg.InstallCommand
 	}
 	return "sudo emerge " + pkg.Name
 }

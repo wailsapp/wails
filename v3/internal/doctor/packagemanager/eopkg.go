@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-// Eopkg represents the Eopkg manager
 type Eopkg struct {
 	name string
 	osid string
@@ -42,6 +41,9 @@ func (e *Eopkg) Packages() Packagemap {
 		"npm": []*Package{
 			{Name: "nodejs", SystemPackage: true},
 		},
+		"nfpm": []*Package{
+			{Name: "nfpm", SystemPackage: false, InstallCheck: isNfpmInstalled, InstallCommand: "go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest", Optional: true},
+		},
 	}
 }
 
@@ -52,7 +54,10 @@ func (e *Eopkg) Name() string {
 
 // PackageInstalled tests if the given package is installed
 func (e *Eopkg) PackageInstalled(pkg *Package) (bool, error) {
-	if pkg.SystemPackage == false {
+	if !pkg.SystemPackage {
+		if pkg.InstallCheck != nil {
+			return pkg.InstallCheck(), nil
+		}
 		return false, nil
 	}
 	stdout, err := execCmd("eopkg", "info", pkg.Name)
@@ -75,7 +80,7 @@ func (e *Eopkg) PackageAvailable(pkg *Package) (bool, error) {
 // InstallCommand returns the package manager specific command to install a package
 func (e *Eopkg) InstallCommand(pkg *Package) string {
 	if pkg.SystemPackage == false {
-		return pkg.InstallCommand[e.osid]
+		return pkg.InstallCommand
 	}
 	return "sudo eopkg it " + pkg.Name
 }

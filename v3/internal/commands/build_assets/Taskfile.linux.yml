@@ -28,6 +28,9 @@ tasks:
           PRODUCTION: "true"
     cmds:
       - task: create:appimage
+      - task: create:deb
+      - task: create:rpm
+      - task: create:aur
 
   create:appimage:
     summary: Creates an AppImage
@@ -47,6 +50,48 @@ tasks:
       ICON: '../appicon.png'
       DESKTOP_FILE: '{{.APP_NAME}}.desktop'
       OUTPUT_DIR: '../../bin'
+
+  create:deb:
+    summary: Creates a deb package
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+    cmds:
+      - task: generate:deb
+
+  create:rpm:
+    summary: Creates a rpm package
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+    cmds:
+      - task: generate:rpm
+
+  create:aur:
+    summary: Creates a arch linux packager package
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+    cmds:
+      - task: generate:aur
+
+  generate:deb:
+    summary: Creates a deb package
+    cmds: 
+      - nfpm pkg -f ./build/nfpm/nfpm.yaml -p deb -t ./bin/{{.APP_NAME}}.deb
+
+  generate:rpm:
+    summary: Creates a rpm package
+    cmds: 
+      - nfpm pkg -f ./build/nfpm/nfpm.yaml -p rpm -t ./bin/{{.APP_NAME}}.rpm
+
+  generate:aur:
+    summary: Creates a arch linux packager package
+    cmds: 
+      - nfpm pkg -f ./build/nfpm/nfpm.yaml -p arch -t ./bin/{{.APP_NAME}}.pkg.tar.zst
 
   generate:dotdesktop:
     summary: Generates a `.desktop` file
