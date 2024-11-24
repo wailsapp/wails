@@ -79,6 +79,42 @@ You'll notice that the build time was faster this time. That's because the new b
 
 You should see a new executable in the `build` directory.
 
+## Step 6: Packaging Your Application
+
+Once your application is ready for distribution, you can create platform-specific packages:
+
+=== "Mac"
+
+    To create a `.app` bundle:
+    ```bash
+    wails3 package
+    ```
+    This will create a production build and package it into a `.app` bundle in the `bin` directory.
+
+=== "Windows"
+
+    To create an NSIS installer:
+    ```bash
+    wails3 package
+    ```
+    This will create a production build and package it into an NSIS installer in the `bin` directory.
+
+=== "Linux"
+
+    Wails supports multiple package formats for Linux distribution:
+    ```bash
+    # Create all package types (AppImage, deb, rpm, and Arch Linux)
+    wails3 package
+
+    # Or create specific package types
+    wails3 task linux:create:appimage  # AppImage format
+    wails3 task linux:create:deb       # Debian package
+    wails3 task linux:create:rpm       # Red Hat package
+    wails3 task linux:create:aur       # Arch Linux package
+    ```
+
+For more detailed information about packaging options and configuration, check out our [Packaging Guide](../learn/guides/packaging.md).
+
 ## Conclusion
 
-Congratulations! You've just created and built your first Wails application. This is just the beginning of what you can achieve with Wails v3 Alpha. Explore the documentation, experiment with different features, and start building amazing applications!
+Congratulations! You've just created, developed and packaged your first Wails application. This is just the beginning of what you can achieve with Wails v3. Explore the documentation, experiment with different features, and start building amazing applications!
