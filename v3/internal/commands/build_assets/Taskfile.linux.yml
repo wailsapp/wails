@@ -81,18 +81,33 @@ tasks:
 
   generate:deb:
     summary: Creates a deb package
+    preconditions:
+      - sh: nfpm --version
+        msg: It appears nfpm is not installed. Please install using `go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest`
     cmds: 
       - nfpm pkg -f ./build/nfpm/nfpm.yaml -p deb -t ./bin/{{.APP_NAME}}.deb
+    env:
+      GOARCH: '{{.ARCH | default ARCH}}'
 
   generate:rpm:
     summary: Creates a rpm package
+    preconditions:
+      - sh: nfpm --version
+        msg: It appears nfpm is not installed. Please install using `go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest`
     cmds: 
       - nfpm pkg -f ./build/nfpm/nfpm.yaml -p rpm -t ./bin/{{.APP_NAME}}.rpm
+    env:
+      GOARCH: '{{.ARCH | default ARCH}}'
 
   generate:aur:
     summary: Creates a arch linux packager package
+    preconditions:
+      - sh: nfpm --version
+        msg: It appears nfpm is not installed. Please install using `go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest`
     cmds: 
       - nfpm pkg -f ./build/nfpm/nfpm.yaml -p arch -t ./bin/{{.APP_NAME}}.pkg.tar.zst
+    env:
+      GOARCH: '{{.ARCH | default ARCH}}'
 
   generate:dotdesktop:
     summary: Generates a `.desktop` file
