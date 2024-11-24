@@ -4,6 +4,7 @@ package flags
 type ToolPackage struct {
 	Common
 
-	Format     string `name:"format" description:"Package format to generate (deb, rpm, archlinux)" default:"deb"`
-	ConfigPath string `name:"config" description:"Path to the package configuration file" default:""`
+	Format         string `name:"format" description:"Package format to generate (deb, rpm, archlinux)" default:"deb"`
+	ExecutableName string `name:"name" description:"Name of the executable to package" default:"myapp"`
+	ConfigPath     string `name:"config" description:"Path to the package configuration file" default:""`
 }

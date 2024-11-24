@@ -18,6 +18,10 @@ func ToolPackage(options *flags.ToolPackage) error {
 		return fmt.Errorf("please provide a config file using the -config flag")
 	}
 
+	if options.ExecutableName == "" {
+		return fmt.Errorf("please provide an executable name using the -name flag")
+	}
+
 	// Validate format
 	var pkgType packager.PackageType
 	switch strings.ToLower(options.Format) {
@@ -43,7 +47,11 @@ func ToolPackage(options *flags.ToolPackage) error {
 	}
 
 	// Generate output filename based on format
-	outputFile := fmt.Sprintf("package.%s", options.Format)
+	if options.Format == "archlinux" {
+		// Arch linux packages are not .archlinux files, they are .pkg.tar.zst
+		options.Format = "pkg.tar.zst"
+	}
+	outputFile := fmt.Sprintf("./bin/%s.%s", options.ExecutableName, options.Format)
 
 	// Create the package
 	err = packager.CreatePackageFromConfig(pkgType, configPath, outputFile)

@@ -28,10 +28,9 @@ tasks:
           PRODUCTION: "true"
     cmds:
       - task: create:appimage
-      # Requires nfpm to be installed
-      # - task: create:deb
-      # - task: create:rpm
-      # - task: create:aur
+      - task: create:deb
+      - task: create:rpm
+      - task: create:aur
 
   create:appimage:
     summary: Creates an AppImage
@@ -81,33 +80,18 @@ tasks:
 
   generate:deb:
     summary: Creates a deb package
-    preconditions:
-      - sh: nfpm --version
-        msg: It appears nfpm is not installed. Please install using `go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest`
     cmds: 
-      - nfpm pkg -f ./build/nfpm/nfpm.yaml -p deb -t ./bin/{{.APP_NAME}}.deb
-    env:
-      GOARCH: '{{.ARCH | default ARCH}}'
+      - wails3 tool package -name {{.APP_NAME}} -format deb -config ./build/nfpm/nfpm.yaml
 
   generate:rpm:
     summary: Creates a rpm package
-    preconditions:
-      - sh: nfpm --version
-        msg: It appears nfpm is not installed. Please install using `go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest`
     cmds: 
-      - nfpm pkg -f ./build/nfpm/nfpm.yaml -p rpm -t ./bin/{{.APP_NAME}}.rpm
-    env:
-      GOARCH: '{{.ARCH | default ARCH}}'
+      - wails3 tool package -name {{.APP_NAME}} -format rpm -config ./build/nfpm/nfpm.yaml
 
   generate:aur:
     summary: Creates a arch linux packager package
-    preconditions:
-      - sh: nfpm --version
-        msg: It appears nfpm is not installed. Please install using `go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest`
     cmds: 
-      - nfpm pkg -f ./build/nfpm/nfpm.yaml -p arch -t ./bin/{{.APP_NAME}}.pkg.tar.zst
-    env:
-      GOARCH: '{{.ARCH | default ARCH}}'
+      - wails3 tool package -name {{.APP_NAME}} -format arch -config ./build/nfpm/nfpm.yaml
 
   generate:dotdesktop:
     summary: Generates a `.desktop` file
