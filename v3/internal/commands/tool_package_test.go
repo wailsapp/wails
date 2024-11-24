@@ -20,8 +20,9 @@ func TestToolPackage(t *testing.T) {
 			name: "should fail with invalid format",
 			setup: func() (*flags.ToolPackage, func()) {
 				return &flags.ToolPackage{
-					Format:     "invalid",
-					ConfigPath: "config.yaml",
+					Format:         "invalid",
+					ConfigPath:     "config.yaml",
+					ExecutableName: "myapp",
 				}, func() {}
 			},
 			wantErr: true,
@@ -31,8 +32,9 @@ func TestToolPackage(t *testing.T) {
 			name: "should fail with missing config file",
 			setup: func() (*flags.ToolPackage, func()) {
 				return &flags.ToolPackage{
-					Format:     "deb",
-					ConfigPath: "nonexistent.yaml",
+					Format:         "deb",
+					ConfigPath:     "nonexistent.yaml",
+					ExecutableName: "myapp",
 				}, func() {}
 			},
 			wantErr: true,
@@ -49,10 +51,19 @@ func TestToolPackage(t *testing.T) {
 					t.Fatal(err)
 				}
 
+				// Create bin directory
+				err = os.MkdirAll(filepath.Join(dir, "bin"), 0755)
+				if err != nil {
+					t.Fatal(err)
+				}
+
 				return &flags.ToolPackage{
-					Format:     "DEB",
-					ConfigPath: configPath,
-				}, func() {}
+					Format:         "DEB",
+					ConfigPath:     configPath,
+					ExecutableName: "myapp",
+				}, func() {
+					os.RemoveAll(filepath.Join(dir, "bin"))
+				}
 			},
 			wantErr: false,
 		},
@@ -67,10 +78,19 @@ func TestToolPackage(t *testing.T) {
 					t.Fatal(err)
 				}
 
+				// Create bin directory
+				err = os.MkdirAll(filepath.Join(dir, "bin"), 0755)
+				if err != nil {
+					t.Fatal(err)
+				}
+
 				return &flags.ToolPackage{
-					Format:     "RPM",
-					ConfigPath: configPath,
-				}, func() {}
+					Format:         "RPM",
+					ConfigPath:     configPath,
+					ExecutableName: "myapp",
+				}, func() {
+					os.RemoveAll(filepath.Join(dir, "bin"))
+				}
 			},
 			wantErr: false,
 		},
@@ -85,10 +105,19 @@ func TestToolPackage(t *testing.T) {
 					t.Fatal(err)
 				}
 
+				// Create bin directory
+				err = os.MkdirAll(filepath.Join(dir, "bin"), 0755)
+				if err != nil {
+					t.Fatal(err)
+				}
+
 				return &flags.ToolPackage{
-					Format:     "ARCHLINUX",
-					ConfigPath: configPath,
-				}, func() {}
+					Format:         "ARCHLINUX",
+					ConfigPath:     configPath,
+					ExecutableName: "myapp",
+				}, func() {
+					os.RemoveAll(filepath.Join(dir, "bin"))
+				}
 			},
 			wantErr: false,
 		},
