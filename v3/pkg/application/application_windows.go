@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
+	"golang.org/x/sys/windows/registry"
 )
 
 type windowsApp struct {
@@ -372,4 +374,34 @@ func (a *App) platformEnvironment() map[string]any {
 func fatalHandler(errFunc func(error)) {
 	w32.Fatal = errFunc
 	return
+}
+
+func (m *windowsApp) setStartAtLogin(enabled bool) error {
+	exePath, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("failed to get executable path: %s", err)
+	}
+
+	registryKey := strings.Split(filepath.Base(exePath), ".")[0]
+
+	key, err := registry.OpenKey(registry.CURRENT_USER, `Software\Microsoft\Windows\CurrentVersion\Run`, registry.ALL_ACCESS)
+	if err != nil {
+		return fmt.Errorf("failed to open registry key: %s", err)
+	}
+	defer key.Close()
+
+	if enabled {
+		err = key.SetStringValue(registryKey, exePath)
+	} else {
+		err = key.DeleteValue(registryKey)
+		if err == registry.ErrNotExist {
+			return nil
+		}
+	}
+	return err
+}
+
+func (m *windowsApp) canStartAtLogin() bool {
+	// Windows generally supports start at login via registry
+	return true
 }

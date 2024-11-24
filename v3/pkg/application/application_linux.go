@@ -16,8 +16,10 @@ import "C"
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
+	"text/template"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -259,4 +261,69 @@ func (a *App) platformEnvironment() map[string]any {
 func fatalHandler(errFunc func(error)) {
 	// Stub for windows function
 	return
+}
+
+func (l *linuxApp) setStartAtLogin(enabled bool) error {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	bin, err := os.Executable()
+	if err != nil {
+		return err
+	}
+
+	name := filepath.Base(bin)
+	autostartFile := fmt.Sprintf("%s-autostart.desktop", name)
+	autostartPath := filepath.Join(homedir, ".config", "autostart", autostartFile)
+
+	if !enabled {
+		err := os.Remove(autostartPath)
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	const tpl = `[Desktop Entry]
+Name={{.Name}}
+Comment=Autostart service for {{.Name}}
+Type=Application
+Exec={{.Cmd}}
+Hidden=true
+X-GNOME-Autostart-enabled=true
+`
+	if err := os.MkdirAll(filepath.Dir(autostartPath), 0755); err != nil {
+		return err
+	}
+
+	file, err := os.OpenFile(autostartPath, os.O_RDWR|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	t := template.Must(template.New("autostart").Parse(tpl))
+	return t.Execute(file, struct {
+		Name string
+		Cmd  string
+	}{
+		Name: name,
+		Cmd:  exe,
+	})
+}
+
+func (l *linuxApp) canStartAtLogin() bool {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		return false
+	}
+
+	autostartDir := filepath.Join(homedir, ".config", "autostart")
+	if err := os.MkdirAll(autostartDir, 0755); err != nil {
+		return false
+	}
+
+	return true
 }

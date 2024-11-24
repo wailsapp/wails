@@ -161,12 +161,19 @@ static const char* serializationNSDictionary(void *dict) {
 import "C"
 import (
 	"encoding/json"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 	"unsafe"
 
+	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/mac"
 )
 
 type macosApp struct {
@@ -376,4 +383,43 @@ func HandleOpenFile(filePath *C.char) {
 		Id:  uint(events.Common.ApplicationOpenedWithFile),
 		ctx: eventContext,
 	}
+}
+
+func (m *macosApp) setStartAtLogin(enabled bool) error {
+	exe, err := os.Executable()
+	if err != nil {
+		return errors.Wrap(err, "Error running os.Executable:")
+	}
+
+	binName := filepath.Base(exe)
+	if !strings.HasSuffix(exe, "/Contents/MacOS/"+binName) {
+		return fmt.Errorf("app needs to be running as package.app file to start at login")
+	}
+
+	appPath := strings.TrimSuffix(exe, "/Contents/MacOS/"+binName)
+	var command string
+	if enabled {
+		command = fmt.Sprintf("tell application \"System Events\" to make login item at end with properties {name: \"%s\",path:\"%s\", hidden:false}", binName, appPath)
+	} else {
+		command = fmt.Sprintf("tell application \"System Events\" to delete login item \"%s\"", binName)
+	}
+
+	cmd := exec.Command("osascript", "-e", command)
+	_, err = cmd.CombinedOutput()
+	return err
+}
+
+func (m *macosApp) canStartAtLogin() bool {
+	bundleID := mac.GetBundleID()
+	if bundleID == "" {
+		return false
+	}
+
+	exe, err := os.Executable()
+	if err != nil {
+		return false
+	}
+
+	binName := filepath.Base(exe)
+	return strings.HasSuffix(exe, "/Contents/MacOS/"+binName)
 }

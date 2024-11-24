@@ -159,6 +159,8 @@ func New(appOptions Options) *App {
 		result.OnShutdown(appOptions.OnShutdown)
 	}
 
+	result.startAtLoginOnRun = appOptions.StartAtLogin
+
 	return result
 }
 
@@ -192,6 +194,8 @@ type (
 		GetFlags(options Options) map[string]any
 		isOnMainThread() bool
 		isDarkMode() bool
+		setStartAtLogin(enabled bool) error
+		canStartAtLogin() bool
 	}
 
 	runnable interface {
@@ -342,6 +346,8 @@ type App struct {
 	// Wails ApplicationEvent Listener related
 	wailsEventListenerLock sync.Mutex
 	wailsEventListeners    []WailsEventListener
+
+	startAtLoginOnRun bool
 }
 
 func (a *App) handleError(err error) {
@@ -616,6 +622,11 @@ func (a *App) Run() error {
 	}
 	if a.options.Icon != nil {
 		a.impl.setIcon(a.options.Icon)
+	}
+
+	if err := a.SetStartAtLogin(a.startAtLoginOnRun); err != nil {
+		a.Logger.Error("SetStartAtLogin() failed:",
+			"error", err.Error())
 	}
 
 	err = a.impl.run()
@@ -1022,4 +1033,12 @@ func (a *App) Path(selector Path) string {
 // Paths returns the paths for the given selector
 func (a *App) Paths(selector Paths) []string {
 	return pathdirs[selector]
+}
+
+func (a *App) SetStartAtLogin(enabled bool) error {
+	if !a.impl.canStartAtLogin() {
+		a.Logger.Warn("SetStartAtLogin: Not supported in current configuration")
+		return nil
+	}
+	return a.impl.setStartAtLogin(enabled)
 }

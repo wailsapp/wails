@@ -114,6 +114,9 @@ type Options struct {
 	// The '.' is required
 	FileAssociations []string
 
+	// StartAtLogin determines if the application should start when the user logs in
+	StartAtLogin bool
+
 	// This blank field ensures types from other packages
 	// are never convertible to Options.
 	// This property, in turn, improves the accuracy of the binding generator.
