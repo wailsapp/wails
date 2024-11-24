@@ -42,8 +42,10 @@ func ToolPackage(options *flags.ToolPackage) error {
 	}
 
 	// Check if config file exists
-	if _, err := os.Stat(configPath); err != nil {
+	if info, err := os.Stat(configPath); err != nil {
 		return fmt.Errorf("config file not found: %s", configPath)
+	} else if info.Mode().Perm()&0444 == 0 {
+		return fmt.Errorf("config file is not readable: %s", configPath)
 	}
 
 	// Generate output filename based on format
