@@ -21,14 +21,20 @@ contents:
     dst: "/usr/local/bin/{{.BinaryName}}"
   - src: "./build/appicon.png"
     dst: "/usr/share/icons/hicolor/128x128/apps/{{.BinaryName}}.png"
+  - src: "./build/{{.BinaryName}}.desktop"
+    dst: "/usr/share/applications/{{.BinaryName}}.desktop"
+
+depends:
+  - gtk3
+  - libwebkit2gtk
 
 # replaces:
 #   - foobar
 # provides:
 #   - bar
 # depends:
-#   - foo
-#   - bar
+#   - gtk3
+#   - libwebkit2gtk
 # recommends:
 #   - whatever
 # suggests:

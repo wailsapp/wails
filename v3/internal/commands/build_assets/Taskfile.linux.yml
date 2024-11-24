@@ -58,6 +58,7 @@ tasks:
         vars:
           PRODUCTION: "true"
     cmds:
+      - task: generate:dotdesktop
       - task: generate:deb
 
   create:rpm:
@@ -67,6 +68,7 @@ tasks:
         vars:
           PRODUCTION: "true"
     cmds:
+      - task: generate:dotdesktop
       - task: generate:rpm
 
   create:aur:
@@ -76,6 +78,7 @@ tasks:
         vars:
           PRODUCTION: "true"
     cmds:
+      - task: generate:dotdesktop
       - task: generate:aur
 
   generate:deb:
