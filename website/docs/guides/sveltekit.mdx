@@ -14,8 +14,8 @@ This guide will go into:
 - Navigate into your newly created myapp folder.
 - Delete the folder named "frontend"
 
-##### While in the Wails project root. Use your favorite package manager and install SvelteKit as the new frontend.  Follow the prompts.
-- `npm create svelte@latest frontend`
+##### While in the Wails project root. Use the Svelte CLI to create a SvelteKit project as the new frontend. Follow the prompts, nothing Wails specific is needed here.
+- `npx sv create frontend`
 
 ##### Modify wails.json.
 - Add `"wailsjsdir": "./frontend/src/lib",` Do note that this is where your Go and runtime functions will appear.
