@@ -1,7 +1,3 @@
----
-title: Application Menu
----
-
 ### RegisterContextMenu
 
 API: `RegisterContextMenu(name string, menu *Menu)`
@@ -10,11 +6,12 @@ API: `RegisterContextMenu(name string, menu *Menu)`
 can be used later in the application.
 
 ```go
-// Create a new menu
-ctxmenu := app.NewMenu()
 
-// Register the menu as a context menu
-app.RegisterContextMenu("MyContextMenu", ctxmenu)
+    // Create a new menu
+    ctxmenu := app.NewMenu()
+
+    // Register the menu as a context menu
+    app.RegisterContextMenu("MyContextMenu", ctxmenu)
 ```
 
 ### SetMenu
