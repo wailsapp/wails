@@ -26,9 +26,9 @@ menu. For Windows and Linux, this will be the default menu for any new window
 created.
 
 ```go
-// Create a new menu
-menu := app.NewMenu()
+    // Create a new menu
+    menu := app.NewMenu()
 
-// Set the menu for the application
-app.SetMenu(menu)
+    // Set the menu for the application
+    app.SetMenu(menu)
 ```
