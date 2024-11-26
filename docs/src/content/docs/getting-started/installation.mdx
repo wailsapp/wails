@@ -4,7 +4,8 @@ title: Installation
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-To install the Wails CLI, first ensure you have the correct dependencies installed:
+To install the Wails CLI, first ensure you have the correct dependencies
+installed:
 
 ## Supported Platforms
 
@@ -88,7 +89,8 @@ To install the Wails CLI using Go Modules, run the following commands:
 go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
 ```
 
-If you would like to install the latest development version, run the following commands:
+If you would like to install the latest development version, run the following
+commands:
 
 ```shell
 git clone https://github.com/wailsapp/wails.git
@@ -98,8 +100,9 @@ cd v3/cmd/wails3
 go install
 ```
 
-When using the development version, all generated projects will use Go's [replace(https://go.dev/ref/mod#go-mod-file-replace) directive
-to ensure projects use the development version of Wails.
+When using the development version, all generated projects will use Go's
+[replace(https://go.dev/ref/mod#go-mod-file-replace) directive to ensure
+projects use the development version of Wails.
 
 ## System Check
 
@@ -112,5 +115,7 @@ any problems.
 If your system is reporting that the `wails3` command is missing, check the
 following:
 
-- Make sure you have followed the [Go installation guide](#__tabbed_1_1) correctly and that the `go/bin` directory is in the `PATH` environment variable.
+- Make sure you have followed the [Go installation guide](#__tabbed_1_1)
+  correctly and that the `go/bin` directory is in the `PATH` environment
+  variable.
 - Close/Reopen current terminals to pick up the new `PATH` variable.
