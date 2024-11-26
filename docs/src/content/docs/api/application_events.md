@@ -38,7 +38,7 @@ API:
 
 `OnApplicationEvent()` registers an event listener for specific application
 events. The `eventType` is based on events.ApplicationEventType. See
-[ApplicationEventType](/API/events/#applicationevent)
+[ApplicationEventType](/api/events/#applicationevent)
 
 ### RegisterApplicationHook
 

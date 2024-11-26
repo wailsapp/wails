@@ -6,7 +6,7 @@ tags: [wails, v2]
 date: 2021-09-27
 ---
 
-![wails screenshot](./img/wails.webp)
+![wails screenshot](img/wails.webp)
 
 When I first announced Wails on Reddit, just over 2 years ago from a train in
 Sydney, I did not expect it to get much attention. A few days later, a prolific
@@ -49,7 +49,7 @@ projects and building on them. Credit also to
 
 ### WebView2 Chromium Renderer
 
-![devtools screenshot](./img/devtools.png)
+![devtools screenshot](img/devtools.png)
 
 Finally, Windows developers get a first class rendering engine for their
 applications! Gone are the days of contorting your frontend code to work on
@@ -69,7 +69,7 @@ Gophers rejoice! The single binary dream lives on!
 
 ### New Features
 
-![wails-menus screenshot](./img/wails-menus.webp)
+![wails-menus screenshot](img/wails-menus.webp)
 
 There were a lot of requests for native menu support. Wails has finally got you
 covered. Application menus are now available and include support for most native
@@ -87,7 +87,7 @@ This means that if you open your project in a supported IDE, it will already be
 configured for building and debugging your application. Currently VSCode is
 supported but we hope to support other IDEs such as Goland soon.
 
-![vscode screenshot](./img/vscode.webp)
+![vscode screenshot](img/vscode.webp)
 
 ### No requirement to bundle assets
 
@@ -109,7 +109,7 @@ Wails will just work it out for you.
 
 ### New Development Experience
 
-![browser screenshot](./img/browser.webp)
+![browser screenshot](img/browser.webp)
 
 Now that assets don't need to be bundled, it's enabled a whole new development
 experience. The new `wails dev` command will build and run your application, but
@@ -142,7 +142,7 @@ code!
 
 ### Remote Templates
 
-![remote screenshot](./img/remote.webp)
+![remote screenshot](img/remote.webp)
 
 Getting an application up and running quickly was always a key goal for the
 Wails project. When we launched, we tried to cover a lot of the modern

@@ -3,8 +3,8 @@ title: Window
 ---
 
 To create a window, use
-[Application.NewWebviewWindow](application.md#newwebviewwindow) or
-[Application.NewWebviewWindowWithOptions](application.md#newwebviewwindowwithoptions).
+[Application.NewWebviewWindow](/api/application_window#newwebviewwindow) or
+[Application.NewWebviewWindowWithOptions](/api/application_window#newwebviewwindowwithoptions).
 The former creates a window with default options, while the latter allows you to
 specify custom options.
 

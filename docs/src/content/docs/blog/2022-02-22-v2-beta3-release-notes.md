@@ -6,7 +6,7 @@ tags: [wails, v2]
 date: 2022-02-22
 ---
 
-![wails-linux screenshot](./img/wails-linux.webp)
+![wails-linux screenshot](img/wails-linux.webp)
 
 I'm pleased to finally announce that Wails v2 is now in beta for Linux! It is
 somewhat ironic that the very first experiments with v2 was on Linux and yet it
@@ -16,7 +16,7 @@ the new features:
 
 ### New Features
 
-![wails-menus-linux screenshot](./img/wails-menus-linux.webp)
+![wails-menus-linux screenshot](img/wails-menus-linux.webp)
 
 There were a lot of requests for native menu support. Wails has finally got you
 covered. Application menus are now available and include support for most native
@@ -80,7 +80,7 @@ code!
 
 ### Remote Templates
 
-![remote-linux screenshot](./img/remote-linux.webp)
+![remote-linux screenshot](img/remote-linux.webp)
 
 Getting an application up and running quickly was always a key goal for the
 Wails project. When we launched, we tried to cover a lot of the modern
@@ -101,7 +101,7 @@ really quite excited about what our developer community can create!
 Because Wails v2 for Windows is pure Go, you can target Windows builds without
 docker.
 
-![build-cross-windows screenshot](./img/linux-build-cross-windows.webp)
+![build-cross-windows screenshot](img/linux-build-cross-windows.webp)
 
 ### In Conclusion
 
