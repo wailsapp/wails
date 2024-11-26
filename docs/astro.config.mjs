@@ -4,12 +4,14 @@ import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
 import starlightLinksValidator from "starlight-links-validator";
 import starlightImageZoom from "starlight-image-zoom";
+import starlightBlog from "starlight-blog";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://wails.io",
   trailingSlash: "ignore",
   compressHTML: true,
+  output: "static",
   build: { format: "directory" },
   devToolbar: { enabled: true },
   integrations: [
@@ -34,6 +36,24 @@ export default defineConfig({
         starlightLinksValidator(),
         // https://starlight-image-zoom.vercel.app/configuration/
         starlightImageZoom(),
+        // https://starlight-blog-docs.vercel.app/configuration
+        starlightBlog({
+          title: "Wails Blog",
+          authors: {
+            leaanthony: {
+              name: "Lea Anthony",
+              title: "Maintainer of Wails",
+              url: "https://github.com/leaanthony",
+              picture: "https://github.com/leaanthony.png",
+            },
+            misitebao: {
+              name: "Misite Bao",
+              title: "Architect",
+              url: "https://github.com/misitebao",
+              picture: "https://github.com/misitebao.png",
+            },
+          },
+        }),
       ],
       sidebar: [
         { label: "Changelog", link: "/changelog" },
