@@ -36,6 +36,13 @@ export default defineConfig({
         starlightImageZoom(),
       ],
       sidebar: [
+        { label: "Changelog", link: "/changelog" },
+        {
+          label: "What's New",
+          link: "/whats-new",
+          badge: { text: "New", variant: "tip" },
+        },
+        { label: "Status", link: "/status" },
         {
           label: "API",
           autogenerate: { directory: "api", collapsed: false },
@@ -43,6 +50,10 @@ export default defineConfig({
         {
           label: "Getting Started",
           autogenerate: { directory: "getting-started", collapsed: false },
+        },
+        {
+          label: "Learn",
+          autogenerate: { directory: "learn", collapsed: false },
         },
         {
           label: "Development",
