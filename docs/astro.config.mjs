@@ -22,7 +22,7 @@ export default defineConfig({
         dark: "./src/assets/wails-logo-horizontal-dark.svg",
         light: "./src/assets/wails-logo-horizontal-light.svg",
       },
-      favicon: "./src/public/favicon.svg",
+      favicon: "./public/favicon.svg",
       description: "Build desktop applications using Go & Web Technologies.",
       pagefind: true,
       lastUpdated: true, // Note, this needs git clone with fetch depth 0 to work
@@ -38,8 +38,8 @@ export default defineConfig({
       },
       defaultLocale: "root",
       locales: {
-        root: { label: "English", lang: "en-US", dir: "ltr" },
-        zh: { label: "简体中文", lang: "zh-CN", dir: "ltr" },
+        root: { label: "English", lang: "en", dir: "ltr" },
+        gr: { label: "Greek", lang: "el", dir: "ltr" },
       },
       plugins: [
         // https://starlight-links-validator.vercel.app/configuration/
