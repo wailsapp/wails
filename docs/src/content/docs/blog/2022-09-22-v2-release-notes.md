@@ -6,7 +6,7 @@ tags: [wails, v2]
 date: 2022-09-22
 ---
 
-![montage screenshot](img/montage.png)
+![montage screenshot](../../../assets/blog-images/montage.png)
 
 # It's here!
 

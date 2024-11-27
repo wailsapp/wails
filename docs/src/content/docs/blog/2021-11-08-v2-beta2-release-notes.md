@@ -6,7 +6,7 @@ tags: [wails, v2]
 date: 2021-11-08
 ---
 
-![wails-mac screenshot](img/wails-mac.webp)
+![wails-mac screenshot](../../../assets/blog-images/wails-mac.webp)
 
 Today marks the first beta release of Wails v2 for Mac! It's taken quite a while
 to get to this point and I'm hoping that today's release will give you something
@@ -24,7 +24,7 @@ Windows Beta :wink:
 
 ### New Features
 
-![wails-menus-mac screenshot](img/wails-menus-mac.webp)
+![wails-menus-mac screenshot](../../../assets/blog-images/wails-menus-mac.webp)
 
 There were a lot of requests for native menu support. Wails has finally got you
 covered. Application menus are now available and include support for most native
@@ -98,7 +98,7 @@ code!
 
 ### Remote Templates
 
-![remote-mac screenshot](img/remote-mac.webp)
+![remote-mac screenshot](../../../assets/blog-images/remote-mac.webp)
 
 Getting an application up and running quickly was always a key goal for the
 Wails project. When we launched, we tried to cover a lot of the modern
@@ -119,22 +119,23 @@ really quite excited about what our developer community can create!
 Thanks to the amazing support of [Mat Ryer](https://github.com/matryer/), the
 Wails project now supports M1 native builds:
 
-![build-darwin-arm screenshot](img/build-darwin-arm.webp)
+![build-darwin-arm screenshot](../../../assets/blog-images/build-darwin-arm.webp)
 
 You can also specify `darwin/amd64` as a target too:
 
-![build-darwin-amd screenshot](img/build-darwin-amd.webp)
+![build-darwin-amd screenshot](../../../assets/blog-images/build-darwin-amd.webp)
 
 Oh, I almost forgot.... you can also do `darwin/universal`.... :wink:
 
-![build-darwin-universal screenshot](img/build-darwin-universal.webp)
+![build-darwin-universal screenshot](../../../assets/blog-images/build-darwin-universal.webp)
 
 ### Cross Compilation to Windows
 
 Because Wails v2 for Windows is pure Go, you can target Windows builds without
 docker.
 
-![build-cross-windows screenshot](img/build-cross-windows.webp) bu
+![build-cross-windows screenshot](../../../assets/blog-images/build-cross-windows.webp)
+bu
 
 ### WKWebView Renderer
 
