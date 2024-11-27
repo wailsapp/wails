@@ -18,6 +18,11 @@ export default defineConfig({
     sitemap(),
     starlight({
       title: "Wails",
+      logo: {
+        dark: "./src/assets/wails-logo-horizontal-dark.svg",
+        light: "./src/assets/wails-logo-horizontal-light.svg",
+      },
+      favicon: "./src/public/favicon.svg",
       description: "Build desktop applications using Go & Web Technologies.",
       pagefind: true,
       lastUpdated: true, // Note, this needs git clone with fetch depth 0 to work
@@ -30,6 +35,11 @@ export default defineConfig({
         github: "https://github.com/wailsapp/wails",
         discord: "https://discord.gg/JDdSxwjhGf",
         "x.com": "https://x.com/wailsapp",
+      },
+      defaultLocale: "root",
+      locales: {
+        root: { label: "English", lang: "en-US", dir: "ltr" },
+        zh: { label: "简体中文", lang: "zh-CN", dir: "ltr" },
       },
       plugins: [
         // https://starlight-links-validator.vercel.app/configuration/
