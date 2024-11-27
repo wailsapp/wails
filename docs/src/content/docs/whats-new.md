@@ -26,7 +26,7 @@ Developers can create, manipulate, and manage these windows programmatically,
 allowing for dynamic user interfaces that adapt to user needs and application
 states.
 
-:::tip ["Multiple Windows"]
+:::tip[Multiple Windows]
 
 ```go
 package main
@@ -71,7 +71,6 @@ func main() {
                 log.Fatal(err.Error())
         }
 }
-
 ```
 
 :::
@@ -97,7 +96,7 @@ Key features of the Wails v3 system tray integration include:
    your application's system tray icon remains visible and aesthetically
    pleasing across different system themes.
 
-:::tip ["Systray"]
+:::tip[Systray]
 
 ```go
 package main
@@ -158,7 +157,6 @@ func main() {
         log.Fatal(err)
     }
 }
-
 ```
 
 :::
@@ -176,7 +174,7 @@ preserves code quality by maintaining comments and parameter names.
 The binding generation process has been simplified, requiring only a single
 command: `wails3 generate bindings`.
 
-:::tip ["Bindings"]
+:::tip[Bindings]
 
 ```js
 // @ts-check
@@ -229,7 +227,7 @@ customise the build process to your needs.
 
 You can even use make if that's your thing!
 
-:::tip ["Taskfile.yml"]
+:::tip[Taskfile.yml]
 
 ```yaml "Snippet from Taskfile.yml"
 build:darwin:
@@ -262,7 +260,7 @@ the `On` method, these hooks allow you to cancel the event if needed. A common
 use case is displaying a confirmation dialog before closing a window. This gives
 you more control over the event flow and user experience.
 
-:::tip ["Example of event handling"]
+:::tip[Example of event handling]
 
 ```go
 package main
@@ -344,7 +342,7 @@ func main() {
 An experimental feature to call runtime methods using plain html, similar to
 [htmx](https://htmx.org).
 
-:::tip ["Example of wml"]
+:::tip[Example of wml]
 
 ```html
 <!doctype html>
