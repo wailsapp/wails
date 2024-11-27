@@ -67,14 +67,18 @@ export default defineConfig({
       ],
       sidebar: [
         {
-          label: "Getting Started",
-          autogenerate: { directory: "getting-started", collapsed: false },
-        },
-        { label: "Changelog", link: "/changelog" },
-        {
           label: "What's New",
           link: "/whats-new",
           badge: { text: "New", variant: "tip" },
+        },
+        {
+          label: "Getting Started",
+          autogenerate: { directory: "getting-started", collapsed: false },
+        },
+        {
+          label: "Learn",
+          collapsed: true,
+          autogenerate: { directory: "learn", collapsed: true },
         },
         { label: "Status", link: "/status" },
         {
@@ -82,11 +86,7 @@ export default defineConfig({
           collapsed: true,
           autogenerate: { directory: "api", collapsed: true },
         },
-        {
-          label: "Learn",
-          collapsed: true,
-          autogenerate: { directory: "learn", collapsed: true },
-        },
+        { label: "Changelog", link: "/changelog" },
         {
           label: "Development",
           collapsed: true,

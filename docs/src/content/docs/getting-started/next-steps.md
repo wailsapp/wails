@@ -1,5 +1,7 @@
 ---
 title: Next Steps
+sidebar:
+  order: 3
 ---
 
 Now that you have created your first application, you can start exploring the
