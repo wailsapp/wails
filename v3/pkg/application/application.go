@@ -136,7 +136,7 @@ func New(appOptions Options) *App {
 		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
 	}
 
-	for _, service := range appOptions.Services {
+	for i, service := range appOptions.Services {
 		if thisService, ok := service.instance.(ServiceStartup); ok {
 			err := thisService.OnStartup(result.ctx, service.options)
 			if err != nil {
@@ -144,8 +144,18 @@ func New(appOptions Options) *App {
 				if name == "" {
 					name = getServiceName(service.instance)
 				}
-				globalApplication.Logger.Error("OnStartup() failed:", "service", name, "error", err.Error())
-				continue
+				globalApplication.Logger.Error("OnStartup() failed shutting down application:", "service", name, "error", err.Error())
+				// Run shutdown on all services that have already started
+				for _, service := range appOptions.Services[:i] {
+					if thisService, ok := service.instance.(ServiceShutdown); ok {
+						err := thisService.OnShutdown()
+						if err != nil {
+							globalApplication.Logger.Error("Error shutting down service: " + err.Error())
+						}
+					}
+				}
+				// Shutdown the application
+				os.Exit(1)
 			}
 		}
 	}
