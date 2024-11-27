@@ -32,7 +32,7 @@ Wails has a number of common dependencies that are required before installation:
 
   </TabItem>
 
-<TabItem label="npm (Optional)" icon="seti:npm">
+  <TabItem label="npm (Optional)" icon="seti:npm">
 
     Although Wails doesn't require npm to be installed, it is needed by most of the bundled templates.
 
@@ -40,14 +40,14 @@ Wails has a number of common dependencies that are required before installation:
 
     Run `npm --version` to verify.
 
-</TabItem>
+  </TabItem>
 
-<TabItem label="Task (Optional)">
+  <TabItem label="Task (Optional)">
 
     The Wails CLI embeds a task runner called [Task](https://taskfile.dev/#/installation). It is optional, but recommended. If you do not wish to install Task, you can use the `wails3 task` command instead of `task`.
     Installing Task will give you the greatest flexibility.
 
-</TabItem>
+  </TabItem>
 
 </Tabs>
 
@@ -56,7 +56,7 @@ Wails has a number of common dependencies that are required before installation:
 You will also need to install platform specific dependencies:
 
 <Tabs syncKey="platform">
-    <TabItem label="Mac" icon="apple">
+  <TabItem label="Mac" icon="apple">
 
     Wails requires that the xcode command line tools are installed. This can be
     done by running:
@@ -65,19 +65,17 @@ You will also need to install platform specific dependencies:
     xcode-select --install
     ```
 
-    </TabItem>
-    <TabItem label="Windows" icon="seti:windows">
-
+  </TabItem>
+  <TabItem label="Windows" icon="seti:windows">
 
     Wails requires that the [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) is installed. Some Windows installations will already have this installed. You can check using the `wails doctor` command.
 
-    </TabItem>
-    <TabItem label="Linux" icon="linux">
-
+  </TabItem>
+  <TabItem label="Linux" icon="linux">
 
     Linux requires the standard `gcc` build tools plus `gtk3` and `webkit2gtk`. Run <code>wails doctor</code> after installation to be shown how to install the dependencies. If your distro/package manager is not supported, please let us know on discord.
 
-    </TabItem>
+  </TabItem>
 
 </Tabs>
 
@@ -115,7 +113,6 @@ any problems.
 If your system is reporting that the `wails3` command is missing, check the
 following:
 
-- Make sure you have followed the [Go installation guide](#TODO:-go-install-tab)
-  correctly and that the `go/bin` directory is in the `PATH` environment
-  variable.
+- Make sure you have followed the above `Go installation guide` correctly and
+  that the `go/bin` directory is in the `PATH` environment variable.
 - Close/Reopen current terminals to pick up the new `PATH` variable.
