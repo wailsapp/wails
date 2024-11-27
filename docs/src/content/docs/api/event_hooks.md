@@ -95,8 +95,3 @@ window
 `events.Common.WindowDidMove` : Triggered when the window is moved
 
 `events.Common.WindowDidResize` : Triggered when the window is resized
-
-### OS-Specific Events
-
---8<-- ./docs/en/API/events_linux.md ./docs/en/API/events_windows.md
-./docs/en/API/events_mac.md --8<--
