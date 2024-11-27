@@ -69,14 +69,17 @@ export default defineConfig({
         { label: "Status", link: "/status" },
         {
           label: "API",
+          collapsed: true,
           autogenerate: { directory: "api", collapsed: true },
         },
         {
           label: "Learn",
+          collapsed: true,
           autogenerate: { directory: "learn", collapsed: true },
         },
         {
           label: "Development",
+          collapsed: true,
           autogenerate: { directory: "development", collapsed: true },
         },
       ],
