@@ -56,6 +56,10 @@ export default defineConfig({
         }),
       ],
       sidebar: [
+        {
+          label: "Getting Started",
+          autogenerate: { directory: "getting-started", collapsed: false },
+        },
         { label: "Changelog", link: "/changelog" },
         {
           label: "What's New",
@@ -65,19 +69,15 @@ export default defineConfig({
         { label: "Status", link: "/status" },
         {
           label: "API",
-          autogenerate: { directory: "api", collapsed: false },
-        },
-        {
-          label: "Getting Started",
-          autogenerate: { directory: "getting-started", collapsed: false },
+          autogenerate: { directory: "api", collapsed: true },
         },
         {
           label: "Learn",
-          autogenerate: { directory: "learn", collapsed: false },
+          autogenerate: { directory: "learn", collapsed: true },
         },
         {
           label: "Development",
-          autogenerate: { directory: "development", collapsed: false },
+          autogenerate: { directory: "development", collapsed: true },
         },
       ],
     }),
