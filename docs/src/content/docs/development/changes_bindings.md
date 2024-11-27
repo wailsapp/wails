@@ -53,21 +53,21 @@ it's a standard method ID and tries to find the method in the usual way.
 Example:
 
 ```go
-  app := application.New(application.Options{
-    Bind: []any{
-      &GreetService{},
-    },
-    BindAliases: map[uint32]uint32{
-      1: 1411160069,
-      2: 4021313248,
-    },
-    Assets: application.AssetOptions{
-      Handler: application.AssetFileServerFS(assets),
-    },
-    Mac: application.MacOptions{
-      ApplicationShouldTerminateAfterLastWindowClosed: true,
-    },
-  })
+app := application.New(application.Options{
+  Bind: []any{
+    &GreetService{},
+  },
+  BindAliases: map[uint32]uint32{
+    1: 1411160069,
+    2: 4021313248,
+  },
+  Assets: application.AssetOptions{
+    Handler: application.AssetFileServerFS(assets),
+  },
+  Mac: application.MacOptions{
+    ApplicationShouldTerminateAfterLastWindowClosed: true,
+  },
+})
 ```
 
 We can now call using this alias in the frontend: `wails.Call(1, "world!")`.
