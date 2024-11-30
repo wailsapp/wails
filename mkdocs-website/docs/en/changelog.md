@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in [#3888](https://github.com/wailsapp/wails/pull/3888)
 
 ### Changed
+- `service.OnStartup` now shutdowns the application on error and runs `service.OnShutdown`for any prior services that started by @atterpac in [#3920](https://github.com/wailsapp/wails/pull/3920)
 - Refactored systray click messaging to better align with user interactions by @atterpac in [#3907](https://github.com/wailsapp/wails/pull/3907)
 - Asset embed to include `all:frontend/dist` to support frameworks that generate subfolders by @atterpac in [#3887](https://github.com/wailsapp/wails/pull/3887)
 - Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)
