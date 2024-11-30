@@ -344,6 +344,13 @@ type App struct {
 	wailsEventListeners    []WailsEventListener
 }
 
+func (a *App) handleWarning(msg string) {
+	if a.options.WarningHandler != nil {
+		a.options.WarningHandler(msg)
+	} else {
+		a.Logger.Warn(msg)
+	}
+}
 func (a *App) handleError(err error) {
 	if a.options.ErrorHandler != nil {
 		a.options.ErrorHandler(err)
@@ -507,6 +514,10 @@ func (a *App) debug(message string, args ...any) {
 func (a *App) fatal(message string, args ...any) {
 	err := fmt.Errorf(message, args...)
 	a.handleFatalError(err)
+}
+func (a *App) warning(message string, args ...any) {
+	msg := fmt.Sprintf(message, args...)
+	a.handleWarning(msg)
 }
 
 func (a *App) error(message string, args ...any) {
