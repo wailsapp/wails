@@ -310,7 +310,7 @@ X-GNOME-Autostart-enabled=true
 		Cmd  string
 	}{
 		Name: name,
-		Cmd:  exe,
+		Cmd:  bin,
 	})
 }
 
