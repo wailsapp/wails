@@ -1,7 +1,7 @@
 ---
 title: Application Window
 sidebar:
-  order: 2
+  order: 20
 ---
 
 ### NewWebviewWindow

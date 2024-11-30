@@ -1,5 +1,7 @@
 ---
-title: Enums
+title: Changes (Enums)
+sidebar:
+  order: 160
 ---
 
 In Go, enums are often defined as a type and a set of constants. For example:

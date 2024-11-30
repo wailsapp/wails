@@ -1,5 +1,5 @@
 ---
-title: Welcome to the Wails v3 (Alpha)
+title: Welcome to the Wails
 description: ""
 template: splash
 hero:
@@ -18,26 +18,27 @@ hero:
       icon: right-arrow
 ---
 
-{/* TODO: use the cards below for some of the content */}
-
 import { Card, CardGrid } from "@astrojs/starlight/components";
 
 Welcome to the Wails v3 Alpha documentation. This is your starting point for
 exploring the latest version of Wails, a powerful framework for building desktop
 applications using Go and modern web technologies.
 
-## Introduction
+<CardGrid stagger>
+  <Card title="Introduction" icon="pencil">
 
 Wails v3 Alpha is the latest iteration of the Wails project, bringing new
 features and improvements to make desktop application development more efficient
 and enjoyable. This version is still in alpha, so some features might change
 before the final release.
 
-## Status
+  </Card>
+  <Card title="Status" icon="add-document">
 
 Please consult our [Status Page](/status) for up-to-date status.
 
-## What's New
+  </Card>
+  <Card title="What's New" icon="add-document">
 
 Here are some of the exciting new features and improvements in Wails v3 Alpha:
 
@@ -50,7 +51,8 @@ Here are some of the exciting new features and improvements in Wails v3 Alpha:
 More information about these features and other changes can be found in the
 [What's new](/whats-new) section.
 
-## Getting Started
+  </Card>
+  <Card title="Getting Started" icon="open-book">
 
 To get started with Wails v3 Alpha:
 
@@ -61,13 +63,9 @@ To get started with Wails v3 Alpha:
 3. [Explore the API Reference](/api/application): Dive deeper into the API
    documentation.
 
-## Alpha Version Notice
+  </Card>
 
-Please note that this is an alpha version of Wails v3. Features may be added,
-removed, or changed in future updates. This version is intended for early
-adopters and those who wish to contribute to the development of Wails.
-
-## Feedback and Contributions
+  <Card title="Feedback and Contributions" icon="open-book">
 
 Your feedback is vital to making Wails better. If you encounter any issues or
 have suggestions, please use our [Feedback process](/getting-started/feedback).
@@ -75,19 +73,13 @@ Contributions to the project are also welcome!
 
 Thank you for trying out Wails v3 Alpha!
 
-## Next steps
+  </Card>
+  <Card title="Alpha Version Notice" icon="add-document">
 
-<CardGrid stagger>
-  <Card title="Update content" icon="pencil">
-    Edit `src/content/docs/index.mdx` to see this page change.
+Please note that this is an alpha version of Wails v3. Features may be added,
+removed, or changed in future updates. This version is intended for early
+adopters and those who wish to contribute to the development of Wails.
+
   </Card>
-  <Card title="Add new content" icon="add-document">
-    Add Markdown or MDX files to `src/content/docs` to create new pages.
-  </Card>
-  <Card title="Configure your site" icon="setting">
-    Edit your `sidebar` and other config in `astro.config.mjs`.
-  </Card>
-  <Card title="Read the docs" icon="open-book">
-    Learn more in [the Starlight Docs](https://starlight.astro.build/).
-  </Card>
+
 </CardGrid>

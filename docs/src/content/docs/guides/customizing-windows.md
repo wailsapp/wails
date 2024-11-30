@@ -1,5 +1,7 @@
 ---
 title: Customizing Window Controls in Wails
+sidebar:
+  order: 10
 ---
 
 Wails provides an API to control the appearance and functionality of the

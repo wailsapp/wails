@@ -1,5 +1,7 @@
 ---
-title: Context Menus
+title: Changes (Context Menus)
+sidebar:
+  order: 90
 ---
 
 Context menus are contextual menus that are shown when the user right-clicks on

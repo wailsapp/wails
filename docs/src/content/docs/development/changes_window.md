@@ -1,5 +1,7 @@
 ---
-title: Window
+title: Changes (Window)
+sidebar:
+  order: 50
 ---
 
 The Window API has largely remained the same, however the methods are now on an

@@ -1,11 +1,8 @@
 ---
 title: Application
 sidebar:
-  order: 1
+  order: 10
 ---
-
-import { Code } from "@astrojs/starlight/components";
-import application_options from "../../../../../v3/pkg/application/application_options.go?raw";
 
 The application API assists in creating an application using the Wails
 framework.
@@ -194,11 +191,3 @@ The `Paths` type is an enum with the following values:
 - `PathsConfigDirs`: Returns the list of configuration directories
 - `PathsCacheDirs`: Returns the list of cache directories
 - `PathsRuntimeDirs`: Returns the list of runtime directories
-
-## Options
-
-<Code
-  code={application_options}
-  lang="go"
-  title="pkg/application/application_options.go"
-/>

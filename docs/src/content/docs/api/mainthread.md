@@ -1,5 +1,7 @@
 ---
 title: Main Thread Functions
+sidebar:
+  order: 170
 ---
 
 These methods are utility functions to run code on the main thread. This is
@@ -47,6 +49,10 @@ thread. If a panic occurs inside `fn`, it will be passed to the handler function
 
 ---
 
-_Note_: These functions will block execution until `fn` has finished. It's
-critical to ensure that `fn` doesn't block. If you need to run a function that
-blocks, use `InvokeAsync` instead.
+:::tip
+
+These functions will block execution until `fn` has finished. It's critical to
+ensure that `fn` doesn't block. If you need to run a function that blocks, use
+`InvokeAsync` instead.
+
+:::

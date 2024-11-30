@@ -1,7 +1,7 @@
 ---
 title: Next Steps
 sidebar:
-  order: 3
+  order: 30
 ---
 
 Now that you have created your first application, you can start exploring the
@@ -20,4 +20,8 @@ go run .
 
 in the example directory.
 
-!!! note Some examples may not work during alpha development.
+:::note
+
+Some examples may not work during alpha development.
+
+:::

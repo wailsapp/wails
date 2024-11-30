@@ -1,5 +1,9 @@
 ---
 title: Event Hooks
+tableOfContents:
+  maxHeadingLevel: 4
+sidebar:
+  order: 90
 ---
 
 wails3 provides an event system that allows for hooking into application and
@@ -43,55 +47,106 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 Application events are hookable events that can be registered with
 `application.RegisterApplicationEventHook()` and
-`application.OnApplicationEvent()`. These events are based on
-`events.ApplicationEventType`.
+`application.OnApplicationEvent()`.
 
-`events.Common.ApplicationStarted` : Triggered when the application starts
+These events are based on `events.ApplicationEventType`.
 
-`events.Common.ThemeChanged` : Triggered when the application theme changes
+#### `events.Common.ApplicationStarted`
+
+Triggered when the application starts
+
+#### `events.Common.ThemeChanged`
+
+Triggered when the application theme changes
 
 ### Window Events
 
-`events.Common.WindowMaximised` : Triggered when the window is maximised
+#### `events.Common.WindowMaximised`
 
-`events.Common.WindowUnmaximised` : Triggered when the window is unmaximised
+Triggered when the window is maximised
 
-`events.Common.WindowMinimised` : Triggered when the window is minimised
+#### `events.Common.WindowUnmaximised`
 
-`events.Common.WindowUnminimised` : Triggered when the window is unminimised
+Triggered when the window is unmaximised
 
-`events.Common.WindowFullscreen` : Triggered when the window is set to
-fullscreen
+#### `events.Common.WindowMinimised`
 
-`events.Common.WindowUnfullscreen` : Triggered when the window is unfullscreened
+Triggered when the window is minimised
 
-`events.Common.WindowRestored` : Triggered when the window is restored
+#### `events.Common.WindowUnminimised`
 
-`events.Common.WindowClosing` : Triggered before the window closes
+Triggered when the window is unminimised
 
-`events.Common.WindowZoom` : Triggered when the window is zoomed
+#### `events.Common.WindowFullscreen`
 
-`events.Common.WindowZoomOut` : Triggered when the window is zoomed out
+Triggered when the window is set to fullscreen
 
-`events.Common.WindowZoomIn` : Triggered when the window is zoomed in
+#### `events.Common.WindowUnfullscreen`
 
-`events.Common.WindowZoomReset` : Triggered when the window zoom is reset
+Triggered when the window is unfullscreened
 
-`events.Common.WindowFocus` : Triggered when the window gains focus
+#### `events.Common.WindowRestored`
 
-`events.Common.WindowLostFocus` : Triggered when the window loses focus
+Triggered when the window is restored
 
-`events.Common.WindowShow` : Triggered when the window is shown
+#### `events.Common.WindowClosing`
 
-`events.Common.WindowHide` : Triggered when the window is hidden
+Triggered before the window closes
 
-`events.Common.WindowDPIChanged` : Triggered when the window DPI changes
+#### `events.Common.WindowZoom`
 
-`events.Common.WindowFilesDropped` : Triggered when files are dropped on the
-window
+Triggered when the window is zoomed
 
-`events.Common.WindowRuntimeReady` : Triggered when the window runtime is ready
+#### `events.Common.WindowZoomOut`
 
-`events.Common.WindowDidMove` : Triggered when the window is moved
+Triggered when the window is zoomed out
 
-`events.Common.WindowDidResize` : Triggered when the window is resized
+#### `events.Common.WindowZoomIn`
+
+Triggered when the window is zoomed in
+
+#### `events.Common.WindowZoomReset`
+
+Triggered when the window zoom is reset
+
+#### `events.Common.WindowFocus`
+
+Triggered when the window gains focus
+
+#### `events.Common.WindowLostFocus`
+
+Triggered when the window loses focus
+
+#### `events.Common.WindowShow`
+
+Triggered when the window is shown
+
+#### `events.Common.WindowHide`
+
+Triggered when the window is hidden
+
+#### `events.Common.WindowDPIChanged`
+
+Triggered when the window DPI changes
+
+#### `events.Common.WindowFilesDropped`
+
+Triggered when files are dropped on the window
+
+#### `events.Common.WindowRuntimeReady`
+
+Triggered when the window runtime is ready
+
+#### `events.Common.WindowDidMove`
+
+Triggered when the window is moved
+
+#### `events.Common.WindowDidResize`
+
+Triggered when the window is resized
+
+### OS Specific Events
+
+- [Mac Events](/api/events_mac)
+- [Windows Events](/api/events_windows)
+- [Linux Events](/api/events_linux)

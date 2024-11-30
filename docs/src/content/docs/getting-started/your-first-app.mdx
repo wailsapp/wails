@@ -1,10 +1,11 @@
 ---
 title: Your First Application
 sidebar:
-  order: 2
+  order: 20
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Steps } from "@astrojs/starlight/components";
 
 Creating your first application with Wails v3 Alpha is an exciting journey into
 the world of modern desktop app development. This guide will walk you through
@@ -20,102 +21,172 @@ Before you begin, ensure you have the following installed:
 - Wails v3 Alpha (see the [installation guide](/getting-started/installation)
   for instructions)
 
-## Step 1: Creating a New Project
+<Steps>
 
-Open your terminal and run the following command to create a new Wails project:
+1.  ## Creating a New Project
 
-`wails3 init -n myfirstapp`
+    Open your terminal and run the following command to create a new Wails
+    project:
 
-This command creates a new directory called `myfirstapp` with all the necessary
-files.
+    ```bash
+    wails3 init -n myfirstapp
+    ```
 
-## Step 2: Exploring the Project Structure
+    This command creates a new directory called `myfirstapp` with all the
+    necessary files.
 
-Navigate to the `myfirstapp` directory. You'll find several files and folders:
+2.  ## Exploring the Project Structure
 
-- `build`: Contains files used by the build process.
-- `frontend`: Contains your web frontend code.
-- `go.mod` & `go.sum`: Go module files.
-- `main.go`: The entry point for your Wails application.
-- `Taskfile.yml`: Defines all the tasks used by the build system. Learn more at
-  the [Task](https://taskfile.dev/) website.
+    Navigate to the `myfirstapp` directory. You'll find several files and
+    folders:
 
-Take a moment to explore these files and familiarize yourself with the
-structure.
+    - `build`: Contains files used by the build process.
+    - `frontend`: Contains your web frontend code.
+    - `go.mod` & `go.sum`: Go module files.
+    - `main.go`: The entry point for your Wails application.
+    - `Taskfile.yml`: Defines all the tasks used by the build system. Learn more
+      at the [Task](https://taskfile.dev/) website.
 
-:::note [Although Wails v3 uses [Task](https://taskfile.dev/) as its default]
+    Take a moment to explore these files and familiarize yourself with the
+    structure.
 
-build system, there is nothing stopping you from using `make` or any other
-alternative build system.
+    :::note [Although Wails v3 uses [Task](https://taskfile.dev/) as its
+    default]
 
-:::
+    build system, there is nothing stopping you from using `make` or any other
+    alternative build system.
 
-## Step 3: Building Your Application
+    :::
 
-To build your application, execute:
+3.  ## Building Your Application
 
-`wails3 build`
+    To build your application, execute:
 
-This command compiles a debug version of your application and saves it in a new
-`bin` directory. You can run this like you would any normal application:
+    ```bash
+    wails3 build
+    ```
 
-<Tabs syncKey="platform">
-  <TabItem label="Mac" icon="apple">
+    This command compiles a debug version of your application and saves it in a
+    new `bin` directory. You can run this like you would any normal application:
 
-```sh
-./bin/myfirstapp
-```
+    <Tabs syncKey="platform">
 
-  </TabItem>
-  <TabItem label="Windows" icon="seti:windows">
+      <TabItem label="Mac" icon="apple">
 
-```sh
-bin\myfirstapp.exe
-```
+        ```sh
+        ./bin/myfirstapp
+        ```
 
-  </TabItem>
-  <TabItem label="Linux" icon="linux">
+          </TabItem>
 
-```sh
-./bin/myfirstapp
-```
+      <TabItem label="Windows" icon="seti:windows">
 
-  </TabItem>
-</Tabs>
+        ```sh
+        bin\myfirstapp.exe
+        ```
 
-You'll see a simple UI, the starting point for your application. As it is the
-debug version, you'll also see logs in the console window. This is useful for
-debugging purposes.
+          </TabItem>
 
-## Step 4: Dev Mode
+      <TabItem label="Linux" icon="linux">
 
-We can also run the application in development mode. This mode allows you to
-make changes to your frontend code and see the changes reflected in the running
-application without having to rebuild the entire application.
+        ```sh
+        ./bin/myfirstapp
+        ```
 
-1. Open a new terminal window.
-2. Run `wails3 dev`.
-3. Open `frontend/main.js`.
-4. Change the line that has `<h1>Hello Wails!</h1>` to `<h1>Hello World!</h1>`.
-5. Save the file.
+          </TabItem>
 
-The application will update automatically, and you'll see the changes reflected
-in the running application.
+    </Tabs>
 
-## Step 5: Building the Application Again
+    You'll see a simple UI, the starting point for your application. As it is
+    the debug version, you'll also see logs in the console window. This is
+    useful for debugging purposes.
 
-Once you're happy with your changes, build your application again:
+4.  ## Dev Mode
 
-`wails3 build`
+    We can also run the application in development mode. This mode allows you to
+    make changes to your frontend code and see the changes reflected in the
+    running application without having to rebuild the entire application.
 
-You'll notice that the build time was faster this time. That's because the new
-build system only builds the parts of your application that have changed.
+    1. Open a new terminal window.
+    2. Run `wails3 dev`.
+    3. Open `frontend/main.js`.
+    4. Change the line that has `<h1>Hello Wails!</h1>` to
+       `<h1>Hello World!</h1>`.
+    5. Save the file.
 
-You should see a new executable in the `build` directory.
+    The application will update automatically, and you'll see the changes
+    reflected in the running application.
+
+5.  ## Building the Application Again
+
+    Once you're happy with your changes, build your application again:
+
+    ```bash
+    wails3 build
+    ```
+
+    You'll notice that the build time was faster this time. That's because the
+    new build system only builds the parts of your application that have
+    changed.
+
+    You should see a new executable in the `build` directory.
+
+6.  ## Packaging Your Application
+
+        Once your application is ready for distribution, you can create
+        platform-specific packages:
+
+          <Tabs syncKey="platform">
+
+    <TabItem label="Mac" icon="apple">
+
+              To create a `.app` bundle:
+
+              ```bash
+              wails3 package
+              ```
+
+              This will create a production build and package it into a `.app` bundle in the `bin` directory.
+
+            </TabItem>
+            <TabItem label="Windows" icon="seti:windows">
+
+              To create an NSIS installer:
+
+              ```bash
+              wails3 package
+              ```
+
+              This will create a production build and package it into an NSIS installer in the `bin` directory.
+
+            </TabItem>
+            <TabItem label="Linux" icon="linux">
+
+              Wails supports multiple package formats for Linux distribution:
+
+              ```bash
+              # Create all package types (AppImage, deb, rpm, and Arch Linux)
+              wails3 package
+
+              # Or create specific package types
+              wails3 task linux:create:appimage  # AppImage format
+              wails3 task linux:create:deb       # Debian package
+              wails3 task linux:create:rpm       # Red Hat package
+              wails3 task linux:create:aur       # Arch Linux package
+              ```
+
+            </TabItem>
+
+          </Tabs>
+
+        For more detailed information about packaging options and configuration,
+        check out our [Packaging Guide](/guides/packaging).
+
+</Steps>
 
 ## Conclusion
 
-Congratulations! You've just created and built your first Wails application.
-This is just the beginning of what you can achieve with Wails v3 Alpha. Explore
-the documentation, experiment with different features, and start building
-amazing applications!
+Congratulations! You've just created, developed and packaged your first Wails
+application. This is just the beginning of what you can achieve with Wails v3.
+Explore the documentation, experiment with different features, and start
+building amazing applications!

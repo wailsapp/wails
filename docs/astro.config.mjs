@@ -5,9 +5,11 @@ import sitemap from "@astrojs/sitemap";
 import starlightLinksValidator from "starlight-links-validator";
 import starlightImageZoom from "starlight-image-zoom";
 import starlightBlog from "starlight-blog";
+import { authors } from "./src/content/authors";
 
 // https://astro.build/config
 export default defineConfig({
+  // TODO: update this
   site: "https://wails.io",
   trailingSlash: "ignore",
   compressHTML: true,
@@ -17,7 +19,7 @@ export default defineConfig({
   integrations: [
     sitemap(),
     starlight({
-      title: "Wails",
+      title: "Wails (Alpha)",
       logo: {
         dark: "./src/assets/wails-logo-horizontal-dark.svg",
         light: "./src/assets/wails-logo-horizontal-light.svg",
@@ -25,9 +27,7 @@ export default defineConfig({
       favicon: "./public/favicon.svg",
       description: "Build desktop applications using Go & Web Technologies.",
       pagefind: true,
-      customCss: [
-          "./src/stylesheets/extra.css"
-      ],
+      customCss: ["./src/stylesheets/extra.css"],
       lastUpdated: true, // Note, this needs git clone with fetch depth 0 to work
       pagination: true,
       editLink: {
@@ -52,48 +52,47 @@ export default defineConfig({
         // https://starlight-blog-docs.vercel.app/configuration
         starlightBlog({
           title: "Wails Blog",
-          authors: {
-            leaanthony: {
-              name: "Lea Anthony",
-              title: "Maintainer of Wails",
-              url: "https://github.com/leaanthony",
-              picture: "https://github.com/leaanthony.png",
-            },
-            misitebao: {
-              name: "Misite Bao",
-              title: "Architect",
-              url: "https://github.com/misitebao",
-              picture: "https://github.com/misitebao.png",
-            },
-          },
+          authors: authors,
         }),
       ],
       sidebar: [
+        { label: "Home", link: "/" },
+        {
+          label: "Getting Started",
+          autogenerate: { directory: "getting-started", collapsed: false },
+        },
+        { label: "Feedback", link: "/getting-started/feedback" },
+        {
+          label: "Learn",
+          collapsed: true,
+          autogenerate: { directory: "learn", collapsed: true },
+        },
+        {
+          label: "Guides",
+          collapsed: true,
+          autogenerate: { directory: "guides", collapsed: true },
+        },
         {
           label: "What's New",
           link: "/whats-new",
           badge: { text: "New", variant: "tip" },
         },
         {
-          label: "Getting Started",
-          autogenerate: { directory: "getting-started", collapsed: false },
-        },
-        {
-          label: "Learn",
-          collapsed: true,
-          autogenerate: { directory: "learn", collapsed: true },
-        },
-        { label: "Status", link: "/status" },
-        {
           label: "API",
           collapsed: true,
           autogenerate: { directory: "api", collapsed: true },
         },
-        { label: "Changelog", link: "/changelog" },
         {
           label: "Development",
           collapsed: true,
           autogenerate: { directory: "development", collapsed: true },
+        },
+        { label: "Status", link: "/status" },
+        { label: "Changelog", link: "/changelog" },
+        {
+          label: "Sponsor",
+          link: "https://github.com/sponsors/leaanthony",
+          badge: { text: "❤️" },
         },
       ],
     }),

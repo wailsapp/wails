@@ -1,5 +1,7 @@
 ---
-title: Bindings
+title: Changes (Bindings)
+sidebar:
+  order: 70
 ---
 
 Bindings work in a similar way to v2, by providing a means to bind struct

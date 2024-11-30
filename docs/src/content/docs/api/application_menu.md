@@ -1,5 +1,7 @@
 ---
 title: Application Menu
+sidebar:
+  order: 30
 ---
 
 ### RegisterContextMenu

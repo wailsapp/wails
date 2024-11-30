@@ -1,5 +1,7 @@
 ---
 title: Menu
+sidebar:
+  order: 160
 ---
 
 Menus can be created and added to the application. They can be used to create

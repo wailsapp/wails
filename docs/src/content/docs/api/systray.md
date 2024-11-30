@@ -1,5 +1,7 @@
 ---
 title: System Tray
+sidebar:
+  order: 150
 ---
 
 The system tray houses notification area on a desktop environment, which can

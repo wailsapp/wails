@@ -1,5 +1,7 @@
 ---
 title: Runtime
+sidebar:
+  order: 30
 ---
 
 The Wails runtime is the standard library for Wails applications. It provides a

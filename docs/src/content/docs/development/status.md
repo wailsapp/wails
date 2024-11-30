@@ -1,13 +1,25 @@
 ---
 title: Status
+sidebar:
+  order: 20
 ---
 
 Status of features in v3.
 
-!!! note
+:::note
 
-        This list is a mixture of public and internal API support.<br/>
-        It is not complete and probably not up to date.
+This list is a mixture of public and internal API support.
+
+It is not complete and probably not up to date.
+
+:::
+
+### Legend
+
+- ✅ = Supported
+- 🚧 = Under Development
+- ❔ = Untested
+- ❌ = Not available on the platform
 
 ## Known Issues
 
@@ -19,19 +31,19 @@ Application interface methods
 
 | Method                                                        | Windows | Linux | Mac | Notes |
 | ------------------------------------------------------------- | ------- | ----- | --- | ----- |
-| run() error                                                   | Y       | Y     | Y   |       |
-| destroy()                                                     |         | Y     | Y   |       |
-| setApplicationMenu(menu \*Menu)                               | Y       | Y     | Y   |       |
-| name() string                                                 |         | Y     | Y   |       |
-| getCurrentWindowID() uint                                     | Y       | Y     | Y   |       |
-| showAboutDialog(name string, description string, icon []byte) |         | Y     | Y   |       |
-| setIcon(icon []byte)                                          | -       | Y     | Y   |       |
-| on(id uint)                                                   |         |       | Y   |       |
-| dispatchOnMainThread(fn func())                               | Y       | Y     | Y   |       |
-| hide()                                                        | Y       | Y     | Y   |       |
-| show()                                                        | Y       | Y     | Y   |       |
-| getPrimaryScreen() (\*Screen, error)                          |         | Y     | Y   |       |
-| getScreens() ([]\*Screen, error)                              |         | Y     | Y   |       |
+| run() error                                                   | ✅      | ✅    | ✅  |       |
+| destroy()                                                     |         | ✅    | ✅  |       |
+| setApplicationMenu(menu \*Menu)                               | ✅      | ✅    | ✅  |       |
+| name() string                                                 |         | ✅    | ✅  |       |
+| getCurrentWindowID() uint                                     | ✅      | ✅    | ✅  |       |
+| showAboutDialog(name string, description string, icon []byte) |         | ✅    | ✅  |       |
+| setIcon(icon []byte)                                          | ❌      | ✅    | ✅  |       |
+| on(id uint)                                                   |         |       | ✅  |       |
+| dispatchOnMainThread(fn func())                               | ✅      | ✅    | ✅  |       |
+| hide()                                                        | ✅      | ✅    | ✅  |       |
+| show()                                                        | ✅      | ✅    | ✅  |       |
+| getPrimaryScreen() (\*Screen, error)                          |         | ✅    | ✅  |       |
+| getScreens() ([]\*Screen, error)                              |         | ✅    | ✅  |       |
 
 ## Webview Window
 
@@ -39,53 +51,53 @@ Webview Window Interface Methods
 
 | Method                                             | Windows | Linux | Mac | Notes                                    |
 | -------------------------------------------------- | ------- | ----- | --- | ---------------------------------------- |
-| center()                                           | Y       | Y     | Y   |                                          |
-| close()                                            | y       | Y     | Y   |                                          |
-| destroy()                                          |         | Y     | Y   |                                          |
-| execJS(js string)                                  | y       | Y     | Y   |                                          |
-| focus()                                            | Y       | Y     |     |                                          |
-| forceReload()                                      |         | Y     | Y   |                                          |
-| fullscreen()                                       | Y       | Y     | Y   |                                          |
-| getScreen() (\*Screen, error)                      | y       | Y     | Y   |                                          |
-| getZoom() float64                                  |         | Y     | Y   |                                          |
-| height() int                                       | Y       | Y     | Y   |                                          |
-| hide()                                             | Y       | Y     | Y   |                                          |
-| isFullscreen() bool                                | Y       | Y     | Y   |                                          |
-| isMaximised() bool                                 | Y       | Y     | Y   |                                          |
-| isMinimised() bool                                 | Y       | Y     | Y   |                                          |
-| maximise()                                         | Y       | Y     | Y   |                                          |
-| minimise()                                         | Y       | Y     | Y   |                                          |
-| nativeWindowHandle() (uintptr, error)              | Y       | Y     | Y   |                                          |
-| on(eventID uint)                                   | y       |       | Y   |                                          |
-| openContextMenu(menu *Menu, data *ContextMenuData) | y       | Y     | Y   |                                          |
-| relativePosition() (int, int)                      | Y       | Y     | Y   |                                          |
-| reload()                                           | y       | Y     | Y   |                                          |
-| run()                                              | Y       | Y     | Y   |                                          |
-| setAlwaysOnTop(alwaysOnTop bool)                   | Y       | Y     | Y   |                                          |
-| setBackgroundColour(color RGBA)                    | Y       | Y     | Y   |                                          |
-| setEnabled(bool)                                   |         | Y     | Y   |                                          |
-| setFrameless(bool)                                 |         | Y     | Y   |                                          |
-| setFullscreenButtonEnabled(enabled bool)           | -       | Y     | Y   | There is no fullscreen button in Windows |
-| setHTML(html string)                               | Y       | Y     | Y   |                                          |
-| setMaxSize(width, height int)                      | Y       | Y     | Y   |                                          |
-| setMinSize(width, height int)                      | Y       | Y     | Y   |                                          |
-| setRelativePosition(x int, y int)                  | Y       | Y     | Y   |                                          |
-| setResizable(resizable bool)                       | Y       | Y     | Y   |                                          |
-| setSize(width, height int)                         | Y       | Y     | Y   |                                          |
-| setTitle(title string)                             | Y       | Y     | Y   |                                          |
-| setURL(url string)                                 | Y       | Y     | Y   |                                          |
-| setZoom(zoom float64)                              | Y       | Y     | Y   |                                          |
-| show()                                             | Y       | Y     | Y   |                                          |
-| size() (int, int)                                  | Y       | Y     | Y   |                                          |
-| toggleDevTools()                                   | Y       | Y     | Y   |                                          |
-| unfullscreen()                                     | Y       | Y     | Y   |                                          |
-| unmaximise()                                       | Y       | Y     | Y   |                                          |
-| unminimise()                                       | Y       | Y     | Y   |                                          |
-| width() int                                        | Y       | Y     | Y   |                                          |
-| zoom()                                             |         | Y     | Y   |                                          |
-| zoomIn()                                           | Y       | Y     | Y   |                                          |
-| zoomOut()                                          | Y       | Y     | Y   |                                          |
-| zoomReset()                                        | Y       | Y     | Y   |                                          |
+| center()                                           | ✅      | ✅    | ✅  |                                          |
+| close()                                            | ✅      | ✅    | ✅  |                                          |
+| destroy()                                          |         | ✅    | ✅  |                                          |
+| execJS(js string)                                  | ✅      | ✅    | ✅  |                                          |
+| focus()                                            | ✅      | ✅    |     |                                          |
+| forceReload()                                      |         | ✅    | ✅  |                                          |
+| fullscreen()                                       | ✅      | ✅    | ✅  |                                          |
+| getScreen() (\*Screen, error)                      | ✅      | ✅    | ✅  |                                          |
+| getZoom() float64                                  |         | ✅    | ✅  |                                          |
+| height() int                                       | ✅      | ✅    | ✅  |                                          |
+| hide()                                             | ✅      | ✅    | ✅  |                                          |
+| isFullscreen() bool                                | ✅      | ✅    | ✅  |                                          |
+| isMaximised() bool                                 | ✅      | ✅    | ✅  |                                          |
+| isMinimised() bool                                 | ✅      | ✅    | ✅  |                                          |
+| maximise()                                         | ✅      | ✅    | ✅  |                                          |
+| minimise()                                         | ✅      | ✅    | ✅  |                                          |
+| nativeWindowHandle() (uintptr, error)              | ✅      | ✅    | ✅  |                                          |
+| on(eventID uint)                                   | ✅      |       | ✅  |                                          |
+| openContextMenu(menu *Menu, data *ContextMenuData) | ✅      | ✅    | ✅  |                                          |
+| relativePosition() (int, int)                      | ✅      | ✅    | ✅  |                                          |
+| reload()                                           | ✅      | ✅    | ✅  |                                          |
+| run()                                              | ✅      | ✅    | ✅  |                                          |
+| setAlwaysOnTop(alwaysOnTop bool)                   | ✅      | ✅    | ✅  |                                          |
+| setBackgroundColour(color RGBA)                    | ✅      | ✅    | ✅  |                                          |
+| setEnabled(bool)                                   |         | ✅    | ✅  |                                          |
+| setFrameless(bool)                                 |         | ✅    | ✅  |                                          |
+| setFullscreenButtonEnabled(enabled bool)           | ❌      | ✅    | ✅  | There is no fullscreen button in Windows |
+| setHTML(html string)                               | ✅      | ✅    | ✅  |                                          |
+| setMaxSize(width, height int)                      | ✅      | ✅    | ✅  |                                          |
+| setMinSize(width, height int)                      | ✅      | ✅    | ✅  |                                          |
+| setRelativePosition(x int, y int)                  | ✅      | ✅    | ✅  |                                          |
+| setResizable(resizable bool)                       | ✅      | ✅    | ✅  |                                          |
+| setSize(width, height int)                         | ✅      | ✅    | ✅  |                                          |
+| setTitle(title string)                             | ✅      | ✅    | ✅  |                                          |
+| setURL(url string)                                 | ✅      | ✅    | ✅  |                                          |
+| setZoom(zoom float64)                              | ✅      | ✅    | ✅  |                                          |
+| show()                                             | ✅      | ✅    | ✅  |                                          |
+| size() (int, int)                                  | ✅      | ✅    | ✅  |                                          |
+| toggleDevTools()                                   | ✅      | ✅    | ✅  |                                          |
+| unfullscreen()                                     | ✅      | ✅    | ✅  |                                          |
+| unmaximise()                                       | ✅      | ✅    | ✅  |                                          |
+| unminimise()                                       | ✅      | ✅    | ✅  |                                          |
+| width() int                                        | ✅      | ✅    | ✅  |                                          |
+| zoom()                                             |         | ✅    | ✅  |                                          |
+| zoomIn()                                           | ✅      | ✅    | ✅  |                                          |
+| zoomOut()                                          | ✅      | ✅    | ✅  |                                          |
+| zoomReset()                                        | ✅      | ✅    | ✅  |                                          |
 
 ## Runtime
 
@@ -93,35 +105,35 @@ Webview Window Interface Methods
 
 | Feature | Windows | Linux | Mac | Notes |
 | ------- | ------- | ----- | --- | ----- |
-| Quit    | Y       | Y     | Y   |       |
-| Hide    | Y       | Y     | Y   |       |
-| Show    | Y       |       | Y   |       |
+| Quit    | ✅      | ✅    | ✅  |       |
+| Hide    | ✅      | ✅    | ✅  |       |
+| Show    | ✅      |       | ✅  |       |
 
 ### Dialogs
 
 | Feature  | Windows | Linux | Mac | Notes |
 | -------- | ------- | ----- | --- | ----- |
-| Info     | Y       | Y     | Y   |       |
-| Warning  | Y       | Y     | Y   |       |
-| Error    | Y       | Y     | Y   |       |
-| Question | Y       | Y     | Y   |       |
-| OpenFile | Y       | Y     | Y   |       |
-| SaveFile | Y       | Y     | Y   |       |
+| Info     | ✅      | ✅    | ✅  |       |
+| Warning  | ✅      | ✅    | ✅  |       |
+| Error    | ✅      | ✅    | ✅  |       |
+| Question | ✅      | ✅    | ✅  |       |
+| OpenFile | ✅      | ✅    | ✅  |       |
+| SaveFile | ✅      | ✅    | ✅  |       |
 
 ### Clipboard
 
 | Feature | Windows | Linux | Mac | Notes |
 | ------- | ------- | ----- | --- | ----- |
-| SetText | Y       | Y     | Y   |       |
-| Text    | Y       | Y     | Y   |       |
+| SetText | ✅      | ✅    | ✅  |       |
+| Text    | ✅      | ✅    | ✅  |       |
 
 ### ContextMenu
 
 | Feature          | Windows | Linux | Mac | Notes |
 | ---------------- | ------- | ----- | --- | ----- |
-| OpenContextMenu  | Y       | Y     | Y   |       |
+| OpenContextMenu  | ✅      | ✅    | ✅  |       |
 | On By Default    |         |       |     |       |
-| Control via HTML | Y       |       |     |       |
+| Control via HTML | ✅      |       |     |       |
 
 The default context menu is enabled by default for all elements that are
 `contentEditable: true`, `<input>` or `<textarea>` tags or have the
@@ -137,91 +149,83 @@ show the context menu unless it is explicitly set with
 
 | Feature    | Windows | Linux | Mac | Notes |
 | ---------- | ------- | ----- | --- | ----- |
-| GetAll     | Y       | Y     | Y   |       |
-| GetPrimary | Y       | Y     | Y   |       |
-| GetCurrent | Y       | Y     | Y   |       |
+| GetAll     | ✅      | ✅    | ✅  |       |
+| GetPrimary | ✅      | ✅    | ✅  |       |
+| GetCurrent | ✅      | ✅    | ✅  |       |
 
 ### System
 
 | Feature    | Windows | Linux | Mac | Notes |
 | ---------- | ------- | ----- | --- | ----- |
-| IsDarkMode |         |       | Y   |       |
+| IsDarkMode |         |       | ✅  |       |
 
 ### Window
 
-Y = Supported U = Untested
-
-- = Not available
-
 | Feature             | Windows | Linux | Mac | Notes                                                                                |
 | ------------------- | ------- | ----- | --- | ------------------------------------------------------------------------------------ |
-| Center              | Y       | Y     | Y   |                                                                                      |
-| Focus               | Y       | Y     |     |                                                                                      |
-| FullScreen          | Y       | Y     | Y   |                                                                                      |
-| GetZoom             | Y       | Y     | Y   | Get current view scale                                                               |
-| Height              | Y       | Y     | Y   |                                                                                      |
-| Hide                | Y       | Y     | Y   |                                                                                      |
-| Maximise            | Y       | Y     | Y   |                                                                                      |
-| Minimise            | Y       | Y     | Y   |                                                                                      |
-| RelativePosition    | Y       | Y     | Y   |                                                                                      |
-| Screen              | Y       | Y     | Y   | Get screen for window                                                                |
-| SetAlwaysOnTop      | Y       | Y     | Y   |                                                                                      |
-| SetBackgroundColour | Y       | Y     | Y   | https://github.com/MicrosoftEdge/WebView2Feedback/issues/1621#issuecomment-938234294 |
-| SetEnabled          | Y       | U     | -   | Set the window to be enabled/disabled                                                |
-| SetMaxSize          | Y       | Y     | Y   |                                                                                      |
-| SetMinSize          | Y       | Y     | Y   |                                                                                      |
-| SetRelativePosition | Y       | Y     | Y   |                                                                                      |
-| SetResizable        | Y       | Y     | Y   |                                                                                      |
-| SetSize             | Y       | Y     | Y   |                                                                                      |
-| SetTitle            | Y       | Y     | Y   |                                                                                      |
-| SetZoom             | Y       | Y     | Y   | Set view scale                                                                       |
-| Show                | Y       | Y     | Y   |                                                                                      |
-| Size                | Y       | Y     | Y   |                                                                                      |
-| UnFullscreen        | Y       | Y     | Y   |                                                                                      |
-| UnMaximise          | Y       | Y     | Y   |                                                                                      |
-| UnMinimise          | Y       | Y     | Y   |                                                                                      |
-| Width               | Y       | Y     | Y   |                                                                                      |
-| ZoomIn              | Y       | Y     | Y   | Increase view scale                                                                  |
-| ZoomOut             | Y       | Y     | Y   | Decrease view scale                                                                  |
-| ZoomReset           | Y       | Y     | Y   | Reset view scale                                                                     |
+| Center              | ✅      | ✅    | ✅  |                                                                                      |
+| Focus               | ✅      | ✅    |     |                                                                                      |
+| FullScreen          | ✅      | ✅    | ✅  |                                                                                      |
+| GetZoom             | ✅      | ✅    | ✅  | Get current view scale                                                               |
+| Height              | ✅      | ✅    | ✅  |                                                                                      |
+| Hide                | ✅      | ✅    | ✅  |                                                                                      |
+| Maximise            | ✅      | ✅    | ✅  |                                                                                      |
+| Minimise            | ✅      | ✅    | ✅  |                                                                                      |
+| RelativePosition    | ✅      | ✅    | ✅  |                                                                                      |
+| Screen              | ✅      | ✅    | ✅  | Get screen for window                                                                |
+| SetAlwaysOnTop      | ✅      | ✅    | ✅  |                                                                                      |
+| SetBackgroundColour | ✅      | ✅    | ✅  | https://github.com/MicrosoftEdge/WebView2Feedback/issues/1621#issuecomment-938234294 |
+| SetEnabled          | ✅      | ❔    | ❌  | Set the window to be enabled/disabled                                                |
+| SetMaxSize          | ✅      | ✅    | ✅  |                                                                                      |
+| SetMinSize          | ✅      | ✅    | ✅  |                                                                                      |
+| SetRelativePosition | ✅      | ✅    | ✅  |                                                                                      |
+| SetResizable        | ✅      | ✅    | ✅  |                                                                                      |
+| SetSize             | ✅      | ✅    | ✅  |                                                                                      |
+| SetTitle            | ✅      | ✅    | ✅  |                                                                                      |
+| SetZoom             | ✅      | ✅    | ✅  | Set view scale                                                                       |
+| Show                | ✅      | ✅    | ✅  |                                                                                      |
+| Size                | ✅      | ✅    | ✅  |                                                                                      |
+| UnFullscreen        | ✅      | ✅    | ✅  |                                                                                      |
+| UnMaximise          | ✅      | ✅    | ✅  |                                                                                      |
+| UnMinimise          | ✅      | ✅    | ✅  |                                                                                      |
+| Width               | ✅      | ✅    | ✅  |                                                                                      |
+| ZoomIn              | ✅      | ✅    | ✅  | Increase view scale                                                                  |
+| ZoomOut             | ✅      | ✅    | ✅  | Decrease view scale                                                                  |
+| ZoomReset           | ✅      | ✅    | ✅  | Reset view scale                                                                     |
 
 ### Window Options
 
-A 'Y' in the table below indicates that the option has been tested and is
-applied when the window is created. An 'X' indicates that the option is not
-supported by the platform.
-
 | Feature                         | Windows | Linux | Mac | Notes                                      |
 | ------------------------------- | ------- | ----- | --- | ------------------------------------------ |
-| AlwaysOnTop                     | Y       | Y     |     |                                            |
-| BackgroundColour                | Y       | Y     |     |                                            |
+| AlwaysOnTop                     | ✅      | ✅    |     |                                            |
+| BackgroundColour                | ✅      | ✅    |     |                                            |
 | BackgroundType                  |         |       |     | Acrylic seems to work but the others don't |
-| CSS                             | Y       | Y     |     |                                            |
-| DevToolsEnabled                 | Y       | Y     | Y   |                                            |
-| DisableResize                   | Y       | Y     |     |                                            |
-| EnableDragAndDrop               |         | Y     |     |                                            |
+| CSS                             | ✅      | ✅    |     |                                            |
+| DevToolsEnabled                 | ✅      | ✅    | ✅  |                                            |
+| DisableResize                   | ✅      | ✅    |     |                                            |
+| EnableDragAndDrop               |         | ✅    |     |                                            |
 | EnableFraudulentWebsiteWarnings |         |       |     |                                            |
-| Focused                         | Y       | Y     |     |                                            |
-| Frameless                       | Y       | Y     |     |                                            |
-| FullscreenButtonEnabled         | Y       |       |     |                                            |
-| Height                          | Y       | Y     |     |                                            |
-| Hidden                          | Y       | Y     |     |                                            |
-| HTML                            | Y       | Y     |     |                                            |
-| JS                              | Y       | Y     |     |                                            |
-| Mac                             | -       | -     |     |                                            |
-| MaxHeight                       | Y       | Y     |     |                                            |
-| MaxWidth                        | Y       | Y     |     |                                            |
-| MinHeight                       | Y       | Y     |     |                                            |
-| MinWidth                        | Y       | Y     |     |                                            |
-| Name                            | Y       | Y     |     |                                            |
+| Focused                         | ✅      | ✅    |     |                                            |
+| Frameless                       | ✅      | ✅    |     |                                            |
+| FullscreenButtonEnabled         | ✅      |       |     |                                            |
+| Height                          | ✅      | ✅    |     |                                            |
+| Hidden                          | ✅      | ✅    |     |                                            |
+| HTML                            | ✅      | ✅    |     |                                            |
+| JS                              | ✅      | ✅    |     |                                            |
+| Mac                             | ❌      | ❌    |     |                                            |
+| MaxHeight                       | ✅      | ✅    |     |                                            |
+| MaxWidth                        | ✅      | ✅    |     |                                            |
+| MinHeight                       | ✅      | ✅    |     |                                            |
+| MinWidth                        | ✅      | ✅    |     |                                            |
+| Name                            | ✅      | ✅    |     |                                            |
 | OpenInspectorOnStartup          |         |       |     |                                            |
-| StartState                      | Y       |       |     |                                            |
-| Title                           | Y       | Y     |     |                                            |
-| URL                             | Y       | Y     |     |                                            |
-| Width                           | Y       | Y     |     |                                            |
-| Windows                         | Y       | -     | -   |                                            |
-| X                               | Y       | Y     |     |                                            |
-| Y                               | Y       | Y     |     |                                            |
+| StartState                      | ✅      |       |     |                                            |
+| Title                           | ✅      | ✅    |     |                                            |
+| URL                             | ✅      | ✅    |     |                                            |
+| Width                           | ✅      | ✅    |     |                                            |
+| Windows                         | ✅      | ❌    | ❌  |                                            |
+| X                               | ✅      | ✅    |     |                                            |
+| Y                               | ✅      | ✅    |     |                                            |
 | Zoom                            |         |       |     |                                            |
 | ZoomControlEnabled              |         |       |     |                                            |
 
@@ -233,29 +237,29 @@ To log or not to log? System logger vs custom logger.
 
 | Event                    | Windows | Linux | Mac | Notes |
 | ------------------------ | ------- | ----- | --- | ----- |
-| Default Application Menu | Y       | Y     | Y   |       |
+| Default Application Menu | ✅      | ✅    | ✅  |       |
 
 ## Tray Menus
 
 | Feature            | Windows | Linux | Mac | Notes                                                                |
 | ------------------ | ------- | ----- | --- | -------------------------------------------------------------------- |
-| Icon               | Y       | Y     | Y   | Windows has default icons for light/dark mode & supports PNG or ICO. |
-| Label              | -       | Y     | Y   |                                                                      |
-| Label (ANSI Codes) | -       |       |     |                                                                      |
-| Menu               | Y       | Y     | Y   |                                                                      |
+| Icon               | ✅      | ✅    | ✅  | Windows has default icons for light/dark mode & supports PNG or ICO. |
+| Label              | ❌      | ✅    | ✅  |                                                                      |
+| Label (ANSI Codes) | ❌      |       |     |                                                                      |
+| Menu               | ✅      | ✅    | ✅  |                                                                      |
 
 ### Methods
 
 | Method                        | Windows | Linux | Mac | Notes                              |
 | ----------------------------- | ------- | ----- | --- | ---------------------------------- |
-| setLabel(label string)        | -       | Y     | Y   |                                    |
-| run()                         | Y       | Y     | Y   |                                    |
-| setIcon(icon []byte)          | Y       | Y     | Y   |                                    |
-| setMenu(menu \*Menu)          | Y       | Y     | Y   |                                    |
-| setIconPosition(position int) | -       | Y     | Y   |                                    |
-| setTemplateIcon(icon []byte)  | -       | Y     | Y   |                                    |
-| destroy()                     | Y       | Y     | Y   |                                    |
-| setDarkModeIcon(icon []byte)  | Y       | Y     | Y   | Darkmode isn't handled yet (linux) |
+| setLabel(label string)        | ❌      | ✅    | ✅  |                                    |
+| run()                         | ✅      | ✅    | ✅  |                                    |
+| setIcon(icon []byte)          | ✅      | ✅    | ✅  |                                    |
+| setMenu(menu \*Menu)          | ✅      | ✅    | ✅  |                                    |
+| setIconPosition(position int) | ❌      | ✅    | ✅  |                                    |
+| setTemplateIcon(icon []byte)  | ❌      | ✅    | ✅  |                                    |
+| destroy()                     | ✅      | ✅    | ✅  |                                    |
+| setDarkModeIcon(icon []byte)  | ✅      | ✅    | ✅  | Darkmode isn't handled yet (linux) |
 
 ## Cross Platform Events
 
@@ -287,9 +291,9 @@ Contains a lot needed for development.
 
 | Mode   | Windows | Linux | Mac | Notes |
 | ------ | ------- | ----- | --- | ----- |
-| Dark   | Y       |       |     |       |
-| Light  | Y       |       |     |       |
-| System | Y       |       |     |       |
+| Dark   | ✅      |       |     |       |
+| Light  | ✅      |       |     |       |
+| System | ✅      |       |     |       |
 
 ## NSIS Installer
 
@@ -305,12 +309,12 @@ Built-in plugin support:
 
 | Plugin          | Windows | Linux | Mac | Notes |
 | --------------- | ------- | ----- | --- | ----- |
-| Browser         | Y       |       | Y   |       |
-| KV Store        | Y       | Y     | Y   |       |
-| Log             | Y       | Y     | Y   |       |
-| Single Instance | Y       |       | Y   |       |
-| SQLite          | Y       | Y     | Y   |       |
-| Start at login  | Y       |       | Y   |       |
+| Browser         | ✅      |       | ✅  |       |
+| KV Store        | ✅      | ✅    | ✅  |       |
+| Log             | ✅      | ✅    | ✅  |       |
+| Single Instance | ✅      |       | ✅  |       |
+| SQLite          | ✅      | ✅    | ✅  |       |
+| Start at login  | ✅      |       | ✅  |       |
 | Server          |         |       |     |       |
 
 TODO:
@@ -321,23 +325,25 @@ TODO:
 
 |                 | Windows | Linux | Mac | Notes |
 | --------------- | ------- | ----- | --- | ----- |
-| Icon Generation | Y       |       | Y   |       |
-| Icon Embedding  | Y       |       | Y   |       |
-| Info.plist      | -       |       | Y   |       |
-| NSIS Installer  |         |       | -   |       |
-| Mac bundle      | -       |       | Y   |       |
-| Windows exe     | Y       |       | -   |       |
+| Icon Generation | ✅      |       | ✅  |       |
+| Icon Embedding  | ✅      |       | ✅  |       |
+| Info.plist      | ❌      |       | ✅  |       |
+| NSIS Installer  |         |       | ❌  |       |
+| Mac bundle      | ❌      |       | ✅  |       |
+| Windows exe     | ✅      |       | ❌  |       |
 
 ## Frameless Windows
 
 | Feature | Windows | Linux | Mac | Notes                                          |
 | ------- | ------- | ----- | --- | ---------------------------------------------- |
-| Resize  | Y       |       | Y   |                                                |
-| Drag    | Y       | Y     | Y   | Linux - can always drag with `Meta`+left mouse |
+| Resize  | ✅      |       | ✅  |                                                |
+| Drag    | ✅      | ✅    | ✅  | Linux - can always drag with `Meta`+left mouse |
 
 ## Mac Specific
 
-- [x] Translucency
+| Feature      | Mac | Notes |
+| ------------ | --- | ----- |
+| Translucency | ✅  |       |
 
 ### Mac Options
 
@@ -352,8 +358,10 @@ TODO:
 
 ## Windows Specific
 
-- [x] Translucency
-- [x] Custom Themes
+| Feature       | Windows | Notes |
+| ------------- | ------- | ----- |
+| Translucency  | ✅      |       |
+| Custom Themes | ✅      |       |
 
 ### Windows Options
 
@@ -371,8 +379,8 @@ TODO:
 Implementation details for the functions utilized by the `*_linux.go` files are
 located in the following files:
 
-- linux_cgo.go: CGo implementation
-- linux_purego.go: PureGo implementation
+- `linux_cgo.go`: CGo implementation
+- `linux_purego.go`: PureGo implementation
 
 ### CGO
 
@@ -384,6 +392,12 @@ developed.
 
 The examples can be compiled using the following command:
 
-    CGO_ENABLED=0 go build -tags purego
+```bash
+CGO_ENABLED=0 go build -tags purego
+```
 
-Note: things are currently not working after the refactor
+:::note
+
+Things are currently not working after the refactor
+
+:::

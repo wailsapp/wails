@@ -1,5 +1,7 @@
 ---
-title: Drag and Drop
+title: Changes (Drag and Drop)
+sidebar:
+  order: 80
 ---
 
 Native drag and drop can be enabled per-window. Simply set the

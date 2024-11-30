@@ -1,5 +1,7 @@
 ---
-title: Events
+title: Changes (Events)
+sidebar:
+  order: 40
 ---
 
 In v3, there are 3 types of events:

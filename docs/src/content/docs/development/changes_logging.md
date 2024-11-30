@@ -1,5 +1,7 @@
 ---
-title: Logging
+title: Changes (Logging)
+sidebar:
+  order: 140
 ---
 
 Logging in v2 was confusing as both application logs and system (internal) logs

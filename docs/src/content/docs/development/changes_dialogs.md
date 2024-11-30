@@ -1,5 +1,7 @@
 ---
-title: Dialogs
+title: Changes (Dialogs)
+sidebar:
+  order: 100
 ---
 
 Dialogs are now available in JavaScript!
@@ -14,12 +16,15 @@ callback method:
 
 ```go
 dialog := app.QuestionDialog().
+
 SetTitle("Update").
 SetMessage("The cancel button is selected when pressing escape")
+
 ok := dialog.AddButton("Ok")
 ok.OnClick(func() {
   // Do something
 })
+
 no := dialog.AddButton("Cancel")
 dialog.SetDefaultButton(ok)
 dialog.SetCancelButton(no)

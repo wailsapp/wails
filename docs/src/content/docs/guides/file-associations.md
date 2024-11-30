@@ -1,5 +1,7 @@
 ---
 title: File Associations
+sidebar:
+  order: 20
 ---
 
 File associations allow your application to handle specific file types when

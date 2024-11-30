@@ -1,9 +1,11 @@
 ---
-title: Wails Markup Language (WML)
+title: Changes (WML)
+sidebar:
+  order: 120
 ---
 
-The Wails Markup Language is a simple markup language that allows you to add
-functionality to standard HTML elements without the use of Javascript.
+The Wails Markup Language (**WML**) is a simple markup language that allows you
+to add functionality to standard HTML elements without the use of Javascript.
 
 The following tags are currently supported:
 

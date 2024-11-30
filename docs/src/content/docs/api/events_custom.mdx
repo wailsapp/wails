@@ -1,0 +1,147 @@
+---
+title: Events (Custom)
+tableOfContents:
+  maxHeadingLevel: 4
+sidebar:
+  order: 130
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Custom Events
+
+You can create your own custom events that can be emitted and received on both
+the frontend and backend. Events are able to emitted at both the application and
+the window level. The receiver of the event gets data of where the event was
+emitted from along with the data that was sent with the event. Events can be
+cancelled by the receiver.
+
+<Tabs syncKey="language">
+    <TabItem label="Go" icon="seti:go">
+
+    ```go
+    app.OnEvent("event1", func(e \*application.CustomEvent) {
+        app.Logger.Info("[Go] CustomEvent received", "name", e.Name, "data", e.Data,
+        "sender", e.Sender, "cancelled", e.Cancelled) app.Logger.Info("[Go]",
+        e.Data[0].(string)) // Logs "Hello from JS" to the terminal })
+
+        window.EmitEvent("event2", "Hello from Go")
+    }
+
+    ```
+
+    </TabItem>
+    <TabItem label="JS" icon="seti:javascript">
+
+    ```js
+    wails.Events.Emit("event1", "Hello from JS");
+
+    wails.Events.On("event2", function (event) {
+        console.log("[JS] CustomEvent received", event);
+        console.log(event.data); // prints "Hello from Go" to the webview console
+    });
+    ```
+
+    </TabItem>
+
+</Tabs>
+
+### Emitting Events
+
+<Tabs syncKey="language">
+    <TabItem label="Go" icon="seti:go">
+
+#### `application.EmitEvent(name string, data ...any)`
+
+Emits an event from the application instance
+
+    </TabItem>
+    <TabItem label="JS" icon="seti:javascript">
+
+#### `window.EmitEvent(name string, data ...any)`
+
+Emits an event from the window instance
+
+#### `wails.Events.Emit(event:wails.Events.EventData)`
+
+Emits an event from the frontend sending an object with `name` and `data`
+properties or the typescript type WailsEvent
+
+    </TabItem>
+
+</Tabs>
+
+### Receiving Events
+
+Events can be received on the application instance and the frontend with a
+couple options of how you chose to receive them. You can register a single event
+listener that will trigger every time the event is emitted or you can register
+an event listener that will only trigger a specific number of times.
+
+<Tabs syncKey="language">
+    <TabItem label="Go" icon="seti:go">
+
+#### `application.OnEvent(name string, handler func(data ...any))`
+
+Registers an event on the application instance this will trigger every time the
+event is emitted
+
+#### `application.OnMultipleEvent(name string, handler func(data ...any), count int)`
+
+Registers an event on the application instance this will trigger every time the
+event is emitted up to the count specified
+
+    </TabItem>
+    <TabItem label="JS" icon="seti:javascript">
+
+#### `wails.Events.On(name: string, callback: ()=>void)`,
+
+Registers an event on the frontend, this function returns a function that can be
+called to remove the event listener
+
+#### `wails.Events.Once(name: string, callback: ()=>void)`,
+
+Registers an event on the frontend that will only be called once, this function
+returns a function that can be called to remove the event listener
+
+#### `wails.Events.OnMultiple(name: string, callback: ()=>void, count: number)`,
+
+Registers an event on the frontend that will only be called `count` times, this
+function returns a function that can be called to remove the event listener
+
+    </TabItem>
+
+</Tabs>
+
+### Removing Events
+
+There are a few ways to remove events that are registered. All of the
+registration functions return a function that can be called to remove the event
+listener in the frontend. There are additional functions provided to help remove
+events as well.
+
+<Tabs syncKey="language">
+    <TabItem label="Go" icon="seti:go">
+
+#### `application.OffEvent(name string, ...additionalNames string)`
+
+Removes an event listener with the specified name
+
+#### `application.ResetEvents()`
+
+Removes all registered events and hooks
+
+    </TabItem>
+    <TabItem label="JS" icon="seti:javascript">
+
+#### `wails.Events.OffAll()`
+
+Removes all registered events
+
+#### `wails.Events.Off(name: string)`
+
+Removes an event listener with the specified name
+
+    </TabItem>
+
+</Tabs>

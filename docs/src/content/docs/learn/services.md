@@ -1,5 +1,7 @@
 ---
 title: Services
+sidebar:
+  order: 10
 ---
 
 Services in Wails v3 provide a powerful way to extend the functionality of your

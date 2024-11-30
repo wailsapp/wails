@@ -1,5 +1,7 @@
 ---
 title: Application Dialogs
+sidebar:
+  order: 40
 ---
 
 :::caution[MacOS Dialogs and Application Lifecycle]

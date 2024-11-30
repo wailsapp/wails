@@ -1,5 +1,7 @@
 ---
 title: Application Events
+sidebar:
+  order: 50
 ---
 
 ### OnEvent
@@ -38,7 +40,7 @@ API:
 
 `OnApplicationEvent()` registers an event listener for specific application
 events. The `eventType` is based on events.ApplicationEventType. See
-[ApplicationEventType](/api/events/#applicationevent)
+[ApplicationEventType](/api/event_types/#applicationevent)
 
 ### RegisterApplicationHook
 

@@ -1,5 +1,7 @@
 ---
-title: ClipBoard
+title: Changes (Clipboard)
+sidebar:
+  order: 110
 ---
 
 The clipboard API has been simplified. There is now a single `Clipboard` object

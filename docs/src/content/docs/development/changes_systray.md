@@ -1,5 +1,7 @@
 ---
-title: Systray
+title: Changes (Systray)
+sidebar:
+  order: 60
 ---
 
 Wails 3 comes with a built-in systray. This is a fully featured systray that has

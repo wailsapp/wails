@@ -1,5 +1,7 @@
 ---
-title: Plugins
+title: Changes (Plugins)
+sidebar:
+  order: 130
 ---
 
 Plugins are a way to extend the functionality of your Wails application.

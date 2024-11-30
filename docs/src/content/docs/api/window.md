@@ -1,5 +1,7 @@
 ---
 title: Window
+sidebar:
+  order: 80
 ---
 
 To create a window, use

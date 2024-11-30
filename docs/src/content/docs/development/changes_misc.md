@@ -1,5 +1,7 @@
 ---
-title: Misc
+title: Changes (Misc)
+sidebar:
+  order: 150
 ---
 
 ## Windows Application Options
