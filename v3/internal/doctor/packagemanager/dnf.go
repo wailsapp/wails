@@ -43,9 +43,6 @@ func (y *Dnf) Packages() Packagemap {
 			{Name: "npm", SystemPackage: true},
 			{Name: "nodejs-npm", SystemPackage: true},
 		},
-		"nfpm*": []*Package{
-			{Name: "nfpm", SystemPackage: false, InstallCheck: isNfpmInstalled, InstallCommand: "go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest", Optional: true},
-		},
 	}
 }
 

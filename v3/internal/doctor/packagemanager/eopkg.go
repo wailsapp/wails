@@ -41,9 +41,6 @@ func (e *Eopkg) Packages() Packagemap {
 		"npm": []*Package{
 			{Name: "nodejs", SystemPackage: true},
 		},
-		"nfpm": []*Package{
-			{Name: "nfpm", SystemPackage: false, InstallCheck: isNfpmInstalled, InstallCommand: "go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest", Optional: true},
-		},
 	}
 }
 

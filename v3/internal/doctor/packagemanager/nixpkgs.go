@@ -55,9 +55,6 @@ func (n *Nixpkgs) Packages() Packagemap {
 		"npm": []*Package{
 			{Name: channel + ".nodejs", SystemPackage: true},
 		},
-		"nfpm": []*Package{
-			{Name: channel + ".nfpm", SystemPackage: false, InstallCheck: isNfpmInstalled, InstallCommand: "go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest", Optional: true},
-		},
 	}
 }
 

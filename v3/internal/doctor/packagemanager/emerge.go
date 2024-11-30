@@ -41,9 +41,6 @@ func (e *Emerge) Packages() Packagemap {
 		"npm": []*Package{
 			{Name: "net-libs/nodejs", SystemPackage: true},
 		},
-		"nfpm": []*Package{
-			{Name: "nfpm", SystemPackage: false, InstallCheck: isNfpmInstalled, InstallCommand: "go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest", Optional: true},
-		},
 	}
 }
 
