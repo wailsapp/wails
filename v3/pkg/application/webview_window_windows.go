@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 	"unsafe"
@@ -57,9 +58,8 @@ type windowsWebviewWindow struct {
 	previousWindowPlacement w32.WINDOWPLACEMENT
 
 	// Webview
-	chromium        *edge.Chromium
-	hasStarted      bool
-	resizeDebouncer func(func())
+	chromium   *edge.Chromium
+	hasStarted bool
 
 	// resizeBorder* is the width/height of the resize border in pixels.
 	resizeBorderWidth  int32
@@ -364,10 +364,6 @@ func (w *windowsWebviewWindow) run() {
 	// Process window mask
 	if options.Windows.WindowMask != nil {
 		w.setWindowMask(options.Windows.WindowMask)
-	}
-
-	if options.Windows.ResizeDebounceMS > 0 {
-		w.resizeDebouncer = debounce.New(time.Duration(options.Windows.ResizeDebounceMS) * time.Millisecond)
 	}
 
 	if options.InitialPosition == WindowCentered {
@@ -1006,6 +1002,8 @@ func (w *windowsWebviewWindow) isActive() bool {
 	return w32.GetForegroundWindow() == w.hwnd
 }
 
+var resizePending int32
+
 func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	switch msg {
 	case w32.WM_ACTIVATE:
@@ -1064,20 +1062,24 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		case w32.SIZE_MINIMIZED:
 			w.parent.emit(events.Windows.WindowMinimise)
 		}
+
 		if w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED {
 			// If the window is frameless, and we are minimizing, then we need to suppress the Resize on the
 			// WebView2. If we don't do this, restoring does not work as expected and first restores with some wrong
 			// size during the restore animation and only fully renders when the animation is done. This highly
 			// depends on the content in the WebView, see https://github.com/wailsapp/wails/issues/1319
-		} else if w.resizeDebouncer != nil {
-			w.resizeDebouncer(func() {
-				InvokeSync(func() {
-					w.chromium.Resize()
-				})
-				w.parent.emit(events.Windows.WindowDidResize)
-			})
 		} else {
-			w.chromium.Resize()
+			if atomic.CompareAndSwapInt32(&resizePending, 0, 1) {
+				go func() {
+					// Wait for next vsync-like interval
+					time.Sleep(time.Millisecond) // ~60fps timing
+					InvokeSync(func() {
+						w.chromium.Resize()
+						atomic.StoreInt32(&resizePending, 0)
+						w.parent.emit(events.Windows.WindowDidResize)
+					})
+				}()
+			}
 		}
 		return 0
 
@@ -1491,7 +1493,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 			//println(windowName)
 			//if windowName == "Chrome_RenderWidgetHostHWND" {
 			err := w32.RegisterDragDrop(hwnd, w.dropTarget)
-			if err != nil && err != syscall.Errno(w32.DRAGDROP_E_ALREADYREGISTERED) {
+			if err != nil && !errors.Is(err, syscall.Errno(w32.DRAGDROP_E_ALREADYREGISTERED)) {
 				globalApplication.error("Error registering drag and drop: " + err.Error())
 			}
 			//}
@@ -1546,6 +1548,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 	settings, err := chromium.GetSettings()
 	if err != nil {
 		globalApplication.fatal(err.Error())
+	}
+	if settings == nil {
+		globalApplication.fatal("Error getting settings")
 	}
 	err = settings.PutAreDefaultContextMenusEnabled(debugMode || !w.parent.options.DefaultContextMenuDisabled)
 	if err != nil {
