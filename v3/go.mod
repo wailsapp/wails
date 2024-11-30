@@ -30,9 +30,9 @@ require (
 	github.com/pterm/pterm v0.12.51
 	github.com/samber/lo v1.38.1
 	github.com/tc-hib/winres v0.3.1
-	github.com/wailsapp/go-webview2 v1.0.17
+	github.com/wailsapp/go-webview2 v1.0.18-0.20241130004144-dd8667af33c1
 	github.com/wailsapp/mimetype v1.4.1
-	golang.org/x/sys v0.22.0
+	golang.org/x/sys v0.27.0
 	golang.org/x/term v0.20.0
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d
 	gopkg.in/yaml.v3 v3.0.1

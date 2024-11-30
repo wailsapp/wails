@@ -1503,14 +1503,23 @@ func (w *windowsWebviewWindow) setupChromium() {
 	if opts.GeneralAutofillEnabled {
 		err = chromium.PutIsGeneralAutofillEnabled(true)
 		if err != nil {
-			globalApplication.error(err.Error())
+			if errors.Is(edge.UnsupportedCapabilityError, err) {
+				// warning
+				globalApplication.warning("unsupported capability: GeneralAutofillEnabled")
+			} else {
+				globalApplication.fatal(err.Error())
+			}
 		}
 	}
 
 	if opts.PasswordAutosaveEnabled {
 		err = chromium.PutIsPasswordAutosaveEnabled(true)
 		if err != nil {
-			globalApplication.error(err.Error())
+			if errors.Is(edge.UnsupportedCapabilityError, err) {
+				globalApplication.warning("unsupported capability: PasswordAutosaveEnabled")
+			} else {
+				globalApplication.fatal(err.Error())
+			}
 		}
 	}
 
