@@ -11,6 +11,7 @@ import (
 	"github.com/leaanthony/u"
 
 	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -44,7 +45,6 @@ type (
 		size() (int, int)
 		width() int
 		height() int
-		relativePosition() (int, int)
 		destroy()
 		reload()
 		forceReload()
@@ -57,7 +57,6 @@ type (
 		close()
 		zoom()
 		setHTML(html string)
-		setRelativePosition(x int, y int)
 		on(eventID uint)
 		minimise()
 		unminimise()
@@ -82,8 +81,14 @@ type (
 		startResize(border string) error
 		print() error
 		setEnabled(enabled bool)
+		physicalBounds() Rect
+		setPhysicalBounds(physicalBounds Rect)
+		bounds() Rect
+		setBounds(bounds Rect)
 		position() (int, int)
 		setPosition(x int, y int)
+		relativePosition() (int, int)
+		setRelativePosition(x int, y int)
 		flash(enabled bool)
 		handleKeyEvent(acceleratorString string)
 		getBorderSizes() *LRTB
@@ -430,10 +435,11 @@ func (w *WebviewWindow) Hide() Window {
 }
 
 func (w *WebviewWindow) SetURL(s string) Window {
-	w.options.URL = s
+	url, _ := assetserver.GetStartURL(s)
+	w.options.URL = url
 	if w.impl != nil {
 		InvokeSync(func() {
-			w.impl.setURL(s)
+			w.impl.setURL(url)
 		})
 	}
 	return w
@@ -722,7 +728,7 @@ func (w *WebviewWindow) startResize(border string) error {
 // Center centers the window on the screen
 func (w *WebviewWindow) Center() {
 	if w.impl == nil && !w.isDestroyed() {
-		w.options.Centered = true
+		w.options.InitialPosition = WindowCentered
 		return
 	}
 	InvokeSync(w.impl.center)
@@ -806,7 +812,73 @@ func (w *WebviewWindow) Height() int {
 	return InvokeSyncWithResult(w.impl.height)
 }
 
-// RelativePosition returns the relative position of the window to the screen
+// PhysicalBounds returns the physical bounds of the window
+func (w *WebviewWindow) PhysicalBounds() Rect {
+	if w.impl == nil && !w.isDestroyed() {
+		return Rect{}
+	}
+	var rect Rect
+	InvokeSync(func() {
+		rect = w.impl.physicalBounds()
+	})
+	return rect
+}
+
+// SetPhysicalBounds sets the physical bounds of the window
+func (w *WebviewWindow) SetPhysicalBounds(physicalBounds Rect) {
+	if w.impl == nil && !w.isDestroyed() {
+		return
+	}
+	InvokeSync(func() {
+		w.impl.setPhysicalBounds(physicalBounds)
+	})
+}
+
+// Bounds returns the DIP bounds of the window
+func (w *WebviewWindow) Bounds() Rect {
+	if w.impl == nil && !w.isDestroyed() {
+		return Rect{}
+	}
+	var rect Rect
+	InvokeSync(func() {
+		rect = w.impl.bounds()
+	})
+	return rect
+}
+
+// SetBounds sets the DIP bounds of the window
+func (w *WebviewWindow) SetBounds(bounds Rect) {
+	if w.impl == nil && !w.isDestroyed() {
+		return
+	}
+	InvokeSync(func() {
+		w.impl.setBounds(bounds)
+	})
+}
+
+// Position returns the absolute position of the window
+func (w *WebviewWindow) Position() (int, int) {
+	if w.impl == nil && !w.isDestroyed() {
+		return 0, 0
+	}
+	var x, y int
+	InvokeSync(func() {
+		x, y = w.impl.position()
+	})
+	return x, y
+}
+
+// SetPosition sets the absolute position of the window.
+func (w *WebviewWindow) SetPosition(x int, y int) {
+	if w.impl == nil && !w.isDestroyed() {
+		return
+	}
+	InvokeSync(func() {
+		w.impl.setPosition(x, y)
+	})
+}
+
+// RelativePosition returns the position of the window relative to the screen WorkArea on which it is
 func (w *WebviewWindow) RelativePosition() (int, int) {
 	if w.impl == nil && !w.isDestroyed() {
 		return 0, 0
@@ -818,16 +890,16 @@ func (w *WebviewWindow) RelativePosition() (int, int) {
 	return x, y
 }
 
-// Position returns the absolute position of the window to the screen
-func (w *WebviewWindow) Position() (int, int) {
-	if w.impl == nil && !w.isDestroyed() {
-		return 0, 0
+// SetRelativePosition sets the position of the window relative to the screen WorkArea on which it is.
+func (w *WebviewWindow) SetRelativePosition(x, y int) Window {
+	w.options.X = x
+	w.options.Y = y
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setRelativePosition(x, y)
+		})
 	}
-	var x, y int
-	InvokeSync(func() {
-		x, y = w.impl.position()
-	})
-	return x, y
+	return w
 }
 
 func (w *WebviewWindow) Destroy() {
@@ -945,18 +1017,6 @@ func (w *WebviewWindow) SetHTML(html string) Window {
 	if w.impl != nil {
 		InvokeSync(func() {
 			w.impl.setHTML(html)
-		})
-	}
-	return w
-}
-
-// SetRelativePosition sets the position of the window.
-func (w *WebviewWindow) SetRelativePosition(x, y int) Window {
-	w.options.X = x
-	w.options.Y = y
-	if w.impl != nil {
-		InvokeSync(func() {
-			w.impl.setRelativePosition(x, y)
 		})
 	}
 	return w
@@ -1192,16 +1252,6 @@ func (w *WebviewWindow) SetEnabled(enabled bool) {
 	}
 	InvokeSync(func() {
 		w.impl.setEnabled(enabled)
-	})
-}
-
-func (w *WebviewWindow) SetPosition(x int, y int) {
-	// set absolute position
-	if w.impl == nil && !w.isDestroyed() {
-		return
-	}
-	InvokeSync(func() {
-		w.impl.setPosition(x, y)
 	})
 }
 

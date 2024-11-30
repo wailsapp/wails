@@ -17,13 +17,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Support of linux packaging of deb,rpm, and arch linux packager builds by @atterpac in [#3909](https://github.com/wailsapp/wails/3909)
+- Added Support for darwin universal builds and packages by [ansxuman](https://github.com/ansxuman) in [#3902](https://github.com/wailsapp/wails/pull/3902)
+- Events documentation to the mkdocs webite by [atterpac](https://github.com/atterpac) in [#3867](https://github.com/wailsapp/wails/pull/3867)
+- Templates for sveltekit and sveltekit-ts that are set for non-SSR development by [atterpac](https://github.com/atterpac) in [#3829](https://github.com/wailsapp/wails/pull/3829)
+- Update build assets using new `wails3 update build-assets` command by [leaanthony](https://github.com/leaanthony)
+- Example to test the HTML Drag and Drop API by [FerroO2000](https://github.com/FerroO2000) in [#3856](https://github.com/wailsapp/wails/pull/3856)
+- File Association support by [leaanthony](https://github.com/leaanthony) in [#3873](https://github.com/wailsapp/wails/pull/3873)
+- New `wails3 generate runtime` command by [leaanthony](https://github.com/leaanthony)
+- New `InitialPosition` option to specify if the window should be centered or positioned at the given X/Y location by [leaanthony](https://github.com/leaanthony) in [#3885](https://github.com/wailsapp/wails/pull/3885)
+- Add `Path` & `Paths` methods to `application` package by [ansxuman](https://github.com/ansxuman) and [leaanthony](https://github.com/leaanthony) in [#3823](https://github.com/wailsapp/wails/pull/3823)
+- Added `GeneralAutofillEnabled` and `PasswordAutosaveEnabled` Windows options by [leaanthony](https://github.com/leaanthony) in [#3766](https://github.com/wailsapp/wails/pull/3766)
+- Added the ability to retrieve the window calling a service method by [leaanthony](https://github.com/leaanthony)
+  in [#3888](https://github.com/wailsapp/wails/pull/3888)
+
 ### Changed
+- Refactored systray click messaging to better align with user interactions by @atterpac in [#3907](https://github.com/wailsapp/wails/pull/3907)
+- Asset embed to include `all:frontend/dist` to support frameworks that generate subfolders by @atterpac in [#3887](https://github.com/wailsapp/wails/pull/3887)
 - Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)
+- Upgrade to `go-webview2` v1.0.16 by [leaanthony](https://github.com/leaanthony)
+- Fixed `Screen` type to include `ID` not `Id` by [etesam913](https://github.com/etesam913) in [#3778](https://github.com/wailsapp/wails/pull/3778)
+- Update `go.mod.tmpl` wails version to support `application.ServiceOptions` by [northes](https://github.com/northes) in [#3836](https://github.com/wailsapp/wails/pull/3836)
+- Fixed service name determination by [windom](https://github.com/windom/) in [#3827](https://github.com/wailsapp/wails/pull/3827)
+- mkdocs serve now uses docker by [leaanthony](https://github.com/leaanthony)
+- Consolidated dev config into `config.yml` by [leaanthony](https://github.com/leaanthony)
+
+### Fixed
+- Fixed amd64 appimage compile by @atterpac in [#3898](https://github.com/wailsapp/wails/pull/3898)
+- Fixed build assets update by @ansxuman in [#3901](https://github.com/wailsapp/wails/pull/3901)
+- Fixed Linux systray `OnClick` and `OnRightClick` implementation by @atterpac in [#3886](https://github.com/wailsapp/wails/pull/3886)
+- Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony) in [#3841](https://github.com/wailsapp/wails/pull/3841)
+- [darwin]  Fixed `application.NewEditMenu` including a duplicate `PasteAndMatchStyle` role in the edit menu on Darwin by [johnmccabe](https://github.com/johnmccabe) in [#3839](https://github.com/wailsapp/wails/pull/3839)
+- [linux] Fixed aarch64 compilation [#3840](https://github.com/wailsapp/wails/issues/3840) in [#3854](https://github.com/wailsapp/wails/pull/3854) by [kodflow](https://github.com/kodflow)
 
 ## v3.0.0-alpha.7 - 2024-09-18
 
 ### Added
-- [windows] Window class name option by [windom](https://github.com/windom/) in [#3682](https://github.com/wailsapp/wails/pull/3682) 
+- [windows] New DIP system for Enhanced High DPI Monitor Support by [mmghv](https://github.com/mmghv) in [#3665](https://github.com/wailsapp/wails/pull/3665)
+- [windows] Window class name option by [windom](https://github.com/windom/) in [#3682](https://github.com/wailsapp/wails/pull/3682)
 - Services have been expanded to provide plugin functionality. By [atterpac](https://github.com/atterpac) and [leaanthony](https://github.com/leaanthony) in [#3570](https://github.com/wailsapp/wails/pull/3570)
 
 ### Changed

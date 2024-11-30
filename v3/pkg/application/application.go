@@ -142,7 +142,7 @@ func New(appOptions Options) *App {
 			if err != nil {
 				name := service.options.Name
 				if name == "" {
-					name = getServiceName(service)
+					name = getServiceName(service.instance)
 				}
 				globalApplication.Logger.Error("OnStartup() failed:", "service", name, "error", err.Error())
 				continue
@@ -290,6 +290,9 @@ type App struct {
 	applicationEventListenersLock sync.RWMutex
 	applicationEventHooks         map[uint][]*eventHook
 	applicationEventHooksLock     sync.RWMutex
+
+	// Screens layout manager (handles DIP coordinate system)
+	screenManager ScreenManager
 
 	// Windows
 	windows     map[uint]Window
@@ -840,12 +843,18 @@ func SaveFileDialog() *SaveFileDialogStruct {
 	return newSaveFileDialog()
 }
 
-func (a *App) GetPrimaryScreen() (*Screen, error) {
-	return a.impl.getPrimaryScreen()
-}
-
+// NOTE: should use screenManager directly after DPI is implemented in all platforms
+// (should also get rid of the error return)
 func (a *App) GetScreens() ([]*Screen, error) {
 	return a.impl.getScreens()
+	// return a.screenManager.screens, nil
+}
+
+// NOTE: should use screenManager directly after DPI is implemented in all platforms
+// (should also get rid of the error return)
+func (a *App) GetPrimaryScreen() (*Screen, error) {
+	return a.impl.getPrimaryScreen()
+	// return a.screenManager.primaryScreen, nil
 }
 
 func (a *App) Clipboard() *Clipboard {
@@ -1029,4 +1038,14 @@ func (a *App) shouldQuit() bool {
 		return a.options.ShouldQuit()
 	}
 	return true
+}
+
+// Path returns the path for the given selector
+func (a *App) Path(selector Path) string {
+	return paths[selector]
+}
+
+// Paths returns the paths for the given selector
+func (a *App) Paths(selector Paths) []string {
+	return pathdirs[selector]
 }

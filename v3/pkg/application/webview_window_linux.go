@@ -105,8 +105,8 @@ func (w *linuxWebviewWindow) setMaximiseButtonEnabled(enabled bool) {
 }
 
 func (w *linuxWebviewWindow) disableSizeConstraints() {
-	x, y, width, height, scale := w.getCurrentMonitorGeometry()
-	w.setMinMaxSize(x, y, width*scale, height*scale)
+	x, y, width, height, scaleFactor := w.getCurrentMonitorGeometry()
+	w.setMinMaxSize(x, y, width*scaleFactor, height*scaleFactor)
 }
 
 func (w *linuxWebviewWindow) unminimise() {
@@ -204,6 +204,36 @@ func (w *linuxWebviewWindow) setPosition(x int, y int) {
 	w.move(x, y)
 }
 
+func (w *linuxWebviewWindow) bounds() Rect {
+	// DOTO: do it in a single step + proper DPI scaling
+	x, y := w.position()
+	width, height := w.size()
+
+	return Rect{
+		X:      x,
+		Y:      y,
+		Width:  width,
+		Height: height,
+	}
+}
+
+func (w *linuxWebviewWindow) setBounds(bounds Rect) {
+	// DOTO: do it in a single step + proper DPI scaling
+	w.move(bounds.X, bounds.Y)
+	w.setSize(bounds.Width, bounds.Height)
+
+}
+
+func (w *linuxWebviewWindow) physicalBounds() Rect {
+	// TODO: proper DPI scaling
+	return w.bounds()
+}
+
+func (w *linuxWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
+	// TODO: proper DPI scaling
+	w.setBounds(physicalBounds)
+}
+
 func (w *linuxWebviewWindow) run() {
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
@@ -265,11 +295,12 @@ func (w *linuxWebviewWindow) run() {
 
 	w.setFrameless(w.parent.options.Frameless)
 
-	if w.parent.options.X != 0 || w.parent.options.Y != 0 {
-		w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
-	} else {
+	if w.parent.options.InitialPosition == WindowCentered {
 		w.center()
+	} else {
+		w.setPosition(w.parent.options.X, w.parent.options.Y)
 	}
+
 	switch w.parent.options.StartState {
 	case WindowStateMaximised:
 		w.maximise()
@@ -322,10 +353,10 @@ func (w *linuxWebviewWindow) run() {
 	}
 	if !w.parent.options.Hidden {
 		w.show()
-		if w.parent.options.X != 0 || w.parent.options.Y != 0 {
-			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
+		if w.parent.options.InitialPosition == WindowCentered {
+			w.center()
 		} else {
-			w.center() // needs to be queued until after GTK starts up!
+			w.setRelativePosition(w.parent.options.X, w.parent.options.Y)
 		}
 	}
 	if w.parent.options.DevToolsEnabled || globalApplication.isDebugMode {

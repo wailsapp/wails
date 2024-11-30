@@ -11,43 +11,37 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 /**
- * @typedef {Object} Position
- * @property {number} X - The X coordinate.
- * @property {number} Y - The Y coordinate.
- */
-
-/**
  * @typedef {Object} Size
- * @property {number} X - The width.
- * @property {number} Y - The height.
+ * @property {number} Width - The width.
+ * @property {number} Height - The height.
  */
-
 
 /**
  * @typedef {Object} Rect
- * @property {number} X - The X coordinate of the top-left corner.
- * @property {number} Y - The Y coordinate of the top-left corner.
+ * @property {number} X - The X coordinate of the origin.
+ * @property {number} Y - The Y coordinate of the origin.
  * @property {number} Width - The width of the rectangle.
  * @property {number} Height - The height of the rectangle.
  */
 
-
 /**
  * @typedef {Object} Screen
- * @property {string} Id - Unique identifier for the screen.
+ * @property {string} ID - Unique identifier for the screen.
  * @property {string} Name - Human readable name of the screen.
- * @property {number} Scale - The resolution scale of the screen. 1 = standard resolution, 2 = high (Retina), etc.
- * @property {Position} Position - Contains the X and Y coordinates of the screen's position.
+ * @property {number} ScaleFactor - The scale factor of the screen (DPI/96). 1 = standard DPI, 2 = HiDPI (Retina), etc.
+ * @property {number} X - The X coordinate of the screen.
+ * @property {number} Y - The Y coordinate of the screen.
  * @property {Size} Size - Contains the width and height of the screen.
  * @property {Rect} Bounds - Contains the bounds of the screen in terms of X, Y, Width, and Height.
+ * @property {Rect} PhysicalBounds - Contains the physical bounds of the screen in terms of X, Y, Width, and Height (before scaling).
  * @property {Rect} WorkArea - Contains the area of the screen that is actually usable (excluding taskbar and other system UI).
+ * @property {Rect} PhysicalWorkArea - Contains the physical WorkArea of the screen (before scaling).
  * @property {boolean} IsPrimary - True if this is the primary monitor selected by the user in the operating system.
  * @property {number} Rotation - The rotation of the screen.
  */
 
-
-import {newRuntimeCallerWithID, objectNames} from "./runtime";
-const call = newRuntimeCallerWithID(objectNames.Screens, '');
+import { newRuntimeCallerWithID, objectNames } from "./runtime";
+const call = newRuntimeCallerWithID(objectNames.Screens, "");
 
 const getAll = 0;
 const getPrimary = 1;

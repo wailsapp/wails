@@ -24,7 +24,7 @@ typedef struct Screen {
 	int w_height;
 	int w_x;
 	int w_y;
-	float scale;
+	float scaleFactor;
 	double rotation;
 	bool isPrimary;
 } Screen;
@@ -36,7 +36,7 @@ int GetNumScreens(){
 
 Screen processScreen(NSScreen* screen){
 	Screen returnScreen;
-	returnScreen.scale = screen.backingScaleFactor;
+	returnScreen.scaleFactor = screen.backingScaleFactor;
 
 	// screen bounds
 	returnScreen.height = screen.frame.size.height;
@@ -137,17 +137,29 @@ func cScreenToScreen(screen C.Screen) *Screen {
 			Height: int(screen.height),
 			Width:  int(screen.width),
 		},
+		PhysicalBounds: Rect{
+			X:      int(screen.x),
+			Y:      int(screen.y),
+			Height: int(screen.height),
+			Width:  int(screen.width),
+		},
 		WorkArea: Rect{
 			X:      int(screen.w_x),
 			Y:      int(screen.w_y),
 			Height: int(screen.w_height),
 			Width:  int(screen.w_width),
 		},
-		Scale:     float32(screen.scale),
-		ID:        C.GoString(screen.id),
-		Name:      C.GoString(screen.name),
-		IsPrimary: bool(screen.isPrimary),
-		Rotation:  float32(screen.rotation),
+		PhysicalWorkArea: Rect{
+			X:      int(screen.w_x),
+			Y:      int(screen.w_y),
+			Height: int(screen.w_height),
+			Width:  int(screen.w_width),
+		},
+		ScaleFactor: float32(screen.scaleFactor),
+		ID:          C.GoString(screen.id),
+		Name:        C.GoString(screen.name),
+		IsPrimary:   bool(screen.isPrimary),
+		Rotation:    float32(screen.rotation),
 	}
 }
 

@@ -2,6 +2,9 @@ package main
 
 import (
 	"bytes"
+	"github.com/Masterminds/semver/v3"
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	"os"
 	"strconv"
 	"strings"
@@ -396,4 +399,35 @@ func main() {
 		panic(err)
 	}
 
+	// Load the runtime package.json
+	packageJsonFilename := "../../internal/runtime/desktop/@wailsio/runtime/package.json"
+	packageJSON, err := os.ReadFile(packageJsonFilename)
+	if err != nil {
+		panic(err)
+	}
+	version := gjson.Get(string(packageJSON), "version").String()
+	// Parse and increment version
+	v := semver.MustParse(version)
+	prerelease := v.Prerelease()
+	// Split the prerelease by the "." and increment the last part by 1
+	parts := strings.Split(prerelease, ".")
+	prereleaseDigits, err := strconv.Atoi(parts[len(parts)-1])
+	if err != nil {
+		panic(err)
+	}
+	prereleaseNumber := strconv.Itoa(prereleaseDigits + 1)
+	parts[len(parts)-1] = prereleaseNumber
+	prerelease = strings.Join(parts, ".")
+	newVersion, err := v.SetPrerelease(prerelease)
+	if err != nil {
+		panic(err)
+	}
+
+	// Set new version using sjson
+	newJSON, err := sjson.Set(string(packageJSON), "version", newVersion.String())
+	if err != nil {
+		panic(err)
+	}
+
+	err = os.WriteFile(packageJsonFilename, []byte(newJSON), 0644)
 }

@@ -4,65 +4,138 @@
     <meta charset="UTF-8">
     <title>Screens Demo</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
-            padding-top: 75px;
-            margin: 0 auto;
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+            background-color: white;
+        }
+        #container {
             display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            text-align: -webkit-center;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
         }
-
-        article {
-            padding: 1em;
+        svg {
+            user-select: none;
+            cursor: crosshair;
         }
-
-
-        .monitor {
-            width: 300px;
-            height: 150px;
-            overflow-y: scroll;
-            border: solid 1em #333;
-            border-radius: .5em;
-            background: lightblue;
+        .controls > div {
+            padding-bottom: 10px;
         }
-
-        .monitor::-webkit-scrollbar {
-            width: 15px;
+        .controls > div > span:first-child {
+            display: inline-block;
+            width: 6em;
         }
-
-        .monitor::-webkit-scrollbar-thumb {
-            background: #666;
+        .controls .radio-btn {
+            display: inline-block;
+            padding: 0 3px 2px;
+            border-radius: 5px;
+            min-width: 1.5em;
+            text-align: center;
+            background-color: #ecf3f7;
+            box-shadow: 1px 1px 3px 0px #00000070;
+            border: solid 1px #9a9a9a;
+            cursor: default;
+            user-select: none;
         }
-
-        ::-webkit-scrollbar-track {
-            background-color: #888;
+        .controls .radio-btn.active {
+            background-color: #d0d8dc;
+            box-shadow: inset 1px 1px 3px 0px #00000070;
         }
-        .center {
-            text-align: -webkit-center;
+        #probe-buttons:not(.active) button:last-child {
+            display: none;
+        }
+        #probe-buttons.active button:not(:last-child) {
+            display: none;
+        }
+        .advanced {
+            display: none;
         }
     </style>
 </head>
 <body>
+    <div id="container">
+        <!-- Remove the underscore "_" from the class name to show test buttons in advanced move -->
+        <div class="advanced_" style="display: none;">
+            <button onclick="document.location.reload()">Reload</button>&nbsp;&nbsp;
+            <button onclick="test1()">Test1</button>
+            <button onclick="test2()">Test2</button>
+            <hr>
+        </div>
+        <div class="advanced">
+            <label>
+                &#10021;
+                <input id="step" type="number" value="50" style="width: 55px" title="DIP Step, Arrow Move" onkeydown="arrowMove(event)">
+            </label>
+            &nbsp;X:
+            <button onclick="updateDipRect(-step.value)">&lt;</button>
+            <button onclick="updateDipRect(+step.value)">&gt;</button>
+            &nbsp;Width:
+            <button onclick="updateDipRect(0, 0, -step.value)">-</button>
+            <button onclick="updateDipRect(0, 0, +step.value)">+</button>
+            &nbsp;
+            <input id="x" type="number" value="100" style="width: 55px" title="X">
+            <input id="y" type="number" value="100" style="width: 55px" title="Y">
+            &nbsp;
+            <input id="w" type="number" value="800" style="width: 55px" title="Width">
+            <input id="h" type="number" value="600" style="width: 55px" title="Height">
+            &nbsp;
+            <button onclick="drawRect({X: +x.value, Y: +y.value, Width: +w.value, Height: +h.value})">Set rect</button>
+            &nbsp;
+            Layers: <input id="slider" type="range" min="1" max="5" value="3" style="width: 70px" oninput="drawRect()">
+            <hr>
+        </div>
+        <div class="controls" onmousedown="radioBtnClick(event)">
+            <div id="layout-selector" class="radio-btn-group">
+                <span>Screens</span>:&nbsp;
+                <span class="radio-btn" data-value="0">System</span>
+                <span class="advanced">
+                    <span>&nbsp;-&nbsp;Examples </span>
+                    <select id="examples-type" onchange="setExamplesType(event.target.value)">
+                        <option value="0" selected>Normal</option>
+                        <option value="1">Test cases</option>
+                        <option value="2">Edge cases</option>
+                    </select> :
+                    <span id="examples-list"></span>&nbsp;
+                    <small id="example-name"></small>
+                </span>
+            </div>
+            <div id="coordinate-selector" class="radio-btn-group">
+                <span>Coordinates</span>:&nbsp;
+                <span class="radio-btn active" data-value="0">Physical (PX)</span>
+                <span class="radio-btn" data-value="1">Logical (DIP)</span>
+                <label><input type="checkbox" id="retain-viewbox" onchange="draw()" checked> Retain viewbox</label>
+                <button onclick="showAdvanced(event)" style="margin-left: 1em">Show advanced</button>
+                &nbsp;
+                <span id="probe-buttons" class="advanced">
+                    <button onclick="probeLayout()">Probe layout</button>
+                    <button onclick="probeAllExamples()">Probe all examples</button>
+                    <button onclick="window.cancelProbing = true">Cancel Probing</button>
+                </span>
+            </div>
+        </div>
+        <svg
+          id="svg"
+          viewBox="0 0 500 500"
+          fill="none"
+          stroke="none"
+          preserveAspectRatio="xMinYMin"
+        >
+            <defs>
+                <svg id="point1" preserveAspectRatio="xMinYMin" viewBox="0 0 100 100"><path d="M9 1H2.4L7.1 5.7 5.7 7.1 1 2.4V9H-1V2.3L-5.7 7-7.1 5.6-2.6 1H-9V-1H-2.4L-7.1-5.7-6-7-1-2.4V-9H1V-2.6L5.6-7.2 7-5.7 2.3-1H9V1Z" /></svg>
+                <path id="point2" d="M9 1H2.4L7.1 5.7 5.7 7.1 1 2.4V9H-1V2.3L-5.7 7-7.1 5.6-2.6 1H-9V-1H-2.4L-7.1-5.7-6-7-1-2.4V-9H1V-2.6L5.6-7.2 7-5.7 2.3-1H9V1Z" />
+            </defs>
+        </svg>
+    </div>
 
-<script type="module">
-    import * as wails from "/wails/runtime.js";
-
-    let monitors = wails.Screens.GetAll();
-    monitors.then((result) => {
-        console.log({result})
-        let html = "";
-        for (let i = 0; i < result.length; i++) {
-            html += "<article class='center'><div class='monitor'><div style='padding:5px;'>";
-            let hidpi = result[i].Scale === 2 ? " (HiDPI)" : "";
-            html += "<h3 class='center'>"+result[i].Name+"</h3>";
-            html += "<h4 class='center'>"+hidpi+"</h4>";
-            html += "<h4 class='center'>"+result[i].Size.Width+"x"+result[i].Size.Height+"</h4>";
-            html += "</div></div></article>";
-        }
-        document.body.innerHTML = html;
-    })
-</script>
+    <script src="/wails/runtime.js" type="module"></script>
+    <script id="script" src="./examples.js"></script>
+    <script id="script" src="./main.js" defer></script>
 </body>
 </html>

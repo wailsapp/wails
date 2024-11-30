@@ -22,6 +22,13 @@ const (
 	ButtonHidden   ButtonState = 2
 )
 
+type WindowStartPosition int
+
+const (
+	WindowCentered WindowStartPosition = 0
+	WindowXY       WindowStartPosition = 1
+)
+
 type WebviewWindowOptions struct {
 	// Name is a unique identifier that can be given to a window.
 	Name string
@@ -63,9 +70,6 @@ type WebviewWindowOptions struct {
 	// Default: WindowStateNormal
 	StartState WindowState
 
-	// Centered will center the window on the screen.
-	Centered bool
-
 	// BackgroundType is the type of background to use for the window.
 	// Default: BackgroundTypeSolid
 	BackgroundType BackgroundType
@@ -81,6 +85,9 @@ type WebviewWindowOptions struct {
 
 	// CSS is the CSS to load in the window.
 	CSS string
+
+	// Initial Position
+	InitialPosition WindowStartPosition
 
 	// X is the starting X position of the window.
 	X int
@@ -136,19 +143,6 @@ type WebviewWindowOptions struct {
 
 	// IgnoreMouseEvents will ignore mouse events in the window (Windows + Mac only)
 	IgnoreMouseEvents bool
-}
-
-var WebviewWindowDefaults = &WebviewWindowOptions{
-	Title:  "",
-	Width:  800,
-	Height: 600,
-	URL:    "",
-	BackgroundColour: RGBA{
-		Red:   255,
-		Green: 255,
-		Blue:  255,
-		Alpha: 255,
-	},
 }
 
 type RGBA struct {
@@ -299,6 +293,12 @@ type WindowsWindow struct {
 
 	// ExStyle is the extended window style
 	ExStyle int
+
+	// GeneralAutofillEnabled enables general autofill
+	GeneralAutofillEnabled bool
+
+	// PasswordAutosaveEnabled enables autosaving passwords
+	PasswordAutosaveEnabled bool
 }
 
 type Theme int

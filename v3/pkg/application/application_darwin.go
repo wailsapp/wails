@@ -91,6 +91,7 @@ static void run(void) {
     @autoreleasepool {
         [NSApp run];
         [appDelegate release];
+		[NSApp abortModal];
     }
 }
 
@@ -362,4 +363,17 @@ func (a *App) platformEnvironment() map[string]any {
 
 func fatalHandler(errFunc func(error)) {
 	return
+}
+
+//export HandleOpenFile
+func HandleOpenFile(filePath *C.char) {
+	goFilepath := C.GoString(filePath)
+	// Create new application event context
+	eventContext := newApplicationEventContext()
+	eventContext.setOpenedWithFile(goFilepath)
+	// EmitEvent application started event
+	applicationEvents <- &ApplicationEvent{
+		Id:  uint(events.Common.ApplicationOpenedWithFile),
+		ctx: eventContext,
+	}
 }

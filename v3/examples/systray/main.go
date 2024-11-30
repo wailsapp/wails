@@ -23,7 +23,7 @@ func main() {
 
 	_ = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Width:         500,
-		Height:        800,
+		Height:        500,
 		Name:          "Systray Demo Window",
 		Frameless:     true,
 		AlwaysOnTop:   true,
@@ -92,6 +92,17 @@ func main() {
 	})
 
 	systemTray.SetMenu(myMenu)
+	systemTray.OnClick(func() {
+		println("System tray clicked!")
+	})
+
+	systemTray.OnDoubleClick(func() {
+		println("System tray double clicked!")
+	})
+
+	systemTray.OnRightClick(func() {
+		println("System tray right clicked!")
+	})
 
 	//systemTray.AttachWindow(window).WindowOffset(5)
 

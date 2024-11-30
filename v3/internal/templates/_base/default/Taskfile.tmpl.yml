@@ -172,7 +172,7 @@ tasks:
     dir: build
     platform: windows
     cmds:
-      - wails generate syso -arch {{ "{{.ARCH}}" }} -icon icon.ico -manifest wails.exe.manifest -info info.json -out ../wails.syso
+      - wails generate syso -arch {{ "{{.ARCH}}" }} -icon icon.ico -manifest wails.exe.manifest -info info.json
     vars:
       ARCH: $GOARCH
 
@@ -186,4 +186,4 @@ tasks:
         vars:
             ARCH: amd64
       - go build -tags production -ldflags="-w -s -H windowsgui" -o bin/{{ "{{.APP_NAME}}" }}.exe
-      - powershell Remove-item wails.syso
+      - powershell Remove-item *.syso

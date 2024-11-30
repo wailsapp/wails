@@ -53,7 +53,10 @@ func (y *Dnf) Name() string {
 
 // PackageInstalled tests if the given package name is installed
 func (y *Dnf) PackageInstalled(pkg *Package) (bool, error) {
-	if pkg.SystemPackage == false {
+	if !pkg.SystemPackage {
+		if pkg.InstallCheck != nil {
+			return pkg.InstallCheck(), nil
+		}
 		return false, nil
 	}
 	stdout, err := execCmd("dnf", "info", "installed", pkg.Name)
@@ -103,7 +106,7 @@ func (y *Dnf) PackageAvailable(pkg *Package) (bool, error) {
 // InstallCommand returns the package manager specific command to install a package
 func (y *Dnf) InstallCommand(pkg *Package) string {
 	if pkg.SystemPackage == false {
-		return pkg.InstallCommand[y.osid]
+		return pkg.InstallCommand
 	}
 	return "sudo dnf install " + pkg.Name
 }
