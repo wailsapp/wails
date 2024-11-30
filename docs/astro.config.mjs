@@ -25,6 +25,9 @@ export default defineConfig({
       favicon: "./public/favicon.svg",
       description: "Build desktop applications using Go & Web Technologies.",
       pagefind: true,
+      customCss: [
+          "./src/stylesheets/extra.css"
+      ],
       lastUpdated: true, // Note, this needs git clone with fetch depth 0 to work
       pagination: true,
       editLink: {
