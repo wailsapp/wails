@@ -2,13 +2,14 @@ package doctor
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/buildinfo"
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/wailsapp/wails/v3/internal/buildinfo"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/jaypipes/ghw"

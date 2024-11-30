@@ -54,7 +54,10 @@ func (a *Apt) listPackage(name string) (string, error) {
 
 // PackageInstalled tests if the given package name is installed
 func (a *Apt) PackageInstalled(pkg *Package) (bool, error) {
-	if pkg.SystemPackage == false {
+	if !pkg.SystemPackage {
+		if pkg.InstallCheck != nil {
+			return pkg.InstallCheck(), nil
+		}
 		return false, nil
 	}
 	output, err := a.listPackage(pkg.Name)
@@ -64,8 +67,8 @@ func (a *Apt) PackageInstalled(pkg *Package) (bool, error) {
 
 // PackageAvailable tests if the given package is available for installation
 func (a *Apt) PackageAvailable(pkg *Package) (bool, error) {
-	if pkg.SystemPackage == false {
-		return false, nil
+	if !pkg.SystemPackage {
+		return true, nil
 	}
 	output, err := a.listPackage(pkg.Name)
 	// We add a space to ensure we get a full match, not partial match
@@ -78,8 +81,8 @@ func (a *Apt) PackageAvailable(pkg *Package) (bool, error) {
 
 // InstallCommand returns the package manager specific command to install a package
 func (a *Apt) InstallCommand(pkg *Package) string {
-	if pkg.SystemPackage == false {
-		return pkg.InstallCommand[a.osid]
+	if !pkg.SystemPackage {
+		return pkg.InstallCommand
 	}
 	return "sudo apt install " + pkg.Name
 }

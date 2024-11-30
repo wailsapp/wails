@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Added Support for StartAtLogin by [ansxuman](https://github.com/ansxuman) in [#3910](https://github.com/wailsapp/wails/pull/3910)
+- Support of linux packaging of deb,rpm, and arch linux packager builds by @atterpac in [#3909](https://github.com/wailsapp/wails/3909)
 - Added Support for darwin universal builds and packages by [ansxuman](https://github.com/ansxuman) in [#3902](https://github.com/wailsapp/wails/pull/3902)
 - Events documentation to the mkdocs webite by [atterpac](https://github.com/atterpac) in [#3867](https://github.com/wailsapp/wails/pull/3867)
 - Templates for sveltekit and sveltekit-ts that are set for non-SSR development by [atterpac](https://github.com/atterpac) in [#3829](https://github.com/wailsapp/wails/pull/3829)
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in [#3888](https://github.com/wailsapp/wails/pull/3888)
 
 ### Changed
+- `service.OnStartup` now shutdowns the application on error and runs `service.OnShutdown`for any prior services that started by @atterpac in [#3920](https://github.com/wailsapp/wails/pull/3920)
 - Refactored systray click messaging to better align with user interactions by @atterpac in [#3907](https://github.com/wailsapp/wails/pull/3907)
 - Asset embed to include `all:frontend/dist` to support frameworks that generate subfolders by @atterpac in [#3887](https://github.com/wailsapp/wails/pull/3887)
 - Taskfile refactor by [leaanthony](https://github.com/leaanthony) in [#3748](https://github.com/wailsapp/wails/pull/3748)

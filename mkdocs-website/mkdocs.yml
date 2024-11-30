@@ -153,6 +153,7 @@ nav:
         - Guides:
             - Customising Windows: learn/guides/customising-windows.md
             - File Associations: learn/guides/file-associations.md
+            - Packaging: learn/guides/packaging.md
     - Feedback: getting-started/feedback.md
   - Feedback: getting-started/feedback.md
   - What's New in v3?: whats-new.md
@@ -175,4 +176,4 @@ watch:
   - overrides
   - shared
 copyright:
-  Copyright © 2024 Lea Anthony
+  Copyright 2024 Lea Anthony
