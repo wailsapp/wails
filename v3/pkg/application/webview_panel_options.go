@@ -17,10 +17,6 @@ type WebviewPanelOptions struct {
 	KeyBindings map[string]func(panel *WebviewPanel)
 }
 
-var WebviewPanelDefaults = &WebviewPanelOptions{
-	WebviewWindowOptions: *WebviewWindowDefaults,
-}
-
 func processKeyBindingOptionsForPanel(keyBindings map[string]func(panel *WebviewPanel), windowKeyBindings map[string]func(panel *WebviewWindow)) map[string]func(panel *WebviewPanel) {
 	result := make(map[string]func(panel *WebviewPanel))
 

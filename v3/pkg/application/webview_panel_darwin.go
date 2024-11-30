@@ -38,7 +38,7 @@ type macosWebviewPanel struct {
 func newPanelImpl(parent *WebviewPanel) *macosWebviewPanel {
 	result := &macosWebviewPanel{
 		macosWebviewWindow: newWindowImpl(parent.WebviewWindow),
-		parent: parent,
+		parent:             parent,
 	}
 	return result
 }

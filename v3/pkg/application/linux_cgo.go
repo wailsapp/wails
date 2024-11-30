@@ -482,12 +482,12 @@ func clipboardGet() string {
 
 func clipboardSet(text string) {
 	cText := C.CString(text)
+	defer C.free(unsafe.Pointer(cText))
 	clip := C.gtk_clipboard_get(C.GDK_SELECTION_CLIPBOARD)
 	C.gtk_clipboard_set_text(clip, cText, -1)
 
 	clip = C.gtk_clipboard_get(C.GDK_SELECTION_PRIMARY)
 	C.gtk_clipboard_set_text(clip, cText, -1)
-	C.free(unsafe.Pointer(cText))
 }
 
 // Menu
@@ -662,10 +662,10 @@ func menuItemSetDisabled(widget pointer, disabled bool) {
 
 func menuItemSetLabel(widget pointer, label string) {
 	value := C.CString(label)
+	defer C.free(unsafe.Pointer(value))
 	C.gtk_menu_item_set_label(
 		(*C.GtkMenuItem)(widget),
 		value)
-	C.free(unsafe.Pointer(value))
 }
 
 func menuItemRemoveBitmap(widget pointer) {
@@ -710,10 +710,11 @@ func menuItemSetBitmap(widget pointer, bitmap []byte) {
 
 func menuItemSetToolTip(widget pointer, tooltip string) {
 	value := C.CString(tooltip)
+	defer C.free(unsafe.Pointer(value))
+
 	C.gtk_widget_set_tooltip_text(
 		(*C.GtkWidget)(widget),
 		value)
-	C.free(unsafe.Pointer(value))
 }
 
 func menuItemSignalBlock(widget pointer, handlerId uint, block bool) {
@@ -827,15 +828,18 @@ func (w *linuxWebviewWindow) enableDND() {
 
 func (w *linuxWebviewWindow) execJS(js string) {
 	value := C.CString(js)
+	defer C.free(unsafe.Pointer(value))
+	blank := C.CString("")
+	defer C.free(unsafe.Pointer(blank))
 	C.webkit_web_view_evaluate_javascript(w.webKitWebView(),
 		value,
 		C.long(len(js)),
 		nil,
-		C.CString(""),
+		blank,
 		nil,
 		nil,
 		nil)
-	C.free(unsafe.Pointer(value))
+
 }
 
 func getMousePosition() (int, int, *Screen) {
@@ -1105,6 +1109,7 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 
 	colour.Alpha = 255
 	cssStr := C.CString(fmt.Sprintf("#webview-box {background-color: rgba(%d, %d, %d, %1.1f);}", colour.Red, colour.Green, colour.Blue, float32(colour.Alpha)/255.0))
+	defer C.free(unsafe.Pointer(cssStr))
 	provider := C.gtk_css_provider_new()
 	C.gtk_style_context_add_provider(
 		C.gtk_widget_get_style_context((*C.GtkWidget)(w.vbox)),
@@ -1112,7 +1117,6 @@ func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 		C.GTK_STYLE_PROVIDER_PRIORITY_USER)
 	C.g_object_unref(C.gpointer(provider))
 	C.gtk_css_provider_load_from_data(provider, cssStr, -1, nil)
-	C.free(unsafe.Pointer(cssStr))
 }
 
 func getPrimaryScreen() (*Screen, error) {
@@ -1185,8 +1189,8 @@ func (w *linuxWebviewWindow) flash(_ bool) {
 func (w *linuxWebviewWindow) setTitle(title string) {
 	if !w.parent.options.Frameless {
 		cTitle := C.CString(title)
+		defer C.free(unsafe.Pointer(cTitle))
 		C.gtk_window_set_title(w.gtkWindow(), cTitle)
-		C.free(unsafe.Pointer(cTitle))
 	}
 }
 
@@ -1212,8 +1216,8 @@ func (w *linuxWebviewWindow) setTransparent() {
 
 func (w *linuxWebviewWindow) setURL(uri string) {
 	target := C.CString(uri)
+	defer C.free(unsafe.Pointer(target))
 	C.webkit_web_view_load_uri(w.webKitWebView(), target)
-	C.free(unsafe.Pointer(target))
 }
 
 //export emit
@@ -1369,8 +1373,8 @@ func (w *linuxWebviewWindow) zoomReset() {
 
 func (w *linuxWebviewWindow) reload() {
 	uri := C.CString("wails://")
+	defer C.free(unsafe.Pointer(uri))
 	C.webkit_web_view_load_uri(w.webKitWebView(), uri)
-	C.free(unsafe.Pointer(uri))
 }
 
 func (w *linuxWebviewWindow) setZoom(zoom float64) {
@@ -1481,8 +1485,9 @@ func onUriList(extracted **C.char, data unsafe.Pointer) {
 	}
 }
 
-var debounceTimer *time.Timer 
+var debounceTimer *time.Timer
 var isDebouncing bool = false
+
 //export onKeyPressEvent
 func onKeyPressEvent(_ *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t) C.gboolean {
 	// Keypress re-emits if the key is pressed over a certain threshold so we need a debounce
@@ -1617,12 +1622,14 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 	gtkFilters := []*C.GtkFileFilter{}
 	for _, filter := range filters {
 		f := C.gtk_file_filter_new()
+
 		displayStr := C.CString(filter.DisplayName)
-		C.gtk_file_filter_set_name(f, displayStr)
-		C.free(unsafe.Pointer(displayStr))
+		defer C.free(unsafe.Pointer(displayStr))
 		patternStr := C.CString(filter.Pattern)
+		defer C.free(unsafe.Pointer(patternStr))
+
+		C.gtk_file_filter_set_name(f, displayStr)
 		C.gtk_file_filter_add_pattern(f, patternStr)
-		C.free(unsafe.Pointer(patternStr))
 		C.gtk_file_chooser_add_filter((*C.GtkFileChooser)(fc), f)
 		gtkFilters = append(gtkFilters, f)
 	}
@@ -1638,10 +1645,10 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 
 	if currentFolder != "" {
 		path := C.CString(currentFolder)
+		defer C.free(unsafe.Pointer(path))
 		C.gtk_file_chooser_set_current_folder(
 			(*C.GtkFileChooser)(fc),
 			path)
-		C.free(unsafe.Pointer(path))
 	}
 
 	// FIXME: This should be consolidated - duplicate exists in linux_purego.go

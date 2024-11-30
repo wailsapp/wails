@@ -12,7 +12,7 @@ type WebviewPanel struct {
 	options WebviewPanelOptions
 	impl    webviewPanelImpl
 	// keyBindings holds the keybindings for the panel
-	keyBindings     map[string]func(*WebviewPanel)
+	keyBindings map[string]func(*WebviewPanel)
 }
 
 // NewPanel creates a new panel with the given options
@@ -22,7 +22,7 @@ func NewPanel(options WebviewPanelOptions) *WebviewPanel {
 
 	result := &WebviewPanel{
 		WebviewWindow: window,
-		options: options,
+		options:       options,
 	}
 
 	// Process keybindings specific to the WebviewPanel

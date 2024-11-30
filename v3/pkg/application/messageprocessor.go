@@ -28,7 +28,7 @@ const (
 )
 
 type MessageProcessor struct {
-	logger        *slog.Logger
+	logger *slog.Logger
 
 	runningCalls map[string]context.CancelFunc
 	l            sync.Mutex

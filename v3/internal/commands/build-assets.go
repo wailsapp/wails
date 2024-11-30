@@ -127,10 +127,10 @@ type WailsConfig struct {
 		CompanyName       string `yaml:"companyName"`
 		ProductName       string `yaml:"productName"`
 		ProductIdentifier string `yaml:"productIdentifier"`
-		Description      string `yaml:"description"`
-		Copyright        string `yaml:"copyright"`
-		Comments         string `yaml:"comments"`
-		Version          string `yaml:"version"`
+		Description       string `yaml:"description"`
+		Copyright         string `yaml:"copyright"`
+		Comments          string `yaml:"comments"`
+		Version           string `yaml:"version"`
 	} `yaml:"info"`
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
 }

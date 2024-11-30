@@ -120,6 +120,20 @@ func main() {
 				Show()
 			windowCounter++
 		})
+	if runtime.GOOS == "darwin" {
+		myMenu.Add("New Panel Window").SetAccelerator("CmdOrCtrl+P").OnClick(func(ctx *application.Context) {
+			app.NewWebviewPanelWithOptions(application.WebviewPanelOptions{
+				Floating:    true,
+				ShouldClose: nil,
+				KeyBindings: nil,
+			}).
+				SetTitle("PanelWindow "+strconv.Itoa(windowCounter)).
+				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
+				SetURL("https://wails.io").
+				Show()
+			windowCounter++
+		})
+	}
 	if runtime.GOOS != "linux" {
 		myMenu.Add("New WebviewWindow (Disable Minimise)").
 			OnClick(func(ctx *application.Context) {
@@ -496,7 +510,7 @@ func main() {
 		})
 	})
 	positionMenu.Add("Set Relative Position (Corner)").OnClick(func(ctx *application.Context) {
-		currentWindow(func(w *application.WebviewWindow) {
+		currentWindow(func(w application.Window) {
 			screen, _ := w.GetScreen()
 			w.SetRelativePosition(screen.WorkArea.Width-w.Width(), screen.WorkArea.Height-w.Height())
 		})

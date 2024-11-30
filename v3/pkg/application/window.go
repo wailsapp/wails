@@ -12,6 +12,8 @@ type Callback interface {
 }
 
 type Window interface {
+	Bounds() Rect
+	SetBounds(bounds Rect)
 	Callback
 	Center()
 	Close()

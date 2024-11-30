@@ -243,12 +243,16 @@ func (w *macosWebviewWindow) execJS(js string) {
 		if w.nsWindow == nil {
 			return
 		}
-		C.windowExecJS(w.nsWindow, C.CString(js))
+		cJS := C.CString(js)
+		defer C.free(unsafe.Pointer(cJS))
+		C.windowExecJS(w.nsWindow, cJS)
 	})
 }
 
 func (w *macosWebviewWindow) setURL(uri string) {
-	C.navigationLoadURL(w.nsWindow, C.CString(uri))
+	cURI := C.CString(uri)
+	defer C.free(unsafe.Pointer(cURI))
+	C.navigationLoadURL(w.nsWindow, cURI)
 }
 
 func (w *macosWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
@@ -268,6 +272,7 @@ func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
 func (w *macosWebviewWindow) setTitle(title string) {
 	if !w.parent.options.Frameless {
 		cTitle := C.CString(title)
+		defer C.free(unsafe.Pointer(cTitle))
 		C.windowSetTitle(w.nsWindow, cTitle)
 	}
 }
@@ -446,7 +451,9 @@ func (w *macosWebviewWindow) setup(options *WebviewWindowOptions, macOptions *Ma
 	}
 
 	if macOptions.Appearance != "" {
-		C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
+		cAppearance := C.CString(string(macOptions.Appearance))
+		defer C.free(unsafe.Pointer(cAppearance))
+		C.windowSetAppearanceTypeByName(w.nsWindow, cAppearance)
 	}
 
 	if macOptions.InvisibleTitleBarHeight != 0 {
@@ -463,10 +470,10 @@ func (w *macosWebviewWindow) setup(options *WebviewWindowOptions, macOptions *Ma
 	case WindowStateNormal:
 	}
 	if w.parent.options.InitialPosition == WindowCentered {
-			C.windowCenter(w.nsWindow)
-		} else {
-			w.setPosition(options.X, options.Y)
-		}
+		C.windowCenter(w.nsWindow)
+	} else {
+		w.setPosition(options.X, options.Y)
+	}
 
 	startURL, err := assetserver.GetStartURL(options.URL)
 	if err != nil {
@@ -482,16 +489,20 @@ func (w *macosWebviewWindow) setup(options *WebviewWindowOptions, macOptions *Ma
 				w.execJS(options.JS)
 			}
 			if options.CSS != "" {
-				C.windowInjectCSS(w.nsWindow, C.CString(options.CSS))
+				cCSS := C.CString(options.CSS)
+				C.windowInjectCSS(w.nsWindow, cCSS)
+				C.free(unsafe.Pointer(cCSS))
 			}
 			if !options.Hidden {
 				w.parent.Show()
-				w.setHasShadow(!options.Mac.DisableShadow)w.setAlwaysOnTop(options.AlwaysOnTop)
+				w.setHasShadow(!options.Mac.DisableShadow)
+				w.setAlwaysOnTop(options.AlwaysOnTop)
 			} else {
 				// We have to wait until the window is shown before we can remove the shadow
 				var cancel func()
 				cancel = w.parent.OnWindowEvent(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
-					w.setHasShadow(!options.Mac.DisableShadow)w.setAlwaysOnTop(options.AlwaysOnTop)
+					w.setHasShadow(!options.Mac.DisableShadow)
+					w.setAlwaysOnTop(options.AlwaysOnTop)
 					cancel()
 				})
 			}
@@ -586,6 +597,7 @@ func (w *macosWebviewWindow) destroy() {
 func (w *macosWebviewWindow) setHTML(html string) {
 	// Convert HTML to C string
 	cHTML := C.CString(html)
+	defer C.free(unsafe.Pointer(cHTML))
 	// Render HTML
 	C.windowRenderHTML(w.nsWindow, cHTML)
 }
