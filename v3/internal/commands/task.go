@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/go-task/task/v3/errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,10 +10,8 @@ import (
 
 	"github.com/pterm/pterm"
 
-	"github.com/go-task/task/v3/args"
-
 	"github.com/go-task/task/v3"
-	"github.com/go-task/task/v3/taskfile"
+	"github.com/go-task/task/v3/taskfile/ast"
 )
 
 // BuildSettings contains the CLI build settings
@@ -81,7 +78,7 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		if options.OutputGroupBegin != "" {
 			return fmt.Errorf("task: You can't set --output-group-begin without --output=group")
 		}
-		if options.OutputGroupBegin != "" {
+		if options.OutputGroupEnd != "" {
 			return fmt.Errorf("task: You can't set --output-group-end without --output=group")
 		}
 	}
@@ -103,22 +100,14 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
-
-		OutputStyle: taskfile.Output{
-			Name: options.OutputName,
-			Group: taskfile.OutputGroup{
-				Begin: options.OutputGroupBegin,
-				End:   options.OutputGroupEnd,
-			},
-		},
 	}
 
-	var listOptions = task.NewListOptions(options.List, options.ListAll, options.ListJSON)
+	listOptions := task.NewListOptions(options.List, options.ListAll, options.ListJSON, false)
 	if err := listOptions.Validate(); err != nil {
 		fatal(err.Error())
 	}
 
-	if (listOptions.ShouldListTasks()) && options.Silent {
+	if listOptions.ShouldListTasks() && options.Silent {
 		e.ListTaskNames(options.ListAll)
 		return nil
 	}
@@ -133,11 +122,6 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		}
 		return nil
 	}
-
-	var (
-		calls   []taskfile.Call
-		globals *taskfile.Vars
-	)
 
 	var index int
 	var arg string
@@ -161,34 +145,8 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		}
 	}
 
-	if e.Taskfile.Version.Compare(taskfile.V3) >= 0 {
-		calls, globals = args.ParseV3(tasksAndVars...)
-	} else {
-		calls, globals = args.ParseV2(tasksAndVars...)
-	}
-
-	globals.Set("CLI_ARGS", taskfile.Var{Static: strings.Join(otherArgs, " ")})
-	e.Taskfile.Vars.Merge(globals)
-
-	if !options.Watch {
-		e.InterceptInterruptSignals()
-	}
-
-	ctx := context.Background()
-
-	if options.Status {
-		return e.Status(ctx, calls...)
-	}
-
-	if err := e.Run(ctx, calls...); err != nil {
-		pterm.Error.Println(err.Error())
-
-		if options.ExitCode {
-			if err, ok := err.(*errors.TaskRunError); ok {
-				os.Exit(err.Code())
-			}
-		}
-		os.Exit(1)
+	if err := e.RunTask(context.Background(), &ast.Call{Task: tasksAndVars[0]}); err != nil {
+		fatal(err.Error())
 	}
 	return nil
 }

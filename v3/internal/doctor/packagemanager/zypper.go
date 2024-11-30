@@ -54,7 +54,10 @@ func (z *Zypper) Name() string {
 
 // PackageInstalled tests if the given package name is installed
 func (z *Zypper) PackageInstalled(pkg *Package) (bool, error) {
-	if pkg.SystemPackage == false {
+	if !pkg.SystemPackage {
+		if pkg.InstallCheck != nil {
+			return pkg.InstallCheck(), nil
+		}
 		return false, nil
 	}
 	stdout, err := execCmd("zypper", "info", pkg.Name)
@@ -101,7 +104,7 @@ func (z *Zypper) PackageAvailable(pkg *Package) (bool, error) {
 // InstallCommand returns the package manager specific command to install a package
 func (z *Zypper) InstallCommand(pkg *Package) string {
 	if pkg.SystemPackage == false {
-		return pkg.InstallCommand[z.osid]
+		return pkg.InstallCommand
 	}
 	return "sudo zypper in " + pkg.Name
 }

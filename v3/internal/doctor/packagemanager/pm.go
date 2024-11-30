@@ -6,7 +6,8 @@ package packagemanager
 type Package struct {
 	Name           string
 	Version        string
-	InstallCommand map[string]string
+	InstallCommand string
+	InstallCheck   func() bool
 	SystemPackage  bool
 	Library        bool
 	Optional       bool
