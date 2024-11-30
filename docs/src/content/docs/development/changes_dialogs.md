@@ -15,18 +15,29 @@ Example: Create a button with the label `Ok` and use `OnClick()` to set the
 callback method:
 
 ```go
+// Create a question dialog
 dialog := app.QuestionDialog().
 
+// Configure dialog title and message
 SetTitle("Update").
 SetMessage("The cancel button is selected when pressing escape")
 
+// Add "Ok" button with callback
 ok := dialog.AddButton("Ok")
 ok.OnClick(func() {
-  // Do something
+  // Handle successful confirmation (Or do something else)
+  if err := handleConfirmation(); err != nil {
+    log.Printf("Error handling confirmation: %v", err)
+  }
 })
 
+// Add "Cancel" button and configure dialog behavior
 no := dialog.AddButton("Cancel")
 dialog.SetDefaultButton(ok)
 dialog.SetCancelButton(no)
-dialog.Show()
+
+// Show dialog and handle potential errors
+if err := dialog.Show(); err != nil {
+  log.Printf("Error showing dialog: %v", err)
+}
 ```
