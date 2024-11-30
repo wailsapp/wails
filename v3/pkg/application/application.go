@@ -136,7 +136,7 @@ func New(appOptions Options) *App {
 		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
 	}
 
-	for _, service := range appOptions.Services {
+	for i, service := range appOptions.Services {
 		if thisService, ok := service.instance.(ServiceStartup); ok {
 			err := thisService.OnStartup(result.ctx, service.options)
 			if err != nil {
@@ -144,8 +144,18 @@ func New(appOptions Options) *App {
 				if name == "" {
 					name = getServiceName(service.instance)
 				}
-				globalApplication.Logger.Error("OnStartup() failed:", "service", name, "error", err.Error())
-				continue
+				globalApplication.Logger.Error("OnStartup() failed shutting down application:", "service", name, "error", err.Error())
+				// Run shutdown on all services that have already started
+				for _, service := range appOptions.Services[:i] {
+					if thisService, ok := service.instance.(ServiceShutdown); ok {
+						err := thisService.OnShutdown()
+						if err != nil {
+							globalApplication.Logger.Error("Error shutting down service: " + err.Error())
+						}
+					}
+				}
+				// Shutdown the application
+				os.Exit(1)
 			}
 		}
 	}
@@ -359,6 +369,13 @@ type App struct {
 	wailsEventListeners    []WailsEventListener
 }
 
+func (a *App) handleWarning(msg string) {
+	if a.options.WarningHandler != nil {
+		a.options.WarningHandler(msg)
+	} else {
+		a.Logger.Warn(msg)
+	}
+}
 func (a *App) handleError(err error) {
 	if a.options.ErrorHandler != nil {
 		a.options.ErrorHandler(err)
@@ -522,6 +539,10 @@ func (a *App) debug(message string, args ...any) {
 func (a *App) fatal(message string, args ...any) {
 	err := fmt.Errorf(message, args...)
 	a.handleFatalError(err)
+}
+func (a *App) warning(message string, args ...any) {
+	msg := fmt.Sprintf(message, args...)
+	a.handleWarning(msg)
 }
 
 func (a *App) error(message string, args ...any) {
