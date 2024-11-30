@@ -155,7 +155,7 @@ func New(appOptions Options) *App {
 					}
 				}
 				// Shutdown the application
-				runtime.Goexit()
+				os.Exit(1)
 			}
 		}
 	}
