@@ -94,6 +94,11 @@ export default defineConfig({
           link: "https://github.com/sponsors/leaanthony",
           badge: { text: "❤️" },
         },
+        {
+          label: "Credits",
+          link: "/credits",
+          badge: { text: "👑" },
+        },
       ],
     }),
   ],
