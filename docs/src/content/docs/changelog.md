@@ -173,7 +173,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [linux] WindowDidMove / WindowDidResize events in
   [#3580](https://github.com/wailsapp/wails/pull/3580)
 - [windows] WindowDidResize event in
-  (https://github.com/wailsapp/wails/pull/3580)
+  [#3580](https://github.com/wailsapp/wails/pull/3580)
 - [darwin] add Event ApplicationShouldHandleReopen to be able to handle dock
   icon click by @5aaee9 in [#2991](https://github.com/wailsapp/wails/pull/2991)
 - [darwin] add getPrimaryScreen/getScreens to impl by @tmclane in
