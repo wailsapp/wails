@@ -42,7 +42,11 @@ export default defineConfig({
       defaultLocale: "root",
       locales: {
         root: { label: "English", lang: "en", dir: "ltr" },
-        gr: { label: "Greek", lang: "el", dir: "ltr" },
+        // Example of how a new language is added.
+        // After this, you create a directory named after the language inside content/docs/
+        // with the same structure as the root language
+        // eg content/docs/gr/changelog.md or content/docs/gr/api/application.mdx
+        // gr: { label: "Greek", lang: "el", dir: "ltr" },
       },
       plugins: [
         // https://starlight-links-validator.vercel.app/configuration/
