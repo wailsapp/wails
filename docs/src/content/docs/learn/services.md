@@ -50,7 +50,6 @@ app := application.New(application.Options{
         application.NewService(NewMyService()),
     },
 })
-
 ```
 
 ## Optional Methods
@@ -97,11 +96,11 @@ your service to act as an HTTP handler. The route of the handler is defined in
 the service options:
 
 ```go
-    application.NewService(fileserver.New(&fileserver.Config{
-        RootPath: rootPath,
-    }), application.ServiceOptions{
-        Route: "/files",
-    }),
+application.NewService(fileserver.New(&fileserver.Config{
+    RootPath: rootPath,
+}), application.ServiceOptions{
+    Route: "/files",
+})
 ```
 
 ## Example: File Server Service
@@ -140,11 +139,13 @@ We can now use this service in our application:
 ```go
 app := application.New(application.Options{
     Services: []application.Service{
-      application.NewService(fileserver.New(&fileserver.Config{
-      RootPath: rootPath,
-    }), application.ServiceOptions{
-      Route: "/files",
-    }),
+        application.NewService(fileserver.New(&fileserver.Config{
+            RootPath: rootPath,
+        }), application.ServiceOptions{
+            Route: "/files",
+        }),
+    },
+})
 ```
 
 All requests to `/files` will be handled by the `fileserver` service.
