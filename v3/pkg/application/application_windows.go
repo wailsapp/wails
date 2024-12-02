@@ -139,17 +139,13 @@ func (m *windowsApp) run() error {
 
 	// Check if there is 1 parameter passed to the application
 	// and if the extension matches the options.FileAssociations string
-	println("Checking args")
 	if len(os.Args) == 2 {
 		arg := os.Args[1]
 		ext := filepath.Ext(arg)
-		println("Got extension: ", ext)
 		if slices.Contains(m.parent.options.FileAssociations, ext) {
-			println("Slices contains")
 			eventContext := newApplicationEventContext()
 			eventContext.setOpenedWithFile(arg)
 			// EmitEvent application started event
-			println("sending event")
 			applicationEvents <- &ApplicationEvent{
 				Id:  uint(events.Common.ApplicationOpenedWithFile),
 				ctx: eventContext,
