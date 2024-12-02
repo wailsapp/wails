@@ -83,7 +83,7 @@ app := application.New(application.Options{
     //options
 })
 // Run the application
-err := application.Run()
+err := app.Run()
 if err != nil {
     // Handle error
 }
@@ -171,7 +171,7 @@ fmt.Println("DataHome path:", dataHomePath)
 // Output: DataHome path: C:\Users\Username\AppData\Roaming  // Windows
 
 // Get the CacheHome directory path
-cacheHomePath := app.Path(application.CacheHome)
+cacheHomePath := app.Path(application.PathCacheHome)
 fmt.Println("CacheHome path:", cacheHomePath)
 
 // Output: CacheHome path: /home/username/.cache  // Linux
