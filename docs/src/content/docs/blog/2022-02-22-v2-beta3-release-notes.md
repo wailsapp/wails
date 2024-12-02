@@ -55,8 +55,8 @@ instead of using the assets in the `embed.FS`, it loads them directly from disk.
 
 It also provides the additional features:
 
-- Hot reload - Any changes to frontend assets will trigger and auto reload of
-  the application frontend
+- Hot reload - Any changes to frontend assets will trigger an auto reload of the
+  application frontend
 - Auto rebuild - Any changes to your Go code will rebuild and relaunch your
   application
 
@@ -115,7 +115,7 @@ Linux is **hard** to support. We expect there to be a number of quirks with the
 beta. Please help us to help you by filing detailed bug reports!
 
 Finally, I'd like to give a special thank you to all the
-[project sponsors](/credits#sponsors) whose support drive the project in many
+[project sponsors](/credits#sponsors) whose support drives the project in many
 ways behind the scenes.
 
 I look forward to seeing what people build with Wails in this next exciting
