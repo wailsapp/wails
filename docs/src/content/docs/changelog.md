@@ -84,6 +84,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed cross-platform cleanup for .syso files during Windows build by
+  [ansxuman](https://github.com/ansxuman) in
+  [#3924](https://github.com/wailsapp/wails/pull/3924)
 - Fixed amd64 appimage compile by @atterpac in
   [#3898](https://github.com/wailsapp/wails/pull/3898)
 - Fixed build assets update by @ansxuman in
