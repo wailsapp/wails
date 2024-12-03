@@ -474,7 +474,7 @@ Triggered when the window will use standard frame
 
 Triggered when the webview starts a provisional navigation
 
-#### `events.Mac.WebviewDidReceiveServerRedirectForProvisionalNavigation`:
+#### `events.Mac.WebviewDidReceiveServerRedirectForProvisionalNavigation`
 
 Triggered when the webview receives a server redirect for a provisional
 navigation
