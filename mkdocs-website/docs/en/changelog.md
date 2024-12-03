@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed service name determination by [windom](https://github.com/windom/) in [#3827](https://github.com/wailsapp/wails/pull/3827)
 - mkdocs serve now uses docker by [leaanthony](https://github.com/leaanthony)
 - Consolidated dev config into `config.yml` by [leaanthony](https://github.com/leaanthony)
+- Systray dialog now defaults to the application icon if available (Windows) by [@leaanthony](https://github.com/leaanthony)
 
 ### Fixed
 - Fixed cross-platform cleanup for .syso files during Windows build by [ansxuman](https://github.com/ansxuman) in [#3924](https://github.com/wailsapp/wails/pull/3924)
