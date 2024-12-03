@@ -420,7 +420,7 @@ Triggered when the window will order off-screen
 
 #### `events.Mac.WindowWillOrderOnScreen`
 
-Triggered when the window will order on screen`
+Triggered when the window will order on screen
 
 #### `events.Mac.WindowWillResignMain`
 
@@ -432,7 +432,7 @@ Triggered when the window will resize
 
 #### `events.Mac.WindowWillUnfocus`
 
-Triggered when the window will unfocus`
+Triggered when the window will unfocus
 
 #### `events.Mac.WindowWillUpdate`
 
@@ -489,7 +489,7 @@ Triggered when the webview commits navigation
 
 #### `events.Mac.WindowFileDraggingEntered`
 
-Triggered when files are dragged into the window`
+Triggered when files are dragged into the window
 
 #### `events.Mac.WindowFileDraggingPerformed`
 
