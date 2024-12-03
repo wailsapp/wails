@@ -65,7 +65,7 @@ Triggered when the window is set to fullscreen
 
 #### `events.Windows.UnFullscreen`
 
-Triggered when the window is exited from fullscreene
+Triggered when the window exits fullscreen mode
 
 #### `events.Windows.WindowRestore`
 
@@ -77,7 +77,10 @@ Triggered when the window is minimised
 
 #### `events.Windows.WindowUnminimise`
 
-Triggered when the window is ####nminimised -`events.Windows.WindowClose`
+Triggered when the window is minimised
+
+#### `events.Windows.WindowClose`
+
 Triggered before the window closes
 
 #### `events.Windows.WindowSetFocus`
