@@ -190,7 +190,7 @@ without them, this release just wouldn't exist:
 
 And finally, I'd like to give a special thank you to all the
 [project sponsors](/credits#sponsors), including
-[JetBrains](https://www.jetbrains.com?from=Wails), whose support drive the
+[JetBrains](https://www.jetbrains.com?from=Wails), whose support drives the
 project in many ways behind the scenes.
 
 I look forward to seeing what people build with Wails in this next exciting
