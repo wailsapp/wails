@@ -54,7 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony) in [#3841](https://github.com/wailsapp/wails/pull/3841)
 - [darwin]  Fixed `application.NewEditMenu` including a duplicate `PasteAndMatchStyle` role in the edit menu on Darwin by [johnmccabe](https://github.com/johnmccabe) in [#3839](https://github.com/wailsapp/wails/pull/3839)
 - [linux] Fixed aarch64 compilation [#3840](https://github.com/wailsapp/wails/issues/3840) in [#3854](https://github.com/wailsapp/wails/pull/3854) by [kodflow](https://github.com/kodflow)
-
+- Fixed garble build by @5aaee9 in [#3192](https://github.com/wailsapp/wails/pull/3192)
+- 
 ## v3.0.0-alpha.7 - 2024-09-18
 
 ### Added
@@ -148,6 +149,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix random crash on linux due to window ID handling by @leaanthony. Based on PR [#3466](https://github.com/wailsapp/wails/pull/3622) by [@5aaee9](https://github.com/5aaee9).
 - Fix systemTray.setIcon crashing on Linux by [@windom](https://github.com/windom/) in [#3636](https://github.com/wailsapp/wails/pull/3636).
 - Fix Ensure Window Frame is Applied on First Call in `setFrameless` Function on Windows by [@bruxaodev](https://github.com/bruxaodev/) in [#3691](https://github.com/wailsapp/wails/pull/3691).
+
 
 ### Changed
 
