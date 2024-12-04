@@ -19,7 +19,7 @@ export default defineConfig({
   integrations: [
     sitemap(),
     starlight({
-      title: "Wails (Alpha)",
+      title: "",
       logo: {
         dark: "./src/assets/wails-logo-horizontal-dark.svg",
         light: "./src/assets/wails-logo-horizontal-light.svg",
@@ -53,16 +53,16 @@ export default defineConfig({
         starlightLinksValidator({
           exclude: [
             // TODO: Fix these links in the blog/wails-v2-released file
-            "/docs/reference/options#theme",
-            "/docs/reference/options#customtheme",
-            "/docs/guides/application-development#application-menu",
-            "/docs/reference/runtime/dialog",
-            "/docs/reference/options#windowistranslucent",
-            "/docs/reference/options#windowistranslucent-1",
-            "/docs/guides/windows-installer",
-            "/docs/reference/runtime/intro",
-            "/docs/guides/obfuscated",
-            "/docs/howdoesitwork#calling-bound-go-methods",
+            // "/docs/reference/options#theme",
+            // "/docs/reference/options#customtheme",
+            // "/docs/guides/application-development#application-menu",
+            // "/docs/reference/runtime/dialog",
+            // "/docs/reference/options#windowistranslucent",
+            // "/docs/reference/options#windowistranslucent-1",
+            // "/docs/guides/windows-installer",
+            // "/docs/reference/runtime/intro",
+            // "/docs/guides/obfuscated",
+            // "/docs/howdoesitwork#calling-bound-go-methods",
           ],
         }),
         // https://starlight-image-zoom.vercel.app/configuration/

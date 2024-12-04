@@ -1,6 +1,6 @@
 ---
-title: Welcome to the Wails
-description: ""
+title: Welcome to Wails
+description: "Create beautiful applications using Go"
 template: splash
 hero:
   tagline:
@@ -8,7 +8,10 @@ hero:
     powerful framework for building desktop applications using Go and modern web
     technologies.
   image:
-    file: ../../assets/wails-logo-horizontal-dark.svg
+    dark: ../../assets/wails-logo-dark.svg
+    light: ../../assets/wails-logo-light.svg
+    alt: Wails Logo
+
   actions:
     - text: Getting Started
       link: /getting-started/installation
@@ -16,13 +19,15 @@ hero:
     - text: Learn More
       link: /learn/services
       icon: right-arrow
+    - text: Sponsor
+      link: https://github.com/sponsors/leaanthony
+      icon: heart
+      class:
+        - is-sponsor
+
 ---
 
 import { Card, CardGrid } from "@astrojs/starlight/components";
-
-Welcome to the Wails v3 Alpha documentation. This is your starting point for
-exploring the latest version of Wails, a powerful framework for building desktop
-applications using Go and modern web technologies.
 
 <CardGrid stagger>
   <Card title="Introduction" icon="pencil">

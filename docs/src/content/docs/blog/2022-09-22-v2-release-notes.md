@@ -42,29 +42,29 @@ covers all the major changes in more detail. In summary:
 
 - Webview2 component for Windows that supports modern web standards and
   debugging capabilities.
-- [Dark / Light theme](/docs/reference/options#theme) +
-  [custom theming](/docs/reference/options#customtheme) on Windows.
+- [Dark / Light theme](https://wails.io/docs/reference/options#theme) +
+  [custom theming](https://wails.io/docs/reference/options#customtheme) on Windows.
 - Windows now has no CGO requirements.
 - Out-of-the-box support for Svelte, Vue, React, Preact, Lit & Vanilla project
   templates.
 - [Vite](https://vitejs.dev/) integration providing a hot-reload development
   environment for your application.
 - Native application
-  [menus](/docs/guides/application-development#application-menu) and
-  [dialogs](/docs/reference/runtime/dialog).
+  [menus](https://wails.io/docs/guides/application-development#application-menu) and
+  [dialogs](https://wails.io/docs/reference/runtime/dialog).
 - Native window translucency effects for
-  [Windows](/docs/reference/options#windowistranslucent) and
-  [macOS](/docs/reference/options#windowistranslucent-1). Support for Mica &
+  [Windows](https://wails.io/docs/reference/options#windowistranslucent) and
+  [macOS](https://wails.io/docs/reference/options#windowistranslucent-1). Support for Mica &
   Acrylic backdrops.
-- Easily generate an [NSIS installer](/docs/guides/windows-installer) for
+- Easily generate an [NSIS installer](https://wails.io/docs/guides/windows-installer) for
   Windows deployments.
-- A rich [runtime library](/docs/reference/runtime/intro) providing utility
+- A rich [runtime library](https://wails.io/docs/reference/runtime/intro) providing utility
   methods for window manipulation, eventing, dialogs, menus and logging.
-- Support for [obfuscating](/docs/guides/obfuscated) your application using
+- Support for [obfuscating](https://wails.io/docs/guides/obfuscated) your application using
   [garble](https://github.com/burrowers/garble).
 - Support for compressing your application using [UPX](https://upx.github.io/).
 - Automatic TypeScript generation of Go structs. More info
-  [here](/docs/howdoesitwork#calling-bound-go-methods).
+  [here](https://wails.io/docs/howdoesitwork#calling-bound-go-methods).
 - No extra libraries or DLLs are required to be shipped with your application.
   For any platform.
 - No requirement to bundle frontend assets. Just develop your application like
