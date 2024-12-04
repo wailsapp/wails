@@ -1,20 +1,18 @@
-//go:build darwin
-
-#ifndef WebviewWindowDelegate_h
-#define WebviewWindowDelegate_h
+#ifndef WEBVIEW_WINDOW_DARWIN
+#define WEBVIEW_WINDOW_DARWIN
 
 #import <Cocoa/Cocoa.h>
 #import <WebKit/WebKit.h>
+#include "webview_responder_darwin.h"
 
-@interface WebviewWindow : NSWindow
-- (BOOL) canBecomeKeyWindow;
-- (BOOL) canBecomeMainWindow;
-- (BOOL) acceptsFirstResponder;
-- (BOOL) becomeFirstResponder;
-- (BOOL) resignFirstResponder;
-- (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+@interface WebviewWindow : NSObject
 
-@property (assign) WKWebView* webView; // We already retain WKWebView since it's part of the Window.
+@property(assign) NSWindow *w;
+@property(assign) WKWebView *webView; // We already retain WKWebView since it's part of the Window.
+@property(assign) WebviewResponder *responder;
+
+- (WebviewWindow *) initAsWindow:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+- (WebviewWindow *) initAsPanel:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 
 @end
 
@@ -32,5 +30,4 @@
 
 @end
 
-
-#endif /* WebviewWindowDelegate_h */
+#endif /* WEBVIEW_WINDOW_DARWIN */

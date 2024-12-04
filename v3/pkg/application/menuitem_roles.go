@@ -47,7 +47,12 @@ func NewCutMenuItem() *MenuItem {
 		SetAccelerator("CmdOrCtrl+x").OnClick(func(ctx *Context) {
 		currentWindow := globalApplication.CurrentWindow()
 		if currentWindow != nil {
-			currentWindow.cut()
+			switch currentWindow := currentWindow.(type) {
+			case *WebviewWindow:
+				currentWindow.cut()
+			case *WebviewPanel:
+				currentWindow.cut()
+			}
 		}
 	})
 }

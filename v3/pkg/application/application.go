@@ -172,6 +172,21 @@ func New(appOptions Options) *App {
 	return result
 }
 
+func processKeyBindingOptions(keyBindings map[string]func(window Window)) map[string]func(window Window) {
+	result := make(map[string]func(window Window))
+	for key, callback := range keyBindings {
+		// Parse the key to an accelerator
+		acc, err := parseAccelerator(key)
+		if err != nil {
+			globalApplication.error("Invalid keybinding: %s", err.Error())
+			continue
+		}
+		result[acc.String()] = callback
+		globalApplication.debug("Added Keybinding", "accelerator", acc.String())
+	}
+	return result
+}
+
 func mergeApplicationDefaults(o *Options) {
 	if o.Name == "" {
 		o.Name = "My Wails Application"
@@ -335,7 +350,7 @@ type App struct {
 	isDebugMode  bool
 
 	// Keybindings
-	keyBindings     map[string]func(window *WebviewWindow)
+	keyBindings     map[string]func(window Window)
 	keyBindingsLock sync.RWMutex
 
 	// Shutdown
@@ -422,7 +437,7 @@ func (a *App) init() {
 	a.windows = make(map[uint]Window)
 	a.systemTrays = make(map[uint]*SystemTray)
 	a.contextMenus = make(map[string]*Menu)
-	a.keyBindings = make(map[string]func(window *WebviewWindow))
+	a.keyBindings = make(map[string]func(window Window))
 	a.Logger = a.options.Logger
 	a.pid = os.Getpid()
 	a.wailsEventListeners = make([]WailsEventListener, 0)
@@ -536,20 +551,31 @@ func (a *App) error(message string, args ...any) {
 
 func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
 	newWindow := NewWindow(windowOptions)
-	id := newWindow.ID()
-
-	a.windowsLock.Lock()
-	a.windows[id] = newWindow
-	a.windowsLock.Unlock()
-
-	// Call hooks
-	for _, hook := range a.windowCreatedCallbacks {
-		hook(newWindow)
-	}
-
-	a.runOrDeferToAppRun(newWindow)
+	a.addNewWindow(newWindow)
 
 	return newWindow
+}
+
+func (a *App) NewWebviewPanelWithOptions(panelOptions WebviewPanelOptions) *WebviewPanel {
+	newPanel := NewPanel(panelOptions)
+	a.addNewWindow(newPanel)
+
+	return newPanel
+}
+
+func (a *App) addNewWindow(newWindow Window) {
+    id := newWindow.ID()
+
+    a.windowsLock.Lock()
+    a.windows[id] = newWindow
+    a.windowsLock.Unlock()
+
+    // Call hooks
+    for _, hook := range a.windowCreatedCallbacks {
+        hook(newWindow)
+    }
+
+    a.runOrDeferToAppRun(newWindow)
 }
 
 func (a *App) NewSystemTray() *SystemTray {
@@ -692,7 +718,7 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.Unlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		a.error("DragAndDropMessage: Window #%d not found", event.windowId)
 		return
 	}
 	// Get callback from window
@@ -705,7 +731,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		a.error("WindowMessage: Window #%d not found", event.windowId)
 		return
 	}
 	// Check if the message starts with "wails:"
@@ -728,7 +754,7 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("Window #%d not found", event.WindowID)
+		a.error("WindowEvent %d: Window #%d not found", event.EventID, event.WindowID)
 		return
 	}
 	window.HandleWindowEvent(event.EventID)
@@ -743,7 +769,7 @@ func (a *App) handleMenuItemClicked(menuItemID uint) {
 	menuItem.handleClick()
 }
 
-func (a *App) CurrentWindow() *WebviewWindow {
+func (a *App) CurrentWindow() Window {
 	if a.impl == nil {
 		return nil
 	}
@@ -754,7 +780,7 @@ func (a *App) CurrentWindow() *WebviewWindow {
 	if result == nil {
 		return nil
 	}
-	return result.(*WebviewWindow)
+	return result
 }
 
 // OnShutdown adds a function to be run when the application is shutting down.
@@ -959,7 +985,7 @@ func (a *App) runOrDeferToAppRun(r runnable) {
 	}
 }
 
-func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow) bool {
+func (a *App) processKeyBinding(acceleratorString string, window Window) bool {
 	if len(a.keyBindings) == 0 {
 		return false
 	}
@@ -979,7 +1005,7 @@ func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow)
 	return true
 }
 
-func (a *App) addKeyBinding(acceleratorString string, callback func(window *WebviewWindow)) {
+func (a *App) addKeyBinding(acceleratorString string, callback func(window Window)) {
 	a.keyBindingsLock.Lock()
 	defer a.keyBindingsLock.Unlock()
 	a.keyBindings[acceleratorString] = callback
@@ -997,7 +1023,7 @@ func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		a.error("WindowKeyEvent: Window #%d not found", event.windowId)
 		return
 	}
 	// Get callback from window
