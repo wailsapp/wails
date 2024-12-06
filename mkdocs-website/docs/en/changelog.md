@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v3.0.0-alpha.8.1 - 2024-12-07
+
+### Changed
+- Using fork of Taskfile to fix version issues when installing using `go install` by @leaanthon
+
 ## v3.0.0-alpha.8 - 2024-12-06
 
 ### Added
@@ -60,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [darwin]  Fixed `application.NewEditMenu` including a duplicate `PasteAndMatchStyle` role in the edit menu on Darwin by [johnmccabe](https://github.com/johnmccabe) in [#3839](https://github.com/wailsapp/wails/pull/3839)
 - [linux] Fixed aarch64 compilation [#3840](https://github.com/wailsapp/wails/issues/3840) in [#3854](https://github.com/wailsapp/wails/pull/3854) by [kodflow](https://github.com/kodflow)
 - [windows] Fixed radio group menu items by [@leaanthony](https://github.com/leaanthony)
+- Fix error on building runnable .app on MacOS when 'name' and 'outputfilename' are different. by @nickisworking in https://github.com/wailsapp/wails/pull/3789
 
 ## v3.0.0-alpha.7 - 2024-09-18
 
