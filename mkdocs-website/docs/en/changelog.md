@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v3.0.0-alpha.8 - 2024-12-06
+
 ### Added
 - Support of linux packaging of deb,rpm, and arch linux packager builds by @atterpac in [#3909](https://github.com/wailsapp/wails/3909)
 - Added Support for darwin universal builds and packages by [ansxuman](https://github.com/ansxuman) in [#3902](https://github.com/wailsapp/wails/pull/3902)
@@ -31,7 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `GeneralAutofillEnabled` and `PasswordAutosaveEnabled` Windows options by [leaanthony](https://github.com/leaanthony) in [#3766](https://github.com/wailsapp/wails/pull/3766)
 - Added the ability to retrieve the window calling a service method by [leaanthony](https://github.com/leaanthony)
   in [#3888](https://github.com/wailsapp/wails/pull/3888)
-
+- Added `EnabledFeatures` and `DisabledFeatures` options for Webview2 by [leaanthony](https://github.com/leaanthony).
+- 
 ### Changed
 - `service.OnStartup` now shutdowns the application on error and runs `service.OnShutdown`for any prior services that started by @atterpac in [#3920](https://github.com/wailsapp/wails/pull/3920)
 - Refactored systray click messaging to better align with user interactions by @atterpac in [#3907](https://github.com/wailsapp/wails/pull/3907)
@@ -44,6 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - mkdocs serve now uses docker by [leaanthony](https://github.com/leaanthony)
 - Consolidated dev config into `config.yml` by [leaanthony](https://github.com/leaanthony)
 - Systray dialog now defaults to the application icon if available (Windows) by [@leaanthony](https://github.com/leaanthony)
+- Better reporting of GPU + Memory for macOS by [@leaanthony](https://github.com/leaanthony)
+- Removed `WebviewGpuIsDisabled` and `EnableFraudulentWebsiteWarnings` (superseded by `EnabledFeatures` and `DisabledFeatures` options) by [leaanthony](https://github.com/leaanthony)
 
 ### Fixed
 - Fixed deadlock in Linux dialog for multiple selections caused by unclosed channel variable by @michael-freling in [#3925](https://github.com/wailsapp/wails/pull/3925)
@@ -54,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `AlwaysOnTop` not working on Mac by [leaanthony](https://github.com/leaanthony) in [#3841](https://github.com/wailsapp/wails/pull/3841)
 - [darwin]  Fixed `application.NewEditMenu` including a duplicate `PasteAndMatchStyle` role in the edit menu on Darwin by [johnmccabe](https://github.com/johnmccabe) in [#3839](https://github.com/wailsapp/wails/pull/3839)
 - [linux] Fixed aarch64 compilation [#3840](https://github.com/wailsapp/wails/issues/3840) in [#3854](https://github.com/wailsapp/wails/pull/3854) by [kodflow](https://github.com/kodflow)
+- [windows] Fixed radio group menu items by [@leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.7 - 2024-09-18
 
