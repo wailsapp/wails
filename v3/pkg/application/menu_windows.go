@@ -60,6 +60,9 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		if item.IsSeparator() {
 			flags = flags | w32.MF_SEPARATOR
 		}
+		if item.itemType == radio {
+			flags = flags | w32.MFT_RADIOCHECK
+		}
 
 		if item.submenu != nil {
 			flags = flags | w32.MF_POPUP

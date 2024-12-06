@@ -62,27 +62,29 @@ func (m *Menu) AddRole(role Role) *Menu {
 
 func (m *Menu) processRadioGroups() {
 	var radioGroup []*MenuItem
+
+	closeOutRadioGroups := func() {
+		if len(radioGroup) > 0 {
+			for _, item := range radioGroup {
+				item.radioGroupMembers = radioGroup
+			}
+			radioGroup = []*MenuItem{}
+		}
+	}
+
 	for _, item := range m.items {
+		if item.itemType != radio {
+			closeOutRadioGroups()
+		}
 		if item.itemType == submenu {
 			item.submenu.processRadioGroups()
 			continue
 		}
 		if item.itemType == radio {
 			radioGroup = append(radioGroup, item)
-		} else {
-			if len(radioGroup) > 0 {
-				for _, item := range radioGroup {
-					item.radioGroupMembers = radioGroup
-				}
-				radioGroup = nil
-			}
 		}
 	}
-	if len(radioGroup) > 0 {
-		for _, item := range radioGroup {
-			item.radioGroupMembers = radioGroup
-		}
-	}
+	closeOutRadioGroups()
 }
 
 func (m *Menu) SetLabel(label string) {

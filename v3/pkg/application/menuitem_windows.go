@@ -69,6 +69,10 @@ func (m *windowsMenuItem) IsCheckbox() bool {
 	return m.itemType == checkbox
 }
 
+func (m *windowsMenuItem) IsRadio() bool {
+	return m.itemType == radio
+}
+
 func (m *windowsMenuItem) Enabled() bool {
 	return !m.disabled
 }
@@ -146,6 +150,9 @@ func (m *windowsMenuItem) getMenuInfo() *w32.MENUITEMINFO {
 		mii.FType = w32.MFT_SEPARATOR
 	} else {
 		mii.FType = w32.MFT_STRING
+		if m.IsRadio() {
+			mii.FType |= w32.MFT_RADIOCHECK
+		}
 		thisText := m.label
 		if m.menuItem.accelerator != nil {
 			thisText += "\t" + m.menuItem.accelerator.String()
@@ -160,7 +167,7 @@ func (m *windowsMenuItem) getMenuInfo() *w32.MENUITEMINFO {
 		mii.FState |= w32.MFS_DISABLED
 	}
 
-	if m.IsCheckbox() {
+	if m.IsCheckbox() || m.IsRadio() {
 		mii.FMask |= w32.MIIM_CHECKMARKS
 	}
 	if m.Checked() {
