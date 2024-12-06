@@ -1410,24 +1410,26 @@ func (w *windowsWebviewWindow) setupChromium() {
 	}
 	globalApplication.capabilities = capabilities.NewCapabilities(webview2version)
 
-	disableFeatues := []string{}
-	if !opts.EnableFraudulentWebsiteWarnings {
-		disableFeatues = append(disableFeatues, "msSmartScreenProtection")
-	}
-	if opts.WebviewGpuIsDisabled {
-		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
-	}
+	// We disable this by default. Can be overridden with the `EnableFraudulentWebsiteWarnings` option
+	opts.DisabledFeatures = append(opts.DisabledFeatures, "msSmartScreenProtection")
 
-	if len(disableFeatues) > 0 {
-		arg := fmt.Sprintf("--disable-features=%s", strings.Join(disableFeatues, ","))
+	if len(opts.DisabledFeatures) > 0 {
+		opts.DisabledFeatures = lo.Uniq(opts.DisabledFeatures)
+		arg := fmt.Sprintf("--disable-features=%s", strings.Join(opts.DisabledFeatures, ","))
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
-	enableFeatures := []string{"msWebView2BrowserHitTransparent"}
-	if len(enableFeatures) > 0 {
-		arg := fmt.Sprintf("--enable-features=%s", strings.Join(enableFeatures, ","))
+	if len(opts.EnabledFeatures) > 0 {
+		opts.EnabledFeatures = lo.Uniq(opts.EnabledFeatures)
+		arg := fmt.Sprintf("--enable-features=%s", strings.Join(opts.EnabledFeatures, ","))
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
+
+	////enableFeatures := []string{"msWebView2BrowserHitTransparent"}
+	//if len(enableFeatures) > 0 {
+	//	arg := fmt.Sprintf("--enable-features=%s", strings.Join(enableFeatures, ","))
+	//	chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
+	//}
 
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
 	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath

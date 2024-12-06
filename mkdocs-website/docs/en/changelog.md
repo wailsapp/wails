@@ -31,7 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `GeneralAutofillEnabled` and `PasswordAutosaveEnabled` Windows options by [leaanthony](https://github.com/leaanthony) in [#3766](https://github.com/wailsapp/wails/pull/3766)
 - Added the ability to retrieve the window calling a service method by [leaanthony](https://github.com/leaanthony)
   in [#3888](https://github.com/wailsapp/wails/pull/3888)
-
+- Added `EnabledFeatures` and `DisabledFeatures` options for Webview2 by [leaanthony](https://github.com/leaanthony).
+- 
 ### Changed
 - `service.OnStartup` now shutdowns the application on error and runs `service.OnShutdown`for any prior services that started by @atterpac in [#3920](https://github.com/wailsapp/wails/pull/3920)
 - Refactored systray click messaging to better align with user interactions by @atterpac in [#3907](https://github.com/wailsapp/wails/pull/3907)
@@ -45,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Consolidated dev config into `config.yml` by [leaanthony](https://github.com/leaanthony)
 - Systray dialog now defaults to the application icon if available (Windows) by [@leaanthony](https://github.com/leaanthony)
 - Better reporting of GPU + Memory for macOS by [@leaanthony](https://github.com/leaanthony)
+- Removed `WebviewGpuIsDisabled` and `EnableFraudulentWebsiteWarnings` (superseded by `EnabledFeatures` and `DisabledFeatures` options) by [leaanthony](https://github.com/leaanthony)
 
 ### Fixed
 - Fixed deadlock in Linux dialog for multiple selections caused by unclosed channel variable by @michael-freling in [#3925](https://github.com/wailsapp/wails/pull/3925)
