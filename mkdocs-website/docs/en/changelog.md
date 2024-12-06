@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v3.0.0-alpha.8 - 2024-12-06
 
 ### Added
+- Added Support for StartAtLogin by [ansxuman](https://github.com/ansxuman) in [#3910](https://github.com/wailsapp/wails/pull/3910)
 - Support of linux packaging of deb,rpm, and arch linux packager builds by @atterpac in [#3909](https://github.com/wailsapp/wails/3909)
 - Added Support for darwin universal builds and packages by [ansxuman](https://github.com/ansxuman) in [#3902](https://github.com/wailsapp/wails/pull/3902)
 - Events documentation to the mkdocs webite by [atterpac](https://github.com/atterpac) in [#3867](https://github.com/wailsapp/wails/pull/3867)
