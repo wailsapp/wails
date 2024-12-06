@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - mkdocs serve now uses docker by [leaanthony](https://github.com/leaanthony)
 - Consolidated dev config into `config.yml` by [leaanthony](https://github.com/leaanthony)
 - Systray dialog now defaults to the application icon if available (Windows) by [@leaanthony](https://github.com/leaanthony)
+- Better reporting of GPU + Memory for macOS by [@leaanthony](https://github.com/leaanthony)
 
 ### Fixed
 - Fixed deadlock in Linux dialog for multiple selections caused by unclosed channel variable by @michael-freling in [#3925](https://github.com/wailsapp/wails/pull/3925)

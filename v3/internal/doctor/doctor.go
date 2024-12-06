@@ -1,8 +1,11 @@
 package doctor
 
 import (
+	"bytes"
 	"fmt"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"runtime/debug"
 	"slices"
@@ -140,17 +143,50 @@ func Run() (err error) {
 			systemTabledata = append(systemTabledata, []string{prefix, details})
 		}
 	} else {
-		systemTabledata = append(systemTabledata, []string{"GPU", "Unknown"})
+		if runtime.GOOS == "darwin" {
+			var numCoresValue string
+			cmd := exec.Command("sh", "-c", "ioreg -l | grep gpu-core-count")
+			output, err := cmd.Output()
+			if err == nil {
+				// Look for an `=` sign, optional spaces and then an integer
+				re := regexp.MustCompile(`= *(\d+)`)
+				matches := re.FindAllStringSubmatch(string(output), -1)
+				numCoresValue = "Unknown"
+				if len(matches) > 0 {
+					numCoresValue = matches[0][1]
+				}
+
+			}
+
+			// Run `system_profiler SPDisplaysDataType | grep Metal`
+			var metalSupport string
+			cmd = exec.Command("sh", "-c", "system_profiler SPDisplaysDataType | grep Metal")
+			output, err = cmd.Output()
+			if err == nil {
+				metalSupport = ", " + strings.TrimSpace(string(output))
+			}
+			systemTabledata = append(systemTabledata, []string{"GPU", numCoresValue + " cores" + metalSupport})
+
+		} else {
+			systemTabledata = append(systemTabledata, []string{"GPU", "Unknown"})
+		}
 	}
 
 	memory, _ := ghw.Memory()
+	var memoryText = "Unknown"
 	if memory != nil {
-		systemTabledata = append(systemTabledata, []string{"Memory", strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"})
+		memoryText = strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"
 	} else {
-		systemTabledata = append(systemTabledata, []string{"Memory", "Unknown"})
+		if runtime.GOOS == "darwin" {
+			cmd := exec.Command("sh", "-c", "system_profiler SPHardwareDataType | grep 'Memory'")
+			output, err := cmd.Output()
+			if err == nil {
+				output = bytes.Replace(output, []byte("Memory: "), []byte(""), 1)
+				memoryText = strings.TrimSpace(string(output))
+			}
+		}
 	}
-
-	//systemTabledata = append(systemTabledata, []string{"CPU", cpu.Processors[0].Model})
+	systemTabledata = append(systemTabledata, []string{"Memory", memoryText})
 
 	err = pterm.DefaultTable.WithBoxed().WithData(systemTabledata).Render()
 	if err != nil {
