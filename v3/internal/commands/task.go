@@ -10,8 +10,8 @@ import (
 
 	"github.com/pterm/pterm"
 
-	"github.com/go-task/task/v3"
-	"github.com/go-task/task/v3/taskfile/ast"
+	"github.com/wailsapp/task/v3"
+	"github.com/wailsapp/task/v3/taskfile/ast"
 )
 
 // BuildSettings contains the CLI build settings
@@ -52,7 +52,7 @@ type RunTaskOptions struct {
 func RunTask(options *RunTaskOptions, otherArgs []string) error {
 
 	if options.Version {
-		ver := BuildSettings["mod.github.com/go-task/task/v3"]
+		ver := BuildSettings["mod.github.com/wailsapp/task/v3"]
 		fmt.Println("Task Version:", ver)
 		return nil
 	}

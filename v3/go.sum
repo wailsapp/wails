@@ -307,8 +307,8 @@ github.com/wailsapp/go-webview2 v1.0.18 h1:SSSCoLA+MYikSp1U0WmvELF/4c3x5kH8Vi31T
 github.com/wailsapp/go-webview2 v1.0.18/go.mod h1:qJmWAmAmaniuKGZPWwne+uor3AHMB5PFhqiK0Bbj8kc=
 github.com/wailsapp/mimetype v1.4.1 h1:pQN9ycO7uo4vsUUuPeHEYoUkLVkaRntMnHJxVwYhwHs=
 github.com/wailsapp/mimetype v1.4.1/go.mod h1:9aV5k31bBOv5z6u+QP8TltzvNGJPmNJD4XlAL3U+j3o=
-github.com/wailsapp/task/v3 v3.19.2-0.20241206221137-ce6256667be0 h1:NkY5LxC2qaa5NptuydCeuU155JIxyeuyF7/dJsNeJIM=
-github.com/wailsapp/task/v3 v3.19.2-0.20241206221137-ce6256667be0/go.mod h1:GuHraC/erBpUdA98k7tcPlygJ90Q87UoT9RauYXnsdA=
+github.com/wailsapp/task/v3 v3.40.1-patched3 h1:i6O1WNdSur9CGaiMDIYGjsmj/qS4465zqv+WEs6sPRs=
+github.com/wailsapp/task/v3 v3.40.1-patched3/go.mod h1:jIP48r8ftoSQNlxFP4+aEnkvGQqQXqCnRi/B7ROaecE=
 github.com/xanzy/ssh-agent v0.3.3 h1:+/15pJfg/RsTxqYcX6fHqOXZwwMP+2VyYWJeWM2qQFM=
 github.com/xanzy/ssh-agent v0.3.3/go.mod h1:6dzNDKs0J9rVPHPhaGCukekBHKqfl+L3KghI1Bc68Uw=
 github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 h1:nIPpBwaJSVYIxUFsDv3M8ofmx9yWTog9BfvIu0q41lo=

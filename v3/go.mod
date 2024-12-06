@@ -9,7 +9,6 @@ require (
 	github.com/ebitengine/purego v0.4.0-alpha.4
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/go-ole/go-ole v1.3.0
-	github.com/go-task/task/v3 v3.40.0
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/google/go-cmp v0.6.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -33,6 +32,7 @@ require (
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/go-webview2 v1.0.18
 	github.com/wailsapp/mimetype v1.4.1
+	github.com/wailsapp/task/v3 v3.40.1-patched3
 	golang.org/x/sys v0.28.0
 	golang.org/x/term v0.26.0
 	golang.org/x/tools v0.23.0
@@ -133,5 +133,3 @@ require (
 	modernc.org/token v1.0.1 // indirect
 	mvdan.cc/sh/v3 v3.10.0 // indirect
 )
-
-replace github.com/go-task/task/v3 v3.40.0 => github.com/wailsapp/task/v3 v3.19.2-0.20241206221137-ce6256667be0
