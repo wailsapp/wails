@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v3.0.0-alpha.8 - 2024-12-06
+
 ### Added
 
 - Support of linux packaging of deb,rpm, and arch linux packager builds by
@@ -55,6 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the ability to retrieve the window calling a service method by
   [leaanthony](https://github.com/leaanthony) in
   [#3888](https://github.com/wailsapp/wails/pull/3888)
+- Added `EnabledFeatures` and `DisabledFeatures` options for Webview2 by
+  [leaanthony](https://github.com/leaanthony).
+-
 
 ### Changed
 
@@ -81,9 +86,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - mkdocs serve now uses docker by [leaanthony](https://github.com/leaanthony)
 - Consolidated dev config into `config.yml` by
   [leaanthony](https://github.com/leaanthony)
+- Systray dialog now defaults to the application icon if available (Windows) by
+  [@leaanthony](https://github.com/leaanthony)
+- Better reporting of GPU + Memory for macOS by
+  [@leaanthony](https://github.com/leaanthony)
+- Removed `WebviewGpuIsDisabled` and `EnableFraudulentWebsiteWarnings`
+  (superseded by `EnabledFeatures` and `DisabledFeatures` options) by
+  [leaanthony](https://github.com/leaanthony)
 
 ### Fixed
 
+- Fixed deadlock in Linux dialog for multiple selections caused by unclosed
+  channel variable by @michael-freling in
+  [#3925](https://github.com/wailsapp/wails/pull/3925)
 - Fixed cross-platform cleanup for .syso files during Windows build by
   [ansxuman](https://github.com/ansxuman) in
   [#3924](https://github.com/wailsapp/wails/pull/3924)
@@ -104,6 +119,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#3840](https://github.com/wailsapp/wails/issues/3840) in
   [#3854](https://github.com/wailsapp/wails/pull/3854) by
   [kodflow](https://github.com/kodflow)
+- [windows] Fixed radio group menu items by
+  [@leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.7 - 2024-09-18
 
@@ -146,6 +163,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#1811](https://github.com/wailsapp/wails/pull/1811) in
   [#3614](https://github.com/wailsapp/wails/pull/3614) by
   [@stendler](https://github.com/stendler)
+- Do not bind internal service methods in
+  [#3720](https://github.com/wailsapp/wails/pull/3720) by
+  [leaanthony](https://github.com/leaanthony)
+- [windows] Fixed system tray startup panic in
+  [#3693](https://github.com/wailsapp/wails/issues/3693) by
+  [@DeltaLaboratory](https://github.com/DeltaLaboratory)
 - Do not bind internal service methods in
   [#3720](https://github.com/wailsapp/wails/pull/3720) by
   [leaanthony](https://github.com/leaanthony)
@@ -370,9 +393,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Disable spinner on Non-Terminal or CI Environment by
   [@DeltaLaboratory](https://github.com/DeltaLaboratory) in
   [#3574](https://github.com/wailsapp/wails/pull/3574)
-
-### Removed
-
-### Deprecated
-
-### Security
