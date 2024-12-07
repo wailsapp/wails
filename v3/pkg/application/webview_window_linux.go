@@ -321,13 +321,15 @@ func (w *linuxWebviewWindow) run() {
 
 	w.setURL(startURL)
 	w.parent.OnWindowEvent(events.Linux.WindowLoadChanged, func(_ *WindowEvent) {
-		if w.parent.options.JS != "" {
-			w.execJS(w.parent.options.JS)
-		}
-		if w.parent.options.CSS != "" {
-			js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();", w.parent.options.CSS)
-			w.execJS(js)
-		}
+		InvokeAsync(func() {
+			if w.parent.options.JS != "" {
+				w.execJS(w.parent.options.JS)
+			}
+			if w.parent.options.CSS != "" {
+				js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();", w.parent.options.CSS)
+				w.execJS(js)
+			}
+		})
 	})
 	w.parent.OnWindowEvent(events.Linux.WindowFocusIn, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowFocus)
