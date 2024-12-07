@@ -33,6 +33,9 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
+	// Allow fullscreen. Needed for frameless windows
+	window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+
 	// Create delegate
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
 	[delegate autorelease];
@@ -1278,9 +1281,14 @@ func (w *macosWebviewWindow) run() {
 					// We have to wait until the window is shown before we can remove the shadow
 					var cancel func()
 					cancel = w.parent.OnWindowEvent(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
-						w.setHasShadow(!options.Mac.DisableShadow)
-						w.setAlwaysOnTop(options.AlwaysOnTop)
-						cancel()
+						InvokeAsync(func() {
+							if !w.isVisible() {
+								w.parent.Show()
+							}
+							w.setHasShadow(!options.Mac.DisableShadow)
+							w.setAlwaysOnTop(options.AlwaysOnTop)
+							cancel()
+						})
 					})
 				}
 			})

@@ -267,7 +267,7 @@ func (w *windowsWebviewWindow) run() {
 		nil)
 
 	if w.hwnd == 0 {
-		panic("Unable to create window")
+		globalApplication.fatal("Unable to create window")
 	}
 
 	// Ensure correct window size in case the scale factor of current screen is different from the initial one.
@@ -329,7 +329,9 @@ func (w *windowsWebviewWindow) run() {
 	case SystemDefault:
 		w.updateTheme(w32.IsCurrentlyDarkMode())
 		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*ApplicationEvent) {
-			w.updateTheme(w32.IsCurrentlyDarkMode())
+			InvokeAsync(func() {
+				w.updateTheme(w32.IsCurrentlyDarkMode())
+			})
 		})
 	case Light:
 		w.updateTheme(false)
@@ -527,8 +529,7 @@ func (w *windowsWebviewWindow) reload() {
 }
 
 func (w *windowsWebviewWindow) forceReload() {
-	//TODO implement me
-	panic("implement me")
+	// noop
 }
 
 func (w *windowsWebviewWindow) zoomReset() {
@@ -580,8 +581,7 @@ func (w *windowsWebviewWindow) close() {
 }
 
 func (w *windowsWebviewWindow) zoom() {
-	//TODO implement me
-	panic("implement me")
+	// Noop
 }
 
 func (w *windowsWebviewWindow) setHTML(html string) {
@@ -1299,7 +1299,7 @@ func (w *windowsWebviewWindow) setWindowMask(imageData []byte) {
 
 	data, err := pngToImage(imageData)
 	if err != nil {
-		panic(err)
+		globalApplication.fatal("Fatal error in callback setWindowMask: " + err.Error())
 	}
 
 	bitmap, err := w32.CreateHBITMAPFromImage(data)

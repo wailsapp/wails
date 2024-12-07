@@ -10,8 +10,8 @@ import (
 
 	"github.com/pterm/pterm"
 
-	"github.com/go-task/task/v3"
-	"github.com/go-task/task/v3/taskfile/ast"
+	"github.com/wailsapp/task/v3"
+	"github.com/wailsapp/task/v3/taskfile/ast"
 )
 
 // BuildSettings contains the CLI build settings
@@ -52,7 +52,7 @@ type RunTaskOptions struct {
 func RunTask(options *RunTaskOptions, otherArgs []string) error {
 
 	if options.Version {
-		ver := BuildSettings["mod.github.com/go-task/task/v3"]
+		ver := BuildSettings["mod.github.com/wailsapp/task/v3"]
 		fmt.Println("Task Version:", ver)
 		return nil
 	}
@@ -84,18 +84,19 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 	}
 
 	e := task.Executor{
-		Force:       options.Force,
-		Watch:       options.Watch,
-		Verbose:     options.Verbose,
-		Silent:      options.Silent,
-		Dir:         options.Dir,
-		Dry:         options.Dry,
-		Entrypoint:  options.EntryPoint,
-		Summary:     options.Summary,
-		Parallel:    options.Parallel,
-		Color:       options.Color,
-		Concurrency: options.Concurrency,
-		Interval:    time.Duration(options.Interval) * time.Second,
+		Force:               options.Force,
+		Watch:               options.Watch,
+		Verbose:             options.Verbose,
+		Silent:              options.Silent,
+		Dir:                 options.Dir,
+		Dry:                 options.Dry,
+		Entrypoint:          options.EntryPoint,
+		Summary:             options.Summary,
+		Parallel:            options.Parallel,
+		Color:               options.Color,
+		Concurrency:         options.Concurrency,
+		Interval:            time.Duration(options.Interval) * time.Second,
+		DisableVersionCheck: true,
 
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
