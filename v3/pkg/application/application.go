@@ -5,7 +5,6 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/fileexplorer"
 	"io"
 	"log"
 	"log/slog"
@@ -16,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/internal/fileexplorer"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
@@ -1046,8 +1047,16 @@ func (a *App) Paths(selector Paths) []string {
 	return pathdirs[selector]
 }
 
+// OpenDirectory opens the system file explorer to the specified directory.
 func (a *App) OpenDirectory(path string) error {
 	return InvokeSyncWithError(func() error {
-		return fileexplorer.Open(path)
+		return fileexplorer.OpenFileManager(path, false)
+	})
+}
+
+// OpenFileManager opens the file manager at the specified path, optionally selecting the file.
+func (a *App) OpenFileManager(path string, selectFile bool) error {
+	return InvokeSyncWithError(func() error {
+		return fileexplorer.OpenFileManager(path, selectFile)
 	})
 }
