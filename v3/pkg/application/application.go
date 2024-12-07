@@ -5,6 +5,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/fileexplorer"
 	"io"
 	"log"
 	"log/slog"
@@ -1043,4 +1044,10 @@ func (a *App) Path(selector Path) string {
 // Paths returns the paths for the given selector
 func (a *App) Paths(selector Paths) []string {
 	return pathdirs[selector]
+}
+
+func (a *App) OpenDirectory(path string) error {
+	return InvokeSyncWithError(func() error {
+		return fileexplorer.Open(path)
+	})
 }

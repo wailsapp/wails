@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `app.OpenDirectory(dir string)` to open the system file explorer to the directory `dir` by [@leaanthony](https://github.com/leaanthony)
+
 ### Fixed
 
 - [darwin] Ensure `windowDidBecomeKey` callback is running on main thread by [@leaanthony](https://github.com/leaanthony)
