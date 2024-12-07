@@ -290,7 +290,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#3606](https://github.com/wailsapp/wails/pull/3606)
 - [linux] Fixed theme handling error on NixOS by
   [tmclane](https://github.com/tmclane) in
-  [#3515)(https://github.com/wailsapp/wails/pull/3515)
+  [#3515](https://github.com/wailsapp/wails/pull/3515)
 - Fixed cross volume project install for windows by
   [atterpac](https://github.com/atterac) in
   [#3512](https://github.com/wailsapp/wails/pull/3512)
