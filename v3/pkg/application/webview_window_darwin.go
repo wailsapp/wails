@@ -33,6 +33,9 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
+	// Allow fullscreen. Needed for frameless windows
+	window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+
 	// Create delegate
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
 	[delegate autorelease];

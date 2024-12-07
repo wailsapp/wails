@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [darwin] Ensure `windowDidBecomeKey` callback is running on main thread by [@leaanthony](https://github.com/leaanthony)
 - Ensure key callbacks in window run() are called on the main thread by [@leaanthony](https://github.com/leaanthony)
+- [darwin] Support fullscreen for frameless windows by [@leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.8.3 - 2024-12-07
 
