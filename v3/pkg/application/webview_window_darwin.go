@@ -1278,9 +1278,14 @@ func (w *macosWebviewWindow) run() {
 					// We have to wait until the window is shown before we can remove the shadow
 					var cancel func()
 					cancel = w.parent.OnWindowEvent(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
-						w.setHasShadow(!options.Mac.DisableShadow)
-						w.setAlwaysOnTop(options.AlwaysOnTop)
-						cancel()
+						InvokeAsync(func() {
+							if !w.isVisible() {
+								w.parent.Show()
+							}
+							w.setHasShadow(!options.Mac.DisableShadow)
+							w.setAlwaysOnTop(options.AlwaysOnTop)
+							cancel()
+						})
 					})
 				}
 			})

@@ -17,7 +17,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- [darwin] Ensure `windowDidBecomeKey` callback is running on main thread by [@leaanthony](https://github.com/leaanthony)
+
+
 ## v3.0.0-alpha.8.3 - 2024-12-07
+
+### Changed
+
+- Ensure for of taskfile is used by @leaanthony
 
 ## v3.0.0-alpha.8.2 - 2024-12-07
 
