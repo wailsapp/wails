@@ -1,0 +1,4 @@
+html {
+    scrollbar-gutter: stable;
+    overflow-y: scroll; /* Show vertical scrollbar */
+}

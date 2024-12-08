@@ -1,0 +1,90 @@
+---
+title: Welcome to Wails
+description: "Create beautiful applications using Go"
+template: splash
+hero:
+  tagline:
+    This is your starting point for exploring the latest version of Wails, a
+    powerful framework for building desktop applications using Go and modern web
+    technologies.
+  image:
+    dark: ../../assets/wails-logo-dark.svg
+    light: ../../assets/wails-logo-light.svg
+    alt: Wails Logo
+
+  actions:
+    - text: Getting Started
+      link: /getting-started/installation
+      icon: right-arrow
+    - text: Learn More
+      link: /learn/services
+      icon: right-arrow
+    - text: Sponsor
+      link: https://github.com/sponsors/leaanthony
+      icon: heart
+      class:
+        - is-sponsor
+
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+<CardGrid stagger>
+  <Card title="Introduction" icon="pencil">
+
+Wails v3 Alpha is the latest iteration of the Wails project, bringing new
+features and improvements to make desktop application development more efficient
+and enjoyable. This version is still in alpha, so some features might change
+before the final release.
+
+  </Card>
+  <Card title="Status" icon="add-document">
+
+Please consult our [Status Page](/status) for up-to-date status.
+
+  </Card>
+  <Card title="What's New" icon="add-document">
+
+Here are some of the exciting new features and improvements in Wails v3 Alpha:
+
+- Multiple Windows
+- System Trays
+- Improved bindings generation
+- Improved build system
+- Improved events system
+
+More information about these features and other changes can be found in the
+[What's new](/whats-new) section.
+
+  </Card>
+  <Card title="Getting Started" icon="open-book">
+
+To get started with Wails v3 Alpha:
+
+1. [Installation](/getting-started/installation): Follow our simple guide to
+   install Wails on your system.
+2. [Create Your First Application](/getting-started/your-first-app): Learn how
+   to create your first Wails application with our step-by-step tutorial.
+3. [Explore the API Reference](/api/application): Dive deeper into the API
+   documentation.
+
+  </Card>
+
+  <Card title="Feedback and Contributions" icon="open-book">
+
+Your feedback is vital to making Wails better. If you encounter any issues or
+have suggestions, please use our [Feedback process](/getting-started/feedback).
+Contributions to the project are also welcome!
+
+Thank you for trying out Wails v3 Alpha!
+
+  </Card>
+  <Card title="Alpha Version Notice" icon="add-document">
+
+Please note that this is an alpha version of Wails v3. Features may be added,
+removed, or changed in future updates. This version is intended for early
+adopters and those who wish to contribute to the development of Wails.
+
+  </Card>
+
+</CardGrid>
