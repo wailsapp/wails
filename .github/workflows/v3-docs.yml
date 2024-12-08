@@ -32,6 +32,7 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
+          cache-dependency-path: docs/package-lock.json
 
       # Cache npm dependencies
       - name: Cache npm dependencies
