@@ -1,7 +1,7 @@
 version: '3'
 
 includes:
-  common: Taskfile.common.yml
+  common: ../Taskfile.yml
 
 tasks:
   build:
