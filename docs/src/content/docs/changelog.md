@@ -21,17 +21,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `app.OpenDirectory(dir string)` to open the system file explorer to the
-  directory `dir` by [@leaanthony](https://github.com/leaanthony)
+- `app.OpenDirectory(dir string)` to open the system file explorer to the directory `dir` by [@leaanthony](https://github.com/leaanthony)
 
 ### Fixed
 
-- [darwin] Ensure `windowDidBecomeKey` callback is running on main thread by
-  [@leaanthony](https://github.com/leaanthony)
-- Ensure key callbacks in window run() are called on the main thread by
-  [@leaanthony](https://github.com/leaanthony)
-- [darwin] Support fullscreen for frameless windows by
-  [@leaanthony](https://github.com/leaanthony)
+- [darwin] Ensure `windowDidBecomeKey` callback is running on main thread by [@leaanthony](https://github.com/leaanthony)
+- Ensure key callbacks in window run() are called on the main thread by [@leaanthony](https://github.com/leaanthony)
+- [darwin] Support fullscreen for frameless windows by [@leaanthony](https://github.com/leaanthony)
+
+### Changed
+
+- Moved build assets to platform specific directories by [@leaanthony](https://github.com/leaanthony)
+- Moved and renamed Taskfiles to platform specific directories by [@leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.8.3 - 2024-12-07
 

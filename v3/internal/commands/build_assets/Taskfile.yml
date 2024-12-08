@@ -58,7 +58,7 @@ tasks:
       - "icons.icns"
       - "icons.ico"
     cmds:
-      - wails3 generate icons -input appicon.png
+      - wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icons.ico
 
   dev:frontend:
     summary: Runs the frontend in development mode
