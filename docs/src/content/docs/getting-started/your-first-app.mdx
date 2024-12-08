@@ -6,20 +6,13 @@ sidebar:
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 import { Steps } from "@astrojs/starlight/components";
+import { FileTree } from '@astrojs/starlight/components';
+
 
 Creating your first application with Wails v3 Alpha is an exciting journey into
 the world of modern desktop app development. This guide will walk you through
 the process of creating a basic application, showcasing the power and simplicity
 of Wails.
-
-## Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-- Go (version 1.21 or later)
-- Node.js (LTS version)
-- Wails v3 Alpha (see the [installation guide](/getting-started/installation)
-  for instructions)
 
 <br/>
 <br/>
@@ -43,22 +36,46 @@ Before you begin, ensure you have the following installed:
     Navigate to the `myfirstapp` directory. You'll find several files and
     folders:
 
-    - `build`: Contains files used by the build process.
-    - `frontend`: Contains your web frontend code.
-    - `go.mod` & `go.sum`: Go module files.
-    - `main.go`: The entry point for your Wails application.
-    - `Taskfile.yml`: Defines all the tasks used by the build system. Learn more
-      at the [Task](https://taskfile.dev/) website.
+    <FileTree>
+    - build/       Contains files used by the build process.
+        - appimage/
+          - build.sh The build script for AppImage
+        - nfpm/
+          - scripts/ Contains scripts used by nfpm
+            - ...
+          - nfpm.yaml The package configuration
+        - nsis/
+          - MicrosoftEdgeWebview2Setup.exe The WebView2 bootstrap installer
+          - project.nsi The NSIS project file
+          - wails_tools.nsh The NSIS script
+        - appicon.png The application icon
+        - config.yml The project configuration
+        - icon.ico    The application icon (Windows)
+        - icons.icns  The application icon (Mac)
+        - Info.dev.plist The application config for development (Mac)
+        - Info.plist The production application config (Mac)
+        - info.json  The application config (Windows)
+        - Taskfile.common.yml Common tasks used by all platforms
+        - Taskfile.darwin.yml Taskfile for macOS
+        - Taskfile.linux.yml Taskfile for Linux
+        - Taskfile.windows.yml Taskfile for Windows
+        - wails.exe.manifest The Windows application manifest
+    - frontend/    Contains your web frontend code.
+        - ...
+    - main.go      The entry point for your Wails application.
+    - Taskfile.yml Defines all the tasks used by the build system. Learn more at the [Task](https://taskfile.dev/) website.
+    - go.mod
+    - go.sum
+    - README.md The project description
+    </FileTree>
 
     Take a moment to explore these files and familiarize yourself with the
     structure.
 
-    :::note [Although Wails v3 uses [Task](https://taskfile.dev/) as its
-    default]
-
-    build system, there is nothing stopping you from using `make` or any other
+    :::note
+    Although Wails v3 uses [Task](https://taskfile.dev/) as its
+    default build system, there is nothing stopping you from using `make` or any other
     alternative build system.
-
     :::
 
 3.  ## Building Your Application
@@ -70,7 +87,13 @@ Before you begin, ensure you have the following installed:
     ```
 
     This command compiles a debug version of your application and saves it in a
-    new `bin` directory. You can run this like you would any normal application:
+    new `bin` directory.
+
+    :::note
+    `wails3 build` is shorthand for `wails3 task build` and will run the `build` task in `Taskfile.yml`.
+    :::
+
+    You can run this like you would any normal application:
 
     <Tabs syncKey="platform">
 
