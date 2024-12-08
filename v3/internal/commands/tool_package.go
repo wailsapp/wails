@@ -53,7 +53,7 @@ func ToolPackage(options *flags.ToolPackage) error {
 		// Arch linux packages are not .archlinux files, they are .pkg.tar.zst
 		options.Format = "pkg.tar.zst"
 	}
-	outputFile := filepath.Join(filepath.Dir(configPath), "bin", fmt.Sprintf("%s.%s", options.ExecutableName, options.Format))
+	outputFile := filepath.Join(options.Out, fmt.Sprintf("%s.%s", options.ExecutableName, options.Format))
 
 	// Create the package
 	err = packager.CreatePackageFromConfig(pkgType, configPath, outputFile)

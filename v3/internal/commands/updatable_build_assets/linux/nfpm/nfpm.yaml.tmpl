@@ -21,7 +21,7 @@ contents:
     dst: "/usr/local/bin/{{.BinaryName}}"
   - src: "./build/appicon.png"
     dst: "/usr/share/icons/hicolor/128x128/apps/{{.BinaryName}}.png"
-  - src: "./build/{{.BinaryName}}.desktop"
+  - src: "./build/linux/{{.BinaryName}}.desktop"
     dst: "/usr/share/applications/{{.BinaryName}}.desktop"
 
 depends:
@@ -44,7 +44,7 @@ depends:
 #   - not-bar
 # changelog: "changelog.yaml"
 # scripts:
-#   preinstall: ./build/nfpm/scripts/preinstall.sh
-#   postinstall: ./build/nfpm/scripts/postinstall.sh
-#   preremove: ./build/nfpm/scripts/preremove.sh
-#   postremove: ./build/nfpm/scripts/postremove.sh
+#   preinstall: ./build/linux/nfpm/scripts/preinstall.sh
+#   postinstall: ./build/linux/nfpm/scripts/postinstall.sh
+#   preremove: ./build/linux/nfpm/scripts/preremove.sh
+#   postremove: ./build/linux/nfpm/scripts/postremove.sh
