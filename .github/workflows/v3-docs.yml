@@ -4,7 +4,7 @@ on:
   # Trigger the workflow every time you push to the `main` branch
   # Using a different branch name? Replace `main` with your branch’s name
   push:
-    branches: [main]
+    branches: [v3-alpha]
   # Allows you to run this workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
 
