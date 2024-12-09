@@ -129,8 +129,8 @@ app := application.New(application.Options{
 })
 ```
 
-:::tip[Why do the file extensions need to be set in the application config when
-it's set in config.yml?]
+<!--  prettier-ignore -->
+:::tip[Why are file extensions required in both the application config and config.yml?]
 
 On Windows, when a file is opened with a file association, the application is
 launched with the filename as the first argument to the application. The
