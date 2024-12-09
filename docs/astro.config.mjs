@@ -20,6 +20,8 @@ export default defineConfig({
     sitemap(),
     starlight({
       title: "",
+      // If a title is added, also update the delimiter.
+      titleDelimiter: "",
       logo: {
         dark: "./src/assets/wails-logo-horizontal-dark.svg",
         light: "./src/assets/wails-logo-horizontal-light.svg",
@@ -99,6 +101,21 @@ export default defineConfig({
           label: "API",
           collapsed: true,
           autogenerate: { directory: "api", collapsed: true },
+        },
+        {
+          label: "Community",
+          collapsed: true,
+          items: [
+            { label: "Links", link: "/community/links" },
+            { label: "Templates", link: "/community/templates" },
+            {
+              label: "Showcase",
+              autogenerate: {
+                directory: "community/showcase",
+                collapsed: true,
+              },
+            },
+          ],
         },
         {
           label: "Development",
