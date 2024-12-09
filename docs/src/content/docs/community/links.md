@@ -23,7 +23,7 @@ related to Wails.
 
 ## Social Media
 
-- [Twitter](https://twitter.com/wailsapp)
+- [Twitter](https://x.com/wailsapp)
 - [Wails Chinese Community QQ Group](https://qm.qq.com/cgi-bin/qm/qr?k=PmIURne5hFGNd7QWzW5qd6FV-INEjNJv&jump_from=webapi) -
   Group number: 1067173054
 
