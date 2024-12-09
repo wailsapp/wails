@@ -5,6 +5,14 @@ sidebar:
 ---
 
 import { ShowcaseImage } from "starlight-showcases";
+import { Steps } from "@astrojs/starlight/components";
+
+:::tip[See how to add your project]
+
+Check out the
+[How to add my project in showcase](#how-to-add-my-project-in-showcase) section.
+
+:::
 
 <ShowcaseImage
   entries={[
@@ -162,3 +170,20 @@ import { ShowcaseImage } from "starlight-showcases";
     },
   ]}
 />
+
+## How to add my project in showcase
+
+<Steps>
+
+1. Make a fork of the repository.
+2. Add the image(s) under `docs/src/assets/showcase-images` folder.
+3. Make a copy of the `_template.md` file under
+   `docs/src/content/docs/community/showcase` folder.
+4. Rename the copied file to the name of your project. (Name should not start
+   with `_`))
+5. Update the title, image, link and content of the file.
+6. Add it on the above list in
+   `docs/src/content/docs/community/showcase/index.mdx`.
+7. Submit a PR.
+
+</Steps>
