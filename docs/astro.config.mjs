@@ -107,6 +107,7 @@ export default defineConfig({
           collapsed: true,
           items: [
             { label: "Links", link: "/community/links" },
+            { label: "Templates", link: "/community/templates" },
             {
               label: "Showcase",
               autogenerate: {
