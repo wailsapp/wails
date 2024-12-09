@@ -8,8 +8,11 @@ This page might be outdated for Wails v3.
 
 :::
 
+<!-- TODO: Update this link -->
+
 This page serves as a list for community supported templates. To build your own
-template, please see the [Templates](../guides/templates.mdx) guide.
+template, please see the [Templates](https://wails.io/docs/guides/templates)
+guide.
 
 :::tip[How to Submit a Template]
 
