@@ -106,6 +106,7 @@ export default defineConfig({
           label: "Community",
           collapsed: true,
           items: [
+            { label: "Links", link: "/community/links" },
             {
               label: "Showcase",
               autogenerate: {
