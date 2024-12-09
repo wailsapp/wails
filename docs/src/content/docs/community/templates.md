@@ -8,9 +8,14 @@ This page might be outdated for Wails v3.
 
 :::
 
-This page serves as a list for community supported templates. Please submit a PR
-(click `Edit this page` at the bottom) to include your templates. To build your
-own template, please see the [Templates](../guides/templates.mdx) guide.
+:::tip[How to Submit a Template]
+
+You can click `Edit this page` at the bottom to include your templates.
+
+:::
+
+This page serves as a list for community supported templates. To build your own
+template, please see the [Templates](../guides/templates.mdx) guide.
 
 To use these templates, run
 `wails init -n "Your Project Name" -t [the link below[@version]]`
