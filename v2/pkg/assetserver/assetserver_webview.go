@@ -1,6 +1,7 @@
 package assetserver
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -19,6 +20,8 @@ type assetServerWebView struct {
 	dispatchReqC    chan<- webview.Request
 	dispatchWorkers int
 }
+
+var requestCancelFuncsMap sync.Map
 
 // ServeWebViewRequest processes the HTTP Request asynchronously by faking a golang HTTP Server.
 // The request will be finished with a StatusNotImplemented code if no handler has written to the response.
@@ -49,6 +52,13 @@ func (d *AssetServer) ServeWebViewRequest(req webview.Request) {
 		go d.processWebViewRequest(req)
 	} else {
 		d.dispatchReqC <- req
+	}
+}
+
+func CancelRequest(requestID string) {
+	if cancelFunc, ok := requestCancelFuncsMap.Load(requestID); ok {
+		cancelFunc.(context.CancelFunc)()
+		requestCancelFuncsMap.Delete(requestID)
 	}
 }
 
@@ -106,7 +116,16 @@ func (d *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	}
 	defer body.Close()
 
-	req, err := http.NewRequest(method, uri, body)
+	requestID := uri
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	requestCancelFuncsMap.Store(requestID, cancelFunc)
+
+	defer func() {
+		cancelFunc()
+		requestCancelFuncsMap.Delete(requestID)
+	}()
+
+	req, err := http.NewRequestWithContext(ctx, method, uri, body)
 	if err != nil {
 		d.webviewRequestErrorHandler(uri, rw, fmt.Errorf("HTTP-Request: %w", err))
 		return
