@@ -13,15 +13,21 @@ Wailsプロジェクトに、アプリケーションメニューを追加する
     app := NewApp()
 
     AppMenu := menu.NewMenu()
+    if runtime.GOOS == "darwin" {
+        AppMenu.Append(menu.AppMenu()) // On macOS platform, this must be done right after `NewMenu()`
+    }
     FileMenu := AppMenu.AddSubmenu("File")
-    FileMenu.AddText("&Open", keys.CmdOrCtrl("o"), openFile)
+    FileMenu.AddText("&Open", keys.CmdOrCtrl("o"), func(_ *menu.CallbackData) {
+        // do something
+    })
     FileMenu.AddSeparator()
     FileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
-        runtime.Quit(app.ctx)
+        // `rt` is an alias of "github.com/wailsapp/wails/v2/pkg/runtime" to prevent collision with standard package
+        rt.Quit(app.ctx)
     })
 
     if runtime.GOOS == "darwin" {
-    AppMenu.Append(menu.EditMenu())  // on macos platform, we should append EditMenu to enable Cmd+C,Cmd+V,Cmd+Z... shortcut
+    AppMenu.Append(menu.EditMenu())  // On macOS platform, EditMenu should be appended to enable Cmd+C, Cmd+V, Cmd+Z... shortcuts
     }
 
     err := wails.Run(&options.App{
