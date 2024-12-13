@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - Wails</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #111827;
+            color: #F3F4F6;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .container {
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Header styles */
+        header {
+            padding: 1.5rem 0;
+        }
+
+        .logo {
+            width: 200px;
+            height: auto;
+        }
+
+        /* Main content styles */
+        main {
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .content {
+            margin: 0 auto;
+        }
+
+        .error-code {
+            font-size: 6rem;
+            font-weight: bold;
+            color: #EF4444;
+            margin-bottom: 1rem;
+        }
+
+        .error-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        .error-card {
+            background-color: #1F2937;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .error-description {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #111827;
+            color: #F3F4F6;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .container {
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Header styles */
+        header {
+            padding: 1.5rem 0;
+        }
+
+        .logo {
+            width: 200px;
+            height: auto;
+        }
+
+        /* Main content styles */
+        main {
+            padding: 0rem 0;
+            text-align: center;
+        }
+
+        .content {
+            max-width: 90%;
+            margin: 0 auto;
+        }
+
+        .error-code {
+            font-size: 6rem;
+            font-weight: bold;
+            color: #EF4444;
+            margin-bottom: 1rem;
+        }
+
+        .error-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: orange;
+        }
+
+        .error-card {
+            background-color: #1F2937;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .error-description {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: #E5E7EB;
+            text-align: left;
+        }
+
+        .error-list {
+            text-align: left;
+            list-style: none;
+        }
+
+        .error-list li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            color: #D1D5DB;
+        }
+
+        .error-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .error-icon {
+            background-color: #EF4444;
+            color: white;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            margin-top: 0.25rem;
+            flex-shrink: 0;
+        }
+
+        .error-sign {
+            font-size: 3rem;
+        }
+
+        .code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background-color: #374151;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.9em;
+        }
+
+        /* Details/Summary styles */
+        details {
+            margin: 0.5rem 0 0 0rem;
+        }
+
+        summary {
+            color: #60A5FA;
+            cursor: pointer;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+
+        summary:hover {
+            color: #93C5FD;
+        }
+
+        .code-block {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background-color: #242A38;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: left;
+            white-space: pre-wrap;
+            border: 1px solid #374151;
+        }
+
+        .comment {
+            color: #6B7280;
+        }
+
+
+        /* Button styles */
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .button-primary {
+            background-color: #EF4444;
+            color: white;
+        }
+
+        .button-primary:hover {
+            background-color: #DC2626;
+        }
+
+        .button-secondary {
+            background-color: #374151;
+            color: white;
+        }
+
+        .button-secondary:hover {
+            background-color: #4B5563;
+        }
+
+        /* Footer styles */
+        footer {
+            padding: 2rem 0;
+            text-align: center;
+            color: #6B7280;
+        }
+
+        /* SVG styles */
+        .logo svg {
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header with logo -->
+    <header>
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" version="1.1" viewBox="0 0 1291 314" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2"><g><path d="M0,-51.891L14.429,-51.891L13.043,-21.183L22.568,-51.891L34.226,-51.891L34.084,-21.183L42.365,-51.891L56.794,-51.891L38.526,0L25.198,0L25.34,-32.45L15.211,0L1.919,0L0,-51.891Z" transform="matrix(2.51258,0,0,2.51258,581.01,242.138)" style="fill:#fff;fill-rule:nonzero"/></g><g><path d="M0,15.639L5.793,15.639L5.971,-3.589L0,15.639ZM-20.187,33.765L-0.675,-18.126L16.42,-18.126L20.08,33.765L5.437,33.765L5.509,26.123L-3.057,26.123L-5.332,33.765L-20.187,33.765Z" transform="matrix(2.51258,0,0,2.51258,810.566,157.301)" style="fill:#fff;fill-rule:nonzero"/></g><g><path d="M-16.046,33.107L36.491,33.107L38.757,18.784L-13.785,18.82L-16.046,33.107Z" transform="matrix(0.392647,-2.48171,-2.48171,-0.392647,1018.28,215.316)" style="fill:#fff;fill-rule:nonzero"/></g><g><path d="M0,51.891L8.246,0L22.781,0L16.597,39.024L27.224,39.024L25.199,51.891L0,51.891Z" transform="matrix(2.51258,0,0,2.51258,1055.68,111.758)" style="fill:#fff;fill-rule:nonzero"/></g><g><path d="M0,19.83C1.611,21.181 3.305,22.224 5.083,22.959C6.859,23.693 8.565,24.06 10.2,24.06C11.645,24.06 12.794,23.663 13.647,22.87C14.5,22.076 14.927,20.992 14.927,19.617C14.927,18.434 14.571,17.254 13.861,16.081C13.15,14.908 11.775,13.351 9.738,11.408C7.273,9.015 5.58,6.906 4.655,5.081C3.731,3.257 3.27,1.243 3.27,-0.96C3.27,-5.912 4.839,-9.846 7.979,-12.76C11.118,-15.674 15.377,-17.132 20.756,-17.132C22.936,-17.132 25.008,-16.889 26.975,-16.403C28.941,-15.917 30.943,-15.165 32.982,-14.146L30.92,-1.493C29.356,-2.583 27.834,-3.412 26.354,-3.981C24.872,-4.551 23.457,-4.835 22.106,-4.835C20.898,-4.835 19.943,-4.521 19.245,-3.894C18.546,-3.265 18.196,-2.406 18.196,-1.316C18.196,0.154 19.535,2.215 22.213,4.868C22.544,5.2 22.805,5.46 22.995,5.649C25.696,8.304 27.473,10.578 28.326,12.475C29.179,14.37 29.605,16.56 29.605,19.049C29.605,24.594 27.893,28.965 24.469,32.163C21.046,35.361 16.36,36.962 10.413,36.962C7.877,36.962 5.479,36.66 3.216,36.056C0.953,35.45 -0.948,34.615 -2.488,33.549L0,19.83Z" transform="matrix(2.51258,0,0,2.51258,1199.13,152.036)" style="fill:#fff;fill-rule:nonzero"/></g><g><path d="M0.883,-0.081L0.121,0.081L0.256,-0.063L0.883,-0.081Z" transform="matrix(-166.599,4.57132,4.57132,166.599,147.403,167.564)" style="fill:url(#_Linear1);fill-rule:nonzero"/></g><g><path d="M0.878,-0.285L-0.073,0.71L-1.186,0.542L0.015,0.207L-0.846,0.077L0.355,-0.258L-0.505,-0.388L0.649,-0.71L0.878,-0.285Z" transform="matrix(-106.443,-16.0669,-16.0669,106.443,428.19,187.949)" style="fill:url(#_Linear2);fill-rule:nonzero"/></g><g><path d="M0.44,-0.04L0.265,-0.056L0.177,0.437L-0.311,-0.255L0.262,-0.437L0.568,-0.437L0.44,-0.04Z" transform="matrix(-114.484,-162.408,-162.408,114.484,333.291,285.72)" style="fill:url(#_Linear3);fill-rule:nonzero"/></g><g><path d="M0.622,-0.115L0.761,-0.115L0.806,-0.013L0.826,0.182L0.622,-0.115Z" transform="matrix(238.126,298.893,298.893,-238.126,113.516,-150.62)" style="fill:url(#_Linear4);fill-rule:nonzero"/></g><g><path d="M0.467,0.005L0.49,0.062L0.271,-0.062L0.467,0.005Z" transform="matrix(-369.529,-97.4118,-97.4118,369.529,582.38,93.9429)" style="fill:url(#_Linear5);fill-rule:nonzero"/></g><g><path d="M269.095,104.527L287.764,111.419L263.632,106.75L269.095,104.527Z" transform="matrix(0.436503,-1.22916,4.88651,1.73532,-368.043,253.619)" style="fill:#fff"/></g><g><path d="M0.2,0.001L0.219,-0.018L0.614,0.012L0.519,0.089L0.282,0.068L0.2,0.135L0.463,0.194L0.374,0.266L0.138,0.186L0.047,0.033L-0.131,-0.266L0.2,0.001Z" transform="matrix(-496.156,-53.9751,-53.9751,496.156,367.888,125.001)" style="fill:url(#_Linear6);fill-rule:nonzero"/></g><defs><linearGradient id="_Linear1" x1="0" x2="1" y1="0" y2="0" gradientTransform="matrix(1,-3.46945e-18,3.46945e-18,1,0,-3.05761e-06)" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:#e33232;stop-opacity:1"/><stop offset="1" style="stop-color:#6b000d;stop-opacity:1"/></linearGradient><linearGradient id="_Linear2" x1="0" x2="1" y1="0" y2="0" gradientTransform="matrix(1,0,0,1,0,-2.75467e-06)" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:#e33232;stop-opacity:1"/><stop offset="1" style="stop-color:#6b000d;stop-opacity:1"/></linearGradient><linearGradient id="_Linear3" x1="0" x2="1" y1="0" y2="0" gradientTransform="matrix(1,-1.11022e-16,1.11022e-16,1,0,-2.61861e-06)" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:#e33232;stop-opacity:1"/><stop offset="1" style="stop-color:#6b000d;stop-opacity:1"/></linearGradient><linearGradient id="_Linear4" x1="0" x2="1" y1="0" y2="0" gradientTransform="matrix(-0.801899,-0.59746,0.59746,-0.801899,1.3495,0.447457)" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:#e33232;stop-opacity:1"/><stop offset="1" style="stop-color:#6b000d;stop-opacity:1"/></linearGradient><linearGradient id="_Linear5" x1="0" x2="1" y1="0" y2="0" gradientTransform="matrix(1,-2.77556e-17,2.77556e-17,1,0,-1.92826e-06)" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:#e33232;stop-opacity:1"/><stop offset="1" style="stop-color:#6b000d;stop-opacity:1"/></linearGradient><linearGradient id="_Linear6" x1="0" x2="1" y1="0" y2="0" gradientTransform="matrix(1,0,0,1,0,9.68429e-07)" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:#e33232;stop-opacity:1"/><stop offset="1" style="stop-color:#6b000d;stop-opacity:1"/></linearGradient></defs></svg>
+            </svg>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <main>
+        <div class="content">
+            <div class="error-title">
+            <div class="error-sign">⚠️</div>
+            <span class="error-title">Missing index.html file</span>
+            </div>
+            <div class="error-card">
+                <p class="error-description">No index.html file was found in the embedded assets. This page appears when the WebView window cannot find HTML content to display.</p>
+                <ul class="error-list">
+                    <li>
+                        <span class="error-icon">1</span>
+                        <span>
+                            If you are using the <span class="code">Assets</span> option in your application, ensure you have an <span class="code">index.html</span> file in your project's embedded assets directory.
+                            <details>
+                                <summary>View Example →</summary>
+                                <div class="code-block">
+<span class="comment">//go:embed all:frontend/dist</span>
+var assets embed.FS
+
+func main() {
+    <span class="comment">// ...</span>
+    app := application.New(application.Options{
+        <span class="comment">// ...</span>
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+    <span class="comment">// ...</span>
+}
+                                </div>
+                            </details>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="error-icon">2</span>
+                        <span>If the file doesn't exist but should, verify that your build process is configured to correctly include the HTML file in the embedded assets directory.</span>
+                    </li>
+                    <li>
+                        <span class="error-icon">3</span>
+                        <span>
+                            An alternative solution is to use the <span class="code">HTML</span> option in the WebviewWindow Options.
+                            <details>
+                                <summary>View Example →</summary>
+                                <div class="code-block">
+func main() {
+
+  <span class="comment">// ...</span>
+
+  app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    <span class="comment">// ...</span>
+     HTML: "&lt;h1&gt;Hello World!&lt;h1&gt;",
+  })
+  <span class="comment">// ...</span>
+}
+                                </div>
+                            </details>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="button-container">
+                <button onclick="window.location.reload()" class="button button-primary">
+                    Reload Page
+                </button>
+                <button onclick="window.location.replace('https://v3alpha.wails.io/')" class="button button-secondary">
+                    View Documentation
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>Need help? Check out our <a href="https://wails.io/docs" style="color: #9CA3AF; text-decoration: underline;">documentation</a> or join our <a href="https://wails.io/community" style="color: #9CA3AF; text-decoration: underline;">community</a></p>
+    </footer>
+</div>
+</body>
+</html>

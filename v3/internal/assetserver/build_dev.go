@@ -11,13 +11,6 @@ import (
 	"os"
 )
 
-//go:embed defaultindex.html
-var defaultHTML []byte
-
-func defaultIndexHTML() []byte {
-	return defaultHTML
-}
-
 func NewAssetFileServer(vfs fs.FS) http.Handler {
 	devServerURL := GetDevServerURL()
 	if devServerURL == "" {
