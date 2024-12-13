@@ -70,10 +70,10 @@ func main() {
 	}
 
 	// Update ChangeLog
-	s.CD("../../../mkdocs-website")
+	s.CD("../../../docs")
 
-	// Read in `src/pages/changelog.mdx`
-	changelogData, err := os.ReadFile("docs/en/changelog.md")
+	// Read in `src/pages/changelog.md`
+	changelogData, err := os.ReadFile("docs/src/content/docs/changelog.md")
 	checkError(err)
 	changelog := string(changelogData)
 	// Split on the line that has `## [Unreleased]`
@@ -83,7 +83,7 @@ func main() {
 	// Add the new version to the top of the changelog
 	newChangelog := changelogSplit[0] + "## [Unreleased]\n\n## " + newVersion + " - " + today + changelogSplit[1]
 	// Write the changelog back
-	err = os.WriteFile("docs/en/changelog.md", []byte(newChangelog), 0o755)
+	err = os.WriteFile("docs/src/content/docs/changelog.md", []byte(newChangelog), 0o755)
 	checkError(err)
 
 	// TODO: Documentation Versioning and Translations

@@ -21,10 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `app.OpenDirectory(dir string)` to open the system file explorer to the directory `dir` by [@leaanthony](https://github.com/leaanthony)
+- `app.OpenFileManager(path string, selectFile bool)` to open the system file manager to the path `path` with optional highlighting via `selectFile` by [@Krzysztofz01](https://github.com/Krzysztofz01) [@rcalixte](https://github.com/rcalixte)
 
 ### Fixed
 
+- Fix Sveltekit template CSS referance by @atterpac in [#3945](https://github.com/wailsapp/wails/pull/3945)
 - [darwin] Ensure `windowDidBecomeKey` callback is running on main thread by [@leaanthony](https://github.com/leaanthony)
 - Ensure key callbacks in window run() are called on the main thread by [@leaanthony](https://github.com/leaanthony)
 - [darwin] Support fullscreen for frameless windows by [@leaanthony](https://github.com/leaanthony)
@@ -63,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Support for darwin universal builds and packages by
   [ansxuman](https://github.com/ansxuman) in
   [#3902](https://github.com/wailsapp/wails/pull/3902)
-- Events documentation to the mkdocs webite by
+- Events documentation to the website by
   [atterpac](https://github.com/atterpac) in
   [#3867](https://github.com/wailsapp/wails/pull/3867)
 - Templates for sveltekit and sveltekit-ts that are set for non-SSR development

@@ -17,8 +17,8 @@ includes:
     optional: true
 
   docs:
-    taskfile: ../mkdocs-website
-    dir: ../mkdocs-website
+    taskfile: ../docs
+    dir: ../docs
     optional: true
 
 tasks:
@@ -126,15 +126,6 @@ tasks:
     cmds:
       - task: reinstall-cli
       - echo "Generated templates"
-
-  format:md:
-    dir: ../mkdocs-website
-    cmds:
-      - npx prettier --write "**/*.md"
-
-  format:
-    cmds:
-      - task: format:md
 
   precommit:
     cmds:

@@ -1,0 +1,30 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+
+  setup:
+    summary: Setup the project
+    preconditions:
+      - sh: npm --version
+        msg: "Looks like npm isn't installed."
+    cmds:
+      - npm install
+
+  dev:
+    summary: Run the dev server
+    preconditions:
+      - sh: npm --version
+        msg: "Looks like npm isn't installed."
+    cmds:
+      - npm run dev
+
+  build:
+    summary: Build the docs
+    preconditions:
+      - sh: npm --version
+        msg: "Looks like npm isn't installed."
+    cmds:
+      - npm run build
+
