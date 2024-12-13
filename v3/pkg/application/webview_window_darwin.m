@@ -719,3 +719,29 @@ extern bool hasListeners(unsigned int);
 
 // GENERATED EVENTS END
 @end
+
+void windowSetScreen(void* window, void* screen, int yOffset) {
+    WebviewWindow* nsWindow = (WebviewWindow*)window;
+    NSScreen* nsScreen = (NSScreen*)screen;
+    
+    // Get current frame
+    NSRect frame = [nsWindow frame];
+    
+    // Convert frame to screen coordinates
+    NSRect screenFrame = [nsScreen frame];
+    NSRect currentScreenFrame = [[nsWindow screen] frame];
+    
+    // Calculate the menubar height for the target screen
+    NSRect visibleFrame = [nsScreen visibleFrame];
+    CGFloat menubarHeight = screenFrame.size.height - visibleFrame.size.height;
+    
+    // Calculate the distance from the top of the current screen
+    CGFloat topOffset = currentScreenFrame.origin.y + currentScreenFrame.size.height - frame.origin.y;
+    
+    // Position relative to new screen's top, accounting for menubar
+    frame.origin.x = screenFrame.origin.x + (frame.origin.x - currentScreenFrame.origin.x);
+    frame.origin.y = screenFrame.origin.y + screenFrame.size.height - topOffset - menubarHeight - yOffset;
+    
+    // Set the frame which moves the window to the new screen
+    [nsWindow setFrame:frame display:YES];
+}

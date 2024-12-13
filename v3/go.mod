@@ -36,6 +36,7 @@ require (
 	golang.org/x/sys v0.28.0
 	golang.org/x/term v0.26.0
 	golang.org/x/tools v0.23.0
+	gopkg.in/ini.v1 v1.67.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.21.0
 )

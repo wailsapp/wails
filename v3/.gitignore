@@ -1,6 +1,6 @@
 examples/kitchensink/kitchensink
 cmd/wails3/wails
-/examples/systray/systray
+/examples/systray-menu/systray
 /examples/window/window
 /examples/dialogs/dialogs
 /examples/menu/menu

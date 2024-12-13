@@ -14,6 +14,7 @@ import "C"
 import (
 	"unsafe"
 
+	"fmt"
 	"github.com/leaanthony/go-ansi-parser"
 )
 
@@ -23,12 +24,13 @@ type macosSystemTray struct {
 	icon  []byte
 	menu  *Menu
 
-	nsStatusItem   unsafe.Pointer
-	nsImage        unsafe.Pointer
-	nsMenu         unsafe.Pointer
-	iconPosition   int
-	isTemplateIcon bool
-	parent         *SystemTray
+	nsStatusItem      unsafe.Pointer
+	nsImage           unsafe.Pointer
+	nsMenu            unsafe.Pointer
+	iconPosition      int
+	isTemplateIcon    bool
+	parent            *SystemTray
+	lastClickedScreen unsafe.Pointer
 }
 
 func (s *macosSystemTray) openMenu() {
@@ -68,60 +70,48 @@ func (s *macosSystemTray) setMenu(menu *Menu) {
 }
 
 func (s *macosSystemTray) positionWindow(window *WebviewWindow, offset int) error {
+	// Get the window's native window
+	impl := window.impl.(*macosWebviewWindow)
 
-	// Get the trayBounds of this system tray
-	trayBounds, err := s.bounds()
-	if err != nil {
-		return err
-	}
-
-	// Get the current screen trayBounds
-	currentScreen, err := s.getScreen()
-	if err != nil {
-		return err
-	}
-	screenBounds := currentScreen.Bounds
-
-	// Get the center height of the window
-	windowWidthCenter := window.Width() / 2
-
-	// Get the center height of the system tray
-	systemTrayWidthCenter := trayBounds.Width / 2
-
-	// The Y will be 0 and the X will make the center of the window line up with the center of the system tray
-	windowX := trayBounds.X + systemTrayWidthCenter - windowWidthCenter
-
-	// If the end of the window goes off-screen, move it back enough to be on screen
-	if windowX+window.Width() > screenBounds.Width {
-		windowX = screenBounds.Width - window.Width()
-	}
-	window.SetRelativePosition(windowX, int(C.statusBarHeight())+offset)
+	// Position the window relative to the systray
+	C.systemTrayPositionWindow(s.nsStatusItem, impl.nsWindow, C.int(offset))
 
 	return nil
 }
 
 func (s *macosSystemTray) getScreen() (*Screen, error) {
-	return getScreenForSystray(s)
+	if s.lastClickedScreen != nil {
+		// Get the screen frame
+		frame := C.NSScreen_frame(s.lastClickedScreen)
+		result := &Screen{
+			Bounds: Rect{
+				X:      int(frame.origin.x),
+				Y:      int(frame.origin.y),
+				Width:  int(frame.size.width),
+				Height: int(frame.size.height),
+			},
+		}
+		return result, nil
+	}
+	return nil, fmt.Errorf("no screen available")
 }
 
 func (s *macosSystemTray) bounds() (*Rect, error) {
 	var rect C.NSRect
-	C.systemTrayGetBounds(s.nsStatusItem, &rect)
-	// Get the screen height for the screen that the systray is on
-	screen, err := getScreenForSystray(s)
-	if err != nil {
-		return nil, err
-	}
+	var screen unsafe.Pointer
+	C.systemTrayGetBounds(s.nsStatusItem, &rect, &screen)
 
-	// Invert Y axis based on screen height
-	rect.origin.y = C.double(screen.Bounds.Height) - rect.origin.y - rect.size.height
+	// Store the screen for use in positionWindow
+	s.lastClickedScreen = screen
 
-	return &Rect{
+	// Return the screen-relative coordinates
+	result := &Rect{
 		X:      int(rect.origin.x),
 		Y:      int(rect.origin.y),
 		Width:  int(rect.size.width),
 		Height: int(rect.size.height),
-	}, nil
+	}
+	return result, nil
 }
 
 func (s *macosSystemTray) run() {
