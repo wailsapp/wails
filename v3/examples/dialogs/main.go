@@ -213,6 +213,7 @@ func main() {
 	openMenu.Add("Open Directory").OnClick(func(ctx *application.Context) {
 		result, _ := application.OpenFileDialog().
 			CanChooseDirectories(true).
+			CanChooseFiles(false).
 			PromptForSingleSelection()
 		if result != "" {
 			application.InfoDialog().SetMessage(result).Show()
@@ -224,6 +225,7 @@ func main() {
 		result, _ := application.OpenFileDialog().
 			CanChooseDirectories(true).
 			CanCreateDirectories(true).
+			CanChooseFiles(false).
 			PromptForSingleSelection()
 		if result != "" {
 			application.InfoDialog().SetMessage(result).Show()
@@ -235,6 +237,7 @@ func main() {
 		result, _ := application.OpenFileDialog().
 			CanChooseDirectories(true).
 			CanCreateDirectories(true).
+			CanChooseFiles(false).
 			ResolvesAliases(true).
 			PromptForSingleSelection()
 		if result != "" {
