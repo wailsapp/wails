@@ -20,10 +20,10 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
-	"github.com/pkg/browser"
-	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/signal"
 
+	"github.com/pkg/browser"
+	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
@@ -581,45 +581,73 @@ func (a *App) Run() error {
 	a.impl = newPlatformApp(a)
 	go func() {
 		for {
-			event := <-applicationEvents
-			go a.handleApplicationEvent(event)
+			select {
+			case <-a.ctx.Done():
+				return
+			case event := <-applicationEvents:
+				go a.handleApplicationEvent(event)
+			}
 		}
 	}()
 	go func() {
 		for {
-			event := <-windowEvents
-			go a.handleWindowEvent(event)
+			select {
+			case <-a.ctx.Done():
+				return
+			case event := <-windowEvents:
+				go a.handleWindowEvent(event)
+			}
 		}
 	}()
 	go func() {
 		for {
-			request := <-webviewRequests
-			go a.handleWebViewRequest(request)
+			select {
+			case <-a.ctx.Done():
+				return
+			case request := <-webviewRequests:
+				go a.handleWebViewRequest(request)
+			}
 		}
 	}()
 	go func() {
 		for {
-			event := <-windowMessageBuffer
-			go a.handleWindowMessage(event)
+			select {
+			case <-a.ctx.Done():
+				return
+			case event := <-windowMessageBuffer:
+				go a.handleWindowMessage(event)
+			}
 		}
 	}()
 	go func() {
 		for {
-			event := <-windowKeyEvents
-			go a.handleWindowKeyEvent(event)
+			select {
+			case <-a.ctx.Done():
+				return
+			case event := <-windowKeyEvents:
+				go a.handleWindowKeyEvent(event)
+			}
 		}
 	}()
 	go func() {
 		for {
-			dragAndDropMessage := <-windowDragAndDropBuffer
-			go a.handleDragAndDropMessage(dragAndDropMessage)
+			select {
+			case <-a.ctx.Done():
+				return
+			case dragAndDropMessage := <-windowDragAndDropBuffer:
+				go a.handleDragAndDropMessage(dragAndDropMessage)
+			}
 		}
 	}()
+	go func() {
+		for {
+			select {
+			case <-a.ctx.Done():
+				return
+			case menuItemID := <-menuItemClicked:
 
-	go func() {
-		for {
-			menuItemID := <-menuItemClicked
-			go a.handleMenuItemClicked(menuItemID)
+				go a.handleMenuItemClicked(menuItemID)
+			}
 		}
 	}()
 
@@ -689,12 +717,15 @@ func (a *App) handleApplicationEvent(event *ApplicationEvent) {
 }
 
 func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
+	if globalApplication.performingShutdown {
+		return
+	}
 	// Get window from window map
 	a.windowsLock.Lock()
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.Unlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		log.Printf("handleDragAndDropMessage: WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Get callback from window
@@ -702,12 +733,15 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 }
 
 func (a *App) handleWindowMessage(event *windowMessage) {
+	if globalApplication.performingShutdown {
+		return
+	}
 	// Get window from window map
 	a.windowsLock.RLock()
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		log.Printf("handleWindowMessage: WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Check if the message starts with "wails:"
@@ -725,18 +759,27 @@ func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 }
 
 func (a *App) handleWindowEvent(event *windowEvent) {
+	if globalApplication.performingShutdown {
+		return
+	}
 	// Get window from window map
 	a.windowsLock.RLock()
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.RUnlock()
+
 	if !ok {
-		log.Printf("Window #%d not found", event.WindowID)
+		// Window not found - it's probably been destroyed
 		return
 	}
+
+	// Normal event handling for active windows
 	window.HandleWindowEvent(event.EventID)
 }
 
 func (a *App) handleMenuItemClicked(menuItemID uint) {
+	if globalApplication.performingShutdown {
+		return
+	}
 	menuItem := getMenuItemByID(menuItemID)
 	if menuItem == nil {
 		log.Printf("MenuItem #%d not found", menuItemID)
