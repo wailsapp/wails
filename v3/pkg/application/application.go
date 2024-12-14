@@ -20,10 +20,10 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 
-	"github.com/wailsapp/wails/v3/internal/signal"
-
 	"github.com/pkg/browser"
 	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/signal"
+
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
@@ -101,7 +101,10 @@ func New(appOptions Options) *App {
 					case "/wails/runtime":
 						messageProc.ServeHTTP(rw, req)
 					case "/wails/capabilities":
-						assetserver.ServeFile(rw, path, globalApplication.capabilities.AsBytes())
+						err := assetserver.ServeFile(rw, path, globalApplication.capabilities.AsBytes())
+						if err != nil {
+							result.handleFatalError(fmt.Errorf("unable to serve capabilities: %s", err.Error()))
+						}
 					case "/wails/flags":
 						updatedOptions := result.impl.GetFlags(appOptions)
 						flags, err := json.Marshal(updatedOptions)
@@ -581,73 +584,45 @@ func (a *App) Run() error {
 	a.impl = newPlatformApp(a)
 	go func() {
 		for {
-			select {
-			case <-a.ctx.Done():
-				return
-			case event := <-applicationEvents:
-				go a.handleApplicationEvent(event)
-			}
+			event := <-applicationEvents
+			go a.handleApplicationEvent(event)
 		}
 	}()
 	go func() {
 		for {
-			select {
-			case <-a.ctx.Done():
-				return
-			case event := <-windowEvents:
-				go a.handleWindowEvent(event)
-			}
+			event := <-windowEvents
+			go a.handleWindowEvent(event)
 		}
 	}()
 	go func() {
 		for {
-			select {
-			case <-a.ctx.Done():
-				return
-			case request := <-webviewRequests:
-				go a.handleWebViewRequest(request)
-			}
+			request := <-webviewRequests
+			go a.handleWebViewRequest(request)
 		}
 	}()
 	go func() {
 		for {
-			select {
-			case <-a.ctx.Done():
-				return
-			case event := <-windowMessageBuffer:
-				go a.handleWindowMessage(event)
-			}
+			event := <-windowMessageBuffer
+			go a.handleWindowMessage(event)
 		}
 	}()
 	go func() {
 		for {
-			select {
-			case <-a.ctx.Done():
-				return
-			case event := <-windowKeyEvents:
-				go a.handleWindowKeyEvent(event)
-			}
+			event := <-windowKeyEvents
+			go a.handleWindowKeyEvent(event)
 		}
 	}()
 	go func() {
 		for {
-			select {
-			case <-a.ctx.Done():
-				return
-			case dragAndDropMessage := <-windowDragAndDropBuffer:
-				go a.handleDragAndDropMessage(dragAndDropMessage)
-			}
+			dragAndDropMessage := <-windowDragAndDropBuffer
+			go a.handleDragAndDropMessage(dragAndDropMessage)
 		}
 	}()
-	go func() {
-		for {
-			select {
-			case <-a.ctx.Done():
-				return
-			case menuItemID := <-menuItemClicked:
 
-				go a.handleMenuItemClicked(menuItemID)
-			}
+	go func() {
+		for {
+			menuItemID := <-menuItemClicked
+			go a.handleMenuItemClicked(menuItemID)
 		}
 	}()
 
@@ -717,15 +692,12 @@ func (a *App) handleApplicationEvent(event *ApplicationEvent) {
 }
 
 func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
-	if globalApplication.performingShutdown {
-		return
-	}
 	// Get window from window map
 	a.windowsLock.Lock()
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.Unlock()
 	if !ok {
-		log.Printf("handleDragAndDropMessage: WebviewWindow #%d not found", event.windowId)
+		log.Printf("WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Get callback from window
@@ -733,15 +705,12 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 }
 
 func (a *App) handleWindowMessage(event *windowMessage) {
-	if globalApplication.performingShutdown {
-		return
-	}
 	// Get window from window map
 	a.windowsLock.RLock()
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("handleWindowMessage: WebviewWindow #%d not found", event.windowId)
+		log.Printf("WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Check if the message starts with "wails:"
@@ -759,27 +728,18 @@ func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 }
 
 func (a *App) handleWindowEvent(event *windowEvent) {
-	if globalApplication.performingShutdown {
-		return
-	}
 	// Get window from window map
 	a.windowsLock.RLock()
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.RUnlock()
-
 	if !ok {
-		// Window not found - it's probably been destroyed
+		log.Printf("Window #%d not found", event.WindowID)
 		return
 	}
-
-	// Normal event handling for active windows
 	window.HandleWindowEvent(event.EventID)
 }
 
 func (a *App) handleMenuItemClicked(menuItemID uint) {
-	if globalApplication.performingShutdown {
-		return
-	}
 	menuItem := getMenuItemByID(menuItemID)
 	if menuItem == nil {
 		log.Printf("MenuItem #%d not found", menuItemID)

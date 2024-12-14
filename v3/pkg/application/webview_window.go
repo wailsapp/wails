@@ -110,7 +110,6 @@ type (
 type WindowEvent struct {
 	ctx       *WindowEventContext
 	Cancelled bool
-	WindowID  uint
 }
 
 func (w *WindowEvent) Context() *WindowEventContext {
@@ -256,8 +255,9 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 			shouldClose = result.options.ShouldClose(result)
 		}
 		if shouldClose {
-			globalApplication.deleteWindowByID(result.id)
+			result.markAsDestroyed()
 			InvokeSync(result.impl.close)
+			globalApplication.deleteWindowByID(result.id)
 		}
 	})
 
@@ -719,7 +719,7 @@ func (w *WebviewWindow) startResize(border string) error {
 	if w.impl == nil && !w.isDestroyed() {
 		return nil
 	}
-	return InvokeSyncWithError(func() error {
+	return InvokeSyncWithResult(func() error {
 		return w.impl.startResize(border)
 	})
 }
@@ -771,7 +771,6 @@ func (w *WebviewWindow) RegisterHook(eventType events.WindowEventType, callback 
 }
 
 func (w *WebviewWindow) HandleWindowEvent(id uint) {
-	// Get hooks for this event
 	w.eventListenersLock.RLock()
 	defer w.eventListenersLock.RUnlock()
 
@@ -782,7 +781,6 @@ func (w *WebviewWindow) HandleWindowEvent(id uint) {
 
 	// Create new WindowEvent
 	thisEvent := NewWindowEvent()
-	thisEvent.WindowID = w.id
 
 	for _, thisHook := range hooks {
 		thisHook.callback(thisEvent)
@@ -908,18 +906,11 @@ func (w *WebviewWindow) Destroy() {
 		return
 	}
 
-	// Mark as being destroyed - this prevents new events from being processed
-	w.markAsDestroyed()
-
-	// Cancel all callbacks
+	// Cancel the callbacks
 	for _, cancelFunc := range w.cancellers {
 		cancelFunc()
 	}
 
-	// Remove from global application map and destroy the native window
-	globalApplication.windowsLock.Lock()
-	delete(globalApplication.windows, w.id)
-	globalApplication.windowsLock.Unlock()
 	InvokeSync(w.impl.destroy)
 }
 
@@ -1189,7 +1180,6 @@ func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(filenames)
 	thisEvent.ctx = ctx
-	thisEvent.WindowID = w.id
 	for _, listener := range w.eventListeners[uint(events.Common.WindowFilesDropped)] {
 		listener.callback(thisEvent)
 	}
@@ -1232,6 +1222,13 @@ func (w *WebviewWindow) NativeWindowHandle() (uintptr, error) {
 func (w *WebviewWindow) Focus() {
 	InvokeSync(w.impl.focus)
 	w.emit(events.Common.WindowFocus)
+}
+
+func (w *WebviewWindow) emit(eventType events.WindowEventType) {
+	windowEvents <- &windowEvent{
+		WindowID: w.id,
+		EventID:  uint(eventType),
+	}
 }
 
 func (w *WebviewWindow) startDrag() error {
@@ -1360,12 +1357,5 @@ func (w *WebviewWindow) undo() {
 func (w *WebviewWindow) delete() {
 	if w.impl == nil && !w.isDestroyed() {
 		w.impl.delete()
-	}
-}
-
-func (w *WebviewWindow) emit(eventType events.WindowEventType) {
-	windowEvents <- &windowEvent{
-		WindowID: w.id,
-		EventID:  uint(eventType),
 	}
 }
