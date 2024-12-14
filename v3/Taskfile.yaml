@@ -30,8 +30,9 @@ tasks:
       - rm -rf {{.TEMPLATE_DIR}}
       - mkdir -p {{.TEMPLATE_DIR}}
 
-  cli:install:
+  install:
     dir: cmd/wails3
+    silent: true
     cmds:
       - go install
       - echo "Installed wails CLI"
@@ -67,8 +68,9 @@ tasks:
       - go get -u github.com/go-task/task/v3
 
   reinstall-cli:
-    dir: cmd/wails
+    dir: cmd/wails3
     internal: true
+    silent: true
     cmds:
       - go install
       - echo "Reinstalled wails CLI"
