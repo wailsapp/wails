@@ -204,7 +204,7 @@ func getRemoteTemplate(uri string) (template *Template, err error) {
 }
 
 func Install(options *flags.Init) error {
-	var wd string = lo.Must(os.Getwd())
+	var wd = lo.Must(os.Getwd())
 	var projectDir string
 	if options.ProjectDir == "." || options.ProjectDir == "" {
 		projectDir = wd

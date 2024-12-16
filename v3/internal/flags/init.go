@@ -9,6 +9,7 @@ type Init struct {
 	ProjectDir         string `name:"d" description:"Project directory" default:"."`
 	Quiet              bool   `name:"q" description:"Suppress output to console"`
 	List               bool   `name:"l" description:"List templates"`
+	Git                string `name:"git" description:"Git repository URL to initialize (e.g. github.com/username/project)"`
 	ProductName        string `description:"The name of the product" default:"My Product"`
 	ProductDescription string `description:"The description of the product" default:"My Product Description"`
 	ProductVersion     string `description:"The version of the product" default:"0.1.0"`

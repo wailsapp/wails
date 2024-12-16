@@ -26,41 +26,40 @@ system, [Task](https://taskfile.dev) plays a central role in orchestrating the
 build process.
 
 The main `Taskfile.yml` is located in the project root, while platform-specific
-tasks are defined in `build/Taskfile.<platform>.yml` files.
+tasks are defined in `build/<platform>/Taskfile.yml` files. A common `Taskfile.yml`
+file in the `build` directory contains common tasks that are shared across
+platforms.
 
 <FileTree>
 
 - Project Root
   - Taskfile.yml
   - build
-    - Taskfile.windows.yml
-    - Taskfile.darwin.yml
-    - Taskfile.linux.yml
-    - Taskfile.common.yml
+    - windows/Taskfile.yml
+    - darwin/Taskfile.yml
+    - linux/Taskfile.yml
+    - Taskfile.yml
 
 </FileTree>
 
-The `Taskfile.common.yml` file contains common tasks that are shared across
-platforms.
-
 ## Taskfile.yml
 
-The `Taskfile.yml` file is the main entry point for the build system. It defines
+The `Taskfile.yml` file in the project root is the main entry point for the build system. It defines
 the tasks and their dependencies. Here's the default `Taskfile.yml` file:
 
 ```yaml
-version: "3"
+version: '3'
 
 includes:
-  common: ./build/Taskfile.common.yml
-  windows: ./build/Taskfile.windows.yml
-  darwin: ./build/Taskfile.darwin.yml
-  linux: ./build/Taskfile.linux.yml
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
 
 vars:
-  APP_NAME: "{{.ProjectName}}"
+  APP_NAME: "myproject"
   BIN_DIR: "bin"
-  VITE_PORT: "{{.WAILS_VITE_PORT | default 9245}}"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
 
 tasks:
   build:
@@ -81,23 +80,19 @@ tasks:
   dev:
     summary: Runs the application in development mode
     cmds:
-      - wails3 dev -config ./build/devmode.config.yaml -port {{.VITE_PORT}}
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
 
-  dev:reload:
-    summary: Reloads the application
-    cmds:
-      - task: run
+
 ```
 
 ## Platform-Specific Taskfiles
 
-Each platform has its own Taskfile, located in the `build` directory. These
-files define the core tasks for that platform. Each taskfile includes common
-tasks from the `Taskfile.common.yml` file.
+Each platform has its own Taskfile, located in the platform directories beneath the `build` directory. These
+files define the core tasks for that platform. Each taskfile includes common tasks from the `build/Taskfile.yml` file.
 
 ### Windows
 
-Location: `build/Taskfile.windows.yml`
+Location: `build/windows/Taskfile.yml`
 
 The Windows-specific Taskfile includes tasks for building, packaging, and
 running the application on Windows. Key features include:
@@ -108,30 +103,30 @@ running the application on Windows. Key features include:
 
 ### Linux
 
-Location: `build/Taskfile.linux.yml`
+Location: `build/linux/Taskfile.yml`
 
 The Linux-specific Taskfile includes tasks for building, packaging, and running
 the application on Linux. Key features include:
 
 - Building with optional production flags
-- Creating an AppImage for packaging
+- Creating an AppImage, deb, rpm, and Arch Linux packages
 - Generating `.desktop` file for Linux applications
 
 ### macOS
 
-Location: `build/Taskfile.darwin.yml`
+Location: `build/darwin/Taskfile.yml`
 
 The macOS-specific Taskfile includes tasks for building, packaging, and running
 the application on macOS. Key features include:
 
-- Building with optional production flags
-- Creating an `.app` bundle for packaging
+- Building binaries for amd64, arm64 and universal (both) architectures
+- Creating an `.app` bundle for distributing
 - Setting macOS-specific build flags and environment variables
 
 ## Wails3 Commands and Task Execution
 
-The `wails3 task` command is an embedded version of taskfile.dev, which executes
-the tasks defined in your Taskfile.yml.
+The `wails3 task` command is an embedded version of [Taskfile](https://taskfile.dev), which executes
+the tasks defined in your `Taskfile.yml`.
 
 The `wails3 build` and `wails3 package` commands are aliases for
 `wails3 task build` and `wails3 task package` respectively. When you run these
@@ -165,6 +160,12 @@ This flexibility allows you to tailor the build process to your specific
 requirements while still benefiting from the structure provided by the Wails v3
 build system.
 
+:::tip[Learning Taskfile]
+We highly recommend reading the [Taskfile](https://taskfile.dev) documentation to
+understand how to use Taskfile effectively.
+You can find out which version of Taskfile is embedded in the Wails CLI by running `wails3 task --version`.
+:::
+
 ## Development Mode
 
 The Wails v3 build system includes a powerful development mode that enhances the
@@ -178,20 +179,19 @@ When you run `wails3 dev`, the following process occurs:
 1. The command checks for an available port, defaulting to 9245 if not
    specified.
 2. It sets up the environment variables for the frontend dev server (Vite).
-3. It starts the file watcher using the `refresh` library.
+3. It starts the file watcher using the [refresh](https://github.com/atterpac/refresh) library.
 
 The [refresh](https://github.com/atterpac/refresh) library is responsible for
-monitoring file changes and triggering rebuilds. It uses a configuration file,
-typically located at `./build/devmode.config.yaml`, to determine which files to
-watch and what actions to take when changes are detected.
+monitoring file changes and triggering rebuilds. It uses the configuration defined under the `dev_mode` key in the `./build/config.yaml` file.
+It may be configured to ignore certain directories and files, to determine which files to watch and what actions to take when changes are detected.
+The default configuration works pretty well, but feel free to customise it to your needs.
 
 ### Configuration
 
-The development mode can be configured using the `devmode.config.yaml` file.
 Here's an example of its structure:
 
 ```yaml
-config:
+dev_mode:
   root_path: .
   log_level: warn
   debounce: 1000
@@ -231,8 +231,7 @@ This configuration file allows you to:
 
 ### Customising Development Mode
 
-You can customise the development mode experience by modifying the
-`devmode.config.yaml` file.
+You can customise the development mode experience by modifying these values in the `config.yaml` file.
 
 Some ways to customise include:
 
@@ -241,22 +240,16 @@ Some ways to customise include:
    changes
 3. Adding or modifying the execute commands to fit your project's needs
 
-You can also specify a custom configuration file and port:
-
-```shell
-wails3 dev -config ./path/to/custom/config.yaml -port 8080
-```
-
 ### Using a browser for development
 
-Whilst v2 fully supported the use of a browser for development, it caused a lot
+Whilst Wails v2 fully supported the use of a browser for development, it caused a lot
 of confusion. Applications that would work in the browser would not necessarily
-work in the desktop application, as not all browser APIs are available in
-webviews.
+work in the desktop application, as not all browser APIs are available in webviews.
 
 For UI-focused development work, you still have the flexibility to use a browser
 in v3, by accessing the Vite URL at `http://localhost:9245` in dev mode. This
 gives you access to powerful browser dev tools while working on styling and
-layout. When you're ready to test functionality like bindings and events, simply
+layout. Be aware that Go bindings *will not work* in this mode.
+When you're ready to test functionality like bindings and events, simply
 switch to the desktop view to ensure everything works perfectly in the
 production environment.

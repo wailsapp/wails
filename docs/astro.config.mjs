@@ -53,19 +53,19 @@ export default defineConfig({
       plugins: [
         // https://starlight-links-validator.vercel.app/configuration/
         starlightLinksValidator({
-          exclude: [
-            // TODO: Fix these links in the blog/wails-v2-released file
-            // "/docs/reference/options#theme",
-            // "/docs/reference/options#customtheme",
-            // "/docs/guides/application-development#application-menu",
-            // "/docs/reference/runtime/dialog",
-            // "/docs/reference/options#windowistranslucent",
-            // "/docs/reference/options#windowistranslucent-1",
-            // "/docs/guides/windows-installer",
-            // "/docs/reference/runtime/intro",
-            // "/docs/guides/obfuscated",
-            // "/docs/howdoesitwork#calling-bound-go-methods",
-          ],
+          // exclude: [
+        //     // TODO: Fix these links in the blog/wails-v2-released file
+        //     // "/docs/reference/options#theme",
+        //     // "/docs/reference/options#customtheme",
+        //     // "/docs/guides/application-development#application-menu",
+        //     // "/docs/reference/runtime/dialog",
+        //     // "/docs/reference/options#windowistranslucent",
+        //     // "/docs/reference/options#windowistranslucent-1",
+        //     // "/docs/guides/windows-installer",
+        //     // "/docs/reference/runtime/intro",
+        //     // "/docs/guides/obfuscated",
+        //     // "/docs/howdoesitwork#calling-bound-go-methods",
+        //   ],
         }),
         // https://starlight-image-zoom.vercel.app/configuration/
         starlightImageZoom(),
@@ -81,7 +81,16 @@ export default defineConfig({
           label: "Getting Started",
           autogenerate: { directory: "getting-started", collapsed: false },
         },
-        { label: "Feedback", link: "/getting-started/feedback" },
+        {
+          label: "Tutorials",
+          autogenerate: { directory: "tutorials", collapsed: true },
+        },
+        {
+          label: "What's New",
+          link: "/whats-new",
+          badge: { text: "New", variant: "tip" },
+        },
+        { label: "v3 Alpha Feedback", link: "/feedback" },
         {
           label: "Learn",
           collapsed: true,
@@ -92,16 +101,11 @@ export default defineConfig({
           collapsed: true,
           autogenerate: { directory: "guides", collapsed: true },
         },
-        {
-          label: "What's New",
-          link: "/whats-new",
-          badge: { text: "New", variant: "tip" },
-        },
-        {
-          label: "API",
-          collapsed: true,
-          autogenerate: { directory: "api", collapsed: true },
-        },
+        // {
+        //   label: "API",
+        //   collapsed: true,
+        //   autogenerate: { directory: "api", collapsed: true },
+        // },
         {
           label: "Community",
           collapsed: true,
@@ -117,11 +121,11 @@ export default defineConfig({
             },
           ],
         },
-        {
-          label: "Development",
-          collapsed: true,
-          autogenerate: { directory: "development", collapsed: true },
-        },
+        // {
+        //   label: "Development",
+        //   collapsed: true,
+        //   autogenerate: { directory: "development", collapsed: true },
+        // },
         { label: "Status", link: "/status" },
         { label: "Changelog", link: "/changelog" },
         {

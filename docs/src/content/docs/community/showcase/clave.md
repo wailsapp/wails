@@ -2,7 +2,7 @@
 title: Clave
 ---
 
-![Clave](../../../../assets/showcase-images/clave.gif)
+![Clave](../../../../assets/showcase-images/clave.png)
 
 Key Features
 

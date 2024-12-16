@@ -6,9 +6,6 @@ sidebar:
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-To install the Wails CLI, first ensure you have the correct dependencies
-installed:
-
 ## Supported Platforms
 
 - Windows 10/11 AMD64/ARM64
@@ -21,7 +18,7 @@ installed:
 Wails has a number of common dependencies that are required before installation:
 
 <Tabs>
-  <TabItem label="Go (At least 1.22.4)" icon="seti:go">
+  <TabItem label="Go (At least 1.23)" icon="seti:go">
 
     Download Go from the [Go Downloads Page](https://go.dev/dl/).
 
@@ -42,12 +39,9 @@ Wails has a number of common dependencies that are required before installation:
 
     Run `npm --version` to verify.
 
-  </TabItem>
-
-  <TabItem label="Task (Optional)">
-
-    The Wails CLI embeds a task runner called [Task](https://taskfile.dev/#/installation). It is optional, but recommended. If you do not wish to install Task, you can use the `wails3 task` command instead of `task`.
-    Installing Task will give you the greatest flexibility.
+      :::note
+      If you prefer a different package manager to npm, feel free to use it. You will need to update the project Taskfiles to use it.
+      :::
 
   </TabItem>
 

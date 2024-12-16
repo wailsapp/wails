@@ -1,13 +1,13 @@
 ---
-title: What's New in Wails v3 Alpha
+title: What's New in Wails v3
 ---
 
-Wails v3 Alpha introduces significant changes from v2. It replaces the
+Wails v3 introduces significant changes from v2. It replaces the
 single-window, declarative API with a more flexible procedural approach. This
 new API design improves code readability and simplifies development, especially
 for complex multi-window applications.
 
-Wails v3 Alpha represents a substantial evolution in how desktop applications
+Wails v3 represents a substantial evolution in how desktop applications
 can be built using Go and web technologies.
 
 ## Multiple Windows
@@ -27,15 +27,16 @@ allowing for dynamic user interfaces that adapt to user needs and application
 states.
 
 :::tip[Multiple Windows]
+<details><summary>Example</summary>
 
 ```go
 package main
 
 import (
-        _ "embed"
-        "log"
-
-        "github.com/wailsapp/wails/v3/pkg/application"
+   _ "embed"
+   "log"
+   
+   "github.com/wailsapp/wails/v3/pkg/application"
 )
 
 //go:embed assets/*
@@ -43,35 +44,36 @@ var assets embed.FS
 
 func main() {
 
-        app := application.New(application.Options{
-                Name:        "Multi Window Demo",
-                Assets: application.AssetOptions{
-                        Handler: application.AssetFileServerFS(assets),
-                },
-        })
+   app := application.New(application.Options{
+        Name:   "Multi Window Demo",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+   })
+   
+   window1 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+       Title:  "Window 1",
+   })
+   
+   window2 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+       Title:  "Window 2",
+   })
+   
+   // load the embedded html from the embed.FS
+   window1.SetURL("/")
+   window1.Center()
+   
+   // Load an external URL
+   window2.SetURL("https://wails.app")
+   
+   err := app.Run()
 
-        window1 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-                Title:  "Window 1",
-        })
-
-        window2 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-                Title:  "Window 2",
-        })
-
-        // load the embedded html from the embed.FS
-        window1.SetURL("/")
-        window1.Center()
-
-        // Load an external URL
-        window2.SetURL("https://wails.app")
-
-        err := app.Run()
-
-        if err != nil {
-                log.Fatal(err.Error())
-        }
+   if err != nil {
+	   log.Fatal(err.Error())
+   }
 }
 ```
+</details>
 
 :::
 
@@ -86,7 +88,7 @@ Key features of the Wails v3 system tray integration include:
 
 1. Window Attachment: You can associate a window with the system tray icon. When
    activated, this window will be centered relative to the icon's position,
-   providing a seamless user experience.
+   providing a great way to quickly access your application.
 
 2. Comprehensive Menu Support: Create rich, interactive menus that users can
    access directly from the system tray icon. This allows for quick actions
@@ -94,9 +96,12 @@ Key features of the Wails v3 system tray integration include:
 
 3. Adaptive Icon Display: Support for both light and dark mode icons ensures
    your application's system tray icon remains visible and aesthetically
-   pleasing across different system themes.
+   pleasing across different system themes. Template icons are also supported on macOS.
 
 :::tip[Systray]
+
+<details><summary>Example</summary>
+
 
 ```go
 package main
@@ -158,7 +163,7 @@ func main() {
     }
 }
 ```
-
+</details>
 :::
 
 ## Improved bindings generation
@@ -175,6 +180,8 @@ The binding generation process has been simplified, requiring only a single
 command: `wails3 generate bindings`.
 
 :::tip[Bindings]
+
+<details><summary>Example</summary>
 
 ```js
 // @ts-check
@@ -209,6 +216,8 @@ window.go.main = {
 };
 ```
 
+</details>
+
 :::
 
 ## Improved build system
@@ -229,6 +238,8 @@ You can even use make if that's your thing!
 
 :::tip[Taskfile.yml]
 
+<details><summary>Example</summary>
+
 ```yaml "Snippet from Taskfile.yml"
 build:darwin:
   summary: Builds the application
@@ -244,6 +255,7 @@ build:darwin:
   CGO_LDFLAGS: "-mmacosx-version-min=10.13"
   MACOSX_DEPLOYMENT_TARGET: "10.13"
 ```
+</details>
 
 :::
 
@@ -261,6 +273,8 @@ use case is displaying a confirmation dialog before closing a window. This gives
 you more control over the event flow and user experience.
 
 :::tip[Example of event handling]
+
+<details><summary>Example</summary>
 
 ```go
 package main
@@ -332,8 +346,9 @@ func main() {
         log.Fatal(err.Error())
     }
 }
-
 ```
+
+</details>
 
 :::
 
@@ -343,6 +358,8 @@ An experimental feature to call runtime methods using plain html, similar to
 [htmx](https://htmx.org).
 
 :::tip[Example of wml]
+
+<details><summary>Example</summary>
 
 ```html
 <!doctype html>
@@ -378,6 +395,8 @@ An experimental feature to call runtime methods using plain html, similar to
   </body>
 </html>
 ```
+
+</details>
 
 :::
 
