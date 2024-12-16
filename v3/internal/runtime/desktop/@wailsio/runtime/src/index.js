@@ -43,12 +43,16 @@ export {
     WML
 };
 
-var initialised = false;
+let initialised = false;
+export function init() {
+    window._wails.invoke = System.invoke;
+    System.invoke("wails:runtime:ready");
+    initialised = true;
+}
+
 window.addEventListener("load", () => {
     if (!initialised) {
-        window._wails.invoke = System.invoke;
-        System.invoke("wails:runtime:ready");
-        initialised = true;
+        init();
     }
 });
 
