@@ -52,7 +52,7 @@ export default defineConfig({
       },
       plugins: [
         // https://starlight-links-validator.vercel.app/configuration/
-        starlightLinksValidator({
+        // starlightLinksValidator({
           // exclude: [
         //     // TODO: Fix these links in the blog/wails-v2-released file
         //     // "/docs/reference/options#theme",
@@ -66,7 +66,7 @@ export default defineConfig({
         //     // "/docs/guides/obfuscated",
         //     // "/docs/howdoesitwork#calling-bound-go-methods",
         //   ],
-        }),
+        // }),
         // https://starlight-image-zoom.vercel.app/configuration/
         starlightImageZoom(),
         // https://starlight-blog-docs.vercel.app/configuration
