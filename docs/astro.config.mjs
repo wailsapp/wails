@@ -83,6 +83,7 @@ export default defineConfig({
         },
         {
           label: "Tutorials",
+          collapsed: true,
           autogenerate: { directory: "tutorials", collapsed: true },
         },
         {

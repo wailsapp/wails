@@ -370,7 +370,45 @@ This will show you how to organize your code into reusable services and handle e
     }
     ```
 
-    Update `main.js` to make the image source the path to the QR code service, passing the text as a query parameter:
+    Now update `main.go` to specify the route that the QR code service should be accessible on:
+
+   ```go title="main.go" ins={8-10}
+    func main() {
+
+        app := application.New(application.Options{
+            Name:        "myproject",
+            Description: "A demo of using raw HTML & CSS",
+            LogLevel:    slog.LevelDebug,
+            Services: []application.Service{
+                application.NewService(NewQRService(), application.ServiceOptions{
+                    Route: "/qrservice",
+                }),
+            },
+            Assets: application.AssetOptions{
+                Handler: application.AssetFileServerFS(assets),
+            },
+            Mac: application.MacOptions{
+                ApplicationShouldTerminateAfterLastWindowClosed: true,
+            },
+        })
+
+        app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+            Title:  "myproject",
+            Width:  600,
+            Height: 400,
+        })
+
+        // Run the application. This blocks until the application has been exited.
+        err := app.Run()
+
+        // If an error occurred while running the application, log it and exit.
+        if err != nil {
+            log.Fatal(err)
+        }
+    }
+   ```
+
+    Finally, update `main.js` to make the image source the path to the QR code service, passing the text as a query parameter:
 
     ```js title="frontend/src/main.js"
     import { GenerateQRCode } from './bindings/changeme/qrservice.js';
