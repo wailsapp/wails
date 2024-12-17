@@ -70,6 +70,9 @@ type windowsWebviewWindow struct {
 
 	// Window move debouncer
 	moveDebouncer func(func())
+	// isMinimizing indicates whether the window is currently being minimized
+	// Used to prevent unnecessary redraws during minimize/restore operations
+	isMinimizing bool
 }
 
 func (w *windowsWebviewWindow) cut() {
@@ -1059,8 +1062,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		case w32.SIZE_MAXIMIZED:
 			w.parent.emit(events.Windows.WindowMaximise)
 		case w32.SIZE_RESTORED:
+			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowRestore)
 		case w32.SIZE_MINIMIZED:
+			w.isMinimizing = true
 			w.parent.emit(events.Windows.WindowMinimise)
 		}
 
@@ -1188,7 +1193,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 					// In Full-Screen mode we don't need to adjust anything
 					// It essential we have the flag here, that is set before SetWindowPos in fullscreen/unfullscreen
 					// because the native size might not yet reflect we are in fullscreen during this event!
-					w.chromium.SetPadding(edge.Rect{})
+					w.setPadding(edge.Rect{})
 				} else if w.isMaximised() {
 					// If the window is maximized we must adjust the client area to the work area of the monitor. Otherwise
 					// some content goes beyond the visible part of the monitor.
@@ -1227,16 +1232,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 						Right:  int32(rect.X + rect.Width),
 						Bottom: int32(rect.Y + rect.Height),
 					}
-					w.chromium.SetPadding(edge.Rect{})
+					w.setPadding(edge.Rect{})
 				} else {
 					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
 					// See: https://stackoverflow.com/a/6558508
-					// The workaround originally suggests to decrese the bottom 1px, but that seems to bring up a thin
-					// white line on some Windows-Versions, due to DrawBackground using also this reduces ClientSize.
+					// The workaround from the SO answer suggests to reduce the bottom of the window by 1px.
+					// However this would result in loosing 1px of the WebView content.
 					// Increasing the bottom also worksaround the flickering but we would loose 1px of the WebView content
 					// therefore let's pad the content with 1px at the bottom.
 					rgrc.Bottom += 1
-					w.chromium.SetPadding(edge.Rect{Bottom: 1})
+					w.setPadding(edge.Rect{Bottom: 1})
 				}
 				return 0
 			}
@@ -1746,7 +1751,7 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 
 		count, err := objs.GetCount()
 		if err != nil {
-			globalApplication.error(err.Error())
+			globalApplication.error("cannot get count: %s", err.Error())
 			return
 		}
 
@@ -1845,4 +1850,12 @@ func (w *windowsWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 		exStyle &^= w32.WS_EX_TRANSPARENT
 	}
 	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, uint32(exStyle))
+}
+
+func (w *windowsWebviewWindow) setPadding(padding edge.Rect) {
+	// Skip SetPadding if window is being minimized to prevent flickering
+	if w.isMinimizing {
+		return
+	}
+	w.chromium.SetPadding(padding)
 }
