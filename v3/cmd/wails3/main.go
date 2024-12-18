@@ -102,6 +102,7 @@ func printFooter() {
 		}
 
 		sponsorURL := "https://github.com/sponsors/leaanthony"
+				// OSC 8 sequence for clickable link: \x1b]8;;url\x1b\\text\x1b]8;;\x1b\\
 		linkText := fmt.Sprintf("\x1b]8;;%s\x1b\\%s\x1b]8;;\x1b\\", sponsorURL, "wails3 sponsor")
 		printer.Println("If Wails is useful to you or your company, please consider sponsoring the project: " + pterm.LightYellow(linkText))
 	}
