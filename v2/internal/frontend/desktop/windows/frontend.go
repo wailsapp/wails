@@ -170,9 +170,18 @@ func (f *Frontend) Run(ctx context.Context) error {
 			// depends on the content in the WebView, see https://github.com/wailsapp/wails/issues/1319
 			event, _ := arg.Data.(*winc.SizeEventData)
 			if event != nil && event.Type == w32.SIZE_MINIMIZED {
+				// Set minimizing flag to prevent unnecessary redraws
+				// 设置最小化标志以防止不必要的重绘
+				// Reference: https://github.com/wailsapp/wails/issues/3951
+				f.mainWindow.isMinimizing = true
 				return
 			}
 		}
+
+		// Clear minimizing flag for all non-minimize size events
+		// 对于所有非最小化的尺寸变化事件,清除最小化标志
+		// Reference: https://github.com/wailsapp/wails/issues/3951
+		f.mainWindow.isMinimizing = false
 
 		if f.resizeDebouncer != nil {
 			f.resizeDebouncer(func() {
