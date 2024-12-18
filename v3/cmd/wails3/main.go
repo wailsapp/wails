@@ -1,9 +1,11 @@
 package main
 
 import (
-	"github.com/pkg/browser"
+	"fmt"
 	"os"
 	"runtime/debug"
+
+	"github.com/pkg/browser"
 
 	"github.com/pterm/pterm"
 	"github.com/samber/lo"
@@ -99,7 +101,9 @@ func printFooter() {
 			},
 		}
 
-		printer.Println("If Wails is useful to you or your company, please consider sponsoring the project: " + pterm.LightYellow("wails3 sponsor"))
+		sponsorURL := "https://github.com/sponsors/leaanthony"
+		linkText := fmt.Sprintf("\x1b]8;;%s\x1b\\%s\x1b]8;;\x1b\\", sponsorURL, "wails3 sponsor")
+		printer.Println("If Wails is useful to you or your company, please consider sponsoring the project: " + pterm.LightYellow(linkText))
 	}
 }
 
