@@ -41,6 +41,8 @@ type Window struct {
 
 	// isMinimizing indicates whether the window is currently being minimized
 	// 标识窗口是否处于最小化状态,用于解决最小化/恢复时的闪屏问题
+	// This flag is used to prevent unnecessary redraws during minimize/restore transitions for frameless windows
+	// 此标志用于防止无边框窗口在最小化/恢复过程中的不必要重绘
 	// Reference: https://github.com/wailsapp/wails/issues/3951
 	isMinimizing bool
 }
@@ -348,6 +350,8 @@ func invokeSync[T any](cba *Window, fn func() (T, error)) (res T, err error) {
 
 // SetPadding is a filter that wraps chromium.SetPadding to prevent unnecessary redraws during minimize/restore
 // 包装了chromium.SetPadding的过滤器,用于防止窗口最小化/恢复过程中的不必要重绘
+// This fixes window flickering when minimizing/restoring frameless windows
+// 这修复了无边框窗口在最小化/恢复时的闪烁问题
 // Reference: https://github.com/wailsapp/wails/issues/3951
 func (w *Window) SetPadding(padding edge.Rect) {
 	// Skip SetPadding if window is being minimized to prevent flickering
