@@ -578,10 +578,14 @@ void windowSetPosition(void* nsWindow, int x, int y) {
     if (screen == NULL) {
         screen = [NSScreen mainScreen];
     }
+	// Get the scale of the screen
+	CGFloat scale = [screen backingScaleFactor];
     NSRect frame = [window frame];
-    frame.origin.x = x;
-    frame.origin.y = (screen.frame.size.height - frame.size.height) - y;
-    [window setFrame:frame display:YES];
+	// Scale the position
+	frame.origin.x = x / scale;
+	frame.origin.y = (screen.frame.size.height - frame.size.height) - (y / scale);
+	// Set the frame
+	[window setFrame:frame display:YES];
 }
 
 
