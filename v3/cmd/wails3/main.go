@@ -91,7 +91,9 @@ func main() {
 
 func printFooter() {
 	if !commands.DisableFooter {
-		pterm.Println(pterm.LightGreen("\nNeed documentation? Run: ") + pterm.LightYellow("wails3 docs\n"))
+		docsLink := hyperlink("https://v3alpha.wails.io/getting-started/your-first-app/", "wails3 docs")
+
+		pterm.Println(pterm.LightGreen("\nNeed documentation? Run: ") + pterm.LightBlue(docsLink))
 		// Check if we're in a teminal
 		printer := pterm.PrefixPrinter{
 			MessageStyle: pterm.NewStyle(pterm.FgLightGreen),
@@ -101,10 +103,8 @@ func printFooter() {
 			},
 		}
 
-		sponsorURL := "https://github.com/sponsors/leaanthony"
-		// OSC 8 sequence for clickable link: \x1b]8;;url\x1b\\text\x1b]8;;\x1b\\
-		linkText := fmt.Sprintf("\x1b]8;;%s\x1b\\%s\x1b]8;;\x1b\\", sponsorURL, "wails3 sponsor")
-		printer.Println("If Wails is useful to you or your company, please consider sponsoring the project: " + pterm.LightYellow(linkText))
+		linkText := hyperlink("https://github.com/sponsors/leaanthony", "wails3 sponsor")
+		printer.Println("If Wails is useful to you or your company, please consider sponsoring the project: " + pterm.LightBlue(linkText))
 	}
 }
 
@@ -116,4 +116,20 @@ func openDocs() error {
 func openSponsor() error {
 	commands.DisableFooter = true
 	return browser.OpenURL("https://github.com/sponsors/leaanthony")
+}
+
+func hyperlink(url, text string) string {
+	// OSC 8 sequence to start a clickable link
+	linkStart := "\x1b]8;;"
+
+	// OSC 8 sequence to end a clickable link
+	linkEnd := "\x1b]8;;\x1b\\"
+
+	// ANSI escape code for underline
+	underlineStart := "\x1b[4m"
+
+	// ANSI escape code to reset text formatting
+	resetFormat := "\x1b[0m"
+
+	return fmt.Sprintf("%s%s%s%s%s%s%s", linkStart, url, "\x1b\\", underlineStart, text, resetFormat, linkEnd)
 }
