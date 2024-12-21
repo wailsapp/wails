@@ -175,7 +175,7 @@ func (w *windowsWebviewWindow) execJS(js string) {
 	if w.chromium == nil {
 		return
 	}
-	globalApplication.dispatchOnMainThread(func() {
+	InvokeSync(func() {
 		w.chromium.Eval(js)
 	})
 }
