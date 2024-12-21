@@ -193,6 +193,36 @@ extern bool hasListeners(unsigned int);
     }
     [super dealloc];
 }
+- (void)windowDidZoom:(NSNotification *)notification {
+    NSWindow *window = notification.object;
+    if ([window isZoomed]) {
+        if (hasListeners(EventWindowMaximise)) {
+            processWindowEvent(self.windowId, EventWindowMaximise);
+        }
+    } else {
+        if (hasListeners(EventWindowUnMaximise)) {
+            processWindowEvent(self.windowId, EventWindowUnMaximise);
+        }
+    }
+}
+- (void)performZoomIn:(id)sender {
+    [super zoom:sender];
+    if (hasListeners(EventWindowZoomIn)) {
+        processWindowEvent(self.windowId, EventWindowZoomIn);
+    }
+}
+- (void)performZoomOut:(id)sender {
+    [super zoom:sender];
+    if (hasListeners(EventWindowZoomOut)) {
+        processWindowEvent(self.windowId, EventWindowZoomOut);
+    }
+}
+- (void)performZoomReset:(id)sender {
+    [self setFrame:[self frameRectForContentRect:[[self screen] visibleFrame]] display:YES];
+    if (hasListeners(EventWindowZoomReset)) {
+        processWindowEvent(self.windowId, EventWindowZoomReset);
+    }
+}
 @end
 @implementation WebviewWindowDelegate
 - (BOOL)windowShouldClose:(NSWindow *)sender {
@@ -246,6 +276,13 @@ extern bool hasListeners(unsigned int);
         return proposedOptions;
     } else {
         return proposedOptions | NSApplicationPresentationAutoHideToolbar;
+    }
+}
+- (void)windowDidChangeVisibility:(NSNotification *)notification {
+    NSWindow *window = notification.object;
+    BOOL isVisible = ![window isVisible];
+    if (hasListeners(isVisible ? EventWindowShow : EventWindowHide)) {
+        processWindowEvent(self.windowId, isVisible ? EventWindowShow : EventWindowHide);
     }
 }
 // GENERATED EVENTS START
@@ -369,12 +406,6 @@ extern bool hasListeners(unsigned int);
     }
 }
 
-- (void)windowDidChangeVisibility:(NSNotification *)notification {
-    if( hasListeners(EventWindowDidChangeVisibility) ) {
-        processWindowEvent(self.windowId, EventWindowDidChangeVisibility);
-    }
-}
-
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
     if( hasListeners(EventWindowDidDeminiaturize) ) {
         processWindowEvent(self.windowId, EventWindowDidDeminiaturize);
@@ -390,6 +421,18 @@ extern bool hasListeners(unsigned int);
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
     if( hasListeners(EventWindowDidEnterFullScreen) ) {
         processWindowEvent(self.windowId, EventWindowDidEnterFullScreen);
+    }
+}
+
+- (void)windowMaximise:(NSNotification *)notification {
+    if( hasListeners(EventWindowMaximise) ) {
+        processWindowEvent(self.windowId, EventWindowMaximise);
+    }
+}
+
+- (void)windowUnMaximise:(NSNotification *)notification {
+    if( hasListeners(EventWindowUnMaximise) ) {
+        processWindowEvent(self.windowId, EventWindowUnMaximise);
     }
 }
 
@@ -504,12 +547,6 @@ extern bool hasListeners(unsigned int);
 - (void)windowDidUpdateToolbar:(NSNotification *)notification {
     if( hasListeners(EventWindowDidUpdateToolbar) ) {
         processWindowEvent(self.windowId, EventWindowDidUpdateToolbar);
-    }
-}
-
-- (void)windowDidUpdateVisibility:(NSNotification *)notification {
-    if( hasListeners(EventWindowDidUpdateVisibility) ) {
-        processWindowEvent(self.windowId, EventWindowDidUpdateVisibility);
     }
 }
 
@@ -719,7 +756,6 @@ extern bool hasListeners(unsigned int);
 
 // GENERATED EVENTS END
 @end
-
 void windowSetScreen(void* window, void* screen, int yOffset) {
     WebviewWindow* nsWindow = (WebviewWindow*)window;
     NSScreen* nsScreen = (NSScreen*)screen;

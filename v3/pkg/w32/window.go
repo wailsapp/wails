@@ -34,6 +34,15 @@ const (
 	GCLP_HICON         int32 = -14
 )
 
+type WINDOWPOS struct {
+	HwndInsertAfter HWND
+	X               int32
+	Y               int32
+	Cx              int32
+	Cy              int32
+	Flags           uint32
+}
+
 func ExtendFrameIntoClientArea(hwnd uintptr, extend bool) error {
 	// -1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11)
 	//     Also shows the caption buttons if transparent ant translucent but they don't work.

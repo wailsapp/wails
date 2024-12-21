@@ -1043,6 +1043,19 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_ENTERSIZEMOVE:
 		// This is needed to close open dropdowns when moving the window https://github.com/MicrosoftEdge/WebView2Feedback/issues/2290
 		w32.SetFocus(w.hwnd)
+		if int(w32.GetKeyState(w32.VK_LBUTTON))&(0x8000) != 0 {
+			// Left mouse button is down - window is being moved
+			w.parent.emit(events.Windows.WindowStartMove)
+		} else {
+			// Window is being resized
+			w.parent.emit(events.Windows.WindowStartResize)
+		}
+	case w32.WM_EXITSIZEMOVE:
+		if int(w32.GetKeyState(w32.VK_LBUTTON))&0x8000 != 0 {
+			w.parent.emit(events.Windows.WindowEndMove)
+		} else {
+			w.parent.emit(events.Windows.WindowEndResize)
+		}
 	case w32.WM_SETFOCUS:
 		w.focus()
 		w.parent.emit(events.Windows.WindowSetFocus)
@@ -1054,9 +1067,28 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		w.moveDebouncer(func() {
 			w.parent.emit(events.Windows.WindowDidMove)
 		})
+	case w32.WM_SHOWWINDOW:
+		if wparam == 1 {
+			w.parent.emit(events.Windows.WindowShow)
+		} else {
+			w.parent.emit(events.Windows.WindowHide)
+		}
+	case w32.WM_WINDOWPOSCHANGED:
+		windowPos := (*w32.WINDOWPOS)(unsafe.Pointer(lparam))
+		if windowPos.Flags&w32.SWP_NOZORDER == 0 {
+			w.parent.emit(events.Windows.WindowZOrderChanged)
+		}
+	case w32.WM_PAINT:
+		w.parent.emit(events.Windows.WindowPaint)
+	case w32.WM_ERASEBKGND:
+		w.parent.emit(events.Windows.WindowBackgroundErase)
+		return 1 // Let WebView2 handle background erasing
 	// Check for keypress
 	case w32.WM_KEYDOWN:
 		w.processKeyBinding(uint(wparam))
+		w.parent.emit(events.Windows.WindowKeyDown)
+	case w32.WM_KEYUP:
+		w.parent.emit(events.Windows.WindowKeyUp)
 	case w32.WM_SIZE:
 		switch wparam {
 		case w32.SIZE_MAXIMIZED:
@@ -1144,7 +1176,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			if w.parent.options.Windows.WindowMaskDraggable {
 				return w32.HTCAPTION
 			}
+			w.parent.emit(events.Windows.WindowNonClientHit)
 			return w32.HTCLIENT
+		case w32.WM_NCLBUTTONDOWN:
+			w.parent.emit(events.Windows.WindowNonClientMouseDown)
+		case w32.WM_NCLBUTTONUP:
+			w.parent.emit(events.Windows.WindowNonClientMouseUp)
+		case w32.WM_NCMOUSEMOVE:
+			w.parent.emit(events.Windows.WindowNonClientMouseMove)
+		case w32.WM_NCMOUSELEAVE:
+			w.parent.emit(events.Windows.WindowNonClientMouseLeave)
 		}
 	}
 
