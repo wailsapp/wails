@@ -170,9 +170,20 @@ func (f *Frontend) Run(ctx context.Context) error {
 			// depends on the content in the WebView, see https://github.com/wailsapp/wails/issues/1319
 			event, _ := arg.Data.(*winc.SizeEventData)
 			if event != nil && event.Type == w32.SIZE_MINIMIZED {
+				// Set minimizing flag to prevent unnecessary redraws during minimize/restore for frameless windows
+				// 设置最小化标志以防止无边框窗口在最小化/恢复过程中的不必要重绘
+				// This fixes window flickering when minimizing/restoring frameless windows
+				// 这修复了无边框窗口在最小化/恢复时的闪烁问题
+				// Reference: https://github.com/wailsapp/wails/issues/3951
+				f.mainWindow.isMinimizing = true
 				return
 			}
 		}
+
+		// Clear minimizing flag for all non-minimize size events
+		// 对于所有非最小化的尺寸变化事件,清除最小化标志
+		// Reference: https://github.com/wailsapp/wails/issues/3951
+		f.mainWindow.isMinimizing = false
 
 		if f.resizeDebouncer != nil {
 			f.resizeDebouncer(func() {
