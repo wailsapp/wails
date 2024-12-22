@@ -152,7 +152,7 @@ windows:WindowUnFullscreen
 windows:WindowRestore
 windows:WindowMinimise
 windows:WindowUnMinimise
-windows:WindowClose
+windows:WindowClosing
 windows:WindowSetFocus
 windows:WindowKillFocus
 windows:WindowDragDrop

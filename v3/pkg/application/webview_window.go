@@ -162,6 +162,9 @@ type WebviewWindow struct {
 	runtimeLoaded bool
 	// pendingJS holds JS that was sent to the window before the runtime was loaded
 	pendingJS []string
+
+	// unconditionallyClose marks the window to be unconditionally closed
+	unconditionallyClose bool
 }
 
 // EmitEvent emits an event from the window
@@ -250,15 +253,10 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 
 	// Listen for window closing events and de
 	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
-		shouldClose := true
-		if result.options.ShouldClose != nil {
-			shouldClose = result.options.ShouldClose(result)
-		}
-		if shouldClose {
-			result.markAsDestroyed()
-			InvokeSync(result.impl.close)
-			globalApplication.deleteWindowByID(result.id)
-		}
+		result.unconditionallyClose = true
+		result.markAsDestroyed()
+		InvokeSync(result.impl.close)
+		globalApplication.deleteWindowByID(result.id)
 	})
 
 	// Process keybindings
@@ -395,6 +393,7 @@ func (w *WebviewWindow) Run() {
 		return
 	}
 	w.impl = newWindowImpl(w)
+
 	InvokeSync(w.impl.run)
 }
 
@@ -991,7 +990,12 @@ func (w *WebviewWindow) ZoomOut() {
 
 // Close closes the window
 func (w *WebviewWindow) Close() {
-	// NOOP?
+	if w.impl == nil && !w.isDestroyed() {
+		return
+	}
+	InvokeAsync(func() {
+		w.emit(events.Common.WindowClosing)
+	})
 }
 
 func (w *WebviewWindow) Zoom() {
@@ -1335,5 +1339,11 @@ func (w *WebviewWindow) undo() {
 func (w *WebviewWindow) delete() {
 	if w.impl == nil && !w.isDestroyed() {
 		w.impl.delete()
+	}
+}
+
+func (w *WebviewWindow) redo() {
+	if w.impl == nil && !w.isDestroyed() {
+		w.impl.redo()
 	}
 }

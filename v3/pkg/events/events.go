@@ -374,7 +374,7 @@ type windowsEvents struct {
 	WindowRestore              WindowEventType
 	WindowMinimise             WindowEventType
 	WindowUnMinimise           WindowEventType
-	WindowClose                WindowEventType
+	WindowClosing              WindowEventType
 	WindowSetFocus             WindowEventType
 	WindowKillFocus            WindowEventType
 	WindowDragDrop             WindowEventType
@@ -421,7 +421,7 @@ func newWindowsEvents() windowsEvents {
 		WindowRestore:              1175,
 		WindowMinimise:             1176,
 		WindowUnMinimise:           1177,
-		WindowClose:                1178,
+		WindowClosing:              1178,
 		WindowSetFocus:             1179,
 		WindowKillFocus:            1180,
 		WindowDragDrop:             1181,
@@ -608,7 +608,7 @@ var eventToJS = map[uint]string{
 	1175: "windows:WindowRestore",
 	1176: "windows:WindowMinimise",
 	1177: "windows:WindowUnMinimise",
-	1178: "windows:WindowClose",
+	1178: "windows:WindowClosing",
 	1179: "windows:WindowSetFocus",
 	1180: "windows:WindowKillFocus",
 	1181: "windows:WindowDragDrop",

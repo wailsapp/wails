@@ -128,10 +128,6 @@ type WebviewWindowOptions struct {
 	MaximiseButtonState ButtonState
 	CloseButtonState    ButtonState
 
-	// ShouldClose is called when the window is about to close.
-	// Return true to allow the window to close, or false to prevent it from closing.
-	ShouldClose func(window *WebviewWindow) bool
-
 	// If true, the window's devtools will be available (default true in builds without the `production` build tag)
 	DevToolsEnabled bool
 

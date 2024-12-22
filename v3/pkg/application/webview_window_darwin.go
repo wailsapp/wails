@@ -956,6 +956,7 @@ func (w *macosWebviewWindow) windowZoom() {
 
 func (w *macosWebviewWindow) close() {
 	C.windowClose(w.nsWindow)
+	// TODO: Check if we need to unregister the window here or not
 }
 
 func (w *macosWebviewWindow) zoomIn() {

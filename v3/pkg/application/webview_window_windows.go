@@ -577,9 +577,7 @@ func (w *windowsWebviewWindow) setZoom(zoom float64) {
 }
 
 func (w *windowsWebviewWindow) close() {
-	// Unregister the window with the application
-	windowsApp := globalApplication.impl.(*windowsApp)
-	windowsApp.unregisterWindow(w)
+	// Send WM_CLOSE message to trigger the same flow as clicking the X button
 	w32.SendMessage(w.hwnd, w32.WM_CLOSE, 0, 0)
 }
 
@@ -1033,8 +1031,22 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			}
 		}
 	case w32.WM_CLOSE:
-		w.parent.emit(events.Windows.WindowClose)
-		return 0
+
+		if w.parent.unconditionallyClose == false {
+			// We were called by `Close()` or pressing the close button on the window
+			w.parent.emit(events.Windows.WindowClosing)
+			return 0
+		}
+
+		defer func() {
+			windowsApp := globalApplication.impl.(*windowsApp)
+			windowsApp.unregisterWindow(w)
+
+		}()
+
+		// Now do the actual close
+		return w32.DefWindowProc(w.hwnd, w32.WM_CLOSE, 0, 0)
+
 	case w32.WM_KILLFOCUS:
 		if w.focusingChromium {
 			return 0

@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"github.com/wailsapp/wails/v3/pkg/events"
 	"log"
 	"runtime"
 
@@ -29,13 +30,14 @@ func main() {
 		AlwaysOnTop:   true,
 		Hidden:        true,
 		DisableResize: true,
-		ShouldClose: func(window *application.WebviewWindow) bool {
-			window.Hide()
-			return false
-		},
 		Windows: application.WindowsWindow{
 			HiddenOnTaskbar: true,
 		},
+	})
+
+	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+		window.Hide()
+		e.Cancel()
 	})
 
 	if runtime.GOOS == "darwin" {

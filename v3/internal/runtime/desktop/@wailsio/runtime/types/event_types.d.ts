@@ -19,7 +19,7 @@ export declare const EventTypes: {
 		WindowRestore: string,
 		WindowMinimise: string,
 		WindowUnMinimise: string,
-		WindowClose: string,
+		WindowClosing: string,
 		WindowSetFocus: string,
 		WindowKillFocus: string,
 		WindowDragDrop: string,
