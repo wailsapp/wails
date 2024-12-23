@@ -900,7 +900,7 @@ func (w *WebviewWindow) SetRelativePosition(x, y int) Window {
 	return w
 }
 
-func (w *WebviewWindow) Destroy() {
+func (w *WebviewWindow) destroy() {
 	if w.impl == nil && !w.isDestroyed() {
 		return
 	}

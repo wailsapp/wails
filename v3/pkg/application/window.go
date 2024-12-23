@@ -15,7 +15,6 @@ type Window interface {
 	Callback
 	Center()
 	Close()
-	Destroy()
 	DisableSizeConstraints()
 	DispatchWailsEvent(event *CustomEvent)
 	EmitEvent(name string, data ...any)

@@ -523,7 +523,7 @@ func (w *windowsWebviewWindow) destroy() {
 	if w.dropTarget != nil {
 		w.dropTarget.Release()
 	}
-	// Destroy the window
+	// destroy the window
 	w32.DestroyWindow(w.hwnd)
 }
 
@@ -1647,6 +1647,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	// Set background colour
 	w.setBackgroundColour(w.parent.options.BackgroundColour)
+	chromium.SetBackgroundColour(w.parent.options.BackgroundColour.Red, w.parent.options.BackgroundColour.Green, w.parent.options.BackgroundColour.Blue, w.parent.options.BackgroundColour.Alpha)
 
 	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)

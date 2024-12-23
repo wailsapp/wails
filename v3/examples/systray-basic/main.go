@@ -40,8 +40,11 @@ func main() {
 		},
 	})
 
+	// Register a hook to hide the window when the window is closing
 	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+		// Hide the window
 		window.Hide()
+		// Cancel the event so it doesn't get destroyed
 		e.Cancel()
 	})
 

@@ -781,13 +781,13 @@ func (a *App) cleanup() {
 	InvokeSync(func() {
 		a.windowsLock.RLock()
 		for _, window := range a.windows {
-			window.Destroy()
+			window.Close()
 		}
 		a.windows = nil
 		a.windowsLock.RUnlock()
 		a.systemTraysLock.Lock()
 		for _, systray := range a.systemTrays {
-			systray.Destroy()
+			systray.destroy()
 		}
 		a.systemTrays = nil
 		a.systemTraysLock.Unlock()
