@@ -58,8 +58,8 @@ type windowsWebviewWindow struct {
 	previousWindowPlacement w32.WINDOWPLACEMENT
 
 	// Webview
-	chromium   *edge.Chromium
-	hasStarted bool
+	chromium                   *edge.Chromium
+	webviewNavigationCompleted bool
 
 	// resizeBorder* is the width/height of the resize border in pixels.
 	resizeBorderWidth  int32
@@ -153,6 +153,7 @@ func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 
 func (w *windowsWebviewWindow) setURL(url string) {
 	// Navigate to the given URL in the webview
+	w.webviewNavigationCompleted = false
 	w.chromium.Navigate(url)
 }
 
@@ -383,10 +384,6 @@ func (w *windowsWebviewWindow) run() {
 		w.chromium.Resize()
 	}
 
-	if !options.Hidden {
-		w.parent.Show()
-		w.update()
-	}
 }
 
 func (w *windowsWebviewWindow) center() {
@@ -871,7 +868,10 @@ func (w *windowsWebviewWindow) printStyle() {
 }
 
 func (w *windowsWebviewWindow) show() {
-	w32.ShowWindow(w.hwnd, w32.SW_SHOW)
+	if w.webviewNavigationCompleted {
+		w.chromium.Show()
+		w32.ShowWindow(w.hwnd, w32.SW_SHOW)
+	}
 }
 
 func (w *windowsWebviewWindow) hide() {
@@ -1667,6 +1667,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 		if err != nil {
 			globalApplication.fatal(err.Error())
 		}
+		w.webviewNavigationCompleted = false
 		chromium.Navigate(startURL)
 	}
 
@@ -1709,12 +1710,12 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
 
-	if w.hasStarted {
+	if w.webviewNavigationCompleted {
 		// NavigationCompleted is triggered for every Load. If an application uses reloads the Hide/Show will trigger
 		// a flickering of the window with every reload. So we only do this once for the first NavigationCompleted.
 		return
 	}
-	w.hasStarted = true
+	w.webviewNavigationCompleted = true
 
 	wasFocused := w.isFocused()
 	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
@@ -1729,9 +1730,10 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	if wasFocused {
 		w.focus()
 	}
-
-	//f.mainWindow.hasBeenShown = true
-
+	if !w.parent.options.Hidden {
+		w.parent.Show()
+		w.update()
+	}
 }
 
 func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {

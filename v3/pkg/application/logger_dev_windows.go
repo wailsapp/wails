@@ -13,7 +13,7 @@ import (
 
 func DefaultLogger(level slog.Level) *slog.Logger {
 	return slog.New(tint.NewHandler(colorable.NewColorable(os.Stderr), &tint.Options{
-		TimeFormat: time.Kitchen,
+		TimeFormat: time.StampMilli,
 		NoColor:    !isatty.IsTerminal(os.Stderr.Fd()),
 		Level:      level,
 	}))

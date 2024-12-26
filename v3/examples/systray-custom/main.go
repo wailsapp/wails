@@ -2,15 +2,20 @@ package main
 
 import (
 	_ "embed"
+	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/icons"
 	"log"
 	"runtime"
-
-	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/icons"
 )
 
-func createWindow(app *application.App) *application.WebviewWindow {
+var windowShowing bool
+
+func createWindow(app *application.App) {
+	if windowShowing {
+		return
+	}
+	// Log the time taken to create the window
 	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Width:            500,
 		Height:           500,
@@ -23,12 +28,13 @@ func createWindow(app *application.App) *application.WebviewWindow {
 			HiddenOnTaskbar: true,
 		},
 	})
+	windowShowing = true
 
 	window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
-		println("Window Closing")
+		windowShowing = false
 	})
 
-	return window
+	window.Show()
 }
 
 func main() {
@@ -45,7 +51,6 @@ func main() {
 	})
 
 	systemTray := app.NewSystemTray()
-	window := createWindow(app)
 	menu := app.NewMenu()
 	menu.Add("Quit").OnClick(func(data *application.Context) {
 		app.Quit()
@@ -57,11 +62,8 @@ func main() {
 	}
 
 	systemTray.OnClick(func() {
-		println("Creating New Window!")
-		createWindow(app).Show()
+		createWindow(app)
 	})
-
-	systemTray.AttachWindow(window).WindowOffset(5)
 
 	err := app.Run()
 	if err != nil {
