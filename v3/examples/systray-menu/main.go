@@ -10,6 +10,9 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/icons"
 )
 
+//go:embed logo-dark-xsmall.png
+var logo []byte
+
 func main() {
 	app := application.New(application.Options{
 		Name:        "Systray Demo",
@@ -50,7 +53,7 @@ func main() {
 	}
 
 	myMenu := app.NewMenu()
-	myMenu.Add("Wails").SetBitmap(icons.WailsLogoBlackTransparent).SetEnabled(false)
+	myMenu.Add("Wails").SetBitmap(logo).SetEnabled(false)
 
 	myMenu.Add("Hello World!").OnClick(func(ctx *application.Context) {
 		println("Hello World!")
