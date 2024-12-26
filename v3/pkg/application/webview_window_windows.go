@@ -210,7 +210,8 @@ func (w *windowsWebviewWindow) run() {
 	}
 	// If we're frameless, we need to add the WS_EX_TOOLWINDOW style to hide the window from the taskbar
 	if options.Windows.HiddenOnTaskbar {
-		exStyle |= w32.WS_EX_TOOLWINDOW
+		//exStyle |= w32.WS_EX_TOOLWINDOW
+		exStyle |= w32.WS_EX_NOACTIVATE
 	} else {
 		exStyle |= w32.WS_EX_APPWINDOW
 	}
