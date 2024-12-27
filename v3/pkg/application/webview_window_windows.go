@@ -28,10 +28,6 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
-const (
-	windowDidMoveDebounceMS = 200
-)
-
 var edgeMap = map[string]uintptr{
 	"n-resize":  w32.HTTOP,
 	"ne-resize": w32.HTTOPRIGHT,
@@ -286,6 +282,15 @@ func (w *windowsWebviewWindow) run() {
 
 	w.setupChromium()
 
+	if options.Windows.WindowDidMoveDebounceMS == 0 {
+		options.Windows.WindowDidMoveDebounceMS = 50
+	}
+	w.moveDebouncer = debounce.New(time.Duration(options.Windows.WindowDidMoveDebounceMS) * time.Millisecond)
+
+	if options.Windows.ResizeDebounceMS > 0 {
+		w.resizeDebouncer = debounce.New(time.Duration(options.Windows.ResizeDebounceMS) * time.Millisecond)
+	}
+
 	// Initialise the window buttons
 	w.setMinimiseButtonState(options.MinimiseButtonState)
 	w.setMaximiseButtonState(options.MaximiseButtonState)
@@ -386,11 +391,6 @@ func (w *windowsWebviewWindow) run() {
 		// Trigger a resize to ensure the window is sized correctly
 		w.chromium.Resize()
 	}
-
-	if options.Windows.ResizeDebounceMS > 0 {
-		w.resizeDebouncer = debounce.New(time.Duration(options.Windows.ResizeDebounceMS) * time.Millisecond)
-	}
-
 }
 
 func (w *windowsWebviewWindow) center() {
@@ -1081,9 +1081,6 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		w.parent.emit(events.Windows.WindowSetFocus)
 	case w32.WM_MOVE, w32.WM_MOVING:
 		_ = w.chromium.NotifyParentWindowPositionChanged()
-		if w.moveDebouncer == nil {
-			w.moveDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
-		}
 		w.moveDebouncer(func() {
 			w.parent.emit(events.Windows.WindowDidMove)
 		})
@@ -1132,6 +1129,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				Bottom: height,
 			}
 			InvokeSync(func() {
+				time.Sleep(1 * time.Nanosecond)
 				w.chromium.ResizeWithBounds(bounds)
 				atomic.StoreInt32(&resizePending, 0)
 				w.parent.emit(events.Windows.WindowDidResize)
@@ -1142,7 +1140,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			// If the window is frameless, and we are minimizing, then we need to suppress the Resize on the
 			// WebView2. If we don't do this, restoring does not work as expected and first restores with some wrong
 			// size during the restore animation and only fully renders when the animation is done. This highly
-			// depends on the content in the WebView, see https://github.com/wailsapp/wails/issues/1319
+			// depends on the content in the WebView, see https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
 		} else if w.resizeDebouncer != nil {
 			w.resizeDebouncer(doResize)
 		} else {
@@ -1598,14 +1596,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 			}
 		}
 	}
-
-	// event mapping
-	w.parent.OnWindowEvent(events.Windows.WindowDidMove, func(e *WindowEvent) {
-		w.parent.emit(events.Common.WindowDidMove)
-	})
-	w.parent.OnWindowEvent(events.Windows.WindowDidResize, func(e *WindowEvent) {
-		w.parent.emit(events.Common.WindowDidResize)
-	})
 
 	// We will get round to this
 	//if chromium.HasCapability(edge.AllowExternalDrop) {

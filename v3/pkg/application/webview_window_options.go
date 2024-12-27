@@ -253,6 +253,11 @@ type WindowsWindow struct {
 	// Default: 0
 	ResizeDebounceMS uint16
 
+	// WindowDidMoveDebounceMS is the amount of time to debounce the WindowDidMove event
+	// when moving the window
+	// Default: 0
+	WindowDidMoveDebounceMS uint16
+
 	// Disable the menu bar for this window
 	// Default: false
 	DisableMenu bool
@@ -526,4 +531,7 @@ type LinuxWindow struct {
 	// Client code may override this behavior by passing a non-nil Options and set
 	// WebviewGpuPolicy as needed.
 	WebviewGpuPolicy WebviewGpuPolicy
+
+	// WindowDidMoveDebounceMS is the debounce time in milliseconds for the WindowDidMove event
+	WindowDidMoveDebounceMS uint16
 }
