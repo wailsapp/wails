@@ -69,7 +69,9 @@ type windowsWebviewWindow struct {
 	onceDo             sync.Once
 
 	// Window move debouncer
-	moveDebouncer func(func())
+	moveDebouncer   func(func())
+	resizeDebouncer func(func())
+
 	// isMinimizing indicates whether the window is currently being minimized
 	// Used to prevent unnecessary redraws during minimize/restore operations
 	isMinimizing bool
@@ -383,6 +385,10 @@ func (w *windowsWebviewWindow) run() {
 	if options.Frameless {
 		// Trigger a resize to ensure the window is sized correctly
 		w.chromium.Resize()
+	}
+
+	if options.Windows.ResizeDebounceMS > 0 {
+		w.resizeDebouncer = debounce.New(time.Duration(options.Windows.ResizeDebounceMS) * time.Millisecond)
 	}
 
 }
@@ -1046,6 +1052,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}()
 
 		// Now do the actual close
+		w.chromium.ShuttingDown()
 		return w32.DefWindowProc(w.hwnd, w32.WM_CLOSE, 0, 0)
 
 	case w32.WM_KILLFOCUS:
@@ -1114,22 +1121,33 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			w.parent.emit(events.Windows.WindowMinimise)
 		}
 
+		doResize := func() {
+			// Get the new size from lparam
+			width := int32(lparam & 0xFFFF)
+			height := int32((lparam >> 16) & 0xFFFF)
+			bounds := &edge.Rect{
+				Left:   0,
+				Top:    0,
+				Right:  width,
+				Bottom: height,
+			}
+			InvokeSync(func() {
+				w.chromium.ResizeWithBounds(bounds)
+				atomic.StoreInt32(&resizePending, 0)
+				w.parent.emit(events.Windows.WindowDidResize)
+			})
+		}
+
 		if w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED {
 			// If the window is frameless, and we are minimizing, then we need to suppress the Resize on the
 			// WebView2. If we don't do this, restoring does not work as expected and first restores with some wrong
 			// size during the restore animation and only fully renders when the animation is done. This highly
 			// depends on the content in the WebView, see https://github.com/wailsapp/wails/issues/1319
+		} else if w.resizeDebouncer != nil {
+			w.resizeDebouncer(doResize)
 		} else {
 			if atomic.CompareAndSwapInt32(&resizePending, 0, 1) {
-				go func() {
-					// Wait for next vsync-like interval
-					time.Sleep(time.Millisecond) // ~60fps timing
-					InvokeSync(func() {
-						w.chromium.Resize()
-						atomic.StoreInt32(&resizePending, 0)
-						w.parent.emit(events.Windows.WindowDidResize)
-					})
-				}()
+				doResize()
 			}
 		}
 		return 0
@@ -1484,12 +1502,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 		arg := fmt.Sprintf("--enable-features=%s", strings.Join(opts.EnabledFeatures, ","))
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
-
-	////enableFeatures := []string{"msWebView2BrowserHitTransparent"}
-	//if len(enableFeatures) > 0 {
-	//	arg := fmt.Sprintf("--enable-features=%s", strings.Join(enableFeatures, ","))
-	//	chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
-	//}
 
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
 	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath

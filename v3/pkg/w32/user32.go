@@ -176,6 +176,8 @@ var (
 
 	procSetMenuItemBitmaps = moduser32.NewProc("SetMenuItemBitmaps")
 
+	procRedrawWindow = moduser32.NewProc("RedrawWindow")
+
 	mainThread HANDLE
 )
 
@@ -1411,5 +1413,14 @@ func GetScrollInfo(hwnd HWND, fnBar int32, lpsi *SCROLLINFO) bool {
 		uintptr(fnBar),
 		uintptr(unsafe.Pointer(lpsi)))
 
+	return ret != 0
+}
+
+func RedrawWindow(hwnd HWND, lprcUpdate *RECT, hrgnUpdate HRGN, flags uint32) bool {
+	ret, _, _ := procRedrawWindow.Call(
+		uintptr(hwnd),
+		uintptr(unsafe.Pointer(lprcUpdate)),
+		uintptr(hrgnUpdate),
+		uintptr(flags))
 	return ret != 0
 }
