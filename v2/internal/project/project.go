@@ -238,7 +238,8 @@ type Protocol struct {
 }
 
 type Bindings struct {
-	TsGeneration TsGeneration `json:"ts_generation"`
+	TsGeneration              TsGeneration `json:"ts_generation"`
+	GenerateAllExportedFields bool         `json:"generate_all_exported_fields"`
 }
 
 type TsGeneration struct {

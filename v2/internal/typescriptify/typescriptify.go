@@ -105,6 +105,8 @@ type TypeScriptify struct {
 	Namespace    string
 	KnownStructs *slicer.StringSlicer
 	KnownEnums   *slicer.StringSlicer
+
+	GenerateAllExportedFields bool
 }
 
 func New() *TypeScriptify {
@@ -554,10 +556,14 @@ func (t *TypeScriptify) getFieldOptions(structType reflect.Type, field reflect.S
 func (t *TypeScriptify) getJSONFieldName(field reflect.StructField, isPtr bool) string {
 	jsonFieldName := ""
 	jsonTag, hasTag := field.Tag.Lookup("json")
-	if !hasTag && field.IsExported() {
-		jsonFieldName = field.Name
-		if isPtr {
-			jsonFieldName += "?"
+	if !hasTag {
+		// If we're generating all exported fields and the field is exported,
+		// consider it as a valid JSON field
+		if t.GenerateAllExportedFields && field.IsExported() {
+			jsonFieldName = field.Name
+			if isPtr {
+				jsonFieldName += "?"
+			}
 		}
 	}
 	if len(jsonTag) > 0 {

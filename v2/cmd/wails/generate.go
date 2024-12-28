@@ -48,11 +48,12 @@ func generateModule(f *flags.GenerateModule) error {
 	}
 
 	_, err = bindings.GenerateBindings(bindings.Options{
-		Compiler:     f.Compiler,
-		Tags:         buildTags,
-		TsPrefix:     projectConfig.Bindings.TsGeneration.Prefix,
-		TsSuffix:     projectConfig.Bindings.TsGeneration.Suffix,
-		TsOutputType: projectConfig.Bindings.TsGeneration.OutputType,
+		Compiler:                  f.Compiler,
+		Tags:                      buildTags,
+		TsPrefix:                  projectConfig.Bindings.TsGeneration.Prefix,
+		TsSuffix:                  projectConfig.Bindings.TsGeneration.Suffix,
+		TsOutputType:              projectConfig.Bindings.TsGeneration.OutputType,
+		GenerateAllExportedFields: projectConfig.Bindings.GenerateAllExportedFields,
 	})
 	if err != nil {
 		return err

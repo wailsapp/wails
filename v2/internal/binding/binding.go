@@ -22,16 +22,18 @@ type Bindings struct {
 	logger     logger.CustomLogger
 	exemptions slicer.StringSlicer
 
-	structsToGenerateTS map[string]map[string]interface{}
-	enumsToGenerateTS   map[string]map[string]interface{}
-	tsPrefix            string
-	tsSuffix            string
-	tsInterface         bool
-	obfuscate           bool
+	structsToGenerateTS       map[string]map[string]interface{}
+	enumsToGenerateTS         map[string]map[string]interface{}
+	tsPrefix                  string
+	tsSuffix                  string
+	tsInterface               bool
+	obfuscate                 bool
+	generateAllExportedFields bool
 }
 
 // NewBindings returns a new Bindings object
 func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exemptions []interface{}, obfuscate bool, enumsToBind []interface{}) *Bindings {
+	println("*** here 1")
 	result := &Bindings{
 		db:                  newDB(),
 		logger:              logger.CustomLogger("Bindings"),
@@ -56,6 +58,7 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 
 	// Add the structs to bind
 	for _, ptr := range structPointersToBind {
+		println("*** here 2")
 		err := result.Add(ptr)
 		if err != nil {
 			logger.Fatal("Error during binding: " + err.Error())
@@ -67,6 +70,7 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 
 // Add the given struct methods to the Bindings
 func (b *Bindings) Add(structPtr interface{}) error {
+	println("*** here 3")
 	methods, err := b.getMethods(structPtr)
 	if err != nil {
 		return fmt.Errorf("cannot bind value to app: %s", err.Error())
@@ -93,6 +97,7 @@ func (b *Bindings) ToJSON() (string, error) {
 }
 
 func (b *Bindings) GenerateModels() ([]byte, error) {
+	println("*** here 4")
 	models := map[string]string{}
 	var seen slicer.StringSlicer
 	var seenEnumsPackages slicer.StringSlicer
@@ -106,6 +111,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		w.WithPrefix(b.tsPrefix)
 		w.WithSuffix(b.tsSuffix)
 		w.WithInterface(b.tsInterface)
+		w.GenerateAllExportedFields = b.generateAllExportedFields
 		w.Namespace = packageName
 		w.WithBackupDir("")
 		w.KnownStructs = allStructNames
@@ -137,7 +143,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 			}
 			seenEnumsPackages.Add(packageName)
 		}
-
+		println("*** here 5")
 		str, err := w.Convert(nil)
 		if err != nil {
 			return nil, err
@@ -158,6 +164,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		w.WithPrefix(b.tsPrefix)
 		w.WithSuffix(b.tsSuffix)
 		w.WithInterface(b.tsInterface)
+		w.GenerateAllExportedFields = b.generateAllExportedFields
 		w.Namespace = packageName
 		w.WithBackupDir("")
 
@@ -273,6 +280,7 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 		}
 		kind := field.Type.Kind()
 		if kind == reflect.Struct {
+			println("here 3")
 			if !field.IsExported() {
 				continue
 			}
@@ -284,6 +292,7 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 			sName := sNameSplit[1]
 			pName := getPackageName(fqname)
 			a := reflect.New(field.Type)
+			println("here 2")
 			if b.hasExportedJSONFields(field.Type) {
 				s := reflect.Indirect(a).Interface()
 				b.AddStructToGenerateTS(pName, sName, s)
@@ -301,6 +310,7 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 			pName := getPackageName(fqname)
 			typ := field.Type.Elem()
 			a := reflect.New(typ)
+			println("here 1")
 			if b.hasExportedJSONFields(typ) {
 				s := reflect.Indirect(a).Interface()
 				b.AddStructToGenerateTS(pName, sName, s)
@@ -323,6 +333,11 @@ func (b *Bindings) SetOutputType(outputType string) *Bindings {
 	if outputType == "interfaces" {
 		b.tsInterface = true
 	}
+	return b
+}
+
+func (b *Bindings) SetGenerateAllExportedFields(generateAllExportedFields bool) *Bindings {
+	b.generateAllExportedFields = generateAllExportedFields
 	return b
 }
 
@@ -351,8 +366,13 @@ func (b *Bindings) hasExportedJSONFields(typeOf reflect.Type) bool {
 		jsonFieldName := ""
 		f := typeOf.Field(i)
 		jsonTag, hasTag := f.Tag.Lookup("json")
-		if !hasTag && f.IsExported() {
-			return true
+		if !hasTag {
+			// If we're generating all exported fields and the field is exported,
+			// consider it as a valid JSON field
+			if b.generateAllExportedFields && f.IsExported() {
+				return true
+			}
+			continue
 		}
 		if len(jsonTag) == 0 {
 			continue

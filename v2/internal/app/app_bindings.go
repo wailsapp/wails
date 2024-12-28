@@ -4,9 +4,6 @@ package app
 
 import (
 	"flag"
-	"os"
-	"path/filepath"
-
 	"github.com/leaanthony/gosod"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime/wrapper"
@@ -14,6 +11,9 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"os"
+	"path/filepath"
+	"strconv"
 )
 
 func (a *App) Run() error {
@@ -32,6 +32,7 @@ func (a *App) Run() error {
 	var tsPrefixFlag *string
 	var tsPostfixFlag *string
 	var tsOutputTypeFlag *string
+	var generateallexportedfieldsFlag *bool
 
 	tsPrefix := os.Getenv("tsprefix")
 	if tsPrefix == "" {
@@ -46,6 +47,17 @@ func (a *App) Run() error {
 	tsOutputType := os.Getenv("tsoutputtype")
 	if tsOutputType == "" {
 		tsOutputTypeFlag = bindingFlags.String("tsoutputtype", "", "Output type for generated typescript entities (classes|interfaces)")
+	}
+
+	generateallexportedfields := os.Getenv("generateallexportedfields")
+	if generateallexportedfields != "" {
+		value, err := strconv.ParseBool(generateallexportedfields)
+		if err != nil {
+			return err
+		}
+		generateallexportedfieldsFlag = bindingFlags.Bool("generateallexportedfields", value, "Generate bindings for all exported fields")
+	} else {
+		generateallexportedfieldsFlag = bindingFlags.Bool("generateallexportedfields", false, "Generate bindings for all exported fields")
 	}
 
 	_ = bindingFlags.Parse(os.Args[1:])
@@ -64,6 +76,7 @@ func (a *App) Run() error {
 	appBindings.SetTsPrefix(tsPrefix)
 	appBindings.SetTsSuffix(tsSuffix)
 	appBindings.SetOutputType(tsOutputType)
+	appBindings.SetGenerateAllExportedFields(*generateallexportedfieldsFlag)
 
 	err := generateBindings(appBindings)
 	if err != nil {
