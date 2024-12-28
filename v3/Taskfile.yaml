@@ -168,9 +168,11 @@ tasks:
         clipboard
         contextmenus
         dialogs
+        dialogs-basic
         drag-n-drop
         environment
         events
+        file-association
         frameless
         hide-window
         ignore-mouse
@@ -181,7 +183,9 @@ tasks:
         screen
         services
         show-macos-toolbar
-        systray
+        systray-basic
+        systray-menu
+        systray-custom
         video
         window
         window-api
