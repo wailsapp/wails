@@ -98,7 +98,9 @@ func main() {
             // OnResume is called when Windows resumes from low power mode
             OnResume: func(),
             // Disable GPU hardware acceleration for the webview
-            WebviewGpuDisabled: false,
+                  WebviewGpuDisabled: false,
+                  // Class name for the window. If empty, 'wailsWindow' will be used.
+                  WindowClassName: "MyWindow",
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -689,6 +691,12 @@ Nom: WebviewGpuIsDisabled<br/> Type: `bool`
 Définir à `true` activera les gestes de balayage pour la webview.
 
 Nom: EnableSwipeGestures<br/> Type: `bool`
+
+#### WindowClassName
+
+Class name for the window. If empty, 'wailsWindow' will be used.
+
+Name: WindowClassName<br/> Type: `string`
 
 ### Mac
 
