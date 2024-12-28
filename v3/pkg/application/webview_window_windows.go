@@ -28,10 +28,6 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
-const (
-	windowDidMoveDebounceMS = 200
-)
-
 var edgeMap = map[string]uintptr{
 	"n-resize":  w32.HTTOP,
 	"ne-resize": w32.HTTOPRIGHT,
@@ -58,8 +54,8 @@ type windowsWebviewWindow struct {
 	previousWindowPlacement w32.WINDOWPLACEMENT
 
 	// Webview
-	chromium   *edge.Chromium
-	hasStarted bool
+	chromium                   *edge.Chromium
+	webviewNavigationCompleted bool
 
 	// resizeBorder* is the width/height of the resize border in pixels.
 	resizeBorderWidth  int32
@@ -69,7 +65,9 @@ type windowsWebviewWindow struct {
 	onceDo             sync.Once
 
 	// Window move debouncer
-	moveDebouncer func(func())
+	moveDebouncer   func(func())
+	resizeDebouncer func(func())
+
 	// isMinimizing indicates whether the window is currently being minimized
 	// Used to prevent unnecessary redraws during minimize/restore operations
 	isMinimizing bool
@@ -153,6 +151,7 @@ func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 
 func (w *windowsWebviewWindow) setURL(url string) {
 	// Navigate to the given URL in the webview
+	w.webviewNavigationCompleted = false
 	w.chromium.Navigate(url)
 }
 
@@ -209,7 +208,8 @@ func (w *windowsWebviewWindow) run() {
 	}
 	// If we're frameless, we need to add the WS_EX_TOOLWINDOW style to hide the window from the taskbar
 	if options.Windows.HiddenOnTaskbar {
-		exStyle |= w32.WS_EX_TOOLWINDOW
+		//exStyle |= w32.WS_EX_TOOLWINDOW
+		exStyle |= w32.WS_EX_NOACTIVATE
 	} else {
 		exStyle |= w32.WS_EX_APPWINDOW
 	}
@@ -281,6 +281,15 @@ func (w *windowsWebviewWindow) run() {
 	}
 
 	w.setupChromium()
+
+	if options.Windows.WindowDidMoveDebounceMS == 0 {
+		options.Windows.WindowDidMoveDebounceMS = 50
+	}
+	w.moveDebouncer = debounce.New(time.Duration(options.Windows.WindowDidMoveDebounceMS) * time.Millisecond)
+
+	if options.Windows.ResizeDebounceMS > 0 {
+		w.resizeDebouncer = debounce.New(time.Duration(options.Windows.ResizeDebounceMS) * time.Millisecond)
+	}
 
 	// Initialise the window buttons
 	w.setMinimiseButtonState(options.MinimiseButtonState)
@@ -381,11 +390,6 @@ func (w *windowsWebviewWindow) run() {
 	if options.Frameless {
 		// Trigger a resize to ensure the window is sized correctly
 		w.chromium.Resize()
-	}
-
-	if !options.Hidden {
-		w.parent.Show()
-		w.update()
 	}
 }
 
@@ -523,7 +527,7 @@ func (w *windowsWebviewWindow) destroy() {
 	if w.dropTarget != nil {
 		w.dropTarget.Release()
 	}
-	// Destroy the window
+	// destroy the window
 	w32.DestroyWindow(w.hwnd)
 }
 
@@ -577,9 +581,7 @@ func (w *windowsWebviewWindow) setZoom(zoom float64) {
 }
 
 func (w *windowsWebviewWindow) close() {
-	// Unregister the window with the application
-	windowsApp := globalApplication.impl.(*windowsApp)
-	windowsApp.unregisterWindow(w)
+	// Send WM_CLOSE message to trigger the same flow as clicking the X button
 	w32.SendMessage(w.hwnd, w32.WM_CLOSE, 0, 0)
 }
 
@@ -873,7 +875,10 @@ func (w *windowsWebviewWindow) printStyle() {
 }
 
 func (w *windowsWebviewWindow) show() {
-	w32.ShowWindow(w.hwnd, w32.SW_SHOW)
+	if w.webviewNavigationCompleted {
+		w.chromium.Show()
+		w32.ShowWindow(w.hwnd, w32.SW_SHOW)
+	}
 }
 
 func (w *windowsWebviewWindow) hide() {
@@ -1033,8 +1038,23 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			}
 		}
 	case w32.WM_CLOSE:
-		w.parent.emit(events.Windows.WindowClose)
-		return 0
+
+		if w.parent.unconditionallyClose == false {
+			// We were called by `Close()` or pressing the close button on the window
+			w.parent.emit(events.Windows.WindowClosing)
+			return 0
+		}
+
+		defer func() {
+			windowsApp := globalApplication.impl.(*windowsApp)
+			windowsApp.unregisterWindow(w)
+
+		}()
+
+		// Now do the actual close
+		w.chromium.ShuttingDown()
+		return w32.DefWindowProc(w.hwnd, w32.WM_CLOSE, 0, 0)
+
 	case w32.WM_KILLFOCUS:
 		if w.focusingChromium {
 			return 0
@@ -1043,20 +1063,49 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_ENTERSIZEMOVE:
 		// This is needed to close open dropdowns when moving the window https://github.com/MicrosoftEdge/WebView2Feedback/issues/2290
 		w32.SetFocus(w.hwnd)
+		if int(w32.GetKeyState(w32.VK_LBUTTON))&(0x8000) != 0 {
+			// Left mouse button is down - window is being moved
+			w.parent.emit(events.Windows.WindowStartMove)
+		} else {
+			// Window is being resized
+			w.parent.emit(events.Windows.WindowStartResize)
+		}
+	case w32.WM_EXITSIZEMOVE:
+		if int(w32.GetKeyState(w32.VK_LBUTTON))&0x8000 != 0 {
+			w.parent.emit(events.Windows.WindowEndMove)
+		} else {
+			w.parent.emit(events.Windows.WindowEndResize)
+		}
 	case w32.WM_SETFOCUS:
 		w.focus()
 		w.parent.emit(events.Windows.WindowSetFocus)
 	case w32.WM_MOVE, w32.WM_MOVING:
 		_ = w.chromium.NotifyParentWindowPositionChanged()
-		if w.moveDebouncer == nil {
-			w.moveDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
-		}
 		w.moveDebouncer(func() {
 			w.parent.emit(events.Windows.WindowDidMove)
 		})
+	case w32.WM_SHOWWINDOW:
+		if wparam == 1 {
+			w.parent.emit(events.Windows.WindowShow)
+		} else {
+			w.parent.emit(events.Windows.WindowHide)
+		}
+	case w32.WM_WINDOWPOSCHANGED:
+		windowPos := (*w32.WINDOWPOS)(unsafe.Pointer(lparam))
+		if windowPos.Flags&w32.SWP_NOZORDER == 0 {
+			w.parent.emit(events.Windows.WindowZOrderChanged)
+		}
+	case w32.WM_PAINT:
+		w.parent.emit(events.Windows.WindowPaint)
+	case w32.WM_ERASEBKGND:
+		w.parent.emit(events.Windows.WindowBackgroundErase)
+		return 1 // Let WebView2 handle background erasing
 	// Check for keypress
 	case w32.WM_KEYDOWN:
 		w.processKeyBinding(uint(wparam))
+		w.parent.emit(events.Windows.WindowKeyDown)
+	case w32.WM_KEYUP:
+		w.parent.emit(events.Windows.WindowKeyUp)
 	case w32.WM_SIZE:
 		switch wparam {
 		case w32.SIZE_MAXIMIZED:
@@ -1069,22 +1118,34 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			w.parent.emit(events.Windows.WindowMinimise)
 		}
 
+		doResize := func() {
+			// Get the new size from lparam
+			width := int32(lparam & 0xFFFF)
+			height := int32((lparam >> 16) & 0xFFFF)
+			bounds := &edge.Rect{
+				Left:   0,
+				Top:    0,
+				Right:  width,
+				Bottom: height,
+			}
+			InvokeSync(func() {
+				time.Sleep(1 * time.Nanosecond)
+				w.chromium.ResizeWithBounds(bounds)
+				atomic.StoreInt32(&resizePending, 0)
+				w.parent.emit(events.Windows.WindowDidResize)
+			})
+		}
+
 		if w.parent.options.Frameless && wparam == w32.SIZE_MINIMIZED {
 			// If the window is frameless, and we are minimizing, then we need to suppress the Resize on the
 			// WebView2. If we don't do this, restoring does not work as expected and first restores with some wrong
 			// size during the restore animation and only fully renders when the animation is done. This highly
-			// depends on the content in the WebView, see https://github.com/wailsapp/wails/issues/1319
+			// depends on the content in the WebView, see https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
+		} else if w.resizeDebouncer != nil {
+			w.resizeDebouncer(doResize)
 		} else {
 			if atomic.CompareAndSwapInt32(&resizePending, 0, 1) {
-				go func() {
-					// Wait for next vsync-like interval
-					time.Sleep(time.Millisecond) // ~60fps timing
-					InvokeSync(func() {
-						w.chromium.Resize()
-						atomic.StoreInt32(&resizePending, 0)
-						w.parent.emit(events.Windows.WindowDidResize)
-					})
-				}()
+				doResize()
 			}
 		}
 		return 0
@@ -1144,7 +1205,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			if w.parent.options.Windows.WindowMaskDraggable {
 				return w32.HTCAPTION
 			}
+			w.parent.emit(events.Windows.WindowNonClientHit)
 			return w32.HTCLIENT
+		case w32.WM_NCLBUTTONDOWN:
+			w.parent.emit(events.Windows.WindowNonClientMouseDown)
+		case w32.WM_NCLBUTTONUP:
+			w.parent.emit(events.Windows.WindowNonClientMouseUp)
+		case w32.WM_NCMOUSEMOVE:
+			w.parent.emit(events.Windows.WindowNonClientMouseMove)
+		case w32.WM_NCMOUSELEAVE:
+			w.parent.emit(events.Windows.WindowNonClientMouseLeave)
 		}
 	}
 
@@ -1431,12 +1501,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
-	////enableFeatures := []string{"msWebView2BrowserHitTransparent"}
-	//if len(enableFeatures) > 0 {
-	//	arg := fmt.Sprintf("--enable-features=%s", strings.Join(enableFeatures, ","))
-	//	chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
-	//}
-
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
 	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
 
@@ -1533,14 +1597,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 		}
 	}
 
-	// event mapping
-	w.parent.OnWindowEvent(events.Windows.WindowDidMove, func(e *WindowEvent) {
-		w.parent.emit(events.Common.WindowDidMove)
-	})
-	w.parent.OnWindowEvent(events.Windows.WindowDidResize, func(e *WindowEvent) {
-		w.parent.emit(events.Common.WindowDidResize)
-	})
-
 	// We will get round to this
 	//if chromium.HasCapability(edge.AllowExternalDrop) {
 	//	err := chromium.AllowExternalDrag(w.parent.options.EnableDragAndDrop)
@@ -1594,6 +1650,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	// Set background colour
 	w.setBackgroundColour(w.parent.options.BackgroundColour)
+	chromium.SetBackgroundColour(w.parent.options.BackgroundColour.Red, w.parent.options.BackgroundColour.Green, w.parent.options.BackgroundColour.Blue, w.parent.options.BackgroundColour.Alpha)
 
 	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
@@ -1613,6 +1670,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 		if err != nil {
 			globalApplication.fatal(err.Error())
 		}
+		w.webviewNavigationCompleted = false
 		chromium.Navigate(startURL)
 	}
 
@@ -1655,12 +1713,12 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
 
-	if w.hasStarted {
+	if w.webviewNavigationCompleted {
 		// NavigationCompleted is triggered for every Load. If an application uses reloads the Hide/Show will trigger
 		// a flickering of the window with every reload. So we only do this once for the first NavigationCompleted.
 		return
 	}
-	w.hasStarted = true
+	w.webviewNavigationCompleted = true
 
 	wasFocused := w.isFocused()
 	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
@@ -1675,9 +1733,10 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	if wasFocused {
 		w.focus()
 	}
-
-	//f.mainWindow.hasBeenShown = true
-
+	if !w.parent.options.Hidden {
+		w.parent.Show()
+		w.update()
+	}
 }
 
 func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {

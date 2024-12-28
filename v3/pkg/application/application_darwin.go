@@ -95,7 +95,7 @@ static void run(void) {
     }
 }
 
-// Destroy application
+// destroyApp destroys the application
 static void destroyApp(void) {
 	[NSApp terminate:nil];
 }

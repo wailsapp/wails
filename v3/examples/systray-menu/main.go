@@ -2,12 +2,16 @@ package main
 
 import (
 	_ "embed"
+	"github.com/wailsapp/wails/v3/pkg/events"
 	"log"
 	"runtime"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/icons"
 )
+
+//go:embed logo-dark-xsmall.png
+var logo []byte
 
 func main() {
 	app := application.New(application.Options{
@@ -29,10 +33,6 @@ func main() {
 		AlwaysOnTop:   true,
 		Hidden:        true,
 		DisableResize: true,
-		ShouldClose: func(window *application.WebviewWindow) bool {
-			window.Hide()
-			return false
-		},
 		Windows: application.WindowsWindow{
 			HiddenOnTaskbar: true,
 		},
@@ -43,12 +43,17 @@ func main() {
 		},
 	})
 
+	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+		window.Hide()
+		e.Cancel()
+	})
+
 	if runtime.GOOS == "darwin" {
 		systemTray.SetTemplateIcon(icons.SystrayMacTemplate)
 	}
 
 	myMenu := app.NewMenu()
-	myMenu.Add("Wails").SetBitmap(icons.WailsLogoBlackTransparent).SetEnabled(false)
+	myMenu.Add("Wails").SetBitmap(logo).SetEnabled(false)
 
 	myMenu.Add("Hello World!").OnClick(func(ctx *application.Context) {
 		println("Hello World!")

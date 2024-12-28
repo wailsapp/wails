@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"github.com/wailsapp/wails/v3/pkg/events"
 	"log"
 	"runtime"
 
@@ -29,10 +30,6 @@ func main() {
 		AlwaysOnTop:   true,
 		Hidden:        true,
 		DisableResize: true,
-		ShouldClose: func(window *application.WebviewWindow) bool {
-			window.Hide()
-			return false
-		},
 		Windows: application.WindowsWindow{
 			HiddenOnTaskbar: true,
 		},
@@ -41,6 +38,14 @@ func main() {
 				systemTray.OpenMenu()
 			},
 		},
+	})
+
+	// Register a hook to hide the window when the window is closing
+	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+		// Hide the window
+		window.Hide()
+		// Cancel the event so it doesn't get destroyed
+		e.Cancel()
 	})
 
 	if runtime.GOOS == "darwin" {

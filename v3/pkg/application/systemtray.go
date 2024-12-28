@@ -184,7 +184,7 @@ func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray {
 	return s
 }
 
-func (s *SystemTray) Destroy() {
+func (s *SystemTray) destroy() {
 	if s.impl == nil {
 		return
 	}

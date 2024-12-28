@@ -21,12 +21,27 @@
         }
     </style>
     <script type="module" src="/wails/runtime.js"></script>
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', (event) => {
+            let minimiseButton = document.querySelector('#min');
+            minimiseButton.addEventListener('click', function(event) {
+                window.wails.Window.Minimise();
+                setTimeout(function() {
+                    window.wails.Window.UnMinimise();
+                }, 3000);
+            });
+            let closeButton = document.querySelector('#close');
+            closeButton.addEventListener('click', function(event) {
+                window.wails.Window.Close();
+            });
+        });
+    </script>
 </head>
 <body>
 <div class="container">
     <div class="quarter" style="background-color: lightblue; --wails-draggable: drag">Draggable</div>
-    <div class="quarter" style="background-color: lightgreen;">Not Draggable</div>
-    <div class="quarter" style="background-color: lightpink;">Not Draggable</div>
+    <div class="quarter" style="background-color: lightgreen;"><div>Not Draggable</div><button id="min">Minimise for 3s</button></div>
+    <div class="quarter" style="background-color: lightpink;"><div>Not Draggable</div><button id="close">Close</button></div>
     <div class="quarter" style="background-color: lightyellow; --wails-draggable: drag">Draggable</div>
 </div>
 </body>

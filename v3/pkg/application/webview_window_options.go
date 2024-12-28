@@ -128,10 +128,6 @@ type WebviewWindowOptions struct {
 	MaximiseButtonState ButtonState
 	CloseButtonState    ButtonState
 
-	// ShouldClose is called when the window is about to close.
-	// Return true to allow the window to close, or false to prevent it from closing.
-	ShouldClose func(window *WebviewWindow) bool
-
 	// If true, the window's devtools will be available (default true in builds without the `production` build tag)
 	DevToolsEnabled bool
 
@@ -251,6 +247,16 @@ type WindowsWindow struct {
 	// WindowMaskDraggable is used to make the window draggable by clicking on the window mask.
 	// Default: false
 	WindowMaskDraggable bool
+
+	// ResizeDebounceMS is the amount of time to debounce redraws of webview2
+	// when resizing the window
+	// Default: 0
+	ResizeDebounceMS uint16
+
+	// WindowDidMoveDebounceMS is the amount of time to debounce the WindowDidMove event
+	// when moving the window
+	// Default: 0
+	WindowDidMoveDebounceMS uint16
 
 	// Disable the menu bar for this window
 	// Default: false
@@ -525,4 +531,7 @@ type LinuxWindow struct {
 	// Client code may override this behavior by passing a non-nil Options and set
 	// WebviewGpuPolicy as needed.
 	WebviewGpuPolicy WebviewGpuPolicy
+
+	// WindowDidMoveDebounceMS is the debounce time in milliseconds for the WindowDidMove event
+	WindowDidMoveDebounceMS uint16
 }

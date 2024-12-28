@@ -5,13 +5,13 @@ package w32
 type Menu HMENU
 type PopupMenu Menu
 
-func (m Menu) Destroy() bool {
+func (m Menu) destroy() bool {
 	ret, _, _ := procDestroyMenu.Call(uintptr(m))
 	return ret != 0
 }
 
-func (p PopupMenu) Destroy() bool {
-	return Menu(p).Destroy()
+func (p PopupMenu) destroy() bool {
+	return Menu(p).destroy()
 }
 
 func (p PopupMenu) Track(hwnd HWND, flags uint32, x, y int32) bool {

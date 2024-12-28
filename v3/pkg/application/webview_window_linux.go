@@ -13,10 +13,6 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
-const (
-	windowDidMoveDebounceMS = 200
-)
-
 type dragInfo struct {
 	XRoot       int
 	YRoot       int
@@ -240,10 +236,18 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	if w.moveDebouncer == nil {
-		w.moveDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
+		debounceMS := w.parent.options.Linux.WindowDidMoveDebounceMS
+		if debounceMS == 0 {
+			debounceMS = 50 // Default value
+		}
+		w.moveDebouncer = debounce.New(time.Duration(debounceMS) * time.Millisecond)
 	}
 	if w.resizeDebouncer == nil {
-		w.resizeDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
+		debounceMS := w.parent.options.Linux.WindowDidMoveDebounceMS
+		if debounceMS == 0 {
+			debounceMS = 50 // Default value
+		}
+		w.resizeDebouncer = debounce.New(time.Duration(debounceMS) * time.Millisecond)
 	}
 
 	// Register the capabilities
