@@ -33,7 +33,6 @@ type Bindings struct {
 
 // NewBindings returns a new Bindings object
 func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exemptions []interface{}, obfuscate bool, enumsToBind []interface{}) *Bindings {
-	println("*** here 1")
 	result := &Bindings{
 		db:                  newDB(),
 		logger:              logger.CustomLogger("Bindings"),
@@ -58,7 +57,6 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 
 	// Add the structs to bind
 	for _, ptr := range structPointersToBind {
-		println("*** here 2")
 		err := result.Add(ptr)
 		if err != nil {
 			logger.Fatal("Error during binding: " + err.Error())
@@ -70,7 +68,6 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 
 // Add the given struct methods to the Bindings
 func (b *Bindings) Add(structPtr interface{}) error {
-	println("*** here 3")
 	methods, err := b.getMethods(structPtr)
 	if err != nil {
 		return fmt.Errorf("cannot bind value to app: %s", err.Error())
@@ -97,7 +94,6 @@ func (b *Bindings) ToJSON() (string, error) {
 }
 
 func (b *Bindings) GenerateModels() ([]byte, error) {
-	println("*** here 4")
 	models := map[string]string{}
 	var seen slicer.StringSlicer
 	var seenEnumsPackages slicer.StringSlicer
@@ -143,7 +139,6 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 			}
 			seenEnumsPackages.Add(packageName)
 		}
-		println("*** here 5")
 		str, err := w.Convert(nil)
 		if err != nil {
 			return nil, err
@@ -280,7 +275,6 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 		}
 		kind := field.Type.Kind()
 		if kind == reflect.Struct {
-			println("here 3")
 			if !field.IsExported() {
 				continue
 			}
@@ -292,7 +286,6 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 			sName := sNameSplit[1]
 			pName := getPackageName(fqname)
 			a := reflect.New(field.Type)
-			println("here 2")
 			if b.hasExportedJSONFields(field.Type) {
 				s := reflect.Indirect(a).Interface()
 				b.AddStructToGenerateTS(pName, sName, s)
@@ -310,7 +303,6 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 			pName := getPackageName(fqname)
 			typ := field.Type.Elem()
 			a := reflect.New(typ)
-			println("here 1")
 			if b.hasExportedJSONFields(typ) {
 				s := reflect.Indirect(a).Interface()
 				b.AddStructToGenerateTS(pName, sName, s)
