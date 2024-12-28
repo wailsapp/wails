@@ -256,6 +256,11 @@
             "type": "object",
             "description": "Bindings configurations",
             "properties": {
+                "generate_all_exported_fields": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "When set to true, all exported fields will be generated, even if they have no JSON tag."
+                },
                 "ts_generation": {
                     "type": "object",
                     "description": "model.ts file generation config",

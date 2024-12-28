@@ -22,12 +22,13 @@ type Bindings struct {
 	logger     logger.CustomLogger
 	exemptions slicer.StringSlicer
 
-	structsToGenerateTS map[string]map[string]interface{}
-	enumsToGenerateTS   map[string]map[string]interface{}
-	tsPrefix            string
-	tsSuffix            string
-	tsInterface         bool
-	obfuscate           bool
+	structsToGenerateTS       map[string]map[string]interface{}
+	enumsToGenerateTS         map[string]map[string]interface{}
+	tsPrefix                  string
+	tsSuffix                  string
+	tsInterface               bool
+	obfuscate                 bool
+	generateAllExportedFields bool
 }
 
 // NewBindings returns a new Bindings object
@@ -106,6 +107,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		w.WithPrefix(b.tsPrefix)
 		w.WithSuffix(b.tsSuffix)
 		w.WithInterface(b.tsInterface)
+		w.GenerateAllExportedFields = b.generateAllExportedFields
 		w.Namespace = packageName
 		w.WithBackupDir("")
 		w.KnownStructs = allStructNames
@@ -137,7 +139,6 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 			}
 			seenEnumsPackages.Add(packageName)
 		}
-
 		str, err := w.Convert(nil)
 		if err != nil {
 			return nil, err
@@ -158,6 +159,7 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		w.WithPrefix(b.tsPrefix)
 		w.WithSuffix(b.tsSuffix)
 		w.WithInterface(b.tsInterface)
+		w.GenerateAllExportedFields = b.generateAllExportedFields
 		w.Namespace = packageName
 		w.WithBackupDir("")
 
@@ -326,6 +328,11 @@ func (b *Bindings) SetOutputType(outputType string) *Bindings {
 	return b
 }
 
+func (b *Bindings) SetGenerateAllExportedFields(generateAllExportedFields bool) *Bindings {
+	b.generateAllExportedFields = generateAllExportedFields
+	return b
+}
+
 func (b *Bindings) getAllStructNames() *slicer.StringSlicer {
 	var result slicer.StringSlicer
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
@@ -351,8 +358,13 @@ func (b *Bindings) hasExportedJSONFields(typeOf reflect.Type) bool {
 		jsonFieldName := ""
 		f := typeOf.Field(i)
 		jsonTag, hasTag := f.Tag.Lookup("json")
-		if !hasTag && f.IsExported() {
-			return true
+		if !hasTag {
+			// If we're generating all exported fields and the field is exported,
+			// consider it as a valid JSON field
+			if b.generateAllExportedFields && f.IsExported() {
+				return true
+			}
+			continue
 		}
 		if len(jsonTag) == 0 {
 			continue
