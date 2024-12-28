@@ -413,7 +413,7 @@ func (w *WebviewWindow) Show() Window {
 	if globalApplication.impl == nil {
 		return w
 	}
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		InvokeSync(w.Run)
 		return w
 	}
@@ -550,7 +550,7 @@ func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) Window {
 
 // ExecJS executes the given javascript in the context of the window.
 func (w *WebviewWindow) ExecJS(js string) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	if w.runtimeLoaded {
@@ -564,7 +564,7 @@ func (w *WebviewWindow) ExecJS(js string) {
 
 // Fullscreen sets the window to fullscreen mode. Min/Max size constraints are disabled.
 func (w *WebviewWindow) Fullscreen() Window {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		w.options.StartState = WindowStateFullscreen
 		return w
 	}
@@ -608,7 +608,7 @@ func (w *WebviewWindow) SetCloseButtonState(state ButtonState) Window {
 // Flash flashes the window's taskbar button/icon.
 // Useful to indicate that attention is required. Windows only.
 func (w *WebviewWindow) Flash(enabled bool) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -618,7 +618,7 @@ func (w *WebviewWindow) Flash(enabled bool) {
 
 // IsMinimised returns true if the window is minimised
 func (w *WebviewWindow) IsMinimised() bool {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return false
 	}
 	return InvokeSyncWithResult(w.impl.isMinimised)
@@ -626,7 +626,7 @@ func (w *WebviewWindow) IsMinimised() bool {
 
 // IsVisible returns true if the window is visible
 func (w *WebviewWindow) IsVisible() bool {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return false
 	}
 	return InvokeSyncWithResult(w.impl.isVisible)
@@ -634,7 +634,7 @@ func (w *WebviewWindow) IsVisible() bool {
 
 // IsMaximised returns true if the window is maximised
 func (w *WebviewWindow) IsMaximised() bool {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return false
 	}
 	return InvokeSyncWithResult(w.impl.isMaximised)
@@ -642,7 +642,7 @@ func (w *WebviewWindow) IsMaximised() bool {
 
 // Size returns the size of the window
 func (w *WebviewWindow) Size() (int, int) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return 0, 0
 	}
 	var width, height int
@@ -654,7 +654,7 @@ func (w *WebviewWindow) Size() (int, int) {
 
 // IsFocused returns true if the window is currently focused
 func (w *WebviewWindow) IsFocused() bool {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return false
 	}
 	return InvokeSyncWithResult(w.impl.isFocused)
@@ -662,7 +662,7 @@ func (w *WebviewWindow) IsFocused() bool {
 
 // IsFullscreen returns true if the window is fullscreen
 func (w *WebviewWindow) IsFullscreen() bool {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return false
 	}
 	return InvokeSyncWithResult(w.impl.isFullscreen)
@@ -716,7 +716,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 }
 
 func (w *WebviewWindow) startResize(border string) error {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return nil
 	}
 	return InvokeSyncWithResult(func() error {
@@ -726,7 +726,7 @@ func (w *WebviewWindow) startResize(border string) error {
 
 // Center centers the window on the screen
 func (w *WebviewWindow) Center() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		w.options.InitialPosition = WindowCentered
 		return
 	}
@@ -797,7 +797,7 @@ func (w *WebviewWindow) HandleWindowEvent(id uint) {
 
 // Width returns the width of the window
 func (w *WebviewWindow) Width() int {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return 0
 	}
 	return InvokeSyncWithResult(w.impl.width)
@@ -805,7 +805,7 @@ func (w *WebviewWindow) Width() int {
 
 // Height returns the height of the window
 func (w *WebviewWindow) Height() int {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return 0
 	}
 	return InvokeSyncWithResult(w.impl.height)
@@ -813,7 +813,7 @@ func (w *WebviewWindow) Height() int {
 
 // PhysicalBounds returns the physical bounds of the window
 func (w *WebviewWindow) PhysicalBounds() Rect {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return Rect{}
 	}
 	var rect Rect
@@ -825,7 +825,7 @@ func (w *WebviewWindow) PhysicalBounds() Rect {
 
 // SetPhysicalBounds sets the physical bounds of the window
 func (w *WebviewWindow) SetPhysicalBounds(physicalBounds Rect) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -835,7 +835,7 @@ func (w *WebviewWindow) SetPhysicalBounds(physicalBounds Rect) {
 
 // Bounds returns the DIP bounds of the window
 func (w *WebviewWindow) Bounds() Rect {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return Rect{}
 	}
 	var rect Rect
@@ -847,7 +847,7 @@ func (w *WebviewWindow) Bounds() Rect {
 
 // SetBounds sets the DIP bounds of the window
 func (w *WebviewWindow) SetBounds(bounds Rect) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -857,7 +857,7 @@ func (w *WebviewWindow) SetBounds(bounds Rect) {
 
 // Position returns the absolute position of the window
 func (w *WebviewWindow) Position() (int, int) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return 0, 0
 	}
 	var x, y int
@@ -869,7 +869,7 @@ func (w *WebviewWindow) Position() (int, int) {
 
 // SetPosition sets the absolute position of the window.
 func (w *WebviewWindow) SetPosition(x int, y int) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -879,7 +879,7 @@ func (w *WebviewWindow) SetPosition(x int, y int) {
 
 // RelativePosition returns the position of the window relative to the screen WorkArea on which it is
 func (w *WebviewWindow) RelativePosition() (int, int) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return 0, 0
 	}
 	var x, y int
@@ -902,7 +902,7 @@ func (w *WebviewWindow) SetRelativePosition(x, y int) Window {
 }
 
 func (w *WebviewWindow) destroy() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 
@@ -916,7 +916,7 @@ func (w *WebviewWindow) destroy() {
 
 // Reload reloads the page assets
 func (w *WebviewWindow) Reload() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(w.impl.reload)
@@ -924,7 +924,7 @@ func (w *WebviewWindow) Reload() {
 
 // ForceReload forces the window to reload the page assets
 func (w *WebviewWindow) ForceReload() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(w.impl.forceReload)
@@ -932,7 +932,7 @@ func (w *WebviewWindow) ForceReload() {
 
 // ToggleFullscreen toggles the window between fullscreen and normal
 func (w *WebviewWindow) ToggleFullscreen() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -946,7 +946,7 @@ func (w *WebviewWindow) ToggleFullscreen() {
 
 // ToggleMaximise toggles the window between maximised and normal
 func (w *WebviewWindow) ToggleMaximise() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -959,7 +959,7 @@ func (w *WebviewWindow) ToggleMaximise() {
 }
 
 func (w *WebviewWindow) OpenDevTools() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(w.impl.openDevTools)
@@ -975,7 +975,7 @@ func (w *WebviewWindow) ZoomReset() Window {
 
 // ZoomIn increases the zoom level of the webview content
 func (w *WebviewWindow) ZoomIn() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(w.impl.zoomIn)
@@ -983,7 +983,7 @@ func (w *WebviewWindow) ZoomIn() {
 
 // ZoomOut decreases the zoom level of the webview content
 func (w *WebviewWindow) ZoomOut() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(w.impl.zoomOut)
@@ -991,7 +991,7 @@ func (w *WebviewWindow) ZoomOut() {
 
 // Close closes the window
 func (w *WebviewWindow) Close() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -1000,7 +1000,7 @@ func (w *WebviewWindow) Close() {
 }
 
 func (w *WebviewWindow) Zoom() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(w.impl.zoom)
@@ -1019,7 +1019,7 @@ func (w *WebviewWindow) SetHTML(html string) Window {
 
 // Minimise minimises the window.
 func (w *WebviewWindow) Minimise() Window {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		w.options.StartState = WindowStateMinimised
 		return w
 	}
@@ -1031,7 +1031,7 @@ func (w *WebviewWindow) Minimise() Window {
 
 // Maximise maximises the window. Min/Max size constraints are disabled.
 func (w *WebviewWindow) Maximise() Window {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		w.options.StartState = WindowStateMaximised
 		return w
 	}
@@ -1044,7 +1044,7 @@ func (w *WebviewWindow) Maximise() Window {
 
 // UnMinimise un-minimises the window. Min/Max size constraints are re-enabled.
 func (w *WebviewWindow) UnMinimise() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	if w.IsMinimised() {
@@ -1070,7 +1070,7 @@ func (w *WebviewWindow) UnFullscreen() {
 
 // Restore restores the window to its previous state if it was previously minimised, maximised or fullscreen.
 func (w *WebviewWindow) Restore() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -1085,7 +1085,7 @@ func (w *WebviewWindow) Restore() {
 }
 
 func (w *WebviewWindow) DisableSizeConstraints() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -1099,7 +1099,7 @@ func (w *WebviewWindow) DisableSizeConstraints() {
 }
 
 func (w *WebviewWindow) EnableSizeConstraints() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -1114,7 +1114,7 @@ func (w *WebviewWindow) EnableSizeConstraints() {
 
 // GetScreen returns the screen that the window is on
 func (w *WebviewWindow) GetScreen() (*Screen, error) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return nil, nil
 	}
 	return InvokeSyncWithResultAndError(w.impl.getScreen)
@@ -1180,7 +1180,7 @@ func (w *WebviewWindow) OpenContextMenu(data *ContextMenuData) {
 		}
 	}
 	menu.setContextData(data)
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -1197,7 +1197,7 @@ func (w *WebviewWindow) RegisterContextMenu(name string, menu *Menu) {
 
 // NativeWindowHandle returns the platform native window handle for the window.
 func (w *WebviewWindow) NativeWindowHandle() (uintptr, error) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return 0, errors.New("native handle unavailable as window is not running")
 	}
 	return w.impl.nativeWindowHandle(), nil
@@ -1215,21 +1215,21 @@ func (w *WebviewWindow) emit(eventType events.WindowEventType) {
 }
 
 func (w *WebviewWindow) startDrag() error {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return nil
 	}
 	return InvokeSyncWithError(w.impl.startDrag)
 }
 
 func (w *WebviewWindow) Print() error {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return nil
 	}
 	return InvokeSyncWithError(w.impl.print)
 }
 
 func (w *WebviewWindow) SetEnabled(enabled bool) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -1263,7 +1263,7 @@ func (w *WebviewWindow) processKeyBinding(acceleratorString string) bool {
 }
 
 func (w *WebviewWindow) HandleKeyEvent(acceleratorString string) {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
@@ -1290,7 +1290,7 @@ func (w *WebviewWindow) addMenuBinding(a *accelerator, menuItem *MenuItem) {
 }
 
 func (w *WebviewWindow) IsIgnoreMouseEvents() bool {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return false
 	}
 	return InvokeSyncWithResult(w.impl.isIgnoreMouseEvents)
@@ -1298,7 +1298,7 @@ func (w *WebviewWindow) IsIgnoreMouseEvents() bool {
 
 func (w *WebviewWindow) SetIgnoreMouseEvents(ignore bool) Window {
 	w.options.IgnoreMouseEvents = ignore
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		return w
 	}
 	InvokeSync(func() {
@@ -1308,43 +1308,43 @@ func (w *WebviewWindow) SetIgnoreMouseEvents(ignore bool) Window {
 }
 
 func (w *WebviewWindow) cut() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		w.impl.cut()
 	}
 }
 
 func (w *WebviewWindow) copy() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		w.impl.copy()
 	}
 }
 
 func (w *WebviewWindow) paste() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		w.impl.paste()
 	}
 }
 
 func (w *WebviewWindow) selectAll() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		w.impl.selectAll()
 	}
 }
 
 func (w *WebviewWindow) undo() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		w.impl.undo()
 	}
 }
 
 func (w *WebviewWindow) delete() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		w.impl.delete()
 	}
 }
 
 func (w *WebviewWindow) redo() {
-	if w.impl == nil && !w.isDestroyed() {
+	if w.impl == nil || w.isDestroyed() {
 		w.impl.redo()
 	}
 }

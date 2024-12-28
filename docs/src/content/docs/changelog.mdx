@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New `-git` flag for `wails3 init` command by [@leaanthony](https://github.com/leaanthony)
 - New `wails3 generate webview2bootstrapper` command by [@leaanthony](https://github.com/leaanthony)
 - Added `init()` method in runtime to allow manual initialisation of the runtime by [@leaanthony](https://github.com/leaanthony)
+- Added `WindowDidMoveDebounceMS` option to Window's WindowOptions by [@leaanthony](https://github.com/leaanthony)
 
 ### Fixed
 
@@ -44,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -  Improved window destroying logic by [@leaanthony](https://github.com/leaanthony)
 -  Fix window position logic when attached to system trays by [@leaanthony](https://github.com/leaanthony)
 -  Support fullscreen for frameless windows by [@leaanthony](https://github.com/leaanthony)
+- Fix event handling by [@leaanthony](https://github.com/leaanthony)
+- Fixed window shutdown logic by [@leaanthony](https://github.com/leaanthony)
 
 ### Changed
 
@@ -51,6 +54,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved and renamed Taskfiles to platform specific directories by [@leaanthony](https://github.com/leaanthony)
 - Created a much better experience when `index.html` is missing by [@leaanthony](https://github.com/leaanthony)
 - [Windows] Improved performance of minimise and restore by [@leaanthony](https://github.com/leaanthony). Based on original [PR](https://github.com/wailsapp/wails/pull/3955) by [562589540](https://github.com/562589540)
+- Removed `ShouldClose` option (Register a hook for events.Common.WindowClosing instead) by [@leaanthony](https://github.com/leaanthony)
+- [Windows] Reduced flicker when opening a window by [@leaanthony](https://github.com/leaanthony)
+- Removed `Window.Destroy` as this was intended to be an internal function by [@leaanthony](https://github.com/leaanthony)
+- Renamed `WindowClose` events to `WindowClosing` by [@leaanthony](https://github.com/leaanthony)
+
 
 ## v3.0.0-alpha.8.3 - 2024-12-07
 
