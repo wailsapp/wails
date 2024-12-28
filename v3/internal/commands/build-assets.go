@@ -32,6 +32,7 @@ type BuildAssetsOptions struct {
 	ProductComments    string `description:"Comments to add to the generated files" default:"This is a comment"`
 	ProductIdentifier  string `description:"The product identifier, e.g com.mycompany.myproduct"`
 	Silent             bool   `description:"Suppress output to console"`
+	Typescript         bool   `description:"Use typescript" default:"false"`
 }
 
 type BuildConfig struct {

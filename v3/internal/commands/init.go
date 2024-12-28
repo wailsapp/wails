@@ -110,6 +110,12 @@ func Init(options *flags.Init) error {
 		pterm.DisableOutput()
 	}
 
+	// Check if the template is a typescript template
+	isTypescript := false
+	if strings.HasSuffix(options.TemplateName, "-ts") {
+		isTypescript = true
+	}
+
 	if options.ProjectName == "" {
 		return fmt.Errorf("please use the -n flag to specify a project name")
 	}
@@ -143,6 +149,7 @@ func Init(options *flags.Init) error {
 		ProductIdentifier:  options.ProductIdentifier,
 		ProductCopyright:   options.ProductCopyright,
 		ProductComments:    options.ProductComments,
+		Typescript:         isTypescript,
 	}
 	err = GenerateBuildAssets(buildAssetsOptions)
 	if err != nil {

@@ -47,8 +47,7 @@ tasks:
     generates:
       - "frontend/bindings/**/*"
     cmds:
-      - wails3 generate bindings -f '{{.BUILD_FLAGS}}'{{if .UseTypescript}} -ts{{end}}
-
+      - wails3 generate bindings -f {{ "'{{.BUILD_FLAGS}}'" }} {{if .Typescript}} -ts{{end}}
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
     dir: build
@@ -66,10 +65,10 @@ tasks:
     deps:
       - task: install:frontend:deps
     cmds:
-      - npm run dev -- --port {{.VITE_PORT}} --strictPort
+      - npm run dev -- --port {{ "{{.VITE_PORT}}" }} --strictPort
 
   update:build-assets:
     summary: Updates the build assets
     dir: build
     cmds:
-      - wails3 update build-assets -name "{{.APP_NAME}}" -binaryname "{{.APP_NAME}}" -config config.yml -dir .
+      - wails3 update build-assets -name {{ "\"{{.APP_NAME}}\"" }} -binaryname {{ "\"{{.APP_NAME}}\"" }} -config config.yml -dir .
