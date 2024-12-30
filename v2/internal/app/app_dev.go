@@ -75,7 +75,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	loglevel := os.Getenv("loglevel")
 	if loglevel == "" {
-		loglevelFlag = devFlags.String("loglevel", "debug", "Loglevel to use - Trace, Debug, Info, Warning, Error")
+		loglevelFlag = devFlags.String("loglevel", appoptions.LogLevel.String(), "Loglevel to use - Trace, Debug, Info, Warning, Error")
 	}
 
 	// If we weren't given the assetdir in the environment variables
@@ -91,8 +91,15 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		if frontendDevServerURLFlag != nil {
 			frontendDevServerURL = *frontendDevServerURLFlag
 		}
-		if loglevelFlag != nil {
-			loglevel = *loglevelFlag
+		// Only override LogLevel if the flag was explicitly set
+		if loglevelFlag != nil && devFlags.Lookup("loglevel").Value.String() != appoptions.LogLevel.String() {
+			loggerLevel, err := pkglogger.StringToLogLevel(*loglevelFlag)
+			if err != nil {
+				return nil, err
+			}
+			if loggerLevel != appoptions.LogLevel {
+				myLogger.SetLogLevel(loggerLevel)
+			}
 		}
 	}
 
@@ -167,14 +174,6 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	if devServer != "" {
 		ctx = context.WithValue(ctx, "devserver", devServer)
-	}
-
-	if loglevel != "" {
-		level, err := pkglogger.StringToLogLevel(loglevel)
-		if err != nil {
-			return nil, err
-		}
-		myLogger.SetLogLevel(level)
 	}
 
 	// Attach logger to context
