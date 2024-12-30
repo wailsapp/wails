@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -172,6 +173,23 @@ func New(appOptions Options) *App {
 
 	if appOptions.OnShutdown != nil {
 		result.OnShutdown(appOptions.OnShutdown)
+	}
+
+	// Initialize single instance manager if enabled
+	if appOptions.SingleInstance != nil {
+		manager, err := newSingleInstanceManager(result, appOptions.SingleInstance)
+		if err != nil {
+			if errors.Is(err, alreadyRunningError) && manager != nil {
+				err = manager.notifyFirstInstance()
+				if err != nil {
+					globalApplication.error("Failed to notify first instance: " + err.Error())
+				}
+				os.Exit(appOptions.SingleInstance.ExitCode)
+			}
+			result.handleFatalError(fmt.Errorf("failed to initialize single instance manager: %w", err))
+		} else {
+			result.singleInstanceManager = manager
+		}
 	}
 
 	return result
@@ -357,6 +375,9 @@ type App struct {
 	// Wails ApplicationEvent Listener related
 	wailsEventListenerLock sync.Mutex
 	wailsEventListeners    []WailsEventListener
+
+	// singleInstanceManager handles single instance functionality
+	singleInstanceManager *singleInstanceManager
 }
 
 func (a *App) handleWarning(msg string) {
@@ -792,6 +813,10 @@ func (a *App) cleanup() {
 		a.systemTrays = nil
 		a.systemTraysLock.Unlock()
 	})
+	// Cleanup single instance manager
+	if a.singleInstanceManager != nil {
+		a.singleInstanceManager.cleanup()
+	}
 }
 
 func (a *App) Quit() {
