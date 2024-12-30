@@ -1,6 +1,10 @@
 package application
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"os"
@@ -9,7 +13,7 @@ import (
 )
 
 var alreadyRunningError = errors.New("application is already running")
-var secondInstanceBuffer = make(chan SecondInstanceData, 1)
+var secondInstanceBuffer = make(chan string, 1)
 var once sync.Once
 
 // SecondInstanceData contains information about the second instance launch
@@ -34,6 +38,10 @@ type SingleInstanceOptions struct {
 
 	// ExitCode is the exit code to use when the second instance exits
 	ExitCode int
+
+	// EncryptionKey is a 32-byte key used for encrypting instance communication
+	// If not provided (zero array), data will be sent unencrypted
+	EncryptionKey [32]byte
 }
 
 // platformLock is the interface that platform-specific lock implementations must implement
@@ -66,8 +74,24 @@ func newSingleInstanceManager(app *App, options *SingleInstanceOptions) (*single
 	// Launch second instance data listener
 	once.Do(func() {
 		go func() {
-			for secondInstanceData := range secondInstanceBuffer {
-				if manager.options.OnSecondInstanceLaunch != nil {
+			for encryptedData := range secondInstanceBuffer {
+				var secondInstanceData SecondInstanceData
+				var jsonData []byte
+				var err error
+
+				// Check if encryption key is non-zero
+				var zeroKey [32]byte
+				if options.EncryptionKey != zeroKey {
+					// Try to decrypt the data
+					jsonData, err = decrypt(options.EncryptionKey, encryptedData)
+					if err != nil {
+						continue // Skip invalid data
+					}
+				} else {
+					jsonData = []byte(encryptedData)
+				}
+
+				if err := json.Unmarshal(jsonData, &secondInstanceData); err == nil && manager.options.OnSecondInstanceLaunch != nil {
 					manager.options.OnSecondInstanceLaunch(secondInstanceData)
 				}
 			}
@@ -98,6 +122,55 @@ func (m *singleInstanceManager) cleanup() {
 	m.lock.release()
 }
 
+// encrypt encrypts data using AES-256-GCM
+func encrypt(key [32]byte, plaintext []byte) (string, error) {
+	block, err := aes.NewCipher(key[:])
+	if err != nil {
+		return "", err
+	}
+
+	nonce := make([]byte, 12)
+	if _, err := rand.Read(nonce); err != nil {
+		return "", err
+	}
+
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+
+	ciphertext := aesgcm.Seal(nil, nonce, plaintext, nil)
+	encrypted := append(nonce, ciphertext...)
+	return base64.StdEncoding.EncodeToString(encrypted), nil
+}
+
+// decrypt decrypts data using AES-256-GCM
+func decrypt(key [32]byte, encrypted string) ([]byte, error) {
+	data, err := base64.StdEncoding.DecodeString(encrypted)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(data) < 12 {
+		return nil, errors.New("invalid encrypted data")
+	}
+
+	block, err := aes.NewCipher(key[:])
+	if err != nil {
+		return nil, err
+	}
+
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	nonce := data[:12]
+	ciphertext := data[12:]
+
+	return aesgcm.Open(nil, nonce, ciphertext, nil)
+}
+
 // notifyFirstInstance sends data to the first instance of the application
 func (m *singleInstanceManager) notifyFirstInstance() error {
 	data := SecondInstanceData{
@@ -109,6 +182,16 @@ func (m *singleInstanceManager) notifyFirstInstance() error {
 	serialized, err := json.Marshal(data)
 	if err != nil {
 		return err
+	}
+
+	// Check if encryption key is non-zero
+	var zeroKey [32]byte
+	if m.options.EncryptionKey != zeroKey {
+		encrypted, err := encrypt(m.options.EncryptionKey, serialized)
+		if err != nil {
+			return err
+		}
+		return m.lock.notify(encrypted)
 	}
 
 	return m.lock.notify(string(serialized))

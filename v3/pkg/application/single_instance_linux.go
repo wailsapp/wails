@@ -3,7 +3,6 @@
 package application
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/godbus/dbus/v5"
 	"os"
@@ -54,12 +53,7 @@ func (l *linuxLock) acquire(uniqueID string) error {
 
 	setup.Do(func() {
 		f := dbusHandler(func(message string) {
-			var secondInstanceData SecondInstanceData
-
-			err := json.Unmarshal([]byte(message), &secondInstanceData)
-			if err == nil {
-				secondInstanceBuffer <- secondInstanceData
-			}
+			secondInstanceBuffer <- message
 		})
 
 		err := conn.Export(f, dbus.ObjectPath(l.dbusPath), l.dbusName)

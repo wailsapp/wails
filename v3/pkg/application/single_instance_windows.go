@@ -3,7 +3,6 @@
 package application
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/w32"
@@ -121,14 +120,7 @@ func wndProc(hwnd w32.HWND, msg uint32, wparam w32.WPARAM, lparam w32.LPARAM) w3
 
 		if ldata.DwData == w32.WMCOPYDATA_SINGLE_INSTANCE_DATA {
 			serialized := windows.UTF16PtrToString((*uint16)(unsafe.Pointer(ldata.LpData)))
-
-			var secondInstanceData SecondInstanceData
-
-			err := json.Unmarshal([]byte(serialized), &secondInstanceData)
-
-			if err == nil {
-				secondInstanceBuffer <- secondInstanceData
-			}
+			secondInstanceBuffer <- serialized
 		}
 		return w32.LRESULT(0)
 	}

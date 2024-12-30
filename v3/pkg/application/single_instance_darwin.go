@@ -22,7 +22,6 @@ static void SendDataToFirstInstance(char *singleInstanceUniqueId, char* message)
 */
 import "C"
 import (
-	"encoding/json"
 	"os"
 	"syscall"
 	"unsafe"
@@ -94,11 +93,5 @@ func createLockFile(filename string) (*os.File, error) {
 //export handleSecondInstanceData
 func handleSecondInstanceData(secondInstanceMessage *C.char) {
 	message := C.GoString(secondInstanceMessage)
-
-	var secondInstanceData SecondInstanceData
-
-	err := json.Unmarshal([]byte(message), &secondInstanceData)
-	if err == nil {
-		secondInstanceBuffer <- secondInstanceData
-	}
+	secondInstanceBuffer <- message
 }
