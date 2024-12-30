@@ -1,0 +1,97 @@
+---
+title: Single Instance
+description: Limiting your app to a single running instance
+sidebar:
+   order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+
+# Single Instance
+
+Single instance locking is a mechanism that allows you to prevent multiple instances of your app from running at the same time.
+It is useful for apps that are designed to open files from the command line or from the OS file explorer.
+
+    :::danger[Warning]
+    The Single Instance feature does not implement a secure communications protocol between instances. When using the single instance feature,
+    your app should treat any data passed to it from second instance callback as untrusted.
+    You should verify that args that you receive are valid and don't contain any malicious data.
+    :::
+
+## How it works
+
+<Tabs syncKey="platform">
+    <TabItem label="Mac" icon="apple">
+
+        Single instance lock using a named mutex. The mutex name is generated from the unique id that you provide. Data is passed to the first instance via [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter)
+
+    </TabItem>
+    <TabItem label="Windows" icon="seti:windows">
+
+        Single instance lock using a named mutex. The mutex name is generated from the unique id that you provide. Data is passed to the first instance via a shared window using [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)
+
+    </TabItem>
+    <TabItem label="Linux" icon="linux">
+
+        Single instance lock using [dbus](https://www.freedesktop.org/wiki/Software/dbus/). The dbus name is generated from the unique id that you provide. Data is passed to the first instance via [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
+
+    </TabItem>
+</Tabs>
+
+## Usage
+
+To enable single instance functionality in your app, provide a `SingleInstanceOptions` struct when creating your application:
+
+```go
+app := application.New(application.Options{
+    // ... other options ...
+    SingleInstance: &application.SingleInstanceOptions{
+        UniqueID: "com.myapp.unique-id",
+        OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+            // Handle second instance launch
+            log.Printf("Second instance launched with args: %v", data.Args)
+            log.Printf("Working directory: %s", data.WorkingDir)
+            
+            // Focus the window if needed
+            if window != nil {
+				window.Restore()
+                window.Focus()
+            }
+        },
+        // Optional: Pass additional data to second instance
+        AdditionalData: map[string]string{
+            "launchtime": time.Now().String(),
+        },
+    },
+})
+```
+
+The `SingleInstanceOptions` struct has the following fields:
+
+- `UniqueID`: A unique identifier for your application. This should be a unique string, typically in reverse domain notation (e.g., "com.company.appname").
+- `OnSecondInstanceLaunch`: A callback function that is called when a second instance of your app is launched. The callback receives a `SecondInstanceData` struct containing:
+    - `Args`: The command line arguments passed to the second instance
+    - `WorkingDir`: The working directory of the second instance
+    - `AdditionalData`: Any additional data passed from the second instance (if provided)
+- `AdditionalData`: Optional map of string key-value pairs that will be passed to the first instance when subsequent instances are launched
+
+### Window Management
+
+When handling second instance launches, you'll often want to bring your application window to the front. You can do this using the window's `Focus()` method. If your window is minimized, you may need to restore it first:
+
+```go
+if window != nil {
+    window.Restore()  // If the window is minimized
+    window.Focus()    // Bring the window to front
+}
+```
+
+You can also emit events to your frontend to handle the second instance launch:
+
+```go
+if window != nil {
+    window.EmitEvent("secondInstanceLaunched", data)
+    window.Focus()
+}
+```

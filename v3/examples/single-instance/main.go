@@ -37,6 +37,7 @@ func main() {
 			OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
 				if window != nil {
 					window.EmitEvent("secondInstanceLaunched", data)
+					window.Restore()
 					window.Focus()
 				}
 				log.Printf("Second instance launched with args: %v\n", data.Args)
@@ -57,7 +58,7 @@ func main() {
 	window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title:  "Single Instance Demo",
 		Width:  800,
-		Height: 600,
+		Height: 700,
 		URL:    "/",
 	})
 
