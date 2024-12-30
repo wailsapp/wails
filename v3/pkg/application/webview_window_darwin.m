@@ -195,38 +195,43 @@ extern bool hasListeners(unsigned int);
 }
 - (void)windowDidZoom:(NSNotification *)notification {
     NSWindow *window = notification.object;
+    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[window delegate];
     if ([window isZoomed]) {
         if (hasListeners(EventWindowMaximise)) {
-            processWindowEvent(self.windowId, EventWindowMaximise);
+            processWindowEvent(delegate.windowId, EventWindowMaximise);
         }
     } else {
         if (hasListeners(EventWindowUnMaximise)) {
-            processWindowEvent(self.windowId, EventWindowUnMaximise);
+            processWindowEvent(delegate.windowId, EventWindowUnMaximise);
         }
     }
 }
 - (void)performZoomIn:(id)sender {
     [super zoom:sender];
     if (hasListeners(EventWindowZoomIn)) {
-        processWindowEvent(self.windowId, EventWindowZoomIn);
+        WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+        processWindowEvent(delegate.windowId, EventWindowZoomIn);
     }
 }
 - (void)performZoomOut:(id)sender {
     [super zoom:sender];
     if (hasListeners(EventWindowZoomOut)) {
-        processWindowEvent(self.windowId, EventWindowZoomOut);
+        WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+        processWindowEvent(delegate.windowId, EventWindowZoomOut);
     }
 }
 - (void)performZoomReset:(id)sender {
     [self setFrame:[self frameRectForContentRect:[[self screen] visibleFrame]] display:YES];
     if (hasListeners(EventWindowZoomReset)) {
-        processWindowEvent(self.windowId, EventWindowZoomReset);
+        WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+        processWindowEvent(delegate.windowId, EventWindowZoomReset);
     }
 }
 @end
 @implementation WebviewWindowDelegate
 - (BOOL)windowShouldClose:(NSWindow *)sender {
-    processWindowEvent(self.windowId, EventWindowShouldClose);
+    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+    processWindowEvent(delegate.windowId, EventWindowShouldClose);
     return false;
 }
 - (void) dealloc {
@@ -727,6 +732,18 @@ extern bool hasListeners(unsigned int);
 - (void)windowFileDraggingExited:(NSNotification *)notification {
     if( hasListeners(EventWindowFileDraggingExited) ) {
         processWindowEvent(self.windowId, EventWindowFileDraggingExited);
+    }
+}
+
+- (void)windowShow:(NSNotification *)notification {
+    if( hasListeners(EventWindowShow) ) {
+        processWindowEvent(self.windowId, EventWindowShow);
+    }
+}
+
+- (void)windowHide:(NSNotification *)notification {
+    if( hasListeners(EventWindowHide) ) {
+        processWindowEvent(self.windowId, EventWindowHide);
     }
 }
 

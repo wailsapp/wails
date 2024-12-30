@@ -23,6 +23,8 @@ func (a *App) GetCurrentInstanceInfo() map[string]interface{} {
 }
 
 func main() {
+
+	var window *application.WebviewWindow
 	app := application.New(application.Options{
 		Name:        "Single Instance Example",
 		LogLevel:    slog.LevelDebug,
@@ -33,10 +35,9 @@ func main() {
 		SingleInstance: &application.SingleInstanceOptions{
 			UniqueID: "com.wails.example.single-instance",
 			OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
-				currentWindow := application.Get().CurrentWindow()
-				if currentWindow != nil {
-					currentWindow.EmitEvent("secondInstanceLaunched", data)
-					currentWindow.Focus()
+				if window != nil {
+					window.EmitEvent("secondInstanceLaunched", data)
+					window.Focus()
 				}
 				log.Printf("Second instance launched with args: %v\n", data.Args)
 				log.Printf("Working directory: %s\n", data.WorkingDir)
@@ -53,7 +54,7 @@ func main() {
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	window = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title:  "Single Instance Demo",
 		Width:  800,
 		Height: 600,

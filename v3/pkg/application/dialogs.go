@@ -294,9 +294,7 @@ func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error) {
 	selections, err := InvokeSyncWithResultAndError(d.impl.show)
 
 	var result []string
-	fmt.Println("Waiting for results:")
 	for filename := range selections {
-		fmt.Println(filename)
 		result = append(result, filename)
 	}
 

@@ -50,8 +50,8 @@ extern void handleSecondInstanceData(char * message);
 }
 - (void)handleSecondInstanceNotification:(NSNotification *)note;
 {
-    if (note.object != nil) {
-        NSString * message = (__bridge NSString *)note.object;
+   if (note.userInfo[@"message"] != nil) {
+        NSString *message = note.userInfo[@"message"];
         const char* utf8Message = message.UTF8String;
         handleSecondInstanceData((char*)utf8Message);
     }

@@ -15,6 +15,7 @@ package application
 extern void registerListener(unsigned int event);
 
 #import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 static AppDelegate *appDelegate = nil;
 
@@ -158,9 +159,11 @@ static const char* serializationNSDictionary(void *dict) {
 	return nil;
 }
 
-void startSingleInstanceListener(const char *uniqueID) {
-      [[NSDistributedNotificationCenter defaultCenter] addObserver:self
-          selector:@selector(handleSecondInstanceNotification:) name:uniqueID object:nil];
+static void startSingleInstanceListener(const char *uniqueID) {
+	// Convert to NSString
+	NSString *uid = [NSString stringWithUTF8String:uniqueID];
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:appDelegate
+          selector:@selector(handleSecondInstanceNotification:) name:uid object:nil];
 }
 */
 import "C"

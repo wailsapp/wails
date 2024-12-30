@@ -6,7 +6,12 @@ package application
 #cgo CFLAGS: -x objective-c
 #cgo LDFLAGS: -framework Foundation -framework Cocoa
 
-void SendDataToFirstInstance(char *singleInstanceUniqueId, char* message) {
+#include <stdlib.h>
+#import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
+
+static void SendDataToFirstInstance(char *singleInstanceUniqueId, char* message) {
+	NSLog(@"SendDataToFirstInstance: singleInstanceUniqueId='%s' message='%@'\n", singleInstanceUniqueId, [NSString stringWithUTF8String:message]);
     [[NSDistributedNotificationCenter defaultCenter]
         postNotificationName:[NSString stringWithUTF8String:singleInstanceUniqueId]
         object:nil
@@ -57,7 +62,7 @@ func (l *unixLock) release() {
 }
 
 func (l *unixLock) notify(data string) error {
-	singleInstanceUniqueId := C.String(l.uniqueID)
+	singleInstanceUniqueId := C.CString(l.uniqueID)
 	defer C.free(unsafe.Pointer(singleInstanceUniqueId))
 	cData := C.CString(data)
 	defer C.free(unsafe.Pointer(cData))
@@ -89,7 +94,6 @@ func createLockFile(filename string) (*os.File, error) {
 //export handleSecondInstanceData
 func handleSecondInstanceData(secondInstanceMessage *C.char) {
 	message := C.GoString(secondInstanceMessage)
-	defer C.free(unsafe.Pointer(secondInstanceMessage))
 
 	var secondInstanceData SecondInstanceData
 
