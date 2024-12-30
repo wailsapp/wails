@@ -1,63 +1,86 @@
-//go:build unix
+//go:build linux
 
 package application
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/godbus/dbus/v5"
 	"os"
 	"strings"
+	"sync"
 	"syscall"
 )
 
-type unixLock struct {
+type dbusHandler func(string)
+
+var setup sync.Once
+
+func (f dbusHandler) SendMessage(message string) *dbus.Error {
+	f(message)
+	return nil
+}
+
+type linuxLock struct {
 	file     *os.File
 	uniqueID string
+	dbusPath string
+	dbusName string
+	manager  *singleInstanceManager
 }
 
-func newPlatformLock(_ *singleInstanceManager) (platformLock, error) {
-	return &unixLock{}, nil
+func newPlatformLock(manager *singleInstanceManager) (platformLock, error) {
+	return &linuxLock{
+		manager: manager,
+	}, nil
 }
 
-func (l *unixLock) acquire(uniqueID string) error {
+func (l *linuxLock) acquire(uniqueID string) error {
 	if uniqueID == "" {
 		return fmt.Errorf("UniqueID is required for single instance lock")
 	}
 
-	l.uniqueID = uniqueID
-	lockPath := getLockPath(uniqueID)
-	file, err := os.OpenFile(lockPath, os.O_WRONLY|os.O_CREATE, 0600)
+	id := "wails_app_" + strings.ReplaceAll(strings.ReplaceAll(uniqueID, "-", "_"), ".", "_")
+
+	l.dbusName = "org." + id + ".SingleInstance"
+	l.dbusPath = "/org/" + id + "/SingleInstance"
+
+	conn, err := dbus.ConnectSessionBus()
+	// if we will reach any error during establishing connection or sending message we will just continue.
+	// It should not be the case that such thing will happen actually, but just in case.
 	if err != nil {
-		return fmt.Errorf("failed to open lock file: %w", err)
+		return err
 	}
 
-	// Try to acquire an exclusive lock
-	err = syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
-	if err != nil {
-		file.Close()
-		if strings.Contains(err.Error(), "resource temporarily unavailable") {
-			return fmt.Errorf("another instance is already running")
+	setup.Do(func() {
+		f := dbusHandler(func(message string) {
+			var secondInstanceData SecondInstanceData
+
+			err := json.Unmarshal([]byte(message), &secondInstanceData)
+			if err == nil {
+				secondInstanceBuffer <- secondInstanceData
+			}
+		})
+
+		err := conn.Export(f, dbus.ObjectPath(l.dbusPath), l.dbusName)
+		if err != nil {
+			globalApplication.error(err.Error())
 		}
-		return fmt.Errorf("failed to acquire lock: %w", err)
+	})
+
+	reply, err := conn.RequestName(l.dbusName, dbus.NameFlagDoNotQueue)
+	if err != nil {
+		return err
 	}
 
-	// Write PID to lock file
-	pid := fmt.Sprintf("%d", os.Getpid())
-	if err := file.Truncate(0); err != nil {
-		syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
-		file.Close()
-		return fmt.Errorf("failed to truncate lock file: %w", err)
+	// if name already taken, try to send args to existing instance, if no success just launch new instance
+	if reply == dbus.RequestNameReplyExists {
+		return alreadyRunningError
 	}
-	if _, err := file.WriteString(pid); err != nil {
-		syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
-		file.Close()
-		return fmt.Errorf("failed to write PID to lock file: %w", err)
-	}
-
-	l.file = file
 	return nil
 }
 
-func (l *unixLock) release() {
+func (l *linuxLock) release() {
 	if l.file != nil {
 		syscall.Flock(int(l.file.Fd()), syscall.LOCK_UN)
 		l.file.Close()
@@ -66,38 +89,18 @@ func (l *unixLock) release() {
 	}
 }
 
-func (l *unixLock) notify(data string) error {
-	// For Unix systems, we need to use some form of IPC
-	lockPath := getLockPath(l.uniqueID)
-	pidBytes, err := os.ReadFile(lockPath)
+func (l *linuxLock) notify(data string) error {
+	conn, err := dbus.ConnectSessionBus()
+	// if we will reach any error during establishing connection or sending message we will just continue.
+	// It should not be the case that such thing will happen actually, but just in case.
 	if err != nil {
-		return fmt.Errorf("failed to read PID from lock file: %w", err)
+		return err
 	}
 
-	pid := strings.TrimSpace(string(pidBytes))
-	process, err := os.FindProcess(parseInt(pid))
+	err = conn.Object(l.dbusName, dbus.ObjectPath(l.dbusPath)).Call(l.dbusName+".SendMessage", 0, data).Store()
 	if err != nil {
-		return fmt.Errorf("failed to find first instance process: %w", err)
+		return err
 	}
-
-	// Send SIGUSR1 to notify the first instance
-	err = process.Signal(syscall.SIGUSR1)
-	if err != nil {
-		return fmt.Errorf("failed to signal first instance: %w", err)
-	}
-
-	// Write data to a temporary file that the first instance can read
-	dataFile := lockPath + ".data"
-	err = os.WriteFile(dataFile, []byte(data), 0600)
-	if err != nil {
-		return fmt.Errorf("failed to write data file: %w", err)
-	}
-
+	os.Exit(l.manager.options.ExitCode)
 	return nil
-}
-
-func parseInt(s string) int {
-	var n int
-	fmt.Sscanf(s, "%d", &n)
-	return n
 }

@@ -1,7 +1,6 @@
 package application
 
 import (
-	"fmt"
 	"strings"
 	"sync"
 )

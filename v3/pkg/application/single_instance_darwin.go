@@ -28,19 +28,19 @@ import (
 	"unsafe"
 )
 
-type unixLock struct {
+type darwinLock struct {
 	file     *os.File
 	uniqueID string
 	manager  *singleInstanceManager
 }
 
 func newPlatformLock(manager *singleInstanceManager) (platformLock, error) {
-	return &unixLock{
+	return &darwinLock{
 		manager: manager,
 	}, nil
 }
 
-func (l *unixLock) acquire(uniqueID string) error {
+func (l *darwinLock) acquire(uniqueID string) error {
 	l.uniqueID = uniqueID
 	lockFilePath := os.TempDir()
 	lockFileName := uniqueID + ".lock"
@@ -52,7 +52,7 @@ func (l *unixLock) acquire(uniqueID string) error {
 	return nil
 }
 
-func (l *unixLock) release() {
+func (l *darwinLock) release() {
 	if l.file != nil {
 		syscall.Flock(int(l.file.Fd()), syscall.LOCK_UN)
 		l.file.Close()
@@ -61,7 +61,7 @@ func (l *unixLock) release() {
 	}
 }
 
-func (l *unixLock) notify(data string) error {
+func (l *darwinLock) notify(data string) error {
 	singleInstanceUniqueId := C.CString(l.uniqueID)
 	defer C.free(unsafe.Pointer(singleInstanceUniqueId))
 	cData := C.CString(data)
