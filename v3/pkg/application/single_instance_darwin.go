@@ -11,7 +11,6 @@ package application
 #import <Cocoa/Cocoa.h>
 
 static void SendDataToFirstInstance(char *singleInstanceUniqueId, char* message) {
-	NSLog(@"SendDataToFirstInstance: singleInstanceUniqueId='%s' message='%@'\n", singleInstanceUniqueId, [NSString stringWithUTF8String:message]);
     [[NSDistributedNotificationCenter defaultCenter]
         postNotificationName:[NSString stringWithUTF8String:singleInstanceUniqueId]
         object:nil
