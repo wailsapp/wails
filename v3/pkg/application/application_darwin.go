@@ -157,6 +157,11 @@ static const char* serializationNSDictionary(void *dict) {
 
 	return nil;
 }
+
+void startSingleInstanceListener(const char *uniqueID) {
+      [[NSDistributedNotificationCenter defaultCenter] addObserver:self
+          selector:@selector(handleSecondInstanceNotification:) name:uniqueID object:nil];
+}
 */
 import "C"
 import (
@@ -221,6 +226,11 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 }
 
 func (m *macosApp) run() error {
+	if m.parent.options.SingleInstance != nil {
+		cUniqueID := C.CString(m.parent.options.SingleInstance.UniqueID)
+		defer C.free(unsafe.Pointer(cUniqueID))
+		C.startSingleInstanceListener(cUniqueID)
+	}
 	// Add a hook to the ApplicationDidFinishLaunching event
 	m.parent.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*ApplicationEvent) {
 		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))

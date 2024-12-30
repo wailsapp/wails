@@ -5,9 +5,12 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 var alreadyRunningError = errors.New("application is already running")
+var secondInstanceBuffer = make(chan SecondInstanceData, 1)
+var once sync.Once
 
 // SecondInstanceData contains information about the second instance launch
 type SecondInstanceData struct {
@@ -59,6 +62,17 @@ func newSingleInstanceManager(app *App, options *SingleInstanceOptions) (*single
 		options: options,
 		app:     app,
 	}
+
+	// Launch second instance data listener
+	once.Do(func() {
+		go func() {
+			for secondInstanceData := range secondInstanceBuffer {
+				if manager.options.OnSecondInstanceLaunch != nil {
+					manager.options.OnSecondInstanceLaunch(secondInstanceData)
+				}
+			}
+		}()
+	})
 
 	// Create platform-specific lock
 	lock, err := newPlatformLock(manager)

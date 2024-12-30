@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 	"golang.org/x/sys/windows"
-	"sync"
 	"syscall"
 	"unsafe"
 )
@@ -27,19 +26,7 @@ type windowsLock struct {
 	windowName string
 }
 
-var secondInstanceBuffer = make(chan SecondInstanceData)
-var once sync.Once
-
 func newPlatformLock(manager *singleInstanceManager) (platformLock, error) {
-	once.Do(func() {
-		go func() {
-			for secondInstanceData := range secondInstanceBuffer {
-				if manager.options.OnSecondInstanceLaunch != nil {
-					manager.options.OnSecondInstanceLaunch(secondInstanceData)
-				}
-			}
-		}()
-	})
 	return &windowsLock{
 		manager: manager,
 	}, nil

@@ -36,6 +36,7 @@ func main() {
 				currentWindow := application.Get().CurrentWindow()
 				if currentWindow != nil {
 					currentWindow.EmitEvent("secondInstanceLaunched", data)
+					currentWindow.Focus()
 				}
 				log.Printf("Second instance launched with args: %v\n", data.Args)
 				log.Printf("Working directory: %s\n", data.WorkingDir)
