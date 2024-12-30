@@ -117,6 +117,9 @@ type Options struct {
 	// The '.' is required
 	FileAssociations []string
 
+	// SingleInstance options for single instance functionality
+	SingleInstance *SingleInstanceOptions
+
 	// This blank field ensures types from other packages
 	// are never convertible to Options.
 	// This property, in turn, improves the accuracy of the binding generator.

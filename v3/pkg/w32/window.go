@@ -25,7 +25,19 @@ var (
 	user32         = syscall.NewLazyDLL("user32.dll")
 	getSystemMenu  = user32.NewProc("GetSystemMenu")
 	enableMenuItem = user32.NewProc("EnableMenuItem")
+	findWindow     = user32.NewProc("FindWindowW")
+	sendMessage    = user32.NewProc("SendMessageW")
 )
+
+const (
+	WMCOPYDATA_SINGLE_INSTANCE_DATA = 1542
+)
+
+type COPYDATASTRUCT struct {
+	DwData uintptr
+	CbData uint32
+	LpData uintptr
+}
 
 var Fatal func(error)
 
@@ -304,4 +316,32 @@ func EnableCloseButton(hwnd HWND) error {
 	}
 
 	return nil
+}
+
+func FindWindowW(className, windowName *uint16) HWND {
+	ret, _, _ := findWindow.Call(
+		uintptr(unsafe.Pointer(className)),
+		uintptr(unsafe.Pointer(windowName)),
+	)
+	return HWND(ret)
+}
+
+func SendMessageToWindow(hwnd HWND, msg string) {
+	// Convert data to UTF16 string
+	dataUTF16 := MustStringToUTF16(msg)
+
+	// Prepare COPYDATASTRUCT
+	cds := COPYDATASTRUCT{
+		DwData: WMCOPYDATA_SINGLE_INSTANCE_DATA,
+		CbData: uint32((len(dataUTF16) * 2) + 1), // +1 for null terminator
+		LpData: uintptr(unsafe.Pointer(&dataUTF16[0])),
+	}
+
+	// Send message to first instance
+	_, _, _ = procSendMessage.Call(
+		hwnd,
+		WM_COPYDATA,
+		0,
+		uintptr(unsafe.Pointer(&cds)),
+	)
 }

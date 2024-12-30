@@ -174,6 +174,8 @@ export declare const EventTypes: {
 		WindowFileDraggingEntered: string,
 		WindowFileDraggingPerformed: string,
 		WindowFileDraggingExited: string,
+		WindowShow: string,
+		WindowHide: string,
 	},
 	Linux: {
 		SystemThemeChanged: string,

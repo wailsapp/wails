@@ -5,8 +5,6 @@ sidebar:
   order: 1
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components";
-
 The Wails CLI provides a comprehensive set of commands to help you develop, build, and maintain your Wails applications.
 
 ## Core Commands
@@ -133,21 +131,21 @@ wails3 generate bindings [flags] [patterns...]
 ```
 
 #### Flags
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-f` | Additional Go build flags | |
-| `-d` | Output directory | `frontend/bindings` |
-| `-models` | Models filename | `models` |
-| `-internal` | Internal filename | `internal` |
-| `-index` | Index filename | `index` |
-| `-ts` | Generate TypeScript | `false` |
-| `-i` | Use TS interfaces | `false` |
-| `-b` | Use bundled runtime | `false` |
-| `-names` | Use names instead of IDs | `false` |
-| `-noindex` | Skip index files | `false` |
-| `-dry` | Dry run | `false` |
-| `-silent` | Silent mode | `false` |
-| `-v` | Debug output | `false` |
+| Flag        | Description               | Default             |
+|-------------|---------------------------|---------------------|
+| `-f`        | Additional Go build flags |                     |
+| `-d`        | Output directory          | `frontend/bindings` |
+| `-models`   | Models filename           | `models`            |
+| `-internal` | Internal filename         | `internal`          |
+| `-index`    | Index filename            | `index`             |
+| `-ts`       | Generate TypeScript       | `false`             |
+| `-i`        | Use TS interfaces         | `false`             |
+| `-b`        | Use bundled runtime       | `false`             |
+| `-names`    | Use names instead of IDs  | `false`             |
+| `-noindex`  | Skip index files          | `false`             |
+| `-dry`      | Dry run                   | `false`             |
+| `-silent`   | Silent mode               | `false`             |
+| `-v`        | Debug output              | `false`             |
 
 ### `generate build-assets`
 Generates build assets for your application.
@@ -157,18 +155,18 @@ wails3 generate build-assets [flags]
 ```
 
 #### Flags
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-name` | Project name | |
-| `-dir` | Output directory | `build` |
-| `-silent` | Suppress output | `false` |
-| `-company` | Company name | |
-| `-productname` | Product name | |
-| `-description` | Product description | |
-| `-version` | Product version | |
-| `-identifier` | Product identifier | `com.wails.[name]` |
-| `-copyright` | Copyright notice | |
-| `-comments` | File comments | |
+| Flag           | Description         | Default            |
+|----------------|---------------------|--------------------|
+| `-name`        | Project name        |                    |
+| `-dir`         | Output directory    | `build`            |
+| `-silent`      | Suppress output     | `false`            |
+| `-company`     | Company name        |                    |
+| `-productname` | Product name        |                    |
+| `-description` | Product description |                    |
+| `-version`     | Product version     |                    |
+| `-identifier`  | Product identifier  | `com.wails.[name]` |
+| `-copyright`   | Copyright notice    |                    |
+| `-comments`    | File comments       |                    |
 
 ### `generate icons`
 Generates application icons.
@@ -178,13 +176,13 @@ wails3 generate icons [flags]
 ```
 
 #### Flags
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-input` | Input PNG file | Required |
-| `-windows` | Windows output filename | |
-| `-mac` | macOS output filename | |
-| `-sizes` | Icon sizes (comma-separated) | `256,128,64,48,32,16` |
-| `-example` | Generate example icon | `false` |
+| Flag       | Description                  | Default               |
+|------------|------------------------------|-----------------------|
+| `-input`   | Input PNG file               | Required              |
+| `-windows` | Windows output filename      |                       |
+| `-mac`     | macOS output filename        |                       |
+| `-sizes`   | Icon sizes (comma-separated) | `256,128,64,48,32,16` |
+| `-example` | Generate example icon        | `false`               |
 
 ### `generate syso`
 Generates Windows .syso file.
@@ -194,13 +192,13 @@ wails3 generate syso [flags]
 ```
 
 #### Flags
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-manifest` | Path to manifest file | Required |
-| `-icon` | Path to icon file | Required |
-| `-info` | Path to version info file | |
-| `-arch` | Target architecture | Current GOARCH |
-| `-out` | Output filename | `rsrc_windows_[arch].syso` |
+| Flag        | Description               | Default                    |
+|-------------|---------------------------|----------------------------|
+| `-manifest` | Path to manifest file     | Required                   |
+| `-icon`     | Path to icon file         | Required                   |
+| `-info`     | Path to version info file |                            |
+| `-arch`     | Target architecture       | Current GOARCH             |
+| `-out`      | Output filename           | `rsrc_windows_[arch].syso` |
 
 ### `generate .desktop`
 Generates a Linux .desktop file.
@@ -210,20 +208,20 @@ wails3 generate .desktop [flags]
 ```
 
 #### Flags
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-name` | Application name | Required |
-| `-exec` | Executable path | Required |
-| `-icon` | Icon path | |
-| `-categories` | Application categories | `Utility` |
-| `-comment` | Application comment | |
-| `-terminal` | Run in terminal | `false` |
-| `-keywords` | Search keywords | |
-| `-version` | Application version | |
-| `-genericname` | Generic name | |
-| `-startupnotify` | Show startup notification | `false` |
-| `-mimetype` | Supported MIME types | |
-| `-output` | Output filename | `[name].desktop` |
+| Flag             | Description               | Default          |
+|------------------|---------------------------|------------------|
+| `-name`          | Application name          | Required         |
+| `-exec`          | Executable path           | Required         |
+| `-icon`          | Icon path                 |                  |
+| `-categories`    | Application categories    | `Utility`        |
+| `-comment`       | Application comment       |                  |
+| `-terminal`      | Run in terminal           | `false`          |
+| `-keywords`      | Search keywords           |                  |
+| `-version`       | Application version       |                  |
+| `-genericname`   | Generic name              |                  |
+| `-startupnotify` | Show startup notification | `false`          |
+| `-mimetype`      | Supported MIME types      |                  |
+| `-output`        | Output filename           | `[name].desktop` |
 
 ### `generate runtime`
 Generates the pre-built version of the runtime.
@@ -247,13 +245,13 @@ wails3 generate appimage [flags]
 ```
 
 #### Flags
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-binary` | Path to binary | Required |
-| `-icon` | Path to icon file | Required |
-| `-desktop` | Path to .desktop file | Required |
-| `-builddir` | Build directory | Temp directory |
-| `-output` | Output directory | `.` |
+| Flag        | Description           | Default        |
+|-------------|-----------------------|----------------|
+| `-binary`   | Path to binary        | Required       |
+| `-icon`     | Path to icon file     | Required       |
+| `-desktop`  | Path to .desktop file | Required       |
+| `-builddir` | Build directory       | Temp directory |
+| `-output`   | Output directory      | `.`            |
 
 Base command: `wails3 service`
 
@@ -269,18 +267,18 @@ wails3 service init [flags]
 ```
 
 #### Flags
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-n` | Service name | `example_service` |
+| Flag | Description         | Default           |
+|------|---------------------|-------------------|
+| `-n` | Service name        | `example_service` |
 | `-d` | Service description | `Example service` |
-| `-p` | Package name | |
-| `-o` | Output directory | `.` |
-| `-q` | Suppress output | `false` |
-| `-a` | Author name | |
-| `-v` | Version | |
-| `-w` | Website URL | |
-| `-r` | Repository URL | |
-| `-l` | License | |
+| `-p` | Package name        |                   |
+| `-o` | Output directory    | `.`               |
+| `-q` | Suppress output     | `false`           |
+| `-a` | Author name         |                   |
+| `-v` | Version             |                   |
+| `-w` | Website URL         |                   |
+| `-r` | Repository URL      |                   |
+| `-l` | License             |                   |
 
 Base command: `wails3 tool`
 
@@ -296,9 +294,9 @@ wails3 tool checkport [flags]
 ```
 
 #### Flags
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-port` | Port to check | `9245` |
+| Flag    | Description   | Default     |
+|---------|---------------|-------------|
+| `-port` | Port to check | `9245`      |
 | `-host` | Host to check | `localhost` |
 
 ### `tool watcher`
@@ -309,11 +307,11 @@ wails3 tool watcher [flags]
 ```
 
 #### Flags
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-config` | Config file path | `./build/config.yml` |
-| `-ignore` | Patterns to ignore | |
-| `-include` | Patterns to include | |
+| Flag       | Description         | Default              |
+|------------|---------------------|----------------------|
+| `-config`  | Config file path    | `./build/config.yml` |
+| `-ignore`  | Patterns to ignore  |                      |
+| `-include` | Patterns to include |                      |
 
 ### `tool cp`
 Copies files.
@@ -337,20 +335,20 @@ wails3 tool package [flags]
 ```
 
 #### Flags
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-format` | Package format (deb, rpm, archlinux) | `deb` |
-| `-name` | Executable name | Required |
-| `-config` | Config file path | Required |
-| `-out` | Output directory | `.` |
+| Flag      | Description                          | Default  |
+|-----------|--------------------------------------|----------|
+| `-format` | Package format (deb, rpm, archlinux) | `deb`    |
+| `-name`   | Executable name                      | Required |
+| `-config` | Config file path                     | Required |
+| `-out`    | Output directory                     | `.`      |
 
 #### Flags
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-format` | Package format (deb, rpm, archlinux) | `deb` |
-| `-name` | Executable name | `myapp` |
-| `-config` | Config file path | |
-| `-out` | Output directory | `.` |
+| Flag      | Description                          | Default |
+|-----------|--------------------------------------|---------|
+| `-format` | Package format (deb, rpm, archlinux) | `deb`   |
+| `-name`   | Executable name                      | `myapp` |
+| `-config` | Config file path                     |         |
+| `-out`    | Output directory                     | `.`     |
 
 Base command: `wails3 update`
 
@@ -366,18 +364,18 @@ wails3 update build-assets [flags]
 ```
 
 #### Flags
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-config` | Config file path | |
-| `-dir` | Output directory | `build` |
-| `-silent` | Suppress output | `false` |
-| `-company` | Company name | |
-| `-productname` | Product name | |
-| `-description` | Product description | |
-| `-version` | Product version | |
-| `-identifier` | Product identifier | |
-| `-copyright` | Copyright notice | |
-| `-comments` | File comments | |
+| Flag           | Description         | Default |
+|----------------|---------------------|---------|
+| `-config`      | Config file path    |         |
+| `-dir`         | Output directory    | `build` |
+| `-silent`      | Suppress output     | `false` |
+| `-company`     | Company name        |         |
+| `-productname` | Product name        |         |
+| `-description` | Product description |         |
+| `-version`     | Product version     |         |
+| `-identifier`  | Product identifier  |         |
+| `-copyright`   | Copyright notice    |         |
+| `-comments`    | File comments       |         |
 
 Base command: `wails3`
 
