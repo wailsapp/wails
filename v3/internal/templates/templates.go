@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/wailsapp/wails/v3/internal/buildinfo"
+	"github.com/wailsapp/wails/v3/internal/s"
 	"github.com/wailsapp/wails/v3/internal/version"
 	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/go-git/go-git/v5"
@@ -102,27 +104,34 @@ func getLocalTemplate(templateName string) (*Template, error) {
 		return nil, nil
 	}
 
-	template, err = parseTemplate(os.DirFS(templateName), templateName)
+	template, err = parseTemplate(os.DirFS(templateName), "")
 	if err != nil {
+		println("err2 = ", err.Error())
 		return nil, err
 	}
+	template.IsLocal = true
 
 	return &template, nil
 }
 
+type BaseTemplate struct {
+	Name        string `json:"name" description:"The name of the template"`
+	ShortName   string `json:"shortname" description:"The short name of the template"`
+	Author      string `json:"author" description:"The author of the template"`
+	Description string `json:"description" description:"The template description"`
+	HelpURL     string `json:"helpurl" description:"The help url for the template"`
+	Version     string `json:"version" description:"The version of the template" default:"v0.0.1"`
+	Dir         string `json:"-" description:"The directory to generate the template" default:"."`
+}
+
 // Template holds data relating to a template including the metadata stored in template.yaml
 type Template struct {
-
-	// Template details
-	Name        string `json:"name"`
-	ShortName   string `json:"shortname"`
-	Author      string `json:"author"`
-	Description string `json:"description"`
-	HelpURL     string `json:"helpurl"`
-	Version     int8   `json:"version"`
+	BaseTemplate
+	Schema uint8 `json:"schema"`
 
 	// Other data
-	FS fs.FS `json:"-"`
+	FS      fs.FS `json:"-"`
+	IsLocal bool
 }
 
 func parseTemplate(template fs.FS, templateName string) (Template, error) {
@@ -142,10 +151,10 @@ func parseTemplate(template fs.FS, templateName string) (Template, error) {
 	result.FS = template
 
 	// We need to do a version check here
-	if result.Version == 0 {
+	if result.Schema == 0 {
 		return result, fmt.Errorf("template not supported by wails 3. This template is probably for wails 2")
 	}
-	if result.Version != 3 {
+	if result.Schema != 3 {
 		return result, fmt.Errorf("template version %d is not supported by wails 3. Ensure 'version' is set to 3 in the `template.json` file", result.Version)
 	}
 
@@ -254,25 +263,24 @@ func Install(options *flags.Init) error {
 	}()
 
 	var template *Template
-	template, err = getInternalTemplate(options.TemplateName)
-	if err != nil {
-		return err
-	}
-	if template == nil {
-		template, err = getLocalTemplate(options.TemplateName)
-	}
-	if err != nil {
-		return err
-	}
-	if template == nil {
-		template, err = getRemoteTemplate(options.TemplateName)
-	}
-	if err != nil {
-		return err
-	}
+	println("Using template: " + options.TemplateName)
 
-	if template == nil {
-		return fmt.Errorf("invalid template name: %s. Use -l flag to view available templates or use a valid filepath / url to a template", options.TemplateName)
+	if ValidTemplateName(options.TemplateName) {
+		template, err = getInternalTemplate(options.TemplateName)
+		if err != nil {
+			return err
+		}
+	} else {
+		template, err = getLocalTemplate(options.TemplateName)
+		if err != nil {
+			return err
+		}
+		if template == nil {
+			template, err = getRemoteTemplate(options.TemplateName)
+		}
+		if template == nil {
+			return fmt.Errorf("invalid template name: %s. Use -l flag to view available templates or use a valid filepath / url to a template", options.TemplateName)
+		}
 	}
 
 	templateData.ProjectDir = projectDir
@@ -314,7 +322,6 @@ func Install(options *flags.Init) error {
 	if err != nil {
 		return err
 	}
-
 	// Change to project directory
 	err = os.Chdir(templateData.ProjectDir)
 	if err != nil {
@@ -330,4 +337,50 @@ func Install(options *flags.Init) error {
 
 	return nil
 
+}
+
+func GenerateTemplate(options *BaseTemplate) error {
+	if options.Name == "" {
+		return fmt.Errorf("please provide a template name using the -name flag")
+	}
+
+	// Get current directory
+	baseOutputDir, err := filepath.Abs(options.Dir)
+	if err != nil {
+		return err
+	}
+	outDir := filepath.Join(baseOutputDir, options.Name)
+
+	// Extract base files
+	_, filename, _, _ := runtime.Caller(0)
+	basePath := filepath.Join(filepath.Dir(filename), "_common")
+	s.COPYDIR(basePath, outDir)
+	s.RMDIR(filepath.Join(outDir, "build"))
+
+	// Copy files from relative directory ../commands/build_assets
+	// Get the path to THIS file
+	assetPath := filepath.Join(filepath.Dir(filename), "..", "commands", "build_assets")
+	assetdir := filepath.Join(outDir, "build")
+
+	s.COPYDIR(assetPath, assetdir)
+
+	// Write the template.json file
+	templateJSON := filepath.Join(outDir, "template.json")
+	println("Writing template.json to", templateJSON)
+	// Marshall
+	optionsJSON, err := json.MarshalIndent(&Template{
+		BaseTemplate: *options,
+		Schema:       3,
+	}, "", "  ")
+	if err != nil {
+		return err
+	}
+	println(string(optionsJSON))
+	err = os.WriteFile(templateJSON, optionsJSON, 0o755)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Successfully generated template in %s\n", outDir)
+	return nil
 }

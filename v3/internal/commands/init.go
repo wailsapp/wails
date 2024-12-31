@@ -122,10 +122,6 @@ func Init(options *flags.Init) error {
 
 	options.ProjectName = sanitizeFileName(options.ProjectName)
 
-	if !templates.ValidTemplateName(options.TemplateName) {
-		return fmt.Errorf("invalid template name: %s. Use -l flag to list valid templates", options.TemplateName)
-	}
-
 	err := templates.Install(options)
 	if err != nil {
 		return err
