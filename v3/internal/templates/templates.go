@@ -306,22 +306,57 @@ func Install(options *flags.Init) error {
 	if err != nil {
 		return err
 	}
-	tfs, err := fs.Sub(template.FS, options.TemplateName)
-	if err != nil {
-		return err
+	if !template.IsLocal {
+		tfs, err := fs.Sub(template.FS, options.TemplateName)
+		if err != nil {
+			return err
+		}
+		common, err := fs.Sub(templates, "_common")
+		if err != nil {
+			return err
+		}
+		err = gosod.New(common).Extract(options.ProjectDir, templateData)
+		if err != nil {
+			return err
+		}
+		err = gosod.New(tfs).Extract(options.ProjectDir, templateData)
+		if err != nil {
+			return err
+		}
+	} else {
+		data := struct {
+			TemplateOptions
+			Dir                string
+			Name               string
+			BinaryName         string
+			ProductName        string
+			ProductDescription string
+			ProductVersion     string
+			ProductCompany     string
+			ProductCopyright   string
+			ProductComments    string
+			ProductIdentifier  string
+			Silent             bool
+			Typescript         bool
+		}{
+			Name:               options.ProjectName,
+			Silent:             true,
+			ProductCompany:     options.ProductCompany,
+			ProductName:        options.ProductName,
+			ProductDescription: options.ProductDescription,
+			ProductVersion:     options.ProductVersion,
+			ProductIdentifier:  options.ProductIdentifier,
+			ProductCopyright:   options.ProductCopyright,
+			ProductComments:    options.ProductComments,
+			Typescript:         templateData.UseTypescript,
+			TemplateOptions:    templateData,
+		}
+		err = gosod.New(template.FS).Extract(options.ProjectDir, data)
+		if err != nil {
+			return err
+		}
 	}
-	common, err := fs.Sub(templates, "_common")
-	if err != nil {
-		return err
-	}
-	err = gosod.New(common).Extract(options.ProjectDir, templateData)
-	if err != nil {
-		return err
-	}
-	err = gosod.New(tfs).Extract(options.ProjectDir, templateData)
-	if err != nil {
-		return err
-	}
+
 	// Change to project directory
 	err = os.Chdir(templateData.ProjectDir)
 	if err != nil {
