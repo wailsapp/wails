@@ -553,6 +553,14 @@ func (t *TypeScriptify) getFieldOptions(structType reflect.Type, field reflect.S
 
 func (t *TypeScriptify) getJSONFieldName(field reflect.StructField, isPtr bool) string {
 	jsonFieldName := ""
+	// function, complex, and channel types cannot be json-encoded
+	if field.Type.Kind() == reflect.Chan ||
+		field.Type.Kind() == reflect.Func ||
+		field.Type.Kind() == reflect.UnsafePointer ||
+		field.Type.Kind() == reflect.Complex128 ||
+		field.Type.Kind() == reflect.Complex64 {
+		return ""
+	}
 	jsonTag, hasTag := field.Tag.Lookup("json")
 	if !hasTag && field.IsExported() {
 		jsonFieldName = field.Name
