@@ -353,6 +353,7 @@ func (b *Bindings) hasExportedJSONFields(typeOf reflect.Type) bool {
 		// function, complex, and channel types cannot be json-encoded
 		if f.Type.Kind() == reflect.Chan ||
 			f.Type.Kind() == reflect.Func ||
+			f.Type.Kind() == reflect.UnsafePointer ||
 			f.Type.Kind() == reflect.Complex128 ||
 			f.Type.Kind() == reflect.Complex64 {
 			continue
