@@ -9,7 +9,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/version"
 	"io/fs"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -109,7 +108,7 @@ func getLocalTemplate(templateName string) (*Template, error) {
 		println("err2 = ", err.Error())
 		return nil, err
 	}
-	template.IsLocal = true
+	template.source = sourceLocal
 
 	return &template, nil
 }
@@ -125,6 +124,14 @@ type BaseTemplate struct {
 	Frontend    string `json:"-" description:"The frontend directory to migrate"`
 }
 
+type source int
+
+const (
+	sourceInternal source = 1
+	sourceLocal    source = 2
+	sourceRemote   source = 3
+)
+
 // Template holds data relating to a template including the metadata stored in template.yaml
 type Template struct {
 	BaseTemplate
@@ -132,7 +139,8 @@ type Template struct {
 
 	// Other data
 	FS      fs.FS `json:"-"`
-	IsLocal bool  `json:"-"`
+	source  source
+	tempDir string
 }
 
 func parseTemplate(template fs.FS, templateName string) (Template, error) {
@@ -185,31 +193,28 @@ func gitclone(uri string) (string, error) {
 
 }
 
-func getRemoteTemplate(uri string) (template *Template, err error) {
+func getRemoteTemplate(uri string) (*Template, error) {
 	// git clone to temporary dir
 	var tempDir string
-	tempDir, err = gitclone(uri)
-
-	defer func(path string) {
-		_ = os.RemoveAll(path)
-	}(tempDir)
+	tempDir, err := gitclone(uri)
 
 	if err != nil {
-		return
+		return nil, err
 	}
-
 	// Remove the .git directory
 	err = os.RemoveAll(filepath.Join(tempDir, ".git"))
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	templateFS := os.DirFS(tempDir)
 	var parsedTemplate Template
 	parsedTemplate, err = parseTemplate(templateFS, "")
 	if err != nil {
-		return
+		return nil, err
 	}
+	parsedTemplate.tempDir = tempDir
+	parsedTemplate.source = sourceRemote
 	return &parsedTemplate, nil
 }
 
@@ -264,7 +269,6 @@ func Install(options *flags.Init) error {
 	}()
 
 	var template *Template
-	println("Using template: " + options.TemplateName)
 
 	if ValidTemplateName(options.TemplateName) {
 		template, err = getInternalTemplate(options.TemplateName)
@@ -279,9 +283,10 @@ func Install(options *flags.Init) error {
 		if template == nil {
 			template, err = getRemoteTemplate(options.TemplateName)
 		}
-		if template == nil {
-			return fmt.Errorf("invalid template name: %s. Use -l flag to view available templates or use a valid filepath / url to a template", options.TemplateName)
-		}
+	}
+
+	if template == nil {
+		return fmt.Errorf("invalid template name: %s. Use -l flag to view available templates or use a valid filepath / url to a template", options.TemplateName)
 	}
 
 	templateData.ProjectDir = projectDir
@@ -295,6 +300,13 @@ func Install(options *flags.Init) error {
 		}
 	}
 
+	if template.source == sourceRemote && !options.SkipWarning {
+		var confirmed = confirmRemote(template)
+		if !confirmed {
+			return nil
+		}
+	}
+
 	pterm.Printf("Creating project\n")
 	pterm.Printf("----------------\n\n")
 	table := pterm.TableData{
@@ -302,12 +314,15 @@ func Install(options *flags.Init) error {
 		{"Project Directory", filepath.FromSlash(options.ProjectDir)},
 		{"Template", template.Name},
 		{"Template Source", template.HelpURL},
+		{"Template Version", template.Version},
 	}
 	err = pterm.DefaultTable.WithData(table).Render()
 	if err != nil {
 		return err
 	}
-	if !template.IsLocal {
+
+	switch template.source {
+	case sourceInternal:
 		tfs, err := fs.Sub(template.FS, options.TemplateName)
 		if err != nil {
 			return err
@@ -324,7 +339,7 @@ func Install(options *flags.Init) error {
 		if err != nil {
 			return err
 		}
-	} else {
+	case sourceLocal, sourceRemote:
 		data := struct {
 			TemplateOptions
 			Dir                string
@@ -352,19 +367,25 @@ func Install(options *flags.Init) error {
 			Typescript:         templateData.UseTypescript,
 			TemplateOptions:    templateData,
 		}
+		// If options.ProjectDir does not exist, create it
+		if _, err := os.Stat(options.ProjectDir); os.IsNotExist(err) {
+			err = os.Mkdir(options.ProjectDir, 0755)
+			if err != nil {
+				return err
+			}
+		}
 		err = gosod.New(template.FS).Extract(options.ProjectDir, data)
 		if err != nil {
 			return err
+		}
+
+		if template.tempDir != "" {
+			s.RMDIR(template.tempDir)
 		}
 	}
 
 	// Change to project directory
 	err = os.Chdir(templateData.ProjectDir)
-	if err != nil {
-		return err
-	}
-	// Run `go mod tidy`
-	err = exec.Command("go", "mod", "tidy").Run()
 	if err != nil {
 		return err
 	}
@@ -428,4 +449,15 @@ func GenerateTemplate(options *BaseTemplate) error {
 
 	fmt.Printf("Successfully generated template in %s\n", outDir)
 	return nil
+}
+
+func confirmRemote(template *Template) bool {
+	pterm.Println(pterm.LightRed("\n--- REMOTE TEMPLATES ---"))
+
+	// Create boxes with the title positioned differently and containing different content
+	pterm.Println(pterm.LightYellow("You are creating a project using a remote template.\nThe Wails project takes no responsibility for 3rd party templates.\nOnly use remote templates that you trust."))
+
+	result, _ := pterm.DefaultInteractiveConfirm.WithConfirmText("Are you sure you want to continue?").WithConfirmText("y").WithRejectText("n").Show()
+
+	return result
 }
