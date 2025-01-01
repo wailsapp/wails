@@ -4,5 +4,6 @@
   "author": "Lea Anthony",
   "description": "Svelte + TS + Vite development server",
   "helpurl": "https://wails.io",
-  "version": 3
+  "version": "v0.0.1",
+  "schema": 3
 }
