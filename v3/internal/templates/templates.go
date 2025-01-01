@@ -122,7 +122,7 @@ type BaseTemplate struct {
 	HelpURL     string `json:"helpurl" description:"The help url for the template"`
 	Version     string `json:"version" description:"The version of the template" default:"v0.0.1"`
 	Dir         string `json:"-" description:"The directory to generate the template" default:"."`
-	Frontend    string `json:"frontend" description:"The frontend directory to migrate"`
+	Frontend    string `json:"-" description:"The frontend directory to migrate"`
 }
 
 // Template holds data relating to a template including the metadata stored in template.yaml
@@ -132,7 +132,7 @@ type Template struct {
 
 	// Other data
 	FS      fs.FS `json:"-"`
-	IsLocal bool
+	IsLocal bool  `json:"-"`
 }
 
 func parseTemplate(template fs.FS, templateName string) (Template, error) {
@@ -407,6 +407,9 @@ func GenerateTemplate(options *BaseTemplate) error {
 	assetdir := filepath.Join(outDir, "build")
 
 	s.COPYDIR2(assetPath, assetdir)
+
+	// Copy the template NEXTSTEPS.md
+	s.COPY(filepath.Join(filepath.Dir(filename), "base", "NEXTSTEPS.md"), filepath.Join(outDir, "NEXTSTEPS.md"))
 
 	// Write the template.json file
 	templateJSON := filepath.Join(outDir, "template.json")
