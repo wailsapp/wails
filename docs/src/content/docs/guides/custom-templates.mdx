@@ -1,0 +1,237 @@
+---
+title: Creating Custom Templates
+description: Learn how to create and customise your own Wails v3 templates
+sidebar:
+    order: 50
+---
+
+This guide will walk you through the process of creating a custom template for Wails v3. 
+
+## Why would I make a custom template?
+
+Wails comes with a number of pre-configured templates that allow you to get your application up and running quickly. But if you need a more customised setup, you can create your own template to suit your needs. This can then be shared with the Wails community for others to use.
+
+## Generating a Template
+
+To create a custom template, you can use the `wails generate template` command:
+
+```bash
+wails3 generate template -name mytemplate
+```
+
+This will create a new directory called "mytemplate" in your current directory.
+
+The `wails3 generate template` command supports the following options:
+
+| Option         | Description                                       | Default           |
+|----------------|---------------------------------------------------|-------------------|
+| `-name`        | The name of your template (required)              | -                 |
+| `-frontend`    | Path to an existing frontend directory to include | -                 |
+| `-author`      | The author of the template                        | -                 |
+| `-description` | A description of the template                     | -                 |
+| `-helpurl`     | URL for template documentation                    | -                 |
+| `-dir`         | Directory to generate the template in             | Current directory |
+| `-version`     | Template version                                  | v0.0.1            |
+
+For example, to create a template with all options:
+
+```bash
+wails3 generate template \
+  -name "My Custom Template" \
+  -frontend ./my-existing-frontend \
+  -author "Your Name" \
+  -description "A template with my preferred setup" \
+  -helpurl "https://github.com/yourusername/template-docs" \
+  -dir ./templates \
+  -version "v1.0.0"
+```
+
+## Configuring the Template
+
+### 1. Configure Template Metadata
+
+If you didn't specify the template configuration when generating the template, you can update the `template.json` file in the template directory:
+
+```json5
+{
+  "name": "Your Template Name",          // Display name of your template
+  "shortname": "template-shortname",     // Used when referencing your template
+  "author": "Your Name",                 // Template author
+  "description": "Template description", // Template description
+  "helpurl": "https://your-docs.com",   // Documentation URL
+  "version": "v0.0.1",                  // Template version
+  "schema": 3                           // Must remain 3 for Wails v3
+}
+```
+:::caution
+The `schema` field must remain set to `3` for compatibility with Wails v3.
+:::
+
+### 2. Set Up Build Tasks
+
+In the `build` directory is `Taskfile.yml` where you can define your template's build process. 
+This file uses [Task](https://taskfile.dev) for build automation. The key steps are:
+
+```yaml
+tasks:
+  install:frontend:deps:
+    summary: Install frontend dependencies
+    dir: frontend
+    cmds:
+      - npm install  # Or your package manager's install command
+
+  build:frontend:
+    summary: Build the frontend project
+    dir: frontend
+    deps:
+      - task: install:frontend:deps
+      - task: generate:bindings
+    cmds:
+      - npm run build  # Your frontend build command
+```
+
+### 3. Frontend Setup
+
+You have two ways to set up your frontend: starting from scratch or using an existing framework.
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+  <TabItem label="Start from Scratch">
+    If you want to start from scratch, you can create your frontend project just like you would for any web application. 
+    The `frontend` directory in your template is just a regular directory where you can set up your preferred 
+    development environment. You might want to use build tools like Vite, webpack, or even just plain HTML, CSS, and 
+    JavaScript - it's entirely up to you!
+
+    For example, if you're using Vite, you could navigate to the `frontend` directory and run:
+
+    ```bash
+    npm create vite@latest .
+    ```
+
+    Then follow the prompts to set up your project exactly how you want it. The key thing to remember is that this is just a regular frontend project - you can use any tools, frameworks, or libraries you're familiar with.
+  </TabItem>
+  <TabItem label="Use Existing Framework">
+    For this example, we'll use [Vite](https://vitejs.dev/) to set up a React frontend project:
+
+       ```bash
+       npm create vite@latest frontend -- --template react
+       cd frontend
+       npm install
+       ```
+
+  </TabItem>
+</Tabs>
+
+
+Now you have the frontend files in place, update `common/Taskfile.yml` with the appropriate commands:
+   ```yaml
+   tasks:
+      install:frontend:deps:
+        summary: Install frontend dependencies
+        dir: frontend
+        sources:
+          - package.json
+          - package-lock.json
+        generates:
+          - node_modules/*
+        preconditions:
+          - sh: npm version
+            msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+        cmds:
+          - npm install
+
+      build:frontend:
+        summary: Build the frontend project
+        dir: frontend
+        sources:
+          - "**/*"
+        generates:
+          - dist/*
+        deps:
+          - task: install:frontend:deps
+          - task: generate:bindings
+        cmds:
+          - npm run build -q
+   ```
+
+  :::note
+  For this example, the default Tasks do not need updating as they use the standard `npm install` and `npm run build` commands.
+  :::
+
+### 4. Configure the Go Application
+
+The default files in the template directory are sufficient to get users started. However, you may want to provide some additional functionality to demonstrate your template's capabilities. The best way to do this is to rename `main.go.tmpl` to `main.go` and edit it like any other Go file. Once finished, ensure you rename it back to `main.go.tmpl` before committing your changes. If you do not care about having a templated `main.go` file (the default template injests the project name into the `Name` field of the application), you can skip this step.
+
+## Template Variables
+
+Wails uses Go's templating engine to process files with the `.tmpl` extension. During template generation, several variables are available for use in your template files:
+
+| Variable             | Description                      | Example                           |
+|----------------------|----------------------------------|-----------------------------------|
+| `Name`               | The name of the project          | `"MyApp"`                         |
+| `BinaryName`         | The name of the generated binary | `"myapp"`                         |
+| `ProductName`        | The product name                 | `"My Application"`                |
+| `ProductDescription` | Description of the product       | `"An awesome application"`        |
+| `ProductVersion`     | Version of the product           | `"1.0.0"`                         |
+| `ProductCompany`     | Company name                     | `"My Company Ltd"`                |
+| `ProductCopyright`   | Copyright information            | `"Copyright 2024 My Company Ltd"` |
+| `ProductComments`    | Additional product comments      | `"Built with Wails"`              |
+| `ProductIdentifier`  | Unique product identifier        | `"com.mycompany.myapp"`           |
+| `Typescript`         | Whether TypeScript is being used | `true` or `false`                 |
+| `WailsVersion`       | The version of Wails being used  | `"3.0.0"`                         |
+
+You can use these variables in your template files using Go's template syntax:
+
+```go
+// main.go.tmpl
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "{{.ProductName}}",
+        Description: "{{.ProductDescription}}",
+    })
+    // ...
+}
+```
+
+    :::tip
+    Templating can be applied to any file in your template, even html files, so long as the filename has `.tmpl` in its name.
+    :::
+
+### 5. Testing Your Template
+
+To test your template:
+
+1. Generate a project using your template: `wails3 init -n testproject -t path/to/your/template`
+2. Run `wails3 build` to generate the production build and make sure the binary in `bin` runs correctly
+3. Run `wails3 dev` to start the development server. 
+4. Test that changes to the frontend code are reflected in the application.
+5. Test that changes to the Go code rebuild and relaunch the application
+
+## Best Practices
+
+1. **Documentation**: Include clear documentation in your template:
+   - README.md with setup instructions
+   - Comments in configuration files
+   - Examples of common customisations
+
+2. **Dependencies**: 
+   - Keep frontend dependencies up to date
+   - Use specific versions in package.json
+   - Document any system requirements
+
+## Final Thoughts
+
+Creating a custom template allows you to standardise your Wails applications and streamline development. Remember to:
+
+- Keep your template maintained and updated
+- Document any special requirements or configurations
+- Test the template thoroughly before sharing
+- Consider contributing your template to the Wails community
+

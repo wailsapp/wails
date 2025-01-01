@@ -122,6 +122,7 @@ type BaseTemplate struct {
 	HelpURL     string `json:"helpurl" description:"The help url for the template"`
 	Version     string `json:"version" description:"The version of the template" default:"v0.0.1"`
 	Dir         string `json:"-" description:"The directory to generate the template" default:"."`
+	Frontend    string `json:"frontend" description:"The frontend directory to migrate"`
 }
 
 // Template holds data relating to a template including the metadata stored in template.yaml
@@ -389,19 +390,26 @@ func GenerateTemplate(options *BaseTemplate) error {
 	// Extract base files
 	_, filename, _, _ := runtime.Caller(0)
 	basePath := filepath.Join(filepath.Dir(filename), "_common")
-	s.COPYDIR(basePath, outDir)
+	s.COPYDIR2(basePath, outDir)
 	s.RMDIR(filepath.Join(outDir, "build"))
+
+	// Copy frontend
+	targetFrontendPath := filepath.Join(outDir, "frontend")
+	sourceFrontendPath := options.Frontend
+	if sourceFrontendPath == "" {
+		sourceFrontendPath = filepath.Join(filepath.Dir(filename), "base", "frontend")
+	}
+	s.COPYDIR2(sourceFrontendPath, targetFrontendPath)
 
 	// Copy files from relative directory ../commands/build_assets
 	// Get the path to THIS file
 	assetPath := filepath.Join(filepath.Dir(filename), "..", "commands", "build_assets")
 	assetdir := filepath.Join(outDir, "build")
 
-	s.COPYDIR(assetPath, assetdir)
+	s.COPYDIR2(assetPath, assetdir)
 
 	// Write the template.json file
 	templateJSON := filepath.Join(outDir, "template.json")
-	println("Writing template.json to", templateJSON)
 	// Marshall
 	optionsJSON, err := json.MarshalIndent(&Template{
 		BaseTemplate: *options,
@@ -410,7 +418,6 @@ func GenerateTemplate(options *BaseTemplate) error {
 	if err != nil {
 		return err
 	}
-	println(string(optionsJSON))
 	err = os.WriteFile(templateJSON, optionsJSON, 0o755)
 	if err != nil {
 		return err

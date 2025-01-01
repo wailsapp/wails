@@ -160,6 +160,45 @@ func COPYDIR(src string, dst string) {
 	unindent()
 }
 
+// COPYDIR2 recursively copies a directory tree, attempting to preserve permissions.
+// Source directory must exist, destination directory can exist.
+// Symlinks are ignored and skipped.
+// Credit: https://gist.github.com/r0l1/92462b38df26839a3ca324697c8cba04
+func COPYDIR2(src string, dst string) {
+	log("COPYDIR %s -> %s", src, dst)
+	src = filepath.Clean(src)
+	dst = filepath.Clean(dst)
+
+	si, err := os.Stat(src)
+	checkError(err)
+	if !si.IsDir() {
+		checkError(fmt.Errorf("source is not a directory"))
+	}
+
+	indent()
+	MKDIR(dst)
+
+	entries, err := os.ReadDir(src)
+	checkError(err)
+
+	for _, entry := range entries {
+		srcPath := filepath.Join(src, entry.Name())
+		dstPath := filepath.Join(dst, entry.Name())
+
+		if entry.IsDir() {
+			COPYDIR(srcPath, dstPath)
+		} else {
+			// Skip symlinks.
+			if entry.Type()&os.ModeSymlink != 0 {
+				continue
+			}
+
+			COPY(srcPath, dstPath)
+		}
+	}
+	unindent()
+}
+
 func SYMLINK(source string, target string) {
 	// trim string to first 30 chars
 	var trimTarget = target
