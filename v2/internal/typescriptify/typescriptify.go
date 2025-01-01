@@ -261,15 +261,19 @@ func (t *TypeScriptify) AddType(typeOf reflect.Type) *TypeScriptify {
 func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.StructField) {
 	keyType := field.Type.Key()
 	valueType := field.Type.Elem()
-	valueTypeName := valueType.Name()
+	valueTypeName := t.nameTypeOf(valueType)
 	if name, ok := t.types[valueType.Kind()]; ok {
 		valueTypeName = name
 	}
 	if valueType.Kind() == reflect.Array || valueType.Kind() == reflect.Slice {
-		valueTypeName = valueType.Elem().Name() + "[]"
+		valueTypeName = t.nameTypeOf(valueType.Elem()) + "[]"
 	}
 	if valueType.Kind() == reflect.Ptr {
-		valueTypeName = valueType.Elem().Name()
+		valueTypeName = t.nameTypeOf(valueType.Elem())
+	}
+	if valueType.Kind() == reflect.Map {
+		// TODO: support nested maps
+		valueTypeName = "any" // valueType.Elem().Name()
 	}
 	if valueType.Kind() == reflect.Struct && differentNamespaces(t.namespace, valueType) {
 		valueTypeName = valueType.String()
@@ -296,9 +300,11 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 	}
 	t.fields = append(t.fields, fmt.Sprintf("%s%s: {[key: %s]: %s};", t.indent, fieldName, keyTypeStr, valueTypeName))
 	if valueType.Kind() == reflect.Struct {
-		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = this.convertValues(source[\"%s\"], %s, true);", t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypeName+t.suffix))
+		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = this.convertValues(source[\"%s\"], %s, true);",
+			t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypeName+t.suffix))
 	} else {
-		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = source[\"%s\"];", t.indent, t.indent, dotField, strippedFieldName))
+		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = source[\"%s\"];",
+			t.indent, t.indent, dotField, strippedFieldName))
 	}
 }
 
@@ -501,7 +507,7 @@ func (t *TypeScriptify) convertEnum(depth int, typeOf reflect.Type, elements []e
 	}
 	t.alreadyConverted[typeOf.String()] = true
 
-	entityName := t.Prefix + typeOf.Name() + t.Suffix
+	entityName := t.Prefix + t.nameTypeOf(typeOf) + t.Suffix
 	result := "enum " + entityName + " {\n"
 
 	for _, val := range elements {
@@ -595,6 +601,15 @@ func (t *TypeScriptify) getJSONFieldName(field reflect.StructField, isPtr bool) 
 	return jsonFieldName
 }
 
+func (t *TypeScriptify) nameTypeOf(typeOf reflect.Type) string {
+	tname := typeOf.Name()
+	if strings.Contains(tname, "[") {
+		tname = strings.ReplaceAll(tname, "[", "_")
+		tname = strings.ReplaceAll(tname, "]", "_")
+	}
+	return tname
+}
+
 func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode map[string]string) (string, error) {
 	if _, found := t.alreadyConverted[typeOf.String()]; found { // Already converted
 		return "", nil
@@ -607,7 +622,7 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 
 	t.alreadyConverted[typeOf.String()] = true
 
-	entityName := t.Prefix + typeOf.Name() + t.Suffix
+	entityName := t.Prefix + t.nameTypeOf(typeOf) + t.Suffix
 
 	if typeClashWithReservedKeyword(entityName) {
 		warnAboutTypesClash(entityName)
@@ -807,8 +822,18 @@ type typeScriptClassBuilder struct {
 	namespace            string
 }
 
+func (t *typeScriptClassBuilder) nameTypeOf(typeOf reflect.Type) string {
+	tname := typeOf.Name()
+	if strings.Contains(tname, "[") {
+		tname = strings.ReplaceAll(tname, "[", "_")
+		tname = strings.ReplaceAll(tname, "]", "_")
+	}
+	return tname
+}
+
 func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field reflect.StructField, arrayDepth int, opts TypeOptions) error {
-	fieldType, kind := field.Type.Elem().Name(), field.Type.Elem().Kind()
+	fieldType := t.nameTypeOf(field.Type.Elem())
+	kind := field.Type.Elem().Kind()
 	typeScriptType := t.types[kind]
 
 	if len(fieldName) > 0 {
@@ -828,7 +853,8 @@ func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field ref
 }
 
 func (t *typeScriptClassBuilder) AddSimpleField(fieldName string, field reflect.StructField, opts TypeOptions) error {
-	fieldType, kind := field.Type.Name(), field.Type.Kind()
+	fieldType := t.nameTypeOf(field.Type)
+	kind := field.Type.Kind()
 
 	typeScriptType := t.types[kind]
 	if len(opts.TSType) > 0 {
@@ -852,7 +878,7 @@ func (t *typeScriptClassBuilder) AddSimpleField(fieldName string, field reflect.
 }
 
 func (t *typeScriptClassBuilder) AddEnumField(fieldName string, field reflect.StructField) {
-	fieldType := field.Type.Name()
+	fieldType := t.nameTypeOf(field.Type)
 	t.addField(fieldName, t.prefix+fieldType+t.suffix, false)
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
 	t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
@@ -862,7 +888,7 @@ func (t *typeScriptClassBuilder) AddStructField(fieldName string, field reflect.
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
 	classname := "null"
 	namespace := strings.Split(field.Type.String(), ".")[0]
-	fqname := t.prefix + field.Type.Name() + t.suffix
+	fqname := t.prefix + t.nameTypeOf(field.Type) + t.suffix
 	if namespace != t.namespace {
 		fqname = namespace + "." + fqname
 	}
@@ -881,7 +907,7 @@ func (t *typeScriptClassBuilder) AddStructField(fieldName string, field reflect.
 }
 
 func (t *typeScriptClassBuilder) AddArrayOfStructsField(fieldName string, field reflect.StructField, arrayDepth int) {
-	fieldType := field.Type.Elem().Name()
+	fieldType := t.nameTypeOf(field.Type.Elem())
 	if differentNamespaces(t.namespace, field.Type.Elem()) {
 		fieldType = field.Type.Elem().String()
 	}
