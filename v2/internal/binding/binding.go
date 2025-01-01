@@ -350,6 +350,13 @@ func (b *Bindings) hasExportedJSONFields(typeOf reflect.Type) bool {
 	for i := 0; i < typeOf.NumField(); i++ {
 		jsonFieldName := ""
 		f := typeOf.Field(i)
+		// function, complex, and channel types cannot be json-encoded
+		if f.Type.Kind() == reflect.Chan ||
+			f.Type.Kind() == reflect.Func ||
+			f.Type.Kind() == reflect.Complex128 ||
+			f.Type.Kind() == reflect.Complex64 {
+			continue
+		}
 		jsonTag, hasTag := f.Tag.Lookup("json")
 		if !hasTag && f.IsExported() {
 			return true
