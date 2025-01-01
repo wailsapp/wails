@@ -223,8 +223,18 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 	return arrayifyValue(valueArray, value)
 }
 
+var (
+	jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
+)
+
 func goTypeToTypescriptType(input string, importNamespaces *slicer.StringSlicer) string {
-	return goTypeToJSDocType(input, importNamespaces)
+	tname := goTypeToJSDocType(input, importNamespaces)
+	gidx := strings.IndexRune(tname, '[')
+	if gidx > 0 { // its a generic type
+		rem := strings.SplitN(tname, "[", 2)
+		tname = rem[0] + "_" + jsVariableUnsafeChars.ReplaceAllLiteralString(rem[1], "_")
+	}
+	return tname
 }
 
 func entityFullReturnType(input, prefix, suffix string, importNamespaces *slicer.StringSlicer) string {
