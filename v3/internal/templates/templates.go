@@ -91,7 +91,7 @@ func getInternalTemplate(templateName string) (*Template, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	template.source = sourceInternal
 	return &template, nil
 }
 
