@@ -20,7 +20,7 @@ import * as $models from "./models.js";
  */
 export function Yay(): Promise<$models.Address | null> & { cancel(): void } {
     let $resultPromise = $Call.ByID(3568225479) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType1($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
