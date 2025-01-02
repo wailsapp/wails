@@ -278,6 +278,7 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 	valueTypeName := nameTypeOf(valueType)
 	if valueType.Kind() == reflect.Ptr {
 		valueType = valueType.Elem()
+		valueTypeName = nameTypeOf(valueType)
 	}
 	if name, ok := t.types[valueType.Kind()]; ok {
 		valueTypeName = name
