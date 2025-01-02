@@ -354,6 +354,28 @@ Base command: `wails3 update`
 
 Update commands help manage and update project assets. All update commands use the base command: `wails3 update <command>`.
 
+### `update cli`
+Updates the Wails CLI to a new version.
+
+```bash
+wails3 update cli [flags]
+```
+
+#### Flags
+| Flag        | Description                     | Default |
+|-------------|---------------------------------|---------|
+| `-pre`      | Update to latest pre-release    | `false` |
+| `-version`  | Update to specific version      |         |
+| `-nocolour` | Disable colored output          | `false` |
+
+The update cli command allows you to update your Wails CLI installation. By default, it updates to the latest stable release.
+You can use the `-pre` flag to update to the latest pre-release version, or specify a particular version using the `-version` flag.
+
+After updating, remember to update your project's go.mod file to use the same version:
+```bash
+require github.com/wailsapp/wails/v3 v3.x.x
+```
+
 ### `update build-assets`
 Updates the build assets using the given config file.
 
@@ -413,4 +435,3 @@ Opens the Wails sponsorship page in your default browser.
 
 ```bash
 wails3 sponsor
-

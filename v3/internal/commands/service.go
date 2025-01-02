@@ -3,9 +3,8 @@ package commands
 import (
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/service"
+	"github.com/wailsapp/wails/v3/internal/term"
 	"strings"
-
-	"github.com/pterm/pterm"
 )
 
 func toCamelCasePlugin(s string) string {
@@ -34,7 +33,7 @@ func toCamelCasePlugin(s string) string {
 func ServiceInit(options *flags.ServiceInit) error {
 
 	if options.Quiet {
-		pterm.DisableOutput()
+		term.DisableOutput()
 	}
 
 	if options.PackageName == "" {

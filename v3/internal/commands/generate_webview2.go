@@ -3,10 +3,9 @@ package commands
 import (
 	_ "embed"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/term"
 	"os"
 	"path/filepath"
-
-	"github.com/pterm/pterm"
 )
 
 //go:embed webview2/MicrosoftEdgeWebview2Setup.exe
@@ -35,6 +34,6 @@ func GenerateWebView2Bootstrapper(options *GenerateWebView2Options) error {
 		return fmt.Errorf("failed to write WebView2 bootstrapper: %w", err)
 	}
 
-	pterm.Success.Printf("Generated WebView2 bootstrapper at: %s\n", targetPath)
+	term.Success("Generated WebView2 bootstrapper at: " + targetPath + "\n")
 	return nil
 }

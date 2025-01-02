@@ -3,12 +3,11 @@ package commands
 import (
 	"context"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/term"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/pterm/pterm"
 
 	"github.com/wailsapp/task/v3"
 	"github.com/wailsapp/task/v3/taskfile/ast"
@@ -18,7 +17,7 @@ import (
 var BuildSettings = map[string]string{}
 
 func fatal(message string) {
-	pterm.Error.Println(message)
+	term.Error(message)
 	os.Exit(1)
 }
 

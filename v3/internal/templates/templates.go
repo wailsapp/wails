@@ -260,7 +260,7 @@ func Install(options *flags.Init) error {
 		Init:            options,
 		LocalModulePath: localModulePath,
 		UseTypescript:   UseTypescript,
-		WailsVersion:    version.VersionString,
+		WailsVersion:    version.String(),
 	}
 
 	defer func() {

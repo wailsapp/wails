@@ -57,6 +57,7 @@ func main() {
 
 	update := app.NewSubCommand("update", "Update tools")
 	update.NewSubCommandFunction("build-assets", "Updates the build assets using the given config file", commands.UpdateBuildAssets)
+	update.NewSubCommandFunction("cli", "Updates the Wails CLI", commands.UpdateCLI)
 
 	bindgen := generate.NewSubCommand("bindings", "Generate bindings + models")
 	var bindgenFlags flags.GenerateBindingsOptions

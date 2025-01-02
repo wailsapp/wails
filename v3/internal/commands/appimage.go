@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/term"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -19,7 +20,7 @@ var gtkPlugin []byte
 
 func log(p *pterm.ProgressbarPrinter, message string) {
 	p.UpdateTitle(message)
-	pterm.Info.Println(message)
+	term.Infof(message)
 	p.Increment()
 }
 
@@ -61,7 +62,7 @@ func GenerateAppImage(options *GenerateAppImageOptions) error {
 		return err
 	}
 
-	pterm.Println(pterm.LightYellow("AppImage Generator v1.0.0"))
+	term.Header("AppImage Generator")
 
 	return generateAppImage(options)
 }

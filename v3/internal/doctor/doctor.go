@@ -3,6 +3,7 @@ package doctor
 import (
 	"bytes"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/term"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -30,13 +31,7 @@ func Run() (err error) {
 	}
 	_ = get
 
-	pterm.DefaultSection = *pterm.DefaultSection.
-		WithBottomPadding(0).
-		WithStyle(pterm.NewStyle(pterm.FgBlue, pterm.Bold))
-
-	pterm.Println() // Spacer
-	pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Println("Wails Doctor")
-	pterm.Println() // Spacer
+	term.Header("Wails Doctor")
 
 	spinner, _ := pterm.DefaultSpinner.WithRemoveWhenDone().Start("Scanning system - Please wait (this may take a long time)...")
 
@@ -68,7 +63,7 @@ func Run() (err error) {
 	// Get system info
 	info, err := operatingsystem.Info()
 	if err != nil {
-		pterm.Error.Println("Failed to get system information")
+		term.Error("Failed to get system information")
 		return err
 	}
 
@@ -77,7 +72,7 @@ func Run() (err error) {
 		return dep.Path == "github.com/wailsapp/wails/v3"
 	})
 
-	wailsVersion := strings.TrimSpace(version.VersionString)
+	wailsVersion := strings.TrimSpace(version.String())
 	if wailsPackage != nil && wailsPackage.Replace != nil {
 		wailsVersion = "(local) => " + filepath.ToSlash(wailsPackage.Replace.Path)
 		// Get the latest commit hash
@@ -99,7 +94,7 @@ func Run() (err error) {
 
 	/** Output **/
 
-	pterm.DefaultSection.Println("System")
+	term.Section("System")
 
 	systemTabledata := pterm.TableData{
 		{pterm.Sprint("Name"), info.Name},
@@ -195,7 +190,7 @@ func Run() (err error) {
 
 	// Build Environment
 
-	pterm.DefaultSection.Println("Build Environment")
+	term.Section("Build Environment")
 
 	tableData := pterm.TableData{
 		{"Wails CLI", wailsVersion},
@@ -228,7 +223,7 @@ func Run() (err error) {
 	}
 
 	// Dependencies
-	pterm.DefaultSection.Println("Dependencies")
+	term.Section("Dependencies")
 	dependenciesBox := pterm.DefaultBox.WithTitleBottomCenter().WithTitle(pterm.Gray("*") + " - Optional Dependency")
 	dependencyTableData := pterm.TableData{}
 	if len(dependencies) == 0 {
@@ -248,11 +243,11 @@ func Run() (err error) {
 		dependenciesBox.Println(dependenciesTableString)
 	}
 
-	pterm.DefaultSection.Println("Diagnosis")
+	term.Section("Diagnosis")
 	if !ok {
-		pterm.Warning.Println("There are some items above that need addressing!")
+		term.Warning("There are some items above that need addressing!")
 	} else {
-		pterm.Success.Println("Your system is ready for Wails development!")
+		term.Success("Your system is ready for Wails development!")
 	}
 
 	return nil

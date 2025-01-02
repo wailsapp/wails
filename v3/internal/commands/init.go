@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/wailsapp/wails/v3/internal/term"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -103,12 +104,14 @@ func initGitRepository(projectDir string, gitURL string) error {
 func Init(options *flags.Init) error {
 
 	if options.List {
+		term.Header("Available templates")
 		return printTemplates()
 	}
 
 	if options.Quiet {
-		pterm.DisableOutput()
+		term.DisableOutput()
 	}
+	term.Header("Init project")
 
 	// Check if the template is a typescript template
 	isTypescript := false
@@ -158,7 +161,7 @@ func Init(options *flags.Init) error {
 			return err
 		}
 		if !options.Quiet {
-			pterm.Info.Printf("Initialized git repository with remote: %s\n", options.Git)
+			term.Infof("Initialized git repository with remote: %s\n", options.Git)
 		}
 	}
 	return nil
@@ -167,8 +170,7 @@ func Init(options *flags.Init) error {
 func printTemplates() error {
 	defaultTemplates := templates.GetDefaultTemplates()
 
-	pterm.DefaultSection.Println("Available templates")
-
+	pterm.Println()
 	table := pterm.TableData{{"Name", "Description"}}
 	for _, template := range defaultTemplates {
 		table = append(table, []string{template.Name, template.Description})
