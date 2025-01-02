@@ -44,7 +44,7 @@ func (a *App) logStartup() {
 		return dep.Path == "github.com/wailsapp/wails/v3"
 	})
 
-	wailsVersion := version.VersionString
+	wailsVersion := version.String()
 	if wailsPackage != nil && wailsPackage.Replace != nil {
 		wailsVersion = "(local) => " + filepath.ToSlash(wailsPackage.Replace.Path)
 		// Get the latest commit hash
