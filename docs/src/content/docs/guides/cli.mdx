@@ -117,8 +117,6 @@ Performs a system check and displays a status report.
 wails3 doctor
 ```
 
-Base command: `wails3 generate`
-
 ## Generate Commands
 
 Generate commands help create various project assets like bindings, icons, and build files. All generate commands use the base command: `wails3 generate <command>`.
@@ -390,6 +388,19 @@ Opens the Wails documentation in your default browser.
 wails3 docs
 ```
 
+### `releasenotes`
+Shows the release notes for the current or specified version.
+
+```bash
+wails3 releasenotes [flags]
+```
+
+#### Flags
+| Flag | Description                       | Default |
+|------|-----------------------------------|---------|
+| `-v` | Version to show release notes for |         |
+| `-n` | Disable colour output             | `false` |
+
 ### `version`
 Prints the current version of Wails.
 
@@ -403,4 +414,3 @@ Opens the Wails sponsorship page in your default browser.
 ```bash
 wails3 sponsor
 
-```

@@ -37,6 +37,7 @@ func main() {
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
 	app.NewSubCommandFunction("package", "Package application", commands.Package)
 	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
 
 	task := app.NewSubCommand("task", "Run and list tasks")
 	var taskFlags commands.RunTaskOptions
