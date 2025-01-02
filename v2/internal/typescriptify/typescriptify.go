@@ -835,7 +835,10 @@ type typeScriptClassBuilder struct {
 func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field reflect.StructField, arrayDepth int, opts TypeOptions) error {
 	fieldType := nameTypeOf(field.Type.Elem())
 	kind := field.Type.Elem().Kind()
-	typeScriptType := t.types[kind]
+	typeScriptType, ok := t.types[kind]
+	if !ok {
+		typeScriptType = "any"
+	}
 
 	if len(fieldName) > 0 {
 		strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
@@ -857,7 +860,11 @@ func (t *typeScriptClassBuilder) AddSimpleField(fieldName string, field reflect.
 	fieldType := nameTypeOf(field.Type)
 	kind := field.Type.Kind()
 
-	typeScriptType := t.types[kind]
+	typeScriptType, ok := t.types[kind]
+	if !ok {
+		typeScriptType = "any"
+	}
+
 	if len(opts.TSType) > 0 {
 		typeScriptType = opts.TSType
 	}
