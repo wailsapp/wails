@@ -955,7 +955,7 @@ func indentLines(str string, i int) string {
 
 func getStructFQN(in string) string {
 	result := strings.ReplaceAll(in, "[]", "")
-	//result = strings.ReplaceAll(result, "*", "")
+	result = strings.ReplaceAll(result, "*", "")
 	return result
 }
 
