@@ -277,7 +277,7 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 				continue
 			}
 			fqname := field.Type.String()
-			sNameSplit := strings.Split(fqname, ".")
+			sNameSplit := strings.SplitN(fqname, ".", 2)
 			if len(sNameSplit) < 2 {
 				continue
 			}
@@ -293,7 +293,7 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 				continue
 			}
 			fqname := field.Type.Elem().String()
-			sNameSplit := strings.Split(fqname, ".")
+			sNameSplit := strings.SplitN(fqname, ".", 2)
 			if len(sNameSplit) < 2 {
 				continue
 			}

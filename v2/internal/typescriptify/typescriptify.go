@@ -689,9 +689,11 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 				}
 			}
 
-			isKnownType := true // t.KnownStructs.Contains(getStructFQN(field.Type.String()))
-			//println("KnownStructs:", t.KnownStructs.Join("\t"))
-			//println(getStructFQN(field.Type.String()))
+			isKnownType := t.KnownStructs.Contains(getStructFQN(field.Type.String()))
+			if !isKnownType {
+				println("KnownStructs:", t.KnownStructs.Join("\t"))
+				println("Not found:", getStructFQN(field.Type.String()))
+			}
 			builder.AddStructField(jsonFieldName, field, !isKnownType)
 		} else if field.Type.Kind() == reflect.Map {
 			t.logf(depth, "- map field %s.%s", typeOf.Name(), field.Name)
@@ -953,7 +955,7 @@ func indentLines(str string, i int) string {
 
 func getStructFQN(in string) string {
 	result := strings.ReplaceAll(in, "[]", "")
-	result = strings.ReplaceAll(result, "*", "")
+	//result = strings.ReplaceAll(result, "*", "")
 	return result
 }
 
