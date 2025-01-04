@@ -166,7 +166,7 @@ func getPackageName(in string) string {
 }
 
 func getSplitReturn(in string) (string, string) {
-	result := strings.Split(in, ".")
+	result := strings.SplitN(in, ".", 2)
 	return result[0], result[1]
 }
 
