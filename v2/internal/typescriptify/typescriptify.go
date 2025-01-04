@@ -276,18 +276,27 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 	keyType := field.Type.Key()
 	valueType := field.Type.Elem()
 	valueTypeName := nameTypeOf(valueType)
+	valueTypeSuffix := ""
+	if valueType.Kind() == reflect.Ptr {
+		valueType = valueType.Elem()
+		valueTypeName = nameTypeOf(valueType)
+	}
+	if valueType.Kind() == reflect.Array || valueType.Kind() == reflect.Slice {
+		arrayDepth := 1
+		for valueType.Elem().Kind() == reflect.Array || valueType.Elem().Kind() == reflect.Slice {
+			valueType = valueType.Elem()
+			arrayDepth++
+		}
+		valueType = valueType.Elem()
+		valueTypeName = nameTypeOf(valueType)
+		valueTypeSuffix = strings.Repeat("[]", arrayDepth)
+	}
 	if valueType.Kind() == reflect.Ptr {
 		valueType = valueType.Elem()
 		valueTypeName = nameTypeOf(valueType)
 	}
 	if name, ok := t.types[valueType.Kind()]; ok {
 		valueTypeName = name
-	}
-	if valueType.Kind() == reflect.Array || valueType.Kind() == reflect.Slice {
-		valueTypeName = nameTypeOf(valueType.Elem()) + "[]"
-	}
-	if valueType.Kind() == reflect.Ptr {
-		valueTypeName = nameTypeOf(valueType.Elem())
 	}
 	if valueType.Kind() == reflect.Map {
 		// TODO: support nested maps
@@ -316,10 +325,10 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 			fieldName = fmt.Sprintf(`"%s"?`, strippedFieldName)
 		}
 	}
-	t.fields = append(t.fields, fmt.Sprintf("%s%s: Record<%s, %s>;", t.indent, fieldName, keyTypeStr, valueTypeName))
+	t.fields = append(t.fields, fmt.Sprintf("%s%s: Record<%s, %s>;", t.indent, fieldName, keyTypeStr, valueTypeName+valueTypeSuffix))
 	if valueType.Kind() == reflect.Struct {
 		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = this.convertValues(source[\"%s\"], %s, true);",
-			t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypeName+t.suffix))
+			t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypeName+valueTypeSuffix+t.suffix))
 	} else {
 		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = source[\"%s\"];",
 			t.indent, t.indent, dotField, strippedFieldName))
@@ -740,9 +749,13 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 			}
 
 			arrayDepth := 1
-			for field.Type.Elem().Kind() == reflect.Slice { // Slice of slices:
+			for field.Type.Elem().Kind() == reflect.Slice || field.Type.Elem().Kind() == reflect.Array { // Slice of slices:
 				field.Type = field.Type.Elem()
 				arrayDepth++
+			}
+
+			if field.Type.Elem().Kind() == reflect.Ptr { // extract ptr type
+				field.Type = field.Type.Elem()
 			}
 
 			if field.Type.Elem().Kind() == reflect.Struct { // Slice of structs:
