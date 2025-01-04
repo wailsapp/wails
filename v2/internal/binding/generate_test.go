@@ -128,6 +128,16 @@ func Test_goTypeToJSDocType(t *testing.T) {
 			input: "main.SomeType",
 			want:  "main.SomeType",
 		},
+		{
+			name:  "primitive_generic",
+			input: "main.ListData[string]",
+			want:  "main.ListData_string_",
+		},
+		{
+			name:  "stdlib_generic",
+			input: "main.ListData[*net/http.Request]",
+			want:  "main.ListData_net_http_Request_",
+		},
 	}
 	var importNamespaces slicer.StringSlicer
 	for _, tt := range tests {

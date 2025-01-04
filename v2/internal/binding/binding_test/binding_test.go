@@ -51,6 +51,10 @@ func TestBindings_GenerateModels(t *testing.T) {
 		SpecialCharacterFieldTest,
 		WithoutFieldsTest,
 		NoFieldTagsTest,
+		Generics1Test,
+		Generics2Test,
+		IgnoredTest,
+		DeepElementsTest,
 	}
 
 	testLogger := &logger.Logger{}
