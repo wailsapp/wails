@@ -171,7 +171,18 @@ func fullyQualifiedName(packageName string, typeName string) string {
 	}
 }
 
+var (
+	jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
+)
+
 func arrayifyValue(valueArray string, valueType string) string {
+	valueType = strings.ReplaceAll(valueType, "*", "")
+	gidx := strings.IndexRune(valueType, '[')
+	if gidx > 0 { // its a generic type
+		rem := strings.SplitN(valueType, "[", 2)
+		valueType = rem[0] + "_" + jsVariableUnsafeChars.ReplaceAllLiteralString(rem[1], "_")
+	}
+
 	if len(valueArray) == 0 {
 		return valueType
 	}
@@ -217,25 +228,14 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 	}
 
 	if len(key) > 0 {
-		return fmt.Sprintf("{[key: %s]: %s}", key, arrayifyValue(valueArray, value))
+		return fmt.Sprintf("Record<%s, %s>", key, arrayifyValue(valueArray, value))
 	}
 
 	return arrayifyValue(valueArray, value)
 }
 
-var (
-	jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
-)
-
 func goTypeToTypescriptType(input string, importNamespaces *slicer.StringSlicer) string {
-	tname := goTypeToJSDocType(input, importNamespaces)
-	tname = strings.ReplaceAll(tname, "*", "")
-	gidx := strings.IndexRune(tname, '[')
-	if gidx > 0 { // its a generic type
-		rem := strings.SplitN(tname, "[", 2)
-		tname = rem[0] + "_" + jsVariableUnsafeChars.ReplaceAllLiteralString(rem[1], "_")
-	}
-	return tname
+	return goTypeToJSDocType(input, importNamespaces)
 }
 
 func entityFullReturnType(input, prefix, suffix string, importNamespaces *slicer.StringSlicer) string {

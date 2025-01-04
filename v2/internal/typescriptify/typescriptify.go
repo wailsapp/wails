@@ -316,7 +316,7 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 			fieldName = fmt.Sprintf(`"%s"?`, strippedFieldName)
 		}
 	}
-	t.fields = append(t.fields, fmt.Sprintf("%s%s: {[key: %s]: %s};", t.indent, fieldName, keyTypeStr, valueTypeName))
+	t.fields = append(t.fields, fmt.Sprintf("%s%s: Record<%s, %s>;", t.indent, fieldName, keyTypeStr, valueTypeName))
 	if valueType.Kind() == reflect.Struct {
 		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = this.convertValues(source[\"%s\"], %s, true);",
 			t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypeName+t.suffix))

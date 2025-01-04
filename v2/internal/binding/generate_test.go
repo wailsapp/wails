@@ -116,12 +116,12 @@ func Test_goTypeToJSDocType(t *testing.T) {
 		{
 			name:  "map",
 			input: "map[string]float64",
-			want:  "{[key: string]: number}",
+			want:  "Record<string, number>",
 		},
 		{
 			name:  "map",
 			input: "map[string]map[string]float64",
-			want:  "{[key: string]: {[key: string]: number}}",
+			want:  "Record<string, Record<string, number>>",
 		},
 		{
 			name:  "types",
