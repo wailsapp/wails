@@ -19,7 +19,7 @@ import * as $models from "./models.js";
  */
 export function Get(aliasValue: $models.Alias): Promise<$models.Person> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.Get", aliasValue) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType0($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
@@ -31,7 +31,7 @@ export function Get(aliasValue: $models.Alias): Promise<$models.Person> & { canc
  */
 export function GetButDifferent(): Promise<$models.GenericPerson<boolean>> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.GetButDifferent") as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType1($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
@@ -43,7 +43,7 @@ export function GetButDifferent(): Promise<$models.GenericPerson<boolean>> & { c
  */
 export function Greet($0: $models.EmptyAliasStruct, $1: $models.EmptyStruct): Promise<$models.AliasStruct> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.Greet", $0, $1) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType5($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);

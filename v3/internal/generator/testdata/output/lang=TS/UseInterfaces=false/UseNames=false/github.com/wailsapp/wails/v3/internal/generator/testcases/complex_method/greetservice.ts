@@ -21,7 +21,7 @@ import * as $models from "./models.js";
  */
 export function Greet(str: string, people: $models.Person[], $2: {"AnotherCount": number, "AnotherOne": $models.Person | null}, assoc: { [_: `${number}`]: boolean | null }, $4: (number | null)[], ...other: string[]): Promise<[$models.Person, any, number[]]> & { cancel(): void } {
     let $resultPromise = $Call.ByID(1411160069, str, people, $2, assoc, $4, other) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         $result[0] = $$createType0($result[0]);
         $result[2] = $$createType1($result[2]);
         return $result;

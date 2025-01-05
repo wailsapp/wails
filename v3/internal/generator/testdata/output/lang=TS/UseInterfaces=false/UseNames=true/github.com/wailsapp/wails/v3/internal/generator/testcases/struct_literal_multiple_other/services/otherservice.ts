@@ -20,7 +20,7 @@ import * as $models from "./models.js";
  */
 export function Yay(): Promise<$models.Address | null> & { cancel(): void } {
     let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/generator/testcases/struct_literal_multiple_other/services.OtherService.Yay") as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType1($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);

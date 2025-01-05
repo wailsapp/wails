@@ -27,7 +27,7 @@ export function Greet(name: string): Promise<string> & { cancel(): void } {
  */
 export function NewPerson(name: string): Promise<$models.Person | null> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.NewPerson", name) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType1($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
