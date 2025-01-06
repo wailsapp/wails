@@ -221,7 +221,7 @@ func (m *module) PostponedCreates() []string {
 
 		case *types.Named:
 			if !collect.IsClass(key) {
-				// Creation function for non-struct named types
+				// Creation functions for non-struct named types
 				// require an indirect assignment to break cycles.
 
 				// Typescript cannot infer the return type on its own: add hints.

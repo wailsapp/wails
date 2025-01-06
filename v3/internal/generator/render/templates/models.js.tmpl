@@ -18,6 +18,11 @@ import {Create as $Create} from "{{js $runtime}}";
 import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{- end}}{{if $imports.External}}
 {{end}}
+{{- /*
+    In interface-only mode, this file is likely to contain just comments.
+    We then force the inclusion of at least one import statement
+    to ensure it is recognised as an ES module.
+*/}}
 {{- if or $useInterfaces $imports.ImportModels}}
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
