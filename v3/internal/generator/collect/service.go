@@ -258,8 +258,6 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 		}
 	}
 
-	var needsContext bool
-
 	// Collect parameters.
 	for i := range signature.Params().Len() {
 		param := signature.Params().At(i)
@@ -268,16 +266,6 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 			// Skip first parameter if it has context type.
 			named, ok := types.Unalias(param.Type()).(*types.Named)
 			if ok && named.Obj().Pkg().Path() == collector.systemPaths.ContextPackage && named.Obj().Name() == "Context" {
-				needsContext = true
-				continue
-			}
-		}
-
-		if i == 0 || (i == 1 && needsContext) {
-			// Skip first parameter if it has window type,
-			// or second parameter if it has window type and first is context.
-			named, ok := types.Unalias(param.Type()).(*types.Named)
-			if ok && named.Obj().Pkg().Path() == collector.systemPaths.ApplicationPackage && named.Obj().Name() == "Window" {
 				continue
 			}
 		}
