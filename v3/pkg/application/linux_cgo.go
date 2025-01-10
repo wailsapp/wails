@@ -921,7 +921,12 @@ func (w *linuxWebviewWindow) getScreen() (*Screen, error) {
 func (w *linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width int, height int, scaleFactor int) {
 	monitor := w.getCurrentMonitor()
 	if monitor == nil {
-		return -1, -1, -1, -1, 1
+		// Best effort to find screen resolution of default monitor
+		display := C.gdk_display_get_default()
+		monitor = C.gdk_display_get_primary_monitor(display)
+		if monitor == nil {
+			return -1, -1, -1, -1, 1
+		}
 	}
 	var result C.GdkRectangle
 	C.gdk_monitor_get_geometry(monitor, &result)
