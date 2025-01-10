@@ -8,11 +8,13 @@ import (
 //go:embed version.txt
 var versionString string
 
+const DevVersion = "v3.0.0-dev"
+
 func String() string {
 	if !IsDev() {
 		return versionString
 	}
-	return "v3 dev"
+	return DevVersion
 }
 
 func LatestStable() string {
