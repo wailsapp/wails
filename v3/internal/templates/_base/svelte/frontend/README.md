@@ -1,1 +1,0 @@
-# Wails + Svelte

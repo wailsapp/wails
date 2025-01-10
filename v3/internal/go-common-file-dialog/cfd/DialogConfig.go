@@ -3,6 +3,7 @@
 package cfd
 
 import (
+	"reflect"
 	"fmt"
 	"os"
 )
@@ -13,6 +14,9 @@ type FileFilter struct {
 	// The filter pattern. Eg. "*.txt;*.png" to select all txt and png files, "*.*" to select any files, etc.
 	Pattern string
 }
+
+// Never obfuscate the FileFilter type.
+var _ = reflect.TypeOf(FileFilter{})
 
 type DialogConfig struct {
 	// The title of the dialog
