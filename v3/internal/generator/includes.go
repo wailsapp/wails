@@ -17,7 +17,7 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 		// Validate filename.
 		switch name {
 		case generator.renderer.ModelsFile():
-			if len(index.Models) > 0 {
+			if index.HasExportedModels {
 				generator.logger.Errorf(
 					"package %s: included file '%s' collides with models filename; please rename the file or choose a different filename for models",
 					index.Package.Path,
@@ -27,7 +27,7 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 			}
 
 		case generator.renderer.InternalFile():
-			if len(index.Internal) > 0 {
+			if len(index.Models) > 0 {
 				generator.logger.Errorf(
 					"package %s: included file '%s' collides with internal models filename; please rename the file or choose a different filename for internal models",
 					index.Package.Path,

@@ -17,8 +17,8 @@ type Renderer struct {
 
 	ext string
 
-	service *template.Template
-	models  *template.Template
+	service  *template.Template
+	typedefs *template.Template
 }
 
 // NewRenderer initialises a code renderer
@@ -35,8 +35,8 @@ func NewRenderer(options *flags.GenerateBindingsOptions, collector *collect.Coll
 
 		ext: ext,
 
-		service: tmplService[tmplLanguage(options.TS)],
-		models:  tmplModels[tmplLanguage(options.TS)],
+		service:  tmplService[tmplLanguage(options.TS)],
+		typedefs: tmplTypedefs[tmplLanguage(options.TS)],
 	}
 }
 
@@ -79,9 +79,9 @@ func (renderer *Renderer) Service(w io.Writer, info *collect.ServiceInfo) error 
 	})
 }
 
-// Models renders models code for the given list of models.
-func (renderer *Renderer) Models(w io.Writer, imports *collect.ImportMap, models []*collect.ModelInfo) error {
-	return renderer.models.Execute(w, &struct {
+// Typedefs renders type definitions for the given list of models.
+func (renderer *Renderer) Typedefs(w io.Writer, imports *collect.ImportMap, models []*collect.ModelInfo) error {
+	return renderer.typedefs.Execute(w, &struct {
 		module
 		Models []*collect.ModelInfo
 	}{
@@ -91,6 +91,19 @@ func (renderer *Renderer) Models(w io.Writer, imports *collect.ImportMap, models
 			Imports:                 imports,
 		},
 		models,
+	})
+}
+
+// Models renders exported models for the given package index to w.
+func (renderer *Renderer) Models(w io.Writer, index *collect.PackageIndex) error {
+	return tmplModels.Execute(w, &struct {
+		*collect.PackageIndex
+		*Renderer
+		*flags.GenerateBindingsOptions
+	}{
+		index,
+		renderer,
+		renderer.options,
 	})
 }
 

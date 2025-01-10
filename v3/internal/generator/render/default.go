@@ -105,10 +105,8 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 	}
 
 	prefix := ""
-	if typ.Obj().Exported() && m.Imports.ImportModels {
+	if m.Imports.ImportModels {
 		prefix = "$models."
-	} else if !typ.Obj().Exported() && m.Imports.ImportInternal {
-		prefix = "$internal."
 	}
 
 	if collect.IsAny(typ) {

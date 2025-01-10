@@ -209,13 +209,13 @@ func (generator *Generator) generateModelsIndexIncludes(info *collect.PackageInf
 
 	if len(index.Models) > 0 {
 		generator.scheduler.Schedule(func() {
-			generator.generateModels(info, index.Models, false)
+			generator.generateTypedefs(info, index.Models)
 		})
 	}
 
-	if len(index.Internal) > 0 {
+	if index.HasExportedModels {
 		generator.scheduler.Schedule(func() {
-			generator.generateModels(info, index.Internal, true)
+			generator.generateModels(index)
 		})
 	}
 

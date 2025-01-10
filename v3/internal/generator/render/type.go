@@ -211,10 +211,8 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 	var builder strings.Builder
 
 	if typ.Obj().Pkg().Path() == m.Imports.Self {
-		if typ.Obj().Exported() && m.Imports.ImportModels {
+		if m.Imports.ImportModels {
 			builder.WriteString("$models.")
-		} else if !typ.Obj().Exported() && m.Imports.ImportInternal {
-			builder.WriteString("$internal.")
 		}
 	} else {
 		builder.WriteString(jsimport(m.Imports.External[typ.Obj().Pkg().Path()]))
