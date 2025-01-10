@@ -65,7 +65,7 @@ type ControlBase struct {
 	dispatchq []func()
 }
 
-// initControl is called by controls: edit, button, treeview, listview, and so on.
+// InitControl is called by controls: edit, button, treeview, listview, and so on.
 func (cba *ControlBase) InitControl(className string, parent Controller, exstyle, style uint) {
 	cba.hwnd = CreateWindow(className, parent, exstyle, style)
 	if cba.hwnd == 0 {

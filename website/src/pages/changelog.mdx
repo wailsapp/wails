@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Removed documentation references for 'The default module name in go.mod is "changeme". You should change this to something more appropriate.' as it appears to be no longer relevant.
+- Update script in Mac App Store guide to support app names containing spaces by @cristianrgreco
 
 ### Added
 - Added option to set window class name on Windows. Added in [PR](https://github.com/wailsapp/wails/pull/3828) by @APshenkin
@@ -26,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed typo by @takuyahara in [PR](https://github.com/wailsapp/wails/pull/3846)
 - Fixed incorrect TS definition of `WindowSetSize` by @leaanthony
 - Ensure showHiddenFiles works with directory dialog by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3904)
+- chore: fix some comments in [PR](https://github.com/wailsapp/wails/pull/3932) by @lvyaoting
+- [windows] Fixed frameless window flickering when minimizing/restoring by preventing unnecessary redraws [#3951](https://github.com/wailsapp/wails/issues/3951)
+- Fixed failed models.ts build due to non-json-encodable Go types [PR](https://github.com/wailsapp/wails/pull/3975) by [@pbnjay](https://github.com/pbnjay)
 
 ### Changed
 - Allow to specify macos-min-version externally. Implemented by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3756)
