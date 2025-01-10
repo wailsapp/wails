@@ -1,10 +1,10 @@
 examples/kitchensink/kitchensink
 cmd/wails3/wails
-/examples/systray/systray
+/examples/systray-menu/systray
 /examples/window/window
 /examples/dialogs/dialogs
 /examples/menu/menu
 /examples/clipboard/clipboard
 /examples/plain/plain
 /cmd/wails3/ui/.task/
-!/v3/internal/commands/build_assets/nsis/MicrosoftEdgeWebview2Setup.exe
+!internal/commands/webview2/MicrosoftEdgeWebview2Setup.exe

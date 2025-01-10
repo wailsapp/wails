@@ -4,6 +4,7 @@
 extern bool hasListeners(unsigned int);
 extern bool shouldQuitApplication();
 extern void cleanup();
+extern void handleSecondInstanceData(char * message);
 @implementation AppDelegate
 - (void)dealloc
 {
@@ -47,6 +48,15 @@ extern void cleanup();
     
     return TRUE;
 }
+- (void)handleSecondInstanceNotification:(NSNotification *)note;
+{
+   if (note.userInfo[@"message"] != nil) {
+        NSString *message = note.userInfo[@"message"];
+        const char* utf8Message = message.UTF8String;
+        handleSecondInstanceData((char*)utf8Message);
+    }
+}
+
 // GENERATED EVENTS START
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     if( hasListeners(EventApplicationDidBecomeActive) ) {

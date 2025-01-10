@@ -160,14 +160,85 @@ void showMenu(void* nsStatusItem, void *nsMenu) {
 	});
 }
 
-void systemTrayGetBounds(void* nsStatusItem, NSRect *rect) {
-	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-	NSRect buttonFrame = statusItem.button.frame;
-	*rect = [statusItem.button.window convertRectToScreen:buttonFrame];
+void systemTrayGetBounds(void* nsStatusItem, NSRect *rect, void **outScreen) {
+    NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+    NSStatusBarButton *button = statusItem.button;
+    
+    // Get mouse location and find the screen it's on
+    NSPoint mouseLocation = [NSEvent mouseLocation];
+    NSScreen *screen = nil;
+    NSArray *screens = [NSScreen screens];
+    
+    for (NSScreen *candidate in screens) {
+        NSRect frame = [candidate frame];
+        if (NSPointInRect(mouseLocation, frame)) {
+            screen = candidate;
+            break;
+        }
+    }
+    if (!screen) {
+        screen = [NSScreen mainScreen];
+    }
+    
+    // Get button frame in screen coordinates
+    NSRect buttonFrame = button.frame;
+    NSRect buttonFrameScreen = [button.window convertRectToScreen:buttonFrame];
+    
+    *rect = buttonFrameScreen;
+    *outScreen = (void*)screen;
+}
+
+NSRect NSScreen_frame(void* screen) {
+    return [(NSScreen*)screen frame];
 }
 
 int statusBarHeight() {
     NSMenu *mainMenu = [NSApp mainMenu];
     CGFloat menuBarHeight = [mainMenu menuBarHeight];
     return (int)menuBarHeight;
+}
+
+void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset) {
+    // Get the status item's button
+    NSStatusBarButton *button = [(NSStatusItem*)nsStatusItem button];
+    
+    // Get the frame in screen coordinates
+    NSRect frame = [button.window convertRectToScreen:button.frame];
+    
+    // Get the screen that contains the status item
+    NSScreen *screen = [button.window screen];
+    if (screen == nil) {
+        screen = [NSScreen mainScreen];
+    }
+    
+    // Get screen's backing scale factor (DPI)
+    CGFloat scaleFactor = [screen backingScaleFactor];
+    
+    // Get the window's frame
+    NSRect windowFrame = [(NSWindow*)nsWindow frame];
+    
+    // Calculate the horizontal position (centered under the status item)
+    CGFloat windowX = frame.origin.x + (frame.size.width - windowFrame.size.width) / 2;
+    
+    // If the window would go off the right edge of the screen, adjust it
+    if (windowX + windowFrame.size.width > screen.frame.origin.x + screen.frame.size.width) {
+        windowX = screen.frame.origin.x + screen.frame.size.width - windowFrame.size.width;
+    }
+    // If the window would go off the left edge of the screen, adjust it
+    if (windowX < screen.frame.origin.x) {
+        windowX = screen.frame.origin.x;
+    }
+    
+    // Get screen metrics
+    NSRect screenFrame = [screen frame];
+    NSRect visibleFrame = [screen visibleFrame];
+    
+    // Calculate the vertical position
+    CGFloat scaledOffset = offset * scaleFactor;
+    CGFloat windowY = visibleFrame.origin.y + visibleFrame.size.height - windowFrame.size.height - scaledOffset;
+    
+    // Set the window's frame
+    windowFrame.origin.x = windowX;
+    windowFrame.origin.y = windowY;
+    [(NSWindow*)nsWindow setFrame:windowFrame display:YES animate:NO];
 }

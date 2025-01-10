@@ -193,10 +193,45 @@ extern bool hasListeners(unsigned int);
     }
     [super dealloc];
 }
+- (void)windowDidZoom:(NSNotification *)notification {
+    NSWindow *window = notification.object;
+    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[window delegate];
+    if ([window isZoomed]) {
+        if (hasListeners(EventWindowMaximise)) {
+            processWindowEvent(delegate.windowId, EventWindowMaximise);
+        }
+    } else {
+        if (hasListeners(EventWindowUnMaximise)) {
+            processWindowEvent(delegate.windowId, EventWindowUnMaximise);
+        }
+    }
+}
+- (void)performZoomIn:(id)sender {
+    [super zoom:sender];
+    if (hasListeners(EventWindowZoomIn)) {
+        WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+        processWindowEvent(delegate.windowId, EventWindowZoomIn);
+    }
+}
+- (void)performZoomOut:(id)sender {
+    [super zoom:sender];
+    if (hasListeners(EventWindowZoomOut)) {
+        WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+        processWindowEvent(delegate.windowId, EventWindowZoomOut);
+    }
+}
+- (void)performZoomReset:(id)sender {
+    [self setFrame:[self frameRectForContentRect:[[self screen] visibleFrame]] display:YES];
+    if (hasListeners(EventWindowZoomReset)) {
+        WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+        processWindowEvent(delegate.windowId, EventWindowZoomReset);
+    }
+}
 @end
 @implementation WebviewWindowDelegate
 - (BOOL)windowShouldClose:(NSWindow *)sender {
-    processWindowEvent(self.windowId, EventWindowShouldClose);
+    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+    processWindowEvent(delegate.windowId, EventWindowShouldClose);
     return false;
 }
 - (void) dealloc {
@@ -246,6 +281,13 @@ extern bool hasListeners(unsigned int);
         return proposedOptions;
     } else {
         return proposedOptions | NSApplicationPresentationAutoHideToolbar;
+    }
+}
+- (void)windowDidChangeVisibility:(NSNotification *)notification {
+    NSWindow *window = notification.object;
+    BOOL isVisible = ![window isVisible];
+    if (hasListeners(isVisible ? EventWindowShow : EventWindowHide)) {
+        processWindowEvent(self.windowId, isVisible ? EventWindowShow : EventWindowHide);
     }
 }
 // GENERATED EVENTS START
@@ -369,12 +411,6 @@ extern bool hasListeners(unsigned int);
     }
 }
 
-- (void)windowDidChangeVisibility:(NSNotification *)notification {
-    if( hasListeners(EventWindowDidChangeVisibility) ) {
-        processWindowEvent(self.windowId, EventWindowDidChangeVisibility);
-    }
-}
-
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
     if( hasListeners(EventWindowDidDeminiaturize) ) {
         processWindowEvent(self.windowId, EventWindowDidDeminiaturize);
@@ -390,6 +426,18 @@ extern bool hasListeners(unsigned int);
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
     if( hasListeners(EventWindowDidEnterFullScreen) ) {
         processWindowEvent(self.windowId, EventWindowDidEnterFullScreen);
+    }
+}
+
+- (void)windowMaximise:(NSNotification *)notification {
+    if( hasListeners(EventWindowMaximise) ) {
+        processWindowEvent(self.windowId, EventWindowMaximise);
+    }
+}
+
+- (void)windowUnMaximise:(NSNotification *)notification {
+    if( hasListeners(EventWindowUnMaximise) ) {
+        processWindowEvent(self.windowId, EventWindowUnMaximise);
     }
 }
 
@@ -504,12 +552,6 @@ extern bool hasListeners(unsigned int);
 - (void)windowDidUpdateToolbar:(NSNotification *)notification {
     if( hasListeners(EventWindowDidUpdateToolbar) ) {
         processWindowEvent(self.windowId, EventWindowDidUpdateToolbar);
-    }
-}
-
-- (void)windowDidUpdateVisibility:(NSNotification *)notification {
-    if( hasListeners(EventWindowDidUpdateVisibility) ) {
-        processWindowEvent(self.windowId, EventWindowDidUpdateVisibility);
     }
 }
 
@@ -693,6 +735,18 @@ extern bool hasListeners(unsigned int);
     }
 }
 
+- (void)windowShow:(NSNotification *)notification {
+    if( hasListeners(EventWindowShow) ) {
+        processWindowEvent(self.windowId, EventWindowShow);
+    }
+}
+
+- (void)windowHide:(NSNotification *)notification {
+    if( hasListeners(EventWindowHide) ) {
+        processWindowEvent(self.windowId, EventWindowHide);
+    }
+}
+
 - (void)webView:(WKWebView *)webview didStartProvisionalNavigation:(WKNavigation *)navigation {
     if( hasListeners(EventWebViewDidStartProvisionalNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidStartProvisionalNavigation);
@@ -719,3 +773,28 @@ extern bool hasListeners(unsigned int);
 
 // GENERATED EVENTS END
 @end
+void windowSetScreen(void* window, void* screen, int yOffset) {
+    WebviewWindow* nsWindow = (WebviewWindow*)window;
+    NSScreen* nsScreen = (NSScreen*)screen;
+    
+    // Get current frame
+    NSRect frame = [nsWindow frame];
+    
+    // Convert frame to screen coordinates
+    NSRect screenFrame = [nsScreen frame];
+    NSRect currentScreenFrame = [[nsWindow screen] frame];
+    
+    // Calculate the menubar height for the target screen
+    NSRect visibleFrame = [nsScreen visibleFrame];
+    CGFloat menubarHeight = screenFrame.size.height - visibleFrame.size.height;
+    
+    // Calculate the distance from the top of the current screen
+    CGFloat topOffset = currentScreenFrame.origin.y + currentScreenFrame.size.height - frame.origin.y;
+    
+    // Position relative to new screen's top, accounting for menubar
+    frame.origin.x = screenFrame.origin.x + (frame.origin.x - currentScreenFrame.origin.x);
+    frame.origin.y = screenFrame.origin.y + screenFrame.size.height - topOffset - menubarHeight - yOffset;
+    
+    // Set the frame which moves the window to the new screen
+    [nsWindow setFrame:frame display:YES];
+}

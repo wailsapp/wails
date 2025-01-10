@@ -1,14 +1,19 @@
 package doctor
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/buildinfo"
+	"github.com/wailsapp/wails/v3/internal/term"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"runtime/debug"
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/wailsapp/wails/v3/internal/buildinfo"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/jaypipes/ghw"
@@ -26,13 +31,7 @@ func Run() (err error) {
 	}
 	_ = get
 
-	pterm.DefaultSection = *pterm.DefaultSection.
-		WithBottomPadding(0).
-		WithStyle(pterm.NewStyle(pterm.FgBlue, pterm.Bold))
-
-	pterm.Println() // Spacer
-	pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Println("Wails Doctor")
-	pterm.Println() // Spacer
+	term.Header("Wails Doctor")
 
 	spinner, _ := pterm.DefaultSpinner.WithRemoveWhenDone().Start("Scanning system - Please wait (this may take a long time)...")
 
@@ -64,7 +63,7 @@ func Run() (err error) {
 	// Get system info
 	info, err := operatingsystem.Info()
 	if err != nil {
-		pterm.Error.Println("Failed to get system information")
+		term.Error("Failed to get system information")
 		return err
 	}
 
@@ -73,7 +72,7 @@ func Run() (err error) {
 		return dep.Path == "github.com/wailsapp/wails/v3"
 	})
 
-	wailsVersion := strings.TrimSpace(version.VersionString)
+	wailsVersion := strings.TrimSpace(version.String())
 	if wailsPackage != nil && wailsPackage.Replace != nil {
 		wailsVersion = "(local) => " + filepath.ToSlash(wailsPackage.Replace.Path)
 		// Get the latest commit hash
@@ -95,7 +94,7 @@ func Run() (err error) {
 
 	/** Output **/
 
-	pterm.DefaultSection.Println("System")
+	term.Section("System")
 
 	systemTabledata := pterm.TableData{
 		{pterm.Sprint("Name"), info.Name},
@@ -139,17 +138,50 @@ func Run() (err error) {
 			systemTabledata = append(systemTabledata, []string{prefix, details})
 		}
 	} else {
-		systemTabledata = append(systemTabledata, []string{"GPU", "Unknown"})
+		if runtime.GOOS == "darwin" {
+			var numCoresValue string
+			cmd := exec.Command("sh", "-c", "ioreg -l | grep gpu-core-count")
+			output, err := cmd.Output()
+			if err == nil {
+				// Look for an `=` sign, optional spaces and then an integer
+				re := regexp.MustCompile(`= *(\d+)`)
+				matches := re.FindAllStringSubmatch(string(output), -1)
+				numCoresValue = "Unknown"
+				if len(matches) > 0 {
+					numCoresValue = matches[0][1]
+				}
+
+			}
+
+			// Run `system_profiler SPDisplaysDataType | grep Metal`
+			var metalSupport string
+			cmd = exec.Command("sh", "-c", "system_profiler SPDisplaysDataType | grep Metal")
+			output, err = cmd.Output()
+			if err == nil {
+				metalSupport = ", " + strings.TrimSpace(string(output))
+			}
+			systemTabledata = append(systemTabledata, []string{"GPU", numCoresValue + " cores" + metalSupport})
+
+		} else {
+			systemTabledata = append(systemTabledata, []string{"GPU", "Unknown"})
+		}
 	}
 
 	memory, _ := ghw.Memory()
+	var memoryText = "Unknown"
 	if memory != nil {
-		systemTabledata = append(systemTabledata, []string{"Memory", strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"})
+		memoryText = strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"
 	} else {
-		systemTabledata = append(systemTabledata, []string{"Memory", "Unknown"})
+		if runtime.GOOS == "darwin" {
+			cmd := exec.Command("sh", "-c", "system_profiler SPHardwareDataType | grep 'Memory'")
+			output, err := cmd.Output()
+			if err == nil {
+				output = bytes.Replace(output, []byte("Memory: "), []byte(""), 1)
+				memoryText = strings.TrimSpace(string(output))
+			}
+		}
 	}
-
-	//systemTabledata = append(systemTabledata, []string{"CPU", cpu.Processors[0].Model})
+	systemTabledata = append(systemTabledata, []string{"Memory", memoryText})
 
 	err = pterm.DefaultTable.WithBoxed().WithData(systemTabledata).Render()
 	if err != nil {
@@ -158,7 +190,7 @@ func Run() (err error) {
 
 	// Build Environment
 
-	pterm.DefaultSection.Println("Build Environment")
+	term.Section("Build Environment")
 
 	tableData := pterm.TableData{
 		{"Wails CLI", wailsVersion},
@@ -191,7 +223,7 @@ func Run() (err error) {
 	}
 
 	// Dependencies
-	pterm.DefaultSection.Println("Dependencies")
+	term.Section("Dependencies")
 	dependenciesBox := pterm.DefaultBox.WithTitleBottomCenter().WithTitle(pterm.Gray("*") + " - Optional Dependency")
 	dependencyTableData := pterm.TableData{}
 	if len(dependencies) == 0 {
@@ -211,11 +243,11 @@ func Run() (err error) {
 		dependenciesBox.Println(dependenciesTableString)
 	}
 
-	pterm.DefaultSection.Println("Diagnosis")
+	term.Section("Diagnosis")
 	if !ok {
-		pterm.Warning.Println("There are some items above that need addressing!")
+		term.Warning("There are some items above that need addressing!")
 	} else {
-		pterm.Success.Println("Your system is ready for Wails development!")
+		term.Success("Your system is ready for Wails development!")
 	}
 
 	return nil

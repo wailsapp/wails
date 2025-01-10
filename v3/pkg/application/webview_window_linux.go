@@ -13,10 +13,6 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
-const (
-	windowDidMoveDebounceMS = 200
-)
-
 type dragInfo struct {
 	XRoot       int
 	YRoot       int
@@ -240,10 +236,18 @@ func (w *linuxWebviewWindow) run() {
 	}
 
 	if w.moveDebouncer == nil {
-		w.moveDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
+		debounceMS := w.parent.options.Linux.WindowDidMoveDebounceMS
+		if debounceMS == 0 {
+			debounceMS = 50 // Default value
+		}
+		w.moveDebouncer = debounce.New(time.Duration(debounceMS) * time.Millisecond)
 	}
 	if w.resizeDebouncer == nil {
-		w.resizeDebouncer = debounce.New(time.Duration(windowDidMoveDebounceMS) * time.Millisecond)
+		debounceMS := w.parent.options.Linux.WindowDidMoveDebounceMS
+		if debounceMS == 0 {
+			debounceMS = 50 // Default value
+		}
+		w.resizeDebouncer = debounce.New(time.Duration(debounceMS) * time.Millisecond)
 	}
 
 	// Register the capabilities
@@ -296,9 +300,9 @@ func (w *linuxWebviewWindow) run() {
 	w.setFrameless(w.parent.options.Frameless)
 
 	if w.parent.options.InitialPosition == WindowCentered {
-		C.windowCenter(w.nsWindow)
+		w.center()
 	} else {
-		w.setPosition(options.X, options.Y)
+		w.setPosition(w.parent.options.X, w.parent.options.Y)
 	}
 
 	switch w.parent.options.StartState {
@@ -321,13 +325,15 @@ func (w *linuxWebviewWindow) run() {
 
 	w.setURL(startURL)
 	w.parent.OnWindowEvent(events.Linux.WindowLoadChanged, func(_ *WindowEvent) {
-		if w.parent.options.JS != "" {
-			w.execJS(w.parent.options.JS)
-		}
-		if w.parent.options.CSS != "" {
-			js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();", w.parent.options.CSS)
-			w.execJS(js)
-		}
+		InvokeAsync(func() {
+			if w.parent.options.JS != "" {
+				w.execJS(w.parent.options.JS)
+			}
+			if w.parent.options.CSS != "" {
+				js := fmt.Sprintf("(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%s')); document.head.appendChild(style); })();", w.parent.options.CSS)
+				w.execJS(js)
+			}
+		})
 	})
 	w.parent.OnWindowEvent(events.Linux.WindowFocusIn, func(e *WindowEvent) {
 		w.parent.emit(events.Common.WindowFocus)

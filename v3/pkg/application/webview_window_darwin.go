@@ -33,6 +33,9 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
+	// Allow fullscreen. Needed for frameless windows
+	window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
+
 	// Create delegate
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
 	[delegate autorelease];
@@ -575,10 +578,14 @@ void windowSetPosition(void* nsWindow, int x, int y) {
     if (screen == NULL) {
         screen = [NSScreen mainScreen];
     }
+	// Get the scale of the screen
+	CGFloat scale = [screen backingScaleFactor];
     NSRect frame = [window frame];
-    frame.origin.x = x;
-    frame.origin.y = (screen.frame.size.height - frame.size.height) - y;
-    [window setFrame:frame display:YES];
+	// Scale the position
+	frame.origin.x = x / scale;
+	frame.origin.y = (screen.frame.size.height - frame.size.height) - (y / scale);
+	// Set the frame
+	[window setFrame:frame display:YES];
 }
 
 
@@ -949,6 +956,7 @@ func (w *macosWebviewWindow) windowZoom() {
 
 func (w *macosWebviewWindow) close() {
 	C.windowClose(w.nsWindow)
+	// TODO: Check if we need to unregister the window here or not
 }
 
 func (w *macosWebviewWindow) zoomIn() {
@@ -1278,9 +1286,14 @@ func (w *macosWebviewWindow) run() {
 					// We have to wait until the window is shown before we can remove the shadow
 					var cancel func()
 					cancel = w.parent.OnWindowEvent(events.Mac.WindowDidBecomeKey, func(_ *WindowEvent) {
-						w.setHasShadow(!options.Mac.DisableShadow)
-						w.setAlwaysOnTop(options.AlwaysOnTop)
-						cancel()
+						InvokeAsync(func() {
+							if !w.isVisible() {
+								w.parent.Show()
+							}
+							w.setHasShadow(!options.Mac.DisableShadow)
+							w.setAlwaysOnTop(options.AlwaysOnTop)
+							cancel()
+						})
 					})
 				}
 			})

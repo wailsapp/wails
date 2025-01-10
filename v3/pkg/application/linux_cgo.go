@@ -826,16 +826,18 @@ func (w *linuxWebviewWindow) enableDND() {
 }
 
 func (w *linuxWebviewWindow) execJS(js string) {
-	value := C.CString(js)
-	C.webkit_web_view_evaluate_javascript(w.webKitWebView(),
-		value,
-		C.long(len(js)),
-		nil,
-		C.CString(""),
-		nil,
-		nil,
-		nil)
-	C.free(unsafe.Pointer(value))
+	InvokeAsync(func() {
+		value := C.CString(js)
+		C.webkit_web_view_evaluate_javascript(w.webKitWebView(),
+			value,
+			C.long(len(js)),
+			nil,
+			C.CString(""),
+			nil,
+			nil,
+			nil)
+		C.free(unsafe.Pointer(value))
+	})
 }
 
 func getMousePosition() (int, int, *Screen) {
@@ -1481,8 +1483,9 @@ func onUriList(extracted **C.char, data unsafe.Pointer) {
 	}
 }
 
-var debounceTimer *time.Timer 
+var debounceTimer *time.Timer
 var isDebouncing bool = false
+
 //export onKeyPressEvent
 func onKeyPressEvent(_ *C.GtkWidget, event *C.GdkEventKey, userData C.uintptr_t) C.gboolean {
 	// Keypress re-emits if the key is pressed over a certain threshold so we need a debounce
@@ -1678,6 +1681,7 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 					count++
 				}
 			}
+			close(selections)
 		}()
 	})
 	C.gtk_widget_destroy((*C.GtkWidget)(unsafe.Pointer(fc)))

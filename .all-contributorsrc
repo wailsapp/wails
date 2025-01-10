@@ -1,6 +1,7 @@
 {
   "files": [
-    "website/src/pages/credits.mdx"
+    "website/src/pages/credits.mdx",
+    "docs/src/assets/contributors.html"
   ],
   "imageSize": 75,
   "commit": false,

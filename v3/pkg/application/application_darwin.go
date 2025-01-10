@@ -15,6 +15,7 @@ package application
 extern void registerListener(unsigned int event);
 
 #import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 static AppDelegate *appDelegate = nil;
 
@@ -91,10 +92,11 @@ static void run(void) {
     @autoreleasepool {
         [NSApp run];
         [appDelegate release];
+		[NSApp abortModal];
     }
 }
 
-// Destroy application
+// destroyApp destroys the application
 static void destroyApp(void) {
 	[NSApp terminate:nil];
 }
@@ -155,6 +157,13 @@ static const char* serializationNSDictionary(void *dict) {
 	}
 
 	return nil;
+}
+
+static void startSingleInstanceListener(const char *uniqueID) {
+	// Convert to NSString
+	NSString *uid = [NSString stringWithUTF8String:uniqueID];
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:appDelegate
+          selector:@selector(handleSecondInstanceNotification:) name:uid object:nil];
 }
 */
 import "C"
@@ -220,6 +229,11 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 }
 
 func (m *macosApp) run() error {
+	if m.parent.options.SingleInstance != nil {
+		cUniqueID := C.CString(m.parent.options.SingleInstance.UniqueID)
+		defer C.free(unsafe.Pointer(cUniqueID))
+		C.startSingleInstanceListener(cUniqueID)
+	}
 	// Add a hook to the ApplicationDidFinishLaunching event
 	m.parent.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*ApplicationEvent) {
 		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))

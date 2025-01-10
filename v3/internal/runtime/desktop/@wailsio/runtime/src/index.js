@@ -43,6 +43,18 @@ export {
     WML
 };
 
+let initialised = false;
+export function init() {
+    window._wails.invoke = System.invoke;
+    System.invoke("wails:runtime:ready");
+    initialised = true;
+}
+
+window.addEventListener("load", () => {
+    if (!initialised) {
+        init();
+    }
+});
+
 // Notify backend
-window._wails.invoke = System.invoke;
-System.invoke("wails:runtime:ready");
+

@@ -19,7 +19,7 @@ import * as $models from "./models.js";
  */
 export function MakeCycles(): Promise<[$models.Cyclic, $models.GenericCyclic<$models.GenericCyclic<number>>]> & { cancel(): void } {
     let $resultPromise = $Call.ByID(440020721) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         $result[0] = $$createType0($result[0]);
         $result[1] = $$createType9($result[1]);
         return $result;

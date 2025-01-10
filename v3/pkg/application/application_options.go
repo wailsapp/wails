@@ -106,6 +106,9 @@ type Options struct {
 	// This is useful for implementing custom frontend-to-backend communication.
 	RawMessageHandler func(window Window, message string)
 
+	// WarningHandler is called when a warning occurs
+	WarningHandler func(string)
+
 	// ErrorHandler is called when an error occurs
 	ErrorHandler func(err error)
 
@@ -113,6 +116,9 @@ type Options struct {
 	// Example: [".txt", ".md"]
 	// The '.' is required
 	FileAssociations []string
+
+	// SingleInstance options for single instance functionality
+	SingleInstance *SingleInstanceOptions
 
 	// This blank field ensures types from other packages
 	// are never convertible to Options.

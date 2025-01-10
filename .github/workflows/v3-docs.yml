@@ -1,35 +1,42 @@
-name: v3 docs
+name: Deploy to GitHub Pages
+
 on:
+  # Trigger the workflow every time you push to the `main` branch
+  # Using a different branch name? Replace `main` with your branch’s name
   push:
-    branches:
-      - v3-alpha
-    paths:
-      - 'mkdocs-website/**/*'
+    branches: [v3-alpha]
+  # Allows you to run this workflow manually from the Actions tab on GitHub.
+  workflow_dispatch:
+
+# Allow this job to clone the repo and create a page deployment
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     if: github.event.repository.fork == false
-    defaults:
-      run:
-        working-directory: ./mkdocs-website
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - name: Checkout your repository using git
+        uses: actions/checkout@v4
+      - name: Install, build, and upload your site output
+        uses: withastro/action@v2
         with:
-          python-version: 3.x
-      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
-      - uses: actions/cache@v3
-        with:
-          key: mkdocs-material-${{ env.cache_id }}
-          path: .cache
-          restore-keys: |
-            mkdocs-material-
-      - run: sudo apt-get install pngquant
-      - run: pip install pillow cairosvg mkdocs-table-reader-plugin mkdocs-static-i18n
-      - run: pip install git+https://${GH_TOKEN}@github.com/squidfunk/mkdocs-material-insiders.git
-      - run: mkdocs build --config-file mkdocs.insiders.yml
-      - run: mkdocs gh-deploy --force
+           path: docs
+           node-version: 20 # The specific version of Node that should be used to build your site. Defaults to 18. (optional)
+        # package-manager: pnpm@latest # The Node package manager that should be used to install dependencies and build your site. Automatically detected based on your lockfile. (optional)
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 env:
   GH_TOKEN: ${{ secrets.GH_TOKEN }}

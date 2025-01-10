@@ -114,7 +114,7 @@ export function MapIntSliceInt($in: { [_: `${number}`]: number[] }): Promise<voi
 
 export function MapIntSliceIntInMapIntSliceIntOut($in: { [_: `${number}`]: number[] }): Promise<{ [_: `${number}`]: number[] }> & { cancel(): void } {
     let $resultPromise = $Call.ByID(881980169, $in) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType1($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
@@ -153,7 +153,7 @@ export function PointerStringInStringOut($in: string | null): Promise<string | n
 
 export function StringArrayInputNamedOutput($in: string[]): Promise<string[]> & { cancel(): void } {
     let $resultPromise = $Call.ByID(3678582682, $in) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType2($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
@@ -162,7 +162,7 @@ export function StringArrayInputNamedOutput($in: string[]): Promise<string[]> & 
 
 export function StringArrayInputNamedOutputs($in: string[]): Promise<string[]> & { cancel(): void } {
     let $resultPromise = $Call.ByID(319259595, $in) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType2($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
@@ -171,7 +171,7 @@ export function StringArrayInputNamedOutputs($in: string[]): Promise<string[]> &
 
 export function StringArrayInputStringArrayOut($in: string[]): Promise<string[]> & { cancel(): void } {
     let $resultPromise = $Call.ByID(383995060, $in) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType2($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
@@ -185,7 +185,7 @@ export function StringArrayInputStringOut($in: string[]): Promise<string> & { ca
 
 export function StructInputStructOutput($in: $models.Person): Promise<$models.Person> & { cancel(): void } {
     let $resultPromise = $Call.ByID(3835643147, $in) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType3($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
@@ -199,7 +199,7 @@ export function StructPointerInputErrorOutput($in: $models.Person | null): Promi
 
 export function StructPointerInputStructPointerOutput($in: $models.Person | null): Promise<$models.Person | null> & { cancel(): void } {
     let $resultPromise = $Call.ByID(2943477349, $in) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType4($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);

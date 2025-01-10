@@ -21,9 +21,6 @@ type Logger interface {
 	Error(message string, args ...interface{})
 }
 
-//go:embed defaultindex.html
-var defaultHTML []byte
-
 const (
 	indexHTML = "index.html"
 )
@@ -120,7 +117,9 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	statInfo, err := file.Stat()
 	if err != nil {
@@ -143,7 +142,9 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 		if err != nil {
 			return err
 		}
-		defer file.Close()
+		defer func() {
+			_ = file.Close()
+		}()
 
 		statInfo, err = file.Stat()
 		if err != nil {

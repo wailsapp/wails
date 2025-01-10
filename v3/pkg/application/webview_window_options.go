@@ -128,10 +128,6 @@ type WebviewWindowOptions struct {
 	MaximiseButtonState ButtonState
 	CloseButtonState    ButtonState
 
-	// ShouldClose is called when the window is about to close.
-	// Return true to allow the window to close, or false to prevent it from closing.
-	ShouldClose func(window *WebviewWindow) bool
-
 	// If true, the window's devtools will be available (default true in builds without the `production` build tag)
 	DevToolsEnabled bool
 
@@ -252,14 +248,15 @@ type WindowsWindow struct {
 	// Default: false
 	WindowMaskDraggable bool
 
-	// WebviewGpuIsDisabled is used to enable / disable GPU acceleration for the webview
-	// Default: false
-	WebviewGpuIsDisabled bool
-
 	// ResizeDebounceMS is the amount of time to debounce redraws of webview2
 	// when resizing the window
 	// Default: 0
 	ResizeDebounceMS uint16
+
+	// WindowDidMoveDebounceMS is the amount of time to debounce the WindowDidMove event
+	// when moving the window
+	// Default: 0
+	WindowDidMoveDebounceMS uint16
 
 	// Disable the menu bar for this window
 	// Default: false
@@ -276,10 +273,6 @@ type WindowsWindow struct {
 	// EnableSwipeGestures enables swipe gestures for the window
 	// Default: false
 	EnableSwipeGestures bool
-
-	// EnableFraudulentWebsiteWarnings will enable warnings for fraudulent websites.
-	// Default: false
-	EnableFraudulentWebsiteWarnings bool
 
 	// Menu is the menu to use for the window.
 	Menu *Menu
@@ -299,6 +292,14 @@ type WindowsWindow struct {
 
 	// PasswordAutosaveEnabled enables autosaving passwords
 	PasswordAutosaveEnabled bool
+
+	// EnabledFeatures and DisabledFeatures are used to enable or disable specific features in the WebView2 browser.
+	// Available flags: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags?tabs=dotnetcsharp#available-webview2-browser-flags
+	// WARNING: Apps in production shouldn't use WebView2 browser flags,
+	// because these flags might be removed or altered at any time,
+	// and aren't necessarily supported long-term.
+	EnabledFeatures  []string
+	DisabledFeatures []string
 }
 
 type Theme int
@@ -530,4 +531,7 @@ type LinuxWindow struct {
 	// Client code may override this behavior by passing a non-nil Options and set
 	// WebviewGpuPolicy as needed.
 	WebviewGpuPolicy WebviewGpuPolicy
+
+	// WindowDidMoveDebounceMS is the debounce time in milliseconds for the WindowDidMove event
+	WindowDidMoveDebounceMS uint16
 }

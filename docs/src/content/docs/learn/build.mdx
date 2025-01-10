@@ -1,0 +1,255 @@
+---
+title: Wails v3 Build System
+sidebar:
+  order: 40
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+## Overview
+
+The Wails v3 build system is a flexible and powerful tool designed to streamline
+the build process for your Wails applications. It leverages
+[Task](https://taskfile.dev), a task runner that allows you to define and run
+tasks easily. While the v3 build system is the default, Wails encourages a
+"bring your own tooling" approach, allowing developers to customize their build
+process as needed.
+
+Learn more about how to use Task in the
+[official documentation](https://taskfile.dev/usage/).
+
+## Task: The Heart of the Build System
+
+[Task](https://taskfile.dev) is a modern alternative to Make, written in Go. It
+uses a YAML file to define tasks and their dependencies. In the Wails v3 build
+system, [Task](https://taskfile.dev) plays a central role in orchestrating the
+build process.
+
+The main `Taskfile.yml` is located in the project root, while platform-specific
+tasks are defined in `build/<platform>/Taskfile.yml` files. A common `Taskfile.yml`
+file in the `build` directory contains common tasks that are shared across
+platforms.
+
+<FileTree>
+
+- Project Root
+  - Taskfile.yml
+  - build
+    - windows/Taskfile.yml
+    - darwin/Taskfile.yml
+    - linux/Taskfile.yml
+    - Taskfile.yml
+
+</FileTree>
+
+## Taskfile.yml
+
+The `Taskfile.yml` file in the project root is the main entry point for the build system. It defines
+the tasks and their dependencies. Here's the default `Taskfile.yml` file:
+
+```yaml
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+vars:
+  APP_NAME: "myproject"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+
+```
+
+## Platform-Specific Taskfiles
+
+Each platform has its own Taskfile, located in the platform directories beneath the `build` directory. These
+files define the core tasks for that platform. Each taskfile includes common tasks from the `build/Taskfile.yml` file.
+
+### Windows
+
+Location: `build/windows/Taskfile.yml`
+
+The Windows-specific Taskfile includes tasks for building, packaging, and
+running the application on Windows. Key features include:
+
+- Building with optional production flags
+- Generating Windows `.syso` file
+- Creating an NSIS installer for packaging
+
+### Linux
+
+Location: `build/linux/Taskfile.yml`
+
+The Linux-specific Taskfile includes tasks for building, packaging, and running
+the application on Linux. Key features include:
+
+- Building with optional production flags
+- Creating an AppImage, deb, rpm, and Arch Linux packages
+- Generating `.desktop` file for Linux applications
+
+### macOS
+
+Location: `build/darwin/Taskfile.yml`
+
+The macOS-specific Taskfile includes tasks for building, packaging, and running
+the application on macOS. Key features include:
+
+- Building binaries for amd64, arm64 and universal (both) architectures
+- Creating an `.app` bundle for distributing
+- Setting macOS-specific build flags and environment variables
+
+## Wails3 Commands and Task Execution
+
+The `wails3 task` command is an embedded version of [Taskfile](https://taskfile.dev), which executes
+the tasks defined in your `Taskfile.yml`.
+
+The `wails3 build` and `wails3 package` commands are aliases for
+`wails3 task build` and `wails3 task package` respectively. When you run these
+commands, Wails internally translates them to the appropriate task execution:
+
+- `wails3 build` → `wails3 task build`
+- `wails3 package` → `wails3 task package`
+
+## Common Build Process
+
+Across all platforms, the build process typically includes the following steps:
+
+1. Tidying Go modules
+2. Building the frontend
+3. Generating icons
+4. Compiling the Go code with platform-specific flags
+5. Packaging the application (platform-specific)
+
+## Customising the Build Process
+
+While the v3 build system provides a solid default configuration, you can easily
+customise it to fit your project's needs. By modifying the `Taskfile.yml` and
+platform-specific Taskfiles, you can:
+
+- Add new tasks
+- Modify existing tasks
+- Change the order of task execution
+- Integrate with other tools and scripts
+
+This flexibility allows you to tailor the build process to your specific
+requirements while still benefiting from the structure provided by the Wails v3
+build system.
+
+:::tip[Learning Taskfile]
+We highly recommend reading the [Taskfile](https://taskfile.dev) documentation to
+understand how to use Taskfile effectively.
+You can find out which version of Taskfile is embedded in the Wails CLI by running `wails3 task --version`.
+:::
+
+## Development Mode
+
+The Wails v3 build system includes a powerful development mode that enhances the
+developer experience by providing live reloading and hot module replacement.
+This mode is activated using the `wails3 dev` command.
+
+### How It Works
+
+When you run `wails3 dev`, the following process occurs:
+
+1. The command checks for an available port, defaulting to 9245 if not
+   specified.
+2. It sets up the environment variables for the frontend dev server (Vite).
+3. It starts the file watcher using the [refresh](https://github.com/atterpac/refresh) library.
+
+The [refresh](https://github.com/atterpac/refresh) library is responsible for
+monitoring file changes and triggering rebuilds. It uses the configuration defined under the `dev_mode` key in the `./build/config.yaml` file.
+It may be configured to ignore certain directories and files, to determine which files to watch and what actions to take when changes are detected.
+The default configuration works pretty well, but feel free to customise it to your needs.
+
+### Configuration
+
+Here's an example of its structure:
+
+```yaml
+dev_mode:
+  root_path: .
+  log_level: warn
+  debounce: 1000
+  ignore:
+    dir:
+      - .git
+      - node_modules
+      - frontend
+      - bin
+    file:
+      - .DS_Store
+      - .gitignore
+      - .gitkeep
+    watched_extension:
+      - "*.go"
+    git_ignore: true
+  executes:
+    - cmd: wails3 task common:install:frontend:deps
+      type: once
+    - cmd: wails3 task common:dev:frontend
+      type: background
+    - cmd: go mod tidy
+      type: blocking
+    - cmd: wails3 task build
+      type: blocking
+    - cmd: wails3 task run
+      type: primary
+```
+
+This configuration file allows you to:
+
+- Set the root path for file watching
+- Configure logging level
+- Set a debounce time for file change events
+- Ignore specific directories, files, or file extensions
+- Define commands to execute on file changes
+
+### Customising Development Mode
+
+You can customise the development mode experience by modifying these values in the `config.yaml` file.
+
+Some ways to customise include:
+
+1. Changing the watched directories or files
+2. Adjusting the debounce time to control how quickly the system responds to
+   changes
+3. Adding or modifying the execute commands to fit your project's needs
+
+### Using a browser for development
+
+Whilst Wails v2 fully supported the use of a browser for development, it caused a lot
+of confusion. Applications that would work in the browser would not necessarily
+work in the desktop application, as not all browser APIs are available in webviews.
+
+For UI-focused development work, you still have the flexibility to use a browser
+in v3, by accessing the Vite URL at `http://localhost:9245` in dev mode. This
+gives you access to powerful browser dev tools while working on styling and
+layout. Be aware that Go bindings *will not work* in this mode.
+When you're ready to test functionality like bindings and events, simply
+switch to the desktop view to ensure everything works perfectly in the
+production environment.

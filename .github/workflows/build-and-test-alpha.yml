@@ -4,7 +4,7 @@ on:
   push:
     branches: [v3-alpha, v3/*, v3-*]
     paths-ignore:
-      - 'mkdocs-website/**/*'
+      - '../../docs/**/*'
   workflow_dispatch:
 
 jobs:

@@ -65,7 +65,10 @@ func (n *Nixpkgs) Name() string {
 
 // PackageInstalled tests if the given package name is installed
 func (n *Nixpkgs) PackageInstalled(pkg *Package) (bool, error) {
-	if pkg.SystemPackage == false {
+	if !pkg.SystemPackage {
+		if pkg.InstallCheck != nil {
+			return pkg.InstallCheck(), nil
+		}
 		return false, nil
 	}
 
@@ -142,7 +145,7 @@ func (n *Nixpkgs) PackageAvailable(pkg *Package) (bool, error) {
 // InstallCommand returns the package manager specific command to install a package
 func (n *Nixpkgs) InstallCommand(pkg *Package) string {
 	if pkg.SystemPackage == false {
-		return pkg.InstallCommand[n.osid]
+		return pkg.InstallCommand
 	}
 	return "nix-env -iA " + pkg.Name
 }

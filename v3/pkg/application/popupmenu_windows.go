@@ -59,7 +59,7 @@ func (p *Win32Menu) newMenu() w32.HMENU {
 }
 
 func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
-	var currentRadioGroup RadioGroup
+	currentRadioGroup := RadioGroup{}
 	for _, item := range inputMenu.items {
 		if item.Hidden() {
 			if item.accelerator != nil {
@@ -84,20 +84,22 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		if item.disabled {
 			flags = flags | w32.MF_GRAYED
 		}
-		if item.checked && item.IsCheckbox() {
+		if item.checked {
 			flags = flags | w32.MF_CHECKED
 		}
 		if item.IsSeparator() {
 			flags = flags | w32.MF_SEPARATOR
 		}
 
+		if item.checked && item.IsRadio() {
+			flags = flags | w32.MFT_RADIOCHECK
+		}
+
 		if item.IsCheckbox() {
 			p.checkboxItems[item] = append(p.checkboxItems[item], itemID)
 		}
 		if item.IsRadio() {
-			if currentRadioGroup != nil {
-				currentRadioGroup.Add(itemID, item)
-			}
+			currentRadioGroup.Add(itemID, item)
 		} else {
 			if len(currentRadioGroup) > 0 {
 				for _, radioMember := range currentRadioGroup {
@@ -219,6 +221,9 @@ func (p *Win32Menu) ProcessCommand(cmdMsgID int) bool {
 		return false
 	}
 	if item.IsRadio() {
+		if item.checked {
+			return true
+		}
 		item.checked = true
 		p.updateRadioGroup(item)
 	}

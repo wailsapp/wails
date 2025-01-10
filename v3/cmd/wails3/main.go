@@ -1,9 +1,11 @@
 package main
 
 import (
-	"github.com/pkg/browser"
+	"fmt"
 	"os"
 	"runtime/debug"
+
+	"github.com/pkg/browser"
 
 	"github.com/pterm/pterm"
 	"github.com/samber/lo"
@@ -35,6 +37,7 @@ func main() {
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
 	app.NewSubCommandFunction("package", "Package application", commands.Package)
 	app.NewSubCommandFunction("doctor", "System status report", commands.Doctor)
+	app.NewSubCommandFunction("releasenotes", "Show release notes", commands.ReleaseNotes)
 
 	task := app.NewSubCommand("task", "Run and list tasks")
 	var taskFlags commands.RunTaskOptions
@@ -49,9 +52,12 @@ func main() {
 	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
 	generate.NewSubCommandFunction("syso", "Generate Windows .syso file", commands.GenerateSyso)
 	generate.NewSubCommandFunction("runtime", "Generate the pre-built version of the runtime", commands.GenerateRuntime)
+	generate.NewSubCommandFunction("webview2bootstrapper", "Generate WebView2 bootstrapper", commands.GenerateWebView2Bootstrapper)
+	generate.NewSubCommandFunction("template", "Generate a new template", commands.GenerateTemplate)
 
 	update := app.NewSubCommand("update", "Update tools")
 	update.NewSubCommandFunction("build-assets", "Updates the build assets using the given config file", commands.UpdateBuildAssets)
+	update.NewSubCommandFunction("cli", "Updates the Wails CLI", commands.UpdateCLI)
 
 	bindgen := generate.NewSubCommand("bindings", "Generate bindings + models")
 	var bindgenFlags flags.GenerateBindingsOptions
@@ -72,6 +78,7 @@ func main() {
 	tool.NewSubCommandFunction("watcher", "Watches files and runs a command when they change", commands.Watcher)
 	tool.NewSubCommandFunction("cp", "Copy files", commands.Cp)
 	tool.NewSubCommandFunction("buildinfo", "Show Build Info", commands.BuildInfo)
+	tool.NewSubCommandFunction("package", "Generate Linux packages (deb, rpm, archlinux)", commands.ToolPackage)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
@@ -87,7 +94,9 @@ func main() {
 
 func printFooter() {
 	if !commands.DisableFooter {
-		pterm.Println(pterm.LightGreen("\nNeed documentation? Run: ") + pterm.LightYellow("wails3 docs\n"))
+		docsLink := hyperlink("https://v3alpha.wails.io/getting-started/your-first-app/", "wails3 docs")
+
+		pterm.Println(pterm.LightGreen("\nNeed documentation? Run: ") + pterm.LightBlue(docsLink))
 		// Check if we're in a teminal
 		printer := pterm.PrefixPrinter{
 			MessageStyle: pterm.NewStyle(pterm.FgLightGreen),
@@ -97,7 +106,8 @@ func printFooter() {
 			},
 		}
 
-		printer.Println("If Wails is useful to you or your company, please consider sponsoring the project: " + pterm.LightYellow("wails3 sponsor"))
+		linkText := hyperlink("https://github.com/sponsors/leaanthony", "wails3 sponsor")
+		printer.Println("If Wails is useful to you or your company, please consider sponsoring the project: " + pterm.LightBlue(linkText))
 	}
 }
 
@@ -109,4 +119,20 @@ func openDocs() error {
 func openSponsor() error {
 	commands.DisableFooter = true
 	return browser.OpenURL("https://github.com/sponsors/leaanthony")
+}
+
+func hyperlink(url, text string) string {
+	// OSC 8 sequence to start a clickable link
+	linkStart := "\x1b]8;;"
+
+	// OSC 8 sequence to end a clickable link
+	linkEnd := "\x1b]8;;\x1b\\"
+
+	// ANSI escape code for underline
+	underlineStart := "\x1b[4m"
+
+	// ANSI escape code to reset text formatting
+	resetFormat := "\x1b[0m"
+
+	return fmt.Sprintf("%s%s%s%s%s%s%s", linkStart, url, "\x1b\\", underlineStart, text, resetFormat, linkEnd)
 }

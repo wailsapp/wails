@@ -14,7 +14,6 @@ package application
 
 // Create menu item
 void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* tooltip, char* selector) {
-    NSLog(@"newMenuItem: %s, %s\n", label, selector);
 	MenuItem *menuItem = [MenuItem new];
 
     // Label

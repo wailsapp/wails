@@ -1,0 +1,437 @@
+---
+title: CLI Reference
+description: Complete reference for the Wails CLI commands
+sidebar:
+  order: 1
+---
+
+The Wails CLI provides a comprehensive set of commands to help you develop, build, and maintain your Wails applications.
+
+## Core Commands
+
+Core commands are the primary commands used for project creation, development, and building. 
+
+All CLI commands are of the following format: `wails3 <command>`.
+
+### `init`
+Initializes a new Wails project.
+
+```bash
+wails3 init [flags]
+```
+
+#### Flags
+| Flag                  | Description          | Default                  |
+|-----------------------|----------------------|--------------------------|
+| `-p`                  | Package name         | `main`                   |
+| `-t`                  | Template name or URL | `vanilla`                |
+| `-n`                  | Project name         |                          |
+| `-d`                  | Project directory    | `.`                      |
+| `-q`                  | Suppress output      | `false`                  |
+| `-l`                  | List templates       | `false`                  |
+| `-git`                | Git repository URL   |                          |
+| `-productname`        | Product name         | `My Product`             |
+| `-productdescription` | Product description  | `My Product Description` |
+| `-productversion`     | Product version      | `0.1.0`                  |
+| `-productcompany`     | Company name         | `My Company`             |
+| `-productcopyright`   | Copyright notice     | ` now, My Company`       |
+| `-productcomments`    | File comments        | `This is a comment`      |
+| `-productidentifier`  | Product identifier   |                          |
+
+The `-git` flag accepts various Git URL formats:
+- HTTPS: `https://github.com/username/project`
+- SSH: `git@github.com:username/project` or `ssh://git@github.com/username/project`
+- Git protocol: `git://github.com/username/project`
+- Filesystem: `file:///path/to/project.git`
+
+When provided, this flag will:
+1. Initialize a git repository in the project directory
+2. Set the specified URL as the remote origin
+3. Update the module name in `go.mod` to match the repository URL
+4. Add all files
+
+### `dev`
+Runs the application in development mode. This will give you a live view of your frontend code, and you can make changes and see them reflected 
+in the running application without having to rebuild the entire application. Changes to your Go code will also be detected and the application
+will automatically rebuild and relaunch.
+
+```bash
+wails3 dev [flags]
+```
+
+#### Flags
+| Flag      | Description          | Default              |
+|-----------|----------------------|----------------------|
+| `-config` | Config file path     | `./build/config.yml` |
+| `-port`   | Vite dev server port | `9245`               |
+| `-s`      | Enable HTTPS         | `false`              |
+
+
+    :::note
+    This is equivalent to running `wails3 task dev` and runs the `dev` task in the project's main Taskfile. You can customise this by editing the `Taskfile.yml` file.
+    :::
+
+
+### `build`
+Builds a debug version of your application. It defaults to building for the current platform and architecture.
+
+
+```bash
+wails3 build
+```
+
+    :::note
+    This is equivalent to running `wails3 task build` which runs the `build` task in the project's main Taskfile. You can customise the build process by editing the `Taskfile.yml` file.
+    :::
+
+### `package`
+
+Creates platform-specific packages for distribution.
+
+
+```bash
+wails3 package
+```
+
+#### Package Types
+
+The following package types are available for each platform:
+
+| Platform | Package Type                              |
+|----------|-------------------------------------------|
+| Windows  | `.exe`                                    |
+| macOS    | `.app`,                                   |
+| Linux    | `.AppImage`, `.deb`, `.rpm`, `.archlinux` |
+
+
+
+    :::note
+     This is equivalent to `wails3 task package` which runs the `package` task in the project's main Taskfile. You can customise the packaging process by editing the `Taskfile.yml` file.
+    :::
+
+
+### `doctor`
+Performs a system check and displays a status report.
+
+```bash
+wails3 doctor
+```
+
+## Generate Commands
+
+Generate commands help create various project assets like bindings, icons, and build files. All generate commands use the base command: `wails3 generate <command>`.
+
+### `generate bindings`
+Generates bindings and models for your Go code.
+
+```bash
+wails3 generate bindings [flags] [patterns...]
+```
+
+#### Flags
+| Flag        | Description               | Default             |
+|-------------|---------------------------|---------------------|
+| `-f`        | Additional Go build flags |                     |
+| `-d`        | Output directory          | `frontend/bindings` |
+| `-models`   | Models filename           | `models`            |
+| `-internal` | Internal filename         | `internal`          |
+| `-index`    | Index filename            | `index`             |
+| `-ts`       | Generate TypeScript       | `false`             |
+| `-i`        | Use TS interfaces         | `false`             |
+| `-b`        | Use bundled runtime       | `false`             |
+| `-names`    | Use names instead of IDs  | `false`             |
+| `-noindex`  | Skip index files          | `false`             |
+| `-dry`      | Dry run                   | `false`             |
+| `-silent`   | Silent mode               | `false`             |
+| `-v`        | Debug output              | `false`             |
+
+### `generate build-assets`
+Generates build assets for your application.
+
+```bash
+wails3 generate build-assets [flags]
+```
+
+#### Flags
+| Flag           | Description         | Default            |
+|----------------|---------------------|--------------------|
+| `-name`        | Project name        |                    |
+| `-dir`         | Output directory    | `build`            |
+| `-silent`      | Suppress output     | `false`            |
+| `-company`     | Company name        |                    |
+| `-productname` | Product name        |                    |
+| `-description` | Product description |                    |
+| `-version`     | Product version     |                    |
+| `-identifier`  | Product identifier  | `com.wails.[name]` |
+| `-copyright`   | Copyright notice    |                    |
+| `-comments`    | File comments       |                    |
+
+### `generate icons`
+Generates application icons.
+
+```bash
+wails3 generate icons [flags]
+```
+
+#### Flags
+| Flag       | Description                  | Default               |
+|------------|------------------------------|-----------------------|
+| `-input`   | Input PNG file               | Required              |
+| `-windows` | Windows output filename      |                       |
+| `-mac`     | macOS output filename        |                       |
+| `-sizes`   | Icon sizes (comma-separated) | `256,128,64,48,32,16` |
+| `-example` | Generate example icon        | `false`               |
+
+### `generate syso`
+Generates Windows .syso file.
+
+```bash
+wails3 generate syso [flags]
+```
+
+#### Flags
+| Flag        | Description               | Default                    |
+|-------------|---------------------------|----------------------------|
+| `-manifest` | Path to manifest file     | Required                   |
+| `-icon`     | Path to icon file         | Required                   |
+| `-info`     | Path to version info file |                            |
+| `-arch`     | Target architecture       | Current GOARCH             |
+| `-out`      | Output filename           | `rsrc_windows_[arch].syso` |
+
+### `generate .desktop`
+Generates a Linux .desktop file.
+
+```bash
+wails3 generate .desktop [flags]
+```
+
+#### Flags
+| Flag             | Description               | Default          |
+|------------------|---------------------------|------------------|
+| `-name`          | Application name          | Required         |
+| `-exec`          | Executable path           | Required         |
+| `-icon`          | Icon path                 |                  |
+| `-categories`    | Application categories    | `Utility`        |
+| `-comment`       | Application comment       |                  |
+| `-terminal`      | Run in terminal           | `false`          |
+| `-keywords`      | Search keywords           |                  |
+| `-version`       | Application version       |                  |
+| `-genericname`   | Generic name              |                  |
+| `-startupnotify` | Show startup notification | `false`          |
+| `-mimetype`      | Supported MIME types      |                  |
+| `-output`        | Output filename           | `[name].desktop` |
+
+### `generate runtime`
+Generates the pre-built version of the runtime.
+
+```bash
+wails3 generate runtime
+```
+
+### `generate constants`
+Generates JavaScript constants from Go code.
+
+```bash
+wails3 generate constants
+```
+
+### `generate appimage`
+Generates a Linux AppImage.
+
+```bash
+wails3 generate appimage [flags]
+```
+
+#### Flags
+| Flag        | Description           | Default        |
+|-------------|-----------------------|----------------|
+| `-binary`   | Path to binary        | Required       |
+| `-icon`     | Path to icon file     | Required       |
+| `-desktop`  | Path to .desktop file | Required       |
+| `-builddir` | Build directory       | Temp directory |
+| `-output`   | Output directory      | `.`            |
+
+Base command: `wails3 service`
+
+## Service Commands
+
+Service commands help manage Wails services. All service commands use the base command: `wails3 service <command>`.
+
+### `service init`
+Initializes a new service.
+
+```bash
+wails3 service init [flags]
+```
+
+#### Flags
+| Flag | Description         | Default           |
+|------|---------------------|-------------------|
+| `-n` | Service name        | `example_service` |
+| `-d` | Service description | `Example service` |
+| `-p` | Package name        |                   |
+| `-o` | Output directory    | `.`               |
+| `-q` | Suppress output     | `false`           |
+| `-a` | Author name         |                   |
+| `-v` | Version             |                   |
+| `-w` | Website URL         |                   |
+| `-r` | Repository URL      |                   |
+| `-l` | License             |                   |
+
+Base command: `wails3 tool`
+
+## Tool Commands
+
+Tool commands provide utilities for development and debugging. All tool commands use the base command: `wails3 tool <command>`.
+
+### `tool checkport`
+Checks if a port is open. Useful for testing if vite is running.
+
+```bash
+wails3 tool checkport [flags]
+```
+
+#### Flags
+| Flag    | Description   | Default     |
+|---------|---------------|-------------|
+| `-port` | Port to check | `9245`      |
+| `-host` | Host to check | `localhost` |
+
+### `tool watcher`
+Watches files and runs a command when they change.
+
+```bash
+wails3 tool watcher [flags]
+```
+
+#### Flags
+| Flag       | Description         | Default              |
+|------------|---------------------|----------------------|
+| `-config`  | Config file path    | `./build/config.yml` |
+| `-ignore`  | Patterns to ignore  |                      |
+| `-include` | Patterns to include |                      |
+
+### `tool cp`
+Copies files.
+
+```bash
+wails3 tool cp
+```
+
+### `tool buildinfo`
+Shows build information about the application.
+
+```bash
+wails3 tool buildinfo
+```
+
+### `tool package`
+Generates Linux packages (deb, rpm, archlinux).
+
+```bash
+wails3 tool package [flags]
+```
+
+#### Flags
+| Flag      | Description                          | Default  |
+|-----------|--------------------------------------|----------|
+| `-format` | Package format (deb, rpm, archlinux) | `deb`    |
+| `-name`   | Executable name                      | Required |
+| `-config` | Config file path                     | Required |
+| `-out`    | Output directory                     | `.`      |
+
+#### Flags
+| Flag      | Description                          | Default |
+|-----------|--------------------------------------|---------|
+| `-format` | Package format (deb, rpm, archlinux) | `deb`   |
+| `-name`   | Executable name                      | `myapp` |
+| `-config` | Config file path                     |         |
+| `-out`    | Output directory                     | `.`     |
+
+Base command: `wails3 update`
+
+## Update Commands
+
+Update commands help manage and update project assets. All update commands use the base command: `wails3 update <command>`.
+
+### `update cli`
+Updates the Wails CLI to a new version.
+
+```bash
+wails3 update cli [flags]
+```
+
+#### Flags
+| Flag        | Description                     | Default |
+|-------------|---------------------------------|---------|
+| `-pre`      | Update to latest pre-release    | `false` |
+| `-version`  | Update to specific version      |         |
+| `-nocolour` | Disable colored output          | `false` |
+
+The update cli command allows you to update your Wails CLI installation. By default, it updates to the latest stable release.
+You can use the `-pre` flag to update to the latest pre-release version, or specify a particular version using the `-version` flag.
+
+After updating, remember to update your project's go.mod file to use the same version:
+```bash
+require github.com/wailsapp/wails/v3 v3.x.x
+```
+
+### `update build-assets`
+Updates the build assets using the given config file.
+
+```bash
+wails3 update build-assets [flags]
+```
+
+#### Flags
+| Flag           | Description         | Default |
+|----------------|---------------------|---------|
+| `-config`      | Config file path    |         |
+| `-dir`         | Output directory    | `build` |
+| `-silent`      | Suppress output     | `false` |
+| `-company`     | Company name        |         |
+| `-productname` | Product name        |         |
+| `-description` | Product description |         |
+| `-version`     | Product version     |         |
+| `-identifier`  | Product identifier  |         |
+| `-copyright`   | Copyright notice    |         |
+| `-comments`    | File comments       |         |
+
+Base command: `wails3`
+
+## Utility Commands
+
+Utility commands provide helpful shortcuts for common tasks. Use these commands directly with the base command: `wails3 <command>`.
+
+### `docs`
+Opens the Wails documentation in your default browser.
+
+```bash
+wails3 docs
+```
+
+### `releasenotes`
+Shows the release notes for the current or specified version.
+
+```bash
+wails3 releasenotes [flags]
+```
+
+#### Flags
+| Flag | Description                       | Default |
+|------|-----------------------------------|---------|
+| `-v` | Version to show release notes for |         |
+| `-n` | Disable colour output             | `false` |
+
+### `version`
+Prints the current version of Wails.
+
+```bash
+wails3 version
+```
+
+### `sponsor`
+Opens the Wails sponsorship page in your default browser.
+
+```bash
+wails3 sponsor

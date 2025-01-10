@@ -90,7 +90,7 @@ const ZoomResetMethod                   = 47;
  */
 const caller = Symbol();
 
-class Window {
+export class Window {
     /**
      * Initialises a window object with the specified name.
      *

@@ -32,5 +32,6 @@
 
 @end
 
+void windowSetScreen(void* window, void* screen, int yOffset);
 
 #endif /* WebviewWindowDelegate_h */

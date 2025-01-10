@@ -2,12 +2,11 @@ package main
 
 import (
 	_ "embed"
-	"log"
-	"runtime"
-
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/icons"
+	"log"
+	"runtime"
 )
 
 func main() {
@@ -29,14 +28,14 @@ func main() {
 		AlwaysOnTop:   false,
 		Hidden:        false,
 		DisableResize: false,
-		ShouldClose: func(window *application.WebviewWindow) bool {
-			println("close")
-			window.Hide()
-			return false
-		},
 		Windows: application.WindowsWindow{
 			HiddenOnTaskbar: true,
 		},
+	})
+
+	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+		window.Hide()
+		e.Cancel()
 	})
 
 	if runtime.GOOS == "darwin" {

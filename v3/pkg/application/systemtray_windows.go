@@ -4,11 +4,10 @@ package application
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v3/pkg/icons"
 	"syscall"
 	"time"
 	"unsafe"
-
-	"github.com/wailsapp/wails/v3/pkg/icons"
 
 	"github.com/samber/lo"
 
@@ -202,15 +201,21 @@ func (s *windowsSystemTray) run() {
 		panic(syscall.GetLastError())
 	}
 
-	if s.parent.icon != nil {
-		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.icon))
+	// Get the application icon if available
+	defaultIcon := w32.LoadIconWithResourceID(w32.GetModuleHandle(""), w32.RT_ICON)
+	if defaultIcon != 0 {
+		s.lightModeIcon = defaultIcon
+		s.darkModeIcon = defaultIcon
 	} else {
 		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayLight))
+		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayDark))
+	}
+
+	if s.parent.icon != nil {
+		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.icon))
 	}
 	if s.parent.darkModeIcon != nil {
 		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.darkModeIcon))
-	} else {
-		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayDark))
 	}
 	s.uid = nid.UID
 
@@ -383,7 +388,7 @@ func (s *windowsSystemTray) destroy() {
 		s.menu.Destroy()
 	}
 	w32.DestroyWindow(s.hwnd)
-	// Destroy the notification icon
+	// destroy the notification icon
 	nid := s.newNotifyIconData()
 	if !w32.ShellNotifyIcon(w32.NIM_DELETE, &nid) {
 		globalApplication.debug(syscall.GetLastError().Error())

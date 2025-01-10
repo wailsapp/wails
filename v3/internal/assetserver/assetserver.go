@@ -14,6 +14,7 @@ const (
 	webViewRequestHeaderWindowId   = "x-wails-window-id"
 	webViewRequestHeaderWindowName = "x-wails-window-name"
 	servicePrefix                  = "wails/services"
+	HeaderAcceptLanguage           = "accept-language"
 )
 
 type RuntimeHandler interface {
@@ -100,7 +101,14 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 			a.writeBlob(rw, indexHTML, recorder.Body.Bytes())
 
 		case http.StatusNotFound:
-			a.writeBlob(rw, indexHTML, defaultIndexHTML())
+			// Read the accept-language header
+			acceptLanguage := req.Header.Get(HeaderAcceptLanguage)
+			if acceptLanguage == "" {
+				acceptLanguage = "en"
+			}
+			// Set content type for default index.html
+			header.Set(HeaderContentType, "text/html; charset=utf-8")
+			a.writeBlob(rw, indexHTML, defaultIndexHTML(acceptLanguage))
 
 		default:
 			rw.WriteHeader(recorder.Code)

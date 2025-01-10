@@ -19,7 +19,7 @@ import * as nobindingshere$0 from "../no_bindings_here/models.js";
  */
 export function LikeThisOne(): Promise<[nobindingshere$0.Person, nobindingshere$0.Impersonator, nobindingshere$0.HowDifferent<boolean>, nobindingshere$0.PrivatePerson]> & { cancel(): void } {
     let $resultPromise = $Call.ByID(2590614085) as any;
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
         $result[0] = $$createType0($result[0]);
         $result[1] = $$createType1($result[1]);
         $result[2] = $$createType2($result[2]);

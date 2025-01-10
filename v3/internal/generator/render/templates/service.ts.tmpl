@@ -78,7 +78,7 @@ import * as $internal from "./{{js $internal}}";
     {{- if or $useInterfaces (not .Results) ($module.SkipCreate .Results)}}
     return $resultPromise;
     {{- else}}
-    let $typingPromise = $resultPromise.then(($result) => {
+    let $typingPromise = $resultPromise.then(($result: any) => {
     {{- if eq 1 (len .Results)}}
         return {{$module.JSCreate (index .Results 0)}}($result);
     {{- else}}

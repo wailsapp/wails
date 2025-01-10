@@ -41,6 +41,7 @@ func main() {
 		dialog.SetMessage("This is a custom message")
 		dialog.Show()
 	})
+
 	infoMenu.Add("Info (Title only)").OnClick(func(ctx *application.Context) {
 		dialog := application.InfoDialog()
 		dialog.SetTitle("Custom Title")
@@ -107,17 +108,22 @@ func main() {
 		dialog.SetTitle("Custom Icon Example")
 		dialog.SetMessage("Using a custom icon")
 		dialog.SetIcon(icons.WailsLogoWhiteTransparent)
-		dialog.SetDefaultButton(dialog.AddButton("I like it!"))
-		dialog.AddButton("Not so keen...")
+		likeIt := dialog.AddButton("I like it!").OnClick(func() {
+			application.InfoDialog().SetMessage("Thanks!").Show()
+		})
+		dialog.AddButton("Not so keen...").OnClick(func() {
+			application.InfoDialog().SetMessage("Too bad!").Show()
+		})
+		dialog.SetDefaultButton(likeIt)
 		dialog.Show()
 	})
 
 	warningMenu := menu.AddSubmenu("Warning")
 	warningMenu.Add("Warning").OnClick(func(ctx *application.Context) {
-		dialog := application.WarningDialog()
-		dialog.SetTitle("Custom Title")
-		dialog.SetMessage("This is a custom message")
-		dialog.Show()
+		application.WarningDialog().
+			SetTitle("Custom Title").
+			SetMessage("This is a custom message").
+			Show()
 	})
 	warningMenu.Add("Warning (Title only)").OnClick(func(ctx *application.Context) {
 		dialog := application.WarningDialog()
@@ -150,9 +156,9 @@ func main() {
 		dialog.Show()
 	})
 	errorMenu.Add("Error (Custom Message)").OnClick(func(ctx *application.Context) {
-		dialog := application.ErrorDialog()
-		dialog.SetMessage("This is a custom message")
-		dialog.Show()
+		application.ErrorDialog().
+			SetMessage("This is a custom message").
+			Show()
 	})
 	errorMenu.Add("Error (Custom Icon)").OnClick(func(ctx *application.Context) {
 		dialog := application.ErrorDialog()
@@ -213,6 +219,7 @@ func main() {
 	openMenu.Add("Open Directory").OnClick(func(ctx *application.Context) {
 		result, _ := application.OpenFileDialog().
 			CanChooseDirectories(true).
+			CanChooseFiles(false).
 			PromptForSingleSelection()
 		if result != "" {
 			application.InfoDialog().SetMessage(result).Show()
@@ -224,6 +231,7 @@ func main() {
 		result, _ := application.OpenFileDialog().
 			CanChooseDirectories(true).
 			CanCreateDirectories(true).
+			CanChooseFiles(false).
 			PromptForSingleSelection()
 		if result != "" {
 			application.InfoDialog().SetMessage(result).Show()
@@ -235,6 +243,7 @@ func main() {
 		result, _ := application.OpenFileDialog().
 			CanChooseDirectories(true).
 			CanCreateDirectories(true).
+			CanChooseFiles(false).
 			ResolvesAliases(true).
 			PromptForSingleSelection()
 		if result != "" {

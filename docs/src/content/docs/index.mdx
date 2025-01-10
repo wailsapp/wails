@@ -1,0 +1,114 @@
+---
+title: Welcome to Wails
+description: "Create beautiful applications using Go"
+banner:
+    content: |
+        This site is for v3 Alpha and is under construction. <a href="https://wails.io">v2 is the stable release.</a>
+template: splash
+hero:
+  tagline:
+    A powerful framework for building desktop applications using Go and modern web
+    technologies.
+  image:
+    dark: ../../assets/wails-logo-dark.svg
+    light: ../../assets/wails-logo-light.svg
+    alt: Wails Logo
+
+  actions:
+    - text: Getting Started
+      link: /getting-started/installation
+      icon: right-arrow
+    - text: Sponsor
+      link: https://github.com/sponsors/leaanthony
+      icon: heart
+      class:
+        - is-sponsor
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+import CardAnimation from '../../components/CardAnimation.astro';
+
+    :::danger[Alpha Status]
+    Wails v3 is currently in ALPHA. Please follow our [feedback guide](/feedback) to help us improve the project.
+    This site is still under construction.
+    :::
+
+<br/>
+
+<div class="animate-cards">
+  <CardGrid>
+    <Card title="What is Wails?" icon="star">
+      Build desktop applications that combine the power of Go with modern web technologies:
+
+      - **Native Performance**: Direct in-memory Go-to-Frontend communication
+      - **Cross Platform**: One codebase for Windows, macOS and Linux
+      - **Modern Stack**: Use any modern web framework (React, Vue, Svelte, etc.)
+      - **Native APIs**: Access OS-level features directly from Go
+      - **Developer Experience**: Hot reload, native dialogs, system tray, and more
+      - **Small Footprint**: Lightweight alternative to Electron
+    </Card>
+
+    <Card title="Prerequisites" icon="document">
+      Before you begin, ensure you have:
+
+      - Go 1.23 or later installed
+      - Latest version of npm installed (if you want to use the templates)
+      - Basic knowledge of Go programming
+
+      Check our [detailed prerequisites](/getting-started/installation#dependencies) for a complete list.
+    </Card>
+
+    <Card title="Quick Start" icon="rocket">
+      ```bash
+      # Install wails
+      go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      # Create a new project
+      wails init -n myproject
+
+      # Run your project
+      cd myproject
+      wails dev
+      ```
+    </Card>
+
+    <Card title="Project Status" icon="information">
+      Wails v3 is currently in Alpha. While it's stable enough for testing and
+      development, there might be breaking changes before the final release. Your feedback
+      and contributions are welcome!
+    </Card>
+
+    <Card title="What's New in v3?" icon="list-format">
+      - **Multiple Windows Support**: Create and manage multiple windows in a single application
+      - **Improved API Design**: New procedural approach for more flexibility
+      - **Enhanced Bindings**: Sophisticated static analyzer for Go-to-Frontend communication
+      - **Better Build Tooling**: A new build system based on [Taskfile](https://taskfile.dev/)
+      - **New Linux Packaging**: Support for deb, rpm, arch linux, and AppImage
+      - **New Templates**: Create applications with a single command using our pre-built templates
+    </Card>
+
+    <Card title="Getting Started" icon="open-book">
+      Ready to build your first Wails application? Check out our
+      [installation guide](/getting-started/installation) to get started.
+    </Card>
+
+    <Card title="Feedback & Support" icon="discord">
+        We value your feedback and have a [detailed guide on providing it](/feedback).
+        Use this guide to:
+
+          - Report bugs
+          - Request features
+          - Get help from the community
+          - Contribute to the project
+
+        Join our [Discord community](https://discord.gg/bdj28QNHmT)
+        or visit our [GitHub repository](https://github.com/wailsapp/wails) to:
+    </Card>
+
+    <Card title="Alpha Version Notice" icon="warning">
+      Please note that v3 is currently in Alpha. While we're working hard to ensure
+      stability, there might be breaking changes before the final release. For production
+      use, please use [Wails v2](https://wails.io).
+    </Card>
+  </CardGrid>
+</div>

@@ -3,27 +3,28 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/pterm/pterm"
-	"golang.org/x/term"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
+	"github.com/wailsapp/wails/v3/internal/term"
 )
 
 func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string) error {
 	DisableFooter = true
 
 	if options.Silent {
-		pterm.DisableOutput()
-		defer pterm.EnableOutput()
+		term.DisableOutput()
+		defer term.EnableOutput()
 	} else if options.Verbose {
 		pterm.EnableDebugMessages()
 		defer pterm.DisableDebugMessages()
 	}
+
+	term.Header("Generate Bindings")
 
 	if len(patterns) == 0 {
 		// No input pattern, load package from current directory.
@@ -44,7 +45,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 
 	// Start a spinner for progress messages.
 	var spinner *pterm.SpinnerPrinter
-	if term.IsTerminal(int(os.Stdout.Fd())) && (os.Getenv("CI") != "true") {
+	if term.IsTerminal() {
 		spinner, _ = pterm.DefaultSpinner.Start("Initialising...")
 	}
 
@@ -68,11 +69,11 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	if spinner != nil {
 		spinner.Info(resultMessage)
 	} else {
-		pterm.Info.Println(resultMessage)
+		term.Infofln(resultMessage)
 	}
 
 	// Report output directory.
-	pterm.Info.Printfln("Output directory: %s", absPath)
+	term.Infofln("Output directory: %s", absPath)
 
 	// Process generator error.
 	if err != nil {
@@ -80,14 +81,14 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		switch {
 		case errors.Is(err, generator.ErrNoPackages):
 			// Convert to warning message.
-			pterm.Warning.Println(err)
+			term.Warning(err)
 		case errors.As(err, &report):
 			if report.HasErrors() {
 				// Report error count.
 				return err
 			} else if report.HasWarnings() {
 				// Report warning count.
-				pterm.Warning.Println(report)
+				term.Warning(report)
 			}
 		default:
 			// Report error.
