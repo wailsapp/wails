@@ -54,7 +54,12 @@ app := application.New(application.Options{
 
 ## Optional Methods
 
-Services can implement optional methods to hook into the application lifecycle:
+Services can implement optional methods to hook into the application lifecycle.
+
+:::note
+The `OnStartup`, `OnShutdown`, and `ServeHTTP` methods are not included in the 
+bindings generated for a service, so they are not exposed to your frontend.
+:::
 
 ### Name
 
