@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/pterm/pterm"
@@ -35,6 +36,13 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	absPath, err := filepath.Abs(options.OutputDirectory)
 	if err != nil {
 		return err
+	}
+
+	// Clean the output directory if clean option is enabled
+	if options.Clean {
+		if err := os.RemoveAll(absPath); err != nil {
+			return fmt.Errorf("failed to clean output directory: %w", err)
+		}
 	}
 
 	// Initialise file creator.

@@ -21,6 +21,7 @@ type GenerateBindingsOptions struct {
 	DryRun            bool   `name:"dry" description:"Do not write output files"`
 	Silent            bool   `name:"silent" description:"Silent mode"`
 	Verbose           bool   `name:"v" description:"Enable debug output"`
+	Clean             bool   `name:"clean" description:"Clean output directory before generation" default:"true"`
 }
 
 var ErrUnmatchedQuote = errors.New("build flags contain an unmatched quote")
