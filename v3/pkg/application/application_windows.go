@@ -205,8 +205,13 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		}
 	}
 
+	// Handle the main thread window
+	// Quit the application if requested
 	// Reprocess and cache screens when display settings change
 	if hwnd == m.mainThreadWindowHWND {
+		if msg == w32.WM_ENDSESSION || msg == w32.WM_DESTROY || msg == w32.WM_CLOSE {
+			globalApplication.Quit()
+		}
 		if msg == w32.WM_DISPLAYCHANGE || (msg == w32.WM_SETTINGCHANGE && wParam == w32.SPI_SETWORKAREA) {
 			err := m.processAndCacheScreens()
 			if err != nil {
