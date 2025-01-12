@@ -162,6 +162,7 @@ extern bool hasListeners(unsigned int);
         case 24: return @"=";
         case 50: return @"`";
         case 42: return @"\\";
+
         default: return @"";
     }
 }
@@ -283,14 +284,13 @@ extern bool hasListeners(unsigned int);
         return proposedOptions | NSApplicationPresentationAutoHideToolbar;
     }
 }
-- (void)windowDidChangeVisibility:(NSNotification *)notification {
+- (void)windowDidChangeOcclusionState:(NSNotification *)notification {
     NSWindow *window = notification.object;
-    BOOL isVisible = ![window isVisible];
+    BOOL isVisible = ([window occlusionState] & NSWindowOcclusionStateVisible) != 0;
     if (hasListeners(isVisible ? EventWindowShow : EventWindowHide)) {
         processWindowEvent(self.windowId, isVisible ? EventWindowShow : EventWindowHide);
     }
 }
-// GENERATED EVENTS START
 - (void)windowDidBecomeKey:(NSNotification *)notification {
     if( hasListeners(EventWindowDidBecomeKey) ) {
         processWindowEvent(self.windowId, EventWindowDidBecomeKey);
@@ -336,12 +336,6 @@ extern bool hasListeners(unsigned int);
 - (void)windowDidChangeEffectiveAppearance:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeEffectiveAppearance) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeEffectiveAppearance);
-    }
-}
-
-- (void)windowDidChangeOcclusionState:(NSNotification *)notification {
-    if( hasListeners(EventWindowDidChangeOcclusionState) ) {
-        processWindowEvent(self.windowId, EventWindowDidChangeOcclusionState);
     }
 }
 
@@ -747,25 +741,25 @@ extern bool hasListeners(unsigned int);
     }
 }
 
-- (void)webView:(WKWebView *)webview didStartProvisionalNavigation:(WKNavigation *)navigation {
+- (void)webView:(nonnull WKWebView *)webview didStartProvisionalNavigation:(WKNavigation *)navigation {
     if( hasListeners(EventWebViewDidStartProvisionalNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidStartProvisionalNavigation);
     }
 }
 
-- (void)webView:(WKWebView *)webview didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation {
+- (void)webView:(nonnull WKWebView *)webview didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation {
     if( hasListeners(EventWebViewDidReceiveServerRedirectForProvisionalNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidReceiveServerRedirectForProvisionalNavigation);
     }
 }
 
-- (void)webView:(WKWebView *)webview didFinishNavigation:(WKNavigation *)navigation {
+- (void)webView:(nonnull WKWebView *)webview didFinishNavigation:(WKNavigation *)navigation {
     if( hasListeners(EventWebViewDidFinishNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidFinishNavigation);
     }
 }
 
-- (void)webView:(WKWebView *)webview didCommitNavigation:(WKNavigation *)navigation {
+- (void)webView:(nonnull WKWebView *)webview didCommitNavigation:(WKNavigation *)navigation {
     if( hasListeners(EventWebViewDidCommitNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidCommitNavigation);
     }

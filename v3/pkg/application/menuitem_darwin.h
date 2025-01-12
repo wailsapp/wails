@@ -1,4 +1,3 @@
-
 #ifndef MenuItemDelegate_h
 #define MenuItemDelegate_h
 
