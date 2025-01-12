@@ -1,15 +1,30 @@
-name: Build + Test v3 alpha
+name: Build + Test v3
 
 on:
-  push:
-    branches: [v3-alpha, v3/*, v3-*]
-    paths-ignore:
-      - '../../docs/**/*'
-  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_review:
+    types: [submitted]
 
 jobs:
+  check_approval:
+    name: Check PR Approval
+    runs-on: ubuntu-latest
+    outputs:
+      approved: ${{ steps.check.outputs.approved }}
+    steps:
+      - name: Check if PR is approved
+        id: check
+        run: |
+          if [[ "${{ github.event.review.state }}" == "approved" || "${{ github.event.pull_request.approved }}" == "true" ]]; then
+            echo "approved=true" >> $GITHUB_OUTPUT
+          else
+            echo "approved=false" >> $GITHUB_OUTPUT
+          fi
+
   test_go:
     name: Run Go Tests
+    needs: check_approval
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -58,6 +73,7 @@ jobs:
 
   test_js:
     name: Run JS Tests
+    needs: check_approval
     runs-on: ubuntu-latest
     strategy:
       matrix:
