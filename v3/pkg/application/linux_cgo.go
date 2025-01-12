@@ -779,6 +779,7 @@ func getScreenByIndex(display *C.struct__GdkDisplay, index int) *Screen {
 			Height: int(geometry.height),
 			Width:  int(geometry.width),
 		},
+		Rotation: 0.0,
 	}
 }
 
@@ -852,16 +853,29 @@ func getMousePosition() (int, int, *Screen) {
 	C.gdk_monitor_get_geometry(monitor, &geometry)
 	scaleFactor := int(C.gdk_monitor_get_scale_factor(monitor))
 	return int(x), int(y), &Screen{
-		ID:          fmt.Sprintf("%d", 0),                                           // A unique identifier for the display
-		Name:        C.GoString(C.gdk_monitor_get_model(monitor)),                   // The name of the display
-		ScaleFactor: float32(scaleFactor),                                           // The scale factor of the display
-		X:           int(geometry.x),                                                // The x-coordinate of the top-left corner of the rectangle
-		Y:           int(geometry.y),                                                // The y-coordinate of the top-left corner of the rectangle
-		Size:        Size{Width: int(geometry.width), Height: int(geometry.height)}, // The size of the display
-		Bounds:      Rect{},                                                         // The bounds of the display
-		WorkArea:    Rect{},                                                         // The work area of the display
-		IsPrimary:   false,                                                          // Whether this is the primary display
-		Rotation:    0.0,                                                            // The rotation of the display
+		ID:          fmt.Sprintf("%d", 0),                         // A unique identifier for the display
+		Name:        C.GoString(C.gdk_monitor_get_model(monitor)), // The name of the display
+		ScaleFactor: float32(scaleFactor),                         // The scale factor of the display
+		X:           int(geometry.x),                              // The x-coordinate of the top-left corner of the rectangle
+		Y:           int(geometry.y),                              // The y-coordinate of the top-left corner of the rectangle
+		Size: Size{
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		Bounds: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		WorkArea: Rect{
+			X:      int(geometry.x),
+			Y:      int(geometry.y),
+			Height: int(geometry.height),
+			Width:  int(geometry.width),
+		},
+		IsPrimary: false,
+		Rotation:  0.0,
 	}
 }
 
@@ -905,16 +919,41 @@ func (w *linuxWebviewWindow) getScreen() (*Screen, error) {
 	name := C.gdk_monitor_get_model(monitor)
 	mx, my, width, height, scaleFactor := w.getCurrentMonitorGeometry()
 	return &Screen{
-		ID:          fmt.Sprintf("%d", w.id),            // A unique identifier for the display
-		Name:        C.GoString(name),                   // The name of the display
-		ScaleFactor: float32(scaleFactor),               // The scale factor of the display
-		X:           mx,                                 // The x-coordinate of the top-left corner of the rectangle
-		Y:           my,                                 // The y-coordinate of the top-left corner of the rectangle
-		Size:        Size{Width: width, Height: height}, // The size of the display
-		Bounds:      Rect{},                             // The bounds of the display
-		WorkArea:    Rect{},                             // The work area of the display
-		IsPrimary:   false,                              // Whether this is the primary display
-		Rotation:    0.0,                                // The rotation of the display
+		ID:          fmt.Sprintf("%d", w.id), // A unique identifier for the display
+		Name:        C.GoString(name),        // The name of the display
+		ScaleFactor: float32(scaleFactor),    // The scale factor of the display
+		X:           mx,                      // The x-coordinate of the top-left corner of the rectangle
+		Y:           my,                      // The y-coordinate of the top-left corner of the rectangle
+		Size: Size{
+			Height: int(height),
+			Width:  int(width),
+		},
+		Bounds: Rect{
+			X:      int(mx),
+			Y:      int(my),
+			Height: int(height),
+			Width:  int(width),
+		},
+		WorkArea: Rect{
+			X:      int(mx),
+			Y:      int(my),
+			Height: int(height),
+			Width:  int(width),
+		},
+		PhysicalBounds: Rect{
+			X:      int(mx),
+			Y:      int(my),
+			Height: int(height),
+			Width:  int(width),
+		},
+		PhysicalWorkArea: Rect{
+			X:      int(mx),
+			Y:      int(my),
+			Height: int(height),
+			Width:  int(width),
+		},
+		IsPrimary: false,
+		Rotation:  0.0,
 	}, nil
 }
 

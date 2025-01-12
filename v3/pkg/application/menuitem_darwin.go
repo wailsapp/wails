@@ -48,8 +48,11 @@ void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* too
 
 // set menu item label
 void setMenuItemLabel(void* nsMenuItem, char *label) {
-	MenuItem *menuItem = (MenuItem *)nsMenuItem;
-	menuItem.title = [NSString stringWithUTF8String:label];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        MenuItem *menuItem = (MenuItem *)nsMenuItem;
+        menuItem.title = [NSString stringWithUTF8String:label];
+		free(label);
+    });
 }
 
 // set menu item disabled
@@ -76,14 +79,19 @@ void setMenuItemHidden(void* nsMenuItem, bool hidden) {
 
 // set menu item tooltip
 void setMenuItemTooltip(void* nsMenuItem, char *tooltip) {
-	MenuItem *menuItem = (MenuItem *)nsMenuItem;
-	menuItem.toolTip = [NSString stringWithUTF8String:tooltip];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        MenuItem *menuItem = (MenuItem *)nsMenuItem;
+        menuItem.toolTip = [NSString stringWithUTF8String:tooltip];
+        free(tooltip);
+    });
 }
 
 // Check menu item
 void setMenuItemChecked(void* nsMenuItem, bool checked) {
-	MenuItem *menuItem = (MenuItem *)nsMenuItem;
-	menuItem.state = checked ? NSControlStateValueOn : NSControlStateValueOff;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        MenuItem *menuItem = (MenuItem *)nsMenuItem;
+        menuItem.state = checked ? NSControlStateValueOn : NSControlStateValueOff;
+    });
 }
 
 NSString* translateKey(NSString* key) {
