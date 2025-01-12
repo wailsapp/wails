@@ -39,6 +39,7 @@ func getMonitorName(deviceName string) (string, error) {
 		if device.StateFlags&0x1 != 0 {
 			return syscall.UTF16ToString(device.DeviceString[:]), nil
 		}
+		i++
 	}
 
 	return "", fmt.Errorf("monitor name not found for device: %s", deviceName)
