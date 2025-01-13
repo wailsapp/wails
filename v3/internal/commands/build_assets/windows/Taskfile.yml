@@ -9,6 +9,8 @@ tasks:
     deps:
       - task: common:go:mod:tidy
       - task: common:build:frontend
+        vars:
+          PRODUCTION: '{{.PRODUCTION}}'
       - task: common:generate:icons
     cmds:
       - task: generate:syso
@@ -47,7 +49,7 @@ tasks:
           PRODUCTION: "true"
     cmds:
       # Create the Microsoft WebView2 bootstrapper if it doesn't exist
-      - wails3 generate webview2bootstrapper -dir {{.ROOT_DIR}}/build/windows/nsis
+      - wails3 generate webview2bootstrapper -dir "{{.ROOT_DIR}}\build\windows\nsis"
       - makensis -DARG_WAILS_{{.ARG_FLAG}}_BINARY="{{.ROOT_DIR}}\{{.BIN_DIR}}\{{.APP_NAME}}.exe" project.nsi
     vars:
       ARCH: '{{.ARCH | default ARCH}}'
