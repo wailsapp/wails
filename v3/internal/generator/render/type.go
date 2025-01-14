@@ -54,7 +54,7 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 		}
 
 		if types.Identical(typ, typeByteSlice) {
-			// encoding/json marshals byte arrays/slices as base64 strings
+			// encoding/json marshals byte slices as base64 strings
 			return "string" + null, null != ""
 		}
 

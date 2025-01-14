@@ -23,7 +23,15 @@ func (m *module) JSDefault(typ types.Type, quoted bool) (result string) {
 			return result
 		}
 
-	case *types.Array, *types.Slice:
+	case *types.Array:
+		if t.Len() == 0 {
+			return "[]"
+		} else {
+			// Initialise array with expected number of elements
+			return fmt.Sprintf("Array.from({ length: %d }, () => %s)", t.Len(), m.JSDefault(t.Elem(), false))
+		}
+
+	case *types.Slice:
 		if types.Identical(typ, typeByteSlice) {
 			return `""`
 		} else {
