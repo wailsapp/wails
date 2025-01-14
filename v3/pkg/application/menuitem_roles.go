@@ -32,34 +32,77 @@ func NewUnhideMenuItem() *MenuItem {
 }
 
 func NewUndoMenuItem() *MenuItem {
-	return NewMenuItem("Undo").
+	result := NewMenuItem("Undo").
 		SetAccelerator("CmdOrCtrl+z")
+	if runtime.GOOS != "darwin" {
+		result.OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.undo()
+			}
+		})
+	}
+	return result
 }
 
-// newRedoMenuItem creates a new menu item for redoing the last action
+// NewRedoMenuItem creates a new menu item for redoing the last action
 func NewRedoMenuItem() *MenuItem {
-	return NewMenuItem("Redo").
+	result := NewMenuItem("Redo").
 		SetAccelerator("CmdOrCtrl+Shift+z")
+	if runtime.GOOS != "darwin" {
+		result.OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.redo()
+			}
+		})
+	}
+	return result
 }
 
 func NewCutMenuItem() *MenuItem {
-	return NewMenuItem("Cut").
-		SetAccelerator("CmdOrCtrl+x").OnClick(func(ctx *Context) {
-		currentWindow := globalApplication.CurrentWindow()
-		if currentWindow != nil {
-			currentWindow.cut()
-		}
-	})
+	result := NewMenuItem("Cut").
+		SetAccelerator("CmdOrCtrl+x")
+
+	if runtime.GOOS != "darwin" {
+		result.OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.cut()
+			}
+		})
+	}
+	return result
 }
 
 func NewCopyMenuItem() *MenuItem {
-	return NewMenuItem("Copy").
+	result := NewMenuItem("Copy").
 		SetAccelerator("CmdOrCtrl+c")
+
+	if runtime.GOOS != "darwin" {
+		result.OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.copy()
+			}
+		})
+	}
+	return result
 }
 
 func NewPasteMenuItem() *MenuItem {
-	return NewMenuItem("Paste").
+	result := NewMenuItem("Paste").
 		SetAccelerator("CmdOrCtrl+v")
+
+	if runtime.GOOS != "darwin" {
+		result.OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.paste()
+			}
+		})
+	}
+	return result
 }
 
 func NewPasteAndMatchStyleMenuItem() *MenuItem {
@@ -68,8 +111,18 @@ func NewPasteAndMatchStyleMenuItem() *MenuItem {
 }
 
 func NewDeleteMenuItem() *MenuItem {
-	return NewMenuItem("Delete").
+	result := NewMenuItem("Delete").
 		SetAccelerator("backspace")
+
+	if runtime.GOOS != "darwin" {
+		result.OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.delete()
+			}
+		})
+	}
+	return result
 }
 
 func NewQuitMenuItem() *MenuItem {
@@ -87,8 +140,18 @@ func NewQuitMenuItem() *MenuItem {
 }
 
 func NewSelectAllMenuItem() *MenuItem {
-	return NewMenuItem("Select All").
+	result := NewMenuItem("Select All").
 		SetAccelerator("CmdOrCtrl+a")
+
+	if runtime.GOOS != "darwin" {
+		result.OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.CurrentWindow()
+			if currentWindow != nil {
+				currentWindow.selectAll()
+			}
+		})
+	}
+	return result
 }
 
 func NewAboutMenuItem() *MenuItem {
