@@ -4,10 +4,6 @@ tasks:
   go:mod:tidy:
     summary: Runs `go mod tidy`
     internal: true
-    generates:
-      - go.sum
-    sources:
-      - go.mod
     cmds:
       - go mod tidy
 
@@ -36,10 +32,17 @@ tasks:
       - task: install:frontend:deps
       - task: generate:bindings
     cmds:
-      - npm run build -q
+      - npm run {{ "{{.BUILD_COMMAND}}" }} -q
+    env:
+      PRODUCTION: {{ "'{{.PRODUCTION | default \"false\"}}'" }}
+    vars:
+      BUILD_COMMAND: {{ "'{{if eq .PRODUCTION \"true\"}}build{{else}}build:dev{{end}}'" }}
+
 
   generate:bindings:
     summary: Generates bindings for the frontend
+    deps:
+      - task: go:mod:tidy
     sources:
       - "**/*.go"
       - go.mod

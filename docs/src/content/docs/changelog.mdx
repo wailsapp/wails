@@ -26,6 +26,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Support aarch64 AppImage builds by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981) 
+
+### Fixed
+- Fixed Windows+Linux Edit Menu issues by [@leaanthony](https://github.com/leaanthony) in [#3f78a3a](https://github.com/wailsapp/wails/commit/3f78a3a8ce7837e8b32242c8edbbed431c68c062)
+- Updated the minimum system version in macOS .plist files from 10.13.0 to 10.15.0 by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
+
+## v3.0.0-alpha.9 - 2025-01-13
+
+### Added
 
 - `app.OpenFileManager(path string, selectFile bool)` to open the system file manager to the path `path` with optional highlighting via `selectFile` by [@Krzysztofz01](https://github.com/Krzysztofz01) [@rcalixte](https://github.com/rcalixte)
 - New `-git` flag for `wails3 init` command by [@leaanthony](https://github.com/leaanthony)
@@ -57,8 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Common taskfile now defaults to generating Typescript bindings for Typescript templates by [@leaanthony](https://github.com/leaanthony)
 - Fix Close application on WM_CLOSE message when no windows are open/systray only by [@mmalcek](https://github.com/mmalcek) in [#3990](https://github.com/wailsapp/wails/pull/3990)
 - Fixed garble build by @5aaee9 in [#3192](https://github.com/wailsapp/wails/pull/3192)
-- Updated the minimum system version in macOS .plist files from 10.13.0 to 10.15.0 by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
-
+- Fixed windows nsis builds by [@leaanthony](https://github.com/leaanthony)
 
 ### Changed
 
@@ -70,6 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Windows] Reduced flicker when opening a window by [@leaanthony](https://github.com/leaanthony)
 - Removed `Window.Destroy` as this was intended to be an internal function by [@leaanthony](https://github.com/leaanthony)
 - Renamed `WindowClose` events to `WindowClosing` by [@leaanthony](https://github.com/leaanthony)
+- Frontend builds now use vite environment "development" or "production" depending on build type by [@leaanthony](https://github.com/leaanthony)
+- Update to go-webview2 v1.19 by [@leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.8.3 - 2024-12-07
 

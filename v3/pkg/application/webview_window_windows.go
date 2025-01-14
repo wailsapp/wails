@@ -74,30 +74,98 @@ type windowsWebviewWindow struct {
 }
 
 func (w *windowsWebviewWindow) cut() {
-	w32.Cut(w.hwnd)
+	w.execJS("document.execCommand('cut')")
 }
 
 func (w *windowsWebviewWindow) paste() {
-	w32.Paste(w.hwnd)
+	w.execJS(`
+		(async () => {
+			try {
+				// Try to read all available formats
+				const clipboardItems = await navigator.clipboard.read();
+				
+				for (const clipboardItem of clipboardItems) {
+					// Check for image types
+					for (const type of clipboardItem.types) {
+						if (type.startsWith('image/')) {
+							const blob = await clipboardItem.getType(type);
+							const url = URL.createObjectURL(blob);
+							document.execCommand('insertHTML', false, '<img src="' + url + '">');
+							return;
+						}
+					}
+					
+					// If no image found, try text
+					if (clipboardItem.types.includes('text/plain')) {
+						const text = await navigator.clipboard.readText();
+						document.execCommand('insertText', false, text);
+						return;
+					}
+				}
+			} catch(err) {
+				// Fallback to text-only paste if clipboard access fails
+				try {
+					const text = await navigator.clipboard.readText();
+					document.execCommand('insertText', false, text);
+				} catch(fallbackErr) {
+					console.error('Failed to paste:', err, fallbackErr);
+				}
+			}
+		})()
+	`)
 }
 
 func (w *windowsWebviewWindow) copy() {
-	w32.Copy(w.hwnd)
+	w.execJS(`
+		(async () => {
+			try {
+				const selection = window.getSelection();
+				if (!selection.rangeCount) return;
+
+				const range = selection.getRangeAt(0);
+				const container = document.createElement('div');
+				container.appendChild(range.cloneContents());
+
+				// Check if we have any images in the selection
+				const images = container.getElementsByTagName('img');
+				if (images.length > 0) {
+					// Handle image copy
+					const img = images[0]; // Take the first image
+					const response = await fetch(img.src);
+					const blob = await response.blob();
+					await navigator.clipboard.write([
+						new ClipboardItem({
+							[blob.type]: blob
+						})
+					]);
+				} else {
+					// Handle text copy
+					const text = selection.toString();
+					if (text) {
+						await navigator.clipboard.writeText(text);
+					}
+				}
+			} catch(err) {
+				console.error('Failed to copy:', err);
+			}
+		})()
+	`)
 }
 
 func (w *windowsWebviewWindow) selectAll() {
-	w32.SelectAll(w.hwnd)
+	w.execJS("document.execCommand('selectAll')")
 }
 
 func (w *windowsWebviewWindow) undo() {
-	w32.Undo(w.hwnd)
-}
-
-func (w *windowsWebviewWindow) delete() {
-	w32.Delete(w.hwnd)
+	w.execJS("document.execCommand('undo')")
 }
 
 func (w *windowsWebviewWindow) redo() {
+	w.execJS("document.execCommand('redo')")
+}
+
+func (w *windowsWebviewWindow) delete() {
+	w.execJS("document.execCommand('delete')")
 }
 
 func (w *windowsWebviewWindow) handleKeyEvent(_ string) {

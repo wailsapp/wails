@@ -12,10 +12,14 @@ import (
 var webview2Bootstrapper []byte
 
 type GenerateWebView2Options struct {
-	Directory string `json:"directory"`
+	Directory string `name:"dir" json:"directory"`
 }
 
 func GenerateWebView2Bootstrapper(options *GenerateWebView2Options) error {
+	println("options.Directory", options.Directory)
+	options.Directory = filepath.Clean(options.Directory)
+	println("cleaned options.Directory", options.Directory)
+
 	// If the file already exists, exit early
 	if _, err := os.Stat(filepath.Join(options.Directory, "MicrosoftEdgeWebview2Setup.exe")); err == nil {
 		return nil
