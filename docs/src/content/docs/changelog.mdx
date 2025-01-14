@@ -25,8 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Support aarch64 AppImage builds by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981) 
+
 ### Fixed
 - Fixed Windows+Linux Edit Menu issues by [@leaanthony](https://github.com/leaanthony) in [#3f78a3a](https://github.com/wailsapp/wails/commit/3f78a3a8ce7837e8b32242c8edbbed431c68c062)
+- Updated the minimum system version in macOS .plist files from 10.13.0 to 10.15.0 by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
 
 ## v3.0.0-alpha.9 - 2025-01-13
 
@@ -42,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `wails3 releasenotes` command by [@leaanthony](https://github.com/leaanthony)
 - `wails3 update cli` command by [@leaanthony](https://github.com/leaanthony)
 - `-clean` option for `wails3 generate bindings` command by [@leaanthony](https://github.com/leaanthony)
+- Allow for aarch64 (arm64) AppImage Linux builds by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
 
 ### Fixed
 
@@ -62,7 +67,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix Close application on WM_CLOSE message when no windows are open/systray only by [@mmalcek](https://github.com/mmalcek) in [#3990](https://github.com/wailsapp/wails/pull/3990)
 - Fixed garble build by @5aaee9 in [#3192](https://github.com/wailsapp/wails/pull/3192)
 - Fixed windows nsis builds by [@leaanthony](https://github.com/leaanthony)
-
 
 ### Changed
 
