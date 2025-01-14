@@ -1309,42 +1309,49 @@ func (w *WebviewWindow) SetIgnoreMouseEvents(ignore bool) Window {
 
 func (w *WebviewWindow) cut() {
 	if w.impl == nil || w.isDestroyed() {
-		w.impl.cut()
+		return
 	}
+	w.impl.cut()
 }
 
 func (w *WebviewWindow) copy() {
 	if w.impl == nil || w.isDestroyed() {
-		w.impl.copy()
+		return
 	}
+	w.impl.copy()
 }
 
 func (w *WebviewWindow) paste() {
 	if w.impl == nil || w.isDestroyed() {
-		w.impl.paste()
+		return
 	}
+	w.impl.paste()
 }
 
 func (w *WebviewWindow) selectAll() {
 	if w.impl == nil || w.isDestroyed() {
-		w.impl.selectAll()
+		return
 	}
+	w.impl.selectAll()
 }
 
 func (w *WebviewWindow) undo() {
 	if w.impl == nil || w.isDestroyed() {
-		w.impl.undo()
+		return
 	}
+	w.impl.undo()
 }
 
 func (w *WebviewWindow) delete() {
 	if w.impl == nil || w.isDestroyed() {
-		w.impl.delete()
+		return
 	}
+	w.impl.delete()
 }
 
 func (w *WebviewWindow) redo() {
 	if w.impl == nil || w.isDestroyed() {
-		w.impl.redo()
+		return
 	}
+	w.impl.redo()
 }
