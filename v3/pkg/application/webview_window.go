@@ -1193,6 +1193,10 @@ func (w *WebviewWindow) OpenContextMenu(data *ContextMenuData) {
 
 // RegisterContextMenu registers a context menu and assigns it the given name.
 func (w *WebviewWindow) RegisterContextMenu(name string, menu *Menu) {
+	if menu == nil {
+		w.Error("RegisterContextMenu called with nil menu")
+		return
+	}
 	w.contextMenusLock.Lock()
 	defer w.contextMenusLock.Unlock()
 	w.contextMenus[name] = menu
