@@ -1,0 +1,491 @@
+---
+title: Menus
+description: A guide to creating and customising menus in Wails v3
+---
+
+Wails v3 provides a powerful menu system that allows you to create both application menus and context menus. This guide will walk you through the various features and capabilities of the menu system.
+
+### Creating a Menu
+
+To create a new menu, use the `NewMenu()` method from your application instance:
+
+```go
+menu := application.NewMenu()
+```
+
+### Adding Menu Items
+
+Wails supports several types of menu items, each serving a specific purpose:
+
+#### Regular Menu Items
+Regular menu items are the basic building blocks of menus. They display text and can trigger actions when clicked:
+
+```go
+menuItem := menu.Add("Click Me")
+```
+
+#### Checkboxes
+Checkbox menu items provide a toggleable state, useful for enabling/disabling features or settings:
+
+```go
+checkbox := menu.AddCheckbox("My checkbox", true)  // true = initially checked
+```
+
+#### Radio Groups
+Radio groups allow users to select one option from a set of mutually exclusive choices. They are automatically created when radio items are placed next to each other:
+
+```go
+menu.AddRadio("Option 1", true)   // true = initially selected
+menu.AddRadio("Option 2", false)
+menu.AddRadio("Option 3", false)
+```
+
+#### Separators
+Separators are horizontal lines that help organise menu items into logical groups:
+
+```go
+menu.AddSeparator()
+```
+
+#### Submenus
+Submenus are nested menus that appear when hovering over or clicking a menu item. They're useful for organizing complex menu structures:
+
+```go
+submenu := menu.AddSubmenu("File")
+submenu.Add("Open")
+submenu.Add("Save")
+```
+
+### Menu Item Properties
+
+Menu items have several properties that can be configured:
+
+| Property    | Method                   | Description                                         |
+|-------------|--------------------------|-----------------------------------------------------|
+| Label       | `SetLabel(string)`       | Sets the display text                               |
+| Enabled     | `SetEnabled(bool)`       | Enables/disables the item                           |
+| Checked     | `SetChecked(bool)`       | Sets the checked state (for checkboxes/radio items) |
+| Tooltip     | `SetTooltip(string)`     | Sets the tooltip text                               |
+| Hidden      | `SetHidden(bool)`        | Shows/hides the item                                |
+| Accelerator | `SetAccelerator(string)` | Sets the keyboard shortcut                          |
+
+### Menu Item States
+
+Menu items can be in different states that control their visibility and interactivity:
+
+#### Visibility
+
+Menu items can be shown or hidden dynamically using the `SetHidden()` method:
+
+```go
+menuItem := menu.Add("Dynamic Item")
+
+// Hide the menu item
+menuItem.SetHidden(true)
+
+// Show the menu item
+menuItem.SetHidden(false)
+
+// Check current visibility
+isHidden := menuItem.Hidden()
+```
+
+Hidden menu items are completely removed from the menu until shown again. This is useful for contextual menu items that should only appear in certain application states.
+
+#### Enabled State
+
+Menu items can be enabled or disabled using the `SetEnabled()` method:
+
+```go
+menuItem := menu.Add("Save")
+
+// Disable the menu item
+menuItem.SetEnabled(false)  // Item appears grayed out and cannot be clicked
+
+// Enable the menu item
+menuItem.SetEnabled(true)   // Item becomes clickable again
+
+// Check current enabled state
+isEnabled := menuItem.Enabled()
+```
+
+Disabled menu items remain visible but appear grayed out and cannot be clicked. This is commonly used to indicate that an action is currently unavailable, such as:
+- Disabling "Save" when there are no changes to save
+- Disabling "Copy" when nothing is selected
+- Disabling "Undo" when there's no action to undo
+
+#### Dynamic State Management
+
+You can combine these states with event handlers to create dynamic menus:
+
+```go
+saveMenuItem := menu.Add("Save")
+
+// Initially disable the Save menu item
+saveMenuItem.SetEnabled(false)
+
+// Enable Save only when there are unsaved changes
+documentChanged := func() {
+    saveMenuItem.SetEnabled(true)
+    menu.Update()  // Remember to update the menu after changing states
+}
+
+// Disable Save after saving
+documentSaved := func() {
+    saveMenuItem.SetEnabled(false)
+    menu.Update()
+}
+```
+
+### Event Handling
+
+Menu items can respond to click events using the `OnClick` method:
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // Handle the click event
+    println("Menu item clicked!")
+})
+```
+
+The context provides information about the clicked menu item:
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // Get the clicked menu item
+    clickedItem := ctx.ClickedMenuItem()
+    // Get its current state
+    isChecked := clickedItem.Checked()
+})
+```
+
+### Role-Based Menu Items
+
+Wails provides a set of predefined menu roles that automatically create menu items with standard functionality. Here are the supported menu roles:
+
+#### Complete Menu Structures
+These roles create entire menu structures with common functionality:
+
+| Role | Description | Platform Notes |
+|------|-------------|----------------|
+| `AppMenu` | Application menu with About, Services, Hide/Show, and Quit | macOS only |
+| `EditMenu` | Standard Edit menu with Undo, Redo, Cut, Copy, Paste, etc. | All platforms |
+| `ViewMenu` | View menu with Reload, Zoom, and Fullscreen controls | All platforms |
+| `WindowMenu` | Window controls (Minimise, Zoom, etc.) | All platforms |
+| `HelpMenu` | Help menu with "Learn More" link to Wails website | All platforms |
+
+#### Individual Menu Items
+These roles can be used to add individual menu items:
+
+| Role | Description | Platform Notes |
+|------|-------------|----------------|
+| `About` | Show application About dialog | All platforms |
+| `Hide` | Hide application | macOS only |
+| `HideOthers` | Hide other applications | macOS only |
+| `UnHide` | Show hidden application | macOS only |
+| `CloseWindow` | Close current window | All platforms |
+| `Minimise` | Minimise window | All platforms |
+| `Zoom` | Zoom window | macOS only |
+| `Front` | Bring window to front | macOS only |
+| `Quit` | Quit application | All platforms |
+| `Undo` | Undo last action | All platforms |
+| `Redo` | Redo last action | All platforms |
+| `Cut` | Cut selection | All platforms |
+| `Copy` | Copy selection | All platforms |
+| `Paste` | Paste from clipboard | All platforms |
+| `PasteAndMatchStyle` | Paste and match style | macOS only |
+| `SelectAll` | Select all | All platforms |
+| `Delete` | Delete selection | All platforms |
+| `Reload` | Reload current page | All platforms |
+| `ForceReload` | Force reload current page | All platforms |
+| `ToggleFullscreen` | Toggle fullscreen mode | All platforms |
+| `ResetZoom` | Reset zoom level | All platforms |
+| `ZoomIn` | Increase zoom | All platforms |
+| `ZoomOut` | Decrease zoom | All platforms |
+
+Here's an example showing how to use both complete menus and individual roles:
+
+```go
+menu := application.NewMenu()
+
+// Add complete menu structures
+menu.AddRole(application.AppMenu)    // macOS only
+menu.AddRole(application.EditMenu)   // Common edit operations
+menu.AddRole(application.ViewMenu)   // View controls
+menu.AddRole(application.WindowMenu) // Window controls
+
+// Add individual role-based items to a custom menu
+fileMenu := menu.AddSubmenu("File")
+fileMenu.AddRole(application.CloseWindow)
+fileMenu.AddSeparator()
+fileMenu.AddRole(application.Quit)
+```
+
+## Application Menus
+
+Application menus are the menus that appear at the top of your application window (Windows/Linux) or at the top of the screen (macOS).
+
+
+### Application Menu Behaviour
+
+When you set an application menu using `app.SetMenu()`, it becomes the default menu for all windows in your application. However, there are a few important behaviours to note:
+
+1. **Global Application Menu**: The menu set via `app.SetMenu()` acts as the default menu for all windows.
+
+2. **Per-Window Menu Override**: Individual windows can override the application menu by setting their own menu through window options:
+```go
+app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title: "Custom Menu Window",
+    Windows: application.WindowsWindow{
+        Menu: customMenu,  // Override application menu for this window
+    },
+})
+```
+
+3. **Disable Window Menu**: On Windows, you can disable a window's menu completely even when there's a global application menu:
+```go 
+app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    Title: "No Menu Window",
+    Windows: application.WindowsWindow{
+        DisableMenu: true,  // Disable menu for this window
+    },
+})
+```
+
+Here's a complete example showing these different menu behaviours:
+
+```go
+func main() {
+    app := application.New(application.Options{})
+
+    // Create application menu
+    appMenu := application.NewMenu()
+    fileMenu := appMenu.AddSubmenu("File")
+    fileMenu.Add("New").OnClick(func(ctx *application.Context) {
+        // This will be available in all windows unless overridden
+        window := app.CurrentWindow()
+        window.SetTitle("New Window")
+    })
+    
+    // Set as application menu - default for all windows
+    app.SetMenu(appMenu)
+
+    // Window with default application menu
+    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Title: "Default Menu",
+    })
+
+    // Window with custom menu
+    customMenu := application.NewMenu()
+    customMenu.Add("Custom Action")
+    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Title: "Custom Menu",
+        Windows: application.WindowsWindow{
+            Menu: customMenu,
+        },
+    })
+
+    // Window with no menu
+    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Title: "No Menu",
+        Windows: application.WindowsWindow{
+            DisableMenu: true,
+        },
+    })
+
+    app.Run()
+}
+```
+
+## Context Menus
+
+Context menus are popup menus that appear when right-clicking elements in your application. They provide quick access to relevant actions for the clicked element.
+
+### Default Context Menu
+
+The default context menu is the webview's built-in context menu that provides system-level operations such as:
+- Copy, Cut, and Paste for text manipulation
+- Text selection controls
+- Spell checking options
+
+#### Controlling the Default Context Menu
+
+You can control when the default context menu appears using the `--default-contextmenu` CSS property:
+
+```html
+<!-- Always show default context menu -->
+<div style="--default-contextmenu: show">
+    <input type="text" placeholder="Right-click for text operations"/>
+    <textarea>Standard text operations available here</textarea>
+</div>
+
+<!-- Hide default context menu -->
+<div style="--default-contextmenu: hide">
+    <div class="custom-component">Custom context menu only</div>
+</div>
+
+<!-- Smart context menu behaviour (default) -->
+<div style="--default-contextmenu: auto">
+    <!-- Shows default menu when text is selected or in input fields -->
+    <p>Select this text to see the default menu</p>
+    <input type="text" placeholder="Default menu for input operations"/>
+</div>
+```
+
+#### Nested Context Menu Behavior
+
+When using the `--default-contextmenu` property on nested elements, the following rules apply:
+
+1. Child elements inherit their parent's context menu setting unless explicitly overridden
+2. The most specific (closest) setting takes precedence
+3. The `auto` value can be used to reset to default behaviour
+
+Example of nested context menu behaviour:
+
+```html
+<!-- Parent sets hide -->
+<div style="--default-contextmenu: hide">
+    <!-- This inherits hide -->
+    <p>No context menu here</p>
+    
+    <!-- This overrides to show -->
+    <div style="--default-contextmenu: show">
+        <p>Context menu shown here</p>
+        
+        <!-- This inherits show -->
+        <span>Also has context menu</span>
+        
+        <!-- This resets to automatic behaviour -->
+        <div style="--default-contextmenu: auto">
+            <p>Shows menu only when text is selected</p>
+        </div>
+    </div>
+</div>
+```
+
+### Custom Context Menus
+
+Custom context menus allow you to provide application-specific actions that are relevant to the element being clicked. They're particularly useful for:
+- File operations in a document manager
+- Image manipulation tools
+- Custom actions in a data grid
+- Component-specific operations
+
+#### Creating a Custom Context Menu
+
+When creating a custom context menu, you provide a unique identifier (name) that links the menu to HTML elements:
+
+```go
+// Create a context menu with identifier "imageMenu"
+contextMenu := application.NewContextMenu("imageMenu")
+```
+
+The name parameter ("imageMenu" in this example) serves as a unique identifier that will be used to:
+1. Link HTML elements to this specific context menu
+2. Identify which menu should be shown when right-clicking
+3. Allow menu updates and cleanup
+
+#### Context Data
+
+When handling context menu events, you can access both the clicked menu item and its associated context data:
+
+```go
+contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
+    // Get the clicked menu item
+    menuItem := ctx.ClickedMenuItem()
+    
+    // Get the context data as a string
+    contextData := ctx.ContextMenuData()
+    
+    // Check if the menu item is checked (for checkbox/radio items)
+    isChecked := ctx.IsChecked()
+    
+    // Use the data
+    if contextData != "" {
+        processItem(contextData)
+    }
+})
+```
+
+The context data is passed from the HTML element's `--custom-contextmenu-data` property and is available in the click handler through `ctx.ContextMenuData()`. This is particularly useful when:
+
+- Working with lists or grids where each item needs unique identification
+- Handling operations on specific components or elements
+- Passing state or metadata from the frontend to the backend
+
+#### Context Menu Management
+
+After making changes to a context menu, call the `Update()` method to apply the changes:
+
+```go
+contextMenu.Update()
+```
+
+When you no longer need a context menu, you can destroy it:
+
+```go
+contextMenu.Destroy()
+```
+:::danger[Warning] 
+After calling `Destroy()`, using the context menu reference again will result in a panic.
+:::
+
+### Real-World Example: Image Gallery
+
+Here's a complete example of implementing a custom context menu for an image gallery:
+
+```go
+// Backend: Create the context menu
+imageMenu := application.NewContextMenu("imageMenu")
+
+// Add relevant operations
+imageMenu.Add("View Full Size").OnClick(func(ctx *application.Context) {
+    // Get the image ID from context data
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        openFullSizeImage(imageID)
+    }
+})
+
+imageMenu.Add("Download").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        downloadImage(imageID)
+    }
+})
+
+imageMenu.Add("Share").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        showShareDialog(imageID)
+    }
+})
+```
+
+```html
+<!-- Frontend: Image gallery implementation -->
+<div class="gallery">
+    <!-- Each image container with context menu -->
+    <div class="image-container" 
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_123">
+        <img src="/images/img_123.jpg" alt="Gallery Image"/>
+        <span class="caption">Nature Photo</span>
+    </div>
+    
+    <div class="image-container"
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_124">
+        <img src="/images/img_124.jpg" alt="Gallery Image"/>
+        <span class="caption">City Photo</span>
+    </div>
+</div>
+```
+
+In this example:
+1. The context menu is created with the identifier "imageMenu"
+2. Each image container is linked to the menu using `--custom-contextmenu: imageMenu`
+3. Each container provides its image ID as context data using `--custom-contextmenu-data`
+4. The backend receives the image ID in click handlers and can perform specific operations
+5. The same menu is reused for all images, but the context data tells us which image to operate on
+
+This pattern is particularly powerful for:
+- Data grids where rows need specific operations
+- File managers where files need context-specific actions
+- Design tools where different elements need different operations
+- Any component where the same operations apply to multiple instances

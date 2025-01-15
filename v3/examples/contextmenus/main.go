@@ -36,11 +36,11 @@ func main() {
 	})
 
 	contextMenu := application.NewContextMenu("test")
-	clickMe := contextMenu.Add("Click Me")
+	clickMe := contextMenu.Add("Set Menuitem label to Context Data")
 	contextDataMenuItem := contextMenu.Add("No Context Data")
 	clickMe.OnClick(func(data *application.Context) {
 		app.Logger.Info("Context menu", "context data", data.ContextMenuData())
-		contextDataMenuItem.SetLabel("My context data: " + data.ContextMenuData().(string))
+		contextDataMenuItem.SetLabel("Current context data: " + data.ContextMenuData())
 		contextMenu.Update()
 	})
 
