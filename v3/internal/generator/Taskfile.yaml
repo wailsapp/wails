@@ -40,6 +40,7 @@ tasks:
       - install-deps
     cmds:
       - npx tsc
+      - npx madge --circular output/
 
   install-deps:
     internal: true
