@@ -6,21 +6,21 @@ import (
 )
 
 type ServiceName interface {
-	Name() string
+	ServiceName() string
 }
 
 type ServiceStartup interface {
-	OnStartup(ctx context.Context, options ServiceOptions) error
+	ServiceStartup(ctx context.Context, options ServiceOptions) error
 }
 
 type ServiceShutdown interface {
-	OnShutdown() error
+	ServiceShutdown() error
 }
 
 func getServiceName(service any) string {
 	// First check it conforms to ServiceName interface
 	if serviceName, ok := service.(ServiceName); ok {
-		return serviceName.Name()
+		return serviceName.ServiceName()
 	}
 	// Next, get the name from the type
 	return reflect.TypeOf(service).String()

@@ -33,8 +33,8 @@ func New(config *Config) *KeyValueStore {
 	}
 }
 
-// OnShutdown will save the store to disk if there are unsaved changes.
-func (kvs *KeyValueStore) OnShutdown() error {
+// ServiceShutdown will save the store to disk if there are unsaved changes.
+func (kvs *KeyValueStore) ServiceShutdown() error {
 	if kvs.unsaved {
 		err := kvs.Save()
 		if err != nil {
@@ -44,13 +44,13 @@ func (kvs *KeyValueStore) OnShutdown() error {
 	return nil
 }
 
-// Name returns the name of the plugin.
-func (kvs *KeyValueStore) Name() string {
+// ServiceName returns the name of the plugin.
+func (kvs *KeyValueStore) ServiceName() string {
 	return "github.com/wailsapp/wails/v3/plugins/kvstore"
 }
 
-// OnStartup is called when the plugin is loaded. This is where you should do any setup.
-func (kvs *KeyValueStore) OnStartup(ctx context.Context, options application.ServiceOptions) error {
+// ServiceStartup is called when the plugin is loaded. This is where you should do any setup.
+func (kvs *KeyValueStore) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	err := kvs.open(kvs.config.Filename)
 	if err != nil {
 		return err

@@ -56,8 +56,9 @@ type (
 
 func isInternalServiceMethod(method *types.Func) bool {
 	internalServiceMethods := []string{
-		"OnStartup",
-		"OnShutdown",
+		"ServiceName",
+		"ServiceStartup",
+		"ServiceShutdown",
 		"ServeHTTP",
 	}
 	methodName := method.Name()

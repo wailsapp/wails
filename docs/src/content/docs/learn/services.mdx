@@ -57,23 +57,23 @@ app := application.New(application.Options{
 Services can implement optional methods to hook into the application lifecycle.
 
 :::note
-The `OnStartup`, `OnShutdown`, and `ServeHTTP` methods are not included in the 
+The `ServiceStartup`, `ServiceShutdown`, `ServiceName` and `ServeHTTP` methods are not included in the
 bindings generated for a service, so they are not exposed to your frontend.
 :::
 
-### Name
+### ServiceName
 
 ```go
-func (s *Service) Name() string
+func (s *Service) ServiceName() string
 ```
 
 This method returns the name of the service. It is used for logging purposes
 only.
 
-### OnStartup
+### ServiceStartup
 
 ```go
-func (s *Service) OnStartup(ctx context.Context, options application.ServiceOptions) error
+func (s *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error
 ```
 
 This method is called when the application is starting up. You can use it to
@@ -81,10 +81,10 @@ initialize resources, set up connections, or perform any necessary setup tasks.
 The context is the application context, and the `options` parameter provides
 additional information about the service.
 
-### OnShutdown
+### ServiceShutdown
 
 ```go
-func (s *Service) OnShutdown() error
+func (s *Service) ServiceShutdown() error
 ```
 
 This method is called when the application is shutting down. Use it to clean up
@@ -125,11 +125,11 @@ func New(config *Config) *Service {
     }
 }
 
-func (s *Service) Name() string {
+func (s *Service) ServiceName() string {
     return "github.com/wailsapp/wails/v3/services/fileserver"
 }
 
-func (s *Service) OnStartup(ctx context.Context, options application.ServiceOptions) error {
+func (s *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
     // Any initialization code here
     return nil
 }
@@ -159,11 +159,11 @@ All requests to `/files` will be handled by the `fileserver` service.
 
 1. During application initialization, services are registered with the
    application.
-2. When the application starts (`app.Run()`), the `OnStartup` method of each
+2. When the application starts (`app.Run()`), the `ServiceStartup` method of each
    service is called with the application context and service options.
 3. Throughout the application's lifetime, services can perform their specific
    tasks.
 4. If a service implements `ServeHTTP`, it can handle HTTP requests at the
    specified path.
-5. When the application is shutting down, the `OnShutdown` method of each
+5. When the application is shutting down, the `ServiceShutdown` method of each
    service is called as well as the context being cancelled.

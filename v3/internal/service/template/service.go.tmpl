@@ -7,7 +7,7 @@ import (
 
 // ---------------- Service Setup ----------------
 // This is the main service struct. It can be named anything you like.
-// Both the OnStartup() and OnShutdown() methods are called synchronously when the app starts and stops.
+// Both the ServiceStartup() and ServiceShutdown() methods are called synchronously when the app starts and stops.
 // Changing the name of this struct will change the name of the services class in the frontend 
 // Bound methods will exist inside frontend/bindings/github.com/user/{{.Name}} under the name of the struct
 type MyService struct{
@@ -15,25 +15,25 @@ type MyService struct{
     options application.ServiceOptions
 }
 
-// Name is the name of the service
-func (p *MyService) Name() string {
+// ServiceName is the name of the service
+func (p *MyService) ServiceName() string {
 	return "{{.Name}}"
 }
 
-// OnStartup is called when the app is starting up. You can use this to
+// ServiceStartup is called when the app is starting up. You can use this to
 // initialise any resources you need. You can also access the application
 // instance via the app property.
 // OPTIONAL: This method is optional.
-func (p *MyService) OnStartup(ctx context.Context, options application.ServiceOptions) error {
+func (p *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
     p.ctx = ctx
     p.options = options
 	return nil
 }
 
-// OnShutdown is called when the app is shutting down via runtime.Quit() call
+// ServiceShutdown is called when the app is shutting down via runtime.Quit() call
 // You can use this to clean up any resources you have allocated
 // OPTIONAL: This method is optional.
-func (p *MyService) OnShutdown() error {
+func (p *MyService) ServiceShutdown() error {
     return nil
 }
 

@@ -21,27 +21,27 @@ type MyService struct {
 
 This is the main service struct. You can rename it to better reflect your service's purpose. The struct holds a context and service options, which are set during startup.
 
-### Name Method
+### ServiceName Method
 
 ```go
-func (p *MyService) Name() string
+func (p *MyService) ServiceName() string
 ```
 
 This method returns the name of the service. It's used to identify the service within the Wails application.
 
-### OnStartup Method
+### ServiceStartup Method
 
 ```go
-func (p *MyService) OnStartup(ctx context.Context, options application.ServiceOptions) error
+func (p *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error
 ```
 
 This method is called when the app is starting up. Use it to initialize resources, set up connections, or perform any necessary setup tasks. 
 It receives a context and service options, which are stored in the service struct.
 
-### OnShutdown Method
+### ServiceShutdown Method
 
 ```go
-func (p *MyService) OnShutdown() error
+func (p *MyService) ServiceShutdown() error
 ```
 
 This method is called when the app is shutting down. Use it to clean up resources, close connections, or perform any necessary cleanup tasks.
@@ -68,9 +68,9 @@ This is an example of a service method. You can add as many methods as you need.
 To create your own service:
 
 1. Rename the `MyService` struct to reflect your service's purpose (e.g., `DatabaseService`, `AuthService`).
-2. Update the `Name` method to return your service's unique identifier.
-3. Implement the `OnStartup` method to initialize your service. This might include setting up database connections, loading configuration, etc.
-4. If needed, implement the `OnShutdown` method to properly clean up resources when the application closes.
+2. Update the `ServiceName` method to return your service's unique identifier.
+3. Implement the `ServiceStartup` method to initialize your service. This might include setting up database connections, loading configuration, etc.
+4. If needed, implement the `ServiceShutdown` method to properly clean up resources when the application closes.
 5. If your service needs to handle HTTP requests, implement the `ServeHTTP` method. Use this to create API endpoints, serve files, or handle any HTTP interactions.
 6. Add your own methods to the service. These can include database operations, business logic, or any functionality your service needs to provide.
 7. If your service requires configuration, consider adding a `Config` struct and a `New` function to create and configure your service.
@@ -90,7 +90,7 @@ func (s *DatabaseService) Name() string {
     return "github.com/myname/DatabaseService"
 }
 
-func (s *DatabaseService) OnStartup(ctx context.Context, options application.ServiceOptions) error {
+func (s *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
     s.ctx = ctx
     s.options = options
     // Initialize database connection
@@ -99,7 +99,7 @@ func (s *DatabaseService) OnStartup(ctx context.Context, options application.Ser
     return err
 }
 
-func (s *DatabaseService) OnShutdown() error {
+func (s *DatabaseService) ServiceShutdown() error {
     return s.db.Close()
 }
 

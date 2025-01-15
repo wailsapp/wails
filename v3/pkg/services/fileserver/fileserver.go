@@ -26,21 +26,21 @@ func New(config *Config) *Service {
 	}
 }
 
-// OnShutdown is called when the app is shutting down
+// ServiceShutdown is called when the app is shutting down
 // You can use this to clean up any resources you have allocated
-func (s *Service) OnShutdown() error {
+func (s *Service) ServiceShutdown() error {
 	return nil
 }
 
-// Name returns the name of the plugin.
+// ServiceName returns the name of the plugin.
 // You should use the go module format e.g. github.com/myuser/myplugin
-func (s *Service) Name() string {
+func (s *Service) ServiceName() string {
 	return "github.com/wailsapp/wails/v3/services/fileserver"
 }
 
-// OnStartup is called when the app is starting up. You can use this to
+// ServiceStartup is called when the app is starting up. You can use this to
 // initialise any resources you need.
-func (s *Service) OnStartup(ctx context.Context, options application.ServiceOptions) error {
+func (s *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	// Any initialization code here
 	return nil
 }

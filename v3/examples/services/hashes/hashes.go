@@ -31,12 +31,12 @@ func New() *Hashes {
 	return &Hashes{}
 }
 
-func (h *Hashes) OnShutdown() error { return nil }
+func (h *Hashes) ServiceShutdown() error { return nil }
 
-func (h *Hashes) Name() string {
+func (h *Hashes) ServiceName() string {
 	return "Hashes Service"
 }
 
-func (h *Hashes) OnStartup(_ context.Context, _ application.ServiceOptions) error {
+func (h *Hashes) ServiceStartup(_ context.Context, _ application.ServiceOptions) error {
 	return nil
 }

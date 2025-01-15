@@ -44,7 +44,7 @@ const (
 	ZoomOut            Role = iota
 	ToggleFullscreen   Role = iota
 
-	Minimize   Role = iota
+	Minimise   Role = iota
 	Zoom       Role = iota
 	FullScreen Role = iota
 
@@ -138,7 +138,7 @@ func NewEditMenu() *MenuItem {
 
 func NewWindowMenu() *MenuItem {
 	menu := NewMenu()
-	menu.AddRole(Minimize)
+	menu.AddRole(Minimise)
 	menu.AddRole(Zoom)
 	if runtime.GOOS == "darwin" {
 		menu.AddSeparator()

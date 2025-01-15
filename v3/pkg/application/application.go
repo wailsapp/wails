@@ -144,17 +144,17 @@ func New(appOptions Options) *App {
 
 	for i, service := range appOptions.Services {
 		if thisService, ok := service.instance.(ServiceStartup); ok {
-			err := thisService.OnStartup(result.ctx, service.options)
+			err := thisService.ServiceStartup(result.ctx, service.options)
 			if err != nil {
 				name := service.options.Name
 				if name == "" {
 					name = getServiceName(service.instance)
 				}
-				globalApplication.Logger.Error("OnStartup() failed shutting down application:", "service", name, "error", err.Error())
+				globalApplication.Logger.Error("ServiceStartup() failed shutting down application:", "service", name, "error", err.Error())
 				// Run shutdown on all services that have already started
 				for _, service := range appOptions.Services[:i] {
 					if thisService, ok := service.instance.(ServiceShutdown); ok {
-						err := thisService.OnShutdown()
+						err := thisService.ServiceShutdown()
 						if err != nil {
 							globalApplication.Logger.Error("Error shutting down service: " + err.Error())
 						}
@@ -676,7 +676,7 @@ func (a *App) Run() error {
 	for _, service := range a.options.Services {
 		// If it conforms to the ServiceShutdown interface, call the Shutdown method
 		if thisService, ok := service.instance.(ServiceShutdown); ok {
-			err := thisService.OnShutdown()
+			err := thisService.ServiceShutdown()
 			if err != nil {
 				a.error("Error shutting down service: " + err.Error())
 			}

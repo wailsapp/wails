@@ -258,15 +258,15 @@ func (b *Bindings) internalMethod(def reflect.Method) bool {
 	// Check if the instance implements any of our service interfaces
 	// and if the method matches the interface method
 	switch def.Name {
-	case "Name":
+	case "ServiceName":
 		if _, ok := instance.(ServiceName); ok {
 			return true
 		}
-	case "OnStartup":
+	case "ServiceStartup":
 		if _, ok := instance.(ServiceStartup); ok {
 			return true
 		}
-	case "OnShutdown":
+	case "ServiceShutdown":
 		if _, ok := instance.(ServiceShutdown); ok {
 			return true
 		}

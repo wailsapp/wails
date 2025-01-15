@@ -41,17 +41,17 @@ func New() *LoggerService {
 	return NewLoggerService(&Config{})
 }
 
-// OnShutdown is called when the app is shutting down
+// ServiceShutdown is called when the app is shutting down
 // You can use this to clean up any resources you have allocated
-func (l *LoggerService) OnShutdown() error { return nil }
+func (l *LoggerService) ServiceShutdown() error { return nil }
 
-// Name returns the name of the plugin.
+// ServiceName returns the name of the plugin.
 // You should use the go module format e.g. github.com/myuser/myplugin
-func (l *LoggerService) Name() string {
+func (l *LoggerService) ServiceName() string {
 	return "github.com/wailsapp/wails/v3/plugins/log"
 }
 
-func (l *LoggerService) OnStartup(ctx context.Context, options application.ServiceOptions) error {
+func (l *LoggerService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	// Any initialization code here
 	return nil
 }
