@@ -10,9 +10,8 @@ import (
 type contextKey string
 
 const (
-	CallBinding              = 0
-	WindowNameKey contextKey = "WindowName"
-	WindowIDKey   contextKey = "WindowID"
+	CallBinding            = 0
+	WindowKey   contextKey = "Window"
 )
 
 func (m *MessageProcessor) callErrorCallback(window Window, message string, callID *string, err error) {
@@ -101,8 +100,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 
 		// Set the context values for the window
 		if window != nil {
-			ctx = context.WithValue(ctx, WindowNameKey, window.Name())
-			ctx = context.WithValue(ctx, WindowIDKey, window.ID())
+			ctx = context.WithValue(ctx, WindowKey, window)
 		}
 
 		go func() {

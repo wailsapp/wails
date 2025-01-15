@@ -226,6 +226,9 @@ func (w *WebviewWindow) setupEventMapping() {
 
 // NewWindow creates a new window with the given options
 func NewWindow(options WebviewWindowOptions) *WebviewWindow {
+
+	thisWindowID := getWindowID()
+
 	if options.Width == 0 {
 		options.Width = 800
 	}
@@ -237,11 +240,11 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	}
 
 	if options.Name == "" {
-		options.Name = fmt.Sprintf("window-%d", getWindowID())
+		options.Name = fmt.Sprintf("window-%d", thisWindowID)
 	}
 
 	result := &WebviewWindow{
-		id:             getWindowID(),
+		id:             thisWindowID,
 		options:        options,
 		eventListeners: make(map[uint][]*WindowEventListener),
 		contextMenus:   make(map[string]*Menu),
