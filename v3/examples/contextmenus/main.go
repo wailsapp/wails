@@ -44,11 +44,6 @@ func main() {
 		contextMenu.Update()
 	})
 
-	globalContextMenu := app.NewMenu()
-	globalContextMenu.Add("Default context menu item").OnClick(func(data *application.Context) {
-		app.Logger.Info("Context menu", "context data", data.ContextMenuData())
-	})
-
 	err := app.Run()
 
 	if err != nil {
