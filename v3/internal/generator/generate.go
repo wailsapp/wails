@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"go/types"
 	"io"
-	"os"
-	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -79,16 +77,6 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	stats = &collect.Stats{}
 	stats.Start()
 	defer stats.Stop()
-
-	// Enable type aliases.
-	// This should become unnecessary from Go 1.23 onwards.
-	goDebug := os.Getenv("GODEBUG")
-	defer os.Setenv("GODEBUG", goDebug)
-	settings := slices.DeleteFunc(strings.Split(goDebug, ","), func(setting string) bool {
-		return strings.HasPrefix(setting, "gotypesalias=")
-	})
-	settings = append(settings, "gotypesalias=1")
-	os.Setenv("GODEBUG", strings.Join(settings, ","))
 
 	// Validate file names.
 	err = generator.validateFileNames()
