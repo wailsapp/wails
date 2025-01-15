@@ -38,7 +38,7 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 	}
 
 	// Gather services.
-	info.services.Range(func(key, value any) bool {
+	for _, value := range info.services.Range {
 		service := value.(*ServiceInfo)
 		if !service.IsEmpty() {
 			if service.Object().Exported() {
@@ -49,8 +49,7 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 			stats.NumServices++
 			stats.NumMethods += len(service.Methods)
 		}
-		return true
-	})
+	}
 
 	// Sort services by name.
 	slices.SortFunc(index.Services, func(b1 *ServiceInfo, b2 *ServiceInfo) int {
@@ -61,7 +60,7 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 	})
 
 	// Gather models.
-	info.models.Range(func(key, value any) bool {
+	for _, value := range info.models.Range {
 		model := value.(*ModelInfo)
 		index.Models = append(index.Models, model)
 		// Update model stats.
@@ -70,8 +69,7 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 		} else {
 			stats.NumModels++
 		}
-		return true
-	})
+	}
 
 	// Sort models by internal property (non-internal first), then by name.
 	slices.SortFunc(index.Models, func(m1 *ModelInfo, m2 *ModelInfo) int {
