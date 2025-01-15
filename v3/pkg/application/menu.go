@@ -4,6 +4,29 @@ type menuImpl interface {
 	update()
 }
 
+type ContextMenu struct {
+	*Menu
+	name string
+}
+
+func NewContextMenu(name string) *ContextMenu {
+	result := &ContextMenu{
+		Menu: NewMenu(),
+		name: name,
+	}
+	result.Update()
+	return result
+}
+
+func (m *ContextMenu) Update() {
+	m.Menu.Update()
+	globalApplication.registerContextMenu(m)
+}
+
+func (m *ContextMenu) Destroy() {
+	globalApplication.unregisterContextMenu(m.name)
+}
+
 type Menu struct {
 	items []*MenuItem
 	label string

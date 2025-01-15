@@ -24,7 +24,7 @@ func main() {
 		},
 	})
 
-	mainWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title:  "Context Menu Demo",
 		Width:  1024,
 		Height: 1024,
@@ -35,21 +35,19 @@ func main() {
 		},
 	})
 
-	contextMenu := app.NewMenu()
-	contextMenu.Add("Click Me").OnClick(func(data *application.Context) {
+	contextMenu := application.NewContextMenu("test")
+	clickMe := contextMenu.Add("Click Me")
+	contextDataMenuItem := contextMenu.Add("No Context Data")
+	clickMe.OnClick(func(data *application.Context) {
 		app.Logger.Info("Context menu", "context data", data.ContextMenuData())
+		contextDataMenuItem.SetLabel("My context data: " + data.ContextMenuData().(string))
+		contextMenu.Update()
 	})
 
 	globalContextMenu := app.NewMenu()
 	globalContextMenu.Add("Default context menu item").OnClick(func(data *application.Context) {
 		app.Logger.Info("Context menu", "context data", data.ContextMenuData())
 	})
-
-	// Registering the menu with a window will make it available to that window only
-	mainWindow.RegisterContextMenu("test", contextMenu)
-
-	// Registering the menu with the app will make it available to all windows
-	app.RegisterContextMenu("test", globalContextMenu)
 
 	err := app.Run()
 

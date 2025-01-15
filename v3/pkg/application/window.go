@@ -46,7 +46,6 @@ type Window interface {
 	OnWindowEvent(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
 	OpenContextMenu(data *ContextMenuData)
 	Position() (int, int)
-	RegisterContextMenu(name string, menu *Menu)
 	RelativePosition() (int, int)
 	Reload()
 	Resizable() bool
