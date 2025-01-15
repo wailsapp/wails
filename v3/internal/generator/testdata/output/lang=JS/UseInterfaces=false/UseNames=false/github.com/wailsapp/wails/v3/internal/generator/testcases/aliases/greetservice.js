@@ -13,10 +13,10 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as $models from "./models.js";
+import * as $models from "./internal.js";
 
 /**
- * Get someone
+ * Get someone.
  * @param {$models.Alias} aliasValue
  * @returns {Promise<$models.Person> & { cancel(): void }}
  */
@@ -30,7 +30,21 @@ export function Get(aliasValue) {
 }
 
 /**
- * Get someone quite different
+ * Apparently, aliases are all the rage right now.
+ * @param {$models.AliasedPerson} p
+ * @returns {Promise<$models.StrangelyAliasedPerson> & { cancel(): void }}
+ */
+export function GetButAliased(p) {
+    let $resultPromise = /** @type {any} */($Call.ByID(1896499664, p));
+    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+        return $$createType0($result);
+    }));
+    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
+    return $typingPromise;
+}
+
+/**
+ * Get someone quite different.
  * @returns {Promise<$models.GenericPerson<boolean>> & { cancel(): void }}
  */
 export function GetButDifferent() {
