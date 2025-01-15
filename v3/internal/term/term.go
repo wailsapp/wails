@@ -2,11 +2,12 @@ package term
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
 	"github.com/wailsapp/wails/v3/internal/version"
 	"golang.org/x/term"
-	"os"
 )
 
 func Header(header string) {
@@ -102,4 +103,20 @@ func DisableOutput() {
 
 func Println(s string) {
 	pterm.Println(s)
+}
+
+func Hyperlink(url, text string) string {
+	// OSC 8 sequence to start a clickable link
+	linkStart := "\x1b]8;;"
+
+	// OSC 8 sequence to end a clickable link
+	linkEnd := "\x1b]8;;\x1b\\"
+
+	// ANSI escape code for underline
+	underlineStart := "\x1b[4m"
+
+	// ANSI escape code to reset text formatting
+	resetFormat := "\x1b[0m"
+
+	return fmt.Sprintf("%s%s%s%s%s%s%s", linkStart, url, "\x1b\\", underlineStart, text, resetFormat, linkEnd)
 }

@@ -3,7 +3,6 @@ package doctor
 import (
 	"bytes"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/term"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -12,6 +11,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/wailsapp/wails/v3/internal/term"
 
 	"github.com/wailsapp/wails/v3/internal/buildinfo"
 
@@ -68,6 +69,7 @@ func Run() (err error) {
 	}
 
 	/** Wails **/
+
 	wailsPackage, _ := lo.Find(BuildInfo.Deps, func(dep *debug.Module) bool {
 		return dep.Path == "github.com/wailsapp/wails/v3"
 	})
@@ -241,6 +243,24 @@ func Run() (err error) {
 		dependencyTableData = append(dependencyTableData, optionals...)
 		dependenciesTableString, _ := pterm.DefaultTable.WithData(dependencyTableData).Srender()
 		dependenciesBox.Println(dependenciesTableString)
+	}
+
+	// Run diagnostics after system info
+	term.Section("Checking for issues")
+
+	diagnosticResults := RunDiagnostics()
+	if len(diagnosticResults) == 0 {
+		pterm.Success.Println("No issues found")
+	} else {
+		pterm.Warning.Println("Found potential issues:")
+		for _, result := range diagnosticResults {
+			pterm.Printf("• %s: %s\n", result.TestName, result.ErrorMsg)
+			url := result.HelpURL
+			if strings.HasPrefix(url, "/") {
+				url = "https://v3alpha.wails.io" + url
+			}
+			pterm.Printf("  For more information: %s\n", term.Hyperlink(url, url))
+		}
 	}
 
 	term.Section("Diagnosis")
