@@ -30,7 +30,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        go-version: [1.22]
+        go-version: [1.23]
 
     steps:
       - name: Checkout code
