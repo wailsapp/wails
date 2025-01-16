@@ -247,7 +247,7 @@ func NewZoomOutMenuItem() *MenuItem {
 		})
 }
 
-func NewMinimizeMenuItem() *MenuItem {
+func NewMinimiseMenuItem() *MenuItem {
 	return NewMenuItem("Minimize").
 		SetAccelerator("CmdOrCtrl+M").
 		OnClick(func(ctx *Context) {

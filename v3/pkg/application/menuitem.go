@@ -179,7 +179,7 @@ func NewRole(role Role) *MenuItem {
 	case ZoomOut:
 		result = NewZoomOutMenuItem()
 	case Minimise:
-		result = NewMinimizeMenuItem()
+		result = NewMinimiseMenuItem()
 	case Zoom:
 		result = NewZoomMenuItem()
 	case FullScreen:
