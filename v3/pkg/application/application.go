@@ -232,17 +232,6 @@ type (
 	}
 )
 
-func processPanicHandlerRecover() {
-	h := globalApplication.options.PanicHandler
-	if h == nil {
-		return
-	}
-
-	if err := recover(); err != nil {
-		h(err)
-	}
-}
-
 // Messages sent from javascript get routed here
 type windowMessage struct {
 	windowId uint
@@ -486,7 +475,10 @@ func (a *App) OnApplicationEvent(eventType events.ApplicationEventType, callback
 	}
 	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], listener)
 	if a.impl != nil {
-		go a.impl.on(eventID)
+		go func() {
+			defer handlePanic()
+			a.impl.on(eventID)
+		}()
 	}
 
 	return func() {
@@ -537,13 +529,19 @@ func (a *App) GetPID() int {
 
 func (a *App) info(message string, args ...any) {
 	if a.Logger != nil {
-		go a.Logger.Info(message, args...)
+		go func() {
+			defer handlePanic()
+			a.Logger.Info(message, args...)
+		}()
 	}
 }
 
 func (a *App) debug(message string, args ...any) {
 	if a.Logger != nil {
-		go a.Logger.Debug(message, args...)
+		go func() {
+			defer handlePanic()
+			a.Logger.Debug(message, args...)
+		}()
 	}
 }
 
@@ -592,9 +590,6 @@ func (a *App) NewSystemTray() *SystemTray {
 }
 
 func (a *App) Run() error {
-
-	// Setup panic handler
-	defer processPanicHandlerRecover()
 
 	// Call post-create hooks
 	err := a.preRun()
@@ -651,7 +646,10 @@ func (a *App) Run() error {
 	a.running = true
 
 	for _, systray := range a.pendingRun {
-		go systray.Run()
+		go func() {
+			defer handlePanic()
+			systray.Run()
+		}()
 	}
 	a.pendingRun = nil
 
@@ -687,6 +685,7 @@ func (a *App) Run() error {
 }
 
 func (a *App) handleApplicationEvent(event *ApplicationEvent) {
+	defer handlePanic()
 	a.applicationEventListenersLock.RLock()
 	listeners, ok := a.applicationEventListeners[event.Id]
 	a.applicationEventListenersLock.RUnlock()
@@ -708,11 +707,15 @@ func (a *App) handleApplicationEvent(event *ApplicationEvent) {
 	}
 
 	for _, listener := range listeners {
-		go listener.callback(event)
+		go func() {
+			defer handlePanic()
+			listener.callback(event)
+		}()
 	}
 }
 
 func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
+	defer handlePanic()
 	// Get window from window map
 	a.windowsLock.Lock()
 	window, ok := a.windows[event.windowId]
@@ -726,6 +729,7 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 }
 
 func (a *App) handleWindowMessage(event *windowMessage) {
+	defer handlePanic()
 	// Get window from window map
 	a.windowsLock.RLock()
 	window, ok := a.windows[event.windowId]
@@ -745,10 +749,12 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 }
 
 func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
+	defer handlePanic()
 	a.assets.ServeWebViewRequest(request)
 }
 
 func (a *App) handleWindowEvent(event *windowEvent) {
+	defer handlePanic()
 	// Get window from window map
 	a.windowsLock.RLock()
 	window, ok := a.windows[event.WindowID]
@@ -761,6 +767,8 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 }
 
 func (a *App) handleMenuItemClicked(menuItemID uint) {
+	defer handlePanic()
+
 	menuItem := getMenuItemByID(menuItemID)
 	if menuItem == nil {
 		log.Printf("MenuItem #%d not found", menuItemID)
@@ -1022,6 +1030,7 @@ func (a *App) removeKeyBinding(acceleratorString string) {
 }
 
 func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
+	defer handlePanic()
 	// Get window from window map
 	a.windowsLock.RLock()
 	window, ok := a.windows[event.windowId]

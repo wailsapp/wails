@@ -74,6 +74,7 @@ func newSingleInstanceManager(app *App, options *SingleInstanceOptions) (*single
 	// Launch second instance data listener
 	once.Do(func() {
 		go func() {
+			defer handlePanic()
 			for encryptedData := range secondInstanceBuffer {
 				var secondInstanceData SecondInstanceData
 				var jsonData []byte

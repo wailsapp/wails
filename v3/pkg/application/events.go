@@ -131,8 +131,14 @@ func (e *EventProcessor) Emit(thisEvent *CustomEvent) {
 		}
 	}
 
-	go e.dispatchEventToListeners(thisEvent)
-	go e.dispatchEventToWindows(thisEvent)
+	go func() {
+		defer handlePanic()
+		e.dispatchEventToListeners(thisEvent)
+	}()
+	go func() {
+		defer handlePanic()
+		e.dispatchEventToWindows(thisEvent)
+	}()
 }
 
 func (e *EventProcessor) Off(eventName string) {
@@ -219,7 +225,10 @@ func (e *EventProcessor) dispatchEventToListeners(event *CustomEvent) {
 		if listener.counter > 0 {
 			listener.counter--
 		}
-		go listener.callback(event)
+		go func() {
+			defer handlePanic()
+			listener.callback(event)
+		}()
 
 		if listener.counter == 0 {
 			listener.delete = true

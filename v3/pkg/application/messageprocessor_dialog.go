@@ -107,6 +107,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		dialog := OpenFileDialogWithOptions(&options)
 
 		go func() {
+			defer handlePanic()
 			if options.AllowsMultipleSelection {
 				files, err := dialog.PromptForMultipleSelection()
 				if err != nil {
@@ -148,6 +149,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		dialog := SaveFileDialogWithOptions(&options)
 
 		go func() {
+			defer handlePanic()
 			file, err := dialog.PromptForSingleSelection()
 			if err != nil {
 				m.dialogErrorCallback(window, "Error getting selection: %s", dialogID, err)

@@ -109,6 +109,7 @@ func (s *SystemTray) Run() {
 				}
 				s.attachedWindow.justClosed = true
 				go func() {
+					defer handlePanic()
 					time.Sleep(s.attachedWindow.Debounce)
 					s.attachedWindow.justClosed = false
 				}()
