@@ -1712,6 +1712,7 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 	InvokeAsync(func() {
 		response := C.gtk_dialog_run((*C.GtkDialog)(fc))
 		go func() {
+			defer handlePanic()
 			if response == C.GTK_RESPONSE_ACCEPT {
 				filenames := C.gtk_file_chooser_get_filenames((*C.GtkFileChooser)(fc))
 				iter := filenames

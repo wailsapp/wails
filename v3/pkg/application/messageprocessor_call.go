@@ -104,6 +104,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 		}
 
 		go func() {
+			defer handlePanic()
 			defer func() {
 				cancel()
 
@@ -114,7 +115,8 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 
 			result, err := boundMethod.Call(ctx, options.Args)
 			if err != nil {
-				m.callErrorCallback(window, "Error calling method: %s", callID, err)
+				msg := fmt.Sprintf("Error calling method '%v'", boundMethod.Name)
+				m.callErrorCallback(window, msg+": %s", callID, err)
 				return
 			}
 			var jsonResult = []byte("{}")

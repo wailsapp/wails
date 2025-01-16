@@ -83,6 +83,11 @@ func (m *MessageProcessor) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if handlePanic() {
+			rw.WriteHeader(http.StatusInternalServerError)
+		}
+	}()
 	object, err := strconv.Atoi(r.URL.Query().Get("object"))
 	if err != nil {
 		m.httpError(rw, "Error decoding object value: "+err.Error())

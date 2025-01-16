@@ -152,6 +152,7 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 
 	files := make(chan string)
 	go func() {
+		defer handlePanic()
 		for _, file := range result {
 			files <- file
 		}
@@ -196,6 +197,7 @@ func (m *windowSaveFileDialog) show() (chan string, error) {
 			return cfd.NewSaveFileDialog(config)
 		}, false)
 	go func() {
+		defer handlePanic()
 		files <- result.(string)
 		close(files)
 	}()

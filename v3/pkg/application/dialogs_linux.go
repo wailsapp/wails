@@ -35,7 +35,10 @@ func (m *linuxDialog) show() {
 		if response >= 0 && response < len(m.dialog.Buttons) {
 			button := m.dialog.Buttons[response]
 			if button.Callback != nil {
-				go button.Callback()
+				go func() {
+					defer handlePanic()
+					button.Callback()
+				}()
 			}
 		}
 	})

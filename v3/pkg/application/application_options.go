@@ -84,7 +84,7 @@ type Options struct {
 	Flags map[string]any
 
 	// PanicHandler is called when a panic occurs
-	PanicHandler func(any)
+	PanicHandler func(*PanicDetails)
 
 	// DisableDefaultSignalHandler disables the default signal handler
 	DisableDefaultSignalHandler bool

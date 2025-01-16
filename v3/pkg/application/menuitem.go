@@ -262,7 +262,10 @@ func (m *MenuItem) handleClick() {
 		}
 	}
 	if m.callback != nil {
-		go m.callback(ctx)
+		go func() {
+			defer handlePanic()
+			m.callback(ctx)
+		}()
 	}
 }
 
