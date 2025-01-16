@@ -89,8 +89,6 @@ func (renderer *Renderer) Typedefs(w io.Writer, imports *collect.ImportMap, mode
 
 		// Track postponed class aliases and their dependencies.
 		aliases := make(map[types.Object][]*collect.ModelInfo, len(models))
-		// Placeholder for marking visited objects.
-		visited := make([]*collect.ModelInfo, 0)
 
 		models = slices.Clone(models)
 		for i, j := 0, 0; i < len(models); i++ {
@@ -101,7 +99,7 @@ func (renderer *Renderer) Typedefs(w io.Writer, imports *collect.ImportMap, mode
 				obj := models[i].Type.(interface{ Obj() *types.TypeName }).Obj()
 				if obj.Pkg().Path() == imports.Self {
 					// models[i] aliases a type from the current module.
-					if a := aliases[obj]; a == nil || len(a) > 0 {
+					if a, ok := aliases[obj]; !ok || len(a) > 0 {
 						// The aliased type has not been visited already, postpone.
 						aliases[obj] = append(a, models[i])
 						continue
@@ -116,7 +114,7 @@ func (renderer *Renderer) Typedefs(w io.Writer, imports *collect.ImportMap, mode
 			// Keep appending aliases whose aliased type has been just appended.
 			for k := j - 1; k < j; k++ {
 				a := aliases[models[k].Object()]
-				aliases[models[k].Object()] = visited
+				aliases[models[k].Object()] = nil // Mark aliased model as visited
 				j += copy(models[j:], a)
 			}
 		}
