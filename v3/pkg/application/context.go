@@ -37,7 +37,12 @@ func (c *Context) ContextMenuData() string {
 	if result == nil {
 		return ""
 	}
-	return result.(string)
+	str, ok := result.(string)
+	if !ok {
+		return ""
+	}
+	return str
+}
 }
 
 func (c *Context) withClickedMenuItem(menuItem *MenuItem) *Context {
