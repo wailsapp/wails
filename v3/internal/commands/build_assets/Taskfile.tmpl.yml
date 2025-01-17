@@ -31,6 +31,9 @@ tasks:
     deps:
       - task: install:frontend:deps
       - task: generate:bindings
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
     cmds:
       - npm run {{ "{{.BUILD_COMMAND}}" }} -q
     env:
@@ -43,14 +46,10 @@ tasks:
     summary: Generates bindings for the frontend
     deps:
       - task: go:mod:tidy
-    sources:
-      - "**/*.go"
-      - go.mod
-      - go.sum
     generates:
       - "frontend/bindings/**/*"
     cmds:
-      - wails3 generate bindings -f {{ "'{{.BUILD_FLAGS}}'" }} -clean=true {{if .Typescript}} -ts{{end}}
+      - wails3 generate bindings -f {{ "'{{.BUILD_FLAGS}}'" }} -clean=true {{- if .Typescript}} -ts{{end}}
 
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
