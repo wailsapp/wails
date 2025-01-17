@@ -37,6 +37,7 @@ func (y *Dnf) Packages() packagemap {
 			// {Name: "webkitgtk3-devel", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
+			{Name: "gcc", SystemPackage: true},
 			{Name: "gcc-c++", SystemPackage: true},
 		},
 		"pkg-config": []*Package{
