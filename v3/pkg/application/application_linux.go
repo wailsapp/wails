@@ -138,6 +138,7 @@ func (a *linuxApp) isDarkMode() bool {
 
 func (a *linuxApp) monitorThemeChanges() {
 	go func() {
+		defer handlePanic()
 		conn, err := dbus.ConnectSessionBus()
 		if err != nil {
 			a.parent.info("[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:", err)

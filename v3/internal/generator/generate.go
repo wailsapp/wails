@@ -2,10 +2,7 @@ package generator
 
 import (
 	"fmt"
-	"go/types"
 	"io"
-	"os"
-	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -80,16 +77,6 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	stats.Start()
 	defer stats.Stop()
 
-	// Enable type aliases.
-	// This should become unnecessary from Go 1.23 onwards.
-	goDebug := os.Getenv("GODEBUG")
-	defer os.Setenv("GODEBUG", goDebug)
-	settings := slices.DeleteFunc(strings.Split(goDebug, ","), func(setting string) bool {
-		return strings.HasPrefix(setting, "gotypesalias=")
-	})
-	settings = append(settings, "gotypesalias=1")
-	os.Setenv("GODEBUG", strings.Join(settings, ","))
-
 	// Validate file names.
 	err = generator.validateFileNames()
 	if err != nil {
@@ -153,25 +140,27 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	generator.logger.Statusf("Looking for services...")
 	serviceFound := sync.OnceFunc(func() { generator.logger.Statusf("Generating service bindings...") })
 
-	// Run static analysis and schedule service code generation for each result.
-	err = FindServices(pkgs, systemPaths, generator.logger, func(obj *types.TypeName) bool {
-		serviceFound()
-		generator.scheduler.Schedule(func() {
-			generator.generateService(obj)
-		})
-		return true
-	})
-
-	// Discard unneeded data.
-	pkgs = nil
-
-	// Wait until all services have been generated and all models collected.
-	generator.scheduler.Wait()
+	// Run static analysis.
+	services, err := FindServices(pkgs, systemPaths, generator.logger)
 
 	// Check for analyser errors.
 	if err != nil {
 		return
 	}
+
+	// Discard unneeded data.
+	pkgs = nil
+
+	// Schedule code generation for each found service.
+	for obj := range services {
+		serviceFound()
+		generator.scheduler.Schedule(func() {
+			generator.generateService(obj)
+		})
+	}
+
+	// Wait until all services have been generated and all models collected.
+	generator.scheduler.Wait()
 
 	// Invariants:
 	//   - Service files have been generated for all discovered services;
@@ -186,22 +175,20 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	}
 
 	// Schedule models, index and included files generation for each package.
-	generator.collector.Iterate(func(info *collect.PackageInfo) bool {
+	for info := range generator.collector.Iterate {
 		generator.scheduler.Schedule(func() {
 			generator.generateModelsIndexIncludes(info)
 		})
-		return true
-	})
+	}
 
 	// Wait until all models and indices have been generated.
 	generator.scheduler.Wait()
 
 	// Populate stats.
 	generator.logger.Statusf("Collecting stats...")
-	generator.collector.Iterate(func(info *collect.PackageInfo) bool {
+	for info := range generator.collector.Iterate {
 		stats.Add(info.Stats())
-		return true
-	})
+	}
 
 	// Return non-empty error report.
 	if generator.logger.HasErrors() || generator.logger.HasWarnings() {
@@ -222,13 +209,13 @@ func (generator *Generator) generateModelsIndexIncludes(info *collect.PackageInf
 
 	if len(index.Models) > 0 {
 		generator.scheduler.Schedule(func() {
-			generator.generateModels(info, index.Models, false)
+			generator.generateTypedefs(info, index.Models)
 		})
 	}
 
-	if len(index.Internal) > 0 {
+	if index.HasExportedModels {
 		generator.scheduler.Schedule(func() {
-			generator.generateModels(info, index.Internal, true)
+			generator.generateModels(index)
 		})
 	}
 

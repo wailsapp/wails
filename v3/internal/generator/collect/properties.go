@@ -117,11 +117,11 @@ func IsClass(typ types.Type) bool {
 	typ = types.Unalias(typ)
 
 	if _, isNamed := typ.(*types.Named); !isNamed {
-		// Not a model type.
+		// Unnamed types are never rendered as classes.
 		return false
 	}
 
-	// Struct types without custom marshaling are rendered as classes.
+	// Struct named types without custom marshaling are rendered as classes.
 	_, isStruct := typ.Underlying().(*types.Struct)
 	return isStruct && !MaybeJSONMarshaler(typ) && !MaybeTextMarshaler(typ)
 }

@@ -15,7 +15,7 @@ var roleToSelector = map[Role]string{
 	ShowAll:    "unhideAllApplications:",
 	Quit:       "terminate:",
 	//WindowMenu:          "", // This is a submenu, no direct selector
-	Minimize:        "performMiniaturize:",
+	Minimise:        "performMiniaturize:",
 	Zoom:            "performZoom:",
 	BringAllToFront: "arrangeInFront:",
 	CloseWindow:     "performClose:",

@@ -12,12 +12,12 @@ import {Call as $Call} from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as $models from "./models.js";
+import * as $models from "./internal.js";
 
 /**
  * LikeThisOne is an example method that does nothing.
  */
-export function LikeThisOne(): Promise<[$models.Person, $models.Impersonator, $models.HowDifferent<boolean>, $models.PrivatePerson]> & { cancel(): void } {
+export function LikeThisOne(): Promise<[$models.Person, $models.HowDifferent<boolean>, $models.PrivatePerson]> & { cancel(): void } {
     let $resultPromise = $Call.ByName("github.com/wailsapp/wails/v3/internal/generator/testcases/no_bindings_here.SomeMethods.LikeThisOne") as any;
     return $resultPromise;
 }

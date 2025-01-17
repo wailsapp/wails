@@ -331,6 +331,7 @@ func (s *linuxSystemTray) run() {
 	}
 	s.setLabel(s.label)
 	go func() {
+		defer handlePanic()
 		s.register()
 
 		if err := conn.AddMatchSignal(

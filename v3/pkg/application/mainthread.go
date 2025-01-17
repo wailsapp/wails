@@ -24,7 +24,7 @@ func InvokeSync(fn func()) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer processPanicHandlerRecover()
+		defer handlePanic()
 		fn()
 		wg.Done()
 	})
@@ -35,7 +35,7 @@ func InvokeSyncWithResult[T any](fn func() T) (res T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer processPanicHandlerRecover()
+		defer handlePanic()
 		res = fn()
 		wg.Done()
 	})
@@ -47,7 +47,7 @@ func InvokeSyncWithError(fn func() error) (err error) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer processPanicHandlerRecover()
+		defer handlePanic()
 		err = fn()
 		wg.Done()
 	})
@@ -59,7 +59,7 @@ func InvokeSyncWithResultAndError[T any](fn func() (T, error)) (res T, err error
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer processPanicHandlerRecover()
+		defer handlePanic()
 		res, err = fn()
 		wg.Done()
 	})
@@ -71,7 +71,7 @@ func InvokeSyncWithResultAndOther[T any, U any](fn func() (T, U)) (res T, other 
 	var wg sync.WaitGroup
 	wg.Add(1)
 	globalApplication.dispatchOnMainThread(func() {
-		defer processPanicHandlerRecover()
+		defer handlePanic()
 		res, other = fn()
 		wg.Done()
 	})
@@ -81,7 +81,7 @@ func InvokeSyncWithResultAndOther[T any, U any](fn func() (T, U)) (res T, other 
 
 func InvokeAsync(fn func()) {
 	globalApplication.dispatchOnMainThread(func() {
-		defer processPanicHandlerRecover()
+		defer handlePanic()
 		fn()
 	})
 }

@@ -84,7 +84,7 @@ type Options struct {
 	Flags map[string]any
 
 	// PanicHandler is called when a panic occurs
-	PanicHandler func(any)
+	PanicHandler func(*PanicDetails)
 
 	// DisableDefaultSignalHandler disables the default signal handler
 	DisableDefaultSignalHandler bool
@@ -119,11 +119,6 @@ type Options struct {
 
 	// SingleInstance options for single instance functionality
 	SingleInstance *SingleInstanceOptions
-
-	// This blank field ensures types from other packages
-	// are never convertible to Options.
-	// This property, in turn, improves the accuracy of the binding generator.
-	_ struct{}
 }
 
 // AssetOptions defines the configuration of the AssetServer.

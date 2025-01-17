@@ -11,26 +11,26 @@ tasks:
 
   test:
     cmds:
-      - go test -v .
+      - go test -count=1 -v .
       - task: test:check
 
   test:analyse:
     cmds:
-      - go test -v -run ^TestAnalyser .
+      - go test -count=1 -v -run ^TestAnalyser .
 
   test:constants:
     cmds:
-      - go test -v -run ^TestGenerateConstants .
+      - go test -v -count=1 -run ^TestGenerateConstants .
 
   test:generate:
     cmds:
-      - go test -v -run ^TestGenerator .
+      - go test -v -count=1 -run ^TestGenerator .
       - task: test:check
 
   test:regenerate:
     cmds:
       - cmd: rm -rf ./testdata/output/*
-      - cmd: go test -v -run ^TestGenerator .
+      - cmd: go test -v -count=1 -run ^TestGenerator .
         ignore_error: true
       - task: test:generate
 
@@ -40,6 +40,7 @@ tasks:
       - install-deps
     cmds:
       - npx tsc
+      - npx madge --circular output/
 
   install-deps:
     internal: true

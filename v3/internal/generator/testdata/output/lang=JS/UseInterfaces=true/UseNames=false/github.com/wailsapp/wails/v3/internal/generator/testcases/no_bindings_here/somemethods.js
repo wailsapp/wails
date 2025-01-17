@@ -13,11 +13,11 @@ import {Call as $Call} from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as $models from "./models.js";
+import * as $models from "./internal.js";
 
 /**
  * LikeThisOne is an example method that does nothing.
- * @returns {Promise<[$models.Person, $models.Impersonator, $models.HowDifferent<boolean>, $models.PrivatePerson]> & { cancel(): void }}
+ * @returns {Promise<[$models.Person, $models.HowDifferent<boolean>, $models.PrivatePerson]> & { cancel(): void }}
  */
 export function LikeThisOne() {
     let $resultPromise = /** @type {any} */($Call.ByID(2124352079));

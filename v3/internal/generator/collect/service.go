@@ -54,22 +54,6 @@ type (
 	}
 )
 
-func isInternalServiceMethod(method *types.Func) bool {
-	internalServiceMethods := []string{
-		"OnStartup",
-		"OnShutdown",
-		"ServeHTTP",
-	}
-	methodName := method.Name()
-	for _, name := range internalServiceMethods {
-		if name == methodName {
-			return true
-		}
-	}
-
-	return false
-}
-
 func newServiceInfo(collector *Collector, obj *types.TypeName) *ServiceInfo {
 	return &ServiceInfo{
 		TypeInfo:  collector.Type(obj),
@@ -135,8 +119,8 @@ func (info *ServiceInfo) Collect() *ServiceInfo {
 		// Collect method information.
 		info.Methods = make([]*ServiceMethodInfo, 0, len(mset))
 		for _, sel := range mset {
-			if !sel.Obj().Exported() {
-				// Ignore unexported methods.
+			if !sel.Obj().Exported() || internalServiceMethods[sel.Obj().Name()] {
+				// Ignore unexported and internal methods.
 				continue
 			}
 
@@ -178,6 +162,16 @@ func (info *ServiceInfo) Collect() *ServiceInfo {
 	return info
 }
 
+// internalServiceMethod is a set of methods
+// that are handled specially by the binding engine
+// and must not be exposed to the frontend.
+var internalServiceMethods = map[string]bool{
+	"ServiceName":     true,
+	"ServiceStartup":  true,
+	"ServiceShutdown": true,
+	"ServeHTTP":       true,
+}
+
 // typeError caches the type-checker type for the Go error interface.
 var typeError = types.Universe.Lookup("error").Type()
 
@@ -187,10 +181,6 @@ var typeAny = types.Universe.Lookup("any").Type().Underlying()
 // collectMethod collects and returns information about a service method.
 // It is intended to be called only by ServiceInfo.Collect.
 func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
-	if isInternalServiceMethod(method) {
-		// Ignore internal methods.
-		return nil
-	}
 	collector := info.collector
 	obj := info.Object().(*types.TypeName)
 
@@ -257,8 +247,6 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 		}
 	}
 
-	var needsContext bool
-
 	// Collect parameters.
 	for i := range signature.Params().Len() {
 		param := signature.Params().At(i)
@@ -267,16 +255,6 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 			// Skip first parameter if it has context type.
 			named, ok := types.Unalias(param.Type()).(*types.Named)
 			if ok && named.Obj().Pkg().Path() == collector.systemPaths.ContextPackage && named.Obj().Name() == "Context" {
-				needsContext = true
-				continue
-			}
-		}
-
-		if i == 0 || (i == 1 && needsContext) {
-			// Skip first parameter if it has window type,
-			// or second parameter if it has window type and first is context.
-			named, ok := types.Unalias(param.Type()).(*types.Named)
-			if ok && named.Obj().Pkg().Path() == collector.systemPaths.ApplicationPackage && named.Obj().Name() == "Window" {
 				continue
 			}
 		}

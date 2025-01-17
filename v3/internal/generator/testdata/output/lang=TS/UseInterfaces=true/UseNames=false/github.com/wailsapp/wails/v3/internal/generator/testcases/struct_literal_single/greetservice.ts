@@ -12,7 +12,7 @@ import {Call as $Call} from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as $models from "./models.js";
+import * as $models from "./internal.js";
 
 export function ArrayInt($in: number[]): Promise<void> & { cancel(): void } {
     let $resultPromise = $Call.ByID(3862002418, $in) as any;

@@ -258,15 +258,15 @@ func (b *Bindings) internalMethod(def reflect.Method) bool {
 	// Check if the instance implements any of our service interfaces
 	// and if the method matches the interface method
 	switch def.Name {
-	case "Name":
+	case "ServiceName":
 		if _, ok := instance.(ServiceName); ok {
 			return true
 		}
-	case "OnStartup":
+	case "ServiceStartup":
 		if _, ok := instance.(ServiceStartup); ok {
 			return true
 		}
-	case "OnShutdown":
+	case "ServiceShutdown":
 		if _, ok := instance.(ServiceShutdown); ok {
 			return true
 		}
@@ -280,24 +280,7 @@ var errorType = reflect.TypeFor[error]()
 // Call will attempt to call this bound method with the given args
 func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnValue interface{}, err error) {
 	// Use a defer statement to capture panics
-	defer func() {
-		if r := recover(); r != nil {
-			if str, ok := r.(string); ok {
-				if strings.HasPrefix(str, "reflect: Call using") {
-					// Remove prefix
-					str = strings.Replace(str, "reflect: Call using ", "", 1)
-					// Split on "as"
-					parts := strings.Split(str, " as type ")
-					if len(parts) == 2 {
-						err = fmt.Errorf("invalid argument type: got '%s', expected '%s'", parts[0], parts[1])
-						return
-					}
-				}
-			}
-			err = fmt.Errorf("%v", r)
-		}
-	}()
-
+	defer handlePanic(handlePanicOptions{skipEnd: 5})
 	argCount := len(args)
 	if b.needsContext {
 		argCount++
@@ -309,7 +292,6 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnV
 	}
 
 	// Convert inputs to values of appropriate type
-
 	callArgs := make([]reflect.Value, argCount)
 	base := 0
 

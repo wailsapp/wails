@@ -792,7 +792,10 @@ func (w *WebviewWindow) HandleWindowEvent(id uint) {
 	}
 
 	for _, listener := range w.eventListeners[id] {
-		go listener.callback(thisEvent)
+		go func() {
+			defer handlePanic()
+			listener.callback(thisEvent)
+		}()
 	}
 	w.dispatchWindowEvent(id)
 }
@@ -1246,7 +1249,10 @@ func (w *WebviewWindow) processKeyBinding(acceleratorString string) bool {
 		defer w.keyBindingsLock.RUnlock()
 		if callback := w.keyBindings[acceleratorString]; callback != nil {
 			// Execute callback
-			go callback(w)
+			go func() {
+				defer handlePanic()
+				callback(w)
+			}()
 			return true
 		}
 	}
