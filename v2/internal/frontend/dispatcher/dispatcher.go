@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"context"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -29,7 +30,20 @@ func NewDispatcher(ctx context.Context, log *logger.Logger, bindings *binding.Bi
 	}
 }
 
-func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (string, error) {
+func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (_ string, err error) {
+	defer func() {
+		if e := recover(); e != nil {
+			if errPanic, ok := e.(error); ok {
+				err = errPanic
+			} else {
+				err = fmt.Errorf("%v", e)
+			}
+		}
+		if err != nil {
+			d.log.Error("process message error: %s -> %s", message, err)
+		}
+	}()
+
 	if message == "" {
 		return "", errors.New("No message to process")
 	}
