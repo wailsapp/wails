@@ -221,7 +221,7 @@ func (m *module) PostponedCreates() []string {
 
 		case *types.Named:
 			if !collect.IsClass(key) {
-				// Creation function for non-struct named types
+				// Creation functions for non-struct named types
 				// require an indirect assignment to break cycles.
 
 				// Typescript cannot infer the return type on its own: add hints.
@@ -254,10 +254,8 @@ func (m *module) PostponedCreates() []string {
 			builder.WriteString(pre)
 
 			if t.Obj().Pkg().Path() == m.Imports.Self {
-				if t.Obj().Exported() && m.Imports.ImportModels {
+				if m.Imports.ImportModels {
 					builder.WriteString("$models.")
-				} else if !t.Obj().Exported() && m.Imports.ImportInternal {
-					builder.WriteString("$internal.")
 				}
 			} else {
 				builder.WriteString(jsimport(m.Imports.External[t.Obj().Pkg().Path()]))

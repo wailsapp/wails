@@ -5,7 +5,8 @@ import "github.com/wailsapp/wails/v3/internal/generator/testcases/no_bindings_he
 // Person is not a number.
 type Person struct {
 	// They have a name.
-	Name string
+	Name    string
+	Friends [4]Impersonator // Exactly 4 sketchy friends.
 }
 
 // Impersonator gets their fields from other people.

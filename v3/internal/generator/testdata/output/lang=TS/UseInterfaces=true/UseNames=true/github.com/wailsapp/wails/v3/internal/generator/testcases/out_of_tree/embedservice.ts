@@ -17,7 +17,7 @@ import * as nobindingshere$0 from "../no_bindings_here/models.js";
 /**
  * LikeThisOne is an example method that does nothing.
  */
-export function LikeThisOne(): Promise<[nobindingshere$0.Person, nobindingshere$0.Impersonator, nobindingshere$0.HowDifferent<boolean>, nobindingshere$0.PrivatePerson]> & { cancel(): void } {
+export function LikeThisOne(): Promise<[nobindingshere$0.Person, nobindingshere$0.HowDifferent<boolean>, nobindingshere$0.PrivatePerson]> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.EmbedService.LikeThisOne") as any;
     return $resultPromise;
 }

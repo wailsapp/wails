@@ -54,7 +54,7 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 		}
 
 		if types.Identical(typ, typeByteSlice) {
-			// encoding/json marshals byte arrays/slices as base64 strings
+			// encoding/json marshals byte slices as base64 strings
 			return "string" + null, null != ""
 		}
 
@@ -211,10 +211,8 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 	var builder strings.Builder
 
 	if typ.Obj().Pkg().Path() == m.Imports.Self {
-		if typ.Obj().Exported() && m.Imports.ImportModels {
+		if m.Imports.ImportModels {
 			builder.WriteString("$models.")
-		} else if !typ.Obj().Exported() && m.Imports.ImportInternal {
-			builder.WriteString("$internal.")
 		}
 	} else {
 		builder.WriteString(jsimport(m.Imports.External[typ.Obj().Pkg().Path()]))

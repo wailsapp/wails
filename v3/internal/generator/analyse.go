@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/token"
 	"go/types"
+	"iter"
 
 	"github.com/wailsapp/wails/v3/internal/generator/config"
 	"golang.org/x/tools/go/packages"
@@ -19,7 +20,7 @@ import (
 // Results are deduplicated, i.e. yield is called at most once per object.
 //
 // If yield returns false, FindBoundTypes returns immediately.
-func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, logger config.Logger, yield func(*types.TypeName) bool) error {
+func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, logger config.Logger) (iter.Seq[*types.TypeName], error) {
 	type instanceInfo struct {
 		args *types.TypeList
 		pos  token.Position
@@ -122,7 +123,7 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 				signature := fn.Type().(*types.Signature)
 				if signature.Params().Len() > 2 || signature.Results().Len() != 1 || tp.Len() != 1 || tp.At(0).Obj() == nil {
 					logger.Warningf("Param Len: %d, Results Len: %d, tp.Len: %d, tp.At(0).Obj(): %v", signature.Params().Len(), signature.Results().Len(), tp.Len(), tp.At(0).Obj())
-					return ErrBadApplicationPackage
+					return nil, ErrBadApplicationPackage
 				}
 
 				// Schedule unique type param for analysis.
@@ -136,71 +137,71 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 	// found tracks service types that have been found so far, for deduplication.
 	found := make(map[*types.TypeName]bool)
 
-	// Process targets.
-	for len(next) > 0 {
-		// Pop one target off the next list.
-		tgt := next[len(next)-1]
-		next = next[:len(next)-1]
+	return func(yield func(*types.TypeName) bool) {
+		// Process targets.
+		for len(next) > 0 {
+			// Pop one target off the next list.
+			tgt := next[len(next)-1]
+			next = next[:len(next)-1]
 
-		// Prepare indirect binding message.
-		indirectMsg := ""
-		if tgt.cause.IsValid() {
-			indirectMsg = fmt.Sprintf(" (indirectly bound at %s)", tgt.cause)
-		}
+			// Prepare indirect binding message.
+			indirectMsg := ""
+			if tgt.cause.IsValid() {
+				indirectMsg = fmt.Sprintf(" (indirectly bound at %s)", tgt.cause)
+			}
 
-		for _, instance := range instances[tgt.obj] {
-			// Retrieve type argument.
-			serviceType := types.Unalias(instance.args.At(tgt.param))
+			for _, instance := range instances[tgt.obj] {
+				// Retrieve type argument.
+				serviceType := types.Unalias(instance.args.At(tgt.param))
 
-			var named *types.Named
+				var named *types.Named
 
-			switch t := serviceType.(type) {
-			case *types.Named:
-				// Process named type.
-				named = t.Origin()
+				switch t := serviceType.(type) {
+				case *types.Named:
+					// Process named type.
+					named = t.Origin()
 
-			case *types.TypeParam:
-				// Schedule type parameter for analysis.
-				newtgt := target{owner[t.Obj()], t.Index()}
-				if !scheduled[newtgt] {
-					scheduled[newtgt] = true
+				case *types.TypeParam:
+					// Schedule type parameter for analysis.
+					newtgt := target{owner[t.Obj()], t.Index()}
+					if !scheduled[newtgt] {
+						scheduled[newtgt] = true
 
-					// Retrieve position of call to application.NewService
-					// that caused this target to be scheduled.
-					cause := tgt.cause
-					if !tgt.cause.IsValid() {
-						// This _is_ a call to application.NewService.
-						cause = instance.pos
+						// Retrieve position of call to application.NewService
+						// that caused this target to be scheduled.
+						cause := tgt.cause
+						if !tgt.cause.IsValid() {
+							// This _is_ a call to application.NewService.
+							cause = instance.pos
+						}
+
+						// Push on next list.
+						next = append(next, targetInfo{newtgt, cause})
 					}
+					continue
 
-					// Push on next list.
-					next = append(next, targetInfo{newtgt, cause})
+				default:
+					logger.Warningf("%s: ignoring anonymous service type %s%s", instance.pos, serviceType, indirectMsg)
+					continue
 				}
-				continue
 
-			default:
-				logger.Warningf("%s: ignoring anonymous service type %s%s", instance.pos, serviceType, indirectMsg)
-				continue
-			}
+				// Reject interfaces and generic types.
+				if types.IsInterface(named.Underlying()) {
+					logger.Warningf("%s: ignoring interface service type %s%s", instance.pos, named, indirectMsg)
+					continue
+				} else if named.TypeParams() != nil {
+					logger.Warningf("%s: ignoring generic service type %s", instance.pos, named, indirectMsg)
+					continue
+				}
 
-			// Reject interfaces and generic types.
-			if types.IsInterface(named.Underlying()) {
-				logger.Warningf("%s: ignoring interface service type %s%s", instance.pos, named, indirectMsg)
-				continue
-			} else if named.TypeParams() != nil {
-				logger.Warningf("%s: ignoring generic service type %s", instance.pos, named, indirectMsg)
-				continue
-			}
-
-			// Record and yield type object.
-			if !found[named.Obj()] {
-				found[named.Obj()] = true
-				if !yield(named.Obj()) {
-					return nil
+				// Record and yield type object.
+				if !found[named.Obj()] {
+					found[named.Obj()] = true
+					if !yield(named.Obj()) {
+						return
+					}
 				}
 			}
 		}
-	}
-
-	return nil
+	}, nil
 }

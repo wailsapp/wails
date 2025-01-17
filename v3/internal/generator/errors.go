@@ -3,9 +3,10 @@ package generator
 import (
 	"errors"
 	"fmt"
+	"maps"
+	"slices"
 	"sync"
 
-	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
 )
 
@@ -118,7 +119,7 @@ func (report *ErrorReport) Errors() []string {
 	report.mu.Lock()
 	defer report.mu.Unlock()
 
-	return lo.Keys(report.errors)
+	return slices.Collect(maps.Keys(report.errors))
 }
 
 // Warnings returns the list of warning messages
@@ -128,7 +129,7 @@ func (report *ErrorReport) Warnings() []string {
 	report.mu.Lock()
 	defer report.mu.Unlock()
 
-	return lo.Keys(report.warnings)
+	return slices.Collect(maps.Keys(report.warnings))
 }
 
 // Errorf formats an error message and adds it to the report.

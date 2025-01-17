@@ -97,12 +97,13 @@ func TestAnalyser(t *testing.T) {
 
 			got := make([]string, 0)
 
-			err = FindServices(pkgs, systemPaths, config.DefaultPtermLogger(nil), func(tn *types.TypeName) bool {
-				got = append(got, types.TypeString(tn.Type(), nil))
-				return true
-			})
+			services, err := FindServices(pkgs, systemPaths, config.DefaultPtermLogger(nil))
 			if err != nil {
 				t.Error(err)
+			}
+
+			for obj := range services {
+				got = append(got, types.TypeString(obj.Type(), nil))
 			}
 
 			slices.Sort(got)

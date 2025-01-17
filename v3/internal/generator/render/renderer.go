@@ -1,7 +1,9 @@
 package render
 
 import (
+	"go/types"
 	"io"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -17,8 +19,8 @@ type Renderer struct {
 
 	ext string
 
-	service *template.Template
-	models  *template.Template
+	service  *template.Template
+	typedefs *template.Template
 }
 
 // NewRenderer initialises a code renderer
@@ -35,8 +37,8 @@ func NewRenderer(options *flags.GenerateBindingsOptions, collector *collect.Coll
 
 		ext: ext,
 
-		service: tmplService[tmplLanguage(options.TS)],
-		models:  tmplModels[tmplLanguage(options.TS)],
+		service:  tmplService[tmplLanguage(options.TS)],
+		typedefs: tmplTypedefs[tmplLanguage(options.TS)],
 	}
 }
 
@@ -79,9 +81,46 @@ func (renderer *Renderer) Service(w io.Writer, info *collect.ServiceInfo) error 
 	})
 }
 
-// Models renders models code for the given list of models.
-func (renderer *Renderer) Models(w io.Writer, imports *collect.ImportMap, models []*collect.ModelInfo) error {
-	return renderer.models.Execute(w, &struct {
+// Typedefs renders type definitions for the given list of models.
+func (renderer *Renderer) Typedefs(w io.Writer, imports *collect.ImportMap, models []*collect.ModelInfo) error {
+	if !renderer.options.UseInterfaces {
+		// Sort class aliases after the class they alias.
+		// Works in amortized linear time thanks to an auxiliary map.
+
+		// Track postponed class aliases and their dependencies.
+		aliases := make(map[types.Object][]*collect.ModelInfo, len(models))
+
+		models = slices.Clone(models)
+		for i, j := 0, 0; i < len(models); i++ {
+			if models[i].Type != nil && collect.IsClass(models[i].Type) {
+				// models[i] is a class alias:
+				// models[i].Type is guaranteed to be
+				// either an alias or a named type
+				obj := models[i].Type.(interface{ Obj() *types.TypeName }).Obj()
+				if obj.Pkg().Path() == imports.Self {
+					// models[i] aliases a type from the current module.
+					if a, ok := aliases[obj]; !ok || len(a) > 0 {
+						// The aliased type has not been visited already, postpone.
+						aliases[obj] = append(a, models[i])
+						continue
+					}
+				}
+			}
+
+			// Append models[i].
+			models[j] = models[i]
+			j++
+
+			// Keep appending aliases whose aliased type has been just appended.
+			for k := j - 1; k < j; k++ {
+				a := aliases[models[k].Object()]
+				aliases[models[k].Object()] = nil // Mark aliased model as visited
+				j += copy(models[j:], a)
+			}
+		}
+	}
+
+	return renderer.typedefs.Execute(w, &struct {
 		module
 		Models []*collect.ModelInfo
 	}{
@@ -91,6 +130,19 @@ func (renderer *Renderer) Models(w io.Writer, imports *collect.ImportMap, models
 			Imports:                 imports,
 		},
 		models,
+	})
+}
+
+// Models renders exported models for the given package index to w.
+func (renderer *Renderer) Models(w io.Writer, index *collect.PackageIndex) error {
+	return tmplModels.Execute(w, &struct {
+		*collect.PackageIndex
+		*Renderer
+		*flags.GenerateBindingsOptions
+	}{
+		index,
+		renderer,
+		renderer.options,
 	})
 }
 

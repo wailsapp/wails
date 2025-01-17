@@ -15,8 +15,6 @@ type (
 
 		// ImportModels records whether models from the current package may be needed.
 		ImportModels bool
-		// ImportInternal records whether internal models from the current package may be needed.
-		ImportInternal bool
 
 		// External records information about each imported package,
 		// keyed by package path.
@@ -67,9 +65,6 @@ func (imports *ImportMap) Merge(other *ImportMap) {
 
 	if other.ImportModels {
 		imports.ImportModels = true
-	}
-	if other.ImportInternal {
-		imports.ImportInternal = true
 	}
 
 	for path, info := range other.External {
@@ -151,12 +146,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 			}
 
 			if obj.Pkg().Path() == imports.Self {
-				// Record self import.
-				if obj.Exported() {
-					imports.ImportModels = true
-				} else {
-					imports.ImportInternal = true
-				}
+				imports.ImportModels = true
 			}
 
 			// Record model.

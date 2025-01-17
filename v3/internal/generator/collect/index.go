@@ -5,24 +5,30 @@ import (
 	"strings"
 )
 
-// PackageIndex lists all bindings, models and unexported models
-// generated from a package.
+// PackageIndex lists all services, models and unexported models
+// to be generated from a single package.
 //
 // When obtained through a call to [PackageInfo.Index],
-// each binding and model name appears at most once.
+// each service and model appears at most once;
+// services are sorted by name;
+// exported models precede all unexported ones
+// and both ranges are sorted by name.
 type PackageIndex struct {
 	Package *PackageInfo
 
 	Services []*ServiceInfo
-	Models   []*ModelInfo
-	Internal []*ModelInfo
+
+	Models            []*ModelInfo
+	HasExportedModels bool // If true, there is at least one exported model.
 }
 
 // Index computes a [PackageIndex] for the selected language from the list
 // of generated services and models and regenerates cached stats.
 //
-// Services and models appear at most once in the returned slices,
-// which are sorted by name.
+// Services and models appear at most once in the returned slices;
+// services are sorted by name;
+// exported models precede all unexported ones
+// and both ranges are sorted by name.
 //
 // Index calls info.Collect, and therefore provides the same guarantees.
 // It is safe for concurrent use.
@@ -38,7 +44,7 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 	}
 
 	// Gather services.
-	info.services.Range(func(key, value any) bool {
+	for _, value := range info.services.Range {
 		service := value.(*ServiceInfo)
 		if !service.IsEmpty() {
 			if service.Object().Exported() {
@@ -49,8 +55,7 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 			stats.NumServices++
 			stats.NumMethods += len(service.Methods)
 		}
-		return true
-	})
+	}
 
 	// Sort services by name.
 	slices.SortFunc(index.Services, func(b1 *ServiceInfo, b2 *ServiceInfo) int {
@@ -61,19 +66,22 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 	})
 
 	// Gather models.
-	info.models.Range(func(key, value any) bool {
+	for _, value := range info.models.Range {
 		model := value.(*ModelInfo)
 		index.Models = append(index.Models, model)
+		// Mark presence of exported models
+		if model.Object().Exported() {
+			index.HasExportedModels = true
+		}
 		// Update model stats.
 		if len(model.Values) > 0 {
 			stats.NumEnums++
 		} else {
 			stats.NumModels++
 		}
-		return true
-	})
+	}
 
-	// Sort models by internal property (non-internal first), then by name.
+	// Sort models by exported property (exported first), then by name.
 	slices.SortFunc(index.Models, func(m1 *ModelInfo, m2 *ModelInfo) int {
 		if m1 == m2 {
 			return 0
@@ -90,19 +98,6 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 
 		return strings.Compare(m1.Name, m2.Name)
 	})
-
-	// Find first internal model.
-	split, _ := slices.BinarySearchFunc(index.Models, struct{}{}, func(m *ModelInfo, _ struct{}) int {
-		if m.Object().Exported() {
-			return -1
-		} else {
-			return 1
-		}
-	})
-
-	// Separate internal and non-internal models.
-	index.Internal = index.Models[split:]
-	index.Models = index.Models[:split]
 
 	// Cache stats
 	info.stats.Store(stats)

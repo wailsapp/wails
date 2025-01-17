@@ -28,7 +28,7 @@ export {
 {{- end}}
 };
 {{end}}
-{{- if .Models}}
+{{- if .HasExportedModels}}
 export * from "./{{js $models}}";
 {{end}}
 {{- range .Package.Injections}}

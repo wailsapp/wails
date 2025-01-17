@@ -17,7 +17,7 @@ import * as nobindingshere$0 from "../no_bindings_here/models.js";
 
 /**
  * LikeThisOne is an example method that does nothing.
- * @returns {Promise<[nobindingshere$0.Person, nobindingshere$0.Impersonator, nobindingshere$0.HowDifferent<boolean>, nobindingshere$0.PrivatePerson]> & { cancel(): void }}
+ * @returns {Promise<[nobindingshere$0.Person, nobindingshere$0.HowDifferent<boolean>, nobindingshere$0.PrivatePerson]> & { cancel(): void }}
  */
 export function LikeThisOne() {
     let $resultPromise = /** @type {any} */($Call.ByID(2590614085));
@@ -25,7 +25,6 @@ export function LikeThisOne() {
         $result[0] = $$createType0($result[0]);
         $result[1] = $$createType1($result[1]);
         $result[2] = $$createType2($result[2]);
-        $result[3] = $$createType3($result[3]);
         return $result;
     }));
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
@@ -43,6 +42,5 @@ export function LikeThisOtherOne() {
 
 // Private type creation functions
 const $$createType0 = nobindingshere$0.Person.createFrom;
-const $$createType1 = nobindingshere$0.Impersonator.createFrom;
-const $$createType2 = nobindingshere$0.HowDifferent.createFrom($Create.Any);
-const $$createType3 = nobindingshere$0.PrivatePerson.createFrom;
+const $$createType1 = nobindingshere$0.HowDifferent.createFrom($Create.Any);
+const $$createType2 = nobindingshere$0.PrivatePerson.createFrom;
