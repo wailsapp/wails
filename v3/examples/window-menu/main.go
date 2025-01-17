@@ -12,7 +12,7 @@ var assets embed.FS
 
 func main() {
 	app := application.New(application.Options{
-		Name:        "Window Menu Demo",
+		Name:        "Window MenuBar Demo",
 		Description: "A demo of menu bar toggling",
 		Assets: application.AssetOptions{
 			Handler: application.BundledAssetFileServer(assets),
@@ -38,7 +38,7 @@ func main() {
 
 	// Create window with menu
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title:  "Window Menu Demo",
+		Title:  "Window MenuBar Demo",
 		Width:  800,
 		Height: 600,
 		Windows: application.WindowsWindow{

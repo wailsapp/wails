@@ -43,7 +43,6 @@ func (c *Context) ContextMenuData() string {
 	}
 	return str
 }
-}
 
 func (c *Context) withClickedMenuItem(menuItem *MenuItem) *Context {
 	c.data[clickedMenuItem] = menuItem
