@@ -608,6 +608,36 @@ const (
 	WM_DPICHANGED             = 0x02E0
 )
 
+const (
+	SC_SIZE         = 0xF000 // Resize the window
+	SC_MOVE         = 0xF010 // Move the window
+	SC_MINIMIZE     = 0xF020 // Minimize the window
+	SC_MAXIMIZE     = 0xF030 // Maximize the window
+	SC_NEXTWINDOW   = 0xF040 // Move to next window
+	SC_PREVWINDOW   = 0xF050 // Move to previous window
+	SC_CLOSE        = 0xF060 // Close the window
+	SC_VSCROLL      = 0xF070 // Vertical scroll
+	SC_HSCROLL      = 0xF080 // Horizontal scroll
+	SC_MOUSEMENU    = 0xF090 // Mouse menu
+	SC_KEYMENU      = 0xF100 // Key menu (triggered by Alt or F10)
+	SC_ARRANGE      = 0xF110 // Arrange windows
+	SC_RESTORE      = 0xF120 // Restore window from minimized/maximized
+	SC_TASKLIST     = 0xF130 // Task list
+	SC_SCREENSAVE   = 0xF140 // Screen saver
+	SC_HOTKEY       = 0xF150 // Hotkey
+	SC_DEFAULT      = 0xF160 // Default command
+	SC_MONITORPOWER = 0xF170 // Monitor power
+	SC_CONTEXTHELP  = 0xF180 // Context help
+	SC_SEPARATOR    = 0xF00F // Separator
+)
+
+const (
+	// Remove the Close option from the window menu
+	SC_MASK_CLOSE = ^uint16(SC_CLOSE)
+	// Mask for extracting the system command
+	SC_MASK_CMD = 0xFFF0
+)
+
 // WM_ACTIVATE
 const (
 	WA_INACTIVE    = 0

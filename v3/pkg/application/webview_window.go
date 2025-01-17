@@ -104,6 +104,9 @@ type (
 		delete()
 		selectAll()
 		redo()
+		showMenuBar()
+		hideMenuBar()
+		toggleMenuBar()
 	}
 )
 
@@ -1343,4 +1346,28 @@ func (w *WebviewWindow) redo() {
 		return
 	}
 	w.impl.redo()
+}
+
+// ShowMenuBar shows the menu bar for the window.
+func (w *WebviewWindow) ShowMenuBar() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	InvokeSync(w.impl.showMenuBar)
+}
+
+// HideMenuBar hides the menu bar for the window.
+func (w *WebviewWindow) HideMenuBar() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	InvokeSync(w.impl.hideMenuBar)
+}
+
+// ToggleMenuBar toggles the menu bar for the window.
+func (w *WebviewWindow) ToggleMenuBar() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	InvokeSync(w.impl.toggleMenuBar)
 }

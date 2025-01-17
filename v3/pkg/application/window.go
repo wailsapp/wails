@@ -32,6 +32,7 @@ type Window interface {
 	HandleWindowEvent(id uint)
 	Height() int
 	Hide() Window
+	HideMenuBar()
 	ID() uint
 	Info(message string, args ...any)
 	IsFocused() bool
@@ -69,10 +70,12 @@ type Window interface {
 	SetURL(s string) Window
 	SetZoom(magnification float64) Window
 	Show() Window
+	ShowMenuBar()
 	Size() (width int, height int)
 	OpenDevTools()
 	ToggleFullscreen()
 	ToggleMaximise()
+	ToggleMenuBar()
 	UnFullscreen()
 	UnMaximise()
 	UnMinimise()
