@@ -12,22 +12,23 @@ import (
 	"unsafe"
 )
 
-const (
-	SC_CLOSE    = 0xF060
-	SC_MOVE     = 0xF010
-	SC_MAXIMIZE = 0xF030
-	SC_MINIMIZE = 0xF020
-	SC_SIZE     = 0xF000
-	SC_RESTORE  = 0xF120
-)
-
 var (
 	user32         = syscall.NewLazyDLL("user32.dll")
 	getSystemMenu  = user32.NewProc("GetSystemMenu")
+	getMenuProc    = user32.NewProc("GetMenu")
 	enableMenuItem = user32.NewProc("EnableMenuItem")
 	findWindow     = user32.NewProc("FindWindowW")
 	sendMessage    = user32.NewProc("SendMessageW")
+	vkKeyScan      = user32.NewProc("VkKeyScanW") // Use W version for Unicode
 )
+
+func VkKeyScan(ch uint16) uint16 {
+	ret, _, _ := syscall.SyscallN(
+		vkKeyScan.Addr(),
+		uintptr(ch),
+	)
+	return uint16(ret)
+}
 
 const (
 	WMCOPYDATA_SINGLE_INSTANCE_DATA = 1542
@@ -344,4 +345,10 @@ func SendMessageToWindow(hwnd HWND, msg string) {
 		0,
 		uintptr(unsafe.Pointer(&cds)),
 	)
+}
+
+// GetMenu retrieves a handle to the menu assigned to the specified window
+func GetMenu(hwnd HWND) HMENU {
+	ret, _, _ := getMenuProc.Call(hwnd)
+	return ret
 }

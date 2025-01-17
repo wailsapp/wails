@@ -32,6 +32,7 @@ type Window interface {
 	HandleWindowEvent(id uint)
 	Height() int
 	Hide() Window
+	HideMenuBar()
 	ID() uint
 	Info(message string, args ...any)
 	IsFocused() bool
@@ -46,7 +47,6 @@ type Window interface {
 	OnWindowEvent(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
 	OpenContextMenu(data *ContextMenuData)
 	Position() (int, int)
-	RegisterContextMenu(name string, menu *Menu)
 	RelativePosition() (int, int)
 	Reload()
 	Resizable() bool
@@ -70,10 +70,12 @@ type Window interface {
 	SetURL(s string) Window
 	SetZoom(magnification float64) Window
 	Show() Window
+	ShowMenuBar()
 	Size() (width int, height int)
 	OpenDevTools()
 	ToggleFullscreen()
 	ToggleMaximise()
+	ToggleMenuBar()
 	UnFullscreen()
 	UnMaximise()
 	UnMinimise()

@@ -8,7 +8,7 @@ type ContextMenuData struct {
 	Id   string `json:"id"`
 	X    int    `json:"x"`
 	Y    int    `json:"y"`
-	Data any    `json:"data"`
+	Data string `json:"data"`
 }
 
 func (d ContextMenuData) clone() *ContextMenuData {

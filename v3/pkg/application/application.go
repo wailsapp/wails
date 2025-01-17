@@ -332,7 +332,7 @@ type App struct {
 	customEventProcessor *EventProcessor
 	Logger               *slog.Logger
 
-	contextMenus     map[string]*Menu
+	contextMenus     map[string]*ContextMenu
 	contextMenusLock sync.Mutex
 
 	assets   *assetserver.AssetServer
@@ -436,7 +436,7 @@ func (a *App) init() {
 	a.applicationEventListeners = make(map[uint][]*EventListener)
 	a.windows = make(map[uint]Window)
 	a.systemTrays = make(map[uint]*SystemTray)
-	a.contextMenus = make(map[string]*Menu)
+	a.contextMenus = make(map[string]*ContextMenu)
 	a.keyBindings = make(map[string]func(window *WebviewWindow))
 	a.Logger = a.options.Logger
 	a.pid = os.Getpid()
@@ -955,13 +955,19 @@ func (a *App) Show() {
 	}
 }
 
-func (a *App) RegisterContextMenu(name string, menu *Menu) {
+func (a *App) registerContextMenu(menu *ContextMenu) {
 	a.contextMenusLock.Lock()
 	defer a.contextMenusLock.Unlock()
-	a.contextMenus[name] = menu
+	a.contextMenus[menu.name] = menu
 }
 
-func (a *App) getContextMenu(name string) (*Menu, bool) {
+func (a *App) unregisterContextMenu(name string) {
+	a.contextMenusLock.Lock()
+	defer a.contextMenusLock.Unlock()
+	delete(a.contextMenus, name)
+}
+
+func (a *App) getContextMenu(name string) (*ContextMenu, bool) {
 	a.contextMenusLock.Lock()
 	defer a.contextMenusLock.Unlock()
 	menu, ok := a.contextMenus[name]

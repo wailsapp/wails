@@ -104,6 +104,9 @@ type (
 		delete()
 		selectAll()
 		redo()
+		showMenuBar()
+		hideMenuBar()
+		toggleMenuBar()
 	}
 )
 
@@ -137,9 +140,6 @@ type WebviewWindow struct {
 	eventListenersLock sync.RWMutex
 	eventHooks         map[uint][]*WindowEventListener
 	eventHooksLock     sync.RWMutex
-
-	contextMenus     map[string]*Menu
-	contextMenusLock sync.RWMutex
 
 	// A map of listener cancellation functions
 	cancellersLock sync.RWMutex
@@ -247,7 +247,6 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		id:             thisWindowID,
 		options:        options,
 		eventListeners: make(map[uint][]*WindowEventListener),
-		contextMenus:   make(map[string]*Menu),
 		eventHooks:     make(map[uint][]*WindowEventListener),
 		menuBindings:   make(map[string]*MenuItem),
 	}
@@ -1176,33 +1175,19 @@ func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
 }
 
 func (w *WebviewWindow) OpenContextMenu(data *ContextMenuData) {
-	menu, ok := w.contextMenus[data.Id]
+	// try application level context menu
+	menu, ok := globalApplication.getContextMenu(data.Id)
 	if !ok {
-		// try application level context menu
-		menu, ok = globalApplication.getContextMenu(data.Id)
-		if !ok {
-			w.Error("No context menu found for id: %s", data.Id)
-			return
-		}
+		w.Error("No context menu found for id: %s", data.Id)
+		return
 	}
 	menu.setContextData(data)
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
 	InvokeSync(func() {
-		w.impl.openContextMenu(menu, data)
+		w.impl.openContextMenu(menu.Menu, data)
 	})
-}
-
-// RegisterContextMenu registers a context menu and assigns it the given name.
-func (w *WebviewWindow) RegisterContextMenu(name string, menu *Menu) {
-	if menu == nil {
-		w.Error("RegisterContextMenu called with nil menu")
-		return
-	}
-	w.contextMenusLock.Lock()
-	defer w.contextMenusLock.Unlock()
-	w.contextMenus[name] = menu
 }
 
 // NativeWindowHandle returns the platform native window handle for the window.
@@ -1367,4 +1352,28 @@ func (w *WebviewWindow) redo() {
 		return
 	}
 	w.impl.redo()
+}
+
+// ShowMenuBar shows the menu bar for the window.
+func (w *WebviewWindow) ShowMenuBar() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	InvokeSync(w.impl.showMenuBar)
+}
+
+// HideMenuBar hides the menu bar for the window.
+func (w *WebviewWindow) HideMenuBar() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	InvokeSync(w.impl.hideMenuBar)
+}
+
+// ToggleMenuBar toggles the menu bar for the window.
+func (w *WebviewWindow) ToggleMenuBar() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	InvokeSync(w.impl.toggleMenuBar)
 }

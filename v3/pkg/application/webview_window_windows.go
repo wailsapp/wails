@@ -1169,9 +1169,37 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		w.parent.emit(events.Windows.WindowBackgroundErase)
 		return 1 // Let WebView2 handle background erasing
 	// Check for keypress
-	case w32.WM_KEYDOWN:
-		w.processKeyBinding(uint(wparam))
+	case w32.WM_SYSCOMMAND:
+		switch wparam {
+		case w32.SC_KEYMENU:
+			if lparam == 0 {
+				// F10 or plain Alt key
+				if w.processKeyBinding(w32.VK_F10) {
+					return 0
+				}
+			} else {
+				// Alt + key combination
+				// The character code is in the low word of lparam
+				char := byte(lparam & 0xFF)
+				// Convert ASCII to virtual key code if needed
+				vkey := w32.VkKeyScan(uint16(char))
+				if w.processKeyBinding(uint(vkey)) {
+					return 0
+				}
+			}
+		}
+	case w32.WM_SYSKEYDOWN:
+		globalApplication.info("w32.WM_SYSKEYDOWN: %v", uint(wparam))
 		w.parent.emit(events.Windows.WindowKeyDown)
+		if w.processKeyBinding(uint(wparam)) {
+			return 0
+		}
+	case w32.WM_SYSKEYUP:
+		w.parent.emit(events.Windows.WindowKeyUp)
+	case w32.WM_KEYDOWN:
+		globalApplication.info("w32.WM_KEYDOWN: %v", uint(wparam))
+		w.parent.emit(events.Windows.WindowKeyDown)
+		w.processKeyBinding(uint(wparam))
 	case w32.WM_KEYUP:
 		w.parent.emit(events.Windows.WindowKeyUp)
 	case w32.WM_SIZE:
@@ -1917,6 +1945,43 @@ func (w *windowsWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
 	w.setStyle(enabled, w32.WS_MINIMIZEBOX)
 }
 
+func (w *windowsWebviewWindow) toggleMenuBar() {
+	if w.menu != nil {
+		if w32.GetMenu(w.hwnd) == 0 {
+			w32.SetMenu(w.hwnd, w.menu.menu)
+		} else {
+			w32.SetMenu(w.hwnd, 0)
+		}
+
+		// Get the bounds of the client area
+		//bounds := w32.GetClientRect(w.hwnd)
+
+		// Resize the webview
+		w.chromium.Resize()
+
+		// Update size of webview
+		w.update()
+		// Restore focus to the webview after toggling menu
+		w.focus()
+	}
+}
+
+func (w *windowsWebviewWindow) enableRedraw() {
+	w32.SendMessage(w.hwnd, w32.WM_SETREDRAW, 1, 0)
+	w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_ERASE|w32.RDW_FRAME|w32.RDW_INVALIDATE|w32.RDW_ALLCHILDREN)
+}
+
+func (w *windowsWebviewWindow) disableRedraw() {
+	w32.SendMessage(w.hwnd, w32.WM_SETREDRAW, 0, 0)
+}
+
+func (w *windowsWebviewWindow) disableRedrawWithCallback(callback func()) {
+	w.disableRedraw()
+	callback()
+	w.enableRedraw()
+
+}
+
 func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error) {
 	var err error
 	var result w32.HICON
@@ -1985,4 +2050,16 @@ func (w *windowsWebviewWindow) setPadding(padding edge.Rect) {
 		return
 	}
 	w.chromium.SetPadding(padding)
+}
+
+func (w *windowsWebviewWindow) showMenuBar() {
+	if w.menu != nil {
+		w32.SetMenu(w.hwnd, w.menu.menu)
+	}
+}
+
+func (w *windowsWebviewWindow) hideMenuBar() {
+	if w.menu != nil {
+		w32.SetMenu(w.hwnd, 0)
+	}
 }
