@@ -31,23 +31,21 @@ type ServiceOptions struct {
 
 // DefaultServiceOptions specifies the default values of service options,
 // used when no [ServiceOptions] instance is provided to [NewService].
-var DefaultServiceOptions = ServiceOptions{
-	Route: "",
-}
+var DefaultServiceOptions = ServiceOptions{}
 
 // NewService returns a Service value wrapping the given pointer.
 // If T is not a concrete named type, the returned value is invalid.
-//
-// It accepts optionally at most one instance of [ServiceOptions].
-func NewService[T any](instance *T, options ...ServiceOptions) Service {
-	switch len(options) {
-	case 0:
-		return Service{instance, DefaultServiceOptions}
-	case 1:
-		return Service{instance, options[0]}
-	default:
-		panic("NewService accepts at most one instance of ServiceOptions")
-	}
+func NewService[T any](instance *T) Service {
+	return NewServiceWithOptions(instance, DefaultServiceOptions)
+}
+
+// NewServiceWithOptions returns a Service value wrapping the given pointer
+// and specifying the given service options.
+// If T is not a concrete named type, the returned value is invalid.
+func NewServiceWithOptions[T any](instance *T, options ServiceOptions) Service {
+	service := NewService[T](instance)
+	service.options = options
+	return service
 }
 
 // Instance returns the service instance provided to [NewService].
@@ -55,9 +53,10 @@ func (s Service) Instance() any {
 	return s.instance
 }
 
-// Service instances that implement ServiceName
-// may specify a custom name
-// for logging and debugging purposes.
+// ServiceName returns the name of the service
+//
+// This is an *optional* method that may be implemented by service instances.
+// It is used for logging and debugging purposes.
 //
 // If a non-empty name is provided with [ServiceOptions],
 // it takes precedence over the one returned by the ServiceName method.
@@ -65,9 +64,10 @@ type ServiceName interface {
 	ServiceName() string
 }
 
-// Service instances that implement ServiceStartup
-// will be notified at application startup
-// and receive a copy of the options specified at creation time.
+// ServiceStartup is an *optional* method that may be implemented by service instances.
+//
+// This method will be called during application startup and will receive a copy of the options
+// specified at creation time. It can be used for initialising resources.
 //
 // The context will be valid as long as the application is running,
 // and will be canceled right before shutdown.
@@ -80,8 +80,10 @@ type ServiceStartup interface {
 	ServiceStartup(ctx context.Context, options ServiceOptions) error
 }
 
-// Service instances that implement ServiceShutdown
-// will be notified at application shutdown.
+// ServiceShutdown is an *optional* method that may be implemented by service instances.
+//
+// This method will be called during application shutdown. It can be used for cleaning up resources.
+//
 // If the return value is non-nil, it is logged along with the service name.
 type ServiceShutdown interface {
 	ServiceShutdown() error

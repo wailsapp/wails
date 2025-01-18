@@ -13,16 +13,16 @@ import (
 // ErrNoContextPackage indicates that
 // the canonical path for the standard context package
 // did not match any actual package.
-var ErrNoContextPackage = errors.New("standard context package not found at canonical import path ('context'): is the Wails v3 module properly installed?")
+var ErrNoContextPackage = errors.New("standard context package not found at canonical import path ('context'): is the Wails v3 module properly installed? ")
 
 // ErrNoApplicationPackage indicates that
 // the canonical path for the Wails application package
 // did not match any actual package.
-var ErrNoApplicationPackage = errors.New("Wails application package not found at canonical import path ('" + config.WailsAppPkgPath + "'): is the Wails v3 module properly installed?")
+var ErrNoApplicationPackage = errors.New("Wails application package not found at canonical import path ('" + config.WailsAppPkgPath + "'): is the Wails v3 module properly installed? ")
 
 // ErrBadApplicationPackage indicates that
 // the Wails application package has invalid content.
-var ErrBadApplicationPackage = errors.New("package " + config.WailsAppPkgPath + ": function NewService has wrong signature: is the Wails v3 module properly installed?")
+var ErrBadApplicationPackage = errors.New("package " + config.WailsAppPkgPath + ": function NewService has wrong signature: is the Wails v3 module properly installed? ")
 
 // ErrNoPackages is returned by [Generator.Generate]
 // when [LoadPackages] returns no error and no packages.
@@ -43,7 +43,7 @@ type ErrorReport struct {
 	errors   map[string]bool
 }
 
-// NewError report initialises an ErrorReport instance
+// NewErrorReport report initialises an ErrorReport instance
 // with the provided Logger implementation.
 //
 // If logger is nil, messages will be accumulated but not logged.

@@ -10,6 +10,14 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+var newServiceSignatures = map[string]struct {
+	Inputs  int
+	Outputs int
+}{
+	"NewService":            {1, 1},
+	"NewServiceWithOptions": {2, 1},
+}
+
 // FindServices scans the given packages for invocations
 // of the NewService function from the Wails application package.
 //
@@ -118,18 +126,21 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 			}
 
 			// Detect application.NewService
-			if fn.Name() == "NewService" && fn.Pkg().Path() == systemPaths.ApplicationPackage {
-				// Check signature.
-				signature := fn.Type().(*types.Signature)
-				if signature.Params().Len() > 2 || signature.Results().Len() != 1 || tp.Len() != 1 || tp.At(0).Obj() == nil {
-					logger.Warningf("Param Len: %d, Results Len: %d, tp.Len: %d, tp.At(0).Obj(): %v", signature.Params().Len(), signature.Results().Len(), tp.Len(), tp.At(0).Obj())
-					return nil, ErrBadApplicationPackage
-				}
+			if fn.Pkg().Path() == systemPaths.ApplicationPackage {
+				definition, ok := newServiceSignatures[fn.Name()]
+				if ok {
+					// Check signature.
+					signature := fn.Type().(*types.Signature)
+					if signature.Params().Len() != definition.Inputs || signature.Results().Len() != definition.Outputs || tp.Len() != 1 || tp.At(0).Obj() == nil {
+						logger.Warningf("Param Len: %d, Results Len: %d, tp.Len: %d, tp.At(0).Obj(): %v", signature.Params().Len(), signature.Results().Len(), tp.Len(), tp.At(0).Obj())
+						return nil, ErrBadApplicationPackage
+					}
 
-				// Schedule unique type param for analysis.
-				tgt := target{obj, 0}
-				scheduled[tgt] = true
-				next = append(next, targetInfo{target: tgt})
+					// Schedule unique type param for analysis.
+					tgt := target{obj, 0}
+					scheduled[tgt] = true
+					next = append(next, targetInfo{target: tgt})
+				}
 			}
 		}
 	}
