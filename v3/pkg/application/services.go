@@ -36,14 +36,14 @@ var DefaultServiceOptions = ServiceOptions{}
 // NewService returns a Service value wrapping the given pointer.
 // If T is not a concrete named type, the returned value is invalid.
 func NewService[T any](instance *T) Service {
-	return NewServiceWithOptions(instance, DefaultServiceOptions)
+	return Service{instance, DefaultServiceOptions}
 }
 
 // NewServiceWithOptions returns a Service value wrapping the given pointer
 // and specifying the given service options.
 // If T is not a concrete named type, the returned value is invalid.
 func NewServiceWithOptions[T any](instance *T, options ServiceOptions) Service {
-	service := NewService[T](instance)
+	service := NewService(instance) // Delegate to NewService so that the static analyser may detect T. Do not remove this call.
 	service.options = options
 	return service
 }
