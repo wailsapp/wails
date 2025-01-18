@@ -51,6 +51,7 @@ tasks:
     sources:
       - "**/*.[jt]s"
       - exclude: frontend/**/*
+      - frontend/bindings/**/*  # Rerun when switching between dev/production mode causes changes in output
       - "**/*.go"
       - go.mod
       - go.sum
