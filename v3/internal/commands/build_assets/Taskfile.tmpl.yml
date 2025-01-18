@@ -22,6 +22,7 @@ tasks:
       - npm install
 
   build:frontend:
+    label: build:frontend (PRODUCTION={{ "{{.PRODUCTION}}" }})
     summary: Build the frontend project
     dir: frontend
     sources:
@@ -43,11 +44,15 @@ tasks:
 
 
   generate:bindings:
+    label: generate:bindings (BUILD_FLAGS={{ "{{.BUILD_FLAGS}}" }})
     summary: Generates bindings for the frontend
     deps:
       - task: go:mod:tidy
+      - "**/*.go"
+      - go.mod
+      - go.sum
     generates:
-      - "frontend/bindings/**/*"
+      - frontend/bindings/**/*
     cmds:
       - wails3 generate bindings -f {{ "'{{.BUILD_FLAGS}}'" }} -clean=true {{- if .Typescript}} -ts{{end}}
 
