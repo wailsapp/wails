@@ -48,6 +48,9 @@ tasks:
     summary: Generates bindings for the frontend
     deps:
       - task: go:mod:tidy
+    sources:
+      - "**/*.[jt]s"
+      - exclude: frontend/**/*
       - "**/*.go"
       - go.mod
       - go.sum
