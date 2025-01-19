@@ -28,7 +28,7 @@ tasks:
     sources:
       - "**/*"
     generates:
-      - dist/*
+      - dist/**/*
     deps:
       - task: install:frontend:deps
       - task: generate:bindings
