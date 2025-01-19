@@ -74,7 +74,7 @@ func Warning(input any) {
 }
 
 func Warningf(input any, args ...any) {
-	output(input, pterm.Warning, args)
+	output(input, pterm.Warning, args...)
 }
 
 func Error(input any) {
