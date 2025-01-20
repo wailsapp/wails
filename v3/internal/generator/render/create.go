@@ -40,7 +40,7 @@ func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]boo
 			return m.needsCreateImpl(t.Underlying(), visited)
 		}
 
-		if collect.IsAny(t) || collect.IsString(t) {
+		if collect.IsAny(t) || collect.IsStringAlias(t) {
 			break
 		} else if collect.IsClass(t) {
 			return true
@@ -128,7 +128,7 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 			return m.JSCreateWithParams(t.Underlying(), params)
 		}
 
-		if collect.IsAny(typ) || collect.IsString(typ) || !m.NeedsCreate(typ) {
+		if collect.IsAny(typ) || collect.IsStringAlias(typ) || !m.NeedsCreate(typ) {
 			break
 		}
 

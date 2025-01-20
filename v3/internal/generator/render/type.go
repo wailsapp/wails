@@ -72,9 +72,9 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 		return m.renderMapType(t)
 
 	case *types.Pointer:
-		elem, ptr := m.renderType(t.Elem(), false)
-		if ptr {
-			return elem, true
+		elem, nullable := m.renderType(t.Elem(), false)
+		if nullable {
+			return elem, nullable
 		} else {
 			return fmt.Sprintf("%s | null", elem), true
 		}
@@ -149,11 +149,11 @@ func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
 
 	case *types.Alias, *types.Named:
 		if collect.IsMapKey(typ) {
-			if collect.IsString(typ) {
+			if collect.IsStringAlias(typ) {
 				// Alias or named type is a string and therefore
 				// safe to use as a JS object key.
 				if ptr, ok := k.(*types.Pointer); ok {
-					// Unwrap pointer to named string type, but not pointer aliases.
+					// Unwrap pointers to string aliases.
 					key, _ = m.renderType(ptr.Elem(), false)
 				} else {
 					key, _ = m.renderType(k, false)
@@ -165,7 +165,7 @@ func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
 		}
 
 	case *types.Pointer:
-		if collect.IsMapKey(typ) && collect.IsString(typ.Elem()) {
+		if collect.IsMapKey(typ) && collect.IsStringAlias(typ.Elem()) {
 			// Base type is a string alias and therefore
 			// safe to use as a JS object key.
 			key, _ = m.renderType(k.Elem(), false)
@@ -193,16 +193,12 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 			return m.renderType(a, quoted)
 		case *types.Named:
 			// Quoted mode for (alias of?) named type.
-			// WARN: Do not test with IsString here!! We only want to catch marshalers.
-			if !collect.IsAny(typ) && !collect.MaybeTextMarshaler(typ) {
+			// WARN: Do not test with IsAny/IsStringAlias here!! We only want to catch marshalers.
+			if collect.MaybeJSONMarshaler(typ) == collect.NonMarshaler && collect.MaybeTextMarshaler(typ) == collect.NonMarshaler {
 				// No custom marshaling for this type.
-				switch u := a.Underlying().(type) {
-				case *types.Basic:
+				if u, ok := a.Underlying().(*types.Basic); ok {
 					// Quoted mode for basic named type that is not a marshaler: delegate.
 					return m.renderBasicType(u, quoted), false
-				case *types.TypeParam:
-					// Quoted mode for generic type that maps to typeparam: delegate.
-					return m.renderType(u, quoted)
 				}
 			}
 		}

@@ -102,8 +102,8 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 	}
 
 	if quoted {
-		// WARN: Do not test with IsString here!! We only want to catch marshalers.
-		if !collect.IsAny(typ) && !collect.MaybeTextMarshaler(typ) {
+		// WARN: Do not test with IsAny/IsStringAlias here!! We only want to catch marshalers.
+		if collect.MaybeJSONMarshaler(typ) == collect.NonMarshaler && collect.MaybeTextMarshaler(typ) == collect.NonMarshaler {
 			if basic, ok := typ.Underlying().(*types.Basic); ok {
 				// Quoted mode for basic alias/named type that is not a marshaler: delegate.
 				return m.renderBasicDefault(basic, quoted), true
@@ -119,7 +119,7 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 
 	if collect.IsAny(typ) {
 		return "", false
-	} else if collect.MaybeTextMarshaler(typ) {
+	} else if collect.MaybeTextMarshaler(typ) != collect.NonMarshaler {
 		return `""`, true
 	} else if collect.IsClass(typ) {
 		if typ.Obj().Pkg().Path() == m.Imports.Self {

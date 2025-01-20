@@ -177,7 +177,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 				break
 			}
 
-			if IsClass(typ) || IsString(typ) || IsAny(typ) {
+			if IsClass(typ) || IsStringAlias(typ) || IsAny(typ) {
 				return
 			}
 
@@ -186,9 +186,13 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 			typ = typ.Underlying()
 
 		case *types.Basic:
-			if t.Info()&types.IsComplex != 0 {
-				// Complex types are not supported by encoding/json
+			switch {
+			case t.Info()&(types.IsBoolean|types.IsInteger|types.IsUnsigned|types.IsFloat|types.IsString) != 0:
+				break
+			case t.Info()&types.IsComplex != 0:
 				collector.logger.Warningf("complex types are not supported by encoding/json")
+			default:
+				collector.logger.Warningf("unknown basic type %s: please report this to Wails maintainers", typ)
 			}
 			return
 
@@ -201,7 +205,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 
 		case *types.Map:
 			if IsMapKey(t.Key()) {
-				if IsString(t.Key()) {
+				if IsStringAlias(t.Key()) {
 					// This model type is always rendered as a string alias,
 					// hence we can generate it and use it as a type for JS object keys.
 					imports.addTypeImpl(t.Key(), visited)
