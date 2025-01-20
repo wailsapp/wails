@@ -44,6 +44,7 @@ func main() {
 			fmt.Printf("Time: %s\n", panicDetails.Time)
 			fmt.Printf("Error: %s\n", panicDetails.Error)
 			fmt.Printf("Stacktrace: %s\n", panicDetails.StackTrace)
+			application.InfoDialog().SetMessage("There was a panic!").Show()
 		},
 	})
 
@@ -56,5 +57,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }

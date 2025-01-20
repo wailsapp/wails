@@ -69,16 +69,21 @@ If you want to see the full stack trace, you can use the `FullStackTrace` field.
 
 ## Default Panic Handler
 
-If you don't specify a custom panic handler, Wails will use its default handler which outputs error information in a formatted log message. For example:
+If you don't specify a custom panic handler, Wails will use its default handler which outputs error information in a formatted log message and then quits.
+For example:
 
 ```
-Jan 16 21:18:05.649 ERR panic error: oh no! something went wrong deep in my service! :(
+************************ FATAL ******************************
+* There has been a catastrophic failure in your application *
+********************* Error Details *************************
+panic error: oh no! something went wrong deep in my service! :(
 main.(*WindowService).call2
-    at E:/wails/v3/examples/panic-handling/main.go:24
+	at E:/wails/v3/examples/panic-handling/main.go:23
 main.(*WindowService).call1
-    at E:/wails/v3/examples/panic-handling/main.go:20
+	at E:/wails/v3/examples/panic-handling/main.go:19
 main.(*WindowService).GeneratePanic
-    at E:/wails/v3/examples/panic-handling/main.go:16
+	at E:/wails/v3/examples/panic-handling/main.go:15
+*************************************************************
 ```
 
 ## Custom Panic Handler
