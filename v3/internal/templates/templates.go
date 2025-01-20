@@ -164,7 +164,7 @@ func parseTemplate(template fs.FS, templateName string) (Template, error) {
 		return result, fmt.Errorf("template not supported by wails 3. This template is probably for wails 2")
 	}
 	if result.Schema != 3 {
-		return result, fmt.Errorf("template version %d is not supported by wails 3. Ensure 'version' is set to 3 in the `template.json` file", result.Version)
+		return result, fmt.Errorf("template version %s is not supported by wails 3. Ensure 'version' is set to 3 in the `template.json` file", result.Version)
 	}
 
 	return result, nil

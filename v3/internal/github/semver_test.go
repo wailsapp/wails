@@ -8,13 +8,13 @@ import (
 func TestSemanticVersion_IsGreaterThan(t *testing.T) {
 	is2 := is.New(t)
 
-	alpha1, err := NewSemanticVersion("v2.0.0-alpha.1")
+	alpha1, err := NewSemanticVersion("v3.0.0-alpha.1")
 	is2.NoErr(err)
 
-	beta1, err := NewSemanticVersion("v2.0.0-beta.1")
+	beta1, err := NewSemanticVersion("v3.0.0-beta.1")
 	is2.NoErr(err)
 
-	v2, err := NewSemanticVersion("v2.0.0")
+	v2, err := NewSemanticVersion("v3.0.0")
 	is2.NoErr(err)
 
 	is2.True(alpha1.IsPreRelease())
