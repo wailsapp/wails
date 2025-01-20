@@ -46,7 +46,7 @@ func TestGenerateIcon(t *testing.T) {
 			},
 		},
 		{
-			name: "should generate a .ico file when using the `input` flag and `windowsfilena   me` flag",
+			name: "should generate a .ico file when using the `input` flag and `windowsfilename` flag",
 			setup: func() *IconsOptions {
 				// Get the directory of this file
 				_, thisFile, _, _ := runtime.Caller(1)
@@ -68,10 +68,7 @@ func TestGenerateIcon(t *testing.T) {
 				}
 				defer func() {
 					// Remove the file
-					err = os.Remove("appicon.ico")
-					if err != nil {
-						return
-					}
+					_ = os.Remove("appicon.ico")
 				}()
 				if f.IsDir() {
 					return fmt.Errorf("appicon.ico is a directory")

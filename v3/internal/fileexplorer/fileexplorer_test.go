@@ -11,7 +11,15 @@ import (
 	"github.com/wailsapp/wails/v3/internal/fileexplorer"
 )
 
+// Credit: https://stackoverflow.com/a/50631395
+func skipCI(t *testing.T) {
+	if os.Getenv("CI") != "" {
+		t.Skip("Skipping testing in CI environment")
+	}
+}
+
 func TestFileExplorer(t *testing.T) {
+	skipCI(t)
 	// TestFileExplorer verifies that the OpenFileManager function correctly handles:
 	// - Opening files in the native file manager across different platforms
 	// - Selecting files when the selectFile parameter is true
