@@ -325,7 +325,7 @@ func parseTag(tag string) (name string, optional bool, quoted bool, visible bool
 
 	for _, option := range parts[1:] {
 		switch option {
-		case "omitempty":
+		case "omitempty", "omitzero":
 			optional = true
 		case "string":
 			quoted = true
