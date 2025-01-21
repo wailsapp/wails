@@ -152,6 +152,12 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 // renderStructDefault outputs the Javascript representation
 // of the zero value for the given struct type.
 func (m *module) renderStructDefault(typ *types.Struct) string {
+	if collect.MaybeJSONMarshaler(typ) != collect.NonMarshaler {
+		return "null"
+	} else if collect.MaybeTextMarshaler(typ) != collect.NonMarshaler {
+		return `""`
+	}
+
 	info := m.collector.Struct(typ)
 	info.Collect()
 

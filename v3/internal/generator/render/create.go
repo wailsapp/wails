@@ -40,12 +40,12 @@ func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]boo
 			return m.needsCreateImpl(t.Underlying(), visited)
 		}
 
-		if collect.IsAny(t) || collect.IsStringAlias(t) {
+		if collect.IsAny(typ) || collect.IsStringAlias(typ) {
 			break
-		} else if collect.IsClass(t) {
+		} else if collect.IsClass(typ) {
 			return true
 		} else if _, isAlias := typ.(*types.Alias); isAlias {
-			return m.needsCreateImpl(types.Unalias(t), visited)
+			return m.needsCreateImpl(types.Unalias(typ), visited)
 		} else {
 			return m.needsCreateImpl(t.Underlying(), visited)
 		}
@@ -57,6 +57,10 @@ func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]boo
 		return true
 
 	case *types.Struct:
+		if t.NumFields() == 0 || collect.MaybeJSONMarshaler(typ) != collect.NonMarshaler || collect.MaybeTextMarshaler(typ) != collect.NonMarshaler {
+			return false
+		}
+
 		info := m.collector.Struct(t)
 		info.Collect()
 
@@ -127,7 +131,7 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 			return m.JSCreateWithParams(t.Underlying(), params)
 		}
 
-		if collect.IsAny(typ) || collect.IsStringAlias(typ) || !m.NeedsCreate(typ) {
+		if !m.NeedsCreate(typ) {
 			break
 		}
 
@@ -165,6 +169,10 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 		return fmt.Sprintf("$$createType%d%s", pp.index, params)
 
 	case *types.Struct:
+		if t.NumFields() == 0 || collect.MaybeJSONMarshaler(typ) != collect.NonMarshaler || collect.MaybeTextMarshaler(typ) != collect.NonMarshaler {
+			break
+		}
+
 		pp, ok := m.postponedCreates.At(typ).(*postponed)
 		if ok {
 			return fmt.Sprintf("$$createType%d%s", pp.index, params)

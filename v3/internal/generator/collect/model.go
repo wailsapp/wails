@@ -219,7 +219,7 @@ func (info *ModelInfo) Collect() *ModelInfo {
 
 		// Handle struct types.
 		strct, isStruct := def.(*types.Struct)
-		if isStruct {
+		if isStruct && info.Predicates.MaybeJSONMarshaler == NonMarshaler && info.Predicates.MaybeTextMarshaler == NonMarshaler {
 			// Def is struct and model is not a marshaler:
 			// collect information about struct fields.
 			info.collectStruct(strct)
@@ -231,7 +231,7 @@ func (info *ModelInfo) Collect() *ModelInfo {
 		info.Imports.AddType(def)
 
 		// Handle enum types.
-		// constants slice is always empty for aliases.
+		// constants slice is always empty for aliases, structs, marshalers.
 		if len(constants) > 0 {
 			// Collect information about enum values.
 			info.collectEnum(constants)

@@ -177,7 +177,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 				break
 			}
 
-			if IsClass(typ) || IsStringAlias(typ) || IsAny(typ) {
+			if IsClass(typ) || IsAny(typ) || IsStringAlias(typ) {
 				return
 			}
 
@@ -224,8 +224,8 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 			return
 
 		case *types.Struct:
-			if t.NumFields() == 0 {
-				// Empty struct.
+			if t.NumFields() == 0 || MaybeJSONMarshaler(typ) != NonMarshaler || MaybeTextMarshaler(typ) != NonMarshaler {
+				// Struct is empty, or marshals to custom JSON (any) or string.
 				return
 			}
 

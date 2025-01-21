@@ -231,6 +231,12 @@ func (m *module) renderNamedType(typ aliasOrNamed, quoted bool) (result string, 
 // renderStructType outputs the TS representation
 // of the given anonymous struct type.
 func (m *module) renderStructType(typ *types.Struct) string {
+	if collect.MaybeJSONMarshaler(typ) != collect.NonMarshaler {
+		return "any"
+	} else if collect.MaybeTextMarshaler(typ) != collect.NonMarshaler {
+		return "string"
+	}
+
 	info := m.collector.Struct(typ)
 	info.Collect()
 
