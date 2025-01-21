@@ -147,9 +147,9 @@ func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
 			key = m.renderBasicType(k, true)
 		}
 
-	case *types.Alias, *types.Named:
-		if collect.IsMapKey(typ) {
-			if collect.IsStringAlias(typ) {
+	case *types.Alias, *types.Named, *types.Pointer:
+		if collect.IsMapKey(k) {
+			if collect.IsStringAlias(k) {
 				// Alias or named type is a string and therefore
 				// safe to use as a JS object key.
 				if ptr, ok := k.(*types.Pointer); ok {
@@ -158,17 +158,10 @@ func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
 				} else {
 					key, _ = m.renderType(k, false)
 				}
-			} else if basic, ok := typ.Underlying().(*types.Basic); ok && basic.Info()&types.IsString == 0 {
+			} else if basic, ok := k.Underlying().(*types.Basic); ok && basic.Info()&types.IsString == 0 {
 				// Render non-string basic type in quoted mode.
 				key = m.renderBasicType(basic, true)
 			}
-		}
-
-	case *types.Pointer:
-		if collect.IsMapKey(typ) && collect.IsStringAlias(typ.Elem()) {
-			// Base type is a string alias and therefore
-			// safe to use as a JS object key.
-			key, _ = m.renderType(k.Elem(), false)
 		}
 	}
 
