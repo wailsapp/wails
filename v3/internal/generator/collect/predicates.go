@@ -323,6 +323,20 @@ func IsMapKey(typ types.Type) bool {
 	return true
 }
 
+// IsTypeParam returns true when the given type
+// is either a TypeParam or a pointer to a TypeParam.
+func IsTypeParam(typ types.Type) bool {
+	switch t := types.Unalias(typ).(type) {
+	case *types.TypeParam:
+		return true
+	case *types.Pointer:
+		_, ok := types.Unalias(t.Elem()).(*types.TypeParam)
+		return ok
+	default:
+		return false
+	}
+}
+
 // IsStringAlias returns true when
 // either typ will be rendered to JS/TS as an alias for the TS type `string`,
 // or typ itself (not its underlying type) is a pointer

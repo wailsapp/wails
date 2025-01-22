@@ -63,6 +63,8 @@ type (
 		MaybeJSONMarshaler MarshalerKind
 		IsTextMarshaler    MarshalerKind
 		MaybeTextMarshaler MarshalerKind
+		IsMapKey           bool
+		IsTypeParam        bool
 		IsStringAlias      bool
 		IsClass            bool
 		IsAny              bool
@@ -153,6 +155,8 @@ func (info *ModelInfo) Collect() *ModelInfo {
 			MaybeJSONMarshaler: MaybeJSONMarshaler(ityp),
 			IsTextMarshaler:    IsTextMarshaler(ityp),
 			MaybeTextMarshaler: MaybeTextMarshaler(ityp),
+			IsMapKey:           IsMapKey(ityp),
+			IsTypeParam:        IsTypeParam(ityp),
 			IsStringAlias:      IsStringAlias(ityp),
 			IsClass:            IsClass(ityp),
 			IsAny:              IsAny(ityp),
