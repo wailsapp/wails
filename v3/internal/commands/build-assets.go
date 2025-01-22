@@ -126,6 +126,7 @@ type FileAssociation struct {
 type UpdateConfig struct {
 	UpdateBuildAssetsOptions
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
+	Protocols        []Protocol        `yaml:"protocols"`
 }
 
 type WailsConfig struct {
@@ -139,6 +140,13 @@ type WailsConfig struct {
 		Version           string `yaml:"version"`
 	} `yaml:"info"`
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
+	Protocols        []Protocol        `yaml:"protocols"`
+}
+
+type Protocol struct {
+	Scheme      string `json:"scheme"`
+	Role        string `json:"role"`
+	Description string `json:"description"`
 }
 
 func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
@@ -169,6 +177,7 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 		options.ProductCopyright = wailsConfig.Info.Copyright
 		options.ProductComments = wailsConfig.Info.Comments
 		options.ProductVersion = wailsConfig.Info.Version
+		config.Protocols = wailsConfig.Protocols
 		config.FileAssociations = wailsConfig.FileAssociations
 	}
 

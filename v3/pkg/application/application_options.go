@@ -195,6 +195,8 @@ type MacOptions struct {
 	ActivationPolicy ActivationPolicy
 	// If set to true, the application will terminate when the last window is closed.
 	ApplicationShouldTerminateAfterLastWindowClosed bool
+	// OnURLOpen is a function that is called when the user opens an associated url such as `magnet://l234i2li34h`.
+	OnUrlOpen func(filePath string)
 }
 
 /****** Windows Options *******/

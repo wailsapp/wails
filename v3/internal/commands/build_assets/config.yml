@@ -44,7 +44,7 @@ dev_mode:
       type: primary
 
 # File Associations
-# More information at: https://v3alpha.wails.io/noit/done/yet
+# More information at: https://v3.wails.io/not/done/yet
 fileAssociations:
 #  - ext: wails
 #    name: Wails
@@ -56,6 +56,14 @@ fileAssociations:
 #    description: Image File
 #    iconName: jpegFileIcon
 #    role: Editor
+
+# Custom URL Protocols
+# A list of custom URL protocols associated with this application
+# More information at: https://v3.wails.io/not/done/yet
+protocols:
+#  - scheme: "magnet"
+#    description: "Magnet URI Scheme"
+#    role: "Editor"
 
 # Other data
 other:

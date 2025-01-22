@@ -23,5 +23,22 @@
         <string>true</string>
         <key>NSHumanReadableCopyright</key>
         <string>{{.ProductCopyright}}</string>
+        {{if .Protocols}}
+        <key>CFBundleURLTypes</key>
+        <array>
+        {{range .Protocols}}
+            <dict>
+                <key>CFBundleURLName</key>
+                <string>com.wails.{{.Scheme}}</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>{{.Scheme}}</string>
+                </array>
+                <key>CFBundleTypeRole</key>
+                <string>{{.Role}}</string>
+            </dict>
+        {{end}}
+        </array>
+        {{end}}
     </dict>
 </plist>
