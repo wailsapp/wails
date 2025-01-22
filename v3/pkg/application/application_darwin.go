@@ -10,6 +10,8 @@ package application
 #include "application_darwin.h"
 #include "application_darwin_delegate.h"
 #include "webview_window_darwin.h"
+#include "custom_protocol.h"
+
 #include <stdlib.h>
 
 extern void registerListener(unsigned int event);
@@ -177,6 +179,8 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
+var openUrlBuffer = make(chan string, 100)
+
 type macosApp struct {
 	applicationMenu unsafe.Pointer
 	parent          *App
@@ -229,6 +233,9 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 }
 
 func (m *macosApp) run() error {
+
+	C.StartCustomProtocolHandler()
+
 	if m.parent.options.SingleInstance != nil {
 		cUniqueID := C.CString(m.parent.options.SingleInstance.UniqueID)
 		defer C.free(unsafe.Pointer(cUniqueID))
@@ -262,9 +269,25 @@ func (m *macosApp) GetFlags(options Options) map[string]any {
 
 func newPlatformApp(app *App) *macosApp {
 	C.init()
-	return &macosApp{
+	result := &macosApp{
 		parent: app,
 	}
+	go result.startUrlOpenProcessor()
+	return result
+}
+
+func (m *macosApp) startUrlOpenProcessor() {
+	for url := range openUrlBuffer {
+		if m.parent.options.Mac.OnUrlOpen != nil {
+			m.parent.options.Mac.OnUrlOpen(url)
+		}
+	}
+}
+
+//export HandleCustomProtocol
+func HandleCustomProtocol(url *C.char) {
+	goUrl := C.GoString(url)
+	openUrlBuffer <- goUrl
 }
 
 //export processApplicationEvent
