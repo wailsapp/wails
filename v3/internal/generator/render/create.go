@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/generator/collect"
+	"golang.org/x/tools/go/types/typeutil"
 )
 
 // SkipCreate returns true if the given array of types needs no creation code.
@@ -21,22 +22,27 @@ func (m *module) SkipCreate(ts []types.Type) bool {
 
 // NeedsCreate returns true if the given type needs some creation code.
 func (m *module) NeedsCreate(typ types.Type) bool {
-	return m.needsCreateImpl(typ, make(map[*types.TypeName]bool))
+	return m.needsCreateImpl(typ, new(typeutil.Map))
 }
 
 // needsCreateImpl provides the actual implementation of NeedsCreate.
 // The visited parameter is used to break cycles.
-func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]bool) bool {
+func (m *module) needsCreateImpl(typ types.Type, visited *typeutil.Map) bool {
 	switch t := typ.(type) {
-	case *types.Alias, *types.Named:
-		obj := typ.(interface{ Obj() *types.TypeName }).Obj()
-		if visited[obj] {
+	case *types.Alias:
+		return m.needsCreateImpl(types.Unalias(typ), visited)
+
+	case *types.Named:
+		if visited.Set(typ, true) != nil {
+			// The only way to hit a cycle here
+			// is through a chain of structs, nested pointers and arrays (not slices).
+			// We can safely return false at this point
+			// as the final answer is independent of the cycle.
 			return false
 		}
-		visited[obj] = true
 
-		if obj.Pkg() == nil {
-			// Builtin alias or named type: render underlying type.
+		if t.Obj().Pkg() == nil {
+			// Builtin named type: render underlying type.
 			return m.needsCreateImpl(t.Underlying(), visited)
 		}
 
@@ -44,8 +50,6 @@ func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]boo
 			break
 		} else if collect.IsClass(typ) {
 			return true
-		} else if _, isAlias := typ.(*types.Alias); isAlias {
-			return m.needsCreateImpl(types.Unalias(typ), visited)
 		} else {
 			return m.needsCreateImpl(t.Underlying(), visited)
 		}

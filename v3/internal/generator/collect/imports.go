@@ -3,6 +3,8 @@ package collect
 import (
 	"go/types"
 	"path/filepath"
+
+	"golang.org/x/tools/go/types/typeutil"
 )
 
 type (
@@ -120,12 +122,12 @@ func (imports *ImportMap) Add(pkg *PackageInfo) {
 // AddType does not support unsynchronised concurrent calls
 // on the same receiver.
 func (imports *ImportMap) AddType(typ types.Type) {
-	imports.addTypeImpl(typ, make(map[*types.TypeName]bool))
+	imports.addTypeImpl(typ, new(typeutil.Map))
 }
 
 // addTypeImpl provides the actual implementation of AddType.
 // The visited parameter is used to break cycles.
-func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeName]bool) {
+func (imports *ImportMap) addTypeImpl(typ types.Type, visited *typeutil.Map) {
 	collector := imports.collector
 	if collector == nil {
 		panic("AddType called on ImportMap with nil importing package")
@@ -134,12 +136,12 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 	for { // Avoid recursion where possible.
 		switch t := typ.(type) {
 		case *types.Alias, *types.Named:
-			obj := typ.(interface{ Obj() *types.TypeName }).Obj()
-			if visited[obj] {
+			if visited.Set(typ, true) != nil {
+				// Break type cycles.
 				return
 			}
-			visited[obj] = true
 
+			obj := typ.(interface{ Obj() *types.TypeName }).Obj()
 			if obj.Pkg() == nil {
 				// Ignore universe type.
 				return
@@ -155,7 +157,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 			// Import parent package.
 			imports.Add(collector.Package(obj.Pkg()))
 
-			instance, _ := t.(interface{ TypeArgs() *types.TypeList })
+			instance, _ := typ.(interface{ TypeArgs() *types.TypeList })
 			if instance != nil {
 				// Record type argument dependencies.
 				if targs := instance.TypeArgs(); targs != nil {
@@ -170,7 +172,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 				return
 			}
 
-			if _, isAlias := t.(*types.Alias); isAlias {
+			if _, isAlias := typ.(*types.Alias); isAlias {
 				// Aliased type might be needed during
 				// JS value creation and initialisation.
 				typ = types.Unalias(typ)
@@ -181,7 +183,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 				return
 			}
 
-			// If named type does not map to a class, string or unknown type,
+			// If named type does not map to a class, unknown type or string,
 			// its underlying type may be needed during JS value creation.
 			typ = typ.Underlying()
 
