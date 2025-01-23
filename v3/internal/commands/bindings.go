@@ -70,11 +70,6 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		pluralise(stats.NumModels, "Model"),
 		stats.Elapsed().String(),
 	)
-	if spinner != nil {
-		spinner.Info(resultMessage)
-	} else {
-		term.Infofln("%s", resultMessage)
-	}
 
 	// Report output directory.
 	term.Infof("Output directory: %s", absPath)
