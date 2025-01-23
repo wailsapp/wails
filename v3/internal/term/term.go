@@ -16,13 +16,6 @@ func Header(header string) {
 	pterm.BgLightGreen.Println(pterm.LightWhite(" " + header + " "))
 }
 
-func Infof(format string, args ...interface{}) {
-	pterm.Info.Printf(format, args...)
-}
-func Infofln(format string, args ...interface{}) {
-	pterm.Info.Printfln(format, args...)
-}
-
 func IsTerminal() bool {
 	return term.IsTerminal(int(os.Stdout.Fd())) && (os.Getenv("CI") != "true")
 }
@@ -31,37 +24,32 @@ type Spinner struct {
 	spinner *pterm.SpinnerPrinter
 }
 
-func (s *Spinner) Logger() config.Logger {
-	if s == nil {
-		return nil
-	}
+func (s Spinner) Logger() config.Logger {
 	return config.DefaultPtermLogger(s.spinner)
 }
 
-func StartSpinner(text string) *Spinner {
+func StartSpinner(text string) Spinner {
 	if !IsTerminal() {
-		return nil
+		return Spinner{}
 	}
-	spin, err := pterm.DefaultSpinner.Start(text)
+	spinner, err := pterm.DefaultSpinner.Start(text)
 	if err != nil {
-		return nil
+		return Spinner{}
 	}
-	return &Spinner{
-		spinner: spin,
-	}
+	spinner.RemoveWhenDone = true
+	return Spinner{spinner}
 }
 
-func StopSpinner(s *Spinner) {
-	if s == nil {
-		return
+func StopSpinner(s Spinner) {
+	if s.spinner != nil {
+		_ = s.spinner.Stop()
 	}
-	_ = s.spinner.Stop()
 }
 
 func output(input any, printer pterm.PrefixPrinter, args ...any) {
 	switch v := input.(type) {
 	case string:
-		printer.Println(fmt.Sprintf(input.(string), args...))
+		printer.Printfln(input.(string), args...)
 	case error:
 		printer.Println(v.Error())
 	default:
@@ -69,12 +57,20 @@ func output(input any, printer pterm.PrefixPrinter, args ...any) {
 	}
 }
 
+func Info(input any) {
+	output(input, pterm.Info)
+}
+
+func Infof(input any, args ...interface{}) {
+	output(input, pterm.Info, args...)
+}
+
 func Warning(input any) {
 	output(input, pterm.Warning)
 }
 
 func Warningf(input any, args ...any) {
-	output(input, pterm.Warning, args)
+	output(input, pterm.Warning, args...)
 }
 
 func Error(input any) {
@@ -93,12 +89,21 @@ func Section(s string) {
 func DisableColor() {
 	pterm.DisableColor()
 }
+
 func EnableOutput() {
 	pterm.EnableOutput()
 }
 
 func DisableOutput() {
 	pterm.DisableOutput()
+}
+
+func EnableDebug() {
+	pterm.EnableDebugMessages()
+}
+
+func DisableDebug() {
+	pterm.DisableDebugMessages()
 }
 
 func Println(s string) {
