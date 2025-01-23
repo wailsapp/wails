@@ -8,40 +8,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
 
-// Service wraps a bound type instance.
-// The zero value of Service is invalid.
-// Valid values may only be obtained by calling [NewService].
-type Service struct {
-	instance any
-	options  ServiceOptions
-}
-
-type ServiceOptions struct {
-	// Name can be set to override the name of the service
-	// This is useful for logging and debugging purposes
-	Name string
-	// Route is the path to the assets
-	Route string
-}
-
-var DefaultServiceOptions = ServiceOptions{
-	Route: "",
-}
-
-// NewService returns a Service value wrapping the given pointer.
-// If T is not a named type, the returned value is invalid.
-// The prefix is used if Service implements a http.Handler only one allowed
-func NewService[T any](instance *T, options ...ServiceOptions) Service {
-	if len(options) == 1 {
-		return Service{instance, options[0]}
-	}
-	return Service{instance, DefaultServiceOptions}
-}
-
-func (s Service) Instance() any {
-	return s.instance
-}
-
 // Options contains the options for the application
 type Options struct {
 	// Name is the name of the application (used in the default about box)

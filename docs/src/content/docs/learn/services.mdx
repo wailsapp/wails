@@ -52,6 +52,24 @@ app := application.New(application.Options{
 })
 ```
 
+This registers the `NewMyService` function as a service with the application.
+
+Services may also be registered with additional options:
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(NewMyService(), application.ServiceOptions{
+            // ...
+        })
+    }
+})
+```
+
+ServiceOptions has the following fields:
+	- Name - Specify a custom name for the Service
+    - Route - A route to bind the Service to the frontend (more on this below)
+
 ## Optional Methods
 
 Services can implement optional methods to hook into the application lifecycle.
@@ -67,8 +85,10 @@ bindings generated for a service, so they are not exposed to your frontend.
 func (s *Service) ServiceName() string
 ```
 
-This method returns the name of the service. It is used for logging purposes
-only.
+This method returns the name of the service. By default, it will the struct name of the Service but can be
+overridden with the `Name` field of the `ServiceOptions`.
+
+It is used for logging purposes only.
 
 ### ServiceStartup
 
@@ -101,7 +121,7 @@ your service to act as an HTTP handler. The route of the handler is defined in
 the service options:
 
 ```go
-application.NewService(fileserver.New(&fileserver.Config{
+application.NewServiceWithOptions(fileserver.New(&fileserver.Config{
     RootPath: rootPath,
 }), application.ServiceOptions{
     Route: "/files",
@@ -144,7 +164,7 @@ We can now use this service in our application:
 ```go
 app := application.New(application.Options{
     Services: []application.Service{
-        application.NewService(fileserver.New(&fileserver.Config{
+        application.NewServiceWithOptions(fileserver.New(&fileserver.Config{
             RootPath: rootPath,
         }), application.ServiceOptions{
             Route: "/files",

@@ -77,7 +77,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	if spinner != nil {
 		spinner.Info(resultMessage)
 	} else {
-		term.Infofln(resultMessage)
+		term.Infofln("%s", resultMessage)
 	}
 
 	// Report output directory.
