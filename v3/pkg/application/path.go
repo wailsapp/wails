@@ -2,11 +2,11 @@ package application
 
 import "github.com/adrg/xdg"
 
-type Path int
+type PathType int
 
 const (
 	// PathHome is the user's home directory.
-	PathHome Path = iota
+	PathHome PathType = iota
 
 	// PathDataHome defines the base directory relative to which user-specific
 	// data files should be stored. This directory is defined by the
@@ -68,7 +68,7 @@ const (
 	PathPublicShare
 )
 
-var paths = map[Path]string{
+var paths = map[PathType]string{
 	PathHome:        xdg.Home,
 	PathDataHome:    xdg.DataHome,
 	PathConfigHome:  xdg.ConfigHome,
@@ -85,7 +85,7 @@ var paths = map[Path]string{
 	PathPublicShare: xdg.UserDirs.PublicShare,
 }
 
-type Paths int
+type PathTypes int
 
 const (
 	// PathsDataDirs defines the preference-ordered set of base directories to
@@ -96,7 +96,7 @@ const (
 	// DataHome directory is considered more important than any of the
 	// directories defined by DataDirs. Therefore, user data files should be
 	// written relative to the DataHome directory, if possible.
-	PathsDataDirs = iota
+	PathsDataDirs PathTypes = iota
 
 	// PathsConfigDirs defines the preference-ordered set of base directories
 	// search for configuration files in addition to the ConfigHome base
@@ -115,9 +115,19 @@ const (
 	PathsApplicationDirs
 )
 
-var pathdirs = map[Paths][]string{
+var pathdirs = map[PathTypes][]string{
 	PathsDataDirs:        xdg.DataDirs,
 	PathsConfigDirs:      xdg.ConfigDirs,
 	PathsFontDirs:        xdg.FontDirs,
 	PathsApplicationDirs: xdg.ApplicationDirs,
+}
+
+// Path returns the path for the given selector
+func Path(selector PathType) string {
+	return paths[selector]
+}
+
+// Paths returns the paths for the given selector
+func Paths(selector PathTypes) []string {
+	return pathdirs[selector]
 }
