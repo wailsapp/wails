@@ -2,7 +2,11 @@
 
 package cfd
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"reflect"
+)
 
 type FileFilter struct {
 	// The display name of the filter (That is shown to the user)
@@ -10,6 +14,9 @@ type FileFilter struct {
 	// The filter pattern. Eg. "*.txt;*.png" to select all txt and png files, "*.*" to select any files, etc.
 	Pattern string
 }
+
+// Never obfuscate the FileFilter type.
+var _ = reflect.TypeOf(FileFilter{})
 
 type DialogConfig struct {
 	// The title of the dialog
@@ -69,6 +76,10 @@ func (config *DialogConfig) apply(dialog Dialog) (err error) {
 	}
 
 	if config.Folder != "" {
+		_, err = os.Stat(config.Folder)
+		if err != nil {
+			return
+		}
 		err = dialog.SetFolder(config.Folder)
 		if err != nil {
 			return
@@ -76,6 +87,10 @@ func (config *DialogConfig) apply(dialog Dialog) (err error) {
 	}
 
 	if config.DefaultFolder != "" {
+		_, err = os.Stat(config.DefaultFolder)
+		if err != nil {
+			return
+		}
 		err = dialog.SetDefaultFolder(config.DefaultFolder)
 		if err != nil {
 			return
