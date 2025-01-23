@@ -20,6 +20,7 @@ type Service9 struct{}
 type Service10 struct{}
 type Service11 struct{}
 type Service12 struct{}
+type Service13 struct{}
 
 func main() {
 	factory := NewFactory[Service1, Service2]()
@@ -36,6 +37,7 @@ func main() {
 				ServiceInitialiser[Service6]()(&Service6{}),
 				other.CustomNewService(Service7{}),
 				other.ServiceInitialiser[Service8]()(&Service8{}),
+				application.NewServiceWithOptions(&Service13{}, application.ServiceOptions{Name: "custom name"}),
 				other.LocalService,
 			},
 			CustomNewServices[Service9, Service10]()...),

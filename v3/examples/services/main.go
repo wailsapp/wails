@@ -43,7 +43,7 @@ func main() {
 				AutoSave: true,
 			})),
 			application.NewService(log.New()),
-			application.NewService(fileserver.New(&fileserver.Config{
+			application.NewServiceWithOptions(fileserver.New(&fileserver.Config{
 				RootPath: rootPath,
 			}), application.ServiceOptions{
 				Route: "/files",
