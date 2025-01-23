@@ -69,6 +69,11 @@ func (m *Menu) Update() {
 	m.impl.update()
 }
 
+// Remove all menu items
+func (m *Menu) Clear() {
+	m.items = nil
+}
+
 func (m *Menu) AddSubmenu(s string) *Menu {
 	result := NewSubMenuItem(s)
 	m.items = append(m.items, result)
@@ -186,8 +191,14 @@ func (m *Menu) Clone() *Menu {
 	return result
 }
 
+// Insert menu after an existing menu
 func (m *Menu) Append(in *Menu) {
 	m.items = append(m.items, in.items...)
+}
+
+// Insert menu before an existing menu
+func (m *Menu) Prepend(in *Menu) {
+	m.items = append(in.items, m.items...)
 }
 
 func (a *App) NewMenu() *Menu {
