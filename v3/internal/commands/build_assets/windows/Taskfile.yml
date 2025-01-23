@@ -10,7 +10,10 @@ tasks:
       - task: common:go:mod:tidy
       - task: common:build:frontend
         vars:
-          PRODUCTION: '{{.PRODUCTION}}'
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+          PRODUCTION:
+            ref: .PRODUCTION
       - task: common:generate:icons
     cmds:
       - task: generate:syso

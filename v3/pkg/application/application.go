@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -419,13 +418,11 @@ func (a *App) ResetEvents() {
 
 func (a *App) handleFatalError(err error) {
 	var buffer strings.Builder
-	buffer.WriteString("*********************** FATAL ***********************")
-	buffer.WriteString("There has been a catastrophic failure in your application.")
-	buffer.WriteString("Please report this error at https://github.com/wailsapp/wails/issues")
-	buffer.WriteString("******************** Error Details ******************")
-	buffer.WriteString(fmt.Sprintf("Message: " + err.Error()))
-	buffer.WriteString(fmt.Sprintf("Stack: " + string(debug.Stack())))
-	buffer.WriteString("*********************** FATAL ***********************")
+	buffer.WriteString("\n\n************************ FATAL ******************************\n")
+	buffer.WriteString("* There has been a catastrophic failure in your application *\n")
+	buffer.WriteString("********************* Error Details *************************\n")
+	buffer.WriteString(err.Error())
+	buffer.WriteString("*************************************************************\n")
 	a.handleError(fmt.Errorf(buffer.String()))
 	os.Exit(1)
 }

@@ -103,5 +103,5 @@ func processPanic(panicDetails *PanicDetails) {
 
 func defaultPanicHandler(panicDetails *PanicDetails) {
 	errorMessage := fmt.Sprintf("panic error: %s\n%s", panicDetails.Error.Error(), panicDetails.StackTrace)
-	globalApplication.error(errorMessage)
+	globalApplication.fatal(errorMessage)
 }
