@@ -12,7 +12,54 @@
 - `Security(安全)` 对安全性的改进。
 
 ## [即将发布]
+### 变更
+- Removed documentation references for 'The default module name in go.mod is "changeme". You should change this to something more appropriate.' as it appears to be no longer relevant.
+- Update script in Mac App Store guide to support app names containing spaces by @cristianrgreco
 
+### 新增
+- Added option to set window class name on Windows. Added in [PR](https://github.com/wailsapp/wails/pull/3828) by @APshenkin
+
+### 修复
+- Fixed dev mode logging bug by @attperac in [#3972](https://wailsapp/wails/pull/3972)
+- Fixed `reloaddirs` wails.json config options by @atterpac in [#4005](https//github.com/wailsapp/wails/pull/4005)
+- Fixed cross compilation failed with CGO [PR](https://github.com/wailsapp/wails/pull/3795) by [@fcying](https://github.com/fcying)
+- Using go-webview2 v0.1.17 to fix native webview2loader issue, by @leaanthony
+- Fixed example for macOS menu by @takuyahara in [PR](https://github.com/wailsapp/wails/pull/3847)
+- Fixed typo by @takuyahara in [PR](https://github.com/wailsapp/wails/pull/3846)
+- Fixed incorrect TS definition of `WindowSetSize` by @leaanthony
+- Ensure showHiddenFiles works with directory dialog by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3904)
+- chore: fix some comments in [PR](https://github.com/wailsapp/wails/pull/3932) by @lvyaoting
+- [windows] Fixed frameless window flickering when minimizing/restoring by preventing unnecessary redraws [#3951](https://github.com/wailsapp/wails/issues/3951)
+- Fixed failed models.ts build due to non-json-encodable Go types [PR](https://github.com/wailsapp/wails/pull/3975) by [@pbnjay](https://github.com/pbnjay)
+- Fixed more binding and typescript export bugs [PR](https://github.com/wailsapp/wails/pull/3978) by [@pbnjay](https://github.com/pbnjay)
+- Fixed Dispatcher.ProcessMessage crash process instead of return error [PR](https://github.com/wailsapp/wails/pull/4016) [#4015](https://github.com/wailsapp/wails/issues/4015) by [@ronaldinho_x86](https://github.com/RonaldinhoL)
+- Fixed Windows SaveDialog crash by [@leaanthony](https://github.com/leaanthony)
+
+### 变更
+- Allow to specify macos-min-version externally. Implemented by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3756)
+
+## v2.9.2 - 2024-09-18
+
+### 修复
+- Fixed CGO memory issue on Darwin by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3590)
+- Fixed an error that occurred when an author name contains a string that is not suitable for JSON. Fixed by @taiseiotsuka in [PR](https://github.com/wailsapp/wails/pull/3638)
+- Fixed MacOS build to use `outputfilename` from wails.json. [#3200](https://github.com/wailsapp/wails/issues/3200)
+- Fixed file drop events on windows. Fixed in [PR](https://github.com/wailsapp/wails/pull/3595) by @FrancescoLuzzi
+- Fixed doctor command not finding pkg-config on Solus. [PR #3670](https://github.com/wailsapp/wails/pull/3670) by [@ianmjones](https://github.com/ianmjones)
+- Fixed binding for struct fields that were exported but had no json tags. [PR #3678](https://github.com/wailsapp/wails/pull/3678)
+- Fixed file drop events on Windows in [PR](https://github.com/wailsapp/wails/pull/3595) by @FrancescoLuzzi
+- Modified `ZoomFactor` and `IsZoomControlEnabled` options to be Windows-only options in PR[#3644](https://github.com/wailsapp/wails/pull/3644) by @levinit
+- Added nil check for Drag-n-Drop on Windows. Fixed by in [PR](https://github.com/wailsapp/wails/pull/3597) by @leaanthony based on the suggestion by @Alpa-1 in [#3596](https://github.com/wailsapp/wails/issues/3596).
+- Fixed typos in various .mdx files. [PR #3628](https://github.com/wailsapp/wails/pull/3628) by [@deining](https://github.com/deining)
+- Fixed `notifyListeners()` race condition when terminated mid-emission [PR](https://github.com/wailsapp/wails/pull/3695) by [@mrf345](https://github.com/mrf345)
+- Fixed dialogs in Windows when using Go 1.23 in [PR](https://github.com/wailsapp/wails/pull/3707) by [@leaanthony](https://github.com/leaanthony)
+- More syscall fixes for Go 1.23 support in [PR](https://github.com/wailsapp/wails/pull/3713) by [@leaanthony](https://github.com/leaanthony)
+- Fixed drag and drop missing cursor icon [PR](https://github.com/wailsapp/wails/pull/3703) by [@mrf345](https://github.com/mrf345)
+- Fixed a build error on macOS that occurred when the `outputfilename` and `name` fields in wails.json were different. Fixed in [PR](https://github.com/wailsapp/wails/pull/3789) by [@nickisworking](https://github.com/nickisworking)
+
+### 变更
+- Modified docs to reflect the correct password syntax for the `gon-sign.json` file [PR](https://github.com/wailsapp/wails/pull/3620) by [@ignasbernotas](github.com/ignasbernotas)
+- Updated installation docs for latest linux os version and libwebkit issue [PR](https://github.com/wailsapp/wails/pull/3806) by [@pratikmota](https://github.com/pratikmota)
 ## v2.9.1 - 2024-06-18
 
 ### 修复
