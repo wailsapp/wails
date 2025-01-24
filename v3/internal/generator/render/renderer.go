@@ -92,7 +92,7 @@ func (renderer *Renderer) Typedefs(w io.Writer, imports *collect.ImportMap, mode
 
 		models = slices.Clone(models)
 		for i, j := 0, 0; i < len(models); i++ {
-			if models[i].Type != nil && collect.IsClass(models[i].Type) {
+			if models[i].Type != nil && models[i].Predicates.IsClass {
 				// models[i] is a class alias:
 				// models[i].Type is guaranteed to be
 				// either an alias or a named type

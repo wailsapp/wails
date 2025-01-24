@@ -67,6 +67,28 @@ func termlist(typ types.Type) iter.Seq[*typeparams.Term] {
 	}
 }
 
+// instantiate instantiates typ if it is un uninstantiated generic type
+// using its own type parameters as arguments
+// in order to preserve genericity.
+//
+// If typ is not generic or already instantiated, it is returned as is.
+// If typ is not an alias, then the returned type is not an alias either.
+func instantiate(typ types.Type) types.Type {
+	if t, ok := typ.(interface {
+		TypeParams() *types.TypeParamList
+		TypeArgs() *types.TypeList
+	}); ok && t.TypeParams() != nil && t.TypeArgs() == nil {
+		args := make([]types.Type, t.TypeParams().Len())
+		for i := range args {
+			args[i] = t.TypeParams().At(i)
+		}
+
+		typ, _ = types.Instantiate(nil, typ, args, false)
+	}
+
+	return typ
+}
+
 // isMarshaler checks whether the given type
 // implements one of the two marshaler interfaces,
 // and whether it implements it explicitly,
@@ -78,34 +100,18 @@ func termlist(typ types.Type) iter.Seq[*typeparams.Term] {
 // The behaviour of isMarshaler is unspecified
 // if marshaler is not one of [json.Marshaler] or [encoding.TextMarshaler].
 func isMarshaler(typ types.Type, marshaler *types.Interface, addressable bool, visited map[*types.TypeName]MarshalerKind) MarshalerKind {
-	// Follow alias chain.
-	typ = types.Unalias(typ)
-
-	if t, ok := typ.(interface {
-		TypeParams() *types.TypeParamList
-		TypeArgs() *types.TypeList
-	}); ok && t.TypeParams() != nil && t.TypeArgs() == nil {
-		// types.Implements does not handle generics,
-		// hence when typ is generic it must be instantiated.
-		// In order to preserve genericity,
-		// the type's own type parameters are used as type arguments.
-		//
-		// Instantiation operations may incur a huge performance penalty and are usually cached,
-		// but doing so here would entail some complex global state and a potential memory leak.
-		// Because typ should be generic only during model collection,
-		// it should be enough to cache the result of marshaler queries for models.
-
-		args := make([]types.Type, t.TypeParams().Len())
-		for i := range args {
-			args[i] = t.TypeParams().At(i)
-		}
-		typ, _ = types.Instantiate(nil, typ, args, false)
-	}
+	// Follow alias chain and instantiate if necessary.
+	//
+	// types.Implements does not handle generics,
+	// hence when typ is generic it must be instantiated.
+	//
+	// Instantiation operations may incur a large performance penalty and are usually cached,
+	// but doing so here would entail some complex global state and a potential memory leak.
+	// Because typ should be generic only during model collection,
+	// it should be enough to cache the result of marshaler queries for models.
+	typ = instantiate(types.Unalias(typ))
 
 	// Invariant: at this point, typ is not an alias.
-	//
-	// Note that having unaliased typ upon entering [isMarshaler],
-	// [types.Instantiate] will not return an alias again.
 
 	if typ == types.Typ[types.Invalid] {
 		// Do not pass invalid types to [types.Implements].

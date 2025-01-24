@@ -39,6 +39,13 @@ type (
 		// TypeParams records type parameter names for generic models.
 		TypeParams []string
 
+		// Predicates caches the value of all type predicates for this model.
+		//
+		// WARN: whenever working with a generic uninstantiated model type,
+		// use these instead of invoking predicate functions,
+		// which may incur a large performance penalty.
+		Predicates Predicates
+
 		collector *Collector
 		once      sync.Once
 	}
@@ -48,6 +55,17 @@ type (
 	ModelFieldInfo struct {
 		*StructField
 		*FieldInfo
+	}
+
+	// Predicates caches the value of all type predicates.
+	Predicates struct {
+		IsJSONMarshaler    MarshalerKind
+		MaybeJSONMarshaler MarshalerKind
+		IsTextMarshaler    MarshalerKind
+		MaybeTextMarshaler MarshalerKind
+		IsStringAlias      bool
+		IsClass            bool
+		IsAny              bool
 	}
 )
 
@@ -113,15 +131,9 @@ func (info *ModelInfo) Collect() *ModelInfo {
 		// Setup fallback type.
 		info.Type = types.Universe.Lookup("any").Type()
 
-		// Retrieve type denotation and skip alias chains.
-		def := info.TypeInfo.Def
-
-		// Check marshalers and detect enums.
-		var constants []*types.Const
-
+		// Record type parameter names.
 		var isGeneric bool
-		if generic, ok := obj.Type().(interface{ TypeParams() *types.TypeParamList }); ok {
-			// Record type parameter names.
+		if generic, ok := typ.(interface{ TypeParams() *types.TypeParamList }); ok {
 			tparams := generic.TypeParams()
 			isGeneric = tparams != nil
 
@@ -133,38 +145,86 @@ func (info *ModelInfo) Collect() *ModelInfo {
 			}
 		}
 
-		if _, isNamed := obj.Type().(*types.Named); isNamed {
-			// Model is a named type.
-			// Check whether it implements marshaler interfaces
-			// or has defined constants.
+		// Precompute predicates.
+		// Preinstantiate typ to avoid repeated instantiations in predicate code.
+		ityp := instantiate(typ)
+		info.Predicates = Predicates{
+			IsJSONMarshaler:    IsJSONMarshaler(ityp),
+			MaybeJSONMarshaler: MaybeJSONMarshaler(ityp),
+			IsTextMarshaler:    IsTextMarshaler(ityp),
+			MaybeTextMarshaler: MaybeTextMarshaler(ityp),
+			IsStringAlias:      IsStringAlias(ityp),
+			IsClass:            IsClass(ityp),
+			IsAny:              IsAny(ityp),
+		}
 
-			if IsAny(typ) {
+		var def types.Type
+		var constants []*types.Const
+
+		switch t := typ.(type) {
+		case *types.Alias:
+			// Model is an alias: take rhs as definition.
+			// It is important not to skip alias chains with [types.Unalias]
+			// because in doing so we could end up with a private type from another package.
+			def = t.Rhs()
+
+		case *types.Named:
+			// Model is a named type:
+			// jump directly to underlying type to match go semantics,
+			// i.e. do not render named types as aliases for other named types.
+			def = typ.Underlying()
+
+			// Check whether it implements marshaler interfaces or has defined constants.
+			if info.Predicates.MaybeJSONMarshaler != NonMarshaler {
 				// Type marshals to a custom value of unknown shape.
-				return
-			} else if MaybeTextMarshaler(typ) {
+				// If it has explicit custom marshaling logic, render it as any;
+				// otherwise, delegate to the underlying type that must be the actual [json.Marshaler].
+				if info.Predicates.MaybeJSONMarshaler == ExplicitMarshaler {
+					return
+				}
+			} else if info.Predicates.MaybeTextMarshaler != NonMarshaler {
 				// Type marshals to a custom string of unknown shape.
-				info.Type = types.Typ[types.String]
-				return
-			} else if isGeneric && !collector.options.UseInterfaces && IsClass(typ) {
-				// Generic classes cannot be defined in terms of other generic classes.
-				// That would break class creation code,
-				// and I (@fbbdev) couldn't find any other satisfying workaround.
-				def = typ.Underlying()
-			}
-
-			// Test for enums (excluding generic types).
-			basic, ok := typ.Underlying().(*types.Basic)
-			if ok && !isGeneric && basic.Info()&types.IsConstType != 0 && basic.Info()&types.IsComplex == 0 {
-				// Named type is defined as a representable constant type:
-				// look for defined constants of that named type.
-				for _, name := range obj.Pkg().Scope().Names() {
-					if cnst, ok := obj.Pkg().Scope().Lookup(name).(*types.Const); ok {
-						if cnst.Val().Kind() != constant.Unknown && types.Identical(cnst.Type(), typ) {
-							constants = append(constants, cnst)
+				// If it has explicit custom marshaling logic, render it as string;
+				// otherwise, delegate to the underlying type that must be the actual [encoding.TextMarshaler].
+				//
+				// One exception must be made for situations
+				// where the underlying type is a [json.Marshaler] but the model is not:
+				// in that case, we cannot delegate to the underlying type either.
+				// Note that in such a case the underlying type is never a pointer or interface,
+				// because those cannot have explicitly defined methods,
+				// hence it would not possible for the model not to be a [json.Marshaler]
+				// while the underlying type is.
+				if info.Predicates.MaybeTextMarshaler == ExplicitMarshaler || MaybeJSONMarshaler(def) != NonMarshaler {
+					info.Type = types.Typ[types.String]
+					return
+				}
+			} else if basic, ok := def.(*types.Basic); ok {
+				// Test for enums (excluding marshalers and generic types).
+				if !isGeneric && basic.Info()&types.IsConstType != 0 && basic.Info()&types.IsComplex == 0 {
+					// Named type is defined as a representable constant type:
+					// look for defined constants of that named type.
+					for _, name := range obj.Pkg().Scope().Names() {
+						if cnst, ok := obj.Pkg().Scope().Lookup(name).(*types.Const); ok {
+							if cnst.Val().Kind() != constant.Unknown && types.Identical(cnst.Type(), typ) {
+								constants = append(constants, cnst)
+							}
 						}
 					}
 				}
 			}
+
+		default:
+			panic("model has unknown object kind (neither alias nor named type)")
+		}
+
+		// Handle struct types.
+		strct, isStruct := def.(*types.Struct)
+		if isStruct {
+			// Def is struct and model is not a marshaler:
+			// collect information about struct fields.
+			info.collectStruct(strct)
+			info.Type = nil
+			return
 		}
 
 		// Record required imports.
@@ -176,15 +236,6 @@ func (info *ModelInfo) Collect() *ModelInfo {
 			// Collect information about enum values.
 			info.collectEnum(constants)
 			info.Type = def
-			return
-		}
-
-		// Handle struct types.
-		strct, isStruct := def.(*types.Struct)
-		if isStruct {
-			// Collect information about struct fields.
-			info.collectStruct(strct)
-			info.Type = nil
 			return
 		}
 
@@ -265,6 +316,9 @@ func (info *ModelInfo) collectStruct(strct *types.Struct) {
 
 	// Collect fields.
 	for i, field := range structInfo.Fields {
+		// Record required imports.
+		info.Imports.AddType(field.Type)
+
 		fields[i] = &ModelFieldInfo{
 			StructField: field,
 			FieldInfo:   collector.Field(field.Object).Collect(),

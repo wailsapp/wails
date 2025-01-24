@@ -14,7 +14,7 @@
 {{- if not $model.Object.Exported}}{{break}}{{end}}
 
 {{- $isEnum := $model.Values}}
-{{- $isClassAlias := and $model.Type (not $useInterfaces) (isclass $model.Type)}}
+{{- $isClassAlias := and $model.Type (not $useInterfaces) $model.Predicates.IsClass}}
 {{- $isClass := and (not $model.Type) (not $model.Values) (not $useInterfaces) (not $model.Alias)}}
 
 {{- if or $isEnum $isClassAlias $isClass}}
@@ -44,7 +44,7 @@ import * as $models from "./{{js $internal}}";
 {{- if not $model.Object.Exported}}{{break}}{{end}}
 
 {{- $isEnum := $model.Values}}
-{{- $isClassAlias := and $model.Type (not $useInterfaces) (isclass $model.Type)}}
+{{- $isClassAlias := and $model.Type (not $useInterfaces) $model.Predicates.IsClass}}
 {{- $isClass := and (not $model.Type) (not $model.Values) (not $useInterfaces) (not $model.Alias)}}
 {{- if or $isEnum $isClassAlias $isClass}}{{continue}}{{end}}
 

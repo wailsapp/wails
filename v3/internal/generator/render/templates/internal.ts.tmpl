@@ -19,8 +19,8 @@ import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{- range $model := .Models}}
 
 {{- $isEnum := $model.Values}}
-{{- $isClassAlias := and $model.Type (not $useInterfaces) (isclass $model.Type)}}
-{{- $isTypeAlias := and $model.Type (or $useInterfaces (not (isclass $model.Type)))}}
+{{- $isClassAlias := and $model.Type (not $useInterfaces) $model.Predicates.IsClass}}
+{{- $isTypeAlias := and $model.Type (or $useInterfaces (not $model.Predicates.IsClass))}}
 {{- $isClassOrInterface := and (not $model.Type) (not $model.Values)}}
 {{- $isInterface := or $useInterfaces $model.Alias}}
 

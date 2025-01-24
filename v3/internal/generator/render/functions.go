@@ -15,7 +15,6 @@ import (
 var tmplFunctions = template.FuncMap{
 	"fixext":     fixext,
 	"hasdoc":     hasdoc,
-	"isclass":    collect.IsClass,
 	"isjsdocid":  isjsdocid,
 	"isjsdocobj": isjsdocobj,
 	"jsdoc":      jsdoc,
