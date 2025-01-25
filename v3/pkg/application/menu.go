@@ -69,8 +69,15 @@ func (m *Menu) Update() {
 	m.impl.update()
 }
 
-// Remove all menu items
+// Clear all menu items
 func (m *Menu) Clear() {
+	m.items = nil
+}
+
+func (m *Menu) Destroy() {
+	for _, item := range m.items {
+		item.Destroy()
+	}
 	m.items = nil
 }
 
