@@ -33,6 +33,12 @@ func getMenuItemByID(id uint) *MenuItem {
 	return menuItemMap[id]
 }
 
+func removeMenuItemByID(id uint) {
+	menuItemMapLock.Lock()
+	defer menuItemMapLock.Unlock()
+	delete(menuItemMap, id)
+}
+
 type menuItemImpl interface {
 	setTooltip(s string)
 	setLabel(s string)
@@ -428,6 +434,9 @@ func (m *MenuItem) Clone() *MenuItem {
 }
 
 func (m *MenuItem) Destroy() {
+
+	removeMenuItemByID(m.id)
+
 	// Clean up resources
 	if m.impl != nil {
 		m.impl.destroy()
