@@ -344,21 +344,6 @@ func (w *linuxWebviewWindow) run() {
 			}
 		})
 	})
-	w.parent.OnWindowEvent(events.Linux.WindowFocusIn, func(e *WindowEvent) {
-		w.parent.emit(events.Common.WindowFocus)
-	})
-	w.parent.OnWindowEvent(events.Linux.WindowFocusOut, func(e *WindowEvent) {
-		w.parent.emit(events.Common.WindowLostFocus)
-	})
-	w.parent.OnWindowEvent(events.Linux.WindowDeleteEvent, func(e *WindowEvent) {
-		w.parent.emit(events.Common.WindowClosing)
-	})
-	w.parent.OnWindowEvent(events.Linux.WindowDidMove, func(e *WindowEvent) {
-		w.parent.emit(events.Common.WindowDidMove)
-	})
-	w.parent.OnWindowEvent(events.Linux.WindowDidResize, func(e *WindowEvent) {
-		w.parent.emit(events.Common.WindowDidResize)
-	})
 
 	w.parent.RegisterHook(events.Linux.WindowLoadChanged, func(e *WindowEvent) {
 		w.execJS(runtime.Core())

@@ -697,7 +697,7 @@ func (a *App) handleApplicationEvent(event *ApplicationEvent) {
 	if ok {
 		for _, thisHook := range hooks {
 			thisHook.callback(event)
-			if event.Cancelled {
+			if event.IsCancelled() {
 				return
 			}
 		}
@@ -705,6 +705,9 @@ func (a *App) handleApplicationEvent(event *ApplicationEvent) {
 
 	for _, listener := range listeners {
 		go func() {
+			if event.IsCancelled() {
+				return
+			}
 			defer handlePanic()
 			listener.callback(event)
 		}()
@@ -925,10 +928,16 @@ func (a *App) dispatchEventToListeners(event *CustomEvent) {
 	listeners := a.wailsEventListeners
 
 	for _, window := range a.windows {
+		if event.IsCancelled() {
+			return
+		}
 		window.DispatchWailsEvent(event)
 	}
 
 	for _, listener := range listeners {
+		if event.IsCancelled() {
+			return
+		}
 		listener.DispatchWailsEvent(event)
 	}
 }

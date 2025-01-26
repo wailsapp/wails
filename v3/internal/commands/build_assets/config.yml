@@ -44,7 +44,7 @@ dev_mode:
       type: primary
 
 # File Associations
-# More information at: https://v3alpha.wails.io/noit/done/yet
+# More information at: https://v3.wails.io/noit/done/yet
 fileAssociations:
 #  - ext: wails
 #    name: Wails

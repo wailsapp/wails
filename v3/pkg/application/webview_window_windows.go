@@ -1292,7 +1292,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				int(newWindowRect.Bottom-newWindowRect.Top),
 				w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
 		}
-		w.parent.emit(events.Common.WindowDPIChanged)
+		w.parent.emit(events.Windows.WindowDPIChanged)
 	}
 
 	if w.parent.options.Windows.WindowMask != nil {

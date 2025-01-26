@@ -9,7 +9,7 @@ The electron alternative for Go
 */
 
 /* jshint esversion: 9 */
-import { nanoid } from 'nanoid/non-secure';
+import { nanoid } from './nanoid.js';
 
 const runtimeURL = window.location.origin + "/wails/runtime";
 

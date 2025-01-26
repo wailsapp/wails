@@ -1,0 +1,225 @@
+---
+title: Application Menu
+sidebar:
+  order: 53
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Application menus provide the main menu bar interface for your application. They appear at the top of the window on Windows and Linux, and at the top of the screen on macOS.
+
+## Creating an Application Menu
+
+Create a new application menu using the `NewMenu` method:
+
+```go
+menu := app.NewMenu()
+```
+
+## Menu Roles
+
+Wails provides predefined menu roles that automatically create platform-appropriate menu structures:
+
+```go
+// Add standard application menu on macOS
+if runtime.GOOS == "darwin" {
+    menu.AddRole(application.AppMenu)
+}
+
+// Add standard menus
+menu.AddRole(application.FileMenu)
+menu.AddRole(application.EditMenu)
+menu.AddRole(application.WindowMenu)
+menu.AddRole(application.HelpMenu)
+```
+
+:::note[Platform Behaviour]
+The AppMenu role is specific to macOS and provides the standard application menu containing About, Preferences, and Quit items.
+:::
+
+### Available Roles
+
+| Role | Description | Platform Notes |
+|------|-------------|----------------|
+| `AppMenu` | Standard application menu | macOS only |
+| `FileMenu` | File operations menu | All platforms |
+| `EditMenu` | Text editing operations | All platforms |
+| `WindowMenu` | Window management | All platforms |
+| `HelpMenu` | Help and information | All platforms |
+
+## Custom Menus
+
+Create custom menus by adding items directly:
+
+```go
+// Add a custom menu
+customMenu := menu.AddSubmenu("Tools")
+customMenu.Add("Settings").OnClick(func(ctx *application.Context) {
+    // Show settings dialogue
+})
+```
+
+:::tip[Menu Items]
+For detailed information about available menu item types and properties, refer to the [Menu Reference](./menu-reference) documentation.
+:::
+
+## Window Control
+
+Menu items can control the application windows:
+
+```go
+viewMenu := menu.AddSubmenu("View")
+viewMenu.Add("Toggle Fullscreen").OnClick(func(ctx *application.Context) {
+    window := app.CurrentWindow()
+    if window.Fullscreen() {
+        window.SetFullscreen(false)
+    } else {
+        window.SetFullscreen(true)
+    }
+})
+```
+
+## Dynamic Menus
+
+Menus can be updated dynamically based on application state:
+
+```go
+projectMenu := menu.AddSubmenu("Project")
+saveItem := projectMenu.Add("Save Project")
+
+// Update based on state
+saveItem.OnClick(func(ctx *application.Context) {
+    if projectSaved {
+        saveItem.SetEnabled(false)
+        saveItem.SetLabel("Project Saved")
+    }
+    menu.Update()
+})
+```
+
+## Platform-Specific Considerations
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    On macOS, menus are deeply integrated with the system:
+    
+    - Menus appear in the system menu bar at the top of the screen
+    - The application menu (⌘) is required and should be added using `menu.AddRole(application.AppMenu)`
+    - Standard keyboard shortcuts are automatically handled
+    - Menu styling follows system appearance
+    - The "About" menu item appears in the application menu
+    - Preferences are typically placed in the application menu
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    On Windows, menus follow the traditional Windows UI guidelines:
+    
+    - Menus appear in the application window's title bar
+    - Standard keyboard shortcuts should be explicitly set using `SetAccelerator`
+    - Menu styling matches the Windows theme
+    - The "About" menu item typically appears in the Help menu
+    - Settings/Preferences are typically placed in the Tools menu
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    On Linux, menu behaviour depends on the desktop environment:
+    
+    - Menu appearance adapts to the desktop environment's theme
+    - Some desktop environments (like Unity) support global menu bars
+    - Menu placement follows the desktop environment's conventions
+    - Keyboard shortcuts should be explicitly set
+    - Settings are typically placed in the Edit menu
+    
+  </TabItem>
+</Tabs>
+
+## Best Practices
+
+1. Use standard menu roles where appropriate
+2. Follow platform-specific menu conventions
+3. Provide keyboard shortcuts for common actions
+4. Keep menu structures shallow and organised
+5. Update menu items to reflect application state
+6. Use clear, concise menu labels
+7. Group related items logically
+
+:::danger[Warning]
+Always test menu functionality across all target platforms to ensure consistent behaviour and appearance.
+:::
+
+:::tip[Pro Tip]
+Consider using the `application.CurrentWindow()` method in menu handlers to affect the active window, rather than storing window references.
+:::
+
+## Complete Example
+
+Here's a comprehensive example demonstrating various menu features:
+
+```go
+package main
+
+import (
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Menu Demo",
+    })
+
+    // Create main menu
+    menu := app.NewMenu()
+
+    // Add platform-specific application menu
+    if runtime.GOOS == "darwin" {
+        menu.AddRole(application.AppMenu)
+    }
+
+    // Add standard menus
+    fileMenu := menu.AddRole(application.FileMenu)
+    menu.AddRole(application.EditMenu)
+    menu.AddRole(application.WindowMenu)
+    menu.AddRole(application.HelpMenu)
+
+    // Add custom menu
+    toolsMenu := menu.AddSubmenu("Tools")
+    
+    // Add checkbox item
+    toolsMenu.AddCheckbox("Dark Mode", false).OnClick(func(ctx *application.Context) {
+        isDark := ctx.ClickedMenuItem().Checked()
+        // Toggle theme
+    })
+
+    // Add radio group
+    toolsMenu.AddRadio("Small Text", true).OnClick(handleFontSize)
+    toolsMenu.AddRadio("Medium Text", false).OnClick(handleFontSize)
+    toolsMenu.AddRadio("Large Text", false).OnClick(handleFontSize)
+
+    // Add submenu
+    advancedMenu := toolsMenu.AddSubmenu("Advanced")
+    advancedMenu.Add("Configure...").OnClick(func(ctx *application.Context) {
+        // Show configuration
+    })
+
+    // Set the menu
+    app.SetMenu(menu)
+
+    // Create main window
+    app.NewWebviewWindow()
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func handleFontSize(ctx *application.Context) {
+    size := ctx.ClickedMenuItem().Label()
+    // Update font size
+}

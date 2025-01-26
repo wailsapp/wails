@@ -1,0 +1,221 @@
+---
+title: Context Menus
+sidebar:
+  order: 51
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Context menus are popup menus that appear when right-clicking elements in your application. They provide quick access to relevant actions for the clicked element.
+
+## Creating a Context Menu
+
+To create a context menu, utilise the `NewContextMenu` method from your application instance:
+
+```go
+contextMenu := application.NewContextMenu("menu-id")
+```
+
+The `menu-id` parameter is a unique identifier for the menu that will be used to associate it with HTML elements.
+
+## Adding Menu Items
+
+You can add items to your context menu using the same methods as application menus. Here's a simple example:
+
+```go
+contextMenu := application.NewContextMenu("editor-menu")
+contextMenu.Add("Cut").OnClick(func(ctx *application.Context) {
+    // Handle cut action
+})
+contextMenu.Add("Copy").OnClick(func(ctx *application.Context) {
+    // Handle copy action
+})
+contextMenu.Add("Paste").OnClick(func(ctx *application.Context) {
+    // Handle paste action
+})
+```
+
+:::tip[Menu Items]
+For detailed information about available menu item types and properties, refer to the [Menu Reference](./menu-reference) documentation.
+:::
+
+## Context Data
+
+Context menus can receive data from the HTML element that triggered them. This data can be accessed in the click handlers:
+
+```go
+contextMenu := application.NewContextMenu("image-menu")
+menuItem := contextMenu.Add("Process Image")
+menuItem.OnClick(func(ctx *application.Context) {
+    imageID := ctx.ContextMenuData()
+    // Process the image using the ID
+})
+```
+
+## Associating with HTML Elements
+
+To associate a context menu with an HTML element, use the `--custom-contextmenu` and `--custom-contextmenu-data` CSS properties:
+
+```html
+<div style="--custom-contextmenu: menu-id; --custom-contextmenu-data: some-data">
+    Right click me!
+</div>
+```
+
+- `--custom-contextmenu`: Specifies the menu ID (must match the ID used in `NewContextMenu`)
+- `--custom-contextmenu-data`: Optional data that will be passed to the click handlers
+
+## Default Context Menu
+
+The default context menu is the webview's built-in context menu that provides system-level operations. You can control its visibility using the `--default-contextmenu` CSS property:
+
+```html
+<!-- Hide the default context menu -->
+<div style="--default-contextmenu: hide">
+    No default menu here
+</div>
+
+<!-- Show the default context menu -->
+<div style="--default-contextmenu: show">
+    Default menu always shown
+</div>
+
+<!-- Smart context menu (default behaviour) -->
+<div style="--default-contextmenu: auto">
+    Shows menu when appropriate
+</div>
+```
+
+:::note[Smart Context Menu]
+The `auto` setting enables "smart" context menu behaviour:
+- Shows when text is selected
+- Shows in text input fields
+- Shows in editable content
+- Hides in other contexts
+:::
+
+## Updating Menu Items
+
+Menu items can be updated dynamically using the `SetLabel` method and other property setters. After making changes, call `Update` on the menu to apply them:
+
+```go
+contextMenu := application.NewContextMenu("dynamic-menu")
+menuItem := contextMenu.Add("Initial Label")
+
+// Later, update the menu item
+menuItem.SetLabel("New Label")
+contextMenu.Update()
+```
+
+## Platform Considerations
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    On macOS, context menus follow system conventions:
+    
+    - Menus use native system animations and transitions
+    - Right-click is automatically mapped to Control+Click
+    - Menu styling automatically adapts to system appearance
+    - Standard text operations appear in the default context menu
+    - Context menus support native macOS scrolling behaviour
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    On Windows, context menus integrate with the Windows UI:
+    
+    - Menus use the Windows native context menu style
+    - Right-click handling is native
+    - Menu appearance follows the Windows theme
+    - Default context menu includes standard Windows operations
+    - Context menus support Windows touch and pen input
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    On Linux, context menu behaviour varies by desktop environment:
+    
+    - Menu styling adapts to the current desktop theme
+    - Right-click behaviour follows system settings
+    - Default context menu content may vary by environment
+    - Menu positioning follows desktop environment conventions
+    - GTK/Qt integration depends on the environment
+    
+  </TabItem>
+</Tabs>
+
+:::tip[Pro Tip]
+Consider using different context menus for different types of elements in your application. This allows you to provide context-specific actions that make sense for each element type.
+:::
+
+## Best Practices
+
+1. Keep context menus focused and relevant to the clicked element
+2. Use clear, concise labels for menu items
+3. Group related items together
+4. Consider using separators to organise menu items
+5. Provide keyboard shortcuts for common actions
+6. Update menu items dynamically based on application state
+7. Handle errors gracefully when processing context data
+
+:::danger[Warning]
+Always validate context data received from the frontend before using it in your application logic, as it could be manipulated by users.
+:::
+
+## Example
+
+Here's a complete example demonstrating context menu features:
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Context Menu Demo",
+    })
+
+    // Create a context menu
+    contextMenu := application.NewContextMenu("test")
+    
+    // Add items that respond to context data
+    clickMe := contextMenu.Add("Click to show context data")
+    dataLabel := contextMenu.Add("Current data: None")
+    
+    clickMe.OnClick(func(ctx *application.Context) {
+        data := ctx.ContextMenuData()
+        dataLabel.SetLabel("Current data: " + data)
+        contextMenu.Update()
+    })
+
+    window := app.NewWebviewWindow()
+    window.SetTitle("Context Menu Demo")
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+```
+
+Associated HTML:
+
+```html
+<div class="region" style="--custom-contextmenu: test; --custom-contextmenu-data: item-123">
+    Right click me to see the custom menu!
+</div>
+
+<div style="--default-contextmenu: hide">
+    No context menu here
+</div>
+
+<div style="--default-contextmenu: auto">
+    <p style="user-select: text">Select this text to see the default menu</p>
+    <input type="text" placeholder="Type here to see the default menu"/>
+</div>
