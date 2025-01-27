@@ -114,7 +114,6 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 	case *types.Map:
 		pp, ok := m.postponedCreates.At(typ).(*postponed)
 		if !ok {
-			m.JSCreateWithParams(t.Key(), params)
 			m.JSCreateWithParams(t.Elem(), params)
 			pp = &postponed{m.postponedCreates.Len(), params}
 			m.postponedCreates.Set(typ, pp)
@@ -212,12 +211,7 @@ func (m *module) PostponedCreates() []string {
 			result[pp.index] = fmt.Sprintf("%s$Create.Array(%s)", pre, m.JSCreateWithParams(t.(interface{ Elem() types.Type }).Elem(), pp.params))
 
 		case *types.Map:
-			result[pp.index] = fmt.Sprintf(
-				"%s$Create.Map(%s, %s)",
-				pre,
-				m.JSCreateWithParams(t.Key(), pp.params),
-				m.JSCreateWithParams(t.Elem(), pp.params),
-			)
+			result[pp.index] = fmt.Sprintf("%s$Create.Map($Create.Any, %s)", pre, m.JSCreateWithParams(t.Elem(), pp.params))
 
 		case *types.Named:
 			if !collect.IsClass(key) {
