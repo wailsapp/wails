@@ -1,7 +1,6 @@
 {{$module := .}}
 {{- $runtime := $module.Runtime}}
 {{- $models := (fixext $module.ModelsFile)}}
-{{- $internal := (fixext $module.InternalFile)}}
 {{- $useNames := $module.UseNames}}
 {{- $useInterfaces := $module.UseInterfaces}}
 {{- $imports := $module.Imports}}
@@ -33,7 +32,7 @@ import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{- if $imports.ImportModels}}
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as $models from "./{{js $internal}}";
+import * as $models from "./{{js $models}}";
 {{end}}
 {{- range .Injections}}
 {{.}}

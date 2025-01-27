@@ -108,5 +108,5 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 // IsEmpty returns true if the given index
 // contains no data for the selected language.
 func (index *PackageIndex) IsEmpty() bool {
-	return len(index.Package.Injections) == 0 && len(index.Services) == 0 && len(index.Models) == 0
+	return len(index.Package.Injections) == 0 && len(index.Services) == 0 && !index.HasExportedModels
 }

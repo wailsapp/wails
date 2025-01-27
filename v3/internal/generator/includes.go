@@ -26,16 +26,6 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 				return
 			}
 
-		case generator.renderer.InternalFile():
-			if len(index.Models) > 0 {
-				generator.logger.Errorf(
-					"package %s: included file '%s' collides with internal models filename; please rename the file or choose a different filename for internal models",
-					index.Package.Path,
-					path,
-				)
-				return
-			}
-
 		case generator.renderer.IndexFile():
 			if !generator.options.NoIndex && !index.IsEmpty() {
 				generator.logger.Errorf(

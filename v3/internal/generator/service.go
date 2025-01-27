@@ -53,14 +53,6 @@ func (generator *Generator) generateService(obj *types.TypeName) {
 		)
 		return
 
-	case generator.renderer.InternalFile():
-		generator.logger.Errorf(
-			"package %s: type %s: service filename collides with internal models filename; please rename the type or choose a different filename for internal models",
-			obj.Pkg().Path(),
-			obj.Name(),
-		)
-		return
-
 	case generator.renderer.IndexFile():
 		if !generator.options.NoIndex {
 			generator.logger.Errorf(
