@@ -71,6 +71,9 @@ func (m *Menu) Update() {
 
 // Clear all menu items
 func (m *Menu) Clear() {
+	for _, item := range m.items {
+		removeMenuItemByID(item.id)
+	}
 	m.items = nil
 }
 
