@@ -1197,7 +1197,6 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_SYSKEYUP:
 		w.parent.emit(events.Windows.WindowKeyUp)
 	case w32.WM_KEYDOWN:
-		globalApplication.info("w32.WM_KEYDOWN: %v", uint(wparam))
 		w.parent.emit(events.Windows.WindowKeyDown)
 		w.processKeyBinding(uint(wparam))
 	case w32.WM_KEYUP:

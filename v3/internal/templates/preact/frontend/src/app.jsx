@@ -28,10 +28,10 @@ export function App() {
   return (
     <div className="container">
       <div>
-        <a wml-openURL="https://wails.io">
+        <a data-wml-openURL="https://wails.io">
           <img src="/wails.png" className="logo" alt="Wails logo"/>
         </a>
-        <a wml-openURL="https://preactjs.com">
+        <a data-wml-openURL="https://preactjs.com">
           <img src="/preact.svg" className="logo preact" alt="Preact logo"/>
         </a>
       </div>
