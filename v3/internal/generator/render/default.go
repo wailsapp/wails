@@ -122,7 +122,7 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 		return "", false
 	} else if collect.MaybeTextMarshaler(typ) != collect.NonMarshaler {
 		return `""`, true
-	} else if collect.IsClass(typ) {
+	} else if collect.IsClass(typ) && !istpalias(typ) {
 		if typ.Obj().Pkg().Path() == m.Imports.Self {
 			return fmt.Sprintf("(new %s%s())", prefix, jsid(typ.Obj().Name())), true
 		} else {

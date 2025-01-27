@@ -58,7 +58,11 @@ export enum {{jsid $model.Name}} {
     {{- end}}{{end}}{{end}}
 };
 {{else if $info.IsClassAlias}}
-export const {{jsid $model.Name}} = {{$module.JSType $model.Type.Origin}};
+export const {{jsid $model.Name}} = {{if istpalias $model.Type -}}
+    {{$module.JSType (unalias $model.Type).Origin}};
+{{- else -}}
+    {{$module.JSType $model.Type.Origin}};
+{{- end}}
 {{- if or (hasdoc $model.Decl.Doc) (hasdoc $model.Doc)}}
 
 /**
