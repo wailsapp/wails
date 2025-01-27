@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"log"
 
+	nobindingshere "github.com/wailsapp/wails/v3/internal/generator/testcases/no_bindings_here"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -65,6 +66,10 @@ func (GreetService) GetButDifferent() GenericPerson[bool] {
 // Apparently, aliases are all the rage right now.
 func (GreetService) GetButAliased(p AliasedPerson) StrangelyAliasedPerson {
 	return p
+}
+
+func (GreetService) GetButForeignPrivateAlias() (_ nobindingshere.PrivatePerson) {
+	return
 }
 
 // Greet a lot of unusual things.
