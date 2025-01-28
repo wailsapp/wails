@@ -201,16 +201,15 @@ func (m *Menu) Clone() *Menu {
 	return result
 }
 
-// Insert menu after an existing menu
+// Append menu to an existing menu
 func (m *Menu) Append(in *Menu) {
-    if in == nil {
-        return
-    }
-    m.items = append(m.items, in.items...)
-    m.Update()
+	if in == nil {
+		return
+	}
+	m.items = append(m.items, in.items...)
 }
 
-// Insert menu before an existing menu
+// Prepend menu before an existing menu
 func (m *Menu) Prepend(in *Menu) {
 	m.items = append(in.items, m.items...)
 }
