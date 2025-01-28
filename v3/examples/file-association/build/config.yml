@@ -9,7 +9,7 @@ info:
   productName: "My Product" # The name of the application
   productIdentifier: "com.mycompany.myproduct" # The unique product identifier
   description: "A program that does X" # The application description
-  copyright: "(c) 2024, My Company" # Copyright text
+  copyright: "(c) 2025, My Company" # Copyright text
   comments: "Some Product Comments" # Comments
   version: "v0.0.1" # The application version
 
