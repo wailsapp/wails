@@ -45,10 +45,10 @@ export class MyElement extends LitElement {
         return html`
             <div class="container">
                 <div>
-                    <a wml-openURL="https://wails.io">
+                    <a data-wml-openURL="https://wails.io">
                         <img src="/wails.png" class="logo" alt="Wails logo"/>
                     </a>
-                    <a wml-openURL="https://lit.dev">
+                    <a data-wml-openURL="https://lit.dev">
                         <img src="/lit.svg" class="logo lit" alt="Lit logo"/>
                     </a>
                 </div>

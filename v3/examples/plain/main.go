@@ -19,7 +19,7 @@ func main() {
 		Assets: application.AssetOptions{
 			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`<html><head><title>Plain Bundle</title><script type="module" src="/wails/runtime.js"></script></head><body><div class="main"><h1>Plain Bundle</h1><p>This is a plain bundle. It has no frontend code but this was Served by the AssetServer's Handler.</p><br/><br/><p wml-event="clicked">Clicking this paragraph emits an event...<p></div></body></html>`))
+				w.Write([]byte(`<html><head><title>Plain Bundle</title><script type="module" src="/wails/runtime.js"></script></head><body><div class="main"><h1>Plain Bundle</h1><p>This is a plain bundle. It has no frontend code but this was Served by the AssetServer's Handler.</p><br/><br/><p data-wml-event="clicked">Clicking this paragraph emits an event...<p></div></body></html>`))
 			}),
 		},
 	})

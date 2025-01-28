@@ -94,7 +94,7 @@ func main() {
 
 func printFooter() {
 	if !commands.DisableFooter {
-		docsLink := term.Hyperlink("https://v3alpha.wails.io/getting-started/your-first-app/", "wails3 docs")
+		docsLink := term.Hyperlink("https://v3.wails.io/getting-started/your-first-app/", "wails3 docs")
 
 		pterm.Println(pterm.LightGreen("\nNeed documentation? Run: ") + pterm.LightBlue(docsLink))
 		// Check if we're in a teminal
@@ -113,7 +113,7 @@ func printFooter() {
 
 func openDocs() error {
 	commands.DisableFooter = true
-	return browser.OpenURL("https://v3alpha.wails.io/getting-started/your-first-app/")
+	return browser.OpenURL("https://v3.wails.io/getting-started/your-first-app/")
 }
 
 func openSponsor() error {

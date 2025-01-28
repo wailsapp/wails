@@ -80,7 +80,7 @@ window._wails.dialogResultCallback = dialogResultCallback;
 
 import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
-import { nanoid } from 'nanoid/non-secure';
+import { nanoid } from './nanoid.js';
 
 // Define constants from the `methods` object in Title Case
 const DialogInfo = 0;

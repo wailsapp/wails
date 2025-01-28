@@ -28,7 +28,7 @@ func main() {
 
 	// Custom event handling
 	app.OnEvent("myevent", func(e *application.CustomEvent) {
-		app.Logger.Info("[Go] CustomEvent received", "name", e.Name, "data", e.Data, "sender", e.Sender, "cancelled", e.Cancelled)
+		app.Logger.Info("[Go] CustomEvent received", "name", e.Name, "data", e.Data, "sender", e.Sender, "cancelled", e.IsCancelled())
 	})
 
 	// OS specific application events
@@ -104,7 +104,7 @@ func main() {
 	})
 
 	win2.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
-		app.Logger.Info("[ApplicationEvent] Window focus!")
+		app.Logger.Info("[OnWindowEvent] Window focus!")
 	})
 
 	err := app.Run()

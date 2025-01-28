@@ -35,6 +35,6 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 		return
 	}
 
-	m.Info("Runtime Call:", "method", "Events."+eventsMethodNames[method], "name", event.Name, "sender", event.Sender, "data", event.Data, "cancelled", event.Cancelled)
+	m.Info("Runtime Call:", "method", "Events."+eventsMethodNames[method], "name", event.Name, "sender", event.Sender, "data", event.Data, "cancelled", event.IsCancelled())
 
 }

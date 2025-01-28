@@ -28,10 +28,10 @@ function App() {
   return (
     <div class="container">
       <div>
-        <a wml-openURL="https://wails.io">
+        <a data-wml-openURL="https://wails.io">
           <img src="/wails.png" class="logo" alt="Wails logo"/>
         </a>
-        <a wml-openURL="https://solidjs.com">
+        <a data-wml-openURL="https://solidjs.com">
           <img src="/solid.svg" class="logo solid" alt="Solid logo"/>
         </a>
       </div>

@@ -1,0 +1,230 @@
+---
+title: Dialogs
+sidebar:
+  order: 54
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails provides a comprehensive dialog system for displaying native system dialogs. These include informational messages, questions, file selection, and more.
+
+## Dialog Types
+
+### Information Dialog
+
+Display simple informational messages to users:
+
+```go
+dialog := application.InfoDialog()
+dialog.SetTitle("Welcome")
+dialog.SetMessage("Welcome to our application!")
+dialog.Show()
+```
+
+### Question Dialog
+
+Present users with questions and customisable buttons:
+
+```go
+dialog := application.QuestionDialog()
+dialog.SetTitle("Save Changes")
+dialog.SetMessage("Do you want to save your changes?")
+dialog.AddButton("Save").OnClick(func() {
+    // Handle save
+})
+saveButton := dialog.AddButton("Don't Save")
+dialog.SetDefaultButton(saveButton)
+dialog.Show()
+```
+
+### Error Dialog
+
+Display error messages:
+
+```go
+dialog := application.ErrorDialog()
+dialog.SetTitle("Error")
+dialog.SetMessage("Failed to save file")
+dialog.Show()
+```
+
+### File Dialogs
+
+#### Open File Dialog
+
+Allow users to select files to open:
+
+```go
+dialog := application.OpenFileDialog()
+dialog.SetTitle("Select Image")
+dialog.SetFilters([]*application.FileFilter{
+    {
+        DisplayName: "Images (*.png;*.jpg)",
+        Pattern:     "*.png;*.jpg",
+    },
+})
+
+// Single file selection
+if path, err := dialog.PromptForSingleSelection(); err == nil {
+    // Use selected file path
+}
+
+// Multiple file selection
+if paths, err := dialog.PromptForMultipleSelection(); err == nil {
+    // Use selected file paths
+}
+```
+
+#### Save File Dialog
+
+Allow users to choose where to save files:
+
+```go
+dialog := application.SaveFileDialog()
+dialog.SetTitle("Save Document")
+dialog.SetDefaultFilename("document.txt")
+dialog.SetFilters([]*application.FileFilter{
+    {
+        DisplayName: "Text Files (*.txt)",
+        Pattern:     "*.txt",
+    },
+})
+
+if path, err := dialog.PromptForSingleSelection(); err == nil {
+    // Save file to selected path
+}
+```
+
+## Dialog Customisation
+
+### Setting Icons
+
+Dialogs can use custom icons from the built-in icon set:
+
+```go
+dialog := application.InfoDialog()
+dialog.SetIcon(icons.ApplicationDarkMode256)
+```
+
+### Window Attachment
+
+Dialogs can be attached to specific windows:
+
+```go
+dialog := application.QuestionDialog()
+dialog.AttachToWindow(app.CurrentWindow())
+dialog.Show()
+```
+
+### Button Customisation
+
+Create buttons with custom labels and actions:
+
+```go
+dialog := application.QuestionDialog()
+dialog.SetMessage("Choose an action")
+
+// Add buttons with custom handlers
+dialog.AddButton("Save").OnClick(func() {
+    // Handle save
+})
+dialog.AddButton("Don't Save").OnClick(func() {
+    // Handle don't save
+})
+cancelButton := dialog.AddButton("Cancel")
+dialog.SetDefaultButton(cancelButton)  // Set default button
+```
+
+## Platform Considerations
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    On macOS, dialogs follow system conventions:
+    
+    - Use system-standard dialog appearances
+    - Support keyboard navigation (Tab, Space, Return)
+    - Support standard keyboard shortcuts (⌘+.)
+    - Automatically handle dark/light mode
+    - Support system accessibility features
+    - Position relative to parent window
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    On Windows, dialogs integrate with the Windows UI:
+    
+    - Use Windows system dialog styles
+    - Support keyboard navigation (Tab, Space, Enter)
+    - Support Windows accessibility features
+    - Follow Windows dialog positioning rules
+    - Adapt to Windows theme settings
+    - Support high DPI displays
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    On Linux, dialog behaviour depends on the desktop environment:
+    
+    - Use native dialog widgets when available
+    - Follow desktop environment theme
+    - Support keyboard navigation
+    - Adapt to desktop environment settings
+    - Position according to window manager rules
+    - Support desktop environment accessibility
+    
+  </TabItem>
+</Tabs>
+
+## Directory Selection
+
+Allow users to select directories:
+
+```go
+dialog := application.DirectoryDialog()
+dialog.SetTitle("Select Project Directory")
+if path, err := dialog.PromptForSingleSelection(); err == nil {
+    // Use selected directory path
+}
+```
+
+## About Dialog
+
+Display application information:
+
+```go
+app.ShowAboutDialog()
+```
+
+## Best Practices
+
+1. Use appropriate dialog types for different scenarios:
+   - InfoDialog for general messages
+   - QuestionDialog for user decisions
+   - ErrorDialog for error messages
+   - FileDialog for file operations
+
+2. Provide clear and concise messages:
+   - Use descriptive titles
+   - Keep messages brief but informative
+   - Clearly state any required user action
+
+3. Handle dialog responses appropriately:
+   - Check for errors in file dialogs
+   - Provide feedback for user actions
+   - Handle cancellation gracefully
+
+4. Consider platform conventions:
+   - Follow platform-specific dialog patterns
+   - Use appropriate button ordering
+   - Respect system settings
+
+:::tip[Pro Tip]
+When using file dialogs, always set appropriate filters to help users select the correct file types for your application.
+:::
+
+:::danger[Warning]
+Always handle potential errors from file and directory dialogs, as they may fail due to permissions or other system issues.
+:::
