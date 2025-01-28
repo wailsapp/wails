@@ -1,0 +1,135 @@
+---
+title: Clipboard
+sidebar:
+  order: 50
+---
+
+The Wails Clipboard API provides a simple interface for interacting with the system clipboard. It allows you to read from and write to the clipboard, whilst supporting text data.
+
+## Accessing the Clipboard
+
+The clipboard can be accessed through the application instance:
+
+```go
+clipboard := app.Clipboard()
+```
+
+## Setting Text
+
+To set text to the clipboard, utilise the `SetText` method:
+
+```go
+success := app.Clipboard().SetText("Hello World")
+if !success {
+    // Handle error
+}
+```
+
+The `SetText` method returns a boolean indicating whether the operation was successful.
+
+:::tip[Empty Text]
+Setting an empty string (`""`) effectively clears the text content from the clipboard.
+:::
+
+## Getting Text
+
+To retrieve text from the clipboard, utilise the `Text` method:
+
+```go
+text, ok := app.Clipboard().Text()
+if !ok {
+    // Handle error
+} else {
+    // Use the text
+}
+```
+
+The `Text` method returns two values:
+- The text content from the clipboard (string)
+- A boolean indicating whether the operation was successful
+
+:::note[Platform Behaviour]
+The clipboard behaviour might vary slightly amongst operating systems. Always check the return values to ensure operations were successful.
+:::
+
+## Example
+
+Here's a complete example showing how to create a menu-driven application that demonstrates clipboard operations:
+
+```go
+package main
+
+import (
+    "log"
+    "runtime"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name:        "Clipboard Demo",
+        Description: "A demo of the clipboard API",
+        Assets:      application.AlphaAssets,
+    })
+
+    // Create a custom menu
+    menu := app.NewMenu()
+    if runtime.GOOS == "darwin" {
+        menu.AddRole(application.AppMenu)
+    }
+
+    // Add clipboard operations to menu
+    setClipboardMenu := menu.AddSubmenu("Set Clipboard")
+    setClipboardMenu.Add("Set Text 'Hello'").OnClick(func(ctx *application.Context) {
+        success := app.Clipboard().SetText("Hello")
+        if !success {
+            application.InfoDialog().SetMessage("Failed to set clipboard text").Show()
+        }
+    })
+
+    getClipboardMenu := menu.AddSubmenu("Get Clipboard")
+    getClipboardMenu.Add("Get Text").OnClick(func(ctx *application.Context) {
+        result, ok := app.Clipboard().Text()
+        if !ok {
+            application.InfoDialog().SetMessage("Failed to get clipboard text").Show()
+        } else {
+            application.InfoDialog().SetMessage("Got:\n\n" + result).Show()
+        }
+    })
+
+    clearClipboardMenu := menu.AddSubmenu("Clear Clipboard")
+    clearClipboardMenu.Add("Clear Text").OnClick(func(ctx *application.Context) {
+        success := app.Clipboard().SetText("")
+        if success {
+            application.InfoDialog().SetMessage("Clipboard text cleared").Show()
+        } else {
+            application.InfoDialog().SetMessage("Clipboard text not cleared").Show()
+        }
+    })
+
+    app.SetMenu(menu)
+    app.NewWebviewWindow()
+
+    err := app.Run()
+    if err != nil {
+        log.Fatal(err.Error())
+    }
+}
+```
+
+:::danger[Warning]
+Always handle clipboard operation failures gracefully, as they can fail due to various system-level reasons such as permissions or resource constraints.
+:::
+
+## Best Practices
+
+1. Always check the return values of clipboard operations
+2. Handle failures gracefully with appropriate user feedback
+3. Clear sensitive data from the clipboard when your application exits if it was responsible for putting it there
+4. Consider implementing a timeout mechanism for clipboard operations in critical sections of your application
+
+:::tip[Pro Tip]
+Whilst working with the clipboard in a production environment, consider implementing retry logic for critical clipboard operations, as they can occasionally fail due to temporary system conditions.
+:::

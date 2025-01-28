@@ -1,6 +1,6 @@
 # WML Example
 
-This is an example of how to use the experimental WML, which provides HTMX style calling of the runtime API.
+This is an example of how to use the experimental WML, which provides HTMX style calling of the Wails JS API.
 
 ## Running the example
 

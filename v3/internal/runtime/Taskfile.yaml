@@ -5,6 +5,7 @@ version: "3"
 tasks:
   install-deps:
     internal: true
+    dir: desktop/@wailsio/runtime
     sources:
       - package.json
     cmds:

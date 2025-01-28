@@ -60,10 +60,10 @@ function onWMLTriggered(ev) {
         if (choice !== "Yes")
             return;
 
-        const eventType = element.getAttribute('wml-event');
-        const targetWindow = element.getAttribute('wml-target-window') || "";
-        const windowMethod = element.getAttribute('wml-window');
-        const url = element.getAttribute('wml-openurl');
+        const eventType = element.getAttribute('data-wml-event');
+        const targetWindow = element.getAttribute('data-wml-target-window') || "";
+        const windowMethod = element.getAttribute('data-wml-window');
+        const url = element.getAttribute('data-wml-openURL');
 
         if (eventType !== null)
             sendEvent(eventType);
@@ -73,7 +73,7 @@ function onWMLTriggered(ev) {
             void OpenURL(url);
     }
 
-    const confirm = element.getAttribute('wml-confirm');
+    const confirm = element.getAttribute('data-wml-confirm');
 
     if (confirm) {
         Question({
@@ -218,7 +218,7 @@ const triggerRegistry = canAbortListeners() ? new AbortControllerRegistry() : ne
  */
 function addWMLListeners(element) {
     const triggerRegExp = /\S+/g;
-    const triggerAttr = (element.getAttribute('wml-trigger') || "click");
+    const triggerAttr = (element.getAttribute('data-wml-trigger') || "click");
     const triggers = [];
 
     let match;
@@ -246,5 +246,5 @@ export function Enable() {
  */
 export function Reload() {
     triggerRegistry.reset();
-    document.body.querySelectorAll('[wml-event], [wml-window], [wml-openurl]').forEach(addWMLListeners);
+    document.body.querySelectorAll('[data-wml-event], [data-wml-window], [data-wml-openURL]').forEach(addWMLListeners);
 }

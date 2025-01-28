@@ -1,7 +1,7 @@
 # File Association Sample Project
 
 This sample project demonstrates how to associate a file type with an application.
-More info at: https://v3alpha.wails.io/learn/guides/file-associations/
+More info at: https://v3.wails.io/learn/guides/file-associations/
 
 To run the sample, follow these steps:
 

@@ -36,7 +36,7 @@ Now that you have your project set up, it's time to explore the features that Wa
 
    Note: Some examples may be under development during the alpha phase.
 
-3. **Explore the documentation**: Visit the [Wails3 documentation](https://v3alpha.wails.io/) for in-depth guides and API references.
+3. **Explore the documentation**: Visit the [Wails3 documentation](https://v3.wails.io/) for in-depth guides and API references.
 
 4. **Join the community**: Have questions or want to share your progress? Join the [Wails Discord](https://discord.gg/JDdSxwjhGf) or visit the [Wails discussions on GitHub](https://github.com/wailsapp/wails/discussions).
 

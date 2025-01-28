@@ -10,7 +10,7 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 import { newRuntimeCallerWithID, objectNames } from "./runtime";
-import { nanoid } from 'nanoid/non-secure';
+import { nanoid } from './nanoid.js';
 
 // Setup
 window._wails = window._wails || {};

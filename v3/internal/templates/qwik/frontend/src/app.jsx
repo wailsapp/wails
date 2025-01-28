@@ -30,10 +30,10 @@ export const App = component$(() => {
   return (
     <div class="container">
       <div>
-        <a wml-openURL="https://wails.io">
+        <a data-wml-openURL="https://wails.io">
           <img src="/wails.png" class="logo" alt="Wails logo"/>
         </a>
-        <a wml-openURL="https://qwik.builder.io">
+        <a data-wml-openURL="https://qwik.builder.io">
           <img src="/qwik.svg" class="logo qwik" alt="Qwik logo"/>
         </a>
       </div>

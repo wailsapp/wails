@@ -1,0 +1,491 @@
+---
+title: Events
+sidebar:
+  order: 55
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails provides a flexible event system that enables communication between different parts of your application. This includes both application-level and window-level events.
+
+## Application Events
+
+Application events are triggered by application-level state changes such as application startup, theme changes, and power events. You can listen for these events using the `OnApplicationEvent` method:
+
+```go
+app.OnApplicationEvent(events.Mac.ApplicationDidBecomeActive, func(event *application.ApplicationEvent) {
+    app.Logger.Info("Application started!")
+})
+
+app.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *application.ApplicationEvent) {
+		app.Logger.Info("System theme changed!")
+		if event.Context().IsDarkMode() {
+			app.Logger.Info("System is now using dark mode!")
+		} else {
+			app.Logger.Info("System is now using light mode!")
+		}
+	})
+```
+
+### Common Application Events
+
+Common application events are aliases for platform-specific application events. These events are triggered by application-level state 
+changes such as application startup, theme changes, and power events. 
+
+Here is the same example as above, but using common application events to make it work across all platforms:
+
+```go
+app.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
+    app.Logger.Info("Application started!")
+})
+
+app.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+    if event.Context().IsDarkMode() {
+        app.Logger.Info("System is now using dark mode!")
+    } else {
+        app.Logger.Info("System is now using light mode!")
+    }
+})
+```
+#### Common Application Event List
+
+| Event Name                | Description                                                                                              |
+|---------------------------|----------------------------------------------------------------------------------------------------------|
+| ApplicationOpenedWithFile | Application opened with a file. See [File Associations](/guides/file-associations) for more information. |
+| ApplicationStarted        | Application has started                                                                                  |
+| ThemeChanged              | System theme changed                                                                                     |
+
+### Platform-Specific Application Events
+
+Below is a list of all platform-specific application events.
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+
+      | Event Name | Common Event | Description |
+      |------------|--------------|-------------|
+      | ApplicationDidBecomeActive | - | Application became active |
+      | ApplicationDidChangeBackingProperties | - | Application backing properties changed |
+      | ApplicationDidChangeEffectiveAppearance | ThemeChanged | Application appearance changed |
+      | ApplicationDidChangeIcon | - | Application icon changed |
+      | ApplicationDidChangeOcclusionState | - | Application occlusion state changed |
+      | ApplicationDidChangeScreenParameters | - | Screen parameters changed |
+      | ApplicationDidChangeStatusBarFrame | - | Status bar frame changed |
+      | ApplicationDidChangeStatusBarOrientation | - | Status bar orientation changed |
+      | ApplicationDidChangeTheme | ThemeChanged | System theme changed |
+      | ApplicationDidFinishLaunching | ApplicationStarted | Application finished launching |
+      | ApplicationDidHide | - | Application hidden |
+      | ApplicationDidResignActiveNotification | - | Application resigned active state |
+      | ApplicationDidUnhide | - | Application unhidden |
+      | ApplicationDidUpdate | - | Application updated |
+      | ApplicationShouldHandleReopen | - | Application should handle reopen |
+      | ApplicationWillBecomeActive | - | Application will become active |
+      | ApplicationWillFinishLaunching | - | Application will finish launching |
+      | ApplicationWillHide | - | Application will hide |
+      | ApplicationWillResignActiveNotification | - | Application will resign active state |
+      | ApplicationWillTerminate | - | Application will terminate |
+      | ApplicationWillUnhide | - | Application will unhide |
+      | ApplicationWillUpdate | - | Application will update |
+
+
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    | Event Name | Common Event | Description |
+    |------------|--------------|-------------|
+    | APMPowerSettingChange | - | Power settings changed |
+    | APMPowerStatusChange | - | Power status changed |
+    | APMResumeAutomatic | - | System resuming automatically |
+    | APMResumeSuspend | - | System resuming from suspend |
+    | APMSuspend | - | System suspending |
+    | ApplicationStarted | ApplicationStarted | Application started |
+    | SystemThemeChanged | ThemeChanged | System theme changed |
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    | Event Name | Common Event | Description |
+    |------------|--------------|-------------|
+    | ApplicationStartup | ApplicationStarted | Application started |
+    | SystemThemeChanged | ThemeChanged | System theme changed |
+  </TabItem>
+</Tabs>
+
+## Window Events
+
+Window events are triggered by window-specific actions such as resizing, moving, or changing focus state. You can listen for these events using the `OnWindowEvent` method:
+
+```go
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    app.Logger.Info("Window is closing!")
+})
+
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window gained focus!")
+})
+```
+
+### Hooks vs Standard Listeners
+
+Wails provides two ways to handle window events: standard listeners (OnWindowEvent) and hooks (RegisterHook). The key differences are:
+
+1. **Execution Order**: Hooks are executed first and in the order they are registered, while standard listeners execute after Hooks and have no guaranteed order.
+2. **Blocking**: Hooks are blocking and must complete before the next hook is executed. Standard listeners are non-blocking.
+3. **Event Cancellation**: When cancelling an event in a Hook, it prevents it from propagating further. This is useful to prevent 
+default behaviour, such as closing a window. Cancelling an event in a standard listener will only prevent it from being emitted 
+from that point in time.
+
+In this example, the window will only close after the close button has been clicked three times, demonstrating how hooks can be used to control event flow.
+
+```go
+// Hook - runs synchronously. The window will not close until the countdown reaches zero.
+var countdown = 3
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    countdown--
+    if countdown == 0 {
+        app.Logger.Info("Window closing - countdown reached zero!")
+        return
+    }
+    app.Logger.Info("Preventing window from closing - countdown:", countdown)
+    e.Cancel()
+})
+```
+
+This next example demonstrates the execution order of hooks vs standard listeners.
+
+```go
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("I always run after hooks!")
+})
+
+// Multiple hooks are executed in order
+window.RegisterHook(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("First focus hook - will always run first!")
+})
+window.RegisterHook(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Second focus hook - will always run second!")
+})
+```
+
+This produces the following output:
+
+```
+INF First focus hook - will always run first!
+INF Second focus hook - will always run second!
+INF I always run after hooks!
+```
+
+### Common Window Events
+
+| Event Name         | Description               |
+|--------------------|---------------------------|
+| WindowClosing      | Window is closing         |
+| WindowDidMove      | Window moved              |
+| WindowDidResize    | Window resized            |
+| WindowDPIChanged   | Window DPI changed        |
+| WindowFilesDropped | Files dropped on window   |
+| WindowFocus        | Window gained focus       |
+| WindowFullscreen   | Window entered fullscreen |
+| WindowHide         | Window hidden             |
+| WindowLostFocus    | Window lost focus         |
+| WindowMaximise     | Window maximised          |
+| WindowMinimise     | Window minimised          |
+| WindowRestore      | Window restored           |
+| WindowRuntimeReady | Window runtime is ready   |
+| WindowShow         | Window shown              |
+| WindowUnFullscreen | Window exited fullscreen  |
+| WindowUnMaximise   | Window unmaximised        |
+| WindowUnMinimise   | Window unminimised        |
+| WindowZoom         | Window zoomed             |
+| WindowZoomIn       | Window zoomed in          |
+| WindowZoomOut      | Window zoomed out         |
+| WindowZoomReset    | Window zoom reset         |
+
+### Platform-Specific Window Events
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    | Event Name | Common Event | Description |
+    | WindowDidBecomeKey | WindowFocus | Window became key window |
+    | WindowDidBecomeMain | - | Window became main window |
+    | WindowDidBeginSheet | - | Sheet began |
+    | WindowDidChangeAlpha | - | Window alpha changed |
+    | WindowDidChangeBackingLocation | - | Window backing location changed |
+    | WindowDidChangeBackingProperties | - | Window backing properties changed |
+    | WindowDidChangeCollectionBehavior | - | Window collection behaviour changed |
+    | WindowDidChangeEffectiveAppearance | - | Window appearance changed |
+    | WindowDidChangeOcclusionState | - | Window occlusion state changed |
+    | WindowDidChangeOrderingMode | - | Window ordering mode changed |
+    | WindowDidChangeScreen | - | Window screen changed |
+    | WindowDidChangeScreenParameters | - | Window screen parameters changed |
+    | WindowDidChangeScreenProfile | - | Window screen profile changed |
+    | WindowDidChangeScreenSpace | - | Window screen space changed |
+    | WindowDidChangeScreenSpaceProperties | - | Window screen space properties changed |
+    | WindowDidChangeSharingType | - | Window sharing type changed |
+    | WindowDidChangeSpace | - | Window space changed |
+    | WindowDidChangeSpaceOrderingMode | - | Window space ordering mode changed |
+    | WindowDidChangeTitle | - | Window title changed |
+    | WindowDidChangeToolbar | - | Window toolbar changed |
+    | WindowDidDeminiaturize | WindowUnMinimise | Window unminimised |
+    | WindowDidEndSheet | - | Sheet ended |
+    | WindowDidEnterFullScreen | WindowFullscreen | Window entered fullscreen |
+    | WindowDidEnterVersionBrowser | - | Window entered version browser |
+    | WindowDidExitFullScreen | WindowUnFullscreen | Window exited fullscreen |
+    | WindowDidExitVersionBrowser | - | Window exited version browser |
+    | WindowDidExpose | - | Window exposed |
+    | WindowDidFocus | WindowFocus | Window gained focus |
+    | WindowDidMiniaturise | WindowMinimise | Window minimised |
+    | WindowDidMove | WindowDidMove | Window moved |
+    | WindowDidOrderOffScreen | - | Window ordered off screen |
+    | WindowDidOrderOnScreen | - | Window ordered on screen |
+    | WindowDidResignKey | - | Window resigned key window |
+    | WindowDidResignMain | - | Window resigned main window |
+    | WindowDidResize | WindowDidResize | Window resized |
+    | WindowDidUpdate | - | Window updated |
+    | WindowDidUpdateAlpha | - | Window alpha updated |
+    | WindowDidUpdateCollectionBehavior | - | Window collection behaviour updated |
+    | WindowDidUpdateCollectionProperties | - | Window collection properties updated |
+    | WindowDidUpdateShadow | - | Window shadow updated |
+    | WindowDidUpdateTitle | - | Window title updated |
+    | WindowDidUpdateToolbar | - | Window toolbar updated |
+    | WindowDidZoom | WindowZoom | Window zoomed |
+    | WindowFileDraggingEntered | - | File dragging entered window |
+    | WindowFileDraggingExited | - | File dragging exited window |
+    | WindowFileDraggingPerformed | - | File dragging performed |
+    | WindowHide | WindowHide | Window hidden |
+    | WindowMaximise | WindowMaximise | Window maximised |
+    | WindowShouldClose | WindowClosing | Window should close |
+    | WindowShow | WindowShow | Window shown |
+    | WindowUnMaximise | WindowUnMaximise | Window unmaximised |
+    | WindowZoomIn | WindowZoomIn | Window zoomed in |
+    | WindowZoomOut | WindowZoomOut | Window zoomed out |
+    | WindowZoomReset | WindowZoomReset | Window zoom reset |
+    |------------|--------------|-------------|
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    | Event Name | Common Event | Description |
+    |------------|--------------|-------------|
+    | WebViewNavigationCompleted | - | WebView navigation completed |
+    | WindowActive | - | Window became active |
+    | WindowBackgroundErase | - | Window background needs erasing |
+    | WindowClickActive | - | Window clicked whilst active |
+    | WindowClosing | WindowClosing | Window closing |
+    | WindowDidMove | WindowDidMove | Window moved |
+    | WindowDidResize | WindowDidResize | Window resized |
+    | WindowEndMove | - | Window finished moving |
+    | WindowEndResize | - | Window finished resising |
+    | WindowFullscreen | WindowFullscreen | Window entered fullscreen |
+    | WindowHide | WindowHide | Window hidden |
+    | WindowInactive | - | Window became inactive |
+    | WindowKillFocus | WindowLostFocus | Window lost focus |
+    | WindowMaximise | WindowMaximise | Window maximised |
+    | WindowMinimise | WindowMinimise | Window minimised |
+    | WindowPaint | - | Window needs painting |
+    | WindowRestore | WindowRestore | Window restored |
+    | WindowSetFocus | WindowFocus | Window gained focus |
+    | WindowShow | WindowShow | Window shown |
+    | WindowStartMove | - | Window started moving |
+    | WindowStartResize | - | Window started resising |
+    | WindowUnFullscreen | WindowUnFullscreen | Window exited fullscreen |
+    | WindowUnMaximise | WindowUnMaximise | Window unmaximised |
+    | WindowUnMinimise | WindowUnMinimise | Window unminimised |
+    | WindowZOrderChanged | - | Window z-order changed |
+
+    #### Input Events
+    | Event Name | Description |
+    |------------|-------------|
+    | WindowDragDrop | Files dragged and dropped |
+    | WindowDragEnter | Drag entered window |
+    | WindowDragLeave | Drag left window |
+    | WindowDragOver | Drag over window |
+    | WindowKeyDown | Key pressed |
+    | WindowKeyUp | Key released |
+    | WindowNonClientHit | Mouse hit in non-client area |
+    | WindowNonClientMouseDown | Mouse down in non-client area |
+    | WindowNonClientMouseLeave | Mouse left non-client area |
+    | WindowNonClientMouseMove | Mouse move in non-client area |
+    | WindowNonClientMouseUp | Mouse up in non-client area |
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    | Event Name | Common Event | Description |
+    |------------|--------------|-------------|
+    | WindowDeleteEvent | WindowClosing | Window delete requested |
+    | WindowDidMove | WindowDidMove | Window moved |
+    | WindowDidResize | WindowDidResize | Window resized |
+    | WindowFocusIn | WindowFocus | Window gained focus |
+    | WindowFocusOut | WindowLostFocus | Window lost focus |
+    | WindowLoadChanged | WindowShow | Window load state changed |
+  </TabItem>
+</Tabs>
+
+## Menu Events
+
+Menu events are triggered by menu-specific actions such as opening, closing, and interacting with menu items. These events are useful for creating dynamic menus and responding to menu interactions.
+
+```go
+// Listen for menu events
+app.OnApplicationEvent(events.Mac.MenuDidOpen, func(event *application.ApplicationEvent) {
+    app.Logger.Info("Menu opened!")
+})
+
+app.OnApplicationEvent(events.Mac.MenuWillSendAction, func(event *application.ApplicationEvent) {
+    app.Logger.Info("Menu about to send action!")
+})
+```
+
+For more information about menus, see the [Application Menu](/learn/application-menu) and [Context Menu](/learn/context-menu) documentation.
+
+### Platform-Specific Menu Events
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    | Event Name | Description |
+    |------------|-------------|
+    | MenuDidAddItem | Menu item added |
+    | MenuDidBeginTracking | Menu began tracking |
+    | MenuDidClose | Menu closed |
+    | MenuDidDisplayItem | Menu item displayed |
+    | MenuDidEndTracking | Menu ended tracking |
+    | MenuDidHighlightItem | Menu item highlighted |
+    | MenuDidOpen | Menu opened |
+    | MenuDidPopUp | Menu popped up |
+    | MenuDidRemoveItem | Menu item removed |
+    | MenuDidSendAction | Menu sent action |
+    | MenuDidSendActionToItem | Menu sent action to item |
+    | MenuDidUpdate | Menu updated |
+    | MenuWillAddItem | Menu will add item |
+    | MenuWillBeginTracking | Menu will begin tracking |
+    | MenuWillDisplayItem | Menu will display item |
+    | MenuWillEndTracking | Menu will end tracking |
+    | MenuWillHighlightItem | Menu will highlight item |
+    | MenuWillOpen | Menu will open |
+    | MenuWillPopUp | Menu will pop up |
+    | MenuWillRemoveItem | Menu will remove item |
+    | MenuWillSendAction | Menu will send action |
+    | MenuWillSendActionToItem | Menu will send action to item |
+    | MenuWillUpdate | Menu will update |
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    Windows does not currently provide specific menu events.
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    Linux does not currently provide specific menu events.
+  </TabItem>
+</Tabs>
+
+## WebView Events
+
+WebView events are triggered by navigation and loading state changes in the WebView component. These events are useful for tracking page loads and navigation state.
+
+```go
+// Listen for WebView navigation events
+app.OnApplicationEvent(events.Mac.WebViewDidStartProvisionalNavigation, func(event *application.ApplicationEvent) {
+    app.Logger.Info("WebView started loading a page!")
+})
+
+app.OnApplicationEvent(events.Mac.WebViewDidFinishNavigation, func(event *application.ApplicationEvent) {
+    app.Logger.Info("WebView finished loading the page!")
+})
+
+// On Windows
+app.OnApplicationEvent(events.Windows.WebViewNavigationCompleted, func(event *application.ApplicationEvent) {
+    app.Logger.Info("WebView navigation completed!")
+})
+```
+
+### Platform-Specific WebView Events
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    | Event Name | Description |
+    |------------|-------------|
+    | WebViewDidCommitNavigation | Navigation committed |
+    | WebViewDidFinishNavigation | Navigation finished |
+    | WebViewDidReceiveServerRedirectForProvisionalNavigation | Server redirect received |
+    | WebViewDidStartProvisionalNavigation | Provisional navigation started |
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    | Event Name | Description |
+    |------------|-------------|
+    | WebViewNavigationCompleted | Navigation completed |
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    Linux does not currently provide specific WebView events.
+  </TabItem>
+</Tabs>
+
+## Custom Events
+
+You can emit and listen for custom events to enable communication between different parts of your application.
+
+### Emitting Events
+
+You can emit custom events from anywhere in your application:
+
+```go
+// Emit an event with data from the application
+app.EmitEvent("myevent", "hello")
+
+// Emit from a specific window
+window.EmitEvent("windowevent", "window specific data")
+```
+
+### Handling Custom Events
+
+Listen for custom events using the `OnEvent` method:
+
+```go
+app.OnEvent("myevent", func(e *application.CustomEvent) {
+    // Access event information
+    name := e.Name        // Event name
+    data := e.Data        // Event data
+    sender := e.Sender    // Event sender
+    cancelled := e.IsCancelled()  // Event cancellation status
+})
+
+## Event Cancellation
+
+Events can be cancelled to prevent their default behaviour or stop propagation to other listeners. This is particularly useful for hooks that need to control window closing, menu actions, or other system events.
+
+### Cancelling Events
+
+To cancel an event, call the `Cancel()` method on the event object:
+
+```go
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    // Prevent the window from closing
+    e.Cancel()
+})
+```
+
+### Checking Event Cancellation
+
+You can check if an event has been cancelled using the `IsCancelled()` method:
+
+```go
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    if e.IsCancelled() {
+        app.Logger.Info("Window closing was cancelled by another hook")
+        return
+    }
+    // Process event
+})
+
+// For custom events
+app.OnEvent("myevent", func(e *application.CustomEvent) {
+    if e.IsCancelled() {
+        app.Logger.Info("Event was cancelled")
+        return
+    }
+    // Process event
+})
+```
+
+:::tip[Pro Tip]
+Remember that event cancellation in hooks affects all subsequent hooks and listeners, whilst cancellation in standard listeners only affects listeners that haven't yet been called.
+:::

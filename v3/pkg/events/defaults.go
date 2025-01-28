@@ -21,6 +21,7 @@ var defaultWindowEventMapping = map[string]map[WindowEventType]WindowEventType{
 		Windows.WindowDidResize:    Common.WindowDidResize,
 		Windows.WindowSetFocus:     Common.WindowFocus,
 		Windows.WindowKillFocus:    Common.WindowLostFocus,
+		Windows.WindowDPIChanged:   Common.WindowDPIChanged,
 	},
 	"darwin": {
 		Mac.WindowDidResignKey:       Common.WindowLostFocus,
@@ -39,6 +40,10 @@ var defaultWindowEventMapping = map[string]map[WindowEventType]WindowEventType{
 		Mac.WindowZoomIn:             Common.WindowZoomIn,
 		Mac.WindowZoomOut:            Common.WindowZoomOut,
 		Mac.WindowZoomReset:          Common.WindowZoomReset,
+		Mac.WindowShouldClose:        Common.WindowClosing,
+		Mac.WindowDidResignKey:       Common.WindowLostFocus,
+		Mac.WindowDidResignMain:      Common.WindowLostFocus,
+		Mac.WindowDidResize:          Common.WindowDidResize,
 	},
 	"linux": {
 		Linux.WindowDeleteEvent: Common.WindowClosing,

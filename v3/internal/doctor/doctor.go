@@ -257,7 +257,7 @@ func Run() (err error) {
 			pterm.Printf("• %s: %s\n", result.TestName, result.ErrorMsg)
 			url := result.HelpURL
 			if strings.HasPrefix(url, "/") {
-				url = "https://v3alpha.wails.io" + url
+				url = "https://v3.wails.io" + url
 			}
 			pterm.Printf("  For more information: %s\n", term.Hyperlink(url, url))
 		}

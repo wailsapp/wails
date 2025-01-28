@@ -25,10 +25,10 @@
 
 <div class="container">
   <div>
-    <span wml-openURL="https://wails.io">
+    <span data-wml-openURL="https://wails.io">
       <img src="/wails.png" class="logo" alt="Wails logo"/>
     </span>
-    <span wml-openURL="https://svelte.dev">
+    <span data-wml-openURL="https://svelte.dev">
       <img src="/svelte.svg" class="logo svelte" alt="Svelte logo"/>
     </span>
   </div>

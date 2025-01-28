@@ -30,10 +30,10 @@ function App() {
   return (
     <div className="container">
       <div>
-        <a wml-openURL="https://wails.io">
+        <a data-wml-openURL="https://wails.io">
           <img src="/wails.png" className="logo" alt="Wails logo"/>
         </a>
-        <a wml-openURL="https://reactjs.org">
+        <a data-wml-openURL="https://reactjs.org">
           <img src='/react.svg' className="logo react" alt="React logo"/>
         </a>
       </div>

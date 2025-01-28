@@ -44,6 +44,7 @@ export const EventTypes = {
 		WindowNonClientMouseUp: "windows:WindowNonClientMouseUp",
 		WindowNonClientMouseMove: "windows:WindowNonClientMouseMove",
 		WindowNonClientMouseLeave: "windows:WindowNonClientMouseLeave",
+		WindowDPIChanged: "windows:WindowDPIChanged",
 	},
 	Mac: {
 		ApplicationDidBecomeActive: "mac:ApplicationDidBecomeActive",

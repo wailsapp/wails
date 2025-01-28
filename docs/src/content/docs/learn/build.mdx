@@ -1,5 +1,5 @@
 ---
-title: Wails v3 Build System
+title: Build System
 sidebar:
   order: 40
 ---
@@ -8,7 +8,7 @@ import { FileTree } from "@astrojs/starlight/components";
 
 ## Overview
 
-The Wails v3 build system is a flexible and powerful tool designed to streamline
+The Wails build system is a flexible and powerful tool designed to streamline
 the build process for your Wails applications. It leverages
 [Task](https://taskfile.dev), a task runner that allows you to define and run
 tasks easily. While the v3 build system is the default, Wails encourages a
@@ -21,7 +21,7 @@ Learn more about how to use Task in the
 ## Task: The Heart of the Build System
 
 [Task](https://taskfile.dev) is a modern alternative to Make, written in Go. It
-uses a YAML file to define tasks and their dependencies. In the Wails v3 build
+uses a YAML file to define tasks and their dependencies. In the Wails build
 system, [Task](https://taskfile.dev) plays a central role in orchestrating the
 build process.
 
@@ -98,6 +98,7 @@ The Windows-specific Taskfile includes tasks for building, packaging, and
 running the application on Windows. Key features include:
 
 - Building with optional production flags
+- Generating `.ico` icon file
 - Generating Windows `.syso` file
 - Creating an NSIS installer for packaging
 
@@ -120,10 +121,11 @@ The macOS-specific Taskfile includes tasks for building, packaging, and running
 the application on macOS. Key features include:
 
 - Building binaries for amd64, arm64 and universal (both) architectures
+- Generating `.icns` icon file
 - Creating an `.app` bundle for distributing
 - Setting macOS-specific build flags and environment variables
 
-## Wails3 Commands and Task Execution
+## Task Execution and Command Aliases
 
 The `wails3 task` command is an embedded version of [Taskfile](https://taskfile.dev), which executes
 the tasks defined in your `Taskfile.yml`.
@@ -157,7 +159,7 @@ platform-specific Taskfiles, you can:
 - Integrate with other tools and scripts
 
 This flexibility allows you to tailor the build process to your specific
-requirements while still benefiting from the structure provided by the Wails v3
+requirements while still benefiting from the structure provided by the Wails
 build system.
 
 :::tip[Learning Taskfile]
@@ -168,7 +170,7 @@ You can find out which version of Taskfile is embedded in the Wails CLI by runni
 
 ## Development Mode
 
-The Wails v3 build system includes a powerful development mode that enhances the
+The Wails build system includes a powerful development mode that enhances the
 developer experience by providing live reloading and hot module replacement.
 This mode is activated using the `wails3 dev` command.
 

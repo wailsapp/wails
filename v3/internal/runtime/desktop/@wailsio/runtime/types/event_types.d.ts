@@ -44,6 +44,7 @@ export declare const EventTypes: {
 		WindowNonClientMouseUp: string,
 		WindowNonClientMouseMove: string,
 		WindowNonClientMouseLeave: string,
+		WindowDPIChanged: string,
 	},
 	Mac: {
 		ApplicationDidBecomeActive: string,
