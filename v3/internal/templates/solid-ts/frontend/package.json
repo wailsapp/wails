@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "typescript": "^5.2.2",
-    "vite": "^6.0.0",
+    "vite": "^5.0.8",
     "vite-plugin-solid": "^2.8.0",
     "@wailsio/runtime": "latest"
   }
