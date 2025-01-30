@@ -22,7 +22,7 @@ const doGreet = () => {
 }
 
 onMounted(() => {
-  Events.On('time', (timeValue: { data: string }) => {
+  Events.On<string>('time', (timeValue) => {
     time.value = timeValue.data;
   });
 })

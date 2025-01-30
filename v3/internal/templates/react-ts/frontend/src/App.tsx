@@ -20,7 +20,7 @@ function App() {
   }
 
   useEffect(() => {
-    Events.On('time', (timeValue: any) => {
+    Events.On<string>('time', (timeValue) => {
       setTime(timeValue.data);
     });
     // Reload WML so it picks up the wml tags

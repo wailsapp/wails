@@ -16,6 +16,6 @@ window.doGreet = () => {
     });
 }
 
-Events.On('time', (time) => {
-    timeElement.innerText = time.data;
+Events.On('time', (timeValue) => {
+    timeElement.innerText = timeValue.data;
 });

@@ -23,7 +23,7 @@ export class MyElement extends LitElement {
 
     constructor() {
         super();
-        Events.On('time', (timeValue: { data: string }) => {
+        Events.On<string>('time', (timeValue) => {
             this.time = timeValue.data;
         });
     }

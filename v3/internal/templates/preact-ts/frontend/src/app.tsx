@@ -20,7 +20,7 @@ export function App() {
     }
 
     useEffect(() => {
-        Events.On('time', (timeValue: any) => {
+        Events.On<string>('time', (timeValue) => {
             setTime(timeValue.data);
         });
     }, []);
