@@ -2,28 +2,31 @@ export function setup(): void;
 /**
  * Register a callback function to be called multiple times for a specific event.
  *
+ * @template [D=unknown]
  * @param {string} eventName - The name of the event to register the callback for.
- * @param {function} callback - The callback function to be called when the event is triggered.
+ * @param {WailsEventCallback<D>} callback - The callback function to be called when the event is triggered.
  * @param {number} maxCallbacks - The maximum number of times the callback can be called for the event. Once the maximum number is reached, the callback will no longer be called.
  *
- @return {function} - A function that, when called, will unregister the callback from the event.
+ @return {() => void} - A function that, when called, will unregister the callback from the event.
  */
-export function OnMultiple(eventName: string, callback: Function, maxCallbacks: number): Function;
+export function OnMultiple<D = unknown>(eventName: string, callback: WailsEventCallback<D>, maxCallbacks: number): () => void;
 /**
  * Registers a callback function to be executed when the specified event occurs.
  *
+ * @template [D=unknown]
  * @param {string} eventName - The name of the event.
- * @param {function} callback - The callback function to be executed. It takes no parameters.
- * @return {function} - A function that, when called, will unregister the callback from the event. */
-export function On(eventName: string, callback: Function): Function;
+ * @param {WailsEventCallback<D>} callback - The callback function to be executed.
+ * @return {() => void} - A function that, when called, will unregister the callback from the event. */
+export function On<D = unknown>(eventName: string, callback: WailsEventCallback<D>): () => void;
 /**
  * Registers a callback function to be executed only once for the specified event.
  *
+ * @template [D=unknown]
  * @param {string} eventName - The name of the event.
- * @param {function} callback - The function to be executed when the event occurs.
- * @return {function} - A function that, when called, will unregister the callback from the event.
+ * @param {WailsEventCallback<D>} callback - The function to be executed when the event occurs.
+ * @return {() => void} - A function that, when called, will unregister the callback from the event.
  */
-export function Once(eventName: string, callback: Function): Function;
+export function Once<D = unknown>(eventName: string, callback: WailsEventCallback<D>): () => void;
 /**
  * Removes event listeners for the specified event names.
  *
@@ -232,8 +235,16 @@ export const Types: {
         ThemeChanged: string;
     };
 };
-export class WailsEvent {
-    constructor(name: any, data?: any);
-    name: any;
-    data: any;
+/**
+ * @template [D=unknown]
+ */
+export class WailsEvent<D = unknown> {
+    /**
+     * @param {string} name - The name of the event
+     * @param {D} data - The data emitted by the event
+     */
+    constructor(name: string, data?: D);
+    name: string;
+    data: D;
 }
+export type WailsEventCallback<D> = (event: WailsEvent<D>) => void;
