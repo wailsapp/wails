@@ -18,6 +18,6 @@ greetButton.addEventListener('click', () => {
     });
 });
 
-Events.On('time', (time: {data: any}) => {
+Events.On<string>('time', (time) => {
     timeElement.innerText = time.data;
 });
