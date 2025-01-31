@@ -7,7 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: 'v3-alpha'
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
 
+      - name: Configure git
+        run: |
+          git config --local user.email "github-actions@github.com"
+          git config --local user.name "GitHub Actions"
 
       - name: Setup go-task
         uses: pnorton5432/setup-task@v1
@@ -23,11 +31,19 @@ jobs:
           npm run build:docs
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
 
-      - name: commit code
-        uses: devops-infra/action-commit-push@master
+      - name: test action
+        id: get-version
+        uses: beaconbrigade/package-json-version@v0.3.2
         with:
-          github_token: "${{ secrets.GITHUB_TOKEN }}"
-          commit_message: "The runtime was rebuilt"
+          path: v3/internal/runtime/desktop/@wailsio/runtime
+
+      - name: Print the version
+        run: echo "The version was ${{ steps.get-version.outputs.version }}"
+      - name: Commit changes
+        run: |
+          git add .
+          git commit -m "chore: Publish @wailsio/runtime ${{ steps.get-version.outputs.version }}"
+          git push
 
       - uses: JS-DevTools/npm-publish@v3
         with:
