@@ -56,7 +56,6 @@ extern void handleSecondInstanceData(char * message);
         handleSecondInstanceData((char*)utf8Message);
     }
 }
-
 // GENERATED EVENTS START
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     if( hasListeners(EventApplicationDidBecomeActive) ) {
