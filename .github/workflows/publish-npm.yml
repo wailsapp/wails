@@ -37,12 +37,10 @@ jobs:
         with:
           path: v3/internal/runtime/desktop/@wailsio/runtime
 
-      - name: Print the version
-        run: echo "The version was ${{ steps.get-version.outputs.version }}"
       - name: Commit changes
         run: |
           git add .
-          git commit -m "chore: Publish @wailsio/runtime ${{ steps.get-version.outputs.version }}"
+          git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.get-version.outputs.version }}"
           git push
 
       - uses: JS-DevTools/npm-publish@v3
