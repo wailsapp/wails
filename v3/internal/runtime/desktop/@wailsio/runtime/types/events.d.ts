@@ -51,6 +51,9 @@ export const Types: {
         SystemThemeChanged: string;
         APMPowerStatusChange: string;
         APMSuspend: string;
+        /**
+         * @typedef {import("./types").WailsEvent} WailsEvent
+         */
         APMResumeAutomatic: string;
         APMResumeSuspend: string;
         APMPowerSettingChange: string;
@@ -66,13 +69,32 @@ export const Types: {
         WindowRestore: string;
         WindowMinimise: string;
         WindowUnMinimise: string;
-        WindowClose: string;
+        WindowClosing: string;
         WindowSetFocus: string;
         WindowKillFocus: string;
         WindowDragDrop: string;
         WindowDragEnter: string;
         WindowDragLeave: string;
         WindowDragOver: string;
+        WindowDidMove: string;
+        WindowDidResize: string;
+        WindowShow: string;
+        WindowHide: string;
+        WindowStartMove: string;
+        WindowEndMove: string;
+        WindowStartResize: string;
+        WindowEndResize: string;
+        WindowKeyDown: string;
+        WindowKeyUp: string;
+        WindowZOrderChanged: string;
+        WindowPaint: string;
+        WindowBackgroundErase: string;
+        WindowNonClientHit: string;
+        WindowNonClientMouseDown: string;
+        WindowNonClientMouseUp: string;
+        WindowNonClientMouseMove: string;
+        WindowNonClientMouseLeave: string;
+        WindowDPIChanged: string;
     };
     Mac: {
         ApplicationDidBecomeActive: string;
@@ -93,6 +115,12 @@ export const Types: {
         ApplicationWillHide: string;
         ApplicationWillResignActive: string;
         ApplicationWillTerminate: string;
+        /**
+         * Removes the specified listener from the event listeners collection.
+         * If all listeners for the event are removed, the event key is deleted from the collection.
+         *
+         * @param {Object} listener - The listener to be removed.
+         */
         ApplicationWillUnhide: string;
         ApplicationWillUpdate: string;
         ApplicationDidChangeTheme: string;
@@ -117,10 +145,15 @@ export const Types: {
         WindowDidChangeSpaceOrderingMode: string;
         WindowDidChangeTitle: string;
         WindowDidChangeToolbar: string;
-        WindowDidChangeVisibility: string;
         WindowDidDeminiaturize: string;
         WindowDidEndSheet: string;
         WindowDidEnterFullScreen: string;
+        WindowMaximise: string;
+        WindowUnMaximise: string;
+        WindowDidZoom: string;
+        WindowZoomIn: string;
+        WindowZoomOut: string;
+        WindowZoomReset: string;
         WindowDidEnterVersionBrowser: string;
         WindowDidExitFullScreen: string;
         WindowDidExitVersionBrowser: string;
@@ -140,7 +173,6 @@ export const Types: {
         WindowDidUpdateShadow: string;
         WindowDidUpdateTitle: string;
         WindowDidUpdateToolbar: string;
-        WindowDidUpdateVisibility: string;
         WindowShouldClose: string;
         WindowWillBecomeKey: string;
         WindowWillBecomeMain: string;
@@ -199,11 +231,15 @@ export const Types: {
         WindowFileDraggingEntered: string;
         WindowFileDraggingPerformed: string;
         WindowFileDraggingExited: string;
+        WindowShow: string;
+        WindowHide: string;
     };
     Linux: {
         SystemThemeChanged: string;
         WindowLoadChanged: string;
         WindowDeleteEvent: string;
+        WindowDidMove: string;
+        WindowDidResize: string;
         WindowFocusIn: string;
         WindowFocusOut: string;
         ApplicationStartup: string;
@@ -230,6 +266,9 @@ export const Types: {
         WindowFilesDropped: string;
         WindowRuntimeReady: string;
         ThemeChanged: string;
+        WindowDidMove: string;
+        WindowDidResize: string;
+        ApplicationOpenedWithFile: string;
     };
 };
 export class WailsEvent {

@@ -10,8 +10,17 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: "20"
-      - run: npm ci
+      - run: |
+          npm ci
+          npm run build:types
+          npm run build:docs
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+
+      - name: commit code
+        uses: devops-infra/action-commit-push@master
+        with:
+          github_token: "${{ secrets.GITHUB_TOKEN }}"
+          commit_message: "The runtime was rebuilt"
 
       - uses: JS-DevTools/npm-publish@v3
         with:
