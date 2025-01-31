@@ -86,6 +86,8 @@ func (s *systrayMenuItem) setDisabled(disabled bool) {
 	}
 }
 
+func (s *systrayMenuItem) destroy() {}
+
 func (s *systrayMenuItem) setChecked(checked bool) {
 	v := dbus.MakeVariant(0)
 	if checked {
