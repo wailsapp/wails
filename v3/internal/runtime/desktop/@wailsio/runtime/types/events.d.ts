@@ -75,8 +75,6 @@ export const Types: {
         WindowKeyDown: string;
         WindowKeyUp: string;
         WindowKillFocus: string;
-        WindowMaximise: string;
-        WindowMinimise: string;
         WindowNonClientHit: string;
         WindowNonClientMouseDown: string;
         WindowNonClientMouseLeave: string;
@@ -89,9 +87,11 @@ export const Types: {
         WindowStartMove: string;
         WindowStartResize: string;
         WindowUnFullscreen: string;
-        WindowUnMaximise: string;
-        WindowUnMinimise: string;
         WindowZOrderChanged: string;
+        WindowMinimise: string;
+        WindowUnMinimise: string;
+        WindowMaximise: string;
+        WindowUnMaximise: string;
     };
     Mac: {
         ApplicationDidBecomeActive: string;
@@ -105,7 +105,7 @@ export const Types: {
         ApplicationDidChangeTheme: string;
         ApplicationDidFinishLaunching: string;
         ApplicationDidHide: string;
-        ApplicationDidResignActiveNotification: string;
+        ApplicationDidResignActive: string;
         ApplicationDidUnhide: string;
         ApplicationDidUpdate: string;
         ApplicationShouldHandleReopen: string;
@@ -190,10 +190,12 @@ export const Types: {
         WindowFileDraggingExited: string;
         WindowFileDraggingPerformed: string;
         WindowHide: string;
-        WindowMaximize: string;
+        WindowMaximise: string;
+        WindowUnMaximise: string;
+        WindowMinimise: string;
+        WindowUnMinimise: string;
         WindowShouldClose: string;
         WindowShow: string;
-        WindowUnMaximise: string;
         WindowWillBecomeKey: string;
         WindowWillBecomeMain: string;
         WindowWillBeginSheet: string;
