@@ -117,9 +117,9 @@ extern void handleSecondInstanceData(char * message);
     }
 }
 
-- (void)applicationDidResignActiveNotification:(NSNotification *)notification {
-    if( hasListeners(EventApplicationDidResignActiveNotification) ) {
-        processApplicationEvent(EventApplicationDidResignActiveNotification, NULL);
+- (void)applicationDidResignActive:(NSNotification *)notification {
+    if( hasListeners(EventApplicationDidResignActive) ) {
+        processApplicationEvent(EventApplicationDidResignActive, NULL);
     }
 }
 

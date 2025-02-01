@@ -41,7 +41,7 @@ mac:ApplicationDidChangeStatusBarOrientation
 mac:ApplicationDidChangeTheme!
 mac:ApplicationDidFinishLaunching
 mac:ApplicationDidHide
-mac:ApplicationDidResignActiveNotification
+mac:ApplicationDidResignActive
 mac:ApplicationDidUnhide
 mac:ApplicationDidUpdate
 mac:ApplicationShouldHandleReopen!
@@ -126,10 +126,12 @@ mac:WindowFileDraggingEntered
 mac:WindowFileDraggingExited
 mac:WindowFileDraggingPerformed
 mac:WindowHide
-mac:WindowMaximize
+mac:WindowMaximise!
+mac:WindowUnMaximise!
+mac:WindowMinimise!
+mac:WindowUnMinimise!
 mac:WindowShouldClose!
 mac:WindowShow
-mac:WindowUnMaximise
 mac:WindowWillBecomeKey
 mac:WindowWillBecomeMain
 mac:WindowWillBeginSheet
@@ -187,8 +189,6 @@ windows:WindowInactive
 windows:WindowKeyDown
 windows:WindowKeyUp
 windows:WindowKillFocus
-windows:WindowMaximise
-windows:WindowMinimise
 windows:WindowNonClientHit
 windows:WindowNonClientMouseDown
 windows:WindowNonClientMouseLeave
@@ -201,6 +201,8 @@ windows:WindowShow
 windows:WindowStartMove
 windows:WindowStartResize
 windows:WindowUnFullscreen
-windows:WindowUnMaximise
-windows:WindowUnMinimise
 windows:WindowZOrderChanged
+windows:WindowMinimise
+windows:WindowUnMinimise
+windows:WindowMaximise
+windows:WindowUnMaximise
