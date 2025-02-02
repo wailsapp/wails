@@ -1,0 +1,212 @@
+---
+title: System Tray
+description: Learn how to create and use system tray icons in Wails
+---
+import {Badge} from '@astrojs/starlight/components';
+
+## Introduction
+
+The system tray (also known as the notification area) is a section of the desktop environment where applications can display icons and menus. In Wails, you can easily add a system tray icon to your application with full control over its appearance and behavior.
+
+## Basic Usage
+
+To create a basic system tray icon:
+
+```go
+app := application.New(options)
+systray := app.NewSystemTray()
+systray.SetLabel("My App")
+systray.SetIcon(iconBytes)
+systray.Run()
+```
+
+## Setting the Icon
+
+The system tray icon can be set using embedded image files. First, import the `embed` package and declare your icon files:
+
+```go
+import "embed"
+
+//go:embed assets/icon.png assets/icon-dark.png
+var iconFS embed.FS
+```
+
+Then read and set the icons:
+
+```go
+// Read icon data
+iconBytes, _ := iconFS.ReadFile("assets/icon.png")
+darkModeIconBytes, _ := iconFS.ReadFile("assets/icon-dark.png")
+
+// Set icons
+systray.SetIcon(iconBytes)
+systray.SetDarkModeIcon(darkModeIconBytes)
+```
+
+Supported image formats include PNG and JPEG. For best results, use icons with appropriate sizes:
+- Windows: 16x16 or 32x32 pixels
+- macOS: 18x18 to 128x128 pixels
+- Linux: Varies by desktop environment
+
+On macOS, you can mark the icon as a template image for automatic dark/light mode adaptation:
+
+```go
+systray.SetTemplateIcon(iconBytes)
+```
+
+For more details on creating template icons, read this [great article](https://bjango.com/articles/designingmenubarextras/).
+
+## Setting the Label <Badge text="macOS" variant="success" />
+
+You can set a text label for your system tray icon:
+
+```go
+systray.SetLabel("My App")
+```
+
+The label will appear next to the icon in the system tray. On some platforms, this text may be truncated if it's too long.
+
+## Adding a Menu
+
+You can add a menu to your system tray icon:
+
+```go
+menu := application.NewMenu()
+menu.Add("Open").OnClick(func() {
+    // Handle click
+})
+menu.Add("Quit").OnClick(func() {
+    app.Quit()
+})
+
+systray.SetMenu(menu)
+```
+
+## Attaching a Window
+
+You can attach a window to a system tray icon to gain a number of desirable features:
+- The attached window will start hidden
+- Left-clicking on the system tray icon will toggle the visibility of the attached window
+- Right-clicking on the system tray icon will show the system tray menu, if given
+
+Here's a complete example:
+
+```go
+app := application.New()
+
+// Create system tray
+systray := app.NewSystemTray()
+systray.SetLabel("My App")
+
+// Create a window
+window := app.NewWebviewWindow()
+
+// Attach the window to the system tray
+systray.AttachWindow(window)
+
+// Optional: Set window offset from tray icon
+systray.WindowOffset(10)
+
+// Optional: Set debounce time for window show/hide
+systray.WindowDebounce(200 * time.Millisecond)
+
+// Add a menu (optional)
+menu := application.NewMenu()
+menu.Add("Open").OnClick(func() {
+    window.Show()
+})
+menu.Add("Quit").OnClick(func() {
+    app.Quit()
+})
+systray.SetMenu(menu)
+
+systray.Run()
+```
+
+## Icon Position <Badge text="macOS" variant="success" />
+
+On macOS, you can control the position of the system tray icon relative to other icons:
+
+```go
+systray.SetIconPosition(application.IconPositionRight)
+```
+
+Available positions:
+- `NSImageNone`
+- `NSImageOnly`
+- `NSImageLeft`
+- `NSImageRight`
+- `NSImageBelow`
+- `NSImageAbove`
+- `NSImageOverlaps`
+- `NSImageLeading`
+- `NSImageTrailing`
+
+## Destroying the System Tray
+
+When you're done with the system tray, you should destroy it to release resources:
+
+```go
+systray.Destroy()
+```
+
+## Platform Considerations
+
+- **macOS**: Icons support template images for automatic dark/light mode
+- **Windows**: Icons should be 16x16 or 32x32 pixels
+- **Linux**: Uses the StatusNotifierItem specification
+
+## Examples
+
+Explore these examples for more advanced usage:
+
+- [Basic System Tray](/examples/systray-basic)
+- [System Tray with Menu](/examples/systray-menu)
+- [Custom System Tray](/examples/systray-custom)
+
+## API Reference
+
+### Core Methods
+| Method                         | Description                                |
+|--------------------------------|--------------------------------------------|
+| `NewSystemTray()`              | Creates a new system tray instance         |
+| `Run()`                        | Starts the system tray                     |
+| `SetLabel(label string)`       | Sets the text label                        |
+| `SetIcon(icon []byte)`         | Sets the icon image                        |
+| `SetDarkModeIcon(icon []byte)` | Sets the dark mode variant of the icon     |
+| `SetTemplateIcon(icon []byte)` | Marks the icon as a template image (macOS) |
+| `SetIconPosition(position int)`| Sets the icon position (macOS)             |
+| `Destroy()`                    | Destroys the system tray                   |
+
+### Menu Management
+| Method                | Description                      |
+|-----------------------|----------------------------------|
+| `SetMenu(menu *Menu)` | Attaches a menu to the tray icon |
+| `OpenMenu()`          | Programmatically opens the menu  |
+
+### Event Handlers
+| Method                               | Description                       |
+|--------------------------------------|-----------------------------------|
+| `OnClick(handler func())`            | Handles left-click events         |
+| `OnRightClick(handler func())`       | Handles right-click events        |
+| `OnDoubleClick(handler func())`      | Handles left-double-click events  |
+| `OnRightDoubleClick(handler func())` | Handles right-double-click events |
+| `OnMouseEnter(handler func())`       | Handles mouse enter events        |
+| `OnMouseLeave(handler func())`       | Handles mouse leave events        |
+
+### Window Attachment
+
+| Method                                   | Description                                 |
+|------------------------------------------|---------------------------------------------|
+| `AttachWindow(window *WebviewWindow)`    | Associates a window with the tray icon      |
+| `WindowOffset(offset int)`               | Sets the offset between the tray and window |
+| `WindowDebounce(debounce time.Duration)` | Sets the debounce time for window show/hide |
+
+### Visibility Control
+
+| Method   | Description                 |
+|----------|-----------------------------|
+| `Show()` | Makes the tray icon visible |
+| `Hide()` | Hides the tray icon         |
+
+See the [SystemTray API Reference](/api/systemtray) for complete documentation.

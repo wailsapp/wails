@@ -9,6 +9,24 @@ package application
 #include "Cocoa/Cocoa.h"
 #include "menuitem_darwin.h"
 #include "systemtray_darwin.h"
+
+// Show the system tray icon
+static void systemTrayShow(void* nsStatusItem) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+		// Get the NSStatusItem
+        NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+        [statusItem setVisible:YES];
+    });
+}
+
+// Hide the system tray icon
+static void systemTrayHide(void* nsStatusItem) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+        [statusItem setVisible:NO];
+    });
+}
+
 */
 import "C"
 import (
@@ -27,10 +45,24 @@ type macosSystemTray struct {
 	nsStatusItem      unsafe.Pointer
 	nsImage           unsafe.Pointer
 	nsMenu            unsafe.Pointer
-	iconPosition      int
+	iconPosition      IconPosition
 	isTemplateIcon    bool
 	parent            *SystemTray
 	lastClickedScreen unsafe.Pointer
+}
+
+func (s *macosSystemTray) Show() {
+	if s.nsStatusItem == nil {
+		return
+	}
+	C.systemTrayShow(s.nsStatusItem)
+}
+
+func (s *macosSystemTray) Hide() {
+	if s.nsStatusItem == nil {
+		return
+	}
+	C.systemTrayHide(s.nsStatusItem)
 }
 
 func (s *macosSystemTray) openMenu() {
@@ -61,7 +93,7 @@ func systrayClickCallback(id C.long, buttonID C.int) {
 	systemTray.processClick(button(buttonID))
 }
 
-func (s *macosSystemTray) setIconPosition(position int) {
+func (s *macosSystemTray) setIconPosition(position IconPosition) {
 	s.iconPosition = position
 }
 

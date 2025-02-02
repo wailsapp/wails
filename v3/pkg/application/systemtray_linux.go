@@ -724,6 +724,16 @@ func (s *linuxSystemTray) SecondaryActivate(x int32, y int32) (err *dbus.Error) 
 	return
 }
 
+// Show is a no-op for Linux
+func (s *linuxSystemTray) Show() {
+	// No-op
+}
+
+// Hide is a no-op for Linux
+func (s *linuxSystemTray) Hide() {
+	// No-op
+}
+
 // tooltip is our data for a tooltip property.
 // Param names need to match the generated code...
 type tooltip = struct {

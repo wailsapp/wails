@@ -394,3 +394,11 @@ func (s *windowsSystemTray) destroy() {
 		globalApplication.debug(syscall.GetLastError().Error())
 	}
 }
+
+func (s *windowsSystemTray) Show() {
+	// No-op
+}
+
+func (s *windowsSystemTray) Hide() {
+	// No-op
+}
