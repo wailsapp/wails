@@ -112,7 +112,7 @@ func (i systrayMenuItem) dbus() *dbusMenu {
 	return item
 }
 
-func (s *linuxSystemTray) setIconPosition(position int) {
+func (s *linuxSystemTray) setIconPosition(position IconPosition) {
 	s.iconPosition = position
 }
 

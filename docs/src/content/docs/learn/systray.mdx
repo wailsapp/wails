@@ -2,7 +2,7 @@
 title: System Tray
 description: Learn how to create and use system tray icons in Wails
 ---
-import {Badge} from '@astrojs/starlight/components';
+
 
 ## Introduction
 
@@ -167,16 +167,16 @@ Explore these examples for more advanced usage:
 ## API Reference
 
 ### Core Methods
-| Method                         | Description                                |
-|--------------------------------|--------------------------------------------|
-| `NewSystemTray()`              | Creates a new system tray instance         |
-| `Run()`                        | Starts the system tray                     |
-| `SetLabel(label string)`       | Sets the text label                        |
-| `SetIcon(icon []byte)`         | Sets the icon image                        |
-| `SetDarkModeIcon(icon []byte)` | Sets the dark mode variant of the icon     |
-| `SetTemplateIcon(icon []byte)` | Marks the icon as a template image (macOS) |
-| `SetIconPosition(position int)`| Sets the icon position (macOS)             |
-| `Destroy()`                    | Destroys the system tray                   |
+| Method                                   | Description                                |
+|------------------------------------------|--------------------------------------------|
+| `NewSystemTray()`                        | Creates a new system tray instance         |
+| `Run()`                                  | Starts the system tray                     |
+| `SetLabel(label string)`                 | Sets the text label                        |
+| `SetIcon(icon []byte)`                   | Sets the icon image                        |
+| `SetDarkModeIcon(icon []byte)`           | Sets the dark mode variant of the icon     |
+| `SetTemplateIcon(icon []byte)`           | Marks the icon as a template image (macOS) |
+| `SetIconPosition(position IconPosition)` | Sets the icon position (macOS)             |
+| `Destroy()`                              | Destroys the system tray                   |
 
 ### Menu Management
 | Method                | Description                      |
