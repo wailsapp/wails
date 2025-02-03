@@ -530,4 +530,7 @@ type LinuxWindow struct {
 
 	// WindowDidMoveDebounceMS is the debounce time in milliseconds for the WindowDidMove event
 	WindowDidMoveDebounceMS uint16
+
+	// Menu is the window's menu
+	Menu *Menu
 }
