@@ -262,9 +262,6 @@ func (w *linuxWebviewWindow) run() {
 	app := getNativeApplication()
 
 	var menu = w.menu
-	if menu == nil && globalApplication.ApplicationMenu != nil {
-		menu = globalApplication.ApplicationMenu.Clone()
-	}
 	if menu != nil {
 		InvokeSync(func() {
 			menu.Update()

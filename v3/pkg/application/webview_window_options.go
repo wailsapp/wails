@@ -258,10 +258,6 @@ type WindowsWindow struct {
 	// Default: 0
 	WindowDidMoveDebounceMS uint16
 
-	// Disable the menu bar for this window
-	// Default: false
-	DisableMenu bool
-
 	// Event mapping for the window. This allows you to define a translation from one event to another.
 	// Default: nil
 	EventMapping map[events.WindowEventType]events.WindowEventType

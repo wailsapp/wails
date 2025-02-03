@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Renamed Service methods: `Name` -> `ServiceName`, `OnStartup` -> `ServiceStartup`, `OnShutdown` -> `ServiceShutdown` by [@leaanthony](https://github.com/leaanthony)
 - Moved `Path` and `Paths` methods to `application` package by [@leaanthony](https://github.com/leaanthony)
+- The application menu is now macOS only by [@leaanthony](https://github.com/leaanthony)
 
 ### Added
 
@@ -57,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change paths in windows Taskfile to forward slashes to ensure it works on non-Windows platforms by [@leaanthony](https://github.com/leaanthony)
 - Mac + Mac JS events now fixed by [@leaanthony](https://github.com/leaanthony)
 - Fixed event deadlock for macOS by [@leaanthony](https://github.com/leaanthony)
+- Fixed a `Parameter incorrect` error in Window initialisation on Windows when HTML provided but no JS by [@leaanthony](https://github.com/leaanthony)
 
 ### Changed
 
@@ -66,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ContextMenuData now returns a string instead of any by [@leaanthony](https://github.com/leaanthony)
 - `application.NewService` does not accept options as an optional parameter anymore (use `application.NewServiceWithOptions` instead) by [@leaanthony](https://github.com/leaanthony) in [#4024](https://github.com/wailsapp/wails/pull/4024)
 - Removed `nanoid` dependency by [@leaanthony](https://github.com/leaanthony)
+- Updated Window example for mica/acrylic/tabbed window styles by [@leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.9 - 2025-01-13
 
