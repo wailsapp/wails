@@ -7,7 +7,7 @@ shopt: [globstar]
 tasks:
   clean:
     cmds:
-      - rm -rf ./testdata/output/**/*.got.[jt]s
+      - rm -rf ./testdata/output/**/*.got.[jt]s ./testdata/output/**/*.got.log
 
   test:
     cmds:

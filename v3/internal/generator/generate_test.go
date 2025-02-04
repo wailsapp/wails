@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -88,9 +89,11 @@ func TestGenerator(t *testing.T) {
 	// Run tests.
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			creator := outputCreator(t, test)
+
 			generator := NewGenerator(
 				test.options,
-				outputCreator(t, test),
+				creator,
 				config.DefaultPtermLogger(nil),
 			)
 
@@ -100,6 +103,22 @@ func TestGenerator(t *testing.T) {
 					t.Error(report)
 				} else if report.HasWarnings() {
 					pterm.Warning.Println(report)
+				}
+
+				// Log warnings and compare with reference output.
+				if log, err := creator.Create("warnings.log"); err != nil {
+					t.Error(err)
+				} else {
+					func() {
+						defer log.Close()
+
+						warnings := report.Warnings()
+						slices.Sort(warnings)
+
+						for _, msg := range warnings {
+							fmt.Fprintln(log, msg)
+						}
+					}()
 				}
 			} else if err != nil {
 				t.Error(err)
