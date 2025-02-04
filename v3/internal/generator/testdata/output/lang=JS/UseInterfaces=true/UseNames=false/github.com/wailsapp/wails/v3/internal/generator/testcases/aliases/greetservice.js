@@ -57,14 +57,6 @@ export function GetButForeignPrivateAlias() {
 }
 
 /**
- * @returns {Promise<$models.AliasGroup> & { cancel(): void }}
- */
-export function GetButGenericAliases() {
-    let $resultPromise = /** @type {any} */($Call.ByID(914093800));
-    return $resultPromise;
-}
-
-/**
  * Greet a lot of unusual things.
  * @param {$models.EmptyAliasStruct} $0
  * @param {$models.EmptyStruct} $1

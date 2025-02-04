@@ -47,11 +47,6 @@ export function GetButForeignPrivateAlias(): Promise<nobindingshere$0.PrivatePer
     return $resultPromise;
 }
 
-export function GetButGenericAliases(): Promise<$models.AliasGroup> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(914093800) as any;
-    return $resultPromise;
-}
-
 /**
  * Greet a lot of unusual things.
  */

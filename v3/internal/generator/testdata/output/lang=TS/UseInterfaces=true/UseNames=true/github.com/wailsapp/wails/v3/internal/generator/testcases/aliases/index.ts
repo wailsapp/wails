@@ -8,19 +8,12 @@ export {
 
 export type {
     Alias,
-    AliasGroup,
     AliasStruct,
     AliasedPerson,
     EmptyAliasStruct,
     EmptyStruct,
-    GenericAlias,
-    GenericMapAlias,
     GenericPerson,
-    GenericPersonAlias,
-    GenericPtrAlias,
-    IndirectPersonAlias,
     OtherAliasStruct,
     Person,
-    StrangelyAliasedPerson,
-    TPIndirectPersonAlias
+    StrangelyAliasedPerson
 } from "./models.js";

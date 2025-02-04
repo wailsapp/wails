@@ -7,20 +7,6 @@
 export type Alias = number;
 
 /**
- * A class whose fields have various aliased types.
- */
-export interface AliasGroup {
-    "GAi": GenericAlias<number>;
-    "GAP": GenericAlias<GenericPerson<boolean>>;
-    "GPAs": GenericPtrAlias<string[] | null>;
-    "GPAP": GenericPtrAlias<GenericPerson<number[] | null>>;
-    "GMA": GenericMapAlias<string, number>;
-    "GPA": GenericPersonAlias<boolean>;
-    "IPA": IndirectPersonAlias;
-    "TPIPA": TPIndirectPersonAlias;
-}
-
-/**
  * A struct alias.
  * This should be rendered as a typedef or interface in every mode.
  */
@@ -60,37 +46,12 @@ export interface EmptyStruct {
 }
 
 /**
- * A generic alias that forwards to a type parameter.
- */
-export type GenericAlias<T> = T;
-
-/**
- * A generic alias that wraps a map.
- */
-export type GenericMapAlias<T, U> = { [_: string]: U } | null;
-
-/**
  * A generic struct containing an alias.
  */
 export interface GenericPerson<T> {
     "Name": T;
     "AliasedField": Alias;
 }
-
-/**
- * A generic alias that wraps a generic struct.
- */
-export type GenericPersonAlias<T> = GenericPerson<GenericPtrAlias<T>[] | null>;
-
-/**
- * A generic alias that wraps a pointer type.
- */
-export type GenericPtrAlias<T> = GenericAlias<T> | null;
-
-/**
- * An alias that wraps a class through a non-typeparam alias.
- */
-export type IndirectPersonAlias = GenericPersonAlias<boolean>;
 
 /**
  * Another struct alias.
@@ -118,8 +79,3 @@ export interface Person {
  * Another class alias, but ordered after its aliased class.
  */
 export type StrangelyAliasedPerson = Person;
-
-/**
- * An alias that wraps a class through a typeparam alias.
- */
-export type TPIndirectPersonAlias = GenericAlias<GenericPerson<boolean>>;

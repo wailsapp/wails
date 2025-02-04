@@ -14,16 +14,6 @@ export {
 import * as $models from "./models.js";
 
 /**
- * @template S
- * @typedef {$models.BasicCstrAlias<S>} BasicCstrAlias
- */
-
-/**
- * @template R
- * @typedef {$models.ComparableCstrAlias<R>} ComparableCstrAlias
- */
-
-/**
  * @typedef {$models.EmbeddedCustomInterface} EmbeddedCustomInterface
  */
 
@@ -45,31 +35,6 @@ import * as $models from "./models.js";
 
 /**
  * @typedef {$models.EmbeddedValuePtr} EmbeddedValuePtr
- */
-
-/**
- * @template U
- * @typedef {$models.GoodTildeCstrAlias<U>} GoodTildeCstrAlias
- */
-
-/**
- * @template Y
- * @typedef {$models.InterfaceCstrAlias<Y>} InterfaceCstrAlias
- */
-
-/**
- * @template X
- * @typedef {$models.MixedCstrAlias<X>} MixedCstrAlias
- */
-
-/**
- * @template V
- * @typedef {$models.NonBasicCstrAlias<V>} NonBasicCstrAlias
- */
-
-/**
- * @template W
- * @typedef {$models.PointableCstrAlias<W>} PointableCstrAlias
  */
 
 /**

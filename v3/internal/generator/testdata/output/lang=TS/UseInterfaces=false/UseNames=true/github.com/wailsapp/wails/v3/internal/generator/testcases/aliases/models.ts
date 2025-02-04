@@ -11,86 +11,6 @@ import {Create as $Create} from "/wails/runtime.js";
 export type Alias = number;
 
 /**
- * A class whose fields have various aliased types.
- */
-export class AliasGroup {
-    "GAi": GenericAlias<number>;
-    "GAP": GenericAlias<GenericPerson<boolean>>;
-    "GPAs": GenericPtrAlias<string[]>;
-    "GPAP": GenericPtrAlias<GenericPerson<number[]>>;
-    "GMA": GenericMapAlias<string, number>;
-    "GPA": GenericPersonAlias<boolean>;
-    "IPA": IndirectPersonAlias;
-    "TPIPA": TPIndirectPersonAlias;
-
-    /** Creates a new AliasGroup instance. */
-    constructor($$source: Partial<AliasGroup> = {}) {
-        if (!("GAi" in $$source)) {
-            this["GAi"] = 0;
-        }
-        if (!("GAP" in $$source)) {
-            this["GAP"] = (new GenericPerson());
-        }
-        if (!("GPAs" in $$source)) {
-            this["GPAs"] = null;
-        }
-        if (!("GPAP" in $$source)) {
-            this["GPAP"] = null;
-        }
-        if (!("GMA" in $$source)) {
-            this["GMA"] = {};
-        }
-        if (!("GPA" in $$source)) {
-            this["GPA"] = (new GenericPersonAlias());
-        }
-        if (!("IPA" in $$source)) {
-            this["IPA"] = (new IndirectPersonAlias());
-        }
-        if (!("TPIPA" in $$source)) {
-            this["TPIPA"] = (new TPIndirectPersonAlias());
-        }
-
-        Object.assign(this, $$source);
-    }
-
-    /**
-     * Creates a new AliasGroup instance from a string or object.
-     */
-    static createFrom($$source: any = {}): AliasGroup {
-        const $$createField1_0 = $$createType0;
-        const $$createField2_0 = $$createType2;
-        const $$createField3_0 = $$createType5;
-        const $$createField4_0 = $$createType6;
-        const $$createField5_0 = $$createType8;
-        const $$createField6_0 = $$createType8;
-        const $$createField7_0 = $$createType0;
-        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
-        if ("GAP" in $$parsedSource) {
-            $$parsedSource["GAP"] = $$createField1_0($$parsedSource["GAP"]);
-        }
-        if ("GPAs" in $$parsedSource) {
-            $$parsedSource["GPAs"] = $$createField2_0($$parsedSource["GPAs"]);
-        }
-        if ("GPAP" in $$parsedSource) {
-            $$parsedSource["GPAP"] = $$createField3_0($$parsedSource["GPAP"]);
-        }
-        if ("GMA" in $$parsedSource) {
-            $$parsedSource["GMA"] = $$createField4_0($$parsedSource["GMA"]);
-        }
-        if ("GPA" in $$parsedSource) {
-            $$parsedSource["GPA"] = $$createField5_0($$parsedSource["GPA"]);
-        }
-        if ("IPA" in $$parsedSource) {
-            $$parsedSource["IPA"] = $$createField6_0($$parsedSource["IPA"]);
-        }
-        if ("TPIPA" in $$parsedSource) {
-            $$parsedSource["TPIPA"] = $$createField7_0($$parsedSource["TPIPA"]);
-        }
-        return new AliasGroup($$parsedSource as Partial<AliasGroup>);
-    }
-}
-
-/**
  * A struct alias.
  * This should be rendered as a typedef or interface in every mode.
  */
@@ -139,16 +59,6 @@ export class EmptyStruct {
 }
 
 /**
- * A generic alias that forwards to a type parameter.
- */
-export type GenericAlias<T> = T;
-
-/**
- * A generic alias that wraps a map.
- */
-export type GenericMapAlias<T, U> = { [_: string]: U };
-
-/**
  * A generic struct containing an alias.
  */
 export class GenericPerson<T> {
@@ -180,31 +90,6 @@ export class GenericPerson<T> {
         };
     }
 }
-
-/**
- * A generic alias that wraps a generic struct.
- */
-export const GenericPersonAlias = GenericPerson;
-
-/**
- * A generic alias that wraps a generic struct.
- */
-export type GenericPersonAlias<T> = GenericPerson<GenericPtrAlias<T>[]>;
-
-/**
- * A generic alias that wraps a pointer type.
- */
-export type GenericPtrAlias<T> = GenericAlias<T> | null;
-
-/**
- * An alias that wraps a class through a non-typeparam alias.
- */
-export const IndirectPersonAlias = GenericPersonAlias;
-
-/**
- * An alias that wraps a class through a non-typeparam alias.
- */
-export type IndirectPersonAlias = GenericPersonAlias<boolean>;
 
 /**
  * Another struct alias.
@@ -267,24 +152,3 @@ export const StrangelyAliasedPerson = Person;
  * Another class alias, but ordered after its aliased class.
  */
 export type StrangelyAliasedPerson = Person;
-
-/**
- * An alias that wraps a class through a typeparam alias.
- */
-export const TPIndirectPersonAlias = GenericPerson;
-
-/**
- * An alias that wraps a class through a typeparam alias.
- */
-export type TPIndirectPersonAlias = GenericAlias<GenericPerson<boolean>>;
-
-// Private type creation functions
-const $$createType0 = GenericPerson.createFrom($Create.Any);
-const $$createType1 = $Create.Array($Create.Any);
-const $$createType2 = $Create.Nullable($$createType1);
-const $$createType3 = $Create.Array($Create.Any);
-const $$createType4 = GenericPerson.createFrom($$createType3);
-const $$createType5 = $Create.Nullable($$createType4);
-const $$createType6 = $Create.Map($Create.Any, $Create.Any);
-const $$createType7 = $Create.Array($Create.Any);
-const $$createType8 = GenericPerson.createFrom($$createType7);
