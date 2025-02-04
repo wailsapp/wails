@@ -63,13 +63,22 @@ export function GetButForeignPrivateAlias(): Promise<nobindingshere$0.PrivatePer
     return $typingPromise;
 }
 
+export function GetButGenericAliases(): Promise<$models.AliasGroup> & { cancel(): void } {
+    let $resultPromise = $Call.ByName("main.GreetService.GetButGenericAliases") as any;
+    let $typingPromise = $resultPromise.then(($result: any) => {
+        return $$createType3($result);
+    }) as any;
+    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
+    return $typingPromise;
+}
+
 /**
  * Greet a lot of unusual things.
  */
 export function Greet($0: $models.EmptyAliasStruct, $1: $models.EmptyStruct): Promise<$models.AliasStruct> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.Greet", $0, $1) as any;
     let $typingPromise = $resultPromise.then(($result: any) => {
-        return $$createType6($result);
+        return $$createType7($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
     return $typingPromise;
@@ -79,12 +88,13 @@ export function Greet($0: $models.EmptyAliasStruct, $1: $models.EmptyStruct): Pr
 const $$createType0 = $models.Person.createFrom;
 const $$createType1 = $models.GenericPerson.createFrom($Create.Any);
 const $$createType2 = nobindingshere$0.personImpl.createFrom;
-const $$createType3 = $Create.Array($Create.Any);
+const $$createType3 = $models.AliasGroup.createFrom;
 const $$createType4 = $Create.Array($Create.Any);
-const $$createType5 = $Create.Struct({
-    "NoMoreIdeas": $$createType4,
-});
+const $$createType5 = $Create.Array($Create.Any);
 const $$createType6 = $Create.Struct({
-    "Foo": $$createType3,
-    "Other": $$createType5,
+    "NoMoreIdeas": $$createType5,
+});
+const $$createType7 = $Create.Struct({
+    "Foo": $$createType4,
+    "Other": $$createType6,
 });
