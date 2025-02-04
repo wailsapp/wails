@@ -6,44 +6,9 @@
 // @ts-ignore: Unused imports
 import {Create as $Create} from "/wails/runtime.js";
 
-export class Hashes {
-    /**
-     * Creates a new Hashes instance.
-     * @param {Partial<Hashes>} [$$source = {}] - The source object to create the Hashes.
-     */
-    constructor($$source = {}) {
-        if (!("md5" in $$source)) {
-            /**
-             * @member
-             * @type {string}
-             */
-            this["md5"] = "";
-        }
-        if (!("sha1" in $$source)) {
-            /**
-             * @member
-             * @type {string}
-             */
-            this["sha1"] = "";
-        }
-        if (!("sha256" in $$source)) {
-            /**
-             * @member
-             * @type {string}
-             */
-            this["sha256"] = "";
-        }
-
-        Object.assign(this, $$source);
-    }
-
-    /**
-     * Creates a new Hashes instance from a string or object.
-     * @param {any} [$$source = {}]
-     * @returns {Hashes}
-     */
-    static createFrom($$source = {}) {
-        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
-        return new Hashes(/** @type {Partial<Hashes>} */($$parsedSource));
-    }
-}
+/**
+ * @typedef {Object} Hashes
+ * @property {string} md5
+ * @property {string} sha1
+ * @property {string} sha256
+ */

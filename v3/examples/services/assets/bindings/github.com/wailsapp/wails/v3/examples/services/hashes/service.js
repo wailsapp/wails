@@ -15,21 +15,6 @@ import * as $models from "./models.js";
  * @returns {Promise<$models.Hashes> & { cancel(): void }}
  */
 export function Generate(s) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1640814231, s));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
-        return $$createType0($result);
-    }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
-}
-
-/**
- * @returns {Promise<string> & { cancel(): void }}
- */
-export function Name() {
-    let $resultPromise = /** @type {any} */($Call.ByID(2815914379));
+    let $resultPromise = /** @type {any} */($Call.ByID(1123907498, s));
     return $resultPromise;
 }
-
-// Private type creation functions
-const $$createType0 = $models.Hashes.createFrom;
