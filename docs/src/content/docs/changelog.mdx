@@ -45,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - More documentation by [@leaanthony](https://github.com/leaanthony)
 - Support cancellation of events in standard event listeners by [@leaanthony](https://github.com/leaanthony)
 - Systray `Hide`, `Show` and `Destroy` support by [@leaanthony](https://github.com/leaanthony)
+- Report package path in binding generator warnings about unsupported types by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add binding generator support for generic aliases by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add binding generator support for `omitzero` JSON flag by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 
 ### Fixed
 
@@ -59,6 +62,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mac + Mac JS events now fixed by [@leaanthony](https://github.com/leaanthony)
 - Fixed event deadlock for macOS by [@leaanthony](https://github.com/leaanthony)
 - Fixed a `Parameter incorrect` error in Window initialisation on Windows when HTML provided but no JS by [@leaanthony](https://github.com/leaanthony)
+- Fixed undefined behaviour in binding generator when testing properties of generic types by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed binding generator output for models when underlying type has not the same properties as named wrapper by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed binding generator output for map key types and preprocessing by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed binding generator output for structs that implement marshaler interfaces by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed detection of type cycles involving generic types in binding generator by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed invalid references to unexported models in binding generator output by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 
 ### Changed
 
@@ -69,6 +78,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `application.NewService` does not accept options as an optional parameter anymore (use `application.NewServiceWithOptions` instead) by [@leaanthony](https://github.com/leaanthony) in [#4024](https://github.com/wailsapp/wails/pull/4024)
 - Removed `nanoid` dependency by [@leaanthony](https://github.com/leaanthony)
 - Updated Window example for mica/acrylic/tabbed window styles by [@leaanthony](https://github.com/leaanthony)
+- In JS/TS bindings, `internal.js/ts` model files have been removed; all models can now be found in `models.js/ts` by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- In JS/TS bindings, named types are never rendered as aliases for other named types; the old behaviour is now restricted to aliases by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- In JS/TS bindings, in class mode, struct fields whose type is a type parameter are marked optional and never initialised automatically by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 
 ## v3.0.0-alpha.9 - 2025-01-13
 
