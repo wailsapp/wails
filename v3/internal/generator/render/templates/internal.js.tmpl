@@ -144,9 +144,9 @@ export class {{jsid $model.Name}} {
             {{- jsdoc $field.Decl.Doc.Text "            "}}
             {{- end}}
              * @member
-             * @type { {{- $module.JSFieldType $field.StructField}}{{if .Optional}} | undefined{{end -}} }
+             * @type { {{- $module.JSFieldType $field.StructField}}{{if $field.Optional}} | undefined{{end -}} }
              */
-            this["{{js $field.JsonName}}"] = {{$module.JSDefault $field.Type $field.Quoted}};
+            this["{{js $field.JsonName}}"] = {{if $field.Optional}}undefined{{else}}{{$module.JSDefault $field.Type $field.Quoted}}{{end}};
         }
     {{- end}}{{end}}
 

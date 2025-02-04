@@ -83,11 +83,11 @@ func (m *module) renderType(typ types.Type, quoted bool) (result string, nullabl
 		return m.renderStructType(t), false
 
 	case *types.TypeParam:
-		str := ""
+		pre, post := "", ""
 		if quoted {
-			str = "| string "
+			pre, post = "(", " | string)"
 		}
-		return fmt.Sprintf("%s %s| null", typeparam(t.Index(), t.Obj().Name()), str), true
+		return fmt.Sprintf("%s%s%s", pre, typeparam(t.Index(), t.Obj().Name()), post), false
 	}
 
 	// Fall back to untyped mode.

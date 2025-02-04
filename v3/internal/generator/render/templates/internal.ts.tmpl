@@ -111,7 +111,7 @@ export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$t
 
     /** Creates a new {{jsid $model.Name}} instance. */
     constructor($$source: Partial<{{jsid $model.Name}}{{$typeParamList}}> = {}) {
-    {{- range $spec := $model.Fields}}{{range $i, $field := $spec}}{{if not .Optional}}
+    {{- range $spec := $model.Fields}}{{range $i, $field := $spec}}{{if not $field.Optional}}
         if (!("{{js $field.JsonName}}" in $$source)) {
             this["{{js $field.JsonName}}"] = {{$module.JSDefault $field.Type $field.Quoted}};
         }

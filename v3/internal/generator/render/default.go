@@ -44,11 +44,12 @@ func (m *module) JSDefault(typ types.Type, quoted bool) (result string) {
 	case *types.Map:
 		return "{}"
 
-	case *types.Pointer:
-		return "null"
-
 	case *types.Struct:
 		return m.renderStructDefault(t)
+
+	case *types.TypeParam:
+		// Should be unreachable
+		panic("type parameters have no default value")
 	}
 
 	// Fall back to null.
@@ -129,23 +130,14 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 		}
 	} else if _, isAlias := typ.(*types.Alias); isAlias {
 		return m.JSDefault(types.Unalias(typ), quoted), true
-	} else {
-		// Inject a type assertion in case we are breaking an enum.
-		// Using the true Go zero value is preferrable to selecting an arbitrary enum value.
-		value := m.JSDefault(typ.Underlying(), quoted)
+	} else if len(m.collector.Model(typ.Obj()).Collect().Values) > 0 {
 		if typ.Obj().Pkg().Path() == m.Imports.Self {
-			if m.TS {
-				return fmt.Sprintf("(%s as %s%s)", value, prefix, jsid(typ.Obj().Name())), true
-			} else {
-				return fmt.Sprintf("(/** @type {%s%s} */(%s))", prefix, jsid(typ.Obj().Name()), value), true
-			}
+			return fmt.Sprintf("%s%s.$zero", prefix, jsid(typ.Obj().Name())), true
 		} else {
-			if m.TS {
-				return fmt.Sprintf("(%s as %s.%s)", value, jsimport(m.Imports.External[typ.Obj().Pkg().Path()]), jsid(typ.Obj().Name())), true
-			} else {
-				return fmt.Sprintf("(/** @type {%s.%s} */(%s))", jsimport(m.Imports.External[typ.Obj().Pkg().Path()]), jsid(typ.Obj().Name()), value), true
-			}
+			return fmt.Sprintf("%s.%s.$zero", jsimport(m.Imports.External[typ.Obj().Pkg().Path()]), jsid(typ.Obj().Name())), true
 		}
+	} else {
+		return m.JSDefault(typ.Underlying(), quoted), true
 	}
 }
 
