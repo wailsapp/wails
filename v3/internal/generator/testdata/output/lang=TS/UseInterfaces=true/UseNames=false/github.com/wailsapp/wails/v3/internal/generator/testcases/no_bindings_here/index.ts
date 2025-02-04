@@ -6,4 +6,9 @@ export {
     SomeMethods
 };
 
-export * from "./models.js";
+export type {
+    HowDifferent,
+    Impersonator,
+    Person,
+    PrivatePerson
+} from "./models.js";

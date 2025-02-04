@@ -5,5 +5,3 @@ import * as OtherMethods from "./othermethods.js";
 export {
     OtherMethods
 };
-
-export * from "./models.js";

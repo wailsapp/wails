@@ -7,4 +7,16 @@ export {
     GreetService
 };
 
-export * from "./models.js";
+import * as $models from "./models.js";
+
+/**
+ * @typedef {$models.StructA} StructA
+ */
+
+/**
+ * @typedef {$models.StructC} StructC
+ */
+
+/**
+ * @typedef {$models.StructE} StructE
+ */

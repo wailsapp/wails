@@ -7,4 +7,26 @@ export {
     SomeMethods
 };
 
-export * from "./models.js";
+import * as $models from "./models.js";
+
+/**
+ * HowDifferent is a curious kind of person
+ * that lets other people decide how they are different.
+ * @template How
+ * @typedef {$models.HowDifferent<How>} HowDifferent
+ */
+
+/**
+ * Impersonator gets their fields from other people.
+ * @typedef {$models.Impersonator} Impersonator
+ */
+
+/**
+ * Person is not a number.
+ * @typedef {$models.Person} Person
+ */
+
+/**
+ * PrivatePerson gets their fields from hidden sources.
+ * @typedef {$models.PrivatePerson} PrivatePerson
+ */

@@ -7,4 +7,14 @@ export {
     GreetService
 };
 
-export * from "./models.js";
+export {
+    Embedded1,
+    Person,
+    Title
+} from "./models.js";
+
+import * as $models from "./models.js";
+
+/**
+ * @typedef {$models.Embedded3} Embedded3
+ */
