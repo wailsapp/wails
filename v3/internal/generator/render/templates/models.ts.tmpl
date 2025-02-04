@@ -18,29 +18,8 @@ import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{end}}
 {{- range $model := .Models}}
 
-{{- $isEnum := $model.Values}}
-{{- $isClassAlias := and $model.Type (not $useInterfaces) $model.Predicates.IsClass}}
-{{- $isTypeAlias := and $model.Type (or $useInterfaces (not $model.Predicates.IsClass))}}
-{{- $isClassOrInterface := and (not $model.Type) (not $model.Values)}}
-{{- $isInterface := or $useInterfaces $model.Alias}}
-
-{{- /* Build type parameter list */}}
-{{- $typeParamList := ""}}
-{{- $createParamList := ""}}
-{{- range $i, $param := $model.TypeParams}}
-    {{- $param = (typeparam $i $param)}}
-    {{- if eq $i 0}}
-        {{- $typeParamList = (printf "<%s" $param)}}
-        {{- $createParamList = (printf "($$createParam%s" $param)}}
-    {{- else}}
-        {{- $typeParamList = (printf "%s, %s" $typeParamList $param)}}
-        {{- $createParamList = (printf "%s, $$createParam%s" $createParamList $param)}}
-    {{- end}}
-{{- end}}
-{{- if $typeParamList}}
-    {{- $typeParamList = (printf "%s>" $typeParamList)}}
-    {{- $createParamList = (printf "%s)" $createParamList)}}
-{{- end}}
+{{- $info := modelinfo $model $useInterfaces }}
+{{- $template := $info.Template }}
 
 {{- if or (hasdoc $model.Decl.Doc) (hasdoc $model.Doc)}}
 /**
@@ -53,7 +32,7 @@ import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{- end}}
  */
 {{- end}}
-{{- if $isEnum}}
+{{- if $info.IsEnum}}
 export enum {{jsid $model.Name}} {
     /**
      * The Go zero value for the underlying type of the enum.
@@ -78,7 +57,7 @@ export enum {{jsid $model.Name}} {
     {{jsid $value.Name}} = {{jsvalue $value.Value}},
     {{- end}}{{end}}{{end}}
 };
-{{else if $isClassAlias}}
+{{else if $info.IsClassAlias}}
 export const {{jsid $model.Name}} = {{$module.JSType $model.Type.Origin}};
 {{- if or (hasdoc $model.Decl.Doc) (hasdoc $model.Doc)}}
 
@@ -92,11 +71,11 @@ export const {{jsid $model.Name}} = {{$module.JSType $model.Type.Origin}};
 {{- end}}
  */
 {{- end}}
-export type {{jsid $model.Name}}{{$typeParamList}} = {{$module.JSType $model.Type}};
-{{else if $isTypeAlias}}
-export type {{jsid $model.Name}}{{$typeParamList}} = {{$module.JSType $model.Type}};
-{{else if $isClassOrInterface}}
-export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$typeParamList}} {
+export type {{jsid $model.Name}}{{$template.ParamList}} = {{$module.JSType $model.Type}};
+{{else if $info.IsTypeAlias}}
+export type {{jsid $model.Name}}{{$template.ParamList}} = {{$module.JSType $model.Type}};
+{{else if $info.IsClassOrInterface}}
+export {{if $info.IsInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$template.ParamList}} {
     {{- range $i, $decl := $model.Fields}}{{range $j, $field := $decl}}
     {{- if and (eq $j 0) (hasdoc $field.Decl.Doc)}}
     {{- if gt $i 0}}
@@ -107,10 +86,10 @@ export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$t
     {{- end}}
     "{{js $field.JsonName}}"{{if $field.Optional}}?{{end}}: {{$module.JSFieldType $field.StructField}};
     {{- end}}{{end}}
-{{- if not $isInterface}}
+{{- if $info.IsClass}}
 
     /** Creates a new {{jsid $model.Name}} instance. */
-    constructor($$source: Partial<{{jsid $model.Name}}{{$typeParamList}}> = {}) {
+    constructor($$source: Partial<{{jsid $model.Name}}{{$template.ParamList}}> = {}) {
     {{- range $spec := $model.Fields}}{{range $i, $field := $spec}}{{if not $field.Optional}}
         if (!("{{js $field.JsonName}}" in $$source)) {
             this["{{js $field.JsonName}}"] = {{$module.JSDefault $field.Type $field.Quoted}};
@@ -121,7 +100,7 @@ export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$t
     }
 
     /**
-    {{- if $typeParamList}}
+    {{- if $template.ParamList}}
      * Given creation functions for each type parameter,
      * returns a creation function for a concrete instance
      * of the generic class {{jsid $model.Name}}.
@@ -129,21 +108,21 @@ export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$t
      * Creates a new {{jsid $model.Name}} instance from a string or object.
     {{- end}}
      */
-    static createFrom{{$typeParamList}}({{if $typeParamList}}
+    static createFrom{{$template.ParamList}}({{if $template.ParamList}}
             {{- range $i, $param := $model.TypeParams}}
                 {{- $param = (typeparam $i $param)}}
                 {{- if gt $i 0}}, {{end -}}
                 $$createParam{{$param}}: (source: any) => {{$param}}{{end -}}
             {{else}}$$source: any = {}{{end}}):
-                {{- if $typeParamList}} ($$source?: any) =>{{end}} {{jsid $model.Name}}{{$typeParamList}} {
+                {{- if $template.ParamList}} ($$source?: any) =>{{end}} {{jsid $model.Name}}{{$template.ParamList}} {
         {{- range $i, $spec := $model.Fields}}{{range $j, $field := $spec}}
-            {{- $create := ($module.JSCreateWithParams $field.Type $createParamList)}}
+            {{- $create := ($module.JSCreateWithParams $field.Type $template.CreateList)}}
             {{- if ne $create "$Create.Any"}}
         const $$createField{{$i}}_{{$j}} = {{$create}};
             {{- end}}
         {{- end}}{{end}}
         {{- $indent := ""}}
-        {{- if $typeParamList}}
+        {{- if $template.ParamList}}
             {{- $indent = "    "}}
         return ($$source: any = {}) => {
         {{- end}}
@@ -155,8 +134,8 @@ export {{if $isInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$t
         {{$indent -}} }
             {{- end}}
         {{- end}}{{end}}
-        {{$indent}}return new {{jsid $model.Name}}{{$typeParamList}}($$parsedSource as Partial<{{jsid $model.Name}}{{$typeParamList}}>);
-        {{- if $typeParamList}}
+        {{$indent}}return new {{jsid $model.Name}}{{$template.ParamList}}($$parsedSource as Partial<{{jsid $model.Name}}{{$template.ParamList}}>);
+        {{- if $template.ParamList}}
         };
         {{- end}}
     }

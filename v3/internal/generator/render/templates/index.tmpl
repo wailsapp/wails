@@ -36,11 +36,9 @@ export {
 {{- range $model := .Models}}
 {{- if not $model.Object.Exported}}{{break}}{{end}}
 
-{{- $isEnum := $model.Values}}
-{{- $isClassAlias := and $model.Type (not $useInterfaces) $model.Predicates.IsClass}}
-{{- $isClass := and (not $model.Type) (not $model.Values) (not $useInterfaces) (not $model.Alias)}}
+{{- $info := modelinfo $model $useInterfaces }}
 
-{{- if or $isEnum $isClassAlias $isClass}}
+{{- if or $info.IsEnum $info.IsClassAlias $info.IsClass}}
 {{- if not $hasObjects}}
     {{- $hasObjects = true}}
 export {
@@ -65,27 +63,11 @@ import * as $models from "./{{js $models}}";
 {{- range $model := .Models}}
 {{- if not $model.Object.Exported}}{{break}}{{end}}
 
-{{- $isEnum := $model.Values}}
-{{- $isClassAlias := and $model.Type (not $useInterfaces) $model.Predicates.IsClass}}
-{{- $isClass := and (not $model.Type) (not $model.Values) (not $useInterfaces) (not $model.Alias)}}
-{{- if or $isEnum $isClassAlias $isClass}}{{continue}}{{end}}
+{{- $info := modelinfo $model $useInterfaces }}
+{{- $template := $info.Template }}
 
-{{- /* Build type parameter list */}}
-{{- $typeParams := ""}}
-{{- $typeParamList := ""}}
-{{- range $i, $param := $model.TypeParams}}
-    {{- $param = (typeparam $i $param)}}
-    {{- if eq $i 0}}
-        {{- $typeParams = $param}}
-        {{- $typeParamList = (printf "<%s" $param)}}
-    {{- else}}
-        {{- $typeParams = (printf "%s,%s" $typeParams $param)}}
-        {{- $typeParamList = (printf "%s, %s" $typeParamList $param)}}
-    {{- end}}
-{{- end}}
-{{- if $typeParamList}}
-    {{- $typeParamList = (printf "%s>" $typeParamList)}}
-{{- end}}
+{{- if or $info.IsEnum $info.IsClassAlias $info.IsClass}}{{continue}}{{end}}
+
 {{- if $renderer.TS}}
     {{- if $hasTypes}},{{end}}
     {{jsid $model.Name}}
@@ -98,10 +80,10 @@ import * as $models from "./{{js $models}}";
 {{- if hasdoc $model.Doc}}
 {{- jsdoc $model.Doc.Text ""}}
 {{- end}}
-{{- if $typeParamList}}
- * @template {{$typeParams}}
+{{- if $template.ParamList}}
+ * @template {{$template.Params}}
 {{- end}}
- * @typedef {$models.{{jsid $model.Name}}{{$typeParamList -}} } {{jsid $model.Name}}
+ * @typedef {$models.{{jsid $model.Name}}{{$template.ParamList -}} } {{jsid $model.Name}}
  */
 {{end}}
 

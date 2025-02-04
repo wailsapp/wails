@@ -23,6 +23,7 @@ var tmplFunctions = template.FuncMap{
 	"jsimport":   jsimport,
 	"jsparam":    jsparam,
 	"jsvalue":    jsvalue,
+	"modelinfo":  modelinfo,
 	"typeparam":  typeparam,
 }
 

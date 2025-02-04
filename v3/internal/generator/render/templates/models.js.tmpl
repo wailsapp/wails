@@ -19,34 +19,10 @@ import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{end}}
 {{- range $model := .Models}}
 
-{{- $isEnum := $model.Values}}
-{{- $isClassAlias := and $model.Type (not $useInterfaces) $model.Predicates.IsClass}}
-{{- $isTypeAlias := and $model.Type (or $useInterfaces (not $model.Predicates.IsClass))}}
-{{- $isClassOrInterface := and (not $model.Type) (not $model.Values)}}
-{{- $isInterface := and $isClassOrInterface (or $useInterfaces $model.Alias)}}
+{{- $info := modelinfo $model $useInterfaces }}
+{{- $template := $info.Template }}
 
-{{- /* Build type parameter list */}}
-{{- $typeParams := ""}}
-{{- $typeParamList := ""}}
-{{- $createParamList := ""}}
-{{- range $i, $param := $model.TypeParams}}
-    {{- $param = (typeparam $i $param)}}
-    {{- if eq $i 0}}
-        {{- $typeParams = $param}}
-        {{- $typeParamList = (printf "<%s" $param)}}
-        {{- $createParamList = (printf "($$createParam%s" $param)}}
-    {{- else}}
-        {{- $typeParams = (printf "%s,%s" $typeParams $param)}}
-        {{- $typeParamList = (printf "%s, %s" $typeParamList $param)}}
-        {{- $createParamList = (printf "%s, $$createParam%s" $createParamList $param)}}
-    {{- end}}
-{{- end}}
-{{- if $typeParamList}}
-    {{- $typeParamList = (printf "%s>" $typeParamList)}}
-    {{- $createParamList = (printf "%s)" $createParamList)}}
-{{- end}}
-
-{{- if or $typeParamList (hasdoc $model.Decl.Doc) (hasdoc $model.Doc) $isEnum $isTypeAlias $isInterface}}
+{{- if or $template.ParamList (hasdoc $model.Decl.Doc) (hasdoc $model.Doc) $info.IsEnum $info.IsTypeAlias $info.IsInterface}}
 /**
 {{- if hasdoc $model.Decl.Doc}}
 {{- jsdoc $model.Decl.Doc.Text ""}}{{if hasdoc $model.Doc}}
@@ -55,15 +31,15 @@ import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{- if hasdoc $model.Doc}}
 {{- jsdoc $model.Doc.Text ""}}
 {{- end}}
-{{- if and $typeParamList (not $isClassAlias)}}
- * @template {{$typeParams}}
+{{- if and $template.ParamList (not $info.IsClassAlias)}}
+ * @template {{$template.Params}}
 {{- end}}
-{{- if $isEnum}}
+{{- if $info.IsEnum}}
  * @readonly
  * @enum { {{- $module.JSType $model.Type -}} }
-{{- else if $isTypeAlias}}
+{{- else if $info.IsTypeAlias}}
  * @typedef { {{- $module.JSType $model.Type -}} } {{jsid $model.Name}}
-{{- else if $isInterface}}
+{{- else if $info.IsInterface}}
 {{- if isjsdocobj $model}}
  * @typedef {Object} {{jsid $model.Name}}
 {{- range $i, $decl := $model.Fields}}{{range $j, $field := $decl}}
@@ -81,7 +57,7 @@ import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{- end}}
  */
 {{- end}}
-{{- if $isEnum}}
+{{- if $info.IsEnum}}
 export const {{jsid $model.Name}} = {
     /**
      * The Go zero value for the underlying type of the enum.
@@ -106,7 +82,7 @@ export const {{jsid $model.Name}} = {
     {{jsid $value.Name}}: {{jsvalue $value.Value}},
 {{- end}}{{end}}{{end}}
 };
-{{else if $isClassAlias}}
+{{else if $info.IsClassAlias}}
 export const {{jsid $model.Name}} = {{$module.JSType $model.Type.Origin}};
 
 /**
@@ -117,16 +93,16 @@ export const {{jsid $model.Name}} = {{$module.JSType $model.Type.Origin}};
 {{- if hasdoc $model.Doc}}
 {{- jsdoc $model.Doc.Text ""}}
 {{- end}}
-{{- if $typeParamList}}
- * @template {{$typeParams}}
+{{- if $template.ParamList}}
+ * @template {{$template.Params}}
 {{- end}}
  * @typedef { {{- $module.JSType $model.Type -}} } {{jsid $model.Name}}
  */
-{{else if and $isClassOrInterface (not $isInterface)}}
+{{else if and $info.IsClass}}
 export class {{jsid $model.Name}} {
     /**
      * Creates a new {{jsid $model.Name}} instance.
-     * @param {Partial<{{jsid $model.Name}}{{$typeParamList}}>} [$$source = {}] - The source object to create the {{jsid $model.Name}}.
+     * @param {Partial<{{jsid $model.Name}}{{$template.ParamList}}>} [$$source = {}] - The source object to create the {{jsid $model.Name}}.
      */
     constructor($$source = {}) {
     {{- range $decl := $model.Fields}}{{range $j, $field := $decl}}
@@ -154,31 +130,31 @@ export class {{jsid $model.Name}} {
     }
 
     /**
-    {{- if $typeParamList}}
+    {{- if $template.ParamList}}
      * Given creation functions for each type parameter,
      * returns a creation function for a concrete instance
      * of the generic class {{jsid $model.Name}}.
-     * @template {{$typeParams}}
+     * @template {{$template.Params}}
     {{- range $i, $param := $model.TypeParams}}
         {{- $param = (typeparam $i $param)}}
      * @param {(source: any) => {{$param -}} } $$createParam{{$param}}
     {{- end}}
-     * @returns {($$source?: any) => {{jsid $model.Name}}{{$typeParamList -}} }
+     * @returns {($$source?: any) => {{jsid $model.Name}}{{$template.ParamList -}} }
     {{- else}}
      * Creates a new {{jsid $model.Name}} instance from a string or object.
      * @param {any} [$$source = {}]
      * @returns { {{- jsid $model.Name -}} }
     {{- end}}
      */
-    static createFrom{{if $typeParamList}}{{$createParamList}}{{else}}($$source = {}){{end}} {
+    static createFrom{{if $template.ParamList}}{{$template.CreateList}}{{else}}($$source = {}){{end}} {
         {{- range $i, $spec := $model.Fields}}{{range $j, $field := $spec}}
-            {{- $create := ($module.JSCreateWithParams $field.Type $createParamList)}}
+            {{- $create := ($module.JSCreateWithParams $field.Type $template.CreateList)}}
             {{- if ne $create "$Create.Any"}}
         const $$createField{{$i}}_{{$j}} = {{$create}};
             {{- end}}
         {{- end}}{{end}}
         {{- $indent := ""}}
-        {{- if $typeParamList}}
+        {{- if $template.ParamList}}
             {{- $indent = "    "}}
         return ($$source = {}) => {
         {{- end}}
@@ -190,8 +166,8 @@ export class {{jsid $model.Name}} {
         {{$indent -}} }
             {{- end}}
         {{- end}}{{end}}
-        {{$indent}}return new {{jsid $model.Name}}(/** @type {Partial<{{jsid $model.Name}}{{$typeParamList}}>} */($$parsedSource));
-        {{- if $typeParamList}}
+        {{$indent}}return new {{jsid $model.Name}}(/** @type {Partial<{{jsid $model.Name}}{{$template.ParamList}}>} */($$parsedSource));
+        {{- if $template.ParamList}}
         };
         {{- end}}
     }
