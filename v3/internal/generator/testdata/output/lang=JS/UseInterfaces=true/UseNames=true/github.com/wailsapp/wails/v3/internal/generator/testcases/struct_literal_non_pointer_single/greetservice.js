@@ -170,11 +170,11 @@ export function MapIntInt($in) {
 }
 
 /**
- * @param {{ [_: string]: number } | null} $in
+ * @param {{ [_: `${number}`]: number | null } | null} $in
  * @returns {Promise<void> & { cancel(): void }}
  */
-export function MapIntPointerInt($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.MapIntPointerInt", $in));
+export function MapIntIntPointer($in) {
+    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.MapIntIntPointer", $in));
     return $resultPromise;
 }
 

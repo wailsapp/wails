@@ -102,8 +102,8 @@ export function MapIntInt($in: { [_: `${number}`]: number } | null): Promise<voi
     return $resultPromise;
 }
 
-export function MapIntPointerInt($in: { [_: string]: number } | null): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.MapIntPointerInt", $in) as any;
+export function MapIntIntPointer($in: { [_: `${number}`]: number | null } | null): Promise<void> & { cancel(): void } {
+    let $resultPromise = $Call.ByName("main.GreetService.MapIntIntPointer", $in) as any;
     return $resultPromise;
 }
 
