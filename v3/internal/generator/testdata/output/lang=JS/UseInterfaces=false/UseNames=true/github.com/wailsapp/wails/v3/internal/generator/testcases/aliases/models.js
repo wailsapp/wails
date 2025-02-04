@@ -61,12 +61,12 @@ export class GenericPerson {
      * @param {Partial<GenericPerson<T>>} [$$source = {}] - The source object to create the GenericPerson.
      */
     constructor($$source = {}) {
-        if (!("Name" in $$source)) {
+        if (/** @type {any} */(false)) {
             /**
              * @member
-             * @type {T | null}
+             * @type {T | undefined}
              */
-            this["Name"] = null;
+            this["Name"] = undefined;
         }
         if (!("AliasedField" in $$source)) {
             /**

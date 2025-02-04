@@ -16,5 +16,5 @@ import {Create as $Create} from "/wails/runtime.js";
 
 /**
  * @template T
- * @typedef {{"X": GenericCyclic<T | null> | null, "Y": (T | null)[]}[]} GenericCyclic
+ * @typedef {{"X": GenericCyclic<T> | null, "Y": T[]}[]} GenericCyclic
  */

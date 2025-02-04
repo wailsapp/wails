@@ -22,7 +22,7 @@ export class HowDifferent<How> {
     /**
      * But they may have many differences.
      */
-    "Differences": { [_: string]: How | null }[];
+    "Differences": { [_: string]: How }[];
 
     /** Creates a new HowDifferent instance. */
     constructor($$source: Partial<HowDifferent<How>> = {}) {

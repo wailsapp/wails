@@ -9,4 +9,4 @@ export type Alias = Cyclic | null;
 
 export type Cyclic = { [_: string]: Alias }[];
 
-export type GenericCyclic<T> = {"X": GenericCyclic<T | null> | null, "Y": (T | null)[]}[];
+export type GenericCyclic<T> = {"X": GenericCyclic<T> | null, "Y": T[]}[];

@@ -20,7 +20,7 @@ export class Person {
              * @member
              * @type {Title}
              */
-            this["Title"] = (/** @type {Title} */(""));
+            this["Title"] = Title.$zero;
         }
         if (!("Name" in $$source)) {
             /**

@@ -28,7 +28,7 @@ export class OtherPerson {
             /**
              * But they may have many differences.
              * @member
-             * @type {(T | null)[]}
+             * @type {T[]}
              */
             this["Differences"] = [];
         }

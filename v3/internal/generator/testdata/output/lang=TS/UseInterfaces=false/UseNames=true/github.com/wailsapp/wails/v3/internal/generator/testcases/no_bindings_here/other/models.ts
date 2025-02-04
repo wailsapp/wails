@@ -17,7 +17,7 @@ export class OtherPerson<T> {
     /**
      * But they may have many differences.
      */
-    "Differences": (T | null)[];
+    "Differences": T[];
 
     /** Creates a new OtherPerson instance. */
     constructor($$source: Partial<OtherPerson<T>> = {}) {

@@ -78,7 +78,7 @@ export class Person {
              * @member
              * @type {Title[] | undefined}
              */
-            this["Titles"] = [];
+            this["Titles"] = undefined;
         }
         if (!("Names" in $$source)) {
             /**
@@ -134,7 +134,7 @@ export class Person {
              * @member
              * @type {Embedded3}
              */
-            this["Embedded3"] = (/** @type {Embedded3} */(""));
+            this["Embedded3"] = "";
         }
         if (!("StrangerNumber" in $$source)) {
             /**
@@ -150,7 +150,7 @@ export class Person {
              * @member
              * @type {`"${string}"` | undefined}
              */
-            this["StrangestString"] = '""';
+            this["StrangestString"] = undefined;
         }
         if (/** @type {any} */(false)) {
             /**
@@ -158,7 +158,7 @@ export class Person {
              * @member
              * @type {`"${string}"` | undefined}
              */
-            this["StringStrangest"] = '""';
+            this["StringStrangest"] = undefined;
         }
         if (/** @type {any} */(false)) {
             /**
@@ -166,7 +166,7 @@ export class Person {
              * @member
              * @type {embedded4 | undefined}
              */
-            this["emb4"] = (new embedded4());
+            this["emb4"] = undefined;
         }
 
         Object.assign(this, $$source);

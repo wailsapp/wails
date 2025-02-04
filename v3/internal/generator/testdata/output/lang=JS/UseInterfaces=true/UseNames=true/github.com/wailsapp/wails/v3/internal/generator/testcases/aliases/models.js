@@ -38,7 +38,7 @@
  * A generic struct containing an alias.
  * @template T
  * @typedef {Object} GenericPerson
- * @property {T | null} Name
+ * @property {T} Name
  * @property {Alias} AliasedField
  */
 

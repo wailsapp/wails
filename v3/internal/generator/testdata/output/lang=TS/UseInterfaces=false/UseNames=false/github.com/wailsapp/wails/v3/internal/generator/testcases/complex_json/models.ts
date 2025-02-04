@@ -137,7 +137,7 @@ export class Person {
             this["-"] = 0;
         }
         if (!("Embedded3" in $$source)) {
-            this["Embedded3"] = ("" as Embedded3);
+            this["Embedded3"] = "";
         }
         if (!("StrangerNumber" in $$source)) {
             this["StrangerNumber"] = "0";

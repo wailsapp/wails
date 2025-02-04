@@ -12,7 +12,7 @@
 
 /**
  * @template T
- * @typedef {{"X": GenericCyclic<T | null> | null, "Y": (T | null)[] | null}[] | null} GenericCyclic
+ * @typedef {{"X": GenericCyclic<T> | null, "Y": T[] | null}[] | null} GenericCyclic
  */
 
 // In interface mode, this file is likely to contain just comments.

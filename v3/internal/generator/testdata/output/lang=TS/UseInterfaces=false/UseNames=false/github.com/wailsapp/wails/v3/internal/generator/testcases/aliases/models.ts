@@ -62,14 +62,11 @@ export class EmptyStruct {
  * A generic struct containing an alias.
  */
 export class GenericPerson<T> {
-    "Name": T | null;
+    "Name"?: T;
     "AliasedField": Alias;
 
     /** Creates a new GenericPerson instance. */
     constructor($$source: Partial<GenericPerson<T>> = {}) {
-        if (!("Name" in $$source)) {
-            this["Name"] = null;
-        }
         if (!("AliasedField" in $$source)) {
             this["AliasedField"] = 0;
         }

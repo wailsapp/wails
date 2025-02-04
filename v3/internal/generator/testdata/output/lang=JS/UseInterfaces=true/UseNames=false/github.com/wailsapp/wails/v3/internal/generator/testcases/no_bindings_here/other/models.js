@@ -7,7 +7,7 @@
  * @template T
  * @typedef {Object} OtherPerson
  * @property {string} Name - They have a name as well.
- * @property {(T | null)[] | null} Differences - But they may have many differences.
+ * @property {T[] | null} Differences - But they may have many differences.
  */
 
 // In interface mode, this file is likely to contain just comments.

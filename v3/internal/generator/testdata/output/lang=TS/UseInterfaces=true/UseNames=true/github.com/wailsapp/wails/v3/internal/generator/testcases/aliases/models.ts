@@ -49,7 +49,7 @@ export interface EmptyStruct {
  * A generic struct containing an alias.
  */
 export interface GenericPerson<T> {
-    "Name": T | null;
+    "Name": T;
     "AliasedField": Alias;
 }
 

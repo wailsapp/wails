@@ -15,7 +15,7 @@ export class Person {
     /** Creates a new Person instance. */
     constructor($$source: Partial<Person> = {}) {
         if (!("Title" in $$source)) {
-            this["Title"] = ("" as Title);
+            this["Title"] = Title.$zero;
         }
         if (!("Name" in $$source)) {
             this["Name"] = "";

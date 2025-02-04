@@ -13,5 +13,5 @@ export interface OtherPerson<T> {
     /**
      * But they may have many differences.
      */
-    "Differences": (T | null)[] | null;
+    "Differences": T[] | null;
 }
