@@ -6,3 +6,11 @@ import * as OtherMethods from "./othermethods.js";
 export {
     OtherMethods
 };
+
+import * as $models from "./models.js";
+
+/**
+ * OtherPerson is like a person, but different.
+ * @template T
+ * @typedef {$models.OtherPerson<T>} OtherPerson
+ */

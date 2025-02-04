@@ -43,4 +43,4 @@ export function LikeThisOtherOne() {
 // Private type creation functions
 const $$createType0 = $models.Person.createFrom;
 const $$createType1 = $models.HowDifferent.createFrom($Create.Any);
-const $$createType2 = $models.PrivatePerson.createFrom;
+const $$createType2 = $models.personImpl.createFrom;

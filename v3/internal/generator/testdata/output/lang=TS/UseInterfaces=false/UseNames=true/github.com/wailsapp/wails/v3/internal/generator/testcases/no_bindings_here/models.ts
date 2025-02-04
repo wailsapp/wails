@@ -5,6 +5,10 @@
 // @ts-ignore: Unused imports
 import {Create as $Create} from "/wails/runtime.js";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as other$0 from "./other/models.js";
+
 /**
  * HowDifferent is a curious kind of person
  * that lets other people decide how they are different.
@@ -52,41 +56,12 @@ export class HowDifferent<How> {
 /**
  * Impersonator gets their fields from other people.
  */
-export class Impersonator {
-    /**
-     * They have a name as well.
-     */
-    "Name": string;
+export const Impersonator = other$0.OtherPerson;
 
-    /**
-     * But they may have many differences.
-     */
-    "Differences": number[];
-
-    /** Creates a new Impersonator instance. */
-    constructor($$source: Partial<Impersonator> = {}) {
-        if (!("Name" in $$source)) {
-            this["Name"] = "";
-        }
-        if (!("Differences" in $$source)) {
-            this["Differences"] = [];
-        }
-
-        Object.assign(this, $$source);
-    }
-
-    /**
-     * Creates a new Impersonator instance from a string or object.
-     */
-    static createFrom($$source: any = {}): Impersonator {
-        const $$createField1_0 = $$createType2;
-        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
-        if ("Differences" in $$parsedSource) {
-            $$parsedSource["Differences"] = $$createField1_0($$parsedSource["Differences"]);
-        }
-        return new Impersonator($$parsedSource as Partial<Impersonator>);
-    }
-}
+/**
+ * Impersonator gets their fields from other people.
+ */
+export type Impersonator = other$0.OtherPerson<number>;
 
 /**
  * Person is not a number.
@@ -118,7 +93,7 @@ export class Person {
      * Creates a new Person instance from a string or object.
      */
     static createFrom($$source: any = {}): Person {
-        const $$createField1_0 = $$createType4;
+        const $$createField1_0 = $$createType3;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("Friends" in $$parsedSource) {
             $$parsedSource["Friends"] = $$createField1_0($$parsedSource["Friends"]);
@@ -127,10 +102,7 @@ export class Person {
     }
 }
 
-/**
- * PrivatePerson gets their fields from hidden sources.
- */
-export class PrivatePerson {
+export class personImpl {
     /**
      * Nickname conceals a person's identity.
      */
@@ -146,8 +118,8 @@ export class PrivatePerson {
      */
     "Friends": Impersonator[];
 
-    /** Creates a new PrivatePerson instance. */
-    constructor($$source: Partial<PrivatePerson> = {}) {
+    /** Creates a new personImpl instance. */
+    constructor($$source: Partial<personImpl> = {}) {
         if (!("Nickname" in $$source)) {
             this["Nickname"] = "";
         }
@@ -162,21 +134,30 @@ export class PrivatePerson {
     }
 
     /**
-     * Creates a new PrivatePerson instance from a string or object.
+     * Creates a new personImpl instance from a string or object.
      */
-    static createFrom($$source: any = {}): PrivatePerson {
-        const $$createField2_0 = $$createType4;
+    static createFrom($$source: any = {}): personImpl {
+        const $$createField2_0 = $$createType3;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("Friends" in $$parsedSource) {
             $$parsedSource["Friends"] = $$createField2_0($$parsedSource["Friends"]);
         }
-        return new PrivatePerson($$parsedSource as Partial<PrivatePerson>);
+        return new personImpl($$parsedSource as Partial<personImpl>);
     }
 }
+
+/**
+ * PrivatePerson gets their fields from hidden sources.
+ */
+export const PrivatePerson = personImpl;
+
+/**
+ * PrivatePerson gets their fields from hidden sources.
+ */
+export type PrivatePerson = personImpl;
 
 // Private type creation functions
 const $$createType0 = ($$createParamHow) => $Create.Map($Create.Any, $$createParamHow);
 const $$createType1 = ($$createParamHow) => $Create.Array($$createType0($$createParamHow));
-const $$createType2 = $Create.Array($Create.Any);
-const $$createType3 = Impersonator.createFrom;
-const $$createType4 = $Create.Array($$createType3);
+const $$createType2 = other$0.OtherPerson.createFrom($Create.Any);
+const $$createType3 = $Create.Array($$createType2);

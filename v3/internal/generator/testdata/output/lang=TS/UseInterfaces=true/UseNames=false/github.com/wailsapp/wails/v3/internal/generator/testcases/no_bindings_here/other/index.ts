@@ -5,3 +5,7 @@ import * as OtherMethods from "./othermethods.js";
 export {
     OtherMethods
 };
+
+export type {
+    OtherPerson
+} from "./models.js";
