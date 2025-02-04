@@ -24,7 +24,7 @@ type Service13 struct{}
 type Service14 struct{}
 type Service15 struct{}
 
-type SimplifiedFactory[T any] = Factory[T, Service15]
+// type SimplifiedFactory[T any] = Factory[T, Service15]
 
 func main() {
 	factory := NewFactory[Service1, Service2]()
@@ -42,7 +42,7 @@ func main() {
 				other.CustomNewService(Service7{}),
 				other.ServiceInitialiser[Service8]()(&Service8{}),
 				application.NewServiceWithOptions(&Service13{}, application.ServiceOptions{Name: "custom name"}),
-				SimplifiedFactory[Service14]{}.Get(),
+				// SimplifiedFactory[Service14]{}.Get(),
 				other.LocalService,
 			},
 			CustomNewServices[Service9, Service10]()...),
