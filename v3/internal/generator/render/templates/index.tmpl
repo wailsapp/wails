@@ -94,4 +94,8 @@ import * as $models from "./{{js $models}}";
 } from "./{{js $models}}";
 {{end}}
 
-{{- end -}}
+{{- end}}
+{{- range .Package.Injections}}
+{{.}}
+{{- end}}{{if .Package.Injections}}
+{{end -}}
