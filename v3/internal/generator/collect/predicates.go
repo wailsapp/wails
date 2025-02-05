@@ -67,9 +67,8 @@ func termlist(typ types.Type) iter.Seq[*typeparams.Term] {
 	}
 }
 
-// instantiate instantiates typ if it is un uninstantiated generic type
-// using its own type parameters as arguments
-// in order to preserve genericity.
+// instantiate instantiates typ if it is an uninstantiated generic type
+// using its own type parameters as arguments in order to preserve genericity.
 //
 // If typ is not generic or already instantiated, it is returned as is.
 // If typ is not an alias, then the returned type is not an alias either.
