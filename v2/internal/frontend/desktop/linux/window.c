@@ -14,6 +14,9 @@ static float xroot = 0.0f;
 static float yroot = 0.0f;
 static int dragTime = -1;
 static uint mouseButton = 0;
+static int wmIsWayland = -1;
+static int decoratorWidth = -1;
+static int decoratorHeight = -1;
 
 // casts
 void ExecuteOnMainThread(void *f, gpointer jscallback)
@@ -66,6 +69,27 @@ static void sendMessageToBackend(WebKitUserContentManager *contentManager,
 static bool isNULLRectangle(GdkRectangle input)
 {
     return input.x == -1 && input.y == -1 && input.width == -1 && input.height == -1;
+}
+
+static gboolean onWayland()
+{
+    switch (wmIsWayland)
+    {
+    case -1:
+     char *gdkBackend = getenv("XDG_SESSION_TYPE");
+        if(gdkBackend != NULL && strcmp(gdkBackend, "wayland") == 0) 
+        {
+            wmIsWayland = 1;
+            return TRUE;
+        }
+        
+        wmIsWayland = 0;
+        return FALSE;
+    case 1:
+        return TRUE;
+    default:
+        return FALSE;
+    }
 }
 
 static GdkMonitor *getCurrentMonitor(GtkWindow *window)
@@ -228,9 +252,6 @@ void SetPosition(void *window, int x, int y)
     ExecuteOnMainThread(setPosition, (gpointer)args);
 }
 
-static int decoratorWidth = 0;
-static int decoratorHeight = 0;
-
 void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_width, int max_height)
 {
     GdkGeometry size;
@@ -249,10 +270,10 @@ void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_wid
     size.min_height = min_height;
     size.min_width = min_width;
 
-# ifdef GDK_WINDOWING_WAYLAND
-    if (decoratorWidth == 0 && decoratorHeight == 0) {
-        char *gdkBackend = getenv("XDG_SESSION_TYPE");
-        if(gdkBackend != NULL && strcmp(gdkBackend, "wayland") == 0 && gtk_window_get_decorated(window)) {
+    if(onWayland()) 
+    {
+        if(decoratorWidth == -1 && decoratorHeight == -1)
+        {
             int windowWidth, windowHeight;
             gtk_window_get_size(window, &windowWidth, &windowHeight);
 
@@ -260,13 +281,12 @@ void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_wid
             gtk_widget_get_allocation(GTK_WIDGET(window), &windowAllocation);
 
             decoratorWidth = (windowAllocation.width-windowWidth);
-            decoratorHeight = (windowAllocation.height-windowHeight);
+            decoratorHeight = (windowAllocation.height-windowHeight);        
         }
+    
+        size.max_height = decoratorHeight+size.max_height;
+        size.max_width = decoratorWidth+size.max_width;
     }
-
-    size.max_height = decoratorHeight+size.max_height;
-    size.max_width = decoratorWidth+size.max_width;
-#endif
 
     gtk_window_set_geometry_hints(window, NULL, &size, flags);
 }
