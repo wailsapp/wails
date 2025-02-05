@@ -1,35 +1,29 @@
 package fileserver
 
 import (
-	"context"
 	"net/http"
-
-	"github.com/wailsapp/wails/v3/pkg/application"
+	"sync/atomic"
 )
 
-// ---------------- Service Setup ----------------
-// This is the main Service struct. It can be named anything you like.
-
 type Config struct {
+	// RootPath specifies the filesystem path from which requests are to be served.
 	RootPath string
 }
 
 type Service struct {
-	config *Config
-	fs     http.Handler
+	fs atomic.Pointer[http.Handler]
 }
 
-func New(config *Config) *Service {
-	return &Service{
-		config: config,
-		fs:     http.FileServer(http.Dir(config.RootPath)),
-	}
+// New initialises an unconfigured fileserver. See [Configure] for details.
+func New() *Service {
+	return NewWithConfig(nil)
 }
 
-// ServiceShutdown is called when the app is shutting down
-// You can use this to clean up any resources you have allocated
-func (s *Service) ServiceShutdown() error {
-	return nil
+// New initialises and optionally configures a fileserver. See [Service.Configure] for details.
+func NewWithConfig(config *Config) *Service {
+	result := &Service{}
+	result.Configure(config)
+	return result
 }
 
 // ServiceName returns the name of the plugin.
@@ -38,14 +32,25 @@ func (s *Service) ServiceName() string {
 	return "github.com/wailsapp/wails/v3/services/fileserver"
 }
 
-// ServiceStartup is called when the app is starting up. You can use this to
-// initialise any resources you need.
-func (s *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
-	// Any initialization code here
-	return nil
+// Configure reconfigures the fileserver.
+// If config is nil, then every request will receive a 503 Service Unavailable response.
+//
+//wails:ignore
+func (s *Service) Configure(config *Config) {
+	if config == nil {
+		s.fs.Store(&dummyHandler)
+	} else {
+		var fs http.Handler = http.FileServer(http.Dir(config.RootPath))
+		s.fs.Store(&fs)
+	}
 }
 
 func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Create a new file server rooted at the given path
-	s.fs.ServeHTTP(w, r)
+	(*s.fs.Load()).ServeHTTP(w, r)
 }
+
+var dummyHandler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain;charset=utf-8")
+	w.WriteHeader(http.StatusServiceUnavailable)
+	w.Write([]byte("Fileserver service has not been configured yet\n"))
+})
