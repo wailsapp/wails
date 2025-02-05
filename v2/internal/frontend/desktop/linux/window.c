@@ -228,6 +228,9 @@ void SetPosition(void *window, int x, int y)
     ExecuteOnMainThread(setPosition, (gpointer)args);
 }
 
+static int decoratorWidth = 0;
+static int decoratorHeight = 0;
+
 void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_width, int max_height)
 {
     GdkGeometry size;
@@ -238,11 +241,33 @@ void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_wid
     {
         return;
     }
+
     int flags = GDK_HINT_MAX_SIZE | GDK_HINT_MIN_SIZE;
+
     size.max_height = (max_height == 0 ? monitorSize.height : max_height);
     size.max_width = (max_width == 0 ? monitorSize.width : max_width);
     size.min_height = min_height;
     size.min_width = min_width;
+
+# ifdef GDK_WINDOWING_WAYLAND
+    if (decoratorWidth == 0 && decoratorHeight == 0) {
+        char *gdkBackend = getenv("XDG_SESSION_TYPE");
+        if(gdkBackend != NULL && strcmp(gdkBackend, "wayland") == 0 && gtk_window_get_decorated(window)) {
+            int windowWidth, windowHeight;
+            gtk_window_get_size(window, &windowWidth, &windowHeight);
+
+            GtkAllocation windowAllocation;
+            gtk_widget_get_allocation(GTK_WIDGET(window), &windowAllocation);
+
+            decoratorWidth = (windowAllocation.width-windowWidth);
+            decoratorHeight = (windowAllocation.height-windowHeight);
+        }
+    }
+
+    size.max_height = decoratorHeight+size.max_height;
+    size.max_width = decoratorWidth+size.max_width;
+#endif
+
     gtk_window_set_geometry_hints(window, NULL, &size, flags);
 }
 
