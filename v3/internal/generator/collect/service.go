@@ -217,6 +217,9 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 
 		for _, comment := range methodInfo.Doc.List {
 			switch {
+			case IsDirective(comment.Text, "ignore"):
+				return nil
+
 			case IsDirective(comment.Text, "internal"):
 				methodInfo.Internal = true
 

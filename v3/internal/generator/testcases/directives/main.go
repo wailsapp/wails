@@ -18,6 +18,10 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
+type IgnoredType struct {
+	Field int
+}
+
 //wails:inject j*:/**
 //wails:inject j*: * @param {string} arg
 //wails:inject j*: * @returns {Promise<void>}
@@ -29,6 +33,9 @@ import (
 type Service struct{}
 
 func (*Service) VisibleMethod(otherpackage.Dummy) {}
+
+//wails:ignore
+func (*Service) IgnoredMethod(IgnoredType) {}
 
 //wails:internal
 func (*Service) InternalMethod(string) {}
