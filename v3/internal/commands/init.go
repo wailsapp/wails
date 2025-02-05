@@ -2,20 +2,36 @@ package commands
 
 import (
 	"fmt"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/wailsapp/wails/v3/internal/term"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/templates"
+	"github.com/wailsapp/wails/v3/internal/term"
 )
 
-var DisableFooter bool
+var (
+	DisableFooter    bool
+	projectName      string
+	projectDir       string // Shortened variable name
+	templateName     string // Shortened variable name
+	gitRepo          string
+	confirmCreation  bool
+	productCompany   string
+	productName      string
+	productDesc      string // Shortened variable name
+	productVersion   string = "1.0.0"
+	productID        string // Shortened variable name
+	productCopyright string
+	productComments  string
+)
 
 // GitURLToModuleName converts a git URL to a Go module name by removing common prefixes
 // and suffixes. It handles HTTPS, SSH, Git protocol, and filesystem URLs.
@@ -119,8 +135,21 @@ func Init(options *flags.Init) error {
 		isTypescript = true
 	}
 
+	options.ProjectName = projectName
+	options.ProjectDir = projectDir
+	options.TemplateName = templateName
+	options.Git = gitRepo
+	options.ProductCompany = productCompany
+	options.ProductName = productName
+	options.ProductDescription = productDesc // Use shortened variable
+	options.ProductVersion = productVersion
+	options.ProductIdentifier = productID // Use shortened variable
+	options.ProductCopyright = productCopyright
+	options.ProductComments = productComments
+
 	if options.ProjectName == "" {
-		return fmt.Errorf("please use the -n flag to specify a project name")
+		startInteractive()
+		return nil
 	}
 
 	options.ProjectName = sanitizeFileName(options.ProjectName)
@@ -187,4 +216,154 @@ func sanitizeFileName(fileName string) string {
 
 	// Replace matched characters with an underscore or any other safe character
 	return reg.ReplaceAllString(fileName, "_")
+}
+
+func startInteractive() {
+	var templateOptions []huh.Option[string]
+	var templateSelect *huh.Select[string] // Declare templateSelect outside
+
+	templateSelect = huh.NewSelect[string](). // Initialize templateSelect here
+							Title("Template").
+							Description("Project template to use (Enter to list)").
+							Options(templateOptions...).
+							Value(&templateName)
+
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Project Name").
+				Description("Name of project").
+				Value(&projectName),
+
+			huh.NewInput().
+				Title("Project Dir").
+				Description("Target directory (empty for default)").
+				Value(&projectDir),
+
+			templateSelect, // Use templateSelect here, no assignment
+		),
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Git Repo URL (optional)").
+				Description("Git repo to initialize (optional)").
+				Value(&gitRepo),
+		),
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Company (optional)").
+				Value(&productCompany),
+			huh.NewInput().
+				Title("Product Name (optional)").
+				Value(&productName),
+			huh.NewInput().
+				Title("Version (optional)").
+				Value(&productVersion),
+			huh.NewInput().
+				Title("ID (optional)").
+				Value(&productID),
+			huh.NewInput().
+				Title("Copyright (optional)").
+				Value(&productCopyright),
+			huh.NewText().
+				Title("Description (optional)").
+				Lines(2).
+				Value(&productDesc),
+			huh.NewText().
+				Title("Comments (optional)").
+				Lines(2).
+				Value(&productComments),
+		),
+		huh.NewGroup(
+			huh.NewConfirm().
+				Title("Confirm?").
+				Value(&confirmCreation),
+		),
+	)
+
+	// Dynamically load and order templates when the "Template" select is rendered
+	templateSelect.OptionsFunc(func() []huh.Option[string] {
+		defaultTemplates := templates.GetDefaultTemplates()
+
+		// Reorder templates: Ensure "vanilla" is first
+		vanillaTemplate := templates.TemplateData{Name: "vanilla", Description: ""} // Create vanilla template for comparison
+		orderedTemplates := []templates.TemplateData{}
+		vanillaFound := false
+		for _, t := range defaultTemplates {
+			if t.Name == vanillaTemplate.Name {
+				orderedTemplates = append([]templates.TemplateData{t}, orderedTemplates...) // Prepend vanilla
+				vanillaFound = true
+			} else {
+				orderedTemplates = append(orderedTemplates, t) // Append other templates
+			}
+		}
+		if !vanillaFound { // If "vanilla" template isn't found (unlikely, but for safety)
+			orderedTemplates = append([]templates.TemplateData{vanillaTemplate}, orderedTemplates...)
+		}
+
+		templateOptions = nil // Clear existing options
+		for _, t := range orderedTemplates {
+			templateOptions = append(templateOptions, huh.NewOption(t.Name, t.Name))
+		}
+
+		// Set default template to "vanilla" - do this BEFORE running the form
+		templateName = "vanilla" // Set default value here
+
+		return templateOptions
+	}, nil)
+
+	formStyle := lipgloss.NewStyle().
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("62")). // A nice cyan color
+		Padding(10, 2).
+		Margin(10, 0) // Add a little margin above and below
+
+	formRenderer := lipgloss.NewRenderer(os.Stdout) // Corrected: Pass os.Stdout to NewRenderer
+
+	err := form.Run()
+	if err != nil {
+		term.Error(err)
+	}
+
+	formString := form.View()                                                   // Get the form's rendered output directly from form.View()
+	styledForm := formRenderer.NewStyle().Inherit(formStyle).Render(formString) // Corrected: Use formRenderer.NewStyle().Render()
+
+	fmt.Println(styledForm) // Print the styled form
+
+	if confirmCreation {
+		fmt.Println("Creating project...")
+		// In real code, continue with project creation logic here
+		fmt.Printf("Project Name: %s\n", projectName)
+		fmt.Printf("Project Directory: %s\n", projectDir)
+		fmt.Printf("Template: %s\n", templateName)
+		fmt.Printf("Git Repo: %s\n", gitRepo)
+		fmt.Printf("Product Company: %s\n", productCompany)
+		fmt.Printf("Product Name: %s\n", productName)
+		fmt.Printf("Product Description: %s\n", productDesc)
+		fmt.Printf("Product Version: %s\n", productVersion)
+		fmt.Printf("Product Identifier: %s\n", productID)
+		fmt.Printf("Product Copyright: %s\n", productCopyright)
+		fmt.Printf("Product Comments: %s\n", productComments)
+
+		options := &flags.Init{
+			ProjectName:        projectName,
+			ProjectDir:         projectDir,
+			TemplateName:       templateName,
+			Git:                gitRepo,
+			ProductCompany:     productCompany,
+			ProductName:        productName,
+			ProductDescription: productDesc,
+			ProductVersion:     productVersion,
+			ProductIdentifier:  productID,
+			ProductCopyright:   productCopyright,
+			ProductComments:    productComments,
+		}
+
+		// Call the original Init function with the populated options
+		if err := Init(options); err != nil {
+			term.Error(err)
+		}
+
+	} else {
+		fmt.Println("Project creation cancelled.")
+	}
 }
