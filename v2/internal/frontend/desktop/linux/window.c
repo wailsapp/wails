@@ -270,7 +270,7 @@ void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_wid
     size.min_height = min_height;
     size.min_width = min_width;
 
-    // On Wayland window manager get the decoratgors and calculate the differences from the windows' size.
+    // On Wayland window manager get the decorators and calculate the differences from the windows' size.
     if(onWayland()) 
     {
         if(decoratorWidth == -1 && decoratorHeight == -1)
