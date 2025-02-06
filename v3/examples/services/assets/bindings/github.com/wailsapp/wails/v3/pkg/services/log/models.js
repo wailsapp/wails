@@ -9,5 +9,18 @@ import {Create as $Create} from "/wails/runtime.js";
 /**
  * A Level is the importance or severity of a log event.
  * The higher the level, the more important or severe the event.
- * @typedef {any} Level
+ * 
+ * Values are arbitrary, but there are four predefined ones.
+ * @typedef {number} Level
  */
+
+/**
+ * Predefined constants for type Level.
+ * @namespace
+ */
+export const Level = {
+    Debug: -4,
+    Info: 0,
+    Warning: 4,
+    Error: 8,
+};

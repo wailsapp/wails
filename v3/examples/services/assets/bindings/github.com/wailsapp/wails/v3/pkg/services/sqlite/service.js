@@ -6,8 +6,18 @@
 // @ts-ignore: Unused imports
 import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as $models from "./models.js";
+
 /**
- * @returns {Promise<string> & { cancel(): void }}
+ * Close closes the current database connection if one is open, otherwise has no effect.
+ * Additionally, Close closes all open prepared statements associated to the connection.
+ *
+ * Even when a non-nil error is returned,
+ * the database service is left in a consistent state,
+ * ready for a call to [Service.Open].
+ * @returns {Promise<void> & { cancel(): void }}
  */
 export function Close() {
     let $resultPromise = /** @type {any} */($Call.ByID(1888105376));
@@ -15,41 +25,104 @@ export function Close() {
 }
 
 /**
+ * ClosePrepared closes a prepared statement
+ * obtained with [Service.Prepare] or [Service.PrepareContext].
+ * ClosePrepared is idempotent:
+ * it has no effect on prepared statements that are already closed.
+ * @param {$models.Stmt | null} stmt
+ * @returns {Promise<void> & { cancel(): void }}
+ */
+function ClosePrepared(stmt) {
+    let $resultPromise = /** @type {any} */($Call.ByID(2526200629, stmt));
+    return $resultPromise;
+}
+
+/**
+ * ExecContext executes a query without returning any rows.
+ * It supports early cancellation.
  * @param {string} query
  * @param {any[]} args
  * @returns {Promise<void> & { cancel(): void }}
  */
-export function Execute(query, ...args) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3811930203, query, args));
+function ExecContext(query, ...args) {
+    let $resultPromise = /** @type {any} */($Call.ByID(674944556, query, args));
     return $resultPromise;
 }
 
 /**
- * Name returns the name of the plugin.
- * You should use the go module format e.g. github.com/myuser/myplugin
- * @returns {Promise<string> & { cancel(): void }}
+ * ExecPrepared executes a prepared statement
+ * obtained with [Service.Prepare] or [Service.PrepareContext]
+ * without returning any rows.
+ * It supports early cancellation.
+ * @param {$models.Stmt | null} stmt
+ * @param {any[]} args
+ * @returns {Promise<void> & { cancel(): void }}
  */
-export function Name() {
-    let $resultPromise = /** @type {any} */($Call.ByID(2075046103));
+function ExecPrepared(stmt, ...args) {
+    let $resultPromise = /** @type {any} */($Call.ByID(2086877656, stmt, args));
     return $resultPromise;
 }
 
 /**
- * @param {string} dbPath
- * @returns {Promise<string> & { cancel(): void }}
+ * Open validates the current configuration,
+ * closes the current connection if one is present,
+ * then opens and validates a new connection.
+ *
+ * Even when a non-nil error is returned,
+ * the database service is left in a consistent state,
+ * ready for a new call to Open.
+ * @returns {Promise<void> & { cancel(): void }}
  */
-export function Open(dbPath) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2012175612, dbPath));
+export function Open() {
+    let $resultPromise = /** @type {any} */($Call.ByID(2012175612));
     return $resultPromise;
 }
 
 /**
+ * PrepareContext creates a prepared statement for later queries or executions.
+ * Multiple queries or executions may be run concurrently from the returned statement.
+ *
+ * The caller must call the statement's Close method when it is no longer needed.
+ * Statements are closed automatically
+ * when the connection they are associated with is closed.
+ *
+ * PrepareContext supports early cancellation.
+ * @param {string} query
+ * @returns {Promise<$models.Stmt | null> & { cancel(): void }}
+ */
+function PrepareContext(query) {
+    let $resultPromise = /** @type {any} */($Call.ByID(570941694, query));
+    return $resultPromise;
+}
+
+/**
+ * QueryContext executes a query and returns a slice of key-value records,
+ * one per row, with column names as keys.
+ * It supports early cancellation, returning the slice of results fetched so far.
  * @param {string} query
  * @param {any[]} args
- * @returns {Promise<{ [_: string]: any }[]> & { cancel(): void }}
+ * @returns {Promise<$models.Rows> & { cancel(): void }}
  */
-export function Select(query, ...args) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2472933124, query, args));
+function QueryContext(query, ...args) {
+    let $resultPromise = /** @type {any} */($Call.ByID(4115542347, query, args));
+    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+        return $$createType1($result);
+    }));
+    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
+    return $typingPromise;
+}
+
+/**
+ * QueryPrepared executes a prepared statement
+ * obtained with [Service.Prepare] or [Service.PrepareContext]
+ * and returns a slice of key-value records, one per row, with column names as keys.
+ * It supports early cancellation, returning the slice of results fetched so far.
+ * @param {$models.Stmt | null} stmt
+ * @param {any[]} args
+ * @returns {Promise<$models.Rows> & { cancel(): void }}
+ */
+function QueryPrepared(stmt, ...args) {
+    let $resultPromise = /** @type {any} */($Call.ByID(3885083725, stmt, args));
     let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
         return $$createType1($result);
     }));
@@ -70,3 +143,35 @@ export function Shutdown() {
 // Private type creation functions
 const $$createType0 = $Create.Map($Create.Any, $Create.Any);
 const $$createType1 = $Create.Array($$createType0);
+
+export {
+    ExecContext as Execute,
+    QueryContext as Query
+};
+
+import { Stmt } from "./stmt.js";
+
+/**
+ * Prepare creates a prepared statement for later queries or executions.
+ * Multiple queries or executions may be run concurrently from the returned statement.
+ *
+ * The caller must call the statement's Close method when it is no longer needed.
+ * Statements are closed automatically
+ * when the connection they are associated with is closed.
+ *
+ * Prepare supports early cancellation.
+ *
+ * @param {string} query
+ * @returns {Promise<Stmt | null> & { cancel(): void }}
+ */
+export function Prepare(query) {
+    const promise = PrepareContext(query);
+    const wrapper = /** @type {any} */(promise.then(function (id) {
+        return id == null ? null : new Stmt(
+            ClosePrepared.bind(null, id),
+            ExecPrepared.bind(null, id),
+            QueryPrepared.bind(null, id));
+    }));
+    wrapper.cancel = promise.cancel;
+    return wrapper;
+}
