@@ -19,14 +19,15 @@
  */
 {{end}}
 {{- if .Services}}
-{{- range .Services}}{{if not .Internal}}
+{{- range .Services}}{{if .Internal}}{{break}}{{end}}
 import * as {{jsid .Name}} from "./{{js (fixext ($renderer.ServiceFile .Name))}}";
-{{- end}}{{end}}
+{{- end}}
 export {
-{{- range $i, $service := .Services}}{{if not .Internal}}
+{{- range $i, $service := .Services}}
+    {{- if .Internal}}{{break}}{{end}}
     {{- if gt $i 0}},{{end}}
     {{jsid .Name}}
-{{- end}}{{end}}
+{{- end}}
 };
 {{end}}
 

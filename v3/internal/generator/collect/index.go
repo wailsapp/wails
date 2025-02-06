@@ -10,9 +10,8 @@ import (
 //
 // When obtained through a call to [PackageInfo.Index],
 // each service and model appears at most once;
-// services are sorted by name;
-// exported models precede all unexported ones
-// and both ranges are sorted by name.
+// services and models are sorted
+// by internal property (all exported first), then by name.
 type PackageIndex struct {
 	Package *PackageInfo
 
@@ -59,12 +58,21 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 		}
 	}
 
-	// Sort services by name.
-	slices.SortFunc(index.Services, func(b1 *ServiceInfo, b2 *ServiceInfo) int {
-		if b1 == b2 {
+	// Sort services by internal property (exported first), then by name.
+	slices.SortFunc(index.Services, func(s1 *ServiceInfo, s2 *ServiceInfo) int {
+		if s1 == s2 {
 			return 0
 		}
-		return strings.Compare(b1.Name, b2.Name)
+
+		if s1.Internal != s2.Internal {
+			if s1.Internal {
+				return 1
+			} else {
+				return -1
+			}
+		}
+
+		return strings.Compare(s1.Name, s2.Name)
 	})
 
 	// Gather models.
@@ -89,9 +97,8 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 			return 0
 		}
 
-		m1e, m2e := m1.Internal, m2.Internal
-		if m1e != m2e {
-			if m1e {
+		if m1.Internal != m2.Internal {
+			if m1.Internal {
 				return 1
 			} else {
 				return -1
