@@ -95,8 +95,8 @@ import * as $models from "./{{js $models}}";
 {{if and (ge (len $create) 54) (eq (slice $create 39 54) "function $$init")}}var {{else}}const {{end -}}
 $$createType{{$i}} = {{$create}};
 {{- end}}
-{{end}}{{end}}
+{{end}}
 {{- range .Injections}}
 {{.}}
 {{- end}}{{if .Injections}}
-{{end}}
+{{end}}{{end -}}
