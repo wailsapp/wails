@@ -8,6 +8,7 @@ export {
 };
 
 export {
+    Age,
     Title
 } from "./models.js";
 

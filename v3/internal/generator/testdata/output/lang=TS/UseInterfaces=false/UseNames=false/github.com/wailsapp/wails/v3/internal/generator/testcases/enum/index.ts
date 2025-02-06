@@ -7,6 +7,7 @@ export {
 };
 
 export {
+    Age,
     Person,
     Title
 } from "./models.js";

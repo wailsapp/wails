@@ -6,11 +6,37 @@
 import {Create as $Create} from "/wails/runtime.js";
 
 /**
+ * Age is an integer with some predefined values
+ */
+export type Age = number;
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+
+/**
  * Person represents a person
  */
 export class Person {
     "Title": Title;
     "Name": string;
+    "Age": Age;
 
     /** Creates a new Person instance. */
     constructor($$source: Partial<Person> = {}) {
@@ -19,6 +45,9 @@ export class Person {
         }
         if (!("Name" in $$source)) {
             this["Name"] = "";
+        }
+        if (!("Age" in $$source)) {
+            this["Age"] = 0;
         }
 
         Object.assign(this, $$source);

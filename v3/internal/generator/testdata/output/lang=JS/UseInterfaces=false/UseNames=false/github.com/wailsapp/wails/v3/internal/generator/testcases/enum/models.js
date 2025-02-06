@@ -7,6 +7,31 @@
 import {Create as $Create} from "/wails/runtime.js";
 
 /**
+ * Age is an integer with some predefined values
+ * @typedef {number} Age
+ */
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+
+/**
  * Person represents a person
  */
 export class Person {
@@ -28,6 +53,13 @@ export class Person {
              * @type {string}
              */
             this["Name"] = "";
+        }
+        if (!("Age" in $$source)) {
+            /**
+             * @member
+             * @type {Age}
+             */
+            this["Age"] = 0;
         }
 
         Object.assign(this, $$source);
