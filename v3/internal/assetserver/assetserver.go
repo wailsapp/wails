@@ -12,7 +12,6 @@ import (
 const (
 	webViewRequestHeaderWindowId   = "x-wails-window-id"
 	webViewRequestHeaderWindowName = "x-wails-window-name"
-	servicePrefix                  = "wails/services"
 	HeaderAcceptLanguage           = "accept-language"
 )
 
@@ -122,14 +121,8 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 			}
 		}
 
-		// Check if it can be served by the user-provided handler
-		if !strings.HasPrefix(reqPath, servicePrefix) {
-			userHandler.ServeHTTP(rw, req)
-			return
-		}
-
-		rw.WriteHeader(http.StatusNotFound)
-		return
+		// Forward to the user-provided handler
+		userHandler.ServeHTTP(rw, req)
 	}
 }
 
