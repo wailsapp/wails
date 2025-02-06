@@ -82,7 +82,12 @@ func (generator *Generator) generateService(obj *types.TypeName) {
 		generator.logger.Errorf("%v", err)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			generator.logger.Errorf("%v", err)
+			success = false
+		}
+	}()
 
 	// Render service code.
 	err = generator.renderer.Service(file, info)

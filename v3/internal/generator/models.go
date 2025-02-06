@@ -24,7 +24,12 @@ func (generator *Generator) generateModels(info *collect.PackageInfo, models []*
 		generator.logger.Errorf("package %s: models generation failed", info.Path)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			generator.logger.Errorf("%v", err)
+			generator.logger.Errorf("package %s: models generation failed", info.Path)
+		}
+	}()
 
 	err = generator.renderer.Models(file, imports, models)
 	if err != nil {

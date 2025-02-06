@@ -83,7 +83,12 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 				generator.logger.Errorf("package %s: could not write included file '%s'", index.Package.Path, name)
 				return
 			}
-			defer dst.Close()
+			defer func() {
+				if err := dst.Close(); err != nil {
+					generator.logger.Errorf("%v", err)
+					generator.logger.Errorf("package %s: could not write included file '%s'", index.Package.Path, name)
+				}
+			}()
 
 			_, err = io.Copy(dst, src)
 			if err != nil {
