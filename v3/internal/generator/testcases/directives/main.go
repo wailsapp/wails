@@ -44,6 +44,8 @@ func main() {
 	app := application.New(application.Options{
 		Services: []application.Service{
 			application.NewService(&Service{}),
+			application.NewService(&unexportedService{}),
+			application.NewService(&InternalService{}),
 		},
 	})
 
