@@ -33,11 +33,13 @@ func (generator *Generator) generateService(obj *types.TypeName) {
 	}
 
 	if info.IsEmpty() {
-		generator.logger.Infof(
-			"package %s: type %s: service has no valid exported methods, skipping",
-			obj.Pkg().Path(),
-			obj.Name(),
-		)
+		if !info.HasInternalMethods {
+			generator.logger.Infof(
+				"package %s: type %s: service has no valid exported methods, skipping",
+				obj.Pkg().Path(),
+				obj.Name(),
+			)
+		}
 		success = true
 		return
 	}
