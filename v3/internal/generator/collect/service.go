@@ -22,8 +22,16 @@ type (
 	ServiceInfo struct {
 		*TypeInfo
 
+		// Internal records whether the service
+		// should be exported by the index file.
+		Internal bool
+
 		Imports *ImportMap
 		Methods []*ServiceMethodInfo
+
+		// HasInternalMethods records whether the service
+		// defines lifecycle or http server methods.
+		HasInternalMethods bool
 
 		// Injections stores a list of JS code lines
 		// that should be injected into the generated file.
@@ -80,7 +88,7 @@ func (collector *Collector) Service(obj *types.TypeName) *ServiceInfo {
 func (info *ServiceInfo) IsEmpty() bool {
 	// Ensure information has been collected.
 	info.Collect()
-	return len(info.Injections) == 0 && len(info.Methods) == 0
+	return len(info.Methods) == 0 && len(info.Injections) == 0
 }
 
 // Collect gathers information about the service described by its receiver.
@@ -119,7 +127,11 @@ func (info *ServiceInfo) Collect() *ServiceInfo {
 		// Collect method information.
 		info.Methods = make([]*ServiceMethodInfo, 0, len(mset))
 		for _, sel := range mset {
-			if !sel.Obj().Exported() || internalServiceMethods[sel.Obj().Name()] {
+			switch {
+			case internalServiceMethods[sel.Obj().Name()]:
+				info.HasInternalMethods = true
+				continue
+			case !sel.Obj().Exported():
 				// Ignore unexported and internal methods.
 				continue
 			}
@@ -130,13 +142,20 @@ func (info *ServiceInfo) Collect() *ServiceInfo {
 			}
 		}
 
+		// Record whether the service should be exported.
+		info.Internal = !obj.Exported()
+
 		// Parse directives.
 		for _, doc := range []*ast.CommentGroup{info.Doc, info.Decl.Doc} {
 			if doc == nil {
 				continue
 			}
 			for _, comment := range doc.List {
-				if IsDirective(comment.Text, "inject") {
+				switch {
+				case IsDirective(comment.Text, "internal"):
+					info.Internal = true
+
+				case IsDirective(comment.Text, "inject"):
 					// Check condition.
 					line, cond, err := ParseCondition(ParseDirective(comment.Text, "inject"))
 					if err != nil {

@@ -2,6 +2,7 @@ package collect
 
 import (
 	"cmp"
+	"go/ast"
 	"go/constant"
 	"go/types"
 	"slices"
@@ -19,6 +20,10 @@ type (
 	// or before spawning the accessing goroutine.
 	ModelInfo struct {
 		*TypeInfo
+
+		// Internal records whether the model
+		// should be exported by the index file.
+		Internal bool
 
 		// Imports records dependencies for this model.
 		Imports *ImportMap
@@ -132,6 +137,21 @@ func (info *ModelInfo) Collect() *ModelInfo {
 
 		// Setup fallback type.
 		info.Type = types.Universe.Lookup("any").Type()
+
+		// Record whether the model should be exported.
+		info.Internal = !obj.Exported()
+
+		// Parse directives.
+		for _, doc := range []*ast.CommentGroup{info.Doc, info.Decl.Doc} {
+			if doc == nil {
+				continue
+			}
+			for _, comment := range doc.List {
+				if IsDirective(comment.Text, "internal") {
+					info.Internal = true
+				}
+			}
+		}
 
 		// Record type parameter names.
 		var isGeneric bool

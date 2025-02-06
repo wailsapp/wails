@@ -16,7 +16,8 @@ import (
 type PackageIndex struct {
 	Package *PackageInfo
 
-	Services []*ServiceInfo
+	Services            []*ServiceInfo
+	HasExportedServices bool // If true, there is at least one exported service.
 
 	Models            []*ModelInfo
 	HasExportedModels bool // If true, there is at least one exported model.
@@ -47,9 +48,10 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 	for _, value := range info.services.Range {
 		service := value.(*ServiceInfo)
 		if !service.IsEmpty() {
-			if service.Object().Exported() {
-				// Publish non-internal service on the local index.
-				index.Services = append(index.Services, service)
+			index.Services = append(index.Services, service)
+			// Mark presence of exported services
+			if !service.Internal {
+				index.HasExportedServices = true
 			}
 			// Update service stats.
 			stats.NumServices++
@@ -70,7 +72,7 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 		model := value.(*ModelInfo)
 		index.Models = append(index.Models, model)
 		// Mark presence of exported models
-		if model.Object().Exported() {
+		if !model.Internal {
 			index.HasExportedModels = true
 		}
 		// Update model stats.
@@ -81,18 +83,18 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 		}
 	}
 
-	// Sort models by exported property (exported first), then by name.
+	// Sort models by internal property (exported first), then by name.
 	slices.SortFunc(index.Models, func(m1 *ModelInfo, m2 *ModelInfo) int {
 		if m1 == m2 {
 			return 0
 		}
 
-		m1e, m2e := m1.Object().Exported(), m2.Object().Exported()
+		m1e, m2e := m1.Internal, m2.Internal
 		if m1e != m2e {
 			if m1e {
-				return -1
-			} else {
 				return 1
+			} else {
+				return -1
 			}
 		}
 
@@ -108,5 +110,5 @@ func (info *PackageInfo) Index(TS bool) (index *PackageIndex) {
 // IsEmpty returns true if the given index
 // contains no data for the selected language.
 func (index *PackageIndex) IsEmpty() bool {
-	return len(index.Package.Injections) == 0 && len(index.Services) == 0 && !index.HasExportedModels
+	return !index.HasExportedServices && !index.HasExportedModels && len(index.Package.Injections) == 0
 }
