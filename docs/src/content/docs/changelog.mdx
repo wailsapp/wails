@@ -48,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Report package path in binding generator warnings about unsupported types by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Add binding generator support for generic aliases by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Add binding generator support for `omitzero` JSON flag by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add `//wails:ignore` directive to prevent binding generation for chosen service methods by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add `//wails:internal` directive on services and models to allow for types that are exported in Go but not in JS/TS by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 
 ### Fixed
 
@@ -68,6 +70,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed binding generator output for structs that implement marshaler interfaces by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Fixed detection of type cycles involving generic types in binding generator by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Fixed invalid references to unexported models in binding generator output by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Moved injected code to the end of service files by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed handling of errors from file close operations in binding generator by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Suppressed warnings for services that define lifecycle or http methods but no other bound methods by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 
 ### Changed
 
