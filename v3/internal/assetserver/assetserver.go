@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"strings"
 	"time"
@@ -95,32 +94,25 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 	reqPath := req.URL.Path
 	switch reqPath {
 	case "", "/", "/index.html":
-		recorder := httptest.NewRecorder()
-		userHandler.ServeHTTP(recorder, req)
-		for k, v := range recorder.Result().Header {
-			header[k] = v
+		// Cache the accept-language header
+		// before passing the request down the chain.
+		acceptLanguage := req.Header.Get(HeaderAcceptLanguage)
+		if acceptLanguage == "" {
+			acceptLanguage = "en"
 		}
 
-		switch recorder.Code {
-		case http.StatusOK:
-			a.writeBlob(rw, indexHTML, recorder.Body.Bytes())
-
-		case http.StatusNotFound:
-			// Read the accept-language header
-			acceptLanguage := req.Header.Get(HeaderAcceptLanguage)
-			if acceptLanguage == "" {
-				acceptLanguage = "en"
-			}
-			// Set content type for default index.html
-			header.Set(HeaderContentType, "text/html; charset=utf-8")
-			a.writeBlob(rw, indexHTML, defaultIndexHTML(acceptLanguage))
-
-		default:
-			rw.WriteHeader(recorder.Code)
+		wrapped := &fallbackResponseWriter{
+			rw:  rw,
+			req: req,
+			fallback: http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				// Set content type for default index.html
+				header.Set(HeaderContentType, "text/html; charset=utf-8")
+				a.writeBlob(rw, indexHTML, defaultIndexHTML(acceptLanguage))
+			}),
 		}
+		userHandler.ServeHTTP(wrapped, req)
 
 	default:
-
 		// Check if the path matches the keys in the services map
 		for route, handler := range a.services {
 			if strings.HasPrefix(reqPath, route) {
