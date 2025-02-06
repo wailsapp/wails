@@ -2,16 +2,17 @@ package main
 
 import (
 	"embed"
+	"log/slog"
+	"os"
+	"path/filepath"
+	"runtime"
+
 	"github.com/wailsapp/wails/v3/examples/services/hashes"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/services/fileserver"
 	"github.com/wailsapp/wails/v3/pkg/services/kvstore"
 	"github.com/wailsapp/wails/v3/pkg/services/log"
 	"github.com/wailsapp/wails/v3/pkg/services/sqlite"
-	"log/slog"
-	"os"
-	"path/filepath"
-	"runtime"
 )
 
 //go:embed assets/*
@@ -35,15 +36,15 @@ func main() {
 		LogLevel: slog.LevelDebug,
 		Services: []application.Service{
 			application.NewService(hashes.New()),
-			application.NewService(sqlite.New(&sqlite.Config{
-				DBFile: "test.db",
+			application.NewService(sqlite.NewWithConfig(&sqlite.Config{
+				DBSource: "test.db",
 			})),
-			application.NewService(kvstore.New(&kvstore.Config{
+			application.NewService(kvstore.NewWithConfig(&kvstore.Config{
 				Filename: "store.json",
 				AutoSave: true,
 			})),
 			application.NewService(log.New()),
-			application.NewServiceWithOptions(fileserver.New(&fileserver.Config{
+			application.NewServiceWithOptions(fileserver.NewWithConfig(&fileserver.Config{
 				RootPath: rootPath,
 			}), application.ServiceOptions{
 				Route: "/files",
