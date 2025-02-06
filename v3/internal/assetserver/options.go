@@ -1,7 +1,7 @@
 package assetserver
 
 import (
-	"fmt"
+	"errors"
 	"log/slog"
 	"net/http"
 )
@@ -31,7 +31,7 @@ type Options struct {
 // Validate the options
 func (o Options) Validate() error {
 	if o.Handler == nil && o.Middleware == nil {
-		return fmt.Errorf("AssetServer options invalid: either Handler or Middleware must be set")
+		return errors.New("AssetServer options invalid: either Handler or Middleware must be set")
 	}
 
 	return nil

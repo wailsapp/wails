@@ -151,13 +151,13 @@ func (a *AssetServer) AttachServiceHandler(prefix string, handler http.Handler) 
 func (a *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {
 	err := ServeFile(rw, filename, blob)
 	if err != nil {
-		a.serveError(rw, err, "Unable to write content %s", filename)
+		a.serveError(rw, err, "Error writing file content.", "filename", filename)
 	}
 }
 
 func (a *AssetServer) serveError(rw http.ResponseWriter, err error, msg string, args ...interface{}) {
-	args = append(args, err)
-	a.options.Logger.Error(msg+":", args...)
+	args = append(args, "error", err)
+	a.options.Logger.Error(msg, args...)
 	rw.WriteHeader(http.StatusInternalServerError)
 }
 
@@ -168,7 +168,7 @@ func GetStartURL(userURL string) (string, error) {
 		// Parse the port
 		parsedURL, err := url.Parse(devServerURL)
 		if err != nil {
-			return "", fmt.Errorf("Error parsing environment variable 'FRONTEND_DEVSERVER_URL`: " + err.Error() + ". Please check your `Taskfile.yml` file")
+			return "", fmt.Errorf("error parsing environment variable `FRONTEND_DEVSERVER_URL`: %w. Please check your `Taskfile.yml` file", err)
 		}
 		port := parsedURL.Port()
 		if port != "" {
@@ -180,7 +180,7 @@ func GetStartURL(userURL string) (string, error) {
 	if userURL != "" {
 		parsedURL, err := baseURL.Parse(userURL)
 		if err != nil {
-			return "", fmt.Errorf("Error parsing URL: " + err.Error())
+			return "", fmt.Errorf("error parsing URL: %w", err)
 		}
 
 		startURL = parsedURL.String()

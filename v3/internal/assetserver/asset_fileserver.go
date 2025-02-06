@@ -33,7 +33,7 @@ func newAssetFileServerFS(vfs iofs.FS) http.Handler {
 				msg += fmt.Sprintf(", please make sure the embedded directory '%s' is correct and contains your assets", rootFolder)
 			}
 
-			err = fmt.Errorf(msg)
+			err = errors.New(msg)
 		}
 	} else {
 		vfs, err = iofs.Sub(vfs, path.Clean(subDir))
