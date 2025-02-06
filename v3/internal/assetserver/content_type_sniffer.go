@@ -34,14 +34,14 @@ func (rw *contentTypeSniffer) Write(chunk []byte) (int, error) {
 		return 0, nil
 	}
 
-	// Cut away at most 512 bytes from chunk.
-	cut := min(len(chunk), 512-len(rw.prefix))
+	// Cut away at most 512 bytes from chunk, and not less than 0.
+	cut := max(min(len(chunk), 512-len(rw.prefix)), 0)
 	if cut >= 512 {
 		// Avoid copying data if a full prefix is available on first non-zero write.
 		cut = len(chunk)
 		rw.prefix = chunk
 		chunk = nil
-	} else {
+	} else if cut > 0 {
 		// First write had less than 512 bytes -- copy data to the prefix buffer.
 		if rw.prefix == nil {
 			// Preallocate space for the prefix to be used for sniffing.
