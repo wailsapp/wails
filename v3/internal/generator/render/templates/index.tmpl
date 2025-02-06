@@ -39,7 +39,7 @@ export {
 
 {{- $info := modelinfo $model $useInterfaces }}
 
-{{- if or $info.IsEnum $info.IsClassAlias $info.IsClass}}
+{{- if or $info.HasValues $info.IsClassAlias $info.IsClass}}
 {{- if not $hasObjects}}
     {{- $hasObjects = true}}
 export {
@@ -67,7 +67,7 @@ import * as $models from "./{{js $models}}";
 {{- $info := modelinfo $model $useInterfaces }}
 {{- $template := $info.Template }}
 
-{{- if or $info.IsEnum $info.IsClassAlias $info.IsClass}}{{continue}}{{end}}
+{{- if or $info.HasValues $info.IsClassAlias $info.IsClass}}{{continue}}{{end}}
 
 {{- if $renderer.TS}}
     {{- if $hasTypes}},{{end}}

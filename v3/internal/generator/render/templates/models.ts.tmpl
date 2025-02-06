@@ -78,6 +78,33 @@ export const {{jsid $model.Name}} = {{if istpalias $model.Type -}}
 export type {{jsid $model.Name}}{{$template.ParamList}} = {{$module.JSType $model.Type}};
 {{else if $info.IsTypeAlias}}
 export type {{jsid $model.Name}}{{$template.ParamList}} = {{$module.JSType $model.Type}};
+{{- if $info.HasValues}}
+
+/**
+ * Predefined constants for type {{jsid $model.Name}}.
+ * @namespace
+ */
+export const {{jsid $model.Name}} = {
+{{- range $i, $decl := $model.Values}}{{range $j, $spec := $decl}}{{range $k, $value := $spec}}
+    {{- if and (ne $i 0) (eq $j 0) (eq $k 0)}}
+{{end}}
+    {{- if or (and (eq $j 0) (eq $k 0) (hasdoc $value.Decl.Doc)) (and (eq $k 0) (hasdoc $value.Spec.Doc))}}
+    {{- if gt $j 0}}
+{{end}}
+    /**
+    {{- if and (eq $j 0) (eq $k 0) (hasdoc $value.Decl.Doc)}}
+    {{- jsdoc $value.Decl.Doc.Text "    "}}{{if and (eq $k 0) (hasdoc $value.Spec.Doc)}}
+     *{{end}}
+    {{- end}}
+    {{- if and (eq $k 0) (hasdoc $value.Spec.Doc)}}
+    {{- jsdoc $value.Spec.Doc.Text "    "}}
+    {{- end}}
+     */
+    {{- end}}
+    {{jsid $value.Name}}: {{jsvalue $value.Value}},
+{{- end}}{{end}}{{end}}
+};
+{{- end}}
 {{else if $info.IsClassOrInterface}}
 export {{if $info.IsInterface}}interface{{else}}class{{end}} {{jsid $model.Name}}{{$template.ParamList}} {
     {{- range $i, $decl := $model.Fields}}{{range $j, $field := $decl}}

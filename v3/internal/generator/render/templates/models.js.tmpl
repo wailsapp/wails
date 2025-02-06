@@ -57,13 +57,22 @@ import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{- end}}
  */
 {{- end}}
-{{- if $info.IsEnum}}
+{{- if $info.HasValues}}
+{{- if not $info.IsEnum}}
+
+/**
+ * Predefined constants for type {{jsid $model.Name}}.
+ * @namespace
+ */
+{{- end}}
 export const {{jsid $model.Name}} = {
+{{- if $info.IsEnum}}
     /**
      * The Go zero value for the underlying type of the enum.
      */
     $zero: {{$module.JSDefault $model.Type false}},
-{{range $i, $decl := $model.Values}}{{range $j, $spec := $decl}}{{range $k, $value := $spec}}
+{{end}}
+{{- range $i, $decl := $model.Values}}{{range $j, $spec := $decl}}{{range $k, $value := $spec}}
     {{- if and (ne $i 0) (eq $j 0) (eq $k 0)}}
 {{end}}
     {{- if or (and (eq $j 0) (eq $k 0) (hasdoc $value.Decl.Doc)) (and (eq $k 0) (hasdoc $value.Spec.Doc))}}

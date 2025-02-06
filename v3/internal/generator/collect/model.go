@@ -192,6 +192,24 @@ func (info *ModelInfo) Collect() *ModelInfo {
 			// because in doing so we could end up with a private type from another package.
 			def = t.Rhs()
 
+			// Test for constants with alias type,
+			// but only when non-generic alias resolves to a basic type
+			// (hence not to e.g. a named type).
+			if basic, ok := types.Unalias(def).(*types.Basic); ok {
+				if !isGeneric && basic.Info()&types.IsConstType != 0 && basic.Info()&types.IsComplex == 0 {
+					// Non-generic alias resolves to a representable constant type:
+					// look for defined constants whose type is exactly the alias typ.
+					for _, name := range obj.Pkg().Scope().Names() {
+						if cnst, ok := obj.Pkg().Scope().Lookup(name).(*types.Const); ok {
+							alias, isAlias := cnst.Type().(*types.Alias)
+							if isAlias && cnst.Val().Kind() != constant.Unknown && alias.Obj() == t.Obj() {
+								constants = append(constants, cnst)
+							}
+						}
+					}
+				}
+			}
+
 		case *types.Named:
 			// Model is a named type:
 			// jump directly to underlying type to match go semantics,
@@ -222,7 +240,7 @@ func (info *ModelInfo) Collect() *ModelInfo {
 					info.Type = types.Typ[types.String]
 					return
 				}
-			} else if basic, ok := def.(*types.Basic); ok {
+			} else if basic, ok := def.Underlying().(*types.Basic); ok {
 				// Test for enums (excluding marshalers and generic types).
 				if !isGeneric && basic.Info()&types.IsConstType != 0 && basic.Info()&types.IsComplex == 0 {
 					// Named type is defined as a representable constant type:
@@ -255,12 +273,10 @@ func (info *ModelInfo) Collect() *ModelInfo {
 		info.Imports.AddType(def)
 
 		// Handle enum types.
-		// constants slice is always empty for aliases, structs, marshalers.
+		// constants slice is always empty for structs, marshalers.
 		if len(constants) > 0 {
 			// Collect information about enum values.
 			info.collectEnum(constants)
-			info.Type = def
-			return
 		}
 
 		// That's all, folks. Render as a TS alias.
