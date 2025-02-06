@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	iofs "io/fs"
 	"net/http"
 	"os"
@@ -24,7 +23,7 @@ type assetFileServer struct {
 	err error
 }
 
-func newAssetFileServerFS(vfs fs.FS) http.Handler {
+func newAssetFileServerFS(vfs iofs.FS) http.Handler {
 	subDir, err := findPathToFile(vfs, indexHTML)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {

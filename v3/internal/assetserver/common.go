@@ -22,9 +22,9 @@ const (
 	WailsUserAgentValue = "wails.io"
 )
 
-var (
-	assetServerLogger = struct{}{}
-)
+type assetServerLogger struct{}
+
+var assetServerLoggerKey assetServerLogger
 
 func ServeFile(rw http.ResponseWriter, filename string, blob []byte) error {
 	header := rw.Header()
@@ -45,17 +45,17 @@ func isWebSocket(req *http.Request) bool {
 }
 
 func contextWithLogger(ctx context.Context, logger *slog.Logger) context.Context {
-	return context.WithValue(ctx, assetServerLogger, logger)
+	return context.WithValue(ctx, assetServerLoggerKey, logger)
 }
 
 func logInfo(ctx context.Context, message string, args ...interface{}) {
-	if logger, _ := ctx.Value(assetServerLogger).(*slog.Logger); logger != nil {
+	if logger, _ := ctx.Value(assetServerLoggerKey).(*slog.Logger); logger != nil {
 		logger.Info(message, args...)
 	}
 }
 
 func logError(ctx context.Context, message string, args ...interface{}) {
-	if logger, _ := ctx.Value(assetServerLogger).(*slog.Logger); logger != nil {
+	if logger, _ := ctx.Value(assetServerLoggerKey).(*slog.Logger); logger != nil {
 		logger.Error(message, args...)
 	}
 }
