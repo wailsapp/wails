@@ -600,7 +600,6 @@ void windowSetShadow(void* nsWindow, bool hasShadow) {
 }
 
 
-
 // windowClose closes the current window
 static void windowClose(void *window) {
 	[(WebviewWindow*)window close];

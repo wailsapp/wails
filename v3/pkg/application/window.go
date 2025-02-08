@@ -61,6 +61,7 @@ type Window interface {
 	SetMaximiseButtonState(state ButtonState) Window
 	SetCloseButtonState(state ButtonState) Window
 	SetMaxSize(maxWidth, maxHeight int) Window
+	SetMenu(menu *Menu) Window
 	SetMinSize(minWidth, minHeight int) Window
 	SetRelativePosition(x, y int) Window
 	SetResizable(b bool) Window
@@ -84,5 +85,4 @@ type Window interface {
 	ZoomIn()
 	ZoomOut()
 	ZoomReset() Window
-	SetMenu(menu *Menu)
 }

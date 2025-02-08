@@ -33,6 +33,7 @@ type LRTB struct {
 
 type (
 	webviewWindowImpl interface {
+		setMenu(menu *Menu)
 		setTitle(title string)
 		setSize(width, height int)
 		setAlwaysOnTop(alwaysOnTop bool)
@@ -184,6 +185,21 @@ func (w *WebviewWindow) SetMenu(menu *Menu) {
 			w.impl.setMenu(menu)
 		})
 	}
+}
+
+func (w *WebviewWindow) SetMenu(menu *Menu) Window {
+	if w.impl == nil {
+		switch runtime.GOOS {
+		case "windows":
+			w.options.Windows.Menu = menu
+		case "linux":
+			w.options.Linux.Menu = menu
+		}
+	}
+	if w.impl != nil {
+		w.impl.setMenu(menu)
+	}
+	return w
 }
 
 // EmitEvent emits an event from the window
