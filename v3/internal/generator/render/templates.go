@@ -25,7 +25,7 @@ var tmplModels = map[tmplLanguage]*template.Template{
 
 var tmplIndex = template.Must(template.New("index.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/index.tmpl"))
 
-var newline string
+var Newline string
 
 func init() {
 	var builder strings.Builder
@@ -35,5 +35,5 @@ func init() {
 		panic(err)
 	}
 
-	newline = builder.String()
+	Newline = builder.String()
 }

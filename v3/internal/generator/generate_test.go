@@ -3,6 +3,7 @@ package generator
 import (
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/generator/render"
 	"io"
 	"io/fs"
 	"os"
@@ -116,7 +117,7 @@ func TestGenerator(t *testing.T) {
 						slices.Sort(warnings)
 
 						for _, msg := range warnings {
-							fmt.Fprintln(log, msg)
+							fmt.Fprint(log, msg, render.Newline)
 						}
 					}()
 				}
