@@ -260,13 +260,7 @@ func (w *linuxWebviewWindow) run() {
 
 	app := getNativeApplication()
 
-	var menu = w.parent.options.Linux.Menu
-	if menu != nil {
-		InvokeSync(func() {
-			menu.Update()
-		})
-		w.gtkmenu = (menu.impl).(*linuxMenu).native
-	}
+	w.setMenu(w.parent.options.Linux.Menu)
 
 	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
 	app.registerWindow(w.window, w.parent.id) // record our mapping
@@ -360,6 +354,16 @@ func (w *linuxWebviewWindow) run() {
 			w.openDevTools()
 		}
 	}
+}
+
+func (w *linuxWebviewWindow) setMenu(menu *Menu) {
+	if menu == nil {
+		return
+	}
+	InvokeSync(func() {
+		menu.Update()
+	})
+	w.gtkmenu = (menu.impl).(*linuxMenu).native
 }
 
 func (w *linuxWebviewWindow) startResize(border string) error {

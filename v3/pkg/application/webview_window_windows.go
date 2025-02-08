@@ -73,6 +73,13 @@ type windowsWebviewWindow struct {
 	isMinimizing bool
 }
 
+func (w *windowsWebviewWindow) setMenu(menu *Menu) {
+	menu.Update()
+	w.menu = NewApplicationMenu(w, menu)
+	w.menu.parentWindow = w
+	w32.SetMenu(w.hwnd, w.menu.menu)
+}
+
 func (w *windowsWebviewWindow) cut() {
 	w.execJS("document.execCommand('cut')")
 }

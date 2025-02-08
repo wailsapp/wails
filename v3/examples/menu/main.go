@@ -27,16 +27,7 @@ func main() {
 	if runtime.GOOS == "darwin" {
 		menu.AddRole(application.AppMenu)
 	}
-	fileMenu := menu.AddRole(application.FileMenu)
-	_ = fileMenu
-	//fileMenu.FindByRole(application.Open).OnClick(func(context *application.Context) {
-	//	selection, err := application.OpenFileDialog().PromptForSingleSelection()
-	//	if err != nil {
-	//		println("Error: " + err.Error())
-	//		return
-	//	}
-	//	println("You selected: " + selection)
-	//})
+	menu.AddRole(application.FileMenu)
 	menu.AddRole(application.EditMenu)
 	menu.AddRole(application.WindowMenu)
 	menu.AddRole(application.HelpMenu)
@@ -118,7 +109,8 @@ func main() {
 	})
 	app.SetMenu(menu)
 
-	app.NewWebviewWindow().SetBackgroundColour(application.NewRGB(33, 37, 41))
+	window := app.NewWebviewWindow().SetBackgroundColour(application.NewRGB(33, 37, 41))
+	window.SetMenu(menu)
 
 	err := app.Run()
 

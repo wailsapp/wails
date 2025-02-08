@@ -1423,6 +1423,7 @@ func (w *macosWebviewWindow) delete() {
 func (w *macosWebviewWindow) redo() {
 }
 
-func (w *macosWebviewWindow) showMenuBar()   {}
-func (w *macosWebviewWindow) hideMenuBar()   {}
-func (w *macosWebviewWindow) toggleMenuBar() {}
+func (w *macosWebviewWindow) showMenuBar()       {}
+func (w *macosWebviewWindow) hideMenuBar()       {}
+func (w *macosWebviewWindow) toggleMenuBar()     {}
+func (w *macosWebviewWindow) setMenu(menu *Menu) {}
