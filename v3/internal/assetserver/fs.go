@@ -12,7 +12,7 @@ import (
 
 // findEmbedRootPath finds the root path in the embed FS. It's the directory which contains all the files.
 func findEmbedRootPath(fileSystem embed.FS) (string, error) {
-	stopErr := fmt.Errorf("files or multiple dirs found")
+	stopErr := errors.New("files or multiple dirs found")
 
 	fPath := ""
 	err := fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {

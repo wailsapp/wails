@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"strings"
 	"time"
@@ -13,7 +12,6 @@ import (
 const (
 	webViewRequestHeaderWindowId   = "x-wails-window-id"
 	webViewRequestHeaderWindowName = "x-wails-window-name"
-	servicePrefix                  = "wails/services"
 	HeaderAcceptLanguage           = "accept-language"
 )
 
@@ -59,6 +57,11 @@ func NewAssetServer(options *Options) (*AssetServer, error) {
 func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	start := time.Now()
 	wrapped := &contentTypeSniffer{rw: rw}
+	defer func() {
+		if _, err := wrapped.complete(); err != nil {
+			a.options.Logger.Error("Error writing response data.", "uri", req.RequestURI, "error", err)
+		}
+	}()
 
 	req = req.WithContext(contextWithLogger(req.Context(), a.options.Logger))
 	a.handler.ServeHTTP(wrapped, req)
@@ -90,32 +93,25 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 	reqPath := req.URL.Path
 	switch reqPath {
 	case "", "/", "/index.html":
-		recorder := httptest.NewRecorder()
-		userHandler.ServeHTTP(recorder, req)
-		for k, v := range recorder.Result().Header {
-			header[k] = v
+		// Cache the accept-language header
+		// before passing the request down the chain.
+		acceptLanguage := req.Header.Get(HeaderAcceptLanguage)
+		if acceptLanguage == "" {
+			acceptLanguage = "en"
 		}
 
-		switch recorder.Code {
-		case http.StatusOK:
-			a.writeBlob(rw, indexHTML, recorder.Body.Bytes())
-
-		case http.StatusNotFound:
-			// Read the accept-language header
-			acceptLanguage := req.Header.Get(HeaderAcceptLanguage)
-			if acceptLanguage == "" {
-				acceptLanguage = "en"
-			}
-			// Set content type for default index.html
-			header.Set(HeaderContentType, "text/html; charset=utf-8")
-			a.writeBlob(rw, indexHTML, defaultIndexHTML(acceptLanguage))
-
-		default:
-			rw.WriteHeader(recorder.Code)
+		wrapped := &fallbackResponseWriter{
+			rw:  rw,
+			req: req,
+			fallback: http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				// Set content type for default index.html
+				header.Set(HeaderContentType, "text/html; charset=utf-8")
+				a.writeBlob(rw, indexHTML, defaultIndexHTML(acceptLanguage))
+			}),
 		}
+		userHandler.ServeHTTP(wrapped, req)
 
 	default:
-
 		// Check if the path matches the keys in the services map
 		for route, handler := range a.services {
 			if strings.HasPrefix(reqPath, route) {
@@ -125,14 +121,8 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 			}
 		}
 
-		// Check if it can be served by the user-provided handler
-		if !strings.HasPrefix(reqPath, servicePrefix) {
-			userHandler.ServeHTTP(rw, req)
-			return
-		}
-
-		rw.WriteHeader(http.StatusNotFound)
-		return
+		// Forward to the user-provided handler
+		userHandler.ServeHTTP(rw, req)
 	}
 }
 
@@ -146,13 +136,13 @@ func (a *AssetServer) AttachServiceHandler(prefix string, handler http.Handler) 
 func (a *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {
 	err := ServeFile(rw, filename, blob)
 	if err != nil {
-		a.serveError(rw, err, "Unable to write content %s", filename)
+		a.serveError(rw, err, "Error writing file content.", "filename", filename)
 	}
 }
 
 func (a *AssetServer) serveError(rw http.ResponseWriter, err error, msg string, args ...interface{}) {
-	args = append(args, err)
-	a.options.Logger.Error(msg+":", args...)
+	args = append(args, "error", err)
+	a.options.Logger.Error(msg, args...)
 	rw.WriteHeader(http.StatusInternalServerError)
 }
 
@@ -163,7 +153,7 @@ func GetStartURL(userURL string) (string, error) {
 		// Parse the port
 		parsedURL, err := url.Parse(devServerURL)
 		if err != nil {
-			return "", fmt.Errorf("Error parsing environment variable 'FRONTEND_DEVSERVER_URL`: " + err.Error() + ". Please check your `Taskfile.yml` file")
+			return "", fmt.Errorf("error parsing environment variable `FRONTEND_DEVSERVER_URL`: %w. Please check your `Taskfile.yml` file", err)
 		}
 		port := parsedURL.Port()
 		if port != "" {
@@ -175,7 +165,7 @@ func GetStartURL(userURL string) (string, error) {
 	if userURL != "" {
 		parsedURL, err := baseURL.Parse(userURL)
 		if err != nil {
-			return "", fmt.Errorf("Error parsing URL: " + err.Error())
+			return "", fmt.Errorf("error parsing URL: %w", err)
 		}
 
 		startURL = parsedURL.String()
