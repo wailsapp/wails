@@ -59,7 +59,7 @@ func GenerateBindings(options Options) (string, error) {
 	envBuild = shell.SetEnv(envBuild, "GOOS", options.Platform)
 	envBuild = shell.SetEnv(envBuild, "GOARCH", options.Arch)
 
-	stdout, stderr, err = shell.RunCommandWithEnv(envBuild, workingDirectory, options.Compiler, "build", "-tags", tagString, "-o", filename)
+	stdout, stderr, err = shell.RunCommandWithEnv(envBuild, workingDirectory, options.Compiler, "build", "-buildvcs=false", "-tags", tagString, "-o", filename)
 	if err != nil {
 		return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 	}
