@@ -4,6 +4,7 @@ package webview
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -68,7 +69,7 @@ func (rw *responseWriter) Finish() error {
 	if code == http.StatusNotModified {
 		// WebView2 has problems when a request returns a 304 status code and the WebView2 is going to hang for other
 		// requests including IPC calls.
-		errs = append(errs, fmt.Errorf("AssetServer returned 304 - StatusNotModified which are going to hang WebView2, changed code to 505 - StatusInternalServerError"))
+		errs = append(errs, errors.New("AssetServer returned 304 - StatusNotModified which are going to hang WebView2, changed code to 505 - StatusInternalServerError"))
 		code = http.StatusInternalServerError
 	}
 
