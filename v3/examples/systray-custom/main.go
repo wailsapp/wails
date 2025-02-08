@@ -56,6 +56,7 @@ func main() {
 		app.Quit()
 	})
 	systemTray.SetMenu(menu)
+	systemTray.SetTooltip("Systray Demo")
 
 	if runtime.GOOS == "darwin" {
 		systemTray.SetTemplateIcon(icons.SystrayMacTemplate)
