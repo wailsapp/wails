@@ -19,6 +19,19 @@ const (
 	Dr     Title = "Dr"
 )
 
+// Age is an integer with some predefined values
+type Age = int
+
+const (
+	NewBorn    Age = 0
+	Teenager   Age = 12
+	YoungAdult Age = 18
+
+	// Oh no, some grey hair!
+	MiddleAged Age = 50
+	Mathusalem Age = 1000 // Unbelievable!
+)
+
 // GreetService is great
 type GreetService struct {
 	SomeVariable int
@@ -30,6 +43,7 @@ type GreetService struct {
 type Person struct {
 	Title Title
 	Name  string
+	Age   Age
 }
 
 // Greet does XYZ

@@ -1,7 +1,6 @@
 {{$module := .}}
 {{- $runtime := $module.Runtime}}
 {{- $models := (fixext $module.ModelsFile)}}
-{{- $internal := (fixext $module.InternalFile)}}
 {{- $useNames := $module.UseNames}}
 {{- $useInterfaces := $module.UseInterfaces}}
 {{- $imports := $module.Imports}}
@@ -33,11 +32,7 @@ import * as {{jsimport .}} from "{{js .RelPath}}/{{js $models}}";
 {{- if $imports.ImportModels}}
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as $models from "./{{js $internal}}";
-{{end}}
-{{- range .Injections}}
-{{.}}
-{{- end}}{{if .Injections}}
+import * as $models from "./{{js $models}}";
 {{end}}
 {{- range .Methods}}
 /**
@@ -100,4 +95,8 @@ import * as $models from "./{{js $internal}}";
 {{if and (ge (len $create) 54) (eq (slice $create 39 54) "function $$init")}}var {{else}}const {{end -}}
 $$createType{{$i}} = {{$create}};
 {{- end}}
+{{end}}
+{{- range .Injections}}
+{{.}}
+{{- end}}{{if .Injections}}
 {{end}}{{end -}}

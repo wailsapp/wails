@@ -7,4 +7,21 @@ export {
     GreetService
 };
 
-export * from "./models.js";
+export {
+    Title
+} from "./models.js";
+
+import * as $models from "./models.js";
+
+/**
+ * @typedef {$models.Embedded1} Embedded1
+ */
+
+/**
+ * @typedef {$models.Embedded3} Embedded3
+ */
+
+/**
+ * Person represents a person
+ * @typedef {$models.Person} Person
+ */

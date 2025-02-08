@@ -38,7 +38,7 @@ func NewRenderer(options *flags.GenerateBindingsOptions, collector *collect.Coll
 		ext: ext,
 
 		service:  tmplService[tmplLanguage(options.TS)],
-		typedefs: tmplTypedefs[tmplLanguage(options.TS)],
+		typedefs: tmplModels[tmplLanguage(options.TS)],
 	}
 }
 
@@ -52,12 +52,6 @@ func (renderer *Renderer) ServiceFile(name string) string {
 // with the appropriate extension.
 func (renderer *Renderer) ModelsFile() string {
 	return renderer.options.ModelsFilename + renderer.ext
-}
-
-// InternalFile returns the standard name of an internal model file
-// with the appropriate extension.
-func (renderer *Renderer) InternalFile() string {
-	return renderer.options.InternalFilename + renderer.ext
 }
 
 // IndexFile returns the standard name of a package index file
@@ -82,7 +76,7 @@ func (renderer *Renderer) Service(w io.Writer, info *collect.ServiceInfo) error 
 }
 
 // Typedefs renders type definitions for the given list of models.
-func (renderer *Renderer) Typedefs(w io.Writer, imports *collect.ImportMap, models []*collect.ModelInfo) error {
+func (renderer *Renderer) Models(w io.Writer, imports *collect.ImportMap, models []*collect.ModelInfo) error {
 	if !renderer.options.UseInterfaces {
 		// Sort class aliases after the class they alias.
 		// Works in amortized linear time thanks to an auxiliary map.
@@ -92,7 +86,7 @@ func (renderer *Renderer) Typedefs(w io.Writer, imports *collect.ImportMap, mode
 
 		models = slices.Clone(models)
 		for i, j := 0, 0; i < len(models); i++ {
-			if models[i].Type != nil && collect.IsClass(models[i].Type) {
+			if models[i].Type != nil && models[i].Predicates.IsClass {
 				// models[i] is a class alias:
 				// models[i].Type is guaranteed to be
 				// either an alias or a named type
@@ -130,19 +124,6 @@ func (renderer *Renderer) Typedefs(w io.Writer, imports *collect.ImportMap, mode
 			Imports:                 imports,
 		},
 		models,
-	})
-}
-
-// Models renders exported models for the given package index to w.
-func (renderer *Renderer) Models(w io.Writer, index *collect.PackageIndex) error {
-	return tmplModels.Execute(w, &struct {
-		*collect.PackageIndex
-		*Renderer
-		*flags.GenerateBindingsOptions
-	}{
-		index,
-		renderer,
-		renderer.options,
 	})
 }
 

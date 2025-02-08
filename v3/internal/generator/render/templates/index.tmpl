@@ -1,4 +1,5 @@
 {{$renderer := .}}
+{{- $useInterfaces := .UseInterfaces}}
 {{- $models := (fixext .ModelsFile)}}
 {{- if not .TS -}}
 // @ts-check
@@ -18,19 +19,83 @@
  */
 {{end}}
 {{- if .Services}}
-{{- range .Services}}
+{{- range .Services}}{{if .Internal}}{{break}}{{end}}
 import * as {{jsid .Name}} from "./{{js (fixext ($renderer.ServiceFile .Name))}}";
 {{- end}}
 export {
 {{- range $i, $service := .Services}}
+    {{- if .Internal}}{{break}}{{end}}
     {{- if gt $i 0}},{{end}}
     {{jsid .Name}}
 {{- end}}
 };
 {{end}}
-{{- if .HasExportedModels}}
-export * from "./{{js $models}}";
+
+{{- $hasObjects := false}}
+{{- $hasTypes := false}}
+
+{{- range $model := .Models}}
+{{- if $model.Internal}}{{break}}{{end}}
+
+{{- $info := modelinfo $model $useInterfaces }}
+
+{{- if or $info.HasValues $info.IsClassAlias $info.IsClass}}
+{{- if not $hasObjects}}
+    {{- $hasObjects = true}}
+export {
+{{- else}},{{end}}
+    {{jsid $model.Name}}
+{{- else}}
+    {{- $hasTypes = true}}
+{{- end}}
+{{- end}}
+{{- if $hasObjects}}
+} from "./{{js $models}}";
 {{end}}
+
+{{- if $hasTypes}}
+{{- $hasTypes = false}}
+
+{{- if .TS}}
+export type {
+{{- else}}
+import * as $models from "./{{js $models}}";
+{{end}}
+{{- range $model := .Models}}
+{{- if $model.Internal}}{{break}}{{end}}
+
+{{- $info := modelinfo $model $useInterfaces }}
+{{- $template := $info.Template }}
+
+{{- if or $info.HasValues $info.IsClassAlias $info.IsClass}}{{continue}}{{end}}
+
+{{- if $renderer.TS}}
+    {{- if $hasTypes}},{{end}}
+    {{jsid $model.Name}}
+{{- else}}
+/**
+{{- if hasdoc $model.Decl.Doc}}
+{{- jsdoc $model.Decl.Doc.Text ""}}{{if hasdoc $model.Doc}}
+ *{{end}}
+{{- end}}
+{{- if hasdoc $model.Doc}}
+{{- jsdoc $model.Doc.Text ""}}
+{{- end}}
+{{- if $template.ParamList}}
+ * @template {{$template.Params}}
+{{- end}}
+ * @typedef {$models.{{jsid $model.Name}}{{$template.ParamList -}} } {{jsid $model.Name}}
+ */
+{{end}}
+
+{{- $hasTypes = true}}
+{{- end}}
+
+{{- if .TS}}
+} from "./{{js $models}}";
+{{end}}
+
+{{- end}}
 {{- range .Package.Injections}}
 {{.}}
 {{- end}}{{if .Package.Injections}}

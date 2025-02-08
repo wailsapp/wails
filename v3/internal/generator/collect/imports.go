@@ -3,6 +3,8 @@ package collect
 import (
 	"go/types"
 	"path/filepath"
+
+	"golang.org/x/tools/go/types/typeutil"
 )
 
 type (
@@ -120,26 +122,26 @@ func (imports *ImportMap) Add(pkg *PackageInfo) {
 // AddType does not support unsynchronised concurrent calls
 // on the same receiver.
 func (imports *ImportMap) AddType(typ types.Type) {
-	imports.addTypeImpl(typ, make(map[*types.TypeName]bool))
+	imports.addTypeImpl(typ, new(typeutil.Map))
 }
 
 // addTypeImpl provides the actual implementation of AddType.
 // The visited parameter is used to break cycles.
-func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeName]bool) {
+func (imports *ImportMap) addTypeImpl(typ types.Type, visited *typeutil.Map) {
 	collector := imports.collector
 	if collector == nil {
-		panic("AddType called on ImportMap with nil importing package")
+		panic("AddType called on ImportMap with nil collector")
 	}
 
 	for { // Avoid recursion where possible.
 		switch t := typ.(type) {
 		case *types.Alias, *types.Named:
-			obj := typ.(interface{ Obj() *types.TypeName }).Obj()
-			if visited[obj] {
+			if visited.Set(typ, true) != nil {
+				// Break type cycles.
 				return
 			}
-			visited[obj] = true
 
+			obj := typ.(interface{ Obj() *types.TypeName }).Obj()
 			if obj.Pkg() == nil {
 				// Ignore universe type.
 				return
@@ -155,7 +157,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 			// Import parent package.
 			imports.Add(collector.Package(obj.Pkg()))
 
-			instance, _ := t.(interface{ TypeArgs() *types.TypeList })
+			instance, _ := typ.(interface{ TypeArgs() *types.TypeList })
 			if instance != nil {
 				// Record type argument dependencies.
 				if targs := instance.TypeArgs(); targs != nil {
@@ -170,25 +172,29 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 				return
 			}
 
-			if _, isAlias := t.(*types.Alias); isAlias {
+			if _, isAlias := typ.(*types.Alias); isAlias {
 				// Aliased type might be needed during
 				// JS value creation and initialisation.
 				typ = types.Unalias(typ)
 				break
 			}
 
-			if IsClass(typ) || IsString(typ) || IsAny(typ) {
+			if IsClass(typ) || IsAny(typ) || IsStringAlias(typ) {
 				return
 			}
 
-			// If named type does not map to a class, string or unknown type,
+			// If named type does not map to a class, unknown type or string,
 			// its underlying type may be needed during JS value creation.
 			typ = typ.Underlying()
 
 		case *types.Basic:
-			if t.Info()&types.IsComplex != 0 {
-				// Complex types are not supported by encoding/json
-				collector.logger.Warningf("complex types are not supported by encoding/json")
+			switch {
+			case t.Info()&(types.IsBoolean|types.IsInteger|types.IsUnsigned|types.IsFloat|types.IsString) != 0:
+				break
+			case t.Info()&types.IsComplex != 0:
+				collector.logger.Warningf("package %s: complex types are not supported by encoding/json", imports.Self)
+			default:
+				collector.logger.Warningf("package %s: unknown basic type %s: please report this to Wails maintainers", imports.Self, typ)
 			}
 			return
 
@@ -196,32 +202,40 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 			typ = typ.(interface{ Elem() types.Type }).Elem()
 
 		case *types.Chan:
-			collector.logger.Warningf("channel types are not supported by encoding/json")
+			collector.logger.Warningf("package %s: channel types are not supported by encoding/json", imports.Self)
 			return
 
 		case *types.Map:
 			if IsMapKey(t.Key()) {
-				if IsString(t.Key()) {
+				if IsStringAlias(t.Key()) {
 					// This model type is always rendered as a string alias,
 					// hence we can generate it and use it as a type for JS object keys.
 					imports.addTypeImpl(t.Key(), visited)
 				}
+			} else if IsTypeParam(t.Key()) {
+				// In some cases, type params or pointers to type params
+				// may be valid as map keys, but not for all instantiations.
+				// When that happens, emit a softer warning.
+				collector.logger.Warningf(
+					"package %s: type %s is used as a map key, but some of its instantiations might not implement encoding.TextMarshaler: this might result in runtime errors",
+					imports.Self, types.TypeString(t.Key(), nil),
+				)
 			} else {
 				collector.logger.Warningf(
-					"%s is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors",
-					types.TypeString(t.Key(), nil),
+					"package %s: type %s is used as a map key, but does not implement encoding.TextMarshaler: this will likely result in runtime errors",
+					imports.Self, types.TypeString(t.Key(), nil),
 				)
 			}
 
 			typ = t.Elem()
 
 		case *types.Signature:
-			collector.logger.Warningf("function types are not supported by encoding/json")
+			collector.logger.Warningf("package %s: function types are not supported by encoding/json", imports.Self)
 			return
 
 		case *types.Struct:
-			if t.NumFields() == 0 {
-				// Empty struct.
+			if t.NumFields() == 0 || MaybeJSONMarshaler(typ) != NonMarshaler || MaybeTextMarshaler(typ) != NonMarshaler {
+				// Struct is empty, or marshals to custom JSON (any) or string.
 				return
 			}
 
@@ -246,7 +260,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 			return
 
 		default:
-			collector.logger.Warningf("unknown type %s: please report this to Wails maintainers", typ)
+			collector.logger.Warningf("package %s: unknown type %s: please report this to Wails maintainers", imports.Self, typ)
 			return
 		}
 	}

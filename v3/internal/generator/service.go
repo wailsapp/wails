@@ -33,11 +33,13 @@ func (generator *Generator) generateService(obj *types.TypeName) {
 	}
 
 	if info.IsEmpty() {
-		generator.logger.Infof(
-			"package %s: type %s: service has no valid exported methods, skipping",
-			obj.Pkg().Path(),
-			obj.Name(),
-		)
+		if !info.HasInternalMethods {
+			generator.logger.Infof(
+				"package %s: type %s: service has no valid exported methods, skipping",
+				obj.Pkg().Path(),
+				obj.Name(),
+			)
+		}
 		success = true
 		return
 	}
@@ -48,14 +50,6 @@ func (generator *Generator) generateService(obj *types.TypeName) {
 	case generator.renderer.ModelsFile():
 		generator.logger.Errorf(
 			"package %s: type %s: service filename collides with models filename; please rename the type or choose a different filename for models",
-			obj.Pkg().Path(),
-			obj.Name(),
-		)
-		return
-
-	case generator.renderer.InternalFile():
-		generator.logger.Errorf(
-			"package %s: type %s: service filename collides with internal models filename; please rename the type or choose a different filename for internal models",
 			obj.Pkg().Path(),
 			obj.Name(),
 		)
@@ -90,7 +84,12 @@ func (generator *Generator) generateService(obj *types.TypeName) {
 		generator.logger.Errorf("%v", err)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			generator.logger.Errorf("%v", err)
+			success = false
+		}
+	}()
 
 	// Render service code.
 	err = generator.renderer.Service(file, info)

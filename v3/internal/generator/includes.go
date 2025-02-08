@@ -26,16 +26,6 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 				return
 			}
 
-		case generator.renderer.InternalFile():
-			if len(index.Models) > 0 {
-				generator.logger.Errorf(
-					"package %s: included file '%s' collides with internal models filename; please rename the file or choose a different filename for internal models",
-					index.Package.Path,
-					path,
-				)
-				return
-			}
-
 		case generator.renderer.IndexFile():
 			if !generator.options.NoIndex && !index.IsEmpty() {
 				generator.logger.Errorf(
@@ -93,7 +83,12 @@ func (generator *Generator) generateIncludes(index *collect.PackageIndex) {
 				generator.logger.Errorf("package %s: could not write included file '%s'", index.Package.Path, name)
 				return
 			}
-			defer dst.Close()
+			defer func() {
+				if err := dst.Close(); err != nil {
+					generator.logger.Errorf("%v", err)
+					generator.logger.Errorf("package %s: could not write included file '%s'", index.Package.Path, name)
+				}
+			}()
 
 			_, err = io.Copy(dst, src)
 			if err != nil {

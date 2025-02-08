@@ -6,4 +6,8 @@ export {
     GreetService
 };
 
-export * from "./models.js";
+export type {
+    StructA,
+    StructC,
+    StructE
+} from "./models.js";

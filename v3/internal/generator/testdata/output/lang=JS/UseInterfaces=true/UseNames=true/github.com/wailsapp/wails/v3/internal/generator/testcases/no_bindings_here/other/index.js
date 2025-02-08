@@ -7,4 +7,10 @@ export {
     OtherMethods
 };
 
-export * from "./models.js";
+import * as $models from "./models.js";
+
+/**
+ * OtherPerson is like a person, but different.
+ * @template T
+ * @typedef {$models.OtherPerson<T>} OtherPerson
+ */

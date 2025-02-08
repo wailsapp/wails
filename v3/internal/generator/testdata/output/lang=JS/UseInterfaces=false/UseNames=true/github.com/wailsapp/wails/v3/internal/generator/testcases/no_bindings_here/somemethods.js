@@ -13,7 +13,7 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as $models from "./internal.js";
+import * as $models from "./models.js";
 
 /**
  * LikeThisOne is an example method that does nothing.
@@ -43,4 +43,4 @@ export function LikeThisOtherOne() {
 // Private type creation functions
 const $$createType0 = $models.Person.createFrom;
 const $$createType1 = $models.HowDifferent.createFrom($Create.Any);
-const $$createType2 = $models.PrivatePerson.createFrom;
+const $$createType2 = $models.personImpl.createFrom;

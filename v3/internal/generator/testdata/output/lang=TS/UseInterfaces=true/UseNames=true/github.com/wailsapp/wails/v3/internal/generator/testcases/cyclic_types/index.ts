@@ -6,4 +6,8 @@ export {
     GreetService
 };
 
-export * from "./models.js";
+export type {
+    Alias,
+    Cyclic,
+    GenericCyclic
+} from "./models.js";

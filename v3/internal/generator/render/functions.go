@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"go/types"
 	"math/big"
 	"strconv"
 	"strings"
@@ -15,16 +16,18 @@ import (
 var tmplFunctions = template.FuncMap{
 	"fixext":     fixext,
 	"hasdoc":     hasdoc,
-	"isclass":    collect.IsClass,
 	"isjsdocid":  isjsdocid,
 	"isjsdocobj": isjsdocobj,
+	"istpalias":  istpalias,
 	"jsdoc":      jsdoc,
 	"jsdocline":  jsdocline,
 	"jsid":       jsid,
 	"jsimport":   jsimport,
 	"jsparam":    jsparam,
 	"jsvalue":    jsvalue,
+	"modelinfo":  modelinfo,
 	"typeparam":  typeparam,
+	"unalias":    types.Unalias,
 }
 
 // fixext replaces a *.ts extension with *.js in the given string.
@@ -91,4 +94,14 @@ func jsvalue(value any) string {
 
 	// Fall back to undefined.
 	return "(void(0))"
+}
+
+// istpalias determines whether typ is an alias
+// that when uninstantiated resolves to a typeparam.
+func istpalias(typ types.Type) bool {
+	if alias, ok := typ.(*types.Alias); ok {
+		return collect.IsTypeParam(alias.Origin())
+	}
+
+	return false
 }

@@ -7,4 +7,17 @@ export {
     GreetService
 };
 
-export * from "./models.js";
+import * as $models from "./models.js";
+
+/**
+ * @typedef {$models.Alias} Alias
+ */
+
+/**
+ * @typedef {$models.Cyclic} Cyclic
+ */
+
+/**
+ * @template T
+ * @typedef {$models.GenericCyclic<T>} GenericCyclic
+ */
