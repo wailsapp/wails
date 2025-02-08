@@ -189,6 +189,10 @@ func (s *macosSystemTray) setTemplateIcon(icon []byte) {
 	})
 }
 
+func (s *macosSystemTray) setTooltip(tooltip string) {
+	// Tooltips not supported on macOS
+}
+
 func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 	result := &macosSystemTray{
 		parent:         s,

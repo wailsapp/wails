@@ -6,16 +6,16 @@ Portions of this code are derived from the project:
 */
 package application
 
+import "C"
 import (
 	"fmt"
-	"os"
-
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/introspect"
 	"github.com/godbus/dbus/v5/prop"
 	"github.com/wailsapp/wails/v3/internal/dbus/menu"
 	"github.com/wailsapp/wails/v3/internal/dbus/notifier"
 	"github.com/wailsapp/wails/v3/pkg/icons"
+	"os"
 )
 
 const (
@@ -31,7 +31,7 @@ type linuxSystemTray struct {
 	icon  []byte
 	menu  *Menu
 
-	iconPosition   int
+	iconPosition   IconPosition
 	isTemplateIcon bool
 
 	quitChan  chan struct{}
@@ -41,6 +41,7 @@ type linuxSystemTray struct {
 
 	menuVersion uint32 // need to bump this anytime we change anything
 	itemMap     map[int32]*systrayMenuItem
+	tooltip     string
 }
 
 func (s *linuxSystemTray) getScreen() (*Screen, error) {
@@ -103,9 +104,9 @@ func (s *systrayMenuItem) setHidden(hidden bool) {
 	s.sysTray.update(s)
 }
 
-func (i systrayMenuItem) dbus() *dbusMenu {
+func (s *systrayMenuItem) dbus() *dbusMenu {
 	item := &dbusMenu{
-		V0: int32(i.menuItem.id),
+		V0: int32(s.menuItem.id),
 		V1: map[string]dbus.Variant{},
 		V2: []dbus.Variant{},
 	}
@@ -364,7 +365,19 @@ func (s *linuxSystemTray) run() {
 			}
 		}
 	}()
+
+	if s.parent.label != "" {
+		s.setLabel(s.parent.label)
+	}
+
+	if s.parent.tooltip != "" {
+		s.setTooltip(s.parent.tooltip)
+	}
 	s.setMenu(s.menu)
+}
+
+func (s *linuxSystemTray) setTooltip(_ string) {
+	// TBD
 }
 
 func (s *linuxSystemTray) setIcon(icon []byte) {
