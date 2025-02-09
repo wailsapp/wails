@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/leaanthony/u"
 
@@ -160,9 +161,10 @@ type WebviewWindow struct {
 
 	// Flags for managing the runtime
 	// runtimeLoaded indicates that the runtime has been loaded
-	runtimeLoaded bool
+	runtimeLoaded atomic.Bool
 	// pendingJS holds JS that was sent to the window before the runtime was loaded
-	pendingJS []string
+	pendingJS     []string
+	pendingJSLock sync.RWMutex
 
 	// unconditionallyClose marks the window to be unconditionally closed
 	unconditionallyClose bool
@@ -556,12 +558,14 @@ func (w *WebviewWindow) ExecJS(js string) {
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
-	if w.runtimeLoaded {
+	if w.runtimeLoaded.Load() {
 		InvokeSync(func() {
 			w.impl.execJS(js)
 		})
 	} else {
+		w.pendingJSLock.Lock()
 		w.pendingJS = append(w.pendingJS, js)
+		w.pendingJSLock.Unlock()
 	}
 }
 
@@ -708,7 +712,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		}
 	case message == "wails:runtime:ready":
 		w.emit(events.Common.WindowRuntimeReady)
-		w.runtimeLoaded = true
+		w.runtimeLoaded.Store(true)
 		w.SetResizable(!w.options.DisableResize)
 		for _, js := range w.pendingJS {
 			w.ExecJS(js)
