@@ -162,12 +162,17 @@ var (
 	procAppendMenu       = moduser32.NewProc("AppendMenuW")
 	procSetMenuItemInfo  = moduser32.NewProc("SetMenuItemInfoW")
 	procDrawMenuBar      = moduser32.NewProc("DrawMenuBar")
+	procTrackPopupMenu   = moduser32.NewProc("TrackPopupMenu")
 	procTrackPopupMenuEx = moduser32.NewProc("TrackPopupMenuEx")
 	procGetKeyState      = moduser32.NewProc("GetKeyState")
 	procGetSysColorBrush = moduser32.NewProc("GetSysColorBrush")
+	procGetSysColor      = moduser32.NewProc("GetSysColor")
+
+	procMapWindowPoints = moduser32.NewProc("MapWindowPoints")
 
 	procGetWindowPlacement = moduser32.NewProc("GetWindowPlacement")
 	procSetWindowPlacement = moduser32.NewProc("SetWindowPlacement")
+	procGetWindowDC        = moduser32.NewProc("GetWindowDC")
 
 	procGetScrollInfo = moduser32.NewProc("GetScrollInfo")
 	procSetScrollInfo = moduser32.NewProc("SetScrollInfo")
@@ -187,6 +192,11 @@ var (
 func init() {
 	runtime.LockOSThread()
 	mainThread = GetCurrentThreadId()
+}
+
+func GetWindowDC(hwnd HWND) HDC {
+	ret, _, _ := procGetWindowDC.Call(hwnd)
+	return ret
 }
 
 func GET_X_LPARAM(lp uintptr) int32 {
@@ -1058,10 +1068,14 @@ func FillRect(hDC HDC, lprc *RECT, hbr HBRUSH) bool {
 	return ret != 0
 }
 
-func DrawText(hDC HDC, text string, uCount int, lpRect *RECT, uFormat uint) int {
+func DrawText(hDC HDC, text []uint16, uCount int, lpRect *RECT, uFormat uint32) int {
+
+	// Convert the string to a UTF16 pointer
+	// This is necessary because the DrawText function expects a UTF16 pointer
+
 	ret, _, _ := procDrawText.Call(
 		uintptr(hDC),
-		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(text))),
+		uintptr(unsafe.Pointer(&text[0])),
 		uintptr(uCount),
 		uintptr(unsafe.Pointer(lpRect)),
 		uintptr(uFormat))

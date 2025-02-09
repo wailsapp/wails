@@ -1119,6 +1119,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 	customTheme := w.parent.options.Windows.CustomTheme
 	// Custom theme
 	if w32.SupportsCustomThemes() && customTheme != nil {
+		w32.InitDarkMode(customTheme.DarkModeMenuBar)
 		if w.isActive() {
 			if isDarkMode {
 				w32.SetTitleBarColour(w.hwnd, customTheme.DarkModeTitleBar)
@@ -1150,6 +1151,12 @@ func (w *windowsWebviewWindow) isActive() bool {
 var resizePending int32
 
 func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
+
+	processed, code := w32.MenuBarWndProc(w.hwnd, msg, wparam, lparam)
+	if processed {
+		return code
+	}
+
 	switch msg {
 	case w32.WM_ACTIVATE:
 		if int(wparam&0xffff) == w32.WA_INACTIVE {
@@ -1470,11 +1477,11 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 					}
 					w.setPadding(edge.Rect{})
 				} else {
-					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
+					// This is needed to work around the resize flickering in frameless mode with WindowDecorations
 					// See: https://stackoverflow.com/a/6558508
 					// The workaround from the SO answer suggests to reduce the bottom of the window by 1px.
-					// However this would result in loosing 1px of the WebView content.
-					// Increasing the bottom also worksaround the flickering but we would loose 1px of the WebView content
+					// However, this would result in losing 1px of the WebView content.
+					// Increasing the bottom also worksaround the flickering, but we would lose 1px of the WebView content
 					// therefore let's pad the content with 1px at the bottom.
 					rgrc.Bottom += 1
 					w.setPadding(edge.Rect{Bottom: 1})
