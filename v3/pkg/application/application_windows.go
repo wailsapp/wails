@@ -125,6 +125,7 @@ func (m *windowsApp) setApplicationMenu(menu *Menu) {
 }
 
 func (m *windowsApp) run() error {
+
 	m.setupCommonEvents()
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)
@@ -221,6 +222,33 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 	}
 
 	switch msg {
+
+	/*
+			    case WM_UAHDRAWMENU:
+		    {
+		        UAHMENU* pUDM = (UAHMENU*)lParam;
+		        RECT rc = { 0 };
+
+		        // get the menubar rect
+		        {
+		            MENUBARINFO mbi = { sizeof(mbi) };
+		            GetMenuBarInfo(hWnd, OBJID_MENU, 0, &mbi);
+
+		            RECT rcWindow;
+		            GetWindowRect(hWnd, &rcWindow);
+
+		            // the rcBar is offset by the window rect
+		            rc = mbi.rcBar;
+		            OffsetRect(&rc, -rcWindow.left, -rcWindow.top);
+		        }
+
+		        FillRect(pUDM->hdc, &rc, g_brBarBackground);
+
+		        return true;
+		    }
+	*/
+	case w32.WM_UAHDRAWMENU:
+		return w32.UAHDrawMenu(hwnd, wParam, lParam)
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))
 		if settingChanged == "ImmersiveColorSet" {
