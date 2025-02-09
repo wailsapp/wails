@@ -72,8 +72,14 @@ type ServiceName interface {
 // The context will be valid as long as the application is running,
 // and will be canceled right before shutdown.
 //
-// If the return value is non-nil, it is logged along with the service name,
-// the startup process aborts and the application quits.
+// Services are guaranteed to receive the startup notification
+// in the exact order in which they were either listed in [Options.Services],
+// or registered with [App.RegisterService].
+//
+// If the return value is non-nil, the startup process aborts
+// and [App.Run] returns the error wrapped in a user-friendly message with [fmt.Errorf].
+// The extended message includes the name of the failing service.
+//
 // When that happens, service instances that have been already initialised
 // receive a shutdown notification.
 type ServiceStartup interface {
@@ -83,17 +89,28 @@ type ServiceStartup interface {
 // ServiceShutdown is an *optional* method that may be implemented by service instances.
 //
 // This method will be called during application shutdown. It can be used for cleaning up resources.
+// If a service has received a startup notification,
+// then it is guaranteed to receive a shutdown notification too,
+// except in case of unhandled panics during shutdown.
+//
+// Services receive the shutdown notifications in reverse
+// with respect to the order in which they were registered and started.
 //
 // If the return value is non-nil, it is logged along with the service name.
 type ServiceShutdown interface {
 	ServiceShutdown() error
 }
 
-func getServiceName(service any) string {
-	// First check it conforms to ServiceName interface
-	if serviceName, ok := service.(ServiceName); ok {
-		return serviceName.ServiceName()
+func getServiceName(service Service) string {
+	if service.options.Name != "" {
+		return service.options.Name
 	}
-	// Next, get the name from the type
-	return reflect.TypeOf(service).String()
+
+	// Check if the service implements the ServiceName interface
+	if s, ok := service.Instance().(ServiceName); ok {
+		return s.ServiceName()
+	}
+
+	// Finally, get the name from the type.
+	return reflect.TypeOf(service.Instance()).Elem().String()
 }

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"reflect"
 	"runtime"
 	"strings"
@@ -19,18 +18,6 @@ type CallOptions struct {
 	MethodID   uint32            `json:"methodID"`
 	MethodName string            `json:"methodName"`
 	Args       []json.RawMessage `json:"args"`
-}
-
-type PluginCallOptions struct {
-	Name string            `json:"name"`
-	Args []json.RawMessage `json:"args"`
-}
-
-var reservedPluginMethods = []string{
-	"Name",
-	"Init",
-	"Shutdown",
-	"Exported",
 }
 
 // Parameter defines a Go method parameter
@@ -61,14 +48,13 @@ func (p *Parameter) IsError() bool {
 // BoundMethod defines all the data related to a Go method that is
 // bound to the Wails application
 type BoundMethod struct {
-	ID          uint32        `json:"id"`
-	Name        string        `json:"name"`
-	Inputs      []*Parameter  `json:"inputs,omitempty"`
-	Outputs     []*Parameter  `json:"outputs,omitempty"`
-	Comments    string        `json:"comments,omitempty"`
-	Method      reflect.Value `json:"-"`
-	TypeName    string
-	PackagePath string
+	ID       uint32        `json:"id"`
+	Name     string        `json:"name"`
+	Inputs   []*Parameter  `json:"inputs,omitempty"`
+	Outputs  []*Parameter  `json:"outputs,omitempty"`
+	Comments string        `json:"comments,omitempty"`
+	Method   reflect.Value `json:"-"`
+	FQN      string
 
 	needsContext bool
 }
@@ -79,48 +65,50 @@ type Bindings struct {
 	methodAliases map[uint32]uint32
 }
 
-func NewBindings(instances []Service, aliases map[uint32]uint32) (*Bindings, error) {
-	app := Get()
-	b := &Bindings{
+func NewBindings(aliases map[uint32]uint32) *Bindings {
+	return &Bindings{
 		boundMethods:  make(map[string]*BoundMethod),
 		boundByID:     make(map[uint32]*BoundMethod),
 		methodAliases: aliases,
 	}
-	for _, binding := range instances {
-		handler, ok := binding.Instance().(http.Handler)
-		if ok && binding.options.Route != "" {
-			app.assets.AttachServiceHandler(binding.options.Route, handler)
-		}
-		err := b.Add(binding.Instance())
-		if err != nil {
-			return nil, err
-		}
-	}
-	return b, nil
 }
 
-// Add the given named type pointer methods to the Bindings
-func (b *Bindings) Add(namedPtr interface{}) error {
-	methods, err := b.getMethods(namedPtr)
+// Add adds the given service to the bindings.
+func (b *Bindings) Add(service Service) error {
+	methods, err := getMethods(service.Instance())
 	if err != nil {
-		return fmt.Errorf("cannot bind value to app: %s", err.Error())
+		return err
 	}
 
+	// Validate and log methods.
 	for _, method := range methods {
-		// Add it as a regular method
-		b.boundMethods[method.String()] = method
+		if _, ok := b.boundMethods[method.FQN]; ok {
+			return fmt.Errorf("bound method '%s' is already registered. Please note that you can register at most one service of each type; additional instances must be wrapped in dedicated structs", method.FQN)
+		}
+		if boundMethod, ok := b.boundByID[method.ID]; ok {
+			return fmt.Errorf("oh wow, we're sorry about this! Amazingly, a hash collision was detected for method '%s' (it generates the same hash as '%s'). To use this method, please rename it. Sorry :(", method.FQN, boundMethod.FQN)
+		}
+
+		// Log
+		attrs := []any{"name", method.Name, "id", method.ID}
+		if alias, ok := lo.FindKey(b.methodAliases, method.ID); ok {
+			attrs = append(attrs, "alias", alias)
+		}
+		globalApplication.debug("Registering bound method:", attrs...)
+	}
+
+	for i, method := range methods {
+		// Register method
+		b.boundMethods[method.FQN] = method
 		b.boundByID[method.ID] = method
 	}
+
 	return nil
 }
 
 // Get returns the bound method with the given name
 func (b *Bindings) Get(options *CallOptions) *BoundMethod {
-	method, ok := b.boundMethods[options.MethodName]
-	if !ok {
-		return nil
-	}
-	return method
+	return b.boundMethods[options.MethodName]
 }
 
 // GetByID returns the bound method with the given ID
@@ -131,29 +119,27 @@ func (b *Bindings) GetByID(id uint32) *BoundMethod {
 			id = alias
 		}
 	}
-	result := b.boundByID[id]
-	return result
+
+	return b.boundByID[id]
 }
 
-// GenerateID generates a unique ID for a binding
-func (b *Bindings) GenerateID(name string) (uint32, error) {
-	id, err := hash.Fnv(name)
-	if err != nil {
-		return 0, err
-	}
-	// Check if we already have it
-	boundMethod, ok := b.boundByID[id]
-	if ok {
-		return 0, fmt.Errorf("oh wow, we're sorry about this! Amazingly, a hash collision was detected for method '%s' (it generates the same hash as '%s'). To continue, please rename it. Sorry :(", name, boundMethod.String())
-	}
-	return id, nil
+// internalServiceMethod is a set of methods
+// that are handled specially by the binding engine
+// and must not be exposed to the frontend.
+//
+// For simplicity we exclude these by name
+// without checking their signatures,
+// and so does the binding generator.
+var internalServiceMethods = map[string]bool{
+	"ServiceName":     true,
+	"ServiceStartup":  true,
+	"ServiceShutdown": true,
+	"ServeHTTP":       true,
 }
 
-func (b *BoundMethod) String() string {
-	return fmt.Sprintf("%s.%s.%s", b.PackagePath, b.TypeName, b.Name)
-}
+var ctxType = reflect.TypeFor[context.Context]()
 
-func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
+func getMethods(value any) ([]*BoundMethod, error) {
 	// Create result placeholder
 	var result []*BoundMethod
 
@@ -180,42 +166,27 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 		return nil, fmt.Errorf("%s.%s is a generic type. Generic bound types are not supported", packagePath, namedType.String())
 	}
 
-	ctxType := reflect.TypeFor[context.Context]()
-
 	// Process Methods
-	for i := 0; i < ptrType.NumMethod(); i++ {
-		methodDef := ptrType.Method(i)
-		methodName := methodDef.Name
-		method := namedValue.MethodByName(methodName)
+	for i := range ptrType.NumMethod() {
+		methodName := ptrType.Method(i).Name
+		method := namedValue.Method(i)
 
-		if b.internalMethod(methodDef) {
+		if internalServiceMethods[methodName] {
 			continue
 		}
 
+		fqn := fmt.Sprintf("%s.%s.%s", packagePath, typeName, methodName)
+
 		// Create new method
 		boundMethod := &BoundMethod{
-			Name:        methodName,
-			PackagePath: packagePath,
-			TypeName:    typeName,
-			Inputs:      nil,
-			Outputs:     nil,
-			Comments:    "",
-			Method:      method,
+			ID:       hash.Fnv(fqn),
+			FQN:      fqn,
+			Name:     methodName,
+			Inputs:   nil,
+			Outputs:  nil,
+			Comments: "",
+			Method:   method,
 		}
-		var err error
-		boundMethod.ID, err = b.GenerateID(boundMethod.String())
-		if err != nil {
-			return nil, err
-		}
-
-		args := []any{"name", boundMethod, "id", boundMethod.ID}
-		if b.methodAliases != nil {
-			alias, found := lo.FindKey(b.methodAliases, boundMethod.ID)
-			if found {
-				args = append(args, "alias", alias)
-			}
-		}
-		globalApplication.debug("Adding method:", args...)
 
 		// Iterate inputs
 		methodType := method.Type()
@@ -245,34 +216,12 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 		result = append(result, boundMethod)
 
 	}
+
 	return result, nil
 }
 
-func (b *Bindings) internalMethod(def reflect.Method) bool {
-	// Get the receiver type
-	receiverType := def.Type.In(0)
-
-	// Create a new instance of the receiver type
-	instance := reflect.New(receiverType.Elem()).Interface()
-
-	// Check if the instance implements any of our service interfaces
-	// and if the method matches the interface method
-	switch def.Name {
-	case "ServiceName":
-		if _, ok := instance.(ServiceName); ok {
-			return true
-		}
-	case "ServiceStartup":
-		if _, ok := instance.(ServiceStartup); ok {
-			return true
-		}
-	case "ServiceShutdown":
-		if _, ok := instance.(ServiceShutdown); ok {
-			return true
-		}
-	}
-
-	return false
+func (b *BoundMethod) String() string {
+	return b.FQN
 }
 
 var errorType = reflect.TypeFor[error]()
