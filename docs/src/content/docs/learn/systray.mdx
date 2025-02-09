@@ -3,6 +3,7 @@ title: System Tray
 description: Learn how to create and use system tray icons in Wails
 ---
 
+import {Badge} from "@astrojs/starlight/components";
 
 ## Introduction
 
@@ -56,6 +57,14 @@ systray.SetTemplateIcon(iconBytes)
 
 For more details on creating template icons, read this [great article](https://bjango.com/articles/designingmenubarextras/).
 
+## Setting the Tooltip <Badge text="Windows" variant="note" />
+
+You can set a tooltip for your system tray icon that appears when hovering over the icon:
+
+```go
+systray.SetTooltip("My Application Tooltip")
+```
+
 ## Setting the Label <Badge text="macOS" variant="success" />
 
 You can set a text label for your system tray icon:
@@ -65,6 +74,10 @@ systray.SetLabel("My App")
 ```
 
 The label will appear next to the icon in the system tray. On some platforms, this text may be truncated if it's too long.
+
+:::note
+On Windows, setting the label is the equivalent of setting the tooltip.
+:::
 
 ## Adding a Menu
 
@@ -172,6 +185,7 @@ Explore these examples for more advanced usage:
 | `NewSystemTray()`                        | Creates a new system tray instance         |
 | `Run()`                                  | Starts the system tray                     |
 | `SetLabel(label string)`                 | Sets the text label                        |
+| `SetTooltip(tooltip string)`             | Sets the tooltip text (Windows)            |
 | `SetIcon(icon []byte)`                   | Sets the icon image                        |
 | `SetDarkModeIcon(icon []byte)`           | Sets the dark mode variant of the icon     |
 | `SetTemplateIcon(icon []byte)`           | Marks the icon as a template image (macOS) |
@@ -208,4 +222,3 @@ Explore these examples for more advanced usage:
 |----------|-----------------------------|
 | `Show()` | Makes the tray icon visible |
 | `Hide()` | Hides the tray icon         |
-

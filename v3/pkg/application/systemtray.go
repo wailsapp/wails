@@ -25,6 +25,7 @@ const (
 
 type systemTrayImpl interface {
 	setLabel(label string)
+	setTooltip(tooltip string)
 	run()
 	setIcon(icon []byte)
 	setMenu(menu *Menu)
@@ -43,6 +44,7 @@ type systemTrayImpl interface {
 type SystemTray struct {
 	id           uint
 	label        string
+	tooltip      string
 	icon         []byte
 	darkModeIcon []byte
 	iconPosition IconPosition
@@ -67,6 +69,7 @@ func newSystemTray(id uint) *SystemTray {
 	result := &SystemTray{
 		id:           id,
 		label:        "",
+		tooltip:      "",
 		iconPosition: NSImageLeading,
 		attachedWindow: WindowAttachConfig{
 			Window:   nil,
@@ -181,6 +184,16 @@ func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray {
 		})
 	}
 	return s
+}
+
+func (s *SystemTray) SetTooltip(tooltip string) {
+	if s.impl == nil {
+		s.tooltip = tooltip
+		return
+	}
+	InvokeSync(func() {
+		s.impl.setTooltip(tooltip)
+	})
 }
 
 func (s *SystemTray) Destroy() {

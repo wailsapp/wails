@@ -6,4 +6,6 @@ export {
     OtherService
 };
 
-export * from "./models.js";
+export type {
+    Address
+} from "./models.js";

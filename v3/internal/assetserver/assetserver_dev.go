@@ -4,7 +4,6 @@ package assetserver
 
 import (
 	"embed"
-	_ "embed"
 	"io"
 	iofs "io/fs"
 )

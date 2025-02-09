@@ -25,16 +25,6 @@ export function Execute(query, ...args) {
 }
 
 /**
- * Name returns the name of the plugin.
- * You should use the go module format e.g. github.com/myuser/myplugin
- * @returns {Promise<string> & { cancel(): void }}
- */
-export function Name() {
-    let $resultPromise = /** @type {any} */($Call.ByID(2075046103));
-    return $resultPromise;
-}
-
-/**
  * @param {string} dbPath
  * @returns {Promise<string> & { cancel(): void }}
  */
@@ -55,16 +45,6 @@ export function Select(query, ...args) {
     }));
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
     return $typingPromise;
-}
-
-/**
- * Shutdown is called when the app is shutting down
- * You can use this to clean up any resources you have allocated
- * @returns {Promise<void> & { cancel(): void }}
- */
-export function Shutdown() {
-    let $resultPromise = /** @type {any} */($Call.ByID(846401686));
-    return $resultPromise;
 }
 
 // Private type creation functions

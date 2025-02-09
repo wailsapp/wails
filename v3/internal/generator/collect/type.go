@@ -22,12 +22,6 @@ type TypeInfo struct {
 	Doc  *ast.CommentGroup
 	Decl *GroupInfo
 
-	// Def holds the actual denotation of the type expression
-	// that defines the described type.
-	// This is not the same as the underlying type,
-	// which skips all intermediate aliases and named types.
-	Def types.Type
-
 	obj  *types.TypeName
 	node ast.Node
 
@@ -92,13 +86,8 @@ func (info *TypeInfo) Collect() *TypeInfo {
 				info.Name,
 			)
 
-			// Provide dummy group and def.
+			// Provide dummy group.
 			info.Decl = newGroupInfo(nil).Collect()
-			if _, isAlias := info.obj.Type().(*types.Alias); isAlias {
-				info.Def = types.Unalias(info.obj.Type())
-			} else {
-				info.Def = info.obj.Type().Underlying()
-			}
 			return
 		}
 
@@ -116,8 +105,6 @@ func (info *TypeInfo) Collect() *TypeInfo {
 		}
 
 		info.Decl = collector.fromCache(path[1]).(*GroupInfo).Collect()
-
-		info.Def = collector.Package(info.obj.Pkg()).TypesInfo.TypeOf(tspec.Type)
 
 		info.node = path[0]
 	})

@@ -12,7 +12,11 @@ import {Call as $Call} from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as $models from "./internal.js";
+import * as nobindingshere$0 from "../no_bindings_here/models.js";
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as $models from "./models.js";
 
 /**
  * Get someone.
@@ -35,6 +39,11 @@ export function GetButAliased(p: $models.AliasedPerson): Promise<$models.Strange
  */
 export function GetButDifferent(): Promise<$models.GenericPerson<boolean>> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.GetButDifferent") as any;
+    return $resultPromise;
+}
+
+export function GetButForeignPrivateAlias(): Promise<nobindingshere$0.PrivatePerson> & { cancel(): void } {
+    let $resultPromise = $Call.ByName("main.GreetService.GetButForeignPrivateAlias") as any;
     return $resultPromise;
 }
 

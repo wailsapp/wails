@@ -6,4 +6,12 @@ export {
     GreetService
 };
 
-export * from "./models.js";
+export {
+    Title
+} from "./models.js";
+
+export type {
+    Embedded1,
+    Embedded3,
+    Person
+} from "./models.js";

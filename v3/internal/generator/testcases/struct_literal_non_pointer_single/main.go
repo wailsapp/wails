@@ -174,7 +174,7 @@ func (GreetService) MapIntInt(in map[int]int) {
 func (GreetService) PointerMapIntInt(in *map[int]int) {
 }
 
-func (GreetService) MapIntPointerInt(in map[*int]int) {
+func (GreetService) MapIntIntPointer(in map[int]*int) {
 }
 
 func (GreetService) MapIntSliceInt(in map[int][]int) {

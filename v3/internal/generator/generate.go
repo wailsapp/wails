@@ -209,13 +209,7 @@ func (generator *Generator) generateModelsIndexIncludes(info *collect.PackageInf
 
 	if len(index.Models) > 0 {
 		generator.scheduler.Schedule(func() {
-			generator.generateTypedefs(info, index.Models)
-		})
-	}
-
-	if index.HasExportedModels {
-		generator.scheduler.Schedule(func() {
-			generator.generateModels(index)
+			generator.generateModels(info, index.Models)
 		})
 	}
 
@@ -236,29 +230,17 @@ func (generator *Generator) validateFileNames() error {
 	case generator.options.ModelsFilename == "":
 		return fmt.Errorf("models filename must not be empty")
 
-	case generator.options.InternalFilename == "":
-		return fmt.Errorf("internal models filename must not be empty")
-
 	case !generator.options.NoIndex && generator.options.IndexFilename == "":
 		return fmt.Errorf("package index filename must not be empty")
 
 	case generator.options.ModelsFilename != strings.ToLower(generator.options.ModelsFilename):
 		return fmt.Errorf("models filename must not contain uppercase characters")
 
-	case generator.options.InternalFilename != strings.ToLower(generator.options.InternalFilename):
-		return fmt.Errorf("internal models filename must not contain uppercase characters")
-
 	case generator.options.IndexFilename != strings.ToLower(generator.options.IndexFilename):
 		return fmt.Errorf("package index filename must not contain uppercase characters")
 
-	case generator.options.ModelsFilename == generator.options.InternalFilename:
-		return fmt.Errorf("models and internal models cannot share the same filename")
-
 	case !generator.options.NoIndex && generator.options.ModelsFilename == generator.options.IndexFilename:
 		return fmt.Errorf("models and package indexes cannot share the same filename")
-
-	case !generator.options.NoIndex && generator.options.InternalFilename == generator.options.IndexFilename:
-		return fmt.Errorf("internal models and package indexes cannot share the same filename")
 	}
 
 	return nil

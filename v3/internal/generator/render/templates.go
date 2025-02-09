@@ -18,16 +18,14 @@ var tmplService = map[tmplLanguage]*template.Template{
 	tmplTS: template.Must(template.New("service.ts.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/service.ts.tmpl")),
 }
 
-var tmplTypedefs = map[tmplLanguage]*template.Template{
-	tmplJS: template.Must(template.New("internal.js.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/internal.js.tmpl")),
-	tmplTS: template.Must(template.New("internal.ts.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/internal.ts.tmpl")),
+var tmplModels = map[tmplLanguage]*template.Template{
+	tmplJS: template.Must(template.New("models.js.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/models.js.tmpl")),
+	tmplTS: template.Must(template.New("models.ts.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/models.ts.tmpl")),
 }
-
-var tmplModels = template.Must(template.New("models.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/models.tmpl"))
 
 var tmplIndex = template.Must(template.New("index.tmpl").Funcs(tmplFunctions).ParseFS(templates, "templates/index.tmpl"))
 
-var newline string
+var Newline string
 
 func init() {
 	var builder strings.Builder
@@ -37,5 +35,5 @@ func init() {
 		panic(err)
 	}
 
-	newline = builder.String()
+	Newline = builder.String()
 }

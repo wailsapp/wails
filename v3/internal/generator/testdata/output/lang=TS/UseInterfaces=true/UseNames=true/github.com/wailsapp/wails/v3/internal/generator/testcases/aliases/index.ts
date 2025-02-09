@@ -6,4 +6,14 @@ export {
     GreetService
 };
 
-export * from "./models.js";
+export type {
+    Alias,
+    AliasStruct,
+    AliasedPerson,
+    EmptyAliasStruct,
+    EmptyStruct,
+    GenericPerson,
+    OtherAliasStruct,
+    Person,
+    StrangelyAliasedPerson
+} from "./models.js";
