@@ -247,8 +247,6 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		        return true;
 		    }
 	*/
-	case w32.WM_UAHDRAWMENU:
-		return w32.UAHDrawMenu(hwnd, wParam, lParam)
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))
 		if settingChanged == "ImmersiveColorSet" {

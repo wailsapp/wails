@@ -241,6 +241,13 @@ func (r *RECT) String() string {
 	return fmt.Sprintf("RECT (%p): Left: %d, Top: %d, Right: %d, Bottom: %d", r, r.Left, r.Top, r.Right, r.Bottom)
 }
 
+func RectToPoints(rect *RECT) []POINT {
+	return []POINT{
+		{X: rect.Left, Y: rect.Top},     // Top-left
+		{X: rect.Right, Y: rect.Bottom}, // Bottom-right
+	}
+}
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms633577.aspx
 type WNDCLASSEX struct {
 	Size       uint32

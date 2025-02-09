@@ -24,6 +24,8 @@ const HCF_HIGHCONTRASTON = 0x00000001
 
 type WINDOWCOMPOSITIONATTRIB DWORD
 
+type HTHEME HANDLE
+
 const (
 	WCA_UNDEFINED                     WINDOWCOMPOSITIONATTRIB = 0
 	WCA_NCRENDERING_ENABLED           WINDOWCOMPOSITIONATTRIB = 1
@@ -67,7 +69,10 @@ type WINDOWCOMPOSITIONATTRIBDATA struct {
 var (
 	uxtheme                         = syscall.NewLazyDLL("uxtheme.dll")
 	procSetWindowTheme              = uxtheme.NewProc("SetWindowTheme")
+	procOpenThemeData               = uxtheme.NewProc("OpenThemeData")
+	procDrawThemeBackground         = uxtheme.NewProc("DrawThemeBackground")
 	procAllowDarkModeForApplication = uxtheme.NewProc("AllowDarkModeForApp")
+	procDrawThemeTextEx             = uxtheme.NewProc("DrawThemeTextEx")
 )
 
 type PreferredAppMode = int32
@@ -206,7 +211,7 @@ func SetMenuTheme(hwnd uintptr, useDarkMode bool) {
 	// Set the window theme
 	themeName := "Explorer"
 	if useDarkMode {
-		themeName = "DarkMode"
+		themeName = "DarkMode_Explorer"
 	}
 	procSetWindowTheme.Call(HWND(hwnd), uintptr(unsafe.Pointer(windows.StringToUTF16Ptr(themeName))), 0)
 

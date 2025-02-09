@@ -324,6 +324,7 @@ type ThemeSettings struct {
 	LightModeTitleTextInactive int32
 	LightModeBorder            int32
 	LightModeBorderInactive    int32
+	DarkModeMenuBar            int32
 }
 
 /****** Mac Options *******/
