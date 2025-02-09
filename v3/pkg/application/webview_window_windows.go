@@ -420,6 +420,8 @@ func (w *windowsWebviewWindow) run() {
 	}
 
 	// Process the theme
+	w32.AllowDarkModeForWindow(w.hwnd, true)
+
 	switch options.Windows.Theme {
 	case SystemDefault:
 		w.updateTheme(w32.IsCurrentlyDarkMode())

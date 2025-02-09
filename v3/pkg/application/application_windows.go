@@ -134,6 +134,7 @@ func (m *windowsApp) setApplicationMenu(menu *Menu) {
 }
 
 func (m *windowsApp) run() error {
+
 	m.setupCommonEvents()
 	for eventID := range m.parent.applicationEventListeners {
 		m.on(eventID)
@@ -230,6 +231,8 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 	}
 
 	switch msg {
+	case w32.WM_UAHDRAWMENU:
+		return w32.UAHDrawMenu(hwnd, wParam, lParam)
 	case wmTaskbarCreated:
 		if m.restartingTaskbar.Load() {
 			break

@@ -176,7 +176,8 @@ var (
 
 	procSetMenuItemBitmaps = moduser32.NewProc("SetMenuItemBitmaps")
 
-	procRedrawWindow = moduser32.NewProc("RedrawWindow")
+	procRedrawWindow   = moduser32.NewProc("RedrawWindow")
+	procGetMenuBarInfo = moduser32.NewProc("GetMenuBarInfo")
 
 	procRegisterWindowMessageW = moduser32.NewProc("RegisterWindowMessageW")
 

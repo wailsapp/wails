@@ -352,7 +352,7 @@ func main() {
 
 	app.Menu.Set(menu)
 
-	app.Window.New()
+	app.Window.New().SetMenu(menu)
 
 	err := app.Run()
 
