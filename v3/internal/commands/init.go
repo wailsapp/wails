@@ -17,21 +17,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/term"
 )
 
-var (
-	DisableFooter    bool
-	projectName      string
-	projectDir       string // Shortened variable name
-	templateName     string // Shortened variable name
-	gitRepo          string
-	confirmCreation  bool
-	productCompany   string
-	productName      string
-	productDesc      string // Shortened variable name
-	productVersion   string = "1.0.0"
-	productID        string // Shortened variable name
-	productCopyright string
-	productComments  string
-)
+var DisableFooter bool
 
 // GitURLToModuleName converts a git URL to a Go module name by removing common prefixes
 // and suffixes. It handles HTTPS, SSH, Git protocol, and filesystem URLs.
@@ -135,21 +121,15 @@ func Init(options *flags.Init) error {
 		isTypescript = true
 	}
 
-	options.ProjectName = projectName
-	options.ProjectDir = projectDir
-	options.TemplateName = templateName
-	options.Git = gitRepo
-	options.ProductCompany = productCompany
-	options.ProductName = productName
-	options.ProductDescription = productDesc // Use shortened variable
-	options.ProductVersion = productVersion
-	options.ProductIdentifier = productID // Use shortened variable
-	options.ProductCopyright = productCopyright
-	options.ProductComments = productComments
-
 	if options.ProjectName == "" {
-		startInteractive()
-		return nil
+		interactiveOptions, err := startInteractive(options) // Call startInteractive, pass options
+		if err != nil {
+			return err // Return error from interactive form
+		}
+		options = interactiveOptions // Use options returned from interactive form
+		if options.ProjectName == "" {
+			return fmt.Errorf("project name is required") // Ensure project name is provided
+		}
 	}
 
 	options.ProjectName = sanitizeFileName(options.ProjectName)
@@ -218,27 +198,41 @@ func sanitizeFileName(fileName string) string {
 	return reg.ReplaceAllString(fileName, "_")
 }
 
-func startInteractive() {
+// startInteractive starts the interactive form and returns the populated flags.Init and error.
+// It now accepts the flags.Init as input, to initialize default values if needed.
+func startInteractive(initialOptions *flags.Init) (*flags.Init, error) {
 	var templateOptions []huh.Option[string]
 	var templateSelect *huh.Select[string] // Declare templateSelect outside
+	confirmProjectCreation := false        // Local variable for confirmation
+
+	options := initialOptions // Use the passed-in options, avoids shadowing
+
+	if options == nil { // Defensive check in case nil options are passed
+		options = &flags.Init{
+			ProductVersion: "1.0.0", // Default value if no initial options are provided
+		}
+	} else if options.ProductVersion == "" {
+		options.ProductVersion = "1.0.0" // Ensure default if not set in initial options
+	}
+	templateName := &options.TemplateName // keep pointer for default value setting
 
 	templateSelect = huh.NewSelect[string](). // Initialize templateSelect here
 							Title("Template").
 							Description("Project template to use (Enter to list)").
 							Options(templateOptions...).
-							Value(&templateName)
+							Value(templateName) // Bind to options.TemplateName
 
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
 				Title("Project Name").
 				Description("Name of project").
-				Value(&projectName),
+				Value(&options.ProjectName), // Bind to options.ProjectName
 
 			huh.NewInput().
 				Title("Project Dir").
 				Description("Target directory (empty for default)").
-				Value(&projectDir),
+				Value(&options.ProjectDir), // Bind to options.ProjectDir
 
 			templateSelect, // Use templateSelect here, no assignment
 		),
@@ -246,37 +240,37 @@ func startInteractive() {
 			huh.NewInput().
 				Title("Git Repo URL (optional)").
 				Description("Git repo to initialize (optional)").
-				Value(&gitRepo),
+				Value(&options.Git), // Bind to options.Git
 		),
 		huh.NewGroup(
 			huh.NewInput().
 				Title("Company (optional)").
-				Value(&productCompany),
+				Value(&options.ProductCompany), // Bind to options.ProductCompany
 			huh.NewInput().
 				Title("Product Name (optional)").
-				Value(&productName),
+				Value(&options.ProductName), // Bind to options.ProductName
 			huh.NewInput().
 				Title("Version (optional)").
-				Value(&productVersion),
+				Value(&options.ProductVersion), // Bind to options.ProductVersion
 			huh.NewInput().
 				Title("ID (optional)").
-				Value(&productID),
+				Value(&options.ProductIdentifier), // Bind to options.ProductIdentifier
 			huh.NewInput().
 				Title("Copyright (optional)").
-				Value(&productCopyright),
+				Value(&options.ProductCopyright), // Bind to options.ProductCopyright
 			huh.NewText().
 				Title("Description (optional)").
-				Lines(2).
-				Value(&productDesc),
+				Lines(1).
+				Value(&options.ProductDescription), // Bind to options.ProductDescription
 			huh.NewText().
 				Title("Comments (optional)").
-				Lines(2).
-				Value(&productComments),
+				Lines(1).
+				Value(&options.ProductComments), // Bind to options.ProductComments
 		),
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title("Confirm?").
-				Value(&confirmCreation),
+				Value(&confirmProjectCreation), // Bind to local variable confirmProjectCreation
 		),
 	)
 
@@ -285,19 +279,19 @@ func startInteractive() {
 		defaultTemplates := templates.GetDefaultTemplates()
 
 		// Reorder templates: Ensure "vanilla" is first
-		vanillaTemplate := templates.TemplateData{Name: "vanilla", Description: ""} // Create vanilla template for comparison
-		orderedTemplates := []templates.TemplateData{}
+		vanillaTemplate := templates.TemplateData{Name: "vanilla", Description: ""} // Use TemplateData
+		orderedTemplates := []templates.TemplateData{}                              // Use TemplateData
 		vanillaFound := false
 		for _, t := range defaultTemplates {
 			if t.Name == vanillaTemplate.Name {
-				orderedTemplates = append([]templates.TemplateData{t}, orderedTemplates...) // Prepend vanilla
+				orderedTemplates = append([]templates.TemplateData{t}, orderedTemplates...) // Prepend vanilla - use TemplateData
 				vanillaFound = true
 			} else {
-				orderedTemplates = append(orderedTemplates, t) // Append other templates
+				orderedTemplates = append(orderedTemplates, t) // Append other templates - use TemplateData
 			}
 		}
 		if !vanillaFound { // If "vanilla" template isn't found (unlikely, but for safety)
-			orderedTemplates = append([]templates.TemplateData{vanillaTemplate}, orderedTemplates...)
+			orderedTemplates = append([]templates.TemplateData{vanillaTemplate}, orderedTemplates...) // Use TemplateData
 		}
 
 		templateOptions = nil // Clear existing options
@@ -306,7 +300,7 @@ func startInteractive() {
 		}
 
 		// Set default template to "vanilla" - do this BEFORE running the form
-		templateName = "vanilla" // Set default value here
+		*templateName = "vanilla" // Set default value here, using pointer
 
 		return templateOptions
 	}, nil)
@@ -314,56 +308,26 @@ func startInteractive() {
 	formStyle := lipgloss.NewStyle().
 		BorderStyle(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("62")). // A nice cyan color
-		Padding(10, 2).
-		Margin(10, 0) // Add a little margin above and below
+		Padding(1, 2).
+		Margin(1, 0) // Add a little margin above and below
 
 	formRenderer := lipgloss.NewRenderer(os.Stdout) // Corrected: Pass os.Stdout to NewRenderer
 
 	err := form.Run()
 	if err != nil {
 		term.Error(err)
+		return nil, err // Return error if form fails
 	}
 
-	formString := form.View()                                                   // Get the form's rendered output directly from form.View()
-	styledForm := formRenderer.NewStyle().Inherit(formStyle).Render(formString) // Corrected: Use formRenderer.NewStyle().Render()
+	formString := formRenderer.NewStyle().Render(form.View()) // Get the form's rendered output
+	styledForm := formStyle.Render(formString)                // Apply lipgloss style
+	fmt.Println(styledForm)                                   // Print the styled form
 
-	fmt.Println(styledForm) // Print the styled form
-
-	if confirmCreation {
+	if confirmProjectCreation { // Check local variable confirmProjectCreation
 		fmt.Println("Creating project...")
-		// In real code, continue with project creation logic here
-		fmt.Printf("Project Name: %s\n", projectName)
-		fmt.Printf("Project Directory: %s\n", projectDir)
-		fmt.Printf("Template: %s\n", templateName)
-		fmt.Printf("Git Repo: %s\n", gitRepo)
-		fmt.Printf("Product Company: %s\n", productCompany)
-		fmt.Printf("Product Name: %s\n", productName)
-		fmt.Printf("Product Description: %s\n", productDesc)
-		fmt.Printf("Product Version: %s\n", productVersion)
-		fmt.Printf("Product Identifier: %s\n", productID)
-		fmt.Printf("Product Copyright: %s\n", productCopyright)
-		fmt.Printf("Product Comments: %s\n", productComments)
-
-		options := &flags.Init{
-			ProjectName:        projectName,
-			ProjectDir:         projectDir,
-			TemplateName:       templateName,
-			Git:                gitRepo,
-			ProductCompany:     productCompany,
-			ProductName:        productName,
-			ProductDescription: productDesc,
-			ProductVersion:     productVersion,
-			ProductIdentifier:  productID,
-			ProductCopyright:   productCopyright,
-			ProductComments:    productComments,
-		}
-
-		// Call the original Init function with the populated options
-		if err := Init(options); err != nil {
-			term.Error(err)
-		}
-
+		return options, nil // Return populated options
 	} else {
 		fmt.Println("Project creation cancelled.")
+		return nil, fmt.Errorf("project creation cancelled by user") // Return cancellation error
 	}
 }
