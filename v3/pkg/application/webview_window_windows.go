@@ -71,6 +71,9 @@ type windowsWebviewWindow struct {
 	// isMinimizing indicates whether the window is currently being minimized
 	// Used to prevent unnecessary redraws during minimize/restore operations
 	isMinimizing bool
+
+	// menubarTheme is the theme for the menubar
+	menubarTheme *w32.MenuBarTheme
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -408,11 +411,13 @@ func (w *windowsWebviewWindow) run() {
 	}
 
 	// Process the theme
-	w32.AllowDarkModeForWindow(w.hwnd, true)
-
 	switch options.Windows.Theme {
 	case SystemDefault:
-		w.updateTheme(w32.IsCurrentlyDarkMode())
+		isDark := w32.IsCurrentlyDarkMode()
+		if isDark {
+			w32.AllowDarkModeForWindow(w.hwnd, true)
+		}
+		w.updateTheme(isDark)
 		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*ApplicationEvent) {
 			InvokeAsync(func() {
 				w.updateTheme(w32.IsCurrentlyDarkMode())
@@ -421,6 +426,7 @@ func (w *windowsWebviewWindow) run() {
 	case Light:
 		w.updateTheme(false)
 	case Dark:
+		w32.AllowDarkModeForWindow(w.hwnd, true)
 		w.updateTheme(true)
 	}
 
@@ -1059,10 +1065,9 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 	customTheme := w.parent.options.Windows.CustomTheme
 	// Custom theme
 	if w32.SupportsCustomThemes() {
-		var menuBarTheme *w32.DarkModeMenuTheme
-		var userTheme = customTheme.DarkModeMenuBar
+		userTheme := customTheme.DarkModeMenuBar
 		if userTheme != nil {
-			menuBarTheme = &w32.DarkModeMenuTheme{
+			w.menubarTheme = &w32.MenuBarTheme{
 				TitleBarBackground:     userTheme.Default.Background,
 				TitleBarText:           userTheme.Default.Text,
 				MenuHoverBackground:    userTheme.Hover.Background,
@@ -1070,8 +1075,8 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 				MenuSelectedBackground: userTheme.Selected.Background,
 				MenuSelectedText:       userTheme.Selected.Text,
 			}
+			w.menubarTheme.Init()
 		}
-		w32.InitDarkMode(menuBarTheme)
 		// Define a map for theme selection
 		themeMap := map[bool]map[bool]*WindowTheme{
 			true: { // Window is active
@@ -1104,7 +1109,7 @@ var resizePending int32
 
 func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
-	processed, code := w32.MenuBarWndProc(w.hwnd, msg, wparam, lparam)
+	processed, code := w32.MenuBarWndProc(w.hwnd, msg, wparam, lparam, w.menubarTheme)
 	if processed {
 		return code
 	}
