@@ -126,7 +126,7 @@ export function WindowUnfullscreen(): void;
 
 // [WindowSetSize](https://wails.io/docs/reference/runtime/window#windowsetsize)
 // Sets the width and height of the window.
-export function WindowSetSize(width: number, height: number): void;
+export function WindowSetSize(width: number, height: number): Promise<Size>;
 
 // [WindowGetSize](https://wails.io/docs/reference/runtime/window#windowgetsize)
 // Gets the width and height of the window.

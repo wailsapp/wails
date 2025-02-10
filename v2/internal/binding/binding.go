@@ -262,19 +262,22 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 
 	// Iterate this struct and add any struct field references
 	structType := reflect.TypeOf(s)
-	for hasElements(structType) {
+	if hasElements(structType) {
 		structType = structType.Elem()
 	}
 
 	for i := 0; i < structType.NumField(); i++ {
 		field := structType.Field(i)
-		if field.Anonymous || !field.IsExported() {
+		if field.Anonymous {
 			continue
 		}
 		kind := field.Type.Kind()
 		if kind == reflect.Struct {
+			if !field.IsExported() {
+				continue
+			}
 			fqname := field.Type.String()
-			sNameSplit := strings.SplitN(fqname, ".", 2)
+			sNameSplit := strings.Split(fqname, ".")
 			if len(sNameSplit) < 2 {
 				continue
 			}
@@ -285,24 +288,22 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 				s := reflect.Indirect(a).Interface()
 				b.AddStructToGenerateTS(pName, sName, s)
 			}
-		} else {
-			fType := field.Type
-			for hasElements(fType) {
-				fType = fType.Elem()
+		} else if hasElements(field.Type) && field.Type.Elem().Kind() == reflect.Struct {
+			if !field.IsExported() {
+				continue
 			}
-			if fType.Kind() == reflect.Struct {
-				fqname := fType.String()
-				sNameSplit := strings.SplitN(fqname, ".", 2)
-				if len(sNameSplit) < 2 {
-					continue
-				}
-				sName := sNameSplit[1]
-				pName := getPackageName(fqname)
-				a := reflect.New(fType)
-				if b.hasExportedJSONFields(fType) {
-					s := reflect.Indirect(a).Interface()
-					b.AddStructToGenerateTS(pName, sName, s)
-				}
+			fqname := field.Type.Elem().String()
+			sNameSplit := strings.Split(fqname, ".")
+			if len(sNameSplit) < 2 {
+				continue
+			}
+			sName := sNameSplit[1]
+			pName := getPackageName(fqname)
+			typ := field.Type.Elem()
+			a := reflect.New(typ)
+			if b.hasExportedJSONFields(typ) {
+				s := reflect.Indirect(a).Interface()
+				b.AddStructToGenerateTS(pName, sName, s)
 			}
 		}
 	}
@@ -349,18 +350,7 @@ func (b *Bindings) hasExportedJSONFields(typeOf reflect.Type) bool {
 	for i := 0; i < typeOf.NumField(); i++ {
 		jsonFieldName := ""
 		f := typeOf.Field(i)
-		// function, complex, and channel types cannot be json-encoded
-		if f.Type.Kind() == reflect.Chan ||
-			f.Type.Kind() == reflect.Func ||
-			f.Type.Kind() == reflect.UnsafePointer ||
-			f.Type.Kind() == reflect.Complex128 ||
-			f.Type.Kind() == reflect.Complex64 {
-			continue
-		}
-		jsonTag, hasTag := f.Tag.Lookup("json")
-		if !hasTag && f.IsExported() {
-			return true
-		}
+		jsonTag := f.Tag.Get("json")
 		if len(jsonTag) == 0 {
 			continue
 		}

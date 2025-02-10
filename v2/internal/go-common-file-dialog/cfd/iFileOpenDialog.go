@@ -5,7 +5,7 @@ package cfd
 
 import (
 	"github.com/go-ole/go-ole"
-	"github.com/google/uuid"
+	"github.com/wailsapp/wails/v2/internal/go-common-file-dialog/util"
 	"syscall"
 	"unsafe"
 )
@@ -106,7 +106,7 @@ func (fileOpenDialog *iFileOpenDialog) SetFileFilters(filter []FileFilter) error
 }
 
 func (fileOpenDialog *iFileOpenDialog) SetRole(role string) error {
-	return fileOpenDialog.vtbl.setClientGuid(unsafe.Pointer(fileOpenDialog), StringToUUID(role))
+	return fileOpenDialog.vtbl.setClientGuid(unsafe.Pointer(fileOpenDialog), util.StringToUUID(role))
 }
 
 // This should only be callable when the user asks for a multi select because
@@ -164,7 +164,8 @@ func (fileOpenDialog *iFileOpenDialog) setIsMultiselect(isMultiselect bool) erro
 
 func (vtbl *iFileOpenDialogVtbl) getResults(objPtr unsafe.Pointer) (*iShellItemArray, error) {
 	var shellItemArray *iShellItemArray
-	ret, _, _ := syscall.SyscallN(vtbl.GetResults,
+	ret, _, _ := syscall.Syscall(vtbl.GetResults,
+		1,
 		uintptr(objPtr),
 		uintptr(unsafe.Pointer(&shellItemArray)),
 		0)
@@ -193,8 +194,4 @@ func (vtbl *iFileOpenDialogVtbl) getResultsStrings(objPtr unsafe.Pointer) ([]str
 		results = append(results, newItem)
 	}
 	return results, nil
-}
-
-func StringToUUID(str string) *ole.GUID {
-	return ole.NewGUID(uuid.NewSHA1(uuid.Nil, []byte(str)).String())
 }

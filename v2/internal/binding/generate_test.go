@@ -116,27 +116,17 @@ func Test_goTypeToJSDocType(t *testing.T) {
 		{
 			name:  "map",
 			input: "map[string]float64",
-			want:  "Record<string, number>",
+			want:  "{[key: string]: number}",
 		},
 		{
 			name:  "map",
 			input: "map[string]map[string]float64",
-			want:  "Record<string, Record<string, number>>",
+			want:  "{[key: string]: {[key: string]: number}}",
 		},
 		{
 			name:  "types",
 			input: "main.SomeType",
 			want:  "main.SomeType",
-		},
-		{
-			name:  "primitive_generic",
-			input: "main.ListData[string]",
-			want:  "main.ListData_string_",
-		},
-		{
-			name:  "stdlib_generic",
-			input: "main.ListData[*net/http.Request]",
-			want:  "main.ListData_net_http_Request_",
 		},
 	}
 	var importNamespaces slicer.StringSlicer

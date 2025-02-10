@@ -193,8 +193,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// Default go build command
 	commands.Add("build")
 
-	commands.Add("-buildvcs=false")
-
 	// Add better debugging flags
 	if options.Mode == Dev || options.Mode == Debug {
 		commands.Add("-gcflags")
@@ -309,9 +307,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 				if v != "" {
 					v += " "
 				}
-				if !strings.Contains(v, "-mmacosx-version-min") {
-					v += "-mmacosx-version-min=10.13"
-				}
+				v += "-mmacosx-version-min=10.13"
 			}
 			return v
 		})
@@ -348,9 +344,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 				if addUTIFramework {
 					v += "-framework UniformTypeIdentifiers "
 				}
-				if !strings.Contains(v, "-mmacosx-version-min") {
-					v += "-mmacosx-version-min=10.13"
-				}
+				v += "-mmacosx-version-min=10.13"
 
 				return v
 			})

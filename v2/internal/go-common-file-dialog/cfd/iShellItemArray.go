@@ -4,7 +4,6 @@
 package cfd
 
 import (
-	"fmt"
 	"github.com/go-ole/go-ole"
 	"syscall"
 	"unsafe"
@@ -39,9 +38,11 @@ type iShellItemArrayVtbl struct {
 
 func (vtbl *iShellItemArrayVtbl) getCount(objPtr unsafe.Pointer) (uintptr, error) {
 	var count uintptr
-	ret, _, _ := syscall.SyscallN(vtbl.GetCount,
+	ret, _, _ := syscall.Syscall(vtbl.GetCount,
+		1,
 		uintptr(objPtr),
-		uintptr(unsafe.Pointer(&count)))
+		uintptr(unsafe.Pointer(&count)),
+		0)
 	if err := hresultToError(ret); err != nil {
 		return 0, err
 	}
@@ -50,7 +51,8 @@ func (vtbl *iShellItemArrayVtbl) getCount(objPtr unsafe.Pointer) (uintptr, error
 
 func (vtbl *iShellItemArrayVtbl) getItemAt(objPtr unsafe.Pointer, index uintptr) (string, error) {
 	var shellItem *iShellItem
-	ret, _, _ := syscall.SyscallN(vtbl.GetItemAt,
+	ret, _, _ := syscall.Syscall(vtbl.GetItemAt,
+		2,
 		uintptr(objPtr),
 		index,
 		uintptr(unsafe.Pointer(&shellItem)))
@@ -58,7 +60,7 @@ func (vtbl *iShellItemArrayVtbl) getItemAt(objPtr unsafe.Pointer, index uintptr)
 		return "", err
 	}
 	if shellItem == nil {
-		return "", fmt.Errorf("shellItem is nil")
+		return "", ErrCancelled
 	}
 	defer shellItem.vtbl.release(unsafe.Pointer(shellItem))
 	return shellItem.vtbl.getDisplayName(unsafe.Pointer(shellItem))

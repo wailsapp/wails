@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 
@@ -18,7 +17,7 @@ type Watcher interface {
 }
 
 // initialiseWatcher creates the project directory watcher that will trigger recompile
-func initialiseWatcher(cwd, reloadDirs string) (*fsnotify.Watcher, error) {
+func initialiseWatcher(cwd string) (*fsnotify.Watcher, error) {
 	// Ignore dot files, node_modules and build directories by default
 	ignoreDirs := getIgnoreDirs(cwd)
 
@@ -28,22 +27,12 @@ func initialiseWatcher(cwd, reloadDirs string) (*fsnotify.Watcher, error) {
 		return nil, err
 	}
 
-	customDirs := dirs.AsSlice()
-	seperatedDirs := strings.Split(reloadDirs, ",")
-	for _, dir := range seperatedDirs {
-		customSub, err := fs.GetSubdirectories(filepath.Join(cwd, dir))
-		if err != nil {
-			return nil, err
-		}
-		customDirs = append(customDirs, customSub.AsSlice()...)
-	}
-
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, dir := range processDirectories(customDirs, ignoreDirs) {
+	for _, dir := range processDirectories(dirs.AsSlice(), ignoreDirs) {
 		err := watcher.Add(dir)
 		if err != nil {
 			return nil, err

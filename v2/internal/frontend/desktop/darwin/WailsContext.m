@@ -594,8 +594,9 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         }
 
         [dialog setAllowsMultipleSelection: allowMultipleSelection];
+        [dialog setShowsHiddenFiles: showHiddenFiles];
+
     }
-    [dialog setShowsHiddenFiles: showHiddenFiles];
 
     // Default Directory
     if( defaultDirectory != nil ) {

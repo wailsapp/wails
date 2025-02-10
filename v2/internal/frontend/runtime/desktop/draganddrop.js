@@ -51,7 +51,6 @@ function onDragOver(e) {
     if (!window.wails.flags.enableWailsDragAndDrop) {
         return;
     }
-    e.dataTransfer.dropEffect = 'copy';
     e.preventDefault();
 
     if (!flags.useDropTarget) {
@@ -131,6 +130,16 @@ function onDrop(e) {
     }
     e.preventDefault();
 
+    if (!flags.useDropTarget) {
+        return;
+    }
+
+    // Trigger debounce function to deactivate drop targets
+    if(flags.nextDeactivate) flags.nextDeactivate();
+
+    // Deactivate all drop targets
+    Array.from(document.getElementsByClassName(DROP_TARGET_ACTIVE)).forEach(el => el.classList.remove(DROP_TARGET_ACTIVE));
+
     if (CanResolveFilePaths()) {
         // process files
         let files = [];
@@ -145,16 +154,6 @@ function onDrop(e) {
         }
         window.runtime.ResolveFilePaths(e.x, e.y, files);
     }
-
-    if (!flags.useDropTarget) {
-        return;
-    }
-
-    // Trigger debounce function to deactivate drop targets
-    if(flags.nextDeactivate) flags.nextDeactivate();
-
-    // Deactivate all drop targets
-    Array.from(document.getElementsByClassName(DROP_TARGET_ACTIVE)).forEach(el => el.classList.remove(DROP_TARGET_ACTIVE));
 }
 
 /**

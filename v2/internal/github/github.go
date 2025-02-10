@@ -3,7 +3,6 @@ package github
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/charmbracelet/glamour/styles"
 	"io"
 	"net/http"
 	"net/url"
@@ -40,7 +39,7 @@ func GetReleaseNotes(tagVersion string, noColour bool) string {
 	var termRendererOpts []glamour.TermRendererOption
 
 	if runtime.GOOS == "windows" || noColour {
-		termRendererOpts = append(termRendererOpts, glamour.WithStyles(styles.NoTTYStyleConfig))
+		termRendererOpts = append(termRendererOpts, glamour.WithStyles(glamour.NoTTYStyleConfig))
 	} else {
 		termRendererOpts = append(termRendererOpts, glamour.WithAutoStyle())
 	}

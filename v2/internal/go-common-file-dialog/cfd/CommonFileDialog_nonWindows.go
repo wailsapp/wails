@@ -5,24 +5,24 @@ package cfd
 
 import "fmt"
 
-var unsupportedError = fmt.Errorf("common file dialogs are only available on windows")
+var errUnsupported = fmt.Errorf("common file dialogs are only available on windows")
 
 // TODO doc
 func NewOpenFileDialog(config DialogConfig) (OpenFileDialog, error) {
-	return nil, unsupportedError
+	return nil, errUnsupported
 }
 
 // TODO doc
 func NewOpenMultipleFilesDialog(config DialogConfig) (OpenMultipleFilesDialog, error) {
-	return nil, unsupportedError
+	return nil, errUnsupported
 }
 
 // TODO doc
 func NewSelectFolderDialog(config DialogConfig) (SelectFolderDialog, error) {
-	return nil, unsupportedError
+	return nil, errUnsupported
 }
 
 // TODO doc
 func NewSaveFileDialog(config DialogConfig) (SaveFileDialog, error) {
-	return nil, unsupportedError
+	return nil, errUnsupported
 }
