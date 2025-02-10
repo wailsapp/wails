@@ -310,8 +310,8 @@ func startInteractive(initialOptions *flags.Init) (*flags.Init, error) {
 
 	err := form.Run()
 	if err != nil {
-		term.Error(err)
-		return nil, err
+		term.Error(fmt.Errorf("Interactive form failed: %w", err))
+		return nil, fmt.Errorf("form execution failed: %w", err)
 	}
 
 	formString := formRenderer.NewStyle().Render(form.View())
