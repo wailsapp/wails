@@ -160,7 +160,7 @@ func (u *UAHMENUPOPUPMETRICS) SetFUpdateMaxWidths(value uint32) {
 	u.FUpdateMaxWidths = (u.FUpdateMaxWidths &^ 0x3) | (value & 0x3) // Clear and set the first 2 bits
 }
 
-type DarkModeMenuTheme struct {
+type MenuBarTheme struct {
 	TitleBarBackground     *uint32
 	TitleBarText           *uint32
 	MenuHoverBackground    *uint32
@@ -181,7 +181,7 @@ func createColourWithDefaultColor(color *uint32, def uint32) *uint32 {
 	return color
 }
 
-func (d *DarkModeMenuTheme) init() {
+func (d *MenuBarTheme) Init() {
 	d.TitleBarBackground = createColourWithDefaultColor(d.TitleBarBackground, RGB(25, 25, 26))
 	d.TitleBarText = createColourWithDefaultColor(d.TitleBarText, RGB(255, 255, 255))
 	d.MenuSelectedText = createColourWithDefaultColor(d.MenuSelectedText, RGB(255, 255, 255))
@@ -192,24 +192,6 @@ func (d *DarkModeMenuTheme) init() {
 	d.titleBarBackgroundBrush = CreateSolidBrush(*d.TitleBarBackground)
 	d.menuHoverBackgroundBrush = CreateSolidBrush(*d.MenuHoverBackground)
 	d.menuSelectedBackgroundBrush = CreateSolidBrush(*d.MenuSelectedBackground)
-}
-
-// theme is a global variable that holds the current theme settings
-// Initialised to default settings
-var theme *DarkModeMenuTheme = &DarkModeMenuTheme{
-	TitleBarBackground:     RGBptr(25, 25, 26),
-	TitleBarText:           RGBptr(255, 255, 255),
-	MenuHoverBackground:    RGBptr(45, 45, 45),
-	MenuHoverText:          RGBptr(255, 255, 255),
-	MenuSelectedBackground: RGBptr(60, 60, 60),
-}
-
-func InitDarkMode(userTheme *DarkModeMenuTheme) {
-	defer theme.init()
-	if userTheme == nil {
-		return // use default theme
-	}
-	theme = userTheme
 }
 
 func CreateSolidBrush(color COLORREF) HBRUSH {
@@ -241,7 +223,7 @@ func TrackPopupMenu(hmenu HMENU, flags uint32, x, y int32, reserved int32, hwnd 
 	return ret != 0
 }
 
-func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM) (bool, LRESULT) {
+func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *MenuBarTheme) (bool, LRESULT) {
 	if !IsCurrentlyDarkMode() {
 		return false, 0
 	}
@@ -364,7 +346,7 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM) (bool, 
 		hdc := GetWindowDC(hwnd)
 		FillRect(hdc, &line, theme.titleBarBackgroundBrush)
 		ReleaseDC(hwnd, hdc)
-		return true, result
+		return false, result
 	}
 	return false, 0
 }
