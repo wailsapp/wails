@@ -122,13 +122,13 @@ func Init(options *flags.Init) error {
 	}
 
 	if options.ProjectName == "" {
-		interactiveOptions, err := startInteractive(options) // Call startInteractive, pass options
+		interactiveOptions, err := startInteractive(options)
 		if err != nil {
-			return err // Return error from interactive form
+			return err
 		}
-		options = interactiveOptions // Use options returned from interactive form
+		options = interactiveOptions
 		if options.ProjectName == "" {
-			return fmt.Errorf("project name is required") // Ensure project name is provided
+			return fmt.Errorf("project name is required")
 		}
 	}
 
@@ -198,136 +198,131 @@ func sanitizeFileName(fileName string) string {
 	return reg.ReplaceAllString(fileName, "_")
 }
 
-// startInteractive starts the interactive form and returns the populated flags.Init and error.
-// It now accepts the flags.Init as input, to initialize default values if needed.
 func startInteractive(initialOptions *flags.Init) (*flags.Init, error) {
 	var templateOptions []huh.Option[string]
-	var templateSelect *huh.Select[string] // Declare templateSelect outside
-	confirmProjectCreation := false        // Local variable for confirmation
+	var templateSelect *huh.Select[string]
+	confirmProjectCreation := false
 
-	options := initialOptions // Use the passed-in options, avoids shadowing
+	options := initialOptions
 
-	if options == nil { // Defensive check in case nil options are passed
+	if options == nil {
 		options = &flags.Init{
-			ProductVersion: "1.0.0", // Default value if no initial options are provided
+			ProductVersion: "1.0.0",
 		}
 	} else if options.ProductVersion == "" {
-		options.ProductVersion = "1.0.0" // Ensure default if not set in initial options
+		options.ProductVersion = "1.0.0"
 	}
-	templateName := &options.TemplateName // keep pointer for default value setting
+	templateName := &options.TemplateName
 
-	templateSelect = huh.NewSelect[string](). // Initialize templateSelect here
-							Title("Template").
-							Description("Project template to use (Enter to list)").
-							Options(templateOptions...).
-							Value(templateName) // Bind to options.TemplateName
+	templateSelect = huh.NewSelect[string]().
+		Title("Template").
+		Description("Project template to use (Enter to list)").
+		Options(templateOptions...).
+		Value(templateName)
 
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
 				Title("Project Name").
 				Description("Name of project").
-				Value(&options.ProjectName), // Bind to options.ProjectName
+				Value(&options.ProjectName),
 
 			huh.NewInput().
 				Title("Project Dir").
 				Description("Target directory (empty for default)").
-				Value(&options.ProjectDir), // Bind to options.ProjectDir
+				Value(&options.ProjectDir),
 
-			templateSelect, // Use templateSelect here, no assignment
+			templateSelect,
 		),
 		huh.NewGroup(
 			huh.NewInput().
 				Title("Git Repo URL (optional)").
 				Description("Git repo to initialize (optional)").
-				Value(&options.Git), // Bind to options.Git
+				Value(&options.Git),
 		),
 		huh.NewGroup(
 			huh.NewInput().
 				Title("Company (optional)").
-				Value(&options.ProductCompany), // Bind to options.ProductCompany
+				Value(&options.ProductCompany),
 			huh.NewInput().
 				Title("Product Name (optional)").
-				Value(&options.ProductName), // Bind to options.ProductName
+				Value(&options.ProductName),
 			huh.NewInput().
 				Title("Version (optional)").
-				Value(&options.ProductVersion), // Bind to options.ProductVersion
+				Value(&options.ProductVersion),
 			huh.NewInput().
 				Title("ID (optional)").
-				Value(&options.ProductIdentifier), // Bind to options.ProductIdentifier
+				Value(&options.ProductIdentifier),
 			huh.NewInput().
 				Title("Copyright (optional)").
-				Value(&options.ProductCopyright), // Bind to options.ProductCopyright
+				Value(&options.ProductCopyright),
 			huh.NewText().
 				Title("Description (optional)").
 				Lines(1).
-				Value(&options.ProductDescription), // Bind to options.ProductDescription
+				Value(&options.ProductDescription),
 			huh.NewText().
 				Title("Comments (optional)").
 				Lines(1).
-				Value(&options.ProductComments), // Bind to options.ProductComments
+				Value(&options.ProductComments),
 		),
 		huh.NewGroup(
 			huh.NewConfirm().
 				Title("Confirm?").
-				Value(&confirmProjectCreation), // Bind to local variable confirmProjectCreation
+				Value(&confirmProjectCreation),
 		),
 	)
 
-	// Dynamically load and order templates when the "Template" select is rendered
 	templateSelect.OptionsFunc(func() []huh.Option[string] {
 		defaultTemplates := templates.GetDefaultTemplates()
 
-		// Reorder templates: Ensure "vanilla" is first
-		vanillaTemplate := templates.TemplateData{Name: "vanilla", Description: ""} // Use TemplateData
-		orderedTemplates := []templates.TemplateData{}                              // Use TemplateData
+		vanillaTemplate := templates.TemplateData{Name: "vanilla", Description: ""}
+		orderedTemplates := []templates.TemplateData{}
 		vanillaFound := false
 		for _, t := range defaultTemplates {
 			if t.Name == vanillaTemplate.Name {
-				orderedTemplates = append([]templates.TemplateData{t}, orderedTemplates...) // Prepend vanilla - use TemplateData
+				orderedTemplates = append([]templates.TemplateData{t}, orderedTemplates...)
 				vanillaFound = true
 			} else {
-				orderedTemplates = append(orderedTemplates, t) // Append other templates - use TemplateData
+				orderedTemplates = append(orderedTemplates, t)
 			}
 		}
-		if !vanillaFound { // If "vanilla" template isn't found (unlikely, but for safety)
-			orderedTemplates = append([]templates.TemplateData{vanillaTemplate}, orderedTemplates...) // Use TemplateData
+		if !vanillaFound {
+			orderedTemplates = append([]templates.TemplateData{vanillaTemplate}, orderedTemplates...)
 		}
 
-		templateOptions = nil // Clear existing options
+		templateOptions = nil
 		for _, t := range orderedTemplates {
 			templateOptions = append(templateOptions, huh.NewOption(t.Name, t.Name))
 		}
 
-		// Set default template to "vanilla" - do this BEFORE running the form
-		*templateName = "vanilla" // Set default value here, using pointer
+		*templateName = "vanilla"
 
 		return templateOptions
 	}, nil)
 
 	formStyle := lipgloss.NewStyle().
 		BorderStyle(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("62")). // A nice cyan color
+		BorderForeground(lipgloss.Color("62")).
 		Padding(1, 2).
-		Margin(1, 0) // Add a little margin above and below
+		Margin(1, 0)
 
-	formRenderer := lipgloss.NewRenderer(os.Stdout) // Corrected: Pass os.Stdout to NewRenderer
+	formRenderer := lipgloss.NewRenderer(os.Stdout)
 
 	err := form.Run()
 	if err != nil {
 		term.Error(err)
-		return nil, err // Return error if form fails
+		return nil, err
 	}
 
-	formString := formRenderer.NewStyle().Render(form.View()) // Get the form's rendered output
-	styledForm := formStyle.Render(formString)                // Apply lipgloss style
-	fmt.Println(styledForm)                                   // Print the styled form
+	formString := formRenderer.NewStyle().Render(form.View())
+	styledForm := formStyle.Render(formString)
+	fmt.Println(styledForm)
 
-	if confirmProjectCreation { // Check local variable confirmProjectCreation
+	if confirmProjectCreation {
 		fmt.Println("Creating project...")
-		return options, nil // Return populated options
+		return options, nil
 	} else {
 		fmt.Println("Project creation cancelled.")
-		return nil, fmt.Errorf("project creation cancelled by user") // Return cancellation error
+		return nil, fmt.Errorf("project creation cancelled by user")
 	}
 }
