@@ -3,9 +3,10 @@
 package windows
 
 import (
-	"github.com/wailsapp/go-webview2/pkg/edge"
 	"sync"
 	"unsafe"
+
+	"github.com/wailsapp/go-webview2/pkg/edge"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
@@ -37,6 +38,13 @@ type Window struct {
 	OnResume  func()
 
 	chromium *edge.Chromium
+
+	// isMinimizing indicates whether the window is currently being minimized
+	// 标识窗口是否处于最小化状态,用于解决最小化/恢复时的闪屏问题
+	// This flag is used to prevent unnecessary redraws during minimize/restore transitions for frameless windows
+	// 此标志用于防止无边框窗口在最小化/恢复过程中的不必要重绘
+	// Reference: https://github.com/wailsapp/wails/issues/3951
+	isMinimizing bool
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo, chromium *edge.Chromium) *Window {
@@ -70,8 +78,13 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 
 	var dwStyle = w32.WS_OVERLAPPEDWINDOW
 
-	winc.RegClassOnlyOnce("wailsWindow")
-	handle := winc.CreateWindow("wailsWindow", parent, uint(exStyle), uint(dwStyle))
+	windowClassName := "wailsWindow"
+	if windowsOptions != nil && windowsOptions.WindowClassName != "" {
+		windowClassName = windowsOptions.WindowClassName
+	}
+
+	winc.RegClassOnlyOnce(windowClassName)
+	handle := winc.CreateWindow(windowClassName, parent, uint(exStyle), uint(dwStyle))
 	result.SetHandle(handle)
 	winc.RegMsgHandler(result)
 	result.SetParent(parent)
@@ -251,7 +264,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 				rgrc := (*w32.RECT)(unsafe.Pointer(lparam))
 				if w.Form.IsFullScreen() {
 					// In Full-Screen mode we don't need to adjust anything
-					w.chromium.SetPadding(edge.Rect{})
+					w.SetPadding(edge.Rect{})
 				} else if w.IsMaximised() {
 					// If the window is maximized we must adjust the client area to the work area of the monitor. Otherwise
 					// some content goes beyond the visible part of the monitor.
@@ -282,7 +295,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 							}
 						}
 					}
-					w.chromium.SetPadding(edge.Rect{})
+					w.SetPadding(edge.Rect{})
 				} else {
 					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
 					// See: https://stackoverflow.com/a/6558508
@@ -291,7 +304,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 					// Increasing the bottom also worksaround the flickering but we would loose 1px of the WebView content
 					// therefore let's pad the content with 1px at the bottom.
 					rgrc.Bottom += 1
-					w.chromium.SetPadding(edge.Rect{Bottom: 1})
+					w.SetPadding(edge.Rect{Bottom: 1})
 				}
 				return 0
 			}
@@ -333,4 +346,18 @@ func invokeSync[T any](cba *Window, fn func() (T, error)) (res T, err error) {
 	})
 	wg.Wait()
 	return res, err
+}
+
+// SetPadding is a filter that wraps chromium.SetPadding to prevent unnecessary redraws during minimize/restore
+// 包装了chromium.SetPadding的过滤器,用于防止窗口最小化/恢复过程中的不必要重绘
+// This fixes window flickering when minimizing/restoring frameless windows
+// 这修复了无边框窗口在最小化/恢复时的闪烁问题
+// Reference: https://github.com/wailsapp/wails/issues/3951
+func (w *Window) SetPadding(padding edge.Rect) {
+	// Skip SetPadding if window is being minimized to prevent flickering
+	// 如果窗口正在最小化,跳过设置padding以防止闪烁
+	if w.isMinimizing {
+		return
+	}
+	w.chromium.SetPadding(padding)
 }
