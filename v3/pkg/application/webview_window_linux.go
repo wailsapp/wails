@@ -87,10 +87,6 @@ func (w *linuxWebviewWindow) setCloseButtonEnabled(enabled bool) {
 	//	C.enableCloseButton(w.nsWindow, C.bool(enabled))
 }
 
-func (w *linuxWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	// Not implemented
-}
-
 func (w *linuxWebviewWindow) setMinimiseButtonEnabled(enabled bool) {
 	//C.enableMinimiseButton(w.nsWindow, C.bool(enabled))
 }

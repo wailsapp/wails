@@ -796,10 +796,6 @@ func (w *windowsWebviewWindow) isVisible() bool {
 	return style&w32.WS_VISIBLE != 0
 }
 
-func (w *windowsWebviewWindow) setFullscreenButtonEnabled(_ bool) {
-	// Unused in Windows
-}
-
 func (w *windowsWebviewWindow) focus() {
 	w32.SetForegroundWindow(w.hwnd)
 
