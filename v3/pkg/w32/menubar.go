@@ -80,42 +80,6 @@ func boolToUint(b bool) uint {
 	return 0
 }
 
-// Add these function declarations
-func OpenThemeData(hwnd HWND, pszClassList *uint16) HTHEME {
-	ret, _, _ := procOpenThemeData.Call(
-		uintptr(hwnd),
-		uintptr(unsafe.Pointer(pszClassList)),
-	)
-	return HTHEME(ret)
-}
-
-func DrawThemeBackground(hTheme HTHEME, hdc HDC, iPartId, iStateId int32, pRect *RECT, pClipRect *RECT) HRESULT {
-	ret, _, _ := procDrawThemeBackground.Call(
-		uintptr(hTheme),
-		uintptr(hdc),
-		uintptr(iPartId),
-		uintptr(iStateId),
-		uintptr(unsafe.Pointer(pRect)),
-		uintptr(unsafe.Pointer(pClipRect)),
-	)
-	return HRESULT(ret)
-}
-
-func DrawThemeTextEx(hTheme HTHEME, hdc HDC, iPartId, iStateId int32, text *uint16, textLen int32, dwFlags uint32, pRect *RECT, pOptions *DTTOPTS) HRESULT {
-	ret, _, _ := procDrawThemeTextEx.Call(
-		uintptr(hTheme),
-		uintptr(hdc),
-		uintptr(iPartId),
-		uintptr(iStateId),
-		uintptr(unsafe.Pointer(text)),
-		uintptr(textLen),
-		uintptr(dwFlags),
-		uintptr(unsafe.Pointer(pRect)),
-		uintptr(unsafe.Pointer(pOptions)),
-	)
-	return HRESULT(ret)
-}
-
 type UAHMENU struct {
 	Hmenu   HMENU
 	Hdc     HDC
@@ -196,18 +160,56 @@ func (u *UAHMENUPOPUPMETRICS) SetFUpdateMaxWidths(value uint32) {
 	u.FUpdateMaxWidths = (u.FUpdateMaxWidths &^ 0x3) | (value & 0x3) // Clear and set the first 2 bits
 }
 
-var darkModeTitleBarBrush HBRUSH
+type DarkModeMenuTheme struct {
+	TitleBarBackground     *uint32
+	TitleBarText           *uint32
+	MenuHoverBackground    *uint32
+	MenuHoverText          *uint32
+	MenuSelectedBackground *uint32
+	MenuSelectedText       *uint32
 
-func init() {
-	darkModeTitleBarBrush, _, _ = procCreateSolidBrush.Call(
-		uintptr(0x00262525),
-	)
+	// private brushes
+	titleBarBackgroundBrush     HBRUSH
+	menuHoverBackgroundBrush    HBRUSH
+	menuSelectedBackgroundBrush HBRUSH
 }
 
-func InitDarkMode(darkModeMenuBarColour int32) {
-	darkModeTitleBarBrush, _, _ = procCreateSolidBrush.Call(
-		uintptr(darkModeMenuBarColour),
-	)
+func createColourWithDefaultColor(color *uint32, def uint32) *uint32 {
+	if color == nil {
+		return &def
+	}
+	return color
+}
+
+func (d *DarkModeMenuTheme) init() {
+	d.TitleBarBackground = createColourWithDefaultColor(d.TitleBarBackground, RGB(25, 25, 26))
+	d.TitleBarText = createColourWithDefaultColor(d.TitleBarText, RGB(255, 255, 255))
+	d.MenuSelectedText = createColourWithDefaultColor(d.MenuSelectedText, RGB(255, 255, 255))
+	d.MenuSelectedBackground = createColourWithDefaultColor(d.MenuSelectedBackground, RGB(60, 60, 60))
+	d.MenuHoverText = createColourWithDefaultColor(d.MenuHoverText, RGB(255, 255, 255))
+	d.MenuHoverBackground = createColourWithDefaultColor(d.MenuHoverBackground, RGB(45, 45, 45))
+	// Create brushes
+	d.titleBarBackgroundBrush = CreateSolidBrush(*d.TitleBarBackground)
+	d.menuHoverBackgroundBrush = CreateSolidBrush(*d.MenuHoverBackground)
+	d.menuSelectedBackgroundBrush = CreateSolidBrush(*d.MenuSelectedBackground)
+}
+
+// theme is a global variable that holds the current theme settings
+// Initialised to default settings
+var theme *DarkModeMenuTheme = &DarkModeMenuTheme{
+	TitleBarBackground:     RGBptr(25, 25, 26),
+	TitleBarText:           RGBptr(255, 255, 255),
+	MenuHoverBackground:    RGBptr(45, 45, 45),
+	MenuHoverText:          RGBptr(255, 255, 255),
+	MenuSelectedBackground: RGBptr(60, 60, 60),
+}
+
+func InitDarkMode(userTheme *DarkModeMenuTheme) {
+	defer theme.init()
+	if userTheme == nil {
+		return // use default theme
+	}
+	theme = userTheme
 }
 
 func CreateSolidBrush(color COLORREF) HBRUSH {
@@ -219,6 +221,11 @@ func CreateSolidBrush(color COLORREF) HBRUSH {
 
 func RGB(r, g, b byte) uint32 {
 	return uint32(r) | uint32(g)<<8 | uint32(b)<<16
+}
+
+func RGBptr(r, g, b byte) *uint32 {
+	result := uint32(r) | uint32(g)<<8 | uint32(b)<<16
+	return &result
 }
 
 func TrackPopupMenu(hmenu HMENU, flags uint32, x, y int32, reserved int32, hwnd HWND, prcRect *RECT) bool {
@@ -255,7 +262,7 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM) (bool, 
 		rc = menuBarInfo.Bar
 		OffsetRect(&rc, int(-winRect.Left), int(-winRect.Top))
 
-		FillRect(udm.Hdc, &rc, darkModeTitleBarBrush)
+		FillRect(udm.Hdc, &rc, theme.titleBarBackgroundBrush)
 
 		return true, 0
 	case WM_UAHDRAWMENUITEM:
@@ -273,8 +280,9 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM) (bool, 
 		}
 
 		GetMenuItemInfo(udmi.UM.Hmenu, uint32(udmi.UAMI.Position), true, &mii)
+
 		if udmi.DIS.ItemState&ODS_HOTLIGHT != 0 && mii.HSubMenu != 0 {
-			// If this is a menu item with a submenu and we're hovering,
+			// If this is a menu item with a submenu, and we're hovering,
 			// tell the menu to track
 			TrackPopupMenu(mii.HSubMenu,
 				TPM_LEFTALIGN|TPM_TOPALIGN,
@@ -290,25 +298,20 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM) (bool, 
 
 		if udmi.DIS.ItemState&ODS_HOTLIGHT != 0 {
 			// Hot state - use a specific color for hover
-			bgBrush = CreateSolidBrush(RGB(45, 45, 45)) // Dark gray for hover
-			textColor = RGB(255, 255, 255)              // White text
+			bgBrush = theme.menuHoverBackgroundBrush
+			textColor = *theme.MenuHoverText
 		} else if udmi.DIS.ItemState&ODS_SELECTED != 0 {
 			// Selected state
-			bgBrush = CreateSolidBrush(RGB(60, 60, 60)) // Slightly lighter for selected
-			textColor = RGB(255, 255, 255)
+			bgBrush = theme.menuSelectedBackgroundBrush
+			textColor = *theme.MenuSelectedText
 		} else {
 			// Normal state
-			bgBrush = darkModeTitleBarBrush
-			textColor = RGB(255, 255, 255)
+			bgBrush = theme.titleBarBackgroundBrush
+			textColor = *theme.TitleBarText
 		}
 
 		// Fill background
 		FillRect(udmi.UM.Hdc, &udmi.DIS.RcItem, bgBrush)
-
-		// Delete the temporary brush if we created one
-		if bgBrush != darkModeTitleBarBrush {
-			DeleteObject(bgBrush)
-		}
 
 		// Draw text
 		SetTextColor(udmi.UM.Hdc, textColor)
@@ -359,7 +362,7 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM) (bool, 
 		line.Top = line.Top - 1
 
 		hdc := GetWindowDC(hwnd)
-		FillRect(hdc, &line, darkModeTitleBarBrush)
+		FillRect(hdc, &line, theme.titleBarBackgroundBrush)
 		ReleaseDC(hwnd, hdc)
 		return true, result
 	}

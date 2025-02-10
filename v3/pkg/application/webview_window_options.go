@@ -233,7 +233,7 @@ type WindowsWindow struct {
 
 	// Specify custom colours to use for dark/light mode
 	// Default: nil
-	CustomTheme *ThemeSettings
+	CustomTheme ThemeSettings
 
 	// Disable all window decorations in Frameless mode, which means no "Aero Shadow" and no "Rounded Corner" will be shown.
 	// "Rounded Corners" are only available on Windows 11.
@@ -309,22 +309,53 @@ const (
 	Light Theme = 2
 )
 
+type WindowTheme struct {
+	// BorderColour is the colour of the window border
+	BorderColour *uint32
+
+	// TitleBarColour is the colour of the window title bar
+	TitleBarColour *uint32
+
+	// TitleTextColour is the colour of the window title text
+	TitleTextColour *uint32
+}
+
+type TextTheme struct {
+	// Text is the colour of the text
+	Text *uint32
+
+	// Background is the background colour of the text
+	Background *uint32
+}
+
+type MenuBarTheme struct {
+	// Default is the default theme
+	Default *TextTheme
+
+	// Hover defines the theme to use when the menu item is hovered
+	Hover *TextTheme
+
+	// Selected defines the theme to use when the menu item is selected
+	Selected *TextTheme
+}
+
 // ThemeSettings defines custom colours to use in dark or light mode.
 // They may be set using the hex values: 0x00BBGGRR
 type ThemeSettings struct {
-	DarkModeTitleBar           int32
-	DarkModeTitleBarInactive   int32
-	DarkModeTitleText          int32
-	DarkModeTitleTextInactive  int32
-	DarkModeBorder             int32
-	DarkModeBorderInactive     int32
-	LightModeTitleBar          int32
-	LightModeTitleBarInactive  int32
-	LightModeTitleText         int32
-	LightModeTitleTextInactive int32
-	LightModeBorder            int32
-	LightModeBorderInactive    int32
-	DarkModeMenuBar            int32
+	// Dark mode active window
+	DarkModeActive *WindowTheme
+
+	// Dark mode inactive window
+	DarkModeInactive *WindowTheme
+
+	// Light mode active window
+	LightModeActive *WindowTheme
+
+	// Light mode inactive window
+	LightModeInactive *WindowTheme
+
+	// Dark mode MenuBar
+	DarkModeMenuBar *MenuBarTheme
 }
 
 /****** Mac Options *******/
