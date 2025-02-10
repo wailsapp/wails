@@ -1018,7 +1018,7 @@ func (w *windowsWebviewWindow) setBackdropType(backdropType BackdropType) {
 
 		w32.SetWindowCompositionAttribute(w.hwnd, &data)
 	} else {
-		w32.EnableTranslucency(w.hwnd, int32(backdropType))
+		w32.EnableTranslucency(w.hwnd, uint32(backdropType))
 	}
 }
 
@@ -1040,6 +1040,13 @@ func (w *windowsWebviewWindow) disableIcon() {
 	)
 }
 
+func (w *windowsWebviewWindow) processThemeColour(fn func(w32.HWND, uint32), value *uint32) {
+	if value == nil {
+		return
+	}
+	fn(w.hwnd, *value)
+}
+
 func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 
 	if w32.IsCurrentlyHighContrastMode() {
@@ -1055,28 +1062,40 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 	// Custom theme processing
 	customTheme := w.parent.options.Windows.CustomTheme
 	// Custom theme
-	if w32.SupportsCustomThemes() && customTheme != nil {
-		w32.InitDarkMode(customTheme.DarkModeMenuBar)
-		if w.isActive() {
-			if isDarkMode {
-				w32.SetTitleBarColour(w.hwnd, customTheme.DarkModeTitleBar)
-				w32.SetTitleTextColour(w.hwnd, customTheme.DarkModeTitleText)
-				w32.SetBorderColour(w.hwnd, customTheme.DarkModeBorder)
-			} else {
-				w32.SetTitleBarColour(w.hwnd, customTheme.LightModeTitleBar)
-				w32.SetTitleTextColour(w.hwnd, customTheme.LightModeTitleText)
-				w32.SetBorderColour(w.hwnd, customTheme.LightModeBorder)
+	if w32.SupportsCustomThemes() {
+		var menuBarTheme *w32.DarkModeMenuTheme
+		var userTheme = customTheme.DarkModeMenuBar
+		if userTheme != nil {
+			menuBarTheme = &w32.DarkModeMenuTheme{
+				TitleBarBackground:     userTheme.Default.Background,
+				TitleBarText:           userTheme.Default.Text,
+				MenuHoverBackground:    userTheme.Hover.Background,
+				MenuHoverText:          userTheme.Hover.Text,
+				MenuSelectedBackground: userTheme.Selected.Background,
+				MenuSelectedText:       userTheme.Selected.Text,
 			}
-		} else {
-			if isDarkMode {
-				w32.SetTitleBarColour(w.hwnd, customTheme.DarkModeTitleBarInactive)
-				w32.SetTitleTextColour(w.hwnd, customTheme.DarkModeTitleTextInactive)
-				w32.SetBorderColour(w.hwnd, customTheme.DarkModeBorderInactive)
-			} else {
-				w32.SetTitleBarColour(w.hwnd, customTheme.LightModeTitleBarInactive)
-				w32.SetTitleTextColour(w.hwnd, customTheme.LightModeTitleTextInactive)
-				w32.SetBorderColour(w.hwnd, customTheme.LightModeBorderInactive)
-			}
+		}
+		w32.InitDarkMode(menuBarTheme)
+		// Define a map for theme selection
+		themeMap := map[bool]map[bool]*WindowTheme{
+			true: { // Window is active
+				true:  customTheme.DarkModeActive,  // Dark mode
+				false: customTheme.LightModeActive, // Light mode
+			},
+			false: { // Window is inactive
+				true:  customTheme.DarkModeInactive,  // Dark mode
+				false: customTheme.LightModeInactive, // Light mode
+			},
+		}
+
+		// Select the appropriate theme
+		theme := themeMap[w.isActive()][isDarkMode]
+
+		// Apply theme colors
+		if theme != nil {
+			w.processThemeColour(w32.SetTitleBarColour, theme.TitleBarColour)
+			w.processThemeColour(w32.SetTitleTextColour, theme.TitleTextColour)
+			w.processThemeColour(w32.SetBorderColour, theme.BorderColour)
 		}
 	}
 }

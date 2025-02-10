@@ -249,19 +249,19 @@ func SetTheme(hwnd uintptr, useDarkMode bool) {
 	}
 }
 
-func EnableTranslucency(hwnd uintptr, backdrop int32) {
+func EnableTranslucency(hwnd uintptr, backdrop uint32) {
 	dwmSetWindowAttribute(hwnd, DwmwaSystemBackdropType, unsafe.Pointer(&backdrop), unsafe.Sizeof(backdrop))
 }
 
-func SetTitleBarColour(hwnd uintptr, titleBarColour int32) {
+func SetTitleBarColour(hwnd uintptr, titleBarColour uint32) {
 	dwmSetWindowAttribute(hwnd, DwmwaCaptionColor, unsafe.Pointer(&titleBarColour), unsafe.Sizeof(titleBarColour))
 }
 
-func SetTitleTextColour(hwnd uintptr, titleTextColour int32) {
+func SetTitleTextColour(hwnd uintptr, titleTextColour uint32) {
 	dwmSetWindowAttribute(hwnd, DwmwaTextColor, unsafe.Pointer(&titleTextColour), unsafe.Sizeof(titleTextColour))
 }
 
-func SetBorderColour(hwnd uintptr, titleBorderColour int32) {
+func SetBorderColour(hwnd uintptr, titleBorderColour uint32) {
 	dwmSetWindowAttribute(hwnd, DwmwaBorderColor, unsafe.Pointer(&titleBorderColour), unsafe.Sizeof(titleBorderColour))
 }
 
