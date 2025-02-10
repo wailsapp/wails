@@ -16,7 +16,12 @@ func (generator *Generator) generateIndex(index *collect.PackageIndex) {
 		generator.logger.Errorf("package %s: index generation failed", index.Package.Path)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			generator.logger.Errorf("%v", err)
+			generator.logger.Errorf("package %s: index generation failed", index.Package.Path)
+		}
+	}()
 
 	err = generator.renderer.Index(file, index)
 	if err != nil {

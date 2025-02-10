@@ -234,8 +234,7 @@ func main() {
 			OnClick(func(ctx *application.Context) {
 				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 					Windows: application.WindowsWindow{
-						DisableMenu: true,
-						ExStyle:     getExStyle(),
+						ExStyle: getExStyle(),
 					},
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
@@ -247,11 +246,7 @@ func main() {
 	}
 	myMenu.Add("New WebviewWindow (Listen to Move)").
 		OnClick(func(ctx *application.Context) {
-			w := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-				Windows: application.WindowsWindow{
-					DisableMenu: true,
-				},
-			}).
+			w := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{}).
 				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
@@ -264,11 +259,7 @@ func main() {
 		})
 	myMenu.Add("New WebviewWindow (Listen to Resize)").
 		OnClick(func(ctx *application.Context) {
-			w := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-				Windows: application.WindowsWindow{
-					DisableMenu: true,
-				},
-			}).
+			w := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{}).
 				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
@@ -389,7 +380,26 @@ func main() {
 					X:              rand.Intn(1000),
 					Y:              rand.Intn(800),
 					BackgroundType: application.BackgroundTypeTranslucent,
-					HTML:           "<html style='background-color: rgba(0,0,0,0);'><body></body></html>",
+					HTML: `
+<html style='background-color: rgba(0,0,0,0);'>
+  <head>
+    <style>
+      body {
+        background-color: rgba(0,0,0,0);
+        color: rgb(128, 128, 128);
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h2 style="text-align: center;">This is a Window with a Mica backdrop</h2>
+    </div>
+  </body>
+</html>`,
 					Windows: application.WindowsWindow{
 						BackdropType: application.Mica,
 					},
@@ -403,7 +413,26 @@ func main() {
 					X:              rand.Intn(1000),
 					Y:              rand.Intn(800),
 					BackgroundType: application.BackgroundTypeTranslucent,
-					HTML:           "<html style='background-color: rgba(0,0,0,0);'><body></body></html>",
+					HTML: `
+<html style='background-color: rgba(0,0,0,0);'>
+  <head>
+    <style>
+      body {
+        background-color: rgba(0,0,0,0);
+        color: rgb(128, 128, 128);
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h2 style="text-align: center;">This is a Window with an Acrylic backdrop</h2>
+    </div>
+  </body>
+</html>`,
 					Windows: application.WindowsWindow{
 						BackdropType: application.Acrylic,
 					},
@@ -417,7 +446,26 @@ func main() {
 					X:              rand.Intn(1000),
 					Y:              rand.Intn(800),
 					BackgroundType: application.BackgroundTypeTranslucent,
-					HTML:           "<html style='background-color: rgba(0,0,0,0);'><body></body></html>",
+					HTML: `
+<html style='background-color: rgba(0,0,0,0);'>
+  <head>
+    <style>
+      body {
+        background-color: rgba(0,0,0,0);
+        color: rgb(128, 128, 128);
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h2 style="text-align: center;">This is a Window with a Tabbed-effect backdrop</h2>
+    </div>
+  </body>
+</html>`,
 					Windows: application.WindowsWindow{
 						BackdropType: application.Tabbed,
 					},
@@ -685,6 +733,9 @@ func main() {
 		BackgroundColour: application.NewRGB(33, 37, 41),
 		Mac: application.MacWindow{
 			DisableShadow: true,
+		},
+		Windows: application.WindowsWindow{
+			Menu: menu,
 		},
 	})
 

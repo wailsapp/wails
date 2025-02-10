@@ -12,7 +12,7 @@ import {Call as $Call} from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as $models from "./internal.js";
+import * as $models from "./models.js";
 
 export function ArrayInt($in: number[]): Promise<void> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.ArrayInt", $in) as any;
@@ -102,8 +102,8 @@ export function MapIntInt($in: { [_: `${number}`]: number } | null): Promise<voi
     return $resultPromise;
 }
 
-export function MapIntPointerInt($in: { [_: string]: number } | null): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.MapIntPointerInt", $in) as any;
+export function MapIntIntPointer($in: { [_: `${number}`]: number | null } | null): Promise<void> & { cancel(): void } {
+    let $resultPromise = $Call.ByName("main.GreetService.MapIntIntPointer", $in) as any;
     return $resultPromise;
 }
 

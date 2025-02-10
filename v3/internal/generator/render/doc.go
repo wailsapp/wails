@@ -35,7 +35,7 @@ var commentTerminator = []byte("*/")
 // with the given indentation.
 func jsdoc(comment string, indent string) string {
 	var builder strings.Builder
-	prefix := []byte(newline + indent + " * ")
+	prefix := []byte(Newline + indent + " * ")
 
 	scanner := bufio.NewScanner(bytes.NewReader([]byte(comment)))
 	for scanner.Scan() {

@@ -191,6 +191,11 @@ func MustStringToUTF16(input string) []uint16 {
 	return lo.Must(syscall.UTF16FromString(input))
 }
 
+func StringToUTF16(input string) ([]uint16, error) {
+	input = stripNulls(input)
+	return syscall.UTF16FromString(input)
+}
+
 func CenterWindow(hwnd HWND) {
 	windowInfo := getWindowInfo(hwnd)
 	frameless := windowInfo.IsPopup()
@@ -329,7 +334,10 @@ func FindWindowW(className, windowName *uint16) HWND {
 
 func SendMessageToWindow(hwnd HWND, msg string) {
 	// Convert data to UTF16 string
-	dataUTF16 := MustStringToUTF16(msg)
+	dataUTF16, err := StringToUTF16(msg)
+	if err != nil {
+		return
+	}
 
 	// Prepare COPYDATASTRUCT
 	cds := COPYDATASTRUCT{

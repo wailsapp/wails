@@ -27,15 +27,6 @@ export function Get(key) {
 }
 
 /**
- * Name returns the name of the plugin.
- * @returns {Promise<string> & { cancel(): void }}
- */
-export function Name() {
-    let $resultPromise = /** @type {any} */($Call.ByID(2879709053));
-    return $resultPromise;
-}
-
-/**
  * Save saves the store to disk
  * @returns {Promise<void> & { cancel(): void }}
  */

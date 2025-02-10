@@ -799,6 +799,14 @@ func (a *App) OnShutdown(f func()) {
 	a.shutdownTasks = append(a.shutdownTasks, f)
 }
 
+func (a *App) destroySystemTray(tray *SystemTray) {
+	// Remove the system tray from the a.systemTrays map
+	a.systemTraysLock.Lock()
+	delete(a.systemTrays, tray.id)
+	a.systemTraysLock.Unlock()
+	tray.destroy()
+}
+
 func (a *App) cleanup() {
 	if a.performingShutdown {
 		return

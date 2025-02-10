@@ -28,7 +28,6 @@ type linuxWebviewWindow struct {
 	parent        *WebviewWindow
 	menubar       pointer
 	vbox          pointer
-	menu          *Menu
 	accels        pointer
 	lastWidth     int
 	lastHeight    int
@@ -261,15 +260,11 @@ func (w *linuxWebviewWindow) run() {
 
 	app := getNativeApplication()
 
-	var menu = w.menu
-	if menu == nil && globalApplication.ApplicationMenu != nil {
-		menu = globalApplication.ApplicationMenu.Clone()
-	}
+	var menu = w.parent.options.Linux.Menu
 	if menu != nil {
 		InvokeSync(func() {
 			menu.Update()
 		})
-		w.menu = menu
 		w.gtkmenu = (menu.impl).(*linuxMenu).native
 	}
 

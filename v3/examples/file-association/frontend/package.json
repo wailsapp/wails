@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "vite": "^6.0.0",
+    "vite": "^5.0.0",
     "@wailsio/runtime": "latest"
   }
 }

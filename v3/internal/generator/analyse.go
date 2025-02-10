@@ -68,16 +68,11 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 
 			// Object seen for the first time:
 			// add type params to owner map.
-			// If applicable, process methods too.
 			var tp *types.TypeParamList
-			var recv *types.Named
-			switch t := obj.Type().(type) {
-			case *types.Named:
+
+			if t, ok := obj.Type().(interface{ TypeParams() *types.TypeParamList }); ok {
 				tp = t.TypeParams()
-				recv = t
-			case *types.Signature:
-				tp = t.TypeParams()
-			default:
+			} else {
 				// Instantiated object has unexpected kind:
 				// the spec might have changed.
 				logger.Warningf(
@@ -94,8 +89,8 @@ func FindServices(pkgs []*packages.Package, systemPaths *config.SystemPaths, log
 				}
 			}
 
-			// Process methods.
-			if recv != nil && recv.NumMethods() > 0 {
+			// If this is a named type, process methods.
+			if recv, ok := obj.Type().(*types.Named); ok && recv.NumMethods() > 0 {
 				// Register receiver type params.
 				for i := range recv.NumMethods() {
 					tp := recv.Method(i).Type().(*types.Signature).RecvTypeParams()

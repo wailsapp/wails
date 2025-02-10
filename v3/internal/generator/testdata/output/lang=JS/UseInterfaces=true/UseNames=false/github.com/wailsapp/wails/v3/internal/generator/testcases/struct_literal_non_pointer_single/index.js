@@ -7,4 +7,8 @@ export {
     GreetService
 };
 
-export * from "./models.js";
+import * as $models from "./models.js";
+
+/**
+ * @typedef {$models.Person} Person
+ */

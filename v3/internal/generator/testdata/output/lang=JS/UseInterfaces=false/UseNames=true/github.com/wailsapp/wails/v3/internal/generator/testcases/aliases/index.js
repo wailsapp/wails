@@ -7,4 +7,33 @@ export {
     GreetService
 };
 
-export * from "./models.js";
+export {
+    AliasedPerson,
+    EmptyStruct,
+    GenericPerson,
+    Person,
+    StrangelyAliasedPerson
+} from "./models.js";
+
+import * as $models from "./models.js";
+
+/**
+ * A nice type Alias.
+ * @typedef {$models.Alias} Alias
+ */
+
+/**
+ * A struct alias.
+ * This should be rendered as a typedef or interface in every mode.
+ * @typedef {$models.AliasStruct} AliasStruct
+ */
+
+/**
+ * An empty struct alias.
+ * @typedef {$models.EmptyAliasStruct} EmptyAliasStruct
+ */
+
+/**
+ * Another struct alias.
+ * @typedef {$models.OtherAliasStruct} OtherAliasStruct
+ */

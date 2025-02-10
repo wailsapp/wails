@@ -1,7 +1,7 @@
 {
   "name": "@wailsio/runtime",
   "type": "module",
-  "version": "3.0.0-alpha.40",
+  "version": "3.0.0-alpha.55",
   "description": "Wails Runtime",
   "types": "types/index.d.ts",
   "exports": {
@@ -18,9 +18,9 @@
   "scripts": {
     "prebuild:types": "rimraf ./types",
     "build:types": "npx -p typescript tsc src/index.js --declaration --allowJs --emitDeclarationOnly --outDir types",
-    "postbuild:types": "wails3 task generate:events",
+    "postbuild:types": "task generate:events",
     "build:docs": "npx typedoc ./src/index.js",
-    "build:docs:md": "npx typedoc --plugin typedoc-plugin-markdown --namedAnchors true --hideBreadcrumbs true --out ../../../../../../old_mkdocs/docs/en/api/js ./src/index.js"
+    "build:docs:md": "npx typedoc ./src/index.js"
   },
   "author": "The Wails Team",
   "license": "MIT",

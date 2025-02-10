@@ -7,13 +7,56 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: 'v3-alpha'
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+
+      - name: Configure git
+        run: |
+          git config --local user.email "github-actions@github.com"
+          git config --local user.name "GitHub Actions"
+
+      - name: Setup go-task
+        uses: pnorton5432/setup-task@v1
+        with:
+          task-version: 3.29.1
+
       - uses: actions/setup-node@v3
         with:
           node-version: "20"
-      - run: npm ci
+      - run: |
+          npm ci
+          npm run build:types
+          npm run build:docs
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
 
+      - name: Verify Changed files
+        uses: tj-actions/verify-changed-files@v20
+        id: verify-changed-files
+        with:
+          files: |
+            v3/internal/runtime/desktop/@wailsio/runtime/src/*.js
+            v3/internal/runtime/desktop/@wailsio/runtime/types/*.d.ts
+            v3/internal/runtime/desktop/@wailsio/runtime/docs/*.*
+
+      - name: test action
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        id: get-version
+        uses: beaconbrigade/package-json-version@v0.3.2
+        with:
+          path: v3/internal/runtime/desktop/@wailsio/runtime
+
+      - name: Commit changes
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          git add .
+          git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.get-version.outputs.version }}"
+          git push
+
       - uses: JS-DevTools/npm-publish@v3
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
         with:
           package: v3/internal/runtime/desktop/@wailsio/runtime
           access: public

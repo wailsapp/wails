@@ -305,15 +305,11 @@ func (w *windowsWebviewWindow) run() {
 	var appMenu w32.HMENU
 
 	// Process Menu
-	if !options.Windows.DisableMenu && !options.Frameless {
-		theMenu := globalApplication.ApplicationMenu
-		// Create the menu if we have one
-		if w.parent.options.Windows.Menu != nil {
-			theMenu = w.parent.options.Windows.Menu
-		}
-		if theMenu != nil {
-			theMenu.Update()
-			w.menu = NewApplicationMenu(w, theMenu)
+	if !options.Frameless {
+		userMenu := w.parent.options.Windows.Menu
+		if userMenu != nil {
+			userMenu.Update()
+			w.menu = NewApplicationMenu(w, userMenu)
 			w.menu.parentWindow = w
 			appMenu = w.menu.menu
 		}
@@ -1758,7 +1754,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 		if w.parent.options.CSS != "" {
 			script += fmt.Sprintf("; addEventListener(\"DOMContentLoaded\", (event) => { document.head.appendChild(document.createElement('style')).innerHTML=\"%s\"; });", strings.ReplaceAll(w.parent.options.CSS, `"`, `\"`))
 		}
-		chromium.Init(script)
+		if script != "" {
+			chromium.Init(script)
+		}
 		chromium.NavigateToString(w.parent.options.HTML)
 	} else {
 		startURL, err := assetserver.GetStartURL(w.parent.options.URL)

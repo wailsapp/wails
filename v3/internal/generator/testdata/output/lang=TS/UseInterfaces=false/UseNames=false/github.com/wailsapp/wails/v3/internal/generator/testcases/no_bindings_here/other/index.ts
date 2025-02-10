@@ -6,4 +6,6 @@ export {
     OtherMethods
 };
 
-export * from "./models.js";
+export {
+    OtherPerson
+} from "./models.js";

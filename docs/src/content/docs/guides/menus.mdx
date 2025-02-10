@@ -228,26 +228,14 @@ Application menus are the menus that appear at the top of your application windo
 
 ### Application Menu Behaviour
 
-When you set an application menu using `app.SetMenu()`, it becomes the default menu for all windows in your application. However, there are a few important behaviours to note:
+When you set an application menu using `app.SetMenu()`, it becomes the main menu on macOS.
+Menus are set on a pre-window basis for Windows/Linux.
 
-1. **Global Application Menu**: The menu set via `app.SetMenu()` acts as the default menu for all windows.
-
-2. **Per-Window Menu Override**: Individual windows can override the application menu by setting their own menu through window options:
 ```go
 app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
     Title: "Custom Menu Window",
     Windows: application.WindowsWindow{
         Menu: customMenu,  // Override application menu for this window
-    },
-})
-```
-
-3. **Disable Window Menu**: On Windows, you can disable a window's menu completely even when there's a global application menu:
-```go 
-app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-    Title: "No Menu Window",
-    Windows: application.WindowsWindow{
-        DisableMenu: true,  // Disable menu for this window
     },
 })
 ```
@@ -267,29 +255,16 @@ func main() {
         window.SetTitle("New Window")
     })
     
-    // Set as application menu - default for all windows
+    // Set as application menu - this is for macOS
     app.SetMenu(appMenu)
 
-    // Window with default application menu
-    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-        Title: "Default Menu",
-    })
-
-    // Window with custom menu
+    // Window with custom menu on Windows
     customMenu := application.NewMenu()
     customMenu.Add("Custom Action")
     app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
         Title: "Custom Menu",
         Windows: application.WindowsWindow{
             Menu: customMenu,
-        },
-    })
-
-    // Window with no menu
-    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-        Title: "No Menu",
-        Windows: application.WindowsWindow{
-            DisableMenu: true,
         },
     })
 

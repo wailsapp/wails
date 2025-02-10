@@ -25,10 +25,11 @@ const (
 
 type systemTrayImpl interface {
 	setLabel(label string)
+	setTooltip(tooltip string)
 	run()
 	setIcon(icon []byte)
 	setMenu(menu *Menu)
-	setIconPosition(position int)
+	setIconPosition(position IconPosition)
 	setTemplateIcon(icon []byte)
 	destroy()
 	setDarkModeIcon(icon []byte)
@@ -36,18 +37,17 @@ type systemTrayImpl interface {
 	getScreen() (*Screen, error)
 	positionWindow(window *WebviewWindow, offset int) error
 	openMenu()
-}
-
-type PositionOptions struct {
-	Buffer int
+	Show()
+	Hide()
 }
 
 type SystemTray struct {
 	id           uint
 	label        string
+	tooltip      string
 	icon         []byte
 	darkModeIcon []byte
-	iconPosition int
+	iconPosition IconPosition
 
 	clickHandler            func()
 	rightClickHandler       func()
@@ -69,6 +69,7 @@ func newSystemTray(id uint) *SystemTray {
 	result := &SystemTray{
 		id:           id,
 		label:        "",
+		tooltip:      "",
 		iconPosition: NSImageLeading,
 		attachedWindow: WindowAttachConfig{
 			Window:   nil,
@@ -162,7 +163,7 @@ func (s *SystemTray) SetMenu(menu *Menu) *SystemTray {
 	return s
 }
 
-func (s *SystemTray) SetIconPosition(iconPosition int) *SystemTray {
+func (s *SystemTray) SetIconPosition(iconPosition IconPosition) *SystemTray {
 	if s.impl == nil {
 		s.iconPosition = iconPosition
 	} else {
@@ -183,6 +184,20 @@ func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray {
 		})
 	}
 	return s
+}
+
+func (s *SystemTray) SetTooltip(tooltip string) {
+	if s.impl == nil {
+		s.tooltip = tooltip
+		return
+	}
+	InvokeSync(func() {
+		s.impl.setTooltip(tooltip)
+	})
+}
+
+func (s *SystemTray) Destroy() {
+	globalApplication.destroySystemTray(s)
 }
 
 func (s *SystemTray) destroy() {
@@ -220,6 +235,24 @@ func (s *SystemTray) OnMouseEnter(handler func()) *SystemTray {
 func (s *SystemTray) OnMouseLeave(handler func()) *SystemTray {
 	s.mouseLeaveHandler = handler
 	return s
+}
+
+func (s *SystemTray) Show() {
+	if s.impl == nil {
+		return
+	}
+	InvokeSync(func() {
+		s.impl.Show()
+	})
+}
+
+func (s *SystemTray) Hide() {
+	if s.impl == nil {
+		return
+	}
+	InvokeSync(func() {
+		s.impl.Hide()
+	})
 }
 
 type WindowAttachConfig struct {

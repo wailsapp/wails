@@ -3,10 +3,12 @@ package generator
 import (
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/generator/render"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -37,9 +39,8 @@ func TestGenerator(t *testing.T) {
 	tests := make([]*testParams, 1<<3)
 	for i := range tests {
 		options := &flags.GenerateBindingsOptions{
-			ModelsFilename:   "models",
-			InternalFilename: "internal",
-			IndexFilename:    "index",
+			ModelsFilename: "models",
+			IndexFilename:  "index",
 
 			UseBundledRuntime: true,
 
@@ -89,9 +90,11 @@ func TestGenerator(t *testing.T) {
 	// Run tests.
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			creator := outputCreator(t, test)
+
 			generator := NewGenerator(
 				test.options,
-				outputCreator(t, test),
+				creator,
 				config.DefaultPtermLogger(nil),
 			)
 
@@ -101,6 +104,22 @@ func TestGenerator(t *testing.T) {
 					t.Error(report)
 				} else if report.HasWarnings() {
 					pterm.Warning.Println(report)
+				}
+
+				// Log warnings and compare with reference output.
+				if log, err := creator.Create("warnings.log"); err != nil {
+					t.Error(err)
+				} else {
+					func() {
+						defer log.Close()
+
+						warnings := report.Warnings()
+						slices.Sort(warnings)
+
+						for _, msg := range warnings {
+							fmt.Fprint(log, msg, render.Newline)
+						}
+					}()
 				}
 			} else if err != nil {
 				t.Error(err)
