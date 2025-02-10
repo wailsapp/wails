@@ -417,12 +417,6 @@ void windowRestore(void* nsWindow) {
 	}
 }
 
-// disable window fullscreen button
-void setFullscreenButtonEnabled(void* nsWindow, bool enabled) {
-	NSButton *fullscreenButton = [(WebviewWindow*)nsWindow standardWindowButton:NSWindowZoomButton];
-	fullscreenButton.enabled = enabled;
-}
-
 // Set the titlebar style
 void windowSetTitleBarAppearsTransparent(void* nsWindow, bool transparent) {
 	if( transparent ) {
@@ -908,10 +902,6 @@ func (w *macosWebviewWindow) show() {
 
 func (w *macosWebviewWindow) hide() {
 	C.windowHide(w.nsWindow)
-}
-
-func (w *macosWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	C.setFullscreenButtonEnabled(w.nsWindow, C.bool(enabled))
 }
 
 func (w *macosWebviewWindow) disableSizeConstraints() {

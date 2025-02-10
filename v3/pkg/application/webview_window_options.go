@@ -95,10 +95,6 @@ type WebviewWindowOptions struct {
 	// Y is the starting Y position of the window.
 	Y int
 
-	// TransparentTitlebar will make the titlebar transparent.
-	// TODO: Move to mac window options
-	FullscreenButtonEnabled bool
-
 	// Hidden will hide the window when it is first created.
 	Hidden bool
 
@@ -161,6 +157,13 @@ func NewRGB(red, green, blue uint8) RGBA {
 		Blue:  blue,
 		Alpha: 255,
 	}
+}
+
+func NewRGBPtr(red, green, blue uint8) *uint32 {
+	result := uint32(red)
+	result |= uint32(green) << 8
+	result |= uint32(blue) << 16
+	return &result
 }
 
 type BackgroundType int

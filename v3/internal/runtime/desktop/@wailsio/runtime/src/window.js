@@ -64,26 +64,25 @@ const SetPositionMethod                 = 24;
 const SetAlwaysOnTopMethod              = 25;
 const SetBackgroundColourMethod         = 26;
 const SetFramelessMethod                = 27;
-const SetFullscreenButtonEnabledMethod  = 28;
-const SetMaxSizeMethod                  = 29;
-const SetMinSizeMethod                  = 30;
-const SetRelativePositionMethod         = 31;
-const SetResizableMethod                = 32;
-const SetSizeMethod                     = 33;
-const SetTitleMethod                    = 34;
-const SetZoomMethod                     = 35;
-const ShowMethod                        = 36;
-const SizeMethod                        = 37;
-const ToggleFullscreenMethod            = 38;
-const ToggleMaximiseMethod              = 39;
-const UnFullscreenMethod                = 40;
-const UnMaximiseMethod                  = 41;
-const UnMinimiseMethod                  = 42;
-const WidthMethod                       = 43;
-const ZoomMethod                        = 44;
-const ZoomInMethod                      = 45;
-const ZoomOutMethod                     = 46;
-const ZoomResetMethod                   = 47;
+const SetMaxSizeMethod                  = 28;
+const SetMinSizeMethod                  = 29;
+const SetRelativePositionMethod         = 30;
+const SetResizableMethod                = 31;
+const SetSizeMethod                     = 32;
+const SetTitleMethod                    = 33;
+const SetZoomMethod                     = 34;
+const ShowMethod                        = 35;
+const SizeMethod                        = 36;
+const ToggleFullscreenMethod            = 37;
+const ToggleMaximiseMethod              = 38;
+const UnFullscreenMethod                = 39;
+const UnMaximiseMethod                  = 40;
+const UnMinimiseMethod                  = 41;
+const WidthMethod                       = 42;
+const ZoomMethod                        = 43;
+const ZoomInMethod                      = 44;
+const ZoomOutMethod                     = 45;
+const ZoomResetMethod                   = 46;
 
 /**
  * @type {symbol}
@@ -413,17 +412,6 @@ export class Window {
      */
     SetFrameless(frameless) {
         return this[caller](SetFramelessMethod, { frameless });
-    }
-
-    /**
-     * Disables the system fullscreen button.
-     *
-     * @public
-     * @param {boolean} enabled - Whether the fullscreen button should be enabled
-     * @return {Promise<void>}
-     */
-    SetFullscreenButtonEnabled(enabled) {
-        return this[caller](SetFullscreenButtonEnabledMethod, { enabled });
     }
 
     /**

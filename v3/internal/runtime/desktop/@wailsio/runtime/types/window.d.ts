@@ -219,14 +219,6 @@ export class Window {
      */
     public SetFrameless(frameless: boolean): Promise<void>;
     /**
-     * Disables the system fullscreen button.
-     *
-     * @public
-     * @param {boolean} enabled - Whether the fullscreen button should be enabled
-     * @return {Promise<void>}
-     */
-    public SetFullscreenButtonEnabled(enabled: boolean): Promise<void>;
-    /**
      * Sets the maximum size of the window.
      *
      * @public
