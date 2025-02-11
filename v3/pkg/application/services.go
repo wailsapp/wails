@@ -27,6 +27,16 @@ type ServiceOptions struct {
 	// it will be mounted on the internal asset server
 	// at the prefix specified by Route.
 	Route string
+
+	// MarshalError will be called if non-nil
+	// to marshal to JSON the error values returned by this service's methods.
+	//
+	// MarshalError is not allowed to fail,
+	// but it may return a nil slice to fall back
+	// to the globally configured error handler.
+	//
+	// If the returned slice is not nil, it must contain valid JSON.
+	MarshalError func(error) []byte
 }
 
 // DefaultServiceOptions specifies the default values of service options,

@@ -20,6 +20,24 @@ type CallOptions struct {
 	Args       []json.RawMessage `json:"args"`
 }
 
+type ErrorKind string
+
+const (
+	ReferenceError ErrorKind = "ReferenceError"
+	TypeError      ErrorKind = "TypeError"
+	RuntimeError   ErrorKind = "RuntimeError"
+)
+
+type CallError struct {
+	Kind    ErrorKind `json:"kind"`
+	Message string    `json:"message"`
+	Cause   any       `json:"cause,omitempty"`
+}
+
+func (e *CallError) Error() string {
+	return e.Message
+}
+
 // Parameter defines a Go method parameter
 type Parameter struct {
 	Name        string `json:"name,omitempty"`
@@ -56,17 +74,20 @@ type BoundMethod struct {
 	Method   reflect.Value `json:"-"`
 	FQN      string
 
+	marshalError func(error) []byte
 	needsContext bool
 }
 
 type Bindings struct {
+	marshalError  func(error) []byte
 	boundMethods  map[string]*BoundMethod
 	boundByID     map[uint32]*BoundMethod
 	methodAliases map[uint32]uint32
 }
 
-func NewBindings(aliases map[uint32]uint32) *Bindings {
+func NewBindings(marshalError func(error) []byte, aliases map[uint32]uint32) *Bindings {
 	return &Bindings{
+		marshalError:  wrapErrorMarshaler(marshalError, defaultMarshalError),
 		boundMethods:  make(map[string]*BoundMethod),
 		boundByID:     make(map[uint32]*BoundMethod),
 		methodAliases: aliases,
@@ -79,6 +100,8 @@ func (b *Bindings) Add(service Service) error {
 	if err != nil {
 		return err
 	}
+
+	marshalError := wrapErrorMarshaler(service.options.MarshalError, defaultMarshalError)
 
 	// Validate and log methods.
 	for _, method := range methods {
@@ -97,7 +120,10 @@ func (b *Bindings) Add(service Service) error {
 		globalApplication.debug("Registering bound method:", attrs...)
 	}
 
-	for i, method := range methods {
+	for _, method := range methods {
+		// Store composite error marshaler
+		method.marshalError = marshalError
+
 		// Register method
 		b.boundMethods[method.FQN] = method
 		b.boundByID[method.ID] = method
@@ -226,8 +252,13 @@ func (b *BoundMethod) String() string {
 
 var errorType = reflect.TypeFor[error]()
 
-// Call will attempt to call this bound method with the given args
-func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnValue interface{}, err error) {
+// Call will attempt to call this bound method with the given args.
+// If the call succeeds, result will be either a non-error return value (if there is only one)
+// or a slice of non-error return values (if there are more than one).
+//
+// If the arguments are mistyped or the call returns one or more non-nil error values,
+// result is nil and err is an instance of *[CallError].
+func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (result any, err error) {
 	// Use a defer statement to capture panics
 	defer handlePanic(handlePanicOptions{skipEnd: 5})
 	argCount := len(args)
@@ -236,7 +267,10 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnV
 	}
 
 	if argCount != len(b.Inputs) {
-		err = fmt.Errorf("%s expects %d arguments, received %d", b.Name, len(b.Inputs), argCount)
+		err = &CallError{
+			Kind:    TypeError,
+			Message: fmt.Sprintf("%s expects %d arguments, got %d", b.FQN, len(b.Inputs), argCount),
+		}
 		return
 	}
 
@@ -254,7 +288,11 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnV
 		value := reflect.New(b.Inputs[base+index].ReflectType)
 		err = json.Unmarshal(arg, value.Interface())
 		if err != nil {
-			err = fmt.Errorf("could not parse argument #%d: %w", index, err)
+			err = &CallError{
+				Kind:    TypeError,
+				Message: fmt.Sprintf("could not parse argument #%d: %s", index, err),
+				Cause:   json.RawMessage(b.marshalError(err)),
+			}
 			return
 		}
 		callArgs[base+index] = value.Elem()
@@ -271,30 +309,71 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnV
 	var nonErrorOutputs = make([]any, 0, len(callResults))
 	var errorOutputs []error
 
-	for _, result := range callResults {
-		if result.Type() == errorType {
-			if result.IsNil() {
+	for _, field := range callResults {
+		if field.Type() == errorType {
+			if field.IsNil() {
 				continue
 			}
 			if errorOutputs == nil {
 				errorOutputs = make([]error, 0, len(callResults)-len(nonErrorOutputs))
 				nonErrorOutputs = nil
 			}
-			errorOutputs = append(errorOutputs, result.Interface().(error))
+			errorOutputs = append(errorOutputs, field.Interface().(error))
 		} else if nonErrorOutputs != nil {
-			nonErrorOutputs = append(nonErrorOutputs, result.Interface())
+			nonErrorOutputs = append(nonErrorOutputs, field.Interface())
 		}
 	}
 
-	if errorOutputs != nil {
-		err = errors.Join(errorOutputs...)
+	if len(errorOutputs) > 0 {
+		info := make([]json.RawMessage, len(errorOutputs))
+		for i, err := range errorOutputs {
+			info[i] = b.marshalError(err)
+		}
+
+		cerr := &CallError{
+			Kind:    RuntimeError,
+			Message: errors.Join(errorOutputs...).Error(),
+			Cause:   info,
+		}
+		if len(info) == 1 {
+			cerr.Cause = info[0]
+		}
+
+		err = cerr
 	} else if len(nonErrorOutputs) == 1 {
-		returnValue = nonErrorOutputs[0]
+		result = nonErrorOutputs[0]
 	} else if len(nonErrorOutputs) > 1 {
-		returnValue = nonErrorOutputs
+		result = nonErrorOutputs
 	}
 
 	return
+}
+
+// wrapErrorMarshaler returns an error marshaling functions
+// that calls the primary marshaler first,
+// then falls back to the secondary one.
+func wrapErrorMarshaler(primary func(error) []byte, secondary func(error) []byte) func(error) []byte {
+	if primary == nil {
+		return secondary
+	}
+
+	return func(err error) []byte {
+		result := primary(err)
+		if result == nil {
+			result = secondary(err)
+		}
+
+		return result
+	}
+}
+
+// defaultMarshalError implements the default error marshaling mechanism.
+func defaultMarshalError(err error) []byte {
+	result, jsonErr := json.Marshal(&err)
+	if jsonErr != nil {
+		return nil
+	}
+	return result
 }
 
 // isPtr returns true if the value given is a pointer.

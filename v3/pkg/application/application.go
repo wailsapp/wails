@@ -137,7 +137,7 @@ func New(appOptions Options) *App {
 	result.assets = srv
 	result.assets.LogDetails()
 
-	result.bindings = NewBindings(appOptions.BindAliases)
+	result.bindings = NewBindings(appOptions.MarshalError, appOptions.BindAliases)
 	result.options.Services = slices.Clone(appOptions.Services)
 
 	// Process keybindings

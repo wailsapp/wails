@@ -156,7 +156,7 @@ func TestBoundMethodCall(t *testing.T) {
 	// init globalApplication
 	_ = application.New(application.Options{})
 
-	bindings := application.NewBindings(nil)
+	bindings := application.NewBindings(nil, nil)
 
 	err := bindings.Add(application.NewService(&TestService{}))
 	if err != nil {

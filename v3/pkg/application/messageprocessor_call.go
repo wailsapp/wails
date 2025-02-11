@@ -17,7 +17,16 @@ const (
 
 func (m *MessageProcessor) callErrorCallback(window Window, message string, callID *string, err error) {
 	m.Error(message, "error", err)
-	window.CallError(*callID, err.Error())
+	if cerr := (*CallError)(nil); errors.As(err, &cerr) {
+		if data, jsonErr := json.Marshal(cerr); jsonErr == nil {
+			window.CallError(*callID, string(data), true)
+			return
+		} else {
+			m.Error("Unable to convert data to JSON. Please report this to the Wails team!", "error", jsonErr)
+		}
+	}
+
+	window.CallError(*callID, err.Error(), false)
 }
 
 func (m *MessageProcessor) callCallback(window Window, callID *string, result string) {
@@ -122,26 +131,27 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			if options.MethodName != "" {
 				boundMethod = globalApplication.bindings.Get(&options)
 				if boundMethod == nil {
-					m.callErrorCallback(window, "Binding call failed", callID, fmt.Errorf("bound method '%s' not found", options.MethodName))
+					m.callErrorCallback(window, "Binding call failed", callID, &CallError{
+						Kind:    ReferenceError,
+						Message: fmt.Sprintf("unknown bound method name '%s'", options.MethodName),
+					})
 					return
 				}
 			} else {
 				boundMethod = globalApplication.bindings.GetByID(options.MethodID)
 				if boundMethod == nil {
-					m.callErrorCallback(window, "Binding call failed", callID, fmt.Errorf("bound method id %d not found", options.MethodID))
+					m.callErrorCallback(window, "Binding call failed", callID, &CallError{
+						Kind:    ReferenceError,
+						Message: fmt.Sprintf("unknown bound method id %d", options.MethodID),
+					})
 					return
 				}
 			}
 
-			// Parse args for logging.
-			var jsonArgs struct {
-				Args json.RawMessage `json:"args"`
-			}
-			err := params.ToStruct(&jsonArgs)
-			if err != nil {
-				m.callErrorCallback(window, "Binding call failed", callID, fmt.Errorf("error parsing arguments: %w", err))
-				return
-			}
+			// Prepare args for logging. This should never fail since json.Unmarshal succeeded before.
+			jsonArgs, _ := json.Marshal(options.Args)
+			var jsonResult []byte
+			defer m.Info("Binding call complete:", "id", *callID, "method", boundMethod, "args", string(jsonArgs), "result", string(jsonResult))
 
 			// Set the context values for the window
 			if window != nil {
@@ -149,23 +159,29 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			}
 
 			result, err := boundMethod.Call(ctx, options.Args)
-			if err != nil {
-				m.callErrorCallback(window, "Binding call failed", callID, err)
+			if cerr := (*CallError)(nil); errors.As(err, &cerr) {
+				switch cerr.Kind {
+				case ReferenceError, TypeError:
+					m.callErrorCallback(window, "Binding call failed", callID, cerr)
+				case RuntimeError:
+					m.callErrorCallback(window, "Bound method returned an error", callID, cerr)
+				}
 				return
 			}
 
-			var jsonResult = []byte("{}")
 			if result != nil {
 				// convert result to json
 				jsonResult, err = json.Marshal(result)
 				if err != nil {
-					m.callErrorCallback(window, "Binding call failed", callID, fmt.Errorf("error marshaling result: %w", err))
+					m.callErrorCallback(window, "Binding call failed", callID, &CallError{
+						Kind:    TypeError,
+						Message: fmt.Sprintf("error marshaling result: %s", err),
+					})
 					return
 				}
 			}
 
 			m.callCallback(window, callID, string(jsonResult))
-			m.Info("Binding call complete:", "method", boundMethod, "args", string(jsonArgs.Args), "result", result)
 		}()
 
 		cancelRequired = false
