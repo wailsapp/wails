@@ -320,11 +320,7 @@ func (w *WebviewWindow) DialogError(dialogID string, result string) {
 
 func (w *WebviewWindow) DialogResponse(dialogID string, result string, isJSON bool) {
 	if w.impl != nil {
-		if isJSON {
-			w.impl.execJS(w.formatJS("_wails.dialogResultCallback('%s', %s, true);", dialogID, result))
-		} else {
-			w.impl.execJS(fmt.Sprintf("_wails.dialogResultCallback('%s', '%s', false);", dialogID, result))
-		}
+		w.impl.execJS(w.formatJS(fmt.Sprintf("_wails.dialogResultCallback('%%s', %%s, %t);", isJSON), dialogID, result))
 	}
 }
 

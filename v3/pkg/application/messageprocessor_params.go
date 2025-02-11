@@ -141,6 +141,8 @@ func convertNumber[T int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 
 		result = v
 	case float64:
 		result = T(v)
+	default:
+		return nil
 	}
 	return &result
 }
@@ -154,6 +156,7 @@ func (a *Args) UInt8(s string) *uint8 {
 	}
 	return nil
 }
+
 func (a *Args) UInt(s string) *uint {
 	if a == nil {
 		return nil
@@ -169,8 +172,9 @@ func (a *Args) Float64(s string) *float64 {
 		return nil
 	}
 	if val := a.data[s]; val != nil {
-		result := val.(float64)
-		return &result
+		if result, ok := val.(float64); ok {
+			return &result
+		}
 	}
 	return nil
 }
@@ -180,8 +184,9 @@ func (a *Args) Bool(s string) *bool {
 		return nil
 	}
 	if val := a.data[s]; val != nil {
-		result := val.(bool)
-		return &result
+		if result, ok := val.(bool); ok {
+			return &result
+		}
 	}
 	return nil
 }
