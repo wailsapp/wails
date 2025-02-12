@@ -22,7 +22,7 @@ func (m *MessageProcessor) processSystemMethod(method int, rw http.ResponseWrite
 	case Environment:
 		m.json(rw, globalApplication.Environment())
 	default:
-		m.httpError(rw, "Invalid system call", fmt.Errorf("unknown method: %d", method))
+		m.httpError(rw, "Invalid system call:", fmt.Errorf("unknown method: %d", method))
 		return
 	}
 

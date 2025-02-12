@@ -16,13 +16,13 @@ const (
 )
 
 func (m *MessageProcessor) callErrorCallback(window Window, message string, callID *string, err error) {
-	m.Error(message, "error", err)
+	m.Error(message, "id", *callID, "error", err)
 	if cerr := (*CallError)(nil); errors.As(err, &cerr) {
 		if data, jsonErr := json.Marshal(cerr); jsonErr == nil {
 			window.CallError(*callID, string(data), true)
 			return
 		} else {
-			m.Error("Unable to convert data to JSON. Please report this to the Wails team!", "error", jsonErr)
+			m.Error("Unable to convert data to JSON. Please report this to the Wails team!", "id", *callID, "error", jsonErr)
 		}
 	}
 
@@ -36,13 +36,13 @@ func (m *MessageProcessor) callCallback(window Window, callID *string, result st
 func (m *MessageProcessor) processCallCancelMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
 	args, err := params.Args()
 	if err != nil {
-		m.httpError(rw, "Invalid binding call", fmt.Errorf("unable to parse arguments: %w", err))
+		m.httpError(rw, "Invalid binding call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
 	}
 
 	callID := args.String("call-id")
 	if callID == nil || *callID == "" {
-		m.httpError(rw, "Invalid binding call", errors.New("missing argument 'call-id'"))
+		m.httpError(rw, "Invalid binding call:", errors.New("missing argument 'call-id'"))
 		return
 	}
 
@@ -63,13 +63,13 @@ func (m *MessageProcessor) processCallCancelMethod(method int, rw http.ResponseW
 func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
 	args, err := params.Args()
 	if err != nil {
-		m.httpError(rw, "Invalid binding call", fmt.Errorf("unable to parse arguments: %w", err))
+		m.httpError(rw, "Invalid binding call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
 	}
 
 	callID := args.String("call-id")
 	if callID == nil || *callID == "" {
-		m.httpError(rw, "Invalid binding call", errors.New("missing argument 'call-id'"))
+		m.httpError(rw, "Invalid binding call:", errors.New("missing argument 'call-id'"))
 		return
 	}
 
@@ -78,7 +78,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 		var options CallOptions
 		err := params.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Invalid binding call", fmt.Errorf("error parsing call options: %w", err))
+			m.httpError(rw, "Invalid binding call:", fmt.Errorf("error parsing call options: %w", err))
 			return
 		}
 
@@ -105,7 +105,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 		}()
 
 		if ambiguousID {
-			m.httpError(rw, "Invalid binding call", fmt.Errorf("ambiguous call id: %s", *callID))
+			m.httpError(rw, "Invalid binding call:", fmt.Errorf("ambiguous call id: %s", *callID))
 			return
 		}
 
@@ -131,7 +131,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			if options.MethodName != "" {
 				boundMethod = globalApplication.bindings.Get(&options)
 				if boundMethod == nil {
-					m.callErrorCallback(window, "Binding call failed", callID, &CallError{
+					m.callErrorCallback(window, "Binding call failed:", callID, &CallError{
 						Kind:    ReferenceError,
 						Message: fmt.Sprintf("unknown bound method name '%s'", options.MethodName),
 					})
@@ -140,7 +140,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			} else {
 				boundMethod = globalApplication.bindings.GetByID(options.MethodID)
 				if boundMethod == nil {
-					m.callErrorCallback(window, "Binding call failed", callID, &CallError{
+					m.callErrorCallback(window, "Binding call failed:", callID, &CallError{
 						Kind:    ReferenceError,
 						Message: fmt.Sprintf("unknown bound method id %d", options.MethodID),
 					})
@@ -162,9 +162,9 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			if cerr := (*CallError)(nil); errors.As(err, &cerr) {
 				switch cerr.Kind {
 				case ReferenceError, TypeError:
-					m.callErrorCallback(window, "Binding call failed", callID, cerr)
+					m.callErrorCallback(window, "Binding call failed:", callID, cerr)
 				case RuntimeError:
-					m.callErrorCallback(window, "Bound method returned an error", callID, cerr)
+					m.callErrorCallback(window, "Bound method returned an error:", callID, cerr)
 				}
 				return
 			}
@@ -173,7 +173,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 				// convert result to json
 				jsonResult, err = json.Marshal(result)
 				if err != nil {
-					m.callErrorCallback(window, "Binding call failed", callID, &CallError{
+					m.callErrorCallback(window, "Binding call failed:", callID, &CallError{
 						Kind:    TypeError,
 						Message: fmt.Sprintf("error marshaling result: %s", err),
 					})
@@ -187,7 +187,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 		cancelRequired = false
 
 	default:
-		m.httpError(rw, "Invalid binding call", fmt.Errorf("unknown method: %d", method))
+		m.httpError(rw, "Invalid binding call:", fmt.Errorf("unknown method: %d", method))
 		return
 	}
 }

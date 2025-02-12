@@ -21,11 +21,11 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 		var event CustomEvent
 		err := params.ToStruct(&event)
 		if err != nil {
-			m.httpError(rw, "Invalid events call", fmt.Errorf("error parsing event: %w", err))
+			m.httpError(rw, "Invalid events call:", fmt.Errorf("error parsing event: %w", err))
 			return
 		}
 		if event.Name == "" {
-			m.httpError(rw, "Invalid events call", errors.New("missing event name"))
+			m.httpError(rw, "Invalid events call:", errors.New("missing event name"))
 			return
 		}
 
@@ -35,7 +35,7 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 		m.ok(rw)
 		m.Info("Runtime call:", "method", "Events."+eventsMethodNames[method], "name", event.Name, "sender", event.Sender, "data", event.Data, "cancelled", event.IsCancelled())
 	default:
-		m.httpError(rw, "Invalid events call", fmt.Errorf("unknown method: %d", method))
+		m.httpError(rw, "Invalid events call:", fmt.Errorf("unknown method: %d", method))
 		return
 	}
 }

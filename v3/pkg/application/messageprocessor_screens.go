@@ -22,26 +22,26 @@ func (m *MessageProcessor) processScreensMethod(method int, rw http.ResponseWrit
 	case ScreensGetAll:
 		screens, err := globalApplication.GetScreens()
 		if err != nil {
-			m.httpError(rw, "GetScreens failed", err)
+			m.httpError(rw, "GetScreens failed:", err)
 			return
 		}
 		m.json(rw, screens)
 	case ScreensGetPrimary:
 		screen, err := globalApplication.GetPrimaryScreen()
 		if err != nil {
-			m.httpError(rw, "GetPrimary failed", err)
+			m.httpError(rw, "GetPrimary failed:", err)
 			return
 		}
 		m.json(rw, screen)
 	case ScreensGetCurrent:
 		screen, err := globalApplication.CurrentWindow().GetScreen()
 		if err != nil {
-			m.httpError(rw, "Window.GetScreen failed", err)
+			m.httpError(rw, "Window.GetScreen failed:", err)
 			return
 		}
 		m.json(rw, screen)
 	default:
-		m.httpError(rw, "Invalid screens call", fmt.Errorf("unknown method: %d", method))
+		m.httpError(rw, "Invalid screens call:", fmt.Errorf("unknown method: %d", method))
 		return
 	}
 

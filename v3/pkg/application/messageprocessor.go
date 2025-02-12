@@ -47,7 +47,7 @@ func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, err
 	rw.WriteHeader(http.StatusUnprocessableEntity)
 	_, err = rw.Write([]byte(err.Error()))
 	if err != nil {
-		m.Error("Unable to write error response", "error", err)
+		m.Error("Unable to write error response:", "error", err)
 	}
 }
 
@@ -62,12 +62,12 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 	}
 	wID, err := strconv.ParseUint(windowID, 10, 64)
 	if err != nil {
-		m.Error("Window ID not parsable", "id", windowID, "error", err)
+		m.Error("Window ID not parsable:", "id", windowID, "error", err)
 		return nil, windowID
 	}
 	targetWindow := globalApplication.getWindowForID(uint(wID))
 	if targetWindow == nil {
-		m.Error("Window ID not found", "id", wID)
+		m.Error("Window ID not found:", "id", wID)
 		return nil, windowID
 	}
 	return targetWindow, windowID
@@ -76,7 +76,7 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 func (m *MessageProcessor) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	object := r.URL.Query().Get("object")
 	if object == "" {
-		m.httpError(rw, "Invalid runtime call", errors.New("missing object value"))
+		m.httpError(rw, "Invalid runtime call:", errors.New("missing object value"))
 		return
 	}
 
@@ -91,19 +91,19 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *h
 	}()
 	object, err := strconv.Atoi(r.URL.Query().Get("object"))
 	if err != nil {
-		m.httpError(rw, "Invalid runtime call", fmt.Errorf("error decoding object value: %w", err))
+		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("error decoding object value: %w", err))
 		return
 	}
 	method, err := strconv.Atoi(r.URL.Query().Get("method"))
 	if err != nil {
-		m.httpError(rw, "Invalid runtime call", fmt.Errorf("error decoding method value: %w", err))
+		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("error decoding method value: %w", err))
 		return
 	}
 	params := QueryParams(r.URL.Query())
 
 	targetWindow, nameOrID := m.getTargetWindow(r)
 	if targetWindow == nil {
-		m.httpError(rw, "Invalid runtime call", fmt.Errorf("window '%s' not found", nameOrID))
+		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("window '%s' not found", nameOrID))
 		return
 	}
 
@@ -131,7 +131,7 @@ func (m *MessageProcessor) HandleRuntimeCallWithIDs(rw http.ResponseWriter, r *h
 	case cancelCallRequesst:
 		m.processCallCancelMethod(method, rw, r, targetWindow, params)
 	default:
-		m.httpError(rw, "Invalid runtime call", fmt.Errorf("unknown object %d", object))
+		m.httpError(rw, "Invalid runtime call:", fmt.Errorf("unknown object %d", object))
 	}
 }
 

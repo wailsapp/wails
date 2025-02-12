@@ -35,7 +35,7 @@ func (m *MessageProcessor) processContextMenuMethod(method int, rw http.Response
 		var data ContextMenuData
 		err := params.ToStruct(&data)
 		if err != nil {
-			m.httpError(rw, "Invalid contextmenu call", fmt.Errorf("error parsing parameters: %w", err))
+			m.httpError(rw, "Invalid contextmenu call:", fmt.Errorf("error parsing parameters: %w", err))
 			return
 		}
 
@@ -44,7 +44,7 @@ func (m *MessageProcessor) processContextMenuMethod(method int, rw http.Response
 		m.ok(rw)
 		m.Info("Runtime call:", "method", "ContextMenu."+contextmenuMethodNames[method], "id", data.Id, "x", data.X, "y", data.Y, "data", data.Data)
 	default:
-		m.httpError(rw, "Invalid contextmenu call", fmt.Errorf("unknown method: %d", method))
+		m.httpError(rw, "Invalid contextmenu call:", fmt.Errorf("unknown method: %d", method))
 		return
 	}
 }

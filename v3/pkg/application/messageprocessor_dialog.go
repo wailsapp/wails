@@ -38,13 +38,13 @@ func (m *MessageProcessor) dialogCallback(window Window, dialogID *string, resul
 func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
 	args, err := params.Args()
 	if err != nil {
-		m.httpError(rw, "Invalid dialog call", fmt.Errorf("unable to parse arguments: %w", err))
+		m.httpError(rw, "Invalid dialog call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
 	}
 
 	dialogID := args.String("dialog-id")
 	if dialogID == nil {
-		m.httpError(rw, "Invalid window call", errors.New("missing argument 'dialog-id'"))
+		m.httpError(rw, "Invalid window call:", errors.New("missing argument 'dialog-id'"))
 		return
 	}
 
@@ -55,7 +55,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		var options MessageDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Invalid dialog call", fmt.Errorf("error parsing dialog options: %w", err))
+			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
 			return
 		}
 		if len(options.Buttons) == 0 {
@@ -97,7 +97,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		var options OpenFileDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Invalid dialog call", fmt.Errorf("error parsing dialog options: %w", err))
+			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
 			return
 		}
 		var detached = args.Bool("Detached")
@@ -139,7 +139,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		var options SaveFileDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Invalid dialog call", fmt.Errorf("error parsing dialog options: %w", err))
+			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
 			return
 		}
 		var detached = args.Bool("Detached")
@@ -162,7 +162,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		m.Info("Runtime call:", "method", methodName, "options", options)
 
 	default:
-		m.httpError(rw, "Invalid dialog call", fmt.Errorf("unknown method: %d", method))
+		m.httpError(rw, "Invalid dialog call:", fmt.Errorf("unknown method: %d", method))
 		return
 	}
 }

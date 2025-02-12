@@ -19,7 +19,7 @@ var clipboardMethods = map[int]string{
 func (m *MessageProcessor) processClipboardMethod(method int, rw http.ResponseWriter, _ *http.Request, _ Window, params QueryParams) {
 	args, err := params.Args()
 	if err != nil {
-		m.httpError(rw, "Invalid clipboard call", fmt.Errorf("unable to parse arguments: %w", err))
+		m.httpError(rw, "Invalid clipboard call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
 	}
 
@@ -29,7 +29,7 @@ func (m *MessageProcessor) processClipboardMethod(method int, rw http.ResponseWr
 	case ClipboardSetText:
 		textp := args.String("text")
 		if textp == nil {
-			m.httpError(rw, "Invalid clipboard call", errors.New("missing argument 'text'"))
+			m.httpError(rw, "Invalid clipboard call:", errors.New("missing argument 'text'"))
 			return
 		}
 		text = *textp
@@ -39,7 +39,7 @@ func (m *MessageProcessor) processClipboardMethod(method int, rw http.ResponseWr
 		text, _ = globalApplication.Clipboard().Text()
 		m.text(rw, text)
 	default:
-		m.httpError(rw, "Invalid clipboard call", fmt.Errorf("unknown method: %d", method))
+		m.httpError(rw, "Invalid clipboard call:", fmt.Errorf("unknown method: %d", method))
 		return
 	}
 
