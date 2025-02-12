@@ -1038,7 +1038,11 @@ func (w *macosWebviewWindow) setEnabled(enabled bool) {
 
 func (w *macosWebviewWindow) execJS(js string) {
 	InvokeAsync(func() {
-		if globalApplication.performingShutdown {
+		globalApplication.shutdownLock.Lock()
+		performingShutdown := globalApplication.performingShutdown
+		globalApplication.shutdownLock.Unlock()
+
+		if performingShutdown {
 			return
 		}
 		if w.nsWindow == nil {

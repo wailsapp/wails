@@ -326,7 +326,9 @@ type App struct {
 	keyBindingsLock sync.RWMutex
 
 	// Shutdown
-	performingShutdown bool
+	performingShutdown  bool
+	shutdownLock        sync.Mutex
+	serviceShutdownLock sync.Mutex
 
 	// Shutdown tasks are run when the application is shutting down.
 	// They are run in the order they are added and run on the main thread.
@@ -601,29 +603,22 @@ func (a *App) Run() error {
 
 	a.impl = newPlatformApp(a)
 
+	// Ensure services are shut down in case of failures.
+	defer a.shutdownServices()
+	// Ensure application context is canceled before service shutdown (duplicate calls don't hurt).
+	defer a.cancel()
+
 	// Startup services before dispatching any events.
 	// No need to hold the lock here because a.options.Services may only change when a.running is false.
-	for _, service := range a.options.Services {
+	services := a.options.Services
+	a.options.Services = nil
+	for i, service := range services {
 		if err := a.startupService(service); err != nil {
 			return fmt.Errorf("error starting service '%s': %w", getServiceName(service), err)
 		}
-
-		// Schedule shutdown in reverse order.
-		if s, ok := service.instance.(ServiceShutdown); ok {
-			// Deliberate defer in loop to ensure all started services
-			// are shut down in case of any future failure.
-			//goland:noinspection GoDeferInLoop
-			defer func() {
-				// Ensure context is canceled strictly before shutting down any service.
-				// This is fine because cancel functions are idempotent.
-				a.cancel()
-				if err := s.ServiceShutdown(); err != nil {
-					a.error("Error shutting down service '%s': %w", getServiceName(service), err)
-				}
-			}()
-		}
+		// Schedule started services for shutdown.
+		a.options.Services = services[:i+1]
 	}
-	a.options.Services = nil
 
 	go func() {
 		for {
@@ -720,6 +715,27 @@ func (a *App) startupService(service Service) error {
 	}
 
 	return nil
+}
+
+func (a *App) shutdownServices() {
+	// Acquire lock to prevent double calls (defer in Run() + OnShutdown)
+	a.serviceShutdownLock.Lock()
+	defer a.serviceShutdownLock.Unlock()
+
+	// Ensure app context is canceled first (duplicate calls don't hurt).
+	a.cancel()
+
+	for len(a.options.Services) > 0 {
+		last := len(a.options.Services) - 1
+		service := a.options.Services[last]
+		a.options.Services = a.options.Services[:last] // Prevent double shutdowns
+
+		if s, ok := service.instance.(ServiceShutdown); ok {
+			if err := s.ServiceShutdown(); err != nil {
+				a.error("Error shutting down service '%s': %w", getServiceName(service), err)
+			}
+		}
+	}
 }
 
 func (a *App) handleApplicationEvent(event *ApplicationEvent) {
@@ -837,7 +853,17 @@ func (a *App) OnShutdown(f func()) {
 	if f == nil {
 		return
 	}
-	a.shutdownTasks = append(a.shutdownTasks, f)
+
+	a.shutdownLock.Lock()
+
+	if !a.performingShutdown {
+		defer a.shutdownLock.Unlock()
+		a.shutdownTasks = append(a.shutdownTasks, f)
+		return
+	}
+
+	a.shutdownLock.Unlock()
+	InvokeAsync(f)
 }
 
 func (a *App) destroySystemTray(tray *SystemTray) {
@@ -849,14 +875,22 @@ func (a *App) destroySystemTray(tray *SystemTray) {
 }
 
 func (a *App) cleanup() {
+	a.shutdownLock.Lock()
 	if a.performingShutdown {
+		a.shutdownLock.Unlock()
 		return
 	}
+	a.cancel() // Cancel app context before running shutdown hooks.
 	a.performingShutdown = true
+	a.shutdownLock.Unlock()
+
+	// No need to hold the lock here because a.shutdownTasks
+	// may only change while a.performingShutdown is false.
 	for _, shutdownTask := range a.shutdownTasks {
 		InvokeSync(shutdownTask)
 	}
 	InvokeSync(func() {
+		a.shutdownServices()
 		a.windowsLock.RLock()
 		for _, window := range a.windows {
 			window.Close()
