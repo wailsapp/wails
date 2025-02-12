@@ -705,6 +705,7 @@ func (a *App) startupService(service Service) error {
 	}
 
 	if s, ok := service.instance.(ServiceStartup); ok {
+		a.debug("Starting up service:", "name", getServiceName(service))
 		return s.ServiceStartup(a.ctx, service.options)
 	}
 
@@ -725,6 +726,7 @@ func (a *App) shutdownServices() {
 		a.options.Services = a.options.Services[:last] // Prevent double shutdowns
 
 		if s, ok := service.instance.(ServiceShutdown); ok {
+			a.debug("Shutting down service:", "name", getServiceName(service))
 			if err := s.ServiceShutdown(); err != nil {
 				a.error("Error shutting down service '%s': %w", getServiceName(service), err)
 			}

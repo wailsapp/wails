@@ -113,7 +113,7 @@ func (b *Bindings) Add(service Service) error {
 		}
 
 		// Log
-		attrs := []any{"name", method.Name, "id", method.ID}
+		attrs := []any{"fqn", method.FQN, "id", method.ID}
 		if alias, ok := lo.FindKey(b.methodAliases, method.ID); ok {
 			attrs = append(attrs, "alias", alias)
 		}
