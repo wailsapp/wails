@@ -20,7 +20,7 @@ export const App = component$(() => {
   }
 
   useVisibleTask$(() => {
-    Events.On('time', (timeValue: any) => {
+    Events.On<string>('time', (timeValue) => {
       time.value = timeValue.data;
     });
     // Reload WML so it picks up the wml tags

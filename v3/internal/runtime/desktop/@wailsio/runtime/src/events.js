@@ -10,9 +10,13 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
-/**
- * @typedef {import("./types").WailsEvent} WailsEvent
+/** 
+ * @template D
+ * @callback WailsEventCallback
+ * @param {WailsEvent<D>} event
+ * @return {void}
  */
+
 import {newRuntimeCallerWithID, objectNames} from "./runtime";
 
 import {EventTypes} from "./event_types";
@@ -38,8 +42,14 @@ class Listener {
         };
     }
 }
-
+/** 
+ * @template [D=unknown] 
+ */
 export class WailsEvent {
+    /** 
+     * @param {string} name - The name of the event
+     * @param {D} data - The data emitted by the event
+     */
     constructor(name, data = null) {
         this.name = name;
         this.data = data;
@@ -67,11 +77,12 @@ function dispatchWailsEvent(event) {
 /**
  * Register a callback function to be called multiple times for a specific event.
  *
+ * @template [D=unknown]
  * @param {string} eventName - The name of the event to register the callback for.
- * @param {function} callback - The callback function to be called when the event is triggered.
+ * @param {WailsEventCallback<D>} callback - The callback function to be called when the event is triggered.
  * @param {number} maxCallbacks - The maximum number of times the callback can be called for the event. Once the maximum number is reached, the callback will no longer be called.
  *
- @return {function} - A function that, when called, will unregister the callback from the event.
+ @return {() => void} - A function that, when called, will unregister the callback from the event.
  */
 export function OnMultiple(eventName, callback, maxCallbacks) {
     let listeners = eventListeners.get(eventName) || [];
@@ -84,17 +95,19 @@ export function OnMultiple(eventName, callback, maxCallbacks) {
 /**
  * Registers a callback function to be executed when the specified event occurs.
  *
+ * @template [D=unknown]
  * @param {string} eventName - The name of the event.
- * @param {function} callback - The callback function to be executed. It takes no parameters.
- * @return {function} - A function that, when called, will unregister the callback from the event. */
+ * @param {WailsEventCallback<D>} callback - The callback function to be executed.
+ * @return {() => void} - A function that, when called, will unregister the callback from the event. */
 export function On(eventName, callback) { return OnMultiple(eventName, callback, -1); }
 
 /**
  * Registers a callback function to be executed only once for the specified event.
  *
+ * @template [D=unknown]
  * @param {string} eventName - The name of the event.
- * @param {function} callback - The function to be executed when the event occurs.
- * @return {function} - A function that, when called, will unregister the callback from the event.
+ * @param {WailsEventCallback<D>} callback - The function to be executed when the event occurs.
+ * @return {() => void} - A function that, when called, will unregister the callback from the event.
  */
 export function Once(eventName, callback) { return OnMultiple(eventName, callback, 1); }
 
