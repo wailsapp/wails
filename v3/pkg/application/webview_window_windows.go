@@ -1111,6 +1111,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 
 	processed, code := w32.MenuBarWndProc(w.hwnd, msg, wparam, lparam, w.menubarTheme)
 	if processed {
+		rect := w32.GetClientRect(w.hwnd)
+		w32.InvalidateRect(w.hwnd, rect, true)
+		w32.UpdateWindow(w.hwnd)
 		return code
 	}
 
