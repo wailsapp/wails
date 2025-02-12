@@ -83,12 +83,15 @@ type ServiceName interface {
 // and will be canceled right before shutdown.
 //
 // Services are guaranteed to receive the startup notification
-// in the exact order in which they were either listed in [Options.Services],
-// or registered with [App.RegisterService].
+// in the exact order in which they were either
+// listed in [Options.Services] or registered with [App.RegisterService],
+// with those from [Options.Services] coming first.
 //
 // If the return value is non-nil, the startup process aborts
-// and [App.Run] returns the error wrapped in a user-friendly message with [fmt.Errorf].
-// The extended message includes the name of the failing service.
+// and [App.Run] returns the error wrapped with [fmt.Errorf]
+// in a user-friendly message comprising the service name.
+// The original error can be retrieved either by calling the Unwrap method
+// or through the [errors.As] API.
 //
 // When that happens, service instances that have been already initialised
 // receive a shutdown notification.
@@ -103,10 +106,15 @@ type ServiceStartup interface {
 // then it is guaranteed to receive a shutdown notification too,
 // except in case of unhandled panics during shutdown.
 //
-// Services receive the shutdown notifications in reverse
-// with respect to the order in which they were registered and started.
+// Services receive shutdown notifications in reverse registration order,
+// after all user-provided shutdown hooks have run (see [App.OnShutdown]).
 //
-// If the return value is non-nil, it is logged along with the service name.
+// If the return value is non-nil, it is passed to the application's
+// configured error handler at [Options.ErrorHandler],
+// wrapped with [fmt.Errorf] in a user-friendly message comprising the service name.
+// The default behaviour is to log the error along with the service name.
+// The original error can be retrieved either by calling the Unwrap method
+// or through the [errors.As] API.
 type ServiceShutdown interface {
 	ServiceShutdown() error
 }
