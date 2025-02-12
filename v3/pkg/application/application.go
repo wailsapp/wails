@@ -903,17 +903,23 @@ func (a *App) cleanup() {
 		}
 		a.systemTrays = nil
 		a.systemTraysLock.Unlock()
+
+		// Cleanup single instance manager
+		if a.singleInstanceManager != nil {
+			a.singleInstanceManager.cleanup()
+		}
+
+		a.postQuit()
+
+		if a.options.PostShutdown != nil {
+			a.options.PostShutdown()
+		}
 	})
-	// Cleanup single instance manager
-	if a.singleInstanceManager != nil {
-		a.singleInstanceManager.cleanup()
-	}
 }
 
 func (a *App) Quit() {
 	if a.impl != nil {
 		InvokeSync(a.impl.destroy)
-		a.postQuit()
 	}
 }
 

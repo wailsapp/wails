@@ -70,8 +70,16 @@ type Options struct {
 
 	// OnShutdown is called when the application is about to terminate.
 	// This is useful for cleanup tasks.
-	// The shutdown process blocks until this function returns
+	// The shutdown process blocks until this function returns.
 	OnShutdown func()
+
+	// PostShutdown is called after the application
+	// has finished shutting down, just before process termination.
+	// This is useful for testing and logging purposes
+	// on platforms where the Run() method does not return.
+	// When PostShutdown is called, the application instance is not usable anymore.
+	// The shutdown process blocks until this function returns.
+	PostShutdown func()
 
 	// ShouldQuit is a function that is called when the user tries to quit the application.
 	// If the function returns true, the application will quit.
