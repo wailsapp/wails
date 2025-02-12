@@ -412,13 +412,7 @@ func (a *App) ResetEvents() {
 }
 
 func (a *App) handleFatalError(err error) {
-	var buffer strings.Builder
-	buffer.WriteString("\n\n************************ FATAL ******************************\n")
-	buffer.WriteString("* There has been a catastrophic failure in your application *\n")
-	buffer.WriteString("********************* Error Details *************************\n")
-	buffer.WriteString(err.Error())
-	buffer.WriteString("*************************************************************\n")
-	a.handleError(errors.New(buffer.String()))
+	a.handleError(&FatalError{err: err})
 	os.Exit(1)
 }
 
