@@ -56,6 +56,65 @@ submenu.Add("Open")
 submenu.Add("Save")
 ```
 
+#### Combining menus
+A menu can be added into another menu by appending or prepending it.
+```go
+menu := application.NewMenu()
+menu.Add("First Menu")
+
+secondaryMenu := application.NewMenu()
+secondaryMenu.Add("Second Menu")
+
+// insert 'secondaryMenu' after 'menu'
+menu.Append(secondaryMenu)
+
+// insert 'secondaryMenu' before 'menu'
+menu.Prepend(secondaryMenu)
+
+// update the menu
+menu.Update()
+```
+
+:::note
+By default, `prepend` and `append` will share state with the original menu. If you want to create a new menu with its own state,
+you can call `.Clone()` on the menu.
+
+E.g: `menu.Append(secondaryMenu.Clone())`
+:::
+
+#### Clearing a menu
+In some cases it'll be better to construct a whole new menu if you are working with a variable amount of menu items.
+
+This will clear all items on an existing menu and allows you to add items again.
+
+```go
+menu := application.NewMenu()
+menu.Add("Waiting for update...")
+
+// after certain logic, the menu has to be updated
+menu.Clear()
+menu.Add("Update complete!")
+menu.Update()
+```
+
+:::note
+Clearing a menu simply clears the menu items at the top level. Whilst Submenus won't be visible, they will still occupy memory
+so be sure to manage your menus carefully.
+:::
+
+#### Destroying a menu
+
+If you want to clear and release a menu, use the `Destroy()` method:
+
+```go
+menu := application.NewMenu()
+menu.Add("Waiting for update...")
+
+// after certain logic, the menu has to be destroyed
+menu.Destroy()
+```
+
+
 ### Menu Item Properties
 
 Menu items have several properties that can be configured:

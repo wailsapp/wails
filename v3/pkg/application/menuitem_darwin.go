@@ -295,6 +295,11 @@ void setMenuItemBitmap(void* nsMenuItem, unsigned char *bitmap, int length) {
 	NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:bitmap length:length]];
 	[menuItem setImage:image];
 }
+
+void destroyMenuItem(void* nsMenuItem) {
+	MenuItem *menuItem = (MenuItem *)nsMenuItem;
+	[menuItem release];
+}
 */
 import "C"
 import (
@@ -342,6 +347,10 @@ func (m macosMenuItem) setAccelerator(accelerator *accelerator) {
 
 	// Convert the key to a string
 	C.setMenuItemKeyEquivalent(m.nsMenuItem, key, modifier)
+}
+
+func (m macosMenuItem) destroy() {
+	C.destroyMenuItem(m.nsMenuItem)
 }
 
 func newMenuItemImpl(item *MenuItem) *macosMenuItem {
