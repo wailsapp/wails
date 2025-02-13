@@ -209,7 +209,7 @@ This will show you how to organize your code into reusable services and handle e
 
     :::note
     Simplified import paths are only available when using frontend bundlers.
-    If have a vanilla frontend that does not employ a bundler,
+    If you prefer a vanilla frontend that does not employ a bundler,
     you will have to import either `index.js` or `qrservice.js` manually.
     :::
     <br/>
@@ -468,7 +468,7 @@ This will show you how to organize your code into reusable services and handle e
 
 8. ## Supporting dynamic configurations
 
-    In the example above we used an hardcoded route `/qrservice`.
+    In the example above we used a hardcoded route `/qrservice`.
     If you edit `main.go` and change the `Route` option without updating `main.js`,
     the application will break:
 
@@ -577,7 +577,7 @@ This will show you how to organize your code into reusable services and handle e
     }
     ```
 
-    Now update `main.js` to use the `URL` method in place of an hardcoded path:
+    Now update `main.js` to use the `URL` method in place of a hardcoded path:
 
     ```js title="frontend/src/main.js" ins={1,11-12}
     import { QRService } from "./bindings/changeme";
