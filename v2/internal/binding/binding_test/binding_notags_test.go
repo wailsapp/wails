@@ -5,6 +5,7 @@ type NoFieldTags struct {
 	Address string
 	Zip     *string
 	Spouse  *NoFieldTags
+	NoFunc  func() string
 }
 
 func (n NoFieldTags) Get() NoFieldTags {

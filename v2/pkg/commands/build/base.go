@@ -193,6 +193,8 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// Default go build command
 	commands.Add("build")
 
+	commands.Add("-buildvcs=false")
+
 	// Add better debugging flags
 	if options.Mode == Dev || options.Mode == Debug {
 		commands.Add("-gcflags")

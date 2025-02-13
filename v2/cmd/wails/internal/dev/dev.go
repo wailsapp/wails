@@ -153,7 +153,7 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 	}()
 
 	// Watch for changes and trigger restartApp()
-	debugBinaryProcess, err = doWatcherLoop(cwd, buildOptions, debugBinaryProcess, f, exitCodeChannel, quitChannel, f.DevServerURL(), legacyUseDevServerInsteadofCustomScheme)
+	debugBinaryProcess, err = doWatcherLoop(cwd, projectConfig.ReloadDirectories, buildOptions, debugBinaryProcess, f, exitCodeChannel, quitChannel, f.DevServerURL(), legacyUseDevServerInsteadofCustomScheme)
 	if err != nil {
 		return err
 	}
@@ -326,9 +326,9 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 }
 
 // doWatcherLoop is the main watch loop that runs while dev is active
-func doWatcherLoop(cwd string, buildOptions *build.Options, debugBinaryProcess *process.Process, f *flags.Dev, exitCodeChannel chan int, quitChannel chan os.Signal, devServerURL *url.URL, legacyUseDevServerInsteadofCustomScheme bool) (*process.Process, error) {
+func doWatcherLoop(cwd string, reloadDirs string, buildOptions *build.Options, debugBinaryProcess *process.Process, f *flags.Dev, exitCodeChannel chan int, quitChannel chan os.Signal, devServerURL *url.URL, legacyUseDevServerInsteadofCustomScheme bool) (*process.Process, error) {
 	// create the project files watcher
-	watcher, err := initialiseWatcher(cwd)
+	watcher, err := initialiseWatcher(cwd, reloadDirs)
 	if err != nil {
 		logutils.LogRed("Unable to create filesystem watcher. Reloads will not occur.")
 		return nil, err

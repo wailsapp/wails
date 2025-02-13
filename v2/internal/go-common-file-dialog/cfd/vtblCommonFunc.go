@@ -168,7 +168,7 @@ func (vtbl *iFileDialogVtbl) getResultString(objPtr unsafe.Pointer) (string, err
 		return "", err
 	}
 	if shellItem == nil {
-		return "", ErrCancelled
+		return "", fmt.Errorf("shellItem is nil")
 	}
 	defer shellItem.vtbl.release(unsafe.Pointer(shellItem))
 	return shellItem.vtbl.getDisplayName(unsafe.Pointer(shellItem))
