@@ -52,6 +52,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `//wails:ignore` directive to prevent binding generation for chosen service methods by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Add `//wails:internal` directive on services and models to allow for types that are exported in Go but not in JS/TS by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Add binding generator support for constants of alias type to allow for weakly typed enums by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add `Configure` method on all services for late configuration/dynamic reconfiguration by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `fileserver` service sends a 503 Service Unavailable response when unconfigured by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `kvstore` service provides an in-memory key-value store by default when unconfigured by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add `Load` method on `kvstore` service to reload data from file after config changes by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add `Clear` method on `kvstore` service to delete all keys by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add type `Level` in `log` service to provide JS-side log-level constants by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add `Log` method on `log` service to specify log-level dynamically by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `sqlite` service provides an in-memory DB by default when unconfigured by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add method `Close` on `sqlite` service to close the DB manually by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add cancellation support for query methods on `sqlite` service by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add prepared statement support to `sqlite` service with JS bindings by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 
 ### Fixed
 
@@ -90,6 +101,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In JS/TS bindings, `internal.js/ts` model files have been removed; all models can now be found in `models.js/ts` by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - In JS/TS bindings, named types are never rendered as aliases for other named types; the old behaviour is now restricted to aliases by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - In JS/TS bindings, in class mode, struct fields whose type is a type parameter are marked optional and never initialised automatically by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Built-in service types are now consistently called `Service` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Built-in service creation functions with options are now consistently called `NewWithConfig` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `Select` method on `sqlite` service is now named `Query` for consistency with Go APIs by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 
 ## v3.0.0-alpha.9 - 2025-01-13
 
