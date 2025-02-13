@@ -43,5 +43,5 @@ func (m *MessageProcessor) processClipboardMethod(method int, rw http.ResponseWr
 		return
 	}
 
-	m.Info("Runtime call:", "method", "Browser."+browserMethods[method], "text", text)
+	m.Info("Runtime call:", "method", "Clipboard."+clipboardMethods[method], "text", text)
 }
