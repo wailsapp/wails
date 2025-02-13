@@ -300,9 +300,9 @@ func (w *WebviewWindow) formatJS(f string, callID string, data string) string {
 	return fmt.Sprintf(f, callID, j)
 }
 
-func (w *WebviewWindow) CallError(callID string, result string) {
+func (w *WebviewWindow) CallError(callID string, result string, isJSON bool) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.callErrorHandler('%s', %s);", callID, result))
+		w.impl.execJS(w.formatJS(fmt.Sprintf("_wails.callErrorHandler('%%s', %%s, %t);", isJSON), callID, result))
 	}
 }
 
@@ -320,11 +320,7 @@ func (w *WebviewWindow) DialogError(dialogID string, result string) {
 
 func (w *WebviewWindow) DialogResponse(dialogID string, result string, isJSON bool) {
 	if w.impl != nil {
-		if isJSON {
-			w.impl.execJS(w.formatJS("_wails.dialogResultCallback('%s', %s, true);", dialogID, result))
-		} else {
-			w.impl.execJS(fmt.Sprintf("_wails.dialogResultCallback('%s', '%s', false);", dialogID, result))
-		}
+		w.impl.execJS(w.formatJS(fmt.Sprintf("_wails.dialogResultCallback('%%s', %%s, %t);", isJSON), dialogID, result))
 	}
 }
 

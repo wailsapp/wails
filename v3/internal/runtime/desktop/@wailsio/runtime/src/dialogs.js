@@ -135,12 +135,12 @@ function dialog(type, options = {}) {
 function dialogResultCallback(id, data, isJSON) {
     let p = dialogResponses.get(id);
     if (p) {
+        dialogResponses.delete(id);
         if (isJSON) {
             p.resolve(JSON.parse(data));
         } else {
             p.resolve(data);
         }
-        dialogResponses.delete(id);
     }
 }
 
@@ -155,8 +155,8 @@ function dialogResultCallback(id, data, isJSON) {
 function dialogErrorCallback(id, message) {
     let p = dialogResponses.get(id);
     if (p) {
-        p.reject(message);
         dialogResponses.delete(id);
+        p.reject(new Error(message));
     }
 }
 

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"reflect"
 	"runtime"
 	"strings"
@@ -21,16 +20,22 @@ type CallOptions struct {
 	Args       []json.RawMessage `json:"args"`
 }
 
-type PluginCallOptions struct {
-	Name string            `json:"name"`
-	Args []json.RawMessage `json:"args"`
+type ErrorKind string
+
+const (
+	ReferenceError ErrorKind = "ReferenceError"
+	TypeError      ErrorKind = "TypeError"
+	RuntimeError   ErrorKind = "RuntimeError"
+)
+
+type CallError struct {
+	Kind    ErrorKind `json:"kind"`
+	Message string    `json:"message"`
+	Cause   any       `json:"cause,omitempty"`
 }
 
-var reservedPluginMethods = []string{
-	"Name",
-	"Init",
-	"Shutdown",
-	"Exported",
+func (e *CallError) Error() string {
+	return e.Message
 }
 
 // Parameter defines a Go method parameter
@@ -61,66 +66,75 @@ func (p *Parameter) IsError() bool {
 // BoundMethod defines all the data related to a Go method that is
 // bound to the Wails application
 type BoundMethod struct {
-	ID          uint32        `json:"id"`
-	Name        string        `json:"name"`
-	Inputs      []*Parameter  `json:"inputs,omitempty"`
-	Outputs     []*Parameter  `json:"outputs,omitempty"`
-	Comments    string        `json:"comments,omitempty"`
-	Method      reflect.Value `json:"-"`
-	TypeName    string
-	PackagePath string
+	ID       uint32        `json:"id"`
+	Name     string        `json:"name"`
+	Inputs   []*Parameter  `json:"inputs,omitempty"`
+	Outputs  []*Parameter  `json:"outputs,omitempty"`
+	Comments string        `json:"comments,omitempty"`
+	Method   reflect.Value `json:"-"`
+	FQN      string
 
+	marshalError func(error) []byte
 	needsContext bool
 }
 
 type Bindings struct {
+	marshalError  func(error) []byte
 	boundMethods  map[string]*BoundMethod
 	boundByID     map[uint32]*BoundMethod
 	methodAliases map[uint32]uint32
 }
 
-func NewBindings(instances []Service, aliases map[uint32]uint32) (*Bindings, error) {
-	app := Get()
-	b := &Bindings{
+func NewBindings(marshalError func(error) []byte, aliases map[uint32]uint32) *Bindings {
+	return &Bindings{
+		marshalError:  wrapErrorMarshaler(marshalError, defaultMarshalError),
 		boundMethods:  make(map[string]*BoundMethod),
 		boundByID:     make(map[uint32]*BoundMethod),
 		methodAliases: aliases,
 	}
-	for _, binding := range instances {
-		handler, ok := binding.Instance().(http.Handler)
-		if ok && binding.options.Route != "" {
-			app.assets.AttachServiceHandler(binding.options.Route, handler)
-		}
-		err := b.Add(binding.Instance())
-		if err != nil {
-			return nil, err
-		}
-	}
-	return b, nil
 }
 
-// Add the given named type pointer methods to the Bindings
-func (b *Bindings) Add(namedPtr interface{}) error {
-	methods, err := b.getMethods(namedPtr)
+// Add adds the given service to the bindings.
+func (b *Bindings) Add(service Service) error {
+	methods, err := getMethods(service.Instance())
 	if err != nil {
-		return fmt.Errorf("cannot bind value to app: %s", err.Error())
+		return err
+	}
+
+	marshalError := wrapErrorMarshaler(service.options.MarshalError, defaultMarshalError)
+
+	// Validate and log methods.
+	for _, method := range methods {
+		if _, ok := b.boundMethods[method.FQN]; ok {
+			return fmt.Errorf("bound method '%s' is already registered. Please note that you can register at most one service of each type; additional instances must be wrapped in dedicated structs", method.FQN)
+		}
+		if boundMethod, ok := b.boundByID[method.ID]; ok {
+			return fmt.Errorf("oh wow, we're sorry about this! Amazingly, a hash collision was detected for method '%s' (it generates the same hash as '%s'). To use this method, please rename it. Sorry :(", method.FQN, boundMethod.FQN)
+		}
+
+		// Log
+		attrs := []any{"fqn", method.FQN, "id", method.ID}
+		if alias, ok := lo.FindKey(b.methodAliases, method.ID); ok {
+			attrs = append(attrs, "alias", alias)
+		}
+		globalApplication.debug("Registering bound method:", attrs...)
 	}
 
 	for _, method := range methods {
-		// Add it as a regular method
-		b.boundMethods[method.String()] = method
+		// Store composite error marshaler
+		method.marshalError = marshalError
+
+		// Register method
+		b.boundMethods[method.FQN] = method
 		b.boundByID[method.ID] = method
 	}
+
 	return nil
 }
 
 // Get returns the bound method with the given name
 func (b *Bindings) Get(options *CallOptions) *BoundMethod {
-	method, ok := b.boundMethods[options.MethodName]
-	if !ok {
-		return nil
-	}
-	return method
+	return b.boundMethods[options.MethodName]
 }
 
 // GetByID returns the bound method with the given ID
@@ -131,29 +145,27 @@ func (b *Bindings) GetByID(id uint32) *BoundMethod {
 			id = alias
 		}
 	}
-	result := b.boundByID[id]
-	return result
+
+	return b.boundByID[id]
 }
 
-// GenerateID generates a unique ID for a binding
-func (b *Bindings) GenerateID(name string) (uint32, error) {
-	id, err := hash.Fnv(name)
-	if err != nil {
-		return 0, err
-	}
-	// Check if we already have it
-	boundMethod, ok := b.boundByID[id]
-	if ok {
-		return 0, fmt.Errorf("oh wow, we're sorry about this! Amazingly, a hash collision was detected for method '%s' (it generates the same hash as '%s'). To continue, please rename it. Sorry :(", name, boundMethod.String())
-	}
-	return id, nil
+// internalServiceMethod is a set of methods
+// that are handled specially by the binding engine
+// and must not be exposed to the frontend.
+//
+// For simplicity we exclude these by name
+// without checking their signatures,
+// and so does the binding generator.
+var internalServiceMethods = map[string]bool{
+	"ServiceName":     true,
+	"ServiceStartup":  true,
+	"ServiceShutdown": true,
+	"ServeHTTP":       true,
 }
 
-func (b *BoundMethod) String() string {
-	return fmt.Sprintf("%s.%s.%s", b.PackagePath, b.TypeName, b.Name)
-}
+var ctxType = reflect.TypeFor[context.Context]()
 
-func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
+func getMethods(value any) ([]*BoundMethod, error) {
 	// Create result placeholder
 	var result []*BoundMethod
 
@@ -180,42 +192,27 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 		return nil, fmt.Errorf("%s.%s is a generic type. Generic bound types are not supported", packagePath, namedType.String())
 	}
 
-	ctxType := reflect.TypeFor[context.Context]()
-
 	// Process Methods
-	for i := 0; i < ptrType.NumMethod(); i++ {
-		methodDef := ptrType.Method(i)
-		methodName := methodDef.Name
-		method := namedValue.MethodByName(methodName)
+	for i := range ptrType.NumMethod() {
+		methodName := ptrType.Method(i).Name
+		method := namedValue.Method(i)
 
-		if b.internalMethod(methodDef) {
+		if internalServiceMethods[methodName] {
 			continue
 		}
 
+		fqn := fmt.Sprintf("%s.%s.%s", packagePath, typeName, methodName)
+
 		// Create new method
 		boundMethod := &BoundMethod{
-			Name:        methodName,
-			PackagePath: packagePath,
-			TypeName:    typeName,
-			Inputs:      nil,
-			Outputs:     nil,
-			Comments:    "",
-			Method:      method,
+			ID:       hash.Fnv(fqn),
+			FQN:      fqn,
+			Name:     methodName,
+			Inputs:   nil,
+			Outputs:  nil,
+			Comments: "",
+			Method:   method,
 		}
-		var err error
-		boundMethod.ID, err = b.GenerateID(boundMethod.String())
-		if err != nil {
-			return nil, err
-		}
-
-		args := []any{"name", boundMethod, "id", boundMethod.ID}
-		if b.methodAliases != nil {
-			alias, found := lo.FindKey(b.methodAliases, boundMethod.ID)
-			if found {
-				args = append(args, "alias", alias)
-			}
-		}
-		globalApplication.debug("Adding method:", args...)
 
 		// Iterate inputs
 		methodType := method.Type()
@@ -245,40 +242,23 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 		result = append(result, boundMethod)
 
 	}
+
 	return result, nil
 }
 
-func (b *Bindings) internalMethod(def reflect.Method) bool {
-	// Get the receiver type
-	receiverType := def.Type.In(0)
-
-	// Create a new instance of the receiver type
-	instance := reflect.New(receiverType.Elem()).Interface()
-
-	// Check if the instance implements any of our service interfaces
-	// and if the method matches the interface method
-	switch def.Name {
-	case "ServiceName":
-		if _, ok := instance.(ServiceName); ok {
-			return true
-		}
-	case "ServiceStartup":
-		if _, ok := instance.(ServiceStartup); ok {
-			return true
-		}
-	case "ServiceShutdown":
-		if _, ok := instance.(ServiceShutdown); ok {
-			return true
-		}
-	}
-
-	return false
+func (b *BoundMethod) String() string {
+	return b.FQN
 }
 
 var errorType = reflect.TypeFor[error]()
 
-// Call will attempt to call this bound method with the given args
-func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnValue interface{}, err error) {
+// Call will attempt to call this bound method with the given args.
+// If the call succeeds, result will be either a non-error return value (if there is only one)
+// or a slice of non-error return values (if there are more than one).
+//
+// If the arguments are mistyped or the call returns one or more non-nil error values,
+// result is nil and err is an instance of *[CallError].
+func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (result any, err error) {
 	// Use a defer statement to capture panics
 	defer handlePanic(handlePanicOptions{skipEnd: 5})
 	argCount := len(args)
@@ -287,7 +267,10 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnV
 	}
 
 	if argCount != len(b.Inputs) {
-		err = fmt.Errorf("%s expects %d arguments, received %d", b.Name, len(b.Inputs), argCount)
+		err = &CallError{
+			Kind:    TypeError,
+			Message: fmt.Sprintf("%s expects %d arguments, got %d", b.FQN, len(b.Inputs), argCount),
+		}
 		return
 	}
 
@@ -305,7 +288,11 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnV
 		value := reflect.New(b.Inputs[base+index].ReflectType)
 		err = json.Unmarshal(arg, value.Interface())
 		if err != nil {
-			err = fmt.Errorf("could not parse argument #%d: %w", index, err)
+			err = &CallError{
+				Kind:    TypeError,
+				Message: fmt.Sprintf("could not parse argument #%d: %s", index, err),
+				Cause:   json.RawMessage(b.marshalError(err)),
+			}
 			return
 		}
 		callArgs[base+index] = value.Elem()
@@ -322,30 +309,71 @@ func (b *BoundMethod) Call(ctx context.Context, args []json.RawMessage) (returnV
 	var nonErrorOutputs = make([]any, 0, len(callResults))
 	var errorOutputs []error
 
-	for _, result := range callResults {
-		if result.Type() == errorType {
-			if result.IsNil() {
+	for _, field := range callResults {
+		if field.Type() == errorType {
+			if field.IsNil() {
 				continue
 			}
 			if errorOutputs == nil {
 				errorOutputs = make([]error, 0, len(callResults)-len(nonErrorOutputs))
 				nonErrorOutputs = nil
 			}
-			errorOutputs = append(errorOutputs, result.Interface().(error))
+			errorOutputs = append(errorOutputs, field.Interface().(error))
 		} else if nonErrorOutputs != nil {
-			nonErrorOutputs = append(nonErrorOutputs, result.Interface())
+			nonErrorOutputs = append(nonErrorOutputs, field.Interface())
 		}
 	}
 
-	if errorOutputs != nil {
-		err = errors.Join(errorOutputs...)
+	if len(errorOutputs) > 0 {
+		info := make([]json.RawMessage, len(errorOutputs))
+		for i, err := range errorOutputs {
+			info[i] = b.marshalError(err)
+		}
+
+		cerr := &CallError{
+			Kind:    RuntimeError,
+			Message: errors.Join(errorOutputs...).Error(),
+			Cause:   info,
+		}
+		if len(info) == 1 {
+			cerr.Cause = info[0]
+		}
+
+		err = cerr
 	} else if len(nonErrorOutputs) == 1 {
-		returnValue = nonErrorOutputs[0]
+		result = nonErrorOutputs[0]
 	} else if len(nonErrorOutputs) > 1 {
-		returnValue = nonErrorOutputs
+		result = nonErrorOutputs
 	}
 
 	return
+}
+
+// wrapErrorMarshaler returns an error marshaling functions
+// that calls the primary marshaler first,
+// then falls back to the secondary one.
+func wrapErrorMarshaler(primary func(error) []byte, secondary func(error) []byte) func(error) []byte {
+	if primary == nil {
+		return secondary
+	}
+
+	return func(err error) []byte {
+		result := primary(err)
+		if result == nil {
+			result = secondary(err)
+		}
+
+		return result
+	}
+}
+
+// defaultMarshalError implements the default error marshaling mechanism.
+func defaultMarshalError(err error) []byte {
+	result, jsonErr := json.Marshal(&err)
+	if jsonErr != nil {
+		return nil
+	}
+	return result
 }
 
 // isPtr returns true if the value given is a pointer.

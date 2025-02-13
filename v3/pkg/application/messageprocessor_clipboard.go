@@ -1,6 +1,8 @@
 package application
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 )
 
@@ -15,30 +17,31 @@ var clipboardMethods = map[int]string{
 }
 
 func (m *MessageProcessor) processClipboardMethod(method int, rw http.ResponseWriter, _ *http.Request, _ Window, params QueryParams) {
-
 	args, err := params.Args()
 	if err != nil {
-		m.httpError(rw, "Unable to parse arguments: %s", err.Error())
+		m.httpError(rw, "Invalid clipboard call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
 	}
+
+	var text string
 
 	switch method {
 	case ClipboardSetText:
-		text := args.String("text")
-		if text == nil {
-			m.Error("SetText: text is required")
+		textp := args.String("text")
+		if textp == nil {
+			m.httpError(rw, "Invalid clipboard call:", errors.New("missing argument 'text'"))
 			return
 		}
-		globalApplication.Clipboard().SetText(*text)
+		text = *textp
+		globalApplication.Clipboard().SetText(text)
 		m.ok(rw)
-		m.Info("Runtime Call:", "method", "Clipboard."+clipboardMethods[method], "text", *text)
 	case ClipboardText:
-		text, _ := globalApplication.Clipboard().Text()
+		text, _ = globalApplication.Clipboard().Text()
 		m.text(rw, text)
-		m.Info("Runtime Call:", "method", "Clipboard."+clipboardMethods[method], "text", text)
 	default:
-		m.httpError(rw, "Unknown clipboard method: %d", method)
+		m.httpError(rw, "Invalid clipboard call:", fmt.Errorf("unknown method: %d", method))
 		return
 	}
 
+	m.Info("Runtime call:", "method", "Clipboard."+clipboardMethods[method], "text", text)
 }

@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -29,21 +30,21 @@ var contextmenuMethodNames = map[int]string{
 }
 
 func (m *MessageProcessor) processContextMenuMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
-
 	switch method {
 	case ContextMenuOpen:
 		var data ContextMenuData
 		err := params.ToStruct(&data)
 		if err != nil {
-			m.httpError(rw, "error parsing contextmenu message: %s", err.Error())
+			m.httpError(rw, "Invalid contextmenu call:", fmt.Errorf("error parsing parameters: %w", err))
 			return
 		}
+
 		window.OpenContextMenu(&data)
+
 		m.ok(rw)
+		m.Info("Runtime call:", "method", "ContextMenu."+contextmenuMethodNames[method], "id", data.Id, "x", data.X, "y", data.Y, "data", data.Data)
 	default:
-		m.httpError(rw, "Unknown contextmenu method: %d", method)
+		m.httpError(rw, "Invalid contextmenu call:", fmt.Errorf("unknown method: %d", method))
+		return
 	}
-
-	m.Info("Runtime Call:", "method", "ContextMenu."+contextmenuMethodNames[method])
-
 }

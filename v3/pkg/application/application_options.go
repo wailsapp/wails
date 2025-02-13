@@ -31,11 +31,21 @@ type Options struct {
 	// Services allows you to bind Go methods to the frontend.
 	Services []Service
 
+	// MarshalError will be called if non-nil
+	// to marshal to JSON the error values returned by service methods.
+	//
+	// MarshalError is not allowed to fail,
+	// but it may return a nil slice to fall back
+	// to the default error handling mechanism.
+	//
+	// If the returned slice is not nil, it must contain valid JSON.
+	MarshalError func(error) []byte
+
 	// BindAliases allows you to specify alias IDs for your bound methods.
 	// Example: `BindAliases: map[uint32]uint32{1: 1411160069}` states that alias ID 1 maps to the Go method with ID 1411160069.
 	BindAliases map[uint32]uint32
 
-	// Logger i a slog.Logger instance used for logging Wails system messages (not application messages).
+	// Logger is a slog.Logger instance used for logging Wails system messages (not application messages).
 	// If not defined, a default logger is used.
 	Logger *slog.Logger
 
@@ -60,8 +70,16 @@ type Options struct {
 
 	// OnShutdown is called when the application is about to terminate.
 	// This is useful for cleanup tasks.
-	// The shutdown process blocks until this function returns
+	// The shutdown process blocks until this function returns.
 	OnShutdown func()
+
+	// PostShutdown is called after the application
+	// has finished shutting down, just before process termination.
+	// This is useful for testing and logging purposes
+	// on platforms where the Run() method does not return.
+	// When PostShutdown is called, the application instance is not usable anymore.
+	// The shutdown process blocks until this function returns.
+	PostShutdown func()
 
 	// ShouldQuit is a function that is called when the user tries to quit the application.
 	// If the function returns true, the application will quit.

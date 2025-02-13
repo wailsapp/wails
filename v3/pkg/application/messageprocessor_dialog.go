@@ -2,6 +2,7 @@ package application
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"runtime"
@@ -26,9 +27,8 @@ var dialogMethodNames = map[int]string{
 }
 
 func (m *MessageProcessor) dialogErrorCallback(window Window, message string, dialogID *string, err error) {
-	errorMsg := fmt.Sprintf(message, err)
-	m.Error(errorMsg)
-	window.DialogError(*dialogID, errorMsg)
+	m.Error(message, "error", err)
+	window.DialogError(*dialogID, err.Error())
 }
 
 func (m *MessageProcessor) dialogCallback(window Window, dialogID *string, result string, isJSON bool) {
@@ -36,15 +36,15 @@ func (m *MessageProcessor) dialogCallback(window Window, dialogID *string, resul
 }
 
 func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-
 	args, err := params.Args()
 	if err != nil {
-		m.httpError(rw, "Unable to parse arguments: %s", err.Error())
+		m.httpError(rw, "Invalid dialog call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
 	}
+
 	dialogID := args.String("dialog-id")
 	if dialogID == nil {
-		m.Error("dialog-id is required")
+		m.httpError(rw, "Invalid window call:", errors.New("missing argument 'dialog-id'"))
 		return
 	}
 
@@ -55,7 +55,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		var options MessageDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
-			m.dialogErrorCallback(window, "Error parsing dialog options: %s", dialogID, err)
+			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
 			return
 		}
 		if len(options.Buttons) == 0 {
@@ -91,13 +91,13 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		dialog.AddButtons(options.Buttons)
 		dialog.Show()
 		m.ok(rw)
-		m.Info("Runtime Call:", "method", methodName, "options", options)
+		m.Info("Runtime call:", "method", methodName, "options", options)
 
 	case DialogOpenFile:
 		var options OpenFileDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Error parsing dialog options: %s", err.Error())
+			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
 			return
 		}
 		var detached = args.Bool("Detached")
@@ -111,35 +111,35 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 			if options.AllowsMultipleSelection {
 				files, err := dialog.PromptForMultipleSelection()
 				if err != nil {
-					m.dialogErrorCallback(window, "Error getting selection: %s", dialogID, err)
+					m.dialogErrorCallback(window, "Dialog.OpenFile failed", dialogID, fmt.Errorf("error getting selection: %w", err))
 					return
 				} else {
 					result, err := json.Marshal(files)
 					if err != nil {
-						m.dialogErrorCallback(window, "Error marshalling files: %s", dialogID, err)
+						m.dialogErrorCallback(window, "Dialog.OpenFile failed", dialogID, fmt.Errorf("error marshaling files: %w", err))
 						return
 					}
 					m.dialogCallback(window, dialogID, string(result), true)
-					m.Info("Runtime Call:", "method", methodName, "result", result)
+					m.Info("Runtime call:", "method", methodName, "result", result)
 				}
 			} else {
 				file, err := dialog.PromptForSingleSelection()
 				if err != nil {
-					m.dialogErrorCallback(window, "Error getting selection: %s", dialogID, err)
+					m.dialogErrorCallback(window, "Dialog.OpenFile failed", dialogID, fmt.Errorf("error getting selection: %w", err))
 					return
 				}
 				m.dialogCallback(window, dialogID, file, false)
-				m.Info("Runtime Call:", "method", methodName, "result", file)
+				m.Info("Runtime call:", "method", methodName, "result", file)
 			}
 		}()
 		m.ok(rw)
-		m.Info("Runtime Call:", "method", methodName, "options", options)
+		m.Info("Runtime call:", "method", methodName, "options", options)
 
 	case DialogSaveFile:
 		var options SaveFileDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
-			m.httpError(rw, "Error parsing dialog options: %s", err.Error())
+			m.httpError(rw, "Invalid dialog call:", fmt.Errorf("error parsing dialog options: %w", err))
 			return
 		}
 		var detached = args.Bool("Detached")
@@ -152,17 +152,17 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 			defer handlePanic()
 			file, err := dialog.PromptForSingleSelection()
 			if err != nil {
-				m.dialogErrorCallback(window, "Error getting selection: %s", dialogID, err)
+				m.dialogErrorCallback(window, "Dialog.SaveFile failed", dialogID, fmt.Errorf("error getting selection: %w", err))
 				return
 			}
 			m.dialogCallback(window, dialogID, file, false)
-			m.Info("Runtime Call:", "method", methodName, "result", file)
+			m.Info("Runtime call:", "method", methodName, "result", file)
 		}()
 		m.ok(rw)
-		m.Info("Runtime Call:", "method", methodName, "options", options)
+		m.Info("Runtime call:", "method", methodName, "options", options)
 
 	default:
-		m.httpError(rw, "Unknown dialog method: %d", method)
+		m.httpError(rw, "Invalid dialog call:", fmt.Errorf("unknown method: %d", method))
+		return
 	}
-
 }

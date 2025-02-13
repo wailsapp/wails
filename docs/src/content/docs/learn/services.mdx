@@ -40,9 +40,9 @@ greeting.
 ## Registering a Service
 
 To register a service with the application, you need to provide an instance of
-the service to the `Services` field of the `application.Options` struct (All
-services need to be wrapped by an `application.NewService` call. Here's an
-example:
+the service to the `Services` field of the `application.Options` struct.
+All services need to be wrapped by an `application.NewService` call.
+Here's an example:
 
 ```go
 app := application.New(application.Options{
@@ -69,6 +69,25 @@ app := application.New(application.Options{
 ServiceOptions has the following fields:
 	- Name - Specify a custom name for the Service
     - Route - A route to bind the Service to the frontend (more on this below)
+
+After the application has been created but not yet started,
+you can register more services using the `RegisterService` method.
+This is useful when you need to feed a service some value
+that is only available after the application has been created.
+For example, let's wire application's logger into your own service:
+
+```go
+app := application.New(application.Options{})
+
+app.RegisterService(application.NewService(NewMyService(app.Logger)))
+
+// ...
+
+err := app.Run()
+```
+
+Services may only be registered before running the application:
+`RegisterService` will panic if called after the `Run` method.
 
 ## Optional Methods
 
@@ -98,8 +117,12 @@ func (s *Service) ServiceStartup(ctx context.Context, options application.Servic
 
 This method is called when the application is starting up. You can use it to
 initialize resources, set up connections, or perform any necessary setup tasks.
-The context is the application context, and the `options` parameter provides
-additional information about the service.
+The context is the application context that will be canceled upon shutdown,
+and the `options` parameter provides additional information about the service.
+
+Services are initialised in the exact order of registration:
+first those listed in the `Services` field of the `application.Options` struct,
+then those added through the `RegisterService` method.
 
 ### ServiceShutdown
 
@@ -109,6 +132,9 @@ func (s *Service) ServiceShutdown() error
 
 This method is called when the application is shutting down. Use it to clean up
 resources, close connections, or perform any necessary cleanup tasks.
+
+Services are shut down in reverse registration order.
+The application context will be canceled before `ServiceShutdown` is called.
 
 ### ServeHTTP
 

@@ -12,10 +12,12 @@ tasks:
       - npm install
 
   test:
+    dir: desktop/@wailsio/runtime
     cmds:
       - npx vitest run
 
   update:
+    dir: desktop/@wailsio/runtime
     cmds:
       - npx npm-check-updates -u
 
