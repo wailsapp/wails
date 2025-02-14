@@ -125,7 +125,6 @@ export class MyElement extends LitElement {
             margin-top: 1rem;
             align-content: center;
             text-align: center;
-            color: rgba(255, 255, 255, 0.67);
         }
 
         .input-box .btn:hover {

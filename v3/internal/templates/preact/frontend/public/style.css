@@ -115,7 +115,6 @@ h1 {
     margin-top: 1rem;
     align-content: center;
     text-align: center;
-    color: rgba(255, 255, 255, 0.67);
 }
 
 @media (prefers-color-scheme: light) {
