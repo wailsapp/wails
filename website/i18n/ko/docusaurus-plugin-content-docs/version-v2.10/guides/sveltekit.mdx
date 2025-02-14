@@ -1,0 +1,157 @@
+# SvelteKit
+
+This guide will go into:
+
+1. Miminal Installation Steps - The steps needed to get a minimum Wails setup working for SvelteKit.
+2. Install Script - Bash script for accomplishing the Minimal Installation Steps with optional Wails branding.
+3. Important Notes - Issues that can be encountered when using SvelteKit + Wails and fixes.
+
+## 1. Minimal Installation Steps
+
+##### Install Wails for Svelte.
+
+- `wails init -n myapp -t svelte`
+
+##### Delete the svelte frontend.
+
+- Navigate into your newly created myapp folder.
+- Delete the folder named "frontend"
+
+##### While in the Wails project root. Use your favorite package manager and install SvelteKit as the new frontend.  Follow the prompts.
+
+- `npm create svelte@latest frontend`
+
+##### Modify wails.json.
+
+- Add `"wailsjsdir": "./frontend/src/lib",` Do note that this is where your Go and runtime functions will appear.
+- Change your package manager frontend here if not using npm.
+
+##### Modify main.go.
+
+- The first comment `//go:embed all:frontend/dist` needs to be changed to `//go:embed all:frontend/build`
+
+##### Modify .gitignore
+
+- The line `frontend/dist` needs to be replaced with `frontend/build`
+
+##### Install/remove dependencies using your favorite package manager.
+
+- Navigate into your "frontend" folder.
+- `npm i`
+- `npm uninstall @sveltejs/adapter-auto`
+- `npm i -D @sveltejs/adapter-static`
+
+##### Change adapter in svelte.config.js
+
+- First line of file change `import adapter from '@sveltejs/adapter-auto';` to `import adapter from '@sveltejs/adapter-static';`
+
+##### Put SvelteKit into SPA mode with prerendering.
+
+- Create a file under myapp/frontend/src/routes/ named +layout.ts/+layout.js.
+- Add two lines into the newly created file `export const prerender = true` and `export const ssr = false`
+
+##### Test installation.
+
+- Navigate back into the Wails project root (one directory up).
+- run `wails dev`
+- If the application doesn't run please check through the previous steps.
+
+## 2. Install Script
+
+##### This Bash Script does the steps listed above.  Make sure to read over the script and understand what the script is doing on your computer.
+
+- Create a file sveltekit-wails.sh
+- Copy the below code into the new file then save it.
+- Make it executable with `chmod +x sveltekit-wails.sh`
+- Brand is an optional param below that adds back in the wails branding.  Leave third param blank to not insert the Wails branding.
+- Example usage: `./sveltekit-wails.sh pnpm newapp brand`
+
+##### sveltekit-wails.sh:
+
+```
+manager=$1
+project=$2
+brand=$3
+wails init -n $project -t svelte
+cd $project
+sed -i "s|npm|$manager|g" wails.json
+sed -i 's|"auto",|"auto",\n  "wailsjsdir": "./frontend/src/lib",|' wails.json
+sed -i "s|all:frontend/dist|all:frontend/build|" main.go
+if [[ -n $brand ]]; then
+	mv frontend/src/App.svelte +page.svelte
+	sed -i "s|'./assets|'\$lib/assets|" +page.svelte
+	sed -i "s|'../wails|'\$lib/wails|" +page.svelte
+	mv frontend/src/assets .
+fi
+rm -r frontend
+$manager create svelte@latest frontend
+if [[ -n $brand ]]; then
+	mv +page.svelte frontend/src/routes/+page.svelte
+	mkdir frontend/src/lib
+	mv assets frontend/src/lib/
+fi
+cd frontend
+$manager i
+$manager uninstall @sveltejs/adapter-auto
+$manager i -D @sveltejs/adapter-static
+echo -e "export const prerender = true\nexport const ssr = false" > src/routes/+layout.ts
+sed -i "s|-auto';|-static';|" svelte.config.js
+cd ..
+wails dev
+```
+
+## 3. Important Notes
+
+##### Server files will cause build failures.
+
+- \+layout.server.ts, +page.server.ts, +server.ts or any file with "server" in the name will fail to build as all routes are prerendered.
+
+##### The Wails runtime unloads with full page navigations!
+
+- Anything that causes full page navigations: `window.location.href = '/<some>/<page>'` or Context menu reload when using wails dev.  What this means is that you can end up losing the ability to call any runtime breaking the app. There are two ways to work around this.
+- Use `import { goto } from '$app/navigation'` then call `goto('/<some>/<page>')` in your +page.svelte. This will prevent a full page navigation.
+- If full page navigation can't be prevented the Wails runtime can be added to all pages by adding the below into the `<head>` of myapp/frontend/src/app.html
+
+```
+<head>
+...
+	<meta name="wails-options" content="noautoinject" />
+	<script src="/wails/ipc.js"></script>
+	<script src="/wails/runtime.js"></script>
+...
+</head>
+```
+
+See https://wails.io/docs/guides/frontend for more information.
+
+##### Inital data can be loaded and refreshed from +page.ts/+page.js to +page.svelte.
+
+- \+page.ts/+page.js works well with load() https://kit.svelte.dev/docs/load#page-data
+- invalidateAll() in +page.svelte will call load() from +page.ts/+page.js https://kit.svelte.dev/docs/load#rerunning-load-functions-manual-invalidation.
+
+##### Error Handling
+
+- Expected errors using Throw error works in +page.ts/+page.js with a +error.svelte page. https://kit.svelte.dev/docs/errors#expected-errors
+- Unexpected errors will cause the application to become unusable.  Only recovery option (known so far) from unexpected errors is to reload the app.  To do this create a file myapp/frontend/src/hooks.client.ts then add the below code to the file.
+
+```
+import { WindowReloadApp } from '$lib/wailsjs/runtime/runtime' 
+export async function handleError() {
+	WindowReloadApp()
+}
+```
+
+##### Using Forms and handling functions
+
+- The simplest way is to call a function from the form is the standard, bind:value your variables and prevent submission `<form method="POST" on:submit|preventDefault={handle}>`
+- The more advanced way is to use:enhance (progressive enhancement) which will allow for convenient access to formData, formElement, submitter.  The important note is to always cancel() the form which prevents server side behavior.  https://kit.svelte.dev/docs/form-actions#progressive-enhancement  Example:
+
+```
+<form method="POST" use:enhance={({cancel, formData, formElement, submitter}) => {
+	cancel()
+	console.log(Object.fromEntries(formData))
+	console.log(formElement)
+	console.log(submitter)
+	handle()
+}}>
+```

@@ -1,0 +1,66 @@
+# Construction cross-plateforme avec Github Actions
+
+Pour construire un projet Wails pour toutes les plateformes disponibles, vous devez créer un build de l'application pour chaque système d'exploitation. Une méthode efficace pour y parvenir est d'utiliser GitHub Actions.
+
+Une action qui facilite la création d'une application Wails est disponible sur :
+https://github.com/dAppServer/wails-build-action
+
+Dans le cas où l'action existante ne répond pas à vos exigences, vous ne pouvez sélectionner que les étapes nécessaires à partir de la source :
+https://github.com/dAppServer/wails-build-action/blob/main/action.yml
+
+Voici un exemple complet qui démontre la construction d'une application lors de la création d'une nouvelle balise Git et qui la téléversera ensuite sur les artefacts Actions :
+
+```yaml
+name: Wails build
+
+on:
+  push:
+    tags:
+    # Matche n'importe quel nouveau tag
+      - '*'
+
+env:
+  # Nécessaire pour la plupart des environnement, car des soucis de build peuvent arriver à cause de soucis de mémoire
+  NODE_OPTIONS: "--max-old-space-size=4096"
+
+jobs:
+  build:
+    strategy:
+    # Afin d'éviter que l'échec du build d'une plateforme n'impacte les autres
+      fail-fast: false
+      matrix:
+        build:
+          - name: 'App'
+            platform:  'linux/amd64'
+            os: 'ubuntu-latest'
+          - name: 'App'
+            platform:  'windows/amd64'
+            os: 'windows-latest'
+          - name: 'App'
+            platform:  'darwin/universal'
+            os: 'macos-latest'
+
+    runs-on: ${{ matrix.build.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Build wails
+        uses: dAppServer/wails-build-action@v2.2
+        id: build
+        with:
+          build-name: ${{ matrix.build.name }}
+          build-platform: ${{ matrix.build.platform }}
+          package: false
+          go-version: '1.20'
+```
+
+Cet exemple offre des opportunités pour diverses améliorations, comprenant :
+
+- Mise en cache des dépendances
+- Signature de code
+- Envoi vers des plateformes comme S3, Supbase, etc.
+- Injection de secrets en tant que variables d'environnement
+- Utiliser des variables d'environnement comme variables de compilation (telles que la variable de version extraite de la balise Git actuelle)
