@@ -2,17 +2,19 @@ package commands
 
 import (
 	"fmt"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/wailsapp/wails/v3/internal/term"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/templates"
+	"github.com/wailsapp/wails/v3/internal/term"
 )
 
 var DisableFooter bool
@@ -120,7 +122,14 @@ func Init(options *flags.Init) error {
 	}
 
 	if options.ProjectName == "" {
-		return fmt.Errorf("please use the -n flag to specify a project name")
+		interactiveOptions, err := startInteractive(options)
+		if err != nil {
+			return err
+		}
+		options = interactiveOptions
+		if options.ProjectName == "" {
+			return fmt.Errorf("project name is required")
+		}
 	}
 
 	options.ProjectName = sanitizeFileName(options.ProjectName)
@@ -187,4 +196,133 @@ func sanitizeFileName(fileName string) string {
 
 	// Replace matched characters with an underscore or any other safe character
 	return reg.ReplaceAllString(fileName, "_")
+}
+
+func startInteractive(initialOptions *flags.Init) (*flags.Init, error) {
+	var templateOptions []huh.Option[string]
+	var templateSelect *huh.Select[string]
+	confirmProjectCreation := false
+
+	options := initialOptions
+
+	if options == nil {
+		options = &flags.Init{
+			ProductVersion: "1.0.0",
+		}
+	} else if options.ProductVersion == "" {
+		options.ProductVersion = "1.0.0"
+	}
+	templateName := &options.TemplateName
+
+	templateSelect = huh.NewSelect[string]().
+		Title("Template").
+		Description("Project template to use (Enter to list)").
+		Options(templateOptions...).
+		Value(templateName)
+
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Project Name").
+				Description("Name of project").
+				Value(&options.ProjectName),
+
+			huh.NewInput().
+				Title("Project Dir").
+				Description("Target directory (empty for default)").
+				Value(&options.ProjectDir),
+
+			templateSelect,
+		),
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Git Repo URL (optional)").
+				Description("Git repo to initialize (optional)").
+				Value(&options.Git),
+		),
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Company (optional)").
+				Value(&options.ProductCompany),
+			huh.NewInput().
+				Title("Product Name (optional)").
+				Value(&options.ProductName),
+			huh.NewInput().
+				Title("Version (optional)").
+				Value(&options.ProductVersion),
+			huh.NewInput().
+				Title("ID (optional)").
+				Value(&options.ProductIdentifier),
+			huh.NewInput().
+				Title("Copyright (optional)").
+				Value(&options.ProductCopyright),
+			huh.NewText().
+				Title("Description (optional)").
+				Lines(1).
+				Value(&options.ProductDescription),
+			huh.NewText().
+				Title("Comments (optional)").
+				Lines(1).
+				Value(&options.ProductComments),
+		),
+		huh.NewGroup(
+			huh.NewConfirm().
+				Title("Confirm?").
+				Value(&confirmProjectCreation),
+		),
+	)
+
+	templateSelect.OptionsFunc(func() []huh.Option[string] {
+		defaultTemplates := templates.GetDefaultTemplates()
+
+		vanillaTemplate := templates.TemplateData{Name: "vanilla", Description: ""}
+		orderedTemplates := []templates.TemplateData{}
+		vanillaFound := false
+		for _, t := range defaultTemplates {
+			if t.Name == vanillaTemplate.Name {
+				orderedTemplates = append([]templates.TemplateData{t}, orderedTemplates...)
+				vanillaFound = true
+			} else {
+				orderedTemplates = append(orderedTemplates, t)
+			}
+		}
+		if !vanillaFound {
+			orderedTemplates = append([]templates.TemplateData{vanillaTemplate}, orderedTemplates...)
+		}
+
+		templateOptions = nil
+		for _, t := range orderedTemplates {
+			templateOptions = append(templateOptions, huh.NewOption(t.Name, t.Name))
+		}
+
+		*templateName = "vanilla"
+
+		return templateOptions
+	}, nil)
+
+	formStyle := lipgloss.NewStyle().
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("62")).
+		Padding(1, 2).
+		Margin(1, 0)
+
+	formRenderer := lipgloss.NewRenderer(os.Stdout)
+
+	err := form.Run()
+	if err != nil {
+		term.Error(fmt.Errorf("Interactive form failed: %w", err))
+		return nil, fmt.Errorf("form execution failed: %w", err)
+	}
+
+	formString := formRenderer.NewStyle().Render(form.View())
+	styledForm := formStyle.Render(formString)
+	fmt.Println(styledForm)
+
+	if confirmProjectCreation {
+		fmt.Println("Creating project...")
+		return options, nil
+	} else {
+		fmt.Println("Project creation cancelled.")
+		return nil, fmt.Errorf("project creation cancelled by user")
+	}
 }
