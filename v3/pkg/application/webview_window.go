@@ -185,8 +185,13 @@ func (w *WebviewWindow) SetMenu(menu *Menu) {
 	}
 }
 
-// EmitEvent emits an event from the window
-func (w *WebviewWindow) EmitEvent(name string, data ...any) {
+// EmitEvent emits a custom event with the specified name and associated data.
+// The [CustomEvent.Sender] field will be set to the window name.
+//
+// If the given event name is registered, EmitEvent validates the data parameter
+// against the expected data type. In case of a mismatch, EmitEvent reports an error
+// to the registered error handler for the application and cancels the event.
+func (w *WebviewWindow) EmitEvent(name string, data any) {
 	globalApplication.emitEvent(&CustomEvent{
 		Name:   name,
 		Data:   data,

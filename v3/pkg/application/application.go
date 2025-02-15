@@ -380,17 +380,27 @@ func (a *App) RegisterService(service Service) {
 	a.options.Services = append(a.options.Services, service)
 }
 
-// EmitEvent will emit an event
+// EmitEvent emits a custom event with the specified name and associated data.
+//
+// If the given event name is registered, EmitEvent validates the data parameter
+// against the expected data type. In case of a mismatch, EmitEvent reports an error
+// to the registered error handler for the application and cancels the event.
 func (a *App) EmitEvent(name string, data any) {
-	a.customEventProcessor.Emit(&CustomEvent{
+	a.emitEvent(&CustomEvent{
 		Name: name,
 		Data: data,
 	})
 }
 
-// EmitEvent will emit an event
+// emitEvent emits a custom event.
+//
+// If the given event name is registered, emitEvent validates the data parameter
+// against the expected data type. In case of a mismatch, emitEvent reports an error
+// to the registered error handler for the application and cancels the event.
 func (a *App) emitEvent(event *CustomEvent) {
-	a.customEventProcessor.Emit(event)
+	if err := a.customEventProcessor.Emit(event); err != nil {
+		a.handleError(err)
+	}
 }
 
 // OnEvent will listen for events

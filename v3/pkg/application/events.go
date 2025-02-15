@@ -2,6 +2,8 @@ package application
 
 import (
 	"encoding/json"
+	"fmt"
+	"reflect"
 	"sync"
 
 	"github.com/samber/lo"
@@ -52,7 +54,11 @@ var menuItemClicked = make(chan uint, 5)
 type CustomEvent struct {
 	Name      string `json:"name"`
 	Data      any    `json:"data"`
-	Sender    string `json:"sender"` // Name of the window sending the event, or "" if sent from application
+
+	// Sender records the name of the window sending the event,
+	// or "" if sent from application.
+	Sender    string `json:"sender,omitempty"`
+
 	cancelled bool
 	lock      sync.RWMutex
 }
@@ -131,10 +137,20 @@ func (e *EventProcessor) Once(eventName string, callback func(event *CustomEvent
 	return e.registerListener(eventName, callback, 1)
 }
 
-// Emit sends an event to all listeners
-func (e *EventProcessor) Emit(thisEvent *CustomEvent) {
+// Emit sends an event to all listeners.
+//
+// If the event is globally registered, it validates associated data
+// against the expected data type. In case of mismatches,
+// it cancels the event and returns an error.
+func (e *EventProcessor) Emit(thisEvent *CustomEvent) error {
 	if thisEvent == nil {
-		return
+		return nil
+	}
+
+	// Validate data type; in case of mismatches cancel and report error.
+	if err := validateEventData(thisEvent); err != nil {
+		thisEvent.Cancel()
+		return err
 	}
 
 	// If we have any hooks, run them first and check if the event was cancelled
@@ -143,7 +159,7 @@ func (e *EventProcessor) Emit(thisEvent *CustomEvent) {
 			for _, thisHook := range hooks {
 				thisHook.callback(thisEvent)
 				if thisEvent.IsCancelled() {
-					return
+					return nil
 				}
 			}
 		}
@@ -157,6 +173,8 @@ func (e *EventProcessor) Emit(thisEvent *CustomEvent) {
 		defer handlePanic()
 		e.dispatchEventToWindows(thisEvent)
 	}()
+
+	return nil
 }
 
 func (e *EventProcessor) Off(eventName string) {
@@ -263,4 +281,66 @@ func (e *EventProcessor) dispatchEventToListeners(event *CustomEvent) {
 			return l.delete == false
 		})
 	}
+}
+
+var registeredEvents sync.Map
+
+// RegisterEvent registers a custom event name and associated data type.
+// Events may be registered at most once.
+// Duplicate calls for the same event name trigger a panic.
+//
+// The binding generator emits typing information for all registered custom events.
+// [App.EmitEvent] and [Window.EmitEvent] check the data type for registered events.
+// Data types are matched exactly and no conversion is performed.
+//
+// It is recommended to call RegisterEvent only within init functions.
+func RegisterEvent[Data any](name string) {
+	if typ, ok := registeredEvents.Load(name); ok {
+		panic(fmt.Errorf("event '%s' is already registered with data type %s", name, typ))
+	}
+
+	registeredEvents.Store(name, reflect.TypeFor[Data]())
+}
+
+func validateEventData(event *CustomEvent) error {
+	r, ok := registeredEvents.Load(event.Name)
+	if !ok {
+		// Unregistered events are always acceptable.
+		return nil
+	}
+
+	typ := r.(reflect.Type)
+
+	if typ.Kind() == reflect.Interface {
+		if reflect.TypeOf(event.Data).Implements(typ) {
+			return nil
+		}
+	} else {
+		if reflect.TypeOf(event.Data) == typ {
+			return nil
+		}
+	}
+
+	return fmt.Errorf(
+		"data of type %s for event '%s' does not match registered data type %s",
+		reflect.TypeOf(event.Data),
+		event.Name,
+		typ,
+	)
+}
+
+func decodeEventData(name string, data []byte) (result any, err error) {
+	typ, ok := registeredEvents.Load(name)
+	if !ok {
+		// Unregistered events unmarshal to any.
+		err = json.Unmarshal(data, &result)
+		return
+	}
+
+	value := reflect.New(typ.(reflect.Type))
+	err = json.Unmarshal(data, value.Interface())
+	if err != nil {
+		result = value.Elem().Interface()
+	}
+	return
 }
