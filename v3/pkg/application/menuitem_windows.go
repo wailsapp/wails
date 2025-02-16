@@ -96,6 +96,10 @@ func (m *windowsMenuItem) setChecked(checked bool) {
 	m.update()
 }
 
+func (m *windowsMenuItem) destroy() {
+	w32.RemoveMenu(m.hMenu, m.id, w32.MF_BYCOMMAND)
+}
+
 func (m *windowsMenuItem) setAccelerator(accelerator *accelerator) {
 	//// Set the keyboard shortcut of the menu item
 	//var modifier C.int

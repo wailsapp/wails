@@ -587,6 +587,10 @@ func menuItemNew(label string, bitmap []byte) pointer {
 	return menuItemAddProperties(C.gtk_menu_item_new(), label, bitmap)
 }
 
+func menuItemDestroy(widget pointer) {
+	C.gtk_widget_destroy((*C.GtkWidget)(widget))
+}
+
 func menuItemAddProperties(menuItem *C.GtkWidget, label string, bitmap []byte) pointer {
 	/*
 		   // FIXME: Support accelerator configuration
