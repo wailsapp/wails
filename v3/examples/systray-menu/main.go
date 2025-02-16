@@ -55,6 +55,7 @@ func main() {
 
 	myMenu := app.NewMenu()
 	myMenu.Add("Wails").SetBitmap(logo).SetEnabled(false)
+	myMenu.Add("Hidden").SetHidden(true)
 
 	myMenu.Add("Hello World!").OnClick(func(ctx *application.Context) {
 		println("Hello World!")
