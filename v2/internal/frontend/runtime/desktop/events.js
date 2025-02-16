@@ -202,6 +202,8 @@ export function EventsOff(eventName, ...additionalEventNames) {
  */
  function listenerOff(listener) {
     const eventName = listener.eventName;
+    if (eventListeners[eventName] === undefined) return;
+
     // Remove local listener
     eventListeners[eventName] = eventListeners[eventName].filter(l => l !== listener);
 
