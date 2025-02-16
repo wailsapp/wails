@@ -366,13 +366,15 @@ func (a *App) handleError(err error) {
 // Registered services will be bound and initialised
 // in registration order upon calling [App.Run].
 //
-// RegisterService will panic if called after [App.Run].
+// RegisterService will log an error message
+// and discard the given service if called after [App.Run].
 func (a *App) RegisterService(service Service) {
 	a.runLock.Lock()
 	defer a.runLock.Unlock()
 
 	if a.starting || a.running {
-		panic("services must be registered before running the application")
+		a.error("services must be registered before running the application. Service '%s' will not be registered.", getServiceName(service))
+		return
 	}
 
 	a.options.Services = append(a.options.Services, service)
