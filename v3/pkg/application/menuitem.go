@@ -33,6 +33,12 @@ func getMenuItemByID(id uint) *MenuItem {
 	return menuItemMap[id]
 }
 
+func removeMenuItemByID(id uint) {
+	menuItemMapLock.Lock()
+	defer menuItemMapLock.Unlock()
+	delete(menuItemMap, id)
+}
+
 type menuItemImpl interface {
 	setTooltip(s string)
 	setLabel(s string)
@@ -41,6 +47,7 @@ type menuItemImpl interface {
 	setAccelerator(accelerator *accelerator)
 	setHidden(hidden bool)
 	setBitmap(bitmap []byte)
+	destroy()
 }
 
 type MenuItem struct {
@@ -424,4 +431,30 @@ func (m *MenuItem) Clone() *MenuItem {
 		result.contextMenuData = m.contextMenuData.clone()
 	}
 	return result
+}
+
+func (m *MenuItem) Destroy() {
+
+	removeMenuItemByID(m.id)
+
+	// Clean up resources
+	if m.impl != nil {
+		m.impl.destroy()
+	}
+	if m.submenu != nil {
+		m.submenu.Destroy()
+		m.submenu = nil
+	}
+
+	if m.contextMenuData != nil {
+		m.contextMenuData = nil
+	}
+
+	if m.accelerator != nil {
+		m.accelerator = nil
+	}
+
+	m.callback = nil
+	m.radioGroupMembers = nil
+
 }
