@@ -68,8 +68,14 @@ jobs:
 
       - name: Run tests (!mac)
         if: matrix.os != 'macos-latest'
+        uses: coactions/setup-xvfb@v1
+        with:
+          working-directory: ./v3
+          run: go test -v ./...
+
+      - name: Typecheck binding generator output
         working-directory: ./v3
-        run: go test -v ./...
+        run: task generator:test:check
 
   test_js:
     name: Run JS Tests
