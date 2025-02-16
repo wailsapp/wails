@@ -82,6 +82,9 @@ func (m *macosMenu) update() {
 
 func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 	for _, item := range menu.items {
+		if item.hidden {
+			continue
+		}
 		switch item.itemType {
 		case submenu:
 			submenu := item.submenu
