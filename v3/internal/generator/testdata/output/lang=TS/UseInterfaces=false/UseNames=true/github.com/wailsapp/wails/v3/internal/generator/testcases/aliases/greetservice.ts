@@ -12,7 +12,11 @@ import {Call as $Call, Create as $Create} from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as $models from "./internal.js";
+import * as nobindingshere$0 from "../no_bindings_here/models.js";
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as $models from "./models.js";
 
 /**
  * Get someone.
@@ -50,13 +54,22 @@ export function GetButDifferent(): Promise<$models.GenericPerson<boolean>> & { c
     return $typingPromise;
 }
 
+export function GetButForeignPrivateAlias(): Promise<nobindingshere$0.PrivatePerson> & { cancel(): void } {
+    let $resultPromise = $Call.ByName("main.GreetService.GetButForeignPrivateAlias") as any;
+    let $typingPromise = $resultPromise.then(($result: any) => {
+        return $$createType2($result);
+    }) as any;
+    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
+    return $typingPromise;
+}
+
 /**
  * Greet a lot of unusual things.
  */
 export function Greet($0: $models.EmptyAliasStruct, $1: $models.EmptyStruct): Promise<$models.AliasStruct> & { cancel(): void } {
     let $resultPromise = $Call.ByName("main.GreetService.Greet", $0, $1) as any;
     let $typingPromise = $resultPromise.then(($result: any) => {
-        return $$createType5($result);
+        return $$createType6($result);
     }) as any;
     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
     return $typingPromise;
@@ -65,12 +78,13 @@ export function Greet($0: $models.EmptyAliasStruct, $1: $models.EmptyStruct): Pr
 // Private type creation functions
 const $$createType0 = $models.Person.createFrom;
 const $$createType1 = $models.GenericPerson.createFrom($Create.Any);
-const $$createType2 = $Create.Array($Create.Any);
+const $$createType2 = nobindingshere$0.personImpl.createFrom;
 const $$createType3 = $Create.Array($Create.Any);
-const $$createType4 = $Create.Struct({
-    "NoMoreIdeas": $$createType3,
-});
+const $$createType4 = $Create.Array($Create.Any);
 const $$createType5 = $Create.Struct({
-    "Foo": $$createType2,
-    "Other": $$createType4,
+    "NoMoreIdeas": $$createType4,
+});
+const $$createType6 = $Create.Struct({
+    "Foo": $$createType3,
+    "Other": $$createType5,
 });

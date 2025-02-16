@@ -8,12 +8,12 @@ export function Call(options: any): any;
 /**
  * Executes a method by name.
  *
- * @param {string} name - The name of the method in the format 'package.struct.method'.
+ * @param {string} methodName - The name of the method in the format 'package.struct.method'.
  * @param {...*} args - The arguments to pass to the method.
  * @throws {Error} If the name is not a string or is not in the correct format.
  * @returns {*} The result of the method execution.
  */
-export function ByName(name: string, ...args: any[]): any;
+export function ByName(methodName: string, ...args: any[]): any;
 /**
  * Calls a method by its ID with the specified arguments.
  *

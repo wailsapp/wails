@@ -5,6 +5,7 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"log"
 	"runtime"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/icons"
@@ -54,6 +55,7 @@ func main() {
 
 	myMenu := app.NewMenu()
 	myMenu.Add("Wails").SetBitmap(logo).SetEnabled(false)
+	myMenu.Add("Hidden").SetHidden(true)
 
 	myMenu.Add("Hello World!").OnClick(func(ctx *application.Context) {
 		println("Hello World!")
@@ -90,7 +92,12 @@ func main() {
 	myMenu.AddRadio("Radio 1", true).OnClick(radioCallback)
 	myMenu.AddRadio("Radio 2", false).OnClick(radioCallback)
 	myMenu.AddRadio("Radio 3", false).OnClick(radioCallback)
-
+	myMenu.AddSeparator()
+	myMenu.Add("Hide System tray for 3 seconds...").OnClick(func(ctx *application.Context) {
+		systemTray.Hide()
+		time.Sleep(3 * time.Second)
+		systemTray.Show()
+	})
 	myMenu.AddSeparator()
 	myMenu.Add("Quit").OnClick(func(ctx *application.Context) {
 		app.Quit()

@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Renamed Service methods: `Name` -> `ServiceName`, `OnStartup` -> `ServiceStartup`, `OnShutdown` -> `ServiceShutdown` by [@leaanthony](https://github.com/leaanthony)
 - Moved `Path` and `Paths` methods to `application` package by [@leaanthony](https://github.com/leaanthony)
+- The application menu is now macOS only by [@leaanthony](https://github.com/leaanthony)
 
 ### Added
 
@@ -44,6 +45,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved menu control by [@FalcoG](https://github.com/FalcoG) and [@leaanthony](https://github.com/leaanthony) in [#4031](https://github.com/wailsapp/wails/pull/4031)
 - More documentation by [@leaanthony](https://github.com/leaanthony)
 - Support cancellation of events in standard event listeners by [@leaanthony](https://github.com/leaanthony)
+- Systray `Hide`, `Show` and `Destroy` support by [@leaanthony](https://github.com/leaanthony)
+- Systray `SetTooltip` support by [@leaanthony](https://github.com/leaanthony). Original idea by [@lujihong](https://github.com/wailsapp/wails/issues/3487#issuecomment-2633242304)
+- Report package path in binding generator warnings about unsupported types by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add binding generator support for generic aliases by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add binding generator support for `omitzero` JSON flag by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add `//wails:ignore` directive to prevent binding generation for chosen service methods by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add `//wails:internal` directive on services and models to allow for types that are exported in Go but not in JS/TS by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add binding generator support for constants of alias type to allow for weakly typed enums by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add support for macOS 15 "Sequoia" to `OSInfo.Branding` for improved OS version detection in [#4065](https://github.com/wailsapp/wails/pull/4065)
 
 ### Fixed
 
@@ -55,6 +65,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed use-before-define errors in binding generator output by [@fbbdev](https://github.com/fbbdev) in [#4001](https://github.com/wailsapp/wails/pull/4001)
 - Pass build flags to binding generator by [@fbbdev](https://github.com/fbbdev) in [#4023](https://github.com/wailsapp/wails/pull/4023)
 - Change paths in windows Taskfile to forward slashes to ensure it works on non-Windows platforms by [@leaanthony](https://github.com/leaanthony)
+- Mac + Mac JS events now fixed by [@leaanthony](https://github.com/leaanthony)
+- Fixed event deadlock for macOS by [@leaanthony](https://github.com/leaanthony)
+- Fixed a `Parameter incorrect` error in Window initialisation on Windows when HTML provided but no JS by [@leaanthony](https://github.com/leaanthony)
+- Fixed size of response prefix used for content type sniffing in asset server by [@fbbdev](https://github.com/fbbdev) in [#4049](https://github.com/wailsapp/wails/pull/4049)
+- Fixed handling of non-404 responses on root index path in asset server by [@fbbdev](https://github.com/fbbdev) in [#4049](https://github.com/wailsapp/wails/pull/4049)
+- Fixed undefined behaviour in binding generator when testing properties of generic types by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed binding generator output for models when underlying type has not the same properties as named wrapper by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed binding generator output for map key types and preprocessing by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed binding generator output for structs that implement marshaler interfaces by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed detection of type cycles involving generic types in binding generator by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed invalid references to unexported models in binding generator output by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Moved injected code to the end of service files by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed handling of errors from file close operations in binding generator by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Suppressed warnings for services that define lifecycle or http methods but no other bound methods by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed non-React templates failing to display Hello World footer when using light system colour scheme by [@marcus-crane](https://github.com/marcus-crane) in [#4056](https://github.com/wailsapp/wails/pull/4056)
+- Fixed hidden menu items on macOS by [@leaanthony](https://github.com/leaanthony)
 
 ### Changed
 
@@ -64,7 +90,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ContextMenuData now returns a string instead of any by [@leaanthony](https://github.com/leaanthony)
 - `application.NewService` does not accept options as an optional parameter anymore (use `application.NewServiceWithOptions` instead) by [@leaanthony](https://github.com/leaanthony) in [#4024](https://github.com/wailsapp/wails/pull/4024)
 - Removed `nanoid` dependency by [@leaanthony](https://github.com/leaanthony)
-- Use Vite 6 by [@leaanthony](https://github.com/leaanthony)
+- Updated Window example for mica/acrylic/tabbed window styles by [@leaanthony](https://github.com/leaanthony)
+- In JS/TS bindings, `internal.js/ts` model files have been removed; all models can now be found in `models.js/ts` by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- In JS/TS bindings, named types are never rendered as aliases for other named types; the old behaviour is now restricted to aliases by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- In JS/TS bindings, in class mode, struct fields whose type is a type parameter are marked optional and never initialised automatically by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Update copyright date to 2025 by [@IanVS](https://github.com/IanVS) in [#4037](https://github.com/wailsapp/wails/pull/4037)
+- Add docs for event.Sender by [@IanVS](https://github.com/IanVS) in [#4075](https://github.com/wailsapp/wails/pull/4075)
+- Go 1.24 support by [@leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.9 - 2025-01-13
 

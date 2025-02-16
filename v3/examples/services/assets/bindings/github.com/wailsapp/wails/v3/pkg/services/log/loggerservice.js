@@ -41,16 +41,6 @@ export function Info(message, ...args) {
 }
 
 /**
- * Name returns the name of the plugin.
- * You should use the go module format e.g. github.com/myuser/myplugin
- * @returns {Promise<string> & { cancel(): void }}
- */
-export function Name() {
-    let $resultPromise = /** @type {any} */($Call.ByID(3407342027));
-    return $resultPromise;
-}
-
-/**
  * @param {slog$0.Level} level
  * @returns {Promise<void> & { cancel(): void }}
  */

@@ -1,3 +1,4 @@
 .task
 node_modules
 testdata/output/**/*.got.[jt]s
+testdata/output/**/*.got.log

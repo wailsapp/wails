@@ -70,17 +70,21 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	wrw := r.Response()
 	defer func() {
 		if err := wrw.Finish(); err != nil {
-			a.options.Logger.Error("Error finishing request '%s': %s", uri, err)
+			a.options.Logger.Error("Error finishing request.", "uri", uri, "error", err)
 		}
 	}()
 
-	var rw http.ResponseWriter = &contentTypeSniffer{rw: wrw} // Make sure we have a Content-Type sniffer
-	defer rw.WriteHeader(http.StatusNotImplemented)           // This is a NOP when a handler has already written and set the status
+	rw := &contentTypeSniffer{rw: wrw} // Make sure we have a Content-Type sniffer
+	defer func() {
+		if _, err := rw.complete(); err != nil {
+			a.options.Logger.Error("Error writing response data.", "uri", uri, "error", err)
+		}
+	}()
+	defer rw.WriteHeader(http.StatusNotImplemented) // This is a NOP when a handler has already written and set the status
 
 	uri, err = r.URL()
 	if err != nil {
-		a.options.Logger.Error(fmt.Sprintf("Error processing request, unable to get URL: %s (HttpResponse=500)", err))
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		a.webviewRequestErrorHandler(uri, rw, fmt.Errorf("URL: %w", err))
 		return
 	}
 
@@ -162,7 +166,7 @@ func (a *AssetServer) webviewRequestErrorHandler(uri string, rw http.ResponseWri
 		logInfo = strings.Replace(logInfo, fmt.Sprintf("%s://%s", uri.Scheme, uri.Host), "", 1)
 	}
 
-	a.options.Logger.Error("Error processing request (HttpResponse=500)", "details", logInfo, "error", err.Error())
+	a.options.Logger.Error("Error processing request (HttpResponse=500)", "details", logInfo, "error", err)
 	http.Error(rw, err.Error(), http.StatusInternalServerError)
 }
 

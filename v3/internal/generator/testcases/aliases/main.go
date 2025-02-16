@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"log"
 
+	nobindingshere "github.com/wailsapp/wails/v3/internal/generator/testcases/no_bindings_here"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -52,6 +53,39 @@ type GenericPerson[T any] struct {
 // Another class alias, but ordered after its aliased class.
 type StrangelyAliasedPerson = Person
 
+// A generic alias that forwards to a type parameter.
+// type GenericAlias[T any] = T
+
+// A generic alias that wraps a pointer type.
+// type GenericPtrAlias[T any] = *GenericAlias[T]
+
+// A generic alias that wraps a map.
+// type GenericMapAlias[T interface {
+// 	comparable
+// 	encoding.TextMarshaler
+// }, U any] = map[T]U
+
+// A generic alias that wraps a generic struct.
+// type GenericPersonAlias[T any] = GenericPerson[[]GenericPtrAlias[T]]
+
+// An alias that wraps a class through a non-typeparam alias.
+// type IndirectPersonAlias = GenericPersonAlias[bool]
+
+// An alias that wraps a class through a typeparam alias.
+// type TPIndirectPersonAlias = GenericAlias[GenericPerson[bool]]
+
+// A class whose fields have various aliased types.
+// type AliasGroup struct {
+// 	GAi   GenericAlias[int]
+// 	GAP   GenericAlias[GenericPerson[bool]]
+// 	GPAs  GenericPtrAlias[[]string]
+// 	GPAP  GenericPtrAlias[GenericPerson[[]int]]
+// 	GMA   GenericMapAlias[struct{ encoding.TextMarshaler }, float32]
+// 	GPA   GenericPersonAlias[bool]
+// 	IPA   IndirectPersonAlias
+// 	TPIPA TPIndirectPersonAlias
+// }
+
 // Get someone.
 func (GreetService) Get(aliasValue Alias) Person {
 	return Person{"hello", aliasValue}
@@ -66,6 +100,14 @@ func (GreetService) GetButDifferent() GenericPerson[bool] {
 func (GreetService) GetButAliased(p AliasedPerson) StrangelyAliasedPerson {
 	return p
 }
+
+func (GreetService) GetButForeignPrivateAlias() (_ nobindingshere.PrivatePerson) {
+	return
+}
+
+// func (GreetService) GetButGenericAliases() (_ AliasGroup) {
+//	return
+// }
 
 // Greet a lot of unusual things.
 func (GreetService) Greet(EmptyAliasStruct, EmptyStruct) AliasStruct {

@@ -1,38 +1,4 @@
-export default thisWindow;
-export type Screen = import("./screens").Screen;
-/**
- * A record describing the position of a window.
- */
-export type Position = {
-    /**
-     * - The horizontal position of the window
-     */
-    x: number;
-    /**
-     * - The vertical position of the window
-     */
-    y: number;
-};
-/**
- * A record describing the size of a window.
- */
-export type Size = {
-    /**
-     * - The width of the window
-     */
-    width: number;
-    /**
-     * - The height of the window
-     */
-    height: number;
-};
-/**
- * The window within which the script is running.
- *
- * @type {Window}
- */
-declare const thisWindow: Window;
-declare class Window {
+export class Window {
     /**
      * Initialises a window object with the specified name.
      *
@@ -405,3 +371,37 @@ declare class Window {
      */
     public ZoomReset(): Promise<void>;
 }
+export default thisWindow;
+export type Screen = import("./screens").Screen;
+/**
+ * A record describing the position of a window.
+ */
+export type Position = {
+    /**
+     * - The horizontal position of the window
+     */
+    x: number;
+    /**
+     * - The vertical position of the window
+     */
+    y: number;
+};
+/**
+ * A record describing the size of a window.
+ */
+export type Size = {
+    /**
+     * - The width of the window
+     */
+    width: number;
+    /**
+     * - The height of the window
+     */
+    height: number;
+};
+/**
+ * The window within which the script is running.
+ *
+ * @type {Window}
+ */
+declare const thisWindow: Window;

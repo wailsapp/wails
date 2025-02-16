@@ -22,7 +22,7 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
-    "vite": "^6.0.0",
+    "vite": "^5.0.8",
     "@wailsio/runtime": "latest"
   }
 }

@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/generator/collect"
+	"golang.org/x/tools/go/types/typeutil"
 )
 
 // SkipCreate returns true if the given array of types needs no creation code.
@@ -21,31 +22,34 @@ func (m *module) SkipCreate(ts []types.Type) bool {
 
 // NeedsCreate returns true if the given type needs some creation code.
 func (m *module) NeedsCreate(typ types.Type) bool {
-	return m.needsCreateImpl(typ, make(map[*types.TypeName]bool))
+	return m.needsCreateImpl(typ, new(typeutil.Map))
 }
 
 // needsCreateImpl provides the actual implementation of NeedsCreate.
 // The visited parameter is used to break cycles.
-func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]bool) bool {
+func (m *module) needsCreateImpl(typ types.Type, visited *typeutil.Map) bool {
 	switch t := typ.(type) {
-	case *types.Alias, *types.Named:
-		obj := typ.(interface{ Obj() *types.TypeName }).Obj()
-		if visited[obj] {
+	case *types.Alias:
+		return m.needsCreateImpl(types.Unalias(typ), visited)
+
+	case *types.Named:
+		if visited.Set(typ, true) != nil {
+			// The only way to hit a cycle here
+			// is through a chain of structs, nested pointers and arrays (not slices).
+			// We can safely return false at this point
+			// as the final answer is independent of the cycle.
 			return false
 		}
-		visited[obj] = true
 
-		if obj.Pkg() == nil {
-			// Builtin alias or named type: render underlying type.
+		if t.Obj().Pkg() == nil {
+			// Builtin named type: render underlying type.
 			return m.needsCreateImpl(t.Underlying(), visited)
 		}
 
-		if collect.IsAny(t) || collect.IsString(t) {
+		if collect.IsAny(typ) || collect.IsStringAlias(typ) {
 			break
-		} else if collect.IsClass(t) {
+		} else if collect.IsClass(typ) {
 			return true
-		} else if _, isAlias := typ.(*types.Alias); isAlias {
-			return m.needsCreateImpl(types.Unalias(t), visited)
 		} else {
 			return m.needsCreateImpl(t.Underlying(), visited)
 		}
@@ -57,6 +61,10 @@ func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]boo
 		return true
 
 	case *types.Struct:
+		if t.NumFields() == 0 || collect.MaybeJSONMarshaler(typ) != collect.NonMarshaler || collect.MaybeTextMarshaler(typ) != collect.NonMarshaler {
+			return false
+		}
+
 		info := m.collector.Struct(t)
 		info.Collect()
 
@@ -114,7 +122,6 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 	case *types.Map:
 		pp, ok := m.postponedCreates.At(typ).(*postponed)
 		if !ok {
-			m.JSCreateWithParams(t.Key(), params)
 			m.JSCreateWithParams(t.Elem(), params)
 			pp = &postponed{m.postponedCreates.Len(), params}
 			m.postponedCreates.Set(typ, pp)
@@ -128,7 +135,7 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 			return m.JSCreateWithParams(t.Underlying(), params)
 		}
 
-		if collect.IsAny(typ) || collect.IsString(typ) || !m.NeedsCreate(typ) {
+		if !m.NeedsCreate(typ) {
 			break
 		}
 
@@ -166,6 +173,10 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 		return fmt.Sprintf("$$createType%d%s", pp.index, params)
 
 	case *types.Struct:
+		if t.NumFields() == 0 || collect.MaybeJSONMarshaler(typ) != collect.NonMarshaler || collect.MaybeTextMarshaler(typ) != collect.NonMarshaler {
+			break
+		}
+
 		pp, ok := m.postponedCreates.At(typ).(*postponed)
 		if ok {
 			return fmt.Sprintf("$$createType%d%s", pp.index, params)
@@ -212,12 +223,7 @@ func (m *module) PostponedCreates() []string {
 			result[pp.index] = fmt.Sprintf("%s$Create.Array(%s)", pre, m.JSCreateWithParams(t.(interface{ Elem() types.Type }).Elem(), pp.params))
 
 		case *types.Map:
-			result[pp.index] = fmt.Sprintf(
-				"%s$Create.Map(%s, %s)",
-				pre,
-				m.JSCreateWithParams(t.Key(), pp.params),
-				m.JSCreateWithParams(t.Elem(), pp.params),
-			)
+			result[pp.index] = fmt.Sprintf("%s$Create.Map($Create.Any, %s)", pre, m.JSCreateWithParams(t.Elem(), pp.params))
 
 		case *types.Named:
 			if !collect.IsClass(key) {
@@ -313,10 +319,10 @@ func (m *module) PostponedCreates() []string {
 		}
 	})
 
-	if newline != "\n" {
+	if Newline != "\n" {
 		// Replace newlines according to local git config.
 		for i := range result {
-			result[i] = strings.ReplaceAll(result[i], "\n", newline)
+			result[i] = strings.ReplaceAll(result[i], "\n", Newline)
 		}
 	}
 

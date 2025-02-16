@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 
@@ -738,20 +739,21 @@ func (w *WebviewWindow) Center() {
 // OnWindowEvent registers a callback for the given window event
 func (w *WebviewWindow) OnWindowEvent(eventType events.WindowEventType, callback func(event *WindowEvent)) func() {
 	eventID := uint(eventType)
-	w.eventListenersLock.Lock()
-	defer w.eventListenersLock.Unlock()
 	windowEventListener := &WindowEventListener{
 		callback: callback,
 	}
+	w.eventListenersLock.Lock()
 	w.eventListeners[eventID] = append(w.eventListeners[eventID], windowEventListener)
+	w.eventListenersLock.Unlock()
 	if w.impl != nil {
 		w.impl.on(eventID)
 	}
 
 	return func() {
+		// Check if eventListener is already locked
 		w.eventListenersLock.Lock()
-		defer w.eventListenersLock.Unlock()
 		w.eventListeners[eventID] = lo.Without(w.eventListeners[eventID], windowEventListener)
+		w.eventListenersLock.Unlock()
 	}
 }
 
@@ -773,9 +775,6 @@ func (w *WebviewWindow) RegisterHook(eventType events.WindowEventType, callback 
 }
 
 func (w *WebviewWindow) HandleWindowEvent(id uint) {
-	w.eventListenersLock.RLock()
-	defer w.eventListenersLock.RUnlock()
-
 	// Get hooks
 	w.eventHooksLock.RLock()
 	hooks := w.eventHooks[id]
@@ -791,7 +790,12 @@ func (w *WebviewWindow) HandleWindowEvent(id uint) {
 		}
 	}
 
-	for _, listener := range w.eventListeners[id] {
+	// Copy the w.eventListeners
+	w.eventListenersLock.RLock()
+	var tempListeners = slices.Clone(w.eventListeners[id])
+	w.eventListenersLock.RUnlock()
+
+	for _, listener := range tempListeners {
 		go func() {
 			defer handlePanic()
 			listener.callback(thisEvent)

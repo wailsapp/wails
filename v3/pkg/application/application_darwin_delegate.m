@@ -56,7 +56,6 @@ extern void handleSecondInstanceData(char * message);
         handleSecondInstanceData((char*)utf8Message);
     }
 }
-
 // GENERATED EVENTS START
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     if( hasListeners(EventApplicationDidBecomeActive) ) {
@@ -118,9 +117,9 @@ extern void handleSecondInstanceData(char * message);
     }
 }
 
-- (void)applicationDidResignActiveNotification:(NSNotification *)notification {
-    if( hasListeners(EventApplicationDidResignActiveNotification) ) {
-        processApplicationEvent(EventApplicationDidResignActiveNotification, NULL);
+- (void)applicationDidResignActive:(NSNotification *)notification {
+    if( hasListeners(EventApplicationDidResignActive) ) {
+        processApplicationEvent(EventApplicationDidResignActive, NULL);
     }
 }
 

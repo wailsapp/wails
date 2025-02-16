@@ -172,8 +172,12 @@ func main() {
 		event := strings.TrimSpace(string(split[1]))
 		var ignoreEvent bool
 		if strings.HasSuffix(event, "!") {
-			event = event[:len(event)-1]
+			event = strings.TrimSuffix(event, "!")
 			ignoreEvent = true
+		}
+		// Strip last byte of line if it's a "!" character
+		if line[len(line)-1] == '!' {
+			line = line[:len(line)-1]
 		}
 
 		// Title case the event name

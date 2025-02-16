@@ -193,6 +193,14 @@ func (info *StructInfo) Collect() *StructInfo {
 						// or field is not structure:
 						// add to field list.
 
+						if !info.collector.options.UseInterfaces {
+							// In class mode, mark parametric fields as optional
+							// because there is no way to know their default JS value in advance.
+							if _, isTypeParam := types.Unalias(field.Type()).(*types.TypeParam); isTypeParam {
+								optional = true
+							}
+						}
+
 						finfo := fieldData{
 							StructField: &StructField{
 								JsonName: name,
@@ -317,7 +325,7 @@ func parseTag(tag string) (name string, optional bool, quoted bool, visible bool
 
 	for _, option := range parts[1:] {
 		switch option {
-		case "omitempty":
+		case "omitempty", "omitzero":
 			optional = true
 		case "string":
 			quoted = true

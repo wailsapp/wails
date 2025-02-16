@@ -6,4 +6,6 @@ export {
     GreetService
 };
 
-export * from "./models.js";
+export type {
+    Person
+} from "./models.js";

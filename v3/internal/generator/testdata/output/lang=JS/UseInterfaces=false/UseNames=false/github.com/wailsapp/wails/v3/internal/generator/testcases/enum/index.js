@@ -7,4 +7,8 @@ export {
     GreetService
 };
 
-export * from "./models.js";
+export {
+    Age,
+    Person,
+    Title
+} from "./models.js";

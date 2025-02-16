@@ -40,4 +40,4 @@ export function LikeThisOtherOne(): Promise<void> & { cancel(): void } {
 // Private type creation functions
 const $$createType0 = nobindingshere$0.Person.createFrom;
 const $$createType1 = nobindingshere$0.HowDifferent.createFrom($Create.Any);
-const $$createType2 = nobindingshere$0.PrivatePerson.createFrom;
+const $$createType2 = nobindingshere$0.personImpl.createFrom;

@@ -3,10 +3,10 @@
 package webview
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/wailsapp/go-webview2/pkg/edge"
 )
@@ -202,15 +202,17 @@ func getHeaders(req *edge.ICoreWebView2WebResourceRequest) (http.Header, error) 
 }
 
 func combineErrs(errs []error) error {
-	// TODO use Go1.20 errors.Join
-	if len(errs) == 0 {
-		return nil
+	err := errors.Join(errs...)
+
+	if err != nil {
+		// errors.Join wraps even a single error.
+		// Check the filtered error list,
+		// and if it has just one element return it directly.
+		errs = err.(interface{ Unwrap() []error }).Unwrap()
+		if len(errs) == 1 {
+			return errs[0]
+		}
 	}
 
-	errStrings := make([]string, len(errs))
-	for i, err := range errs {
-		errStrings[i] = err.Error()
-	}
-
-	return fmt.Errorf(strings.Join(errStrings, "\n"))
+	return err
 }

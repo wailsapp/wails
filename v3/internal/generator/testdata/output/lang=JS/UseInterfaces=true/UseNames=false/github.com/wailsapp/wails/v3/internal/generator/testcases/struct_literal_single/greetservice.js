@@ -13,7 +13,7 @@ import {Call as $Call} from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as $models from "./internal.js";
+import * as $models from "./models.js";
 
 /**
  * @param {number[]} $in
@@ -170,11 +170,11 @@ export function MapIntInt($in) {
 }
 
 /**
- * @param {{ [_: string]: number } | null} $in
+ * @param {{ [_: `${number}`]: number | null } | null} $in
  * @returns {Promise<void> & { cancel(): void }}
  */
-export function MapIntPointerInt($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(550413585, $in));
+export function MapIntIntPointer($in) {
+    let $resultPromise = /** @type {any} */($Call.ByID(2163571325, $in));
     return $resultPromise;
 }
 

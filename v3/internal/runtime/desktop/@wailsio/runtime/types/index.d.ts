@@ -1,3 +1,4 @@
+export function init(): void;
 import * as Application from "./application";
 import * as Browser from "./browser";
 import * as Call from "./calls";
