@@ -276,7 +276,7 @@ func processKeyBindingOptions(keyBindings map[string]func(window *WebviewWindow)
 		// Parse the key to an accelerator
 		acc, err := parseAccelerator(key)
 		if err != nil {
-			globalApplication.error("Invalid keybinding: %s", err.Error())
+			globalApplication.error("invalid keybinding: %w", err)
 			continue
 		}
 		result[acc.String()] = callback
@@ -686,7 +686,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 			InvokeSync(func() {
 				err := w.startDrag()
 				if err != nil {
-					w.Error("Failed to start drag: %s", err)
+					w.Error("Failed to start drag: %w", err)
 				}
 			})
 		}
@@ -694,12 +694,12 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		if !w.IsFullscreen() {
 			sl := strings.Split(message, ":")
 			if len(sl) != 3 {
-				w.Error("Unknown message returned from dispatcher", "message", message)
+				w.Error("unknown message returned from dispatcher: %s", message)
 				return
 			}
 			err := w.startResize(sl[2])
 			if err != nil {
-				w.Error(err.Error())
+				w.Error("%w", err)
 			}
 		}
 	case message == "wails:runtime:ready":
@@ -710,7 +710,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 			w.ExecJS(js)
 		}
 	default:
-		w.Error("Unknown message sent via 'invoke' on frontend: %v", message)
+		w.Error("unknown message sent via 'invoke' on frontend: %v", message)
 	}
 }
 
@@ -1158,10 +1158,8 @@ func (w *WebviewWindow) Info(message string, args ...any) {
 }
 
 func (w *WebviewWindow) Error(message string, args ...any) {
-	var messageArgs []interface{}
-	messageArgs = append(messageArgs, args...)
-	messageArgs = append(messageArgs, "sender", w.Name())
-	globalApplication.error(message, messageArgs...)
+	args = append([]any{w.Name()}, args...)
+	globalApplication.error("in window '%s': "+message, args...)
 }
 
 func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
@@ -1178,7 +1176,7 @@ func (w *WebviewWindow) OpenContextMenu(data *ContextMenuData) {
 	// try application level context menu
 	menu, ok := globalApplication.getContextMenu(data.Id)
 	if !ok {
-		w.Error("No context menu found for id: %s", data.Id)
+		w.Error("no context menu found for id: %s", data.Id)
 		return
 	}
 	menu.setContextData(data)

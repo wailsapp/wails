@@ -104,17 +104,17 @@ func New(appOptions Options) *App {
 					case "/wails/capabilities":
 						err := assetserver.ServeFile(rw, path, globalApplication.capabilities.AsBytes())
 						if err != nil {
-							result.handleFatalError(fmt.Errorf("unable to serve capabilities: %s", err.Error()))
+							result.fatal("unable to serve capabilities: %w", err)
 						}
 					case "/wails/flags":
 						updatedOptions := result.impl.GetFlags(appOptions)
 						flags, err := json.Marshal(updatedOptions)
 						if err != nil {
-							result.handleFatalError(fmt.Errorf("invalid flags provided to application: %s", err.Error()))
+							result.fatal("invalid flags provided to application: %w", err)
 						}
 						err = assetserver.ServeFile(rw, path, flags)
 						if err != nil {
-							result.handleFatalError(fmt.Errorf("unable to serve flags: %s", err.Error()))
+							result.fatal("unable to serve flags: %w", err)
 						}
 					default:
 						next.ServeHTTP(rw, req)
@@ -131,7 +131,7 @@ func New(appOptions Options) *App {
 
 	srv, err := assetserver.NewAssetServer(opts)
 	if err != nil {
-		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
+		result.fatal("application initialisation failed: %w", err)
 	}
 
 	result.assets = srv
@@ -156,11 +156,11 @@ func New(appOptions Options) *App {
 			if errors.Is(err, alreadyRunningError) && manager != nil {
 				err = manager.notifyFirstInstance()
 				if err != nil {
-					globalApplication.error("Failed to notify first instance: " + err.Error())
+					globalApplication.error("failed to notify first instance: %w", err)
 				}
 				os.Exit(appOptions.SingleInstance.ExitCode)
 			}
-			result.handleFatalError(fmt.Errorf("failed to initialize single instance manager: %w", err))
+			result.fatal("failed to initialize single instance manager: %w", err)
 		} else {
 			result.singleInstanceManager = manager
 		}
@@ -367,7 +367,8 @@ func (a *App) handleError(err error) {
 // in registration order upon calling [App.Run].
 //
 // RegisterService will log an error message
-// and discard the given service if called after [App.Run].
+// and discard the given service
+// if called after [App.Run].
 func (a *App) RegisterService(service Service) {
 	a.runLock.Lock()
 	defer a.runLock.Unlock()

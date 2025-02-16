@@ -73,10 +73,8 @@ func handlePanic(options ...handlePanicOptions) bool {
 	}
 
 	// Get the error
-	var err error
-	if errPanic, ok := e.(error); ok {
-		err = errPanic
-	} else {
+	err, ok := e.(error)
+	if !ok {
 		err = fmt.Errorf("%v", e)
 	}
 
@@ -102,6 +100,5 @@ func processPanic(panicDetails *PanicDetails) {
 }
 
 func defaultPanicHandler(panicDetails *PanicDetails) {
-	errorMessage := fmt.Sprintf("panic error: %s\n%s", panicDetails.Error.Error(), panicDetails.StackTrace)
-	globalApplication.fatal(errorMessage)
+	globalApplication.fatal("panic error: %w\n%s", panicDetails.Error, panicDetails.StackTrace)
 }

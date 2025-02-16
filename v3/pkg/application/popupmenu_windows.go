@@ -1,7 +1,6 @@
 package application
 
 import (
-	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
@@ -133,12 +132,12 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 		}
 		ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), w32.MustStringToUTF16Ptr(menuText))
 		if !ok {
-			globalApplication.fatal(fmt.Sprintf("Error adding menu item: %s", menuText))
+			globalApplication.fatal("error adding menu item '%s'", menuText)
 		}
 		if item.bitmap != nil {
 			err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
 			if err != nil {
-				globalApplication.fatal(fmt.Sprintf("Error setting menu icons: %s", err.Error()))
+				globalApplication.fatal("error setting menu icons: %w", err)
 			}
 		}
 

@@ -4,11 +4,11 @@ package application
 
 import (
 	"errors"
-	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/w32"
-	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/pkg/w32"
+	"golang.org/x/sys/windows"
 )
 
 var (
@@ -33,7 +33,7 @@ func newPlatformLock(manager *singleInstanceManager) (platformLock, error) {
 
 func (l *windowsLock) acquire(uniqueID string) error {
 	if uniqueID == "" {
-		return fmt.Errorf("UniqueID is required for single instance lock")
+		return errors.New("UniqueID is required for single instance lock")
 	}
 
 	l.uniqueID = uniqueID
