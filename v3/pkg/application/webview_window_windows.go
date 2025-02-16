@@ -1521,7 +1521,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 		}
 		err = reqHeaders.Release()
 		if err != nil {
-			globalApplication.fatal("error releasing headers: %w" + err)
+			globalApplication.fatal("error releasing headers: %w", err)
 		}
 	}
 
