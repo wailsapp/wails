@@ -52,7 +52,7 @@ var menuItemClicked = make(chan uint, 5)
 type CustomEvent struct {
 	Name      string `json:"name"`
 	Data      any    `json:"data"`
-	Sender    string `json:"sender"`
+	Sender    string `json:"sender"` // Name of the window sending the event, or "" if sent from application
 	cancelled bool
 	lock      sync.RWMutex
 }

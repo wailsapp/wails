@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `//wails:internal` directive on services and models to allow for types that are exported in Go but not in JS/TS by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Add binding generator support for constants of alias type to allow for weakly typed enums by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Add binding generator tests for Go 1.24 features by [@fbbdev](https://github.com/fbbdev) in [#4068](https://github.com/wailsapp/wails/pull/4068)
+- Add support for macOS 15 "Sequoia" to `OSInfo.Branding` for improved OS version detection in [#4065](https://github.com/wailsapp/wails/pull/4065)
 
 ### Fixed
 
@@ -78,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved injected code to the end of service files by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Fixed handling of errors from file close operations in binding generator by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Suppressed warnings for services that define lifecycle or http methods but no other bound methods by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed hidden menu items on macOS by [@leaanthony](https://github.com/leaanthony)
 
 ### Changed
 
@@ -91,6 +93,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In JS/TS bindings, `internal.js/ts` model files have been removed; all models can now be found in `models.js/ts` by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - In JS/TS bindings, named types are never rendered as aliases for other named types; the old behaviour is now restricted to aliases by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - In JS/TS bindings, in class mode, struct fields whose type is a type parameter are marked optional and never initialised automatically by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Update copyright date to 2025 by [@IanVS](https://github.com/IanVS) in [#4037](https://github.com/wailsapp/wails/pull/4037)
+- Add docs for event.Sender by [@IanVS](https://github.com/IanVS) in [#4075](https://github.com/wailsapp/wails/pull/4075)
+- Go 1.24 support by [@leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.9 - 2025-01-13
 
