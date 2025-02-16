@@ -18,6 +18,7 @@ var macOSNames = map[string]string{
 	"12":    "Monterey",
 	"13":    "Ventura",
 	"14":    "Sonoma",
+	"15":    "Sequoia",
 	// Add newer versions as they are released...
 }
 

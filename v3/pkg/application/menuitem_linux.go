@@ -21,6 +21,14 @@ func (l linuxMenuItem) setTooltip(tooltip string) {
 	})
 }
 
+func (l linuxMenuItem) destroy() {
+	InvokeSync(func() {
+		l.blockSignal()
+		defer l.unBlockSignal()
+		menuItemDestroy(l.native)
+	})
+}
+
 func (l linuxMenuItem) blockSignal() {
 	if l.handlerId != 0 {
 		menuItemSignalBlock(l.native, l.handlerId, true)

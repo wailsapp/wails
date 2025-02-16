@@ -445,9 +445,10 @@ app.OnEvent("myevent", func(e *application.CustomEvent) {
     // Access event information
     name := e.Name        // Event name
     data := e.Data        // Event data
-    sender := e.Sender    // Event sender
+    sender := e.Sender    // Name of the window sending the event, or "" if sent from application
     cancelled := e.IsCancelled()  // Event cancellation status
 })
+```
 
 ## Event Cancellation
 
