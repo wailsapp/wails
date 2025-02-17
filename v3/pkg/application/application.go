@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -777,7 +776,7 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.Unlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Get callback from window
@@ -791,7 +790,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Check if the message starts with "wails:"
@@ -816,7 +815,7 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("Window #%d not found", event.WindowID)
+		a.warning("Window #%d not found", event.WindowID)
 		return
 	}
 	window.HandleWindowEvent(event.EventID)
@@ -827,7 +826,7 @@ func (a *App) handleMenuItemClicked(menuItemID uint) {
 
 	menuItem := getMenuItemByID(menuItemID)
 	if menuItem == nil {
-		log.Printf("MenuItem #%d not found", menuItemID)
+		a.warning("MenuItem #%d not found", menuItemID)
 		return
 	}
 	menuItem.handleClick()
@@ -1138,7 +1137,7 @@ func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Get callback from window
