@@ -51,5 +51,8 @@ ReactDOM.render(
 The recommended approach for routing in Svelte is [SvelteKit's adapter-static with SPA configuration](https://svelte.dev/docs/kit/single-page-apps):
 
 ```svelte
+export const prerender = true;
 export const ssr = false;
 ```
+
+See [the guide](sveltekit) for full details.
