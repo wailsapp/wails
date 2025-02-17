@@ -15,12 +15,16 @@ var endChan chan error = make(chan error, 1)
 
 func init() { runtime.LockOSThread() }
 
-func New(options application.Options) *application.App {
+func New(t *testing.T, options application.Options) *application.App {
 	var app *application.App
 
 	app = application.Get()
 	if app != nil {
 		return app
+	}
+
+	if options.Name == "" {
+		options.Name = t.Name()
 	}
 
 	errorHandler := options.ErrorHandler

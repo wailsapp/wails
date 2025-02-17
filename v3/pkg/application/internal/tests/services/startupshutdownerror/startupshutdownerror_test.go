@@ -42,7 +42,7 @@ func TestServiceStartupShutdownError(t *testing.T) {
 	var errCount atomic.Int64
 
 	var app *application.App
-	app = apptest.New(application.Options{
+	app = apptest.New(t, application.Options{
 		Services: services[:3],
 		ErrorHandler: func(err error) {
 			var mock *svctest.Error

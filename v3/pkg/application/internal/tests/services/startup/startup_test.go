@@ -46,7 +46,7 @@ func TestServiceStartup(t *testing.T) {
 		}}),
 	}
 
-	app := apptest.New(application.Options{
+	app := apptest.New(t, application.Options{
 		Services: services[:3],
 	})
 

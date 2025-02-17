@@ -36,7 +36,7 @@ func TestServiceShutdown(t *testing.T) {
 		svctest.Configure(&Service6{}, svctest.Config{Id: 5, T: t, Seq: &seq}),
 	}
 
-	app := apptest.New(application.Options{
+	app := apptest.New(t, application.Options{
 		Services: services[:3],
 	})
 
