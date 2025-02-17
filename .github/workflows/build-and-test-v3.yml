@@ -119,20 +119,18 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         template:
-          [
-            svelte,
-            svelte-ts,
-            vue,
-            vue-ts,
-            react,
-            react-ts,
-            preact,
-            preact-ts,
-            lit,
-            lit-ts,
-            vanilla,
-            vanilla-ts,
-          ]
+          - svelte
+          - svelte-ts
+          - vue
+          - vue-ts
+          - react
+          - react-ts
+          - preact
+          - preact-ts
+          - lit
+          - lit-ts
+          - vanilla
+          - vanilla-ts
         go-version: [1.24]
     steps:
       - name: Checkout
@@ -150,16 +148,6 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
           cache-dependency-path: "v3/go.sum"
-
-      - name: Setup Golang caches
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-golang-
 
       - name: Install Task
         uses: arduino/setup-task@v2
