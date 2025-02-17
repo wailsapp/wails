@@ -731,7 +731,7 @@ func (a *App) shutdownServices() {
 		if s, ok := service.instance.(ServiceShutdown); ok {
 			a.debug("Shutting down service:", "name", getServiceName(service))
 			if err := s.ServiceShutdown(); err != nil {
-				a.error("Error shutting down service '%s': %w", getServiceName(service), err)
+				a.error("error shutting down service '%s': %w", getServiceName(service), err)
 			}
 		}
 	}

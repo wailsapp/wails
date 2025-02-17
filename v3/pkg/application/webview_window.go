@@ -686,7 +686,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 			InvokeSync(func() {
 				err := w.startDrag()
 				if err != nil {
-					w.Error("Failed to start drag: %w", err)
+					w.Error("failed to start drag: %w", err)
 				}
 			})
 		}

@@ -208,7 +208,7 @@ func newPlatformApp(parent *App) *linuxApp {
 func (a *App) logPlatformInfo() {
 	info, err := operatingsystem.Info()
 	if err != nil {
-		a.error("Error getting OS info: %w", err)
+		a.error("error getting OS info: %w", err)
 		return
 	}
 
