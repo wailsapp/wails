@@ -2,8 +2,10 @@ package buildinfo
 
 import (
 	"fmt"
-	"github.com/samber/lo"
 	"runtime/debug"
+	"slices"
+
+	"github.com/samber/lo"
 )
 
 type Info struct {
@@ -29,7 +31,9 @@ func Get() (*Info, error) {
 		return setting.Key, setting.Value
 	})
 	result.Version = BuildInfo.Main.Version
-	result.Development = BuildInfo.Main.Version == "(devel)"
+	result.Development = -1 != slices.IndexFunc(BuildInfo.Settings, func(setting debug.BuildSetting) bool {
+		return setting.Key == "vcs" && setting.Value == "git"
+	})
 
 	return &result, nil
 
