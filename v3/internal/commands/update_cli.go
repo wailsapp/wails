@@ -70,7 +70,7 @@ func UpdateCLI(options *UpdateCLIOptions) error {
 			if err != nil {
 				pterm.Println("")
 				pterm.Println("No stable release found for this major version. To update to the latest pre-release (eg beta), run:")
-				pterm.Println("   wails update -pre")
+				pterm.Println("   wails3 update cli -pre")
 				return nil
 			}
 		}
@@ -143,7 +143,7 @@ func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentV
 		// Compare
 		if !success {
 			pterm.Println("Error: The requested version is lower than the current version.")
-			pterm.Printf("If this is what you really want to do, use `wails update -version %s`\n", targetVersionString)
+			pterm.Printf("If this is what you really want to do, use `wails3 update cli -version %s`\n", targetVersionString)
 			return nil
 		}
 
