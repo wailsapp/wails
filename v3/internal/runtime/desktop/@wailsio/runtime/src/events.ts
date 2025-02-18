@@ -157,6 +157,6 @@ export function OffAll(): void {
  * @param event - The name of the event to emit.
  * @returns A promise that will be fulfilled once the event has been emitted.
  */
-export function Emit<E extends WailsEventName = WailsEventName>(event: WailsEvent<E>): Promise<void> {
+export function Emit<E extends WailsEventName = WailsEventName>(event: WailsEvent<E>): Promise<boolean> {
     return call(EmitMethod, event);
 }

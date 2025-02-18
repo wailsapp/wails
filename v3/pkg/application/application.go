@@ -381,26 +381,29 @@ func (a *App) RegisterService(service Service) {
 }
 
 // EmitEvent emits a custom event with the specified name and associated data.
+// It returns a boolean indicating whether the event was cancelled by a hook.
 //
 // If the given event name is registered, EmitEvent validates the data parameter
 // against the expected data type. In case of a mismatch, EmitEvent reports an error
 // to the registered error handler for the application and cancels the event.
-func (a *App) EmitEvent(name string, data any) {
-	a.emitEvent(&CustomEvent{
+func (a *App) EmitEvent(name string, data any) bool {
+	return a.emitEvent(&CustomEvent{
 		Name: name,
 		Data: data,
 	})
 }
 
 // emitEvent emits a custom event.
+// It returns a boolean indicating whether the event was cancelled by a hook.
 //
 // If the given event name is registered, emitEvent validates the data parameter
 // against the expected data type. In case of a mismatch, emitEvent reports an error
 // to the registered error handler for the application and cancels the event.
-func (a *App) emitEvent(event *CustomEvent) {
+func (a *App) emitEvent(event *CustomEvent) bool {
 	if err := a.customEventProcessor.Emit(event); err != nil {
 		a.handleError(err)
 	}
+	return event.IsCancelled()
 }
 
 // OnEvent will listen for events
@@ -598,7 +601,7 @@ func (a *App) Run() error {
 	a.starting = true
 	a.runLock.Unlock()
 
-	// Ensure application context is canceled in case of failures.
+	// Ensure application context is cancelled in case of failures.
 	defer a.cancel()
 
 	// Call post-create hooks
@@ -611,7 +614,7 @@ func (a *App) Run() error {
 
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
-	// Ensure application context is canceled before service shutdown (duplicate calls don't hurt).
+	// Ensure application context is cancelled before service shutdown (duplicate calls don't hurt).
 	defer a.cancel()
 
 	// Startup services before dispatching any events.
@@ -729,7 +732,7 @@ func (a *App) shutdownServices() {
 	a.serviceShutdownLock.Lock()
 	defer a.serviceShutdownLock.Unlock()
 
-	// Ensure app context is canceled first (duplicate calls don't hurt).
+	// Ensure app context is cancelled first (duplicate calls don't hurt).
 	a.cancel()
 
 	for len(a.options.Services) > 0 {

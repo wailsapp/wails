@@ -1,8 +1,8 @@
 package application
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -46,7 +46,7 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 		event.Sender = window.Name()
 		globalApplication.emitEvent(&event)
 
-		m.ok(rw)
+		m.json(rw, event.IsCancelled())
 		m.Info("Runtime call:", "method", "Events."+eventsMethodNames[method], "name", event.Name, "sender", event.Sender, "data", event.Data, "cancelled", event.IsCancelled())
 	default:
 		m.httpError(rw, "Invalid events call:", fmt.Errorf("unknown method: %d", method))

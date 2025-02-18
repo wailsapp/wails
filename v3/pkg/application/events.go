@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"sync"
+	"sync/atomic"
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -13,8 +14,7 @@ import (
 type ApplicationEvent struct {
 	Id        uint
 	ctx       *ApplicationEventContext
-	cancelled bool
-	lock      sync.RWMutex
+	cancelled atomic.Bool
 }
 
 func (w *ApplicationEvent) Context() *ApplicationEventContext {
@@ -29,15 +29,11 @@ func newApplicationEvent(id events.ApplicationEventType) *ApplicationEvent {
 }
 
 func (w *ApplicationEvent) Cancel() {
-	w.lock.Lock()
-	defer w.lock.Unlock()
-	w.cancelled = true
+	w.cancelled.Store(true)
 }
 
 func (w *ApplicationEvent) IsCancelled() bool {
-	w.lock.RLock()
-	defer w.lock.RUnlock()
-	return w.cancelled
+	return w.cancelled.Load()
 }
 
 var applicationEvents = make(chan *ApplicationEvent, 5)
@@ -52,27 +48,22 @@ var windowEvents = make(chan *windowEvent, 5)
 var menuItemClicked = make(chan uint, 5)
 
 type CustomEvent struct {
-	Name      string `json:"name"`
-	Data      any    `json:"data"`
+	Name string `json:"name"`
+	Data any    `json:"data"`
 
 	// Sender records the name of the window sending the event,
 	// or "" if sent from application.
-	Sender    string `json:"sender,omitempty"`
+	Sender string `json:"sender,omitempty"`
 
-	cancelled bool
-	lock      sync.RWMutex
+	cancelled atomic.Bool
 }
 
 func (e *CustomEvent) Cancel() {
-	e.lock.Lock()
-	defer e.lock.Unlock()
-	e.cancelled = true
+	e.cancelled.Store(true)
 }
 
 func (e *CustomEvent) IsCancelled() bool {
-	e.lock.Lock()
-	defer e.lock.Unlock()
-	return e.cancelled
+	return e.cancelled.Load()
 }
 
 func (e *CustomEvent) ToJSON() string {
@@ -293,7 +284,9 @@ var registeredEvents sync.Map
 // [App.EmitEvent] and [Window.EmitEvent] check the data type for registered events.
 // Data types are matched exactly and no conversion is performed.
 //
-// It is recommended to call RegisterEvent only within init functions.
+// It is recommended to call RegisterEvent directly,
+// with constant arguments, and only from init functions.
+// Indirect calls or instantiations are not discoverable by the binding generator.
 func RegisterEvent[Data any](name string) {
 	if typ, ok := registeredEvents.Load(name); ok {
 		panic(fmt.Errorf("event '%s' is already registered with data type %s", name, typ))
