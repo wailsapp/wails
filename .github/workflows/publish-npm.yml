@@ -39,7 +39,7 @@ jobs:
           files: |
             v3/internal/runtime/desktop/@wailsio/runtime/src/*.js
             v3/internal/runtime/desktop/@wailsio/runtime/types/*.d.ts
-            v3/internal/runtime/desktop/@wailsio/runtime/docs/*.*
+            v3/internal/runtime/desktop/@wailsio/runtime/docs/**/*.*
 
       - name: test action
         if: steps.verify-changed-files.outputs.files_changed == 'true'
