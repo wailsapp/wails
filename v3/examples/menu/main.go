@@ -45,7 +45,17 @@ func main() {
 	myMenu := menu.AddSubmenu("Demo")
 
 	// Disabled menu item
-	myMenu.Add("Not Enabled").SetEnabled(false)
+	disabledMenuItem := myMenu.Add("Show window").SetEnabled(false).OnClick(func(ctx *application.Context) {
+		app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+			Title:  "Success",
+			Width:  300,
+			Height: 300,
+			HTML:   "It worked",
+		}).Show()
+	})
+	myMenu.Add("Enable show window").OnClick(func(ctx *application.Context) {
+		disabledMenuItem.SetEnabled(true)
+	})
 
 	// Click callbacks
 	myMenu.Add("Click Me!").SetAccelerator("CmdOrCtrl+l").OnClick(func(ctx *application.Context) {
