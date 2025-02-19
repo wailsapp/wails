@@ -1,0 +1,473 @@
+---
+title: Binding system
+sidebar:
+order: 10
+---
+
+
+# Reference
+
+## CLI
+
+```sh
+wails3 generate bindings [flags] [patterns...]
+```
+
+For flags, see struct `GenerateBindingsOptions` at `v3/internal/flags/bindings.go:10`.
+
+For testing and debugging, it is useful to run the command with flags `-dry -v`:
+
+- `-dry`: do not write output files;
+- `-v`: enable debug output.
+
+Note that the command _needs_ to know the _exact_ flags passed to `go build`.
+These can be passed as a single `-f "<FLAGS>"` option,
+where `<FLAGS>` is a space-separated list of `go build` flags.
+The default Taskfiles take care of that,
+but it is important to warn users should they wish to customise their Taskfile.
+
+The positional argument `[patterns...]` is a list of Go package patterns,
+as expected by `go build`, `go list` etc. (e.g. `./...`, `github.com/wailsapp/wails/...`).
+
+If no pattern is specified, the default is `.` (load package from current directory).
+
+The generator scans the packages specified by the patterns,
+plus _all of their dependencies._
+
+The default output directory (flag `-d`) is `frontend/bindings`.
+
+## Discovery
+
+The generator discovers instantiations of the function
+
+```go
+func NewService[T any](instance *T, options ...ServiceOptions) Service
+```
+
+from package `github.com/wailsapp/wails/v3/pkg/application`
+(defined at `v3/pkg/application/application_options.go:34`).
+
+It then outputs bindings for all _named, concrete, non-generic_ types
+assigned to the parameter `T`.
+Therefore, the following categories are always ignored:
+
+- unnamed types, including basic types (a warning is emitted at `v3/internal/generator/analyse.go:182`);
+- interface types (a warning is emitted at `v3/internal/generator/analyse.go:188`);
+- generic types (a warning is emitted at `v3/internal/generator/analyse.go:191`);
+
+the reasons being:
+
+- we have currently no way to bind unnamed types
+  because we use names to match them;
+- interface types might work with some minor adjustment,
+  but passing them as pointers would be somewhat unusual;
+  moreover, they can be easily wrapped as anonymous struct fields;
+- for generic types, it is hard to predict
+  which name they are going to have at runtime;
+  if we stopped relying on names, we could perhaps support these too.
+
+## Method set
+
+For each discovered type `T`, the generator outputs a JS stub for each method in the so-called [_intuitive method set_](https://pkg.go.dev/golang.org/x/tools/go/types/typeutil#IntuitiveMethodSet) of `T`.
+This comprises specifically:
+
+- all exported methods with receiver of type `T` or `*T`;
+- for embedded fields of interface type, all methods exported by that interface;
+- recursively, the intuitive method set of each embedded field of concrete type.
+
+## Calling mechanism
+
+When a stub is called from the frontend:
+
+1. each argument is converted to JSON by a call to [`JSON.stringify`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify);
+2. the arguments are sent to the backend; a promise is returned;
+3. on the backend, each argument is unmarshaled to its required Go type using [`encoding/json.Unmarshal`](https://pkg.go.dev/encoding/json#Unmarshal);
+    - if the any unmarshaling step fails, the returned promise rejects on the frontend with an error message;
+4. the Go function is called with the arguments obtained by unmarshaling at step 3;
+5. the returned tuple is inspected:
+    - if any returned value is of type `error` and is non-nil,
+      then all of them are joined with [`errors.Join`](https://pkg.go.dev/errors#Join);
+      the returned promise rejects on the frontend with an error message
+      obtained by calling `error.Error()` on the joined error value;
+    - otherwise, all other values (i.e. the non-`error` ones) are put into a slice
+      and marshaled to an array using [`encoding/json.Marshal`](https://pkg.go.dev/encoding/json#Marshal);
+      (as a special case, if there is just one value it is not put into a slice);
+6. the resulting JSON string is sent to the frontend;
+7. on the frontend, the resulting JSON is passed to [`JSON.parse`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse);
+8. in class mode, the returned values are post-processed for better usability (see below);
+9. the promise resolves with the resulting (possibly post-processed) value or array.
+
+## Signatures and typing
+
+The generator and runtime calling mechanism handles all possible Go signatures,
+including variadic arguments and multiple return values.
+
+Variadic signatures are rendered using JS/TS variadic arguments.
+
+As described in the previous section, multiple return values are split into `error` and non-`error` values.
+If there is more than one _non_-`error` value, they are returned to JS as an array, otherwise as a single value.
+`error` values, on the other hand, are combined using [`errors.Join`](https://pkg.go.dev/errors#Join) and cause promise rejections.
+
+The feature set as regards types is defined by `encoding/json`:
+
+- arguments can have any type that is compatible with `encoding/json.Unmarshal`;
+- return values can have any type that is compatible with `encoding/json.Marshal`, or `error`.
+
+In particular, generics are fully supported.
+On the other hand, interface types are only supported _as return values._
+Arguments of interface type cannot work because `encoding/json.Unmarshal` needs their concrete type, which is undetermined (a warning is emitted at `v3/internal/generator/collect/service.go:267`).
+
+All stubs are typed:
+
+- in JS mode, using JSDoc with TypeScript types;
+  aliases and named types are rendered as classes or JSDoc `@typedefs`;
+- in TS mode, using type annotations;
+  aliases and named types are rendered as classes, TS `interfaces` or TS `type` declarations.
+
+If the generator is invoked in _interface mode_ (CLI flag `-i`), then types describe the schema of JSON objects
+as expected by `encoding/json.Unmarshal` (for arguments)
+and produced by `encoding/json.Marshal` (for return values).
+No post-processing of return values is done.
+
+If the generator is invoked in _class mode_ (the default)
+then _named struct types_ (and only those) are rendered as _JS/TS classes_.
+The constructors of those classes initialize all fields to the JS equivalent of their Go zero values;
+this can be useful when preparing argument values for method calls on the frontend.
+
+Moreover, returned values are post-processed for better usability.
+For example, `nil` slices/maps result in a `null` JS value:
+these are changed to empty arrays/objects to match the semantics of the Go `nil` values.
+Struct values of named types are used to initialize class instances
+for their corresponding classes.
+For more details, see the section about [Type translation](#type-translation)
+
+When the object schema cannot be determined statically, the generator defaults to the `any` TS type.
+In particular, _interface types are always rendered as `any`,_ whether they appear in arguments, return values or struct fields.
+
+If the type is known to be incompatible with `encoding/json`, a warning is emitted (see `v3/internal/generator/collect/imports.go:135-251`).
+
+## Code layout
+
+```
+- <output dir>
+|
++ - <package path>
+| |
+| + - index.<js|ts>
+| + - models.<js|ts>
+| + - internal.<js|ts>
+| + - <ServiceTypeName>.<js|ts>
+|
++ - <package path 2>
+⋮
++ - <package path n>
+⋮
+```
+
+where `<package path>` is an arbitrary number of nested directories
+reproducing the full path of a Go package, for example:
+
+```
+- <output dir>
+|
++ - github.com
+  |
+  + - wailsapp
+    |
+    + - wails
+      |
+      + - v3
+        |
+        + - examples
+          |
+          + - binding
+            |
+            + - index.js
+            + - internal.js
+            + - GreetService.js
+            |
+            + - data
+              |
+              + - index.js
+              + - internal.js
+              + - models.js
+```
+
+File contents are as follows:
+
+- `<ServiceTypeName>` files export method stubs for the type they are named after;
+- `internal` files define and export _all_ classes, enums and type aliases defined by the enclosing package and used anywhere, including _unexported_ types;
+- `models` files re-export all _exported_ classes, enums and type aliases defined by the enclosing package (exported in the Go sense, i.e. those whose name is capitalised);
+- `index.js`, if present, re-exports everything from `models.js`, plus each exported service module under an identifier `<ServiceTypeName>` (again exported in the Go sense, i.e. whose name is capitalised).
+
+For example, if there is a service file `GreetService.js` and `models.js` exports a class named `Person`,
+then `index.js` exports a class `Person` and a module `GreetService`. The presence of `index.js` files simplifies import paths when bundlers are used.
+
+(The generation of index files can be disabled (CLI flag `-noindex`). I recommend removing the flag and making index generation mandatory. For the reason, see the `inject` [package directive](#package-directives)).
+
+## Type translation
+
+In the following table, assume `zero(T)` is the Go zero value of type `T`,
+while `default(T)` is the default JS value for `T` as specified by the table.
+When a type parameter `T` appears in the _Go type_ column (first column),
+assume every instance of `T` in TS columns is the translated version of `T` as specified by the table.
+
+| Go type                                                                                                                       | Supported by `encoding/json`                                                     | Go zero value                        | TS type (interface mode)                                                                                | TS type (class mode)                                                                                | JS default value (class mode)                           | Post-processing of return values (class mode)        |
+| ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------- |
+| Implements [`encoding/json.Marshaler`](https://pkg.go.dev/encoding/json#Marshaler) either with value or pointer receiver      | ✅                                                                                | N/A                                  | `any` (unpredictable JSON schema)                                                                       | `any`                                                                                               | `null`                                                  | None                                                 |
+| Implements [`encoding.TextMarshaler`](https://pkg.go.dev/encoding#TextMarshaler) either with value or pointer receiver        | ✅                                                                                | N/A                                  | `string`                                                                                                | `string`                                                                                            | `""`                                                    | None                                                 |
+| `bool`                                                                                                                        | ✅                                                                                | `false`                              | `boolean` (quoted: `` `${boolean}` ``)                                                                  | `boolean` (quoted: `` `${boolean}` ``)                                                              | `false` (quoted: `"false"`)                             | None                                                 |
+| `string`                                                                                                                      | ✅                                                                                | `""`                                 | `string` (quoted: `` `"${string}"` ``)                                                                  | `string` (quoted: `` `"${string}"` ``)                                                              | `""` (quoted: `'""'`)                                   | None                                                 |
+| `int`, `int8`, `int16`, `int32`, `int64`, `uint`, `uint8`, `uint16`, `uint32`, `uint64`, `byte`, `rune`, `float32`, `float64` | ✅                                                                                | `0`                                  | `number` (quoted: `` `"${number}"` ``)                                                                  | `number` (quoted: `` `"${number}"` ``)                                                              | `0` (quoted: `"0"`)                                     | None                                                 |
+| `complex64`, `complex128`                                                                                                     | ❌                                                                                | `0`                                  | `any` (quoted: `string`)                                                                                | `any` (quoted: `string`)                                                                            | `null` (quoted: `""`)                                   | None                                                 |
+| `chan T`, <nobr>`<-chan T`</nobr>, <nobr>`chan<- T`</nobr>                                                                    | ❌                                                                                | `nil`                                | `any`                                                                                                   | `any`                                                                                               | `null`                                                  | None                                                 |
+| `func(T1, ... Tn) (R1, ..., Rn)`                                                                                              | ❌                                                                                | `nil`                                | `any`                                                                                                   | `any`                                                                                               | `null`                                                  | None                                                 |
+| `*T`                                                                                                                          | ✅ (if `T` is supported)                                                          | `nil`                                | `T \| null`                                                                                             | `T \| null`                                                                                         | `null`                                                  | If non-null, process as `T`                          |
+| `[]byte`                                                                                                                      | ✅                                                                                | `nil`                                | `string \| null`                                                                                        | `string`                                                                                            | `""`                                                    | Convert `null` to `""`                               |
+| `[N]T`                                                                                                                        | ✅ (if `T` is supported)                                                          | `[zero(T), zero(T), ...]`            | `T[]`                                                                                                   | `T[]`                                                                                               | `[default(T), default(T), ...]`                         | Process elements recursively                         |
+| `[]T`                                                                                                                         | ✅ (if `T` is supported)                                                          | `nil`                                | `T[] \| null`                                                                                           | `T[]`                                                                                               | `[]`                                                    | Convert `null` to `[]`; process elements recursively |
+| `map[string]T`, `map[K]T` where `K` implements `encoding.TextMarshaler`                                                       | ✅ (if `T` is supported)                                                          | `nil`                                | `{ [_: string]: T }`                                                                                    | `{ [_: string]: T }`                                                                                | `{}`                                                    | Convert `null` to `{}`; process values recursively   |
+| `map[K]T` where `K` != `string` does _not_ implement `encoding.TextMarshaler`                                                 | ❌                                                                                | `nil`                                | `{ [_: string]: T }`                                                                                    | `{ [_: string]: T }`                                                                                | `{}`                                                    | Convert `null` to `{}`; process values recursively   |
+| `struct { Field1 T1, Field2 T2, ... }`                                                                                        | ✅ (if `T1`, `T2`, ... are supported)                                             | `struct { zero(T1), zero(T2), ... }` | `{ "Field1": T1, "Field2": T2, ... }`                                                                   | `{ "Field1": T1, "Field2": T2, ... }`                                                               | `{ "Field1": default(T1), "Field2": default(T2), ... }` | Process fields recursively                           |
+| `interface { ... }`                                                                                                           | ⚠️ (marshaling only, if the interface is a superset of `encoding/json.Marshaler`) | `nil`                                | `any` (unpredictable JSON schema)                                                                       | `any`                                                                                               | `null`                                                  | None                                                 |
+| `type NamedStruct struct { ... }`                                                                                             | ✅ (if all field types are supported)                                             | `NamedStruct{}`                      | `interface NamedStruct { ... }` (fields as for structs)                                                 | `class NamedStruct { ... }` (fields as for structs)                                                 | `new NamedStruct()`                                     | Process fields recursively, construct class instance |
+| `type NamedStruct[P1 any, P2 any, ...] struct { ... }`                                                                        | ✅ (if all field types are supported)                                             | `NamedStruct[P1, P2, ...]{}`         | `interface NamedStruct<P1, P2, ...> { ... }` (fields as for structs)                                    | `class NamedStruct<P1, P2, ...> { ... }` (fields as for structs)                                    | `new NamedStruct<P1, P2, ...>()`                        | Process fields recursively, construct class instance |
+| `type Named NamedStruct`                                                                                                      | ✅ (if all field types are supported)                                             | `Named{}`                            | `interface Named { ... }` (fields as for `NamedStruct`)                                                 | `class Named { ... }` (fields as for `NamedStruct`)                                                 | `new Named()`                                           | Process fields recursively, construct class instance |
+| `type Named[P1 any, P2 any, ...] NamedStruct[...]`                                                                            | ✅ (if all field types are supported)                                             | `Named[P1, P2, ...]{}`               | `interface Named<P1, P2, ...> { ... }` (fields as for `NamedStruct[...]` with type parameters replaced) | `class Named<P1, P2, ...> { ... }` (fields as for `NamedStruct[...]` with type parameters replaced) | `new Named<P1, P2, ...>()`                              | Process fields recursively, construct class instance |
+| `type Named T`                                                                                                                | ✅ (if `T` is supported)                                                          | `zero(T)`                            | `type Named = T`                                                                                        | `type Named = T`                                                                                    | `default(T)`                                            | Process as `T`                                       |
+| `type Named[P1 any, P2 any, ...] T`                                                                                           | ✅ (if `T` is supported)                                                          | `zero(T[P1, P2, ...])`               | `type Named<P1, P2, ...> = T`                                                                           | `type Named<P1, P2, ...> = T`                                                                       | `default(T<P1, P2, ...>)`                               | Process as `T<P1, P2, ...>`                          |
+| `type Alias = NamedStruct`                                                                                                    | ✅ (if all field types are supported)                                             | `NamedStruct{}`                      | `type Alias = NamedStruct`                                                                              | `type Alias = NamedStruct; const Alias = NamedStruct`                                               | `new NamedStruct()`                                     | Process as `NamedStruct`                             |
+| `type Alias = T`                                                                                                              | ✅ (if `T` is supported)                                                          | `zero(T)`                            | `type Alias = T`                                                                                        | `type Alias = T`                                                                                    | `default(T)`                                            | Process as `T`                                       |
+
+In class mode, named types whose underlying type is a struct are translated as classes; in interface mode, they are translated as interfaces. All other named types are translated just like aliases.
+
+Class constructors take one optional argument: this must be a plain JS object with the same JSON schema as the underlying unnamed struct type, and is used to initialise class fields.
+
+### Struct translation
+
+Structs are flattened following `encoding/json`'s algorithm, i.e. embedded fields without tags are are merged with the enclosing struct, and shadowing may happen.
+
+Field tags are taken into account, in particular:
+
+- fields with the tag `"-"` are ignored;
+- fields names are taken from tags if present;
+- fields with the `omitempty` option are marked optional in TS;
+- basic types are translated to string types if the `string` option is present in the tag (described above as “quoted” mode).
+
+The same rules apply to class fields in class mode.
+
+For example:
+
+```go
+type Struct1 = struct {
+    Field1 string
+    Field2 bool `json:"specialName2"`
+    Field3 map[string]int
+    unexported float64
+}
+
+type Struct2 = struct {
+    Struct1 // embedded field
+    Field2 []int `json:",omitempty"` // does not shadow Struct1.Field2
+    Field3 bool // shadows Struct1.Field3
+    Field4 struct {
+        Field5 bool `json:",string"`
+    }
+    IgnoreMe float32 `json:"-"`
+}
+```
+
+results in the following TS output:
+
+```ts
+interface Struct1 {
+  "Field1": string;
+  "specialName2": boolean;
+  "Field3": { [_: string]: number };
+}
+
+interface Struct2 {
+  "Field1": string;
+  "specialName2": boolean; // this is Struct1.Field2
+  "Field2"?: number[]; // no shadowing here
+  "Field3": boolean; // shadows Struct1.Field3
+  "Field4": {
+    "Field5": `${boolean}`;
+  };
+}
+```
+
+## Directives
+
+The binding generator understands some directives. These must have the same form as those accepted by Go tooling, i.e. line comments occurring just before certain items, at the beginning of a line, e.g.:
+
+```go
+//wails:<directive> <arguments...>
+type NamedType ...
+```
+
+Directives may be attached to packages, service types or service methods.
+More than one directive may appear above the same item, as long as they occur on separate, contiguous lines.
+
+Directives afford developers additional control over the output of the code generator, and can be very helpful in keeping frontend and backend code in sync. If properly used, they enable low-JS approaches where most JS/TS code is automatically derived from Go code and correctly typed.
+
+### Conditions
+
+Some package and service directives accept an optional `<condition>` parameter before their main argument.
+These allow directives to act conditionally depending on the current configuration of the binding generator, and are useful primarily for library/plugin authors.
+
+The syntax of conditions is _two characters followed by a colon._ Synthetically:
+
+```
+(*|j|t)(*|c|i):
+```
+
+The first character specifies the language: either any (`*`), JS (`j`) or TS (`t`).
+The second character specifies the typing mode: either any (`*`), class mode (`c`) or interface mode (`i`).
+
+In detail, the following combinations are supported:
+
+- `**:` always satisfied;
+- `j*:` satisfied in JS mode;
+- `t*:` satisfied in TS mode;
+- `*c:` satisfied in class mode, any language;
+- `jc:` satisfied in JS class mode;
+- `tc:` satisfied in TS class mode;
+- `*i:` satisfied in interface mode, any language;
+- `ji:` satisfied in JS interface mode;
+- `ti:` satisfied in TS interface mode;
+
+### Package directives
+
+These may appear right above package declarations at the beginning of any Go file.
+There are two: `include` and `inject`.
+
+#### `include`
+
+```go
+//wails:include [<condition>:]<glob pattern>
+package somepackage
+```
+
+If no condition is present, or if one is present _and_ satisfied, the glob pattern is interpreted relative to the directory of the Go file that contains the directive, and all matching files are copied to the output directory for `somepackage`.
+
+If a condition is present, but unsatisfied, the directive is ignored.
+
+Only files are copied: no directory structure is kept. In case of name collisions with generated files, an error message is emitted and code generation fails. If the glob pattern matches a directory, an error message is emitted and code generation fails. (The reason for this choice is to avoid accidental collisions with other package directories: detecting those would require excessively complex logic).
+
+The glob pattern is interpreted by [`path/filepath.Glob`](https://pkg.go.dev/path/filepath#Glob); the syntax is the same as in [`path/filepath.Match`](https://pkg.go.dev/path/filepath#Match).
+
+_NOTE: Leading and trailing spaces are always stripped from the pattern._
+
+If the glob pattern includes a colon, a condition _must be present_, or the part before the colon will be mistaken for one. Conflicts can be solved with the dummy condition `**:` that is always satisfied.
+
+#### `inject`
+
+```go
+//wails:inject [<condition>:]<JS/TS code>
+package somepackage
+```
+
+If no condition is present, or if one is present _and_ satisfied, the provided code line is appended _at the end of the `index.js/ts` file._ (If the file is not generated, all inject directives are ignored silently. This is why I recommend making index files mandatory).
+
+If a condition is present, but unsatisfied, the directive is ignored.
+
+Inject directives that appear in the same Go file are processed in order, enabling complex multi-line code injection. The relative ordering of blocks of directives that appear in distinct Go files, however, is unspecified and may change from run to run.
+
+_NOTE: leading and trailing spaces are always preserved._
+
+If the code line includes a colon, which is common in JS/TS code, a condition _must be present_, or the part before the colon will be mistaken for one. Conflicts can be solved with the dummy condition `**:` that is always satisfied.
+
+### Service directives
+
+These may appear right above service type declarations.
+There is just one: `inject`.
+
+#### `inject`
+
+```go
+//wails:inject [<condition>:]<JS/TS code>
+type ServiceType ...
+```
+
+It works just like the `inject` directive described above for packages, but injects code _at the beginning of service files,_ right after import statements. _The same caveats apply._
+
+Special care must be taken to avoid and/or detect identifier collisions with generated code.
+
+### Method directives
+
+These may appear right above service methods at the beginning of any Go file.
+There are two: `id` and `internal`.
+
+#### `id`
+
+```go
+//wails:id <base 10 unsigned 32-bit integer>
+func (*ServiceType) Method(...) ...
+```
+
+The `id` directive assigns a custom ID to `Method` in place of the automatically computed hash.
+These IDs must then be resolved by passing a properly initialised map among application options.
+
+(I recommend removing this as the developer experience is terrible... is it really needed? Is it used in practice?).
+
+#### `internal`
+
+```go
+//wails:internal
+func (*ServiceType) Method(...) ...
+```
+
+The `internal` directive marks the stub for `Method` as _unexported_ from the generated JS/TS module. A special directive is necessary because unexported methods in the Go sense are not accessible by reflection, hence never included in the output.
+
+There might be two reasons to employ the `internal` directive:
+
+- the developer wants to define a wrapper for `Method` using inject directives and export that instead, but call the stub behind the scenes:
+  ```go
+  //wails:inject function Greet(name) {
+  //wails:inject   Send("Hello " + name + "!");
+  //wails:inject }
+  type MessageService struct{}
+
+  //wails:internal
+  func (Service) Send(msg string) {
+    // dispatch a generic message
+  }
+  ```
+- a dummy internal method on an unexported service may be used to force the inclusion of certain model types in the generator output:
+  ```go
+  type MyBelovedType struct { ... }
+
+  type dummyService struct{}
+
+  //wails:internal
+  func (dummyService) DummyMethod(_ MyBelovedType) {}
+
+  func init() {
+      application.NewService(&dummyService{})
+  }
+  ```
+  Now `MyBelovedType` will be exported from `models.js/ts` and `index.js/ts` even if it is not used by any publicly accessible service method.
+
+## Errors that should be reported
+
+It would be helpful if users could report some specific warning/error messages as bugs ASAP.
+
+These are:
+
+- _Unexpected generic,_ emitted at `v3/internal/generator/analyse.go:191`;
+  it is reported as a warning to avoid breaking the tool entirely;
+  it means the tool has fallen out of sync with the Go spec on generics.
+- _Unknown type,_ emitted at `v3/internal/generator/collect/imports.go:249`;
+  it is reported as a warning to avoid breaking the tool entirely;
+  it means the tool has fallen out of sync with the Go spec on types.
+- _Template execution failure,_ emitted at
+
+    * `v3/internal/generator/index.go:23`
+    * `v3/internal/generator/models.go:21`
+    * `v3/internal/generator/service.go:98`
+    * `v3/internal/generator/typedefs.go:31`
+
+  these might mean either that some update to [`text/template`](https://pkg.go.dev/text/template)
+  is backwards incompatible (should never happen in theory)
+  or that some undetected error has creeped into the templates.
