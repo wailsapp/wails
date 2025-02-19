@@ -3,11 +3,12 @@
 package application
 
 import (
-	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/icons"
+	"errors"
 	"syscall"
 	"time"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/pkg/icons"
 
 	"github.com/samber/lo"
 
@@ -120,7 +121,7 @@ func (s *windowsSystemTray) bounds() (*Rect, error) {
 
 	monitor := w32.MonitorFromWindow(s.hwnd, w32.MONITOR_DEFAULTTONEAREST)
 	if monitor == 0 {
-		return nil, fmt.Errorf("failed to get monitor")
+		return nil, errors.New("failed to get monitor")
 	}
 
 	return &Rect{
@@ -186,7 +187,7 @@ func (s *windowsSystemTray) run() {
 	for retries := range 6 {
 		if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
 			if retries == 5 {
-				globalApplication.fatal("Failed to register system tray icon: %v", syscall.GetLastError())
+				globalApplication.fatal("failed to register system tray icon: %w", syscall.GetLastError())
 			}
 
 			time.Sleep(500 * time.Millisecond)

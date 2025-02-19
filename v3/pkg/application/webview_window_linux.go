@@ -324,7 +324,7 @@ func (w *linuxWebviewWindow) run() {
 
 	startURL, err := assetserver.GetStartURL(w.parent.options.URL)
 	if err != nil {
-		globalApplication.fatal(err.Error())
+		globalApplication.handleFatalError(err)
 	}
 
 	w.setURL(startURL)
@@ -380,7 +380,7 @@ func (w *linuxWebviewWindow) handleKeyEvent(acceleratorString string) {
 	// Parse acceleratorString
 	// accelerator, err := parseAccelerator(acceleratorString)
 	// if err != nil {
-	// 	globalApplication.error("unable to parse accelerator: %s", err.Error())
+	// 	globalApplication.error("unable to parse accelerator: %w", err)
 	// 	return
 	// }
 	w.parent.processKeyBinding(acceleratorString)

@@ -465,7 +465,7 @@ func (a *linuxApp) setIcon(icon []byte) {
 	var gerror *C.GError
 	pixbuf := C.gdk_pixbuf_new_from_stream(stream, nil, &gerror)
 	if gerror != nil {
-		a.parent.error("Failed to load application icon: " + C.GoString(gerror.message))
+		a.parent.error("failed to load application icon: %s", C.GoString(gerror.message))
 		C.g_error_free(gerror)
 		return
 	}

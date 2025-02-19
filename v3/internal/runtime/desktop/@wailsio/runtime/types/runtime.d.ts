@@ -9,11 +9,11 @@ export function newRuntimeCaller(object: any, windowName: string): Function;
 /**
  * Creates a new runtime caller with specified ID.
  *
- * @param {object} object - The object to invoke the method on.
+ * @param {number} object - The object to invoke the method on.
  * @param {string} windowName - The name of the window.
  * @return {Function} - The new runtime caller function.
  */
-export function newRuntimeCallerWithID(object: object, windowName: string): Function;
+export function newRuntimeCallerWithID(object: number, windowName: string): Function;
 export namespace objectNames {
     let Call: number;
     let Clipboard: number;

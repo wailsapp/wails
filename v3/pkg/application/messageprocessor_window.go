@@ -1,6 +1,8 @@
 package application
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 )
 
@@ -107,10 +109,9 @@ var windowMethodNames = map[int]string{
 }
 
 func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
-
 	args, err := params.Args()
 	if err != nil {
-		m.httpError(rw, "Unable to parse arguments: %s", err.Error())
+		m.httpError(rw, "Invalid window call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
 	}
 
@@ -145,7 +146,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowGetScreen:
 		screen, err := window.GetScreen()
 		if err != nil {
-			m.httpError(rw, err.Error())
+			m.httpError(rw, "Window.GetScreen failed:", err)
 			return
 		}
 		m.json(rw, screen)
@@ -197,18 +198,20 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetPosition:
 		x := args.Int("x")
 		if x == nil {
-			m.Error("Invalid SetPosition Message: 'x' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'x'"))
+			return
 		}
 		y := args.Int("y")
 		if y == nil {
-			m.Error("Invalid SetPosition Message: 'y' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'y'"))
+			return
 		}
 		window.SetPosition(*x, *y)
 		m.ok(rw)
 	case WindowSetAlwaysOnTop:
 		alwaysOnTop := args.Bool("alwaysOnTop")
 		if alwaysOnTop == nil {
-			m.Error("Invalid SetAlwaysOnTop Message: 'alwaysOnTop' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'alwaysOnTop'"))
 			return
 		}
 		window.SetAlwaysOnTop(*alwaysOnTop)
@@ -216,22 +219,22 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetBackgroundColour:
 		r := args.UInt8("r")
 		if r == nil {
-			m.Error("Invalid SetBackgroundColour Message: 'r' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'r'"))
 			return
 		}
 		g := args.UInt8("g")
 		if g == nil {
-			m.Error("Invalid SetBackgroundColour Message: 'g' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'g'"))
 			return
 		}
 		b := args.UInt8("b")
 		if b == nil {
-			m.Error("Invalid SetBackgroundColour Message: 'b' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'b'"))
 			return
 		}
 		a := args.UInt8("a")
 		if a == nil {
-			m.Error("Invalid SetBackgroundColour Message: 'a' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'a'"))
 			return
 		}
 		window.SetBackgroundColour(RGBA{
@@ -244,7 +247,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetFrameless:
 		frameless := args.Bool("frameless")
 		if frameless == nil {
-			m.Error("Invalid SetFrameless Message: 'frameless' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'frameless'"))
 			return
 		}
 		window.SetFrameless(*frameless)
@@ -252,40 +255,46 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetMaxSize:
 		width := args.Int("width")
 		if width == nil {
-			m.Error("Invalid SetMaxSize Message: 'width' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'width'"))
+			return
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.Error("Invalid SetMaxSize Message: 'height' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'height'"))
+			return
 		}
 		window.SetMaxSize(*width, *height)
 		m.ok(rw)
 	case WindowSetMinSize:
 		width := args.Int("width")
 		if width == nil {
-			m.Error("Invalid SetMinSize Message: 'width' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'width'"))
+			return
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.Error("Invalid SetMinSize Message: 'height' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'height'"))
+			return
 		}
 		window.SetMinSize(*width, *height)
 		m.ok(rw)
 	case WindowSetRelativePosition:
 		x := args.Int("x")
 		if x == nil {
-			m.Error("Invalid SetRelativePosition Message: 'x' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'x'"))
+			return
 		}
 		y := args.Int("y")
 		if y == nil {
-			m.Error("Invalid SetRelativePosition Message: 'y' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'y'"))
+			return
 		}
 		window.SetRelativePosition(*x, *y)
 		m.ok(rw)
 	case WindowSetResizable:
 		resizable := args.Bool("resizable")
 		if resizable == nil {
-			m.Error("Invalid SetResizable Message: 'resizable' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'resizable'"))
 			return
 		}
 		window.SetResizable(*resizable)
@@ -293,18 +302,20 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetSize:
 		width := args.Int("width")
 		if width == nil {
-			m.Error("Invalid SetSize Message: 'width' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'width'"))
+			return
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.Error("Invalid SetSize Message: 'height' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'height'"))
+			return
 		}
 		window.SetSize(*width, *height)
 		m.ok(rw)
 	case WindowSetTitle:
 		title := args.String("title")
 		if title == nil {
-			m.Error("Invalid SetTitle Message: 'title' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing argument 'title'"))
 			return
 		}
 		window.SetTitle(*title)
@@ -312,7 +323,7 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetZoom:
 		zoom := args.Float64("zoom")
 		if zoom == nil {
-			m.Error("Invalid SetZoom Message: 'zoom' value required")
+			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'zoom'"))
 			return
 		}
 		window.SetZoom(*zoom)
@@ -360,8 +371,9 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 		window.ZoomReset()
 		m.ok(rw)
 	default:
-		m.httpError(rw, "Unknown window method id: %d", method)
+		m.httpError(rw, "Invalid window call:", fmt.Errorf("unknown method %d", method))
+		return
 	}
 
-	m.Info("Runtime Call:", "method", "Window."+windowMethodNames[method])
+	m.Info("Runtime call:", "method", "Window."+windowMethodNames[method])
 }

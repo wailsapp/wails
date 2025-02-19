@@ -832,7 +832,7 @@ func (w *macosWebviewWindow) handleKeyEvent(acceleratorString string) {
 	// Parse acceleratorString
 	accelerator, err := parseAccelerator(acceleratorString)
 	if err != nil {
-		globalApplication.error("unable to parse accelerator: %s", err.Error())
+		globalApplication.error("unable to parse accelerator: %w", err)
 		return
 	}
 	w.parent.processKeyBinding(accelerator.String())
@@ -1038,7 +1038,11 @@ func (w *macosWebviewWindow) setEnabled(enabled bool) {
 
 func (w *macosWebviewWindow) execJS(js string) {
 	InvokeAsync(func() {
-		if globalApplication.performingShutdown {
+		globalApplication.shutdownLock.Lock()
+		performingShutdown := globalApplication.performingShutdown
+		globalApplication.shutdownLock.Unlock()
+
+		if performingShutdown {
 			return
 		}
 		if w.nsWindow == nil {
@@ -1264,7 +1268,7 @@ func (w *macosWebviewWindow) run() {
 
 		startURL, err := assetserver.GetStartURL(options.URL)
 		if err != nil {
-			globalApplication.fatal(err.Error())
+			globalApplication.handleFatalError(err)
 		}
 
 		w.setURL(startURL)

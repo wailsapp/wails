@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -28,9 +29,9 @@ func (m *MessageProcessor) processApplicationMethod(method int, rw http.Response
 		globalApplication.Show()
 		m.ok(rw)
 	default:
-		m.httpError(rw, "Unknown application method: %d", method)
+		m.httpError(rw, "Invalid application call:", fmt.Errorf("unknown method: %d", method))
+		return
 	}
 
-	m.Info("Runtime Call:", "method", "Application."+applicationMethodNames[method])
-
+	m.Info("Runtime call:", "method", "Application."+applicationMethodNames[method])
 }
