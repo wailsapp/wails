@@ -1,9 +1,9 @@
 package application
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"runtime"
 	"slices"
 	"strings"
@@ -291,36 +291,27 @@ func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 	w.cancellers = append(w.cancellers, canceller)
 }
 
-// formatJS ensures the 'data' provided marshals to valid json or panics
-func (w *WebviewWindow) formatJS(f string, callID string, data string) string {
-	j, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
-	return fmt.Sprintf(f, callID, j)
-}
-
 func (w *WebviewWindow) CallError(callID string, result string, isJSON bool) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS(fmt.Sprintf("_wails.callErrorHandler('%%s', %%s, %t);", isJSON), callID, result))
+		w.impl.execJS(fmt.Sprintf("_wails.callErrorHandler('%s', '%s', %t);", callID, template.JSEscapeString(result), isJSON))
 	}
 }
 
 func (w *WebviewWindow) CallResponse(callID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.callResultHandler('%s', %s, true);", callID, result))
+		w.impl.execJS(fmt.Sprintf("_wails.callResultHandler('%s', '%s', true);", callID, template.JSEscapeString(result)))
 	}
 }
 
 func (w *WebviewWindow) DialogError(dialogID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.dialogErrorCallback('%s', %s);", dialogID, result))
+		w.impl.execJS(fmt.Sprintf("_wails.dialogErrorCallback('%s', '%s');", dialogID, template.JSEscapeString(result)))
 	}
 }
 
 func (w *WebviewWindow) DialogResponse(dialogID string, result string, isJSON bool) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS(fmt.Sprintf("_wails.dialogResultCallback('%%s', %%s, %t);", isJSON), dialogID, result))
+		w.impl.execJS(fmt.Sprintf("_wails.dialogResultCallback('%s', '%s', %t);", dialogID, template.JSEscapeString(result), isJSON))
 	}
 }
 
