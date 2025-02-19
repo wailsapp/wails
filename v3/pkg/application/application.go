@@ -7,11 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -103,17 +103,17 @@ func New(appOptions Options) *App {
 					case "/wails/capabilities":
 						err := assetserver.ServeFile(rw, path, globalApplication.capabilities.AsBytes())
 						if err != nil {
-							result.handleFatalError(fmt.Errorf("unable to serve capabilities: %s", err.Error()))
+							result.fatal("unable to serve capabilities: %w", err)
 						}
 					case "/wails/flags":
 						updatedOptions := result.impl.GetFlags(appOptions)
 						flags, err := json.Marshal(updatedOptions)
 						if err != nil {
-							result.handleFatalError(fmt.Errorf("invalid flags provided to application: %s", err.Error()))
+							result.fatal("invalid flags provided to application: %w", err)
 						}
 						err = assetserver.ServeFile(rw, path, flags)
 						if err != nil {
-							result.handleFatalError(fmt.Errorf("unable to serve flags: %s", err.Error()))
+							result.fatal("unable to serve flags: %w", err)
 						}
 					default:
 						next.ServeHTTP(rw, req)
@@ -130,40 +130,14 @@ func New(appOptions Options) *App {
 
 	srv, err := assetserver.NewAssetServer(opts)
 	if err != nil {
-		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
+		result.fatal("application initialisation failed: %w", err)
 	}
 
 	result.assets = srv
 	result.assets.LogDetails()
 
-	result.bindings, err = NewBindings(appOptions.Services, appOptions.BindAliases)
-	if err != nil {
-		result.handleFatalError(fmt.Errorf("Fatal error in application initialisation: " + err.Error()))
-	}
-
-	for i, service := range appOptions.Services {
-		if thisService, ok := service.instance.(ServiceStartup); ok {
-			err := thisService.ServiceStartup(result.ctx, service.options)
-			if err != nil {
-				name := service.options.Name
-				if name == "" {
-					name = getServiceName(service.instance)
-				}
-				globalApplication.Logger.Error("ServiceStartup() failed shutting down application:", "service", name, "error", err.Error())
-				// Run shutdown on all services that have already started
-				for _, service := range appOptions.Services[:i] {
-					if thisService, ok := service.instance.(ServiceShutdown); ok {
-						err := thisService.ServiceShutdown()
-						if err != nil {
-							globalApplication.Logger.Error("Error shutting down service: " + err.Error())
-						}
-					}
-				}
-				// Shutdown the application
-				os.Exit(1)
-			}
-		}
-	}
+	result.bindings = NewBindings(appOptions.MarshalError, appOptions.BindAliases)
+	result.options.Services = slices.Clone(appOptions.Services)
 
 	// Process keybindings
 	if result.options.KeyBindings != nil {
@@ -181,11 +155,11 @@ func New(appOptions Options) *App {
 			if errors.Is(err, alreadyRunningError) && manager != nil {
 				err = manager.notifyFirstInstance()
 				if err != nil {
-					globalApplication.error("Failed to notify first instance: " + err.Error())
+					globalApplication.error("failed to notify first instance: %w", err)
 				}
 				os.Exit(appOptions.SingleInstance.ExitCode)
 			}
-			result.handleFatalError(fmt.Errorf("failed to initialize single instance manager: %w", err))
+			result.fatal("failed to initialize single instance manager: %w", err)
 		} else {
 			result.singleInstanceManager = manager
 		}
@@ -314,7 +288,8 @@ type App struct {
 	menuItems     map[uint]*MenuItem
 	menuItemsLock sync.Mutex
 
-	// Running
+	// Starting and running
+	starting   bool
 	running    bool
 	runLock    sync.Mutex
 	pendingRun []runnable
@@ -350,7 +325,9 @@ type App struct {
 	keyBindingsLock sync.RWMutex
 
 	// Shutdown
-	performingShutdown bool
+	performingShutdown  bool
+	shutdownLock        sync.Mutex
+	serviceShutdownLock sync.Mutex
 
 	// Shutdown tasks are run when the application is shutting down.
 	// They are run in the order they are added and run on the main thread.
@@ -375,12 +352,32 @@ func (a *App) handleWarning(msg string) {
 		a.Logger.Warn(msg)
 	}
 }
+
 func (a *App) handleError(err error) {
 	if a.options.ErrorHandler != nil {
 		a.options.ErrorHandler(err)
 	} else {
 		a.Logger.Error(err.Error())
 	}
+}
+
+// RegisterService appends the given service to the list of bound services.
+// Registered services will be bound and initialised
+// in registration order upon calling [App.Run].
+//
+// RegisterService will log an error message
+// and discard the given service
+// if called after [App.Run].
+func (a *App) RegisterService(service Service) {
+	a.runLock.Lock()
+	defer a.runLock.Unlock()
+
+	if a.starting || a.running {
+		a.error("services must be registered before running the application. Service '%s' will not be registered.", getServiceName(service))
+		return
+	}
+
+	a.options.Services = append(a.options.Services, service)
 }
 
 // EmitEvent will emit an event
@@ -417,13 +414,7 @@ func (a *App) ResetEvents() {
 }
 
 func (a *App) handleFatalError(err error) {
-	var buffer strings.Builder
-	buffer.WriteString("\n\n************************ FATAL ******************************\n")
-	buffer.WriteString("* There has been a catastrophic failure in your application *\n")
-	buffer.WriteString("********************* Error Details *************************\n")
-	buffer.WriteString(err.Error())
-	buffer.WriteString("*************************************************************\n")
-	a.handleError(fmt.Errorf(buffer.String()))
+	a.handleError(&FatalError{err: err})
 	os.Exit(1)
 }
 
@@ -587,6 +578,18 @@ func (a *App) NewSystemTray() *SystemTray {
 }
 
 func (a *App) Run() error {
+	a.runLock.Lock()
+	// Prevent double invocations.
+	if a.starting || a.running {
+		a.runLock.Unlock()
+		return errors.New("application is running or a previous run has failed")
+	}
+	// Block further service registrations.
+	a.starting = true
+	a.runLock.Unlock()
+
+	// Ensure application context is canceled in case of failures.
+	defer a.cancel()
 
 	// Call post-create hooks
 	err := a.preRun()
@@ -595,6 +598,24 @@ func (a *App) Run() error {
 	}
 
 	a.impl = newPlatformApp(a)
+
+	// Ensure services are shut down in case of failures.
+	defer a.shutdownServices()
+	// Ensure application context is canceled before service shutdown (duplicate calls don't hurt).
+	defer a.cancel()
+
+	// Startup services before dispatching any events.
+	// No need to hold the lock here because a.options.Services may only change when a.running is false.
+	services := a.options.Services
+	a.options.Services = nil
+	for i, service := range services {
+		if err := a.startupService(service); err != nil {
+			return fmt.Errorf("error starting service '%s': %w", getServiceName(service), err)
+		}
+		// Schedule started services for shutdown.
+		a.options.Services = services[:i+1]
+	}
+
 	go func() {
 		for {
 			event := <-applicationEvents
@@ -641,16 +662,18 @@ func (a *App) Run() error {
 
 	a.runLock.Lock()
 	a.running = true
+	a.runLock.Unlock()
 
-	for _, systray := range a.pendingRun {
+	// No need to hold the lock here because
+	//   - a.pendingRun may only change while a.running is false.
+	//   - runnables are scheduled asynchronously anyway.
+	for _, pending := range a.pendingRun {
 		go func() {
 			defer handlePanic()
-			systray.Run()
+			pending.Run()
 		}()
 	}
 	a.pendingRun = nil
-
-	a.runLock.Unlock()
 
 	// set the application menu
 	if runtime.GOOS == "darwin" {
@@ -660,25 +683,57 @@ func (a *App) Run() error {
 		a.impl.setIcon(a.options.Icon)
 	}
 
-	err = a.impl.run()
+	return a.impl.run()
+}
+
+func (a *App) startupService(service Service) error {
+	err := a.bindings.Add(service)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot bind service methods: %w", err)
 	}
 
-	// Cancel the context
-	a.cancel()
-
-	for _, service := range a.options.Services {
-		// If it conforms to the ServiceShutdown interface, call the Shutdown method
-		if thisService, ok := service.instance.(ServiceShutdown); ok {
-			err := thisService.ServiceShutdown()
-			if err != nil {
-				a.error("Error shutting down service: " + err.Error())
-			}
+	if service.options.Route != "" {
+		handler, ok := service.Instance().(http.Handler)
+		if !ok {
+			handler = http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				http.Error(
+					rw,
+					fmt.Sprintf("Service '%s' does not handle HTTP requests", getServiceName(service)),
+					http.StatusServiceUnavailable,
+				)
+			})
 		}
+		a.assets.AttachServiceHandler(service.options.Route, handler)
+	}
+
+	if s, ok := service.instance.(ServiceStartup); ok {
+		a.debug("Starting up service:", "name", getServiceName(service))
+		return s.ServiceStartup(a.ctx, service.options)
 	}
 
 	return nil
+}
+
+func (a *App) shutdownServices() {
+	// Acquire lock to prevent double calls (defer in Run() + OnShutdown)
+	a.serviceShutdownLock.Lock()
+	defer a.serviceShutdownLock.Unlock()
+
+	// Ensure app context is canceled first (duplicate calls don't hurt).
+	a.cancel()
+
+	for len(a.options.Services) > 0 {
+		last := len(a.options.Services) - 1
+		service := a.options.Services[last]
+		a.options.Services = a.options.Services[:last] // Prevent double shutdowns
+
+		if s, ok := service.instance.(ServiceShutdown); ok {
+			a.debug("Shutting down service:", "name", getServiceName(service))
+			if err := s.ServiceShutdown(); err != nil {
+				a.error("error shutting down service '%s': %w", getServiceName(service), err)
+			}
+		}
+	}
 }
 
 func (a *App) handleApplicationEvent(event *ApplicationEvent) {
@@ -721,7 +776,7 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.Unlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Get callback from window
@@ -735,7 +790,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Check if the message starts with "wails:"
@@ -760,7 +815,7 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("Window #%d not found", event.WindowID)
+		a.warning("Window #%d not found", event.WindowID)
 		return
 	}
 	window.HandleWindowEvent(event.EventID)
@@ -771,7 +826,7 @@ func (a *App) handleMenuItemClicked(menuItemID uint) {
 
 	menuItem := getMenuItemByID(menuItemID)
 	if menuItem == nil {
-		log.Printf("MenuItem #%d not found", menuItemID)
+		a.warning("MenuItem #%d not found", menuItemID)
 		return
 	}
 	menuItem.handleClick()
@@ -796,7 +851,17 @@ func (a *App) OnShutdown(f func()) {
 	if f == nil {
 		return
 	}
-	a.shutdownTasks = append(a.shutdownTasks, f)
+
+	a.shutdownLock.Lock()
+
+	if !a.performingShutdown {
+		defer a.shutdownLock.Unlock()
+		a.shutdownTasks = append(a.shutdownTasks, f)
+		return
+	}
+
+	a.shutdownLock.Unlock()
+	InvokeAsync(f)
 }
 
 func (a *App) destroySystemTray(tray *SystemTray) {
@@ -808,14 +873,22 @@ func (a *App) destroySystemTray(tray *SystemTray) {
 }
 
 func (a *App) cleanup() {
+	a.shutdownLock.Lock()
 	if a.performingShutdown {
+		a.shutdownLock.Unlock()
 		return
 	}
+	a.cancel() // Cancel app context before running shutdown hooks.
 	a.performingShutdown = true
+	a.shutdownLock.Unlock()
+
+	// No need to hold the lock here because a.shutdownTasks
+	// may only change while a.performingShutdown is false.
 	for _, shutdownTask := range a.shutdownTasks {
 		InvokeSync(shutdownTask)
 	}
 	InvokeSync(func() {
+		a.shutdownServices()
 		a.windowsLock.RLock()
 		for _, window := range a.windows {
 			window.Close()
@@ -828,17 +901,23 @@ func (a *App) cleanup() {
 		}
 		a.systemTrays = nil
 		a.systemTraysLock.Unlock()
+
+		// Cleanup single instance manager
+		if a.singleInstanceManager != nil {
+			a.singleInstanceManager.cleanup()
+		}
+
+		a.postQuit()
+
+		if a.options.PostShutdown != nil {
+			a.options.PostShutdown()
+		}
 	})
-	// Cleanup single instance manager
-	if a.singleInstanceManager != nil {
-		a.singleInstanceManager.cleanup()
-	}
 }
 
 func (a *App) Quit() {
 	if a.impl != nil {
 		InvokeSync(a.impl.destroy)
-		a.postQuit()
 	}
 }
 
@@ -1006,15 +1085,17 @@ func (a *App) GetWindowByName(name string) Window {
 
 func (a *App) runOrDeferToAppRun(r runnable) {
 	a.runLock.Lock()
-	running := a.running
-	if !running {
-		a.pendingRun = append(a.pendingRun, r)
-	}
-	a.runLock.Unlock()
 
-	if running {
-		r.Run()
+	if !a.running {
+		defer a.runLock.Unlock() // Defer unlocking for panic tolerance.
+		a.pendingRun = append(a.pendingRun, r)
+		return
 	}
+
+	// Unlock immediately to prevent deadlocks.
+	// No TOC/TOU risk here because a.running can never switch back to false.
+	a.runLock.Unlock()
+	r.Run()
 }
 
 func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow) bool {
@@ -1056,7 +1137,7 @@ func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.RUnlock()
 	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
+		a.warning("WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Get callback from window

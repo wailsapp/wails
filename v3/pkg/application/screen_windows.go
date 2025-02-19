@@ -3,7 +3,7 @@
 package application
 
 import (
-	"fmt"
+	"errors"
 	"strconv"
 
 	"github.com/wailsapp/wails/v3/pkg/w32"
@@ -80,7 +80,7 @@ func getScreenForWindowHwnd(hwnd w32.HWND) (*Screen, error) {
 			return screen, nil
 		}
 	}
-	return nil, fmt.Errorf("screen not found for window")
+	return nil, errors.New("screen not found for window")
 }
 
 func hMonitorToScreenID(hMonitor uintptr) string {

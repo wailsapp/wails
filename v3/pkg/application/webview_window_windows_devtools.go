@@ -11,6 +11,6 @@ func (w *windowsWebviewWindow) openDevTools() {
 func (w *windowsWebviewWindow) enableDevTools(settings *edge.ICoreWebViewSettings) {
 	err := settings.PutAreDevToolsEnabled(true)
 	if err != nil {
-		globalApplication.fatal(err.Error())
+		globalApplication.handleFatalError(err)
 	}
 }

@@ -48,7 +48,17 @@ function generateID() {
 function resultHandler(id, data, isJSON) {
     const promiseHandler = getAndDeleteResponse(id);
     if (promiseHandler) {
-        promiseHandler.resolve(isJSON ? JSON.parse(data) : data);
+        if (!data) {
+            promiseHandler.resolve();
+        } else if (!isJSON) {
+            promiseHandler.resolve(data);
+        } else {
+            try {
+                promiseHandler.resolve(JSON.parse(data));
+            } catch (err) {
+                promiseHandler.reject(new TypeError("could not parse result: " + err.message, { cause: err }));
+            }
+        }
     }
 }
 
@@ -56,14 +66,48 @@ function resultHandler(id, data, isJSON) {
  * Handles the error from a call request.
  *
  * @param {string} id - The id of the promise handler.
- * @param {string} message - The error message to reject the promise handler with.
+ * @param {string} data - The error data to reject the promise handler with.
+ * @param {boolean} isJSON - Indicates whether the data is JSON or not.
  *
  * @return {void}
  */
-function errorHandler(id, message) {
+function errorHandler(id, data, isJSON) {
     const promiseHandler = getAndDeleteResponse(id);
     if (promiseHandler) {
-        promiseHandler.reject(message);
+        if (!isJSON) {
+            promiseHandler.reject(new Error(data));
+        } else {
+            let error;
+            try {
+                error = JSON.parse(data);
+            } catch (err) {
+                promiseHandler.reject(new TypeError("could not parse error: " + err.message, { cause: err }));
+                return;
+            }
+
+            let options = {};
+            if (error.cause) {
+                options.cause = error.cause;
+            }
+
+            let exception;
+            switch (error.kind) {
+                case "ReferenceError":
+                    exception = new ReferenceError(error.message, options);
+                    break;
+                case "TypeError":
+                    exception = new TypeError(error.message, options);
+                    break;
+                case "RuntimeError":
+                    exception = new RuntimeError(error.message, options);
+                    break;
+                default:
+                    exception = new Error(error.message, options);
+                    break;
+            }
+
+            promiseHandler.reject(exception);
+        }
     }
 }
 
@@ -81,30 +125,59 @@ function getAndDeleteResponse(id) {
 }
 
 /**
- * Executes a call using the provided type and options.
+ * Collects all required information for a binding call.
  *
- * @param {string|number} type - The type of call to execute.
- * @param {Object} [options={}] - Additional options for the call.
- * @return {Promise} - A promise that will be resolved or rejected based on the result of the call. It also has a cancel method to cancel a long running request.
+ * @typedef {Object} CallOptions
+ * @property {number} [methodID] - The numeric ID of the bound method to call.
+ * @property {string} [methodName] - The fully qualified name of the bound method to call.
+ * @property {any[]} args - Arguments to be passed into the bound method.
  */
-function callBinding(type, options = {}) {
+
+/**
+ * Exception class that will be thrown in case the bound method returns an error.
+ * The value of the {@link RuntimeError#name} property is "RuntimeError".
+ */
+export class RuntimeError extends Error {
+    /**
+     * Constructs a new RuntimeError instance.
+     *
+     * @param {string} message - The error message.
+     * @param {any[]} args - Optional arguments for the Error constructor.
+     */
+    constructor(message, ...args) {
+        super(message, ...args);
+        this.name = "RuntimeError";
+    }
+}
+
+/**
+ * Call a bound method according to the given call options.
+ *
+ * In case of failure, the returned promise will reject with an exception
+ * among ReferenceError (unknown method), TypeError (wrong argument count or type),
+ * {@link RuntimeError} (method returned an error), or other (network or internal errors).
+ * The exception might have a "cause" field with the value returned
+ * by the application- or service-level error marshaling functions.
+ *
+ * @param {CallOptions} options - A method call descriptor.
+ * @returns {Promise<any>} - The result of the call.
+ */
+export function Call(options) {
     const id = generateID();
     const doCancel = () => { return cancelCall(type, {"call-id": id}) };
     let queuedCancel = false, callRunning = false;
     let p = new Promise((resolve, reject) => {
         options["call-id"] = id;
         callResponses.set(id, { resolve, reject });
-        call(type, options).
-            then((_) => {
-                callRunning = true;
-                if (queuedCancel) {
-                    return doCancel();
-                }
-            }).
-            catch((error) => {
-                reject(error);
-                callResponses.delete(id);
-            });
+        call(CallBinding, options).then((_) => {
+            callRunning = true;
+            if (queuedCancel) {
+                return doCancel();
+            }
+        }).catch((error) => {
+            reject(error);
+            callResponses.delete(id);
+        });
     });
     p.cancel = () => {
         if (callRunning) {
@@ -118,57 +191,31 @@ function callBinding(type, options = {}) {
 }
 
 /**
- * Call method.
- *
- * @param {Object} options - The options for the method.
- * @returns {Object} - The result of the call.
- */
-export function Call(options) {
-    return callBinding(CallBinding, options);
-}
-
-/**
- * Executes a method by name.
+ * Calls a bound method by name with the specified arguments.
+ * See {@link Call} for details.
  *
  * @param {string} methodName - The name of the method in the format 'package.struct.method'.
- * @param {...*} args - The arguments to pass to the method.
- * @throws {Error} If the name is not a string or is not in the correct format.
- * @returns {*} The result of the method execution.
+ * @param {any[]} args - The arguments to pass to the method.
+ * @returns {Promise<any>} The result of the method call.
  */
 export function ByName(methodName, ...args) {
-    return callBinding(CallBinding, {
+    return Call({
         methodName,
         args
     });
 }
 
 /**
- * Calls a method by its ID with the specified arguments.
+ * Calls a method by its numeric ID with the specified arguments.
+ * See {@link Call} for details.
  *
  * @param {number} methodID - The ID of the method to call.
- * @param {...*} args - The arguments to pass to the method.
- * @return {*} - The result of the method call.
+ * @param {any[]} args - The arguments to pass to the method.
+ * @return {Promise<any>} - The result of the method call.
  */
 export function ByID(methodID, ...args) {
-    return callBinding(CallBinding, {
+    return Call({
         methodID,
-        args
-    });
-}
-
-/**
- * Calls a method on a plugin.
- *
- * @param {string} pluginName - The name of the plugin.
- * @param {string} methodName - The name of the method to call.
- * @param {...*} args - The arguments to pass to the method.
- * @returns {*} - The result of the method call.
- */
-export function Plugin(pluginName, methodName, ...args) {
-    return callBinding(CallBinding, {
-        packageName: "wails-plugins",
-        structName: pluginName,
-        methodName,
         args
     });
 }

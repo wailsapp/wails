@@ -42,7 +42,7 @@ func (m *windowsDialog) show() {
 	if m.dialog.window != nil {
 		parentWindow, err = m.dialog.window.NativeWindowHandle()
 		if err != nil {
-			globalApplication.fatal(err.Error())
+			globalApplication.handleFatalError(err)
 		}
 	}
 
@@ -50,12 +50,12 @@ func (m *windowsDialog) show() {
 		// 3 is the application icon
 		button, err = w32.MessageBoxWithIcon(parentWindow, message, title, 3, windows.MB_OK|windows.MB_USERICON)
 		if err != nil {
-			globalApplication.fatal(err.Error())
+			globalApplication.handleFatalError(err)
 		}
 	} else {
 		button, err = windows.MessageBox(windows.HWND(parentWindow), message, title, flags|windows.MB_SYSTEMMODAL)
 		if err != nil {
-			globalApplication.fatal(err.Error())
+			globalApplication.handleFatalError(err)
 		}
 	}
 	// This maps MessageBox return values to strings
@@ -114,7 +114,7 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 	if m.dialog.window != nil {
 		config.ParentWindowHandle, err = m.dialog.window.NativeWindowHandle()
 		if err != nil {
-			globalApplication.fatal(err.Error())
+			globalApplication.handleFatalError(err)
 		}
 	}
 
@@ -242,7 +242,7 @@ func showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelect bool) (any, 
 	defer func() {
 		err := dlg.Release()
 		if err != nil {
-			globalApplication.error("Unable to release dialog: " + err.Error())
+			globalApplication.error("unable to release dialog: %w", err)
 		}
 	}()
 

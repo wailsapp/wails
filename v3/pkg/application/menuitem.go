@@ -1,8 +1,6 @@
 package application
 
 import (
-	"fmt"
-	"os"
 	"sync"
 	"sync/atomic"
 )
@@ -226,15 +224,13 @@ func NewRole(role Role) *MenuItem {
 		result = NewHelpMenuItem()
 
 	default:
-		globalApplication.error(fmt.Sprintf("No support for role: %v", role))
-		os.Exit(1)
+		globalApplication.error("no support for role: %v", role)
 	}
 
-	if result == nil {
-		return nil
+	if result != nil {
+		result.role = role
 	}
 
-	result.role = role
 	return result
 }
 
@@ -279,7 +275,7 @@ func (m *MenuItem) handleClick() {
 func (m *MenuItem) SetAccelerator(shortcut string) *MenuItem {
 	accelerator, err := parseAccelerator(shortcut)
 	if err != nil {
-		globalApplication.error("invalid accelerator. %v", err.Error())
+		globalApplication.error("invalid accelerator: %w", err)
 		return m
 	}
 	m.accelerator = accelerator

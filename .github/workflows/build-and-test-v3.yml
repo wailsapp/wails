@@ -30,7 +30,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        go-version: [1.23]
+        go-version: [1.24]
 
     steps:
       - name: Checkout code
@@ -40,7 +40,7 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
         with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+          packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
           version: 1.0
 
       - name: Setup Go
@@ -66,10 +66,24 @@ jobs:
         working-directory: ./v3
         run: go test -v ./...
 
-      - name: Run tests (!mac)
-        if: matrix.os != 'macos-latest'
+      - name: Run tests (windows)
+        if: matrix.os == 'windows-latest'
         working-directory: ./v3
         run: go test -v ./...
+
+      - name: Run tests (ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: ./v3
+        run: >
+          xvfb-run --auto-servernum
+          sh -c '
+          dbus-update-activation-environment --systemd --all &&
+          go test -v ./...
+          '
+
+      - name: Typecheck binding generator output
+        working-directory: ./v3
+        run: task generator:test:check
 
   test_js:
     name: Run JS Tests
@@ -105,40 +119,22 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         template:
-          [
-            svelte,
-            svelte-ts,
-            vue,
-            vue-ts,
-            react,
-            react-ts,
-            preact,
-            preact-ts,
-            lit,
-            lit-ts,
-            vanilla,
-            vanilla-ts,
-          ]
-        go-version: [1.23]
+          - svelte
+          - svelte-ts
+          - vue
+          - vue-ts
+          - react
+          - react-ts
+          - preact
+          - preact-ts
+          - lit
+          - lit-ts
+          - vanilla
+          - vanilla-ts
+        go-version: [1.24]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go-version }}
-          cache-dependency-path: "v3/go.sum"
-
-      - name: Setup Golang caches
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-golang-
 
       - name: Install linux dependencies
         uses: awalsh128/cache-apt-pkgs-action@latest
@@ -147,15 +143,26 @@ jobs:
           packages: libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
           version: 1.0
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache-dependency-path: "v3/go.sum"
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build Wails3 CLI
+        working-directory: ./v3
         run: |
-          cd ./v3/cmd/wails3
-          go install
-          wails3 -help
+          task install
+          wails3 doctor
 
       - name: Generate template '${{ matrix.template }}'
         run: |
-          go install github.com/go-task/task/v3/cmd/task@latest 
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
           wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}

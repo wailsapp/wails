@@ -2,14 +2,15 @@ package commands
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/debug"
 	"github.com/wailsapp/wails/v3/internal/github"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/version"
-	"os"
-	"os/exec"
-	"path/filepath"
 )
 
 type UpdateCLIOptions struct {
@@ -31,9 +32,9 @@ func UpdateCLI(options *UpdateCLIOptions) error {
 		v3Path := filepath.ToSlash(debug.LocalModulePath + "/v3")
 		term.Println("This Wails CLI has been installed from source. To update to the latest stable release, run the following commands in the `" + v3Path + "` directory:")
 		term.Println("   - git pull")
-		term.Println("   - go install")
+		term.Println("   - wails3 task install")
 		term.Println("")
-		term.Println("If you want to install the latest release, please run `wails update cli -latest`")
+		term.Println("If you want to install the latest release, please run `wails3 update cli -latest`")
 		return nil
 	}
 
@@ -69,7 +70,7 @@ func UpdateCLI(options *UpdateCLIOptions) error {
 			if err != nil {
 				pterm.Println("")
 				pterm.Println("No stable release found for this major version. To update to the latest pre-release (eg beta), run:")
-				pterm.Println("   wails update -pre")
+				pterm.Println("   wails3 update cli -pre")
 				return nil
 			}
 		}
@@ -142,7 +143,7 @@ func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentV
 		// Compare
 		if !success {
 			pterm.Println("Error: The requested version is lower than the current version.")
-			pterm.Printf("If this is what you really want to do, use `wails update -version %s`\n", targetVersionString)
+			pterm.Printf("If this is what you really want to do, use `wails3 update cli -version %s`\n", targetVersionString)
 			return nil
 		}
 

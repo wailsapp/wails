@@ -220,7 +220,7 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 	}
 
 	fqn := path + "." + obj.Name() + "." + method.Name()
-	id, _ := hash.Fnv(fqn)
+	id := hash.Fnv(fqn)
 
 	methodInfo := &ServiceMethodInfo{
 		MethodInfo: collector.Method(method).Collect(),
@@ -265,6 +265,7 @@ func (info *ServiceInfo) collectMethod(method *types.Func) *ServiceMethodInfo {
 					idValue,
 				)
 				methodInfo.ID = strconv.FormatUint(idValue, 10)
+				methodIdFound = true
 			}
 		}
 	}
