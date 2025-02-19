@@ -3,7 +3,6 @@ package kvstore
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"os"
 	"sync"
 
@@ -11,111 +10,147 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-type KeyValueStore struct {
-	config   *Config
-	filename string
-	data     map[string]any
-	unsaved  bool
-	lock     sync.RWMutex
-}
-
 type Config struct {
+	// Filename specifies the path of the on-disk file associated to the key-value store.
 	Filename string
+
+	// AutoSave specifies whether the store
+	// must be written to disk automatically after every modification.
+	// When AutoSave is false, stores are only saved to disk upon shutdown
+	// or when the [Service.Save] method is called manually.
 	AutoSave bool
 }
 
-type Service struct{}
+type Service struct {
+	lock sync.RWMutex
 
-func New(config *Config) *KeyValueStore {
-	return &KeyValueStore{
-		config: config,
-		data:   make(map[string]any),
-	}
+	config *Config
+
+	data    map[string]any
+	unsaved bool
 }
 
-// ServiceShutdown will save the store to disk if there are unsaved changes.
-func (kvs *KeyValueStore) ServiceShutdown() error {
-	if kvs.unsaved {
-		err := kvs.Save()
-		if err != nil {
-			return errors.Wrap(err, "Error saving store")
-		}
-	}
-	return nil
+// New initialises an in-memory key-value store. See [NewWithConfig] for details.
+func New() *Service {
+	return NewWithConfig(nil)
+}
+
+// NewWithConfig initialises a key-value store with the given configuration:
+//   - if config is nil, the new store is in-memory, i.e. not associated with a file;
+//   - if config is non-nil, the associated file is not loaded until [Service.Load] is called.
+//
+// If the store is registered with the application as a service,
+// [Service.Load] will be called automatically at startup.
+func NewWithConfig(config *Config) *Service {
+	result := &Service{data: make(map[string]any)}
+	result.Configure(config)
+	return result
 }
 
 // ServiceName returns the name of the plugin.
-func (kvs *KeyValueStore) ServiceName() string {
+func (kvs *Service) ServiceName() string {
 	return "github.com/wailsapp/wails/v3/plugins/kvstore"
 }
 
-// ServiceStartup is called when the plugin is loaded. This is where you should do any setup.
-func (kvs *KeyValueStore) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
-	err := kvs.open(kvs.config.Filename)
-	if err != nil {
-		return err
-	}
-
-	return nil
+// ServiceStartup loads the store from disk if it is associated with a file.
+// It returns a non-nil error in case of failure.
+func (kvs *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+	return errors.Wrap(kvs.Load(), "error loading store")
 }
 
-func (kvs *KeyValueStore) open(filename string) (err error) {
-	kvs.filename = filename
-	kvs.data = make(map[string]any)
+// ServiceShutdown saves the store to disk if it is associated with a file.
+// It returns a non-nil error in case of failure.
+func (kvs *Service) ServiceShutdown() error {
+	return errors.Wrap(kvs.Save(), "error saving store")
+}
 
-	file, err := os.Open(filename)
+// Configure changes the store's configuration.
+// The contents of the store at call time are preserved and marked unsaved.
+// Consumers will need to call [Service.Load] manually after Configure
+// in order to load a new file.
+//
+// If the store is unsaved upon calling Configure, no attempt is made at saving it.
+// Consumers will need to call [Service.Save] manually beforehand.
+//
+// See [NewWithConfig] for details on configuration.
+//
+//wails:ignore
+func (kvs *Service) Configure(config *Config) {
+	if config != nil {
+		// Clone to prevent changes from the outside.
+		clone := new(Config)
+		*clone = *config
+		config = clone
+	}
+
+	kvs.lock.Lock()
+	defer kvs.lock.Unlock()
+
+	kvs.config = config
+	kvs.unsaved = true
+}
+
+// Load loads the store from disk.
+// If the store is in-memory, i.e. not associated with a file, Load has no effect.
+// If the operation fails, a non-nil error is returned
+// and the store's content and state at call time are preserved.
+func (kvs *Service) Load() error {
+	kvs.lock.Lock()
+	defer kvs.lock.Unlock()
+
+	if kvs.config == nil {
+		return nil
+	}
+
+	bytes, err := os.ReadFile(kvs.config.Filename)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
-		}
-		return err
-	}
-	defer func() {
-		err2 := file.Close()
-		if err2 != nil {
-			application.Get().Logger.Error("Key/Value Store Plugin Error:", "error", err.Error())
-			if err == nil {
-				err = err2
-			}
-		}
-	}()
-
-	bytes, err := io.ReadAll(file)
-	if err != nil {
-		return err
-	}
-
-	if len(bytes) > 0 {
-		if err := json.Unmarshal(bytes, &kvs.data); err != nil {
+		} else {
 			return err
 		}
 	}
 
+	// Init new map because [json.Unmarshal] does not clear the previous one.
+	data := make(map[string]any)
+
+	if len(bytes) > 0 {
+		if err := json.Unmarshal(bytes, &data); err != nil {
+			return err
+		}
+	}
+
+	kvs.data = data
+	kvs.unsaved = false
 	return nil
 }
 
-// Save saves the store to disk
-func (kvs *KeyValueStore) Save() error {
+// Save saves the store to disk.
+// If the store is in-memory, i.e. not associated with a file, Save has no effect.
+func (kvs *Service) Save() error {
 	kvs.lock.Lock()
 	defer kvs.lock.Unlock()
+
+	if kvs.config == nil {
+		return nil
+	}
 
 	bytes, err := json.Marshal(kvs.data)
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(kvs.filename, bytes, 0644)
+	err = os.WriteFile(kvs.config.Filename, bytes, 0644)
 	if err != nil {
 		return err
 	}
 
 	kvs.unsaved = false
-
 	return nil
 }
 
 // Get returns the value for the given key. If key is empty, the entire store is returned.
-func (kvs *KeyValueStore) Get(key string) any {
+func (kvs *Service) Get(key string) any {
 	kvs.lock.RLock()
 	defer kvs.lock.RUnlock()
 
@@ -127,35 +162,67 @@ func (kvs *KeyValueStore) Get(key string) any {
 }
 
 // Set sets the value for the given key. If AutoSave is true, the store is saved to disk.
-func (kvs *KeyValueStore) Set(key string, value any) error {
-	kvs.lock.Lock()
-	kvs.data[key] = value
-	kvs.lock.Unlock()
-	if kvs.config.AutoSave {
-		err := kvs.Save()
-		if err != nil {
-			return err
-		}
-		kvs.unsaved = false
-	} else {
+func (kvs *Service) Set(key string, value any) error {
+	var autosave bool
+	func() {
+		kvs.lock.Lock()
+		defer kvs.lock.Unlock()
+
+		kvs.data[key] = value
 		kvs.unsaved = true
+
+		if kvs.config != nil {
+			autosave = kvs.config.AutoSave
+		}
+	}()
+
+	if autosave {
+		return kvs.Save()
+	} else {
+		return nil
 	}
-	return nil
 }
 
-// Delete deletes the key from the store. If AutoSave is true, the store is saved to disk.
-func (kvs *KeyValueStore) Delete(key string) error {
-	kvs.lock.Lock()
-	delete(kvs.data, key)
-	kvs.lock.Unlock()
-	if kvs.config.AutoSave {
-		err := kvs.Save()
-		if err != nil {
-			return err
-		}
-		kvs.unsaved = false
-	} else {
+// Delete deletes the given key from the store. If AutoSave is true, the store is saved to disk.
+func (kvs *Service) Delete(key string) error {
+	var autosave bool
+	func() {
+		kvs.lock.Lock()
+		defer kvs.lock.Unlock()
+
+		delete(kvs.data, key)
 		kvs.unsaved = true
+
+		if kvs.config != nil {
+			autosave = kvs.config.AutoSave
+		}
+	}()
+
+	if autosave {
+		return kvs.Save()
+	} else {
+		return nil
 	}
-	return nil
+}
+
+// Clear deletes all keys from the store. If AutoSave is true, the store is saved to disk.
+func (kvs *Service) Clear() error {
+	var autosave bool
+	func() {
+		kvs.lock.Lock()
+		defer kvs.lock.Unlock()
+
+		kvs.data = make(map[string]any)
+		kvs.unsaved = true
+
+		if kvs.config != nil {
+			autosave = kvs.config.AutoSave
+		}
+	}()
+
+	if autosave {
+		return kvs.Save()
+	} else {
+		return nil
+	}
 }
