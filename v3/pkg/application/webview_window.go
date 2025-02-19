@@ -3,11 +3,11 @@ package application
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"runtime"
 	"slices"
 	"strings"
 	"sync"
+	"text/template"
 
 	"github.com/leaanthony/u"
 
