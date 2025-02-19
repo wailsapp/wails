@@ -3,7 +3,7 @@
 package application
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"path/filepath"
 	"slices"
@@ -215,7 +215,7 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		if msg == w32.WM_DISPLAYCHANGE || (msg == w32.WM_SETTINGCHANGE && wParam == w32.SPI_SETWORKAREA) {
 			err := m.processAndCacheScreens()
 			if err != nil {
-				m.parent.error(err.Error())
+				m.parent.handleError(err)
 			}
 		}
 	}
@@ -318,14 +318,14 @@ func setupDPIAwareness() error {
 		return w32.SetProcessDPIAware()
 	}
 
-	return fmt.Errorf("no DPI awareness method supported")
+	return errors.New("no DPI awareness method supported")
 }
 
 func newPlatformApp(app *App) *windowsApp {
 
 	err := setupDPIAwareness()
 	if err != nil {
-		app.error(err.Error())
+		app.handleError(err)
 	}
 
 	result := &windowsApp{
@@ -337,7 +337,7 @@ func newPlatformApp(app *App) *windowsApp {
 
 	err = result.processAndCacheScreens()
 	if err != nil {
-		app.fatal(err.Error())
+		app.handleFatalError(err)
 	}
 
 	result.init()

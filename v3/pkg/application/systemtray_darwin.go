@@ -30,9 +30,9 @@ static void systemTrayHide(void* nsStatusItem) {
 */
 import "C"
 import (
+	"errors"
 	"unsafe"
 
-	"fmt"
 	"github.com/leaanthony/go-ansi-parser"
 )
 
@@ -125,7 +125,7 @@ func (s *macosSystemTray) getScreen() (*Screen, error) {
 		}
 		return result, nil
 	}
-	return nil, fmt.Errorf("no screen available")
+	return nil, errors.New("no screen available")
 }
 
 func (s *macosSystemTray) bounds() (*Rect, error) {

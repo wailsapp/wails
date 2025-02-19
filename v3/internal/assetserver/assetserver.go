@@ -19,12 +19,15 @@ type RuntimeHandler interface {
 	HandleRuntimeCall(w http.ResponseWriter, r *http.Request)
 }
 
+type service struct {
+	Route   string
+	Handler http.Handler
+}
+
 type AssetServer struct {
-	options *Options
-
-	handler http.Handler
-
-	services map[string]http.Handler
+	options  *Options
+	handler  http.Handler
+	services []service
 
 	assetServerWebView
 }
@@ -112,11 +115,11 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 		userHandler.ServeHTTP(wrapped, req)
 
 	default:
-		// Check if the path matches the keys in the services map
-		for route, handler := range a.services {
-			if strings.HasPrefix(reqPath, route) {
-				req.URL.Path = strings.TrimPrefix(reqPath, route)
-				handler.ServeHTTP(rw, req)
+		// Check if the path matches a service route
+		for _, svc := range a.services {
+			if strings.HasPrefix(reqPath, svc.Route) {
+				req.URL.Path = strings.TrimPrefix(reqPath, svc.Route)
+				svc.Handler.ServeHTTP(rw, req)
 				return
 			}
 		}
@@ -126,11 +129,8 @@ func (a *AssetServer) serveHTTP(rw http.ResponseWriter, req *http.Request, userH
 	}
 }
 
-func (a *AssetServer) AttachServiceHandler(prefix string, handler http.Handler) {
-	if a.services == nil {
-		a.services = make(map[string]http.Handler)
-	}
-	a.services[prefix] = handler
+func (a *AssetServer) AttachServiceHandler(route string, handler http.Handler) {
+	a.services = append(a.services, service{route, handler})
 }
 
 func (a *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {

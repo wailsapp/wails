@@ -3,8 +3,9 @@
 package application
 
 import (
-	"github.com/wailsapp/wails/v3/pkg/w32"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
 type windowsMenuItem struct {
@@ -96,6 +97,10 @@ func (m *windowsMenuItem) setChecked(checked bool) {
 	m.update()
 }
 
+func (m *windowsMenuItem) destroy() {
+	w32.RemoveMenu(m.hMenu, m.id, w32.MF_BYCOMMAND)
+}
+
 func (m *windowsMenuItem) setAccelerator(accelerator *accelerator) {
 	//// Set the keyboard shortcut of the menu item
 	//var modifier C.int
@@ -117,7 +122,7 @@ func (m *windowsMenuItem) setBitmap(bitmap []byte) {
 	// Set the icon
 	err := w32.SetMenuIcons(m.hMenu, m.id, bitmap, nil)
 	if err != nil {
-		globalApplication.error("Unable to set bitmap on menu item: %s", err.Error())
+		globalApplication.error("unable to set bitmap on menu item: %w", err)
 		return
 	}
 	m.update()
