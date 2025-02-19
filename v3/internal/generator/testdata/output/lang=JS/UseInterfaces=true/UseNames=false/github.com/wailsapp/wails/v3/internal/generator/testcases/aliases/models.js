@@ -8,6 +8,19 @@
  */
 
 /**
+ * A class whose fields have various aliased types.
+ * @typedef {Object} AliasGroup
+ * @property {GenericAlias<number>} GAi
+ * @property {GenericAlias<GenericPerson<boolean>>} GAP
+ * @property {GenericPtrAlias<string[] | null>} GPAs
+ * @property {GenericPtrAlias<GenericPerson<number[] | null>>} GPAP
+ * @property {GenericMapAlias<string, number>} GMA
+ * @property {GenericPersonAlias<boolean>} GPA
+ * @property {IndirectPersonAlias} IPA
+ * @property {TPIndirectPersonAlias} TPIPA
+ */
+
+/**
  * A struct alias.
  * This should be rendered as a typedef or interface in every mode.
  * @typedef {Object} AliasStruct
@@ -35,11 +48,40 @@
  */
 
 /**
+ * A generic alias that forwards to a type parameter.
+ * @template T
+ * @typedef {T} GenericAlias
+ */
+
+/**
+ * A generic alias that wraps a map.
+ * @template T,U
+ * @typedef {{ [_: string]: U } | null} GenericMapAlias
+ */
+
+/**
  * A generic struct containing an alias.
  * @template T
  * @typedef {Object} GenericPerson
  * @property {T} Name
  * @property {Alias} AliasedField
+ */
+
+/**
+ * A generic alias that wraps a generic struct.
+ * @template T
+ * @typedef {GenericPerson<GenericPtrAlias<T>[] | null>} GenericPersonAlias
+ */
+
+/**
+ * A generic alias that wraps a pointer type.
+ * @template T
+ * @typedef {GenericAlias<T> | null} GenericPtrAlias
+ */
+
+/**
+ * An alias that wraps a class through a non-typeparam alias.
+ * @typedef {GenericPersonAlias<boolean>} IndirectPersonAlias
  */
 
 /**
@@ -58,6 +100,11 @@
 /**
  * Another class alias, but ordered after its aliased class.
  * @typedef {Person} StrangelyAliasedPerson
+ */
+
+/**
+ * An alias that wraps a class through a typeparam alias.
+ * @typedef {GenericAlias<GenericPerson<boolean>>} TPIndirectPersonAlias
  */
 
 // In interface mode, this file is likely to contain just comments.

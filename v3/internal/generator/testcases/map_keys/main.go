@@ -106,24 +106,24 @@ type InterfacePtrType *encoding.TextMarshaler
 type InterfaceAlias = encoding.TextMarshaler
 type InterfacePtrAlias = *encoding.TextMarshaler
 
-// type ComparableCstrAlias[R comparable] = R
-// type ComparableCstrPtrAlias[R comparable] = *R
-// type BasicCstrAlias[S BasicConstraint] = S
-// type BasicCstrPtrAlias[S BasicConstraint] = *S
-// type BadTildeCstrAlias[T BadTildeConstraint] = T
-// type BadTildeCstrPtrAlias[T BadTildeConstraint] = *T
-// type GoodTildeCstrAlias[U GoodTildeConstraint] = U
-// type GoodTildeCstrPtrAlias[U GoodTildeConstraint] = *U
-// type NonBasicCstrAlias[V NonBasicConstraint] = V
-// type NonBasicCstrPtrAlias[V NonBasicConstraint] = *V
-// type PointableCstrAlias[W PointableConstraint] = W
-// type PointableCstrPtrAlias[W PointableConstraint] = *W
-// type MixedCstrAlias[X MixedConstraint] = X
-// type MixedCstrPtrAlias[X MixedConstraint] = *X
-// type InterfaceCstrAlias[Y InterfaceConstraint] = Y
-// type InterfaceCstrPtrAlias[Y InterfaceConstraint] = *Y
-// type PointerCstrAlias[R comparable, Z PointerConstraint[R]] = Z
-// type PointerCstrPtrAlias[R comparable, Z PointerConstraint[R]] = *Z
+type ComparableCstrAlias[R comparable] = R
+type ComparableCstrPtrAlias[R comparable] = *R
+type BasicCstrAlias[S BasicConstraint] = S
+type BasicCstrPtrAlias[S BasicConstraint] = *S
+type BadTildeCstrAlias[T BadTildeConstraint] = T
+type BadTildeCstrPtrAlias[T BadTildeConstraint] = *T
+type GoodTildeCstrAlias[U GoodTildeConstraint] = U
+type GoodTildeCstrPtrAlias[U GoodTildeConstraint] = *U
+type NonBasicCstrAlias[V NonBasicConstraint] = V
+type NonBasicCstrPtrAlias[V NonBasicConstraint] = *V
+type PointableCstrAlias[W PointableConstraint] = W
+type PointableCstrPtrAlias[W PointableConstraint] = *W
+type MixedCstrAlias[X MixedConstraint] = X
+type MixedCstrPtrAlias[X MixedConstraint] = *X
+type InterfaceCstrAlias[Y InterfaceConstraint] = Y
+type InterfaceCstrPtrAlias[Y InterfaceConstraint] = *Y
+type PointerCstrAlias[R comparable, Z PointerConstraint[R]] = Z
+type PointerCstrPtrAlias[R comparable, Z PointerConstraint[R]] = *Z
 
 type Maps[R comparable, S BasicConstraint, T BadTildeConstraint, U GoodTildeConstraint, V NonBasicConstraint, W PointableConstraint, X MixedConstraint, Y InterfaceConstraint, Z PointerConstraint[R]] struct {
 	Bool    map[bool]int      // Reject
@@ -226,63 +226,63 @@ type Maps[R comparable, S BasicConstraint, T BadTildeConstraint, U GoodTildeCons
 	TPZ    map[Z]int  // Accept, hide
 	TPZPtr map[*Z]int // Soft reject
 
-	// GAR    map[ComparableCstrAlias[R]]int    // Soft reject
-	// GARPtr map[ComparableCstrPtrAlias[R]]int // Soft reject
-	// GAS    map[BasicCstrAlias[S]]int         // Accept, hide
-	// GASPtr map[BasicCstrPtrAlias[S]]int      // Soft reject
-	// GAT    map[BadTildeCstrAlias[T]]int      // Soft reject
-	// GATPtr map[BadTildeCstrPtrAlias[T]]int   // Soft reject
-	// GAU    map[GoodTildeCstrAlias[U]]int     // Accept, hide
-	// GAUPtr map[GoodTildeCstrPtrAlias[U]]int  // Soft reject
-	// GAV    map[NonBasicCstrAlias[V]]int      // Accept, hide
-	// GAVPtr map[NonBasicCstrPtrAlias[V]]int   // Soft reject
-	// GAW    map[PointableCstrAlias[W]]int     // Soft reject
-	// GAWPtr map[PointableCstrPtrAlias[W]]int  // Accept, hide
-	// GAX    map[MixedCstrAlias[X]]int         // Accept, hide
-	// GAXPtr map[MixedCstrPtrAlias[X]]int      // Soft reject
-	// GAY    map[InterfaceCstrAlias[Y]]int     // Accept, hide
-	// GAYPtr map[InterfaceCstrPtrAlias[Y]]int  // Soft reject
-	// GAZ    map[PointerCstrAlias[R, Z]]int    // Accept, hide
-	// GAZPtr map[PointerCstrPtrAlias[R, Z]]int // Soft reject
+	GAR    map[ComparableCstrAlias[R]]int    // Soft reject
+	GARPtr map[ComparableCstrPtrAlias[R]]int // Soft reject
+	GAS    map[BasicCstrAlias[S]]int         // Accept, hide
+	GASPtr map[BasicCstrPtrAlias[S]]int      // Soft reject
+	GAT    map[BadTildeCstrAlias[T]]int      // Soft reject
+	GATPtr map[BadTildeCstrPtrAlias[T]]int   // Soft reject
+	GAU    map[GoodTildeCstrAlias[U]]int     // Accept, hide
+	GAUPtr map[GoodTildeCstrPtrAlias[U]]int  // Soft reject
+	GAV    map[NonBasicCstrAlias[V]]int      // Accept, hide
+	GAVPtr map[NonBasicCstrPtrAlias[V]]int   // Soft reject
+	GAW    map[PointableCstrAlias[W]]int     // Soft reject
+	GAWPtr map[PointableCstrPtrAlias[W]]int  // Accept, hide
+	GAX    map[MixedCstrAlias[X]]int         // Accept, hide
+	GAXPtr map[MixedCstrPtrAlias[X]]int      // Soft reject
+	GAY    map[InterfaceCstrAlias[Y]]int     // Accept, hide
+	GAYPtr map[InterfaceCstrPtrAlias[Y]]int  // Soft reject
+	GAZ    map[PointerCstrAlias[R, Z]]int    // Accept, hide
+	GAZPtr map[PointerCstrPtrAlias[R, Z]]int // Soft reject
 
-	// GACi     map[ComparableCstrAlias[int]]int                                         // Accept, hide
-	// GACV     map[ComparableCstrAlias[ValueTextMarshaler]]int                          // Accept
-	// GACP     map[ComparableCstrAlias[PointerTextMarshaler]]int                        // Reject
-	// GACiPtr  map[ComparableCstrPtrAlias[int]]int                                      // Reject
-	// GACVPtr  map[ComparableCstrPtrAlias[ValueTextMarshaler]]int                       // Accept, hide
-	// GACPPtr  map[ComparableCstrPtrAlias[PointerTextMarshaler]]int                     // Accept, hide
-	// GABi     map[BasicCstrAlias[int]]int                                              // Accept, hide
-	// GABs     map[BasicCstrAlias[string]]int                                           // Accept
-	// GABiPtr  map[BasicCstrPtrAlias[int]]int                                           // Reject
-	// GABT     map[BadTildeCstrAlias[struct{}]]int                                      // Reject
-	// GABTPtr  map[BadTildeCstrPtrAlias[struct{}]]int                                   // Reject
-	// GAGT     map[GoodTildeCstrAlias[ValueTextMarshaler]]int                           // Accept
-	// GAGTPtr  map[GoodTildeCstrPtrAlias[ValueTextMarshaler]]int                        // Accept, hide
-	// GANBV    map[NonBasicCstrAlias[ValueTextMarshaler]]int                            // Accept
-	// GANBP    map[NonBasicCstrAlias[*PointerTextMarshaler]]int                         // Accept, hide
-	// GANBVPtr map[NonBasicCstrPtrAlias[ValueTextMarshaler]]int                         // Accept, hide
-	// GANBPPtr map[NonBasicCstrPtrAlias[*PointerTextMarshaler]]int                      // Reject
-	// GAPlV1   map[PointableCstrAlias[ValueTextMarshaler]]int                           // Accept
-	// GAPlV2   map[*PointableCstrAlias[ValueTextMarshaler]]int                          // Accept
-	// GAPlP1   map[PointableCstrAlias[PointerTextMarshaler]]int                         // Reject
-	// GAPlP2   map[*PointableCstrAlias[PointerTextMarshaler]]int                        // Accept
-	// GAPlVPtr map[PointableCstrPtrAlias[ValueTextMarshaler]]int                        // Accept, hide
-	// GAPlPPtr map[PointableCstrPtrAlias[PointerTextMarshaler]]int                      // Accept, hide
-	// GAMi     map[MixedCstrAlias[uint]]int                                             // Accept, hide
-	// GAMS     map[MixedCstrAlias[StringType]]int                                       // Accept
-	// GAMV     map[MixedCstrAlias[ValueTextMarshaler]]int                               // Accept
-	// GAMSPtr  map[MixedCstrPtrAlias[StringType]]int                                    // Reject
-	// GAMVPtr  map[MixedCstrPtrAlias[ValueTextMarshaler]]int                            // Accept, hide
-	// GAII     map[InterfaceCstrAlias[encoding.TextMarshaler]]int                       // Accept, hide
-	// GAIV     map[InterfaceCstrAlias[ValueTextMarshaler]]int                           // Accept
-	// GAIP     map[InterfaceCstrAlias[*PointerTextMarshaler]]int                        // Accept, hide
-	// GAIIPtr  map[InterfaceCstrPtrAlias[encoding.TextMarshaler]]int                    // Reject
-	// GAIVPtr  map[InterfaceCstrPtrAlias[ValueTextMarshaler]]int                        // Accept, hide
-	// GAIPPtr  map[InterfaceCstrPtrAlias[*PointerTextMarshaler]]int                     // Reject
-	// GAPrV    map[PointerCstrAlias[ValueTextMarshaler, *ValueTextMarshaler]]int        // Accept, hide
-	// GAPrP    map[PointerCstrAlias[PointerTextMarshaler, *PointerTextMarshaler]]int    // Accept, hide
-	// GAPrVPtr map[PointerCstrPtrAlias[ValueTextMarshaler, *ValueTextMarshaler]]int     // Reject
-	// GAPrPPtr map[PointerCstrPtrAlias[PointerTextMarshaler, *PointerTextMarshaler]]int // Reject
+	GACi     map[ComparableCstrAlias[int]]int                                         // Accept, hide
+	GACV     map[ComparableCstrAlias[ValueTextMarshaler]]int                          // Accept
+	GACP     map[ComparableCstrAlias[PointerTextMarshaler]]int                        // Reject
+	GACiPtr  map[ComparableCstrPtrAlias[int]]int                                      // Reject
+	GACVPtr  map[ComparableCstrPtrAlias[ValueTextMarshaler]]int                       // Accept, hide
+	GACPPtr  map[ComparableCstrPtrAlias[PointerTextMarshaler]]int                     // Accept, hide
+	GABi     map[BasicCstrAlias[int]]int                                              // Accept, hide
+	GABs     map[BasicCstrAlias[string]]int                                           // Accept
+	GABiPtr  map[BasicCstrPtrAlias[int]]int                                           // Reject
+	GABT     map[BadTildeCstrAlias[struct{}]]int                                      // Reject
+	GABTPtr  map[BadTildeCstrPtrAlias[struct{}]]int                                   // Reject
+	GAGT     map[GoodTildeCstrAlias[ValueTextMarshaler]]int                           // Accept
+	GAGTPtr  map[GoodTildeCstrPtrAlias[ValueTextMarshaler]]int                        // Accept, hide
+	GANBV    map[NonBasicCstrAlias[ValueTextMarshaler]]int                            // Accept
+	GANBP    map[NonBasicCstrAlias[*PointerTextMarshaler]]int                         // Accept, hide
+	GANBVPtr map[NonBasicCstrPtrAlias[ValueTextMarshaler]]int                         // Accept, hide
+	GANBPPtr map[NonBasicCstrPtrAlias[*PointerTextMarshaler]]int                      // Reject
+	GAPlV1   map[PointableCstrAlias[ValueTextMarshaler]]int                           // Accept
+	GAPlV2   map[*PointableCstrAlias[ValueTextMarshaler]]int                          // Accept
+	GAPlP1   map[PointableCstrAlias[PointerTextMarshaler]]int                         // Reject
+	GAPlP2   map[*PointableCstrAlias[PointerTextMarshaler]]int                        // Accept
+	GAPlVPtr map[PointableCstrPtrAlias[ValueTextMarshaler]]int                        // Accept, hide
+	GAPlPPtr map[PointableCstrPtrAlias[PointerTextMarshaler]]int                      // Accept, hide
+	GAMi     map[MixedCstrAlias[uint]]int                                             // Accept, hide
+	GAMS     map[MixedCstrAlias[StringType]]int                                       // Accept
+	GAMV     map[MixedCstrAlias[ValueTextMarshaler]]int                               // Accept
+	GAMSPtr  map[MixedCstrPtrAlias[StringType]]int                                    // Reject
+	GAMVPtr  map[MixedCstrPtrAlias[ValueTextMarshaler]]int                            // Accept, hide
+	GAII     map[InterfaceCstrAlias[encoding.TextMarshaler]]int                       // Accept, hide
+	GAIV     map[InterfaceCstrAlias[ValueTextMarshaler]]int                           // Accept
+	GAIP     map[InterfaceCstrAlias[*PointerTextMarshaler]]int                        // Accept, hide
+	GAIIPtr  map[InterfaceCstrPtrAlias[encoding.TextMarshaler]]int                    // Reject
+	GAIVPtr  map[InterfaceCstrPtrAlias[ValueTextMarshaler]]int                        // Accept, hide
+	GAIPPtr  map[InterfaceCstrPtrAlias[*PointerTextMarshaler]]int                     // Reject
+	GAPrV    map[PointerCstrAlias[ValueTextMarshaler, *ValueTextMarshaler]]int        // Accept, hide
+	GAPrP    map[PointerCstrAlias[PointerTextMarshaler, *PointerTextMarshaler]]int    // Accept, hide
+	GAPrVPtr map[PointerCstrPtrAlias[ValueTextMarshaler, *ValueTextMarshaler]]int     // Reject
+	GAPrPPtr map[PointerCstrPtrAlias[PointerTextMarshaler, *PointerTextMarshaler]]int // Reject
 }
 
 func (*Service) Method() (_ Maps[PointerTextMarshaler, int, int, ValueTextMarshaler, *PointerTextMarshaler, ValueTextMarshaler, StringType, ValueTextMarshaler, *PointerTextMarshaler]) {

@@ -15,6 +15,11 @@ import * as $models from "./models.js";
  */
 
 /**
+ * A class whose fields have various aliased types.
+ * @typedef {$models.AliasGroup} AliasGroup
+ */
+
+/**
  * A struct alias.
  * This should be rendered as a typedef or interface in every mode.
  * @typedef {$models.AliasStruct} AliasStruct
@@ -36,9 +41,38 @@ import * as $models from "./models.js";
  */
 
 /**
+ * A generic alias that forwards to a type parameter.
+ * @template T
+ * @typedef {$models.GenericAlias<T>} GenericAlias
+ */
+
+/**
+ * A generic alias that wraps a map.
+ * @template T,U
+ * @typedef {$models.GenericMapAlias<T, U>} GenericMapAlias
+ */
+
+/**
  * A generic struct containing an alias.
  * @template T
  * @typedef {$models.GenericPerson<T>} GenericPerson
+ */
+
+/**
+ * A generic alias that wraps a generic struct.
+ * @template T
+ * @typedef {$models.GenericPersonAlias<T>} GenericPersonAlias
+ */
+
+/**
+ * A generic alias that wraps a pointer type.
+ * @template T
+ * @typedef {$models.GenericPtrAlias<T>} GenericPtrAlias
+ */
+
+/**
+ * An alias that wraps a class through a non-typeparam alias.
+ * @typedef {$models.IndirectPersonAlias} IndirectPersonAlias
  */
 
 /**
@@ -54,4 +88,9 @@ import * as $models from "./models.js";
 /**
  * Another class alias, but ordered after its aliased class.
  * @typedef {$models.StrangelyAliasedPerson} StrangelyAliasedPerson
+ */
+
+/**
+ * An alias that wraps a class through a typeparam alias.
+ * @typedef {$models.TPIndirectPersonAlias} TPIndirectPersonAlias
  */

@@ -52,7 +52,7 @@ type Embedded3 string
 // Person represents a person
 type Person struct {
 	// Titles is optional in JSON
-	Titles []Title `json:",omitempty"`
+	Titles []Title `json:",omitzero"`
 
 	// Names has a
 	// multiline comment
