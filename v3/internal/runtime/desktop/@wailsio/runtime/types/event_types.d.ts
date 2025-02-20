@@ -69,6 +69,7 @@ export declare const EventTypes: {
 		ApplicationWillTerminate: string,
 		ApplicationWillUnhide: string,
 		ApplicationWillUpdate: string,
+		DidReceiveNotificationResponse: string,
 		MenuDidAddItem: string,
 		MenuDidBeginTracking: string,
 		MenuDidClose: string,

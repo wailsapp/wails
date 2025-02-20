@@ -52,6 +52,7 @@ mac:ApplicationWillResignActive
 mac:ApplicationWillTerminate
 mac:ApplicationWillUnhide
 mac:ApplicationWillUpdate
+mac:DidReceiveNotificationResponse
 mac:MenuDidAddItem
 mac:MenuDidBeginTracking
 mac:MenuDidClose

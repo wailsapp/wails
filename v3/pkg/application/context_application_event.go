@@ -52,7 +52,7 @@ func (c ApplicationEventContext) HasVisibleWindows() bool {
 	return c.getBool("hasVisibleWindows")
 }
 
-func (c ApplicationEventContext) setData(data map[string]any) {
+func (c *ApplicationEventContext) setData(data map[string]any) {
 	c.data = data
 }
 
@@ -70,6 +70,10 @@ func (c ApplicationEventContext) Filename() string {
 		return ""
 	}
 	return result
+}
+
+func (c *ApplicationEventContext) GetData() map[string]any {
+	return c.data
 }
 
 func newApplicationEventContext() *ApplicationEventContext {
