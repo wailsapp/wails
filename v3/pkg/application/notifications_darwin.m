@@ -70,7 +70,7 @@ bool checkBundleIdentifier(void) {
         NSLog(@"Error: Cannot use notifications in development mode.\n"
               "  Notifications require the app to be properly bundled with a bundle identifier.\n"
               "  To test notifications:\n"
-              "  1. Build and package your app using 'wails package'\n"
+              "  1. Build and package your app using 'wails3 package'\n"
               "  2. Sign the packaged .app\n"
               "  3. Run the signed .app bundle");
         return false;
