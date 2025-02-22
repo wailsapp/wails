@@ -1,7 +1,7 @@
 #import "notifications_darwin.h"
 #import <Cocoa/Cocoa.h>
 #import <UserNotifications/UserNotifications.h>
-#import "../events/events_darwin.h"
+#import "../../events/events_darwin.h"
 
 extern bool hasListeners(unsigned int);
 extern void processApplicationEvent(unsigned int, void* data);

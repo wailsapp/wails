@@ -2,16 +2,18 @@ package main
 
 import (
 	"embed"
+	"log/slog"
+	"os"
+	"path/filepath"
+	"runtime"
+
 	"github.com/wailsapp/wails/v3/examples/services/hashes"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/services/fileserver"
 	"github.com/wailsapp/wails/v3/pkg/services/kvstore"
 	"github.com/wailsapp/wails/v3/pkg/services/log"
+	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 	"github.com/wailsapp/wails/v3/pkg/services/sqlite"
-	"log/slog"
-	"os"
-	"path/filepath"
-	"runtime"
 )
 
 //go:embed assets/*
@@ -48,6 +50,7 @@ func main() {
 			}), application.ServiceOptions{
 				Route: "/files",
 			}),
+			application.NewService(notifications.New()),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.BundledAssetFileServer(assets),
