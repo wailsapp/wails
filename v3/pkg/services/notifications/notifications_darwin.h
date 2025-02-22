@@ -5,16 +5,10 @@
 
 #import <Foundation/Foundation.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 bool checkBundleIdentifier(void);
 bool requestUserNotificationAuthorization(void *completion);
 bool checkNotificationAuthorization(void);
 void sendNotification(const char *identifier, const char *title, const char *subtitle, const char *body, void *completion);
-
-// New advanced notification functions
 void sendNotificationWithActions(const char *identifier, const char *title, const char *subtitle, 
                                const char *body, const char *categoryId, const char *actions_json, void *completion);
 void registerNotificationCategory(const char *categoryId, const char *actions_json, bool hasReplyField, 
@@ -23,9 +17,5 @@ void removeAllPendingNotifications(void);
 void removePendingNotification(const char *identifier);
 void removeAllDeliveredNotifications(void);
 void removeDeliveredNotification(const char *identifier);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* NOTIFICATIONS_DARWIN_H */
