@@ -228,41 +228,6 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 	C.setApplicationMenu(m.applicationMenu)
 }
 
-// RequestNotificationPermission requests user permission for notifications
-func (m *macosApp) RequestNotificationPermission() (bool, error) {
-	return RequestUserNotificationAuthorization()
-}
-
-// CheckNotificationPermission checks current permission status
-func (m *macosApp) CheckNotificationPermission() (bool, error) {
-	return CheckNotificationAuthorization()
-}
-
-// SendNotification sends a simple notification
-func (m *macosApp) SendNotification(identifier, title, subtitle, body string) error {
-	return SendNotification(identifier, title, subtitle, body)
-}
-
-// SendNotificationWithActions sends a notification with custom actions
-func (m *macosApp) SendNotificationWithActions(options NotificationOptions) error {
-	return SendNotificationWithActions(options)
-}
-
-// RegisterNotificationCategory registers a notification category with actions
-func (m *macosApp) RegisterNotificationCategory(category NotificationCategory) error {
-	return RegisterNotificationCategory(category)
-}
-
-// RemoveAllPendingNotifications removes all pending notifications
-func (m *macosApp) RemoveAllPendingNotifications() {
-	RemoveAllPendingNotifications()
-}
-
-// RemovePendingNotification removes a specific pending notification
-func (m *macosApp) RemovePendingNotification(identifier string) {
-	RemovePendingNotification(identifier)
-}
-
 func (m *macosApp) run() error {
 	if m.parent.options.SingleInstance != nil {
 		cUniqueID := C.CString(m.parent.options.SingleInstance.UniqueID)
