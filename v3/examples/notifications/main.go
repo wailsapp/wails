@@ -8,6 +8,7 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/services/notification"
 )
 
 func main() {
@@ -15,6 +16,9 @@ func main() {
 		Name:        "Notifications Demo",
 		Description: "A test of macOS notifications",
 		Assets:      application.AlphaAssets,
+		Services: []application.Service{
+			application.NewService(&notification.NotificationService{}),
+		},
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
