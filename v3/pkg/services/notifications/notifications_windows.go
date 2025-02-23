@@ -71,11 +71,11 @@ func (ns *Service) CheckNotificationAuthorization() bool {
 
 // SendNotification sends a basic notification with a name, title, and body.
 // (subtitle is only available on macOS)
-func (ns *Service) SendNotification(identifier, title, _, body string) error {
+func (ns *Service) SendNotification(options NotificationOptions) error {
 	n := toast.Notification{
-		AppID: identifier,
-		Title: title,
-		Body:  body,
+		AppID: options.ID,
+		Title: options.Title,
+		Body:  options.Body,
 	}
 
 	err := n.Push()
