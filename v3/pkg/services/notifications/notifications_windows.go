@@ -21,6 +21,7 @@ func (ns *Service) ServiceName() string {
 }
 
 // ServiceStartup is called when the service is loaded
+// Sets an activation callback to emit an event when notifications are interacted with.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
 		response := NotificationResponse{
@@ -44,21 +45,26 @@ func (ns *Service) ServiceShutdown() error {
 	return nil
 }
 
-// On Windows this does not apply, return true
+// CheckBundleIdentifier is a Windows stub that always returns true.
+// (bundle identifiers are macOS-specific)
 func CheckBundleIdentifier() bool {
 	return true
 }
 
-// On Windows this does not apply, return true
+// RequestUserNotificationAuthorization is a Windows stub that always returns true, nil.
+// (user authorization is macOS-specific)
 func (ns *Service) RequestUserNotificationAuthorization() (bool, error) {
 	return true, nil
 }
 
-// On Windows this does not apply, return true
+// CheckNotificationAuthorization is a Windows stub that always returns true.
+// (user authorization is macOS-specific)
 func (ns *Service) CheckNotificationAuthorization() bool {
 	return true
 }
 
+// SendNotification sends a basic notification with a name, title, and body.
+// (subtitle is only available on macOS)
 func (ns *Service) SendNotification(identifier, title, _, body string) error {
 	n := toast.Notification{
 		AppID: identifier,
@@ -73,6 +79,9 @@ func (ns *Service) SendNotification(identifier, title, _, body string) error {
 	return nil
 }
 
+// SendNotificationWithActions sends a notification with additional actions and inputs.
+// A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
+// If a NotificationCategory is not registered a basic notification will be sent.
 func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
 	nCategory := NotificationCategories[options.CategoryID]
 
@@ -97,7 +106,8 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 		})
 
 		n.Actions = append(n.Actions, toast.Action{
-			Content: nCategory.ReplyButtonTitle,
+			Content:   nCategory.ReplyButtonTitle,
+			Arguments: "TEXT_REPLY",
 		})
 	}
 
@@ -108,6 +118,7 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	return nil
 }
 
+// RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
 func (ns *Service) RegisterNotificationCategory(category NotificationCategory) error {
 	NotificationCategories[category.ID] = NotificationCategory{
 		ID:               category.ID,
@@ -120,22 +131,26 @@ func (ns *Service) RegisterNotificationCategory(category NotificationCategory) e
 	return nil
 }
 
-// RemoveAllPendingNotifications removes all pending notifications
+// RemoveAllPendingNotifications is a Windows stub that always returns nil.
+// (macOS-specific)
 func (ns *Service) RemoveAllPendingNotifications() error {
 	return nil
 }
 
-// RemovePendingNotification removes a specific pending notification
+// RemovePendingNotification is a Windows stub that always returns nil.
+// (macOS-specific)
 func (ns *Service) RemovePendingNotification(_ string) error {
 	return nil
 }
 
-// RemoveAllDeliveredNotifications removes all delivered notifications
+// RemoveAllDeliveredNotifications is a Windows stub that always returns nil.
+// (macOS-specific)
 func (ns *Service) RemoveAllDeliveredNotifications() error {
 	return nil
 }
 
-// RemoveDeliveredNotification removes a specific delivered notification
+// RemoveDeliveredNotification is a Windows stub that always returns nil.
+// (macOS-specific)
 func (ns *Service) RemoveDeliveredNotification(_ string) error {
 	return nil
 }

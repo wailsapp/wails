@@ -30,6 +30,7 @@ type NotificationOptions = struct {
 	Data       map[string]interface{} `json:"data,omitempty"`
 }
 
+// NotificationResponseData
 type NotificationResponseData = struct {
 	ID               string                 `json:"id,omitempty"`
 	ActionIdentifier string                 `json:"actionIdentifier,omitempty"`
@@ -41,6 +42,7 @@ type NotificationResponseData = struct {
 	UserInfo         map[string]interface{} `json:"userInfo,omitempty"`
 }
 
+// NotificationResponse
 type NotificationResponse = struct {
 	Name string                   `json:"name"`
 	Data NotificationResponseData `json:"data"`

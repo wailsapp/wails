@@ -17,16 +17,18 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
+// Creates a new Notifications Service.
+// Your app must be packaged and signed for this feature to work.
 func New() *Service {
 	return &Service{}
 }
 
-// ServiceName returns the name of the service
+// ServiceName returns the name of the service.
 func (ns *Service) ServiceName() string {
 	return "github.com/wailsapp/wails/v3/services/notifications"
 }
 
-// ServiceStartup is called when the service is loaded
+// ServiceStartup is called when the service is loaded.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	if !CheckBundleIdentifier() {
 		return fmt.Errorf("Notifications require a bundled application with a unique bundle identifier")
@@ -34,7 +36,7 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 	return nil
 }
 
-// ServiceShutdown is called when the service is unloaded
+// ServiceShutdown is called when the service is unloaded.
 func (ns *Service) ServiceShutdown() error {
 	return nil
 }
@@ -52,7 +54,7 @@ func (ns *Service) RequestUserNotificationAuthorization() (bool, error) {
 	return result == true, nil
 }
 
-// CheckNotificationAuthorization checks current permission status
+// CheckNotificationAuthorization checks current notification permission status.
 func (ns *Service) CheckNotificationAuthorization() (bool, error) {
 	if !CheckBundleIdentifier() {
 		return false, fmt.Errorf("Notifications require a bundled application with a unique bundle identifier")
@@ -60,7 +62,7 @@ func (ns *Service) CheckNotificationAuthorization() (bool, error) {
 	return bool(C.checkNotificationAuthorization()), nil
 }
 
-// SendNotification sends a notification with the given identifier, title, subtitle, and body.
+// SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
 func (ns *Service) SendNotification(identifier, title, subtitle, body string) error {
 	if !CheckBundleIdentifier() {
 		return fmt.Errorf("Notifications require a bundled application with a unique bundle identifier")
@@ -78,7 +80,9 @@ func (ns *Service) SendNotification(identifier, title, subtitle, body string) er
 	return nil
 }
 
-// SendNotificationWithActions sends a notification with the specified actions
+// SendNotificationWithActions sends a notification with additional actions and inputs.
+// A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
+// If a NotificationCategory is not registered a basic notification will be sent.
 func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
 	if !CheckBundleIdentifier() {
 		return fmt.Errorf("Notifications require a bundled application with a unique bundle identifier")
@@ -107,7 +111,7 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	return nil
 }
 
-// RegisterNotificationCategory registers a category with actions and optional reply field
+// RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
 func (ns *Service) RegisterNotificationCategory(category NotificationCategory) error {
 	if !CheckBundleIdentifier() {
 		return fmt.Errorf("Notifications require a bundled application with a unique bundle identifier")
@@ -135,7 +139,7 @@ func (ns *Service) RegisterNotificationCategory(category NotificationCategory) e
 	return nil
 }
 
-// RemoveAllPendingNotifications removes all pending notifications
+// RemoveAllPendingNotifications removes all pending notifications.
 func (ns *Service) RemoveAllPendingNotifications() error {
 	if !CheckBundleIdentifier() {
 		return fmt.Errorf("Notifications require a bundled application with a unique bundle identifier")
@@ -144,7 +148,7 @@ func (ns *Service) RemoveAllPendingNotifications() error {
 	return nil
 }
 
-// RemovePendingNotification removes a specific pending notification
+// RemovePendingNotification removes a pending notification matching the unique identifier.
 func (ns *Service) RemovePendingNotification(identifier string) error {
 	if !CheckBundleIdentifier() {
 		return fmt.Errorf("Notifications require a bundled application with a unique bundle identifier")
@@ -155,7 +159,7 @@ func (ns *Service) RemovePendingNotification(identifier string) error {
 	return nil
 }
 
-// RemoveAllDeliveredNotifications removes all delivered notifications
+// RemoveAllDeliveredNotifications removes all delivered notifications.
 func (ns *Service) RemoveAllDeliveredNotifications() error {
 	if !CheckBundleIdentifier() {
 		return fmt.Errorf("Notifications require a bundled application with a unique bundle identifier")
@@ -164,7 +168,7 @@ func (ns *Service) RemoveAllDeliveredNotifications() error {
 	return nil
 }
 
-// RemoveDeliveredNotification removes a specific delivered notification
+// RemoveDeliveredNotification removes a delivered notification matching the unique identifier.
 func (ns *Service) RemoveDeliveredNotification(identifier string) error {
 	if !CheckBundleIdentifier() {
 		return fmt.Errorf("Notifications require a bundled application with a unique bundle identifier")
