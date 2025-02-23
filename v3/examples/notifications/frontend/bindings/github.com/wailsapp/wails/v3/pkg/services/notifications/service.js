@@ -30,6 +30,7 @@ export function RegisterNotificationCategory(category) {
 }
 
 /**
+ * RemoveAllDeliveredNotifications removes all delivered notifications
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function RemoveAllDeliveredNotifications() {
@@ -47,6 +48,7 @@ export function RemoveAllPendingNotifications() {
 }
 
 /**
+ * RemoveDeliveredNotification removes a specific delivered notification
  * @param {string} identifier
  * @returns {Promise<void> & { cancel(): void }}
  */

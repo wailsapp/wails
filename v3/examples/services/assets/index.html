@@ -10,13 +10,6 @@
         import * as kvstore from './bindings/github.com/wailsapp/wails/v3/pkg/services/kvstore/keyvaluestore.js';
         import {Debug, Info, Warning, Error} from './bindings/github.com/wailsapp/wails/v3/pkg/services/log/loggerservice.js';
         import * as hash from './bindings/github.com/wailsapp/wails/v3/examples/services/hashes/service.js';
-        import * as notifications from "./bindings/github.com/wailsapp/wails/v3/pkg/services/notifications/service.js"
-        
-        notifications.RequestUserNotificationAuthorization().then((granted) => {
-            if (granted) {
-                notifications.SendNotification("some-uuid-fronted", "Frontend Notificaiton", "", "Notificaiton sent through JS!");
-            }
-        });
 
         function runHash() {
             let hashstring = document.getElementById("hashstring").value;

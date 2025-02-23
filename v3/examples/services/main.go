@@ -12,7 +12,6 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/services/fileserver"
 	"github.com/wailsapp/wails/v3/pkg/services/kvstore"
 	"github.com/wailsapp/wails/v3/pkg/services/log"
-	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 	"github.com/wailsapp/wails/v3/pkg/services/sqlite"
 )
 
@@ -50,7 +49,6 @@ func main() {
 			}), application.ServiceOptions{
 				Route: "/files",
 			}),
-			application.NewService(notifications.New()),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.BundledAssetFileServer(assets),
