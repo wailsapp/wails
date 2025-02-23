@@ -34,6 +34,10 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     if (response.notification.request.content.categoryIdentifier) {
         [payload setObject:response.notification.request.content.categoryIdentifier forKey:@"categoryIdentifier"];
     }
+
+    if (response.notification.request.content.subtitle) {
+        [payload setObject:response.notification.request.content.subtitle forKey:@"subtitle"];
+    }
     
     if (response.notification.request.content.userInfo) {
         [payload setObject:response.notification.request.content.userInfo forKey:@"userInfo"];
