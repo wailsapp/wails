@@ -3,8 +3,8 @@
 package notifications
 
 /*
-#cgo CFLAGS: -mmacosx-version-min=10.14 -x objective-c
-#cgo LDFLAGS: -framework Cocoa -mmacosx-version-min=10.14 -framework UserNotifications
+#cgo CFLAGS: -mmacosx-version-min=11.0 -x objective-c
+#cgo LDFLAGS: -framework Cocoa -mmacosx-version-min=11 -framework UserNotifications
 #import "./notifications_darwin.h"
 */
 import "C"
