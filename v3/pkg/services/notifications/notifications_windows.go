@@ -4,9 +4,15 @@ package notifications
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"git.sr.ht/~jackmordaunt/go-toast"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"golang.org/x/sys/windows/registry"
 )
 
 var NotificationCategories map[string]NotificationCategory = make(map[string]NotificationCategory)
@@ -37,12 +43,12 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 
 		application.Get().EmitEvent("notificationResponse", response)
 	})
-	return nil
+	return loadCategoriesFromRegistry()
 }
 
 // ServiceShutdown is called when the service is unloaded
 func (ns *Service) ServiceShutdown() error {
-	return nil
+	return saveCategoriesToRegistry()
 }
 
 // CheckBundleIdentifier is a Windows stub that always returns true.
@@ -128,7 +134,13 @@ func (ns *Service) RegisterNotificationCategory(category NotificationCategory) e
 		ReplyButtonTitle: category.ReplyButtonTitle,
 	}
 
-	return nil
+	return saveCategoriesToRegistry()
+}
+
+// RemoveNotificationCategory removes a previously registered NotificationCategory.
+func (ns *Service) RemoveNotificationCategory(categoryId string) error {
+	delete(NotificationCategories, categoryId)
+	return saveCategoriesToRegistry()
 }
 
 // RemoveAllPendingNotifications is a Windows stub that always returns nil.
@@ -153,6 +165,63 @@ func (ns *Service) RemoveAllDeliveredNotifications() error {
 // (macOS-specific)
 func (ns *Service) RemoveDeliveredNotification(_ string) error {
 	return nil
+}
+
+func getExeName() string {
+	executable, err := os.Executable()
+	if err != nil {
+		return ""
+	}
+
+	return strings.TrimSuffix(filepath.Base(executable), filepath.Ext(executable))
+}
+
+func saveCategoriesToRegistry() error {
+	appName := getExeName()
+	registryPath := fmt.Sprintf(`SOFTWARE\%s\NotificationCategories`, appName)
+
+	key, _, err := registry.CreateKey(
+		registry.CURRENT_USER,
+		registryPath,
+		registry.ALL_ACCESS,
+	)
+	if err != nil {
+		return err
+	}
+	defer key.Close()
+
+	data, err := json.Marshal(NotificationCategories)
+	if err != nil {
+		return err
+	}
+
+	return key.SetStringValue("Categories", string(data))
+}
+
+func loadCategoriesFromRegistry() error {
+	appName := getExeName()
+	println(appName)
+	registryPath := fmt.Sprintf(`SOFTWARE\%s\NotificationCategories`, appName)
+
+	key, err := registry.OpenKey(
+		registry.CURRENT_USER,
+		registryPath,
+		registry.QUERY_VALUE,
+	)
+	if err != nil {
+		if err == registry.ErrNotExist {
+			return nil
+		}
+		return err
+	}
+	defer key.Close()
+
+	data, _, err := key.GetStringValue("Categories")
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal([]byte(data), &NotificationCategories)
 }
 
 func getUserText(data []toast.UserData) (string, bool) {

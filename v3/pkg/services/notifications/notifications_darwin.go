@@ -140,7 +140,7 @@ func (ns *Service) RegisterNotificationCategory(category NotificationCategory) e
 	return nil
 }
 
-// RemoveNotificationCategory remove a previously registered NotificationCategory.
+// RemoveNotificationCategory removes a previously registered NotificationCategory.
 func (ns *Service) RemoveNotificationCategory(categoryId string) error {
 	if !CheckBundleIdentifier() {
 		return fmt.Errorf("Notifications require a bundled application with a unique bundle identifier")
