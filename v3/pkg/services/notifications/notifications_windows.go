@@ -69,8 +69,8 @@ func (ns *Service) CheckNotificationAuthorization() bool {
 	return true
 }
 
-// SendNotification sends a basic notification with a name, title, and body.
-// (subtitle is only available on macOS)
+// SendNotification sends a basic notification with a name, title, and body. All other options are ignored on Windows.
+// (subtitle, category id, and data are only available on macOS)
 func (ns *Service) SendNotification(options NotificationOptions) error {
 	n := toast.Notification{
 		AppID: options.ID,
@@ -88,6 +88,7 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 // SendNotificationWithActions sends a notification with additional actions and inputs.
 // A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
 // If a NotificationCategory is not registered a basic notification will be sent.
+// (subtitle, category id, and data are only available on macOS)
 func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
 	nCategory := NotificationCategories[options.CategoryID]
 
