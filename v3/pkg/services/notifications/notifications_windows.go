@@ -17,6 +17,11 @@ import (
 
 var NotificationCategories map[string]NotificationCategory = make(map[string]NotificationCategory)
 
+const (
+	defaultAction = "defaultActionIdentifier"
+	dataSeparator = ":::"
+)
+
 func New() *Service {
 	return &Service{}
 }
@@ -30,11 +35,20 @@ func (ns *Service) ServiceName() string {
 // Sets an activation callback to emit an event when notifications are interacted with.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
+		actionIdentifier, userInfo := parseNotificationResponse(args)
 		response := NotificationResponse{
 			Name: "notification",
 			Data: NotificationResponseData{
-				ActionIdentifier: args,
+				ActionIdentifier: actionIdentifier,
 			},
+		}
+
+		if userInfo != "" {
+			jsonStr := strings.ReplaceAll(userInfo, "'", "\"")
+			var userInfoMap map[string]interface{}
+			if err := json.Unmarshal([]byte(jsonStr), &userInfoMap); err == nil {
+				response.Data.UserInfo = userInfoMap
+			}
 		}
 
 		if userText, found := getUserText(data); found {
@@ -73,9 +87,20 @@ func (ns *Service) CheckNotificationAuthorization() bool {
 // (subtitle, category id, and data are only available on macOS)
 func (ns *Service) SendNotification(options NotificationOptions) error {
 	n := toast.Notification{
-		AppID: options.ID,
-		Title: options.Title,
-		Body:  options.Body,
+		AppID:               options.ID,
+		Title:               options.Title,
+		Body:                options.Body,
+		ActivationArguments: defaultAction,
+	}
+
+	options.Data["title"] = options.Title
+	options.Data["body"] = options.Body
+
+	if options.Data != nil {
+		jsonData, err := json.Marshal(options.Data)
+		if err == nil {
+			n.ActivationArguments = defaultAction + dataSeparator + strings.ReplaceAll(string(jsonData), "\"", "'")
+		}
 	}
 
 	err := n.Push()
@@ -93,9 +118,10 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	nCategory := NotificationCategories[options.CategoryID]
 
 	n := toast.Notification{
-		AppID: options.ID,
-		Title: options.Title,
-		Body:  options.Body,
+		AppID:               options.ID,
+		Title:               options.Title,
+		Body:                options.Body,
+		ActivationArguments: defaultAction,
 	}
 
 	for _, action := range nCategory.Actions {
@@ -116,6 +142,16 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 			Content:   nCategory.ReplyButtonTitle,
 			Arguments: "TEXT_REPLY",
 		})
+	}
+
+	if options.Data != nil {
+		jsonData, err := json.Marshal(options.Data)
+		if err == nil {
+			n.ActivationArguments = defaultAction + dataSeparator + strings.ReplaceAll(string(jsonData), "\"", "'")
+			for index := range n.Actions {
+				n.Actions[index].Arguments = n.Actions[index].Arguments + dataSeparator + strings.ReplaceAll(string(jsonData), "\"", "'")
+			}
+		}
 	}
 
 	err := n.Push()
@@ -166,6 +202,14 @@ func (ns *Service) RemoveAllDeliveredNotifications() error {
 // (macOS-specific)
 func (ns *Service) RemoveDeliveredNotification(_ string) error {
 	return nil
+}
+
+func parseNotificationResponse(response string) (action string, data string) {
+	parts := strings.Split(response, dataSeparator)
+	if len(parts) == 1 {
+		return parts[0], ""
+	}
+	return parts[0], parts[1]
 }
 
 // Is there a better way for me to grab this from the Wails config?
