@@ -93,9 +93,6 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 		ActivationArguments: defaultAction,
 	}
 
-	options.Data["title"] = options.Title
-	options.Data["body"] = options.Body
-
 	if options.Data != nil {
 		jsonData, err := json.Marshal(options.Data)
 		if err == nil {
