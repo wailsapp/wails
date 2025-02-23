@@ -69,7 +69,6 @@ export const EventTypes = {
 		ApplicationWillTerminate: "mac:ApplicationWillTerminate",
 		ApplicationWillUnhide: "mac:ApplicationWillUnhide",
 		ApplicationWillUpdate: "mac:ApplicationWillUpdate",
-		DidReceiveNotificationResponse: "mac:DidReceiveNotificationResponse",
 		MenuDidAddItem: "mac:MenuDidAddItem",
 		MenuDidBeginTracking: "mac:MenuDidBeginTracking",
 		MenuDidClose: "mac:MenuDidClose",

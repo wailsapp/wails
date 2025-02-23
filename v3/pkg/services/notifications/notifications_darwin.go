@@ -174,3 +174,18 @@ func (ns *Service) RemoveDeliveredNotification(identifier string) error {
 	C.removeDeliveredNotification(cIdentifier)
 	return nil
 }
+
+//export didReceiveNotificationResponse
+func didReceiveNotificationResponse(jsonPayload *C.char) {
+	payload := C.GoString(jsonPayload)
+
+	var response NotificationResponseData
+	if err := json.Unmarshal([]byte(payload), &response); err != nil {
+		return
+	}
+
+	application.Get().EmitEvent("notificationResponse", NotificationResponse{
+		Name: "notification",
+		Data: response,
+	})
+}

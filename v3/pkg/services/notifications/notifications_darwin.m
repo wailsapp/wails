@@ -1,10 +1,8 @@
 #import "notifications_darwin.h"
 #import <Cocoa/Cocoa.h>
 #import <UserNotifications/UserNotifications.h>
-#import "../../events/events_darwin.h"
 
-extern bool hasListeners(unsigned int);
-extern void processApplicationEvent(unsigned int, void* data);
+extern void didReceiveNotificationResponse(const char *jsonPayload);
 
 @interface NotificationsDelegate : NSObject <UNUserNotificationCenterDelegate>
 @end
@@ -48,9 +46,11 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         [payload setObject:textResponse.userText forKey:@"userText"];
     }
     
-    // Check if there are listeners for our notification response event
-    if (hasListeners(EventDidReceiveNotificationResponse)) {
-        processApplicationEvent(EventDidReceiveNotificationResponse, (__bridge void*)payload);
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:payload options:0 error:&error];
+    if (!error) {
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        didReceiveNotificationResponse([jsonString UTF8String]);
     }
     
     completionHandler();
