@@ -8,7 +8,7 @@
 bool checkBundleIdentifier(void);
 bool requestUserNotificationAuthorization(void *completion);
 bool checkNotificationAuthorization(void);
-void sendNotification(const char *identifier, const char *title, const char *subtitle, const char *body, void *completion);
+void sendNotification(const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json, void *completion);
 void sendNotificationWithActions(const char *identifier, const char *title, const char *subtitle, const char *body, const char *categoryId, const char *actions_json, void *completion);
 void registerNotificationCategory(const char *categoryId, const char *actions_json, bool hasReplyField, const char *replyPlaceholder, const char *replyButtonTitle);
 void removeNotificationCategory(const char *categoryId);

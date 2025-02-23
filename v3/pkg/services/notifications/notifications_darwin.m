@@ -118,13 +118,24 @@ bool checkNotificationAuthorization(void) {
     return isAuthorized;
 }
 
-void sendNotification(const char *identifier, const char *title, const char *subtitle, const char *body, void *completion) {
+void sendNotification(const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json, void *completion) {
     ensureDelegateInitialized();
     
     NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
     NSString *nsTitle = [NSString stringWithUTF8String:title];
     NSString *nsSubtitle = [NSString stringWithUTF8String:subtitle];
     NSString *nsBody = [NSString stringWithUTF8String:body];
+    
+    NSMutableDictionary *customData = [NSMutableDictionary dictionary];
+    if (data_json) {
+        NSString *dataJsonStr = [NSString stringWithUTF8String:data_json];
+        NSData *jsonData = [dataJsonStr dataUsingEncoding:NSUTF8StringEncoding];
+        NSError *error = nil;
+        NSDictionary *parsedData = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+        if (!error && parsedData) {
+            [customData addEntriesFromDictionary:parsedData];
+        }
+    }
     
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     
@@ -133,6 +144,11 @@ void sendNotification(const char *identifier, const char *title, const char *sub
     content.subtitle = nsSubtitle;
     content.body = nsBody;
     content.sound = [UNNotificationSound defaultSound];
+    
+    // Add custom data if available
+    if (customData.count > 0) {
+        content.userInfo = customData;
+    }
     
     UNTimeIntervalNotificationTrigger *trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:1 repeats:NO];
     
