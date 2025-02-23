@@ -245,7 +245,7 @@ void registerNotificationCategory(const char *categoryId, const char *actions_js
         [actions addObject:textAction];
     }
     
-    UNNotificationCategory *category = [UNNotificationCategory 
+    UNNotificationCategory *newCategory = [UNNotificationCategory 
                                       categoryWithIdentifier:nsCategoryId
                                       actions:actions
                                       intentIdentifiers:@[]
@@ -254,8 +254,45 @@ void registerNotificationCategory(const char *categoryId, const char *actions_js
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center getNotificationCategoriesWithCompletionHandler:^(NSSet<UNNotificationCategory *> *categories) {
         NSMutableSet *updatedCategories = [NSMutableSet setWithSet:categories];
-        [updatedCategories addObject:category];
+        
+        // Remove existing category with same ID if it exists
+        UNNotificationCategory *existingCategory = nil;
+        for (UNNotificationCategory *category in updatedCategories) {
+            if ([category.identifier isEqualToString:nsCategoryId]) {
+                existingCategory = category;
+                break;
+            }
+        }
+        if (existingCategory) {
+            [updatedCategories removeObject:existingCategory];
+        }
+        
+        // Add the new category
+        [updatedCategories addObject:newCategory];
         [center setNotificationCategories:updatedCategories];
+    }];
+}
+
+void removeNotificationCategory(const char *categoryId) {
+    NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    
+    [center getNotificationCategoriesWithCompletionHandler:^(NSSet<UNNotificationCategory *> *categories) {
+        NSMutableSet *updatedCategories = [NSMutableSet setWithSet:categories];
+        
+        // Find and remove the category with matching identifier
+        UNNotificationCategory *categoryToRemove = nil;
+        for (UNNotificationCategory *category in updatedCategories) {
+            if ([category.identifier isEqualToString:nsCategoryId]) {
+                categoryToRemove = category;
+                break;
+            }
+        }
+        
+        if (categoryToRemove) {
+            [updatedCategories removeObject:categoryToRemove];
+            [center setNotificationCategories:updatedCategories];
+        }
     }];
 }
 

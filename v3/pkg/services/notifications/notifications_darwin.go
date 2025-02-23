@@ -112,6 +112,7 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 }
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
+// Registering a category with the same name as a previously registered NotificationCategory will override it.
 func (ns *Service) RegisterNotificationCategory(category NotificationCategory) error {
 	if !CheckBundleIdentifier() {
 		return fmt.Errorf("Notifications require a bundled application with a unique bundle identifier")
@@ -136,6 +137,18 @@ func (ns *Service) RegisterNotificationCategory(category NotificationCategory) e
 
 	C.registerNotificationCategory(cCategoryID, cActionsJSON, C.bool(category.HasReplyField),
 		cReplyPlaceholder, cReplyButtonTitle)
+	return nil
+}
+
+// RemoveNotificationCategory remove a previously registered NotificationCategory.
+func (ns *Service) RemoveNotificationCategory(categoryId string) error {
+	if !CheckBundleIdentifier() {
+		return fmt.Errorf("Notifications require a bundled application with a unique bundle identifier")
+	}
+	cCategoryID := C.CString(categoryId)
+	defer C.free(unsafe.Pointer(cCategoryID))
+
+	C.removeNotificationCategory(cCategoryID)
 	return nil
 }
 
