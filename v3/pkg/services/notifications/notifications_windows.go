@@ -167,6 +167,7 @@ func (ns *Service) RemoveDeliveredNotification(_ string) error {
 	return nil
 }
 
+// Is there a better way for me to grab this from the Wails config?
 func getExeName() string {
 	executable, err := os.Executable()
 	if err != nil {
@@ -178,6 +179,9 @@ func getExeName() string {
 
 func saveCategoriesToRegistry() error {
 	appName := getExeName()
+	if appName == "" {
+		return fmt.Errorf("failed to save categories to registry: empty executable name")
+	}
 	registryPath := fmt.Sprintf(`SOFTWARE\%s\NotificationCategories`, appName)
 
 	key, _, err := registry.CreateKey(
@@ -200,7 +204,9 @@ func saveCategoriesToRegistry() error {
 
 func loadCategoriesFromRegistry() error {
 	appName := getExeName()
-	println(appName)
+	if appName == "" {
+		return fmt.Errorf("failed to save categories to registry: empty executable name")
+	}
 	registryPath := fmt.Sprintf(`SOFTWARE\%s\NotificationCategories`, appName)
 
 	key, err := registry.OpenKey(

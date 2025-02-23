@@ -7,7 +7,8 @@ const notificationsElement = document.getElementById('notifications');
 window.sendNotification = async () => {
     const granted = await Notifications.RequestUserNotificationAuthorization();
     if (granted) {
-        await Notifications.SendNotification("some-uuid-fronted", "Frontend Notificaiton", "", "Notificaiton sent through JS!");
+        const uuid = crypto.randomUUID();
+        await Notifications.SendNotification(uuid, "Frontend Notification", "", "Notification sent through JS!");
     }
 }
 
@@ -26,11 +27,12 @@ window.sendComplexNotification = async () => {
             replyPlaceholder: "Reply to frontend...",
         });
         
+        const uuid = crypto.randomUUID();
         await Notifications.SendNotificationWithActions({
-            id: "some-uuid-complex",
+            id: uuid,
             title: "Complex Frontend Notification",
             subtitle: "From: Jane Doe",
-            body: "Is it rainging today where you are?",
+            body: "Is it raining today where you are?",
             categoryId: "FRONTEND_NOTIF",
             data: {
                 messageId: "msg-456",
