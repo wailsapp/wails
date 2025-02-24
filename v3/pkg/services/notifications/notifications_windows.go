@@ -60,8 +60,6 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 		application.Get().EmitEvent("notificationResponse", response)
 	})
 
-	NotificationLock.Lock()
-	defer NotificationLock.Unlock()
 	return loadCategoriesFromRegistry()
 }
 
