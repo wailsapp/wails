@@ -9,13 +9,15 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"git.sr.ht/~jackmordaunt/go-toast"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"golang.org/x/sys/windows/registry"
 )
 
-var NotificationCategories map[string]NotificationCategory = make(map[string]NotificationCategory)
+var NotificationLock sync.RWMutex
+var NotificationCategories = make(map[string]NotificationCategory)
 
 const (
 	defaultAction = "defaultActionIdentifier"
@@ -57,6 +59,9 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 
 		application.Get().EmitEvent("notificationResponse", response)
 	})
+
+	NotificationLock.Lock()
+	defer NotificationLock.Unlock()
 	return loadCategoriesFromRegistry()
 }
 
@@ -112,7 +117,9 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 // If a NotificationCategory is not registered a basic notification will be sent.
 // (subtitle, category id, and data are only available on macOS)
 func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
+	NotificationLock.RLock()
 	nCategory := NotificationCategories[options.CategoryID]
+	NotificationLock.RUnlock()
 
 	n := toast.Notification{
 		AppID:               options.ID,
@@ -160,6 +167,7 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
 func (ns *Service) RegisterNotificationCategory(category NotificationCategory) error {
+	NotificationLock.Lock()
 	NotificationCategories[category.ID] = NotificationCategory{
 		ID:               category.ID,
 		Actions:          category.Actions,
@@ -167,13 +175,17 @@ func (ns *Service) RegisterNotificationCategory(category NotificationCategory) e
 		ReplyPlaceholder: category.ReplyPlaceholder,
 		ReplyButtonTitle: category.ReplyButtonTitle,
 	}
+	NotificationLock.Unlock()
 
 	return saveCategoriesToRegistry()
 }
 
 // RemoveNotificationCategory removes a previously registered NotificationCategory.
 func (ns *Service) RemoveNotificationCategory(categoryId string) error {
+	NotificationLock.Lock()
 	delete(NotificationCategories, categoryId)
+	NotificationLock.Unlock()
+
 	return saveCategoriesToRegistry()
 }
 
@@ -236,7 +248,9 @@ func saveCategoriesToRegistry() error {
 	}
 	defer key.Close()
 
+	NotificationLock.RLock()
 	data, err := json.Marshal(NotificationCategories)
+	NotificationLock.RUnlock()
 	if err != nil {
 		return err
 	}
@@ -269,7 +283,16 @@ func loadCategoriesFromRegistry() error {
 		return err
 	}
 
-	return json.Unmarshal([]byte(data), &NotificationCategories)
+	categories := make(map[string]NotificationCategory)
+	if err := json.Unmarshal([]byte(data), &categories); err != nil {
+		return err
+	}
+
+	NotificationLock.Lock()
+	NotificationCategories = categories
+	NotificationLock.Unlock()
+
+	return nil
 }
 
 func getUserText(data []toast.UserData) (string, bool) {
