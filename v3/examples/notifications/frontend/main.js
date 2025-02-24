@@ -1,5 +1,5 @@
 import * as Notifications from "./bindings/github.com/wailsapp/wails/v3/pkg/services/notifications/service";
-import { Events } from "@wailsio/runtime";
+import { Events, System } from "@wailsio/runtime";
 
 const timeElement = document.getElementById('time');
 const notificationsElement = document.getElementById('notifications');
@@ -7,8 +7,17 @@ const notificationsElement = document.getElementById('notifications');
 window.sendNotification = async () => {
     const granted = await Notifications.RequestUserNotificationAuthorization();
     if (granted) {
-        const uuid = crypto.randomUUID();
-        await Notifications.SendNotification(uuid, "Frontend Notification", "", "Notification sent through JS!");
+        const id = System.IsWindows() ? "Wails Notification Demo" : crypto.randomUUID()
+        await Notifications.SendNotification({
+            id,
+            title: "Title",
+            body: "Body!",
+            data: {
+                messageId: "msg-123",
+                senderId: "user-123",
+                timestamp: Date.now(),
+            }
+        });
     }
 }
 
@@ -20,19 +29,18 @@ window.sendComplexNotification = async () => {
             actions: [
                 { id: "VIEW_ACTION", title: "View" },
                 { id: "MARK_READ_ACTION", title: "Mark as Read" },
-                { id: "DELETE_ACTION", title: "Delete", destructive: true },
             ],
             hasReplyField: true,
             replyButtonTitle: "Reply",
             replyPlaceholder: "Reply to frontend...",
         });
         
-        const uuid = crypto.randomUUID();
+        const id = System.IsWindows() ? "Wails Notification Demo" : crypto.randomUUID()
         await Notifications.SendNotificationWithActions({
-            id: uuid,
+            id,
             title: "Complex Frontend Notification",
             subtitle: "From: Jane Doe",
-            body: "Is it raining today where you are?",
+            body: "Is it rainging today where you are?",
             categoryId: "FRONTEND_NOTIF",
             data: {
                 messageId: "msg-456",
@@ -48,5 +56,6 @@ Events.On('time', (time) => {
 });
 
 Events.On("notificationResponse", (response) => {
+    console.log(response)
     notificationsElement.innerText += JSON.stringify(response.data[0].data);
 });

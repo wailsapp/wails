@@ -9,8 +9,8 @@ import {Create as $Create} from "@wailsio/runtime";
 /**
  * NotificationAction represents an action button for a notification
  * @typedef {Object} NotificationAction
- * @property {string} id
- * @property {string} title
+ * @property {string} [id]
+ * @property {string} [title]
  * @property {boolean} [destructive]
  * @property {boolean} [authenticationRequired]
  */
@@ -18,8 +18,8 @@ import {Create as $Create} from "@wailsio/runtime";
 /**
  * NotificationCategory groups actions for notifications
  * @typedef {Object} NotificationCategory
- * @property {string} id
- * @property {NotificationAction[]} actions
+ * @property {string} [id]
+ * @property {NotificationAction[]} [actions]
  * @property {boolean} [hasReplyField]
  * @property {string} [replyPlaceholder]
  * @property {string} [replyButtonTitle]
@@ -28,10 +28,10 @@ import {Create as $Create} from "@wailsio/runtime";
 /**
  * NotificationOptions contains configuration for a notification
  * @typedef {Object} NotificationOptions
- * @property {string} id
- * @property {string} title
+ * @property {string} [id]
+ * @property {string} [title]
  * @property {string} [subtitle]
- * @property {string} body
+ * @property {string} [body]
  * @property {string} [categoryId]
  * @property {{ [_: string]: any }} [data]
  */

@@ -11,7 +11,8 @@ import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 import * as $models from "./models.js";
 
 /**
- * CheckNotificationAuthorization checks current permission status
+ * CheckNotificationAuthorization is a Windows stub that always returns true.
+ * (user authorization is macOS-specific)
  * @returns {Promise<boolean> & { cancel(): void }}
  */
 export function CheckNotificationAuthorization() {
@@ -20,7 +21,7 @@ export function CheckNotificationAuthorization() {
 }
 
 /**
- * RegisterNotificationCategory registers a category with actions and optional reply field
+ * RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
  * @param {$models.NotificationCategory} category
  * @returns {Promise<void> & { cancel(): void }}
  */
@@ -30,7 +31,8 @@ export function RegisterNotificationCategory(category) {
 }
 
 /**
- * RemoveAllDeliveredNotifications removes all delivered notifications
+ * RemoveAllDeliveredNotifications is a Windows stub that always returns nil.
+ * (macOS-specific)
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function RemoveAllDeliveredNotifications() {
@@ -39,7 +41,8 @@ export function RemoveAllDeliveredNotifications() {
 }
 
 /**
- * RemoveAllPendingNotifications removes all pending notifications
+ * RemoveAllPendingNotifications is a Windows stub that always returns nil.
+ * (macOS-specific)
  * @returns {Promise<void> & { cancel(): void }}
  */
 export function RemoveAllPendingNotifications() {
@@ -48,27 +51,40 @@ export function RemoveAllPendingNotifications() {
 }
 
 /**
- * RemoveDeliveredNotification removes a specific delivered notification
- * @param {string} identifier
+ * RemoveDeliveredNotification is a Windows stub that always returns nil.
+ * (macOS-specific)
+ * @param {string} $0
  * @returns {Promise<void> & { cancel(): void }}
  */
-export function RemoveDeliveredNotification(identifier) {
-    let $resultPromise = /** @type {any} */($Call.ByID(149440045, identifier));
+export function RemoveDeliveredNotification($0) {
+    let $resultPromise = /** @type {any} */($Call.ByID(149440045, $0));
     return $resultPromise;
 }
 
 /**
- * RemovePendingNotification removes a specific pending notification
- * @param {string} identifier
+ * RemoveNotificationCategory removes a previously registered NotificationCategory.
+ * @param {string} categoryId
  * @returns {Promise<void> & { cancel(): void }}
  */
-export function RemovePendingNotification(identifier) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3872412470, identifier));
+export function RemoveNotificationCategory(categoryId) {
+    let $resultPromise = /** @type {any} */($Call.ByID(229511469, categoryId));
     return $resultPromise;
 }
 
 /**
- * RequestUserNotificationAuthorization requests permission for notifications.
+ * RemovePendingNotification is a Windows stub that always returns nil.
+ * (macOS-specific)
+ * @param {string} $0
+ * @returns {Promise<void> & { cancel(): void }}
+ */
+export function RemovePendingNotification($0) {
+    let $resultPromise = /** @type {any} */($Call.ByID(3872412470, $0));
+    return $resultPromise;
+}
+
+/**
+ * RequestUserNotificationAuthorization is a Windows stub that always returns true, nil.
+ * (user authorization is macOS-specific)
  * @returns {Promise<boolean> & { cancel(): void }}
  */
 export function RequestUserNotificationAuthorization() {
@@ -77,20 +93,21 @@ export function RequestUserNotificationAuthorization() {
 }
 
 /**
- * SendNotification sends a notification with the given identifier, title, subtitle, and body.
- * @param {string} identifier
- * @param {string} title
- * @param {string} subtitle
- * @param {string} body
+ * SendNotification sends a basic notification with a name, title, and body. All other options are ignored on Windows.
+ * (subtitle, category id, and data are only available on macOS)
+ * @param {$models.NotificationOptions} options
  * @returns {Promise<void> & { cancel(): void }}
  */
-export function SendNotification(identifier, title, subtitle, body) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2246903123, identifier, title, subtitle, body));
+export function SendNotification(options) {
+    let $resultPromise = /** @type {any} */($Call.ByID(2246903123, options));
     return $resultPromise;
 }
 
 /**
- * SendNotificationWithActions sends a notification with the specified actions
+ * SendNotificationWithActions sends a notification with additional actions and inputs.
+ * A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
+ * If a NotificationCategory is not registered a basic notification will be sent.
+ * (subtitle, category id, and data are only available on macOS)
  * @param {$models.NotificationOptions} options
  * @returns {Promise<void> & { cancel(): void }}
  */
