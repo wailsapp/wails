@@ -60,52 +60,69 @@ func main() {
 		URL:              "/",
 	})
 
+	app.OnEvent("notificationResponse", func(event *application.CustomEvent) {
+		data, _ := json.Marshal(event.Data)
+		fmt.Printf("%s\n", string(data))
+	})
+
 	go func() {
-		app.OnEvent("notificationResponse", func(event *application.CustomEvent) {
-			data, _ := json.Marshal(event.Data)
-			fmt.Printf("%s\n", string(data))
-		})
+		granted, err := NotificationService.RequestUserNotificationAuthorization()
+		if err != nil {
+			log.Default().Printf("WARNING: %s\n", err)
+			return
+		}
 
-		NotificationService.RequestUserNotificationAuthorization()
-		NotificationService.CheckNotificationAuthorization()
+		if granted {
+			time.Sleep(time.Second * 2)
 
-		time.Sleep(time.Second * 2)
-		NotificationService.SendNotification(notifications.NotificationOptions{
-			ID:    "Wails Notification Demo",
-			Title: "Title!",
-			Body:  "Body!",
-			Data: map[string]interface{}{
-				"messageId": "msg-123",
-				"senderId":  "user-123",
-				"timestamp": time.Now().String(),
-			},
-		})
+			var uuid1 string = "Wails Notification Demo"
+			if application.Get().Environment().OS == "darwin" {
+				uuid1 = "uuid1"
+			}
 
-		time.Sleep(time.Second * 2)
-		NotificationService.RegisterNotificationCategory(notifications.NotificationCategory{
-			ID: "BACKEND_NOTIF",
-			Actions: []notifications.NotificationAction{
-				{ID: "VIEW_ACTION", Title: "View"},
-				{ID: "MARK_READ_ACTION", Title: "Mark as Read"},
-				{ID: "DELETE_ACTION", Title: "Delete", Destructive: true},
-			},
-			HasReplyField:    true,
-			ReplyButtonTitle: "Reply",
-			ReplyPlaceholder: "Reply to backend...",
-		})
+			NotificationService.SendNotification(notifications.NotificationOptions{
+				ID:    uuid1,
+				Title: "Title!",
+				Body:  "Body!",
+				Data: map[string]interface{}{
+					"messageId": "msg-123",
+					"senderId":  "user-123",
+					"timestamp": time.Now().String(),
+				},
+			})
 
-		NotificationService.SendNotificationWithActions(notifications.NotificationOptions{
-			ID:         "Wails Notification Demo",
-			Title:      "Complex Backend Notification",
-			Subtitle:   "Should not show on Windows",
-			Body:       "Is it raining today where you are?",
-			CategoryID: "BACKEND_NOTIF",
-			Data: map[string]interface{}{
-				"messageId": "msg-456",
-				"senderId":  "user-456",
-				"timestamp": time.Now().String(),
-			},
-		})
+			time.Sleep(time.Second * 2)
+
+			var uuid2 string = "Wails Notification Demo"
+			if application.Get().Environment().OS == "darwin" {
+				uuid2 = "uuid2"
+			}
+
+			NotificationService.RegisterNotificationCategory(notifications.NotificationCategory{
+				ID: "BACKEND_NOTIF",
+				Actions: []notifications.NotificationAction{
+					{ID: "VIEW_ACTION", Title: "View"},
+					{ID: "MARK_READ_ACTION", Title: "Mark as Read"},
+					{ID: "DELETE_ACTION", Title: "Delete", Destructive: true},
+				},
+				HasReplyField:    true,
+				ReplyButtonTitle: "Reply",
+				ReplyPlaceholder: "Reply to backend...",
+			})
+
+			NotificationService.SendNotificationWithActions(notifications.NotificationOptions{
+				ID:         uuid2,
+				Title:      "Complex Backend Notification",
+				Subtitle:   "Should not show on Windows",
+				Body:       "Is it raining today where you are?",
+				CategoryID: "BACKEND_NOTIF",
+				Data: map[string]interface{}{
+					"messageId": "msg-456",
+					"senderId":  "user-456",
+					"timestamp": time.Now().String(),
+				},
+			})
+		}
 	}()
 
 	// Run the application. This blocks until the application has been exited.

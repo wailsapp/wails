@@ -1,7 +1,6 @@
 import * as Notifications from "./bindings/github.com/wailsapp/wails/v3/pkg/services/notifications/service";
 import { Events, System } from "@wailsio/runtime";
 
-const timeElement = document.getElementById('time');
 const notificationsElement = document.getElementById('notifications');
 
 window.sendNotification = async () => {
@@ -50,10 +49,6 @@ window.sendComplexNotification = async () => {
         });
     }
 }
-
-Events.On('time', (time) => {
-    timeElement.innerText = time.data;
-});
 
 Events.On("notificationResponse", (response) => {
     console.log(response)
