@@ -437,8 +437,9 @@ func (s *MyService) WindowAwareMethod(ctx context.Context) (string, error) {
 ```
 
 From the frontend, these methods can be called normally. If you need to cancel a
-long-running operation, the Promise will be rejected with the cancellation
-error:
+long-running operation, you can call the special `cancel` method on the promise
+and it will reject immediately with a special cancellation error;
+the Go context will be cancelled and the actual result of the call will be discarded:
 
 ```javascript
 // Call the method
@@ -448,6 +449,84 @@ const promise = MyService.LongRunningTask("input");
 // This will cause the context to be cancelled in the Go method
 promise.cancel();
 ```
+
+In fact, the runtime returns a special promise wrapper
+that provides cancellation support for arbitrarily long promise chains.
+For example:
+
+```javascript
+import { CancelError } from "@wailsio/runtime";
+
+// Call the method and process its output
+const promise = MyService.LongRunningTask("input").then((result) => {
+    console.log(result);
+}).catch((err) => {
+    if (err instanceof CancelError) {
+        console.log("Cancelled.", err.cause);
+    } else {
+        console.error("Failed.", err);
+    }
+});
+
+// Later...
+// cancel() accepts an optional cause parameter
+// that will be attached to the cancellation error:
+promise.cancel("I'm tired of waiting!").then(() => {
+    // Cancellation has been requested successfully
+    // and all handlers attached above have run.
+    console.log("Ready for the next adventure!");
+});
+```
+
+The `cancel` method returns a promise that fulfills always (and never rejects)
+after the cancellation request has been submitted successfully
+and all previously attached handlers have run.
+
+:::note
+Calling the `cancel` method on a settled promise is safe and has no effect;
+if the task completes before the call to `cancel`, the code above is going to log:
+
+```
+completed
+Ready for the next adventure!
+```
+
+However, if `cancel` is called before the task finishes, the output will be:
+
+```
+Cancelled. I'm tired of waiting!
+Ready for the next adventure!
+```
+:::
+
+The approach discussed above requires storing and chaining promises manually,
+which can be cumbersome for code written in `async`/`await` style.
+If you target plaforms that support the `AbortController`/`AbortSignal` idiom,
+you can call the `cancelOn` method and tie call cancellation to an `AbortSignal` instead:
+
+```javascript
+async function callBinding(signal) {
+    try {
+        await MyService.LongRunningTask("input").cancelOn(signal);
+    } catch (err) {
+        if (err instanceof CancelError) {
+            console.log("Cancelled! Cause: ", err.cause);
+        } else {
+            console.error("Failed! Error: ", err);
+        }
+    }
+}
+
+let controller = new AbortController();
+callBinding(controller.signal);
+
+// Later...
+controller.abort("I'm tired of waiting!");
+```
+
+:::caution
+On the macOS platform, `AbortSignal` is only supported from macOS 10.15 Catalina onwards.
+:::
 
 ### Handling errors
 
