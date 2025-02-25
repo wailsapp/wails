@@ -36,15 +36,17 @@ func (ns *Service) ServiceName() string {
 // ServiceStartup is called when the service is loaded
 // Sets an activation callback to emit an event when notifications are interacted with.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
-	toast.SetAppData(toast.AppData{
-		AppID:         "Notifications",
-		GUID:          "{8F2E1A3D-C497-42B6-9E5D-72F8A169B051}",
-		IconPath:      "C:\\Users\\Zach\\Development\\notifications_demo\\build\\appicon.ico",
-		ActivationExe: "C:\\Users\\Zach\\Development\\notifications_demo\\bin\\Notifications.exe",
-	})
+	// Need to get App Name and generate a UUID on first launch
+	//
+	// toast.SetAppData(toast.AppData{
+	// 	AppID:         "Notifications",
+	// 	GUID:          "{8F2E1A3D-C497-42B6-9E5D-72F8A169B051}",
+	// 	IconPath:      "C:\\Users\\Zach\\Development\\notifications_demo\\build\\appicon.ico",
+	// 	ActivationExe: "C:\\Users\\Zach\\Development\\notifications_demo\\bin\\Notifications.exe",
+	// })
+	//
 
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
-		println("HERE!")
 		actionIdentifier, userInfo := parseNotificationResponse(args)
 		response := NotificationResponse{
 			Name: "notification",
