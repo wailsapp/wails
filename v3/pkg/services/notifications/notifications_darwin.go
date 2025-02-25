@@ -17,10 +17,16 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
+var NotificationService *Service
+var AppleDefaultActionIdentifier = "com.apple.UNNotificationDefaultActionIdentifier"
+
 // Creates a new Notifications Service.
 // Your app must be packaged and signed for this feature to work.
 func New() *Service {
-	return &Service{}
+	if NotificationService == nil {
+		NotificationService = &Service{}
+	}
+	return NotificationService
 }
 
 // ServiceName returns the name of the service.
@@ -201,17 +207,24 @@ func (ns *Service) RemoveDeliveredNotification(identifier string) error {
 	return nil
 }
 
+func (ns *Service) forwardResponse(response NotificationResponse) {
+	if NotificationService != nil {
+		NotificationService.handleNotificationResponse(response)
+	}
+}
+
 //export didReceiveNotificationResponse
 func didReceiveNotificationResponse(jsonPayload *C.char) {
 	payload := C.GoString(jsonPayload)
 
-	var response NotificationResponseData
+	var response NotificationResponse
 	if err := json.Unmarshal([]byte(payload), &response); err != nil {
 		return
 	}
 
-	application.Get().EmitEvent("notificationResponse", NotificationResponse{
-		Name: "notification",
-		Data: response,
-	})
+	if response.ActionIdentifier == AppleDefaultActionIdentifier {
+		response.ActionIdentifier = DefaultActionIdentifier
+	}
+
+	NotificationService.forwardResponse(response)
 }

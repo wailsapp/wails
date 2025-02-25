@@ -16,16 +16,19 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
+var NotificationService *Service
 var NotificationLock sync.RWMutex
 var NotificationCategories = make(map[string]NotificationCategory)
 
 const (
-	defaultAction = "defaultActionIdentifier"
 	dataSeparator = ":::"
 )
 
 func New() *Service {
-	return &Service{}
+	if NotificationService == nil {
+		NotificationService = &Service{}
+	}
+	return NotificationService
 }
 
 // ServiceName returns the name of the service
@@ -49,25 +52,24 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
 		actionIdentifier, userInfo := parseNotificationResponse(args)
 		response := NotificationResponse{
-			Name: "notification",
-			Data: NotificationResponseData{
-				ActionIdentifier: actionIdentifier,
-			},
+			ActionIdentifier: actionIdentifier,
 		}
 
 		if userInfo != "" {
 			jsonStr := strings.ReplaceAll(userInfo, "'", "\"")
 			var userInfoMap map[string]interface{}
 			if err := json.Unmarshal([]byte(jsonStr), &userInfoMap); err == nil {
-				response.Data.UserInfo = userInfoMap
+				response.UserInfo = userInfoMap
 			}
 		}
 
 		if userText, found := getUserText(data); found {
-			response.Data.UserText = userText
+			response.UserText = userText
 		}
 
-		application.Get().EmitEvent("notificationResponse", response)
+		if NotificationService != nil {
+			NotificationService.handleNotificationResponse(response)
+		}
 	})
 
 	return loadCategoriesFromRegistry()
@@ -103,14 +105,14 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 		AppID:               options.ID,
 		Title:               options.Title,
 		Body:                options.Body,
-		ActivationArguments: defaultAction,
+		ActivationArguments: DefaultActionIdentifier,
 		Audio:               toast.IM,
 	}
 
 	if options.Data != nil {
 		jsonData, err := json.Marshal(options.Data)
 		if err == nil {
-			n.ActivationArguments = defaultAction + dataSeparator + strings.ReplaceAll(string(jsonData), "\"", "'")
+			n.ActivationArguments = DefaultActionIdentifier + dataSeparator + strings.ReplaceAll(string(jsonData), "\"", "'")
 		}
 	}
 
@@ -134,7 +136,7 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 		AppID:               options.ID,
 		Title:               options.Title,
 		Body:                options.Body,
-		ActivationArguments: defaultAction,
+		ActivationArguments: DefaultActionIdentifier,
 		Audio:               toast.IM,
 	}
 
@@ -162,7 +164,7 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	if options.Data != nil {
 		jsonData, err := json.Marshal(options.Data)
 		if err == nil {
-			n.ActivationArguments = defaultAction + dataSeparator + strings.ReplaceAll(string(jsonData), "\"", "'")
+			n.ActivationArguments = DefaultActionIdentifier + dataSeparator + strings.ReplaceAll(string(jsonData), "\"", "'")
 			for index := range n.Actions {
 				n.Actions[index].Arguments = n.Actions[index].Arguments + dataSeparator + strings.ReplaceAll(string(jsonData), "\"", "'")
 			}

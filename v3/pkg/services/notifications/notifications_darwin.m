@@ -233,12 +233,10 @@ void registerNotificationCategory(const char *categoryId, const char *actions_js
         NSString *actionId = actionDict[@"id"];
         NSString *actionTitle = actionDict[@"title"];
         BOOL destructive = [actionDict[@"destructive"] boolValue];
-        BOOL authRequired = [actionDict[@"authenticationRequired"] boolValue];
         
         if (actionId && actionTitle) {
             UNNotificationActionOptions options = UNNotificationActionOptionNone;
             if (destructive) options |= UNNotificationActionOptionDestructive;
-            if (authRequired) options |= UNNotificationActionOptionAuthenticationRequired;
             
             UNNotificationAction *action = [UNNotificationAction 
                                           actionWithIdentifier:actionId

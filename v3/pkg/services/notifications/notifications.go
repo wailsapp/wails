@@ -1,14 +1,16 @@
 package notifications
 
+// Service represents the notifications service
 type Service struct {
+	// responseCallback is called when a notification response is received
+	Callback func(response NotificationResponse)
 }
 
 // NotificationAction represents an action button for a notification
 type NotificationAction = struct {
-	ID                     string `json:"id,omitempty"`
-	Title                  string `json:"title,omitempty"`
-	Destructive            bool   `json:"destructive,omitempty"`
-	AuthenticationRequired bool   `json:"authenticationRequired,omitempty"`
+	ID          string `json:"id,omitempty"`
+	Title       string `json:"title,omitempty"`
+	Destructive bool   `json:"destructive,omitempty"` // macOS only
 }
 
 // NotificationCategory groups actions for notifications
@@ -30,8 +32,10 @@ type NotificationOptions = struct {
 	Data       map[string]interface{} `json:"data,omitempty"`
 }
 
-// NotificationResponseData
-type NotificationResponseData = struct {
+var DefaultActionIdentifier = "DEFAULT_ACTION"
+
+// NotificationResponse represents a user's response to a notification
+type NotificationResponse = struct {
 	ID               string                 `json:"id,omitempty"`
 	ActionIdentifier string                 `json:"actionIdentifier,omitempty"`
 	CategoryID       string                 `json:"categoryIdentifier,omitempty"`
@@ -42,8 +46,19 @@ type NotificationResponseData = struct {
 	UserInfo         map[string]interface{} `json:"userInfo,omitempty"`
 }
 
-// NotificationResponse
-type NotificationResponse = struct {
-	Name string                   `json:"name"`
-	Data NotificationResponseData `json:"data"`
+// OnNotificationResponse registers a callback function that will be called when
+// a notification response is received from the user
+func (ns *Service) OnNotificationResponse(callback func(response NotificationResponse)) {
+	if ns.Callback != nil {
+		return
+	}
+	ns.Callback = callback
+}
+
+// handleNotificationResponse is an internal method to handle notification responses
+// and invoke the registered callback if one exists
+func (ns *Service) handleNotificationResponse(response NotificationResponse) {
+	if ns.Callback != nil {
+		ns.Callback(response)
+	}
 }
