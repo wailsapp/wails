@@ -40,14 +40,14 @@ npm install --save @wailsio/runtime
 ## Using a pre-built bundle
 
 Some projects will not use a Javascript bundler and may prefer to use a
-pre-built version of the runtime. The pre-built version of the runtime
-can be generated using the following command:
+pre-built bundled version of the runtime. This version can be generated locally
+using the following command:
 
 ```shell
 wails3 generate runtime
 ```
 
-This will generate a `runtime.js` (and `runtime.debug.js`) file in the current
+The command will output a `runtime.js` (and `runtime.debug.js`) file in the current
 directory. This file is an ES module that can be imported by your application scripts
 just like the npm package, but the API is also exported to the global window object,
 so for simpler applications you can use it as follows:
