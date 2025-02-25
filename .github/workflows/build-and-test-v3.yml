@@ -167,7 +167,7 @@ jobs:
       - name: Check that the bundled runtime builds
         working-directory: v3
         run: |
-          npx --yes -p esbuild@latest exit
+          npx --yes esbuild@latest --version
           task runtime:build
 
       - name: Check that the npm package builds

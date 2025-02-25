@@ -36,7 +36,7 @@ jobs:
       - name: Build bundled runtime
         working-directory: v3
         run: |
-          npx --yes -p esbuild@latest exit
+          npx --yes esbuild@latest --version
           task runtime:build
 
       - name: Test+Build npm package

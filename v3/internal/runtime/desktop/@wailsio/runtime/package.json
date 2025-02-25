@@ -3,6 +3,7 @@
   "type": "module",
   "version": "3.0.0-alpha.57",
   "description": "Wails Runtime",
+  "types": "types/index.d.ts",
   "exports": {
     "types": "./types/index.d.ts",
     "import": "./dist/index.js"
