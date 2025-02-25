@@ -24,7 +24,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 
     NSMutableDictionary *payload = [NSMutableDictionary dictionary];
     
-    [payload setObject:response.notification.request.identifier forKey:@"identifier"];
+    [payload setObject:response.notification.request.identifier forKey:@"id"];
     [payload setObject:response.actionIdentifier forKey:@"actionIdentifier"];
     [payload setObject:response.notification.request.content.title ?: @"" forKey:@"title"];
     [payload setObject:response.notification.request.content.body ?: @"" forKey:@"body"];
