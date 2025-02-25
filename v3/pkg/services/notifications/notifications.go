@@ -2,9 +2,11 @@ package notifications
 
 // Service represents the notifications service
 type Service struct {
-	// responseCallback is called when a notification response is received
+	// Callback is called when a notification response is received
 	Callback func(response NotificationResponse)
 }
+
+var NotificationService *Service
 
 // NotificationAction represents an action button for a notification
 type NotificationAction = struct {

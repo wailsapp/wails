@@ -4,12 +4,19 @@ package notifications
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"sync"
 
 	"git.sr.ht/~whereswaldon/shout"
+	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-var NotificationService *Service
+var NotificationLock sync.RWMutex
+var NotificationCategories = make(map[string]NotificationCategory)
 var Notifier shout.Notifier
 
 // Creates a new Notifications Service.
@@ -22,12 +29,66 @@ func New() *Service {
 
 // ServiceStartup is called when the service is loaded
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+	if err := loadCategories(); err != nil {
+		fmt.Printf("Failed to load notification categories: %v\n", err)
+	}
+
+	conn, err := dbus.SessionBus()
+	if err != nil {
+		return fmt.Errorf("failed to connect to D-Bus session bus: %v", err)
+	}
+
+	appName := "Wails Application"
+
+	var iconPath string
+
+	Notifier, err = shout.NewNotifier(conn, appName, iconPath, func(notificationID, action string, platformData map[string]dbus.Variant, target, notifierResponse dbus.Variant, err error) {
+		if err != nil {
+			return
+		}
+
+		response := NotificationResponse{
+			ID:               notificationID,
+			ActionIdentifier: action,
+		}
+
+		if action == "default" {
+			response.ActionIdentifier = DefaultActionIdentifier
+		}
+
+		if target.Signature().String() == "s" {
+			var targetStr string
+			if err := target.Store(&targetStr); err == nil {
+				// Try to parse as JSON
+				var userInfo map[string]interface{}
+				if err := json.Unmarshal([]byte(targetStr), &userInfo); err == nil {
+					response.UserInfo = userInfo
+				}
+			}
+		}
+
+		if notifierResponse.Signature().String() == "s" {
+			var userText string
+			if err := notifierResponse.Store(&userText); err == nil {
+				response.UserText = userText
+			}
+		}
+
+		if NotificationService != nil {
+			NotificationService.handleNotificationResponse(response)
+		}
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to create notifier: %v", err)
+	}
+
 	return nil
 }
 
 // ServiceShutdown is called when the service is unloaded
 func (ns *Service) ServiceShutdown() error {
-	return nil
+	return saveCategories()
 }
 
 // CheckBundleIdentifier is a Linux stub that always returns true.
@@ -44,32 +105,87 @@ func (ns *Service) RequestUserNotificationAuthorization() (bool, error) {
 
 // CheckNotificationAuthorization is a Linux stub that always returns true.
 // (user authorization is macOS-specific)
-func (ns *Service) CheckNotificationAuthorization() bool {
-	return true
+func (ns *Service) CheckNotificationAuthorization() (bool, error) {
+	return true, nil
 }
 
-// SendNotification sends a basic notification with a name, title, and body. All other options are ignored on Linux.
-// (subtitle and category id are only available on macOS)
+// SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
 func (ns *Service) SendNotification(options NotificationOptions) error {
-	return nil
+	notification := shout.Notification{
+		Title:         options.Title,
+		Body:          options.Body,
+		Priority:      shout.Normal,
+		DefaultAction: "default",
+	}
+
+	if options.Data != nil {
+		jsonData, err := json.Marshal(options.Data)
+		if err == nil {
+			notification.DefaultActionTarget = dbus.MakeVariant(string(jsonData))
+		}
+	}
+
+	return Notifier.Send(options.ID, notification)
 }
 
 // SendNotificationWithActions sends a notification with additional actions and inputs.
-// A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
-// If a NotificationCategory is not registered a basic notification will be sent.
-// (subtitle and category id are only available on macOS)
 func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
-	return nil
+	NotificationLock.RLock()
+	category, exists := NotificationCategories[options.CategoryID]
+	NotificationLock.RUnlock()
+
+	if !exists {
+		return ns.SendNotification(options)
+	}
+
+	notification := shout.Notification{
+		Title:         options.Title,
+		Body:          options.Body,
+		Priority:      shout.Normal,
+		DefaultAction: "default",
+	}
+
+	if options.Data != nil {
+		jsonData, err := json.Marshal(options.Data)
+		if err == nil {
+			notification.DefaultActionTarget = dbus.MakeVariant(string(jsonData))
+		}
+	}
+
+	for _, action := range category.Actions {
+		notification.Buttons = append(notification.Buttons, shout.Button{
+			Label:  action.Title,
+			Action: action.ID,
+			Target: "", // Will be set below if we have user data
+		})
+	}
+
+	if options.Data != nil {
+		jsonData, err := json.Marshal(options.Data)
+		if err == nil {
+			for i := range notification.Buttons {
+				notification.Buttons[i].Target = string(jsonData)
+			}
+		}
+	}
+
+	return Notifier.Send(options.ID, notification)
 }
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
 func (ns *Service) RegisterNotificationCategory(category NotificationCategory) error {
-	return nil
+	NotificationLock.Lock()
+	NotificationCategories[category.ID] = category
+	NotificationLock.Unlock()
+	return saveCategories()
 }
 
 // RemoveNotificationCategory removes a previously registered NotificationCategory.
 func (ns *Service) RemoveNotificationCategory(categoryId string) error {
-	return nil
+	NotificationLock.Lock()
+	delete(NotificationCategories, categoryId)
+	NotificationLock.Unlock()
+	return saveCategories()
 }
 
 // RemoveAllPendingNotifications is a Linux stub that always returns nil.
@@ -96,8 +212,78 @@ func (ns *Service) RemoveDeliveredNotification(_ string) error {
 	return nil
 }
 
-// RemoveNotification removes a pending notification matching the unique identifier.
-// (Linux-specific)
+// RemoveNotification removes a notification by ID (Linux-specific)
 func (ns *Service) RemoveNotification(identifier string) error {
+	return Notifier.Remove(identifier)
+}
+
+// getConfigFilePath returns the path to the configuration file for storing notification categories
+func getConfigFilePath() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get user config directory: %v", err)
+	}
+
+	appName := "Wails Application"
+
+	appConfigDir := filepath.Join(configDir, appName)
+	if err := os.MkdirAll(appConfigDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create config directory: %v", err)
+	}
+
+	return filepath.Join(appConfigDir, "notification-categories.json"), nil
+}
+
+// saveCategories saves the notification categories to a file.
+func saveCategories() error {
+	filePath, err := getConfigFilePath()
+	if err != nil {
+		return err
+	}
+
+	NotificationLock.RLock()
+	data, err := json.Marshal(NotificationCategories)
+	NotificationLock.RUnlock()
+
+	if err != nil {
+		return fmt.Errorf("failed to marshal notification categories: %v", err)
+	}
+
+	if err := os.WriteFile(filePath, data, 0644); err != nil {
+		return fmt.Errorf("failed to write notification categories to file: %v", err)
+	}
+
+	return nil
+}
+
+// loadCategories loads notification categories from a file.
+func loadCategories() error {
+	filePath, err := getConfigFilePath()
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return nil
+	}
+
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to read notification categories file: %v", err)
+	}
+
+	if len(data) == 0 {
+		return nil
+	}
+
+	categories := make(map[string]NotificationCategory)
+	if err := json.Unmarshal(data, &categories); err != nil {
+		return fmt.Errorf("failed to unmarshal notification categories: %v", err)
+	}
+
+	NotificationLock.Lock()
+	NotificationCategories = categories
+	NotificationLock.Unlock()
+
 	return nil
 }

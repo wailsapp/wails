@@ -16,7 +16,6 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
-var NotificationService *Service
 var NotificationLock sync.RWMutex
 var NotificationCategories = make(map[string]NotificationCategory)
 

@@ -17,7 +17,6 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-var NotificationService *Service
 var AppleDefaultActionIdentifier = "com.apple.UNNotificationDefaultActionIdentifier"
 
 // Creates a new Notifications Service.
