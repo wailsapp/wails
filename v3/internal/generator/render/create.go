@@ -213,17 +213,22 @@ func (m *module) PostponedCreates() []string {
 	m.postponedCreates.Iterate(func(key types.Type, value any) {
 		pp := value.(*postponed)
 
-		pre := ""
+		pre, post := "", ""
 		if pp.params != "" {
-			pre = pp.params + " => "
+			if m.TS {
+				pre = createParamRegex.ReplaceAllString(pp.params, "${0}: any") + " => "
+			} else {
+				pre = "/** @type {(...args: any[]) => any} */(" + pp.params + " => "
+				post = ")"
+			}
 		}
 
 		switch t := key.(type) {
 		case *types.Array, *types.Slice:
-			result[pp.index] = fmt.Sprintf("%s$Create.Array(%s)", pre, m.JSCreateWithParams(t.(interface{ Elem() types.Type }).Elem(), pp.params))
+			result[pp.index] = fmt.Sprintf("%s$Create.Array(%s)%s", pre, m.JSCreateWithParams(t.(interface{ Elem() types.Type }).Elem(), pp.params), post)
 
 		case *types.Map:
-			result[pp.index] = fmt.Sprintf("%s$Create.Map($Create.Any, %s)", pre, m.JSCreateWithParams(t.Elem(), pp.params))
+			result[pp.index] = fmt.Sprintf("%s$Create.Map($Create.Any, %s)%s", pre, m.JSCreateWithParams(t.Elem(), pp.params), post)
 
 		case *types.Named:
 			if !collect.IsClass(key) {
@@ -231,23 +236,24 @@ func (m *module) PostponedCreates() []string {
 				// require an indirect assignment to break cycles.
 
 				// Typescript cannot infer the return type on its own: add hints.
-				cast, returnType := "", ""
+				cast, argType, returnType := "", "", ""
 				if m.TS {
+					argType = ": any[]"
 					returnType = ": any"
 				} else {
 					cast = "/** @type {(...args: any[]) => any} */"
 				}
 
 				result[pp.index] = fmt.Sprintf(`
-%s(function $$initCreateType%d(...args)%s {
+%s(function $$initCreateType%d(...args%s)%s {
     if ($$createType%d === $$initCreateType%d) {
-        $$createType%d = %s%s;
+        $$createType%d = %s%s%s;
     }
     return $$createType%d(...args);
 })`,
-					cast, pp.index, returnType,
+					cast, pp.index, argType, returnType,
 					pp.index, pp.index,
-					pp.index, pre, m.JSCreateWithParams(t.Underlying(), pp.params),
+					pp.index, pre, m.JSCreateWithParams(t.Underlying(), pp.params), post,
 					pp.index,
 				)[1:] // Remove initial newline.
 
@@ -280,11 +286,12 @@ func (m *module) PostponedCreates() []string {
 				}
 				builder.WriteString(")")
 			}
+			builder.WriteString(post)
 
 			result[pp.index] = builder.String()
 
 		case *types.Pointer:
-			result[pp.index] = fmt.Sprintf("%s$Create.Nullable(%s)", pre, m.JSCreateWithParams(t.Elem(), pp.params))
+			result[pp.index] = fmt.Sprintf("%s$Create.Nullable(%s)%s", pre, m.JSCreateWithParams(t.Elem(), pp.params), post)
 
 		case *types.Struct:
 			info := m.collector.Struct(t)
@@ -311,11 +318,12 @@ func (m *module) PostponedCreates() []string {
 				builder.WriteRune('\n')
 			}
 			builder.WriteString("})")
+			builder.WriteString(post)
 
 			result[pp.index] = builder.String()
 
 		default:
-			result[pp.index] = pre + "$Create.Any"
+			result[pp.index] = pre + "$Create.Any" + post
 		}
 	})
 
