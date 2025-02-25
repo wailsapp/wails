@@ -102,13 +102,29 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install dependencies
-        run: npm install
-        working-directory: v2/internal/frontend/runtime
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run tests
-        run: npm test
-        working-directory: v2/internal/frontend/runtime
+      - name: Typecheck runtime
+        run: task runtime:check
+        working-directory: ./v3
+
+      - name: Test runtime
+        run: task runtime:test
+        working-directory: ./v3
+
+      - name: Build bundled runtime
+        run: |
+          npx --yes -p esbuild@latest exit
+          task runtime:build
+        working-directory: ./v3
+
+      - name: Verify that the npm package builds correctly
+        run: npm run prepack
+        working-directory: ./v3/internal/runtime/desktop/@wailsio/runtime
 
   test_templates:
     name: Test Templates
