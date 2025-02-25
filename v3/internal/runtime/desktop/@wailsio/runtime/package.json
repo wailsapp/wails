@@ -28,6 +28,8 @@
     "./dist/drag.js"
   ],
   "scripts": {
+    "check": "npx tsc --noEmit",
+    "test": "npx vitest run",
     "clean": "npx rimraf ./dist ./docs ./types ./tsconfig.tsbuildinfo",
     "generate:events": "task generate:events",
     "generate": "npm run generate:events",
@@ -39,11 +41,21 @@
     "prepack": "npm run build"
   },
   "devDependencies": {
+    "happy-dom": "^17.1.1",
+    "promises-aplus-tests": "2.1.2",
     "rimraf": "^5.0.5",
     "typedoc": "^0.27.7",
     "typedoc-plugin-markdown": "^4.4.2",
     "typedoc-plugin-mdn-links": "^4.0.13",
     "typedoc-plugin-missing-exports": "^3.1.0",
     "typescript": "^5.7.3",
+    "vitest": "^3.0.6"
+  },
+  "overrides": {
+    "promises-aplus-tests": {
+      "mocha": "^11.1.0",
+      "sinon": "^19.0.2",
+      "underscore": "^1.13.7"
+    }
   }
 }
