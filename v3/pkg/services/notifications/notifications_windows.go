@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	"git.sr.ht/~jackmordaunt/go-toast"
+	"git.sr.ht/~jackmordaunt/go-toast/v2"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"golang.org/x/sys/windows/registry"
 )
@@ -36,7 +36,15 @@ func (ns *Service) ServiceName() string {
 // ServiceStartup is called when the service is loaded
 // Sets an activation callback to emit an event when notifications are interacted with.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+	toast.SetAppData(toast.AppData{
+		AppID:         "Notifications",
+		GUID:          "{8F2E1A3D-C497-42B6-9E5D-72F8A169B051}",
+		IconPath:      "C:\\Users\\Zach\\Development\\notifications_demo\\build\\appicon.ico",
+		ActivationExe: "C:\\Users\\Zach\\Development\\notifications_demo\\bin\\Notifications.exe",
+	})
+
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
+		println("HERE!")
 		actionIdentifier, userInfo := parseNotificationResponse(args)
 		response := NotificationResponse{
 			Name: "notification",
@@ -94,6 +102,7 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 		Title:               options.Title,
 		Body:                options.Body,
 		ActivationArguments: defaultAction,
+		Audio:               toast.IM,
 	}
 
 	if options.Data != nil {
@@ -124,6 +133,7 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 		Title:               options.Title,
 		Body:                options.Body,
 		ActivationArguments: defaultAction,
+		Audio:               toast.IM,
 	}
 
 	for _, action := range nCategory.Actions {
@@ -143,6 +153,7 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 		n.Actions = append(n.Actions, toast.Action{
 			Content:   nCategory.ReplyButtonTitle,
 			Arguments: "TEXT_REPLY",
+			InputID:   "userText",
 		})
 	}
 
