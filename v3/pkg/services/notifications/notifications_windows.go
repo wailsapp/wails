@@ -35,14 +35,13 @@ func New() *Service {
 // Sets an activation callback to emit an event when notifications are interacted with.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	// Need to get App Name and generate a UUID on first launch
-	//
-	// toast.SetAppData(toast.AppData{
-	// 	AppID:         "Notifications",
-	// 	GUID:          "{8F2E1A3D-C497-42B6-9E5D-72F8A169B051}",
-	// 	IconPath:      "C:\\Users\\Zach\\Development\\notifications_demo\\build\\appicon.ico",
-	// 	ActivationExe: "C:\\Users\\Zach\\Development\\notifications_demo\\bin\\Notifications.exe",
-	// })
-	//
+	// How do we grab the app icon properly?
+	toast.SetAppData(toast.AppData{
+		AppID:         "Notifications",
+		GUID:          "{8F2E1A3D-C497-42B6-9E5D-72F8A169B051}",
+		IconPath:      "C:\\Users\\Zach\\Development\\notifications_demo\\build\\appicon.ico",
+		ActivationExe: "C:\\Users\\Zach\\Development\\notifications_demo\\bin\\Notifications.exe",
+	})
 
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
 		actionIdentifier, userInfo := parseNotificationResponse(args)
@@ -97,7 +96,6 @@ func (ns *Service) CheckNotificationAuthorization() bool {
 // (subtitle and category id are only available on macOS)
 func (ns *Service) SendNotification(options NotificationOptions) error {
 	n := toast.Notification{
-		AppID:               options.ID,
 		Title:               options.Title,
 		Body:                options.Body,
 		ActivationArguments: DefaultActionIdentifier,
@@ -128,7 +126,6 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	NotificationLock.RUnlock()
 
 	n := toast.Notification{
-		AppID:               options.ID,
 		Title:               options.Title,
 		Body:                options.Body,
 		ActivationArguments: DefaultActionIdentifier,
