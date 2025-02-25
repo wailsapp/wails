@@ -68,7 +68,7 @@ type CancellablePromiseExecutor<T> = (resolve: CancellablePromiseResolver<T>, re
 
 export interface CancellablePromiseLike<T> {
     then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1> | CancellablePromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2> | CancellablePromiseLike<TResult2>) | undefined | null): CancellablePromiseLike<TResult1 | TResult2>;
-    cancel(cause?: any): void;
+    cancel(cause?: any): void | PromiseLike<void>;
 }
 
 /**
@@ -292,7 +292,9 @@ export class CancellablePromise<T> extends Promise<T> implements PromiseLike<T>,
      */
     cancel(cause?: any): CancellablePromise<void> {
         return new CancellablePromise<void>((resolve) => {
-            Promise.allSettled([
+            // INVARIANT: the result of this[cancelImplSym] and the barrier do not ever reject.
+            // Unfortunately macOS High Sierra does not support Promise.allSettled.
+            Promise.all([
                 this[cancelImplSym](new CancelError("Promise cancelled.", { cause })),
                 currentBarrier(this)
             ]).then(() => resolve(), () => resolve());
@@ -523,11 +525,12 @@ export class CancellablePromise<T> extends Promise<T> implements PromiseLike<T>,
     static all<T extends readonly unknown[] | []>(values: T): CancellablePromise<{ -readonly [P in keyof T]: Awaited<T[P]>; }>;
     static all<T extends Iterable<unknown> | ArrayLike<unknown>>(values: T): CancellablePromise<unknown> {
         let collected = Array.from(values);
-        return collected.length === 0
+        const promise = collected.length === 0
             ? CancellablePromise.resolve(collected)
             : new CancellablePromise<unknown>((resolve, reject) => {
                 void Promise.all(collected).then(resolve, reject);
-            }, allCanceller(collected));
+            }, (cause?): Promise<void> => cancelAll(promise, collected, cause));
+        return promise;
     }
 
     /**
@@ -543,11 +546,12 @@ export class CancellablePromise<T> extends Promise<T> implements PromiseLike<T>,
     static allSettled<T extends readonly unknown[] | []>(values: T): CancellablePromise<{ -readonly [P in keyof T]: PromiseSettledResult<Awaited<T[P]>>; }>;
     static allSettled<T extends Iterable<unknown> | ArrayLike<unknown>>(values: T): CancellablePromise<unknown> {
         let collected = Array.from(values);
-        return collected.length === 0
+        const promise = collected.length === 0
             ? CancellablePromise.resolve(collected)
             : new CancellablePromise<unknown>((resolve, reject) => {
                 void Promise.allSettled(collected).then(resolve, reject);
-            }, allCanceller(collected));
+            }, (cause?): Promise<void> => cancelAll(promise, collected, cause));
+        return promise;
     }
 
     /**
@@ -565,11 +569,12 @@ export class CancellablePromise<T> extends Promise<T> implements PromiseLike<T>,
     static any<T extends readonly unknown[] | []>(values: T): CancellablePromise<Awaited<T[number]>>;
     static any<T extends Iterable<unknown> | ArrayLike<unknown>>(values: T): CancellablePromise<unknown> {
         let collected = Array.from(values);
-        return collected.length === 0
+        const promise = collected.length === 0
             ? CancellablePromise.resolve(collected)
             : new CancellablePromise<unknown>((resolve, reject) => {
                 void Promise.any(collected).then(resolve, reject);
-            }, allCanceller(collected));
+            }, (cause?): Promise<void> => cancelAll(promise, collected, cause));
+        return promise;
     }
 
     /**
@@ -584,9 +589,10 @@ export class CancellablePromise<T> extends Promise<T> implements PromiseLike<T>,
     static race<T extends readonly unknown[] | []>(values: T): CancellablePromise<Awaited<T[number]>>;
     static race<T extends Iterable<unknown> | ArrayLike<unknown>>(values: T): CancellablePromise<unknown> {
         let collected = Array.from(values);
-        return new CancellablePromise<unknown>((resolve, reject) => {
+        const promise = new CancellablePromise<unknown>((resolve, reject) => {
             void Promise.race(collected).then(resolve, reject);
-        }, allCanceller(collected));
+        }, (cause?): Promise<void> => cancelAll(promise, collected, cause));
+        return promise;
     }
 
     /**
@@ -722,15 +728,14 @@ function cancellerFor<T>(promise: CancellablePromiseWithResolvers<T>, state: Can
         // If oncancelled is unset, no need to go any further.
         if (!state.reason || !promise.oncancelled) { return; }
 
-        cancellationPromise = new Promise((resolve) => {
+        cancellationPromise = new Promise<void>((resolve) => {
             try {
                 resolve(promise.oncancelled!(state.reason!.cause));
             } catch (err) {
                 Promise.reject(new CancelledRejectionError(promise.promise, err, "Unhandled exception in oncancelled callback."));
             }
-        });
-        cancellationPromise.then(undefined, (reason?) => {
-            throw new CancelledRejectionError(promise.promise, reason, "Unhandled rejection in oncancelled callback.");
+        }).catch((reason?) => {
+            Promise.reject(new CancelledRejectionError(promise.promise, reason, "Unhandled rejection in oncancelled callback."));
         });
 
         // Unset oncancelled to prevent repeated calls.
@@ -832,21 +837,37 @@ function rejectorFor<T>(promise: CancellablePromiseWithResolvers<T>, state: Canc
 }
 
 /**
- * Returns a callback that cancels all values in an iterable that look like cancellable thenables.
+ * Cancels all values in an array that look like cancellable thenables.
+ * Returns a promise that fulfills once all cancellation procedures for the given values have settled.
  */
-function allCanceller(values: Iterable<any>): CancellablePromiseCanceller {
-    return (cause?) => {
-        for (const value of values) {
-            try {
-                if (isCallable(value.then)) {
-                    let cancel = value.cancel;
-                    if (isCallable(cancel)) {
-                        Reflect.apply(cancel, value, [cause]);
-                    }
-                }
-            } catch {}
+function cancelAll(parent: CancellablePromise<unknown>, values: any[], cause?: any): Promise<void> {
+    const results = [];
+
+    for (const value of values) {
+        let cancel: CancellablePromiseCanceller;
+        try {
+            if (!isCallable(value.then)) { continue; }
+            cancel = value.cancel;
+            if (!isCallable(cancel)) { continue; }
+        } catch { continue; }
+
+        let result: void | PromiseLike<void>;
+        try {
+            result = Reflect.apply(cancel, value, [cause]);
+        } catch (err) {
+            Promise.reject(new CancelledRejectionError(parent, err, "Unhandled exception in cancel method."));
+            continue;
         }
+
+        if (!result) { continue; }
+        results.push(
+            (result instanceof Promise  ? result : Promise.resolve(result)).catch((reason?) => {
+                Promise.reject(new CancelledRejectionError(parent, reason, "Unhandled rejection in cancel method."));
+            })
+        );
     }
+
+    return Promise.all(results) as any;
 }
 
 /**

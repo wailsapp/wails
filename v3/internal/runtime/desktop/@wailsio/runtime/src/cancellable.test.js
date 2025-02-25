@@ -12,6 +12,7 @@ import { CancelError, CancellablePromise, CancelledRejectionError } from "./canc
 //     it should be reported as an unhandled rejection,
 //   - unless it is a CancelError with the same reason given for cancelling the returned promise.
 // TODO: test multiple calls to cancel() (second and later should have no effect).
+// TODO: test static factory methods and their cancellation support.
 
 let expectedUnhandled = new Map();
 

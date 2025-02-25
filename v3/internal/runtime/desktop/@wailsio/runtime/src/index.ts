@@ -45,8 +45,8 @@ export {
 /**
  * An internal utility consumed by the binding generator.
  *
- * @private
  * @ignore
+ * @internal
  */
 export { Create };
 
