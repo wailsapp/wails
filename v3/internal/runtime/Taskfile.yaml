@@ -11,25 +11,29 @@ tasks:
     cmds:
       - npm install
 
+  check:
+    dir: desktop/@wailsio/runtime
+    deps:
+      - install-deps
+    cmds:
+      - npm run check
+
   test:
     dir: desktop/@wailsio/runtime
+    deps:
+      - install-deps
     cmds:
-      - npx vitest run
-
-  update:
-    dir: desktop/@wailsio/runtime
-    cmds:
-      - npx npm-check-updates -u
+      - npm test
 
   build:debug:
     internal: true
     cmds:
-      - npx esbuild@latest desktop/@wailsio/runtime/src/index.js --inject:desktop/compiled/main.js --format=esm --bundle --tree-shaking=true --sourcemap=inline --outfile=../assetserver/bundledassets/runtime.debug.js --define:DEBUG=true
+      - npx esbuild@latest desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=es2015 --bundle --ignore-annotations --tree-shaking=true --sourcemap=inline --outfile=../assetserver/bundledassets/runtime.debug.js --define:DEBUG=true
 
   build:production:
     internal: true
     cmds:
-      - npx esbuild@latest desktop/@wailsio/runtime/src/index.js --inject:desktop/compiled/main.js --format=esm --bundle --tree-shaking=true --minify --outfile=../assetserver/bundledassets/runtime.js --define:DEBUG=false --drop:console
+      - npx esbuild@latest desktop/@wailsio/runtime/src/index.ts --inject:desktop/compiled/main.js --format=esm --target=es2015 --bundle --ignore-annotations --tree-shaking=true --minify --outfile=../assetserver/bundledassets/runtime.js --define:DEBUG=false --drop:console
 
   build:all:
     internal: true
