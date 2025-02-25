@@ -8,30 +8,38 @@ The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
 
-/* jshint esversion: 9 */
-
-import {newRuntimeCallerWithID, objectNames} from "./runtime";
-import {IsDebug} from "./system";
+import { newRuntimeCaller, objectNames } from "./runtime.js";
+import { IsDebug } from "./system.js";
 
 // setup
 window.addEventListener('contextmenu', contextMenuHandler);
 
-const call = newRuntimeCallerWithID(objectNames.ContextMenu, '');
+const call = newRuntimeCaller(objectNames.ContextMenu);
+
 const ContextMenuOpen = 0;
 
-function openContextMenu(id, x, y, data) {
+function openContextMenu(id: string, x: number, y: number, data: any): void {
     void call(ContextMenuOpen, {id, x, y, data});
 }
 
-function contextMenuHandler(event) {
+function contextMenuHandler(event: MouseEvent) {
+    let target: HTMLElement;
+
+    if (event.target instanceof HTMLElement) {
+        target = event.target;
+    } else if (!(event.target instanceof HTMLElement) && event.target instanceof Node) {
+        target = event.target.parentElement ?? document.body;
+    } else {
+        target = document.body;
+    }
+
     // Check for custom context menu
-    let element = event.target;
-    let customContextMenu = window.getComputedStyle(element).getPropertyValue("--custom-contextmenu");
-    customContextMenu = customContextMenu ? customContextMenu.trim() : "";
+    let customContextMenu = window.getComputedStyle(target).getPropertyValue("--custom-contextmenu").trim();
+
     if (customContextMenu) {
         event.preventDefault();
-        let customContextMenuData = window.getComputedStyle(element).getPropertyValue("--custom-contextmenu-data");
-        openContextMenu(customContextMenu, event.clientX, event.clientY, customContextMenuData);
+        let data = window.getComputedStyle(target).getPropertyValue("--custom-contextmenu-data");
+        openContextMenu(customContextMenu, event.clientX, event.clientY, data);
         return
     }
 
@@ -46,47 +54,56 @@ function contextMenuHandler(event) {
 
 This rule is inherited like normal CSS rules, so nesting works as expected
 */
-function processDefaultContextMenu(event) {
-
+function processDefaultContextMenu(event: MouseEvent) {
     // Debug builds always show the menu
     if (IsDebug()) {
         return;
     }
 
+    let target: HTMLElement;
+
+    if (event.target instanceof HTMLElement) {
+        target = event.target;
+    } else if (!(event.target instanceof HTMLElement) && event.target instanceof Node) {
+        target = event.target.parentElement ?? document.body;
+    } else {
+        target = document.body;
+    }
+
     // Process default context menu
-    const element = event.target;
-    const computedStyle = window.getComputedStyle(element);
-    const defaultContextMenuAction = computedStyle.getPropertyValue("--default-contextmenu").trim();
-    switch (defaultContextMenuAction) {
+    switch (window.getComputedStyle(target).getPropertyValue("--default-contextmenu").trim()) {
         case "show":
             return;
+
         case "hide":
             event.preventDefault();
             return;
+
         default:
             // Check if contentEditable is true
-            if (element.isContentEditable) {
+            if (target.isContentEditable) {
                 return;
             }
 
             // Check if text has been selected
             const selection = window.getSelection();
-            const hasSelection = (selection.toString().length > 0)
+            const hasSelection = selection && selection.toString().length > 0;
             if (hasSelection) {
                 for (let i = 0; i < selection.rangeCount; i++) {
                     const range = selection.getRangeAt(i);
                     const rects = range.getClientRects();
                     for (let j = 0; j < rects.length; j++) {
                         const rect = rects[j];
-                        if (document.elementFromPoint(rect.left, rect.top) === element) {
+                        if (document.elementFromPoint(rect.left, rect.top) === target) {
                             return;
                         }
                     }
                 }
             }
-            // Check if tagname is input or textarea
-            if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
-                if (hasSelection || (!element.readOnly && !element.disabled)) {
+
+            // Check if tag is input or textarea.
+            if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+                if (hasSelection || (!target.readOnly && !target.disabled)) {
                     return;
                 }
             }

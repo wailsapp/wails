@@ -27,10 +27,10 @@
 // `'use`, `andom`, and `rict'`
 // References to the brotli default dictionary:
 // `-26T`, `1983`, `40px`, `75px`, `bush`, `jack`, `mind`, `very`, and `wolf`
-let urlAlphabet =
+const urlAlphabet =
     'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict'
 
-export let nanoid = (size = 21) => {
+export function nanoid(size: number = 21): string {
     let id = ''
     // A compact alternative for `for (var i = 0; i < step; i++)`.
     let i = size | 0

@@ -10,10 +10,10 @@ The electron alternative for Go
 
 /**
  * Logs a message to the console with custom formatting.
- * @param {string} message - The message to be logged.
- * @return {void}
+ *
+ * @param message - The message to be logged.
  */
-export function debugLog(message) {
+export function debugLog(message: any) {
     // eslint-disable-next-line
     console.log(
         '%c wails3 %c ' + message + ' ',
@@ -23,10 +23,16 @@ export function debugLog(message) {
 }
 
 /**
+ * Checks whether the webview supports the {@link MouseEvent#buttons} property.
+ * Looking at you macOS High Sierra!
+ */
+export function canTrackButtons(): boolean {
+    return (new MouseEvent('mousedown')).buttons === 0;
+}
+
+/**
  * Checks whether the browser supports removing listeners by triggering an AbortSignal
- * (see https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#signal)
- *
- * @return {boolean}
+ * (see https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#signal).
  */
 export function canAbortListeners() {
     if (!EventTarget || !AbortSignal || !AbortController)
@@ -75,9 +81,9 @@ export function canAbortListeners() {
  ***/
 
 let isReady = false;
-document.addEventListener('DOMContentLoaded', () => isReady = true);
+document.addEventListener('DOMContentLoaded', () => { isReady = true });
 
-export function whenReady(callback) {
+export function whenReady(callback: () => void) {
     if (isReady || document.readyState === 'complete') {
         callback();
     } else {

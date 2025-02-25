@@ -8,10 +8,8 @@ The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
 
-/* jshint esversion: 9 */
-
-import { newRuntimeCallerWithID, objectNames } from "./runtime";
-const call = newRuntimeCallerWithID(objectNames.Application, '');
+import { newRuntimeCaller, objectNames } from "./runtime.js";
+const call = newRuntimeCaller(objectNames.Application);
 
 const HideMethod = 0;
 const ShowMethod = 1;
@@ -19,28 +17,21 @@ const QuitMethod = 2;
 
 /**
  * Hides a certain method by calling the HideMethod function.
- *
- * @return {Promise<void>}
- *
  */
-export function Hide() {
+export function Hide(): Promise<void> {
     return call(HideMethod);
 }
 
 /**
  * Calls the ShowMethod and returns the result.
- *
- * @return {Promise<void>}
  */
-export function Show() {
+export function Show(): Promise<void> {
     return call(ShowMethod);
 }
 
 /**
  * Calls the QuitMethod to terminate the program.
- *
- * @return {Promise<void>}
  */
-export function Quit() {
+export function Quit(): Promise<void> {
     return call(QuitMethod);
 }

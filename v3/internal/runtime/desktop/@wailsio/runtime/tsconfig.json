@@ -1,20 +1,36 @@
 {
   "include": ["./src/**/*"],
+  "exclude": ["./src/**/*.test.*"],
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
+    "composite": true,
+
+    "allowJs": false,
+
+    "noEmitOnError": true,
     "declaration": true,
-    "declarationMap": true,
-    "emitDeclarationOnly": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    "declarationMap": false,
+    "declarationDir": "types",
     "outDir": "dist",
+    "rootDir": "src",
+
+    "target": "ES2015",
+    "module": "ES2015",
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "stripInternal": true,
+
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
+
     "strict": true,
-    "target": "es6",
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
   }
 }
