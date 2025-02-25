@@ -4,6 +4,7 @@ package notifications
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -19,9 +20,11 @@ import (
 var NotificationLock sync.RWMutex
 var NotificationCategories = make(map[string]NotificationCategory)
 
-const (
-	dataSeparator = ":::"
-)
+// NotificationPayload combines the action ID and user data into a single structure
+type NotificationPayload struct {
+	Action string                 `json:"action"`
+	Data   map[string]interface{} `json:"data,omitempty"`
+}
 
 // Creates a new Notifications Service.
 func New() *Service {
@@ -103,17 +106,13 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 	}
 
 	if options.Data != nil {
-		jsonData, err := json.Marshal(options.Data)
+		encodedPayload, err := encodePayload(DefaultActionIdentifier, options.Data)
 		if err == nil {
-			n.ActivationArguments = DefaultActionIdentifier + dataSeparator + strings.ReplaceAll(string(jsonData), "\"", "'")
+			n.ActivationArguments = encodedPayload
 		}
 	}
 
-	err := n.Push()
-	if err != nil {
-		return err
-	}
-	return nil
+	return n.Push()
 }
 
 // SendNotificationWithActions sends a notification with additional actions and inputs.
@@ -142,7 +141,6 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	if nCategory.HasReplyField {
 		n.Inputs = append(n.Inputs, toast.Input{
 			ID:          "userText",
-			Title:       nCategory.ReplyButtonTitle,
 			Placeholder: nCategory.ReplyPlaceholder,
 		})
 
@@ -154,11 +152,10 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	}
 
 	if options.Data != nil {
-		jsonData, err := json.Marshal(options.Data)
-		if err == nil {
-			n.ActivationArguments = DefaultActionIdentifier + dataSeparator + strings.ReplaceAll(string(jsonData), "\"", "'")
-			for index := range n.Actions {
-				n.Actions[index].Arguments = n.Actions[index].Arguments + dataSeparator + strings.ReplaceAll(string(jsonData), "\"", "'")
+		for index := range n.Actions {
+			encodedPayload, err := encodePayload(n.Actions[index].Arguments, options.Data)
+			if err == nil {
+				n.Actions[index].Arguments = encodedPayload
 			}
 		}
 	}
@@ -225,12 +222,49 @@ func (ns *Service) RemoveNotification(identifier string) error {
 	return nil
 }
 
-func parseNotificationResponse(response string) (action string, data string) {
-	parts := strings.Split(response, dataSeparator)
-	if len(parts) == 1 {
-		return parts[0], ""
+// encodePayload combines an action ID and user data into a single encoded string
+func encodePayload(actionID string, data map[string]interface{}) (string, error) {
+	payload := NotificationPayload{
+		Action: actionID,
+		Data:   data,
 	}
-	return parts[0], parts[1]
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return actionID, err
+	}
+
+	encodedPayload := base64.StdEncoding.EncodeToString(jsonData)
+	return encodedPayload, nil
+}
+
+// decodePayload extracts the action ID and user data from an encoded payload
+func decodePayload(encodedString string) (string, map[string]interface{}, error) {
+	jsonData, err := base64.StdEncoding.DecodeString(encodedString)
+	if err != nil {
+		return encodedString, nil, nil
+	}
+
+	var payload NotificationPayload
+	if err := json.Unmarshal(jsonData, &payload); err != nil {
+		return encodedString, nil, nil
+	}
+
+	return payload.Action, payload.Data, nil
+}
+
+// parseNotificationResponse updated to use structured payload decoding
+func parseNotificationResponse(response string) (action string, data string) {
+	actionID, userData, _ := decodePayload(response)
+
+	if userData != nil {
+		userDataJSON, err := json.Marshal(userData)
+		if err == nil {
+			return actionID, string(userDataJSON)
+		}
+	}
+
+	return actionID, ""
 }
 
 // Is there a better way for me to grab this from the Wails config?

@@ -12,7 +12,7 @@ var NotificationService *Service
 type NotificationAction = struct {
 	ID          string `json:"id,omitempty"`
 	Title       string `json:"title,omitempty"`
-	Destructive bool   `json:"destructive,omitempty"` // macOS only
+	Destructive bool   `json:"destructive,omitempty"` // (macOS-specific)
 }
 
 // NotificationCategory groups actions for notifications
@@ -28,7 +28,7 @@ type NotificationCategory = struct {
 type NotificationOptions = struct {
 	ID         string                 `json:"id,omitempty"`
 	Title      string                 `json:"title,omitempty"`
-	Subtitle   string                 `json:"subtitle,omitempty"`
+	Subtitle   string                 `json:"subtitle,omitempty"` // (macOS-specific)
 	Body       string                 `json:"body,omitempty"`
 	CategoryID string                 `json:"categoryId,omitempty"`
 	Data       map[string]interface{} `json:"data,omitempty"`
@@ -42,7 +42,7 @@ type NotificationResponse = struct {
 	ActionIdentifier string                 `json:"actionIdentifier,omitempty"`
 	CategoryID       string                 `json:"categoryIdentifier,omitempty"`
 	Title            string                 `json:"title,omitempty"`
-	Subtitle         string                 `json:"subtitle,omitempty"`
+	Subtitle         string                 `json:"subtitle,omitempty"` // (macOS-specific)
 	Body             string                 `json:"body,omitempty"`
 	UserText         string                 `json:"userText,omitempty"`
 	UserInfo         map[string]interface{} `json:"userInfo,omitempty"`
