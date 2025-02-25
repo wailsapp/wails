@@ -32,7 +32,7 @@ const _invoke = (function () {
 })();
 
 export function invoke(msg: any): void {
-    return _invoke?.(msg);
+    _invoke?.(msg);
 }
 
 /**
