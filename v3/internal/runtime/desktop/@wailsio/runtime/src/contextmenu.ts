@@ -10,6 +10,7 @@ The electron alternative for Go
 
 import { newRuntimeCaller, objectNames } from "./runtime.js";
 import { IsDebug } from "./system.js";
+import { eventTarget } from "./utils";
 
 // setup
 window.addEventListener('contextmenu', contextMenuHandler);
@@ -23,27 +24,18 @@ function openContextMenu(id: string, x: number, y: number, data: any): void {
 }
 
 function contextMenuHandler(event: MouseEvent) {
-    let target: HTMLElement;
-
-    if (event.target instanceof HTMLElement) {
-        target = event.target;
-    } else if (!(event.target instanceof HTMLElement) && event.target instanceof Node) {
-        target = event.target.parentElement ?? document.body;
-    } else {
-        target = document.body;
-    }
+    const target = eventTarget(event);
 
     // Check for custom context menu
-    let customContextMenu = window.getComputedStyle(target).getPropertyValue("--custom-contextmenu").trim();
+    const customContextMenu = window.getComputedStyle(target).getPropertyValue("--custom-contextmenu").trim();
 
     if (customContextMenu) {
         event.preventDefault();
-        let data = window.getComputedStyle(target).getPropertyValue("--custom-contextmenu-data");
+        const data = window.getComputedStyle(target).getPropertyValue("--custom-contextmenu-data");
         openContextMenu(customContextMenu, event.clientX, event.clientY, data);
-        return
+    } else {
+        processDefaultContextMenu(event, target);
     }
-
-    processDefaultContextMenu(event);
 }
 
 
@@ -54,61 +46,49 @@ function contextMenuHandler(event: MouseEvent) {
 
 This rule is inherited like normal CSS rules, so nesting works as expected
 */
-function processDefaultContextMenu(event: MouseEvent) {
+function processDefaultContextMenu(event: MouseEvent, target: HTMLElement) {
     // Debug builds always show the menu
     if (IsDebug()) {
         return;
     }
 
-    let target: HTMLElement;
-
-    if (event.target instanceof HTMLElement) {
-        target = event.target;
-    } else if (!(event.target instanceof HTMLElement) && event.target instanceof Node) {
-        target = event.target.parentElement ?? document.body;
-    } else {
-        target = document.body;
-    }
-
     // Process default context menu
     switch (window.getComputedStyle(target).getPropertyValue("--default-contextmenu").trim()) {
-        case "show":
+        case 'show':
             return;
-
-        case "hide":
+        case 'hide':
             event.preventDefault();
             return;
+    }
 
-        default:
-            // Check if contentEditable is true
-            if (target.isContentEditable) {
-                return;
-            }
+    // Check if contentEditable is true
+    if (target.isContentEditable) {
+        return;
+    }
 
-            // Check if text has been selected
-            const selection = window.getSelection();
-            const hasSelection = selection && selection.toString().length > 0;
-            if (hasSelection) {
-                for (let i = 0; i < selection.rangeCount; i++) {
-                    const range = selection.getRangeAt(i);
-                    const rects = range.getClientRects();
-                    for (let j = 0; j < rects.length; j++) {
-                        const rect = rects[j];
-                        if (document.elementFromPoint(rect.left, rect.top) === target) {
-                            return;
-                        }
-                    }
-                }
-            }
-
-            // Check if tag is input or textarea.
-            if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
-                if (hasSelection || (!target.readOnly && !target.disabled)) {
+    // Check if text has been selected
+    const selection = window.getSelection();
+    const hasSelection = selection && selection.toString().length > 0;
+    if (hasSelection) {
+        for (let i = 0; i < selection.rangeCount; i++) {
+            const range = selection.getRangeAt(i);
+            const rects = range.getClientRects();
+            for (let j = 0; j < rects.length; j++) {
+                const rect = rects[j];
+                if (document.elementFromPoint(rect.left, rect.top) === target) {
                     return;
                 }
             }
-
-            // hide default context menu
-            event.preventDefault();
+        }
     }
+
+    // Check if tag is input or textarea.
+    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+        if (hasSelection || (!target.readOnly && !target.disabled)) {
+            return;
+        }
+    }
+
+    // hide default context menu
+    event.preventDefault();
 }

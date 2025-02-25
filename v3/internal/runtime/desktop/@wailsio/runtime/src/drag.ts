@@ -10,7 +10,7 @@ The electron alternative for Go
 
 import { invoke, IsWindows } from "./system.js";
 import { GetFlag } from "./flags.js";
-import { canTrackButtons } from "./utils.js";
+import { canTrackButtons, eventTarget } from "./utils.js";
 
 // Setup
 let canDrag = false;
@@ -134,15 +134,7 @@ function primaryDown(event: MouseEvent): void {
     }
 
     // Retrieve target element
-    let target: HTMLElement;
-
-    if (event.target instanceof HTMLElement) {
-        target = event.target;
-    } else if (!(event.target instanceof HTMLElement) && event.target instanceof Node) {
-        target = event.target.parentElement ?? document.body;
-    } else {
-        target = document.body;
-    }
+    const target = eventTarget(event);
 
     // Ready to drag if the primary button was pressed for the first time on a draggable element.
     // Ignore clicks on the scrollbar.

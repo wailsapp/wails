@@ -49,6 +49,19 @@ export function canAbortListeners() {
     return result;
 }
 
+/**
+ * Resolves the closest HTMLElement ancestor of an event's target.
+ */
+export function eventTarget(event: Event): HTMLElement {
+    if (event.target instanceof HTMLElement) {
+        return event.target;
+    } else if (!(event.target instanceof HTMLElement) && event.target instanceof Node) {
+        return event.target.parentElement ?? document.body;
+    } else {
+        return document.body;
+    }
+}
+
 /***
  This technique for proper load detection is taken from HTMX:
 
