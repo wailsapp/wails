@@ -144,6 +144,10 @@ describe("OffAll", () => {
     On('b', cbb);
     On('c', cbc);
     On('c', cbc);
+    OffAll();
+    dispatchWailsEvent({ name: 'a' });
+    dispatchWailsEvent({ name: 'b' });
+    dispatchWailsEvent({ name: 'c' });
     expect(cba).not.toHaveBeenCalled();
     expect(cbb).not.toHaveBeenCalled();
     expect(cbc).not.toHaveBeenCalled();
