@@ -11,7 +11,7 @@ import {Create as $Create} from "@wailsio/runtime";
  * @typedef {Object} NotificationAction
  * @property {string} [id]
  * @property {string} [title]
- * @property {boolean} [destructive] - macOS only
+ * @property {boolean} [destructive] - (macOS-specific)
  */
 
 /**
@@ -29,7 +29,7 @@ import {Create as $Create} from "@wailsio/runtime";
  * @typedef {Object} NotificationOptions
  * @property {string} [id]
  * @property {string} [title]
- * @property {string} [subtitle]
+ * @property {string} [subtitle] - (macOS-specific)
  * @property {string} [body]
  * @property {string} [categoryId]
  * @property {{ [_: string]: any }} [data]

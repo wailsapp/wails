@@ -1,14 +1,13 @@
 import * as Notifications from "./bindings/github.com/wailsapp/wails/v3/pkg/services/notifications/service";
-import { Events, System } from "@wailsio/runtime";
+import { Events } from "@wailsio/runtime";
 
 const notificationsElement = document.getElementById('notifications');
 
 window.sendNotification = async () => {
     const granted = await Notifications.RequestUserNotificationAuthorization();
     if (granted) {
-        const id = System.IsWindows() ? "Wails Notification Demo" : crypto.randomUUID()
         await Notifications.SendNotification({
-            id,
+            id: crypto.randomUUID(),
             title: "Title",
             body: "Body!",
             data: {
@@ -33,10 +32,9 @@ window.sendComplexNotification = async () => {
             replyButtonTitle: "Reply",
             replyPlaceholder: "Reply to frontend...",
         });
-        
-        const id = System.IsWindows() ? "Wails Notification Demo" : crypto.randomUUID()
+
         await Notifications.SendNotificationWithActions({
-            id,
+            id: crypto.randomUUID(),
             title: "Complex Frontend Notification",
             subtitle: "From: Jane Doe",
             body: "Is it rainging today where you are?",
