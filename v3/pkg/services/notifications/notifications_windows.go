@@ -152,11 +152,10 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	}
 
 	if options.Data != nil {
+		n.ActivationArguments, _ = encodePayload(n.ActivationArguments, options.Data)
+
 		for index := range n.Actions {
-			encodedPayload, err := encodePayload(n.Actions[index].Arguments, options.Data)
-			if err == nil {
-				n.Actions[index].Arguments = encodedPayload
-			}
+			n.Actions[index].Arguments, _ = encodePayload(n.Actions[index].Arguments, options.Data)
 		}
 	}
 

@@ -19,7 +19,7 @@ func main() {
 	notificationService := notifications.New()
 
 	app := application.New(application.Options{
-		Name:        "notifications_demo",
+		Name:        "Notifications",
 		Description: "A demo of using raw HTML & CSS",
 		Services: []application.Service{
 			application.NewService(notificationService),
@@ -33,7 +33,7 @@ func main() {
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title: "Window 1",
+		Title: "Notifications",
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
 			Backdrop:                application.MacBackdropTranslucent,
@@ -58,13 +58,8 @@ func main() {
 			})
 			time.Sleep(time.Second * 2)
 
-			var uuid1 string = "Wails Notification Demo"
-			if application.Get().Environment().OS == "darwin" {
-				uuid1 = "uuid1"
-			}
-
 			notificationService.SendNotification(notifications.NotificationOptions{
-				ID:    uuid1,
+				ID:    "uuid1",
 				Title: "Title!",
 				Body:  "Body!",
 				Data: map[string]interface{}{
@@ -75,11 +70,6 @@ func main() {
 			})
 
 			time.Sleep(time.Second * 2)
-
-			var uuid2 string = "Wails Notification Demo"
-			if application.Get().Environment().OS == "darwin" {
-				uuid2 = "uuid2"
-			}
 
 			notificationService.RegisterNotificationCategory(notifications.NotificationCategory{
 				ID: "BACKEND_NOTIF",
@@ -94,9 +84,9 @@ func main() {
 			})
 
 			notificationService.SendNotificationWithActions(notifications.NotificationOptions{
-				ID:         uuid2,
+				ID:         "uuid2",
 				Title:      "Complex Backend Notification",
-				Subtitle:   "Should not show on Windows",
+				Subtitle:   "From: Jane Doe",
 				Body:       "Is it raining today where you are?",
 				CategoryID: "BACKEND_NOTIF",
 				Data: map[string]interface{}{
