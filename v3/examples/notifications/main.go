@@ -30,6 +30,9 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		Windows: application.WindowsOptions{
+			WndClass: "Notifications",
+		},
 	})
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
@@ -65,7 +68,7 @@ func main() {
 				Data: map[string]interface{}{
 					"messageId": "msg-123",
 					"senderId":  "user-123",
-					"timestamp": time.Now().String(),
+					"timestamp": time.Now().Unix(),
 				},
 			})
 
@@ -92,7 +95,7 @@ func main() {
 				Data: map[string]interface{}{
 					"messageId": "msg-456",
 					"senderId":  "user-456",
-					"timestamp": time.Now().String(),
+					"timestamp": time.Now().Unix(),
 				},
 			})
 		}

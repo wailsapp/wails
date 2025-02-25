@@ -38,7 +38,7 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 		return fmt.Errorf("failed to connect to D-Bus session bus: %v", err)
 	}
 
-	appName := "Wails Application"
+	appName := application.Get().Config().Name
 
 	var iconPath string
 
@@ -52,14 +52,13 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 			ActionIdentifier: action,
 		}
 
-		if action == "default" {
+		if action == "" {
 			response.ActionIdentifier = DefaultActionIdentifier
 		}
 
 		if target.Signature().String() == "s" {
 			var targetStr string
 			if err := target.Store(&targetStr); err == nil {
-				// Try to parse as JSON
 				var userInfo map[string]interface{}
 				if err := json.Unmarshal([]byte(targetStr), &userInfo); err == nil {
 					response.UserInfo = userInfo
