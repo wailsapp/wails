@@ -11,8 +11,7 @@ import {Create as $Create} from "@wailsio/runtime";
  * @typedef {Object} NotificationAction
  * @property {string} [id]
  * @property {string} [title]
- * @property {boolean} [destructive]
- * @property {boolean} [authenticationRequired]
+ * @property {boolean} [destructive] - macOS only
  */
 
 /**

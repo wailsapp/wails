@@ -12,29 +12,17 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 )
 
-// Wails uses Go's `embed` package to embed the frontend files into the binary.
-// Any files in the frontend/dist folder will be embedded into the binary and
-// made available to the frontend.
-// See https://pkg.go.dev/embed for more information.
-
 //go:embed all:frontend/dist
 var assets embed.FS
 
-// main function serves as the application's entry point. It initializes the application, creates a window,
-// and starts a goroutine that emits a time-based event every second. It subsequently runs the application and
-// logs any error that might occur.
 func main() {
-	NotificationService := notifications.New()
-	// Create a new Wails application by providing the necessary options.
-	// Variables 'Name' and 'Description' are for application metadata.
-	// 'Assets' configures the asset server with the 'FS' variable pointing to the frontend files.
-	// 'Bind' is a list of Go struct instances. The frontend has access to the methods of these instances.
-	// 'Mac' options tailor the application when running an macOS.
+	notificationService := notifications.New()
+
 	app := application.New(application.Options{
 		Name:        "notifications_demo",
 		Description: "A demo of using raw HTML & CSS",
 		Services: []application.Service{
-			application.NewService(NotificationService),
+			application.NewService(notificationService),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -44,11 +32,6 @@ func main() {
 		},
 	})
 
-	// Create a new window with the necessary options.
-	// 'Title' is the title of the window.
-	// 'Mac' options tailor the window when running on macOS.
-	// 'BackgroundColour' is the background colour of the window.
-	// 'URL' is the URL that will be loaded into the webview.
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Window 1",
 		Mac: application.MacWindow{
@@ -60,19 +43,19 @@ func main() {
 		URL:              "/",
 	})
 
-	app.OnEvent("notificationResponse", func(event *application.CustomEvent) {
-		data, _ := json.Marshal(event.Data)
-		fmt.Printf("%s\n", string(data))
-	})
-
 	go func() {
-		granted, err := NotificationService.RequestUserNotificationAuthorization()
+		granted, err := notificationService.RequestUserNotificationAuthorization()
 		if err != nil {
 			log.Default().Printf("WARNING: %s\n", err)
 			return
 		}
 
 		if granted {
+			notificationService.OnNotificationResponse(func(response notifications.NotificationResponse) {
+				data, _ := json.Marshal(response)
+				fmt.Printf("%s\n", string(data))
+				app.EmitEvent("notification:response", response)
+			})
 			time.Sleep(time.Second * 2)
 
 			var uuid1 string = "Wails Notification Demo"
@@ -80,7 +63,7 @@ func main() {
 				uuid1 = "uuid1"
 			}
 
-			NotificationService.SendNotification(notifications.NotificationOptions{
+			notificationService.SendNotification(notifications.NotificationOptions{
 				ID:    uuid1,
 				Title: "Title!",
 				Body:  "Body!",
@@ -98,7 +81,7 @@ func main() {
 				uuid2 = "uuid2"
 			}
 
-			NotificationService.RegisterNotificationCategory(notifications.NotificationCategory{
+			notificationService.RegisterNotificationCategory(notifications.NotificationCategory{
 				ID: "BACKEND_NOTIF",
 				Actions: []notifications.NotificationAction{
 					{ID: "VIEW_ACTION", Title: "View"},
@@ -110,7 +93,7 @@ func main() {
 				ReplyPlaceholder: "Reply to backend...",
 			})
 
-			NotificationService.SendNotificationWithActions(notifications.NotificationOptions{
+			notificationService.SendNotificationWithActions(notifications.NotificationOptions{
 				ID:         uuid2,
 				Title:      "Complex Backend Notification",
 				Subtitle:   "Should not show on Windows",
@@ -125,10 +108,8 @@ func main() {
 		}
 	}()
 
-	// Run the application. This blocks until the application has been exited.
 	err := app.Run()
 
-	// If an error occurred while running the application, log it and exit.
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -50,7 +50,6 @@ window.sendComplexNotification = async () => {
     }
 }
 
-Events.On("notificationResponse", (response) => {
-    console.log(response)
-    notificationsElement.innerText += JSON.stringify(response.data[0].data);
+Events.On("notification:response", (response) => {
+    notificationsElement.innerText = JSON.stringify(response.data[0]);
 });
