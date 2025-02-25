@@ -24,16 +24,12 @@ const (
 	dataSeparator = ":::"
 )
 
+// Creates a new Notifications Service.
 func New() *Service {
 	if NotificationService == nil {
 		NotificationService = &Service{}
 	}
 	return NotificationService
-}
-
-// ServiceName returns the name of the service
-func (ns *Service) ServiceName() string {
-	return "github.com/wailsapp/wails/v3/services/notifications"
 }
 
 // ServiceStartup is called when the service is loaded
@@ -224,6 +220,12 @@ func (ns *Service) RemoveAllDeliveredNotifications() error {
 // RemoveDeliveredNotification is a Windows stub that always returns nil.
 // (macOS-specific)
 func (ns *Service) RemoveDeliveredNotification(_ string) error {
+	return nil
+}
+
+// RemoveNotification is a Windows stub that always returns nil.
+// (Linux-specific)
+func (ns *Service) RemoveNotification(identifier string) error {
 	return nil
 }
 

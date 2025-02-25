@@ -46,6 +46,7 @@ require (
 
 require (
 	atomicgo.dev/schedule v0.1.0 // indirect
+	git.sr.ht/~whereswaldon/shout v0.0.0-20241212204820-26acea6b0007 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
 )
 

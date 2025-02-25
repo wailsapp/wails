@@ -29,11 +29,6 @@ func New() *Service {
 	return NotificationService
 }
 
-// ServiceName returns the name of the service.
-func (ns *Service) ServiceName() string {
-	return "github.com/wailsapp/wails/v3/services/notifications"
-}
-
 // ServiceStartup is called when the service is loaded.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	if !CheckBundleIdentifier() {
@@ -207,10 +202,15 @@ func (ns *Service) RemoveDeliveredNotification(identifier string) error {
 	return nil
 }
 
-func (ns *Service) forwardResponse(response NotificationResponse) {
-	if NotificationService != nil {
-		NotificationService.handleNotificationResponse(response)
-	}
+// RemoveNotification is a macOS stub that always returns nil.
+// Use one of the following instead:
+// RemoveAllPendingNotifications
+// RemovePendingNotification
+// RemoveAllDeliveredNotifications
+// RemoveDeliveredNotification
+// (Linux-specific)
+func (ns *Service) RemoveNotification(identifier string) error {
+	return nil
 }
 
 //export didReceiveNotificationResponse
@@ -222,9 +222,11 @@ func didReceiveNotificationResponse(jsonPayload *C.char) {
 		return
 	}
 
-	if response.ActionIdentifier == AppleDefaultActionIdentifier {
+	if response.ActionIdentifier == "com.apple.UNNotificationDefaultActionIdentifier" {
 		response.ActionIdentifier = DefaultActionIdentifier
 	}
 
-	NotificationService.forwardResponse(response)
+	if NotificationService != nil {
+		NotificationService.handleNotificationResponse(response)
+	}
 }

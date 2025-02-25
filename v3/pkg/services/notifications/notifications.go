@@ -46,6 +46,11 @@ type NotificationResponse = struct {
 	UserInfo         map[string]interface{} `json:"userInfo,omitempty"`
 }
 
+// ServiceName returns the name of the service.
+func (ns *Service) ServiceName() string {
+	return "github.com/wailsapp/wails/v3/services/notifications"
+}
+
 // OnNotificationResponse registers a callback function that will be called when
 // a notification response is received from the user
 func (ns *Service) OnNotificationResponse(callback func(response NotificationResponse)) {
