@@ -193,7 +193,7 @@ export function Call(options: CallOptions): CancellablePromise<any> {
     const cancel = () => {
         callResponses.delete(id);
         return cancelCall(CancelMethod, {"call-id": id}).catch((err) => {
-            console.log("Error while requesting binding call cancellation:", err);
+            console.error("Error while requesting binding call cancellation:", err);
         });
     };
 

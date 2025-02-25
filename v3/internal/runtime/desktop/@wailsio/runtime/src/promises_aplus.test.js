@@ -21,7 +21,7 @@ process.on('unhandledRejection', function (reason, promise) {
 global.context = global.describe = V.describe;
 global.specify = global.it = function it(desc, fn) {
     let viTestFn = fn;
-    if (fn && fn.length) {
+    if (fn?.length) {
         viTestFn = () => new Promise((done) => fn(done));
     }
     V.it(desc, viTestFn);
