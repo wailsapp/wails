@@ -10,7 +10,7 @@ The electron alternative for Go
 
 import { newRuntimeCaller, objectNames } from "./runtime.js";
 
-let call = newRuntimeCaller(objectNames.System);
+const call = newRuntimeCaller(objectNames.System);
 
 const SystemIsDarkMode = 0;
 const SystemEnvironment = 1;
