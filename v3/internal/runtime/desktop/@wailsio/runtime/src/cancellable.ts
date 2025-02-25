@@ -386,7 +386,7 @@ export class CancellablePromise<T> extends Promise<T> implements PromiseLike<T>,
         this[barrierSym] = barrier;
 
         return new CancellablePromise<TResult1 | TResult2>((resolve, reject) => {
-            void promiseThen.call(this,
+            void super.then(
                 (value) => {
                     if (this[barrierSym] === barrier) { this[barrierSym] = null; }
                     barrier.resolve?.();
@@ -717,7 +717,7 @@ function cancellerFor<T>(promise: CancellablePromiseWithResolvers<T>, state: Can
             // In theory, a sane underlying implementation at this point
             // should always reject with our cancellation reason,
             // hence the handler will never throw.
-            void promiseThen.call(promise.promise, undefined, (err) => {
+            void Promise.prototype.then.call(promise.promise, undefined, (err) => {
                 if (err !== reason) {
                     throw err;
                 }
@@ -918,16 +918,6 @@ function currentBarrier<T>(promise: CancellablePromise<T>): Promise<void> {
         promise[barrierSym] = pwr;
     }
     return pwr.promise!;
-}
-
-// Stop sneaky people from breaking the barrier mechanism.
-const promiseThen = Promise.prototype.then;
-Promise.prototype.then = function(...args) {
-    if (this instanceof CancellablePromise) {
-        return this.then(...args);
-    } else {
-        return Reflect.apply(promiseThen, this, args);
-    }
 }
 
 // Polyfill Promise.withResolvers.
