@@ -35,54 +35,105 @@ window._wails.setResizable = (value: boolean): void => {
     }
 };
 
-window.addEventListener('mousedown', onMouseDown, { capture: true });
-window.addEventListener('mousemove', onMouseMove, { capture: true });
-window.addEventListener('mouseup', onMouseUp, { capture: true });
-for (const ev of ['click', 'contextmenu', 'dblclick', 'pointerdown', 'pointerup']) {
+window.addEventListener('mousedown', update, { capture: true });
+window.addEventListener('mousemove', update, { capture: true });
+window.addEventListener('mouseup', update, { capture: true });
+for (const ev of ['click', 'contextmenu', 'dblclick']) {
     window.addEventListener(ev, suppressEvent, { capture: true });
 }
 
 function suppressEvent(event: Event) {
+    // Suppress click events while resizing or dragging.
     if (dragging || resizing) {
-        // Suppress all button events during dragging & resizing.
         event.stopImmediatePropagation();
         event.stopPropagation();
         event.preventDefault();
     }
 }
 
-function onMouseDown(event: MouseEvent): void {
-    buttons = buttonsTracked ? event.buttons : (buttons | (1 << event.button));
+// Use constants to avoid comparing strings multiple times.
+const MouseDown = 0;
+const MouseUp   = 1;
+const MouseMove = 2;
 
-    if (dragging || resizing) {
-        // After dragging or resizing has started, only lifting the primary button can stop it.
-        // Do not let any other events through.
-        suppressEvent(event);
-        return;
+function update(event: MouseEvent) {
+    // Windows suppresses mouse events at the end of dragging or resizing,
+    // so we need to be smart and synthesize button events.
+
+    let eventType: number, eventButtons = event.buttons;
+    switch (event.type) {
+        case 'mousedown':
+            eventType = MouseDown;
+            if (!buttonsTracked) { eventButtons = buttons | (1 << event.button); }
+            break;
+        case 'mouseup':
+            eventType = MouseUp;
+            if (!buttonsTracked) { eventButtons = buttons & ~(1 << event.button); }
+            break;
+        default:
+            eventType = MouseMove;
+            if (!buttonsTracked) { eventButtons = buttons; }
+            break;
     }
 
-    if ((canDrag || canResize) && (buttons & 1) && event.button !== 0) {
-        // We were ready before, the primary is pressed and was not released:
-        // still ready, but let events bubble through the window.
-        return;
+    let released = buttons & ~eventButtons;
+    let pressed = eventButtons & ~buttons;
+
+    buttons = eventButtons;
+
+    // Synthesize a release-press sequence if we detect a press of an already pressed button.
+    if (eventType === MouseDown && !(pressed & event.button)) {
+        released |= (1 << event.button);
+        pressed |= (1 << event.button);
     }
 
+    // Suppress all button events during dragging and resizing,
+    // unless this is a mouseup event that is ending a drag action.
+    if (
+        eventType !== MouseMove // Fast path for mousemove
+        && resizing
+        || (
+            dragging
+            && (
+                eventType === MouseDown
+                || event.button !== 0
+            )
+        )
+    ) {
+        event.stopImmediatePropagation();
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    // Handle releases
+    if (released & 1) { primaryUp(event); }
+    // Handle presses
+    if (pressed & 1) { primaryDown(event); }
+
+    // Handle mousemove
+    if (eventType === MouseMove) { onMouseMove(event); };
+}
+
+function primaryDown(event: MouseEvent): void {
     // Reset readiness state.
     canDrag = false;
     canResize = false;
 
-    // Check for resizing readiness.
-    if (resizeEdge) {
-        if (event.button === 0 && event.detail === 1) {
-            // Ready to resize if the primary button was pressed for the first time.
-            canResize = true;
-            invoke("wails:resize:" + resizeEdge);
+    // Ignore repeated clicks on macOS and Linux.
+    if (!IsWindows()) {
+        if (event.type === 'mousedown' && event.button === 0 && event.detail !== 1) {
+            return;
         }
+    }
 
-        // Do not start drag operations within resize edges.
+    if (resizeEdge) {
+        // Ready to resize if the primary button was pressed for the first time.
+        canResize = true;
+        // Do not start drag operations when on resize edges.
         return;
     }
 
+    // Retrieve target element
     let target: HTMLElement;
 
     if (event.target instanceof HTMLElement) {
@@ -93,41 +144,24 @@ function onMouseDown(event: MouseEvent): void {
         target = document.body;
     }
 
+    // Ready to drag if the primary button was pressed for the first time on a draggable element.
+    // Ignore clicks on the scrollbar.
     const style = window.getComputedStyle(target);
-    const setting = style.getPropertyValue("--wails-draggable").trim();
-    if (setting === "drag" && event.button === 0 && event.detail === 1) {
-        // Ready to drag if the primary button was pressed for the first time on a draggable element.
-        // Ignore clicks on the scrollbar.
-        if (
+    canDrag = (
+        style.getPropertyValue("--wails-draggable").trim() === "drag"
+        && (
             event.offsetX - parseFloat(style.paddingLeft) < target.clientWidth
             && event.offsetY - parseFloat(style.paddingTop) < target.clientHeight
-        ) {
-            canDrag = true;
-            invoke("wails:drag");
-        }
-    }
+        )
+    );
 }
 
-function onMouseUp(event: MouseEvent) {
-    buttons = buttonsTracked ? event.buttons : (buttons & ~(1 << event.button));
-
-    if (event.button === 0) {
-        if (resizing) {
-            // Let mouseup event bubble when a drag ends, but not when a resize ends.
-            suppressEvent(event);
-        }
-
-        // Stop dragging and resizing when the primary button is lifted.
-        canDrag = false;
-        dragging = false;
-        canResize = false;
-        resizing = false;
-        return;
-    }
-
-    // After dragging or resizing has started, only lifting the primary button can stop it.
-    suppressEvent(event);
-    return;
+function primaryUp(event: MouseEvent) {
+    // Stop dragging and resizing.
+    canDrag = false;
+    dragging = false;
+    canResize = false;
+    resizing = false;
 }
 
 const cursorForEdge = Object.freeze({
@@ -156,9 +190,11 @@ function onMouseMove(event: MouseEvent): void {
     if (canResize && resizeEdge) {
         // Start resizing.
         resizing = true;
+        invoke("wails:resize:" + resizeEdge);
     } else if (canDrag) {
         // Start dragging.
         dragging = true;
+        invoke("wails:drag");
     }
 
     if (dragging || resizing) {
