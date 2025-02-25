@@ -13,6 +13,7 @@ import (
 	"sync"
 
 	"git.sr.ht/~jackmordaunt/go-toast/v2"
+	"github.com/google/uuid"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"golang.org/x/sys/windows/registry"
 )
@@ -37,13 +38,20 @@ func New() *Service {
 // ServiceStartup is called when the service is loaded
 // Sets an activation callback to emit an event when notifications are interacted with.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
-	// Need to get App Name and generate a UUID on first launch
-	// How do we grab the app icon properly?
+	appName := application.Get().Config().Name
+	icon := application.Get().Config().Icon
+
+	println(icon)
+
+	guid, err := getGUID(appName)
+	if err != nil {
+		return err
+	}
+
 	toast.SetAppData(toast.AppData{
-		AppID:         "Notifications",
-		GUID:          "{8F2E1A3D-C497-42B6-9E5D-72F8A169B051}",
-		IconPath:      "C:\\Users\\Zach\\Development\\notifications_demo\\build\\appicon.ico",
-		ActivationExe: "C:\\Users\\Zach\\Development\\notifications_demo\\bin\\Notifications.exe",
+		AppID:    appName,
+		GUID:     guid,
+		IconPath: "C:\\Users\\Zach\\Development\\notifications_demo\\build\\appicon.ico",
 	})
 
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
@@ -347,4 +355,36 @@ func getUserText(data []toast.UserData) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+func getGUID(name string) (string, error) {
+	keyPath := `Software\Classes\AppUserModelId\` + name
+
+	k, err := registry.OpenKey(registry.CURRENT_USER, keyPath, registry.QUERY_VALUE)
+	if err == nil {
+		guid, _, err := k.GetStringValue("CustomActivator")
+		k.Close()
+		if err == nil && guid != "" {
+			return guid, nil
+		}
+	}
+
+	guid := generateGUID()
+
+	k, _, err = registry.CreateKey(registry.CURRENT_USER, keyPath, registry.WRITE)
+	if err != nil {
+		return "", fmt.Errorf("failed to create registry key: %w", err)
+	}
+	defer k.Close()
+
+	if err := k.SetStringValue("CustomActivator", guid); err != nil {
+		return "", fmt.Errorf("failed to write GUID to registry: %w", err)
+	}
+
+	return guid, nil
+}
+
+func generateGUID() string {
+	guid := uuid.New()
+	return fmt.Sprintf("{%s}", guid.String())
 }
