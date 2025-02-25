@@ -22,6 +22,50 @@ jobs:
             echo "approved=false" >> $GITHUB_OUTPUT
           fi
 
+  check_build_artifacts:
+    name: Check runtime build artifact changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: 'true'
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            v3/internal/runtime/desktop/@wailsio/runtime/dist/**
+            v3/internal/runtime/desktop/@wailsio/runtime/types/**
+
+      - name: Get merge base
+        id: merge-base
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          BASE_SHA: ${{github.event.pull_request.base.sha}}
+          HEAD_SHA: ${{github.event.pull_request.head.sha}}
+        run: |
+          echo "sha=$(git merge-base "$BASE_SHA" "$HEAD_SHA")" >> $GITHUB_OUTPUT
+
+      - name: This PR includes changes to runtime build artifacts
+        uses: actions/github-script@v7
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          MERGE_BASE_SHA: ${{steps.merge-base.outputs.sha}}
+        with:
+          script: |
+            process.exitCode = 1
+            core.error(
+              'The CI pipeline will rebuild and publish the runtime automatically.\n' +
+              'Please run the following command (or equivalent) in your local wails repo\n' +
+              'to revert all build artifact changes; then update the PR:\n\n' +
+              '    cd v3/internal/runtime/desktop/@wailsio/runtime &&\n' +
+              `    git restore -s ${process.env.MERGE_BASE_SHA} -W -S -- dist types &&${"\n"}` +
+              '    git commit -m "Revert build artifact changes"\n',
+              { title: 'This PR includes changes to runtime build artifacts' }
+            );
+
   test_go:
     name: Run Go Tests
     needs: check_approval
@@ -56,24 +100,24 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Examples
-        working-directory: ./v3
+        working-directory: v3
         run: task test:examples
 
       - name: Run tests (mac)
         if: matrix.os == 'macos-latest'
         env:
           CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
-        working-directory: ./v3
+        working-directory: v3
         run: go test -v ./...
 
       - name: Run tests (windows)
         if: matrix.os == 'windows-latest'
-        working-directory: ./v3
+        working-directory: v3
         run: go test -v ./...
 
       - name: Run tests (ubuntu)
         if: matrix.os == 'ubuntu-latest'
-        working-directory: ./v3
+        working-directory: v3
         run: >
           xvfb-run --auto-servernum
           sh -c '
@@ -82,7 +126,7 @@ jobs:
           '
 
       - name: Typecheck binding generator output
-        working-directory: ./v3
+        working-directory: v3
         run: task generator:test:check
 
   test_js:
@@ -108,23 +152,27 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Typecheck runtime
+      - name: Clean build artifacts
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm run clean
+
+      - name: Type-check runtime
+        working-directory: v3
         run: task runtime:check
-        working-directory: ./v3
 
       - name: Test runtime
+        working-directory: v3
         run: task runtime:test
-        working-directory: ./v3
 
-      - name: Build bundled runtime
+      - name: Check that the bundled runtime builds
+        working-directory: v3
         run: |
           npx --yes -p esbuild@latest exit
           task runtime:build
-        working-directory: ./v3
 
-      - name: Verify that the npm package builds correctly
+      - name: Check that the npm package builds
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
         run: npm run prepack
-        working-directory: ./v3/internal/runtime/desktop/@wailsio/runtime
 
   test_templates:
     name: Test Templates
@@ -172,7 +220,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Wails3 CLI
-        working-directory: ./v3
+        working-directory: v3
         run: |
           task install
           wails3 doctor

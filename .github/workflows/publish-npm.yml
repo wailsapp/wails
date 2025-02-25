@@ -12,7 +12,6 @@ jobs:
           ref: 'v3-alpha'
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
-
       - name: Configure git
         run: |
           git config --local user.email "github-actions@github.com"
@@ -29,62 +28,65 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Test+Build
-        run: |
-          npm ci
-          npm test
-          npm run build
+      - name: Clean build artifacts
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm run clean
 
       - name: Build bundled runtime
+        working-directory: v3
         run: |
           npx --yes -p esbuild@latest exit
           task runtime:build
-        working-directory: v3
 
-      - name: Detect build artifact changes
+      - name: Test+Build npm package
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: |
+          npm ci
+          npm test
+          npm run prepack
+
+      - name: Detect npm package changes
         uses: tj-actions/verify-changed-files@v20
-        id: build-artifact-changes
+        id: package-changes
         with:
-          files: v3/internal/runtime/desktop/@wailsio/runtime/{dist,types,docs}/**
+          files: |
+            v3/internal/runtime/desktop/@wailsio/runtime/dist/**
+            v3/internal/runtime/desktop/@wailsio/runtime/types/**
 
       - name: Bump version
-        if: steps.build-artifact-changes.outputs.files_changed == 'true'
-        run: |
-          npm version prerelease
+        if: steps.package-changes.outputs.files_changed == 'true'
+        id: bump-version
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
-
-      - name: Get version
-        if: steps.build-artifact-changes.outputs.files_changed == 'true'
-        id: get-version
-        uses: beaconbrigade/package-json-version@v0.3.2
-        with:
-          path: v3/internal/runtime/desktop/@wailsio/runtime
+        run: |
+          echo "version=$(npm version prerelease)" >> $GITHUB_OUTPUT
 
       - name: Commit changes
-        if: steps.build-artifact-changes.outputs.files_changed == 'true'
+        if: steps.package-changes.outputs.files_changed == 'true'
         run: |
           git add .
-          git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.get-version.outputs.version }}"
+          git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.bump-version.outputs.version }}"
           git push
 
-      - uses: JS-DevTools/npm-publish@v3
-        if: steps.build-artifact-changes.outputs.files_changed == 'true'
+      - name: Publish npm package
+        uses: JS-DevTools/npm-publish@v3
+        if: steps.package-changes.outputs.files_changed == 'true'
         with:
           package: v3/internal/runtime/desktop/@wailsio/runtime
           access: public
           token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Detect bundled runtime changes
-        if: steps.build-artifact-changes.outputs.files_changed != 'true'
+      - name: Detect docs and bundled runtime changes
+        if: steps.package-changes.outputs.files_changed != 'true'
         uses: tj-actions/verify-changed-files@v20
-        id: bundle-changes
+        id: docs-bundle-changes
         with:
-          files: v3/internal/assetserver/bundledassets/**
+          files: |
+            v3/internal/assetserver/bundledassets/**
+            v3/internal/runtime/desktop/@wailsio/runtime/docs/**
 
-      - name: Commit bundled runtime changes
-        if: steps.build-artifact-changes.outputs.files_changed != 'true' && steps.bundle-changes.outputs.files_changed == 'true'
+      - name: Commit docs and bundled runtime changes
+        if: steps.package-changes.outputs.files_changed != 'true' && steps.docs-bundle-changes.outputs.files_changed == 'true'
         run: |
           git add .
-          git commit -m "[skip ci] Update bundled runtime"
+          git commit -m "[skip ci] Update runtime docs and bundle"
           git push
