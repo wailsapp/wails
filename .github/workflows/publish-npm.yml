@@ -1,6 +1,7 @@
 on:
   push:
     branches: ['v3-alpha']
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -54,14 +55,14 @@ jobs:
             v3/internal/runtime/desktop/@wailsio/runtime/types/**
 
       - name: Bump version
-        if: steps.package-changes.outputs.files_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.package-changes.outputs.files_changed == 'true'
         id: bump-version
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
         run: |
           echo "version=$(npm version prerelease)" >> $GITHUB_OUTPUT
 
       - name: Commit changes
-        if: steps.package-changes.outputs.files_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.package-changes.outputs.files_changed == 'true'
         run: |
           git add .
           git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.bump-version.outputs.version }}"
@@ -69,14 +70,14 @@ jobs:
 
       - name: Publish npm package
         uses: JS-DevTools/npm-publish@v3
-        if: steps.package-changes.outputs.files_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.package-changes.outputs.files_changed == 'true'
         with:
           package: v3/internal/runtime/desktop/@wailsio/runtime
           access: public
           token: ${{ secrets.NPM_TOKEN }}
 
       - name: Detect docs and bundled runtime changes
-        if: steps.package-changes.outputs.files_changed != 'true'
+        if: github.event_name != 'workflow_dispatch' && steps.package-changes.outputs.files_changed != 'true'
         uses: tj-actions/verify-changed-files@v20
         id: docs-bundle-changes
         with:
@@ -85,7 +86,7 @@ jobs:
             v3/internal/runtime/desktop/@wailsio/runtime/docs/**
 
       - name: Commit docs and bundled runtime changes
-        if: steps.package-changes.outputs.files_changed != 'true' && steps.docs-bundle-changes.outputs.files_changed == 'true'
+        if: github.event_name != 'workflow_dispatch' && steps.package-changes.outputs.files_changed != 'true' && steps.docs-bundle-changes.outputs.files_changed == 'true'
         run: |
           git add .
           git commit -m "[skip ci] Update runtime docs and bundle"
