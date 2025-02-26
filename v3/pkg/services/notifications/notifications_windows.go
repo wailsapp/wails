@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"git.sr.ht/~jackmordaunt/go-toast/v2"
@@ -39,9 +38,6 @@ func New() *Service {
 // Sets an activation callback to emit an event when notifications are interacted with.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	appName := application.Get().Config().Name
-	icon := application.Get().Config().Icon
-
-	println(icon)
 
 	guid, err := getGUID(appName)
 	if err != nil {
@@ -51,7 +47,7 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 	toast.SetAppData(toast.AppData{
 		AppID:    appName,
 		GUID:     guid,
-		IconPath: "C:\\Users\\Zach\\Development\\notifications_demo\\build\\appicon.ico",
+		IconPath: filepath.Join(os.TempDir(), appName+guid+".png"),
 	})
 
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
@@ -105,11 +101,14 @@ func (ns *Service) CheckNotificationAuthorization() bool {
 // SendNotification sends a basic notification with a name, title, and body. All other options are ignored on Windows.
 // (subtitle and category id are only available on macOS)
 func (ns *Service) SendNotification(options NotificationOptions) error {
+	if err := saveIconToDir(); err != nil {
+		fmt.Printf("Error saving icon: %v\n", err)
+	}
+
 	n := toast.Notification{
 		Title:               options.Title,
 		Body:                options.Body,
 		ActivationArguments: DefaultActionIdentifier,
-		Audio:               toast.IM,
 	}
 
 	if options.Data != nil {
@@ -127,6 +126,10 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 // If a NotificationCategory is not registered a basic notification will be sent.
 // (subtitle and category id are only available on macOS)
 func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
+	if err := saveIconToDir(); err != nil {
+		fmt.Printf("Error saving icon: %v\n", err)
+	}
+
 	NotificationLock.RLock()
 	nCategory := NotificationCategories[options.CategoryID]
 	NotificationLock.RUnlock()
@@ -135,7 +138,6 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 		Title:               options.Title,
 		Body:                options.Body,
 		ActivationArguments: DefaultActionIdentifier,
-		Audio:               toast.IM,
 	}
 
 	for _, action := range nCategory.Actions {
@@ -273,18 +275,27 @@ func parseNotificationResponse(response string) (action string, data string) {
 	return actionID, ""
 }
 
-// Is there a better way for me to grab this from the Wails config?
-func getExeName() string {
-	executable, err := os.Executable()
-	if err != nil {
-		return ""
+func saveIconToDir() error {
+	options := application.Get().Config()
+	appName := options.Name
+	icon := options.Icon
+
+	if len(icon) == 0 {
+		return fmt.Errorf("failed to retrieve icon from application")
 	}
 
-	return strings.TrimSuffix(filepath.Base(executable), filepath.Ext(executable))
+	guid, err := getGUID(appName)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve application guid from registry")
+	}
+
+	iconPath := filepath.Join(os.TempDir(), appName+guid+".png")
+
+	return os.WriteFile(iconPath, icon, 0644)
 }
 
 func saveCategoriesToRegistry() error {
-	appName := getExeName()
+	appName := application.Get().Config().Name
 	if appName == "" {
 		return fmt.Errorf("failed to save categories to registry: empty executable name")
 	}
@@ -311,7 +322,7 @@ func saveCategoriesToRegistry() error {
 }
 
 func loadCategoriesFromRegistry() error {
-	appName := getExeName()
+	appName := application.Get().Config().Name
 	if appName == "" {
 		return fmt.Errorf("failed to save categories to registry: empty executable name")
 	}
