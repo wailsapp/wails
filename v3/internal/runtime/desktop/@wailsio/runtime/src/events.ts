@@ -10,6 +10,7 @@ The electron alternative for Go
 
 import { newRuntimeCaller, objectNames } from "./runtime.js";
 import { eventListeners, Listener, listenerOff } from "./listener.js";
+import { Events as Create } from "./create.js";
 import { Types } from "./event_types.js";
 
 // Setup
@@ -84,7 +85,10 @@ function dispatchWailsEvent(event: any) {
         return;
     }
 
-    let wailsEvent = new WailsEvent(event.name, event.data);
+    let wailsEvent = new WailsEvent(
+        event.name,
+        (event.name in Create) ? Create[event.name](event.data) : event.data
+    );
     if ('sender' in event) {
         wailsEvent.sender = event.sender;
     }
