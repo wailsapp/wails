@@ -13,7 +13,7 @@
     "outDir": "dist",
     "rootDir": "src",
 
-    "target": "ES2015",
+    "target": "ES2017",
     "module": "ES2015",
     "moduleResolution": "bundler",
     "isolatedModules": true,
