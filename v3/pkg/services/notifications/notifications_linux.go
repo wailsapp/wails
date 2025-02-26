@@ -19,7 +19,7 @@ import (
 var NotificationLock sync.RWMutex
 var NotificationCategories = make(map[string]NotificationCategory)
 var Notifier shout.Notifier
-var appName = application.Get().Config().Name
+var appName string
 
 // Creates a new Notifications Service.
 func New() *Service {
@@ -31,6 +31,8 @@ func New() *Service {
 
 // ServiceStartup is called when the service is loaded
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+	appName = application.Get().Config().Name
+
 	if err := loadCategories(); err != nil {
 		fmt.Printf("Failed to load notification categories: %v\n", err)
 	}
@@ -46,6 +48,14 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 		if err != nil {
 			return
 		}
+
+		fmt.Printf("\n---------- NOTIFICATION RESPONSE DEBUG ----------\n")
+		fmt.Printf("notificationID: %s\n", notificationID)
+		fmt.Printf("action: %s\n", action)
+		fmt.Printf("platformData: %+v\n", platformData)
+		fmt.Printf("target: %+v (signature: %s)\n", target, target.Signature())
+		fmt.Printf("response: %+v (signature: %s)\n", notifierResponse, notifierResponse.Signature())
+		fmt.Printf("----------------------------------------------\n")
 
 		response := NotificationResponse{
 			ID:               notificationID,
