@@ -61,7 +61,7 @@ jobs:
               'Please run the following command (or equivalent) in your local wails repo\n' +
               'to revert all build artifact changes; then update the PR:\n\n' +
               '    cd v3/internal/runtime/desktop/@wailsio/runtime &&\n' +
-              `    git restore -s ${process.env.MERGE_BASE_SHA} -W -S -- dist types &&${"\n"}` +
+              `    git restore -s ${process.env.MERGE_BASE_SHA} -W -S -- dist types &&\n` +
               '    git commit -m "Revert build artifact changes"\n',
               { title: 'This PR includes changes to runtime build artifacts' }
             );
