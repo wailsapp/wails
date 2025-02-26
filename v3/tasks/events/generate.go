@@ -100,14 +100,19 @@ The electron alternative for Go
 
 export const Types = Object.freeze({
 	Windows: Object.freeze({
-$$WINDOWSJSEVENTS	}),
+$$WINDOWSJSEVENTS	} as const),
 	Mac: Object.freeze({
-$$MACJSEVENTS	}),
+$$MACJSEVENTS	} as const),
 	Linux: Object.freeze({
-$$LINUXJSEVENTS	}),
+$$LINUXJSEVENTS	} as const),
 	Common: Object.freeze({
-$$COMMONJSEVENTS	}),
-});
+$$COMMONJSEVENTS	} as const),
+} as const);
+
+export const Windows = Types.Windows;
+export const Mac = Types.Mac;
+export const Linux = Types.Linux;
+export const Common = Types.Common;
 `
 
 func main() {

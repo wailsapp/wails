@@ -10,6 +10,7 @@ The electron alternative for Go
 
 import { newRuntimeCaller, objectNames } from "./runtime.js";
 import { eventListeners, Listener, listenerOff } from "./listener.js";
+import { Types } from "./event_types.js";
 
 // Setup
 window._wails = window._wails || {};
@@ -18,26 +19,50 @@ window._wails.dispatchWailsEvent = dispatchWailsEvent;
 const call = newRuntimeCaller(objectNames.Events);
 const EmitMethod = 0;
 
-export { Types } from "./event_types.js";
+export * from "./event_types.js";
+
+/**
+ * A table of data types for all known events.
+ * Will be monkey-patched by the binding generator.
+ */
+export interface CustomEvents {}
+
+/**
+ * Either a known event name or an arbitrary string.
+ */
+export type WailsEventName<E extends keyof CustomEvents = keyof CustomEvents> = E | (string & {});
+
+/**
+ * Union of all known system event names.
+ */
+type SystemEventName = {
+    [K in keyof (typeof Types)]: (typeof Types)[K][keyof ((typeof Types)[K])]
+} extends (infer M) ? M[keyof M] : never;
+
+/**
+ * The data type associated to a given event.
+ */
+export type WailsEventData<E extends WailsEventName = WailsEventName> =
+    E extends keyof CustomEvents ? CustomEvents[E] : (E extends SystemEventName ? null : any);
 
 /**
  * The type of handlers for a given event.
  */
-export type Callback = (ev: WailsEvent) => void;
+export type WailsEventCallback<E extends WailsEventName = WailsEventName> = (ev: WailsEvent<E>) => void;
 
 /**
  * Represents a system event or a custom event emitted through wails-provided facilities.
  */
-export class WailsEvent {
+export class WailsEvent<E extends WailsEventName = WailsEventName> {
     /**
      * The name of the event.
      */
-    name: string;
+    name: E;
 
     /**
      * Optional data associated with the emitted event.
      */
-    data: any;
+    data: WailsEventData<E>;
 
     /**
      * Name of the originating window. Omitted for application events.
@@ -45,9 +70,11 @@ export class WailsEvent {
      */
     sender?: string;
 
-    constructor(name: string, data: any = null) {
+    constructor(name: E, data: WailsEventData<E>);
+    constructor(name: E extends keyof CustomEvents ? never : E, data?: WailsEventData<E>)
+    constructor(name: E, data?: any) {
         this.name = name;
-        this.data = data;
+        this.data = data ?? null;
     }
 }
 
@@ -78,7 +105,7 @@ function dispatchWailsEvent(event: any) {
  * @param maxCallbacks - The maximum number of times the callback can be called for the event. Once the maximum number is reached, the callback will no longer be called.
  * @returns A function that, when called, will unregister the callback from the event.
  */
-export function OnMultiple(eventName: string, callback: Callback, maxCallbacks: number) {
+export function OnMultiple<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>, maxCallbacks: number) {
     let listeners = eventListeners.get(eventName) || [];
     const thisListener = new Listener(eventName, callback, maxCallbacks);
     listeners.push(thisListener);
@@ -93,7 +120,7 @@ export function OnMultiple(eventName: string, callback: Callback, maxCallbacks: 
  * @param callback - The callback function to be called when the event is triggered.
  * @returns A function that, when called, will unregister the callback from the event.
  */
-export function On(eventName: string, callback: Callback): () => void {
+export function On<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void {
     return OnMultiple(eventName, callback, -1);
 }
 
@@ -104,7 +131,7 @@ export function On(eventName: string, callback: Callback): () => void {
  * @param callback - The callback function to be called when the event is triggered.
  * @returns A function that, when called, will unregister the callback from the event.
  */
-export function Once(eventName: string, callback: Callback): () => void {
+export function Once<E extends WailsEventName = WailsEventName>(eventName: E, callback: WailsEventCallback<E>): () => void {
     return OnMultiple(eventName, callback, 1);
 }
 
@@ -113,7 +140,7 @@ export function Once(eventName: string, callback: Callback): () => void {
  *
  * @param eventNames - The name of the events to remove listeners for.
  */
-export function Off(...eventNames: [string, ...string[]]): void {
+export function Off(...eventNames: [WailsEventName, ...WailsEventName[]]): void {
     eventNames.forEach(eventName => eventListeners.delete(eventName));
 }
 
@@ -130,6 +157,6 @@ export function OffAll(): void {
  * @param event - The name of the event to emit.
  * @returns A promise that will be fulfilled once the event has been emitted.
  */
-export function Emit(event: WailsEvent): Promise<void> {
+export function Emit<E extends WailsEventName = WailsEventName>(event: WailsEvent<E>): Promise<void> {
     return call(EmitMethod, event);
 }
