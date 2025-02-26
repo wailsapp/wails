@@ -11,7 +11,7 @@ The electron alternative for Go
 /**
  * Any is a dummy creation function for simple or unknown types.
  */
-export function Any<T>(source: any): T {
+export function Any<T = any>(source: any): T {
     return source;
 }
 
@@ -28,7 +28,7 @@ export function ByteSlice(source: any): string {
  * and returns an in-place creation function for an array
  * whose elements are of that type.
  */
-export function Array<T>(element: (source: any) => T): (source: any) => T[] {
+export function Array<T = any>(element: (source: any) => T): (source: any) => T[] {
     if (element === Any) {
         return (source) => (source === null ? [] : source);
     }
@@ -49,7 +49,7 @@ export function Array<T>(element: (source: any) => T): (source: any) => T[] {
  * and returns an in-place creation function for an object
  * whose keys and values are of those types.
  */
-export function Map<V>(key: (source: any) => string, value: (source: any) => V): (source: any) => Record<string, V> {
+export function Map<V = any>(key: (source: any) => string, value: (source: any) => V): (source: any) => Record<string, V> {
     if (value === Any) {
         return (source) => (source === null ? {} : source);
     }
@@ -69,7 +69,7 @@ export function Map<V>(key: (source: any) => string, value: (source: any) => V):
  * Nullable takes a creation function for an arbitrary type
  * and returns a creation function for a nullable value of that type.
  */
-export function Nullable<T>(element: (source: any) => T): (source: any) => (T | null) {
+export function Nullable<T = any>(element: (source: any) => T): (source: any) => (T | null) {
     if (element === Any) {
         return Any;
     }
@@ -81,10 +81,9 @@ export function Nullable<T>(element: (source: any) => T): (source: any) => (T | 
  * Struct takes an object mapping field names to creation functions
  * and returns an in-place creation function for a struct.
  */
-export function Struct<
-    T extends { [_: string]: ((source: any) => any) },
-    U extends { [Key in keyof T]?: ReturnType<T[Key]> }
->(createField: T): (source: any) => U {
+export function Struct(createField: Record<string, (source: any) => any>):
+    <U extends Record<string, any> = any>(source: any) => U
+{
     let allAny = true;
     for (const name in createField) {
         if (createField[name] !== Any) {

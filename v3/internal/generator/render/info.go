@@ -50,11 +50,14 @@ func modelinfo(model *collect.ModelInfo, useInterfaces bool) (info modelInfo) {
 		createList.WriteRune('(')
 
 		for i, param := range model.TypeParams {
+			param = typeparam(i, param)
+
 			if i > 0 {
 				params.WriteRune(',')
 				paramList.WriteString(", ")
 				createList.WriteString(", ")
 			}
+
 			params.WriteString(param)
 			paramList.WriteString(param)
 

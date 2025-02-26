@@ -139,7 +139,12 @@ export {{if $info.IsInterface}}interface{{else}}class{{end}} {{jsid $model.Name}
      * Creates a new {{jsid $model.Name}} instance from a string or object.
     {{- end}}
      */
-    static createFrom{{$template.ParamList}}({{if $template.ParamList}}
+    static createFrom{{if $template.ParamList}}<
+            {{- range $i, $param := $model.TypeParams}}
+                {{- $param = (typeparam $i $param)}}
+                {{- if gt $i 0}}, {{end -}}
+                {{$param}} = any
+            {{- end}}>{{end}}({{if $template.ParamList}}
             {{- range $i, $param := $model.TypeParams}}
                 {{- $param = (typeparam $i $param)}}
                 {{- if gt $i 0}}, {{end -}}
