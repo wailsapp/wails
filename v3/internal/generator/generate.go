@@ -132,16 +132,20 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		panic("Generate() must not be called more than once on the same receiver")
 	}
 
-	// Initialise subcomponents.
-	generator.collector = collect.NewCollector(pkgs, systemPaths, generator.options, &generator.scheduler, generator.logger)
-	generator.renderer = render.NewRenderer(generator.options, generator.collector)
-
 	// Update status.
-	generator.logger.Statusf("Looking for services...")
-	serviceFound := sync.OnceFunc(func() { generator.logger.Statusf("Generating service bindings...") })
+	if generator.options.NoEvents {
+		generator.logger.Statusf("Looking for services...")
+	} else {
+		generator.logger.Statusf("Looking for services and events...")
+	}
+	serviceOrEventFound := sync.OnceFunc(func() { generator.logger.Statusf("Generating bindings...") })
 
 	// Run static analysis.
-	services, err := FindServices(pkgs, systemPaths, generator.logger)
+	services, registerEvent, err := FindServices(pkgs, systemPaths, generator.logger)
+
+	// Initialise subcomponents.
+	generator.collector = collect.NewCollector(pkgs, registerEvent, systemPaths, generator.options, &generator.scheduler, generator.logger)
+	generator.renderer = render.NewRenderer(generator.options, generator.collector)
 
 	// Check for analyser errors.
 	if err != nil {
@@ -151,9 +155,23 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	// Discard unneeded data.
 	pkgs = nil
 
+	// Schedule collection and code generation for event data types.
+	if !generator.options.NoEvents {
+		generator.scheduler.Schedule(func() {
+			events := generator.collector.EventMap().Collect()
+			if len(events.Defs) > 0 {
+				serviceOrEventFound()
+				// Not a data race because we wait for this scheduled task
+				// to complete before accessing stats again.
+				stats.Add(events.Stats())
+			}
+			generator.generateEvents(events)
+		})
+	}
+
 	// Schedule code generation for each found service.
 	for obj := range services {
-		serviceFound()
+		serviceOrEventFound()
 		generator.scheduler.Schedule(func() {
 			generator.generateService(obj)
 		})
@@ -175,9 +193,9 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	}
 
 	// Schedule models, index and included files generation for each package.
-	for info := range generator.collector.Iterate {
+	for pkg := range generator.collector.Iterate {
 		generator.scheduler.Schedule(func() {
-			generator.generateModelsIndexIncludes(info)
+			generator.generateModelsIndexIncludes(pkg)
 		})
 	}
 
@@ -201,15 +219,15 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 // generateModelsIndexIncludes schedules generation of public/private model files,
 // included files and, if allowed by the options,
 // of an index file for the given package.
-func (generator *Generator) generateModelsIndexIncludes(info *collect.PackageInfo) {
-	index := info.Index(generator.options.TS)
+func (generator *Generator) generateModelsIndexIncludes(pkg *collect.PackageInfo) {
+	index := pkg.Index(generator.options.TS)
 
 	// info.Index implies info.Collect: goroutines spawned below
 	// can access package information freely.
 
 	if len(index.Models) > 0 {
 		generator.scheduler.Schedule(func() {
-			generator.generateModels(info, index.Models)
+			generator.generateModels(pkg, index.Models)
 		})
 	}
 

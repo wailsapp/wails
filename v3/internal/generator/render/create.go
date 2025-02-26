@@ -97,7 +97,7 @@ func (m *module) JSCreate(typ types.Type) string {
 // JSCreateWithParams's output may be incorrect
 // if m.Imports.AddType has not been called for the given type.
 func (m *module) JSCreateWithParams(typ types.Type, params string) string {
-	if len(params) > 0 && !m.hasTypeParams(typ) {
+	if len(params) > 0 && !collect.IsParametric(typ) {
 		// Forget params for non-generic types.
 		params = ""
 	}
@@ -340,52 +340,4 @@ func (m *module) PostponedCreates() []string {
 type postponed struct {
 	index  int
 	params string
-}
-
-// hasTypeParams returns true if the given type depends upon type parameters.
-func (m *module) hasTypeParams(typ types.Type) bool {
-	switch t := typ.(type) {
-	case *types.Alias:
-		if t.Obj().Pkg() == nil {
-			// Builtin alias: these are never rendered as templates.
-			return false
-		}
-
-		return m.hasTypeParams(types.Unalias(typ))
-
-	case *types.Array, *types.Pointer, *types.Slice:
-		return m.hasTypeParams(typ.(interface{ Elem() types.Type }).Elem())
-
-	case *types.Map:
-		return m.hasTypeParams(t.Key()) || m.hasTypeParams(t.Elem())
-
-	case *types.Named:
-		if t.Obj().Pkg() == nil {
-			// Builtin named type: these are never rendered as templates.
-			return false
-		}
-
-		if targs := t.TypeArgs(); targs != nil {
-			for i := range targs.Len() {
-				if m.hasTypeParams(targs.At(i)) {
-					return true
-				}
-			}
-		}
-
-	case *types.Struct:
-		info := m.collector.Struct(t)
-		info.Collect()
-
-		for _, field := range info.Fields {
-			if m.hasTypeParams(field.Type) {
-				return true
-			}
-		}
-
-	case *types.TypeParam:
-		return true
-	}
-
-	return false
 }

@@ -313,6 +313,13 @@ func main() {
 		panic(err)
 	}
 
+	templateToWrite = strings.ReplaceAll(knownEvents, "$$PACKAGE", "collect")
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$EVENTNAMEMAP", eventNameMap.String())
+	err = os.WriteFile("../../internal/generator/collect/known_events.go", []byte(templateToWrite), 0644)
+	if err != nil {
+		panic(err)
+	}
+
 	// Save the eventsTS template substituting the values and decls
 	templateToWrite = strings.ReplaceAll(eventsTS, "$$MACJSEVENTS", macTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSJSEVENTS", windowsTSEvents.String())

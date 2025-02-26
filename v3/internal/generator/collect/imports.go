@@ -260,7 +260,7 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited *typeutil.Map) {
 			return
 
 		default:
-			collector.logger.Warningf("package %s: unknown type %s: please report this to Wails maintainers", imports.Self, typ)
+			collector.logger.Warningf("package %s: unknown or unexpected type %s: please report this to Wails maintainers", imports.Self, typ)
 			return
 		}
 	}
