@@ -1,6 +1,12 @@
 {
-  "include": ["output/**/*.js", "output/**/*.ts"],
-  "exclude": ["output/**/*.got.?s"],
+  "include": [
+    "output/**/*.js",
+    "output/**/*.ts"
+  ],
+  "exclude": [
+    "output/**/*.d.ts",
+    "output/**/*.got.?s"
+  ],
   "references": [
     { "path": "../../runtime/desktop/@wailsio/runtime" }
   ],
