@@ -15,12 +15,24 @@ import (
 	"git.sr.ht/~jackmordaunt/go-toast/v2"
 	"github.com/google/uuid"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/w32"
 	"golang.org/x/sys/windows/registry"
 )
 
-var NotificationLock sync.RWMutex
-var NotificationCategories = make(map[string]NotificationCategory)
-var Icon []byte
+var (
+	NotificationLock       sync.RWMutex
+	NotificationCategories = make(map[string]NotificationCategory)
+	AppName                string
+	AppGUID                string
+	IconPath               string
+)
+
+const (
+	ToastRegistryPath                  = `Software\Classes\AppUserModelId\`
+	ToastRegistryGuidKey               = "CustomActivator"
+	NotificationCategoriesRegistryPath = `SOFTWARE\%s\NotificationCategories`
+	NotificationCategoriesRegistryKey  = "Categories"
+)
 
 // NotificationPayload combines the action ID and user data into a single structure
 type NotificationPayload struct {
@@ -39,17 +51,20 @@ func New() *Service {
 // ServiceStartup is called when the service is loaded
 // Sets an activation callback to emit an event when notifications are interacted with.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
-	appName := application.Get().Config().Name
+	AppName = application.Get().Config().Name
 
-	guid, err := getGUID(appName)
+	guid, err := getGUID()
 	if err != nil {
 		return err
 	}
+	AppGUID = guid
+
+	IconPath = filepath.Join(os.TempDir(), AppName+guid+".png")
 
 	toast.SetAppData(toast.AppData{
-		AppID:    appName,
+		AppID:    AppName,
 		GUID:     guid,
-		IconPath: filepath.Join(os.TempDir(), appName+guid+".png"),
+		IconPath: IconPath,
 	})
 
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
@@ -103,10 +118,8 @@ func (ns *Service) CheckNotificationAuthorization() bool {
 // SendNotification sends a basic notification with a name, title, and body. All other options are ignored on Windows.
 // (subtitle and category id are only available on macOS)
 func (ns *Service) SendNotification(options NotificationOptions) error {
-	if len(Icon) > 0 {
-		if err := saveIconToDir(); err != nil {
-			fmt.Printf("Error saving icon: %v\n", err)
-		}
+	if err := saveIconToDir(); err != nil {
+		fmt.Printf("Error saving icon: %v\n", err)
 	}
 
 	n := toast.Notification{
@@ -130,10 +143,8 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 // If a NotificationCategory is not registered a basic notification will be sent.
 // (subtitle and category id are only available on macOS)
 func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
-	if len(Icon) > 0 {
-		if err := saveIconToDir(); err != nil {
-			fmt.Printf("Error saving icon: %v\n", err)
-		}
+	if err := saveIconToDir(); err != nil {
+		fmt.Printf("Error saving icon: %v\n", err)
 	}
 
 	NotificationLock.RLock()
@@ -236,11 +247,6 @@ func (ns *Service) RemoveNotification(identifier string) error {
 	return nil
 }
 
-// SetIcon sets the notifications icon.
-func (ns *Service) SetIcon(icon []byte) {
-	Icon = icon
-}
-
 // encodePayload combines an action ID and user data into a single encoded string
 func encodePayload(actionID string, data map[string]interface{}) (string, error) {
 	payload := NotificationPayload{
@@ -287,25 +293,16 @@ func parseNotificationResponse(response string) (action string, data string) {
 }
 
 func saveIconToDir() error {
-	options := application.Get().Config()
-	appName := options.Name
-
-	guid, err := getGUID(appName)
+	icon, err := application.NewIconFromResource(w32.GetModuleHandle(""), uint16(3))
 	if err != nil {
-		return fmt.Errorf("failed to retrieve application guid from registry")
+		return fmt.Errorf("failed to retrieve application icon")
 	}
 
-	iconPath := filepath.Join(os.TempDir(), appName+guid+".png")
-
-	return os.WriteFile(iconPath, Icon, 0644)
+	return saveHIconAsPNG(icon, IconPath)
 }
 
 func saveCategoriesToRegistry() error {
-	appName := application.Get().Config().Name
-	if appName == "" {
-		return fmt.Errorf("failed to save categories to registry: empty executable name")
-	}
-	registryPath := fmt.Sprintf(`SOFTWARE\%s\NotificationCategories`, appName)
+	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, AppName)
 
 	key, _, err := registry.CreateKey(
 		registry.CURRENT_USER,
@@ -324,15 +321,11 @@ func saveCategoriesToRegistry() error {
 		return err
 	}
 
-	return key.SetStringValue("Categories", string(data))
+	return key.SetStringValue(NotificationCategoriesRegistryKey, string(data))
 }
 
 func loadCategoriesFromRegistry() error {
-	appName := application.Get().Config().Name
-	if appName == "" {
-		return fmt.Errorf("failed to save categories to registry: empty executable name")
-	}
-	registryPath := fmt.Sprintf(`SOFTWARE\%s\NotificationCategories`, appName)
+	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, AppName)
 
 	key, err := registry.OpenKey(
 		registry.CURRENT_USER,
@@ -347,7 +340,7 @@ func loadCategoriesFromRegistry() error {
 	}
 	defer key.Close()
 
-	data, _, err := key.GetStringValue("Categories")
+	data, _, err := key.GetStringValue(NotificationCategoriesRegistryKey)
 	if err != nil {
 		return err
 	}
@@ -373,12 +366,12 @@ func getUserText(data []toast.UserData) (string, bool) {
 	return "", false
 }
 
-func getGUID(name string) (string, error) {
-	keyPath := `Software\Classes\AppUserModelId\` + name
+func getGUID() (string, error) {
+	keyPath := ToastRegistryPath + AppName
 
 	k, err := registry.OpenKey(registry.CURRENT_USER, keyPath, registry.QUERY_VALUE)
 	if err == nil {
-		guid, _, err := k.GetStringValue("CustomActivator")
+		guid, _, err := k.GetStringValue(ToastRegistryGuidKey)
 		k.Close()
 		if err == nil && guid != "" {
 			return guid, nil
@@ -393,7 +386,7 @@ func getGUID(name string) (string, error) {
 	}
 	defer k.Close()
 
-	if err := k.SetStringValue("CustomActivator", guid); err != nil {
+	if err := k.SetStringValue(ToastRegistryGuidKey, guid); err != nil {
 		return "", fmt.Errorf("failed to write GUID to registry: %w", err)
 	}
 
