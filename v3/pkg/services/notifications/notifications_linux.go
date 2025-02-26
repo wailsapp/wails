@@ -164,20 +164,17 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	}
 
 	for _, action := range category.Actions {
+		var targetStr string = ""
+		if options.Data != nil {
+			if jsonData, err := json.Marshal(options.Data); err == nil {
+				targetStr = base64.StdEncoding.EncodeToString(jsonData)
+			}
+		}
 		notification.Buttons = append(notification.Buttons, shout.Button{
 			Label:  action.Title,
 			Action: action.ID,
-			Target: "", // Will be set below if we have user data
+			Target: targetStr,
 		})
-	}
-
-	if options.Data != nil {
-		jsonData, err := json.Marshal(options.Data)
-		if err == nil {
-			for index := range notification.Buttons {
-				notification.Buttons[index].Target = string(jsonData)
-			}
-		}
 	}
 
 	return Notifier.Send(options.ID, notification)
