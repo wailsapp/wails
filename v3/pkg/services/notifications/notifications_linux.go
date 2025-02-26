@@ -1,5 +1,7 @@
 //go:build linux
 
+// WIP - WILL NOT WORK PROPERLY
+
 package notifications
 
 import (

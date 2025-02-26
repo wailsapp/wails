@@ -212,6 +212,11 @@ func (ns *Service) RemoveNotification(identifier string) error {
 	return nil
 }
 
+// SetIcon is a macOS stub. The application icon is used automatically.
+func (ns *Service) SetIcon(_ []byte) {
+	return
+}
+
 //export didReceiveNotificationResponse
 func didReceiveNotificationResponse(jsonPayload *C.char) {
 	payload := C.GoString(jsonPayload)
@@ -221,7 +226,7 @@ func didReceiveNotificationResponse(jsonPayload *C.char) {
 		return
 	}
 
-	if response.ActionIdentifier == "com.apple.UNNotificationDefaultActionIdentifier" {
+	if response.ActionIdentifier == AppleDefaultActionIdentifier {
 		response.ActionIdentifier = DefaultActionIdentifier
 	}
 
