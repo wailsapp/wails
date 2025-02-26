@@ -4,6 +4,7 @@ package notifications
 
 import (
 	"context"
+	_ "embed"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -19,6 +20,7 @@ import (
 
 var NotificationLock sync.RWMutex
 var NotificationCategories = make(map[string]NotificationCategory)
+var Icon []byte
 
 // NotificationPayload combines the action ID and user data into a single structure
 type NotificationPayload struct {
@@ -101,8 +103,10 @@ func (ns *Service) CheckNotificationAuthorization() bool {
 // SendNotification sends a basic notification with a name, title, and body. All other options are ignored on Windows.
 // (subtitle and category id are only available on macOS)
 func (ns *Service) SendNotification(options NotificationOptions) error {
-	if err := saveIconToDir(); err != nil {
-		fmt.Printf("Error saving icon: %v\n", err)
+	if len(Icon) > 0 {
+		if err := saveIconToDir(); err != nil {
+			fmt.Printf("Error saving icon: %v\n", err)
+		}
 	}
 
 	n := toast.Notification{
@@ -126,8 +130,10 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 // If a NotificationCategory is not registered a basic notification will be sent.
 // (subtitle and category id are only available on macOS)
 func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
-	if err := saveIconToDir(); err != nil {
-		fmt.Printf("Error saving icon: %v\n", err)
+	if len(Icon) > 0 {
+		if err := saveIconToDir(); err != nil {
+			fmt.Printf("Error saving icon: %v\n", err)
+		}
 	}
 
 	NotificationLock.RLock()
@@ -230,6 +236,11 @@ func (ns *Service) RemoveNotification(identifier string) error {
 	return nil
 }
 
+// SetIcon sets the notifications icon.
+func (ns *Service) SetIcon(icon []byte) {
+	Icon = icon
+}
+
 // encodePayload combines an action ID and user data into a single encoded string
 func encodePayload(actionID string, data map[string]interface{}) (string, error) {
 	payload := NotificationPayload{
@@ -278,11 +289,6 @@ func parseNotificationResponse(response string) (action string, data string) {
 func saveIconToDir() error {
 	options := application.Get().Config()
 	appName := options.Name
-	icon := options.Icon
-
-	if len(icon) == 0 {
-		return fmt.Errorf("failed to retrieve icon from application")
-	}
 
 	guid, err := getGUID(appName)
 	if err != nil {
@@ -291,7 +297,7 @@ func saveIconToDir() error {
 
 	iconPath := filepath.Join(os.TempDir(), appName+guid+".png")
 
-	return os.WriteFile(iconPath, icon, 0644)
+	return os.WriteFile(iconPath, Icon, 0644)
 }
 
 func saveCategoriesToRegistry() error {
