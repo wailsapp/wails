@@ -288,6 +288,9 @@ var registeredEvents sync.Map
 // with constant arguments, and only from init functions.
 // Indirect calls or instantiations are not discoverable by the binding generator.
 func RegisterEvent[Data any](name string) {
+	if events.IsKnownEvent(name) {
+		panic(fmt.Errorf("'%s' is a known system event name", name))
+	}
 	if typ, ok := registeredEvents.Load(name); ok {
 		panic(fmt.Errorf("event '%s' is already registered with data type %s", name, typ))
 	}
