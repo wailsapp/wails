@@ -66,9 +66,67 @@ jobs:
               { title: 'This PR includes changes to runtime build artifacts' }
             );
 
+  test_js:
+    name: Run JS Tests
+    needs: check_approval
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: |
+          npm ci
+          npx --yes esbuild@latest --version
+
+      - name: Clean build artifacts
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm run clean
+
+      - name: Type-check runtime
+        working-directory: v3
+        run: task runtime:check
+
+      - name: Test runtime
+        working-directory: v3
+        run: task runtime:test
+
+      - name: Check that the bundled runtime builds
+        working-directory: v3
+        run: task runtime:build
+
+      - name: Check that the npm package builds
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm run build
+
+      - name: Store runtime build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-build-artifacts
+          path: |
+            v3/internal/runtime/desktop/@wailsio/runtime/dist/
+            v3/internal/runtime/desktop/@wailsio/runtime/types/
+            v3/internal/runtime/desktop/@wailsio/runtime/tsconfig.tsbuildinfo
+
   test_go:
     name: Run Go Tests
-    needs: check_approval
+    needs: [check_approval, test_js]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -98,6 +156,12 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Retrieve runtime build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: runtime-build-artifacts
+          path: v3/internal/runtime/desktop/@wailsio/runtime/
 
       - name: Build Examples
         working-directory: v3
@@ -129,50 +193,16 @@ jobs:
         working-directory: v3
         run: task generator:test:check
 
-  test_js:
-    name: Run JS Tests
-    needs: check_approval
+  cleanup:
+    name: Cleanup build artifacts
+    if: always()
+    needs: [test_js, test_go]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - uses: geekyeggo/delete-artifact@v5
         with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install Task
-        uses: arduino/setup-task@v2
-        with:
-          version: 3.x
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Clean build artifacts
-        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
-        run: npm run clean
-
-      - name: Type-check runtime
-        working-directory: v3
-        run: task runtime:check
-
-      - name: Test runtime
-        working-directory: v3
-        run: task runtime:test
-
-      - name: Check that the bundled runtime builds
-        working-directory: v3
-        run: |
-          npx --yes esbuild@latest --version
-          task runtime:build
-
-      - name: Check that the npm package builds
-        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
-        run: npm run prepack
+          name: runtime-build-artifacts
+          failOnError: false
 
   test_templates:
     name: Test Templates
