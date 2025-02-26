@@ -4,6 +4,7 @@ package notifications
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -18,6 +19,7 @@ import (
 var NotificationLock sync.RWMutex
 var NotificationCategories = make(map[string]NotificationCategory)
 var Notifier shout.Notifier
+var appName = application.Get().Config().Name
 
 // Creates a new Notifications Service.
 func New() *Service {
@@ -38,8 +40,6 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 		return fmt.Errorf("failed to connect to D-Bus session bus: %v", err)
 	}
 
-	appName := application.Get().Config().Name
-
 	var iconPath string
 
 	Notifier, err = shout.NewNotifier(conn, appName, iconPath, func(notificationID, action string, platformData map[string]dbus.Variant, target, notifierResponse dbus.Variant, err error) {
@@ -52,26 +52,28 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 			ActionIdentifier: action,
 		}
 
-		if action == "" {
-			response.ActionIdentifier = DefaultActionIdentifier
-		}
-
 		if target.Signature().String() == "s" {
 			var targetStr string
 			if err := target.Store(&targetStr); err == nil {
 				var userInfo map[string]interface{}
-				if err := json.Unmarshal([]byte(targetStr), &userInfo); err == nil {
+				userInfoStr, err := base64.StdEncoding.DecodeString(targetStr)
+				if err != nil {
+					if err := json.Unmarshal([]byte(targetStr), &userInfo); err == nil {
+						response.UserInfo = userInfo
+					}
+				}
+				if err := json.Unmarshal(userInfoStr, &userInfo); err == nil {
 					response.UserInfo = userInfo
 				}
 			}
 		}
 
-		if notifierResponse.Signature().String() == "s" {
-			var userText string
-			if err := notifierResponse.Store(&userText); err == nil {
-				response.UserText = userText
-			}
-		}
+		// if notifierResponse.Signature().String() == "s" {
+		// 	var userText string
+		// 	if err := notifierResponse.Store(&userText); err == nil {
+		// 		response.UserText = userText
+		// 	}
+		// }
 
 		if NotificationService != nil {
 			NotificationService.handleNotificationResponse(response)
@@ -114,13 +116,13 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 		Title:         options.Title,
 		Body:          options.Body,
 		Priority:      shout.Normal,
-		DefaultAction: "default",
+		DefaultAction: DefaultActionIdentifier,
 	}
 
 	if options.Data != nil {
 		jsonData, err := json.Marshal(options.Data)
 		if err == nil {
-			notification.DefaultActionTarget = dbus.MakeVariant(string(jsonData))
+			notification.DefaultActionTarget = dbus.MakeVariant(base64.StdEncoding.EncodeToString(jsonData))
 		}
 	}
 
@@ -141,13 +143,13 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 		Title:         options.Title,
 		Body:          options.Body,
 		Priority:      shout.Normal,
-		DefaultAction: "default",
+		DefaultAction: DefaultActionIdentifier,
 	}
 
 	if options.Data != nil {
 		jsonData, err := json.Marshal(options.Data)
 		if err == nil {
-			notification.DefaultActionTarget = dbus.MakeVariant(string(jsonData))
+			notification.DefaultActionTarget = dbus.MakeVariant(base64.StdEncoding.EncodeToString(jsonData))
 		}
 	}
 
@@ -162,8 +164,8 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	if options.Data != nil {
 		jsonData, err := json.Marshal(options.Data)
 		if err == nil {
-			for i := range notification.Buttons {
-				notification.Buttons[i].Target = string(jsonData)
+			for index := range notification.Buttons {
+				notification.Buttons[index].Target = string(jsonData)
 			}
 		}
 	}
@@ -222,8 +224,6 @@ func getConfigFilePath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to get user config directory: %v", err)
 	}
-
-	appName := "Wails Application"
 
 	appConfigDir := filepath.Join(configDir, appName)
 	if err := os.MkdirAll(appConfigDir, 0755); err != nil {

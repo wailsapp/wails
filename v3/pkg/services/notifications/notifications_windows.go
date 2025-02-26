@@ -61,9 +61,8 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 		}
 
 		if userInfo != "" {
-			jsonStr := strings.ReplaceAll(userInfo, "'", "\"")
 			var userInfoMap map[string]interface{}
-			if err := json.Unmarshal([]byte(jsonStr), &userInfoMap); err == nil {
+			if err := json.Unmarshal([]byte(userInfo), &userInfoMap); err == nil {
 				response.UserInfo = userInfoMap
 			}
 		}
