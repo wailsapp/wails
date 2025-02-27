@@ -1,30 +1,22 @@
-/**
- * Creates a runtime caller function that invokes a specified method on a given object within a specified window context.
- *
- * @param {Object} object - The object on which the method is to be invoked.
- * @param {string} windowName - The name of the window context in which the method should be called.
- * @returns {Function} A runtime caller function that takes the method name and optionally arguments and invokes the method within the specified window context.
- */
-export function newRuntimeCaller(object: any, windowName: string): Function;
+export declare const objectNames: Readonly<{
+    Call: 0;
+    Clipboard: 1;
+    Application: 2;
+    Events: 3;
+    ContextMenu: 4;
+    Dialog: 5;
+    Window: 6;
+    Screens: 7;
+    System: 8;
+    Browser: 9;
+    CancelCall: 10;
+}>;
+export declare let clientId: string;
 /**
  * Creates a new runtime caller with specified ID.
  *
- * @param {number} object - The object to invoke the method on.
- * @param {string} windowName - The name of the window.
- * @return {Function} - The new runtime caller function.
+ * @param object - The object to invoke the method on.
+ * @param windowName - The name of the window.
+ * @return The new runtime caller function.
  */
-export function newRuntimeCallerWithID(object: number, windowName: string): Function;
-export namespace objectNames {
-    let Call: number;
-    let Clipboard: number;
-    let Application: number;
-    let Events: number;
-    let ContextMenu: number;
-    let Dialog: number;
-    let Window: number;
-    let Screens: number;
-    let System: number;
-    let Browser: number;
-    let CancelCall: number;
-}
-export let clientId: string;
+export declare function newRuntimeCaller(object: number, windowName?: string): (method: number, args?: any) => Promise<any>;

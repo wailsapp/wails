@@ -1,6 +1,6 @@
 /**
- * Open a browser window to the given URL
- * @param {string} url - The URL to open
- * @returns {Promise<string>}
+ * Open a browser window to the given URL.
+ *
+ * @param url - The URL to open
  */
-export function OpenURL(url: string): Promise<string>;
+export declare function OpenURL(url: string | URL): Promise<void>;

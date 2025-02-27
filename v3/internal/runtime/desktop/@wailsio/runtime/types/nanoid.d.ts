@@ -1,1 +1,1 @@
-export function nanoid(size?: number): string;
+export declare function nanoid(size?: number): string;
