@@ -27,7 +27,7 @@ jobs:
           fi
 
   test_go:
-    name: Run Go Tests
+    name: Run Go Tests v3
     needs: check_approval
     runs-on: ${{ matrix.os }}
     strategy:
