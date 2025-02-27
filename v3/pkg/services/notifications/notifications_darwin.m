@@ -2,6 +2,10 @@
 #import <Cocoa/Cocoa.h>
 #import <UserNotifications/UserNotifications.h>
 
+extern void requestNotificationAuthorizationResponse(int channelID, bool authorized, const char* error);
+extern void checkNotificationAuthorizationResponse(int channelID, bool authorized, const char* error);
+extern void didReceiveNotificationResponse(const char *jsonPayload);
+
 @interface NotificationsDelegate : NSObject <UNUserNotificationCenterDelegate>
 @end
 
@@ -80,11 +84,8 @@ bool checkBundleIdentifier(void) {
     return true;
 }
 
-bool requestNotificationAuthorization(int channelID) {
+void requestNotificationAuthorization(int channelID) {
     ensureDelegateInitialized();
-    
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-    UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
     
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
@@ -98,7 +99,7 @@ bool requestNotificationAuthorization(int channelID) {
     }];
 }
 
-bool checkNotificationAuthorization(int channelID) {
+void checkNotificationAuthorization(int channelID) {
     ensureDelegateInitialized();
     
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
