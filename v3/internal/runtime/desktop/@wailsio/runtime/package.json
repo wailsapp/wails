@@ -5,8 +5,11 @@
   "description": "Wails Runtime",
   "types": "types/index.d.ts",
   "exports": {
-    "types": "./types/index.d.ts",
-    "import": "./dist/index.js"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./plugins/*": "./plugins/*"
   },
   "repository": {
     "type": "git",
@@ -21,6 +24,7 @@
   },
   "files": [
     "./dist",
+    "./plugins",
     "./types"
   ],
   "sideEffects": [
