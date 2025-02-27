@@ -41,18 +41,17 @@ jobs:
             v3/internal/runtime/desktop/@wailsio/runtime/types/*.d.ts
             v3/internal/runtime/desktop/@wailsio/runtime/docs/**/*.*
 
-      - name: test action
+      - name: Bump version
         if: steps.verify-changed-files.outputs.files_changed == 'true'
-        id: get-version
-        uses: beaconbrigade/package-json-version@v0.3.2
-        with:
-          path: v3/internal/runtime/desktop/@wailsio/runtime
+        id: bump-version
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: echo "version=$(npm --no-git-tag-version --force version prerelease)" >> "$GITHUB_OUTPUT"
 
       - name: Commit changes
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
           git add .
-          git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.get-version.outputs.version }}"
+          git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.bump-version.outputs.version }}"
           git push
 
       - uses: JS-DevTools/npm-publish@v3
