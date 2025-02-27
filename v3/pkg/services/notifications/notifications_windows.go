@@ -20,11 +20,11 @@ import (
 )
 
 var (
-	NotificationLock       sync.RWMutex
-	NotificationCategories = make(map[string]NotificationCategory)
-	AppName                string
-	AppGUID                string
-	IconPath               string
+	NotificationCategories     = make(map[string]NotificationCategory)
+	notificationCategoriesLock sync.RWMutex
+	appName                    string
+	appGUID                    string
+	iconPath                   string
 )
 
 const (
@@ -42,6 +42,9 @@ type NotificationPayload struct {
 
 // Creates a new Notifications Service.
 func New() *Service {
+	notificationServiceLock.Lock()
+	defer notificationServiceLock.Unlock()
+
 	if NotificationService == nil {
 		NotificationService = &Service{}
 	}
@@ -51,20 +54,20 @@ func New() *Service {
 // ServiceStartup is called when the service is loaded
 // Sets an activation callback to emit an event when notifications are interacted with.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
-	AppName = application.Get().Config().Name
+	appName = application.Get().Config().Name
 
 	guid, err := getGUID()
 	if err != nil {
 		return err
 	}
-	AppGUID = guid
+	appGUID = guid
 
-	IconPath = filepath.Join(os.TempDir(), AppName+guid+".png")
+	iconPath = filepath.Join(os.TempDir(), appName+appGUID+".png")
 
 	toast.SetAppData(toast.AppData{
-		AppID:    AppName,
+		AppID:    appName,
 		GUID:     guid,
-		IconPath: IconPath,
+		IconPath: iconPath,
 	})
 
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
@@ -147,9 +150,9 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 		fmt.Printf("Error saving icon: %v\n", err)
 	}
 
-	NotificationLock.RLock()
+	notificationCategoriesLock.RLock()
 	nCategory := NotificationCategories[options.CategoryID]
-	NotificationLock.RUnlock()
+	notificationCategoriesLock.RUnlock()
 
 	n := toast.Notification{
 		Title:               options.Title,
@@ -195,7 +198,7 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
 // Registering a category with the same name as a previously registered NotificationCategory will override it.
 func (ns *Service) RegisterNotificationCategory(category NotificationCategory) error {
-	NotificationLock.Lock()
+	notificationCategoriesLock.Lock()
 	NotificationCategories[category.ID] = NotificationCategory{
 		ID:               category.ID,
 		Actions:          category.Actions,
@@ -203,16 +206,16 @@ func (ns *Service) RegisterNotificationCategory(category NotificationCategory) e
 		ReplyPlaceholder: category.ReplyPlaceholder,
 		ReplyButtonTitle: category.ReplyButtonTitle,
 	}
-	NotificationLock.Unlock()
+	notificationCategoriesLock.Unlock()
 
 	return saveCategoriesToRegistry()
 }
 
 // RemoveNotificationCategory removes a previously registered NotificationCategory.
 func (ns *Service) RemoveNotificationCategory(categoryId string) error {
-	NotificationLock.Lock()
+	notificationCategoriesLock.Lock()
 	delete(NotificationCategories, categoryId)
-	NotificationLock.Unlock()
+	notificationCategoriesLock.Unlock()
 
 	return saveCategoriesToRegistry()
 }
@@ -298,11 +301,11 @@ func saveIconToDir() error {
 		return fmt.Errorf("failed to retrieve application icon")
 	}
 
-	return saveHIconAsPNG(icon, IconPath)
+	return saveHIconAsPNG(icon, iconPath)
 }
 
 func saveCategoriesToRegistry() error {
-	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, AppName)
+	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, appName)
 
 	key, _, err := registry.CreateKey(
 		registry.CURRENT_USER,
@@ -314,9 +317,9 @@ func saveCategoriesToRegistry() error {
 	}
 	defer key.Close()
 
-	NotificationLock.RLock()
+	notificationCategoriesLock.RLock()
 	data, err := json.Marshal(NotificationCategories)
-	NotificationLock.RUnlock()
+	notificationCategoriesLock.RUnlock()
 	if err != nil {
 		return err
 	}
@@ -325,7 +328,7 @@ func saveCategoriesToRegistry() error {
 }
 
 func loadCategoriesFromRegistry() error {
-	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, AppName)
+	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, appName)
 
 	key, err := registry.OpenKey(
 		registry.CURRENT_USER,
@@ -350,9 +353,9 @@ func loadCategoriesFromRegistry() error {
 		return err
 	}
 
-	NotificationLock.Lock()
+	notificationCategoriesLock.Lock()
 	NotificationCategories = categories
-	NotificationLock.Unlock()
+	notificationCategoriesLock.Unlock()
 
 	return nil
 }
@@ -367,7 +370,7 @@ func getUserText(data []toast.UserData) (string, bool) {
 }
 
 func getGUID() (string, error) {
-	keyPath := ToastRegistryPath + AppName
+	keyPath := ToastRegistryPath + appName
 
 	k, err := registry.OpenKey(registry.CURRENT_USER, keyPath, registry.QUERY_VALUE)
 	if err == nil {

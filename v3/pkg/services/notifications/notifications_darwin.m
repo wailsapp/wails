@@ -2,8 +2,6 @@
 #import <Cocoa/Cocoa.h>
 #import <UserNotifications/UserNotifications.h>
 
-extern void didReceiveNotificationResponse(const char *jsonPayload);
-
 @interface NotificationsDelegate : NSObject <UNUserNotificationCenterDelegate>
 @end
 
@@ -71,8 +69,8 @@ static void ensureDelegateInitialized(void) {
 bool checkBundleIdentifier(void) {
     NSBundle *main = [NSBundle mainBundle];
     if (main.bundleIdentifier == nil) {
-        NSLog(@"Error: Cannot use notifications in development mode.\n"
-              "  Notifications require the app to be properly bundled with a bundle identifier.\n"
+        NSLog(@"Error: Cannot use the notification API in development mode.\n"
+              "  Notifications require the app to be properly bundled with a bundle identifier and signed.\n"
               "  To test notifications:\n"
               "  1. Build and package your app using 'wails3 package'\n"
               "  2. Sign the packaged .app\n"
@@ -82,40 +80,32 @@ bool checkBundleIdentifier(void) {
     return true;
 }
 
-bool requestUserNotificationAuthorization(void *completion) {
-    if (!checkBundleIdentifier()) {
-        return false;
-    }
-    
+bool requestNotificationAuthorization(int channelID) {
     ensureDelegateInitialized();
     
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
     
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
+    
     [center requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError * _Nullable error) {
-        if (completion != NULL) {
-            void (^callback)(NSError *, BOOL) = completion;
-            callback(error, granted);
+        if (error) {
+            requestNotificationAuthorizationResponse(channelID, false, [[error localizedDescription] UTF8String]);
+        } else {
+            requestNotificationAuthorizationResponse(channelID, granted, NULL);
         }
     }];
-    return true;
 }
 
-bool checkNotificationAuthorization(void) {
+bool checkNotificationAuthorization(int channelID) {
     ensureDelegateInitialized();
     
-    __block BOOL isAuthorized = NO;
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-    
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
-        isAuthorized = (settings.authorizationStatus == UNAuthorizationStatusAuthorized);
-        dispatch_semaphore_signal(semaphore);
+    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings *settings) {
+        BOOL isAuthorized = (settings.authorizationStatus == UNAuthorizationStatusAuthorized);
+        checkNotificationAuthorizationResponse(channelID, isAuthorized, NULL);
     }];
-    
-    // Wait for response with a timeout
-    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC));
-    return isAuthorized;
 }
 
 void sendNotification(const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json, void *completion) {

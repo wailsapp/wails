@@ -12,16 +12,32 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-var AppleDefaultActionIdentifier = "com.apple.UNNotificationDefaultActionIdentifier"
+type notificationChannel struct {
+	authorized bool
+	err        error
+}
+
+var (
+	notificationChannels     = make(map[int]chan notificationChannel)
+	notificationChannelsLock sync.Mutex
+	nextChannelID            int
+)
+
+const AppleDefaultActionIdentifier = "com.apple.UNNotificationDefaultActionIdentifier"
+const BundleIdentifierError = fmt.Errorf("notifications require a bundled application with a unique bundle identifier")
 
 // Creates a new Notifications Service.
 // Your app must be packaged and signed for this feature to work.
 func New() *Service {
+	notificationServiceLock.Lock()
+	defer notificationServiceLock.Unlock()
+
 	if NotificationService == nil {
 		NotificationService = &Service{}
 	}
@@ -31,7 +47,7 @@ func New() *Service {
 // ServiceStartup is called when the service is loaded.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	if !CheckBundleIdentifier() {
-		return fmt.Errorf("notifications require a bundled application with a unique bundle identifier")
+		return BundleIdentifierError
 	}
 	return nil
 }
@@ -45,21 +61,32 @@ func CheckBundleIdentifier() bool {
 	return bool(C.checkBundleIdentifier())
 }
 
-// RequestUserNotificationAuthorization requests permission for notifications.
-func (ns *Service) RequestUserNotificationAuthorization() (bool, error) {
+// RequestNotificationAuthorization requests permission for notifications.
+func (ns *Service) RequestNotificationAuthorization() (bool, err) {
 	if !CheckBundleIdentifier() {
-		return false, fmt.Errorf("notifications require a bundled application with a unique bundle identifier")
+		return false, BundleIdentifierError
 	}
-	result := C.requestUserNotificationAuthorization(nil)
-	return result == true, nil
+
+	id, resultCh := registerChannel()
+
+	C.requestNotificationAuthorization(C.int(id))
+
+	result := <-resultCh
+	return result.authorized, result.err
 }
 
 // CheckNotificationAuthorization checks current notification permission status.
-func (ns *Service) CheckNotificationAuthorization() (bool, error) {
+func (ns *Service) CheckNotificationAuthorization() (bool, err) {
 	if !CheckBundleIdentifier() {
-		return false, fmt.Errorf("notifications require a bundled application with a unique bundle identifier")
+		return false, BundleIdentifierError
 	}
-	return bool(C.checkNotificationAuthorization()), nil
+
+	id, resultCh := registerChannel()
+
+	C.checkNotificationAuthorization(C.int(id))
+
+	result := <-resultCh
+	return result.authorized, result.err
 }
 
 // SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
@@ -212,9 +239,48 @@ func (ns *Service) RemoveNotification(identifier string) error {
 	return nil
 }
 
-// SetIcon is a macOS stub. The application icon is used automatically.
-func (ns *Service) SetIcon(_ []byte) {
-	return
+//export requestNotificationAuthorizationResponse
+func requestNotificationAuthorizationResponse(channelID C.int, authorized C.bool, errorMsg *C.char) {
+	resultCh, exists := getAndDeleteChannel(int(channelID))
+	if !exists {
+		// handle this
+		return
+	}
+
+	var err error
+    if errorMsg != nil {
+        err = fmt.Errorf("%s", C.GoString(errorMsg))
+        C.free(unsafe.Pointer(errorMsg))
+    }
+
+	resultCh <- notificationChannel{
+		authorized: bool(authorized),
+		err:        err,
+	}
+
+	close(resultCh)
+}
+
+//export checkNotificationAuthorizationResponse
+func checkNotificationAuthorizationResponse(channelID C.int, authorized C.bool, errorMsg *C.char) {
+	resultCh, exists := getAndDeleteChannel(int(channelID))
+	if !exists {
+		// handle this
+		return
+	}
+
+	var err error
+    if errorMsg != nil {
+        err = fmt.Errorf("%s", C.GoString(errorMsg))
+        C.free(unsafe.Pointer(errorMsg))
+    }
+
+	resultCh <- notificationChannel{
+		authorized: bool(authorized),
+		err:        err,
+	}
+
+	close(resultCh)
 }
 
 //export didReceiveNotificationResponse
@@ -230,7 +296,44 @@ func didReceiveNotificationResponse(jsonPayload *C.char) {
 		response.ActionIdentifier = DefaultActionIdentifier
 	}
 
-	if NotificationService != nil {
-		NotificationService.handleNotificationResponse(response)
+	notificationServiceLock.RLock()
+	ns := NotificationService
+	notificationServiceLock.RUnlock()
+
+	if service != nil {
+		ns.callbackLock.RLock()
+		callback := ns.notificationResponseCallback
+		ns.callbackLock.RUnlock()
+
+		if callback != nil {
+			callback(response)
+		}
 	}
+}
+
+func registerChannel() (int, chan notificationChannel) {
+	notificationChannelsLock.Lock()
+	defer notificationChannelsLock.Unlock()
+
+	id := nextChannelID
+	nextChannelID++
+
+	resultCh := make(chan notificationChannel{
+		authorized bool
+		err error
+	}, 1)
+
+	notificationChannels[id] = resultCh
+	return id, resultCh
+}
+
+func getChannel(id int) (chan notificationChannel, bool) {
+	notificationChannelsLock.Lock()
+	defer notificationChannelsLock.Unlock()
+
+	ch, exists := notificationChannels[id]
+	if exists {
+		delete(notificationChannels, id)
+	}
+	return ch, exists
 }

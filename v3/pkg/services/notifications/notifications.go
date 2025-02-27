@@ -1,12 +1,17 @@
 package notifications
 
+import "sync"
+
 // Service represents the notifications service
 type Service struct {
-	// Callback is called when a notification response is received
-	Callback func(response NotificationResponse)
+	// notificationResponseCallback is called when a notification response is received
+	notificationResponseCallback func(response NotificationResponse)
+
+	callbackLock sync.RWMutex
 }
 
 var NotificationService *Service
+var notificationServiceLock sync.RWMutex
 
 // NotificationAction represents an action button for a notification
 type NotificationAction = struct {
@@ -54,18 +59,22 @@ func (ns *Service) ServiceName() string {
 }
 
 // OnNotificationResponse registers a callback function that will be called when
-// a notification response is received from the user
+// a notification response is received from the user.
 func (ns *Service) OnNotificationResponse(callback func(response NotificationResponse)) {
-	if ns.Callback != nil {
-		return
-	}
-	ns.Callback = callback
+	ns.callbackLock.Lock()
+	defer ns.callbackLock.Unlock()
+
+	ns.notificationResponseCallback = callback
 }
 
 // handleNotificationResponse is an internal method to handle notification responses
 // and invoke the registered callback if one exists
 func (ns *Service) handleNotificationResponse(response NotificationResponse) {
-	if ns.Callback != nil {
-		ns.Callback(response)
+	ns.callbackLock.RLock()
+	callback := ns.notificationResponseCallback
+	ns.callbackLock.RUnlock()
+
+	if callback != nil {
+		callback(response)
 	}
 }
