@@ -2,6 +2,7 @@ package application
 
 import (
 	"github.com/wailsapp/wails/v3/pkg/w32"
+	"unsafe"
 )
 
 const (
@@ -191,7 +192,26 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 		p.onMenuOpen()
 	}
 
-	if !w32.TrackPopupMenuEx(p.menu, w32.TPM_LEFTALIGN, int32(x), int32(y-5), p.parent, nil) {
+	// Get screen dimensions to determine menu positioning
+	monitor := w32.MonitorFromWindow(p.parent, w32.MONITOR_DEFAULTTONEAREST)
+	var monitorInfo w32.MONITORINFO
+	monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
+	if !w32.GetMonitorInfo(monitor, &monitorInfo) {
+		globalApplication.fatal("GetMonitorInfo failed")
+	}
+
+	// Set flags to always position the menu above the cursor
+	menuFlags := uint32(w32.TPM_LEFTALIGN | w32.TPM_BOTTOMALIGN)
+
+	// Check if we're close to the right edge of the screen
+	// If so, right-align the menu with some padding
+	if x > int(monitorInfo.RcWork.Right)-200 { // Assuming 200px as a reasonable menu width
+		menuFlags = uint32(w32.TPM_RIGHTALIGN | w32.TPM_BOTTOMALIGN)
+		// Add a small padding (10px) from the right edge
+		x = int(monitorInfo.RcWork.Right) - 10
+	}
+
+	if !w32.TrackPopupMenuEx(p.menu, menuFlags, int32(x), int32(y), p.parent, nil) {
 		globalApplication.fatal("TrackPopupMenu failed")
 	}
 
