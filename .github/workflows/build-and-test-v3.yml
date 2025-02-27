@@ -172,3 +172,17 @@ jobs:
           wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}
           cd ${{ matrix.template }}
           wails3 build
+
+  results:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: v3 Build Results
+    needs: [test_go, test_js, test_templates]
+    steps:
+      - run: |
+          result="${{ needs.build.result }}"
+          if [[ $result == "success" || $result == "skipped" ]]; then
+            exit 0
+          else
+            exit 1
+          fi
