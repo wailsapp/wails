@@ -9,7 +9,7 @@ on:
     types: [submitted]
     branches:
       - v3-alpha
-      -
+
 jobs:
   check_approval:
     name: Check PR Approval
