@@ -4,7 +4,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import {Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create} from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -13,48 +13,43 @@ import * as slog$0 from "../../../../../../../log/slog/models.js";
 /**
  * @param {string} message
  * @param {any[]} args
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function Debug(message, ...args) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1384012895, message, args));
-    return $resultPromise;
+    return $Call.ByID(1384012895, message, args);
 }
 
 /**
  * @param {string} message
  * @param {any[]} args
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function Error(message, ...args) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1324251502, message, args));
-    return $resultPromise;
+    return $Call.ByID(1324251502, message, args);
 }
 
 /**
  * @param {string} message
  * @param {any[]} args
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function Info(message, ...args) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3712350036, message, args));
-    return $resultPromise;
+    return $Call.ByID(3712350036, message, args);
 }
 
 /**
  * @param {slog$0.Level} level
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function SetLogLevel(level) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2521579448, level));
-    return $resultPromise;
+    return $Call.ByID(2521579448, level);
 }
 
 /**
  * @param {string} message
  * @param {any[]} args
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function Warning(message, ...args) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2902024404, message, args));
-    return $resultPromise;
+    return $Call.ByID(2902024404, message, args);
 }

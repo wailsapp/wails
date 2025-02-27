@@ -61,6 +61,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add test harness for application startup/shutdown sequence and service startup/shutdown tests by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
 - Add `RegisterService` method for registering services after the application has been created by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
 - Add `MarshalError` field in application and service options for custom error handling in binding calls by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Add cancellable promise wrapper that propagates cancellation requests through promise chains by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Add the ability to tie binding call cancellation to an `AbortSignal` by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Support `data-wml-*` attributes for WML alongside the usual `wml-*` attributes by [@leaanthony](https://github.com/leaanthony)
 
 ### Fixed
 
@@ -91,6 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed handling and formatting of errors in message processors by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
 -  Fixed skipped service shutdown when quitting application by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
 -  Ensure menu updates occur on the main thread by [@leaanthony](https://github.com/leaanthony)
+- The dragging and resizing mechanism is now more robust and matches expected platform behaviour more closely by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Fixed [#4097](https://github.com/wailsapp/wails/issues/4097) Webpack/angular discards runtime init code by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
 
 ### Changed
 
@@ -112,6 +117,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ServiceStartup` errors are now returned from `App.Run` instead of terminating the process by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
 - Binding and dialog calls from JS now reject with error objects instead of strings by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
 - Improved systray menu positioning on Windows by [@leaanthony](https://github.com/leaanthony)
+- The JS runtime has been ported to TypeScript by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- The runtime initialises as soon as it is imported, no need to wait for the window to load by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- The runtime does not export an init method anymore. A side effects import can be used to initialise it by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Bound methods now return a `CancellablePromise` that rejects with a `CancelError` if cancelled. The actual result of the call is discarded by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
 
 ## v3.0.0-alpha.9 - 2025-01-13
 

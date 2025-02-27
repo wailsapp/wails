@@ -26,9 +26,111 @@ jobs:
             echo "approved=false" >> $GITHUB_OUTPUT
           fi
 
+  check_build_artifacts:
+    name: Check runtime build artifact changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: 'true'
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            v3/internal/runtime/desktop/@wailsio/runtime/dist/**
+            v3/internal/runtime/desktop/@wailsio/runtime/types/**
+
+      - name: Get merge base
+        id: merge-base
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          BASE_SHA: ${{github.event.pull_request.base.sha}}
+          HEAD_SHA: ${{github.event.pull_request.head.sha}}
+        run: |
+          echo "sha=$(git merge-base "$BASE_SHA" "$HEAD_SHA")" >> $GITHUB_OUTPUT
+
+      - name: This PR includes changes to runtime build artifacts
+        uses: actions/github-script@v7
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          MERGE_BASE_SHA: ${{steps.merge-base.outputs.sha}}
+        with:
+          script: |
+            process.exitCode = 1
+            core.error(
+              'The CI pipeline will rebuild and publish the runtime automatically.\n' +
+              'Please run the following command (or equivalent) in your local wails repo\n' +
+              'to revert all build artifact changes; then update the PR:\n\n' +
+              '    cd v3/internal/runtime/desktop/@wailsio/runtime &&\n' +
+              `    git restore -s ${process.env.MERGE_BASE_SHA} -W -S -- dist types &&\n` +
+              '    git commit -m "Revert build artifact changes"\n',
+              { title: 'This PR includes changes to runtime build artifacts' }
+            );
+
+  test_js:
+    name: Run JS Tests
+    needs: check_approval
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: |
+          npm ci
+          npx --yes esbuild@latest --version
+
+      - name: Clean build artifacts
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm run clean
+
+      - name: Type-check runtime
+        working-directory: v3
+        run: task runtime:check
+
+      - name: Test runtime
+        working-directory: v3
+        run: task runtime:test
+
+      - name: Check that the bundled runtime builds
+        working-directory: v3
+        run: task runtime:build
+
+      - name: Check that the npm package builds
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm run build
+
+      - name: Store runtime build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-build-artifacts
+          path: |
+            v3/internal/runtime/desktop/@wailsio/runtime/dist/
+            v3/internal/runtime/desktop/@wailsio/runtime/types/
+            v3/internal/runtime/desktop/@wailsio/runtime/tsconfig.tsbuildinfo
+
   test_go:
     name: Run Go Tests v3
-    needs: check_approval
+    needs: [check_approval, test_js]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -59,25 +161,31 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Retrieve runtime build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: runtime-build-artifacts
+          path: v3/internal/runtime/desktop/@wailsio/runtime/
+
       - name: Build Examples
-        working-directory: ./v3
+        working-directory: v3
         run: task test:examples
 
       - name: Run tests (mac)
         if: matrix.os == 'macos-latest'
         env:
           CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
-        working-directory: ./v3
+        working-directory: v3
         run: go test -v ./...
 
       - name: Run tests (windows)
         if: matrix.os == 'windows-latest'
-        working-directory: ./v3
+        working-directory: v3
         run: go test -v ./...
 
       - name: Run tests (ubuntu)
         if: matrix.os == 'ubuntu-latest'
-        working-directory: ./v3
+        working-directory: v3
         run: >
           xvfb-run --auto-servernum
           sh -c '
@@ -86,33 +194,19 @@ jobs:
           '
 
       - name: Typecheck binding generator output
-        working-directory: ./v3
+        working-directory: v3
         run: task generator:test:check
 
-  test_js:
-    name: Run JS Tests
-    needs: check_approval
+  cleanup:
+    name: Cleanup build artifacts
+    if: always()
+    needs: [test_js, test_go]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - uses: geekyeggo/delete-artifact@v5
         with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        run: npm install
-        working-directory: v2/internal/frontend/runtime
-
-      - name: Run tests
-        run: npm test
-        working-directory: v2/internal/frontend/runtime
+          name: runtime-build-artifacts
+          failOnError: false
 
   test_templates:
     name: Test Templates
@@ -160,7 +254,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Wails3 CLI
-        working-directory: ./v3
+        working-directory: v3
         run: |
           task install
           wails3 doctor

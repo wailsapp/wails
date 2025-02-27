@@ -4,47 +4,41 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import {Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create} from "/wails/runtime.js";
 
 /**
- * @returns {Promise<string> & { cancel(): void }}
+ * @returns {$CancellablePromise<string>}
  */
 export function Close() {
-    let $resultPromise = /** @type {any} */($Call.ByID(1888105376));
-    return $resultPromise;
+    return $Call.ByID(1888105376);
 }
 
 /**
  * @param {string} query
  * @param {any[]} args
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function Execute(query, ...args) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3811930203, query, args));
-    return $resultPromise;
+    return $Call.ByID(3811930203, query, args);
 }
 
 /**
  * @param {string} dbPath
- * @returns {Promise<string> & { cancel(): void }}
+ * @returns {$CancellablePromise<string>}
  */
 export function Open(dbPath) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2012175612, dbPath));
-    return $resultPromise;
+    return $Call.ByID(2012175612, dbPath);
 }
 
 /**
  * @param {string} query
  * @param {any[]} args
- * @returns {Promise<{ [_: string]: any }[]> & { cancel(): void }}
+ * @returns {$CancellablePromise<{ [_: string]: any }[]>}
  */
 export function Select(query, ...args) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2472933124, query, args));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByID(2472933124, query, args).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType1($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 // Private type creation functions
