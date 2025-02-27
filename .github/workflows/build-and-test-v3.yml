@@ -3,8 +3,12 @@ name: Build + Test v3
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - v3-alpha
   pull_request_review:
     types: [submitted]
+    branches:
+      - v3-alpha
 
 jobs:
   check_approval:
@@ -23,7 +27,7 @@ jobs:
           fi
 
   test_go:
-    name: Run Go Tests
+    name: Run Go Tests v3
     needs: check_approval
     runs-on: ${{ matrix.os }}
     strategy:
