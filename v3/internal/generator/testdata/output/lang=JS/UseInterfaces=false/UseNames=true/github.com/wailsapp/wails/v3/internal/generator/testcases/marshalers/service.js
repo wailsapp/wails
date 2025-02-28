@@ -4,22 +4,19 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
 import * as $models from "./models.js";
 
 /**
- * @returns {Promise<$models.Data> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.Data>}
  */
 export function Method() {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.Service.Method"));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.Service.Method").then(/** @type {($result: any) => any} */(($result) => {
         return $$createType0($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 // Private type creation functions

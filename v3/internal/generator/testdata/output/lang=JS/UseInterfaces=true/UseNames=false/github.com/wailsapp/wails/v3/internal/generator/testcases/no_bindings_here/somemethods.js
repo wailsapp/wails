@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -17,18 +17,16 @@ import * as $models from "./models.js";
 
 /**
  * LikeThisOne is an example method that does nothing.
- * @returns {Promise<[$models.Person, $models.HowDifferent<boolean>, $models.PrivatePerson]> & { cancel(): void }}
+ * @returns {$CancellablePromise<[$models.Person, $models.HowDifferent<boolean>, $models.PrivatePerson]>}
  */
 export function LikeThisOne() {
-    let $resultPromise = /** @type {any} */($Call.ByID(2124352079));
-    return $resultPromise;
+    return $Call.ByID(2124352079);
 }
 
 /**
  * LikeThisOtherOne does nothing as well, but is different.
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function LikeThisOtherOne() {
-    let $resultPromise = /** @type {any} */($Call.ByID(4281222271));
-    return $resultPromise;
+    return $Call.ByID(4281222271);
 }

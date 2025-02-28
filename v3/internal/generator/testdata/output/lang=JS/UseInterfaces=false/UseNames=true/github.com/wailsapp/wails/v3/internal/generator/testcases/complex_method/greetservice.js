@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -25,17 +25,14 @@ import * as $models from "./models.js";
  * @param {{ [_: `${number}`]: boolean | null }} assoc
  * @param {(number | null)[]} $4
  * @param {string[]} other
- * @returns {Promise<[$models.Person, any, number[]]> & { cancel(): void }}
+ * @returns {$CancellablePromise<[$models.Person, any, number[]]>}
  */
 export function Greet(str, people, $2, assoc, $4, ...other) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Greet", str, people, $2, assoc, $4, other));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.Greet", str, people, $2, assoc, $4, other).then(/** @type {($result: any) => any} */(($result) => {
         $result[0] = $$createType0($result[0]);
         $result[2] = $$createType1($result[2]);
         return $result;
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 // Private type creation functions

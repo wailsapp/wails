@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -22,55 +22,49 @@ import * as $models from "./models.js";
 /**
  * Get someone.
  * @param {$models.Alias} aliasValue
- * @returns {Promise<$models.Person> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.Person>}
  */
 export function Get(aliasValue) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1928502664, aliasValue));
-    return $resultPromise;
+    return $Call.ByID(1928502664, aliasValue);
 }
 
 /**
  * Apparently, aliases are all the rage right now.
  * @param {$models.AliasedPerson} p
- * @returns {Promise<$models.StrangelyAliasedPerson> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.StrangelyAliasedPerson>}
  */
 export function GetButAliased(p) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1896499664, p));
-    return $resultPromise;
+    return $Call.ByID(1896499664, p);
 }
 
 /**
  * Get someone quite different.
- * @returns {Promise<$models.GenericPerson<boolean>> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.GenericPerson<boolean>>}
  */
 export function GetButDifferent() {
-    let $resultPromise = /** @type {any} */($Call.ByID(2240931744));
-    return $resultPromise;
+    return $Call.ByID(2240931744);
 }
 
 /**
- * @returns {Promise<nobindingshere$0.PrivatePerson> & { cancel(): void }}
+ * @returns {$CancellablePromise<nobindingshere$0.PrivatePerson>}
  */
 export function GetButForeignPrivateAlias() {
-    let $resultPromise = /** @type {any} */($Call.ByID(643456960));
-    return $resultPromise;
+    return $Call.ByID(643456960);
 }
 
 /**
- * @returns {Promise<$models.AliasGroup> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.AliasGroup>}
  */
 export function GetButGenericAliases() {
-    let $resultPromise = /** @type {any} */($Call.ByID(914093800));
-    return $resultPromise;
+    return $Call.ByID(914093800);
 }
 
 /**
  * Greet a lot of unusual things.
  * @param {$models.EmptyAliasStruct} $0
  * @param {$models.EmptyStruct} $1
- * @returns {Promise<$models.AliasStruct> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.AliasStruct>}
  */
 export function Greet($0, $1) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1411160069, $0, $1));
-    return $resultPromise;
+    return $Call.ByID(1411160069, $0, $1);
 }

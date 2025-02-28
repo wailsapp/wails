@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -25,9 +25,8 @@ import * as $models from "./models.js";
  * @param {{ [_: `${number}`]: boolean | null } | null} assoc
  * @param {(number | null)[] | null} $4
  * @param {string[]} other
- * @returns {Promise<[$models.Person, any, number[] | null]> & { cancel(): void }}
+ * @returns {$CancellablePromise<[$models.Person, any, number[] | null]>}
  */
 export function Greet(str, people, $2, assoc, $4, ...other) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1411160069, str, people, $2, assoc, $4, other));
-    return $resultPromise;
+    return $Call.ByID(1411160069, str, people, $2, assoc, $4, other);
 }

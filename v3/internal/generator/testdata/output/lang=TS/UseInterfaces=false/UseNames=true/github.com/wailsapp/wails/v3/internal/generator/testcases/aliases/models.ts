@@ -3,7 +3,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Create as $Create} from "/wails/runtime.js";
+import { Create as $Create } from "/wails/runtime.js";
 
 /**
  * A nice type Alias.
@@ -169,7 +169,7 @@ export class GenericPerson<T> {
      * returns a creation function for a concrete instance
      * of the generic class GenericPerson.
      */
-    static createFrom<T>($$createParamT: (source: any) => T): ($$source?: any) => GenericPerson<T> {
+    static createFrom<T = any>($$createParamT: (source: any) => T): ($$source?: any) => GenericPerson<T> {
         const $$createField0_0 = $$createParamT;
         return ($$source: any = {}) => {
             let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;

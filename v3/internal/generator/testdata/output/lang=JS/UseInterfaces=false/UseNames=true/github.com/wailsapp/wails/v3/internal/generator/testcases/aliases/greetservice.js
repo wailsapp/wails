@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -22,81 +22,63 @@ import * as $models from "./models.js";
 /**
  * Get someone.
  * @param {$models.Alias} aliasValue
- * @returns {Promise<$models.Person> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.Person>}
  */
 export function Get(aliasValue) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Get", aliasValue));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.Get", aliasValue).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType0($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
  * Apparently, aliases are all the rage right now.
  * @param {$models.AliasedPerson} p
- * @returns {Promise<$models.StrangelyAliasedPerson> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.StrangelyAliasedPerson>}
  */
 export function GetButAliased(p) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.GetButAliased", p));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.GetButAliased", p).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType0($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
  * Get someone quite different.
- * @returns {Promise<$models.GenericPerson<boolean>> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.GenericPerson<boolean>>}
  */
 export function GetButDifferent() {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.GetButDifferent"));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.GetButDifferent").then(/** @type {($result: any) => any} */(($result) => {
         return $$createType1($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
- * @returns {Promise<nobindingshere$0.PrivatePerson> & { cancel(): void }}
+ * @returns {$CancellablePromise<nobindingshere$0.PrivatePerson>}
  */
 export function GetButForeignPrivateAlias() {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.GetButForeignPrivateAlias"));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.GetButForeignPrivateAlias").then(/** @type {($result: any) => any} */(($result) => {
         return $$createType2($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
- * @returns {Promise<$models.AliasGroup> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.AliasGroup>}
  */
 export function GetButGenericAliases() {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.GetButGenericAliases"));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.GetButGenericAliases").then(/** @type {($result: any) => any} */(($result) => {
         return $$createType3($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
  * Greet a lot of unusual things.
  * @param {$models.EmptyAliasStruct} $0
  * @param {$models.EmptyStruct} $1
- * @returns {Promise<$models.AliasStruct> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.AliasStruct>}
  */
 export function Greet($0, $1) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Greet", $0, $1));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.Greet", $0, $1).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType7($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 // Private type creation functions
