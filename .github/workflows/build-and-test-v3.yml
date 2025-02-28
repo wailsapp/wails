@@ -26,50 +26,6 @@ jobs:
             echo "approved=false" >> $GITHUB_OUTPUT
           fi
 
-  check_build_artifacts:
-    name: Check runtime build artifact changes
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: 'true'
-
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v45
-        with:
-          files: |
-            v3/internal/runtime/desktop/@wailsio/runtime/dist/**
-            v3/internal/runtime/desktop/@wailsio/runtime/types/**
-
-      - name: Get merge base
-        id: merge-base
-        if: steps.changed-files.outputs.any_changed == 'true'
-        env:
-          BASE_SHA: ${{github.event.pull_request.base.sha}}
-          HEAD_SHA: ${{github.event.pull_request.head.sha}}
-        run: |
-          echo "sha=$(git merge-base "$BASE_SHA" "$HEAD_SHA")" >> $GITHUB_OUTPUT
-
-      - name: This PR includes changes to runtime build artifacts
-        uses: actions/github-script@v7
-        if: steps.changed-files.outputs.any_changed == 'true'
-        env:
-          MERGE_BASE_SHA: ${{steps.merge-base.outputs.sha}}
-        with:
-          script: |
-            process.exitCode = 1
-            core.error(
-              'The CI pipeline will rebuild and publish the runtime automatically.\n' +
-              'Please run the following command (or equivalent) in your local wails repo\n' +
-              'to revert all build artifact changes; then update the PR:\n\n' +
-              '    cd v3/internal/runtime/desktop/@wailsio/runtime &&\n' +
-              `    git restore -s ${process.env.MERGE_BASE_SHA} -W -S -- dist types &&\n` +
-              '    git commit -m "Revert build artifact changes"\n',
-              { title: 'This PR includes changes to runtime build artifacts' }
-            );
-
   test_js:
     name: Run JS Tests
     needs: check_approval
