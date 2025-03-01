@@ -11,8 +11,8 @@ The electron alternative for Go
 import * as Runtime from "../@wailsio/runtime/src";
 
 // NOTE: the following methods MUST be imported explicitly because of how esbuild injection works
-import {Enable as EnableWML} from "../@wailsio/runtime/src/wml";
-import {debugLog} from "../@wailsio/runtime/src/utils";
+import { Enable as EnableWML } from "../@wailsio/runtime/src/wml";
+import { debugLog } from "../@wailsio/runtime/src/utils";
 
 window.wails = Runtime;
 EnableWML();

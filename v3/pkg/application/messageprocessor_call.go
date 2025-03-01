@@ -151,7 +151,9 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			// Prepare args for logging. This should never fail since json.Unmarshal succeeded before.
 			jsonArgs, _ := json.Marshal(options.Args)
 			var jsonResult []byte
-			defer m.Info("Binding call complete:", "id", *callID, "method", boundMethod, "args", string(jsonArgs), "result", string(jsonResult))
+			defer func() {
+				m.Info("Binding call complete:", "id", *callID, "method", boundMethod, "args", string(jsonArgs), "result", string(jsonResult))
+			}()
 
 			// Set the context values for the window
 			if window != nil {

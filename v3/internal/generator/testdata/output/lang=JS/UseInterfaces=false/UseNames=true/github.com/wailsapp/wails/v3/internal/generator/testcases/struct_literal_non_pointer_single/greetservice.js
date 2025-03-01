@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -17,413 +17,358 @@ import * as $models from "./models.js";
 
 /**
  * @param {number[]} $in
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function ArrayInt($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.ArrayInt", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.ArrayInt", $in);
 }
 
 /**
  * @param {boolean} $in
- * @returns {Promise<boolean> & { cancel(): void }}
+ * @returns {$CancellablePromise<boolean>}
  */
 export function BoolInBoolOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.BoolInBoolOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.BoolInBoolOut", $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function Float32InFloat32Out($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Float32InFloat32Out", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Float32InFloat32Out", $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function Float64InFloat64Out($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Float64InFloat64Out", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Float64InFloat64Out", $in);
 }
 
 /**
  * Greet someone
  * @param {string} name
- * @returns {Promise<string> & { cancel(): void }}
+ * @returns {$CancellablePromise<string>}
  */
 export function Greet(name) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Greet", name));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Greet", name);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function Int16InIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int16InIntOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Int16InIntOut", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function Int16PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int16PointerInAndOutput", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Int16PointerInAndOutput", $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function Int32InIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int32InIntOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Int32InIntOut", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function Int32PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int32PointerInAndOutput", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Int32PointerInAndOutput", $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function Int64InIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int64InIntOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Int64InIntOut", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function Int64PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int64PointerInAndOutput", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Int64PointerInAndOutput", $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function Int8InIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int8InIntOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Int8InIntOut", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function Int8PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Int8PointerInAndOutput", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Int8PointerInAndOutput", $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function IntInIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.IntInIntOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.IntInIntOut", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function IntPointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.IntPointerInAndOutput", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.IntPointerInAndOutput", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function IntPointerInputNamedOutputs($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.IntPointerInputNamedOutputs", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.IntPointerInputNamedOutputs", $in);
 }
 
 /**
  * @param {{ [_: `${number}`]: number }} $in
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function MapIntInt($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.MapIntInt", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.MapIntInt", $in);
 }
 
 /**
  * @param {{ [_: `${number}`]: number | null }} $in
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function MapIntIntPointer($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.MapIntIntPointer", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.MapIntIntPointer", $in);
 }
 
 /**
  * @param {{ [_: `${number}`]: number[] }} $in
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function MapIntSliceInt($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.MapIntSliceInt", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.MapIntSliceInt", $in);
 }
 
 /**
  * @param {{ [_: `${number}`]: number[] }} $in
- * @returns {Promise<{ [_: `${number}`]: number[] }> & { cancel(): void }}
+ * @returns {$CancellablePromise<{ [_: `${number}`]: number[] }>}
  */
 export function MapIntSliceIntInMapIntSliceIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.MapIntSliceIntInMapIntSliceIntOut", $in));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.MapIntSliceIntInMapIntSliceIntOut", $in).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType1($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
- * @returns {Promise<string> & { cancel(): void }}
+ * @returns {$CancellablePromise<string>}
  */
 export function NoInputsStringOut() {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.NoInputsStringOut"));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.NoInputsStringOut");
 }
 
 /**
  * @param {boolean | null} $in
- * @returns {Promise<boolean | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<boolean | null>}
  */
 export function PointerBoolInBoolOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.PointerBoolInBoolOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.PointerBoolInBoolOut", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function PointerFloat32InFloat32Out($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.PointerFloat32InFloat32Out", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.PointerFloat32InFloat32Out", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function PointerFloat64InFloat64Out($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.PointerFloat64InFloat64Out", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.PointerFloat64InFloat64Out", $in);
 }
 
 /**
  * @param {{ [_: `${number}`]: number } | null} $in
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function PointerMapIntInt($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.PointerMapIntInt", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.PointerMapIntInt", $in);
 }
 
 /**
  * @param {string | null} $in
- * @returns {Promise<string | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<string | null>}
  */
 export function PointerStringInStringOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.PointerStringInStringOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.PointerStringInStringOut", $in);
 }
 
 /**
  * @param {string[]} $in
- * @returns {Promise<string[]> & { cancel(): void }}
+ * @returns {$CancellablePromise<string[]>}
  */
 export function StringArrayInputNamedOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StringArrayInputNamedOutput", $in));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.StringArrayInputNamedOutput", $in).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType2($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
  * @param {string[]} $in
- * @returns {Promise<string[]> & { cancel(): void }}
+ * @returns {$CancellablePromise<string[]>}
  */
 export function StringArrayInputNamedOutputs($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StringArrayInputNamedOutputs", $in));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.StringArrayInputNamedOutputs", $in).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType2($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
  * @param {string[]} $in
- * @returns {Promise<string[]> & { cancel(): void }}
+ * @returns {$CancellablePromise<string[]>}
  */
 export function StringArrayInputStringArrayOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StringArrayInputStringArrayOut", $in));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.StringArrayInputStringArrayOut", $in).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType2($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
  * @param {string[]} $in
- * @returns {Promise<string> & { cancel(): void }}
+ * @returns {$CancellablePromise<string>}
  */
 export function StringArrayInputStringOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StringArrayInputStringOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.StringArrayInputStringOut", $in);
 }
 
 /**
  * @param {$models.Person} $in
- * @returns {Promise<$models.Person> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.Person>}
  */
 export function StructInputStructOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StructInputStructOutput", $in));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.StructInputStructOutput", $in).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType3($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
  * @param {$models.Person | null} $in
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function StructPointerInputErrorOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StructPointerInputErrorOutput", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.StructPointerInputErrorOutput", $in);
 }
 
 /**
  * @param {$models.Person | null} $in
- * @returns {Promise<$models.Person | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.Person | null>}
  */
 export function StructPointerInputStructPointerOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.StructPointerInputStructPointerOutput", $in));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByName("main.GreetService.StructPointerInputStructPointerOutput", $in).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType4($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function UInt16InUIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt16InUIntOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.UInt16InUIntOut", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function UInt16PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt16PointerInAndOutput", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.UInt16PointerInAndOutput", $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function UInt32InUIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt32InUIntOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.UInt32InUIntOut", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function UInt32PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt32PointerInAndOutput", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.UInt32PointerInAndOutput", $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function UInt64InUIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt64InUIntOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.UInt64InUIntOut", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function UInt64PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt64PointerInAndOutput", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.UInt64PointerInAndOutput", $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function UInt8InUIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt8InUIntOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.UInt8InUIntOut", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function UInt8PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UInt8PointerInAndOutput", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.UInt8PointerInAndOutput", $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function UIntInUIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UIntInUIntOut", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.UIntInUIntOut", $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function UIntPointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.UIntPointerInAndOutput", $in));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.UIntPointerInAndOutput", $in);
 }
 
 // Private type creation functions

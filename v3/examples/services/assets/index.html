@@ -48,11 +48,7 @@
                 let results = document.getElementById("sqlresults");
                 results.innerHTML = "";
                 if (!isSelect) {
-                    let message = "Query executed successfully";
-                    if (result.length > 0) {
-                        message += " - " + result;
-                    }
-                    results.innerHTML = message;
+                    results.innerHTML = "Query executed successfully";
                     return;
                 }
                 if (result.length === 0) {
@@ -78,6 +74,8 @@
                 }
                 results.appendChild(table);
             }).catch((err) => {
+                // Log error for debugging
+                console.error(err);
                 // Put error in results
                 document.getElementById("sqlresults").innerHTML = "<p class='error-message'>" + err + "</p>";
             });

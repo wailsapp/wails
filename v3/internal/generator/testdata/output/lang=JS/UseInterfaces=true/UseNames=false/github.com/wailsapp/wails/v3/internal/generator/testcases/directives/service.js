@@ -4,7 +4,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -12,20 +12,18 @@ import * as otherpackage$0 from "./otherpackage/models.js";
 
 /**
  * @param {string} $0
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 function InternalMethod($0) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3518775569, $0));
-    return $resultPromise;
+    return $Call.ByID(3518775569, $0);
 }
 
 /**
  * @param {otherpackage$0.Dummy} $0
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function VisibleMethod($0) {
-    let $resultPromise = /** @type {any} */($Call.ByID(474018228, $0));
-    return $resultPromise;
+    return $Call.ByID(474018228, $0);
 }
 
 /**
