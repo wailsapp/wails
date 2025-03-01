@@ -1,0 +1,499 @@
+---
+title: Integrating Sparkle for Self-Updates
+description: A tutorial on integrating Sparkle for automatic updates in macOS and Windows applications
+---
+
+import { Tabs, TabItem, FileTree } from '@astrojs/starlight/components';
+import {Image } from 'astro:assets';
+
+import gatekeeper from "../../../assets/sparkle/gatekeeper.png";
+import openprompt from "../../../assets/sparkle/openprompt.png";
+import prefs from "../../../assets/sparkle/prefs.png";
+import touchid from "../../../assets/sparkle/touchid.png";
+import winsparkle from "../../../assets/sparkle/winsparkle-screenshot.png";
+import updater3 from "../../../assets/sparkle/updater3.mp4";
+
+
+[Sparkle](https://sparkle-project.org/) provides all the functionality needed for updating applications. It handles:
+
+- Checking for updates (automatically or manually)
+- Downloading updates
+- Verifying update integrity with cryptographic signatures
+- Installing updates with user consent
+
+:::note
+For this tutorial, an [Apple developer certificate](https://developer.apple.com/help/account/create-certificates/create-developer-id-certificates) is required.
+:::
+
+## Tutorial: Integrating Sparkle with Wails
+
+This tutorial will walk you through the complete process of adding self-update capabilities to your Wails application using Sparkle. We'll cover:
+
+1. Installing the Sparkle framework
+2. Integrating with go-sparkle
+3. Setting up a local development server for testing updates
+4. Creating and signing update packages
+5. Configuring the appcast.xml file
+
+
+By the end of the tutorial, you'll know how to integrate Sparkle into your Wails application. Here is a demo:
+
+<video src={updater3} controls></video>
+
+
+### Step 1: Installing the Sparkle Framework
+
+First, we need to download and integrate the Sparkle framework into our application bundle.
+
+#### Download Sparkle Framework
+
+1. Download the latest Sparkle package [from GitHub](https://github.com/sparkle-project/Sparkle/releases)
+2. Extract the downloaded archive
+3. For this tutorial, we're using [Sparkle 2.6.4](https://github.com/sparkle-project/Sparkle/releases/tag/2.6.4)
+
+The extracted Sparkle package contains several important directories and files:
+
+<FileTree>
+- CHANGELOG
+- INSTALL
+- LICENSE
+- SampleAppcast.xml
+- Sparkle&nbsp;Test&nbsp;App.app
+- Sparkle.framework/
+  - Autoupdate -> Versions/Current/Autoupdate
+  - Headers -> Versions/Current/Headers
+  - Modules -> Versions/Current/Modules
+  - PrivateHeaders -> Versions/Current/PrivateHeaders
+  - Resources -> Versions/Current/Resources
+  - Sparkle -> Versions/Current/Sparkle
+  - Updater.app -> Versions/Current/Updater.app
+  - Versions/
+  - XPCServices -> Versions/Current/XPCServices
+- Symbols/
+  - Various&nbsp;.dSYM&nbsp;files
+- bin/
+  - BinaryDelta
+  - generate_appcast
+  - generate_keys
+  - old_dsa_scripts
+  - sign_update
+- sparkle.app
+</FileTree>
+
+#### Add Sparkle Framework to Your App
+
+1. Create a `Frameworks` directory in your `build/darwin` folder:
+
+```shell
+mkdir -p build/darwin/Frameworks
+```
+
+2. Copy the Sparkle framework to your `build/darwin` folder:
+
+```shell
+cp -R /path/to/Sparkle-2.6.4/Sparkle.framework build/darwin/Frameworks
+```
+
+:::note
+The `Frameworks` directory is the standard location for frameworks within macOS applications. When examining existing applications (via right-click > Show Package Contents), you'll find frameworks in paths like `/Applications/AppName.app/Contents/Frameworks/`.
+:::
+
+#### Update Build Configuration
+
+Modify your `build/darwin/Taskfile.yml` to copy the Sparkle framework into your app bundle:
+
+```diff
+  create:app:bundle:
+    summary: Creates an `.app` bundle
+    cmds:
+      - mkdir -p {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/{MacOS,Resources,Frameworks}
+      - cp build/icons.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources
+      - cp {{.BIN_DIR}}/{{.APP_NAME}} {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS
+      - cp build/darwin/Info.plist {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents
++     - cp -R build/darwin/Frameworks/Sparkle.framework {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Frameworks
+```
+
+#### Set up CGO_LDFLAGS
+
+Under the `env` block of the `build` task in `build/darwin/Taskfile.yml`, add:
+
+```diff
+  env:
+    CGO_ENABLED: 1
+    CGO_CFLAGS: -mmacosx-version-min=10.13
+-   CGO_LDFLAGS: -mmacosx-version-min=10.13 
++   CGO_LDFLAGS: -mmacosx-version-min=10.13 -rpath @loader_path/../Frameworks
+```
+
+This path is relative to where our binary will be inside the app bundle:
+
+<FileTree>
+    - YourApp.app/
+      - Contents/
+        - MacOS/
+          - YourApp
+        - Frameworks/
+          - Sparkle.framework/
+</FileTree>
+
+#### Update Info.plist
+
+Add the following keys to your `build/darwin/Info.plist` file:
+
+```xml
+<key>SUFeedURL</key>
+<string>https://localhost/appcast.xml</string>
+<key>SUEnableAutomaticChecks</key>
+<false/>
+```
+
+We'll generate and add the public key in a later step.
+
+#### Test Build
+
+Now, we will test that building the app bundle works. To do this, run:
+
+```shell
+wails3 package
+```
+
+If the build was successful, the app bundle should contain the Sparkle framework:
+
+<FileTree>
+    - YourApp.app/
+      - Contents/
+        - MacOS/
+          - YourApp
+        - Frameworks/
+          - Sparkle.framework/
+</FileTree>
+
+You can check this by right clicking on the app bundle and selecting "Show Package Contents".
+
+
+### Step 2: Integrating with go-sparkle
+
+Now that we have the Sparkle framework installed, let's integrate it with our Go code using the [go-sparkle](https://github.com/abemedia/go-sparkle) package.
+
+#### Install go-sparkle
+
+Add the go-sparkle package to your project:
+
+```shell
+go get github.com/abemedia/go-sparkle
+```
+
+#### Basic Integration
+
+In your `main.go` file, import `go-sparkle` with a leading underscore:
+
+```go
+import (
+   _ "github.com/abemedia/go-sparkle"
+)
+```
+
+#### Rebuild your Application
+
+To rebuild your application, run:
+
+```shell
+wails3 package
+```
+
+If all is successful, you should be able to run your application and get a popup dialog asking if you want to enable automatic updates.
+
+TBD: PICTURE
+
+
+### Step 3: Setting up a Local Development Server
+
+To test the update mechanism, we need a server to host our update files. We'll use [Caddy](https://caddyserver.com/) for this purpose as it provides excellent HTTPS support.
+
+#### Install Caddy
+
+Install Caddy using Homebrew:
+
+```shell
+brew install caddy
+```
+
+#### Create Updates Directory
+
+Create an `updates` directory to host your update files:
+
+```shell
+mkdir -p build/darwin/updates
+```
+
+#### Create a Caddyfile
+
+Create a file named `Caddyfile` in your project directory with:
+
+```
+localhost {
+  root * ./build/darwin/updates
+  file_server
+}
+```
+
+#### Create a test html file
+
+Create an html file to test the server:
+
+```shell
+echo "Hello World" > build/darwin/updates/index.html
+```
+
+#### Start the Server
+
+Start Caddy with:
+
+```shell
+caddy run
+```
+
+If you now browse to `https://localhost`, you should see the test HTML file.
+
+### Step 4: Creating and Signing Updates
+
+Sparkle uses cryptographic signatures to verify update integrity. Let's set up the necessary keys and learn how to sign updates.
+
+#### Generate Sparkle Keys
+
+Use the `generate_keys` tool from the Sparkle package:
+
+```shell
+/path/to/Sparkle-2.6.4/bin/generate_keys
+```
+
+When running this tool for the first time, you may encounter macOS Gatekeeper security prompts:
+
+<Image src={gatekeeper} alt="Gatekeeper blocking dialog"/>
+
+To proceed, open System Settings > Privacy & Security and scroll to the bottom:
+
+:::note
+The naming above is as of macOS Sequoia 15.3. Previous versions of macOS may differ.
+:::
+
+<Image src={prefs} alt="Privacy & Security settings"/>
+
+Click "Allow Anyway" and then run the tool again. You'll see another prompt:
+
+<Image src={openprompt} alt="Open prompt"/>
+
+Click "Open Anyway" and authenticate:
+
+<Image src={touchid} alt="Touch ID authentication"/>
+
+After authentication, the tool will generate a key pair and output your public key:
+
+```
+$ ./bin/generate_keys
+Generating a new signing key. This may take a moment, depending on your machine.
+A key has been generated and saved in your keychain. Add the `SUPublicEDKey` key to
+the Info.plist of each app for which you intend to use Sparkle for distributing
+updates. It should appear like this:
+
+    <key>SUPublicEDKey</key>
+    <string>wiI5O/SGcbX9VdcIN+hBXvV66KI3gpTTlHMelslKsg0=</string>
+```
+
+This will generate two keys:
+- A private key (kept secure in your keychain)
+- A public key (add this to your Info.plist)
+
+Update your `build/darwin/Info.plist` with the generated public key:
+
+```xml
+<key>SUPublicEDKey</key>
+<string>GENERATED_PUBLIC_KEY</string>
+```
+
+#### Create a Test Update
+
+1. Firstly, rename your existing application to `oldversion.app`.
+2. Make a change to your existing application. For our demo app, we'll update the version number text to 1.0.0.
+3. Build the updated application using `wails3 package`
+4. Code sign the updated application:
+
+Check if you have a valid developer identity by running `security find-identity -v -p codesigning` which should show any valid identities in the format of Developer ID Application: Human Person (TEAMIDHERE)".
+
+
+
+```shell
+CODE_SIGN_IDENTITY="Developer ID Application: Human Person (TEAMIDHERE)"
+
+codesign -f -s "$CODE_SIGN_IDENTITY" -o runtime bin/updater3.app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc
+
+# For Sparkle versions >= 2.6
+codesign -f -s "$CODE_SIGN_IDENTITY" -o runtime --preserve-metadata=entitlements bin/updater3.app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc
+
+# For Sparkle versions < 2.6
+#codesign -f -s "$CODE_SIGN_IDENTITY" -o runtime --entitlements Entitlements/Downloader.entitlements bin/updater3.app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc
+
+codesign -f -s "$CODE_SIGN_IDENTITY" -o runtime bin/updater3.app/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate
+codesign -f -s "$CODE_SIGN_IDENTITY" -o runtime bin/updater3.app/Contents/Frameworks/Sparkle.framework/Versions/B/Updater.app
+codesign -f -s "$CODE_SIGN_IDENTITY" -o runtime bin/updater3.app/Contents/Frameworks/Sparkle.framework
+```
+5. Create a ZIP archive of the updated application:
+
+```shell
+ditto -c -k --keepParent "bin/YourApp.app" "build/darwin/updates/YourApp_1.0.0.zip"
+```
+
+#### Sign the Update
+
+Sign the update using the `sign_update` tool:
+
+```shell
+/path/to/Sparkle-2.6.4/bin/sign_update updates/YourApp_1.0.0.zip /path/to/your/private/key
+```
+
+This will output a signature that you'll need for your appcast.xml file.
+
+### Step 5: Creating the Appcast.xml File
+
+The appcast.xml file is an RSS feed that tells Sparkle where to find updates and what versions are available.
+
+Create an `appcast.xml` file in your `updates` directory:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <channel>
+        <title>YourApp Changelog</title>
+        <link>http://localhost:8000/appcast.xml</link>
+        <description>Most recent changes with links to updates.</description>
+        <language>en</language>
+        <item>
+            <title>Version 1.0.0</title>
+            <sparkle:version>1.0.0</sparkle:version>
+            <description>
+                <![CDATA[
+                    <h2>New Features</h2>
+                    <ul>
+                        <li>Feature 1</li>
+                        <li>Feature 2</li>
+                    </ul>
+                    <h2>Bug Fixes</h2>
+                    <ul>
+                        <li>Fix 1</li>
+                        <li>Fix 2</li>
+                    </ul>
+                ]]>
+            </description>
+            <pubDate>Wed, 01 Mar 2023 12:00:00 +0000</pubDate>
+            <enclosure
+                url="http://localhost:8000/YourApp_1.0.0.zip"
+                sparkle:version="1.0.0"
+                length="12345678"
+                type="application/octet-stream"
+                sparkle:edSignature="YOUR_SIGNATURE_FROM_SIGN_UPDATE"
+            />
+        </item>
+    </channel>
+</rss>
+```
+
+Replace `YOUR_SIGNATURE_FROM_SIGN_UPDATE` with the signature generated in the previous step.
+
+#### Automating Appcast Generation
+
+For convenience, you can use the `generate_appcast` tool to automatically generate the appcast.xml file:
+
+```shell
+/path/to/Sparkle-2.6.4/bin/generate_appcast \
+  --download-url-prefix "http://localhost:8000" \
+  --private-key-path /path/to/your/private/key \
+  updates/
+```
+
+This will scan the updates directory and generate an appcast.xml file with the correct signatures.
+
+### Step 6: Testing the Update Process
+
+Now that everything is set up, let's test the update process:
+
+1. Build and run your application with version 0.9.0
+2. The app should check for updates and find version 1.0.0
+3. Sparkle will prompt the user to update
+4. After confirmation, Sparkle will download and install the update
+
+## Additional Configuration
+
+### Customising Update Checks
+
+You can customise how Sparkle checks for updates by adding additional keys to your Info.plist:
+
+```xml
+<!-- Check for updates every 24 hours (86400 seconds) -->
+<key>SUScheduledCheckInterval</key>
+<integer>86400</integer>
+
+<!-- Skip minor updates -->
+<key>SUSkipMinorUpdates</key>
+<true/>
+```
+
+### Adding Manual Update Checks
+
+To provide a manual update check option, add a function like this to your application service:
+
+```go
+func (a *App) CheckForUpdates() {
+    sparkle.CheckForUpdates()
+}
+```
+
+Then, expose this function to your frontend:
+
+```go
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    // Create application with options
+    app := wails.NewApplication(wails.Options{
+        Assets: assets,
+        Bind: []interface{}{
+            &App{},
+        },
+    })
+
+    // Run the application
+    err := app.Run()
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+For a native macOS experience, add a menu item under `<App Name> -> Check for Updates` that calls this function.
+
+### Windows Support with WinSparkle
+
+For Windows applications, you can use WinSparkle, which provides similar functionality with an almost identical API. The go-sparkle package supports both Sparkle and WinSparkle, making it easy to support both platforms with minimal code changes.
+
+<Image src={winsparkle} alt="WinSparkle"/>
+
+## Conclusion
+
+You've now successfully integrated Sparkle into your Wails application, providing a robust self-update mechanism for your users. This approach gives you complete control over the update process whilst providing a native experience for your users.
+
+For production use, you'll want to:
+
+1. Host your updates on a secure server with HTTPS
+2. Keep your private key secure
+3. Consider using a CI/CD pipeline to automate the build, signing, and appcast generation process
+
+## References
+
+:::note
+This tutorial is based on [Marcus Crane's](https://github.com/marcus-crane) [Wails Sparkle guide](https://github.com/marcus-crane/wails3-sparkle-poc)
+:::
+
+- [Sparkle Documentation](https://sparkle-project.org/documentation/)
+- [go-sparkle Repository](https://github.com/abemedia/go-sparkle)
+- [WinSparkle Documentation](https://github.com/vslavik/winsparkle/wiki)
