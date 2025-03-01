@@ -2,9 +2,12 @@ name: PR Checks
 
 on:
   pull_request:
+    branches:
+      - master
   pull_request_review:
     types: [submitted]
-
+    branches:
+      - master
 jobs:
   check_docs:
     name: Check Docs
