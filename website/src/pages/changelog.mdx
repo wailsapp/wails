@@ -13,9 +13,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Security` in case of vulnerabilities.
 
 ## [Unreleased]
+
+### Fixed
+- Fixed Window size issues on Wayland [PR](https://github.com/wailsapp/wails/pull/4047) by [@lyimmi](https://github.com/lyimmi) 
+
+
 ### Changed
-- Removed documentation references for 'The default module name in go.mod is "changeme". You should change this to something more appropriate.' as it appears to be no longer relevant.
-- Update script in Mac App Store guide to support app names containing spaces by @cristianrgreco
+- Updated recommendation for Svelte router in [#4085](https://github.com/wailsapp/wails/pull/4085) by [@benmccann](https://github.com/benmccann)
+
+
+## v2.10.1 - 2025-02-24
+
+### Fixed
+- Fixed [listenerOff issue](https://github.com/wailsapp/wails/issues/3850) by @leaanthony.
+- Fixed issues building with `darwin/universal` target by @leaanthony.
+
+## v2.10 - 2025-02-15
 
 ### Added
 - Added option to set window class name on Windows. Added in [PR](https://github.com/wailsapp/wails/pull/3828) by @APshenkin
@@ -34,11 +47,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed failed models.ts build due to non-json-encodable Go types [PR](https://github.com/wailsapp/wails/pull/3975) by [@pbnjay](https://github.com/pbnjay)
 - Fixed more binding and typescript export bugs [PR](https://github.com/wailsapp/wails/pull/3978) by [@pbnjay](https://github.com/pbnjay)
 - Fixed Dispatcher.ProcessMessage crash process instead of return error [PR](https://github.com/wailsapp/wails/pull/4016) [#4015](https://github.com/wailsapp/wails/issues/4015) by [@ronaldinho_x86](https://github.com/RonaldinhoL)
-- Fixed Windows SaveDialog crash by [@leaanthony](https://github.com/leaanthony) 
-- Fixed Window size issues on Wayland [PR](https://github.com/wailsapp/wails/pull/4047) by [@lyimmi](https://github.com/lyimmi) 
+- Fixed Windows SaveDialog crash by [@leaanthony](https://github.com/leaanthony)
+- Fixed `buildvcs` errors by [@leaanthony](https://github.com/leaanthony)
+- Fixed updating menus on MacOS by [@stffabi](https://github.com/stffabi)
+- Fixed a build error on macOS that occurred when the `outputfilename` and `name` fields in wails.json were different. Fixed in [PR](https://github.com/wailsapp/wails/pull/3789) by [@nickisworking](https://github.com/nickisworking)
 
 ### Changed
+- Removed documentation references for 'The default module name in go.mod is "changeme". You should change this to something more appropriate.' as it appears to be no longer relevant.
+- Update script in Mac App Store guide to support app names containing spaces by @cristianrgreco
 - Allow to specify macos-min-version externally. Implemented by @APshenkin in [PR](https://github.com/wailsapp/wails/pull/3756)
+- Updated installation docs for latest linux os version and libwebkit issue [PR](https://github.com/wailsapp/wails/pull/3806) by [@pratikmota](https://github.com/pratikmota)
+
+
+
+## v2.9.3 - 2025-02-13
+
+### Added
+- Go 1.24 support by [@leaanthony](https://github.com/leaanthony)
+
+### Fixed
+- Now using `-buildvcs=false` build tag by default to remove `error obtaining VCS status: exit status 128` errors by [@leaanthony](https://github.com/leaanthony)
 
 ## v2.9.2 - 2024-09-18
 
@@ -57,11 +85,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed dialogs in Windows when using Go 1.23 in [PR](https://github.com/wailsapp/wails/pull/3707) by [@leaanthony](https://github.com/leaanthony)
 - More syscall fixes for Go 1.23 support in [PR](https://github.com/wailsapp/wails/pull/3713) by [@leaanthony](https://github.com/leaanthony)
 - Fixed drag and drop missing cursor icon [PR](https://github.com/wailsapp/wails/pull/3703) by [@mrf345](https://github.com/mrf345)
-- Fixed a build error on macOS that occurred when the `outputfilename` and `name` fields in wails.json were different. Fixed in [PR](https://github.com/wailsapp/wails/pull/3789) by [@nickisworking](https://github.com/nickisworking)
 
 ### Changed
 - Modified docs to reflect the correct password syntax for the `gon-sign.json` file [PR](https://github.com/wailsapp/wails/pull/3620) by [@ignasbernotas](github.com/ignasbernotas)
-- Updated installation docs for latest linux os version and libwebkit issue [PR](https://github.com/wailsapp/wails/pull/3806) by [@pratikmota](https://github.com/pratikmota)
 ## v2.9.1 - 2024-06-18
 
 ### Fixed

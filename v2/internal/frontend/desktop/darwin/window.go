@@ -32,6 +32,8 @@ func init() {
 
 type Window struct {
 	context unsafe.Pointer
+
+	applicationMenu *menu.Menu
 }
 
 func bool2Cint(value bool) C.int {
@@ -292,12 +294,16 @@ func (w *Window) Size() (int, int) {
 }
 
 func (w *Window) SetApplicationMenu(inMenu *menu.Menu) {
-	mainMenu := NewNSMenu(w.context, "")
-	processMenu(mainMenu, inMenu)
-	C.SetAsApplicationMenu(w.context, mainMenu.nsmenu)
+	w.applicationMenu = inMenu
+	w.UpdateApplicationMenu()
 }
 
 func (w *Window) UpdateApplicationMenu() {
+	mainMenu := NewNSMenu(w.context, "")
+	if w.applicationMenu != nil {
+		processMenu(mainMenu, w.applicationMenu)
+	}
+	C.SetAsApplicationMenu(w.context, mainMenu.nsmenu)
 	C.UpdateApplicationMenu(w.context)
 }
 
