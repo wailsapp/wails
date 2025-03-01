@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -17,18 +17,16 @@ import * as $models from "./models.js";
 
 /**
  * LikeThisOne is an example method that does nothing.
- * @returns {Promise<[$models.Person, $models.HowDifferent<boolean>, $models.PrivatePerson]> & { cancel(): void }}
+ * @returns {$CancellablePromise<[$models.Person, $models.HowDifferent<boolean>, $models.PrivatePerson]>}
  */
 export function LikeThisOne() {
-    let $resultPromise = /** @type {any} */($Call.ByName("github.com/wailsapp/wails/v3/internal/generator/testcases/no_bindings_here.SomeMethods.LikeThisOne"));
-    return $resultPromise;
+    return $Call.ByName("github.com/wailsapp/wails/v3/internal/generator/testcases/no_bindings_here.SomeMethods.LikeThisOne");
 }
 
 /**
  * LikeThisOtherOne does nothing as well, but is different.
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function LikeThisOtherOne() {
-    let $resultPromise = /** @type {any} */($Call.ByName("github.com/wailsapp/wails/v3/internal/generator/testcases/no_bindings_here.SomeMethods.LikeThisOtherOne"));
-    return $resultPromise;
+    return $Call.ByName("github.com/wailsapp/wails/v3/internal/generator/testcases/no_bindings_here.SomeMethods.LikeThisOtherOne");
 }

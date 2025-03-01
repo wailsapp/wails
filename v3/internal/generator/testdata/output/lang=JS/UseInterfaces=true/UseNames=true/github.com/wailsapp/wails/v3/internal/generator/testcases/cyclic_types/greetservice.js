@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -17,9 +17,8 @@ import * as $models from "./models.js";
 
 /**
  * Make a cycle.
- * @returns {Promise<[$models.Cyclic, $models.GenericCyclic<$models.GenericCyclic<number>>]> & { cancel(): void }}
+ * @returns {$CancellablePromise<[$models.Cyclic, $models.GenericCyclic<$models.GenericCyclic<number>>]>}
  */
 export function MakeCycles() {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.MakeCycles"));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.MakeCycles");
 }

@@ -3,20 +3,18 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
 import * as otherpackage$0 from "./otherpackage/models.js";
 
-function InternalMethod($0: string): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.Service.InternalMethod", $0) as any;
-    return $resultPromise;
+function InternalMethod($0: string): $CancellablePromise<void> {
+    return $Call.ByName("main.Service.InternalMethod", $0);
 }
 
-export function VisibleMethod($0: otherpackage$0.Dummy): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.Service.VisibleMethod", $0) as any;
-    return $resultPromise;
+export function VisibleMethod($0: otherpackage$0.Dummy): $CancellablePromise<void> {
+    return $Call.ByName("main.Service.VisibleMethod", $0);
 }
 
 export async function CustomMethod(arg: string): Promise<void> {

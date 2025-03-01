@@ -8,7 +8,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -17,24 +17,20 @@ import * as nobindingshere$0 from "../no_bindings_here/models.js";
 /**
  * LikeThisOne is an example method that does nothing.
  */
-export function LikeThisOne(): Promise<[nobindingshere$0.Person, nobindingshere$0.HowDifferent<boolean>, nobindingshere$0.PrivatePerson]> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.EmbedService.LikeThisOne") as any;
-    let $typingPromise = $resultPromise.then(($result: any) => {
+export function LikeThisOne(): $CancellablePromise<[nobindingshere$0.Person, nobindingshere$0.HowDifferent<boolean>, nobindingshere$0.PrivatePerson]> {
+    return $Call.ByName("main.EmbedService.LikeThisOne").then(($result: any) => {
         $result[0] = $$createType0($result[0]);
         $result[1] = $$createType1($result[1]);
         $result[2] = $$createType2($result[2]);
         return $result;
-    }) as any;
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
+    });
 }
 
 /**
  * LikeThisOtherOne does nothing as well, but is different.
  */
-export function LikeThisOtherOne(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.EmbedService.LikeThisOtherOne") as any;
-    return $resultPromise;
+export function LikeThisOtherOne(): $CancellablePromise<void> {
+    return $Call.ByName("main.EmbedService.LikeThisOtherOne");
 }
 
 // Private type creation functions

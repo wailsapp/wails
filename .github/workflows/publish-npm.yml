@@ -3,11 +3,55 @@ on:
     branches: ['v3-alpha']
   workflow_dispatch:
 
+concurrency:
+  group: publish-npm-v3
+  cancel-in-progress: true
+
 jobs:
-  publish:
+  detect:
+    name: Detect committed changes
+    if: github.event_name != 'workflow_dispatch'
+    outputs:
+      changed: ${{ steps.package-json-changes.outputs.any_modified == 'true' || steps.source-changes.outputs.any_modified == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: 'true'
+
+      - name: Detect committed package.json changes
+        id: package-json-changes
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            v3/internal/runtime/desktop/@wailsio/runtime/package.json
+
+      - name: Detect committed source changes
+        if: >-
+          steps.package-json-changes.outputs.any_modified != 'true'
+        id: source-changes
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            v3/internal/runtime/Taskfile.yaml
+            v3/internal/runtime/desktop/@wailsio/compiled/main.js
+            v3/internal/runtime/desktop/@wailsio/runtime/tsconfig.json
+            v3/internal/runtime/desktop/@wailsio/runtime/src/**
+            v3/pkg/events/events.txt
+            v3/tasks/events/**
+
+  rebuild_and_publish:
+    name: Rebuild and publish
+    needs: [detect]
+    if: >-
+      !failure() && !cancelled()
+      && (github.event_name == 'workflow_dispatch' || needs.detect.outputs.changed == 'true')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: 'v3-alpha'
@@ -49,48 +93,22 @@ jobs:
           npm test
           npm run build
 
-      - name: Detect npm package changes
-        uses: tj-actions/verify-changed-files@v20
-        id: package-changes
-        with:
-          files: |
-            v3/internal/runtime/desktop/@wailsio/runtime/dist/**
-            v3/internal/runtime/desktop/@wailsio/runtime/types/**
-
       - name: Bump version
-        if: github.event_name == 'workflow_dispatch' || steps.package-changes.outputs.files_changed == 'true'
         id: bump-version
         working-directory: v3/internal/runtime/desktop/@wailsio/runtime
         run: |
-          echo "version=$(npm version prerelease)" >> $GITHUB_OUTPUT
+          echo "version=$(npm --no-git-tag-version --force version prerelease)" >> "$GITHUB_OUTPUT"
 
       - name: Commit changes
-        if: github.event_name == 'workflow_dispatch' || steps.package-changes.outputs.files_changed == 'true'
         run: |
           git add .
           git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.bump-version.outputs.version }}"
           git push
+          fi
 
       - name: Publish npm package
         uses: JS-DevTools/npm-publish@v3
-        if: github.event_name == 'workflow_dispatch' || steps.package-changes.outputs.files_changed == 'true'
         with:
           package: v3/internal/runtime/desktop/@wailsio/runtime
           access: public
           token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Detect docs and bundled runtime changes
-        if: github.event_name != 'workflow_dispatch' && steps.package-changes.outputs.files_changed != 'true'
-        uses: tj-actions/verify-changed-files@v20
-        id: docs-bundle-changes
-        with:
-          files: |
-            v3/internal/assetserver/bundledassets/**
-            v3/internal/runtime/desktop/@wailsio/runtime/docs/**
-
-      - name: Commit docs and bundled runtime changes
-        if: github.event_name != 'workflow_dispatch' && steps.package-changes.outputs.files_changed != 'true' && steps.docs-bundle-changes.outputs.files_changed == 'true'
-        run: |
-          git add .
-          git commit -m "[skip ci] Update runtime docs and bundle"
-          git push

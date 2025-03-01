@@ -4,7 +4,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Create as $Create} from "/wails/runtime.js";
+import { Create as $Create } from "/wails/runtime.js";
 
 /**
  * @template S
@@ -1227,7 +1227,15 @@ export class Maps {
      * Given creation functions for each type parameter,
      * returns a creation function for a concrete instance
      * of the generic class Maps.
-     * @template R,S,T,U,V,W,X,Y,Z
+     * @template [R=any]
+     * @template [S=any]
+     * @template [T=any]
+     * @template [U=any]
+     * @template [V=any]
+     * @template [W=any]
+     * @template [X=any]
+     * @template [Y=any]
+     * @template [Z=any]
      * @param {(source: any) => R} $$createParamR
      * @param {(source: any) => S} $$createParamS
      * @param {(source: any) => T} $$createParamT
@@ -1926,24 +1934,24 @@ const $$createType55 = $Create.Map($Create.Any, $Create.Any);
 const $$createType56 = $Create.Map($Create.Any, $Create.Any);
 const $$createType57 = $Create.Map($Create.Any, $Create.Any);
 const $$createType58 = $Create.Map($Create.Any, $Create.Any);
-const $$createType59 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType60 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType61 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType62 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType63 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType64 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType65 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType66 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType67 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType68 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType69 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType70 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType71 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType72 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType73 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType74 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType75 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
-const $$createType76 = ($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any);
+const $$createType59 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType60 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType61 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType62 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType63 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType64 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType65 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType66 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType67 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType68 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType69 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType70 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType71 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType72 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType73 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType74 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType75 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
+const $$createType76 = /** @type {(...args: any[]) => any} */(($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ) => $Create.Map($Create.Any, $Create.Any));
 const $$createType77 = $Create.Map($Create.Any, $Create.Any);
 const $$createType78 = $Create.Map($Create.Any, $Create.Any);
 const $$createType79 = $Create.Map($Create.Any, $Create.Any);
