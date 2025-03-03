@@ -3,6 +3,7 @@ module github.com/wailsapp/wails/v3
 go 1.24.0
 
 require (
+	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.5.3
 	github.com/atterpac/refresh v0.8.4
@@ -45,6 +46,7 @@ require (
 
 require (
 	atomicgo.dev/schedule v0.1.0 // indirect
+	git.sr.ht/~whereswaldon/shout v0.0.0-20241212204820-26acea6b0007 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
 )
 
