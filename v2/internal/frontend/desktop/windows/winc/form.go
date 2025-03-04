@@ -145,7 +145,7 @@ func (fm *Form) Restore() {
 		SC_RESTORE,
 		0,
 	)
-	w32.ShowWindow(fm.hwnd, w32.SW_RESTORE)
+	w32.ShowWindow(fm.hwnd, w32.SW_SHOW)
 }
 
 // Public methods
