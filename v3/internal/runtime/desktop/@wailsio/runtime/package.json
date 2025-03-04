@@ -9,7 +9,10 @@
       "types": "./types/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./plugins/*": "./plugins/*"
+    "./plugins/*": {
+      "types": "./types/plugins/*.d.ts",
+      "default": "./dist/plugins/*.js"
+    }
   },
   "repository": {
     "type": "git",
@@ -54,6 +57,7 @@
     "typedoc-plugin-mdn-links": "^4.0.13",
     "typedoc-plugin-missing-exports": "^3.1.0",
     "typescript": "^5.7.3",
+    "vite": "^6.2.0",
     "vitest": "^3.0.6"
   },
   "overrides": {
