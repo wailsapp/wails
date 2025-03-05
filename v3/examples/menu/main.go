@@ -44,6 +44,12 @@ func main() {
 	// Let's make a "Demo" menu
 	myMenu := menu.AddSubmenu("Demo")
 
+	// Hidden menu item that can be unhidden
+	hidden := myMenu.Add("I was hidden").SetHidden(true)
+	myMenu.Add("Toggle hidden menu").OnClick(func(ctx *application.Context) {
+		hidden.SetHidden(!hidden.Hidden())
+	})
+
 	// Disabled menu item
 	myMenu.Add("Not Enabled").SetEnabled(false)
 
