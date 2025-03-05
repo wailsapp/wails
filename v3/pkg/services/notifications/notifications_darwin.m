@@ -73,12 +73,6 @@ static void ensureDelegateInitialized(void) {
 bool checkBundleIdentifier(void) {
     NSBundle *main = [NSBundle mainBundle];
     if (main.bundleIdentifier == nil) {
-        NSLog(@"Error: Cannot use the notification API in development mode.\n"
-              "  Notifications require the app to be properly bundled with a bundle identifier and signed.\n"
-              "  To test notifications:\n"
-              "  1. Build and package your app using 'wails3 package'\n"
-              "  2. Sign the packaged .app\n"
-              "  3. Run the signed .app bundle");
         return false;
     }
     return true;
@@ -109,7 +103,7 @@ void checkNotificationAuthorization(int channelID) {
     }];
 }
 
-void sendNotification(const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json, void *completion) {
+void sendNotification(const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json) {
     ensureDelegateInitialized();
     
     NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
@@ -136,7 +130,6 @@ void sendNotification(const char *identifier, const char *title, const char *sub
     content.body = nsBody;
     content.sound = [UNNotificationSound defaultSound];
     
-    // Add custom data if available
     if (customData.count > 0) {
         content.userInfo = customData;
     }
@@ -146,15 +139,14 @@ void sendNotification(const char *identifier, const char *title, const char *sub
     UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
     
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
-        if (completion != NULL) {
-            void (^callback)(NSError *) = completion;
-            callback(error);
+        if (error) {
+            NSLog(@"Error scheduling notification: %@", error.localizedDescription);
         }
     }];
 }
 
 void sendNotificationWithActions(const char *identifier, const char *title, const char *subtitle, 
-                             const char *body, const char *categoryId, const char *actions_json, void *completion) {
+                             const char *body, const char *categoryId, const char *actions_json) {
     ensureDelegateInitialized();
     
     NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
@@ -185,7 +177,6 @@ void sendNotificationWithActions(const char *identifier, const char *title, cons
     content.sound = [UNNotificationSound defaultSound];
     content.categoryIdentifier = nsCategoryId;
     
-    // Add custom data if available
     if (customData.count > 0) {
         content.userInfo = customData;
     }
@@ -195,9 +186,8 @@ void sendNotificationWithActions(const char *identifier, const char *title, cons
     UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
     
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
-        if (completion != NULL) {
-            void (^callback)(NSError *) = completion;
-            callback(error);
+        if (error) {
+            NSLog(@"Error scheduling notification: %@", error.localizedDescription);
         }
     }];
 }
