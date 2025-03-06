@@ -2,11 +2,12 @@ package main
 
 import (
 	_ "embed"
+	"log"
+	"runtime"
+
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/icons"
-	"log"
-	"runtime"
 )
 
 var windowShowing bool
@@ -52,6 +53,12 @@ func main() {
 
 	systemTray := app.NewSystemTray()
 	menu := app.NewMenu()
+	// Hidden menu item that can be unhidden
+	hidden := menu.Add("I was hidden").SetHidden(true)
+	menu.Add("Toggle the hidden menu").OnClick(func(ctx *application.Context) {
+		hidden.SetHidden(!hidden.Hidden())
+		menu.Update()
+	})
 	menu.Add("Quit").OnClick(func(data *application.Context) {
 		app.Quit()
 	})
