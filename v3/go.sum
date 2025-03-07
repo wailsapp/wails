@@ -59,6 +59,8 @@ github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5/go.mod h1:wHh0iHkY
 github.com/atomicgo/cursor v0.0.1/go.mod h1:cBON2QmmrysudxNBFthvMtN32r3jxVRIvzkUiF/RuIk=
 github.com/atterpac/refresh v0.8.4 h1:jRgX8TwZaMTqDmcFemhtnpJsrlmEmwwSILUQczHTxY8=
 github.com/atterpac/refresh v0.8.4/go.mod h1:fJpWySLdpbANS8Ej5OvfZVZIVvi/9bmnhTjKS5EjQes=
+github.com/atterpac/refresh v0.8.6 h1:Q5miKV2qs9jW+USw8WZ/54Zz8/RSh/bOz5U6JvvDZmM=
+github.com/atterpac/refresh v0.8.6/go.mod h1:fJpWySLdpbANS8Ej5OvfZVZIVvi/9bmnhTjKS5EjQes=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1/go.mod h1:uYgXzlJ7ZpABp8OJ+exZzJJhRNQ2ASbcXHWsFqH8hp8=
 github.com/aymanbagabas/go-udiff v0.2.0 h1:TK0fH4MteXUDspT88n8CKzvK0X9O2xu9yQjWpi6yML8=
