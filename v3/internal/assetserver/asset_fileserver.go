@@ -71,7 +71,15 @@ func (d *assetFileServer) serveFSFile(rw http.ResponseWriter, req *http.Request,
 
 	file, err := d.fs.Open(filename)
 	if err != nil {
-		return err
+		if s := path.Ext(filename); s == "" {
+			filename = filename + ".html"
+			file, err = d.fs.Open(filename)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
 	}
 	defer file.Close()
 
