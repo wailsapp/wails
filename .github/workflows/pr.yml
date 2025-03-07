@@ -11,7 +11,7 @@ on:
 jobs:
   check_docs:
     name: Check Docs
-    if: ${{github.repository == 'wailsapp/wails' && contains(github.head_ref,'feature/')}}
+    if: ${{github.repository == 'wailsapp/wails' && github.base_ref == 'master'}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
