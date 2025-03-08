@@ -24,9 +24,9 @@ type windowsMenuItem struct {
 }
 
 func (m *windowsMenuItem) setHidden(hidden bool) {
-	m.hidden = hidden
-	if m.hidden {
-		// iterate the parent items and find the menu item before us
+	if hidden && !m.hidden {
+		m.hidden = true
+		// iterate the parent items and find the menu item after us
 		for i, item := range m.parent.items {
 			if item == m.menuItem {
 				if i < len(m.parent.items)-1 {
@@ -37,13 +37,11 @@ func (m *windowsMenuItem) setHidden(hidden bool) {
 				break
 			}
 		}
-		// Get the position of this menu item in the parent menu
-		// m.pos = w32.GetMenuItemPosition(m.hMenu, uint32(m.id))
 		// Remove from parent menu
 		w32.RemoveMenu(m.hMenu, m.id, w32.MF_BYCOMMAND)
-	} else {
-		// Add to parent menu
-		// Get the position of the item before us
+	} else if !hidden && m.hidden {
+		m.hidden = false
+		// Add to parent menu before the "itemAfter"
 		var pos int
 		if m.itemAfter != nil {
 			for i, item := range m.parent.items {

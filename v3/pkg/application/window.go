@@ -84,4 +84,5 @@ type Window interface {
 	ZoomIn()
 	ZoomOut()
 	ZoomReset() Window
+	SetMenu(menu *Menu)
 }

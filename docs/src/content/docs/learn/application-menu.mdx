@@ -16,6 +16,43 @@ Create a new application menu using the `NewMenu` method:
 menu := app.NewMenu()
 ```
 
+## Setting the Menu
+
+The way to set the menu varies on the platform:
+
+<Tabs>
+    <TabItem label="macOS" icon="fa-brands:apple">
+
+        On macOS, there is only one menu bar per application. Set the menu using the `SetMenu` method of the application:
+
+        ```go
+        app.SetMenu(menu)
+        ```
+
+    </TabItem>
+
+    <TabItem label="Windows" icon="fa-brands:windows">
+
+        On Windows, there is a menu bar per window. Set the menu using the `SetMenu` method of the window:
+
+        ```go
+        window.SetMenu(menu)
+        ```
+
+    </TabItem>
+
+    <TabItem label="Linux" icon="fa-brands:linux">
+
+        On Linux, the menu bar is typically per window. Set the menu using the `SetMenu` method of the window:
+
+        ```go
+        window.SetMenu(menu)
+        ```
+
+    </TabItem>
+</Tabs>
+
+
 ## Menu Roles
 
 Wails provides predefined menu roles that automatically create platform-appropriate menu structures:

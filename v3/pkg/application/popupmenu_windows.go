@@ -61,6 +61,14 @@ func (p *Win32Menu) newMenu() w32.HMENU {
 func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 	currentRadioGroup := RadioGroup{}
 	for _, item := range inputMenu.items {
+		p.currentMenuID++
+		itemID := p.currentMenuID
+		p.menuMapping[itemID] = item
+
+		menuItemImpl := newMenuItemImpl(item, parentMenu, itemID)
+		menuItemImpl.parent = inputMenu
+		item.impl = menuItemImpl
+
 		if item.Hidden() {
 			if item.accelerator != nil {
 				if p.parentWindow != nil {
@@ -71,14 +79,7 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 					globalApplication.removeKeyBinding(item.accelerator.String())
 				}
 			}
-			continue
 		}
-		p.currentMenuID++
-		itemID := p.currentMenuID
-		p.menuMapping[itemID] = item
-
-		menuItemImpl := newMenuItemImpl(item, parentMenu, itemID)
-		menuItemImpl.parent = inputMenu
 
 		flags := uint32(w32.MF_STRING)
 		if item.disabled {
@@ -131,6 +132,12 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 				}
 			}
 		}
+
+		// If the item is hidden, don't append
+		if item.Hidden() {
+			continue
+		}
+
 		ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), w32.MustStringToUTF16Ptr(menuText))
 		if !ok {
 			globalApplication.fatal("error adding menu item '%s'", menuText)
@@ -141,8 +148,6 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 				globalApplication.fatal("error setting menu icons: %w", err)
 			}
 		}
-
-		item.impl = menuItemImpl
 	}
 	if len(currentRadioGroup) > 0 {
 		for _, radioMember := range currentRadioGroup {

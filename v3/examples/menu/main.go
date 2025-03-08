@@ -27,22 +27,19 @@ func main() {
 	if runtime.GOOS == "darwin" {
 		menu.AddRole(application.AppMenu)
 	}
-	fileMenu := menu.AddRole(application.FileMenu)
-	_ = fileMenu
-	//fileMenu.FindByRole(application.Open).OnClick(func(context *application.Context) {
-	//	selection, err := application.OpenFileDialog().PromptForSingleSelection()
-	//	if err != nil {
-	//		println("Error: " + err.Error())
-	//		return
-	//	}
-	//	println("You selected: " + selection)
-	//})
+	menu.AddRole(application.FileMenu)
 	menu.AddRole(application.EditMenu)
 	menu.AddRole(application.WindowMenu)
 	menu.AddRole(application.HelpMenu)
 
 	// Let's make a "Demo" menu
 	myMenu := menu.AddSubmenu("Demo")
+
+	// Hidden menu item that can be unhidden
+	hidden := myMenu.Add("I was hidden").SetHidden(true)
+	myMenu.Add("Toggle the hidden menu").OnClick(func(ctx *application.Context) {
+		hidden.SetHidden(!hidden.Hidden())
+	})
 
 	// Disabled menu item
 	myMenu.Add("Not Enabled").SetEnabled(false)
@@ -118,7 +115,8 @@ func main() {
 	})
 	app.SetMenu(menu)
 
-	app.NewWebviewWindow().SetBackgroundColour(application.NewRGB(33, 37, 41))
+	window := app.NewWebviewWindow().SetBackgroundColour(application.NewRGB(33, 37, 41))
+	window.SetMenu(menu)
 
 	err := app.Run()
 

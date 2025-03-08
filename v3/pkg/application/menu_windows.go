@@ -36,6 +36,14 @@ func (w *windowsMenu) update() {
 
 func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 	for _, item := range inputMenu.items {
+		w.currentMenuID++
+		itemID := w.currentMenuID
+		w.menuMapping[itemID] = item
+
+		menuItemImpl := newMenuItemImpl(item, parentMenu, itemID)
+		menuItemImpl.parent = inputMenu
+		item.impl = menuItemImpl
+
 		if item.Hidden() {
 			if item.accelerator != nil && item.callback != nil {
 				if w.parentWindow != nil {
@@ -44,11 +52,7 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 					globalApplication.removeKeyBinding(item.accelerator.String())
 				}
 			}
-			continue
 		}
-		w.currentMenuID++
-		itemID := w.currentMenuID
-		w.menuMapping[itemID] = item
 
 		flags := uint32(w32.MF_STRING)
 		if item.disabled {
@@ -83,6 +87,11 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 			thisText = thisText + "\t" + item.accelerator.String()
 		}
 		var menuText = w32.MustStringToUTF16Ptr(thisText)
+
+		// If the item is hidden, don't append
+		if item.Hidden() {
+			continue
+		}
 
 		w32.AppendMenu(parentMenu, flags, uintptr(itemID), menuText)
 		if item.bitmap != nil {
