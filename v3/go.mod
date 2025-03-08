@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.5.3
-	github.com/atterpac/refresh v0.8.4
+	github.com/atterpac/refresh v0.8.6
 	github.com/bep/debounce v1.2.1
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/ebitengine/purego v0.8.2
