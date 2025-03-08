@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [warp-windows-latest-x64-2x, warp-macos-15-arm64-6x, warp-ubuntu-latest-x64-2x]
+        os: [windows-latest, macos-latest, ubuntu-latest]
         go-version: [1.24]
 
     steps:
