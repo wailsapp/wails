@@ -235,6 +235,15 @@ func (w *linuxWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 	w.setBounds(physicalBounds)
 }
 
+func (w *linuxWebviewWindow) setMenu(menu *Menu) {
+	if menu == nil {
+		w.gtkmenu = nil
+		return
+	}
+	w.parent.options.Linux.Menu = menu
+	w.gtkmenu = (menu.impl).(*linuxMenu).native
+}
+
 func (w *linuxWebviewWindow) run() {
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
