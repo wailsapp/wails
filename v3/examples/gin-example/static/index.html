@@ -42,23 +42,55 @@
         <div class="container">
             <h1>Wails + Gin Integration</h1>
             <div class="card">
+                <h2>Hello World!</h2>
+                <p>This page is being served by Gin.</p>
+                <p>Click the button below to trigger a Wails event:</p>
+                <button id="triggerEvent">Trigger Event</button>
+                <div id="eventResult" style="margin-top: 1rem; padding: 1rem; background-color: #f0f0f0; border-radius: 4px; display: none;"></div>
+            </div>
+            <div class="card">
                 <h2>API Example</h2>
                 <p>Try the Gin API endpoint:</p>
                 <button id="callApi">Call API</button>
                 <div id="apiResult" style="margin-top: 1rem; padding: 1rem; background-color: #f0f0f0; border-radius: 4px;"></div>
             </div>
         </div>
-        <script>
-            document.getElementById('callApi').addEventListener('click', async () => {
-                try {
-                    const response = await fetch('/api/hello');
-                    const data = await response.json();
-                    document.getElementById('apiResult').textContent = JSON.stringify(data, null, 2);
-                } catch (error) {
-                    console.error('Error calling API:', error);
-                    document.getElementById('apiResult').textContent = 'Error: ' + error.message;
-                }
+        <script type="module">
+            import * as wails from '/wails/runtime.js';
+
+            // Wait for the Wails runtime to be ready
+            document.addEventListener('DOMContentLoaded', () => {
+                    setupEventListeners();
             });
+
+            function setupEventListeners() {
+                document.getElementById('triggerEvent').addEventListener('click', async () => {
+                    try {
+                        console.log('Attempting to emit event...');
+                        await wails.Events.Emit('gin-button-clicked', {
+                            message: 'Hello from Gin!'
+                        });
+                        console.log('Event emitted successfully');
+                        document.getElementById('eventResult').textContent = 'Event emitted successfully!';
+                        document.getElementById('eventResult').style.display = 'block';
+                    } catch (error) {
+                        console.error('Error emitting event:', error);
+                        document.getElementById('eventResult').textContent = 'Error: ' + error.message;
+                        document.getElementById('eventResult').style.display = 'block';
+                    }
+                });
+
+                document.getElementById('callApi').addEventListener('click', async () => {
+                    try {
+                        const response = await fetch('/api/hello');
+                        const data = await response.json();
+                        document.getElementById('apiResult').textContent = JSON.stringify(data, null, 2);
+                    } catch (error) {
+                        console.error('Error calling API:', error);
+                        document.getElementById('apiResult').textContent = 'Error: ' + error.message;
+                    }
+                });
+            }
         </script>
     </body>
 </html>

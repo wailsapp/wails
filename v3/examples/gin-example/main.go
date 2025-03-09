@@ -4,6 +4,7 @@ import (
 	"embed"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +19,7 @@ func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Let Wails handle the `/wails` route
-			if r.URL.Path == "/wails" {
+			if strings.HasPrefix(r.URL.Path, "/wails") {
 				next.ServeHTTP(w, r)
 				return
 			}
