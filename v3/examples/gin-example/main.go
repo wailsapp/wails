@@ -17,6 +17,11 @@ var staticFiles embed.FS
 func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Let Wails handle the `/wails` route
+			if r.URL.Path == "/wails" {
+				next.ServeHTTP(w, r)
+				return
+			}
 			// Let Gin handle everything else
 			ginEngine.ServeHTTP(w, r)
 		})
@@ -88,17 +93,16 @@ func main() {
 	})
 
 	// Register event handler
-	app.Events.On("gin-button-clicked", func(event *application.WailsEvent) {
+	app.OnEvent("gin-button-clicked", func(event *application.CustomEvent) {
 		log.Printf("Received event from frontend: %v", event.Data)
 	})
 
 	// Create window
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title:    "Wails + Gin Example",
-		Width:    900,
-		Height:   700,
-		Centered: true,
-		URL:      "/",
+		Title:  "Wails + Gin Example",
+		Width:  900,
+		Height: 700,
+		URL:    "/",
 	})
 
 	// Run the app

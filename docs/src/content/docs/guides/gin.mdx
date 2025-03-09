@@ -3,18 +3,15 @@ title: Using Gin with Wails
 description: A comprehensive guide to integrating Gin web framework with Wails v3 applications
 ---
 
-# Using Gin with Wails
-
 This guide demonstrates how to integrate the [Gin web framework](https://github.com/gin-gonic/gin) with Wails v3. Gin is a high-performance HTTP web framework written in Go that makes it easy to build web applications and APIs.
 
-## Overview
+## Introduction
 
 Wails v3 provides a flexible asset system that allows you to use any HTTP handler, including popular web frameworks like Gin. This integration enables you to:
 
 - Serve web content using Gin's powerful routing and middleware capabilities
 - Create RESTful APIs that can be accessed from your Wails application
 - Leverage Gin's extensive feature set whilst maintaining the benefits of Wails
-- Build hybrid applications that combine native desktop features with web technologies
 
 ## Setting Up Gin with Wails
 
@@ -37,6 +34,11 @@ Create a middleware function that will handle the integration between Wails and 
 func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
     return func(next http.Handler) http.Handler {
         return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            // Let Wails handle the `/wails` route
+            if r.URL.Path == "/wails" {
+                next.ServeHTTP(w, r)
+                return
+            }
             // Let Gin handle everything
             ginEngine.ServeHTTP(w, r)
         })
@@ -44,25 +46,7 @@ func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
 }
 ```
 
-This middleware passes all HTTP requests to the Gin router. If you need to let Wails handle specific routes (like the Wails runtime), you can modify the middleware to check the request path:
-
-```go
-// GinMiddleware creates a middleware that passes requests to Gin if they're not handled by Wails
-func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
-    return func(next http.Handler) http.Handler {
-        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-            // Let Wails handle its internal routes
-            if r.URL.Path == "/wails/runtime.js" || r.URL.Path == "/wails/ipc" {
-                next.ServeHTTP(w, r)
-                return
-            }
-
-            // Let Gin handle everything else
-            ginEngine.ServeHTTP(w, r)
-        })
-    }
-}
-```
+This middleware passes all HTTP requests to the Gin router.
 
 ### 3. Configure Your Gin Router
 
@@ -225,13 +209,14 @@ ginEngine.GET("/api/search", func(c *gin.Context) {
 
 ## Interacting with Wails
 
-Your Gin-served web content can interact with Wails features like events and bindings:
+Your Gin-served web content can interact with Wails features like events and bindings. To enable this interaction, you
+must use the JavaScript API package `@wailsio/runtime`.
 
 ### Handling Wails Events in Go
 
 ```go
 // Register event handler
-app.Events.On("my-event", func(event *application.WailsEvent) {
+app.OnEvent("my-event", func(event *application.CustomEvent) {
     log.Printf("Received event from frontend: %v", event.Data)
     // Process the event...
 })
@@ -240,39 +225,21 @@ app.Events.On("my-event", func(event *application.WailsEvent) {
 ### Emitting Events from JavaScript
 
 ```html
-<script>
-    document.getElementById('triggerEvent').addEventListener('click', async () => {
-        try {
-            await window.wails.Events.Emit('my-event', {
-                message: 'Hello from Gin!'
-            });
-            console.log('Event emitted successfully');
-        } catch (error) {
-            console.error('Error emitting event:', error);
-        }
-    });
-</script>
+    <script>
+        document.getElementById('callApi').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/hello');
+                const data = await response.json();
+                document.getElementById('apiResult').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('Error calling API:', error);
+                document.getElementById('apiResult').textContent = 'Error: ' + error.message;
+            }
+        });
+    </script>
 ```
 
 ## Advanced Configuration
-
-### CORS Configuration
-
-If your application needs to handle Cross-Origin Resource Sharing (CORS), you can use Gin's CORS middleware:
-
-```go
-import "github.com/gin-contrib/cors"
-
-// In your main function:
-ginEngine.Use(cors.New(cors.Config{
-    AllowOrigins:     []string{"*"},
-    AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-    AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-    ExposeHeaders:    []string{"Content-Length"},
-    AllowCredentials: true,
-    MaxAge:           12 * time.Hour,
-}))
-```
 
 ### Customising Gin's Mode
 
@@ -284,6 +251,25 @@ gin.SetMode(gin.ReleaseMode)
 
 // Create a new Gin router
 ginEngine := gin.New()
+```
+
+You can use Go's build tags to set the mode based on the build environment:
+
+```go[main_prod.go]
+// +build production
+
+var ginMode = gin.ReleaseMode
+```
+
+```go[main_dev.go]
+// +build !production
+
+var ginMode = gin.DebugMode
+```
+
+```go [main.go]
+// In your main function:
+gin.SetMode(ginMode)
 ```
 
 ### Handling WebSockets
@@ -322,107 +308,115 @@ Here's a complete example of integrating Gin with Wails:
 package main
 
 import (
-    "embed"
-    "log"
-    "net/http"
-    "time"
+	"embed"
+	"log"
+	"net/http"
+	"time"
 
-    "github.com/gin-gonic/gin"
-    "github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/gin-gonic/gin"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 //go:embed static
 var staticFiles embed.FS
 
-// GinMiddleware creates a middleware that passes requests to Gin
+// GinMiddleware creates a middleware that passes requests to Gin if they're not handled by Wails
 func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
-    return func(next http.Handler) http.Handler {
-        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-            // Let Gin handle everything
-            ginEngine.ServeHTTP(w, r)
-        })
-    }
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Let Wails handle the `/wails` route
+			if r.URL.Path == "/wails" {
+				next.ServeHTTP(w, r)
+				return
+			}
+			// Let Gin handle everything else
+			ginEngine.ServeHTTP(w, r)
+		})
+	}
 }
 
 // LoggingMiddleware is a Gin middleware that logs request details
 func LoggingMiddleware() gin.HandlerFunc {
-    return func(c *gin.Context) {
-        startTime := time.Now()
-        c.Next()
-        latency := time.Since(startTime)
-        log.Printf("[GIN] %s | %s | %s | %d | %s",
-            c.Request.Method,
-            c.Request.URL.Path,
-            c.ClientIP(),
-            c.Writer.Status(),
-            latency,
-        )
-    }
+	return func(c *gin.Context) {
+		// Start timer
+		startTime := time.Now()
+
+		// Process request
+		c.Next()
+
+		// Calculate latency
+		latency := time.Since(startTime)
+
+		// Log request details
+		log.Printf("[GIN] %s | %s | %s | %d | %s",
+			c.Request.Method,
+			c.Request.URL.Path,
+			c.ClientIP(),
+			c.Writer.Status(),
+			latency,
+		)
+	}
 }
 
 func main() {
-    // Set Gin to release mode for production
-    // gin.SetMode(gin.ReleaseMode)
+	// Create a new Gin router
+	ginEngine := gin.New() // Using New() instead of Default() to add our own middleware
 
-    // Create a new Gin router
-    ginEngine := gin.New()
+	// Add middlewares
+	ginEngine.Use(gin.Recovery())
+	ginEngine.Use(LoggingMiddleware())
 
-    // Add middlewares
-    ginEngine.Use(gin.Recovery())
-    ginEngine.Use(LoggingMiddleware())
+	// Serve embedded static files
+	ginEngine.StaticFS("/static", http.FS(staticFiles))
 
-    // Serve embedded static files
-    ginEngine.StaticFS("/static", http.FS(staticFiles))
+	// Define routes
+	ginEngine.GET("/", func(c *gin.Context) {
+		file, err := staticFiles.ReadFile("static/index.html")
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Error reading index.html")
+			return
+		}
+		c.Data(http.StatusOK, "text/html; charset=utf-8", file)
+	})
 
-    // Define routes
-    ginEngine.GET("/", func(c *gin.Context) {
-        file, err := staticFiles.ReadFile("static/index.html")
-        if err != nil {
-            c.String(http.StatusInternalServerError, "Error reading index.html")
-            return
-        }
-        c.Data(http.StatusOK, "text/html; charset=utf-8", file)
-    })
+	ginEngine.GET("/api/hello", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Hello from Gin API!",
+			"time":    time.Now().Format(time.RFC3339),
+		})
+	})
 
-    ginEngine.GET("/api/hello", func(c *gin.Context) {
-        c.JSON(http.StatusOK, gin.H{
-            "message": "Hello from Gin API!",
-            "time":    time.Now().Format(time.RFC3339),
-        })
-    })
+	// Create a new Wails application
+	app := application.New(application.Options{
+		Name:        "Gin Example",
+		Description: "A demo of using Gin with Wails",
+		Mac: application.MacOptions{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
+		},
+		Assets: application.AssetOptions{
+			Handler:    ginEngine,
+			Middleware: GinMiddleware(ginEngine),
+		},
+	})
 
-    // Create a new Wails application
-    app := application.New(application.Options{
-        Name:        "Gin Example",
-        Description: "A demo of using Gin with Wails",
-        Mac: application.MacOptions{
-            ApplicationShouldTerminateAfterLastWindowClosed: true,
-        },
-        Assets: application.AssetOptions{
-            Handler:    ginEngine,
-            Middleware: GinMiddleware(ginEngine),
-        },
-    })
+	// Register event handler
+	app.OnEvent("gin-button-clicked", func(event *application.CustomEvent) {
+		log.Printf("Received event from frontend: %v", event.Data)
+	})
 
-    // Register event handler
-    app.Events.On("gin-button-clicked", func(event *application.WailsEvent) {
-        log.Printf("Received event from frontend: %v", event.Data)
-    })
+	// Create window
+	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+		Title:  "Wails + Gin Example",
+		Width:  900,
+		Height: 700,
+		URL:    "/",
+	})
 
-    // Create window
-    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-        Title:    "Wails + Gin Example",
-        Width:    900,
-        Height:   700,
-        Centered: true,
-        URL:      "/",
-    })
-
-    // Run the app
-    err := app.Run()
-    if err != nil {
-        log.Fatal(err)
-    }
+	// Run the app
+	err := app.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 ```
 

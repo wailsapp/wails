@@ -49,16 +49,16 @@
             </div>
         </div>
         <script>
-                document.getElementById('callApi').addEventListener('click', async () => {
-                    try {
-                        const response = await fetch('/api/hello');
-                        const data = await response.json();
-                        document.getElementById('apiResult').textContent = JSON.stringify(data, null, 2);
-                    } catch (error) {
-                        console.error('Error calling API:', error);
-                        document.getElementById('apiResult').textContent = 'Error: ' + error.message;
-                    }
-                });
+            document.getElementById('callApi').addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/api/hello');
+                    const data = await response.json();
+                    document.getElementById('apiResult').textContent = JSON.stringify(data, null, 2);
+                } catch (error) {
+                    console.error('Error calling API:', error);
+                    document.getElementById('apiResult').textContent = 'Error: ' + error.message;
+                }
+            });
         </script>
     </body>
 </html>
