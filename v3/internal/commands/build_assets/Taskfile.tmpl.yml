@@ -66,8 +66,8 @@ tasks:
     sources:
       - "appicon.png"
     generates:
-      - "icons.icns"
-      - "icon.ico"
+      - "darwin/icons.icns"
+      - "windows/icon.ico"
     cmds:
       - wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico
 
