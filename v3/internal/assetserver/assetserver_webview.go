@@ -74,7 +74,7 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 		}
 	}()
 
-	rw := &contentTypeSniffer{rw: wrw} // Make sure we have a Content-Type sniffer
+	rw := newContentTypeSniffer(wrw) // Make sure we have a Content-Type sniffer
 	defer func() {
 		if _, err := rw.complete(); err != nil {
 			a.options.Logger.Error("Error writing response data.", "uri", uri, "error", err)

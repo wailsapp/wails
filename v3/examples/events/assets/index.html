@@ -9,7 +9,7 @@
 <h1>Events Demo</h1>
 <br/>
 The main program emits an event every 10s which will be displayed in the section below.
-To send an event from this window, click here: <button onclick="wails.Events.Emit({name:'myevent', data:'hello!'})">Send Event</button>
+To send an event from this window, click here: <button onclick="wails.Events.Emit('myevent', 'hello!')">Send Event</button>
 <div id="results"></div>
 </body>
 
