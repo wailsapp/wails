@@ -679,6 +679,7 @@ func (w *windowsWebviewWindow) maximise() {
 
 func (w *windowsWebviewWindow) unmaximise() {
 	w.restore()
+	w.parent.emit(events.Windows.WindowUnMaximise)
 }
 
 func (w *windowsWebviewWindow) restore() {
@@ -719,6 +720,7 @@ func (w *windowsWebviewWindow) fullscreen() {
 		int(monitorInfo.RcMonitor.Bottom-monitorInfo.RcMonitor.Top),
 		w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
 	w.chromium.Focus()
+	w.parent.emit(events.Windows.WindowFullscreen)
 }
 
 func (w *windowsWebviewWindow) unfullscreen() {
@@ -738,6 +740,7 @@ func (w *windowsWebviewWindow) unfullscreen() {
 	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0,
 		w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
 	w.enableSizeConstraints()
+	w.parent.emit(events.Windows.WindowUnFullscreen)
 }
 
 func (w *windowsWebviewWindow) isMinimised() bool {
@@ -1202,6 +1205,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		case w32.SIZE_MAXIMIZED:
 			w.parent.emit(events.Windows.WindowMaximise)
 		case w32.SIZE_RESTORED:
+			if w.isMinimizing {
+				w.parent.emit(events.Windows.WindowUnMinimise)
+			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowRestore)
 		case w32.SIZE_MINIMIZED:
