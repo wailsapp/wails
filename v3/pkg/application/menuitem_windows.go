@@ -39,7 +39,57 @@ func (m *windowsMenuItem) setHidden(hidden bool) {
 				pos++
 			}
 		}
-		w32.InsertMenuItem(m.hMenu, uint32(pos), true, m.getMenuInfo())
+	}
+
+	if m.menuItem.submenu != nil {
+		// Find our position in the parent menu
+		var position int = -1
+		for i, item := range m.parent.items {
+			if item == m.menuItem {
+				position = i
+				break
+			}
+		}
+
+		if position == -1 {
+			// Can't find our position, can't proceed
+			return
+		}
+
+		if hidden {
+			// When hiding, we need to remove the menu item by position
+			w32.RemoveMenu(m.hMenu, position, w32.MF_BYPOSITION)
+		} else {
+			// When showing, we need to insert the menu item at the correct position
+			// Create a new menu info for this item
+			menuInfo := m.getMenuInfo()
+			w32.InsertMenuItem(m.hMenu, uint32(position), true, menuInfo)
+		}
+	} else {
+		// For regular menu items, we can use the command ID
+		if hidden {
+			w32.RemoveMenu(m.hMenu, int(m.id), w32.MF_BYCOMMAND)
+		} else {
+			// Find the position to insert at
+			var position int = 0
+			for i, item := range m.parent.items {
+				if item == m.menuItem {
+					position = i
+					break
+				}
+			}
+			menuInfo := m.getMenuInfo()
+			w32.InsertMenuItem(m.hMenu, uint32(position), true, menuInfo)
+		}
+	}
+
+	// If we have a parent window, redraw the menu
+	if m.parent.impl != nil {
+		if windowsImpl, ok := m.parent.impl.(*windowsMenu); ok {
+			if windowsImpl.parentWindow != nil {
+				w32.DrawMenuBar(windowsImpl.parentWindow.hwnd)
+			}
+		}
 	}
 }
 
