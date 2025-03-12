@@ -7,7 +7,7 @@ sidebar_position: 1
 ## Plataformas Suportadas
 
 - Windows 10/11 AMD64/ARM64
-- MacOS 10.13+ AMD64
+- MacOS 10.15+ AMD64 for development, MacOS 10.13+ for release
 - MacOS 11.0+ ARM64
 - Linux AMD64/ARM64
 
@@ -15,7 +15,7 @@ sidebar_position: 1
 
 O Wails tem várias dependências comuns que são necessárias antes da instalação:
 
-- Go 1.20+
+- Go 1.21+ (macOS 15+ requires Go 1.23.3+)
 - NPM (Node 15+)
 
 ### Go
@@ -58,6 +58,8 @@ import TabItem from "@theme/TabItem";
   </TabItem>
   <TabItem value={"Linux"}>
     Linux requires the standard <code>gcc</code> build tools plus <code>libgtk3</code> and <code>libwebkit</code>. Ao invés de listar uma tonelada de comandos para diferentes distros, os Wails podem tentar determinar quais são os comandos de instalação para sua distribuição específica. Execute o <code>wails doctor</code> após a instalação para ser mostrado como instalar as dependencias. Se o seu gerenciador de destro/pacote não for suportado, por favor, consulte o guia <a href={"/docs/guides/linux-distro-support"}>Adicionar Distro do Linux</a>.
+    <br/><strong>Note:</strong><br/>
+    If you are using latest Linux version (example: Ubuntu 24.04) and it is not supporting <code>libwebkit2gtk-4.0-dev</code>, then you might encounter an issue in <code>wails doctor</code>: <code>libwebkit</code> not found. To resolve this issue you can install <code>libwebkit2gtk-4.1-dev</code> and during your build use the tag <code>-tags webkit2_41</code>.
   </TabItem>
 </Tabs>
 ```
