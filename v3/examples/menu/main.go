@@ -113,6 +113,120 @@ func main() {
 			ctx.ClickedMenuItem().SetLabel("Unhide the beatles!")
 		}
 	})
+
+	// ---- New index-based menu operations demo ----
+	indexMenu := menu.AddSubmenu("Index Operations")
+
+	// Add some initial items
+	indexMenu.Add("Item 0")
+	indexMenu.Add("Item 2")
+	indexMenu.Add("Item 4")
+
+	// Demonstrate inserting items at specific indices
+	indexMenu.InsertAt(1, "Item 1").OnClick(func(*application.Context) {
+		println("Item 1 clicked")
+	})
+
+	indexMenu.InsertAt(3, "Item 3").OnClick(func(*application.Context) {
+		println("Item 3 clicked")
+	})
+
+	// Demonstrate inserting different types of items at specific indices
+	indexMenu.AddSeparator()
+	indexMenu.InsertCheckboxAt(6, "Checkbox at index 6", true).OnClick(func(ctx *application.Context) {
+		println("Checkbox at index 6 clicked, checked:", ctx.ClickedMenuItem().Checked())
+	})
+
+	indexMenu.InsertRadioAt(7, "Radio at index 7", true).OnClick(func(ctx *application.Context) {
+		println("Radio at index 7 clicked")
+	})
+
+	indexMenu.InsertSeparatorAt(8)
+
+	// Create a submenu and insert it at a specific index
+	submenuAtIndex := indexMenu.InsertSubmenuAt(9, "Inserted Submenu")
+	submenuAtIndex.Add("Submenu Item 1")
+	submenuAtIndex.Add("Submenu Item 2")
+
+	// Demonstrate ItemAt to access items by index
+	indexMenu.AddSeparator()
+	indexMenu.Add("Get Item at Index").OnClick(func(*application.Context) {
+		// Get the item at index 2 and change its label
+		if item := indexMenu.ItemAt(2); item != nil {
+			println("Item at index 2:", item.Label())
+			item.SetLabel("Item 2 (Modified)")
+		}
+	})
+
+	// Demonstrate Count method
+	indexMenu.Add("Count Items").OnClick(func(*application.Context) {
+		println("Menu has", indexMenu.Count(), "items")
+	})
+
+	// Demonstrate visibility control for different item types
+	visibilityMenu := menu.AddSubmenu("Visibility Control")
+
+	// Regular menu item
+	regularItem := visibilityMenu.Add("Regular Item")
+
+	// Checkbox menu item
+	checkboxItem := visibilityMenu.AddCheckbox("Checkbox Item", true)
+
+	// Radio menu item
+	radioItem := visibilityMenu.AddRadio("Radio Item", true)
+
+	// Separator
+	visibilityMenu.AddSeparator()
+	separatorIndex := visibilityMenu.Count() - 1
+	separatorItem := visibilityMenu.ItemAt(separatorIndex)
+
+	// Submenu - get the MenuItem for the submenu to control visibility
+	submenuMenuItem := application.NewSubMenuItem("Submenu")
+	visibilityMenu.InsertItemAt(visibilityMenu.Count(), submenuMenuItem)
+	submenuContent := submenuMenuItem.GetSubmenu()
+	submenuContent.Add("Submenu Content")
+
+	// Controls for toggling visibility
+	visibilityMenu.AddSeparator()
+	visibilityMenu.Add("Toggle Regular Item").OnClick(func(*application.Context) {
+		regularItem.SetHidden(!regularItem.Hidden())
+		println("Regular item hidden:", regularItem.Hidden())
+	})
+
+	visibilityMenu.Add("Toggle Checkbox Item").OnClick(func(*application.Context) {
+		checkboxItem.SetHidden(!checkboxItem.Hidden())
+		println("Checkbox item hidden:", checkboxItem.Hidden())
+	})
+
+	visibilityMenu.Add("Toggle Radio Item").OnClick(func(*application.Context) {
+		radioItem.SetHidden(!radioItem.Hidden())
+		println("Radio item hidden:", radioItem.Hidden())
+	})
+
+	visibilityMenu.Add("Toggle Separator").OnClick(func(*application.Context) {
+		separatorItem.SetHidden(!separatorItem.Hidden())
+		println("Separator hidden:", separatorItem.Hidden())
+	})
+
+	// For submenu visibility, we need to toggle the visibility of the MenuItem that contains the submenu
+	visibilityMenu.Add("Toggle Submenu").OnClick(func(ctx *application.Context) {
+		// Log the current state before toggling
+		println("Submenu hidden before toggle:", submenuMenuItem.Hidden())
+
+		// Toggle the visibility
+		submenuMenuItem.SetHidden(!submenuMenuItem.Hidden())
+
+		// Log the new state after toggling
+		println("Submenu hidden after toggle:", submenuMenuItem.Hidden())
+
+		// Update the menu item label to reflect the current state
+		if submenuMenuItem.Hidden() {
+			ctx.ClickedMenuItem().SetLabel("Show Submenu")
+		} else {
+			ctx.ClickedMenuItem().SetLabel("Hide Submenu")
+		}
+	})
+
 	app.SetMenu(menu)
 
 	window := app.NewWebviewWindow().SetBackgroundColour(application.NewRGB(33, 37, 41))

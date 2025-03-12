@@ -190,6 +190,78 @@ func (m *Menu) ItemAt(index int) *MenuItem {
 	return m.items[index]
 }
 
+// InsertAt inserts a menu item at the specified index.
+// If index is out of bounds, the item will be appended to the end of the menu.
+// Returns the newly created menu item for further customisation.
+func (m *Menu) InsertAt(index int, label string) *MenuItem {
+	result := NewMenuItem(label)
+	m.InsertItemAt(index, result)
+	return result
+}
+
+// InsertItemAt inserts an existing menu item at the specified index.
+// If index is negative, the item will be inserted at the beginning of the menu.
+// If index is greater than the current length, the item will be appended to the end of the menu.
+// Returns the menu for method chaining.
+func (m *Menu) InsertItemAt(index int, item *MenuItem) *Menu {
+	if index < 0 {
+		index = 0
+	}
+	if index > len(m.items) {
+		index = len(m.items)
+	}
+
+	if index == 0 {
+		m.items = append([]*MenuItem{item}, m.items...)
+	} else if index == len(m.items) {
+		m.items = append(m.items, item)
+	} else {
+		m.items = append(m.items[:index], append([]*MenuItem{item}, m.items[index:]...)...)
+	}
+	return m
+}
+
+// InsertSeparatorAt inserts a separator at the specified index.
+// If index is out of bounds, the separator will be appended to the end of the menu.
+// Returns the menu for method chaining.
+func (m *Menu) InsertSeparatorAt(index int) *Menu {
+	result := NewMenuItemSeparator()
+	m.InsertItemAt(index, result)
+	return m
+}
+
+// InsertCheckboxAt inserts a checkbox menu item at the specified index.
+// If index is out of bounds, the item will be appended to the end of the menu.
+// Returns the newly created menu item for further customisation.
+func (m *Menu) InsertCheckboxAt(index int, label string, enabled bool) *MenuItem {
+	result := NewMenuItemCheckbox(label, enabled)
+	m.InsertItemAt(index, result)
+	return result
+}
+
+// InsertRadioAt inserts a radio menu item at the specified index.
+// If index is out of bounds, the item will be appended to the end of the menu.
+// Returns the newly created menu item for further customisation.
+func (m *Menu) InsertRadioAt(index int, label string, enabled bool) *MenuItem {
+	result := NewMenuItemRadio(label, enabled)
+	m.InsertItemAt(index, result)
+	return result
+}
+
+// InsertSubmenuAt inserts a submenu at the specified index.
+// If index is out of bounds, the submenu will be appended to the end of the menu.
+// Returns the newly created submenu for further customisation.
+func (m *Menu) InsertSubmenuAt(index int, label string) *Menu {
+	result := NewSubMenuItem(label)
+	m.InsertItemAt(index, result)
+	return result.submenu
+}
+
+// Count returns the number of items in the menu.
+func (m *Menu) Count() int {
+	return len(m.items)
+}
+
 // Clone recursively clones the menu and all its submenus.
 func (m *Menu) Clone() *Menu {
 	result := &Menu{

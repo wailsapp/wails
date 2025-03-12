@@ -91,6 +91,21 @@ checkbox.SetChecked(true)
 isChecked := checkbox.Checked()
 ```
 
+### Visibility
+
+Control whether a menu item is visible using the `SetHidden` method, which works for all menu item types including submenus:
+
+```go
+menuItem := menu.Add("Regular Item")
+menuItem.SetHidden(true)  // Hide the item
+menuItem.SetHidden(false) // Show the item
+
+// For submenus, use the same method
+submenuItem := menu.AddSubmenu("Advanced Options")
+submenuItem.SetHidden(true)  // Hide the submenu
+submenuItem.SetHidden(false) // Show the submenu
+```
+
 ### Accelerators
 
 Add keyboard shortcuts to menu items:
@@ -105,6 +120,71 @@ Common accelerator modifiers:
 - `Shift`
 - `Alt`: Option on macOS
 - `Ctrl`: Control key on all platforms
+
+## Menu Operations
+
+### Adding Items
+
+Standard methods for adding items to the end of a menu:
+
+```go
+menu.Add("Regular Item")
+menu.AddCheckbox("Checkbox Item", false)
+menu.AddRadio("Radio Item", false)
+menu.AddSubmenu("Submenu")
+menu.AddSeparator()
+```
+
+### Accessing Items by Index
+
+Retrieve menu items using their index position:
+
+```go
+firstItem := menu.ItemAt(0)
+secondItem := menu.ItemAt(1)
+
+// Check if an item exists at the given index
+if item := menu.ItemAt(5); item != nil {
+    // Item exists, use it
+}
+```
+
+### Inserting Items by Index
+
+Insert items at specific positions in the menu. If the index is out of bounds, the item will be inserted at the beginning (for negative indices) or appended to the end (for indices greater than the menu length):
+
+```go
+// Insert a regular item at index 0 (beginning of the menu)
+menu.InsertAt(0, "First Item")
+
+// Insert a separator at index 2
+menu.InsertSeparatorAt(2)
+
+// Insert a checkbox at index 3
+menu.InsertCheckboxAt(3, "Enable Feature", false)
+
+// Insert a radio button at index 4
+menu.InsertRadioAt(4, "Option", true)
+
+// Insert a submenu at index 5
+submenu := menu.InsertSubmenuAt(5, "More Options")
+
+// Insert an existing menu item at index 6
+existingItem := NewMenuItem("Existing Item")
+menu.InsertItemAt(6, existingItem)
+
+// Handling out-of-bounds indices
+menu.InsertAt(-1, "Will be inserted at the beginning")
+menu.InsertAt(999, "Will be appended to the end")
+```
+
+### Menu Size
+
+Get the number of items in a menu:
+
+```go
+count := menu.Count()
+```
 
 ## Event Handling
 
@@ -151,6 +231,7 @@ menuItem := menu.Add("Initial State")
 menuItem.SetLabel("New Label")
 menuItem.SetEnabled(false)
 menuItem.SetChecked(true)
+menuItem.SetHidden(true)  // Hide the item
 
 // Apply changes
 menu.Update()
@@ -169,6 +250,8 @@ After modifying menu items, call `Update()` on the parent menu to apply the chan
 5. Keep radio groups focused on a single choice
 6. Update menu items to reflect application state
 7. Handle all possible states in click handlers
+8. Use index-based operations for dynamic menu restructuring
+9. Use `SetHidden` consistently for all menu item types, including submenus
 
 :::tip[Pro Tip]
 When sharing event handlers, use the `ctx.ClickedMenuItem()` method to determine which item triggered the event and handle it accordingly.
@@ -186,3 +269,37 @@ Menu appearance and behaviour varies by platform:
 :::danger[Warning]
 Always test menu functionality across all supported platforms, as behaviour and appearance may vary significantly.
 :::
+
+## Example: Dynamic Menu Management
+
+This example demonstrates how to dynamically manage menu items using the index-based operations:
+
+```go
+// Create a menu with some initial items
+menu := application.NewMenu()
+menu.Add("Item 1")
+menu.Add("Item 3") // Intentionally skipping Item 2
+
+// Later, insert the missing item at the correct position
+menu.InsertAt(1, "Item 2")
+
+// Get the count of items
+fmt.Printf("Menu has %d items\n", menu.Count())
+
+// Access items by index
+for i := 0; i < menu.Count(); i++ {
+    item := menu.ItemAt(i)
+    fmt.Printf("Item at index %d: %s\n", i, item.Label())
+}
+
+// Show/hide a submenu based on application state
+submenu := menu.AddSubmenu("Advanced Options")
+if userIsAdvanced {
+    submenu.SetHidden(false) // Show the submenu
+} else {
+    submenu.SetHidden(true)  // Hide the submenu
+}
+
+// Apply all changes
+menu.Update()
+```

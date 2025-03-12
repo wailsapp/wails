@@ -24,35 +24,63 @@ type windowsMenuItem struct {
 }
 
 func (m *windowsMenuItem) setHidden(hidden bool) {
-	if hidden && !m.hidden {
-		m.hidden = true
-		// iterate the parent items and find the menu item after us
+	// Only process if the visibility state is changing
+	if hidden == m.hidden {
+		return
+	}
+
+	m.hidden = hidden
+
+	// For submenus, we need special handling
+	if m.menuItem.submenu != nil {
+		// Find our position in the parent menu
+		var position int = -1
 		for i, item := range m.parent.items {
 			if item == m.menuItem {
-				if i < len(m.parent.items)-1 {
-					m.itemAfter = m.parent.items[i+1]
-				} else {
-					m.itemAfter = nil
-				}
+				position = i
 				break
 			}
 		}
-		// Remove from parent menu
-		w32.RemoveMenu(m.hMenu, m.id, w32.MF_BYCOMMAND)
-	} else if !hidden && m.hidden {
-		m.hidden = false
-		// Add to parent menu before the "itemAfter"
-		var pos int
-		if m.itemAfter != nil {
+
+		if position == -1 {
+			// Can't find our position, can't proceed
+			return
+		}
+
+		if hidden {
+			// When hiding, we need to remove the menu item by position
+			w32.RemoveMenu(m.hMenu, position, w32.MF_BYPOSITION)
+		} else {
+			// When showing, we need to insert the menu item at the correct position
+			// Create a new menu info for this item
+			menuInfo := m.getMenuInfo()
+			w32.InsertMenuItem(m.hMenu, uint32(position), true, menuInfo)
+		}
+	} else {
+		// For regular menu items, we can use the command ID
+		if hidden {
+			w32.RemoveMenu(m.hMenu, int(m.id), w32.MF_BYCOMMAND)
+		} else {
+			// Find the position to insert at
+			var position int = 0
 			for i, item := range m.parent.items {
-				if item == m.itemAfter {
-					pos = i - 1
+				if item == m.menuItem {
+					position = i
 					break
 				}
 			}
-			m.itemAfter = nil
+			menuInfo := m.getMenuInfo()
+			w32.InsertMenuItem(m.hMenu, uint32(position), true, menuInfo)
 		}
-		w32.InsertMenuItem(m.hMenu, uint32(pos), true, m.getMenuInfo())
+	}
+
+	// If we have a parent window, redraw the menu
+	if m.parent.impl != nil {
+		if windowsImpl, ok := m.parent.impl.(*windowsMenu); ok {
+			if windowsImpl.parentWindow != nil {
+				w32.DrawMenuBar(windowsImpl.parentWindow.hwnd)
+			}
+		}
 	}
 }
 
