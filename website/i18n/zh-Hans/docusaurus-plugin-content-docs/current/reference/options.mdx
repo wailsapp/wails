@@ -98,7 +98,9 @@ func main() {
             // OnResume is called when Windows resumes from low power mode
             OnResume: func(),
             // Disable GPU hardware acceleration for the webview
-            WebviewGpuDisabled: false,
+                  WebviewGpuDisabled: false,
+                  // Class name for the window. If empty, 'wailsWindow' will be used.
+                  WindowClassName: "MyWindow",
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -552,25 +554,25 @@ Setting this to `true` will disable pinch zoom gestures.
 
 Name: DisablePinchZoom<br/> Type: `bool`
 
-#### 禁用窗口图标
+#### DisableWindowIcon
 
 将此设置为 `true` 将删除标题栏左上角的图标。
 
 名称：DisableWindowIcon<br/> 类型：`bool`
 
-#### 禁用无边框窗口装饰
+#### DisableFramelessWindowDecorations
 
 将此设置为 `true` 将移除 [无边框](#无边框) 模式下的窗口装饰。 这意味着将不会有`Aero 阴影` 和 `圆角`显示在窗口上。 请注意，'圆角' 只在 Windows 11 上支持。
 
 名称：DisableFramelessWindowDecorations<br/> 类型：`bool`
 
-#### Webview 用户数据路径
+#### WebviewUserDataPath
 
 这定义了 WebView2 存储用户数据的路径。 如果为空将使用 `%APPDATA%\[BinaryName.exe]`。
 
 名称：WebviewUserDataPath<br/> 类型：`string`
 
-#### Webview 浏览器路径
+#### WebviewBrowserPath
 
 这定义了带有 WebView2 可执行文件和库的目录的路径 如果为空，则使用系统中安装的 webview2
 
@@ -582,7 +584,7 @@ Name: DisablePinchZoom<br/> Type: `bool`
 
 名称：WebviewBrowserPath<br/> 类型：`string`
 
-#### 主题
+#### Theme
 
 最低 Windows 版本：Windows 10 2004/20H1
 
@@ -596,7 +598,7 @@ Name: DisablePinchZoom<br/> Type: `bool`
 
 名称：Theme<br/> 类型：`windows.Theme`
 
-#### 自定义主题
+#### CustomTheme
 
 :::note
 
@@ -652,7 +654,7 @@ type ThemeSettings struct {
     },
 ```
 
-#### 消息
+#### Messages
 
 一个如果找不到有效的 webview2 运行时，webview2 安装程序所使用的字符串结构。
 
@@ -660,25 +662,25 @@ type ThemeSettings struct {
 
 您可以选择支持的任意语言定制此选项。
 
-#### 重置尺寸防抖间隔
+#### ResizeDebounceMS
 
 ResizeDebounceMS 是调整窗口大小时去抖动 webview2 重绘的时间量。 默认值 (0) 将尽可能快地执行重绘。
 
 名称：ResizeDebounceMS<br/> 类型：`uint16`
 
-#### 待机回调
+#### OnSuspend
 
 如果设置，当 Windows 启动切换到低功耗模式（挂起/休眠）时将调用此函数
 
 名称：OnSuspend<br/> 类型：`func()`
 
-#### 恢复回调
+#### OnResume
 
 如果设置，当 Windows 从低功耗模式（挂起/休眠）恢复时将调用此函数
 
 名称：OnResume<br/> 类型：`func()`
 
-#### 禁用 Webview GPU 硬件加速
+#### WebviewGpuIsDisabled
 
 设置为 `true` 将禁用 webview 的 GPU 硬件加速。
 
@@ -690,13 +692,19 @@ Setting this to `true` will enable swipe gestures for the webview.
 
 Name: EnableSwipeGestures<br/> Type: `bool`
 
+#### WindowClassName
+
+Class name for the window. If empty, 'wailsWindow' will be used.
+
+Name: WindowClassName<br/> Type: `string`
+
 ### Mac
 
 这定义了 [Mac 特定的选项](#mac)。
 
 名称：Mac<br/> 类型：`*mac.Options`
 
-#### 标题栏
+#### TitleBar
 
 TitleBar 结构提供了配置标题栏外观的能力。
 
@@ -744,7 +752,7 @@ Mac: &mac.Options{
 
 单击 [此处](https://github.com/lukakerr/NSWindowStyles) 获取有关自定义标题栏的一些灵感。
 
-#### 外观
+#### Appearance
 
 Appearance 用于根据 Apple 的 [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) 名称设置您的应用程序的样式。
 
@@ -833,7 +841,7 @@ Mac: &mac.Options{
 }
 ```
 
-#### 关于
+#### About
 
 此配置允许您在“AppMenu”角色创建的应用程序菜单中设置“关于”菜单项的标题、消息和图标。
 
@@ -916,7 +924,7 @@ func main() {
 
 名称：Linux<br/> 类型：`*linux.Options`
 
-#### 图标
+#### Icon
 
 设置代表窗口的图标。 当窗口最小化（也称为图标化）时使用此图标。
 
@@ -934,7 +942,7 @@ func main() {
 
 名称：WindowIsTranslucent<br/> 类型：`bool`
 
-#### Webview GPU 策略
+#### WebviewGpuPolicy
 
 该选项用于决定 webview 的硬件加速策略。
 
@@ -956,13 +964,13 @@ When a .desktop file is created this value helps with window grouping and deskto
 
 Name: ProgramName<br/> Type: string<br/>
 
-### 调试
+### Debug
 
 这定义了用于调试构建的 [调试特定选项](#调试)。
 
 名称: Debug<br/> 类型: `options.Debug`
 
-#### 启动时打开检查器
+#### OpenInspectorOnStartup
 
 设置为 `true` 将在应用程序启动时打开 Web 检查器。
 

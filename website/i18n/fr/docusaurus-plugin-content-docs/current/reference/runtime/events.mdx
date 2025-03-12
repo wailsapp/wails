@@ -14,7 +14,7 @@ Go: `EventsOn(ctx context.Context, eventName string, callback func(optionalData 
 
 ### EventsOff
 
-Cette méthode désactive l'évènement correspondant au nom donné, éventuellement plusieurs évènements peuvent être désinscrits via `additionalEventNames`.
+This method unregisters the listener for the given event name, optionally multiple listeners can be unregistered via `additionalEventNames`.
 
 Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...string)`<br/> JS: `EventsOff(eventName string, ...additionalEventNames)`
 
