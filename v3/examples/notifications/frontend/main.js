@@ -1,12 +1,12 @@
-import * as Notifications from "./bindings/github.com/wailsapp/wails/v3/pkg/services/notifications/service";
+import * as Notifications from "./bindings/github.com/wailsapp/wails/v3/pkg/services/notifications";
 import { Events } from "@wailsio/runtime";
 
 const notificationsElement = document.getElementById('notifications');
 
 window.sendNotification = async () => {
-    const granted = await Notifications.RequestUserNotificationAuthorization();
+    const granted = await Notifications.Service.RequestNotificationAuthorization();
     if (granted) {
-        await Notifications.SendNotification({
+        await Notifications.Service.SendNotification({
             id: crypto.randomUUID(),
             title: "Title",
             body: "Body!",
@@ -20,9 +20,9 @@ window.sendNotification = async () => {
 }
 
 window.sendComplexNotification = async () => {
-    const granted = await Notifications.RequestUserNotificationAuthorization();
+    const granted = await Notifications.Service.RequestNotificationAuthorization();
     if (granted) {
-        await Notifications.RegisterNotificationCategory({
+        await Notifications.Service.RegisterNotificationCategory({
             id: "FRONTEND_NOTIF",
             actions: [
                 { id: "VIEW_ACTION", title: "View" },
@@ -33,7 +33,7 @@ window.sendComplexNotification = async () => {
             replyPlaceholder: "Reply to frontend...",
         });
 
-        await Notifications.SendNotificationWithActions({
+        await Notifications.Service.SendNotificationWithActions({
             id: crypto.randomUUID(),
             title: "Complex Frontend Notification",
             subtitle: "From: Jane Doe",
