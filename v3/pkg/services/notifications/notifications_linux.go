@@ -323,9 +323,9 @@ func (ns *Service) CheckBundleIdentifier() bool {
 	return true
 }
 
-// RequestUserNotificationAuthorization is a Linux stub that always returns true.
+// RequestNotificationAuthorization is a Linux stub that always returns true.
 // (user authorization is macOS-specific)
-func (ns *Service) RequestUserNotificationAuthorization() (bool, error) {
+func (ns *Service) RequestNotificationAuthorization() (bool, error) {
 	return true, nil
 }
 

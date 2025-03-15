@@ -106,9 +106,9 @@ func CheckBundleIdentifier() bool {
 	return true
 }
 
-// RequestUserNotificationAuthorization is a Windows stub that always returns true, nil.
+// RequestNotificationAuthorization is a Windows stub that always returns true, nil.
 // (user authorization is macOS-specific)
-func (ns *Service) RequestUserNotificationAuthorization() (bool, error) {
+func (ns *Service) RequestNotificationAuthorization() (bool, error) {
 	return true, nil
 }
 
