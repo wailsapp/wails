@@ -60,6 +60,7 @@ func (ns *Service) ServiceName() string {
 
 // OnNotificationResponse registers a callback function that will be called when
 // a notification response is received from the user.
+//
 //wails:ignore
 func (ns *Service) OnNotificationResponse(callback func(response NotificationResponse)) {
 	ns.callbackLock.Lock()
