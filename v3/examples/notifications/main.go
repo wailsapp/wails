@@ -47,7 +47,7 @@ func main() {
 	})
 
 	go func() {
-		granted, err := notificationService.RequestUserNotificationAuthorization()
+		granted, err := notificationService.RequestNotificationAuthorization()
 		if err != nil {
 			log.Default().Printf("WARNING: %s\n", err)
 			return
