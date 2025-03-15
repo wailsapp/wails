@@ -278,6 +278,10 @@ func (n *internalNotifier) handleActionInvoked(systemID uint32, actionKey string
 	n.Unlock()
 
 	if notifID != "" && NotificationService != nil {
+		if actionKey == "default" {
+			actionKey = DefaultActionIdentifier
+		}
+
 		// First, send the action response with the user data
 		response := NotificationResponse{
 			ID:               notifID,
