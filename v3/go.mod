@@ -46,7 +46,6 @@ require (
 
 require (
 	atomicgo.dev/schedule v0.1.0 // indirect
-	git.sr.ht/~whereswaldon/shout v0.0.0-20241212204820-26acea6b0007 // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
