@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -18,19 +18,17 @@ import * as $models from "./models.js";
 /**
  * Greet does XYZ
  * @param {string} name
- * @returns {Promise<string> & { cancel(): void }}
+ * @returns {$CancellablePromise<string>}
  */
 export function Greet(name) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1411160069, name));
-    return $resultPromise;
+    return $Call.ByID(1411160069, name);
 }
 
 /**
  * NewPerson creates a new person
  * @param {string} name
- * @returns {Promise<$models.Person | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.Person | null>}
  */
 export function NewPerson(name) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1661412647, name));
-    return $resultPromise;
+    return $Call.ByID(1661412647, name);
 }

@@ -8,12 +8,11 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 /**
  * LikeThisOtherOne does nothing as well, but is different.
  */
-export function LikeThisOtherOne(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(3566862802) as any;
-    return $resultPromise;
+export function LikeThisOtherOne(): $CancellablePromise<void> {
+    return $Call.ByID(3566862802);
 }

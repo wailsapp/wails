@@ -11,7 +11,7 @@ import (
 	"github.com/mattn/go-isatty"
 )
 
-func DefaultLogger(level slog.Level) *slog.Logger {
+func DefaultLogger(level slog.Leveler) *slog.Logger {
 	return slog.New(tint.NewHandler(os.Stderr, &tint.Options{
 		TimeFormat: time.Kitchen,
 		NoColor:    !isatty.IsTerminal(os.Stderr.Fd()),

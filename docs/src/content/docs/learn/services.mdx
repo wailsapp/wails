@@ -159,25 +159,22 @@ application.NewServiceWithOptions(fileserver.New(&fileserver.Config{
 Let's look at a simplified version of the `fileserver` service as an example:
 
 ```go
-type Service struct {
-    config *Config
-    fs     http.Handler
+type Config struct {
+    RootPath string
 }
 
-func New(config *Config) *Service {
+type Service struct {
+    fs http.Handler
+}
+
+func NewWithConfig(config *Config) *Service {
     return &Service{
-        config: config,
         fs:     http.FileServer(http.Dir(config.RootPath)),
     }
 }
 
 func (s *Service) ServiceName() string {
     return "github.com/wailsapp/wails/v3/services/fileserver"
-}
-
-func (s *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
-    // Any initialization code here
-    return nil
 }
 
 func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {

@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -22,81 +22,76 @@ import * as $models from "./models.js";
 /**
  * Get someone.
  * @param {$models.Alias} aliasValue
- * @returns {Promise<$models.Person> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.Person>}
  */
 export function Get(aliasValue) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1928502664, aliasValue));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByID(1928502664, aliasValue).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType0($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
  * Apparently, aliases are all the rage right now.
  * @param {$models.AliasedPerson} p
- * @returns {Promise<$models.StrangelyAliasedPerson> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.StrangelyAliasedPerson>}
  */
 export function GetButAliased(p) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1896499664, p));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByID(1896499664, p).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType0($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
  * Get someone quite different.
- * @returns {Promise<$models.GenericPerson<boolean>> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.GenericPerson<boolean>>}
  */
 export function GetButDifferent() {
-    let $resultPromise = /** @type {any} */($Call.ByID(2240931744));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByID(2240931744).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType1($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 /**
- * @returns {Promise<nobindingshere$0.PrivatePerson> & { cancel(): void }}
+ * @returns {$CancellablePromise<nobindingshere$0.PrivatePerson>}
  */
 export function GetButForeignPrivateAlias() {
-    let $resultPromise = /** @type {any} */($Call.ByID(643456960));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByID(643456960).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType2($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
+}
+
+/**
+ * @returns {$CancellablePromise<$models.AliasGroup>}
+ */
+export function GetButGenericAliases() {
+    return $Call.ByID(914093800).then(/** @type {($result: any) => any} */(($result) => {
+        return $$createType3($result);
+    }));
 }
 
 /**
  * Greet a lot of unusual things.
  * @param {$models.EmptyAliasStruct} $0
  * @param {$models.EmptyStruct} $1
- * @returns {Promise<$models.AliasStruct> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.AliasStruct>}
  */
 export function Greet($0, $1) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1411160069, $0, $1));
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
-        return $$createType6($result);
+    return $Call.ByID(1411160069, $0, $1).then(/** @type {($result: any) => any} */(($result) => {
+        return $$createType7($result);
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
 }
 
 // Private type creation functions
 const $$createType0 = $models.Person.createFrom;
 const $$createType1 = $models.GenericPerson.createFrom($Create.Any);
 const $$createType2 = nobindingshere$0.personImpl.createFrom;
-const $$createType3 = $Create.Array($Create.Any);
+const $$createType3 = $models.AliasGroup.createFrom;
 const $$createType4 = $Create.Array($Create.Any);
-const $$createType5 = $Create.Struct({
-    "NoMoreIdeas": $$createType4,
-});
+const $$createType5 = $Create.Array($Create.Any);
 const $$createType6 = $Create.Struct({
-    "Foo": $$createType3,
-    "Other": $$createType5,
+    "NoMoreIdeas": $$createType5,
+});
+const $$createType7 = $Create.Struct({
+    "Foo": $$createType4,
+    "Other": $$createType6,
 });

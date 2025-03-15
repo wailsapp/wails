@@ -8,7 +8,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -19,7 +19,6 @@ import * as $models from "./models.js";
  * It has a multiline doc comment
  * The comment has even some * / traps!!
  */
-export function Greet(str: string, people: $models.Person[] | null, $2: {"AnotherCount": number, "AnotherOne": $models.Person | null}, assoc: { [_: `${number}`]: boolean | null } | null, $4: (number | null)[] | null, ...other: string[]): Promise<[$models.Person, any, number[] | null]> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", str, people, $2, assoc, $4, other) as any;
-    return $resultPromise;
+export function Greet(str: string, people: $models.Person[] | null, $2: {"AnotherCount": number, "AnotherOne": $models.Person | null}, assoc: { [_: `${number}`]: boolean | null } | null, $4: (number | null)[] | null, ...other: string[]): $CancellablePromise<[$models.Person, any, number[] | null]> {
+    return $Call.ByName("main.GreetService.Greet", str, people, $2, assoc, $4, other);
 }

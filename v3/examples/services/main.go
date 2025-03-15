@@ -36,15 +36,15 @@ func main() {
 		LogLevel: slog.LevelDebug,
 		Services: []application.Service{
 			application.NewService(hashes.New()),
-			application.NewService(sqlite.New(&sqlite.Config{
-				DBFile: "test.db",
+			application.NewService(sqlite.NewWithConfig(&sqlite.Config{
+				DBSource: "test.db",
 			})),
-			application.NewService(kvstore.New(&kvstore.Config{
+			application.NewService(kvstore.NewWithConfig(&kvstore.Config{
 				Filename: "store.json",
 				AutoSave: true,
 			})),
 			application.NewService(log.New()),
-			application.NewServiceWithOptions(fileserver.New(&fileserver.Config{
+			application.NewServiceWithOptions(fileserver.NewWithConfig(&fileserver.Config{
 				RootPath: rootPath,
 			}), application.ServiceOptions{
 				Route: "/files",

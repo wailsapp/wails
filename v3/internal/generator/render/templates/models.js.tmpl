@@ -9,7 +9,7 @@
 {{if not $useInterfaces}}
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Create as $Create} from "{{js $runtime}}";
+import { Create as $Create } from "{{js $runtime}}";
 {{end -}}
 {{range $imports.External}}
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -147,7 +147,10 @@ export class {{jsid $model.Name}} {
      * Given creation functions for each type parameter,
      * returns a creation function for a concrete instance
      * of the generic class {{jsid $model.Name}}.
-     * @template {{$template.Params}}
+    {{- range $i, $param := $model.TypeParams}}
+        {{- $param = (typeparam $i $param)}}
+     * @template [{{$param}}=any]
+    {{- end}}
     {{- range $i, $param := $model.TypeParams}}
         {{- $param = (typeparam $i $param)}}
      * @param {(source: any) => {{$param -}} } $$createParam{{$param}}

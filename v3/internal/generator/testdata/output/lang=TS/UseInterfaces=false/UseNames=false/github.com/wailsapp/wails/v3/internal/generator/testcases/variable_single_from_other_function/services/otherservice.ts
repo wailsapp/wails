@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -18,13 +18,10 @@ import * as $models from "./models.js";
 /**
  * Yay does this and that
  */
-export function Yay(): Promise<$models.Address | null> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(1491748400) as any;
-    let $typingPromise = $resultPromise.then(($result: any) => {
+export function Yay(): $CancellablePromise<$models.Address | null> {
+    return $Call.ByID(1491748400).then(($result: any) => {
         return $$createType1($result);
-    }) as any;
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
+    });
 }
 
 // Private type creation functions

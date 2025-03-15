@@ -8,45 +8,40 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 /**
  * Comment 1.
  */
-export function Method1(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Method1") as any;
-    return $resultPromise;
+export function Method1(): $CancellablePromise<void> {
+    return $Call.ByName("main.GreetService.Method1");
 }
 
 /**
  * Comment 2.
  */
-export function Method2(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Method2") as any;
-    return $resultPromise;
+export function Method2(): $CancellablePromise<void> {
+    return $Call.ByName("main.GreetService.Method2");
 }
 
 /**
  * Comment 3a.
  * Comment 3b.
  */
-export function Method3(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Method3") as any;
-    return $resultPromise;
+export function Method3(): $CancellablePromise<void> {
+    return $Call.ByName("main.GreetService.Method3");
 }
 
 /**
  * Comment 4.
  */
-export function Method4(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Method4") as any;
-    return $resultPromise;
+export function Method4(): $CancellablePromise<void> {
+    return $Call.ByName("main.GreetService.Method4");
 }
 
 /**
  * Comment 5.
  */
-export function Method5(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Method5") as any;
-    return $resultPromise;
+export function Method5(): $CancellablePromise<void> {
+    return $Call.ByName("main.GreetService.Method5");
 }
