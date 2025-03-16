@@ -11,38 +11,42 @@ import (
 )
 
 type Dispatcher struct {
-	log        *logger.Logger
-	bindings   *binding.Bindings
-	events     frontend.Events
-	bindingsDB *binding.DB
-	ctx        context.Context
-	errfmt     options.ErrorFormatter
+	log                  *logger.Logger
+	bindings             *binding.Bindings
+	events               frontend.Events
+	bindingsDB           *binding.DB
+	ctx                  context.Context
+	errfmt               options.ErrorFormatter
+	disablePanicRecovery bool
 }
 
-func NewDispatcher(ctx context.Context, log *logger.Logger, bindings *binding.Bindings, events frontend.Events, errfmt options.ErrorFormatter) *Dispatcher {
+func NewDispatcher(ctx context.Context, log *logger.Logger, bindings *binding.Bindings, events frontend.Events, errfmt options.ErrorFormatter, disablePanicRecovery bool) *Dispatcher {
 	return &Dispatcher{
-		log:        log,
-		bindings:   bindings,
-		events:     events,
-		bindingsDB: bindings.DB(),
-		ctx:        ctx,
-		errfmt:     errfmt,
+		log:                  log,
+		bindings:             bindings,
+		events:               events,
+		bindingsDB:           bindings.DB(),
+		ctx:                  ctx,
+		errfmt:               errfmt,
+		disablePanicRecovery: disablePanicRecovery,
 	}
 }
 
 func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (_ string, err error) {
-	defer func() {
-		if e := recover(); e != nil {
-			if errPanic, ok := e.(error); ok {
-				err = errPanic
-			} else {
-				err = fmt.Errorf("%v", e)
+	if !d.disablePanicRecovery {
+		defer func() {
+			if e := recover(); e != nil {
+				if errPanic, ok := e.(error); ok {
+					err = errPanic
+				} else {
+					err = fmt.Errorf("%v", e)
+				}
 			}
-		}
-		if err != nil {
-			d.log.Error("process message error: %s -> %s", message, err)
-		}
-	}()
+			if err != nil {
+				d.log.Error("process message error: %s -> %s", message, err)
+			}
+		}()
+	}
 
 	if message == "" {
 		return "", errors.New("No message to process")
