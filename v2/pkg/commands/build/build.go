@@ -69,7 +69,7 @@ type Options struct {
 	Obfuscated        bool                 // Indicates that bound methods should be obfuscated
 	GarbleArgs        string               // The arguments for Garble
 	SkipBindings      bool                 // Skip binding generation
-	SkipEmbedCreate   bool                 // Skip embed creation when in development mode
+	SkipEmbedCreate   bool                 // Skip creation of embed files
 }
 
 // Build the project!
