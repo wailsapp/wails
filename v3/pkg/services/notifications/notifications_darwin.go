@@ -56,8 +56,9 @@ func CheckBundleIdentifier() bool {
 }
 
 // RequestNotificationAuthorization requests permission for notifications.
+// Default timeout is 5 minutes
 func (ns *Service) RequestNotificationAuthorization() (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*900)
 	defer cancel()
 
 	id, resultCh := registerChannel()
@@ -294,14 +295,12 @@ func (ns *Service) RemoveNotification(identifier string) error {
 func captureResult(channelID C.int, success C.bool, errorMsg *C.char) {
 	resultCh, exists := getChannel(int(channelID))
 	if !exists {
-		// handle this
 		return
 	}
 
 	var err error
 	if errorMsg != nil {
 		err = fmt.Errorf("%s", C.GoString(errorMsg))
-		C.free(unsafe.Pointer(errorMsg))
 	}
 
 	resultCh <- notificationChannel{
