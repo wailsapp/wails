@@ -54,10 +54,14 @@ func main() {
 		}
 
 		if granted {
-			notificationService.OnNotificationResponse(func(response notifications.NotificationResponse) {
-				data, _ := json.Marshal(response)
+			notificationService.OnNotificationResponse(func(result notifications.NotificationResult) {
+				if result.Error != nil {
+					fmt.Printf("notification response error: %s", result.Error)
+					return
+				}
+				data, _ := json.Marshal(result.Response)
 				fmt.Printf("%s\n", string(data))
-				app.EmitEvent("notification:response", response)
+				app.EmitEvent("notification:response", result.Response)
 			})
 			time.Sleep(time.Second * 2)
 

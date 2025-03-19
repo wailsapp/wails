@@ -8,9 +8,9 @@
 bool checkBundleIdentifier(void);
 void requestNotificationAuthorization(int channelID);
 void checkNotificationAuthorization(int channelID);
-void sendNotification(const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json);
-void sendNotificationWithActions(const char *identifier, const char *title, const char *subtitle, const char *body, const char *categoryId, const char *actions_json);
-void registerNotificationCategory(const char *categoryId, const char *actions_json, bool hasReplyField, const char *replyPlaceholder, const char *replyButtonTitle);
+void sendNotification(int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json);
+void sendNotificationWithActions(int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *categoryId, const char *actions_json);
+void registerNotificationCategory(int channelID, const char *categoryId, const char *actions_json, bool hasReplyField, const char *replyPlaceholder, const char *replyButtonTitle);
 void removeNotificationCategory(const char *categoryId);
 void removeAllPendingNotifications(void);
 void removePendingNotification(const char *identifier);

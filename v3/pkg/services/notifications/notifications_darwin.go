@@ -9,15 +9,17 @@ package notifications
 */
 import "C"
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sync"
+	"time"
 	"unsafe"
 )
 
 type notificationChannel struct {
-	authorized bool
-	err        error
+	success bool
+	err     error
 }
 
 var (
@@ -55,26 +57,47 @@ func CheckBundleIdentifier() bool {
 
 // RequestNotificationAuthorization requests permission for notifications.
 func (ns *Service) RequestNotificationAuthorization() (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
 	id, resultCh := registerChannel()
 
 	C.requestNotificationAuthorization(C.int(id))
 
-	result := <-resultCh
-	return result.authorized, result.err
+	select {
+	case result := <-resultCh:
+		return result.success, result.err
+	case <-ctx.Done():
+		cleanupChannel(id)
+		return false, fmt.Errorf("notification authorization timed out after 15s: %w", ctx.Err())
+	}
 }
 
 // CheckNotificationAuthorization checks current notification permission status.
 func (ns *Service) CheckNotificationAuthorization() (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
 	id, resultCh := registerChannel()
 
 	C.checkNotificationAuthorization(C.int(id))
 
-	result := <-resultCh
-	return result.authorized, result.err
+	select {
+	case result := <-resultCh:
+		return result.success, result.err
+	case <-ctx.Done():
+		cleanupChannel(id)
+		return false, fmt.Errorf("notification authorization timed out after 15s: %w", ctx.Err())
+	}
 }
 
 // SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
 func (ns *Service) SendNotification(options NotificationOptions) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	id, resultCh := registerChannel()
+
 	cIdentifier := C.CString(options.ID)
 	cTitle := C.CString(options.Title)
 	cSubtitle := C.CString(options.Subtitle)
@@ -94,14 +117,32 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 		defer C.free(unsafe.Pointer(cDataJSON))
 	}
 
-	C.sendNotification(cIdentifier, cTitle, cSubtitle, cBody, cDataJSON)
-	return nil
+	C.sendNotification(C.int(id), cIdentifier, cTitle, cSubtitle, cBody, cDataJSON)
+
+	select {
+	case result := <-resultCh:
+		if !result.success {
+			if result.err != nil {
+				return result.err
+			}
+			return fmt.Errorf("sending notification failed")
+		}
+		return nil
+	case <-ctx.Done():
+		cleanupChannel(id)
+		return fmt.Errorf("sending notification timed out: %w", ctx.Err())
+	}
 }
 
 // SendNotificationWithActions sends a notification with additional actions and inputs.
 // A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
 // If a NotificationCategory is not registered a basic notification will be sent.
 func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	id, resultCh := registerChannel()
+
 	cIdentifier := C.CString(options.ID)
 	cTitle := C.CString(options.Title)
 	cSubtitle := C.CString(options.Subtitle)
@@ -123,13 +164,30 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 		defer C.free(unsafe.Pointer(cDataJSON))
 	}
 
-	C.sendNotificationWithActions(cIdentifier, cTitle, cSubtitle, cBody, cCategoryID, cDataJSON)
-	return nil
+	C.sendNotificationWithActions(C.int(id), cIdentifier, cTitle, cSubtitle, cBody, cCategoryID, cDataJSON)
+	select {
+	case result := <-resultCh:
+		if !result.success {
+			if result.err != nil {
+				return result.err
+			}
+			return fmt.Errorf("sending notification failed")
+		}
+		return nil
+	case <-ctx.Done():
+		cleanupChannel(id)
+		return fmt.Errorf("sending notification timed out: %w", ctx.Err())
+	}
 }
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
 // Registering a category with the same name as a previously registered NotificationCategory will override it.
 func (ns *Service) RegisterNotificationCategory(category NotificationCategory) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	id, resultCh := registerChannel()
+
 	cCategoryID := C.CString(category.ID)
 	defer C.free(unsafe.Pointer(cCategoryID))
 
@@ -148,9 +206,22 @@ func (ns *Service) RegisterNotificationCategory(category NotificationCategory) e
 		defer C.free(unsafe.Pointer(cReplyButtonTitle))
 	}
 
-	C.registerNotificationCategory(cCategoryID, cActionsJSON, C.bool(category.HasReplyField),
+	C.registerNotificationCategory(C.int(id), cCategoryID, cActionsJSON, C.bool(category.HasReplyField),
 		cReplyPlaceholder, cReplyButtonTitle)
-	return nil
+
+	select {
+	case result := <-resultCh:
+		if !result.success {
+			if result.err != nil {
+				return result.err
+			}
+			return fmt.Errorf("category registration failed")
+		}
+		return nil
+	case <-ctx.Done():
+		cleanupChannel(id)
+		return fmt.Errorf("category registration timed out: %w", ctx.Err())
+	}
 }
 
 // RemoveNotificationCategory remove a previously registered NotificationCategory.
@@ -201,8 +272,8 @@ func (ns *Service) RemoveNotification(identifier string) error {
 	return nil
 }
 
-//export requestNotificationAuthorizationResponse
-func requestNotificationAuthorizationResponse(channelID C.int, authorized C.bool, errorMsg *C.char) {
+//export notificationResponse
+func notificationResponse(channelID C.int, success C.bool, errorMsg *C.char) {
 	resultCh, exists := getChannel(int(channelID))
 	if !exists {
 		// handle this
@@ -216,41 +287,42 @@ func requestNotificationAuthorizationResponse(channelID C.int, authorized C.bool
 	}
 
 	resultCh <- notificationChannel{
-		authorized: bool(authorized),
-		err:        err,
-	}
-
-	close(resultCh)
-}
-
-//export checkNotificationAuthorizationResponse
-func checkNotificationAuthorizationResponse(channelID C.int, authorized C.bool, errorMsg *C.char) {
-	resultCh, exists := getChannel(int(channelID))
-	if !exists {
-		// handle this
-		return
-	}
-
-	var err error
-	if errorMsg != nil {
-		err = fmt.Errorf("%s", C.GoString(errorMsg))
-		C.free(unsafe.Pointer(errorMsg))
-	}
-
-	resultCh <- notificationChannel{
-		authorized: bool(authorized),
-		err:        err,
+		success: bool(success),
+		err:     err,
 	}
 
 	close(resultCh)
 }
 
 //export didReceiveNotificationResponse
-func didReceiveNotificationResponse(jsonPayload *C.char) {
+func didReceiveNotificationResponse(jsonPayload *C.char, err *C.char) {
+	result := NotificationResult{}
+
+	if err != nil {
+		errMsg := C.GoString(err)
+		result.Error = fmt.Errorf("notification response error: %s", errMsg)
+		if ns := getNotificationService(); ns != nil {
+			ns.handleNotificationResult(result)
+		}
+		return
+	}
+
+	if jsonPayload == nil {
+		result.Error = fmt.Errorf("received nil JSON payload in notification response")
+		if ns := getNotificationService(); ns != nil {
+			ns.handleNotificationResult(result)
+		}
+		return
+	}
+
 	payload := C.GoString(jsonPayload)
 
 	var response NotificationResponse
 	if err := json.Unmarshal([]byte(payload), &response); err != nil {
+		result.Error = fmt.Errorf("failed to unmarshal notification response: %w", err)
+		if ns := getNotificationService(); ns != nil {
+			ns.handleNotificationResult(result)
+		}
 		return
 	}
 
@@ -258,18 +330,9 @@ func didReceiveNotificationResponse(jsonPayload *C.char) {
 		response.ActionIdentifier = DefaultActionIdentifier
 	}
 
-	notificationServiceLock.RLock()
-	ns := NotificationService
-	notificationServiceLock.RUnlock()
-
-	if ns != nil {
-		ns.callbackLock.RLock()
-		callback := ns.notificationResponseCallback
-		ns.callbackLock.RUnlock()
-
-		if callback != nil {
-			callback(response)
-		}
+	result.Response = response
+	if ns := getNotificationService(); ns != nil {
+		ns.handleNotificationResult(result)
 	}
 }
 
@@ -295,4 +358,14 @@ func getChannel(id int) (chan notificationChannel, bool) {
 		delete(notificationChannels, id)
 	}
 	return ch, exists
+}
+
+func cleanupChannel(id int) {
+	notificationChannelsLock.Lock()
+	defer notificationChannelsLock.Unlock()
+
+	if ch, exists := notificationChannels[id]; exists {
+		delete(notificationChannels, id)
+		close(ch)
+	}
 }

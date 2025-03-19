@@ -2,9 +2,8 @@
 #import <Cocoa/Cocoa.h>
 #import <UserNotifications/UserNotifications.h>
 
-extern void requestNotificationAuthorizationResponse(int channelID, bool authorized, const char* error);
-extern void checkNotificationAuthorizationResponse(int channelID, bool authorized, const char* error);
-extern void didReceiveNotificationResponse(const char *jsonPayload);
+extern void notificationResponse(int channelID, bool success, const char* error);
+extern void didReceiveNotificationResponse(const char *jsonPayload, const char* error);
 
 @interface NotificationsDelegate : NSObject <UNUserNotificationCenterDelegate>
 @end
@@ -50,9 +49,12 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     
     NSError *error = nil;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:payload options:0 error:&error];
-    if (!error) {
+    if (error) {
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+        didReceiveNotificationResponse(NULL, [errorMsg UTF8String]);
+    } else {
         NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        didReceiveNotificationResponse([jsonString UTF8String]);
+        didReceiveNotificationResponse([jsonString UTF8String], NULL);
     }
     
     completionHandler();
@@ -86,9 +88,10 @@ void requestNotificationAuthorization(int channelID) {
     
     [center requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError * _Nullable error) {
         if (error) {
-            requestNotificationAuthorizationResponse(channelID, false, [[error localizedDescription] UTF8String]);
+            NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+            notificationResponse(channelID, false, [errorMsg UTF8String]);
         } else {
-            requestNotificationAuthorizationResponse(channelID, granted, NULL);
+            notificationResponse(channelID, granted, NULL);
         }
     }];
 }
@@ -99,11 +102,11 @@ void checkNotificationAuthorization(int channelID) {
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings *settings) {
         BOOL isAuthorized = (settings.authorizationStatus == UNAuthorizationStatusAuthorized);
-        checkNotificationAuthorizationResponse(channelID, isAuthorized, NULL);
+        notificationResponse(channelID, isAuthorized, NULL);
     }];
 }
 
-void sendNotification(const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json) {
+void sendNotification(int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json) {
     ensureDelegateInitialized();
     
     NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
@@ -117,6 +120,11 @@ void sendNotification(const char *identifier, const char *title, const char *sub
         NSData *jsonData = [dataJsonStr dataUsingEncoding:NSUTF8StringEncoding];
         NSError *error = nil;
         NSDictionary *parsedData = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+        if (error) {
+            NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+            notificationResponse(channelID, false, [errorMsg UTF8String]);
+            return;
+        }
         if (!error && parsedData) {
             [customData addEntriesFromDictionary:parsedData];
         }
@@ -140,12 +148,15 @@ void sendNotification(const char *identifier, const char *title, const char *sub
     
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
         if (error) {
-            NSLog(@"Error scheduling notification: %@", error.localizedDescription);
+            NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+            notificationResponse(channelID, false, [errorMsg UTF8String]);
+        } else {
+            notificationResponse(channelID, true, NULL);
         }
     }];
 }
 
-void sendNotificationWithActions(const char *identifier, const char *title, const char *subtitle, 
+void sendNotificationWithActions(int channelID, const char *identifier, const char *title, const char *subtitle, 
                              const char *body, const char *categoryId, const char *actions_json) {
     ensureDelegateInitialized();
     
@@ -187,12 +198,15 @@ void sendNotificationWithActions(const char *identifier, const char *title, cons
     
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
         if (error) {
-            NSLog(@"Error scheduling notification: %@", error.localizedDescription);
+            NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+            notificationResponse(channelID, false, [errorMsg UTF8String]);
+        } else {
+            notificationResponse(channelID, true, NULL);
         }
     }];
 }
 
-void registerNotificationCategory(const char *categoryId, const char *actions_json, bool hasReplyField, 
+void registerNotificationCategory(int channelID, const char *categoryId, const char *actions_json, bool hasReplyField, 
                                 const char *replyPlaceholder, const char *replyButtonTitle) {
     ensureDelegateInitialized();
     
@@ -204,7 +218,8 @@ void registerNotificationCategory(const char *categoryId, const char *actions_js
     NSArray *actionsArray = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
     
     if (error) {
-        NSLog(@"Error parsing notification actions JSON: %@", error);
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+        notificationResponse(channelID, false, [errorMsg UTF8String]);
         return;
     }
     
@@ -265,6 +280,8 @@ void registerNotificationCategory(const char *categoryId, const char *actions_js
         // Add the new category
         [updatedCategories addObject:newCategory];
         [center setNotificationCategories:updatedCategories];
+
+        notificationResponse(channelID, true, NULL);
     }];
 }
 

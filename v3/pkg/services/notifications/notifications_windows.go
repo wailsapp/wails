@@ -71,6 +71,7 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 	})
 
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
+		result := NotificationResult{}
 		actionIdentifier, userInfo := parseNotificationResponse(args)
 		response := NotificationResponse{
 			ActionIdentifier: actionIdentifier,
@@ -78,17 +79,23 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 
 		if userInfo != "" {
 			var userInfoMap map[string]interface{}
-			if err := json.Unmarshal([]byte(userInfo), &userInfoMap); err == nil {
-				response.UserInfo = userInfoMap
+			if err := json.Unmarshal([]byte(userInfo), &userInfoMap); err != nil {
+				result.Error = fmt.Errorf("failed to unmarshal notification response: %w", err)
+
+				if ns := getNotificationService(); ns != nil {
+					ns.handleNotificationResult(result)
+				}
 			}
+			response.UserInfo = userInfoMap
 		}
 
 		if userText, found := getUserText(data); found {
 			response.UserText = userText
 		}
 
-		if NotificationService != nil {
-			NotificationService.handleNotificationResponse(response)
+		result.Response = response
+		if ns := getNotificationService(); ns != nil {
+			ns.handleNotificationResult(result)
 		}
 	})
 

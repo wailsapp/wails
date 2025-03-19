@@ -5,7 +5,7 @@ import "sync"
 // Service represents the notifications service
 type Service struct {
 	// notificationResponseCallback is called when a notification response is received
-	notificationResponseCallback func(response NotificationResponse)
+	notificationResultCallback func(result NotificationResult)
 
 	callbackLock sync.RWMutex
 }
@@ -53,30 +53,42 @@ type NotificationResponse = struct {
 	UserInfo         map[string]interface{} `json:"userInfo,omitempty"`
 }
 
+// NotificationResult
+type NotificationResult = struct {
+	Response NotificationResponse
+	Error    error
+}
+
 // ServiceName returns the name of the service.
 func (ns *Service) ServiceName() string {
 	return "github.com/wailsapp/wails/v3/services/notifications"
+}
+
+func getNotificationService() *Service {
+	notificationServiceLock.RLock()
+	defer notificationServiceLock.RUnlock()
+	return NotificationService
 }
 
 // OnNotificationResponse registers a callback function that will be called when
 // a notification response is received from the user.
 //
 //wails:ignore
-func (ns *Service) OnNotificationResponse(callback func(response NotificationResponse)) {
+func (ns *Service) OnNotificationResponse(callback func(result NotificationResult)) {
 	ns.callbackLock.Lock()
 	defer ns.callbackLock.Unlock()
 
-	ns.notificationResponseCallback = callback
+	ns.notificationResultCallback = callback
 }
 
 // handleNotificationResponse is an internal method to handle notification responses
 // and invoke the registered callback if one exists
-func (ns *Service) handleNotificationResponse(response NotificationResponse) {
+func (ns *Service) handleNotificationResult(result NotificationResult) {
 	ns.callbackLock.RLock()
-	callback := ns.notificationResponseCallback
+	callback := ns.notificationResultCallback
 	ns.callbackLock.RUnlock()
 
 	if callback != nil {
-		callback(response)
+		callback(result)
 	}
 }

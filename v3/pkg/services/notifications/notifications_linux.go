@@ -235,7 +235,7 @@ func (n *internalNotifier) handleNotificationClosed(systemID uint32, reason stri
 	}
 	n.Unlock()
 
-	if notifID != "" && NotificationService != nil {
+	if notifID != "" {
 		response := NotificationResponse{
 			ID:               notifID,
 			ActionIdentifier: DefaultActionIdentifier,
@@ -251,7 +251,11 @@ func (n *internalNotifier) handleNotificationClosed(systemID uint32, reason stri
 			response.UserInfo["reason"] = reason
 		}
 
-		NotificationService.handleNotificationResponse(response)
+		result := NotificationResult{}
+		result.Response = response
+		if ns := getNotificationService(); ns != nil {
+			ns.handleNotificationResult(result)
+		}
 
 		// Clean up the context
 		n.Lock()
@@ -277,7 +281,7 @@ func (n *internalNotifier) handleActionInvoked(systemID uint32, actionKey string
 	}
 	n.Unlock()
 
-	if notifID != "" && NotificationService != nil {
+	if notifID != "" {
 		if actionKey == "default" {
 			actionKey = DefaultActionIdentifier
 		}
@@ -293,7 +297,11 @@ func (n *internalNotifier) handleActionInvoked(systemID uint32, actionKey string
 			response.UserInfo = ctx.UserData
 		}
 
-		NotificationService.handleNotificationResponse(response)
+		result := NotificationResult{}
+		result.Response = response
+		if ns := getNotificationService(); ns != nil {
+			ns.handleNotificationResult(result)
+		}
 
 		// Then, trigger a closed event with "activated-by-user" reason
 		closeResponse := NotificationResponse{
@@ -311,7 +319,11 @@ func (n *internalNotifier) handleActionInvoked(systemID uint32, actionKey string
 		// Add the reason to the user info
 		closeResponse.UserInfo["reason"] = closedReason(5).string() // "activated-by-user"
 
-		NotificationService.handleNotificationResponse(closeResponse)
+		closeResult := NotificationResult{}
+		closeResult.Response = closeResponse
+		if ns := getNotificationService(); ns != nil {
+			ns.handleNotificationResult(closeResult)
+		}
 
 		// Clean up the context
 		n.Lock()
