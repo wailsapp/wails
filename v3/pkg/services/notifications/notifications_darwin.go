@@ -18,8 +18,8 @@ import (
 )
 
 type notificationChannel struct {
-	success bool
-	err     error
+	Success bool
+	Error   error
 }
 
 var (
@@ -66,7 +66,7 @@ func (ns *Service) RequestNotificationAuthorization() (bool, error) {
 
 	select {
 	case result := <-resultCh:
-		return result.success, result.err
+		return result.Success, result.Error
 	case <-ctx.Done():
 		cleanupChannel(id)
 		return false, fmt.Errorf("notification authorization timed out after 15s: %w", ctx.Err())
@@ -84,7 +84,7 @@ func (ns *Service) CheckNotificationAuthorization() (bool, error) {
 
 	select {
 	case result := <-resultCh:
-		return result.success, result.err
+		return result.Success, result.Error
 	case <-ctx.Done():
 		cleanupChannel(id)
 		return false, fmt.Errorf("notification authorization timed out after 15s: %w", ctx.Err())
@@ -121,9 +121,9 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 
 	select {
 	case result := <-resultCh:
-		if !result.success {
-			if result.err != nil {
-				return result.err
+		if !result.Success {
+			if result.Error != nil {
+				return result.Error
 			}
 			return fmt.Errorf("sending notification failed")
 		}
@@ -167,9 +167,9 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	C.sendNotificationWithActions(C.int(id), cIdentifier, cTitle, cSubtitle, cBody, cCategoryID, cDataJSON)
 	select {
 	case result := <-resultCh:
-		if !result.success {
-			if result.err != nil {
-				return result.err
+		if !result.Success {
+			if result.Error != nil {
+				return result.Error
 			}
 			return fmt.Errorf("sending notification failed")
 		}
@@ -211,9 +211,9 @@ func (ns *Service) RegisterNotificationCategory(category NotificationCategory) e
 
 	select {
 	case result := <-resultCh:
-		if !result.success {
-			if result.err != nil {
-				return result.err
+		if !result.Success {
+			if result.Error != nil {
+				return result.Error
 			}
 			return fmt.Errorf("category registration failed")
 		}
@@ -226,11 +226,29 @@ func (ns *Service) RegisterNotificationCategory(category NotificationCategory) e
 
 // RemoveNotificationCategory remove a previously registered NotificationCategory.
 func (ns *Service) RemoveNotificationCategory(categoryId string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	id, resultCh := registerChannel()
+
 	cCategoryID := C.CString(categoryId)
 	defer C.free(unsafe.Pointer(cCategoryID))
 
-	C.removeNotificationCategory(cCategoryID)
-	return nil
+	C.removeNotificationCategory(C.int(id), cCategoryID)
+
+	select {
+	case result := <-resultCh:
+		if !result.Success {
+			if result.Error != nil {
+				return result.Error
+			}
+			return fmt.Errorf("category registration failed")
+		}
+		return nil
+	case <-ctx.Done():
+		cleanupChannel(id)
+		return fmt.Errorf("category registration timed out: %w", ctx.Err())
+	}
 }
 
 // RemoveAllPendingNotifications removes all pending notifications.
@@ -272,8 +290,8 @@ func (ns *Service) RemoveNotification(identifier string) error {
 	return nil
 }
 
-//export notificationResponse
-func notificationResponse(channelID C.int, success C.bool, errorMsg *C.char) {
+//export captureResult
+func captureResult(channelID C.int, success C.bool, errorMsg *C.char) {
 	resultCh, exists := getChannel(int(channelID))
 	if !exists {
 		// handle this
@@ -287,8 +305,8 @@ func notificationResponse(channelID C.int, success C.bool, errorMsg *C.char) {
 	}
 
 	resultCh <- notificationChannel{
-		success: bool(success),
-		err:     err,
+		Success: bool(success),
+		Error:   err,
 	}
 
 	close(resultCh)

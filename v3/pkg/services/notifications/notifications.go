@@ -5,6 +5,7 @@ import "sync"
 // Service represents the notifications service
 type Service struct {
 	// notificationResponseCallback is called when a notification response is received
+	// Only one callback can be assigned at a time.
 	notificationResultCallback func(result NotificationResult)
 
 	callbackLock sync.RWMutex

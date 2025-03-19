@@ -305,7 +305,7 @@ func parseNotificationResponse(response string) (action string, data string) {
 func saveIconToDir() error {
 	icon, err := application.NewIconFromResource(w32.GetModuleHandle(""), uint16(3))
 	if err != nil {
-		return fmt.Errorf("failed to retrieve application icon")
+		return fmt.Errorf("failed to retrieve application icon: %w", err)
 	}
 
 	return saveHIconAsPNG(icon, iconPath)

@@ -48,6 +48,20 @@ window.sendComplexNotification = async () => {
     }
 }
 
+window.removeNotification = async (id) => {
+    const granted = await Notifications.Service.RequestNotificationAuthorization();
+    if (granted) {
+        await Notifications.Service.RemoveDeliveredNotification(id);
+    }
+}
+
+window.removeAllNotifications = async (id) => {
+    const granted = await Notifications.Service.RequestNotificationAuthorization();
+    if (granted) {
+        await Notifications.Service.RemoveAllDeliveredNotifications();
+    }
+}
+
 Events.On("notification:response", (response) => {
     notificationsElement.innerText = JSON.stringify(response.data[0]);
 });

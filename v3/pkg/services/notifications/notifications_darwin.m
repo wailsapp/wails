@@ -2,7 +2,7 @@
 #import <Cocoa/Cocoa.h>
 #import <UserNotifications/UserNotifications.h>
 
-extern void notificationResponse(int channelID, bool success, const char* error);
+extern void captureResult(int channelID, bool success, const char* error);
 extern void didReceiveNotificationResponse(const char *jsonPayload, const char* error);
 
 @interface NotificationsDelegate : NSObject <UNUserNotificationCenterDelegate>
@@ -89,9 +89,9 @@ void requestNotificationAuthorization(int channelID) {
     [center requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError * _Nullable error) {
         if (error) {
             NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
-            notificationResponse(channelID, false, [errorMsg UTF8String]);
+            captureResult(channelID, false, [errorMsg UTF8String]);
         } else {
-            notificationResponse(channelID, granted, NULL);
+            captureResult(channelID, granted, NULL);
         }
     }];
 }
@@ -102,7 +102,7 @@ void checkNotificationAuthorization(int channelID) {
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings *settings) {
         BOOL isAuthorized = (settings.authorizationStatus == UNAuthorizationStatusAuthorized);
-        notificationResponse(channelID, isAuthorized, NULL);
+        captureResult(channelID, isAuthorized, NULL);
     }];
 }
 
@@ -122,10 +122,10 @@ void sendNotification(int channelID, const char *identifier, const char *title, 
         NSDictionary *parsedData = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
         if (error) {
             NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
-            notificationResponse(channelID, false, [errorMsg UTF8String]);
+            captureResult(channelID, false, [errorMsg UTF8String]);
             return;
         }
-        if (!error && parsedData) {
+        if (parsedData) {
             [customData addEntriesFromDictionary:parsedData];
         }
     }
@@ -142,16 +142,16 @@ void sendNotification(int channelID, const char *identifier, const char *title, 
         content.userInfo = customData;
     }
     
-    UNTimeIntervalNotificationTrigger *trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:1 repeats:NO];
+    UNTimeIntervalNotificationTrigger *trigger = nil;
     
     UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
     
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
         if (error) {
             NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
-            notificationResponse(channelID, false, [errorMsg UTF8String]);
+            captureResult(channelID, false, [errorMsg UTF8String]);
         } else {
-            notificationResponse(channelID, true, NULL);
+            captureResult(channelID, true, NULL);
         }
     }];
 }
@@ -192,16 +192,16 @@ void sendNotificationWithActions(int channelID, const char *identifier, const ch
         content.userInfo = customData;
     }
     
-    UNTimeIntervalNotificationTrigger *trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:1 repeats:NO];
+    UNTimeIntervalNotificationTrigger *trigger = nil;
     
     UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
     
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
         if (error) {
             NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
-            notificationResponse(channelID, false, [errorMsg UTF8String]);
+            captureResult(channelID, false, [errorMsg UTF8String]);
         } else {
-            notificationResponse(channelID, true, NULL);
+            captureResult(channelID, true, NULL);
         }
     }];
 }
@@ -219,7 +219,7 @@ void registerNotificationCategory(int channelID, const char *categoryId, const c
     
     if (error) {
         NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
-        notificationResponse(channelID, false, [errorMsg UTF8String]);
+        captureResult(channelID, false, [errorMsg UTF8String]);
         return;
     }
     
@@ -281,11 +281,11 @@ void registerNotificationCategory(int channelID, const char *categoryId, const c
         [updatedCategories addObject:newCategory];
         [center setNotificationCategories:updatedCategories];
 
-        notificationResponse(channelID, true, NULL);
+        captureResult(channelID, true, NULL);
     }];
 }
 
-void removeNotificationCategory(const char *categoryId) {
+void removeNotificationCategory(int channelID, const char *categoryId) {
     NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     
@@ -304,6 +304,10 @@ void removeNotificationCategory(const char *categoryId) {
         if (categoryToRemove) {
             [updatedCategories removeObject:categoryToRemove];
             [center setNotificationCategories:updatedCategories];
+            captureResult(channelID, true, NULL);
+        } else {
+            NSString *errorMsg = [NSString stringWithFormat:@"Category '%@' not found", nsCategoryId];
+            captureResult(channelID, false, [errorMsg UTF8String]);
         }
     }];
 }

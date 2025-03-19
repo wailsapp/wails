@@ -1,7 +1,5 @@
 //go:build linux
 
-// WIP - WILL NOT WORK PROPERLY
-
 package notifications
 
 import (
@@ -69,11 +67,14 @@ type notificationContext struct {
 
 type internalNotifier struct {
 	sync.Mutex
-	method       string
-	dbusConn     *dbus.Conn
-	sendPath     string
-	activeNotifs map[string]uint32               // Maps our notification IDs to system IDs
-	contexts     map[string]*notificationContext // Stores notification contexts by our ID
+	method          string
+	dbusConn        *dbus.Conn
+	sendPath        string
+	activeNotifs    map[string]uint32               // Maps our notification IDs to system IDs
+	contexts        map[string]*notificationContext // Stores notification contexts by our ID
+	listenerCtx     context.Context
+	listenerCancel  context.CancelFunc
+	listenerRunning bool
 }
 
 var notifier *internalNotifier
@@ -107,10 +108,33 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 	return err
 }
 
+func (n *internalNotifier) shutdown() {
+	n.Lock()
+	defer n.Unlock()
+
+	// Cancel the listener context if it's running
+	if n.listenerCancel != nil {
+		n.listenerCancel()
+		n.listenerCancel = nil
+	}
+
+	// Close the connection
+	if n.dbusConn != nil {
+		n.dbusConn.Close()
+		n.dbusConn = nil
+	}
+
+	// Clear state
+	n.activeNotifs = make(map[string]uint32)
+	n.contexts = make(map[string]*notificationContext)
+	n.method = "none"
+	n.sendPath = ""
+}
+
 // ServiceShutdown is called when the service is unloaded
 func (ns *Service) ServiceShutdown() error {
-	if notifier != nil && notifier.dbusConn != nil {
-		notifier.dbusConn.Close()
+	if notifier != nil {
+		notifier.shutdown()
 	}
 	return saveCategories()
 }
@@ -118,6 +142,19 @@ func (ns *Service) ServiceShutdown() error {
 // Initialize the notifier and choose the best available notification method
 func (n *internalNotifier) init() error {
 	var err error
+
+	// Cancel any existing listener before starting a new one
+	if n.listenerCancel != nil {
+		n.listenerCancel()
+	}
+
+	// Create a new context for the listener
+	n.listenerCtx, n.listenerCancel = context.WithCancel(context.Background())
+
+	// Reset state
+	n.activeNotifs = make(map[string]uint32)
+	n.contexts = make(map[string]*notificationContext)
+	n.listenerRunning = false
 
 	checkDbus := func() (*dbus.Conn, error) {
 		conn, err := dbus.SessionBusPrivate()
@@ -161,8 +198,9 @@ func (n *internalNotifier) init() error {
 	n.dbusConn, err = checkDbus()
 	if err == nil {
 		n.method = MethodDbus
-		// Start the dbus signal listener
-		go n.startDBusListener()
+		// Start the dbus signal listener with context
+		go n.startDBusListener(n.listenerCtx)
+		n.listenerRunning = true
 		return nil
 	}
 	if n.dbusConn != nil {
@@ -194,24 +232,44 @@ func (n *internalNotifier) init() error {
 }
 
 // startDBusListener listens for DBus signals for notification actions and closures
-func (n *internalNotifier) startDBusListener() {
+func (n *internalNotifier) startDBusListener(ctx context.Context) {
 	signal := make(chan *dbus.Signal, notifyChannelBufferSize)
 	n.dbusConn.Signal(signal)
 
-	for s := range signal {
-		if s == nil || len(s.Body) < 2 {
-			continue
-		}
+	defer func() {
+		n.Lock()
+		n.listenerRunning = false
+		n.Unlock()
+		n.dbusConn.RemoveSignal(signal) // Remove signal handler
+		close(signal)                   // Clean up channel
+	}()
 
-		switch s.Name {
-		case signalNotificationClosed:
-			systemID := s.Body[0].(uint32)
-			reason := closedReason(s.Body[1].(uint32)).string()
-			n.handleNotificationClosed(systemID, reason)
-		case signalActionInvoked:
-			systemID := s.Body[0].(uint32)
-			actionKey := s.Body[1].(string)
-			n.handleActionInvoked(systemID, actionKey)
+	for {
+		select {
+		case <-ctx.Done():
+			// Context was cancelled, exit gracefully
+			return
+
+		case s := <-signal:
+			if s == nil {
+				// Channel closed or nil signal
+				continue
+			}
+
+			if len(s.Body) < 2 {
+				continue
+			}
+
+			switch s.Name {
+			case signalNotificationClosed:
+				systemID := s.Body[0].(uint32)
+				reason := closedReason(s.Body[1].(uint32)).string()
+				n.handleNotificationClosed(systemID, reason)
+			case signalActionInvoked:
+				systemID := s.Body[0].(uint32)
+				actionKey := s.Body[1].(string)
+				n.handleActionInvoked(systemID, actionKey)
+			}
 		}
 	}
 }
