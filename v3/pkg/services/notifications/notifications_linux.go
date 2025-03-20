@@ -91,59 +91,59 @@ func (ls *linuxNotifier) Startup(ctx context.Context) error {
 
 	var err error
 	ls.initOnce.Do(func() {
-		err = ls.internal.init()
+		err = ls.init()
 	})
 
 	return err
 }
 
-func (n *internalNotifier) shutdown() {
-	n.Lock()
-	defer n.Unlock()
+func (ls *linuxNotifier) shutdown() {
+	ls.internal.Lock()
+	defer ls.internal.Unlock()
 
 	// Cancel the listener context if it's running
-	if n.listenerCancel != nil {
-		n.listenerCancel()
-		n.listenerCancel = nil
+	if ls.internal.listenerCancel != nil {
+		ls.internal.listenerCancel()
+		ls.internal.listenerCancel = nil
 	}
 
 	// Close the connection
-	if n.dbusConn != nil {
-		n.dbusConn.Close()
-		n.dbusConn = nil
+	if ls.internal.dbusConn != nil {
+		ls.internal.dbusConn.Close()
+		ls.internal.dbusConn = nil
 	}
 
 	// Clear state
-	n.activeNotifs = make(map[string]uint32)
-	n.contexts = make(map[string]*notificationContext)
-	n.method = "none"
-	n.sendPath = ""
+	ls.internal.activeNotifs = make(map[string]uint32)
+	ls.internal.contexts = make(map[string]*notificationContext)
+	ls.internal.method = "none"
+	ls.internal.sendPath = ""
 }
 
 // Shutdown is called when the service is unloaded
 func (ls *linuxNotifier) Shutdown() error {
 	if ls.internal != nil {
-		ls.internal.shutdown()
+		ls.shutdown()
 	}
 	return ls.saveCategories()
 }
 
 // Initialize the notifier and choose the best available notification method
-func (n *internalNotifier) init() error {
+func (ls *linuxNotifier) init() error {
 	var err error
 
 	// Cancel any existing listener before starting a new one
-	if n.listenerCancel != nil {
-		n.listenerCancel()
+	if ls.internal.listenerCancel != nil {
+		ls.internal.listenerCancel()
 	}
 
 	// Create a new context for the listener
-	n.listenerCtx, n.listenerCancel = context.WithCancel(context.Background())
+	ls.internal.listenerCtx, ls.internal.listenerCancel = context.WithCancel(context.Background())
 
 	// Reset state
-	n.activeNotifs = make(map[string]uint32)
-	n.contexts = make(map[string]*notificationContext)
-	n.listenerRunning = false
+	ls.internal.activeNotifs = make(map[string]uint32)
+	ls.internal.contexts = make(map[string]*notificationContext)
+	ls.internal.listenerRunning = false
 
 	checkDbus := func() (*dbus.Conn, error) {
 		conn, err := dbus.SessionBusPrivate()
@@ -184,53 +184,53 @@ func (n *internalNotifier) init() error {
 	}
 
 	// Try dbus first
-	n.dbusConn, err = checkDbus()
+	ls.internal.dbusConn, err = checkDbus()
 	if err == nil {
-		n.method = MethodDbus
+		ls.internal.method = MethodDbus
 		// Start the dbus signal listener with context
-		go n.startDBusListener(n.listenerCtx)
-		n.listenerRunning = true
+		go ls.startDBusListener(ls.internal.listenerCtx)
+		ls.internal.listenerRunning = true
 		return nil
 	}
-	if n.dbusConn != nil {
-		n.dbusConn.Close()
-		n.dbusConn = nil
+	if ls.internal.dbusConn != nil {
+		ls.internal.dbusConn.Close()
+		ls.internal.dbusConn = nil
 	}
 
 	// Try notify-send
 	send, err := exec.LookPath("notify-send")
 	if err == nil {
-		n.sendPath = send
-		n.method = MethodNotifySend
+		ls.internal.sendPath = send
+		ls.internal.method = MethodNotifySend
 		return nil
 	}
 
 	// Try sw-notify-send
 	send, err = exec.LookPath("sw-notify-send")
 	if err == nil {
-		n.sendPath = send
-		n.method = MethodNotifySend
+		ls.internal.sendPath = send
+		ls.internal.method = MethodNotifySend
 		return nil
 	}
 
 	// No method available
-	n.method = "none"
-	n.sendPath = ""
+	ls.internal.method = "none"
+	ls.internal.sendPath = ""
 
 	return errors.New("no notification method is available")
 }
 
 // startDBusListener listens for DBus signals for notification actions and closures
-func (n *internalNotifier) startDBusListener(ctx context.Context) {
+func (ls *linuxNotifier) startDBusListener(ctx context.Context) {
 	signal := make(chan *dbus.Signal, notifyChannelBufferSize)
-	n.dbusConn.Signal(signal)
+	ls.internal.dbusConn.Signal(signal)
 
 	defer func() {
-		n.Lock()
-		n.listenerRunning = false
-		n.Unlock()
-		n.dbusConn.RemoveSignal(signal) // Remove signal handler
-		close(signal)                   // Clean up channel
+		ls.internal.Lock()
+		ls.internal.listenerRunning = false
+		ls.internal.Unlock()
+		ls.internal.dbusConn.RemoveSignal(signal) // Remove signal handler
+		close(signal)                             // Clean up channel
 	}()
 
 	for {
@@ -253,34 +253,34 @@ func (n *internalNotifier) startDBusListener(ctx context.Context) {
 			case signalNotificationClosed:
 				systemID := s.Body[0].(uint32)
 				reason := closedReason(s.Body[1].(uint32)).string()
-				n.handleNotificationClosed(systemID, reason)
+				ls.handleNotificationClosed(systemID, reason)
 			case signalActionInvoked:
 				systemID := s.Body[0].(uint32)
 				actionKey := s.Body[1].(string)
-				n.handleActionInvoked(systemID, actionKey)
+				ls.handleActionInvoked(systemID, actionKey)
 			}
 		}
 	}
 }
 
 // handleNotificationClosed processes notification closed signals
-func (n *internalNotifier) handleNotificationClosed(systemID uint32, reason string) {
+func (ls *linuxNotifier) handleNotificationClosed(systemID uint32, reason string) {
 	// Find our notification ID for this system ID
 	var notifID string
 	var userData map[string]interface{}
 
-	n.Lock()
-	for id, sysID := range n.activeNotifs {
+	ls.internal.Lock()
+	for id, sysID := range ls.internal.activeNotifs {
 		if sysID == systemID {
 			notifID = id
 			// Get the user data from context if available
-			if ctx, exists := n.contexts[id]; exists {
+			if ctx, exists := ls.internal.contexts[id]; exists {
 				userData = ctx.UserData
 			}
 			break
 		}
 	}
-	n.Unlock()
+	ls.internal.Unlock()
 
 	if notifID != "" {
 		response := NotificationResponse{
@@ -305,28 +305,28 @@ func (n *internalNotifier) handleNotificationClosed(systemID uint32, reason stri
 		}
 
 		// Clean up the context
-		n.Lock()
-		delete(n.contexts, notifID)
-		delete(n.activeNotifs, notifID)
-		n.Unlock()
+		ls.internal.Lock()
+		delete(ls.internal.contexts, notifID)
+		delete(ls.internal.activeNotifs, notifID)
+		ls.internal.Unlock()
 	}
 }
 
 // handleActionInvoked processes action invoked signals
-func (n *internalNotifier) handleActionInvoked(systemID uint32, actionKey string) {
+func (ls *linuxNotifier) handleActionInvoked(systemID uint32, actionKey string) {
 	// Find our notification ID and context for this system ID
 	var notifID string
 	var ctx *notificationContext
 
-	n.Lock()
-	for id, sysID := range n.activeNotifs {
+	ls.internal.Lock()
+	for id, sysID := range ls.internal.activeNotifs {
 		if sysID == systemID {
 			notifID = id
-			ctx = n.contexts[id]
+			ctx = ls.internal.contexts[id]
 			break
 		}
 	}
-	n.Unlock()
+	ls.internal.Unlock()
 
 	if notifID != "" {
 		if actionKey == "default" {
@@ -373,10 +373,10 @@ func (n *internalNotifier) handleActionInvoked(systemID uint32, actionKey string
 		}
 
 		// Clean up the context
-		n.Lock()
-		delete(n.contexts, notifID)
-		delete(n.activeNotifs, notifID)
-		n.Unlock()
+		ls.internal.Lock()
+		delete(ls.internal.contexts, notifID)
+		delete(ls.internal.activeNotifs, notifID)
+		ls.internal.Unlock()
 	}
 }
 
