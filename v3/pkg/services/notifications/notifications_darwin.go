@@ -256,7 +256,7 @@ func (ns *Service) RemoveNotificationCategory(categoryId string) error {
 		return nil
 	case <-ctx.Done():
 		cleanupChannel(id)
-		return fmt.Errorf("category registration timed out: %w", ctx.Err())
+		return fmt.Errorf("category removal timed out: %w", ctx.Err())
 	}
 }
 
