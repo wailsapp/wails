@@ -33,21 +33,21 @@ const AppleDefaultActionIdentifier = "com.apple.UNNotificationDefaultActionIdent
 // Creates a new Notifications Service.
 // Your app must be packaged and signed for this feature to work.
 func New() *Service {
-	if !CheckBundleIdentifier() {
-		panic("\nError: Cannot use the notification API in development mode on macOS.\n" +
-			"Notifications require the app to be properly bundled with a bundle identifier and signed.\n" +
-			"To use the notification API on macOS:\n" +
-			"  1. Build and package your app using 'wails3 package'\n" +
-			"  2. Sign the packaged .app\n" +
-			"  3. Run the signed .app bundle")
-	}
+	notificationServiceOnce.Do(func() {
+		if !CheckBundleIdentifier() {
+			panic("\nError: Cannot use the notification API in development mode on macOS.\n" +
+				"Notifications require the app to be properly bundled with a bundle identifier and signed.\n" +
+				"To use the notification API on macOS:\n" +
+				"  1. Build and package your app using 'wails3 package'\n" +
+				"  2. Sign the packaged .app\n" +
+				"  3. Run the signed .app bundle")
+		}
 
-	notificationServiceLock.Lock()
-	defer notificationServiceLock.Unlock()
+		if NotificationService == nil {
+			NotificationService = &Service{}
+		}
+	})
 
-	if NotificationService == nil {
-		NotificationService = &Service{}
-	}
 	return NotificationService
 }
 
@@ -70,7 +70,7 @@ func (ns *Service) RequestNotificationAuthorization() (bool, error) {
 		return result.Success, result.Error
 	case <-ctx.Done():
 		cleanupChannel(id)
-		return false, fmt.Errorf("notification authorization timed out after 15s: %w", ctx.Err())
+		return false, fmt.Errorf("notification authorization timed out after 15 minutes: %w", ctx.Err())
 	}
 }
 

@@ -26,8 +26,11 @@ type Service struct {
 	callbackLock sync.RWMutex
 }
 
-var NotificationService *Service
-var notificationServiceLock sync.RWMutex
+var (
+	notificationServiceOnce sync.Once
+	NotificationService     *Service
+	notificationServiceLock sync.RWMutex
+)
 
 // NotificationAction represents an action button for a notification
 type NotificationAction = struct {
@@ -109,6 +112,7 @@ func (ns *Service) handleNotificationResult(result NotificationResult) {
 	}
 }
 
+// validateNotificationOptions validates an ID and Title are provided for notifications
 func validateNotificationOptions(options NotificationOptions) error {
 	if options.ID == "" {
 		return fmt.Errorf("notification ID cannot be empty")

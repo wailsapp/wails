@@ -42,12 +42,12 @@ type NotificationPayload struct {
 
 // Creates a new Notifications Service.
 func New() *Service {
-	notificationServiceLock.Lock()
-	defer notificationServiceLock.Unlock()
+	notificationServiceOnce.Do(func() {
+		if NotificationService == nil {
+			NotificationService = &Service{}
+		}
+	})
 
-	if NotificationService == nil {
-		NotificationService = &Service{}
-	}
 	return NotificationService
 }
 

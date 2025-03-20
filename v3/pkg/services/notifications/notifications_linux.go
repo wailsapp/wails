@@ -81,9 +81,11 @@ var notifier *internalNotifier
 
 // New creates a new Notifications Service
 func New() *Service {
-	if NotificationService == nil {
-		NotificationService = &Service{}
-	}
+	notificationServiceOnce.Do(func() {
+		if NotificationService == nil {
+			NotificationService = &Service{}
+		}
+	})
 	return NotificationService
 }
 
