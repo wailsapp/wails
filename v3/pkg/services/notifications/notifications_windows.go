@@ -321,6 +321,9 @@ func saveIconToDir() error {
 }
 
 func saveCategoriesToRegistry() error {
+	notificationCategoriesLock.Lock()
+	defer notificationCategoriesLock.Unlock()
+
 	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, appName)
 
 	key, _, err := registry.CreateKey(
@@ -333,9 +336,7 @@ func saveCategoriesToRegistry() error {
 	}
 	defer key.Close()
 
-	notificationCategoriesLock.RLock()
 	data, err := json.Marshal(NotificationCategories)
-	notificationCategoriesLock.RUnlock()
 	if err != nil {
 		return err
 	}
@@ -344,6 +345,9 @@ func saveCategoriesToRegistry() error {
 }
 
 func loadCategoriesFromRegistry() error {
+	notificationCategoriesLock.Lock()
+	defer notificationCategoriesLock.Unlock()
+
 	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, appName)
 
 	key, err := registry.OpenKey(
@@ -374,9 +378,7 @@ func loadCategoriesFromRegistry() error {
 		return fmt.Errorf("failed to parse notification categories from registry: %w", err)
 	}
 
-	notificationCategoriesLock.Lock()
 	NotificationCategories = categories
-	notificationCategoriesLock.Unlock()
 
 	return nil
 }
