@@ -107,10 +107,6 @@ func (dn *darwinNotifier) CheckNotificationAuthorization() (bool, error) {
 
 // SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
 func (dn *darwinNotifier) SendNotification(options NotificationOptions) error {
-	if err := validateNotificationOptions(options); err != nil {
-		return err
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -156,10 +152,6 @@ func (dn *darwinNotifier) SendNotification(options NotificationOptions) error {
 // A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
 // If a NotificationCategory is not registered a basic notification will be sent.
 func (dn *darwinNotifier) SendNotificationWithActions(options NotificationOptions) error {
-	if err := validateNotificationOptions(options); err != nil {
-		return err
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

@@ -84,6 +84,7 @@ func (ls *linuxNotifier) Startup(ctx context.Context) error {
 		fmt.Printf("Failed to load notification categories: %v\n", err)
 	}
 
+	// Initialize the internal notifier
 	ls.internal = &internalNotifier{
 		activeNotifs: make(map[string]uint32),
 		contexts:     make(map[string]*notificationContext),
@@ -91,45 +92,43 @@ func (ls *linuxNotifier) Startup(ctx context.Context) error {
 
 	var err error
 	ls.initOnce.Do(func() {
-		err = ls.init()
+		// Initialize notification system
+		err = ls.initNotificationSystem()
 	})
 
 	return err
 }
 
-func (ls *linuxNotifier) shutdown() {
-	ls.internal.Lock()
-	defer ls.internal.Unlock()
-
-	// Cancel the listener context if it's running
-	if ls.internal.listenerCancel != nil {
-		ls.internal.listenerCancel()
-		ls.internal.listenerCancel = nil
-	}
-
-	// Close the connection
-	if ls.internal.dbusConn != nil {
-		ls.internal.dbusConn.Close()
-		ls.internal.dbusConn = nil
-	}
-
-	// Clear state
-	ls.internal.activeNotifs = make(map[string]uint32)
-	ls.internal.contexts = make(map[string]*notificationContext)
-	ls.internal.method = "none"
-	ls.internal.sendPath = ""
-}
-
 // Shutdown is called when the service is unloaded
 func (ls *linuxNotifier) Shutdown() error {
 	if ls.internal != nil {
-		ls.shutdown()
+		ls.internal.Lock()
+		defer ls.internal.Unlock()
+
+		// Cancel the listener context if it's running
+		if ls.internal.listenerCancel != nil {
+			ls.internal.listenerCancel()
+			ls.internal.listenerCancel = nil
+		}
+
+		// Close the connection
+		if ls.internal.dbusConn != nil {
+			ls.internal.dbusConn.Close()
+			ls.internal.dbusConn = nil
+		}
+
+		// Clear state
+		ls.internal.activeNotifs = make(map[string]uint32)
+		ls.internal.contexts = make(map[string]*notificationContext)
+		ls.internal.method = "none"
+		ls.internal.sendPath = ""
 	}
+
 	return ls.saveCategories()
 }
 
-// Initialize the notifier and choose the best available notification method
-func (ls *linuxNotifier) init() error {
+// initNotificationSystem initializes the notification system, choosing the best available method
+func (ls *linuxNotifier) initNotificationSystem() error {
 	var err error
 
 	// Cancel any existing listener before starting a new one
@@ -404,8 +403,9 @@ func (ls *linuxNotifier) SendNotification(options NotificationOptions) error {
 		return errors.New("notification service not initialized")
 	}
 
-	if err := validateNotificationOptions(options); err != nil {
-		return err
+	if ls.internal.method == "" || (ls.internal.method == MethodDbus && ls.internal.dbusConn == nil) ||
+		(ls.internal.method == MethodNotifySend && ls.internal.sendPath == "") {
+		return errors.New("notification system not properly initialized")
 	}
 
 	ls.internal.Lock()
@@ -447,8 +447,9 @@ func (ls *linuxNotifier) SendNotificationWithActions(options NotificationOptions
 		return errors.New("notification service not initialized")
 	}
 
-	if err := validateNotificationOptions(options); err != nil {
-		return err
+	if ls.internal.method == "" || (ls.internal.method == MethodDbus && ls.internal.dbusConn == nil) ||
+		(ls.internal.method == MethodNotifySend && ls.internal.sendPath == "") {
+		return errors.New("notification system not properly initialized")
 	}
 
 	ls.categoriesLock.RLock()
