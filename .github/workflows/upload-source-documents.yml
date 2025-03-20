@@ -15,7 +15,7 @@ jobs:
 
       - name: Verify Changed files
         id: changed-files
-        uses: tj-actions/changed-files@v41
+        uses: step-security/changed-files@3dbe17c78367e7d60f00d78ae6781a35be47b4a1 # v45.0.1
         with:
           files: |
             website/**/*.mdx

@@ -23,7 +23,7 @@ jobs:
 
       - name: Detect committed package.json changes
         id: package-json-changes
-        uses: tj-actions/changed-files@v45
+        uses: step-security/changed-files@3dbe17c78367e7d60f00d78ae6781a35be47b4a1 # v45.0.1
         with:
           files: |
             v3/internal/runtime/desktop/@wailsio/runtime/package.json
@@ -32,7 +32,7 @@ jobs:
         if: >-
           steps.package-json-changes.outputs.any_modified != 'true'
         id: source-changes
-        uses: tj-actions/changed-files@v45
+        uses: step-security/changed-files@3dbe17c78367e7d60f00d78ae6781a35be47b4a1 # v45.0.1
         with:
           files: |
             v3/internal/runtime/Taskfile.yaml
