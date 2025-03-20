@@ -197,7 +197,11 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	}
 
 	if options.Data != nil {
-		n.ActivationArguments, _ = encodePayload(n.ActivationArguments, options.Data)
+		encodedPayload, err := encodePayload(n.ActivationArguments, options.Data)
+		if err != nil {
+			return fmt.Errorf("failed to encode notification data: %w", err)
+		}
+		n.ActivationArguments = encodedPayload
 
 		for index := range n.Actions {
 			encodedPayload, err := encodePayload(n.Actions[index].Arguments, options.Data)
