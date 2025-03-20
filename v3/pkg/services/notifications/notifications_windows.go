@@ -19,13 +19,13 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
-var (
-	NotificationCategories     = make(map[string]NotificationCategory)
-	notificationCategoriesLock sync.RWMutex
-	appName                    string
-	appGUID                    string
-	iconPath                   string
-)
+type windowsNotifier struct {
+	categories     map[string]NotificationCategory
+	categoriesLock sync.RWMutex
+	appName        string
+	appGUID        string
+	iconPath       string
+}
 
 const (
 	ToastRegistryPath                  = `Software\Classes\AppUserModelId\`
@@ -43,31 +43,35 @@ type NotificationPayload struct {
 // Creates a new Notifications Service.
 func New() *Service {
 	notificationServiceOnce.Do(func() {
-		if NotificationService == nil {
-			NotificationService = &Service{}
+		impl := &windowsNotifier{
+			categories: make(map[string]NotificationCategory),
+		}
+
+		NotificationService = &Service{
+			impl: impl,
 		}
 	})
 
 	return NotificationService
 }
 
-// ServiceStartup is called when the service is loaded
+// Startup is called when the service is loaded
 // Sets an activation callback to emit an event when notifications are interacted with.
-func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
-	appName = application.Get().Config().Name
+func (wn *windowsNotifier) Startup(ctx context.Context) error {
+	wn.appName = application.Get().Config().Name
 
-	guid, err := getGUID()
+	guid, err := wn.getGUID()
 	if err != nil {
 		return err
 	}
-	appGUID = guid
+	wn.appGUID = guid
 
-	iconPath = filepath.Join(os.TempDir(), appName+appGUID+".png")
+	wn.iconPath = filepath.Join(os.TempDir(), wn.appName+wn.appGUID+".png")
 
 	toast.SetAppData(toast.AppData{
-		AppID:    appName,
+		AppID:    wn.appName,
 		GUID:     guid,
-		IconPath: iconPath,
+		IconPath: wn.iconPath,
 	})
 
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
@@ -89,7 +93,7 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 			response.UserInfo = userInfoMap
 		}
 
-		if userText, found := getUserText(data); found {
+		if userText, found := wn.getUserText(data); found {
 			response.UserText = userText
 		}
 
@@ -99,40 +103,34 @@ func (ns *Service) ServiceStartup(ctx context.Context, options application.Servi
 		}
 	})
 
-	return loadCategoriesFromRegistry()
+	return wn.loadCategoriesFromRegistry()
 }
 
-// ServiceShutdown is called when the service is unloaded
-func (ns *Service) ServiceShutdown() error {
-	return saveCategoriesToRegistry()
-}
-
-// CheckBundleIdentifier is a Windows stub that always returns true.
-// (bundle identifiers are macOS-specific)
-func CheckBundleIdentifier() bool {
-	return true
+// Shutdown will attempt to save the categories to the registry when the service unloads
+func (wn *windowsNotifier) Shutdown() error {
+	return wn.saveCategoriesToRegistry()
 }
 
 // RequestNotificationAuthorization is a Windows stub that always returns true, nil.
 // (user authorization is macOS-specific)
-func (ns *Service) RequestNotificationAuthorization() (bool, error) {
+func (wn *windowsNotifier) RequestNotificationAuthorization() (bool, error) {
 	return true, nil
 }
 
 // CheckNotificationAuthorization is a Windows stub that always returns true.
 // (user authorization is macOS-specific)
-func (ns *Service) CheckNotificationAuthorization() bool {
-	return true
+func (wn *windowsNotifier) CheckNotificationAuthorization() (bool, error) {
+	return true, nil
 }
 
 // SendNotification sends a basic notification with a name, title, and body. All other options are ignored on Windows.
-// (subtitle and category id are only available on macOS)
-func (ns *Service) SendNotification(options NotificationOptions) error {
+// (subtitle is only available on macOS)
+func (wn *windowsNotifier) SendNotification(options NotificationOptions) error {
 	if err := validateNotificationOptions(options); err != nil {
 		return err
 	}
 
-	if err := saveIconToDir(); err != nil {
+	if err := wn.saveIconToDir(); err != nil {
 		fmt.Printf("Error saving icon: %v\n", err)
 	}
 
@@ -143,7 +141,7 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 	}
 
 	if options.Data != nil {
-		encodedPayload, err := encodePayload(DefaultActionIdentifier, options.Data)
+		encodedPayload, err := wn.encodePayload(DefaultActionIdentifier, options.Data)
 		if err != nil {
 			return fmt.Errorf("failed to encode notification data: %w", err)
 		}
@@ -156,19 +154,19 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 // SendNotificationWithActions sends a notification with additional actions and inputs.
 // A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
 // If a NotificationCategory is not registered a basic notification will be sent.
-// (subtitle and category id are only available on macOS)
-func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
+// (subtitle is only available on macOS)
+func (wn *windowsNotifier) SendNotificationWithActions(options NotificationOptions) error {
 	if err := validateNotificationOptions(options); err != nil {
 		return err
 	}
 
-	if err := saveIconToDir(); err != nil {
+	if err := wn.saveIconToDir(); err != nil {
 		fmt.Printf("Error saving icon: %v\n", err)
 	}
 
-	notificationCategoriesLock.RLock()
-	nCategory := NotificationCategories[options.CategoryID]
-	notificationCategoriesLock.RUnlock()
+	wn.categoriesLock.RLock()
+	nCategory := wn.categories[options.CategoryID]
+	wn.categoriesLock.RUnlock()
 
 	n := toast.Notification{
 		Title:               options.Title,
@@ -197,14 +195,14 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 	}
 
 	if options.Data != nil {
-		encodedPayload, err := encodePayload(n.ActivationArguments, options.Data)
+		encodedPayload, err := wn.encodePayload(n.ActivationArguments, options.Data)
 		if err != nil {
 			return fmt.Errorf("failed to encode notification data: %w", err)
 		}
 		n.ActivationArguments = encodedPayload
 
 		for index := range n.Actions {
-			encodedPayload, err := encodePayload(n.Actions[index].Arguments, options.Data)
+			encodedPayload, err := wn.encodePayload(n.Actions[index].Arguments, options.Data)
 			if err != nil {
 				return fmt.Errorf("failed to encode notification data: %w", err)
 			}
@@ -217,61 +215,63 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
 // Registering a category with the same name as a previously registered NotificationCategory will override it.
-func (ns *Service) RegisterNotificationCategory(category NotificationCategory) error {
-	notificationCategoriesLock.Lock()
-	NotificationCategories[category.ID] = NotificationCategory{
+func (wn *windowsNotifier) RegisterNotificationCategory(category NotificationCategory) error {
+	wn.categoriesLock.Lock()
+	defer wn.categoriesLock.Unlock()
+
+	wn.categories[category.ID] = NotificationCategory{
 		ID:               category.ID,
 		Actions:          category.Actions,
 		HasReplyField:    bool(category.HasReplyField),
 		ReplyPlaceholder: category.ReplyPlaceholder,
 		ReplyButtonTitle: category.ReplyButtonTitle,
 	}
-	notificationCategoriesLock.Unlock()
 
-	return saveCategoriesToRegistry()
+	return wn.saveCategoriesToRegistry()
 }
 
 // RemoveNotificationCategory removes a previously registered NotificationCategory.
-func (ns *Service) RemoveNotificationCategory(categoryId string) error {
-	notificationCategoriesLock.Lock()
-	delete(NotificationCategories, categoryId)
-	notificationCategoriesLock.Unlock()
+func (wn *windowsNotifier) RemoveNotificationCategory(categoryId string) error {
+	wn.categoriesLock.Lock()
+	defer wn.categoriesLock.Unlock()
 
-	return saveCategoriesToRegistry()
+	delete(wn.categories, categoryId)
+
+	return wn.saveCategoriesToRegistry()
 }
 
 // RemoveAllPendingNotifications is a Windows stub that always returns nil.
 // (macOS-specific)
-func (ns *Service) RemoveAllPendingNotifications() error {
+func (wn *windowsNotifier) RemoveAllPendingNotifications() error {
 	return nil
 }
 
 // RemovePendingNotification is a Windows stub that always returns nil.
 // (macOS-specific)
-func (ns *Service) RemovePendingNotification(_ string) error {
+func (wn *windowsNotifier) RemovePendingNotification(_ string) error {
 	return nil
 }
 
 // RemoveAllDeliveredNotifications is a Windows stub that always returns nil.
 // (macOS-specific)
-func (ns *Service) RemoveAllDeliveredNotifications() error {
+func (wn *windowsNotifier) RemoveAllDeliveredNotifications() error {
 	return nil
 }
 
 // RemoveDeliveredNotification is a Windows stub that always returns nil.
 // (macOS-specific)
-func (ns *Service) RemoveDeliveredNotification(_ string) error {
+func (wn *windowsNotifier) RemoveDeliveredNotification(_ string) error {
 	return nil
 }
 
 // RemoveNotification is a Windows stub that always returns nil.
 // (Linux-specific)
-func (ns *Service) RemoveNotification(identifier string) error {
+func (wn *windowsNotifier) RemoveNotification(identifier string) error {
 	return nil
 }
 
 // encodePayload combines an action ID and user data into a single encoded string
-func encodePayload(actionID string, data map[string]interface{}) (string, error) {
+func (wn *windowsNotifier) encodePayload(actionID string, data map[string]interface{}) (string, error) {
 	payload := NotificationPayload{
 		Action: actionID,
 		Data:   data,
@@ -315,20 +315,20 @@ func parseNotificationResponse(response string) (action string, data string) {
 	return actionID, ""
 }
 
-func saveIconToDir() error {
+func (wn *windowsNotifier) saveIconToDir() error {
 	icon, err := application.NewIconFromResource(w32.GetModuleHandle(""), uint16(3))
 	if err != nil {
 		return fmt.Errorf("failed to retrieve application icon: %w", err)
 	}
 
-	return saveHIconAsPNG(icon, iconPath)
+	return saveHIconAsPNG(icon, wn.iconPath)
 }
 
-func saveCategoriesToRegistry() error {
-	notificationCategoriesLock.Lock()
-	defer notificationCategoriesLock.Unlock()
+func (wn *windowsNotifier) saveCategoriesToRegistry() error {
+	wn.categoriesLock.Lock()
+	defer wn.categoriesLock.Unlock()
 
-	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, appName)
+	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, wn.appName)
 
 	key, _, err := registry.CreateKey(
 		registry.CURRENT_USER,
@@ -340,7 +340,7 @@ func saveCategoriesToRegistry() error {
 	}
 	defer key.Close()
 
-	data, err := json.Marshal(NotificationCategories)
+	data, err := json.Marshal(wn.categories)
 	if err != nil {
 		return err
 	}
@@ -348,11 +348,11 @@ func saveCategoriesToRegistry() error {
 	return key.SetStringValue(NotificationCategoriesRegistryKey, string(data))
 }
 
-func loadCategoriesFromRegistry() error {
-	notificationCategoriesLock.Lock()
-	defer notificationCategoriesLock.Unlock()
+func (wn *windowsNotifier) loadCategoriesFromRegistry() error {
+	wn.categoriesLock.Lock()
+	defer wn.categoriesLock.Unlock()
 
-	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, appName)
+	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, wn.appName)
 
 	key, err := registry.OpenKey(
 		registry.CURRENT_USER,
@@ -382,12 +382,12 @@ func loadCategoriesFromRegistry() error {
 		return fmt.Errorf("failed to parse notification categories from registry: %w", err)
 	}
 
-	NotificationCategories = categories
+	wn.categories = categories
 
 	return nil
 }
 
-func getUserText(data []toast.UserData) (string, bool) {
+func (wn *windowsNotifier) getUserText(data []toast.UserData) (string, bool) {
 	for _, d := range data {
 		if d.Key == "userText" {
 			return d.Value, true
@@ -396,8 +396,8 @@ func getUserText(data []toast.UserData) (string, bool) {
 	return "", false
 }
 
-func getGUID() (string, error) {
-	keyPath := ToastRegistryPath + appName
+func (wn *windowsNotifier) getGUID() (string, error) {
+	keyPath := ToastRegistryPath + wn.appName
 
 	k, err := registry.OpenKey(registry.CURRENT_USER, keyPath, registry.QUERY_VALUE)
 	if err == nil {
@@ -408,7 +408,7 @@ func getGUID() (string, error) {
 		}
 	}
 
-	guid := generateGUID()
+	guid := wn.generateGUID()
 
 	k, _, err = registry.CreateKey(registry.CURRENT_USER, keyPath, registry.WRITE)
 	if err != nil {
@@ -423,7 +423,7 @@ func getGUID() (string, error) {
 	return guid, nil
 }
 
-func generateGUID() string {
+func (wn *windowsNotifier) generateGUID() string {
 	guid := uuid.New()
 	return fmt.Sprintf("{%s}", guid.String())
 }
