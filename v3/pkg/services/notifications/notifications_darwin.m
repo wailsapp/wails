@@ -106,37 +106,43 @@ void checkNotificationAuthorization(int channelID) {
     }];
 }
 
-void sendNotification(int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json) {
-    ensureDelegateInitialized();
-    
-    NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
+// Helper function to create notification content
+UNMutableNotificationContent* createNotificationContent(const char *title, const char *subtitle, 
+                                                       const char *body, const char *data_json) {
     NSString *nsTitle = [NSString stringWithUTF8String:title];
-    NSString *nsSubtitle = [NSString stringWithUTF8String:subtitle];
+    NSString *nsSubtitle = subtitle ? [NSString stringWithUTF8String:subtitle] : @"";
     NSString *nsBody = [NSString stringWithUTF8String:body];
     
-    NSMutableDictionary *customData = [NSMutableDictionary dictionary];
+    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+    content.title = nsTitle;
+    if (![nsSubtitle isEqualToString:@""]) {
+        content.subtitle = nsSubtitle;
+    }
+    content.body = nsBody;
+    content.sound = [UNNotificationSound defaultSound];
+    
+    // Parse JSON data if provided
     if (data_json) {
         NSString *dataJsonStr = [NSString stringWithUTF8String:data_json];
         NSData *jsonData = [dataJsonStr dataUsingEncoding:NSUTF8StringEncoding];
         NSError *error = nil;
         NSDictionary *parsedData = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
-        if (error) {
-            NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
-            captureResult(channelID, false, [errorMsg UTF8String]);
-            return;
-        }
-        if (parsedData) {
-            [customData addEntriesFromDictionary:parsedData];
+        if (!error && parsedData) {
+            content.userInfo = parsedData;
         }
     }
     
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    return content;
+}
+
+void sendNotification(int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json) {
+    ensureDelegateInitialized();
     
-    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
-    content.title = nsTitle;
-    content.subtitle = nsSubtitle;
-    content.body = nsBody;
-    content.sound = [UNNotificationSound defaultSound];
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+
+    NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
+    UNMutableNotificationContent *content = createNotificationContent(title, subtitle, body, data_json);
+    NSMutableDictionary *customData = [NSMutableDictionary dictionary];
     
     if (customData.count > 0) {
         content.userInfo = customData;
@@ -157,35 +163,16 @@ void sendNotification(int channelID, const char *identifier, const char *title, 
 }
 
 void sendNotificationWithActions(int channelID, const char *identifier, const char *title, const char *subtitle, 
-                             const char *body, const char *categoryId, const char *actions_json) {
+                             const char *body, const char *categoryId, const char *data_json) {
     ensureDelegateInitialized();
     
-    NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
-    NSString *nsTitle = [NSString stringWithUTF8String:title];
-    NSString *nsSubtitle = subtitle ? [NSString stringWithUTF8String:subtitle] : @"";
-    NSString *nsBody = [NSString stringWithUTF8String:body];
-    NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
-    
-    NSMutableDictionary *customData = [NSMutableDictionary dictionary];
-    if (actions_json) {
-        NSString *actionsJsonStr = [NSString stringWithUTF8String:actions_json];
-        NSData *jsonData = [actionsJsonStr dataUsingEncoding:NSUTF8StringEncoding];
-        NSError *error = nil;
-        NSDictionary *parsedData = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
-        if (!error && parsedData) {
-            [customData addEntriesFromDictionary:parsedData];
-        }
-    }
-    
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+
+    NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
+    NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
+    UNMutableNotificationContent *content = createNotificationContent(title, subtitle, body, data_json);
+    NSMutableDictionary *customData = [NSMutableDictionary dictionary];
     
-    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
-    content.title = nsTitle;
-    if (![nsSubtitle isEqualToString:@""]) {
-        content.subtitle = nsSubtitle;
-    }
-    content.body = nsBody;
-    content.sound = [UNNotificationSound defaultSound];
     content.categoryIdentifier = nsCategoryId;
     
     if (customData.count > 0) {

@@ -56,7 +56,7 @@ func CheckBundleIdentifier() bool {
 }
 
 // RequestNotificationAuthorization requests permission for notifications.
-// Default timeout is 5 minutes
+// Default timeout is 15 minutes
 func (ns *Service) RequestNotificationAuthorization() (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*900)
 	defer cancel()
@@ -94,6 +94,10 @@ func (ns *Service) CheckNotificationAuthorization() (bool, error) {
 
 // SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
 func (ns *Service) SendNotification(options NotificationOptions) error {
+	if err := validateNotificationOptions(options); err != nil {
+		return err
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -139,6 +143,10 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 // A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
 // If a NotificationCategory is not registered a basic notification will be sent.
 func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
+	if err := validateNotificationOptions(options); err != nil {
+		return err
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -243,7 +251,7 @@ func (ns *Service) RemoveNotificationCategory(categoryId string) error {
 			if result.Error != nil {
 				return result.Error
 			}
-			return fmt.Errorf("category registration failed")
+			return fmt.Errorf("category removal failed")
 		}
 		return nil
 	case <-ctx.Done():

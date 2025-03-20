@@ -1,10 +1,25 @@
+// Package notifications provides cross-platform notification capabilities for desktop applications.
+// It supports macOS, Windows, and Linux with a consistent API while handling platform-specific
+// differences internally. Key features include:
+//   - Basic notifications with title, subtitle, and body
+//   - Interactive notifications with buttons and actions
+//   - Notification categories for reusing configurations
+//   - User feedback handling with a unified callback system
+//
+// Platform-specific notes:
+//   - macOS: Requires a properly bundled and signed application
+//   - Windows: Uses Windows Toast notifications
+//   - Linux: Falls back between D-Bus, notify-send, or other methods and does not support text inputs
 package notifications
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 // Service represents the notifications service
 type Service struct {
-	// notificationResponseCallback is called when a notification response is received
+	// notificationResponseCallback is called when a notification result is received.
 	// Only one callback can be assigned at a time.
 	notificationResultCallback func(result NotificationResult)
 
@@ -92,4 +107,16 @@ func (ns *Service) handleNotificationResult(result NotificationResult) {
 	if callback != nil {
 		callback(result)
 	}
+}
+
+func validateNotificationOptions(options NotificationOptions) error {
+	if options.ID == "" {
+		return fmt.Errorf("notification ID cannot be empty")
+	}
+
+	if options.Title == "" {
+		return fmt.Errorf("notification title cannot be empty")
+	}
+
+	return nil
 }

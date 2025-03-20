@@ -128,6 +128,10 @@ func (ns *Service) CheckNotificationAuthorization() bool {
 // SendNotification sends a basic notification with a name, title, and body. All other options are ignored on Windows.
 // (subtitle and category id are only available on macOS)
 func (ns *Service) SendNotification(options NotificationOptions) error {
+	if err := validateNotificationOptions(options); err != nil {
+		return err
+	}
+
 	if err := saveIconToDir(); err != nil {
 		fmt.Printf("Error saving icon: %v\n", err)
 	}
@@ -140,9 +144,10 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 
 	if options.Data != nil {
 		encodedPayload, err := encodePayload(DefaultActionIdentifier, options.Data)
-		if err == nil {
-			n.ActivationArguments = encodedPayload
+		if err != nil {
+			return fmt.Errorf("failed to encode notification data: %w", err)
 		}
+		n.ActivationArguments = encodedPayload
 	}
 
 	return n.Push()
@@ -153,6 +158,10 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 // If a NotificationCategory is not registered a basic notification will be sent.
 // (subtitle and category id are only available on macOS)
 func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
+	if err := validateNotificationOptions(options); err != nil {
+		return err
+	}
+
 	if err := saveIconToDir(); err != nil {
 		fmt.Printf("Error saving icon: %v\n", err)
 	}
@@ -191,15 +200,15 @@ func (ns *Service) SendNotificationWithActions(options NotificationOptions) erro
 		n.ActivationArguments, _ = encodePayload(n.ActivationArguments, options.Data)
 
 		for index := range n.Actions {
-			n.Actions[index].Arguments, _ = encodePayload(n.Actions[index].Arguments, options.Data)
+			encodedPayload, err := encodePayload(n.Actions[index].Arguments, options.Data)
+			if err != nil {
+				return fmt.Errorf("failed to encode notification data: %w", err)
+			}
+			n.Actions[index].Arguments = encodedPayload
 		}
 	}
 
-	err := n.Push()
-	if err != nil {
-		return err
-	}
-	return nil
+	return n.Push()
 }
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
@@ -344,20 +353,25 @@ func loadCategoriesFromRegistry() error {
 	)
 	if err != nil {
 		if err == registry.ErrNotExist {
+			// Not an error, no saved categories
 			return nil
 		}
-		return err
+		return fmt.Errorf("failed to open registry key: %w", err)
 	}
 	defer key.Close()
 
 	data, _, err := key.GetStringValue(NotificationCategoriesRegistryKey)
 	if err != nil {
-		return err
+		if err == registry.ErrNotExist {
+			// No value yet, but key exists
+			return nil
+		}
+		return fmt.Errorf("failed to read categories from registry: %w", err)
 	}
 
 	categories := make(map[string]NotificationCategory)
 	if err := json.Unmarshal([]byte(data), &categories); err != nil {
-		return err
+		return fmt.Errorf("failed to parse notification categories from registry: %w", err)
 	}
 
 	notificationCategoriesLock.Lock()

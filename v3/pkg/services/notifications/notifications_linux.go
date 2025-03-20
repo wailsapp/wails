@@ -415,6 +415,10 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 		return errors.New("notification service not initialized")
 	}
 
+	if err := validateNotificationOptions(options); err != nil {
+		return err
+	}
+
 	notifier.Lock()
 	defer notifier.Unlock()
 
@@ -452,6 +456,10 @@ func (ns *Service) SendNotification(options NotificationOptions) error {
 func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
 	if notifier == nil {
 		return errors.New("notification service not initialized")
+	}
+
+	if err := validateNotificationOptions(options); err != nil {
+		return err
 	}
 
 	notificationLock.RLock()
