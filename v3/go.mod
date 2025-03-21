@@ -3,6 +3,7 @@ module github.com/wailsapp/wails/v3
 go 1.24.0
 
 require (
+	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.5.3
 	github.com/atterpac/refresh v0.8.6
