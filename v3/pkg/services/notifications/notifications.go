@@ -16,6 +16,8 @@ import (
 	"context"
 	"fmt"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type notificationImpl interface {
@@ -133,7 +135,7 @@ func (ns *Service) handleNotificationResult(result NotificationResult) {
 }
 
 // ServiceStartup is called when the service is loaded
-func (ns *Service) ServiceStartup(ctx context.Context, options interface{}) error {
+func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	return ns.impl.Startup(ctx)
 }
 

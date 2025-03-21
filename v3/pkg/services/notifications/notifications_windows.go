@@ -209,8 +209,6 @@ func (wn *windowsNotifier) SendNotificationWithActions(options NotificationOptio
 // Registering a category with the same name as a previously registered NotificationCategory will override it.
 func (wn *windowsNotifier) RegisterNotificationCategory(category NotificationCategory) error {
 	wn.categoriesLock.Lock()
-	defer wn.categoriesLock.Unlock()
-
 	wn.categories[category.ID] = NotificationCategory{
 		ID:               category.ID,
 		Actions:          category.Actions,
@@ -218,6 +216,7 @@ func (wn *windowsNotifier) RegisterNotificationCategory(category NotificationCat
 		ReplyPlaceholder: category.ReplyPlaceholder,
 		ReplyButtonTitle: category.ReplyButtonTitle,
 	}
+	wn.categoriesLock.Unlock()
 
 	return wn.saveCategoriesToRegistry()
 }
@@ -225,9 +224,8 @@ func (wn *windowsNotifier) RegisterNotificationCategory(category NotificationCat
 // RemoveNotificationCategory removes a previously registered NotificationCategory.
 func (wn *windowsNotifier) RemoveNotificationCategory(categoryId string) error {
 	wn.categoriesLock.Lock()
-	defer wn.categoriesLock.Unlock()
-
 	delete(wn.categories, categoryId)
+	wn.categoriesLock.Unlock()
 
 	return wn.saveCategoriesToRegistry()
 }

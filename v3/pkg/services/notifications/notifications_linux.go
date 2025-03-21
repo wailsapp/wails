@@ -78,6 +78,7 @@ func New() *Service {
 			impl: impl,
 		}
 	})
+
 	return NotificationService
 }
 
