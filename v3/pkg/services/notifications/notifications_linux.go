@@ -83,7 +83,7 @@ func New() *Service {
 }
 
 // Startup is called when the service is loaded
-func (ln *linuxNotifier) Startup(ctx context.Context) error {
+func (ln *linuxNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {
 	ln.appName = application.Get().Config().Name
 
 	if err := ln.loadCategories(); err != nil {

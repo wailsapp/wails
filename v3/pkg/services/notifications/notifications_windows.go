@@ -57,7 +57,7 @@ func New() *Service {
 
 // Startup is called when the service is loaded
 // Sets an activation callback to emit an event when notifications are interacted with.
-func (wn *windowsNotifier) Startup(ctx context.Context) error {
+func (wn *windowsNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {
 	wn.appName = application.Get().Config().Name
 
 	guid, err := wn.getGUID()

@@ -20,9 +20,9 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-type notificationImpl interface {
+type platformNotifier interface {
 	// Lifecycle methods
-	Startup(ctx context.Context) error
+	Startup(ctx context.Context, options application.ServiceOptions) error
 	Shutdown() error
 
 	// Core notification methods
@@ -45,7 +45,7 @@ type notificationImpl interface {
 
 // Service represents the notifications service
 type Service struct {
-	impl notificationImpl
+	impl platformNotifier
 
 	// notificationResponseCallback is called when a notification result is received.
 	// Only one callback can be assigned at a time.
@@ -136,7 +136,7 @@ func (ns *Service) handleNotificationResult(result NotificationResult) {
 
 // ServiceStartup is called when the service is loaded
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
-	return ns.impl.Startup(ctx)
+	return ns.impl.Startup(ctx, options)
 }
 
 // ServiceShutdown is called when the service is unloaded

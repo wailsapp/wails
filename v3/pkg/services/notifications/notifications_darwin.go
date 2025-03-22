@@ -15,6 +15,8 @@ import (
 	"sync"
 	"time"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type darwinNotifier struct {
@@ -56,7 +58,7 @@ func New() *Service {
 	return NotificationService
 }
 
-func (dn *darwinNotifier) Startup(ctx context.Context) error {
+func (dn *darwinNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {
 	return nil
 }
 
