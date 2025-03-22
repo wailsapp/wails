@@ -174,8 +174,12 @@ func (wn *windowsNotifier) SendNotificationWithActions(options NotificationOptio
 	}
 
 	wn.categoriesLock.RLock()
-	nCategory := wn.categories[options.CategoryID]
+	nCategory, categoryExists := wn.categories[options.CategoryID]
 	wn.categoriesLock.RUnlock()
+
+	if options.CategoryID == "" || !categoryExists {
+		fmt.Printf("Category '%s' not found, sending basic notification without actions\n", options.CategoryID)
+	}
 
 	n := toast.Notification{
 		Title:               options.Title,
