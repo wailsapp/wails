@@ -71,9 +71,9 @@ func CheckBundleIdentifier() bool {
 }
 
 // RequestNotificationAuthorization requests permission for notifications.
-// Default timeout is 15 minutes
+// Default timeout is 3 minutes
 func (dn *darwinNotifier) RequestNotificationAuthorization() (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*900)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
 	id, resultCh := dn.registerChannel()

@@ -58,6 +58,9 @@ func New() *Service {
 // Startup is called when the service is loaded
 // Sets an activation callback to emit an event when notifications are interacted with.
 func (wn *windowsNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {
+	wn.categoriesLock.Lock()
+	defer wn.categoriesLock.Unlock()
+
 	wn.appName = application.Get().Config().Name
 
 	guid, err := wn.getGUID()
@@ -76,7 +79,17 @@ func (wn *windowsNotifier) Startup(ctx context.Context, options application.Serv
 
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
 		result := NotificationResult{}
-		actionIdentifier, userInfo := parseNotificationResponse(args)
+		actionIdentifier, userInfo, err := parseNotificationResponse(args)
+
+		if err != nil {
+			result.Error = err
+
+			if ns := getNotificationService(); ns != nil {
+				ns.handleNotificationResult(result)
+			}
+			return
+		}
+
 		response := NotificationResponse{
 			ActionIdentifier: actionIdentifier,
 		}
@@ -89,6 +102,7 @@ func (wn *windowsNotifier) Startup(ctx context.Context, options application.Serv
 				if ns := getNotificationService(); ns != nil {
 					ns.handleNotificationResult(result)
 				}
+				return
 			}
 			response.UserInfo = userInfoMap
 		}
@@ -108,6 +122,9 @@ func (wn *windowsNotifier) Startup(ctx context.Context, options application.Serv
 
 // Shutdown will attempt to save the categories to the registry when the service unloads
 func (wn *windowsNotifier) Shutdown() error {
+	wn.categoriesLock.Lock()
+	defer wn.categoriesLock.Unlock()
+
 	return wn.saveCategoriesToRegistry()
 }
 
@@ -209,6 +226,8 @@ func (wn *windowsNotifier) SendNotificationWithActions(options NotificationOptio
 // Registering a category with the same name as a previously registered NotificationCategory will override it.
 func (wn *windowsNotifier) RegisterNotificationCategory(category NotificationCategory) error {
 	wn.categoriesLock.Lock()
+	defer wn.categoriesLock.Unlock()
+
 	wn.categories[category.ID] = NotificationCategory{
 		ID:               category.ID,
 		Actions:          category.Actions,
@@ -216,7 +235,6 @@ func (wn *windowsNotifier) RegisterNotificationCategory(category NotificationCat
 		ReplyPlaceholder: category.ReplyPlaceholder,
 		ReplyButtonTitle: category.ReplyButtonTitle,
 	}
-	wn.categoriesLock.Unlock()
 
 	return wn.saveCategoriesToRegistry()
 }
@@ -224,8 +242,9 @@ func (wn *windowsNotifier) RegisterNotificationCategory(category NotificationCat
 // RemoveNotificationCategory removes a previously registered NotificationCategory.
 func (wn *windowsNotifier) RemoveNotificationCategory(categoryId string) error {
 	wn.categoriesLock.Lock()
+	defer wn.categoriesLock.Unlock()
+
 	delete(wn.categories, categoryId)
-	wn.categoriesLock.Unlock()
 
 	return wn.saveCategoriesToRegistry()
 }
@@ -280,29 +299,34 @@ func (wn *windowsNotifier) encodePayload(actionID string, data map[string]interf
 func decodePayload(encodedString string) (string, map[string]interface{}, error) {
 	jsonData, err := base64.StdEncoding.DecodeString(encodedString)
 	if err != nil {
-		return encodedString, nil, nil
+		return encodedString, nil, fmt.Errorf("failed to decode base64 payload: %w", err)
 	}
 
 	var payload NotificationPayload
 	if err := json.Unmarshal(jsonData, &payload); err != nil {
-		return encodedString, nil, nil
+		return encodedString, nil, fmt.Errorf("failed to unmarshal notification payload: %w", err)
 	}
 
 	return payload.Action, payload.Data, nil
 }
 
 // parseNotificationResponse updated to use structured payload decoding
-func parseNotificationResponse(response string) (action string, data string) {
-	actionID, userData, _ := decodePayload(response)
+func parseNotificationResponse(response string) (action string, data string, err error) {
+	actionID, userData, err := decodePayload(response)
+
+	if err != nil {
+		fmt.Printf("Warning: Failed to decode notification response: %v\n", err)
+		return response, "", err
+	}
 
 	if userData != nil {
 		userDataJSON, err := json.Marshal(userData)
 		if err == nil {
-			return actionID, string(userDataJSON)
+			return actionID, string(userDataJSON), nil
 		}
 	}
 
-	return actionID, ""
+	return actionID, "", nil
 }
 
 func (wn *windowsNotifier) saveIconToDir() error {
@@ -315,8 +339,7 @@ func (wn *windowsNotifier) saveIconToDir() error {
 }
 
 func (wn *windowsNotifier) saveCategoriesToRegistry() error {
-	wn.categoriesLock.Lock()
-	defer wn.categoriesLock.Unlock()
+	// We assume lock is held by caller
 
 	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, wn.appName)
 
@@ -339,8 +362,7 @@ func (wn *windowsNotifier) saveCategoriesToRegistry() error {
 }
 
 func (wn *windowsNotifier) loadCategoriesFromRegistry() error {
-	wn.categoriesLock.Lock()
-	defer wn.categoriesLock.Unlock()
+	// We assume lock is held by caller
 
 	registryPath := fmt.Sprintf(NotificationCategoriesRegistryPath, wn.appName)
 
