@@ -63,13 +63,22 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 @end
 
 static NotificationsDelegate *delegateInstance = nil;
+static dispatch_once_t onceToken;
 
-static void ensureDelegateInitialized(void) {
-    if (!delegateInstance) {
+static BOOL ensureDelegateInitialized(void) {
+    __block BOOL success = YES;
+
+    dispatch_once(&onceToken, ^{
         delegateInstance = [[NotificationsDelegate alloc] init];
         UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
         center.delegate = delegateInstance;
+    });
+
+    if (!delegateInstance) {
+        success = NO;
     }
+
+    return success;
 }
 
 bool checkBundleIdentifier(void) {
@@ -81,7 +90,11 @@ bool checkBundleIdentifier(void) {
 }
 
 void requestNotificationAuthorization(int channelID) {
-    ensureDelegateInitialized();
+    if (!ensureDelegateInitialized()) {
+        NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
+    }
     
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
@@ -97,7 +110,11 @@ void requestNotificationAuthorization(int channelID) {
 }
 
 void checkNotificationAuthorization(int channelID) {
-    ensureDelegateInitialized();
+    if (!ensureDelegateInitialized()) {
+        NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
+    }
     
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings *settings) {
@@ -136,7 +153,11 @@ UNMutableNotificationContent* createNotificationContent(const char *title, const
 }
 
 void sendNotification(int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json) {
-    ensureDelegateInitialized();
+    if (!ensureDelegateInitialized()) {
+        NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
+    }
     
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
 
@@ -164,7 +185,11 @@ void sendNotification(int channelID, const char *identifier, const char *title, 
 
 void sendNotificationWithActions(int channelID, const char *identifier, const char *title, const char *subtitle, 
                              const char *body, const char *categoryId, const char *data_json) {
-    ensureDelegateInitialized();
+    if (!ensureDelegateInitialized()) {
+        NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
+    }
     
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
 
@@ -195,7 +220,11 @@ void sendNotificationWithActions(int channelID, const char *identifier, const ch
 
 void registerNotificationCategory(int channelID, const char *categoryId, const char *actions_json, bool hasReplyField, 
                                 const char *replyPlaceholder, const char *replyButtonTitle) {
-    ensureDelegateInitialized();
+    if (!ensureDelegateInitialized()) {
+        NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
+    }
     
     NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
     NSString *actionsJsonStr = actions_json ? [NSString stringWithUTF8String:actions_json] : @"[]";
