@@ -41,6 +41,9 @@ type linuxNotifier struct {
 	// Initialization
 	initOnce    sync.Once
 	initialized bool
+
+	monitorCtx    context.Context
+	monitorCancel context.CancelFunc
 }
 
 type notificationContext struct {
@@ -104,6 +107,8 @@ func (ln *linuxNotifier) Startup(ctx context.Context, options application.Servic
 func (ln *linuxNotifier) initNotificationSystem() error {
 	ln.Lock()
 	defer ln.Unlock()
+
+	ln.monitorCtx, ln.monitorCancel = context.WithCancel(context.Background())
 
 	// Cancel any existing listener
 	if ln.listenerCancel != nil {
@@ -209,6 +214,12 @@ func (ln *linuxNotifier) initNotifySend() (string, error) {
 // Shutdown is called when the service is unloaded
 func (ln *linuxNotifier) Shutdown() error {
 	ln.Lock()
+
+	// Cancel monitor goroutine first
+	if ln.monitorCancel != nil {
+		ln.monitorCancel()
+		ln.monitorCancel = nil
+	}
 
 	// Cancel the listener context if it's running
 	if ln.listenerCancel != nil {
@@ -562,11 +573,16 @@ func (ln *linuxNotifier) monitorDBusConnection(ctx context.Context) chan struct{
 	disconnected := make(chan struct{})
 
 	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
 		for {
 			select {
 			case <-ctx.Done():
-				return // Context cancelled, exit monitor
-			default:
+				return // Parent context cancelled
+			case <-ln.monitorCtx.Done():
+				return // Monitor specifically cancelled
+			case <-ticker.C:
 				ln.Lock()
 				connected := ln.dbusConn != nil && ln.dbusConn.Connected()
 				ln.Unlock()
@@ -575,7 +591,6 @@ func (ln *linuxNotifier) monitorDBusConnection(ctx context.Context) chan struct{
 					close(disconnected)
 					return
 				}
-				time.Sleep(1 * time.Second) // Check every second
 			}
 		}
 	}()
