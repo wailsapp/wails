@@ -141,7 +141,7 @@ func (wn *windowsNotifier) CheckNotificationAuthorization() (bool, error) {
 }
 
 // SendNotification sends a basic notification with a name, title, and body. All other options are ignored on Windows.
-// (subtitle is only available on macOS)
+// (subtitle is only available on macOS and Linux)
 func (wn *windowsNotifier) SendNotification(options NotificationOptions) error {
 	if err := wn.saveIconToDir(); err != nil {
 		fmt.Printf("Error saving icon: %v\n", err)
@@ -167,7 +167,7 @@ func (wn *windowsNotifier) SendNotification(options NotificationOptions) error {
 // SendNotificationWithActions sends a notification with additional actions and inputs.
 // A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
 // If a NotificationCategory is not registered a basic notification will be sent.
-// (subtitle is only available on macOS)
+// (subtitle is only available on macOS and Linux)
 func (wn *windowsNotifier) SendNotificationWithActions(options NotificationOptions) error {
 	if err := wn.saveIconToDir(); err != nil {
 		fmt.Printf("Error saving icon: %v\n", err)
