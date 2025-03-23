@@ -262,6 +262,9 @@ func (p *Win32Menu) Destroy() {
 }
 
 func (p *Win32Menu) UpdateMenuItem(item *MenuItem) {
+	if p.menu == 0 || item == nil {
+		return // Silently ignore update if menu or item is nil
+	}
 	if item.IsCheckbox() {
 		for _, itemID := range p.checkboxItems[item] {
 			var checkState uint = w32.MF_UNCHECKED
