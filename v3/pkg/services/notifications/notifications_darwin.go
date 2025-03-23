@@ -112,8 +112,6 @@ func (dn *darwinNotifier) SendNotification(options NotificationOptions) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	id, resultCh := dn.registerChannel()
-
 	cIdentifier := C.CString(options.ID)
 	cTitle := C.CString(options.Title)
 	cSubtitle := C.CString(options.Subtitle)
@@ -133,6 +131,7 @@ func (dn *darwinNotifier) SendNotification(options NotificationOptions) error {
 		defer C.free(unsafe.Pointer(cDataJSON))
 	}
 
+	id, resultCh := dn.registerChannel()
 	C.sendNotification(C.int(id), cIdentifier, cTitle, cSubtitle, cBody, cDataJSON)
 
 	select {
@@ -157,8 +156,6 @@ func (dn *darwinNotifier) SendNotificationWithActions(options NotificationOption
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	id, resultCh := dn.registerChannel()
-
 	cIdentifier := C.CString(options.ID)
 	cTitle := C.CString(options.Title)
 	cSubtitle := C.CString(options.Subtitle)
@@ -180,7 +177,9 @@ func (dn *darwinNotifier) SendNotificationWithActions(options NotificationOption
 		defer C.free(unsafe.Pointer(cDataJSON))
 	}
 
+	id, resultCh := dn.registerChannel()
 	C.sendNotificationWithActions(C.int(id), cIdentifier, cTitle, cSubtitle, cBody, cCategoryID, cDataJSON)
+
 	select {
 	case result := <-resultCh:
 		if !result.Success {
@@ -202,8 +201,6 @@ func (dn *darwinNotifier) RegisterNotificationCategory(category NotificationCate
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	id, resultCh := dn.registerChannel()
-
 	cCategoryID := C.CString(category.ID)
 	defer C.free(unsafe.Pointer(cCategoryID))
 
@@ -222,6 +219,7 @@ func (dn *darwinNotifier) RegisterNotificationCategory(category NotificationCate
 		defer C.free(unsafe.Pointer(cReplyButtonTitle))
 	}
 
+	id, resultCh := dn.registerChannel()
 	C.registerNotificationCategory(C.int(id), cCategoryID, cActionsJSON, C.bool(category.HasReplyField),
 		cReplyPlaceholder, cReplyButtonTitle)
 
@@ -245,11 +243,10 @@ func (dn *darwinNotifier) RemoveNotificationCategory(categoryId string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	id, resultCh := dn.registerChannel()
-
 	cCategoryID := C.CString(categoryId)
 	defer C.free(unsafe.Pointer(cCategoryID))
 
+	id, resultCh := dn.registerChannel()
 	C.removeNotificationCategory(C.int(id), cCategoryID)
 
 	select {

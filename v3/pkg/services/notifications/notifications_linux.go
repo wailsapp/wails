@@ -22,6 +22,7 @@ type linuxNotifier struct {
 	notificationMeta map[uint32]map[string]interface{}
 	activeNotifsLock sync.RWMutex
 	appName          string
+	cancel           context.CancelFunc
 }
 
 const (
@@ -63,7 +64,11 @@ func (ln *linuxNotifier) Startup(ctx context.Context, options application.Servic
 		fmt.Printf("Failed to load notification categories: %v\n", err)
 	}
 
-	if err := ln.setupSignalHandling(); err != nil {
+	var signalCtx context.Context
+	signalCtx, ln.cancel = context.WithCancel(context.Background())
+
+	// Set up signal handling for notification actions
+	if err := ln.setupSignalHandling(signalCtx); err != nil {
 		return fmt.Errorf("failed to set up notification signal handling: %w", err)
 	}
 
@@ -72,15 +77,13 @@ func (ln *linuxNotifier) Startup(ctx context.Context, options application.Servic
 
 // Shutdown will save categories and close the D-Bus connection when the service unloads
 func (ln *linuxNotifier) Shutdown() error {
+	ln.cancel()
+
 	if err := ln.saveCategories(); err != nil {
 		fmt.Printf("Failed to save notification categories: %v\n", err)
 	}
 
-	if ln.conn != nil {
-		return ln.conn.Close()
-	}
-
-	return nil
+	return ln.conn.Close()
 }
 
 // RequestNotificationAuthorization is a Linux stub that always returns true, nil.
@@ -126,7 +129,7 @@ func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
 	hints["x-wails-metadata"] = dbus.MakeVariant(string(metadataJSON))
 
 	actions := []string{}
-	timeout := int32(0) // Timeout in milliseconds (5 seconds)
+	timeout := int32(0)
 
 	// Call the Notify method on the D-Bus interface
 	obj := ln.conn.Object(dbusNotificationInterface, dbusNotificationPath)
@@ -153,15 +156,18 @@ func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
 	}
 
 	ln.activeNotifsLock.Lock()
+
 	ln.activeNotifs[notifID] = options.ID
 
-	ln.notificationMeta[notifID] = map[string]interface{}{
+	metadata := map[string]interface{}{
 		"id":       options.ID,
 		"title":    options.Title,
 		"subtitle": options.Subtitle,
 		"body":     options.Body,
 		"data":     options.Data,
 	}
+
+	ln.notificationMeta[notifID] = metadata
 	ln.activeNotifsLock.Unlock()
 
 	return nil
@@ -267,7 +273,9 @@ func (ln *linuxNotifier) RegisterNotificationCategory(category NotificationCateg
 
 	ln.categories[category.ID] = category
 
-	go ln.saveCategories()
+	if err := ln.saveCategories(); err != nil {
+		fmt.Printf("Failed to save notification categories: %v\n", err)
+	}
 
 	return nil
 }
@@ -279,7 +287,9 @@ func (ln *linuxNotifier) RemoveNotificationCategory(categoryId string) error {
 
 	delete(ln.categories, categoryId)
 
-	go ln.saveCategories()
+	if err := ln.saveCategories(); err != nil {
+		fmt.Printf("Failed to save notification categories: %v\n", err)
+	}
 
 	return nil
 }
@@ -425,7 +435,7 @@ func (ln *linuxNotifier) loadCategories() error {
 }
 
 // Setup signal handling for notification actions.
-func (ln *linuxNotifier) setupSignalHandling() error {
+func (ln *linuxNotifier) setupSignalHandling(ctx context.Context) error {
 	if err := ln.conn.AddMatchSignal(
 		dbus.WithMatchInterface(dbusNotificationInterface),
 		dbus.WithMatchMember("ActionInvoked"),
@@ -440,22 +450,31 @@ func (ln *linuxNotifier) setupSignalHandling() error {
 		return err
 	}
 
-	go ln.handleSignals()
+	c := make(chan *dbus.Signal, 10)
+	ln.conn.Signal(c)
+
+	go ln.handleSignals(ctx, c)
 
 	return nil
 }
 
 // Handle incoming D-Bus signals.
-func (ln *linuxNotifier) handleSignals() {
-	c := make(chan *dbus.Signal, 10)
-	ln.conn.Signal(c)
+func (ln *linuxNotifier) handleSignals(ctx context.Context, c chan *dbus.Signal) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case signal, ok := <-c:
+			if !ok {
+				return
+			}
 
-	for signal := range c {
-		switch signal.Name {
-		case dbusNotificationInterface + ".ActionInvoked":
-			ln.handleActionInvoked(signal)
-		case dbusNotificationInterface + ".NotificationClosed":
-			ln.handleNotificationClosed(signal)
+			switch signal.Name {
+			case dbusNotificationInterface + ".ActionInvoked":
+				ln.handleActionInvoked(signal)
+			case dbusNotificationInterface + ".NotificationClosed":
+				ln.handleNotificationClosed(signal)
+			}
 		}
 	}
 }
