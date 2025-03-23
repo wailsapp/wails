@@ -129,7 +129,6 @@ func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
 	hints["x-wails-metadata"] = dbus.MakeVariant(string(metadataJSON))
 
 	actions := []string{}
-	timeout := int32(0)
 
 	// Call the Notify method on the D-Bus interface
 	obj := ln.conn.Object(dbusNotificationInterface, dbusNotificationPath)
@@ -143,7 +142,7 @@ func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
 		body,
 		actions,
 		hints,
-		timeout,
+		uint32(0),
 	)
 
 	if call.Err != nil {
@@ -156,7 +155,6 @@ func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
 	}
 
 	ln.activeNotifsLock.Lock()
-
 	ln.activeNotifs[notifID] = options.ID
 
 	metadata := map[string]interface{}{
@@ -221,8 +219,6 @@ func (ln *linuxNotifier) SendNotificationWithActions(options NotificationOptions
 	}
 	hints["x-wails-metadata"] = dbus.MakeVariant(string(metadataJSON))
 
-	timeout := int32(0)
-
 	obj := ln.conn.Object(dbusNotificationInterface, dbusNotificationPath)
 	call := obj.Call(
 		dbusNotificationInterface+".Notify",
@@ -234,7 +230,7 @@ func (ln *linuxNotifier) SendNotificationWithActions(options NotificationOptions
 		body,
 		actions,
 		hints,
-		timeout,
+		uint32(0),
 	)
 
 	if call.Err != nil {
@@ -481,7 +477,7 @@ func (ln *linuxNotifier) handleSignals(ctx context.Context, c chan *dbus.Signal)
 
 // Handle ActionInvoked signal.
 func (ln *linuxNotifier) handleActionInvoked(signal *dbus.Signal) {
-	if len(signal.Body) < 2 {
+	if len(signal.Body) < 1 {
 		return
 	}
 
