@@ -85,7 +85,7 @@ func (dn *darwinNotifier) RequestNotificationAuthorization() (bool, error) {
 		return result.Success, result.Error
 	case <-ctx.Done():
 		dn.cleanupChannel(id)
-		return false, fmt.Errorf("notification authorization timed out after 15 minutes: %w", ctx.Err())
+		return false, fmt.Errorf("notification authorization timed out after 3 minutes: %w", ctx.Err())
 	}
 }
 

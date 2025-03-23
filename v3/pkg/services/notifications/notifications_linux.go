@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -246,11 +247,54 @@ func (ln *linuxNotifier) startDBusListener(ctx context.Context) {
 		close(signal)                    // Clean up channel
 	}()
 
+	// Create a separate goroutine to monitor the D-Bus connection
+	disconnected := ln.monitorDBusConnection(ctx)
+
 	for {
 		select {
 		case <-ctx.Done():
 			// Context was cancelled, exit gracefully
 			return
+
+		case <-disconnected:
+			// D-Bus connection lost
+			fmt.Println("D-Bus connection lost, attempting to reconnect...")
+			ln.Lock()
+
+			// Attempt to reconnect
+			var err error
+			newConn, err := ln.initDBus()
+			if err != nil {
+				fmt.Printf("Failed to reconnect to D-Bus: %v\n", err)
+				ln.dbusConn = nil
+				ln.method = "" // No longer using D-Bus
+
+				// Try fallback to notify-send
+				sendPath, err := ln.initNotifySend()
+				if err == nil {
+					fmt.Println("Falling back to notify-send method")
+					ln.sendPath = sendPath
+					ln.method = MethodNotifySend
+				} else {
+					fmt.Println("No notification methods available after D-Bus disconnect")
+				}
+
+				ln.Unlock()
+				return // Exit listener as we can't continue without D-Bus
+			}
+
+			// Successfully reconnected
+			ln.dbusConn = newConn
+			ln.Unlock()
+
+			// Re-register for signals
+			signal = make(chan *dbus.Signal, notifyChannelBufferSize)
+			ln.dbusConn.Signal(signal)
+
+			// Restart the monitor goroutine
+			disconnected = ln.monitorDBusConnection(ctx)
+			fmt.Println("Successfully reconnected to D-Bus")
+			continue
 
 		case s := <-signal:
 			if s == nil {
@@ -512,6 +556,33 @@ func (ln *linuxNotifier) SendNotificationWithActions(options NotificationOptions
 	return err
 }
 
+// monitorDBusConnection creates a goroutine to monitor the D-Bus connection
+// Returns a channel that will be closed if the connection is lost
+func (ln *linuxNotifier) monitorDBusConnection(ctx context.Context) chan struct{} {
+	disconnected := make(chan struct{})
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return // Context cancelled, exit monitor
+			default:
+				ln.Lock()
+				connected := ln.dbusConn != nil && ln.dbusConn.Connected()
+				ln.Unlock()
+
+				if !connected {
+					close(disconnected)
+					return
+				}
+				time.Sleep(1 * time.Second) // Check every second
+			}
+		}
+	}()
+
+	return disconnected
+}
+
 // sendViaDbus sends a notification via dbus
 func (ln *linuxNotifier) sendViaDbus(options NotificationOptions, category *NotificationCategory) (result uint32, err error) {
 	// Prepare actions
@@ -623,14 +694,15 @@ func (ln *linuxNotifier) RemoveDeliveredNotification(_ string) error {
 
 // RemoveNotification removes a notification by ID (Linux-specific)
 func (ln *linuxNotifier) RemoveNotification(identifier string) error {
+	ln.Lock()
+	defer ln.Unlock()
+
 	if !ln.initialized || ln.method != MethodDbus || ln.dbusConn == nil {
 		return errors.New("dbus not available for closing notifications")
 	}
 
 	// Get the system ID for this notification
-	ln.Lock()
 	systemID, exists := ln.activeNotifs[identifier]
-	ln.Unlock()
 
 	if !exists {
 		return nil // Already closed or unknown
