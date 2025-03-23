@@ -20,6 +20,9 @@ func (m *linuxMenu) run() {
 }
 
 func (m *linuxMenu) update() {
+	if m.native == 0 || m.menu == nil {
+		return // Silently ignore update if menu is not initialized
+	}
 	m.processMenu(m.menu)
 }
 
