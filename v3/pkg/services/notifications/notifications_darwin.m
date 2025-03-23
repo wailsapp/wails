@@ -1,4 +1,5 @@
 #import "notifications_darwin.h"
+#include <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #import <UserNotifications/UserNotifications.h>
 
@@ -125,7 +126,7 @@ void checkNotificationAuthorization(int channelID) {
 
 // Helper function to create notification content
 UNMutableNotificationContent* createNotificationContent(const char *title, const char *subtitle, 
-                                                       const char *body, const char *data_json) {
+                                                       const char *body, const char *data_json, NSError **contentError) {
     NSString *nsTitle = [NSString stringWithUTF8String:title];
     NSString *nsSubtitle = subtitle ? [NSString stringWithUTF8String:subtitle] : @"";
     NSString *nsBody = [NSString stringWithUTF8String:body];
@@ -146,6 +147,8 @@ UNMutableNotificationContent* createNotificationContent(const char *title, const
         NSDictionary *parsedData = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
         if (!error && parsedData) {
             content.userInfo = parsedData;
+        } else if (error) {
+            *contentError = error;
         }
     }
     
@@ -162,13 +165,16 @@ void sendNotification(int channelID, const char *identifier, const char *title, 
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
 
     NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
-    UNMutableNotificationContent *content = createNotificationContent(title, subtitle, body, data_json);
-    NSMutableDictionary *customData = [NSMutableDictionary dictionary];
+
+    NSError *contentError = nil;
+    UNMutableNotificationContent *content = createNotificationContent(title, subtitle, body, data_json, &contentError);
     
-    if (customData.count > 0) {
-        content.userInfo = customData;
+    if (contentError) {
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [contentError localizedDescription]];
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
     }
-    
+
     UNTimeIntervalNotificationTrigger *trigger = nil;
     
     UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
@@ -195,13 +201,14 @@ void sendNotificationWithActions(int channelID, const char *identifier, const ch
 
     NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
     NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
-    UNMutableNotificationContent *content = createNotificationContent(title, subtitle, body, data_json);
-    NSMutableDictionary *customData = [NSMutableDictionary dictionary];
     
-    content.categoryIdentifier = nsCategoryId;
+    NSError *contentError = nil;
+    UNMutableNotificationContent *content = createNotificationContent(title, subtitle, body, data_json, &contentError);
     
-    if (customData.count > 0) {
-        content.userInfo = customData;
+    if (contentError) {
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [contentError localizedDescription]];
+        captureResult(channelID, false, [errorMsg UTF8String]);
+        return;
     }
     
     UNTimeIntervalNotificationTrigger *trigger = nil;
