@@ -15,14 +15,24 @@ import (
 )
 
 type linuxNotifier struct {
-	conn             *dbus.Conn
-	categories       map[string]NotificationCategory
-	categoriesLock   sync.RWMutex
-	activeNotifs     map[uint32]string
-	notificationMeta map[uint32]map[string]interface{}
-	activeNotifsLock sync.RWMutex
-	appName          string
-	cancel           context.CancelFunc
+	conn              *dbus.Conn
+	categories        map[string]NotificationCategory
+	categoriesLock    sync.RWMutex
+	notifications     map[uint32]*notificationData
+	notificationsLock sync.RWMutex
+	appName           string
+	cancel            context.CancelFunc
+}
+
+type notificationData struct {
+	ID         string
+	Title      string
+	Subtitle   string
+	Body       string
+	CategoryID string
+	Data       map[string]interface{}
+	DBusID     uint32
+	ActionMap  map[string]string
 }
 
 const (
@@ -34,9 +44,8 @@ const (
 func New() *Service {
 	notificationServiceOnce.Do(func() {
 		impl := &linuxNotifier{
-			categories:       make(map[string]NotificationCategory),
-			activeNotifs:     make(map[uint32]string),
-			notificationMeta: make(map[uint32]map[string]interface{}),
+			categories:    make(map[string]NotificationCategory),
+			notifications: make(map[uint32]*notificationData),
 		}
 
 		NotificationService = &Service{
@@ -47,12 +56,9 @@ func New() *Service {
 	return NotificationService
 }
 
-// Startup is called when the service is loaded
+// Startup is called when the service is loaded.
 func (ln *linuxNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {
-	app := application.Get()
-	if app != nil && app.Config().Name != "" {
-		ln.appName = app.Config().Name
-	}
+	ln.appName = application.Get().Config().Name
 
 	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
@@ -67,7 +73,6 @@ func (ln *linuxNotifier) Startup(ctx context.Context, options application.Servic
 	var signalCtx context.Context
 	signalCtx, ln.cancel = context.WithCancel(context.Background())
 
-	// Set up signal handling for notification actions
 	if err := ln.setupSignalHandling(signalCtx); err != nil {
 		return fmt.Errorf("failed to set up notification signal handling: %w", err)
 	}
@@ -75,15 +80,20 @@ func (ln *linuxNotifier) Startup(ctx context.Context, options application.Servic
 	return nil
 }
 
-// Shutdown will save categories and close the D-Bus connection when the service unloads
+// Shutdown will save categories and close the D-Bus connection when the service unloads.
 func (ln *linuxNotifier) Shutdown() error {
-	ln.cancel()
+	if ln.cancel != nil {
+		ln.cancel()
+	}
 
 	if err := ln.saveCategories(); err != nil {
 		fmt.Printf("Failed to save notification categories: %v\n", err)
 	}
 
-	return ln.conn.Close()
+	if ln.conn != nil {
+		return ln.conn.Close()
+	}
+	return nil
 }
 
 // RequestNotificationAuthorization is a Linux stub that always returns true, nil.
@@ -102,33 +112,26 @@ func (ln *linuxNotifier) CheckNotificationAuthorization() (bool, error) {
 func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
 	hints := map[string]dbus.Variant{}
 
-	// Use subtitle as part of the body if provided
 	body := options.Body
 	if options.Subtitle != "" {
 		body = options.Subtitle + "\n" + body
 	}
 
+	defaultActionID := "default"
+	actions := []string{defaultActionID, "Default"}
+
+	actionMap := map[string]string{
+		defaultActionID: DefaultActionIdentifier,
+	}
+
+	hints["x-notification-id"] = dbus.MakeVariant(options.ID)
+
 	if options.Data != nil {
-		jsonData, err := json.Marshal(options.Data)
-		if err != nil {
-			return fmt.Errorf("failed to marshal notification data: %w", err)
+		userData, err := json.Marshal(options.Data)
+		if err == nil {
+			hints["x-user-data"] = dbus.MakeVariant(string(userData))
 		}
-		hints["x-user-info"] = dbus.MakeVariant(string(jsonData))
 	}
-
-	metadataJSON, err := json.Marshal(map[string]interface{}{
-		"id":       options.ID,
-		"title":    options.Title,
-		"subtitle": options.Subtitle,
-		"body":     options.Body,
-		"data":     options.Data,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to marshal notification metadata: %w", err)
-	}
-	hints["x-wails-metadata"] = dbus.MakeVariant(string(metadataJSON))
-
-	actions := []string{}
 
 	// Call the Notify method on the D-Bus interface
 	obj := ln.conn.Object(dbusNotificationInterface, dbusNotificationPath)
@@ -142,37 +145,36 @@ func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
 		body,
 		actions,
 		hints,
-		uint32(0),
+		int32(-1),
 	)
 
 	if call.Err != nil {
 		return fmt.Errorf("failed to send notification: %w", call.Err)
 	}
 
-	var notifID uint32
-	if err := call.Store(&notifID); err != nil {
+	var dbusID uint32
+	if err := call.Store(&dbusID); err != nil {
 		return fmt.Errorf("failed to store notification ID: %w", err)
 	}
 
-	ln.activeNotifsLock.Lock()
-	ln.activeNotifs[notifID] = options.ID
-
-	metadata := map[string]interface{}{
-		"id":       options.ID,
-		"title":    options.Title,
-		"subtitle": options.Subtitle,
-		"body":     options.Body,
-		"data":     options.Data,
+	notification := &notificationData{
+		ID:        options.ID,
+		Title:     options.Title,
+		Subtitle:  options.Subtitle,
+		Body:      options.Body,
+		Data:      options.Data,
+		DBusID:    dbusID,
+		ActionMap: actionMap,
 	}
 
-	ln.notificationMeta[notifID] = metadata
-	ln.activeNotifsLock.Unlock()
+	ln.notificationsLock.Lock()
+	ln.notifications[dbusID] = notification
+	ln.notificationsLock.Unlock()
 
 	return nil
 }
 
 // SendNotificationWithActions sends a notification with additional actions.
-// (Inputs are only supported on macOS and Windows)
 func (ln *linuxNotifier) SendNotificationWithActions(options NotificationOptions) error {
 	ln.categoriesLock.RLock()
 	category, exists := ln.categories[options.CategoryID]
@@ -183,41 +185,35 @@ func (ln *linuxNotifier) SendNotificationWithActions(options NotificationOptions
 		return ln.SendNotification(options)
 	}
 
-	// Use subtitle as part of the body if provided
 	body := options.Body
 	if options.Subtitle != "" {
 		body = options.Subtitle + "\n" + body
 	}
 
 	var actions []string
+	actionMap := make(map[string]string)
+
+	defaultActionID := "default"
+	actions = append(actions, defaultActionID, "Default")
+	actionMap[defaultActionID] = DefaultActionIdentifier
+
 	for _, action := range category.Actions {
 		actions = append(actions, action.ID, action.Title)
+		actionMap[action.ID] = action.ID
 	}
 
 	hints := map[string]dbus.Variant{}
 
+	hints["x-notification-id"] = dbus.MakeVariant(options.ID)
+
+	hints["x-category-id"] = dbus.MakeVariant(options.CategoryID)
+
 	if options.Data != nil {
-		jsonData, err := json.Marshal(options.Data)
-		if err != nil {
-			return fmt.Errorf("failed to marshal notification data: %w", err)
+		userData, err := json.Marshal(options.Data)
+		if err == nil {
+			hints["x-user-data"] = dbus.MakeVariant(string(userData))
 		}
-		hints["x-user-info"] = dbus.MakeVariant(string(jsonData))
 	}
-
-	hints["category"] = dbus.MakeVariant(options.CategoryID)
-
-	metadataJSON, err := json.Marshal(map[string]interface{}{
-		"id":         options.ID,
-		"title":      options.Title,
-		"subtitle":   options.Subtitle,
-		"body":       options.Body,
-		"categoryId": options.CategoryID,
-		"data":       options.Data,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to marshal notification metadata: %w", err)
-	}
-	hints["x-wails-metadata"] = dbus.MakeVariant(string(metadataJSON))
 
 	obj := ln.conn.Object(dbusNotificationInterface, dbusNotificationPath)
 	call := obj.Call(
@@ -230,44 +226,41 @@ func (ln *linuxNotifier) SendNotificationWithActions(options NotificationOptions
 		body,
 		actions,
 		hints,
-		uint32(0),
+		int32(-1),
 	)
 
 	if call.Err != nil {
 		return fmt.Errorf("failed to send notification: %w", call.Err)
 	}
 
-	var notifID uint32
-	if err := call.Store(&notifID); err != nil {
+	var dbusID uint32
+	if err := call.Store(&dbusID); err != nil {
 		return fmt.Errorf("failed to store notification ID: %w", err)
 	}
 
-	ln.activeNotifsLock.Lock()
-
-	ln.activeNotifs[notifID] = options.ID
-
-	metadata := map[string]interface{}{
-		"id":         options.ID,
-		"title":      options.Title,
-		"subtitle":   options.Subtitle,
-		"body":       options.Body,
-		"categoryId": options.CategoryID,
-		"data":       options.Data,
+	notification := &notificationData{
+		ID:         options.ID,
+		Title:      options.Title,
+		Subtitle:   options.Subtitle,
+		Body:       options.Body,
+		CategoryID: options.CategoryID,
+		Data:       options.Data,
+		DBusID:     dbusID,
+		ActionMap:  actionMap,
 	}
 
-	ln.notificationMeta[notifID] = metadata
-	ln.activeNotifsLock.Unlock()
+	ln.notificationsLock.Lock()
+	ln.notifications[dbusID] = notification
+	ln.notificationsLock.Unlock()
 
 	return nil
 }
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
-// Registering a category with the same name as a previously registered NotificationCategory will override it.
 func (ln *linuxNotifier) RegisterNotificationCategory(category NotificationCategory) error {
 	ln.categoriesLock.Lock()
-	defer ln.categoriesLock.Unlock()
-
 	ln.categories[category.ID] = category
+	ln.categoriesLock.Unlock()
 
 	if err := ln.saveCategories(); err != nil {
 		fmt.Printf("Failed to save notification categories: %v\n", err)
@@ -279,9 +272,8 @@ func (ln *linuxNotifier) RegisterNotificationCategory(category NotificationCateg
 // RemoveNotificationCategory removes a previously registered NotificationCategory.
 func (ln *linuxNotifier) RemoveNotificationCategory(categoryId string) error {
 	ln.categoriesLock.Lock()
-	defer ln.categoriesLock.Unlock()
-
 	delete(ln.categories, categoryId)
+	ln.categoriesLock.Unlock()
 
 	if err := ln.saveCategories(); err != nil {
 		fmt.Printf("Failed to save notification categories: %v\n", err)
@@ -290,17 +282,16 @@ func (ln *linuxNotifier) RemoveNotificationCategory(categoryId string) error {
 	return nil
 }
 
-// RemoveAllPendingNotifications is not directly supported in Linux D-Bus
-// but we can try to remove all active notifications.
+// RemoveAllPendingNotifications attempts to remove all active notifications.
 func (ln *linuxNotifier) RemoveAllPendingNotifications() error {
-	ln.activeNotifsLock.RLock()
-	notifIDs := make([]uint32, 0, len(ln.activeNotifs))
-	for id := range ln.activeNotifs {
-		notifIDs = append(notifIDs, id)
+	ln.notificationsLock.Lock()
+	dbusIDs := make([]uint32, 0, len(ln.notifications))
+	for id := range ln.notifications {
+		dbusIDs = append(dbusIDs, id)
 	}
-	ln.activeNotifsLock.RUnlock()
+	ln.notificationsLock.Unlock()
 
-	for _, id := range notifIDs {
+	for _, id := range dbusIDs {
 		ln.closeNotification(id)
 	}
 
@@ -309,24 +300,24 @@ func (ln *linuxNotifier) RemoveAllPendingNotifications() error {
 
 // RemovePendingNotification removes a pending notification.
 func (ln *linuxNotifier) RemovePendingNotification(identifier string) error {
-	var notifID uint32
+	var dbusID uint32
 	found := false
 
-	ln.activeNotifsLock.RLock()
-	for id, ident := range ln.activeNotifs {
-		if ident == identifier {
-			notifID = id
+	ln.notificationsLock.Lock()
+	for id, notif := range ln.notifications {
+		if notif.ID == identifier {
+			dbusID = id
 			found = true
 			break
 		}
 	}
-	ln.activeNotifsLock.RUnlock()
+	ln.notificationsLock.Unlock()
 
 	if !found {
 		return nil
 	}
 
-	return ln.closeNotification(notifID)
+	return ln.closeNotification(dbusID)
 }
 
 // RemoveAllDeliveredNotifications functionally equivalent to RemoveAllPendingNotification on Linux.
@@ -353,15 +344,9 @@ func (ln *linuxNotifier) closeNotification(id uint32) error {
 		return fmt.Errorf("failed to close notification: %w", call.Err)
 	}
 
-	ln.activeNotifsLock.Lock()
-	delete(ln.activeNotifs, id)
-	delete(ln.notificationMeta, id)
-	ln.activeNotifsLock.Unlock()
-
 	return nil
 }
 
-// Get the config directory for the app.
 func (ln *linuxNotifier) getConfigDir() (string, error) {
 	configDir, err := os.UserConfigDir()
 	if err != nil {
@@ -477,11 +462,11 @@ func (ln *linuxNotifier) handleSignals(ctx context.Context, c chan *dbus.Signal)
 
 // Handle ActionInvoked signal.
 func (ln *linuxNotifier) handleActionInvoked(signal *dbus.Signal) {
-	if len(signal.Body) < 1 {
+	if len(signal.Body) < 2 {
 		return
 	}
 
-	notifID, ok := signal.Body[0].(uint32)
+	dbusID, ok := signal.Body[0].(uint32)
 	if !ok {
 		return
 	}
@@ -491,42 +476,30 @@ func (ln *linuxNotifier) handleActionInvoked(signal *dbus.Signal) {
 		return
 	}
 
-	ln.activeNotifsLock.RLock()
-	identifier, idExists := ln.activeNotifs[notifID]
-	metadata, metaExists := ln.notificationMeta[notifID]
-	ln.activeNotifsLock.RUnlock()
+	ln.notificationsLock.Lock()
+	notification, exists := ln.notifications[dbusID]
+	if exists {
+		delete(ln.notifications, dbusID)
+	}
+	ln.notificationsLock.Unlock()
 
-	if !idExists || !metaExists {
+	if !exists {
 		return
 	}
 
+	appActionID, ok := notification.ActionMap[actionID]
+	if !ok {
+		appActionID = actionID
+	}
+
 	response := NotificationResponse{
-		ID:               identifier,
-		ActionIdentifier: actionID,
-	}
-
-	if title, ok := metadata["title"].(string); ok {
-		response.Title = title
-	}
-
-	if subtitle, ok := metadata["subtitle"].(string); ok {
-		response.Subtitle = subtitle
-	}
-
-	if body, ok := metadata["body"].(string); ok {
-		response.Body = body
-	}
-
-	if categoryID, ok := metadata["categoryId"].(string); ok {
-		response.CategoryID = categoryID
-	}
-
-	if userData, ok := metadata["data"].(map[string]interface{}); ok {
-		response.UserInfo = userData
-	}
-
-	if actionID == DefaultActionIdentifier {
-		response.ActionIdentifier = DefaultActionIdentifier
+		ID:               notification.ID,
+		ActionIdentifier: appActionID,
+		Title:            notification.Title,
+		Subtitle:         notification.Subtitle,
+		Body:             notification.Body,
+		CategoryID:       notification.CategoryID,
+		UserInfo:         notification.Data,
 	}
 
 	result := NotificationResult{
@@ -536,80 +509,57 @@ func (ln *linuxNotifier) handleActionInvoked(signal *dbus.Signal) {
 	if ns := getNotificationService(); ns != nil {
 		ns.handleNotificationResult(result)
 	}
-
-	ln.activeNotifsLock.Lock()
-	delete(ln.activeNotifs, notifID)
-	delete(ln.notificationMeta, notifID)
-	ln.activeNotifsLock.Unlock()
 }
 
 // Handle NotificationClosed signal.
-// The second parameter contains the close reason:
+// Reason codes:
 // 1 - expired timeout
 // 2 - dismissed by user (click on X)
 // 3 - closed by CloseNotification call
 // 4 - undefined/reserved
 func (ln *linuxNotifier) handleNotificationClosed(signal *dbus.Signal) {
-	if len(signal.Body) < 1 {
+	if len(signal.Body) < 2 {
 		return
 	}
 
-	notifID, ok := signal.Body[0].(uint32)
+	dbusID, ok := signal.Body[0].(uint32)
 	if !ok {
 		return
 	}
 
-	var reason uint32 = 0
-	if len(signal.Body) > 1 {
-		if r, ok := signal.Body[1].(uint32); ok {
-			reason = r
-		}
+	reason, ok := signal.Body[1].(uint32)
+	if !ok {
+		reason = 0 // Unknown reason
 	}
 
-	if reason != 1 && reason != 3 {
-		ln.activeNotifsLock.RLock()
-		identifier, idExists := ln.activeNotifs[notifID]
-		metadata, metaExists := ln.notificationMeta[notifID]
-		ln.activeNotifsLock.RUnlock()
+	ln.notificationsLock.Lock()
+	notification, exists := ln.notifications[dbusID]
+	if exists {
+		delete(ln.notifications, dbusID)
+	}
+	ln.notificationsLock.Unlock()
 
-		if idExists && metaExists {
-			response := NotificationResponse{
-				ID:               identifier,
-				ActionIdentifier: DefaultActionIdentifier,
-			}
-
-			if title, ok := metadata["title"].(string); ok {
-				response.Title = title
-			}
-
-			if subtitle, ok := metadata["subtitle"].(string); ok {
-				response.Subtitle = subtitle
-			}
-
-			if body, ok := metadata["body"].(string); ok {
-				response.Body = body
-			}
-
-			if categoryID, ok := metadata["categoryId"].(string); ok {
-				response.CategoryID = categoryID
-			}
-
-			if userData, ok := metadata["data"].(map[string]interface{}); ok {
-				response.UserInfo = userData
-			}
-
-			result := NotificationResult{
-				Response: response,
-			}
-
-			if ns := getNotificationService(); ns != nil {
-				ns.handleNotificationResult(result)
-			}
-		}
+	if !exists {
+		return
 	}
 
-	ln.activeNotifsLock.Lock()
-	delete(ln.activeNotifs, notifID)
-	delete(ln.notificationMeta, notifID)
-	ln.activeNotifsLock.Unlock()
+	if reason == 2 {
+		response := NotificationResponse{
+			ID:               notification.ID,
+			ActionIdentifier: DefaultActionIdentifier,
+			Title:            notification.Title,
+			Subtitle:         notification.Subtitle,
+			Body:             notification.Body,
+			CategoryID:       notification.CategoryID,
+			UserInfo:         notification.Data,
+		}
+
+		result := NotificationResult{
+			Response: response,
+		}
+
+		if ns := getNotificationService(); ns != nil {
+			ns.handleNotificationResult(result)
+		}
+	}
 }

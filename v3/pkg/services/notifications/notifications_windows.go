@@ -254,25 +254,25 @@ func (wn *windowsNotifier) RemoveNotificationCategory(categoryId string) error {
 }
 
 // RemoveAllPendingNotifications is a Windows stub that always returns nil.
-// (macOS-specific)
+// (macOS and Linux only)
 func (wn *windowsNotifier) RemoveAllPendingNotifications() error {
 	return nil
 }
 
 // RemovePendingNotification is a Windows stub that always returns nil.
-// (macOS-specific)
+// (macOS and Linux only)
 func (wn *windowsNotifier) RemovePendingNotification(_ string) error {
 	return nil
 }
 
 // RemoveAllDeliveredNotifications is a Windows stub that always returns nil.
-// (macOS-specific)
+// (macOS and Linux only)
 func (wn *windowsNotifier) RemoveAllDeliveredNotifications() error {
 	return nil
 }
 
 // RemoveDeliveredNotification is a Windows stub that always returns nil.
-// (macOS-specific)
+// (macOS and Linux only)
 func (wn *windowsNotifier) RemoveDeliveredNotification(_ string) error {
 	return nil
 }
