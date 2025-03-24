@@ -4,6 +4,7 @@ package application
 
 import (
 	"errors"
+	"fmt"
 	"syscall"
 	"time"
 	"unsafe"
@@ -256,6 +257,9 @@ func (s *windowsSystemTray) run() {
 
 func (s *windowsSystemTray) updateIcon() {
 	var newIcon w32.HICON
+
+	oldIcon := s.currentIcon
+
 	if w32.IsCurrentlyDarkMode() {
 		newIcon = s.darkModeIcon
 	} else {
@@ -273,8 +277,14 @@ func (s *windowsSystemTray) updateIcon() {
 	}
 
 	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
-		panic(syscall.GetLastError())
+		globalApplication.handleError(fmt.Errorf("failed to update system tray icon: %w", syscall.GetLastError()))
 	}
+
+	// Clean up existing icon if present
+	if oldIcon != 0 {
+		w32.DestroyIcon(s.currentIcon)
+	}
+
 }
 
 func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
