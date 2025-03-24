@@ -9,7 +9,7 @@
 // Platform-specific notes:
 //   - macOS: Requires a properly bundled and signed application
 //   - Windows: Uses Windows Toast notifications
-//   - Linux: Falls back between D-Bus, notify-send, or other methods and does not support text inputs
+//   - Linux: Uses D-Bus and does not support text inputs
 package notifications
 
 import (
