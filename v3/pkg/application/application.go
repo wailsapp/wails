@@ -54,7 +54,7 @@ func Get() *App {
 
 func New(appOptions Options) *App {
 	if globalApplication != nil {
-		return globalApplication
+		globalApplication.fatal("application already created. You cannot create more than one application")
 	}
 
 	mergeApplicationDefaults(&appOptions)
