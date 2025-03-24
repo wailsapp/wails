@@ -13,17 +13,18 @@
         <a data-wml-openURL="https://wails.io">
             <img src="/wails.png" class="logo" alt="Wails logo"/>
         </a>
-        <a data-wml-openURL="https://developer.mozilla.org/en-US/docs/Web/JavaScript">
-            <img src="/javascript.svg" class="logo vanilla" alt="JavaScript logo"/>
+        <a data-wml-openURL="https://www.typescriptlang.org/">
+            <img src="/typescript.svg" class="logo vanilla" alt="Typescript logo"/>
         </a>
     </div>
-    <h1>Wails + Javascript</h1>
-    <div class="footer">
-        <div><button class="btn" onclick="sendNotification()">Send Basic Notification</button></div>
-        <div><button class="btn" onclick="sendComplexNotification()">Send Complex Notificaiton</button></div>
-        <code id="notifications"></code>
+    <h1>Wails + Typescript + Desktop Notifications</h1>
+    <h3>Send notifications 👇</h3>
+    <div class="controls">
+        <button class="btn" id="basic">Basic</button>
+        <button class="btn" id="complex">Complex</button>
     </div>
+    <div class="footer" id="response"></div>
 </div>
-<script type="module" src="/main.js"></script>
+<script type="module" src="/src/main.ts"></script>
 </body>
 </html>
