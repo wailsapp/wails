@@ -62,6 +62,7 @@ type MenuItem struct {
 	accelerator     *accelerator
 	role            Role
 	contextMenuData *ContextMenuData
+	parent          *Menu
 
 	impl              menuItemImpl
 	radioGroupMembers []*MenuItem
@@ -275,12 +276,15 @@ func (m *MenuItem) handleClick() {
 func (m *MenuItem) SetAccelerator(shortcut string) *MenuItem {
 	accelerator, err := parseAccelerator(shortcut)
 	if err != nil {
-		globalApplication.error("invalid accelerator: %w", err)
-		return m
+		globalApplication.handleFatalError(err)
 	}
 	m.accelerator = accelerator
 	if m.impl != nil {
 		m.impl.setAccelerator(accelerator)
+	}
+	// If this menu item has a parent menu, update it
+	if m.parent != nil {
+		m.parent.Update()
 	}
 	return m
 }
@@ -301,6 +305,10 @@ func (m *MenuItem) SetTooltip(s string) *MenuItem {
 	if m.impl != nil {
 		m.impl.setTooltip(s)
 	}
+	// If this menu item has a parent menu, update it
+	if m.parent != nil {
+		m.parent.Update()
+	}
 	return m
 }
 
@@ -314,6 +322,10 @@ func (m *MenuItem) SetLabel(s string) *MenuItem {
 	if m.impl != nil {
 		m.impl.setLabel(s)
 	}
+	// If this menu item has a parent menu, update it
+	if m.parent != nil {
+		m.parent.Update()
+	}
 	return m
 }
 
@@ -321,6 +333,10 @@ func (m *MenuItem) SetEnabled(enabled bool) *MenuItem {
 	m.disabled = !enabled
 	if m.impl != nil {
 		m.impl.setDisabled(m.disabled)
+	}
+	// If this menu item has a parent menu, update it
+	if m.parent != nil {
+		m.parent.Update()
 	}
 	return m
 }
@@ -330,13 +346,21 @@ func (m *MenuItem) SetBitmap(bitmap []byte) *MenuItem {
 	if m.impl != nil {
 		m.impl.setBitmap(bitmap)
 	}
+	// If this menu item has a parent menu, update it
+	if m.parent != nil {
+		m.parent.Update()
+	}
 	return m
 }
 
 func (m *MenuItem) SetChecked(checked bool) *MenuItem {
 	m.checked = checked
 	if m.impl != nil {
-		m.impl.setChecked(m.checked)
+		m.impl.setChecked(checked)
+	}
+	// If this menu item has a parent menu, update it
+	if m.parent != nil {
+		m.parent.Update()
 	}
 	return m
 }
@@ -344,7 +368,11 @@ func (m *MenuItem) SetChecked(checked bool) *MenuItem {
 func (m *MenuItem) SetHidden(hidden bool) *MenuItem {
 	m.hidden = hidden
 	if m.impl != nil {
-		m.impl.setHidden(m.hidden)
+		m.impl.setHidden(hidden)
+	}
+	// If this menu item has a parent menu, update it
+	if m.parent != nil {
+		m.parent.Update()
 	}
 	return m
 }
@@ -416,6 +444,7 @@ func (m *MenuItem) Clone() *MenuItem {
 		callback: m.callback,
 		itemType: m.itemType,
 		role:     m.role,
+		parent:   m.parent,
 	}
 	if m.submenu != nil {
 		result.submenu = m.submenu.Clone()

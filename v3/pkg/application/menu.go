@@ -40,23 +40,27 @@ func NewMenu() *Menu {
 
 func (m *Menu) Add(label string) *MenuItem {
 	result := NewMenuItem(label)
+	result.parent = m
 	m.items = append(m.items, result)
 	return result
 }
 
 func (m *Menu) AddSeparator() {
 	result := NewMenuItemSeparator()
+	result.parent = m
 	m.items = append(m.items, result)
 }
 
 func (m *Menu) AddCheckbox(label string, enabled bool) *MenuItem {
 	result := NewMenuItemCheckbox(label, enabled)
+	result.parent = m
 	m.items = append(m.items, result)
 	return result
 }
 
 func (m *Menu) AddRadio(label string, enabled bool) *MenuItem {
 	result := NewMenuItemRadio(label, enabled)
+	result.parent = m
 	m.items = append(m.items, result)
 	return result
 }

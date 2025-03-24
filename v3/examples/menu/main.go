@@ -41,7 +41,41 @@ func main() {
 		hidden.SetHidden(!hidden.Hidden())
 	})
 
-	// Disabled menu item
+	disabledMenuItem := myMenu.Add("Show window").SetEnabled(false).OnClick(func(ctx *application.Context) {
+		// Create the window with HTML content
+		app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+			Title:  "Success",
+			Width:  300,
+			Height: 300,
+			HTML:   "It worked",
+		}).Show()
+	})
+	myMenu.Add("Enable show window").OnClick(func(ctx *application.Context) {
+		disabledMenuItem.SetEnabled(true)
+	})
+
+	// Add an example of URL-based window creation
+	myMenu.Add("Show window with URL").OnClick(func(ctx *application.Context) {
+		// Create a window with a URL
+		app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+			Title:  "URL Example",
+			Width:  800,
+			Height: 600,
+			URL:    "https://wails.io",
+		}).Show()
+	})
+
+	myMenu.Add("Show window with raw HTML").OnClick(func(ctx *application.Context) {
+		// Create a window with a URL
+		app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+			Title:  "Raw HTML Example",
+			Width:  800,
+			Height: 600,
+			HTML:   "<html><body><h1>Hello World</h1></body></html>",
+		}).Show()
+	})
+
+	// Not Enabled menu item (left for backwards compatibility)
 	myMenu.Add("Not Enabled").SetEnabled(false)
 
 	// Click callbacks
