@@ -1,33 +1,26 @@
+/** 
+ * This file tells your IDE where the root of your JavaScript project is, and sets some
+ * options that it can use to provide autocompletion and other features.  
+ * 
+ * List of options: https://code.visualstudio.com/docs/languages/jsconfig#_jsconfig-options
+ */
 {
   "compilerOptions": {
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
+    /**
+     * The target and module can be set to ESNext to allow writing modern JavaScript, 
+     * and Vite will compile down to the level of "build.target" specified in the vite config file.
+     * Builds will error if you use a feature that cannot be compiled down to the target level.
+     */
     "target": "ESNext",
     "module": "ESNext",
-    /**
-     * svelte-preprocess cannot figure out whether you have
-     * a value or a type, so tell TypeScript to enforce using
-     * `import type` instead of `import` for Types.
-     */
-    "importsNotUsedAsValues": "error",
-    "isolatedModules": true,
     "resolveJsonModule": true,
     /**
-     * To have warnings / errors of the Svelte compiler at the
-     * correct position, enable source maps by default.
+     * Enable checkJs if you'd like type checking in `.svelte` and `.js` files.
      */
-    "sourceMap": true,
-    "esModuleInterop": true,
+    "checkJs": false,
+    "strict": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    /**
-     * Typecheck JS in `.svelte` and `.js` files by default.
-     * Disable this if you'd like to use dynamic types.
-     */
-    "checkJs": true
   },
-  /**
-   * Use global.d.ts instead of compilerOptions.types
-   * to avoid limiting type declarations.
-   */
-  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte"]
+  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte", "bindings"]
 }
