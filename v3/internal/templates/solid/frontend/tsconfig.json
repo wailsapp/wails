@@ -1,11 +1,10 @@
 /** 
  * This file tells your IDE where the root of your JavaScript project is, and sets some
  * options that it can use to provide autocompletion and other features.  
- * 
- * List of options: https://code.visualstudio.com/docs/languages/jsconfig#_jsconfig-options
  */
 {
   "compilerOptions": {
+    "allowJs": true,
     "moduleResolution": "bundler",
     /**
      * The target and module can be set to ESNext to allow writing modern JavaScript, 

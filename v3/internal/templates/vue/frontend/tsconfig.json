@@ -1,11 +1,10 @@
 /** 
  * This file tells your IDE where the root of your JavaScript project is, and sets some
  * options that it can use to provide autocompletion and other features.  
- * 
- * List of options: https://code.visualstudio.com/docs/languages/jsconfig#_jsconfig-options
  */
 {
   "compilerOptions": {
+    "allowJs": true,
     "moduleResolution": "bundler",
     /**
      * The target and module can be set to ESNext to allow writing modern JavaScript, 
@@ -16,11 +15,11 @@
     "module": "ESNext",
     "resolveJsonModule": true,
     /**
-     * Enable checkJs if you'd like type checking in `.js(x)` files.
+     * Enable checkJs if you'd like type checking in `.vue` and `.js` files.
      */
     "checkJs": false,
     "strict": true,
     "skipLibCheck": true,
   },
-  "include": ["src", "bindings"]
+  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.jsx", "src/**/*.vue", "bindings"]
 }
