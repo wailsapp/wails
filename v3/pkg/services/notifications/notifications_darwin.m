@@ -210,6 +210,8 @@ void sendNotificationWithActions(int channelID, const char *identifier, const ch
         captureResult(channelID, false, [errorMsg UTF8String]);
         return;
     }
+
+    content.categoryIdentifier = nsCategoryId;
     
     UNTimeIntervalNotificationTrigger *trigger = nil;
     

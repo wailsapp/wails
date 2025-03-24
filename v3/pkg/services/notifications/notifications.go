@@ -60,15 +60,15 @@ var (
 	notificationServiceLock sync.RWMutex
 )
 
-// NotificationAction represents an action button for a notification
-type NotificationAction = struct {
+// NotificationAction represents an action button for a notification.
+type NotificationAction struct {
 	ID          string `json:"id,omitempty"`
 	Title       string `json:"title,omitempty"`
 	Destructive bool   `json:"destructive,omitempty"` // (macOS-specific)
 }
 
-// NotificationCategory groups actions for notifications
-type NotificationCategory = struct {
+// NotificationCategory groups actions for notifications.
+type NotificationCategory struct {
 	ID               string               `json:"id,omitempty"`
 	Actions          []NotificationAction `json:"actions,omitempty"`
 	HasReplyField    bool                 `json:"hasReplyField,omitempty"`
@@ -77,31 +77,32 @@ type NotificationCategory = struct {
 }
 
 // NotificationOptions contains configuration for a notification
-type NotificationOptions = struct {
-	ID         string                 `json:"id,omitempty"`
-	Title      string                 `json:"title,omitempty"`
-	Subtitle   string                 `json:"subtitle,omitempty"` // (macOS-specific)
+type NotificationOptions struct {
+	ID         string                 `json:"id"`
+	Title      string                 `json:"title"`
+	Subtitle   string                 `json:"subtitle,omitempty"` // (macOS and Linux only)
 	Body       string                 `json:"body,omitempty"`
 	CategoryID string                 `json:"categoryId,omitempty"`
 	Data       map[string]interface{} `json:"data,omitempty"`
 }
 
-var DefaultActionIdentifier = "DEFAULT_ACTION"
+const DefaultActionIdentifier = "DEFAULT_ACTION"
 
-// NotificationResponse represents a user's response to a notification
-type NotificationResponse = struct {
+// NotificationResponse represents the response sent by interacting with a notification.
+type NotificationResponse struct {
 	ID               string                 `json:"id,omitempty"`
 	ActionIdentifier string                 `json:"actionIdentifier,omitempty"`
 	CategoryID       string                 `json:"categoryIdentifier,omitempty"`
 	Title            string                 `json:"title,omitempty"`
-	Subtitle         string                 `json:"subtitle,omitempty"` // (macOS-specific)
+	Subtitle         string                 `json:"subtitle,omitempty"` // (macOS and Linux only)
 	Body             string                 `json:"body,omitempty"`
 	UserText         string                 `json:"userText,omitempty"`
 	UserInfo         map[string]interface{} `json:"userInfo,omitempty"`
 }
 
-// NotificationResult
-type NotificationResult = struct {
+// NotificationResult represents the result of a notification response,
+// returning the response or any errors that occurred.
+type NotificationResult struct {
 	Response NotificationResponse
 	Error    error
 }
@@ -123,7 +124,7 @@ func (ns *Service) OnNotificationResponse(callback func(result NotificationResul
 }
 
 // handleNotificationResponse is an internal method to handle notification responses
-// and invoke the registered callback if one exists
+// and invoke the registered callback if one exists.
 func (ns *Service) handleNotificationResult(result NotificationResult) {
 	ns.callbackLock.RLock()
 	callback := ns.notificationResultCallback
@@ -134,17 +135,17 @@ func (ns *Service) handleNotificationResult(result NotificationResult) {
 	}
 }
 
-// ServiceStartup is called when the service is loaded
+// ServiceStartup is called when the service is loaded.
 func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	return ns.impl.Startup(ctx, options)
 }
 
-// ServiceShutdown is called when the service is unloaded
+// ServiceShutdown is called when the service is unloaded.
 func (ns *Service) ServiceShutdown() error {
 	return ns.impl.Shutdown()
 }
 
-// Public methods that delegate to the implementation
+// Public methods that delegate to the implementation.
 func (ns *Service) RequestNotificationAuthorization() (bool, error) {
 	return ns.impl.RequestNotificationAuthorization()
 }
@@ -201,7 +202,7 @@ func getNotificationService() *Service {
 	return NotificationService
 }
 
-// validateNotificationOptions validates an ID and Title are provided for notifications
+// validateNotificationOptions validates an ID and Title are provided for notifications.
 func validateNotificationOptions(options NotificationOptions) error {
 	if options.ID == "" {
 		return fmt.Errorf("notification ID cannot be empty")
