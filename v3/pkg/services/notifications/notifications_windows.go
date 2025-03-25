@@ -36,8 +36,8 @@ const (
 
 // NotificationPayload combines the action ID and user data into a single structure
 type NotificationPayload struct {
-	Action string                 `json:"action"`
-	Data   map[string]interface{} `json:"data,omitempty"`
+	Action  string              `json:"action"`
+	Options NotificationOptions `json:"payload,omitempty"`
 }
 
 // Creates a new Notifications Service.
@@ -79,7 +79,8 @@ func (wn *windowsNotifier) Startup(ctx context.Context, options application.Serv
 
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
 		result := NotificationResult{}
-		actionIdentifier, userInfo, err := parseNotificationResponse(args)
+
+		actionIdentifier, options, err := parseNotificationResponse(args)
 
 		if err != nil {
 			result.Error = err
@@ -90,21 +91,15 @@ func (wn *windowsNotifier) Startup(ctx context.Context, options application.Serv
 			return
 		}
 
+		// Subtitle is retained but was not shown with the notification
 		response := NotificationResponse{
+			ID:               options.ID,
 			ActionIdentifier: actionIdentifier,
-		}
-
-		if userInfo != "" {
-			var userInfoMap map[string]interface{}
-			if err := json.Unmarshal([]byte(userInfo), &userInfoMap); err != nil {
-				result.Error = fmt.Errorf("failed to unmarshal notification response: %w", err)
-
-				if ns := getNotificationService(); ns != nil {
-					ns.handleNotificationResult(result)
-				}
-				return
-			}
-			response.UserInfo = userInfoMap
+			Title:            options.Title,
+			Subtitle:         options.Subtitle,
+			Body:             options.Body,
+			CategoryID:       options.CategoryID,
+			UserInfo:         options.Data,
 		}
 
 		if userText, found := wn.getUserText(data); found {
@@ -154,9 +149,9 @@ func (wn *windowsNotifier) SendNotification(options NotificationOptions) error {
 	}
 
 	if options.Data != nil {
-		encodedPayload, err := wn.encodePayload(DefaultActionIdentifier, options.Data)
+		encodedPayload, err := wn.encodePayload(DefaultActionIdentifier, options)
 		if err != nil {
-			return fmt.Errorf("failed to encode notification data: %w", err)
+			return fmt.Errorf("failed to encode notification payload: %w", err)
 		}
 		n.ActivationArguments = encodedPayload
 	}
@@ -208,16 +203,16 @@ func (wn *windowsNotifier) SendNotificationWithActions(options NotificationOptio
 	}
 
 	if options.Data != nil {
-		encodedPayload, err := wn.encodePayload(n.ActivationArguments, options.Data)
+		encodedPayload, err := wn.encodePayload(n.ActivationArguments, options)
 		if err != nil {
-			return fmt.Errorf("failed to encode notification data: %w", err)
+			return fmt.Errorf("failed to encode notification payload: %w", err)
 		}
 		n.ActivationArguments = encodedPayload
 
 		for index := range n.Actions {
-			encodedPayload, err := wn.encodePayload(n.Actions[index].Arguments, options.Data)
+			encodedPayload, err := wn.encodePayload(n.Actions[index].Arguments, options)
 			if err != nil {
-				return fmt.Errorf("failed to encode notification data: %w", err)
+				return fmt.Errorf("failed to encode notification payload: %w", err)
 			}
 			n.Actions[index].Arguments = encodedPayload
 		}
@@ -284,10 +279,10 @@ func (wn *windowsNotifier) RemoveNotification(identifier string) error {
 }
 
 // encodePayload combines an action ID and user data into a single encoded string
-func (wn *windowsNotifier) encodePayload(actionID string, data map[string]interface{}) (string, error) {
+func (wn *windowsNotifier) encodePayload(actionID string, options NotificationOptions) (string, error) {
 	payload := NotificationPayload{
-		Action: actionID,
-		Data:   data,
+		Action:  actionID,
+		Options: options,
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -300,37 +295,30 @@ func (wn *windowsNotifier) encodePayload(actionID string, data map[string]interf
 }
 
 // decodePayload extracts the action ID and user data from an encoded payload
-func decodePayload(encodedString string) (string, map[string]interface{}, error) {
+func decodePayload(encodedString string) (string, NotificationOptions, error) {
 	jsonData, err := base64.StdEncoding.DecodeString(encodedString)
 	if err != nil {
-		return encodedString, nil, fmt.Errorf("failed to decode base64 payload: %w", err)
+		return encodedString, NotificationOptions{}, fmt.Errorf("failed to decode base64 payload: %w", err)
 	}
 
 	var payload NotificationPayload
 	if err := json.Unmarshal(jsonData, &payload); err != nil {
-		return encodedString, nil, fmt.Errorf("failed to unmarshal notification payload: %w", err)
+		return encodedString, NotificationOptions{}, fmt.Errorf("failed to unmarshal notification payload: %w", err)
 	}
 
-	return payload.Action, payload.Data, nil
+	return payload.Action, payload.Options, nil
 }
 
 // parseNotificationResponse updated to use structured payload decoding
-func parseNotificationResponse(response string) (action string, data string, err error) {
-	actionID, userData, err := decodePayload(response)
+func parseNotificationResponse(response string) (action string, options NotificationOptions, err error) {
+	actionID, options, err := decodePayload(response)
 
 	if err != nil {
 		fmt.Printf("Warning: Failed to decode notification response: %v\n", err)
-		return response, "", err
+		return response, NotificationOptions{}, err
 	}
 
-	if userData != nil {
-		userDataJSON, err := json.Marshal(userData)
-		if err == nil {
-			return actionID, string(userDataJSON), nil
-		}
-	}
-
-	return actionID, "", nil
+	return actionID, options, nil
 }
 
 func (wn *windowsNotifier) saveIconToDir() error {
