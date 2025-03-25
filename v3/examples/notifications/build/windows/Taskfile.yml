@@ -60,4 +60,4 @@ tasks:
 
   run:
     cmds:
-      - '{{.BIN_DIR}}/{{.APP_NAME}}.exe'
+      - '{{.BIN_DIR}}\\{{.APP_NAME}}.exe'
