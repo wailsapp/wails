@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -48,6 +49,29 @@ func New() *Service {
 			notifications: make(map[uint32]*notificationData),
 		}
 
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		conn, err := dbus.ConnectSessionBus()
+		if err != nil {
+			fmt.Printf("Warning: Failed to connect to D-Bus session bus: %v\n", err)
+			fmt.Printf("Notifications will be unavailable\n")
+		} else {
+			impl.conn = conn
+
+			obj := conn.Object(dbusNotificationInterface, dbusNotificationPath)
+			call := obj.CallWithContext(ctx, dbusNotificationInterface+".GetCapabilities", 0)
+
+			var capabilities []string
+			err := call.Store(&capabilities)
+
+			if err != nil {
+				fmt.Printf("Warning: D-Bus notification service not ready: %v\n", err)
+			} else {
+				fmt.Printf("D-Bus notification service is ready with capabilities: %v\n", capabilities)
+			}
+		}
+
 		NotificationService = &Service{
 			impl: impl,
 		}
@@ -56,15 +80,29 @@ func New() *Service {
 	return NotificationService
 }
 
+// Helper method to check if D-Bus connection is available
+func (ln *linuxNotifier) checkConnection() error {
+	if ln.conn == nil {
+		return fmt.Errorf("D-Bus connection is not initialized, notifications are unavailable")
+	}
+
+	return nil
+}
+
 // Startup is called when the service is loaded.
 func (ln *linuxNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {
 	ln.appName = application.Get().Config().Name
 
-	conn, err := dbus.ConnectSessionBus()
-	if err != nil {
-		return fmt.Errorf("failed to connect to session bus: %w", err)
+	if ln.conn == nil {
+		conn, err := dbus.ConnectSessionBus()
+		if err != nil {
+			fmt.Printf("Warning: Failed to connect to D-Bus session bus: %v\n", err)
+			fmt.Printf("Notifications will be unavailable\n")
+
+			return nil
+		}
+		ln.conn = conn
 	}
-	ln.conn = conn
 
 	if err := ln.loadCategories(); err != nil {
 		fmt.Printf("Failed to load notification categories: %v\n", err)
@@ -74,7 +112,7 @@ func (ln *linuxNotifier) Startup(ctx context.Context, options application.Servic
 	signalCtx, ln.cancel = context.WithCancel(context.Background())
 
 	if err := ln.setupSignalHandling(signalCtx); err != nil {
-		return fmt.Errorf("failed to set up notification signal handling: %w", err)
+		fmt.Printf("Warning: Failed to set up notification signal handling: %v\n", err)
 	}
 
 	return nil
@@ -110,6 +148,10 @@ func (ln *linuxNotifier) CheckNotificationAuthorization() (bool, error) {
 
 // SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
 func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
+	if err := ln.checkConnection(); err != nil {
+		return err
+	}
+
 	hints := map[string]dbus.Variant{}
 
 	body := options.Body
@@ -176,6 +218,10 @@ func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
 
 // SendNotificationWithActions sends a notification with additional actions.
 func (ln *linuxNotifier) SendNotificationWithActions(options NotificationOptions) error {
+	if err := ln.checkConnection(); err != nil {
+		return err
+	}
+
 	ln.categoriesLock.RLock()
 	category, exists := ln.categories[options.CategoryID]
 	ln.categoriesLock.RUnlock()
@@ -284,6 +330,10 @@ func (ln *linuxNotifier) RemoveNotificationCategory(categoryId string) error {
 
 // RemoveAllPendingNotifications attempts to remove all active notifications.
 func (ln *linuxNotifier) RemoveAllPendingNotifications() error {
+	if err := ln.checkConnection(); err != nil {
+		return err
+	}
+
 	ln.notificationsLock.Lock()
 	dbusIDs := make([]uint32, 0, len(ln.notifications))
 	for id := range ln.notifications {
@@ -300,6 +350,10 @@ func (ln *linuxNotifier) RemoveAllPendingNotifications() error {
 
 // RemovePendingNotification removes a pending notification.
 func (ln *linuxNotifier) RemovePendingNotification(identifier string) error {
+	if err := ln.checkConnection(); err != nil {
+		return err
+	}
+
 	var dbusID uint32
 	found := false
 
@@ -337,6 +391,10 @@ func (ln *linuxNotifier) RemoveNotification(identifier string) error {
 
 // Helper method to close a notification.
 func (ln *linuxNotifier) closeNotification(id uint32) error {
+	if err := ln.checkConnection(); err != nil {
+		return err
+	}
+
 	obj := ln.conn.Object(dbusNotificationInterface, dbusNotificationPath)
 	call := obj.Call(dbusNotificationInterface+".CloseNotification", 0, id)
 
@@ -417,6 +475,10 @@ func (ln *linuxNotifier) loadCategories() error {
 
 // Setup signal handling for notification actions.
 func (ln *linuxNotifier) setupSignalHandling(ctx context.Context) error {
+	if err := ln.checkConnection(); err != nil {
+		return err
+	}
+
 	if err := ln.conn.AddMatchSignal(
 		dbus.WithMatchInterface(dbusNotificationInterface),
 		dbus.WithMatchMember("ActionInvoked"),
