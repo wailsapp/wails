@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 )
 
@@ -61,85 +62,87 @@ func main() {
 		URL:              "/",
 	})
 
-	// Create a goroutine that spawns desktop notifications from Go
-	go func() {
-		var authorized bool
-		var err error
-		authorized, err = ns.CheckNotificationAuthorization()
-		if err != nil {
-			println(fmt.Errorf("checking app notification authorization failed: %s", err))
-		}
-
-		if !authorized {
-			authorized, err = ns.RequestNotificationAuthorization()
+	app.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
+		// Create a goroutine that spawns desktop notifications from Go
+		go func() {
+			var authorized bool
+			var err error
+			authorized, err = ns.CheckNotificationAuthorization()
 			if err != nil {
-				println(fmt.Errorf("requesting app notification authorization failed: %s", err))
+				println(fmt.Errorf("checking app notification authorization failed: %s", err))
 			}
-		}
 
-		if authorized {
-			ns.OnNotificationResponse(func(result notifications.NotificationResult) {
-				if result.Error != nil {
-					println(fmt.Errorf("parsing notification result failed: %s", result.Error))
-				} else {
-					fmt.Printf("Response: %+v\n", result.Response)
-					println("Sending response to frontend...")
-					app.EmitEvent("notification:action", result.Response)
+			if !authorized {
+				authorized, err = ns.RequestNotificationAuthorization()
+				if err != nil {
+					println(fmt.Errorf("requesting app notification authorization failed: %s", err))
 				}
-			})
-
-			err = ns.SendNotification(notifications.NotificationOptions{
-				ID:       "uuid-basic-1",
-				Title:    "Notification Title",
-				Subtitle: "Subtitle on macOS and Linux",
-				Body:     "Body text of notification.",
-				Data: map[string]interface{}{
-					"user-id":    "user-123",
-					"message-id": "msg-123",
-					"timestamp":  time.Now().Unix(),
-				},
-			})
-			if err != nil {
-				println(fmt.Errorf("sending basic notification failed: %s", err))
 			}
 
-			// Delay before sending next notification
-			time.Sleep(time.Second * 2)
+			if authorized {
+				ns.OnNotificationResponse(func(result notifications.NotificationResult) {
+					if result.Error != nil {
+						println(fmt.Errorf("parsing notification result failed: %s", result.Error))
+					} else {
+						fmt.Printf("Response: %+v\n", result.Response)
+						println("Sending response to frontend...")
+						app.EmitEvent("notification:action", result.Response)
+					}
+				})
 
-			const CategoryID = "backend-notification-id"
+				err = ns.SendNotification(notifications.NotificationOptions{
+					ID:       "uuid-basic-1",
+					Title:    "Notification Title",
+					Subtitle: "Subtitle on macOS and Linux",
+					Body:     "Body text of notification.",
+					Data: map[string]interface{}{
+						"user-id":    "user-123",
+						"message-id": "msg-123",
+						"timestamp":  time.Now().Unix(),
+					},
+				})
+				if err != nil {
+					println(fmt.Errorf("sending basic notification failed: %s", err))
+				}
 
-			err = ns.RegisterNotificationCategory(notifications.NotificationCategory{
-				ID: CategoryID,
-				Actions: []notifications.NotificationAction{
-					{ID: "VIEW", Title: "View"},
-					{ID: "MARK_READ", Title: "Mark as read"},
-					{ID: "DELETE", Title: "Delete", Destructive: true},
-				},
-				HasReplyField:    true,
-				ReplyPlaceholder: "Message...",
-				ReplyButtonTitle: "Reply",
-			})
-			if err != nil {
-				println(fmt.Errorf("creating notification category failed: %s", err))
+				// Delay before sending next notification
+				time.Sleep(time.Second * 2)
+
+				const CategoryID = "backend-notification-id"
+
+				err = ns.RegisterNotificationCategory(notifications.NotificationCategory{
+					ID: CategoryID,
+					Actions: []notifications.NotificationAction{
+						{ID: "VIEW", Title: "View"},
+						{ID: "MARK_READ", Title: "Mark as read"},
+						{ID: "DELETE", Title: "Delete", Destructive: true},
+					},
+					HasReplyField:    true,
+					ReplyPlaceholder: "Message...",
+					ReplyButtonTitle: "Reply",
+				})
+				if err != nil {
+					println(fmt.Errorf("creating notification category failed: %s", err))
+				}
+
+				err = ns.SendNotificationWithActions(notifications.NotificationOptions{
+					ID:         "uuid-with-actions-1",
+					Title:      "Actions Notification Title",
+					Subtitle:   "Subtitle on macOS and Linux",
+					Body:       "Body text of notification with actions.",
+					CategoryID: CategoryID,
+					Data: map[string]interface{}{
+						"user-id":    "user-123",
+						"message-id": "msg-123",
+						"timestamp":  time.Now().Unix(),
+					},
+				})
+				if err != nil {
+					println(fmt.Errorf("sending notification with actions failed: %s", err))
+				}
 			}
-
-			err = ns.SendNotificationWithActions(notifications.NotificationOptions{
-				ID:         "uuid-with-actions-1",
-				Title:      "Actions Notification Title",
-				Subtitle:   "Subtitle on macOS and Linux",
-				Body:       "Body text of notification with actions.",
-				CategoryID: CategoryID,
-				Data: map[string]interface{}{
-					"user-id":    "user-123",
-					"message-id": "msg-123",
-					"timestamp":  time.Now().Unix(),
-				},
-			})
-			if err != nil {
-				println(fmt.Errorf("sending notification with actions failed: %s", err))
-			}
-		}
-	}()
+		}()
+	})
 
 	// Run the application. This blocks until the application has been exited.
 	err := app.Run()
