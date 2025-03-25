@@ -841,7 +841,7 @@ function rejectorFor<T>(promise: CancellablePromiseWithResolvers<T>, state: Canc
  * Returns a promise that fulfills once all cancellation procedures for the given values have settled.
  */
 function cancelAll(parent: CancellablePromise<unknown>, values: any[], cause?: any): Promise<void> {
-    const results = [];
+    const results: Promise<void>[] = [];
 
     for (const value of values) {
         let cancel: CancellablePromiseCanceller;
