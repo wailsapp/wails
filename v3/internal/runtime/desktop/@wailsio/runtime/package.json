@@ -27,7 +27,6 @@
   },
   "files": [
     "./dist",
-    "./plugins",
     "./types"
   ],
   "sideEffects": [
