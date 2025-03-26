@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build:dev": "tsc && vite build --minify false --mode development",
-    "build": "tsc && vite build --mode production",
+    "build:dev": "vite build --minify false --mode development",
+    "build": "vite build --mode production",
     "preview": "vite preview"
   },
   "devDependencies": {
-    "typescript": "^4.9.3",
     "vite": "^5.0.0",
+    "typescript": "^5.7.3",
     "@wailsio/runtime": "latest"
   }
 }

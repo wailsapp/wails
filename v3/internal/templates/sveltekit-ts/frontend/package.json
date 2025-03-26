@@ -21,6 +21,6 @@
 	"type": "module",
 	"dependencies": {
 		"@sveltejs/adapter-static": "^3.0.5",
-		"@wailsio/runtime": "^3.0.0-alpha.28"
+		"@wailsio/runtime": "latest"
 	}
 }

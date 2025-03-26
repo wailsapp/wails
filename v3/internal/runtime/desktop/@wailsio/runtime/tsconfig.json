@@ -1,5 +1,5 @@
 {
-  "include": ["./src/**/*"],
+  "include": ["src"],
   "exclude": ["./src/**/*.test.*"],
   "compilerOptions": {
     "composite": true,
@@ -19,6 +19,7 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "stripInternal": true,
+    "skipLibCheck": true,
 
     "lib": [
       "DOM",

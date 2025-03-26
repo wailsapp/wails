@@ -19,8 +19,8 @@ type Renderer struct {
 
 	ext string
 
-	service  *template.Template
-	typedefs *template.Template
+	service *template.Template
+	models  *template.Template
 }
 
 // NewRenderer initialises a code renderer
@@ -37,8 +37,8 @@ func NewRenderer(options *flags.GenerateBindingsOptions, collector *collect.Coll
 
 		ext: ext,
 
-		service:  tmplService[tmplLanguage(options.TS)],
-		typedefs: tmplModels[tmplLanguage(options.TS)],
+		service: tmplService[tmplLanguage(options.TS)],
+		models:  tmplModels[tmplLanguage(options.TS)],
 	}
 }
 
@@ -52,6 +52,18 @@ func (renderer *Renderer) ServiceFile(name string) string {
 // with the appropriate extension.
 func (renderer *Renderer) ModelsFile() string {
 	return renderer.options.ModelsFilename + renderer.ext
+}
+
+// EventDataFile returns the standard name of the event data definitions file
+// with the appropriate extension.
+func (renderer *Renderer) EventDataFile() string {
+	return "eventdata.d.ts"
+}
+
+// EventCreateFile returns the standard name of the event data creation file
+// with the appropriate extension.
+func (renderer *Renderer) EventCreateFile() string {
+	return "eventcreate" + renderer.ext
 }
 
 // IndexFile returns the standard name of a package index file
@@ -75,7 +87,7 @@ func (renderer *Renderer) Service(w io.Writer, info *collect.ServiceInfo) error 
 	})
 }
 
-// Typedefs renders type definitions for the given list of models.
+// Models renders type definitions for the given list of models.
 func (renderer *Renderer) Models(w io.Writer, imports *collect.ImportMap, models []*collect.ModelInfo) error {
 	if !renderer.options.UseInterfaces {
 		// Sort class aliases after the class they alias.
@@ -114,7 +126,7 @@ func (renderer *Renderer) Models(w io.Writer, imports *collect.ImportMap, models
 		}
 	}
 
-	return renderer.typedefs.Execute(w, &struct {
+	return renderer.models.Execute(w, &struct {
 		module
 		Models []*collect.ModelInfo
 	}{
@@ -124,6 +136,36 @@ func (renderer *Renderer) Models(w io.Writer, imports *collect.ImportMap, models
 			Imports:                 imports,
 		},
 		models,
+	})
+}
+
+// EventData renders the given event map to w as an event data table.
+func (renderer *Renderer) EventData(w io.Writer, events *collect.EventMap) error {
+	return tmplEventData.Execute(w, &struct {
+		module
+		Events *collect.EventMap
+	}{
+		module{
+			Renderer:                renderer,
+			GenerateBindingsOptions: renderer.options,
+			Imports:                 events.Imports,
+		},
+		events,
+	})
+}
+
+// EventCreate renders the given event map to w as event data creation code.
+func (renderer *Renderer) EventCreate(w io.Writer, events *collect.EventMap) error {
+	return tmplEventCreate.Execute(w, &struct {
+		module
+		Events *collect.EventMap
+	}{
+		module{
+			Renderer:                renderer,
+			GenerateBindingsOptions: renderer.options,
+			Imports:                 events.Imports,
+		},
+		events,
 	})
 }
 
