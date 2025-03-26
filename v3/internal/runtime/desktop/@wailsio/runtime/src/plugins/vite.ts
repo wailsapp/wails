@@ -1,3 +1,5 @@
+import type {Plugin} from 'vite';
+
 /*
  _	   __	  _ __
 | |	 / /___ _(_) /____
@@ -18,10 +20,10 @@ const TYPED_EVENTS_MODULE = "\0wailsio_runtime_events_typed";
  *
  * @param {string} [bindingsRoot] - The root import path for generated bindings
  */
-export default function WailsTypedEvents(bindingsRoot) {
-    let bindingsId = null,
-        runtimeId = null,
-        eventsId = null;
+export default function WailsTypedEvents(bindingsRoot: string): Plugin {
+    let bindingsId: string,
+        runtimeId: string,
+        eventsId: string;
 
     return {
         name: "wails-typed-events",
@@ -58,6 +60,7 @@ export default function WailsTypedEvents(bindingsRoot) {
                 ) {
                     return TYPED_EVENTS_MODULE;
                 }
+                return undefined;
             }
         },
         load(id) {
@@ -67,6 +70,7 @@ export default function WailsTypedEvents(bindingsRoot) {
                     + `export * from ${JSON.stringify(eventsId)};`
                 );
             }
+            return undefined;
         }
     }
 }
