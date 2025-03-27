@@ -19,7 +19,7 @@ tasks:
       - go build {{.BUILD_FLAGS}} -o {{.OUTPUT}}
     vars:
       BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-buildvcs=false -gcflags=all="-l"{{end}}'
-      DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
+      DEFAULT_OUTPUT: '{{.BIN_DIR}}/build/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
     env:
       GOOS: darwin
@@ -36,14 +36,14 @@ tasks:
       - task: build
         vars:
           ARCH: amd64
-          OUTPUT: "{{.BIN_DIR}}/{{.APP_NAME}}-amd64"
+          OUTPUT: "{{.BIN_DIR}}/build/{{.APP_NAME}}-amd64"
       - task: build
         vars:
           ARCH: arm64
-          OUTPUT: "{{.BIN_DIR}}/{{.APP_NAME}}-arm64"
+          OUTPUT: "{{.BIN_DIR}}/build/{{.APP_NAME}}-arm64"
     cmds:
-      - lipo -create -output "{{.BIN_DIR}}/{{.APP_NAME}}" "{{.BIN_DIR}}/{{.APP_NAME}}-amd64" "{{.BIN_DIR}}/{{.APP_NAME}}-arm64"
-      - rm "{{.BIN_DIR}}/{{.APP_NAME}}-amd64" "{{.BIN_DIR}}/{{.APP_NAME}}-arm64"
+      - lipo -create -output "{{.BIN_DIR}}/build/{{.APP_NAME}}" "{{.BIN_DIR}}/build/{{.APP_NAME}}-amd64" "{{.BIN_DIR}}/build/{{.APP_NAME}}-arm64"
+      - rm "{{.BIN_DIR}}/build/{{.APP_NAME}}-amd64" "{{.BIN_DIR}}/build/{{.APP_NAME}}-arm64"
 
   package:
     summary: Packages a production build of the application into a `.app` bundle
@@ -65,11 +65,17 @@ tasks:
   create:app:bundle:
     summary: Creates an `.app` bundle
     cmds:
-      - mkdir -p {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/{MacOS,Resources}
-      - cp build/darwin/icons.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources
-      - cp {{.BIN_DIR}}/{{.APP_NAME}} {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS
-      - cp build/darwin/Info.plist {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents
+      - mkdir -p {{.BIN_DIR}}/release/{{.APP_NAME}}.app/Contents/{MacOS,Resources}
+      - cp build/darwin/icons.icns {{.BIN_DIR}}/release/{{.APP_NAME}}.app/Contents/Resources
+      - cp {{.BIN_DIR}}/build/{{.APP_NAME}} {{.BIN_DIR}}/release/{{.APP_NAME}}.app/Contents/MacOS
+      - cp build/darwin/Info.plist {{.BIN_DIR}}/release/{{.APP_NAME}}.app/Contents
+      - codesign --force --deep --sign - {{.BIN_DIR}}/release/{{.APP_NAME}}.app
 
   run:
     cmds:
-      - '{{.BIN_DIR}}/{{.APP_NAME}}'
+      - mkdir -p {{.BIN_DIR}}/dev/{{.APP_NAME}}.app/Contents/{MacOS,Resources}
+      - cp build/darwin/icons.icns {{.BIN_DIR}}/dev/{{.APP_NAME}}.app/Contents/Resources
+      - cp {{.BIN_DIR}}/build/{{.APP_NAME}} {{.BIN_DIR}}/dev/{{.APP_NAME}}.app/Contents/MacOS
+      - cp build/darwin/Info.dev.plist {{.BIN_DIR}}/dev/{{.APP_NAME}}.app/Contents/Info.plist
+      - codesign --force --deep --sign - {{.BIN_DIR}}/dev/{{.APP_NAME}}.app
+      - '{{.BIN_DIR}}/dev/{{.APP_NAME}}.app/Contents/MacOS/{{.APP_NAME}}'
