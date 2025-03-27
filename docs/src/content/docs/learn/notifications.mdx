@@ -54,7 +54,7 @@ On Windows and Linux this always returns `true`.
 Send a basic notification with a unique id, title, optional subtitle (macOS and Linux), and body text to users:
 
 ```go
-notifier.SendNotification(notifications.NotificaionOptions{
+notifier.SendNotification(notifications.NotificationOptions{
     ID: "unique-id",
     Title: "New Calendar Invite",
     Subtitle: "From: Jane Doe", // Optional
@@ -137,8 +137,8 @@ notifier.SendNotification(notifications.NotificaionOptions{
     Subtitle: "From: Jane Doe", // Optional
     Body: "Tap to view the event"
     Data: map[string]interface{}{
-        sender: "jane.doe@example.com",
-        timestamp: "2025-03-10T15:30:00Z",
+        "sender": "jane.doe@example.com",
+        "timestamp": "2025-03-10T15:30:00Z",
     }
 })
 
