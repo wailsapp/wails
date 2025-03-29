@@ -416,22 +416,27 @@ func (a *App) emitEvent(event *CustomEvent) bool {
 	return event.IsCancelled()
 }
 
-// OnEvent will listen for events
+// OnEvent will listen for custom events
 func (a *App) OnEvent(name string, callback func(event *CustomEvent)) func() {
 	return a.customEventProcessor.On(name, callback)
 }
 
-// OffEvent will remove an event listener
+// OffEvent will remove a custom event listener
 func (a *App) OffEvent(name string) {
 	a.customEventProcessor.Off(name)
 }
 
-// OnMultipleEvent will listen for events a set number of times before unsubscribing.
+// OnMultipleEvent will listen for custom events a set number of times before unsubscribing.
 func (a *App) OnMultipleEvent(name string, callback func(event *CustomEvent), counter int) {
 	a.customEventProcessor.OnMultiple(name, callback, counter)
 }
 
-// ResetEvents will remove all event listeners and hooks
+// RegisterHook registers an event hook for custom events.
+func (a *App) RegisterHook(name string, callback func(event *CustomEvent)) func() {
+	return a.customEventProcessor.RegisterHook(name, callback)
+}
+
+// ResetEvents will remove all custom event listeners and hooks
 func (a *App) ResetEvents() {
 	a.customEventProcessor.OffAll()
 }
