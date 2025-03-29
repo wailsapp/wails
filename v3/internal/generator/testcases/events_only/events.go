@@ -20,3 +20,7 @@ func init() {
 	application.RegisterEvent[int]("collision")
 	application.RegisterEvent[bool](fmt.Sprintf("events_only:%s%d", "dynamic", 3))
 }
+
+func init() {
+	application.RegisterEvent[application.Void]("events_only:nodata")
+}
