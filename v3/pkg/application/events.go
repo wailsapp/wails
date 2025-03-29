@@ -139,7 +139,7 @@ func (e *EventProcessor) Emit(thisEvent *CustomEvent) error {
 	}
 
 	// Validate data type; in case of mismatches cancel and report error.
-	if err := validateEventData(thisEvent); err != nil {
+	if err := validateCustomEvent(thisEvent); err != nil {
 		thisEvent.Cancel()
 		return err
 	}
@@ -280,8 +280,8 @@ type Void interface {
 	sentinel()
 }
 
-var voidType = reflect.TypeFor[Void]()
 var registeredEvents sync.Map
+var voidType = reflect.TypeFor[Void]()
 
 // RegisterEvent registers a custom event name and associated data type.
 // Events may be registered at most once.
@@ -303,12 +303,13 @@ func RegisterEvent[Data any](name string) {
 	}
 
 	registeredEvents.Store(name, reflect.TypeFor[Data]())
+	eventRegistered(name)
 }
 
-func validateEventData(event *CustomEvent) error {
+func validateCustomEvent(event *CustomEvent) error {
 	r, ok := registeredEvents.Load(event.Name)
 	if !ok {
-		// Unregistered events are always acceptable.
+		warnAboutUnregisteredEvent(event.Name)
 		return nil
 	}
 
@@ -337,17 +338,28 @@ func validateEventData(event *CustomEvent) error {
 }
 
 func decodeEventData(name string, data []byte) (result any, err error) {
-	typ, ok := registeredEvents.Load(name)
+	r, ok := registeredEvents.Load(name)
 	if !ok {
 		// Unregistered events unmarshal to any.
 		err = json.Unmarshal(data, &result)
 		return
 	}
 
-	value := reflect.New(typ.(reflect.Type))
-	err = json.Unmarshal(data, value.Interface())
-	if err != nil {
-		result = value.Elem().Interface()
+	typ := r.(reflect.Type)
+
+	if typ == voidType {
+		// When typ is voidType, perform a null check
+		err = json.Unmarshal(data, &result)
+		if err == nil && result != nil {
+			err = fmt.Errorf("non-null data for event '%s' does not match registered data type %s", name, typ)
+		}
+	} else {
+		value := reflect.New(typ.(reflect.Type))
+		err = json.Unmarshal(data, value.Interface())
+		if err == nil {
+			result = value.Elem().Interface()
+		}
 	}
+
 	return
 }
