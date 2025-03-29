@@ -194,15 +194,27 @@ func (w *WebviewWindow) SetMenu(menu *Menu) {
 // It returns a boolean indicating whether the event was cancelled by a hook.
 // The [CustomEvent.Sender] field will be set to the window name.
 //
-// If the given event name is registered, EmitEvent validates the data parameter
-// against the expected data type. In case of a mismatch, EmitEvent reports an error
-// to the registered error handler for the application and cancels the event.
-func (w *WebviewWindow) EmitEvent(name string, data any) bool {
-	return globalApplication.emitEvent(&CustomEvent{
+// If no data argument is provided, EmitEvent emits an event with nil data.
+// When there is exactly one data argument, it will be used as the custom event's data field.
+// When more than one argument is provided, the event's data field will be set to the argument slice.
+//
+// If the given event name is registered with [RegisterEvent],
+// EmitEvent validates all data arguments against the expected data type.
+// In case of a mismatch, the offending event is cancelled
+// and an error is reported to the error handler registered with the application.
+func (w *WebviewWindow) EmitEvent(name string, data ...any) bool {
+	event := &CustomEvent{
 		Name:   name,
-		Data:   data,
 		Sender: w.Name(),
-	})
+	}
+
+	if len(data) == 1 {
+		event.Data = data[0]
+	} else if len(data) > 1 {
+		event.Data = data
+	}
+
+	return globalApplication.emitEvent(event)
 }
 
 var windowID uint
