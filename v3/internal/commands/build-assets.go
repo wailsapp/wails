@@ -4,14 +4,15 @@ import (
 	"embed"
 	_ "embed"
 	"fmt"
-	"github.com/leaanthony/gosod"
-	"gopkg.in/yaml.v3"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/leaanthony/gosod"
+	"gopkg.in/yaml.v3"
 )
 
 //go:embed build_assets
@@ -121,6 +122,7 @@ type FileAssociation struct {
 	Description string `yaml:"description"`
 	IconName    string `yaml:"iconName"`
 	Role        string `yaml:"role"`
+	MimeType    string `yaml:"mimeType"`
 }
 
 type UpdateConfig struct {
