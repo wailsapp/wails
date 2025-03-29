@@ -14,8 +14,8 @@ import (
 // Renderer holds the template set for a given configuration.
 // It provides methods for rendering various output modules.
 type Renderer struct {
-	options   *flags.GenerateBindingsOptions
 	collector *collect.Collector
+	options   *flags.GenerateBindingsOptions
 
 	ext string
 
@@ -25,15 +25,15 @@ type Renderer struct {
 
 // NewRenderer initialises a code renderer
 // for the given configuration and data collector.
-func NewRenderer(options *flags.GenerateBindingsOptions, collector *collect.Collector) *Renderer {
+func NewRenderer(collector *collect.Collector, options *flags.GenerateBindingsOptions) *Renderer {
 	ext := ".js"
 	if options.TS {
 		ext = ".ts"
 	}
 
 	return &Renderer{
-		options:   options,
 		collector: collector,
+		options:   options,
 
 		ext: ext,
 

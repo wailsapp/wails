@@ -92,7 +92,7 @@ interface CancellablePromiseState {
 // Private field names.
 const barrierSym = Symbol("barrier");
 const cancelImplSym = Symbol("cancelImpl");
-const species = Symbol.species ?? Symbol("speciesPolyfill");
+const species: typeof Symbol.species = Symbol.species ?? Symbol("speciesPolyfill");
 
 /**
  * A promise with an attached method for cancelling long-running operations (see {@link CancellablePromise#cancel}).

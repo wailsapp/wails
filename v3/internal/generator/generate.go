@@ -145,7 +145,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 
 	// Initialise subcomponents.
 	generator.collector = collect.NewCollector(pkgs, registerEvent, systemPaths, generator.options, &generator.scheduler, generator.logger)
-	generator.renderer = render.NewRenderer(generator.options, generator.collector)
+	generator.renderer = render.NewRenderer(generator.collector, generator.options)
 
 	// Check for analyser errors.
 	if err != nil {

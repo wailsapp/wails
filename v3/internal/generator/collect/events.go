@@ -271,7 +271,7 @@ func (em *EventMap) collectEventsInPackage(pkg *PackageInfo, defs *sync.Map) {
 				event.Name,
 			)
 			em.collector.logger.Warningf("generic wrappers for calls to `application.RegisterEvent` are not analysable by the binding generator: it is recommended to call `application.RegisterEvent` with concrete types only")
-		} else if types.IsInterface(event.Data) && !types.Identical(event.Data.Underlying(), typeAny) {
+		} else if types.IsInterface(event.Data) && !types.Identical(event.Data.Underlying(), typeAny) && !em.collector.IsVoidAlias(event.Data) {
 			em.collector.logger.Warningf(
 				"%v: data type %s for event '%s' is a non-empty interface: emitting events from the frontend with data other than `null` is not supported by encoding/json and will likely result in runtime errors",
 				event.Pos,

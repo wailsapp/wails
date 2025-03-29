@@ -274,6 +274,13 @@ func (e *EventProcessor) dispatchEventToListeners(event *CustomEvent) {
 	}
 }
 
+// Void will be translated by the binding generator to the TypeScript type 'void'.
+// It can be used as an event data type to register events that must not have any associated data.
+type Void interface {
+	sentinel()
+}
+
+var voidType = reflect.TypeFor[Void]()
 var registeredEvents sync.Map
 
 // RegisterEvent registers a custom event name and associated data type.
@@ -307,7 +314,11 @@ func validateEventData(event *CustomEvent) error {
 
 	typ := r.(reflect.Type)
 
-	if typ.Kind() == reflect.Interface {
+	if typ == voidType {
+		if event.Data == nil {
+			return nil
+		}
+	} else if typ.Kind() == reflect.Interface {
 		if reflect.TypeOf(event.Data).Implements(typ) {
 			return nil
 		}

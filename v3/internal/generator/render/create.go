@@ -30,6 +30,10 @@ func (m *module) NeedsCreate(typ types.Type) bool {
 func (m *module) needsCreateImpl(typ types.Type, visited *typeutil.Map) bool {
 	switch t := typ.(type) {
 	case *types.Alias:
+		if m.collector.IsVoidAlias(t.Obj()) {
+			return false
+		}
+
 		return m.needsCreateImpl(types.Unalias(typ), visited)
 
 	case *types.Named:
@@ -44,6 +48,10 @@ func (m *module) needsCreateImpl(typ types.Type, visited *typeutil.Map) bool {
 		if t.Obj().Pkg() == nil {
 			// Builtin named type: render underlying type.
 			return m.needsCreateImpl(t.Underlying(), visited)
+		}
+
+		if m.collector.IsVoidAlias(t.Obj()) {
+			return false
 		}
 
 		if collect.IsAny(typ) || collect.IsStringAlias(typ) {
@@ -104,6 +112,10 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 
 	switch t := typ.(type) {
 	case *types.Alias:
+		if m.collector.IsVoidAlias(t.Obj()) {
+			return "$Create.Any"
+		}
+
 		return m.JSCreateWithParams(types.Unalias(typ), params)
 
 	case *types.Array, *types.Pointer:
@@ -133,6 +145,10 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 		if t.Obj().Pkg() == nil {
 			// Builtin named type: render underlying type.
 			return m.JSCreateWithParams(t.Underlying(), params)
+		}
+
+		if m.collector.IsVoidAlias(t.Obj()) {
+			return "$Create.Any"
 		}
 
 		if !m.NeedsCreate(typ) {

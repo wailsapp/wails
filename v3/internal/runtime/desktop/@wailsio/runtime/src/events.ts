@@ -44,7 +44,7 @@ type SystemEventName = {
  * The data type associated to a given event.
  */
 export type WailsEventData<E extends WailsEventName = WailsEventName> =
-    E extends keyof CustomEvents ? CustomEvents[E] : (E extends SystemEventName ? null : any);
+    E extends keyof CustomEvents ? CustomEvents[E] : (E extends SystemEventName ? void : any);
 
 /**
  * The type of handlers for a given event.
@@ -72,7 +72,7 @@ export class WailsEvent<E extends WailsEventName = WailsEventName> {
     sender?: string;
 
     constructor(name: E, data: WailsEventData<E>);
-    constructor(name: E extends keyof CustomEvents ? never : E, data?: WailsEventData<E>)
+    constructor(name: WailsEventData<E> extends null | void ? E : never)
     constructor(name: E, data?: any) {
         this.name = name;
         this.data = data ?? null;

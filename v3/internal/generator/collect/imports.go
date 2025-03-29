@@ -147,6 +147,11 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited *typeutil.Map) {
 				return
 			}
 
+			// Special case: application.Void will render as TS void hence no dependencies and no model
+			if collector.IsVoidAlias(obj) {
+				return
+			}
+
 			if obj.Pkg().Path() == imports.Self {
 				imports.ImportModels = true
 			}
