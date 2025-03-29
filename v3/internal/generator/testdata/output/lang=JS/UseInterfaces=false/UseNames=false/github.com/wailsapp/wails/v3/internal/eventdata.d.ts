@@ -20,6 +20,7 @@ declare module "/wails/runtime.js" {
         interface CustomEvents {
             "events_only:class": events_only$0.SomeClass;
             "events_only:map": { [_: string]: number[] };
+            "events_only:nodata": void;
             "events_only:other": more$0.StringPtr[];
             "events_only:string": string;
             "interface": json$0.Marshaler;
