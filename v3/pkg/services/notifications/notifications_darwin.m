@@ -1,7 +1,26 @@
 #import "notifications_darwin.h"
 #include <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 #import <UserNotifications/UserNotifications.h>
+#endif
+
+bool isNotificationAvailable(void) {
+    if (@available(macOS 11.0, *)) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+bool checkBundleIdentifier(void) {
+    NSBundle *main = [NSBundle mainBundle];
+    if (main.bundleIdentifier == nil) {
+        return NO;
+    }
+    return YES;
+}
 
 extern void captureResult(int channelID, bool success, const char* error);
 extern void didReceiveNotificationResponse(const char *jsonPayload, const char* error);
@@ -14,9 +33,15 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center
        willPresentNotification:(UNNotification *)notification
          withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
-    UNNotificationPresentationOptions options = UNNotificationPresentationOptionList | 
-                                                UNNotificationPresentationOptionBanner | 
-                                                UNNotificationPresentationOptionSound;
+    UNNotificationPresentationOptions options = 0;
+    
+    if (@available(macOS 11.0, *)) {
+        // These options are only available in macOS 11.0+
+        options = UNNotificationPresentationOptionList | 
+                  UNNotificationPresentationOptionBanner | 
+                  UNNotificationPresentationOptionSound;
+    }
+    
     completionHandler(options);
 }
 
@@ -80,14 +105,6 @@ static BOOL ensureDelegateInitialized(void) {
     }
 
     return success;
-}
-
-bool checkBundleIdentifier(void) {
-    NSBundle *main = [NSBundle mainBundle];
-    if (main.bundleIdentifier == nil) {
-        return false;
-    }
-    return true;
 }
 
 void requestNotificationAuthorization(int channelID) {

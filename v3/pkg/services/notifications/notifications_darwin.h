@@ -6,6 +6,7 @@
 #import <Foundation/Foundation.h>
 
 bool checkBundleIdentifier(void);
+bool isNotificationAvailable(void);
 void requestNotificationAuthorization(int channelID);
 void checkNotificationAuthorization(int channelID);
 void sendNotification(int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json);

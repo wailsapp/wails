@@ -327,7 +327,7 @@ func (wn *windowsNotifier) saveIconToDir() error {
 		return fmt.Errorf("failed to retrieve application icon: %w", err)
 	}
 
-	return saveHIconAsPNG(icon, wn.iconPath)
+	return w32.SaveHIconAsPNG(icon, wn.iconPath)
 }
 
 func (wn *windowsNotifier) saveCategoriesToRegistry() error {

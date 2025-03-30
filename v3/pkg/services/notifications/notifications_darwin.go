@@ -3,8 +3,13 @@
 package notifications
 
 /*
-#cgo CFLAGS: -mmacosx-version-min=11.0 -x objective-c
-#cgo LDFLAGS: -framework Cocoa -mmacosx-version-min=11 -framework UserNotifications
+#cgo CFLAGS:-x objective-c
+#cgo LDFLAGS: -framework Foundation -framework Cocoa
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+#cgo LDFLAGS: -framework UserNotifications
+#endif
+
 #import "./notifications_darwin.h"
 */
 import "C"
@@ -30,21 +35,18 @@ type notificationChannel struct {
 	Error   error
 }
 
+type ChannelHandler interface {
+	GetChannel(id int) (chan notificationChannel, bool)
+}
+
+var _ ChannelHandler = (*darwinNotifier)(nil)
+
 const AppleDefaultActionIdentifier = "com.apple.UNNotificationDefaultActionIdentifier"
 
 // Creates a new Notifications Service.
 // Your app must be packaged and signed for this feature to work.
 func New() *Service {
 	notificationServiceOnce.Do(func() {
-		if !CheckBundleIdentifier() {
-			panic("\nError: Cannot use the notification API in development mode on macOS.\n" +
-				"Notifications require the app to be properly bundled with a bundle identifier and signed.\n" +
-				"To use the notification API on macOS:\n" +
-				"  1. Build and package your app using 'wails3 package'\n" +
-				"  2. Sign the packaged .app\n" +
-				"  3. Run the signed .app bundle")
-		}
-
 		impl := &darwinNotifier{
 			channels:      make(map[int]chan notificationChannel),
 			nextChannelID: 0,
@@ -59,6 +61,12 @@ func New() *Service {
 }
 
 func (dn *darwinNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {
+	if !isNotificationAvailable() {
+		return fmt.Errorf("notifications are not available on this system")
+	}
+	if !checkBundleIdentifier() {
+		return fmt.Errorf("notifications require a valid bundle identifier")
+	}
 	return nil
 }
 
@@ -66,7 +74,12 @@ func (dn *darwinNotifier) Shutdown() error {
 	return nil
 }
 
-func CheckBundleIdentifier() bool {
+// isNotificationAvailable checks if notifications are available on the system.
+func isNotificationAvailable() bool {
+	return bool(C.isNotificationAvailable())
+}
+
+func checkBundleIdentifier() bool {
 	return bool(C.checkBundleIdentifier())
 }
 
@@ -310,12 +323,12 @@ func captureResult(channelID C.int, success C.bool, errorMsg *C.char) {
 		return
 	}
 
-	dn, ok := ns.impl.(*darwinNotifier)
+	handler, ok := ns.impl.(ChannelHandler)
 	if !ok {
 		return
 	}
 
-	resultCh, exists := dn.getChannel(int(channelID))
+	resultCh, exists := handler.GetChannel(int(channelID))
 	if !exists {
 		return
 	}
@@ -390,7 +403,7 @@ func (dn *darwinNotifier) registerChannel() (int, chan notificationChannel) {
 	return id, resultCh
 }
 
-func (dn *darwinNotifier) getChannel(id int) (chan notificationChannel, bool) {
+func (dn *darwinNotifier) GetChannel(id int) (chan notificationChannel, bool) {
 	dn.channelsLock.Lock()
 	defer dn.channelsLock.Unlock()
 
