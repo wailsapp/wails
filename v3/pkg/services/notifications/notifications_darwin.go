@@ -39,8 +39,6 @@ type ChannelHandler interface {
 	GetChannel(id int) (chan notificationChannel, bool)
 }
 
-var _ ChannelHandler = (*darwinNotifier)(nil)
-
 const AppleDefaultActionIdentifier = "com.apple.UNNotificationDefaultActionIdentifier"
 
 // Creates a new Notifications Service.
