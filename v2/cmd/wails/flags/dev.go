@@ -128,6 +128,7 @@ func (d *Dev) GenerateBuildOptions() *build.Options {
 		ForceBuild:      d.ForceBuild,
 		IgnoreFrontend:  d.SkipFrontend,
 		SkipBindings:    d.SkipBindings,
+		SkipModTidy:     d.SkipModTidy,
 		Verbosity:       d.Verbosity,
 		WailsJSDir:      d.WailsJSDir,
 		RaceDetector:    d.RaceDetector,
