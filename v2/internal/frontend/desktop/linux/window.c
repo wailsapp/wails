@@ -68,6 +68,17 @@ static bool isNULLRectangle(GdkRectangle input)
     return input.x == -1 && input.y == -1 && input.width == -1 && input.height == -1;
 }
 
+static gboolean onWayland()
+{
+    const char *gdkBackend = getenv("XDG_SESSION_TYPE");
+    if(gdkBackend != NULL && strcmp(gdkBackend, "wayland") == 0)
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 static GdkMonitor *getCurrentMonitor(GtkWindow *window)
 {
     // Get the monitor that the window is currently on
@@ -238,11 +249,28 @@ void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_wid
     {
         return;
     }
+
     int flags = GDK_HINT_MAX_SIZE | GDK_HINT_MIN_SIZE;
+
     size.max_height = (max_height == 0 ? monitorSize.height : max_height);
     size.max_width = (max_width == 0 ? monitorSize.width : max_width);
     size.min_height = min_height;
     size.min_width = min_width;
+
+    // On Wayland window manager get the decorators and calculate the differences from the window size.
+    if(onWayland()) 
+    {
+        int windowWidth, windowHeight;
+        gtk_window_get_size(window, &windowWidth, &windowHeight);
+
+        GtkAllocation windowAllocation;
+        gtk_widget_get_allocation(GTK_WIDGET(window), &windowAllocation);
+
+        // Add the decorator difference to the window so fullscreen and maximise can fill the window.
+        size.max_height = (windowAllocation.height-windowHeight)+size.max_height;
+        size.max_width = (windowAllocation.width-windowWidth)+size.max_width;
+    }
+
     gtk_window_set_geometry_hints(window, NULL, &size, flags);
 }
 
