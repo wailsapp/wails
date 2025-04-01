@@ -46,7 +46,12 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	ctx = context.WithValue(ctx, "debug", true)
 	ctx = context.WithValue(ctx, "devtoolsEnabled", true)
 
-	// Set up logger
+	// Set up logger if the appoptions.LogLevel is an invalid value, set it to the default log level
+	appoptions.LogLevel, err = pkglogger.StringToLogLevel(appoptions.LogLevel.String())
+	if err != nil {
+		return nil, err
+	}
+
 	myLogger := logger.New(appoptions.Logger)
 	myLogger.SetLogLevel(appoptions.LogLevel)
 
@@ -91,15 +96,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		if frontendDevServerURLFlag != nil {
 			frontendDevServerURL = *frontendDevServerURLFlag
 		}
-		// Only override LogLevel if the flag was explicitly set
-		if loglevelFlag != nil && devFlags.Lookup("loglevel").Value.String() != appoptions.LogLevel.String() {
-			loggerLevel, err := pkglogger.StringToLogLevel(*loglevelFlag)
-			if err != nil {
-				return nil, err
-			}
-			if loggerLevel != appoptions.LogLevel {
-				myLogger.SetLogLevel(loggerLevel)
-			}
+		if loglevelFlag != nil {
+			loglevel = *loglevelFlag
 		}
 	}
 
@@ -174,6 +172,17 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	if devServer != "" {
 		ctx = context.WithValue(ctx, "devserver", devServer)
+	}
+
+	if loglevel != "" {
+		level, err := pkglogger.StringToLogLevel(loglevel)
+		if err != nil {
+			return nil, err
+		}
+		// Only set the log level if it's different from the appoptions.LogLevel
+		if level != appoptions.LogLevel {
+			myLogger.SetLogLevel(level)
+		}
 	}
 
 	// Attach logger to context
