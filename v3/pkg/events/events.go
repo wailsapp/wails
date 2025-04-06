@@ -1,7 +1,7 @@
 package events
 
 type ApplicationEventType uint
-type WindowEventType      uint
+type WindowEventType uint
 
 var Common = newCommonEvents()
 
@@ -673,4 +673,3 @@ var eventToJS = map[uint]string{
 	1230: "windows:WindowMaximise",
 	1231: "windows:WindowUnMaximise",
 }
-

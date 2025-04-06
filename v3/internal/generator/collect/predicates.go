@@ -476,3 +476,123 @@ func IsAny(typ types.Type) bool {
 
 	return true
 }
+
+// IsParametric returns true if the given type
+// contains unresolved type parameters.
+func IsParametric(typ types.Type) bool {
+	for { // Avoid recursion where possible
+		switch t := typ.(type) {
+		case *types.Alias, *types.Named:
+			tp := t.(interface{ TypeParams() *types.TypeParamList }).TypeParams()
+			ta := t.(interface{ TypeArgs() *types.TypeList }).TypeArgs()
+
+			if tp.Len() == 0 {
+				// Not a generic alias/named type.
+				return false
+			}
+
+			if ta.Len() == 0 {
+				// Uninstantiated generic.
+				return true
+			}
+
+			for i := range ta.Len() - 1 {
+				if IsParametric(ta.At(i)) {
+					return true
+				}
+			}
+
+			typ = ta.At(ta.Len() - 1)
+
+		case *types.Basic:
+			return false
+
+		case *types.Array, *types.Pointer, *types.Slice, *types.Chan:
+			typ = typ.(interface{ Elem() types.Type }).Elem()
+
+		case *types.Map:
+			if IsParametric(t.Key()) {
+				return true
+			}
+
+			typ = t.Elem()
+
+		case *types.Signature:
+			if IsParametric(t.Params()) {
+				return true
+			}
+
+			typ = t.Results()
+
+		case *types.Struct:
+			if t.NumFields() == 0 {
+				// No more subtypes to check.
+				return false
+			}
+
+			for i := range t.NumFields() - 1 {
+				if IsParametric(t.Field(i).Type()) {
+					return true
+				}
+			}
+
+			typ = t.Field(t.NumFields() - 1).Type()
+
+		case *types.Interface:
+			for m := range t.ExplicitMethods() {
+				if IsParametric(m.Type()) {
+					return true
+				}
+			}
+
+			if t.NumEmbeddeds() == 0 {
+				// No more subtypes to check.
+				return false
+			}
+
+			for i := range t.NumEmbeddeds() - 1 {
+				if IsParametric(t.EmbeddedType(i)) {
+					return true
+				}
+			}
+
+			typ = t.EmbeddedType(t.NumEmbeddeds() - 1)
+
+		case *types.Tuple:
+			if t.Len() == 0 {
+				// No more subtypes to check.
+				return false
+			}
+
+			for i := range t.Len() - 1 {
+				if IsParametric(t.At(i).Type()) {
+					return true
+				}
+			}
+
+			typ = t.At(t.Len() - 1).Type()
+
+		case *types.TypeParam:
+			return true
+
+		case *types.Union:
+			if t.Len() == 0 {
+				// No more subtypes to check.
+				return false
+			}
+
+			for i := range t.Len() - 1 {
+				if IsParametric(t.Term(i).Type()) {
+					return true
+				}
+			}
+
+			typ = t.Term(t.Len() - 1).Type()
+
+		default:
+			// Unknown new type.
+			// This is wrong but [ImportMap.AddType] will take care of reporting it eventually.
+			return false
+		}
+	}
+}

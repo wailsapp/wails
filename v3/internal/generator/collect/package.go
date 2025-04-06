@@ -16,7 +16,7 @@ import (
 
 // PackageInfo records information about a package.
 //
-// Read accesses to fields Path, Name, Types, TypesInfo, Fset
+// Read accesses to fields Path, Name, IsOrImportsApp, Types, TypesInfo, Fset,
 // are safe at any time without any synchronisation.
 //
 // Read accesses to all other fields are only safe
@@ -31,6 +31,9 @@ type PackageInfo struct {
 
 	// Name holds the import name of the described package.
 	Name string
+
+	// IsOrImportsApp is true if this package is, or depends upon, the Wails application package.
+	IsOrImportsApp bool
 
 	// Types and TypesInfo hold type information for this package.
 	Types     *types.Package
@@ -73,9 +76,13 @@ type PackageInfo struct {
 }
 
 func newPackageInfo(pkg *packages.Package, collector *Collector) *PackageInfo {
+	_, importsApp := pkg.Imports[collector.systemPaths.ApplicationPackage]
+
 	return &PackageInfo{
 		Path: pkg.PkgPath,
 		Name: pkg.Name,
+
+		IsOrImportsApp: importsApp || pkg.PkgPath == collector.systemPaths.ApplicationPackage,
 
 		Types:     pkg.Types,
 		TypesInfo: pkg.TypesInfo,
@@ -87,7 +94,7 @@ func newPackageInfo(pkg *packages.Package, collector *Collector) *PackageInfo {
 	}
 }
 
-// Package retrieves the the unique [PackageInfo] instance, if any,
+// Package retrieves the unique [PackageInfo] instance, if any,
 // associated to the given package object within a Collector.
 //
 // Package is safe for concurrent use.

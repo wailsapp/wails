@@ -380,35 +380,63 @@ func (a *App) RegisterService(service Service) {
 	a.options.Services = append(a.options.Services, service)
 }
 
-// EmitEvent will emit an event
-func (a *App) EmitEvent(name string, data ...any) {
-	a.customEventProcessor.Emit(&CustomEvent{
-		Name: name,
-		Data: data,
-	})
+// EmitEvent emits a custom event with the specified name and associated data.
+// It returns a boolean indicating whether the event was cancelled by a hook.
+//
+// If no data argument is provided, EmitEvent emits an event with nil data.
+// When there is exactly one data argument, it will be used as the custom event's data field.
+// When more than one argument is provided, the event's data field will be set to the argument slice.
+//
+// If the given event name is registered with [RegisterEvent],
+// EmitEvent validates all data arguments against the expected data type.
+// In case of a mismatch, the offending event is cancelled
+// and an error is reported to the error handler registered with the application.
+func (a *App) EmitEvent(name string, data ...any) bool {
+	event := &CustomEvent{Name: name}
+
+	if len(data) == 1 {
+		event.Data = data[0]
+	} else if len(data) > 1 {
+		event.Data = data
+	}
+
+	return a.emitEvent(event)
 }
 
-// EmitEvent will emit an event
-func (a *App) emitEvent(event *CustomEvent) {
-	a.customEventProcessor.Emit(event)
+// emitEvent emits a custom event.
+// It returns a boolean indicating whether the event was cancelled by a hook.
+//
+// If the given event name is registered, emitEvent validates the data parameter
+// against the expected data type. In case of a mismatch, emitEvent reports an error
+// to the registered error handler for the application and cancels the event.
+func (a *App) emitEvent(event *CustomEvent) bool {
+	if err := a.customEventProcessor.Emit(event); err != nil {
+		a.handleError(err)
+	}
+	return event.IsCancelled()
 }
 
-// OnEvent will listen for events
+// OnEvent will listen for custom events
 func (a *App) OnEvent(name string, callback func(event *CustomEvent)) func() {
 	return a.customEventProcessor.On(name, callback)
 }
 
-// OffEvent will remove an event listener
+// OffEvent will remove a custom event listener
 func (a *App) OffEvent(name string) {
 	a.customEventProcessor.Off(name)
 }
 
-// OnMultipleEvent will listen for events a set number of times before unsubscribing.
+// OnMultipleEvent will listen for custom events a set number of times before unsubscribing.
 func (a *App) OnMultipleEvent(name string, callback func(event *CustomEvent), counter int) {
 	a.customEventProcessor.OnMultiple(name, callback, counter)
 }
 
-// ResetEvents will remove all event listeners and hooks
+// RegisterHook registers an event hook for custom events.
+func (a *App) RegisterHook(name string, callback func(event *CustomEvent)) func() {
+	return a.customEventProcessor.RegisterHook(name, callback)
+}
+
+// ResetEvents will remove all custom event listeners and hooks
 func (a *App) ResetEvents() {
 	a.customEventProcessor.OffAll()
 }
@@ -588,7 +616,7 @@ func (a *App) Run() error {
 	a.starting = true
 	a.runLock.Unlock()
 
-	// Ensure application context is canceled in case of failures.
+	// Ensure application context is cancelled in case of failures.
 	defer a.cancel()
 
 	// Call post-create hooks
@@ -601,7 +629,7 @@ func (a *App) Run() error {
 
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
-	// Ensure application context is canceled before service shutdown (duplicate calls don't hurt).
+	// Ensure application context is cancelled before service shutdown (duplicate calls don't hurt).
 	defer a.cancel()
 
 	// Startup services before dispatching any events.
@@ -719,7 +747,7 @@ func (a *App) shutdownServices() {
 	a.serviceShutdownLock.Lock()
 	defer a.serviceShutdownLock.Unlock()
 
-	// Ensure app context is canceled first (duplicate calls don't hurt).
+	// Ensure app context is cancelled first (duplicate calls don't hurt).
 	a.cancel()
 
 	for len(a.options.Services) > 0 {

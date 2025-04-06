@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -19,20 +20,33 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 	switch method {
 	case EventsEmit:
 		var event CustomEvent
-		err := params.ToStruct(&event)
+		var options struct {
+			Name *string         `json:"name"`
+			Data json.RawMessage `json:"data"`
+		}
+
+		err := params.ToStruct(&options)
 		if err != nil {
 			m.httpError(rw, "Invalid events call:", fmt.Errorf("error parsing event: %w", err))
 			return
 		}
-		if event.Name == "" {
+		if options.Name == nil {
 			m.httpError(rw, "Invalid events call:", errors.New("missing event name"))
 			return
 		}
 
-		event.Sender = window.Name()
-		globalApplication.customEventProcessor.Emit(&event)
+		data, err := decodeEventData(*options.Name, options.Data)
+		if err != nil {
+			m.httpError(rw, "Events.Emit failed: ", fmt.Errorf("error parsing event data: %w", err))
+			return
+		}
 
-		m.ok(rw)
+		event.Name = *options.Name
+		event.Data = data
+		event.Sender = window.Name()
+		globalApplication.emitEvent(&event)
+
+		m.json(rw, event.IsCancelled())
 		m.Info("Runtime call:", "method", "Events."+eventsMethodNames[method], "name", event.Name, "sender", event.Sender, "data", event.Data, "cancelled", event.IsCancelled())
 	default:
 		m.httpError(rw, "Invalid events call:", fmt.Errorf("unknown method: %d", method))

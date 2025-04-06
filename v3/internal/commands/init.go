@@ -1,13 +1,16 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/wailsapp/wails/v3/internal/term"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/go-git/go-git/v5/config"
+	"github.com/wailsapp/wails/v3/internal/term"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/pterm/pterm"
@@ -17,36 +20,52 @@ import (
 
 var DisableFooter bool
 
-// GitURLToModuleName converts a git URL to a Go module name by removing common prefixes
+// See https://github.com/git/git/blob/master/Documentation/urls.adoc
+var (
+	gitProtocolFormat = regexp.MustCompile(`^(?:ssh|git|https?|ftps?|file)://`)
+	gitScpLikeGuard   = regexp.MustCompile(`^[^/:]+:`)
+	gitScpLikeFormat  = regexp.MustCompile(`^(?:([^@/:]+)@)?([^@/:]+):([^\\].*)$`)
+)
+
+// gitURLToModulePath converts a git URL to a Go module name by removing common prefixes
 // and suffixes. It handles HTTPS, SSH, Git protocol, and filesystem URLs.
-func GitURLToModuleName(gitURL string) string {
-	moduleName := gitURL
-	if strings.HasSuffix(moduleName, ".git") {
-		moduleName = moduleName[:len(moduleName)-4]
-	}
-	// Handle various URL schemes
-	for _, prefix := range []string{
-		"https://",
-		"http://",
-		"git://",
-		"ssh://",
-		"file://",
-	} {
-		if strings.HasPrefix(moduleName, prefix) {
-			moduleName = moduleName[len(prefix):]
-			break
+func gitURLToModulePath(gitURL string) string {
+	var path string
+
+	if gitProtocolFormat.MatchString(gitURL) {
+		// Standard URL
+		parsed, err := url.Parse(gitURL)
+		if err != nil {
+			term.Warningf("invalid Git repository URL: %s; module path will default to 'changeme'", err)
+			return "changeme"
+		}
+
+		path = parsed.Host + parsed.Path
+	} else if gitScpLikeGuard.MatchString(gitURL) {
+		// SCP-like URL
+		match := gitScpLikeFormat.FindStringSubmatch(gitURL)
+		if match != nil {
+			sep := ""
+			if !strings.HasPrefix(match[3], "/") {
+				// Add slash between host and path if missing
+				sep = "/"
+			}
+
+			path = match[2] + sep + match[3]
 		}
 	}
-	// Handle SSH URLs (git@github.com:username/project.git)
-	if strings.HasPrefix(moduleName, "git@") {
-		// Remove the 'git@' prefix
-		moduleName = moduleName[4:]
-		// Replace ':' with '/' for proper module path
-		moduleName = strings.Replace(moduleName, ":", "/", 1)
+
+	if path == "" {
+		// Filesystem path
+		path = gitURL
 	}
+
+	if strings.HasSuffix(path, ".git") {
+		path = path[:len(path)-4]
+	}
+
 	// Remove leading forward slash for file system paths
-	moduleName = strings.TrimPrefix(moduleName, "/")
-	return moduleName
+	return strings.TrimPrefix(path, "/")
 }
 
 func initGitRepository(projectDir string, gitURL string) error {
@@ -65,28 +84,6 @@ func initGitRepository(projectDir string, gitURL string) error {
 		return fmt.Errorf("failed to create git remote: %w", err)
 	}
 
-	// Update go.mod with the module name
-	moduleName := GitURLToModuleName(gitURL)
-
-	goModPath := filepath.Join(projectDir, "go.mod")
-	content, err := os.ReadFile(goModPath)
-	if err != nil {
-		return fmt.Errorf("failed to read go.mod: %w", err)
-	}
-
-	// Replace module name
-	lines := strings.Split(string(content), "\n")
-	if len(lines) == 0 {
-		return fmt.Errorf("go.mod is empty")
-	}
-	lines[0] = fmt.Sprintf("module %s", moduleName)
-	newContent := strings.Join(lines, "\n")
-
-	err = os.WriteFile(goModPath, []byte(newContent), 0644)
-	if err != nil {
-		return fmt.Errorf("failed to write go.mod: %w", err)
-	}
-
 	// Stage all files
 	worktree, err := repo.Worktree()
 	if err != nil {
@@ -102,7 +99,6 @@ func initGitRepository(projectDir string, gitURL string) error {
 }
 
 func Init(options *flags.Init) error {
-
 	if options.List {
 		term.Header("Available templates")
 		return printTemplates()
@@ -120,10 +116,18 @@ func Init(options *flags.Init) error {
 	}
 
 	if options.ProjectName == "" {
-		return fmt.Errorf("please use the -n flag to specify a project name")
+		return errors.New("please use the -n flag to specify a project name")
 	}
 
 	options.ProjectName = sanitizeFileName(options.ProjectName)
+
+	if options.ModulePath == "" {
+		if options.Git == "" {
+			options.ModulePath = "changeme"
+		} else {
+			options.ModulePath = gitURLToModulePath(options.Git)
+		}
+	}
 
 	err := templates.Install(options)
 	if err != nil {

@@ -16,6 +16,7 @@ type GenerateBindingsOptions struct {
 	UseInterfaces     bool   `name:"i" description:"Generate Typescript interfaces instead of classes"`
 	UseBundledRuntime bool   `name:"b" description:"Use the bundled runtime instead of importing the npm package"`
 	UseNames          bool   `name:"names" description:"Use names instead of IDs for the binding calls"`
+	NoEvents          bool   `name:"noevents" description:"Do not generate types for registered custom events"`
 	NoIndex           bool   `name:"noindex" description:"Do not generate JS/TS index files"`
 	DryRun            bool   `name:"dry" description:"Do not write output files"`
 	Silent            bool   `name:"silent" description:"Silent mode"`
