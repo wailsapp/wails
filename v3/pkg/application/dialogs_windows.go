@@ -234,10 +234,6 @@ func convertFilters(filters []FileFilter) []cfd.FileFilter {
 	return result
 }
 
-func normalizeWindowsPath(path string) string {
-	return strings.ReplaceAll(path, "\\", "/")
-}
-
 func showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelect bool) (any, error) {
 	dlg, err := newDlg()
 	if err != nil {
@@ -257,7 +253,7 @@ func showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelect bool) (any, 
 		}
 
 		for i, path := range paths {
-			paths[i] = normalizeWindowsPath(path)
+			paths[i] = filepath.Clean(path)
 		}
 		return paths, nil
 	}
@@ -266,5 +262,5 @@ func showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelect bool) (any, 
 	if err != nil {
 		return nil, err
 	}
-	return normalizeWindowsPath(path), nil
+	return filepath.Clean(path), nil
 }
