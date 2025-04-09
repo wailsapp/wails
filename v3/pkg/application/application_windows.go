@@ -18,6 +18,10 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
+var (
+	wmTaskbarCreated = w32.RegisterWindowMessage(w32.MustStringToUTF16Ptr("TaskbarCreated"))
+)
+
 type windowsApp struct {
 	parent *App
 
@@ -221,6 +225,8 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 	}
 
 	switch msg {
+	case wmTaskbarCreated:
+		m.reshowSystrays()
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))
 		if settingChanged == "ImmersiveColorSet" {
@@ -294,6 +300,14 @@ func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
 	// If this was the last window...
 	if len(m.windowMap) == 0 && !m.parent.options.Windows.DisableQuitOnLastWindowClosed {
 		w32.PostQuitMessage(0)
+	}
+}
+
+func (m *windowsApp) reshowSystrays() {
+	m.systrayMapLock.Lock()
+	defer m.systrayMapLock.Unlock()
+	for _, systray := range m.systrayMap {
+		systray.reshow()
 	}
 }
 
