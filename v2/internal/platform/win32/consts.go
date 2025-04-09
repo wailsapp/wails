@@ -81,6 +81,8 @@ SetPreferredAppMode = PreferredAppMode (PreferredAppMode appMode) // ordinal 135
 IsDarkModeAllowedForApp = bool () // ordinal 139
 */
 func init() {
+	// Set the default DLL directories to search the system32 directory
+	windows.SetDefaultDllDirectories(windows.LOAD_LIBRARY_SEARCH_SYSTEM32)
 	if IsWindowsVersionAtLeast(10, 0, 18334) {
 
 		// AllowDarkModeForWindow is only available on Windows 10+
