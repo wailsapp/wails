@@ -785,6 +785,14 @@ func (w *windowsWebviewWindow) setFullscreenButtonEnabled(_ bool) {
 
 func (w *windowsWebviewWindow) focus() {
 	w32.SetForegroundWindow(w.hwnd)
+
+	if w.isDisabled() {
+		return
+	}
+	if w.isMinimised() {
+		w.unminimise()
+	}
+
 	w.focusingChromium = true
 	w.chromium.Focus()
 	w.focusingChromium = false
@@ -1036,6 +1044,11 @@ func (w *windowsWebviewWindow) disableIcon() {
 				w32.SWP_NOSIZE|
 				w32.SWP_NOZORDER),
 	)
+}
+
+func (w *windowsWebviewWindow) isDisabled() bool {
+	style := uint32(w32.GetWindowLong(w.hwnd, w32.GWL_STYLE))
+	return style&w32.WS_DISABLED != 0
 }
 
 func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
