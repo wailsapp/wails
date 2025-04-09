@@ -178,6 +178,8 @@ var (
 
 	procRedrawWindow = moduser32.NewProc("RedrawWindow")
 
+	procRegisterWindowMessageW = moduser32.NewProc("RegisterWindowMessageW")
+
 	mainThread HANDLE
 )
 
@@ -299,9 +301,7 @@ func PostThreadMessage(threadID HANDLE, msg int, wp, lp uintptr) {
 }
 
 func RegisterWindowMessage(name *uint16) uint32 {
-	ret, _, _ := procRegisterWindowMessageA.Call(
-		uintptr(unsafe.Pointer(name)))
-
+	ret, _, _ := procRegisterWindowMessageW.Call(uintptr(unsafe.Pointer(name)))
 	return uint32(ret)
 }
 
