@@ -8,7 +8,9 @@ import (
 	"path/filepath"
 	"slices"
 	"sync"
+	"sync/atomic"
 	"syscall"
+	"time"
 	"unsafe"
 
 	"github.com/wailsapp/go-webview2/webviewloader"
@@ -44,6 +46,9 @@ type windowsApp struct {
 	// system theme
 	isCurrentlyDarkMode bool
 	currentWindowID     uint
+
+	// Restart taskbar flag
+	restartingTaskbar atomic.Bool
 }
 
 func (m *windowsApp) isDarkMode() bool {
@@ -226,7 +231,16 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 
 	switch msg {
 	case wmTaskbarCreated:
+		if m.restartingTaskbar.Load() {
+			break
+		}
+		m.restartingTaskbar.Store(true)
 		m.reshowSystrays()
+		go func() {
+			// 1 second debounce
+			time.Sleep(1000)
+			m.restartingTaskbar.Store(false)
+		}()
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))
 		if settingChanged == "ImmersiveColorSet" {
