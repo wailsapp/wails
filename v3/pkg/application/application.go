@@ -381,7 +381,7 @@ func (a *App) RegisterService(service Service) {
 }
 
 // EmitEvent will emit an event
-func (a *App) EmitEvent(name string, data ...any) {
+func (a *App) EmitEvent(name string, data any) {
 	a.customEventProcessor.Emit(&CustomEvent{
 		Name: name,
 		Data: data,
