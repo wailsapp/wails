@@ -273,9 +273,12 @@ func (w *windowsWebviewWindow) run() {
 
 	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
-		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
-		if w.parent.options.IgnoreMouseEvents {
+		if (options.Frameless && options.BackgroundType == BackgroundTypeTransparent) || w.parent.options.IgnoreMouseEvents {
+			// Always if transparent and frameless
 			exStyle |= w32.WS_EX_TRANSPARENT | w32.WS_EX_LAYERED
+		} else {
+			// Only WS_EX_NOREDIRECTIONBITMAP if not (and not solid)
+			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 	}
 	if options.AlwaysOnTop {
