@@ -10,8 +10,6 @@ package w32
 import (
 	"syscall"
 	"unsafe"
-
-	"golang.org/x/sys/windows"
 )
 
 // LISTVIEW parts
@@ -72,8 +70,6 @@ var (
 )
 
 func init() {
-	// Set the default DLL directories to search the system32 directory
-	windows.SetDefaultDllDirectories(windows.LOAD_LIBRARY_SEARCH_SYSTEM32)
 	// Library
 	libuxtheme = MustLoadLibrary("uxtheme.dll")
 
