@@ -63,18 +63,18 @@ export namespace binding_test {
                     DoubleFour: number[][];
                     Triple: number[][][];
                     SingleMap: Record<string, number>;
-                    SliceMap: Record<string, number[]>;
-                    DoubleSliceMap: Record<string, number[][]>;
-                    ArrayMap: Record<string, number[]>;
-                    DoubleArrayMap1: Record<string, number[][]>;
-                    DoubleArrayMap2: Record<string, number[][]>;
-                    DoubleArrayMap3: Record<string, number[][]>;
+                    SliceMap: Record<string, Array<number>>;
+                    DoubleSliceMap: Record<string, Array<Array<number>>>;
+                    ArrayMap: Record<string, Array<number>>;
+                    DoubleArrayMap1: Record<string, Array<Array<number>>>;
+                    DoubleArrayMap2: Record<string, Array<Array<number>>>;
+                    DoubleArrayMap3: Record<string, Array<Array<number>>>;
                     OneStructs: DeepMessage[];
                     TwoStructs: DeepMessage[][];
                     ThreeStructs: DeepMessage[][][];
-                    MapStructs: Record<string, DeepMessage[]>;
-                    MapTwoStructs: Record<string, DeepMessage[][]>;
-                    MapThreeStructs: Record<string, DeepMessage[][][]>;
+                    MapStructs: Record<string, Array<DeepMessage>>;
+                    MapTwoStructs: Record<string, Array<Array<DeepMessage>>>;
+                    MapThreeStructs: Record<string, Array<Array<Array<DeepMessage>>>>;
             
                     static createFrom(source: any = {}) {
                         return new DeepElements(source);
@@ -97,9 +97,9 @@ export namespace binding_test {
                         this.OneStructs = this.convertValues(source["OneStructs"], DeepMessage);
                         this.TwoStructs = this.convertValues(source["TwoStructs"], DeepMessage);
                         this.ThreeStructs = this.convertValues(source["ThreeStructs"], DeepMessage);
-                        this.MapStructs = this.convertValues(source["MapStructs"], DeepMessage[], true);
-                        this.MapTwoStructs = this.convertValues(source["MapTwoStructs"], DeepMessage[][], true);
-                        this.MapThreeStructs = this.convertValues(source["MapThreeStructs"], DeepMessage[][][], true);
+                        this.MapStructs = this.convertValues(source["MapStructs"], Array<DeepMessage>, true);
+                        this.MapTwoStructs = this.convertValues(source["MapTwoStructs"], Array<Array<DeepMessage>>, true);
+                        this.MapThreeStructs = this.convertValues(source["MapThreeStructs"], Array<Array<Array<DeepMessage>>>, true);
                     }
             
                         convertValues(a: any, classs: any, asMap: boolean = false): any {
