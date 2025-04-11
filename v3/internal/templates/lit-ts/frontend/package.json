@@ -10,11 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@wailsio/runtime": "latest",
     "lit": "^3.1.0"
   },
   "devDependencies": {
     "typescript": "^5.2.2",
-    "vite": "^5.0.0",
-    "@wailsio/runtime": "latest"
+    "vite": "^5.0.0"
   }
 }

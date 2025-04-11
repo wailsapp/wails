@@ -9,8 +9,10 @@
     "build": "vite build --mode production",
     "preview": "vite preview"
   },
-  "devDependencies": {
-    "vite": "^5.0.0",
+  "dependencies": {
     "@wailsio/runtime": "latest"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
   }
 }

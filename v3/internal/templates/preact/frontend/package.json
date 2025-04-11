@@ -10,11 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@wailsio/runtime": "latest",
     "preact": "^10.19.3"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.7.0",
-    "vite": "^5.0.8",
-    "@wailsio/runtime": "latest"
+    "vite": "^5.0.8"
   }
 }
