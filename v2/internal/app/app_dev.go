@@ -79,9 +79,11 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	}
 
 	loglevel := os.Getenv("loglevel")
-	if loglevel == "" {
-		loglevelFlag = devFlags.String("loglevel", appoptions.LogLevel.String(), "Loglevel to use - Trace, Debug, Info, Warning, Error")
+	appLogLevel := appoptions.LogLevel.String()
+	if loglevel != "" {
+		appLogLevel = loglevel
 	}
+	loglevelFlag = devFlags.String("loglevel", appLogLevel, "Loglevel to use - Trace, Debug, Info, Warning, Error")
 
 	// If we weren't given the assetdir in the environment variables
 	if assetdir == "" {
