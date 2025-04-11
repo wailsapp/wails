@@ -2,7 +2,7 @@
 
 Ce tutoriel va vous présenter :
 
-1. L'installation minimale - Les étapes à suivre au minimum pour avoir Wails fonctionnant avec SvelteKit.
+1. Minimal Installation Steps - The steps needed to get a minimum Wails setup working for SvelteKit.
 2. Script d'installation - Script Bash pour réaliser les étapes d'installation minimale avec la marque Wails (pouvant être changée dans les options).
 3. Notes importantes - Problèmes qui peuvent être rencontrés avec SvelteKit + Wails et comment les corriger.
 
@@ -17,9 +17,9 @@ Ce tutoriel va vous présenter :
 - Naviguez dans votre dossier myapp nouvellement créé.
 - Supprimer le dossier nommé "frontend"
 
-##### Lorsque vous êtes dans le dossier racine du projet Wails. Utilisez votre gestionnaire de paquets préféré et installez SvelteKit comme nouveau frontend.  Suivez les instructions.
+##### Lorsque vous êtes dans le dossier racine du projet Wails. Use the Svelte CLI to create a SvelteKit project as the new frontend. Follow the prompts, nothing Wails specific is needed here.
 
-- `npm create svelte@latest frontend`
+- `npx sv create frontend`
 
 ##### Modifier wails.json.
 
@@ -108,7 +108,7 @@ wails dev
 
 ##### Le runtime Wails se décharge avec des pages de navigation complètes !
 
-- Tout ce qui provoque la navigation de page complète : `window.location.href = '/<some>/<page>'` ou le menu contextuel se recharge lorsque vous utilisez wails dev.  Cela signifie que vous pouvez finir par perdre la possibilité d'appeler n'importe quel runtime cassant l'application. Il y a deux façons de contourner ce problème.
+- Tout ce qui provoque la navigation de page complète : \`window.location.href = '/<some>/<page>' ou le menu contextuel se recharge lorsque vous utilisez wails dev.  Cela signifie que vous pouvez finir par perdre la possibilité d'appeler n'importe quel runtime cassant l'application. Il y a deux façons de contourner ce problème.
 - Utilisez `import { goto } de '$app/navigation'` puis appelez `goto('/<some>/<page>')` dans votre +page.svelte. Cela empêchera la navigation de la page complète.
 - Si la navigation de la page complète ne peut pas être empêchée, le runtime Wails peut être ajouté à toutes les pages en ajoutant ce qui suit dans le `<head>` de myapp/frontend/src/app.html
 
@@ -124,7 +124,7 @@ wails dev
 
 Voir https://wails.io/docs/guides/frontend pour plus d'informations.
 
-##### Les données initiales peuvent être chargées et actualisées de +page.ts/+page.js à +page.svelte.
+##### Initial data can be loaded and refreshed from +page.ts/+page.js to +page.svelte.
 
 - \+page.ts/+page.js fonctionne bien avec la fonction load() https://kit.svelte.dev/docs/load#page-data
 - invalidateAll() dans +page.svelte appellera la fonction load() de +page.ts/+page.js https://kit.svelte.dev/docs/load#rerunning-load-functions-manual-invalidation.
