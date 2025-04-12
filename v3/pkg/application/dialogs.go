@@ -291,6 +291,9 @@ func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error) {
 	}
 
 	selections, err := InvokeSyncWithResultAndError(d.impl.show)
+	if err != nil {
+		return nil, err
+	}
 
 	var result []string
 	for filename := range selections {
