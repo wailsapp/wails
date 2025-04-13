@@ -1,5 +1,5 @@
-//go:build dev
-// +build dev
+//go:build dev || server || hybrid
+// +build dev server hybrid
 
 package runtime
 
