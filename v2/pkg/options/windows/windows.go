@@ -42,37 +42,22 @@ const (
 const (
 	// Default is 0, which means no changes to the default Windows DLL search behavior
 	DLLSearchDefault uint32 = 0
-
 	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchDontResolveDllReferences uint32 = windows.DONT_RESOLVE_DLL_REFERENCES // 0x1
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchAsDataFile uint32 = windows.LOAD_LIBRARY_AS_DATAFILE // 0x2
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchWithAlteredPath uint32 = windows.LOAD_WITH_ALTERED_SEARCH_PATH // 0x8
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchIgnoreCodeAuthzLevel uint32 = windows.LOAD_IGNORE_CODE_AUTHZ_LEVEL // 0x10
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchAsImageResource uint32 = windows.LOAD_LIBRARY_AS_IMAGE_RESOURCE // 0x20
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchAsDataFileExclusive uint32 = windows.LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE // 0x40
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchRequireSignedTarget uint32 = windows.LOAD_LIBRARY_REQUIRE_SIGNED_TARGET // 0x80
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchDllLoadDir uint32 = windows.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR // 0x100
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchApplicationDir uint32 = windows.LOAD_LIBRARY_SEARCH_APPLICATION_DIR // 0x200
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchUserDirs uint32 = windows.LOAD_LIBRARY_SEARCH_USER_DIRS // 0x400
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchSystem32 uint32 = windows.LOAD_LIBRARY_SEARCH_SYSTEM32 // 0x800
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchDefaultDirs uint32 = windows.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS // 0x1000
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchSafeCurrentDirs uint32 = windows.LOAD_LIBRARY_SAFE_CURRENT_DIRS // 0x2000
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchSystem32NoForwarder uint32 = windows.LOAD_LIBRARY_SEARCH_SYSTEM32_NO_FORWARDER // 0x4000
-	// LoadLibrary flags for determining from where to search for a DLL
-	DLLSearchOsIntegrityContinuity uint32 = windows.LOAD_LIBRARY_OS_INTEGRITY_CONTINUITY // 0x8000
+	DLLSearchDontResolveDllReferences uint32 = windows.DONT_RESOLVE_DLL_REFERENCES               // 0x1
+	DLLSearchAsDataFile               uint32 = windows.LOAD_LIBRARY_AS_DATAFILE                  // 0x2
+	DLLSearchWithAlteredPath          uint32 = windows.LOAD_WITH_ALTERED_SEARCH_PATH             // 0x8
+	DLLSearchIgnoreCodeAuthzLevel     uint32 = windows.LOAD_IGNORE_CODE_AUTHZ_LEVEL              // 0x10
+	DLLSearchAsImageResource          uint32 = windows.LOAD_LIBRARY_AS_IMAGE_RESOURCE            // 0x20
+	DLLSearchAsDataFileExclusive      uint32 = windows.LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE        // 0x40
+	DLLSearchRequireSignedTarget      uint32 = windows.LOAD_LIBRARY_REQUIRE_SIGNED_TARGET        // 0x80
+	DLLSearchDllLoadDir               uint32 = windows.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR          // 0x100
+	DLLSearchApplicationDir           uint32 = windows.LOAD_LIBRARY_SEARCH_APPLICATION_DIR       // 0x200
+	DLLSearchUserDirs                 uint32 = windows.LOAD_LIBRARY_SEARCH_USER_DIRS             // 0x400
+	DLLSearchSystem32                 uint32 = windows.LOAD_LIBRARY_SEARCH_SYSTEM32              // 0x800
+	DLLSearchDefaultDirs              uint32 = windows.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS          // 0x1000
+	DLLSearchSafeCurrentDirs          uint32 = windows.LOAD_LIBRARY_SAFE_CURRENT_DIRS            // 0x2000
+	DLLSearchSystem32NoForwarder      uint32 = windows.LOAD_LIBRARY_SEARCH_SYSTEM32_NO_FORWARDER // 0x4000
+	DLLSearchOsIntegrityContinuity    uint32 = windows.LOAD_LIBRARY_OS_INTEGRITY_CONTINUITY      // 0x8000
 )
 
 func RGB(r, g, b uint8) int32 {
