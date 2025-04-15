@@ -15,6 +15,7 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.6.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/jaypipes/ghw v0.13.0
 	github.com/labstack/echo/v4 v4.13.3
