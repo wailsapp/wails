@@ -275,7 +275,7 @@ func (d *DevWebServer) broadcastExcludingSender(message string, sender *websocke
 				return
 			}
 			locker.Lock()
-			err := client.WriteMessage(websocket.CloseMessage, []byte(message))
+			err := client.WriteMessage(websocket.TextMessage, []byte(message))
 			if err != nil {
 				locker.Unlock()
 				d.logger.Error(err.Error())
