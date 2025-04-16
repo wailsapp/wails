@@ -56,7 +56,7 @@ tasks:
       - "appicon.png"
     generates:
       - "icons.icns"
-      - "icons.ico"
+      - "icon.ico"
     cmds:
       - wails3 generate icons -input appicon.png
 
