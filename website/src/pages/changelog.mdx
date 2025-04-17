@@ -16,11 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Updated recommendation for Svelte router in [#4085](https://github.com/wailsapp/wails/pull/4085) by [@benmccann](https://github.com/benmccann)
+- Updated documentation to clarify `WebviewGpuPolicy` default behavior on Linux in [#4162](https://github.com/wailsapp/wails/pull/4162) by [@brianetaveras](https://github.com/brianetaveras)
 
 ### Added
 - Added "Branding" section to `wails doctor` to correctly identify Windows 11 [#3891](https://github.com/wailsapp/wails/pull/3891) by [@ronen25](https://github.com/ronen25)
 - Added `-skipembedcreate` flag to build and dev command to improve compile and recompile speed [#4143](https://github.com/wailsapp/wails/pull/4143) by @josStorer
 - Added `DisablePanicRecovery` option to allow handle panics manually [#4136](https://github.com/wailsapp/wails/pull/4136) by [@APshenkin](https://github.com/APshenkin)
+
+### Fixed
+- Fixed -m build flag for dev command not working when recompiling in [#4141](https://github.com/wailsapp/wails/pull/4141) by @josStorer
+- Fixed window restoration behavior after minimization by @superDingda in [#4109](https://github.com/wailsapp/wails/issues/4109)
+- Fixed excessive console logging after updating to v2.10.1 by @superDingda in [#4111](https://github.com/wailsapp/wails/issues/4111)
+- Fixed incorrect Webview2 reg key in HKCU path by @leaanthony.
 
 ## v2.10.1 - 2025-02-24
 
