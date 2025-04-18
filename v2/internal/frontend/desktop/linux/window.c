@@ -14,6 +14,9 @@ static float xroot = 0.0f;
 static float yroot = 0.0f;
 static int dragTime = -1;
 static uint mouseButton = 0;
+static int wmIsWayland = -1;
+static int decoratorWidth = -1;
+static int decoratorHeight = -1;
 
 // casts
 void ExecuteOnMainThread(void *f, gpointer jscallback)
@@ -70,13 +73,23 @@ static bool isNULLRectangle(GdkRectangle input)
 
 static gboolean onWayland()
 {
-    const char *gdkBackend = getenv("XDG_SESSION_TYPE");
-    if(gdkBackend != NULL && strcmp(gdkBackend, "wayland") == 0)
+    switch (wmIsWayland)
     {
+    case -1:
+     char *gdkBackend = getenv("XDG_SESSION_TYPE");
+        if(gdkBackend != NULL && strcmp(gdkBackend, "wayland") == 0) 
+        {
+            wmIsWayland = 1;
+            return TRUE;
+        }
+        
+        wmIsWayland = 0;
+        return FALSE;
+    case 1:
         return TRUE;
+    default:
+        return FALSE;
     }
-
-    return FALSE;
 }
 
 static GdkMonitor *getCurrentMonitor(GtkWindow *window)
@@ -257,18 +270,24 @@ void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_wid
     size.min_height = min_height;
     size.min_width = min_width;
 
-    // On Wayland window manager get the decorators and calculate the differences from the window size.
+    // On Wayland window manager get the decorators and calculate the differences from the windows' size.
     if(onWayland()) 
     {
-        int windowWidth, windowHeight;
-        gtk_window_get_size(window, &windowWidth, &windowHeight);
+        if(decoratorWidth == -1 && decoratorHeight == -1)
+        {
+            int windowWidth, windowHeight;
+            gtk_window_get_size(window, &windowWidth, &windowHeight);
 
-        GtkAllocation windowAllocation;
-        gtk_widget_get_allocation(GTK_WIDGET(window), &windowAllocation);
+            GtkAllocation windowAllocation;
+            gtk_widget_get_allocation(GTK_WIDGET(window), &windowAllocation);
 
+            decoratorWidth = (windowAllocation.width-windowWidth);
+            decoratorHeight = (windowAllocation.height-windowHeight);        
+        }
+    
         // Add the decorator difference to the window so fullscreen and maximise can fill the window.
-        size.max_height = (windowAllocation.height-windowHeight)+size.max_height;
-        size.max_width = (windowAllocation.width-windowWidth)+size.max_width;
+        size.max_height = decoratorHeight+size.max_height;
+        size.max_width = decoratorWidth+size.max_width;
     }
 
     gtk_window_set_geometry_hints(window, NULL, &size, flags);
