@@ -137,30 +137,57 @@ func (s *GinService) setupRoutes() {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		})
 
-		// Create a new user
-		users.POST("", func(c *gin.Context) {
-			var newUser User
-			if err := c.ShouldBindJSON(&newUser); err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
+// import block (ensure this exists in your file)
+import (
+	"context"
+	"net/http"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+)
 
-			s.mu.Lock()
-			defer s.mu.Unlock()
+// ...
 
-			// Set the ID and creation time
-			newUser.ID = s.nextID
-			newUser.CreatedAt = time.Now()
-			s.nextID++
+// Create a new user
+users.POST("", func(c *gin.Context) {
+	var newUser User
+	if err := c.ShouldBindJSON(&newUser); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-			// Add to the users slice
-			s.users = append(s.users, newUser)
+	// Validate required fields
+	if newUser.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Name is required"})
+		return
+	}
+	if newUser.Email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required"})
+		return
+	}
+	// Basic email validation (consider using a proper validator library in production)
+	if !strings.Contains(newUser.Email, "@") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email format"})
+		return
+	}
 
-			c.JSON(http.StatusCreated, newUser)
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-			// Emit an event to notify about the new user
-			s.app.EmitEvent("user-created", newUser)
-		})
+	// Set the ID and creation time
+	newUser.ID = s.nextID
+	newUser.CreatedAt = time.Now()
+	s.nextID++
+
+	// Add to the users slice
+	s.users = append(s.users, newUser)
+
+	c.JSON(http.StatusCreated, newUser)
+
+	// Emit an event to notify about the new user
+	s.app.EmitEvent("user-created", newUser)
+})
 
 		// Delete a user
 		users.DELETE("/:id", func(c *gin.Context) {
