@@ -14,11 +14,6 @@ This example shows how to:
 
 ## Running the Example
 
-```bash
-cd v3/examples/gin-routing
-go mod tidy
-go run .
-```
 
 ## Documentation
 
