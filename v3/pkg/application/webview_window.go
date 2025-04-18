@@ -108,6 +108,7 @@ type (
 		showMenuBar()
 		hideMenuBar()
 		toggleMenuBar()
+		setMenu(menu *Menu)
 	}
 )
 
@@ -166,6 +167,22 @@ type WebviewWindow struct {
 
 	// unconditionallyClose marks the window to be unconditionally closed
 	unconditionallyClose bool
+}
+
+func (w *WebviewWindow) SetMenu(menu *Menu) {
+	switch runtime.GOOS {
+	case "darwin":
+		return
+	case "windows":
+		w.options.Windows.Menu = menu
+	case "linux":
+		w.options.Linux.Menu = menu
+	}
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setMenu(menu)
+		})
+	}
 }
 
 // EmitEvent emits an event from the window

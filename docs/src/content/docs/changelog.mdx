@@ -76,6 +76,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add cancellation support for query methods on `sqlite` service by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - Add prepared statement support to `sqlite` service with JS bindings by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - Fix auto save and password auto save always enabled by [@oSethoum](https://github.com/osethoum) in [#4134](https://github.com/wailsapp/wails/pull/4134)
+- Add `SetMenu()` on window to allow for setting a menu on a window by [@leaanthony](https://github.com/leaanthony)
+- Add Notification support by [@popaprozac] in [#4098](https://github.com/wailsapp/wails/pull/4098)
+-  Add File Association support for mac by [@wimaha](https://github.com/wimaha) in [#4177](https://github.com/wailsapp/wails/pull/4177)
+
 ### Fixed
 
 - Fixed Windows+Linux Edit Menu issues by [@leaanthony](https://github.com/leaanthony) in [#3f78a3a](https://github.com/wailsapp/wails/commit/3f78a3a8ce7837e8b32242c8edbbed431c68c062)
@@ -107,8 +111,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -  Ensure menu updates occur on the main thread by [@leaanthony](https://github.com/leaanthony)
 - The dragging and resizing mechanism is now more robust and matches expected platform behaviour more closely by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
 - Fixed [#4097](https://github.com/wailsapp/wails/issues/4097) Webpack/angular discards runtime init code by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Fixed initially-hidden menu items by [@IanVS](https://github.com/IanVS) in [#4116](https://github.com/wailsapp/wails/pull/4116)
 - Fixed assetFileServer not serving `.html` files when non-extension request when `[request]` doesn't exist but `[request].html` does
 - Fixed icon generation paths by [@robin-samuel](https://github.com/robin-samuel) in [#4125](https://github.com/wailsapp/wails/pull/4125)
+- Fixed Dialogs runtime function returning escaped paths on Windows by [TheGB0077](https://github.com/TheGB0077) in [#4188](https://github.com/wailsapp/wails/pull/4188)
+- Fixed Webview2 detection path in HKCU by [@leaanthony](https://github.com/leaanthony).
+- Fixed Windows icon generation task file name by [@yulesxoxo](https://github.com/yulesxoxo) in [#4219](https://github.com/wailsapp/wails/pull/4219).
 
 ### Changed
 
@@ -137,6 +145,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Built-in service types are now consistently called `Service` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - Built-in service creation functions with options are now consistently called `NewWithConfig` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - `Select` method on `sqlite` service is now named `Query` for consistency with Go APIs by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Templates: moved runtime to "dependencies", organized package.json files by [@IanVS](https://github.com/IanVS) in [#4133](https://github.com/wailsapp/wails/pull/4133)
+- Creates and ad-hoc signs app bundles in dev to enable certain macOS APIs by [@popaprozac] in [#4171](https://github.com/wailsapp/wails/pull/4171)
 
 ## v3.0.0-alpha.9 - 2025-01-13
 
