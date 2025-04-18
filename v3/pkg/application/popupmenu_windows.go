@@ -1,8 +1,8 @@
 package application
 
 import (
-	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/w32"
+	"unsafe"
 )
 
 const (
@@ -61,6 +61,14 @@ func (p *Win32Menu) newMenu() w32.HMENU {
 func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 	currentRadioGroup := RadioGroup{}
 	for _, item := range inputMenu.items {
+		p.currentMenuID++
+		itemID := p.currentMenuID
+		p.menuMapping[itemID] = item
+
+		menuItemImpl := newMenuItemImpl(item, parentMenu, itemID)
+		menuItemImpl.parent = inputMenu
+		item.impl = menuItemImpl
+
 		if item.Hidden() {
 			if item.accelerator != nil {
 				if p.parentWindow != nil {
@@ -71,14 +79,7 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 					globalApplication.removeKeyBinding(item.accelerator.String())
 				}
 			}
-			continue
 		}
-		p.currentMenuID++
-		itemID := p.currentMenuID
-		p.menuMapping[itemID] = item
-
-		menuItemImpl := newMenuItemImpl(item, parentMenu, itemID)
-		menuItemImpl.parent = inputMenu
 
 		flags := uint32(w32.MF_STRING)
 		if item.disabled {
@@ -131,18 +132,22 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 				}
 			}
 		}
+
+		// If the item is hidden, don't append
+		if item.Hidden() {
+			continue
+		}
+
 		ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), w32.MustStringToUTF16Ptr(menuText))
 		if !ok {
-			globalApplication.fatal(fmt.Sprintf("Error adding menu item: %s", menuText))
+			globalApplication.fatal("error adding menu item '%s'", menuText)
 		}
 		if item.bitmap != nil {
 			err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
 			if err != nil {
-				globalApplication.fatal(fmt.Sprintf("Error setting menu icons: %s", err.Error()))
+				globalApplication.fatal("error setting menu icons: %w", err)
 			}
 		}
-
-		item.impl = menuItemImpl
 	}
 	if len(currentRadioGroup) > 0 {
 		for _, radioMember := range currentRadioGroup {
@@ -192,7 +197,26 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 		p.onMenuOpen()
 	}
 
-	if !w32.TrackPopupMenuEx(p.menu, w32.TPM_LEFTALIGN, int32(x), int32(y-5), p.parent, nil) {
+	// Get screen dimensions to determine menu positioning
+	monitor := w32.MonitorFromWindow(p.parent, w32.MONITOR_DEFAULTTONEAREST)
+	var monitorInfo w32.MONITORINFO
+	monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
+	if !w32.GetMonitorInfo(monitor, &monitorInfo) {
+		globalApplication.fatal("GetMonitorInfo failed")
+	}
+
+	// Set flags to always position the menu above the cursor
+	menuFlags := uint32(w32.TPM_LEFTALIGN | w32.TPM_BOTTOMALIGN)
+
+	// Check if we're close to the right edge of the screen
+	// If so, right-align the menu with some padding
+	if x > int(monitorInfo.RcWork.Right)-200 { // Assuming 200px as a reasonable menu width
+		menuFlags = uint32(w32.TPM_RIGHTALIGN | w32.TPM_BOTTOMALIGN)
+		// Add a small padding (10px) from the right edge
+		x = int(monitorInfo.RcWork.Right) - 10
+	}
+
+	if !w32.TrackPopupMenuEx(p.menu, menuFlags, int32(x), int32(y), p.parent, nil) {
 		globalApplication.fatal("TrackPopupMenu failed")
 	}
 

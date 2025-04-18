@@ -73,6 +73,13 @@ type windowsWebviewWindow struct {
 	isMinimizing bool
 }
 
+func (w *windowsWebviewWindow) setMenu(menu *Menu) {
+	menu.Update()
+	w.menu = NewApplicationMenu(w, menu)
+	w.menu.parentWindow = w
+	w32.SetMenu(w.hwnd, w.menu.menu)
+}
+
 func (w *windowsWebviewWindow) cut() {
 	w.execJS("document.execCommand('cut')")
 }
@@ -183,7 +190,7 @@ func (w *windowsWebviewWindow) print() error {
 
 func (w *windowsWebviewWindow) startResize(border string) error {
 	if !w32.ReleaseCapture() {
-		return fmt.Errorf("unable to release mouse capture")
+		return errors.New("unable to release mouse capture")
 	}
 	// Use PostMessage because we don't want to block the caller until resizing has been finished.
 	w32.PostMessage(w.hwnd, w32.WM_NCLBUTTONDOWN, edgeMap[border], 0)
@@ -192,7 +199,7 @@ func (w *windowsWebviewWindow) startResize(border string) error {
 
 func (w *windowsWebviewWindow) startDrag() error {
 	if !w32.ReleaseCapture() {
-		return fmt.Errorf("unable to release mouse capture")
+		return errors.New("unable to release mouse capture")
 	}
 	// Use PostMessage because we don't want to block the caller until dragging has been finished.
 	w32.PostMessage(w.hwnd, w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
@@ -334,7 +341,7 @@ func (w *windowsWebviewWindow) run() {
 		nil)
 
 	if w.hwnd == 0 {
-		globalApplication.fatal("Unable to create window")
+		globalApplication.fatal("unable to create window")
 	}
 
 	// Ensure correct window size in case the scale factor of current screen is different from the initial one.
@@ -679,6 +686,7 @@ func (w *windowsWebviewWindow) maximise() {
 
 func (w *windowsWebviewWindow) unmaximise() {
 	w.restore()
+	w.parent.emit(events.Windows.WindowUnMaximise)
 }
 
 func (w *windowsWebviewWindow) restore() {
@@ -719,6 +727,7 @@ func (w *windowsWebviewWindow) fullscreen() {
 		int(monitorInfo.RcMonitor.Bottom-monitorInfo.RcMonitor.Top),
 		w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
 	w.chromium.Focus()
+	w.parent.emit(events.Windows.WindowFullscreen)
 }
 
 func (w *windowsWebviewWindow) unfullscreen() {
@@ -738,6 +747,7 @@ func (w *windowsWebviewWindow) unfullscreen() {
 	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0,
 		w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
 	w.enableSizeConstraints()
+	w.parent.emit(events.Windows.WindowUnFullscreen)
 }
 
 func (w *windowsWebviewWindow) isMinimised() bool {
@@ -1202,6 +1212,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		case w32.SIZE_MAXIMIZED:
 			w.parent.emit(events.Windows.WindowMaximise)
 		case w32.SIZE_RESTORED:
+			if w.isMinimizing {
+				w.parent.emit(events.Windows.WindowUnMinimise)
+			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowRestore)
 		case w32.SIZE_MINIMIZED:
@@ -1465,7 +1478,7 @@ func (w *windowsWebviewWindow) setWindowMask(imageData []byte) {
 
 	data, err := pngToImage(imageData)
 	if err != nil {
-		globalApplication.fatal("Fatal error in callback setWindowMask: " + err.Error())
+		globalApplication.fatal("fatal error in callback setWindowMask: %w", err)
 	}
 
 	bitmap, err := w32.CreateHBITMAPFromImage(data)
@@ -1513,15 +1526,15 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 		useragent = strings.Join([]string{useragent, assetserver.WailsUserAgentValue}, " ")
 		err = reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
 		if err != nil {
-			globalApplication.fatal("Error setting UserAgent header: " + err.Error())
+			globalApplication.fatal("error setting UserAgent header: %w", err)
 		}
 		err = reqHeaders.SetHeader(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(w.parent.id), 10))
 		if err != nil {
-			globalApplication.fatal("Error setting WindowId header: " + err.Error())
+			globalApplication.fatal("error setting WindowId header: %w", err)
 		}
 		err = reqHeaders.Release()
 		if err != nil {
-			globalApplication.fatal("Error releasing headers: " + err.Error())
+			globalApplication.fatal("error releasing headers: %w", err)
 		}
 	}
 
@@ -1534,7 +1547,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 	uri, _ := req.GetUri()
 	reqUri, err := url.ParseRequestURI(uri)
 	if err != nil {
-		globalApplication.error("Unable to parse request uri: uri='%s' error='%s'", uri, err)
+		globalApplication.error("unable to parse request uri: uri='%s' error='%w'", uri, err)
 		return
 	}
 
@@ -1553,7 +1566,7 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 			InvokeSync(fn)
 		})
 	if err != nil {
-		globalApplication.error("%s: NewRequest failed: %s", uri, err)
+		globalApplication.error("%s: NewRequest failed: %w", uri, err)
 		return
 	}
 
@@ -1572,7 +1585,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	webview2version, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(globalApplication.options.Windows.WebviewBrowserPath)
 	if err != nil {
-		globalApplication.error("Error getting WebView2 version: " + err.Error())
+		globalApplication.error("error getting WebView2 version: %w", err)
 		return
 	}
 	globalApplication.capabilities = capabilities.NewCapabilities(webview2version)
@@ -1614,14 +1627,14 @@ func (w *windowsWebviewWindow) setupChromium() {
 	if chromium.HasCapability(edge.SwipeNavigation) {
 		err := chromium.PutIsSwipeNavigationEnabled(opts.EnableSwipeGestures)
 		if err != nil {
-			globalApplication.fatal(err.Error())
+			globalApplication.handleFatalError(err)
 		}
 	}
 
 	if chromium.HasCapability(edge.AllowExternalDrop) {
 		err := chromium.AllowExternalDrag(false)
 		if err != nil {
-			globalApplication.fatal(err.Error())
+			globalApplication.handleFatalError(err)
 		}
 	}
 	if w.parent.options.EnableDragAndDrop {
@@ -1657,7 +1670,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 			//if windowName == "Chrome_RenderWidgetHostHWND" {
 			err := w32.RegisterDragDrop(hwnd, w.dropTarget)
 			if err != nil && !errors.Is(err, syscall.Errno(w32.DRAGDROP_E_ALREADYREGISTERED)) {
-				globalApplication.error("Error registering drag and drop: " + err.Error())
+				globalApplication.error("error registering drag and drop: %w", err)
 			}
 			//}
 			return 1
@@ -1665,26 +1678,21 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	}
 
-	if opts.GeneralAutofillEnabled {
-		err = chromium.PutIsGeneralAutofillEnabled(true)
-		if err != nil {
-			if errors.Is(edge.UnsupportedCapabilityError, err) {
-				// warning
-				globalApplication.warning("unsupported capability: GeneralAutofillEnabled")
-			} else {
-				globalApplication.fatal(err.Error())
-			}
+	err = chromium.PutIsGeneralAutofillEnabled(opts.GeneralAutofillEnabled)
+	if err != nil {
+		if errors.Is(err, edge.UnsupportedCapabilityError) {
+			globalApplication.warning("unsupported capability: GeneralAutofillEnabled")
+		} else {
+			globalApplication.handleFatalError(err)
 		}
 	}
 
-	if opts.PasswordAutosaveEnabled {
-		err = chromium.PutIsPasswordAutosaveEnabled(true)
-		if err != nil {
-			if errors.Is(edge.UnsupportedCapabilityError, err) {
-				globalApplication.warning("unsupported capability: PasswordAutosaveEnabled")
-			} else {
-				globalApplication.fatal(err.Error())
-			}
+	err = chromium.PutIsPasswordAutosaveEnabled(opts.PasswordAutosaveEnabled)
+	if err != nil {
+		if errors.Is(err, edge.UnsupportedCapabilityError) {
+			globalApplication.warning("unsupported capability: PasswordAutosaveEnabled")
+		} else {
+			globalApplication.handleFatalError(err)
 		}
 	}
 
@@ -1692,7 +1700,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	//if chromium.HasCapability(edge.AllowExternalDrop) {
 	//	err := chromium.AllowExternalDrag(w.parent.options.EnableDragAndDrop)
 	//	if err != nil {
-	//		globalApplication.fatal(err.Error())
+	//		globalApplication.handleFatalError(err)
 	//	}
 	//	if w.parent.options.EnableDragAndDrop {
 	//		chromium.MessageWithAdditionalObjectsCallback = w.processMessageWithAdditionalObjects
@@ -1702,14 +1710,14 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
 	if err != nil {
-		globalApplication.fatal(err.Error())
+		globalApplication.handleFatalError(err)
 	}
 	if settings == nil {
-		globalApplication.fatal("Error getting settings")
+		globalApplication.fatal("error getting settings")
 	}
 	err = settings.PutAreDefaultContextMenusEnabled(debugMode || !w.parent.options.DefaultContextMenuDisabled)
 	if err != nil {
-		globalApplication.fatal(err.Error())
+		globalApplication.handleFatalError(err)
 	}
 
 	w.enableDevTools(settings)
@@ -1719,20 +1727,20 @@ func (w *windowsWebviewWindow) setupChromium() {
 	}
 	err = settings.PutIsZoomControlEnabled(w.parent.options.ZoomControlEnabled)
 	if err != nil {
-		globalApplication.fatal(err.Error())
+		globalApplication.handleFatalError(err)
 	}
 
 	err = settings.PutIsStatusBarEnabled(false)
 	if err != nil {
-		globalApplication.fatal(err.Error())
+		globalApplication.handleFatalError(err)
 	}
 	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
 	if err != nil {
-		globalApplication.fatal(err.Error())
+		globalApplication.handleFatalError(err)
 	}
 	err = settings.PutIsSwipeNavigationEnabled(false)
 	if err != nil {
-		globalApplication.fatal(err.Error())
+		globalApplication.handleFatalError(err)
 	}
 
 	if debugMode && w.parent.options.OpenInspectorOnStartup {
@@ -1761,7 +1769,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	} else {
 		startURL, err := assetserver.GetStartURL(w.parent.options.URL)
 		if err != nil {
-			globalApplication.fatal(err.Error())
+			globalApplication.handleFatalError(err)
 		}
 		w.webviewNavigationCompleted = false
 		chromium.Navigate(startURL)
@@ -1772,7 +1780,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 func (w *windowsWebviewWindow) fullscreenChanged(sender *edge.ICoreWebView2, _ *edge.ICoreWebView2ContainsFullScreenElementChangedEventArgs) {
 	isFullscreen, err := sender.GetContainsFullScreenElement()
 	if err != nil {
-		globalApplication.fatal("Fatal error in callback fullscreenChanged: " + err.Error())
+		globalApplication.fatal("fatal error in callback fullscreenChanged: %w", err)
 	}
 	if isFullscreen {
 		w.fullscreen()
@@ -1817,11 +1825,11 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
 	err := w.chromium.Hide()
 	if err != nil {
-		globalApplication.fatal(err.Error())
+		globalApplication.handleFatalError(err)
 	}
 	err = w.chromium.Show()
 	if err != nil {
-		globalApplication.fatal(err.Error())
+		globalApplication.handleFatalError(err)
 	}
 	if wasFocused {
 		w.focus()
@@ -1839,7 +1847,7 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 	// Get the keyboard state and convert to an accelerator
 	var keyState [256]byte
 	if !w32.GetKeyboardState(keyState[:]) {
-		globalApplication.error("Error getting keyboard state")
+		globalApplication.error("error getting keyboard state")
 		return false
 	}
 
@@ -1890,20 +1898,20 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 	if strings.HasPrefix(message, "FilesDropped") {
 		objs, err := args.GetAdditionalObjects()
 		if err != nil {
-			globalApplication.error(err.Error())
+			globalApplication.handleError(err)
 			return
 		}
 
 		defer func() {
 			err = objs.Release()
 			if err != nil {
-				globalApplication.error("Error releasing objects: " + err.Error())
+				globalApplication.error("error releasing objects: %w", err)
 			}
 		}()
 
 		count, err := objs.GetCount()
 		if err != nil {
-			globalApplication.error("cannot get count: %s", err.Error())
+			globalApplication.error("cannot get count: %w", err)
 			return
 		}
 
@@ -1911,7 +1919,7 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 		for i := uint32(0); i < count; i++ {
 			_file, err := objs.GetValueAtIndex(i)
 			if err != nil {
-				globalApplication.error("cannot get value at %d : %s", i, err.Error())
+				globalApplication.error("cannot get value at %d: %w", i, err)
 				return
 			}
 
@@ -1922,7 +1930,7 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 
 			filepath, err := file.GetPath()
 			if err != nil {
-				globalApplication.error("cannot get path for object at %d : %s", i, err.Error())
+				globalApplication.error("cannot get path for object at %d: %w", i, err)
 				return
 			}
 
@@ -1983,7 +1991,7 @@ func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error
 	var err error
 	var result w32.HICON
 	if result = w32.LoadIconWithResourceID(instance, resId); result == 0 {
-		err = errors.New(fmt.Sprintf("Cannot load icon from resource with id %v", resId))
+		err = fmt.Errorf("cannot load icon from resource with id %v", resId)
 	}
 	return result, err
 }

@@ -1,8 +1,6 @@
 package application
 
 import (
-	"fmt"
-	"os"
 	"sync"
 	"sync/atomic"
 )
@@ -33,6 +31,12 @@ func getMenuItemByID(id uint) *MenuItem {
 	return menuItemMap[id]
 }
 
+func removeMenuItemByID(id uint) {
+	menuItemMapLock.Lock()
+	defer menuItemMapLock.Unlock()
+	delete(menuItemMap, id)
+}
+
 type menuItemImpl interface {
 	setTooltip(s string)
 	setLabel(s string)
@@ -41,6 +45,7 @@ type menuItemImpl interface {
 	setAccelerator(accelerator *accelerator)
 	setHidden(hidden bool)
 	setBitmap(bitmap []byte)
+	destroy()
 }
 
 type MenuItem struct {
@@ -219,15 +224,13 @@ func NewRole(role Role) *MenuItem {
 		result = NewHelpMenuItem()
 
 	default:
-		globalApplication.error(fmt.Sprintf("No support for role: %v", role))
-		os.Exit(1)
+		globalApplication.error("no support for role: %v", role)
 	}
 
-	if result == nil {
-		return nil
+	if result != nil {
+		result.role = role
 	}
 
-	result.role = role
 	return result
 }
 
@@ -272,7 +275,7 @@ func (m *MenuItem) handleClick() {
 func (m *MenuItem) SetAccelerator(shortcut string) *MenuItem {
 	accelerator, err := parseAccelerator(shortcut)
 	if err != nil {
-		globalApplication.error("invalid accelerator. %v", err.Error())
+		globalApplication.error("invalid accelerator: %w", err)
 		return m
 	}
 	m.accelerator = accelerator
@@ -424,4 +427,30 @@ func (m *MenuItem) Clone() *MenuItem {
 		result.contextMenuData = m.contextMenuData.clone()
 	}
 	return result
+}
+
+func (m *MenuItem) Destroy() {
+
+	removeMenuItemByID(m.id)
+
+	// Clean up resources
+	if m.impl != nil {
+		m.impl.destroy()
+	}
+	if m.submenu != nil {
+		m.submenu.Destroy()
+		m.submenu = nil
+	}
+
+	if m.contextMenuData != nil {
+		m.contextMenuData = nil
+	}
+
+	if m.accelerator != nil {
+		m.accelerator = nil
+	}
+
+	m.callback = nil
+	m.radioGroupMembers = nil
+
 }

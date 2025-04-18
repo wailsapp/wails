@@ -3,7 +3,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Create as $Create} from "/wails/runtime.js";
+import { Create as $Create } from "/wails/runtime.js";
 
 /**
  * OtherPerson is like a person, but different.
@@ -36,7 +36,7 @@ export class OtherPerson<T> {
      * returns a creation function for a concrete instance
      * of the generic class OtherPerson.
      */
-    static createFrom<T>($$createParamT: (source: any) => T): ($$source?: any) => OtherPerson<T> {
+    static createFrom<T = any>($$createParamT: (source: any) => T): ($$source?: any) => OtherPerson<T> {
         const $$createField1_0 = $$createType0($$createParamT);
         return ($$source: any = {}) => {
             let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
@@ -49,4 +49,4 @@ export class OtherPerson<T> {
 }
 
 // Private type creation functions
-const $$createType0 = ($$createParamT) => $Create.Array($$createParamT);
+const $$createType0 = ($$createParamT: any) => $Create.Array($$createParamT);

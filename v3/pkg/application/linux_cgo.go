@@ -465,7 +465,7 @@ func (a *linuxApp) setIcon(icon []byte) {
 	var gerror *C.GError
 	pixbuf := C.gdk_pixbuf_new_from_stream(stream, nil, &gerror)
 	if gerror != nil {
-		a.parent.error("Failed to load application icon: " + C.GoString(gerror.message))
+		a.parent.error("failed to load application icon: %s", C.GoString(gerror.message))
 		C.g_error_free(gerror)
 		return
 	}
@@ -585,6 +585,10 @@ func menuItemChecked(widget pointer) bool {
 
 func menuItemNew(label string, bitmap []byte) pointer {
 	return menuItemAddProperties(C.gtk_menu_item_new(), label, bitmap)
+}
+
+func menuItemDestroy(widget pointer) {
+	C.gtk_widget_destroy((*C.GtkWidget)(widget))
 }
 
 func menuItemAddProperties(menuItem *C.GtkWidget, label string, bitmap []byte) pointer {

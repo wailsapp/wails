@@ -6,10 +6,10 @@
     <link rel="stylesheet" href="/style.css">
     <script type="module" src="/wails/runtime.js"></script>
     <script type="module">
-        import * as sqlite from './bindings/github.com/wailsapp/wails/v3/pkg/services/sqlite/service.js';
-        import * as kvstore from './bindings/github.com/wailsapp/wails/v3/pkg/services/kvstore/keyvaluestore.js';
-        import {Debug, Info, Warning, Error} from './bindings/github.com/wailsapp/wails/v3/pkg/services/log/loggerservice.js';
-        import * as hash from './bindings/github.com/wailsapp/wails/v3/examples/services/hashes/service.js';
+        import { Service as sqlite } from './bindings/github.com/wailsapp/wails/v3/pkg/services/sqlite/index.js';
+        import { Service as kvstore } from './bindings/github.com/wailsapp/wails/v3/pkg/services/kvstore/index.js';
+        import { Service as logger } from './bindings/github.com/wailsapp/wails/v3/pkg/services/log/index.js';
+        import { Service as hash } from './bindings/github.com/wailsapp/wails/v3/examples/services/hashes/index.js';
 
         function runHash() {
             let hashstring = document.getElementById("hashstring").value;
@@ -41,18 +41,14 @@
             let method = sqlite.Execute;
             let isSelect = false;
             if (query.toLowerCase().startsWith("select ")) {
-                method = sqlite.Select;
+                method = sqlite.Query;
                 isSelect = true;
             }
             method(query).then((result) => {
                 let results = document.getElementById("sqlresults");
                 results.innerHTML = "";
                 if (!isSelect) {
-                    let message = "Query executed successfully";
-                    if (result.length > 0) {
-                        message += " - " + result;
-                    }
-                    results.innerHTML = message;
+                    results.innerHTML = "Query executed successfully";
                     return;
                 }
                 if (result.length === 0) {
@@ -78,6 +74,8 @@
                 }
                 results.appendChild(table);
             }).catch((err) => {
+                // Log error for debugging
+                console.error(err);
                 // Put error in results
                 document.getElementById("sqlresults").innerHTML = "<p class='error-message'>" + err + "</p>";
             });
@@ -146,16 +144,16 @@
             // Call the appropriate logging function based on the log level
             switch(logLevel) {
                 case 'Debug':
-                    Debug(message);
+                    logger.Debug(message);
                     break;
                 case 'Info':
-                    Info(message);
+                    logger.Info(message);
                     break;
                 case 'Warning':
-                    Warning(message);
+                    logger.Warning(message);
                     break;
                 case 'Error':
-                    Error(message);
+                    logger.Error(message);
                     break;
             }
         }

@@ -4,16 +4,15 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
 import * as $models from "./models.js";
 
 /**
- * @returns {Promise<$models.Data> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.Data>}
  */
 export function Method() {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.Service.Method"));
-    return $resultPromise;
+    return $Call.ByName("main.Service.Method");
 }

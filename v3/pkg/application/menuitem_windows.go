@@ -3,8 +3,9 @@
 package application
 
 import (
-	"github.com/wailsapp/wails/v3/pkg/w32"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
 type windowsMenuItem struct {
@@ -23,9 +24,9 @@ type windowsMenuItem struct {
 }
 
 func (m *windowsMenuItem) setHidden(hidden bool) {
-	m.hidden = hidden
-	if m.hidden {
-		// iterate the parent items and find the menu item before us
+	if hidden && !m.hidden {
+		m.hidden = true
+		// iterate the parent items and find the menu item after us
 		for i, item := range m.parent.items {
 			if item == m.menuItem {
 				if i < len(m.parent.items)-1 {
@@ -36,13 +37,11 @@ func (m *windowsMenuItem) setHidden(hidden bool) {
 				break
 			}
 		}
-		// Get the position of this menu item in the parent menu
-		// m.pos = w32.GetMenuItemPosition(m.hMenu, uint32(m.id))
 		// Remove from parent menu
 		w32.RemoveMenu(m.hMenu, m.id, w32.MF_BYCOMMAND)
-	} else {
-		// Add to parent menu
-		// Get the position of the item before us
+	} else if !hidden && m.hidden {
+		m.hidden = false
+		// Add to parent menu before the "itemAfter"
 		var pos int
 		if m.itemAfter != nil {
 			for i, item := range m.parent.items {
@@ -96,6 +95,10 @@ func (m *windowsMenuItem) setChecked(checked bool) {
 	m.update()
 }
 
+func (m *windowsMenuItem) destroy() {
+	w32.RemoveMenu(m.hMenu, m.id, w32.MF_BYCOMMAND)
+}
+
 func (m *windowsMenuItem) setAccelerator(accelerator *accelerator) {
 	//// Set the keyboard shortcut of the menu item
 	//var modifier C.int
@@ -117,7 +120,7 @@ func (m *windowsMenuItem) setBitmap(bitmap []byte) {
 	// Set the icon
 	err := w32.SetMenuIcons(m.hMenu, m.id, bitmap, nil)
 	if err != nil {
-		globalApplication.error("Unable to set bitmap on menu item: %s", err.Error())
+		globalApplication.error("unable to set bitmap on menu item: %w", err)
 		return
 	}
 	m.update()

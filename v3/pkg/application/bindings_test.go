@@ -44,7 +44,7 @@ func (t *TestService) Variadic(s ...string) []string {
 	return s
 }
 
-func (t *TestService) PositionalAndVariadic(a int, b ...string) int {
+func (t *TestService) PositionalAndVariadic(a int, _ ...string) int {
 	return a
 }
 
@@ -52,106 +52,103 @@ func (t *TestService) Slice(a []int) []int {
 	return a
 }
 
-func newArgs(jsonArgs ...string) []json.RawMessage {
-	args := []json.RawMessage{}
-
+func newArgs(jsonArgs ...string) (args []json.RawMessage) {
 	for _, j := range jsonArgs {
 		args = append(args, json.RawMessage(j))
 	}
-	return args
+	return
 }
 
 func TestBoundMethodCall(t *testing.T) {
-
 	tests := []struct {
 		name     string
 		method   string
 		args     []json.RawMessage
-		err      error
+		err      string
 		expected interface{}
 	}{
 		{
 			name:     "nil",
 			method:   "Nil",
 			args:     []json.RawMessage{},
-			err:      nil,
+			err:      "",
 			expected: nil,
 		},
 		{
 			name:     "string",
 			method:   "String",
 			args:     newArgs(`"foo"`),
-			err:      nil,
+			err:      "",
 			expected: "foo",
 		},
 		{
 			name:     "multiple",
 			method:   "Multiple",
 			args:     newArgs(`"foo"`, "0", "false"),
-			err:      nil,
+			err:      "",
 			expected: []interface{}{"foo", 0, false},
 		},
 		{
 			name:     "struct",
 			method:   "Struct",
 			args:     newArgs(`{ "name": "alice" }`),
-			err:      nil,
+			err:      "",
 			expected: Person{Name: "alice"},
 		},
 		{
 			name:     "struct, nil error",
 			method:   "StructNil",
 			args:     newArgs(`{ "name": "alice" }`),
-			err:      nil,
+			err:      "",
 			expected: Person{Name: "alice"},
 		},
 		{
 			name:     "struct, error",
 			method:   "StructError",
 			args:     newArgs(`{ "name": "alice" }`),
-			err:      errors.New("error"),
+			err:      "error",
 			expected: nil,
 		},
 		{
 			name:     "invalid argument count",
 			method:   "Multiple",
 			args:     newArgs(`"foo"`),
-			err:      errors.New("expects 3 arguments, received 1"),
+			err:      "expects 3 arguments, got 1",
 			expected: nil,
 		},
 		{
 			name:     "invalid argument type",
 			method:   "String",
 			args:     newArgs("1"),
-			err:      errors.New("could not parse"),
+			err:      "could not parse",
 			expected: nil,
 		},
 		{
 			name:     "variadic, no arguments",
 			method:   "Variadic",
 			args:     newArgs(`[]`), // variadic parameters are passed as arrays
-			err:      nil,
+			err:      "",
 			expected: []string{},
 		},
 		{
 			name:     "variadic",
 			method:   "Variadic",
 			args:     newArgs(`["foo", "bar"]`),
-			err:      nil,
+			err:      "",
 			expected: []string{"foo", "bar"},
 		},
 		{
 			name:     "positional and variadic",
 			method:   "PositionalAndVariadic",
 			args:     newArgs("42", `[]`),
-			err:      nil,
+			err:      "",
 			expected: 42,
 		},
 		{
 			name:     "slice",
 			method:   "Slice",
 			args:     newArgs(`[1,2,3]`),
-			err:      nil,
+			err:      "",
 			expected: []int{1, 2, 3},
 		},
 	}
@@ -159,13 +156,11 @@ func TestBoundMethodCall(t *testing.T) {
 	// init globalApplication
 	_ = application.New(application.Options{})
 
-	bindings, err := application.NewBindings(
-		[]application.Service{
-			application.NewService(&TestService{}),
-		}, make(map[uint32]uint32),
-	)
+	bindings := application.NewBindings(nil, nil)
+
+	err := bindings.Add(application.NewService(&TestService{}))
 	if err != nil {
-		t.Fatalf("application.NewBindings() error = %v\n", err)
+		t.Fatalf("bindings.Add() error = %v\n", err)
 	}
 
 	for _, tt := range tests {
@@ -180,13 +175,16 @@ func TestBoundMethodCall(t *testing.T) {
 			}
 
 			result, err := method.Call(context.TODO(), tt.args)
-			if tt.err != err && (tt.err == nil || err == nil || !strings.Contains(err.Error(), tt.err.Error())) {
-				t.Fatalf("error: %v, expected error: %v", err, tt.err)
+			if (tt.err == "") != (err == nil) || (err != nil && !strings.Contains(err.Error(), tt.err)) {
+				expected := tt.err
+				if expected == "" {
+					expected = "nil"
+				}
+				t.Fatalf("error: %#v, expected error: %v", err, expected)
 			}
 			if !reflect.DeepEqual(result, tt.expected) {
 				t.Fatalf("result: %v, expected result: %v", result, tt.expected)
 			}
-
 		})
 	}
 

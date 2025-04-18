@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New Menu guide by [@leaanthony](https://github.com/leaanthony)
 - Add doc comments for Service API by [@fbbdev](https://github.com/fbbdev) in [#4024](https://github.com/wailsapp/wails/pull/4024)
 - Add function `application.NewServiceWithOptions` to initialise services with additional configuration by [@leaanthony](https://github.com/leaanthony) in [#4024](https://github.com/wailsapp/wails/pull/4024)
+- Improved menu control by [@FalcoG](https://github.com/FalcoG) and [@leaanthony](https://github.com/leaanthony) in [#4031](https://github.com/wailsapp/wails/pull/4031)
 - More documentation by [@leaanthony](https://github.com/leaanthony)
 - Support cancellation of events in standard event listeners by [@leaanthony](https://github.com/leaanthony)
 - Systray `Hide`, `Show` and `Destroy` support by [@leaanthony](https://github.com/leaanthony)
@@ -52,6 +53,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `//wails:ignore` directive to prevent binding generation for chosen service methods by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Add `//wails:internal` directive on services and models to allow for types that are exported in Go but not in JS/TS by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Add binding generator support for constants of alias type to allow for weakly typed enums by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Add binding generator tests for Go 1.24 features by [@fbbdev](https://github.com/fbbdev) in [#4068](https://github.com/wailsapp/wails/pull/4068)
+- Add support for macOS 15 "Sequoia" to `OSInfo.Branding` for improved OS version detection in [#4065](https://github.com/wailsapp/wails/pull/4065)
+- Add `PostShutdown` hook for running custom code after the shutdown process completes by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Add `FatalError` struct to support detection of fatal errors in custom error handlers by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Standardise and document service startup and shutdown order by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Add test harness for application startup/shutdown sequence and service startup/shutdown tests by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Add `RegisterService` method for registering services after the application has been created by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Add `MarshalError` field in application and service options for custom error handling in binding calls by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Add cancellable promise wrapper that propagates cancellation requests through promise chains by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Add the ability to tie binding call cancellation to an `AbortSignal` by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Support `data-wml-*` attributes for WML alongside the usual `wml-*` attributes by [@leaanthony](https://github.com/leaanthony)
+- Add `Configure` method on all services for late configuration/dynamic reconfiguration by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `fileserver` service sends a 503 Service Unavailable response when unconfigured by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `kvstore` service provides an in-memory key-value store by default when unconfigured by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add `Load` method on `kvstore` service to reload data from file after config changes by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add `Clear` method on `kvstore` service to delete all keys by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add type `Level` in `log` service to provide JS-side log-level constants by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add `Log` method on `log` service to specify log-level dynamically by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `sqlite` service provides an in-memory DB by default when unconfigured by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add method `Close` on `sqlite` service to close the DB manually by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add cancellation support for query methods on `sqlite` service by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Add prepared statement support to `sqlite` service with JS bindings by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Gin support by [Lea Anthony](https://github.com/leaanthony) in [PR](https://github.com/wailsapp/wails/pull/3537) based on the original work of [@AnalogJ](https://github.com/AnalogJ) in PR[https://github.com/wailsapp/wails/pull/3537]
+- Fix auto save and password auto save always enabled by [@oSethoum](https://github.com/osethoum) in [#4134](https://github.com/wailsapp/wails/pull/4134)
+- Add `SetMenu()` on window to allow for setting a menu on a window by [@leaanthony](https://github.com/leaanthony)
+- Add Notification support by [@popaprozac] in [#4098](https://github.com/wailsapp/wails/pull/4098)
+-  Add File Association support for mac by [@wimaha](https://github.com/wimaha) in [#4177](https://github.com/wailsapp/wails/pull/4177)
 
 ### Fixed
 
@@ -77,6 +105,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved injected code to the end of service files by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Fixed handling of errors from file close operations in binding generator by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - Suppressed warnings for services that define lifecycle or http methods but no other bound methods by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Fixed non-React templates failing to display Hello World footer when using light system colour scheme by [@marcus-crane](https://github.com/marcus-crane) in [#4056](https://github.com/wailsapp/wails/pull/4056)
+- Fixed hidden menu items on macOS by [@leaanthony](https://github.com/leaanthony)
+- Fixed handling and formatting of errors in message processors by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+-  Fixed skipped service shutdown when quitting application by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+-  Ensure menu updates occur on the main thread by [@leaanthony](https://github.com/leaanthony)
+- The dragging and resizing mechanism is now more robust and matches expected platform behaviour more closely by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Fixed [#4097](https://github.com/wailsapp/wails/issues/4097) Webpack/angular discards runtime init code by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Fixed initially-hidden menu items by [@IanVS](https://github.com/IanVS) in [#4116](https://github.com/wailsapp/wails/pull/4116)
+- Fixed assetFileServer not serving `.html` files when non-extension request when `[request]` doesn't exist but `[request].html` does
+- Fixed icon generation paths by [@robin-samuel](https://github.com/robin-samuel) in [#4125](https://github.com/wailsapp/wails/pull/4125)
+- Fixed `fullscreen`, `unfullscreen`, `unminimise` and `unmaximise` events not being emitted by [@oSethoum](https://github.com/osethoum) in [#4130](https://github.com/wailsapp/wails/pull/4130)
+- Fixed NSIS Error because of incorrect prefix on default version in config by [@robin-samuel](https://github.com/robin-samuel) in [#4126](https://github.com/wailsapp/wails/pull/4126)
+- Fixed Dialogs runtime function returning escaped paths on Windows by [TheGB0077](https://github.com/TheGB0077) in [#4188](https://github.com/wailsapp/wails/pull/4188)
+- Fixed Webview2 detection path in HKCU by [@leaanthony](https://github.com/leaanthony).
+- Fixed Windows icon generation task file name by [@yulesxoxo](https://github.com/yulesxoxo) in [#4219](https://github.com/wailsapp/wails/pull/4219).
 
 ### Changed
 
@@ -90,6 +133,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In JS/TS bindings, `internal.js/ts` model files have been removed; all models can now be found in `models.js/ts` by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - In JS/TS bindings, named types are never rendered as aliases for other named types; the old behaviour is now restricted to aliases by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
 - In JS/TS bindings, in class mode, struct fields whose type is a type parameter are marked optional and never initialised automatically by [@fbbdev](https://github.com/fbbdev) in [#4045](https://github.com/wailsapp/wails/pull/4045)
+- Remove ESLint from templates by by [@IanVS](https://github.com/IanVS) in [#4059](https://github.com/wailsapp/wails/pull/4059)
+- Update copyright date to 2025 by [@IanVS](https://github.com/IanVS) in [#4037](https://github.com/wailsapp/wails/pull/4037)
+- Add docs for event.Sender by [@IanVS](https://github.com/IanVS) in [#4075](https://github.com/wailsapp/wails/pull/4075)
+- Go 1.24 support by [@leaanthony](https://github.com/leaanthony)
+- `ServiceStartup` hooks are now invoked when `App.Run` is called, not in `application.New` by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- `ServiceStartup` errors are now returned from `App.Run` instead of terminating the process by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Binding and dialog calls from JS now reject with error objects instead of strings by [@fbbdev](https://github.com/fbbdev) in [#4066](https://github.com/wailsapp/wails/pull/4066)
+- Improved systray menu positioning on Windows by [@leaanthony](https://github.com/leaanthony)
+- The JS runtime has been ported to TypeScript by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- The runtime initialises as soon as it is imported, no need to wait for the window to load by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- The runtime does not export an init method anymore. A side effects import can be used to initialise it by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Bound methods now return a `CancellablePromise` that rejects with a `CancelError` if cancelled. The actual result of the call is discarded by [@fbbdev](https://github.com/fbbdev) in [#4100](https://github.com/wailsapp/wails/pull/4100)
+- Built-in service types are now consistently called `Service` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Built-in service creation functions with options are now consistently called `NewWithConfig` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- `Select` method on `sqlite` service is now named `Query` for consistency with Go APIs by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Templates: moved runtime to "dependencies", organized package.json files by [@IanVS](https://github.com/IanVS) in [#4133](https://github.com/wailsapp/wails/pull/4133)
+- Creates and ad-hoc signs app bundles in dev to enable certain macOS APIs by [@popaprozac] in [#4171](https://github.com/wailsapp/wails/pull/4171)
 
 ## v3.0.0-alpha.9 - 2025-01-13
 

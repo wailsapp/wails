@@ -1,28 +1,35 @@
 {
-    "compilerOptions": {
-        "allowJs": true,
-        "noEmit": true,
-        "skipLibCheck": true,
+  "include": ["output/**/*.js", "output/**/*.ts"],
+  "exclude": ["output/**/*.got.?s"],
+  "references": [
+    { "path": "../../runtime/desktop/@wailsio/runtime" }
+  ],
+  "compilerOptions": {
+    "allowJs": true,
 
-        "target": "ES6",
-        "lib": ["ES6", "DOM"],
+    "noEmit": true,
+    "skipLibCheck": true,
 
-        "module": "ES6",
-        "moduleResolution": "Node",
-        "isolatedModules": true,
-        "esModuleInterop": true,
+    "target": "ES2015",
+    "module": "ES2015",
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
 
-        "strict": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": false,
-        "noImplicitAny": false,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
+    "lib": [
+      "DOM",
+      "ESNext"
+    ],
 
-        "paths": {
-            "/wails/runtime.js": ["../../runtime/desktop/@wailsio/runtime/types/index.d.ts"]
-        }
-    },
-    "include": ["output/**/*"],
-    "exclude": ["output/**/*.got.?s"]
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "paths": {
+      "/wails/runtime.js": ["../../runtime/desktop/@wailsio/runtime/src/index.ts"]
+    }
+  }
 }

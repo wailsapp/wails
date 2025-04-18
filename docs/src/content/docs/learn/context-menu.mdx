@@ -65,6 +65,10 @@ To associate a context menu with an HTML element, use the `--custom-contextmenu`
 - `--custom-contextmenu`: Specifies the menu ID (must match the ID used in `NewContextMenu`)
 - `--custom-contextmenu-data`: Optional data that will be passed to the click handlers
 
+:::note
+This feature will only work as expected after the runtime [has been initialised](../runtime#initialisation).
+:::
+
 ## Default Context Menu
 
 The default context menu is the webview's built-in context menu that provides system-level operations. You can control its visibility using the `--default-contextmenu` CSS property:

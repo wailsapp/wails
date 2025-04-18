@@ -1,7 +1,6 @@
 package application
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"runtime"
@@ -9,6 +8,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"text/template"
 
 	"github.com/leaanthony/u"
 
@@ -109,6 +109,7 @@ type (
 		showMenuBar()
 		hideMenuBar()
 		toggleMenuBar()
+		setMenu(menu *Menu)
 	}
 )
 
@@ -168,6 +169,22 @@ type WebviewWindow struct {
 
 	// unconditionallyClose marks the window to be unconditionally closed
 	unconditionallyClose bool
+}
+
+func (w *WebviewWindow) SetMenu(menu *Menu) {
+	switch runtime.GOOS {
+	case "darwin":
+		return
+	case "windows":
+		w.options.Windows.Menu = menu
+	case "linux":
+		w.options.Linux.Menu = menu
+	}
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setMenu(menu)
+		})
+	}
 }
 
 // EmitEvent emits an event from the window
@@ -278,7 +295,7 @@ func processKeyBindingOptions(keyBindings map[string]func(window *WebviewWindow)
 		// Parse the key to an accelerator
 		acc, err := parseAccelerator(key)
 		if err != nil {
-			globalApplication.error("Invalid keybinding: %s", err.Error())
+			globalApplication.error("invalid keybinding: %w", err)
 			continue
 		}
 		result[acc.String()] = callback
@@ -293,40 +310,27 @@ func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 	w.cancellers = append(w.cancellers, canceller)
 }
 
-// formatJS ensures the 'data' provided marshals to valid json or panics
-func (w *WebviewWindow) formatJS(f string, callID string, data string) string {
-	j, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
-	return fmt.Sprintf(f, callID, j)
-}
-
-func (w *WebviewWindow) CallError(callID string, result string) {
+func (w *WebviewWindow) CallError(callID string, result string, isJSON bool) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.callErrorHandler('%s', %s);", callID, result))
+		w.impl.execJS(fmt.Sprintf("_wails.callErrorHandler('%s', '%s', %t);", callID, template.JSEscapeString(result), isJSON))
 	}
 }
 
 func (w *WebviewWindow) CallResponse(callID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.callResultHandler('%s', %s, true);", callID, result))
+		w.impl.execJS(fmt.Sprintf("_wails.callResultHandler('%s', '%s', true);", callID, template.JSEscapeString(result)))
 	}
 }
 
 func (w *WebviewWindow) DialogError(dialogID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.dialogErrorCallback('%s', %s);", dialogID, result))
+		w.impl.execJS(fmt.Sprintf("_wails.dialogErrorCallback('%s', '%s');", dialogID, template.JSEscapeString(result)))
 	}
 }
 
 func (w *WebviewWindow) DialogResponse(dialogID string, result string, isJSON bool) {
 	if w.impl != nil {
-		if isJSON {
-			w.impl.execJS(w.formatJS("_wails.dialogResultCallback('%s', %s, true);", dialogID, result))
-		} else {
-			w.impl.execJS(fmt.Sprintf("_wails.dialogResultCallback('%s', '%s', false);", dialogID, result))
-		}
+		w.impl.execJS(fmt.Sprintf("_wails.dialogResultCallback('%s', '%s', %t);", dialogID, template.JSEscapeString(result), isJSON))
 	}
 }
 
@@ -694,7 +698,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 			InvokeSync(func() {
 				err := w.startDrag()
 				if err != nil {
-					w.Error("Failed to start drag: %s", err)
+					w.Error("failed to start drag: %w", err)
 				}
 			})
 		}
@@ -702,12 +706,12 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		if !w.IsFullscreen() {
 			sl := strings.Split(message, ":")
 			if len(sl) != 3 {
-				w.Error("Unknown message returned from dispatcher", "message", message)
+				w.Error("unknown message returned from dispatcher: %s", message)
 				return
 			}
 			err := w.startResize(sl[2])
 			if err != nil {
-				w.Error(err.Error())
+				w.Error("%w", err)
 			}
 		}
 	case message == "wails:runtime:ready":
@@ -718,7 +722,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 			w.ExecJS(js)
 		}
 	default:
-		w.Error("Unknown message sent via 'invoke' on frontend: %v", message)
+		w.Error("unknown message sent via 'invoke' on frontend: %v", message)
 	}
 }
 
@@ -1166,10 +1170,8 @@ func (w *WebviewWindow) Info(message string, args ...any) {
 }
 
 func (w *WebviewWindow) Error(message string, args ...any) {
-	var messageArgs []interface{}
-	messageArgs = append(messageArgs, args...)
-	messageArgs = append(messageArgs, "sender", w.Name())
-	globalApplication.error(message, messageArgs...)
+	args = append([]any{w.Name()}, args...)
+	globalApplication.error("in window '%s': "+message, args...)
 }
 
 func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
@@ -1186,7 +1188,7 @@ func (w *WebviewWindow) OpenContextMenu(data *ContextMenuData) {
 	// try application level context menu
 	menu, ok := globalApplication.getContextMenu(data.Id)
 	if !ok {
-		w.Error("No context menu found for id: %s", data.Id)
+		w.Error("no context menu found for id: %s", data.Id)
 		return
 	}
 	menu.setContextData(data)

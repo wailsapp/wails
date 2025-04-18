@@ -2,11 +2,8 @@ package hash
 
 import "hash/fnv"
 
-func Fnv(s string) (uint32, error) {
+func Fnv(s string) uint32 {
 	h := fnv.New32a()
-	_, err := h.Write([]byte(s))
-	if err != nil {
-		return 0, err
-	}
-	return h.Sum32(), nil
+	_, _ = h.Write([]byte(s)) // Hash implementations never return errors (see https://pkg.go.dev/hash#Hash)
+	return h.Sum32()
 }

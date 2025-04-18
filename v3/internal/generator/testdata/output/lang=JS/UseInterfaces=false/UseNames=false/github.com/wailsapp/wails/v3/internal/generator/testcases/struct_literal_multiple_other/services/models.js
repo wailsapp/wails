@@ -4,7 +4,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Create as $Create} from "/wails/runtime.js";
+import { Create as $Create } from "/wails/runtime.js";
 
 export class Address {
     /**

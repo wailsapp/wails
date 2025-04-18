@@ -6,3 +6,17 @@ import * as Service from "./service.js";
 export {
     Service
 };
+
+import * as $models from "./models.js";
+
+/**
+ * Row holds a single row in the result of a query.
+ * It is a key-value map where keys are column names.
+ * @typedef {$models.Row} Row
+ */
+
+/**
+ * Rows holds the result of a query
+ * as an array of key-value maps where keys are column names.
+ * @typedef {$models.Rows} Rows
+ */

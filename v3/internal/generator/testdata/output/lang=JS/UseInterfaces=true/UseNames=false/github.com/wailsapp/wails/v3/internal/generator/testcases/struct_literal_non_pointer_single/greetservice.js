@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -17,387 +17,344 @@ import * as $models from "./models.js";
 
 /**
  * @param {number[]} $in
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function ArrayInt($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3862002418, $in));
-    return $resultPromise;
+    return $Call.ByID(3862002418, $in);
 }
 
 /**
  * @param {boolean} $in
- * @returns {Promise<boolean> & { cancel(): void }}
+ * @returns {$CancellablePromise<boolean>}
  */
 export function BoolInBoolOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2424639793, $in));
-    return $resultPromise;
+    return $Call.ByID(2424639793, $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function Float32InFloat32Out($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3132595881, $in));
-    return $resultPromise;
+    return $Call.ByID(3132595881, $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function Float64InFloat64Out($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2182412247, $in));
-    return $resultPromise;
+    return $Call.ByID(2182412247, $in);
 }
 
 /**
  * Greet someone
  * @param {string} name
- * @returns {Promise<string> & { cancel(): void }}
+ * @returns {$CancellablePromise<string>}
  */
 export function Greet(name) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1411160069, name));
-    return $resultPromise;
+    return $Call.ByID(1411160069, name);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function Int16InIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3306292566, $in));
-    return $resultPromise;
+    return $Call.ByID(3306292566, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function Int16PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1754277916, $in));
-    return $resultPromise;
+    return $Call.ByID(1754277916, $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function Int32InIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1909469092, $in));
-    return $resultPromise;
+    return $Call.ByID(1909469092, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function Int32PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(4251088558, $in));
-    return $resultPromise;
+    return $Call.ByID(4251088558, $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function Int64InIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1343888303, $in));
-    return $resultPromise;
+    return $Call.ByID(1343888303, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function Int64PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2205561041, $in));
-    return $resultPromise;
+    return $Call.ByID(2205561041, $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function Int8InIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(572240879, $in));
-    return $resultPromise;
+    return $Call.ByID(572240879, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function Int8PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2189402897, $in));
-    return $resultPromise;
+    return $Call.ByID(2189402897, $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function IntInIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(642881729, $in));
-    return $resultPromise;
+    return $Call.ByID(642881729, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function IntPointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1066151743, $in));
-    return $resultPromise;
+    return $Call.ByID(1066151743, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function IntPointerInputNamedOutputs($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2718999663, $in));
-    return $resultPromise;
+    return $Call.ByID(2718999663, $in);
 }
 
 /**
  * @param {{ [_: `${number}`]: number } | null} $in
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function MapIntInt($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2386486356, $in));
-    return $resultPromise;
+    return $Call.ByID(2386486356, $in);
 }
 
 /**
  * @param {{ [_: `${number}`]: number | null } | null} $in
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function MapIntIntPointer($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2163571325, $in));
-    return $resultPromise;
+    return $Call.ByID(2163571325, $in);
 }
 
 /**
  * @param {{ [_: `${number}`]: number[] | null } | null} $in
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function MapIntSliceInt($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2900172572, $in));
-    return $resultPromise;
+    return $Call.ByID(2900172572, $in);
 }
 
 /**
  * @param {{ [_: `${number}`]: number[] | null } | null} $in
- * @returns {Promise<{ [_: `${number}`]: number[] | null } | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<{ [_: `${number}`]: number[] | null } | null>}
  */
 export function MapIntSliceIntInMapIntSliceIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(881980169, $in));
-    return $resultPromise;
+    return $Call.ByID(881980169, $in);
 }
 
 /**
- * @returns {Promise<string> & { cancel(): void }}
+ * @returns {$CancellablePromise<string>}
  */
 export function NoInputsStringOut() {
-    let $resultPromise = /** @type {any} */($Call.ByID(1075577233));
-    return $resultPromise;
+    return $Call.ByID(1075577233);
 }
 
 /**
  * @param {boolean | null} $in
- * @returns {Promise<boolean | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<boolean | null>}
  */
 export function PointerBoolInBoolOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3589606958, $in));
-    return $resultPromise;
+    return $Call.ByID(3589606958, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function PointerFloat32InFloat32Out($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(224675106, $in));
-    return $resultPromise;
+    return $Call.ByID(224675106, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function PointerFloat64InFloat64Out($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2124953624, $in));
-    return $resultPromise;
+    return $Call.ByID(2124953624, $in);
 }
 
 /**
  * @param {{ [_: `${number}`]: number } | null} $in
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function PointerMapIntInt($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3516977899, $in));
-    return $resultPromise;
+    return $Call.ByID(3516977899, $in);
 }
 
 /**
  * @param {string | null} $in
- * @returns {Promise<string | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<string | null>}
  */
 export function PointerStringInStringOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(229603958, $in));
-    return $resultPromise;
+    return $Call.ByID(229603958, $in);
 }
 
 /**
  * @param {string[] | null} $in
- * @returns {Promise<string[] | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<string[] | null>}
  */
 export function StringArrayInputNamedOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3678582682, $in));
-    return $resultPromise;
+    return $Call.ByID(3678582682, $in);
 }
 
 /**
  * @param {string[] | null} $in
- * @returns {Promise<string[] | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<string[] | null>}
  */
 export function StringArrayInputNamedOutputs($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(319259595, $in));
-    return $resultPromise;
+    return $Call.ByID(319259595, $in);
 }
 
 /**
  * @param {string[] | null} $in
- * @returns {Promise<string[] | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<string[] | null>}
  */
 export function StringArrayInputStringArrayOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(383995060, $in));
-    return $resultPromise;
+    return $Call.ByID(383995060, $in);
 }
 
 /**
  * @param {string[] | null} $in
- * @returns {Promise<string> & { cancel(): void }}
+ * @returns {$CancellablePromise<string>}
  */
 export function StringArrayInputStringOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1091960237, $in));
-    return $resultPromise;
+    return $Call.ByID(1091960237, $in);
 }
 
 /**
  * @param {$models.Person} $in
- * @returns {Promise<$models.Person> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.Person>}
  */
 export function StructInputStructOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3835643147, $in));
-    return $resultPromise;
+    return $Call.ByID(3835643147, $in);
 }
 
 /**
  * @param {$models.Person | null} $in
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function StructPointerInputErrorOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2447692557, $in));
-    return $resultPromise;
+    return $Call.ByID(2447692557, $in);
 }
 
 /**
  * @param {$models.Person | null} $in
- * @returns {Promise<$models.Person | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.Person | null>}
  */
 export function StructPointerInputStructPointerOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2943477349, $in));
-    return $resultPromise;
+    return $Call.ByID(2943477349, $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function UInt16InUIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(3401034892, $in));
-    return $resultPromise;
+    return $Call.ByID(3401034892, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function UInt16PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1236957573, $in));
-    return $resultPromise;
+    return $Call.ByID(1236957573, $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function UInt32InUIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1160383782, $in));
-    return $resultPromise;
+    return $Call.ByID(1160383782, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function UInt32PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1739300671, $in));
-    return $resultPromise;
+    return $Call.ByID(1739300671, $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function UInt64InUIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(793803239, $in));
-    return $resultPromise;
+    return $Call.ByID(793803239, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function UInt64PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1403757716, $in));
-    return $resultPromise;
+    return $Call.ByID(1403757716, $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function UInt8InUIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2988345717, $in));
-    return $resultPromise;
+    return $Call.ByID(2988345717, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function UInt8PointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(518250834, $in));
-    return $resultPromise;
+    return $Call.ByID(518250834, $in);
 }
 
 /**
  * @param {number} $in
- * @returns {Promise<number> & { cancel(): void }}
+ * @returns {$CancellablePromise<number>}
  */
 export function UIntInUIntOut($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(2836661285, $in));
-    return $resultPromise;
+    return $Call.ByID(2836661285, $in);
 }
 
 /**
  * @param {number | null} $in
- * @returns {Promise<number | null> & { cancel(): void }}
+ * @returns {$CancellablePromise<number | null>}
  */
 export function UIntPointerInAndOutput($in) {
-    let $resultPromise = /** @type {any} */($Call.ByID(1367187362, $in));
-    return $resultPromise;
+    return $Call.ByID(1367187362, $in);
 }

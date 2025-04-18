@@ -8,45 +8,40 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 /**
  * Comment 1.
  */
-export function Method1(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(841558284) as any;
-    return $resultPromise;
+export function Method1(): $CancellablePromise<void> {
+    return $Call.ByID(841558284);
 }
 
 /**
  * Comment 2.
  */
-export function Method2(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(891891141) as any;
-    return $resultPromise;
+export function Method2(): $CancellablePromise<void> {
+    return $Call.ByID(891891141);
 }
 
 /**
  * Comment 3a.
  * Comment 3b.
  */
-export function Method3(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(875113522) as any;
-    return $resultPromise;
+export function Method3(): $CancellablePromise<void> {
+    return $Call.ByID(875113522);
 }
 
 /**
  * Comment 4.
  */
-export function Method4(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(791225427) as any;
-    return $resultPromise;
+export function Method4(): $CancellablePromise<void> {
+    return $Call.ByID(791225427);
 }
 
 /**
  * Comment 5.
  */
-export function Method5(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(774447808) as any;
-    return $resultPromise;
+export function Method5(): $CancellablePromise<void> {
+    return $Call.ByID(774447808);
 }

@@ -22,7 +22,7 @@
 {{end}}
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call{{if not $useInterfaces}}, Create as $Create{{end -}} } from "{{js $runtime}}";
+import { Call as $Call, CancellablePromise as $CancellablePromise{{if not $useInterfaces}}, Create as $Create{{end}} } from "{{js $runtime}}";
 {{range $imports.External}}
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -46,7 +46,7 @@ import * as $models from "./{{js $models}}";
 {{- range $i, $param := .Params}}
  * @param { {{- $module.JSType .Type}}{{if .Variadic}}[]{{end -}} } {{jsparam $i .}}
 {{- end}}
- * @returns {Promise<
+ * @returns {$CancellablePromise<
     {{- if eq 0 (len .Results) -}}
         void
     {{- else if eq 1 (len .Results)}}
@@ -56,7 +56,7 @@ import * as $models from "./{{js $models}}";
             {{- if gt $i 0}}, {{end}}
             {{- $module.JSType $result}}
         {{- end}}]
-    {{- end}}> & { cancel(): void }}
+    {{- end}}>}
  */
 {{if not .Internal}}export {{end}}function {{.Name}}({{range $i, $param := .Params -}}
     {{- if gt $i 0}}, {{end}}
@@ -64,14 +64,14 @@ import * as $models from "./{{js $models}}";
     {{- jsparam $i .}}
 {{- end}}) {
     {{- if $useNames}}
-    let $resultPromise = /** @type {any} */($Call.ByName("{{js .FQN}}"
+    return $Call.ByName("{{js .FQN}}"
     {{- else}}
-    let $resultPromise = /** @type {any} */($Call.ByID({{.ID}}
-    {{- end}}{{range $i, $param := .Params}}, {{jsparam $i .}}{{end}}));
-    {{- if or $useInterfaces (not .Results) ($module.SkipCreate .Results)}}
-    return $resultPromise;
-    {{- else}}
-    let $typingPromise = /** @type {any} */($resultPromise.then(($result) => {
+    return $Call.ByID({{.ID}}
+    {{- end}}{{range $i, $param := .Params}}, {{jsparam $i .}}{{end}})
+    {{- if or $useInterfaces (not .Results) ($module.SkipCreate .Results) -}}
+    ;
+    {{- else -}}
+    .then(/** @type {($result: any) => any} */(($result) => {
     {{- if eq 1 (len .Results)}}
         return {{$module.JSCreate (index .Results 0)}}($result);
     {{- else}}
@@ -83,8 +83,6 @@ import * as $models from "./{{js $models}}";
         return $result;
     {{- end}}
     }));
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
     {{- end}}
 }
 {{end}}

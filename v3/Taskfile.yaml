@@ -96,6 +96,8 @@ tasks:
       EXAMPLEDIRS: |
         binding
         build
+        cancel-async
+        cancel-chaining
         clipboard
         contextmenus
         dialogs
@@ -108,17 +110,21 @@ tasks:
         ignore-mouse
         keybindings
         menu
+        panic-handling
         plain
         raw-message
         screen
         services
         show-macos-toolbar
+        single-instance
         systray-basic
-        systray-menu
         systray-custom
+        systray-menu
         video
         window
         window-api
+        window-call
+        window-menu
         wml
     cmds:
       - for: { var: EXAMPLEDIRS }

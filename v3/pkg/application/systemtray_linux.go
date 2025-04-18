@@ -9,13 +9,14 @@ package application
 import "C"
 import (
 	"fmt"
+	"os"
+
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/introspect"
 	"github.com/godbus/dbus/v5/prop"
 	"github.com/wailsapp/wails/v3/internal/dbus/menu"
 	"github.com/wailsapp/wails/v3/internal/dbus/notifier"
 	"github.com/wailsapp/wails/v3/pkg/icons"
-	"os"
 )
 
 const (
@@ -86,6 +87,8 @@ func (s *systrayMenuItem) setDisabled(disabled bool) {
 		s.sysTray.update(s)
 	}
 }
+
+func (s *systrayMenuItem) destroy() {}
 
 func (s *systrayMenuItem) setChecked(checked bool) {
 	v := dbus.MakeVariant(0)
@@ -176,7 +179,7 @@ func (s *linuxSystemTray) refresh() {
 	s.menuVersion++
 	if err := s.menuProps.Set("com.canonical.dbusmenu", "Version",
 		dbus.MakeVariant(s.menuVersion)); err != nil {
-		globalApplication.error("systray error: failed to update menu version: %v", err)
+		globalApplication.error("systray error: failed to update menu version: %w", err)
 		return
 	}
 	if err := menu.Emit(s.conn, &menu.Dbusmenu_LayoutUpdatedSignal{
@@ -185,7 +188,7 @@ func (s *linuxSystemTray) refresh() {
 			Revision: s.menuVersion,
 		},
 	}); err != nil {
-		globalApplication.error("systray error: failed to emit layout updated signal: %v", err)
+		globalApplication.error("systray error: failed to emit layout updated signal: %w", err)
 	}
 }
 
@@ -268,34 +271,34 @@ func (s *linuxSystemTray) bounds() (*Rect, error) {
 func (s *linuxSystemTray) run() {
 	conn, err := dbus.SessionBus()
 	if err != nil {
-		globalApplication.error("systray error: failed to connect to DBus: %v\n", err)
+		globalApplication.error("systray error: failed to connect to DBus: %w\n", err)
 		return
 	}
 	err = notifier.ExportStatusNotifierItem(conn, itemPath, s)
 	if err != nil {
-		globalApplication.error("systray error: failed to export status notifier item: %v\n", err)
+		globalApplication.error("systray error: failed to export status notifier item: %w\n", err)
 	}
 
 	err = menu.ExportDbusmenu(conn, menuPath, s)
 	if err != nil {
-		globalApplication.error("systray error: failed to export status notifier menu: %v", err)
+		globalApplication.error("systray error: failed to export status notifier menu: %w", err)
 		return
 	}
 
 	name := fmt.Sprintf("org.kde.StatusNotifierItem-%d-1", os.Getpid()) // register id 1 for this process
 	_, err = conn.RequestName(name, dbus.NameFlagDoNotQueue)
 	if err != nil {
-		globalApplication.error("systray error: failed to request name: %s\n", err)
+		globalApplication.error("systray error: failed to request name: %w", err)
 		// it's not critical error: continue
 	}
 	props, err := prop.Export(conn, itemPath, s.createPropSpec())
 	if err != nil {
-		globalApplication.error("systray error: failed to export notifier item properties to bus: %s\n", err)
+		globalApplication.error("systray error: failed to export notifier item properties to bus: %w", err)
 		return
 	}
 	menuProps, err := prop.Export(conn, menuPath, s.createMenuPropSpec())
 	if err != nil {
-		globalApplication.error("systray error: failed to export notifier menu properties to bus: %s\n", err)
+		globalApplication.error("systray error: failed to export notifier menu properties to bus: %w", err)
 		return
 	}
 
@@ -313,7 +316,7 @@ func (s *linuxSystemTray) run() {
 	}
 	err = conn.Export(introspect.NewIntrospectable(&node), itemPath, "org.freedesktop.DBus.Introspectable")
 	if err != nil {
-		globalApplication.error("systray error: failed to export node introspection: %s\n", err)
+		globalApplication.error("systray error: failed to export node introspection: %w", err)
 		return
 	}
 	menuNode := introspect.Node{
@@ -327,7 +330,7 @@ func (s *linuxSystemTray) run() {
 	err = conn.Export(introspect.NewIntrospectable(&menuNode), menuPath,
 		"org.freedesktop.DBus.Introspectable")
 	if err != nil {
-		globalApplication.error("systray error: failed to export menu node introspection: %s\n", err)
+		globalApplication.error("systray error: failed to export menu node introspection: %w", err)
 		return
 	}
 	s.setLabel(s.label)
@@ -342,7 +345,7 @@ func (s *linuxSystemTray) run() {
 			dbus.WithMatchMember("NameOwnerChanged"),
 			dbus.WithMatchArg(0, "org.kde.StatusNotifierWatcher"),
 		); err != nil {
-			globalApplication.error("systray error: failed to register signal matching: %v\n", err)
+			globalApplication.error("systray error: failed to register signal matching: %w", err)
 			return
 		}
 
@@ -386,7 +389,7 @@ func (s *linuxSystemTray) setIcon(icon []byte) {
 
 	iconPx, err := iconToPX(icon)
 	if err != nil {
-		globalApplication.error("systray error: failed to convert icon to PX: %s\n", err)
+		globalApplication.error("systray error: failed to convert icon to PX: %w", err)
 		return
 	}
 	s.props.SetMust("org.kde.StatusNotifierItem", "IconPixmap", []PX{iconPx})
@@ -400,7 +403,7 @@ func (s *linuxSystemTray) setIcon(icon []byte) {
 		Body: &notifier.StatusNotifierItem_NewIconSignalBody{},
 	})
 	if err != nil {
-		globalApplication.error("systray error: failed to emit new icon signal: %s\n", err)
+		globalApplication.error("systray error: failed to emit new icon signal: %w", err)
 		return
 	}
 }
@@ -443,7 +446,7 @@ func (s *linuxSystemTray) setLabel(label string) {
 	s.label = label
 
 	if err := s.props.Set("org.kde.StatusNotifierItem", "Title", dbus.MakeVariant(label)); err != nil {
-		globalApplication.error("systray error: failed to set Title prop: %s\n", err)
+		globalApplication.error("systray error: failed to set Title prop: %w", err)
 		return
 	}
 
@@ -455,7 +458,7 @@ func (s *linuxSystemTray) setLabel(label string) {
 		Path: itemPath,
 		Body: &notifier.StatusNotifierItem_NewTitleSignalBody{},
 	}); err != nil {
-		globalApplication.error("systray error: failed to emit new title signal: %s", err)
+		globalApplication.error("systray error: failed to emit new title signal: %w", err)
 		return
 	}
 
@@ -589,7 +592,7 @@ func (s *linuxSystemTray) register() bool {
 	obj := s.conn.Object("org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher")
 	call := obj.Call("org.kde.StatusNotifierWatcher.RegisterStatusNotifierItem", 0, itemPath)
 	if call.Err != nil {
-		globalApplication.error("systray error: failed to register: %v\n", call.Err)
+		globalApplication.error("systray error: failed to register: %w", call.Err)
 		return false
 	}
 
