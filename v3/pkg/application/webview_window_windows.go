@@ -73,6 +73,13 @@ type windowsWebviewWindow struct {
 	isMinimizing bool
 }
 
+func (w *windowsWebviewWindow) setMenu(menu *Menu) {
+	menu.Update()
+	w.menu = NewApplicationMenu(w, menu)
+	w.menu.parentWindow = w
+	w32.SetMenu(w.hwnd, w.menu.menu)
+}
+
 func (w *windowsWebviewWindow) cut() {
 	w.execJS("document.execCommand('cut')")
 }
@@ -1671,26 +1678,21 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	}
 
-	if opts.GeneralAutofillEnabled {
-		err = chromium.PutIsGeneralAutofillEnabled(true)
-		if err != nil {
-			if errors.Is(edge.UnsupportedCapabilityError, err) {
-				// warning
-				globalApplication.warning("unsupported capability: GeneralAutofillEnabled")
-			} else {
-				globalApplication.handleFatalError(err)
-			}
+	err = chromium.PutIsGeneralAutofillEnabled(opts.GeneralAutofillEnabled)
+	if err != nil {
+		if errors.Is(err, edge.UnsupportedCapabilityError) {
+			globalApplication.warning("unsupported capability: GeneralAutofillEnabled")
+		} else {
+			globalApplication.handleFatalError(err)
 		}
 	}
 
-	if opts.PasswordAutosaveEnabled {
-		err = chromium.PutIsPasswordAutosaveEnabled(true)
-		if err != nil {
-			if errors.Is(edge.UnsupportedCapabilityError, err) {
-				globalApplication.warning("unsupported capability: PasswordAutosaveEnabled")
-			} else {
-				globalApplication.handleFatalError(err)
-			}
+	err = chromium.PutIsPasswordAutosaveEnabled(opts.PasswordAutosaveEnabled)
+	if err != nil {
+		if errors.Is(err, edge.UnsupportedCapabilityError) {
+			globalApplication.warning("unsupported capability: PasswordAutosaveEnabled")
+		} else {
+			globalApplication.handleFatalError(err)
 		}
 	}
 

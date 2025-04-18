@@ -11,7 +11,7 @@ info:
   description: "A program that does X" # The application description
   copyright: "(c) 2025, My Company" # Copyright text
   comments: "Some Product Comments" # Comments
-  version: "v0.0.1" # The application version
+  version: "0.0.1" # The application version
 
 # Dev mode configuration
 dev_mode:
@@ -56,6 +56,7 @@ fileAssociations:
 #    description: Image File
 #    iconName: jpegFileIcon
 #    role: Editor
+#    mimeType: image/jpeg  # (optional)
 
 # Other data
 other:

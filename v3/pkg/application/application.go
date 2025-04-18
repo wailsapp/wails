@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"io"
 	"log/slog"
 	"net/http"
@@ -98,6 +99,11 @@ func New(appOptions Options) *App {
 				return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 					path := req.URL.Path
 					switch path {
+					case "/wails/runtime.js":
+						err := assetserver.ServeFile(rw, path, bundledassets.RuntimeJS)
+						if err != nil {
+							result.fatal("unable to serve runtime.js: %w", err)
+						}
 					case "/wails/runtime":
 						messageProc.ServeHTTP(rw, req)
 					case "/wails/capabilities":
@@ -343,6 +349,10 @@ type App struct {
 
 	// singleInstanceManager handles single instance functionality
 	singleInstanceManager *singleInstanceManager
+}
+
+func (a *App) Config() Options {
+	return a.options
 }
 
 func (a *App) handleWarning(msg string) {
