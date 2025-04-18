@@ -98,6 +98,9 @@ type App struct {
 
 	// DragAndDrop options for drag and drop behavior
 	DragAndDrop *DragAndDrop
+
+	// DisablePanicRecovery disables the panic recovery system in messages processing
+	DisablePanicRecovery bool
 }
 
 type ErrorFormatter func(error) any
