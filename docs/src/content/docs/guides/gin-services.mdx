@@ -1,0 +1,552 @@
+---
+title: Using Gin for Services
+description: A guide to integrating the Gin web framework with Wails v3 Services
+---
+
+# Using Gin for Services
+
+The Gin web framework is a popular choice for building HTTP services in Go. With Wails v3, you can easily integrate Gin-based services into your application, providing a powerful way to handle HTTP requests, implement RESTful APIs, and serve web content.
+
+This guide will walk you through creating a Gin-based service that can be mounted at a specific route in your Wails application. We'll build a complete example that demonstrates how to:
+
+1. Create a Gin-based service
+2. Implement the Wails Service interface
+3. Set up routes and middleware
+4. Integrate with the Wails event system
+5. Interact with the service from the frontend
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- Wails v3 installed
+- Basic knowledge of Go and the Gin framework
+- Familiarity with HTTP concepts and RESTful APIs
+
+You'll need to add the Gin framework to your project:
+
+```bash
+go get github.com/gin-gonic/gin
+```
+
+## Creating a Gin-Based Service
+
+Let's start by creating a Gin service that implements the Wails Service interface. Our service will manage a collection of users and provide API endpoints for retrieving and creating user records.
+
+### 1. Define Your Data Models
+
+First, define the data structures your service will work with:
+
+```go
+package services
+
+import (
+	"context"
+	"net/http"
+	"strconv"
+	"sync"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// User represents a user in the system
+type User struct {
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+// EventData represents data sent in events
+type EventData struct {
+	Message   string `json:"message"`
+	Timestamp string `json:"timestamp"`
+}
+```
+
+### 2. Create Your Service Structure
+
+Next, define the service structure that will hold your Gin router and any state your service needs to maintain:
+
+```go
+// GinService implements a Wails service that uses Gin for HTTP handling
+type GinService struct {
+	ginEngine *gin.Engine
+	users     []User
+	nextID    int
+	mu        sync.RWMutex
+	app       *application.App
+}
+
+// NewGinService creates a new GinService instance
+func NewGinService() *GinService {
+	// Create a new Gin router
+	ginEngine := gin.New()
+
+	// Add middlewares
+	ginEngine.Use(gin.Recovery())
+	ginEngine.Use(LoggingMiddleware())
+
+	service := &GinService{
+		ginEngine: ginEngine,
+		users: []User{
+			{ID: 1, Name: "Alice", Email: "alice@example.com", CreatedAt: time.Now().Add(-72 * time.Hour)},
+			{ID: 2, Name: "Bob", Email: "bob@example.com", CreatedAt: time.Now().Add(-48 * time.Hour)},
+			{ID: 3, Name: "Charlie", Email: "charlie@example.com", CreatedAt: time.Now().Add(-24 * time.Hour)},
+		},
+		nextID: 4,
+	}
+
+	// Define routes
+	service.setupRoutes()
+
+	return service
+}
+```
+
+### 3. Implement the Service Interface
+
+Implement the required methods for the Wails Service interface:
+
+```go
+// ServiceName returns the name of the service
+func (s *GinService) ServiceName() string {
+	return "Gin API Service"
+}
+
+// ServiceStartup is called when the service starts
+func (s *GinService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+	// Store the application instance for later use
+	s.app = application.Get()
+
+	// Register an event handler that can be triggered from the frontend
+	s.app.OnEvent("gin-api-event", func(event *application.CustomEvent) {
+		// Log the event data
+		s.app.Logger.Info("Received event from frontend", "data", event.Data)
+
+		// Emit an event back to the frontend
+		s.app.EmitEvent("gin-api-response", map[string]interface{}{
+			"message": "Response from Gin API Service",
+			"time":    time.Now().Format(time.RFC3339),
+		})
+	})
+
+	return nil
+}
+
+// ServiceShutdown is called when the service shuts down
+func (s *GinService) ServiceShutdown(ctx context.Context) error {
+	// Clean up resources if needed
+	return nil
+}
+```
+
+### 3. Implement the http.Handler Interface
+
+To make your service mountable at a specific route, implement the `http.Handler` interface. This single method, `ServeHTTP`, is the gateway for all HTTP requests to your service. It delegates the request handling to the Gin router, allowing you to use all of Gin's powerful features for routing and middleware.
+
+```go
+// ServeHTTP implements the http.Handler interface
+func (s *GinService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// All requests go to the Gin router
+	s.ginEngine.ServeHTTP(w, r)
+}
+```
+
+### 4. Set Up Your Routes
+
+Define your API routes in a separate method for better organisation. This approach keeps your code clean and makes it easier to understand the structure of your API. The Gin router provides a fluent API for defining routes, including support for route groups, which help organise related endpoints.
+
+```go
+// setupRoutes configures the API routes
+func (s *GinService) setupRoutes() {
+	// Basic info endpoint
+	s.ginEngine.GET("/info", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"service": "Gin API Service",
+			"version": "1.0.0",
+			"time":    time.Now().Format(time.RFC3339),
+		})
+	})
+
+	// Users group
+	users := s.ginEngine.Group("/users")
+	{
+		// Get all users
+		users.GET("", func(c *gin.Context) {
+			s.mu.RLock()
+			defer s.mu.RUnlock()
+			c.JSON(http.StatusOK, s.users)
+		})
+
+		// Get user by ID
+		users.GET("/:id", func(c *gin.Context) {
+			id, err := strconv.Atoi(c.Param("id"))
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+				return
+			}
+
+			s.mu.RLock()
+			defer s.mu.RUnlock()
+
+			for _, user := range s.users {
+				if user.ID == id {
+					c.JSON(http.StatusOK, user)
+					return
+				}
+			}
+
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		})
+
+		// Create a new user
+		users.POST("", func(c *gin.Context) {
+			var newUser User
+			if err := c.ShouldBindJSON(&newUser); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+
+			s.mu.Lock()
+			defer s.mu.Unlock()
+
+			// Set the ID and creation time
+			newUser.ID = s.nextID
+			newUser.CreatedAt = time.Now()
+			s.nextID++
+
+			// Add to the users slice
+			s.users = append(s.users, newUser)
+
+			c.JSON(http.StatusCreated, newUser)
+
+			// Emit an event to notify about the new user
+			s.app.EmitEvent("user-created", newUser)
+		})
+
+		// Delete a user
+		users.DELETE("/:id", func(c *gin.Context) {
+			id, err := strconv.Atoi(c.Param("id"))
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+				return
+			}
+
+			s.mu.Lock()
+			defer s.mu.Unlock()
+
+			for i, user := range s.users {
+				if user.ID == id {
+					// Remove the user from the slice
+					s.users = append(s.users[:i], s.users[i+1:]...)
+					c.JSON(http.StatusOK, gin.H{"message": "User deleted"})
+					return
+				}
+			}
+
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		})
+	}
+}
+```
+
+### 5. Create Custom Middleware
+
+You can create custom Gin middleware to enhance your service. Middleware functions in Gin are executed in the order they are added to the router and can perform tasks such as logging, authentication, and error handling. This example shows a simple logging middleware that records request details.
+
+```go
+// LoggingMiddleware is a Gin middleware that logs request details
+func LoggingMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Start timer
+		start := time.Now()
+
+		// Process request
+		c.Next()
+
+		// Calculate latency
+		latency := time.Since(start)
+
+		// Log request details
+		log.Printf("[GIN] %s %s %d %s", c.Request.Method, c.Request.URL.Path, c.Writer.Status(), latency)
+	}
+}
+```
+
+## Registering Your Service
+
+To use your Gin-based service in a Wails application, you need to register it with the application and specify the route where it should be mounted. This is done when creating the Wails application instance. The route you specify becomes the base path for all endpoints defined in your Gin router.
+
+```go
+app := application.New(application.Options{
+    Name:        "Gin Service Demo",
+    Description: "A demo of using Gin in Wails services",
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+    LogLevel: slog.LevelDebug,
+    Services: []application.Service{
+        application.NewServiceWithOptions(services.NewGinService(), application.ServiceOptions{
+            Route: "/api",
+        }),
+    },
+    Assets: application.AssetOptions{
+        Handler: application.BundledAssetFileServer(assets),
+    },
+})
+```
+
+In this example, the Gin service is mounted at the `/api` route. This means that if your Gin router has an endpoint defined as `/info`, it will be accessible at `/api/info` in your application. This approach allows you to organise your API endpoints logically and avoid conflicts with other parts of your application.
+
+## Integrating with the Wails Event System
+
+One of the powerful features of using Gin with Wails Services is the ability to seamlessly integrate with the Wails event system. This allows for real-time communication between your backend service and the frontend.
+
+In your service's `ServiceStartup` method, you can register event handlers to process events from the frontend:
+
+```go
+s.app.OnEvent("gin-api-event", func(event *application.CustomEvent) {
+    // Log the event data
+    s.app.Logger.Info("Received event from frontend", "data", event.Data)
+
+    // Emit an event back to the frontend
+    s.app.EmitEvent("gin-api-response", map[string]interface{}{
+        "message": "Response from Gin API Service",
+        "time":    time.Now().Format(time.RFC3339),
+    })
+})
+```
+
+You can also emit events to the frontend from your Gin routes or other parts of your service:
+
+```go
+// After creating a new user
+s.app.EmitEvent("user-created", newUser)
+```
+
+## Frontend Integration
+
+To interact with your Gin service from the frontend, you'll need to import the Wails runtime, make HTTP requests to your API endpoints, and use the Wails event system for real-time communication.
+
+For production use, it's recommended to use the `@wailsio/runtime` package instead of directly importing `/wails/runtime.js`. This ensures type safety, better IDE support, version management through npm, and compatibility with modern JavaScript tooling.
+
+Install the package:
+```bash
+npm install @wailsio/runtime
+```
+
+Then use it in your code:
+```javascript
+import * as wails from '@wailsio/runtime';
+
+// Event emission
+wails.Events.Emit('gin-api-event',  eventData);
+```
+
+Here's an example of how to set up frontend integration:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gin Service Example</title>
+    <!-- Styles omitted for brevity -->
+</head>
+<body>
+    <h1>Gin Service Example</h1>
+    
+    <div class="card">
+        <h2>API Endpoints</h2>
+        <p>Try the Gin API endpoints mounted at /api:</p>
+        
+        <button id="getInfo">Get Service Info</button>
+        <button id="getUsers">Get All Users</button>
+        <button id="getUser">Get User by ID</button>
+        <button id="createUser">Create User</button>
+        <button id="deleteUser">Delete User</button>
+
+        <div id="apiResult">
+            <pre id="apiResponse">Results will appear here...</pre>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Event Communication</h2>
+        <p>Trigger an event to communicate with the Gin service:</p>
+        
+        <button id="triggerEvent">Trigger Event</button>
+        
+        <div id="eventResult">
+            <pre id="eventResponse">Event responses will appear here...</pre>
+        </div>
+    </div>
+    
+    <div class="card" id="createUserForm" style="display: none; border: 2px solid #0078d7;">
+        <h2>Create New User</h2>
+
+        <div>
+            <label for="userName">Name:</label>
+            <input type="text" id="userName" placeholder="Enter name">
+        </div>
+
+        <div>
+            <label for="userEmail">Email:</label>
+            <input type="email" id="userEmail" placeholder="Enter email">
+        </div>
+
+        <button id="submitUser">Submit</button>
+        <button id="cancelCreate">Cancel</button>
+    </div>
+
+    <script type="module">
+        // Import the Wails runtime
+        // Note: In production, use '@wailsio/runtime' instead
+        import * as wails from "/wails/runtime.js";
+        
+        // Helper function to fetch API endpoints
+        async function fetchAPI(endpoint, options = {}) {
+            try {
+                const response = await fetch(`/api${endpoint}`, options);
+                const data = await response.json();
+                
+                document.getElementById('apiResponse').textContent = JSON.stringify(data, null, 2);
+                return data;
+            } catch (error) {
+                document.getElementById('apiResponse').textContent = `Error: ${error.message}`;
+                console.error('API Error:', error);
+            }
+        }
+        
+        // Event listeners for API buttons
+        document.getElementById('getInfo').addEventListener('click', () => {
+            fetchAPI('/info');
+        });
+        
+        document.getElementById('getUsers').addEventListener('click', () => {
+            fetchAPI('/users');
+        });
+
+        document.getElementById('getUser').addEventListener('click', async () => {
+            const userId = prompt('Enter user ID:');
+            if (userId) {
+                await fetchAPI(`/users/${userId}`);
+            }
+        });
+
+        document.getElementById('createUser').addEventListener('click', () => {
+            const form = document.getElementById('createUserForm');
+            form.style.display = 'block';
+            form.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        document.getElementById('cancelCreate').addEventListener('click', () => {
+            document.getElementById('createUserForm').style.display = 'none';
+        });
+
+        document.getElementById('submitUser').addEventListener('click', async () => {
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+
+            if (!name || !email) {
+                alert('Please enter both name and email');
+                return;
+            }
+
+            try {
+                await fetchAPI('/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email })
+                });
+
+                document.getElementById('createUserForm').style.display = 'none';
+                document.getElementById('userName').value = '';
+                document.getElementById('userEmail').value = '';
+
+                // Automatically fetch the updated user list
+                await fetchAPI('/users');
+
+                // Show a success message
+                const apiResponse = document.getElementById('apiResponse');
+                const currentData = JSON.parse(apiResponse.textContent);
+                apiResponse.textContent = JSON.stringify({
+                    message: "User created successfully!",
+                    users: currentData
+                }, null, 2);
+            } catch (error) {
+                console.error('Error creating user:', error);
+            }
+        });
+
+        document.getElementById('deleteUser').addEventListener('click', async () => {
+            const userId = prompt('Enter user ID to delete:');
+            if (userId) {
+                try {
+                    await fetchAPI(`/users/${userId}`, {
+                        method: 'DELETE'
+                    });
+
+                    // Show success message
+                    document.getElementById('apiResponse').textContent = JSON.stringify({
+                        message: `User with ID ${userId} deleted successfully`
+                    }, null, 2);
+
+                    // Refresh the user list
+                    setTimeout(() => fetchAPI('/users'), 1000);
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                }
+            }
+        });
+
+        // Using Wails Events API for event communication
+        document.getElementById('triggerEvent').addEventListener('click', async () => {
+            // Display the event being sent
+            document.getElementById('eventResponse').textContent = JSON.stringify({
+                status: "Sending event to backend...",
+                data: { timestamp: new Date().toISOString() }
+            }, null, 2);
+            
+            // Use the Wails runtime to emit an event
+            const eventData = {
+                message: "Hello from the frontend!",
+                timestamp: new Date().toISOString()
+            };
+            wails.Events.Emit({name: 'gin-api-event', data: eventData});
+        });
+        
+        // Set up event listener for responses from the backend
+        window.addEventListener('DOMContentLoaded', () => {
+            // Register event listener using Wails runtime
+            wails.Events.On("gin-api-response", (data) => {
+                document.getElementById('eventResponse').textContent = JSON.stringify(data, null, 2);
+            });
+            
+            // Also listen for user-created events
+            wails.Events.On("user-created", (data) => {
+                document.getElementById('eventResponse').textContent = JSON.stringify({
+                    event: "user-created",
+                    user: data
+                }, null, 2);
+            });
+
+            // Initial API call to get service info
+            fetchAPI('/info');
+        });
+    </script>
+</body>
+</html>
+```
+
+## Closing Thoughts
+
+Integrating the Gin web framework with Wails v3 Services provides a powerful and flexible approach to building modular, maintainable web applications. By leveraging Gin's routing and middleware capabilities alongside the Wails event system, you can create rich, interactive applications with clean separation of concerns.
+
+The complete example code for this guide can be found in the Wails repository under `v3/examples/gin-service`.
