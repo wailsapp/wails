@@ -40,9 +40,7 @@ const (
 	jsVariableNameRegex = `^([A-Z]|[a-z]|\$|_)([A-Z]|[a-z]|[0-9]|\$|_)*$`
 )
 
-var (
-	jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
-)
+var jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
 
 func nameTypeOf(typeOf reflect.Type) string {
 	tname := typeOf.Name()
@@ -277,6 +275,7 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 	valueType := field.Type.Elem()
 	valueTypeName := nameTypeOf(valueType)
 	valueTypeSuffix := ""
+	valueTypePrefix := ""
 	if valueType.Kind() == reflect.Ptr {
 		valueType = valueType.Elem()
 		valueTypeName = nameTypeOf(valueType)
@@ -289,7 +288,8 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 		}
 		valueType = valueType.Elem()
 		valueTypeName = nameTypeOf(valueType)
-		valueTypeSuffix = strings.Repeat("[]", arrayDepth)
+		valueTypeSuffix = strings.Repeat(">", arrayDepth)
+		valueTypePrefix = strings.Repeat("Array<", arrayDepth)
 	}
 	if valueType.Kind() == reflect.Ptr {
 		valueType = valueType.Elem()
@@ -325,10 +325,10 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 			fieldName = fmt.Sprintf(`"%s"?`, strippedFieldName)
 		}
 	}
-	t.fields = append(t.fields, fmt.Sprintf("%s%s: Record<%s, %s>;", t.indent, fieldName, keyTypeStr, valueTypeName+valueTypeSuffix))
+	t.fields = append(t.fields, fmt.Sprintf("%s%s: Record<%s, %s>;", t.indent, fieldName, keyTypeStr, valueTypePrefix+valueTypeName+valueTypeSuffix))
 	if valueType.Kind() == reflect.Struct {
 		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = this.convertValues(source[\"%s\"], %s, true);",
-			t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypeName+valueTypeSuffix+t.suffix))
+			t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypePrefix+valueTypeName+valueTypeSuffix+t.suffix))
 	} else {
 		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = source[\"%s\"];",
 			t.indent, t.indent, dotField, strippedFieldName))
