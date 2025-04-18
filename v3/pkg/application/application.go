@@ -351,6 +351,10 @@ type App struct {
 	singleInstanceManager *singleInstanceManager
 }
 
+func (a *App) Config() Options {
+	return a.options
+}
+
 func (a *App) handleWarning(msg string) {
 	if a.options.WarningHandler != nil {
 		a.options.WarningHandler(msg)
