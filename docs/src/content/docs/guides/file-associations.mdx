@@ -62,6 +62,7 @@ fileAssociations:
 | description | Description shown in file properties                             | Windows  |
 | iconName    | Name of the icon file (without extension) in the build folder    | All      |
 | role        | Application's role for this file type (e.g., `Editor`, `Viewer`) | macOS    |
+| mimeType    | MIME type for the file (e.g., `image/jpeg`)                      | macOS    |
 
 ## Listening for File Open Events
 
@@ -104,6 +105,8 @@ Let's walk through setting up file associations for a simple text editor:
     You can use `wails3 generate icons` to generate the required icons for you.
     Run `wails3 generate icons --help` for more information.
     :::
+
+    - For macOS add copy statement like `cp build/darwin/documenticon.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources` in the `create:app:bundle:` task.
 
 2. ### Configure File Associations
 
