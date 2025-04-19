@@ -14,9 +14,10 @@ var clickBitmap []byte
 func main() {
 
 	app := application.New(application.Options{
-		Name:        "Menu Demo",
-		Description: "A demo of the menu system",
-		Assets:      application.AlphaAssets,
+		UseGlobalMenuByDefault: true,
+		Name:                   "Menu Demo",
+		Description:            "A demo of the menu system",
+		Assets:                 application.AlphaAssets,
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},

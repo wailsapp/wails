@@ -275,6 +275,12 @@ func (w *linuxWebviewWindow) run() {
 			menu.Update()
 		})
 		w.gtkmenu = (menu.impl).(*linuxMenu).native
+	} else if !w.parent.options.Frameless && globalApplication.options.UseGlobalMenuByDefault && globalApplication.ApplicationMenu != nil {
+		// Use the global application menu if the flag is set and no explicit window menu is provided
+		InvokeSync(func() {
+			globalApplication.ApplicationMenu.Update()
+		})
+		w.gtkmenu = (globalApplication.ApplicationMenu.impl).(*linuxMenu).native
 	}
 
 	w.window, w.webview, w.vbox = windowNew(app.application, w.gtkmenu, w.parent.id, w.parent.options.Linux.WebviewGpuPolicy)
