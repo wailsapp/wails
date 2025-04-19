@@ -14,13 +14,13 @@ var clickBitmap []byte
 func main() {
 
 	app := application.New(application.Options{
-		UseGlobalMenuByDefault: true,
-		Name:                   "Menu Demo",
-		Description:            "A demo of the menu system",
-		Assets:                 application.AlphaAssets,
+		Name:        "Menu Demo",
+		Description: "A demo of the menu system",
+		Assets:      application.AlphaAssets,
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		UseGlobalMenuByDefault: true,
 	})
 
 	// Create a custom menu

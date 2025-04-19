@@ -313,7 +313,7 @@ app.NewWebviewWindow().SetTitle("Window 2").Show()
 ### Application Menu Behaviour
 
 When you set an application menu using `app.SetMenu()`, it becomes the main menu on macOS.
-Menus are set on a pre-window basis for Windows/Linux (unless `UseGlobalMenuByDefault` is enabled).
+Menus are set on a per-window basis for Windows/Linux (unless `UseGlobalMenuByDefault` is enabled).
 
 ```go
 app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
