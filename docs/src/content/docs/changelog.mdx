@@ -75,7 +75,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add method `Close` on `sqlite` service to close the DB manually by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - Add cancellation support for query methods on `sqlite` service by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - Add prepared statement support to `sqlite` service with JS bindings by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Gin support by [Lea Anthony](https://github.com/leaanthony) in [PR](https://github.com/wailsapp/wails/pull/3537) based on the original work of [@AnalogJ](https://github.com/AnalogJ) in PR[https://github.com/wailsapp/wails/pull/3537]
+- Fix auto save and password auto save always enabled by [@oSethoum](https://github.com/osethoum) in [#4134](https://github.com/wailsapp/wails/pull/4134)
 - Add `SetMenu()` on window to allow for setting a menu on a window by [@leaanthony](https://github.com/leaanthony)
+- Add Notification support by [@popaprozac] in [#4098](https://github.com/wailsapp/wails/pull/4098)
+-  Add File Association support for mac by [@wimaha](https://github.com/wimaha) in [#4177](https://github.com/wailsapp/wails/pull/4177)
 
 ### Fixed
 
@@ -111,6 +115,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed initially-hidden menu items by [@IanVS](https://github.com/IanVS) in [#4116](https://github.com/wailsapp/wails/pull/4116)
 - Fixed assetFileServer not serving `.html` files when non-extension request when `[request]` doesn't exist but `[request].html` does
 - Fixed icon generation paths by [@robin-samuel](https://github.com/robin-samuel) in [#4125](https://github.com/wailsapp/wails/pull/4125)
+- Fixed `fullscreen`, `unfullscreen`, `unminimise` and `unmaximise` events not being emitted by [@oSethoum](https://github.com/osethoum) in [#4130](https://github.com/wailsapp/wails/pull/4130)
+- Fixed NSIS Error because of incorrect prefix on default version in config by [@robin-samuel](https://github.com/robin-samuel) in [#4126](https://github.com/wailsapp/wails/pull/4126)
+- Fixed Dialogs runtime function returning escaped paths on Windows by [TheGB0077](https://github.com/TheGB0077) in [#4188](https://github.com/wailsapp/wails/pull/4188)
+- Fixed Webview2 detection path in HKCU by [@leaanthony](https://github.com/leaanthony).
+- Fixed input issue with macOS by [@leaanthony](https://github.com/leaanthony).
+- Fixed Windows icon generation task file name by [@yulesxoxo](https://github.com/yulesxoxo) in [#4219](https://github.com/wailsapp/wails/pull/4219).
+- Fixed transparency issue for frameless windows by [@leaanthony](https://github.com/leaanthony) based on work by @kron.
+- Fixed focus calls when window is disabled or minimised by [@leaanthony](https://github.com/leaanthony) based on work by @kron.
+- Fixed system trays not showing after taskbar restarts by [@leaanthony](https://github.com/leaanthony) based on work by @kron.
 - Fixed window not responding when using HTML field on Windows by [@leaanthony](https://github.com/leaanthony)
 
 ### Changed
@@ -140,6 +153,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Built-in service types are now consistently called `Service` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - Built-in service creation functions with options are now consistently called `NewWithConfig` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - `Select` method on `sqlite` service is now named `Query` for consistency with Go APIs by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Templates: moved runtime to "dependencies", organized package.json files by [@IanVS](https://github.com/IanVS) in [#4133](https://github.com/wailsapp/wails/pull/4133)
+- Creates and ad-hoc signs app bundles in dev to enable certain macOS APIs by [@popaprozac] in [#4171](https://github.com/wailsapp/wails/pull/4171)
 - Calling `application.New` more than once will result in a fatal error by [@leaanthony](https://github.com/leaanthony)
 
 ## v3.0.0-alpha.9 - 2025-01-13

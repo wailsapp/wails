@@ -273,9 +273,12 @@ func (w *windowsWebviewWindow) run() {
 
 	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
-		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
-		if w.parent.options.IgnoreMouseEvents {
+		if (options.Frameless && options.BackgroundType == BackgroundTypeTransparent) || w.parent.options.IgnoreMouseEvents {
+			// Always if transparent and frameless
 			exStyle |= w32.WS_EX_TRANSPARENT | w32.WS_EX_LAYERED
+		} else {
+			// Only WS_EX_NOREDIRECTIONBITMAP if not (and not solid)
+			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 	}
 	if options.AlwaysOnTop {
@@ -686,6 +689,7 @@ func (w *windowsWebviewWindow) maximise() {
 
 func (w *windowsWebviewWindow) unmaximise() {
 	w.restore()
+	w.parent.emit(events.Windows.WindowUnMaximise)
 }
 
 func (w *windowsWebviewWindow) restore() {
@@ -726,6 +730,7 @@ func (w *windowsWebviewWindow) fullscreen() {
 		int(monitorInfo.RcMonitor.Bottom-monitorInfo.RcMonitor.Top),
 		w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
 	w.chromium.Focus()
+	w.parent.emit(events.Windows.WindowFullscreen)
 }
 
 func (w *windowsWebviewWindow) unfullscreen() {
@@ -745,6 +750,7 @@ func (w *windowsWebviewWindow) unfullscreen() {
 	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0,
 		w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
 	w.enableSizeConstraints()
+	w.parent.emit(events.Windows.WindowUnFullscreen)
 }
 
 func (w *windowsWebviewWindow) isMinimised() bool {
@@ -785,6 +791,14 @@ func (w *windowsWebviewWindow) setFullscreenButtonEnabled(_ bool) {
 
 func (w *windowsWebviewWindow) focus() {
 	w32.SetForegroundWindow(w.hwnd)
+
+	if w.isDisabled() {
+		return
+	}
+	if w.isMinimised() {
+		w.unminimise()
+	}
+
 	w.focusingChromium = true
 	w.chromium.Focus()
 	w.focusingChromium = false
@@ -1038,6 +1052,11 @@ func (w *windowsWebviewWindow) disableIcon() {
 	)
 }
 
+func (w *windowsWebviewWindow) isDisabled() bool {
+	style := uint32(w32.GetWindowLong(w.hwnd, w32.GWL_STYLE))
+	return style&w32.WS_DISABLED != 0
+}
+
 func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 
 	if w32.IsCurrentlyHighContrastMode() {
@@ -1209,6 +1228,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		case w32.SIZE_MAXIMIZED:
 			w.parent.emit(events.Windows.WindowMaximise)
 		case w32.SIZE_RESTORED:
+			if w.isMinimizing {
+				w.parent.emit(events.Windows.WindowUnMinimise)
+			}
 			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowRestore)
 		case w32.SIZE_MINIMIZED:
@@ -1672,26 +1694,21 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	}
 
-	if opts.GeneralAutofillEnabled {
-		err = chromium.PutIsGeneralAutofillEnabled(true)
-		if err != nil {
-			if errors.Is(edge.UnsupportedCapabilityError, err) {
-				// warning
-				globalApplication.warning("unsupported capability: GeneralAutofillEnabled")
-			} else {
-				globalApplication.handleFatalError(err)
-			}
+	err = chromium.PutIsGeneralAutofillEnabled(opts.GeneralAutofillEnabled)
+	if err != nil {
+		if errors.Is(err, edge.UnsupportedCapabilityError) {
+			globalApplication.warning("unsupported capability: GeneralAutofillEnabled")
+		} else {
+			globalApplication.handleFatalError(err)
 		}
 	}
 
-	if opts.PasswordAutosaveEnabled {
-		err = chromium.PutIsPasswordAutosaveEnabled(true)
-		if err != nil {
-			if errors.Is(edge.UnsupportedCapabilityError, err) {
-				globalApplication.warning("unsupported capability: PasswordAutosaveEnabled")
-			} else {
-				globalApplication.handleFatalError(err)
-			}
+	err = chromium.PutIsPasswordAutosaveEnabled(opts.PasswordAutosaveEnabled)
+	if err != nil {
+		if errors.Is(err, edge.UnsupportedCapabilityError) {
+			globalApplication.warning("unsupported capability: PasswordAutosaveEnabled")
+		} else {
+			globalApplication.handleFatalError(err)
 		}
 	}
 
