@@ -8,7 +8,9 @@ import (
 	"path/filepath"
 	"slices"
 	"sync"
+	"sync/atomic"
 	"syscall"
+	"time"
 	"unsafe"
 
 	"github.com/wailsapp/go-webview2/webviewloader"
@@ -16,6 +18,10 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
+)
+
+var (
+	wmTaskbarCreated = w32.RegisterWindowMessage(w32.MustStringToUTF16Ptr("TaskbarCreated"))
 )
 
 type windowsApp struct {
@@ -40,6 +46,9 @@ type windowsApp struct {
 	// system theme
 	isCurrentlyDarkMode bool
 	currentWindowID     uint
+
+	// Restart taskbar flag
+	restartingTaskbar atomic.Bool
 }
 
 func (m *windowsApp) isDarkMode() bool {
@@ -221,6 +230,17 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 	}
 
 	switch msg {
+	case wmTaskbarCreated:
+		if m.restartingTaskbar.Load() {
+			break
+		}
+		m.restartingTaskbar.Store(true)
+		m.reshowSystrays()
+		go func() {
+			// 1 second debounce
+			time.Sleep(1000)
+			m.restartingTaskbar.Store(false)
+		}()
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))
 		if settingChanged == "ImmersiveColorSet" {
@@ -294,6 +314,14 @@ func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
 	// If this was the last window...
 	if len(m.windowMap) == 0 && !m.parent.options.Windows.DisableQuitOnLastWindowClosed {
 		w32.PostQuitMessage(0)
+	}
+}
+
+func (m *windowsApp) reshowSystrays() {
+	m.systrayMapLock.Lock()
+	defer m.systrayMapLock.Unlock()
+	for _, systray := range m.systrayMap {
+		systray.reshow()
 	}
 }
 

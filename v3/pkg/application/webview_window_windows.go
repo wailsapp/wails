@@ -273,9 +273,12 @@ func (w *windowsWebviewWindow) run() {
 
 	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
-		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
-		if w.parent.options.IgnoreMouseEvents {
+		if (options.Frameless && options.BackgroundType == BackgroundTypeTransparent) || w.parent.options.IgnoreMouseEvents {
+			// Always if transparent and frameless
 			exStyle |= w32.WS_EX_TRANSPARENT | w32.WS_EX_LAYERED
+		} else {
+			// Only WS_EX_NOREDIRECTIONBITMAP if not (and not solid)
+			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 	}
 	if options.AlwaysOnTop {
@@ -788,6 +791,14 @@ func (w *windowsWebviewWindow) setFullscreenButtonEnabled(_ bool) {
 
 func (w *windowsWebviewWindow) focus() {
 	w32.SetForegroundWindow(w.hwnd)
+
+	if w.isDisabled() {
+		return
+	}
+	if w.isMinimised() {
+		w.unminimise()
+	}
+
 	w.focusingChromium = true
 	w.chromium.Focus()
 	w.focusingChromium = false
@@ -1039,6 +1050,11 @@ func (w *windowsWebviewWindow) disableIcon() {
 				w32.SWP_NOSIZE|
 				w32.SWP_NOZORDER),
 	)
+}
+
+func (w *windowsWebviewWindow) isDisabled() bool {
+	style := uint32(w32.GetWindowLong(w.hwnd, w32.GWL_STYLE))
+	return style&w32.WS_DISABLED != 0
 }
 
 func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {

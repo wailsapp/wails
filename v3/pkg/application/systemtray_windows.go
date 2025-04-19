@@ -431,3 +431,19 @@ func (s *windowsSystemTray) Show() {
 func (s *windowsSystemTray) Hide() {
 	// No-op
 }
+
+func (s *windowsSystemTray) reshow() {
+	// Add icons back to systray
+	nid := w32.NOTIFYICONDATA{
+		HWnd:             s.hwnd,
+		UID:              uint32(s.parent.id),
+		UFlags:           w32.NIF_ICON | w32.NIF_MESSAGE,
+		HIcon:            s.currentIcon,
+		UCallbackMessage: WM_USER_SYSTRAY,
+	}
+	nid.CbSize = uint32(unsafe.Sizeof(nid))
+	// Show the icon
+	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
+		panic(syscall.GetLastError())
+	}
+}
