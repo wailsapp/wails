@@ -28,6 +28,10 @@ type Options struct {
 	// Linux is the Linux specific configuration for Linux builds
 	Linux LinuxOptions
 
+	// UseGlobalMenuByDefault determines if the global application menu set via SetMenu should be used by default for all windows on Windows and Linux.
+	// If false (default), windows do not inherit the global menu unless explicitly set. If true, all windows inherit the global menu unless they opt out.
+	UseGlobalMenuByDefault bool
+
 	// Services allows you to bind Go methods to the frontend.
 	Services []Service
 

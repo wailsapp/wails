@@ -284,11 +284,36 @@ fileMenu.AddRole(application.Quit)
 
 Application menus are the menus that appear at the top of your application window (Windows/Linux) or at the top of the screen (macOS).
 
+### Global Menu Inheritance: `UseGlobalMenuByDefault`
+
+On Windows and Linux, menus are usually set per window. However, if you want all windows to use the global application menu by default (unless a window-specific menu is provided), you can enable this behaviour with the `UseGlobalMenuByDefault` option:
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    UseGlobalMenuByDefault: true, // All windows will use the global menu unless overridden
+})
+
+menu := app.NewMenu()
+// ... add items/roles ...
+app.SetMenu(menu)
+
+app.NewWebviewWindow().SetTitle("Window 1").Show()
+app.NewWebviewWindow().SetTitle("Window 2").Show()
+```
+
+- When `UseGlobalMenuByDefault` is `true`, any window created without an explicit menu will inherit the global application menu.
+- If you set a menu directly on a window (via `WebviewWindowOptions.Menu` or `window.SetMenu()`), that menu takes precedence for that window.
+- This flag has no effect on macOS, where the application menu is always global.
+
+**When to use:**
+- Use this option if you want a consistent application menu across all windows on Windows/Linux, without having to set it for each window individually.
+- Omit this option or set it to `false` if you want to control menus per window.
 
 ### Application Menu Behaviour
 
 When you set an application menu using `app.SetMenu()`, it becomes the main menu on macOS.
-Menus are set on a pre-window basis for Windows/Linux.
+Menus are set on a pre-window basis for Windows/Linux (unless `UseGlobalMenuByDefault` is enabled).
 
 ```go
 app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{

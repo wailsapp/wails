@@ -322,6 +322,12 @@ func (w *windowsWebviewWindow) run() {
 			w.menu = NewApplicationMenu(w, userMenu)
 			w.menu.parentWindow = w
 			appMenu = w.menu.menu
+		} else if globalApplication.options.UseGlobalMenuByDefault && globalApplication.ApplicationMenu != nil {
+			// Use the global application menu if the flag is set and no explicit window menu is provided
+			globalApplication.ApplicationMenu.Update()
+			w.menu = NewApplicationMenu(w, globalApplication.ApplicationMenu)
+			w.menu.parentWindow = w
+			appMenu = w.menu.menu
 		}
 	}
 

@@ -84,12 +84,10 @@ func (r rnr) run() {
 }
 
 func (a *linuxApp) setApplicationMenu(menu *Menu) {
-	// FIXME: How do we avoid putting a menu?
 	if menu == nil {
-		// Create a default menu
 		menu = DefaultApplicationMenu()
-		globalApplication.ApplicationMenu = menu
 	}
+	globalApplication.ApplicationMenu = menu
 }
 
 func (a *linuxApp) run() error {
