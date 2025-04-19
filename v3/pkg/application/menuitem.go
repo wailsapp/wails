@@ -365,6 +365,13 @@ func (m *MenuItem) SetChecked(checked bool) *MenuItem {
 	return m
 }
 
+func (m *MenuItem) Hidden() bool {
+	return m.hidden
+}
+
+// SetHidden sets whether the menu item is hidden.
+// This works for all menu item types, including submenus.
+// Returns the menu item for method chaining.
 func (m *MenuItem) SetHidden(hidden bool) *MenuItem {
 	m.hidden = hidden
 	if m.impl != nil {
@@ -377,36 +384,7 @@ func (m *MenuItem) SetHidden(hidden bool) *MenuItem {
 	return m
 }
 
-// GetSubmenu returns the submenu of the MenuItem.
-// If the MenuItem is not a submenu, it returns nil.
-func (m *MenuItem) GetSubmenu() *Menu {
-	return m.submenu
-}
-
-func (m *MenuItem) Checked() bool {
-	return m.checked
-}
-
-func (m *MenuItem) IsSeparator() bool {
-	return m.itemType == separator
-}
-
-func (m *MenuItem) IsSubmenu() bool {
-	return m.itemType == submenu
-}
-
-func (m *MenuItem) IsCheckbox() bool {
-	return m.itemType == checkbox
-}
-
-func (m *MenuItem) IsRadio() bool {
-	return m.itemType == radio
-}
-
-func (m *MenuItem) Hidden() bool {
-	return m.hidden
-}
-
+// OnClick sets the callback function for when the menu item is clicked.
 func (m *MenuItem) OnClick(f func(*Context)) *MenuItem {
 	m.callback = f
 	return m
@@ -482,4 +460,28 @@ func (m *MenuItem) Destroy() {
 	m.callback = nil
 	m.radioGroupMembers = nil
 
+}
+
+func (m *MenuItem) GetSubmenu() *Menu {
+	return m.submenu
+}
+
+func (m *MenuItem) IsSeparator() bool {
+	return m.itemType == separator
+}
+
+func (m *MenuItem) IsSubmenu() bool {
+	return m.itemType == submenu
+}
+
+func (m *MenuItem) IsCheckbox() bool {
+	return m.itemType == checkbox
+}
+
+func (m *MenuItem) IsRadio() bool {
+	return m.itemType == radio
+}
+
+func (m *MenuItem) Checked() bool {
+	return m.checked
 }
