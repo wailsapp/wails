@@ -86,9 +86,15 @@ func (wn *windowsNotifier) Startup(ctx context.Context, options application.Serv
 	wn.exePath = exe
 
 	// Create the registry key for the toast activator
-	key, _, _ := registry.CreateKey(registry.CURRENT_USER,
+	key, _, err := registry.CreateKey(registry.CURRENT_USER,
 		`Software\Classes\CLSID\`+wn.appGUID+`\LocalServer32`, registry.ALL_ACCESS)
-	key.SetStringValue("", fmt.Sprintf("\"%s\" %%1", wn.exePath))
+	if err != nil {
+		return fmt.Errorf("failed to create CLSID key: %w", err)
+	}
+
+	if err := key.SetStringValue("", fmt.Sprintf("\"%s\" %%1", wn.exePath)); err != nil {
+		return fmt.Errorf("failed to set CLSID server path: %w", err)
+	}
 	key.Close()
 
 	toast.SetAppData(toast.AppData{
