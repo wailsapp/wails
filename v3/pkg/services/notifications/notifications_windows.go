@@ -4,15 +4,16 @@ package notifications
 
 import (
 	"context"
-	_ "embed"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
+	_ "unsafe"
 
 	"git.sr.ht/~jackmordaunt/go-toast/v2"
+	wintoast "git.sr.ht/~jackmordaunt/go-toast/v2/wintoast"
 	"github.com/google/uuid"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/w32"
@@ -25,6 +26,7 @@ type windowsNotifier struct {
 	appName        string
 	appGUID        string
 	iconPath       string
+	exePath        string
 }
 
 const (
@@ -55,13 +57,19 @@ func New() *Service {
 	return NotificationService
 }
 
+//go:linkname registerFactoryInternal git.sr.ht/~jackmordaunt/go-toast/v2/wintoast.registerClassFactory
+func registerFactoryInternal(factory *wintoast.IClassFactory) error
+
 // Startup is called when the service is loaded
 // Sets an activation callback to emit an event when notifications are interacted with.
 func (wn *windowsNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {
 	wn.categoriesLock.Lock()
 	defer wn.categoriesLock.Unlock()
 
-	wn.appName = application.Get().Config().Name
+	app := application.Get()
+	cfg := app.Config()
+
+	wn.appName = cfg.Name
 
 	guid, err := wn.getGUID()
 	if err != nil {
@@ -71,10 +79,23 @@ func (wn *windowsNotifier) Startup(ctx context.Context, options application.Serv
 
 	wn.iconPath = filepath.Join(os.TempDir(), wn.appName+wn.appGUID+".png")
 
+	exe, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("failed to get executable path: %w", err)
+	}
+	wn.exePath = exe
+
+	// Create the registry key for the toast activator
+	key, _, _ := registry.CreateKey(registry.CURRENT_USER,
+		`Software\Classes\CLSID\`+wn.appGUID+`\LocalServer32`, registry.ALL_ACCESS)
+	key.SetStringValue("", fmt.Sprintf("\"%s\" %%1", wn.exePath))
+	key.Close()
+
 	toast.SetAppData(toast.AppData{
-		AppID:    wn.appName,
-		GUID:     guid,
-		IconPath: wn.iconPath,
+		AppID:         wn.appName,
+		GUID:          guid,
+		IconPath:      wn.iconPath,
+		ActivationExe: wn.exePath,
 	})
 
 	toast.SetActivationCallback(func(args string, data []toast.UserData) {
@@ -84,33 +105,34 @@ func (wn *windowsNotifier) Startup(ctx context.Context, options application.Serv
 
 		if err != nil {
 			result.Error = err
-
-			if ns := getNotificationService(); ns != nil {
-				ns.handleNotificationResult(result)
+		} else {
+			// Subtitle is retained but was not shown with the notification
+			response := NotificationResponse{
+				ID:               options.ID,
+				ActionIdentifier: actionIdentifier,
+				Title:            options.Title,
+				Subtitle:         options.Subtitle,
+				Body:             options.Body,
+				CategoryID:       options.CategoryID,
+				UserInfo:         options.Data,
 			}
-			return
+
+			if userText, found := wn.getUserText(data); found {
+				response.UserText = userText
+			}
+
+			result.Response = response
 		}
 
-		// Subtitle is retained but was not shown with the notification
-		response := NotificationResponse{
-			ID:               options.ID,
-			ActionIdentifier: actionIdentifier,
-			Title:            options.Title,
-			Subtitle:         options.Subtitle,
-			Body:             options.Body,
-			CategoryID:       options.CategoryID,
-			UserInfo:         options.Data,
-		}
-
-		if userText, found := wn.getUserText(data); found {
-			response.UserText = userText
-		}
-
-		result.Response = response
 		if ns := getNotificationService(); ns != nil {
 			ns.handleNotificationResult(result)
 		}
 	})
+
+	// Register the class factory for the toast activator
+	if err := registerFactoryInternal(wintoast.ClassFactory); err != nil {
+		return fmt.Errorf("CoRegisterClassObject failed: %w", err)
+	}
 
 	return wn.loadCategoriesFromRegistry()
 }
@@ -145,6 +167,7 @@ func (wn *windowsNotifier) SendNotification(options NotificationOptions) error {
 	n := toast.Notification{
 		Title:               options.Title,
 		Body:                options.Body,
+		ActivationType:      toast.Foreground,
 		ActivationArguments: DefaultActionIdentifier,
 	}
 
@@ -179,6 +202,7 @@ func (wn *windowsNotifier) SendNotificationWithActions(options NotificationOptio
 	n := toast.Notification{
 		Title:               options.Title,
 		Body:                options.Body,
+		ActivationType:      toast.Foreground,
 		ActivationArguments: DefaultActionIdentifier,
 	}
 
