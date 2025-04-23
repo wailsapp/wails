@@ -65,6 +65,9 @@ func (dn *darwinNotifier) Startup(ctx context.Context, options application.Servi
 	if !checkBundleIdentifier() {
 		return fmt.Errorf("notifications require a valid bundle identifier")
 	}
+	if !bool(C.ensureDelegateInitialized()) {
+		return fmt.Errorf("failed to initialize notification center delegate")
+	}
 	return nil
 }
 

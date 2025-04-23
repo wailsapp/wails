@@ -91,7 +91,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 static NotificationsDelegate *delegateInstance = nil;
 static dispatch_once_t onceToken;
 
-static BOOL ensureDelegateInitialized(void) {
+bool ensureDelegateInitialized(void) {
     __block BOOL success = YES;
 
     dispatch_once(&onceToken, ^{
