@@ -17,7 +17,6 @@ import (
 
 var (
 	ole32            = syscall.NewLazyDLL("ole32.dll")
-	shobjidl         = syscall.NewLazyDLL("shell32.dll")
 	coCreateInstance = ole32.NewProc("CoCreateInstance")
 )
 
@@ -59,6 +58,13 @@ type taskbarList3Vtbl struct {
 }
 
 func newTaskbarList3() (*ITaskbarList3, error) {
+	const COINIT_APARTMENTTHREADED = 0x2
+
+	coInit := ole32.NewProc("CoInitializeEx")
+	if hr, _, _ := coInit.Call(0, COINIT_APARTMENTTHREADED); hr != 0 && hr != 0x1 {
+		return nil, syscall.Errno(hr)
+	}
+
 	var taskbar *ITaskbarList3
 	hr, _, _ := coCreateInstance.Call(
 		uintptr(unsafe.Pointer(&CLSID_TaskbarList)),
@@ -70,6 +76,12 @@ func newTaskbarList3() (*ITaskbarList3, error) {
 
 	if hr != 0 {
 		return nil, syscall.Errno(hr)
+	}
+
+	if r, _, _ := syscall.SyscallN(taskbar.lpVtbl.HrInit, uintptr(unsafe.Pointer(taskbar))); r != 0 {
+		syscall.SyscallN(taskbar.lpVtbl.Release, uintptr(unsafe.Pointer(taskbar)))
+		ole32.NewProc("CoUninitialize").Call()
+		return nil, syscall.Errno(r)
 	}
 
 	return taskbar, nil
@@ -110,6 +122,11 @@ func (w *windowsBadge) Startup(ctx context.Context, options application.ServiceO
 }
 
 func (w *windowsBadge) Shutdown() error {
+	if w.taskbar != nil {
+		syscall.SyscallN(w.taskbar.lpVtbl.Release, uintptr(unsafe.Pointer(w.taskbar)))
+		ole32.NewProc("CoUninitialize").Call()
+	}
+
 	return nil
 }
 
@@ -169,7 +186,7 @@ func (w *windowsBadge) RemoveBadge() error {
 	return w.taskbar.SetOverlayIcon(syscall.Handle(hwnd), 0, nil)
 }
 
-func createBadgeIcon() (uintptr, error) {
+func createBadgeIcon() (w32.HICON, error) {
 	const size = 32
 
 	img := image.NewRGBA(image.Rect(0, 0, size, size))
@@ -209,5 +226,5 @@ func createBadgeIcon() (uintptr, error) {
 	}
 
 	hicon, err := w32.CreateSmallHIconFromImage(buf.Bytes())
-	return uintptr(hicon), err
+	return hicon, err
 }
