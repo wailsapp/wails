@@ -62,7 +62,7 @@ document.querySelector("#complex")?.addEventListener("click", async () => {
 });
 
 const unlisten = Events.On("notification:action", (response) => {
-    console.info(`Recieved a ${response.name} event`);
+    console.info(`Received a ${response.name} event`);
     const { userInfo, ...base } = response.data[0]; 
     console.info("Notification Response:");
     console.table(base);

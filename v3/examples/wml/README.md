@@ -4,16 +4,9 @@ This is an example of how to use the experimental WML, which provides HTMX style
 
 ## Running the example
 
-To run the example, simply run the following command:
+To run the example, run the following command:
 
 ```bash
 go run .
 ```
 
-# Status
-
-| Platform | Status  |
-|----------|---------|
-| Mac      | Working |
-| Windows  | Working |
-| Linux    |         |

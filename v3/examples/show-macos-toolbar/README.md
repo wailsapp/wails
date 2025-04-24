@@ -11,10 +11,3 @@ To run the example (on macOS), simply run the following command:
 go run .
 ```
 
-# Status
-
-| Platform | Status  |
-|----------|---------|
-| Mac      | Working |
-| Windows  | N/A     |
-| Linux    | N/A     |

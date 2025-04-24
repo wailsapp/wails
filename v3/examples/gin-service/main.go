@@ -32,8 +32,8 @@ func main() {
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title:  "Gin Service Demo",
-		Width:  1024,
-		Height: 768,
+		Width:  1280,
+		Height: 1200,
 	})
 
 	err := app.Run()

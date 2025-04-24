@@ -26,6 +26,7 @@ func main() {
 		URL:   "https://wails.io",
 		KeyBindings: map[string]func(window *application.WebviewWindow){
 			"F12": func(window *application.WebviewWindow) {
+				println("Window 2: Open Dev Tools")
 				window.OpenDevTools()
 			},
 		},
@@ -37,7 +38,8 @@ func main() {
 		URL:   "https://google.com",
 		KeyBindings: map[string]func(window *application.WebviewWindow){
 			"F12": func(window *application.WebviewWindow) {
-				println("Window 2: Toggle Dev Tools")
+				println("Window 2: Open Dev Tools")
+				window.OpenDevTools()
 			},
 		},
 	})

@@ -7,13 +7,6 @@ This example will detect all attached screens and display their details.
 To run the example, simply run the following command:
 
 ```bash
-go run .
+go run main.go
 ```
 
-# Status
-
-| Platform | Status  |
-|----------|---------|
-| Mac      | Working |
-| Windows  | Working |
-| Linux    |         |

@@ -101,8 +101,8 @@ func main() {
 	// Create window
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title:  "Wails + Gin Example",
-		Width:  900,
-		Height: 700,
+		Width:  950,
+		Height: 800,
 		URL:    "/",
 	})
 

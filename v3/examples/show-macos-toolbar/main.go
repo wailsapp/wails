@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"log"
+	"runtime"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -42,6 +43,10 @@ func main() {
 			},
 		},
 	})
+
+	if runtime.GOOS != "darwin" {
+		println("Warning: This example will only run correctly on macOS.")
+	}
 
 	err := app.Run()
 

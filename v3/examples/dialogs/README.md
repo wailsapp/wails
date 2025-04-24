@@ -24,10 +24,3 @@ To build the example to use application icons, simply run the following command:
 wails3 task package
 ```
 
-# Status
-
-| Platform | Status         |
-|----------|----------------|
-| Mac      | Mostly Working |
-| Windows  | Working        |
-| Linux    |                |

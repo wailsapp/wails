@@ -4,16 +4,9 @@ This example is a demonstration of different ways to create applications without
 
 ## Running the example
 
-To run the example, simply run the following command:
+To run the example, run the following command:
 
 ```bash
 go run .
 ```
 
-# Status
-
-| Platform | Status  |
-|----------|---------|
-| Mac      | Working |
-| Windows  | Working |
-| Linux    |         |

@@ -4,16 +4,9 @@ This example will detect all attached screens and display their details.
 
 ## Running the example
 
-To run the example, simply run the following command:
+To run the example, run the following command:
 
 ```bash
 go run .
 ```
 
-# Status
-
-| Platform | Status  |
-|----------|---------|
-| Mac      | Working |
-| Windows  | Working |
-| Linux    |         |

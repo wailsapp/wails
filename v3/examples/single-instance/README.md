@@ -38,7 +38,7 @@ The example consists of:
 
 - `main.go`: The main application code demonstrating single instance setup
 - A simple web UI showing current instance information
-- Callback handling for second instance launches
+- Callback handling for when the second instance launches
 
 ## Implementation Details
 

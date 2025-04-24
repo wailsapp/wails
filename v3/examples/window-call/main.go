@@ -21,8 +21,6 @@ func (s *WindowService) RandomTitle(ctx context.Context) {
 	callingWindow.SetTitle(title)
 }
 
-// ==============================================
-
 func main() {
 	app := application.New(application.Options{
 		Name:        "Window call Demo",
@@ -37,10 +35,6 @@ func main() {
 			application.NewService(&WindowService{}),
 		},
 	})
-
-	app.NewWebviewWindow().
-		SetTitle("WebviewWindow 1").
-		Show()
 
 	// Create a custom menu
 	menu := app.NewMenu()
@@ -62,6 +56,11 @@ func main() {
 				Show()
 			windowCounter++
 		})
+
+	window := app.NewWebviewWindow().
+		SetTitle("WebviewWindow 1").
+		Show()
+	window.SetMenu(menu)
 
 	app.SetMenu(menu)
 	err := app.Run()

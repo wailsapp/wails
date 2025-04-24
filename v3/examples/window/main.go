@@ -25,7 +25,6 @@ var assets embed.FS
 
 type WindowService struct{}
 
-// ==============================================
 func (s *WindowService) SetPos(relative bool, x, y float64) {
 	win := application.Get().CurrentWindow()
 	initX, initY := win.Position()
@@ -67,8 +66,6 @@ func (s *WindowService) GetBounds() application.Rect {
 	fmt.Printf("GetBounds: %+v: mid: %d\n", r, mid)
 	return r
 }
-
-// ==============================================
 
 func main() {
 	app := application.New(application.Options{
@@ -713,10 +710,12 @@ func main() {
 	if runtime.GOOS != "darwin" {
 		stateMenu.Add("Flash for 5s").OnClick(func(ctx *application.Context) {
 			currentWindow(func(w *application.WebviewWindow) {
+				w.Minimise()
 				time.Sleep(2 * time.Second)
 				w.Flash(true)
 				time.Sleep(5 * time.Second)
 				w.Flash(false)
+				w.Restore()
 			})
 		})
 	}

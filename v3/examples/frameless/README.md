@@ -10,10 +10,3 @@ To run the example, simply run the following command:
 go run .
 ```
 
-# Status
-
-| Platform | Status  |
-|----------|---------|
-| Mac      | Working |
-| Windows  | Working |
-| Linux    |         |

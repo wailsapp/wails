@@ -8,10 +8,3 @@ Right-clicking on the systray icon will show the menu.
 On Windows, if the icon is in the notification flyout, 
 then the window will be shown in the bottom right corner. 
 
-# Status
-
-| Platform | Status  |
-|----------|---------|
-| Mac      | Working |
-| Windows  | Working |
-| Linux    |         |

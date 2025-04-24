@@ -8,7 +8,7 @@ import (
 type Service struct {
 }
 
-// A long running operation of specified duration.
+// LongRunning - A long-running operation of specified duration.
 func (*Service) LongRunning(ctx context.Context, milliseconds int) error {
 	select {
 	case <-time.After(time.Duration(milliseconds) * time.Millisecond):

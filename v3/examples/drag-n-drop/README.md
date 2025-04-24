@@ -18,10 +18,3 @@ To build the example in debug mode, simply run the following command:
 wails3 task build
 ```
 
-# Status
-
-| Platform | Status      |
-|----------|-------------|
-| Mac      | Working     |
-| Windows  | Not Working |
-| Linux    |             |

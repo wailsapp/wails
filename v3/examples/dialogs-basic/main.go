@@ -20,6 +20,7 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		Assets: application.AlphaAssets,
 	})
 
 	// Create main window
@@ -176,6 +177,8 @@ func main() {
 		}
 		showResults("Full Featured", results, mainWindow)
 	})
+
+	mainWindow.SetMenu(menu)
 
 	// Show the window
 	mainWindow.Show()

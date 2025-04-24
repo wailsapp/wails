@@ -79,6 +79,7 @@ func main() {
 
 	win2 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title: "Window 2",
+		Name:  "Window 2",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,

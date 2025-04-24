@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"log"
 	"runtime"
 
@@ -104,13 +105,15 @@ func main() {
 			beatles.SetLabel("Hello")
 		}
 	})
-	myMenu.Add("Hide the beatles").OnClick(func(ctx *application.Context) {
+	hideText := fmt.Sprintf("Hide the '%s' menu", beatles.Label())
+	unhideText := fmt.Sprintf("Unhide the '%s' menu", beatles.Label())
+	myMenu.Add(hideText).OnClick(func(ctx *application.Context) {
 		if beatles.Hidden() {
-			ctx.ClickedMenuItem().SetLabel("Hide the beatles!")
+			ctx.ClickedMenuItem().SetLabel(hideText)
 			beatles.SetHidden(false)
 		} else {
 			beatles.SetHidden(true)
-			ctx.ClickedMenuItem().SetLabel("Unhide the beatles!")
+			ctx.ClickedMenuItem().SetLabel(unhideText)
 		}
 	})
 	app.SetMenu(menu)
