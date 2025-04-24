@@ -99,35 +99,33 @@ func New() *Service {
 	}
 }
 
-func (d *windowsBadge) Startup(ctx context.Context, options application.ServiceOptions) error {
+func (w *windowsBadge) Startup(ctx context.Context, options application.ServiceOptions) error {
 	taskbar, err := newTaskbarList3()
 	if err != nil {
 		return err
 	}
-	d.taskbar = taskbar
+	w.taskbar = taskbar
 
-	// Don't try to get the window handle here - wait until SetBadge is called
 	return nil
 }
 
-func (d *windowsBadge) Shutdown() error {
+func (w *windowsBadge) Shutdown() error {
 	return nil
 }
 
-func (d *windowsBadge) SetBadge(label string) error {
-	if d.taskbar == nil {
+func (w *windowsBadge) SetBadge(label string) error {
+	if w.taskbar == nil {
 		return nil
 	}
 
-	// Get the window handle when SetBadge is called, not during startup
 	app := application.Get()
 	if app == nil {
-		return nil // App not initialized yet
+		return nil
 	}
 
 	window := app.CurrentWindow()
 	if window == nil {
-		return nil // No window available yet
+		return nil
 	}
 
 	hwnd, err := window.NativeWindowHandle()
@@ -136,7 +134,7 @@ func (d *windowsBadge) SetBadge(label string) error {
 	}
 
 	if label == "" {
-		return d.taskbar.SetOverlayIcon(syscall.Handle(hwnd), 0, nil)
+		return w.taskbar.SetOverlayIcon(syscall.Handle(hwnd), 0, nil)
 	}
 
 	hicon, err := createBadgeIcon()
@@ -145,23 +143,22 @@ func (d *windowsBadge) SetBadge(label string) error {
 	}
 	defer w32.DestroyIcon(hicon)
 
-	return d.taskbar.SetOverlayIcon(syscall.Handle(hwnd), syscall.Handle(hicon), nil)
+	return w.taskbar.SetOverlayIcon(syscall.Handle(hwnd), syscall.Handle(hicon), nil)
 }
 
-func (d *windowsBadge) RemoveBadge() error {
-	if d.taskbar == nil {
+func (w *windowsBadge) RemoveBadge() error {
+	if w.taskbar == nil {
 		return nil
 	}
 
-	// Get the window handle when SetBadge is called, not during startup
 	app := application.Get()
 	if app == nil {
-		return nil // App not initialized yet
+		return nil
 	}
 
 	window := app.CurrentWindow()
 	if window == nil {
-		return nil // No window available yet
+		return nil
 	}
 
 	hwnd, err := window.NativeWindowHandle()
@@ -169,7 +166,7 @@ func (d *windowsBadge) RemoveBadge() error {
 		return err
 	}
 
-	return d.taskbar.SetOverlayIcon(syscall.Handle(hwnd), 0, nil)
+	return w.taskbar.SetOverlayIcon(syscall.Handle(hwnd), 0, nil)
 }
 
 func createBadgeIcon() (uintptr, error) {

@@ -1,0 +1,122 @@
+---
+title: Badges
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Introduction
+
+Wails provides a cross-platform badge service for desktop applications. This service allows you to display badges on your application tile or dock icon, which is useful for indicating unread messages, notifications, or other status information.
+
+## Basic Usage
+
+### Creating the Service
+
+First, initialize the badge service:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/services/badge"
+
+// Create a new badge service
+badgeService := badge.New()
+
+// Register the service with the application
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(badgeService),
+    },
+})
+```
+
+## Badge Operations
+
+### Setting a Badge
+
+Set a badge on the application tile/dock icon:
+
+```go
+// Set a numeric badge
+badgeService.SetBadge("3")
+
+// Set a text badge
+badgeService.SetBadge("New")
+
+// Set a symbol badge
+badgeService.SetBadge("●")
+```
+
+### Removing a Badge
+
+Remove the badge from the application icon:
+
+```go
+badgeService.RemoveBadge()
+
+// or
+
+// Set an empty string
+badgeService.SetBadge("")
+```
+
+## Platform Considerations
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    On macOS, badges:
+    
+    - Are displayed directly on the dock icon
+    - Support both text and numeric values
+    - Automatically handle dark/light mode appearance
+    - Use the standard macOS dock badge styling
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    On Windows, badges:
+    
+    - Are displayed as an overlay icon in the taskbar
+    - Currently implemented as a red circle with a white center
+    - Do not currently support displaying text or numbers
+    - Adapt to Windows theme settings
+    - Require the application to have a window
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    On Linux:
+    
+    - Badge functionality is not available
+    
+  </TabItem>
+</Tabs>
+
+## Best Practices
+
+1. Use badges sparingly:
+   - Too many badge updates can distract users
+   - Reserve badges for important notifications
+
+2. Keep badge text short:
+   - Numeric badges are most effective
+   - On macOS, text badges should be brief
+
+## API Reference
+
+### Service Management
+| Method                                     | Description                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `New()`                                    | Creates a new badge service                           |
+
+### Badge Operations
+| Method                                       | Description                                                |
+|----------------------------------------------|------------------------------------------------------------|
+| `SetBadge(label string) error`               | Sets a badge with the specified label                      |
+| `RemoveBadge() error`                        | Removes the badge from the application icon                |
+
+### Structs and Types
+
+This service doesn't define any specific structs or types beyond the standard error return types.
