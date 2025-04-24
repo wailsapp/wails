@@ -49,3 +49,8 @@ func (d *darwinBadge) SetBadge(label string) error {
 	C.setBadge(cLabel)
 	return nil
 }
+
+func (d *darwinBadge) RemoveBadge() error {
+	C.setBadge(nil)
+	return nil
+}

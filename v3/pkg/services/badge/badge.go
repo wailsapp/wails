@@ -12,6 +12,7 @@ type platformBadge interface {
 	Shutdown() error
 
 	SetBadge(label string) error
+	RemoveBadge() error
 }
 
 // Service represents the notifications service
@@ -36,4 +37,8 @@ func (b *Service) ServiceShutdown() error {
 
 func (b *Service) SetBadge(label string) error {
 	return b.impl.SetBadge(label)
+}
+
+func (b *Service) RemoveBadge() error {
+	return b.impl.RemoveBadge()
 }
