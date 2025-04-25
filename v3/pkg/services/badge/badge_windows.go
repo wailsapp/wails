@@ -66,33 +66,34 @@ type taskbarList3Vtbl struct {
 }
 
 func newTaskbarList3() (*ITaskbarList3, error) {
-	const COINIT_APARTMENTTHREADED = 0x2
+    const COINIT_APARTMENTTHREADED = 0x2
 
-	coInit := ole32.NewProc("CoInitializeEx")
-	if hr, _, _ := coInit.Call(0, COINIT_APARTMENTTHREADED); hr != 0 && hr != 0x1 {
-		return nil, syscall.Errno(hr)
-	}
+    coInit := ole32.NewProc("CoInitializeEx")
+    if hr, _, _ := coInit.Call(0, COINIT_APARTMENTTHREADED); hr != 0 && hr != 0x1 {
+        return nil, syscall.Errno(hr)
+    }
 
-	var taskbar *ITaskbarList3
-	hr, _, _ := coCreateInstance.Call(
-		uintptr(unsafe.Pointer(&CLSID_TaskbarList)),
-		0,
-		uintptr(CLSCTX_INPROC_SERVER),
-		uintptr(unsafe.Pointer(&IID_ITaskbarList3)),
-		uintptr(unsafe.Pointer(&taskbar)),
-	)
+    var taskbar *ITaskbarList3
+    hr, _, _ := coCreateInstance.Call(
+        uintptr(unsafe.Pointer(&CLSID_TaskbarList)),
+        0,
+        uintptr(CLSCTX_INPROC_SERVER),
+        uintptr(unsafe.Pointer(&IID_ITaskbarList3)),
+        uintptr(unsafe.Pointer(&taskbar)),
+    )
 
-	if hr != 0 {
-		return nil, syscall.Errno(hr)
-	}
+    if hr != 0 {
+        ole32.NewProc("CoUninitialize").Call()
+        return nil, syscall.Errno(hr)
+    }
 
-	if r, _, _ := syscall.SyscallN(taskbar.lpVtbl.HrInit, uintptr(unsafe.Pointer(taskbar))); r != 0 {
-		syscall.SyscallN(taskbar.lpVtbl.Release, uintptr(unsafe.Pointer(taskbar)))
-		ole32.NewProc("CoUninitialize").Call()
-		return nil, syscall.Errno(r)
-	}
+    if r, _, _ := syscall.SyscallN(taskbar.lpVtbl.HrInit, uintptr(unsafe.Pointer(taskbar))); r != 0 {
+        syscall.SyscallN(taskbar.lpVtbl.Release, uintptr(unsafe.Pointer(taskbar)))
+        ole32.NewProc("CoUninitialize").Call()
+        return nil, syscall.Errno(r)
+    }
 
-	return taskbar, nil
+    return taskbar, nil
 }
 
 func (t *ITaskbarList3) SetOverlayIcon(hwnd syscall.Handle, hIcon syscall.Handle, description *uint16) error {
