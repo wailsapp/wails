@@ -45,6 +45,8 @@ func (d *darwinBadge) SetBadge(label string) error {
 	if label != "" {
 		cLabel = C.CString(label)
 		defer C.free(unsafe.Pointer(cLabel))
+	} else {
+		cLabel = C.CString("●") // Default badge character
 	}
 	C.setBadge(cLabel)
 	return nil

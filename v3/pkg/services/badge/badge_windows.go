@@ -8,11 +8,17 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"os"
+	"strings"
 	"syscall"
 	"unsafe"
 
+	"github.com/flopp/go-findfont"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/w32"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/opentype"
+	"golang.org/x/image/math/fixed"
 )
 
 var (
@@ -102,7 +108,9 @@ func (t *ITaskbarList3) SetOverlayIcon(hwnd syscall.Handle, hIcon syscall.Handle
 }
 
 type windowsBadge struct {
-	taskbar *ITaskbarList3
+	taskbar   *ITaskbarList3
+	badgeImg  *image.RGBA
+	badgeSize int
 }
 
 func New() *Service {
@@ -150,13 +158,19 @@ func (w *windowsBadge) SetBadge(label string) error {
 		return err
 	}
 
-	if label == "" {
-		return w.taskbar.SetOverlayIcon(syscall.Handle(hwnd), 0, nil)
-	}
+	w.createBadge()
 
-	hicon, err := createBadgeIcon()
-	if err != nil {
-		return err
+	var hicon w32.HICON
+	if label == "" {
+		hicon, err = w.createBadgeIcon()
+		if err != nil {
+			return err
+		}
+	} else {
+		hicon, err = w.createBadgeIconWithText(label)
+		if err != nil {
+			return err
+		}
 	}
 	defer w32.DestroyIcon(hicon)
 
@@ -186,17 +200,99 @@ func (w *windowsBadge) RemoveBadge() error {
 	return w.taskbar.SetOverlayIcon(syscall.Handle(hwnd), 0, nil)
 }
 
-func createBadgeIcon() (w32.HICON, error) {
-	const size = 32
+func (w *windowsBadge) createBadgeIcon() (w32.HICON, error) {
+	radius := w.badgeSize / 2
+	centerX, centerY := radius, radius
+	white := color.RGBA{255, 255, 255, 255}
+	innerRadius := w.badgeSize / 5
 
-	img := image.NewRGBA(image.Rect(0, 0, size, size))
+	for y := 0; y < w.badgeSize; y++ {
+		for x := 0; x < w.badgeSize; x++ {
+			dx := float64(x - centerX)
+			dy := float64(y - centerY)
+
+			if dx*dx+dy*dy < float64(innerRadius*innerRadius) {
+				w.badgeImg.Set(x, y, white)
+			}
+		}
+	}
+
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, w.badgeImg); err != nil {
+		return 0, err
+	}
+
+	hicon, err := w32.CreateSmallHIconFromImage(buf.Bytes())
+	return hicon, err
+}
+
+func (w *windowsBadge) createBadgeIconWithText(label string) (w32.HICON, error) {
+	fontPath := ""
+	for _, path := range findfont.List() {
+		if strings.Contains(strings.ToLower(path), "segoeuib.ttf") || // Segoe UI Bold
+			strings.Contains(strings.ToLower(path), "arialbd.ttf") {
+			fontPath = path
+			break
+		}
+	}
+	if fontPath == "" {
+		return w.createBadgeIcon()
+	}
+
+	fontBytes, err := os.ReadFile(fontPath)
+	if err != nil {
+		return 0, err
+	}
+
+	ttf, err := opentype.Parse(fontBytes)
+	if err != nil {
+		return 0, err
+	}
+
+	fontSize := 18.0
+	if len(label) > 1 {
+		fontSize = 14.0
+	}
+
+	face, err := opentype.NewFace(ttf, &opentype.FaceOptions{
+		Size:    fontSize,
+		DPI:     96,
+		Hinting: font.HintingFull,
+	})
+	if err != nil {
+		return 0, err
+	}
+	defer face.Close()
+
+	d := &font.Drawer{
+		Dst:  w.badgeImg,
+		Src:  image.NewUniform(color.White),
+		Face: face,
+	}
+
+	textWidth := d.MeasureString(label).Ceil()
+	d.Dot = fixed.P((w.badgeSize-textWidth)/2, int(float64(w.badgeSize)/2+fontSize/2))
+	d.DrawString(label)
+
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, w.badgeImg); err != nil {
+		return 0, err
+	}
+
+	return w32.CreateSmallHIconFromImage(buf.Bytes())
+}
+
+func (w *windowsBadge) createBadge() {
+	w.badgeSize = 32
+
+	img := image.NewRGBA(image.Rect(0, 0, w.badgeSize, w.badgeSize))
 
 	red := color.RGBA{255, 0, 0, 255}
-	radius := size / 2
+	radius := w.badgeSize / 2
 	centerX, centerY := radius, radius
 
-	for y := 0; y < size; y++ {
-		for x := 0; x < size; x++ {
+	for y := 0; y < w.badgeSize; y++ {
+		for x := 0; x < w.badgeSize; x++ {
 			dx := float64(x - centerX)
 			dy := float64(y - centerY)
 
@@ -206,25 +302,5 @@ func createBadgeIcon() (w32.HICON, error) {
 		}
 	}
 
-	white := color.RGBA{255, 255, 255, 255}
-	innerRadius := size / 5
-
-	for y := 0; y < size; y++ {
-		for x := 0; x < size; x++ {
-			dx := float64(x - centerX)
-			dy := float64(y - centerY)
-
-			if dx*dx+dy*dy < float64(innerRadius*innerRadius) {
-				img.Set(x, y, white)
-			}
-		}
-	}
-
-	var buf bytes.Buffer
-	if err := png.Encode(&buf, img); err != nil {
-		return 0, err
-	}
-
-	hicon, err := w32.CreateSmallHIconFromImage(buf.Bytes())
-	return hicon, err
+	w.badgeImg = img
 }

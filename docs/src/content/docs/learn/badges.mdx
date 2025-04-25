@@ -36,14 +36,14 @@ app := application.New(application.Options{
 Set a badge on the application tile/dock icon:
 
 ```go
+// Set a default badge
+badgeService.SetBadge("")
+
 // Set a numeric badge
 badgeService.SetBadge("3")
 
 // Set a text badge
 badgeService.SetBadge("New")
-
-// Set a symbol badge
-badgeService.SetBadge("●")
 ```
 
 ### Removing a Badge
@@ -52,11 +52,6 @@ Remove the badge from the application icon:
 
 ```go
 badgeService.RemoveBadge()
-
-// or
-
-// Set an empty string
-badgeService.SetBadge("")
 ```
 
 ## Platform Considerations
@@ -67,9 +62,10 @@ badgeService.SetBadge("")
     On macOS, badges:
     
     - Are displayed directly on the dock icon
-    - Support both text and numeric values
+    - Support text values
     - Automatically handle dark/light mode appearance
     - Use the standard macOS dock badge styling
+    - Automatically handle label overflow
     
   </TabItem>
   
@@ -78,10 +74,10 @@ badgeService.SetBadge("")
     On Windows, badges:
     
     - Are displayed as an overlay icon in the taskbar
-    - Currently implemented as a red circle with a white center
-    - Do not currently support displaying text or numbers
+    - Support text values
     - Adapt to Windows theme settings
     - Require the application to have a window
+    - Does not handle label overflow
     
   </TabItem>
   
