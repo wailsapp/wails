@@ -14,6 +14,7 @@ Wails provides a cross-platform badge service for desktop applications. This ser
 
 First, initialize the badge service:
 
+```go
 import "github.com/wailsapp/wails/v3/pkg/application"
 import "github.com/wailsapp/wails/v3/pkg/services/badge"
 
@@ -26,6 +27,7 @@ app := application.New(application.Options{
         application.NewService(badgeService),
     },
 })
+```
 
 ## Badge Operations
 
