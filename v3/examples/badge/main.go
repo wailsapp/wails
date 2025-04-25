@@ -27,11 +27,14 @@ func main() {
 	// 'Assets' configures the asset server with the 'FS' variable pointing to the frontend files.
 	// 'Bind' is a list of Go struct instances. The frontend has access to the methods of these instances.
 	// 'Mac' options tailor the application when running an macOS.
+
+	badgeService := badge.New()
+
 	app := application.New(application.Options{
 		Name:        "badge",
 		Description: "A demo of using raw HTML & CSS",
 		Services: []application.Service{
-			application.NewService(badge.New()),
+			application.NewService(badgeService),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -55,6 +58,21 @@ func main() {
 		},
 		BackgroundColour: application.NewRGB(27, 38, 54),
 		URL:              "/",
+	})
+
+	app.OnEvent("remove:badge", func(event *application.CustomEvent) {
+		err := badgeService.RemoveBadge()
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
+
+	app.OnEvent("set:badge", func(event *application.CustomEvent) {
+		text := event.Data.(string)
+		err := badgeService.SetBadge(text)
+		if err != nil {
+			log.Fatal(err)
+		}
 	})
 
 	// Create a goroutine that emits an event containing the current time every second.

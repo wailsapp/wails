@@ -5,15 +5,17 @@ package badge
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"golang.org/x/sys/windows/registry"
 	"image"
 	"image/color"
 	"image/png"
 	"os"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"unsafe"
 
-	"github.com/flopp/go-findfont"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 	"golang.org/x/image/font"
@@ -108,9 +110,10 @@ func (t *ITaskbarList3) SetOverlayIcon(hwnd syscall.Handle, hIcon syscall.Handle
 }
 
 type windowsBadge struct {
-	taskbar   *ITaskbarList3
-	badgeImg  *image.RGBA
-	badgeSize int
+	taskbar     *ITaskbarList3
+	badgeImg    *image.RGBA
+	badgeSize   int
+	fontManager *FontManager
 }
 
 func New() *Service {
@@ -125,6 +128,7 @@ func (w *windowsBadge) Startup(ctx context.Context, options application.ServiceO
 		return err
 	}
 	w.taskbar = taskbar
+	w.fontManager = NewFontManager()
 
 	return nil
 }
@@ -227,12 +231,16 @@ func (w *windowsBadge) createBadgeIcon() (w32.HICON, error) {
 }
 
 func (w *windowsBadge) createBadgeIconWithText(label string) (w32.HICON, error) {
+	var err error
 	fontPath := ""
-	for _, path := range findfont.List() {
-		if strings.Contains(strings.ToLower(path), "segoeuib.ttf") || // Segoe UI Bold
-			strings.Contains(strings.ToLower(path), "arialbd.ttf") {
-			fontPath = path
-			break
+	fontPath, err = w.fontManager.FindFont("segoeuib.ttf")
+	if err != nil {
+		return 0, err
+	}
+	if fontPath == "" {
+		fontPath, err = w.fontManager.FindFont("arialbd.ttf")
+		if err != nil {
+			return 0, err
 		}
 	}
 	if fontPath == "" {
@@ -303,4 +311,119 @@ func (w *windowsBadge) createBadge() {
 	}
 
 	w.badgeImg = img
+}
+
+// GetInstalledFonts returns a slice of strings containing paths to all installed fonts on Windows
+func GetInstalledFonts() ([]string, error) {
+	var fontPaths []string
+	var fontDirs = []string{
+		filepath.Join(os.Getenv("windir"), "Fonts"),
+		filepath.Join(os.Getenv("localappdata"), "Microsoft", "Windows", "Fonts"),
+	}
+
+	// Check system fonts from registry
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts`, registry.QUERY_VALUE)
+	if err != nil {
+		return nil, fmt.Errorf("error opening system font registry key: %v", err)
+	}
+	defer k.Close()
+
+	// Add system fonts
+	valueNames, err := k.ReadValueNames(0)
+	if err != nil {
+		return nil, fmt.Errorf("error reading system font registry values: %v", err)
+	}
+
+	systemFontDir := fontDirs[0]
+	for _, name := range valueNames {
+		value, _, err := k.GetStringValue(name)
+		if err != nil {
+			continue
+		}
+
+		// If value doesn't contain path separator, assume it's in the Windows font directory
+		if !strings.Contains(value, "\\") {
+			value = filepath.Join(systemFontDir, value)
+		}
+
+		if fileExists(value) {
+			fontPaths = append(fontPaths, value)
+		}
+	}
+
+	// Check user fonts from registry
+	userK, err := registry.OpenKey(registry.CURRENT_USER, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts`, registry.QUERY_VALUE)
+	if err == nil { // It's okay if this fails, some users might not have custom fonts
+		defer userK.Close()
+
+		userValueNames, err := userK.ReadValueNames(0)
+		if err == nil {
+			userFontDir := fontDirs[1]
+			for _, name := range userValueNames {
+				value, _, err := userK.GetStringValue(name)
+				if err != nil {
+					continue
+				}
+
+				// If value doesn't contain path separator, assume it's in the user font directory
+				if !strings.Contains(value, "\\") {
+					value = filepath.Join(userFontDir, value)
+				}
+
+				if fileExists(value) {
+					fontPaths = append(fontPaths, value)
+				}
+			}
+		}
+	}
+
+	// Also check the font directories directly for any fonts not in the registry
+	for _, dir := range fontDirs {
+		if !dirExists(dir) {
+			continue
+		}
+
+		files, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
+
+		for _, file := range files {
+			if file.IsDir() {
+				continue
+			}
+
+			ext := strings.ToLower(filepath.Ext(file.Name()))
+			// Common font extensions
+			if ext == ".ttf" || ext == ".otf" || ext == ".ttc" || ext == ".fon" || ext == ".fnt" {
+				fontPath := filepath.Join(dir, file.Name())
+				// Check if this path is already in our list
+				if !contains(fontPaths, fontPath) {
+					fontPaths = append(fontPaths, fontPath)
+				}
+			}
+		}
+	}
+
+	return fontPaths, nil
+}
+
+// Helper functions
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && !info.IsDir()
+}
+
+func dirExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && info.IsDir()
+}
+
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if strings.EqualFold(s, item) {
+			return true
+		}
+	}
+	return false
 }

@@ -43,8 +43,6 @@ a:hover {
 }
 
 button {
-    width: 60px;
-    height: 30px;
     line-height: 30px;
     border-radius: 3px;
     border: none;

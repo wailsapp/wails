@@ -127,10 +127,10 @@ function eventTarget(event) {
 document.addEventListener("DOMContentLoaded", () => {
 });
 window.addEventListener("contextmenu", contextMenuHandler);
-const call$1 = newRuntimeCaller(objectNames.ContextMenu);
+const call$2 = newRuntimeCaller(objectNames.ContextMenu);
 const ContextMenuOpen = 0;
 function openContextMenu(id, x, y, data) {
-  void call$1(ContextMenuOpen, { id, x, y, data });
+  void call$2(ContextMenuOpen, { id, x, y, data });
 }
 function contextMenuHandler(event) {
   const target = eventTarget(event);
@@ -1138,7 +1138,7 @@ if (promiseWithResolvers && typeof promiseWithResolvers === "function") {
 window._wails = window._wails || {};
 window._wails.callResultHandler = resultHandler;
 window._wails.callErrorHandler = errorHandler;
-const call = newRuntimeCaller(objectNames.Call);
+const call$1 = newRuntimeCaller(objectNames.Call);
 const cancelCall = newRuntimeCaller(objectNames.CancelCall);
 const callResponses = /* @__PURE__ */ new Map();
 const CallBinding = 0;
@@ -1224,7 +1224,7 @@ function Call(options) {
   const id = generateID();
   const result = CancellablePromise.withResolvers();
   callResponses.set(id, { resolve: result.resolve, reject: result.reject });
-  const request = call(CallBinding, Object.assign({ "call-id": id }, options));
+  const request = call$1(CallBinding, Object.assign({ "call-id": id }, options));
   let running = false;
   request.then(() => {
     running = true;
@@ -1283,7 +1283,8 @@ function listenerOff(listener) {
 }
 window._wails = window._wails || {};
 window._wails.dispatchWailsEvent = dispatchWailsEvent;
-newRuntimeCaller(objectNames.Events);
+const call = newRuntimeCaller(objectNames.Events);
+const EmitMethod = 0;
 class WailsEvent {
   constructor(name, data = null) {
     this.name = name;
@@ -1316,6 +1317,9 @@ function OnMultiple(eventName, callback, maxCallbacks) {
 function On(eventName, callback) {
   return OnMultiple(eventName, callback, -1);
 }
+function Emit(event) {
+  return call(EmitMethod, event);
+}
 window._wails = window._wails || {};
 window._wails.invoke = invoke;
 invoke("wails:runtime:ready");
@@ -1329,6 +1333,8 @@ function SetBadge(label) {
 }
 const setButton = document.getElementById("set");
 const removeButton = document.getElementById("remove");
+const setButtonUsingGo = document.getElementById("set-go");
+const removeButtonUsingGo = document.getElementById("remove-go");
 const labelElement = document.getElementById("label");
 const timeElement = document.getElementById("time");
 setButton.addEventListener("click", () => {
@@ -1337,6 +1343,16 @@ setButton.addEventListener("click", () => {
 });
 removeButton.addEventListener("click", () => {
   RemoveBadge();
+});
+setButtonUsingGo.addEventListener("click", () => {
+  let label = labelElement.value;
+  void Emit({
+    name: "set:badge",
+    data: label
+  });
+});
+removeButtonUsingGo.addEventListener("click", () => {
+  void Emit({ name: "remove:badge", data: null });
 });
 On("time", (time) => {
   timeElement.innerText = time.data;
