@@ -7,42 +7,42 @@ This document is for tracking the status of the v3-alpha branch in readiness for
 | Example            | Linux | Windows                                          | macOS |
 |--------------------|-------|--------------------------------------------------|-------|
 | badge              |       | ✅                                                |       |
-| binding            |       | ✅                                                |       |
-| cancel-async       |       | ✅                                                |       |
-| cancel-chaining    |       | ✅                                                |       |
-| clipboard          |       | ✅                                                |       |
-| context-menus      |       | ✅                                                |       |
-| dialogs            |       | ⚠️ custom icon not working                       |       |
-| dialogs-basic      |       | ⚠️ cancel crashes the app                        |       |
-| drag-n-drop        |       | ✅                                                |       |
-| environment        |       | ✅                                                |       |
-| events             |       | ✅                                                |       |
-| file-association   |       | ✅                                                |       |
-| frameless          |       | ✅                                                |       |
-| gin-example        |       | ✅                                                |       |
-| gin-routing        |       | ✅                                                |       |
-| gin-service        |       | ✅                                                |       |
-| html-dnd-api       |       | 🚫                                               |       |
-| ignore-mouse       |       | ✅                                                |       |
-| keybindings        |       | ✅                                                |       |
-| menu               |       | ⚠️ Hide/Unhide issue                             |       |
-| notifications      |       | ✅                                                |       |
-| panic-handling     |       | ✅                                                |       |
-| plain              |       | ✅                                                |       |
-| raw-message        |       | ✅                                                |       |
-| screen             |       | ✅                                                |       |
-| services           |       | ⚠️ KV needs refreshing after save                |       |
-| show-macos-toolbar |       | ➖                                                |       |
-| single-instance    |       | ✅                                                |       |
-| systray-basic      |       | ✅                                                |       |
-| systray-custom     |       | ✅                                                |       |
-| systray-menu       |       | ⚠️ Check systray.Hide/Show                       |       |
-| video              |       | ✅                                                |       |
-| window             |       | ⚠️ SetPos 0,0 is going to 5,0. GetPos is correct |       |
-| window-api         |       | ✅                                                |       |
-| window-call        |       | ✅                                                |       |
-| window-menubar     |       | ✅                                                |       |
-| wml                |       | ✅                                                |       |
+| binding            |       | ✅                                                |   ✅    |
+| cancel-async       |       | ✅                                                |   ✅    |
+| cancel-chaining    |       | ✅                                                |    ✅   |
+| clipboard          |       | ✅                                                |   ✅    |
+| context-menus      |       | ✅                                                |   🚫 panic    |
+| dialogs            |       | ⚠️ custom icon not working                       |   ⚠️    |
+| dialogs-basic      |       | ⚠️ cancel crashes the app                        |   ✅    |
+| drag-n-drop        |       | ✅                                                |   ✅    |
+| environment        |       | ✅                                                |   ✅    |
+| events             |       | ✅                                                |   ✅    |
+| file-association   |       | ✅                                                |   ✅    |
+| frameless          |       | ✅                                                |   ⚠️ minimise for 3 not working    |
+| gin-example        |       | ✅                                                |   ✅    |
+| gin-routing        |       | ✅                                                |   ⚠️ cant see difference from gin-example (copy/paste?)    |
+| gin-service        |       | ✅                                                |   ⚠️ half buttons does nothing? ( getuserbyid )    |
+| html-dnd-api       |       | 🚫                                               |    ✅   |
+| ignore-mouse       |       | ✅                                                |   ✅    |
+| keybindings        |       | ✅                                                |   ✅    |
+| menu               |       | ⚠️ Hide/Unhide issue                             |    ✅   |
+| notifications      |       | ✅                                                |   ⚠️ nothing happens on button click    |
+| panic-handling     |       | ✅                                                |   ✅    |
+| plain              |       | ✅                                                |    ✅   |
+| raw-message        |       | ✅                                                |    ✅   |
+| screen             |       | ✅                                                |    ⚠️ slider bubble drags window   |
+| services           |       | ⚠️ KV needs refreshing after save                |    ⚠️ update kv doesnt updates view on update value   |
+| show-macos-toolbar |       | ➖                                                |   ✅    |
+| single-instance    |       | ✅                                                |   ✅    |
+| systray-basic      |       | ✅                                                |   ✅    |
+| systray-custom     |       | ✅                                                |   ✅    |
+| systray-menu       |       | ⚠️ Check systray.Hide/Show                       |    ✅   |
+| video              |       | ✅                                                |   ✅    |
+| window             |       | ⚠️ SetPos 0,0 is going to 5,0. GetPos is correct |     ✅  |
+| window-api         |       | ✅                                                |   ✅    |
+| window-call        |       | ✅                                                |   ✅    |
+| window-menubar     |       | ✅                                                |   ⚠️ not sure what should happen in osx    |
+| wml                |       | ✅                                                |   ✅    |
 
 ## Open Bugs
 
