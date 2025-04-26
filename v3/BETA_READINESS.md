@@ -50,7 +50,6 @@ This document is for tracking the status of the v3-alpha branch in readiness for
 - https://github.com/wailsapp/wails/issues/4131
 - https://github.com/wailsapp/wails/issues/3743
 - https://github.com/wailsapp/wails/issues/3683 - needs checking
-- https://github.com/wailsapp/wails/issues/1503
 - https://github.com/wailsapp/wails/issues/4235
 - https://github.com/wailsapp/wails/issues/4236
 
