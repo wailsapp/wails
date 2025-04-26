@@ -31,7 +31,8 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     [result SetTitle:safeInit(title)];
     [result Center];
 
-    if (contentProtection == 1) {
+    if (contentProtection == 1 &&
+        [result.mainWindow respondsToSelector:@selector(setSharingType:)]) {
         [result.mainWindow setSharingType:NSWindowSharingNone];
     }
 
