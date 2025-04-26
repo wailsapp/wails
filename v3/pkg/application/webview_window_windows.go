@@ -693,6 +693,9 @@ func (w *windowsWebviewWindow) unmaximise() {
 }
 
 func (w *windowsWebviewWindow) restore() {
+	if w.isFullscreen() {
+		w.unfullscreen()
+	}
 	w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
 	w.chromium.Focus()
 }

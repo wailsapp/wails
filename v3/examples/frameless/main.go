@@ -26,6 +26,14 @@ func main() {
 
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Frameless: true,
+		KeyBindings: map[string]func(window *application.WebviewWindow){
+			"shift+ctrl+f": func(window *application.WebviewWindow) {
+				window.Fullscreen()
+			},
+			"shift+ctrl+u": func(window *application.WebviewWindow) {
+				window.UnFullscreen()
+			},
+		},
 	})
 
 	err := app.Run()

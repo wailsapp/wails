@@ -11,6 +11,7 @@ The electron alternative for Go
 import { invoke, IsWindows } from "./system.js";
 import { GetFlag } from "./flags.js";
 import { canTrackButtons, eventTarget } from "./utils.js";
+import { On, Types } from "./events.js";
 
 // Setup
 let canDrag = false;
@@ -21,11 +22,27 @@ let canResize = false;
 let resizing = false;
 let resizeEdge: string = "";
 let defaultCursor = "auto";
+let isFullscreen = false;
 
 let buttons = 0;
 const buttonsTracked = canTrackButtons();
 
+// Register event listeners for fullscreen state changes
+On(Types.Windows.WindowFullscreen, () => {
+    window._wails.setIsFullscreen(true);
+});
+
+On(Types.Windows.WindowUnFullscreen, () => {
+    window._wails.setIsFullscreen(false);
+});
+
 window._wails = window._wails || {};
+window._wails.setIsFullscreen = (value: boolean): void => {
+   isFullscreen = value;
+   if (isFullscreen) {
+       if (resizeEdge) setResize();
+   }
+}
 window._wails.setResizable = (value: boolean): void => {
     resizable = value;
     if (!resizable) {
@@ -196,7 +213,7 @@ function onMouseMove(event: MouseEvent): void {
         return;
     }
 
-    if (!resizable || !IsWindows()) {
+    if (!resizable || !IsWindows() || isFullscreen) {
         if (resizeEdge) { setResize(); }
         return;
     }
