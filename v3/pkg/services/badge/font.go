@@ -131,3 +131,9 @@ func (fm *FontManager) findFontInRegistry(k registry.Key, fontFileLower string, 
 
 	return "", false
 }
+
+// Helper functions
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && !info.IsDir()
+}

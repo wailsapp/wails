@@ -5,14 +5,10 @@ package badge
 import (
 	"bytes"
 	"context"
-	"fmt"
-	"golang.org/x/sys/windows/registry"
 	"image"
 	"image/color"
 	"image/png"
 	"os"
-	"path/filepath"
-	"strings"
 	"syscall"
 	"unsafe"
 
@@ -66,34 +62,34 @@ type taskbarList3Vtbl struct {
 }
 
 func newTaskbarList3() (*ITaskbarList3, error) {
-    const COINIT_APARTMENTTHREADED = 0x2
+	const COINIT_APARTMENTTHREADED = 0x2
 
-    coInit := ole32.NewProc("CoInitializeEx")
-    if hr, _, _ := coInit.Call(0, COINIT_APARTMENTTHREADED); hr != 0 && hr != 0x1 {
-        return nil, syscall.Errno(hr)
-    }
+	coInit := ole32.NewProc("CoInitializeEx")
+	if hr, _, _ := coInit.Call(0, COINIT_APARTMENTTHREADED); hr != 0 && hr != 0x1 {
+		return nil, syscall.Errno(hr)
+	}
 
-    var taskbar *ITaskbarList3
-    hr, _, _ := coCreateInstance.Call(
-        uintptr(unsafe.Pointer(&CLSID_TaskbarList)),
-        0,
-        uintptr(CLSCTX_INPROC_SERVER),
-        uintptr(unsafe.Pointer(&IID_ITaskbarList3)),
-        uintptr(unsafe.Pointer(&taskbar)),
-    )
+	var taskbar *ITaskbarList3
+	hr, _, _ := coCreateInstance.Call(
+		uintptr(unsafe.Pointer(&CLSID_TaskbarList)),
+		0,
+		uintptr(CLSCTX_INPROC_SERVER),
+		uintptr(unsafe.Pointer(&IID_ITaskbarList3)),
+		uintptr(unsafe.Pointer(&taskbar)),
+	)
 
-    if hr != 0 {
-        ole32.NewProc("CoUninitialize").Call()
-        return nil, syscall.Errno(hr)
-    }
+	if hr != 0 {
+		ole32.NewProc("CoUninitialize").Call()
+		return nil, syscall.Errno(hr)
+	}
 
-    if r, _, _ := syscall.SyscallN(taskbar.lpVtbl.HrInit, uintptr(unsafe.Pointer(taskbar))); r != 0 {
-        syscall.SyscallN(taskbar.lpVtbl.Release, uintptr(unsafe.Pointer(taskbar)))
-        ole32.NewProc("CoUninitialize").Call()
-        return nil, syscall.Errno(r)
-    }
+	if r, _, _ := syscall.SyscallN(taskbar.lpVtbl.HrInit, uintptr(unsafe.Pointer(taskbar))); r != 0 {
+		syscall.SyscallN(taskbar.lpVtbl.Release, uintptr(unsafe.Pointer(taskbar)))
+		ole32.NewProc("CoUninitialize").Call()
+		return nil, syscall.Errno(r)
+	}
 
-    return taskbar, nil
+	return taskbar, nil
 }
 
 func (t *ITaskbarList3) SetOverlayIcon(hwnd syscall.Handle, hIcon syscall.Handle, description *uint16) error {
@@ -312,119 +308,4 @@ func (w *windowsBadge) createBadge() {
 	}
 
 	w.badgeImg = img
-}
-
-// GetInstalledFonts returns a slice of strings containing paths to all installed fonts on Windows
-func GetInstalledFonts() ([]string, error) {
-	var fontPaths []string
-	var fontDirs = []string{
-		filepath.Join(os.Getenv("windir"), "Fonts"),
-		filepath.Join(os.Getenv("localappdata"), "Microsoft", "Windows", "Fonts"),
-	}
-
-	// Check system fonts from registry
-	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts`, registry.QUERY_VALUE)
-	if err != nil {
-		return nil, fmt.Errorf("error opening system font registry key: %v", err)
-	}
-	defer k.Close()
-
-	// Add system fonts
-	valueNames, err := k.ReadValueNames(0)
-	if err != nil {
-		return nil, fmt.Errorf("error reading system font registry values: %v", err)
-	}
-
-	systemFontDir := fontDirs[0]
-	for _, name := range valueNames {
-		value, _, err := k.GetStringValue(name)
-		if err != nil {
-			continue
-		}
-
-		// If value doesn't contain path separator, assume it's in the Windows font directory
-		if !strings.Contains(value, "\\") {
-			value = filepath.Join(systemFontDir, value)
-		}
-
-		if fileExists(value) {
-			fontPaths = append(fontPaths, value)
-		}
-	}
-
-	// Check user fonts from registry
-	userK, err := registry.OpenKey(registry.CURRENT_USER, `SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts`, registry.QUERY_VALUE)
-	if err == nil { // It's okay if this fails, some users might not have custom fonts
-		defer userK.Close()
-
-		userValueNames, err := userK.ReadValueNames(0)
-		if err == nil {
-			userFontDir := fontDirs[1]
-			for _, name := range userValueNames {
-				value, _, err := userK.GetStringValue(name)
-				if err != nil {
-					continue
-				}
-
-				// If value doesn't contain path separator, assume it's in the user font directory
-				if !strings.Contains(value, "\\") {
-					value = filepath.Join(userFontDir, value)
-				}
-
-				if fileExists(value) {
-					fontPaths = append(fontPaths, value)
-				}
-			}
-		}
-	}
-
-	// Also check the font directories directly for any fonts not in the registry
-	for _, dir := range fontDirs {
-		if !dirExists(dir) {
-			continue
-		}
-
-		files, err := os.ReadDir(dir)
-		if err != nil {
-			continue
-		}
-
-		for _, file := range files {
-			if file.IsDir() {
-				continue
-			}
-
-			ext := strings.ToLower(filepath.Ext(file.Name()))
-			// Common font extensions
-			if ext == ".ttf" || ext == ".otf" || ext == ".ttc" || ext == ".fon" || ext == ".fnt" {
-				fontPath := filepath.Join(dir, file.Name())
-				// Check if this path is already in our list
-				if !contains(fontPaths, fontPath) {
-					fontPaths = append(fontPaths, fontPath)
-				}
-			}
-		}
-	}
-
-	return fontPaths, nil
-}
-
-// Helper functions
-func fileExists(path string) bool {
-	info, err := os.Stat(path)
-	return err == nil && !info.IsDir()
-}
-
-func dirExists(path string) bool {
-	info, err := os.Stat(path)
-	return err == nil && info.IsDir()
-}
-
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if strings.EqualFold(s, item) {
-			return true
-		}
-	}
-	return false
 }
