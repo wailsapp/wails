@@ -85,4 +85,5 @@ type Window interface {
 	ZoomOut()
 	ZoomReset() Window
 	SetMenu(menu *Menu)
+	SetContentProtection(protection bool) Window
 }

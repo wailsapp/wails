@@ -811,6 +811,18 @@ static void setIgnoreMouseEvents(void *nsWindow, bool ignore) {
     [window setIgnoresMouseEvents:ignore];
 }
 
+static void setContentProtection(void *nsWindow, bool enabled) {
+    NSWindow *window = (__bridge NSWindow *)nsWindow;
+	if( ! [window respondsToSelector:@selector(setSharingType:)]) {
+		return;
+	}
+
+	if( enabled ) {
+		[window setSharingType:NSWindowSharingReadOnly];
+	} else {
+		[window setSharingType:NSWindowSharingNone];
+	}
+
 */
 import "C"
 import (
@@ -1404,6 +1416,10 @@ func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {
 
 func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 	C.setIgnoreMouseEvents(w.nsWindow, C.bool(ignore))
+}
+
+func (w *macosWebviewWindow) setContentProtection(enabled bool) {
+	C.setContectProtection(w.nsWindow, C.bool(enabled))
 }
 
 func (w *macosWebviewWindow) cut() {

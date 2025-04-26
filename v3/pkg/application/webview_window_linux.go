@@ -412,6 +412,7 @@ func (w *linuxWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 	w.ignoreMouse(w.ignoreMouseEvents)
 }
 
-func (w *linuxWebviewWindow) showMenuBar()   {}
-func (w *linuxWebviewWindow) hideMenuBar()   {}
-func (w *linuxWebviewWindow) toggleMenuBar() {}
+func (w *linuxWebviewWindow) showMenuBar()                      {}
+func (w *linuxWebviewWindow) hideMenuBar()                      {}
+func (w *linuxWebviewWindow) toggleMenuBar()                    {}
+func (w *linuxWebviewWindow) setContentProtection(enabled bool) {}

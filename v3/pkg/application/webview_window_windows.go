@@ -347,6 +347,9 @@ func (w *windowsWebviewWindow) run() {
 		globalApplication.fatal("unable to create window")
 	}
 
+	// Process ContentProtection
+	w.setContentProtection(w.parent.options.ContentProtectionEnabled)
+
 	// Ensure correct window size in case the scale factor of current screen is different from the initial one.
 	// This could happen when using the default window position and the window launches on a secondary monitor.
 	currentScreen, _ := w.getScreen()
@@ -2085,4 +2088,12 @@ func (w *windowsWebviewWindow) hideMenuBar() {
 	if w.menu != nil {
 		w32.SetMenu(w.hwnd, 0)
 	}
+}
+
+func (w *windowsWebviewWindow) setContentProtection(enabled bool) {
+	var affinity uint32 = w32.WDA_EXCLUDEFROMCAPTURE
+	if !enabled {
+		affinity = w32.WDA_NONE
+	}
+	w32.SetWindowDisplayAffinity(w.hwnd, affinity)
 }

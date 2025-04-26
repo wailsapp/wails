@@ -118,6 +118,18 @@ func main() {
 			windowCounter++
 		})
 	if runtime.GOOS != "linux" {
+		myMenu.Add("New WebviewWindow (Content Protection Enabled)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					MinimiseButtonState:      application.ButtonDisabled,
+					ContentProtectionEnabled: true,
+				}).
+					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+					SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
+					SetURL("https://wails.io").
+					Show()
+				windowCounter++
+			})
 		myMenu.Add("New WebviewWindow (Disable Minimise)").
 			OnClick(func(ctx *application.Context) {
 				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
