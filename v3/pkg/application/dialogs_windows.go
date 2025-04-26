@@ -198,7 +198,10 @@ func (m *windowSaveFileDialog) show() (chan string, error) {
 		}, false)
 	go func() {
 		defer handlePanic()
-		files <- result.(string)
+		filename, ok := result.(string)
+		if ok {
+			files <- filename
+		}
 		close(files)
 	}()
 	return files, err
