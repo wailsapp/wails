@@ -239,7 +239,7 @@ func (w *windowsBadge) createBadgeIcon() (w32.HICON, error) {
 			dy := float64(y - centerY)
 
 			if dx*dx+dy*dy < float64(innerRadius*innerRadius) {
-				w.badgeImg.Set(x, y, w.options.BackgroundColour)
+				w.badgeImg.Set(x, y, w.options.TextColour)
 			}
 		}
 	}
