@@ -216,17 +216,13 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 		x = int(monitorInfo.RcWork.Right) - 10
 	}
 
-	if !w32.TrackPopupMenuEx(p.menu, menuFlags, int32(x), int32(y), p.parent, nil) {
-		globalApplication.fatal("TrackPopupMenu failed")
-	}
+	w32.TrackPopupMenuEx(p.menu, menuFlags, int32(x), int32(y), p.parent, nil)
 
 	if p.onMenuClose != nil {
 		p.onMenuClose()
 	}
 
-	if !w32.PostMessage(p.parent, w32.WM_NULL, 0, 0) {
-		globalApplication.fatal("PostMessage failed")
-	}
+	w32.PostMessage(p.parent, w32.WM_NULL, 0, 0)
 
 }
 

@@ -45,9 +45,7 @@ This document is for tracking the status of the v3-alpha branch in readiness for
 | wml                |       | ✅                                                | ✅                                                     |
 
 ## Open Bugs
-
-- https://github.com/wailsapp/wails/issues/4151
-- https://github.com/wailsapp/wails/issues/4131
+- 
 - https://github.com/wailsapp/wails/issues/3743
 - https://github.com/wailsapp/wails/issues/3683 - needs checking
 - https://github.com/wailsapp/wails/issues/4235
