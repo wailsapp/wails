@@ -36,7 +36,7 @@ This document is for tracking the status of the v3-alpha branch in readiness for
 | single-instance    |       | ✅                                                | ✅                                                     |
 | systray-basic      |       | ✅                                                | ✅                                                     |
 | systray-custom     |       | ✅                                                | ✅                                                     |
-| systray-menu       |       | ⚠️ Check systray.Hide/Show                       | ✅                                                     |
+| systray-menu       |       | ✅                                                | ✅                                                     |
 | video              |       | ✅                                                | ✅                                                     |
 | window             |       | ⚠️ SetPos 0,0 is going to 5,0. GetPos is correct | ✅                                                     |
 | window-api         |       | ✅                                                | ✅                                                     |

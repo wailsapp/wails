@@ -425,11 +425,27 @@ func (s *windowsSystemTray) destroy() {
 }
 
 func (s *windowsSystemTray) Show() {
-	// No-op
+	// Add icons back to systray
+	nid := w32.NOTIFYICONDATA{
+		HWnd:             s.hwnd,
+		UID:              uint32(s.parent.id),
+		UFlags:           w32.NIF_ICON | w32.NIF_MESSAGE,
+		HIcon:            s.currentIcon,
+		UCallbackMessage: WM_USER_SYSTRAY,
+	}
+	nid.CbSize = uint32(unsafe.Sizeof(nid))
+	// Show the icon
+	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
+		globalApplication.debug(syscall.GetLastError().Error())
+	}
 }
 
 func (s *windowsSystemTray) Hide() {
-	// No-op
+	// Remove the notification icon
+	nid := s.newNotifyIconData()
+	if !w32.ShellNotifyIcon(w32.NIM_DELETE, &nid) {
+		globalApplication.debug(syscall.GetLastError().Error())
+	}
 }
 
 func (s *windowsSystemTray) reshow() {
