@@ -1,6 +1,6 @@
 # README
 
-This is an example application showcasing the ContentPrivacy option.
+This is an example application showcasing the ContentProtection option.
 
 1. `wails build`
 2. run the new binary in `./build/bin/`
