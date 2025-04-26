@@ -90,7 +90,7 @@ func (w *windowsWebviewWindow) paste() {
 			try {
 				// Try to read all available formats
 				const clipboardItems = await navigator.clipboard.read();
-				
+
 				for (const clipboardItem of clipboardItems) {
 					// Check for image types
 					for (const type of clipboardItem.types) {
@@ -101,7 +101,7 @@ func (w *windowsWebviewWindow) paste() {
 							return;
 						}
 					}
-					
+
 					// If no image found, try text
 					if (clipboardItem.types.includes('text/plain')) {
 						const text = await navigator.clipboard.readText();
@@ -504,25 +504,24 @@ func (w *windowsWebviewWindow) getBorderSizes() *LRTB {
 }
 
 func (w *windowsWebviewWindow) physicalBounds() Rect {
-	// var rect w32.RECT
-	// // Get the extended frame bounds instead of the window rect to offset the invisible borders in Windows 10
-	// w32.DwmGetWindowAttribute(w.hwnd, w32.DWMWA_EXTENDED_FRAME_BOUNDS, unsafe.Pointer(&rect), unsafe.Sizeof(rect))
 	rect := w32.GetWindowRect(w.hwnd)
+	// Compensate for invisible borders
+	borderSize := w.getBorderSizes()
 	return Rect{
-		X:      int(rect.Left),
-		Y:      int(rect.Top),
-		Width:  int(rect.Right - rect.Left),
-		Height: int(rect.Bottom - rect.Top),
+		X:      int(rect.Left) + borderSize.Left,
+		Y:      int(rect.Top) + borderSize.Top,
+		Width:  int(rect.Right-rect.Left) - borderSize.Left - borderSize.Right,
+		Height: int(rect.Bottom-rect.Top) - borderSize.Top - borderSize.Bottom,
 	}
 }
 
 func (w *windowsWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
-	// // Offset invisible borders
-	// borderSize := w.getBorderSizes()
-	// physicalBounds.X -= borderSize.Left
-	// physicalBounds.Y -= borderSize.Top
-	// physicalBounds.Width += borderSize.Left + borderSize.Right
-	// physicalBounds.Height += borderSize.Top + borderSize.Bottom
+	// Offset invisible borders
+	borderSize := w.getBorderSizes()
+	physicalBounds.X -= borderSize.Left
+	physicalBounds.Y -= borderSize.Top
+	physicalBounds.Width += borderSize.Left + borderSize.Right
+	physicalBounds.Height += borderSize.Top + borderSize.Bottom
 
 	// Set flag to ignore resizing the window with DPI change because we already calculated the correct size
 	// for the target position, this prevents double resizing issue when the window is moved between screens
