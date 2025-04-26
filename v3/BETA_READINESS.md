@@ -13,7 +13,7 @@ This document is for tracking the status of the v3-alpha branch in readiness for
 | clipboard          |       | ✅                                                | ✅                                                     |
 | context-menus      |       | ✅                                                | 🚫 panic                                              |
 | dialogs            |       | ⚠️ custom icon not working                       | ⚠️                                                    |
-| dialogs-basic      |       | ⚠️ cancel crashes the app                        | ✅                                                     |
+| dialogs-basic      |       | ✅                                                | ✅                                                     |
 | drag-n-drop        |       | ✅                                                | ✅                                                     |
 | environment        |       | ✅                                                | ✅                                                     |
 | events             |       | ✅                                                | ✅                                                     |
@@ -31,7 +31,7 @@ This document is for tracking the status of the v3-alpha branch in readiness for
 | plain              |       | ✅                                                | ✅                                                     |
 | raw-message        |       | ✅                                                | ✅                                                     |
 | screen             |       | ✅                                                | ⚠️ slider bubble drags window                         |
-| services           |       | ⚠️ KV needs refreshing after save                | ⚠️ update kv doesnt updates view on update value      |
+| services           |       | ✅                                                | ✅                                                     |
 | show-macos-toolbar |       | ➖                                                | ✅                                                     |
 | single-instance    |       | ✅                                                | ✅                                                     |
 | systray-basic      |       | ✅                                                | ✅                                                     |

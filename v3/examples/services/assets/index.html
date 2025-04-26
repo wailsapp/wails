@@ -173,9 +173,7 @@
             // Validate the key and value
             if (key) {
                 // Call the Set method
-                kvstore.Set(key, value);
-                // Get all values from the kvstore
-                getKVStoreValues();
+                kvstore.Set(key, value).then(getKVStoreValues);
             } else {
                 // Show an error message if the key is missing
                 alert('Key is required.');
