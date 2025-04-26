@@ -1,12 +1,15 @@
+//go:build windows
+
 package badge
 
 import (
 	"errors"
-	"golang.org/x/sys/windows/registry"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"golang.org/x/sys/windows/registry"
 )
 
 // FontManager handles font discovery on Windows with minimal caching
