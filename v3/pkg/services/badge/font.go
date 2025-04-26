@@ -132,6 +132,17 @@ func (fm *FontManager) findFontInRegistry(k registry.Key, fontFileLower string, 
 	return "", false
 }
 
+func (fm *FontManager) FindFontOrDefault(name string) string {
+	fontsToFind := []string{name, "segoeuib.ttf", "arialbd.ttf"}
+	for _, font := range fontsToFind {
+		path, err := fm.FindFont(font)
+		if err == nil {
+			return path
+		}
+	}
+	return ""
+}
+
 // Helper functions
 func fileExists(path string) bool {
 	info, err := os.Stat(path)

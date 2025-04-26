@@ -111,11 +111,38 @@ type windowsBadge struct {
 	badgeImg    *image.RGBA
 	badgeSize   int
 	fontManager *FontManager
+	options     Options
+}
+
+type Options struct {
+	TextColour       color.RGBA
+	BackgroundColour color.RGBA
+	FontName         string
+	FontSize         int
+	SmallFontSize    int
+}
+
+var defaultOptions = Options{
+	TextColour:       color.RGBA{255, 255, 255, 255},
+	BackgroundColour: color.RGBA{255, 0, 0, 255},
+	FontName:         "segoeuib.ttf",
+	FontSize:         18,
+	SmallFontSize:    14,
 }
 
 func New() *Service {
 	return &Service{
-		impl: &windowsBadge{},
+		impl: &windowsBadge{
+			options: defaultOptions,
+		},
+	}
+}
+
+func NewWithOptions(options Options) *Service {
+	return &Service{
+		impl: &windowsBadge{
+			options: options,
+		},
 	}
 }
 
@@ -204,7 +231,6 @@ func (w *windowsBadge) RemoveBadge() error {
 func (w *windowsBadge) createBadgeIcon() (w32.HICON, error) {
 	radius := w.badgeSize / 2
 	centerX, centerY := radius, radius
-	white := color.RGBA{255, 255, 255, 255}
 	innerRadius := w.badgeSize / 5
 
 	for y := 0; y < w.badgeSize; y++ {
@@ -213,7 +239,7 @@ func (w *windowsBadge) createBadgeIcon() (w32.HICON, error) {
 			dy := float64(y - centerY)
 
 			if dx*dx+dy*dy < float64(innerRadius*innerRadius) {
-				w.badgeImg.Set(x, y, white)
+				w.badgeImg.Set(x, y, w.options.BackgroundColour)
 			}
 		}
 	}
@@ -228,18 +254,8 @@ func (w *windowsBadge) createBadgeIcon() (w32.HICON, error) {
 }
 
 func (w *windowsBadge) createBadgeIconWithText(label string) (w32.HICON, error) {
-	var err error
-	fontPath := ""
-	fontPath, err = w.fontManager.FindFont("segoeuib.ttf")
-	if err != nil {
-		return 0, err
-	}
-	if fontPath == "" {
-		fontPath, err = w.fontManager.FindFont("arialbd.ttf")
-		if err != nil {
-			return 0, err
-		}
-	}
+
+	fontPath := w.fontManager.FindFontOrDefault(w.options.FontName)
 	if fontPath == "" {
 		return w.createBadgeIcon()
 	}
@@ -254,14 +270,18 @@ func (w *windowsBadge) createBadgeIconWithText(label string) (w32.HICON, error) 
 		return 0, err
 	}
 
-	fontSize := 18.0
+	fontSize := float64(w.options.FontSize)
 	if len(label) > 1 {
-		fontSize = 14.0
+		fontSize = float64(w.options.SmallFontSize)
 	}
+
+	// Get DPI of the current screen
+	screen := w32.GetDesktopWindow()
+	dpi := w32.GetDpiForWindow(screen)
 
 	face, err := opentype.NewFace(ttf, &opentype.FaceOptions{
 		Size:    fontSize,
-		DPI:     96,
+		DPI:     float64(dpi),
 		Hinting: font.HintingFull,
 	})
 	if err != nil {
@@ -271,7 +291,7 @@ func (w *windowsBadge) createBadgeIconWithText(label string) (w32.HICON, error) 
 
 	d := &font.Drawer{
 		Dst:  w.badgeImg,
-		Src:  image.NewUniform(color.White),
+		Src:  image.NewUniform(w.options.TextColour),
 		Face: face,
 	}
 
@@ -292,7 +312,7 @@ func (w *windowsBadge) createBadge() {
 
 	img := image.NewRGBA(image.Rect(0, 0, w.badgeSize, w.badgeSize))
 
-	red := color.RGBA{255, 0, 0, 255}
+	backgroundColour := w.options.BackgroundColour
 	radius := w.badgeSize / 2
 	centerX, centerY := radius, radius
 
@@ -302,7 +322,7 @@ func (w *windowsBadge) createBadge() {
 			dy := float64(y - centerY)
 
 			if dx*dx+dy*dy < float64(radius*radius) {
-				img.Set(x, y, red)
+				img.Set(x, y, backgroundColour)
 			}
 		}
 	}
