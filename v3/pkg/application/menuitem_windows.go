@@ -12,45 +12,32 @@ type windowsMenuItem struct {
 	parent   *Menu
 	menuItem *MenuItem
 
-	hMenu     w32.HMENU
-	id        int
-	label     string
-	disabled  bool
-	checked   bool
-	itemType  menuItemType
-	hidden    bool
-	submenu   w32.HMENU
-	itemAfter *MenuItem
+	hMenu    w32.HMENU
+	id       int
+	label    string
+	disabled bool
+	checked  bool
+	itemType menuItemType
+	hidden   bool
+	submenu  w32.HMENU
 }
 
 func (m *windowsMenuItem) setHidden(hidden bool) {
 	if hidden && !m.hidden {
 		m.hidden = true
-		// iterate the parent items and find the menu item after us
-		for i, item := range m.parent.items {
-			if item == m.menuItem {
-				if i < len(m.parent.items)-1 {
-					m.itemAfter = m.parent.items[i+1]
-				} else {
-					m.itemAfter = nil
-				}
-				break
-			}
-		}
 		// Remove from parent menu
 		w32.RemoveMenu(m.hMenu, m.id, w32.MF_BYCOMMAND)
 	} else if !hidden && m.hidden {
 		m.hidden = false
-		// Add to parent menu before the "itemAfter"
+		// Reinsert into parent menu at correct visible position
 		var pos int
-		if m.itemAfter != nil {
-			for i, item := range m.parent.items {
-				if item == m.itemAfter {
-					pos = i - 1
-					break
-				}
+		for _, item := range m.parent.items {
+			if item == m.menuItem {
+				break
 			}
-			m.itemAfter = nil
+			if item.hidden == false {
+				pos++
+			}
 		}
 		w32.InsertMenuItem(m.hMenu, uint32(pos), true, m.getMenuInfo())
 	}
