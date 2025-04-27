@@ -1,59 +1,71 @@
 # Welcome to Your New Wails3 Project!
+Now that you have your project set up, it's time to explore the basic badge features that Wails3 offers on **macOS** and **Windows**.
 
-Congratulations on generating your Wails3 application! This README will guide you through the next steps to get your project up and running.
+## Exploring Badge Features
 
-## Getting Started
+### Creating the Service
 
-1. Navigate to your project directory in the terminal.
+First, initialize the badge service:
 
-2. To run your application in development mode, use the following command:
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/badge"
 
-   ```
-   wails3 dev
-   ```
+// Create a new badge service
+badgeService := badge.New()
 
-   This will start your application and enable hot-reloading for both frontend and backend changes.
+// Register the service with the application
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(badgeService),
+    },
+})
+```
 
-3. To build your application for production, use:
+## Badge Operations
 
-   ```
-   wails3 build
-   ```
+### Setting a Badge
 
-   This will create a production-ready executable in the `build` directory.
+Set a badge on the application tile/dock icon:
 
-## Exploring Wails3 Features
+**Go**
+```go
+// Set a default badge
+badgeService.SetBadge("")
 
-Now that you have your project set up, it's time to explore the features that Wails3 offers:
+// Set a numeric badge
+badgeService.SetBadge("3")
 
-1. **Check out the examples**: The best way to learn is by example. Visit the `examples` directory in the `v3/examples` directory to see various sample applications.
+// Set a text badge
+badgeService.SetBadge("New")
+```
 
-2. **Run an example**: To run any of the examples, navigate to the example's directory and use:
+**JS**
+```js
+import {SetBadge} from "../bindings/github.com/wailsapp/wails/v3/pkg/services/badge/service";
 
-   ```
-   go run .
-   ```
+// Set a default badge
+SetBadge("")
 
-   Note: Some examples may be under development during the alpha phase.
+// Set a numeric badge
+SetBadge("3")
 
-3. **Explore the documentation**: Visit the [Wails3 documentation](https://v3.wails.io/) for in-depth guides and API references.
+// Set a text badge
+SetBadge("New")
+```
 
-4. **Join the community**: Have questions or want to share your progress? Join the [Wails Discord](https://discord.gg/JDdSxwjhGf) or visit the [Wails discussions on GitHub](https://github.com/wailsapp/wails/discussions).
+### Removing a Badge
 
-## Project Structure
+Remove the badge from the application icon:
 
-Take a moment to familiarize yourself with your project structure:
+**Go**
+```go
+badgeService.RemoveBadge()
+```
 
-- `frontend/`: Contains your frontend code (HTML, CSS, JavaScript/TypeScript)
-- `main.go`: The entry point of your Go backend
-- `app.go`: Define your application structure and methods here
-- `wails.json`: Configuration file for your Wails project
+**JS**
+```js
+import {RemoveBadge} from "../bindings/github.com/wailsapp/wails/v3/pkg/services/badge/service";
 
-## Next Steps
-
-1. Modify the frontend in the `frontend/` directory to create your desired UI.
-2. Add backend functionality in `main.go`.
-3. Use `wails3 dev` to see your changes in real-time.
-4. When ready, build your application with `wails3 build`.
-
-Happy coding with Wails3! If you encounter any issues or have questions, don't hesitate to consult the documentation or reach out to the Wails community.
+RemoveBadge()
+```
