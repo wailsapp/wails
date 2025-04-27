@@ -41,7 +41,7 @@ import "image/color"
 // Create a badge service with custom options
 options := badge.Options{
     TextColour:       color.RGBA{255, 255, 255, 255}, // White text
-    BackgroundColour: color.RGBA{0, 0, 255, 255},     // Green background
+    BackgroundColour: color.RGBA{0, 0, 255, 255},     // Blue background
     FontName:         "consolab.ttf",                 // Bold Consolas font
     FontSize:         20,                             // Font size for single character
     SmallFontSize:    14,                             // Font size for multiple characters
@@ -173,7 +173,7 @@ badgeService.RemoveBadge()
 | Method                                     | Description                                           |
 |--------------------------------------------|-------------------------------------------------------|
 | `New()`                                    | Creates a new badge service with default options      |
-| `NewWithOptions(options Options)`          | Creates a new badge service with custom option (Windows only, options are ignored on macOS) |
+| `NewWithOptions(options Options)`          | Creates a new badge service with custom options (Windows only, options are ignored on macOS) |
 
 ### Badge Operations
 | Method                                       | Description                                                |
