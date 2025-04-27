@@ -170,12 +170,12 @@ func (w *windowsBadge) createBadgeIconWithText(label string) (w32.HICON, error) 
 
 	fontBytes, err := os.ReadFile(fontPath)
 	if err != nil {
-		return 0, err
+		return w.createBadgeIcon()
 	}
 
 	ttf, err := opentype.Parse(fontBytes)
 	if err != nil {
-		return 0, err
+		return w.createBadgeIcon()
 	}
 
 	fontSize := float64(w.options.FontSize)
@@ -193,7 +193,7 @@ func (w *windowsBadge) createBadgeIconWithText(label string) (w32.HICON, error) 
 		Hinting: font.HintingFull,
 	})
 	if err != nil {
-		return 0, err
+		return w.createBadgeIcon()
 	}
 	defer face.Close()
 
