@@ -13,6 +13,7 @@ type platformBadge interface {
 	Shutdown() error
 
 	SetBadge(label string) error
+	SetCustomBadge(label string, options Options) error
 	RemoveBadge() error
 }
 
@@ -47,6 +48,10 @@ func (b *Service) ServiceShutdown() error {
 // SetBadge sets the badge label on the application icon.
 func (b *Service) SetBadge(label string) error {
 	return b.impl.SetBadge(label)
+}
+
+func (b *Service) SetCustomBadge(label string, options Options) error {
+	return b.impl.SetCustomBadge(label, options)
 }
 
 // RemoveBadge removes the badge label from the application icon.

@@ -74,6 +74,30 @@ badgeService.SetBadge("3")
 badgeService.SetBadge("New")
 ```
 
+### Setting a Custom Badge
+
+Set a badge on the application tile/dock icon with one-off options applied:
+
+#### Go
+```go
+options := badge.Options{
+    BackgroundColour: color.RGBA{0, 255, 255, 255},
+    FontName: "arialb.ttf", // System font
+    FontSize: 16,
+    SmallFontSize: 10,
+    TextColour: color.RGBA{0, 0, 0, 255},
+}
+
+// Set a default badge
+badgeService.SetCustomBadge("", options)
+
+// Set a numeric badge
+badgeService.SetCustomBadge("3", options)
+
+// Set a text badge
+badgeService.SetCustomBadge("New", options)
+```
+
 ### Removing a Badge
 
 Remove the badge from the application icon:

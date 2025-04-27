@@ -61,6 +61,12 @@ func (d *darwinBadge) SetBadge(label string) error {
 	return nil
 }
 
+// SetCustomBadge is not supported on macOS, SetBadge is called instead.
+// (Windows-specific)
+func (d *darwinBadge) SetCustomBadge(label string, options Options) error {
+	return d.SetBadge(label)
+}
+
 // RemoveBadge removes the badge label from the application icon.
 func (d *darwinBadge) RemoveBadge() error {
 	C.setBadge(nil)

@@ -35,7 +35,7 @@ app := application.New(application.Options{
 
 ### Setting a Badge
 
-Set a badge on the application tile/dock icon:
+Set a badge on the application tile/dock icon with the global options applied:
 
 #### Go
 ```go
@@ -61,6 +61,54 @@ SetBadge("3")
 
 // Set a text badge
 SetBadge("New")
+```
+
+### Setting a Custom Badge
+
+Set a badge on the application tile/dock icon with one-off options applied:
+
+#### Go
+```go
+// Set a default badge
+badgeService.SetCustomBadge("")
+
+// Set a numeric badge
+badgeService.SetCustomBadge("3")
+
+// Set a text badge
+badgeService.SetCustomBadge("New")
+```
+
+#### JS
+```js
+import {SetCustomBadge} from "../bindings/github.com/wailsapp/wails/v3/pkg/services/badge/service";
+
+const options = {
+   BackgroundColour: RGBA.createFrom({
+         R: 0,
+         G: 255,
+         B: 255,
+         A: 255,
+      }),
+      FontName: "arialb.ttf", // System font
+      FontSize: 16,
+      SmallFontSize: 10,
+      TextColour: RGBA.createFrom({
+         R: 0,
+         G: 0,
+         B: 0,
+         A: 255,
+      }),
+}
+
+// Set a default badge
+SetCustomBadge("", options)
+
+// Set a numeric badge
+SetCustomBadge("3", options)
+
+// Set a text badge
+SetCustomBadge("New", options)
 ```
 
 ### Removing a Badge
