@@ -65,7 +65,6 @@ func (w *windowsBadge) Startup(ctx context.Context, options application.ServiceO
 func (w *windowsBadge) Shutdown() error {
 	if w.taskbar != nil {
 		w.taskbar.Release()
-		w32.CoUninitialize()
 	}
 
 	return nil
