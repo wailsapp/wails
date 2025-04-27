@@ -37,7 +37,7 @@ app := application.New(application.Options{
 
 Set a badge on the application tile/dock icon:
 
-**Go**
+#### Go
 ```go
 // Set a default badge
 badgeService.SetBadge("")
@@ -49,7 +49,7 @@ badgeService.SetBadge("3")
 badgeService.SetBadge("New")
 ```
 
-**JS**
+#### JS
 ```js
 import {SetBadge} from "../bindings/github.com/wailsapp/wails/v3/pkg/services/badge/service";
 
@@ -67,12 +67,12 @@ SetBadge("New")
 
 Remove the badge from the application icon:
 
-**Go**
+#### Go
 ```go
 badgeService.RemoveBadge()
 ```
 
-**JS**
+#### JS
 ```js
 import {RemoveBadge} from "../bindings/github.com/wailsapp/wails/v3/pkg/services/badge/service";
 
