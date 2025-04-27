@@ -26,10 +26,18 @@ import (
 
 type darwinBadge struct{}
 
+// Creates a new Badge Service.
 func New() *Service {
 	return &Service{
 		impl: &darwinBadge{},
 	}
+}
+
+// NewWithOptions creates a new badge service with the given options.
+// Currently, options are not available on macOS and are ignored.
+// (Windows-specific)
+func NewWithOptions(options Options) *Service {
+	return New()
 }
 
 func (d *darwinBadge) Startup(ctx context.Context, options application.ServiceOptions) error {
@@ -40,6 +48,7 @@ func (d *darwinBadge) Shutdown() error {
 	return nil
 }
 
+// SetBadge sets the badge label on the application icon.
 func (d *darwinBadge) SetBadge(label string) error {
 	var cLabel *C.char
 	if label != "" {
@@ -52,6 +61,7 @@ func (d *darwinBadge) SetBadge(label string) error {
 	return nil
 }
 
+// RemoveBadge removes the badge label from the application icon.
 func (d *darwinBadge) RemoveBadge() error {
 	C.setBadge(nil)
 	return nil

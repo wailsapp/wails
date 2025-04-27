@@ -25,14 +25,6 @@ type windowsBadge struct {
 	options     Options
 }
 
-type Options struct {
-	TextColour       color.RGBA
-	BackgroundColour color.RGBA
-	FontName         string
-	FontSize         int
-	SmallFontSize    int
-}
-
 var defaultOptions = Options{
 	TextColour:       color.RGBA{255, 255, 255, 255},
 	BackgroundColour: color.RGBA{255, 0, 0, 255},
@@ -41,6 +33,7 @@ var defaultOptions = Options{
 	SmallFontSize:    14,
 }
 
+// Creates a new Badge Service.
 func New() *Service {
 	return &Service{
 		impl: &windowsBadge{
@@ -49,6 +42,7 @@ func New() *Service {
 	}
 }
 
+// NewWithOptions creates a new badge service with the given options.
 func NewWithOptions(options Options) *Service {
 	return &Service{
 		impl: &windowsBadge{
@@ -77,6 +71,7 @@ func (w *windowsBadge) Shutdown() error {
 	return nil
 }
 
+// SetBadge sets the badge label on the application icon.
 func (w *windowsBadge) SetBadge(label string) error {
 	if w.taskbar == nil {
 		return nil
@@ -116,6 +111,7 @@ func (w *windowsBadge) SetBadge(label string) error {
 	return w.taskbar.SetOverlayIcon(hwnd, hicon, nil)
 }
 
+// RemoveBadge removes the badge label from the application icon.
 func (w *windowsBadge) RemoveBadge() error {
 	if w.taskbar == nil {
 		return nil
@@ -139,6 +135,7 @@ func (w *windowsBadge) RemoveBadge() error {
 	return w.taskbar.SetOverlayIcon(hwnd, 0, nil)
 }
 
+// createBadgeIcon creates a badge icon with the specified size and color.
 func (w *windowsBadge) createBadgeIcon() (w32.HICON, error) {
 	radius := w.badgeSize / 2
 	centerX, centerY := radius, radius
@@ -164,6 +161,7 @@ func (w *windowsBadge) createBadgeIcon() (w32.HICON, error) {
 	return hicon, err
 }
 
+// createBadgeIconWithText creates a badge icon with the specified text.
 func (w *windowsBadge) createBadgeIconWithText(label string) (w32.HICON, error) {
 
 	fontPath := w.fontManager.FindFontOrDefault(w.options.FontName)
@@ -218,6 +216,7 @@ func (w *windowsBadge) createBadgeIconWithText(label string) (w32.HICON, error) 
 	return w32.CreateSmallHIconFromImage(buf.Bytes())
 }
 
+// createBadge creates a circular badge with the specified background color.
 func (w *windowsBadge) createBadge() {
 	w.badgeSize = 32
 
