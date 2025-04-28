@@ -69,6 +69,13 @@ void UpdateMenuItem(void* nsmenuitem, int checked);
 void RunMainLoop(void);
 void ReleaseContext(void *inctx);
 
+/* Notifications */
+bool IsNotificationAvailable(void *inctx);
+bool CheckBundleIdentifier(void *inctx);
+bool EnsureDelegateInitialized(void *inctx);
+void RequestNotificationAuthorization(void *inctx, int channelID);
+void CheckNotificationAuthorization(void *inctx, int channelID);
+
 NSString* safeInit(const char* input);
 
 #endif /* Application_h */

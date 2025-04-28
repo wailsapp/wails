@@ -362,6 +362,32 @@ void AppendSeparator(void* inMenu) {
 }
 
 
+bool IsNotificationAvailable(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    return [ctx IsNotificationAvailable];
+}
+
+bool CheckBundleIdentifier(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    return [ctx CheckBundleIdentifier];
+}
+
+bool EnsureDelegateInitialized(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    return [ctx EnsureDelegateInitialized];
+}
+
+void RequestNotificationAuthorization(void *inctx, int channelID) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RequestNotificationAuthorization:channelID];
+}
+
+void CheckNotificationAuthorization(void *inctx, int channelID) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx CheckNotificationAuthorization:channelID];
+}
+
+
 
 void Run(void *inctx, const char* url) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;

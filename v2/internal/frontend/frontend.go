@@ -76,6 +76,51 @@ type MessageDialogOptions struct {
 	Icon          []byte
 }
 
+// NotificationOptions contains configuration for a notification.
+type NotificationOptions struct {
+	ID         string                 `json:"id"`
+	Title      string                 `json:"title"`
+	Subtitle   string                 `json:"subtitle,omitempty"` // (macOS and Linux only)
+	Body       string                 `json:"body,omitempty"`
+	CategoryID string                 `json:"categoryId,omitempty"`
+	Data       map[string]interface{} `json:"data,omitempty"`
+}
+
+// NotificationAction represents an action button for a notification.
+type NotificationAction struct {
+	ID          string `json:"id,omitempty"`
+	Title       string `json:"title,omitempty"`
+	Destructive bool   `json:"destructive,omitempty"` // (macOS-specific)
+}
+
+// NotificationCategory groups actions for notifications.
+type NotificationCategory struct {
+	ID               string               `json:"id,omitempty"`
+	Actions          []NotificationAction `json:"actions,omitempty"`
+	HasReplyField    bool                 `json:"hasReplyField,omitempty"`
+	ReplyPlaceholder string               `json:"replyPlaceholder,omitempty"`
+	ReplyButtonTitle string               `json:"replyButtonTitle,omitempty"`
+}
+
+// NotificationResponse represents the response sent by interacting with a notification.
+type NotificationResponse struct {
+	ID               string                 `json:"id,omitempty"`
+	ActionIdentifier string                 `json:"actionIdentifier,omitempty"`
+	CategoryID       string                 `json:"categoryIdentifier,omitempty"`
+	Title            string                 `json:"title,omitempty"`
+	Subtitle         string                 `json:"subtitle,omitempty"` // (macOS and Linux only)
+	Body             string                 `json:"body,omitempty"`
+	UserText         string                 `json:"userText,omitempty"`
+	UserInfo         map[string]interface{} `json:"userInfo,omitempty"`
+}
+
+// NotificationResult represents the result of a notification response,
+// returning the response or any errors that occurred.
+type NotificationResult struct {
+	Response NotificationResponse
+	Error    error
+}
+
 type Frontend interface {
 	Run(ctx context.Context) error
 	RunMainLoop()
@@ -139,4 +184,19 @@ type Frontend interface {
 	// Clipboard
 	ClipboardGetText() (string, error)
 	ClipboardSetText(text string) error
+
+	// Notifications
+	InitializeNotifications() error
+	IsNotificationAvailable() bool
+	RequestNotificationAuthorization() (bool, error)
+	CheckNotificationAuthorization() (bool, error)
+	// SendNotification(options NotificationOptions) error
+	// SendNotificationWithActions(options NotificationOptions) error
+	// RegisterNotificationCategory(category NotificationCategory) error
+	// RemoveNotificationCategory(categoryID string) error
+	// RemoveAllPendingNotifications() error
+	// RemovePendingNotification(identifier string) error
+	// RemoveAllDeliveredNotifications() error
+	// RemoveDeliveredNotification(identifier string) error
+	// RemoveNotification(identifier string) error
 }

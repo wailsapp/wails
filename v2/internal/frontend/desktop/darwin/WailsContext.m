@@ -5,6 +5,7 @@
 //  Created by Lea Anthony on 10/10/21.
 //
 
+#include "Application.h"
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 #import "WailsContext.h"
@@ -34,6 +35,17 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     [self setMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
 }
 
+@end
+
+// Notifications
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 101400
+#import <UserNotifications/UserNotifications.h>
+#endif
+
+@interface NotificationsDelegate : NSObject <UNUserNotificationCenterDelegate>
+@end
+
+@implementation NotificationsDelegate
 @end
 
 @implementation WailsContext
@@ -708,6 +720,148 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 
 }
 
+/***** Notifications ******/
+- (bool) IsNotificationAvailable {
+    if (@available(macOS 10.14, *)) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+- (bool) CheckBundleIdentifier {
+    NSBundle *main = [NSBundle mainBundle];
+    if (main.bundleIdentifier == nil) {
+        return NO;
+    }
+    return YES;
+}
+
+extern void captureResult(int channelID, bool success, const char* error);
+extern void didReceiveNotificationResponse(const char *jsonPayload, const char* error);
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler API_AVAILABLE(macos(10.14)) {
+    UNNotificationPresentationOptions options = 0;
+    
+    if (@available(macOS 11.0, *)) {
+        // These options are only available in macOS 11.0+
+        options = UNNotificationPresentationOptionList | 
+                  UNNotificationPresentationOptionBanner | 
+                  UNNotificationPresentationOptionSound;
+    }
+    
+    completionHandler(options);
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+didReceiveNotificationResponse:(UNNotificationResponse *)response
+         withCompletionHandler:(void (^)(void))completionHandler API_AVAILABLE(macos(10.14)) {
+
+    NSMutableDictionary *payload = [NSMutableDictionary dictionary];
+    
+    [payload setObject:response.notification.request.identifier forKey:@"id"];
+    [payload setObject:response.actionIdentifier forKey:@"actionIdentifier"];
+    [payload setObject:response.notification.request.content.title ?: @"" forKey:@"title"];
+    [payload setObject:response.notification.request.content.body ?: @"" forKey:@"body"];
+    
+    if (response.notification.request.content.categoryIdentifier) {
+        [payload setObject:response.notification.request.content.categoryIdentifier forKey:@"categoryIdentifier"];
+    }
+
+    if (response.notification.request.content.subtitle) {
+        [payload setObject:response.notification.request.content.subtitle forKey:@"subtitle"];
+    }
+    
+    if (response.notification.request.content.userInfo) {
+        [payload setObject:response.notification.request.content.userInfo forKey:@"userInfo"];
+    }
+    
+    if ([response isKindOfClass:[UNTextInputNotificationResponse class]]) {
+        UNTextInputNotificationResponse *textResponse = (UNTextInputNotificationResponse *)response;
+        [payload setObject:textResponse.userText forKey:@"userText"];
+    }
+    
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:payload options:0 error:&error];
+    if (error) {
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+        didReceiveNotificationResponse(NULL, [errorMsg UTF8String]);
+    } else {
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        didReceiveNotificationResponse([jsonString UTF8String], NULL);
+    }
+    
+    completionHandler();
+}
+
+static NotificationsDelegate *delegateInstance = nil;
+static dispatch_once_t onceToken;
+
+- (bool) EnsureDelegateInitialized {
+    if (@available(macOS 10.14, *)) {
+        __block BOOL success = YES;
+
+        dispatch_once(&onceToken, ^{
+            delegateInstance = [[NotificationsDelegate alloc] init];
+            UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+            center.delegate = delegateInstance;
+        });
+
+        if (!delegateInstance) {
+            success = NO;
+        }
+
+        return success;
+    } else {
+        return NO;
+    }
+}
+
+- (void) RequestNotificationAuthorization :(int)channelID {
+    if (@available(macOS 10.14, *)) {
+        if (![self EnsureDelegateInitialized]) {
+            NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
+            captureResult(channelID, false, [errorMsg UTF8String]);
+            return;
+        }
+        
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
+        
+        [center requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError * _Nullable error) {
+            if (error) {
+                NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
+                captureResult(channelID, false, [errorMsg UTF8String]);
+            } else {
+                captureResult(channelID, granted, NULL);
+            }
+        }];
+    } else {
+        captureResult(channelID, false, "Notifications not available on macOS versions prior to 10.14");
+    }
+}
+
+- (void) CheckNotificationAuthorization :(int) channelID {
+    if (@available(macOS 10.14, *)) {
+        if (![self EnsureDelegateInitialized]) {
+            NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
+            captureResult(channelID, false, [errorMsg UTF8String]);
+            return;
+        }
+        
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings *settings) {
+            BOOL isAuthorized = (settings.authorizationStatus == UNAuthorizationStatusAuthorized);
+            captureResult(channelID, isAuthorized, NULL);
+        }];
+    } else {
+        captureResult(channelID, false, "Notifications not available on macOS versions prior to 10.14");
+    }
+}
+
+
 - (void) SetAbout :(NSString*)title :(NSString*)description :(void*)imagedata :(int)datalen {
     self.aboutTitle = title;
     self.aboutDescription = description;
@@ -716,7 +870,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     self.aboutImage = [[NSImage alloc] initWithData:imageData];
 }
 
--(void) About {
+- (void) About {
 
     WailsAlert *alert = [WailsAlert new];
     [alert setAlertStyle:NSAlertStyleInformational];

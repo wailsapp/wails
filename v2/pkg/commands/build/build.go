@@ -3,6 +3,7 @@ package build
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -355,6 +356,16 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		err := packageProject(options, runtime.GOOS)
 		if err != nil {
 			return "", err
+		}
+		pterm.Println("Done.")
+	}
+
+	if runtime.GOOS == "darwin" {
+		// On macOS, self-sign the .app bundle so notifications work
+		printBulletPoint("Self-signing application: ")
+		cmd := exec.Command("codesign", "--force", "--deep", "--sign", "-", options.CompiledBinary)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			fmt.Println("Codesign failed:", string(out))
 		}
 		pterm.Println("Done.")
 	}
