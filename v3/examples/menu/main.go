@@ -113,6 +113,37 @@ func main() {
 			ctx.ClickedMenuItem().SetLabel("Unhide the beatles!")
 		}
 	})
+
+	myMenu.AddSeparator()
+
+	coffee := myMenu.Add("Request Coffee").OnClick(func(*application.Context) {
+		println("Coffee dispatched. Productivity +10!")
+	})
+
+	myMenu.Add("Toggle coffee availability").OnClick(func(*application.Context) {
+		if coffee.Enabled() {
+			coffee.SetEnabled(false)
+			coffee.SetLabel("Coffee Machine Broken")
+			println("Alert: Developer morale critically low.")
+		} else {
+			coffee.SetEnabled(true)
+			coffee.SetLabel("Request Coffee")
+			println("All systems nominal. Coffee restored.")
+		}
+	})
+
+	myMenu.Add("Hide the coffee option").OnClick(func(ctx *application.Context) {
+		if coffee.Hidden() {
+			ctx.ClickedMenuItem().SetLabel("Hide the coffee option")
+			coffee.SetHidden(false)
+			println("Coffee menu item has been resurrected!")
+		} else {
+			coffee.SetHidden(true)
+			ctx.ClickedMenuItem().SetLabel("Unhide the coffee option")
+			println("The coffee option has vanished into the void.")
+		}
+	})
+
 	app.SetMenu(menu)
 
 	window := app.NewWebviewWindow().SetBackgroundColour(application.NewRGB(33, 37, 41))
