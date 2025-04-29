@@ -101,6 +101,14 @@ struct Preferences {
 - (bool) EnsureDelegateInitialized;
 - (void) RequestNotificationAuthorization:(int)channelID;
 - (void) CheckNotificationAuthorization:(int)channelID;
+- (void) SendNotification:(int)channelID :(const char *)identifier :(const char *)title :(const char *)subtitle :(const char *)body :(const char *)dataJSON;
+- (void) SendNotificationWithActions:(int)channelID :(const char *)identifier :(const char *)title :(const char *)subtitle :(const char *)body :(const char *)categoryId :(const char *)actionsJSON;
+- (void) RegisterNotificationCategory:(int)channelID :(const char *)categoryId :(const char *)actionsJSON :(bool)hasReplyField :(const char *)replyPlaceholder :(const char *)replyButtonTitle;
+- (void) RemoveNotificationCategory:(int)channelID :(const char *)categoryId;
+- (void) RemoveAllPendingNotifications;
+- (void) RemovePendingNotification:(const char *)identifier;
+- (void) RemoveAllDeliveredNotifications;
+- (void) RemoveDeliveredNotification:(const char *)identifier;
 
 - (void) loadRequest:(NSString*)url;
 - (void) ExecJS:(NSString*)script;

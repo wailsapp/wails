@@ -17,9 +17,13 @@ package darwin
 import "C"
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
+	"unsafe"
+
+	"github.com/wailsapp/wails/v2/internal/frontend"
 )
 
 // Package-scoped variable only accessible within this file
@@ -30,7 +34,13 @@ var (
 	channels      map[int]chan notificationChannel
 	channelsLock  sync.Mutex
 	nextChannelID int
+
+	notificationResultCallback func(result frontend.NotificationResult)
+	callbackLock               sync.RWMutex
 )
+
+const DefaultActionIdentifier = "DEFAULT_ACTION"
+const AppleDefaultActionIdentifier = "com.apple.UNNotificationDefaultActionIdentifier"
 
 // setCurrentFrontend sets the current frontend instance
 // This is called when RequestNotificationAuthorization or CheckNotificationAuthorization is called
@@ -70,6 +80,8 @@ func (f *Frontend) InitializeNotifications() error {
 	channels = make(map[int]chan notificationChannel)
 	nextChannelID = 0
 
+	setCurrentFrontend(f)
+
 	return nil
 }
 
@@ -84,9 +96,6 @@ func (f *Frontend) checkBundleIdentifier() bool {
 func (f *Frontend) RequestNotificationAuthorization() (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
-
-	setCurrentFrontend(f)
-	defer setCurrentFrontend(nil)
 
 	id, resultCh := f.registerChannel()
 
@@ -105,9 +114,6 @@ func (f *Frontend) CheckNotificationAuthorization() (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	setCurrentFrontend(f)
-	defer setCurrentFrontend(nil)
-
 	id, resultCh := f.registerChannel()
 
 	C.CheckNotificationAuthorization(f.mainWindow.context, C.int(id))
@@ -119,6 +125,209 @@ func (f *Frontend) CheckNotificationAuthorization() (bool, error) {
 		f.cleanupChannel(id)
 		return false, fmt.Errorf("notification authorization timed out after 15s: %w", ctx.Err())
 	}
+}
+
+// SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
+func (f *Frontend) SendNotification(options frontend.NotificationOptions) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cIdentifier := C.CString(options.ID)
+	cTitle := C.CString(options.Title)
+	cSubtitle := C.CString(options.Subtitle)
+	cBody := C.CString(options.Body)
+	defer C.free(unsafe.Pointer(cIdentifier))
+	defer C.free(unsafe.Pointer(cTitle))
+	defer C.free(unsafe.Pointer(cSubtitle))
+	defer C.free(unsafe.Pointer(cBody))
+
+	var cDataJSON *C.char
+	if options.Data != nil {
+		jsonData, err := json.Marshal(options.Data)
+		if err != nil {
+			return fmt.Errorf("failed to marshal notification data: %w", err)
+		}
+		cDataJSON = C.CString(string(jsonData))
+		defer C.free(unsafe.Pointer(cDataJSON))
+	}
+
+	id, resultCh := f.registerChannel()
+	C.SendNotification(f.mainWindow.context, C.int(id), cIdentifier, cTitle, cSubtitle, cBody, cDataJSON)
+
+	select {
+	case result := <-resultCh:
+		if !result.Success {
+			if result.Error != nil {
+				return result.Error
+			}
+			return fmt.Errorf("sending notification failed")
+		}
+		return nil
+	case <-ctx.Done():
+		f.cleanupChannel(id)
+		return fmt.Errorf("sending notification timed out: %w", ctx.Err())
+	}
+}
+
+// SendNotificationWithActions sends a notification with additional actions and inputs.
+// A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
+// If a NotificationCategory is not registered a basic notification will be sent.
+func (f *Frontend) SendNotificationWithActions(options frontend.NotificationOptions) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cIdentifier := C.CString(options.ID)
+	cTitle := C.CString(options.Title)
+	cSubtitle := C.CString(options.Subtitle)
+	cBody := C.CString(options.Body)
+	cCategoryID := C.CString(options.CategoryID)
+	defer C.free(unsafe.Pointer(cIdentifier))
+	defer C.free(unsafe.Pointer(cTitle))
+	defer C.free(unsafe.Pointer(cSubtitle))
+	defer C.free(unsafe.Pointer(cBody))
+	defer C.free(unsafe.Pointer(cCategoryID))
+
+	var cDataJSON *C.char
+	if options.Data != nil {
+		jsonData, err := json.Marshal(options.Data)
+		if err != nil {
+			return fmt.Errorf("failed to marshal notification data: %w", err)
+		}
+		cDataJSON = C.CString(string(jsonData))
+		defer C.free(unsafe.Pointer(cDataJSON))
+	}
+
+	id, resultCh := f.registerChannel()
+	C.SendNotificationWithActions(f.mainWindow.context, C.int(id), cIdentifier, cTitle, cSubtitle, cBody, cCategoryID, cDataJSON)
+
+	select {
+	case result := <-resultCh:
+		if !result.Success {
+			if result.Error != nil {
+				return result.Error
+			}
+			return fmt.Errorf("sending notification failed")
+		}
+		return nil
+	case <-ctx.Done():
+		f.cleanupChannel(id)
+		return fmt.Errorf("sending notification timed out: %w", ctx.Err())
+	}
+}
+
+// RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
+// Registering a category with the same name as a previously registered NotificationCategory will override it.
+func (f *Frontend) RegisterNotificationCategory(category frontend.NotificationCategory) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cCategoryID := C.CString(category.ID)
+	defer C.free(unsafe.Pointer(cCategoryID))
+
+	actionsJSON, err := json.Marshal(category.Actions)
+	if err != nil {
+		return fmt.Errorf("failed to marshal notification category: %w", err)
+	}
+	cActionsJSON := C.CString(string(actionsJSON))
+	defer C.free(unsafe.Pointer(cActionsJSON))
+
+	var cReplyPlaceholder, cReplyButtonTitle *C.char
+	if category.HasReplyField {
+		cReplyPlaceholder = C.CString(category.ReplyPlaceholder)
+		cReplyButtonTitle = C.CString(category.ReplyButtonTitle)
+		defer C.free(unsafe.Pointer(cReplyPlaceholder))
+		defer C.free(unsafe.Pointer(cReplyButtonTitle))
+	}
+
+	id, resultCh := f.registerChannel()
+	C.RegisterNotificationCategory(f.mainWindow.context, C.int(id), cCategoryID, cActionsJSON, C.bool(category.HasReplyField),
+		cReplyPlaceholder, cReplyButtonTitle)
+
+	select {
+	case result := <-resultCh:
+		if !result.Success {
+			if result.Error != nil {
+				return result.Error
+			}
+			return fmt.Errorf("category registration failed")
+		}
+		return nil
+	case <-ctx.Done():
+		f.cleanupChannel(id)
+		return fmt.Errorf("category registration timed out: %w", ctx.Err())
+	}
+}
+
+// RemoveNotificationCategory remove a previously registered NotificationCategory.
+func (f *Frontend) RemoveNotificationCategory(categoryId string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cCategoryID := C.CString(categoryId)
+	defer C.free(unsafe.Pointer(cCategoryID))
+
+	id, resultCh := f.registerChannel()
+	C.RemoveNotificationCategory(f.mainWindow.context, C.int(id), cCategoryID)
+
+	select {
+	case result := <-resultCh:
+		if !result.Success {
+			if result.Error != nil {
+				return result.Error
+			}
+			return fmt.Errorf("category removal failed")
+		}
+		return nil
+	case <-ctx.Done():
+		f.cleanupChannel(id)
+		return fmt.Errorf("category removal timed out: %w", ctx.Err())
+	}
+}
+
+// RemoveAllPendingNotifications removes all pending notifications.
+func (f *Frontend) RemoveAllPendingNotifications() error {
+	C.RemoveAllPendingNotifications(f.mainWindow.context)
+	return nil
+}
+
+// RemovePendingNotification removes a pending notification matching the unique identifier.
+func (f *Frontend) RemovePendingNotification(identifier string) error {
+	cIdentifier := C.CString(identifier)
+	defer C.free(unsafe.Pointer(cIdentifier))
+	C.RemovePendingNotification(f.mainWindow.context, cIdentifier)
+	return nil
+}
+
+// RemoveAllDeliveredNotifications removes all delivered notifications.
+func (f *Frontend) RemoveAllDeliveredNotifications() error {
+	C.RemoveAllDeliveredNotifications(f.mainWindow.context)
+	return nil
+}
+
+// RemoveDeliveredNotification removes a delivered notification matching the unique identifier.
+func (f *Frontend) RemoveDeliveredNotification(identifier string) error {
+	cIdentifier := C.CString(identifier)
+	defer C.free(unsafe.Pointer(cIdentifier))
+	C.RemoveDeliveredNotification(f.mainWindow.context, cIdentifier)
+	return nil
+}
+
+// RemoveNotification is a macOS stub that always returns nil.
+// Use one of the following instead:
+// RemoveAllPendingNotifications
+// RemovePendingNotification
+// RemoveAllDeliveredNotifications
+// RemoveDeliveredNotification
+// (Linux-specific)
+func (f *Frontend) RemoveNotification(identifier string) error {
+	return nil
+}
+
+func (f *Frontend) OnNotificationResponse(callback func(result frontend.NotificationResult)) {
+	callbackLock.Lock()
+	defer callbackLock.Unlock()
+
+	notificationResultCallback = callback
 }
 
 //export captureResult
@@ -146,6 +355,43 @@ func captureResult(channelID C.int, success C.bool, errorMsg *C.char) {
 
 //export didReceiveNotificationResponse
 func didReceiveNotificationResponse(jsonPayload *C.char, err *C.char) {
+	result := frontend.NotificationResult{}
+
+	if err != nil {
+		errMsg := C.GoString(err)
+		result.Error = fmt.Errorf("notification response error: %s", errMsg)
+		handleNotificationResult(result)
+
+		return
+	}
+
+	if jsonPayload == nil {
+		result.Error = fmt.Errorf("received nil JSON payload in notification response")
+		handleNotificationResult(result)
+		return
+	}
+
+	payload := C.GoString(jsonPayload)
+
+	var response frontend.NotificationResponse
+	if err := json.Unmarshal([]byte(payload), &response); err != nil {
+		result.Error = fmt.Errorf("failed to unmarshal notification response: %w", err)
+		handleNotificationResult(result)
+		return
+	}
+
+	if response.ActionIdentifier == AppleDefaultActionIdentifier {
+		response.ActionIdentifier = DefaultActionIdentifier
+	}
+
+	result.Response = response
+	handleNotificationResult(result)
+}
+
+func handleNotificationResult(result frontend.NotificationResult) {
+	callbackLock.Lock()
+	notificationResultCallback(result)
+	callbackLock.Unlock()
 }
 
 // Helper methods

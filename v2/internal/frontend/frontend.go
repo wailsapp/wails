@@ -190,13 +190,14 @@ type Frontend interface {
 	IsNotificationAvailable() bool
 	RequestNotificationAuthorization() (bool, error)
 	CheckNotificationAuthorization() (bool, error)
-	// SendNotification(options NotificationOptions) error
-	// SendNotificationWithActions(options NotificationOptions) error
-	// RegisterNotificationCategory(category NotificationCategory) error
-	// RemoveNotificationCategory(categoryID string) error
-	// RemoveAllPendingNotifications() error
-	// RemovePendingNotification(identifier string) error
-	// RemoveAllDeliveredNotifications() error
-	// RemoveDeliveredNotification(identifier string) error
-	// RemoveNotification(identifier string) error
+	OnNotificationResponse(callback func(result NotificationResult))
+	SendNotification(options NotificationOptions) error
+	SendNotificationWithActions(options NotificationOptions) error
+	RegisterNotificationCategory(category NotificationCategory) error
+	RemoveNotificationCategory(categoryID string) error
+	RemoveAllPendingNotifications() error
+	RemovePendingNotification(identifier string) error
+	RemoveAllDeliveredNotifications() error
+	RemoveDeliveredNotification(identifier string) error
+	RemoveNotification(identifier string) error
 }

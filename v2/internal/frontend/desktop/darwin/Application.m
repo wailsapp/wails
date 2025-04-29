@@ -387,6 +387,67 @@ void CheckNotificationAuthorization(void *inctx, int channelID) {
     [ctx CheckNotificationAuthorization:channelID];
 }
 
+void SendNotification(void *inctx, int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    NSString *_identifier = safeInit(identifier);
+    NSString *_title = safeInit(title);
+    NSString *_subtitle = safeInit(subtitle);
+    NSString *_body = safeInit(body);
+    NSString *_data_json = safeInit(data_json);
+
+    [ctx SendNotification:channelID :[_identifier UTF8String] :[_title UTF8String] :[_subtitle UTF8String] :[_body UTF8String] :[_data_json UTF8String]];
+}
+
+void SendNotificationWithActions(void *inctx, int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *categoryId, const char *actions_json) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    NSString *_identifier = safeInit(identifier);
+    NSString *_title = safeInit(title);
+    NSString *_subtitle = safeInit(subtitle);
+    NSString *_body = safeInit(body);
+    NSString *_categoryId = safeInit(categoryId);
+    NSString *_actions_json = safeInit(actions_json);
+
+    [ctx SendNotificationWithActions:channelID :[_identifier UTF8String] :[_title UTF8String] :[_subtitle UTF8String] :[_body UTF8String] :[_categoryId UTF8String] :[_actions_json UTF8String]];
+}
+
+void RegisterNotificationCategory(void *inctx, int channelID, const char *categoryId, const char *actions_json, bool hasReplyField, const char *replyPlaceholder, const char *replyButtonTitle) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    NSString *_categoryId = safeInit(categoryId);
+    NSString *_actions_json = safeInit(actions_json);
+    NSString *_replyPlaceholder = safeInit(replyPlaceholder);
+    NSString *_replyButtonTitle = safeInit(replyButtonTitle);
+
+    [ctx RegisterNotificationCategory:channelID :[_categoryId UTF8String] :[_actions_json UTF8String] :hasReplyField :[_replyPlaceholder UTF8String] :[_replyButtonTitle UTF8String]];
+}
+
+void RemoveNotificationCategory(void *inctx, int channelID, const char *categoryId) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    NSString *_categoryId = safeInit(categoryId);
+
+    [ctx RemoveNotificationCategory:channelID :[_categoryId UTF8String]];
+}
+
+void RemoveAllPendingNotifications(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RemoveAllPendingNotifications];
+}
+
+void RemovePendingNotification(void *inctx, const char *identifier) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    NSString *_identifier = safeInit(identifier);
+    [ctx RemovePendingNotification:[_identifier UTF8String]];
+}
+
+void RemoveAllDeliveredNotifications(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RemoveAllDeliveredNotifications];
+}
+
+void RemoveDeliveredNotification(void *inctx, const char *identifier) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    NSString *_identifier = safeInit(identifier);
+    [ctx RemoveDeliveredNotification:[_identifier UTF8String]];
+}
 
 
 void Run(void *inctx, const char* url) {
