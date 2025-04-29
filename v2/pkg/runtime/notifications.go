@@ -23,71 +23,71 @@ type NotificationResponse = frontend.NotificationResponse
 type NotificationResult = frontend.NotificationResult
 
 func InitializeNotifications(ctx context.Context) error {
-	frontend := getFrontend(ctx)
-	return frontend.InitializeNotifications()
+	appFrontend := getFrontend(ctx)
+	return appFrontend.InitializeNotifications()
 }
 
 func IsNotificationAvailable(ctx context.Context) bool {
-	frontend := getFrontend(ctx)
-	return frontend.IsNotificationAvailable()
+	appFrontend := getFrontend(ctx)
+	return appFrontend.IsNotificationAvailable()
 }
 
 func RequestNotificationAuthorization(ctx context.Context) (bool, error) {
-	frontend := getFrontend(ctx)
-	return frontend.RequestNotificationAuthorization()
+	appFrontend := getFrontend(ctx)
+	return appFrontend.RequestNotificationAuthorization()
 }
 
 func CheckNotificationAuthorization(ctx context.Context) (bool, error) {
-	frontend := getFrontend(ctx)
-	return frontend.CheckNotificationAuthorization()
+	appFrontend := getFrontend(ctx)
+	return appFrontend.CheckNotificationAuthorization()
 }
 
 func SendNotification(ctx context.Context, options frontend.NotificationOptions) error {
-	frontend := getFrontend(ctx)
-	return frontend.SendNotification(options)
+	appFrontend := getFrontend(ctx)
+	return appFrontend.SendNotification(options)
 }
 
 func SendNotificationWithActions(ctx context.Context, options frontend.NotificationOptions) error {
-	frontend := getFrontend(ctx)
-	return frontend.SendNotificationWithActions(options)
+	appFrontend := getFrontend(ctx)
+	return appFrontend.SendNotificationWithActions(options)
 }
 
 func RegisterNotificationCategory(ctx context.Context, category frontend.NotificationCategory) error {
-	frontend := getFrontend(ctx)
-	return frontend.RegisterNotificationCategory(category)
+	appFrontend := getFrontend(ctx)
+	return appFrontend.RegisterNotificationCategory(category)
 }
 
 func RemoveNotificationCategory(ctx context.Context, categoryId string) error {
-	frontend := getFrontend(ctx)
-	return frontend.RemoveNotificationCategory(categoryId)
+	appFrontend := getFrontend(ctx)
+	return appFrontend.RemoveNotificationCategory(categoryId)
 }
 
 func RemoveAllPendingNotifications(ctx context.Context) error {
-	frontend := getFrontend(ctx)
-	return frontend.RemoveAllPendingNotifications()
+	appFrontend := getFrontend(ctx)
+	return appFrontend.RemoveAllPendingNotifications()
 }
 
 func RemovePendingNotification(ctx context.Context, identifier string) error {
-	frontend := getFrontend(ctx)
-	return frontend.RemovePendingNotification(identifier)
+	appFrontend := getFrontend(ctx)
+	return appFrontend.RemovePendingNotification(identifier)
 }
 
 func RemoveAllDeliveredNotifications(ctx context.Context) error {
-	frontend := getFrontend(ctx)
-	return frontend.RemoveAllDeliveredNotifications()
+	appFrontend := getFrontend(ctx)
+	return appFrontend.RemoveAllDeliveredNotifications()
 }
 
 func RemoveDeliveredNotification(ctx context.Context, identifier string) error {
-	frontend := getFrontend(ctx)
-	return frontend.RemoveDeliveredNotification(identifier)
+	appFrontend := getFrontend(ctx)
+	return appFrontend.RemoveDeliveredNotification(identifier)
 }
 
 func RemoveNotification(ctx context.Context, identifier string) error {
-	frontend := getFrontend(ctx)
-	return frontend.RemoveNotification(identifier)
+	appFrontend := getFrontend(ctx)
+	return appFrontend.RemoveNotification(identifier)
 }
 
 func OnNotificationResponse(ctx context.Context, callback func(result frontend.NotificationResult)) {
-	frontend := getFrontend(ctx)
-	frontend.OnNotificationResponse(callback)
+	appFrontend := getFrontend(ctx)
+	appFrontend.OnNotificationResponse(callback)
 }

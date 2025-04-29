@@ -390,13 +390,13 @@ func (f *Frontend) loadCategories() error {
 		return fmt.Errorf("failed to read notification categories from disk: %w", err)
 	}
 
-	categories := make(map[string]frontend.NotificationCategory)
+	_categories := make(map[string]frontend.NotificationCategory)
 	if err := json.Unmarshal(categoriesData, &categories); err != nil {
 		return fmt.Errorf("failed to unmarshal notification categories: %w", err)
 	}
 
 	categoriesLock.Lock()
-	categories = categories
+	categories = _categories
 	categoriesLock.Unlock()
 
 	return nil

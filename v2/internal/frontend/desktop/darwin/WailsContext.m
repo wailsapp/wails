@@ -790,9 +790,6 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     completionHandler();
 }
 
-static dispatch_once_t onceToken;
-
-
 - (bool) EnsureDelegateInitialized {
     if (@available(macOS 10.14, *)) {
         static dispatch_once_t onceToken;

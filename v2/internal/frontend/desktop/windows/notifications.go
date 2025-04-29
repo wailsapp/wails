@@ -183,6 +183,7 @@ func (f *Frontend) SendNotificationWithActions(options frontend.NotificationOpti
 
 	if options.CategoryID == "" || !categoryExists {
 		fmt.Printf("Category '%s' not found, sending basic notification without actions\n", options.CategoryID)
+		return f.SendNotification(options)
 	}
 
 	n := toast.Notification{
@@ -351,7 +352,7 @@ func loadCategoriesFromRegistry() error {
 	}
 
 	_categories := make(map[string]frontend.NotificationCategory)
-	if err := json.Unmarshal([]byte(data), &categories); err != nil {
+	if err := json.Unmarshal([]byte(data), &_categories); err != nil {
 		return fmt.Errorf("failed to parse notification categories from registry: %w", err)
 	}
 

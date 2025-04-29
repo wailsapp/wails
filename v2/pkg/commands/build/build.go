@@ -360,12 +360,12 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		pterm.Println("Done.")
 	}
 
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == "darwin" && options.Platform == "darwin" {
 		// On macOS, self-sign the .app bundle so notifications work
 		printBulletPoint("Self-signing application: ")
 		cmd := exec.Command("codesign", "--force", "--deep", "--sign", "-", options.CompiledBinary)
 		if out, err := cmd.CombinedOutput(); err != nil {
-			fmt.Println("Codesign failed:", string(out))
+			return "", fmt.Errorf("codesign failed: %v – %s", err, out)
 		}
 		pterm.Println("Done.")
 	}
