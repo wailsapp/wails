@@ -408,13 +408,9 @@ func parseNotificationResponse(response string) (action string, options frontend
 }
 
 func handleNotificationResult(result frontend.NotificationResult) {
-	callbackLock.RLock()
-	callback := notificationResultCallback
-	callbackLock.RUnlock()
-
-	if callback != nil {
-		callback(result)
-	}
+	callbackLock.Lock()
+	notificationResultCallback(result)
+	callbackLock.Unlock()
 }
 
 // Helper functions
