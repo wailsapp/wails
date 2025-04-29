@@ -418,7 +418,7 @@ func handleNotificationResult(result frontend.NotificationResult) {
 	callbackLock.Unlock()
 
 	if callback != nil {
-		callback(result)
+		go callback(result)
 	}
 }
 
