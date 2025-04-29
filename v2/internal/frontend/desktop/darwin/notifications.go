@@ -325,9 +325,8 @@ func (f *Frontend) RemoveNotification(identifier string) error {
 
 func (f *Frontend) OnNotificationResponse(callback func(result frontend.NotificationResult)) {
 	callbackLock.Lock()
-	defer callbackLock.Unlock()
-
 	notificationResultCallback = callback
+	callbackLock.Unlock()
 }
 
 //export captureResult
@@ -390,8 +389,12 @@ func didReceiveNotificationResponse(jsonPayload *C.char, err *C.char) {
 
 func handleNotificationResult(result frontend.NotificationResult) {
 	callbackLock.Lock()
-	notificationResultCallback(result)
+	callback := notificationResultCallback
 	callbackLock.Unlock()
+
+	if callback != nil {
+		go callback(result)
+	}
 }
 
 // Helper methods

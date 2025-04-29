@@ -6,6 +6,7 @@ package windows
 import (
 	"encoding/base64"
 	"encoding/json"
+	"runtime"
 	"sync"
 
 	wintoast "git.sr.ht/~jackmordaunt/go-toast/v2/wintoast"
@@ -46,6 +47,10 @@ const (
 type NotificationPayload struct {
 	Action  string                       `json:"action"`
 	Options frontend.NotificationOptions `json:"payload,omitempty"`
+}
+
+func init() {
+	runtime.LockOSThread()
 }
 
 func (f *Frontend) InitializeNotifications() error {
@@ -409,8 +414,12 @@ func parseNotificationResponse(response string) (action string, options frontend
 
 func handleNotificationResult(result frontend.NotificationResult) {
 	callbackLock.Lock()
-	notificationResultCallback(result)
+	callback := notificationResultCallback
 	callbackLock.Unlock()
+
+	if callback != nil {
+		callback(result)
+	}
 }
 
 // Helper functions

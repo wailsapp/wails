@@ -798,7 +798,7 @@ static dispatch_once_t onceToken;
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
             UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-            center.delegate = self;
+            center.delegate = (id<UNUserNotificationCenterDelegate>)self;
         });
         return YES;
     }
