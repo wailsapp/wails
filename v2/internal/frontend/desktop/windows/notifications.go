@@ -6,7 +6,6 @@ package windows
 import (
 	"encoding/base64"
 	"encoding/json"
-	"runtime"
 	"sync"
 
 	wintoast "git.sr.ht/~jackmordaunt/go-toast/v2/wintoast"
@@ -47,10 +46,6 @@ const (
 type NotificationPayload struct {
 	Action  string                       `json:"action"`
 	Options frontend.NotificationOptions `json:"payload,omitempty"`
-}
-
-func init() {
-	runtime.LockOSThread()
 }
 
 func (f *Frontend) InitializeNotifications() error {
