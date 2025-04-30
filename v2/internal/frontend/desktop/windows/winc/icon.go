@@ -116,33 +116,28 @@ func ExtractIcon(fileName string, index int) (*Icon, error) {
 
 func SaveHIconAsPNG(hIcon w32.HICON, filePath string) error {
 	// Load necessary DLLs
-	user32 := syscall.NewLazyDLL("user32.dll")
 	gdi32 := syscall.NewLazyDLL("gdi32.dll")
 
 	// Get procedures
-	getIconInfo := user32.NewProc("GetIconInfo")
-	getObject := gdi32.NewProc("GetObjectW")
 	createCompatibleDC := gdi32.NewProc("CreateCompatibleDC")
 	selectObject := gdi32.NewProc("SelectObject")
-	getDIBits := gdi32.NewProc("GetDIBits")
-	deleteObject := gdi32.NewProc("DeleteObject")
 	deleteDC := gdi32.NewProc("DeleteDC")
 
 	// Get icon info
 	var iconInfo ICONINFO
-	ret, _, err := getIconInfo.Call(
+	ret, _, err := procGetIconInfo.Call(
 		uintptr(hIcon),
 		uintptr(unsafe.Pointer(&iconInfo)),
 	)
 	if ret == 0 {
 		return err
 	}
-	defer deleteObject.Call(uintptr(iconInfo.HbmMask))
-	defer deleteObject.Call(uintptr(iconInfo.HbmColor))
+	defer procDeleteObject.Call(uintptr(iconInfo.HbmMask))
+	defer procDeleteObject.Call(uintptr(iconInfo.HbmColor))
 
 	// Get bitmap info
 	var bmp BITMAP
-	ret, _, err = getObject.Call(
+	ret, _, err = procGetObject.Call(
 		uintptr(iconInfo.HbmColor),
 		unsafe.Sizeof(bmp),
 		uintptr(unsafe.Pointer(&bmp)),
@@ -177,7 +172,7 @@ func SaveHIconAsPNG(hIcon w32.HICON, filePath string) error {
 	bits := make([]byte, bufferSize)
 
 	// Get bitmap bits
-	ret, _, err = getDIBits.Call(
+	ret, _, err = procGetDIBits.Call(
 		hdc,
 		uintptr(iconInfo.HbmColor),
 		0,
@@ -187,7 +182,7 @@ func SaveHIconAsPNG(hIcon w32.HICON, filePath string) error {
 		DIB_RGB_COLORS,
 	)
 	if ret == 0 {
-		return err
+		return fmt.Errorf("failed to get bitmap bits: %w", err)
 	}
 
 	// Create Go image

@@ -792,11 +792,8 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 
 - (bool) EnsureDelegateInitialized {
     if (@available(macOS 10.14, *)) {
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-            center.delegate = (id<UNUserNotificationCenterDelegate>)self;
-        });
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        center.delegate = (id<UNUserNotificationCenterDelegate>)self;
         return YES;
     }
     return NO;
@@ -849,7 +846,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     NSString *nsSubtitle = subtitle ? [NSString stringWithUTF8String:subtitle] : @"";
     NSString *nsBody = [NSString stringWithUTF8String:body];
     
-    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+    UNMutableNotificationContent *content = [[[UNMutableNotificationContent alloc] init] autorelease];
     content.title = nsTitle;
     if (![nsSubtitle isEqualToString:@""]) {
         content.subtitle = nsSubtitle;
@@ -916,11 +913,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
     
     NSError *contentError = nil;
-    UNMutableNotificationContent *content = [self createNotificationContent:title
-                                                                           subtitle:subtitle
-                                                                               body:body
-                                                                           dataJSON:dataJSON
-                                                                              error:&contentError];
+    UNMutableNotificationContent *content = [self createNotificationContent:title subtitle:subtitle body:body dataJSON:dataJSON error:&contentError];
     if (contentError) {
         NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [contentError localizedDescription]];
         captureResult(channelID, false, [errorMsg UTF8String]);
@@ -930,9 +923,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     content.categoryIdentifier = nsCategoryId;
     
     UNTimeIntervalNotificationTrigger *trigger = nil;
-    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier
-                                                                          content:content
-                                                                          trigger:trigger];
+    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
     
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
         if (error) {
