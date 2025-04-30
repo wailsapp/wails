@@ -1647,13 +1647,13 @@ func (w *windowsWebviewWindow) setupChromium() {
 		}
 	}
 
-	if chromium.HasCapability(edge.AllowExternalDrop) {
-		err := chromium.AllowExternalDrag(false)
-		if err != nil {
-			globalApplication.handleFatalError(err)
-		}
-	}
 	if w.parent.options.EnableDragAndDrop {
+		if chromium.HasCapability(edge.AllowExternalDrop) {
+			err := chromium.AllowExternalDrag(false)
+			if err != nil {
+				globalApplication.handleFatalError(err)
+			}
+		}
 		w.dropTarget = w32.NewDropTarget()
 		w.dropTarget.OnDrop = func(files []string) {
 			w.parent.emit(events.Windows.WindowDragDrop)
