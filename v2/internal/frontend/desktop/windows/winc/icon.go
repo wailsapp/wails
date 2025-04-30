@@ -21,12 +21,15 @@ import (
 )
 
 var (
-	user32           = syscall.NewLazyDLL("user32.dll")
-	gdi32            = syscall.NewLazyDLL("gdi32.dll")
-	procGetIconInfo  = user32.NewProc("GetIconInfo")
-	procDeleteObject = gdi32.NewProc("DeleteObject")
-	procGetObject    = gdi32.NewProc("GetObjectW")
-	procGetDIBits    = gdi32.NewProc("GetDIBits")
+	user32                 = syscall.NewLazyDLL("user32.dll")
+	gdi32                  = syscall.NewLazyDLL("gdi32.dll")
+	procGetIconInfo        = user32.NewProc("GetIconInfo")
+	procDeleteObject       = gdi32.NewProc("DeleteObject")
+	procGetObject          = gdi32.NewProc("GetObjectW")
+	procGetDIBits          = gdi32.NewProc("GetDIBits")
+	procCreateCompatibleDC = gdi32.NewProc("CreateCompatibleDC")
+	procSelectObject       = gdi32.NewProc("SelectObject")
+	procDeleteDC           = gdi32.NewProc("DeleteDC")
 )
 
 // ICONINFO mirrors the Win32 ICONINFO struct
@@ -115,14 +118,6 @@ func ExtractIcon(fileName string, index int) (*Icon, error) {
 }
 
 func SaveHIconAsPNG(hIcon w32.HICON, filePath string) error {
-	// Load necessary DLLs
-	gdi32 := syscall.NewLazyDLL("gdi32.dll")
-
-	// Get procedures
-	createCompatibleDC := gdi32.NewProc("CreateCompatibleDC")
-	selectObject := gdi32.NewProc("SelectObject")
-	deleteDC := gdi32.NewProc("DeleteDC")
-
 	// Get icon info
 	var iconInfo ICONINFO
 	ret, _, err := procGetIconInfo.Call(
@@ -147,15 +142,15 @@ func SaveHIconAsPNG(hIcon w32.HICON, filePath string) error {
 	}
 
 	// Create DC
-	hdc, _, _ := createCompatibleDC.Call(0)
+	hdc, _, _ := procCreateCompatibleDC.Call(0)
 	if hdc == 0 {
 		return syscall.EINVAL
 	}
-	defer deleteDC.Call(hdc)
+	defer procDeleteDC.Call(hdc)
 
 	// Select bitmap into DC
-	oldBitmap, _, _ := selectObject.Call(hdc, uintptr(iconInfo.HbmColor))
-	defer selectObject.Call(hdc, oldBitmap)
+	oldBitmap, _, _ := procSelectObject.Call(hdc, uintptr(iconInfo.HbmColor))
+	defer procSelectObject.Call(hdc, oldBitmap)
 
 	// Prepare bitmap info header
 	var bi BITMAPINFO
