@@ -391,7 +391,7 @@ func (f *Frontend) loadCategories() error {
 	}
 
 	_categories := make(map[string]frontend.NotificationCategory)
-	if err := json.Unmarshal(categoriesData, &categories); err != nil {
+	if err := json.Unmarshal(categoriesData, &_categories); err != nil {
 		return fmt.Errorf("failed to unmarshal notification categories: %w", err)
 	}
 

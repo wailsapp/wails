@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"image/color"
 	"image/png"
 	"os"
 	"syscall"
@@ -37,36 +38,44 @@ type ICONINFO struct {
 	HbmColor uintptr
 }
 
-// BITMAP mirrors the Win32 BITMAP struct for GetObject
-type BITMAP struct {
-	Type       int32
-	Width      int32
-	Height     int32
-	WidthBytes int32
-	Planes     uint16
-	BitsPixel  uint16
-	Bits       uintptr
-}
-
-// BITMAPINFOHEADER mirrors the Win32 BITMAPINFOHEADER
+// http://msdn.microsoft.com/en-us/library/windows/desktop/dd183376.aspx
 type BITMAPINFOHEADER struct {
-	Size          uint32
-	Width         int32
-	Height        int32
-	Planes        uint16
-	BitCount      uint16
-	Compression   uint32
-	SizeImage     uint32
-	XPelsPerMeter int32
-	YPelsPerMeter int32
-	ClrUsed       uint32
-	ClrImportant  uint32
+	BiSize          uint32
+	BiWidth         int32
+	BiHeight        int32
+	BiPlanes        uint16
+	BiBitCount      uint16
+	BiCompression   uint32
+	BiSizeImage     uint32
+	BiXPelsPerMeter int32
+	BiYPelsPerMeter int32
+	BiClrUsed       uint32
+	BiClrImportant  uint32
 }
 
-// BITMAPINFO wraps a header plus color table
+// http://msdn.microsoft.com/en-us/library/windows/desktop/dd162938.aspx
+type RGBQUAD struct {
+	RgbBlue     byte
+	RgbGreen    byte
+	RgbRed      byte
+	RgbReserved byte
+}
+
+// http://msdn.microsoft.com/en-us/library/windows/desktop/dd183375.aspx
 type BITMAPINFO struct {
-	Header BITMAPINFOHEADER
-	Colors [1]uint32
+	BmiHeader BITMAPINFOHEADER
+	BmiColors *RGBQUAD
+}
+
+// http://msdn.microsoft.com/en-us/library/windows/desktop/dd183371.aspx
+type BITMAP struct {
+	BmType       int32
+	BmWidth      int32
+	BmHeight     int32
+	BmWidthBytes int32
+	BmPlanes     uint16
+	BmBitsPixel  uint16
+	BmBits       unsafe.Pointer
 }
 
 const (
@@ -105,71 +114,111 @@ func ExtractIcon(fileName string, index int) (*Icon, error) {
 	return ico, err
 }
 
-// SaveHIconAsPNG extracts the color bitmap from an HICON and writes it to a PNG file.
-func SaveHIconAsPNG(hIcon w32.HICON, destPath string) error {
-	// 1) Get the ICONINFO structure (which contains two HBITMAPs)
-	var ii ICONINFO
-	if ret, _, err := procGetIconInfo.Call(
+func SaveHIconAsPNG(hIcon w32.HICON, filePath string) error {
+	// Load necessary DLLs
+	user32 := syscall.NewLazyDLL("user32.dll")
+	gdi32 := syscall.NewLazyDLL("gdi32.dll")
+
+	// Get procedures
+	getIconInfo := user32.NewProc("GetIconInfo")
+	getObject := gdi32.NewProc("GetObjectW")
+	createCompatibleDC := gdi32.NewProc("CreateCompatibleDC")
+	selectObject := gdi32.NewProc("SelectObject")
+	getDIBits := gdi32.NewProc("GetDIBits")
+	deleteObject := gdi32.NewProc("DeleteObject")
+	deleteDC := gdi32.NewProc("DeleteDC")
+
+	// Get icon info
+	var iconInfo ICONINFO
+	ret, _, err := getIconInfo.Call(
 		uintptr(hIcon),
-		uintptr(unsafe.Pointer(&ii)),
-	); ret == 0 {
+		uintptr(unsafe.Pointer(&iconInfo)),
+	)
+	if ret == 0 {
 		return err
 	}
-	// Make sure we free the bitmaps when done
-	defer procDeleteObject.Call(ii.HbmMask)
-	defer procDeleteObject.Call(ii.HbmColor)
+	defer deleteObject.Call(uintptr(iconInfo.HbmMask))
+	defer deleteObject.Call(uintptr(iconInfo.HbmColor))
 
-	// 2) Render the color bitmap (HbmColor) to RGBA pixels and save
-	return saveHBitmapAsPNG(w32.HBITMAP(ii.HbmColor), destPath)
-}
-
-func saveHBitmapAsPNG(hBmp w32.HBITMAP, destPath string) error {
-	// 1) Fetch the BITMAP header
+	// Get bitmap info
 	var bmp BITMAP
-	if ret, _, err := procGetObject.Call(
-		uintptr(hBmp),
+	ret, _, err = getObject.Call(
+		uintptr(iconInfo.HbmColor),
 		unsafe.Sizeof(bmp),
 		uintptr(unsafe.Pointer(&bmp)),
-	); ret == 0 {
+	)
+	if ret == 0 {
 		return err
 	}
-	w, h := int(bmp.Width), int(bmp.Height)
 
-	// 2) Prepare BITMAPINFO for 32-bit, top-down DIB
-	var bmi BITMAPINFO
-	bmi.Header = BITMAPINFOHEADER{
-		Size:        uint32(unsafe.Sizeof(BITMAPINFOHEADER{})),
-		Width:       int32(w),
-		Height:      -int32(h), // negative = top-down
-		Planes:      1,
-		BitCount:    32,
-		Compression: BI_RGB,
+	// Create DC
+	hdc, _, _ := createCompatibleDC.Call(0)
+	if hdc == 0 {
+		return syscall.EINVAL
 	}
+	defer deleteDC.Call(hdc)
 
-	// 3) Allocate a buffer and pull the bits
-	buf := make([]byte, w*h*4)
-	if ret, _, err := procGetDIBits.Call(
+	// Select bitmap into DC
+	oldBitmap, _, _ := selectObject.Call(hdc, uintptr(iconInfo.HbmColor))
+	defer selectObject.Call(hdc, oldBitmap)
+
+	// Prepare bitmap info header
+	var bi BITMAPINFO
+	bi.BmiHeader.BiSize = uint32(unsafe.Sizeof(bi.BmiHeader))
+	bi.BmiHeader.BiWidth = bmp.BmWidth
+	bi.BmiHeader.BiHeight = bmp.BmHeight
+	bi.BmiHeader.BiPlanes = 1
+	bi.BmiHeader.BiBitCount = 32
+	bi.BmiHeader.BiCompression = BI_RGB
+
+	// Allocate memory for bitmap bits
+	width, height := int(bmp.BmWidth), int(bmp.BmHeight)
+	bufferSize := width * height * 4
+	bits := make([]byte, bufferSize)
+
+	// Get bitmap bits
+	ret, _, err = getDIBits.Call(
+		hdc,
+		uintptr(iconInfo.HbmColor),
 		0,
-		uintptr(hBmp),
-		0,
-		uintptr(h),
-		uintptr(unsafe.Pointer(&buf[0])),
-		uintptr(unsafe.Pointer(&bmi)),
+		uintptr(bmp.BmHeight),
+		uintptr(unsafe.Pointer(&bits[0])),
+		uintptr(unsafe.Pointer(&bi)),
 		DIB_RGB_COLORS,
-	); ret == 0 {
+	)
+	if ret == 0 {
 		return err
 	}
 
-	// 4) Copy into an image.RGBA and write PNG
-	img := image.NewRGBA(image.Rect(0, 0, w, h))
-	copy(img.Pix, buf)
+	// Create Go image
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
-	f, err := os.Create(destPath)
+	// Convert DIB to RGBA
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			// DIB is bottom-up, so we need to invert Y
+			dibIndex := ((height-1-y)*width + x) * 4
+
+			// BGRA to RGBA
+			b := bits[dibIndex]
+			g := bits[dibIndex+1]
+			r := bits[dibIndex+2]
+			a := bits[dibIndex+3]
+
+			// Set pixel in the image
+			img.Set(x, y, color.RGBA{R: r, G: g, B: b, A: a})
+		}
+	}
+
+	// Create output file
+	outFile, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	return png.Encode(f, img)
+	defer outFile.Close()
+
+	// Encode and save the image
+	return png.Encode(outFile, img)
 }
 
 func (ic *Icon) Destroy() bool {

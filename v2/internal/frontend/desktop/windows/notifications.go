@@ -11,6 +11,8 @@ import (
 	wintoast "git.sr.ht/~jackmordaunt/go-toast/v2/wintoast"
 	"github.com/google/uuid"
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 
 	"fmt"
 	"os"
@@ -292,6 +294,15 @@ func (f *Frontend) OnNotificationResponse(callback func(result frontend.Notifica
 }
 
 func (f *Frontend) saveIconToDir() error {
+	hIcon := w32.ExtractIcon(exePath, 0)
+	if hIcon == 0 {
+		return fmt.Errorf("ExtractIcon failed for %s", exePath)
+	}
+
+	if err := winc.SaveHIconAsPNG(hIcon, iconPath); err != nil {
+		return fmt.Errorf("SaveHIconAsPNG failed: %w", err)
+	}
+
 	return nil
 }
 
