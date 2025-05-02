@@ -1712,17 +1712,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 		}
 	}
 
-	// We will get round to this
-	//if chromium.HasCapability(edge.AllowExternalDrop) {
-	//	err := chromium.AllowExternalDrag(w.parent.options.EnableDragAndDrop)
-	//	if err != nil {
-	//		globalApplication.handleFatalError(err)
-	//	}
-	//	if w.parent.options.EnableDragAndDrop {
-	//		chromium.MessageWithAdditionalObjectsCallback = w.processMessageWithAdditionalObjects
-	//	}
-	//}
-
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
 	if err != nil {
