@@ -11,13 +11,13 @@ on:
 jobs:
   check_docs:
     name: Check Docs
-    if: ${{github.repository == 'wailsapp/wails' && contains(github.head_ref,'feature/')}}
+    if: ${{github.repository == 'wailsapp/wails' && github.base_ref == 'master'}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v17
+        uses: step-security/changed-files@3dbe17c78367e7d60f00d78ae6781a35be47b4a1 # v45.0.1
         id: verify-changed-files
         with:
           files: |
@@ -55,7 +55,7 @@ jobs:
   test_go:
     name: Run Go Tests
     runs-on: ${{ matrix.os }}
-    if: github.event.review.state == 'approved'
+    if: github.event.review.state == 'approved' && github.repository == 'wailsapp/wails' && github.base_ref == 'master'
     strategy:
       matrix:
         os: [ubuntu-22.04, windows-latest, macos-latest, ubuntu-24.04]

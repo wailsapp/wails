@@ -487,6 +487,13 @@ services of Apple and Microsoft.
 Name: EnableFraudulentWebsiteDetection<br/>
 Type: `bool`
 
+### DisablePanicRecovery
+
+DisablePanicRecovery disables the automatic recovery from panics in message processing. By default, Wails will recover from panics in message processing and log the error. If you want to handle panics yourself, set this to `true`.
+
+Name: DisablePanicRecovery<br/>
+Type: `bool`
+
 ### Bind
 
 A slice of struct instances defining methods that need to be bound to the frontend.
