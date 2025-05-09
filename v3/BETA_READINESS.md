@@ -12,11 +12,11 @@ This document is for tracking the status of the v3-alpha branch in readiness for
 | cancel-chaining    |       | ✅                          | ✅                                                     |
 | clipboard          |       | ✅                          | ✅                                                     |
 | context-menus      |       | ✅                          | 🚫 panic                                              |
-| dialogs            |       | ⚠️ custom icon not working | ⚠️                                                    |
-| dialogs-basic      |       | ✅                          | ✅                                                     |
+| dialogs            |       | ⚠️ custom icon not working <br>⚠️question (with cancel) (no cancel btn, esc does nothing)<br> ⚠️save (full example) dialogue not opening|⚠️                              |
+| dialogs-basic      |       | ⚠️ basic open is behind app window<br>⚠️ save dialogue is behind window | ✅                            |
 | drag-n-drop        |       | ✅                          | ✅                                                     |
 | environment        |       | ✅                          | ✅                                                     |
-| events             |       | ✅                          | ✅                                                     |
+| events             |       | ✅ but window 1 hidden behind window2| ✅                                            |
 | file-association   |       | ✅                          | ✅                                                     |
 | frameless          |       | ✅                          | ⚠️ minimise for 3 not working                         |
 | gin-example        |       | ✅                          | ✅                                                     |
@@ -30,15 +30,15 @@ This document is for tracking the status of the v3-alpha branch in readiness for
 | panic-handling     |       | ✅                          | ✅                                                     |
 | plain              |       | ✅                          | ✅                                                     |
 | raw-message        |       | ✅                          | ✅                                                     |
-| screen             |       | ✅                          | ⚠️ slider bubble drags window                         |
-| services           |       | ✅                          | ✅                                                     |
+| screen             |       | ✅                          | ⚠️ slider bubble drags window                          |
+| services           |       | ✅ ?windows threat protection blocks it| ✅                                          |
 | show-macos-toolbar |       | ➖                          | ✅                                                     |
 | single-instance    |       | ✅                          | ✅                                                     |
-| systray-basic      |       | ✅                          | ✅                                                     |
+| systray-basic      |       | ⚠️white window in centre of screen on launch, no right click menu|✅                                      |
 | systray-custom     |       | ✅                          | ✅                                                     |
-| systray-menu       |       | ✅                          | ✅                                                     |
+| systray-menu       |       | ⚠️white window in centre of screen on launch| ✅                                                     |
 | video              |       | ✅                          | ✅                                                     |
-| window             |       | ✅                          | ✅                                                     |
+| window             |       | ⚠️hide minimise and hide maximise don't work<br> ⚠️hide close hides all three buttons| ✅                         |
 | window-api         |       | ✅                          | ✅                                                     |
 | window-call        |       | ✅                          | ✅                                                     |
 | window-menubar     |       | ✅                          | ⚠️ not sure what should happen in osx                 |
