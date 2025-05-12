@@ -9,7 +9,7 @@ require (
 	github.com/bitfield/script v0.24.0
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/flytam/filenamify v1.2.0
-	github.com/fsnotify/fsnotify v1.8.0
+	github.com/fsnotify/fsnotify v1.9.0
 	github.com/go-git/go-git/v5 v5.13.2
 	github.com/go-ole/go-ole v1.3.0
 	github.com/godbus/dbus/v5 v5.1.0
