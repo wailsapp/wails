@@ -30,3 +30,7 @@ exemptMilestones: true
 exemptAssignees: true
 # Only mark issues (not PRs)
 only: issues
+# Exempt issues created before a certain date
+exemptCreatedBefore: "2024-01-01T00:00:00Z"
+# Starts checking issues only after the specified date
+startDate: "2025-06-01T00:00:00Z"
