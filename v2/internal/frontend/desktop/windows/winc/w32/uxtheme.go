@@ -69,7 +69,7 @@ var (
 	setWindowTheme      uintptr
 )
 
-func init() {
+func Init() {
 	// Library
 	libuxtheme = MustLoadLibrary("uxtheme.dll")
 
