@@ -20,7 +20,7 @@ jobs:
         days-before-stale: 45
         days-before-close: 10
         stale-issue-label: 'stale'
-        operations-per-run: 50  # Limits API calls per run
+        operations-per-run: 250  # Increased from 50 to 250
         
         # Issue specific settings
         stale-issue-message: |
@@ -50,7 +50,7 @@ jobs:
         # Only process issues, not PRs
         only-labels: ''
         any-of-labels: ''
-        only-issue-labels: ''
+        remove-stale-when-updated: true
         
         # Debug options
         debug-only: false  # Set to true to test without actually marking issues
