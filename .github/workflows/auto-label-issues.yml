@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Label issues and PRs by content
-        uses: github/issue-labeler@v3
+        uses: github/issue-labeler@v3.4
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           configuration-path: .github/issue-labeler.yml
