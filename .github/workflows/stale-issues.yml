@@ -1,0 +1,57 @@
+name: Mark and Close Stale Issues
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # Run at 1 AM UTC every day
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    
+    steps:
+    - uses: actions/stale@v9
+      with:
+        # General settings
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        days-before-stale: 45
+        days-before-close: 10
+        stale-issue-label: 'stale'
+        operations-per-run: 50  # Limits API calls per run
+        
+        # Issue specific settings
+        stale-issue-message: |
+          This issue has been automatically marked as stale because it has not had recent activity.
+          It will be closed if no further activity occurs within the next 10 days.
+          
+          If this issue is still relevant, please add a comment to keep it open.
+          Thank you for your contributions.
+        
+        close-issue-message: |
+          This issue has been automatically closed due to lack of activity.
+          Please feel free to reopen it if it's still relevant.
+        
+        # PR specific settings - We will not mark PRs as stale
+        days-before-pr-stale: -1  # Disable PR staling
+        days-before-pr-close: -1  # Disable PR closing
+        
+        # Exemptions
+        exempt-issue-labels: 'pinned,security,onhold,inprogress,Selected For Development,bug,enhancement,v3-alpha,high-priority'
+        exempt-all-issue-milestones: true
+        exempt-all-issue-assignees: true
+        
+        # Protection for existing issues
+        exempt-issue-created-before: '2024-01-01T00:00:00Z'
+        start-date: '2025-06-01T00:00:00Z'  # Don't start checking until June 1, 2025
+        
+        # Only process issues, not PRs
+        only-labels: ''
+        any-of-labels: ''
+        only-issue-labels: ''
+        
+        # Debug options
+        debug-only: false  # Set to true to test without actually marking issues
+        ascending: true    # Process older issues first
