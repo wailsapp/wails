@@ -249,7 +249,7 @@ func showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelect bool) (any, 
 	if multi, _ := dlg.(cfd.OpenMultipleFilesDialog); multi != nil && isMultiSelect {
 		paths, err := multi.ShowAndGetResults()
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 
 		for i, path := range paths {
@@ -260,7 +260,7 @@ func showCfdDialog(newDlg func() (cfd.Dialog, error), isMultiSelect bool) (any, 
 
 	path, err := dlg.ShowAndGetResult()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	return filepath.Clean(path), nil
 }
