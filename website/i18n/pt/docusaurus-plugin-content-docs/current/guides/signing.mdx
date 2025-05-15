@@ -232,7 +232,7 @@ Agora precisamos configurar alguns arquivos de configuração do gon no nosso di
   "bundle_id": "app.myapp",
   "apple_id": {
     "username": "my-appleid@email.com",
-    "password": "@env:APPLE_PASSWORD",
+    "password": "your-app-specific-password",
     "provider": "ABCDE12345"
   },
   "sign": {
@@ -246,10 +246,12 @@ Here is a brief break down of the above fields:
 - `source`: The location of your wails binary to be signed
 - `apple_id`:
   - `username`: Your Apple ID email address
-  - `password`: Your app-specific password, referenced using Gon's environment variable syntax
+  - `password`: Your app-specific password
   - `provider`: Your team ID for your App Store Connect account
 - `sign`:
   - `application_identity`: Your Apple developer identity
+
+The (https://developer.apple.com/documentation/technotes/tn3147-migrating-to-the-latest-notarization-tool)[deprecated Apple's altool]'s syntax supporting `@env:` is no longer available since Apple has migrated to the new notarytool.
 
 Your developer identity and team ID can both by found on macOS by running the following command:
 
