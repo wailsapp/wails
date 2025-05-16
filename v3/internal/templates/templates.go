@@ -469,6 +469,8 @@ func confirmRemote(template *Template) bool {
 	return result
 }
 
+// goModTidy runs go mod tidy in the given project directory
+// It returns an error if the command fails
 func goModTidy(projectDir string) error {
 	cmd := exec.Command("go", "mod", "tidy")
 	cmd.Dir = projectDir
