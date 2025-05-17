@@ -41,6 +41,7 @@ func (m *windowsMenuItem) setHidden(hidden bool) {
 		}
 	}
 
+	// For submenus, we need special handling
 	if m.menuItem.submenu != nil {
 		// Find our position in the parent menu
 		var position int = -1
