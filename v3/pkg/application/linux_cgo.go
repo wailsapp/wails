@@ -1671,9 +1671,12 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 		displayStr := C.CString(filter.DisplayName)
 		C.gtk_file_filter_set_name(f, displayStr)
 		C.free(unsafe.Pointer(displayStr))
-		patternStr := C.CString(filter.Pattern)
-		C.gtk_file_filter_add_pattern(f, patternStr)
-		C.free(unsafe.Pointer(patternStr))
+		patterns := strings.Split(filter.Pattern, ";")
+		for _, pattern := range patterns {
+			patternStr := C.CString(strings.TrimSpace(pattern))
+			C.gtk_file_filter_add_pattern(f, patternStr)
+			C.free(unsafe.Pointer(patternStr))
+		}
 		C.gtk_file_chooser_add_filter((*C.GtkFileChooser)(fc), f)
 		gtkFilters = append(gtkFilters, f)
 	}
