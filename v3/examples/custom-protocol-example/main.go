@@ -39,18 +39,10 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
-		// Add a custom protocol scheme
-		Protocols: []application.Protocol{
-			{
-				Scheme:      "myexampleapp",
-				Description: "My Example Application Custom Protocol",
-			},
-		},
 	})
 
 	// Listen for the system event indicating the app was launched with a URL
 	app.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *application.ApplicationEvent) {
-		log.Println("ApplicationLaunchedWithUrl", e.Context().URL())
 		app.EmitEvent("frontend:ShowURL", e.Context().URL())
 	})
 
