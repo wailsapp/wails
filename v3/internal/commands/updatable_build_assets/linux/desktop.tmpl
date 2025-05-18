@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Name={{.ProductName}}
+Comment={{.ProductDescription}}
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/{{.BinaryName}} %u
+Terminal=false
+Type=Application
+Icon={{.BinaryName}}
+Categories=Utility;
+StartupWMClass={{.BinaryName}}
+
+{{if .Info.Protocols -}}
+MimeType={{range $index, $protocol := .Info.Protocols}}x-scheme-handler/{{$protocol.Scheme}};{{end}}
+{{- end}} 

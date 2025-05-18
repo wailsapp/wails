@@ -27,7 +27,8 @@ import (
 func init() {
 	// FIXME: This should be handled appropriately in the individual files most likely.
 	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
-	if os.Getenv("GDK_BACKEND") == "" && (os.Getenv("XDG_SESSION_TYPE") == "" || os.Getenv("XDG_SESSION_TYPE") == "unspecified" || os.Getenv("XDG_SESSION_TYPE") == "x11") {
+	if os.Getenv("GDK_BACKEND") == "" &&
+		(os.Getenv("XDG_SESSION_TYPE") == "" || os.Getenv("XDG_SESSION_TYPE") == "unspecified" || os.Getenv("XDG_SESSION_TYPE") == "x11") {
 		_ = os.Setenv("GDK_BACKEND", "x11")
 	}
 }
@@ -94,6 +95,40 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 
 func (a *linuxApp) run() error {
 
+	if len(os.Args) == 2 { // Case: program + 1 argument
+		arg1 := os.Args[1]
+		// Check if the argument is likely a URL from a custom protocol invocation
+		if strings.Contains(arg1, "://") {
+			a.parent.info("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
+			eventContext := newApplicationEventContext()
+			eventContext.setURL(arg1)
+			applicationEvents <- &ApplicationEvent{
+				Id:  uint(events.Common.ApplicationLaunchedWithUrl),
+				ctx: eventContext,
+			}
+		} else {
+			// Check if the argument matches any file associations
+			if a.parent.options.FileAssociations != nil {
+				for _, association := range a.parent.options.FileAssociations {
+					if strings.HasSuffix(arg1, association.Extension) {
+						a.parent.info("File opened via file association", "file", arg1, "extension", association.Extension)
+						eventContext := newApplicationEventContext()
+						eventContext.setOpenedWithFile(arg1)
+						applicationEvents <- &ApplicationEvent{
+							Id:  uint(events.Common.ApplicationOpenedWithFile),
+							ctx: eventContext,
+						}
+						return
+					}
+				}
+			}
+			a.parent.info("Application launched with single argument (not a URL), potential file open?", "arg", arg1)
+		}
+	} else if len(os.Args) > 2 {
+		// Log if multiple arguments are passed
+		a.parent.info("Application launched with multiple arguments", "args", os.Args[1:])
+	}
+
 	a.parent.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
 		// TODO: What should happen here?
 	})
@@ -141,7 +176,10 @@ func (a *linuxApp) monitorThemeChanges() {
 		defer handlePanic()
 		conn, err := dbus.ConnectSessionBus()
 		if err != nil {
-			a.parent.info("[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:", err)
+			a.parent.info(
+				"[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:",
+				err,
+			)
 			return
 		}
 		defer conn.Close()
