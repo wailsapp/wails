@@ -386,9 +386,11 @@ func Install(options *flags.Init) error {
 		}
 	}
 
-	err = goModTidy(templateData.ProjectDir)
-	if err != nil {
-		return err
+	if !options.SkipGoModTidy {
+		err = goModTidy(templateData.ProjectDir)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Change to project directory
