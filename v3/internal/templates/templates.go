@@ -385,7 +385,6 @@ func Install(options *flags.Init) error {
 			s.RMDIR(template.tempDir)
 		}
 	}
-
 	if !options.SkipGoModTidy {
 		err = goModTidy(templateData.ProjectDir)
 		if err != nil {
