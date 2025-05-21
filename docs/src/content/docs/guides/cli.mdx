@@ -14,7 +14,7 @@ Core commands are the primary commands used for project creation, development, a
 All CLI commands are of the following format: `wails3 <command>`.
 
 ### `init`
-Initializes a new Wails project. During this initialization, the `go mod tidy` command, which is typically used to add missing and remove unused modules, is intentionally bypassed. This is done automatically as part of the initialization process.
+Initializes a new Wails project. During this initialization, the `go mod tidy` command is run to bring the project packages up to date. This can be bypassed by using the `-skipgomodtidy` flag with the `init` command.
 
 ```bash
 wails3 init [flags]
