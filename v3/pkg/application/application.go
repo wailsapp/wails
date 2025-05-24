@@ -938,7 +938,20 @@ func (a *App) SetIcon(icon []byte) {
 }
 
 func (a *App) SetMenu(menu *Menu) {
+	// Unregister from the old menu if it exists
+	if a.ApplicationMenu != nil {
+		// Use ID 0 to represent the application
+		a.ApplicationMenu.unregisterWindow(0)
+	}
+
 	a.ApplicationMenu = menu
+
+	// Register with the new menu if it exists
+	if menu != nil {
+		// Use ID 0 to represent the application
+		menu.registerWindow(0)
+	}
+
 	if a.impl != nil {
 		a.impl.setApplicationMenu(menu)
 	}
@@ -995,6 +1008,14 @@ func (a *App) Clipboard() *Clipboard {
 }
 
 func (a *App) dispatchOnMainThread(fn func()) {
+
+	// If Start hasn't been called yet then impl will be nil.
+	// In this case, call the function
+	if a.impl == nil {
+		fn()
+		return
+	}
+
 	// If we are on the main thread, just call the function
 	if a.impl.isOnMainThread() {
 		fn()

@@ -314,6 +314,10 @@ func (m *MenuItem) SetLabel(s string) *MenuItem {
 	if m.impl != nil {
 		m.impl.setLabel(s)
 	}
+	// If this is a submenu, update the submenu's label as well
+	if m.itemType == submenu && m.submenu != nil {
+		m.submenu.label = s
+	}
 	return m
 }
 

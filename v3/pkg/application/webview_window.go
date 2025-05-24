@@ -170,14 +170,27 @@ type WebviewWindow struct {
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
+	// Unregister from the old menu if it exists
 	switch runtime.GOOS {
 	case "darwin":
 		return
 	case "windows":
+		if w.options.Windows.Menu != nil {
+			w.options.Windows.Menu.unregisterWindow(w.id)
+		}
 		w.options.Windows.Menu = menu
 	case "linux":
+		if w.options.Linux.Menu != nil {
+			w.options.Linux.Menu.unregisterWindow(w.id)
+		}
 		w.options.Linux.Menu = menu
 	}
+
+	// Register with the new menu if it exists
+	if menu != nil {
+		menu.registerWindow(w.id)
+	}
+
 	if w.impl != nil {
 		InvokeSync(func() {
 			w.impl.setMenu(menu)
