@@ -85,10 +85,10 @@ You can add a menu to your system tray icon:
 
 ```go
 menu := application.NewMenu()
-menu.Add("Open").OnClick(func() {
+menu.Add("Open").OnClick(func(ctx *application.Context) {
     // Handle click
 })
-menu.Add("Quit").OnClick(func() {
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
     app.Quit()
 })
 
