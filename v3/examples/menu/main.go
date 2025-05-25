@@ -50,7 +50,7 @@ func main() {
 	hiddenFirstItem := indexMenu.Add("Hidden First Item").SetHidden(true)
 	indexMenu.Add("Toggle Hidden First Item").OnClick(func(*application.Context) {
 		hiddenFirstItem.SetHidden(!hiddenFirstItem.Hidden())
-		menu.Update(true)
+		menu.Update()
 		println("Toggled visibility of first item - Now hidden:", hiddenFirstItem.Hidden())
 	})
 	indexMenu.AddSeparator()
@@ -67,7 +67,7 @@ func main() {
 		item.OnClick(func(*application.Context) {
 			println("Clicked on inserted item!")
 		})
-		menu.Update(true)
+		menu.Update()
 		println("Inserted item at index 1")
 	})
 
@@ -77,7 +77,7 @@ func main() {
 		checkbox.OnClick(func(ctx *application.Context) {
 			println("Checkbox clicked, checked:", ctx.ClickedMenuItem().Checked())
 		})
-		menu.Update(true)
+		menu.Update()
 		println("Inserted checkbox at index 2")
 	})
 
@@ -111,7 +111,7 @@ func main() {
 		newCheckbox.OnClick(func(ctx *application.Context) {
 			println("Checkbox B clicked, checked:", ctx.ClickedMenuItem().Checked())
 		})
-		menu.Update(true)
+		menu.Update()
 		println("Inserted Checkbox B after Checkbox A")
 	})
 
@@ -148,7 +148,7 @@ func main() {
 		newRadio.OnClick(func(ctx *application.Context) {
 			println("Radio C clicked, checked:", ctx.ClickedMenuItem().Checked())
 		})
-		menu.Update(true)
+		menu.Update()
 		println("Inserted Radio C after Radio B")
 	})
 
@@ -157,7 +157,7 @@ func main() {
 	// Demonstrate InsertSeparatorAt
 	indexMenu.Add("Insert separator at index 3").OnClick(func(*application.Context) {
 		indexMenu.InsertSeparatorAt(3)
-		menu.Update(true)
+		menu.Update()
 		println("Inserted separator at index 3")
 	})
 
@@ -176,7 +176,7 @@ func main() {
 		submenu := indexMenu.InsertSubmenuAt(count, "Inserted Submenu")
 		submenu.Add("Submenu Item 1")
 		submenu.Add("Submenu Item 2")
-		menu.Update(true)
+		menu.Update()
 		println("Inserted submenu at end")
 	})
 
@@ -210,7 +210,7 @@ func main() {
 		item := indexMenu.ItemAt(targetIndex)
 		if item != nil {
 			item.SetEnabled(!item.Enabled())
-			menu.Update(true)
+			menu.Update()
 			println("Toggled enabled state for item at index", targetIndex, "- Now enabled:", item.Enabled())
 		}
 	})
@@ -245,7 +245,7 @@ func main() {
 		item := indexMenu.ItemAt(hidableIndex)
 		if item != nil {
 			item.SetHidden(!item.Hidden())
-			menu.Update(true)
+			menu.Update()
 			println("Toggled hidden state for item at index", hidableIndex, "- Now hidden:", item.Hidden())
 		}
 	})
@@ -329,7 +329,7 @@ func main() {
 			println("Submenu is now hidden")
 		}
 		// Update the menu to reflect the changes
-		menu.Update(true)
+		menu.Update()
 	})
 
 	myMenu.AddSeparator()
@@ -376,7 +376,7 @@ func main() {
 	myMenu.Add("Append a new item").OnClick(func(*application.Context) {
 		myMenu.AppendItem(newItem)
 		// Use Update(true) to update everything in one call
-		menu.Update(true)
+		menu.Update()
 		println("Appended a new item to the menu")
 	})
 
@@ -393,7 +393,7 @@ func main() {
 		if lastIndex >= 0 {
 			myMenu.Remove(lastIndex)
 			// Use Update(true) to update everything in one call
-			menu.Update(true)
+			menu.Update()
 			println("Removed the last item from the menu")
 		} else {
 			println("No items to remove")
@@ -412,7 +412,7 @@ func main() {
 	// Add a menu item to toggle the enabled state of the disabled item
 	disabledMenu.Add("Toggle Enabled State").OnClick(func(*application.Context) {
 		disabledItem.SetEnabled(!disabledItem.Enabled())
-		menu.Update(true)
+		menu.Update()
 		println("Toggled enabled state - Now enabled:", disabledItem.Enabled())
 	})
 
@@ -428,7 +428,7 @@ func main() {
 	menuUpdateDemo.Add("Reset menu").OnClick(func(ctx *application.Context) {
 		menuUpdateDemo.Clear()
 		menuUpdateDemo.Add("New option")
-		menu.Update(true)
+		menu.Update()
 		// Explicitly set the menu on the application and window to ensure it's updated
 		app.SetMenu(menu)
 		if app.CurrentWindow() != nil {
@@ -451,7 +451,7 @@ func main() {
 			// Change the label
 			submenuItem.SetLabel("Parent Updated Label")
 			// Update the menu to reflect the changes
-			menu.Update(true)
+			menu.Update()
 			println("Submenu label changed from parent to: Parent Updated Label")
 
 			// Verify the change
@@ -474,7 +474,7 @@ func main() {
 			// Change the label
 			submenuItem.SetLabel("Updated Submenu Label")
 			// Update the menu to reflect the changes
-			menu.Update(true)
+			menu.Update()
 			println("Submenu label changed to: Updated Submenu Label")
 
 			// Verify the change
@@ -497,7 +497,7 @@ func main() {
 			// Change the label
 			submenuItem.SetLabel("Updated Operations")
 			// Update the menu to reflect the changes
-			menu.Update(true)
+			menu.Update()
 			println("Submenu label changed to: Updated Operations")
 
 			// Verify the change
@@ -525,7 +525,7 @@ func main() {
 			// Change the label
 			submenuItem.SetLabel("Self-Updated Submenu")
 			// Update the menu to reflect the changes
-			menu.Update(true)
+			menu.Update()
 			println("Nested submenu changed its own label to: Self-Updated Submenu")
 
 			// Verify the change
@@ -548,7 +548,7 @@ func main() {
 			// Change the label
 			submenuItem.SetLabel("Updated Nested Submenu")
 			// Update the menu to reflect the changes
-			menu.Update(true)
+			menu.Update()
 			println("Nested submenu label changed to: Updated Nested Submenu")
 
 			// Verify the change

@@ -69,12 +69,12 @@ func (m *Menu) AddRadio(label string, enabled bool) *MenuItem {
 	return result
 }
 
-// Update updates the menu and optionally propagates the changes to the application and all windows
+// Update updates the menu and propagates the changes to the application and all windows
 // that have the menu attached.
 //
-// If propagate is true, the changes will be propagated to the application and all windows
-// that have the menu attached. This is equivalent to calling UpdateAll().
-func (m *Menu) Update(propagate ...bool) *Menu {
+// The propagate parameter is kept for backward compatibility but is ignored.
+// Changes are always propagated to the application and all windows that have the menu attached.
+func (m *Menu) Update() *Menu {
 	// Process radio groups and update the menu
 	m.processRadioGroups()
 	if m.impl == nil {
@@ -82,40 +82,32 @@ func (m *Menu) Update(propagate ...bool) *Menu {
 	}
 	m.impl.update()
 
-	// Check if we should propagate the changes
-	shouldPropagate := false
-	if len(propagate) > 0 {
-		shouldPropagate = propagate[0]
+	// If globalApplication is not initialized yet, just return
+	if globalApplication == nil {
+		return m
 	}
 
-	if shouldPropagate {
-		// If globalApplication is not initialized yet, just return
-		if globalApplication == nil {
-			return m
-		}
+	// Get a copy of the attached windows
+	m.attachedWindowsLock.RLock()
+	attachedWindowsCopy := make(map[uint]bool)
+	for id, attached := range m.attachedWindows {
+		attachedWindowsCopy[id] = attached
+	}
+	m.attachedWindowsLock.RUnlock()
 
-		// Get a copy of the attached windows
-		m.attachedWindowsLock.RLock()
-		attachedWindowsCopy := make(map[uint]bool)
-		for id, attached := range m.attachedWindows {
-			attachedWindowsCopy[id] = attached
-		}
-		m.attachedWindowsLock.RUnlock()
+	// Check if this menu is the application menu (ID 0)
+	if attachedWindowsCopy[0] {
+		// Update the application menu
+		globalApplication.SetMenu(m)
+	}
 
-		// Check if this menu is the application menu (ID 0)
-		if attachedWindowsCopy[0] {
-			// Update the application menu
-			globalApplication.SetMenu(m)
-		}
+	// Update all windows that use this menu
+	globalApplication.windowsLock.RLock()
+	defer globalApplication.windowsLock.RUnlock()
 
-		// Update all windows that use this menu
-		globalApplication.windowsLock.RLock()
-		defer globalApplication.windowsLock.RUnlock()
-
-		for id, window := range globalApplication.windows {
-			if attachedWindowsCopy[id] {
-				window.SetMenu(m)
-			}
+	for id, window := range globalApplication.windows {
+		if attachedWindowsCopy[id] {
+			window.SetMenu(m)
 		}
 	}
 
@@ -373,9 +365,9 @@ func (m *Menu) unregisterWindow(windowID uint) {
 // UpdateAll updates the menu and propagates the changes to the application and all windows
 // This is a convenience method that handles all the necessary update steps after modifying a menu
 //
-// Deprecated: Use Update(true) instead.
+// Deprecated: Use Update() instead as it now always propagates changes.
 func (m *Menu) UpdateAll() *Menu {
-	return m.Update(true)
+	return m.Update()
 }
 
 // Prepend menu before an existing menu
