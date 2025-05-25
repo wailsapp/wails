@@ -11,5 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "sponsorkit": "^16.4.2"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   }
 }
