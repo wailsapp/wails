@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"io"
 	"log/slog"
 	"net/http"
@@ -16,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 
 	"github.com/wailsapp/wails/v3/internal/fileexplorer"
 
@@ -107,7 +108,11 @@ func New(appOptions Options) *App {
 					case "/wails/runtime":
 						messageProc.ServeHTTP(rw, req)
 					case "/wails/capabilities":
-						err := assetserver.ServeFile(rw, path, globalApplication.capabilities.AsBytes())
+						err := assetserver.ServeFile(
+							rw,
+							path,
+							globalApplication.capabilities.AsBytes(),
+						)
 						if err != nil {
 							result.fatal("unable to serve capabilities: %w", err)
 						}
@@ -219,17 +224,28 @@ type windowMessage struct {
 
 var windowMessageBuffer = make(chan *windowMessage, 5)
 
+// DropZoneDetails contains information about the HTML element
+// at the location of a file drop.
+type DropZoneDetails struct {
+	X         int      `json:"x"`
+	Y         int      `json:"y"`
+	ElementID string   `json:"id"`
+	ClassList []string `json:"classList"`
+}
+
 type dragAndDropMessage struct {
 	windowId  uint
 	filenames []string
+	DropZone  *DropZoneDetails
 }
 
 var windowDragAndDropBuffer = make(chan *dragAndDropMessage, 5)
 
-func addDragAndDropMessage(windowId uint, filenames []string) {
+func addDragAndDropMessage(windowId uint, filenames []string, dropZone *DropZoneDetails) {
 	windowDragAndDropBuffer <- &dragAndDropMessage{
 		windowId:  windowId,
 		filenames: filenames,
+		DropZone:  dropZone,
 	}
 }
 
@@ -383,7 +399,10 @@ func (a *App) RegisterService(service Service) {
 	defer a.runLock.Unlock()
 
 	if a.starting || a.running {
-		a.error("services must be registered before running the application. Service '%s' will not be registered.", getServiceName(service))
+		a.error(
+			"services must be registered before running the application. Service '%s' will not be registered.",
+			getServiceName(service),
+		)
 		return
 	}
 
@@ -464,7 +483,10 @@ func (a *App) Capabilities() capabilities.Capabilities {
 	return a.capabilities
 }
 
-func (a *App) OnApplicationEvent(eventType events.ApplicationEventType, callback func(event *ApplicationEvent)) func() {
+func (a *App) OnApplicationEvent(
+	eventType events.ApplicationEventType,
+	callback func(event *ApplicationEvent),
+) func() {
 	eventID := uint(eventType)
 	a.applicationEventListenersLock.Lock()
 	defer a.applicationEventListenersLock.Unlock()
@@ -484,14 +506,20 @@ func (a *App) OnApplicationEvent(eventType events.ApplicationEventType, callback
 		a.applicationEventListenersLock.Lock()
 		defer a.applicationEventListenersLock.Unlock()
 		// Remove listener
-		a.applicationEventListeners[eventID] = lo.Without(a.applicationEventListeners[eventID], listener)
+		a.applicationEventListeners[eventID] = lo.Without(
+			a.applicationEventListeners[eventID],
+			listener,
+		)
 	}
 }
 
 // RegisterApplicationEventHook registers a hook for the given application event.
 // Hooks are called before the event listeners and can cancel the event.
 // The returned function can be called to remove the hook.
-func (a *App) RegisterApplicationEventHook(eventType events.ApplicationEventType, callback func(event *ApplicationEvent)) func() {
+func (a *App) RegisterApplicationEventHook(
+	eventType events.ApplicationEventType,
+	callback func(event *ApplicationEvent),
+) func() {
 	eventID := uint(eventType)
 	a.applicationEventHooksLock.Lock()
 	defer a.applicationEventHooksLock.Unlock()
@@ -659,6 +687,7 @@ func (a *App) Run() error {
 	go func() {
 		for {
 			dragAndDropMessage := <-windowDragAndDropBuffer
+			a.Logger.Debug("[DragDropDebug] App.Run: Received message from windowDragAndDropBuffer", "message", fmt.Sprintf("%+v", dragAndDropMessage))
 			go a.handleDragAndDropMessage(dragAndDropMessage)
 		}
 	}()
@@ -708,7 +737,10 @@ func (a *App) startupService(service Service) error {
 			handler = http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				http.Error(
 					rw,
-					fmt.Sprintf("Service '%s' does not handle HTTP requests", getServiceName(service)),
+					fmt.Sprintf(
+						"Service '%s' does not handle HTTP requests",
+						getServiceName(service),
+					),
 					http.StatusServiceUnavailable,
 				)
 			})
@@ -780,6 +812,7 @@ func (a *App) handleApplicationEvent(event *ApplicationEvent) {
 }
 
 func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
+	a.Logger.Debug("[DragDropDebug] App.handleDragAndDropMessage: Called with event", "event", fmt.Sprintf("%+v", event))
 	defer handlePanic()
 	// Get window from window map
 	a.windowsLock.Lock()
@@ -790,7 +823,8 @@ func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 		return
 	}
 	// Get callback from window
-	window.HandleDragAndDropMessage(event.filenames)
+	a.Logger.Debug("[DragDropDebug] App.handleDragAndDropMessage: Calling window.HandleDragAndDropMessage", "windowID", event.windowId)
+	window.HandleDragAndDropMessage(event.filenames, event.DropZone)
 }
 
 func (a *App) handleWindowMessage(event *windowMessage) {
@@ -1080,6 +1114,17 @@ func (a *App) getContextMenu(name string) (*ContextMenu, bool) {
 
 func (a *App) OnWindowCreation(callback func(window Window)) {
 	a.windowCreatedCallbacks = append(a.windowCreatedCallbacks, callback)
+}
+
+func (a *App) getWindowByID(id uint) *WebviewWindow {
+	a.windowsLock.RLock()
+	defer a.windowsLock.RUnlock()
+	w, ok := a.windows[id].(*WebviewWindow)
+	if !ok {
+		// Or handle error appropriately, e.g., log and return nil
+		return nil
+	}
+	return w
 }
 
 func (a *App) GetWindowByName(name string) Window {

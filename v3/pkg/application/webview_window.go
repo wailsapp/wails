@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"runtime"
@@ -1170,12 +1171,18 @@ func (w *WebviewWindow) Error(message string, args ...any) {
 	globalApplication.error("in window '%s': "+message, args...)
 }
 
-func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
+func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string, dropZone *DropZoneDetails) {
+	fmt.Println("[DragDropDebug] HandleDragAndDropMessage called - Files: %v, DropZone: %+v", filenames, dropZone)
 	thisEvent := NewWindowEvent()
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(filenames)
+	if dropZone != nil { // Check if dropZone details are available
+		ctx.setDropZoneDetails(dropZone)
+	}
 	thisEvent.ctx = ctx
-	for _, listener := range w.eventListeners[uint(events.Common.WindowFilesDropped)] {
+	listeners := w.eventListeners[uint(events.Common.WindowDropZoneFilesDropped)]
+	fmt.Println("[DragDropDebug] HandleDragAndDropMessage: Found %d listeners for WindowDropZoneFilesDropped", len(listeners))
+	for _, listener := range listeners {
 		listener.callback(thisEvent)
 	}
 }
@@ -1382,4 +1389,30 @@ func (w *WebviewWindow) ToggleMenuBar() {
 		return
 	}
 	InvokeSync(w.impl.toggleMenuBar)
+}
+
+func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int, y int) {
+	fmt.Println("[DragDropDebug] InitiateFrontendDropProcessing called - Files: %v, X: %d, Y: %d", filenames, x, y)
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+
+	filenamesJSON, err := json.Marshal(filenames)
+	if err != nil {
+		w.Error("Error marshalling filenames for drop processing: %s", err)
+		return
+	}
+
+	jsCall := fmt.Sprintf("window.wails.runtime.System.HandlePlatformFileDrop(%s, %d, %d);", string(filenamesJSON), x, y)
+	fmt.Println("[DragDropDebug] InitiateFrontendDropProcessing: Prepared JS call: %s", jsCall)
+
+	// Ensure JS is executed after runtime is loaded
+	if !w.runtimeLoaded {
+		w.pendingJS = append(w.pendingJS, jsCall)
+		return
+	}
+
+	InvokeSync(func() {
+		w.impl.execJS(jsCall)
+	})
 }

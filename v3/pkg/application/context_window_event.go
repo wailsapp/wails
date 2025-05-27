@@ -3,7 +3,8 @@ package application
 var blankWindowEventContext = &WindowEventContext{}
 
 const (
-	droppedFiles = "droppedFiles"
+	droppedFiles        = "droppedFiles"
+	dropZoneDetailsKey  = "dropZoneDetails"
 )
 
 type WindowEventContext struct {
@@ -25,6 +26,37 @@ func (c WindowEventContext) DroppedFiles() []string {
 
 func (c WindowEventContext) setDroppedFiles(files []string) {
 	c.data[droppedFiles] = files
+}
+
+func (c WindowEventContext) setCoordinates(x, y int) {
+	c.data["x"] = x
+	c.data["y"] = y
+}
+
+func (c WindowEventContext) setDropZoneDetails(details *DropZoneDetails) {
+	if details == nil {
+		c.data[dropZoneDetailsKey] = nil
+		return
+	}
+	c.data[dropZoneDetailsKey] = details
+}
+
+// DropZoneDetails retrieves the detailed drop zone information, if available.
+func (c WindowEventContext) DropZoneDetails() *DropZoneDetails {
+	details, ok := c.data[dropZoneDetailsKey]
+	if !ok {
+		return nil
+	}
+	// Explicitly type assert, handle if it's nil (though setDropZoneDetails should handle it)
+	if details == nil {
+	    return nil
+	}
+	result, ok := details.(*DropZoneDetails)
+	if !ok {
+		// This case indicates a programming error if data was set incorrectly
+		return nil
+	}
+	return result
 }
 
 func newWindowEventContext() *WindowEventContext {
