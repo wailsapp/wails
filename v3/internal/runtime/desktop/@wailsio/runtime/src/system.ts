@@ -14,6 +14,7 @@ const call = newRuntimeCaller(objectNames.System);
 
 const SystemIsDarkMode = 0;
 const SystemEnvironment = 1;
+const ApplicationFilesDroppedWithContext = 100; // New method ID for enriched drop event
 
 const _invoke = (function () {
     try {
@@ -152,5 +153,51 @@ export function IsARM64(): boolean {
  */
 export function IsDebug(): boolean {
     return Boolean(window._wails.environment.Debug);
+}
+
+/**
+ * Handles file drops originating from platform-specific code (e.g., macOS native drag-and-drop).
+ * Gathers information about the drop target element and sends it back to the Go backend.
+ *
+ * @param filenames - An array of file paths (strings) that were dropped.
+ * @param x - The x-coordinate of the drop event.
+ * @param y - The y-coordinate of the drop event.
+ */
+export function HandlePlatformFileDrop(filenames: string[], x: number, y: number): void {
+    const element = document.elementFromPoint(x, y);
+    const elementId = element ? element.id : '';
+    const classList = element ? Array.from(element.classList) : [];
+
+    const payload = {
+        filenames,
+        x,
+        y,
+        elementId,
+        classList,
+    };
+
+    // We use objectNames.Application because this is like an application-level event/command
+    // The runtimeCallWithID function is already imported via newRuntimeCaller, 
+    // but we can use it directly if we don't want to create a specific caller for this.
+    // Let's assume runtimeCallWithID is accessible or we adjust to use `call` if appropriate.
+    // For now, directly constructing the call to Go runtime, similar to how `call` would do it.
+    
+    // Directly using runtimeCallWithID, assuming it's made available or imported.
+    // If newRuntimeCaller is preferred, we'd need to ensure runtimeCallWithID is exported from runtime.ts or use an existing caller.
+    // For now, let's assume we need to import runtimeCallWithID or make it available.
+    // Given the structure, it's better to use the existing `call` for `objectNames.System` if this is a system message,
+    // or create a new caller for `objectNames.Application`.
+    // Let's create a new application-level caller for this specific purpose.
+
+    const appCall = newRuntimeCaller(objectNames.Application);
+    appCall(ApplicationFilesDroppedWithContext, payload)
+        .then(() => {
+            // Optional: Log success or handle if needed
+            console.log("Platform file drop processed and sent to Go.");
+        })
+        .catch(err => {
+            // Optional: Log error
+            console.error("Error sending platform file drop to Go:", err);
+        });
 }
 
