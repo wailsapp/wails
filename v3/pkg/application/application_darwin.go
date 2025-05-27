@@ -225,8 +225,11 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 		defaultM.Update() // This processes defaultM, creates its impl, and updates its nsMenu.
 		// Since defaultM is a new instance, this Update() won't loop back here for itself.
 		if defaultM.impl != nil { // Ensure impl was created
-			m.applicationMenu = (defaultM.impl).(*macosMenu).nsMenu
-			C.setApplicationMenu(m.applicationMenu)
+			nsMenu := (defaultM.impl).(*macosMenu).nsMenu
+			InvokeSync(func() { // Ensure C call is on main thread
+				m.applicationMenu = nsMenu
+				C.setApplicationMenu(nsMenu)
+			})
 		} else {
 			fmt.Println("Error: DefaultApplicationMenu().impl is nil. Cannot set default menu.")
 		}
@@ -236,30 +239,26 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 	// If menu is not nil:
 	if menu.impl == nil {
 		// This menu hasn't been processed by Menu.Update() to create its platform impl.
-		// This typically happens on the first app.SetMenu(someMenu) call from user code.
-		// We need to initialize the impl and build the native menu.
-		// This sequence is part of what Menu.Update() does, but crucially,
-		// it does not call globalApplication.SetMenu(), avoiding recursion.
 		fmt.Println("Info: Initializing menu.impl in setApplicationMenu as it was nil.")
 		menu.processRadioGroups()
 		menu.impl = newMenuImpl(menu) // Creates *macosMenu
 		// Directly call the platform-specific update on the new impl
 		if macosM, ok := menu.impl.(*macosMenu); ok {
-			macosM.update() // Builds/updates nsMenu within macosM
+			macosM.update() // Builds/updates nsMenu within macosM. This uses InvokeSync internally for its C calls.
 		} else {
-			// This should not happen on macOS if newMenuImpl works as expected.
 			fmt.Println("Critical Error: menu.impl is not *macosMenu after newMenuImpl on macOS for a non-nil menu.")
 			return // Cannot proceed to set native menu
 		}
 	}
-	// At this point, menu.impl should be non-nil (unless newMenuImpl failed catastrophically).
-	// And menu.impl.update() has been called (either just above if impl was nil, or by a prior Menu.Update() call).
-	// So, (menu.impl).(*macosMenu).nsMenu should be valid and current.
-	if menu.impl != nil { // Check again in case newMenuImpl somehow failed or returned nil impl
-		m.applicationMenu = (menu.impl).(*macosMenu).nsMenu
-		C.setApplicationMenu(m.applicationMenu)
+
+	// At this point, menu.impl should be non-nil and its nsMenu should be built.
+	if menu.impl != nil {
+		nsMenu := (menu.impl).(*macosMenu).nsMenu
+		InvokeSync(func() { // Ensure C call is on main thread
+			m.applicationMenu = nsMenu
+			C.setApplicationMenu(nsMenu)
+		})
 	} else {
-		// This would only be reached if newMenuImpl returned a nil impl or some other unexpected failure.
 		fmt.Println("Error: menu.impl is still nil after attempted initialization in setApplicationMenu. Native menu not set.")
 	}
 }
