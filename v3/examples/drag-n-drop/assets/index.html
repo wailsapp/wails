@@ -2,37 +2,136 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-    <style>body{ text-align: center; color: white; background-color: #191919; user-select: none; -ms-user-select: none; -webkit-user-select: none; }</style>
+    <title>Wails v3 Drag-n-Drop Demo</title>
+    <style>
+        body {
+            text-align: center;
+            color: white;
+            background-color: #1e1e1e;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            margin: 0;
+            padding: 20px;
+            user-select: none;
+            -ms-user-select: none;
+            -webkit-user-select: none;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            gap: 20px;
+        }
+        .dropzone {
+            width: 200px;
+            height: 200px;
+            border: 2px dashed #555;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            background-color: #2a2a2a;
+        }
+        .dropzone.drag-over {
+            background-color: #3a3a3a;
+            border-color: #777;
+        }
+        .dropzone p {
+            margin: 5px 0;
+        }
+        #output {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            text-align: left;
+            min-height: 50px; /* Adjusted height */
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        h1 {
+            color: #eee;
+        }
+    </style>
 </head>
 <body>
-<h1>Drag-n-drop Demo</h1>
-<br/>
-Drop Files onto this window...
-<div id="results"></div>
-</body>
+    <h1>Wails v3 Drag-n-Drop Demo</h1>
+    <p>Drop files onto one of the zones below. Details will be logged in Go.</p>
 
-<script type="module">
-    import * as wails from "/wails/runtime.js";
+    <div class="container">
+        <div id="dropzoneA" class="dropzone">
+            <p>Drop Zone A</p>
+            <p>(ID: dropzoneA)</p>
+        </div>
+        <div id="dropzoneB" class="dropzone">
+            <p>Drop Zone B</p>
+            <p>(ID: dropzoneB)</p>
+        </div>
+    </div>
 
-    document.body.addEventListener('drop', function(e) {
-        // Note that postMessageWithAdditionalObjects does not accept a single object,
-        // but only accepts an ArrayLike object.
-        // However, input.files is type FileList, which is already an ArrayLike object so
-        // no conversion to array is needed.
-        const currentFiles = input.files;
-        chrome.webview.postMessageWithAdditionalObjects("FilesDropped", currentFiles);
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    });
-    wails.Events.On("files", function(event) {
-        let resultsHTML = "";
-        event.data.forEach(function(file) {
-            resultsHTML += "<br/>" + file;
+    <div id="output">Frontend initialized. Waiting for drops...</div>
+
+    <script type="module">
+        import * as wails from "/wails/runtime.js";
+        const outputDiv = document.getElementById('output');
+        const dropzones = document.querySelectorAll('.dropzone');
+
+        dropzones.forEach(zone => {
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+            zone.addEventListener('dragenter', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+            zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); });
         });
-        document.getElementById("results").innerHTML = resultsHTML;
-    })
-</script>
+        
+        On("common:WindowFilesDropped", (event) => {
+            const { droppedFiles, x, y } = event.data;
+            dropzones.forEach(zone => zone.classList.remove('drag-over'));
 
+            if (!droppedFiles || droppedFiles.length === 0) {
+                outputDiv.textContent = 'JS: No files detected in drop event.';
+                return;
+            }
+
+            const targetElement = document.elementFromPoint(x, y);
+            let dropzoneTarget = null;
+            if (targetElement) {
+                dropzoneTarget = targetElement.closest('.dropzone');
+            }
+
+            let targetInfo = { id: null, classes: [] }; 
+            if (dropzoneTarget) {
+                targetInfo.id = dropzoneTarget.id;
+                targetInfo.classes = Array.from(dropzoneTarget.classList);
+            }
+            
+            // The Go backend now handles FilesDroppedOnTarget via its own Wails event listener.
+            // We will just update the frontend with basic info from this JS event.
+            // The detailed context (elementID, classList from Go's perspective) will be in Go logs.
+            console.log("JS: 'common:WindowFilesDropped' event received.", event.data);
+
+            let message = `JS: Files Dropped: ${droppedFiles.join(', ')}`;
+            if (event.data && typeof event.data.x !== 'undefined' && typeof event.data.y !== 'undefined') {
+                message += ` (at JS coords: ${event.data.x}, ${event.data.y})`;
+            }
+            if (dropzoneTarget) {
+                message += `.\nJS detected drop over element ID: ${targetInfo.id || 'N/A'}`;
+            } else {
+                message += `.\nJS detected drop outside a specific zone.`;
+            }
+            outputDiv.textContent = message;
+            outputDiv.scrollTop = outputDiv.scrollHeight; // Scroll to bottom
+            
+            console.log("Detailed drop context (element ID, class list, Go perspective coords) should appear in Go logs.");
+        });
+
+        document.documentElement.addEventListener('dragleave', (e) => {
+            if (e.target === document.documentElement || e.relatedTarget === null) {
+                dropzones.forEach(zone => zone.classList.remove('drag-over'));
+            }
+        });
+
+        console.log("Drag-n-drop example JS initialized. Listening for drops.");
+    </script>
+</body>
 </html>
