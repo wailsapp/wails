@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"log"
 	"runtime"
 
@@ -468,24 +469,30 @@ func main() {
 
 	// Add a button to update the submenu label in the Demo menu
 	labelOperations.Add("Update Demo Submenu Label").OnClick(func(*application.Context) {
-		// Find the submenu item in the Demo menu
-		submenuItem := myMenu.FindByLabel("Submenu")
-		if submenuItem != nil {
-			// Change the label
-			submenuItem.SetLabel("Updated Submenu Label")
-			// Update the menu to reflect the changes
-			menu.Update()
-			println("Submenu label changed to: Updated Submenu Label")
+		// Use the direct reference 'myDemoMenuItemForSubmenu' captured when the menu was created.
+		if submenu != nil {
+			oldLabel := submenu.Label()
+			targetNewLabel := "Updated Submenu Label"
 
-			// Verify the change
-			updatedItem := myMenu.FindByLabel("Updated Submenu Label")
-			if updatedItem != nil {
-				println("Verification: Found submenu with updated label:", updatedItem.Label())
+			if oldLabel == targetNewLabel {
+				fmt.Printf("Demo submenu ('%s') label in myMenu is already: %s\n", oldLabel, targetNewLabel)
+				return
+			}
+
+			submenu.SetLabel(targetNewLabel)
+			menu.Update() // Global update
+
+			fmt.Printf("Submenu label in myMenu changed from '%s' to: '%s'\n", oldLabel, submenu.Label())
+
+			// Verification (using the direct reference)
+			if submenu.Label() == targetNewLabel {
+				fmt.Printf("Verification: Submenu MenuItem in myMenu now has label: %s\n", submenu.Label())
 			} else {
-				println("Verification failed: Could not find submenu with updated label")
+				fmt.Printf("Verification FAILED: Submenu MenuItem in myMenu has label: %s, but expected %s\n", submenu.Label(), targetNewLabel)
 			}
 		} else {
-			println("Submenu not found!")
+			// This means myDemoMenuItemForSubmenu was nil when captured (myMenu.GetItemByLabel("Submenu") failed during setup).
+			fmt.Println("Error: The 'myDemoMenuItemForSubmenu' variable is nil (was not found during menu setup).")
 		}
 	})
 
@@ -519,47 +526,61 @@ func main() {
 
 	// Add a button to the nested submenu to change its own label
 	nestedSubmenu.Add("Change My Own Label").OnClick(func(*application.Context) {
-		// Find the nested submenu item
-		submenuItem := labelOperations.FindByLabel("Nested Submenu")
-		if submenuItem != nil {
-			// Change the label
-			submenuItem.SetLabel("Self-Updated Submenu")
-			// Update the menu to reflect the changes
-			menu.Update()
-			println("Nested submenu changed its own label to: Self-Updated Submenu")
+		// 'nestedSubmenu' is the Go variable pointing to the menu whose label we want to change.
+		// It's captured by this closure.
+		if nestedSubmenu != nil {
+			oldLabel := nestedSubmenu.Label()
+			targetNewLabel := "Self-Updated Submenu"
 
-			// Verify the change
-			updatedItem := labelOperations.FindByLabel("Self-Updated Submenu")
-			if updatedItem != nil {
-				println("Verification: Found nested submenu with self-updated label:", updatedItem.Label())
+			// Avoid re-setting if already set, to prevent redundant updates/logs if clicked multiple times
+			if oldLabel == targetNewLabel {
+				fmt.Printf("Nested submenu (self) label is already: %s\n", targetNewLabel)
+				return
+			}
+
+			nestedSubmenu.SetLabel(targetNewLabel)
+			menu.Update() // Or app.Update()
+
+			fmt.Printf("Nested submenu (self) changed label from '%s' to: %s\n", oldLabel, nestedSubmenu.Label())
+
+			// Verification
+			if nestedSubmenu.Label() == targetNewLabel {
+				fmt.Printf("Verification: Nested submenu (self) object now has label: %s\n", nestedSubmenu.Label())
 			} else {
-				println("Verification failed: Could not find nested submenu with self-updated label")
+				fmt.Printf("Verification FAILED: Nested submenu (self) object has label: %s, but expected %s\n", nestedSubmenu.Label(), targetNewLabel)
 			}
 		} else {
-			println("Nested submenu not found!")
+			println("Error: The 'nestedSubmenu' variable is nil in the 'Change My Own Label' click handler scope.")
 		}
 	})
 
 	// Add a button to update the nested submenu's label
 	labelOperations.Add("Update Nested Submenu Label").OnClick(func(*application.Context) {
-		// Find the nested submenu item
-		submenuItem := labelOperations.FindByLabel("Nested Submenu")
-		if submenuItem != nil {
-			// Change the label
-			submenuItem.SetLabel("Updated Nested Submenu")
-			// Update the menu to reflect the changes
-			menu.Update()
-			println("Nested submenu label changed to: Updated Nested Submenu")
+		// 'nestedSubmenu' is the Go variable pointing to the target menu.
+		// It's captured by this closure.
+		if nestedSubmenu != nil {
+			oldLabel := nestedSubmenu.Label()
+			targetNewLabel := "Updated Nested Submenu"
 
-			// Verify the change
-			updatedItem := labelOperations.FindByLabel("Updated Nested Submenu")
-			if updatedItem != nil {
-				println("Verification: Found nested submenu with updated label:", updatedItem.Label())
+			// Avoid re-setting if already set
+			if oldLabel == targetNewLabel {
+				fmt.Printf("Nested submenu label is already: %s\n", targetNewLabel)
+				return
+			}
+
+			nestedSubmenu.SetLabel(targetNewLabel)
+			menu.Update() // Or app.Update()
+
+			fmt.Printf("Nested submenu label changed from '%s' to: %s\n", oldLabel, nestedSubmenu.Label())
+
+			// Verification
+			if nestedSubmenu.Label() == targetNewLabel {
+				fmt.Printf("Verification: Nested submenu object now has label: %s\n", nestedSubmenu.Label())
 			} else {
-				println("Verification failed: Could not find nested submenu with updated label")
+				fmt.Printf("Verification FAILED: Nested submenu object has label: %s, but expected %s\n", nestedSubmenu.Label(), targetNewLabel)
 			}
 		} else {
-			println("Nested submenu not found!")
+			println("Error: The 'nestedSubmenu' variable is nil in the 'Update Nested Submenu Label' click handler scope.")
 		}
 	})
 

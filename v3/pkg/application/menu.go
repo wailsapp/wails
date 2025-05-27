@@ -176,6 +176,13 @@ func (m *Menu) SetLabel(label string) {
 	m.updateParentMenuItemLabel(label)
 }
 
+// Label returns the menu's internal label.
+// For a submenu, this is the label it was created with.
+// The displayed label of a submenu is determined by the label of the MenuItem that points to it.
+func (m *Menu) Label() string {
+	return m.label
+}
+
 // updateParentMenuItemLabel finds and updates the parent MenuItem that contains this submenu
 func (m *Menu) updateParentMenuItemLabel(label string) {
 	// Find all menu items that have this menu as their submenu
