@@ -32,14 +32,41 @@ func (a *App) Startup(ctx context.Context) {
 	a.app = application.Get()
 }
 
-// FilesDroppedOnTarget is called from JavaScript when files are dropped.
-func (a *App) FilesDroppedOnTarget(files []string, targetID string, targetClasses []string, dropX float64, dropY float64, isTargetDropzone bool) {
-	a.app.Logger.Info("Go: Received 'FilesDroppedOnTarget' call from frontend")
-	a.app.Logger.Info(fmt.Sprintf("  Files: %v", files))
-	a.app.Logger.Info(fmt.Sprintf("  Target ID: %s", targetID))
-	a.app.Logger.Info(fmt.Sprintf("  Target Classes: %v", targetClasses))
-	a.app.Logger.Info(fmt.Sprintf("  Drop X: %f, Drop Y: %f", dropX, dropY))
-	a.app.Logger.Info(fmt.Sprintf("  Is Target Dropzone: %t", isTargetDropzone))
+// FileDropInfo defines the payload for the file drop event sent to the frontend.
+type FileDropInfo struct {
+	Files         []string `json:"files"`
+	TargetID      string   `json:"targetID"`
+	TargetClasses []string `json:"targetClasses"`
+	DropX         float64  `json:"dropX"`
+	DropY         float64  `json:"dropY"`
+}
+
+// FilesDroppedOnTarget is called when files are dropped onto a registered drop target
+// or the window if no specific target is hit.
+func FilesDroppedOnTarget(
+	files []string,
+	targetID string,
+	targetClasses []string,
+	dropX float64,
+	dropY float64,
+	isTargetDropzone bool, // This parameter is kept for logging but not sent to frontend in this event
+) {
+	log.Println("Go: FilesDroppedOnTarget method called")
+	log.Println(fmt.Sprintf("  Files: %v", files))
+	log.Println(fmt.Sprintf("  Target ID: '%s'", targetID))
+	log.Println(fmt.Sprintf("  Target Classes: %v", targetClasses))
+	log.Println(fmt.Sprintf("  Drop X: %f, Drop Y: %f", dropX, dropY))
+	log.Println(fmt.Sprintf("  Is Target Dropzone (determined by JS): %t", isTargetDropzone))
+
+	payload := FileDropInfo{
+		Files:         files,
+		TargetID:      targetID,
+		TargetClasses: targetClasses,
+		DropX:         dropX,
+		DropY:         dropY,
+	}
+
+	log.Println("Go: Emitted 'frontend:FileDropInfo' event with payload:", payload)
 }
 
 func main() {
@@ -57,8 +84,6 @@ func main() {
 		Services: []application.Service{
 			application.NewService(appInstance),
 		},
-		// The Startup(ctx context.Context) method on appInstance should be called by convention
-		// if application.Service is an interface that *App implements.
 	})
 
 	win := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
@@ -71,20 +96,38 @@ func main() {
 		EnableDragAndDrop: true,
 	})
 
-	// Set up the event listener for enriched drag-and-drop events on this window
-	win.OnWindowEvent(events.Common.WindowDropZoneFilesDropped, func(event *application.WindowEvent) {
-		appInstance.app.Logger.Info("Go (Window Event): Received 'WindowDropZoneFilesDropped'")
-		droppedFiles := event.Context().DroppedFiles()
-		details := event.Context().DropZoneDetails()
+	log.Println("Setting up event listener for 'WindowDropZoneFilesDropped'...")
+	win.OnWindowEvent(
+		events.Common.WindowDropZoneFilesDropped,
+		func(event *application.WindowEvent) {
+			droppedFiles := event.Context().DroppedFiles()
+			details := event.Context().DropZoneDetails()
+			// Call the App method with the extracted data
+			if details != nil {
+				FilesDroppedOnTarget(
+					droppedFiles,
+					details.ElementID,
+					details.ClassList,
+					float64(details.X),
+					float64(details.Y),
+					details.ElementID != "", // isTargetDropzone based on whether an ID was found
+				)
+			} else {
+				// This case might occur if DropZoneDetails are nil, meaning the drop was not on a specific registered zone
+				// or if the context itself was problematic.
+				FilesDroppedOnTarget(droppedFiles, "", nil, 0, 0, false)
+			}
 
-		if details != nil {
-			appInstance.app.Logger.Info(fmt.Sprintf("  Ctx X: %d, Y: %d, ID: '%s', Classes: %v", details.X, details.Y, details.ElementID, details.ClassList))
-			appInstance.FilesDroppedOnTarget(droppedFiles, details.ElementID, details.ClassList, float64(details.X), float64(details.Y), details.ElementID != "")
-		} else {
-			appInstance.app.Logger.Info("  Ctx DropZoneDetails were nil")
-			appInstance.FilesDroppedOnTarget(droppedFiles, "", nil, 0, 0, false)
-		}
-	})
+			payload := FileDropInfo{
+				Files:         droppedFiles,
+				TargetID:      details.ElementID,
+				TargetClasses: details.ClassList,
+				DropX:         float64(details.X),
+				DropY:         float64(details.Y),
+			}
+			application.Get().EmitEvent("frontend:FileDropInfo", payload)
+		},
+	)
 
 	err := app.Run()
 

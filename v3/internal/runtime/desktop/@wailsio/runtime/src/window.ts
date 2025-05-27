@@ -59,6 +59,7 @@ const ZoomMethod                        = 44;
 const ZoomInMethod                      = 45;
 const ZoomOutMethod                     = 46;
 const ZoomResetMethod                   = 47;
+const WindowDropZoneDropped             = 48;
 
 /**
  * A record describing the position of a window.
@@ -509,6 +510,31 @@ class Window {
      */
     ZoomReset(): Promise<void> {
         return this[callerSym](ZoomResetMethod);
+    }
+
+    /**
+     * Handles file drops originating from platform-specific code (e.g., macOS native drag-and-drop).
+     * Gathers information about the drop target element and sends it back to the Go backend.
+     *
+     * @param filenames - An array of file paths (strings) that were dropped.
+     * @param x - The x-coordinate of the drop event.
+     * @param y - The y-coordinate of the drop event.
+     */
+    HandlePlatformFileDrop(filenames: string[], x: number, y: number): void {
+        const element = document.elementFromPoint(x, y);
+        console.log(`Window.HandlePlatformFileDrop: Dropped files at (${x}, ${y}) on element`, element);
+        const elementId = element ? element.id : '';
+        const classList = element ? Array.from(element.classList) : [];
+
+        const payload = {
+            filenames,
+            x,
+            y,
+            elementId,
+            classList,
+        };
+
+        this[callerSym](WindowDropZoneDropped,payload)
     }
 }
 

@@ -176,21 +176,7 @@ export function HandlePlatformFileDrop(filenames: string[], x: number, y: number
         classList,
     };
 
-    // We use objectNames.Application because this is like an application-level event/command
-    // The runtimeCallWithID function is already imported via newRuntimeCaller, 
-    // but we can use it directly if we don't want to create a specific caller for this.
-    // Let's assume runtimeCallWithID is accessible or we adjust to use `call` if appropriate.
-    // For now, directly constructing the call to Go runtime, similar to how `call` would do it.
-    
-    // Directly using runtimeCallWithID, assuming it's made available or imported.
-    // If newRuntimeCaller is preferred, we'd need to ensure runtimeCallWithID is exported from runtime.ts or use an existing caller.
-    // For now, let's assume we need to import runtimeCallWithID or make it available.
-    // Given the structure, it's better to use the existing `call` for `objectNames.System` if this is a system message,
-    // or create a new caller for `objectNames.Application`.
-    // Let's create a new application-level caller for this specific purpose.
-
-    const appCall = newRuntimeCaller(objectNames.Application);
-    appCall(ApplicationFilesDroppedWithContext, payload)
+    call(ApplicationFilesDroppedWithContext, payload)
         .then(() => {
             // Optional: Log success or handle if needed
             console.log("Platform file drop processed and sent to Go.");

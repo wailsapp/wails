@@ -51,7 +51,6 @@ extern void processDragItems(unsigned int windowId, char** arr, int length, int 
     NSPasteboard *pasteboard = [sender draggingPasteboard];
     processWindowEvent(self.windowId, EventWindowFileDraggingPerformed);
     if ([[pasteboard types] containsObject:NSFilenamesPboardType]) {
-        NSLog(@"WebviewDrag: performDragOperation - Found NSFilenamesPboardType.");
         NSArray *files = [pasteboard propertyListForType:NSFilenamesPboardType];
         NSUInteger count = [files count];
         NSLog(@"WebviewDrag: performDragOperation - File count: %lu", (unsigned long)count);
@@ -69,12 +68,17 @@ extern void processDragItems(unsigned int windowId, char** arr, int length, int 
         
         NSPoint dropPointInWindow = [sender draggingLocation];
         NSPoint dropPointInView = [self convertPoint:dropPointInWindow fromView:nil];
-        CGFloat viewHeight = self.frame.size.height;
+        
+        // Get the window's content view height
+        NSView *contentView = [self.window contentView];
+        CGFloat contentHeight = contentView.frame.size.height;
+        
+        NSLog(@"WebviewDrag: Self height: %.2f, Content view height: %.2f", self.frame.size.height, contentHeight);
+        
         int x = (int)dropPointInView.x;
-        int y = (int)(viewHeight - dropPointInView.y);
-        NSLog(@"WebviewDrag: performDragOperation - Coords: x=%d, y=%d. ViewHeight: %f", x, y, viewHeight);
-
-        NSLog(@"WebviewDrag: performDragOperation - Calling processDragItems for windowId %u.", self.windowId);
+        // Use the content view height for conversion
+        int y = (int)(contentHeight - dropPointInView.y);
+        
         processDragItems(self.windowId, cArray, (int)count, x, y);
         free(cArray);
         NSLog(@"WebviewDrag: performDragOperation - Returned from processDragItems.");

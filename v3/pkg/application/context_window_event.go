@@ -3,8 +3,8 @@ package application
 var blankWindowEventContext = &WindowEventContext{}
 
 const (
-	droppedFiles        = "droppedFiles"
-	dropZoneDetailsKey  = "dropZoneDetails"
+	droppedFiles       = "droppedFiles"
+	dropZoneDetailsKey = "dropZoneDetails"
 )
 
 type WindowEventContext struct {
@@ -25,6 +25,9 @@ func (c WindowEventContext) DroppedFiles() []string {
 }
 
 func (c WindowEventContext) setDroppedFiles(files []string) {
+	if c.data == nil {
+		c.data = make(map[string]any)
+	}
 	c.data[droppedFiles] = files
 }
 
@@ -49,7 +52,7 @@ func (c WindowEventContext) DropZoneDetails() *DropZoneDetails {
 	}
 	// Explicitly type assert, handle if it's nil (though setDropZoneDetails should handle it)
 	if details == nil {
-	    return nil
+		return nil
 	}
 	result, ok := details.(*DropZoneDetails)
 	if !ok {

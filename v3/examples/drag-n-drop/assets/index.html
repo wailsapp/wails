@@ -18,6 +18,7 @@
         .container {
             display: flex;
             justify-content: space-around;
+            flex-wrap: wrap; /* Allow wrapping for multiple rows */
             margin-top: 30px;
             gap: 20px;
         }
@@ -39,6 +40,8 @@
         }
         .dropzone p {
             margin: 5px 0;
+            font-size: 0.9em;
+            pointer-events: none; /* Ensure parent div receives drop event */
         }
         #output {
             margin-top: 30px;
@@ -68,6 +71,10 @@
             <p>Drop Zone B</p>
             <p>(ID: dropzoneB)</p>
         </div>
+        <div id="dropzoneD" class="dropzone">
+            <p>Drop Zone D</p>
+            <p>(ID: dropzoneD)</p>
+        </div>
     </div>
 
     <div id="output">Frontend initialized. Waiting for drops...</div>
@@ -77,52 +84,24 @@
         const outputDiv = document.getElementById('output');
         const dropzones = document.querySelectorAll('.dropzone');
 
-        dropzones.forEach(zone => {
-            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-            zone.addEventListener('dragenter', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-            zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); });
-        });
+        // dropzones.forEach(zone => {
+        //     zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+        //     zone.addEventListener('dragenter', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+        //     zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+        //     zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); });
+        // });
         
-        On("common:WindowFilesDropped", (event) => {
-            const { droppedFiles, x, y } = event.data;
-            dropzones.forEach(zone => zone.classList.remove('drag-over'));
+        wails.Events.On("frontend:FileDropInfo", (eventData) => {
+            console.log("JS: Received 'frontend:FileDropInfo' event with data:", eventData);
+            const { files, targetID, targetClasses, dropX, dropY } = eventData.data[0]; // Access the first element of the data array
 
-            if (!droppedFiles || droppedFiles.length === 0) {
-                outputDiv.textContent = 'JS: No files detected in drop event.';
-                return;
-            }
+            let message = `Files Dropped: ${files.join(', ')}\n`;
+            message += `Dropped on Element ID: ${targetID || 'N/A'}\n`;
+            message += `Element Classes: ${targetClasses && targetClasses.length > 0 ? targetClasses.join(', ') : 'N/A'}\n`;
+            message += `Coordinates (from Go): X=${dropX.toFixed(2)}, Y=${dropY.toFixed(2)}`;
 
-            const targetElement = document.elementFromPoint(x, y);
-            let dropzoneTarget = null;
-            if (targetElement) {
-                dropzoneTarget = targetElement.closest('.dropzone');
-            }
-
-            let targetInfo = { id: null, classes: [] }; 
-            if (dropzoneTarget) {
-                targetInfo.id = dropzoneTarget.id;
-                targetInfo.classes = Array.from(dropzoneTarget.classList);
-            }
-            
-            // The Go backend now handles FilesDroppedOnTarget via its own Wails event listener.
-            // We will just update the frontend with basic info from this JS event.
-            // The detailed context (elementID, classList from Go's perspective) will be in Go logs.
-            console.log("JS: 'common:WindowFilesDropped' event received.", event.data);
-
-            let message = `JS: Files Dropped: ${droppedFiles.join(', ')}`;
-            if (event.data && typeof event.data.x !== 'undefined' && typeof event.data.y !== 'undefined') {
-                message += ` (at JS coords: ${event.data.x}, ${event.data.y})`;
-            }
-            if (dropzoneTarget) {
-                message += `.\nJS detected drop over element ID: ${targetInfo.id || 'N/A'}`;
-            } else {
-                message += `.\nJS detected drop outside a specific zone.`;
-            }
             outputDiv.textContent = message;
             outputDiv.scrollTop = outputDiv.scrollHeight; // Scroll to bottom
-            
-            console.log("Detailed drop context (element ID, class list, Go perspective coords) should appear in Go logs.");
         });
 
         document.documentElement.addEventListener('dragleave', (e) => {

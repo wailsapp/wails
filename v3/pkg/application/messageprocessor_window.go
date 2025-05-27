@@ -1,8 +1,10 @@
 package application
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -113,7 +115,7 @@ var windowMethodNames = map[int]string{
 func (m *MessageProcessor) processWindowMethod(
 	method int,
 	rw http.ResponseWriter,
-	_ *http.Request,
+	req *http.Request,
 	window Window,
 	params QueryParams,
 ) {
@@ -419,15 +421,73 @@ func (m *MessageProcessor) processWindowMethod(
 		window.ZoomReset()
 		m.ok(rw)
 	case WindowDropZoneDropped:
-		dropZoneID := args.String("dropZoneID")
-		if dropZoneID == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing argument 'dropZoneID'"))
+		m.Info(
+			"[DragDropDebug] processWindowMethod: Entered WindowDropZoneDropped case",
+		)
+
+		jsonArgs := params.String("args") // 'params' is the QueryParams from processWindowMethod
+		if jsonArgs == nil {
+			m.httpError(rw, "Error processing WindowDropZoneDropped: missing 'args' parameter", nil)
 			return
 		}
+
+		slog.Info("[DragDropDebug] Raw 'args' payload string:", "data", *jsonArgs)
+
+		var payload fileDropPayload
+		err := json.Unmarshal([]byte(*jsonArgs), &payload)
+		if err != nil {
+			m.httpError(rw, "Error decoding file drop payload from 'args' parameter:", err)
+			return
+		}
+		m.Info(
+			"[DragDropDebug] processWindowMethod: Decoded payload from 'args'",
+			"payload",
+			fmt.Sprintf("%+v", payload),
+		)
+
+		dropDetails := &DropZoneDetails{
+			X:         payload.X,
+			Y:         payload.Y,
+			ElementID: payload.ElementID,
+			ClassList: payload.ClassList,
+		}
+
+		wvWindow, ok := window.(*WebviewWindow)
+		if !ok {
+			m.httpError(
+				rw,
+				"Error: Target window is not a WebviewWindow for FilesDroppedWithContext",
+				nil,
+			)
+			return
+		}
+
+		msg := &dragAndDropMessage{
+			windowId:  wvWindow.id,
+			filenames: payload.Filenames,
+			DropZone:  dropDetails,
+		}
+
+		m.Info(
+			"[DragDropDebug] processApplicationMethod: Sending message to windowDragAndDropBuffer",
+			"message",
+			fmt.Sprintf("%+v", msg),
+		)
+		windowDragAndDropBuffer <- msg
+		m.ok(rw)
 	default:
 		m.httpError(rw, "Invalid window call:", fmt.Errorf("unknown method %d", method))
 		return
 	}
 
 	m.Info("Runtime call:", "method", "Window."+windowMethodNames[method])
+}
+
+// Define a struct for the JSON payload from HandlePlatformFileDrop
+type fileDropPayload struct {
+	Filenames []string `json:"filenames"`
+	X         int      `json:"x"`
+	Y         int      `json:"y"`
+	ElementID string   `json:"elementId"`
+	ClassList []string `json:"classList"`
 }
