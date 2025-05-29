@@ -77,7 +77,7 @@ extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
 void handleClick(void*);
 extern gboolean onButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
 extern gboolean onMenuButtonEvent(GtkWidget *widget, GdkEventButton *event, uintptr_t user_data);
-extern void onUriList(char **extracted, gpointer data);
+extern void onUriList(char **extracted, gint x, gint y, gpointer data);
 extern gboolean onKeyPressEvent (GtkWidget *widget, GdkEventKey *event, uintptr_t user_data);
 extern void onProcessRequest(WebKitURISchemeRequest *request, uintptr_t user_data);
 extern void sendMessageToBackend(WebKitUserContentManager *contentManager, WebKitJavascriptResult *result, void *data);
@@ -230,7 +230,7 @@ static void on_data_received(GtkWidget *widget, GdkDragContext *context, gint x,
     gchar *uri_data = (gchar *)gtk_selection_data_get_data(selection_data);
     gchar **uri_list = g_uri_list_extract_uris(uri_data);
 
-    onUriList(uri_list, data);
+    onUriList(uri_list, x, y, data);
 
     g_strfreev(uri_list);
     gtk_drag_finish(context, TRUE, TRUE, time);
@@ -1516,7 +1516,7 @@ func onMenuButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t
 }
 
 //export onUriList
-func onUriList(extracted **C.char, data unsafe.Pointer) {
+func onUriList(extracted **C.char, x C.gint, y C.gint, data unsafe.Pointer) {
 	// Credit: https://groups.google.com/g/golang-nuts/c/bI17Bpck8K4/m/DVDa7EMtDAAJ
 	offset := unsafe.Sizeof(uintptr(0))
 	filenames := []string{}
@@ -1528,6 +1528,8 @@ func onUriList(extracted **C.char, data unsafe.Pointer) {
 	windowDragAndDropBuffer <- &dragAndDropMessage{
 		windowId:  uint(*((*C.uint)(data))),
 		filenames: filenames,
+		X:         int(x),
+		Y:         int(y),
 	}
 }
 
