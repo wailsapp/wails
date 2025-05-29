@@ -14,7 +14,7 @@ func TestMenuItem_GetAccelerator(t *testing.T) {
 	}{
 		{
 			name:        "Get existing accelerator",
-			menuItem:    application.NewMenuItem("Item 1").SetAccelerator("ctrl+a"),
+			menuItem:    application.NewMenuItem("Item 1").SetAcceleratorItem("ctrl+a"),
 			expectedAcc: "Ctrl+A",
 		},
 		{
@@ -41,7 +41,7 @@ func TestMenuItem_RemoveAccelerator(t *testing.T) {
 	}{
 		{
 			name:     "Remove existing accelerator",
-			menuItem: application.NewMenuItem("Item 1").SetAccelerator("Ctrl+A"),
+			menuItem: application.NewMenuItem("Item 1").SetAcceleratorItem("Ctrl+A"),
 		},
 		{
 			name:     "Remove non-existing accelerator",

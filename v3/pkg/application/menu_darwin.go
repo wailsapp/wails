@@ -74,7 +74,7 @@ func newMenuImpl(menu *Menu) *macosMenu {
 func (m *macosMenu) update() {
 	InvokeSync(func() {
 		if m.nsMenu == nil {
-			m.nsMenu = C.createNSMenu(C.CString(m.menu.label))
+			m.nsMenu = C.createNSMenu(C.CString(m.menu.Label()))
 		} else {
 			C.clearMenu(m.nsMenu)
 		}
@@ -84,33 +84,55 @@ func (m *macosMenu) update() {
 
 func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 	for _, item := range menu.items {
-		switch item.itemType {
-		case submenu:
-			submenu := item.submenu
-			nsSubmenu := C.createNSMenu(C.CString(item.label))
-			m.processMenu(nsSubmenu, submenu)
-			menuItem := newMenuItemImpl(item)
-			item.impl = menuItem
+		// Handle Menu items (submenus)
+		if newSubmenu, ok := item.(*Menu); ok {
+			nsSubmenu := C.createNSMenu(C.CString(newSubmenu.Label()))
+			m.processMenu(nsSubmenu, newSubmenu)
+
+			// Create a temporary MenuItem to represent this submenu in the native menu
+			tempMenuItem := NewMenuItem(newSubmenu.Label())
+			tempMenuItem.itemType = submenu
+			menuItem := newMenuItemImpl(tempMenuItem)
+			tempMenuItem.impl = menuItem
 			C.addMenuItem(parent, menuItem.nsMenuItem)
 			C.setMenuItemSubmenu(menuItem.nsMenuItem, nsSubmenu)
-			if item.role == ServicesMenu {
-				C.addServicesMenu(nsSubmenu)
-			}
-		case text, checkbox, radio:
-			menuItem := newMenuItemImpl(item)
-			item.impl = menuItem
-			if item.hidden {
-				menuItem.setHidden(true)
-			}
-			C.addMenuItem(parent, menuItem.nsMenuItem)
-		case separator:
-			C.addMenuSeparator(parent)
-		}
-		if item.bitmap != nil {
-			macMenuItem := item.impl.(*macosMenuItem)
-			C.setMenuItemBitmap(macMenuItem.nsMenuItem, (*C.uchar)(&item.bitmap[0]), C.int(len(item.bitmap)))
+			continue
 		}
 
+		// Handle MenuItem items
+		if menuItem, ok := item.(*MenuItem); ok {
+			switch menuItem.itemType {
+			case submenu:
+				submenu := menuItem.submenu
+				nsSubmenu := C.createNSMenu(C.CString(menuItem.Label()))
+				m.processMenu(nsSubmenu, submenu)
+				impl := newMenuItemImpl(menuItem)
+				menuItem.impl = impl
+				C.addMenuItem(parent, impl.nsMenuItem)
+				C.setMenuItemSubmenu(impl.nsMenuItem, nsSubmenu)
+				if menuItem.role == ServicesMenu {
+					C.addServicesMenu(nsSubmenu)
+				}
+			case text, checkbox, radio:
+				impl := newMenuItemImpl(menuItem)
+				menuItem.impl = impl
+				if menuItem.Hidden() {
+					impl.setHidden(true)
+				}
+				C.addMenuItem(parent, impl.nsMenuItem)
+			case separator:
+				C.addMenuSeparator(parent)
+			}
+
+			if menuItem.bitmap != nil {
+				macMenuItem := menuItem.impl.(*macosMenuItem)
+				C.setMenuItemBitmap(
+					macMenuItem.nsMenuItem,
+					(*C.uchar)(&menuItem.bitmap[0]),
+					C.int(len(menuItem.bitmap)),
+				)
+			}
+		}
 	}
 }
 
