@@ -127,7 +127,9 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 		if err != nil {
 			return nil, err
 		}
-		result = temp.([]string)
+		if temp != nil {
+			result = temp.([]string)
+		}
 	} else {
 		if m.dialog.canChooseDirectories {
 			temp, err := showCfdDialog(
@@ -137,7 +139,9 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 			if err != nil {
 				return nil, err
 			}
-			result = []string{temp.(string)}
+			if temp != nil {
+				result = []string{temp.(string)}
+			}
 		} else {
 			temp, err := showCfdDialog(
 				func() (cfd.Dialog, error) {
@@ -146,7 +150,9 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 			if err != nil {
 				return nil, err
 			}
-			result = []string{temp.(string)}
+			if temp != nil {
+				result = []string{temp.(string)}
+			}
 		}
 	}
 
@@ -198,7 +204,11 @@ func (m *windowSaveFileDialog) show() (chan string, error) {
 		}, false)
 	go func() {
 		defer handlePanic()
-		files <- result.(string)
+		if result != nil {
+			files <- result.(string)
+		} else {
+			files <- ""
+		}
 		close(files)
 	}()
 	return files, err
