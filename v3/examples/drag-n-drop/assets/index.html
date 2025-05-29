@@ -2,133 +2,307 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Wails v3 Drag-n-Drop Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Tree Drag-and-Drop Example</title>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Material UI lite CSS -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     <style>
         body {
-            text-align: center;
-            color: white;
+            font-family: 'Roboto', sans-serif;
             background-color: #1e1e1e;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            color: #f0f0f0;
             margin: 0;
             padding: 20px;
-            user-select: none;
-            -ms-user-select: none;
-            -webkit-user-select: none;
-        }
-        .container {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap; /* Allow wrapping for multiple rows */
-            margin-top: 30px;
-            gap: 20px;
-        }
-        .dropzone {
-            width: 200px;
-            height: 200px;
-            border: 2px dashed #888; /* Brighter dashed border for resting state */
-            border-radius: 10px;
+            height: 100vh;
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: background-color 0.3s ease, border-color 0.3s ease, border-style 0.3s ease, box-shadow 0.3s ease;
-            background-color: #303030; /* Slightly lighter background for resting state */
-            color: white; /* Ensure text is visible */
-            padding: 10px;
-            box-sizing: border-box; /* Consistent sizing */
-            text-align: center; /* Center text paragraphs */
         }
-        .dropzone p {
-            margin: 5px 0;
-            font-size: 0.9em;
-            pointer-events: none; /* Ensure parent div receives drop event */
+        
+        .container {
+            display: flex;
+            height: calc(100vh - 140px);
+            gap: 20px;
         }
-
-        .customDropzone { /* This is a custom BASE style variant */
-            background-color: #444;
-            /* border-color: #888; /* This would override .dropzone's border-color if also applied */
-        }
-
-        /* Default Wails Runtime Hover Effect for any .dropzone */
-        /* Provides highlight and dotted outline */
-        .dropzone.wails-dropzone-hover {
-            background-color: #3c3c3e; /* Highlight background */
-            border-style: dotted;      /* Change from dashed to dotted */
-            border-color: #007bff;     /* Blue outline */
-            box-shadow: 0 0 8px rgba(0, 123, 255, 0.4); /* Subtle blue glow */
-        }
-
-        /* Custom Hover for a specific dropzone that OVERRIDES the default Wails hover */
-        /* Add class "special-hover-override" to the specific dropzone in HTML */
-        .dropzone.special-hover-override.wails-dropzone-hover {
-            background-color: #6a0dad; /* Vibrant Purple */
-            border-style: solid;       /* Solid border */
-            border-color: #ff00ff;     /* Magenta */
-            border-width: 3px;         /* Thicker border */
-            box-shadow: 0 0 12px rgba(255, 0, 255, 0.7); /* Brighter Magenta glow */
-            color: #f0f0f0; /* Lighter text for contrast */
-        }
-
-        #output {
-            margin-top: 30px;
-            padding: 15px;
+        
+        .file-tree {
+            flex: 1;
             background-color: #2a2a2a;
-            border-radius: 8px;
-            text-align: left;
-            min-height: 50px; /* Adjusted height */
-            white-space: pre-wrap;
-            word-wrap: break-word;
+            border-radius: 4px;
+            padding: 16px;
+            overflow: auto;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
-        h1 {
-            color: #eee;
+        
+        .info-panel {
+            flex: 1;
+            background-color: #2a2a2a;
+            border-radius: 4px;
+            padding: 16px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tree-node {
+            padding: 4px;
+            margin: 2px 0;
+            display: flex;
+            align-items: center;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .tree-node:hover {
+            background-color: #3a3a3a;
+        }
+        
+        .folder {
+            color: #ffca28; /* Amber for folders */
+        }
+        
+        .file {
+            color: #81c784; /* Light green for files */
+        }
+        
+        .node-icon {
+            margin-right: 8px;
+        }
+        
+        .tree-children {
+            padding-left: 24px;
+        }
+        
+        .dropzone {
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        /* Wails applied class for active dropzones during drag */
+        .wails-dropzone-hover {
+            background-color: rgba(63, 81, 181, 0.2) !important;
+            box-shadow: 0 0 8px rgba(63, 81, 181, 0.5) !important;
+        }
+        
+        /* Custom styles for folder highlight */
+        .folder-dropzone {
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        
+        .folder-dropzone.wails-dropzone-hover {
+            border: 1px dashed #7986cb;
+            box-shadow: inset 0 0 5px rgba(121, 134, 203, 0.5) !important;
+        }
+        
+        #drop-output {
+            background-color: #3a3a3a;
+            color: #f0f0f0;
+            font-family: monospace;
+            padding: 16px;
+            border-radius: 4px;
+            flex-grow: 1;
+            white-space: pre-wrap;
+            overflow: auto;
+            margin-top: 16px;
+        }
+        
+        .header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .info-header {
+            margin-bottom: 16px;
+            color: #7986cb;
+        }
+        
+        .material-icons {
+            font-size: 20px;
+        }
+        
+        /* Path breadcrumb */
+        .path-display {
+            background-color: #3a3a3a;
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-family: monospace;
+            color: #bbdefb;
+            overflow-x: auto;
+            white-space: nowrap;
         }
     </style>
 </head>
 <body>
-    <h1>Wails v3 Drag-n-Drop Demo</h1>
-    <p>Drop files onto one of the zones below. Details will be logged in Go.</p>
-
+    <div class="header">
+        <h1>File Tree Drag & Drop Example</h1>
+        <p>Drag files onto folders to upload them to that location</p>
+    </div>
+    
     <div class="container">
-        <div id="dropzone" class="dropzone" data-wails-dropzone>
-            <p>Drop Zone A</p>
-            <p>(ID: dropzone)</p>
-            <p> Default Dropzone Hover </p>
+        <div class="file-tree">
+            <div class="path-display" id="current-path">/home/user</div>
+            
+            <!-- Root folder -->
+            <div class="tree-node folder folder-dropzone" data-path="/home/user" data-wails-dropzone data-folder-id="root" data-folder-name="Home">
+                <span class="material-icons node-icon">folder</span>
+                <span>Home</span>
+            </div>
+            
+            <div class="tree-children">
+                <!-- Documents folder -->
+                <div class="tree-node folder folder-dropzone" data-path="/home/user/Documents" data-wails-dropzone data-folder-id="docs" data-folder-name="Documents">
+                    <span class="material-icons node-icon">folder</span>
+                    <span>Documents</span>
+                </div>
+                
+                <div class="tree-children">
+                    <div class="tree-node file" data-path="/home/user/Documents/report.pdf">
+                        <span class="material-icons node-icon">description</span>
+                        <span>report.pdf</span>
+                    </div>
+                    <div class="tree-node file" data-path="/home/user/Documents/notes.txt">
+                        <span class="material-icons node-icon">description</span>
+                        <span>notes.txt</span>
+                    </div>
+                </div>
+                
+                <!-- Pictures folder -->
+                <div class="tree-node folder folder-dropzone" data-path="/home/user/Pictures" data-wails-dropzone data-folder-id="pics" data-folder-name="Pictures">
+                    <span class="material-icons node-icon">folder</span>
+                    <span>Pictures</span>
+                </div>
+                
+                <div class="tree-children">
+                    <div class="tree-node file" data-path="/home/user/Pictures/vacation.jpg">
+                        <span class="material-icons node-icon">image</span>
+                        <span>vacation.jpg</span>
+                    </div>
+                    <div class="tree-node file" data-path="/home/user/Pictures/profile.png">
+                        <span class="material-icons node-icon">image</span>
+                        <span>profile.png</span>
+                    </div>
+                </div>
+                
+                <!-- Downloads folder -->
+                <div class="tree-node folder folder-dropzone" data-path="/home/user/Downloads" data-wails-dropzone data-folder-id="downloads" data-folder-name="Downloads">
+                    <span class="material-icons node-icon">folder</span>
+                    <span>Downloads</span>
+                </div>
+                
+                <div class="tree-children">
+                    <div class="tree-node file" data-path="/home/user/Downloads/app.dmg">
+                        <span class="material-icons node-icon">archive</span>
+                        <span>app.dmg</span>
+                    </div>
+                    <div class="tree-node file" data-path="/home/user/Downloads/data.zip">
+                        <span class="material-icons node-icon">archive</span>
+                        <span>data.zip</span>
+                    </div>
+                </div>
+                
+                <!-- Projects folder with nested structure -->
+                <div class="tree-node folder folder-dropzone" data-path="/home/user/Projects" data-wails-dropzone data-folder-id="projects" data-folder-name="Projects">
+                    <span class="material-icons node-icon">folder</span>
+                    <span>Projects</span>
+                </div>
+                
+                <div class="tree-children">
+                    <!-- Nested folder with its own dropzone -->
+                    <div class="tree-node folder folder-dropzone" data-path="/home/user/Projects/Wails" data-wails-dropzone data-folder-id="wails" data-folder-name="Wails">
+                        <span class="material-icons node-icon">folder</span>
+                        <span>Wails</span>
+                    </div>
+                    
+                    <div class="tree-children">
+                        <div class="tree-node file" data-path="/home/user/Projects/Wails/main.go">
+                            <span class="material-icons node-icon">code</span>
+                            <span>main.go</span>
+                        </div>
+                        <div class="tree-node file" data-path="/home/user/Projects/Wails/go.mod">
+                            <span class="material-icons node-icon">code</span>
+                            <span>go.mod</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div id="second-dropzone" class="dropzone" data-wails-dropzone>
-            <p>Drop Zone B</p>
-            <p>(ID: second-dropzone)</p>
-        </div>
-        <div id="no-dropzone" class="dropzone-not-so-much"> 
-            <p>Drop Zone Disabled</p>
-            <p>(ID: no-dropzone)</p>
+        
+        <div class="info-panel">
+            <h2 class="info-header">Drop Information</h2>
+            <div id="drop-output">Drag and drop files onto any folder in the file tree...
+
+The folder elements have the following attributes:
+- data-wails-dropzone: Marks the element as a dropzone
+- data-path: Contains the full path (used for destination)
+- data-folder-id: A unique ID for the folder
+- data-folder-name: The display name of the folder</div>
         </div>
     </div>
-
-    <div id="output">Frontend initialized. Waiting for drops...</div>
-
+    
     <script type="module">
         import * as wails from "/wails/runtime.js";
-        const outputDiv = document.getElementById('output');
-        const dropzones = document.querySelectorAll('.dropzone');
-
-        wails.Events.On("frontend:FileDropInfo", (eventData) => {
-            console.log("JS: Received 'frontend:FileDropInfo' event with data:", eventData);
-            const { files, targetID, targetClasses, dropX, dropY, attributes } = eventData.data[0]; // Access the first element of the data array
-
-            let message = `Dropped on Element ID: ${targetID || 'N/A'}\n`;
-            message += `Element Classes: ${targetClasses && targetClasses.length > 0 ? targetClasses.join(', ') : 'N/A'}\n`;
-            if (attributes) {
-                message += `Element Attributes: ${Object.entries(attributes).map(([key, value]) => `${key}="${value}"`).join(', ')}\n`;
-            }
-            message += `Files Dropped: ${files.join(', ')}\n`;
-            message += `Coordinates (from Go): X=${dropX.toFixed(2)}, Y=${dropY.toFixed(2)}`;
-
-            outputDiv.textContent = message;
-            outputDiv.scrollTop = outputDiv.scrollHeight; // Scroll to bottom
+        
+        const outputDiv = document.getElementById('drop-output');
+        const pathDisplay = document.getElementById('current-path');
+        const folderNodes = document.querySelectorAll('.folder-dropzone');
+        
+        // Update path display when clicking folders
+        folderNodes.forEach(folder => {
+            folder.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event bubbling
+                const path = folder.getAttribute('data-path');
+                if (path) {
+                    pathDisplay.textContent = path;
+                    outputDiv.textContent = `Selected folder: ${path}\nReady to receive files...`;
+                }
+            });
         });
-
-
-        console.log("Drag-n-drop example JS initialized. Listening for drops.");
+        
+        // Listen for the file drop event from Wails
+        wails.Events.On("frontend:FileDropInfo", (eventData) => {
+            console.log("File drop detected:", eventData);
+            
+            const { files, targetID, targetClasses, dropX, dropY, attributes } = eventData.data[0];
+            
+            // Get additional folder information from the attributes
+            const folderPath = attributes ? attributes['data-path'] : 'Unknown path';
+            const folderName = attributes ? attributes['data-folder-name'] : 'Unknown folder';
+            
+            let message = `Files dropped on folder: ${folderName}\n`;
+            message += `Target path: ${folderPath}\n`;
+            message += `Element ID: ${targetID || 'N/A'}\n`;
+            message += `Element Classes: ${targetClasses && targetClasses.length > 0 ? targetClasses.join(', ') : 'N/A'}\n\n`;
+            
+            // Display all attributes from the element
+            if (attributes && Object.keys(attributes).length > 0) {
+                message += "Element Attributes:\n";
+                Object.entries(attributes).forEach(([key, value]) => {
+                    message += `  ${key}: "${value}"\n`;
+                });
+                message += "\n";
+            }
+            
+            // List all dropped files
+            message += "Dropped Files:\n";
+            files.forEach(file => {
+                message += `  → ${file}\n`;
+            });
+            
+            message += `\nDrop Coordinates: X=${dropX.toFixed(2)}, Y=${dropY.toFixed(2)}`;
+            
+            // Show a simulated upload message
+            message += "\n\nSimulating upload to " + folderPath + "...";
+            
+            outputDiv.textContent = message;
+        });
+        
+        console.log("File Tree Drag-and-Drop example initialized.");
     </script>
 </body>
 </html>
