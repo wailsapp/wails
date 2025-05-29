@@ -25,24 +25,50 @@
         .dropzone {
             width: 200px;
             height: 200px;
-            border: 2px dashed #555;
+            border: 2px dashed #888; /* Brighter dashed border for resting state */
             border-radius: 10px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-            background-color: #2a2a2a;
-        }
-        .dropzone.drag-over {
-            background-color: #3a3a3a;
-            border-color: #777;
+            transition: background-color 0.3s ease, border-color 0.3s ease, border-style 0.3s ease, box-shadow 0.3s ease;
+            background-color: #303030; /* Slightly lighter background for resting state */
+            color: white; /* Ensure text is visible */
+            padding: 10px;
+            box-sizing: border-box; /* Consistent sizing */
+            text-align: center; /* Center text paragraphs */
         }
         .dropzone p {
             margin: 5px 0;
             font-size: 0.9em;
             pointer-events: none; /* Ensure parent div receives drop event */
         }
+
+        .customDropzone { /* This is a custom BASE style variant */
+            background-color: #444;
+            /* border-color: #888; /* This would override .dropzone's border-color if also applied */
+        }
+
+        /* Default Wails Runtime Hover Effect for any .dropzone */
+        /* Provides highlight and dotted outline */
+        .dropzone.wails-dropzone-hover {
+            background-color: #3c3c3e; /* Highlight background */
+            border-style: dotted;      /* Change from dashed to dotted */
+            border-color: #007bff;     /* Blue outline */
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.4); /* Subtle blue glow */
+        }
+
+        /* Custom Hover for a specific dropzone that OVERRIDES the default Wails hover */
+        /* Add class "special-hover-override" to the specific dropzone in HTML */
+        .dropzone.special-hover-override.wails-dropzone-hover {
+            background-color: #6a0dad; /* Vibrant Purple */
+            border-style: solid;       /* Solid border */
+            border-color: #ff00ff;     /* Magenta */
+            border-width: 3px;         /* Thicker border */
+            box-shadow: 0 0 12px rgba(255, 0, 255, 0.7); /* Brighter Magenta glow */
+            color: #f0f0f0; /* Lighter text for contrast */
+        }
+
         #output {
             margin-top: 30px;
             padding: 15px;
@@ -63,17 +89,22 @@
     <p>Drop files onto one of the zones below. Details will be logged in Go.</p>
 
     <div class="container">
-        <div id="dropzoneA" class="dropzone">
+        <div id="dropzone" class="dropzone" data-wails-dropzone>
             <p>Drop Zone A</p>
-            <p>(ID: dropzoneA)</p>
+            <p>(ID: dropzone)</p>
+            <p> Default Dropzone Hover </p>
         </div>
-        <div id="dropzoneB" class="dropzone">
+        <div id="second-dropzone" class="dropzone special-hover-override" data-wails-dropzone>
             <p>Drop Zone B</p>
-            <p>(ID: dropzoneB)</p>
+            <p>(ID: second-dropzone)</p>
         </div>
-        <div id="dropzoneD" class="dropzone">
+        <div id="anotha-one" class="dropzone customDropzone" data-wails-dropzone>
             <p>Drop Zone D</p>
-            <p>(ID: dropzoneD)</p>
+            <p>(ID: anotha-one)</p>
+        </div>
+        <div id="no-dropzone" class="dropzone"> 
+            <p>Drop Zone Disabled</p>
+            <p>(ID: no-dropzone)</p>
         </div>
     </div>
 
@@ -84,31 +115,19 @@
         const outputDiv = document.getElementById('output');
         const dropzones = document.querySelectorAll('.dropzone');
 
-        // dropzones.forEach(zone => {
-        //     zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-        //     zone.addEventListener('dragenter', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-        //     zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-        //     zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); });
-        // });
-        
         wails.Events.On("frontend:FileDropInfo", (eventData) => {
             console.log("JS: Received 'frontend:FileDropInfo' event with data:", eventData);
             const { files, targetID, targetClasses, dropX, dropY } = eventData.data[0]; // Access the first element of the data array
 
-            let message = `Files Dropped: ${files.join(', ')}\n`;
-            message += `Dropped on Element ID: ${targetID || 'N/A'}\n`;
+            let message = `Dropped on Element ID: ${targetID || 'N/A'}\n`;
             message += `Element Classes: ${targetClasses && targetClasses.length > 0 ? targetClasses.join(', ') : 'N/A'}\n`;
+            message += `Files Dropped: ${files.join(', ')}\n`;
             message += `Coordinates (from Go): X=${dropX.toFixed(2)}, Y=${dropY.toFixed(2)}`;
 
             outputDiv.textContent = message;
             outputDiv.scrollTop = outputDiv.scrollHeight; // Scroll to bottom
         });
 
-        document.documentElement.addEventListener('dragleave', (e) => {
-            if (e.target === document.documentElement || e.relatedTarget === null) {
-                dropzones.forEach(zone => zone.classList.remove('drag-over'));
-            }
-        });
 
         console.log("Drag-n-drop example JS initialized. Listening for drops.");
     </script>

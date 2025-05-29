@@ -56,7 +56,7 @@ func FilesDroppedOnTarget(
 	log.Println(fmt.Sprintf("  Target ID: '%s'", targetID))
 	log.Println(fmt.Sprintf("  Target Classes: %v", targetClasses))
 	log.Println(fmt.Sprintf("  Drop X: %f, Drop Y: %f", dropX, dropY))
-	log.Println(fmt.Sprintf("  Is Target Dropzone (determined by JS): %t", isTargetDropzone))
+	log.Println(fmt.Sprintf("  Drop occurred on a designated dropzone (runtime validated before this Go event): %t", isTargetDropzone))
 
 	payload := FileDropInfo{
 		Files:         files,
