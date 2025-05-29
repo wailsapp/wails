@@ -182,6 +182,15 @@ func (m *MenuItem) Hidden() bool {
 
 func (m *MenuItem) OnClick(f func(*Context)) MenuElementInterface {
 	m.callback = f
+	// Debug: Log when click handler is set
+	if globalApplication != nil {
+		globalApplication.debug(
+			"OnClick handler set for menu item: %s (Go ID: %d, Callback: %v)",
+			m.label,
+			m.id,
+			f != nil,
+		)
+	}
 	return m
 }
 
@@ -234,6 +243,16 @@ func (m *MenuItem) Update() MenuElementInterface {
 // Legacy MenuItem methods that still work
 
 func (m *MenuItem) handleClick() {
+	// Debug: Log when click handler is called
+	if globalApplication != nil {
+		globalApplication.debug(
+			"handleClick called for menu item: %s (Go ID: %d, Callback: %v)",
+			m.label,
+			m.id,
+			m.callback != nil,
+		)
+	}
+
 	var ctx = newContext().
 		withClickedMenuItem(m).
 		withContextMenuData(m.contextMenuData)
@@ -258,10 +277,19 @@ func (m *MenuItem) handleClick() {
 		}
 	}
 	if m.callback != nil {
+		// Debug: Log before calling callback
+		if globalApplication != nil {
+			globalApplication.debug("Executing callback for menu item: %s (Go ID: %d)", m.label, m.id)
+		}
 		go func() {
 			defer handlePanic()
 			m.callback(ctx)
 		}()
+	} else {
+		// Debug: Log when no callback is available
+		if globalApplication != nil {
+			globalApplication.debug("No callback available for menu item: %s (Go ID: %d)", m.label, m.id)
+		}
 	}
 }
 

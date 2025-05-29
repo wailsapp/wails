@@ -380,6 +380,10 @@ func processDragItems(windowID C.uint, arr **C.char, length C.int) {
 
 //export processMenuItemClick
 func processMenuItemClick(menuID C.uint) {
+	// Debug: Log when native click is received
+	if globalApplication != nil {
+		globalApplication.debug("processMenuItemClick called for menu ID: %d", uint(menuID))
+	}
 	menuItemClicked <- uint(menuID)
 }
 

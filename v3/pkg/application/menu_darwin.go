@@ -114,12 +114,51 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 					C.addServicesMenu(nsSubmenu)
 				}
 			case text, checkbox, radio:
+				// Debug: Log original state
+				if globalApplication != nil {
+					globalApplication.debug("Processing menu item: %s (Go ID: %d, Disabled: %v, Hidden: %v, Callback: %v)",
+						menuItem.Label(), menuItem.id, menuItem.disabled, menuItem.Hidden(), menuItem.callback != nil)
+				}
+
+				// Create a temporary enabled version for proper click handler setup
+				tempDisabled := menuItem.disabled
+				menuItem.disabled = false // Temporarily enable for creation
+
 				impl := newMenuItemImpl(menuItem)
 				menuItem.impl = impl
-				if menuItem.Hidden() {
-					impl.setHidden(true)
+
+				// Debug: Log after native creation
+				if globalApplication != nil {
+					globalApplication.debug("Native menu item created for: %s (Go ID: %d)", menuItem.Label(), menuItem.id)
 				}
+
+				// Synchronize all state to the new native menu item
+				impl.setDisabled(tempDisabled)
+				impl.setLabel(menuItem.Label())
+				impl.setDisabled(menuItem.disabled) // Apply correct disabled state
+				impl.setHidden(menuItem.Hidden())
+				if menuItem.checked {
+					impl.setChecked(menuItem.checked)
+				}
+				if menuItem.accelerator != nil {
+					impl.setAccelerator(menuItem.accelerator)
+				}
+				if len(menuItem.bitmap) > 0 {
+					impl.setBitmap(menuItem.bitmap)
+				}
+
 				C.addMenuItem(parent, impl.nsMenuItem)
+				// Debug: Track menu item recreation
+				if globalApplication != nil {
+					globalApplication.debug(
+						"Recreated native menu item: %s (Go ID: %d, Hidden: %v, Disabled: %v, Callback: %v)",
+						menuItem.Label(),
+						menuItem.id,
+						menuItem.Hidden(),
+						menuItem.disabled,
+						menuItem.callback != nil,
+					)
+				}
 			case separator:
 				C.addMenuSeparator(parent)
 			}
