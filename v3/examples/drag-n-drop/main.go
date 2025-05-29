@@ -34,11 +34,12 @@ func (a *App) Startup(ctx context.Context) {
 
 // FileDropInfo defines the payload for the file drop event sent to the frontend.
 type FileDropInfo struct {
-	Files         []string `json:"files"`
-	TargetID      string   `json:"targetID"`
-	TargetClasses []string `json:"targetClasses"`
-	DropX         float64  `json:"dropX"`
-	DropY         float64  `json:"dropY"`
+	Files         []string          `json:"files"`
+	TargetID      string            `json:"targetID"`
+	TargetClasses []string          `json:"targetClasses"`
+	DropX         float64           `json:"dropX"`
+	DropY         float64           `json:"dropY"`
+	Attributes    map[string]string `json:"attributes,omitempty"`
 }
 
 // FilesDroppedOnTarget is called when files are dropped onto a registered drop target
@@ -124,6 +125,7 @@ func main() {
 				TargetClasses: details.ClassList,
 				DropX:         float64(details.X),
 				DropY:         float64(details.Y),
+				Attributes:    details.Attributes, // Add the attributes
 			}
 			application.Get().EmitEvent("frontend:FileDropInfo", payload)
 		},

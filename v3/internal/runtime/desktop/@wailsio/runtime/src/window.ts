@@ -546,21 +546,24 @@ class Window {
         }
 
         console.log(`Wails Runtime: Drop on designated dropzone. Element at (${x}, ${y}):`, element, 'Effective dropzone:', dropzoneTarget);
-        // The 'element' variable is already defined from the line: const element = document.elementFromPoint(x, y);
-        // which should be before the dropzoneTarget check. The original console.log below also uses it.
-        console.log(`Window.HandlePlatformFileDrop: Original log - Dropped files at (${x}, ${y}) on element:`, element);
-        const elementId = element ? element.id : '';
-        const classList = element ? Array.from(element.classList) : [];
+        const elementDetails = {
+            id: dropzoneTarget.id,
+            classList: Array.from(dropzoneTarget.classList),
+            attributes: {} as { [key: string]: string },
+        };
+        for (let i = 0; i < dropzoneTarget.attributes.length; i++) {
+            const attr = dropzoneTarget.attributes[i];
+            elementDetails.attributes[attr.name] = attr.value;
+        }
 
         const payload = {
             filenames,
             x,
             y,
-            elementId,
-            classList,
+            elementDetails,
         };
 
-        this[callerSym](WindowDropZoneDropped,payload)
+        this[callerSym](WindowDropZoneDropped, payload);
     }
 }
 

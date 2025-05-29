@@ -227,10 +227,11 @@ var windowMessageBuffer = make(chan *windowMessage, 5)
 // DropZoneDetails contains information about the HTML element
 // at the location of a file drop.
 type DropZoneDetails struct {
-	X         int      `json:"x"`
-	Y         int      `json:"y"`
-	ElementID string   `json:"id"`
-	ClassList []string `json:"classList"`
+	X          int               `json:"x"`
+	Y          int               `json:"y"`
+	ElementID  string            `json:"id"`
+	ClassList  []string          `json:"classList"`
+	Attributes map[string]string `json:"attributes,omitempty"`
 }
 
 type dragAndDropMessage struct {

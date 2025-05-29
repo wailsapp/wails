@@ -113,10 +113,13 @@
 
         wails.Events.On("frontend:FileDropInfo", (eventData) => {
             console.log("JS: Received 'frontend:FileDropInfo' event with data:", eventData);
-            const { files, targetID, targetClasses, dropX, dropY } = eventData.data[0]; // Access the first element of the data array
+            const { files, targetID, targetClasses, dropX, dropY, attributes } = eventData.data[0]; // Access the first element of the data array
 
             let message = `Dropped on Element ID: ${targetID || 'N/A'}\n`;
             message += `Element Classes: ${targetClasses && targetClasses.length > 0 ? targetClasses.join(', ') : 'N/A'}\n`;
+            if (attributes) {
+                message += `Element Attributes: ${Object.entries(attributes).map(([key, value]) => `${key}="${value}"`).join(', ')}\n`;
+            }
             message += `Files Dropped: ${files.join(', ')}\n`;
             message += `Coordinates (from Go): X=${dropX.toFixed(2)}, Y=${dropY.toFixed(2)}`;
 

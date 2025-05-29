@@ -446,10 +446,11 @@ func (m *MessageProcessor) processWindowMethod(
 		)
 
 		dropDetails := &DropZoneDetails{
-			X:         payload.X,
-			Y:         payload.Y,
-			ElementID: payload.ElementID,
-			ClassList: payload.ClassList,
+			X:          payload.X,
+			Y:          payload.Y,
+			ElementID:  payload.ElementDetails.ID,
+			ClassList:  payload.ElementDetails.ClassList,
+			Attributes: payload.ElementDetails.Attributes, // Assumes DropZoneDetails struct is updated to include this field
 		}
 
 		wvWindow, ok := window.(*WebviewWindow)
@@ -483,11 +484,17 @@ func (m *MessageProcessor) processWindowMethod(
 	m.Info("Runtime call:", "method", "Window."+windowMethodNames[method])
 }
 
+// ElementDetailsPayload holds detailed information about the drop target element.
+type ElementDetailsPayload struct {
+	ID         string            `json:"id"`
+	ClassList  []string          `json:"classList"`
+	Attributes map[string]string `json:"attributes"`
+}
+
 // Define a struct for the JSON payload from HandlePlatformFileDrop
 type fileDropPayload struct {
-	Filenames []string `json:"filenames"`
-	X         int      `json:"x"`
-	Y         int      `json:"y"`
-	ElementID string   `json:"elementId"`
-	ClassList []string `json:"classList"`
+	Filenames      []string              `json:"filenames"`
+	X              int                   `json:"x"`
+	Y              int                   `json:"y"`
+	ElementDetails ElementDetailsPayload `json:"elementDetails"`
 }
