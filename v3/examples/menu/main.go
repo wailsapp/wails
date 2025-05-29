@@ -48,7 +48,10 @@ func main() {
 	indexMenu := menu.AddSubmenu("Index API")
 
 	// Add a hidden item at the start of the menu (to demonstrate the bug in issue #4088)
-	hiddenFirstItem := indexMenu.Add("Hidden First Item").SetHidden(true)
+	hiddenFirstItem := indexMenu.Add("Hidden First Item")
+	hiddenFirstItem.OnClick(func(*application.Context) {
+		println("Hidden First Item clicked!")
+	}).SetHidden(true)
 	indexMenu.Add("Toggle Hidden First Item").OnClick(func(*application.Context) {
 		hiddenFirstItem.SetHidden(!hiddenFirstItem.Hidden())
 		menu.Update()

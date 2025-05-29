@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"io"
 	"log/slog"
 	"net/http"
@@ -16,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 
 	"github.com/wailsapp/wails/v3/internal/fileexplorer"
 
@@ -383,7 +384,10 @@ func (a *App) RegisterService(service Service) {
 	defer a.runLock.Unlock()
 
 	if a.starting || a.running {
-		a.error("services must be registered before running the application. Service '%s' will not be registered.", getServiceName(service))
+		a.error(
+			"services must be registered before running the application. Service '%s' will not be registered.",
+			getServiceName(service),
+		)
 		return
 	}
 
@@ -491,7 +495,10 @@ func (a *App) OnApplicationEvent(eventType events.ApplicationEventType, callback
 // RegisterApplicationEventHook registers a hook for the given application event.
 // Hooks are called before the event listeners and can cancel the event.
 // The returned function can be called to remove the hook.
-func (a *App) RegisterApplicationEventHook(eventType events.ApplicationEventType, callback func(event *ApplicationEvent)) func() {
+func (a *App) RegisterApplicationEventHook(
+	eventType events.ApplicationEventType,
+	callback func(event *ApplicationEvent),
+) func() {
 	eventID := uint(eventType)
 	a.applicationEventHooksLock.Lock()
 	defer a.applicationEventHooksLock.Unlock()
@@ -666,6 +673,8 @@ func (a *App) Run() error {
 	go func() {
 		for {
 			menuItemID := <-menuItemClicked
+			// Debug: Log when menu item click event is received
+			a.debug("Menu item click event received for ID: %d", menuItemID)
 			go a.handleMenuItemClicked(menuItemID)
 		}
 	}()
@@ -834,11 +843,18 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 func (a *App) handleMenuItemClicked(menuItemID uint) {
 	defer handlePanic()
 
+	// Debug: Log when menu item click is being handled
+	a.debug("handleMenuItemClicked called for menu item ID: %d", menuItemID)
+
 	menuItem := getMenuItemByID(menuItemID)
 	if menuItem == nil {
 		a.warning("MenuItem #%d not found", menuItemID)
 		return
 	}
+
+	// Debug: Log that menu item was found and is about to be clicked
+	a.debug("Menu item found: %s (Go ID: %d), calling handleClick", menuItem.label, menuItem.id)
+
 	menuItem.handleClick()
 }
 

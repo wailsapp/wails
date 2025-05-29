@@ -329,6 +329,10 @@ func (m macosMenuItem) setChecked(checked bool) {
 }
 
 func (m macosMenuItem) setHidden(hidden bool) {
+	// Debug: Log when hidden state is changed
+	if globalApplication != nil {
+		globalApplication.debug("Setting hidden state for menu item (Go ID: %d) to: %v", m.menuItem.id, hidden)
+	}
 	C.setMenuItemHidden(m.nsMenuItem, C.bool(hidden))
 }
 
@@ -358,6 +362,12 @@ func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 		menuItem: item,
 	}
 
+	// Debug: Log menu item creation details
+	if globalApplication != nil {
+		globalApplication.debug("Creating native menu item: %s (Go ID: %d, Disabled: %v, Callback: %v)",
+			item.label, item.id, item.disabled, item.callback != nil)
+	}
+
 	selector := getSelectorForRole(item.role)
 	if selector != nil {
 		defer C.free(unsafe.Pointer(selector))
@@ -369,6 +379,11 @@ func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 		C.CString(item.tooltip),
 		selector,
 	))
+
+	// Debug: Log after native creation
+	if globalApplication != nil {
+		globalApplication.debug("Native menu item created successfully for: %s (Go ID: %d)", item.label, item.id)
+	}
 
 	switch item.itemType {
 	case checkbox, radio:
