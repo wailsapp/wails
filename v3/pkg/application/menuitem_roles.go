@@ -13,14 +13,14 @@ func NewSpeechMenu() *MenuItem {
 
 func NewHideMenuItem() *MenuItem {
 	return NewMenuItem("Hide " + globalApplication.options.Name).
-		SetAccelerator("CmdOrCtrl+h").
-		SetRole(Hide)
+		SetAcceleratorItem("CmdOrCtrl+h").
+		SetRoleItem(Hide)
 }
 
 func NewHideOthersMenuItem() *MenuItem {
 	return NewMenuItem("Hide Others").
-		SetAccelerator("CmdOrCtrl+OptionOrAlt+h").
-		SetRole(HideOthers)
+		SetAcceleratorItem("CmdOrCtrl+OptionOrAlt+h").
+		SetRoleItem(HideOthers)
 }
 
 func NewFrontMenuItem() *MenuItem {
@@ -33,9 +33,9 @@ func NewUnhideMenuItem() *MenuItem {
 
 func NewUndoMenuItem() *MenuItem {
 	result := NewMenuItem("Undo").
-		SetAccelerator("CmdOrCtrl+z")
+		SetAcceleratorItem("CmdOrCtrl+z")
 	if runtime.GOOS != "darwin" {
-		result.OnClick(func(ctx *Context) {
+		result.OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.undo()
@@ -48,9 +48,9 @@ func NewUndoMenuItem() *MenuItem {
 // NewRedoMenuItem creates a new menu item for redoing the last action
 func NewRedoMenuItem() *MenuItem {
 	result := NewMenuItem("Redo").
-		SetAccelerator("CmdOrCtrl+Shift+z")
+		SetAcceleratorItem("CmdOrCtrl+Shift+z")
 	if runtime.GOOS != "darwin" {
-		result.OnClick(func(ctx *Context) {
+		result.OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.redo()
@@ -62,10 +62,10 @@ func NewRedoMenuItem() *MenuItem {
 
 func NewCutMenuItem() *MenuItem {
 	result := NewMenuItem("Cut").
-		SetAccelerator("CmdOrCtrl+x")
+		SetAcceleratorItem("CmdOrCtrl+x")
 
 	if runtime.GOOS != "darwin" {
-		result.OnClick(func(ctx *Context) {
+		result.OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.cut()
@@ -77,10 +77,10 @@ func NewCutMenuItem() *MenuItem {
 
 func NewCopyMenuItem() *MenuItem {
 	result := NewMenuItem("Copy").
-		SetAccelerator("CmdOrCtrl+c")
+		SetAcceleratorItem("CmdOrCtrl+c")
 
 	if runtime.GOOS != "darwin" {
-		result.OnClick(func(ctx *Context) {
+		result.OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.copy()
@@ -92,10 +92,10 @@ func NewCopyMenuItem() *MenuItem {
 
 func NewPasteMenuItem() *MenuItem {
 	result := NewMenuItem("Paste").
-		SetAccelerator("CmdOrCtrl+v")
+		SetAcceleratorItem("CmdOrCtrl+v")
 
 	if runtime.GOOS != "darwin" {
-		result.OnClick(func(ctx *Context) {
+		result.OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.paste()
@@ -107,15 +107,15 @@ func NewPasteMenuItem() *MenuItem {
 
 func NewPasteAndMatchStyleMenuItem() *MenuItem {
 	return NewMenuItem("Paste and Match Style").
-		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+v")
+		SetAcceleratorItem("CmdOrCtrl+OptionOrAlt+Shift+v")
 }
 
 func NewDeleteMenuItem() *MenuItem {
 	result := NewMenuItem("Delete").
-		SetAccelerator("backspace")
+		SetAcceleratorItem("backspace")
 
 	if runtime.GOOS != "darwin" {
-		result.OnClick(func(ctx *Context) {
+		result.OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.delete()
@@ -133,18 +133,18 @@ func NewQuitMenuItem() *MenuItem {
 		}
 	}
 	return NewMenuItem(label).
-		SetAccelerator("CmdOrCtrl+q").
-		OnClick(func(ctx *Context) {
+		SetAcceleratorItem("CmdOrCtrl+q").
+		OnClickItem(func(ctx *Context) {
 			globalApplication.Quit()
 		})
 }
 
 func NewSelectAllMenuItem() *MenuItem {
 	result := NewMenuItem("Select All").
-		SetAccelerator("CmdOrCtrl+a")
+		SetAcceleratorItem("CmdOrCtrl+a")
 
 	if runtime.GOOS != "darwin" {
-		result.OnClick(func(ctx *Context) {
+		result.OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.selectAll()
@@ -160,15 +160,15 @@ func NewAboutMenuItem() *MenuItem {
 		label += " " + globalApplication.options.Name
 	}
 	return NewMenuItem(label).
-		OnClick(func(ctx *Context) {
+		OnClickItem(func(ctx *Context) {
 			globalApplication.ShowAboutDialog()
 		})
 }
 
 func NewCloseMenuItem() *MenuItem {
 	return NewMenuItem("Close").
-		SetAccelerator("CmdOrCtrl+w").
-		OnClick(func(ctx *Context) {
+		SetAcceleratorItem("CmdOrCtrl+w").
+		OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.Close()
@@ -178,8 +178,8 @@ func NewCloseMenuItem() *MenuItem {
 
 func NewReloadMenuItem() *MenuItem {
 	return NewMenuItem("Reload").
-		SetAccelerator("CmdOrCtrl+r").
-		OnClick(func(ctx *Context) {
+		SetAcceleratorItem("CmdOrCtrl+r").
+		OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.Reload()
@@ -189,8 +189,8 @@ func NewReloadMenuItem() *MenuItem {
 
 func NewForceReloadMenuItem() *MenuItem {
 	return NewMenuItem("Force Reload").
-		SetAccelerator("CmdOrCtrl+Shift+r").
-		OnClick(func(ctx *Context) {
+		SetAcceleratorItem("CmdOrCtrl+Shift+r").
+		OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.ForceReload()
@@ -200,15 +200,15 @@ func NewForceReloadMenuItem() *MenuItem {
 
 func NewToggleFullscreenMenuItem() *MenuItem {
 	result := NewMenuItem("Toggle Full Screen").
-		SetAccelerator("Ctrl+Command+F").
-		OnClick(func(ctx *Context) {
+		SetAcceleratorItem("Ctrl+Command+F").
+		OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.ToggleFullscreen()
 			}
 		})
 	if runtime.GOOS != "darwin" {
-		result.SetAccelerator("F11")
+		result.SetAcceleratorItem("F11")
 	}
 	return result
 }
@@ -216,8 +216,8 @@ func NewToggleFullscreenMenuItem() *MenuItem {
 func NewZoomResetMenuItem() *MenuItem {
 	// reset zoom menu item
 	return NewMenuItem("Actual Size").
-		SetAccelerator("CmdOrCtrl+0").
-		OnClick(func(ctx *Context) {
+		SetAcceleratorItem("CmdOrCtrl+0").
+		OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.ZoomReset()
@@ -227,8 +227,8 @@ func NewZoomResetMenuItem() *MenuItem {
 
 func NewZoomInMenuItem() *MenuItem {
 	return NewMenuItem("Zoom In").
-		SetAccelerator("CmdOrCtrl+plus").
-		OnClick(func(ctx *Context) {
+		SetAcceleratorItem("CmdOrCtrl+plus").
+		OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.ZoomIn()
@@ -238,8 +238,8 @@ func NewZoomInMenuItem() *MenuItem {
 
 func NewZoomOutMenuItem() *MenuItem {
 	return NewMenuItem("Zoom Out").
-		SetAccelerator("CmdOrCtrl+-").
-		OnClick(func(ctx *Context) {
+		SetAcceleratorItem("CmdOrCtrl+-").
+		OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.ZoomOut()
@@ -249,8 +249,8 @@ func NewZoomOutMenuItem() *MenuItem {
 
 func NewMinimiseMenuItem() *MenuItem {
 	return NewMenuItem("Minimize").
-		SetAccelerator("CmdOrCtrl+M").
-		OnClick(func(ctx *Context) {
+		SetAcceleratorItem("CmdOrCtrl+M").
+		OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.Minimise()
@@ -260,7 +260,7 @@ func NewMinimiseMenuItem() *MenuItem {
 
 func NewZoomMenuItem() *MenuItem {
 	return NewMenuItem("Zoom").
-		OnClick(func(ctx *Context) {
+		OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.Zoom()
@@ -270,7 +270,7 @@ func NewZoomMenuItem() *MenuItem {
 
 func NewFullScreenMenuItem() *MenuItem {
 	return NewMenuItem("Fullscreen").
-		OnClick(func(ctx *Context) {
+		OnClickItem(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.Fullscreen()
@@ -280,12 +280,12 @@ func NewFullScreenMenuItem() *MenuItem {
 
 func NewPrintMenuItem() *MenuItem {
 	return NewMenuItem("Print").
-		SetAccelerator("CmdOrCtrl+p")
+		SetAcceleratorItem("CmdOrCtrl+p")
 }
 
 func NewPageLayoutMenuItem() *MenuItem {
 	return NewMenuItem("Page Setup...").
-		SetAccelerator("CmdOrCtrl+Shift+p")
+		SetAcceleratorItem("CmdOrCtrl+Shift+p")
 }
 
 func NewShowAllMenuItem() *MenuItem {
@@ -298,61 +298,61 @@ func NewBringAllToFrontMenuItem() *MenuItem {
 
 func NewNewFileMenuItem() *MenuItem {
 	return NewMenuItem("New File").
-		SetAccelerator("CmdOrCtrl+n")
+		SetAcceleratorItem("CmdOrCtrl+n")
 }
 
 func NewOpenMenuItem() *MenuItem {
 	return NewMenuItem("Open...").
-		SetAccelerator("CmdOrCtrl+o").
-		SetRole(Open)
+		SetAcceleratorItem("CmdOrCtrl+o").
+		SetRoleItem(Open)
 }
 
 func NewSaveMenuItem() *MenuItem {
 	return NewMenuItem("Save").
-		SetAccelerator("CmdOrCtrl+s")
+		SetAcceleratorItem("CmdOrCtrl+s")
 }
 
 func NewSaveAsMenuItem() *MenuItem {
 	return NewMenuItem("Save As...").
-		SetAccelerator("CmdOrCtrl+Shift+s")
+		SetAcceleratorItem("CmdOrCtrl+Shift+s")
 }
 
 func NewStartSpeakingMenuItem() *MenuItem {
 	return NewMenuItem("Start Speaking").
-		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+.")
+		SetAcceleratorItem("CmdOrCtrl+OptionOrAlt+Shift+.")
 }
 
 func NewStopSpeakingMenuItem() *MenuItem {
 	return NewMenuItem("Stop Speaking").
-		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+,")
+		SetAcceleratorItem("CmdOrCtrl+OptionOrAlt+Shift+,")
 }
 
 func NewRevertMenuItem() *MenuItem {
 	return NewMenuItem("Revert").
-		SetAccelerator("CmdOrCtrl+r")
+		SetAcceleratorItem("CmdOrCtrl+r")
 }
 
 func NewFindMenuItem() *MenuItem {
 	return NewMenuItem("Find...").
-		SetAccelerator("CmdOrCtrl+f")
+		SetAcceleratorItem("CmdOrCtrl+f")
 }
 
 func NewFindAndReplaceMenuItem() *MenuItem {
 	return NewMenuItem("Find and Replace...").
-		SetAccelerator("CmdOrCtrl+Shift+f")
+		SetAcceleratorItem("CmdOrCtrl+Shift+f")
 }
 
 func NewFindNextMenuItem() *MenuItem {
 	return NewMenuItem("Find Next").
-		SetAccelerator("CmdOrCtrl+g")
+		SetAcceleratorItem("CmdOrCtrl+g")
 }
 
 func NewFindPreviousMenuItem() *MenuItem {
 	return NewMenuItem("Find Previous").
-		SetAccelerator("CmdOrCtrl+Shift+g")
+		SetAcceleratorItem("CmdOrCtrl+Shift+g")
 }
 
 func NewHelpMenuItem() *MenuItem {
 	return NewMenuItem("Help").
-		SetAccelerator("CmdOrCtrl+?")
+		SetAcceleratorItem("CmdOrCtrl+?")
 }

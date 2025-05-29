@@ -169,6 +169,7 @@ static void startSingleInstanceListener(const char *uniqueID) {
 import "C"
 import (
 	"encoding/json"
+	"fmt"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -218,14 +219,48 @@ func (m *macosApp) getCurrentWindowID() uint {
 
 func (m *macosApp) setApplicationMenu(menu *Menu) {
 	if menu == nil {
-		// Create a default menu for mac
-		menu = DefaultApplicationMenu()
+		// Create a default menu for mac.
+		defaultM := DefaultApplicationMenu()
+		// DefaultApplicationMenu creates a new Menu. It needs to be fully processed.
+		defaultM.Update() // This processes defaultM, creates its impl, and updates its nsMenu.
+		// Since defaultM is a new instance, this Update() won't loop back here for itself.
+		if defaultM.impl != nil { // Ensure impl was created
+			nsMenu := (defaultM.impl).(*macosMenu).nsMenu
+			InvokeSync(func() { // Ensure C call is on main thread
+				m.applicationMenu = nsMenu
+				C.setApplicationMenu(nsMenu)
+			})
+		} else {
+			fmt.Println("Error: DefaultApplicationMenu().impl is nil. Cannot set default menu.")
+		}
+		return
 	}
-	menu.Update()
 
-	// Convert impl to macosMenu object
-	m.applicationMenu = (menu.impl).(*macosMenu).nsMenu
-	C.setApplicationMenu(m.applicationMenu)
+	// If menu is not nil:
+	if menu.impl == nil {
+		// This menu hasn't been processed by Menu.Update() to create its platform impl.
+		fmt.Println("Info: Initializing menu.impl in setApplicationMenu as it was nil.")
+		menu.processRadioGroups()
+		menu.impl = newMenuImpl(menu) // Creates *macosMenu
+		// Directly call the platform-specific update on the new impl
+		if macosM, ok := menu.impl.(*macosMenu); ok {
+			macosM.update() // Builds/updates nsMenu within macosM. This uses InvokeSync internally for its C calls.
+		} else {
+			fmt.Println("Critical Error: menu.impl is not *macosMenu after newMenuImpl on macOS for a non-nil menu.")
+			return // Cannot proceed to set native menu
+		}
+	}
+
+	// At this point, menu.impl should be non-nil and its nsMenu should be built.
+	if menu.impl != nil {
+		nsMenu := (menu.impl).(*macosMenu).nsMenu
+		InvokeSync(func() { // Ensure C call is on main thread
+			m.applicationMenu = nsMenu
+			C.setApplicationMenu(nsMenu)
+		})
+	} else {
+		fmt.Println("Error: menu.impl is still nil after attempted initialization in setApplicationMenu. Native menu not set.")
+	}
 }
 
 func (m *macosApp) run() error {
