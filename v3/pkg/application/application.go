@@ -236,6 +236,8 @@ type DropZoneDetails struct {
 type dragAndDropMessage struct {
 	windowId  uint
 	filenames []string
+	X         int
+	Y         int
 	DropZone  *DropZoneDetails
 }
 
