@@ -4,14 +4,16 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/buildinfo"
-	"github.com/wailsapp/wails/v3/internal/s"
-	"github.com/wailsapp/wails/v3/internal/version"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/wailsapp/wails/v3/internal/buildinfo"
+	"github.com/wailsapp/wails/v3/internal/s"
+	"github.com/wailsapp/wails/v3/internal/version"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -383,6 +385,12 @@ func Install(options *flags.Init) error {
 			s.RMDIR(template.tempDir)
 		}
 	}
+	if !options.SkipGoModTidy {
+		err = goModTidy(templateData.ProjectDir)
+		if err != nil {
+			return err
+		}
+	}
 
 	// Change to project directory
 	err = os.Chdir(templateData.ProjectDir)
@@ -460,4 +468,16 @@ func confirmRemote(template *Template) bool {
 	result, _ := pterm.DefaultInteractiveConfirm.WithConfirmText("Are you sure you want to continue?").WithConfirmText("y").WithRejectText("n").Show()
 
 	return result
+}
+
+// goModTidy runs go mod tidy in the given project directory
+// It returns an error if the command fails
+func goModTidy(projectDir string) error {
+	cmd := exec.Command("go", "mod", "tidy")
+	cmd.Dir = projectDir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to run go mod tidy: %w\n%s", err, string(output))
+	}
+	return nil
 }
