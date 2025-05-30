@@ -36,7 +36,7 @@ jobs:
       github.event.review.state == 'approved' && 
       github.repository == 'wailsapp/wails' && 
       github.base_ref == 'master' &&
-      github.head_ref != 'update-sponsors'
+      github.event.pull_request.head.ref != 'update-sponsors'
     strategy:
       matrix:
         os: [ubuntu-22.04, windows-latest, macos-latest, ubuntu-24.04]
