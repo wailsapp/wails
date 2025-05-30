@@ -28,6 +28,13 @@ depends:
   - gtk3
   - libwebkit2gtk
 
+# scripts section to ensure desktop database is updated after install
+scripts:
+  postinstall: "./build/linux/nfpm/scripts/postinstall.sh"
+  # You can also add preremove, postremove if needed
+  # preremove: "./build/linux/nfpm/scripts/preremove.sh"
+  # postremove: "./build/linux/nfpm/scripts/postremove.sh"
+
 # replaces:
 #   - foobar
 # provides:
@@ -43,8 +50,3 @@ depends:
 #   - not-foo
 #   - not-bar
 # changelog: "changelog.yaml"
-# scripts:
-#   preinstall: ./build/linux/nfpm/scripts/preinstall.sh
-#   postinstall: ./build/linux/nfpm/scripts/postinstall.sh
-#   preremove: ./build/linux/nfpm/scripts/preremove.sh
-#   postremove: ./build/linux/nfpm/scripts/postremove.sh
