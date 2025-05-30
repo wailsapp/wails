@@ -47,14 +47,15 @@ const (
 	WindowSize                       = 37
 	WindowToggleFullscreen           = 38
 	WindowToggleMaximise             = 39
-	WindowUnFullscreen               = 40
-	WindowUnMaximise                 = 41
-	WindowUnMinimise                 = 42
-	WindowWidth                      = 43
-	WindowZoom                       = 44
-	WindowZoomIn                     = 45
-	WindowZoomOut                    = 46
-	WindowZoomReset                  = 47
+	WindowToggleFrameless            = 40
+	WindowUnFullscreen               = 41
+	WindowUnMaximise                 = 42
+	WindowUnMinimise                 = 43
+	WindowWidth                      = 44
+	WindowZoom                       = 45
+	WindowZoomIn                     = 46
+	WindowZoomOut                    = 47
+	WindowZoomReset                  = 48
 )
 
 var windowMethodNames = map[int]string{
@@ -98,6 +99,7 @@ var windowMethodNames = map[int]string{
 	WindowSize:                       "Size",
 	WindowToggleFullscreen:           "ToggleFullscreen",
 	WindowToggleMaximise:             "ToggleMaximise",
+	WindowToggleFrameless:            "ToggleFrameless",
 	WindowUnFullscreen:               "UnFullscreen",
 	WindowUnMaximise:                 "UnMaximise",
 	WindowUnMinimise:                 "UnMinimise",
@@ -108,7 +110,13 @@ var windowMethodNames = map[int]string{
 	WindowZoomReset:                  "ZoomReset",
 }
 
-func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
+func (m *MessageProcessor) processWindowMethod(
+	method int,
+	rw http.ResponseWriter,
+	_ *http.Request,
+	window Window,
+	params QueryParams,
+) {
 	args, err := params.Args()
 	if err != nil {
 		m.httpError(rw, "Invalid window call:", fmt.Errorf("unable to parse arguments: %w", err))
@@ -211,7 +219,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetAlwaysOnTop:
 		alwaysOnTop := args.Bool("alwaysOnTop")
 		if alwaysOnTop == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'alwaysOnTop'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'alwaysOnTop'"),
+			)
 			return
 		}
 		window.SetAlwaysOnTop(*alwaysOnTop)
@@ -247,7 +259,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetFrameless:
 		frameless := args.Bool("frameless")
 		if frameless == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'frameless'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'frameless'"),
+			)
 			return
 		}
 		window.SetFrameless(*frameless)
@@ -255,12 +271,20 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetMaxSize:
 		width := args.Int("width")
 		if width == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'width'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'width'"),
+			)
 			return
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'height'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'height'"),
+			)
 			return
 		}
 		window.SetMaxSize(*width, *height)
@@ -268,12 +292,20 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetMinSize:
 		width := args.Int("width")
 		if width == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'width'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'width'"),
+			)
 			return
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'height'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'height'"),
+			)
 			return
 		}
 		window.SetMinSize(*width, *height)
@@ -294,7 +326,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetResizable:
 		resizable := args.Bool("resizable")
 		if resizable == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'resizable'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'resizable'"),
+			)
 			return
 		}
 		window.SetResizable(*resizable)
@@ -302,12 +338,20 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetSize:
 		width := args.Int("width")
 		if width == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'width'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'width'"),
+			)
 			return
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'height'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'height'"),
+			)
 			return
 		}
 		window.SetSize(*width, *height)
@@ -323,7 +367,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetZoom:
 		zoom := args.Float64("zoom")
 		if zoom == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'zoom'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'zoom'"),
+			)
 			return
 		}
 		window.SetZoom(*zoom)
@@ -345,6 +393,9 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 		m.ok(rw)
 	case WindowToggleMaximise:
 		window.ToggleMaximise()
+		m.ok(rw)
+	case WindowToggleFrameless:
+		window.ToggleFrameless()
 		m.ok(rw)
 	case WindowUnFullscreen:
 		window.UnFullscreen()

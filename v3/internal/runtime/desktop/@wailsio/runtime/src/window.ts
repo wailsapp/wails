@@ -51,14 +51,15 @@ const ShowMethod                        = 36;
 const SizeMethod                        = 37;
 const ToggleFullscreenMethod            = 38;
 const ToggleMaximiseMethod              = 39;
-const UnFullscreenMethod                = 40;
-const UnMaximiseMethod                  = 41;
-const UnMinimiseMethod                  = 42;
-const WidthMethod                       = 43;
-const ZoomMethod                        = 44;
-const ZoomInMethod                      = 45;
-const ZoomOutMethod                     = 46;
-const ZoomResetMethod                   = 47;
+const ToggleFramelessMethod             = 40; 
+const UnFullscreenMethod                = 41;
+const UnMaximiseMethod                  = 42;
+const UnMinimiseMethod                  = 43;
+const WidthMethod                       = 44;
+const ZoomMethod                        = 45;
+const ZoomInMethod                      = 46;
+const ZoomOutMethod                     = 47;
+const ZoomResetMethod                   = 48;
 
 /**
  * A record describing the position of a window.
@@ -451,6 +452,13 @@ class Window {
      */
     ToggleMaximise(): Promise<void> {
         return this[callerSym](ToggleMaximiseMethod);
+    }
+
+    /**
+     * Toggles the window between frameless and normal.
+     */
+    ToggleFrameless(): Promise<void> {
+        return this[callerSym](ToggleFramelessMethod);
     }
 
     /**

@@ -76,6 +76,7 @@ type Window interface {
 	ToggleFullscreen()
 	ToggleMaximise()
 	ToggleMenuBar()
+	ToggleFrameless()
 	UnFullscreen()
 	UnMaximise()
 	UnMinimise()
