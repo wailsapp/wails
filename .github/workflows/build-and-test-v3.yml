@@ -223,7 +223,7 @@ jobs:
           cd ${{ matrix.template }}
           wails3 build
 
-results:
+build_results:
   if: ${{ always() }}
   runs-on: ubuntu-latest
   name: v3 Build Results
