@@ -59,10 +59,10 @@ jobs:
     name: Run Go Tests
     runs-on: ${{ matrix.os }}
     if: >
+      github.event.pull_request.head.ref != 'update-sponsors' &&
       github.event.review.state == 'approved' && 
       github.repository == 'wailsapp/wails' && 
-      github.base_ref == 'master' &&
-      github.head_ref != 'update-sponsors'
+      github.base_ref == 'master'
     strategy:
       matrix:
         os: [ubuntu-22.04, windows-latest, macos-latest, ubuntu-24.04]
@@ -101,3 +101,15 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         working-directory: ./v2
         run: go test -v -tags webkit2_41 ./...
+    
+  # This job will run instead of test_go for the update-sponsors branch
+  skip_tests:
+    name: Skip Tests (Sponsor Update)
+    if: github.event.pull_request.head.ref == 'update-sponsors'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip tests for sponsor updates
+        run: |
+          echo "Skipping tests for sponsor update branch"
+          echo "This is an automated update of the sponsors image."
+        continue-on-error: true
