@@ -48,6 +48,10 @@ export function EventsOff(eventName, ...additionalEventNames) {
     return window.runtime.EventsOff(eventName, ...additionalEventNames);
 }
 
+export function EventsOffAll() {
+  return window.runtime.EventsOffAll();
+}
+
 export function EventsOnce(eventName, callback) {
     return EventsOnMultiple(eventName, callback, 1);
 }
