@@ -169,6 +169,7 @@ static void startSingleInstanceListener(const char *uniqueID) {
 import "C"
 import (
 	"encoding/json"
+	"fmt"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -330,17 +331,34 @@ func processWindowKeyDownEvent(windowID C.uint, acceleratorString *C.char) {
 }
 
 //export processDragItems
-func processDragItems(windowID C.uint, arr **C.char, length C.int) {
+func processDragItems(windowID C.uint, arr **C.char, length C.int, x C.int, y C.int) {
 	var filenames []string
 	// Convert the C array to a Go slice
 	goSlice := (*[1 << 30]*C.char)(unsafe.Pointer(arr))[:length:length]
 	for _, str := range goSlice {
 		filenames = append(filenames, C.GoString(str))
 	}
-	windowDragAndDropBuffer <- &dragAndDropMessage{
-		windowId:  uint(windowID),
-		filenames: filenames,
+
+	if globalApplication != nil && globalApplication.Logger != nil {
+		globalApplication.Logger.Debug("[DragDropDebug] processDragItems called", "windowID", windowID, "fileCount", len(filenames), "x", x, "y", y)
+	} else {
+		fmt.Printf("[DragDropDebug] processDragItems called - windowID: %d, fileCount: %d, x: %d, y: %d\n", windowID, len(filenames), x, y)
 	}
+	targetWindow := globalApplication.getWindowByID(uint(windowID))
+	if targetWindow == nil {
+		// Log an error if the window is not found. Consider using the application's logger.
+		// For now, a simple println to stderr or a log if available.
+		// TODO: Replace with proper logging if globalApplication.Logger is accessible and appropriate here.
+		println("Error: processDragItems could not find window with ID:", uint(windowID))
+		return
+	}
+
+	if globalApplication != nil && globalApplication.Logger != nil {
+		globalApplication.Logger.Debug("[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing")
+	} else {
+		fmt.Printf("[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing\n")
+	}
+	targetWindow.InitiateFrontendDropProcessing(filenames, int(x), int(y))
 }
 
 //export processMenuItemClick

@@ -1,8 +1,10 @@
 package application
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -55,6 +57,7 @@ const (
 	WindowZoomIn                     = 45
 	WindowZoomOut                    = 46
 	WindowZoomReset                  = 47
+	WindowDropZoneDropped            = 48
 )
 
 var windowMethodNames = map[int]string{
@@ -106,9 +109,16 @@ var windowMethodNames = map[int]string{
 	WindowZoomIn:                     "ZoomIn",
 	WindowZoomOut:                    "ZoomOut",
 	WindowZoomReset:                  "ZoomReset",
+	WindowDropZoneDropped:            "DropZoneDropped",
 }
 
-func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
+func (m *MessageProcessor) processWindowMethod(
+	method int,
+	rw http.ResponseWriter,
+	req *http.Request,
+	window Window,
+	params QueryParams,
+) {
 	args, err := params.Args()
 	if err != nil {
 		m.httpError(rw, "Invalid window call:", fmt.Errorf("unable to parse arguments: %w", err))
@@ -211,7 +221,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetAlwaysOnTop:
 		alwaysOnTop := args.Bool("alwaysOnTop")
 		if alwaysOnTop == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'alwaysOnTop'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'alwaysOnTop'"),
+			)
 			return
 		}
 		window.SetAlwaysOnTop(*alwaysOnTop)
@@ -247,7 +261,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetFrameless:
 		frameless := args.Bool("frameless")
 		if frameless == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'frameless'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'frameless'"),
+			)
 			return
 		}
 		window.SetFrameless(*frameless)
@@ -255,12 +273,20 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetMaxSize:
 		width := args.Int("width")
 		if width == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'width'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'width'"),
+			)
 			return
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'height'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'height'"),
+			)
 			return
 		}
 		window.SetMaxSize(*width, *height)
@@ -268,12 +294,20 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetMinSize:
 		width := args.Int("width")
 		if width == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'width'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'width'"),
+			)
 			return
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'height'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'height'"),
+			)
 			return
 		}
 		window.SetMinSize(*width, *height)
@@ -294,7 +328,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetResizable:
 		resizable := args.Bool("resizable")
 		if resizable == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'resizable'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'resizable'"),
+			)
 			return
 		}
 		window.SetResizable(*resizable)
@@ -302,12 +340,20 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetSize:
 		width := args.Int("width")
 		if width == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'width'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'width'"),
+			)
 			return
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'height'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'height'"),
+			)
 			return
 		}
 		window.SetSize(*width, *height)
@@ -323,7 +369,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetZoom:
 		zoom := args.Float64("zoom")
 		if zoom == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'zoom'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'zoom'"),
+			)
 			return
 		}
 		window.SetZoom(*zoom)
@@ -370,10 +420,81 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowZoomReset:
 		window.ZoomReset()
 		m.ok(rw)
+	case WindowDropZoneDropped:
+		m.Info(
+			"[DragDropDebug] processWindowMethod: Entered WindowDropZoneDropped case",
+		)
+
+		jsonArgs := params.String("args") // 'params' is the QueryParams from processWindowMethod
+		if jsonArgs == nil {
+			m.httpError(rw, "Error processing WindowDropZoneDropped: missing 'args' parameter", nil)
+			return
+		}
+
+		slog.Info("[DragDropDebug] Raw 'args' payload string:", "data", *jsonArgs)
+
+		var payload fileDropPayload
+		err := json.Unmarshal([]byte(*jsonArgs), &payload)
+		if err != nil {
+			m.httpError(rw, "Error decoding file drop payload from 'args' parameter:", err)
+			return
+		}
+		m.Info(
+			"[DragDropDebug] processWindowMethod: Decoded payload from 'args'",
+			"payload",
+			fmt.Sprintf("%+v", payload),
+		)
+
+		dropDetails := &DropZoneDetails{
+			X:          payload.X,
+			Y:          payload.Y,
+			ElementID:  payload.ElementDetails.ID,
+			ClassList:  payload.ElementDetails.ClassList,
+			Attributes: payload.ElementDetails.Attributes, // Assumes DropZoneDetails struct is updated to include this field
+		}
+
+		wvWindow, ok := window.(*WebviewWindow)
+		if !ok {
+			m.httpError(
+				rw,
+				"Error: Target window is not a WebviewWindow for FilesDroppedWithContext",
+				nil,
+			)
+			return
+		}
+
+		msg := &dragAndDropMessage{
+			windowId:  wvWindow.id,
+			filenames: payload.Filenames,
+			DropZone:  dropDetails,
+		}
+
+		m.Info(
+			"[DragDropDebug] processApplicationMethod: Sending message to windowDragAndDropBuffer",
+			"message",
+			fmt.Sprintf("%+v", msg),
+		)
+		windowDragAndDropBuffer <- msg
+		m.ok(rw)
 	default:
 		m.httpError(rw, "Invalid window call:", fmt.Errorf("unknown method %d", method))
 		return
 	}
 
 	m.Info("Runtime call:", "method", "Window."+windowMethodNames[method])
+}
+
+// ElementDetailsPayload holds detailed information about the drop target element.
+type ElementDetailsPayload struct {
+	ID         string            `json:"id"`
+	ClassList  []string          `json:"classList"`
+	Attributes map[string]string `json:"attributes"`
+}
+
+// Define a struct for the JSON payload from HandlePlatformFileDrop
+type fileDropPayload struct {
+	Filenames      []string              `json:"filenames"`
+	X              int                   `json:"x"`
+	Y              int                   `json:"y"`
+	ElementDetails ElementDetailsPayload `json:"elementDetails"`
 }

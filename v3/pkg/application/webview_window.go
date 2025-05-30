@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"runtime"
@@ -207,7 +208,10 @@ func getWindowID() uint {
 // FIXME: This should like be an interface method (TDM)
 // Use onApplicationEvent to register a callback for an application event from a window.
 // This will handle tidying up the callback when the window is destroyed
-func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func(*ApplicationEvent)) {
+func (w *WebviewWindow) onApplicationEvent(
+	eventType events.ApplicationEventType,
+	callback func(*ApplicationEvent),
+) {
 	cancelFn := globalApplication.OnApplicationEvent(eventType, callback)
 	w.addCancellationFunction(cancelFn)
 }
@@ -287,7 +291,9 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	return result
 }
 
-func processKeyBindingOptions(keyBindings map[string]func(window *WebviewWindow)) map[string]func(window *WebviewWindow) {
+func processKeyBindingOptions(
+	keyBindings map[string]func(window *WebviewWindow),
+) map[string]func(window *WebviewWindow) {
 	result := make(map[string]func(window *WebviewWindow))
 	for key, callback := range keyBindings {
 		// Parse the key to an accelerator
@@ -310,25 +316,51 @@ func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 
 func (w *WebviewWindow) CallError(callID string, result string, isJSON bool) {
 	if w.impl != nil {
-		w.impl.execJS(fmt.Sprintf("_wails.callErrorHandler('%s', '%s', %t);", callID, template.JSEscapeString(result), isJSON))
+		w.impl.execJS(
+			fmt.Sprintf(
+				"_wails.callErrorHandler('%s', '%s', %t);",
+				callID,
+				template.JSEscapeString(result),
+				isJSON,
+			),
+		)
 	}
 }
 
 func (w *WebviewWindow) CallResponse(callID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(fmt.Sprintf("_wails.callResultHandler('%s', '%s', true);", callID, template.JSEscapeString(result)))
+		w.impl.execJS(
+			fmt.Sprintf(
+				"_wails.callResultHandler('%s', '%s', true);",
+				callID,
+				template.JSEscapeString(result),
+			),
+		)
 	}
 }
 
 func (w *WebviewWindow) DialogError(dialogID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(fmt.Sprintf("_wails.dialogErrorCallback('%s', '%s');", dialogID, template.JSEscapeString(result)))
+		w.impl.execJS(
+			fmt.Sprintf(
+				"_wails.dialogErrorCallback('%s', '%s');",
+				dialogID,
+				template.JSEscapeString(result),
+			),
+		)
 	}
 }
 
 func (w *WebviewWindow) DialogResponse(dialogID string, result string, isJSON bool) {
 	if w.impl != nil {
-		w.impl.execJS(fmt.Sprintf("_wails.dialogResultCallback('%s', '%s', %t);", dialogID, template.JSEscapeString(result), isJSON))
+		w.impl.execJS(
+			fmt.Sprintf(
+				"_wails.dialogResultCallback('%s', '%s', %t);",
+				dialogID,
+				template.JSEscapeString(result),
+				isJSON,
+			),
+		)
 	}
 }
 
@@ -741,8 +773,16 @@ func (w *WebviewWindow) Center() {
 }
 
 // OnWindowEvent registers a callback for the given window event
-func (w *WebviewWindow) OnWindowEvent(eventType events.WindowEventType, callback func(event *WindowEvent)) func() {
+func (w *WebviewWindow) OnWindowEvent(
+	eventType events.WindowEventType,
+	callback func(event *WindowEvent),
+) func() {
 	eventID := uint(eventType)
+	fmt.Printf(
+		"[DEBUG] OnWindowEvent: Registering window event listener - eventID: %d, eventType: %s\n",
+		eventID,
+		eventType,
+	)
 	windowEventListener := &WindowEventListener{
 		callback: callback,
 	}
@@ -762,7 +802,10 @@ func (w *WebviewWindow) OnWindowEvent(eventType events.WindowEventType, callback
 }
 
 // RegisterHook registers a hook for the given window event
-func (w *WebviewWindow) RegisterHook(eventType events.WindowEventType, callback func(event *WindowEvent)) func() {
+func (w *WebviewWindow) RegisterHook(
+	eventType events.WindowEventType,
+	callback func(event *WindowEvent),
+) func() {
 	eventID := uint(eventType)
 	w.eventHooksLock.Lock()
 	defer w.eventHooksLock.Unlock()
@@ -1170,12 +1213,42 @@ func (w *WebviewWindow) Error(message string, args ...any) {
 	globalApplication.error("in window '%s': "+message, args...)
 }
 
-func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
+func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string, dropZone *DropZoneDetails) {
+	fmt.Printf(
+		"[DragDropDebug] HandleDragAndDropMessage called - Files: %v, DropZone: %+v\n",
+		filenames,
+		dropZone,
+	)
 	thisEvent := NewWindowEvent()
+	fmt.Printf(
+		"[DragDropDebug] HandleDragAndDropMessage: thisEvent created, thisEvent.ctx is initially: %p\n",
+		thisEvent.ctx,
+	)
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(filenames)
+	if dropZone != nil { // Check if dropZone details are available
+		ctx.setDropZoneDetails(dropZone)
+	}
 	thisEvent.ctx = ctx
-	for _, listener := range w.eventListeners[uint(events.Common.WindowFilesDropped)] {
+	fmt.Printf(
+		"[DragDropDebug] HandleDragAndDropMessage: thisEvent.ctx assigned, thisEvent.ctx is now: %p, ctx is: %p\n",
+		thisEvent.ctx,
+		ctx,
+	)
+	listeners := w.eventListeners[uint(events.Common.WindowDropZoneFilesDropped)]
+	fmt.Printf(
+		"[DragDropDebug] HandleDragAndDropMessage: Found %d listeners for WindowDropZoneFilesDropped\n",
+		len(listeners),
+	)
+	fmt.Printf(
+		"[DragDropDebug] HandleDragAndDropMessage: Before calling listeners, thisEvent.ctx is: %p\n",
+		thisEvent.ctx,
+	)
+	for _, listener := range listeners {
+		if listener == nil {
+			fmt.Println("[DragDropDebug] HandleDragAndDropMessage: Skipping nil listener")
+			continue
+		}
 		listener.callback(thisEvent)
 	}
 }
@@ -1382,4 +1455,38 @@ func (w *WebviewWindow) ToggleMenuBar() {
 		return
 	}
 	InvokeSync(w.impl.toggleMenuBar)
+}
+
+func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int, y int) {
+	fmt.Printf(
+		"[DragDropDebug] InitiateFrontendDropProcessing called - X: %d, Y: %d",
+		x,
+		y,
+	)
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+
+	filenamesJSON, err := json.Marshal(filenames)
+	if err != nil {
+		w.Error("Error marshalling filenames for drop processing: %s", err)
+		return
+	}
+
+	jsCall := fmt.Sprintf(
+		"window.wails.Window.HandlePlatformFileDrop(%s, %d, %d);",
+		string(filenamesJSON),
+		x,
+		y,
+	)
+
+	// Ensure JS is executed after runtime is loaded
+	if !w.runtimeLoaded {
+		w.pendingJS = append(w.pendingJS, jsCall)
+		return
+	}
+
+	InvokeSync(func() {
+		w.impl.execJS(jsCall)
+	})
 }
