@@ -40,11 +40,12 @@ func (em *EnvironmentManager) IsDarkMode() bool {
 	return em.app.impl.isDarkMode()
 }
 
-// GetAccentColor returns the accent color for MacOS as a rgb string
-// and "rgb(0,122,255)" for the other operating systems
+// GetAccentColor() returns the accent color for the OS. Returns
+// "rgb(0,122,255)" for Windows and Linus as they have no unified
+// system accent color api
 func (em *EnvironmentManager) GetAccentColor() string {
 	if em.app.impl == nil {
-		return "rgb(0,122,255)"
+		return ""
 	}
 	return em.app.impl.getAccentColor()
 }
