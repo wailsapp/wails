@@ -837,20 +837,6 @@ func (a *App) dispatchEventToListeners(event *CustomEvent) {
 	}
 }
 
-func (a *App) IsDarkMode() bool {
-	if a.impl == nil {
-		return false
-	}
-	return a.impl.isDarkMode()
-}
-
-func (a *App) GetAccentColor() string {
-	if a.impl == nil {
-		return "rgb(0,122,255)"
-	}
-	return a.impl.getAccentColor()
-}
-
 func (a *App) Hide() {
 	if a.impl != nil {
 		a.impl.hide()
