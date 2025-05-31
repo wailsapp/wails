@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"io"
 	"log/slog"
 	"net/http"
@@ -16,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 
 	"github.com/wailsapp/wails/v3/internal/fileexplorer"
 
@@ -204,6 +205,7 @@ type (
 		GetFlags(options Options) map[string]any
 		isOnMainThread() bool
 		isDarkMode() bool
+		getAccentColor() string
 	}
 
 	runnable interface {
@@ -1044,6 +1046,13 @@ func (a *App) IsDarkMode() bool {
 		return false
 	}
 	return a.impl.isDarkMode()
+}
+
+func (a *App) GetAccentColor() string {
+	if a.impl == nil {
+		return "rgb(0,122,255)"
+	}
+	return a.impl.getAccentColor()
 }
 
 func (a *App) Hide() {
