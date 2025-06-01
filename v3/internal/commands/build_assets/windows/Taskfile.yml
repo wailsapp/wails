@@ -31,9 +31,16 @@ tasks:
       PRODUCTION: '{{.PRODUCTION | default "false"}}'
 
   package:
-    summary: Packages a production build of the application into a `.exe` bundle
+    summary: Packages a production build of the application
     cmds:
-      - task: create:nsis:installer
+      - |-
+        if [ "{{.FORMAT | default "nsis"}}" = "msix" ]; then
+          task: create:msix:package
+        else
+          task: create:nsis:installer
+        fi
+    vars:
+      FORMAT: '{{.FORMAT | default "nsis"}}'
 
   generate:syso:
     summary: Generates Windows `.syso` file
@@ -57,6 +64,34 @@ tasks:
     vars:
       ARCH: '{{.ARCH | default ARCH}}'
       ARG_FLAG: '{{if eq .ARCH "amd64"}}AMD64{{else}}ARM64{{end}}'
+
+  create:msix:package:
+    summary: Creates an MSIX package
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+    cmds:
+      - |-
+        wails3 tool msix \
+          --config "{{.ROOT_DIR}}/wails.json" \
+          --name "{{.APP_NAME}}" \
+          --executable "{{.ROOT_DIR}}/{{.BIN_DIR}}/{{.APP_NAME}}.exe" \
+          --arch "{{.ARCH}}" \
+          --out "{{.ROOT_DIR}}/{{.BIN_DIR}}/{{.APP_NAME}}-{{.ARCH}}.msix" \
+          {{if .CERT_PATH}}--cert "{{.CERT_PATH}}"{{end}} \
+          {{if .PUBLISHER}}--publisher "{{.PUBLISHER}}"{{end}} \
+          {{if .USE_MSIX_TOOL}}--use-msix-tool{{else}}--use-makeappx{{end}}
+    vars:
+      ARCH: '{{.ARCH | default ARCH}}'
+      CERT_PATH: '{{.CERT_PATH | default ""}}'
+      PUBLISHER: '{{.PUBLISHER | default ""}}'
+      USE_MSIX_TOOL: '{{.USE_MSIX_TOOL | default "false"}}'
+
+  install:msix:tools:
+    summary: Installs tools required for MSIX packaging
+    cmds:
+      - wails3 tool msix-install-tools
 
   run:
     cmds:

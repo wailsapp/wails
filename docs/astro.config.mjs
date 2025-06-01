@@ -127,6 +127,7 @@ export default defineConfig({
         //   collapsed: true,
         //   autogenerate: { directory: "development", collapsed: true },
         // },
+        { label: "Contributing", link: "/contributing" },
         { label: "Status", link: "/status" },
         { label: "Changelog", link: "/changelog" },
         {
