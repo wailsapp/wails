@@ -223,23 +223,23 @@ jobs:
           cd ${{ matrix.template }}
           wails3 build
 
-results:
-  if: ${{ always() }}
-  runs-on: ubuntu-latest
-  name: v3 Build Results
-  needs: [test_go, test_js, test_templates]
-  steps:
-    - run: |
-        go_result="${{ needs.test_go.result }}"
-        js_result="${{ needs.test_js.result }}"
-        templates_result="${{ needs.test_templates.result }}"
-        
-        if [[ $go_result == "success" || $go_result == "skipped" ]] && \
-           [[ $js_result == "success" || $js_result == "skipped" ]] && \
-           [[ $templates_result == "success" || $templates_result == "skipped" ]]; then
-          echo "All required jobs succeeded or were skipped"
-          exit 0
-        else
-          echo "One or more required jobs failed"
-          exit 1
-        fi
+  build_results:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: v3 Build Results
+    needs: [test_go, test_js, test_templates]
+    steps:
+      - run: |
+          go_result="${{ needs.test_go.result }}"
+          js_result="${{ needs.test_js.result }}"
+          templates_result="${{ needs.test_templates.result }}"
+          
+          if [[ $go_result == "success" || $go_result == "skipped" ]] && \
+             [[ $js_result == "success" || $js_result == "skipped" ]] && \
+             [[ $templates_result == "success" || $templates_result == "skipped" ]]; then
+            echo "All required jobs succeeded or were skipped"
+            exit 0
+          else
+            echo "One or more required jobs failed"
+            exit 1
+          fi
