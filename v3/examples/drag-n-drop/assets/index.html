@@ -252,6 +252,95 @@ The folder elements have the following attributes:
         const pathDisplay = document.getElementById('current-path');
         const folderNodes = document.querySelectorAll('.folder-dropzone');
         
+        // Add debug coordinate overlay
+        let debugOverlay = null;
+        
+        function createDebugOverlay() {
+            if (debugOverlay) return;
+            
+            debugOverlay = document.createElement('div');
+            debugOverlay.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                font-family: monospace;
+                font-size: 12px;
+                z-index: 10000;
+                pointer-events: none;
+                white-space: pre-line;
+            `;
+            document.body.appendChild(debugOverlay);
+        }
+        
+        function updateDebugOverlay(info) {
+            if (!debugOverlay) createDebugOverlay();
+            debugOverlay.textContent = info;
+        }
+        
+        // Track mouse position and other debug info
+        let mouseInfo = { x: 0, y: 0 };
+        let windowInfo = { width: window.innerWidth, height: window.innerHeight };
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseInfo.x = e.clientX;
+            mouseInfo.y = e.clientY;
+            
+            const debugInfo = `Mouse: ${e.clientX}, ${e.clientY}
+Page: ${e.pageX}, ${e.pageY}
+Screen: ${e.screenX}, ${e.screenY}
+Window: ${windowInfo.width}x${windowInfo.height}
+Viewport offset: ${window.pageXOffset}, ${window.pageYOffset}`;
+            
+            updateDebugOverlay(debugInfo);
+        });
+        
+        // Add drag event listeners to show coordinates during drag
+        document.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const debugInfo = `[DRAGOVER]
+Mouse: ${e.clientX}, ${e.clientY}
+Page: ${e.pageX}, ${e.pageY}
+Screen: ${e.screenX}, ${e.screenY}
+Window: ${windowInfo.width}x${windowInfo.height}
+Target: ${e.target.tagName} ${e.target.className}`;
+            
+            updateDebugOverlay(debugInfo);
+        });
+        
+        document.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const rect = e.target.getBoundingClientRect();
+            const debugInfo = `[DROP EVENT]
+Client: ${e.clientX}, ${e.clientY}
+Page: ${e.pageX}, ${e.pageY}
+Screen: ${e.screenX}, ${e.screenY}
+Target rect: ${rect.left}, ${rect.top}, ${rect.width}x${rect.height}
+Relative to target: ${e.clientX - rect.left}, ${e.clientY - rect.top}
+Window: ${windowInfo.width}x${windowInfo.height}`;
+            
+            updateDebugOverlay(debugInfo);
+            console.log('Drop event debug info:', {
+                clientX: e.clientX,
+                clientY: e.clientY,
+                pageX: e.pageX,
+                pageY: e.pageY,
+                screenX: e.screenX,
+                screenY: e.screenY,
+                targetRect: rect,
+                relativeX: e.clientX - rect.left,
+                relativeY: e.clientY - rect.top
+            });
+        });
+        
+        window.addEventListener('resize', () => {
+            windowInfo.width = window.innerWidth;
+            windowInfo.height = window.innerHeight;
+        });
+        
         // Update path display when clicking folders
         folderNodes.forEach(folder => {
             folder.addEventListener('click', (e) => {
@@ -266,43 +355,70 @@ The folder elements have the following attributes:
         
         // Listen for the file drop event from Wails
         wails.Events.On("frontend:FileDropInfo", (eventData) => {
-            console.log("File drop detected:", eventData);
+            console.log("=============== Frontend: File Drop Debug Info ===============");
+            console.log("Full event data:", eventData);
             
             const { files, targetID, targetClasses, dropX, dropY, attributes } = eventData.data[0];
+            
+            console.log("Extracted data:", {
+                files,
+                targetID,
+                targetClasses,
+                dropX,
+                dropY,
+                attributes
+            });
             
             // Get additional folder information from the attributes
             const folderPath = attributes ? attributes['data-path'] : 'Unknown path';
             const folderName = attributes ? attributes['data-folder-name'] : 'Unknown folder';
             
-            let message = `Files dropped on folder: ${folderName}\n`;
+            let message = `=============== FILE DROP DEBUG REPORT ===============\n`;
+            message += `Files dropped on folder: ${folderName}\n`;
             message += `Target path: ${folderPath}\n`;
             message += `Element ID: ${targetID || 'N/A'}\n`;
-            message += `Element Classes: ${targetClasses && targetClasses.length > 0 ? targetClasses.join(', ') : 'N/A'}\n\n`;
+            message += `Element Classes: ${targetClasses && targetClasses.length > 0 ? targetClasses.join(', ') : 'N/A'}\n`;
+            message += `\n=== COORDINATE DEBUG INFO ===\n`;
+            message += `Drop Coordinates from Wails: X=${dropX.toFixed(2)}, Y=${dropY.toFixed(2)}\n`;
+            message += `Current Mouse Position: X=${mouseInfo.x}, Y=${mouseInfo.y}\n`;
+            message += `Window Size: ${windowInfo.width}x${windowInfo.height}\n`;
             
-            // Display all attributes from the element
+            // Get the target element to show its position
+            const targetElement = document.querySelector(`[data-folder-id="${targetID}"]`);
+            if (targetElement) {
+                const rect = targetElement.getBoundingClientRect();
+                message += `Target Element Position:\n`;
+                message += `  - Bounding rect: left=${rect.left}, top=${rect.top}, right=${rect.right}, bottom=${rect.bottom}\n`;
+                message += `  - Size: ${rect.width}x${rect.height}\n`;
+                message += `  - Center: ${rect.left + rect.width/2}, ${rect.top + rect.height/2}\n`;
+                message += `  - Drop relative to element: X=${dropX - rect.left}, Y=${dropY - rect.top}\n`;
+            }
+            
+            message += `\n=== ELEMENT ATTRIBUTES ===\n`;
             if (attributes && Object.keys(attributes).length > 0) {
-                message += "Element Attributes:\n";
                 Object.entries(attributes).forEach(([key, value]) => {
                     message += `  ${key}: "${value}"\n`;
                 });
-                message += "\n";
+            } else {
+                message += "  No attributes found\n";
             }
             
-            // List all dropped files
-            message += "Dropped Files:\n";
-            files.forEach(file => {
-                message += `  → ${file}\n`;
+            message += `\n=== DROPPED FILES ===\n`;
+            files.forEach((file, index) => {
+                message += `  ${index + 1}. ${file}\n`;
             });
             
-            message += `\nDrop Coordinates: X=${dropX.toFixed(2)}, Y=${dropY.toFixed(2)}`;
-            
-            // Show a simulated upload message
-            message += "\n\nSimulating upload to " + folderPath + "...";
+            message += `\n=== SIMULATION ===\n`;
+            message += `Simulating upload to ${folderPath}...\n`;
+            message += `===========================================`;
             
             outputDiv.textContent = message;
+            
+            console.log("=============== End Frontend Debug ===============");
         });
         
-        console.log("File Tree Drag-and-Drop example initialized.");
+        console.log("File Tree Drag-and-Drop example initialized with enhanced debugging.");
+        createDebugOverlay();
     </script>
 </body>
 </html>

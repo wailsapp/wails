@@ -513,6 +513,59 @@ func (w *windowsWebviewWindow) getBorderSizes() *LRTB {
 	return &result
 }
 
+// convertWindowToWebviewCoordinates converts window-relative coordinates to webview-relative coordinates
+func (w *windowsWebviewWindow) convertWindowToWebviewCoordinates(windowX, windowY int) (int, int) {
+	// Get the client area of the window (this excludes borders, title bar, etc.)
+	clientRect := w32.GetClientRect(w.hwnd)
+	if clientRect == nil {
+		// Fallback: return coordinates as-is if we can't get client rect
+		fmt.Printf("[DragDropDebug] convertWindowToWebviewCoordinates: Failed to get client rect, returning original coordinates (%d, %d)\n", windowX, windowY)
+		return windowX, windowY
+	}
+
+	// Get the window rect to calculate the offset
+	windowRect := w32.GetWindowRect(w.hwnd)
+
+	fmt.Printf("[DragDropDebug] convertWindowToWebviewCoordinates: Input window coordinates: (%d, %d)\n", windowX, windowY)
+	fmt.Printf("[DragDropDebug] convertWindowToWebviewCoordinates: Window rect: Left=%d, Top=%d, Right=%d, Bottom=%d (Size: %dx%d)\n",
+		windowRect.Left, windowRect.Top, windowRect.Right, windowRect.Bottom,
+		windowRect.Right-windowRect.Left, windowRect.Bottom-windowRect.Top)
+	fmt.Printf("[DragDropDebug] convertWindowToWebviewCoordinates: Client rect: Left=%d, Top=%d, Right=%d, Bottom=%d (Size: %dx%d)\n",
+		clientRect.Left, clientRect.Top, clientRect.Right, clientRect.Bottom,
+		clientRect.Right-clientRect.Left, clientRect.Bottom-clientRect.Top)
+
+	// Convert client (0,0) to screen coordinates to find where the client area starts
+	var point w32.POINT
+	point.X = 0
+	point.Y = 0
+
+	// Convert client (0,0) to screen coordinates
+	clientX, clientY := w32.ClientToScreen(w.hwnd, int(point.X), int(point.Y))
+
+	// The window coordinates from drag drop are relative to the window's top-left
+	// But we need them relative to the client area's top-left
+	// So we need to subtract the difference between window origin and client origin
+	windowOriginX := int(windowRect.Left)
+	windowOriginY := int(windowRect.Top)
+
+	fmt.Printf("[DragDropDebug] convertWindowToWebviewCoordinates: Client (0,0) in screen coordinates: (%d, %d)\n", clientX, clientY)
+	fmt.Printf("[DragDropDebug] convertWindowToWebviewCoordinates: Window origin in screen coordinates: (%d, %d)\n", windowOriginX, windowOriginY)
+
+	// Calculate the offset from window origin to client origin
+	offsetX := clientX - windowOriginX
+	offsetY := clientY - windowOriginY
+
+	fmt.Printf("[DragDropDebug] convertWindowToWebviewCoordinates: Calculated offset: (%d, %d)\n", offsetX, offsetY)
+
+	// Convert window-relative coordinates to webview-relative coordinates
+	webviewX := windowX - offsetX
+	webviewY := windowY - offsetY
+
+	fmt.Printf("[DragDropDebug] convertWindowToWebviewCoordinates: Final webview coordinates: (%d, %d)\n", webviewX, webviewY)
+
+	return webviewX, webviewY
+}
+
 func (w *windowsWebviewWindow) physicalBounds() Rect {
 	// var rect w32.RECT
 	// // Get the extended frame bounds instead of the window rect to offset the invisible borders in Windows 10
@@ -1699,7 +1752,20 @@ func (w *windowsWebviewWindow) setupChromium() {
 		w.dropTarget = w32.NewDropTarget()
 		w.dropTarget.OnDrop = func(files []string, x int, y int) {
 			w.parent.emit(events.Windows.WindowDragDrop)
-			w.parent.InitiateFrontendDropProcessing(files, x, y)
+			fmt.Printf("[DragDropDebug] Windows DropTarget OnDrop: Raw screen coordinates: (%d, %d)\n", x, y)
+
+			// Convert screen coordinates to window-relative coordinates first
+			// Windows DropTarget gives us screen coordinates, but we need window-relative coordinates
+			windowRect := w32.GetWindowRect(w.hwnd)
+			windowRelativeX := x - int(windowRect.Left)
+			windowRelativeY := y - int(windowRect.Top)
+
+			fmt.Printf("[DragDropDebug] Windows DropTarget OnDrop: After screen-to-window conversion: (%d, %d)\n", windowRelativeX, windowRelativeY)
+
+			// Convert window-relative coordinates to webview-relative coordinates
+			webviewX, webviewY := w.convertWindowToWebviewCoordinates(windowRelativeX, windowRelativeY)
+			fmt.Printf("[DragDropDebug] Windows DropTarget OnDrop: Final webview coordinates: (%d, %d)\n", webviewX, webviewY)
+			w.parent.InitiateFrontendDropProcessing(files, webviewX, webviewY)
 		}
 		if opts.OnEnterEffect != 0 {
 			w.dropTarget.OnEnterEffect = convertEffect(opts.OnEnterEffect)
@@ -2026,7 +2092,15 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(
 			}
 		}
 
-		w.parent.InitiateFrontendDropProcessing(filenames, x, y)
+		fmt.Printf("[DragDropDebug] processMessageWithAdditionalObjects: Raw WebView2 coordinates: (%d, %d)\n", x, y)
+
+		// Convert webview-relative coordinates to window-relative coordinates, then to webview-relative coordinates
+		// Note: The coordinates from WebView2 are already webview-relative, but let's log them for debugging
+		webviewX, webviewY := x, y
+
+		fmt.Printf("[DragDropDebug] processMessageWithAdditionalObjects: Using coordinates as-is (already webview-relative): (%d, %d)\n", webviewX, webviewY)
+
+		w.parent.InitiateFrontendDropProcessing(filenames, webviewX, webviewY)
 		return
 	}
 }

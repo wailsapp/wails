@@ -51,13 +51,16 @@ func FilesDroppedOnTarget(
 	dropX float64,
 	dropY float64,
 	isTargetDropzone bool, // This parameter is kept for logging but not sent to frontend in this event
+	attributes map[string]string,
 ) {
-	log.Println("Go: FilesDroppedOnTarget method called")
+	log.Println("=============== Go: FilesDroppedOnTarget Debug Info ===============")
 	log.Println(fmt.Sprintf("  Files: %v", files))
 	log.Println(fmt.Sprintf("  Target ID: '%s'", targetID))
 	log.Println(fmt.Sprintf("  Target Classes: %v", targetClasses))
 	log.Println(fmt.Sprintf("  Drop X: %f, Drop Y: %f", dropX, dropY))
 	log.Println(fmt.Sprintf("  Drop occurred on a designated dropzone (runtime validated before this Go event): %t", isTargetDropzone))
+	log.Println(fmt.Sprintf("  Element Attributes: %v", attributes))
+	log.Println("================================================================")
 
 	payload := FileDropInfo{
 		Files:         files,
@@ -65,6 +68,7 @@ func FilesDroppedOnTarget(
 		TargetClasses: targetClasses,
 		DropX:         dropX,
 		DropY:         dropY,
+		Attributes:    attributes,
 	}
 
 	log.Println("Go: Emitted 'frontend:FileDropInfo' event with payload:", payload)
@@ -101,10 +105,22 @@ func main() {
 	win.OnWindowEvent(
 		events.Common.WindowDropZoneFilesDropped,
 		func(event *application.WindowEvent) {
+			log.Println("=============== WindowDropZoneFilesDropped Event Debug ===============")
+
 			droppedFiles := event.Context().DroppedFiles()
 			details := event.Context().DropZoneDetails()
-			// Call the App method with the extracted data
+
+			log.Printf("Dropped files count: %d", len(droppedFiles))
+			log.Printf("Event context: %+v", event.Context())
+
 			if details != nil {
+				log.Printf("DropZone details found:")
+				log.Printf("  ElementID: '%s'", details.ElementID)
+				log.Printf("  ClassList: %v", details.ClassList)
+				log.Printf("  X: %d, Y: %d", details.X, details.Y)
+				log.Printf("  Attributes: %+v", details.Attributes)
+
+				// Call the App method with the extracted data
 				FilesDroppedOnTarget(
 					droppedFiles,
 					details.ElementID,
@@ -112,11 +128,13 @@ func main() {
 					float64(details.X),
 					float64(details.Y),
 					details.ElementID != "", // isTargetDropzone based on whether an ID was found
+					details.Attributes,
 				)
 			} else {
+				log.Println("DropZone details are nil - drop was not on a specific registered zone")
 				// This case might occur if DropZoneDetails are nil, meaning the drop was not on a specific registered zone
 				// or if the context itself was problematic.
-				FilesDroppedOnTarget(droppedFiles, "", nil, 0, 0, false)
+				FilesDroppedOnTarget(droppedFiles, "", nil, 0, 0, false, nil)
 			}
 
 			payload := FileDropInfo{
@@ -127,7 +145,10 @@ func main() {
 				DropY:         float64(details.Y),
 				Attributes:    details.Attributes, // Add the attributes
 			}
+
+			log.Printf("Emitting event payload: %+v", payload)
 			application.Get().EmitEvent("frontend:FileDropInfo", payload)
+			log.Println("=============== End WindowDropZoneFilesDropped Event Debug ===============")
 		},
 	)
 
