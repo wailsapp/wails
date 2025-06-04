@@ -217,6 +217,15 @@ To designate an HTML element as a dropzone, add the `data-wails-dropzone` attrib
 <div id="anotherZone" data-wails-dropzone style="width: 300px; height: 100px; border: 1px solid grey;">
   Another drop target
 </div>
+
+<!-- Advanced example with custom data attributes -->
+<div class="tree-node folder folder-dropzone" 
+     data-wails-dropzone 
+     data-folder-id="documents"
+     data-folder-name="Documents" 
+     data-path="/home/user/Documents">
+  <span>📁 Documents</span>
+</div>
 ```
 
 #### 2. Visual Feedback
@@ -251,7 +260,7 @@ The runtime handles adding and removing the `wails-dropzone-hover` class as file
 
 #### 3. Handling Drops in Go
 
-On the Go side, listen for the `events.Common.WindowDropZoneFilesDropped` event. This event will **only** be emitted when files are dropped onto an element that has the `data-wails-dropzone` attribute.
+On the Go side, listen for the `events.Common.WindowDropZoneFilesDropped` event. This event will be emitted when files are dropped onto an element that has the `data-wails-dropzone` attribute.
 
 **Example Go Handler:**
 ```go
@@ -273,12 +282,36 @@ win.OnWindowEvent(events.Common.WindowDropZoneFilesDropped, func(event *applicat
         log.Printf("Element Classes: %v", details.ClassList)
         log.Printf("Drop Coordinates (relative to window): X=%d, Y=%d", details.X, details.Y)
         
+        // Access custom data attributes from the HTML element
+        if folderName, exists := details.Attributes["data-folder-name"]; exists {
+            log.Printf("Folder name: %s", folderName)
+        }
+        if folderPath, exists := details.Attributes["data-path"]; exists {
+            log.Printf("Target path: %s", folderPath)
+        }
+        
+        // Example: Handle different dropzone types based on ElementID
+        switch details.ElementID {
+        case "documents":
+            log.Printf("Files dropped on Documents folder")
+            // Handle document uploads
+        case "downloads":
+            log.Printf("Files dropped on Downloads folder") 
+            // Handle download folder drops
+        case "trash":
+            log.Printf("Files dropped on Trash")
+            // Handle file deletion
+        default:
+            log.Printf("Files dropped on unknown target: %s", details.ElementID)
+        }
+        
         payload := map[string]interface{}{
             "files":         droppedFiles,
             "targetID":      details.ElementID,
             "targetClasses": details.ClassList,
             "dropX":         details.X,
             "dropY":         details.Y,
+            "attributes":    details.Attributes,
         }
         application.Get().EmitEvent("frontend:FileDropInfo", payload) // Emits globally
         // or win.EmitEvent("frontend:FileDropInfoForWindow", payload) // Emits to this specific window
@@ -288,14 +321,13 @@ win.OnWindowEvent(events.Common.WindowDropZoneFilesDropped, func(event *applicat
 })
 ```
 The `event.Context().DropZoneDetails()` method returns a pointer to an `application.DropZoneDetails` struct (or `nil` if details aren't available), containing:
-- `ElementID string`: The `id` attribute of the HTML element that was the direct target of the drop.
-- `ClassList []string`: The list of CSS classes of the HTML element.
+- `ElementID string`: The id of the element dropped onto
+- `ClassList []string`: The list of CSS classes of the HTML element that received the drop.
 - `X int`: The X-coordinate of the drop, relative to the window's content area.
 - `Y int`: The Y-coordinate of the drop, relative to the window's content area.
+- `Attributes map[string]string`: A map containing all HTML attributes of the target element, allowing access to custom data attributes like `data-path`, `data-folder-name`, etc.
 
 The `event.Context().DroppedFiles()` method returns a `[]string` of file paths.
-
-If the drop occurs on an element that is a child of an element with `data-wails-dropzone`, `ElementID` and `ClassList` will refer to the child element, but the event is still correctly filtered by the parent dropzone attribute.
 
 For a fully runnable demonstration of these features, including multiple styled dropzones, please refer to the example located in the `v3/examples/drag-n-drop` directory within the Wails repository.
 
