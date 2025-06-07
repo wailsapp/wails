@@ -1,3 +1,6 @@
+//go:build linux && !webkit_6
+// +build linux,!webkit_6
+
 #ifndef window_h
 #define window_h
 

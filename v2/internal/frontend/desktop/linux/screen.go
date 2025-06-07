@@ -4,13 +4,22 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0 
-#cgo !webkit2_41 pkg-config: webkit2gtk-4.0
+#cgo webkit_6 CFLAGS: -DWEBKIT_6
+#cgo !webkit_6 pkg-config: gtk+-3.0
+#cgo webkit_6 pkg-config: gtk4
+#cgo !(webkit2_41 || webkit_6) pkg-config: webkit2gtk-4.0
 #cgo webkit2_41 pkg-config: webkit2gtk-4.1
+#cgo webkit_6 pkg-config: webkitgtk-6.0
 
 #cgo CFLAGS: -w
 #include <stdio.h>
+
+#ifdef WEBKIT_6
+#include "webkit/webkit.h"
+#else
 #include "webkit2/webkit2.h"
+#endif
+
 #include "gtk/gtk.h"
 #include "gdk/gdk.h"
 
