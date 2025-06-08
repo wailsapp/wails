@@ -208,7 +208,7 @@ func (p *Project) setDefaults() {
 		if !strings.HasSuffix(p.OutputFilename, ".exe") {
 			p.OutputFilename += ".exe"
 		}
-	case "darwin", "linux":
+	case "darwin", "freebsd", "linux":
 		p.OutputFilename = strings.TrimSuffix(p.OutputFilename, ".exe")
 	}
 }

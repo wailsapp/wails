@@ -1,4 +1,4 @@
-//go:build (linux || darwin) && !bindings
+//go:build (linux || darwin || freebsd) && !bindings
 
 package app
 

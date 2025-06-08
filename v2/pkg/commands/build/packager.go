@@ -30,6 +30,8 @@ func packageProject(options *Options, platform string) error {
 		err = packageApplicationForWindows(options)
 	case "linux":
 		err = packageApplicationForLinux(options)
+	case "freebsd":
+		err = packageApplicationForFreeBSD(options)
 	default:
 		err = fmt.Errorf("packing not supported for %s yet", platform)
 	}
@@ -182,6 +184,10 @@ func packageApplicationForWindows(options *Options) error {
 		return err
 	}
 
+	return nil
+}
+
+func packageApplicationForFreeBSD(_ *Options) error {
 	return nil
 }
 

@@ -132,6 +132,8 @@ func buildApplication(f *flags.Build) error {
 		"darwin/amd64",
 		"darwin/arm64",
 		"darwin/universal",
+		"freebsd",
+		"freebsd/amd64",
 		"linux",
 		"linux/amd64",
 		"linux/arm64",
@@ -203,7 +205,7 @@ func buildApplication(f *flags.Build) error {
 			switch buildOptions.Platform {
 			case "windows":
 				desiredFilename = fmt.Sprintf("%s-%s", desiredFilename, buildOptions.Arch)
-			case "linux", "darwin":
+			case "linux", "darwin", "freebsd":
 				desiredFilename = fmt.Sprintf("%s-%s-%s", desiredFilename, buildOptions.Platform, buildOptions.Arch)
 			}
 		}

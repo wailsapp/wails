@@ -1,4 +1,4 @@
-//go:build linux && !(webkit2_36 || webkit2_40 || webkit2_41)
+//go:build (linux || freebsd) && !(webkit2_36 || webkit2_40 || webkit2_41)
 
 package webview
 
@@ -24,7 +24,7 @@ func webkit_uri_scheme_request_get_http_method(_ *C.WebKitURISchemeRequest) stri
 }
 
 func webkit_uri_scheme_request_get_http_headers(_ *C.WebKitURISchemeRequest) http.Header {
-	// Fake some basic default headers that are needed if e.g. request are being proxied to the an external sever, like
+	// Fake some basic default headers that are needed if e.g. request are being proxied to the an external server, like
 	// we do in the devserver.
 	h := http.Header{}
 	h.Add("Accept", "*/*")

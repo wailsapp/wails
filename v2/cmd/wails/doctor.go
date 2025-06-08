@@ -103,6 +103,12 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 				cpuInfo = strings.TrimSpace(stdout)
 			}
 		}
+		if runtime.GOOS == "freebsd" {
+			// Try to get CPU info from sysctl
+			if stdout, _, err := shell.RunCommand("", "sysctl", "-a", "hw.model"); err == nil {
+				cpuInfo = strings.TrimSpace(strings.Split(string(stdout), ":")[1])
+			}
+		}
 		systemTabledata = append(systemTabledata, []string{"CPU", cpuInfo})
 	}
 
