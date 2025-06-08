@@ -141,7 +141,7 @@ func (b *BaseBuilder) OutputFilename(options *Options) string {
 		switch b.options.Platform {
 		case "windows":
 			outputFile = target + ".exe"
-		case "darwin", "linux":
+		case "darwin", "freebsd", "linux":
 			if b.options.Arch == "" {
 				b.options.Arch = runtime.GOARCH
 			}
