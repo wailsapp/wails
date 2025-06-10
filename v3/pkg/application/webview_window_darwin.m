@@ -231,6 +231,11 @@ extern bool hasListeners(unsigned int);
 @implementation WebviewWindowDelegate
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+    // Check if this window should close unconditionally (called from Close() method)
+    if (delegate.shouldClose) {
+        return true;
+    }
+    // Otherwise, emit the WindowClosing event and let the application decide
     processWindowEvent(delegate.windowId, EventWindowShouldClose);
     return false;
 }

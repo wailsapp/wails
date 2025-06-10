@@ -40,7 +40,7 @@ var defaultWindowEventMapping = map[string]map[WindowEventType]WindowEventType{
 		Mac.WindowZoomIn:             Common.WindowZoomIn,
 		Mac.WindowZoomOut:            Common.WindowZoomOut,
 		Mac.WindowZoomReset:          Common.WindowZoomReset,
-		Mac.WindowWillClose:          Common.WindowClosing,
+		Mac.WindowShouldClose:        Common.WindowClosing,
 	},
 	"linux": {
 		Linux.WindowDeleteEvent: Common.WindowClosing,

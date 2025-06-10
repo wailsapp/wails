@@ -43,6 +43,7 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	// Set delegate
 	[window setDelegate:delegate];
 	delegate.windowId = id;
+	delegate.shouldClose = false;
 
 	// Add NSView to window
 	NSView* view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
@@ -600,8 +601,17 @@ void windowSetShadow(void* nsWindow, bool hasShadow) {
 }
 
 
+// windowSetShouldClose sets the shouldClose flag on the window delegate
+static void windowSetShouldClose(void *window, bool shouldClose) {
+	WebviewWindow* nsWindow = (WebviewWindow*)window;
+	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[nsWindow delegate];
+	delegate.shouldClose = shouldClose;
+}
+
 // windowClose closes the current window
 static void windowClose(void *window) {
+	// Set the shouldClose flag to allow the window to close
+	windowSetShouldClose(window, true);
 	[(WebviewWindow*)window close];
 }
 
