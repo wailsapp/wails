@@ -41,6 +41,9 @@ func (p *Pacman) Packages() Packagemap {
 		"npm": []*Package{
 			{Name: "npm", SystemPackage: true},
 		},
+		"musl-dev": []*Package{
+			{Name: "musl", SystemPackage: true, Optional: true},
+		},
 	}
 }
 
