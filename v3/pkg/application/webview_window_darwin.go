@@ -43,7 +43,6 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	// Set delegate
 	[window setDelegate:delegate];
 	delegate.windowId = id;
-	delegate.shouldClose = false;
 
 	// Add NSView to window
 	NSView* view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
@@ -601,17 +600,9 @@ void windowSetShadow(void* nsWindow, bool hasShadow) {
 }
 
 
-// windowSetShouldClose sets the shouldClose flag on the window delegate
-static void windowSetShouldClose(void *window, bool shouldClose) {
-	WebviewWindow* nsWindow = (WebviewWindow*)window;
-	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[nsWindow delegate];
-	delegate.shouldClose = shouldClose;
-}
 
 // windowClose closes the current window
 static void windowClose(void *window) {
-	// Set the shouldClose flag to allow the window to close
-	windowSetShouldClose(window, true);
 	[(WebviewWindow*)window close];
 }
 
@@ -913,10 +904,12 @@ func (w *macosWebviewWindow) getScreen() (*Screen, error) {
 }
 
 func (w *macosWebviewWindow) show() {
+	globalApplication.debug("Window showing", "windowId", w.parent.id, "title", w.parent.options.Title)
 	C.windowShow(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) hide() {
+	globalApplication.debug("Window hiding", "windowId", w.parent.id, "title", w.parent.options.Title)
 	C.windowHide(w.nsWindow)
 }
 
@@ -965,7 +958,11 @@ func (w *macosWebviewWindow) windowZoom() {
 }
 
 func (w *macosWebviewWindow) close() {
+	globalApplication.debug("Window close() called - setting unconditionallyClose flag", "windowId", w.parent.id, "title", w.parent.options.Title)
+	// Set the unconditionallyClose flag to allow the window to close
+	w.parent.unconditionallyClose = true
 	C.windowClose(w.nsWindow)
+	globalApplication.debug("Window close() completed", "windowId", w.parent.id, "title", w.parent.options.Title)
 	// TODO: Check if we need to unregister the window here or not
 }
 

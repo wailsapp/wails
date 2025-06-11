@@ -25,7 +25,6 @@
 @property unsigned int invisibleTitleBarHeight;
 @property BOOL showToolbarWhenFullscreen;
 @property NSWindowStyleMask previousStyleMask; // Used to restore the window style mask when using frameless
-@property BOOL shouldClose; // Flag to indicate if the window should close unconditionally
 
 - (void)handleLeftMouseUp:(NSWindow *)window;
 - (void)handleLeftMouseDown:(NSEvent*)event;
