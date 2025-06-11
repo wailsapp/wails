@@ -2,12 +2,10 @@
 
 package capabilities
 
-import "github.com/wailsapp/wails/v3/internal/operatingsystem"
-
 func NewCapabilities() Capabilities {
 	c := Capabilities{}
-
-	webkitVersion := operatingsystem.GetWebkitVersion()
-	c.HasNativeDrag = webkitVersion.IsAtLeast(2, 36, 0)
+	// For now, assume Linux has native drag support
+	// TODO: Implement proper WebKit version detection
+	c.HasNativeDrag = true
 	return c
 }
