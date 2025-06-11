@@ -31,8 +31,7 @@ tasks:
       CGO_ENABLED: 1
       GOARCH: '{{.ARCH | default ARCH}}'
       PRODUCTION: '{{.PRODUCTION | default "false"}}'
-      CC: '{{if eq .STATIC "true"}}{{.CC | default "musl-gcc"}}{{else}}{{.CC | default ""}}{{end}}'
-
+      CC: "{{- if eq .STATIC \"true\" -}}{{.CC | default \"musl-gcc\"}}{{- else -}}{{.CC | default \"\"}}{{- end -}}"
   build:static:
     summary: Builds a statically linked application for Linux using musl
     deps:
