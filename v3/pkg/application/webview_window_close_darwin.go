@@ -6,19 +6,21 @@ package application
 #include <stdbool.h>
 */
 import "C"
+import "sync/atomic"
 
 //export windowShouldUnconditionallyClose
-func windowShouldUnconditionallyClose(windowId uint) bool {
-	window := globalApplication.getWindowForID(windowId)
+func windowShouldUnconditionallyClose(windowId C.uint) C.bool {
+	window := globalApplication.getWindowForID(uint(windowId))
 	if window == nil {
 		globalApplication.debug("windowShouldUnconditionallyClose: window not found", "windowId", windowId)
-		return false
+		return C.bool(false)
 	}
 	webviewWindow, ok := window.(*WebviewWindow)
 	if !ok {
 		globalApplication.debug("windowShouldUnconditionallyClose: window is not WebviewWindow", "windowId", windowId)
-		return false
+		return C.bool(false)
 	}
-	globalApplication.debug("windowShouldUnconditionallyClose check", "windowId", windowId, "unconditionallyClose", webviewWindow.unconditionallyClose)
-	return webviewWindow.unconditionallyClose
+	unconditionallyClose := atomic.LoadUint32(&webviewWindow.unconditionallyClose) != 0
+	globalApplication.debug("windowShouldUnconditionallyClose check", "windowId", windowId, "unconditionallyClose", unconditionallyClose)
+	return C.bool(unconditionallyClose)
 }

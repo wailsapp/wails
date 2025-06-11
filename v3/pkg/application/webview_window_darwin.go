@@ -816,6 +816,7 @@ static void setIgnoreMouseEvents(void *nsWindow, bool ignore) {
 import "C"
 import (
 	"sync"
+	"sync/atomic"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
@@ -960,7 +961,7 @@ func (w *macosWebviewWindow) windowZoom() {
 func (w *macosWebviewWindow) close() {
 	globalApplication.debug("Window close() called - setting unconditionallyClose flag", "windowId", w.parent.id, "title", w.parent.options.Title)
 	// Set the unconditionallyClose flag to allow the window to close
-	w.parent.unconditionallyClose = true
+	atomic.StoreUint32(&w.parent.unconditionallyClose, 1)
 	C.windowClose(w.nsWindow)
 	globalApplication.debug("Window close() completed", "windowId", w.parent.id, "title", w.parent.options.Title)
 	// TODO: Check if we need to unregister the window here or not
