@@ -1009,6 +1009,10 @@ func (w *linuxWebviewWindow) hide() {
 	C.gtk_widget_hide(w.gtkWidget())
 }
 
+func (w *linuxWebviewWindow) windowHide() {
+	C.gtk_widget_hide(w.gtkWidget())
+}
+
 func (w *linuxWebviewWindow) isFullscreen() bool {
 	gdkWindow := C.gtk_widget_get_window(w.gtkWidget())
 	state := C.gdk_window_get_state(gdkWindow)
@@ -1121,6 +1125,13 @@ func (w *linuxWebviewWindow) show() {
 	}
 	C.gtk_widget_show_all(w.gtkWidget())
 	//w.setPosition(w.lastX, w.lastY)
+}
+
+func (w *linuxWebviewWindow) windowShow() {
+	if w.gtkWidget() == nil {
+		return
+	}
+	C.gtk_widget_show_all(w.gtkWidget())
 }
 
 func windowIgnoreMouseEvents(window pointer, webview pointer, ignore bool) {
