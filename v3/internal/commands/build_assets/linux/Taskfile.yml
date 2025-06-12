@@ -31,7 +31,7 @@ tasks:
       CGO_ENABLED: 1
       GOARCH: '{{.ARCH | default ARCH}}'
       PRODUCTION: '{{.PRODUCTION | default "false"}}'
-      CC: "{{- if eq .STATIC \"true\" -}}{{.CC | default \"musl-gcc\"}}{{- else -}}{{.CC | default \"\"}}{{- end -}}"
+      CC: '{{ if eq .STATIC "true" }}{{ .CC | default "musl-gcc" }}{{ end }}'
   build:static:
     summary: Builds a statically linked application for Linux using musl
     deps:
@@ -45,12 +45,13 @@ tasks:
     cmds:
       - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}-static
     vars:
-      BUILD_FLAGS: '-tags production -trimpath -buildvcs=false -ldflags="-w -s -linkmode external -extldflags '\''-static'\''"'
+      BUILD_FLAGS: >-
+        -tags production -trimpath -buildvcs=false -ldflags="-w -s -linkmode external -extldflags '-static'"
     env:
       GOOS: linux
       CGO_ENABLED: 1
       GOARCH: '{{.ARCH | default ARCH}}'
-      CC: '{{.CC | default "musl-gcc"}}'
+      CC: '{{ .CC | default "musl-gcc" }}'
 
   package:
     summary: Packages a production build of the application for Linux
@@ -156,6 +157,7 @@ tasks:
       - '{{.BIN_DIR}}/{{.APP_NAME}}'
 
   run:static:
+    summary: Runs the statically linked binary
     cmds:
       - '{{.BIN_DIR}}/{{.APP_NAME}}-static'
 
@@ -173,7 +175,7 @@ tasks:
       APP_NAME: '{{.APP_NAME}}-static'
       APP_BINARY: '../../../bin/{{.APP_NAME}}-static'
       ICON: '../../appicon.png'
-      DESKTOP_FILE: '../{{.APP_NAME}}.desktop'
+      DESKTOP_FILE: '../{{ .APP_NAME | trimSuffix "-static" }}.desktop'
       OUTPUT_DIR: '../../../bin'
 
   create:deb:static:
