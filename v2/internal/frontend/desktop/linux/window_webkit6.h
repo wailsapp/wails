@@ -4,7 +4,8 @@
 #ifndef window_h
 #define window_h
 
-#include <JavaScriptCore/JavaScript.h>
+#include <jsc/jsc.h>
+// #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
 #include <stdio.h>
@@ -21,7 +22,7 @@ typedef struct ResizeOptions
 {
     void *webview;
     GtkWindow *mainwindow;
-    GdkWindowEdge edge;
+    GdkSurfaceEdge edge;
 } ResizeOptions;
 
 typedef struct JSCallback
@@ -79,7 +80,7 @@ void ExecuteOnMainThread(void *f, gpointer jscallback);
 
 GtkWidget *GTKWIDGET(void *pointer);
 GtkWindow *GTKWINDOW(void *pointer);
-GtkContainer *GTKCONTAINER(void *pointer);
+// GtkContainer *GTKCONTAINER(void *pointer);
 GtkBox *GTKBOX(void *pointer);
 
 // window
@@ -116,7 +117,7 @@ void ExecuteJS(void *data);
 
 // Drag
 void StartDrag(void *webview, GtkWindow *mainwindow);
-void StartResize(void *webview, GtkWindow *mainwindow, GdkWindowEdge edge);
+void StartResize(void *webview, GtkWindow *mainwindow, GdkSurfaceEdge edge);
 
 // Dialog
 void MessageDialog(void *data);

@@ -1,21 +1,38 @@
-//go:build linux && !webkit_6
-// +build linux,!webkit_6
+//go:build linux && webkit_6
+// +build linux,webkit_6
 
 package linux
 
 /*
-#cgo pkg-config: gtk+-3.0
-#cgo !webkit2_41 pkg-config: webkit2gtk-4.0
-#cgo webkit2_41 pkg-config: webkit2gtk-4.1
+#cgo pkg-config: gtk4
+#cgo webkit_6 pkg-config: webkitgtk-6.0
 
-#include <JavaScriptCore/JavaScript.h>
+#include <jsc/jsc.h>
+// #include <JavaScriptCore/JavaScript.h>
+
 #include <gtk/gtk.h>
-#include <webkit2/webkit2.h>
+#include <webkit/webkit.h>
 #include <stdio.h>
 #include <limits.h>
 #include <stdint.h>
-#include "window.h"
+#include "window_webkit6.h"
 
+const int G_APPLICATION_DEFAULT_FLAGS = 0;
+
+static void activate(GtkApplication *app, gpointer user_data) {
+	onActivate();
+}
+
+GtkApplication* createApp(char *appId) {
+	GtkApplication *app = gtk_application_new(appId, G_APPLICATION_DEFAULT_FLAGS);
+	g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+	return app;
+}
+
+void runApp(GtkApplication *app) {
+	g_application_run(G_APPLICATION(app), 0, NULL);
+	g_object_unref(app);
+}
 */
 import "C"
 import (
@@ -38,17 +55,17 @@ func gtkBool(input bool) C.gboolean {
 }
 
 type Window struct {
-	appoptions                               *options.App
-	debug                                    bool
-	devtoolsEnabled                          bool
-	gtkWindow                                unsafe.Pointer
-	contentManager                           unsafe.Pointer
-	webview                                  unsafe.Pointer
-	applicationMenu                          *menu.Menu
-	menubar                                  *C.GtkWidget
-	webviewBox                               *C.GtkWidget
-	vbox                                     *C.GtkWidget
-	accels                                   *C.GtkAccelGroup
+	appoptions      *options.App
+	debug           bool
+	devtoolsEnabled bool
+	gtkWindow       unsafe.Pointer
+	contentManager  unsafe.Pointer
+	webview         unsafe.Pointer
+	applicationMenu *menu.Menu
+	menubar         *C.GtkWidget
+	webviewBox      *C.GtkWidget
+	vbox            *C.GtkWidget
+	// accels       *C.GtkAccelGroup //// TODO: ???
 	minWidth, minHeight, maxWidth, maxHeight int
 }
 
@@ -58,6 +75,8 @@ func bool2Cint(value bool) C.int {
 	}
 	return C.int(0)
 }
+
+var activateWg sync.WaitGroup
 
 func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Window {
 	validateWebKit2Version(appoptions)
@@ -72,7 +91,18 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 		maxWidth:        appoptions.MaxWidth,
 	}
 
-	gtkWindow := C.gtk_window_new(C.GTK_WINDOW_TOPLEVEL)
+	activateWg.Add(1)
+
+	//// TODO: Build app id from wails.json? ex. 'wails.author.name'
+	gtkApp := C.createApp(C.CString("wails.app.dev"))
+
+	go func(gtkApp *C.GtkApplication) {
+		C.runApp(gtkApp)
+	}(gtkApp)
+
+	activateWg.Wait()
+
+	gtkWindow := C.gtk_application_window_new(gtkApp)
 	C.g_object_ref_sink(C.gpointer(gtkWindow))
 	result.gtkWindow = unsafe.Pointer(gtkWindow)
 
@@ -82,12 +112,12 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 	C.gtk_widget_set_name(result.webviewBox, webviewName)
 
 	result.vbox = C.gtk_box_new(C.GTK_ORIENTATION_VERTICAL, 0)
-	C.gtk_container_add(result.asGTKContainer(), result.vbox)
+	C.gtk_window_set_child(result.asGTKWindow(), result.vbox)
 
 	result.contentManager = unsafe.Pointer(C.webkit_user_content_manager_new())
 	external := C.CString("external")
 	defer C.free(unsafe.Pointer(external))
-	C.webkit_user_content_manager_register_script_message_handler(result.cWebKitUserContentManager(), external)
+	C.webkit_user_content_manager_register_script_message_handler(result.cWebKitUserContentManager(), external, nil)
 	C.SetupInvokeSignal(result.contentManager)
 
 	var webviewGpuPolicy int
@@ -107,8 +137,8 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 		bool2Cint(appoptions.DragAndDrop != nil && appoptions.DragAndDrop.EnableFileDrop),
 	)
 	result.webview = unsafe.Pointer(webview)
-	buttonPressedName := C.CString("button-press-event")
-	defer C.free(unsafe.Pointer(buttonPressedName))
+	// buttonPressedName := C.CString("button-press-event")
+	// defer C.free(unsafe.Pointer(buttonPressedName))
 	C.ConnectButtons(unsafe.Pointer(webview))
 
 	if devtoolsEnabled {
@@ -156,8 +186,12 @@ func (w *Window) asGTKWindow() *C.GtkWindow {
 	return C.GTKWINDOW(w.gtkWindow)
 }
 
-func (w *Window) asGTKContainer() *C.GtkContainer {
-	return C.GTKCONTAINER(w.gtkWindow)
+// func (w *Window) asGTKContainer() *C.GtkContainer {
+// 	return C.GTKCONTAINER(w.gtkWindow)
+// }
+
+func (w *Window) asGTKBox() *C.GtkBox {
+	return C.GTKBOX(w.gtkWindow)
 }
 
 func (w *Window) cWebKitUserContentManager() *C.WebKitUserContentManager {
@@ -178,8 +212,9 @@ func (w *Window) UnFullscreen() {
 }
 
 func (w *Window) Destroy() {
-	C.gtk_widget_destroy(w.asGTKWidget())
-	C.g_object_unref(C.gpointer(w.gtkWindow))
+	// C.gtk_widget_destroy(w.asGTKWidget())
+	// C.g_object_unref(C.gpointer(w.gtkWindow))
+	C.gtk_window_destroy(w.asGTKWindow())
 }
 
 func (w *Window) Close() {
@@ -201,7 +236,8 @@ func (w *Window) Size() (int, int) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	invokeOnMainThread(func() {
-		C.gtk_window_get_size(w.asGTKWindow(), &width, &height)
+		// C.gtk_window_get_size(w.asGTKWindow(), &width, &height)
+		C.gtk_window_get_default_size(w.asGTKWindow(), &width, &height)
 		wg.Done()
 	})
 	wg.Wait()
@@ -209,15 +245,16 @@ func (w *Window) Size() (int, int) {
 }
 
 func (w *Window) GetPosition() (int, int) {
-	var width, height C.int
-	var wg sync.WaitGroup
-	wg.Add(1)
-	invokeOnMainThread(func() {
-		C.gtk_window_get_position(w.asGTKWindow(), &width, &height)
-		wg.Done()
-	})
-	wg.Wait()
-	return int(width), int(height)
+	// var width, height C.int
+	// var wg sync.WaitGroup
+	// wg.Add(1)
+	// invokeOnMainThread(func() {
+	// 	C.gtk_window_get_position(w.asGTKWindow(), &width, &height)
+	// 	wg.Done()
+	// })
+	// wg.Wait()
+	// return int(width), int(height)
+	return 0, 0
 }
 
 func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
@@ -309,18 +346,21 @@ func (w *Window) SetWindowIcon(icon []byte) {
 
 func (w *Window) Run(url string) {
 	if w.menubar != nil {
-		C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), w.menubar, 0, 0, 0)
+		C.gtk_box_prepend(C.GTKBOX(unsafe.Pointer(w.vbox)), w.menubar)
 	}
 
-	C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.webviewBox)), C.GTKWIDGET(w.webview), 1, 1, 0)
-	C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), w.webviewBox, 1, 1, 0)
+	C.gtk_box_prepend(C.GTKBOX(unsafe.Pointer(w.webviewBox)), C.GTKWIDGET(w.webview))
+	C.gtk_box_prepend(C.GTKBOX(unsafe.Pointer(w.vbox)), w.webviewBox)
+
 	_url := C.CString(url)
 	C.LoadIndex(w.webview, _url)
 	defer C.free(unsafe.Pointer(_url))
 	if w.appoptions.StartHidden {
 		w.Hide()
 	}
-	C.gtk_widget_show_all(w.asGTKWidget())
+
+	C.gtk_window_present(w.asGTKWindow())
+
 	w.Center()
 	switch w.appoptions.WindowStartState {
 	case options.Fullscreen:
@@ -333,7 +373,7 @@ func (w *Window) Run(url string) {
 }
 
 func (w *Window) SetKeepAbove(top bool) {
-	C.gtk_window_set_keep_above(w.asGTKWindow(), gtkBool(top))
+	// C.gtk_window_set_keep_above(w.asGTKWindow(), gtkBool(top))
 }
 
 func (w *Window) SetResizable(resizable bool) {
@@ -345,7 +385,8 @@ func (w *Window) SetDefaultSize(width int, height int) {
 }
 
 func (w *Window) SetSize(width int, height int) {
-	C.gtk_window_resize(w.asGTKWindow(), C.gint(width), C.gint(height))
+	// C.gtk_window_resize(w.asGTKWindow(), C.gint(width), C.gint(height))
+	C.gtk_window_set_default_size(w.asGTKWindow(), C.gint(width), C.gint(height))
 }
 
 func (w *Window) SetDecorated(frameless bool) {
@@ -369,11 +410,14 @@ func (w *Window) StartDrag() {
 }
 
 func (w *Window) StartResize(edge uintptr) {
-	C.StartResize(w.webview, w.asGTKWindow(), C.GdkWindowEdge(edge))
+	C.StartResize(w.webview, w.asGTKWindow(), C.GdkSurfaceEdge(edge))
 }
 
 func (w *Window) Quit() {
-	C.gtk_main_quit()
+	// C.gtk_main_quit()
+
+	mainLoop := C.g_main_loop_new(nil, gtkBool(true))
+	C.g_main_loop_quit(mainLoop)
 }
 
 func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multipleFiles int, action C.GtkFileChooserAction) {
