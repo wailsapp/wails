@@ -31,6 +31,7 @@ func (e *Emerge) Packages() Packagemap {
 		},
 		"webkit2gtk": []*Package{
 			{Name: "net-libs/webkit-gtk:6", SystemPackage: true, Library: true},
+			{Name: "net-libs/webkit-gtk:4", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
 			{Name: "sys-devel/gcc", SystemPackage: true},
