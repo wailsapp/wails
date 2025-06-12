@@ -135,7 +135,7 @@ func checkLibrary(name string) func() *packagemanager.Dependency {
 }
 
 func checkDocker() *packagemanager.Dependency {
-	// Check for npm
+	// Check for docker
 	output, err := exec.Command("docker", "version").Output()
 	installed := true
 	version := ""

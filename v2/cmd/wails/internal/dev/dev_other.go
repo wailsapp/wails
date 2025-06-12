@@ -1,5 +1,5 @@
-//go:build darwin || linux
-// +build darwin linux
+//go:build darwin || linux || freebsd
+// +build darwin linux freebsd
 
 package dev
 
