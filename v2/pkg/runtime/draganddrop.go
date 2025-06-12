@@ -11,6 +11,9 @@ func OnFileDrop(ctx context.Context, callback func(x, y int, paths []string)) {
 		LogError(ctx, "OnFileDrop called with a nil callback")
 		return
 	}
+
+	EventsEmit(ctx, "wails:init-file-drop")
+
 	EventsOn(ctx, "wails:file-drop", func(optionalData ...interface{}) {
 		if len(optionalData) != 3 {
 			callback(0, 0, nil)
