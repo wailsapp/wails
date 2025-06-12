@@ -18,14 +18,7 @@ tasks:
     cmds:
       - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}
     vars:
-      BUILD_FLAGS: >-
-        {{ if eq .STATIC "true" }}
-          -tags production -trimpath -buildvcs=false -ldflags="-w -s -linkmode external -extldflags '-static'"
-        {{ else if eq .PRODUCTION "true" }}
-          -tags production -trimpath -buildvcs=false -ldflags="-w -s"
-        {{ else }}
-          -buildvcs=false -gcflags=all="-l"
-        {{ end }}
+      BUILD_FLAGS: '{{if eq .STATIC "true"}}-tags production -trimpath -buildvcs=false -ldflags="-w -s -linkmode external -extldflags '\''-static'\''"{{else if eq .PRODUCTION "true"}}-tags production -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-buildvcs=false -gcflags=all="-l"{{end}}'
     env:
       GOOS: linux
       CGO_ENABLED: 1
@@ -47,8 +40,7 @@ tasks:
     cmds:
       - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}-static
     vars:
-      BUILD_FLAGS: >-
-        -tags production -trimpath -buildvcs=false -ldflags="-w -s -linkmode external -extldflags '-static'"
+      BUILD_FLAGS: '-tags production -trimpath -buildvcs=false -ldflags="-w -s -linkmode external -extldflags '\''-static'\''"'
     env:
       GOOS: linux
       CGO_ENABLED: 1
