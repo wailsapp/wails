@@ -8,8 +8,6 @@ package linux
 #cgo webkit_6 pkg-config: webkitgtk-6.0
 
 #include <jsc/jsc.h>
-// #include <JavaScriptCore/JavaScript.h>
-
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
 #include <stdio.h>
@@ -212,8 +210,6 @@ func (w *Window) UnFullscreen() {
 }
 
 func (w *Window) Destroy() {
-	// C.gtk_widget_destroy(w.asGTKWidget())
-	// C.g_object_unref(C.gpointer(w.gtkWindow))
 	C.gtk_window_destroy(w.asGTKWindow())
 }
 
@@ -414,9 +410,6 @@ func (w *Window) StartResize(edge uintptr) {
 }
 
 func (w *Window) Quit() {
-	// C.gtk_main_quit()
-
-	mainLoop := C.g_main_loop_new(nil, gtkBool(true))
 	C.g_main_loop_quit(mainLoop)
 }
 

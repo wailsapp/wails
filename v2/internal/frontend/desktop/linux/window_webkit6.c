@@ -2,7 +2,6 @@
 // +build linux,webkit_6
 
 #include <jsc/jsc.h>
-// #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
 #include <stdio.h>
@@ -54,19 +53,6 @@ static void sendMessageToBackend(WebKitUserContentManager *contentManager,
                                  JSCValue *value,
                                  void *data)
 {
-// #if WEBKIT_MAJOR_VERSION >= 2 && WEBKIT_MINOR_VERSION >= 22
-//     JSCValue *value = webkit_javascript_result_get_js_value(result);
-//     char *message = jsc_value_to_string(value);
-// #else
-//     JSGlobalContextRef context = webkit_javascript_result_get_global_context(result);
-//     JSValueRef value = webkit_javascript_result_get_value(result);
-//     JSStringRef js = JSValueToStringCopy(context, value, NULL);
-//     size_t messageSize = JSStringGetMaximumUTF8CStringSize(js);
-//     char *message = g_new(char, messageSize);
-//     JSStringGetUTF8CString(js, message, messageSize);
-//     JSStringRelease(js);
-// #endif
-
     char *message = jsc_value_to_string(value);
 
     processMessage(message);
@@ -501,8 +487,13 @@ static void webviewLoadChanged(WebKitWebView *web_view, WebKitLoadEvent load_eve
 
 extern void processURLRequest(void *request);
 
+void window_hide(GtkWindow* window, gpointer data) {
+    gtk_widget_set_visible(GTK_WIDGET(window), false);
+}
+
 // This is called when the close button on the window is pressed
-gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void *data)
+// gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void *data)
+gboolean close_button_pressed(GtkWindow* window, gpointer data)
 {
     processMessage("Q");
     // since we handle the close in processMessage tell GTK to not invoke additional handlers - see:
@@ -601,14 +592,14 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
     //     g_signal_connect(G_OBJECT(webview), "drag-drop", G_CALLBACK(onDragDrop), NULL);
     // }
 
-    // if (hideWindowOnClose)
-    // {
-    //     g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    // }
-    // else
-    // {
-    //     g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(close_button_pressed), NULL);
-    // }
+    if (hideWindowOnClose)
+    {
+        g_signal_connect(window, "close-request", G_CALLBACK(window_hide), NULL);
+    }
+    else
+    {
+        g_signal_connect(window, "close-request", G_CALLBACK(close_button_pressed), NULL);
+    }
 
     WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
     webkit_settings_set_user_agent_with_application_details(settings, "wails.io", "");
