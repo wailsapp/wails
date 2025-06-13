@@ -4,6 +4,7 @@
 package linux
 
 /*
+#cgo webkit_6 CFLAGS: -DWEBKIT_6
 #cgo !webkit_6 pkg-config: gtk+-3.0
 #cgo webkit_6 pkg-config: gtk4
 #cgo !(webkit2_41 || webkit_6) pkg-config: webkit2gtk-4.0
@@ -13,6 +14,11 @@ package linux
 
 #include "gtk/gtk.h"
 
+#ifdef WEBKIT_6
+const GdkModifierType ALT_KEY_MASK = GDK_ALT_MASK;
+#else
+const GdkModifierType ALT_KEY_MASK = GDK_MOD1_MASK;
+#endif
 */
 import "C"
 import (
@@ -105,7 +111,7 @@ func parseModifiers(modifiers []keys.Modifier) C.GdkModifierType {
 		case keys.ControlKey, keys.CmdOrCtrlKey:
 			result |= C.GDK_CONTROL_MASK
 		case keys.OptionOrAltKey:
-			result |= C.GDK_MOD1_MASK
+			result |= C.ALT_KEY_MASK
 		}
 	}
 	return result
