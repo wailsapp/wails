@@ -1045,7 +1045,7 @@ func (w *macosWebviewWindow) execJS(js string) {
 		if performingShutdown {
 			return
 		}
-		if w.nsWindow == nil {
+		if w.nsWindow == nil || w.parent.isDestroyed() {
 			return
 		}
 		C.windowExecJS(w.nsWindow, C.CString(js))
