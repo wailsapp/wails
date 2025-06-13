@@ -581,9 +581,8 @@ static void onDelete(GtkWidget* self) {}
 // WebView
 GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowOnClose, int gpuPolicy, int disableWebViewDragAndDrop, int enableDragAndDrop)
 {
-    // GtkWidget *webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager *)contentManager);
-    GtkWidget *webview = webkit_web_view_new();
-    // WEBKIT_WEB_VIEW(webview)->UserContentManager = (WebKitUserContentManager *) contentManager;
+    GtkWidget *webview = GTK_WIDGET(g_object_new(WEBKIT_TYPE_WEB_VIEW, "user-content-manager", (WebKitUserContentManager *) contentManager, NULL));
+
     gtk_widget_set_vexpand(webview, true);
 
     // gtk_container_add(GTK_CONTAINER(window), webview);
