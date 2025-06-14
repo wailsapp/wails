@@ -1206,3 +1206,18 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 func isOnMainThread() bool {
 	return mainThreadId == gThreadSelf()
 }
+
+// linuxWebviewWindow show/hide methods for purego implementation
+func (w *linuxWebviewWindow) windowShow() {
+	if w.window == 0 {
+		return
+	}
+	windowShow(w.window)
+}
+
+func (w *linuxWebviewWindow) windowHide() {
+	if w.window == 0 {
+		return
+	}
+	windowHide(w.window)
+}
