@@ -1003,12 +1003,6 @@ func (w *linuxWebviewWindow) gtkWidget() *C.GtkWidget {
 	return (*C.GtkWidget)(w.window)
 }
 
-func (w *linuxWebviewWindow) hide() {
-	// save position
-	w.lastX, w.lastY = w.position()
-	C.gtk_widget_hide(w.gtkWidget())
-}
-
 func (w *linuxWebviewWindow) windowHide() {
 	C.gtk_widget_hide(w.gtkWidget())
 }
@@ -1117,14 +1111,6 @@ func (w *linuxWebviewWindow) setSize(width, height int) {
 		w.gtkWindow(),
 		C.gint(width),
 		C.gint(height))
-}
-
-func (w *linuxWebviewWindow) show() {
-	if w.gtkWidget() == nil {
-		return
-	}
-	C.gtk_widget_show_all(w.gtkWidget())
-	//w.setPosition(w.lastX, w.lastY)
 }
 
 func (w *linuxWebviewWindow) windowShow() {
