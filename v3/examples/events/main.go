@@ -27,7 +27,7 @@ func main() {
 	})
 
 	// Custom event handling
-	app.OnEvent("myevent", func(e *application.CustomEvent) {
+	app.Events.On("myevent", func(e *application.CustomEvent) {
 		app.Logger.Info("[Go] CustomEvent received", "name", e.Name, "data", e.Data, "sender", e.Sender, "cancelled", e.IsCancelled())
 	})
 
@@ -36,7 +36,7 @@ func main() {
 		for {
 			// This emits a custom event every 10 seconds
 			// As it's sent from the application, the sender will be blank
-			app.EmitEvent("myevent", "hello")
+			app.Events.Emit("myevent", "hello")
 			time.Sleep(10 * time.Second)
 		}
 	})

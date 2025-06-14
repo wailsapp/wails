@@ -161,7 +161,7 @@ func NewAboutMenuItem() *MenuItem {
 	}
 	return NewMenuItem(label).
 		OnClick(func(ctx *Context) {
-			globalApplication.ShowAboutDialog()
+			globalApplication.Menus.ShowAbout()
 		})
 }
 

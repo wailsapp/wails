@@ -13,7 +13,7 @@ type ScreenService struct {
 
 func (s *ScreenService) GetSystemScreens() []*application.Screen {
 	s.isExampleLayout = false
-	screens, _ := application.Get().GetScreens()
+	screens := application.Get().GetScreens()
 	return screens
 }
 

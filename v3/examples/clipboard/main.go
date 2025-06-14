@@ -65,7 +65,7 @@ func main() {
 		}
 	})
 
-	app.SetMenu(menu)
+	app.Menus.Set(menu)
 
 	app.NewWebviewWindow()
 

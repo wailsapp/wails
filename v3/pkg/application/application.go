@@ -17,11 +17,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/wailsapp/wails/v3/internal/fileexplorer"
-
-	"github.com/wailsapp/wails/v3/internal/operatingsystem"
-
-	"github.com/pkg/browser"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/signal"
 
@@ -277,6 +272,17 @@ type App struct {
 	applicationEventHooks         map[uint][]*eventHook
 	applicationEventHooksLock     sync.RWMutex
 
+	// Manager pattern for organized API
+	Windows      *WindowManager
+	ContextMenus *ContextMenuManager
+	KeyBindings  *KeyBindingManager
+	Browser      *BrowserManager
+	Env          *EnvironmentManager
+	Dialogs      *DialogManager
+	Events       *EventManager
+	Menus        *MenuManager
+	Screens      *ScreenManager
+
 	// Screens layout manager (handles DIP coordinate system)
 	screenManager ScreenManager
 
@@ -391,36 +397,8 @@ func (a *App) RegisterService(service Service) {
 }
 
 // EmitEvent will emit an event
-func (a *App) EmitEvent(name string, data ...any) {
-	a.customEventProcessor.Emit(&CustomEvent{
-		Name: name,
-		Data: data,
-	})
-}
-
-// EmitEvent will emit an event
 func (a *App) emitEvent(event *CustomEvent) {
 	a.customEventProcessor.Emit(event)
-}
-
-// OnEvent will listen for events
-func (a *App) OnEvent(name string, callback func(event *CustomEvent)) func() {
-	return a.customEventProcessor.On(name, callback)
-}
-
-// OffEvent will remove an event listener
-func (a *App) OffEvent(name string) {
-	a.customEventProcessor.Off(name)
-}
-
-// OnMultipleEvent will listen for events a set number of times before unsubscribing.
-func (a *App) OnMultipleEvent(name string, callback func(event *CustomEvent), counter int) {
-	a.customEventProcessor.OnMultiple(name, callback, counter)
-}
-
-// ResetEvents will remove all event listeners and hooks
-func (a *App) ResetEvents() {
-	a.customEventProcessor.OffAll()
 }
 
 func (a *App) handleFatalError(err error) {
@@ -439,6 +417,17 @@ func (a *App) init() {
 	a.Logger = a.options.Logger
 	a.pid = os.Getpid()
 	a.wailsEventListeners = make([]WailsEventListener, 0)
+
+	// Initialize managers
+	a.Windows = NewWindowManager(a)
+	a.ContextMenus = NewContextMenuManager(a)
+	a.KeyBindings = NewKeyBindingManager(a)
+	a.Browser = NewBrowserManager(a)
+	a.Env = NewEnvironmentManager(a)
+	a.Dialogs = NewDialogManager(a)
+	a.Events = NewEventManager(a)
+	a.Menus = NewMenuManager(a)
+	a.Screens = &a.screenManager
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -937,18 +926,6 @@ func (a *App) SetIcon(icon []byte) {
 	}
 }
 
-func (a *App) SetMenu(menu *Menu) {
-	a.ApplicationMenu = menu
-	if a.impl != nil {
-		a.impl.setApplicationMenu(menu)
-	}
-}
-func (a *App) ShowAboutDialog() {
-	if a.impl != nil {
-		a.impl.showAboutDialog(a.options.Name, a.options.Description, a.options.Icon)
-	}
-}
-
 func InfoDialog() *MessageDialog {
 	return newMessageDialog(InfoDialogType)
 }
@@ -973,20 +950,6 @@ func SaveFileDialog() *SaveFileDialogStruct {
 	return newSaveFileDialog()
 }
 
-// NOTE: should use screenManager directly after DPI is implemented in all platforms
-// (should also get rid of the error return)
-func (a *App) GetScreens() ([]*Screen, error) {
-	return a.impl.getScreens()
-	// return a.screenManager.screens, nil
-}
-
-// NOTE: should use screenManager directly after DPI is implemented in all platforms
-// (should also get rid of the error return)
-func (a *App) GetPrimaryScreen() (*Screen, error) {
-	return a.impl.getPrimaryScreen()
-	// return a.screenManager.primaryScreen, nil
-}
-
 func (a *App) Clipboard() *Clipboard {
 	if a.clipboard == nil {
 		a.clipboard = newClipboard()
@@ -1009,18 +972,6 @@ func (a *App) dispatchOnMainThread(fn func()) {
 	a.impl.dispatchOnMainThread(id)
 }
 
-func OpenFileDialogWithOptions(options *OpenFileDialogOptions) *OpenFileDialogStruct {
-	result := OpenFileDialog()
-	result.SetOptions(options)
-	return result
-}
-
-func SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialogStruct {
-	result := SaveFileDialog()
-	result.SetOptions(s)
-	return result
-}
-
 func (a *App) dispatchEventToListeners(event *CustomEvent) {
 	listeners := a.wailsEventListeners
 
@@ -1037,13 +988,6 @@ func (a *App) dispatchEventToListeners(event *CustomEvent) {
 		}
 		listener.DispatchWailsEvent(event)
 	}
-}
-
-func (a *App) IsDarkMode() bool {
-	if a.impl == nil {
-		return false
-	}
-	return a.impl.isDarkMode()
 }
 
 func (a *App) Hide() {
@@ -1076,21 +1020,6 @@ func (a *App) getContextMenu(name string) (*ContextMenu, bool) {
 	menu, ok := a.contextMenus[name]
 	return menu, ok
 
-}
-
-func (a *App) OnWindowCreation(callback func(window Window)) {
-	a.windowCreatedCallbacks = append(a.windowCreatedCallbacks, callback)
-}
-
-func (a *App) GetWindowByName(name string) Window {
-	a.windowsLock.RLock()
-	defer a.windowsLock.RUnlock()
-	for _, window := range a.windows {
-		if window.Name() == name {
-			return window
-		}
-	}
-	return nil
 }
 
 func (a *App) runOrDeferToAppRun(r runnable) {
@@ -1158,36 +1087,9 @@ func (a *App) AssetServerHandler() func(rw http.ResponseWriter, req *http.Reques
 	return a.assets.ServeHTTP
 }
 
-func (a *App) BrowserOpenURL(url string) error {
-	return browser.OpenURL(url)
-}
-
-func (a *App) BrowserOpenFile(path string) error {
-	return browser.OpenFile(path)
-}
-
-func (a *App) Environment() EnvironmentInfo {
-	info, _ := operatingsystem.Info()
-	result := EnvironmentInfo{
-		OS:     runtime.GOOS,
-		Arch:   runtime.GOARCH,
-		Debug:  a.isDebugMode,
-		OSInfo: info,
-	}
-	result.PlatformInfo = a.platformEnvironment()
-	return result
-}
-
 func (a *App) shouldQuit() bool {
 	if a.options.ShouldQuit != nil {
 		return a.options.ShouldQuit()
 	}
 	return true
-}
-
-// OpenFileManager opens the file manager at the specified path, optionally selecting the file.
-func (a *App) OpenFileManager(path string, selectFile bool) error {
-	return InvokeSyncWithError(func() error {
-		return fileexplorer.OpenFileManager(path, selectFile)
-	})
 }

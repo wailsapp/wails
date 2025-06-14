@@ -94,7 +94,7 @@ func main() {
 	})
 
 	// Register event handler
-	app.OnEvent("gin-button-clicked", func(event *application.CustomEvent) {
+	app.Events.On("gin-button-clicked", func(event *application.CustomEvent) {
 		log.Printf("Received event from frontend: %v", event.Data)
 	})
 

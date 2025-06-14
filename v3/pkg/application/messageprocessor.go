@@ -54,7 +54,7 @@ func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, err
 func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 	windowName := r.Header.Get(webViewRequestHeaderWindowName)
 	if windowName != "" {
-		return globalApplication.GetWindowByName(windowName), windowName
+		return globalApplication.Windows.GetByName(windowName), windowName
 	}
 	windowID := r.Header.Get(webViewRequestHeaderWindowId)
 	if windowID == "" {

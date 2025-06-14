@@ -215,7 +215,7 @@ func (m *Menu) Prepend(in *Menu) {
 }
 
 func (a *App) NewMenu() *Menu {
-	return &Menu{}
+	return a.Menus.New()
 }
 
 func NewMenuFromItems(item *MenuItem, items ...*MenuItem) *Menu {

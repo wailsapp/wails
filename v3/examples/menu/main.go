@@ -144,7 +144,7 @@ func main() {
 		}
 	})
 
-	app.SetMenu(menu)
+	app.Menus.Set(menu)
 
 	window := app.NewWebviewWindow().SetBackgroundColour(application.NewRGB(33, 37, 41))
 	window.SetMenu(menu)

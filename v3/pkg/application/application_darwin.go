@@ -290,7 +290,7 @@ func processApplicationEvent(eventID C.uint, data unsafe.Pointer) {
 
 	switch event.Id {
 	case uint(events.Mac.ApplicationDidChangeTheme):
-		isDark := globalApplication.IsDarkMode()
+		isDark := globalApplication.Env.IsDarkMode()
 		event.Context().setIsDarkMode(isDark)
 	}
 	applicationEvents <- event

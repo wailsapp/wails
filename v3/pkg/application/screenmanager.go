@@ -835,33 +835,33 @@ func (m *ScreenManager) ScreenNearestDipRect(dipRect Rect) *Screen {
 // Exported application-level methods for internal convenience and availability to application devs
 
 func DipToPhysicalPoint(dipPoint Point) Point {
-	return globalApplication.screenManager.DipToPhysicalPoint(dipPoint)
+	return globalApplication.Screens.DipToPhysicalPoint(dipPoint)
 }
 
 func PhysicalToDipPoint(physicalPoint Point) Point {
-	return globalApplication.screenManager.PhysicalToDipPoint(physicalPoint)
+	return globalApplication.Screens.PhysicalToDipPoint(physicalPoint)
 }
 
 func DipToPhysicalRect(dipRect Rect) Rect {
-	return globalApplication.screenManager.DipToPhysicalRect(dipRect)
+	return globalApplication.Screens.DipToPhysicalRect(dipRect)
 }
 
 func PhysicalToDipRect(physicalRect Rect) Rect {
-	return globalApplication.screenManager.PhysicalToDipRect(physicalRect)
+	return globalApplication.Screens.PhysicalToDipRect(physicalRect)
 }
 
 func ScreenNearestPhysicalPoint(physicalPoint Point) *Screen {
-	return globalApplication.screenManager.ScreenNearestPhysicalPoint(physicalPoint)
+	return globalApplication.Screens.ScreenNearestPhysicalPoint(physicalPoint)
 }
 
 func ScreenNearestDipPoint(dipPoint Point) *Screen {
-	return globalApplication.screenManager.ScreenNearestDipPoint(dipPoint)
+	return globalApplication.Screens.ScreenNearestDipPoint(dipPoint)
 }
 
 func ScreenNearestPhysicalRect(physicalRect Rect) *Screen {
-	return globalApplication.screenManager.ScreenNearestPhysicalRect(physicalRect)
+	return globalApplication.Screens.ScreenNearestPhysicalRect(physicalRect)
 }
 
 func ScreenNearestDipRect(dipRect Rect) *Screen {
-	return globalApplication.screenManager.ScreenNearestDipRect(dipRect)
+	return globalApplication.Screens.ScreenNearestDipRect(dipRect)
 }

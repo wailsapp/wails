@@ -76,7 +76,7 @@ func main() {
 	go func() {
 		for {
 			now := time.Now().Format(time.RFC1123)
-			app.EmitEvent("time", now)
+			app.Events.Emit("time", now)
 			time.Sleep(time.Second)
 		}
 	}()

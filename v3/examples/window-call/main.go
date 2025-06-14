@@ -63,7 +63,7 @@ func main() {
 			windowCounter++
 		})
 
-	app.SetMenu(menu)
+	app.Menus.Set(menu)
 	err := app.Run()
 
 	if err != nil {

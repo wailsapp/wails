@@ -422,33 +422,85 @@ app.OnApplicationEvent(events.Windows.WebViewNavigationCompleted, func(event *ap
 
 ## Custom Events
 
-You can emit and listen for custom events to enable communication between different parts of your application.
+You can emit and listen for custom events to enable communication between different parts of your application. Wails v3 provides both a traditional API and a new [Manager API](/learn/manager-api) for better organization.
 
 ### Emitting Events
 
 You can emit custom events from anywhere in your application:
 
+<Tabs>
+<TabItem label="Manager API (Recommended)">
 ```go
-// Emit an event with data from the application
+// NEW: Using the Events Manager (recommended)
+app.Events.Emit("myevent", "hello")
+
+// Emit from a specific window
+window.EmitEvent("windowevent", "window specific data")
+```
+</TabItem>
+<TabItem label="Traditional API">
+```go
+// Traditional API (still supported)
 app.EmitEvent("myevent", "hello")
 
 // Emit from a specific window
 window.EmitEvent("windowevent", "window specific data")
 ```
+</TabItem>
+</Tabs>
 
 ### Handling Custom Events
 
-Listen for custom events using the `OnEvent` method:
+Listen for custom events using the event management methods:
 
+<Tabs>
+<TabItem label="Manager API (Recommended)">
 ```go
-app.OnEvent("myevent", func(e *application.CustomEvent) {
+// NEW: Using the Events Manager (recommended)
+cancelFunc := app.Events.On("myevent", func(e *application.CustomEvent) {
     // Access event information
     name := e.Name        // Event name
     data := e.Data        // Event data
     sender := e.Sender    // Name of the window sending the event, or "" if sent from application
     cancelled := e.IsCancelled()  // Event cancellation status
 })
+
+// Remove specific event listener
+app.Events.Off("myevent")
+
+// Remove all event listeners
+app.Events.Reset()
+
+// Listen for events a limited number of times
+app.Events.OnMultiple("myevent", func(e *application.CustomEvent) {
+    // This will only be called 3 times
+}, 3)
 ```
+</TabItem>
+<TabItem label="Traditional API">
+```go
+// Traditional API (still supported)
+cancelFunc := app.OnEvent("myevent", func(e *application.CustomEvent) {
+    // Access event information
+    name := e.Name        // Event name
+    data := e.Data        // Event data
+    sender := e.Sender    // Name of the window sending the event, or "" if sent from application
+    cancelled := e.IsCancelled()  // Event cancellation status
+})
+
+// Remove specific event listener
+app.OffEvent("myevent")
+
+// Remove all event listeners
+app.ResetEvents()
+
+// Listen for events a limited number of times
+app.OnMultipleEvent("myevent", func(e *application.CustomEvent) {
+    // This will only be called 3 times
+}, 3)
+```
+</TabItem>
+</Tabs>
 
 ## Event Cancellation
 

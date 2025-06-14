@@ -667,20 +667,12 @@ func main() {
 		})
 	})
 	stateMenu.Add("Get Primary Screen").OnClick(func(ctx *application.Context) {
-		screen, err := app.GetPrimaryScreen()
-		if err != nil {
-			application.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
-			return
-		}
+		screen := app.GetPrimaryScreen()
 		msg := fmt.Sprintf("Screen: %+v", screen)
 		application.InfoDialog().SetTitle("Primary Screen").SetMessage(msg).Show()
 	})
 	stateMenu.Add("Get Screens").OnClick(func(ctx *application.Context) {
-		screens, err := app.GetScreens()
-		if err != nil {
-			application.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
-			return
-		}
+		screens := app.GetScreens()
 		for _, screen := range screens {
 			msg := fmt.Sprintf("Screen: %+v", screen)
 			application.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
@@ -739,7 +731,7 @@ func main() {
 		},
 	})
 
-	app.SetMenu(menu)
+	app.Menus.Set(menu)
 	err := app.Run()
 
 	if err != nil {

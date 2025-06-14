@@ -60,7 +60,7 @@ func main() {
 		dialog.Show()
 	})
 	infoMenu.Add("About").OnClick(func(ctx *application.Context) {
-		app.ShowAboutDialog()
+		app.Menus.ShowAbout()
 	})
 
 	questionMenu := menu.AddSubmenu("Question")
@@ -350,7 +350,7 @@ func main() {
 		}
 	})
 
-	app.SetMenu(menu)
+	app.Menus.Set(menu)
 
 	app.NewWebviewWindow()
 

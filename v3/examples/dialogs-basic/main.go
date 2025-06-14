@@ -34,7 +34,7 @@ func main() {
 
 	// Create main menu
 	menu := app.NewMenu()
-	app.SetMenu(menu)
+	app.Menus.Set(menu)
 	menu.AddRole(application.AppMenu)
 	menu.AddRole(application.EditMenu)
 	menu.AddRole(application.WindowMenu)

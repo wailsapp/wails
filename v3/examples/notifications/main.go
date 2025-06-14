@@ -68,7 +68,7 @@ func main() {
 		} else {
 			fmt.Printf("Response: %+v\n", result.Response)
 			println("Sending response to frontend...")
-			app.EmitEvent("notification:action", result.Response)
+			app.Events.Emit("notification:action", result.Response)
 		}
 	})
 
