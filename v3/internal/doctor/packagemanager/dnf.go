@@ -31,7 +31,7 @@ func (y *Dnf) Packages() Packagemap {
 		"webkit2gtk": []*Package{
 			{Name: "webkit2gtk4.1-devel", SystemPackage: true, Library: true},
 			{Name: "webkit2gtk3-devel", SystemPackage: true, Library: true},
-			// {Name: "webkitgtk3-devel", SystemPackage: true, Library: true},
+			{Name: "webkit2gtk4.0-devel", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
 			{Name: "gcc-c++", SystemPackage: true},
