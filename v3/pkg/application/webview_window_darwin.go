@@ -903,6 +903,8 @@ func (w *macosWebviewWindow) getScreen() (*Screen, error) {
 }
 
 func (w *macosWebviewWindow) show() {
+	// macOS implementation is already robust - window container shows immediately
+	// This is the preferred pattern that Windows should follow
 	C.windowShow(w.nsWindow)
 }
 
