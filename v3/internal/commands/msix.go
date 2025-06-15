@@ -8,12 +8,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"text/template"
 
-	"github.com/leaanthony/gosod"
 	"github.com/wailsapp/wails/v3/internal/flags"
-	"github.com/wailsapp/wails/v3/internal/s"
 )
 
 //go:embed build_assets/windows/msix/*
@@ -23,13 +20,13 @@ var msixAssets embed.FS
 type MSIXOptions struct {
 	// Info from project config
 	Info struct {
-		CompanyName      string `json:"companyName"`
-		ProductName      string `json:"productName"`
-		ProductVersion   string `json:"version"`
+		CompanyName       string `json:"companyName"`
+		ProductName       string `json:"productName"`
+		ProductVersion    string `json:"version"`
 		ProductIdentifier string `json:"productIdentifier"`
-		Description      string `json:"description"`
-		Copyright        string `json:"copyright"`
-		Comments         string `json:"comments"`
+		Description       string `json:"description"`
+		Copyright         string `json:"copyright"`
+		Comments          string `json:"comments"`
 	}
 	// File associations
 	FileAssociations []struct {
@@ -41,15 +38,15 @@ type MSIXOptions struct {
 		MimeType    string `json:"mimeType,omitempty"`
 	} `json:"fileAssociations"`
 	// MSIX specific options
-	Publisher           string `json:"publisher"`
-	CertificatePath     string `json:"certificatePath"`
-	CertificatePassword string `json:"certificatePassword,omitempty"`
+	Publisher             string `json:"publisher"`
+	CertificatePath       string `json:"certificatePath"`
+	CertificatePassword   string `json:"certificatePassword,omitempty"`
 	ProcessorArchitecture string `json:"processorArchitecture"`
-	ExecutableName      string `json:"executableName"`
-	ExecutablePath      string `json:"executablePath"`
-	OutputPath          string `json:"outputPath"`
-	UseMsixPackagingTool bool   `json:"useMsixPackagingTool"`
-	UseMakeAppx        bool   `json:"useMakeAppx"`
+	ExecutableName        string `json:"executableName"`
+	ExecutablePath        string `json:"executablePath"`
+	OutputPath            string `json:"outputPath"`
+	UseMsixPackagingTool  bool   `json:"useMsixPackagingTool"`
+	UseMakeAppx           bool   `json:"useMakeAppx"`
 }
 
 // ToolMSIX creates an MSIX package for Windows applications
@@ -79,7 +76,7 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 
 	// Parse the config
 	var config struct {
-		Info            map[string]interface{} `json:"info"`
+		Info             map[string]interface{}   `json:"info"`
 		FileAssociations []map[string]interface{} `json:"fileAssociations"`
 	}
 	if err := json.Unmarshal(configData, &config); err != nil {
@@ -88,15 +85,15 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 
 	// Create MSIX options
 	msixOptions := MSIXOptions{
-		Publisher:           options.Publisher,
-		CertificatePath:     options.CertificatePath,
-		CertificatePassword: options.CertificatePassword,
+		Publisher:             options.Publisher,
+		CertificatePath:       options.CertificatePath,
+		CertificatePassword:   options.CertificatePassword,
 		ProcessorArchitecture: options.Arch,
-		ExecutableName:      options.ExecutableName,
-		ExecutablePath:      options.ExecutablePath,
-		OutputPath:          options.OutputPath,
-		UseMsixPackagingTool: options.UseMsixPackagingTool,
-		UseMakeAppx:        options.UseMakeAppx,
+		ExecutableName:        options.ExecutableName,
+		ExecutablePath:        options.ExecutablePath,
+		OutputPath:            options.OutputPath,
+		UseMsixPackagingTool:  options.UseMsixPackagingTool,
+		UseMakeAppx:           options.UseMakeAppx,
 	}
 
 	// Copy info from config
@@ -239,7 +236,7 @@ func createMSIXWithPackagingTool(options *MSIXOptions) error {
 	// Create the MSIX package
 	fmt.Println("Creating MSIX package using Microsoft MSIX Packaging Tool...")
 	args := []string{"create-package", "--template", templatePath}
-	
+
 	// Add certificate password if provided
 	if options.CertificatePassword != "" {
 		args = append(args, "--certPassword", options.CertificatePassword)
@@ -283,14 +280,14 @@ func createMSIXWithMakeAppx(options *MSIXOptions) error {
 	if options.CertificatePath != "" {
 		fmt.Println("Signing MSIX package...")
 		signArgs := []string{"sign", "/fd", "SHA256", "/a", "/f", options.CertificatePath}
-		
+
 		// Add certificate password if provided
 		if options.CertificatePassword != "" {
 			signArgs = append(signArgs, "/p", options.CertificatePassword)
 		}
-		
+
 		signArgs = append(signArgs, options.OutputPath)
-		
+
 		cmd = exec.Command("signtool.exe", signArgs...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -414,7 +411,7 @@ func generateAppxManifest(options *MSIXOptions, outputPath string) error {
 func generatePlaceholderImage(outputPath string) error {
 	// For now, we'll create a simple 1x1 transparent PNG
 	// In a real implementation, we would generate proper icons based on the application icon
-	
+
 	// Create a minimal valid PNG file (1x1 transparent pixel)
 	pngData := []byte{
 		0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
@@ -469,7 +466,7 @@ func InstallMSIXTools() error {
 	if !sdkInstalled {
 		fmt.Println("Windows SDK is not installed. Please download and install from:")
 		fmt.Println("https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/")
-		
+
 		// Open the download page
 		cmd = exec.Command("powershell", "-Command", "Start-Process https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/")
 		if err := cmd.Run(); err != nil {
