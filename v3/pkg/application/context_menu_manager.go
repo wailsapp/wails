@@ -5,22 +5,29 @@ type ContextMenuManager struct {
 	app *App
 }
 
-// NewContextMenuManager creates a new ContextMenuManager instance
-func NewContextMenuManager(app *App) *ContextMenuManager {
+// newContextMenuManager creates a new ContextMenuManager instance
+func newContextMenuManager(app *App) *ContextMenuManager {
 	return &ContextMenuManager{
 		app: app,
 	}
 }
 
-// Register registers a context menu
-func (cmm *ContextMenuManager) Register(menu *ContextMenu) {
-	cmm.app.contextMenusLock.Lock()
-	defer cmm.app.contextMenusLock.Unlock()
-	cmm.app.contextMenus[menu.name] = menu
+// New creates a new context menu
+func (cmm *ContextMenuManager) New() *ContextMenu {
+	return &ContextMenu{
+		Menu: NewMenu(),
+	}
 }
 
-// Unregister removes a context menu by name
-func (cmm *ContextMenuManager) Unregister(name string) {
+// Add adds a context menu (replaces Register for consistency)
+func (cmm *ContextMenuManager) Add(name string, menu *ContextMenu) {
+	cmm.app.contextMenusLock.Lock()
+	defer cmm.app.contextMenusLock.Unlock()
+	cmm.app.contextMenus[name] = menu
+}
+
+// Remove removes a context menu by name (replaces Unregister for consistency)
+func (cmm *ContextMenuManager) Remove(name string) {
 	cmm.app.contextMenusLock.Lock()
 	defer cmm.app.contextMenusLock.Unlock()
 	delete(cmm.app.contextMenus, name)
@@ -34,14 +41,14 @@ func (cmm *ContextMenuManager) Get(name string) (*ContextMenu, bool) {
 	return menu, exists
 }
 
-// GetAll returns all registered context menus
-func (cmm *ContextMenuManager) GetAll() map[string]*ContextMenu {
+// GetAll returns all registered context menus as a slice
+func (cmm *ContextMenuManager) GetAll() []*ContextMenu {
 	cmm.app.contextMenusLock.Lock()
 	defer cmm.app.contextMenusLock.Unlock()
 
-	result := make(map[string]*ContextMenu)
-	for name, menu := range cmm.app.contextMenus {
-		result[name] = menu
+	result := make([]*ContextMenu, 0, len(cmm.app.contextMenus))
+	for _, menu := range cmm.app.contextMenus {
+		result = append(result, menu)
 	}
 	return result
 }

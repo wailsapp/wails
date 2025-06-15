@@ -10,8 +10,16 @@ import (
 // Chromium License: https://chromium.googlesource.com/chromium/src/+/HEAD/LICENSE
 
 type ScreenManager struct {
+	app           *App
 	screens       []*Screen
 	primaryScreen *Screen
+}
+
+// newScreenManager creates a new ScreenManager instance
+func newScreenManager(app *App) *ScreenManager {
+	return &ScreenManager{
+		app: app,
+	}
 }
 
 type Screen struct {
@@ -375,11 +383,11 @@ func (m *ScreenManager) LayoutScreens(screens []*Screen) error {
 	return nil
 }
 
-func (m *ScreenManager) Screens() []*Screen {
+func (m *ScreenManager) GetAll() []*Screen {
 	return m.screens
 }
 
-func (m *ScreenManager) PrimaryScreen() *Screen {
+func (m *ScreenManager) GetPrimary() *Screen {
 	return m.primaryScreen
 }
 

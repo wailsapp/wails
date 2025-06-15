@@ -13,7 +13,7 @@ type ScreenService struct {
 
 func (s *ScreenService) GetSystemScreens() []*application.Screen {
 	s.isExampleLayout = false
-	screens := application.Get().GetScreens()
+	screens := application.Get().Screens.GetAll()
 	return screens
 }
 
@@ -52,7 +52,7 @@ func (s *ScreenService) ProcessExampleScreens(rawScreens []interface{}) []*appli
 	}
 
 	s.screenManager.LayoutScreens(screens)
-	return s.screenManager.Screens()
+	return s.screenManager.GetAll()
 }
 
 func (s *ScreenService) transformPoint(point application.Point, toDIP bool) application.Point {

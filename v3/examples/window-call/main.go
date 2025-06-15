@@ -38,7 +38,7 @@ func main() {
 		},
 	})
 
-	app.NewWebviewWindow().
+	app.Windows.New().
 		SetTitle("WebviewWindow 1").
 		Show()
 
@@ -56,7 +56,7 @@ func main() {
 	myMenu.Add("New WebviewWindow").
 		SetAccelerator("CmdOrCtrl+N").
 		OnClick(func(ctx *application.Context) {
-			app.NewWebviewWindow().
+			app.Windows.New().
 				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				Show()

@@ -5,31 +5,31 @@ type KeyBindingManager struct {
 	app *App
 }
 
-// NewKeyBindingManager creates a new KeyBindingManager instance
-func NewKeyBindingManager(app *App) *KeyBindingManager {
+// newKeyBindingManager creates a new KeyBindingManager instance
+func newKeyBindingManager(app *App) *KeyBindingManager {
 	return &KeyBindingManager{
 		app: app,
 	}
 }
 
 // Add adds a key binding
-func (kbm *KeyBindingManager) Add(accel string, callback func(window *WebviewWindow)) {
+func (kbm *KeyBindingManager) Add(accelerator string, callback func(window *WebviewWindow)) {
 	kbm.app.keyBindingsLock.Lock()
 	defer kbm.app.keyBindingsLock.Unlock()
-	kbm.app.keyBindings[accel] = callback
+	kbm.app.keyBindings[accelerator] = callback
 }
 
 // Remove removes a key binding
-func (kbm *KeyBindingManager) Remove(accel string) {
+func (kbm *KeyBindingManager) Remove(accelerator string) {
 	kbm.app.keyBindingsLock.Lock()
 	defer kbm.app.keyBindingsLock.Unlock()
-	delete(kbm.app.keyBindings, accel)
+	delete(kbm.app.keyBindings, accelerator)
 }
 
 // Process processes a key binding and returns true if handled
-func (kbm *KeyBindingManager) Process(accel string, window *WebviewWindow) bool {
+func (kbm *KeyBindingManager) Process(accelerator string, window *WebviewWindow) bool {
 	kbm.app.keyBindingsLock.RLock()
-	callback, exists := kbm.app.keyBindings[accel]
+	callback, exists := kbm.app.keyBindings[accelerator]
 	kbm.app.keyBindingsLock.RUnlock()
 
 	if exists && callback != nil {
@@ -39,14 +39,23 @@ func (kbm *KeyBindingManager) Process(accel string, window *WebviewWindow) bool 
 	return false
 }
 
-// GetAll returns all registered key bindings
-func (kbm *KeyBindingManager) GetAll() map[string]func(window *WebviewWindow) {
+// KeyBinding represents a key binding with its accelerator and callback
+type KeyBinding struct {
+	Accelerator string
+	Callback    func(window *WebviewWindow)
+}
+
+// GetAll returns all registered key bindings as a slice
+func (kbm *KeyBindingManager) GetAll() []*KeyBinding {
 	kbm.app.keyBindingsLock.RLock()
 	defer kbm.app.keyBindingsLock.RUnlock()
 
-	result := make(map[string]func(window *WebviewWindow))
-	for accel, callback := range kbm.app.keyBindings {
-		result[accel] = callback
+	result := make([]*KeyBinding, 0, len(kbm.app.keyBindings))
+	for accelerator, callback := range kbm.app.keyBindings {
+		result = append(result, &KeyBinding{
+			Accelerator: accelerator,
+			Callback:    callback,
+		})
 	}
 	return result
 }

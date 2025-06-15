@@ -187,7 +187,7 @@ func (w *WebviewWindow) SetMenu(menu *Menu) {
 
 // EmitEvent emits an event from the window
 func (w *WebviewWindow) EmitEvent(name string, data ...any) {
-	globalApplication.emitEvent(&CustomEvent{
+	globalApplication.Events.EmitEvent(&CustomEvent{
 		Name:   name,
 		Data:   data,
 		Sender: w.Name(),
@@ -208,7 +208,7 @@ func getWindowID() uint {
 // Use onApplicationEvent to register a callback for an application event from a window.
 // This will handle tidying up the callback when the window is destroyed
 func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func(*ApplicationEvent)) {
-	cancelFn := globalApplication.OnApplicationEvent(eventType, callback)
+	cancelFn := globalApplication.Events.OnApplicationEvent(eventType, callback)
 	w.addCancellationFunction(cancelFn)
 }
 
@@ -276,7 +276,7 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 		result.unconditionallyClose = true
 		InvokeSync(result.markAsDestroyed)
 		InvokeSync(result.impl.close)
-		globalApplication.deleteWindowByID(result.id)
+		globalApplication.Windows.Remove(result.id)
 	})
 
 	// Process keybindings
@@ -1182,7 +1182,7 @@ func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
 
 func (w *WebviewWindow) OpenContextMenu(data *ContextMenuData) {
 	// try application level context menu
-	menu, ok := globalApplication.getContextMenu(data.Id)
+	menu, ok := globalApplication.ContextMenus.Get(data.Id)
 	if !ok {
 		w.Error("no context menu found for id: %s", data.Id)
 		return
@@ -1263,7 +1263,7 @@ func (w *WebviewWindow) processKeyBinding(acceleratorString string) bool {
 		}
 	}
 
-	return globalApplication.processKeyBinding(acceleratorString, w)
+	return globalApplication.KeyBindings.Process(acceleratorString, w)
 }
 
 func (w *WebviewWindow) HandleKeyEvent(acceleratorString string) {

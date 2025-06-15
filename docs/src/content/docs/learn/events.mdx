@@ -531,7 +531,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 
 // For custom events
-app.OnEvent("myevent", func(e *application.CustomEvent) {
+app.Events.On("myevent", func(e *application.CustomEvent) {
     if e.IsCancelled() {
         app.Logger.Info("Event was cancelled")
         return

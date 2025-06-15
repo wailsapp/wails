@@ -23,7 +23,7 @@ func main() {
 	})
 
 	// Create main window
-	mainWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	mainWindow := app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title:     "Dialog Tests",
 		Width:     800,
 		Height:    600,

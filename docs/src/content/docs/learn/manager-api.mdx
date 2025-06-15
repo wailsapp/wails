@@ -10,7 +10,7 @@ The Wails v3 Manager API provides an organized and discoverable way to access ap
 
 ## Overview
 
-The Manager API organizes application functionality into eight focused areas:
+The Manager API organizes application functionality into eleven focused areas:
 
 - **`app.Windows`** - Window creation, management, and callbacks
 - **`app.ContextMenus`** - Context menu registration and management  
@@ -20,43 +20,40 @@ The Manager API organizes application functionality into eight focused areas:
 - **`app.Dialogs`** - File and message dialog operations
 - **`app.Events`** - Custom event handling and application events
 - **`app.Menus`** - Application menu management
+- **`app.Screens`** - Screen management and coordinate transformations
+- **`app.Clipboard`** - Clipboard text operations
+- **`app.SystemTray`** - System tray icon creation and management
 
 ## Benefits
 
 - **Better discoverability** - IDE autocomplete shows organized API surface
 - **Improved code organization** - Related methods grouped together
 - **Enhanced maintainability** - Separation of concerns across managers
-- **Full backward compatibility** - Existing code continues to work unchanged
 - **Future extensibility** - Easier to add new features to specific areas
 
-## Migration Strategy
+## Usage
 
-The Manager API is **completely optional**. Existing applications will continue to work without any changes. New applications are encouraged to use the manager API for better organization and discoverability.
+The Manager API provides organized access to all application functionality:
 
-<Tabs>
-<TabItem label="Traditional API">
 ```go
-// Traditional API
-app.EmitEvent("custom", data)
-app.OnEvent("custom", func(e *CustomEvent) { ... })
-window := app.GetWindowByName("main")
-app.BrowserOpenURL("https://wails.io")
-menu := app.NewMenu()
-app.SetMenu(menu)
-```
-</TabItem>
-<TabItem label="Manager API">
-```go
-// NEW: Manager API
+// Events and custom event handling
 app.Events.Emit("custom", data)
 app.Events.On("custom", func(e *CustomEvent) { ... })
-window := app.Windows.GetByName("main")
+
+// Window management
+window, _ := app.Windows.GetByName("main")
+app.Windows.OnCreate(func(window Window) { ... })
+
+// Browser integration
 app.Browser.OpenURL("https://wails.io")
+
+// Menu management
 menu := app.Menus.New()
 app.Menus.Set(menu)
+
+// System tray
+systray := app.SystemTray.New()
 ```
-</TabItem>
-</Tabs>
 
 ## Manager Reference
 
@@ -71,7 +68,7 @@ window := app.Windows.NewWithOptions(options)
 current := app.Windows.Current()
 
 // Find windows
-window := app.Windows.GetByName("main")
+window, exists := app.Windows.GetByName("main")
 windows := app.Windows.GetAll()
 
 // Window callbacks
@@ -122,6 +119,9 @@ fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
 if app.Env.IsDarkMode() {
     // Dark mode is active
 }
+
+// Open file manager
+err := app.Env.OpenFileManager("/path/to/folder", false)
 ```
 
 ### Dialogs Manager
@@ -134,7 +134,7 @@ result, err := app.Dialogs.OpenFile().
     AddFilter("Text Files", "*.txt").
     PromptForSingleSelection()
 
-err := app.Dialogs.SaveFile().
+result, err = app.Dialogs.SaveFile().
     SetDefaultFilename("document.txt").
     PromptForSingleSelection()
 
@@ -194,13 +194,72 @@ bindings := app.KeyBindings.GetAll()
 Advanced context menu management (for library authors).
 
 ```go
-// Register context menu
-menu := NewContextMenu("myMenu")
-app.ContextMenus.Register(menu)
+// Create and register context menu
+menu := app.ContextMenus.New()
+app.ContextMenus.Add("myMenu", menu)
 
 // Retrieve context menu
 menu, exists := app.ContextMenus.Get("myMenu")
 
-// Unregister context menu
-app.ContextMenus.Unregister("myMenu")
+// Remove context menu
+app.ContextMenus.Remove("myMenu")
+```
+
+### Screens Manager
+
+Screen management and coordinate transformations for multi-monitor setups.
+
+```go
+// Get screen information
+screens := app.Screens.GetAll()
+primary := app.Screens.GetPrimary()
+
+// Coordinate transformations
+physicalPoint := app.Screens.DipToPhysicalPoint(logicalPoint)
+logicalPoint := app.Screens.PhysicalToDipPoint(physicalPoint)
+
+// Screen detection
+screen := app.Screens.ScreenNearestDipPoint(point)
+screen = app.Screens.ScreenNearestDipRect(rect)
+```
+
+### Clipboard Manager
+
+Clipboard operations for reading and writing text.
+
+```go
+// Set text to clipboard
+success := app.Clipboard.SetText("Hello World")
+if !success {
+    // Handle error
+}
+
+// Get text from clipboard
+text, ok := app.Clipboard.Text()
+if !ok {
+    // Handle error
+} else {
+    // Use the text
+}
+```
+
+### SystemTray Manager
+
+System tray icon creation and management.
+
+```go
+// Create system tray
+systray := app.SystemTray.New()
+systray.SetLabel("My App")
+systray.SetIcon(iconBytes)
+
+// Add menu to system tray
+menu := app.Menus.New()
+menu.Add("Open").OnClick(func(ctx *Context) {
+    // Handle click
+})
+systray.SetMenu(menu)
+
+// Destroy system tray when done
+systray.Destroy()
 ```

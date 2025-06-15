@@ -50,7 +50,7 @@ func main() {
 	myMenu.Add("New WebviewWindow").
 		SetAccelerator("CmdOrCtrl+N").
 		OnClick(func(ctx *application.Context) {
-			app.NewWebviewWindow().
+			app.Windows.New().
 				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
@@ -60,7 +60,7 @@ func main() {
 	myMenu.Add("New WebviewWindow (Hides on Close one time)").
 		SetAccelerator("CmdOrCtrl+H").
 		OnClick(func(ctx *application.Context) {
-			w := app.NewWebviewWindow()
+			w := app.Windows.New()
 			w.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
 				if !lo.Contains(hiddenWindows, w) {
 					hiddenWindows = append(hiddenWindows, w)

@@ -20,11 +20,11 @@ func NewContextMenu(name string) *ContextMenu {
 
 func (m *ContextMenu) Update() {
 	m.Menu.Update()
-	globalApplication.registerContextMenu(m)
+	globalApplication.ContextMenus.Add(m.name, m)
 }
 
 func (m *ContextMenu) Destroy() {
-	globalApplication.unregisterContextMenu(m.name)
+	globalApplication.ContextMenus.Remove(m.name)
 }
 
 type Menu struct {

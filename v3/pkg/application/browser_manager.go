@@ -9,8 +9,8 @@ type BrowserManager struct {
 	app *App
 }
 
-// NewBrowserManager creates a new BrowserManager instance
-func NewBrowserManager(app *App) *BrowserManager {
+// newBrowserManager creates a new BrowserManager instance
+func newBrowserManager(app *App) *BrowserManager {
 	return &BrowserManager{
 		app: app,
 	}

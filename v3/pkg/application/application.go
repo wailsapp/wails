@@ -17,13 +17,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/internal/signal"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
-	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 //go:embed assets/*
@@ -78,7 +76,7 @@ func New(appOptions Options) *App {
 	result.logStartup()
 	result.logPlatformInfo()
 
-	result.customEventProcessor = NewWailsEventProcessor(result.dispatchEventToListeners)
+	result.customEventProcessor = NewWailsEventProcessor(result.Events.dispatch)
 
 	messageProc := NewMessageProcessor(result.Logger)
 	opts := &assetserver.Options{
@@ -282,9 +280,8 @@ type App struct {
 	Events       *EventManager
 	Menus        *MenuManager
 	Screens      *ScreenManager
-
-	// Screens layout manager (handles DIP coordinate system)
-	screenManager ScreenManager
+	Clipboard    *ClipboardManager
+	SystemTray   *SystemTrayManager
 
 	// Windows
 	windows     map[uint]Window
@@ -311,8 +308,8 @@ type App struct {
 	// platform app
 	impl platformApp
 
-	// The main application menu
-	ApplicationMenu *Menu
+	// The main application menu (private - use app.Menus.GetApplicationMenu/SetApplicationMenu)
+	applicationMenu *Menu
 
 	clipboard            *Clipboard
 	customEventProcessor *EventProcessor
@@ -397,9 +394,6 @@ func (a *App) RegisterService(service Service) {
 }
 
 // EmitEvent will emit an event
-func (a *App) emitEvent(event *CustomEvent) {
-	a.customEventProcessor.Emit(event)
-}
 
 func (a *App) handleFatalError(err error) {
 	a.handleError(&FatalError{err: err})
@@ -419,81 +413,21 @@ func (a *App) init() {
 	a.wailsEventListeners = make([]WailsEventListener, 0)
 
 	// Initialize managers
-	a.Windows = NewWindowManager(a)
-	a.ContextMenus = NewContextMenuManager(a)
-	a.KeyBindings = NewKeyBindingManager(a)
-	a.Browser = NewBrowserManager(a)
-	a.Env = NewEnvironmentManager(a)
-	a.Dialogs = NewDialogManager(a)
-	a.Events = NewEventManager(a)
-	a.Menus = NewMenuManager(a)
-	a.Screens = &a.screenManager
-}
-
-func (a *App) getSystemTrayID() uint {
-	a.systemTrayIDLock.Lock()
-	defer a.systemTrayIDLock.Unlock()
-	a.systemTrayID++
-	return a.systemTrayID
-}
-
-func (a *App) getWindowForID(id uint) Window {
-	a.windowsLock.RLock()
-	defer a.windowsLock.RUnlock()
-	return a.windows[id]
-}
-
-func (a *App) deleteWindowByID(id uint) {
-	a.windowsLock.Lock()
-	defer a.windowsLock.Unlock()
-	delete(a.windows, id)
+	a.Windows = newWindowManager(a)
+	a.ContextMenus = newContextMenuManager(a)
+	a.KeyBindings = newKeyBindingManager(a)
+	a.Browser = newBrowserManager(a)
+	a.Env = newEnvironmentManager(a)
+	a.Dialogs = newDialogManager(a)
+	a.Events = newEventManager(a)
+	a.Menus = newMenuManager(a)
+	a.Screens = newScreenManager(a)
+	a.Clipboard = newClipboardManager(a)
+	a.SystemTray = newSystemTrayManager(a)
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {
 	return a.capabilities
-}
-
-func (a *App) OnApplicationEvent(eventType events.ApplicationEventType, callback func(event *ApplicationEvent)) func() {
-	eventID := uint(eventType)
-	a.applicationEventListenersLock.Lock()
-	defer a.applicationEventListenersLock.Unlock()
-	listener := &EventListener{
-		callback: callback,
-	}
-	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], listener)
-	if a.impl != nil {
-		go func() {
-			defer handlePanic()
-			a.impl.on(eventID)
-		}()
-	}
-
-	return func() {
-		// lock the map
-		a.applicationEventListenersLock.Lock()
-		defer a.applicationEventListenersLock.Unlock()
-		// Remove listener
-		a.applicationEventListeners[eventID] = lo.Without(a.applicationEventListeners[eventID], listener)
-	}
-}
-
-// RegisterApplicationEventHook registers a hook for the given application event.
-// Hooks are called before the event listeners and can cancel the event.
-// The returned function can be called to remove the hook.
-func (a *App) RegisterApplicationEventHook(eventType events.ApplicationEventType, callback func(event *ApplicationEvent)) func() {
-	eventID := uint(eventType)
-	a.applicationEventHooksLock.Lock()
-	defer a.applicationEventHooksLock.Unlock()
-	thisHook := &eventHook{
-		callback: callback,
-	}
-	a.applicationEventHooks[eventID] = append(a.applicationEventHooks[eventID], thisHook)
-
-	return func() {
-		a.applicationEventHooksLock.Lock()
-		a.applicationEventHooks[eventID] = lo.Without(a.applicationEventHooks[eventID], thisHook)
-		a.applicationEventHooksLock.Unlock()
-	}
 }
 
 //func (a *App) RegisterListener(listener WailsEventListener) {
@@ -505,10 +439,6 @@ func (a *App) RegisterApplicationEventHook(eventType events.ApplicationEventType
 //func (a *App) RegisterServiceHandler(prefix string, handler http.Handler) {
 //	a.assets.AttachServiceHandler(prefix, handler)
 //}
-
-func (a *App) NewWebviewWindow() *WebviewWindow {
-	return a.NewWebviewWindowWithOptions(WebviewWindowOptions{})
-}
 
 func (a *App) GetPID() int {
 	return a.pid
@@ -543,37 +473,6 @@ func (a *App) warning(message string, args ...any) {
 
 func (a *App) error(message string, args ...any) {
 	a.handleError(fmt.Errorf(message, args...))
-}
-
-func (a *App) NewWebviewWindowWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
-	newWindow := NewWindow(windowOptions)
-	id := newWindow.ID()
-
-	a.windowsLock.Lock()
-	a.windows[id] = newWindow
-	a.windowsLock.Unlock()
-
-	// Call hooks
-	for _, hook := range a.windowCreatedCallbacks {
-		hook(newWindow)
-	}
-
-	a.runOrDeferToAppRun(newWindow)
-
-	return newWindow
-}
-
-func (a *App) NewSystemTray() *SystemTray {
-	id := a.getSystemTrayID()
-	newSystemTray := newSystemTray(id)
-
-	a.systemTraysLock.Lock()
-	a.systemTrays[id] = newSystemTray
-	a.systemTraysLock.Unlock()
-
-	a.runOrDeferToAppRun(newSystemTray)
-
-	return newSystemTray
 }
 
 func (a *App) Run() error {
@@ -618,7 +517,7 @@ func (a *App) Run() error {
 	go func() {
 		for {
 			event := <-applicationEvents
-			go a.handleApplicationEvent(event)
+			go a.Events.handleApplicationEvent(event)
 		}
 	}()
 	go func() {
@@ -655,7 +554,7 @@ func (a *App) Run() error {
 	go func() {
 		for {
 			menuItemID := <-menuItemClicked
-			go a.handleMenuItemClicked(menuItemID)
+			go a.Menus.handleMenuItemClicked(menuItemID)
 		}
 	}()
 
@@ -676,7 +575,7 @@ func (a *App) Run() error {
 
 	// set the application menu
 	if runtime.GOOS == "darwin" {
-		a.impl.setApplicationMenu(a.ApplicationMenu)
+		a.impl.setApplicationMenu(a.applicationMenu)
 	}
 	if a.options.Icon != nil {
 		a.impl.setIcon(a.options.Icon)
@@ -735,39 +634,6 @@ func (a *App) shutdownServices() {
 	}
 }
 
-func (a *App) handleApplicationEvent(event *ApplicationEvent) {
-	defer handlePanic()
-	a.applicationEventListenersLock.RLock()
-	listeners, ok := a.applicationEventListeners[event.Id]
-	a.applicationEventListenersLock.RUnlock()
-	if !ok {
-		return
-	}
-
-	// Process Hooks
-	a.applicationEventHooksLock.RLock()
-	hooks, ok := a.applicationEventHooks[event.Id]
-	a.applicationEventHooksLock.RUnlock()
-	if ok {
-		for _, thisHook := range hooks {
-			thisHook.callback(event)
-			if event.IsCancelled() {
-				return
-			}
-		}
-	}
-
-	for _, listener := range listeners {
-		go func() {
-			if event.IsCancelled() {
-				return
-			}
-			defer handlePanic()
-			listener.callback(event)
-		}()
-	}
-}
-
 func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
 	defer handlePanic()
 	// Get window from window map
@@ -820,31 +686,6 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 	window.HandleWindowEvent(event.EventID)
 }
 
-func (a *App) handleMenuItemClicked(menuItemID uint) {
-	defer handlePanic()
-
-	menuItem := getMenuItemByID(menuItemID)
-	if menuItem == nil {
-		a.warning("MenuItem #%d not found", menuItemID)
-		return
-	}
-	menuItem.handleClick()
-}
-
-func (a *App) CurrentWindow() *WebviewWindow {
-	if a.impl == nil {
-		return nil
-	}
-	id := a.impl.getCurrentWindowID()
-	a.windowsLock.RLock()
-	defer a.windowsLock.RUnlock()
-	result := a.windows[id]
-	if result == nil {
-		return nil
-	}
-	return result.(*WebviewWindow)
-}
-
 // OnShutdown adds a function to be run when the application is shutting down.
 func (a *App) OnShutdown(f func()) {
 	if f == nil {
@@ -861,14 +702,6 @@ func (a *App) OnShutdown(f func()) {
 
 	a.shutdownLock.Unlock()
 	InvokeAsync(f)
-}
-
-func (a *App) destroySystemTray(tray *SystemTray) {
-	// Remove the system tray from the a.systemTrays map
-	a.systemTraysLock.Lock()
-	delete(a.systemTrays, tray.id)
-	a.systemTraysLock.Unlock()
-	tray.destroy()
 }
 
 func (a *App) cleanup() {
@@ -950,13 +783,6 @@ func SaveFileDialog() *SaveFileDialogStruct {
 	return newSaveFileDialog()
 }
 
-func (a *App) Clipboard() *Clipboard {
-	if a.clipboard == nil {
-		a.clipboard = newClipboard()
-	}
-	return a.clipboard
-}
-
 func (a *App) dispatchOnMainThread(fn func()) {
 	// If we are on the main thread, just call the function
 	if a.impl.isOnMainThread() {
@@ -972,24 +798,6 @@ func (a *App) dispatchOnMainThread(fn func()) {
 	a.impl.dispatchOnMainThread(id)
 }
 
-func (a *App) dispatchEventToListeners(event *CustomEvent) {
-	listeners := a.wailsEventListeners
-
-	for _, window := range a.windows {
-		if event.IsCancelled() {
-			return
-		}
-		window.DispatchWailsEvent(event)
-	}
-
-	for _, listener := range listeners {
-		if event.IsCancelled() {
-			return
-		}
-		listener.DispatchWailsEvent(event)
-	}
-}
-
 func (a *App) Hide() {
 	if a.impl != nil {
 		a.impl.hide()
@@ -1000,26 +808,6 @@ func (a *App) Show() {
 	if a.impl != nil {
 		a.impl.show()
 	}
-}
-
-func (a *App) registerContextMenu(menu *ContextMenu) {
-	a.contextMenusLock.Lock()
-	defer a.contextMenusLock.Unlock()
-	a.contextMenus[menu.name] = menu
-}
-
-func (a *App) unregisterContextMenu(name string) {
-	a.contextMenusLock.Lock()
-	defer a.contextMenusLock.Unlock()
-	delete(a.contextMenus, name)
-}
-
-func (a *App) getContextMenu(name string) (*ContextMenu, bool) {
-	a.contextMenusLock.Lock()
-	defer a.contextMenusLock.Unlock()
-	menu, ok := a.contextMenus[name]
-	return menu, ok
-
 }
 
 func (a *App) runOrDeferToAppRun(r runnable) {
@@ -1037,38 +825,6 @@ func (a *App) runOrDeferToAppRun(r runnable) {
 	r.Run()
 }
 
-func (a *App) processKeyBinding(acceleratorString string, window *WebviewWindow) bool {
-	if len(a.keyBindings) == 0 {
-		return false
-	}
-
-	a.keyBindingsLock.RLock()
-	defer a.keyBindingsLock.RUnlock()
-
-	// Check key bindings
-	callback, ok := a.keyBindings[acceleratorString]
-	if !ok {
-		return false
-	}
-
-	// Execute callback
-	go callback(window)
-
-	return true
-}
-
-func (a *App) addKeyBinding(acceleratorString string, callback func(window *WebviewWindow)) {
-	a.keyBindingsLock.Lock()
-	defer a.keyBindingsLock.Unlock()
-	a.keyBindings[acceleratorString] = callback
-}
-
-func (a *App) removeKeyBinding(acceleratorString string) {
-	a.keyBindingsLock.Lock()
-	defer a.keyBindingsLock.Unlock()
-	delete(a.keyBindings, acceleratorString)
-}
-
 func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
 	defer handlePanic()
 	// Get window from window map
@@ -1081,10 +837,6 @@ func (a *App) handleWindowKeyEvent(event *windowKeyEvent) {
 	}
 	// Get callback from window
 	window.HandleKeyEvent(event.acceleratorString)
-}
-
-func (a *App) AssetServerHandler() func(rw http.ResponseWriter, req *http.Request) {
-	return a.assets.ServeHTTP
 }
 
 func (a *App) shouldQuit() bool {

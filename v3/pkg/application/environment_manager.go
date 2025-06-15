@@ -12,8 +12,8 @@ type EnvironmentManager struct {
 	app *App
 }
 
-// NewEnvironmentManager creates a new EnvironmentManager instance
-func NewEnvironmentManager(app *App) *EnvironmentManager {
+// newEnvironmentManager creates a new EnvironmentManager instance
+func newEnvironmentManager(app *App) *EnvironmentManager {
 	return &EnvironmentManager{
 		app: app,
 	}

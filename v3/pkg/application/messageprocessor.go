@@ -54,7 +54,8 @@ func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, err
 func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 	windowName := r.Header.Get(webViewRequestHeaderWindowName)
 	if windowName != "" {
-		return globalApplication.Windows.GetByName(windowName), windowName
+		window, _ := globalApplication.Windows.GetByName(windowName)
+		return window, windowName
 	}
 	windowID := r.Header.Get(webViewRequestHeaderWindowId)
 	if windowID == "" {
@@ -65,7 +66,7 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 		m.Error("Window ID not parsable:", "id", windowID, "error", err)
 		return nil, windowID
 	}
-	targetWindow := globalApplication.getWindowForID(uint(wID))
+	targetWindow, _ := globalApplication.Windows.GetByID(uint(wID))
 	if targetWindow == nil {
 		m.Error("Window ID not found:", "id", wID)
 		return nil, windowID
