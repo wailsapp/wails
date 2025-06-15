@@ -1,0 +1,36 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/wailsapp/wails/v3/internal/assetserver
+cpu: Apple M4 Max
+BenchmarkStage7Performance/SmallAsset-Baseline-14         	45952212	        27.32 ns/op	     112 B/op	       1 allocs/op
+BenchmarkStage7Performance/SmallAsset-Baseline-14         	41618556	        27.49 ns/op	     112 B/op	       1 allocs/op
+BenchmarkStage7Performance/SmallAsset-Baseline-14         	47868600	        25.06 ns/op	     112 B/op	       1 allocs/op
+BenchmarkStage7Performance/SmallAsset-Pooled-14           	57152948	        21.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStage7Performance/SmallAsset-Pooled-14           	57705717	        21.58 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStage7Performance/SmallAsset-Pooled-14           	56168599	        21.45 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStage7Performance/MediumAsset-Baseline-14        	41722200	        27.46 ns/op	     112 B/op	       1 allocs/op
+BenchmarkStage7Performance/MediumAsset-Baseline-14        	43974902	        27.21 ns/op	     112 B/op	       1 allocs/op
+BenchmarkStage7Performance/MediumAsset-Baseline-14        	44914731	        26.62 ns/op	     112 B/op	       1 allocs/op
+BenchmarkStage7Performance/MediumAsset-Pooled-14          	52715775	        23.00 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStage7Performance/MediumAsset-Pooled-14          	53573919	        22.99 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStage7Performance/MediumAsset-Pooled-14          	52113302	        23.27 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStage7Performance/LargeAsset-Baseline-14         	34842067	        33.62 ns/op	     112 B/op	       1 allocs/op
+BenchmarkStage7Performance/LargeAsset-Baseline-14         	35837565	        33.51 ns/op	     112 B/op	       1 allocs/op
+BenchmarkStage7Performance/LargeAsset-Baseline-14         	35609718	        33.52 ns/op	     112 B/op	       1 allocs/op
+BenchmarkStage7Performance/LargeAsset-Pooled-14           	40728876	        29.73 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStage7Performance/LargeAsset-Pooled-14           	38532294	        29.89 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStage7Performance/LargeAsset-Pooled-14           	41802500	        29.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkHighConcurrencyServing/Concurrency-Baseline-14   	43128362	        30.26 ns/op	     112 B/op	       1 allocs/op
+BenchmarkHighConcurrencyServing/Concurrency-Baseline-14   	39679806	        30.00 ns/op	     112 B/op	       1 allocs/op
+BenchmarkHighConcurrencyServing/Concurrency-Baseline-14   	40395086	        30.02 ns/op	     112 B/op	       1 allocs/op
+BenchmarkHighConcurrencyServing/Concurrency-Pooled-14     	438642850	         2.592 ns/op	       0 B/op	       0 allocs/op
+BenchmarkHighConcurrencyServing/Concurrency-Pooled-14     	483109695	         2.771 ns/op	       0 B/op	       0 allocs/op
+BenchmarkHighConcurrencyServing/Concurrency-Pooled-14     	432365240	         2.474 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRealWorldMixedContent/MixedContent-Baseline-14   	35946170	        30.98 ns/op	     112 B/op	       1 allocs/op
+BenchmarkRealWorldMixedContent/MixedContent-Baseline-14   	38690902	        30.78 ns/op	     112 B/op	       1 allocs/op
+BenchmarkRealWorldMixedContent/MixedContent-Baseline-14   	39235666	        30.74 ns/op	     112 B/op	       1 allocs/op
+BenchmarkRealWorldMixedContent/MixedContent-Pooled-14     	46357999	        25.90 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRealWorldMixedContent/MixedContent-Pooled-14     	47340621	        25.85 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRealWorldMixedContent/MixedContent-Pooled-14     	46524850	        25.81 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/wailsapp/wails/v3/internal/assetserver	39.098s

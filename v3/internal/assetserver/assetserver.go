@@ -64,6 +64,8 @@ func (a *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		if _, err := wrapped.complete(); err != nil {
 			a.options.Logger.Error("Error writing response data.", "uri", req.RequestURI, "error", err)
 		}
+		// Return the sniffer to the pool
+		wrapped.returnToPool()
 	}()
 
 	req = req.WithContext(contextWithLogger(req.Context(), a.options.Logger))

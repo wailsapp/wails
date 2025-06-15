@@ -2,13 +2,61 @@ package assetserver
 
 import (
 	"net/http"
+	"sync"
 )
 
+// closeChannelPool manages a pool of close channels to avoid allocation
+var closeChannelPool = sync.Pool{
+	New: func() interface{} {
+		return make(chan bool, 1)
+	},
+}
+
+// contentTypeSnifferPool manages a pool of contentTypeSniffer objects
+var contentTypeSnifferPool = sync.Pool{
+	New: func() interface{} {
+		return &contentTypeSniffer{}
+	},
+}
+
 func newContentTypeSniffer(rw http.ResponseWriter) *contentTypeSniffer {
-	return &contentTypeSniffer{
-		rw:           rw,
-		closeChannel: make(chan bool, 1),
+	sniffer := contentTypeSnifferPool.Get().(*contentTypeSniffer)
+	sniffer.rw = rw
+	sniffer.prefix = nil
+	sniffer.status = 0
+	sniffer.headerCommitted = false
+	sniffer.headerWritten = false
+	
+	// Get a pooled close channel
+	if sniffer.closeChannel == nil {
+		sniffer.closeChannel = closeChannelPool.Get().(chan bool)
 	}
+	
+	// Drain the close channel if needed
+	select {
+	case <-sniffer.closeChannel:
+	default:
+	}
+	
+	return sniffer
+}
+
+// returnToPool returns the contentTypeSniffer to the pool for reuse
+func (rw *contentTypeSniffer) returnToPool() {
+	// Return the prefix buffer to the pool if it exists
+	if rw.prefix != nil && cap(rw.prefix) == ContentSnifferBufferSize {
+		PutContentSnifferBuffer(rw.prefix)
+	}
+	
+	// Clear the sniffer state
+	rw.rw = nil
+	rw.prefix = nil
+	rw.status = 0
+	rw.headerCommitted = false
+	rw.headerWritten = false
+	
+	// Return to pool
+	contentTypeSnifferPool.Put(rw)
 }
 
 type contentTypeSniffer struct {
@@ -46,14 +94,18 @@ func (rw *contentTypeSniffer) Write(chunk []byte) (int, error) {
 	cut := max(min(len(chunk), 512-len(rw.prefix)), 0)
 	if cut >= 512 {
 		// Avoid copying data if a full prefix is available on first non-zero write.
-		cut = len(chunk)
-		rw.prefix = chunk
-		chunk = nil
+		// Instead of referencing the chunk directly, copy to a pooled buffer
+		if rw.prefix == nil {
+			rw.prefix = GetContentSnifferBuffer()
+		}
+		rw.prefix = append(rw.prefix[:0], chunk[:512]...)
+		cut = 512
+		chunk = chunk[cut:]
 	} else if cut > 0 {
 		// First write had less than 512 bytes -- copy data to the prefix buffer.
 		if rw.prefix == nil {
-			// Preallocate space for the prefix to be used for sniffing.
-			rw.prefix = make([]byte, 0, 512)
+			// Get a pooled buffer for content type sniffing
+			rw.prefix = GetContentSnifferBuffer()
 		}
 		rw.prefix = append(rw.prefix, chunk[:cut]...)
 		chunk = chunk[cut:]
