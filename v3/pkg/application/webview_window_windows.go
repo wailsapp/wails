@@ -1683,10 +1683,11 @@ func (w *windowsWebviewWindow) setupChromium() {
 	// Prevent efficiency mode by keeping WebView2 visible (fixes issue #2861)
 	// Microsoft recommendation: keep IsVisible = true to avoid efficiency mode
 	// See: https://github.com/MicrosoftEdge/WebView2Feedback/discussions/4021
-	err := chromium.PutIsVisible(true)
-	if err != nil {
-		globalApplication.error("Failed to set WebView2 visibility for efficiency mode prevention: %v", err)
-	}
+	// TODO: Re-enable when PutIsVisible method is available in go-webview2 package
+	// err := chromium.PutIsVisible(true)
+	// if err != nil {
+	//	globalApplication.error("Failed to set WebView2 visibility for efficiency mode prevention: %v", err)
+	// }
 
 	if chromium.HasCapability(edge.SwipeNavigation) {
 		err := chromium.PutIsSwipeNavigationEnabled(opts.EnableSwipeGestures)
