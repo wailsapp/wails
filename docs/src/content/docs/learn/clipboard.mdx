@@ -11,7 +11,7 @@ The Wails Clipboard API provides a simple interface for interacting with the sys
 The clipboard can be accessed through the application instance:
 
 ```go
-clipboard := app.Clipboard()
+clipboard := app.Clipboard
 ```
 
 ## Setting Text
@@ -19,7 +19,7 @@ clipboard := app.Clipboard()
 To set text to the clipboard, utilise the `SetText` method:
 
 ```go
-success := app.Clipboard().SetText("Hello World")
+success := app.Clipboard.SetText("Hello World")
 if !success {
     // Handle error
 }
@@ -36,7 +36,7 @@ Setting an empty string (`""`) effectively clears the text content from the clip
 To retrieve text from the clipboard, utilise the `Text` method:
 
 ```go
-text, ok := app.Clipboard().Text()
+text, ok := app.Clipboard.Text()
 if !ok {
     // Handle error
 } else {
@@ -75,7 +75,7 @@ func main() {
     })
 
     // Create a custom menu
-    menu := app.NewMenu()
+    menu := app.Menus.New()
     if runtime.GOOS == "darwin" {
         menu.AddRole(application.AppMenu)
     }
@@ -83,33 +83,33 @@ func main() {
     // Add clipboard operations to menu
     setClipboardMenu := menu.AddSubmenu("Set Clipboard")
     setClipboardMenu.Add("Set Text 'Hello'").OnClick(func(ctx *application.Context) {
-        success := app.Clipboard().SetText("Hello")
+        success := app.Clipboard.SetText("Hello")
         if !success {
-            application.InfoDialog().SetMessage("Failed to set clipboard text").Show()
+            app.Dialogs.Info().SetMessage("Failed to set clipboard text").Show()
         }
     })
 
     getClipboardMenu := menu.AddSubmenu("Get Clipboard")
     getClipboardMenu.Add("Get Text").OnClick(func(ctx *application.Context) {
-        result, ok := app.Clipboard().Text()
+        result, ok := app.Clipboard.Text()
         if !ok {
-            application.InfoDialog().SetMessage("Failed to get clipboard text").Show()
+            app.Dialogs.Info().SetMessage("Failed to get clipboard text").Show()
         } else {
-            application.InfoDialog().SetMessage("Got:\n\n" + result).Show()
+            app.Dialogs.Info().SetMessage("Got:\n\n" + result).Show()
         }
     })
 
     clearClipboardMenu := menu.AddSubmenu("Clear Clipboard")
     clearClipboardMenu.Add("Clear Text").OnClick(func(ctx *application.Context) {
-        success := app.Clipboard().SetText("")
+        success := app.Clipboard.SetText("")
         if success {
-            application.InfoDialog().SetMessage("Clipboard text cleared").Show()
+            app.Dialogs.Info().SetMessage("Clipboard text cleared").Show()
         } else {
-            application.InfoDialog().SetMessage("Clipboard text not cleared").Show()
+            app.Dialogs.Info().SetMessage("Clipboard text not cleared").Show()
         }
     })
 
-    app.SetMenu(menu)
+    app.Menus.Set(menu)
     app.NewWebviewWindow()
 
     err := app.Run()

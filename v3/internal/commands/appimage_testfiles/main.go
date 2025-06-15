@@ -50,7 +50,7 @@ func main() {
 	myMenu.Add("New WebviewWindow").
 		SetAccelerator("CmdOrCtrl+N").
 		OnClick(func(ctx *application.Context) {
-			app.NewWebviewWindow().
+			app.Windows.New().
 				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
@@ -60,7 +60,7 @@ func main() {
 	myMenu.Add("New WebviewWindow (Hides on Close one time)").
 		SetAccelerator("CmdOrCtrl+H").
 		OnClick(func(ctx *application.Context) {
-			w := app.NewWebviewWindow()
+			w := app.Windows.New()
 			w.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
 				if !lo.Contains(hiddenWindows, w) {
 					hiddenWindows = append(hiddenWindows, w)
@@ -340,20 +340,12 @@ func main() {
 		})
 	})
 	stateMenu.Add("Get Primary Screen").OnClick(func(ctx *application.Context) {
-		screen, err := app.GetPrimaryScreen()
-		if err != nil {
-			application.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
-			return
-		}
+		screen := app.GetPrimaryScreen()
 		msg := fmt.Sprintf("Screen: %+v", screen)
 		application.InfoDialog().SetTitle("Primary Screen").SetMessage(msg).Show()
 	})
 	stateMenu.Add("Get Screens").OnClick(func(ctx *application.Context) {
-		screens, err := app.GetScreens()
-		if err != nil {
-			application.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
-			return
-		}
+		screens := app.GetScreens()
 		for _, screen := range screens {
 			msg := fmt.Sprintf("Screen: %+v", screen)
 			application.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()

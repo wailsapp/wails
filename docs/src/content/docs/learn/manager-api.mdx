@@ -1,0 +1,265 @@
+---
+title: Manager API
+sidebar:
+  order: 25
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+The Wails v3 Manager API provides an organized and discoverable way to access application functionality through focused manager structs. This new API structure groups related methods together while maintaining full backward compatibility with the traditional App API.
+
+## Overview
+
+The Manager API organizes application functionality into eleven focused areas:
+
+- **`app.Windows`** - Window creation, management, and callbacks
+- **`app.ContextMenus`** - Context menu registration and management  
+- **`app.KeyBindings`** - Global key binding management
+- **`app.Browser`** - Browser integration (opening URLs and files)
+- **`app.Env`** - Environment information and system state
+- **`app.Dialogs`** - File and message dialog operations
+- **`app.Events`** - Custom event handling and application events
+- **`app.Menus`** - Application menu management
+- **`app.Screens`** - Screen management and coordinate transformations
+- **`app.Clipboard`** - Clipboard text operations
+- **`app.SystemTray`** - System tray icon creation and management
+
+## Benefits
+
+- **Better discoverability** - IDE autocomplete shows organized API surface
+- **Improved code organization** - Related methods grouped together
+- **Enhanced maintainability** - Separation of concerns across managers
+- **Future extensibility** - Easier to add new features to specific areas
+
+## Usage
+
+The Manager API provides organized access to all application functionality:
+
+```go
+// Events and custom event handling
+app.Events.Emit("custom", data)
+app.Events.On("custom", func(e *CustomEvent) { ... })
+
+// Window management
+window, _ := app.Windows.GetByName("main")
+app.Windows.OnCreate(func(window Window) { ... })
+
+// Browser integration
+app.Browser.OpenURL("https://wails.io")
+
+// Menu management
+menu := app.Menus.New()
+app.Menus.Set(menu)
+
+// System tray
+systray := app.SystemTray.New()
+```
+
+## Manager Reference
+
+### Windows Manager
+
+Manages window creation, retrieval, and lifecycle callbacks.
+
+```go
+// Create windows
+window := app.Windows.New()
+window := app.Windows.NewWithOptions(options)
+current := app.Windows.Current()
+
+// Find windows
+window, exists := app.Windows.GetByName("main")
+windows := app.Windows.GetAll()
+
+// Window callbacks
+app.Windows.OnCreate(func(window Window) {
+    // Handle window creation
+})
+```
+
+### Events Manager
+
+Handles custom events and application event listening.
+
+```go
+// Custom events
+app.Events.Emit("userAction", data)
+cancelFunc := app.Events.On("userAction", func(e *CustomEvent) {
+    // Handle event
+})
+app.Events.Off("userAction")
+app.Events.Reset() // Remove all listeners
+
+// Application events
+app.Events.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
+    // Handle system theme change
+})
+```
+
+### Browser Manager
+
+Provides browser integration for opening URLs and files.
+
+```go
+// Open URLs and files in default browser
+err := app.Browser.OpenURL("https://wails.io")
+err := app.Browser.OpenFile("/path/to/document.pdf")
+```
+
+### Environment Manager
+
+Access to system environment information.
+
+```go
+// Get environment info
+env := app.Env.Info()
+fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
+
+// Check system theme
+if app.Env.IsDarkMode() {
+    // Dark mode is active
+}
+
+// Open file manager
+err := app.Env.OpenFileManager("/path/to/folder", false)
+```
+
+### Dialogs Manager
+
+Organized access to file and message dialogs.
+
+```go
+// File dialogs
+result, err := app.Dialogs.OpenFile().
+    AddFilter("Text Files", "*.txt").
+    PromptForSingleSelection()
+
+result, err = app.Dialogs.SaveFile().
+    SetDefaultFilename("document.txt").
+    PromptForSingleSelection()
+
+// Message dialogs
+app.Dialogs.Info().
+    SetTitle("Information").
+    SetMessage("Operation completed successfully").
+    Show()
+
+app.Dialogs.Error().
+    SetTitle("Error").  
+    SetMessage("An error occurred").
+    Show()
+```
+
+### Menus Manager
+
+Application menu creation and management.
+
+```go
+// Create and set application menu
+menu := app.Menus.New()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").OnClick(func(ctx *Context) {
+    // Handle menu click
+})
+
+app.Menus.Set(menu)
+
+// Show about dialog
+app.Menus.ShowAbout()
+```
+
+### Key Bindings Manager
+
+Dynamic management of global key bindings.
+
+```go
+// Add key bindings
+app.KeyBindings.Add("ctrl+n", func(window *WebviewWindow) {
+    // Handle Ctrl+N
+})
+
+app.KeyBindings.Add("ctrl+q", func(window *WebviewWindow) {
+    app.Quit()
+})
+
+// Remove key bindings
+app.KeyBindings.Remove("ctrl+n")
+
+// Get all bindings
+bindings := app.KeyBindings.GetAll()
+```
+
+### Context Menus Manager
+
+Advanced context menu management (for library authors).
+
+```go
+// Create and register context menu
+menu := app.ContextMenus.New()
+app.ContextMenus.Add("myMenu", menu)
+
+// Retrieve context menu
+menu, exists := app.ContextMenus.Get("myMenu")
+
+// Remove context menu
+app.ContextMenus.Remove("myMenu")
+```
+
+### Screens Manager
+
+Screen management and coordinate transformations for multi-monitor setups.
+
+```go
+// Get screen information
+screens := app.Screens.GetAll()
+primary := app.Screens.GetPrimary()
+
+// Coordinate transformations
+physicalPoint := app.Screens.DipToPhysicalPoint(logicalPoint)
+logicalPoint := app.Screens.PhysicalToDipPoint(physicalPoint)
+
+// Screen detection
+screen := app.Screens.ScreenNearestDipPoint(point)
+screen = app.Screens.ScreenNearestDipRect(rect)
+```
+
+### Clipboard Manager
+
+Clipboard operations for reading and writing text.
+
+```go
+// Set text to clipboard
+success := app.Clipboard.SetText("Hello World")
+if !success {
+    // Handle error
+}
+
+// Get text from clipboard
+text, ok := app.Clipboard.Text()
+if !ok {
+    // Handle error
+} else {
+    // Use the text
+}
+```
+
+### SystemTray Manager
+
+System tray icon creation and management.
+
+```go
+// Create system tray
+systray := app.SystemTray.New()
+systray.SetLabel("My App")
+systray.SetIcon(iconBytes)
+
+// Add menu to system tray
+menu := app.Menus.New()
+menu.Add("Open").OnClick(func(ctx *Context) {
+    // Handle click
+})
+systray.SetMenu(menu)
+
+// Destroy system tray when done
+systray.Destroy()
+```

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -69,13 +70,13 @@ func (s *GinService) ServiceStartup(ctx context.Context, options application.Ser
 	s.app = application.Get()
 
 	// Register an event handler that can be triggered from the frontend
-	s.app.OnEvent("gin-api-event", func(event *application.CustomEvent) {
+	s.app.Events.On("gin-api-event", func(event *application.CustomEvent) {
 		// Log the event data
 		// Parse the event data
 		s.app.Logger.Info("Received event from frontend", "data", event.Data)
 
 		// You could also emit an event back to the frontend
-		s.app.EmitEvent("gin-api-response", map[string]interface{}{
+		s.app.Events.Emit("gin-api-response", map[string]interface{}{
 			"message": "Response from Gin API Service",
 			"time":    time.Now().Format(time.RFC3339),
 		})
@@ -137,57 +138,45 @@ func (s *GinService) setupRoutes() {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		})
 
-// import block (ensure this exists in your file)
-import (
-	"context"
-	"net/http"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
-)
+		// Create a new user
+		users.POST("", func(c *gin.Context) {
+			var newUser User
+			if err := c.ShouldBindJSON(&newUser); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 
-// ...
+			// Validate required fields
+			if newUser.Name == "" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Name is required"})
+				return
+			}
+			if newUser.Email == "" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required"})
+				return
+			}
+			// Basic email validation (consider using a proper validator library in production)
+			if !strings.Contains(newUser.Email, "@") {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email format"})
+				return
+			}
 
-// Create a new user
-users.POST("", func(c *gin.Context) {
-	var newUser User
-	if err := c.ShouldBindJSON(&newUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+			s.mu.Lock()
+			defer s.mu.Unlock()
 
-	// Validate required fields
-	if newUser.Name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Name is required"})
-		return
-	}
-	if newUser.Email == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required"})
-		return
-	}
-	// Basic email validation (consider using a proper validator library in production)
-	if !strings.Contains(newUser.Email, "@") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email format"})
-		return
-	}
+			// Set the ID and creation time
+			newUser.ID = s.nextID
+			newUser.CreatedAt = time.Now()
+			s.nextID++
 
-	s.mu.Lock()
-	defer s.mu.Unlock()
+			// Add to the users slice
+			s.users = append(s.users, newUser)
 
-	// Set the ID and creation time
-	newUser.ID = s.nextID
-	newUser.CreatedAt = time.Now()
-	s.nextID++
+			c.JSON(http.StatusCreated, newUser)
 
-	// Add to the users slice
-	s.users = append(s.users, newUser)
-
-	c.JSON(http.StatusCreated, newUser)
-
-	// Emit an event to notify about the new user
-	s.app.EmitEvent("user-created", newUser)
-})
+			// Emit an event to notify about the new user
+			s.app.Events.Emit("user-created", newUser)
+		})
 
 		// Delete a user
 		users.DELETE("/:id", func(c *gin.Context) {

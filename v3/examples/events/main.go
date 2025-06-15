@@ -27,21 +27,21 @@ func main() {
 	})
 
 	// Custom event handling
-	app.OnEvent("myevent", func(e *application.CustomEvent) {
+	app.Events.On("myevent", func(e *application.CustomEvent) {
 		app.Logger.Info("[Go] CustomEvent received", "name", e.Name, "data", e.Data, "sender", e.Sender, "cancelled", e.IsCancelled())
 	})
 
 	// OS specific application events
-	app.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
+	app.Events.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
 		for {
 			// This emits a custom event every 10 seconds
 			// As it's sent from the application, the sender will be blank
-			app.EmitEvent("myevent", "hello")
+			app.Events.Emit("myevent", "hello")
 			time.Sleep(10 * time.Second)
 		}
 	})
 
-	app.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+	app.Events.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
 		app.Logger.Info("System theme changed!")
 		if event.Context().IsDarkMode() {
 			app.Logger.Info("System is now using dark mode!")
@@ -51,11 +51,11 @@ func main() {
 	})
 
 	// Platform agnostic events
-	app.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
+	app.Events.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
 		app.Logger.Info("events.Common.ApplicationStarted fired!")
 	})
 
-	win1 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	win1 := app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Window 1",
 		Name:  "Window 1",
 		Mac: application.MacWindow{
@@ -77,7 +77,7 @@ func main() {
 		e.Cancel()
 	})
 
-	win2 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	win2 := app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Window 2",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,

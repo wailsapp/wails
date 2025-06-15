@@ -26,7 +26,7 @@ func main() {
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Window 1",
 		Name:  "Window 1",
 		Mac: application.MacWindow{

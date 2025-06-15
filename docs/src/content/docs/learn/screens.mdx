@@ -1,0 +1,505 @@
+---
+title: Screen Management
+sidebar:
+  order: 57
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails provides comprehensive screen management capabilities for multi-monitor setups and high-DPI displays. The ScreenManager API allows you to query screen information, handle coordinate transformations, and manage window placement across multiple displays.
+
+## Accessing the Screen Manager
+
+The screen manager is accessed through the `Screens` property on your application instance:
+
+```go
+app := application.New(application.Options{
+    Name: "Multi-Monitor App",
+})
+
+// Access the screen manager
+screens := app.Screens
+```
+
+## Getting Screen Information
+
+### Get All Screens
+
+Retrieve information about all connected displays:
+
+```go
+allScreens := app.Screens.GetAll()
+for i, screen := range allScreens {
+    app.Logger.Info("Screen info",
+        "index", i,
+        "name", screen.Name,
+        "id", screen.ID,
+        "primary", screen.IsPrimary,
+        "width", screen.Size.Width,
+        "height", screen.Size.Height,
+        "scaleFactor", screen.ScaleFactor,
+    )
+}
+```
+
+### Get Primary Screen
+
+Get the primary (main) display:
+
+```go
+primaryScreen := app.Screens.GetPrimary()
+if primaryScreen != nil {
+    app.Logger.Info("Primary screen",
+        "name", primaryScreen.Name,
+        "resolution", fmt.Sprintf("%dx%d", primaryScreen.Size.Width, primaryScreen.Size.Height),
+        "workArea", primaryScreen.WorkArea,
+    )
+}
+```
+
+## Screen Properties
+
+### Screen Structure
+
+Each screen provides comprehensive information about the display:
+
+```go
+type Screen struct {
+    ID               string  // Unique identifier for the display
+    Name             string  // Display name (e.g., "Built-in Retina Display")
+    ScaleFactor      float32 // DPI scale factor (1.0 = 96 DPI, 2.0 = 192 DPI)
+    X                int     // X coordinate of top-left corner
+    Y                int     // Y coordinate of top-left corner
+    Size             Size    // Logical size of the display
+    Bounds           Rect    // Display bounds in logical coordinates
+    PhysicalBounds   Rect    // Physical bounds before scaling
+    WorkArea         Rect    // Available area (excluding taskbars/docks)
+    PhysicalWorkArea Rect    // Physical work area
+    IsPrimary        bool    // Whether this is the primary display
+    Rotation         float32 // Display rotation in degrees
+}
+```
+
+### Coordinate Systems
+
+Wails handles two coordinate systems:
+
+- **Logical (DIP)**: Device-independent pixels, scaled for readability
+- **Physical**: Actual pixel coordinates on the hardware
+
+```go
+screen := app.Screens.GetPrimary()
+
+// Logical coordinates (what you typically work with)
+logicalWidth := screen.Size.Width
+logicalHeight := screen.Size.Height
+
+// Physical coordinates (actual hardware pixels)
+physicalWidth := screen.PhysicalBounds.Width
+physicalHeight := screen.PhysicalBounds.Height
+
+// Scale factor relationship
+scaleFactor := screen.ScaleFactor // e.g., 2.0 for Retina displays
+// physicalWidth = logicalWidth * scaleFactor
+```
+
+## Coordinate Transformations
+
+### Point Transformations
+
+Convert coordinates between logical and physical systems:
+
+```go
+// Convert logical point to physical coordinates
+logicalPoint := application.Point{X: 100, Y: 50}
+physicalPoint := app.Screens.DipToPhysicalPoint(logicalPoint)
+
+// Convert physical point to logical coordinates
+physicalPoint2 := application.Point{X: 200, Y: 100}
+logicalPoint2 := app.Screens.PhysicalToDipPoint(physicalPoint2)
+
+app.Logger.Info("Coordinate conversion",
+    "logical", logicalPoint,
+    "physical", physicalPoint,
+    "backToLogical", logicalPoint2,
+)
+```
+
+### Rectangle Transformations
+
+Convert rectangular areas between coordinate systems:
+
+```go
+// Define a logical rectangle
+logicalRect := application.Rect{
+    X: 100, Y: 100,
+    Width: 400, Height: 300,
+}
+
+// Convert to physical coordinates
+physicalRect := app.Screens.DipToPhysicalRect(logicalRect)
+
+// Convert back to logical coordinates
+logicalRect2 := app.Screens.PhysicalToDipRect(physicalRect)
+
+app.Logger.Info("Rectangle conversion",
+    "original", logicalRect,
+    "physical", physicalRect,
+    "converted", logicalRect2,
+)
+```
+
+## Screen Detection and Positioning
+
+### Find Screen by Point
+
+Determine which screen contains a specific point:
+
+```go
+// Find screen containing a logical point
+point := application.Point{X: 500, Y: 300}
+screen := app.Screens.ScreenNearestDipPoint(point)
+
+// Find screen containing a physical point
+physicalPoint := application.Point{X: 1000, Y: 600}
+screenPhys := app.Screens.ScreenNearestPhysicalPoint(physicalPoint)
+
+app.Logger.Info("Screen detection",
+    "point", point,
+    "screen", screen.Name,
+    "physicalPoint", physicalPoint,
+    "physicalScreen", screenPhys.Name,
+)
+```
+
+### Find Screen by Rectangle
+
+Determine which screen best contains or overlaps with a rectangle:
+
+```go
+// Find screen for a logical rectangle
+rect := application.Rect{X: 200, Y: 150, Width: 800, Height: 600}
+screen := app.Screens.ScreenNearestDipRect(rect)
+
+// Find screen for a physical rectangle
+physicalRect := application.Rect{X: 400, Y: 300, Width: 1600, Height: 1200}
+screenPhys := app.Screens.ScreenNearestPhysicalRect(physicalRect)
+
+app.Logger.Info("Screen detection by area",
+    "rect", rect,
+    "screen", screen.Name,
+    "physicalRect", physicalRect,
+    "physicalScreen", screenPhys.Name,
+)
+```
+
+## Window Positioning
+
+### Position Window on Specific Screen
+
+Place a window on a particular screen:
+
+```go
+func positionWindowOnScreen(window *application.WebviewWindow, targetScreen *application.Screen) {
+    // Calculate center position on target screen
+    centerX := targetScreen.WorkArea.X + (targetScreen.WorkArea.Width-800)/2
+    centerY := targetScreen.WorkArea.Y + (targetScreen.WorkArea.Height-600)/2
+    
+    // Position the window
+    window.SetPosition(centerX, centerY)
+    window.SetSize(800, 600)
+}
+
+// Usage
+primaryScreen := app.Screens.GetPrimary()
+if primaryScreen != nil {
+    window := app.Windows.New()
+    positionWindowOnScreen(window, primaryScreen)
+}
+```
+
+### Multi-Monitor Window Management
+
+Manage windows across multiple screens:
+
+```go
+func distributeWindowsAcrossScreens(app *application.App) {
+    screens := app.Screens.GetAll()
+    if len(screens) == 0 {
+        return
+    }
+    
+    // Create one window per screen
+    for i, screen := range screens {
+        window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+            Name:   fmt.Sprintf("window-%d", i),
+            Title:  fmt.Sprintf("Window on %s", screen.Name),
+            Width:  800,
+            Height: 600,
+        })
+        
+        // Position window in center of screen's work area
+        x := screen.WorkArea.X + (screen.WorkArea.Width-800)/2
+        y := screen.WorkArea.Y + (screen.WorkArea.Height-600)/2
+        window.SetPosition(x, y)
+    }
+}
+```
+
+## High-DPI Support
+
+### Handling Different Scale Factors
+
+Properly handle displays with different DPI settings:
+
+```go
+func analyzeDisplayScaling(app *application.App) {
+    screens := app.Screens.GetAll()
+    
+    for _, screen := range screens {
+        scaleFactor := screen.ScaleFactor
+        
+        switch {
+        case scaleFactor == 1.0:
+            app.Logger.Info("Standard DPI display", "screen", screen.Name)
+        case scaleFactor == 1.25:
+            app.Logger.Info("125% scaled display", "screen", screen.Name)
+        case scaleFactor == 1.5:
+            app.Logger.Info("150% scaled display", "screen", screen.Name)
+        case scaleFactor == 2.0:
+            app.Logger.Info("High DPI display (200%)", "screen", screen.Name)
+        default:
+            app.Logger.Info("Custom scale display",
+                "screen", screen.Name,
+                "scale", scaleFactor,
+            )
+        }
+    }
+}
+```
+
+### DPI-Aware Measurements
+
+Convert measurements appropriately for different displays:
+
+```go
+func getDPIAwareSizes(screen *application.Screen, logicalSize int) (int, int) {
+    // Physical size in actual pixels
+    physicalSize := int(float32(logicalSize) * screen.ScaleFactor)
+    
+    return logicalSize, physicalSize
+}
+
+// Usage
+screen := app.Screens.GetPrimary()
+logicalWidth, physicalWidth := getDPIAwareSizes(screen, 400)
+app.Logger.Info("Size conversion",
+    "logical", logicalWidth,
+    "physical", physicalWidth,
+    "scaleFactor", screen.ScaleFactor,
+)
+```
+
+## Platform Considerations
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+    
+    On macOS:
+    
+    - Screen coordinates start from bottom-left (different from Windows/Linux)
+    - Built-in Retina displays typically have 2.0 scale factor
+    - External displays may have different scale factors
+    - Mission Control and Spaces affect screen management
+    - Screen arrangement can be configured in System Preferences
+    
+    ```go
+    // macOS-specific screen handling
+    if runtime.GOOS == "darwin" {
+        // Handle coordinate system differences
+        screen := app.Screens.GetPrimary()
+        // Y coordinates are flipped on macOS
+    }
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Windows" icon="fa-brands:windows">
+    
+    On Windows:
+    
+    - Screen coordinates start from top-left
+    - Scale factors vary: 100%, 125%, 150%, 175%, 200%, etc.
+    - Multiple monitor configurations are common
+    - Taskbar affects work area calculations
+    - Windows display settings control scaling
+    
+    ```go
+    // Windows-specific screen handling
+    if runtime.GOOS == "windows" {
+        screen := app.Screens.GetPrimary()
+        // Account for taskbar in work area
+        workArea := screen.WorkArea
+    }
+    ```
+    
+  </TabItem>
+  
+  <TabItem label="Linux" icon="fa-brands:linux">
+    
+    On Linux:
+    
+    - Screen coordinates start from top-left
+    - Scale factors depend on desktop environment
+    - X11 and Wayland have different behaviors
+    - Panel/dock configurations affect work areas
+    - Multi-monitor support varies by environment
+    
+    ```go
+    // Linux-specific screen handling
+    if runtime.GOOS == "linux" {
+        screen := app.Screens.GetPrimary()
+        // Handle different desktop environments
+    }
+    ```
+    
+  </TabItem>
+</Tabs>
+
+## Best Practices
+
+1. **Always Check for Screens**: Ensure screens are available before using them:
+   ```go
+   screens := app.Screens.GetAll()
+   if len(screens) == 0 {
+       app.Logger.Warn("No screens detected")
+       return
+   }
+   ```
+
+2. **Use Work Areas**: Position windows within work areas to avoid taskbars/docks:
+   ```go
+   screen := app.Screens.GetPrimary()
+   workArea := screen.WorkArea
+   // Position within workArea, not full screen bounds
+   ```
+
+3. **Handle Scale Factors**: Always consider DPI scaling for proper sizing:
+   ```go
+   screen := app.Screens.GetPrimary()
+   if screen.ScaleFactor > 1.0 {
+       // Adjust UI elements for high-DPI displays
+   }
+   ```
+
+4. **Monitor Screen Changes**: Listen for screen configuration changes:
+   ```go
+   app.OnApplicationEvent(events.Common.SystemDisplayChanged, func(event *application.ApplicationEvent) {
+       // Refresh screen information
+       screens := app.Screens.GetAll()
+       // Reposition windows if needed
+   })
+   ```
+
+## Complete Example
+
+Here's a complete example demonstrating screen management:
+
+```go
+package main
+
+import (
+    "fmt"
+    "runtime"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Screen Management Demo",
+    })
+
+    // Analyze connected screens
+    analyzeScreens(app)
+
+    // Create windows strategically positioned
+    createPositionedWindows(app)
+
+    // Setup screen change monitoring
+    monitorScreenChanges(app)
+
+    err := app.Run()
+    if err != nil {
+        panic(err)
+    }
+}
+
+func analyzeScreens(app *application.App) {
+    screens := app.Screens.GetAll()
+    app.Logger.Info("Screen analysis", "count", len(screens))
+
+    primary := app.Screens.GetPrimary()
+    if primary != nil {
+        app.Logger.Info("Primary screen",
+            "name", primary.Name,
+            "size", fmt.Sprintf("%dx%d", primary.Size.Width, primary.Size.Height),
+            "scaleFactor", primary.ScaleFactor,
+            "workArea", primary.WorkArea,
+        )
+    }
+
+    for i, screen := range screens {
+        app.Logger.Info("Screen details",
+            "index", i,
+            "name", screen.Name,
+            "primary", screen.IsPrimary,
+            "bounds", screen.Bounds,
+            "scaleFactor", screen.ScaleFactor,
+        )
+    }
+}
+
+func createPositionedWindows(app *application.App) {
+    screens := app.Screens.GetAll()
+    
+    for i, screen := range screens {
+        window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+            Name:  fmt.Sprintf("screen-%d", i),
+            Title: fmt.Sprintf("Window on %s", screen.Name),
+            Width: 600,
+            Height: 400,
+        })
+
+        // Center window in screen's work area
+        x := screen.WorkArea.X + (screen.WorkArea.Width-600)/2
+        y := screen.WorkArea.Y + (screen.WorkArea.Height-400)/2
+        window.SetPosition(x, y)
+
+        app.Logger.Info("Created window",
+            "screen", screen.Name,
+            "position", fmt.Sprintf("%d,%d", x, y),
+        )
+    }
+}
+
+func monitorScreenChanges(app *application.App) {
+    // Monitor for screen configuration changes
+    app.OnApplicationEvent(events.Common.SystemDisplayChanged, func(event *application.ApplicationEvent) {
+        app.Logger.Info("Screen configuration changed")
+        
+        // Re-analyze screens
+        screens := app.Screens.GetAll()
+        app.Logger.Info("Updated screen count", "count", len(screens))
+        
+        // Could reposition windows here if needed
+    })
+}
+```
+
+:::tip[Pro Tip]
+When developing multi-monitor applications, test on various configurations including different DPI settings and monitor arrangements to ensure proper behavior.
+:::
+
+:::danger[Warning]
+Screen configurations can change during application runtime (monitors connected/disconnected, resolution changes). Always handle these changes gracefully and avoid storing screen references long-term.
+:::

@@ -130,7 +130,7 @@ func (m *windowsApp) setApplicationMenu(menu *Menu) {
 	}
 	menu.Update()
 
-	m.parent.ApplicationMenu = menu
+	m.parent.applicationMenu = menu
 }
 
 func (m *windowsApp) run() error {

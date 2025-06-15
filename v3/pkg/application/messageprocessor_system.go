@@ -18,9 +18,9 @@ var systemMethodNames = map[int]string{
 func (m *MessageProcessor) processSystemMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
 	switch method {
 	case SystemIsDarkMode:
-		m.json(rw, globalApplication.IsDarkMode())
+		m.json(rw, globalApplication.Env.IsDarkMode())
 	case Environment:
-		m.json(rw, globalApplication.Environment())
+		m.json(rw, globalApplication.Env.Info())
 	default:
 		m.httpError(rw, "Invalid system call:", fmt.Errorf("unknown method: %d", method))
 		return

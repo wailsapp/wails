@@ -49,7 +49,7 @@ func main() {
 			other.CustomNewServices[Service11, Service12]()...),
 	})
 
-	app.NewWebviewWindow()
+	app.Windows.New()
 
 	err := app.Run()
 

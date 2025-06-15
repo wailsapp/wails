@@ -24,7 +24,7 @@ func main() {
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Environment Demo",
 		Width:  800,
 		Height: 600,

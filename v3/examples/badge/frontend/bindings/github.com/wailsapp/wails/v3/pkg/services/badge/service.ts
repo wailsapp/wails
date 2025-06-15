@@ -8,14 +8,26 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "@wailsio/runtime";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
-export function RemoveBadge(): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(2633565570) as any;
-    return $resultPromise;
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as $models from "./models.js";
+
+/**
+ * RemoveBadge removes the badge label from the application icon.
+ */
+export function RemoveBadge(): $CancellablePromise<void> {
+    return $Call.ByID(2633565570);
 }
 
-export function SetBadge(label: string): Promise<void> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(3052354152, label) as any;
-    return $resultPromise;
+/**
+ * SetBadge sets the badge label on the application icon.
+ */
+export function SetBadge(label: string): $CancellablePromise<void> {
+    return $Call.ByID(3052354152, label);
+}
+
+export function SetCustomBadge(label: string, options: $models.Options): $CancellablePromise<void> {
+    return $Call.ByID(921166821, label, options);
 }

@@ -88,7 +88,7 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 	if menu == nil {
 		// Create a default menu
 		menu = DefaultApplicationMenu()
-		globalApplication.ApplicationMenu = menu
+		globalApplication.applicationMenu = menu
 	}
 }
 

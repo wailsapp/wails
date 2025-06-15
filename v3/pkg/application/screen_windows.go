@@ -50,7 +50,7 @@ func (m *windowsApp) processAndCacheScreens() error {
 		})
 	}
 
-	err = m.parent.screenManager.LayoutScreens(screens)
+	err = m.parent.Screens.LayoutScreens(screens)
 	if err != nil {
 		return err
 	}
@@ -60,12 +60,12 @@ func (m *windowsApp) processAndCacheScreens() error {
 
 // NOTE: should be moved to *App after DPI is implemented in all platforms
 func (m *windowsApp) getScreens() ([]*Screen, error) {
-	return m.parent.screenManager.screens, nil
+	return m.parent.Screens.screens, nil
 }
 
 // NOTE: should be moved to *App after DPI is implemented in all platforms
 func (m *windowsApp) getPrimaryScreen() (*Screen, error) {
-	return m.parent.screenManager.primaryScreen, nil
+	return m.parent.Screens.primaryScreen, nil
 }
 
 func getScreenForWindow(window *windowsWebviewWindow) (*Screen, error) {
@@ -75,7 +75,7 @@ func getScreenForWindow(window *windowsWebviewWindow) (*Screen, error) {
 func getScreenForWindowHwnd(hwnd w32.HWND) (*Screen, error) {
 	hMonitor := w32.MonitorFromWindow(hwnd, w32.MONITOR_DEFAULTTONEAREST)
 	screenID := hMonitorToScreenID(hMonitor)
-	for _, screen := range globalApplication.screenManager.screens {
+	for _, screen := range globalApplication.Screens.screens {
 		if screen.ID == screenID {
 			return screen, nil
 		}

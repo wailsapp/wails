@@ -23,7 +23,7 @@ func main() {
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "JS Window API Demo",
 		Width:  1280,
 		Height: 1024,

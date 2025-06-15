@@ -1324,12 +1324,10 @@ window._wails = window._wails || {};
 window._wails.invoke = invoke;
 invoke("wails:runtime:ready");
 function RemoveBadge() {
-  let $resultPromise = ByID(2633565570);
-  return $resultPromise;
+  return ByID(2633565570);
 }
 function SetBadge(label) {
-  let $resultPromise = ByID(3052354152, label);
-  return $resultPromise;
+  return ByID(3052354152, label);
 }
 const setButton = document.getElementById("set");
 const removeButton = document.getElementById("remove");

@@ -33,10 +33,10 @@ func (m *MessageProcessor) processClipboardMethod(method int, rw http.ResponseWr
 			return
 		}
 		text = *textp
-		globalApplication.Clipboard().SetText(text)
+		globalApplication.Clipboard.SetText(text)
 		m.ok(rw)
 	case ClipboardText:
-		text, _ = globalApplication.Clipboard().Text()
+		text, _ = globalApplication.Clipboard.Text()
 		m.text(rw, text)
 	default:
 		m.httpError(rw, "Invalid clipboard call:", fmt.Errorf("unknown method: %d", method))
