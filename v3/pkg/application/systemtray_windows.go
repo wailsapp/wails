@@ -62,6 +62,7 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) er
 
 	// systray icons in windows can either be in the taskbar
 	// or in a flyout menu.
+	var iconIsInTrayBounds bool
 	iconIsInTrayBounds, err = s.iconIsInTrayBounds()
 	if err != nil {
 		return err
