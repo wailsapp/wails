@@ -55,6 +55,12 @@ func (m *windowsApp) isDarkMode() bool {
 	return w32.IsCurrentlyDarkMode()
 }
 
+func (m *windowsApp) getAccentColor() string {
+	// Windows doesn't have a simple accent color API in the current w32 package
+	// Return a default blue color
+	return "rgb(0,122,255)"
+}
+
 func (m *windowsApp) isOnMainThread() bool {
 	return m.mainThreadID == w32.GetCurrentThreadId()
 }
