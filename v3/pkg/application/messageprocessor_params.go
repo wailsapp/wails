@@ -192,15 +192,6 @@ func (a *Args) Bool(s string) *bool {
 }
 
 func (qp QueryParams) Args() (*Args, error) {
-	argData := qp["args"]
-	var result = &Args{
-		data: make(map[string]any),
-	}
-	if len(argData) == 1 {
-		err := json.Unmarshal([]byte(argData[0]), &result.data)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return result, nil
+	// Use pooled version for better performance
+	return ArgsFromQueryParams(qp)
 }

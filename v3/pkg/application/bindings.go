@@ -217,7 +217,7 @@ func getMethods(value any) ([]*BoundMethod, error) {
 		// Iterate inputs
 		methodType := method.Type()
 		inputParamCount := methodType.NumIn()
-		var inputs []*Parameter
+		inputs := GetParameterSlice()
 		for inputIndex := 0; inputIndex < inputParamCount; inputIndex++ {
 			input := methodType.In(inputIndex)
 			if inputIndex == 0 && input.AssignableTo(ctxType) {
@@ -230,7 +230,7 @@ func getMethods(value any) ([]*BoundMethod, error) {
 		boundMethod.Inputs = inputs
 
 		outputParamCount := methodType.NumOut()
-		var outputs []*Parameter
+		outputs := GetParameterSlice()
 		for outputIndex := 0; outputIndex < outputParamCount; outputIndex++ {
 			output := methodType.Out(outputIndex)
 			thisParam := newParameter("", output)

@@ -34,11 +34,12 @@ func (m *MessageProcessor) callCallback(window Window, callID *string, result st
 }
 
 func (m *MessageProcessor) processCallCancelMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	args, err := params.Args()
+	args, err := ArgsFromQueryParams(params)
 	if err != nil {
 		m.httpError(rw, "Invalid binding call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
 	}
+	defer PutArgs(args) // Return args to pool when done
 
 	callID := args.String("call-id")
 	if callID == nil || *callID == "" {
@@ -61,11 +62,12 @@ func (m *MessageProcessor) processCallCancelMethod(method int, rw http.ResponseW
 }
 
 func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter, r *http.Request, window Window, params QueryParams) {
-	args, err := params.Args()
+	args, err := ArgsFromQueryParams(params)
 	if err != nil {
 		m.httpError(rw, "Invalid binding call:", fmt.Errorf("unable to parse arguments: %w", err))
 		return
 	}
+	defer PutArgs(args) // Return args to pool when done
 
 	callID := args.String("call-id")
 	if callID == nil || *callID == "" {
@@ -75,8 +77,10 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 
 	switch method {
 	case CallBinding:
-		var options CallOptions
-		err := params.ToStruct(&options)
+		options := GetCallOptions()
+		defer PutCallOptions(options) // Return options to pool when done
+		
+		err := params.ToStruct(options)
 		if err != nil {
 			m.httpError(rw, "Invalid binding call:", fmt.Errorf("error parsing call options: %w", err))
 			return
@@ -129,7 +133,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 
 			var boundMethod *BoundMethod
 			if options.MethodName != "" {
-				boundMethod = globalApplication.bindings.Get(&options)
+				boundMethod = globalApplication.bindings.Get(options)
 				if boundMethod == nil {
 					m.callErrorCallback(window, "Binding call failed:", callID, &CallError{
 						Kind:    ReferenceError,
