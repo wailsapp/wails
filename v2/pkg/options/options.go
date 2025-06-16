@@ -10,6 +10,7 @@ import (
 	"runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/freebsd"
 	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
@@ -89,6 +90,7 @@ type App struct {
 	Windows *windows.Options
 	Mac     *mac.Options
 	Linux   *linux.Options
+	FreeBSD *freebsd.Options
 
 	// Experimental options
 	Experimental *Experimental
