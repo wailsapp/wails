@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import {GreetService} from "../../bindings/changeme";
+import {GreetService} from "@services";
 import {Events} from "@wailsio/runtime";
 
 const name = ref('')

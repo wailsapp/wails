@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {GreetService} from '../bindings/changeme';
+import {GreetService} from '@services';
 import {Events} from "@wailsio/runtime";
 
 /**

@@ -8,4 +8,9 @@ export default defineConfig({
       csr: true,
     }),
   ],
+  resolve: {
+    alias: {
+        "@services": "/bindings/changeme/index.ts",
+    },
+},
 })

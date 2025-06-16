@@ -12,5 +12,10 @@ export default defineConfig({
           ],
         },
     },
-	plugins: [sveltekit()]
+	plugins: [sveltekit()],
+  resolve: {
+    alias: {
+        "@services": "/bindings/changeme/index.ts",
+    },
+},
 });
