@@ -131,6 +131,10 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 			}
 		}
 
+		if windowsOptions.ContentProtection {
+			w32.SetWindowDisplayAffinity(result.Handle(), w32.WDA_EXCLUDEFROMCAPTURE)
+		}
+
 		if windowsOptions.DisableWindowIcon {
 			result.DisableIcon()
 		}
