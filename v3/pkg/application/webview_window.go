@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"text/template"
 
 	"github.com/leaanthony/u"
@@ -165,8 +166,8 @@ type WebviewWindow struct {
 	// pendingJS holds JS that was sent to the window before the runtime was loaded
 	pendingJS []string
 
-	// unconditionallyClose marks the window to be unconditionally closed
-	unconditionallyClose bool
+	// unconditionallyClose marks the window to be unconditionally closed (atomic)
+	unconditionallyClose uint32
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -273,7 +274,7 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 
 	// Listen for window closing events and de
 	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
-		result.unconditionallyClose = true
+		atomic.StoreUint32(&result.unconditionallyClose, 1)
 		InvokeSync(result.markAsDestroyed)
 		InvokeSync(result.impl.close)
 		globalApplication.deleteWindowByID(result.id)
