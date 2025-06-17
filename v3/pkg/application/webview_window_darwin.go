@@ -905,7 +905,6 @@ func (w *macosWebviewWindow) getScreen() (*Screen, error) {
 }
 
 func (w *macosWebviewWindow) show() {
-	globalApplication.debug("Window showing", "windowId", w.parent.id, "title", w.parent.options.Title)
 	C.windowShow(w.nsWindow)
 }
 
@@ -1053,7 +1052,7 @@ func (w *macosWebviewWindow) execJS(js string) {
 		if performingShutdown {
 			return
 		}
-		if w.nsWindow == nil {
+		if w.nsWindow == nil || w.parent.isDestroyed() {
 			return
 		}
 		C.windowExecJS(w.nsWindow, C.CString(js))

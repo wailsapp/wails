@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MsixPackagingToolTemplate
+    xmlns="http://schemas.microsoft.com/msix/packaging/msixpackagingtool/template/2022">
+    <Settings
+        AllowTelemetry="false"
+        ApplyACLsToPackageFiles="true"
+        GenerateCommandLineFile="true"
+        AllowPromptForPassword="false">
+    </Settings>
+    <Installer
+        Path="{{.ExecutablePath}}"
+        Arguments=""
+        InstallLocation="C:\Program Files\{{.Info.CompanyName}}\{{.Info.ProductName}}">
+    </Installer>
+    <PackageInformation
+        PackageName="{{.Info.ProductName}}"
+        PackageDisplayName="{{.Info.ProductName}}"
+        PublisherName="CN={{.Info.CompanyName}}"
+        PublisherDisplayName="{{.Info.CompanyName}}"
+        Version="{{.Info.Version}}.0"
+        PackageDescription="{{.Info.Description}}">
+        <Capabilities>
+            <Capability Name="runFullTrust" />
+            {{if .FileAssociations}}
+            <Capability Name="documentsLibrary" />
+            {{end}}
+        </Capabilities>
+        <Applications>
+            <Application
+                Id="{{.Info.ProductIdentifier}}"
+                Description="{{.Info.Description}}"
+                DisplayName="{{.Info.ProductName}}"
+                ExecutableName="{{.ExecutableName}}"
+                EntryPoint="Windows.FullTrustApplication">
+                {{if .FileAssociations}}
+                <Extensions>
+                    <Extension Category="windows.fileTypeAssociation">
+                        <FileTypeAssociation Name="{{.Info.ProductIdentifier}}">
+                            {{range .FileAssociations}}
+                            <SupportedFileTypes>
+                                <FileType>.{{.Ext}}</FileType>
+                            </SupportedFileTypes>
+                            {{end}}
+                        </FileTypeAssociation>
+                    </Extension>
+                </Extensions>
+                {{end}}
+            </Application>
+        </Applications>
+        <Resources>
+            <Resource Language="en-us" />
+        </Resources>
+        <Dependencies>
+            <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+        </Dependencies>
+        <Properties>
+            <Framework>false</Framework>
+            <DisplayName>{{.Info.ProductName}}</DisplayName>
+            <PublisherDisplayName>{{.Info.CompanyName}}</PublisherDisplayName>
+            <Description>{{.Info.Description}}</Description>
+            <Logo>Assets\AppIcon.png</Logo>
+        </Properties>
+    </PackageInformation>
+    <SaveLocation PackagePath="{{.OutputPath}}" />
+    <PackageIntegrity>
+        <CertificatePath>{{.CertificatePath}}</CertificatePath>
+    </PackageIntegrity>
+</MsixPackagingToolTemplate>
