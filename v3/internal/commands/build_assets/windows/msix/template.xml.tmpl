@@ -10,15 +10,15 @@
     <Installer
         Path="{{.ExecutablePath}}"
         Arguments=""
-        InstallLocation="C:\Program Files\{{.Info.CompanyName}}\{{.Info.ProductName}}">
+        InstallLocation="C:\Program Files\{{.ProductCompany}}\{{.ProductName}}">
     </Installer>
     <PackageInformation
-        PackageName="{{.Info.ProductName}}"
-        PackageDisplayName="{{.Info.ProductName}}"
-        PublisherName="CN={{.Info.CompanyName}}"
-        PublisherDisplayName="{{.Info.CompanyName}}"
-        Version="{{.Info.Version}}.0"
-        PackageDescription="{{.Info.Description}}">
+        PackageName="{{.ProductName}}"
+        PackageDisplayName="{{.ProductName}}"
+        PublisherName="CN={{.ProductCompany}}"
+        PublisherDisplayName="{{.ProductCompany}}"
+        Version="{{.ProductVersion}}.0"
+        PackageDescription="{{.ProductDescription}}">
         <Capabilities>
             <Capability Name="runFullTrust" />
             {{if .FileAssociations}}
@@ -27,15 +27,15 @@
         </Capabilities>
         <Applications>
             <Application
-                Id="{{.Info.ProductIdentifier}}"
-                Description="{{.Info.Description}}"
-                DisplayName="{{.Info.ProductName}}"
+                Id="{{.ProductIdentifier}}"
+                Description="{{.ProductDescription}}"
+                DisplayName="{{.ProductName}}"
                 ExecutableName="{{.ExecutableName}}"
                 EntryPoint="Windows.FullTrustApplication">
                 {{if .FileAssociations}}
                 <Extensions>
                     <Extension Category="windows.fileTypeAssociation">
-                        <FileTypeAssociation Name="{{.Info.ProductIdentifier}}">
+                        <FileTypeAssociation Name="{{.ProductIdentifier}}">
                             {{range .FileAssociations}}
                             <SupportedFileTypes>
                                 <FileType>.{{.Ext}}</FileType>
@@ -55,9 +55,9 @@
         </Dependencies>
         <Properties>
             <Framework>false</Framework>
-            <DisplayName>{{.Info.ProductName}}</DisplayName>
-            <PublisherDisplayName>{{.Info.CompanyName}}</PublisherDisplayName>
-            <Description>{{.Info.Description}}</Description>
+            <DisplayName>{{.ProductName}}</DisplayName>
+            <PublisherDisplayName>{{.ProductCompany}}</PublisherDisplayName>
+            <Description>{{.ProductDescription}}</Description>
             <Logo>Assets\AppIcon.png</Logo>
         </Properties>
     </PackageInformation>
