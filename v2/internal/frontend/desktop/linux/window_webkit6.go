@@ -15,22 +15,6 @@ package linux
 #include <stdint.h>
 #include "window_webkit6.h"
 
-const int G_APPLICATION_DEFAULT_FLAGS = 0;
-
-static void activate(GtkApplication *app, gpointer user_data) {
-	onActivate();
-}
-
-GtkApplication* createApp(char *appId) {
-	GtkApplication *app = gtk_application_new(appId, G_APPLICATION_DEFAULT_FLAGS);
-	g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
-	return app;
-}
-
-void runApp(GtkApplication *app) {
-	g_application_run(G_APPLICATION(app), 0, NULL);
-	g_object_unref(app);
-}
 */
 import "C"
 import (
@@ -75,6 +59,11 @@ func bool2Cint(value bool) C.int {
 }
 
 var activateWg sync.WaitGroup
+
+//export onActivate
+func onActivate() {
+	activateWg.Done()
+}
 
 func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Window {
 	validateWebKit2Version(appoptions)
@@ -135,8 +124,8 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 		bool2Cint(appoptions.DragAndDrop != nil && appoptions.DragAndDrop.EnableFileDrop),
 	)
 	result.webview = unsafe.Pointer(webview)
-	// buttonPressedName := C.CString("button-press-event")
-	// defer C.free(unsafe.Pointer(buttonPressedName))
+	buttonPressedName := C.CString("button-press-event")
+	defer C.free(unsafe.Pointer(buttonPressedName))
 	C.ConnectButtons(unsafe.Pointer(webview))
 
 	if devtoolsEnabled {

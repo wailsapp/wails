@@ -5,7 +5,6 @@
 #define window_h
 
 #include <jsc/jsc.h>
-// #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
 #include <stdio.h>
@@ -128,5 +127,9 @@ void Opendialog(void *data);
 void sendShowInspectorMessage();
 void ShowInspector(void *webview);
 void InstallF12Hotkey(void *window);
+
+static void activate(GtkApplication *app, gpointer user_data);
+GtkApplication* createApp(char *appId);
+void runApp(GtkApplication *app);
 
 #endif /* window_h */

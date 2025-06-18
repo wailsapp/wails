@@ -303,21 +303,23 @@ void DisableContextMenu(void *webview)
     g_signal_connect(WEBKIT_WEB_VIEW(webview), "context-menu", G_CALLBACK(disableContextMenu), NULL);
 }
 
-static gboolean buttonPress(GtkWidget *widget, GdkButtonEvent *event, void *dummy)
+static void buttonPress(GtkGestureClick* gesture, gint n_press, gdouble gesture_x, gdouble gesture_y, gpointer data)
 {
+    GdkEvent *event = gtk_event_controller_get_current_event(gesture);
+
     if (event == NULL)
     {
         xroot = yroot = 0.0f;
         dragTime = -1;
-        return FALSE;
+        return;
     }
 
-    guint button = gdk_button_event_get_button(event);
+    guint button = gtk_gesture_single_get_button(gesture);
     mouseButton = button;
 
     if (button == 3)
     {
-        return FALSE;
+        return;
     }
 
     if (gdk_event_get_event_type(event) == GDK_BUTTON_PRESS && button == 1)
@@ -335,25 +337,30 @@ static gboolean buttonPress(GtkWidget *widget, GdkButtonEvent *event, void *dumm
 
         dragTime = gdk_event_get_time(event);
     }
-
-    return FALSE;
 }
 
-static gboolean buttonRelease(GtkWidget *widget, GdkButtonEvent *event, void *dummy)
+static void buttonRelease(GtkGestureClick* gesture, gint n_press, gdouble gesture_x, gdouble gesture_y, gpointer data)
 {
+    GdkEvent *event = gtk_event_controller_get_current_event(gesture);
+
     if (event == NULL || 
-        (gdk_event_get_event_type(event) == GDK_BUTTON_RELEASE && gdk_button_event_get_button(event) == 1))
+        (gdk_event_get_event_type(event) == GDK_BUTTON_RELEASE && gtk_gesture_single_get_button(gesture) == 1))
     {
         xroot = yroot = 0.0f;
         dragTime = -1;
     }
-    return FALSE;
 }
 
 void ConnectButtons(void *webview)
 {
-    // g_signal_connect(WEBKIT_WEB_VIEW(webview), "button-press-event", G_CALLBACK(buttonPress), NULL);
-    // g_signal_connect(WEBKIT_WEB_VIEW(webview), "button-release-event", G_CALLBACK(buttonRelease), NULL);
+    GtkGesture *press = gtk_gesture_click_new();
+    GtkGesture *release = gtk_gesture_click_new();
+
+    gtk_widget_add_controller(GTK_WIDGET(webview), press);
+    gtk_widget_add_controller(GTK_WIDGET(webview), release);
+
+    g_signal_connect(press, "pressed", G_CALLBACK(buttonPress), NULL);
+    g_signal_connect(release, "released", G_CALLBACK(buttonRelease), NULL);
 }
 
 int IsFullscreen(GtkWidget *widget)
@@ -909,4 +916,23 @@ void InstallF12Hotkey(void *window)
     // gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
     // GClosure *closure = g_cclosure_new(G_CALLBACK(sendShowInspectorMessage), window, NULL);
     // gtk_accel_group_connect(accel_group, GDK_KEY_F12, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, closure);
+}
+
+extern void onActivate();
+
+const int G_APPLICATION_DEFAULT_FLAGS = 0;
+
+static void activate(GtkApplication *app, gpointer user_data) {
+	onActivate();
+}
+
+GtkApplication* createApp(char *appId) {
+	GtkApplication *app = gtk_application_new(appId, G_APPLICATION_DEFAULT_FLAGS);
+	g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+	return app;
+}
+
+void runApp(GtkApplication *app) {
+	g_application_run(G_APPLICATION(app), 0, NULL);
+	g_object_unref(app);
 }
