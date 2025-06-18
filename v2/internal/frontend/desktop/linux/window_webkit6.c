@@ -88,17 +88,19 @@ static gboolean onWayland()
 static GdkMonitor *getCurrentMonitor(GtkWindow *window)
 {
     // Get the monitor that the window is currently on
-    // GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
-    // GdkWindow *gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
-    // if (gdk_window == NULL)
-    // {
-    //     return NULL;
-    // }
-    // GdkMonitor *monitor = gdk_display_get_monitor_at_window(display, gdk_window);
+    GtkNative *native = gtk_widget_get_native(GTK_WIDGET(window));
 
-    // return GDK_MONITOR(monitor);
+    if(native == NULL) {
+        return NULL;
+    }
 
-    return NULL;
+	GdkSurface *surface = gtk_native_get_surface(native);
+
+	GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
+
+	GdkMonitor *currentMonitor = gdk_display_get_monitor_at_surface(display, surface);
+
+    return currentMonitor;
 }
 
 static GdkRectangle getCurrentMonitorGeometry(GtkWindow *window)
@@ -226,27 +228,31 @@ void SetTitle(GtkWindow *window, char *title)
     ExecuteOnMainThread(setTitle, (gpointer)args);
 }
 
+// gtk_window_move has been removed
+// see: https://docs.gtk.org/gtk4/migrating-3to4.html#adapt-to-gtkwindow-api-changes
 static gboolean setPosition(gpointer data)
 {
-    SetPositionArgs *args = (SetPositionArgs *)data;
-    gtk_window_move((GtkWindow *)args->window, args->x, args->y);
-    free(args);
+    // SetPositionArgs *args = (SetPositionArgs *)data;
+    // gtk_window_move((GtkWindow *)args->window, args->x, args->y);
+    // free(args);
 
     return G_SOURCE_REMOVE;
 }
 
+// gtk_window_move has been removed
+// see: https://docs.gtk.org/gtk4/migrating-3to4.html#adapt-to-gtkwindow-api-changes
 void SetPosition(void *window, int x, int y)
 {
-    GdkRectangle monitorDimensions = getCurrentMonitorGeometry(window);
-    if (isNULLRectangle(monitorDimensions))
-    {
-        return;
-    }
-    SetPositionArgs *args = malloc(sizeof(SetPositionArgs));
-    args->window = window;
-    args->x = monitorDimensions.x + x;
-    args->y = monitorDimensions.y + y;
-    ExecuteOnMainThread(setPosition, (gpointer)args);
+    // GdkRectangle monitorDimensions = getCurrentMonitorGeometry(window);
+    // if (isNULLRectangle(monitorDimensions))
+    // {
+    //     return;
+    // }
+    // SetPositionArgs *args = malloc(sizeof(SetPositionArgs));
+    // args->window = window;
+    // args->x = monitorDimensions.x + x;
+    // args->y = monitorDimensions.y + y;
+    // ExecuteOnMainThread(setPosition, (gpointer)args);
 }
 
 void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_width, int max_height)
@@ -393,26 +399,28 @@ int IsMinimised(GtkWidget *widget)
     return !gtk_window_is_fullscreen(gtkwindow) && !gtk_window_is_maximized(gtkwindow);
 }
 
+// gtk_window_move has been removed
+// see: https://docs.gtk.org/gtk4/migrating-3to4.html#adapt-to-gtkwindow-api-changes
 gboolean Center(gpointer data)
 {
-    GtkWindow *window = (GtkWindow *)data;
+    // GtkWindow *window = (GtkWindow *)data;
 
-    // Get the geometry of the monitor
-    GdkRectangle m = getCurrentMonitorGeometry(window);
-    if (isNULLRectangle(m))
-    {
-        return G_SOURCE_REMOVE;
-    }
+    // // Get the geometry of the monitor
+    // GdkRectangle m = getCurrentMonitorGeometry(window);
+    // if (isNULLRectangle(m))
+    // {
+    //     return G_SOURCE_REMOVE;
+    // }
 
-    // Get the window width/height
-    int windowWidth, windowHeight;
-    gtk_window_get_size(window, &windowWidth, &windowHeight);
+    // // Get the window width/height
+    // int windowWidth, windowHeight;
+    // gtk_window_get_size(window, &windowWidth, &windowHeight);
 
-    int newX = ((m.width - windowWidth) / 2) + m.x;
-    int newY = ((m.height - windowHeight) / 2) + m.y;
+    // int newX = ((m.width - windowWidth) / 2) + m.x;
+    // int newY = ((m.height - windowHeight) / 2) + m.y;
 
-    // Place the window at the center of the monitor
-    gtk_window_move(window, newX, newY);
+    // // Place the window at the center of the monitor
+    // gtk_window_move(window, newX, newY);
 
     return G_SOURCE_REMOVE;
 }
