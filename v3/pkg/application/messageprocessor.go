@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"math"
 )
 
 // TODO maybe we could use a new struct that has the targetWindow as an attribute so we could get rid of passing the targetWindow
@@ -64,6 +65,11 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 	wID, err := strconv.ParseUint(windowID, 10, 64)
 	if err != nil {
 		m.Error("Window ID not parsable:", "id", windowID, "error", err)
+		return nil, windowID
+	}
+	// Check if wID is within the valid range for uint
+	if wID > math.MaxUint32 {
+		m.Error("Window ID out of range for uint:", "id", wID)
 		return nil, windowID
 	}
 	targetWindow, _ := globalApplication.Windows.GetByID(uint(wID))
