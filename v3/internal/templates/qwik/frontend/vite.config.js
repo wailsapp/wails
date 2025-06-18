@@ -11,7 +11,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-        "@services": path.resolve(__dirname, "/bindings/changeme/index.ts"),
+        "@services": path.resolve(__dirname, "/bindings/changeme/index.js"),
     },
 },
 })
