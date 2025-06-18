@@ -43,8 +43,8 @@ func (cmm *ContextMenuManager) Get(name string) (*ContextMenu, bool) {
 
 // GetAll returns all registered context menus as a slice
 func (cmm *ContextMenuManager) GetAll() []*ContextMenu {
-	cmm.app.contextMenusLock.Lock()
-	defer cmm.app.contextMenusLock.Unlock()
+	cmm.app.contextMenusLock.RLock()
+	defer cmm.app.contextMenusLock.RUnlock()
 
 	result := make([]*ContextMenu, 0, len(cmm.app.contextMenus))
 	for _, menu := range cmm.app.contextMenus {
