@@ -1,0 +1,44 @@
+# File path specific labels
+v2-only:
+  - 'v2/**/*'
+
+v3-alpha:
+  - 'v3/**/*'
+
+windows:
+  - '**/*_windows.go'
+  - 'v2/internal/frontend/desktop/windows/**/*'
+
+macos:
+  - '**/*_darwin.go'
+  - 'v2/internal/frontend/desktop/darwin/**/*'
+
+linux:
+  - '**/*_linux.go'
+  - 'v2/internal/frontend/desktop/linux/**/*'
+
+cli:
+  - 'v2/cmd/**/*'
+  - 'v3/cmd/**/*'
+  - '**/cli/**/*'
+  - '**/commands/**/*'
+  
+documentation:
+  - '**/*.md'
+  - 'docs/**/*'
+  - 'website/**/*'
+  - 'mkdocs-website/**/*'
+
+templates:
+  - '**/templates/**/*'
+  - '**/template/**/*'
+
+runtime:
+  - '**/runtime/**/*'
+  - 'v2/internal/runtime/**/*'
+  - 'v3/internal/runtime/**/*'
+  
+bindings:
+  - 'v2/internal/binding/**/*'
+  - 'v3/internal/generator/**/*'
+

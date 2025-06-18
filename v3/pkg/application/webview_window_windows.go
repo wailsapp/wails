@@ -57,6 +57,11 @@ type windowsWebviewWindow struct {
 	chromium                   *edge.Chromium
 	webviewNavigationCompleted bool
 
+	// Window visibility management - robust fallback for issue #2861
+	showRequested     bool        // Track if show() was called before navigation completed
+	visibilityTimeout *time.Timer // Timeout to show window if navigation is delayed
+	windowShown       bool        // Track if window container has been shown
+
 	// resizeBorder* is the width/height of the resize border in pixels.
 	resizeBorderWidth  int32
 	resizeBorderHeight int32
@@ -960,14 +965,45 @@ func (w *windowsWebviewWindow) printStyle() {
 }
 
 func (w *windowsWebviewWindow) show() {
+	// Always show the window container immediately (decouple from WebView state)
+	// This fixes issue #2861 where efficiency mode prevents window visibility
+	w32.ShowWindow(w.hwnd, w32.SW_SHOW)
+	w.windowShown = true
+	w.showRequested = true
+
+	// Show WebView if navigation has completed
 	if w.webviewNavigationCompleted {
 		w.chromium.Show()
-		w32.ShowWindow(w.hwnd, w32.SW_SHOW)
+		// Cancel timeout since we can show immediately
+		if w.visibilityTimeout != nil {
+			w.visibilityTimeout.Stop()
+			w.visibilityTimeout = nil
+		}
+	} else {
+		// Start timeout to show WebView if navigation is delayed (fallback for efficiency mode)
+		if w.visibilityTimeout == nil {
+			w.visibilityTimeout = time.AfterFunc(3*time.Second, func() {
+				// Show WebView even if navigation hasn't completed
+				// This prevents permanent invisibility in efficiency mode
+				if !w.webviewNavigationCompleted && w.chromium != nil {
+					w.chromium.Show()
+				}
+				w.visibilityTimeout = nil
+			})
+		}
 	}
 }
 
 func (w *windowsWebviewWindow) hide() {
 	w32.ShowWindow(w.hwnd, w32.SW_HIDE)
+	w.windowShown = false
+	w.showRequested = false
+
+	// Cancel any pending visibility timeout
+	if w.visibilityTimeout != nil {
+		w.visibilityTimeout.Stop()
+		w.visibilityTimeout = nil
+	}
 }
 
 // Get the screen for the current window
@@ -990,6 +1026,10 @@ func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
 		parent:             parent,
 		resizeBorderWidth:  int32(w32.GetSystemMetrics(w32.SM_CXSIZEFRAME)),
 		resizeBorderHeight: int32(w32.GetSystemMetrics(w32.SM_CYSIZEFRAME)),
+		// Initialize visibility tracking fields
+		showRequested:     false,
+		visibilityTimeout: nil,
+		windowShown:       false,
 	}
 
 	return result
@@ -1129,7 +1169,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 	case w32.WM_CLOSE:
 
-		if w.parent.unconditionallyClose == false {
+		if atomic.LoadUint32(&w.parent.unconditionallyClose) == 0 {
 			// We were called by `Close()` or pressing the close button on the window
 			w.parent.emit(events.Windows.WindowClosing)
 			return 0
@@ -1640,6 +1680,15 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	chromium.Embed(w.hwnd)
 
+	// Prevent efficiency mode by keeping WebView2 visible (fixes issue #2861)
+	// Microsoft recommendation: keep IsVisible = true to avoid efficiency mode
+	// See: https://github.com/MicrosoftEdge/WebView2Feedback/discussions/4021
+	// TODO: Re-enable when PutIsVisible method is available in go-webview2 package
+	// err := chromium.PutIsVisible(true)
+	// if err != nil {
+	//	globalApplication.error("Failed to set WebView2 visibility for efficiency mode prevention: %v", err)
+	// }
+
 	if chromium.HasCapability(edge.SwipeNavigation) {
 		err := chromium.PutIsSwipeNavigationEnabled(opts.EnableSwipeGestures)
 		if err != nil {
@@ -1837,6 +1886,12 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	}
 	w.webviewNavigationCompleted = true
 
+	// Cancel any pending visibility timeout since navigation completed
+	if w.visibilityTimeout != nil {
+		w.visibilityTimeout.Stop()
+		w.visibilityTimeout = nil
+	}
+
 	wasFocused := w.isFocused()
 	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
 	err := w.chromium.Hide()
@@ -1850,8 +1905,13 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	if wasFocused {
 		w.focus()
 	}
+
+	// Only call parent.Show() if not hidden and show was requested but window wasn't shown yet
+	// The new robust show() method handles window visibility independently
 	if !w.parent.options.Hidden {
-		w.parent.Show()
+		if w.showRequested && !w.windowShown {
+			w.parent.Show()
+		}
 		w.update()
 	}
 }

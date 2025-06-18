@@ -1,0 +1,203 @@
+---
+title: Asset Server
+description: How Wails v3 serves and embeds your web assets in development and production
+sidebar:
+  order: 4
+---
+
+## Overview
+
+Every Wails application ships a **single native executable** that combines:
+
+1. Your *Go* backend  
+2. A *Web* frontend (HTML + JS + CSS)
+
+The **Asset Server** is the glue that makes this possible.  
+It has **two operating modes** that are selected at compile-time via Go build
+tags:
+
+| Mode | Tag | Purpose |
+|------|-----|---------|
+| **Development** | `//go:build dev` | Fast iteration with hot-reload |
+| **Production**  | `//go:build !dev` | Zero-dependency, embedded assets |
+
+The implementation lives in  
+`v3/internal/assetserver/` with clear file splits:
+
+```
+assetserver_dev.go        # ⬅️ runtime dev server
+assetserver_production.go # ⬅️ embedded server
+assetserver_darwin.go     # OS-specific helpers (same for linux/windows)
+asset_fileserver.go       # Shared static file logic
+content_type_sniffer.go   # MIME type detection
+ringqueue.go              # Tiny LRU for mime cache
+```
+
+---
+
+## Development Mode
+
+### Lifecycle
+
+1. `wails3 dev` boots and **spawns your frontend dev server**  
+   (Vite, SvelteKit, React-SWC …) by running the task defined in
+   `frontend/Taskfile.yml` (usually `npm run dev`).
+2. Wails starts the **Dev Asset Server** listening on `localhost:<random>` and
+   tells the Go runtime to load `http://<host>:<port>` as the window URL.
+3. Incoming requests are handled by `assetserver_dev.go`:
+
+   ```
+   ┌─────────┐  /runtime/...          ┌─────────────┐
+   │ Browser │ ── native bridge  ───▶ │   Runtime   │
+   ├─────────┤                       └─────────────┘
+   │   JS    │  / (index.html)        proxy / -> Vite
+   └─────────┘ ◀─────────────┐
+                 AssetServer │
+                             ▼
+                      ┌────────────┐
+                      │  Vite Dev  │
+                      │   Server   │
+                      └────────────┘
+   ```
+
+4. Static files (`/assets/logo.svg`) are **served directly from disk** via
+   `asset_fileserver.go` (for speed) while anything unknown is **proxied** to
+   the framework dev server, giving you *instant* hot-module replacement.
+
+### Features
+
+* **Live Reload** – Vite/Snowpack/… injects HMR WebSocket; Wails only has to
+  proxy it.
+* **Source Map Support** – because assets are not bundled, your browser devtools
+  map errors back to original source.
+* **No Go Re-compile** – Only the frontend rebuilds; Go code stays running until
+  you change `.go` files.
+
+### Switching Frameworks
+
+The dev proxy is **framework-agnostic**:
+
+* The `wails.json` template injects two env vars:
+  `FRONTEND_DEV_HOST` & `FRONTEND_DEV_PORT`.
+* Taskfiles for each template emit those vars before running their dev servers.
+* `assetserver_dev.go` simply proxies to that target.
+
+Add a new template → define its dev task → Asset Server just works.
+
+---
+
+## Production Mode
+
+When you run `wails3 build` the pipeline:
+
+1. Runs the frontend **production build** (`npm run build`) producing
+   `/frontend/dist/**`.
+2. **Embeds** that folder into `go:embed` FS at compile time (see
+   `bundled_assetserver.go` generated file).
+3. Compiles the Go binary with `-tags production` (implicit).
+
+### Request Handling
+
+```go
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    // 1. Try embedded static assets (exact path)
+    // 2. Fallback to index.html for SPA routing
+    // 3. Sniff content-type if extension unknown
+    // 4. Set strong cache headers
+}
+```
+
+* **MIME Detection** – If the build tool produced extension-less files (e.g.
+  `/assets/manifest`) `content_type_sniffer.go` inspects the first 512 bytes and
+  caches the result in a tiny lock-free LRU.
+* **Ring Queue Caching** – Frequently accessed assets (logo, CSS) are kept
+  in-memory for the lifetime of the app, removing the need for disk or embed FS
+  lookups.
+* **Security Headers** – Disallows `file://` navigation, enables `nosniff`.
+
+Because everything is embedded, the shipped binary has **no external
+dependencies** (even on Windows).
+
+---
+
+## Bridging Dev ↔ Prod
+
+Both modes expose the **same public interface**:
+
+```go
+type AssetServer interface {
+    URL()        string // dev: http://localhost:34115, prod: wails://app
+    Open() error // start listening
+    Close()      // graceful shutdown
+}
+```
+
+`pkg/application` happily uses whichever implementation was compiled in, meaning
+**your application code does not change** between `dev` and `build`.
+
+---
+
+## How Frontend Frameworks Integrate
+
+### Templates
+
+Each official template (React, Vue, Svelte, Solid…) contains:
+
+* `frontend/Taskfile.yml`
+* `frontend/vite.config.ts` (or equivalent)
+
+They export two tasks:
+
+| Task | Purpose |
+|------|---------|
+| `dev`   | Starts the framework dev server on a **random free port** and prints it to stdout (`PORT=5173`). |
+| `build` | Produces static assets into `dist/` + manifest for cache-busting. |
+
+`internal/commands/dev.go` parses that stdout, sets `FRONTEND_DEV_*` env vars
+and launches the **Dev Asset Server**.
+
+Frameworks remain fully decoupled from Go:
+
+* No need to import Wails JS SDK at build time – the runtime injects it at
+  window creation.
+* Any framework with an HTTP dev server can plug in.
+
+---
+
+## Extending / Customising
+
+Need custom headers, auth, or gzip?
+
+1. Implement `type Middleware func(http.Handler) http.Handler`
+2. Register via `internal/assetserver/options.go`
+3. For prod, remember to add the same middleware in `assetserver_production.go`.
+
+---
+
+## Key Source Files
+
+| File | Role |
+|------|------|
+| `assetserver_dev.go` | Reverse proxy + disk file server |
+| `assetserver_production.go` | Embedded FS handler |
+| `options.go` | Config struct parsed from `pkg/options/assetserver` |
+| `build_dev.go` / `build_production.go` | Build-tag wrappers selecting correct implementation |
+| `bundled_assetserver.go` | Generated embed data (only present in production builds) |
+
+---
+
+## Gotchas & Debugging
+
+* **White Screen in Prod** – usually SPA routing: ensure `History API Fallback`
+  is enabled in dev and `index.html` fallback works in prod.
+* **404 in Dev** – mis-matched `FRONTEND_DEV_PORT`; run with
+  `WAILSDEV_VERBOSE=1` to print every proxied request.
+* **Large Assets** – they are embedded; consider
+  [`assetserver.WithExternalDir("/path")`](https://pkg.go.dev) to load from disk.
+
+---
+
+You now know how the Wails **Asset Server** feeds your web code to the native
+window in both **development** and **production**.  
+Master this layer and you can debug loading issues, add middlewares, or even
+swap in a completely different frontend tool-chain with confidence.
