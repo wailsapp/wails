@@ -1169,7 +1169,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 	case w32.WM_CLOSE:
 
-		if w.parent.unconditionallyClose == false {
+		if atomic.LoadUint32(&w.parent.unconditionallyClose) == 0 {
 			// We were called by `Close()` or pressing the close button on the window
 			w.parent.emit(events.Windows.WindowClosing)
 			return 0

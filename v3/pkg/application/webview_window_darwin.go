@@ -600,6 +600,7 @@ void windowSetShadow(void* nsWindow, bool hasShadow) {
 }
 
 
+
 // windowClose closes the current window
 static void windowClose(void *window) {
 	[(WebviewWindow*)window close];
@@ -815,6 +816,7 @@ static void setIgnoreMouseEvents(void *nsWindow, bool ignore) {
 import "C"
 import (
 	"sync"
+	"sync/atomic"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
@@ -903,12 +905,11 @@ func (w *macosWebviewWindow) getScreen() (*Screen, error) {
 }
 
 func (w *macosWebviewWindow) show() {
-	// macOS implementation is already robust - window container shows immediately
-	// This is the preferred pattern that Windows should follow
 	C.windowShow(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) hide() {
+	globalApplication.debug("Window hiding", "windowId", w.parent.id, "title", w.parent.options.Title)
 	C.windowHide(w.nsWindow)
 }
 
@@ -957,7 +958,11 @@ func (w *macosWebviewWindow) windowZoom() {
 }
 
 func (w *macosWebviewWindow) close() {
+	globalApplication.debug("Window close() called - setting unconditionallyClose flag", "windowId", w.parent.id, "title", w.parent.options.Title)
+	// Set the unconditionallyClose flag to allow the window to close
+	atomic.StoreUint32(&w.parent.unconditionallyClose, 1)
 	C.windowClose(w.nsWindow)
+	globalApplication.debug("Window close() completed", "windowId", w.parent.id, "title", w.parent.options.Title)
 	// TODO: Check if we need to unregister the window here or not
 }
 
@@ -1047,7 +1052,7 @@ func (w *macosWebviewWindow) execJS(js string) {
 		if performingShutdown {
 			return
 		}
-		if w.nsWindow == nil {
+		if w.nsWindow == nil || w.parent.isDestroyed() {
 			return
 		}
 		C.windowExecJS(w.nsWindow, C.CString(js))
