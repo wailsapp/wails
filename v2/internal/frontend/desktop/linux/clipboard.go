@@ -20,16 +20,40 @@ package linux
 #endif
 
 static gchar* GetClipboardText() {
-	GtkClipboard *clip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-	return gtk_clipboard_wait_for_text(clip);
+	#ifdef WEBKIT_6
+		GdkClipboard *clip = gdk_display_get_primary_clipboard(gdk_display_get_default());
+		GdkContentProvider *provider = gdk_clipboard_get_content(clip);
+
+		GValue value = G_VALUE_INIT;
+		g_value_init(&value, G_TYPE_STRING);
+
+		if(!gdk_content_provider_get_value(provider, &value, NULL)) {
+			return "";
+		}
+
+		return g_value_get_string(&value);
+	#else
+		GtkClipboard *clip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+		return gtk_clipboard_wait_for_text(clip);
+	#endif
 }
 
 static void SetClipboardText(gchar* text) {
-	GtkClipboard *clip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-	gtk_clipboard_set_text(clip, text, -1);
+	#ifdef WEBKIT_6
+		GdkDisplay *display = gdk_display_get_default();
 
-	clip = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
-	gtk_clipboard_set_text(clip, text, -1);
+		GdkClipboard *clip = gdk_display_get_primary_clipboard(display);
+		gdk_clipboard_set_text(clip, text);
+
+		clip = gdk_display_get_clipboard(display);
+		gdk_clipboard_set_text(clip, text);
+	#else
+		GtkClipboard *clip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+		gtk_clipboard_set_text(clip, text, -1);
+
+		clip = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+		gtk_clipboard_set_text(clip, text, -1);
+	#endif
 }
 */
 import "C"
