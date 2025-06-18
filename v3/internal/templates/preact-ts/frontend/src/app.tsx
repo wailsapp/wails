@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'preact/hooks'
-import {GreetService} from "../bindings/changeme";
+import {GreetService} from "@services";
 import {Events} from "@wailsio/runtime";
 
 export function App() {
