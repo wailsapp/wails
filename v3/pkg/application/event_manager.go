@@ -1,6 +1,8 @@
 package application
 
 import (
+	"slices"
+
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -94,28 +96,28 @@ func (em *EventManager) RegisterApplicationEventHook(eventType events.Applicatio
 
 // Dispatch dispatches an event to listeners (internal use)
 func (em *EventManager) dispatch(event *CustomEvent) {
-    // Snapshot windows under RLock
-    em.app.windowsLock.RLock()
-    for _, window := range em.app.windows {
-        if event.IsCancelled() {
-            em.app.windowsLock.RUnlock()
-            return
-        }
-        window.DispatchWailsEvent(event)
-    }
-    em.app.windowsLock.RUnlock()
+	// Snapshot windows under RLock
+	em.app.windowsLock.RLock()
+	for _, window := range em.app.windows {
+		if event.IsCancelled() {
+			em.app.windowsLock.RUnlock()
+			return
+		}
+		window.DispatchWailsEvent(event)
+	}
+	em.app.windowsLock.RUnlock()
 
-    // Snapshot listeners under Lock
-    em.app.wailsEventListenerLock.Lock()
-    listeners := slices.Clone(em.app.wailsEventListeners)
-    em.app.wailsEventListenerLock.Unlock()
+	// Snapshot listeners under Lock
+	em.app.wailsEventListenerLock.Lock()
+	listeners := slices.Clone(em.app.wailsEventListeners)
+	em.app.wailsEventListenerLock.Unlock()
 
-    for _, listener := range listeners {
-        if event.IsCancelled() {
-            return
-        }
-        listener.DispatchWailsEvent(event)
-    }
+	for _, listener := range listeners {
+		if event.IsCancelled() {
+			return
+		}
+		listener.DispatchWailsEvent(event)
+	}
 }
 
 // HandleApplicationEvent handles application events (internal use)

@@ -316,7 +316,7 @@ type App struct {
 	Logger               *slog.Logger
 
 	contextMenus     map[string]*ContextMenu
-	contextMenusLock sync.Mutex
+	contextMenusLock sync.RWMutex
 
 	assets   *assetserver.AssetServer
 	startURL string
