@@ -35,10 +35,10 @@ func (cmm *ContextMenuManager) Remove(name string) {
 
 // Get retrieves a context menu by name
 func (cmm *ContextMenuManager) Get(name string) (*ContextMenu, bool) {
-	cmm.app.contextMenusLock.Lock()
-	defer cmm.app.contextMenusLock.Unlock()
-	menu, exists := cmm.app.contextMenus[name]
-	return menu, exists
+    cmm.app.contextMenusLock.RLock()
+    defer cmm.app.contextMenusLock.RUnlock()
+    menu, exists := cmm.app.contextMenus[name]
+    return menu, exists
 }
 
 // GetAll returns all registered context menus as a slice
