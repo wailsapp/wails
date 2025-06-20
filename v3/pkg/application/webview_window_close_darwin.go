@@ -10,7 +10,7 @@ import "sync/atomic"
 
 //export windowShouldUnconditionallyClose
 func windowShouldUnconditionallyClose(windowId C.uint) C.bool {
-	window := globalApplication.getWindowForID(uint(windowId))
+	window, _ := globalApplication.Windows.GetByID(uint(windowId))
 	if window == nil {
 		globalApplication.debug("windowShouldUnconditionallyClose: window not found", "windowId", windowId)
 		return C.bool(false)

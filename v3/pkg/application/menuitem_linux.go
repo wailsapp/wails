@@ -253,7 +253,7 @@ func newSelectAllMenuItem() *MenuItem {
 func newAboutMenuItem() *MenuItem {
 	return NewMenuItem("About " + globalApplication.options.Name).
 		OnClick(func(ctx *Context) {
-			globalApplication.ShowAboutDialog()
+			globalApplication.Menus.ShowAbout()
 		})
 }
 
@@ -261,7 +261,7 @@ func newCloseMenuItem() *MenuItem {
 	return NewMenuItem("Close").
 		SetAccelerator("CmdOrCtrl+w").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Windows.Current()
 			if currentWindow != nil {
 				currentWindow.Close()
 			}
@@ -272,7 +272,7 @@ func newReloadMenuItem() *MenuItem {
 	return NewMenuItem("Reload").
 		SetAccelerator("CmdOrCtrl+r").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Windows.Current()
 			if currentWindow != nil {
 				currentWindow.Reload()
 			}
@@ -283,7 +283,7 @@ func newForceReloadMenuItem() *MenuItem {
 	return NewMenuItem("Force Reload").
 		SetAccelerator("CmdOrCtrl+Shift+r").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Windows.Current()
 			if currentWindow != nil {
 				currentWindow.ForceReload()
 			}
@@ -293,7 +293,7 @@ func newForceReloadMenuItem() *MenuItem {
 func newToggleFullscreenMenuItem() *MenuItem {
 	result := NewMenuItem("Toggle Full Screen").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Windows.Current()
 			if currentWindow != nil {
 				currentWindow.ToggleFullscreen()
 			}
@@ -311,7 +311,7 @@ func newZoomResetMenuItem() *MenuItem {
 	return NewMenuItem("Actual Size").
 		SetAccelerator("CmdOrCtrl+0").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Windows.Current()
 			if currentWindow != nil {
 				currentWindow.ZoomReset()
 			}
@@ -322,7 +322,7 @@ func newZoomInMenuItem() *MenuItem {
 	return NewMenuItem("Zoom In").
 		SetAccelerator("CmdOrCtrl+plus").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Windows.Current()
 			if currentWindow != nil {
 				currentWindow.ZoomIn()
 			}
@@ -333,7 +333,7 @@ func newZoomOutMenuItem() *MenuItem {
 	return NewMenuItem("Zoom Out").
 		SetAccelerator("CmdOrCtrl+-").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Windows.Current()
 			if currentWindow != nil {
 				currentWindow.ZoomOut()
 			}
@@ -344,7 +344,7 @@ func newMinimizeMenuItem() *MenuItem {
 	return NewMenuItem("Minimize").
 		SetAccelerator("CmdOrCtrl+M").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Windows.Current()
 			if currentWindow != nil {
 				currentWindow.Minimise()
 			}
@@ -354,7 +354,7 @@ func newMinimizeMenuItem() *MenuItem {
 func newZoomMenuItem() *MenuItem {
 	return NewMenuItem("Zoom").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Windows.Current()
 			if currentWindow != nil {
 				currentWindow.Zoom()
 			}
@@ -364,7 +364,7 @@ func newZoomMenuItem() *MenuItem {
 func newFullScreenMenuItem() *MenuItem {
 	return NewMenuItem("Fullscreen").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Windows.Current()
 			if currentWindow != nil {
 				currentWindow.Fullscreen()
 			}
