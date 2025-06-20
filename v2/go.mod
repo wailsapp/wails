@@ -9,12 +9,13 @@ require (
 	github.com/bitfield/script v0.24.0
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/flytam/filenamify v1.2.0
-	github.com/fsnotify/fsnotify v1.8.0
+	github.com/fsnotify/fsnotify v1.9.0
 	github.com/go-git/go-git/v5 v5.13.2
 	github.com/go-ole/go-ole v1.3.0
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.6.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/jaypipes/ghw v0.13.0
 	github.com/labstack/echo/v4 v4.13.3

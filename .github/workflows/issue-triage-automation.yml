@@ -1,0 +1,77 @@
+name: Issue Triage Automation
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      # Request more info for unclear bug reports
+      - name: Request more info
+        uses: actions/github-script@v6
+        if: |
+          contains(github.event.issue.labels.*.name, 'bug') &&
+          !contains(github.event.issue.body, 'wails doctor') &&
+          !contains(github.event.issue.body, 'reproduction')
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `👋 Thanks for reporting this issue! To help us investigate, could you please:
+
+              1. Add the output of \`wails doctor\` if not already included
+              2. Provide clear steps to reproduce the issue
+              3. If possible, create a minimal reproduction of the issue
+              
+              This will help us resolve your issue much faster. Thank you!`
+            });
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['awaiting feedback']
+            });
+
+      # Prioritize security issues
+      - name: Prioritize security issues
+        uses: actions/github-script@v6
+        if: contains(github.event.issue.labels.*.name, 'security')
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['high-priority']
+            });
+
+      # Tag version-specific issues for project boards
+      - name: Add to v2 project
+        uses: actions/github-script@v6
+        if: |
+          contains(github.event.issue.labels.*.name, 'v2-only') &&
+          !contains(github.event.issue.labels.*.name, 'v3-alpha')
+        with:
+          script: |
+            // Replace PROJECT_ID with your actual GitHub project ID
+            // This is a placeholder as the actual implementation would require 
+            // GraphQL API calls to add to a project board
+            console.log('Would add to v2 project board');
+
+      # Tag version-specific issues for project boards
+      - name: Add to v3 project
+        uses: actions/github-script@v6
+        if: contains(github.event.issue.labels.*.name, 'v3-alpha')
+        with:
+          script: |
+            // Replace PROJECT_ID with your actual GitHub project ID
+            // This is a placeholder as the actual implementation would require 
+            // GraphQL API calls to add to a project board
+            console.log('Would add to v3 project board');

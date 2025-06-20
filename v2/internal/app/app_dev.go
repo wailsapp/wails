@@ -79,9 +79,11 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	}
 
 	loglevel := os.Getenv("loglevel")
-	if loglevel == "" {
-		loglevelFlag = devFlags.String("loglevel", appoptions.LogLevel.String(), "Loglevel to use - Trace, Debug, Info, Warning, Error")
+	appLogLevel := appoptions.LogLevel.String()
+	if loglevel != "" {
+		appLogLevel = loglevel
 	}
+	loglevelFlag = devFlags.String("loglevel", appLogLevel, "Loglevel to use - Trace, Debug, Info, Warning, Error")
 
 	// If we weren't given the assetdir in the environment variables
 	if assetdir == "" {
@@ -221,7 +223,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	eventHandler := runtime.NewEvents(myLogger)
 	ctx = context.WithValue(ctx, "events", eventHandler)
-	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler, appoptions.ErrorFormatter)
+	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler, appoptions.ErrorFormatter, appoptions.DisablePanicRecovery)
 
 	// Create the frontends and register to event handler
 	desktopFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)
