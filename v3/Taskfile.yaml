@@ -225,6 +225,37 @@ tasks:
       - cd internal/commands/appimage_testfiles && go mod tidy && go build
       - echo "✅ CLI appimage testfiles compile successfully"
 
+  test:cli:all:
+    summary: Test all CLI components and critical test files
+    cmds:
+      - echo "Testing CLI appimage testfiles..."
+      - cd internal/commands/appimage_testfiles && go mod tidy && go build
+      - echo "Testing window visibility test..."
+      - cd tests/window-visibility-test && go mod tidy && go build
+      - echo "Testing service implementations..."
+      - cd pkg/services/badge && go build
+      - echo "✅ All CLI components compile successfully"
+
+  test:generator:
+    summary: Test code generator test cases compilation
+    cmds:
+      - echo "Testing generator test cases (sample)..."
+      - cd internal/generator/testcases/function_single && go mod tidy && go build
+      - cd internal/generator/testcases/complex_method && go mod tidy && go build
+      - cd internal/generator/testcases/struct_literal_single && go mod tidy && go build
+      - echo "✅ Generator test cases compile successfully"
+
+  test:infrastructure:
+    summary: Test critical infrastructure components
+    cmds:
+      - echo "=== Testing CLI Components ==="
+      - task: test:cli:all
+      - echo "=== Testing Generator ==="
+      - task: test:generator
+      - echo "=== Testing pkg/application ==="
+      - cd pkg/application && go test -c -o /dev/null ./...
+      - echo "✅ All infrastructure components test successfully"
+
   test:examples:
     summary: Builds the examples for current platform only
     dir: examples
