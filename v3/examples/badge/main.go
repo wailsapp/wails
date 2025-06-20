@@ -49,7 +49,7 @@ func main() {
 	// 'Mac' options tailor the window when running on macOS.
 	// 'BackgroundColour' is the background colour of the window.
 	// 'URL' is the URL that will be loaded into the webview.
-	window, err := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Window 1",
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
@@ -59,9 +59,6 @@ func main() {
 		BackgroundColour: application.NewRGB(27, 38, 54),
 		URL:              "/",
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	app.Events.On("remove:badge", func(event *application.CustomEvent) {
 		err := badgeService.RemoveBadge()
