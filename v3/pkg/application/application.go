@@ -358,6 +358,12 @@ func (a *App) Config() Options {
 	return a.options
 }
 
+// Context returns the application context that is canceled when the application shuts down.
+// This context should be used for graceful shutdown of goroutines and long-running operations.
+func (a *App) Context() context.Context {
+	return a.ctx
+}
+
 func (a *App) handleWarning(msg string) {
 	if a.options.WarningHandler != nil {
 		a.options.WarningHandler(msg)
@@ -499,6 +505,7 @@ func (a *App) Run() error {
 
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
+
 	// Ensure application context is canceled before service shutdown (duplicate calls don't hurt).
 	defer a.cancel()
 

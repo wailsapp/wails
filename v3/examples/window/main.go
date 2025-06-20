@@ -720,7 +720,7 @@ func main() {
 		})
 	})
 
-	_, err := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title:            "Window Demo",
 		BackgroundColour: application.NewRGB(33, 37, 41),
 		Mac: application.MacWindow{
@@ -730,12 +730,9 @@ func main() {
 			Menu: menu,
 		},
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	app.Menus.Set(menu)
-	err = app.Run()
+	err := app.Run()
 
 	if err != nil {
 		log.Fatal(err)
