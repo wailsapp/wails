@@ -24,7 +24,7 @@ func main() {
 		},
 	})
 	// Create window
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	_, err := app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Plain Bundle",
 		CSS:   `body { background-color: rgb(255, 255, 255); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; user-select: none; -ms-user-select: none; -webkit-user-select: none; } .main { color: white; margin: 20%; }`,
 		Mac: application.MacWindow{
@@ -34,13 +34,19 @@ func main() {
 		},
 		URL: "/",
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	_, err = app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title: "HTML TEST",
 		HTML:  "<h1>AWESOME!</h1>",
 		CSS:   `body { background-color: rgb(255, 0, 0); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; user-select: none; -ms-user-select: none; -webkit-user-select: none; } .main { color: white; margin: 20%; }`,
 		JS:    `window.iamhere = function() { console.log("Hello World!"); }`,
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	app.Events.On("clicked", func(_ *application.CustomEvent) {
 		println("clicked")
@@ -49,7 +55,7 @@ func main() {
 	go func() {
 		time.Sleep(5 * time.Second)
 
-		app.Windows.NewWithOptions(application.WebviewWindowOptions{
+		_, err := app.Windows.NewWithOptions(application.WebviewWindowOptions{
 			Title:  "Plain Bundle new Window from GoRoutine",
 			Width:  500,
 			Height: 500,
@@ -59,6 +65,9 @@ func main() {
 				InvisibleTitleBarHeight: 50,
 			},
 		})
+		if err != nil {
+			log.Printf("Error creating window from goroutine: %v", err)
+		}
 	}()
 
 	err := app.Run()

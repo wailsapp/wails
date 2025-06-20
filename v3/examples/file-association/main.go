@@ -48,7 +48,7 @@ func main() {
 	// 'Mac' options tailor the window when running on macOS.
 	// 'BackgroundColour' is the background colour of the window.
 	// 'URL' is the URL that will be loaded into the webview.
-	window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	window, err := app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Window 1",
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
@@ -58,6 +58,9 @@ func main() {
 		BackgroundColour: application.NewRGB(27, 38, 54),
 		URL:              "/",
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	var filename string
 	app.Events.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
@@ -74,10 +77,16 @@ func main() {
 	// Create a goroutine that emits an event containing the current time every second.
 	// The frontend can listen to this event and update the UI accordingly.
 	go func() {
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
 		for {
-			now := time.Now().Format(time.RFC1123)
-			app.Events.Emit("time", now)
-			time.Sleep(time.Second)
+			select {
+			case <-ticker.C:
+				now := time.Now().Format(time.RFC1123)
+				app.Events.Emit("time", now)
+			case <-app.Context().Done():
+				return
+			}
 		}
 	}()
 

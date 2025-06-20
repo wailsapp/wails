@@ -59,7 +59,7 @@ func main() {
 		},
 	})
 
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	_, err := app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Screen Demo",
 		Width:  800,
 		Height: 600,
@@ -69,8 +69,11 @@ func main() {
 			InvisibleTitleBarHeight: 50,
 		},
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	err := app.Run()
+	err = app.Run()
 
 	if err != nil {
 		log.Fatal(err.Error())

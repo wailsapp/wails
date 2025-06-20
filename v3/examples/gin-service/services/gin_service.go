@@ -27,6 +27,7 @@ type GinService struct {
 	nextID    int
 	mu        sync.RWMutex
 	app       *application.App
+	maxUsers  int // Maximum number of users to prevent unbounded growth
 }
 
 type EventData struct {
@@ -50,7 +51,8 @@ func NewGinService() *GinService {
 			{ID: 2, Name: "Bob", Email: "bob@example.com", CreatedAt: time.Now().Add(-48 * time.Hour)},
 			{ID: 3, Name: "Charlie", Email: "charlie@example.com", CreatedAt: time.Now().Add(-24 * time.Hour)},
 		},
-		nextID: 4,
+		nextID:   4,
+		maxUsers: 1000, // Limit to prevent unbounded slice growth
 	}
 
 	// Define routes
@@ -163,6 +165,12 @@ func (s *GinService) setupRoutes() {
 
 			s.mu.Lock()
 			defer s.mu.Unlock()
+
+			// Check if we've reached the maximum number of users
+			if len(s.users) >= s.maxUsers {
+				c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Maximum number of users reached"})
+				return
+			}
 
 			// Set the ID and creation time
 			newUser.ID = s.nextID

@@ -21,7 +21,7 @@ func main() {
 
 	systemTray := app.SystemTray.New()
 
-	window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	window, err := app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Width:         500,
 		Height:        800,
 		Frameless:     false,
@@ -32,6 +32,9 @@ func main() {
 			HiddenOnTaskbar: true,
 		},
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
 		window.Hide()
@@ -62,7 +65,7 @@ func main() {
 		window.Show()
 	})
 
-	err := app.Run()
+	err = app.Run()
 	if err != nil {
 		log.Fatal(err)
 	}

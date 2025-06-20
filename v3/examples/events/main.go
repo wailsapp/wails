@@ -33,12 +33,20 @@ func main() {
 
 	// OS specific application events
 	app.Events.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
-		for {
-			// This emits a custom event every 10 seconds
-			// As it's sent from the application, the sender will be blank
-			app.Events.Emit("myevent", "hello")
-			time.Sleep(10 * time.Second)
-		}
+		go func() {
+			ticker := time.NewTicker(10 * time.Second)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-ticker.C:
+					// This emits a custom event every 10 seconds
+					// As it's sent from the application, the sender will be blank
+					app.Events.Emit("myevent", "hello")
+				case <-app.Context().Done():
+					return
+				}
+			}
+		}()
 	})
 
 	app.Events.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
@@ -87,9 +95,15 @@ func main() {
 	})
 
 	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
 		for {
-			win2.EmitEvent("windowevent", "ooooh!")
-			time.Sleep(10 * time.Second)
+			select {
+			case <-ticker.C:
+				win2.EmitEvent("windowevent", "ooooh!")
+			case <-app.Context().Done():
+				return
+			}
 		}
 	}()
 
