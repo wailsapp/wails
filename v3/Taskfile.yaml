@@ -71,45 +71,182 @@ tasks:
     platforms:
       - darwin
     cmds:
-      - echo "Building example {{.DIR}}"
+      - echo "Building example {{.DIR}} for Darwin"
       - go mod tidy
-      - go build -o "testbuild-{{.DIR}}{{exeExt}}"
+      - go build -o "testbuild-{{.DIR}}-darwin{{exeExt}}"
     env:
       CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
       CGO_CFLAGS: -mmacosx-version-min=10.13
 
-  test:example:notdarwin:
+  test:example:windows:
+    dir: 'examples/{{.DIR}}'
+    platforms:
+      - windows
+    cmds:
+      - echo "Building example {{.DIR}} for Windows"
+      - go mod tidy
+      - go build -o "testbuild-{{.DIR}}-windows.exe"
+    env:
+      GOOS: windows
+      GOARCH: amd64
+
+  test:example:linux:
     dir: 'examples/{{.DIR}}'
     platforms:
       - linux
-      - windows
     cmds:
-      - echo "Building example {{.DIR}}"
+      - echo "Building example {{.DIR}} for Linux"
       - go mod tidy
-      - go build -o "testbuild-{{.DIR}}{{exeExt}}"
+      - go build -o "testbuild-{{.DIR}}-linux"
 
+  test:example:linux:docker:arm64:
+    summary: Build a single example for Linux ARM64 using Docker (Ubuntu 24.04)
+    cmds:
+      - echo "Building example {{.DIR}} for Linux ARM64 using Docker"
+      - docker build -f Dockerfile.linux-arm64 -t wails-v3-linux-arm64 .
+      - docker run --rm wails-v3-linux-arm64 /build/build-linux-arm64.sh {{.DIR}}
 
-  test:examples:
-    summary: Builds the examples
-    dir: examples
+  test:example:linux:docker:x86_64:
+    summary: Build a single example for Linux x86_64 using Docker (Ubuntu 24.04)
+    cmds:
+      - echo "Building example {{.DIR}} for Linux x86_64 using Docker"
+      - docker build -f Dockerfile.linux-x86_64 -t wails-v3-linux-x86_64 .
+      - docker run --rm wails-v3-linux-x86_64 /build/build-linux-x86_64.sh {{.DIR}}
+
+  test:examples:linux:docker:arm64:
+    summary: Build all examples for Linux ARM64 using Docker (Ubuntu 24.04)
+    cmds:
+      - echo "Building Docker image for Linux ARM64 compilation..."
+      - docker build -f Dockerfile.linux-arm64 -t wails-v3-linux-arm64 .
+      - echo "Running Linux ARM64 compilation in Docker container..."
+      - docker run --rm wails-v3-linux-arm64
+
+  test:examples:linux:docker:x86_64:
+    summary: Build all examples for Linux x86_64 using Docker (Ubuntu 24.04)
+    cmds:
+      - echo "Building Docker image for Linux x86_64 compilation..."
+      - docker build -f Dockerfile.linux-x86_64 -t wails-v3-linux-x86_64 .
+      - echo "Running Linux x86_64 compilation in Docker container..."
+      - docker run --rm wails-v3-linux-x86_64
+
+  test:example:linux:docker:
+    summary: Build a single example for Linux using Docker (auto-detect architecture)
+    cmds:
+      - echo "Auto-detecting architecture for Linux Docker build..."
+      - |
+        if [ "$(uname -m)" = "arm64" ] || [ "$(uname -m)" = "aarch64" ]; then
+          echo "Detected ARM64, using ARM64 Docker image"
+          task test:example:linux:docker:arm64 DIR={{.DIR}}
+        else
+          echo "Detected x86_64, using x86_64 Docker image"
+          task test:example:linux:docker:x86_64 DIR={{.DIR}}
+        fi
+
+  test:examples:linux:docker:
+    summary: Build all examples for Linux using Docker (auto-detect architecture)
+    cmds:
+      - echo "Auto-detecting architecture for Linux Docker build..."
+      - |
+        if [ "$(uname -m)" = "arm64" ] || [ "$(uname -m)" = "aarch64" ]; then
+          echo "Detected ARM64, using ARM64 Docker image"
+          task test:examples:linux:docker:arm64
+        else
+          echo "Detected x86_64, using x86_64 Docker image"
+          task test:examples:linux:docker:x86_64
+        fi
+
+  test:examples:all:
+    summary: Builds all examples for all platforms (Mac + Windows + Linux via Docker)
     vars:
       EXAMPLEDIRS: |
+        badge
+        badge-custom
         binding
         build
         cancel-async
         cancel-chaining
         clipboard
         contextmenus
+        dev
         dialogs
         dialogs-basic
         drag-n-drop
         environment
         events
+        events-bug
+        file-association
         frameless
+        gin-example
+        gin-routing
+        gin-service
         hide-window
+        html-dnd-api
         ignore-mouse
         keybindings
         menu
+        notifications
+        panic-handling
+        plain
+        raw-message
+        screen
+        services
+        show-macos-toolbar
+        single-instance
+        systray-basic
+        systray-custom
+        systray-menu
+        video
+        window
+        window-api
+        window-call
+        window-menu
+        wml
+    cmds:
+      - echo "Building all examples for all platforms..."
+      - echo "=== Building for Darwin ==="
+      - for: { var: EXAMPLEDIRS }
+        task: test:example:darwin
+        vars:
+          DIR: "{{.ITEM}}"
+      - echo "=== Building for Windows (cross-compile) ==="
+      - for: { var: EXAMPLEDIRS }
+        task: test:example:windows
+        vars:
+          DIR: "{{.ITEM}}"
+      - echo "=== Building for Linux (Docker) ==="
+      - task: test:examples:linux:docker
+
+  test:examples:
+    summary: Builds the examples for current platform only
+    dir: examples
+    vars:
+      EXAMPLEDIRS: |
+        badge
+        badge-custom
+        binding
+        build
+        cancel-async
+        cancel-chaining
+        clipboard
+        contextmenus
+        dev
+        dialogs
+        dialogs-basic
+        drag-n-drop
+        environment
+        events
+        events-bug
+        file-association
+        frameless
+        gin-example
+        gin-routing
+        gin-service
+        hide-window
+        html-dnd-api
+        ignore-mouse
+        keybindings
+        menu
+        notifications
         panic-handling
         plain
         raw-message
@@ -131,7 +268,14 @@ tasks:
         task: test:example:darwin
         vars:
           DIR: "{{.ITEM}}"
+        platforms: [darwin]
       - for: { var: EXAMPLEDIRS }
-        task: test:example:notdarwin
+        task: test:example:linux
         vars:
           DIR: "{{.ITEM}}"
+        platforms: [linux]
+      - for: { var: EXAMPLEDIRS }
+        task: test:example:windows
+        vars:
+          DIR: "{{.ITEM}}"
+        platforms: [windows]

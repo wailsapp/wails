@@ -84,6 +84,7 @@ v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 /v3/examples/*/main
 /v3/examples/*/app
 /v3/examples/*/changeme
+/v3/examples/*/testbuild-*
 
 # Temporary called mkdocs, should be renamed to more standard -website or similar
 /docs/site
