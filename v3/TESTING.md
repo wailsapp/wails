@@ -16,17 +16,20 @@ The testing system ensures all Wails v3 examples build successfully across all s
 # Build all examples for ALL platforms (macOS + Windows + Linux)
 task test:examples:all
 ```
-**Total: 129 builds** (43 examples × 3 platforms)
+**Total: 129 builds** (43 examples × 3 platforms) + CLI code testing
 
 ### All Examples (No DIR Parameter Needed)
 ```bash
-# Current platform only (all 43 examples)
+# Current platform only (all 43 examples + CLI code)
 task test:examples
 
 # All examples for specific Linux architectures
 task test:examples:linux:docker           # Auto-detect architecture
 task test:examples:linux:docker:arm64     # ARM64 native
 task test:examples:linux:docker:x86_64    # x86_64 native
+
+# CLI code testing only
+task test:cli
 ```
 
 ### Single Example Builds (Requires DIR=example)

@@ -215,6 +215,15 @@ tasks:
           DIR: "{{.ITEM}}"
       - echo "=== Building for Linux (Docker) ==="
       - task: test:examples:linux:docker
+      - echo "=== Testing CLI Code ==="
+      - task: test:cli
+
+  test:cli:
+    summary: Test CLI-related code compilation
+    cmds:
+      - echo "Testing CLI appimage testfiles compilation..."
+      - cd internal/commands/appimage_testfiles && go mod tidy && go build
+      - echo "✅ CLI appimage testfiles compile successfully"
 
   test:examples:
     summary: Builds the examples for current platform only
@@ -264,6 +273,7 @@ tasks:
         window-menu
         wml
     cmds:
+      - echo "Testing examples compilation..."
       - for: { var: EXAMPLEDIRS }
         task: test:example:darwin
         vars:
@@ -279,3 +289,5 @@ tasks:
         vars:
           DIR: "{{.ITEM}}"
         platforms: [windows]
+      - echo "Testing CLI code..."
+      - task: test:cli
