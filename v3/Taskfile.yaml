@@ -245,6 +245,23 @@ tasks:
       - cd internal/generator/testcases/struct_literal_single && go mod tidy && go build
       - echo "✅ Generator test cases compile successfully"
 
+  test:templates:
+    summary: Test template generation for core templates
+    cmds:
+      - echo "Testing template generation (core templates)..."
+      - task: install
+      - echo "Testing lit template generation..."
+      - rm -rf ./test-template-lit && wails3 init -n test-template-lit -t lit
+      - mkdir -p ./test-template-lit/frontend/dist && touch ./test-template-lit/frontend/dist/.keep
+      - cd ./test-template-lit && go mod tidy && go build
+      - rm -rf ./test-template-lit
+      - echo "Testing react template generation..."
+      - rm -rf ./test-template-react && wails3 init -n test-template-react -t react
+      - mkdir -p ./test-template-react/frontend/dist && touch ./test-template-react/frontend/dist/.keep
+      - cd ./test-template-react && go mod tidy && go build
+      - rm -rf ./test-template-react
+      - echo "✅ Template generation tests completed successfully"
+
   test:infrastructure:
     summary: Test critical infrastructure components
     cmds:
@@ -252,6 +269,8 @@ tasks:
       - task: test:cli:all
       - echo "=== Testing Generator ==="
       - task: test:generator
+      - echo "=== Testing Templates ==="
+      - task: test:templates
       - echo "=== Testing pkg/application ==="
       - cd pkg/application && go test -c -o /dev/null ./...
       - echo "✅ All infrastructure components test successfully"
