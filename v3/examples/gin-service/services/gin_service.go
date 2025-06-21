@@ -22,12 +22,13 @@ type User struct {
 
 // GinService implements a Wails service that uses Gin for HTTP handling
 type GinService struct {
-	ginEngine *gin.Engine
-	users     []User
-	nextID    int
-	mu        sync.RWMutex
-	app       *application.App
-	maxUsers  int // Maximum number of users to prevent unbounded growth
+	ginEngine         *gin.Engine
+	users             []User
+	nextID            int
+	mu                sync.RWMutex
+	app               *application.App
+	maxUsers          int // Maximum number of users to prevent unbounded growth
+	removeEventHandler func() // Store cleanup function for event handler
 }
 
 type EventData struct {
@@ -72,7 +73,8 @@ func (s *GinService) ServiceStartup(ctx context.Context, options application.Ser
 	s.app = application.Get()
 
 	// Register an event handler that can be triggered from the frontend
-	s.app.Events.On("gin-api-event", func(event *application.CustomEvent) {
+	// Store the cleanup function for proper resource management
+	s.removeEventHandler = s.app.Events.On("gin-api-event", func(event *application.CustomEvent) {
 		// Log the event data
 		// Parse the event data
 		s.app.Logger.Info("Received event from frontend", "data", event.Data)
@@ -89,6 +91,10 @@ func (s *GinService) ServiceStartup(ctx context.Context, options application.Ser
 
 // ServiceShutdown is called when the service shuts down
 func (s *GinService) ServiceShutdown(ctx context.Context) error {
+	// Clean up event handler to prevent memory leaks
+	if s.removeEventHandler != nil {
+		s.removeEventHandler()
+	}
 	return nil
 }
 
