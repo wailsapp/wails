@@ -9,6 +9,26 @@ The testing system ensures all Wails v3 examples build successfully across all s
 - **Windows** - Cross-compilation from any platform
 - **Linux** - Multi-architecture Docker compilation (ARM64 + x86_64)
 
+## Test Directory Structure
+
+The testing infrastructure is organized in a dedicated test directory:
+
+```
+v3/
+├── test/
+│   └── docker/
+│       ├── Dockerfile.linux-arm64    # ARM64 native compilation
+│       └── Dockerfile.linux-x86_64   # x86_64 native compilation
+├── Taskfile.yaml                     # Build task definitions
+└── TESTING.md                        # This documentation
+```
+
+**Benefits of the organized structure:**
+- **Separation of Concerns**: Testing files are isolated from application code
+- **Clear Organization**: All Docker-related files in one location
+- **Easier Maintenance**: Centralized testing infrastructure
+- **Better Git Management**: Clean separation for .gitignore patterns
+
 ## Available Commands
 
 ### 🚀 Complete Cross-Platform Testing
@@ -144,15 +164,15 @@ Uses Ubuntu 24.04 base image with full GTK development environment:
 - `ca-certificates` - HTTPS support
 
 **Docker Images:**
-- `wails-v3-linux-arm64` - Ubuntu 24.04 ARM64 native compilation
-- `wails-v3-linux-x86_64` - Ubuntu 24.04 x86_64 native compilation
+- `wails-v3-linux-arm64` - Ubuntu 24.04 ARM64 native compilation (built from `test/docker/Dockerfile.linux-arm64`)
+- `wails-v3-linux-x86_64` - Ubuntu 24.04 x86_64 native compilation (built from `test/docker/Dockerfile.linux-x86_64`)
 - `wails-v3-linux-fixed` - Legacy unified image (deprecated)
 
 ## Docker Configuration
 
 ### Multi-Architecture Build System
 
-#### ARM64 Native Build Environment (`Dockerfile.linux-arm64`)
+#### ARM64 Native Build Environment (`test/docker/Dockerfile.linux-arm64`)
 ```dockerfile
 FROM ubuntu:24.04
 # ARM64 native compilation environment
@@ -163,7 +183,7 @@ FROM ubuntu:24.04
 # Output: testbuild-{example}-linux-arm64
 ```
 
-#### x86_64 Native Build Environment (`Dockerfile.linux-x86_64`)
+#### x86_64 Native Build Environment (`test/docker/Dockerfile.linux-x86_64`)
 ```dockerfile
 FROM --platform=linux/amd64 ubuntu:24.04
 # x86_64 native compilation environment 
