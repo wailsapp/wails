@@ -56,7 +56,7 @@ func main() {
 	// 'Mac' options tailor the window when running on macOS.
 	// 'BackgroundColour' is the background colour of the window.
 	// 'URL' is the URL that will be loaded into the webview.
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Window 1",
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
@@ -67,14 +67,14 @@ func main() {
 		URL:              "/",
 	})
 
-	app.OnEvent("remove:badge", func(event *application.CustomEvent) {
+	app.Events.On("remove:badge", func(event *application.CustomEvent) {
 		err := badgeService.RemoveBadge()
 		if err != nil {
 			log.Fatal(err)
 		}
 	})
 
-	app.OnEvent("set:badge", func(event *application.CustomEvent) {
+	app.Events.On("set:badge", func(event *application.CustomEvent) {
 		text := event.Data.(string)
 		err := badgeService.SetBadge(text)
 		if err != nil {
@@ -85,10 +85,16 @@ func main() {
 	// Create a goroutine that emits an event containing the current time every second.
 	// The frontend can listen to this event and update the UI accordingly.
 	go func() {
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
 		for {
-			now := time.Now().Format(time.RFC1123)
-			app.EmitEvent("time", now)
-			time.Sleep(time.Second)
+			select {
+			case <-ticker.C:
+				now := time.Now().Format(time.RFC1123)
+				app.Events.Emit("time", now)
+			case <-app.Context().Done():
+				return
+			}
 		}
 	}()
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -21,11 +22,13 @@ type User struct {
 
 // GinService implements a Wails service that uses Gin for HTTP handling
 type GinService struct {
-	ginEngine *gin.Engine
-	users     []User
-	nextID    int
-	mu        sync.RWMutex
-	app       *application.App
+	ginEngine         *gin.Engine
+	users             []User
+	nextID            int
+	mu                sync.RWMutex
+	app               *application.App
+	maxUsers          int // Maximum number of users to prevent unbounded growth
+	removeEventHandler func() // Store cleanup function for event handler
 }
 
 type EventData struct {
@@ -49,7 +52,8 @@ func NewGinService() *GinService {
 			{ID: 2, Name: "Bob", Email: "bob@example.com", CreatedAt: time.Now().Add(-48 * time.Hour)},
 			{ID: 3, Name: "Charlie", Email: "charlie@example.com", CreatedAt: time.Now().Add(-24 * time.Hour)},
 		},
-		nextID: 4,
+		nextID:   4,
+		maxUsers: 1000, // Limit to prevent unbounded slice growth
 	}
 
 	// Define routes
@@ -69,13 +73,14 @@ func (s *GinService) ServiceStartup(ctx context.Context, options application.Ser
 	s.app = application.Get()
 
 	// Register an event handler that can be triggered from the frontend
-	s.app.OnEvent("gin-api-event", func(event *application.CustomEvent) {
+	// Store the cleanup function for proper resource management
+	s.removeEventHandler = s.app.Events.On("gin-api-event", func(event *application.CustomEvent) {
 		// Log the event data
 		// Parse the event data
 		s.app.Logger.Info("Received event from frontend", "data", event.Data)
 
 		// You could also emit an event back to the frontend
-		s.app.EmitEvent("gin-api-response", map[string]interface{}{
+		s.app.Events.Emit("gin-api-response", map[string]interface{}{
 			"message": "Response from Gin API Service",
 			"time":    time.Now().Format(time.RFC3339),
 		})
@@ -86,6 +91,10 @@ func (s *GinService) ServiceStartup(ctx context.Context, options application.Ser
 
 // ServiceShutdown is called when the service shuts down
 func (s *GinService) ServiceShutdown(ctx context.Context) error {
+	// Clean up event handler to prevent memory leaks
+	if s.removeEventHandler != nil {
+		s.removeEventHandler()
+	}
 	return nil
 }
 
@@ -137,57 +146,51 @@ func (s *GinService) setupRoutes() {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		})
 
-// import block (ensure this exists in your file)
-import (
-	"context"
-	"net/http"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
-)
+		// Create a new user
+		users.POST("", func(c *gin.Context) {
+			var newUser User
+			if err := c.ShouldBindJSON(&newUser); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 
-// ...
+			// Validate required fields
+			if newUser.Name == "" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Name is required"})
+				return
+			}
+			if newUser.Email == "" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required"})
+				return
+			}
+			// Basic email validation (consider using a proper validator library in production)
+			if !strings.Contains(newUser.Email, "@") {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email format"})
+				return
+			}
 
-// Create a new user
-users.POST("", func(c *gin.Context) {
-	var newUser User
-	if err := c.ShouldBindJSON(&newUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+			s.mu.Lock()
+			defer s.mu.Unlock()
 
-	// Validate required fields
-	if newUser.Name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Name is required"})
-		return
-	}
-	if newUser.Email == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required"})
-		return
-	}
-	// Basic email validation (consider using a proper validator library in production)
-	if !strings.Contains(newUser.Email, "@") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email format"})
-		return
-	}
+			// Check if we've reached the maximum number of users
+			if len(s.users) >= s.maxUsers {
+				c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Maximum number of users reached"})
+				return
+			}
 
-	s.mu.Lock()
-	defer s.mu.Unlock()
+			// Set the ID and creation time
+			newUser.ID = s.nextID
+			newUser.CreatedAt = time.Now()
+			s.nextID++
 
-	// Set the ID and creation time
-	newUser.ID = s.nextID
-	newUser.CreatedAt = time.Now()
-	s.nextID++
+			// Add to the users slice
+			s.users = append(s.users, newUser)
 
-	// Add to the users slice
-	s.users = append(s.users, newUser)
+			c.JSON(http.StatusCreated, newUser)
 
-	c.JSON(http.StatusCreated, newUser)
-
-	// Emit an event to notify about the new user
-	s.app.EmitEvent("user-created", newUser)
-})
+			// Emit an event to notify about the new user
+			s.app.Events.Emit("user-created", newUser)
+		})
 
 		// Delete a user
 		users.DELETE("/:id", func(c *gin.Context) {

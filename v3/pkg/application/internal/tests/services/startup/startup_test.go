@@ -64,7 +64,7 @@ func TestServiceStartup(t *testing.T) {
 
 	app.RegisterService(services[5])
 
-	app.OnApplicationEvent(events.Common.ApplicationStarted, func(*application.ApplicationEvent) {
+	app.Events.OnApplicationEvent(events.Common.ApplicationStarted, func(*application.ApplicationEvent) {
 		app.Quit()
 	})
 

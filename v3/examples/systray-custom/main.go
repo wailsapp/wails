@@ -16,7 +16,7 @@ func createWindow(app *application.App) {
 		return
 	}
 	// Log the time taken to create the window
-	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		Width:            500,
 		Height:           500,
 		Name:             "Systray Demo Window",
@@ -50,7 +50,7 @@ func main() {
 		},
 	})
 
-	systemTray := app.NewSystemTray()
+	systemTray := app.SystemTray.New()
 	menu := app.NewMenu()
 	menu.Add("Quit").OnClick(func(data *application.Context) {
 		app.Quit()

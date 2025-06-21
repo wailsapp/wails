@@ -13,7 +13,7 @@ func (a *linuxApp) setupCommonEvents() {
 	for sourceEvent, targetEvent := range commonApplicationEventMap {
 		sourceEvent := sourceEvent
 		targetEvent := targetEvent
-		a.parent.OnApplicationEvent(sourceEvent, func(event *ApplicationEvent) {
+		a.parent.Events.OnApplicationEvent(sourceEvent, func(event *ApplicationEvent) {
 			event.Id = uint(targetEvent)
 			applicationEvents <- event
 		})

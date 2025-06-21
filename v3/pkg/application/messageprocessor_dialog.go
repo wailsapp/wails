@@ -104,7 +104,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		if detached == nil || !*detached {
 			options.Window = window.(*WebviewWindow)
 		}
-		dialog := OpenFileDialogWithOptions(&options)
+		dialog := globalApplication.Dialogs.OpenFileWithOptions(&options)
 
 		go func() {
 			defer handlePanic()
@@ -146,7 +146,7 @@ func (m *MessageProcessor) processDialogMethod(method int, rw http.ResponseWrite
 		if detached == nil || !*detached {
 			options.Window = window.(*WebviewWindow)
 		}
-		dialog := SaveFileDialogWithOptions(&options)
+		dialog := globalApplication.Dialogs.SaveFileWithOptions(&options)
 
 		go func() {
 			defer handlePanic()

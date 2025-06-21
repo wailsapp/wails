@@ -24,15 +24,15 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: false,
 		},
 	})
-	app.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(event *application.ApplicationEvent) {
+	app.Events.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(event *application.ApplicationEvent) {
 		log.Println("ApplicationDidFinishLaunching")
 	})
 
 	var hiddenWindows []*application.WebviewWindow
 
 	currentWindow := func(fn func(window *application.WebviewWindow)) {
-		if app.CurrentWindow() != nil {
-			fn(app.CurrentWindow())
+		if app.Windows.Current() != nil {
+			fn(app.Windows.Current())
 		} else {
 			println("Current WebviewWindow is nil")
 		}
@@ -50,7 +50,7 @@ func main() {
 	myMenu.Add("New WebviewWindow").
 		SetAccelerator("CmdOrCtrl+N").
 		OnClick(func(ctx *application.Context) {
-			app.NewWebviewWindow().
+			app.Windows.New().
 				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
@@ -60,7 +60,7 @@ func main() {
 	myMenu.Add("New WebviewWindow (Hides on Close one time)").
 		SetAccelerator("CmdOrCtrl+H").
 		OnClick(func(ctx *application.Context) {
-			w := app.NewWebviewWindow()
+			w := app.Windows.New()
 			w.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
 				if !lo.Contains(hiddenWindows, w) {
 					hiddenWindows = append(hiddenWindows, w)
@@ -83,7 +83,7 @@ func main() {
 	myMenu.Add("New Frameless WebviewWindow").
 		SetAccelerator("CmdOrCtrl+F").
 		OnClick(func(ctx *application.Context) {
-			app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+			app.Windows.NewWithOptions(application.WebviewWindowOptions{
 				X:                rand.Intn(1000),
 				Y:                rand.Intn(800),
 				BackgroundColour: application.NewRGB(33, 37, 41),
@@ -97,7 +97,7 @@ func main() {
 	myMenu.Add("New WebviewWindow (ignores mouse events").
 		SetAccelerator("CmdOrCtrl+F").
 		OnClick(func(ctx *application.Context) {
-			app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+			app.Windows.NewWithOptions(application.WebviewWindowOptions{
 				HTML:              "<div style='width: 100%; height: 95%; border: 3px solid red; background-color: \"0000\";'></div>",
 				X:                 rand.Intn(1000),
 				Y:                 rand.Intn(800),
@@ -112,7 +112,7 @@ func main() {
 	if runtime.GOOS == "darwin" {
 		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInset)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+				app.Windows.NewWithOptions(application.WebviewWindowOptions{
 					Mac: application.MacWindow{
 						TitleBar:                application.MacTitleBarHiddenInset,
 						InvisibleTitleBarHeight: 25,
@@ -127,7 +127,7 @@ func main() {
 			})
 		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInsetUnified)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+				app.Windows.NewWithOptions(application.WebviewWindowOptions{
 					Mac: application.MacWindow{
 						TitleBar:                application.MacTitleBarHiddenInsetUnified,
 						InvisibleTitleBarHeight: 50,
@@ -141,7 +141,7 @@ func main() {
 			})
 		myMenu.Add("New WebviewWindow (MacTitleBarHidden)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+				app.Windows.NewWithOptions(application.WebviewWindowOptions{
 					Mac: application.MacWindow{
 						TitleBar:                application.MacTitleBarHidden,
 						InvisibleTitleBarHeight: 25,
@@ -157,7 +157,7 @@ func main() {
 	if runtime.GOOS == "windows" {
 		myMenu.Add("New WebviewWindow (Mica)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+				app.Windows.NewWithOptions(application.WebviewWindowOptions{
 					Title:          "WebviewWindow " + strconv.Itoa(windowCounter),
 					X:              rand.Intn(1000),
 					Y:              rand.Intn(800),
@@ -171,7 +171,7 @@ func main() {
 			})
 		myMenu.Add("New WebviewWindow (Acrylic)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+				app.Windows.NewWithOptions(application.WebviewWindowOptions{
 					Title:          "WebviewWindow " + strconv.Itoa(windowCounter),
 					X:              rand.Intn(1000),
 					Y:              rand.Intn(800),
@@ -185,7 +185,7 @@ func main() {
 			})
 		myMenu.Add("New WebviewWindow (Tabbed)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+				app.Windows.NewWithOptions(application.WebviewWindowOptions{
 					Title:          "WebviewWindow " + strconv.Itoa(windowCounter),
 					X:              rand.Intn(1000),
 					Y:              rand.Intn(800),
@@ -340,20 +340,12 @@ func main() {
 		})
 	})
 	stateMenu.Add("Get Primary Screen").OnClick(func(ctx *application.Context) {
-		screen, err := app.GetPrimaryScreen()
-		if err != nil {
-			application.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
-			return
-		}
+		screen := app.Screens.GetPrimary()
 		msg := fmt.Sprintf("Screen: %+v", screen)
 		application.InfoDialog().SetTitle("Primary Screen").SetMessage(msg).Show()
 	})
 	stateMenu.Add("Get Screens").OnClick(func(ctx *application.Context) {
-		screens, err := app.GetScreens()
-		if err != nil {
-			application.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
-			return
-		}
+		screens := app.Screens.GetAll()
 		for _, screen := range screens {
 			msg := fmt.Sprintf("Screen: %+v", screen)
 			application.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
@@ -394,14 +386,14 @@ func main() {
 		})
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Windows.NewWithOptions(application.WebviewWindowOptions{
 		BackgroundColour: application.NewRGB(33, 37, 41),
 		Mac: application.MacWindow{
 			DisableShadow: true,
 		},
 	})
 
-	app.SetMenu(menu)
+	app.Menus.SetApplicationMenu(menu)
 	err := app.Run()
 
 	if err != nil {
