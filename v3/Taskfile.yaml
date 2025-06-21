@@ -103,21 +103,21 @@ tasks:
     summary: Build a single example for Linux ARM64 using Docker (Ubuntu 24.04)
     cmds:
       - echo "Building example {{.DIR}} for Linux ARM64 using Docker"
-      - docker build -f test/docker/Dockerfile.linux-arm64 -t wails-v3-linux-arm64 .
+      - docker build --pull -f test/docker/Dockerfile.linux-arm64 -t wails-v3-linux-arm64 .
       - docker run --rm wails-v3-linux-arm64 /build/build-linux-arm64.sh {{.DIR}}
 
   test:example:linux:docker:x86_64:
     summary: Build a single example for Linux x86_64 using Docker (Ubuntu 24.04)
     cmds:
       - echo "Building example {{.DIR}} for Linux x86_64 using Docker"
-      - docker build -f test/docker/Dockerfile.linux-x86_64 -t wails-v3-linux-x86_64 .
+      - docker build --pull -f test/docker/Dockerfile.linux-x86_64 -t wails-v3-linux-x86_64 .
       - docker run --rm wails-v3-linux-x86_64 /build/build-linux-x86_64.sh {{.DIR}}
 
   test:examples:linux:docker:arm64:
     summary: Build all examples for Linux ARM64 using Docker (Ubuntu 24.04)
     cmds:
       - echo "Building Docker image for Linux ARM64 compilation..."
-      - docker build -f test/docker/Dockerfile.linux-arm64 -t wails-v3-linux-arm64 .
+      - docker build --pull -f test/docker/Dockerfile.linux-arm64 -t wails-v3-linux-arm64 .
       - echo "Running Linux ARM64 compilation in Docker container..."
       - docker run --rm wails-v3-linux-arm64
 
@@ -125,7 +125,7 @@ tasks:
     summary: Build all examples for Linux x86_64 using Docker (Ubuntu 24.04)
     cmds:
       - echo "Building Docker image for Linux x86_64 compilation..."
-      - docker build -f test/docker/Dockerfile.linux-x86_64 -t wails-v3-linux-x86_64 .
+      - docker build --pull -f test/docker/Dockerfile.linux-x86_64 -t wails-v3-linux-x86_64 .
       - echo "Running Linux x86_64 compilation in Docker container..."
       - docker run --rm wails-v3-linux-x86_64
 

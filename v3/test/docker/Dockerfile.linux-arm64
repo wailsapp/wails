@@ -6,6 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies for Wails v3 (ARM64 native)
 RUN apt-get update && apt-get install -y \
+    --no-install-recommends \
     # Core build tools for ARM64
     build-essential \
     gcc \
@@ -22,15 +23,18 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     # wget for downloading Go
     wget \
-    # Clean up apt cache
-    && rm -rf /var/lib/apt/lists/*
+    # Clean up apt cache and lists
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Install Go 1.24 ARM64 version
 ENV GO_VERSION=1.24.0
 RUN cd /tmp && \
     wget https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz && \
+    wget https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz.sha256 && \
+    echo "$(cat go${GO_VERSION}.linux-arm64.tar.gz.sha256)  go${GO_VERSION}.linux-arm64.tar.gz" | sha256sum -c - && \
     tar -C /usr/local -xzf go${GO_VERSION}.linux-arm64.tar.gz && \
-    rm go${GO_VERSION}.linux-arm64.tar.gz
+    rm go${GO_VERSION}.linux-arm64.tar.gz go${GO_VERSION}.linux-arm64.tar.gz.sha256
 
 # Set Go environment for ARM64 native compilation
 ENV PATH="/usr/local/go/bin:${PATH}"
@@ -47,6 +51,7 @@ WORKDIR /build
 COPY . /build/
 
 # Create build script for ARM64 native compilation
+# hadolint ignore=DL1000
 RUN cat > /build/build-linux-arm64.sh << 'EOF'
 #!/bin/bash
 set -e

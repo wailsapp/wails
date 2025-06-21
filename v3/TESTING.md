@@ -13,7 +13,7 @@ The testing system ensures all Wails v3 examples build successfully across all s
 
 The testing infrastructure is organized in a dedicated test directory:
 
-```
+```bash
 v3/
 ├── test/
 │   └── docker/
@@ -79,7 +79,7 @@ All builds generate platform-specific binaries with clear naming:
 - **Linux x86_64**: `testbuild-{example}-linux-x86_64` (Docker)
 
 Example outputs:
-```
+```text
 examples/badge/testbuild-badge-darwin
 examples/badge/testbuild-badge-windows.exe
 examples/badge/testbuild-badge-linux-arm64
@@ -311,19 +311,19 @@ task test:examples           # Current platform only (43 builds)
 ### Common Issues (All Resolved in v3.0.0-alpha)
 
 #### **Go Module Resolution Errors**
-```
+```bash
 Error: replacement directory ../wails/v3 does not exist
 ```
 **Solution**: All examples now use standardized `replace github.com/wailsapp/wails/v3 => ../..`
 
 #### **Frontend Asset Embedding Errors**
-```
+```bash
 Error: pattern frontend/dist: no matching files found
 ```
 **Solution**: Updated to `//go:embed all:frontend` for examples without dist directories
 
 #### **Manager API Errors**
-```
+```bash
 Error: app.CurrentWindow undefined
 ```
 **Solution**: Updated to use new manager pattern `app.Windows.Current()`
@@ -408,7 +408,7 @@ find v3/examples -name "testbuild-*" -delete
 ## Changelog
 
 ### v3.0.0-alpha (2025-06-20)
-**🎯 Complete Cross-Platform Testing System**
+#### 🎯 Complete Cross-Platform Testing System
 
 #### **✨ New Features**
 - **Complete Example Coverage**: All 43 examples now tested (was 35)

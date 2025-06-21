@@ -93,10 +93,12 @@ func main() {
 		},
 	})
 
-	// Register event handler
-	app.Events.On("gin-button-clicked", func(event *application.CustomEvent) {
+	// Register event handler and store cleanup function
+	removeGinHandler := app.Events.On("gin-button-clicked", func(event *application.CustomEvent) {
 		log.Printf("Received event from frontend: %v", event.Data)
 	})
+	// Note: In production, call removeGinHandler() during cleanup
+	_ = removeGinHandler
 
 	// Create window
 	app.Windows.NewWithOptions(application.WebviewWindowOptions{

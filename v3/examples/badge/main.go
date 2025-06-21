@@ -60,20 +60,28 @@ func main() {
 		URL:              "/",
 	})
 
-	app.Events.On("remove:badge", func(event *application.CustomEvent) {
+	// Store cleanup functions for proper resource management
+	removeBadgeHandler := app.Events.On("remove:badge", func(event *application.CustomEvent) {
 		err := badgeService.RemoveBadge()
 		if err != nil {
 			log.Fatal(err)
 		}
 	})
 
-	app.Events.On("set:badge", func(event *application.CustomEvent) {
+	setBadgeHandler := app.Events.On("set:badge", func(event *application.CustomEvent) {
 		text := event.Data.(string)
 		err := badgeService.SetBadge(text)
 		if err != nil {
 			log.Fatal(err)
 		}
 	})
+	
+	// Note: In a production application, you would call these cleanup functions
+	// when the handlers are no longer needed, e.g., during shutdown:
+	// defer removeBadgeHandler()
+	// defer setBadgeHandler()
+	_ = removeBadgeHandler // Acknowledge we're storing the cleanup functions
+	_ = setBadgeHandler
 
 	// Create a goroutine that emits an event containing the current time every second.
 	// The frontend can listen to this event and update the UI accordingly.
