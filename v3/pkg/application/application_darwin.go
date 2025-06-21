@@ -169,6 +169,7 @@ static void startSingleInstanceListener(const char *uniqueID) {
 import "C"
 import (
 	"encoding/json"
+	"log"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -314,10 +315,16 @@ func processMessage(windowID C.uint, message *C.char) {
 
 //export processURLRequest
 func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
+	window := globalApplication.getWindowForID(uint(windowID))
+	if window == nil {
+		log.Println("could not find window with id: ", windowID)
+		return
+	}
+
 	webviewRequests <- &webViewAssetRequest{
 		Request:    webview.NewRequest(wkUrlSchemeTask),
 		windowId:   uint(windowID),
-		windowName: globalApplication.getWindowForID(uint(windowID)).Name(),
+		windowName: window.Name(),
 	}
 }
 
