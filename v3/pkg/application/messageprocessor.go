@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"math"
 )
 
 // TODO maybe we could use a new struct that has the targetWindow as an attribute so we could get rid of passing the targetWindow
@@ -54,7 +55,8 @@ func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, err
 func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 	windowName := r.Header.Get(webViewRequestHeaderWindowName)
 	if windowName != "" {
-		return globalApplication.GetWindowByName(windowName), windowName
+		window, _ := globalApplication.Windows.GetByName(windowName)
+		return window, windowName
 	}
 	windowID := r.Header.Get(webViewRequestHeaderWindowId)
 	if windowID == "" {
@@ -65,7 +67,12 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 		m.Error("Window ID not parsable:", "id", windowID, "error", err)
 		return nil, windowID
 	}
-	targetWindow := globalApplication.getWindowForID(uint(wID))
+	// Check if wID is within the valid range for uint
+	if wID > math.MaxUint32 {
+		m.Error("Window ID out of range for uint:", "id", wID)
+		return nil, windowID
+	}
+	targetWindow, _ := globalApplication.Windows.GetByID(uint(wID))
 	if targetWindow == nil {
 		m.Error("Window ID not found:", "id", wID)
 		return nil, windowID

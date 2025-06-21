@@ -13,7 +13,7 @@ type ScreenService struct {
 
 func (s *ScreenService) GetSystemScreens() []*application.Screen {
 	s.isExampleLayout = false
-	screens, _ := application.Get().GetScreens()
+	screens := application.Get().Screens.GetAll()
 	return screens
 }
 
@@ -29,7 +29,13 @@ func (s *ScreenService) ProcessExampleScreens(rawScreens []interface{}) []*appli
 		}
 	}
 
-	screens := []*application.Screen{}
+	// Prevent unbounded slice growth by limiting the number of screens
+	maxScreens := 32 // Reasonable limit for screen configurations
+	if len(rawScreens) > maxScreens {
+		rawScreens = rawScreens[:maxScreens]
+	}
+
+	screens := make([]*application.Screen, 0, len(rawScreens))
 	for _, s := range rawScreens {
 		s := s.(map[string]interface{})
 
@@ -52,7 +58,7 @@ func (s *ScreenService) ProcessExampleScreens(rawScreens []interface{}) []*appli
 	}
 
 	s.screenManager.LayoutScreens(screens)
-	return s.screenManager.Screens()
+	return s.screenManager.GetAll()
 }
 
 func (s *ScreenService) transformPoint(point application.Point, toDIP bool) application.Point {
@@ -87,8 +93,10 @@ func (s *ScreenService) TransformPoint(point map[string]interface{}, toDIP bool)
 	ptTransformed := s.transformPoint(pt, toDIP)
 	ptDblTransformed := s.transformPoint(ptTransformed, !toDIP)
 
-	// double-transform multiple times to catch any double-rounding issues
-	for i := 0; i < 10; i++ {
+	// double-transform a limited number of times to catch any double-rounding issues
+	// Limit iterations to prevent potential performance issues
+	maxIterations := 3 // Reduced from 10 to limit computational overhead
+	for i := 0; i < maxIterations; i++ {
 		ptTransformed = s.transformPoint(ptDblTransformed, toDIP)
 		ptDblTransformed = s.transformPoint(ptTransformed, !toDIP)
 	}

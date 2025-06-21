@@ -56,11 +56,11 @@ func main() {
 
 	// You can control the current window from the menu
 	myMenu.Add("Lock WebviewWindow Resize").OnClick(func(ctx *application.Context) {
-		if app.CurrentWindow().Resizable() {
-			app.CurrentWindow().SetResizable(false)
+		if app.Windows.Current().Resizable() {
+			app.Windows.Current().SetResizable(false)
 			ctx.ClickedMenuItem().SetLabel("Unlock WebviewWindow Resize")
 		} else {
-			app.CurrentWindow().SetResizable(true)
+			app.Windows.Current().SetResizable(true)
 			ctx.ClickedMenuItem().SetLabel("Lock WebviewWindow Resize")
 		}
 	})
@@ -144,9 +144,9 @@ func main() {
 		}
 	})
 
-	app.SetMenu(menu)
+	app.Menus.Set(menu)
 
-	window := app.NewWebviewWindow().SetBackgroundColour(application.NewRGB(33, 37, 41))
+	window := app.Windows.New().SetBackgroundColour(application.NewRGB(33, 37, 41))
 	window.SetMenu(menu)
 
 	err := app.Run()

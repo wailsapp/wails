@@ -271,7 +271,7 @@ func (m *macosApp) run() error {
 		C.startSingleInstanceListener(cUniqueID)
 	}
 	// Add a hook to the ApplicationDidFinishLaunching event
-	m.parent.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*ApplicationEvent) {
+	m.parent.Events.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*ApplicationEvent) {
 		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))
 		C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
 		C.activateIgnoringOtherApps()
@@ -326,7 +326,7 @@ func processApplicationEvent(eventID C.uint, data unsafe.Pointer) {
 
 	switch event.Id {
 	case uint(events.Mac.ApplicationDidChangeTheme):
-		isDark := globalApplication.IsDarkMode()
+		isDark := globalApplication.Env.IsDarkMode()
 		event.Context().setIsDarkMode(isDark)
 	}
 	applicationEvents <- event
@@ -351,9 +351,14 @@ func processMessage(windowID C.uint, message *C.char) {
 //export processURLRequest
 func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
 	webviewRequests <- &webViewAssetRequest{
-		Request:    webview.NewRequest(wkUrlSchemeTask),
-		windowId:   uint(windowID),
-		windowName: globalApplication.getWindowForID(uint(windowID)).Name(),
+		Request:  webview.NewRequest(wkUrlSchemeTask),
+		windowId: uint(windowID),
+		windowName: func() string {
+			if window, ok := globalApplication.Windows.GetByID(uint(windowID)); ok {
+				return window.Name()
+			}
+			return ""
+		}(),
 	}
 }
 

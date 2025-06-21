@@ -27,12 +27,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+- **Manager API Refactoring**: Reorganized application API from flat structure to organized managers for better code organization and discoverability by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
+  - `app.NewWebviewWindow()` → `app.Windows.New()`
+  - `app.CurrentWindow()` → `app.Windows.Current()`
+  - `app.GetAllWindows()` → `app.Windows.GetAll()`
+  - `app.WindowByName()` → `app.Windows.GetByName()`
+  - `app.EmitEvent()` → `app.Events.Emit()`
+  - `app.OnApplicationEvent()` → `app.Events.OnApplicationEvent()`
+  - `app.OnWindowEvent()` → `app.Events.OnWindowEvent()`
+  - `app.SetApplicationMenu()` → `app.Menus.SetApplicationMenu()`
+  - `app.OpenFileDialog()` → `app.Dialogs.OpenFile()`
+  - `app.SaveFileDialog()` → `app.Dialogs.SaveFile()`
+  - `app.MessageDialog()` → `app.Dialogs.Message()`
+  - `app.InfoDialog()` → `app.Dialogs.Info()`
+  - `app.WarningDialog()` → `app.Dialogs.Warning()`
+  - `app.ErrorDialog()` → `app.Dialogs.Error()`
+  - `app.QuestionDialog()` → `app.Dialogs.Question()`
+  - `app.NewSystemTray()` → `app.SystemTray.New()`
+  - `app.GetSystemTray()` → `app.SystemTray.Get()`
+  - `app.ShowContextMenu()` → `app.ContextMenus.Show()`
+  - `app.RegisterKeybinding()` → `app.KeyBindings.Register()`
+  - `app.UnregisterKeybinding()` → `app.KeyBindings.Unregister()`
+  - `app.GetPrimaryScreen()` → `app.Screens.GetPrimary()`
+  - `app.GetAllScreens()` → `app.Screens.GetAll()`
+  - `app.BrowserOpenURL()` → `app.Browser.OpenURL()`
+  - `app.Environment()` → `app.Env.GetAll()`
+  - `app.ClipboardGetText()` → `app.Clipboard.Text()`
+  - `app.ClipboardSetText()` → `app.Clipboard.SetText()`
 - Renamed Service methods: `Name` -> `ServiceName`, `OnStartup` -> `ServiceStartup`, `OnShutdown` -> `ServiceShutdown` by [@leaanthony](https://github.com/leaanthony)
 - Moved `Path` and `Paths` methods to `application` package by [@leaanthony](https://github.com/leaanthony)
 - The application menu is now macOS only by [@leaanthony](https://github.com/leaanthony)
 
 ### Added
 
+- **Organized Testing Infrastructure**: Moved Docker test files to dedicated `test/docker/` directory with optimized images and enhanced build reliability by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
+- **Improved Resource Management Patterns**: Added proper event handler cleanup and context-aware goroutine management in examples by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
 - Support aarch64 AppImage builds by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
 - Add diagnostics section to `wails doctor` by [@leaanthony](https://github.com/leaanthony)
 - Add window to context when calling a service method by [@leaanthony](https://github.com/leaanthony)
