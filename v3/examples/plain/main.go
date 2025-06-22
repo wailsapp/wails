@@ -25,7 +25,7 @@ func main() {
 	})
 	// Create window - Note: In future versions, window creation may return errors
 	// that should be checked. For now, window creation is deferred until app.Run()
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Plain Bundle",
 		CSS:   `body { background-color: rgb(255, 255, 255); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; user-select: none; -ms-user-select: none; -webkit-user-select: none; } .main { color: white; margin: 20%; }`,
 		Mac: application.MacWindow{
@@ -37,7 +37,7 @@ func main() {
 	})
 
 	// Create second window with direct HTML content
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "HTML TEST",
 		HTML:  "<h1>AWESOME!</h1>",
 		CSS:   `body { background-color: rgb(255, 0, 0); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; user-select: none; -ms-user-select: none; -webkit-user-select: none; } .main { color: white; margin: 20%; }`,
@@ -45,7 +45,7 @@ func main() {
 	})
 
 	// Store the cleanup function to remove event listener when needed
-	removeClickHandler := app.Events.On("clicked", func(_ *application.CustomEvent) {
+	removeClickHandler := app.Event.On("clicked", func(_ *application.CustomEvent) {
 		println("clicked")
 	})
 	// Note: In a real application, you would call removeClickHandler() when appropriate
@@ -60,7 +60,7 @@ func main() {
 		select {
 		case <-ticker.C:
 			// Create window after delay - in production, you should handle potential errors
-			app.Windows.NewWithOptions(application.WebviewWindowOptions{
+			app.Window.NewWithOptions(application.WebviewWindowOptions{
 				Title:  "Plain Bundle new Window from GoRoutine",
 				Width:  500,
 				Height: 500,

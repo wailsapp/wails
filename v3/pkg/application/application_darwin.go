@@ -271,7 +271,7 @@ func (m *macosApp) run() error {
 		C.startSingleInstanceListener(cUniqueID)
 	}
 	// Add a hook to the ApplicationDidFinishLaunching event
-	m.parent.Events.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*ApplicationEvent) {
+	m.parent.Event.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*ApplicationEvent) {
 		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))
 		C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
 		C.activateIgnoringOtherApps()
@@ -354,7 +354,7 @@ func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
 		Request:  webview.NewRequest(wkUrlSchemeTask),
 		windowId: uint(windowID),
 		windowName: func() string {
-			if window, ok := globalApplication.Windows.GetByID(uint(windowID)); ok {
+			if window, ok := globalApplication.Window.GetByID(uint(windowID)); ok {
 				return window.Name()
 			}
 			return ""

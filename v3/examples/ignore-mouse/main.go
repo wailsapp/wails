@@ -16,7 +16,7 @@ func main() {
 		},
 	})
 
-	window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Width:             800,
 		Height:            600,
 		Title:             "Ignore Mouse Example",

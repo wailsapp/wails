@@ -94,7 +94,7 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 
 func (a *linuxApp) run() error {
 
-	a.parent.Events.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
+	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
 		// TODO: What should happen here?
 	})
 	a.setupCommonEvents()

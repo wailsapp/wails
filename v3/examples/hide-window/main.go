@@ -21,7 +21,7 @@ func main() {
 
 	systemTray := app.SystemTray.New()
 
-	window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Width:         500,
 		Height:        800,
 		Frameless:     false,
@@ -43,7 +43,7 @@ func main() {
 	}
 
 	// Click Dock icon tigger application show
-	app.Events.OnApplicationEvent(events.Mac.ApplicationShouldHandleReopen, func(event *application.ApplicationEvent) {
+	app.Event.OnApplicationEvent(events.Mac.ApplicationShouldHandleReopen, func(event *application.ApplicationEvent) {
 		println("reopen")
 		window.Show()
 	})

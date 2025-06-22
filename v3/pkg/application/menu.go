@@ -20,11 +20,11 @@ func NewContextMenu(name string) *ContextMenu {
 
 func (m *ContextMenu) Update() {
 	m.Menu.Update()
-	globalApplication.ContextMenus.Add(m.name, m)
+	globalApplication.ContextMenu.Add(m.name, m)
 }
 
 func (m *ContextMenu) Destroy() {
-	globalApplication.ContextMenus.Remove(m.name)
+	globalApplication.ContextMenu.Remove(m.name)
 }
 
 type Menu struct {
@@ -215,7 +215,7 @@ func (m *Menu) Prepend(in *Menu) {
 }
 
 func (a *App) NewMenu() *Menu {
-	return a.Menus.New()
+	return a.Menu.New()
 }
 
 func NewMenuFromItems(item *MenuItem, items ...*MenuItem) *Menu {

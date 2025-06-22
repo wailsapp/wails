@@ -75,7 +75,7 @@ func main() {
     })
 
     // Create a custom menu
-    menu := app.Menus.New()
+    menu := app.Menu.New()
     if runtime.GOOS == "darwin" {
         menu.AddRole(application.AppMenu)
     }
@@ -85,7 +85,7 @@ func main() {
     setClipboardMenu.Add("Set Text 'Hello'").OnClick(func(ctx *application.Context) {
         success := app.Clipboard.SetText("Hello")
         if !success {
-            app.Dialogs.Info().SetMessage("Failed to set clipboard text").Show()
+            app.Dialog.Info().SetMessage("Failed to set clipboard text").Show()
         }
     })
 
@@ -93,9 +93,9 @@ func main() {
     getClipboardMenu.Add("Get Text").OnClick(func(ctx *application.Context) {
         result, ok := app.Clipboard.Text()
         if !ok {
-            app.Dialogs.Info().SetMessage("Failed to get clipboard text").Show()
+            app.Dialog.Info().SetMessage("Failed to get clipboard text").Show()
         } else {
-            app.Dialogs.Info().SetMessage("Got:\n\n" + result).Show()
+            app.Dialog.Info().SetMessage("Got:\n\n" + result).Show()
         }
     })
 
@@ -103,13 +103,13 @@ func main() {
     clearClipboardMenu.Add("Clear Text").OnClick(func(ctx *application.Context) {
         success := app.Clipboard.SetText("")
         if success {
-            app.Dialogs.Info().SetMessage("Clipboard text cleared").Show()
+            app.Dialog.Info().SetMessage("Clipboard text cleared").Show()
         } else {
-            app.Dialogs.Info().SetMessage("Clipboard text not cleared").Show()
+            app.Dialog.Info().SetMessage("Clipboard text not cleared").Show()
         }
     })
 
-    app.Menus.Set(menu)
+    app.Menu.Set(menu)
     app.NewWebviewWindow()
 
     err := app.Run()

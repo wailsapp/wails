@@ -81,7 +81,7 @@ func (w *windowsBadge) SetBadge(label string) error {
 		return nil
 	}
 
-	window := app.Windows.Current()
+	window := app.Window.Current()
 	if window == nil {
 		return nil
 	}
@@ -121,7 +121,7 @@ func (w *windowsBadge) SetCustomBadge(label string, options Options) error {
 		return nil
 	}
 
-	window := app.Windows.Current()
+	window := app.Window.Current()
 	if window == nil {
 		return nil
 	}
@@ -178,7 +178,7 @@ func (w *windowsBadge) RemoveBadge() error {
 		return nil
 	}
 
-	window := app.Windows.Current()
+	window := app.Window.Current()
 	if window == nil {
 		return nil
 	}

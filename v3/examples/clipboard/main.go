@@ -65,9 +65,9 @@ func main() {
 		}
 	})
 
-	app.Menus.Set(menu)
+	app.Menu.Set(menu)
 
-	app.Windows.New()
+	app.Window.New()
 
 	err := app.Run()
 

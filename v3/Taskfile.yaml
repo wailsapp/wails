@@ -217,6 +217,8 @@ tasks:
       - task: test:examples:linux:docker
       - echo "=== Testing CLI Code ==="
       - task: test:cli
+      - echo "=== Cleaning Up Test Binaries ==="
+      - task: clean:test:binaries
 
   test:cli:
     summary: Test CLI-related code compilation
@@ -273,6 +275,8 @@ tasks:
       - task: test:templates
       - echo "=== Testing pkg/application ==="
       - cd pkg/application && go test -c -o /dev/null ./...
+      - echo "=== Cleaning Up Test Binaries ==="
+      - task: clean:test:binaries
       - echo "✅ All infrastructure components test successfully"
 
   test:examples:
@@ -341,3 +345,25 @@ tasks:
         platforms: [windows]
       - echo "Testing CLI code..."
       - task: test:cli
+      - echo "=== Cleaning Up Test Binaries ==="
+      - task: clean:test:binaries
+
+  clean:test:binaries:
+    summary: Clean up all test-generated binary files and directories (cross-platform)
+    cmds:
+      - echo "🧹 Cleaning up test binaries..."
+      - go run tasks/cleanup/cleanup.go
+      - echo "✅ Test binaries cleaned up"
+
+  test:all:
+    summary: Run all tests including examples, infrastructure, and Go unit tests
+    cmds:
+      - echo "=== Running Go Unit Tests ==="
+      - go test ./...
+      - echo "=== Testing Examples (Current Platform) ==="
+      - task: test:examples
+      - echo "=== Testing Infrastructure Components ==="
+      - task: test:infrastructure
+      - echo "=== Cleaning Up Test Binaries ==="
+      - task: clean:test:binaries
+      - echo "✅ All tests completed successfully"

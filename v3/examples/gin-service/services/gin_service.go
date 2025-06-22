@@ -74,13 +74,13 @@ func (s *GinService) ServiceStartup(ctx context.Context, options application.Ser
 
 	// Register an event handler that can be triggered from the frontend
 	// Store the cleanup function for proper resource management
-	s.removeEventHandler = s.app.Events.On("gin-api-event", func(event *application.CustomEvent) {
+	s.removeEventHandler = s.app.Event.On("gin-api-event", func(event *application.CustomEvent) {
 		// Log the event data
 		// Parse the event data
 		s.app.Logger.Info("Received event from frontend", "data", event.Data)
 
 		// You could also emit an event back to the frontend
-		s.app.Events.Emit("gin-api-response", map[string]interface{}{
+		s.app.Event.Emit("gin-api-response", map[string]interface{}{
 			"message": "Response from Gin API Service",
 			"time":    time.Now().Format(time.RFC3339),
 		})
@@ -189,7 +189,7 @@ func (s *GinService) setupRoutes() {
 			c.JSON(http.StatusCreated, newUser)
 
 			// Emit an event to notify about the new user
-			s.app.Events.Emit("user-created", newUser)
+			s.app.Event.Emit("user-created", newUser)
 		})
 
 		// Delete a user

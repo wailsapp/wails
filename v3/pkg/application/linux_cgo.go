@@ -1265,7 +1265,7 @@ func (w *linuxWebviewWindow) setURL(uri string) {
 
 //export emit
 func emit(we *C.WindowEvent) {
-	window, _ := globalApplication.Windows.GetByID(uint(we.id))
+	window, _ := globalApplication.Window.GetByID(uint(we.id))
 	if window != nil {
 		windowEvents <- &windowEvent{
 			WindowID: window.ID(),
@@ -1276,7 +1276,7 @@ func emit(we *C.WindowEvent) {
 
 //export handleConfigureEvent
 func handleConfigureEvent(widget *C.GtkWidget, event *C.GdkEventConfigure, data C.uintptr_t) C.gboolean {
-	window, _ := globalApplication.Windows.GetByID(uint(data))
+	window, _ := globalApplication.Window.GetByID(uint(data))
 	if window != nil {
 		lw, ok := window.(*WebviewWindow).impl.(*linuxWebviewWindow)
 		if !ok {
@@ -1457,7 +1457,7 @@ func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t) C.
 	GdkButtonRelease := C.GDK_BUTTON_RELEASE // 7
 
 	windowId := uint(C.uint(data))
-	window, _ := globalApplication.Windows.GetByID(windowId)
+	window, _ := globalApplication.Window.GetByID(windowId)
 	if window == nil {
 		return C.gboolean(0)
 	}
@@ -1494,7 +1494,7 @@ func onMenuButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t
 	GdkButtonRelease := C.GDK_BUTTON_RELEASE // 7
 
 	windowId := uint(C.uint(data))
-	window, _ := globalApplication.Windows.GetByID(windowId)
+	window, _ := globalApplication.Window.GetByID(windowId)
 	if window == nil {
 		return C.gboolean(0)
 	}
@@ -1589,7 +1589,7 @@ func onProcessRequest(request *C.WebKitURISchemeRequest, data C.uintptr_t) {
 		Request:  webview.NewRequest(unsafe.Pointer(request)),
 		windowId: windowId,
 		windowName: func() string {
-			if window, ok := globalApplication.Windows.GetByID(windowId); ok {
+			if window, ok := globalApplication.Window.GetByID(windowId); ok {
 				return window.Name()
 			}
 			return ""

@@ -431,8 +431,8 @@ You can emit custom events from anywhere in your application:
 <Tabs>
 <TabItem label="Manager API (Recommended)">
 ```go
-// NEW: Using the Events Manager (recommended)
-app.Events.Emit("myevent", "hello")
+// NEW: Using the Event Manager (recommended)
+app.Event.Emit("myevent", "hello")
 
 // Emit from a specific window
 window.EmitEvent("windowevent", "window specific data")
@@ -456,8 +456,8 @@ Listen for custom events using the event management methods:
 <Tabs>
 <TabItem label="Manager API (Recommended)">
 ```go
-// NEW: Using the Events Manager (recommended)
-cancelFunc := app.Events.On("myevent", func(e *application.CustomEvent) {
+// NEW: Using the Event Manager (recommended)
+cancelFunc := app.Event.On("myevent", func(e *application.CustomEvent) {
     // Access event information
     name := e.Name        // Event name
     data := e.Data        // Event data
@@ -466,13 +466,13 @@ cancelFunc := app.Events.On("myevent", func(e *application.CustomEvent) {
 })
 
 // Remove specific event listener
-app.Events.Off("myevent")
+app.Event.Off("myevent")
 
 // Remove all event listeners
-app.Events.Reset()
+app.Event.Reset()
 
 // Listen for events a limited number of times
-app.Events.OnMultiple("myevent", func(e *application.CustomEvent) {
+app.Event.OnMultiple("myevent", func(e *application.CustomEvent) {
     // This will only be called 3 times
 }, 3)
 ```
@@ -531,7 +531,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 
 // For custom events
-app.Events.On("myevent", func(e *application.CustomEvent) {
+app.Event.On("myevent", func(e *application.CustomEvent) {
     if e.IsCancelled() {
         app.Logger.Info("Event was cancelled")
         return

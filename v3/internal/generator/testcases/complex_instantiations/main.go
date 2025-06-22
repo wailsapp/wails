@@ -49,7 +49,7 @@ func main() {
 			other.CustomNewServices[Service11, Service12]()...),
 	})
 
-	app.Windows.New()
+	app.Window.New()
 
 	err := app.Run()
 

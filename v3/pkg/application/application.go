@@ -77,7 +77,7 @@ func New(appOptions Options) *App {
 	result.logStartup()
 	result.logPlatformInfo()
 
-	result.customEventProcessor = NewWailsEventProcessor(result.Events.dispatch)
+	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
 
 	messageProc := NewMessageProcessor(result.Logger)
 	opts := &assetserver.Options{
@@ -273,17 +273,17 @@ type App struct {
 	applicationEventHooksLock     sync.RWMutex
 
 	// Manager pattern for organized API
-	Windows      *WindowManager
-	ContextMenus *ContextMenuManager
-	KeyBindings  *KeyBindingManager
-	Browser      *BrowserManager
-	Env          *EnvironmentManager
-	Dialogs      *DialogManager
-	Events       *EventManager
-	Menus        *MenuManager
-	Screens      *ScreenManager
-	Clipboard    *ClipboardManager
-	SystemTray   *SystemTrayManager
+	Window      *WindowManager
+	ContextMenu *ContextMenuManager
+	KeyBinding  *KeyBindingManager
+	Browser     *BrowserManager
+	Env         *EnvironmentManager
+	Dialog      *DialogManager
+	Event       *EventManager
+	Menu        *MenuManager
+	Screen      *ScreenManager
+	Clipboard   *ClipboardManager
+	SystemTray  *SystemTrayManager
 
 	// Windows
 	windows     map[uint]Window
@@ -310,7 +310,7 @@ type App struct {
 	// platform app
 	impl platformApp
 
-	// The main application menu (private - use app.Menus.GetApplicationMenu/SetApplicationMenu)
+	// The main application menu (private - use app.Menu.GetApplicationMenu/SetApplicationMenu)
 	applicationMenu *Menu
 
 	clipboard            *Clipboard
@@ -421,15 +421,15 @@ func (a *App) init() {
 	a.wailsEventListeners = make([]WailsEventListener, 0)
 
 	// Initialize managers
-	a.Windows = newWindowManager(a)
-	a.ContextMenus = newContextMenuManager(a)
-	a.KeyBindings = newKeyBindingManager(a)
+	a.Window = newWindowManager(a)
+	a.ContextMenu = newContextMenuManager(a)
+	a.KeyBinding = newKeyBindingManager(a)
 	a.Browser = newBrowserManager(a)
 	a.Env = newEnvironmentManager(a)
-	a.Dialogs = newDialogManager(a)
-	a.Events = newEventManager(a)
-	a.Menus = newMenuManager(a)
-	a.Screens = newScreenManager(a)
+	a.Dialog = newDialogManager(a)
+	a.Event = newEventManager(a)
+	a.Menu = newMenuManager(a)
+	a.Screen = newScreenManager(a)
 	a.Clipboard = newClipboardManager(a)
 	a.SystemTray = newSystemTrayManager(a)
 }
@@ -526,7 +526,7 @@ func (a *App) Run() error {
 	go func() {
 		for {
 			event := <-applicationEvents
-			go a.Events.handleApplicationEvent(event)
+			go a.Event.handleApplicationEvent(event)
 		}
 	}()
 	go func() {
@@ -563,7 +563,7 @@ func (a *App) Run() error {
 	go func() {
 		for {
 			menuItemID := <-menuItemClicked
-			go a.Menus.handleMenuItemClicked(menuItemID)
+			go a.Menu.handleMenuItemClicked(menuItemID)
 		}
 	}()
 
