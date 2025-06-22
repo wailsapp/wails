@@ -30,7 +30,7 @@ func main() {
 		},
 	})
 
-	app.Windows.New()
+	app.Window.New()
 
 	err := app.Run()
 

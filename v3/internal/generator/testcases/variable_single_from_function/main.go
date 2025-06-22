@@ -30,8 +30,8 @@ func main() {
 		},
 	})
 
-    _ = app.Windows.New()          // discard
-    // or: win := app.Windows.New() // keep for later
+    _ = app.Window.New()          // discard
+    // or: win := app.Window.New() // keep for later
 
 	err := app.Run()
 
