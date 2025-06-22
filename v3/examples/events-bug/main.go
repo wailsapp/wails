@@ -28,7 +28,7 @@ func main() {
 		},
 	})
 
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Name:  "Window 1",
 		Title: "Window 1",
 		URL:   "https://wails.io",
@@ -39,7 +39,7 @@ func main() {
 		},
 	})
 
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Name:  "Window 2",
 		Title: "Window 2",
 		URL:   "https://google.com",

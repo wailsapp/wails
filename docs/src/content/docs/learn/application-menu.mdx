@@ -10,10 +10,10 @@ Application menus provide the main menu bar interface for your application. They
 
 ## Creating an Application Menu
 
-Create a new application menu using the `New` method from the Menus manager:
+Create a new application menu using the `New` method from the Menu manager:
 
 ```go
-menu := app.Menus.New()
+menu := app.Menu.New()
 ```
 
 ## Setting the Menu
@@ -23,10 +23,10 @@ The way to set the menu varies on the platform:
 <Tabs>
     <TabItem label="macOS" icon="fa-brands:apple">
 
-        On macOS, there is only one menu bar per application. Set the menu using the `Set` method of the Menus manager:
+        On macOS, there is only one menu bar per application. Set the menu using the `Set` method of the Menu manager:
 
         ```go
-        app.Menus.Set(menu)
+        app.Menu.Set(menu)
         ```
 
     </TabItem>
@@ -36,7 +36,7 @@ The way to set the menu varies on the platform:
         On Windows, there is a menu bar per window. Set the menu using the `SetMenu` method of the window:
 
         ```go
-        app.Windows.Current().SetMenu(menu)
+        app.Window.Current().SetMenu(menu)
         ```
 
     </TabItem>
@@ -46,7 +46,7 @@ The way to set the menu varies on the platform:
         On Linux, the menu bar is typically per window. Set the menu using the `SetMenu` method of the window:
 
         ```go
-        app.Windows.Current().SetMenu(menu)
+        app.Window.Current().SetMenu(menu)
         ```
 
     </TabItem>
@@ -107,7 +107,7 @@ Menu items can control the application windows:
 ```go
 viewMenu := menu.AddSubmenu("View")
 viewMenu.Add("Toggle Fullscreen").OnClick(func(ctx *application.Context) {
-    window := app.Windows.Current()
+    window := app.Window.Current()
     if window.Fullscreen() {
         window.SetFullscreen(false)
     } else {
@@ -190,7 +190,7 @@ Always test menu functionality across all target platforms to ensure consistent 
 :::
 
 :::tip[Pro Tip]
-Consider using the `app.Windows.Current()` method in menu handlers to affect the active window, rather than storing window references.
+Consider using the `app.Window.Current()` method in menu handlers to affect the active window, rather than storing window references.
 :::
 
 ## Complete Example
@@ -211,7 +211,7 @@ func main() {
     })
 
     // Create main menu
-    menu := app.Menus.New()
+    menu := app.Menu.New()
 
     // Add platform-specific application menu
     if runtime.GOOS == "darwin" {
@@ -245,7 +245,7 @@ func main() {
     })
 
     // Set the menu
-    app.Menus.Set(menu)
+    app.Menu.Set(menu)
 
     // Create main window
     app.NewWebviewWindow()

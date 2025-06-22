@@ -24,7 +24,7 @@ func main() {
 		},
 	})
 
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Frameless: true,
 	})
 

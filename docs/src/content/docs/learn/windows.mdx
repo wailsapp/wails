@@ -18,7 +18,7 @@ app := application.New(application.Options{
 })
 
 // Access the window manager
-windowManager := app.Windows
+windowManager := app.Window
 ```
 
 ## Creating Windows
@@ -28,7 +28,7 @@ windowManager := app.Windows
 Create a new window with default settings:
 
 ```go
-window := app.Windows.New()
+window := app.Window.New()
 ```
 
 ### Window Creation with Options
@@ -36,7 +36,7 @@ window := app.Windows.New()
 Create a window with custom configuration:
 
 ```go
-window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "Custom Window",
     Width:  800,
     Height: 600,
@@ -59,7 +59,7 @@ window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
 Retrieve a window using its name:
 
 ```go
-window, exists := app.Windows.GetByName("main-window")
+window, exists := app.Window.GetByName("main-window")
 if exists {
     // Work with the window
     window.SetTitle("Found Window")
@@ -71,7 +71,7 @@ if exists {
 Retrieve a window using its unique ID:
 
 ```go
-window, exists := app.Windows.GetByID(123)
+window, exists := app.Window.GetByID(123)
 if exists {
     // Work with the window
 }
@@ -83,13 +83,13 @@ Get the currently active/focused window:
 
 ```go
 // Get current window (may be nil)
-currentWindow := app.Windows.Current()
+currentWindow := app.Window.Current()
 if currentWindow != nil {
     currentWindow.SetTitle("Active Window")
 }
 
 // Get current window with existence check
-currentWindow, exists := app.Windows.GetCurrent()
+currentWindow, exists := app.Window.GetCurrent()
 if exists {
     currentWindow.SetTitle("Active Window")
 }
@@ -100,7 +100,7 @@ if exists {
 Retrieve all windows managed by the application:
 
 ```go
-allWindows := app.Windows.GetAll()
+allWindows := app.Window.GetAll()
 for i, window := range allWindows {
     window.SetTitle(fmt.Sprintf("Window %d", i+1))
 }
@@ -113,7 +113,7 @@ for i, window := range allWindows {
 Register callbacks to be notified when new windows are created:
 
 ```go
-app.Windows.OnCreate(func(window application.Window) {
+app.Window.OnCreate(func(window application.Window) {
     app.Logger.Info("New window created", "name", window.Name())
     
     // Configure the window
@@ -129,10 +129,10 @@ Remove windows from the manager:
 
 ```go
 // Remove by ID
-app.Windows.Remove(windowID)
+app.Window.Remove(windowID)
 
 // Remove by name
-removed := app.Windows.RemoveByName("window-name")
+removed := app.Window.RemoveByName("window-name")
 if removed {
     app.Logger.Info("Window removed successfully")
 }
@@ -145,7 +145,7 @@ if removed {
 The primary window type in Wails v3 is the WebView window, which embeds a web browser:
 
 ```go
-window := app.Windows.New()
+window := app.Window.New()
 
 // WebView-specific operations
 window.SetURL("https://example.com")
@@ -179,14 +179,14 @@ Create and manage multiple windows for complex applications:
 
 ```go
 // Create main window
-mainWindow := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "Main Application",
     Width:  1200,
     Height: 800,
 })
 
 // Create settings window
-settingsWindow := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:  "Settings",
     Width:  600,
     Height: 400,
@@ -203,10 +203,10 @@ Windows can communicate through events:
 
 ```go
 // In window A
-app.Events.Emit("data-updated", newData)
+app.Event.Emit("data-updated", newData)
 
 // In window B
-app.Events.On("data-updated", func(event *application.CustomEvent) {
+app.Event.On("data-updated", func(event *application.CustomEvent) {
     // Update UI with new data
     data := event.Data
     // Process data...
@@ -257,7 +257,7 @@ app.Events.On("data-updated", func(event *application.CustomEvent) {
 
 1. **Window Naming**: Always provide meaningful names for windows to make them easy to find:
    ```go
-   window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+   window := app.Window.NewWithOptions(application.WebviewWindowOptions{
        Name: "settings-window",
        Title: "Application Settings",
    })
@@ -266,20 +266,20 @@ app.Events.On("data-updated", func(event *application.CustomEvent) {
 2. **Resource Management**: Properly clean up windows when they're no longer needed:
    ```go
    window.OnEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
-       app.Windows.Remove(window.ID())
+       app.Window.Remove(window.ID())
    })
    ```
 
 3. **Window State**: Consider starting secondary windows as hidden and showing them when needed:
    ```go
-   window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+   window := app.Window.NewWithOptions(application.WebviewWindowOptions{
        WindowState: application.WindowStateHidden,
    })
    ```
 
 4. **Error Handling**: Always check if windows exist before using them:
    ```go
-   if window, exists := app.Windows.GetByName("main"); exists {
+   if window, exists := app.Window.GetByName("main"); exists {
        window.SetTitle("New Title")
    }
    ```
@@ -301,7 +301,7 @@ func main() {
     })
 
     // Create main window
-    mainWindow := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+    mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:   "main",
         Title:  "Main Window",
         Width:  800,
@@ -309,7 +309,7 @@ func main() {
     })
 
     // Create hidden settings window
-    settingsWindow := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+    settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Name:        "settings",
         Title:       "Settings",
         Width:       400,
@@ -318,23 +318,23 @@ func main() {
     })
 
     // Setup window creation callback
-    app.Windows.OnCreate(func(window application.Window) {
+    app.Window.OnCreate(func(window application.Window) {
         app.Logger.Info("Window created", "name", window.Name())
     })
 
     // Setup menu to show settings
-    menu := app.Menus.New()
+    menu := app.Menu.New()
     menu.AddRole(application.AppMenu)
     
     settingsMenu := menu.AddSubmenu("Settings")
     settingsMenu.Add("Open Settings").OnClick(func(ctx *application.Context) {
-        if window, exists := app.Windows.GetByName("settings"); exists {
+        if window, exists := app.Window.GetByName("settings"); exists {
             window.Show()
             window.Focus()
         }
     })
 
-    app.Menus.Set(menu)
+    app.Menu.Set(menu)
 
     err := app.Run()
     if err != nil {

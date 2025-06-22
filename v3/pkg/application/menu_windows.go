@@ -49,7 +49,7 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 				if w.parentWindow != nil {
 					w.parentWindow.parent.removeMenuBinding(item.accelerator)
 				} else {
-					globalApplication.KeyBindings.Remove(item.accelerator.String())
+					globalApplication.KeyBinding.Remove(item.accelerator.String())
 				}
 			}
 		}
@@ -80,7 +80,7 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) {
 			if w.parentWindow != nil {
 				w.parentWindow.parent.addMenuBinding(item.accelerator, item)
 			} else {
-				globalApplication.KeyBindings.Add(item.accelerator.String(), func(w *WebviewWindow) {
+				globalApplication.KeyBinding.Add(item.accelerator.String(), func(w *WebviewWindow) {
 					item.handleClick()
 				})
 			}

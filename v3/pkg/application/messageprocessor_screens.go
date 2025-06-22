@@ -20,13 +20,13 @@ var screensMethodNames = map[int]string{
 func (m *MessageProcessor) processScreensMethod(method int, rw http.ResponseWriter, _ *http.Request, _ Window, _ QueryParams) {
 	switch method {
 	case ScreensGetAll:
-		screens := globalApplication.Screens.GetAll()
+		screens := globalApplication.Screen.GetAll()
 		m.json(rw, screens)
 	case ScreensGetPrimary:
-		screen := globalApplication.Screens.GetPrimary()
+		screen := globalApplication.Screen.GetPrimary()
 		m.json(rw, screen)
 	case ScreensGetCurrent:
-		screen, err := globalApplication.Windows.Current().GetScreen()
+		screen, err := globalApplication.Window.Current().GetScreen()
 		if err != nil {
 			m.httpError(rw, "Window.GetScreen failed:", err)
 			return

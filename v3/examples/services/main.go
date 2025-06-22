@@ -55,7 +55,7 @@ func main() {
 		},
 	})
 
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Width:  1024,
 		Height: 768,
 	})

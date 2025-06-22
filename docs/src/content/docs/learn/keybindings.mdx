@@ -18,7 +18,7 @@ app := application.New(application.Options{
 })
 
 // Access the key binding manager
-keyBindings := app.KeyBindings
+keyBindings := app.KeyBinding
 ```
 
 ## Adding Key Bindings
@@ -28,7 +28,7 @@ keyBindings := app.KeyBindings
 Register a simple keyboard shortcut:
 
 ```go
-app.KeyBindings.Add("Ctrl+S", func(window *application.WebviewWindow) {
+app.KeyBinding.Add("Ctrl+S", func(window *application.WebviewWindow) {
     // Handle save action
     app.Logger.Info("Save shortcut triggered")
     // Perform save operation...
@@ -41,36 +41,36 @@ Register multiple shortcuts for common operations:
 
 ```go
 // File operations
-app.KeyBindings.Add("Ctrl+N", func(window *application.WebviewWindow) {
+app.KeyBinding.Add("Ctrl+N", func(window *application.WebviewWindow) {
     // New file
     window.EmitEvent("file:new", nil)
 })
 
-app.KeyBindings.Add("Ctrl+O", func(window *application.WebviewWindow) {
+app.KeyBinding.Add("Ctrl+O", func(window *application.WebviewWindow) {
     // Open file
-    dialog := app.Dialogs.OpenFile()
+    dialog := app.Dialog.OpenFile()
     if file, err := dialog.PromptForSingleSelection(); err == nil {
         window.EmitEvent("file:open", file)
     }
 })
 
-app.KeyBindings.Add("Ctrl+S", func(window *application.WebviewWindow) {
+app.KeyBinding.Add("Ctrl+S", func(window *application.WebviewWindow) {
     // Save file
     window.EmitEvent("file:save", nil)
 })
 
 // Edit operations
-app.KeyBindings.Add("Ctrl+Z", func(window *application.WebviewWindow) {
+app.KeyBinding.Add("Ctrl+Z", func(window *application.WebviewWindow) {
     // Undo
     window.EmitEvent("edit:undo", nil)
 })
 
-app.KeyBindings.Add("Ctrl+Y", func(window *application.WebviewWindow) {
+app.KeyBinding.Add("Ctrl+Y", func(window *application.WebviewWindow) {
     // Redo (Windows/Linux)
     window.EmitEvent("edit:redo", nil)
 })
 
-app.KeyBindings.Add("Cmd+Shift+Z", func(window *application.WebviewWindow) {
+app.KeyBinding.Add("Cmd+Shift+Z", func(window *application.WebviewWindow) {
     // Redo (macOS)
     window.EmitEvent("edit:redo", nil)
 })
@@ -117,14 +117,14 @@ import "runtime"
 
 // Cross-platform save shortcut
 if runtime.GOOS == "darwin" {
-    app.KeyBindings.Add("Cmd+S", saveHandler)
+    app.KeyBinding.Add("Cmd+S", saveHandler)
 } else {
-    app.KeyBindings.Add("Ctrl+S", saveHandler)
+    app.KeyBinding.Add("Ctrl+S", saveHandler)
 }
 
 // Or register both
-app.KeyBindings.Add("Ctrl+S", saveHandler)
-app.KeyBindings.Add("Cmd+S", saveHandler)
+app.KeyBinding.Add("Ctrl+S", saveHandler)
+app.KeyBinding.Add("Cmd+S", saveHandler)
 ```
 
 ## Managing Key Bindings
@@ -135,14 +135,14 @@ Remove key bindings when they're no longer needed:
 
 ```go
 // Remove a specific key binding
-app.KeyBindings.Remove("Ctrl+S")
+app.KeyBinding.Remove("Ctrl+S")
 
 // Example: Temporary key binding for a modal
-app.KeyBindings.Add("Escape", func(window *application.WebviewWindow) {
+app.KeyBinding.Add("Escape", func(window *application.WebviewWindow) {
     // Close modal
     window.EmitEvent("modal:close", nil)
     // Remove this temporary binding
-    app.KeyBindings.Remove("Escape")
+    app.KeyBinding.Remove("Escape")
 })
 ```
 
@@ -151,7 +151,7 @@ app.KeyBindings.Add("Escape", func(window *application.WebviewWindow) {
 Retrieve all registered key bindings:
 
 ```go
-allBindings := app.KeyBindings.GetAll()
+allBindings := app.KeyBinding.GetAll()
 for _, binding := range allBindings {
     app.Logger.Info("Key binding", "accelerator", binding.Accelerator)
 }
@@ -164,7 +164,7 @@ for _, binding := range allBindings {
 Make key bindings context-aware by checking application state:
 
 ```go
-app.KeyBindings.Add("Ctrl+S", func(window *application.WebviewWindow) {
+app.KeyBinding.Add("Ctrl+S", func(window *application.WebviewWindow) {
     // Check current application state
     if isEditMode() {
         // Save document
@@ -183,7 +183,7 @@ app.KeyBindings.Add("Ctrl+S", func(window *application.WebviewWindow) {
 Key bindings receive the active window, allowing window-specific behavior:
 
 ```go
-app.KeyBindings.Add("F11", func(window *application.WebviewWindow) {
+app.KeyBinding.Add("F11", func(window *application.WebviewWindow) {
     // Toggle fullscreen for the active window
     if window.Fullscreen() {
         window.SetFullscreen(false)
@@ -192,7 +192,7 @@ app.KeyBindings.Add("F11", func(window *application.WebviewWindow) {
     }
 })
 
-app.KeyBindings.Add("Ctrl+W", func(window *application.WebviewWindow) {
+app.KeyBinding.Add("Ctrl+W", func(window *application.WebviewWindow) {
     // Close the active window
     window.Close()
 })
@@ -205,24 +205,24 @@ Dynamically add and remove key bindings based on application state:
 ```go
 func enableEditMode() {
     // Add edit-specific key bindings
-    app.KeyBindings.Add("Ctrl+B", func(window *application.WebviewWindow) {
+    app.KeyBinding.Add("Ctrl+B", func(window *application.WebviewWindow) {
         window.EmitEvent("format:bold", nil)
     })
     
-    app.KeyBindings.Add("Ctrl+I", func(window *application.WebviewWindow) {
+    app.KeyBinding.Add("Ctrl+I", func(window *application.WebviewWindow) {
         window.EmitEvent("format:italic", nil)
     })
     
-    app.KeyBindings.Add("Ctrl+U", func(window *application.WebviewWindow) {
+    app.KeyBinding.Add("Ctrl+U", func(window *application.WebviewWindow) {
         window.EmitEvent("format:underline", nil)
     })
 }
 
 func disableEditMode() {
     // Remove edit-specific key bindings
-    app.KeyBindings.Remove("Ctrl+B")
-    app.KeyBindings.Remove("Ctrl+I")
-    app.KeyBindings.Remove("Ctrl+U")
+    app.KeyBinding.Remove("Ctrl+B")
+    app.KeyBinding.Remove("Ctrl+I")
+    app.KeyBinding.Remove("Ctrl+U")
 }
 ```
 
@@ -241,13 +241,13 @@ func disableEditMode() {
     
     Common macOS patterns:
     ```go
-    app.KeyBindings.Add("Cmd+N", newFileHandler)      // New
-    app.KeyBindings.Add("Cmd+O", openFileHandler)     // Open
-    app.KeyBindings.Add("Cmd+S", saveFileHandler)     // Save
-    app.KeyBindings.Add("Cmd+Z", undoHandler)         // Undo
-    app.KeyBindings.Add("Cmd+Shift+Z", redoHandler)   // Redo
-    app.KeyBindings.Add("Cmd+C", copyHandler)         // Copy
-    app.KeyBindings.Add("Cmd+V", pasteHandler)        // Paste
+    app.KeyBinding.Add("Cmd+N", newFileHandler)      // New
+    app.KeyBinding.Add("Cmd+O", openFileHandler)     // Open
+    app.KeyBinding.Add("Cmd+S", saveFileHandler)     // Save
+    app.KeyBinding.Add("Cmd+Z", undoHandler)         // Undo
+    app.KeyBinding.Add("Cmd+Shift+Z", redoHandler)   // Redo
+    app.KeyBinding.Add("Cmd+C", copyHandler)         // Copy
+    app.KeyBinding.Add("Cmd+V", pasteHandler)        // Paste
     ```
     
   </TabItem>
@@ -263,14 +263,14 @@ func disableEditMode() {
     
     Common Windows patterns:
     ```go
-    app.KeyBindings.Add("Ctrl+N", newFileHandler)     // New
-    app.KeyBindings.Add("Ctrl+O", openFileHandler)    // Open
-    app.KeyBindings.Add("Ctrl+S", saveFileHandler)    // Save
-    app.KeyBindings.Add("Ctrl+Z", undoHandler)        // Undo
-    app.KeyBindings.Add("Ctrl+Y", redoHandler)        // Redo
-    app.KeyBindings.Add("Ctrl+C", copyHandler)        // Copy
-    app.KeyBindings.Add("Ctrl+V", pasteHandler)       // Paste
-    app.KeyBindings.Add("F1", helpHandler)            // Help
+    app.KeyBinding.Add("Ctrl+N", newFileHandler)     // New
+    app.KeyBinding.Add("Ctrl+O", openFileHandler)    // Open
+    app.KeyBinding.Add("Ctrl+S", saveFileHandler)    // Save
+    app.KeyBinding.Add("Ctrl+Z", undoHandler)        // Undo
+    app.KeyBinding.Add("Ctrl+Y", redoHandler)        // Redo
+    app.KeyBinding.Add("Ctrl+C", copyHandler)        // Copy
+    app.KeyBinding.Add("Ctrl+V", pasteHandler)       // Paste
+    app.KeyBinding.Add("F1", helpHandler)            // Help
     ```
     
   </TabItem>
@@ -286,13 +286,13 @@ func disableEditMode() {
     
     Common Linux patterns:
     ```go
-    app.KeyBindings.Add("Ctrl+N", newFileHandler)     // New
-    app.KeyBindings.Add("Ctrl+O", openFileHandler)    // Open
-    app.KeyBindings.Add("Ctrl+S", saveFileHandler)    // Save
-    app.KeyBindings.Add("Ctrl+Z", undoHandler)        // Undo
-    app.KeyBindings.Add("Ctrl+Shift+Z", redoHandler)  // Redo
-    app.KeyBindings.Add("Ctrl+C", copyHandler)        // Copy
-    app.KeyBindings.Add("Ctrl+V", pasteHandler)       // Paste
+    app.KeyBinding.Add("Ctrl+N", newFileHandler)     // New
+    app.KeyBinding.Add("Ctrl+O", openFileHandler)    // Open
+    app.KeyBinding.Add("Ctrl+S", saveFileHandler)    // Save
+    app.KeyBinding.Add("Ctrl+Z", undoHandler)        // Undo
+    app.KeyBinding.Add("Ctrl+Shift+Z", redoHandler)  // Redo
+    app.KeyBinding.Add("Ctrl+C", copyHandler)        // Copy
+    app.KeyBinding.Add("Ctrl+V", pasteHandler)       // Paste
     ```
     
   </TabItem>
@@ -304,15 +304,15 @@ func disableEditMode() {
    ```go
    // Cross-platform save
    if runtime.GOOS == "darwin" {
-       app.KeyBindings.Add("Cmd+S", saveHandler)
+       app.KeyBinding.Add("Cmd+S", saveHandler)
    } else {
-       app.KeyBindings.Add("Ctrl+S", saveHandler)
+       app.KeyBinding.Add("Ctrl+S", saveHandler)
    }
    ```
 
 2. **Provide Visual Feedback**: Let users know when shortcuts are triggered:
    ```go
-   app.KeyBindings.Add("Ctrl+S", func(window *application.WebviewWindow) {
+   app.KeyBinding.Add("Ctrl+S", func(window *application.WebviewWindow) {
        saveDocument()
        // Show brief notification
        window.EmitEvent("notification:show", "Document saved")
@@ -329,7 +329,7 @@ func disableEditMode() {
 
 4. **Document Shortcuts**: Provide help or documentation for available shortcuts:
    ```go
-   app.KeyBindings.Add("F1", func(window *application.WebviewWindow) {
+   app.KeyBinding.Add("F1", func(window *application.WebviewWindow) {
        // Show help dialog with available shortcuts
        showKeyboardShortcutsHelp()
    })
@@ -338,12 +338,12 @@ func disableEditMode() {
 5. **Clean Up**: Remove temporary key bindings when they're no longer needed:
    ```go
    func enterEditMode() {
-       app.KeyBindings.Add("Escape", exitEditModeHandler)
+       app.KeyBinding.Add("Escape", exitEditModeHandler)
    }
    
    func exitEditModeHandler(window *application.WebviewWindow) {
        exitEditMode()
-       app.KeyBindings.Remove("Escape") // Clean up temporary binding
+       app.KeyBinding.Remove("Escape") // Clean up temporary binding
    }
    ```
 
@@ -366,38 +366,38 @@ func main() {
 
     // File operations
     if runtime.GOOS == "darwin" {
-        app.KeyBindings.Add("Cmd+N", func(window *application.WebviewWindow) {
+        app.KeyBinding.Add("Cmd+N", func(window *application.WebviewWindow) {
             window.EmitEvent("file:new", nil)
         })
-        app.KeyBindings.Add("Cmd+O", func(window *application.WebviewWindow) {
+        app.KeyBinding.Add("Cmd+O", func(window *application.WebviewWindow) {
             openFile(app, window)
         })
-        app.KeyBindings.Add("Cmd+S", func(window *application.WebviewWindow) {
+        app.KeyBinding.Add("Cmd+S", func(window *application.WebviewWindow) {
             window.EmitEvent("file:save", nil)
         })
     } else {
-        app.KeyBindings.Add("Ctrl+N", func(window *application.WebviewWindow) {
+        app.KeyBinding.Add("Ctrl+N", func(window *application.WebviewWindow) {
             window.EmitEvent("file:new", nil)
         })
-        app.KeyBindings.Add("Ctrl+O", func(window *application.WebviewWindow) {
+        app.KeyBinding.Add("Ctrl+O", func(window *application.WebviewWindow) {
             openFile(app, window)
         })
-        app.KeyBindings.Add("Ctrl+S", func(window *application.WebviewWindow) {
+        app.KeyBinding.Add("Ctrl+S", func(window *application.WebviewWindow) {
             window.EmitEvent("file:save", nil)
         })
     }
 
     // View operations
-    app.KeyBindings.Add("F11", func(window *application.WebviewWindow) {
+    app.KeyBinding.Add("F11", func(window *application.WebviewWindow) {
         window.SetFullscreen(!window.Fullscreen())
     })
 
-    app.KeyBindings.Add("F1", func(window *application.WebviewWindow) {
+    app.KeyBinding.Add("F1", func(window *application.WebviewWindow) {
         showKeyboardShortcuts(window)
     })
 
     // Create main window
-    window := app.Windows.New()
+    window := app.Window.New()
     window.SetTitle("Text Editor")
 
     err := app.Run()
@@ -407,7 +407,7 @@ func main() {
 }
 
 func openFile(app *application.App, window *application.WebviewWindow) {
-    dialog := app.Dialogs.OpenFile()
+    dialog := app.Dialog.OpenFile()
     dialog.AddFilter("Text Files", "*.txt;*.md")
     
     if file, err := dialog.PromptForSingleSelection(); err == nil {

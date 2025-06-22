@@ -28,16 +28,16 @@ func main() {
 
 	editMenu := menu.AddSubmenu("MenuBar")
 	editMenu.Add("Hide MenuBar").OnClick(func(ctx *application.Context) {
-		app.Windows.Current().HideMenuBar()
+		app.Window.Current().HideMenuBar()
 	})
 
 	helpMenu := menu.AddSubmenu("Help")
 	helpMenu.Add("About").OnClick(func(ctx *application.Context) {
-		app.Windows.Current().SetURL("/about.html")
+		app.Window.Current().SetURL("/about.html")
 	})
 
 	// Create window with menu
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Window MenuBar Demo",
 		Width:  800,
 		Height: 600,

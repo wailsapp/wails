@@ -10,10 +10,10 @@ Context menus are popup menus that appear when right-clicking elements in your a
 
 ## Creating a Context Menu
 
-To create a context menu, use the `Add` method from the ContextMenus manager:
+To create a context menu, use the `Add` method from the ContextMenu manager:
 
 ```go
-contextMenu := app.ContextMenus.Add("menu-id", application.NewContextMenu())
+contextMenu := app.ContextMenu.Add("menu-id", application.NewContextMenu())
 ```
 
 The `menu-id` parameter is a unique identifier for the menu that will be used to associate it with HTML elements.
@@ -35,7 +35,7 @@ contextMenu.Add("Paste").OnClick(func(ctx *application.Context) {
 })
 
 // Register the context menu with the manager
-app.ContextMenus.Add("editor-menu", contextMenu)
+app.ContextMenu.Add("editor-menu", contextMenu)
 ```
 
 :::tip[Menu Items]
@@ -47,7 +47,7 @@ For detailed information about available menu item types and properties, refer t
 Context menus can receive data from the HTML element that triggered them. This data can be accessed in the click handlers:
 
 ```go
-contextMenu := app.ContextMenus.New()
+contextMenu := app.ContextMenu.New()
 menuItem := contextMenu.Add("Process Image")
 menuItem.OnClick(func(ctx *application.Context) {
     imageID := ctx.ContextMenuData()
@@ -55,7 +55,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 })
 
 // Register the context menu with the manager
-app.ContextMenus.Add("image-menu", contextMenu)
+app.ContextMenu.Add("image-menu", contextMenu)
 ```
 
 ## Associating with HTML Elements
@@ -113,7 +113,7 @@ contextMenu := application.NewContextMenu()
 menuItem := contextMenu.Add("Initial Label")
 
 // Register the context menu with the manager
-app.ContextMenus.Add("dynamic-menu", contextMenu)
+app.ContextMenu.Add("dynamic-menu", contextMenu)
 
 // Later, update the menu item
 menuItem.SetLabel("New Label")
@@ -195,7 +195,7 @@ func main() {
     })
 
     // Create a context menu
-    contextMenu := app.ContextMenus.New()
+    contextMenu := app.ContextMenu.New()
     
     // Add items that respond to context data
     clickMe := contextMenu.Add("Click to show context data")
@@ -208,7 +208,7 @@ func main() {
     })
 
     // Register the context menu with the manager
-    app.ContextMenus.Add("test", contextMenu)
+    app.ContextMenu.Add("test", contextMenu)
 
     window := app.NewWebviewWindow()
     window.SetTitle("Context Menu Demo")

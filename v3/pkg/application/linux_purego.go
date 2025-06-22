@@ -827,7 +827,7 @@ func windowNewWebview(parentId uint, gpuPolicy int) pointer {
 					Request:  webview.NewRequest(request),
 					windowId: parentId,
 					windowName: func() string {
-						if window, ok := globalApplication.Windows.GetByID(parentId); ok {
+						if window, ok := globalApplication.Window.GetByID(parentId); ok {
 							return window.Name()
 						}
 						return ""

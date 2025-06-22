@@ -23,7 +23,7 @@ func main() {
 		},
 	})
 
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Drag-n-drop Demo",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
