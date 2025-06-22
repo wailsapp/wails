@@ -43,7 +43,7 @@ func main() {
 
 	app := application.New(options)
 
-	app.Windows.New()
+	app.Window.New()
 
 	err := app.Run()
 

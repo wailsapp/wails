@@ -18,7 +18,7 @@ app := application.New(application.Options{
 })
 
 // Access the screen manager
-screens := app.Screens
+screens := app.Screen
 ```
 
 ## Getting Screen Information
@@ -28,7 +28,7 @@ screens := app.Screens
 Retrieve information about all connected displays:
 
 ```go
-allScreens := app.Screens.GetAll()
+allScreens := app.Screen.GetAll()
 for i, screen := range allScreens {
     app.Logger.Info("Screen info",
         "index", i,
@@ -47,7 +47,7 @@ for i, screen := range allScreens {
 Get the primary (main) display:
 
 ```go
-primaryScreen := app.Screens.GetPrimary()
+primaryScreen := app.Screen.GetPrimary()
 if primaryScreen != nil {
     app.Logger.Info("Primary screen",
         "name", primaryScreen.Name,
@@ -88,7 +88,7 @@ Wails handles two coordinate systems:
 - **Physical**: Actual pixel coordinates on the hardware
 
 ```go
-screen := app.Screens.GetPrimary()
+screen := app.Screen.GetPrimary()
 
 // Logical coordinates (what you typically work with)
 logicalWidth := screen.Size.Width
@@ -112,11 +112,11 @@ Convert coordinates between logical and physical systems:
 ```go
 // Convert logical point to physical coordinates
 logicalPoint := application.Point{X: 100, Y: 50}
-physicalPoint := app.Screens.DipToPhysicalPoint(logicalPoint)
+physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
 
 // Convert physical point to logical coordinates
 physicalPoint2 := application.Point{X: 200, Y: 100}
-logicalPoint2 := app.Screens.PhysicalToDipPoint(physicalPoint2)
+logicalPoint2 := app.Screen.PhysicalToDipPoint(physicalPoint2)
 
 app.Logger.Info("Coordinate conversion",
     "logical", logicalPoint,
@@ -137,10 +137,10 @@ logicalRect := application.Rect{
 }
 
 // Convert to physical coordinates
-physicalRect := app.Screens.DipToPhysicalRect(logicalRect)
+physicalRect := app.Screen.DipToPhysicalRect(logicalRect)
 
 // Convert back to logical coordinates
-logicalRect2 := app.Screens.PhysicalToDipRect(physicalRect)
+logicalRect2 := app.Screen.PhysicalToDipRect(physicalRect)
 
 app.Logger.Info("Rectangle conversion",
     "original", logicalRect,
@@ -158,11 +158,11 @@ Determine which screen contains a specific point:
 ```go
 // Find screen containing a logical point
 point := application.Point{X: 500, Y: 300}
-screen := app.Screens.ScreenNearestDipPoint(point)
+screen := app.Screen.ScreenNearestDipPoint(point)
 
 // Find screen containing a physical point
 physicalPoint := application.Point{X: 1000, Y: 600}
-screenPhys := app.Screens.ScreenNearestPhysicalPoint(physicalPoint)
+screenPhys := app.Screen.ScreenNearestPhysicalPoint(physicalPoint)
 
 app.Logger.Info("Screen detection",
     "point", point,
@@ -179,11 +179,11 @@ Determine which screen best contains or overlaps with a rectangle:
 ```go
 // Find screen for a logical rectangle
 rect := application.Rect{X: 200, Y: 150, Width: 800, Height: 600}
-screen := app.Screens.ScreenNearestDipRect(rect)
+screen := app.Screen.ScreenNearestDipRect(rect)
 
 // Find screen for a physical rectangle
 physicalRect := application.Rect{X: 400, Y: 300, Width: 1600, Height: 1200}
-screenPhys := app.Screens.ScreenNearestPhysicalRect(physicalRect)
+screenPhys := app.Screen.ScreenNearestPhysicalRect(physicalRect)
 
 app.Logger.Info("Screen detection by area",
     "rect", rect,
@@ -211,9 +211,9 @@ func positionWindowOnScreen(window *application.WebviewWindow, targetScreen *app
 }
 
 // Usage
-primaryScreen := app.Screens.GetPrimary()
+primaryScreen := app.Screen.GetPrimary()
 if primaryScreen != nil {
-    window := app.Windows.New()
+    window := app.Window.New()
     positionWindowOnScreen(window, primaryScreen)
 }
 ```
@@ -224,14 +224,14 @@ Manage windows across multiple screens:
 
 ```go
 func distributeWindowsAcrossScreens(app *application.App) {
-    screens := app.Screens.GetAll()
+    screens := app.Screen.GetAll()
     if len(screens) == 0 {
         return
     }
     
     // Create one window per screen
     for i, screen := range screens {
-        window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+        window := app.Window.NewWithOptions(application.WebviewWindowOptions{
             Name:   fmt.Sprintf("window-%d", i),
             Title:  fmt.Sprintf("Window on %s", screen.Name),
             Width:  800,
@@ -254,7 +254,7 @@ Properly handle displays with different DPI settings:
 
 ```go
 func analyzeDisplayScaling(app *application.App) {
-    screens := app.Screens.GetAll()
+    screens := app.Screen.GetAll()
     
     for _, screen := range screens {
         scaleFactor := screen.ScaleFactor
@@ -291,7 +291,7 @@ func getDPIAwareSizes(screen *application.Screen, logicalSize int) (int, int) {
 }
 
 // Usage
-screen := app.Screens.GetPrimary()
+screen := app.Screen.GetPrimary()
 logicalWidth, physicalWidth := getDPIAwareSizes(screen, 400)
 app.Logger.Info("Size conversion",
     "logical", logicalWidth,
@@ -317,7 +317,7 @@ app.Logger.Info("Size conversion",
     // macOS-specific screen handling
     if runtime.GOOS == "darwin" {
         // Handle coordinate system differences
-        screen := app.Screens.GetPrimary()
+        screen := app.Screen.GetPrimary()
         // Y coordinates are flipped on macOS
     }
     ```
@@ -337,7 +337,7 @@ app.Logger.Info("Size conversion",
     ```go
     // Windows-specific screen handling
     if runtime.GOOS == "windows" {
-        screen := app.Screens.GetPrimary()
+        screen := app.Screen.GetPrimary()
         // Account for taskbar in work area
         workArea := screen.WorkArea
     }
@@ -358,7 +358,7 @@ app.Logger.Info("Size conversion",
     ```go
     // Linux-specific screen handling
     if runtime.GOOS == "linux" {
-        screen := app.Screens.GetPrimary()
+        screen := app.Screen.GetPrimary()
         // Handle different desktop environments
     }
     ```
@@ -370,7 +370,7 @@ app.Logger.Info("Size conversion",
 
 1. **Always Check for Screens**: Ensure screens are available before using them:
    ```go
-   screens := app.Screens.GetAll()
+   screens := app.Screen.GetAll()
    if len(screens) == 0 {
        app.Logger.Warn("No screens detected")
        return
@@ -379,14 +379,14 @@ app.Logger.Info("Size conversion",
 
 2. **Use Work Areas**: Position windows within work areas to avoid taskbars/docks:
    ```go
-   screen := app.Screens.GetPrimary()
+   screen := app.Screen.GetPrimary()
    workArea := screen.WorkArea
    // Position within workArea, not full screen bounds
    ```
 
 3. **Handle Scale Factors**: Always consider DPI scaling for proper sizing:
    ```go
-   screen := app.Screens.GetPrimary()
+   screen := app.Screen.GetPrimary()
    if screen.ScaleFactor > 1.0 {
        // Adjust UI elements for high-DPI displays
    }
@@ -396,7 +396,7 @@ app.Logger.Info("Size conversion",
    ```go
    app.OnApplicationEvent(events.Common.SystemDisplayChanged, func(event *application.ApplicationEvent) {
        // Refresh screen information
-       screens := app.Screens.GetAll()
+       screens := app.Screen.GetAll()
        // Reposition windows if needed
    })
    ```
@@ -435,10 +435,10 @@ func main() {
 }
 
 func analyzeScreens(app *application.App) {
-    screens := app.Screens.GetAll()
+    screens := app.Screen.GetAll()
     app.Logger.Info("Screen analysis", "count", len(screens))
 
-    primary := app.Screens.GetPrimary()
+    primary := app.Screen.GetPrimary()
     if primary != nil {
         app.Logger.Info("Primary screen",
             "name", primary.Name,
@@ -460,10 +460,10 @@ func analyzeScreens(app *application.App) {
 }
 
 func createPositionedWindows(app *application.App) {
-    screens := app.Screens.GetAll()
+    screens := app.Screen.GetAll()
     
     for i, screen := range screens {
-        window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+        window := app.Window.NewWithOptions(application.WebviewWindowOptions{
             Name:  fmt.Sprintf("screen-%d", i),
             Title: fmt.Sprintf("Window on %s", screen.Name),
             Width: 600,
@@ -488,7 +488,7 @@ func monitorScreenChanges(app *application.App) {
         app.Logger.Info("Screen configuration changed")
         
         // Re-analyze screens
-        screens := app.Screens.GetAll()
+        screens := app.Screen.GetAll()
         app.Logger.Info("Updated screen count", "count", len(screens))
         
         // Could reposition windows here if needed

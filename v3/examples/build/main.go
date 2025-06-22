@@ -25,13 +25,13 @@ func main() {
 		},
 	})
 
-	app.Events.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*application.ApplicationEvent) {
+	app.Event.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*application.ApplicationEvent) {
 		log.Println("ApplicationDidFinishLaunching")
 	})
 
 	currentWindow := func(fn func(window *application.WebviewWindow)) {
-		if app.Windows.Current() != nil {
-			fn(app.Windows.Current())
+		if app.Window.Current() != nil {
+			fn(app.Window.Current())
 		} else {
 			println("Current WebviewWindow is nil")
 		}
@@ -51,7 +51,7 @@ func main() {
 	myMenu.Add("New WebviewWindow").
 		SetAccelerator("CmdOrCtrl+N").
 		OnClick(func(ctx *application.Context) {
-			app.Windows.New().
+			app.Window.New().
 				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 				SetRelativePosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
@@ -61,7 +61,7 @@ func main() {
 	myMenu.Add("New Frameless WebviewWindow").
 		SetAccelerator("CmdOrCtrl+F").
 		OnClick(func(ctx *application.Context) {
-			app.Windows.NewWithOptions(application.WebviewWindowOptions{
+			app.Window.NewWithOptions(application.WebviewWindowOptions{
 				X:         rand.Intn(1000),
 				Y:         rand.Intn(800),
 				Frameless: true,
@@ -74,7 +74,7 @@ func main() {
 	if runtime.GOOS == "darwin" {
 		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInset)").
 			OnClick(func(ctx *application.Context) {
-				app.Windows.NewWithOptions(application.WebviewWindowOptions{
+				app.Window.NewWithOptions(application.WebviewWindowOptions{
 					Mac: application.MacWindow{
 						TitleBar:                application.MacTitleBarHiddenInset,
 						InvisibleTitleBarHeight: 25,
@@ -88,7 +88,7 @@ func main() {
 			})
 		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInsetUnified)").
 			OnClick(func(ctx *application.Context) {
-				app.Windows.NewWithOptions(application.WebviewWindowOptions{
+				app.Window.NewWithOptions(application.WebviewWindowOptions{
 					Mac: application.MacWindow{
 						TitleBar:                application.MacTitleBarHiddenInsetUnified,
 						InvisibleTitleBarHeight: 50,
@@ -102,7 +102,7 @@ func main() {
 			})
 		myMenu.Add("New WebviewWindow (MacTitleBarHidden)").
 			OnClick(func(ctx *application.Context) {
-				app.Windows.NewWithOptions(application.WebviewWindowOptions{
+				app.Window.NewWithOptions(application.WebviewWindowOptions{
 					Mac: application.MacWindow{
 						TitleBar:                application.MacTitleBarHidden,
 						InvisibleTitleBarHeight: 25,
@@ -238,12 +238,12 @@ func main() {
 		})
 	})
 	stateMenu.Add("Get Primary Screen").OnClick(func(ctx *application.Context) {
-		screen := app.Screens.GetPrimary()
+		screen := app.Screen.GetPrimary()
 		msg := fmt.Sprintf("Screen: %+v", screen)
 		application.InfoDialog().SetTitle("Primary Screen").SetMessage(msg).Show()
 	})
 	stateMenu.Add("Get Screens").OnClick(func(ctx *application.Context) {
-		screens := app.Screens.GetAll()
+		screens := app.Screen.GetAll()
 		for _, screen := range screens {
 			msg := fmt.Sprintf("Screen: %+v", screen)
 			application.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
@@ -260,9 +260,9 @@ func main() {
 			application.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
 		})
 	})
-	app.Windows.New()
+	app.Window.New()
 
-	app.Menus.Set(menu)
+	app.Menu.Set(menu)
 	err := app.Run()
 
 	if err != nil {

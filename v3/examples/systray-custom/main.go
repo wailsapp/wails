@@ -16,7 +16,7 @@ func createWindow(app *application.App) {
 		return
 	}
 	// Log the time taken to create the window
-	window := app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Width:            500,
 		Height:           500,
 		Name:             "Systray Demo Window",

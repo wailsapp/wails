@@ -24,7 +24,7 @@ func main() {
 		},
 	})
 
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Wails ML Demo",
 		Width:  1280,
 		Height: 1024,
@@ -35,10 +35,10 @@ func main() {
 		},
 	})
 
-	app.Events.On("button-pressed", func(_ *application.CustomEvent) {
+	app.Event.On("button-pressed", func(_ *application.CustomEvent) {
 		println("Button Pressed!")
 	})
-	app.Events.On("hover", func(_ *application.CustomEvent) {
+	app.Event.On("hover", func(_ *application.CustomEvent) {
 		println("Hover time!")
 	})
 

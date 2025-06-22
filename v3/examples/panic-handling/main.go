@@ -48,7 +48,7 @@ func main() {
 		},
 	})
 
-	app.Windows.New().
+	app.Window.New().
 		SetTitle("WebviewWindow 1").
 		Show()
 

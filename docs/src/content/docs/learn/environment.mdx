@@ -103,7 +103,7 @@ app.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.Appli
 func updateApplicationTheme(theme string) {
     // Update your application's theme
     // This could emit an event to the frontend
-    app.Events.Emit("theme:changed", theme)
+    app.Event.Emit("theme:changed", theme)
 }
 ```
 
@@ -142,7 +142,7 @@ func showInFileManager(app *application.App, path string) {
             app.Logger.Error("Could not open file manager", "path", path, "error", err)
             
             // Show error to user
-            app.Dialogs.Error().
+            app.Dialog.Error().
                 SetTitle("File Manager Error").
                 SetMessage("Could not open file manager").
                 Show()
@@ -152,7 +152,7 @@ func showInFileManager(app *application.App, path string) {
 
 // Usage examples
 func setupFileMenu(app *application.App) {
-    menu := app.Menus.New()
+    menu := app.Menu.New()
     fileMenu := menu.AddSubmenu("File")
     
     fileMenu.Add("Show Downloads Folder").OnClick(func(ctx *application.Context) {
@@ -199,7 +199,7 @@ func configureMacOS(app *application.App) {
     app.Logger.Info("Configuring for macOS")
     
     // macOS-specific configuration
-    menu := app.Menus.New()
+    menu := app.Menu.New()
     menu.AddRole(application.AppMenu) // Add standard macOS app menu
     
     // Handle dark mode
@@ -244,20 +244,20 @@ func setupApplicationMode(app *application.App) {
 
 func setupDevelopmentFeatures(app *application.App) {
     // Enable development-only features
-    menu := app.Menus.New()
+    menu := app.Menu.New()
     
     // Add development menu
     devMenu := menu.AddSubmenu("Development")
     devMenu.Add("Reload Application").OnClick(func(ctx *application.Context) {
         // Reload the application
-        window := app.Windows.Current()
+        window := app.Window.Current()
         if window != nil {
             window.Reload()
         }
     })
     
     devMenu.Add("Open DevTools").OnClick(func(ctx *application.Context) {
-        window := app.Windows.Current()
+        window := app.Window.Current()
         if window != nil {
             window.OpenDevTools()
         }
@@ -309,7 +309,7 @@ Platform Information:`,
             envInfo.OSInfo.Version)
     }
     
-    dialog := app.Dialogs.Info()
+    dialog := app.Dialog.Info()
     dialog.SetTitle("Environment Information")
     dialog.SetMessage(details)
     dialog.Show()
@@ -456,7 +456,7 @@ func main() {
     setupEnvironmentMenu(app)
 
     // Create main window
-    window := app.Windows.New()
+    window := app.Window.New()
     window.SetTitle("Environment Demo")
 
     err := app.Run()
@@ -509,7 +509,7 @@ func monitorThemeChanges(app *application.App) {
 }
 
 func setupEnvironmentMenu(app *application.App) {
-    menu := app.Menus.New()
+    menu := app.Menu.New()
     
     // Add platform-specific app menu
     if runtime.GOOS == "darwin" {
@@ -533,7 +533,7 @@ func setupEnvironmentMenu(app *application.App) {
         toggleTheme(app)
     })
     
-    app.Menus.Set(menu)
+    app.Menu.Set(menu)
 }
 
 func showEnvironmentInfo(app *application.App) {
@@ -562,7 +562,7 @@ Platform Details:`,
             envInfo.OSInfo.Version)
     }
     
-    dialog := app.Dialogs.Info()
+    dialog := app.Dialog.Info()
     dialog.SetTitle("Environment Information")
     dialog.SetMessage(message)
     dialog.Show()
@@ -580,7 +580,7 @@ func openDownloadsFolder(app *application.App) {
     if err != nil {
         app.Logger.Error("Could not open Downloads folder", "error", err)
         
-        app.Dialogs.Error().
+        app.Dialog.Error().
             SetTitle("File Manager Error").
             SetMessage("Could not open Downloads folder").
             Show()
@@ -590,13 +590,13 @@ func openDownloadsFolder(app *application.App) {
 func applyDarkTheme(app *application.App) {
     app.Logger.Info("Applying dark theme")
     // Emit theme change to frontend
-    app.Events.Emit("theme:apply", "dark")
+    app.Event.Emit("theme:apply", "dark")
 }
 
 func applyLightTheme(app *application.App) {
     app.Logger.Info("Applying light theme")
     // Emit theme change to frontend
-    app.Events.Emit("theme:apply", "light")
+    app.Event.Emit("theme:apply", "light")
 }
 
 func toggleTheme(app *application.App) {

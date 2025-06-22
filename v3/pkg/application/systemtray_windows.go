@@ -258,7 +258,7 @@ func (s *windowsSystemTray) run() {
 	s.updateIcon()
 
 	// Listen for dark mode changes
-	globalApplication.Events.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *ApplicationEvent) {
+	globalApplication.Event.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *ApplicationEvent) {
 		s.updateIcon()
 	})
 

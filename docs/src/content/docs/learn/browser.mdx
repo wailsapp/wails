@@ -113,13 +113,13 @@ Provide easy access to help resources:
 ```go
 // Create help menu
 func setupHelpMenu(app *application.App) {
-    menu := app.Menus.New()
+    menu := app.Menu.New()
     helpMenu := menu.AddSubmenu("Help")
     
     helpMenu.Add("Online Documentation").OnClick(func(ctx *application.Context) {
         err := app.Browser.OpenURL("https://docs.yourapp.com")
         if err != nil {
-            app.Dialogs.Error().
+            app.Dialog.Error().
                 SetTitle("Error").
                 SetMessage("Could not open documentation").
                 Show()
@@ -149,7 +149,7 @@ func handleExternalLink(app *application.App, url string) {
     }
     
     // Optionally confirm with user
-    dialog := app.Dialogs.Question()
+    dialog := app.Dialog.Question()
     dialog.SetTitle("Open External Link")
     dialog.SetMessage(fmt.Sprintf("Open %s in your browser?", url))
     
@@ -244,12 +244,12 @@ func setupDevelopmentMenu(app *application.App) {
         return // Only show in debug mode
     }
     
-    menu := app.Menus.New()
+    menu := app.Menu.New()
     devMenu := menu.AddSubmenu("Development")
     
     devMenu.Add("Open DevTools").OnClick(func(ctx *application.Context) {
         // This would open browser devtools if available
-        window := app.Windows.Current()
+        window := app.Window.Current()
         if window != nil {
             window.OpenDevTools()
         }
@@ -280,7 +280,7 @@ func openURLWithFallback(app *application.App, url string, fallbackMessage strin
         app.Logger.Error("Failed to open URL", "url", url, "error", err)
         
         // Show fallback dialog with URL
-        dialog := app.Dialogs.Info()
+        dialog := app.Dialog.Info()
         dialog.SetTitle("Unable to Open Link")
         dialog.SetMessage(fmt.Sprintf("%s\n\nURL: %s", fallbackMessage, url))
         dialog.Show()
@@ -302,7 +302,7 @@ func openURLWithFeedback(app *application.App, url string) {
     err := app.Browser.OpenURL(url)
     if err != nil {
         // Show error dialog
-        app.Dialogs.Error().
+        app.Dialog.Error().
             SetTitle("Browser Error").
             SetMessage(fmt.Sprintf("Could not open URL: %s", err.Error())).
             Show()
@@ -408,7 +408,7 @@ func main() {
     setupMenu(app)
 
     // Create main window
-    window := app.Windows.New()
+    window := app.Window.New()
     window.SetTitle("Browser Integration")
 
     err := app.Run()
@@ -418,7 +418,7 @@ func main() {
 }
 
 func setupMenu(app *application.App) {
-    menu := app.Menus.New()
+    menu := app.Menu.New()
     
     // File menu
     fileMenu := menu.AddSubmenu("File")
@@ -435,11 +435,11 @@ func setupMenu(app *application.App) {
         openWithConfirmation(app, "https://support.example.com")
     })
     
-    app.Menus.Set(menu)
+    app.Menu.Set(menu)
 }
 
 func openWithConfirmation(app *application.App, url string) {
-    dialog := app.Dialogs.Question()
+    dialog := app.Dialog.Question()
     dialog.SetTitle("Open External Link")
     dialog.SetMessage(fmt.Sprintf("Open %s in your browser?", url))
     
@@ -494,7 +494,7 @@ func generateHTMLReport(app *application.App) {
 }
 
 func showError(app *application.App, message string, err error) {
-    app.Dialogs.Error().
+    app.Dialog.Error().
         SetTitle("Error").
         SetMessage(fmt.Sprintf("%s: %v", message, err)).
         Show()

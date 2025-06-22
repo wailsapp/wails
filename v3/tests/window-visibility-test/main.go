@@ -28,7 +28,7 @@ func (w *WindowTestService) setApp(app *application.App) {
 func (w *WindowTestService) CreateNormalWindow() string {
 	log.Println("Creating normal window...")
 
-	w.app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	w.app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Normal Window - Should Show Immediately",
 		Width:  600,
 		Height: 400,
@@ -71,7 +71,7 @@ func (w *WindowTestService) CreateDelayedContentWindow() string {
 	</body>
 	</html>`
 
-	w.app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	w.app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Delayed Content Window - Test Navigation Timing",
 		Width:  600,
 		Height: 400,
@@ -87,7 +87,7 @@ func (w *WindowTestService) CreateDelayedContentWindow() string {
 func (w *WindowTestService) CreateHiddenThenShowWindow() string {
 	log.Println("Creating hidden then show window...")
 
-	window := w.app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	window := w.app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Hidden Then Show Window - Test Show() Robustness",
 		Width:  600,
 		Height: 400,
@@ -129,7 +129,7 @@ func (w *WindowTestService) CreateMultipleWindows() string {
 		</body>
 		</html>`, i+1, bgColors[i], i+1, time.Now().Format("15:04:05"))
 
-		w.app.Windows.NewWithOptions(application.WebviewWindowOptions{
+		w.app.Window.NewWithOptions(application.WebviewWindowOptions{
 			Title:  fmt.Sprintf("Batch Window %d - Stress Test", i+1),
 			Width:  400,
 			Height: 300,
@@ -207,7 +207,7 @@ func (w *WindowTestService) CreateEfficiencyModeTestWindow() string {
 	</body>
 	</html>`
 
-	w.app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	w.app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Efficiency Mode Test - Issue #2861 Reproduction",
 		Width:  700,
 		Height: 500,
@@ -279,7 +279,7 @@ func main() {
 	// Help menu
 	helpMenu := menu.AddSubmenu("Help")
 	helpMenu.Add("About").OnClick(func(ctx *application.Context) {
-		app.Windows.NewWithOptions(application.WebviewWindowOptions{
+		app.Window.NewWithOptions(application.WebviewWindowOptions{
 			Title:  "About Window Visibility Test",
 			Width:  500,
 			Height: 400,
@@ -289,10 +289,10 @@ func main() {
 		})
 	})
 
-	app.Menus.SetApplicationMenu(menu)
+	app.Menu.Set(menu)
 
 	// Create main window
-	app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Window Visibility Test - Issue #2861",
 		Width:  800,
 		Height: 600,

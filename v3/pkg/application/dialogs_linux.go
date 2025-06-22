@@ -1,7 +1,7 @@
 package application
 
 func (a *linuxApp) showAboutDialog(title string, message string, icon []byte) {
-	window, _ := globalApplication.Windows.GetByID(a.getCurrentWindowID())
+	window, _ := globalApplication.Window.GetByID(a.getCurrentWindowID())
 	var parent uintptr
 	if window != nil {
 		parent, _ = window.(*WebviewWindow).NativeWindowHandle()
@@ -24,7 +24,7 @@ type linuxDialog struct {
 
 func (m *linuxDialog) show() {
 	windowId := getNativeApplication().getCurrentWindowID()
-	window, _ := globalApplication.Windows.GetByID(windowId)
+	window, _ := globalApplication.Window.GetByID(windowId)
 	var parent uintptr
 	if window != nil {
 		parent, _ = window.(*WebviewWindow).NativeWindowHandle()

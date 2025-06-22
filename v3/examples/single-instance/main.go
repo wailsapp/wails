@@ -63,7 +63,7 @@ func main() {
 		},
 	})
 
-	window = app.Windows.NewWithOptions(application.WebviewWindowOptions{
+	window = app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Single Instance Demo",
 		Width:  800,
 		Height: 700,

@@ -55,7 +55,7 @@ func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, err
 func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 	windowName := r.Header.Get(webViewRequestHeaderWindowName)
 	if windowName != "" {
-		window, _ := globalApplication.Windows.GetByName(windowName)
+		window, _ := globalApplication.Window.GetByName(windowName)
 		return window, windowName
 	}
 	windowID := r.Header.Get(webViewRequestHeaderWindowId)
@@ -72,7 +72,7 @@ func (m *MessageProcessor) getTargetWindow(r *http.Request) (Window, string) {
 		m.Error("Window ID out of range for uint:", "id", wID)
 		return nil, windowID
 	}
-	targetWindow, _ := globalApplication.Windows.GetByID(uint(wID))
+	targetWindow, _ := globalApplication.Window.GetByID(uint(wID))
 	if targetWindow == nil {
 		m.Error("Window ID not found:", "id", wID)
 		return nil, windowID
