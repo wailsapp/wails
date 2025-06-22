@@ -23,8 +23,8 @@ var cleanupPatterns = []CleanupPattern{
 	// Go test binaries
 	{Type: "suffix", Pattern: ".test", TargetFiles: true, Description: "Go test binary"},
 	
-	// Package artifacts from packaging tests
-	{Type: "prefix", Pattern: "myapp.", TargetFiles: true, Description: "package artifact"},
+	// Package artifacts from packaging tests (only in internal/commands directory)
+	// Note: Only clean these from the commands directory, not from test temp directories
 	
 	// Test template directories from template tests
 	{Type: "prefix", Pattern: "test-template-", TargetFiles: false, Description: "test template directory"},
