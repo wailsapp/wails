@@ -67,6 +67,7 @@ func buildApplication(f *flags.Build) error {
 		CleanBinDirectory: f.Clean,
 		Mode:              f.GetBuildMode(),
 		Devtools:          f.Debug || f.Devtools,
+		RuntimeDevtools:   f.RuntimeDevtools,
 		Pack:              !f.NoPackage,
 		LDFlags:           f.LdFlags,
 		Compiler:          f.Compiler,
