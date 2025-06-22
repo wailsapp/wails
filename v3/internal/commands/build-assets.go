@@ -31,9 +31,15 @@ type BuildAssetsOptions struct {
 	ProductCompany     string `description:"The company of the product" default:"My Company"`
 	ProductCopyright   string `description:"The copyright notice" default:"\u00a9 now, My Company"`
 	ProductComments    string `description:"Comments to add to the generated files" default:"This is a comment"`
-	ProductIdentifier  string `description:"The product identifier, e.g com.mycompany.myproduct"`
-	Silent             bool   `description:"Suppress output to console"`
-	Typescript         bool   `description:"Use typescript" default:"false"`
+	ProductIdentifier     string `description:"The product identifier, e.g com.mycompany.myproduct"`
+	Publisher             string `description:"Publisher name for MSIX package (e.g., CN=CompanyName)"`
+	ProcessorArchitecture string `description:"Processor architecture for MSIX package" default:"x64"`
+	ExecutablePath        string `description:"Path to executable for MSIX package"`
+	ExecutableName        string `description:"Name of executable for MSIX package"`
+	OutputPath            string `description:"Output path for MSIX package"`
+	CertificatePath       string `description:"Certificate path for MSIX package"`
+	Silent                bool   `description:"Suppress output to console"`
+	Typescript            bool   `description:"Use typescript" default:"false"`
 }
 
 type BuildConfig struct {
@@ -89,6 +95,28 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 			options.BinaryName += ".exe"
 		}
 	}
+
+	if options.Publisher == "" {
+		options.Publisher = fmt.Sprintf("CN=%s", options.ProductCompany)
+	}
+
+	if options.ProcessorArchitecture == "" {
+		options.ProcessorArchitecture = "x64"
+	}
+
+	if options.ExecutableName == "" {
+		options.ExecutableName = options.BinaryName
+	}
+
+	if options.ExecutablePath == "" {
+		options.ExecutablePath = options.BinaryName
+	}
+
+	if options.OutputPath == "" {
+		options.OutputPath = fmt.Sprintf("%s.msix", normaliseName(options.Name))
+	}
+
+	// CertificatePath is optional, no default needed
 
 	config.BuildAssetsOptions = *options
 

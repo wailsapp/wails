@@ -30,7 +30,7 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 		}
 
 		event.Sender = window.Name()
-		globalApplication.customEventProcessor.Emit(&event)
+		globalApplication.Event.EmitEvent(&event)
 
 		m.ok(rw)
 		m.Info("Runtime call:", "method", "Events."+eventsMethodNames[method], "name", event.Name, "sender", event.Sender, "data", event.Data, "cancelled", event.IsCancelled())

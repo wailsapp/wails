@@ -197,7 +197,7 @@ func (s *SystemTray) SetTooltip(tooltip string) {
 }
 
 func (s *SystemTray) Destroy() {
-	globalApplication.destroySystemTray(s)
+	globalApplication.SystemTray.destroy(s)
 }
 
 func (s *SystemTray) destroy() {

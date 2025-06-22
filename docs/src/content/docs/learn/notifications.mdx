@@ -120,7 +120,7 @@ notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
     }
 
     // Emit an event to the frontend
-    app.EmitEvent("notification", result.Response)
+    app.Event.Emit("notification", result.Response)
 })
 ```
 
