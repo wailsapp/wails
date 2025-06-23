@@ -37,17 +37,17 @@ func gtkBool(input bool) C.gboolean {
 }
 
 type Window struct {
-	appoptions      *options.App
-	debug           bool
-	devtoolsEnabled bool
-	gtkWindow       unsafe.Pointer
-	contentManager  unsafe.Pointer
-	webview         unsafe.Pointer
-	applicationMenu *menu.Menu
-	menubar         *C.GtkWidget
-	webviewBox      *C.GtkWidget
-	vbox            *C.GtkWidget
-	// accels       *C.GtkAccelGroup //// TODO: ???
+	appoptions                               *options.App
+	debug                                    bool
+	devtoolsEnabled                          bool
+	gtkApp                                   *C.GtkApplication
+	gtkWindow                                unsafe.Pointer
+	contentManager                           unsafe.Pointer
+	webview                                  unsafe.Pointer
+	applicationMenu                          *menu.Menu
+	menubar                                  *C.GtkWidget
+	webviewBox                               *C.GtkWidget
+	vbox                                     *C.GtkWidget
 	minWidth, minHeight, maxWidth, maxHeight int
 }
 
@@ -82,6 +82,7 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 
 	//// TODO: Build app id from wails.json? ex. 'wails.author.name'
 	gtkApp := C.createApp(C.CString("wails.app.dev"))
+	result.gtkApp = gtkApp
 
 	go func(gtkApp *C.GtkApplication) {
 		C.runApp(gtkApp)
@@ -335,7 +336,7 @@ func (w *Window) Run(url string) {
 	}
 
 	C.gtk_box_prepend(C.GTKBOX(unsafe.Pointer(w.webviewBox)), C.GTKWIDGET(w.webview))
-	C.gtk_box_prepend(C.GTKBOX(unsafe.Pointer(w.vbox)), w.webviewBox)
+	C.gtk_box_append(C.GTKBOX(unsafe.Pointer(w.vbox)), w.webviewBox)
 
 	_url := C.CString(url)
 	C.LoadIndex(w.webview, _url)
