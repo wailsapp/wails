@@ -126,7 +126,7 @@ void Opendialog(void *data);
 // Inspector
 void sendShowInspectorMessage();
 void ShowInspector(void *webview);
-void InstallF12Hotkey(void *window);
+void InstallF12Hotkey(GtkApplication *app, GtkWindow *window);
 
 static void activate(GtkApplication *app, gpointer user_data);
 GtkApplication* createApp(char *appId);

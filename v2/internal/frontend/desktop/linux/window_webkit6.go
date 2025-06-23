@@ -132,7 +132,7 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 	if devtoolsEnabled {
 		C.DevtoolsEnabled(unsafe.Pointer(webview), C.int(1), C.bool(debug && appoptions.Debug.OpenInspectorOnStartup))
 		// Install Ctrl-Shift-F12 hotkey to call ShowInspector
-		C.InstallF12Hotkey(unsafe.Pointer(gtkWindow))
+		C.InstallF12Hotkey(result.gtkApp, result.asGTKWindow())
 	}
 
 	if !(debug || appoptions.EnableDefaultContextMenu) {

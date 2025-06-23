@@ -913,17 +913,21 @@ void ShowInspector(void *webview) {
     webkit_web_inspector_show(WEBKIT_WEB_INSPECTOR(inspector));
 }
 
-void sendShowInspectorMessage() {
+void sendShowInspectorMessage(GAction *action, GVariant *param) {
     processMessage("wails:showInspector");
 }
 
-void InstallF12Hotkey(void *window)
+// When the user presses Ctrl+Shift+F12, call ShowInspector
+void InstallF12Hotkey(GtkApplication *app, GtkWindow *window)
 {
-    // When the user presses Ctrl+Shift+F12, call ShowInspector
-    // GtkAccelGroup *accel_group = gtk_accel_group_new();
-    // gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
-    // GClosure *closure = g_cclosure_new(G_CALLBACK(sendShowInspectorMessage), window, NULL);
-    // gtk_accel_group_connect(accel_group, GDK_KEY_F12, GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, closure);
+    GSimpleAction *action = g_simple_action_new("show-inspector", NULL);
+    g_signal_connect(action, "activate", G_CALLBACK(sendShowInspectorMessage), NULL);
+    g_action_map_add_action(G_ACTION_MAP(window), G_ACTION(action));
+
+    gtk_application_set_accels_for_action(
+        app, 
+        "win.show-inspector", 
+        (const char *[]) { "<Control><Shift>F12", NULL });
 }
 
 extern void onActivate();
