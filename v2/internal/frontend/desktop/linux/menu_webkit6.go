@@ -64,6 +64,7 @@ void setAccels(GtkApplication *app, char *actionName, char *accels) {
 import "C"
 import (
 	"strings"
+	"unsafe"
 
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
@@ -97,16 +98,22 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 
 func processMenu(window *Window, menu *menu.Menu) {
 	gmenu := C.g_menu_new()
+	defer C.g_object_unref(C.gpointer(gmenu))
 
 	for _, menuItem := range menu.Items {
+		itemLabel := C.CString(menuItem.Label)
+		defer C.free(unsafe.Pointer(itemLabel))
+
 		submenu := processSubmenu(window, menuItem)
-		C.g_menu_append_submenu(gmenu, C.CString(menuItem.Label), C.toGMenuModel(submenu))
+		defer C.g_object_unref(C.gpointer(submenu))
+
+		C.g_menu_append_submenu(gmenu, itemLabel, C.toGMenuModel(submenu))
 	}
 
 	window.menubar = C.gtk_popover_menu_bar_new_from_model(C.toGMenuModel(gmenu))
 }
 
-func processSubmenu(window *Window, menuItem *menu.MenuItem /*, group *C.GtkAccelGroup*/) *C.GMenu {
+func processSubmenu(window *Window, menuItem *menu.MenuItem) *C.GMenu {
 	existingMenu := gtkMenuCache[menuItem]
 
 	if existingMenu != nil {
@@ -131,7 +138,7 @@ func processSubmenu(window *Window, menuItem *menu.MenuItem /*, group *C.GtkAcce
 
 var currentRadioActionId string
 
-func processMenuItem(window *Window, parent *C.GMenu, menuItem *menu.MenuItem /*, group *C.GtkAccelGroup*/) {
+func processMenuItem(window *Window, parent *C.GMenu, menuItem *menu.MenuItem) {
 	if menuItem.Hidden {
 		return
 	}
@@ -147,16 +154,23 @@ func processMenuItem(window *Window, parent *C.GMenu, menuItem *menu.MenuItem /*
 
 	switch menuItem.Type {
 	case menu.SubmenuType:
-		submenu := processSubmenu(window, menuItem /*, group*/)
-		C.g_menu_append_submenu(parent, C.CString(menuItem.Label), C.toGMenuModel(submenu))
+		itemLabel := C.CString(menuItem.Label)
+		defer C.free(unsafe.Pointer(itemLabel))
+
+		submenu := processSubmenu(window, menuItem)
+		defer C.g_object_unref(C.gpointer(submenu))
+
+		C.g_menu_append_submenu(parent, itemLabel, C.toGMenuModel(submenu))
 		return
 
 	case menu.SeparatorType:
 		return
 
 	case menu.CheckboxType:
-		action = C.g_simple_action_new_stateful(C.CString(actionName), nil,
-			C.g_variant_new_boolean(gtkBool(menuItem.Checked)))
+		name := C.CString(actionName)
+		defer C.free(unsafe.Pointer(name))
+
+		action = C.g_simple_action_new_stateful(name, nil, C.g_variant_new_boolean(gtkBool(menuItem.Checked)))
 
 	case menu.RadioType:
 		if currentRadioActionId == "" {
@@ -164,14 +178,19 @@ func processMenuItem(window *Window, parent *C.GMenu, menuItem *menu.MenuItem /*
 		}
 
 		if menuItem.Checked {
-			paramType := C.g_variant_type_new(C.CString("s"))
+			name := C.CString(currentRadioActionId)
+			defer C.free(unsafe.Pointer(name))
 
-			action = C.g_simple_action_new_stateful(
-				C.CString(currentRadioActionId),
-				paramType,
-				C.g_variant_new_string(C.CString(itemId)))
+			vType := C.CString("s")
+			defer C.free(unsafe.Pointer(vType))
 
-			C.g_variant_type_free(paramType)
+			paramType := C.g_variant_type_new(vType)
+			defer C.g_variant_type_free(paramType)
+
+			vContent := C.CString(itemId)
+			defer C.free(unsafe.Pointer(vContent))
+
+			action = C.g_simple_action_new_stateful(name, paramType, C.g_variant_new_string(vContent))
 
 			C.g_action_map_add_action(C.toActionMap(window.asGTKWindow()), C.toGAction(action))
 		}
@@ -180,7 +199,10 @@ func processMenuItem(window *Window, parent *C.GMenu, menuItem *menu.MenuItem /*
 		actionName = currentRadioActionId + "::" + itemId
 
 	default:
-		action = C.g_simple_action_new(C.CString(actionName), nil)
+		name := C.CString(actionName)
+		defer C.free(unsafe.Pointer(name))
+
+		action = C.g_simple_action_new(name, nil)
 	}
 
 	if currentRadioActionId == "" {
@@ -188,6 +210,8 @@ func processMenuItem(window *Window, parent *C.GMenu, menuItem *menu.MenuItem /*
 	}
 
 	if action != nil {
+		defer C.g_object_unref(C.gpointer(action))
+
 		if menuItem.Disabled {
 			C.g_simple_action_set_enabled(action, gtkBool(false))
 		}
@@ -200,13 +224,20 @@ func processMenuItem(window *Window, parent *C.GMenu, menuItem *menu.MenuItem /*
 	gActionIdToMenuItem[actionName] = menuItem
 
 	detActionName := C.CString("win." + actionName)
+	defer C.free(unsafe.Pointer(detActionName))
 
-	item := C.g_menu_item_new(C.CString(menuItem.Label), detActionName)
+	itemName := C.CString(menuItem.Label)
+	defer C.free(unsafe.Pointer(itemName))
+
+	item := C.g_menu_item_new(itemName, detActionName)
+	defer C.g_object_unref(C.gpointer(item))
 	C.g_menu_append_item(parent, item)
 
 	if menuItem.Accelerator != nil {
 		key, mods := acceleratorToGTK(menuItem.Accelerator)
+
 		accelName := C.gtk_accelerator_name(key, mods)
+		defer C.free(unsafe.Pointer(accelName))
 
 		C.setAccels(window.gtkApp, detActionName, accelName)
 	}

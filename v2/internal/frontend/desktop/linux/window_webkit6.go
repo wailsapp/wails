@@ -81,7 +81,9 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 	activateWg.Add(1)
 
 	//// TODO: Build app id from wails.json? ex. 'wails.author.name'
-	gtkApp := C.createApp(C.CString("wails.app.dev"))
+	appId := C.CString("wails.app.dev")
+	defer C.free(unsafe.Pointer(appId))
+	gtkApp := C.createApp(appId)
 	result.gtkApp = gtkApp
 
 	go func(gtkApp *C.GtkApplication) {
@@ -201,6 +203,7 @@ func (w *Window) UnFullscreen() {
 
 func (w *Window) Destroy() {
 	C.gtk_window_destroy(w.asGTKWindow())
+	C.g_object_unref(C.gpointer(w.gtkWindow))
 }
 
 func (w *Window) Close() {
@@ -339,8 +342,8 @@ func (w *Window) Run(url string) {
 	C.gtk_box_append(C.GTKBOX(unsafe.Pointer(w.vbox)), w.webviewBox)
 
 	_url := C.CString(url)
-	C.LoadIndex(w.webview, _url)
 	defer C.free(unsafe.Pointer(_url))
+	C.LoadIndex(w.webview, _url)
 	if w.appoptions.StartHidden {
 		w.Hide()
 	}
@@ -401,6 +404,7 @@ func (w *Window) StartResize(edge uintptr) {
 
 func (w *Window) Quit() {
 	C.g_main_loop_quit(mainLoop)
+	C.g_main_loop_unref(mainLoop)
 }
 
 func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multipleFiles int, action C.GtkFileChooserAction) {
