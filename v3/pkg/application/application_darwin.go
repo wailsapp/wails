@@ -350,15 +350,16 @@ func processMessage(windowID C.uint, message *C.char) {
 
 //export processURLRequest
 func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
+	window, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || window == nil {
+		globalApplication.debug("could not find window with id: %d", windowID)
+		return
+	}
+
 	webviewRequests <- &webViewAssetRequest{
 		Request:  webview.NewRequest(wkUrlSchemeTask),
 		windowId: uint(windowID),
-		windowName: func() string {
-			if window, ok := globalApplication.Window.GetByID(uint(windowID)); ok {
-				return window.Name()
-			}
-			return ""
-		}(),
+		windowName: window.Name(),
 	}
 }
 
