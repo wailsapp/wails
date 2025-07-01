@@ -169,7 +169,6 @@ static void startSingleInstanceListener(const char *uniqueID) {
 import "C"
 import (
 	"encoding/json"
-	"log"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
