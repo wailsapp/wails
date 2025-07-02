@@ -42,6 +42,7 @@ func (*Dev) Default() *Dev {
 	result := &Dev{
 		Extensions: "go",
 		Debounce:   100,
+		LogLevel:   "Info",
 	}
 	result.BuildCommon = result.BuildCommon.Default()
 	return result
