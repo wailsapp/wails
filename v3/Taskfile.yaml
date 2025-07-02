@@ -281,7 +281,6 @@ tasks:
 
   test:examples:
     summary: Builds the examples for current platform only
-    dir: examples
     vars:
       EXAMPLEDIRS: |
         badge
