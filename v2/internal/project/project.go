@@ -181,6 +181,10 @@ func (p *Project) setDefaults() {
 	if p.ViteServerTimeout == 0 {
 		p.ViteServerTimeout = 10
 	}
+	// Validate ViteServerTimeout is within reasonable bounds when loading from config
+	if p.ViteServerTimeout < 1 || p.ViteServerTimeout > 300 {
+		p.ViteServerTimeout = 10 // Reset to default if invalid
+	}
 	if p.NSISType == "" {
 		p.NSISType = "multiple"
 	}

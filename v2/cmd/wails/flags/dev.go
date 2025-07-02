@@ -110,6 +110,12 @@ func (d *Dev) loadAndMergeProjectConfig() error {
 	} else if d.ViteServerTimeout == 0 {
 		d.ViteServerTimeout = 10 // Default timeout
 	}
+	
+	// Validate ViteServerTimeout is within reasonable bounds
+	if d.ViteServerTimeout < 1 || d.ViteServerTimeout > 300 {
+		return fmt.Errorf("viteServerTimeout must be between 1 and 300 seconds, got: %d", d.ViteServerTimeout)
+	}
+	
 	d.projectConfig.ViteServerTimeout = d.ViteServerTimeout
 
 	if d.Save {
