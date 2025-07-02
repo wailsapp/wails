@@ -20,9 +20,9 @@ func main() {
 		},
 	})
 
-	systemTray := app.NewSystemTray()
+	systemTray := app.SystemTray.New()
 
-	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Width:         500,
 		Height:        500,
 		Name:          "Systray Demo Window",

@@ -93,13 +93,15 @@ func main() {
 		},
 	})
 
-	// Register event handler
-	app.OnEvent("gin-button-clicked", func(event *application.CustomEvent) {
+	// Register event handler and store cleanup function
+	removeGinHandler := app.Event.On("gin-button-clicked", func(event *application.CustomEvent) {
 		log.Printf("Received event from frontend: %v", event.Data)
 	})
+	// Note: In production, call removeGinHandler() during cleanup
+	_ = removeGinHandler
 
 	// Create window
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Wails + Gin Example",
 		Width:  900,
 		Height: 700,

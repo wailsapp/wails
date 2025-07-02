@@ -10,10 +10,10 @@ Context menus are popup menus that appear when right-clicking elements in your a
 
 ## Creating a Context Menu
 
-To create a context menu, utilise the `NewContextMenu` method from your application instance:
+To create a context menu, use the `Add` method from the ContextMenu manager:
 
 ```go
-contextMenu := application.NewContextMenu("menu-id")
+contextMenu := app.ContextMenu.Add("menu-id", application.NewContextMenu())
 ```
 
 The `menu-id` parameter is a unique identifier for the menu that will be used to associate it with HTML elements.
@@ -23,7 +23,7 @@ The `menu-id` parameter is a unique identifier for the menu that will be used to
 You can add items to your context menu using the same methods as application menus. Here's a simple example:
 
 ```go
-contextMenu := application.NewContextMenu("editor-menu")
+contextMenu := application.NewContextMenu()
 contextMenu.Add("Cut").OnClick(func(ctx *application.Context) {
     // Handle cut action
 })
@@ -33,6 +33,9 @@ contextMenu.Add("Copy").OnClick(func(ctx *application.Context) {
 contextMenu.Add("Paste").OnClick(func(ctx *application.Context) {
     // Handle paste action
 })
+
+// Register the context menu with the manager
+app.ContextMenu.Add("editor-menu", contextMenu)
 ```
 
 :::tip[Menu Items]
@@ -44,12 +47,15 @@ For detailed information about available menu item types and properties, refer t
 Context menus can receive data from the HTML element that triggered them. This data can be accessed in the click handlers:
 
 ```go
-contextMenu := application.NewContextMenu("image-menu")
+contextMenu := app.ContextMenu.New()
 menuItem := contextMenu.Add("Process Image")
 menuItem.OnClick(func(ctx *application.Context) {
     imageID := ctx.ContextMenuData()
     // Process the image using the ID
 })
+
+// Register the context menu with the manager
+app.ContextMenu.Add("image-menu", contextMenu)
 ```
 
 ## Associating with HTML Elements
@@ -103,8 +109,11 @@ The `auto` setting enables "smart" context menu behaviour:
 Menu items can be updated dynamically using the `SetLabel` method and other property setters. After making changes, call `Update` on the menu to apply them:
 
 ```go
-contextMenu := application.NewContextMenu("dynamic-menu")
+contextMenu := application.NewContextMenu()
 menuItem := contextMenu.Add("Initial Label")
+
+// Register the context menu with the manager
+app.ContextMenu.Add("dynamic-menu", contextMenu)
 
 // Later, update the menu item
 menuItem.SetLabel("New Label")
@@ -186,7 +195,7 @@ func main() {
     })
 
     // Create a context menu
-    contextMenu := application.NewContextMenu("test")
+    contextMenu := app.ContextMenu.New()
     
     // Add items that respond to context data
     clickMe := contextMenu.Add("Click to show context data")
@@ -197,6 +206,9 @@ func main() {
         dataLabel.SetLabel("Current data: " + data)
         contextMenu.Update()
     })
+
+    // Register the context menu with the manager
+    app.ContextMenu.Add("test", contextMenu)
 
     window := app.NewWebviewWindow()
     window.SetTitle("Context Menu Demo")
