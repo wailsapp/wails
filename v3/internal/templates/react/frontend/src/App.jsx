@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import {GreetService} from "../bindings/changeme";
+import {GreetService} from "@services";
 import {Events, WML} from "@wailsio/runtime";
 
 function App() {

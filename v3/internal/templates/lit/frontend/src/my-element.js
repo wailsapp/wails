@@ -1,5 +1,5 @@
 import {css, html, LitElement} from 'lit'
-import {GreetService} from "../bindings/changeme";
+import {GreetService} from "@services";
 import {Events} from "@wailsio/runtime";
 
 export class MyElement extends LitElement {

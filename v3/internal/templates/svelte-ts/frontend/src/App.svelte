@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {GreetService} from "../bindings/changeme";
+  import {GreetService} from "@services";
   import {Events} from "@wailsio/runtime";
 
   let name: string = '';

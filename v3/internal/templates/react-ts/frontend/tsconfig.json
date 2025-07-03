@@ -19,7 +19,13 @@
     "noUnusedLocals": true,
     "noUnusedParameters": false,
     "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* @services alias */
+    "baseUrl": ".",
+    "paths": {
+         "@services": ["bindings/changeme/index"]
+     }
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
