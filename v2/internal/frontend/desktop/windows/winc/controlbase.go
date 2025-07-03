@@ -170,6 +170,14 @@ func (cba *ControlBase) SetTranslucentBackground() {
 	w32.SetWindowCompositionAttribute(cba.hwnd, &data)
 }
 
+func (cba *ControlBase) SetContentProtection(enable bool) {
+	if enable {
+		w32.SetWindowDisplayAffinity(uintptr(cba.hwnd), w32.WDA_EXCLUDEFROMCAPTURE)
+	} else {
+		w32.SetWindowDisplayAffinity(uintptr(cba.hwnd), w32.WDA_NONE)
+	}
+}
+
 func min(a, b int) int {
 	if a < b {
 		return a
