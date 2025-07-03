@@ -16,6 +16,7 @@ jobs:
   check_approval:
     name: Check PR Approval
     runs-on: ubuntu-latest
+    if: github.base_ref == 'v3-alpha'
     outputs:
       approved: ${{ steps.check.outputs.approved }}
     steps:
@@ -32,6 +33,7 @@ jobs:
     name: Run Go Tests v3
     needs: check_approval
     runs-on: ${{ matrix.os }}
+    if: github.base_ref == 'v3-alpha'
     strategy:
       fail-fast: false
       matrix:
@@ -95,6 +97,7 @@ jobs:
     name: Run JS Tests
     needs: check_approval
     runs-on: ubuntu-latest
+    if: github.base_ref == 'v3-alpha'
     strategy:
       matrix:
         node-version: [20.x]
@@ -120,6 +123,7 @@ jobs:
     name: Test Templates
     needs: test_go
     runs-on: ${{ matrix.os }}
+    if: github.base_ref == 'v3-alpha'
     strategy:
       fail-fast: false
       matrix:

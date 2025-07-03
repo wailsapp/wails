@@ -235,6 +235,11 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		tags.Add("devtools")
 	}
 
+	// This option allows you to enable runtime devtools API support
+	if options.RuntimeDevtools {
+		tags.Add("runtimedevtools")
+	}
+
 	if options.Obfuscated {
 		tags.Add("obfuscated")
 	}

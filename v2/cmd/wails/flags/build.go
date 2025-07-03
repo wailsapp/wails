@@ -35,6 +35,7 @@ type Build struct {
 	UpdateWailsVersionGoMod bool   `name:"u" description:"Updates go.mod to use the same Wails version as the CLI"`
 	Debug                   bool   `description:"Builds the application in debug mode"`
 	Devtools                bool   `description:"Enable Devtools in productions, Already enabled in debug mode (-debug)"`
+	RuntimeDevtools         bool   `description:"Enable runtime devtools API support (allows programmatic opening of devtools)"`
 	NSIS                    bool   `description:"Generate NSIS installer for Windows"`
 	TrimPath                bool   `description:"Remove all file system paths from the resulting executable"`
 	WindowsConsole          bool   `description:"Keep the console when building for Windows"`
