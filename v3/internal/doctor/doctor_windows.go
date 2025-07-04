@@ -3,10 +3,11 @@
 package doctor
 
 import (
-	"github.com/samber/lo"
-	"github.com/wailsapp/go-webview2/webviewloader"
 	"os/exec"
 	"strings"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/go-webview2/webviewloader"
 )
 
 func getInfo() (map[string]string, bool) {
@@ -43,12 +44,25 @@ func getMakeAppxVersion() string {
 func getMSIXPackagingToolVersion() string {
 	// Check if MSIX Packaging Tool is installed
 	// Use PowerShell to check if the app is installed from Microsoft Store
-	cmd := exec.Command("powershell", "-Command", "Get-AppxPackage -Name Microsoft.MsixPackagingTool")
+	cmd := exec.Command("powershell", "-Command", "Get-AppxPackage -Name Microsoft.MSIXPackagingTool")
 	output, err := cmd.Output()
-	if err != nil || len(output) == 0 || !strings.Contains(string(output), "Microsoft.MsixPackagingTool") {
+	if err != nil || len(output) == 0 || !strings.Contains(string(output), "Microsoft.MSIXPackagingTool") {
 		return "Not Installed"
 	}
-	return "Installed"
+
+	if strings.Contains(string(output), "Version") {
+		lines := strings.Split(string(output), "\n")
+		for _, line := range lines {
+			if strings.Contains(line, "Version") {
+				parts := strings.Split(line, ":")
+				if len(parts) > 1 {
+					return strings.TrimSpace(parts[1])
+				}
+			}
+		}
+	}
+
+	return "Installed (Version Unknown)"
 }
 
 func getSignToolVersion() string {
@@ -64,7 +78,7 @@ func checkPlatformDependencies(result map[string]string, ok *bool) {
 	checkCommonDependencies(result, ok)
 	// add nsis
 	result["NSIS"] = getNSISVersion()
-	
+
 	// Add MSIX tooling checks
 	result["MakeAppx.exe (Windows SDK)"] = getMakeAppxVersion()
 	result["MSIX Packaging Tool"] = getMSIXPackagingToolVersion()
