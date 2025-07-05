@@ -42,6 +42,28 @@ func updateVersion() string {
 //	checkError(err)
 //}
 
+// extractReleaseNotes extracts just the content from the Unreleased section
+// until the next version header, removing empty lines from the beginning and end
+func extractReleaseNotes(changelogSection string) string {
+	// Find the next version header (starts with "## v" or "## [")
+	lines := strings.Split(changelogSection, "\n")
+	var releaseLines []string
+	
+	for _, line := range lines {
+		// Stop at the next version header
+		if strings.HasPrefix(strings.TrimSpace(line), "## v") || strings.HasPrefix(strings.TrimSpace(line), "## [") {
+			break
+		}
+		releaseLines = append(releaseLines, line)
+	}
+	
+	// Join lines and trim empty lines from beginning and end
+	releaseNotes := strings.Join(releaseLines, "\n")
+	releaseNotes = strings.TrimSpace(releaseNotes)
+	
+	return releaseNotes
+}
+
 //func IsPointRelease(currentVersion string, newVersion string) bool {
 //	// The first n-1 parts of the version should be the same
 //	if currentVersion[:len(currentVersion)-2] != newVersion[:len(newVersion)-2] {
@@ -80,6 +102,15 @@ func main() {
 	changelogSplit := strings.Split(changelog, "## [Unreleased]")
 	// Get today's date in YYYY-MM-DD format
 	today := time.Now().Format("2006-01-02")
+	
+	// Extract release notes from the Unreleased section
+	releaseNotes := extractReleaseNotes(changelogSplit[1])
+	
+	// Print JUST the release notes for version tag
+	println("=== RELEASE NOTES FOR " + newVersion + " ===")
+	print(releaseNotes)
+	println("=== END RELEASE NOTES ===")
+	
 	// Add the new version to the top of the changelog
 	newChangelog := changelogSplit[0] + "## [Unreleased]\n\n## " + newVersion + " - " + today + changelogSplit[1]
 	// Write the changelog back
