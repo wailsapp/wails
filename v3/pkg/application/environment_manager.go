@@ -45,7 +45,7 @@ func (em *EnvironmentManager) IsDarkMode() bool {
 // system accent color api
 func (em *EnvironmentManager) GetAccentColor() string {
 	if em.app.impl == nil {
-		return ""
+		return "rgb(0,12,255)"
 	}
 	return em.app.impl.getAccentColor()
 }
