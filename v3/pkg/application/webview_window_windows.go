@@ -271,6 +271,10 @@ func (w *windowsWebviewWindow) run() {
 
 	options := w.parent.options
 
+	// Initialize showRequested based on whether window should be hidden
+	// Non-hidden windows should be shown by default
+	w.showRequested = !options.Hidden
+
 	w.chromium = edge.NewChromium()
 	if globalApplication.options.ErrorHandler != nil {
 		w.chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
