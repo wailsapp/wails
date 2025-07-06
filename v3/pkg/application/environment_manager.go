@@ -40,6 +40,14 @@ func (em *EnvironmentManager) IsDarkMode() bool {
 	return em.app.impl.isDarkMode()
 }
 
+// IsDarkMode returns true if the system is in dark mode
+func (em *EnvironmentManager) GetAccentColor() string {
+	if em.app.impl == nil {
+		return "rgb(0,122,255)"
+	}
+	return em.app.impl.getAccentColor()
+}
+
 // OpenFileManager opens the file manager at the specified path, optionally selecting the file
 func (em *EnvironmentManager) OpenFileManager(path string, selectFile bool) error {
 	return InvokeSyncWithError(func() error {
