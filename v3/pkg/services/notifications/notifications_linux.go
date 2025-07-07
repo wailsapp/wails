@@ -41,19 +41,19 @@ const (
 )
 
 // Creates a new Notifications Service.
-func New() *Service {
+func New() *NotificationService {
 	notificationServiceOnce.Do(func() {
 		impl := &linuxNotifier{
 			categories:    make(map[string]NotificationCategory),
 			notifications: make(map[uint32]*notificationData),
 		}
 
-		NotificationService = &Service{
+		NotificationService_ = &NotificationService{
 			impl: impl,
 		}
 	})
 
-	return NotificationService
+	return NotificationService_
 }
 
 // Startup is called when the service is loaded.
