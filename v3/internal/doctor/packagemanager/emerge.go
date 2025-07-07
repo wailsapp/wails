@@ -41,6 +41,9 @@ func (e *Emerge) Packages() Packagemap {
 		"npm": []*Package{
 			{Name: "net-libs/nodejs", SystemPackage: true},
 		},
+		"musl-dev": []*Package{
+			{Name: "sys-libs/musl", SystemPackage: true, Optional: true},
+		},
 	}
 }
 

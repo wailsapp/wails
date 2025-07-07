@@ -7,12 +7,42 @@ import (
 	"github.com/wailsapp/wails/v3/internal/flags"
 )
 
-func Build(_ *flags.Build) error {
-	return wrapTask("build")
+func Build(options *flags.Build) error {
+	taskName := "build"
+	
+	// If static flag is enabled, use the static build task
+	if options.Static {
+		taskName = "build:static"
+	}
+
+	// Set up environment variables for the task
+	if options.Static {
+		os.Setenv("STATIC", "true")
+	}
+	if options.Compiler != "" {
+		os.Setenv("CC", options.Compiler)
+	}
+
+	return wrapTask(taskName)
 }
 
-func Package(_ *flags.Package) error {
-	return wrapTask("package")
+func Package(options *flags.Package) error {
+	taskName := "package"
+	
+	// If static flag is enabled, use the static package task
+	if options.Static {
+		taskName = "package:static"
+	}
+
+	// Set up environment variables for the task
+	if options.Static {
+		os.Setenv("STATIC", "true")
+	}
+	if options.Compiler != "" {
+		os.Setenv("CC", options.Compiler)
+	}
+
+	return wrapTask(taskName)
 }
 
 func wrapTask(command string) error {
