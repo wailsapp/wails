@@ -19,17 +19,18 @@ void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* too
     // Label
     menuItem.title = [NSString stringWithUTF8String:label];
 
-	if( disabled ) {
+    if (selector != NULL) {
+        menuItem.action = NSSelectorFromString([NSString stringWithUTF8String:selector]);
+        menuItem.target = nil; // Allow the action to be sent up the responder chain
+    } else {
+        menuItem.action = @selector(handleClick);
+        menuItem.target = menuItem;
+    }
+
+	if ( disabled ) {
 		[menuItem setTarget:nil];
-	} else {
-		if (selector != NULL) {
-			menuItem.action = NSSelectorFromString([NSString stringWithUTF8String:selector]);
-			menuItem.target = nil; // Allow the action to be sent up the responder chain
-		} else {
-			menuItem.action = @selector(handleClick);
-			menuItem.target = menuItem;
-		}
 	}
+
     menuItem.menuItemID = menuItemID;
 
 	menuItem.enabled = !disabled;
