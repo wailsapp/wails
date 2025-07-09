@@ -15,7 +15,7 @@ import (
 // made available to the frontend.
 // See https://pkg.go.dev/embed for more information.
 
-//go:embed all:frontend/dist
+//go:embed all:frontend
 var assets embed.FS
 
 // main function serves as the application's entry point. It initializes the application, creates a window,
@@ -49,7 +49,7 @@ func main() {
 	// 'Mac' options tailor the window when running on macOS.
 	// 'BackgroundColour' is the background colour of the window.
 	// 'URL' is the URL that will be loaded into the webview.
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Window 1",
 		Name:  "main",
 		Mac: application.MacWindow{
@@ -68,7 +68,7 @@ func main() {
 		} else {
 			fmt.Printf("Response: %+v\n", result.Response)
 			println("Sending response to frontend...")
-			app.EmitEvent("notification:action", result.Response)
+			app.Event.Emit("notification:action", result.Response)
 		}
 	})
 

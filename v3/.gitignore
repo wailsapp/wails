@@ -8,3 +8,4 @@ cmd/wails3/wails
 /examples/plain/plain
 /cmd/wails3/ui/.task/
 !internal/commands/webview2/MicrosoftEdgeWebview2Setup.exe
+internal/commands/appimage_testfiles/appimage_testfiles
