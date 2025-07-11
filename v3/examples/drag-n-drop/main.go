@@ -25,7 +25,7 @@ func main() {
 		},
 	})
 
-	window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Drag-n-drop Demo",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
@@ -37,7 +37,7 @@ func main() {
 
 	window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
 		files := event.Context().DroppedFiles()
-		app.EmitEvent("files", files)
+		app.Event.Emit("files", files)
 		app.Logger.Info("Files Dropped!", "files", files)
 	})
 

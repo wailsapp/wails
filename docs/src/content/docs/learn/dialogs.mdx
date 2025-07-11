@@ -15,7 +15,7 @@ Wails provides a comprehensive dialog system for displaying native system dialog
 Display simple informational messages to users:
 
 ```go
-dialog := application.InfoDialog()
+dialog := app.Dialog.Info()
 dialog.SetTitle("Welcome")
 dialog.SetMessage("Welcome to our application!")
 dialog.Show()
@@ -26,7 +26,7 @@ dialog.Show()
 Present users with questions and customisable buttons:
 
 ```go
-dialog := application.QuestionDialog()
+dialog := app.Dialog.Question()
 dialog.SetTitle("Save Changes")
 dialog.SetMessage("Do you want to save your changes?")
 dialog.AddButton("Save").OnClick(func() {
@@ -42,7 +42,7 @@ dialog.Show()
 Display error messages:
 
 ```go
-dialog := application.ErrorDialog()
+dialog := app.Dialog.Error()
 dialog.SetTitle("Error")
 dialog.SetMessage("Failed to save file")
 dialog.Show()
@@ -55,7 +55,7 @@ dialog.Show()
 Allow users to select files to open:
 
 ```go
-dialog := application.OpenFileDialog()
+dialog := app.Dialog.OpenFile()
 dialog.SetTitle("Select Image")
 dialog.SetFilters([]*application.FileFilter{
     {
@@ -80,7 +80,7 @@ if paths, err := dialog.PromptForMultipleSelection(); err == nil {
 Allow users to choose where to save files:
 
 ```go
-dialog := application.SaveFileDialog()
+dialog := app.Dialog.SaveFile()
 dialog.SetTitle("Save Document")
 dialog.SetDefaultFilename("document.txt")
 dialog.SetFilters([]*application.FileFilter{
@@ -102,7 +102,7 @@ if path, err := dialog.PromptForSingleSelection(); err == nil {
 Dialogs can use custom icons from the built-in icon set:
 
 ```go
-dialog := application.InfoDialog()
+dialog := app.Dialog.Info()
 dialog.SetIcon(icons.ApplicationDarkMode256)
 ```
 
@@ -111,8 +111,8 @@ dialog.SetIcon(icons.ApplicationDarkMode256)
 Dialogs can be attached to specific windows:
 
 ```go
-dialog := application.QuestionDialog()
-dialog.AttachToWindow(app.CurrentWindow())
+dialog := app.Dialog.Question()
+dialog.AttachToWindow(app.Window.Current())
 dialog.Show()
 ```
 
@@ -121,7 +121,7 @@ dialog.Show()
 Create buttons with custom labels and actions:
 
 ```go
-dialog := application.QuestionDialog()
+dialog := app.Dialog.Question()
 dialog.SetMessage("Choose an action")
 
 // Add buttons with custom handlers
@@ -183,7 +183,9 @@ dialog.SetDefaultButton(cancelButton)  // Set default button
 Allow users to select directories:
 
 ```go
-dialog := application.DirectoryDialog()
+dialog := app.Dialog.OpenFile()
+dialog.CanChooseDirectories(true)
+dialog.CanChooseFiles(false)
 dialog.SetTitle("Select Project Directory")
 if path, err := dialog.PromptForSingleSelection(); err == nil {
     // Use selected directory path
@@ -195,7 +197,7 @@ if path, err := dialog.PromptForSingleSelection(); err == nil {
 Display application information:
 
 ```go
-app.ShowAboutDialog()
+app.Menu.ShowAbout()
 ```
 
 ## Best Practices
