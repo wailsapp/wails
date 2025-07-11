@@ -309,7 +309,22 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 	os.Setenv("frontenddevserverurl", f.FrontendDevServerURL)
 
 	// Start up new binary with correct args
-	newProcess := process.NewProcess(appBinary, args...)
+
+	var command string
+	if len(f.DlvFlag) == 0 {
+		command = appBinary
+	} else {
+		command = "dlv"
+		newArgs := append(strings.Split(f.DlvFlag, " "), "exec", appBinary)
+		if len(args) > 0 {
+			newArgs = append(newArgs, "--")
+			args = append(newArgs, args...)
+		}
+		args = newArgs
+	}
+
+	logutils.LogGreen("Executing: " + command + " " + strings.Join(args, " "))
+	newProcess := process.NewProcess(command, args...)
 	err = newProcess.Start(exitCodeChannel)
 	if err != nil {
 		// Remove binary
