@@ -5,6 +5,8 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - v3-alpha
+    paths:
+      - 'v3/**'
   pull_request_review:
     types: [submitted]
     branches:
@@ -33,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [warp-windows-latest-x64-2x, warp-macos-15-arm64-6x, warp-ubuntu-latest-x64-2x]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         go-version: [1.24]
 
     steps:
@@ -60,24 +62,24 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Examples
-        working-directory: ./v3
+        working-directory: v3
         run: task test:examples
 
       - name: Run tests (mac)
         if: matrix.os == 'macos-latest'
         env:
           CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
-        working-directory: ./v3
+        working-directory: v3
         run: go test -v ./...
 
       - name: Run tests (windows)
         if: matrix.os == 'windows-latest'
-        working-directory: ./v3
+        working-directory: v3
         run: go test -v ./...
 
       - name: Run tests (ubuntu)
         if: matrix.os == 'ubuntu-latest'
-        working-directory: ./v3
+        working-directory: v3
         run: >
           xvfb-run --auto-servernum
           sh -c '
@@ -86,7 +88,7 @@ jobs:
           '
 
       - name: Typecheck binding generator output
-        working-directory: ./v3
+        working-directory: v3
         run: task generator:test:check
 
   test_js:
@@ -160,7 +162,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Wails3 CLI
-        working-directory: ./v3
+        working-directory: v3
         run: |
           task install
           wails3 doctor
@@ -173,16 +175,23 @@ jobs:
           cd ${{ matrix.template }}
           wails3 build
 
-  results:
+  build_results:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     name: v3 Build Results
     needs: [test_go, test_js, test_templates]
     steps:
       - run: |
-          result="${{ needs.build.result }}"
-          if [[ $result == "success" || $result == "skipped" ]]; then
+          go_result="${{ needs.test_go.result }}"
+          js_result="${{ needs.test_js.result }}"
+          templates_result="${{ needs.test_templates.result }}"
+          
+          if [[ $go_result == "success" || $go_result == "skipped" ]] && \
+             [[ $js_result == "success" || $js_result == "skipped" ]] && \
+             [[ $templates_result == "success" || $templates_result == "skipped" ]]; then
+            echo "All required jobs succeeded or were skipped"
             exit 0
           else
+            echo "One or more required jobs failed"
             exit 1
           fi

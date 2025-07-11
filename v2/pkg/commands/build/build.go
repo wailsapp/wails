@@ -69,6 +69,7 @@ type Options struct {
 	Obfuscated        bool                 // Indicates that bound methods should be obfuscated
 	GarbleArgs        string               // The arguments for Garble
 	SkipBindings      bool                 // Skip binding generation
+	SkipEmbedCreate   bool                 // Skip creation of embed files
 }
 
 // Build the project!
@@ -120,8 +121,10 @@ func Build(options *Options) (string, error) {
 	}
 
 	// Create embed directories if they don't exist
-	if err := CreateEmbedDirectories(cwd, options); err != nil {
-		return "", err
+	if !options.SkipEmbedCreate {
+		if err := CreateEmbedDirectories(cwd, options); err != nil {
+			return "", err
+		}
 	}
 
 	// Generate bindings
@@ -231,8 +234,6 @@ func GenerateBindings(buildOptions *Options) error {
 		Compiler:     buildOptions.Compiler,
 		Tags:         buildOptions.UserTags,
 		GoModTidy:    !buildOptions.SkipModTidy,
-		Platform:     buildOptions.Platform,
-		Arch:         buildOptions.Arch,
 		TsPrefix:     buildOptions.ProjectData.Bindings.TsGeneration.Prefix,
 		TsSuffix:     buildOptions.ProjectData.Bindings.TsGeneration.Suffix,
 		TsOutputType: buildOptions.ProjectData.Bindings.TsGeneration.OutputType,

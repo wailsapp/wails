@@ -20,8 +20,6 @@ type Options struct {
 	ProjectDirectory string
 	Compiler         string
 	GoModTidy        bool
-	Platform         string
-	Arch             string
 	TsPrefix         string
 	TsSuffix         string
 	TsOutputType     string
@@ -56,12 +54,11 @@ func GenerateBindings(options Options) (string, error) {
 	}
 
 	envBuild := os.Environ()
-	arch := options.Arch
-	if arch == "universal" {
-		arch = runtime.GOARCH
-	}
-	envBuild = shell.SetEnv(envBuild, "GOOS", options.Platform)
-	envBuild = shell.SetEnv(envBuild, "GOARCH", arch)
+	envBuild = shell.SetEnv(envBuild, "GOOS", runtime.GOOS)
+	envBuild = shell.SetEnv(envBuild, "GOARCH", runtime.GOARCH)
+	// wailsbindings is executed on the build machine.
+	// So, use the default C compiler, not the one set for cross compiling.
+	envBuild = shell.RemoveEnv(envBuild, "CC")
 
 	stdout, stderr, err = shell.RunCommandWithEnv(envBuild, workingDirectory, options.Compiler, "build", "-buildvcs=false", "-tags", tagString, "-o", filename)
 	if err != nil {

@@ -14,17 +14,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v2.10.2 - 2025-07-06
+
+### Fixed
+- Fixed Window size issues on Wayland [PR](https://github.com/wailsapp/wails/pull/4047) by [@lyimmi](https://github.com/lyimmi)
+- Fixed SaveFileDialog cancellation result [PR](https://github.com/wailsapp/wails/pull/4253) by [@FrancescoLuzzi](https://github.com/FrancescoLuzzi)
+- Fixed issues with hot reloading and quitting not working on Windows [PR](https://github.com/wailsapp/wails/pull/4266) by [@hkere](https://github.com/hkhere)
+
+
 ### Changed
 - Updated recommendation for Svelte router in [#4085](https://github.com/wailsapp/wails/pull/4085) by [@benmccann](https://github.com/benmccann)
+- Updated documentation to clarify `WebviewGpuPolicy` default behavior on Linux in [#4162](https://github.com/wailsapp/wails/pull/4162) by [@brianetaveras](https://github.com/brianetaveras)
+- Updated documentation to display the correct copyright year in [#4243](https://github.com/wailsapp/wails/pull/4243) by [@nnashwin](https://github.com/nnashwin)
 
 ### Added
 - Added "Branding" section to `wails doctor` to correctly identify Windows 11 [#3891](https://github.com/wailsapp/wails/pull/3891) by [@ronen25](https://github.com/ronen25)
+- Added `-skipembedcreate` flag to build and dev command to improve compile and recompile speed [#4143](https://github.com/wailsapp/wails/pull/4143) by @josStorer
+- Added `DisablePanicRecovery` option to allow handle panics manually [#4136](https://github.com/wailsapp/wails/pull/4136) by [@APshenkin](https://github.com/APshenkin)
 
+### Fixed
+- Fixed build fails when cross compiling on Linux for Windows [#4262](https://github.com/wailsapp/wails/issues/4262) by [@rynsf](https://github.com/rynsf)
+- Fixed typescript generation of maps with key of array of structs by @joshuapare in [#4209](https://github.com/wailsapp/wails/pull/4209)
+- Fixed -m build flag for dev command not working when recompiling in [#4141](https://github.com/wailsapp/wails/pull/4141) by @josStorer
+- Fixed window restoration behavior after minimization by @superDingda in [#4109](https://github.com/wailsapp/wails/issues/4109)
+- Fixed excessive console logging after updating to v2.10.1 by @superDingda in [#4111](https://github.com/wailsapp/wails/issues/4111)
+- Fixed incorrect Webview2 reg key in HKCU path by @leaanthony.
+- Fixed long WebSocket messages being truncated in `wails dev` by @superDingda in [#4211](https://github.com/wailsapp/wails/issues/4211)
 
 ## v2.10.1 - 2025-02-24
 
 ### Fixed
 - Fixed [listenerOff issue](https://github.com/wailsapp/wails/issues/3850) by @leaanthony.
+- Fixed [logger issue](https://github.com/wailsapp/wails/issues/4082) by @meeehdi-dev.
 - Fixed issues building with `darwin/universal` target by @leaanthony.
 
 ## v2.10 - 2025-02-15
@@ -73,10 +94,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed CGO memory issue on Darwin by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/3590)
 - Fixed an error that occurred when an author name contains a string that is not suitable for JSON. Fixed by @taiseiotsuka in [PR](https://github.com/wailsapp/wails/pull/3638)
 - Fixed MacOS build to use `outputfilename` from wails.json. [#3200](https://github.com/wailsapp/wails/issues/3200)
-- Fixed file drop events on windows. Fixed in [PR](https://github.com/wailsapp/wails/pull/3595) by @FrancescoLuzzi
 - Fixed doctor command not finding pkg-config on Solus. [PR #3670](https://github.com/wailsapp/wails/pull/3670) by [@ianmjones](https://github.com/ianmjones)
 - Fixed binding for struct fields that were exported but had no json tags. [PR #3678](https://github.com/wailsapp/wails/pull/3678)
-- Fixed file drop events on Windows in [PR](https://github.com/wailsapp/wails/pull/3595) by @FrancescoLuzzi
+- Fixed file drop events on Windows in [PR](https://github.com/wailsapp/wails/pull/3595) by [@FrancescoLuzzi](https://github.com/FrancescoLuzzi)
 - Modified `ZoomFactor` and `IsZoomControlEnabled` options to be Windows-only options in PR[#3644](https://github.com/wailsapp/wails/pull/3644) by @levinit
 - Added nil check for Drag-n-Drop on Windows. Fixed by in [PR](https://github.com/wailsapp/wails/pull/3597) by @leaanthony based on the suggestion by @Alpa-1 in [#3596](https://github.com/wailsapp/wails/issues/3596).
 - Fixed typos in various .mdx files. [PR #3628](https://github.com/wailsapp/wails/pull/3628) by [@deining](https://github.com/deining)

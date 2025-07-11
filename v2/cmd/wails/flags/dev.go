@@ -41,6 +41,7 @@ func (*Dev) Default() *Dev {
 	result := &Dev{
 		Extensions: "go",
 		Debounce:   100,
+		LogLevel:   "Info",
 	}
 	result.BuildCommon = result.BuildCommon.Default()
 	return result
@@ -117,21 +118,23 @@ func (d *Dev) loadAndMergeProjectConfig() error {
 // GenerateBuildOptions creates a build.Options using the flags
 func (d *Dev) GenerateBuildOptions() *build.Options {
 	result := &build.Options{
-		OutputType:     "dev",
-		Mode:           build.Dev,
-		Devtools:       true,
-		Arch:           runtime.GOARCH,
-		Pack:           true,
-		Platform:       runtime.GOOS,
-		LDFlags:        d.LdFlags,
-		Compiler:       d.Compiler,
-		ForceBuild:     d.ForceBuild,
-		IgnoreFrontend: d.SkipFrontend,
-		SkipBindings:   d.SkipBindings,
-		Verbosity:      d.Verbosity,
-		WailsJSDir:     d.WailsJSDir,
-		RaceDetector:   d.RaceDetector,
-		ProjectData:    d.projectConfig,
+		OutputType:      "dev",
+		Mode:            build.Dev,
+		Devtools:        true,
+		Arch:            runtime.GOARCH,
+		Pack:            true,
+		Platform:        runtime.GOOS,
+		LDFlags:         d.LdFlags,
+		Compiler:        d.Compiler,
+		ForceBuild:      d.ForceBuild,
+		IgnoreFrontend:  d.SkipFrontend,
+		SkipBindings:    d.SkipBindings,
+		SkipModTidy:     d.SkipModTidy,
+		Verbosity:       d.Verbosity,
+		WailsJSDir:      d.WailsJSDir,
+		RaceDetector:    d.RaceDetector,
+		ProjectData:     d.projectConfig,
+		SkipEmbedCreate: d.SkipEmbedCreate,
 	}
 
 	return result

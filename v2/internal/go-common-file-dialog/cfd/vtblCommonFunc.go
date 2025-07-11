@@ -3,7 +3,6 @@
 package cfd
 
 import (
-	"fmt"
 	"github.com/go-ole/go-ole"
 	"strings"
 	"syscall"
@@ -34,7 +33,7 @@ func (vtbl *iModalWindowVtbl) show(objPtr unsafe.Pointer, hwnd uintptr) error {
 func (vtbl *iFileDialogVtbl) setFileTypes(objPtr unsafe.Pointer, filters []FileFilter) error {
 	cFileTypes := len(filters)
 	if cFileTypes < 0 {
-		return fmt.Errorf("must specify at least one filter")
+		return ErrEmptyFilters
 	}
 	comDlgFilterSpecs := make([]comDlgFilterSpec, cFileTypes)
 	for i := 0; i < cFileTypes; i++ {
@@ -168,7 +167,7 @@ func (vtbl *iFileDialogVtbl) getResultString(objPtr unsafe.Pointer) (string, err
 		return "", err
 	}
 	if shellItem == nil {
-		return "", fmt.Errorf("shellItem is nil")
+		return "", ErrCancelled
 	}
 	defer shellItem.vtbl.release(unsafe.Pointer(shellItem))
 	return shellItem.vtbl.getDisplayName(unsafe.Pointer(shellItem))
@@ -177,7 +176,7 @@ func (vtbl *iFileDialogVtbl) getResultString(objPtr unsafe.Pointer) (string, err
 func (vtbl *iFileDialogVtbl) setClientGuid(objPtr unsafe.Pointer, guid *ole.GUID) error {
 	// Ensure the GUID is not nil
 	if guid == nil {
-		return fmt.Errorf("guid cannot be nil")
+		return ErrInvalidGUID
 	}
 
 	// Call the SetClientGuid method
