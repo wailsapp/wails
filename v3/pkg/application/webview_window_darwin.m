@@ -8,6 +8,7 @@ extern void processURLRequest(unsigned int, void *);
 extern void processDragItems(unsigned int windowId, char** arr, int length, int x, int y);
 extern void processWindowKeyDownEvent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
+extern bool windowShouldUnconditionallyClose(unsigned int);
 @implementation WebviewWindow
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 {
@@ -316,6 +317,14 @@ extern bool hasListeners(unsigned int);
 
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
+    NSLog(@"[DEBUG] windowShouldClose called for window %d", delegate.windowId);
+    // Check if this window should close unconditionally (called from Close() method)
+    if (windowShouldUnconditionallyClose(delegate.windowId)) {
+        NSLog(@"[DEBUG] Window %d closing unconditionally (Close() method called)", delegate.windowId);
+        return true;
+    }
+    // For user-initiated closes, emit WindowClosing event and let the application decide
+    NSLog(@"[DEBUG] Window %d close requested by user - emitting WindowClosing event", delegate.windowId);
     processWindowEvent(delegate.windowId, EventWindowShouldClose);
     return false;
 }
@@ -531,11 +540,13 @@ extern bool hasListeners(unsigned int);
     }
 }
 - (void)windowDidOrderOffScreen:(NSNotification *)notification {
+    NSLog(@"[DEBUG] Window %d ordered OFF screen (hidden)", self.windowId);
     if( hasListeners(EventWindowDidOrderOffScreen) ) {
         processWindowEvent(self.windowId, EventWindowDidOrderOffScreen);
     }
 }
 - (void)windowDidOrderOnScreen:(NSNotification *)notification {
+    NSLog(@"[DEBUG] Window %d ordered ON screen (shown)", self.windowId);
     if( hasListeners(EventWindowDidOrderOnScreen) ) {
         processWindowEvent(self.windowId, EventWindowDidOrderOnScreen);
     }
@@ -611,6 +622,7 @@ extern bool hasListeners(unsigned int);
     }
 }
 - (void)windowWillClose:(NSNotification *)notification {
+    NSLog(@"[DEBUG] Window %d WILL close (window is actually closing)", self.windowId);
     if( hasListeners(EventWindowWillClose) ) {
         processWindowEvent(self.windowId, EventWindowWillClose);
     }
@@ -656,11 +668,13 @@ extern bool hasListeners(unsigned int);
     }
 }
 - (void)windowWillOrderOffScreen:(NSNotification *)notification {
+    NSLog(@"[DEBUG] Window %d WILL order off screen (about to hide)", self.windowId);
     if( hasListeners(EventWindowWillOrderOffScreen) ) {
         processWindowEvent(self.windowId, EventWindowWillOrderOffScreen);
     }
 }
 - (void)windowWillOrderOnScreen:(NSNotification *)notification {
+    NSLog(@"[DEBUG] Window %d WILL order on screen (about to show)", self.windowId);
     if( hasListeners(EventWindowWillOrderOnScreen) ) {
         processWindowEvent(self.windowId, EventWindowWillOrderOnScreen);
     }

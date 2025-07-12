@@ -236,11 +236,16 @@ func (m *macosApp) run() error {
 		C.startSingleInstanceListener(cUniqueID)
 	}
 	// Add a hook to the ApplicationDidFinishLaunching event
-	m.parent.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*ApplicationEvent) {
-		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))
-		C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
-		C.activateIgnoringOtherApps()
-	})
+	m.parent.Event.OnApplicationEvent(
+		events.Mac.ApplicationDidFinishLaunching,
+		func(*ApplicationEvent) {
+			C.setApplicationShouldTerminateAfterLastWindowClosed(
+				C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed),
+			)
+			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
+			C.activateIgnoringOtherApps()
+		},
+	)
 	m.setupCommonEvents()
 	// setup event listeners
 	for eventID := range m.parent.applicationEventListeners {
@@ -291,7 +296,7 @@ func processApplicationEvent(eventID C.uint, data unsafe.Pointer) {
 
 	switch event.Id {
 	case uint(events.Mac.ApplicationDidChangeTheme):
-		isDark := globalApplication.IsDarkMode()
+		isDark := globalApplication.Env.IsDarkMode()
 		event.Context().setIsDarkMode(isDark)
 	}
 	applicationEvents <- event
@@ -315,10 +320,16 @@ func processMessage(windowID C.uint, message *C.char) {
 
 //export processURLRequest
 func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
+	window, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || window == nil {
+		globalApplication.debug("could not find window with id: %d", windowID)
+		return
+	}
+
 	webviewRequests <- &webViewAssetRequest{
 		Request:    webview.NewRequest(wkUrlSchemeTask),
 		windowId:   uint(windowID),
-		windowName: globalApplication.getWindowForID(uint(windowID)).Name(),
+		windowName: window.Name(),
 	}
 }
 
@@ -340,21 +351,30 @@ func processDragItems(windowID C.uint, arr **C.char, length C.int, x C.int, y C.
 	}
 
 	if globalApplication != nil && globalApplication.Logger != nil {
-		globalApplication.Logger.Debug("[DragDropDebug] processDragItems called", "windowID", windowID, "fileCount", len(filenames), "x", x, "y", y)
+		globalApplication.Logger.Debug(
+			"[DragDropDebug] processDragItems called",
+			"windowID",
+			windowID,
+			"fileCount",
+			len(filenames),
+			"x",
+			x,
+			"y",
+			y,
+		)
 	} else {
 		fmt.Printf("[DragDropDebug] processDragItems called - windowID: %d, fileCount: %d, x: %d, y: %d\n", windowID, len(filenames), x, y)
 	}
-	targetWindow := globalApplication.getWindowByID(uint(windowID))
-	if targetWindow == nil {
-		// Log an error if the window is not found. Consider using the application's logger.
-		// For now, a simple println to stderr or a log if available.
-		// TODO: Replace with proper logging if globalApplication.Logger is accessible and appropriate here.
+	targetWindow, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || targetWindow == nil {
 		println("Error: processDragItems could not find window with ID:", uint(windowID))
 		return
 	}
 
 	if globalApplication != nil && globalApplication.Logger != nil {
-		globalApplication.Logger.Debug("[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing")
+		globalApplication.Logger.Debug(
+			"[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing",
+		)
 	} else {
 		fmt.Printf("[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing\n")
 	}

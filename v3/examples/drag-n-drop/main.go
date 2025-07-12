@@ -58,7 +58,12 @@ func FilesDroppedOnTarget(
 	log.Println(fmt.Sprintf("  Target ID: '%s'", targetID))
 	log.Println(fmt.Sprintf("  Target Classes: %v", targetClasses))
 	log.Println(fmt.Sprintf("  Drop X: %f, Drop Y: %f", dropX, dropY))
-	log.Println(fmt.Sprintf("  Drop occurred on a designated dropzone (runtime validated before this Go event): %t", isTargetDropzone))
+	log.Println(
+		fmt.Sprintf(
+			"  Drop occurred on a designated dropzone (runtime validated before this Go event): %t",
+			isTargetDropzone,
+		),
+	)
 	log.Println(fmt.Sprintf("  Element Attributes: %v", attributes))
 	log.Println("================================================================")
 
@@ -91,7 +96,7 @@ func main() {
 		},
 	})
 
-	win := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	win := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Drag-n-drop Demo",
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
@@ -105,7 +110,6 @@ func main() {
 	win.OnWindowEvent(
 		events.Common.WindowDropZoneFilesDropped,
 		func(event *application.WindowEvent) {
-			log.Println("=============== WindowDropZoneFilesDropped Event Debug ===============")
 
 			droppedFiles := event.Context().DroppedFiles()
 			details := event.Context().DropZoneDetails()
@@ -147,8 +151,10 @@ func main() {
 			}
 
 			log.Printf("Emitting event payload: %+v", payload)
-			application.Get().EmitEvent("frontend:FileDropInfo", payload)
-			log.Println("=============== End WindowDropZoneFilesDropped Event Debug ===============")
+			application.Get().Event.Emit("frontend:FileDropInfo", payload)
+			log.Println(
+				"=============== End WindowDropZoneFilesDropped Event Debug ===============",
+			)
 		},
 	)
 

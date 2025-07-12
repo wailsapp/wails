@@ -1,0 +1,400 @@
+---
+title: Events Guide
+description: A practical guide to using events in Wails v3 for application communication and lifecycle management
+---
+
+**NOTE: This guide is a work in progress**
+
+# Events Guide
+
+Events are the heartbeat of communication in Wails applications. They allow different parts of your application to talk to each other without being tightly coupled. This guide will walk you through everything you need to know about using events effectively in your Wails application.
+
+## Understanding Wails Events
+
+Think of events as messages that get broadcast throughout your application. Any part of your application can listen for these messages and react accordingly. This is particularly useful for:
+
+- **Responding to window changes**: Know when your window is minimized, maximized, or moved
+- **Handling system events**: React to theme changes or power events
+- **Custom application logic**: Create your own events for features like data updates or user actions
+- **Cross-component communication**: Let different parts of your app communicate without direct dependencies
+
+## Event Naming Convention
+
+All Wails events follow a namespace pattern to clearly indicate their origin:
+
+- `common:` - Cross-platform events that work on Windows, macOS, and Linux
+- `windows:` - Windows-specific events
+- `mac:` - macOS-specific events  
+- `linux:` - Linux-specific events
+
+For example:
+- `common:WindowFocus` - Window gained focus (works everywhere)
+- `windows:APMSuspend` - System is suspending (Windows only)
+- `mac:ApplicationDidBecomeActive` - App became active (macOS only)
+
+## Getting Started with Events
+
+### Listening to Events (Frontend)
+
+The most common use case is listening for events in your frontend code:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Listen for when the window gains focus
+Events.On('common:WindowFocus', () => {
+    console.log('Window is now focused!');
+    // Maybe refresh some data or resume animations
+});
+
+// Listen for theme changes
+Events.On('common:ThemeChanged', (event) => {
+    console.log('Theme changed:', event.data);
+    // Update your app's theme accordingly
+});
+
+// Listen for custom events from your Go backend
+Events.On('my-app:data-updated', (event) => {
+    console.log('Data updated:', event.data);
+    // Update your UI with the new data
+});
+```
+
+### Emitting Events (Backend)
+
+From your Go code, you can emit events that your frontend can listen to:
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/events"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func (a *App) UpdateData() {
+    // Do some data processing...
+    
+    // Notify the frontend
+    a.app.EmitEvent("my-app:data-updated", map[string]interface{}{
+        "timestamp": time.Now(),
+        "count": 42,
+    })
+}
+```
+
+### Removing Event Listeners
+
+Always clean up your event listeners when they're no longer needed:
+
+```javascript
+// Store the handler reference
+const focusHandler = () => {
+    console.log('Window focused');
+};
+
+// Add the listener
+Events.On('common:WindowFocus', focusHandler);
+
+// Later, remove it when no longer needed
+Events.Off('common:WindowFocus', focusHandler);
+
+// Or remove all listeners for an event
+Events.Off('common:WindowFocus');
+```
+
+## Common Use Cases
+
+### 1. Pause/Resume on Window Focus
+
+Many applications need to pause certain activities when the window loses focus:
+
+```javascript
+let animationRunning = true;
+
+Events.On('common:WindowLostFocus', () => {
+    animationRunning = false;
+    pauseBackgroundTasks();
+});
+
+Events.On('common:WindowFocus', () => {
+    animationRunning = true;
+    resumeBackgroundTasks();
+});
+```
+
+### 2. Responding to Theme Changes
+
+Keep your app in sync with the system theme:
+
+```javascript
+Events.On('common:ThemeChanged', (event) => {
+    const isDarkMode = event.data.isDark;
+    
+    if (isDarkMode) {
+        document.body.classList.add('dark-theme');
+        document.body.classList.remove('light-theme');
+    } else {
+        document.body.classList.add('light-theme');
+        document.body.classList.remove('dark-theme');
+    }
+});
+```
+
+### 3. Handling File Drops
+
+Make your app accept dragged files:
+
+```javascript
+Events.On('common:WindowFilesDropped', (event) => {
+    const files = event.data.files;
+    
+    files.forEach(file => {
+        console.log('File dropped:', file);
+        // Process the dropped files
+        handleFileUpload(file);
+    });
+});
+```
+
+### 4. Window Lifecycle Management
+
+Respond to window state changes:
+
+```javascript
+Events.On('common:WindowClosing', () => {
+    // Save user data before closing
+    saveApplicationState();
+    
+    // You could also prevent closing by returning false
+    // from a registered window close handler
+});
+
+Events.On('common:WindowMaximise', () => {
+    // Adjust UI for maximized view
+    adjustLayoutForMaximized();
+});
+
+Events.On('common:WindowRestore', () => {
+    // Return UI to normal state
+    adjustLayoutForNormal();
+});
+```
+
+### 5. Platform-Specific Features
+
+Handle platform-specific events when needed:
+
+```javascript
+// Windows-specific power management
+Events.On('windows:APMSuspend', () => {
+    console.log('System is going to sleep');
+    saveState();
+});
+
+Events.On('windows:APMResumeSuspend', () => {
+    console.log('System woke up');
+    refreshData();
+});
+
+// macOS-specific app lifecycle
+Events.On('mac:ApplicationWillTerminate', () => {
+    console.log('App is about to quit');
+    performCleanup();
+});
+```
+
+## Creating Custom Events
+
+You can create your own events for application-specific needs:
+
+### Backend (Go)
+
+```go
+// Emit a custom event when data changes
+func (a *App) ProcessUserData(userData UserData) error {
+    // Process the data...
+    
+    // Notify all listeners
+    a.app.EmitEvent("user:data-processed", map[string]interface{}{
+        "userId": userData.ID,
+        "status": "completed",
+        "timestamp": time.Now(),
+    })
+    
+    return nil
+}
+
+// Emit periodic updates
+func (a *App) StartMonitoring() {
+    ticker := time.NewTicker(5 * time.Second)
+    go func() {
+        for range ticker.C {
+            stats := a.collectStats()
+            a.app.EmitEvent("monitor:stats-updated", stats)
+        }
+    }()
+}
+```
+
+### Frontend (JavaScript)
+
+```javascript
+// Listen for your custom events
+Events.On('user:data-processed', (event) => {
+    const { userId, status, timestamp } = event.data;
+    
+    showNotification(`User ${userId} processing ${status}`);
+    updateUIWithNewData();
+});
+
+Events.On('monitor:stats-updated', (event) => {
+    updateDashboard(event.data);
+});
+```
+
+## Event Reference
+
+### Common Events (Cross-platform)
+
+These events work on all platforms:
+
+| Event | Description | When to Use |
+|-------|-------------|-------------|
+| `common:ApplicationStarted` | Application has fully started | Initialize your app, load saved state |
+| `common:WindowRuntimeReady` | Wails runtime is ready | Start making Wails API calls |
+| `common:ThemeChanged` | System theme changed | Update app appearance |
+| `common:WindowFocus` | Window gained focus | Resume activities, refresh data |
+| `common:WindowLostFocus` | Window lost focus | Pause activities, save state |
+| `common:WindowMinimise` | Window was minimized | Pause rendering, reduce resource usage |
+| `common:WindowMaximise` | Window was maximized | Adjust layout for full screen |
+| `common:WindowRestore` | Window restored from min/max | Return to normal layout |
+| `common:WindowClosing` | Window is about to close | Save data, cleanup resources |
+| `common:WindowFilesDropped` | Files dropped on window | Handle file imports |
+| `common:WindowDidResize` | Window was resized | Adjust layout, rerender charts |
+| `common:WindowDidMove` | Window was moved | Update position-dependent features |
+
+### Platform-Specific Events
+
+#### Windows Events
+
+Key events for Windows applications:
+
+| Event | Description | Use Case |
+|-------|-------------|----------|
+| `windows:SystemThemeChanged` | Windows theme changed | Update app colors |
+| `windows:APMSuspend` | System suspending | Save state, pause operations |
+| `windows:APMResumeSuspend` | System resumed | Restore state, refresh data |
+| `windows:APMPowerStatusChange` | Power status changed | Adjust performance settings |
+
+#### macOS Events
+
+Important macOS application events:
+
+| Event | Description | Use Case |
+|-------|-------------|----------|
+| `mac:ApplicationDidBecomeActive` | App became active | Resume operations |
+| `mac:ApplicationDidResignActive` | App became inactive | Pause operations |
+| `mac:ApplicationWillTerminate` | App will quit | Final cleanup |
+| `mac:WindowDidEnterFullScreen` | Entered fullscreen | Adjust UI for fullscreen |
+| `mac:WindowDidExitFullScreen` | Exited fullscreen | Restore normal UI |
+
+#### Linux Events
+
+Core Linux window events:
+
+| Event | Description | Use Case |
+|-------|-------------|----------|
+| `linux:SystemThemeChanged` | Desktop theme changed | Update app theme |
+| `linux:WindowFocusIn` | Window gained focus | Resume activities |
+| `linux:WindowFocusOut` | Window lost focus | Pause activities |
+
+## Best Practices
+
+### 1. Use Event Namespaces
+
+When creating custom events, use namespaces to avoid conflicts:
+
+```javascript
+// Good - namespaced events
+Events.Emit('myapp:user:login');
+Events.Emit('myapp:data:updated');
+Events.Emit('myapp:network:connected');
+
+// Avoid - generic names that might conflict
+Events.Emit('login');
+Events.Emit('update');
+```
+
+### 2. Clean Up Listeners
+
+Always remove event listeners when components unmount:
+
+```javascript
+// React example
+useEffect(() => {
+    const handler = (event) => {
+        // Handle event
+    };
+    
+    Events.On('common:WindowResize', handler);
+    
+    // Cleanup
+    return () => {
+        Events.Off('common:WindowResize', handler);
+    };
+}, []);
+```
+
+### 3. Handle Platform Differences
+
+Check platform availability when using platform-specific events:
+
+```javascript
+import { Platform } from '@wailsio/runtime';
+
+if (Platform.isWindows) {
+    Events.On('windows:APMSuspend', handleSuspend);
+} else if (Platform.isMac) {
+    Events.On('mac:ApplicationWillTerminate', handleTerminate);
+}
+```
+
+### 4. Don't Overuse Events
+
+While events are powerful, don't use them for everything:
+
+- ✅ Use events for: System notifications, lifecycle changes, broadcast updates
+- ❌ Avoid events for: Direct function returns, single component updates, synchronous operations
+
+## Debugging Events
+
+To debug event issues:
+
+```javascript
+// Log all events (development only)
+if (isDevelopment) {
+    const originalOn = Events.On;
+    Events.On = function(eventName, handler) {
+        console.log(`[Event Registered] ${eventName}`);
+        return originalOn.call(this, eventName, function(event) {
+            console.log(`[Event Fired] ${eventName}`, event);
+            return handler(event);
+        });
+    };
+}
+```
+
+## Source of Truth
+
+The complete list of available events can be found in the Wails source code:
+- Frontend events: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- Backend events: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
+
+Always refer to these files for the most up-to-date event names and availability.
+
+## Summary
+
+Events in Wails provide a powerful, decoupled way to handle communication in your application. By following the patterns and practices in this guide, you can build responsive, platform-aware applications that react smoothly to system changes and user interactions.
+
+Remember: start with common events for cross-platform compatibility, add platform-specific events when needed, and always clean up your event listeners to prevent memory leaks.

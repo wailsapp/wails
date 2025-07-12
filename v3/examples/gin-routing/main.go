@@ -94,12 +94,12 @@ func main() {
 	})
 
 	// Register event handler
-	app.OnEvent("gin-button-clicked", func(event *application.CustomEvent) {
+	app.Event.On("gin-button-clicked", func(event *application.CustomEvent) {
 		log.Printf("Received event from frontend: %v", event.Data)
 	})
 
 	// Create window
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Wails + Gin Example",
 		Width:  900,
 		Height: 700,
