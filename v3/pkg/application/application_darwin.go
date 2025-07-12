@@ -169,6 +169,7 @@ static void startSingleInstanceListener(const char *uniqueID) {
 import "C"
 import (
 	"encoding/json"
+	"fmt"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -235,11 +236,16 @@ func (m *macosApp) run() error {
 		C.startSingleInstanceListener(cUniqueID)
 	}
 	// Add a hook to the ApplicationDidFinishLaunching event
-	m.parent.Event.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*ApplicationEvent) {
-		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))
-		C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
-		C.activateIgnoringOtherApps()
-	})
+	m.parent.Event.OnApplicationEvent(
+		events.Mac.ApplicationDidFinishLaunching,
+		func(*ApplicationEvent) {
+			C.setApplicationShouldTerminateAfterLastWindowClosed(
+				C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed),
+			)
+			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
+			C.activateIgnoringOtherApps()
+		},
+	)
 	m.setupCommonEvents()
 	// setup event listeners
 	for eventID := range m.parent.applicationEventListeners {
@@ -321,8 +327,8 @@ func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
 	}
 
 	webviewRequests <- &webViewAssetRequest{
-		Request:  webview.NewRequest(wkUrlSchemeTask),
-		windowId: uint(windowID),
+		Request:    webview.NewRequest(wkUrlSchemeTask),
+		windowId:   uint(windowID),
 		windowName: window.Name(),
 	}
 }
@@ -336,17 +342,43 @@ func processWindowKeyDownEvent(windowID C.uint, acceleratorString *C.char) {
 }
 
 //export processDragItems
-func processDragItems(windowID C.uint, arr **C.char, length C.int) {
+func processDragItems(windowID C.uint, arr **C.char, length C.int, x C.int, y C.int) {
 	var filenames []string
 	// Convert the C array to a Go slice
 	goSlice := (*[1 << 30]*C.char)(unsafe.Pointer(arr))[:length:length]
 	for _, str := range goSlice {
 		filenames = append(filenames, C.GoString(str))
 	}
-	windowDragAndDropBuffer <- &dragAndDropMessage{
-		windowId:  uint(windowID),
-		filenames: filenames,
+
+	if globalApplication != nil && globalApplication.Logger != nil {
+		globalApplication.Logger.Debug(
+			"[DragDropDebug] processDragItems called",
+			"windowID",
+			windowID,
+			"fileCount",
+			len(filenames),
+			"x",
+			x,
+			"y",
+			y,
+		)
+	} else {
+		fmt.Printf("[DragDropDebug] processDragItems called - windowID: %d, fileCount: %d, x: %d, y: %d\n", windowID, len(filenames), x, y)
 	}
+	targetWindow, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || targetWindow == nil {
+		println("Error: processDragItems could not find window with ID:", uint(windowID))
+		return
+	}
+
+	if globalApplication != nil && globalApplication.Logger != nil {
+		globalApplication.Logger.Debug(
+			"[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing",
+		)
+	} else {
+		fmt.Printf("[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing\n")
+	}
+	targetWindow.InitiateFrontendDropProcessing(filenames, int(x), int(y))
 }
 
 //export processMenuItemClick
