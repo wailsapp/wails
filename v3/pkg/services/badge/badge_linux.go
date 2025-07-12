@@ -13,8 +13,8 @@ type linuxBadge struct{}
 // New creates a new Badge Service.
 // On Linux, this returns a no-op implementation since most desktop environments
 // don't have standardized dock badge functionality.
-func New() *Service {
-	return &Service{
+func New() *BadgeService {
+	return &BadgeService{
 		impl: &linuxBadge{},
 	}
 }
@@ -22,7 +22,7 @@ func New() *Service {
 // NewWithOptions creates a new badge service with the given options.
 // On Linux, this returns a no-op implementation since most desktop environments
 // don't have standardized dock badge functionality. Options are ignored.
-func NewWithOptions(options Options) *Service {
+func NewWithOptions(options Options) *BadgeService {
 	return New()
 }
 

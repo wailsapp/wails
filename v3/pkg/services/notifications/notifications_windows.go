@@ -43,18 +43,18 @@ type NotificationPayload struct {
 }
 
 // Creates a new Notifications Service.
-func New() *Service {
+func New() *NotificationService {
 	notificationServiceOnce.Do(func() {
 		impl := &windowsNotifier{
 			categories: make(map[string]NotificationCategory),
 		}
 
-		NotificationService = &Service{
+		NotificationService_ = &NotificationService{
 			impl: impl,
 		}
 	})
 
-	return NotificationService
+	return NotificationService_
 }
 
 //go:linkname registerFactoryInternal git.sr.ht/~jackmordaunt/go-toast/v2/wintoast.registerClassFactory

@@ -27,8 +27,8 @@ import (
 type darwinBadge struct{}
 
 // Creates a new Badge Service.
-func New() *Service {
-	return &Service{
+func New() *BadgeService {
+	return &BadgeService{
 		impl: &darwinBadge{},
 	}
 }
@@ -36,7 +36,7 @@ func New() *Service {
 // NewWithOptions creates a new badge service with the given options.
 // Currently, options are not available on macOS and are ignored.
 // (Windows-specific)
-func NewWithOptions(options Options) *Service {
+func NewWithOptions(options Options) *BadgeService {
 	return New()
 }
 

@@ -43,19 +43,19 @@ const AppleDefaultActionIdentifier = "com.apple.UNNotificationDefaultActionIdent
 
 // Creates a new Notifications Service.
 // Your app must be packaged and signed for this feature to work.
-func New() *Service {
+func New() *NotificationService {
 	notificationServiceOnce.Do(func() {
 		impl := &darwinNotifier{
 			channels:      make(map[int]chan notificationChannel),
 			nextChannelID: 0,
 		}
 
-		NotificationService = &Service{
+		NotificationService_ = &NotificationService{
 			impl: impl,
 		}
 	})
 
-	return NotificationService
+	return NotificationService_
 }
 
 func (dn *darwinNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {

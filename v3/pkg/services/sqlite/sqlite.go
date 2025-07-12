@@ -55,7 +55,7 @@ type Config struct {
 //wails:inject **:    wrapper.cancel = promise.cancel;
 //wails:inject **:    return wrapper;
 //wails:inject **:}
-type Service struct {
+type SQLiteService struct {
 	lock   sync.RWMutex
 	config *Config
 	conn   *sql.DB
@@ -63,7 +63,7 @@ type Service struct {
 }
 
 // New initialises a sqlite service with the default configuration.
-func New() *Service {
+func New() *SQLiteService {
 	return NewWithConfig(nil)
 }
 
@@ -74,27 +74,27 @@ func New() *Service {
 // A call to [Service.Open] must succeed before using all other methods.
 // If the service is registered with the application,
 // [Service.Open] will be called automatically at startup.
-func NewWithConfig(config *Config) *Service {
-	result := &Service{}
+func NewWithConfig(config *Config) *SQLiteService {
+	result := &SQLiteService{}
 	result.Configure(config)
 	return result
 }
 
 // ServiceName returns the name of the plugin.
 // You should use the go module format e.g. github.com/myuser/myplugin
-func (s *Service) ServiceName() string {
+func (s *SQLiteService) ServiceName() string {
 	return "github.com/wailsapp/wails/v3/plugins/sqlite"
 }
 
 // ServiceStartup opens the database connection.
 // It returns a non-nil error in case of failures.
-func (s *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+func (s *SQLiteService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	return s.Open()
 }
 
 // ServiceShutdown closes the database connection.
 // It returns a non-nil error in case of failures.
-func (s *Service) ServiceShutdown() error {
+func (s *SQLiteService) ServiceShutdown() error {
 	return s.Close()
 }
 
@@ -106,7 +106,7 @@ func (s *Service) ServiceShutdown() error {
 // See [NewWithConfig] for details on configuration.
 //
 //wails:ignore
-func (s *Service) Configure(config *Config) {
+func (s *SQLiteService) Configure(config *Config) {
 	if config == nil {
 		config = &Config{DBSource: ":memory:"}
 	} else {
@@ -129,7 +129,7 @@ func (s *Service) Configure(config *Config) {
 // Even when a non-nil error is returned,
 // the database service is left in a consistent state,
 // ready for a new call to Open.
-func (s *Service) Open() error {
+func (s *SQLiteService) Open() error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -164,7 +164,7 @@ func (s *Service) Open() error {
 // Even when a non-nil error is returned,
 // the database service is left in a consistent state,
 // ready for a call to [Service.Open].
-func (s *Service) Close() error {
+func (s *SQLiteService) Close() error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -175,7 +175,7 @@ func (s *Service) Close() error {
 // It is the caller's responsibility
 // to ensure the lock is held exclusively (in write mode)
 // for the entire duration of the call.
-func (s *Service) closeImpl() error {
+func (s *SQLiteService) closeImpl() error {
 	if s.conn == nil {
 		return nil
 	}
@@ -202,7 +202,7 @@ func (s *Service) closeImpl() error {
 // Execute executes a query without returning any rows.
 //
 //wails:ignore
-func (s *Service) Execute(query string, args ...any) error {
+func (s *SQLiteService) Execute(query string, args ...any) error {
 	return s.ExecContext(context.Background(), query, args...)
 }
 
@@ -210,7 +210,7 @@ func (s *Service) Execute(query string, args ...any) error {
 // It supports early cancellation.
 //
 //wails:internal
-func (s *Service) ExecContext(ctx context.Context, query string, args ...any) error {
+func (s *SQLiteService) ExecContext(ctx context.Context, query string, args ...any) error {
 	s.lock.RLock()
 	conn := s.conn
 	s.lock.RUnlock()
@@ -231,7 +231,7 @@ func (s *Service) ExecContext(ctx context.Context, query string, args ...any) er
 // one per row, with column names as keys.
 //
 //wails:ignore
-func (s *Service) Query(query string, args ...any) (Rows, error) {
+func (s *SQLiteService) Query(query string, args ...any) (Rows, error) {
 	return s.QueryContext(context.Background(), query, args...)
 }
 
@@ -240,7 +240,7 @@ func (s *Service) Query(query string, args ...any) (Rows, error) {
 // It supports early cancellation, returning the slice of results fetched so far.
 //
 //wails:internal
-func (s *Service) QueryContext(ctx context.Context, query string, args ...any) (Rows, error) {
+func (s *SQLiteService) QueryContext(ctx context.Context, query string, args ...any) (Rows, error) {
 	s.lock.RLock()
 	conn := s.conn
 	s.lock.RUnlock()
@@ -269,7 +269,7 @@ func (s *Service) QueryContext(ctx context.Context, query string, args ...any) (
 // when the connection they are associated with is closed.
 //
 //wails:ignore
-func (s *Service) Prepare(query string) (*Stmt, error) {
+func (s *SQLiteService) Prepare(query string) (*Stmt, error) {
 	return s.PrepareContext(context.Background(), query)
 }
 
@@ -283,7 +283,7 @@ func (s *Service) Prepare(query string) (*Stmt, error) {
 // PrepareContext supports early cancellation.
 //
 //wails:internal
-func (s *Service) PrepareContext(ctx context.Context, query string) (*Stmt, error) {
+func (s *SQLiteService) PrepareContext(ctx context.Context, query string) (*Stmt, error) {
 	s.lock.RLock()
 	conn := s.conn
 	s.lock.RUnlock()
@@ -331,7 +331,7 @@ func (s *Service) PrepareContext(ctx context.Context, query string) (*Stmt, erro
 // it has no effect on prepared statements that are already closed.
 //
 //wails:internal
-func (s *Service) ClosePrepared(stmt *Stmt) error {
+func (s *SQLiteService) ClosePrepared(stmt *Stmt) error {
 	return stmt.Close()
 }
 
@@ -341,7 +341,7 @@ func (s *Service) ClosePrepared(stmt *Stmt) error {
 // It supports early cancellation.
 //
 //wails:internal
-func (s *Service) ExecPrepared(ctx context.Context, stmt *Stmt, args ...any) error {
+func (s *SQLiteService) ExecPrepared(ctx context.Context, stmt *Stmt, args ...any) error {
 	if stmt == nil {
 		return errors.New("no prepared statement provided")
 	} else if stmt.sqlStmt == nil {
@@ -362,7 +362,7 @@ func (s *Service) ExecPrepared(ctx context.Context, stmt *Stmt, args ...any) err
 // It supports early cancellation, returning the slice of results fetched so far.
 //
 //wails:internal
-func (s *Service) QueryPrepared(ctx context.Context, stmt *Stmt, args ...any) (Rows, error) {
+func (s *SQLiteService) QueryPrepared(ctx context.Context, stmt *Stmt, args ...any) (Rows, error) {
 	if stmt == nil {
 		return nil, errors.New("no prepared statement provided")
 	} else if stmt.sqlStmt == nil {
@@ -448,7 +448,7 @@ type (
 	//wails:internal
 	Stmt struct {
 		sqlStmt
-		db *Service
+		db *SQLiteService
 		id uint64
 	}
 )
