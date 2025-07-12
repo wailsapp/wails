@@ -492,7 +492,7 @@ func (a *App) Run() error {
 	a.starting = true
 	a.runLock.Unlock()
 
-	// Ensure application context is canceled in case of failures.
+	// Ensure application context is cancelled in case of failures.
 	defer a.cancel()
 
 	// Call post-create hooks
@@ -624,7 +624,7 @@ func (a *App) shutdownServices() {
 	a.serviceShutdownLock.Lock()
 	defer a.serviceShutdownLock.Unlock()
 
-	// Ensure app context is canceled first (duplicate calls don't hurt).
+	// Ensure app context is cancelled first (duplicate calls don't hurt).
 	a.cancel()
 
 	for len(a.options.Services) > 0 {

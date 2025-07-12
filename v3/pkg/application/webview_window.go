@@ -115,7 +115,7 @@ type (
 
 type WindowEvent struct {
 	ctx       *WindowEventContext
-	Cancelled bool
+	cancelled atomic.Bool
 }
 
 func (w *WindowEvent) Context() *WindowEventContext {
@@ -126,8 +126,12 @@ func NewWindowEvent() *WindowEvent {
 	return &WindowEvent{}
 }
 
+func (w *WindowEvent) IsCancelled() bool {
+	return w.cancelled.Load()
+}
+
 func (w *WindowEvent) Cancel() {
-	w.Cancelled = true
+	w.cancelled.Store(true)
 }
 
 type WindowEventListener struct {
@@ -188,11 +192,18 @@ func (w *WebviewWindow) SetMenu(menu *Menu) {
 
 // EmitEvent emits an event from the window
 func (w *WebviewWindow) EmitEvent(name string, data ...any) {
-	globalApplication.Event.EmitEvent(&CustomEvent{
+	event := &CustomEvent{
 		Name:   name,
-		Data:   data,
 		Sender: w.Name(),
-	})
+	}
+
+	if len(data) == 1 {
+		event.Data = data[0]
+	} else if len(data) > 1 {
+		event.Data = data
+	}
+
+	globalApplication.Event.EmitEvent(event)
 }
 
 var windowID uint
@@ -208,7 +219,10 @@ func getWindowID() uint {
 // FIXME: This should like be an interface method (TDM)
 // Use onApplicationEvent to register a callback for an application event from a window.
 // This will handle tidying up the callback when the window is destroyed
-func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func(*ApplicationEvent)) {
+func (w *WebviewWindow) onApplicationEvent(
+	eventType events.ApplicationEventType,
+	callback func(*ApplicationEvent),
+) {
 	cancelFn := globalApplication.Event.OnApplicationEvent(eventType, callback)
 	w.addCancellationFunction(cancelFn)
 }
@@ -288,7 +302,9 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	return result
 }
 
-func processKeyBindingOptions(keyBindings map[string]func(window *WebviewWindow)) map[string]func(window *WebviewWindow) {
+func processKeyBindingOptions(
+	keyBindings map[string]func(window *WebviewWindow),
+) map[string]func(window *WebviewWindow) {
 	result := make(map[string]func(window *WebviewWindow))
 	for key, callback := range keyBindings {
 		// Parse the key to an accelerator
@@ -311,25 +327,51 @@ func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 
 func (w *WebviewWindow) CallError(callID string, result string, isJSON bool) {
 	if w.impl != nil {
-		w.impl.execJS(fmt.Sprintf("_wails.callErrorHandler('%s', '%s', %t);", callID, template.JSEscapeString(result), isJSON))
+		w.impl.execJS(
+			fmt.Sprintf(
+				"_wails.callErrorHandler('%s', '%s', %t);",
+				callID,
+				template.JSEscapeString(result),
+				isJSON,
+			),
+		)
 	}
 }
 
 func (w *WebviewWindow) CallResponse(callID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(fmt.Sprintf("_wails.callResultHandler('%s', '%s', true);", callID, template.JSEscapeString(result)))
+		w.impl.execJS(
+			fmt.Sprintf(
+				"_wails.callResultHandler('%s', '%s', true);",
+				callID,
+				template.JSEscapeString(result),
+			),
+		)
 	}
 }
 
 func (w *WebviewWindow) DialogError(dialogID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(fmt.Sprintf("_wails.dialogErrorCallback('%s', '%s');", dialogID, template.JSEscapeString(result)))
+		w.impl.execJS(
+			fmt.Sprintf(
+				"_wails.dialogErrorCallback('%s', '%s');",
+				dialogID,
+				template.JSEscapeString(result),
+			),
+		)
 	}
 }
 
 func (w *WebviewWindow) DialogResponse(dialogID string, result string, isJSON bool) {
 	if w.impl != nil {
-		w.impl.execJS(fmt.Sprintf("_wails.dialogResultCallback('%s', '%s', %t);", dialogID, template.JSEscapeString(result), isJSON))
+		w.impl.execJS(
+			fmt.Sprintf(
+				"_wails.dialogResultCallback('%s', '%s', %t);",
+				dialogID,
+				template.JSEscapeString(result),
+				isJSON,
+			),
+		)
 	}
 }
 
@@ -742,7 +784,10 @@ func (w *WebviewWindow) Center() {
 }
 
 // OnWindowEvent registers a callback for the given window event
-func (w *WebviewWindow) OnWindowEvent(eventType events.WindowEventType, callback func(event *WindowEvent)) func() {
+func (w *WebviewWindow) OnWindowEvent(
+	eventType events.WindowEventType,
+	callback func(event *WindowEvent),
+) func() {
 	eventID := uint(eventType)
 	windowEventListener := &WindowEventListener{
 		callback: callback,
@@ -763,7 +808,10 @@ func (w *WebviewWindow) OnWindowEvent(eventType events.WindowEventType, callback
 }
 
 // RegisterHook registers a hook for the given window event
-func (w *WebviewWindow) RegisterHook(eventType events.WindowEventType, callback func(event *WindowEvent)) func() {
+func (w *WebviewWindow) RegisterHook(
+	eventType events.WindowEventType,
+	callback func(event *WindowEvent),
+) func() {
 	eventID := uint(eventType)
 	w.eventHooksLock.Lock()
 	defer w.eventHooksLock.Unlock()
@@ -790,7 +838,7 @@ func (w *WebviewWindow) HandleWindowEvent(id uint) {
 
 	for _, thisHook := range hooks {
 		thisHook.callback(thisEvent)
-		if thisEvent.Cancelled {
+		if thisEvent.IsCancelled() {
 			return
 		}
 	}
@@ -802,6 +850,9 @@ func (w *WebviewWindow) HandleWindowEvent(id uint) {
 
 	for _, listener := range tempListeners {
 		go func() {
+			if thisEvent.IsCancelled() {
+				return
+			}
 			defer handlePanic()
 			listener.callback(thisEvent)
 		}()
