@@ -1,5 +1,6 @@
 common:ApplicationOpenedWithFile
 common:ApplicationStarted
+common:ApplicationLaunchedWithUrl
 common:ThemeChanged
 common:WindowClosing
 common:WindowDidMove
