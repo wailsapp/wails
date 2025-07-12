@@ -4,17 +4,23 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
+	// "github.com/wailsapp/wails/v3/internal/commands/dmg" // TODO: Missing package
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/packager"
 )
 
-// ToolPackage generates a Linux package in the specified format using nfpm
+// ToolPackage generates a package in the specified format
 func ToolPackage(options *flags.ToolPackage) error {
 	DisableFooter = true
 
-	if options.ConfigPath == "" {
+	// Check if we're creating a DMG
+	isDMG := strings.ToLower(options.Format) == "dmg" || options.CreateDMG
+
+	// Config file is required for Linux packages but optional for DMG
+	if options.ConfigPath == "" && !isDMG {
 		return fmt.Errorf("please provide a config file using the -config flag")
 	}
 
@@ -22,7 +28,52 @@ func ToolPackage(options *flags.ToolPackage) error {
 		return fmt.Errorf("please provide an executable name using the -name flag")
 	}
 
-	// Validate format
+	// Handle DMG creation for macOS
+	if isDMG {
+		if runtime.GOOS != "darwin" {
+			return fmt.Errorf("DMG creation is only supported on macOS")
+		}
+
+		// For DMG, we expect the .app bundle to already exist
+		appPath := filepath.Join(options.Out, fmt.Sprintf("%s.app", options.ExecutableName))
+		if _, err := os.Stat(appPath); os.IsNotExist(err) {
+			return fmt.Errorf("application bundle not found: %s", appPath)
+		}
+
+		// Create output path for DMG
+		dmgPath := filepath.Join(options.Out, fmt.Sprintf("%s.dmg", options.ExecutableName))
+
+		// DMG creation temporarily disabled - missing dmg package
+		_ = dmgPath // avoid unused variable warning
+		return fmt.Errorf("DMG creation is temporarily disabled due to missing dmg package")
+		
+		// // Create DMG creator
+		// dmgCreator, err := dmg.New(appPath, dmgPath, options.ExecutableName)
+		// if err != nil {
+		// 	return fmt.Errorf("error creating DMG: %w", err)
+		// }
+
+		// // Set background image if provided
+		// if options.BackgroundImage != "" {
+		// 	if err := dmgCreator.SetBackgroundImage(options.BackgroundImage); err != nil {
+		// 		return fmt.Errorf("error setting background image: %w", err)
+		// 	}
+		// }
+
+		// // Set default icon positions
+		// dmgCreator.AddIconPosition(filepath.Base(appPath), 150, 175)
+		// dmgCreator.AddIconPosition("Applications", 450, 175)
+
+		// // Create the DMG
+		// if err := dmgCreator.Create(); err != nil {
+		// 	return fmt.Errorf("error creating DMG: %w", err)
+		// }
+
+		// fmt.Printf("DMG created successfully: %s\n", dmgPath)
+		// return nil
+	}
+
+	// For Linux packages, continue with existing logic
 	var pkgType packager.PackageType
 	switch strings.ToLower(options.Format) {
 	case "deb":
@@ -32,7 +83,7 @@ func ToolPackage(options *flags.ToolPackage) error {
 	case "archlinux":
 		pkgType = packager.ARCH
 	default:
-		return fmt.Errorf("unsupported package format '%s'. Supported formats: deb, rpm, archlinux", options.Format)
+		return fmt.Errorf("unsupported package format '%s'. Supported formats: deb, rpm, archlinux, dmg", options.Format)
 	}
 
 	// Get absolute path of config file

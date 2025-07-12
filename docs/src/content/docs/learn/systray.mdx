@@ -15,10 +15,10 @@ To create a basic system tray icon:
 
 ```go
 app := application.New(options)
-systray := app.NewSystemTray()
+systray := app.SystemTray.New()
 systray.SetLabel("My App")
 systray.SetIcon(iconBytes)
-systray.Run()
+app.Run()
 ```
 
 ## Setting the Icon
@@ -85,10 +85,10 @@ You can add a menu to your system tray icon:
 
 ```go
 menu := application.NewMenu()
-menu.Add("Open").OnClick(func() {
+menu.Add("Open").OnClick(func(ctx *application.Context) {
     // Handle click
 })
-menu.Add("Quit").OnClick(func() {
+menu.Add("Quit").OnClick(func(ctx *application.Context) {
     app.Quit()
 })
 
@@ -108,7 +108,7 @@ Here's a complete example:
 app := application.New()
 
 // Create system tray
-systray := app.NewSystemTray()
+systray := app.SystemTray.New()
 systray.SetLabel("My App")
 
 // Create a window
@@ -133,7 +133,7 @@ menu.Add("Quit").OnClick(func() {
 })
 systray.SetMenu(menu)
 
-systray.Run()
+app.Run()
 ```
 
 ## Icon Position <Badge text="macOS" variant="success" />
@@ -182,7 +182,7 @@ Explore these examples for more advanced usage:
 ### Core Methods
 | Method                                   | Description                                |
 |------------------------------------------|--------------------------------------------|
-| `NewSystemTray()`                        | Creates a new system tray instance         |
+| `app.SystemTray.New()`                   | Creates a new system tray instance         |
 | `Run()`                                  | Starts the system tray                     |
 | `SetLabel(label string)`                 | Sets the text label                        |
 | `SetTooltip(tooltip string)`             | Sets the tooltip text (Windows)            |

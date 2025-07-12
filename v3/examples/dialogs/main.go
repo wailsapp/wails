@@ -60,7 +60,7 @@ func main() {
 		dialog.Show()
 	})
 	infoMenu.Add("About").OnClick(func(ctx *application.Context) {
-		app.ShowAboutDialog()
+		app.Menu.ShowAbout()
 	})
 
 	questionMenu := menu.AddSubmenu("Question")
@@ -73,7 +73,7 @@ func main() {
 	})
 	questionMenu.Add("Question (Attached to Window)").OnClick(func(ctx *application.Context) {
 		dialog := application.QuestionDialog()
-		dialog.AttachToWindow(app.CurrentWindow())
+		dialog.AttachToWindow(app.Window.Current())
 		dialog.SetMessage("No default button")
 		dialog.AddButton("Yes")
 		dialog.AddButton("No")
@@ -196,7 +196,7 @@ func main() {
 			CanChooseFiles(true).
 			CanCreateDirectories(true).
 			ShowHiddenFiles(true).
-			AttachToWindow(app.CurrentWindow()).
+			AttachToWindow(app.Window.Current()).
 			PromptForSingleSelection()
 		if result != "" {
 			application.InfoDialog().SetMessage(result).Show()
@@ -310,7 +310,7 @@ func main() {
 	})
 	saveMenu.Add("Select File (Attach To WebviewWindow)").OnClick(func(ctx *application.Context) {
 		result, _ := application.SaveFileDialog().
-			AttachToWindow(app.CurrentWindow()).
+			AttachToWindow(app.Window.Current()).
 			PromptForSingleSelection()
 		if result != "" {
 			application.InfoDialog().SetMessage(result).Show()
@@ -350,9 +350,9 @@ func main() {
 		}
 	})
 
-	app.SetMenu(menu)
+	app.Menu.Set(menu)
 
-	app.NewWebviewWindow()
+	app.Window.New()
 
 	err := app.Run()
 

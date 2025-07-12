@@ -30,7 +30,7 @@ func main() {
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Gin Service Demo",
 		Width:  1024,
 		Height: 768,

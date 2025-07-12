@@ -89,7 +89,7 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 	if menu == nil {
 		// Create a default menu
 		menu = DefaultApplicationMenu()
-		globalApplication.ApplicationMenu = menu
+		globalApplication.applicationMenu = menu
 	}
 }
 
@@ -129,7 +129,7 @@ func (a *linuxApp) run() error {
 		a.parent.info("Application launched with multiple arguments", "args", os.Args[1:])
 	}
 
-	a.parent.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
+	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
 		// TODO: What should happen here?
 	})
 	a.setupCommonEvents()

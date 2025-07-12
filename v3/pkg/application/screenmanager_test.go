@@ -305,7 +305,7 @@ func TestScreenManager_ScreensLayout(t *testing.T) {
 		err := sm.LayoutScreens(layout.screens)
 		is.NoErr(err)
 
-		screens := sm.Screens()
+		screens := sm.GetAll()
 		is.Equal(len(screens), 2)                                                                         // 2 screens
 		is.Equal(screens[0].PhysicalBounds, application.Rect{X: 0, Y: 0, Width: 1200, Height: 1200})      // Parent physical bounds
 		is.Equal(screens[0].Bounds, screens[0].PhysicalBounds)                                            // Parent no scaling
@@ -324,7 +324,7 @@ func TestScreenManager_ScreensLayout(t *testing.T) {
 		err := sm.LayoutScreens(layout.screens)
 		is.NoErr(err)
 
-		screens := sm.Screens()
+		screens := sm.GetAll()
 		is.Equal(len(screens), 2)                                                                         // 2 screens
 		is.Equal(screens[0].PhysicalBounds, application.Rect{X: 0, Y: 0, Width: 1200, Height: 1200})      // Parent physical bounds
 		is.Equal(screens[0].Bounds, application.Rect{X: 0, Y: 0, Width: 800, Height: 800})                // Parent DIP bounds
@@ -376,7 +376,7 @@ func TestScreenManager_PrimaryScreen(t *testing.T) {
 	for _, layout := range exampleLayouts() {
 		err := sm.LayoutScreens(layout.screens)
 		is.NoErr(err)
-		is.Equal(sm.PrimaryScreen(), layout.screens[0]) // Primary screen
+		is.Equal(sm.GetPrimary(), layout.screens[0]) // Primary screen
 	}
 
 	layout := parseLayout(ScreensLayout{screens: []ScreenDef{
@@ -387,7 +387,7 @@ func TestScreenManager_PrimaryScreen(t *testing.T) {
 	layout.screens[0], layout.screens[1] = layout.screens[1], layout.screens[0]
 	err := sm.LayoutScreens(layout.screens)
 	is.NoErr(err)
-	is.Equal(sm.PrimaryScreen(), layout.screens[1]) // Primary screen
+	is.Equal(sm.GetPrimary(), layout.screens[1]) // Primary screen
 
 	layout.screens[1].IsPrimary = false
 	err = sm.LayoutScreens(layout.screens)
@@ -403,7 +403,7 @@ func TestScreenManager_EdgeAlign(t *testing.T) {
 	for _, layout := range exampleLayouts() {
 		err := sm.LayoutScreens(layout.screens)
 		is.NoErr(err)
-		for _, screen := range sm.Screens() {
+		for _, screen := range sm.GetAll() {
 			ptOriginDip := screen.Bounds.Origin()
 			ptOriginPhysical := screen.PhysicalBounds.Origin()
 			ptCornerDip := screen.Bounds.InsideCorner()
@@ -436,7 +436,7 @@ func TestScreenManager_ProbePoints(t *testing.T) {
 	for _, layout := range exampleLayouts() {
 		err := sm.LayoutScreens(layout.screens)
 		is.NoErr(err)
-		for _, screen := range sm.Screens() {
+		for _, screen := range sm.GetAll() {
 			for i := 0; i <= 1; i++ {
 				isDip := (i == 0)
 
@@ -500,7 +500,7 @@ func TestScreenManager_TransformationDrift(t *testing.T) {
 	for _, layout := range exampleLayouts() {
 		err := sm.LayoutScreens(layout.screens)
 		is.NoErr(err)
-		for _, screen := range sm.Screens() {
+		for _, screen := range sm.GetAll() {
 			rectPhysicalOriginal := application.Rect{
 				X:      screen.PhysicalBounds.X + 100,
 				Y:      screen.PhysicalBounds.Y + 100,

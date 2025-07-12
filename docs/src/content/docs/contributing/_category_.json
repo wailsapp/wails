@@ -1,0 +1,9 @@
+{
+  "label": "Technical Documentation",
+  "link": {
+    "type": "generated-index",
+    "description": "Deep dive into Wails v3 internals for developers who want to understand or contribute to the codebase."
+  },
+  "order": 50,
+  "collapsed": false
+}
