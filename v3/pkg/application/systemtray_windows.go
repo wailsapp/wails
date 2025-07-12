@@ -62,7 +62,8 @@ func (s *windowsSystemTray) positionWindow(window *WebviewWindow, offset int) er
 
 	// systray icons in windows can either be in the taskbar
 	// or in a flyout menu.
-	iconIsInTrayBounds, err := s.iconIsInTrayBounds()
+	var iconIsInTrayBounds bool
+	iconIsInTrayBounds, err = s.iconIsInTrayBounds()
 	if err != nil {
 		return err
 	}
@@ -212,11 +213,22 @@ func (s *windowsSystemTray) run() {
 		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(icons.SystrayDark))
 	}
 
+	// Use custom icons if provided
 	if s.parent.icon != nil {
-		s.lightModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.icon))
+		// Create a new icon and destroy the old one
+		newIcon := lo.Must(w32.CreateSmallHIconFromImage(s.parent.icon))
+		if s.lightModeIcon != 0 && s.lightModeIcon != defaultIcon {
+			w32.DestroyIcon(s.lightModeIcon)
+		}
+		s.lightModeIcon = newIcon
 	}
 	if s.parent.darkModeIcon != nil {
-		s.darkModeIcon = lo.Must(w32.CreateSmallHIconFromImage(s.parent.darkModeIcon))
+		// Create a new icon and destroy the old one
+		newIcon := lo.Must(w32.CreateSmallHIconFromImage(s.parent.darkModeIcon))
+		if s.darkModeIcon != 0 && s.darkModeIcon != defaultIcon && s.darkModeIcon != s.lightModeIcon {
+			w32.DestroyIcon(s.darkModeIcon)
+		}
+		s.darkModeIcon = newIcon
 	}
 	s.uid = nid.UID
 
@@ -246,7 +258,7 @@ func (s *windowsSystemTray) run() {
 	s.updateIcon()
 
 	// Listen for dark mode changes
-	globalApplication.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *ApplicationEvent) {
+	globalApplication.Event.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *ApplicationEvent) {
 		s.updateIcon()
 	})
 
@@ -265,6 +277,9 @@ func (s *windowsSystemTray) updateIcon() {
 		return
 	}
 
+	// Store the old icon to destroy it after updating
+	oldIcon := s.currentIcon
+
 	s.currentIcon = newIcon
 	nid := s.newNotifyIconData()
 	nid.UFlags = w32.NIF_ICON
@@ -274,6 +289,11 @@ func (s *windowsSystemTray) updateIcon() {
 
 	if !w32.ShellNotifyIcon(w32.NIM_MODIFY, &nid) {
 		panic(syscall.GetLastError())
+	}
+
+	// Destroy the old icon handle if it exists and is not one of our default icons
+	if oldIcon != 0 && oldIcon != s.lightModeIcon && oldIcon != s.darkModeIcon {
+		w32.DestroyIcon(oldIcon)
 	}
 }
 
@@ -288,6 +308,10 @@ func (s *windowsSystemTray) newNotifyIconData() w32.NOTIFYICONDATA {
 
 func (s *windowsSystemTray) setIcon(icon []byte) {
 	var err error
+	// Destroy the previous light mode icon if it exists
+	if s.lightModeIcon != 0 {
+		w32.DestroyIcon(s.lightModeIcon)
+	}
 	s.lightModeIcon, err = w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
 		panic(syscall.GetLastError())
@@ -301,6 +325,10 @@ func (s *windowsSystemTray) setIcon(icon []byte) {
 
 func (s *windowsSystemTray) setDarkModeIcon(icon []byte) {
 	var err error
+	// Destroy the previous dark mode icon if it exists
+	if s.darkModeIcon != 0 {
+		w32.DestroyIcon(s.darkModeIcon)
+	}
 	s.darkModeIcon, err = w32.CreateSmallHIconFromImage(icon)
 	if err != nil {
 		panic(syscall.GetLastError())
@@ -422,6 +450,17 @@ func (s *windowsSystemTray) destroy() {
 	if !w32.ShellNotifyIcon(w32.NIM_DELETE, &nid) {
 		globalApplication.debug(syscall.GetLastError().Error())
 	}
+
+	// Clean up icon handles
+	if s.lightModeIcon != 0 {
+		w32.DestroyIcon(s.lightModeIcon)
+		s.lightModeIcon = 0
+	}
+	if s.darkModeIcon != 0 && s.darkModeIcon != s.lightModeIcon {
+		w32.DestroyIcon(s.darkModeIcon)
+		s.darkModeIcon = 0
+	}
+	s.currentIcon = 0
 }
 
 func (s *windowsSystemTray) Show() {
@@ -430,4 +469,20 @@ func (s *windowsSystemTray) Show() {
 
 func (s *windowsSystemTray) Hide() {
 	// No-op
+}
+
+func (s *windowsSystemTray) reshow() {
+	// Add icons back to systray
+	nid := w32.NOTIFYICONDATA{
+		HWnd:             s.hwnd,
+		UID:              uint32(s.parent.id),
+		UFlags:           w32.NIF_ICON | w32.NIF_MESSAGE,
+		HIcon:            s.currentIcon,
+		UCallbackMessage: WM_USER_SYSTRAY,
+	}
+	nid.CbSize = uint32(unsafe.Sizeof(nid))
+	// Show the icon
+	if !w32.ShellNotifyIcon(w32.NIM_ADD, &nid) {
+		panic(syscall.GetLastError())
+	}
 }

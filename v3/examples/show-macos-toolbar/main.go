@@ -17,7 +17,7 @@ func main() {
 	})
 
 	// Create window
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Toolbar hidden (default behaviour)",
 		HTML:  "<html><body><h1>Switch this window to fullscreen: the toolbar will be hidden</h1></body></html>",
 		CSS:   `body { background-color: blue; color: white; height: 100vh; display: flex; justify-content: center; align-items: center; }`,
@@ -30,7 +30,7 @@ func main() {
 	})
 
 	// Create window
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Toolbar visible",
 		HTML:  "<html><body><h1>Switch this window to fullscreen: the toolbar will stay visible</h1></body></html>",
 		CSS:   `body { background-color: red; color: white; height: 100vh; display: flex; justify-content: center; align-items: center; }`,

@@ -25,8 +25,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v3.0.0-alpha.11 - 2025-07-12
+
+## Added
+  - Add distribution-specific build dependencies for Linux by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/4345)
+  - Added bindings guide by @atterpac in [PR](https://github.com/wailsapp/wails/pull/4404)
+
+## v3.0.0-alpha.10 - 2025-07-06
+
 ### Breaking Changes
 
+- **Manager API Refactoring**: Reorganized application API from flat structure to organized managers for better code organization and discoverability by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
+  - `app.NewWebviewWindow()` → `app.Window.New()`
+  - `app.CurrentWindow()` → `app.Window.Current()`
+  - `app.GetAllWindows()` → `app.Window.GetAll()`
+  - `app.WindowByName()` → `app.Window.GetByName()`
+  - `app.EmitEvent()` → `app.Event.Emit()`
+  - `app.OnApplicationEvent()` → `app.Event.OnApplicationEvent()`
+  - `app.OnWindowEvent()` → `app.Event.OnWindowEvent()`
+  - `app.SetApplicationMenu()` → `app.Menu.SetApplicationMenu()`
+  - `app.OpenFileDialog()` → `app.Dialog.OpenFile()`
+  - `app.SaveFileDialog()` → `app.Dialog.SaveFile()`
+  - `app.MessageDialog()` → `app.Dialog.Message()`
+  - `app.InfoDialog()` → `app.Dialog.Info()`
+  - `app.WarningDialog()` → `app.Dialog.Warning()`
+  - `app.ErrorDialog()` → `app.Dialog.Error()`
+  - `app.QuestionDialog()` → `app.Dialog.Question()`
+  - `app.NewSystemTray()` → `app.SystemTray.New()`
+  - `app.GetSystemTray()` → `app.SystemTray.Get()`
+  - `app.ShowContextMenu()` → `app.ContextMenu.Show()`
+  - `app.RegisterKeybinding()` → `app.KeyBinding.Register()`
+  - `app.UnregisterKeybinding()` → `app.KeyBinding.Unregister()`
+  - `app.GetPrimaryScreen()` → `app.Screen.GetPrimary()`
+  - `app.GetAllScreens()` → `app.Screen.GetAll()`
+  - `app.BrowserOpenURL()` → `app.Browser.OpenURL()`
+  - `app.Environment()` → `app.Env.GetAll()`
+  - `app.ClipboardGetText()` → `app.Clipboard.Text()`
+  - `app.ClipboardSetText()` → `app.Clipboard.SetText()`
 - Renamed Service methods: `Name` -> `ServiceName`, `OnStartup` -> `ServiceStartup`, `OnShutdown` -> `ServiceShutdown` by [@leaanthony](https://github.com/leaanthony)
 - Moved `Path` and `Paths` methods to `application` package by [@leaanthony](https://github.com/leaanthony)
 - The application menu is now macOS only by [@leaanthony](https://github.com/leaanthony)
@@ -34,6 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Organized Testing Infrastructure**: Moved Docker test files to dedicated `test/docker/` directory with optimized images and enhanced build reliability by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
+- **Improved Resource Management Patterns**: Added proper event handler cleanup and context-aware goroutine management in examples by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
 - Support aarch64 AppImage builds by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
 - Add diagnostics section to `wails doctor` by [@leaanthony](https://github.com/leaanthony)
 - Add window to context when calling a service method by [@leaanthony](https://github.com/leaanthony)
@@ -76,12 +113,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add method `Close` on `sqlite` service to close the DB manually by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - Add cancellation support for query methods on `sqlite` service by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - Add prepared statement support to `sqlite` service with JS bindings by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Gin support by [Lea Anthony](https://github.com/leaanthony) in [PR](https://github.com/wailsapp/wails/pull/3537) based on the original work of [@AnalogJ](https://github.com/AnalogJ) in PR[https://github.com/wailsapp/wails/pull/3537]
+- Fix auto save and password auto save always enabled by [@oSethoum](https://github.com/osethoum) in [#4134](https://github.com/wailsapp/wails/pull/4134)
 - Add `SetMenu()` on window to allow for setting a menu on a window by [@leaanthony](https://github.com/leaanthony)
+- Add Notification support by [@popaprozac](https://github.com/popaprozac) in [#4098](https://github.com/wailsapp/wails/pull/4098)
+-  Add File Association support for mac by [@wimaha](https://github.com/wimaha) in [#4177](https://github.com/wailsapp/wails/pull/4177)
+- Add `wails3 tool version` for semantic version bumping by [@leaanthony](https://github.com/leaanthony)
+- Add badging support for macOS and Windows by [@popaprozac](https://github.com/popaprozac) in [#](https://github.com/wailsapp/wails/pull/4234)
 - Add support for registered/strictly-typed events by [@fbbdev](https://github.com/fbbdev) and [@IanVS](https://github.com/IanVS) in [#4161](https://github.com/wailsapp/wails/pull/4161)
 - Add the ability to register hooks for custom events by [@fbbdev](https://github.com/fbbdev) and [@IanVS](https://github.com/IanVS) in [#4161](https://github.com/wailsapp/wails/pull/4161)
 
 ### Fixed
 
+- Fixed nil pointer dereference in processURLRequest for Mac by [@etesam913](https://github.com/etesam913) in [#4366](https://github.com/wailsapp/wails/pull/4366)
+- Fixed a linux bug preventing filtered dialogs by [@bh90210](https://github.com/bh90210) in [#4287](https://github.com/wailsapp/wails/pull/4287)
 - Fixed Windows+Linux Edit Menu issues by [@leaanthony](https://github.com/leaanthony) in [#3f78a3a](https://github.com/wailsapp/wails/commit/3f78a3a8ce7837e8b32242c8edbbed431c68c062)
 - Updated the minimum system version in macOS .plist files from 10.13.0 to 10.15.0 by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
 - Window ID skip issue by [@leaanthony](https://github.com/leaanthony)
@@ -114,6 +159,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed initially-hidden menu items by [@IanVS](https://github.com/IanVS) in [#4116](https://github.com/wailsapp/wails/pull/4116)
 - Fixed assetFileServer not serving `.html` files when non-extension request when `[request]` doesn't exist but `[request].html` does
 - Fixed icon generation paths by [@robin-samuel](https://github.com/robin-samuel) in [#4125](https://github.com/wailsapp/wails/pull/4125)
+- Fixed `fullscreen`, `unfullscreen`, `unminimise` and `unmaximise` events not being emitted by [@oSethoum](https://github.com/osethoum) in [#4130](https://github.com/wailsapp/wails/pull/4130)
+- Fixed NSIS Error because of incorrect prefix on default version in config by [@robin-samuel](https://github.com/robin-samuel) in [#4126](https://github.com/wailsapp/wails/pull/4126)
+- Fixed Dialogs runtime function returning escaped paths on Windows by [TheGB0077](https://github.com/TheGB0077) in [#4188](https://github.com/wailsapp/wails/pull/4188)
+- Fixed Webview2 detection path in HKCU by [@leaanthony](https://github.com/leaanthony).
+- Fixed input issue with macOS by [@leaanthony](https://github.com/leaanthony).
+- Fixed Windows icon generation task file name by [@yulesxoxo](https://github.com/yulesxoxo) in [#4219](https://github.com/wailsapp/wails/pull/4219).
+- Fixed transparency issue for frameless windows by [@leaanthony](https://github.com/leaanthony) based on work by @kron.
+- Fixed focus calls when window is disabled or minimised by [@leaanthony](https://github.com/leaanthony) based on work by @kron.
+- Fixed system trays not showing after taskbar restarts by [@leaanthony](https://github.com/leaanthony) based on work by @kron.
+- Fixed fallbackResponseWriter not implementing Flush() in [#4245](https://github.com/wailsapp/wails/pull/4245)
+- Fixed fallbackResponseWriter not implementing Flush() by [@superDingda] in [#4236](https://github.com/wailsapp/wails/issues/4236)
+- Fixed macOS window close with pending async Go-bound function call crashes by [@joshhardy](https://github.com/joshhardy) in [#4354](https://github.com/wailsapp/wails/pull/4354)
+- Fixed Windows Efficiency mode startup race condition by [@leaanthony](https://github.com/leaanthony)
+- Fixed Windows icon handle cleanup by [@leaanthony](https://github.com/leaanthony).
+- Fixed `OpenFileManager` on Windows by [@PPTGamer](https://github.com/PPTGamer) in [#4375](https://github.com/wailsapp/wails/pull/4375).
 
 ### Changed
 
@@ -142,6 +202,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Built-in service types are now consistently called `Service` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - Built-in service creation functions with options are now consistently called `NewWithConfig` by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
 - `Select` method on `sqlite` service is now named `Query` for consistency with Go APIs by [@fbbdev](https://github.com/fbbdev) in [#4067](https://github.com/wailsapp/wails/pull/4067)
+- Templates: moved runtime to "dependencies", organized package.json files by [@IanVS](https://github.com/IanVS) in [#4133](https://github.com/wailsapp/wails/pull/4133)
+- Creates and ad-hoc signs app bundles in dev to enable certain macOS APIs by [@popaprozac](https://github.com/popaprozac) in [#4171](https://github.com/wailsapp/wails/pull/4171)
 
 ## v3.0.0-alpha.9 - 2025-01-13
 

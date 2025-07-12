@@ -3,6 +3,7 @@ module github.com/wailsapp/wails/v3
 go 1.24.0
 
 require (
+	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.5.3
 	github.com/atterpac/refresh v0.8.6
@@ -17,7 +18,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/goreleaser/nfpm/v2 v2.41.3
 	github.com/jackmordaunt/icns/v2 v2.2.7
-	github.com/jaypipes/ghw v0.13.0
+	github.com/jaypipes/ghw v0.17.0
 	github.com/leaanthony/clir v1.7.0
 	github.com/leaanthony/go-ansi-parser v1.6.1
 	github.com/leaanthony/gosod v1.0.4
@@ -135,7 +136,7 @@ require (
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac // indirect
 	golang.org/x/exp/typeparams v0.0.0-20250210185358-939b2ce775ac
-	golang.org/x/image v0.24.0 // indirect
+	golang.org/x/image v0.24.0
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.37.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect

@@ -21,13 +21,13 @@ It can be used to generate many things including:
 
 The `icon` command generates icons for your project. 
 
-| Flag               | Type   | Description                                          | Default               |
-|--------------------|--------|------------------------------------------------------|-----------------------|
-| `-example`         | bool   | Generates example icon file (appicon.png)            |                       |
-| `-input`           | string | The input image file                                 |                       |
+| Flag               | Type   | Description                                          | Default              |
+|--------------------|--------|------------------------------------------------------|----------------------|
+| `-example`         | bool   | Generates example icon file (appicon.png)            |                      |
+| `-input`           | string | The input image file                                 |                      |
 | `-sizes`           | string | The sizes to generate in .ico file (comma separated) | "256,128,64,48,32,16" |
-| `-windowsFilename` | string | The output filename for the Windows icon             | icons.ico             |
-| `-macFilename`     | string | The output filename for the Mac icon bundle          | icons.icns            |
+| `-windowsFilename` | string | The output filename for the Windows icon             | icon.ico             |
+| `-macFilename`     | string | The output filename for the Mac icon bundle          | icons.icns           |
 
 ```bash
 wails3 generate icon -input myicon.png -sizes "32,64,128" -windowsFilename myicon.ico -macFilename myicon.icns       

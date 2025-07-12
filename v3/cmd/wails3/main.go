@@ -79,6 +79,7 @@ func main() {
 	tool.NewSubCommandFunction("cp", "Copy files", commands.Cp)
 	tool.NewSubCommandFunction("buildinfo", "Show Build Info", commands.BuildInfo)
 	tool.NewSubCommandFunction("package", "Generate Linux packages (deb, rpm, archlinux)", commands.ToolPackage)
+	tool.NewSubCommandFunction("version", "Bump semantic version", commands.ToolVersion)
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)

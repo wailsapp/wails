@@ -1,0 +1,372 @@
+name: Automated Nightly Releases
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_release:
+        description: 'Force release even if no changes detected'
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: 'Run in dry-run mode (no actual releases)'
+        required: false
+        default: false
+        type: boolean
+  # schedule:
+    # Run at 2 AM UTC every day - DISABLED for safety until ready
+    # - cron: '0 2 * * *'
+
+env:
+  GO_VERSION: '1.24'
+
+jobs:
+  check-permissions:
+    name: Check Release Permissions
+    runs-on: ubuntu-latest
+    outputs:
+      authorized: ${{ steps.check.outputs.authorized }}
+    steps:
+      - name: Check if user is authorized for releases
+        id: check
+        run: |
+          # Only allow specific users to trigger releases
+          AUTHORIZED_USERS="leaanthony"
+          
+          if [[ "$AUTHORIZED_USERS" == *"${{ github.actor }}"* ]]; then
+            echo "✅ User ${{ github.actor }} is authorized for releases"
+            echo "authorized=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ User ${{ github.actor }} is not authorized for releases"
+            echo "authorized=false" >> $GITHUB_OUTPUT
+          fi
+
+  detect-v2-changes:
+    name: Detect v2 Changes
+    runs-on: ubuntu-latest
+    needs: check-permissions
+    if: needs.check-permissions.outputs.authorized == 'true'
+    outputs:
+      has_changes: ${{ steps.changes.outputs.has_changes }}
+      commits_since_last: ${{ steps.changes.outputs.commits_since_last }}
+      last_release_tag: ${{ steps.changes.outputs.last_release_tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for v2 changes since last release
+        id: changes
+        run: |
+          echo "🔍 Checking for v2 changes since last release..."
+          
+          # Find the last v2 release tag
+          LAST_TAG=$(git tag -l "v2.*" --sort=-version:refname | head -n 1)
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous v2 tags found, assuming first release"
+            LAST_TAG=$(git rev-list --max-parents=0 HEAD)
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "commits_since_last=999" >> $GITHUB_OUTPUT
+            echo "last_release_tag=none" >> $GITHUB_OUTPUT
+          else
+            echo "Last v2 release tag: $LAST_TAG"
+            echo "last_release_tag=$LAST_TAG" >> $GITHUB_OUTPUT
+            
+            # Count commits since last release affecting v2 or root files
+            COMMITS_COUNT=$(git rev-list --count ${LAST_TAG}..HEAD -- v2/ website/ README.md CHANGELOG.md || echo "0")
+            echo "Commits since last v2 release: $COMMITS_COUNT"
+            echo "commits_since_last=$COMMITS_COUNT" >> $GITHUB_OUTPUT
+            
+            if [ "$COMMITS_COUNT" -gt 0 ] || [ "${{ github.event.inputs.force_release }}" == "true" ]; then
+              echo "✅ Changes detected or forced release"
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+            else
+              echo "ℹ️ No changes detected since last release"
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  detect-v3-changes:
+    name: Detect v3-alpha Changes  
+    runs-on: ubuntu-latest
+    needs: check-permissions
+    if: needs.check-permissions.outputs.authorized == 'true'
+    outputs:
+      has_changes: ${{ steps.changes.outputs.has_changes }}
+      commits_since_last: ${{ steps.changes.outputs.commits_since_last }}
+      last_release_tag: ${{ steps.changes.outputs.last_release_tag }}
+    steps:
+      - name: Checkout v3-alpha branch
+        uses: actions/checkout@v4
+        with:
+          ref: v3-alpha
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for v3-alpha changes since last release
+        id: changes
+        run: |
+          echo "🔍 Checking for v3-alpha changes since last release..."
+          
+          # Find the last v3 alpha release tag
+          LAST_TAG=$(git tag -l "v3.*-alpha.*" --sort=-version:refname | head -n 1)
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous v3-alpha tags found, assuming first release"
+            LAST_TAG=$(git rev-list --max-parents=0 HEAD)
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "commits_since_last=999" >> $GITHUB_OUTPUT
+            echo "last_release_tag=none" >> $GITHUB_OUTPUT
+          else
+            echo "Last v3-alpha release tag: $LAST_TAG"
+            echo "last_release_tag=$LAST_TAG" >> $GITHUB_OUTPUT
+            
+            # Count commits since last release affecting v3 or docs
+            COMMITS_COUNT=$(git rev-list --count ${LAST_TAG}..HEAD -- v3/ docs/ || echo "0")
+            echo "Commits since last v3-alpha release: $COMMITS_COUNT"
+            echo "commits_since_last=$COMMITS_COUNT" >> $GITHUB_OUTPUT
+            
+            if [ "$COMMITS_COUNT" -gt 0 ] || [ "${{ github.event.inputs.force_release }}" == "true" ]; then
+              echo "✅ Changes detected or forced release"
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+            else
+              echo "ℹ️ No changes detected since last release"
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  release-v2:
+    name: Create v2 Release
+    runs-on: ubuntu-latest
+    needs: [check-permissions, detect-v2-changes]
+    if: |
+      needs.check-permissions.outputs.authorized == 'true' &&
+      needs.detect-v2-changes.outputs.has_changes == 'true'
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      release_notes: ${{ steps.release.outputs.release_notes }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run v2 release script and extract notes
+        id: release
+        run: |
+          echo "🚀 Running v2 release script..."
+          cd v2/tools/release
+          
+          # Run release script and capture output
+          RELEASE_OUTPUT=$(go run release.go 2>&1)
+          echo "$RELEASE_OUTPUT"
+          
+          # Extract version from output or version file
+          NEW_VERSION=$(cat ../../cmd/wails/internal/version.txt)
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          
+          # Extract release notes from delimited output
+          RELEASE_NOTES=$(echo "$RELEASE_OUTPUT" | sed -n '/=== RELEASE NOTES FOR/,/=== END RELEASE NOTES ===/p' | sed '1d;$d')
+          
+          # Save release notes to file for multiline output
+          echo "$RELEASE_NOTES" > ../../../release_notes_v2.md
+          
+          # Set output (escape for GitHub Actions)
+          {
+            echo "release_notes<<EOF"
+            echo "$RELEASE_NOTES"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          
+          echo "✅ v2 release script completed - version: $NEW_VERSION"
+
+      - name: Create v2 git tag and release
+        if: github.event.inputs.dry_run != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          echo "📝 Creating v2 release: $VERSION"
+          
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Commit the changelog changes
+          git add website/src/pages/changelog.mdx v2/cmd/wails/internal/version.txt
+          git commit -m "chore: release $VERSION
+
+          Automated release created by GitHub Actions
+
+          🤖 Generated with [Claude Code](https://claude.ai/code)
+
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          
+          # Create and push tag
+          git tag -a "$VERSION" -m "Release $VERSION"
+          git push origin master
+          git push origin "$VERSION"
+          
+          # Create GitHub release with notes
+          gh release create "$VERSION" \
+            --title "Release $VERSION" \
+            --notes-file release_notes_v2.md \
+            --target master
+
+      - name: Log dry-run results for v2
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          echo "🧪 DRY RUN - Would have created v2 release:"
+          echo "Version: ${{ steps.release.outputs.version }}"
+          echo "Release Notes:"
+          cat release_notes_v2.md
+
+  release-v3:
+    name: Create v3-alpha Release
+    runs-on: ubuntu-latest
+    needs: [check-permissions, detect-v3-changes]
+    if: |
+      needs.check-permissions.outputs.authorized == 'true' &&
+      needs.detect-v3-changes.outputs.has_changes == 'true'
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      release_notes: ${{ steps.release.outputs.release_notes }}
+    steps:
+      - name: Checkout v3-alpha branch
+        uses: actions/checkout@v4
+        with:
+          ref: v3-alpha
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run v3 release script and extract notes
+        id: release
+        run: |
+          echo "🚀 Running v3-alpha release script..."
+          cd v3/tasks/release
+          
+          # Run release script and capture output
+          RELEASE_OUTPUT=$(go run release.go 2>&1)
+          echo "$RELEASE_OUTPUT"
+          
+          # Extract version from output or version file
+          NEW_VERSION=$(cat ../../internal/version/version.txt)
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          
+          # Extract release notes from delimited output
+          RELEASE_NOTES=$(echo "$RELEASE_OUTPUT" | sed -n '/=== RELEASE NOTES FOR/,/=== END RELEASE NOTES ===/p' | sed '1d;$d')
+          
+          # Save release notes to file for multiline output
+          echo "$RELEASE_NOTES" > ../../../release_notes_v3.md
+          
+          # Set output (escape for GitHub Actions)
+          {
+            echo "release_notes<<EOF"
+            echo "$RELEASE_NOTES"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          
+          echo "✅ v3-alpha release script completed - version: $NEW_VERSION"
+
+      - name: Create v3-alpha git tag and release
+        if: github.event.inputs.dry_run != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          echo "📝 Creating v3-alpha release: $VERSION"
+          
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Commit the changelog changes
+          git add docs/src/content/docs/changelog.mdx v3/internal/version/version.txt
+          git commit -m "chore: release $VERSION
+
+          Automated v3-alpha release created by GitHub Actions
+
+          🤖 Generated with [Claude Code](https://claude.ai/code)
+
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          
+          # Create and push tag
+          git tag -a "$VERSION" -m "Release $VERSION"
+          git push origin v3-alpha
+          git push origin "$VERSION"
+          
+          # Create GitHub release with notes
+          gh release create "$VERSION" \
+            --title "Release $VERSION" \
+            --notes-file release_notes_v3.md \
+            --target v3-alpha \
+            --prerelease
+
+      - name: Log dry-run results for v3-alpha
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          echo "🧪 DRY RUN - Would have created v3-alpha release:"
+          echo "Version: ${{ steps.release.outputs.version }}"
+          echo "Release Notes:"
+          cat release_notes_v3.md
+
+  summary:
+    name: Release Summary
+    runs-on: ubuntu-latest
+    needs: [check-permissions, detect-v2-changes, detect-v3-changes, release-v2, release-v3]
+    if: always() && needs.check-permissions.outputs.authorized == 'true'
+    steps:
+      - name: Create release summary
+        run: |
+          echo "# 🚀 Automated Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Dry Run Mode**: ${{ github.event.inputs.dry_run || 'false' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # v2 Summary
+          echo "## v2 Release" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.detect-v2-changes.outputs.has_changes }}" == "true" ]; then
+            if [ "${{ needs.release-v2.result }}" == "success" ]; then
+              echo "✅ **v2 Release**: Created successfully" >> $GITHUB_STEP_SUMMARY
+              echo "  - Version: ${{ needs.release-v2.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+              echo "  - Commits since last: ${{ needs.detect-v2-changes.outputs.commits_since_last }}" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **v2 Release**: Failed" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "⏭️ **v2 Release**: Skipped (no changes)" >> $GITHUB_STEP_SUMMARY
+            echo "  - Commits since last: ${{ needs.detect-v2-changes.outputs.commits_since_last }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # v3 Summary
+          echo "## v3-alpha Release" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.detect-v3-changes.outputs.has_changes }}" == "true" ]; then
+            if [ "${{ needs.release-v3.result }}" == "success" ]; then
+              echo "✅ **v3-alpha Release**: Created successfully" >> $GITHUB_STEP_SUMMARY
+              echo "  - Version: ${{ needs.release-v3.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+              echo "  - Commits since last: ${{ needs.detect-v3-changes.outputs.commits_since_last }}" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **v3-alpha Release**: Failed" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "⏭️ **v3-alpha Release**: Skipped (no changes)" >> $GITHUB_STEP_SUMMARY
+            echo "  - Commits since last: ${{ needs.detect-v3-changes.outputs.commits_since_last }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "🤖 **Automated Release System** | Generated with [Claude Code](https://claude.ai/code)" >> $GITHUB_STEP_SUMMARY

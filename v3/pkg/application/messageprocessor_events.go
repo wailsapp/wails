@@ -44,7 +44,7 @@ func (m *MessageProcessor) processEventsMethod(method int, rw http.ResponseWrite
 		event.Name = *options.Name
 		event.Data = data
 		event.Sender = window.Name()
-		globalApplication.emitEvent(&event)
+		globalApplication.Event.EmitEvent(&event)
 
 		m.json(rw, event.IsCancelled())
 		m.Info("Runtime call:", "method", "Events."+eventsMethodNames[method], "name", event.Name, "sender", event.Sender, "data", event.Data, "cancelled", event.IsCancelled())

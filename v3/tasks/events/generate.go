@@ -218,7 +218,7 @@ func main() {
 			}
 			macEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			macEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
-			macTSEvents.WriteString("\t\t" + event + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
+			macTSEvents.WriteString("\t\t" + event + ": \"mac:" + event + "\",\n")
 			macCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
 			eventNameMap.WriteString("\t\"" + strings.TrimSpace(string(line)) + "\": {},\n")
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + strings.TrimSpace(string(line)) + "\",\n")

@@ -71,3 +71,10 @@ func (fw *fallbackResponseWriter) WriteHeader(statusCode int) {
 
 	fw.rw.WriteHeader(statusCode)
 }
+
+// Flush implements the http.Flusher interface.
+func (rw *fallbackResponseWriter) Flush() {
+	if f, ok := rw.rw.(http.Flusher); ok {
+		f.Flush()
+	}
+}
