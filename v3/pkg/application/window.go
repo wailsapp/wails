@@ -17,7 +17,7 @@ type Window interface {
 	Close()
 	DisableSizeConstraints()
 	DispatchWailsEvent(event *CustomEvent)
-	EmitEvent(name string, data ...any) bool
+	EmitEvent(name string, data ...any)
 	EnableSizeConstraints()
 	Error(message string, args ...any)
 	ExecJS(js string)
