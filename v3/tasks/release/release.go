@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +19,80 @@ func checkError(err error) {
 		println(err.Error())
 		os.Exit(1)
 	}
+}
+
+func runCommand(name string, arg ...string) ([]byte, error) {
+	cmd := exec.Command(name, arg...)
+	return cmd.Output()
+}
+
+func hasReleaseTag() (bool, string) {
+	output, err := runCommand("git", "describe", "--tags", "--exact-match", "HEAD")
+	if err != nil {
+		return false, ""
+	}
+
+	tag := strings.TrimSpace(string(output))
+	matched, _ := regexp.MatchString(`^v3\.0\.0-alpha\.\d+(\.\d+)*$`, tag)
+	return matched, tag
+}
+
+func extractChangelogSinceTag(tag string) (string, error) {
+	output, err := runCommand("git", "log", "--pretty=format:- %s", tag+"..HEAD")
+	if err != nil {
+		return "", err
+	}
+
+	changelog := strings.TrimSpace(string(output))
+	if changelog == "" {
+		return "No changes since " + tag, nil
+	}
+
+	return changelog, nil
+}
+
+func extractUnreleasedChangelog() (string, error) {
+	// This function assumes we're in the project root
+	changelogData, err := os.ReadFile("docs/src/content/docs/changelog.mdx")
+	if err != nil {
+		return "", err
+	}
+
+	changelog := string(changelogData)
+
+	// Find the [Unreleased] section
+	unreleasedStart := strings.Index(changelog, "## [Unreleased]")
+	if unreleasedStart == -1 {
+		return "No unreleased changes found", nil
+	}
+
+	// Find the next version section
+	nextVersionStart := strings.Index(changelog[unreleasedStart+len("## [Unreleased]"):], "## ")
+	if nextVersionStart == -1 {
+		// No next version, take everything after [Unreleased]
+		content := changelog[unreleasedStart+len("## [Unreleased]"):]
+		return strings.TrimSpace(content), nil
+	}
+
+	// Extract content between [Unreleased] and next version
+	content := changelog[unreleasedStart+len("## [Unreleased]") : unreleasedStart+len("## [Unreleased]")+nextVersionStart]
+	return strings.TrimSpace(content), nil
+}
+
+func outputReleaseMetadata(version, changelog string) error {
+	// Output release metadata for GitHub Actions to consume
+	fmt.Printf("RELEASE_VERSION=%s\n", version)
+	fmt.Printf("RELEASE_TAG=%s\n", version)
+	fmt.Printf("RELEASE_TITLE=%s\n", version)
+
+	// Write changelog to file for GitHub Actions
+	err := os.WriteFile("release-notes.txt", []byte(changelog), 0o644)
+	if err != nil {
+		return fmt.Errorf("failed to write release notes: %v", err)
+	}
+
+	fmt.Println("RELEASE_NOTES_FILE=release-notes.txt")
+	return nil
 }
 
 // TODO:This can be replaced with "https://github.com/coreos/go-semver/blob/main/semver/semver.go"
@@ -57,34 +134,73 @@ func updateVersion() string {
 //}
 
 func main() {
+	// Check if current commit has a release tag
+	hasTag, tag := hasReleaseTag()
+
 	var newVersion string
-	if len(os.Args) > 1 {
-		newVersion = os.Args[1]
-		//currentVersion, err := os.ReadFile(versionFile)
-		//checkError(err)
-		err := os.WriteFile(versionFile, []byte(newVersion), 0o755)
+	var releaseChangelog string
+
+	if hasTag {
+		// Current commit has a release tag - this is a nightly release
+		fmt.Printf("Found release tag: %s\n", tag)
+
+		// Read version from version.txt
+		currentVersionData, err := os.ReadFile(versionFile)
 		checkError(err)
-		//isPointRelease = IsPointRelease(string(currentVersion), newVersion)
+		newVersion = strings.TrimSpace(string(currentVersionData))
+
+		// Extract changelog since the tag
+		changelog, err := extractChangelogSinceTag(tag)
+		checkError(err)
+		releaseChangelog = changelog
+
+		fmt.Printf("Creating GitHub release for existing tag: %s\n", newVersion)
+
 	} else {
-		newVersion = updateVersion()
+		// No release tag - normal release process
+		fmt.Println("No release tag found - proceeding with normal release")
+
+		if len(os.Args) > 1 {
+			newVersion = os.Args[1]
+			err := os.WriteFile(versionFile, []byte(newVersion), 0o755)
+			checkError(err)
+		} else {
+			newVersion = updateVersion()
+		}
+
+		// Update ChangeLog
+		s.CD("../../..")
+		changelogData, err := os.ReadFile("docs/src/content/docs/changelog.mdx")
+		checkError(err)
+		changelog := string(changelogData)
+		// Split on the line that has `## [Unreleased]`
+		changelogSplit := strings.Split(changelog, "## [Unreleased]")
+		// Get today's date in YYYY-MM-DD format
+		today := time.Now().Format("2006-01-02")
+		// Add the new version to the top of the changelog
+		newChangelog := changelogSplit[0] + "## [Unreleased]\n\n## " + newVersion + " - " + today + changelogSplit[1]
+		// Write the changelog back
+		err = os.WriteFile("docs/src/content/docs/changelog.mdx", []byte(newChangelog), 0o755)
+		checkError(err)
+
+		// Extract unreleased changelog for GitHub release
+		unreleasedChangelog, err := extractUnreleasedChangelog()
+		checkError(err)
+		releaseChangelog = unreleasedChangelog
+
+		fmt.Printf("Updated version to: %s\n", newVersion)
+		fmt.Println("Updated changelog")
 	}
 
-	// Update ChangeLog
-	s.CD("../../..")
-
-	// Read in `src/pages/changelog.md`
-	changelogData, err := os.ReadFile("docs/src/content/docs/changelog.mdx")
-	checkError(err)
-	changelog := string(changelogData)
-	// Split on the line that has `## [Unreleased]`
-	changelogSplit := strings.Split(changelog, "## [Unreleased]")
-	// Get today's date in YYYY-MM-DD format
-	today := time.Now().Format("2006-01-02")
-	// Add the new version to the top of the changelog
-	newChangelog := changelogSplit[0] + "## [Unreleased]\n\n## " + newVersion + " - " + today + changelogSplit[1]
-	// Write the changelog back
-	err = os.WriteFile("docs/src/content/docs/changelog.mdx", []byte(newChangelog), 0o755)
-	checkError(err)
+	// Output release metadata for GitHub Actions
+	fmt.Printf("Preparing release metadata for version: %s\n", newVersion)
+	err := outputReleaseMetadata(newVersion, releaseChangelog)
+	if err != nil {
+		fmt.Printf("Failed to output release metadata: %v\n", err)
+		os.Exit(1)
+	} else {
+		fmt.Println("Release metadata prepared successfully")
+	}
 
 	// TODO: Documentation Versioning and Translations
 
