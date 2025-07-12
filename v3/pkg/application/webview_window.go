@@ -209,7 +209,10 @@ func getWindowID() uint {
 // FIXME: This should like be an interface method (TDM)
 // Use onApplicationEvent to register a callback for an application event from a window.
 // This will handle tidying up the callback when the window is destroyed
-func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func(*ApplicationEvent)) {
+func (w *WebviewWindow) onApplicationEvent(
+	eventType events.ApplicationEventType,
+	callback func(*ApplicationEvent),
+) {
 	cancelFn := globalApplication.Event.OnApplicationEvent(eventType, callback)
 	w.addCancellationFunction(cancelFn)
 }
@@ -776,11 +779,6 @@ func (w *WebviewWindow) OnWindowEvent(
 	callback func(event *WindowEvent),
 ) func() {
 	eventID := uint(eventType)
-	fmt.Printf(
-		"[DEBUG] OnWindowEvent: Registering window event listener - eventID: %d, eventType: %s\n",
-		eventID,
-		eventType,
-	)
 	windowEventListener := &WindowEventListener{
 		callback: callback,
 	}
