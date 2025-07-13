@@ -27,6 +27,15 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
         
+    - name: Get REAL validation script from v3-alpha
+      run: |
+        echo "Fetching the REAL validation script from v3-alpha branch..."
+        git fetch origin v3-alpha
+        git checkout origin/v3-alpha -- v3/scripts/validate-changelog.go
+        
+        echo "Validation script fetched successfully:"
+        ls -la v3/scripts/
+        
     - name: Setup Go
       uses: actions/setup-go@v4
       with:
