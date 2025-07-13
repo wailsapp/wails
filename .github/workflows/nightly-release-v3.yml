@@ -1,0 +1,293 @@
+name: Nightly Release v3-alpha
+
+on:
+  schedule:
+    - cron: '0 11 * * *'  # 6 AM EST / 7 PM CST for USA/China visibility
+  workflow_dispatch:
+    inputs:
+      force_release:
+        description: 'Force release even if no changes detected'
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: 'Run in dry-run mode (no actual release)'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  nightly-release:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/v3-alpha'
+    
+    permissions:
+      contents: write
+      pull-requests: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.24'
+    
+    - name: Setup Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+    
+    - name: Check for existing release tag
+      id: check_tag
+      run: |
+        if git describe --tags --exact-match HEAD 2>/dev/null; then
+          echo "has_tag=true" >> $GITHUB_OUTPUT
+          echo "tag=$(git describe --tags --exact-match HEAD)" >> $GITHUB_OUTPUT
+        else
+          echo "has_tag=false" >> $GITHUB_OUTPUT
+          echo "tag=" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Quick change detection and early exit
+      id: quick_check
+      run: |
+        echo "🔍 Quick check for changes to determine if we should continue..."
+        
+        # Check if current commit has a release tag
+        if git describe --tags --exact-match HEAD 2>/dev/null; then
+          CURRENT_TAG=$(git describe --tags --exact-match HEAD)
+          echo "Current commit has release tag: $CURRENT_TAG"
+          
+          # For tagged commits, check if there are changes since the tag
+          COMMIT_COUNT=$(git rev-list ${CURRENT_TAG}..HEAD --count)
+          if [ "$COMMIT_COUNT" -eq 0 ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "should_continue=false" >> $GITHUB_OUTPUT
+            echo "reason=No changes since existing tag $CURRENT_TAG" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "should_continue=true" >> $GITHUB_OUTPUT
+          fi
+        else
+          # No current tag, check against latest release
+          LATEST_TAG=$(git tag --list "v3.0.0-alpha.*" | sort -V | tail -1)
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No previous release found, proceeding with release"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "should_continue=true" >> $GITHUB_OUTPUT
+          else
+            COMMIT_COUNT=$(git rev-list ${LATEST_TAG}..HEAD --count)
+            if [ "$COMMIT_COUNT" -gt 0 ]; then
+              echo "Found $COMMIT_COUNT commits since $LATEST_TAG"
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+              echo "should_continue=true" >> $GITHUB_OUTPUT
+            else
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+              echo "should_continue=false" >> $GITHUB_OUTPUT
+              echo "reason=No changes since latest release $LATEST_TAG" >> $GITHUB_OUTPUT
+            fi
+          fi
+        fi
+    
+    - name: Early exit - No changes detected
+      if: |
+        steps.quick_check.outputs.should_continue == 'false' && 
+        github.event.inputs.force_release != 'true'
+      run: |
+        echo "🛑 EARLY EXIT: ${{ steps.quick_check.outputs.reason }}"
+        echo ""
+        echo "ℹ️  No changes detected since last release and force_release is not enabled."
+        echo "   Workflow will exit early to save resources."
+        echo ""
+        echo "   To force a release anyway, run this workflow with 'force_release=true'"
+        echo ""
+        echo "## 🛑 Early Exit Summary" >> $GITHUB_STEP_SUMMARY
+        echo "**Reason:** ${{ steps.quick_check.outputs.reason }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Action:** Workflow exited early to save resources" >> $GITHUB_STEP_SUMMARY
+        echo "**Force Release:** Set 'force_release=true' to override this behavior" >> $GITHUB_STEP_SUMMARY
+        exit 0
+    
+    - name: Continue with release process
+      if: |
+        steps.quick_check.outputs.should_continue == 'true' || 
+        github.event.inputs.force_release == 'true'
+      run: |
+        echo "✅ Proceeding with release process..."
+        if [ "${{ github.event.inputs.force_release }}" == "true" ]; then
+          echo "🔨 FORCE RELEASE: Overriding change detection"
+        fi
+    
+    - name: Run release script (DRY RUN)
+      id: release
+      if: |
+        steps.quick_check.outputs.should_continue == 'true' || 
+        github.event.inputs.force_release == 'true'
+      run: |
+        cd v3/tasks/release
+        
+        echo "🧪 Running release script in DRY RUN mode for testing..."
+        echo "======================================================="
+        
+        # Run the hardcoded dry run script
+        OUTPUT=$(go run release.go 2>&1)
+        echo "$OUTPUT"
+        
+        # Extract release metadata from output
+        RELEASE_VERSION=$(echo "$OUTPUT" | grep "RELEASE_VERSION=" | cut -d'=' -f2)
+        RELEASE_TAG=$(echo "$OUTPUT" | grep "RELEASE_TAG=" | cut -d'=' -f2)
+        RELEASE_TITLE=$(echo "$OUTPUT" | grep "RELEASE_TITLE=" | cut -d'=' -f2)
+        RELEASE_IS_PRERELEASE=$(echo "$OUTPUT" | grep "RELEASE_IS_PRERELEASE=" | cut -d'=' -f2)
+        RELEASE_IS_LATEST=$(echo "$OUTPUT" | grep "RELEASE_IS_LATEST=" | cut -d'=' -f2)
+        HAS_CHANGES=$(echo "$OUTPUT" | grep "HAS_CHANGES=" | cut -d'=' -f2)
+        
+        # Set outputs for next steps
+        echo "version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+        echo "tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+        echo "title=$RELEASE_TITLE" >> $GITHUB_OUTPUT
+        echo "is_prerelease=$RELEASE_IS_PRERELEASE" >> $GITHUB_OUTPUT
+        echo "is_latest=$RELEASE_IS_LATEST" >> $GITHUB_OUTPUT
+        echo "has_changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
+        
+        # Check if release-notes.txt was created
+        if [ -f "release-notes.txt" ]; then
+          echo "release_notes_file=release-notes.txt" >> $GITHUB_OUTPUT
+        else
+          echo "release_notes_file=" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Create and push git tag
+      if: |
+        (steps.quick_check.outputs.should_continue == 'true' || github.event.inputs.force_release == 'true') &&
+        steps.check_tag.outputs.has_tag == 'false' && 
+        github.event.inputs.dry_run != 'true'
+      run: |
+        git tag -a "${{ steps.release.outputs.tag }}" -m "Release ${{ steps.release.outputs.version }}"
+        git push origin "${{ steps.release.outputs.tag }}"
+    
+    - name: Commit and push changes
+      if: |
+        (steps.quick_check.outputs.should_continue == 'true' || github.event.inputs.force_release == 'true') &&
+        github.event.inputs.dry_run != 'true'
+      run: |
+        # Add any changes made by the release script
+        git add .
+        
+        # Check if there are changes to commit
+        if ! git diff --cached --quiet; then
+          git commit -m "🤖 Automated nightly release ${{ steps.release.outputs.version }}
+          
+          Generated with [Claude Code](https://claude.ai/code)
+          
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          git push origin v3-alpha
+        else
+          echo "No changes to commit"
+        fi
+    
+    - name: Read release notes
+      id: read_notes
+      if: |
+        (steps.quick_check.outputs.should_continue == 'true' || github.event.inputs.force_release == 'true') &&
+        steps.release.outputs.release_notes_file != ''
+      run: |
+        cd v3/tasks/release
+        if [ -f "release-notes.txt" ]; then
+          # Read the release notes and handle multiline content
+          RELEASE_NOTES=$(cat release-notes.txt)
+          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        else
+          echo "release_notes=No release notes available" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Test GitHub Release Creation (DRY RUN)
+      if: |
+        (steps.quick_check.outputs.should_continue == 'true' || github.event.inputs.force_release == 'true') &&
+        github.event.inputs.dry_run == 'true'
+      run: |
+        echo "🧪 DRY RUN: Would create GitHub release with the following parameters:"
+        echo "======================================================================="
+        echo "Tag Name: ${{ steps.release.outputs.tag }}"
+        echo "Release Name: ${{ steps.release.outputs.title }}"
+        echo "Is Prerelease: ${{ steps.release.outputs.is_prerelease }}"
+        echo "Is Latest: ${{ steps.release.outputs.is_latest }}"
+        echo "Has Changes: ${{ steps.release.outputs.has_changes }}"
+        echo ""
+        echo "Release Body Preview:"
+        echo "## Wails v3 Alpha Release - ${{ steps.release.outputs.version }}"
+        echo ""
+        echo "${{ steps.read_notes.outputs.release_notes }}"
+        echo ""
+        echo "---"
+        echo ""
+        echo "🤖 This is an automated nightly release generated from the latest changes in the v3-alpha branch."
+        echo ""
+        echo "**Installation:**"
+        echo "\`\`\`bash"
+        echo "go install github.com/wailsapp/wails/v3/cmd/wails@${{ steps.release.outputs.tag }}"
+        echo "\`\`\`"
+        echo ""
+        echo "**⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features."
+        echo ""
+        echo "✅ DRY RUN: GitHub release creation test completed successfully!"
+
+    - name: Create GitHub Release (LIVE)
+      if: |
+        (steps.quick_check.outputs.should_continue == 'true' || github.event.inputs.force_release == 'true') &&
+        github.event.inputs.dry_run != 'true'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.release.outputs.tag }}
+        release_name: ${{ steps.release.outputs.title }}
+        body: |
+          ## Wails v3 Alpha Release - ${{ steps.release.outputs.version }}
+          
+          ${{ steps.read_notes.outputs.release_notes }}
+          
+          ---
+          
+          🤖 This is an automated nightly release generated from the latest changes in the v3-alpha branch.
+          
+          **Installation:**
+          ```bash
+          go install github.com/wailsapp/wails/v3/cmd/wails@${{ steps.release.outputs.tag }}
+          ```
+          
+          **⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features.
+        draft: false
+        prerelease: ${{ steps.release.outputs.is_prerelease == 'true' }}
+    
+    - name: Summary
+      run: |
+        echo "## 🧪 DRY RUN Release Test Summary" >> $GITHUB_STEP_SUMMARY
+        echo "================================" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version:** ${{ steps.release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tag:** ${{ steps.release.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Has existing tag:** ${{ steps.check_tag.outputs.has_tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Has changes:** ${{ steps.release.outputs.has_changes }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Is prerelease:** ${{ steps.release.outputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Is latest:** ${{ steps.release.outputs.is_latest }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+          echo "- **Mode:** 🧪 DRY RUN (no actual release created)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ✅ Test completed successfully" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- **Mode:** 🚀 Live release" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ✅ Release created" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Release Notes Preview" >> $GITHUB_STEP_SUMMARY
+        echo "${{ steps.read_notes.outputs.release_notes }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "*Generated by automated nightly release workflow*" >> $GITHUB_STEP_SUMMARY
