@@ -5,9 +5,9 @@ import "log"
 var blankApplicationEventContext = &ApplicationEventContext{}
 
 const (
-	openedFiles = "openedFiles"
-	filename    = "filename"
-	url         = "url"
+	CONTEXT_OPENED_FILES = "openedFiles"
+	CONTEXT_FILENAME     = "filename"
+	CONTEXT_URL          = "url"
 )
 
 // ApplicationEventContext is the context of an application event
@@ -18,7 +18,7 @@ type ApplicationEventContext struct {
 
 // OpenedFiles returns the opened files from the event context if it was set
 func (c ApplicationEventContext) OpenedFiles() []string {
-	files, ok := c.data[openedFiles]
+	files, ok := c.data[CONTEXT_OPENED_FILES]
 	if !ok {
 		return nil
 	}
@@ -30,7 +30,7 @@ func (c ApplicationEventContext) OpenedFiles() []string {
 }
 
 func (c ApplicationEventContext) setOpenedFiles(files []string) {
-	c.data[openedFiles] = files
+	c.data[CONTEXT_OPENED_FILES] = files
 }
 
 func (c ApplicationEventContext) setIsDarkMode(mode bool) {
@@ -64,16 +64,16 @@ func (c *ApplicationEventContext) setData(data map[string]any) {
 }
 
 func (c *ApplicationEventContext) setOpenedWithFile(filepath string) {
-	c.data[filename] = filepath
+	c.data[CONTEXT_FILENAME] = filepath
 }
 
 func (c *ApplicationEventContext) setURL(openedWithURL string) {
-	c.data[url] = openedWithURL
+	c.data[CONTEXT_URL] = openedWithURL
 }
 
 // Filename returns the filename from the event context if it was set
 func (c ApplicationEventContext) Filename() string {
-	filename, ok := c.data[filename]
+	filename, ok := c.data[CONTEXT_FILENAME]
 	if !ok {
 		return ""
 	}
@@ -86,7 +86,7 @@ func (c ApplicationEventContext) Filename() string {
 
 // URL returns the URL from the event context if it was set
 func (c ApplicationEventContext) URL() string {
-	url, ok := c.data[url]
+	url, ok := c.data[CONTEXT_URL]
 	if !ok {
 		log.Println("URL not found in event context")
 		return ""
