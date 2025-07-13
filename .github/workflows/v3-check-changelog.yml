@@ -416,12 +416,7 @@ jobs:
         else
           # Add and commit the changes
           git add docs/src/content/docs/changelog.mdx
-          git commit -m "🤖 Fix changelog: move entries to Unreleased section
-
-          This automated fix was triggered by the v3-check-changelog workflow.
-          Misplaced entries in already-released versions have been moved to the [Unreleased] section.
-
-          Co-Authored-By: GitHub Action <action@github.com>"
+          git commit -m "🤖 Fix changelog: move entries to Unreleased section - Co-Authored-By: GitHub Action <action@github.com>"
           
           # Push the changes
           git push origin HEAD
