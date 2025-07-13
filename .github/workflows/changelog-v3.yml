@@ -15,11 +15,28 @@ jobs:
     - uses: actions/setup-go@v4
       with:
         go-version: '1.23'
-    - name: Validate
+    - name: Simulate PR #4392 validation
       run: |
-        echo "PR: ${{ github.event.inputs.pr_number }}"
+        echo "Simulating validation for PR: ${{ github.event.inputs.pr_number }}"
+        
+        # Simulate the problematic lines from PR #4392
+        cat > /tmp/pr_added_lines.txt << 'EOF'
+        - Add distribution-specific build dependencies for Linux by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/4345)
+        - Added bindings guide by @atterpac in [PR](https://github.com/wailsapp/wails/pull/4404)
+        EOF
+        
+        echo "Simulated lines that would be added to changelog:"
+        cat /tmp/pr_added_lines.txt
+        
+        # Fetch v3-alpha to get the actual changelog
+        git fetch origin v3-alpha
+        git checkout origin/v3-alpha -- docs/src/content/docs/changelog.mdx || echo "Changelog not found, creating test version"
+        
+        # Run validation if script exists
         if [ -f "v3/scripts/validate-changelog.go" ]; then
-          echo "Script found"
+          echo "Running changelog validation..."
+          cd v3/scripts
+          go run validate-changelog.go ../../docs/src/content/docs/changelog.mdx /tmp/pr_added_lines.txt
         else
           echo "Script not found"
         fi
