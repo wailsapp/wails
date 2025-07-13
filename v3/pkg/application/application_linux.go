@@ -16,8 +16,11 @@ import "C"
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"sync"
+
+	"path/filepath"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -109,17 +112,16 @@ func (a *linuxApp) run() error {
 		} else {
 			// Check if the argument matches any file associations
 			if a.parent.options.FileAssociations != nil {
-				for _, association := range a.parent.options.FileAssociations {
-					if strings.HasSuffix(arg1, association.Extension) {
-						a.parent.info("File opened via file association", "file", arg1, "extension", association.Extension)
-						eventContext := newApplicationEventContext()
-						eventContext.setOpenedWithFile(arg1)
-						applicationEvents <- &ApplicationEvent{
-							Id:  uint(events.Common.ApplicationOpenedWithFile),
-							ctx: eventContext,
-						}
-						return
+				ext := filepath.Ext(arg1)
+				if slices.Contains(a.parent.options.FileAssociations, ext) {
+					a.parent.info("File opened via file association", "file", arg1, "extension", ext)
+					eventContext := newApplicationEventContext()
+					eventContext.setOpenedWithFile(arg1)
+					applicationEvents <- &ApplicationEvent{
+						Id:  uint(events.Common.ApplicationOpenedWithFile),
+						ctx: eventContext,
 					}
+					return nil
 				}
 			}
 			a.parent.info("Application launched with single argument (not a URL), potential file open?", "arg", arg1)
