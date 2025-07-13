@@ -113,6 +113,10 @@ jobs:
             PR_INFO=$(gh pr view ${{ steps.pr_info.outputs.pr_number }} --json headRefName,headRepository)
             BRANCH_NAME=$(echo "$PR_INFO" | jq -r '.headRefName')
             REPO_OWNER=$(echo "$PR_INFO" | jq -r '.headRepository.owner.login')
+            # Fallback if owner is null/empty
+            if [ "$REPO_OWNER" = "null" ] || [ -z "$REPO_OWNER" ]; then
+              REPO_OWNER="wailsapp"
+            fi
           fi
           
           echo "Pushing to branch: $BRANCH_NAME in repo: $REPO_OWNER"
