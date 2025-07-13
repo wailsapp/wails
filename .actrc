@@ -1,0 +1,6 @@
+# act configuration file
+# This configures act to use ubuntu-latest image and sets default platform
+
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+--artifact-server-path /tmp/artifacts
+--env-file .env.act
