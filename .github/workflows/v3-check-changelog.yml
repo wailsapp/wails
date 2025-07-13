@@ -416,15 +416,12 @@ jobs:
         else
           # Add and commit the changes
           git add docs/src/content/docs/changelog.mdx
-          git commit -m "$(cat <<'EOF'
-🤖 Fix changelog: move entries to Unreleased section
+          git commit -m "🤖 Fix changelog: move entries to Unreleased section
 
-This automated fix was triggered by the v3-check-changelog workflow.
-Misplaced entries in already-released versions have been moved to the [Unreleased] section.
+          This automated fix was triggered by the v3-check-changelog workflow.
+          Misplaced entries in already-released versions have been moved to the [Unreleased] section.
 
-Co-Authored-By: GitHub Action <action@github.com>
-EOF
-)"
+          Co-Authored-By: GitHub Action <action@github.com>"
           
           # Push the changes
           git push origin HEAD
@@ -443,23 +440,11 @@ EOF
           
           let message;
           if (result === 'success') {
-            message = `## ✅ Changelog Validation Passed
-            
-No misplaced changelog entries detected. The changelog structure looks good!`;
+            message = '## ✅ Changelog Validation Passed\n\nNo misplaced changelog entries detected. The changelog structure looks good!';
           } else if (result === 'fixed' && committed === 'true') {
-            message = `## 🔧 Changelog Updated
-            
-I detected some changelog entries that were added to already-released versions and automatically moved them to the \`[Unreleased]\` section.
-
-**What was fixed:**
-- Entries that belonged in the \`[Unreleased]\` section were moved from released version sections
-- The changelog now follows the proper Keep a Changelog format
-
-The changes have been committed to this PR. Please review the updated changelog.`;
+            message = '## 🔧 Changelog Updated\n\nI detected some changelog entries that were added to already-released versions and automatically moved them to the `[Unreleased]` section.\n\n**What was fixed:**\n- Entries that belonged in the `[Unreleased]` section were moved from released version sections\n- The changelog now follows the proper Keep a Changelog format\n\nThe changes have been committed to this PR. Please review the updated changelog.';
           } else if (result === 'fixed' && committed === 'false') {
-            message = `## ✅ Changelog Validation Passed
-            
-The changelog validation completed successfully. No changes were needed.`;
+            message = '## ✅ Changelog Validation Passed\n\nThe changelog validation completed successfully. No changes were needed.';
           }
           
           await github.rest.issues.createComment({
@@ -474,21 +459,7 @@ The changelog validation completed successfully. No changes were needed.`;
       uses: actions/github-script@v7
       with:
         script: |
-          const message = `## ❌ Invalid Changelog Entry
-          
-**Issue:** Changelog entries were found in already-released version sections and cannot be automatically updated.
-
-**Problem:** You've added changelog entries to version sections that have already been released. According to the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format, new changes should only be added to the \`[Unreleased]\` section.
-
-**Required Action:** 
-Please manually move your changelog entries from the released version sections to the \`[Unreleased]\` section and push the changes.
-
-**How to fix:**
-1. Edit \`docs/src/content/docs/changelog.mdx\`
-2. Move your new entries from the released version section to the \`[Unreleased]\` section
-3. Commit and push the changes
-
-This workflow will run again after you push the fix.`;
+          const message = '## ❌ Invalid Changelog Entry\n\n**Issue:** Changelog entries were found in already-released version sections and cannot be automatically updated.\n\n**Problem:** You\'ve added changelog entries to version sections that have already been released. According to the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format, new changes should only be added to the `[Unreleased]` section.\n\n**Required Action:** \nPlease manually move your changelog entries from the released version sections to the `[Unreleased]` section and push the changes.\n\n**How to fix:**\n1. Edit `docs/src/content/docs/changelog.mdx`\n2. Move your new entries from the released version section to the `[Unreleased]` section\n3. Commit and push the changes\n\nThis workflow will run again after you push the fix.';
           
           await github.rest.issues.createComment({
             issue_number: ${{ steps.pr_info.outputs.pr_number }},
