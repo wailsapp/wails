@@ -186,12 +186,11 @@ jobs:
             
             message = `## ⚠️ Changelog Validation Issue
 
-@${author} Your PR contains changelog entries that were added to already-released versions. These need to be moved to the \`[Unreleased]\` section.
+@` + author + ` Your PR contains changelog entries that were added to already-released versions. These need to be moved to the \\`[Unreleased]\\` section.
 
-${committed === 'true' ? 
+` + (committed === 'true' ? 
   '✅ **Auto-fix applied**: The changes have been automatically committed to this PR.' :
-  '❌ **Manual fix required**: Please apply the changes shown below manually.'
-}
+  '❌ **Manual fix required**: Please apply the changes shown below manually.') + `
 
 <details>
 <summary>📝 Click to see the corrected changelog content</summary>
@@ -203,9 +202,9 @@ ${fixedContent}
 </details>
 
 **What happened?** 
-The validation script detected that you added changelog entries to a version section that has already been released (like \`v3.0.0-alpha.10\`). All new entries should go in the \`[Unreleased]\` section under the appropriate category (\`### Added\`, \`### Fixed\`, etc.).
+The validation script detected that you added changelog entries to a version section that has already been released (like \\`v3.0.0-alpha.10\\`). All new entries should go in the \\`[Unreleased]\\` section under the appropriate category (\\`### Added\\`, \\`### Fixed\\`, etc.).
 
-${committed !== 'true' ? '**Action needed:** Please copy the corrected content from above and replace your changelog file.' : ''}`;
+` + (committed !== 'true' ? '**Action needed:** Please copy the corrected content from above and replace your changelog file.' : '');
           }
           
           if (message) {
