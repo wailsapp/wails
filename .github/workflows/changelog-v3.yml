@@ -1,25 +1,191 @@
-name: Changelog V3
+name: Changelog Validation
 
 on:
+  pull_request:
+    branches: [ v3-alpha ]
+    paths:
+      - 'docs/src/content/docs/changelog.mdx'
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'PR number'
+        description: 'PR number to validate'
         required: true
+        type: string
 
 jobs:
   validate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-go@v4
+    - name: Checkout PR code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.inputs.pr_number) }}
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN || github.token }}
+        
+    - name: Get REAL validation script from v3-alpha
+      run: |
+        echo "Fetching the REAL validation script from v3-alpha branch..."
+        git fetch origin v3-alpha
+        git checkout origin/v3-alpha -- v3/scripts/validate-changelog.go
+        
+        echo "Validation script fetched successfully:"
+        ls -la v3/scripts/
+        
+    - name: Setup Go
+      uses: actions/setup-go@v4
       with:
         go-version: '1.23'
-    - name: Validate
+        
+    - name: Get PR information
+      id: pr_info
       run: |
-        echo "PR: ${{ github.event.inputs.pr_number }}"
-        if [ -f "v3/scripts/validate-changelog.go" ]; then
-          echo "Script found"
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          echo "base_ref=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
         else
-          echo "Script not found"
+          echo "pr_number=${{ github.event.inputs.pr_number }}" >> $GITHUB_OUTPUT
+          echo "base_ref=v3-alpha" >> $GITHUB_OUTPUT
         fi
+        
+    - name: Check changelog modifications
+      id: changelog_check
+      run: |
+        echo "Checking PR #${{ steps.pr_info.outputs.pr_number }} for changelog changes"
+        git fetch origin ${{ steps.pr_info.outputs.base_ref }}
+        
+        if git diff --name-only origin/${{ steps.pr_info.outputs.base_ref }}..HEAD | grep -q "docs/src/content/docs/changelog.mdx"; then
+          echo "changelog_modified=true" >> $GITHUB_OUTPUT
+          echo "✅ Changelog was modified in this PR"
+        else
+          echo "changelog_modified=false" >> $GITHUB_OUTPUT
+          echo "ℹ️ Changelog was not modified - skipping validation"
+        fi
+        
+    - name: Get changelog diff
+      id: get_diff
+      if: steps.changelog_check.outputs.changelog_modified == 'true'
+      run: |
+        echo "Getting diff for changelog changes..."
+        git diff origin/${{ steps.pr_info.outputs.base_ref }}..HEAD docs/src/content/docs/changelog.mdx | grep "^+" | grep -v "^+++" | sed 's/^+//' > /tmp/pr_added_lines.txt
+        
+        echo "Lines added in this PR:"
+        cat /tmp/pr_added_lines.txt
+        echo "Total lines added: $(wc -l < /tmp/pr_added_lines.txt)"
+        
+    - name: Validate changelog
+      id: validate
+      if: steps.changelog_check.outputs.changelog_modified == 'true'
+      run: |
+        echo "Running changelog validation..."
+        cd v3/scripts
+        OUTPUT=$(go run validate-changelog.go ../../docs/src/content/docs/changelog.mdx /tmp/pr_added_lines.txt 2>&1)
+        echo "$OUTPUT"
+        
+        RESULT=$(echo "$OUTPUT" | grep "VALIDATION_RESULT=" | cut -d'=' -f2)
+        echo "result=$RESULT" >> $GITHUB_OUTPUT
+        
+    - name: Commit fixes
+      id: commit_fixes
+      if: steps.validate.outputs.result == 'fixed'
+      run: |
+        echo "Committing automatic fixes..."
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Check only the changelog file for changes
+        if git diff --quiet docs/src/content/docs/changelog.mdx; then
+          echo "No changes to commit"
+          echo "committed=false" >> $GITHUB_OUTPUT
+        else
+          # Ensure validation script doesn't get committed
+          echo "v3/scripts/validate-changelog.go" >> .git/info/exclude
+          # Get the correct branch name to push to
+          REPO_OWNER="wailsapp"  # Always wailsapp for this repo
+          
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          else
+            # For manual workflow dispatch, get PR info
+            PR_INFO=$(gh pr view ${{ steps.pr_info.outputs.pr_number }} --json headRefName,headRepository)
+            BRANCH_NAME=$(echo "$PR_INFO" | jq -r '.headRefName')
+            HEAD_REPO=$(echo "$PR_INFO" | jq -r '.headRepository.name')
+            
+            echo "🔍 PR source branch: $BRANCH_NAME"
+            echo "🔍 Head repository: $HEAD_REPO"
+            
+            # Don't push if this is from a fork 
+            if [ "$HEAD_REPO" != "wails" ]; then
+              echo "⚠️ Cannot push to forked repository ($HEAD_REPO). Manual fix required."
+              echo "committed=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            
+            # Don't push if this is the main v3-alpha branch (not from a fork)
+            if [ "$BRANCH_NAME" = "v3-alpha" ]; then
+              echo "⚠️ Cannot push to protected main branch v3-alpha. Manual fix required."
+              echo "committed=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
+          
+          echo "Pushing to branch: $BRANCH_NAME in repo: $REPO_OWNER"
+          
+          # Only commit the changelog changes, not the validation script
+          git add docs/src/content/docs/changelog.mdx
+          git commit -m "🤖 Fix changelog: move entries to Unreleased section"
+          
+          # Only push if running on the main wailsapp repository
+          if [ "${{ github.repository }}" = "wailsapp/wails" ]; then
+            # Pull latest changes and rebase our commit
+            git fetch origin $BRANCH_NAME
+            git rebase origin/$BRANCH_NAME
+            git push origin HEAD:$BRANCH_NAME
+          else
+            echo "⚠️ Running on fork (${{ github.repository }}). Skipping push - manual fix required."
+            echo "committed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "committed=true" >> $GITHUB_OUTPUT
+          echo "✅ Changes committed and pushed"
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Comment on PR
+      if: steps.validate.outputs.result && github.event.inputs.pr_number
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const result = '${{ steps.validate.outputs.result }}';
+          const committed = '${{ steps.commit_fixes.outputs.committed }}';
+          
+          let message;
+          if (result === 'success') {
+            message = '## ✅ Changelog Validation Passed\n\nNo misplaced changelog entries detected.';
+          } else if (result === 'fixed' && committed === 'true') {
+            message = '## 🔧 Changelog Updated\n\nMisplaced entries were automatically moved to the `[Unreleased]` section. The changes have been committed to this PR.';
+          } else if (result === 'cannot_fix' || result === 'error') {
+            message = '## ❌ Changelog Validation Failed\n\nPlease manually move changelog entries to the `[Unreleased]` section.';
+          }
+          
+          if (message) {
+            await github.rest.issues.createComment({
+              issue_number: ${{ steps.pr_info.outputs.pr_number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+          }
+          
+    - name: Fail if validation failed
+      if: steps.validate.outputs.result == 'cannot_fix' || steps.validate.outputs.result == 'error'
+      run: |
+        echo "❌ Changelog validation failed"
+        exit 1
