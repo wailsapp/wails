@@ -15,7 +15,7 @@ import (
 // made available to the frontend.
 // See https://pkg.go.dev/embed for more information.
 
-//go:embed frontend/dist/*
+//go:embed all:frontend/dist
 var assets embed.FS
 
 // main function serves as the application's entry point. It initializes the application, creates a window,
@@ -42,8 +42,8 @@ func main() {
 	})
 
 	// Listen for the system event indicating the app was launched with a URL
-	app.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *application.ApplicationEvent) {
-		app.EmitEvent("frontend:ShowURL", e.Context().URL())
+	app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *application.ApplicationEvent) {
+		app.Event.Emit("frontend:ShowURL", e.Context().URL())
 	})
 
 	// Create a new window with the necessary options.
@@ -51,7 +51,7 @@ func main() {
 	// 'Mac' options tailor the window when running on macOS.
 	// 'BackgroundColour' is the background colour of the window.
 	// 'URL' is the URL that will be loaded into the webview.
-	_ = app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	_ = app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "Window 1",
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
@@ -67,7 +67,7 @@ func main() {
 	go func() {
 		for {
 			now := time.Now().Format(time.RFC1123)
-			app.EmitEvent("time", now)
+			app.Event.Emit("time", now)
 			time.Sleep(time.Second)
 		}
 	}()
