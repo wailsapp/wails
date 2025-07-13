@@ -123,6 +123,9 @@ jobs:
           
           # Only push if running on the main wailsapp repository
           if [ "${{ github.repository }}" = "wailsapp/wails" ]; then
+            # Pull latest changes and rebase our commit
+            git fetch origin $BRANCH_NAME
+            git rebase origin/$BRANCH_NAME
             git push origin HEAD:$BRANCH_NAME
           else
             echo "⚠️ Running on fork (${{ github.repository }}). Skipping push - manual fix required."
