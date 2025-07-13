@@ -18,6 +18,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      actions: write
     
     steps:
     - name: Checkout PR code
@@ -25,7 +26,7 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.inputs.pr_number) }}
         fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN || github.token }}
         
     - name: Get REAL validation script from v3-alpha
       run: |
@@ -111,8 +112,19 @@ jobs:
             BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
           else
             # For manual workflow dispatch, get PR info
-            PR_INFO=$(gh pr view ${{ steps.pr_info.outputs.pr_number }} --json headRefName)
+            PR_INFO=$(gh pr view ${{ steps.pr_info.outputs.pr_number }} --json headRefName,headRepository)
             BRANCH_NAME=$(echo "$PR_INFO" | jq -r '.headRefName')
+            HEAD_REPO=$(echo "$PR_INFO" | jq -r '.headRepository.name')
+            
+            echo "🔍 PR source branch: $BRANCH_NAME"
+            echo "🔍 Head repository: $HEAD_REPO"
+            
+            # Don't push if this is from a fork or if branch is v3-alpha (main branch)
+            if [ "$HEAD_REPO" != "wails" ] || [ "$BRANCH_NAME" = "v3-alpha" ]; then
+              echo "⚠️ Cannot push - either fork or direct v3-alpha branch. Manual fix required."
+              echo "committed=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
           fi
           
           echo "Pushing to branch: $BRANCH_NAME in repo: $REPO_OWNER"
