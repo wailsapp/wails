@@ -119,11 +119,18 @@ jobs:
             echo "🔍 PR source branch: $BRANCH_NAME"
             echo "🔍 Head repository owner: $HEAD_REPO_OWNER"
             
-            # Don't push if this is from a fork 
+            # Check if we can push to forks (requires admin PAT instead of GITHUB_TOKEN)
             if [ "$HEAD_REPO_OWNER" != "wailsapp" ]; then
-              echo "⚠️ Cannot push to forked repository ($HEAD_REPO_OWNER/wails). Manual fix required."
-              echo "committed=false" >> $GITHUB_OUTPUT
-              exit 0
+              echo "🔍 PR is from fork ($HEAD_REPO_OWNER/wails)"
+              if [ -z "${{ secrets.ADMIN_PAT }}" ]; then
+                echo "⚠️ Cannot push to forked repository - requires ADMIN_PAT secret. Manual fix required."
+                echo "committed=false" >> $GITHUB_OUTPUT
+                exit 0
+              else
+                echo "✅ Using ADMIN_PAT to push to fork"
+                # Use admin PAT for fork pushes
+                git remote set-url origin "https://${{ secrets.ADMIN_PAT }}@github.com/$HEAD_REPO_OWNER/wails.git"
+              fi
             fi
             
             # Don't push if this is the main v3-alpha branch (not from a fork)
