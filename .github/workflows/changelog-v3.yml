@@ -105,35 +105,14 @@ jobs:
           # Ensure validation script doesn't get committed
           echo "v3/scripts/validate-changelog.go" >> .git/info/exclude
           # Get the correct branch name to push to
+          REPO_OWNER="wailsapp"  # Always wailsapp for this repo
+          
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
-            REPO_OWNER="${{ github.event.pull_request.head.repo.owner.login }}"
           else
             # For manual workflow dispatch, get PR info
-            echo "🔍 Fetching PR info for #${{ steps.pr_info.outputs.pr_number }}..."
-            PR_INFO=$(gh pr view ${{ steps.pr_info.outputs.pr_number }} --json headRefName,headRepository)
-            echo "📋 Raw PR info: $PR_INFO"
-            
+            PR_INFO=$(gh pr view ${{ steps.pr_info.outputs.pr_number }} --json headRefName)
             BRANCH_NAME=$(echo "$PR_INFO" | jq -r '.headRefName')
-            REPO_OWNER=$(echo "$PR_INFO" | jq -r '.headRepository.owner.login')
-            
-            echo "🌿 Branch: $BRANCH_NAME"
-            echo "👤 Owner: $REPO_OWNER"
-            
-            # Multiple fallback strategies for owner detection
-            if [ "$REPO_OWNER" = "null" ] || [ -z "$REPO_OWNER" ]; then
-              echo "⚠️ Repository owner is null/empty, trying alternative methods..."
-              
-              # Try getting owner from GitHub context
-              REPO_OWNER="${{ github.repository_owner }}"
-              echo "🏢 Context owner: $REPO_OWNER"
-              
-              # Final fallback to hardcoded value
-              if [ "$REPO_OWNER" = "null" ] || [ -z "$REPO_OWNER" ]; then
-                REPO_OWNER="wailsapp"
-                echo "🔧 Using fallback: $REPO_OWNER"
-              fi
-            fi
           fi
           
           echo "Pushing to branch: $BRANCH_NAME in repo: $REPO_OWNER"
