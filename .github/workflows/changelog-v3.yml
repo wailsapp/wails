@@ -112,16 +112,16 @@ jobs:
             BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
           else
             # For manual workflow dispatch, get PR info
-            PR_INFO=$(gh pr view ${{ steps.pr_info.outputs.pr_number }} --json headRefName,headRepository)
+            PR_INFO=$(gh pr view ${{ steps.pr_info.outputs.pr_number }} --json headRefName,headRepositoryOwner)
             BRANCH_NAME=$(echo "$PR_INFO" | jq -r '.headRefName')
-            HEAD_REPO=$(echo "$PR_INFO" | jq -r '.headRepository.name')
+            HEAD_REPO_OWNER=$(echo "$PR_INFO" | jq -r '.headRepositoryOwner.login')
             
             echo "🔍 PR source branch: $BRANCH_NAME"
-            echo "🔍 Head repository: $HEAD_REPO"
+            echo "🔍 Head repository owner: $HEAD_REPO_OWNER"
             
             # Don't push if this is from a fork 
-            if [ "$HEAD_REPO" != "wails" ]; then
-              echo "⚠️ Cannot push to forked repository ($HEAD_REPO). Manual fix required."
+            if [ "$HEAD_REPO_OWNER" != "wailsapp" ]; then
+              echo "⚠️ Cannot push to forked repository ($HEAD_REPO_OWNER/wails). Manual fix required."
               echo "committed=false" >> $GITHUB_OUTPUT
               exit 0
             fi
