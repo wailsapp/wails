@@ -1,0 +1,25 @@
+name: Changelog V3
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number'
+        required: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+    - name: Validate
+      run: |
+        echo "PR: ${{ github.event.inputs.pr_number }}"
+        if [ -f "v3/scripts/validate-changelog.go" ]; then
+          echo "Script found"
+        else
+          echo "Script not found"
+        fi
