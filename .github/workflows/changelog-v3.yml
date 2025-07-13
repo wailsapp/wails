@@ -101,12 +101,36 @@ jobs:
           echo "No changes to commit"
           echo "committed=false" >> $GITHUB_OUTPUT
         else
+          # Get the correct branch name to push to
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+            REPO_OWNER="${{ github.event.pull_request.head.repo.owner.login }}"
+          else
+            # For manual workflow dispatch, get PR info
+            PR_INFO=$(gh pr view ${{ steps.pr_info.outputs.pr_number }} --json headRefName,headRepository)
+            BRANCH_NAME=$(echo "$PR_INFO" | jq -r '.headRefName')
+            REPO_OWNER=$(echo "$PR_INFO" | jq -r '.headRepository.owner.login')
+          fi
+          
+          echo "Pushing to branch: $BRANCH_NAME in repo: $REPO_OWNER"
+          
           git add docs/src/content/docs/changelog.mdx
           git commit -m "🤖 Fix changelog: move entries to Unreleased section"
-          git push origin HEAD
+          
+          # Push to the correct PR branch
+          if [ "$REPO_OWNER" = "wailsapp" ]; then
+            git push origin HEAD:$BRANCH_NAME
+          else
+            echo "⚠️ Cannot push to forked repository. Manual fix required."
+            echo "committed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
           echo "committed=true" >> $GITHUB_OUTPUT
           echo "✅ Changes committed and pushed"
         fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Comment on PR
       if: steps.validate.outputs.result && github.event.inputs.pr_number
