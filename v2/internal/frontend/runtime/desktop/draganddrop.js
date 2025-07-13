@@ -71,7 +71,7 @@ function onDragOver(e) {
     let currentElement = element;
     while (currentElement) {
         // check if currentElement is drop target element
-        if (checkStyleDropTarget(getComputedStyle(currentElement))) {
+        if (checkStyleDropTarget(getComputedStyle(currentElement)) {
             currentElement.classList.add(DROP_TARGET_ACTIVE);
         }
         currentElement = currentElement.parentElement;
