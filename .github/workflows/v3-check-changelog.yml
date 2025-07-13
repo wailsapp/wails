@@ -235,11 +235,20 @@ jobs:
             if strings.HasPrefix(line, "### ") {
               return strings.TrimSpace(line[4:])
             }
-            if strings.HasPrefix(line, "## ") {
+            if strings.HasPrefix(line, "## ") && 
+               !strings.Contains(line, "[Unreleased]") && 
+               !strings.Contains(line, "v3.0.0-alpha") {
+              // This is a malformed category like "## Added" - should be "### Added"
+              // But we'll handle it for backward compatibility
+              return strings.TrimSpace(line[3:])
+            }
+            if strings.HasPrefix(line, "## ") && 
+               (strings.Contains(line, "[Unreleased]") || strings.Contains(line, "v3.0.0-alpha")) {
+              // This is a version section header, stop looking
               break
             }
           }
-          return "Unknown"
+          return "Added" // Default fallback for new entries
         }
         
         func attemptFix(content string, issues []Issue) (bool, error) {
@@ -301,7 +310,7 @@ jobs:
             insertPos := unreleasedStart + 1
             
             for i := unreleasedStart + 1; i < unreleasedEnd && i < len(lines); i++ {
-              if strings.Contains(lines[i], "### " + category) {
+              if strings.Contains(lines[i], "### " + category) || strings.Contains(lines[i], "## " + category) {
                 categoryFound = true
                 // Find the end of this category to append entries
                 for j := i + 1; j < unreleasedEnd && j < len(lines); j++ {
