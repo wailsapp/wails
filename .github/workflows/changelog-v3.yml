@@ -121,11 +121,11 @@ jobs:
           git add docs/src/content/docs/changelog.mdx
           git commit -m "🤖 Fix changelog: move entries to Unreleased section"
           
-          # Push to the correct PR branch
-          if [ "$REPO_OWNER" = "wailsapp" ]; then
+          # Only push if running on the main wailsapp repository
+          if [ "${{ github.repository }}" = "wailsapp/wails" ]; then
             git push origin HEAD:$BRANCH_NAME
           else
-            echo "⚠️ Cannot push to forked repository. Manual fix required."
+            echo "⚠️ Running on fork (${{ github.repository }}). Skipping push - manual fix required."
             echo "committed=false" >> $GITHUB_OUTPUT
             exit 0
           fi
