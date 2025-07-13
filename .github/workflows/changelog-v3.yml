@@ -165,6 +165,15 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
+    - name: Get PR author for tagging
+      id: pr_author
+      if: steps.validate.outputs.result && github.event.inputs.pr_number
+      run: |
+        PR_AUTHOR=$(gh pr view ${{ steps.pr_info.outputs.pr_number }} --json author --jq '.author.login')
+        echo "author=$PR_AUTHOR" >> $GITHUB_OUTPUT
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Comment on PR
       if: steps.validate.outputs.result && github.event.inputs.pr_number
       uses: actions/github-script@v7
@@ -172,14 +181,45 @@ jobs:
         script: |
           const result = '${{ steps.validate.outputs.result }}';
           const committed = '${{ steps.commit_fixes.outputs.committed }}';
+          const author = '${{ steps.pr_author.outputs.author }}';
           
           let message;
           if (result === 'success') {
             message = '## ✅ Changelog Validation Passed\n\nNo misplaced changelog entries detected.';
           } else if (result === 'fixed' && committed === 'true') {
             message = '## 🔧 Changelog Updated\n\nMisplaced entries were automatically moved to the `[Unreleased]` section. The changes have been committed to this PR.';
-          } else if (result === 'cannot_fix' || result === 'error') {
-            message = '## ❌ Changelog Validation Failed\n\nPlease manually move changelog entries to the `[Unreleased]` section.';
+          } else if (result === 'fixed' || result === 'cannot_fix' || result === 'error') {
+            // Read the fixed changelog content
+            const fs = require('fs');
+            let fixedContent = '';
+            try {
+              fixedContent = fs.readFileSync('docs/src/content/docs/changelog.mdx', 'utf8');
+            } catch (error) {
+              fixedContent = 'Error reading fixed changelog content';
+            }
+            
+            message = `## ⚠️ Changelog Validation Issue
+
+@${author} Your PR contains changelog entries that were added to already-released versions. These need to be moved to the \`[Unreleased]\` section.
+
+${committed === 'true' ? 
+  '✅ **Auto-fix applied**: The changes have been automatically committed to this PR.' :
+  '❌ **Manual fix required**: Please apply the changes shown below manually.'
+}
+
+<details>
+<summary>📝 Click to see the corrected changelog content</summary>
+
+\`\`\`mdx
+${fixedContent}
+\`\`\`
+
+</details>
+
+**What happened?** 
+The validation script detected that you added changelog entries to a version section that has already been released (like \`v3.0.0-alpha.10\`). All new entries should go in the \`[Unreleased]\` section under the appropriate category (\`### Added\`, \`### Fixed\`, etc.).
+
+${committed !== 'true' ? '**Action needed:** Please copy the corrected content from above and replace your changelog file.' : ''}`;
           }
           
           if (message) {
