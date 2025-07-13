@@ -1,0 +1,53 @@
+name: V3 Changelog Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to check'
+        required: false
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+        
+    - name: Test basic functionality
+      run: |
+        echo "Testing workflow functionality"
+        echo "PR number: ${{ github.event.inputs.pr_number || 'none' }}"
+        
+        # Test Go is working
+        go version
+        
+        # Test script exists and runs
+        if [ -f "v3/scripts/validate-changelog.go" ]; then
+          echo "✅ Validation script found"
+          echo "Testing script with dummy data..."
+          echo "- Test entry" > /tmp/test_lines.txt
+          cd v3/scripts
+          go run validate-changelog.go ../../docs/src/content/docs/changelog.mdx /tmp/test_lines.txt
+          echo "✅ Script test completed"
+        else
+          echo "❌ Validation script not found"
+          ls -la v3/
+          [ -d "v3/scripts" ] && ls -la v3/scripts/
+        fi
+        
+    - name: Test PR diff simulation
+      if: github.event.inputs.pr_number
+      run: |
+        echo "Simulating PR diff for PR #${{ github.event.inputs.pr_number }}"
+        git fetch origin v3-alpha
+        git diff origin/v3-alpha..HEAD docs/src/content/docs/changelog.mdx | grep "^+" | grep -v "^+++" | sed 's/^+//' || echo "No changes found"
