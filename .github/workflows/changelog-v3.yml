@@ -97,10 +97,13 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         
+        # Check only the changelog file for changes
         if git diff --quiet docs/src/content/docs/changelog.mdx; then
           echo "No changes to commit"
           echo "committed=false" >> $GITHUB_OUTPUT
         else
+          # Ensure validation script doesn't get committed
+          echo "v3/scripts/validate-changelog.go" >> .git/info/exclude
           # Get the correct branch name to push to
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
@@ -114,6 +117,7 @@ jobs:
           
           echo "Pushing to branch: $BRANCH_NAME in repo: $REPO_OWNER"
           
+          # Only commit the changelog changes, not the validation script
           git add docs/src/content/docs/changelog.mdx
           git commit -m "🤖 Fix changelog: move entries to Unreleased section"
           
