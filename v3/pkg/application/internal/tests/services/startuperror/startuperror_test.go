@@ -55,7 +55,7 @@ func TestServiceStartupError(t *testing.T) {
 
 	app.RegisterService(services[5])
 
-	app.OnApplicationEvent(events.Common.ApplicationStarted, func(*application.ApplicationEvent) {
+	app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(*application.ApplicationEvent) {
 		t.Errorf("Application started")
 		app.Quit()
 	})

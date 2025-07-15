@@ -23,7 +23,7 @@ func main() {
 	})
 
 	// Create main window
-	mainWindow := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:     "Dialog Tests",
 		Width:     800,
 		Height:    600,
@@ -34,7 +34,7 @@ func main() {
 
 	// Create main menu
 	menu := app.NewMenu()
-	app.SetMenu(menu)
+	app.Menu.Set(menu)
 	menu.AddRole(application.AppMenu)
 	menu.AddRole(application.EditMenu)
 	menu.AddRole(application.WindowMenu)

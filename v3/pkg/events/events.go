@@ -1,7 +1,7 @@
 package events
 
 type ApplicationEventType uint
-type WindowEventType      uint
+type WindowEventType uint
 
 var Common = newCommonEvents()
 
@@ -68,12 +68,12 @@ var Linux = newLinuxEvents()
 type linuxEvents struct {
 	ApplicationStartup ApplicationEventType
 	SystemThemeChanged ApplicationEventType
-	WindowDeleteEvent WindowEventType
-	WindowDidMove WindowEventType
-	WindowDidResize WindowEventType
-	WindowFocusIn WindowEventType
-	WindowFocusOut WindowEventType
-	WindowLoadChanged WindowEventType
+	WindowDeleteEvent  WindowEventType
+	WindowDidMove      WindowEventType
+	WindowDidResize    WindowEventType
+	WindowFocusIn      WindowEventType
+	WindowFocusOut     WindowEventType
+	WindowLoadChanged  WindowEventType
 }
 
 func newLinuxEvents() linuxEvents {
@@ -92,138 +92,138 @@ func newLinuxEvents() linuxEvents {
 var Mac = newMacEvents()
 
 type macEvents struct {
-	ApplicationDidBecomeActive ApplicationEventType
-	ApplicationDidChangeBackingProperties ApplicationEventType
-	ApplicationDidChangeEffectiveAppearance ApplicationEventType
-	ApplicationDidChangeIcon ApplicationEventType
-	ApplicationDidChangeOcclusionState ApplicationEventType
-	ApplicationDidChangeScreenParameters ApplicationEventType
-	ApplicationDidChangeStatusBarFrame ApplicationEventType
-	ApplicationDidChangeStatusBarOrientation ApplicationEventType
-	ApplicationDidChangeTheme ApplicationEventType
-	ApplicationDidFinishLaunching ApplicationEventType
-	ApplicationDidHide ApplicationEventType
-	ApplicationDidResignActive ApplicationEventType
-	ApplicationDidUnhide ApplicationEventType
-	ApplicationDidUpdate ApplicationEventType
-	ApplicationShouldHandleReopen ApplicationEventType
-	ApplicationWillBecomeActive ApplicationEventType
-	ApplicationWillFinishLaunching ApplicationEventType
-	ApplicationWillHide ApplicationEventType
-	ApplicationWillResignActive ApplicationEventType
-	ApplicationWillTerminate ApplicationEventType
-	ApplicationWillUnhide ApplicationEventType
-	ApplicationWillUpdate ApplicationEventType
-	MenuDidAddItem ApplicationEventType
-	MenuDidBeginTracking ApplicationEventType
-	MenuDidClose ApplicationEventType
-	MenuDidDisplayItem ApplicationEventType
-	MenuDidEndTracking ApplicationEventType
-	MenuDidHighlightItem ApplicationEventType
-	MenuDidOpen ApplicationEventType
-	MenuDidPopUp ApplicationEventType
-	MenuDidRemoveItem ApplicationEventType
-	MenuDidSendAction ApplicationEventType
-	MenuDidSendActionToItem ApplicationEventType
-	MenuDidUpdate ApplicationEventType
-	MenuWillAddItem ApplicationEventType
-	MenuWillBeginTracking ApplicationEventType
-	MenuWillDisplayItem ApplicationEventType
-	MenuWillEndTracking ApplicationEventType
-	MenuWillHighlightItem ApplicationEventType
-	MenuWillOpen ApplicationEventType
-	MenuWillPopUp ApplicationEventType
-	MenuWillRemoveItem ApplicationEventType
-	MenuWillSendAction ApplicationEventType
-	MenuWillSendActionToItem ApplicationEventType
-	MenuWillUpdate ApplicationEventType
-	WebViewDidCommitNavigation WindowEventType
-	WebViewDidFinishNavigation WindowEventType
+	ApplicationDidBecomeActive                              ApplicationEventType
+	ApplicationDidChangeBackingProperties                   ApplicationEventType
+	ApplicationDidChangeEffectiveAppearance                 ApplicationEventType
+	ApplicationDidChangeIcon                                ApplicationEventType
+	ApplicationDidChangeOcclusionState                      ApplicationEventType
+	ApplicationDidChangeScreenParameters                    ApplicationEventType
+	ApplicationDidChangeStatusBarFrame                      ApplicationEventType
+	ApplicationDidChangeStatusBarOrientation                ApplicationEventType
+	ApplicationDidChangeTheme                               ApplicationEventType
+	ApplicationDidFinishLaunching                           ApplicationEventType
+	ApplicationDidHide                                      ApplicationEventType
+	ApplicationDidResignActive                              ApplicationEventType
+	ApplicationDidUnhide                                    ApplicationEventType
+	ApplicationDidUpdate                                    ApplicationEventType
+	ApplicationShouldHandleReopen                           ApplicationEventType
+	ApplicationWillBecomeActive                             ApplicationEventType
+	ApplicationWillFinishLaunching                          ApplicationEventType
+	ApplicationWillHide                                     ApplicationEventType
+	ApplicationWillResignActive                             ApplicationEventType
+	ApplicationWillTerminate                                ApplicationEventType
+	ApplicationWillUnhide                                   ApplicationEventType
+	ApplicationWillUpdate                                   ApplicationEventType
+	MenuDidAddItem                                          ApplicationEventType
+	MenuDidBeginTracking                                    ApplicationEventType
+	MenuDidClose                                            ApplicationEventType
+	MenuDidDisplayItem                                      ApplicationEventType
+	MenuDidEndTracking                                      ApplicationEventType
+	MenuDidHighlightItem                                    ApplicationEventType
+	MenuDidOpen                                             ApplicationEventType
+	MenuDidPopUp                                            ApplicationEventType
+	MenuDidRemoveItem                                       ApplicationEventType
+	MenuDidSendAction                                       ApplicationEventType
+	MenuDidSendActionToItem                                 ApplicationEventType
+	MenuDidUpdate                                           ApplicationEventType
+	MenuWillAddItem                                         ApplicationEventType
+	MenuWillBeginTracking                                   ApplicationEventType
+	MenuWillDisplayItem                                     ApplicationEventType
+	MenuWillEndTracking                                     ApplicationEventType
+	MenuWillHighlightItem                                   ApplicationEventType
+	MenuWillOpen                                            ApplicationEventType
+	MenuWillPopUp                                           ApplicationEventType
+	MenuWillRemoveItem                                      ApplicationEventType
+	MenuWillSendAction                                      ApplicationEventType
+	MenuWillSendActionToItem                                ApplicationEventType
+	MenuWillUpdate                                          ApplicationEventType
+	WebViewDidCommitNavigation                              WindowEventType
+	WebViewDidFinishNavigation                              WindowEventType
 	WebViewDidReceiveServerRedirectForProvisionalNavigation WindowEventType
-	WebViewDidStartProvisionalNavigation WindowEventType
-	WindowDidBecomeKey WindowEventType
-	WindowDidBecomeMain WindowEventType
-	WindowDidBeginSheet WindowEventType
-	WindowDidChangeAlpha WindowEventType
-	WindowDidChangeBackingLocation WindowEventType
-	WindowDidChangeBackingProperties WindowEventType
-	WindowDidChangeCollectionBehavior WindowEventType
-	WindowDidChangeEffectiveAppearance WindowEventType
-	WindowDidChangeOcclusionState WindowEventType
-	WindowDidChangeOrderingMode WindowEventType
-	WindowDidChangeScreen WindowEventType
-	WindowDidChangeScreenParameters WindowEventType
-	WindowDidChangeScreenProfile WindowEventType
-	WindowDidChangeScreenSpace WindowEventType
-	WindowDidChangeScreenSpaceProperties WindowEventType
-	WindowDidChangeSharingType WindowEventType
-	WindowDidChangeSpace WindowEventType
-	WindowDidChangeSpaceOrderingMode WindowEventType
-	WindowDidChangeTitle WindowEventType
-	WindowDidChangeToolbar WindowEventType
-	WindowDidDeminiaturize WindowEventType
-	WindowDidEndSheet WindowEventType
-	WindowDidEnterFullScreen WindowEventType
-	WindowDidEnterVersionBrowser WindowEventType
-	WindowDidExitFullScreen WindowEventType
-	WindowDidExitVersionBrowser WindowEventType
-	WindowDidExpose WindowEventType
-	WindowDidFocus WindowEventType
-	WindowDidMiniaturize WindowEventType
-	WindowDidMove WindowEventType
-	WindowDidOrderOffScreen WindowEventType
-	WindowDidOrderOnScreen WindowEventType
-	WindowDidResignKey WindowEventType
-	WindowDidResignMain WindowEventType
-	WindowDidResize WindowEventType
-	WindowDidUpdate WindowEventType
-	WindowDidUpdateAlpha WindowEventType
-	WindowDidUpdateCollectionBehavior WindowEventType
-	WindowDidUpdateCollectionProperties WindowEventType
-	WindowDidUpdateShadow WindowEventType
-	WindowDidUpdateTitle WindowEventType
-	WindowDidUpdateToolbar WindowEventType
-	WindowDidZoom WindowEventType
-	WindowFileDraggingEntered WindowEventType
-	WindowFileDraggingExited WindowEventType
-	WindowFileDraggingPerformed WindowEventType
-	WindowHide WindowEventType
-	WindowMaximise WindowEventType
-	WindowUnMaximise WindowEventType
-	WindowMinimise WindowEventType
-	WindowUnMinimise WindowEventType
-	WindowShouldClose WindowEventType
-	WindowShow WindowEventType
-	WindowWillBecomeKey WindowEventType
-	WindowWillBecomeMain WindowEventType
-	WindowWillBeginSheet WindowEventType
-	WindowWillChangeOrderingMode WindowEventType
-	WindowWillClose WindowEventType
-	WindowWillDeminiaturize WindowEventType
-	WindowWillEnterFullScreen WindowEventType
-	WindowWillEnterVersionBrowser WindowEventType
-	WindowWillExitFullScreen WindowEventType
-	WindowWillExitVersionBrowser WindowEventType
-	WindowWillFocus WindowEventType
-	WindowWillMiniaturize WindowEventType
-	WindowWillMove WindowEventType
-	WindowWillOrderOffScreen WindowEventType
-	WindowWillOrderOnScreen WindowEventType
-	WindowWillResignMain WindowEventType
-	WindowWillResize WindowEventType
-	WindowWillUnfocus WindowEventType
-	WindowWillUpdate WindowEventType
-	WindowWillUpdateAlpha WindowEventType
-	WindowWillUpdateCollectionBehavior WindowEventType
-	WindowWillUpdateCollectionProperties WindowEventType
-	WindowWillUpdateShadow WindowEventType
-	WindowWillUpdateTitle WindowEventType
-	WindowWillUpdateToolbar WindowEventType
-	WindowWillUpdateVisibility WindowEventType
-	WindowWillUseStandardFrame WindowEventType
-	WindowZoomIn WindowEventType
-	WindowZoomOut WindowEventType
-	WindowZoomReset WindowEventType
+	WebViewDidStartProvisionalNavigation                    WindowEventType
+	WindowDidBecomeKey                                      WindowEventType
+	WindowDidBecomeMain                                     WindowEventType
+	WindowDidBeginSheet                                     WindowEventType
+	WindowDidChangeAlpha                                    WindowEventType
+	WindowDidChangeBackingLocation                          WindowEventType
+	WindowDidChangeBackingProperties                        WindowEventType
+	WindowDidChangeCollectionBehavior                       WindowEventType
+	WindowDidChangeEffectiveAppearance                      WindowEventType
+	WindowDidChangeOcclusionState                           WindowEventType
+	WindowDidChangeOrderingMode                             WindowEventType
+	WindowDidChangeScreen                                   WindowEventType
+	WindowDidChangeScreenParameters                         WindowEventType
+	WindowDidChangeScreenProfile                            WindowEventType
+	WindowDidChangeScreenSpace                              WindowEventType
+	WindowDidChangeScreenSpaceProperties                    WindowEventType
+	WindowDidChangeSharingType                              WindowEventType
+	WindowDidChangeSpace                                    WindowEventType
+	WindowDidChangeSpaceOrderingMode                        WindowEventType
+	WindowDidChangeTitle                                    WindowEventType
+	WindowDidChangeToolbar                                  WindowEventType
+	WindowDidDeminiaturize                                  WindowEventType
+	WindowDidEndSheet                                       WindowEventType
+	WindowDidEnterFullScreen                                WindowEventType
+	WindowDidEnterVersionBrowser                            WindowEventType
+	WindowDidExitFullScreen                                 WindowEventType
+	WindowDidExitVersionBrowser                             WindowEventType
+	WindowDidExpose                                         WindowEventType
+	WindowDidFocus                                          WindowEventType
+	WindowDidMiniaturize                                    WindowEventType
+	WindowDidMove                                           WindowEventType
+	WindowDidOrderOffScreen                                 WindowEventType
+	WindowDidOrderOnScreen                                  WindowEventType
+	WindowDidResignKey                                      WindowEventType
+	WindowDidResignMain                                     WindowEventType
+	WindowDidResize                                         WindowEventType
+	WindowDidUpdate                                         WindowEventType
+	WindowDidUpdateAlpha                                    WindowEventType
+	WindowDidUpdateCollectionBehavior                       WindowEventType
+	WindowDidUpdateCollectionProperties                     WindowEventType
+	WindowDidUpdateShadow                                   WindowEventType
+	WindowDidUpdateTitle                                    WindowEventType
+	WindowDidUpdateToolbar                                  WindowEventType
+	WindowDidZoom                                           WindowEventType
+	WindowFileDraggingEntered                               WindowEventType
+	WindowFileDraggingExited                                WindowEventType
+	WindowFileDraggingPerformed                             WindowEventType
+	WindowHide                                              WindowEventType
+	WindowMaximise                                          WindowEventType
+	WindowUnMaximise                                        WindowEventType
+	WindowMinimise                                          WindowEventType
+	WindowUnMinimise                                        WindowEventType
+	WindowShouldClose                                       WindowEventType
+	WindowShow                                              WindowEventType
+	WindowWillBecomeKey                                     WindowEventType
+	WindowWillBecomeMain                                    WindowEventType
+	WindowWillBeginSheet                                    WindowEventType
+	WindowWillChangeOrderingMode                            WindowEventType
+	WindowWillClose                                         WindowEventType
+	WindowWillDeminiaturize                                 WindowEventType
+	WindowWillEnterFullScreen                               WindowEventType
+	WindowWillEnterVersionBrowser                           WindowEventType
+	WindowWillExitFullScreen                                WindowEventType
+	WindowWillExitVersionBrowser                            WindowEventType
+	WindowWillFocus                                         WindowEventType
+	WindowWillMiniaturize                                   WindowEventType
+	WindowWillMove                                          WindowEventType
+	WindowWillOrderOffScreen                                WindowEventType
+	WindowWillOrderOnScreen                                 WindowEventType
+	WindowWillResignMain                                    WindowEventType
+	WindowWillResize                                        WindowEventType
+	WindowWillUnfocus                                       WindowEventType
+	WindowWillUpdate                                        WindowEventType
+	WindowWillUpdateAlpha                                   WindowEventType
+	WindowWillUpdateCollectionBehavior                      WindowEventType
+	WindowWillUpdateCollectionProperties                    WindowEventType
+	WindowWillUpdateShadow                                  WindowEventType
+	WindowWillUpdateTitle                                   WindowEventType
+	WindowWillUpdateToolbar                                 WindowEventType
+	WindowWillUpdateVisibility                              WindowEventType
+	WindowWillUseStandardFrame                              WindowEventType
+	WindowZoomIn                                            WindowEventType
+	WindowZoomOut                                           WindowEventType
+	WindowZoomReset                                         WindowEventType
 }
 
 func newMacEvents() macEvents {
@@ -366,50 +366,50 @@ func newMacEvents() macEvents {
 var Windows = newWindowsEvents()
 
 type windowsEvents struct {
-	APMPowerSettingChange ApplicationEventType
-	APMPowerStatusChange ApplicationEventType
-	APMResumeAutomatic ApplicationEventType
-	APMResumeSuspend ApplicationEventType
-	APMSuspend ApplicationEventType
-	ApplicationStarted ApplicationEventType
-	SystemThemeChanged ApplicationEventType
+	APMPowerSettingChange      ApplicationEventType
+	APMPowerStatusChange       ApplicationEventType
+	APMResumeAutomatic         ApplicationEventType
+	APMResumeSuspend           ApplicationEventType
+	APMSuspend                 ApplicationEventType
+	ApplicationStarted         ApplicationEventType
+	SystemThemeChanged         ApplicationEventType
 	WebViewNavigationCompleted WindowEventType
-	WindowActive WindowEventType
-	WindowBackgroundErase WindowEventType
-	WindowClickActive WindowEventType
-	WindowClosing WindowEventType
-	WindowDidMove WindowEventType
-	WindowDidResize WindowEventType
-	WindowDPIChanged WindowEventType
-	WindowDragDrop WindowEventType
-	WindowDragEnter WindowEventType
-	WindowDragLeave WindowEventType
-	WindowDragOver WindowEventType
-	WindowEndMove WindowEventType
-	WindowEndResize WindowEventType
-	WindowFullscreen WindowEventType
-	WindowHide WindowEventType
-	WindowInactive WindowEventType
-	WindowKeyDown WindowEventType
-	WindowKeyUp WindowEventType
-	WindowKillFocus WindowEventType
-	WindowNonClientHit WindowEventType
-	WindowNonClientMouseDown WindowEventType
-	WindowNonClientMouseLeave WindowEventType
-	WindowNonClientMouseMove WindowEventType
-	WindowNonClientMouseUp WindowEventType
-	WindowPaint WindowEventType
-	WindowRestore WindowEventType
-	WindowSetFocus WindowEventType
-	WindowShow WindowEventType
-	WindowStartMove WindowEventType
-	WindowStartResize WindowEventType
-	WindowUnFullscreen WindowEventType
-	WindowZOrderChanged WindowEventType
-	WindowMinimise WindowEventType
-	WindowUnMinimise WindowEventType
-	WindowMaximise WindowEventType
-	WindowUnMaximise WindowEventType
+	WindowActive               WindowEventType
+	WindowBackgroundErase      WindowEventType
+	WindowClickActive          WindowEventType
+	WindowClosing              WindowEventType
+	WindowDidMove              WindowEventType
+	WindowDidResize            WindowEventType
+	WindowDPIChanged           WindowEventType
+	WindowDragDrop             WindowEventType
+	WindowDragEnter            WindowEventType
+	WindowDragLeave            WindowEventType
+	WindowDragOver             WindowEventType
+	WindowEndMove              WindowEventType
+	WindowEndResize            WindowEventType
+	WindowFullscreen           WindowEventType
+	WindowHide                 WindowEventType
+	WindowInactive             WindowEventType
+	WindowKeyDown              WindowEventType
+	WindowKeyUp                WindowEventType
+	WindowKillFocus            WindowEventType
+	WindowNonClientHit         WindowEventType
+	WindowNonClientMouseDown   WindowEventType
+	WindowNonClientMouseLeave  WindowEventType
+	WindowNonClientMouseMove   WindowEventType
+	WindowNonClientMouseUp     WindowEventType
+	WindowPaint                WindowEventType
+	WindowRestore              WindowEventType
+	WindowSetFocus             WindowEventType
+	WindowShow                 WindowEventType
+	WindowStartMove            WindowEventType
+	WindowStartResize          WindowEventType
+	WindowUnFullscreen         WindowEventType
+	WindowZOrderChanged        WindowEventType
+	WindowMinimise             WindowEventType
+	WindowUnMinimise           WindowEventType
+	WindowMaximise             WindowEventType
+	WindowUnMaximise           WindowEventType
 }
 
 func newWindowsEvents() windowsEvents {
@@ -458,6 +458,7 @@ func newWindowsEvents() windowsEvents {
 		WindowUnMinimise: 1230,
 		WindowMaximise: 1231,
 		WindowUnMaximise: 1232,
+
 	}
 }
 
@@ -676,4 +677,3 @@ var eventToJS = map[uint]string{
 	1231: "windows:WindowMaximise",
 	1232: "windows:WindowUnMaximise",
 }
-

@@ -412,6 +412,18 @@ func (w *linuxWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 	w.ignoreMouse(w.ignoreMouseEvents)
 }
 
+func (w *linuxWebviewWindow) show() {
+	// Linux implementation is robust - window shows immediately
+	// This is the preferred pattern that Windows should follow
+	w.windowShow()
+}
+
+func (w *linuxWebviewWindow) hide() {
+	// Save position before hiding (consistent with CGO implementation)
+	w.lastX, w.lastY = w.position()
+	w.windowHide()
+}
+
 func (w *linuxWebviewWindow) showMenuBar()   {}
 func (w *linuxWebviewWindow) hideMenuBar()   {}
 func (w *linuxWebviewWindow) toggleMenuBar() {}

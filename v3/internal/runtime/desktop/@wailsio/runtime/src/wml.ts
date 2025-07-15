@@ -10,7 +10,7 @@ The electron alternative for Go
 
 import { OpenURL } from "./browser.js";
 import { Question } from "./dialogs.js";
-import { Emit, WailsEvent } from "./events.js";
+import { Emit } from "./events.js";
 import { canAbortListeners, whenReady } from "./utils.js";
 import Window from "./window.js";
 
@@ -21,7 +21,7 @@ import Window from "./window.js";
  * @param [data=null] - - Optional data to send along with the event.
  */
 function sendEvent(eventName: string, data: any = null): void {
-    Emit(new WailsEvent(eventName, data));
+    void Emit(eventName, data);
 }
 
 /**

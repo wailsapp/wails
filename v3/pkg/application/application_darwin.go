@@ -73,6 +73,32 @@ static bool isDarkMode(void) {
 	return [interfaceStyle isEqualToString:@"Dark"];
 }
 
+static char* getAccentColor(void) {
+	@autoreleasepool {
+		NSColor *accentColor;
+		if (@available(macOS 10.14, *)) {
+			accentColor = [NSColor controlAccentColor];
+		} else {
+			// Fallback to system blue for older macOS versions
+			accentColor = [NSColor systemBlueColor];
+		}
+		// Convert to RGB color space
+		NSColor *rgbColor = [accentColor colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+		if (rgbColor == nil) {
+			rgbColor = accentColor;
+		}
+		// Get RGB components
+		CGFloat red, green, blue, alpha;
+		[rgbColor getRed:&red green:&green blue:&blue alpha:&alpha];
+		// Convert to 0-255 range and format as rgb() string
+		int r = (int)(red * 255);
+		int g = (int)(green * 255);
+		int b = (int)(blue * 255);
+		NSString *colorString = [NSString stringWithFormat:@"rgb(%d,%d,%d)", r, g, b];
+		return strdup([colorString UTF8String]);
+	}
+}
+
 static void setApplicationShouldTerminateAfterLastWindowClosed(bool shouldTerminate) {
 	// Get the NSApp delegate
 	AppDelegate *appDelegate = (AppDelegate*)[NSApp delegate];
@@ -186,6 +212,12 @@ func (m *macosApp) isDarkMode() bool {
 	return bool(C.isDarkMode())
 }
 
+func (m *macosApp) getAccentColor() string {
+	accentColorC := C.getAccentColor()
+	defer C.free(unsafe.Pointer(accentColorC))
+	return C.GoString(accentColorC)
+}
+
 func getNativeApplication() *macosApp {
 	return globalApplication.impl.(*macosApp)
 }
@@ -235,7 +267,7 @@ func (m *macosApp) run() error {
 		C.startSingleInstanceListener(cUniqueID)
 	}
 	// Add a hook to the ApplicationDidFinishLaunching event
-	m.parent.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*ApplicationEvent) {
+	m.parent.Event.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*ApplicationEvent) {
 		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))
 		C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
 		C.activateIgnoringOtherApps()
@@ -290,7 +322,7 @@ func processApplicationEvent(eventID C.uint, data unsafe.Pointer) {
 
 	switch event.Id {
 	case uint(events.Mac.ApplicationDidChangeTheme):
-		isDark := globalApplication.IsDarkMode()
+		isDark := globalApplication.Env.IsDarkMode()
 		event.Context().setIsDarkMode(isDark)
 	}
 	applicationEvents <- event
@@ -314,10 +346,16 @@ func processMessage(windowID C.uint, message *C.char) {
 
 //export processURLRequest
 func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
+	window, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || window == nil {
+		globalApplication.debug("could not find window with id: %d", windowID)
+		return
+	}
+
 	webviewRequests <- &webViewAssetRequest{
 		Request:    webview.NewRequest(wkUrlSchemeTask),
 		windowId:   uint(windowID),
-		windowName: globalApplication.getWindowForID(uint(windowID)).Name(),
+		windowName: window.Name(),
 	}
 }
 

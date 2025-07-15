@@ -88,13 +88,13 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 	if menu == nil {
 		// Create a default menu
 		menu = DefaultApplicationMenu()
-		globalApplication.ApplicationMenu = menu
+		globalApplication.applicationMenu = menu
 	}
 }
 
 func (a *linuxApp) run() error {
 
-	a.parent.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
+	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
 		// TODO: What should happen here?
 	})
 	a.setupCommonEvents()
@@ -134,6 +134,12 @@ func (a *linuxApp) registerWindow(window pointer, id uint) {
 
 func (a *linuxApp) isDarkMode() bool {
 	return strings.Contains(a.theme, "dark")
+}
+
+func (a *linuxApp) getAccentColor() string {
+	// Linux doesn't have a unified system accent color API
+	// Return a default blue color
+	return "rgb(0,122,255)"
 }
 
 func (a *linuxApp) monitorThemeChanges() {
