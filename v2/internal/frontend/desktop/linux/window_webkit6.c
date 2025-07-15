@@ -127,6 +127,7 @@ ulong SetupInvokeSignal(void *contentManager)
     return g_signal_connect((WebKitUserContentManager *)contentManager, "script-message-received::external", G_CALLBACK(sendMessageToBackend), NULL);
 }
 
+//// TODO:
 void SetWindowIcon(GtkWindow *window, const guchar *buf, gsize len)
 {
     // GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
@@ -568,6 +569,21 @@ char *droppedFiles = NULL;
 //     return FALSE;
 // }
 
+//// TODO: Drag and drop might not work
+// see: https://discourse.gnome.org/t/file-drag-and-drop-in-gtkmm4/10548/5
+static gboolean onDragDrop(GtkDropTarget *target, const GValue *value, double x, double y, gpointer data) {
+    GdkFileList *file_list = g_value_get_boxed(value);
+
+    GSList *list = gdk_file_list_get_files(file_list);
+
+    for(GSList *l = list; l != NULL; l = l->next) {
+        GFile* file = l->data;
+        g_print ("%s\n", g_file_get_path(file));
+    }
+
+    return TRUE;
+}
+
 static void onDelete(GtkWidget* self) {}
 
 // WebView
@@ -588,8 +604,13 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
 
     // if(enableDragAndDrop)
     // {
-    //     g_signal_connect(G_OBJECT(webview), "drag-data-received", G_CALLBACK(onDragDataReceived), NULL);
-    //     g_signal_connect(G_OBJECT(webview), "drag-drop", G_CALLBACK(onDragDrop), NULL);
+    //     GtkDropTarget *target = gtk_drop_target_new(G_TYPE_INVALID, GDK_ACTION_COPY);
+
+    //     gtk_drop_target_set_gtypes(target, (GType[1]) { GDK_TYPE_FILE_LIST, }, 1);
+
+    //     g_signal_connect(target, "drop", G_CALLBACK(onDragDrop), NULL);
+
+    //     gtk_widget_add_controller(webview, GTK_EVENT_CONTROLLER(target));
     // }
 
     if (hideWindowOnClose)
