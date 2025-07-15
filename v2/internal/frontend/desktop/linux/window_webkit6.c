@@ -778,112 +778,136 @@ void freeFileFilterArray(GtkFileFilter **filters)
     free(filters);
 }
 
+void openFileResult(GtkDialog *dialog, int response) {
+    GtkFileChooser *fc = GTK_FILE_CHOOSER(dialog);
+
+    // Max 1024 files to select
+    char **result = calloc(1024, sizeof(char *));
+    int resultIndex = 0;
+
+    if(response == GTK_RESPONSE_ACCEPT) {
+        GListModel *files = gtk_file_chooser_get_files(fc);
+
+        GObject *item = g_list_model_get_object(files, resultIndex);
+
+        while(item) {
+            GFile *file = G_FILE(item);
+            char *path = g_file_get_path(file);
+
+            result[resultIndex] = path;
+            resultIndex++;
+
+            g_object_unref(file);
+
+            if(resultIndex == 1024) {
+                break;
+            }
+
+            item = g_list_model_get_object(files, resultIndex);
+        }
+
+        processOpenFileResult(result);
+
+        for(int i = 0; i < resultIndex; i++) {
+            g_free(result[i]);
+        }
+
+        g_object_unref(files);
+    } else {
+        processOpenFileResult(result);
+    }
+    free(result);
+
+    gtk_window_destroy(GTK_WINDOW(dialog));
+}
+
 void Opendialog(void *data)
 {
-    // struct OpenFileDialogOptions *options = data;
-    // char *label = "_Open";
-    // if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE)
-    // {
-    //     label = "_Save";
-    // }
-    // GtkWidget *dlgWidget = gtk_file_chooser_dialog_new(options->title, options->window, options->action,
-    //                                                    "_Cancel", GTK_RESPONSE_CANCEL,
-    //                                                    label, GTK_RESPONSE_ACCEPT,
-    //                                                    NULL);
+    struct OpenFileDialogOptions *options = data;
+    char *label = "_Open";
+    if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE)
+    {
+        label = "_Save";
+    }
 
-    // GtkFileChooser *fc = GTK_FILE_CHOOSER(dlgWidget);
-    // // filters
-    // if (options->filters != 0)
-    // {
-    //     int index = 0;
-    //     GtkFileFilter *thisFilter;
-    //     while (options->filters[index] != NULL)
-    //     {
-    //         thisFilter = options->filters[index];
-    //         gtk_file_chooser_add_filter(fc, thisFilter);
-    //         index++;
-    //     }
-    // }
+    // TODO: gtk_file_chooser_dialog_new is deprecated since 4.10
+    // but the user's system might not offer a compatible version.
+    //
+    // see: https://docs.gtk.org/gtk4/class.FileChooserDialog.html
+    GtkWidget *dialog = gtk_file_chooser_dialog_new(options->title, options->window, options->action,
+                                                       "_Cancel", GTK_RESPONSE_CANCEL,
+                                                       label, GTK_RESPONSE_ACCEPT,
+                                                       NULL);
 
-    // gtk_file_chooser_set_local_only(fc, FALSE);
+    g_object_ref_sink(dialog);
 
-    // if (options->multipleFiles == 1)
-    // {
-    //     gtk_file_chooser_set_select_multiple(fc, TRUE);
-    // }
-    // gtk_file_chooser_set_do_overwrite_confirmation(fc, TRUE);
-    // if (options->createDirectories == 1)
-    // {
-    //     gtk_file_chooser_set_create_folders(fc, TRUE);
-    // }
-    // if (options->showHiddenFiles == 1)
-    // {
-    //     gtk_file_chooser_set_show_hidden(fc, TRUE);
-    // }
+    // TODO: GtkFileChooser is deprecated since 4.10
+    // but the user's system might not offer a compatible version.
+    //
+    // see: https://docs.gtk.org/gtk4/iface.FileChooser.html
+    GtkFileChooser *fc = GTK_FILE_CHOOSER(dialog);
 
-    // if (options->defaultDirectory != NULL)
-    // {
-    //     gtk_file_chooser_set_current_folder(fc, options->defaultDirectory);
-    //     free(options->defaultDirectory);
-    // }
+    // filters
+    if (options->filters != 0)
+    {
+        int index = 0;
+        GtkFileFilter *thisFilter;
+        while (options->filters[index] != NULL)
+        {
+            thisFilter = options->filters[index];
+            gtk_file_chooser_add_filter(fc, thisFilter);
+            index++;
+        }
+    }
 
-    // if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE)
-    // {
-    //     if (options->defaultFilename != NULL)
-    //     {
-    //         gtk_file_chooser_set_current_name(fc, options->defaultFilename);
-    //         free(options->defaultFilename);
-    //     }
-    // }
+    if (options->multipleFiles == 1)
+    {
+        gtk_file_chooser_set_select_multiple(fc, TRUE);
+    }
 
-    // gint response = gtk_dialog_run(GTK_DIALOG(dlgWidget));
+    if (options->createDirectories == 1)
+    {
+        gtk_file_chooser_set_create_folders(fc, TRUE);
+    }
 
-    // // Max 1024 files to select
-    // char **result = calloc(1024, sizeof(char *));
-    // int resultIndex = 0;
+    if (options->defaultDirectory != NULL)
+    {
+        // TODO: gtk_file_chooser_set_current_folder is deprecated since 4.10
+        // but the user's system might not offer a compatible version.
+        //
+        // see: https://docs.gtk.org/gtk4/method.FileChooser.set_current_folder.html
+        gtk_file_chooser_set_current_folder(fc, options->defaultDirectory, NULL);
+        free(options->defaultDirectory);
+    }
 
-    // if (response == GTK_RESPONSE_ACCEPT)
-    // {
-    //     GSList *filenames = gtk_file_chooser_get_filenames(fc);
-    //     GSList *iter = filenames;
-    //     while (iter)
-    //     {
-    //         result[resultIndex++] = (char *)iter->data;
-    //         iter = g_slist_next(iter);
-    //         if (resultIndex == 1024)
-    //         {
-    //             break;
-    //         }
-    //     }
-    //     processOpenFileResult(result);
-    //     iter = filenames;
-    //     while (iter)
-    //     {
-    //         g_free(iter->data);
-    //         iter = g_slist_next(iter);
-    //     }
-    // }
-    // else
-    // {
-    //     processOpenFileResult(result);
-    // }
-    // free(result);
+    if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE)
+    {
+        if (options->defaultFilename != NULL)
+        {
+            gtk_file_chooser_set_current_name(fc, options->defaultFilename);
+            free(options->defaultFilename);
+        }
+    }
 
-    // // Release filters
-    // if (options->filters != NULL)
-    // {
-    //     int index = 0;
-    //     GtkFileFilter *thisFilter;
-    //     while (options->filters[index] != 0)
-    //     {
-    //         thisFilter = options->filters[index];
-    //         g_object_unref(thisFilter);
-    //         index++;
-    //     }
-    //     freeFileFilterArray(options->filters);
-    // }
-    // gtk_widget_destroy(dlgWidget);
-    // free(options->title);
+    g_signal_connect(dialog, "response", G_CALLBACK(openFileResult), NULL);
+    
+    gtk_widget_show(dialog);
+
+    // Release filters
+    if (options->filters != NULL)
+    {
+        int index = 0;
+        GtkFileFilter *thisFilter;
+        while (options->filters[index] != 0)
+        {
+            thisFilter = options->filters[index];
+            g_object_unref(thisFilter);
+            index++;
+        }
+        freeFileFilterArray(options->filters);
+    }
+
+    free(options->title);
 }
 
 GtkFileFilter *newFileFilter()
