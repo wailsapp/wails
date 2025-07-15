@@ -606,12 +606,12 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
 
     switch (gpuPolicy)
     {
-    // case 0:
-    //     webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS);
-    //     break;
-    // case 1:
-    //     webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER);
-    //     break;
+    case 0:
+        webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS);
+        break;
+    case 1:
+        webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER);
+        break;
     default:
         webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS);
     }
