@@ -67,6 +67,11 @@ func onActivate() {
 func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Window {
 	validateWebKit2Version(appoptions)
 
+	if appoptions.Linux == nil || appoptions.Linux.ProgramName == "" {
+		log.Fatal("App option Linux.ProgramName required for gtk4. ex: org.author.app-name")
+		return nil
+	}
+
 	result := &Window{
 		appoptions:      appoptions,
 		debug:           debug,
@@ -79,8 +84,7 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 
 	activateWg.Add(1)
 
-	//// TODO: Build app id from wails.json? ex. 'wails.author.name'
-	appId := C.CString("wails.app.dev")
+	appId := C.CString(appoptions.Linux.ProgramName)
 	defer C.free(unsafe.Pointer(appId))
 	gtkApp := C.createApp(appId)
 	result.gtkApp = gtkApp
