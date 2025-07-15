@@ -16,6 +16,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
+
 	"github.com/wailsapp/wails/v3/internal/signal"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
@@ -201,6 +203,7 @@ type (
 		GetFlags(options Options) map[string]any
 		isOnMainThread() bool
 		isDarkMode() bool
+		getAccentColor() string
 	}
 
 	runnable interface {

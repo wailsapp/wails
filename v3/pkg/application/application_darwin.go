@@ -73,6 +73,32 @@ static bool isDarkMode(void) {
 	return [interfaceStyle isEqualToString:@"Dark"];
 }
 
+static char* getAccentColor(void) {
+	@autoreleasepool {
+		NSColor *accentColor;
+		if (@available(macOS 10.14, *)) {
+			accentColor = [NSColor controlAccentColor];
+		} else {
+			// Fallback to system blue for older macOS versions
+			accentColor = [NSColor systemBlueColor];
+		}
+		// Convert to RGB color space
+		NSColor *rgbColor = [accentColor colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+		if (rgbColor == nil) {
+			rgbColor = accentColor;
+		}
+		// Get RGB components
+		CGFloat red, green, blue, alpha;
+		[rgbColor getRed:&red green:&green blue:&blue alpha:&alpha];
+		// Convert to 0-255 range and format as rgb() string
+		int r = (int)(red * 255);
+		int g = (int)(green * 255);
+		int b = (int)(blue * 255);
+		NSString *colorString = [NSString stringWithFormat:@"rgb(%d,%d,%d)", r, g, b];
+		return strdup([colorString UTF8String]);
+	}
+}
+
 static void setApplicationShouldTerminateAfterLastWindowClosed(bool shouldTerminate) {
 	// Get the NSApp delegate
 	AppDelegate *appDelegate = (AppDelegate*)[NSApp delegate];
@@ -185,6 +211,12 @@ type macosApp struct {
 
 func (m *macosApp) isDarkMode() bool {
 	return bool(C.isDarkMode())
+}
+
+func (m *macosApp) getAccentColor() string {
+	accentColorC := C.getAccentColor()
+	defer C.free(unsafe.Pointer(accentColorC))
+	return C.GoString(accentColorC)
 }
 
 func getNativeApplication() *macosApp {
