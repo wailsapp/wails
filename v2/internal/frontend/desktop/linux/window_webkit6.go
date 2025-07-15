@@ -4,8 +4,7 @@
 package linux
 
 /*
-#cgo pkg-config: gtk4
-#cgo webkit_6 pkg-config: webkitgtk-6.0
+#cgo pkg-config: gtk4 webkitgtk-6.0
 
 #include <jsc/jsc.h>
 #include <gtk/gtk.h>
@@ -176,10 +175,6 @@ func (w *Window) asGTKWindow() *C.GtkWindow {
 	return C.GTKWINDOW(w.gtkWindow)
 }
 
-// func (w *Window) asGTKContainer() *C.GtkContainer {
-// 	return C.GTKCONTAINER(w.gtkWindow)
-// }
-
 func (w *Window) asGTKBox() *C.GtkBox {
 	return C.GTKBOX(w.gtkWindow)
 }
@@ -225,7 +220,6 @@ func (w *Window) Size() (int, int) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	invokeOnMainThread(func() {
-		// C.gtk_window_get_size(w.asGTKWindow(), &width, &height)
 		C.gtk_window_get_default_size(w.asGTKWindow(), &width, &height)
 		wg.Done()
 	})
@@ -234,6 +228,7 @@ func (w *Window) Size() (int, int) {
 }
 
 func (w *Window) GetPosition() (int, int) {
+	//// TODO: gtk_window_set_position was removed in gtk4
 	// var width, height C.int
 	// var wg sync.WaitGroup
 	// wg.Add(1)
@@ -362,6 +357,7 @@ func (w *Window) Run(url string) {
 }
 
 func (w *Window) SetKeepAbove(top bool) {
+	//// TODO: gtk_window_set_keep_above was removed in gtk4
 	// C.gtk_window_set_keep_above(w.asGTKWindow(), gtkBool(top))
 }
 
@@ -374,7 +370,6 @@ func (w *Window) SetDefaultSize(width int, height int) {
 }
 
 func (w *Window) SetSize(width int, height int) {
-	// C.gtk_window_resize(w.asGTKWindow(), C.gint(width), C.gint(height))
 	C.gtk_window_set_default_size(w.asGTKWindow(), C.gint(width), C.gint(height))
 }
 
