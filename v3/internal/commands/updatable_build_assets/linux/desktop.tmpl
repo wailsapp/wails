@@ -10,6 +10,6 @@ Icon={{.BinaryName}}
 Categories=Utility;
 StartupWMClass={{.BinaryName}}
 
-{{if .Info.Protocols -}}
+{{if .Protocols -}}
 MimeType={{range $index, $protocol := .Info.Protocols}}x-scheme-handler/{{$protocol.Scheme}};{{end}}
 {{- end}} 
