@@ -37,11 +37,6 @@ GtkWindow *GTKWINDOW(void *pointer)
     return GTK_WINDOW(pointer);
 }
 
-// GtkContainer *GTKCONTAINER(void *pointer)
-// {
-//     return GTK_CONTAINER(pointer);
-// }
-
 GtkBox *GTKBOX(void *pointer)
 {
     return GTK_BOX(pointer);
@@ -152,6 +147,8 @@ void SetWindowIcon(GtkWindow *window, const guchar *buf, gsize len)
 
 void SetWindowTransparency(GtkWidget *widget)
 {
+    //// TODO: gtk_widget_set_opacity might be able to be used here?
+
     // GdkScreen *screen = gtk_widget_get_screen(widget);
     // GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
 
@@ -204,7 +201,10 @@ void SetBackgroundColour(void *data)
         g_object_unref(windowCssProvider);
     }
 
-    // TODO: load_from_data is deprecated but using load_from_string throws 'undefined reference'.
+    // TODO: gtk_css_provider_load_from_data is deprecated since 4.12
+    // but the user's system might not offer a compatible version.
+    //
+    // see: https://docs.gtk.org/gtk4/method.CssProvider.load_from_data.html
     gtk_css_provider_load_from_data(windowCssProvider, str, -1);
 
     g_free(str);
@@ -228,7 +228,7 @@ void SetTitle(GtkWindow *window, char *title)
     ExecuteOnMainThread(setTitle, (gpointer)args);
 }
 
-// gtk_window_move has been removed
+//// TODO: gtk_window_move has been removed
 // see: https://docs.gtk.org/gtk4/migrating-3to4.html#adapt-to-gtkwindow-api-changes
 static gboolean setPosition(gpointer data)
 {
@@ -239,7 +239,7 @@ static gboolean setPosition(gpointer data)
     return G_SOURCE_REMOVE;
 }
 
-// gtk_window_move has been removed
+//// TODO: gtk_window_move has been removed
 // see: https://docs.gtk.org/gtk4/migrating-3to4.html#adapt-to-gtkwindow-api-changes
 void SetPosition(void *window, int x, int y)
 {
@@ -255,6 +255,7 @@ void SetPosition(void *window, int x, int y)
     // ExecuteOnMainThread(setPosition, (gpointer)args);
 }
 
+//// TODO: gtk_window_set_geometry_hints has been removed
 void SetMinMaxSize(GtkWindow *window, int min_width, int min_height, int max_width, int max_height)
 {
     // GdkGeometry size;
@@ -330,9 +331,6 @@ static void buttonPress(GtkGestureClick* gesture, gint n_press, gdouble gesture_
 
     if (gdk_event_get_event_type(event) == GDK_BUTTON_PRESS && button == 1)
     {
-        // xroot = event->x_root;
-        // yroot = event->y_root;
-
         double x, y;
         gboolean success = gdk_event_get_position(event, &x, &y);
 
@@ -371,35 +369,23 @@ void ConnectButtons(void *webview)
 
 int IsFullscreen(GtkWidget *widget)
 {
-    // GdkWindow *gdkwindow = gtk_widget_get_window(widget);
-    // GdkWindowState state = gdk_window_get_state(GDK_WINDOW(gdkwindow));
-    // return state & GDK_WINDOW_STATE_FULLSCREEN;
-
     GtkWindow *gtkwindow = gtk_widget_get_root(widget);
     return gtk_window_is_fullscreen(gtkwindow);
 }
 
 int IsMaximised(GtkWidget *widget)
 {
-    // GdkWindow *gdkwindow = gtk_widget_get_window(widget);
-    // GdkWindowState state = gdk_window_get_state(GDK_WINDOW(gdkwindow));
-    // return state & GDK_WINDOW_STATE_MAXIMIZED && !(state & GDK_WINDOW_STATE_FULLSCREEN);
-
     GtkWindow *gtkwindow = gtk_widget_get_root(widget);
     return gtk_window_is_maximized(gtkwindow);
 }
 
 int IsMinimised(GtkWidget *widget)
 {
-    // GdkWindow *gdkwindow = gtk_widget_get_window(widget);
-    // GdkWindowState state = gdk_window_get_state(GDK_WINDOW(gdkwindow));
-    // return state & GDK_WINDOW_STATE_ICONIFIED;
-
     GtkWindow *gtkwindow = gtk_widget_get_root(widget);
     return !gtk_window_is_fullscreen(gtkwindow) && !gtk_window_is_maximized(gtkwindow);
 }
 
-// gtk_window_move has been removed
+//// TODO: gtk_window_move has been removed
 // see: https://docs.gtk.org/gtk4/migrating-3to4.html#adapt-to-gtkwindow-api-changes
 gboolean Center(gpointer data)
 {
@@ -591,7 +577,6 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
 
     gtk_widget_set_vexpand(webview, true);
 
-    // gtk_container_add(GTK_CONTAINER(window), webview);
     WebKitWebContext *context = webkit_web_context_get_default();
     webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
     g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webviewLoadChanged), NULL);
@@ -656,7 +641,6 @@ static gboolean startDrag(gpointer data)
     DragOptions *options = (DragOptions *)data;
 
     // Ignore non-toplevel widgets
-    // GtkWidget *window = gtk_widget_get_toplevel(GTK_WIDGET(options->webview));
     GtkRoot *root = gtk_widget_get_root(GTK_WIDGET(options->webview)); 
     if (!GTK_IS_WINDOW(root))
     {
@@ -664,7 +648,6 @@ static gboolean startDrag(gpointer data)
         return G_SOURCE_REMOVE;
     }
 
-    // gtk_window_begin_move_drag(options->mainwindow, mouseButton, xroot, yroot, dragTime);
     gdk_toplevel_begin_move(options->mainwindow, NULL, mouseButton, xroot, yroot, dragTime);
 
     free(data);
@@ -685,7 +668,6 @@ static gboolean startResize(gpointer data)
     ResizeOptions *options = (ResizeOptions *)data;
 
     // Ignore non-toplevel widgets
-    // GtkWidget *window = gtk_widget_get_toplevel(GTK_WIDGET(options->webview));
     GtkRoot *root = gtk_widget_get_root(GTK_WIDGET(options->webview)); 
     if (!GTK_IS_WINDOW(root))
     {
@@ -693,7 +675,6 @@ static gboolean startResize(gpointer data)
         return G_SOURCE_REMOVE;
     }
 
-    // gtk_window_begin_resize_drag(options->mainwindow, options->edge, mouseButton, xroot, yroot, dragTime);
     gdk_toplevel_begin_resize(options->mainwindow, options->edge, NULL, mouseButton, xroot, yroot, dragTime);
     free(data);
 
