@@ -228,7 +228,7 @@ func (w *Window) Size() (int, int) {
 }
 
 func (w *Window) GetPosition() (int, int) {
-	//// TODO: gtk_window_set_position was removed in gtk4
+	//// TODO: gtk_window_get_position was removed in gtk4
 	// var width, height C.int
 	// var wg sync.WaitGroup
 	// wg.Add(1)
@@ -318,7 +318,6 @@ func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {
 		windowIsTranslucent: gtkBool(windowIsTranslucent),
 	}
 	invokeOnMainThread(func() { C.SetBackgroundColour(unsafe.Pointer(&data)) })
-
 }
 
 func (w *Window) SetWindowIcon(icon []byte) {
