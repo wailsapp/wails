@@ -173,6 +173,12 @@ func (a *linuxApp) isDarkMode() bool {
 	return strings.Contains(a.theme, "dark")
 }
 
+func (a *linuxApp) getAccentColor() string {
+	// Linux doesn't have a unified system accent color API
+	// Return a default blue color
+	return "rgb(0,122,255)"
+}
+
 func (a *linuxApp) monitorThemeChanges() {
 	go func() {
 		defer handlePanic()
