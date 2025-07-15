@@ -700,6 +700,22 @@ void ExecuteJS(void *data)
 
 void extern processMessageDialogResult(char *);
 
+void messageResult(GtkDialog* dialog, gint response_id, gpointer user_data) {
+    if(response_id == GTK_RESPONSE_YES) {
+        processMessageDialogResult("Yes");
+    } else if(response_id == GTK_RESPONSE_NO) {
+        processMessageDialogResult("No");
+    } else if(response_id == GTK_RESPONSE_OK) {
+        processMessageDialogResult("OK");
+    } else if(response_id == GTK_RESPONSE_CANCEL) {
+        processMessageDialogResult("Cancel");
+    } else {
+        processMessageDialogResult("");
+    }
+
+    gtk_window_destroy(GTK_WINDOW(dialog));
+}
+
 void MessageDialog(void *data)
 {
     GtkDialogFlags flags;
@@ -726,38 +742,26 @@ void MessageDialog(void *data)
         flags = GTK_BUTTONS_OK;
     }
 
+    // TODO: gtk_message_dialog_new is deprecated since 4.10
+    // but the user's system might not offer a compatible version.
+    //
+    // see: https://docs.gtk.org/gtk4/ctor.MessageDialog.new.html
     GtkWidget *dialog;
     dialog = gtk_message_dialog_new(GTK_WINDOW(options->window),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     messageType,
                                     flags,
                                     options->message, NULL);
+    
+    g_object_ref_sink(dialog);
+
     gtk_window_set_title(GTK_WINDOW(dialog), options->title);
     gtk_window_set_modal(GTK_WINDOW(dialog), true);
-    // GtkResponseType result = gtk_dialog_run(GTK_DIALOG(dialog));
-    // if (result == GTK_RESPONSE_YES)
-    // {
-    //     processMessageDialogResult("Yes");
-    // }
-    // else if (result == GTK_RESPONSE_NO)
-    // {
-    //     processMessageDialogResult("No");
-    // }
-    // else if (result == GTK_RESPONSE_OK)
-    // {
-    //     processMessageDialogResult("OK");
-    // }
-    // else if (result == GTK_RESPONSE_CANCEL)
-    // {
-    //     processMessageDialogResult("Cancel");
-    // }
-    // else
-    // {
-    //     processMessageDialogResult("");
-    // }
 
-    // gtk_widget_destroy(dialog);
-    gtk_window_destroy(GTK_WINDOW(dialog));
+    g_signal_connect(dialog, "response", G_CALLBACK(messageResult), NULL);
+    
+    gtk_widget_show(dialog);
+
     free(options->title);
     free(options->message);
 }
