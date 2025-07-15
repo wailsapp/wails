@@ -24,11 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 
 ## [Unreleased]
+- `app.Env.GetAccentColor` to ge tthe accent color of a user's system. Works on MacOS. by [@etesam913](https://github.com/etesam913)
 
 ## v3.0.0-alpha.10 - 2025-07-06
 
 ### Breaking Changes
-- `app.Env.GetAccentColor` to get the accent color of a user's system. Works on macOS. by [@etesam913](https://github.com/etesam913)
 - **Manager API Refactoring**: Reorganized application API from flat structure to organized managers for better code organization and discoverability by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
   - `app.NewWebviewWindow()` → `app.Window.New()`
   - `app.CurrentWindow()` → `app.Window.Current()`
