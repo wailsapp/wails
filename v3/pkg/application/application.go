@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"io"
 	"log/slog"
 	"net/http"
@@ -16,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 
 	"github.com/wailsapp/wails/v3/internal/signal"
 
@@ -197,6 +198,7 @@ type (
 		GetFlags(options Options) map[string]any
 		isOnMainThread() bool
 		isDarkMode() bool
+		getAccentColor() string
 	}
 
 	runnable interface {
