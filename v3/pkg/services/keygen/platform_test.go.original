@@ -1,0 +1,596 @@
+package keygen
+
+import (
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// MockPlatformKeygen provides a mock implementation for testing
+// This implements the actual platformKeygen interface from keygen.go
+type MockPlatformKeygen struct {
+	mock.Mock
+	mu                sync.Mutex
+	fingerprint       string
+	cacheDir          string
+	storedLicenseKeys map[string]string
+}
+
+func NewMockPlatformKeygen() *MockPlatformKeygen {
+	return &MockPlatformKeygen{
+		storedLicenseKeys: make(map[string]string),
+	}
+}
+
+func (m *MockPlatformKeygen) GetMachineFingerprint() (string, error) {
+	args := m.Called()
+	return args.String(0), args.Error(1)
+}
+
+func (m *MockPlatformKeygen) InstallUpdatePlatform(updatePath string) error {
+	args := m.Called(updatePath)
+	return args.Error(0)
+}
+
+func (m *MockPlatformKeygen) GetCacheDir() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+// Mock hardware info provider for testing
+type MockHardwareInfo struct {
+	mock.Mock
+}
+
+func (m *MockHardwareInfo) GetCPUID() (string, error) {
+	args := m.Called()
+	return args.String(0), args.Error(1)
+}
+
+func (m *MockHardwareInfo) GetMotherboardSerial() (string, error) {
+	args := m.Called()
+	return args.String(0), args.Error(1)
+}
+
+func (m *MockHardwareInfo) GetMACAddresses() ([]string, error) {
+	args := m.Called()
+	return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *MockHardwareInfo) GetSystemUUID() (string, error) {
+	args := m.Called()
+	return args.String(0), args.Error(1)
+}
+
+// Test helper functions
+func createTestTempDir(t *testing.T) string {
+	tempDir, err := os.MkdirTemp("", "keygen-platform-test-*")
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		os.RemoveAll(tempDir)
+	})
+	return tempDir
+}
+
+func createTestFile(t *testing.T, dir, name, content string) string {
+	filePath := filepath.Join(dir, name)
+	err := os.WriteFile(filePath, []byte(content), 0644)
+	require.NoError(t, err)
+	return filePath
+}
+
+func createTestExecutable(t *testing.T, dir, name string) string {
+	filePath := filepath.Join(dir, name)
+	content := "#!/bin/sh\necho 'test executable'\n"
+	err := os.WriteFile(filePath, []byte(content), 0755)
+	require.NoError(t, err)
+	return filePath
+}
+
+// TestPlatformKeygenInterface tests the platform interface methods
+func TestPlatformKeygenInterface(t *testing.T) {
+	tests := []struct {
+		name     string
+		testFunc func(t *testing.T, platform platformKeygen)
+	}{
+		{
+			name: "GetMachineFingerprint_Success",
+			testFunc: func(t *testing.T, platform platformKeygen) {
+				fingerprint, err := platform.GetMachineFingerprint()
+				assert.NoError(t, err)
+				assert.NotEmpty(t, fingerprint)
+				assert.Equal(t, 64, len(fingerprint)) // SHA256 hex length
+			},
+		},
+		{
+			name: "GetCacheDir_ReturnsValidPath",
+			testFunc: func(t *testing.T, platform platformKeygen) {
+				cacheDir := platform.GetCacheDir()
+				assert.NotEmpty(t, cacheDir)
+				assert.True(t, filepath.IsAbs(cacheDir))
+			},
+		},
+		{
+			name: "InstallUpdatePlatform_Success", 
+			testFunc: func(t *testing.T, platform platformKeygen) {
+				err := platform.InstallUpdatePlatform("/tmp/test-update.exe")
+				assert.NoError(t, err)
+			},
+		},
+	}
+
+	t.Run("MockPlatform", func(t *testing.T) {
+		mockPlatform := NewMockPlatformKeygen()
+		mockPlatform.On("GetMachineFingerprint").Return("test-fingerprint-hash", nil)
+		mockPlatform.On("GetCacheDir").Return("/tmp/test-cache")
+		mockPlatform.On("InstallUpdatePlatform", "/tmp/test-update.exe").Return(nil)
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				tt.testFunc(t, mockPlatform)
+			})
+		}
+		mockPlatform.AssertExpectations(t)
+	})
+}
+
+// TestMachineFingerprintGeneration tests machine fingerprinting
+func TestMachineFingerprintGeneration(t *testing.T) {
+	tests := []struct {
+		name           string
+		setupMock      func(*MockPlatformKeygen)
+		expectedError  string
+		validateResult func(t *testing.T, fingerprint string)
+	}{
+		{
+			name: "ValidFingerprint",
+			setupMock: func(m *MockPlatformKeygen) {
+				m.On("GetMachineFingerprint").Return("1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef", nil)
+			},
+			validateResult: func(t *testing.T, fingerprint string) {
+				assert.Len(t, fingerprint, 64)
+				// Validate it's a valid hex string
+				_, err := hex.DecodeString(fingerprint)
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "HardwareError",
+			setupMock: func(m *MockPlatformKeygen) {
+				m.On("GetMachineFingerprint").Return("", errors.New("hardware access denied"))
+			},
+			expectedError: "hardware access denied",
+		},
+		{
+			name: "EmptyFingerprint",
+			setupMock: func(m *MockPlatformKeygen) {
+				m.On("GetMachineFingerprint").Return("", errors.New("no hardware identifiers found"))
+			},
+			expectedError: "no hardware identifiers found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockPlatform := NewMockPlatformKeygen()
+			tt.setupMock(mockPlatform)
+
+			fingerprint, err := mockPlatform.GetMachineFingerprint()
+
+			if tt.expectedError != "" {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedError)
+				assert.Empty(t, fingerprint)
+			} else {
+				assert.NoError(t, err)
+				if tt.validateResult != nil {
+					tt.validateResult(t, fingerprint)
+				}
+			}
+
+			mockPlatform.AssertExpectations(t)
+		})
+	}
+}
+
+// TestUpdateInstallation tests update installation scenarios
+func TestUpdateInstallation(t *testing.T) {
+	tests := []struct {
+		name          string
+		setupTest     func(t *testing.T) string
+		setupMock     func(*MockPlatformKeygen, string)
+		expectedError string
+	}{
+		{
+			name: "SuccessfulInstallation",
+			setupTest: func(t *testing.T) string {
+				tempDir := createTestTempDir(t)
+				updatePath := createTestFile(t, tempDir, "update.exe", "fake update content")
+				return updatePath
+			},
+			setupMock: func(m *MockPlatformKeygen, updatePath string) {
+				m.On("InstallUpdatePlatform", updatePath).Return(nil)
+			},
+		},
+		{
+			name: "FileNotFound",
+			setupTest: func(t *testing.T) string {
+				return "/nonexistent/update.exe"
+			},
+			setupMock: func(m *MockPlatformKeygen, updatePath string) {
+				m.On("InstallUpdatePlatform", updatePath).Return(errors.New("update file not found"))
+			},
+			expectedError: "update file not found",
+		},
+		{
+			name: "PermissionDenied",
+			setupTest: func(t *testing.T) string {
+				tempDir := createTestTempDir(t)
+				updatePath := createTestFile(t, tempDir, "update.exe", "content")
+				return updatePath
+			},
+			setupMock: func(m *MockPlatformKeygen, updatePath string) {
+				m.On("InstallUpdatePlatform", updatePath).Return(errors.New("permission denied"))
+			},
+			expectedError: "permission denied",
+		},
+		{
+			name: "CorruptedUpdate",
+			setupTest: func(t *testing.T) string {
+				tempDir := createTestTempDir(t)
+				updatePath := createTestFile(t, tempDir, "corrupted.exe", "corrupted content")
+				return updatePath
+			},
+			setupMock: func(m *MockPlatformKeygen, updatePath string) {
+				m.On("InstallUpdatePlatform", updatePath).Return(errors.New("update verification failed"))
+			},
+			expectedError: "update verification failed",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			updatePath := tt.setupTest(t)
+			mockPlatform := NewMockPlatformKeygen()
+			tt.setupMock(mockPlatform, updatePath)
+
+			err := mockPlatform.InstallUpdatePlatform(updatePath)
+
+			if tt.expectedError != "" {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedError)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			mockPlatform.AssertExpectations(t)
+		})
+	}
+}
+
+// TestCacheDirectorySetup tests platform-specific cache directory creation
+func TestCacheDirectorySetup(t *testing.T) {
+	tests := []struct {
+		name           string
+		platform       string
+		setupMock      func(*MockPlatformKeygen)
+		validateResult func(t *testing.T, cacheDir string)
+	}{
+		{
+			name:     "Darwin_CacheDir",
+			platform: "darwin",
+			setupMock: func(m *MockPlatformKeygen) {
+				m.On("GetCacheDir").Return("/Users/test/Library/Caches/TestApp/keygen", nil)
+			},
+			validateResult: func(t *testing.T, cacheDir string) {
+				assert.Contains(t, cacheDir, "Library/Caches")
+				assert.Contains(t, cacheDir, "keygen")
+			},
+		},
+		{
+			name:     "Windows_CacheDir",
+			platform: "windows",
+			setupMock: func(m *MockPlatformKeygen) {
+				m.On("GetCacheDir").Return("C:\\Users\\test\\AppData\\Local\\TestApp\\keygen", nil)
+			},
+			validateResult: func(t *testing.T, cacheDir string) {
+				if runtime.GOOS == "windows" {
+					assert.Contains(t, cacheDir, "AppData\\Local")
+				}
+				assert.Contains(t, cacheDir, "keygen")
+			},
+		},
+		{
+			name:     "Linux_CacheDir",
+			platform: "linux",
+			setupMock: func(m *MockPlatformKeygen) {
+				m.On("GetCacheDir").Return("/home/test/.cache/testapp/keygen", nil)
+			},
+			validateResult: func(t *testing.T, cacheDir string) {
+				assert.Contains(t, cacheDir, ".cache")
+				assert.Contains(t, cacheDir, "keygen")
+			},
+		},
+		{
+			name:     "FallbackToTemp",
+			platform: "unknown",
+			setupMock: func(m *MockPlatformKeygen) {
+				m.On("GetCacheDir").Return(filepath.Join(os.TempDir(), "keygen-cache"), nil)
+			},
+			validateResult: func(t *testing.T, cacheDir string) {
+				assert.Contains(t, cacheDir, "keygen-cache")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockPlatform := NewMockPlatformKeygen()
+			tt.setupMock(mockPlatform)
+
+			cacheDir := mockPlatform.GetCacheDir()
+
+			assert.NotEmpty(t, cacheDir)
+			if tt.validateResult != nil {
+				tt.validateResult(t, cacheDir)
+			}
+
+			mockPlatform.AssertExpectations(t)
+		})
+	}
+}
+
+// TestSecureStorageIntegration tests that the platform interface supports secure storage concepts
+// Note: The actual platformKeygen interface doesn't include storage methods, but platform-specific implementations might
+func TestSecureStorageIntegration(t *testing.T) {
+	t.Skip("Secure storage methods are not part of the core platformKeygen interface - tested in platform-specific files")
+}
+
+// TestPlatformStartup tests platform-specific startup procedures
+func TestPlatformStartup(t *testing.T) {
+	t.Skip("Startup method is not part of the core platformKeygen interface - tested in platform-specific files")
+}
+
+// TestPlatformSpecificErrorScenarios tests various error conditions
+func TestPlatformSpecificErrorScenarios(t *testing.T) {
+	tests := []struct {
+		name        string
+		testFunc    func(t *testing.T, platform *MockPlatformKeygen)
+	}{
+		{
+			name: "ConcurrentFingerprinting",
+			testFunc: func(t *testing.T, platform *MockPlatformKeygen) {
+				platform.On("GetMachineFingerprint").Return("test-fingerprint", nil).Maybe()
+
+				var wg sync.WaitGroup
+				errChan := make(chan error, 10)
+
+				// Simulate concurrent fingerprinting operations
+				for i := 0; i < 5; i++ {
+					wg.Add(1)
+					go func() {
+						defer wg.Done()
+						if _, err := platform.GetMachineFingerprint(); err != nil {
+							errChan <- err
+						}
+					}()
+				}
+
+				wg.Wait()
+				close(errChan)
+
+				// Check for any errors
+				for err := range errChan {
+					t.Errorf("Concurrent operation failed: %v", err)
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockPlatform := NewMockPlatformKeygen()
+			tt.testFunc(t, mockPlatform)
+			// Note: Don't call AssertExpectations for Maybe() expectations
+		})
+	}
+}
+
+// TestHashFingerprint tests the fingerprint hashing utility
+func TestHashFingerprint(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "EmptyString",
+			input:    "",
+			expected: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+		},
+		{
+			name:     "SimpleString",
+			input:    "test",
+			expected: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+		},
+		{
+			name:     "ComplexFingerprint",
+			input:    "hardware-uuid-12345-serial-67890-mac-aa:bb:cc:dd:ee:ff",
+			expected: testHashFingerprint("hardware-uuid-12345-serial-67890-mac-aa:bb:cc:dd:ee:ff"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := testHashFingerprint(tt.input)
+			assert.Equal(t, tt.expected, result)
+			assert.Len(t, result, 64) // SHA256 hex length
+			
+			// Verify it's valid hex
+			_, err := hex.DecodeString(result)
+			assert.NoError(t, err)
+		})
+	}
+}
+
+// TestUpdateFileValidation tests various update file scenarios
+func TestUpdateFileValidation(t *testing.T) {
+	tests := []struct {
+		name           string
+		setupFile      func(t *testing.T) string
+		setupMock      func(*MockPlatformKeygen, string)
+		expectedError  string
+		shouldCallMock bool
+	}{
+		{
+			name: "ValidExecutable",
+			setupFile: func(t *testing.T) string {
+				tempDir := createTestTempDir(t)
+				return createTestExecutable(t, tempDir, "update.exe")
+			},
+			setupMock: func(m *MockPlatformKeygen, updatePath string) {
+				m.On("InstallUpdatePlatform", updatePath).Return(nil)
+			},
+			shouldCallMock: true,
+		},
+		{
+			name: "NonExecutableFile",
+			setupFile: func(t *testing.T) string {
+				tempDir := createTestTempDir(t)
+				return createTestFile(t, tempDir, "update.txt", "not executable")
+			},
+			setupMock: func(m *MockPlatformKeygen, updatePath string) {
+				m.On("InstallUpdatePlatform", updatePath).Return(errors.New("file is not executable"))
+			},
+			expectedError:  "file is not executable",
+			shouldCallMock: true,
+		},
+		{
+			name: "NonExistentFile",
+			setupFile: func(t *testing.T) string {
+				return "/path/to/nonexistent/file.exe"
+			},
+			setupMock: func(m *MockPlatformKeygen, updatePath string) {
+				m.On("InstallUpdatePlatform", updatePath).Return(errors.New("update file not found"))
+			},
+			expectedError:  "update file not found",
+			shouldCallMock: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			updatePath := tt.setupFile(t)
+			mockPlatform := NewMockPlatformKeygen()
+			
+			if tt.shouldCallMock {
+				tt.setupMock(mockPlatform, updatePath)
+			}
+
+			err := mockPlatform.InstallUpdatePlatform(updatePath)
+
+			if tt.expectedError != "" {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedError)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			if tt.shouldCallMock {
+				mockPlatform.AssertExpectations(t)
+			}
+		})
+	}
+}
+
+// TestPlatformIntegrationWithService tests integration with the main service
+func TestPlatformIntegrationWithService(t *testing.T) {
+	tempDir := createTestTempDir(t)
+	mockPlatform := NewMockPlatformKeygen()
+	
+	// Setup mock expectations
+	mockPlatform.On("GetCacheDir").Return(tempDir)
+	mockPlatform.On("GetMachineFingerprint").Return("test-fingerprint-hash", nil)
+
+	// Create service with mock platform
+	service := New(ServiceOptions{
+		AccountID:      "test-account",
+		ProductID:      "test-product",
+		LicenseKey:     "test-license-key",
+		CurrentVersion: "1.0.0",
+		CacheDir:       tempDir,
+	})
+
+	// Replace with mock
+	service.impl = mockPlatform
+
+	// Test service startup with platform
+	err := service.ServiceStartup(context.Background(), application.ServiceOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, tempDir, service.cacheDir)
+
+	// Test machine fingerprint through service
+	result, err := service.ActivateMachine()
+	assert.Error(t, err) // Should fail because no license is validated
+	assert.Nil(t, result)
+
+	mockPlatform.AssertExpectations(t)
+}
+
+// Helper function to create a consistent hash for testing
+func testHashFingerprint(data string) string {
+	h := sha256.New()
+	h.Write([]byte(data))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+// BenchmarkMachineFingerprint benchmarks fingerprint generation
+func BenchmarkMachineFingerprint(b *testing.B) {
+	mockPlatform := NewMockPlatformKeygen()
+	mockPlatform.On("GetMachineFingerprint").Return("test-fingerprint-hash", nil)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, err := mockPlatform.GetMachineFingerprint()
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkSecureStorage benchmarks secure storage operations
+func BenchmarkSecureStorage(b *testing.B) {
+	mockPlatform := NewMockPlatformKeygen()
+	testKey := "benchmark-license-key-12345"
+	
+	mockPlatform.On("StoreLicenseKey", testKey).Return(nil)
+	mockPlatform.On("RetrieveLicenseKey").Return(testKey, nil)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		err := mockPlatform.StoreLicenseKey(testKey)
+		if err != nil {
+			b.Fatal(err)
+		}
+		
+		_, err = mockPlatform.RetrieveLicenseKey()
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}

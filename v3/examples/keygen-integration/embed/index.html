@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keygen Integration Demo</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Keygen Integration Demo</h1>
+            <p class="version">Version: <span id="version">Loading...</span></p>
+        </header>
+
+        <main>
+            <!-- License Section -->
+            <section class="card">
+                <h2>License Management</h2>
+                
+                <div class="license-input">
+                    <input type="text" id="licenseKey" placeholder="Enter your license key">
+                    <button onclick="validateLicense()">Validate License</button>
+                </div>
+
+                <div id="licenseStatus" class="status-container hidden">
+                    <h3>License Status</h3>
+                    <div class="status-info">
+                        <div class="status-item">
+                            <span class="label">Status:</span>
+                            <span id="statusValue" class="value">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Email:</span>
+                            <span id="emailValue" class="value">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Expires:</span>
+                            <span id="expiresValue" class="value">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Last Checked:</span>
+                            <span id="lastCheckedValue" class="value">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button onclick="getLicenseInfo()">Get License Info</button>
+                        <button onclick="saveOfflineLicense()">Save for Offline</button>
+                        <button onclick="clearLicenseCache()">Clear Cache</button>
+                    </div>
+                </div>
+
+                <div id="licenseDetails" class="details-container hidden">
+                    <h3>License Details</h3>
+                    <pre id="licenseDetailsContent"></pre>
+                </div>
+            </section>
+
+            <!-- Machine Activation Section -->
+            <section class="card">
+                <h2>Machine Activation</h2>
+                
+                <div id="machineStatus" class="machine-container">
+                    <p class="info-text">Machine activation allows you to bind this license to this specific device.</p>
+                    
+                    <div class="button-group">
+                        <button onclick="activateMachine()" id="activateBtn">Activate This Machine</button>
+                        <button onclick="deactivateMachine()" id="deactivateBtn" disabled>Deactivate Machine</button>
+                    </div>
+                    
+                    <div id="machineInfo" class="status-info hidden">
+                        <div class="status-item">
+                            <span class="label">Machine ID:</span>
+                            <span id="machineIdValue" class="value">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Fingerprint:</span>
+                            <span id="fingerprintValue" class="value">-</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Feature Entitlements Section -->
+            <section class="card">
+                <h2>Feature Entitlements</h2>
+                
+                <div class="entitlement-check">
+                    <input type="text" id="featureName" placeholder="Enter feature name (e.g., premium, api-access)">
+                    <button onclick="checkEntitlement()">Check Feature</button>
+                </div>
+                
+                <div id="entitlementResult" class="result-container hidden">
+                    <p id="entitlementResultText"></p>
+                </div>
+            </section>
+
+            <!-- Updates Section -->
+            <section class="card">
+                <h2>Software Updates</h2>
+                
+                <div class="update-channel">
+                    <label for="updateChannel">Update Channel:</label>
+                    <select id="updateChannel" onchange="setUpdateChannel()">
+                        <option value="stable">Stable</option>
+                        <option value="beta">Beta</option>
+                        <option value="alpha">Alpha</option>
+                        <option value="dev">Development</option>
+                    </select>
+                    <button onclick="checkForUpdates()">Check for Updates</button>
+                </div>
+                
+                <div id="updateStatus" class="update-container hidden">
+                    <h3>Update Available!</h3>
+                    <div class="update-info">
+                        <div class="status-item">
+                            <span class="label">New Version:</span>
+                            <span id="newVersionValue" class="value">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Release Date:</span>
+                            <span id="releaseDateValue" class="value">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Size:</span>
+                            <span id="updateSizeValue" class="value">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="release-notes">
+                        <h4>Release Notes:</h4>
+                        <p id="releaseNotes"></p>
+                    </div>
+                    
+                    <button onclick="downloadUpdate()" id="downloadBtn" class="primary-button">Download Update</button>
+                </div>
+                
+                <div id="downloadProgress" class="progress-container hidden">
+                    <h3>Downloading Update...</h3>
+                    <div class="progress-bar">
+                        <div id="progressBar" class="progress-fill"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span id="progressPercent">0%</span>
+                        <span id="progressSpeed">0 MB/s</span>
+                        <span id="progressETA">ETA: --:--</span>
+                    </div>
+                    <button onclick="installUpdate()" id="installBtn" class="primary-button" disabled>Install Update</button>
+                </div>
+            </section>
+
+            <!-- Event Log Section -->
+            <section class="card">
+                <h2>Event Log</h2>
+                <div class="event-log-controls">
+                    <button onclick="clearEventLog()">Clear Log</button>
+                </div>
+                <div id="eventLog" class="event-log"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

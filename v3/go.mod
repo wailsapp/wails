@@ -19,6 +19,7 @@ require (
 	github.com/goreleaser/nfpm/v2 v2.41.3
 	github.com/jackmordaunt/icns/v2 v2.2.7
 	github.com/jaypipes/ghw v0.17.0
+	github.com/keygen-sh/keygen-go/v3 v3.2.1
 	github.com/leaanthony/clir v1.7.0
 	github.com/leaanthony/go-ansi-parser v1.6.1
 	github.com/leaanthony/gosod v1.0.4
@@ -32,6 +33,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.80
 	github.com/samber/lo v1.49.1
+	github.com/stretchr/testify v1.10.0
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/go-webview2 v1.0.21
 	github.com/wailsapp/mimetype v1.4.1
@@ -49,7 +51,14 @@ require (
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
+	github.com/keygen-sh/go-update v1.0.0 // indirect
+	github.com/keygen-sh/jsonapi-go v1.2.1 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
+	github.com/oasisprotocol/curve25519-voi v0.0.0-20211102120939-d5a936accd94 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 )
 
 require (
