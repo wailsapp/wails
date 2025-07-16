@@ -29,6 +29,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
+        ref: v3-alpha
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
     
