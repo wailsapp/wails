@@ -254,6 +254,8 @@ func EnableTranslucency(hwnd uintptr, backdrop uint32) {
 }
 
 func SetTitleBarColour(hwnd uintptr, titleBarColour uint32) {
+	// Debug: Print the color value being set
+	// fmt.Printf("Setting titlebar color to: 0x%08X (RGB: %d, %d, %d)\n", titleBarColour, titleBarColour&0xFF, (titleBarColour>>8)&0xFF, (titleBarColour>>16)&0xFF)
 	dwmSetWindowAttribute(hwnd, DwmwaCaptionColor, unsafe.Pointer(&titleBarColour), unsafe.Sizeof(titleBarColour))
 }
 

@@ -1,16 +1,20 @@
 package w32
 
 import (
-	"fmt"
 	"unsafe"
 )
 
 const (
 	OBJID_MENU = -3
+	ODT_MENU   = 1
+	// Menu info flags
+	MIIM_BACKGROUND      = 0x00000002
+	MIIM_APPLYTOSUBMENUS = 0x80000000
 )
 
 var (
-	menuTheme HTHEME
+	menuTheme       HTHEME
+	procSetMenuInfo = moduser32.NewProc("SetMenuInfo")
 )
 
 type DTTOPTS struct {
@@ -59,7 +63,9 @@ const (
 )
 
 var (
-	procGetMenuItemInfo = moduser32.NewProc("GetMenuItemInfoW")
+	procGetMenuItemInfo  = moduser32.NewProc("GetMenuItemInfoW")
+	procGetMenuItemCount = moduser32.NewProc("GetMenuItemCount")
+	procGetMenuItemRect  = moduser32.NewProc("GetMenuItemRect")
 )
 
 func GetMenuItemInfo(hmenu HMENU, item uint32, fByPosition bool, lpmii *MENUITEMINFO) bool {
@@ -68,6 +74,21 @@ func GetMenuItemInfo(hmenu HMENU, item uint32, fByPosition bool, lpmii *MENUITEM
 		uintptr(item),
 		uintptr(boolToUint(fByPosition)),
 		uintptr(unsafe.Pointer(lpmii)),
+	)
+	return ret != 0
+}
+
+func GetMenuItemCount(hmenu HMENU) int {
+	ret, _, _ := procGetMenuItemCount.Call(uintptr(hmenu))
+	return int(ret)
+}
+
+func GetMenuItemRect(hwnd HWND, hmenu HMENU, item uint32, rect *RECT) bool {
+	ret, _, _ := procGetMenuItemRect.Call(
+		uintptr(hwnd),
+		uintptr(hmenu),
+		uintptr(item),
+		uintptr(unsafe.Pointer(rect)),
 	)
 	return ret != 0
 }
@@ -163,6 +184,7 @@ func (u *UAHMENUPOPUPMETRICS) SetFUpdateMaxWidths(value uint32) {
 type MenuBarTheme struct {
 	TitleBarBackground     *uint32
 	TitleBarText           *uint32
+	MenuBarBackground      *uint32 // Separate color for menubar
 	MenuHoverBackground    *uint32
 	MenuHoverText          *uint32
 	MenuSelectedBackground *uint32
@@ -170,6 +192,7 @@ type MenuBarTheme struct {
 
 	// private brushes
 	titleBarBackgroundBrush     HBRUSH
+	menuBarBackgroundBrush      HBRUSH // Separate brush for menubar
 	menuHoverBackgroundBrush    HBRUSH
 	menuSelectedBackgroundBrush HBRUSH
 }
@@ -183,15 +206,34 @@ func createColourWithDefaultColor(color *uint32, def uint32) *uint32 {
 
 func (d *MenuBarTheme) Init() {
 	d.TitleBarBackground = createColourWithDefaultColor(d.TitleBarBackground, RGB(25, 25, 26))
-	d.TitleBarText = createColourWithDefaultColor(d.TitleBarText, RGB(255, 255, 255))
-	d.MenuSelectedText = createColourWithDefaultColor(d.MenuSelectedText, RGB(255, 255, 255))
-	d.MenuSelectedBackground = createColourWithDefaultColor(d.MenuSelectedBackground, RGB(60, 60, 60))
-	d.MenuHoverText = createColourWithDefaultColor(d.MenuHoverText, RGB(255, 255, 255))
-	d.MenuHoverBackground = createColourWithDefaultColor(d.MenuHoverBackground, RGB(45, 45, 45))
+	d.TitleBarText = createColourWithDefaultColor(d.TitleBarText, RGB(222, 222, 222))
+	d.MenuBarBackground = createColourWithDefaultColor(d.MenuBarBackground, RGB(33, 33, 33))
+	d.MenuSelectedText = createColourWithDefaultColor(d.MenuSelectedText, RGB(222, 222, 222))
+	d.MenuSelectedBackground = createColourWithDefaultColor(d.MenuSelectedBackground, RGB(48, 48, 48))
+	d.MenuHoverText = createColourWithDefaultColor(d.MenuHoverText, RGB(222, 222, 222))
+	d.MenuHoverBackground = createColourWithDefaultColor(d.MenuHoverBackground, RGB(48, 48, 48))
 	// Create brushes
 	d.titleBarBackgroundBrush = CreateSolidBrush(*d.TitleBarBackground)
+	d.menuBarBackgroundBrush = CreateSolidBrush(*d.MenuBarBackground)
 	d.menuHoverBackgroundBrush = CreateSolidBrush(*d.MenuHoverBackground)
 	d.menuSelectedBackgroundBrush = CreateSolidBrush(*d.MenuSelectedBackground)
+}
+
+// SetMenuBackground sets the menu background brush directly
+func (d *MenuBarTheme) SetMenuBackground(hmenu HMENU) {
+	var mi MENUINFO
+	mi.CbSize = uint32(unsafe.Sizeof(mi))
+	mi.FMask = MIIM_BACKGROUND | MIIM_APPLYTOSUBMENUS
+	mi.HbrBack = d.menuBarBackgroundBrush // Use separate menubar brush
+	SetMenuInfo(hmenu, &mi)
+}
+
+// SetMenuInfo wrapper function
+func SetMenuInfo(hmenu HMENU, lpcmi *MENUINFO) bool {
+	ret, _, _ := procSetMenuInfo.Call(
+		uintptr(hmenu),
+		uintptr(unsafe.Pointer(lpcmi)))
+	return ret != 0
 }
 
 func CreateSolidBrush(color COLORREF) HBRUSH {
@@ -210,43 +252,74 @@ func RGBptr(r, g, b byte) *uint32 {
 	return &result
 }
 
-func TrackPopupMenu(hmenu HMENU, flags uint32, x, y int32, reserved int32, hwnd HWND, prcRect *RECT) bool {
-	ret, _, _ := procTrackPopupMenu.Call(
-		uintptr(hmenu),
-		uintptr(flags),
-		uintptr(x),
-		uintptr(y),
-		uintptr(reserved),
-		uintptr(hwnd),
-		uintptr(unsafe.Pointer(prcRect)),
-	)
-	return ret != 0
-}
-
 func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *MenuBarTheme) (bool, LRESULT) {
-	if !IsCurrentlyDarkMode() {
+	if !IsCurrentlyDarkMode() || theme == nil {
 		return false, 0
 	}
 	switch msg {
 	case WM_UAHDRAWMENU:
 		udm := (*UAHMENU)(unsafe.Pointer(lParam))
-		var rc RECT
 
 		// get the menubar rect
-		menuBarInfo, err := GetMenuBarInfo(hwnd, OBJID_MENU, 0)
-		if err != nil {
+		var menuBarInfo MENUBARINFO
+		menuBarInfo.CbSize = uint32(unsafe.Sizeof(menuBarInfo))
+		if !GetMenuBarInfo(hwnd, OBJID_MENU, 0, &menuBarInfo) {
 			return false, 0
 		}
 
 		winRect := GetWindowRect(hwnd)
 
 		// the rcBar is offset by the window rect
-		rc = menuBarInfo.Bar
+		rc := menuBarInfo.Bar
 		OffsetRect(&rc, int(-winRect.Left), int(-winRect.Top))
 
-		FillRect(udm.Hdc, &rc, theme.titleBarBackgroundBrush)
+		// Fill the entire menubar background with dark color
+		FillRect(udm.Hdc, &rc, theme.menuBarBackgroundBrush)
+
+		// Paint over the menubar border explicitly
+		// The border is typically 1-2 pixels at the bottom
+		borderRect := rc
+		borderRect.Top = borderRect.Bottom - 1
+		borderRect.Bottom = borderRect.Bottom + 2
+		FillRect(udm.Hdc, &borderRect, theme.menuBarBackgroundBrush)
 
 		return true, 0
+	case WM_DRAWITEM:
+		// Handle owner-drawn menu items
+		dis := (*DRAWITEMSTRUCT)(unsafe.Pointer(lParam))
+
+		// Check if this is a menu item
+		if dis.ControlType == ODT_MENU {
+			// Draw the menu item background
+			var bgBrush HBRUSH
+			var textColor uint32
+
+			if dis.ItemState&ODS_SELECTED != 0 {
+				// Selected state
+				bgBrush = theme.menuSelectedBackgroundBrush
+				textColor = *theme.MenuSelectedText
+			} else {
+				// Normal state
+				bgBrush = theme.titleBarBackgroundBrush
+				textColor = *theme.TitleBarText
+			}
+
+			// Fill background
+			FillRect(dis.HDC, &dis.RcItem, bgBrush)
+
+			// Draw text if we have item data
+			if dis.ItemData != 0 {
+				text := (*uint16)(unsafe.Pointer(dis.ItemData))
+				if text != nil {
+					// Set text color and draw
+					SetTextColor(dis.HDC, COLORREF(textColor))
+					SetBkMode(dis.HDC, TRANSPARENT)
+					DrawText(dis.HDC, (*[256]uint16)(unsafe.Pointer(text))[:], -1, &dis.RcItem, DT_CENTER|DT_SINGLELINE|DT_VCENTER)
+				}
+			}
+
+			return true, 1
+		}
 	case WM_UAHDRAWMENUITEM:
 		udmi := (*UAHDRAWMENUITEM)(unsafe.Pointer(lParam))
 
@@ -256,23 +329,22 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 		// Setup menu item info structure
 		mii := MENUITEMINFO{
 			CbSize:     uint32(unsafe.Sizeof(MENUITEMINFO{})),
-			FMask:      MIIM_STRING,
+			FMask:      MIIM_STRING | MIIM_SUBMENU,
 			DwTypeData: &menuString[0],
 			Cch:        uint32(len(menuString) - 1),
 		}
 
-		GetMenuItemInfo(udmi.UM.Hmenu, uint32(udmi.UAMI.Position), true, &mii)
-
-		if udmi.DIS.ItemState&ODS_HOTLIGHT != 0 && mii.HSubMenu != 0 {
-			// If this is a menu item with a submenu, and we're hovering,
-			// tell the menu to track
-			TrackPopupMenu(mii.HSubMenu,
-				TPM_LEFTALIGN|TPM_TOPALIGN,
-				int32(udmi.DIS.RcItem.Left),
-				int32(udmi.DIS.RcItem.Bottom),
-				0, hwnd, nil)
+		if !GetMenuItemInfo(udmi.UM.Hmenu, uint32(udmi.UAMI.Position), true, &mii) {
+			// Failed to get menu item info, let default handler process
+			return false, 0
 		}
+
+		// Remove automatic popup on hover - menus should only open on click
+		// This was causing the menu to appear at wrong coordinates
 		dwFlags := uint32(DT_CENTER | DT_SINGLELINE | DT_VCENTER)
+
+		// Check if this is a menubar item (dwFlags will be 0 for menubar items)
+		isMenuBarItem := udmi.UM.DwFlags == 0
 
 		// Use different colors for menubar vs popup items
 		var bgBrush HBRUSH
@@ -288,18 +360,30 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 			textColor = *theme.MenuSelectedText
 		} else {
 			// Normal state
-			bgBrush = theme.titleBarBackgroundBrush
-			textColor = *theme.TitleBarText
+			if isMenuBarItem {
+				// Menubar items in normal state
+				bgBrush = theme.menuBarBackgroundBrush
+				textColor = *theme.TitleBarText
+			} else {
+				// Popup menu items in normal state - use same color as menubar
+				bgBrush = theme.menuBarBackgroundBrush
+				textColor = *theme.TitleBarText
+			}
 		}
 
 		// Fill background
 		FillRect(udmi.UM.Hdc, &udmi.DIS.RcItem, bgBrush)
 
 		// Draw text
-		SetTextColor(udmi.UM.Hdc, textColor)
+		// For menubar items, we need to ensure the text color is set correctly
+		SetTextColor(udmi.UM.Hdc, COLORREF(textColor))
 		SetBkMode(udmi.UM.Hdc, TRANSPARENT)
+
+		// Draw text using UTF16 string directly
+		// Pass -1 to let DrawText calculate the string length automatically
 		DrawText(udmi.UM.Hdc, menuString, -1, &udmi.DIS.RcItem, dwFlags)
 
+		// Return 1 to indicate we've handled the drawing
 		return true, 1
 	case WM_UAHMEASUREMENUITEM:
 		// Cast lParam to UAHMEASUREMENUITEM pointer
@@ -312,58 +396,141 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 		mmi.Mis.ItemWidth = (mmi.Mis.ItemWidth * 4) / 3
 
 		return true, result
-	case WM_NCPAINT, WM_NCACTIVATE:
+	case WM_NCPAINT:
+		// Paint our custom menubar first
+		paintDarkMenuBar(hwnd, theme)
+
+		// Then let Windows do its default painting
 		result := DefWindowProc(hwnd, msg, wParam, lParam)
-		_, err := GetMenuBarInfo(hwnd, OBJID_MENU, 0)
-		if err != nil {
-			return false, 0
-		}
 
-		clientRect := GetClientRect(hwnd)
-		points := []POINT{
-			{
-				X: clientRect.Left,
-				Y: clientRect.Top,
-			},
-			{
-				X: clientRect.Right,
-				Y: clientRect.Bottom,
-			},
-		}
-		MapWindowPoints(hwnd, 0, uintptr(unsafe.Pointer(&points[0])), 2)
-		clientRect.Left = points[0].X
-		clientRect.Top = points[0].Y
-		clientRect.Right = points[1].X
-		clientRect.Bottom = points[1].Y
-		winRect := GetWindowRect(hwnd)
+		// Paint again to ensure our painting is on top
+		paintDarkMenuBar(hwnd, theme)
 
-		OffsetRect(clientRect, int(-winRect.Left), int(-winRect.Top))
+		return true, result
+	case WM_NCACTIVATE:
+		result := DefWindowProc(hwnd, msg, wParam, lParam)
 
-		line := *clientRect
-		line.Bottom = line.Top
-		line.Top = line.Top - 1
+		// Force paint the menubar with dark background
+		paintDarkMenuBar(hwnd, theme)
 
-		hdc := GetWindowDC(hwnd)
-		FillRect(hdc, &line, theme.titleBarBackgroundBrush)
-		ReleaseDC(hwnd, hdc)
+		return false, result
+	case WM_PAINT:
+		// Let Windows paint first
+		result := DefWindowProc(hwnd, msg, wParam, lParam)
+
+		// Then paint our menubar
+		paintDarkMenuBar(hwnd, theme)
+
+		return false, result
+	case WM_ACTIVATEAPP, WM_ACTIVATE:
+		// Handle app activation/deactivation
+		result := DefWindowProc(hwnd, msg, wParam, lParam)
+
+		// Repaint menubar
+		paintDarkMenuBar(hwnd, theme)
+
+		return false, result
+	case WM_SIZE, WM_WINDOWPOSCHANGED:
+		// Handle window size changes
+		result := DefWindowProc(hwnd, msg, wParam, lParam)
+
+		// Repaint menubar after size change
+		paintDarkMenuBar(hwnd, theme)
+
+		return false, result
+	case WM_SETFOCUS, WM_KILLFOCUS:
+		// Handle focus changes (e.g., when inspector opens)
+		result := DefWindowProc(hwnd, msg, wParam, lParam)
+
+		// Repaint menubar after focus change
+		paintDarkMenuBar(hwnd, theme)
+
 		return false, result
 	}
 	return false, 0
 }
 
-func MapWindowPoints(hWndFrom HWND, hWndTo HWND, points uintptr, numPoints uint32) {
+// paintDarkMenuBar paints the menubar with dark background
+func paintDarkMenuBar(hwnd HWND, theme *MenuBarTheme) {
+	// Get menubar info
+	var menuBarInfo MENUBARINFO
+	menuBarInfo.CbSize = uint32(unsafe.Sizeof(menuBarInfo))
+	if !GetMenuBarInfo(hwnd, OBJID_MENU, 0, &menuBarInfo) {
+		return
+	}
 
-	// Call the MapWindowPoints function
-	ret, _, _ := procMapWindowPoints.Call(
-		uintptr(hWndFrom),
-		uintptr(hWndTo),
-		points,
-		uintptr(numPoints),
-	)
+	// Get window DC
+	hdc := GetWindowDC(hwnd)
+	if hdc == 0 {
+		return
+	}
+	defer ReleaseDC(hwnd, hdc)
 
-	// Check for errors
-	if ret == 0 {
-		fmt.Println("MapWindowPoints failed")
+	// Paint the menubar background with dark color
+	FillRect(hdc, &menuBarInfo.Bar, theme.menuBarBackgroundBrush)
+
+	// Get window and client rects to find the non-client area
+	windowRect := GetWindowRect(hwnd)
+	clientRect := GetClientRect(hwnd)
+
+	// Convert client rect top-left to screen coordinates
+	_, screenY := ClientToScreen(hwnd, int(clientRect.Left), int(clientRect.Top))
+
+	// Paint the entire area between menubar and client area
+	// This should cover any borders
+	borderRect := RECT{
+		Left:   0,
+		Top:    menuBarInfo.Bar.Bottom - windowRect.Top,
+		Right:  windowRect.Right - windowRect.Left,
+		Bottom: int32(screenY) - windowRect.Top,
+	}
+	FillRect(hdc, &borderRect, theme.menuBarBackgroundBrush)
+}
+
+func drawMenuBarText(hwnd HWND, hdc HDC, menuBarInfo *MENUBARINFO, theme *MenuBarTheme) {
+	// Get the menu handle
+	hmenu := menuBarInfo.Menu
+	if hmenu == 0 {
+		return
+	}
+
+	// Get the number of menu items
+	itemCount := GetMenuItemCount(hmenu)
+	if itemCount <= 0 {
+		return
+	}
+
+	// Set text color and background mode
+	SetTextColor(hdc, COLORREF(*theme.TitleBarText))
+	SetBkMode(hdc, TRANSPARENT)
+
+	// Get the window rect for coordinate conversion
+	winRect := GetWindowRect(hwnd)
+
+	// Iterate through each menu item
+	for i := 0; i < itemCount; i++ {
+		// Get the menu item rect
+		var itemRect RECT
+		if !GetMenuItemRect(hwnd, hmenu, uint32(i), &itemRect) {
+			continue
+		}
+
+		// Convert to window coordinates
+		OffsetRect(&itemRect, int(-winRect.Left), int(-winRect.Top))
+
+		// Get the menu item text
+		menuString := make([]uint16, 256)
+		mii := MENUITEMINFO{
+			CbSize:     uint32(unsafe.Sizeof(MENUITEMINFO{})),
+			FMask:      MIIM_STRING,
+			DwTypeData: &menuString[0],
+			Cch:        uint32(len(menuString) - 1),
+		}
+
+		if GetMenuItemInfo(hmenu, uint32(i), true, &mii) {
+			// Draw the text
+			DrawText(hdc, menuString, -1, &itemRect, DT_CENTER|DT_SINGLELINE|DT_VCENTER)
+		}
 	}
 }
 
@@ -437,19 +604,4 @@ func UAHDrawMenuItem(hwnd HWND, wParam uintptr, lParam uintptr) uintptr {
 	//DrawThemeTextEx(g_menuTheme, pUDMI.um.hdc, MENU_BARITEM, MBI_NORMAL, uintptr(unsafe.Pointer(&menuString[0])), mii.cch, dwFlags, &pUDMI.dis.rcItem, &opts)
 
 	//return 1
-}
-
-func GetMenuBarInfo(hwnd HWND, idObject int32, idItem uint32) (*MENUBARINFO, error) {
-	var mi MENUBARINFO
-
-	mi.CbSize = uint32(unsafe.Sizeof(mi))
-	ret, _, err := procGetMenuBarInfo.Call(
-		hwnd,
-		uintptr(idObject),
-		uintptr(idItem),
-		uintptr(unsafe.Pointer(&mi)))
-	if ret == 0 {
-		return nil, err
-	}
-	return &mi, nil
 }

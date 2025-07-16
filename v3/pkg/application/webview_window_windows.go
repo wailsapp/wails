@@ -81,6 +81,14 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 	w.menu = NewApplicationMenu(w, menu)
 	w.menu.parentWindow = w
 	w32.SetMenu(w.hwnd, w.menu.menu)
+
+	// Set dark menu background if dark theme is active
+	if w.menubarTheme != nil {
+		w.menubarTheme.SetMenuBackground(w.menu.menu)
+		w32.DrawMenuBar(w.hwnd)
+		// Force a repaint of the menu area
+		w32.InvalidateRect(w.hwnd, nil, true)
+	}
 }
 
 func (w *windowsWebviewWindow) cut() {
@@ -418,6 +426,20 @@ func (w *windowsWebviewWindow) run() {
 			w32.AllowDarkModeForWindow(w.hwnd, true)
 		}
 		w.updateTheme(isDark)
+		// Initialize dark mode menu theme if dark mode is active
+		if isDark {
+			w.menubarTheme = &w32.MenuBarTheme{
+				TitleBarBackground:     w32.RGBptr(45, 45, 45),    // Dark titlebar
+				TitleBarText:           w32.RGBptr(222, 222, 222), // Slightly muted white
+				MenuBarBackground:      w32.RGBptr(33, 33, 33),    // Standard dark mode (#212121)
+				MenuHoverBackground:    w32.RGBptr(48, 48, 48),    // Slightly lighter for hover (#303030)
+				MenuHoverText:          w32.RGBptr(222, 222, 222), // Slightly muted white
+				MenuSelectedBackground: w32.RGBptr(48, 48, 48),    // Same as hover
+				MenuSelectedText:       w32.RGBptr(222, 222, 222), // Slightly muted white
+			}
+			w.menubarTheme.Init()
+			// Let the system handle titlebar colors
+		}
 		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*ApplicationEvent) {
 			InvokeAsync(func() {
 				w.updateTheme(w32.IsCurrentlyDarkMode())
@@ -428,6 +450,18 @@ func (w *windowsWebviewWindow) run() {
 	case Dark:
 		w32.AllowDarkModeForWindow(w.hwnd, true)
 		w.updateTheme(true)
+		// Initialize dark mode menu theme
+		w.menubarTheme = &w32.MenuBarTheme{
+			TitleBarBackground:     w32.RGBptr(45, 45, 45),    // Dark titlebar
+			TitleBarText:           w32.RGBptr(222, 222, 222), // Slightly muted white
+			MenuBarBackground:      w32.RGBptr(33, 33, 33),    // Standard dark mode (#212121)
+			MenuHoverBackground:    w32.RGBptr(48, 48, 48),    // Slightly lighter for hover (#303030)
+			MenuHoverText:          w32.RGBptr(222, 222, 222), // Slightly muted white
+			MenuSelectedBackground: w32.RGBptr(48, 48, 48),    // Same as hover
+			MenuSelectedText:       w32.RGBptr(222, 222, 222), // Slightly muted white
+		}
+		w.menubarTheme.Init()
+		// Let the system handle titlebar colors - only set menu colors
 	}
 
 	switch options.BackgroundType {
@@ -1061,6 +1095,29 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 
 	w32.SetTheme(w.hwnd, isDarkMode)
 
+	// Update menu theme
+	if isDarkMode && w.menubarTheme == nil {
+		w.menubarTheme = &w32.MenuBarTheme{
+			TitleBarBackground:     w32.RGBptr(45, 45, 45),    // Dark titlebar
+			TitleBarText:           w32.RGBptr(222, 222, 222), // Slightly muted white
+			MenuBarBackground:      w32.RGBptr(33, 33, 33),    // Standard dark mode (#212121)
+			MenuHoverBackground:    w32.RGBptr(48, 48, 48),    // Slightly lighter for hover (#303030)
+			MenuHoverText:          w32.RGBptr(222, 222, 222), // Slightly muted white
+			MenuSelectedBackground: w32.RGBptr(48, 48, 48),    // Same as hover
+			MenuSelectedText:       w32.RGBptr(222, 222, 222), // Slightly muted white
+		}
+		w.menubarTheme.Init()
+		// Let the system handle titlebar colors - only set menu colors
+	} else if !isDarkMode && w.menubarTheme != nil {
+		// Clear theme for light mode
+		w.menubarTheme = nil
+	}
+
+	// Force redraw of menu bar
+	if w.menu != nil {
+		w32.DrawMenuBar(w.hwnd)
+	}
+
 	// Custom theme processing
 	customTheme := w.parent.options.Windows.CustomTheme
 	// Custom theme
@@ -1203,6 +1260,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_ERASEBKGND:
 		w.parent.emit(events.Windows.WindowBackgroundErase)
 		return 1 // Let WebView2 handle background erasing
+	// WM_UAHDRAWMENUITEM is handled by MenuBarWndProc at the top of this function
 	// Check for keypress
 	case w32.WM_SYSCOMMAND:
 		switch wparam {

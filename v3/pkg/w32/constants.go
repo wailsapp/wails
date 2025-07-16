@@ -528,6 +528,9 @@ const (
 	WM_PAINT                  = 15
 	WM_PAINTCLIPBOARD         = 777
 	WM_PAINTICON              = 38
+	WM_UAHDRAWMENU            = 0x0091
+	WM_UAHDRAWMENUITEM        = 0x0092
+	WM_UAHMEASUREMENUITEM     = 0x0094
 	WM_PALETTECHANGED         = 785
 	WM_PALETTEISCHANGING      = 784
 	WM_PARENTNOTIFY           = 528
@@ -606,9 +609,6 @@ const (
 	WM_MOUSELEAVE             = 0x2A3
 	WM_CLIPBOARDUPDATE        = 0x031D
 	WM_DPICHANGED             = 0x02E0
-	WM_UAHDRAWMENU            = 0x0091
-	WM_UAHDRAWMENUITEM        = 0x0092
-	WM_UAHMEASUREMENUITEM     = 0x012E
 )
 
 const (
