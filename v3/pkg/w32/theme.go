@@ -124,6 +124,7 @@ func GetAccentColor() (string, error) {
 		return "", err
 	}
 
+	// Extract RGB components from ABGR format (Alpha, Blue, Green, Red)
 	red := uint8(accentColor & 0xFF)
 	green := uint8((accentColor >> 8) & 0xFF)
 	blue := uint8((accentColor >> 16) & 0xFF)

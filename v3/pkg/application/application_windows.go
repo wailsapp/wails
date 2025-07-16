@@ -58,7 +58,7 @@ func (m *windowsApp) isDarkMode() bool {
 func (m *windowsApp) getAccentColor() string {
 	accentColor, err := w32.GetAccentColor()
 	if err != nil {
-		m.parent.error("failed to get accent color:", err)
+		m.parent.error("failed to get accent color: %w", err)
 		return "rgb(0,122,255)"
 	}
 
