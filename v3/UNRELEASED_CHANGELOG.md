@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- [Windows] Dark Mode menus by @leaanthony in [PR]()
 
 ## Changed
 <!-- Changes in existing functionality -->

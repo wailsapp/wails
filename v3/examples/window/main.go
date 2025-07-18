@@ -477,7 +477,7 @@ func main() {
 		if runtime.GOOS == "windows" {
 			myMenu.Add("New WebviewWindow (Custom Menubar - Follows System Theme)").
 				OnClick(func(ctx *application.Context) {
-					app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+					app.Window.NewWithOptions(application.WebviewWindowOptions{
 						Title: "Custom Menubar - System Theme Aware",
 						X:     rand.Intn(1000),
 						Y:     rand.Intn(800),

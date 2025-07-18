@@ -1148,27 +1148,18 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 
 	w32.SetTheme(w.hwnd, isDarkMode)
 
-	// Update menu theme
-	if isDarkMode && w.menubarTheme == nil {
-		w.menubarTheme = &w32.MenuBarTheme{
-			TitleBarBackground:     w32.RGBptr(45, 45, 45),    // Dark titlebar
-			TitleBarText:           w32.RGBptr(222, 222, 222), // Slightly muted white
-			MenuBarBackground:      w32.RGBptr(33, 33, 33),    // Standard dark mode (#212121)
-			MenuHoverBackground:    w32.RGBptr(48, 48, 48),    // Slightly lighter for hover (#303030)
-			MenuHoverText:          w32.RGBptr(222, 222, 222), // Slightly muted white
-			MenuSelectedBackground: w32.RGBptr(48, 48, 48),    // Same as hover
-			MenuSelectedText:       w32.RGBptr(222, 222, 222), // Slightly muted white
-		}
-		w.menubarTheme.Init()
-		// Let the system handle titlebar colors - only set menu colors
-	} else if !isDarkMode && w.menubarTheme != nil {
-		// Clear theme for light mode
+	// Clear any existing theme first
+	if w.menubarTheme != nil && !isDarkMode {
+		// Reset menu to default Windows theme when switching to light mode
 		w.menubarTheme = nil
-	}
-
-	// Force redraw of menu bar
-	if w.menu != nil {
-		w32.DrawMenuBar(w.hwnd)
+		if w.menu != nil {
+			// Clear the menu background by setting it to default
+			var mi w32.MENUINFO
+			mi.CbSize = uint32(unsafe.Sizeof(mi))
+			mi.FMask = w32.MIIM_BACKGROUND | w32.MIIM_APPLYTOSUBMENUS
+			mi.HbrBack = 0 // NULL brush resets to default
+			w32.SetMenuInfo(w.menu.menu, &mi)
+		}
 	}
 
 	// Custom theme processing
@@ -1205,7 +1196,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 				w32.DrawMenuBar(w.hwnd)
 				w32.InvalidateRect(w.hwnd, nil, true)
 			}
-		} else if isDarkMode {
+		} else if userTheme == nil && isDarkMode {
 			// Use default dark theme if no custom theme provided
 			globalApplication.debug("Setting default dark menubar theme", "window", w.parent.id)
 			w.menubarTheme = &w32.MenuBarTheme{
@@ -1225,6 +1216,16 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 				w32.DrawMenuBar(w.hwnd)
 				w32.InvalidateRect(w.hwnd, nil, true)
 			}
+		} else if userTheme == nil && !isDarkMode && w.menu != nil {
+			// No custom theme for light mode - ensure menu is reset to default
+			globalApplication.debug("Resetting menu to default light theme", "window", w.parent.id)
+			var mi w32.MENUINFO
+			mi.CbSize = uint32(unsafe.Sizeof(mi))
+			mi.FMask = w32.MIIM_BACKGROUND | w32.MIIM_APPLYTOSUBMENUS
+			mi.HbrBack = 0 // NULL brush resets to default
+			w32.SetMenuInfo(w.menu.menu, &mi)
+			w32.DrawMenuBar(w.hwnd)
+			w32.InvalidateRect(w.hwnd, nil, true)
 		}
 		// Define a map for theme selection
 		themeMap := map[bool]map[bool]*WindowTheme{
