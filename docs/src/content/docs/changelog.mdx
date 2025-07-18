@@ -74,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed Service methods: `Name` -> `ServiceName`, `OnStartup` -> `ServiceStartup`, `OnShutdown` -> `ServiceShutdown` by [@leaanthony](https://github.com/leaanthony)
 - Moved `Path` and `Paths` methods to `application` package by [@leaanthony](https://github.com/leaanthony)
 - The application menu is now macOS only by [@leaanthony](https://github.com/leaanthony)
+- When emitting a custom event with zero or one data argument, the data value will be assigned directly to the Data field without wrapping it in a slice by [@fbbdev](https://github.com/fbbdev) in [#4161](https://github.com/wailsapp/wails/pull/4161)
 
 ### Added
 
@@ -128,6 +129,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -  Add File Association support for mac by [@wimaha](https://github.com/wimaha) in [#4177](https://github.com/wailsapp/wails/pull/4177)
 - Add `wails3 tool version` for semantic version bumping by [@leaanthony](https://github.com/leaanthony)
 - Add badging support for macOS and Windows by [@popaprozac](https://github.com/popaprozac) in [#](https://github.com/wailsapp/wails/pull/4234)
+- Add support for registered/strictly-typed events by [@fbbdev](https://github.com/fbbdev) and [@IanVS](https://github.com/IanVS) in [#4161](https://github.com/wailsapp/wails/pull/4161)
+- Add the ability to register hooks for custom events by [@fbbdev](https://github.com/fbbdev) and [@IanVS](https://github.com/IanVS) in [#4161](https://github.com/wailsapp/wails/pull/4161)
 
 ### Fixed
 
