@@ -7,106 +7,116 @@ import (
 )
 
 const (
-	WindowPosition               = 0
-	WindowCenter                 = 1
-	WindowClose                  = 2
-	WindowDisableSizeConstraints = 3
-	WindowEnableSizeConstraints  = 4
-	WindowFocus                  = 5
-	WindowForceReload            = 6
-	WindowFullscreen             = 7
-	WindowGetScreen              = 8
-	WindowGetZoom                = 9
-	WindowHeight                 = 10
-	WindowHide                   = 11
-	WindowIsFocused              = 12
-	WindowIsFullscreen           = 13
-	WindowIsMaximised            = 14
-	WindowIsMinimised            = 15
-	WindowMaximise               = 16
-	WindowMinimise               = 17
-	WindowName                   = 18
-	WindowOpenDevTools           = 19
-	WindowRelativePosition       = 20
-	WindowReload                 = 21
-	WindowResizable              = 22
-	WindowRestore                = 23
-	WindowSetPosition            = 24
-	WindowSetAlwaysOnTop         = 25
-	WindowSetBackgroundColour    = 26
-	WindowSetFrameless           = 27
-	WindowSetMaxSize             = 28
-	WindowSetMinSize             = 29
-	WindowSetRelativePosition    = 30
-	WindowSetResizable           = 31
-	WindowSetSize                = 32
-	WindowSetTitle               = 33
-	WindowSetZoom                = 34
-	WindowShow                   = 35
-	WindowSize                   = 36
-	WindowToggleFullscreen       = 37
-	WindowToggleMaximise         = 38
-	WindowUnFullscreen           = 39
-	WindowUnMaximise             = 40
-	WindowUnMinimise             = 41
-	WindowWidth                  = 42
-	WindowZoom                   = 43
-	WindowZoomIn                 = 44
-	WindowZoomOut                = 45
-	WindowZoomReset              = 46
+	WindowPosition                   = 0
+	WindowCenter                     = 1
+	WindowClose                      = 2
+	WindowDisableSizeConstraints     = 3
+	WindowEnableSizeConstraints      = 4
+	WindowFocus                      = 5
+	WindowForceReload                = 6
+	WindowFullscreen                 = 7
+	WindowGetScreen                  = 8
+	WindowGetZoom                    = 9
+	WindowHeight                     = 10
+	WindowHide                       = 11
+	WindowIsFocused                  = 12
+	WindowIsFullscreen               = 13
+	WindowIsMaximised                = 14
+	WindowIsMinimised                = 15
+	WindowMaximise                   = 16
+	WindowMinimise                   = 17
+	WindowName                       = 18
+	WindowOpenDevTools               = 19
+	WindowRelativePosition           = 20
+	WindowReload                     = 21
+	WindowResizable                  = 22
+	WindowRestore                    = 23
+	WindowSetPosition                = 24
+	WindowSetAlwaysOnTop             = 25
+	WindowSetBackgroundColour        = 26
+	WindowSetFrameless               = 27
+	WindowSetFullscreenButtonEnabled = 28
+	WindowSetMaxSize                 = 29
+	WindowSetMinSize                 = 30
+	WindowSetRelativePosition        = 31
+	WindowSetResizable               = 32
+	WindowSetSize                    = 33
+	WindowSetTitle                   = 34
+	WindowSetZoom                    = 35
+	WindowShow                       = 36
+	WindowSize                       = 37
+	WindowToggleFullscreen           = 38
+	WindowToggleMaximise             = 39
+	WindowToggleFrameless            = 40
+	WindowUnFullscreen               = 41
+	WindowUnMaximise                 = 42
+	WindowUnMinimise                 = 43
+	WindowWidth                      = 44
+	WindowZoom                       = 45
+	WindowZoomIn                     = 46
+	WindowZoomOut                    = 47
+	WindowZoomReset                  = 48
 )
 
 var windowMethodNames = map[int]string{
-	WindowPosition:               "Position",
-	WindowCenter:                 "Center",
-	WindowClose:                  "Close",
-	WindowDisableSizeConstraints: "DisableSizeConstraints",
-	WindowEnableSizeConstraints:  "EnableSizeConstraints",
-	WindowFocus:                  "Focus",
-	WindowForceReload:            "ForceReload",
-	WindowFullscreen:             "Fullscreen",
-	WindowGetScreen:              "GetScreen",
-	WindowGetZoom:                "GetZoom",
-	WindowHeight:                 "Height",
-	WindowHide:                   "Hide",
-	WindowIsFocused:              "IsFocused",
-	WindowIsFullscreen:           "IsFullscreen",
-	WindowIsMaximised:            "IsMaximised",
-	WindowIsMinimised:            "IsMinimised",
-	WindowMaximise:               "Maximise",
-	WindowMinimise:               "Minimise",
-	WindowName:                   "Name",
-	WindowOpenDevTools:           "OpenDevTools",
-	WindowRelativePosition:       "RelativePosition",
-	WindowReload:                 "Reload",
-	WindowResizable:              "Resizable",
-	WindowRestore:                "Restore",
-	WindowSetPosition:            "SetPosition",
-	WindowSetAlwaysOnTop:         "SetAlwaysOnTop",
-	WindowSetBackgroundColour:    "SetBackgroundColour",
-	WindowSetFrameless:           "SetFrameless",
-	WindowSetMaxSize:             "SetMaxSize",
-	WindowSetMinSize:             "SetMinSize",
-	WindowSetRelativePosition:    "SetRelativePosition",
-	WindowSetResizable:           "SetResizable",
-	WindowSetSize:                "SetSize",
-	WindowSetTitle:               "SetTitle",
-	WindowSetZoom:                "SetZoom",
-	WindowShow:                   "Show",
-	WindowSize:                   "Size",
-	WindowToggleFullscreen:       "ToggleFullscreen",
-	WindowToggleMaximise:         "ToggleMaximise",
-	WindowUnFullscreen:           "UnFullscreen",
-	WindowUnMaximise:             "UnMaximise",
-	WindowUnMinimise:             "UnMinimise",
-	WindowWidth:                  "Width",
-	WindowZoom:                   "Zoom",
-	WindowZoomIn:                 "ZoomIn",
-	WindowZoomOut:                "ZoomOut",
-	WindowZoomReset:              "ZoomReset",
+	WindowPosition:                   "Position",
+	WindowCenter:                     "Center",
+	WindowClose:                      "Close",
+	WindowDisableSizeConstraints:     "DisableSizeConstraints",
+	WindowEnableSizeConstraints:      "EnableSizeConstraints",
+	WindowFocus:                      "Focus",
+	WindowForceReload:                "ForceReload",
+	WindowFullscreen:                 "Fullscreen",
+	WindowGetScreen:                  "GetScreen",
+	WindowGetZoom:                    "GetZoom",
+	WindowHeight:                     "Height",
+	WindowHide:                       "Hide",
+	WindowIsFocused:                  "IsFocused",
+	WindowIsFullscreen:               "IsFullscreen",
+	WindowIsMaximised:                "IsMaximised",
+	WindowIsMinimised:                "IsMinimised",
+	WindowMaximise:                   "Maximise",
+	WindowMinimise:                   "Minimise",
+	WindowName:                       "Name",
+	WindowOpenDevTools:               "OpenDevTools",
+	WindowRelativePosition:           "RelativePosition",
+	WindowReload:                     "Reload",
+	WindowResizable:                  "Resizable",
+	WindowRestore:                    "Restore",
+	WindowSetPosition:                "SetPosition",
+	WindowSetAlwaysOnTop:             "SetAlwaysOnTop",
+	WindowSetBackgroundColour:        "SetBackgroundColour",
+	WindowSetFrameless:               "SetFrameless",
+	WindowSetFullscreenButtonEnabled: "SetFullscreenButtonEnabled",
+	WindowSetMaxSize:                 "SetMaxSize",
+	WindowSetMinSize:                 "SetMinSize",
+	WindowSetRelativePosition:        "SetRelativePosition",
+	WindowSetResizable:               "SetResizable",
+	WindowSetSize:                    "SetSize",
+	WindowSetTitle:                   "SetTitle",
+	WindowSetZoom:                    "SetZoom",
+	WindowShow:                       "Show",
+	WindowSize:                       "Size",
+	WindowToggleFullscreen:           "ToggleFullscreen",
+	WindowToggleMaximise:             "ToggleMaximise",
+	WindowToggleFrameless:            "ToggleFrameless",
+	WindowUnFullscreen:               "UnFullscreen",
+	WindowUnMaximise:                 "UnMaximise",
+	WindowUnMinimise:                 "UnMinimise",
+	WindowWidth:                      "Width",
+	WindowZoom:                       "Zoom",
+	WindowZoomIn:                     "ZoomIn",
+	WindowZoomOut:                    "ZoomOut",
+	WindowZoomReset:                  "ZoomReset",
 }
 
-func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWriter, _ *http.Request, window Window, params QueryParams) {
+func (m *MessageProcessor) processWindowMethod(
+	method int,
+	rw http.ResponseWriter,
+	_ *http.Request,
+	window Window,
+	params QueryParams,
+) {
 	args, err := params.Args()
 	if err != nil {
 		m.httpError(rw, "Invalid window call:", fmt.Errorf("unable to parse arguments: %w", err))
@@ -209,7 +219,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetAlwaysOnTop:
 		alwaysOnTop := args.Bool("alwaysOnTop")
 		if alwaysOnTop == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'alwaysOnTop'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'alwaysOnTop'"),
+			)
 			return
 		}
 		window.SetAlwaysOnTop(*alwaysOnTop)
@@ -245,7 +259,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetFrameless:
 		frameless := args.Bool("frameless")
 		if frameless == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'frameless'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'frameless'"),
+			)
 			return
 		}
 		window.SetFrameless(*frameless)
@@ -253,12 +271,20 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetMaxSize:
 		width := args.Int("width")
 		if width == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'width'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'width'"),
+			)
 			return
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'height'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'height'"),
+			)
 			return
 		}
 		window.SetMaxSize(*width, *height)
@@ -266,12 +292,20 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetMinSize:
 		width := args.Int("width")
 		if width == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'width'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'width'"),
+			)
 			return
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'height'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'height'"),
+			)
 			return
 		}
 		window.SetMinSize(*width, *height)
@@ -292,7 +326,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetResizable:
 		resizable := args.Bool("resizable")
 		if resizable == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'resizable'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'resizable'"),
+			)
 			return
 		}
 		window.SetResizable(*resizable)
@@ -300,12 +338,20 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetSize:
 		width := args.Int("width")
 		if width == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'width'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'width'"),
+			)
 			return
 		}
 		height := args.Int("height")
 		if height == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'height'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'height'"),
+			)
 			return
 		}
 		window.SetSize(*width, *height)
@@ -321,7 +367,11 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 	case WindowSetZoom:
 		zoom := args.Float64("zoom")
 		if zoom == nil {
-			m.httpError(rw, "Invalid window call:", errors.New("missing or invalid argument 'zoom'"))
+			m.httpError(
+				rw,
+				"Invalid window call:",
+				errors.New("missing or invalid argument 'zoom'"),
+			)
 			return
 		}
 		window.SetZoom(*zoom)
@@ -343,6 +393,9 @@ func (m *MessageProcessor) processWindowMethod(method int, rw http.ResponseWrite
 		m.ok(rw)
 	case WindowToggleMaximise:
 		window.ToggleMaximise()
+		m.ok(rw)
+	case WindowToggleFrameless:
+		window.ToggleFrameless()
 		m.ok(rw)
 	case WindowUnFullscreen:
 		window.UnFullscreen()
