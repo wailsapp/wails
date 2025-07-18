@@ -19,7 +19,6 @@ on:
 jobs:
   nightly-release:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/v3-alpha'
     
     permissions:
       contents: write
