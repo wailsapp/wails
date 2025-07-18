@@ -76,6 +76,9 @@ type windowsWebviewWindow struct {
 	// isMinimizing indicates whether the window is currently being minimized
 	// Used to prevent unnecessary redraws during minimize/restore operations
 	isMinimizing bool
+
+	// menubarTheme is the theme for the menubar
+	menubarTheme *w32.MenuBarTheme
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -83,6 +86,14 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 	w.menu = NewApplicationMenu(w, menu)
 	w.menu.parentWindow = w
 	w32.SetMenu(w.hwnd, w.menu.menu)
+
+	// Set menu background if theme is active
+	if w.menubarTheme != nil {
+		w.menubarTheme.SetMenuBackground(w.menu.menu)
+		w32.DrawMenuBar(w.hwnd)
+		// Force a repaint of the menu area
+		w32.InvalidateRect(w.hwnd, nil, true)
+	}
 }
 
 func (w *windowsWebviewWindow) cut() {
@@ -1115,6 +1126,58 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 
 	// Custom theme processing
 	customTheme := w.parent.options.Windows.CustomTheme
+	
+	// Initialize menubar theme
+	if customTheme != nil {
+		var userTheme *MenuBarTheme
+		if isDarkMode {
+			userTheme = customTheme.DarkModeMenuBar
+		} else {
+			userTheme = customTheme.LightModeMenuBar
+		}
+
+		if userTheme != nil {
+			w.menubarTheme = &w32.MenuBarTheme{
+				TitleBarBackground:     userTheme.Default.Background,
+				TitleBarText:           userTheme.Default.Text,
+				MenuBarBackground:      userTheme.Default.Background,
+				MenuHoverBackground:    userTheme.Hover.Background,
+				MenuHoverText:          userTheme.Hover.Text,
+				MenuSelectedBackground: userTheme.Selected.Background,
+				MenuSelectedText:       userTheme.Selected.Text,
+			}
+			w.menubarTheme.Init()
+
+			// If menu is already set, update it
+			if w.menu != nil {
+				w.menubarTheme.SetMenuBackground(w.menu.menu)
+				w32.DrawMenuBar(w.hwnd)
+				w32.InvalidateRect(w.hwnd, nil, true)
+			}
+		} else if isDarkMode {
+			// Use default dark theme if no custom theme provided
+			w.menubarTheme = &w32.MenuBarTheme{
+				TitleBarBackground:     w32.RGBptr(45, 45, 45),    // Dark titlebar
+				TitleBarText:           w32.RGBptr(222, 222, 222), // Slightly muted white
+				MenuBarBackground:      w32.RGBptr(33, 33, 33),    // Standard dark mode (#212121)
+				MenuHoverBackground:    w32.RGBptr(48, 48, 48),    // Slightly lighter for hover (#303030)
+				MenuHoverText:          w32.RGBptr(222, 222, 222), // Slightly muted white
+				MenuSelectedBackground: w32.RGBptr(48, 48, 48),    // Same as hover
+				MenuSelectedText:       w32.RGBptr(222, 222, 222), // Slightly muted white
+			}
+			w.menubarTheme.Init()
+
+			// If menu is already set, update it
+			if w.menu != nil {
+				w.menubarTheme.SetMenuBackground(w.menu.menu)
+				w32.DrawMenuBar(w.hwnd)
+			}
+		} else {
+			// Clear theme for light mode if no custom theme
+			w.menubarTheme = nil
+		}
+	}
+	
 	// Custom theme
 	if w32.SupportsCustomThemes() && customTheme != nil {
 		if w.isActive() {
@@ -1148,6 +1211,12 @@ func (w *windowsWebviewWindow) isActive() bool {
 var resizePending int32
 
 func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
+	// Handle menubar theme messages first
+	processed, code := w32.MenuBarWndProc(w.hwnd, msg, wparam, lparam, w.menubarTheme)
+	if processed {
+		return code
+	}
+
 	switch msg {
 	case w32.WM_ACTIVATE:
 		if int(wparam&0xffff) == w32.WA_INACTIVE {

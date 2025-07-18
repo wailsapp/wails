@@ -324,6 +324,34 @@ type ThemeSettings struct {
 	LightModeTitleTextInactive int32
 	LightModeBorder            int32
 	LightModeBorderInactive    int32
+
+	// Menubar themes
+	DarkModeMenuBar  *MenuBarTheme
+	LightModeMenuBar *MenuBarTheme
+}
+
+// MenuBarTheme defines the theme for menus on Windows
+type MenuBarTheme struct {
+	// Default menu item colors
+	Default *TextTheme
+	// Hover state colors
+	Hover *TextTheme
+	// Selected/clicked state colors
+	Selected *TextTheme
+}
+
+// TextTheme defines text and background colors
+type TextTheme struct {
+	// Text color in RGB format (0x00RRGGBB)
+	Text *uint32
+	// Background color in RGB format (0x00RRGGBB)
+	Background *uint32
+}
+
+// NewRGBPtr creates a pointer to an RGB color value
+func NewRGBPtr(r, g, b byte) *uint32 {
+	color := uint32(r) | uint32(g)<<8 | uint32(b)<<16
+	return &color
 }
 
 /****** Mac Options *******/
