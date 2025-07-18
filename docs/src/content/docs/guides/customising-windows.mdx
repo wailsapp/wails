@@ -127,3 +127,150 @@ this setting:
 - AlwaysOnTop
 - IgnoreMouseEvents
 - BackgroundType
+
+## Custom Menu Bar Theming (Windows)
+
+<Badge text="Windows" variant="note" />
+
+Wails v3 supports custom theming for the menu bar on Windows, allowing you to customize colours for both dark and light modes. This feature is particularly useful for creating applications that match your brand colours or design system.
+
+![Dark mode menus in Windows showing customized menu bar colours](../../../assets/dark-mode-menus.png)
+
+### Theme Structure
+
+The menu bar theme is configured using the `MenuBarTheme` struct, which contains three states:
+
+```go
+type MenuBarTheme struct {
+    // Default appearance when not interacting
+    Default *TextTheme
+    
+    // Appearance when hovering over a menu item
+    Hover *TextTheme
+    
+    // Appearance when a menu item is selected/clicked
+    Selected *TextTheme
+}
+
+type TextTheme struct {
+    // Background colour in 0x00BBGGRR format
+    Background *uint32
+    
+    // Text colour in 0x00BBGGRR format
+    Text *uint32
+}
+```
+
+### Setting Custom Menu Bar Themes
+
+You can set custom menu bar themes for both dark and light modes:
+
+```go title="main.go"
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/samber/lo"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My Application",
+    })
+
+    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+        Windows: application.WindowsWindow{
+            Theme: application.SystemDefault, // Follow system theme
+            CustomTheme: application.ThemeSettings{
+                // Dark mode menu bar colours
+                DarkModeMenuBar: &application.MenuBarTheme{
+                    Default: &application.TextTheme{
+                        Background: lo.ToPtr(uint32(0x00212121)), // Dark gray
+                        Text:       lo.ToPtr(uint32(0x00DEDEDE)), // Light gray
+                    },
+                    Hover: &application.TextTheme{
+                        Background: lo.ToPtr(uint32(0x00303030)), // Lighter gray
+                        Text:       lo.ToPtr(uint32(0x00FFFFFF)), // White
+                    },
+                    Selected: &application.TextTheme{
+                        Background: lo.ToPtr(uint32(0x00303030)), // Same as hover
+                        Text:       lo.ToPtr(uint32(0x00FFFFFF)), // White
+                    },
+                },
+                // Light mode menu bar colours
+                LightModeMenuBar: &application.MenuBarTheme{
+                    Default: &application.TextTheme{
+                        Background: lo.ToPtr(uint32(0x00F0F0F0)), // Light gray
+                        Text:       lo.ToPtr(uint32(0x00202020)), // Dark gray
+                    },
+                    Hover: &application.TextTheme{
+                        Background: lo.ToPtr(uint32(0x00E0E0E0)), // Slightly darker
+                        Text:       lo.ToPtr(uint32(0x00000000)), // Black
+                    },
+                    Selected: &application.TextTheme{
+                        Background: lo.ToPtr(uint32(0x00D0D0D0)), // Even darker
+                        Text:       lo.ToPtr(uint32(0x00000000)), // Black
+                    },
+                },
+            },
+        },
+    })
+
+    app.Run()
+}
+```
+
+### Colour Format
+
+Colours are specified in the `0x00BBGGRR` format (Blue, Green, Red), where:
+- `BB` is the blue component (00-FF)
+- `GG` is the green component (00-FF)
+- `RR` is the red component (00-FF)
+
+For example:
+- `0x00FF0000` = Pure blue
+- `0x0000FF00` = Pure green
+- `0x000000FF` = Pure red
+- `0x00FFFFFF` = White
+- `0x00000000` = Black
+
+### Theme Selection
+
+The theme used depends on the `Theme` setting in `WindowsWindow`:
+- `application.SystemDefault`: Automatically uses dark/light theme based on system settings
+- `application.Dark`: Always uses dark mode theme
+- `application.Light`: Always uses light mode theme
+
+### Limitations
+
+:::caution
+Windows has several limitations regarding menu customization:
+1. **Dropdown menu backgrounds**: The background colour of dropdown menus (popup menus) cannot be customized and will always use Windows system colours
+2. **Menu borders and shadows**: These are controlled by Windows and cannot be customized
+3. **Menu separators**: The appearance of menu separators cannot be customized
+4. **Icon/checkbox margins**: The space reserved for icons and checkboxes in menu items is controlled by Windows
+
+Only the menubar itself and individual menu item backgrounds (when hovered/selected) can be fully customized.
+:::
+
+### Example: Brand-coloured Menu Bar
+
+Here's an example of creating a menu bar with custom brand colours:
+
+```go
+// Purple-themed menu bar for dark mode
+DarkModeMenuBar: &application.MenuBarTheme{
+    Default: &application.TextTheme{
+        Background: lo.ToPtr(uint32(0x00400080)), // Dark purple
+        Text:       lo.ToPtr(uint32(0x00FFFF00)), // Yellow
+    },
+    Hover: &application.TextTheme{
+        Background: lo.ToPtr(uint32(0x00600090)), // Lighter purple
+        Text:       lo.ToPtr(uint32(0x00FFFFFF)), // White
+    },
+    Selected: &application.TextTheme{
+        Background: lo.ToPtr(uint32(0x008000A0)), // Even lighter purple
+        Text:       lo.ToPtr(uint32(0x00FFFFFF)), // White
+    },
+},
+```

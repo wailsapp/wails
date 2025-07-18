@@ -253,7 +253,8 @@ func RGBptr(r, g, b byte) *uint32 {
 }
 
 func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *MenuBarTheme) (bool, LRESULT) {
-	if !IsCurrentlyDarkMode() || theme == nil {
+	// Only proceed if we have a theme (either for dark or light mode)
+	if theme == nil {
 		return false, 0
 	}
 	switch msg {
@@ -386,14 +387,9 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 		// Return 1 to indicate we've handled the drawing
 		return true, 1
 	case WM_UAHMEASUREMENUITEM:
-		// Cast lParam to UAHMEASUREMENUITEM pointer
-		mmi := (*UAHMEASUREMENUITEM)(unsafe.Pointer(lParam))
-
-		// Let the default window procedure handle the basic measurement
+		// Let the default window procedure handle the menu item measurement
+		// We're not modifying the default sizing anymore
 		result := DefWindowProc(hwnd, msg, wParam, lParam)
-
-		// Modify the width to be 1/3rd wider
-		mmi.Mis.ItemWidth = (mmi.Mis.ItemWidth * 4) / 3
 
 		return true, result
 	case WM_NCPAINT:
