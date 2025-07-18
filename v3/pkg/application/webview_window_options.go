@@ -359,6 +359,9 @@ type ThemeSettings struct {
 
 	// Dark mode MenuBar
 	DarkModeMenuBar *MenuBarTheme
+
+	// Light mode MenuBar
+	LightModeMenuBar *MenuBarTheme
 }
 
 /****** Mac Options *******/
