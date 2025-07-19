@@ -99,7 +99,7 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 	// frontend:dev:watcher command.
 	frontendDevAutoDiscovery := projectConfig.IsFrontendDevServerURLAutoDiscovery()
 	if command := projectConfig.DevWatcherCommand; command != "" {
-		closer, devServerURL, devServerViteVersion, err := runFrontendDevWatcherCommand(projectConfig.GetFrontendDir(), command, frontendDevAutoDiscovery)
+		closer, devServerURL, devServerViteVersion, err := runFrontendDevWatcherCommand(projectConfig.GetFrontendDir(), command, frontendDevAutoDiscovery, projectConfig.ViteServerTimeout)
 		if err != nil {
 			return err
 		}
@@ -205,7 +205,7 @@ func runCommand(dir string, exitOnError bool, command string, args ...string) er
 }
 
 // runFrontendDevWatcherCommand will run the `frontend:dev:watcher` command if it was given, ex- `npm run dev`
-func runFrontendDevWatcherCommand(frontendDirectory string, devCommand string, discoverViteServerURL bool) (func(), string, string, error) {
+func runFrontendDevWatcherCommand(frontendDirectory string, devCommand string, discoverViteServerURL bool, viteServerTimeout int) (func(), string, string, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	scanner := NewStdoutScanner()
 	cmdSlice := strings.Split(devCommand, " ")
@@ -225,9 +225,9 @@ func runFrontendDevWatcherCommand(frontendDirectory string, devCommand string, d
 		select {
 		case serverURL := <-scanner.ViteServerURLChan:
 			viteServerURL = serverURL
-		case <-time.After(time.Second * 10):
+		case <-time.After(time.Second * time.Duration(viteServerTimeout)):
 			cancel()
-			return nil, "", "", errors.New("failed to find Vite server URL")
+			return nil, "", "", fmt.Errorf("failed to find Vite server URL: Timed out waiting for Vite to output a URL after %d seconds", viteServerTimeout)
 		}
 	}
 

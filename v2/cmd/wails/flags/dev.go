@@ -31,6 +31,7 @@ type Dev struct {
 	AppArgs              string `flag:"appargs" description:"arguments to pass to the underlying app (quoted and space separated)"`
 	Save                 bool   `flag:"save" description:"Save the given flags as defaults"`
 	FrontendDevServerURL string `flag:"frontenddevserverurl" description:"The url of the external frontend dev server to use"`
+	ViteServerTimeout    int    `flag:"viteservertimeout" description:"The timeout in seconds for Vite server detection (default: 10)"`
 
 	// Internal state
 	devServerURL  *url.URL
@@ -41,6 +42,7 @@ func (*Dev) Default() *Dev {
 	result := &Dev{
 		Extensions: "go",
 		Debounce:   100,
+		LogLevel:   "Info",
 	}
 	result.BuildCommon = result.BuildCommon.Default()
 	return result
@@ -103,6 +105,13 @@ func (d *Dev) loadAndMergeProjectConfig() error {
 	d.projectConfig.DebounceMS = d.Debounce
 
 	d.AppArgs, _ = lo.Coalesce(d.AppArgs, d.projectConfig.AppArgs)
+
+	if d.ViteServerTimeout == 0 && d.projectConfig.ViteServerTimeout != 0 {
+		d.ViteServerTimeout = d.projectConfig.ViteServerTimeout
+	} else if d.ViteServerTimeout == 0 {
+		d.ViteServerTimeout = 10 // Default timeout
+	}
+	d.projectConfig.ViteServerTimeout = d.ViteServerTimeout
 
 	if d.Save {
 		err = d.projectConfig.Save()
