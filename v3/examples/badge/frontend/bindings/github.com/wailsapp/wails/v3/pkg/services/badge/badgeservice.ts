@@ -18,16 +18,16 @@ import * as $models from "./models.js";
  * RemoveBadge removes the badge label from the application icon.
  */
 export function RemoveBadge(): $CancellablePromise<void> {
-    return $Call.ByID(2633565570);
+    return $Call.ByID(2374916939);
 }
 
 /**
  * SetBadge sets the badge label on the application icon.
  */
 export function SetBadge(label: string): $CancellablePromise<void> {
-    return $Call.ByID(3052354152, label);
+    return $Call.ByID(784276339, label);
 }
 
 export function SetCustomBadge(label: string, options: $models.Options): $CancellablePromise<void> {
-    return $Call.ByID(921166821, label, options);
+    return $Call.ByID(3058653106, label, options);
 }

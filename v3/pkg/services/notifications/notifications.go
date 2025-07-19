@@ -44,7 +44,7 @@ type platformNotifier interface {
 }
 
 // Service represents the notifications service
-type Service struct {
+type NotificationService struct {
 	impl platformNotifier
 
 	// notificationResponseCallback is called when a notification result is received.
@@ -56,7 +56,7 @@ type Service struct {
 
 var (
 	notificationServiceOnce sync.Once
-	NotificationService     *Service
+	NotificationService_    *NotificationService
 	notificationServiceLock sync.RWMutex
 )
 
@@ -108,7 +108,7 @@ type NotificationResult struct {
 }
 
 // ServiceName returns the name of the service.
-func (ns *Service) ServiceName() string {
+func (ns *NotificationService) ServiceName() string {
 	return "github.com/wailsapp/wails/v3/services/notifications"
 }
 
@@ -116,7 +116,7 @@ func (ns *Service) ServiceName() string {
 // a notification response is received from the user.
 //
 //wails:ignore
-func (ns *Service) OnNotificationResponse(callback func(result NotificationResult)) {
+func (ns *NotificationService) OnNotificationResponse(callback func(result NotificationResult)) {
 	ns.callbackLock.Lock()
 	defer ns.callbackLock.Unlock()
 
@@ -125,7 +125,7 @@ func (ns *Service) OnNotificationResponse(callback func(result NotificationResul
 
 // handleNotificationResponse is an internal method to handle notification responses
 // and invoke the registered callback if one exists.
-func (ns *Service) handleNotificationResult(result NotificationResult) {
+func (ns *NotificationService) handleNotificationResult(result NotificationResult) {
 	ns.callbackLock.RLock()
 	callback := ns.notificationResultCallback
 	ns.callbackLock.RUnlock()
@@ -136,70 +136,70 @@ func (ns *Service) handleNotificationResult(result NotificationResult) {
 }
 
 // ServiceStartup is called when the service is loaded.
-func (ns *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+func (ns *NotificationService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	return ns.impl.Startup(ctx, options)
 }
 
 // ServiceShutdown is called when the service is unloaded.
-func (ns *Service) ServiceShutdown() error {
+func (ns *NotificationService) ServiceShutdown() error {
 	return ns.impl.Shutdown()
 }
 
 // Public methods that delegate to the implementation.
-func (ns *Service) RequestNotificationAuthorization() (bool, error) {
+func (ns *NotificationService) RequestNotificationAuthorization() (bool, error) {
 	return ns.impl.RequestNotificationAuthorization()
 }
 
-func (ns *Service) CheckNotificationAuthorization() (bool, error) {
+func (ns *NotificationService) CheckNotificationAuthorization() (bool, error) {
 	return ns.impl.CheckNotificationAuthorization()
 }
 
-func (ns *Service) SendNotification(options NotificationOptions) error {
+func (ns *NotificationService) SendNotification(options NotificationOptions) error {
 	if err := validateNotificationOptions(options); err != nil {
 		return err
 	}
 	return ns.impl.SendNotification(options)
 }
 
-func (ns *Service) SendNotificationWithActions(options NotificationOptions) error {
+func (ns *NotificationService) SendNotificationWithActions(options NotificationOptions) error {
 	if err := validateNotificationOptions(options); err != nil {
 		return err
 	}
 	return ns.impl.SendNotificationWithActions(options)
 }
 
-func (ns *Service) RegisterNotificationCategory(category NotificationCategory) error {
+func (ns *NotificationService) RegisterNotificationCategory(category NotificationCategory) error {
 	return ns.impl.RegisterNotificationCategory(category)
 }
 
-func (ns *Service) RemoveNotificationCategory(categoryID string) error {
+func (ns *NotificationService) RemoveNotificationCategory(categoryID string) error {
 	return ns.impl.RemoveNotificationCategory(categoryID)
 }
 
-func (ns *Service) RemoveAllPendingNotifications() error {
+func (ns *NotificationService) RemoveAllPendingNotifications() error {
 	return ns.impl.RemoveAllPendingNotifications()
 }
 
-func (ns *Service) RemovePendingNotification(identifier string) error {
+func (ns *NotificationService) RemovePendingNotification(identifier string) error {
 	return ns.impl.RemovePendingNotification(identifier)
 }
 
-func (ns *Service) RemoveAllDeliveredNotifications() error {
+func (ns *NotificationService) RemoveAllDeliveredNotifications() error {
 	return ns.impl.RemoveAllDeliveredNotifications()
 }
 
-func (ns *Service) RemoveDeliveredNotification(identifier string) error {
+func (ns *NotificationService) RemoveDeliveredNotification(identifier string) error {
 	return ns.impl.RemoveDeliveredNotification(identifier)
 }
 
-func (ns *Service) RemoveNotification(identifier string) error {
+func (ns *NotificationService) RemoveNotification(identifier string) error {
 	return ns.impl.RemoveNotification(identifier)
 }
 
-func getNotificationService() *Service {
+func getNotificationService() *NotificationService {
 	notificationServiceLock.RLock()
 	defer notificationServiceLock.RUnlock()
-	return NotificationService
+	return NotificationService_
 }
 
 // validateNotificationOptions validates an ID and Title are provided for notifications.

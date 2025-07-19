@@ -15,48 +15,48 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 import * as $models from "./models.js";
 
 export function CheckNotificationAuthorization(): $CancellablePromise<boolean> {
-    return $Call.ByID(2789931702);
+    return $Call.ByID(2216952893);
 }
 
 export function RegisterNotificationCategory(category: $models.NotificationCategory): $CancellablePromise<void> {
-    return $Call.ByID(2679064664, category);
+    return $Call.ByID(2917562919, category);
 }
 
 export function RemoveAllDeliveredNotifications(): $CancellablePromise<void> {
-    return $Call.ByID(384520397);
+    return $Call.ByID(3956282340);
 }
 
 export function RemoveAllPendingNotifications(): $CancellablePromise<void> {
-    return $Call.ByID(1423986276);
+    return $Call.ByID(108821341);
 }
 
 export function RemoveDeliveredNotification(identifier: string): $CancellablePromise<void> {
-    return $Call.ByID(149440045, identifier);
+    return $Call.ByID(975691940, identifier);
 }
 
 export function RemoveNotification(identifier: string): $CancellablePromise<void> {
-    return $Call.ByID(3702062929, identifier);
+    return $Call.ByID(3966653866, identifier);
 }
 
 export function RemoveNotificationCategory(categoryID: string): $CancellablePromise<void> {
-    return $Call.ByID(229511469, categoryID);
+    return $Call.ByID(2032615554, categoryID);
 }
 
 export function RemovePendingNotification(identifier: string): $CancellablePromise<void> {
-    return $Call.ByID(3872412470, identifier);
+    return $Call.ByID(3729049703, identifier);
 }
 
 /**
  * Public methods that delegate to the implementation.
  */
 export function RequestNotificationAuthorization(): $CancellablePromise<boolean> {
-    return $Call.ByID(729898933);
+    return $Call.ByID(3933442950);
 }
 
 export function SendNotification(options: $models.NotificationOptions): $CancellablePromise<void> {
-    return $Call.ByID(2246903123, options);
+    return $Call.ByID(3968228732, options);
 }
 
 export function SendNotificationWithActions(options: $models.NotificationOptions): $CancellablePromise<void> {
-    return $Call.ByID(1615199806, options);
+    return $Call.ByID(1886542847, options);
 }

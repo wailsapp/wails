@@ -36,26 +36,26 @@ type Config struct {
 //wails:inject     WarningContext as Warning,
 //wails:inject     ErrorContext as Error,
 //wails:inject };
-type Service struct {
+type LogService struct {
 	config atomic.Pointer[Config]
 	level  slog.LevelVar
 }
 
 // New initialises a logging service with the default configuration.
-func New() *Service {
+func New() *LogService {
 	return NewWithConfig(nil)
 }
 
 // NewWithConfig initialises a logging service with a custom configuration.
-func NewWithConfig(config *Config) *Service {
-	result := &Service{}
+func NewWithConfig(config *Config) *LogService {
+	result := &LogService{}
 	result.Configure(config)
 	return result
 }
 
 // ServiceName returns the name of the plugin.
 // You should use the go module format e.g. github.com/myuser/myplugin
-func (l *Service) ServiceName() string {
+func (l *LogService) ServiceName() string {
 	return "github.com/wailsapp/wails/v3/plugins/log"
 }
 
@@ -63,7 +63,7 @@ func (l *Service) ServiceName() string {
 // If config is nil, it falls back to the default configuration.
 //
 //wails:ignore
-func (l *Service) Configure(config *Config) {
+func (l *LogService) Configure(config *Config) {
 	if config == nil {
 		config = &Config{}
 	} else {
@@ -106,19 +106,19 @@ func (l *Service) Configure(config *Config) {
 // will propagate dynamically to the custom logger.
 //
 //wails:ignore
-func (l *Service) Level() slog.Level {
+func (l *LogService) Level() slog.Level {
 	return l.level.Level()
 }
 
 // LogLevel returns the currently configured log level,
 // that is either the one configured initially
 // or the last value passed to [Service.SetLogLevel].
-func (l *Service) LogLevel() Level {
+func (l *LogService) LogLevel() Level {
 	return Level(l.Level())
 }
 
 // SetLogLevel changes the current log level.
-func (l *Service) SetLogLevel(level Level) {
+func (l *LogService) SetLogLevel(level Level) {
 	l.level.Set(slog.Level(level))
 }
 
@@ -134,62 +134,62 @@ func (l *Service) SetLogLevel(level Level) {
 //
 // Log feeds the binding call context into the configured logger,
 // so custom handlers may access context values, e.g. the current window.
-func (l *Service) Log(ctx context.Context, level Level, message string, args ...any) {
+func (l *LogService) Log(ctx context.Context, level Level, message string, args ...any) {
 	l.config.Load().Logger.Log(ctx, slog.Level(level), message, args...)
 }
 
 // Debug logs at level [Debug].
 //
 //wails:ignore
-func (l *Service) Debug(message string, args ...any) {
+func (l *LogService) Debug(message string, args ...any) {
 	l.DebugContext(context.Background(), message, args...)
 }
 
 // Info logs at level [Info].
 //
 //wails:ignore
-func (l *Service) Info(message string, args ...any) {
+func (l *LogService) Info(message string, args ...any) {
 	l.InfoContext(context.Background(), message, args...)
 }
 
 // Warning logs at level [Warning].
 //
 //wails:ignore
-func (l *Service) Warning(message string, args ...any) {
+func (l *LogService) Warning(message string, args ...any) {
 	l.WarningContext(context.Background(), message, args...)
 }
 
 // Error logs at level [Error].
 //
 //wails:ignore
-func (l *Service) Error(message string, args ...any) {
+func (l *LogService) Error(message string, args ...any) {
 	l.ErrorContext(context.Background(), message, args...)
 }
 
 // DebugContext logs at level [Debug].
 //
 //wails:internal
-func (l *Service) DebugContext(ctx context.Context, message string, args ...any) {
+func (l *LogService) DebugContext(ctx context.Context, message string, args ...any) {
 	l.Log(ctx, Debug, message, args...)
 }
 
 // InfoContext logs at level [Info].
 //
 //wails:internal
-func (l *Service) InfoContext(ctx context.Context, message string, args ...any) {
+func (l *LogService) InfoContext(ctx context.Context, message string, args ...any) {
 	l.Log(ctx, Info, message, args...)
 }
 
 // WarningContext logs at level [Warn].
 //
 //wails:internal
-func (l *Service) WarningContext(ctx context.Context, message string, args ...any) {
+func (l *LogService) WarningContext(ctx context.Context, message string, args ...any) {
 	l.Log(ctx, Warning, message, args...)
 }
 
 // ErrorContext logs at level [Error].
 //
 //wails:internal
-func (l *Service) ErrorContext(ctx context.Context, message string, args ...any) {
+func (l *LogService) ErrorContext(ctx context.Context, message string, args ...any) {
 	l.Log(ctx, Error, message, args...)
 }
