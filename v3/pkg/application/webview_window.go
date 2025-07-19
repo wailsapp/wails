@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"runtime"
@@ -208,7 +209,10 @@ func getWindowID() uint {
 // FIXME: This should like be an interface method (TDM)
 // Use onApplicationEvent to register a callback for an application event from a window.
 // This will handle tidying up the callback when the window is destroyed
-func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func(*ApplicationEvent)) {
+func (w *WebviewWindow) onApplicationEvent(
+	eventType events.ApplicationEventType,
+	callback func(*ApplicationEvent),
+) {
 	cancelFn := globalApplication.Event.OnApplicationEvent(eventType, callback)
 	w.addCancellationFunction(cancelFn)
 }
@@ -1215,12 +1219,42 @@ func (w *WebviewWindow) Error(message string, args ...any) {
 	globalApplication.error("in window '%s': "+message, args...)
 }
 
-func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
+func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string, dropZone *DropZoneDetails) {
+	fmt.Printf(
+		"[DragDropDebug] HandleDragAndDropMessage called - Files: %v, DropZone: %+v\n",
+		filenames,
+		dropZone,
+	)
 	thisEvent := NewWindowEvent()
+	fmt.Printf(
+		"[DragDropDebug] HandleDragAndDropMessage: thisEvent created, thisEvent.ctx is initially: %p\n",
+		thisEvent.ctx,
+	)
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(filenames)
+	if dropZone != nil { // Check if dropZone details are available
+		ctx.setDropZoneDetails(dropZone)
+	}
 	thisEvent.ctx = ctx
-	for _, listener := range w.eventListeners[uint(events.Common.WindowFilesDropped)] {
+	fmt.Printf(
+		"[DragDropDebug] HandleDragAndDropMessage: thisEvent.ctx assigned, thisEvent.ctx is now: %p, ctx is: %p\n",
+		thisEvent.ctx,
+		ctx,
+	)
+	listeners := w.eventListeners[uint(events.Common.WindowDropZoneFilesDropped)]
+	fmt.Printf(
+		"[DragDropDebug] HandleDragAndDropMessage: Found %d listeners for WindowDropZoneFilesDropped\n",
+		len(listeners),
+	)
+	fmt.Printf(
+		"[DragDropDebug] HandleDragAndDropMessage: Before calling listeners, thisEvent.ctx is: %p\n",
+		thisEvent.ctx,
+	)
+	for _, listener := range listeners {
+		if listener == nil {
+			fmt.Println("[DragDropDebug] HandleDragAndDropMessage: Skipping nil listener")
+			continue
+		}
 		listener.callback(thisEvent)
 	}
 }
@@ -1427,4 +1461,38 @@ func (w *WebviewWindow) ToggleMenuBar() {
 		return
 	}
 	InvokeSync(w.impl.toggleMenuBar)
+}
+
+func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int, y int) {
+	fmt.Printf(
+		"[DragDropDebug] InitiateFrontendDropProcessing called - X: %d, Y: %d",
+		x,
+		y,
+	)
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+
+	filenamesJSON, err := json.Marshal(filenames)
+	if err != nil {
+		w.Error("Error marshalling filenames for drop processing: %s", err)
+		return
+	}
+
+	jsCall := fmt.Sprintf(
+		"window.wails.Window.HandlePlatformFileDrop(%s, %d, %d);",
+		string(filenamesJSON),
+		x,
+		y,
+	)
+
+	// Ensure JS is executed after runtime is loaded
+	if !w.runtimeLoaded {
+		w.pendingJS = append(w.pendingJS, jsCall)
+		return
+	}
+
+	InvokeSync(func() {
+		w.impl.execJS(jsCall)
+	})
 }
