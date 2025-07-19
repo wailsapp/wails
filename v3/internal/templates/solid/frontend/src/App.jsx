@@ -1,5 +1,5 @@
 import { createSignal, onMount } from 'solid-js'
-import {GreetService} from "../bindings/changeme";
+import {GreetService} from "@services";
 import {Events} from "@wailsio/runtime";
 
 function App() {
