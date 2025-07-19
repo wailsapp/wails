@@ -65,7 +65,7 @@ func UTF16PtrToString(cstr *uint16) string {
 		for p := uintptr(unsafe.Pointer(cstr)); ; p += 2 {
 			u := *(*uint16)(unsafe.Pointer(p))
 			if u == 0 {
-				return string(utf16.Decode(us))
+				return conv.BytesToString(utf16.Decode(us))
 			}
 			us = append(us, u)
 		}

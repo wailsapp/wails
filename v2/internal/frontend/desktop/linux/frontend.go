@@ -4,7 +4,7 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0 
+#cgo linux pkg-config: gtk+-3.0
 #cgo !webkit2_41 pkg-config: webkit2gtk-4.0
 #cgo webkit2_41 pkg-config: webkit2gtk-4.1
 
@@ -491,7 +491,7 @@ func (f *Frontend) Callback(message string) {
 	if err != nil {
 		panic(err)
 	}
-	f.ExecJS(`window.wails.Callback(` + string(escaped) + `);`)
+	f.ExecJS(`window.wails.Callback(` + conv.BytesToString(escaped) + `);`)
 }
 
 func (f *Frontend) startDrag() {

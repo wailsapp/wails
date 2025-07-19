@@ -5,11 +5,12 @@ package linux
 
 import (
 	"encoding/json"
-	"github.com/godbus/dbus/v5"
-	"github.com/wailsapp/wails/v2/pkg/options"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 type dbusHandler func(string)
@@ -68,7 +69,7 @@ func SetupSingleInstance(uniqueID string) {
 			return
 		}
 
-		err = conn.Object(dbusName, dbus.ObjectPath(dbusPath)).Call(dbusName+".SendMessage", 0, string(serialized)).Store()
+		err = conn.Object(dbusName, dbus.ObjectPath(dbusPath)).Call(dbusName+".SendMessage", 0, conv.BytesToString(serialized)).Store()
 		if err != nil {
 			return
 		}

@@ -10,6 +10,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/binding/binding_test/binding_test_import/int_package"
 	"github.com/wailsapp/wails/v2/internal/binding/binding_test/binding_test_import/map_package"
 	"github.com/wailsapp/wails/v2/internal/binding/binding_test/binding_test_import/uint_package"
+	"github.com/wailsapp/wails/v2/internal/conv"
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
 
@@ -57,7 +58,7 @@ func TestConflictingPackageName(t *testing.T) {
 	}
 
 	// then
-	generatedBindings := string(rawGeneratedBindings)
+	generatedBindings := conv.BytesToString(rawGeneratedBindings)
 	if generatedBindings != expectedBindings {
 		t.Fatalf("the generated bindings does not match the expected ones.\nWanted:\n%s\n\nGot:\n%s", expectedBindings, generatedBindings)
 	}

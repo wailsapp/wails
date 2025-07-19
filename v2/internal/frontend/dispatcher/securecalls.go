@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/wailsapp/wails/v2/internal/conv"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 )
 
@@ -47,11 +48,11 @@ func (d *Dispatcher) processSecureCallMessage(message string, sender frontend.Fr
 		callbackMessage.Result = result
 	}
 	messageData, err := json.Marshal(callbackMessage)
-	d.log.Trace("json call result data: %+v\n", string(messageData))
+	d.log.Trace("json call result data: %+v\n", conv.BytesToString(messageData))
 	if err != nil {
 		// what now?
 		d.log.Fatal(err.Error())
 	}
 
-	return "c" + string(messageData), nil
+	return "c" + conv.BytesToString(messageData), nil
 }

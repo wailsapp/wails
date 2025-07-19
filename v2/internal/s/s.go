@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/bitfield/script"
+	"github.com/wailsapp/wails/v2/internal/conv"
 )
 
 var (
@@ -263,7 +264,7 @@ func LOADSTRING(filename string) string {
 	mute()
 	data := LOADBYTES(filename)
 	unmute()
-	return string(data)
+	return conv.BytesToString(data)
 }
 
 // SAVEBYTES will create a file with the given string

@@ -23,6 +23,7 @@ import (
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/gomod"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/logutils"
+	"github.com/wailsapp/wails/v2/internal/conv"
 	"golang.org/x/mod/semver"
 
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
@@ -495,7 +496,7 @@ func doWatcherLoop(cwd string, reloadDirs string, buildOptions *build.Options, d
 						if err != nil {
 							logutils.LogRed("Error reading assetdir from devserver: %s", err.Error())
 						} else {
-							assetDir = string(content)
+							assetDir = conv.BytesToString(content)
 						}
 						resp.Body.Close()
 					}
