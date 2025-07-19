@@ -43,6 +43,10 @@ func (y *Dnf) Packages() Packagemap {
 			{Name: "npm", SystemPackage: true},
 			{Name: "nodejs-npm", SystemPackage: true},
 		},
+		"musl-dev": []*Package{
+			{Name: "musl-devel", SystemPackage: true, Optional: true},
+			{Name: "musl-gcc", SystemPackage: true, Optional: true},
+		},
 	}
 }
 
