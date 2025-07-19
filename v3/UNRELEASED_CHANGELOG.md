@@ -44,6 +44,7 @@ After processing, the content will be moved to the main changelog and this file 
 **Changed:**
 - Update minimum Go version requirement to 1.21
 - Improve error messages for invalid configuration files
+- Rename built-in services for clearer JS/TS bindings
 
 **Fixed:**
 - Fix memory leak in event system during window close operations (#5678)
