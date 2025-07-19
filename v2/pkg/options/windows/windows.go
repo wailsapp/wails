@@ -61,6 +61,7 @@ type ThemeSettings struct {
 
 // Options are options specific to Windows
 type Options struct {
+	ContentProtection    bool
 	WebviewIsTransparent bool
 	WindowIsTranslucent  bool
 	DisableWindowIcon    bool
