@@ -453,6 +453,7 @@ var Types = Object.freeze({
     WindowLostFocus: "common:WindowLostFocus",
     WindowMaximise: "common:WindowMaximise",
     WindowMinimise: "common:WindowMinimise",
+    WindowToggleFrameless: "common:WindowToggleFrameless",
     WindowRestore: "common:WindowRestore",
     WindowRuntimeReady: "common:WindowRuntimeReady",
     WindowShow: "common:WindowShow",
@@ -613,15 +614,16 @@ var ShowMethod = 36;
 var SizeMethod = 37;
 var ToggleFullscreenMethod = 38;
 var ToggleMaximiseMethod = 39;
-var UnFullscreenMethod = 40;
-var UnMaximiseMethod = 41;
-var UnMinimiseMethod = 42;
-var WidthMethod = 43;
-var ZoomMethod = 44;
-var ZoomInMethod = 45;
-var ZoomOutMethod = 46;
-var ZoomResetMethod = 47;
-var WindowDropZoneDropped = 48;
+var ToggleFramelessMethod = 40;
+var UnFullscreenMethod = 41;
+var UnMaximiseMethod = 42;
+var UnMinimiseMethod = 43;
+var WidthMethod = 44;
+var ZoomMethod = 45;
+var ZoomInMethod = 46;
+var ZoomOutMethod = 47;
+var ZoomResetMethod = 48;
+var WindowDropZoneDropped = 49;
 function getDropzoneElement(element) {
   if (!element) {
     return null;
@@ -949,6 +951,12 @@ var _Window = class _Window {
    */
   ToggleMaximise() {
     return this[callerSym](ToggleMaximiseMethod);
+  }
+  /**
+   * Toggles the window between frameless and normal.
+   */
+  ToggleFrameless() {
+    return this[callerSym](ToggleFramelessMethod);
   }
   /**
    * Un-fullscreens the window.

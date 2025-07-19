@@ -49,15 +49,16 @@ const (
 	WindowSize                       = 37
 	WindowToggleFullscreen           = 38
 	WindowToggleMaximise             = 39
-	WindowUnFullscreen               = 40
-	WindowUnMaximise                 = 41
-	WindowUnMinimise                 = 42
-	WindowWidth                      = 43
-	WindowZoom                       = 44
-	WindowZoomIn                     = 45
-	WindowZoomOut                    = 46
-	WindowZoomReset                  = 47
-	WindowDropZoneDropped            = 48
+	WindowToggleFrameless            = 40
+	WindowUnFullscreen               = 41
+	WindowUnMaximise                 = 42
+	WindowUnMinimise                 = 43
+	WindowWidth                      = 44
+	WindowZoom                       = 45
+	WindowZoomIn                     = 46
+	WindowZoomOut                    = 47
+	WindowZoomReset                  = 48
+	WindowDropZoneDropped            = 49
 )
 
 var windowMethodNames = map[int]string{
@@ -101,6 +102,7 @@ var windowMethodNames = map[int]string{
 	WindowSize:                       "Size",
 	WindowToggleFullscreen:           "ToggleFullscreen",
 	WindowToggleMaximise:             "ToggleMaximise",
+	WindowToggleFrameless:            "ToggleFrameless",
 	WindowUnFullscreen:               "UnFullscreen",
 	WindowUnMaximise:                 "UnMaximise",
 	WindowUnMinimise:                 "UnMinimise",
@@ -395,6 +397,9 @@ func (m *MessageProcessor) processWindowMethod(
 		m.ok(rw)
 	case WindowToggleMaximise:
 		window.ToggleMaximise()
+		m.ok(rw)
+	case WindowToggleFrameless:
+		window.ToggleFrameless()
 		m.ok(rw)
 	case WindowUnFullscreen:
 		window.UnFullscreen()

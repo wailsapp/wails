@@ -217,6 +217,7 @@ export const Types = Object.freeze({
 		WindowLostFocus: "common:WindowLostFocus",
 		WindowMaximise: "common:WindowMaximise",
 		WindowMinimise: "common:WindowMinimise",
+		WindowToggleFrameless: "common:WindowToggleFrameless",
 		WindowRestore: "common:WindowRestore",
 		WindowRuntimeReady: "common:WindowRuntimeReady",
 		WindowShow: "common:WindowShow",
