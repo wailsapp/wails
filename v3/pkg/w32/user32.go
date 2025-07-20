@@ -26,6 +26,7 @@ var (
 	procShowWindow                    = moduser32.NewProc("ShowWindow")
 	procGetDesktopWindow              = moduser32.NewProc("GetDesktopWindow")
 	procShowWindowAsync               = moduser32.NewProc("ShowWindowAsync")
+	procIsZoomed                      = moduser32.NewProc("IsZoomed")
 	procUpdateWindow                  = moduser32.NewProc("UpdateWindow")
 	procCreateWindowEx                = moduser32.NewProc("CreateWindowExW")
 	procAdjustWindowRect              = moduser32.NewProc("AdjustWindowRect")
@@ -106,6 +107,7 @@ var (
 	procTranslateAccelerator          = moduser32.NewProc("TranslateAcceleratorW")
 	procSetWindowPos                  = moduser32.NewProc("SetWindowPos")
 	procFillRect                      = moduser32.NewProc("FillRect")
+	procFrameRect                     = moduser32.NewProc("FrameRect")
 	procDrawText                      = moduser32.NewProc("DrawTextW")
 	procAddClipboardFormatListener    = moduser32.NewProc("AddClipboardFormatListener")
 	procRemoveClipboardFormatListener = moduser32.NewProc("RemoveClipboardFormatListener")
@@ -145,6 +147,8 @@ var (
 	procEnumWindows                   = moduser32.NewProc("EnumWindows")
 	procEnumChildWindows              = moduser32.NewProc("EnumChildWindows")
 	procChangeDisplaySettingsEx       = moduser32.NewProc("ChangeDisplaySettingsExW")
+	procSetTimer                      = moduser32.NewProc("SetTimer")
+	procKillTimer                     = moduser32.NewProc("KillTimer")
 	procSendInput                     = moduser32.NewProc("SendInput")
 	procSetWindowsHookEx              = moduser32.NewProc("SetWindowsHookExW")
 	procUnhookWindowsHookEx           = moduser32.NewProc("UnhookWindowsHookEx")
@@ -162,12 +166,17 @@ var (
 	procAppendMenu       = moduser32.NewProc("AppendMenuW")
 	procSetMenuItemInfo  = moduser32.NewProc("SetMenuItemInfoW")
 	procDrawMenuBar      = moduser32.NewProc("DrawMenuBar")
+	procTrackPopupMenu   = moduser32.NewProc("TrackPopupMenu")
 	procTrackPopupMenuEx = moduser32.NewProc("TrackPopupMenuEx")
+	procGetMenuBarInfo   = moduser32.NewProc("GetMenuBarInfo")
+	procMapWindowPoints  = moduser32.NewProc("MapWindowPoints")
 	procGetKeyState      = moduser32.NewProc("GetKeyState")
 	procGetSysColorBrush = moduser32.NewProc("GetSysColorBrush")
+	procGetSysColor      = moduser32.NewProc("GetSysColor")
 
 	procGetWindowPlacement = moduser32.NewProc("GetWindowPlacement")
 	procSetWindowPlacement = moduser32.NewProc("SetWindowPlacement")
+	procGetWindowDC        = moduser32.NewProc("GetWindowDC")
 
 	procGetScrollInfo = moduser32.NewProc("GetScrollInfo")
 	procSetScrollInfo = moduser32.NewProc("SetScrollInfo")
@@ -186,6 +195,11 @@ var (
 func init() {
 	runtime.LockOSThread()
 	mainThread = GetCurrentThreadId()
+}
+
+func GetWindowDC(hwnd HWND) HDC {
+	ret, _, _ := procGetWindowDC.Call(hwnd)
+	return ret
 }
 
 func GET_X_LPARAM(lp uintptr) int32 {
@@ -264,6 +278,11 @@ func ShowWindow(hwnd HWND, cmdshow int) bool {
 		uintptr(hwnd),
 		uintptr(cmdshow))
 
+	return ret != 0
+}
+
+func IsZoomed(hwnd HWND) bool {
+	ret, _, _ := procIsZoomed.Call(uintptr(hwnd))
 	return ret != 0
 }
 
@@ -754,6 +773,13 @@ func GetSysColorBrush(nIndex int) HBRUSH {
 	return HBRUSH(ret)
 }
 
+func GetSysColor(nIndex int) COLORREF {
+	ret, _, _ := procGetSysColor.Call(
+		uintptr(nIndex))
+
+	return COLORREF(ret)
+}
+
 func CopyRect(dst, src *RECT) bool {
 	ret, _, _ := procCopyRect.Call(
 		uintptr(unsafe.Pointer(dst)),
@@ -1057,10 +1083,14 @@ func FillRect(hDC HDC, lprc *RECT, hbr HBRUSH) bool {
 	return ret != 0
 }
 
-func DrawText(hDC HDC, text string, uCount int, lpRect *RECT, uFormat uint) int {
+func DrawText(hDC HDC, text []uint16, uCount int, lpRect *RECT, uFormat uint32) int {
+
+	// Convert the string to a UTF16 pointer
+	// This is necessary because the DrawText function expects a UTF16 pointer
+
 	ret, _, _ := procDrawText.Call(
 		uintptr(hDC),
-		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(text))),
+		uintptr(unsafe.Pointer(&text[0])),
 		uintptr(uCount),
 		uintptr(unsafe.Pointer(lpRect)),
 		uintptr(uFormat))
@@ -1422,5 +1452,43 @@ func RedrawWindow(hwnd HWND, lprcUpdate *RECT, hrgnUpdate HRGN, flags uint32) bo
 		uintptr(unsafe.Pointer(lprcUpdate)),
 		uintptr(hrgnUpdate),
 		uintptr(flags))
+	return ret != 0
+}
+
+func FrameRect(hDC HDC, lprc *RECT, hbr HBRUSH) int {
+	ret, _, _ := procFrameRect.Call(
+		uintptr(hDC),
+		uintptr(unsafe.Pointer(lprc)),
+		uintptr(hbr))
+	return int(ret)
+}
+
+func GetMenuBarInfo(hwnd HWND, idObject int32, idItem uint32, pmbi *MENUBARINFO) bool {
+	ret, _, _ := procGetMenuBarInfo.Call(
+		uintptr(hwnd),
+		uintptr(idObject),
+		uintptr(idItem),
+		uintptr(unsafe.Pointer(pmbi)))
+	return ret != 0
+}
+
+func MapWindowPoints(hwndFrom, hwndTo HWND, lpPoints *POINT, cPoints uint) int {
+	ret, _, _ := procMapWindowPoints.Call(
+		uintptr(hwndFrom),
+		uintptr(hwndTo),
+		uintptr(unsafe.Pointer(lpPoints)),
+		uintptr(cPoints))
+	return int(ret)
+}
+
+func TrackPopupMenu(hmenu HMENU, flags uint32, x, y int32, reserved int32, hwnd HWND, prcRect *RECT) bool {
+	ret, _, _ := procTrackPopupMenu.Call(
+		uintptr(hmenu),
+		uintptr(flags),
+		uintptr(x),
+		uintptr(y),
+		uintptr(reserved),
+		uintptr(hwnd),
+		uintptr(unsafe.Pointer(prcRect)))
 	return ret != 0
 }
