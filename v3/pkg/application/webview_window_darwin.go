@@ -1378,6 +1378,10 @@ func (w *macosWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 
 func (w *macosWebviewWindow) destroy() {
 	w.parent.markAsDestroyed()
+	// Remove window from the window manager
+	if globalApplication.Window != nil {
+		globalApplication.Window.Remove(w.parent.id)
+	}
 	C.windowDestroy(w.nsWindow)
 }
 

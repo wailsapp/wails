@@ -80,6 +80,7 @@ func New(appOptions Options) *App {
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
 
 	messageProc := NewMessageProcessor(result.Logger)
+	result.messageProcessor = messageProc
 	opts := &assetserver.Options{
 		Handler: appOptions.Assets.Handler,
 		Middleware: assetserver.ChainMiddleware(
@@ -354,6 +355,9 @@ type App struct {
 
 	// singleInstanceManager handles single instance functionality
 	singleInstanceManager *singleInstanceManager
+
+	// messageProcessor handles runtime messages
+	messageProcessor *MessageProcessor
 }
 
 func (a *App) Config() Options {

@@ -93,6 +93,7 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 		}()
 
 		ambiguousID := false
+		windowID := window.ID()
 		func() {
 			m.l.Lock()
 			defer m.l.Unlock()
@@ -101,6 +102,11 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 				ambiguousID = true
 			} else {
 				m.runningCalls[*callID] = cancel
+				// Track this call for the window
+				if m.windowCalls[windowID] == nil {
+					m.windowCalls[windowID] = make(map[string]bool)
+				}
+				m.windowCalls[windowID][*callID] = true
 			}
 		}()
 
@@ -124,6 +130,13 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 				m.l.Lock()
 				defer m.l.Unlock()
 				delete(m.runningCalls, *callID)
+				// Remove from window tracking
+				if windowCalls, exists := m.windowCalls[windowID]; exists {
+					delete(windowCalls, *callID)
+					if len(windowCalls) == 0 {
+						delete(m.windowCalls, windowID)
+					}
+				}
 			}()
 			defer cancel()
 
