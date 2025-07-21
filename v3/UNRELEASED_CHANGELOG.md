@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix crash when closing window with pending async Go-bound function calls (#4353)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
