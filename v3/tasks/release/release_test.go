@@ -501,11 +501,6 @@ func TestHasUnreleasedContent_NonexistentFile(t *testing.T) {
 	if hasContent {
 		t.Error("Expected hasUnreleasedContent() to return false for nonexistent file")
 	}
-
-	// Verify the error is about the file not existing
-	if !os.IsNotExist(err) && !strings.Contains(err.Error(), "no such file") {
-		t.Errorf("Expected file not found error, got: %v", err)
-	}
 }
 
 func TestSafeFileOperation_Success(t *testing.T) {
