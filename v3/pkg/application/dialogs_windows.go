@@ -31,6 +31,10 @@ type windowsDialog struct {
 }
 
 func (m *windowsDialog) show() {
+	// Try to use TaskDialog for custom buttons
+	if len(m.dialog.Buttons) > 0 && tryTaskDialog(m.dialog) {
+		return
+	}
 
 	title := w32.MustStringToUTF16Ptr(m.dialog.Title)
 	message := w32.MustStringToUTF16Ptr(m.dialog.Message)
@@ -66,7 +70,10 @@ func (m *windowsDialog) show() {
 	}
 	// Check if there's a callback for the button pressed
 	for _, buttonInDialog := range m.dialog.Buttons {
-		if buttonInDialog.Label == result {
+		// Case-insensitive comparison with trimmed whitespace
+		normalizedDialogLabel := strings.TrimSpace(strings.ToLower(buttonInDialog.Label))
+		normalizedResult := strings.TrimSpace(strings.ToLower(result))
+		if normalizedDialogLabel == normalizedResult {
 			if buttonInDialog.Callback != nil {
 				buttonInDialog.Callback()
 			}
