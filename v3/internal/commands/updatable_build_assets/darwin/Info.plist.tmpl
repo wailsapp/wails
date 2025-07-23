@@ -46,5 +46,20 @@
             {{- end}}
         </array>
         {{- end}}
+        {{- if .Protocols}}
+        <key>CFBundleURLTypes</key>
+        <array>
+            {{- range .Protocols}}
+            <dict>
+                <key>CFBundleURLName</key>
+                <string>wails.com.{{.Scheme}}</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>{{.Scheme}}</string>
+                </array>
+            </dict>
+            {{- end}}
+        </array>
+        {{- end}}
     </dict>
 </plist>

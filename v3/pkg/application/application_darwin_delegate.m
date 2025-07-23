@@ -1,6 +1,7 @@
 //go:build darwin
 #import "application_darwin_delegate.h"
 #import "../events/events_darwin.h"
+#import <CoreServices/CoreServices.h> // For Apple Event constants
 extern bool hasListeners(unsigned int);
 extern bool shouldQuitApplication();
 extern void cleanup();
@@ -41,7 +42,7 @@ extern void handleSecondInstanceData(char * message);
     return YES;
 }
 - (BOOL)applicationShouldHandleReopen:(NSNotification *)notification
-                    hasVisibleWindows:(BOOL)flag {
+                    hasVisibleWindows:(BOOL)flag { // Changed from NSApplication to NSNotification
     if( hasListeners(EventApplicationShouldHandleReopen) ) {
         processApplicationEvent(EventApplicationShouldHandleReopen, @{@"hasVisibleWindows": @(flag)});
     }
@@ -179,3 +180,19 @@ extern void handleSecondInstanceData(char * message);
 
 // GENERATED EVENTS END
 @end
+// Implementation for Apple Event based custom URL handling
+@implementation CustomProtocolSchemeHandler
++ (void)handleGetURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
+   NSString *urlStr = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
+   if (urlStr) {
+       HandleCustomProtocol((char*)[urlStr UTF8String]);
+   }
+}
+@end
+void StartCustomProtocolHandler(void) {
+    NSAppleEventManager *appleEventManager = [NSAppleEventManager sharedAppleEventManager];
+    [appleEventManager setEventHandler:[CustomProtocolSchemeHandler class]
+        andSelector:@selector(handleGetURLEvent:withReplyEvent:)
+        forEventClass:kInternetEventClass
+        andEventID: kAEGetURL];
+}
