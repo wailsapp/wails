@@ -57,6 +57,8 @@ static void init(void) {
 	NSDistributedNotificationCenter *center = [NSDistributedNotificationCenter defaultCenter];
 	[center addObserver:appDelegate selector:@selector(themeChanged:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
 
+	// Register the custom URL scheme handler
+	StartCustomProtocolHandler();
 }
 
 static bool isDarkMode(void) {
@@ -457,6 +459,19 @@ func HandleOpenFile(filePath *C.char) {
 	// EmitEvent application started event
 	applicationEvents <- &ApplicationEvent{
 		Id:  uint(events.Common.ApplicationOpenedWithFile),
+		ctx: eventContext,
+	}
+}
+
+//export HandleCustomProtocol
+func HandleCustomProtocol(urlCString *C.char) {
+	urlString := C.GoString(urlCString)
+	eventContext := newApplicationEventContext()
+	eventContext.setURL(urlString)
+
+	// Emit the standard event with the URL string as data
+	applicationEvents <- &ApplicationEvent{
+		Id:  uint(events.Common.ApplicationLaunchedWithUrl),
 		ctx: eventContext,
 	}
 }
