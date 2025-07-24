@@ -17,7 +17,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- add Windows `getAccentColor` implementation by [@almas-x](https://github.com/almas-x) in [PR](https://github.com/wailsapp/wails/pull/4427)
+- Add Windows `getAccentColor` implementation by [@almas-x](https://github.com/almas-x) in [PR](https://github.com/wailsapp/wails/pull/4427)
+- Windows dark theme menus + menubar. By @leaanthony in [a29b4f0861b1d0a700e9eb213c6f1076ec40efd5](https://github.com/wailsapp/wails/commit/a29b4f0861b1d0a700e9eb213c6f1076ec40efd5)
 
 ## Changed
 <!-- Changes in existing functionality -->
