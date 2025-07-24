@@ -187,8 +187,8 @@ func main() {
 			}
 			linuxEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			linuxEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
-			linuxTSEvents.WriteString("\t\t" + event + ": \"linux:" + event + "\",\n")
-			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + event + "\",\n")
+			linuxTSEvents.WriteString("\t\t" + event + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
 			maxLinuxEvents = id
 			linuxCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
 		case "mac":
@@ -201,9 +201,9 @@ func main() {
 			}
 			macEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			macEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
-			macTSEvents.WriteString("\t\t" + event + ": \"mac:" + event + "\",\n")
+			macTSEvents.WriteString("\t\t" + event + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
 			macCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
-			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + event + "\",\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
 			maxMacEvents = id
 			if ignoreEvent {
 				continue
@@ -249,8 +249,8 @@ func main() {
 			}
 			commonEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			commonEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
-			commonTSEvents.WriteString("\t\t" + event + ": \"common:" + event + "\",\n")
-			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + event + "\",\n")
+			commonTSEvents.WriteString("\t\t" + event + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
 		case "windows":
 			eventType := "ApplicationEventType"
 			if strings.HasPrefix(event, "Window") {
@@ -261,8 +261,8 @@ func main() {
 			}
 			windowsEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			windowsEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
-			windowsTSEvents.WriteString("\t\t" + event + ": \"windows:" + event + "\",\n")
-			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + event + "\",\n")
+			windowsTSEvents.WriteString("\t\t" + event + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + strings.TrimSpace(string(line)) + "\",\n")
 		}
 	}
 

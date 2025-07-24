@@ -1108,7 +1108,7 @@ var window_default = thisWindow;
 
 // desktop/@wailsio/runtime/src/wml.ts
 function sendEvent(eventName, data = null) {
-  void Emit(eventName, data);
+  Emit(new WailsEvent(eventName, data));
 }
 function callWindowMethod(windowName, methodName) {
   const targetWindow = window_default.Get(windowName);
