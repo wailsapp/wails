@@ -18,7 +18,7 @@ type platformBadge interface {
 }
 
 // Service represents the notifications service
-type Service struct {
+type BadgeService struct {
 	impl platformBadge
 }
 
@@ -31,30 +31,30 @@ type Options struct {
 }
 
 // ServiceName returns the name of the service.
-func (b *Service) ServiceName() string {
+func (b *BadgeService) ServiceName() string {
 	return "github.com/wailsapp/wails/v3/services/badge"
 }
 
 // ServiceStartup is called when the service is loaded.
-func (b *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+func (b *BadgeService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
 	return b.impl.Startup(ctx, options)
 }
 
 // ServiceShutdown is called when the service is unloaded.
-func (b *Service) ServiceShutdown() error {
+func (b *BadgeService) ServiceShutdown() error {
 	return b.impl.Shutdown()
 }
 
 // SetBadge sets the badge label on the application icon.
-func (b *Service) SetBadge(label string) error {
+func (b *BadgeService) SetBadge(label string) error {
 	return b.impl.SetBadge(label)
 }
 
-func (b *Service) SetCustomBadge(label string, options Options) error {
+func (b *BadgeService) SetCustomBadge(label string, options Options) error {
 	return b.impl.SetCustomBadge(label, options)
 }
 
 // RemoveBadge removes the badge label from the application icon.
-func (b *Service) RemoveBadge() error {
+func (b *BadgeService) RemoveBadge() error {
 	return b.impl.RemoveBadge()
 }
