@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/wailsapp/wails/v3/internal/commands/dmg"
+	// "github.com/wailsapp/wails/v3/internal/commands/dmg" // TODO: Missing package
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/packager"
 )
@@ -43,30 +43,34 @@ func ToolPackage(options *flags.ToolPackage) error {
 		// Create output path for DMG
 		dmgPath := filepath.Join(options.Out, fmt.Sprintf("%s.dmg", options.ExecutableName))
 
-		// Create DMG creator
-		dmgCreator, err := dmg.New(appPath, dmgPath, options.ExecutableName)
-		if err != nil {
-			return fmt.Errorf("error creating DMG: %w", err)
-		}
+		// DMG creation temporarily disabled - missing dmg package
+		_ = dmgPath // avoid unused variable warning
+		return fmt.Errorf("DMG creation is temporarily disabled due to missing dmg package")
+		
+		// // Create DMG creator
+		// dmgCreator, err := dmg.New(appPath, dmgPath, options.ExecutableName)
+		// if err != nil {
+		// 	return fmt.Errorf("error creating DMG: %w", err)
+		// }
 
-		// Set background image if provided
-		if options.BackgroundImage != "" {
-			if err := dmgCreator.SetBackgroundImage(options.BackgroundImage); err != nil {
-				return fmt.Errorf("error setting background image: %w", err)
-			}
-		}
+		// // Set background image if provided
+		// if options.BackgroundImage != "" {
+		// 	if err := dmgCreator.SetBackgroundImage(options.BackgroundImage); err != nil {
+		// 		return fmt.Errorf("error setting background image: %w", err)
+		// 	}
+		// }
 
-		// Set default icon positions
-		dmgCreator.AddIconPosition(filepath.Base(appPath), 150, 175)
-		dmgCreator.AddIconPosition("Applications", 450, 175)
+		// // Set default icon positions
+		// dmgCreator.AddIconPosition(filepath.Base(appPath), 150, 175)
+		// dmgCreator.AddIconPosition("Applications", 450, 175)
 
-		// Create the DMG
-		if err := dmgCreator.Create(); err != nil {
-			return fmt.Errorf("error creating DMG: %w", err)
-		}
+		// // Create the DMG
+		// if err := dmgCreator.Create(); err != nil {
+		// 	return fmt.Errorf("error creating DMG: %w", err)
+		// }
 
-		fmt.Printf("DMG created successfully: %s\n", dmgPath)
-		return nil
+		// fmt.Printf("DMG created successfully: %s\n", dmgPath)
+		// return nil
 	}
 
 	// For Linux packages, continue with existing logic

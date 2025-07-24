@@ -43,7 +43,7 @@ func main() {
 
 	app := application.New(options)
 
-	app.NewWebviewWindow()
+	app.Window.New()
 
 	err := app.Run()
 

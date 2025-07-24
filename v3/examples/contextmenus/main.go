@@ -24,7 +24,7 @@ func main() {
 		},
 	})
 
-	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:  "Context Menu Demo",
 		Width:  1024,
 		Height: 1024,
@@ -35,7 +35,7 @@ func main() {
 		},
 	})
 
-	contextMenu := application.NewContextMenu("test")
+	contextMenu := app.ContextMenu.New()
 	clickMe := contextMenu.Add("Click to set Menuitem label to Context Data")
 	contextDataMenuItem := contextMenu.Add("Current context data: No Context Data")
 	clickMe.OnClick(func(data *application.Context) {
@@ -43,6 +43,9 @@ func main() {
 		contextDataMenuItem.SetLabel("Current context data: " + data.ContextMenuData())
 		contextMenu.Update()
 	})
+
+	// Register the context menu
+	app.ContextMenu.Add("test", contextMenu)
 
 	err := app.Run()
 

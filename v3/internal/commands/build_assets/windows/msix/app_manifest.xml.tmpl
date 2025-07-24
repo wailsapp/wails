@@ -6,15 +6,15 @@
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10">
   
   <Identity 
-    Name="{{.Info.ProductIdentifier}}"
+    Name="{{.ProductIdentifier}}"
     Publisher="{{.Publisher}}"
-    Version="{{.Info.Version}}.0" 
+    Version="{{.ProductVersion}}.0" 
     ProcessorArchitecture="{{.ProcessorArchitecture}}" />
   
   <Properties>
-    <DisplayName>{{.Info.ProductName}}</DisplayName>
-    <PublisherDisplayName>{{.Info.CompanyName}}</PublisherDisplayName>
-    <Description>{{.Info.Description}}</Description>
+    <DisplayName>{{.ProductName}}</DisplayName>
+    <PublisherDisplayName>{{.ProductCompany}}</PublisherDisplayName>
+    <Description>{{.ProductDescription}}</Description>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   
@@ -27,10 +27,10 @@
   </Resources>
   
   <Applications>
-    <Application Id="{{.Info.ProductIdentifier}}" Executable="{{.ExecutableName}}" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="{{.ProductIdentifier}}" Executable="{{.BinaryName}}" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-        DisplayName="{{.Info.ProductName}}"
-        Description="{{.Info.Description}}"
+        DisplayName="{{.ProductName}}"
+        Description="{{.ProductDescription}}"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
@@ -39,13 +39,13 @@
       </uap:VisualElements>
       
       <Extensions>
-        <desktop:Extension Category="windows.fullTrustProcess" Executable="{{.ExecutableName}}" />
+        <desktop:Extension Category="windows.fullTrustProcess" Executable="{{.BinaryName}}" />
         {{if .FileAssociations}}
         <uap:Extension Category="windows.fileTypeAssociation">
-          <uap:FileTypeAssociation Name="{{.Info.ProductIdentifier}}">
-            <uap:DisplayName>{{.Info.ProductName}}</uap:DisplayName>
+          <uap:FileTypeAssociation Name="{{.ProductIdentifier}}">
+            <uap:DisplayName>{{.ProductName}}</uap:DisplayName>
             <uap:Logo>Assets\FileIcon.png</uap:Logo>
-            <uap:InfoTip>{{.Info.ProductName}} File</uap:InfoTip>
+            <uap:InfoTip>{{.ProductName}} File</uap:InfoTip>
             <uap:SupportedFileTypes>
               {{range .FileAssociations}}
               <uap:FileType>.{{.Ext}}</uap:FileType>
