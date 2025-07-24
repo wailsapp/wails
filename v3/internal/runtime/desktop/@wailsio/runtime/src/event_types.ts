@@ -229,5 +229,6 @@ export const Types = Object.freeze({
 		WindowZoomIn: "common:WindowZoomIn",
 		WindowZoomOut: "common:WindowZoomOut",
 		WindowZoomReset: "common:WindowZoomReset",
+		WindowDropZoneFilesDropped: "common:WindowDropZoneFilesDropped",
 	}),
 });

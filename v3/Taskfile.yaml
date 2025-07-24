@@ -59,6 +59,7 @@ tasks:
     dir: tasks/events
     cmds:
       - go run generate.go
+      - go fmt ../../pkg/events/events.go
 
   precommit:
     cmds:
