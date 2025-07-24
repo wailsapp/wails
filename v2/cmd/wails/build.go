@@ -60,9 +60,9 @@ func buildApplication(f *flags.Build) error {
 		f.GarbleArgs = projectOptions.GarbleArgs
 	}
 
-	projectTags, tagsErr := buildtags.Parse(projectOptions.BuildTags)
-	if tagsErr != nil {
-		return tagsErr
+	projectTags, err := buildtags.Parse(projectOptions.BuildTags)
+	if err != nil {
+		return err
 	}
 	userTags := f.GetTags()
 	compiledTags := append(projectTags, userTags...)

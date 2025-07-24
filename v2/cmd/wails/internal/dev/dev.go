@@ -78,9 +78,9 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 
 	projectConfig := f.ProjectConfig()
 
-	projectTags, tagsErr := buildtags.Parse(projectConfig.BuildTags)
-	if tagsErr != nil {
-		return tagsErr
+	projectTags, err := buildtags.Parse(projectConfig.BuildTags)
+	if err != nil {
+		return err
 	}
 	compiledTags := append(projectTags, userTags...)
 	buildOptions.UserTags = compiledTags
