@@ -3,6 +3,7 @@
 package w32
 
 import (
+	"fmt"
 	"syscall"
 	"unsafe"
 
@@ -145,18 +146,6 @@ func init() {
 				}
 			}
 
-			//procAllowDarkModeForApp, err := windows.GetProcAddressByOrdinal(localUXTheme, uintptr(137))
-			//if err == nil {
-			//	procAllowDarkModeForApplication = func(hwnd HWND, allow bool) uintptr {
-			//		var allowInt int32
-			//		if allow {
-			//			allowInt = 1
-			//		}
-			//		ret, _, _ := syscall.SyscallN(procAllowDarkModeForApp, uintptr(allowInt))
-			//		return ret
-			//	}
-			//}
-
 			// Initialize dark mode
 			if SetPreferredAppMode != nil {
 				SetPreferredAppMode(PreferredAppModeAllowDark)
@@ -298,6 +287,26 @@ func IsCurrentlyHighContrastMode() bool {
 	}
 	r := result.DwFlags&HCF_HIGHCONTRASTON == HCF_HIGHCONTRASTON
 	return r
+}
+
+func GetAccentColor() (string, error) {
+	key, err := registry.OpenKey(registry.CURRENT_USER, `Software\Microsoft\Windows\DWM`, registry.QUERY_VALUE)
+	if err != nil {
+		return "", err
+	}
+	defer key.Close()
+
+	accentColor, _, err := key.GetIntegerValue("AccentColor")
+	if err != nil {
+		return "", err
+	}
+
+	// Extract RGB components from ABGR format (Alpha, Blue, Green, Red)
+	red := uint8(accentColor & 0xFF)
+	green := uint8((accentColor >> 8) & 0xFF)
+	blue := uint8((accentColor >> 16) & 0xFF)
+
+	return fmt.Sprintf("rgb(%d,%d,%d)", red, green, blue), nil
 }
 
 // OpenThemeData opens theme data for a window and its class
