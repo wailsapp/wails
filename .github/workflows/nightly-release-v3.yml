@@ -84,16 +84,24 @@ jobs:
       run: |
         echo "🔍 Checking UNRELEASED_CHANGELOG.md for content..."
         
-        # Run the release script in check mode to see if there's content
-        cd v3/tasks/release
-        
-        # Use the release script itself to check for content
-        if go run release.go --check-only 2>/dev/null; then
-          echo "has_unreleased_content=true" >> $GITHUB_OUTPUT
-          echo "✅ Found unreleased changelog content"
+        # Check if the file exists and has content
+        if [ -f "v3/UNRELEASED_CHANGELOG.md" ]; then
+          echo "Found v3/UNRELEASED_CHANGELOG.md"
+          
+          # Run the release script in check mode to see if there's content
+          cd v3/tasks/release
+          
+          # Use the release script itself to check for content
+          if go run release.go --check-only 2>/dev/null; then
+            echo "has_unreleased_content=true" >> $GITHUB_OUTPUT
+            echo "✅ Found unreleased changelog content"
+          else
+            echo "has_unreleased_content=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No unreleased changelog content found"
+          fi
         else
+          echo "⚠️  v3/UNRELEASED_CHANGELOG.md not found"
           echo "has_unreleased_content=false" >> $GITHUB_OUTPUT
-          echo "ℹ️  No unreleased changelog content found"
         fi
 
     - name: Quick change detection and early exit
@@ -186,17 +194,33 @@ jobs:
         cd v3
         
         echo "📝 Extracting changelog content before release..."
+        echo "Current directory: $(pwd)"
+        echo "Files in current directory:"
+        ls -la
         
         # Extract changelog content and save to file
         if [ -f "UNRELEASED_CHANGELOG.md" ]; then
-          echo "Found UNRELEASED_CHANGELOG.md, extracting content..."
+          echo "Found UNRELEASED_CHANGELOG.md, showing first 20 lines:"
+          head -20 UNRELEASED_CHANGELOG.md
           
           # Use the release script to extract content
           cd tasks/release
-          if CHANGELOG_CONTENT=$(go run release.go --extract-changelog 2>&1); then
+          echo "Running from: $(pwd)"
+          
+          # Run with full error output
+          echo "Attempting to extract changelog..."
+          CHANGELOG_CONTENT=$(go run release.go --extract-changelog 2>&1)
+          EXTRACT_EXIT_CODE=$?
+          
+          echo "Exit code: $EXTRACT_EXIT_CODE"
+          echo "Output: $CHANGELOG_CONTENT"
+          
+          if [ $EXTRACT_EXIT_CODE -eq 0 ]; then
             if [ -n "$CHANGELOG_CONTENT" ] && [ "$CHANGELOG_CONTENT" != "No changelog content found." ]; then
               echo "$CHANGELOG_CONTENT" > ../../changelog-content.txt
               echo "✅ Successfully extracted changelog content"
+              echo "Content preview:"
+              head -5 ../../changelog-content.txt
               echo "has_content=true" >> $GITHUB_OUTPUT
             else
               echo "ℹ️  No changelog content to extract"
@@ -204,13 +228,16 @@ jobs:
               echo "has_content=false" >> $GITHUB_OUTPUT
             fi
           else
-            echo "⚠️  Failed to extract changelog content: $CHANGELOG_CONTENT"
+            echo "⚠️  Failed to extract changelog content with exit code $EXTRACT_EXIT_CODE"
+            echo "Error output: $CHANGELOG_CONTENT"
             echo "No changelog updates in this release." > ../../changelog-content.txt
             echo "has_content=false" >> $GITHUB_OUTPUT
           fi
           cd ../..
         else
-          echo "⚠️  UNRELEASED_CHANGELOG.md not found"
+          echo "⚠️  UNRELEASED_CHANGELOG.md not found in $(pwd)"
+          echo "Looking for file in parent directories..."
+          find .. -name "UNRELEASED_CHANGELOG.md" -type f 2>/dev/null || true
           echo "No changelog updates in this release." > changelog-content.txt
           echo "has_content=false" >> $GITHUB_OUTPUT
         fi
