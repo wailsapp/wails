@@ -177,6 +177,44 @@ jobs:
           echo "🔨 FORCE RELEASE: Overriding change detection"
         fi
     
+    - name: Extract changelog content before release
+      id: extract_changelog
+      if: |
+        steps.quick_check.outputs.should_continue == 'true' || 
+        github.event.inputs.force_release == 'true'
+      run: |
+        cd v3
+        
+        echo "📝 Extracting changelog content before release..."
+        
+        # Extract changelog content and save to file
+        if [ -f "UNRELEASED_CHANGELOG.md" ]; then
+          echo "Found UNRELEASED_CHANGELOG.md, extracting content..."
+          
+          # Use the release script to extract content
+          cd tasks/release
+          if CHANGELOG_CONTENT=$(go run release.go --extract-changelog 2>&1); then
+            if [ -n "$CHANGELOG_CONTENT" ] && [ "$CHANGELOG_CONTENT" != "No changelog content found." ]; then
+              echo "$CHANGELOG_CONTENT" > ../../changelog-content.txt
+              echo "✅ Successfully extracted changelog content"
+              echo "has_content=true" >> $GITHUB_OUTPUT
+            else
+              echo "ℹ️  No changelog content to extract"
+              echo "No changelog updates in this release." > ../../changelog-content.txt
+              echo "has_content=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "⚠️  Failed to extract changelog content: $CHANGELOG_CONTENT"
+            echo "No changelog updates in this release." > ../../changelog-content.txt
+            echo "has_content=false" >> $GITHUB_OUTPUT
+          fi
+          cd ../..
+        else
+          echo "⚠️  UNRELEASED_CHANGELOG.md not found"
+          echo "No changelog updates in this release." > changelog-content.txt
+          echo "has_content=false" >> $GITHUB_OUTPUT
+        fi
+    
     - name: Run release script
       id: release
       if: |
@@ -257,36 +295,25 @@ jobs:
         echo "success=$RELEASE_SUCCESS" >> $GITHUB_OUTPUT
         echo "version_changed=$VERSION_CHANGED" >> $GITHUB_OUTPUT
         
-        # Generate release notes from UNRELEASED_CHANGELOG.md if it has content
-        if [ "${{ steps.changelog_check.outputs.has_unreleased_content }}" == "true" ] && [ "$RELEASE_SUCCESS" == "true" ]; then
-          echo "📝 Generating release notes from UNRELEASED_CHANGELOG.md..."
+        # Generate release notes from pre-extracted changelog content
+        if [ "$RELEASE_SUCCESS" == "true" ]; then
+          echo "📝 Generating release notes from pre-extracted changelog content..."
           
-          # Use the release script to extract changelog content
-          cd tasks/release
-          if CHANGELOG_CONTENT=$(go run release.go --extract-changelog 2>&1); then
-            if [ -n "$CHANGELOG_CONTENT" ] && [ "$CHANGELOG_CONTENT" != "No changelog content found." ]; then
-              echo "### Changes in this release:" > ../../release-notes.txt
-              echo "" >> ../../release-notes.txt
-              echo "$CHANGELOG_CONTENT" >> ../../release-notes.txt
-              echo "✅ Successfully extracted changelog content"
-              echo "release_notes_file=release-notes.txt" >> $GITHUB_OUTPUT
-            else
-              echo "ℹ️  No changelog content to extract"
-              echo "No detailed changelog available for this release." > ../../release-notes.txt
-              echo "release_notes_file=release-notes.txt" >> $GITHUB_OUTPUT
-            fi
+          # Use the pre-extracted content
+          if [ -f "changelog-content.txt" ]; then
+            echo "### Changes in this release:" > release-notes.txt
+            echo "" >> release-notes.txt
+            cat changelog-content.txt >> release-notes.txt
+            echo "✅ Successfully generated release notes"
+            echo "release_notes_file=release-notes.txt" >> $GITHUB_OUTPUT
           else
-            echo "⚠️  Failed to extract changelog content: $CHANGELOG_CONTENT"
-            echo "No detailed changelog available for this release." > ../../release-notes.txt
-            RELEASE_ERRORS="$RELEASE_ERRORS\n- Failed to extract changelog content for release notes"
+            echo "ℹ️  No pre-extracted changelog content found"
+            echo "No detailed changelog available for this release." > release-notes.txt
             echo "release_notes_file=release-notes.txt" >> $GITHUB_OUTPUT
           fi
-          cd ../..
         else
           echo "release_notes_file=" >> $GITHUB_OUTPUT
-          if [ "$RELEASE_SUCCESS" != "true" ]; then
-            echo "⚠️  Skipping release notes generation due to release task failure"
-          fi
+          echo "⚠️  Skipping release notes generation due to release task failure"
         fi
         
         # Set error output for later steps
