@@ -1,3 +1,5 @@
+//go:build windows
+
 package w32
 
 func SetTimer(hwnd HWND, nIDEvent uintptr, uElapse uint32, lpTimerFunc uintptr) uintptr {
