@@ -510,8 +510,8 @@ jobs:
         echo "## Wails v3 Alpha Release - ${{ steps.release.outputs.version }}"
         echo ""
         cat << 'RELEASE_NOTES_EOF'
-${{ steps.read_notes.outputs.release_notes }}
-RELEASE_NOTES_EOF
+        ${{ steps.read_notes.outputs.release_notes }}
+        RELEASE_NOTES_EOF
         echo ""
         echo ""
         echo ""
