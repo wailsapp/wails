@@ -4,10 +4,11 @@ package cfd
 
 import (
 	"fmt"
-	"github.com/go-ole/go-ole"
 	"strings"
 	"syscall"
 	"unsafe"
+
+	"github.com/go-ole/go-ole"
 )
 
 func hresultToError(hr uintptr) error {
@@ -168,7 +169,7 @@ func (vtbl *iFileDialogVtbl) getResultString(objPtr unsafe.Pointer) (string, err
 		return "", err
 	}
 	if shellItem == nil {
-		return "", fmt.Errorf("shellItem is nil")
+		return "", ErrorCancelled
 	}
 	defer shellItem.vtbl.release(unsafe.Pointer(shellItem))
 	return shellItem.vtbl.getDisplayName(unsafe.Pointer(shellItem))
