@@ -42,6 +42,9 @@ type Project struct {
 	// Build directory
 	BuildDir string `json:"build:dir"`
 
+	// BuildTags Extra tags to process during build
+	BuildTags string `json:"build:tags"`
+
 	// The output filename
 	OutputFilename string `json:"outputfilename"`
 

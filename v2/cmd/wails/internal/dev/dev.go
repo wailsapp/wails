@@ -76,9 +76,14 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 		return err
 	}
 
-	buildOptions.UserTags = userTags
-
 	projectConfig := f.ProjectConfig()
+
+	projectTags, err := buildtags.Parse(projectConfig.BuildTags)
+	if err != nil {
+		return err
+	}
+	compiledTags := append(projectTags, userTags...)
+	buildOptions.UserTags = compiledTags
 
 	// Setup signal handler
 	quitChannel := make(chan os.Signal, 1)
