@@ -521,6 +521,7 @@ jobs:
         if gh release create "${{ steps.release.outputs.tag }}" \
           --title "${{ steps.release.outputs.title }}" \
           --notes-file release_notes.md \
+          --target v3-alpha \
           --prerelease; then
           echo "✅ Successfully created GitHub release"
           echo "outcome=success" >> $GITHUB_OUTPUT

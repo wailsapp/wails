@@ -10,7 +10,7 @@ import (
 
 const (
 	versionFile             = "../../internal/version/version.txt"
-	unreleasedChangelogFile = "../../UNRELEASED_CHANGELOG.md"
+	unreleasedChangelogFile = "../../../UNRELEASED_CHANGELOG.md"
 	changelogFile           = "../../../docs/src/content/docs/changelog.mdx"
 )
 

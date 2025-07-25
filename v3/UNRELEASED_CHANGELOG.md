@@ -17,7 +17,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-
+- Add Windows `getAccentColor` implementation by [@almas-x](https://github.com/almas-x) in [PR](https://github.com/wailsapp/wails/pull/4427)
+- 
 ## Changed
 <!-- Changes in existing functionality -->
 
