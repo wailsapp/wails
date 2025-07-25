@@ -23,6 +23,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: read
+      actions: write
     
     steps:
     - name: Checkout code
@@ -30,12 +31,14 @@ jobs:
       with:
         ref: v3-alpha
         fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
     
     - name: Setup Go
       uses: actions/setup-go@v4
       with:
         go-version: '1.24'
+        cache: true
+        cache-dependency-path: 'v3/go.sum'
     
     - name: Install Task
       uses: arduino/setup-task@v2
@@ -47,6 +50,9 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
+        # Configure git to use the token for authentication
+        git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
     
     - name: Check for existing release tag
       id: check_tag
@@ -225,7 +231,7 @@ jobs:
         fi
         
         RELEASE_TAG="${RELEASE_VERSION}"
-        RELEASE_TITLE="There'${RELEASE_VERSION}"
+        RELEASE_TITLE="Wails ${RELEASE_VERSION}"
         
         # Set outputs for next steps
         echo "version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
@@ -287,6 +293,8 @@ jobs:
         github.event.inputs.dry_run != 'true' &&
         steps.release.outputs.success == 'true' &&
         steps.release.outputs.version_changed == 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
       run: |
         echo "🏷️  Creating and pushing git tag: ${{ steps.release.outputs.tag }}"
         
@@ -313,7 +321,7 @@ jobs:
             RETRY_COUNT=$((RETRY_COUNT + 1))
             echo "🔄 Attempting to push tag (attempt $RETRY_COUNT/$MAX_RETRIES)..."
             
-            if git push origin "${{ steps.release.outputs.tag }}" 2>&1; then
+            if git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" "${{ steps.release.outputs.tag }}" 2>&1; then
               echo "✅ Successfully pushed git tag to origin"
               PUSH_SUCCESS=true
             else
@@ -351,6 +359,8 @@ jobs:
         github.event.inputs.dry_run != 'true' &&
         steps.release.outputs.success == 'true' &&
         steps.release.outputs.version_changed == 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
       run: |
         echo "📝 Committing and pushing changes..."
         
@@ -389,7 +399,7 @@ jobs:
                 RETRY_COUNT=$((RETRY_COUNT + 1))
                 echo "🔄 Attempting to push changes (attempt $RETRY_COUNT/$MAX_RETRIES)..."
                 
-                if git push origin v3-alpha 2>&1; then
+                if git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" v3-alpha 2>&1; then
                   echo "✅ Successfully pushed changes to v3-alpha branch"
                   PUSH_SUCCESS=true
                 else
@@ -486,29 +496,41 @@ jobs:
         steps.release.outputs.success == 'true' &&
         steps.release.outputs.version_changed == 'true'
       continue-on-error: true
-      uses: actions/create-release@v1
+      run: |
+        echo "🚀 Creating GitHub release using gh CLI..."
+        
+        # Create release notes in a temporary file
+        cat > release_notes.md << 'EOF'
+        ## Wails v3 Alpha Release - ${{ steps.release.outputs.version }}
+        
+        ${{ steps.read_notes.outputs.release_notes }}
+        
+        ---
+        
+        🤖 This is an automated nightly release generated from the latest changes in the v3-alpha branch.
+        
+        **Installation:**
+        ```bash
+        go install github.com/wailsapp/wails/v3/cmd/wails@${{ steps.release.outputs.tag }}
+        ```
+        
+        **⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features.
+        EOF
+        
+        # Create the release
+        if gh release create "${{ steps.release.outputs.tag }}" \
+          --title "${{ steps.release.outputs.title }}" \
+          --notes-file release_notes.md \
+          --target v3-alpha \
+          --prerelease; then
+          echo "✅ Successfully created GitHub release"
+          echo "outcome=success" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Failed to create GitHub release"
+          echo "outcome=failure" >> $GITHUB_OUTPUT
+        fi
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.release.outputs.tag }}
-        release_name: ${{ steps.release.outputs.title }}
-        body: |
-          ## Wails v3 Alpha Release - ${{ steps.release.outputs.version }}
-          
-          ${{ steps.read_notes.outputs.release_notes }}
-          
-          ---
-          
-          🤖 This is an automated nightly release generated from the latest changes in the v3-alpha branch.
-          
-          **Installation:**
-          ```bash
-          go install github.com/wailsapp/wails/v3/cmd/wails@${{ steps.release.outputs.tag }}
-          ```
-          
-          **⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features.
-        draft: false
-        prerelease: ${{ steps.release.outputs.is_prerelease == 'true' }}
+        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
     
     - name: Handle GitHub Release Creation Result
       id: release_result
@@ -527,49 +549,11 @@ jobs:
         # Check if GitHub release creation succeeded
         if [ "${{ steps.github_release.outcome }}" == "success" ]; then
           echo "✅ GitHub release created successfully"
-          echo "🔗 Release URL: ${{ steps.github_release.outputs.html_url }}"
+          echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.release.outputs.tag }}"
         else
           echo "❌ GitHub release creation failed"
           GITHUB_ERRORS="$GITHUB_ERRORS\n- GitHub release creation failed with outcome: ${{ steps.github_release.outcome }}"
           GITHUB_SUCCESS=false
-          
-          # Attempt fallback: try to create release using GitHub CLI as backup
-          echo "🔄 Attempting fallback release creation using GitHub CLI..."
-          
-          # Install GitHub CLI if not available
-          if ! command -v gh &> /dev/null; then
-            echo "📦 Installing GitHub CLI..."
-            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-            sudo apt update
-            sudo apt install gh -y
-          fi
-          
-          # Try creating release with GitHub CLI
-          if gh release create "${{ steps.release.outputs.tag }}" \
-            --title "${{ steps.release.outputs.title }}" \
-            --notes "## Wails v3 Alpha Release - ${{ steps.release.outputs.version }}
-
-          ${{ steps.read_notes.outputs.release_notes }}
-
-          ---
-
-          🤖 This is an automated nightly release generated from the latest changes in the v3-alpha branch.
-
-          **Installation:**
-          \`\`\`bash
-          go install github.com/wailsapp/wails/v3/cmd/wails@${{ steps.release.outputs.tag }}
-          \`\`\`
-
-          **⚠️ Alpha Warning:** This is pre-release software and may contain bugs or incomplete features." \
-            --prerelease 2>&1; then
-            echo "✅ Fallback GitHub release creation succeeded"
-            GITHUB_SUCCESS=true
-            GITHUB_ERRORS=""
-          else
-            echo "❌ Fallback GitHub release creation also failed"
-            GITHUB_ERRORS="$GITHUB_ERRORS\n- Fallback GitHub CLI release creation also failed"
-          fi
         fi
         
         # Set outputs for summary
