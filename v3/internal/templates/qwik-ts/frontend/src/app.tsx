@@ -1,5 +1,5 @@
 import { component$, useSignal, useVisibleTask$ } from '@builder.io/qwik'
-import {GreetService} from "../bindings/changeme";
+import {GreetService} from "@services";
 import {Events, WML} from "@wailsio/runtime";
 
 export const App = component$(() => {

@@ -11,7 +11,11 @@
 		"strict": true,
         "allowUnusedLabels": true,
         "noUnusedLocals": false,
-        "moduleResolution": "bundler"
+        "moduleResolution": "bundler",
+		"baseUrl": ".",
+		"paths": {
+			 "@services": ["bindings/changeme/index"]
+		 }
 	}
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
 	// except $lib which is handled by https://kit.svelte.dev/docs/configuration#files
