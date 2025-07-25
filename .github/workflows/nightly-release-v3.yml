@@ -418,11 +418,7 @@ jobs:
             echo "📝 Changes detected, creating commit..."
             
             # Create commit with error handling
-            if git commit -m "🤖 Automated nightly release ${{ steps.release.outputs.version }}
-            
-            Generated with [Claude Code](https://claude.ai/code)
-            
-            Co-Authored-By: Claude <noreply@anthropic.com>" 2>&1; then
+            if git commit -m "${{ steps.release.outputs.version }}" 2>&1; then
               echo "✅ Successfully created commit"
               
               # Push changes with retry logic
@@ -513,7 +509,11 @@ jobs:
         echo "Release Body Preview:"
         echo "## Wails v3 Alpha Release - ${{ steps.release.outputs.version }}"
         echo ""
-        echo "${{ steps.read_notes.outputs.release_notes }}"
+        cat << 'RELEASE_NOTES_EOF'
+${{ steps.read_notes.outputs.release_notes }}
+RELEASE_NOTES_EOF
+        echo ""
+        echo ""
         echo ""
         echo "---"
         echo ""
@@ -544,6 +544,8 @@ jobs:
         ## Wails v3 Alpha Release - ${{ steps.release.outputs.version }}
         
         ${{ steps.read_notes.outputs.release_notes }}
+        
+        
         
         ---
         
