@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fixed panic when closing or cancelling a `SaveFileDialog` on windows. Fixed in [PR](https://github.com/wailsapp/wails/pull/4284) by @hkhere
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
