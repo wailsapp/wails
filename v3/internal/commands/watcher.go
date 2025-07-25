@@ -35,17 +35,27 @@ func Watcher(options *WatcherOptions) error {
 	if err != nil {
 		return err
 	}
-	signalHandler := signal.NewSignalHandler(func() {
+	
+	// Setup cleanup function that stops the engine
+	cleanup := func() {
+		watcherEngine.Stop()
 		stopChan <- struct{}{}
-	})
+	}
+	
+	signalHandler := signal.NewSignalHandler(cleanup)
 	signalHandler.ExitMessage = func(sig os.Signal) string {
 		return ""
 	}
 	signalHandler.Start()
+	
+	// Start the engine and ensure cleanup on error
 	err = watcherEngine.Start()
 	if err != nil {
+		// Stop the engine to clean up any started processes
+		watcherEngine.Stop()
 		return err
 	}
+	
 	<-stopChan
 	return nil
 }
