@@ -1,4 +1,6 @@
 
+name: Nightly Release v3-alpha
+
 on:
   schedule:
     - cron: '0 2 * * *'  # 2 AM UTC daily
@@ -36,7 +38,6 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.24'
-        cache: true
         cache-dependency-path: 'v3/go.sum'
     
     - name: Install Task
