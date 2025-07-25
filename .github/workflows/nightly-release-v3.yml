@@ -194,53 +194,22 @@ jobs:
         cd v3
         
         echo "📝 Extracting changelog content before release..."
-        echo "Current directory: $(pwd)"
-        echo "Files in current directory:"
-        ls -la
         
-        # Extract changelog content and save to file
-        if [ -f "UNRELEASED_CHANGELOG.md" ]; then
-          echo "Found UNRELEASED_CHANGELOG.md, showing first 20 lines:"
-          head -20 UNRELEASED_CHANGELOG.md
+        # Use the new --create-release-notes flag
+        cd tasks/release
+        if go run release.go --create-release-notes ../../release_notes.md; then
+          echo "✅ Successfully created release notes"
+          echo "has_content=true" >> $GITHUB_OUTPUT
           
-          # Use the release script to extract content
-          cd tasks/release
-          echo "Running from: $(pwd)"
-          
-          # Run with full error output
-          echo "Attempting to extract changelog..."
-          CHANGELOG_CONTENT=$(go run release.go --extract-changelog 2>&1)
-          EXTRACT_EXIT_CODE=$?
-          
-          echo "Exit code: $EXTRACT_EXIT_CODE"
-          echo "Output: $CHANGELOG_CONTENT"
-          
-          if [ $EXTRACT_EXIT_CODE -eq 0 ]; then
-            if [ -n "$CHANGELOG_CONTENT" ] && [ "$CHANGELOG_CONTENT" != "No changelog content found." ]; then
-              echo "$CHANGELOG_CONTENT" > ../../changelog-content.txt
-              echo "✅ Successfully extracted changelog content"
-              echo "Content preview:"
-              head -5 ../../changelog-content.txt
-              echo "has_content=true" >> $GITHUB_OUTPUT
-            else
-              echo "ℹ️  No changelog content to extract"
-              echo "No changelog updates in this release." > ../../changelog-content.txt
-              echo "has_content=false" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "⚠️  Failed to extract changelog content with exit code $EXTRACT_EXIT_CODE"
-            echo "Error output: $CHANGELOG_CONTENT"
-            echo "No changelog updates in this release." > ../../changelog-content.txt
-            echo "has_content=false" >> $GITHUB_OUTPUT
-          fi
-          cd ../..
+          # Show content preview
+          echo "Release notes preview:"
+          head -10 ../../release_notes.md
         else
-          echo "⚠️  UNRELEASED_CHANGELOG.md not found in $(pwd)"
-          echo "Looking for file in parent directories..."
-          find .. -name "UNRELEASED_CHANGELOG.md" -type f 2>/dev/null || true
-          echo "No changelog updates in this release." > changelog-content.txt
+          echo "⚠️  Failed to create release notes or no content found"
+          echo "No changelog updates in this release." > ../../release_notes.md
           echo "has_content=false" >> $GITHUB_OUTPUT
         fi
+        cd ../..
     
     - name: Run release script
       id: release
@@ -322,19 +291,17 @@ jobs:
         echo "success=$RELEASE_SUCCESS" >> $GITHUB_OUTPUT
         echo "version_changed=$VERSION_CHANGED" >> $GITHUB_OUTPUT
         
-        # Generate release notes from pre-extracted changelog content
+        # Copy pre-extracted release notes
         if [ "$RELEASE_SUCCESS" == "true" ]; then
-          echo "📝 Generating release notes from pre-extracted changelog content..."
+          echo "📝 Using pre-extracted release notes..."
           
-          # Use the pre-extracted content
-          if [ -f "changelog-content.txt" ]; then
-            echo "### Changes in this release:" > release-notes.txt
-            echo "" >> release-notes.txt
-            cat changelog-content.txt >> release-notes.txt
-            echo "✅ Successfully generated release notes"
+          # Use the release_notes.md file created earlier
+          if [ -f "release_notes.md" ]; then
+            cp release_notes.md release-notes.txt
+            echo "✅ Successfully copied release notes"
             echo "release_notes_file=release-notes.txt" >> $GITHUB_OUTPUT
           else
-            echo "ℹ️  No pre-extracted changelog content found"
+            echo "ℹ️  No pre-extracted release notes found"
             echo "No detailed changelog available for this release." > release-notes.txt
             echo "release_notes_file=release-notes.txt" >> $GITHUB_OUTPUT
           fi
@@ -515,8 +482,13 @@ jobs:
       run: |
         cd v3
         if [ -f "release-notes.txt" ]; then
-          # Read the release notes and handle multiline content
-          RELEASE_NOTES=$(cat release-notes.txt)
+          # Read the release notes and add header
+          echo "### Changes in this release:" > formatted-release-notes.txt
+          echo "" >> formatted-release-notes.txt
+          cat release-notes.txt >> formatted-release-notes.txt
+          
+          # Read the formatted notes for output
+          RELEASE_NOTES=$(cat formatted-release-notes.txt)
           echo "release_notes<<EOF" >> $GITHUB_OUTPUT
           echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
