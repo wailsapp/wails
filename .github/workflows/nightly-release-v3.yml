@@ -35,9 +35,9 @@ jobs:
         token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
     
     - name: Setup Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
-        go-version: '1.24'
+        go-version: '1.23'
         cache-dependency-path: 'v3/go.sum'
     
     - name: Install Task
@@ -45,6 +45,20 @@ jobs:
       with:
         version: 3.x
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Verify Go and Task installation
+      run: |
+        echo "Go version:"
+        go version
+        echo ""
+        echo "Task version:"
+        task --version
+        echo ""
+        echo "Working directory:"
+        pwd
+        echo ""
+        echo "v3 directory contents:"
+        ls -la v3/
     
     - name: Setup Git
       run: |
