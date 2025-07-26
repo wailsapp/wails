@@ -76,15 +76,17 @@ static gboolean onWayland()
     switch (wmIsWayland)
     {
     case -1:
-     char *gdkBackend = getenv("XDG_SESSION_TYPE");
-        if(gdkBackend != NULL && strcmp(gdkBackend, "wayland") == 0) 
         {
-            wmIsWayland = 1;
-            return TRUE;
+            char *gdkBackend = getenv("XDG_SESSION_TYPE");
+            if(gdkBackend != NULL && strcmp(gdkBackend, "wayland") == 0) 
+            {
+                wmIsWayland = 1;
+                return TRUE;
+            }
+
+            wmIsWayland = 0;
+            return FALSE;
         }
-        
-        wmIsWayland = 0;
-        return FALSE;
     case 1:
         return TRUE;
     default:
