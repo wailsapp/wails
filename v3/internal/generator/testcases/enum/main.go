@@ -56,6 +56,17 @@ func (*GreetService) NewPerson(name string) *Person {
 	return &Person{Name: name}
 }
 
+// GetTitleMap returns a map with enum keys - this should generate correct TypeScript
+func (*GreetService) GetTitleMap() map[Title]string {
+	return map[Title]string{
+		Mister: "Mr",
+		Miss:   "Miss",
+		Ms:     "Ms",
+		Mrs:    "Mrs",
+		Dr:     "Dr",
+	}
+}
+
 func main() {
 	app := application.New(application.Options{
 		Services: []application.Service{
