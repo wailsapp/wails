@@ -1333,34 +1333,14 @@ func ChangeDisplaySettingsEx(szDeviceName *uint16, devMode *DEVMODE, hwnd HWND, 
 	return int32(ret)
 }
 
-/*
-func SendInput(inputs []INPUT) uint32 {
-	var validInputs []C.INPUT
-
-	for _, oneInput := range inputs {
-		input := C.INPUT{_type: C.DWORD(oneInput.Type)}
-
-		switch oneInput.Type {
-		case INPUT_MOUSE:
-			(*MouseInput)(unsafe.Pointer(&input)).mi = oneInput.Mi
-		case INPUT_KEYBOARD:
-			(*KbdInput)(unsafe.Pointer(&input)).ki = oneInput.Ki
-		case INPUT_HARDWARE:
-			(*HardwareInput)(unsafe.Pointer(&input)).hi = oneInput.Hi
-		default:
-			panic("unkown type")
-		}
-
-		validInputs = append(validInputs, input)
-	}
-
+func SendInput(nInputs int, pInputs unsafe.Pointer, cbSize int) uint32 {
 	ret, _, _ := procSendInput.Call(
-		uintptr(len(validInputs)),
-		uintptr(unsafe.Pointer(&validInputs[0])),
-		uintptr(unsafe.Sizeof(C.INPUT{})),
+		uintptr(nInputs),
+		uintptr(pInputs),
+		uintptr(cbSize),
 	)
 	return uint32(ret)
-}*/
+}
 
 func SetWindowsHookEx(idHook int, lpfn HOOKPROC, hMod HINSTANCE, dwThreadId DWORD) HHOOK {
 	ret, _, _ := procSetWindowsHookEx.Call(

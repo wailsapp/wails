@@ -107,6 +107,7 @@ type (
 		selectAll()
 		redo()
 		showMenuBar()
+		showSnapAssist()
 		hideMenuBar()
 		toggleMenuBar()
 		setMenu(menu *Menu)
@@ -457,6 +458,7 @@ func (w *WebviewWindow) Show() Window {
 	InvokeSync(w.impl.show)
 	return w
 }
+
 
 // Hide hides the window.
 func (w *WebviewWindow) Hide() Window {
@@ -1411,6 +1413,15 @@ func (w *WebviewWindow) ShowMenuBar() {
 		return
 	}
 	InvokeSync(w.impl.showMenuBar)
+}
+
+// ShowSnapAssist shows the Windows SnapAssist overlay for this window.
+// This is a Windows-only feature and does nothing on other platforms.
+func (w *WebviewWindow) ShowSnapAssist() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	InvokeSync(w.impl.showSnapAssist)
 }
 
 // HideMenuBar hides the menu bar for the window.

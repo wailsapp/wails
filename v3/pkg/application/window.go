@@ -71,6 +71,7 @@ type Window interface {
 	SetZoom(magnification float64) Window
 	Show() Window
 	ShowMenuBar()
+	ShowSnapAssist()
 	Size() (width int, height int)
 	OpenDevTools()
 	ToggleFullscreen()

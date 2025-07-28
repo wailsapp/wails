@@ -2276,8 +2276,73 @@ func (w *windowsWebviewWindow) showMenuBar() {
 	}
 }
 
+func (w *windowsWebviewWindow) showSnapAssist() {
+	// Ensure this window is focused first
+	w32.SetForegroundWindow(w.hwnd)
+	
+	// Send Win+Z key combination to trigger SnapAssist
+	w.sendKeyCombo(0x5A, 0x5B) // Z key with Windows key
+}
+
 func (w *windowsWebviewWindow) hideMenuBar() {
 	if w.menu != nil {
 		w32.SetMenu(w.hwnd, 0)
 	}
+}
+
+// sendKeyCombo sends a key combination (key + modifier)
+func (w *windowsWebviewWindow) sendKeyCombo(key, modifier uint16) {
+	// Create input array for key combination
+	inputs := make([]w32.INPUT, 4)
+	
+	// Modifier key down (Windows key)
+	inputs[0] = w32.INPUT{
+		Type: 1, // INPUT_KEYBOARD
+		Ki: w32.KEYBDINPUT{
+			WVk:         modifier,
+			WScan:       0,
+			DwFlags:     0,
+			Time:        0,
+			DwExtraInfo: 0,
+		},
+	}
+	
+	// Main key down (Z key)
+	inputs[1] = w32.INPUT{
+		Type: 1, // INPUT_KEYBOARD
+		Ki: w32.KEYBDINPUT{
+			WVk:         key,
+			WScan:       0,
+			DwFlags:     0,
+			Time:        0,
+			DwExtraInfo: 0,
+		},
+	}
+	
+	// Main key up (Z key)
+	inputs[2] = w32.INPUT{
+		Type: 1, // INPUT_KEYBOARD
+		Ki: w32.KEYBDINPUT{
+			WVk:         key,
+			WScan:       0,
+			DwFlags:     0x0002, // KEYEVENTF_KEYUP
+			Time:        0,
+			DwExtraInfo: 0,
+		},
+	}
+	
+	// Modifier key up (Windows key)
+	inputs[3] = w32.INPUT{
+		Type: 1, // INPUT_KEYBOARD
+		Ki: w32.KEYBDINPUT{
+			WVk:         modifier,
+			WScan:       0,
+			DwFlags:     0x0002, // KEYEVENTF_KEYUP
+			Time:        0,
+			DwExtraInfo: 0,
+		},
+	}
+	
+	// Send the input events
+	w32.SendInput(len(inputs), unsafe.Pointer(&inputs[0]), int(unsafe.Sizeof(w32.INPUT{})))
 }

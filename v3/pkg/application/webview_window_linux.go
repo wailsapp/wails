@@ -425,5 +425,6 @@ func (w *linuxWebviewWindow) hide() {
 }
 
 func (w *linuxWebviewWindow) showMenuBar()   {}
+func (w *linuxWebviewWindow) showSnapAssist() {}
 func (w *linuxWebviewWindow) hideMenuBar()   {}
 func (w *linuxWebviewWindow) toggleMenuBar() {}

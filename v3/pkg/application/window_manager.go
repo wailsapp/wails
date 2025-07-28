@@ -133,3 +133,4 @@ func (wm *WindowManager) GetAll() []Window {
 	}
 	return windows
 }
+

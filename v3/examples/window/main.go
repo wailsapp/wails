@@ -701,6 +701,14 @@ func main() {
 			w.OpenDevTools()
 		})
 	})
+	
+	if runtime.GOOS == "windows" {
+		stateMenu.Add("Show SnapAssist").OnClick(func(ctx *application.Context) {
+			currentWindow(func(w *application.WebviewWindow) {
+				w.ShowSnapAssist()
+			})
+		})
+	}
 
 	if runtime.GOOS != "darwin" {
 		stateMenu.Add("Flash for 5s").OnClick(func(ctx *application.Context) {

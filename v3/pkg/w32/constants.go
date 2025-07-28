@@ -1994,6 +1994,7 @@ const (
 	VK_INSERT              = 0x2D
 	VK_DELETE              = 0x2E
 	VK_HELP                = 0x2F
+	VK_Z                   = 0x5A
 	VK_LWIN                = 0x5B
 	VK_RWIN                = 0x5C
 	VK_APPS                = 0x5D
@@ -2901,6 +2902,10 @@ const (
 )
 
 const (
+	KEYEVENTF_KEYUP = 0x0002
+)
+
+const (
 	MOUSEEVENTF_ABSOLUTE        = 0x8000
 	MOUSEEVENTF_HWHEEL          = 0x01000
 	MOUSEEVENTF_MOVE            = 0x0001
@@ -3555,6 +3560,7 @@ const (
 	VK_INSERT              = 45
 	VK_DELETE              = 46
 	VK_HELP                = 47
+	VK_Z                   = 0x5A
 	VK_LWIN                = 0x5B
 	VK_RWIN                = 0x5C
 	VK_APPS                = 0x5D
