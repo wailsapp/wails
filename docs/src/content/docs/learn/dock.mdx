@@ -1,0 +1,76 @@
+---
+title: Dock
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Introduction
+
+Wails provides a macOS Dock service for desktop applications. This service allows you to hide and show the application icon in the macOS Dock.
+
+## Basic Usage
+
+### Creating the Service
+
+First, initialize the dock service:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+
+// Create a new badge service
+dockService := dock.New()
+
+// Register the service with the application
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+```
+
+## Dock Operations
+
+### Hiding the dock app icon
+
+Hide the app icon from the macOS Dock:
+
+```go
+// Hide the app icon
+dockService.HideAppIcon()
+```
+
+### Showing the dock app icon
+
+Show the app icon in the macOS Dock:
+
+```go
+// Show the app icon
+dockService.ShowAppIcon()
+```
+
+## Best Practices
+
+1. Always provide alternative access:
+   - When hiding the dock icon, ensure users can still access your app (e.g., via [system tray](https://v3alpha.wails.io/learn/systray/))
+   - Include a "Quit" option in your alternative UI
+
+2. Important behaviors when dock icon is hidden:
+   - The app won't appear in Command+Tab switcher
+   - Open windows remain visible and functional
+   - Closing all windows may not quit the app (macOS behavior varies)
+   - Users lose the standard way to quit via Dock right-click
+
+
+## API Reference
+
+### Service Management
+| Method                                     | Description                                           |
+|--------------------------------------------|-------------------------------------------------------|
+| `New()`                                    | Creates a new dock service                            |
+
+### Dock Operations
+| Method                                       | Description                                                |
+|--------------------------------|-------------------------------------------------------------|
+| `HideAppIcon()`                | Hides the app icon from the macOS Dock                      |
+| `ShowAppIcon()`                | Shows the app icon in the macOS Dock.                       |

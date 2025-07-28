@@ -36,12 +36,12 @@ func (d *darwinDock) Shutdown() error {
 	return nil
 }
 
-// HideAppIcon hides the app icon in the macOS Dock
+// HideAppIcon hides the app icon in the macOS Dock.
 func (d *darwinDock) HideAppIcon() {
 	C.hideDockIcon()
 }
 
-// ShowAppIcon shows the app icon in the macOS Dock
+// ShowAppIcon shows the app icon in the macOS Dock.
 func (d *darwinDock) ShowAppIcon() {
 	C.showDockIcon()
 }

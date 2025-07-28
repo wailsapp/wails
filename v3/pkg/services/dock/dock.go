@@ -35,12 +35,12 @@ func (d *DockService) ServiceShutdown() error {
 	return d.impl.Shutdown()
 }
 
-// SetBadge sets the badge label on the application icon.
+// HideAppIcon hides the app icon in the macOS Dock.
 func (d *DockService) HideAppIcon() {
 	d.impl.HideAppIcon()
 }
 
-// RemoveBadge removes the badge label from the application icon.
+// ShowAppIcon shows the app icon in the macOS Dock.
 func (d *DockService) ShowAppIcon() {
 	d.impl.ShowAppIcon()
 }
