@@ -42,17 +42,17 @@ func CheckNotificationAuthorization(ctx context.Context) (bool, error) {
 	return appFrontend.CheckNotificationAuthorization()
 }
 
-func SendNotification(ctx context.Context, options frontend.NotificationOptions) error {
+func SendNotification(ctx context.Context, options NotificationOptions) error {
 	appFrontend := getFrontend(ctx)
 	return appFrontend.SendNotification(options)
 }
 
-func SendNotificationWithActions(ctx context.Context, options frontend.NotificationOptions) error {
+func SendNotificationWithActions(ctx context.Context, options NotificationOptions) error {
 	appFrontend := getFrontend(ctx)
 	return appFrontend.SendNotificationWithActions(options)
 }
 
-func RegisterNotificationCategory(ctx context.Context, category frontend.NotificationCategory) error {
+func RegisterNotificationCategory(ctx context.Context, category NotificationCategory) error {
 	appFrontend := getFrontend(ctx)
 	return appFrontend.RegisterNotificationCategory(category)
 }
@@ -87,7 +87,7 @@ func RemoveNotification(ctx context.Context, identifier string) error {
 	return appFrontend.RemoveNotification(identifier)
 }
 
-func OnNotificationResponse(ctx context.Context, callback func(result frontend.NotificationResult)) {
+func OnNotificationResponse(ctx context.Context, callback func(result NotificationResult)) {
 	appFrontend := getFrontend(ctx)
 	appFrontend.OnNotificationResponse(callback)
 }

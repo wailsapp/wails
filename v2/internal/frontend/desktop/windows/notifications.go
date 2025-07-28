@@ -154,13 +154,11 @@ func (f *Frontend) SendNotification(options frontend.NotificationOptions) error 
 		ActivationArguments: DefaultActionIdentifier,
 	}
 
-	if options.Data != nil {
-		encodedPayload, err := encodePayload(DefaultActionIdentifier, options)
-		if err != nil {
-			return fmt.Errorf("failed to encode notification payload: %w", err)
-		}
-		n.ActivationArguments = encodedPayload
+	encodedPayload, err := encodePayload(DefaultActionIdentifier, options)
+	if err != nil {
+		return fmt.Errorf("failed to encode notification payload: %w", err)
 	}
+	n.ActivationArguments = encodedPayload
 
 	return n.Push()
 }
@@ -210,20 +208,18 @@ func (f *Frontend) SendNotificationWithActions(options frontend.NotificationOpti
 		})
 	}
 
-	if options.Data != nil {
-		encodedPayload, err := encodePayload(n.ActivationArguments, options)
+	encodedPayload, err := encodePayload(n.ActivationArguments, options)
+	if err != nil {
+		return fmt.Errorf("failed to encode notification payload: %w", err)
+	}
+	n.ActivationArguments = encodedPayload
+
+	for index := range n.Actions {
+		encodedPayload, err := encodePayload(n.Actions[index].Arguments, options)
 		if err != nil {
 			return fmt.Errorf("failed to encode notification payload: %w", err)
 		}
-		n.ActivationArguments = encodedPayload
-
-		for index := range n.Actions {
-			encodedPayload, err := encodePayload(n.Actions[index].Arguments, options)
-			if err != nil {
-				return fmt.Errorf("failed to encode notification payload: %w", err)
-			}
-			n.Actions[index].Arguments = encodedPayload
-		}
+		n.Actions[index].Arguments = encodedPayload
 	}
 
 	return n.Push()
