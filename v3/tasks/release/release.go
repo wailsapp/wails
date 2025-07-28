@@ -9,9 +9,12 @@ import (
 )
 
 const (
-	versionFile             = "../../internal/version/version.txt"
+	versionFile   = "../../internal/version/version.txt"
+	changelogFile = "../../../docs/src/content/docs/changelog.mdx"
+)
+
+var (
 	unreleasedChangelogFile = "../../UNRELEASED_CHANGELOG.md"
-	changelogFile           = "../../../docs/src/content/docs/changelog.mdx"
 )
 
 func checkError(err error) {
@@ -401,19 +404,19 @@ func main() {
 			fmt.Printf("Error: No changelog content found in UNRELEASED_CHANGELOG.md\n")
 			os.Exit(1)
 		}
-		
+
 		// Create release_notes.md file
 		releaseNotesPath := "../../release_notes.md"
 		if len(os.Args) > 2 {
 			releaseNotesPath = os.Args[2]
 		}
-		
+
 		err = os.WriteFile(releaseNotesPath, []byte(changelogContent), 0o644)
 		if err != nil {
 			fmt.Printf("Error: Failed to write release notes to %s: %v\n", releaseNotesPath, err)
 			os.Exit(1)
 		}
-		
+
 		fmt.Printf("Successfully created release notes at %s\n", releaseNotesPath)
 		os.Exit(0)
 	}
