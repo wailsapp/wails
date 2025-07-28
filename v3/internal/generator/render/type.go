@@ -165,7 +165,7 @@ func (m *module) renderMapType(typ *types.Map) (result string, nullable bool) {
 		}
 	}
 
-	return fmt.Sprintf("{ [_: %s]: %s }%s", key, elem, null), m.UseInterfaces
+	return fmt.Sprintf("{ [_ in %s]?: %s }%s", key, elem, null), m.UseInterfaces
 }
 
 // renderNamedType outputs the TS representation
