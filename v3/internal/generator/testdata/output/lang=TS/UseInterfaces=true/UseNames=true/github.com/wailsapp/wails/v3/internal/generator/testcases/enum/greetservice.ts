@@ -15,6 +15,13 @@ import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails
 import * as $models from "./models.js";
 
 /**
+ * GetTitleMap returns a map with enum keys - this should generate correct TypeScript
+ */
+export function GetTitleMap(): $CancellablePromise<{ [_ in $models.Title]: string } | null> {
+    return $Call.ByName("main.GreetService.GetTitleMap");
+}
+
+/**
  * Greet does XYZ
  */
 export function Greet(name: string, title: $models.Title): $CancellablePromise<string> {
