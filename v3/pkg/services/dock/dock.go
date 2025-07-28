@@ -15,7 +15,7 @@ type platformDock interface {
 	ShowAppIcon()
 }
 
-// Service represents the notifications service
+// Service represents the dock service
 type DockService struct {
 	impl platformDock
 }
