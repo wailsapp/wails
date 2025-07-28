@@ -21,7 +21,7 @@ import (
 
 type darwinDock struct{}
 
-// Creates a new Badge Service.
+// Creates a new Dock Service.
 func New() *DockService {
 	return &DockService{
 		impl: &darwinDock{},
