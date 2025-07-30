@@ -5,6 +5,8 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - v3-alpha
+    paths:
+      - 'v3/**'
   pull_request_review:
     types: [submitted]
     branches:
@@ -109,6 +111,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
+          cache: true
           cache-dependency-path: "v3/go.sum"
 
       - name: Install Task
@@ -125,7 +128,10 @@ jobs:
 
       - name: Build Examples
         working-directory: v3
-        run: task test:examples
+        run: |
+          echo "Starting example compilation tests..."
+          task test:examples
+          echo "Example compilation tests completed successfully"
 
       - name: Run tests (mac)
         if: matrix.os == 'macos-latest'
@@ -201,6 +207,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
+          cache: true
           cache-dependency-path: "v3/go.sum"
 
       - name: Install Task

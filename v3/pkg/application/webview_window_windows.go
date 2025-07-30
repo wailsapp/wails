@@ -57,6 +57,11 @@ type windowsWebviewWindow struct {
 	chromium                   *edge.Chromium
 	webviewNavigationCompleted bool
 
+	// Window visibility management - robust fallback for issue #2861
+	showRequested     bool        // Track if show() was called before navigation completed
+	visibilityTimeout *time.Timer // Timeout to show window if navigation is delayed
+	windowShown       bool        // Track if window container has been shown
+
 	// resizeBorder* is the width/height of the resize border in pixels.
 	resizeBorderWidth  int32
 	resizeBorderHeight int32
@@ -71,6 +76,9 @@ type windowsWebviewWindow struct {
 	// isMinimizing indicates whether the window is currently being minimized
 	// Used to prevent unnecessary redraws during minimize/restore operations
 	isMinimizing bool
+
+	// menubarTheme is the theme for the menubar
+	menubarTheme *w32.MenuBarTheme
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
@@ -78,6 +86,26 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 	w.menu = NewApplicationMenu(w, menu)
 	w.menu.parentWindow = w
 	w32.SetMenu(w.hwnd, w.menu.menu)
+
+	// Set menu background if theme is active
+	if w.menubarTheme != nil {
+		globalApplication.debug("Applying menubar theme in setMenu", "window", w.parent.id)
+		w.menubarTheme.SetMenuBackground(w.menu.menu)
+		w32.DrawMenuBar(w.hwnd)
+		// Force a repaint of the menu area
+		w32.InvalidateRect(w.hwnd, nil, true)
+	} else {
+		globalApplication.debug("No menubar theme to apply in setMenu", "window", w.parent.id)
+	}
+
+	// Check if using translucent background with Mica - this makes menubars invisible
+	if w.parent.options.BackgroundType == BackgroundTypeTranslucent &&
+		(w.parent.options.Windows.BackdropType == Mica ||
+			w.parent.options.Windows.BackdropType == Acrylic ||
+			w.parent.options.Windows.BackdropType == Tabbed) {
+		// Log warning about menubar visibility issue
+		globalApplication.debug("Warning: Menubars may be invisible when using translucent backgrounds with Mica/Acrylic/Tabbed effects", "window", w.parent.id)
+	}
 }
 
 func (w *windowsWebviewWindow) cut() {
@@ -266,6 +294,10 @@ func (w *windowsWebviewWindow) run() {
 
 	options := w.parent.options
 
+	// Initialize showRequested based on whether window should be hidden
+	// Non-hidden windows should be shown by default
+	w.showRequested = !options.Hidden
+
 	w.chromium = edge.NewChromium()
 	if globalApplication.options.ErrorHandler != nil {
 		w.chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
@@ -413,7 +445,13 @@ func (w *windowsWebviewWindow) run() {
 	// Process the theme
 	switch options.Windows.Theme {
 	case SystemDefault:
-		w.updateTheme(w32.IsCurrentlyDarkMode())
+		isDark := w32.IsCurrentlyDarkMode()
+		if isDark {
+			w32.AllowDarkModeForWindow(w.hwnd, true)
+		}
+		w.updateTheme(isDark)
+		// Don't initialize default dark theme here if custom theme might be set
+		// The updateTheme call above will handle both default and custom themes
 		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func(*ApplicationEvent) {
 			InvokeAsync(func() {
 				w.updateTheme(w32.IsCurrentlyDarkMode())
@@ -422,7 +460,10 @@ func (w *windowsWebviewWindow) run() {
 	case Light:
 		w.updateTheme(false)
 	case Dark:
+		w32.AllowDarkModeForWindow(w.hwnd, true)
 		w.updateTheme(true)
+		// Don't initialize default dark theme here if custom theme might be set
+		// The updateTheme call above will handle custom themes
 	}
 
 	switch options.BackgroundType {
@@ -729,6 +770,10 @@ func (w *windowsWebviewWindow) fullscreen() {
 		int(monitorInfo.RcMonitor.Right-monitorInfo.RcMonitor.Left),
 		int(monitorInfo.RcMonitor.Bottom-monitorInfo.RcMonitor.Top),
 		w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
+
+	// Hide the menubar in fullscreen mode
+	w32.SetMenu(w.hwnd, 0)
+
 	w.chromium.Focus()
 	w.parent.emit(events.Windows.WindowFullscreen)
 }
@@ -747,6 +792,12 @@ func (w *windowsWebviewWindow) unfullscreen() {
 	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, w.previousWindowExStyle)
 	w32.SetWindowPlacement(w.hwnd, &w.previousWindowPlacement)
 	w.isCurrentlyFullscreen = false
+
+	// Restore the menubar when exiting fullscreen
+	if w.menu != nil {
+		w32.SetMenu(w.hwnd, w.menu.menu)
+	}
+
 	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0,
 		w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
 	w.enableSizeConstraints()
@@ -783,10 +834,6 @@ func (w *windowsWebviewWindow) isNormal() bool {
 func (w *windowsWebviewWindow) isVisible() bool {
 	style := uint32(w32.GetWindowLong(w.hwnd, w32.GWL_STYLE))
 	return style&w32.WS_VISIBLE != 0
-}
-
-func (w *windowsWebviewWindow) setFullscreenButtonEnabled(_ bool) {
-	// Unused in Windows
 }
 
 func (w *windowsWebviewWindow) focus() {
@@ -960,14 +1007,45 @@ func (w *windowsWebviewWindow) printStyle() {
 }
 
 func (w *windowsWebviewWindow) show() {
+	// Always show the window container immediately (decouple from WebView state)
+	// This fixes issue #2861 where efficiency mode prevents window visibility
+	w32.ShowWindow(w.hwnd, w32.SW_SHOW)
+	w.windowShown = true
+	w.showRequested = true
+
+	// Show WebView if navigation has completed
 	if w.webviewNavigationCompleted {
 		w.chromium.Show()
-		w32.ShowWindow(w.hwnd, w32.SW_SHOW)
+		// Cancel timeout since we can show immediately
+		if w.visibilityTimeout != nil {
+			w.visibilityTimeout.Stop()
+			w.visibilityTimeout = nil
+		}
+	} else {
+		// Start timeout to show WebView if navigation is delayed (fallback for efficiency mode)
+		if w.visibilityTimeout == nil {
+			w.visibilityTimeout = time.AfterFunc(3*time.Second, func() {
+				// Show WebView even if navigation hasn't completed
+				// This prevents permanent invisibility in efficiency mode
+				if !w.webviewNavigationCompleted && w.chromium != nil {
+					w.chromium.Show()
+				}
+				w.visibilityTimeout = nil
+			})
+		}
 	}
 }
 
 func (w *windowsWebviewWindow) hide() {
 	w32.ShowWindow(w.hwnd, w32.SW_HIDE)
+	w.windowShown = false
+	w.showRequested = false
+
+	// Cancel any pending visibility timeout
+	if w.visibilityTimeout != nil {
+		w.visibilityTimeout.Stop()
+		w.visibilityTimeout = nil
+	}
 }
 
 // Get the screen for the current window
@@ -990,6 +1068,10 @@ func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
 		parent:             parent,
 		resizeBorderWidth:  int32(w32.GetSystemMetrics(w32.SM_CXSIZEFRAME)),
 		resizeBorderHeight: int32(w32.GetSystemMetrics(w32.SM_CYSIZEFRAME)),
+		// Initialize visibility tracking fields
+		showRequested:     false,
+		visibilityTimeout: nil,
+		windowShown:       false,
 	}
 
 	return result
@@ -1030,7 +1112,7 @@ func (w *windowsWebviewWindow) setBackdropType(backdropType BackdropType) {
 
 		w32.SetWindowCompositionAttribute(w.hwnd, &data)
 	} else {
-		w32.EnableTranslucency(w.hwnd, int32(backdropType))
+		w32.EnableTranslucency(w.hwnd, uint32(backdropType))
 	}
 }
 
@@ -1052,6 +1134,13 @@ func (w *windowsWebviewWindow) disableIcon() {
 	)
 }
 
+func (w *windowsWebviewWindow) processThemeColour(fn func(w32.HWND, uint32), value *uint32) {
+	if value == nil {
+		return
+	}
+	fn(w.hwnd, *value)
+}
+
 func (w *windowsWebviewWindow) isDisabled() bool {
 	style := uint32(w32.GetWindowLong(w.hwnd, w32.GWL_STYLE))
 	return style&w32.WS_DISABLED != 0
@@ -1069,30 +1158,105 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 
 	w32.SetTheme(w.hwnd, isDarkMode)
 
+	// Clear any existing theme first
+	if w.menubarTheme != nil && !isDarkMode {
+		// Reset menu to default Windows theme when switching to light mode
+		w.menubarTheme = nil
+		if w.menu != nil {
+			// Clear the menu background by setting it to default
+			var mi w32.MENUINFO
+			mi.CbSize = uint32(unsafe.Sizeof(mi))
+			mi.FMask = w32.MIIM_BACKGROUND | w32.MIIM_APPLYTOSUBMENUS
+			mi.HbrBack = 0 // NULL brush resets to default
+			w32.SetMenuInfo(w.menu.menu, &mi)
+		}
+	}
+
 	// Custom theme processing
 	customTheme := w.parent.options.Windows.CustomTheme
 	// Custom theme
-	if w32.SupportsCustomThemes() && customTheme != nil {
-		if w.isActive() {
-			if isDarkMode {
-				w32.SetTitleBarColour(w.hwnd, customTheme.DarkModeTitleBar)
-				w32.SetTitleTextColour(w.hwnd, customTheme.DarkModeTitleText)
-				w32.SetBorderColour(w.hwnd, customTheme.DarkModeBorder)
-			} else {
-				w32.SetTitleBarColour(w.hwnd, customTheme.LightModeTitleBar)
-				w32.SetTitleTextColour(w.hwnd, customTheme.LightModeTitleText)
-				w32.SetBorderColour(w.hwnd, customTheme.LightModeBorder)
-			}
+	if w32.SupportsCustomThemes() {
+		var userTheme *MenuBarTheme
+		if isDarkMode {
+			userTheme = customTheme.DarkModeMenuBar
 		} else {
+			userTheme = customTheme.LightModeMenuBar
+		}
+
+		if userTheme != nil {
+			modeStr := "light"
 			if isDarkMode {
-				w32.SetTitleBarColour(w.hwnd, customTheme.DarkModeTitleBarInactive)
-				w32.SetTitleTextColour(w.hwnd, customTheme.DarkModeTitleTextInactive)
-				w32.SetBorderColour(w.hwnd, customTheme.DarkModeBorderInactive)
-			} else {
-				w32.SetTitleBarColour(w.hwnd, customTheme.LightModeTitleBarInactive)
-				w32.SetTitleTextColour(w.hwnd, customTheme.LightModeTitleTextInactive)
-				w32.SetBorderColour(w.hwnd, customTheme.LightModeBorderInactive)
+				modeStr = "dark"
 			}
+			globalApplication.debug("Setting custom "+modeStr+" menubar theme", "window", w.parent.id)
+			w.menubarTheme = &w32.MenuBarTheme{
+				TitleBarBackground:     userTheme.Default.Background,
+				TitleBarText:           userTheme.Default.Text,
+				MenuBarBackground:      userTheme.Default.Background, // Use default background for menubar
+				MenuHoverBackground:    userTheme.Hover.Background,
+				MenuHoverText:          userTheme.Hover.Text,
+				MenuSelectedBackground: userTheme.Selected.Background,
+				MenuSelectedText:       userTheme.Selected.Text,
+			}
+			w.menubarTheme.Init()
+
+			// If menu is already set, update it
+			if w.menu != nil {
+				w.menubarTheme.SetMenuBackground(w.menu.menu)
+				w32.DrawMenuBar(w.hwnd)
+				w32.InvalidateRect(w.hwnd, nil, true)
+			}
+		} else if userTheme == nil && isDarkMode {
+			// Use default dark theme if no custom theme provided
+			globalApplication.debug("Setting default dark menubar theme", "window", w.parent.id)
+			w.menubarTheme = &w32.MenuBarTheme{
+				TitleBarBackground:     w32.RGBptr(45, 45, 45),    // Dark titlebar
+				TitleBarText:           w32.RGBptr(222, 222, 222), // Slightly muted white
+				MenuBarBackground:      w32.RGBptr(33, 33, 33),    // Standard dark mode (#212121)
+				MenuHoverBackground:    w32.RGBptr(48, 48, 48),    // Slightly lighter for hover (#303030)
+				MenuHoverText:          w32.RGBptr(222, 222, 222), // Slightly muted white
+				MenuSelectedBackground: w32.RGBptr(48, 48, 48),    // Same as hover
+				MenuSelectedText:       w32.RGBptr(222, 222, 222), // Slightly muted white
+			}
+			w.menubarTheme.Init()
+
+			// If menu is already set, update it
+			if w.menu != nil {
+				w.menubarTheme.SetMenuBackground(w.menu.menu)
+				w32.DrawMenuBar(w.hwnd)
+				w32.InvalidateRect(w.hwnd, nil, true)
+			}
+		} else if userTheme == nil && !isDarkMode && w.menu != nil {
+			// No custom theme for light mode - ensure menu is reset to default
+			globalApplication.debug("Resetting menu to default light theme", "window", w.parent.id)
+			var mi w32.MENUINFO
+			mi.CbSize = uint32(unsafe.Sizeof(mi))
+			mi.FMask = w32.MIIM_BACKGROUND | w32.MIIM_APPLYTOSUBMENUS
+			mi.HbrBack = 0 // NULL brush resets to default
+			w32.SetMenuInfo(w.menu.menu, &mi)
+			w32.DrawMenuBar(w.hwnd)
+			w32.InvalidateRect(w.hwnd, nil, true)
+		}
+		// Define a map for theme selection
+		themeMap := map[bool]map[bool]*WindowTheme{
+			true: { // Window is active
+				true:  customTheme.DarkModeActive,  // Dark mode
+				false: customTheme.LightModeActive, // Light mode
+			},
+			false: { // Window is inactive
+				true:  customTheme.DarkModeInactive,  // Dark mode
+				false: customTheme.LightModeInactive, // Light mode
+			},
+		}
+
+		// Select the appropriate theme
+		theme := themeMap[w.isActive()][isDarkMode]
+
+		// Apply theme colors
+		if theme != nil {
+			w.processThemeColour(w32.SetTitleBarColour, theme.TitleBarColour)
+			w.processThemeColour(w32.SetTitleTextColour, theme.TitleTextColour)
+			w.processThemeColour(w32.SetBorderColour, theme.BorderColour)
 		}
 	}
 }
@@ -1104,6 +1268,13 @@ func (w *windowsWebviewWindow) isActive() bool {
 var resizePending int32
 
 func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
+
+	// Use the original implementation that works perfectly for maximized
+	processed, code := w32.MenuBarWndProc(w.hwnd, msg, wparam, lparam, w.menubarTheme)
+	if processed {
+		return code
+	}
+
 	switch msg {
 	case w32.WM_ACTIVATE:
 		if int(wparam&0xffff) == w32.WA_INACTIVE {
@@ -1129,7 +1300,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 	case w32.WM_CLOSE:
 
-		if w.parent.unconditionallyClose == false {
+		if atomic.LoadUint32(&w.parent.unconditionallyClose) == 0 {
 			// We were called by `Close()` or pressing the close button on the window
 			w.parent.emit(events.Windows.WindowClosing)
 			return 0
@@ -1190,6 +1361,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_ERASEBKGND:
 		w.parent.emit(events.Windows.WindowBackgroundErase)
 		return 1 // Let WebView2 handle background erasing
+	// WM_UAHDRAWMENUITEM is handled by MenuBarWndProc at the top of this function
 	// Check for keypress
 	case w32.WM_SYSCOMMAND:
 		switch wparam {
@@ -1227,6 +1399,11 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		switch wparam {
 		case w32.SIZE_MAXIMIZED:
 			w.parent.emit(events.Windows.WindowMaximise)
+			// Force complete redraw when maximized
+			if w.menu != nil && w.menubarTheme != nil {
+				// Invalidate the entire window to force complete redraw
+				w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_FRAME|w32.RDW_INVALIDATE|w32.RDW_UPDATENOW)
+			}
 		case w32.SIZE_RESTORED:
 			if w.isMinimizing {
 				w.parent.emit(events.Windows.WindowUnMinimise)
@@ -1424,11 +1601,11 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 					}
 					w.setPadding(edge.Rect{})
 				} else {
-					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
+					// This is needed to work around the resize flickering in frameless mode with WindowDecorations
 					// See: https://stackoverflow.com/a/6558508
 					// The workaround from the SO answer suggests to reduce the bottom of the window by 1px.
-					// However this would result in loosing 1px of the WebView content.
-					// Increasing the bottom also worksaround the flickering but we would loose 1px of the WebView content
+					// However, this would result in losing 1px of the WebView content.
+					// Increasing the bottom also worksaround the flickering, but we would lose 1px of the WebView content
 					// therefore let's pad the content with 1px at the bottom.
 					rgrc.Bottom += 1
 					w.setPadding(edge.Rect{Bottom: 1})
@@ -1640,6 +1817,15 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	chromium.Embed(w.hwnd)
 
+	// Prevent efficiency mode by keeping WebView2 visible (fixes issue #2861)
+	// Microsoft recommendation: keep IsVisible = true to avoid efficiency mode
+	// See: https://github.com/MicrosoftEdge/WebView2Feedback/discussions/4021
+	// TODO: Re-enable when PutIsVisible method is available in go-webview2 package
+	// err := chromium.PutIsVisible(true)
+	// if err != nil {
+	//	globalApplication.error("Failed to set WebView2 visibility for efficiency mode prevention: %v", err)
+	// }
+
 	if chromium.HasCapability(edge.SwipeNavigation) {
 		err := chromium.PutIsSwipeNavigationEnabled(opts.EnableSwipeGestures)
 		if err != nil {
@@ -1837,6 +2023,12 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	}
 	w.webviewNavigationCompleted = true
 
+	// Cancel any pending visibility timeout since navigation completed
+	if w.visibilityTimeout != nil {
+		w.visibilityTimeout.Stop()
+		w.visibilityTimeout = nil
+	}
+
 	wasFocused := w.isFocused()
 	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
 	err := w.chromium.Hide()
@@ -1850,8 +2042,13 @@ func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, a
 	if wasFocused {
 		w.focus()
 	}
+
+	// Only call parent.Show() if not hidden and show was requested but window wasn't shown yet
+	// The new robust show() method handles window visibility independently
 	if !w.parent.options.Hidden {
-		w.parent.Show()
+		if w.showRequested && !w.windowShown {
+			w.parent.Show()
+		}
 		w.update()
 	}
 }

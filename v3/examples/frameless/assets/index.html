@@ -34,6 +34,10 @@
             closeButton.addEventListener('click', function(event) {
                 window.wails.Window.Close();
             });
+            let toggleFramelessButton = document.querySelector('#toggle-frameless');
+            toggleFramelessButton.addEventListener('click', function(event) {
+                window.wails.Window.ToggleFrameless();
+            });
         });
     </script>
 </head>
@@ -42,6 +46,7 @@
     <div class="quarter" style="background-color: lightblue; --wails-draggable: drag">Draggable</div>
     <div class="quarter" style="background-color: lightgreen;"><div>Not Draggable</div><button id="min">Minimise for 3s</button></div>
     <div class="quarter" style="background-color: lightpink;"><div>Not Draggable</div><button id="close">Close</button></div>
+    <div class="quarter" style="background-color: lightred;"><div>Not Draggable</div><button id="toggle-frameless">Toggle Frameless</button></div>
     <div class="quarter" style="background-color: lightyellow; --wails-draggable: drag">Draggable</div>
 </div>
 </body>

@@ -34,8 +34,8 @@ var defaultOptions = Options{
 }
 
 // Creates a new Badge Service.
-func New() *Service {
-	return &Service{
+func New() *BadgeService {
+	return &BadgeService{
 		impl: &windowsBadge{
 			options: defaultOptions,
 		},
@@ -43,8 +43,8 @@ func New() *Service {
 }
 
 // NewWithOptions creates a new badge service with the given options.
-func NewWithOptions(options Options) *Service {
-	return &Service{
+func NewWithOptions(options Options) *BadgeService {
+	return &BadgeService{
 		impl: &windowsBadge{
 			options: options,
 		},
@@ -81,7 +81,7 @@ func (w *windowsBadge) SetBadge(label string) error {
 		return nil
 	}
 
-	window := app.CurrentWindow()
+	window := app.Window.Current()
 	if window == nil {
 		return nil
 	}
@@ -121,7 +121,7 @@ func (w *windowsBadge) SetCustomBadge(label string, options Options) error {
 		return nil
 	}
 
-	window := app.CurrentWindow()
+	window := app.Window.Current()
 	if window == nil {
 		return nil
 	}
@@ -178,7 +178,7 @@ func (w *windowsBadge) RemoveBadge() error {
 		return nil
 	}
 
-	window := app.CurrentWindow()
+	window := app.Window.Current()
 	if window == nil {
 		return nil
 	}

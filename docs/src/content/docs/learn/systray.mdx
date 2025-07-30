@@ -15,7 +15,7 @@ To create a basic system tray icon:
 
 ```go
 app := application.New(options)
-systray := app.NewSystemTray()
+systray := app.SystemTray.New()
 systray.SetLabel("My App")
 systray.SetIcon(iconBytes)
 app.Run()
@@ -108,7 +108,7 @@ Here's a complete example:
 app := application.New()
 
 // Create system tray
-systray := app.NewSystemTray()
+systray := app.SystemTray.New()
 systray.SetLabel("My App")
 
 // Create a window
@@ -182,7 +182,7 @@ Explore these examples for more advanced usage:
 ### Core Methods
 | Method                                   | Description                                |
 |------------------------------------------|--------------------------------------------|
-| `NewSystemTray()`                        | Creates a new system tray instance         |
+| `app.SystemTray.New()`                   | Creates a new system tray instance         |
 | `Run()`                                  | Starts the system tray                     |
 | `SetLabel(label string)`                 | Sets the text label                        |
 | `SetTooltip(tooltip string)`             | Sets the tooltip text (Windows)            |
