@@ -1882,7 +1882,3 @@ func (w *linuxWebviewWindow) redo() {
 
 func (w *linuxWebviewWindow) delete() {
 }
-
-func (w *linuxWebviewWindow) snapAssist() {
-	// No-op on Linux
-}
