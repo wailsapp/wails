@@ -1438,3 +1438,4 @@ func (w *macosWebviewWindow) showMenuBar()    {}
 func (w *macosWebviewWindow) hideMenuBar()    {}
 func (w *macosWebviewWindow) toggleMenuBar()  {}
 func (w *macosWebviewWindow) setMenu(_ *Menu) {}
+func (w *macosWebviewWindow) snapAssist()     {} // No-op on macOS
