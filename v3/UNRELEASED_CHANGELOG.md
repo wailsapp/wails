@@ -17,7 +17,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-
+- Windows Snapassist feature by @leaanthony in [PR](https://github.dev/wailsapp/wails/pull/4463)
+- 
 ## Changed
 <!-- Changes in existing functionality -->
 
