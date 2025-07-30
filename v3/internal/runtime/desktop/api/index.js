@@ -15,8 +15,9 @@ import * as Screens from "./screens";
 import * as Dialogs from "./dialogs";
 import * as Events from "./events";
 import * as Window from "./window";
+import * as HTTP from "./http";
 
-export { Clipboard, Application, Screens, Dialogs, Events, Window };
+export { Clipboard, Application, Screens, Dialogs, Events, Window, HTTP };
 
 /**
  * Call a plugin method

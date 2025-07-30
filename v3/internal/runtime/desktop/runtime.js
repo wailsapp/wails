@@ -24,6 +24,7 @@ export const objectNames = {
     Screens: 7,
     System: 8,
     Browser: 9,
+    HTTP: 10,
 }
 export let clientId = nanoid();
 
@@ -67,7 +68,7 @@ export function newRuntimeCaller(object, windowName) {
     };
 }
 
-function runtimeCallWithID(objectID, method, windowName, args) {
+function runtimeCallWithID(objectID, method, windowName, args, body) {
     let url = new URL(runtimeURL);
     url.searchParams.append("object", objectID);
     url.searchParams.append("method", method);
@@ -79,6 +80,11 @@ function runtimeCallWithID(objectID, method, windowName, args) {
     }
     if (args) {
         url.searchParams.append("args", JSON.stringify(args));
+    }
+    if (body) {
+        fetchOptions.method = "POST";
+        fetchOptions.body = body;
+        fetchOptions.headers["Content-Type"] = "application/json";
     }
     fetchOptions.headers["x-wails-client-id"] = clientId;
     return new Promise((resolve, reject) => {
@@ -100,7 +106,7 @@ function runtimeCallWithID(objectID, method, windowName, args) {
 }
 
 export function newRuntimeCallerWithID(object, windowName) {
-    return function (method, args=null) {
-        return runtimeCallWithID(object, method, windowName, args);
+    return function (method, args=null, body=null) {
+        return runtimeCallWithID(object, method, windowName, args, body);
     };
 }

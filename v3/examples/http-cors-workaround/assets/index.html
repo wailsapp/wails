@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP CORS Workaround Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+        #loading {
+            display: none;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>HTTP CORS Workaround Example</h1>
+    
+    <div class="section">
+        <h2>Test HTTP Requests</h2>
+        <p>Click the buttons below to test various HTTP methods using the Wails HTTP API:</p>
+        
+        <button onclick="testGet()">Test GET Request</button>
+        <button onclick="testPost()">Test POST Request</button>
+        <button onclick="testWithHeaders()">Test with Custom Headers</button>
+        <button onclick="testError()">Test Error Handling</button>
+        <button onclick="testTimeout()">Test Timeout</button>
+        
+        <div id="loading">Loading...</div>
+    </div>
+    
+    <div class="section">
+        <h2>Response:</h2>
+        <pre id="response">Click a button to make a request</pre>
+    </div>
+
+    <script>
+        // Wait for Wails to be ready
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('Wails HTTP API Example Ready');
+        });
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showResponse(data, isError = false) {
+            const responseEl = document.getElementById('response');
+            responseEl.textContent = JSON.stringify(data, null, 2);
+            responseEl.className = isError ? 'error' : 'success';
+        }
+
+        async function testGet() {
+            showLoading(true);
+            try {
+                const response = await wails.HTTP.Get('https://jsonplaceholder.typicode.com/posts/1');
+                if (response.error) {
+                    showResponse({ error: response.error }, true);
+                } else {
+                    showResponse({
+                        statusCode: response.statusCode,
+                        data: JSON.parse(response.body)
+                    });
+                }
+            } catch (error) {
+                showResponse({ error: error.message }, true);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function testPost() {
+            showLoading(true);
+            try {
+                const postData = {
+                    title: 'Test Post from Wails',
+                    body: 'This post was made using the Wails HTTP API',
+                    userId: 1
+                };
+                
+                const response = await wails.HTTP.Post('https://jsonplaceholder.typicode.com/posts', postData);
+                if (response.error) {
+                    showResponse({ error: response.error }, true);
+                } else {
+                    showResponse({
+                        statusCode: response.statusCode,
+                        data: JSON.parse(response.body)
+                    });
+                }
+            } catch (error) {
+                showResponse({ error: error.message }, true);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function testWithHeaders() {
+            showLoading(true);
+            try {
+                const response = await wails.HTTP.Fetch({
+                    url: 'https://httpbin.org/headers',
+                    method: 'GET',
+                    headers: {
+                        'X-Custom-Header': 'Wails-HTTP-API',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.error) {
+                    showResponse({ error: response.error }, true);
+                } else {
+                    showResponse({
+                        statusCode: response.statusCode,
+                        data: JSON.parse(response.body)
+                    });
+                }
+            } catch (error) {
+                showResponse({ error: error.message }, true);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function testError() {
+            showLoading(true);
+            try {
+                const response = await wails.HTTP.Get('https://httpstat.us/500');
+                showResponse({
+                    statusCode: response.statusCode,
+                    body: response.body,
+                    error: response.error
+                }, response.statusCode >= 400);
+            } catch (error) {
+                showResponse({ error: error.message }, true);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function testTimeout() {
+            showLoading(true);
+            try {
+                const response = await wails.HTTP.Fetch({
+                    url: 'https://httpstat.us/200?sleep=5000',
+                    method: 'GET',
+                    timeout: 2 // 2 second timeout
+                });
+                
+                if (response.error) {
+                    showResponse({ error: response.error }, true);
+                } else {
+                    showResponse({
+                        statusCode: response.statusCode,
+                        body: response.body
+                    });
+                }
+            } catch (error) {
+                showResponse({ error: error.message }, true);
+            } finally {
+                showLoading(false);
+            }
+        }
+    </script>
+</body>
+</html>
