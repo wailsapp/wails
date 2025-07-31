@@ -23,7 +23,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fixed notification parsing on Windows @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4450)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
