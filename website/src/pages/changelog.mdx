@@ -14,6 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Configure Vite timeout by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/4374)
+- Added `ContentProtection` option to allow hiding the application window from screen sharing software [#4241](https://github.com/wailsapp/wails/pull/4241) by [@Taiterbase](https://github.com/Taiterbase)
+- Added `build:tags` to project specification for automatically adding compilation tags by @symball in [PR](https://github.com/wailsapp/wails/pull/4439)
+
+### Fixed
+- Fixed C compilation error in onWayland on Linux due to declaration after label [#4446](https://github.com/wailsapp/wails/pull/4446) by [@jaesung9507](https://github.com/jaesung9507)
+- Use computed style when adding 'wails-drop-target-active' [PR](https://github.com/wailsapp/wails/pull/4420) by [@riannucci](https://github.com/riannucci)
+
+## v2.10.2 - 2025-07-06
+
 ### Fixed
 - Fixed Window size issues on Wayland [PR](https://github.com/wailsapp/wails/pull/4047) by [@lyimmi](https://github.com/lyimmi)
 - Fixed SaveFileDialog cancellation result [PR](https://github.com/wailsapp/wails/pull/4253) by [@FrancescoLuzzi](https://github.com/FrancescoLuzzi)
@@ -30,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added "Branding" section to `wails doctor` to correctly identify Windows 11 [#3891](https://github.com/wailsapp/wails/pull/3891) by [@ronen25](https://github.com/ronen25)
 - Added `-skipembedcreate` flag to build and dev command to improve compile and recompile speed [#4143](https://github.com/wailsapp/wails/pull/4143) by @josStorer
 - Added `DisablePanicRecovery` option to allow handle panics manually [#4136](https://github.com/wailsapp/wails/pull/4136) by [@APshenkin](https://github.com/APshenkin)
+- Added community template wails-htmx-tailwind-daisyui-template. Added by [@ltcovalt](https://github.com/ltcovalt) in [PR](https://github.com/wailsapp/wails/pull/4394)
 
 ### Fixed
 - Fixed build fails when cross compiling on Linux for Windows [#4262](https://github.com/wailsapp/wails/issues/4262) by [@rynsf](https://github.com/rynsf)
