@@ -13,6 +13,9 @@ type WindowEventContext struct {
 }
 
 func (c WindowEventContext) DroppedFiles() []string {
+	if c.data == nil {
+		c.data = make(map[string]any)
+	}
 	files, ok := c.data[droppedFiles]
 	if !ok {
 		return nil
@@ -32,11 +35,17 @@ func (c WindowEventContext) setDroppedFiles(files []string) {
 }
 
 func (c WindowEventContext) setCoordinates(x, y int) {
+	if c.data == nil {
+		c.data = make(map[string]any)
+	}
 	c.data["x"] = x
 	c.data["y"] = y
 }
 
 func (c WindowEventContext) setDropZoneDetails(details *DropZoneDetails) {
+	if c.data == nil {
+		c.data = make(map[string]any)
+	}
 	if details == nil {
 		c.data[dropZoneDetailsKey] = nil
 		return
@@ -46,6 +55,9 @@ func (c WindowEventContext) setDropZoneDetails(details *DropZoneDetails) {
 
 // DropZoneDetails retrieves the detailed drop zone information, if available.
 func (c WindowEventContext) DropZoneDetails() *DropZoneDetails {
+	if c.data == nil {
+		c.data = make(map[string]any)
+	}
 	details, ok := c.data[dropZoneDetailsKey]
 	if !ok {
 		return nil
