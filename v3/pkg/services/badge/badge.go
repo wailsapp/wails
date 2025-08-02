@@ -17,7 +17,7 @@ type platformBadge interface {
 	RemoveBadge() error
 }
 
-// Service represents the notifications service
+// Service represents the badge service
 type BadgeService struct {
 	impl platformBadge
 }
