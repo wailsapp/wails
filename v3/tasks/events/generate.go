@@ -188,7 +188,7 @@ func main() {
 			linuxEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			linuxEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			linuxTSEvents.WriteString("\t\t" + event + ": \"linux:" + event + "\",\n")
-			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + event + "\",\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"linux:" + event + "\",\n")
 			maxLinuxEvents = id
 			linuxCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
 		case "mac":
@@ -203,7 +203,7 @@ func main() {
 			macEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			macTSEvents.WriteString("\t\t" + event + ": \"mac:" + event + "\",\n")
 			macCHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
-			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + event + "\",\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"mac:" + event + "\",\n")
 			maxMacEvents = id
 			if ignoreEvent {
 				continue
@@ -250,7 +250,7 @@ func main() {
 			commonEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			commonEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			commonTSEvents.WriteString("\t\t" + event + ": \"common:" + event + "\",\n")
-			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + event + "\",\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"common:" + event + "\",\n")
 		case "windows":
 			eventType := "ApplicationEventType"
 			if strings.HasPrefix(event, "Window") {
@@ -262,7 +262,7 @@ func main() {
 			windowsEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			windowsEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			windowsTSEvents.WriteString("\t\t" + event + ": \"windows:" + event + "\",\n")
-			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"" + event + "\",\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"windows:" + event + "\",\n")
 		}
 	}
 

@@ -24,6 +24,7 @@ common:WindowZoom
 common:WindowZoomIn
 common:WindowZoomOut
 common:WindowZoomReset
+common:WindowDropZoneFilesDropped
 linux:ApplicationStartup
 linux:SystemThemeChanged
 linux:WindowDeleteEvent

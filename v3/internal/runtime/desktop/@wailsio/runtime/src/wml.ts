@@ -21,7 +21,7 @@ import Window from "./window.js";
  * @param [data=null] - - Optional data to send along with the event.
  */
 function sendEvent(eventName: string, data: any = null): void {
-    void Emit(eventName, data);
+    Emit(eventName, data);
 }
 
 /**
