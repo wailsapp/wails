@@ -23,7 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fixes issue where onClick didn't work for menu items initially set as disabled by @leaanthony. Thanks to @IanVS for the initial investigation.
+- Fixes issue where onClick didn't work for menu items initially set as disabled by @leaanthony in [PR #4469](https://github.com/wailsapp/wails/pull/4469). Thanks to @IanVS for the initial investigation.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
