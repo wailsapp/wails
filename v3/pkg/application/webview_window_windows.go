@@ -1798,6 +1798,10 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
+	if len(opts.AdditionalLaunchArgs) > 0 {
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, opts.AdditionalLaunchArgs...)
+	}
+
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
 	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
 
@@ -2280,4 +2284,16 @@ func (w *windowsWebviewWindow) hideMenuBar() {
 	if w.menu != nil {
 		w32.SetMenu(w.hwnd, 0)
 	}
+}
+
+func (w *windowsWebviewWindow) snapAssist() {
+	// Simulate Win+Z key combination to trigger Snap Assist
+	// Press Windows key
+	w32.KeybdEvent(byte(w32.VK_LWIN), 0, 0, 0)
+	// Press Z key
+	w32.KeybdEvent(byte('Z'), 0, 0, 0)
+	// Release Z key
+	w32.KeybdEvent(byte('Z'), 0, w32.KEYEVENTF_KEYUP, 0)
+	// Release Windows key
+	w32.KeybdEvent(byte(w32.VK_LWIN), 0, w32.KEYEVENTF_KEYUP, 0)
 }

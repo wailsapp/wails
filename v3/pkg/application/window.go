@@ -86,4 +86,5 @@ type Window interface {
 	ZoomOut()
 	ZoomReset() Window
 	SetMenu(menu *Menu)
+	SnapAssist()
 }
