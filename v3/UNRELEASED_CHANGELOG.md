@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Added `AdditionalLaunchArgs` to `WindowsWindow` options to allow for additional command line arguments to be passed to the WebView2 browser. in [PR](https://github.com/wailsapp/wails/pull/4467)
 
 ## Changed
 <!-- Changes in existing functionality -->
