@@ -46,7 +46,12 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	ctx = context.WithValue(ctx, "debug", true)
 	ctx = context.WithValue(ctx, "devtoolsEnabled", true)
 
-	// Set up logger
+	// Set up logger if the appoptions.LogLevel is an invalid value, set it to the default log level
+	appoptions.LogLevel, err = pkglogger.StringToLogLevel(appoptions.LogLevel.String())
+	if err != nil {
+		return nil, err
+	}
+
 	myLogger := logger.New(appoptions.Logger)
 	myLogger.SetLogLevel(appoptions.LogLevel)
 
@@ -74,9 +79,11 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	}
 
 	loglevel := os.Getenv("loglevel")
-	if loglevel == "" {
-		loglevelFlag = devFlags.String("loglevel", appoptions.LogLevel.String(), "Loglevel to use - Trace, Debug, Info, Warning, Error")
+	appLogLevel := appoptions.LogLevel.String()
+	if loglevel != "" {
+		appLogLevel = loglevel
 	}
+	loglevelFlag = devFlags.String("loglevel", appLogLevel, "Loglevel to use - Trace, Debug, Info, Warning, Error")
 
 	// If we weren't given the assetdir in the environment variables
 	if assetdir == "" {
@@ -91,15 +98,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		if frontendDevServerURLFlag != nil {
 			frontendDevServerURL = *frontendDevServerURLFlag
 		}
-		// Only override LogLevel if the flag was explicitly set
-		if loglevelFlag != nil && devFlags.Lookup("loglevel").Value.String() != appoptions.LogLevel.String() {
-			loggerLevel, err := pkglogger.StringToLogLevel(*loglevelFlag)
-			if err != nil {
-				return nil, err
-			}
-			if loggerLevel != appoptions.LogLevel {
-				myLogger.SetLogLevel(loggerLevel)
-			}
+		if loglevelFlag != nil {
+			loglevel = *loglevelFlag
 		}
 	}
 
@@ -176,6 +176,17 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		ctx = context.WithValue(ctx, "devserver", devServer)
 	}
 
+	if loglevel != "" {
+		level, err := pkglogger.StringToLogLevel(loglevel)
+		if err != nil {
+			return nil, err
+		}
+		// Only set the log level if it's different from the appoptions.LogLevel
+		if level != appoptions.LogLevel {
+			myLogger.SetLogLevel(level)
+		}
+	}
+
 	// Attach logger to context
 	ctx = context.WithValue(ctx, "logger", myLogger)
 	ctx = context.WithValue(ctx, "buildtype", "dev")
@@ -212,7 +223,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	eventHandler := runtime.NewEvents(myLogger)
 	ctx = context.WithValue(ctx, "events", eventHandler)
-	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler, appoptions.ErrorFormatter)
+	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler, appoptions.ErrorFormatter, appoptions.DisablePanicRecovery)
 
 	// Create the frontends and register to event handler
 	desktopFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)

@@ -10,6 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "sponsorkit": "^0.16.2"
+    "sponsorkit": "^16.5.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   }
 }

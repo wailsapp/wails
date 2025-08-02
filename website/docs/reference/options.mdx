@@ -73,8 +73,9 @@ func main() {
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
+            ContentProtection:                 false,
             BackdropType:                      windows.Mica,
-            DisablePinchZoom:               false,
+            DisablePinchZoom:                  false,
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
@@ -117,6 +118,7 @@ func main() {
 			Appearance:           mac.NSAppearanceNameDarkAqua,
             WebviewIsTransparent: true,
             WindowIsTranslucent:  false,
+            ContentProtection:    false,
             About: &mac.AboutInfo{
                 Title:   "My Application",
                 Message: "© 2021 Me",
@@ -487,6 +489,13 @@ services of Apple and Microsoft.
 Name: EnableFraudulentWebsiteDetection<br/>
 Type: `bool`
 
+### DisablePanicRecovery
+
+DisablePanicRecovery disables the automatic recovery from panics in message processing. By default, Wails will recover from panics in message processing and log the error. If you want to handle panics yourself, set this to `true`.
+
+Name: DisablePanicRecovery<br/>
+Type: `bool`
+
 ### Bind
 
 A slice of struct instances defining methods that need to be bound to the frontend.
@@ -604,6 +613,17 @@ newer translucency types that are much faster. By default, the type of transluce
 by Windows. To configure this, use the [BackdropType](#BackdropType) option.
 
 Name: WindowIsTranslucent<br/>
+Type: `bool`
+
+#### ContentProtection
+
+Prevents window contents from being captured by other applications.
+
+On Windows it calls SetWindowDisplayAffinity with `WDA_EXCLUDEFROMCAPTURE`. 
+For Windows 10 version 2004 and later the window will be completely removed from capture. 
+Older Windows versions will call SetWindowDisplayAffinity with `WDA_MONITOR`, capturing a black window.
+
+Name: ContentProtection<br/>
 Type: `bool`
 
 #### BackdropType
@@ -914,6 +934,15 @@ Setting this to `true` will make the window background translucent. Often combin
 with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applications.
 
 Name: WindowIsTranslucent<br/>
+Type: `bool`
+
+#### ContentProtection
+
+Prevents window contents from being captured by other applications.
+
+On MacOS it sets the NSWindow's sharingType to NSWindowSharingNone, removing the window from capture entirely. 
+
+Name: ContentProtection<br/>
 Type: `bool`
 
 #### OnFileOpen
