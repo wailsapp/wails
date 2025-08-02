@@ -163,16 +163,19 @@ export function OffAll(): void {
  * @param data - the data to be sent with the event.
  */
 export function Emit(name: string, data?: any): Promise<void> {
-    let event: WailsEvent;
+    let eventName: string;
+    let eventData: any;
 
     if (typeof name === 'object' && name !== null && 'name' in name && 'data' in name) {
         // If name is an object with a name property, use it directly
-        event = new WailsEvent(name['name'], name['data']);
+        eventName = name['name'];
+        eventData = name['data'];
     } else {
         // Otherwise use the standard parameters
-        event = new WailsEvent(name as string, data);
+        eventName = name as string;
+        eventData = data;
     }
 
-    return call(EmitMethod, event);
+    return call(EmitMethod, { name: eventName, data: eventData });
 }
 

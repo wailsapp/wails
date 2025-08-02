@@ -1023,6 +1023,16 @@ func (w *WebviewWindow) ToggleMaximise() {
 	})
 }
 
+// ToggleFrameless toggles the window between frameless and normal
+func (w *WebviewWindow) ToggleFrameless() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	InvokeSync(func() {
+		w.SetFrameless(!w.options.Frameless)
+	})
+}
+
 func (w *WebviewWindow) OpenDevTools() {
 	if w.impl == nil || w.isDestroyed() {
 		return

@@ -62,6 +62,11 @@ var (
 	procGetPixelFormat            = modgdi32.NewProc("GetPixelFormat")
 	procSetPixelFormat            = modgdi32.NewProc("SetPixelFormat")
 	procSwapBuffers               = modgdi32.NewProc("SwapBuffers")
+	procSaveDC                    = modgdi32.NewProc("SaveDC")
+	procRestoreDC                 = modgdi32.NewProc("RestoreDC")
+	procSelectClipRgn             = modgdi32.NewProc("SelectClipRgn")
+	procExcludeClipRect           = modgdi32.NewProc("ExcludeClipRect")
+	procExtTextOut                = modgdi32.NewProc("ExtTextOutW")
 )
 
 func GetDeviceCaps(hdc HDC, index int) int {
@@ -523,4 +528,54 @@ func SetPixelFormat(hdc HDC, iPixelFormat int, pfd *PIXELFORMATDESCRIPTOR) bool 
 func SwapBuffers(hdc HDC) bool {
 	ret, _, _ := procSwapBuffers.Call(uintptr(hdc))
 	return ret == TRUE
+}
+
+func SaveDC(hdc HDC) int {
+	ret, _, _ := procSaveDC.Call(uintptr(hdc))
+	return int(ret)
+}
+
+func RestoreDC(hdc HDC, nSavedDC int) bool {
+	ret, _, _ := procRestoreDC.Call(
+		uintptr(hdc),
+		uintptr(nSavedDC))
+	return ret != 0
+}
+
+func SelectClipRgn(hdc HDC, hrgn HRGN) int {
+	ret, _, _ := procSelectClipRgn.Call(
+		uintptr(hdc),
+		uintptr(hrgn))
+	return int(ret)
+}
+
+func ExcludeClipRect(hdc HDC, left, top, right, bottom int32) int {
+	ret, _, _ := procExcludeClipRect.Call(
+		uintptr(hdc),
+		uintptr(left),
+		uintptr(top),
+		uintptr(right),
+		uintptr(bottom))
+	return int(ret)
+}
+
+func ExtTextOut(hdc HDC, x, y int32, fuOptions uint32, lprc *RECT, lpString *uint16, cbCount uint32, lpDx *int) bool {
+	var rectPtr uintptr
+	if lprc != nil {
+		rectPtr = uintptr(unsafe.Pointer(lprc))
+	}
+	var dxPtr uintptr
+	if lpDx != nil {
+		dxPtr = uintptr(unsafe.Pointer(lpDx))
+	}
+	ret, _, _ := procExtTextOut.Call(
+		uintptr(hdc),
+		uintptr(x),
+		uintptr(y),
+		uintptr(fuOptions),
+		rectPtr,
+		uintptr(unsafe.Pointer(lpString)),
+		uintptr(cbCount),
+		dxPtr)
+	return ret != 0
 }

@@ -1,5 +1,6 @@
 common:ApplicationOpenedWithFile
 common:ApplicationStarted
+common:ApplicationLaunchedWithUrl
 common:ThemeChanged
 common:WindowClosing
 common:WindowDidMove
@@ -12,6 +13,7 @@ common:WindowHide
 common:WindowLostFocus
 common:WindowMaximise
 common:WindowMinimise
+common:WindowToggleFrameless
 common:WindowRestore
 common:WindowRuntimeReady
 common:WindowShow
