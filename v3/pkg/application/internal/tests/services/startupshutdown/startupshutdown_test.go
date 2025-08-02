@@ -54,7 +54,7 @@ func TestServiceStartupShutdown(t *testing.T) {
 
 	app.RegisterService(services[5])
 
-	app.OnApplicationEvent(events.Common.ApplicationStarted, func(*application.ApplicationEvent) {
+	app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(*application.ApplicationEvent) {
 		if count := seq.Load(); count != int64(len(services)) {
 			t.Errorf("Wrong startup call count: wanted %d, got %d", len(services), count)
 		}

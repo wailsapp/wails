@@ -6,7 +6,7 @@ func NewOpenDevToolsMenuItem() *MenuItem {
 	return NewMenuItem("Open Developer Tools").
 		SetAccelerator("Alt+Command+I").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.CurrentWindow()
+			currentWindow := globalApplication.Window.Current()
 			if currentWindow != nil {
 				currentWindow.OpenDevTools()
 			}

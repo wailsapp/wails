@@ -16,8 +16,11 @@ import "C"
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"sync"
+
+	"path/filepath"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -27,7 +30,8 @@ import (
 func init() {
 	// FIXME: This should be handled appropriately in the individual files most likely.
 	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
-	if os.Getenv("GDK_BACKEND") == "" && (os.Getenv("XDG_SESSION_TYPE") == "" || os.Getenv("XDG_SESSION_TYPE") == "unspecified" || os.Getenv("XDG_SESSION_TYPE") == "x11") {
+	if os.Getenv("GDK_BACKEND") == "" &&
+		(os.Getenv("XDG_SESSION_TYPE") == "" || os.Getenv("XDG_SESSION_TYPE") == "unspecified" || os.Getenv("XDG_SESSION_TYPE") == "x11") {
 		_ = os.Setenv("GDK_BACKEND", "x11")
 	}
 }
@@ -88,13 +92,46 @@ func (a *linuxApp) setApplicationMenu(menu *Menu) {
 	if menu == nil {
 		// Create a default menu
 		menu = DefaultApplicationMenu()
-		globalApplication.ApplicationMenu = menu
+		globalApplication.applicationMenu = menu
 	}
 }
 
 func (a *linuxApp) run() error {
 
-	a.parent.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
+	if len(os.Args) == 2 { // Case: program + 1 argument
+		arg1 := os.Args[1]
+		// Check if the argument is likely a URL from a custom protocol invocation
+		if strings.Contains(arg1, "://") {
+			a.parent.info("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
+			eventContext := newApplicationEventContext()
+			eventContext.setURL(arg1)
+			applicationEvents <- &ApplicationEvent{
+				Id:  uint(events.Common.ApplicationLaunchedWithUrl),
+				ctx: eventContext,
+			}
+		} else {
+			// Check if the argument matches any file associations
+			if a.parent.options.FileAssociations != nil {
+				ext := filepath.Ext(arg1)
+				if slices.Contains(a.parent.options.FileAssociations, ext) {
+					a.parent.info("File opened via file association", "file", arg1, "extension", ext)
+					eventContext := newApplicationEventContext()
+					eventContext.setOpenedWithFile(arg1)
+					applicationEvents <- &ApplicationEvent{
+						Id:  uint(events.Common.ApplicationOpenedWithFile),
+						ctx: eventContext,
+					}
+					return nil
+				}
+			}
+			a.parent.info("Application launched with single argument (not a URL), potential file open?", "arg", arg1)
+		}
+	} else if len(os.Args) > 2 {
+		// Log if multiple arguments are passed
+		a.parent.info("Application launched with multiple arguments", "args", os.Args[1:])
+	}
+
+	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
 		// TODO: What should happen here?
 	})
 	a.setupCommonEvents()
@@ -136,12 +173,21 @@ func (a *linuxApp) isDarkMode() bool {
 	return strings.Contains(a.theme, "dark")
 }
 
+func (a *linuxApp) getAccentColor() string {
+	// Linux doesn't have a unified system accent color API
+	// Return a default blue color
+	return "rgb(0,122,255)"
+}
+
 func (a *linuxApp) monitorThemeChanges() {
 	go func() {
 		defer handlePanic()
 		conn, err := dbus.ConnectSessionBus()
 		if err != nil {
-			a.parent.info("[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:", err)
+			a.parent.info(
+				"[WARNING] Failed to connect to session bus; monitoring for theme changes will not function:",
+				err,
+			)
 			return
 		}
 		defer conn.Close()

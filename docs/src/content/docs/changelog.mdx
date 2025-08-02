@@ -25,14 +25,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Breaking Changes
+## v3.0.0-alpha.17 - 2025-07-31
 
+## Fixed
+- Fixed notification parsing on Windows @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4450)
+
+## v3.0.0-alpha.16 - 2025-07-25
+
+## Added
+- Add Windows `getAccentColor` implementation by [@almas-x](https://github.com/almas-x) in [PR](https://github.com/wailsapp/wails/pull/4427)
+
+## v3.0.0-alpha.15 - 2025-07-25
+
+## Added
+- Add Windows `getAccentColor` implementation by [@almas-x](https://github.com/almas-x) in [PR](https://github.com/wailsapp/wails/pull/4427)
+
+## v3.0.0-alpha.14 - 2025-07-25
+
+## Added
+- Windows dark theme menus + menubar. By @leaanthony in [a29b4f0861b1d0a700e9eb213c6f1076ec40efd5](https://github.com/wailsapp/wails/commit/a29b4f0861b1d0a700e9eb213c6f1076ec40efd5)
+- Rename built-in services for clearer JS/TS bindings by @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4405)
+
+## v3.0.0-alpha.12 - 2025-07-15
+
+### Added
+- `app.Env.GetAccentColor` to get the accent color of a user's system. Works on MacOS. by [@etesam913](https://github.com/etesam913)
+- Add `window.ToggleFrameless()` api by [@atterpac](https://github.com/atterpac) in [#4137](https://github.com/wailsapp/wails/pull/4137)
+
+### Fixed
+- Fixed doctor command to check for Windows SDK dependencies by [@kodumulo](https://github.com/kodumulo) in [#4390](https://github.com/wailsapp/wails/issues/4390)
+
+
+## v3.0.0-alpha.11 - 2025-07-12
+
+## Added
+  - Add distribution-specific build dependencies for Linux by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/4345)
+  - Added bindings guide by @atterpac in [PR](https://github.com/wailsapp/wails/pull/4404)
+
+## v3.0.0-alpha.10 - 2025-07-06
+
+### Breaking Changes
+- **Manager API Refactoring**: Reorganized application API from flat structure to organized managers for better code organization and discoverability by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
+  - `app.NewWebviewWindow()` → `app.Window.New()`
+  - `app.CurrentWindow()` → `app.Window.Current()`
+  - `app.GetAllWindows()` → `app.Window.GetAll()`
+  - `app.WindowByName()` → `app.Window.GetByName()`
+  - `app.EmitEvent()` → `app.Event.Emit()`
+  - `app.OnApplicationEvent()` → `app.Event.OnApplicationEvent()`
+  - `app.OnWindowEvent()` → `app.Event.OnWindowEvent()`
+  - `app.SetApplicationMenu()` → `app.Menu.SetApplicationMenu()`
+  - `app.OpenFileDialog()` → `app.Dialog.OpenFile()`
+  - `app.SaveFileDialog()` → `app.Dialog.SaveFile()`
+  - `app.MessageDialog()` → `app.Dialog.Message()`
+  - `app.InfoDialog()` → `app.Dialog.Info()`
+  - `app.WarningDialog()` → `app.Dialog.Warning()`
+  - `app.ErrorDialog()` → `app.Dialog.Error()`
+  - `app.QuestionDialog()` → `app.Dialog.Question()`
+  - `app.NewSystemTray()` → `app.SystemTray.New()`
+  - `app.GetSystemTray()` → `app.SystemTray.Get()`
+  - `app.ShowContextMenu()` → `app.ContextMenu.Show()`
+  - `app.RegisterKeybinding()` → `app.KeyBinding.Register()`
+  - `app.UnregisterKeybinding()` → `app.KeyBinding.Unregister()`
+  - `app.GetPrimaryScreen()` → `app.Screen.GetPrimary()`
+  - `app.GetAllScreens()` → `app.Screen.GetAll()`
+  - `app.BrowserOpenURL()` → `app.Browser.OpenURL()`
+  - `app.Environment()` → `app.Env.GetAll()`
+  - `app.ClipboardGetText()` → `app.Clipboard.Text()`
+  - `app.ClipboardSetText()` → `app.Clipboard.SetText()`
 - Renamed Service methods: `Name` -> `ServiceName`, `OnStartup` -> `ServiceStartup`, `OnShutdown` -> `ServiceShutdown` by [@leaanthony](https://github.com/leaanthony)
 - Moved `Path` and `Paths` methods to `application` package by [@leaanthony](https://github.com/leaanthony)
 - The application menu is now macOS only by [@leaanthony](https://github.com/leaanthony)
 
 ### Added
 
+- **Organized Testing Infrastructure**: Moved Docker test files to dedicated `test/docker/` directory with optimized images and enhanced build reliability by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
+- **Improved Resource Management Patterns**: Added proper event handler cleanup and context-aware goroutine management in examples by [@leaanthony](https://github.com/leaanthony) in [#4359](https://github.com/wailsapp/wails/pull/4359)
 - Support aarch64 AppImage builds by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
 - Add diagnostics section to `wails doctor` by [@leaanthony](https://github.com/leaanthony)
 - Add window to context when calling a service method by [@leaanthony](https://github.com/leaanthony)
@@ -82,8 +149,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -  Add File Association support for mac by [@wimaha](https://github.com/wimaha) in [#4177](https://github.com/wailsapp/wails/pull/4177)
 - Add `wails3 tool version` for semantic version bumping by [@leaanthony](https://github.com/leaanthony)
 - Add badging support for macOS and Windows by [@popaprozac](https://github.com/popaprozac) in [#](https://github.com/wailsapp/wails/pull/4234)
+
 ### Fixed
 
+- Fixed nil pointer dereference in processURLRequest for Mac by [@etesam913](https://github.com/etesam913) in [#4366](https://github.com/wailsapp/wails/pull/4366)
+- Fixed a linux bug preventing filtered dialogs by [@bh90210](https://github.com/bh90210) in [#4287](https://github.com/wailsapp/wails/pull/4287)
 - Fixed Windows+Linux Edit Menu issues by [@leaanthony](https://github.com/leaanthony) in [#3f78a3a](https://github.com/wailsapp/wails/commit/3f78a3a8ce7837e8b32242c8edbbed431c68c062)
 - Updated the minimum system version in macOS .plist files from 10.13.0 to 10.15.0 by [@AkshayKalose](https://github.com/AkshayKalose) in [#3981](https://github.com/wailsapp/wails/pull/3981)
 - Window ID skip issue by [@leaanthony](https://github.com/leaanthony)
@@ -127,6 +197,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed system trays not showing after taskbar restarts by [@leaanthony](https://github.com/leaanthony) based on work by @kron.
 - Fixed fallbackResponseWriter not implementing Flush() in [#4245](https://github.com/wailsapp/wails/pull/4245)
 - Fixed fallbackResponseWriter not implementing Flush() by [@superDingda] in [#4236](https://github.com/wailsapp/wails/issues/4236)
+- Fixed macOS window close with pending async Go-bound function call crashes by [@joshhardy](https://github.com/joshhardy) in [#4354](https://github.com/wailsapp/wails/pull/4354)
+- Fixed Windows Efficiency mode startup race condition by [@leaanthony](https://github.com/leaanthony)
+- Fixed Windows icon handle cleanup by [@leaanthony](https://github.com/leaanthony).
+- Fixed `OpenFileManager` on Windows by [@PPTGamer](https://github.com/PPTGamer) in [#4375](https://github.com/wailsapp/wails/pull/4375).
 
 ### Changed
 
@@ -422,9 +496,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🐧 add task `run:linux` by
   [@marcus-crane](https://github.com/marcus-crane) in
   [#3146](https://github.com/wailsapp/wails/pull/3146)
-- Export `SetIcon` method by @almas1992 in
+- Export `SetIcon` method by [@almas-x](https://github.com/almas-x) in
   [PR](https://github.com/wailsapp/wails/pull/3147)
-- Improve `OnShutdown` by @almas1992 in
+- Improve `OnShutdown` by [@almas-x](https://github.com/almas-x) in
   [PR](https://github.com/wailsapp/wails/pull/3189)
 - Restore `ToggleMaximise` method in `Window` interface by
   [@fbbdev](https://github.com/fbbdev) in
@@ -495,7 +569,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug for linux in doctor in the event user doesn't have proper drivers
   installed. Added by [@pylotlight](https://github.com/pylotlight) in
   [PR](https://github.com/wailsapp/wails/pull/3032)
-- Fix dpi scaling on start up (windows). Changed by @almas1992 in
+- Fix dpi scaling on start up (windows). Changed by [@almas-x](https://github.com/almas-x) in
   [PR](https://github.com/wailsapp/wails/pull/3145)
 - Fix replace line in `go.mod` to use relative paths. Fixes Windows paths with
   spaces - @leaanthony.

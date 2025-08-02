@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MsixPackagingToolTemplate
+    xmlns="http://schemas.microsoft.com/msix/packaging/msixpackagingtool/template/2022">
+    <Settings
+        AllowTelemetry="false"
+        ApplyACLsToPackageFiles="true"
+        GenerateCommandLineFile="true"
+        AllowPromptForPassword="false">
+    </Settings>
+    <Installer
+        Path="{{.ExecutablePath}}"
+        Arguments=""
+        InstallLocation="C:\Program Files\{{.ProductCompany}}\{{.ProductName}}">
+    </Installer>
+    <PackageInformation
+        PackageName="{{.ProductName}}"
+        PackageDisplayName="{{.ProductName}}"
+        PublisherName="CN={{.ProductCompany}}"
+        PublisherDisplayName="{{.ProductCompany}}"
+        Version="{{.ProductVersion}}.0"
+        PackageDescription="{{.ProductDescription}}">
+        <Capabilities>
+            <Capability Name="runFullTrust" />
+            {{if .FileAssociations}}
+            <Capability Name="documentsLibrary" />
+            {{end}}
+        </Capabilities>
+        <Applications>
+            <Application
+                Id="{{.ProductIdentifier}}"
+                Description="{{.ProductDescription}}"
+                DisplayName="{{.ProductName}}"
+                ExecutableName="{{.ExecutableName}}"
+                EntryPoint="Windows.FullTrustApplication">
+                {{if .FileAssociations}}
+                <Extensions>
+                    <Extension Category="windows.fileTypeAssociation">
+                        <FileTypeAssociation Name="{{.ProductIdentifier}}">
+                            {{range .FileAssociations}}
+                            <SupportedFileTypes>
+                                <FileType>.{{.Ext}}</FileType>
+                            </SupportedFileTypes>
+                            {{end}}
+                        </FileTypeAssociation>
+                    </Extension>
+                </Extensions>
+                {{end}}
+            </Application>
+        </Applications>
+        <Resources>
+            <Resource Language="en-us" />
+        </Resources>
+        <Dependencies>
+            <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+        </Dependencies>
+        <Properties>
+            <Framework>false</Framework>
+            <DisplayName>{{.ProductName}}</DisplayName>
+            <PublisherDisplayName>{{.ProductCompany}}</PublisherDisplayName>
+            <Description>{{.ProductDescription}}</Description>
+            <Logo>Assets\AppIcon.png</Logo>
+        </Properties>
+    </PackageInformation>
+    <SaveLocation PackagePath="{{.OutputPath}}" />
+    <PackageIntegrity>
+        <CertificatePath>{{.CertificatePath}}</CertificatePath>
+    </PackageIntegrity>
+</MsixPackagingToolTemplate>
