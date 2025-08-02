@@ -313,7 +313,7 @@ func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 }
 
 func (w *WebviewWindow) CallError(callID string, result string, isJSON bool) {
-	if w.impl != nil {
+	if w.impl != nil && !w.isDestroyed() {
 		w.impl.execJS(
 			fmt.Sprintf(
 				"_wails.callErrorHandler('%s', '%s', %t);",
@@ -326,7 +326,7 @@ func (w *WebviewWindow) CallError(callID string, result string, isJSON bool) {
 }
 
 func (w *WebviewWindow) CallResponse(callID string, result string) {
-	if w.impl != nil {
+	if w.impl != nil && !w.isDestroyed() {
 		w.impl.execJS(
 			fmt.Sprintf(
 				"_wails.callResultHandler('%s', '%s', true);",
@@ -953,6 +953,11 @@ func (w *WebviewWindow) SetRelativePosition(x, y int) Window {
 func (w *WebviewWindow) destroy() {
 	if w.impl == nil || w.isDestroyed() {
 		return
+	}
+
+	// Cancel all pending async calls for this window
+	if globalApplication.messageProcessor != nil {
+		globalApplication.messageProcessor.CancelWindowCalls(w.id)
 	}
 
 	// Cancel the callbacks
