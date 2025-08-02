@@ -60,6 +60,7 @@ const ZoomMethod                        = 45;
 const ZoomInMethod                      = 46;
 const ZoomOutMethod                     = 47;
 const ZoomResetMethod                   = 48;
+const SnapAssistMethod                  = 49;
 
 /**
  * A record describing the position of a window.
@@ -517,6 +518,14 @@ class Window {
      */
     ZoomReset(): Promise<void> {
         return this[callerSym](ZoomResetMethod);
+    }
+
+    /**
+     * Triggers Windows 11 Snap Assist feature (Windows only).
+     * This is equivalent to pressing Win+Z and shows snap layout options.
+     */
+    SnapAssist(): Promise<void> {
+        return this[callerSym](SnapAssistMethod);
     }
 }
 
