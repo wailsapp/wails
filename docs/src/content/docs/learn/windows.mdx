@@ -171,6 +171,37 @@ type Window interface {
 }
 ```
 
+### Common Window Methods
+
+Windows provide many methods for controlling their appearance and behavior:
+
+#### Display Control
+- `Show()` - Shows the window
+- `Hide()` - Hides the window
+- `SetTitle(title string)` - Sets the window title
+- `SetSize(width, height int)` - Sets the window size
+- `SetPosition(x, y int)` - Sets the window position
+- `Center()` - Centers the window on screen
+- `SetAlwaysOnTop(bool)` - Sets whether window stays on top
+
+#### Window State
+- `Minimise()` - Minimizes the window
+- `Maximise()` - Maximizes the window  
+- `UnMinimise()` - Restores from minimized state
+- `UnMaximise()` - Restores from maximized state
+- `Fullscreen()` - Enters fullscreen mode
+- `UnFullscreen()` - Exits fullscreen mode
+- `Restore()` - Restores window to normal state
+- `IsMinimised() bool` - Checks if window is minimized
+- `IsMaximised() bool` - Checks if window is maximized
+- `IsFullscreen() bool` - Checks if window is fullscreen
+
+#### Platform-Specific Methods
+
+**Windows Only:**
+- `Flash(bool)` - Flashes the taskbar button
+- `SnapAssist()` - Triggers Windows 11 Snap Assist (Win+Z)
+
 ## Advanced Window Management
 
 ### Multi-Window Applications
@@ -235,8 +266,17 @@ app.Event.On("data-updated", func(event *application.CustomEvent) {
     - Support custom window icons
     - Can be configured without system title bars
     - Follow Windows window management conventions
-    - Support Windows 11 snap layouts
+    - Support Windows 11 snap layouts via `SnapAssist()` method
     - Integrate with Windows taskbar features
+    
+    **Windows 11 Snap Assist Example:**
+    ```go
+    // Trigger Windows 11 Snap Assist
+    window.SnapAssist()
+    
+    // This is equivalent to pressing Win+Z
+    // Shows snap layout options for the current window
+    ```
     
   </TabItem>
   
