@@ -18,12 +18,34 @@ tasks:
     cmds:
       - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}
     vars:
-      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-buildvcs=false -gcflags=all="-l"{{end}}'
+      BUILD_FLAGS: '{{if eq .STATIC "true"}}-tags production -trimpath -buildvcs=false -ldflags="-w -s -linkmode external -extldflags '\''-static'\''"{{else if eq .PRODUCTION "true"}}-tags production -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-buildvcs=false -gcflags=all="-l"{{end}}'
     env:
       GOOS: linux
       CGO_ENABLED: 1
       GOARCH: '{{.ARCH | default ARCH}}'
       PRODUCTION: '{{.PRODUCTION | default "false"}}'
+      {{- if eq .STATIC "true" }}
+      CC: '{{ .CC | default "musl-gcc" }}'
+      {{- end }}
+  build:static:
+    summary: Builds a statically linked application for Linux using musl
+    deps:
+      - task: common:go:mod:tidy
+      - task: common:build:frontend
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+          PRODUCTION: "true"
+      - task: common:generate:icons
+    cmds:
+      - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}-static
+    vars:
+      BUILD_FLAGS: '-tags production -trimpath -buildvcs=false -ldflags="-w -s -linkmode external -extldflags '\''-static'\''"'
+    env:
+      GOOS: linux
+      CGO_ENABLED: 1
+      GOARCH: '{{.ARCH | default ARCH}}'
+      CC: '{{ .CC | default "musl-gcc" }}'
 
   package:
     summary: Packages a production build of the application for Linux
@@ -36,6 +58,16 @@ tasks:
       - task: create:deb
       - task: create:rpm
       - task: create:aur
+
+  package:static:
+    summary: Packages a statically linked build of the application for Linux
+    deps:
+      - task: build:static
+    cmds:
+      - task: create:appimage:static
+      - task: create:deb:static
+      - task: create:rpm:static
+      - task: create:aur:static
 
   create:appimage:
     summary: Creates an AppImage
@@ -117,3 +149,64 @@ tasks:
   run:
     cmds:
       - '{{.BIN_DIR}}/{{.APP_NAME}}'
+
+  run:static:
+    summary: Runs the statically linked binary
+    cmds:
+      - '{{.BIN_DIR}}/{{.APP_NAME}}-static'
+
+  create:appimage:static:
+    summary: Creates a static AppImage
+    dir: build/linux/appimage
+    deps:
+      - task: build:static
+      - task: generate:dotdesktop
+    cmds:
+      - cp {{.APP_BINARY}} {{.APP_NAME}}
+      - cp ../../appicon.png appicon.png
+      - wails3 generate appimage -binary {{.APP_NAME}} -icon {{.ICON}} -desktopfile {{.DESKTOP_FILE}} -outputdir {{.OUTPUT_DIR}} -builddir {{.ROOT_DIR}}/build/linux/appimage/build
+    vars:
+      APP_NAME: '{{.APP_NAME}}-static'
+      APP_BINARY: '../../../bin/{{.APP_NAME}}-static'
+      ICON: '../../appicon.png'
+      DESKTOP_FILE: '../{{ .APP_NAME | trimSuffix "-static" }}.desktop'
+      OUTPUT_DIR: '../../../bin'
+
+  create:deb:static:
+    summary: Creates a static deb package
+    deps:
+      - task: build:static
+    cmds:
+      - task: generate:dotdesktop
+      - task: generate:deb:static
+
+  create:rpm:static:
+    summary: Creates a static rpm package
+    deps:
+      - task: build:static
+    cmds:
+      - task: generate:dotdesktop
+      - task: generate:rpm:static
+
+  create:aur:static:
+    summary: Creates a static arch linux package
+    deps:
+      - task: build:static
+    cmds:
+      - task: generate:dotdesktop
+      - task: generate:aur:static
+
+  generate:deb:static:
+    summary: Creates a static deb package
+    cmds:
+      - wails3 tool package -name {{.APP_NAME}}-static -format deb -config ./build/linux/nfpm/nfpm.yaml -out {{.ROOT_DIR}}/bin
+
+  generate:rpm:static:
+    summary: Creates a static rpm package
+    cmds:
+      - wails3 tool package -name {{.APP_NAME}}-static -format rpm -config ./build/linux/nfpm/nfpm.yaml -out {{.ROOT_DIR}}/bin
+
+  generate:aur:static:
+    summary: Creates a static arch linux package
+    cmds:
+      - wails3 tool package -name {{.APP_NAME}}-static -format archlinux -config ./build/linux/nfpm/nfpm.yaml -out {{.ROOT_DIR}}/bin
