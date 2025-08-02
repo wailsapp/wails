@@ -713,6 +713,14 @@ func main() {
 		})
 	}
 
+	if runtime.GOOS == "windows" {
+		stateMenu.Add("Snap Assist").OnClick(func(ctx *application.Context) {
+			currentWindow(func(w *application.WebviewWindow) {
+				w.SnapAssist()
+			})
+		})
+	}
+
 	printMenu := menu.AddSubmenu("Print")
 	printMenu.Add("Print").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {

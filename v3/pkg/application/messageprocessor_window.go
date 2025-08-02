@@ -56,6 +56,7 @@ const (
 	WindowZoomIn                     = 46
 	WindowZoomOut                    = 47
 	WindowZoomReset                  = 48
+	WindowSnapAssist                 = 49
 )
 
 var windowMethodNames = map[int]string{
@@ -108,6 +109,7 @@ var windowMethodNames = map[int]string{
 	WindowZoomIn:                     "ZoomIn",
 	WindowZoomOut:                    "ZoomOut",
 	WindowZoomReset:                  "ZoomReset",
+	WindowSnapAssist:                 "SnapAssist",
 }
 
 func (m *MessageProcessor) processWindowMethod(
@@ -420,6 +422,9 @@ func (m *MessageProcessor) processWindowMethod(
 		m.ok(rw)
 	case WindowZoomReset:
 		window.ZoomReset()
+		m.ok(rw)
+	case WindowSnapAssist:
+		window.SnapAssist()
 		m.ok(rw)
 	default:
 		m.httpError(rw, "Invalid window call:", fmt.Errorf("unknown method %d", method))
