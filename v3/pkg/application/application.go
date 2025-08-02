@@ -16,8 +16,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
-
 	"github.com/wailsapp/wails/v3/internal/signal"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
