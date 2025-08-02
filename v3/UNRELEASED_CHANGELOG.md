@@ -15,8 +15,8 @@ This file is automatically processed by the nightly release workflow.
 After processing, the content will be moved to the main changelog and this file will be reset.
 -->
 
-## Added
-<!-- New features, capabilities, or enhancements -->
+### Added
+- Added Run go mod tidy automatically after wails init [@triadmoko](https://github.com/triadmoko) in [PR](https://github.com/wailsapp/wails/pull/4286)
 
 ## Changed
 <!-- Changes in existing functionality -->
