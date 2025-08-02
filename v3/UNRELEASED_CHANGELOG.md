@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix Vite server not being cleaned up when build fails (#4403)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
