@@ -1,0 +1,165 @@
+---
+title: Wails v3 Architecture
+description: Deep-dive diagrams and explanations of every moving part inside Wails v3
+sidebar:
+  order: 1
+---
+
+import Mermaid from "../../components/Mermaid.astro";
+
+Wails v3 is a **full-stack desktop framework** consisting of a Go runtime,
+a JavaScript bridge, a task-driven tool-chain and a collection of templates that
+let you ship native applications powered by modern web tech.
+
+This page presents the *big picture* in four diagrams:
+
+1. **Overall Architecture** – how every subsystem connects  
+2. **Runtime Flow** – what happens when JS calls Go and vice-versa  
+3. **Development vs Production** – two modes of the asset server  
+4. **Platform Implementations** – where OS-specific code lives  
+
+---
+
+## 1 · Overall Architecture
+
+<Mermaid title="Wails v3 – High-Level Stack">
+flowchart TD
+  subgraph Developer
+    CLI[wails3 CLI]
+  end
+  subgraph Build["Build-time Tool-chain"]
+    GEN["Binding Generator\n(static analysis)"]
+    TMP["Template Engine"]
+    ASSETDEV["Asset Server (dev)"]
+    PKG["Cross-compilation & Packaging"]
+  end
+  subgraph Runtime["Native Runtime"]
+    RT["Desktop Runtime\n(window, dialogs, tray, …)"]
+    BRIDGE["Message Bridge\n(JSON channel)"]
+  end
+  subgraph App["Your Application"]
+    BACKEND["Go Backend"]
+    FRONTEND["Web Frontend\n(React/Vue/…)"]
+  end
+
+  CLI -->|init| TMP
+  CLI -->|generate| GEN
+  CLI -->|dev| ASSETDEV
+  CLI -->|build| PKG
+
+  GEN -->|Go & TS stubs| BACKEND
+  GEN -->|bindings.json| FRONTEND
+
+  ASSETDEV <-->|HTTP| FRONTEND
+
+  BACKEND <--> BRIDGE <--> FRONTEND
+  BRIDGE <--> RT
+  RT <-->|serve assets| ASSETDEV
+</Mermaid>
+
+---
+
+## 2 · Runtime Call Flow
+
+<Mermaid title="Runtime – JavaScript ⇄ Go Calling Path">
+sequenceDiagram
+  participant JS as JavaScript (frontend)
+  participant Bridge as Bridge (WebView callback)
+  participant MP as Message Processor (Go)
+  participant Go as Bound Go Function
+
+  JS->>Bridge: invoke("Greet","Alice")
+  Bridge->>MP: JSON {t:c,id:42,...}
+  MP->>Go: call Greet("Alice")
+  Go-->>MP: "Hello Alice"
+  MP-->>Bridge: JSON {t:r,id:42,result:"Hello Alice"}
+  Bridge-->>JS: Promise.resolve("Hello Alice")
+</Mermaid>
+
+Key points:
+
+* **No HTTP / IPC** – the bridge uses the native WebView’s in-memory channel  
+* **Method IDs** – deterministic FNV-hash enables O(1) lookup in Go  
+* **Promises** – errors propagate as rejections with stack & code
+
+---
+
+## 3 · Development vs Production Asset Flow
+
+<Mermaid title="Dev ↔ Prod Asset Server">
+flowchart LR
+  subgraph Dev["`wails3 dev`"]
+    VITE["Framework Dev Server\n(port 5173)"]
+    ASDEV["Asset Server (dev)\n(proxy + disk)"]
+    FRONTENDDEV[Browser]
+  end
+  subgraph Prod["`wails3 build`"]
+    EMBED["Embedded FS\n(go:embed)"]
+    ASPROD["Asset Server (prod)\n(read-only)"]
+    FRONTENDPROD[WebView Window]
+  end
+
+  VITE <-->|proxy / HMR| ASDEV
+  ASDEV <-->|http| FRONTENDDEV
+
+  EMBED --> ASPROD
+  ASPROD <-->|in-memory| FRONTENDPROD
+</Mermaid>
+
+* In **dev** the server proxies unknown paths to the framework’s live-reload
+  server and serves static assets from disk.  
+* In **prod** the same API is backed by `go:embed`, producing a zero-dependency
+  binary.
+
+---
+
+## 4 · Platform-Specific Runtime Split
+
+<Mermaid title="Per-OS Runtime Files">
+classDiagram
+  class runtime::Window {
+    +Show()
+    +Hide()
+    +Center()
+  }
+
+  runtime::Window <|-- Window_darwin
+  runtime::Window <|-- Window_linux
+  runtime::Window <|-- Window_windows
+
+  class Window_darwin {
+    //go:build darwin
+    +NSWindow* ptr
+  }
+  class Window_linux {
+    //go:build linux
+    +GtkWindow* ptr
+  }
+  class Window_windows {
+    //go:build windows
+    +HWND ptr
+  }
+
+  note for runtime::Window "Shared interface\nin pkg/application"
+  note for Window_darwin "Objective-C (Cgo)"
+  note for Window_linux "Pure Go GTK calls"
+  note for Window_windows "Win32 API via syscall"
+</Mermaid>
+
+Every feature follows this pattern:
+
+1. **Common interface** in `pkg/application`  
+2. **Message processor** entry in `pkg/application/messageprocessor_*.go`  
+3. **Implementation** per OS under `internal/runtime/*.go` guarded by build tags  
+
+Missing functionality on an OS should return `ErrCapability` and register
+availability via `internal/capabilities`.
+
+---
+
+## Summary
+
+These diagrams outline **where the code lives**, **how data moves**, and
+**which layers own which responsibilities**.  
+Keep them handy while exploring the detailed pages that follow – they are your
+map to the Wails v3 source tree.

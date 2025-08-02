@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -22,47 +22,49 @@ import * as $models from "./models.js";
 /**
  * Get someone.
  * @param {$models.Alias} aliasValue
- * @returns {Promise<$models.Person> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.Person>}
  */
 export function Get(aliasValue) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Get", aliasValue));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Get", aliasValue);
 }
 
 /**
  * Apparently, aliases are all the rage right now.
  * @param {$models.AliasedPerson} p
- * @returns {Promise<$models.StrangelyAliasedPerson> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.StrangelyAliasedPerson>}
  */
 export function GetButAliased(p) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.GetButAliased", p));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.GetButAliased", p);
 }
 
 /**
  * Get someone quite different.
- * @returns {Promise<$models.GenericPerson<boolean>> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.GenericPerson<boolean>>}
  */
 export function GetButDifferent() {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.GetButDifferent"));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.GetButDifferent");
 }
 
 /**
- * @returns {Promise<nobindingshere$0.PrivatePerson> & { cancel(): void }}
+ * @returns {$CancellablePromise<nobindingshere$0.PrivatePerson>}
  */
 export function GetButForeignPrivateAlias() {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.GetButForeignPrivateAlias"));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.GetButForeignPrivateAlias");
+}
+
+/**
+ * @returns {$CancellablePromise<$models.AliasGroup>}
+ */
+export function GetButGenericAliases() {
+    return $Call.ByName("main.GreetService.GetButGenericAliases");
 }
 
 /**
  * Greet a lot of unusual things.
  * @param {$models.EmptyAliasStruct} $0
  * @param {$models.EmptyStruct} $1
- * @returns {Promise<$models.AliasStruct> & { cancel(): void }}
+ * @returns {$CancellablePromise<$models.AliasStruct>}
  */
 export function Greet($0, $1) {
-    let $resultPromise = /** @type {any} */($Call.ByName("main.GreetService.Greet", $0, $1));
-    return $resultPromise;
+    return $Call.ByName("main.GreetService.Greet", $0, $1);
 }

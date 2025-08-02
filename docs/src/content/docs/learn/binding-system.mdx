@@ -1,0 +1,155 @@
+---
+title: Binding System Internals
+sidebar:
+  order: 21
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+This guide explains how the Wails binding system works internally, providing insights for developers who want to understand the mechanics behind the automatic code generation.
+
+## Architecture Overview
+
+The Wails binding system consists of three main components:
+
+1. **Collection**: Analyzes Go code to extract information about services, models, and other declarations
+2. **Configuration**: Manages settings and options for the binding generation process
+3. **Rendering**: Generates JavaScript/TypeScript code based on the collected information
+
+<FileTree>
+- internal/generator/
+  - collect/     # Package analysis and information extraction
+  - config/      # Configuration structures and interfaces
+  - render/      # Code generation for JS/TS
+</FileTree>
+
+## Collection Process
+
+The collection process is responsible for analyzing Go packages and extracting information about services, models, and other declarations. This is handled by the `collect` package.
+
+### Key Components
+
+- **Collector**: Manages package information and caches collected data
+- **Package**: Represents a Go package being analyzed and stores collected services, models, and directives
+- **Service**: Collects information about service types and their methods
+- **Model**: Collects detailed information about model types, including fields, values, and type parameters
+- **Directive**: Parses and interprets `//wails:` directives in Go source code
+
+### Collection Flow
+
+1. The collector scans the Go packages specified in the project
+2. It identifies service types (structs with methods that will be exposed to the frontend)
+3. For each service, it collects information about its methods
+4. It identifies model types (structs used as parameters or return values in service methods)
+5. For each model, it collects information about its fields and type parameters
+6. It processes any `//wails:` directives found in the code
+
+## Rendering Process
+
+The rendering process is responsible for generating JavaScript/TypeScript code based on the collected information. This is handled by the `render` package.
+
+### Key Components
+
+- **Renderer**: Orchestrates the rendering of service, model, and index files
+- **Module**: Represents a single generated JavaScript/TypeScript module
+- **Templates**: Text templates used for code generation
+
+### Rendering Flow
+
+1. For each service, the renderer generates a JavaScript/TypeScript file with functions that mirror the service methods
+2. For each model, the renderer generates a JavaScript/TypeScript class that mirrors the model struct
+3. The renderer generates index files that re-export all services and models
+4. The renderer applies any custom code injections specified by `//wails:inject` directives
+
+## Type Mapping
+
+One of the most important aspects of the binding system is how Go types are mapped to JavaScript/TypeScript types. Here's a summary of the mapping:
+
+| Go Type | JavaScript Type | TypeScript Type |
+|---------|----------------|----------------|
+| `bool` | `boolean` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64`, `uint`, `uint8`, `uint16`, `uint32`, `uint64`, `float32`, `float64` | `number` | `number` |
+| `string` | `string` | `string` |
+| `[]byte` | `Uint8Array` | `Uint8Array` |
+| `[]T` | `Array<T>` | `T[]` |
+| `map[K]V` | `Object` | `Record<K, V>` |
+| `struct` | `Object` | Custom class |
+| `interface{}` | `any` | `any` |
+| `*T` | `T \| null` | `T \| null` |
+| `func` | Not supported | Not supported |
+| `chan` | Not supported | Not supported |
+
+## Directives System
+
+The binding system supports several directives that can be used to customize the generated code. These directives are added as comments in your Go code.
+
+### Available Directives
+
+- `//wails:inject`: Injects custom JavaScript/TypeScript code into the generated bindings
+- `//wails:include`: Includes additional files with the generated bindings
+- `//wails:internal`: Marks a type or method as internal, preventing it from being exported to the frontend
+- `//wails:ignore`: Completely ignores a method during binding generation
+- `//wails:id`: Specifies a custom ID for a method, overriding the default hash-based ID
+
+### Directive Processing
+
+1. During the collection phase, the collector identifies and parses directives in the Go code
+2. The directives are stored with the corresponding declarations (services, methods, models, etc.)
+3. During the rendering phase, the renderer applies the directives to customize the generated code
+
+## Advanced Features
+
+### Conditional Code Generation
+
+The binding system supports conditional code generation using a two-character condition prefix for `include` and `inject` directives:
+
+```
+<language><style>:<content>
+```
+
+Where:
+- `<language>` can be:
+  - `*` - Both JavaScript and TypeScript
+  - `j` - JavaScript only
+  - `t` - TypeScript only
+
+- `<style>` can be:
+  - `*` - Both classes and interfaces
+  - `c` - Classes only
+  - `i` - Interfaces only
+
+For example:
+```go
+//wails:inject j*:console.log("JavaScript only");
+//wails:inject t*:console.log("TypeScript only");
+```
+
+### Custom Method IDs
+
+By default, methods are identified by a hash-based ID. However, you can specify a custom ID using the `//wails:id` directive:
+
+```go
+//wails:id 42
+func (s *Service) CustomIDMethod() {}
+```
+
+This can be useful for maintaining compatibility when refactoring code.
+
+## Performance Considerations
+
+The binding generator is designed to be efficient, but there are a few things to keep in mind:
+
+1. The first run will be slower as it builds up a cache of packages to scan
+2. Subsequent runs will be faster as they use the cached information
+3. The generator processes all packages in the project, which can be time-consuming for large projects
+4. You can use the `-clean` flag to clean the output directory before generation
+
+## Debugging
+
+If you encounter issues with the binding generation, you can use the `-v` flag to enable debug output:
+
+```bash
+wails3 generate bindings -v
+```
+
+This will provide detailed information about the collection and rendering process, which can help identify the source of the issue.

@@ -7,10 +7,10 @@ Wails v3 provides a powerful menu system that allows you to create both applicat
 
 ### Creating a Menu
 
-To create a new menu, use the `NewMenu()` method from your application instance:
+To create a new menu, use the `New()` method from the Menus manager:
 
 ```go
-menu := application.NewMenu()
+menu := app.Menus.New()
 ```
 
 ### Adding Menu Items
@@ -59,10 +59,10 @@ submenu.Add("Save")
 #### Combining menus
 A menu can be added into another menu by appending or prepending it.
 ```go
-menu := application.NewMenu()
+menu := app.Menus.New()
 menu.Add("First Menu")
 
-secondaryMenu := application.NewMenu()
+secondaryMenu := app.Menus.New()
 secondaryMenu.Add("Second Menu")
 
 // insert 'secondaryMenu' after 'menu'
@@ -88,7 +88,7 @@ In some cases it'll be better to construct a whole new menu if you are working w
 This will clear all items on an existing menu and allows you to add items again.
 
 ```go
-menu := application.NewMenu()
+menu := app.Menus.New()
 menu.Add("Waiting for update...")
 
 // after certain logic, the menu has to be updated
@@ -107,7 +107,7 @@ so be sure to manage your menus carefully.
 If you want to clear and release a menu, use the `Destroy()` method:
 
 ```go
-menu := application.NewMenu()
+menu := app.Menus.New()
 menu.Add("Waiting for update...")
 
 // after certain logic, the menu has to be destroyed
@@ -265,7 +265,7 @@ These roles can be used to add individual menu items:
 Here's an example showing how to use both complete menus and individual roles:
 
 ```go
-menu := application.NewMenu()
+menu := app.Menus.New()
 
 // Add complete menu structures
 menu.AddRole(application.AppMenu)    // macOS only
@@ -287,8 +287,8 @@ Application menus are the menus that appear at the top of your application windo
 
 ### Application Menu Behaviour
 
-When you set an application menu using `app.SetMenu()`, it becomes the main menu on macOS.
-Menus are set on a pre-window basis for Windows/Linux.
+When you set an application menu using `app.Menus.Set()`, it becomes the main menu on macOS.
+Menus are set on a per-window basis for Windows/Linux.
 
 ```go
 app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
@@ -306,19 +306,19 @@ func main() {
     app := application.New(application.Options{})
 
     // Create application menu
-    appMenu := application.NewMenu()
+    appMenu := app.Menus.New()
     fileMenu := appMenu.AddSubmenu("File")
     fileMenu.Add("New").OnClick(func(ctx *application.Context) {
         // This will be available in all windows unless overridden
-        window := app.CurrentWindow()
+        window := app.Windows.Current()
         window.SetTitle("New Window")
     })
     
     // Set as application menu - this is for macOS
-    app.SetMenu(appMenu)
+    app.Menus.Set(appMenu)
 
     // Window with custom menu on Windows
-    customMenu := application.NewMenu()
+    customMenu := app.Menus.New()
     customMenu.Add("Custom Action")
     app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
         Title: "Custom Menu",
@@ -366,6 +366,10 @@ You can control when the default context menu appears using the `--default-conte
 </div>
 ```
 
+:::note
+This feature will only work as expected after the runtime [has been initialised](../../learn/runtime#initialisation).
+:::
+
 #### Nested Context Menu Behavior
 
 When using the `--default-contextmenu` property on nested elements, the following rules apply:
@@ -411,7 +415,8 @@ When creating a custom context menu, you provide a unique identifier (name) that
 
 ```go
 // Create a context menu with identifier "imageMenu"
-contextMenu := application.NewContextMenu("imageMenu")
+contextMenu := application.NewContextMenu()
+app.ContextMenus.Add("imageMenu", contextMenu)
 ```
 
 The name parameter ("imageMenu" in this example) serves as a unique identifier that will be used to:
@@ -470,7 +475,8 @@ Here's a complete example of implementing a custom context menu for an image gal
 
 ```go
 // Backend: Create the context menu
-imageMenu := application.NewContextMenu("imageMenu")
+imageMenu := application.NewContextMenu()
+app.ContextMenus.Add("imageMenu", imageMenu)
 
 // Add relevant operations
 imageMenu.Add("View Full Size").OnClick(func(ctx *application.Context) {

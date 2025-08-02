@@ -1,7 +1,7 @@
 package application
 
 import (
-	"fmt"
+	"errors"
 	"runtime"
 	"sync"
 	"time"
@@ -123,7 +123,7 @@ func (s *SystemTray) Run() {
 
 func (s *SystemTray) PositionWindow(window *WebviewWindow, offset int) error {
 	if s.impl == nil {
-		return fmt.Errorf("system tray not running")
+		return errors.New("system tray not running")
 	}
 	return InvokeSyncWithError(func() error {
 		return s.impl.positionWindow(window, offset)
@@ -197,7 +197,7 @@ func (s *SystemTray) SetTooltip(tooltip string) {
 }
 
 func (s *SystemTray) Destroy() {
-	globalApplication.destroySystemTray(s)
+	globalApplication.SystemTray.destroy(s)
 }
 
 func (s *SystemTray) destroy() {

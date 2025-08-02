@@ -7,6 +7,6 @@ import (
 	"log/slog"
 )
 
-func DefaultLogger(level slog.Level) *slog.Logger {
+func DefaultLogger(level slog.Leveler) *slog.Logger {
 	return slog.New(slog.NewTextHandler(io.Discard, nil))
 }

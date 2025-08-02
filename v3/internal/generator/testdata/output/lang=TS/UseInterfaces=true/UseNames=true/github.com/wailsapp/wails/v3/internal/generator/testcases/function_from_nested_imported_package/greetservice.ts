@@ -8,7 +8,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -17,15 +17,13 @@ import * as $models from "./models.js";
 /**
  * Greet does XYZ
  */
-export function Greet(name: string): Promise<string> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", name) as any;
-    return $resultPromise;
+export function Greet(name: string): $CancellablePromise<string> {
+    return $Call.ByName("main.GreetService.Greet", name);
 }
 
 /**
  * NewPerson creates a new person
  */
-export function NewPerson(name: string): Promise<$models.Person | null> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.NewPerson", name) as any;
-    return $resultPromise;
+export function NewPerson(name: string): $CancellablePromise<$models.Person | null> {
+    return $Call.ByName("main.GreetService.NewPerson", name);
 }

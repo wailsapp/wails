@@ -1,13 +1,14 @@
 package application
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"runtime"
 	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
+	"text/template"
 
 	"github.com/leaanthony/u"
 
@@ -108,6 +109,7 @@ type (
 		showMenuBar()
 		hideMenuBar()
 		toggleMenuBar()
+		setMenu(menu *Menu)
 	}
 )
 
@@ -164,13 +166,29 @@ type WebviewWindow struct {
 	// pendingJS holds JS that was sent to the window before the runtime was loaded
 	pendingJS []string
 
-	// unconditionallyClose marks the window to be unconditionally closed
-	unconditionallyClose bool
+	// unconditionallyClose marks the window to be unconditionally closed (atomic)
+	unconditionallyClose uint32
+}
+
+func (w *WebviewWindow) SetMenu(menu *Menu) {
+	switch runtime.GOOS {
+	case "darwin":
+		return
+	case "windows":
+		w.options.Windows.Menu = menu
+	case "linux":
+		w.options.Linux.Menu = menu
+	}
+	if w.impl != nil {
+		InvokeSync(func() {
+			w.impl.setMenu(menu)
+		})
+	}
 }
 
 // EmitEvent emits an event from the window
 func (w *WebviewWindow) EmitEvent(name string, data ...any) {
-	globalApplication.emitEvent(&CustomEvent{
+	globalApplication.Event.EmitEvent(&CustomEvent{
 		Name:   name,
 		Data:   data,
 		Sender: w.Name(),
@@ -191,7 +209,7 @@ func getWindowID() uint {
 // Use onApplicationEvent to register a callback for an application event from a window.
 // This will handle tidying up the callback when the window is destroyed
 func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func(*ApplicationEvent)) {
-	cancelFn := globalApplication.OnApplicationEvent(eventType, callback)
+	cancelFn := globalApplication.Event.OnApplicationEvent(eventType, callback)
 	w.addCancellationFunction(cancelFn)
 }
 
@@ -256,10 +274,10 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 
 	// Listen for window closing events and de
 	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
-		result.unconditionallyClose = true
+		atomic.StoreUint32(&result.unconditionallyClose, 1)
 		InvokeSync(result.markAsDestroyed)
 		InvokeSync(result.impl.close)
-		globalApplication.deleteWindowByID(result.id)
+		globalApplication.Window.Remove(result.id)
 	})
 
 	// Process keybindings
@@ -270,13 +288,15 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	return result
 }
 
-func processKeyBindingOptions(keyBindings map[string]func(window *WebviewWindow)) map[string]func(window *WebviewWindow) {
+func processKeyBindingOptions(
+	keyBindings map[string]func(window *WebviewWindow),
+) map[string]func(window *WebviewWindow) {
 	result := make(map[string]func(window *WebviewWindow))
 	for key, callback := range keyBindings {
 		// Parse the key to an accelerator
 		acc, err := parseAccelerator(key)
 		if err != nil {
-			globalApplication.error("Invalid keybinding: %s", err.Error())
+			globalApplication.error("invalid keybinding: %w", err)
 			continue
 		}
 		result[acc.String()] = callback
@@ -291,40 +311,53 @@ func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 	w.cancellers = append(w.cancellers, canceller)
 }
 
-// formatJS ensures the 'data' provided marshals to valid json or panics
-func (w *WebviewWindow) formatJS(f string, callID string, data string) string {
-	j, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
-	return fmt.Sprintf(f, callID, j)
-}
-
-func (w *WebviewWindow) CallError(callID string, result string) {
+func (w *WebviewWindow) CallError(callID string, result string, isJSON bool) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.callErrorHandler('%s', %s);", callID, result))
+		w.impl.execJS(
+			fmt.Sprintf(
+				"_wails.callErrorHandler('%s', '%s', %t);",
+				callID,
+				template.JSEscapeString(result),
+				isJSON,
+			),
+		)
 	}
 }
 
 func (w *WebviewWindow) CallResponse(callID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.callResultHandler('%s', %s, true);", callID, result))
+		w.impl.execJS(
+			fmt.Sprintf(
+				"_wails.callResultHandler('%s', '%s', true);",
+				callID,
+				template.JSEscapeString(result),
+			),
+		)
 	}
 }
 
 func (w *WebviewWindow) DialogError(dialogID string, result string) {
 	if w.impl != nil {
-		w.impl.execJS(w.formatJS("_wails.dialogErrorCallback('%s', %s);", dialogID, result))
+		w.impl.execJS(
+			fmt.Sprintf(
+				"_wails.dialogErrorCallback('%s', '%s');",
+				dialogID,
+				template.JSEscapeString(result),
+			),
+		)
 	}
 }
 
 func (w *WebviewWindow) DialogResponse(dialogID string, result string, isJSON bool) {
 	if w.impl != nil {
-		if isJSON {
-			w.impl.execJS(w.formatJS("_wails.dialogResultCallback('%s', %s, true);", dialogID, result))
-		} else {
-			w.impl.execJS(fmt.Sprintf("_wails.dialogResultCallback('%s', '%s', false);", dialogID, result))
-		}
+		w.impl.execJS(
+			fmt.Sprintf(
+				"_wails.dialogResultCallback('%s', '%s', %t);",
+				dialogID,
+				template.JSEscapeString(result),
+				isJSON,
+			),
+		)
 	}
 }
 
@@ -690,7 +723,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 			InvokeSync(func() {
 				err := w.startDrag()
 				if err != nil {
-					w.Error("Failed to start drag: %s", err)
+					w.Error("failed to start drag: %w", err)
 				}
 			})
 		}
@@ -698,12 +731,12 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		if !w.IsFullscreen() {
 			sl := strings.Split(message, ":")
 			if len(sl) != 3 {
-				w.Error("Unknown message returned from dispatcher", "message", message)
+				w.Error("unknown message returned from dispatcher: %s", message)
 				return
 			}
 			err := w.startResize(sl[2])
 			if err != nil {
-				w.Error(err.Error())
+				w.Error("%w", err)
 			}
 		}
 	case message == "wails:runtime:ready":
@@ -714,7 +747,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 			w.ExecJS(js)
 		}
 	default:
-		w.Error("Unknown message sent via 'invoke' on frontend: %v", message)
+		w.Error("unknown message sent via 'invoke' on frontend: %v", message)
 	}
 }
 
@@ -737,7 +770,10 @@ func (w *WebviewWindow) Center() {
 }
 
 // OnWindowEvent registers a callback for the given window event
-func (w *WebviewWindow) OnWindowEvent(eventType events.WindowEventType, callback func(event *WindowEvent)) func() {
+func (w *WebviewWindow) OnWindowEvent(
+	eventType events.WindowEventType,
+	callback func(event *WindowEvent),
+) func() {
 	eventID := uint(eventType)
 	windowEventListener := &WindowEventListener{
 		callback: callback,
@@ -758,7 +794,10 @@ func (w *WebviewWindow) OnWindowEvent(eventType events.WindowEventType, callback
 }
 
 // RegisterHook registers a hook for the given window event
-func (w *WebviewWindow) RegisterHook(eventType events.WindowEventType, callback func(event *WindowEvent)) func() {
+func (w *WebviewWindow) RegisterHook(
+	eventType events.WindowEventType,
+	callback func(event *WindowEvent),
+) func() {
 	eventID := uint(eventType)
 	w.eventHooksLock.Lock()
 	defer w.eventHooksLock.Unlock()
@@ -967,6 +1006,16 @@ func (w *WebviewWindow) ToggleMaximise() {
 	})
 }
 
+// ToggleFrameless toggles the window between frameless and normal
+func (w *WebviewWindow) ToggleFrameless() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	InvokeSync(func() {
+		w.SetFrameless(!w.options.Frameless)
+	})
+}
+
 func (w *WebviewWindow) OpenDevTools() {
 	if w.impl == nil || w.isDestroyed() {
 		return
@@ -1162,10 +1211,8 @@ func (w *WebviewWindow) Info(message string, args ...any) {
 }
 
 func (w *WebviewWindow) Error(message string, args ...any) {
-	var messageArgs []interface{}
-	messageArgs = append(messageArgs, args...)
-	messageArgs = append(messageArgs, "sender", w.Name())
-	globalApplication.error(message, messageArgs...)
+	args = append([]any{w.Name()}, args...)
+	globalApplication.error("in window '%s': "+message, args...)
 }
 
 func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
@@ -1180,9 +1227,9 @@ func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
 
 func (w *WebviewWindow) OpenContextMenu(data *ContextMenuData) {
 	// try application level context menu
-	menu, ok := globalApplication.getContextMenu(data.Id)
+	menu, ok := globalApplication.ContextMenu.Get(data.Id)
 	if !ok {
-		w.Error("No context menu found for id: %s", data.Id)
+		w.Error("no context menu found for id: %s", data.Id)
 		return
 	}
 	menu.setContextData(data)
@@ -1261,7 +1308,7 @@ func (w *WebviewWindow) processKeyBinding(acceleratorString string) bool {
 		}
 	}
 
-	return globalApplication.processKeyBinding(acceleratorString, w)
+	return globalApplication.KeyBinding.Process(acceleratorString, w)
 }
 
 func (w *WebviewWindow) HandleKeyEvent(acceleratorString string) {

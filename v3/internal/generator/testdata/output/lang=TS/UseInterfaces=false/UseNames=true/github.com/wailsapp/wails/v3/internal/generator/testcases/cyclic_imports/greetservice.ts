@@ -8,7 +8,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -17,15 +17,12 @@ import * as $models from "./models.js";
 /**
  * Make a cycle.
  */
-export function MakeCycles(): Promise<[$models.StructA, $models.StructC]> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.MakeCycles") as any;
-    let $typingPromise = $resultPromise.then(($result: any) => {
+export function MakeCycles(): $CancellablePromise<[$models.StructA, $models.StructC]> {
+    return $Call.ByName("main.GreetService.MakeCycles").then(($result: any) => {
         $result[0] = $$createType0($result[0]);
         $result[1] = $$createType1($result[1]);
         return $result;
-    }) as any;
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
+    });
 }
 
 // Private type creation functions

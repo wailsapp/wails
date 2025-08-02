@@ -2,31 +2,69 @@
 <plist version="1.0">
     <dict>
         <key>CFBundlePackageType</key>
-        <string>APPL</string>
+            <string>APPL</string>
         <key>CFBundleName</key>
-        <string>{{.ProductName}}</string>
+            <string>{{.ProductName}}</string>
         <key>CFBundleExecutable</key>
-        <string>{{.BinaryName}}</string>
+            <string>{{.BinaryName}}</string>
         <key>CFBundleIdentifier</key>
-        <string>{{.ProductIdentifier}}</string>
+            <string>{{.ProductIdentifier}}</string>
         <key>CFBundleVersion</key>
-        <string>{{.ProductVersion}}</string>
+            <string>{{.ProductVersion}}</string>
         <key>CFBundleGetInfoString</key>
-        <string>{{.ProductComments}}</string>
+            <string>{{.ProductComments}}</string>
         <key>CFBundleShortVersionString</key>
-        <string>{{.ProductVersion}}</string>
+            <string>{{.ProductVersion}}</string>
         <key>CFBundleIconFile</key>
-        <string>icons</string>
+            <string>icons</string>
         <key>LSMinimumSystemVersion</key>
-        <string>10.15.0</string>
+            <string>10.15.0</string>
         <key>NSHighResolutionCapable</key>
-        <string>true</string>
+            <string>true</string>
         <key>NSHumanReadableCopyright</key>
-        <string>{{.ProductCopyright}}</string>
+            <string>{{.ProductCopyright}}</string>
+        {{- if .FileAssociations}}
+        <key>CFBundleDocumentTypes</key>
+        <array>
+            {{- range .FileAssociations}}
+            <dict>
+                <key>CFBundleTypeExtensions</key>
+                <array>
+                    <string>{{.Ext}}</string>
+                </array>
+                <key>CFBundleTypeName</key>
+                    <string>{{.Name}}</string>
+                <key>CFBundleTypeRole</key>
+                    <string>{{.Role}}</string>
+                <key>CFBundleTypeIconFile</key>
+                    <string>{{.IconName}}</string>
+                {{- if .MimeType}}
+                <key>CFBundleTypeMimeType</key>
+                    <string>{{.MimeType}}</string>
+                {{- end}}
+            </dict>
+            {{- end}}
+        </array>
+        {{- end}}
         <key>NSAppTransportSecurity</key>
         <dict>
             <key>NSAllowsLocalNetworking</key>
             <true/>
         </dict>
+        {{- if .Protocols}}
+        <key>CFBundleURLTypes</key>
+        <array>
+            {{- range .Protocols}}
+            <dict>
+                <key>CFBundleURLName</key>
+                <string>wails.com.{{.Scheme}}</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>{{.Scheme}}</string>
+                </array>
+            </dict>
+            {{- end}}
+        </array>
+        {{- end}}
     </dict>
 </plist>

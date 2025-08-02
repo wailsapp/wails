@@ -600,6 +600,7 @@ void windowSetShadow(void* nsWindow, bool hasShadow) {
 }
 
 
+
 // windowClose closes the current window
 static void windowClose(void *window) {
 	[(WebviewWindow*)window close];
@@ -815,6 +816,7 @@ static void setIgnoreMouseEvents(void *nsWindow, bool ignore) {
 import "C"
 import (
 	"sync"
+	"sync/atomic"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
@@ -832,7 +834,7 @@ func (w *macosWebviewWindow) handleKeyEvent(acceleratorString string) {
 	// Parse acceleratorString
 	accelerator, err := parseAccelerator(acceleratorString)
 	if err != nil {
-		globalApplication.error("unable to parse accelerator: %s", err.Error())
+		globalApplication.error("unable to parse accelerator: %w", err)
 		return
 	}
 	w.parent.processKeyBinding(accelerator.String())
@@ -907,6 +909,7 @@ func (w *macosWebviewWindow) show() {
 }
 
 func (w *macosWebviewWindow) hide() {
+	globalApplication.debug("Window hiding", "windowId", w.parent.id, "title", w.parent.options.Title)
 	C.windowHide(w.nsWindow)
 }
 
@@ -955,7 +958,11 @@ func (w *macosWebviewWindow) windowZoom() {
 }
 
 func (w *macosWebviewWindow) close() {
+	globalApplication.debug("Window close() called - setting unconditionallyClose flag", "windowId", w.parent.id, "title", w.parent.options.Title)
+	// Set the unconditionallyClose flag to allow the window to close
+	atomic.StoreUint32(&w.parent.unconditionallyClose, 1)
 	C.windowClose(w.nsWindow)
+	globalApplication.debug("Window close() completed", "windowId", w.parent.id, "title", w.parent.options.Title)
 	// TODO: Check if we need to unregister the window here or not
 }
 
@@ -1038,10 +1045,14 @@ func (w *macosWebviewWindow) setEnabled(enabled bool) {
 
 func (w *macosWebviewWindow) execJS(js string) {
 	InvokeAsync(func() {
-		if globalApplication.performingShutdown {
+		globalApplication.shutdownLock.Lock()
+		performingShutdown := globalApplication.performingShutdown
+		globalApplication.shutdownLock.Unlock()
+
+		if performingShutdown {
 			return
 		}
-		if w.nsWindow == nil {
+		if w.nsWindow == nil || w.parent.isDestroyed() {
 			return
 		}
 		C.windowExecJS(w.nsWindow, C.CString(js))
@@ -1264,7 +1275,7 @@ func (w *macosWebviewWindow) run() {
 
 		startURL, err := assetserver.GetStartURL(options.URL)
 		if err != nil {
-			globalApplication.fatal(err.Error())
+			globalApplication.handleFatalError(err)
 		}
 
 		w.setURL(startURL)
@@ -1423,6 +1434,7 @@ func (w *macosWebviewWindow) delete() {
 func (w *macosWebviewWindow) redo() {
 }
 
-func (w *macosWebviewWindow) showMenuBar()   {}
-func (w *macosWebviewWindow) hideMenuBar()   {}
-func (w *macosWebviewWindow) toggleMenuBar() {}
+func (w *macosWebviewWindow) showMenuBar()    {}
+func (w *macosWebviewWindow) hideMenuBar()    {}
+func (w *macosWebviewWindow) toggleMenuBar()  {}
+func (w *macosWebviewWindow) setMenu(_ *Menu) {}

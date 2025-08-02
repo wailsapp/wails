@@ -235,6 +235,15 @@ func (w *linuxWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 	w.setBounds(physicalBounds)
 }
 
+func (w *linuxWebviewWindow) setMenu(menu *Menu) {
+	if menu == nil {
+		w.gtkmenu = nil
+		return
+	}
+	w.parent.options.Linux.Menu = menu
+	w.gtkmenu = (menu.impl).(*linuxMenu).native
+}
+
 func (w *linuxWebviewWindow) run() {
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
@@ -324,7 +333,7 @@ func (w *linuxWebviewWindow) run() {
 
 	startURL, err := assetserver.GetStartURL(w.parent.options.URL)
 	if err != nil {
-		globalApplication.fatal(err.Error())
+		globalApplication.handleFatalError(err)
 	}
 
 	w.setURL(startURL)
@@ -380,7 +389,7 @@ func (w *linuxWebviewWindow) handleKeyEvent(acceleratorString string) {
 	// Parse acceleratorString
 	// accelerator, err := parseAccelerator(acceleratorString)
 	// if err != nil {
-	// 	globalApplication.error("unable to parse accelerator: %s", err.Error())
+	// 	globalApplication.error("unable to parse accelerator: %w", err)
 	// 	return
 	// }
 	w.parent.processKeyBinding(acceleratorString)
@@ -401,6 +410,18 @@ func (w *linuxWebviewWindow) isIgnoreMouseEvents() bool {
 
 func (w *linuxWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 	w.ignoreMouse(w.ignoreMouseEvents)
+}
+
+func (w *linuxWebviewWindow) show() {
+	// Linux implementation is robust - window shows immediately
+	// This is the preferred pattern that Windows should follow
+	w.windowShow()
+}
+
+func (w *linuxWebviewWindow) hide() {
+	// Save position before hiding (consistent with CGO implementation)
+	w.lastX, w.lastY = w.position()
+	w.windowHide()
 }
 
 func (w *linuxWebviewWindow) showMenuBar()   {}

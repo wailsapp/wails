@@ -8,7 +8,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -17,19 +17,16 @@ import * as $models from "./models.js";
 /**
  * Make a cycle.
  */
-export function MakeCycles(): Promise<[$models.Cyclic, $models.GenericCyclic<$models.GenericCyclic<number>>]> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.MakeCycles") as any;
-    let $typingPromise = $resultPromise.then(($result: any) => {
+export function MakeCycles(): $CancellablePromise<[$models.Cyclic, $models.GenericCyclic<$models.GenericCyclic<number>>]> {
+    return $Call.ByName("main.GreetService.MakeCycles").then(($result: any) => {
         $result[0] = $$createType0($result[0]);
         $result[1] = $$createType9($result[1]);
         return $result;
-    }) as any;
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
+    });
 }
 
 // Private type creation functions
-var $$createType0 = (function $$initCreateType0(...args): any {
+var $$createType0 = (function $$initCreateType0(...args: any[]): any {
     if ($$createType0 === $$initCreateType0) {
         $$createType0 = $$createType3;
     }
@@ -38,7 +35,7 @@ var $$createType0 = (function $$initCreateType0(...args): any {
 const $$createType1 = $Create.Nullable($$createType0);
 const $$createType2 = $Create.Map($Create.Any, $$createType1);
 const $$createType3 = $Create.Array($$createType2);
-var $$createType4 = (function $$initCreateType4(...args): any {
+var $$createType4 = (function $$initCreateType4(...args: any[]): any {
     if ($$createType4 === $$initCreateType4) {
         $$createType4 = $$createType8;
     }
@@ -51,7 +48,7 @@ const $$createType7 = $Create.Struct({
     "Y": $$createType6,
 });
 const $$createType8 = $Create.Array($$createType7);
-var $$createType9 = (function $$initCreateType9(...args): any {
+var $$createType9 = (function $$initCreateType9(...args: any[]): any {
     if ($$createType9 === $$initCreateType9) {
         $$createType9 = $$createType13;
     }

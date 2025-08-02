@@ -3,12 +3,15 @@
 package application
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
+	"time"
 	"unsafe"
 
 	"github.com/wailsapp/go-webview2/webviewloader"
@@ -16,6 +19,10 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
+)
+
+var (
+	wmTaskbarCreated = w32.RegisterWindowMessage(w32.MustStringToUTF16Ptr("TaskbarCreated"))
 )
 
 type windowsApp struct {
@@ -40,10 +47,23 @@ type windowsApp struct {
 	// system theme
 	isCurrentlyDarkMode bool
 	currentWindowID     uint
+
+	// Restart taskbar flag
+	restartingTaskbar atomic.Bool
 }
 
 func (m *windowsApp) isDarkMode() bool {
 	return w32.IsCurrentlyDarkMode()
+}
+
+func (m *windowsApp) getAccentColor() string {
+	accentColor, err := w32.GetAccentColor()
+	if err != nil {
+		m.parent.error("failed to get accent color: %w", err)
+		return "rgb(0,122,255)"
+	}
+
+	return accentColor
 }
 
 func (m *windowsApp) isOnMainThread() bool {
@@ -121,7 +141,7 @@ func (m *windowsApp) setApplicationMenu(menu *Menu) {
 	}
 	menu.Update()
 
-	m.parent.ApplicationMenu = menu
+	m.parent.applicationMenu = menu
 }
 
 func (m *windowsApp) run() error {
@@ -135,20 +155,35 @@ func (m *windowsApp) run() error {
 		ctx: blankApplicationEventContext,
 	}
 
-	// Check if there is 1 parameter passed to the application
-	// and if the extension matches the options.FileAssociations string
-	if len(os.Args) == 2 {
-		arg := os.Args[1]
-		ext := filepath.Ext(arg)
-		if slices.Contains(m.parent.options.FileAssociations, ext) {
+	if len(os.Args) == 2 { // Case: program + 1 argument
+		arg1 := os.Args[1]
+		// Check if the argument is likely a URL from a custom protocol invocation
+		if strings.Contains(arg1, "://") {
+			m.parent.info("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
 			eventContext := newApplicationEventContext()
-			eventContext.setOpenedWithFile(arg)
-			// EmitEvent application started event
+			eventContext.setURL(arg1)
 			applicationEvents <- &ApplicationEvent{
-				Id:  uint(events.Common.ApplicationOpenedWithFile),
+				Id:  uint(events.Common.ApplicationLaunchedWithUrl),
 				ctx: eventContext,
 			}
+		} else {
+			// If not a URL-like string, check for file association
+			if m.parent.options.FileAssociations != nil {
+				ext := filepath.Ext(arg1)
+				if slices.Contains(m.parent.options.FileAssociations, ext) {
+					m.parent.info("Application launched with file via file association", "file", arg1)
+					eventContext := newApplicationEventContext()
+					eventContext.setOpenedWithFile(arg1)
+					applicationEvents <- &ApplicationEvent{
+						Id:  uint(events.Common.ApplicationOpenedWithFile),
+						ctx: eventContext,
+					}
+				}
+			}
 		}
+	} else if len(os.Args) > 2 {
+		// Log if multiple arguments are passed, though typical protocol/file launch is a single arg.
+		m.parent.info("Application launched with multiple arguments", "args", os.Args[1:])
 	}
 
 	_ = m.runMainLoop()
@@ -215,12 +250,23 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		if msg == w32.WM_DISPLAYCHANGE || (msg == w32.WM_SETTINGCHANGE && wParam == w32.SPI_SETWORKAREA) {
 			err := m.processAndCacheScreens()
 			if err != nil {
-				m.parent.error(err.Error())
+				m.parent.handleError(err)
 			}
 		}
 	}
 
 	switch msg {
+	case wmTaskbarCreated:
+		if m.restartingTaskbar.Load() {
+			break
+		}
+		m.restartingTaskbar.Store(true)
+		m.reshowSystrays()
+		go func() {
+			// 1 second debounce
+			time.Sleep(1000)
+			m.restartingTaskbar.Store(false)
+		}()
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))
 		if settingChanged == "ImmersiveColorSet" {
@@ -297,6 +343,14 @@ func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
 	}
 }
 
+func (m *windowsApp) reshowSystrays() {
+	m.systrayMapLock.Lock()
+	defer m.systrayMapLock.Unlock()
+	for _, systray := range m.systrayMap {
+		systray.reshow()
+	}
+}
+
 func setupDPIAwareness() error {
 	// https://learn.microsoft.com/en-us/windows/win32/hidpi/setting-the-default-dpi-awareness-for-a-process
 	// https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
@@ -318,14 +372,14 @@ func setupDPIAwareness() error {
 		return w32.SetProcessDPIAware()
 	}
 
-	return fmt.Errorf("no DPI awareness method supported")
+	return errors.New("no DPI awareness method supported")
 }
 
 func newPlatformApp(app *App) *windowsApp {
 
 	err := setupDPIAwareness()
 	if err != nil {
-		app.error(err.Error())
+		app.handleError(err)
 	}
 
 	result := &windowsApp{
@@ -337,7 +391,7 @@ func newPlatformApp(app *App) *windowsApp {
 
 	err = result.processAndCacheScreens()
 	if err != nil {
-		app.fatal(err.Error())
+		app.handleFatalError(err)
 	}
 
 	result.init()
@@ -349,7 +403,9 @@ func newPlatformApp(app *App) *windowsApp {
 func (a *App) logPlatformInfo() {
 	var args []any
 	args = append(args, "Go-WebView2Loader", webviewloader.UsingGoWebview2Loader)
-	webviewVersion, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(a.options.Windows.WebviewBrowserPath)
+	webviewVersion, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(
+		a.options.Windows.WebviewBrowserPath,
+	)
 	if err != nil {
 		args = append(args, "WebView2", "Error: "+err.Error())
 	} else {
@@ -364,7 +420,9 @@ func (a *App) logPlatformInfo() {
 
 func (a *App) platformEnvironment() map[string]any {
 	result := map[string]any{}
-	webviewVersion, _ := webviewloader.GetAvailableCoreWebView2BrowserVersionString(a.options.Windows.WebviewBrowserPath)
+	webviewVersion, _ := webviewloader.GetAvailableCoreWebView2BrowserVersionString(
+		a.options.Windows.WebviewBrowserPath,
+	)
 	result["Go-WebView2Loader"] = webviewloader.UsingGoWebview2Loader
 	result["WebView2"] = webviewVersion
 	return result

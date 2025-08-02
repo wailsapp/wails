@@ -8,7 +8,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -19,15 +19,12 @@ import * as $models from "./models.js";
  * It has a multiline doc comment
  * The comment has even some * / traps!!
  */
-export function Greet(str: string, people: $models.Person[], $2: {"AnotherCount": number, "AnotherOne": $models.Person | null}, assoc: { [_: `${number}`]: boolean | null }, $4: (number | null)[], ...other: string[]): Promise<[$models.Person, any, number[]]> & { cancel(): void } {
-    let $resultPromise = $Call.ByName("main.GreetService.Greet", str, people, $2, assoc, $4, other) as any;
-    let $typingPromise = $resultPromise.then(($result: any) => {
+export function Greet(str: string, people: $models.Person[], $2: {"AnotherCount": number, "AnotherOne": $models.Person | null}, assoc: { [_: `${number}`]: boolean | null }, $4: (number | null)[], ...other: string[]): $CancellablePromise<[$models.Person, any, number[]]> {
+    return $Call.ByName("main.GreetService.Greet", str, people, $2, assoc, $4, other).then(($result: any) => {
         $result[0] = $$createType0($result[0]);
         $result[2] = $$createType1($result[2]);
         return $result;
-    }) as any;
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
+    });
 }
 
 // Private type creation functions

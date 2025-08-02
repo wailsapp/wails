@@ -3,55 +3,41 @@
 package application
 
 import (
-	"github.com/wailsapp/wails/v3/pkg/w32"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v3/pkg/w32"
 )
 
 type windowsMenuItem struct {
 	parent   *Menu
 	menuItem *MenuItem
 
-	hMenu     w32.HMENU
-	id        int
-	label     string
-	disabled  bool
-	checked   bool
-	itemType  menuItemType
-	hidden    bool
-	submenu   w32.HMENU
-	itemAfter *MenuItem
+	hMenu    w32.HMENU
+	id       int
+	label    string
+	disabled bool
+	checked  bool
+	itemType menuItemType
+	hidden   bool
+	submenu  w32.HMENU
 }
 
 func (m *windowsMenuItem) setHidden(hidden bool) {
-	m.hidden = hidden
-	if m.hidden {
-		// iterate the parent items and find the menu item before us
-		for i, item := range m.parent.items {
-			if item == m.menuItem {
-				if i < len(m.parent.items)-1 {
-					m.itemAfter = m.parent.items[i+1]
-				} else {
-					m.itemAfter = nil
-				}
-				break
-			}
-		}
-		// Get the position of this menu item in the parent menu
-		// m.pos = w32.GetMenuItemPosition(m.hMenu, uint32(m.id))
+	if hidden && !m.hidden {
+		m.hidden = true
 		// Remove from parent menu
 		w32.RemoveMenu(m.hMenu, m.id, w32.MF_BYCOMMAND)
-	} else {
-		// Add to parent menu
-		// Get the position of the item before us
+	} else if !hidden && m.hidden {
+		m.hidden = false
+		// Reinsert into parent menu at correct visible position
 		var pos int
-		if m.itemAfter != nil {
-			for i, item := range m.parent.items {
-				if item == m.itemAfter {
-					pos = i - 1
-					break
-				}
+		for _, item := range m.parent.items {
+			if item == m.menuItem {
+				break
 			}
-			m.itemAfter = nil
+			if item.hidden == false {
+				pos++
+			}
 		}
 		w32.InsertMenuItem(m.hMenu, uint32(pos), true, m.getMenuInfo())
 	}
@@ -121,7 +107,7 @@ func (m *windowsMenuItem) setBitmap(bitmap []byte) {
 	// Set the icon
 	err := w32.SetMenuIcons(m.hMenu, m.id, bitmap, nil)
 	if err != nil {
-		globalApplication.error("Unable to set bitmap on menu item: %s", err.Error())
+		globalApplication.error("unable to set bitmap on menu item: %w", err)
 		return
 	}
 	m.update()

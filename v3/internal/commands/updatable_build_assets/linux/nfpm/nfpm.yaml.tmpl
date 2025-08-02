@@ -24,9 +24,37 @@ contents:
   - src: "./build/linux/{{.BinaryName}}.desktop"
     dst: "/usr/share/applications/{{.BinaryName}}.desktop"
 
+# Default dependencies for Debian 12/Ubuntu 22.04+ with WebKit 4.1
 depends:
-  - gtk3
-  - libwebkit2gtk
+  - libgtk-3-dev
+  - libwebkit2gtk-4.1-dev
+  - build-essential
+  - pkg-config
+
+# Distribution-specific overrides for different package formats and WebKit versions
+overrides:
+  # RPM packages for RHEL/CentOS/AlmaLinux/Rocky Linux (WebKit 4.0)
+  rpm:
+    depends:
+      - gtk3-devel
+      - webkit2gtk3-devel
+      - gcc-c++
+      - pkg-config
+  
+  # Arch Linux packages (WebKit 4.1)  
+  archlinux:
+    depends:
+      - gtk3
+      - webkit2gtk-4.1
+      - base-devel
+      - pkgconf
+
+# scripts section to ensure desktop database is updated after install
+scripts:
+  postinstall: "./build/linux/nfpm/scripts/postinstall.sh"
+  # You can also add preremove, postremove if needed
+  # preremove: "./build/linux/nfpm/scripts/preremove.sh"
+  # postremove: "./build/linux/nfpm/scripts/postremove.sh"
 
 # replaces:
 #   - foobar
@@ -43,8 +71,3 @@ depends:
 #   - not-foo
 #   - not-bar
 # changelog: "changelog.yaml"
-# scripts:
-#   preinstall: ./build/linux/nfpm/scripts/preinstall.sh
-#   postinstall: ./build/linux/nfpm/scripts/postinstall.sh
-#   preremove: ./build/linux/nfpm/scripts/preremove.sh
-#   postremove: ./build/linux/nfpm/scripts/postremove.sh

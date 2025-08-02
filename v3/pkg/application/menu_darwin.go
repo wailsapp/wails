@@ -72,19 +72,18 @@ func newMenuImpl(menu *Menu) *macosMenu {
 }
 
 func (m *macosMenu) update() {
-	if m.nsMenu == nil {
-		m.nsMenu = C.createNSMenu(C.CString(m.menu.label))
-	} else {
-		C.clearMenu(m.nsMenu)
-	}
-	m.processMenu(m.nsMenu, m.menu)
+	InvokeSync(func() {
+		if m.nsMenu == nil {
+			m.nsMenu = C.createNSMenu(C.CString(m.menu.label))
+		} else {
+			C.clearMenu(m.nsMenu)
+		}
+		m.processMenu(m.nsMenu, m.menu)
+	})
 }
 
 func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 	for _, item := range menu.items {
-		if item.hidden {
-			continue
-		}
 		switch item.itemType {
 		case submenu:
 			submenu := item.submenu
@@ -100,6 +99,9 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 		case text, checkbox, radio:
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem
+			if item.hidden {
+				menuItem.setHidden(true)
+			}
 			C.addMenuItem(parent, menuItem.nsMenuItem)
 		case separator:
 			C.addMenuSeparator(parent)

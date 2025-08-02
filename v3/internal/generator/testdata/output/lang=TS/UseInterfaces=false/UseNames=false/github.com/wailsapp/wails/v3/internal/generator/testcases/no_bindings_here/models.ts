@@ -3,7 +3,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Create as $Create} from "/wails/runtime.js";
+import { Create as $Create } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -41,7 +41,7 @@ export class HowDifferent<How> {
      * returns a creation function for a concrete instance
      * of the generic class HowDifferent.
      */
-    static createFrom<How>($$createParamHow: (source: any) => How): ($$source?: any) => HowDifferent<How> {
+    static createFrom<How = any>($$createParamHow: (source: any) => How): ($$source?: any) => HowDifferent<How> {
         const $$createField1_0 = $$createType1($$createParamHow);
         return ($$source: any = {}) => {
             let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
@@ -157,7 +157,7 @@ export const PrivatePerson = personImpl;
 export type PrivatePerson = personImpl;
 
 // Private type creation functions
-const $$createType0 = ($$createParamHow) => $Create.Map($Create.Any, $$createParamHow);
-const $$createType1 = ($$createParamHow) => $Create.Array($$createType0($$createParamHow));
+const $$createType0 = ($$createParamHow: any) => $Create.Map($Create.Any, $$createParamHow);
+const $$createType1 = ($$createParamHow: any) => $Create.Array($$createType0($$createParamHow));
 const $$createType2 = other$0.OtherPerson.createFrom($Create.Any);
 const $$createType3 = $Create.Array($$createType2);

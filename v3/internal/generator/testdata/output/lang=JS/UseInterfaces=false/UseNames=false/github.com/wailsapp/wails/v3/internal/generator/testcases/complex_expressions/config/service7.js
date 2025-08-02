@@ -4,12 +4,11 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 /**
- * @returns {Promise<void> & { cancel(): void }}
+ * @returns {$CancellablePromise<void>}
  */
 export function TestMethod() {
-    let $resultPromise = /** @type {any} */($Call.ByID(2241101727));
-    return $resultPromise;
+    return $Call.ByID(2241101727);
 }

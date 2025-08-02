@@ -824,9 +824,14 @@ func windowNewWebview(parentId uint, gpuPolicy int) pointer {
 			"wails",
 			pointer(purego.NewCallback(func(request uintptr) {
 				webviewRequests <- &webViewAssetRequest{
-					Request:    webview.NewRequest(request),
-					windowId:   parentId,
-					windowName: globalApplication.getWindowForID(parentId).Name(),
+					Request:  webview.NewRequest(request),
+					windowId: parentId,
+					windowName: func() string {
+						if window, ok := globalApplication.Window.GetByID(parentId); ok {
+							return window.Name()
+						}
+						return ""
+					}(),
 				}
 			})),
 			0,
@@ -1205,4 +1210,19 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (string, error) {
 
 func isOnMainThread() bool {
 	return mainThreadId == gThreadSelf()
+}
+
+// linuxWebviewWindow show/hide methods for purego implementation
+func (w *linuxWebviewWindow) windowShow() {
+	if w.window == 0 {
+		return
+	}
+	windowShow(w.window)
+}
+
+func (w *linuxWebviewWindow) windowHide() {
+	if w.window == 0 {
+		return
+	}
+	windowHide(w.window)
 }

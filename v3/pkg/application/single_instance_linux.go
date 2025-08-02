@@ -3,12 +3,13 @@
 package application
 
 import (
-	"fmt"
-	"github.com/godbus/dbus/v5"
+	"errors"
 	"os"
 	"strings"
 	"sync"
 	"syscall"
+
+	"github.com/godbus/dbus/v5"
 )
 
 type dbusHandler func(string)
@@ -36,7 +37,7 @@ func newPlatformLock(manager *singleInstanceManager) (platformLock, error) {
 
 func (l *linuxLock) acquire(uniqueID string) error {
 	if uniqueID == "" {
-		return fmt.Errorf("UniqueID is required for single instance lock")
+		return errors.New("UniqueID is required for single instance lock")
 	}
 
 	id := "wails_app_" + strings.ReplaceAll(strings.ReplaceAll(uniqueID, "-", "_"), ".", "_")
@@ -56,11 +57,11 @@ func (l *linuxLock) acquire(uniqueID string) error {
 			secondInstanceBuffer <- message
 		})
 
-		err := conn.Export(f, dbus.ObjectPath(l.dbusPath), l.dbusName)
-		if err != nil {
-			globalApplication.error(err.Error())
-		}
+		err = conn.Export(f, dbus.ObjectPath(l.dbusPath), l.dbusName)
 	})
+	if err != nil {
+		return err
+	}
 
 	reply, err := conn.RequestName(l.dbusName, dbus.NameFlagDoNotQueue)
 	if err != nil {

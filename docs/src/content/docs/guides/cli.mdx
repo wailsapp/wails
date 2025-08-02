@@ -174,13 +174,13 @@ wails3 generate icons [flags]
 ```
 
 #### Flags
-| Flag       | Description                  | Default               |
-|------------|------------------------------|-----------------------|
-| `-input`   | Input PNG file               | Required              |
-| `-windows` | Windows output filename      |                       |
-| `-mac`     | macOS output filename        |                       |
-| `-sizes`   | Icon sizes (comma-separated) | `256,128,64,48,32,16` |
-| `-example` | Generate example icon        | `false`               |
+| Flag               | Description                  | Default               |
+|--------------------|------------------------------|-----------------------|
+| `-input`           | Input PNG file               | Required              |
+| `-windowsfilename` | Windows output filename      |                       |
+| `-macfilename`     | macOS output filename        |                       |
+| `-sizes`           | Icon sizes (comma-separated) | `256,128,64,48,32,16` |
+| `-example`         | Generate example icon        | `false`               |
 
 ### `generate syso`
 Generates Windows .syso file.
@@ -323,6 +323,32 @@ Shows build information about the application.
 
 ```bash
 wails3 tool buildinfo
+```
+
+### `tool version`
+Bumps a semantic version based on the provided flags.
+
+```bash
+wails3 tool version [flags]
+```
+
+#### Flags
+| Flag          | Description                                      | Default |
+|---------------|--------------------------------------------------|---------|
+| `-v`          | Current version to bump                          |         |
+| `-major`      | Bump major version                               | `false` |
+| `-minor`      | Bump minor version                               | `false` |
+| `-patch`      | Bump patch version                               | `false` |
+| `-prerelease` | Bump prerelease version (e.g., alpha.5 to alpha.6) | `false` |
+
+The command follows the precedence order: major > minor > patch > prerelease. It preserves the "v" prefix if present in the input version, as well as any prerelease and metadata components.
+
+Example usage:
+```bash
+wails3 tool version -v 1.2.3 -major      # Output: 2.0.0
+wails3 tool version -v v1.2.3 -minor     # Output: v1.3.0
+wails3 tool version -v 1.2.3-alpha -patch # Output: 1.2.4-alpha
+wails3 tool version -v v3.0.0-alpha.5 -prerelease # Output: v3.0.0-alpha.6
 ```
 
 ### `tool package`

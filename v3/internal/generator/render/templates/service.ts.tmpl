@@ -21,7 +21,7 @@
 {{end}}
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call{{if not $useInterfaces}}, Create as $Create{{end -}} } from "{{js $runtime}}";
+import { Call as $Call, CancellablePromise as $CancellablePromise{{if not $useInterfaces}}, Create as $Create{{end}} } from "{{js $runtime}}";
 {{range $imports.External}}
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -49,7 +49,7 @@ import * as $models from "./{{js $models}}";
     {{- if gt $i 0}}, {{end}}
     {{- if .Variadic}}...{{end}}
     {{- jsparam $i .}}: {{$module.JSType .Type}}{{if .Variadic}}[]{{end}}
-{{- end}}): Promise<
+{{- end}}): $CancellablePromise<
     {{- if eq 0 (len .Results) -}}
         void
     {{- else if eq 1 (len .Results)}}
@@ -59,16 +59,16 @@ import * as $models from "./{{js $models}}";
             {{- if gt $i 0}}, {{end}}
             {{- $module.JSType $result}}
         {{- end}}]
-    {{- end}}> & { cancel(): void } {
+    {{- end}}> {
     {{- if $useNames}}
-    let $resultPromise = $Call.ByName("{{js .FQN}}"
+    return $Call.ByName("{{js .FQN}}"
     {{- else}}
-    let $resultPromise = $Call.ByID({{.ID}}
-    {{- end}}{{range $i, $param := .Params}}, {{jsparam $i .}}{{end}}) as any;
-    {{- if or $useInterfaces (not .Results) ($module.SkipCreate .Results)}}
-    return $resultPromise;
-    {{- else}}
-    let $typingPromise = $resultPromise.then(($result: any) => {
+    return $Call.ByID({{.ID}}
+    {{- end}}{{range $i, $param := .Params}}, {{jsparam $i .}}{{end}})
+    {{- if or $useInterfaces (not .Results) ($module.SkipCreate .Results) -}}
+    ;
+    {{- else -}}
+    .then(($result: any) => {
     {{- if eq 1 (len .Results)}}
         return {{$module.JSCreate (index .Results 0)}}($result);
     {{- else}}
@@ -79,9 +79,7 @@ import * as $models from "./{{js $models}}";
         {{- end}}{{end}}
         return $result;
     {{- end}}
-    }) as any;
-    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
-    return $typingPromise;
+    });
     {{- end}}
 }
 {{end}}

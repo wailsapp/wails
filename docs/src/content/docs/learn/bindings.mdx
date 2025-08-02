@@ -183,7 +183,6 @@ func main() {
 		},
 	})
 	// ....
-	app.NewWebviewWindow()
 	err := app.Run()
 	if err != nil {
 		log.Fatal(err)
@@ -437,8 +436,9 @@ func (s *MyService) WindowAwareMethod(ctx context.Context) (string, error) {
 ```
 
 From the frontend, these methods can be called normally. If you need to cancel a
-long-running operation, the Promise will be rejected with the cancellation
-error:
+long-running operation, you can call the special `cancel` method on the promise
+and it will reject immediately with a special cancellation error;
+the Go context will be cancelled and the actual result of the call will be discarded:
 
 ```javascript
 // Call the method
@@ -448,3 +448,227 @@ const promise = MyService.LongRunningTask("input");
 // This will cause the context to be cancelled in the Go method
 promise.cancel();
 ```
+
+In fact, the runtime returns a special promise wrapper
+that provides cancellation support for arbitrarily long promise chains.
+For example:
+
+```javascript
+import { CancelError } from "@wailsio/runtime";
+
+// Call the method and process its output
+const promise = MyService.LongRunningTask("input").then((result) => {
+    console.log(result);
+}).catch((err) => {
+    if (err instanceof CancelError) {
+        console.log("Cancelled.", err.cause);
+    } else {
+        console.error("Failed.", err);
+    }
+});
+
+// Later...
+// cancel() accepts an optional cause parameter
+// that will be attached to the cancellation error:
+promise.cancel("I'm tired of waiting!").then(() => {
+    // Cancellation has been requested successfully
+    // and all handlers attached above have run.
+    console.log("Ready for the next adventure!");
+});
+```
+
+The `cancel` method returns a promise that fulfills always (and never rejects)
+after the cancellation request has been submitted successfully
+and all previously attached handlers have run.
+
+:::note
+Calling the `cancel` method on a settled promise is safe and has no effect;
+if the task completes before the call to `cancel`, the code above is going to log:
+
+```
+completed
+Ready for the next adventure!
+```
+
+However, if `cancel` is called before the task finishes, the output will be:
+
+```
+Cancelled. I'm tired of waiting!
+Ready for the next adventure!
+```
+:::
+
+The approach discussed above requires storing and chaining promises manually,
+which can be cumbersome for code written in `async`/`await` style.
+If you target plaforms that support the `AbortController`/`AbortSignal` idiom,
+you can call the `cancelOn` method and tie call cancellation to an `AbortSignal` instead:
+
+```javascript
+async function callBinding(signal) {
+    try {
+        await MyService.LongRunningTask("input").cancelOn(signal);
+    } catch (err) {
+        if (err instanceof CancelError) {
+            console.log("Cancelled! Cause: ", err.cause);
+        } else {
+            console.error("Failed! Error: ", err);
+        }
+    }
+}
+
+let controller = new AbortController();
+callBinding(controller.signal);
+
+// Later...
+controller.abort("I'm tired of waiting!");
+```
+
+:::caution
+On the macOS platform, `AbortSignal` is only supported from macOS 10.15 Catalina onwards.
+:::
+
+### Handling errors
+
+As you may have noticed above, bound methods can return errors, which are handled specially.
+When a result field has type `error`, it is omitted by default from the values returned to JS.
+When such a field is _non-nil_, the promise rejects with a `RuntimeError` exception
+that wraps the Go error message:
+
+```go
+func (*MyService) FailingMethod(name string) error {
+    return fmt.Errorf("Welcome to an imperfect world, %s", name)
+}
+```
+
+```js
+import { MyService } from './bindings/changeme';
+
+try {
+    await MyService.FailingMethod("CLU")
+} catch (err) {
+    if (err.name === 'RuntimeError') {
+        console.log(err.message); // Prints 'Welcome to an imperfect world, CLU'
+    }
+}
+```
+
+The exception will be an instance of the `Call.RuntimeError` class from the wails runtime,
+hence you can also test its type like this:
+
+```js
+import { Call } from '@wailsio/runtime';
+
+try {
+    // ...
+} catch (err) {
+    if (err instanceof Call.RuntimeError) {
+        // ...
+    }
+}
+```
+
+If the Go error value supports JSON marshaling, the exception's `cause` property
+will hold the marshaled version of the error:
+
+```go
+type ImperfectWorldError struct {
+    Name string `json:"name"`
+}
+
+func (err *ImperfectWorldError) Error() {
+    return fmt.Sprintf("Welcome to an imperfect world, %s", err.Name)
+}
+
+func (*MyService) FailingMethod(name string) error {
+    return &ImperfectWorldError{
+        Name: name,
+    }
+}
+```
+
+```js
+import { MyService } from './bindings/changeme';
+
+try {
+    await MyService.FailingMethod("CLU")
+} catch (err) {
+    if (err.name === 'RuntimeError') {
+        console.log(err.cause.name); // Prints 'CLU'
+    }
+}
+```
+
+Generally, many Go error values will only have limited or no support for marshaling to JSON.
+If you so wish, you can customise the value provided as cause
+by specifying either a global or per-service error marshaling function:
+
+```go
+app := application.New(application.Options{
+    MarshalError: func(err error) []byte {
+        // ...
+    },
+    Services: []application.Service{
+        application.NewServiceWithOptions(&MyService{}, application.ServiceOptions{
+            MarshalError: func(err error) []byte {
+                // ...
+            },
+        }),
+    },
+})
+```
+
+Per-service functions override the global function,
+which in turn overrides the default behaviour of using `json.Marshal`.
+If a marshaling function returns `nil`, it falls back to the outer function:
+per-service functions fall back to the global function,
+which in turn falls back to the default behaviour.
+
+:::tip
+If you wish to omit the `cause` property on the resulting exception,
+let the marshaling function return a falsy JSON value like `[]byte("null")`.
+:::
+
+Here's an example marshaling function that unwraps path errors and reports the file path:
+
+```go
+app := application.New(application.Options{
+    MarshalError: func(err error) []byte {
+        var perr *fs.PathError
+        if !errors.As(err, &perr) {
+            // Not a path error, fall back to default handling.
+            return nil
+        }
+
+        // Marshal path string
+        path, err := json.Marshal(&perr.Path)
+        if err != nil {
+            // String marshaling failed, fall back to default handling.
+            return nil
+        }
+
+        return []byte(fmt.Sprintf(`{"path":%s}`, path))
+    },
+})
+```
+
+:::note
+Error marshaling functions are not allowed to fail.
+If they are not able to process a given error and return valid JSON,
+they should return `nil` and fall back to a more generic handler.
+If no strategy succeeds, the exception will not have a `cause` property.
+:::
+
+Binding call promises may also reject with a `TypeError`
+when the method has been passed the wrong number of arguments,
+when the conversion of arguments from JSON to their Go types fails,
+or when the conversion of results to JSON fails.
+These problems will usually be caught early by the type system.
+If your code typechecks but you still get type errors,
+it might be that some of your Go types are not supported by the `encoding/json` package:
+look for warnings from the binding generator to catch these.
+
+:::caution
+If you see a `ReferenceError` complaining about unknown methods,
+it could mean that your JS bindings have gotten out of sync with Go code
+and must be regenerated.
+:::
