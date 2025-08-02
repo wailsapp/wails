@@ -1,6 +1,12 @@
 {
-  "include": ["output/**/*.js", "output/**/*.ts"],
-  "exclude": ["output/**/*.got.?s"],
+  "include": [
+    "output/**/*.js",
+    "output/**/*.ts"
+  ],
+  "exclude": [
+    "output/**/*.d.ts",
+    "output/**/*.got.?s"
+  ],
   "references": [
     { "path": "../../runtime/desktop/@wailsio/runtime" }
   ],
@@ -8,7 +14,7 @@
     "allowJs": true,
 
     "noEmit": true,
-    "skipLibCheck": true,
+    "skipLibCheck": false,
 
     "target": "ES2015",
     "module": "ES2015",
@@ -29,7 +35,7 @@
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
-      "/wails/runtime.js": ["../../runtime/desktop/@wailsio/runtime/src/index.ts"]
+      "/wails/runtime.js": ["../../runtime/desktop/@wailsio/runtime"]
     }
   }
 }
