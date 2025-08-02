@@ -197,7 +197,6 @@ static void startSingleInstanceListener(const char *uniqueID) {
 import "C"
 import (
 	"encoding/json"
-	"fmt"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
@@ -384,34 +383,26 @@ func processDragItems(windowID C.uint, arr **C.char, length C.int, x C.int, y C.
 		filenames = append(filenames, C.GoString(str))
 	}
 
-	if globalApplication != nil && globalApplication.Logger != nil {
-		globalApplication.Logger.Debug(
-			"[DragDropDebug] processDragItems called",
-			"windowID",
-			windowID,
-			"fileCount",
-			len(filenames),
-			"x",
-			x,
-			"y",
-			y,
-		)
-	} else {
-		fmt.Printf("[DragDropDebug] processDragItems called - windowID: %d, fileCount: %d, x: %d, y: %d\n", windowID, len(filenames), x, y)
-	}
+	globalApplication.debug(
+		"[DragDropDebug] processDragItems called",
+		"windowID",
+		windowID,
+		"fileCount",
+		len(filenames),
+		"x",
+		x,
+		"y",
+		y,
+	)
 	targetWindow, ok := globalApplication.Window.GetByID(uint(windowID))
 	if !ok || targetWindow == nil {
 		println("Error: processDragItems could not find window with ID:", uint(windowID))
 		return
 	}
 
-	if globalApplication != nil && globalApplication.Logger != nil {
-		globalApplication.Logger.Debug(
-			"[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing",
-		)
-	} else {
-		fmt.Printf("[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing\n")
-	}
+	globalApplication.debug(
+		"[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing",
+	)
 	targetWindow.InitiateFrontendDropProcessing(filenames, int(x), int(y))
 }
 

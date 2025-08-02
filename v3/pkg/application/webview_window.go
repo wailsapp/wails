@@ -1221,15 +1221,15 @@ func (w *WebviewWindow) Error(message string, args ...any) {
 }
 
 func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string, dropZone *DropZoneDetails) {
-	fmt.Printf(
-		"[DragDropDebug] HandleDragAndDropMessage called - Files: %v, DropZone: %+v\n",
-		filenames,
-		dropZone,
+	globalApplication.debug(
+		"[DragDropDebug] HandleDragAndDropMessage called",
+		"files", filenames,
+		"dropZone", dropZone,
 	)
 	thisEvent := NewWindowEvent()
-	fmt.Printf(
-		"[DragDropDebug] HandleDragAndDropMessage: thisEvent created, thisEvent.ctx is initially: %p\n",
-		thisEvent.ctx,
+	globalApplication.debug(
+		"[DragDropDebug] HandleDragAndDropMessage: thisEvent created",
+		"ctx", thisEvent.ctx,
 	)
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(filenames)
@@ -1237,19 +1237,19 @@ func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string, dropZone *D
 		ctx.setDropZoneDetails(dropZone)
 	}
 	thisEvent.ctx = ctx
-	fmt.Printf(
-		"[DragDropDebug] HandleDragAndDropMessage: thisEvent.ctx assigned, thisEvent.ctx is now: %p, ctx is: %p\n",
-		thisEvent.ctx,
-		ctx,
+	globalApplication.debug(
+		"[DragDropDebug] HandleDragAndDropMessage: thisEvent.ctx assigned",
+		"thisEvent.ctx", thisEvent.ctx,
+		"ctx", ctx,
 	)
 	listeners := w.eventListeners[uint(events.Common.WindowDropZoneFilesDropped)]
-	fmt.Printf(
-		"[DragDropDebug] HandleDragAndDropMessage: Found %d listeners for WindowDropZoneFilesDropped\n",
-		len(listeners),
+	globalApplication.debug(
+		"[DragDropDebug] HandleDragAndDropMessage: Found listeners for WindowDropZoneFilesDropped",
+		"count", len(listeners),
 	)
-	fmt.Printf(
-		"[DragDropDebug] HandleDragAndDropMessage: Before calling listeners, thisEvent.ctx is: %p\n",
-		thisEvent.ctx,
+	globalApplication.debug(
+		"[DragDropDebug] HandleDragAndDropMessage: Before calling listeners",
+		"thisEvent.ctx", thisEvent.ctx,
 	)
 	for _, listener := range listeners {
 		if listener == nil {
@@ -1465,10 +1465,10 @@ func (w *WebviewWindow) ToggleMenuBar() {
 }
 
 func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int, y int) {
-	fmt.Printf(
-		"[DragDropDebug] InitiateFrontendDropProcessing called - X: %d, Y: %d",
-		x,
-		y,
+	globalApplication.debug(
+		"[DragDropDebug] InitiateFrontendDropProcessing called",
+		"x", x,
+		"y", y,
 	)
 	if w.impl == nil || w.isDestroyed() {
 		return
