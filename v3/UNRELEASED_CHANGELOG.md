@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix Windows nil pointer dereference bug reported in [#4456](https://github.com/wailsapp/wails/issues/4456) by @leaanthony in [#4460](https://github.com/wailsapp/wails/pull/4460)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
