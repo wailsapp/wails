@@ -111,6 +111,7 @@ type (
 		hideMenuBar()
 		toggleMenuBar()
 		setMenu(menu *Menu)
+		snapAssist()
 	}
 )
 
@@ -1495,4 +1496,13 @@ func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int
 	InvokeSync(func() {
 		w.impl.execJS(jsCall)
 	})
+}
+
+// SnapAssist triggers the Windows Snap Assist feature by simulating Win+Z key combination.
+// On Windows, this opens the snap layout options. On Linux and macOS, this is a no-op.
+func (w *WebviewWindow) SnapAssist() {
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+	InvokeSync(w.impl.snapAssist)
 }

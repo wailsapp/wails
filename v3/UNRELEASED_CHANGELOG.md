@@ -18,13 +18,14 @@ After processing, the content will be moved to the main changelog and this file 
 ## Added
 <!-- New features, capabilities, or enhancements -->
 - Support for dropzones with event sourcing dropped element data [@atterpac](https://github.com/atterpac) in [#4318](https://github.com/wailsapp/wails/pull/4318)
+- Added Run go mod tidy automatically after wails init [@triadmoko](https://github.com/triadmoko) in [PR](https://github.com/wailsapp/wails/pull/4286)
+- Windows Snapassist feature by @leaanthony in [PR](https://github.dev/wailsapp/wails/pull/4463)
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
-- Fixed notification parsing on Windows @popaprozac in [PR](https://github.com/wailsapp/wails/pull/4450)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

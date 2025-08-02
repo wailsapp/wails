@@ -65,7 +65,8 @@ const ZoomMethod                        = 45;
 const ZoomInMethod                      = 46;
 const ZoomOutMethod                     = 47;
 const ZoomResetMethod                   = 48;
-const WindowDropZoneDropped             = 49;
+const SnapAssistMethod                  = 49;
+const WindowDropZoneDropped             = 50;
 
 function getDropzoneElement(element: Element | null): Element | null {
     if (!element) {
@@ -572,6 +573,13 @@ class Window {
         };
 
         this[callerSym](WindowDropZoneDropped, payload);
+    }
+  
+    /* Triggers Windows 11 Snap Assist feature (Windows only).
+     * This is equivalent to pressing Win+Z and shows snap layout options.
+     */
+    SnapAssist(): Promise<void> {
+        return this[callerSym](SnapAssistMethod);
     }
 }
 

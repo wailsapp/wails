@@ -58,7 +58,8 @@ const (
 	WindowZoomIn                     = 46
 	WindowZoomOut                    = 47
 	WindowZoomReset                  = 48
-	WindowDropZoneDropped            = 49
+	WindowSnapAssist                 = 49
+	WindowDropZoneDropped            = 50
 )
 
 var windowMethodNames = map[int]string{
@@ -112,6 +113,7 @@ var windowMethodNames = map[int]string{
 	WindowZoomOut:                    "ZoomOut",
 	WindowZoomReset:                  "ZoomReset",
 	WindowDropZoneDropped:            "DropZoneDropped",
+	WindowSnapAssist:                 "SnapAssist",
 }
 
 func (m *MessageProcessor) processWindowMethod(
@@ -480,6 +482,9 @@ func (m *MessageProcessor) processWindowMethod(
 			fmt.Sprintf("%+v", msg),
 		)
 		windowDragAndDropBuffer <- msg
+    m.ok(rw)
+	case WindowSnapAssist:
+		window.SnapAssist()
 		m.ok(rw)
 	default:
 		m.httpError(rw, "Invalid window call:", fmt.Errorf("unknown method %d", method))
