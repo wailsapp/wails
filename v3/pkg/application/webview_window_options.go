@@ -443,6 +443,8 @@ type MacWebviewPreferences struct {
 	TextInteractionEnabled u.Bool
 	// FullscreenEnabled will enable fullscreen
 	FullscreenEnabled u.Bool
+	// AllowsBackForwardNavigationGestures enables horizontal swipe gestures for back/forward navigation
+	AllowsBackForwardNavigationGestures u.Bool
 }
 
 // MacTitleBar contains options for the Mac titlebar

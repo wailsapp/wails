@@ -26,6 +26,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Add support for `allowsBackForwardNavigationGestures` in macOS WKWebView to enable two-finger swipe navigation gestures (#1857)
 - Fixes issue where onClick didn't work for menu items initially set as disabled by @leaanthony in [PR #4469](https://github.com/wailsapp/wails/pull/4469). Thanks to @IanVS for the initial investigation.
 - Fix Vite server not being cleaned up when build fails (#4403)
 
