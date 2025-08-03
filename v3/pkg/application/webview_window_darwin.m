@@ -285,6 +285,10 @@ extern bool windowShouldUnconditionallyClose(unsigned int);
         }
 
         char** cArray = (char**)malloc(count * sizeof(char*));
+        if (cArray == NULL) {
+            NSLog(@"WebviewWindowDelegate: performDragOperation - Failed to allocate memory for file array.");
+            return NO;
+        }
         for (NSUInteger i = 0; i < count; i++) {
             NSString* str = files[i];
             NSLog(@"WebviewWindowDelegate: performDragOperation - File %lu: %@", (unsigned long)i, str);
