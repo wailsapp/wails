@@ -9,33 +9,6 @@ import (
 	"unsafe"
 )
 
-type JumpListItemType int
-
-const (
-	JumpListItemTypeTask JumpListItemType = iota
-	JumpListItemTypeSeparator
-)
-
-type JumpListItem struct {
-	Type        JumpListItemType
-	Title       string
-	Description string
-	FilePath    string
-	Arguments   string
-	IconPath    string
-	IconIndex   int
-}
-
-type JumpListCategory struct {
-	Name  string
-	Items []JumpListItem
-}
-
-type JumpList struct {
-	app        *windowsApp
-	categories []JumpListCategory
-}
-
 var (
 	modole32                          = syscall.NewLazyDLL("ole32.dll")
 	modshell32                        = syscall.NewLazyDLL("shell32.dll")
@@ -169,15 +142,13 @@ func (app *windowsApp) CreateJumpList() *JumpList {
 	}
 }
 
-func (j *JumpList) AddCategory(category JumpListCategory) {
-	j.categories = append(j.categories, category)
-}
+func (j *JumpList) applyPlatform() error {
+	// Type assert to get the windowsApp
+	app, ok := j.app.(*windowsApp)
+	if !ok {
+		return fmt.Errorf("invalid app type for Windows jumplist")
+	}
 
-func (j *JumpList) ClearCategories() {
-	j.categories = []JumpListCategory{}
-}
-
-func (j *JumpList) Apply() error {
 	hr := w32.CoInitializeEx(0, w32.COINIT_APARTMENTTHREADED)
 	if hr != w32.S_OK && hr != w32.S_FALSE {
 		return fmt.Errorf("CoInitializeEx failed: %v", hr)
@@ -197,7 +168,7 @@ func (j *JumpList) Apply() error {
 	}
 	defer pDestList.Release()
 
-	appID := w32.MustStringToUTF16Ptr(j.app.parent.options.Name)
+	appID := w32.MustStringToUTF16Ptr(app.parent.options.Name)
 	
 	hr = pDestList.SetAppID(appID)
 	if hr != w32.S_OK {
