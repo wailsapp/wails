@@ -12,8 +12,10 @@ import { CancellablePromise, type CancellablePromiseWithResolvers } from "./canc
 import { newRuntimeCaller, objectNames } from "./runtime.js";
 import { nanoid } from "./nanoid.js";
 
-// Remove global callback handlers setup - HTTP-only implementation
-// DELETE: window._wails = window._wails || {};
+// Initialize global _wails object (still needed by other runtime components)
+window._wails = window._wails || {};
+
+// Remove callback handlers setup - HTTP-only implementation no longer needs these
 // DELETE: window._wails.callResultHandler = resultHandler;
 // DELETE: window._wails.callErrorHandler = errorHandler;
 

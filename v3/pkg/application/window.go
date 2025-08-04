@@ -5,8 +5,7 @@ import (
 )
 
 type Callback interface {
-	CallError(callID string, result string, isJSON bool)
-	CallResponse(callID string, result string)
+	// CallError and CallResponse removed - HTTP-only bindings use direct HTTP responses
 	DialogError(dialogID string, result string)
 	DialogResponse(dialogID string, result string, isJSON bool)
 }
