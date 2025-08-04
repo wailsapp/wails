@@ -116,7 +116,7 @@ type (
 
 type WindowEvent struct {
 	ctx       *WindowEventContext
-	Cancelled bool
+	cancelled atomic.Bool
 }
 
 func (w *WindowEvent) Context() *WindowEventContext {
@@ -127,8 +127,12 @@ func NewWindowEvent() *WindowEvent {
 	return &WindowEvent{}
 }
 
+func (w *WindowEvent) IsCancelled() bool {
+	return w.cancelled.Load()
+}
+
 func (w *WindowEvent) Cancel() {
-	w.Cancelled = true
+	w.cancelled.Store(true)
 }
 
 type WindowEventListener struct {
@@ -189,11 +193,18 @@ func (w *WebviewWindow) SetMenu(menu *Menu) {
 
 // EmitEvent emits an event from the window
 func (w *WebviewWindow) EmitEvent(name string, data ...any) {
-	globalApplication.Event.EmitEvent(&CustomEvent{
+	event := &CustomEvent{
 		Name:   name,
-		Data:   data,
 		Sender: w.Name(),
-	})
+	}
+
+	if len(data) == 1 {
+		event.Data = data[0]
+	} else if len(data) > 1 {
+		event.Data = data
+	}
+
+	globalApplication.Event.EmitEvent(event)
 }
 
 var windowID uint
@@ -209,7 +220,10 @@ func getWindowID() uint {
 // FIXME: This should like be an interface method (TDM)
 // Use onApplicationEvent to register a callback for an application event from a window.
 // This will handle tidying up the callback when the window is destroyed
-func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func(*ApplicationEvent)) {
+func (w *WebviewWindow) onApplicationEvent(
+	eventType events.ApplicationEventType,
+	callback func(*ApplicationEvent),
+) {
 	cancelFn := globalApplication.Event.OnApplicationEvent(eventType, callback)
 	w.addCancellationFunction(cancelFn)
 }
@@ -825,7 +839,7 @@ func (w *WebviewWindow) HandleWindowEvent(id uint) {
 
 	for _, thisHook := range hooks {
 		thisHook.callback(thisEvent)
-		if thisEvent.Cancelled {
+		if thisEvent.IsCancelled() {
 			return
 		}
 	}
@@ -837,6 +851,9 @@ func (w *WebviewWindow) HandleWindowEvent(id uint) {
 
 	for _, listener := range tempListeners {
 		go func() {
+			if thisEvent.IsCancelled() {
+				return
+			}
 			defer handlePanic()
 			listener.callback(thisEvent)
 		}()

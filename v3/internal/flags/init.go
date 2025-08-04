@@ -11,6 +11,7 @@ type Init struct {
 	List               bool   `name:"l" description:"List templates"`
 	SkipGoModTidy      bool   `name:"skipgomodtidy" description:"Skip running go mod tidy"`
 	Git                string `name:"git" description:"Git repository URL to initialize (e.g. github.com/username/project)"`
+	ModulePath         string `name:"mod" description:"The Go module path for the project. Will be computed from the Git URL if unspecified."`
 	ProductName        string `description:"The name of the product" default:"My Product"`
 	ProductDescription string `description:"The description of the product" default:"My Product Description"`
 	ProductVersion     string `description:"The version of the product" default:"0.1.0"`
