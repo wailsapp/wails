@@ -798,6 +798,23 @@ func (a *App) AssetServerHandler() func(rw http.ResponseWriter, req *http.Reques
 	return a.assets.ServeHTTP
 }
 
+func (a *App) CreateJumpList() *JumpList {
+	if a.impl == nil {
+		return nil
+	}
+	// Call the platform-specific implementation
+	switch impl := a.impl.(type) {
+	case *windowsApp:
+		return impl.CreateJumpList()
+	case *darwinApp:
+		return impl.CreateJumpList()
+	case *linuxApp:
+		return impl.CreateJumpList()
+	default:
+		return nil
+	}
+}
+
 func (a *App) RegisterWindow(window Window) uint {
 	id := getWindowID()
 	if a.windows == nil {
