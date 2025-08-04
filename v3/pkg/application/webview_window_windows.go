@@ -305,7 +305,8 @@ func (w *windowsWebviewWindow) run() {
 
 	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
-		if (options.Frameless && options.BackgroundType == BackgroundTypeTransparent) || w.parent.options.IgnoreMouseEvents {
+		if (options.Frameless && options.BackgroundType == BackgroundTypeTransparent) ||
+			w.parent.options.IgnoreMouseEvents {
 			// Always if transparent and frameless
 			exStyle |= w32.WS_EX_TRANSPARENT | w32.WS_EX_LAYERED
 		} else {
@@ -391,10 +392,14 @@ func (w *windowsWebviewWindow) run() {
 	if options.Windows.WindowDidMoveDebounceMS == 0 {
 		options.Windows.WindowDidMoveDebounceMS = 50
 	}
-	w.moveDebouncer = debounce.New(time.Duration(options.Windows.WindowDidMoveDebounceMS) * time.Millisecond)
+	w.moveDebouncer = debounce.New(
+		time.Duration(options.Windows.WindowDidMoveDebounceMS) * time.Millisecond,
+	)
 
 	if options.Windows.ResizeDebounceMS > 0 {
-		w.resizeDebouncer = debounce.New(time.Duration(options.Windows.ResizeDebounceMS) * time.Millisecond)
+		w.resizeDebouncer = debounce.New(
+			time.Duration(options.Windows.ResizeDebounceMS) * time.Millisecond,
+		)
 	}
 
 	// Initialise the window buttons
@@ -535,13 +540,71 @@ func (w *windowsWebviewWindow) update() {
 func (w *windowsWebviewWindow) getBorderSizes() *LRTB {
 	var result LRTB
 	var frame w32.RECT
-	w32.DwmGetWindowAttribute(w.hwnd, w32.DWMWA_EXTENDED_FRAME_BOUNDS, unsafe.Pointer(&frame), unsafe.Sizeof(frame))
+	w32.DwmGetWindowAttribute(
+		w.hwnd,
+		w32.DWMWA_EXTENDED_FRAME_BOUNDS,
+		unsafe.Pointer(&frame),
+		unsafe.Sizeof(frame),
+	)
 	rect := w32.GetWindowRect(w.hwnd)
 	result.Left = int(frame.Left - rect.Left)
 	result.Top = int(frame.Top - rect.Top)
 	result.Right = int(rect.Right - frame.Right)
 	result.Bottom = int(rect.Bottom - frame.Bottom)
 	return &result
+}
+
+// convertWindowToWebviewCoordinates converts window-relative coordinates to webview-relative coordinates
+func (w *windowsWebviewWindow) convertWindowToWebviewCoordinates(windowX, windowY int) (int, int) {
+	// Get the client area of the window (this excludes borders, title bar, etc.)
+	clientRect := w32.GetClientRect(w.hwnd)
+	if clientRect == nil {
+		// Fallback: return coordinates as-is if we can't get client rect
+		globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Failed to get client rect, returning original coordinates", "windowX", windowX, "windowY", windowY)
+		return windowX, windowY
+	}
+
+	// Get the window rect to calculate the offset
+	windowRect := w32.GetWindowRect(w.hwnd)
+
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Input window coordinates", "windowX", windowX, "windowY", windowY)
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Window rect",
+		"left", windowRect.Left, "top", windowRect.Top, "right", windowRect.Right, "bottom", windowRect.Bottom,
+		"width", windowRect.Right-windowRect.Left, "height", windowRect.Bottom-windowRect.Top)
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Client rect",
+		"left", clientRect.Left, "top", clientRect.Top, "right", clientRect.Right, "bottom", clientRect.Bottom,
+		"width", clientRect.Right-clientRect.Left, "height", clientRect.Bottom-clientRect.Top)
+
+	// Convert client (0,0) to screen coordinates to find where the client area starts
+	var point w32.POINT
+	point.X = 0
+	point.Y = 0
+
+	// Convert client (0,0) to screen coordinates
+	clientX, clientY := w32.ClientToScreen(w.hwnd, int(point.X), int(point.Y))
+
+	// The window coordinates from drag drop are relative to the window's top-left
+	// But we need them relative to the client area's top-left
+	// So we need to subtract the difference between window origin and client origin
+	windowOriginX := int(windowRect.Left)
+	windowOriginY := int(windowRect.Top)
+
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Client (0,0) in screen coordinates", "clientX", clientX, "clientY", clientY)
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Window origin in screen coordinates", "windowOriginX", windowOriginX, "windowOriginY", windowOriginY)
+
+	// Calculate the offset from window origin to client origin
+	offsetX := clientX - windowOriginX
+	offsetY := clientY - windowOriginY
+
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Calculated offset", "offsetX", offsetX, "offsetY", offsetY)
+
+	// Convert window-relative coordinates to webview-relative coordinates
+	webviewX := windowX - offsetX
+	webviewY := windowY - offsetY
+
+	globalApplication.debug("[DragDropDebug] convertWindowToWebviewCoordinates: Final webview coordinates", "webviewX", webviewX, "webviewY", webviewY)
+
+	return webviewX, webviewY
 }
 
 func (w *windowsWebviewWindow) physicalBounds() Rect {
@@ -569,7 +632,15 @@ func (w *windowsWebviewWindow) setPhysicalBounds(physicalBounds Rect) {
 	// for the target position, this prevents double resizing issue when the window is moved between screens
 	previousFlag := w.ignoreDPIChangeResizing
 	w.ignoreDPIChangeResizing = true
-	w32.SetWindowPos(w.hwnd, 0, physicalBounds.X, physicalBounds.Y, physicalBounds.Width, physicalBounds.Height, w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
+	w32.SetWindowPos(
+		w.hwnd,
+		0,
+		physicalBounds.X,
+		physicalBounds.Y,
+		physicalBounds.Width,
+		physicalBounds.Height,
+		w32.SWP_NOZORDER|w32.SWP_NOACTIVATE,
+	)
 	w.ignoreDPIChangeResizing = previousFlag
 }
 
@@ -761,8 +832,16 @@ func (w *windowsWebviewWindow) fullscreen() {
 		return
 	}
 	// According to https://devblogs.microsoft.com/oldnewthing/20050505-04/?p=35703 one should use w32.WS_POPUP | w32.WS_VISIBLE
-	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w.previousWindowStyle & ^uint32(w32.WS_OVERLAPPEDWINDOW) | (w32.WS_POPUP|w32.WS_VISIBLE))
-	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME))
+	w32.SetWindowLong(
+		w.hwnd,
+		w32.GWL_STYLE,
+		w.previousWindowStyle & ^uint32(w32.WS_OVERLAPPEDWINDOW) | (w32.WS_POPUP|w32.WS_VISIBLE),
+	)
+	w32.SetWindowLong(
+		w.hwnd,
+		w32.GWL_EXSTYLE,
+		w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME),
+	)
 	w.isCurrentlyFullscreen = true
 	w32.SetWindowPos(w.hwnd, w32.HWND_TOP,
 		int(monitorInfo.RcMonitor.Left),
@@ -1060,7 +1139,15 @@ func (w *windowsWebviewWindow) setFrameless(b bool) {
 	} else {
 		w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w32.WS_VISIBLE|w32.WS_OVERLAPPEDWINDOW)
 	}
-	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0, w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_FRAMECHANGED)
+	w32.SetWindowPos(
+		w.hwnd,
+		0,
+		0,
+		0,
+		0,
+		0,
+		w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_FRAMECHANGED,
+	)
 }
 
 func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
@@ -1710,7 +1797,10 @@ func (w *windowsWebviewWindow) processMessage(message string) {
 	}
 }
 
-func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
+func (w *windowsWebviewWindow) processRequest(
+	req *edge.ICoreWebView2WebResourceRequest,
+	args *edge.ICoreWebView2WebResourceRequestedEventArgs,
+) {
 
 	// Setting the UserAgent on the CoreWebView2Settings clears the whole default UserAgent of the Edge browser, but
 	// we want to just append our ApplicationIdentifier. So we adjust the UserAgent for every request.
@@ -1721,7 +1811,10 @@ func (w *windowsWebviewWindow) processRequest(req *edge.ICoreWebView2WebResource
 		if err != nil {
 			globalApplication.fatal("error setting UserAgent header: %w", err)
 		}
-		err = reqHeaders.SetHeader(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(w.parent.id), 10))
+		err = reqHeaders.SetHeader(
+			webViewRequestHeaderWindowId,
+			strconv.FormatUint(uint64(w.parent.id), 10),
+		)
 		if err != nil {
 			globalApplication.fatal("error setting WindowId header: %w", err)
 		}
@@ -1776,7 +1869,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	opts := w.parent.options.Windows
 
-	webview2version, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(globalApplication.options.Windows.WebviewBrowserPath)
+	webview2version, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(
+		globalApplication.options.Windows.WebviewBrowserPath,
+	)
 	if err != nil {
 		globalApplication.error("error getting WebView2 version: %w", err)
 		return
@@ -1845,12 +1940,22 @@ func (w *windowsWebviewWindow) setupChromium() {
 			}
 		}
 		w.dropTarget = w32.NewDropTarget()
-		w.dropTarget.OnDrop = func(files []string) {
+		w.dropTarget.OnDrop = func(files []string, x int, y int) {
 			w.parent.emit(events.Windows.WindowDragDrop)
-			windowDragAndDropBuffer <- &dragAndDropMessage{
-				windowId:  windowID,
-				filenames: files,
-			}
+			globalApplication.debug("[DragDropDebug] Windows DropTarget OnDrop: Raw screen coordinates", "x", x, "y", y)
+
+			// Convert screen coordinates to window-relative coordinates first
+			// Windows DropTarget gives us screen coordinates, but we need window-relative coordinates
+			windowRect := w32.GetWindowRect(w.hwnd)
+			windowRelativeX := x - int(windowRect.Left)
+			windowRelativeY := y - int(windowRect.Top)
+
+			globalApplication.debug("[DragDropDebug] Windows DropTarget OnDrop: After screen-to-window conversion", "windowRelativeX", windowRelativeX, "windowRelativeY", windowRelativeY)
+
+			// Convert window-relative coordinates to webview-relative coordinates
+			webviewX, webviewY := w.convertWindowToWebviewCoordinates(windowRelativeX, windowRelativeY)
+			globalApplication.debug("[DragDropDebug] Windows DropTarget OnDrop: Final webview coordinates", "webviewX", webviewX, "webviewY", webviewY)
+			w.parent.InitiateFrontendDropProcessing(files, webviewX, webviewY)
 		}
 		if opts.OnEnterEffect != 0 {
 			w.dropTarget.OnEnterEffect = convertEffect(opts.OnEnterEffect)
@@ -1910,7 +2015,9 @@ func (w *windowsWebviewWindow) setupChromium() {
 	if settings == nil {
 		globalApplication.fatal("error getting settings")
 	}
-	err = settings.PutAreDefaultContextMenusEnabled(debugMode || !w.parent.options.DefaultContextMenuDisabled)
+	err = settings.PutAreDefaultContextMenusEnabled(
+		debugMode || !w.parent.options.DefaultContextMenuDisabled,
+	)
 	if err != nil {
 		globalApplication.handleFatalError(err)
 	}
@@ -1944,7 +2051,12 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 	// Set background colour
 	w.setBackgroundColour(w.parent.options.BackgroundColour)
-	chromium.SetBackgroundColour(w.parent.options.BackgroundColour.Red, w.parent.options.BackgroundColour.Green, w.parent.options.BackgroundColour.Blue, w.parent.options.BackgroundColour.Alpha)
+	chromium.SetBackgroundColour(
+		w.parent.options.BackgroundColour.Red,
+		w.parent.options.BackgroundColour.Green,
+		w.parent.options.BackgroundColour.Blue,
+		w.parent.options.BackgroundColour.Alpha,
+	)
 
 	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
@@ -1955,7 +2067,10 @@ func (w *windowsWebviewWindow) setupChromium() {
 			script = w.parent.options.JS
 		}
 		if w.parent.options.CSS != "" {
-			script += fmt.Sprintf("; addEventListener(\"DOMContentLoaded\", (event) => { document.head.appendChild(document.createElement('style')).innerHTML=\"%s\"; });", strings.ReplaceAll(w.parent.options.CSS, `"`, `\"`))
+			script += fmt.Sprintf(
+				"; addEventListener(\"DOMContentLoaded\", (event) => { document.head.appendChild(document.createElement('style')).innerHTML=\"%s\"; });",
+				strings.ReplaceAll(w.parent.options.CSS, `"`, `\"`),
+			)
 		}
 		if script != "" {
 			chromium.Init(script)
@@ -1972,7 +2087,10 @@ func (w *windowsWebviewWindow) setupChromium() {
 
 }
 
-func (w *windowsWebviewWindow) fullscreenChanged(sender *edge.ICoreWebView2, _ *edge.ICoreWebView2ContainsFullScreenElementChangedEventArgs) {
+func (w *windowsWebviewWindow) fullscreenChanged(
+	sender *edge.ICoreWebView2,
+	_ *edge.ICoreWebView2ContainsFullScreenElementChangedEventArgs,
+) {
 	isFullscreen, err := sender.GetContainsFullScreenElement()
 	if err != nil {
 		globalApplication.fatal("fatal error in callback fullscreenChanged: %w", err)
@@ -2001,7 +2119,10 @@ func (w *windowsWebviewWindow) flash(enabled bool) {
 	w32.FlashWindow(w.hwnd, enabled)
 }
 
-func (w *windowsWebviewWindow) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
+func (w *windowsWebviewWindow) navigationCompleted(
+	sender *edge.ICoreWebView2,
+	args *edge.ICoreWebView2NavigationCompletedEventArgs,
+) {
 
 	// Install the runtime core
 	w.execJS(runtime.Core())
@@ -2075,7 +2196,9 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 		acc.Modifiers = append(acc.Modifiers, SuperKey)
 	}
 
-	if vkey != w32.VK_CONTROL && vkey != w32.VK_MENU && vkey != w32.VK_SHIFT && vkey != w32.VK_LWIN && vkey != w32.VK_RWIN {
+	if vkey != w32.VK_CONTROL && vkey != w32.VK_MENU && vkey != w32.VK_SHIFT &&
+		vkey != w32.VK_LWIN &&
+		vkey != w32.VK_RWIN {
 		// Convert the vkey to a string
 		accKey, ok := VirtualKeyCodes[vkey]
 		if !ok {
@@ -2100,7 +2223,11 @@ func (w *windowsWebviewWindow) processKeyBinding(vkey uint) bool {
 	return false
 }
 
-func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(
+	message string,
+	sender *edge.ICoreWebView2,
+	args *edge.ICoreWebView2WebMessageReceivedEventArgs,
+) {
 	if strings.HasPrefix(message, "FilesDropped") {
 		objs, err := args.GetAdditionalObjects()
 		if err != nil {
@@ -2143,7 +2270,27 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(message strin
 			filenames = append(filenames, filepath)
 		}
 
-		addDragAndDropMessage(w.parent.id, filenames)
+		// Extract X/Y coordinates from message - format should be "FilesDropped:x:y"
+		var x, y int
+		parts := strings.Split(message, ":")
+		if len(parts) >= 3 {
+			if parsedX, err := strconv.Atoi(parts[1]); err == nil {
+				x = parsedX
+			}
+			if parsedY, err := strconv.Atoi(parts[2]); err == nil {
+				y = parsedY
+			}
+		}
+
+		globalApplication.debug("[DragDropDebug] processMessageWithAdditionalObjects: Raw WebView2 coordinates", "x", x, "y", y)
+
+		// Convert webview-relative coordinates to window-relative coordinates, then to webview-relative coordinates
+		// Note: The coordinates from WebView2 are already webview-relative, but let's log them for debugging
+		webviewX, webviewY := x, y
+
+		globalApplication.debug("[DragDropDebug] processMessageWithAdditionalObjects: Using coordinates as-is (already webview-relative)", "webviewX", webviewX, "webviewY", webviewY)
+
+		w.parent.InitiateFrontendDropProcessing(filenames, webviewX, webviewY)
 		return
 	}
 }
@@ -2179,7 +2326,12 @@ func (w *windowsWebviewWindow) toggleMenuBar() {
 
 func (w *windowsWebviewWindow) enableRedraw() {
 	w32.SendMessage(w.hwnd, w32.WM_SETREDRAW, 1, 0)
-	w32.RedrawWindow(w.hwnd, nil, 0, w32.RDW_ERASE|w32.RDW_FRAME|w32.RDW_INVALIDATE|w32.RDW_ALLCHILDREN)
+	w32.RedrawWindow(
+		w.hwnd,
+		nil,
+		0,
+		w32.RDW_ERASE|w32.RDW_FRAME|w32.RDW_INVALIDATE|w32.RDW_ALLCHILDREN,
+	)
 }
 
 func (w *windowsWebviewWindow) disableRedraw() {
