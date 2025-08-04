@@ -571,8 +571,8 @@ window.EmitEvent("windowevent", "window specific data")
 </TabItem>
 <TabItem label="Traditional API">
 ```go
-// Traditional API (still supported)
-app.Event.Emit(myevent", "hello")
+// Traditional API (no longer works)
+app.EmitEvent("myevent", "hello")
 
 // Emit from a specific window
 window.EmitEvent("windowevent", "window specific data")
