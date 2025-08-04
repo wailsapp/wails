@@ -82,34 +82,32 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 			return
 		}
 
-		ctx, cancel := context.WithCancel(context.WithoutCancel(r.Context()))
+		// Set CORS headers for the response
+		m.setCORSHeaders(rw, r)
 
-		// Schedule cancel in case panics happen before starting the call.
-		cancelRequired := true
-		defer func() {
-			if cancelRequired {
-				cancel()
-			}
-		}()
+		// Create context with timeout from configuration
+		timeout := globalApplication.getBindingTimeout()
+		ctx, cancel := context.WithTimeout(r.Context(), timeout)
+		defer cancel()
 
-		ambiguousID := false
+		// Track the call for cancellation support
 		func() {
 			m.l.Lock()
 			defer m.l.Unlock()
-
+			
 			if m.runningCalls[*callID] != nil {
-				ambiguousID = true
-			} else {
-				m.runningCalls[*callID] = cancel
+				m.handleBindingError(rw, fmt.Errorf("ambiguous call id: %s", *callID))
+				return
 			}
+			m.runningCalls[*callID] = cancel
 		}()
 
-		if ambiguousID {
-			m.httpError(rw, "Invalid binding call:", fmt.Errorf("ambiguous call id: %s", *callID))
-			return
-		}
-
-		m.ok(rw) // From now on, failures are reported through the error callback.
+		// Clean up running call tracking
+		defer func() {
+			m.l.Lock()
+			defer m.l.Unlock()
+			delete(m.runningCalls, *callID)
+		}()
 
 		// Log call
 		var methodRef any = options.MethodName
@@ -118,75 +116,58 @@ func (m *MessageProcessor) processCallMethod(method int, rw http.ResponseWriter,
 		}
 		m.Info("Binding call started:", "id", *callID, "method", methodRef)
 
-		go func() {
-			defer handlePanic()
-			defer func() {
-				m.l.Lock()
-				defer m.l.Unlock()
-				delete(m.runningCalls, *callID)
-			}()
-			defer cancel()
-
-			var boundMethod *BoundMethod
-			if options.MethodName != "" {
-				boundMethod = globalApplication.bindings.Get(&options)
-				if boundMethod == nil {
-					m.callErrorCallback(window, "Binding call failed:", callID, &CallError{
-						Kind:    ReferenceError,
-						Message: fmt.Sprintf("unknown bound method name '%s'", options.MethodName),
-					})
-					return
-				}
-			} else {
-				boundMethod = globalApplication.bindings.GetByID(options.MethodID)
-				if boundMethod == nil {
-					m.callErrorCallback(window, "Binding call failed:", callID, &CallError{
-						Kind:    ReferenceError,
-						Message: fmt.Sprintf("unknown bound method id %d", options.MethodID),
-					})
-					return
-				}
-			}
-
-			// Prepare args for logging. This should never fail since json.Unmarshal succeeded before.
-			jsonArgs, _ := json.Marshal(options.Args)
-			var jsonResult []byte
-			defer func() {
-				m.Info("Binding call complete:", "id", *callID, "method", boundMethod, "args", string(jsonArgs), "result", string(jsonResult))
-			}()
-
-			// Set the context values for the window
-			if window != nil {
-				ctx = context.WithValue(ctx, WindowKey, window)
-			}
-
-			result, err := boundMethod.Call(ctx, options.Args)
-			if cerr := (*CallError)(nil); errors.As(err, &cerr) {
-				switch cerr.Kind {
-				case ReferenceError, TypeError:
-					m.callErrorCallback(window, "Binding call failed:", callID, cerr)
-				case RuntimeError:
-					m.callErrorCallback(window, "Bound method returned an error:", callID, cerr)
-				}
+		// Find the bound method
+		var boundMethod *BoundMethod
+		if options.MethodName != "" {
+			boundMethod = globalApplication.bindings.Get(&options)
+			if boundMethod == nil {
+				m.handleBindingError(rw, &CallError{
+					Kind:    ReferenceError,
+					Message: fmt.Sprintf("unknown bound method name '%s'", options.MethodName),
+				})
 				return
 			}
-
-			if result != nil {
-				// convert result to json
-				jsonResult, err = json.Marshal(result)
-				if err != nil {
-					m.callErrorCallback(window, "Binding call failed:", callID, &CallError{
-						Kind:    TypeError,
-						Message: fmt.Sprintf("error marshaling result: %s", err),
-					})
-					return
-				}
+		} else {
+			boundMethod = globalApplication.bindings.GetByID(options.MethodID)
+			if boundMethod == nil {
+				m.handleBindingError(rw, &CallError{
+					Kind:    ReferenceError,
+					Message: fmt.Sprintf("unknown bound method id %d", options.MethodID),
+				})
+				return
 			}
+		}
 
-			m.callCallback(window, callID, string(jsonResult))
-		}()
+		// Prepare args for logging
+		jsonArgs, _ := json.Marshal(options.Args)
 
-		cancelRequired = false
+		// Set the context values for the window
+		if window != nil {
+			ctx = context.WithValue(ctx, WindowKey, window)
+		}
+
+		// Execute the binding method synchronously
+		result, err := boundMethod.Call(ctx, options.Args)
+		
+		// Log the completion
+		var jsonResult []byte
+		if result != nil {
+			jsonResult, _ = json.Marshal(result)
+		}
+		m.Info("Binding call complete:", "id", *callID, "method", boundMethod, "args", string(jsonArgs), "result", string(jsonResult))
+
+		// Handle errors
+		if err != nil {
+			if cerr := (*CallError)(nil); errors.As(err, &cerr) {
+				m.handleBindingError(rw, cerr)
+			} else {
+				m.handleBindingError(rw, err)
+			}
+			return
+		}
+
+		// Return successful result directly via HTTP
+		m.json(rw, result)
 
 	default:
 		m.httpError(rw, "Invalid binding call:", fmt.Errorf("unknown method: %d", method))
