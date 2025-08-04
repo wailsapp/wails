@@ -33,6 +33,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix Vite server not being cleaned up when build fails (#4403)
 - Fixed panic when closing or cancelling a `SaveFileDialog` on windows. Fixed in [PR](https://github.com/wailsapp/wails/pull/4284) by @hkhere
 - Fixed HTML level drag and drop on Windows by [@mbaklor](https://github.com/mbaklor) in [#4259](https://github.com/wailsapp/wails/pull/4259)
+- Update docs to reflect changes from Manager API Refactoring by @yulesxoxo in [PR #4476](https://github.com/wailsapp/wails/pull/4476)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
