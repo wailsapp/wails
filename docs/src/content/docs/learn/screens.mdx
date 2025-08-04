@@ -394,7 +394,7 @@ app.Logger.Info("Size conversion",
 
 4. **Monitor Screen Changes**: Listen for screen configuration changes:
    ```go
-   app.OnApplicationEvent(events.Common.SystemDisplayChanged, func(event *application.ApplicationEvent) {
+   app.Event.OnApplicationEvent(events.Common.SystemDisplayChanged, func(event *application.ApplicationEvent) {
        // Refresh screen information
        screens := app.Screen.GetAll()
        // Reposition windows if needed
@@ -484,7 +484,7 @@ func createPositionedWindows(app *application.App) {
 
 func monitorScreenChanges(app *application.App) {
     // Monitor for screen configuration changes
-    app.OnApplicationEvent(events.Common.SystemDisplayChanged, func(event *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Common.SystemDisplayChanged, func(event *application.ApplicationEvent) {
         app.Logger.Info("Screen configuration changed")
         
         // Re-analyze screens
