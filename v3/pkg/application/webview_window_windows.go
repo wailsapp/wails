@@ -1798,6 +1798,10 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
+	if len(opts.AdditionalLaunchArgs) > 0 {
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, opts.AdditionalLaunchArgs...)
+	}
+
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
 	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
 
@@ -1833,13 +1837,13 @@ func (w *windowsWebviewWindow) setupChromium() {
 		}
 	}
 
-	if chromium.HasCapability(edge.AllowExternalDrop) {
-		err := chromium.AllowExternalDrag(false)
-		if err != nil {
-			globalApplication.handleFatalError(err)
-		}
-	}
 	if w.parent.options.EnableDragAndDrop {
+		if chromium.HasCapability(edge.AllowExternalDrop) {
+			err := chromium.AllowExternalDrag(false)
+			if err != nil {
+				globalApplication.handleFatalError(err)
+			}
+		}
 		w.dropTarget = w32.NewDropTarget()
 		w.dropTarget.OnDrop = func(files []string) {
 			w.parent.emit(events.Windows.WindowDragDrop)
@@ -1897,17 +1901,6 @@ func (w *windowsWebviewWindow) setupChromium() {
 			globalApplication.handleFatalError(err)
 		}
 	}
-
-	// We will get round to this
-	//if chromium.HasCapability(edge.AllowExternalDrop) {
-	//	err := chromium.AllowExternalDrag(w.parent.options.EnableDragAndDrop)
-	//	if err != nil {
-	//		globalApplication.handleFatalError(err)
-	//	}
-	//	if w.parent.options.EnableDragAndDrop {
-	//		chromium.MessageWithAdditionalObjectsCallback = w.processMessageWithAdditionalObjects
-	//	}
-	//}
 
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
@@ -2280,4 +2273,16 @@ func (w *windowsWebviewWindow) hideMenuBar() {
 	if w.menu != nil {
 		w32.SetMenu(w.hwnd, 0)
 	}
+}
+
+func (w *windowsWebviewWindow) snapAssist() {
+	// Simulate Win+Z key combination to trigger Snap Assist
+	// Press Windows key
+	w32.KeybdEvent(byte(w32.VK_LWIN), 0, 0, 0)
+	// Press Z key
+	w32.KeybdEvent(byte('Z'), 0, 0, 0)
+	// Release Z key
+	w32.KeybdEvent(byte('Z'), 0, w32.KEYEVENTF_KEYUP, 0)
+	// Release Windows key
+	w32.KeybdEvent(byte(w32.VK_LWIN), 0, w32.KEYEVENTF_KEYUP, 0)
 }

@@ -427,3 +427,4 @@ func (w *linuxWebviewWindow) hide() {
 func (w *linuxWebviewWindow) showMenuBar()   {}
 func (w *linuxWebviewWindow) hideMenuBar()   {}
 func (w *linuxWebviewWindow) toggleMenuBar() {}
+func (w *linuxWebviewWindow) snapAssist()    {} // No-op on Linux

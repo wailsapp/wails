@@ -149,6 +149,7 @@ var (
 	procChangeDisplaySettingsEx       = moduser32.NewProc("ChangeDisplaySettingsExW")
 	procSetTimer                      = moduser32.NewProc("SetTimer")
 	procKillTimer                     = moduser32.NewProc("KillTimer")
+	procKeybdEvent                    = moduser32.NewProc("keybd_event")
 	procSendInput                     = moduser32.NewProc("SendInput")
 	procSetWindowsHookEx              = moduser32.NewProc("SetWindowsHookExW")
 	procUnhookWindowsHookEx           = moduser32.NewProc("UnhookWindowsHookEx")
@@ -1491,4 +1492,18 @@ func TrackPopupMenu(hmenu HMENU, flags uint32, x, y int32, reserved int32, hwnd 
 		uintptr(hwnd),
 		uintptr(unsafe.Pointer(prcRect)))
 	return ret != 0
+}
+
+// KeybdEvent synthesizes a keystroke. The system can use such a synthesized keystroke to generate a WM_KEYUP or WM_KEYDOWN message.
+// bVk: Virtual-key code
+// bScan: Hardware scan code
+// dwFlags: Controls various aspects of function operation (KEYEVENTF_EXTENDEDKEY or KEYEVENTF_KEYUP)
+// dwExtraInfo: Additional value associated with the keystroke
+func KeybdEvent(bVk byte, bScan byte, dwFlags uint32, dwExtraInfo uintptr) {
+	procKeybdEvent.Call(
+		uintptr(bVk),
+		uintptr(bScan),
+		uintptr(dwFlags),
+		dwExtraInfo,
+	)
 }
