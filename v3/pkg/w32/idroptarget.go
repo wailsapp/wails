@@ -33,7 +33,13 @@ func init() {
 	)
 }
 
-func _iDropTargetDragEnter(this uintptr, dataObject *IDataObject, grfKeyState DWORD, point POINT, pdfEffect *DWORD) uintptr {
+func _iDropTargetDragEnter(
+	this uintptr,
+	dataObject *IDataObject,
+	grfKeyState DWORD,
+	point POINT,
+	pdfEffect *DWORD,
+) uintptr {
 	return combridge.Resolve[iDropTarget](this).DragEnter(dataObject, grfKeyState, point, pdfEffect)
 }
 
@@ -67,7 +73,7 @@ type DropTarget struct {
 	OnEnter       func()
 	OnLeave       func()
 	OnOver        func()
-	OnDrop        func(filenames []string)
+	OnDrop        func(filenames []string, x int, y int)
 }
 
 func NewDropTarget() *DropTarget {
@@ -128,7 +134,7 @@ func (d *DropTarget) Drop(dataObject *IDataObject, grfKeyState DWORD, point POIN
 		filenames = append(filenames, filename)
 	}
 
-	d.OnDrop(filenames)
+	d.OnDrop(filenames, int(point.X), int(point.Y))
 
 	return uintptr(windows.S_OK)
 }

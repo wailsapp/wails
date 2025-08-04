@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"runtime"
@@ -209,7 +210,10 @@ func getWindowID() uint {
 // FIXME: This should like be an interface method (TDM)
 // Use onApplicationEvent to register a callback for an application event from a window.
 // This will handle tidying up the callback when the window is destroyed
-func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func(*ApplicationEvent)) {
+func (w *WebviewWindow) onApplicationEvent(
+	eventType events.ApplicationEventType,
+	callback func(*ApplicationEvent),
+) {
 	cancelFn := globalApplication.Event.OnApplicationEvent(eventType, callback)
 	w.addCancellationFunction(cancelFn)
 }
@@ -1194,12 +1198,42 @@ func (w *WebviewWindow) Error(message string, args ...any) {
 	globalApplication.error("in window '%s': "+message, args...)
 }
 
-func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string) {
+func (w *WebviewWindow) HandleDragAndDropMessage(filenames []string, dropZone *DropZoneDetails) {
+	globalApplication.debug(
+		"[DragDropDebug] HandleDragAndDropMessage called",
+		"files", filenames,
+		"dropZone", dropZone,
+	)
 	thisEvent := NewWindowEvent()
+	globalApplication.debug(
+		"[DragDropDebug] HandleDragAndDropMessage: thisEvent created",
+		"ctx", thisEvent.ctx,
+	)
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(filenames)
+	if dropZone != nil { // Check if dropZone details are available
+		ctx.setDropZoneDetails(dropZone)
+	}
 	thisEvent.ctx = ctx
-	for _, listener := range w.eventListeners[uint(events.Common.WindowFilesDropped)] {
+	globalApplication.debug(
+		"[DragDropDebug] HandleDragAndDropMessage: thisEvent.ctx assigned",
+		"thisEvent.ctx", thisEvent.ctx,
+		"ctx", ctx,
+	)
+	listeners := w.eventListeners[uint(events.Common.WindowDropZoneFilesDropped)]
+	globalApplication.debug(
+		"[DragDropDebug] HandleDragAndDropMessage: Found listeners for WindowDropZoneFilesDropped",
+		"count", len(listeners),
+	)
+	globalApplication.debug(
+		"[DragDropDebug] HandleDragAndDropMessage: Before calling listeners",
+		"thisEvent.ctx", thisEvent.ctx,
+	)
+	for _, listener := range listeners {
+		if listener == nil {
+			fmt.Println("[DragDropDebug] HandleDragAndDropMessage: Skipping nil listener")
+			continue
+		}
 		listener.callback(thisEvent)
 	}
 }
@@ -1406,6 +1440,40 @@ func (w *WebviewWindow) ToggleMenuBar() {
 		return
 	}
 	InvokeSync(w.impl.toggleMenuBar)
+}
+
+func (w *WebviewWindow) InitiateFrontendDropProcessing(filenames []string, x int, y int) {
+	globalApplication.debug(
+		"[DragDropDebug] InitiateFrontendDropProcessing called",
+		"x", x,
+		"y", y,
+	)
+	if w.impl == nil || w.isDestroyed() {
+		return
+	}
+
+	filenamesJSON, err := json.Marshal(filenames)
+	if err != nil {
+		w.Error("Error marshalling filenames for drop processing: %s", err)
+		return
+	}
+
+	jsCall := fmt.Sprintf(
+		"window.wails.Window.HandlePlatformFileDrop(%s, %d, %d);",
+		string(filenamesJSON),
+		x,
+		y,
+	)
+
+	// Ensure JS is executed after runtime is loaded
+	if !w.runtimeLoaded {
+		w.pendingJS = append(w.pendingJS, jsCall)
+		return
+	}
+
+	InvokeSync(func() {
+		w.impl.execJS(jsCall)
+	})
 }
 
 // SnapAssist triggers the Windows Snap Assist feature by simulating Win+Z key combination.
