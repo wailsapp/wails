@@ -11,6 +11,11 @@ The electron alternative for Go
 import {newRuntimeCaller, objectNames} from "./runtime.js";
 import type { Screen } from "./screens.js";
 
+// NEW: Dropzone constants
+const DROPZONE_ATTRIBUTE = 'data-wails-dropzone';
+const DROPZONE_HOVER_CLASS = 'wails-dropzone-hover'; // User can style this class
+let currentHoveredDropzone: Element | null = null;
+
 const PositionMethod                    = 0;
 const CenterMethod                      = 1;
 const CloseMethod                       = 2;
@@ -61,6 +66,15 @@ const ZoomInMethod                      = 46;
 const ZoomOutMethod                     = 47;
 const ZoomResetMethod                   = 48;
 const SnapAssistMethod                  = 49;
+const WindowDropZoneDropped             = 50;
+
+function getDropzoneElement(element: Element | null): Element | null {
+    if (!element) {
+        return null;
+    }
+    // Allow dropzone attribute to be on the element itself or any parent
+    return element.closest(`[${DROPZONE_ATTRIBUTE}]`);
+}
 
 /**
  * A record describing the position of a window.
@@ -521,7 +535,47 @@ class Window {
     }
 
     /**
-     * Triggers Windows 11 Snap Assist feature (Windows only).
+     * Handles file drops originating from platform-specific code (e.g., macOS native drag-and-drop).
+     * Gathers information about the drop target element and sends it back to the Go backend.
+     *
+     * @param filenames - An array of file paths (strings) that were dropped.
+     * @param x - The x-coordinate of the drop event.
+     * @param y - The y-coordinate of the drop event.
+     */
+    HandlePlatformFileDrop(filenames: string[], x: number, y: number): void {
+        const element = document.elementFromPoint(x, y);
+
+        // NEW: Check if the drop target is a valid dropzone
+        const dropzoneTarget = getDropzoneElement(element);
+
+        if (!dropzoneTarget) {
+            console.log(`Wails Runtime: Drop on element (or no element) at ${x},${y} which is not a designated dropzone. Ignoring. Element:`, element);
+            // No need to call backend if not a valid dropzone target
+            return;
+        }
+
+        console.log(`Wails Runtime: Drop on designated dropzone. Element at (${x}, ${y}):`, element, 'Effective dropzone:', dropzoneTarget);
+        const elementDetails = {
+            id: dropzoneTarget.id,
+            classList: Array.from(dropzoneTarget.classList),
+            attributes: {} as { [key: string]: string },
+        };
+        for (let i = 0; i < dropzoneTarget.attributes.length; i++) {
+            const attr = dropzoneTarget.attributes[i];
+            elementDetails.attributes[attr.name] = attr.value;
+        }
+
+        const payload = {
+            filenames,
+            x,
+            y,
+            elementDetails,
+        };
+
+        this[callerSym](WindowDropZoneDropped, payload);
+    }
+  
+    /* Triggers Windows 11 Snap Assist feature (Windows only).
      * This is equivalent to pressing Win+Z and shows snap layout options.
      */
     SnapAssist(): Promise<void> {
@@ -533,5 +587,82 @@ class Window {
  * The window within which the script is running.
  */
 const thisWindow = new Window('');
+
+// NEW: Global Drag Event Listeners
+function setupGlobalDropzoneListeners() {
+    const docElement = document.documentElement;
+    let dragEnterCounter = 0; // To handle dragenter/dragleave on child elements
+
+    docElement.addEventListener('dragenter', (event) => {
+        event.preventDefault();
+        if (event.dataTransfer && event.dataTransfer.types.includes('Files')) {
+            dragEnterCounter++;
+            const targetElement = document.elementFromPoint(event.clientX, event.clientY);
+            const dropzone = getDropzoneElement(targetElement);
+
+            // Clear previous hover regardless, then apply new if valid
+            if (currentHoveredDropzone && currentHoveredDropzone !== dropzone) {
+                currentHoveredDropzone.classList.remove(DROPZONE_HOVER_CLASS);
+            }
+
+            if (dropzone) {
+                dropzone.classList.add(DROPZONE_HOVER_CLASS);
+                event.dataTransfer.dropEffect = 'copy';
+                currentHoveredDropzone = dropzone;
+            } else {
+                event.dataTransfer.dropEffect = 'none';
+                currentHoveredDropzone = null; // Ensure it's cleared if no dropzone found
+            }
+        }
+    }, false);
+
+    docElement.addEventListener('dragover', (event) => {
+        event.preventDefault(); // Necessary to allow drop
+        if (event.dataTransfer && event.dataTransfer.types.includes('Files')) {
+            // No need to query elementFromPoint again if already handled by dragenter correctly
+            // Just ensure dropEffect is continuously set based on currentHoveredDropzone
+            if (currentHoveredDropzone) {
+                 // Re-apply class just in case it was removed by some other JS
+                if(!currentHoveredDropzone.classList.contains(DROPZONE_HOVER_CLASS)) {
+                    currentHoveredDropzone.classList.add(DROPZONE_HOVER_CLASS);
+                }
+                event.dataTransfer.dropEffect = 'copy';
+            } else {
+                event.dataTransfer.dropEffect = 'none';
+            }
+        }
+    }, false);
+
+    docElement.addEventListener('dragleave', (event) => {
+        event.preventDefault();
+        if (event.dataTransfer && event.dataTransfer.types.includes('Files')) {
+            dragEnterCounter--;
+            // Only remove hover if drag truly left the window or the last dropzone
+            if (dragEnterCounter === 0 || event.relatedTarget === null || (currentHoveredDropzone && !currentHoveredDropzone.contains(event.relatedTarget as Node))) {
+                if (currentHoveredDropzone) {
+                    currentHoveredDropzone.classList.remove(DROPZONE_HOVER_CLASS);
+                    currentHoveredDropzone = null;
+                }
+                dragEnterCounter = 0; // Reset counter if it went negative or left window
+            }
+        }
+    }, false);
+
+    docElement.addEventListener('drop', (event) => {
+        event.preventDefault(); // Prevent default browser file handling
+        dragEnterCounter = 0; // Reset counter
+        if (currentHoveredDropzone) {
+            currentHoveredDropzone.classList.remove(DROPZONE_HOVER_CLASS);
+            currentHoveredDropzone = null;
+        }
+        // The actual drop processing is initiated by the native side calling HandlePlatformFileDrop
+        // HandlePlatformFileDrop will then check if the drop was on a valid zone.
+    }, false);
+}
+
+// Initialize listeners when the script loads
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+    setupGlobalDropzoneListeners();
+}
 
 export default thisWindow;
