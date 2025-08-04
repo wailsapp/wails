@@ -235,7 +235,7 @@ Se essas duas chaves não são dadas, então as Wails não faz absolutamente nad
 
 ### AssetsHandler
 
-Um aplicativo Wails v2 pode opcionalmente definir um `http.Handler` nas opções `options.App`, que permite o gancho do AssetServer criar arquivos em tempo real ou processe solicitações POST/PUT. Solicitações GET sempre são tratadas primeiramente pelos `assets` FS. Se o FS não encontrar o arquivo solicitado, a solicitação será encaminhada para `http.Handler` para servir. Qualquer requisição que não seja o GET será diretamente processada pelo `AssetsHandler` se especificado. Também é usar apenas o `AssetsHandler` por especificação é `nil` como a opção `Assets`.
+Um aplicativo Wails v2 pode opcionalmente definir um `http.Handler` nas opções `options.App`, que permite o gancho do AssetServer criar arquivos em tempo real ou processe solicitações POST/PUT. Solicitações GET sempre são tratadas primeiramente pelos `assets` FS. Se o FS não encontrar o arquivo solicitado, a solicitação será encaminhada para `http.Handler` para servir. Qualquer requisição que não seja o GET será diretamente processada pelo `AssetsHandler` se especificado. It's also possible to only use the `AssetsHandler` by specifying `nil` as the `Assets` option.
 
 ## Servidor de Desenvolvedor nativo
 
