@@ -14,7 +14,7 @@ Core commands are the primary commands used for project creation, development, a
 All CLI commands are of the following format: `wails3 <command>`.
 
 ### `init`
-Initializes a new Wails project.
+Initializes a new Wails project. During this initialization, the `go mod tidy` command is run to bring the project packages up to date. This can be bypassed by using the `-skipgomodtidy` flag with the `init` command.
 
 ```bash
 wails3 init [flags]
@@ -37,6 +37,7 @@ wails3 init [flags]
 | `-productcopyright`   | Copyright notice     | ` now, My Company`       |
 | `-productcomments`    | File comments        | `This is a comment`      |
 | `-productidentifier`  | Product identifier   |                          |
+| `-skipgomodtidy`      | Skip go mod tidy     | `false`                   |
 
 The `-git` flag accepts various Git URL formats:
 - HTTPS: `https://github.com/username/project`
@@ -174,13 +175,13 @@ wails3 generate icons [flags]
 ```
 
 #### Flags
-| Flag       | Description                  | Default               |
-|------------|------------------------------|-----------------------|
-| `-input`   | Input PNG file               | Required              |
-| `-windows` | Windows output filename      |                       |
-| `-mac`     | macOS output filename        |                       |
-| `-sizes`   | Icon sizes (comma-separated) | `256,128,64,48,32,16` |
-| `-example` | Generate example icon        | `false`               |
+| Flag               | Description                  | Default               |
+|--------------------|------------------------------|-----------------------|
+| `-input`           | Input PNG file               | Required              |
+| `-windowsfilename` | Windows output filename      |                       |
+| `-macfilename`     | macOS output filename        |                       |
+| `-sizes`           | Icon sizes (comma-separated) | `256,128,64,48,32,16` |
+| `-example`         | Generate example icon        | `false`               |
 
 ### `generate syso`
 Generates Windows .syso file.

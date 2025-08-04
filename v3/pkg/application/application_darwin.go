@@ -57,6 +57,8 @@ static void init(void) {
 	NSDistributedNotificationCenter *center = [NSDistributedNotificationCenter defaultCenter];
 	[center addObserver:appDelegate selector:@selector(themeChanged:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
 
+	// Register the custom URL scheme handler
+	StartCustomProtocolHandler();
 }
 
 static bool isDarkMode(void) {
@@ -71,6 +73,32 @@ static bool isDarkMode(void) {
 	}
 
 	return [interfaceStyle isEqualToString:@"Dark"];
+}
+
+static char* getAccentColor(void) {
+	@autoreleasepool {
+		NSColor *accentColor;
+		if (@available(macOS 10.14, *)) {
+			accentColor = [NSColor controlAccentColor];
+		} else {
+			// Fallback to system blue for older macOS versions
+			accentColor = [NSColor systemBlueColor];
+		}
+		// Convert to RGB color space
+		NSColor *rgbColor = [accentColor colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+		if (rgbColor == nil) {
+			rgbColor = accentColor;
+		}
+		// Get RGB components
+		CGFloat red, green, blue, alpha;
+		[rgbColor getRed:&red green:&green blue:&blue alpha:&alpha];
+		// Convert to 0-255 range and format as rgb() string
+		int r = (int)(red * 255);
+		int g = (int)(green * 255);
+		int b = (int)(blue * 255);
+		NSString *colorString = [NSString stringWithFormat:@"rgb(%d,%d,%d)", r, g, b];
+		return strdup([colorString UTF8String]);
+	}
 }
 
 static void setApplicationShouldTerminateAfterLastWindowClosed(bool shouldTerminate) {
@@ -184,6 +212,12 @@ type macosApp struct {
 
 func (m *macosApp) isDarkMode() bool {
 	return bool(C.isDarkMode())
+}
+
+func (m *macosApp) getAccentColor() string {
+	accentColorC := C.getAccentColor()
+	defer C.free(unsafe.Pointer(accentColorC))
+	return C.GoString(accentColorC)
 }
 
 func getNativeApplication() *macosApp {
@@ -321,8 +355,8 @@ func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
 	}
 
 	webviewRequests <- &webViewAssetRequest{
-		Request:  webview.NewRequest(wkUrlSchemeTask),
-		windowId: uint(windowID),
+		Request:    webview.NewRequest(wkUrlSchemeTask),
+		windowId:   uint(windowID),
 		windowName: window.Name(),
 	}
 }
@@ -393,6 +427,19 @@ func HandleOpenFile(filePath *C.char) {
 	// EmitEvent application started event
 	applicationEvents <- &ApplicationEvent{
 		Id:  uint(events.Common.ApplicationOpenedWithFile),
+		ctx: eventContext,
+	}
+}
+
+//export HandleCustomProtocol
+func HandleCustomProtocol(urlCString *C.char) {
+	urlString := C.GoString(urlCString)
+	eventContext := newApplicationEventContext()
+	eventContext.setURL(urlString)
+
+	// Emit the standard event with the URL string as data
+	applicationEvents <- &ApplicationEvent{
+		Id:  uint(events.Common.ApplicationLaunchedWithUrl),
 		ctx: eventContext,
 	}
 }

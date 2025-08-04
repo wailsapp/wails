@@ -76,6 +76,7 @@ type Window interface {
 	ToggleFullscreen()
 	ToggleMaximise()
 	ToggleMenuBar()
+	ToggleFrameless()
 	UnFullscreen()
 	UnMaximise()
 	UnMinimise()
@@ -85,4 +86,5 @@ type Window interface {
 	ZoomOut()
 	ZoomReset() Window
 	SetMenu(menu *Menu)
+	SnapAssist()
 }

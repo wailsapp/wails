@@ -13,4 +13,13 @@
 
 extern void HandleOpenFile(char *);
 
-#endif
+// Declarations for Apple Event based custom URL handling
+extern void HandleCustomProtocol(char*);
+
+@interface CustomProtocolSchemeHandler : NSObject
++ (void)handleGetURLEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;
+@end
+
+void StartCustomProtocolHandler(void);
+
+#endif /* appdelegate_h */
