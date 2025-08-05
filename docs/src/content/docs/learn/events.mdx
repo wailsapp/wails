@@ -13,11 +13,11 @@ Wails provides a flexible event system that enables communication between differ
 Application events are triggered by application-level state changes such as application startup, theme changes, and power events. You can listen for these events using the `OnApplicationEvent` method:
 
 ```go
-app.OnApplicationEvent(events.Mac.ApplicationDidBecomeActive, func(event *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Mac.ApplicationDidBecomeActive, func(event *application.ApplicationEvent) {
     app.Logger.Info("Application started!")
 })
 
-app.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Windows.SystemThemeChanged, func(event *application.ApplicationEvent) {
 		app.Logger.Info("System theme changed!")
 		if event.Context().IsDarkMode() {
 			app.Logger.Info("System is now using dark mode!")
@@ -35,11 +35,11 @@ changes such as application startup, theme changes, and power events.
 Here is the same example as above, but using common application events to make it work across all platforms:
 
 ```go
-app.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
     app.Logger.Info("Application started!")
 })
 
-app.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
     if event.Context().IsDarkMode() {
         app.Logger.Info("System is now using dark mode!")
     } else {
@@ -457,11 +457,11 @@ Menu events are triggered by menu-specific actions such as opening, closing, and
 
 ```go
 // Listen for menu events
-app.OnApplicationEvent(events.Mac.MenuDidOpen, func(event *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Mac.MenuDidOpen, func(event *application.ApplicationEvent) {
     app.Logger.Info("Menu opened!")
 })
 
-app.OnApplicationEvent(events.Mac.MenuWillSendAction, func(event *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Mac.MenuWillSendAction, func(event *application.ApplicationEvent) {
     app.Logger.Info("Menu about to send action!")
 })
 ```
@@ -514,16 +514,16 @@ WebView events are triggered by navigation and loading state changes in the WebV
 
 ```go
 // Listen for WebView navigation events
-app.OnApplicationEvent(events.Mac.WebViewDidStartProvisionalNavigation, func(event *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Mac.WebViewDidStartProvisionalNavigation, func(event *application.ApplicationEvent) {
     app.Logger.Info("WebView started loading a page!")
 })
 
-app.OnApplicationEvent(events.Mac.WebViewDidFinishNavigation, func(event *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Mac.WebViewDidFinishNavigation, func(event *application.ApplicationEvent) {
     app.Logger.Info("WebView finished loading the page!")
 })
 
 // On Windows
-app.OnApplicationEvent(events.Windows.WebViewNavigationCompleted, func(event *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Windows.WebViewNavigationCompleted, func(event *application.ApplicationEvent) {
     app.Logger.Info("WebView navigation completed!")
 })
 ```
@@ -571,7 +571,7 @@ window.EmitEvent("windowevent", "window specific data")
 </TabItem>
 <TabItem label="Traditional API">
 ```go
-// Traditional API (still supported)
+// Traditional API (no longer works)
 app.EmitEvent("myevent", "hello")
 
 // Emit from a specific window

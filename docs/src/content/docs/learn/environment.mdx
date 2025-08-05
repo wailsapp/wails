@@ -90,7 +90,7 @@ Listen for theme changes to update your application dynamically:
 import "github.com/wailsapp/wails/v3/pkg/events"
 
 // Listen for theme changes
-app.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
     if app.Env.IsDarkMode() {
         app.Logger.Info("Switched to dark mode")
         updateApplicationTheme("dark")
@@ -401,7 +401,7 @@ Platform Information:`,
 
 2. **Handle Theme Changes**: Listen for system theme changes:
    ```go
-   app.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+   app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
        updateTheme(app.Env.IsDarkMode())
    })
    ```
@@ -497,7 +497,7 @@ func setupForEnvironment(app *application.App) {
 }
 
 func monitorThemeChanges(app *application.App) {
-    app.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
         if app.Env.IsDarkMode() {
             app.Logger.Info("System switched to dark mode")
             applyDarkTheme(app)

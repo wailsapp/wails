@@ -51,11 +51,11 @@ func main() {
         },
    })
    
-   window1 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+   window1 := app.Window.NewWithOptions(application.WebviewWindowOptions{
        Title:  "Window 1",
    })
    
-   window2 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+   window2 := app.Window.NewWithOptions(application.WebviewWindowOptions{
        Title:  "Window 2",
    })
    
@@ -123,7 +123,7 @@ func main() {
         },
     })
 
-    window := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Width:       500,
         Height:      800,
         Frameless:   true,
@@ -134,7 +134,7 @@ func main() {
         },
     })
 
-    systemTray := app.NewSystemTray()
+    systemTray := app.SystemTray.New()
 
     // Support for template icons on macOS
     if runtime.GOOS == "darwin" {
@@ -146,7 +146,7 @@ func main() {
     }
 
     // Support for menu
-    myMenu := app.NewMenu()
+    myMenu := app.Menu.New()
     myMenu.Add("Hello World!").OnClick(func(_ *application.Context) {
         println("Hello World!")
     })
@@ -310,16 +310,16 @@ func main() {
     })
 
     // OS specific application events
-    app.On(events.Mac.ApplicationDidFinishLaunching, func(event *application.Event) {
+    app.Events.On(events.Mac.ApplicationDidFinishLaunching, func(event *application.Event) {
         println("events.Mac.ApplicationDidFinishLaunching fired!")
     })
 
     // Platform agnostic events
-    app.On(events.Common.ApplicationStarted, func(event *application.Event) {
+    app.Events.On(events.Common.ApplicationStarted, func(event *application.Event) {
         println("events.Common.ApplicationStarted fired!")
     })
 
-    win1 := app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    win1 := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title: "Takes 3 attempts to close me!",
     })
 

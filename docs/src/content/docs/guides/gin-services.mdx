@@ -122,14 +122,17 @@ func (s *GinService) ServiceStartup(ctx context.Context, options application.Ser
 	s.app = application.Get()
 
 	// Register an event handler that can be triggered from the frontend
-	s.app.OnEvent("gin-api-event", func(event *application.CustomEvent) {
+	s.app.Event.On("gin-api-event", func(event *application.CustomEvent) {
 		// Log the event data
 		s.app.Logger.Info("Received event from frontend", "data", event.Data)
 
 		// Emit an event back to the frontend
-		s.app.EmitEvent("gin-api-response", map[string]interface{}{
-			"message": "Response from Gin API Service",
-			"time":    time.Now().Format(time.RFC3339),
+		s.app.Event.EmitEvent(&application.CustomEvent{
+			Name: "gin-api-response",
+			Data: map[string]interface{}{
+                "message": "Response from Gin API Service",
+                "time":    time.Now().Format(time.RFC3339),
+            },
 		})
 	})
 
@@ -224,7 +227,7 @@ func (s *GinService) setupRoutes() {
 			c.JSON(http.StatusCreated, newUser)
 
 			// Emit an event to notify about the new user
-			s.app.EmitEvent("user-created", newUser)
+			s.app.Event.Emit("user-created", newUser)
 		})
 
 		// Delete a user
@@ -308,15 +311,18 @@ One of the powerful features of using Gin with Wails Services is the ability to 
 In your service's `ServiceStartup` method, you can register event handlers to process events from the frontend:
 
 ```go
-s.app.OnEvent("gin-api-event", func(event *application.CustomEvent) {
-    // Log the event data
-    s.app.Logger.Info("Received event from frontend", "data", event.Data)
+s.app.Event.On("gin-api-event", func(event *application.CustomEvent) {
+	// Log the event data
+	s.app.Logger.Info("Received event from frontend", "data", event.Data)
 
-    // Emit an event back to the frontend
-    s.app.EmitEvent("gin-api-response", map[string]interface{}{
-        "message": "Response from Gin API Service",
-        "time":    time.Now().Format(time.RFC3339),
-    })
+	// Emit an event back to the frontend
+	s.app.Event.EmitEvent(&application.CustomEvent{
+		Name: "gin-api-response",
+		Data: map[string]interface{}{
+			"message": "Response from Gin API Service",
+			"time":    time.Now().Format(time.RFC3339),
+		},
+	})
 })
 ```
 
@@ -324,7 +330,7 @@ You can also emit events to the frontend from your Gin routes or other parts of 
 
 ```go
 // After creating a new user
-s.app.EmitEvent("user-created", newUser)
+s.app.Event.Emit("user-created", newUser)
 ```
 
 ## Frontend Integration
@@ -343,7 +349,10 @@ Then use it in your code:
 import * as wails from '@wailsio/runtime';
 
 // Event emission
-wails.Events.Emit('gin-api-event',  eventData);
+wails.Events.Emit({
+    name: 'gin-api-event',
+    data: eventData,
+});
 ```
 
 Here's an example of how to set up frontend integration:

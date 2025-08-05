@@ -68,12 +68,12 @@ func main() {
         // ... other runtime options ...
     })
 
-    app.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *application.ApplicationEvent) {
+    app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *application.ApplicationEvent) {
         launchedURL := e.Context().URL() // Retrieve the URL from the event context
         log.Printf("Application launched with URL: %s", launchedURL)
 
         // TODO: Process the URL (e.g., navigate, perform action, etc.)
-        // Example: app.EmitEvent("frontend:ShowURL", launchedURL)
+        // Example: app.Event.Emit("frontend:ShowURL", launchedURL)
     })
 
     // ... rest of your main function ...
