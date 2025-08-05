@@ -240,7 +240,7 @@ Open development resources during development:
 
 ```go
 func setupDevelopmentMenu(app *application.App) {
-    if !app.Environment.Info().Debug {
+    if !app.Env.Info().Debug {
         return // Only show in debug mode
     }
     
