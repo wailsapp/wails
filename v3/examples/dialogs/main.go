@@ -300,6 +300,102 @@ func main() {
 		}
 	})
 
+	// Enhanced Custom Dialog Examples (demonstrates new TaskDialog functionality on Windows)
+	enhancedMenu := menu.AddSubmenu("Enhanced Custom")
+	enhancedMenu.Add("Save or Discard Changes").OnClick(func(ctx *application.Context) {
+		dialog := application.QuestionDialog()
+		dialog.SetTitle("Unsaved Changes")
+		dialog.SetMessage("You have unsaved changes in your document. What would you like to do?")
+		
+		saveBtn := dialog.AddButton("💾 Save and Continue")
+		saveBtn.OnClick(func() {
+			application.InfoDialog().SetMessage("Document saved successfully!").Show()
+		})
+		
+		discardBtn := dialog.AddButton("🗑️ Discard Changes")
+		discardBtn.OnClick(func() {
+			application.WarningDialog().SetMessage("Changes discarded. Document reverted to last saved state.").Show()
+		})
+		
+		reviewBtn := dialog.AddButton("👀 Review Changes")
+		reviewBtn.OnClick(func() {
+			application.InfoDialog().SetMessage("Opening change review dialog...").Show()
+		})
+		
+		cancelBtn := dialog.AddButton("❌ Cancel")
+		cancelBtn.OnClick(func() {
+			application.InfoDialog().SetMessage("Operation cancelled. Returning to editor.").Show()
+		})
+		
+		dialog.SetDefaultButton(reviewBtn)
+		dialog.SetCancelButton(cancelBtn)
+		dialog.Show()
+	})
+
+	enhancedMenu.Add("Multiple Actions").OnClick(func(ctx *application.Context) {
+		dialog := application.InfoDialog()
+		dialog.SetTitle("File Operations")
+		dialog.SetMessage("What would you like to do with the selected files?")
+		
+		copyBtn := dialog.AddButton("📋 Copy")
+		copyBtn.OnClick(func() {
+			application.InfoDialog().SetMessage("Files copied to clipboard").Show()
+		})
+		
+		moveBtn := dialog.AddButton("✂️ Cut")
+		moveBtn.OnClick(func() {
+			application.InfoDialog().SetMessage("Files cut to clipboard").Show()
+		})
+		
+		deleteBtn := dialog.AddButton("🗑️ Delete")
+		deleteBtn.OnClick(func() {
+			application.WarningDialog().SetMessage("Files moved to trash").Show()
+		})
+		
+		archiveBtn := dialog.AddButton("📦 Archive")
+		archiveBtn.OnClick(func() {
+			application.InfoDialog().SetMessage("Creating archive...").Show()
+		})
+		
+		propertiesBtn := dialog.AddButton("ℹ️ Properties")
+		propertiesBtn.OnClick(func() {
+			application.InfoDialog().SetMessage("Opening file properties...").Show()
+		})
+		
+		dialog.SetDefaultButton(copyBtn)
+		dialog.Show()
+	})
+
+	enhancedMenu.Add("Installation Options").OnClick(func(ctx *application.Context) {
+		dialog := application.QuestionDialog()
+		dialog.SetTitle("Software Installation")
+		dialog.SetMessage("How would you like to install the software?")
+		
+		quickBtn := dialog.AddButton("⚡ Quick Install")
+		quickBtn.OnClick(func() {
+			application.InfoDialog().SetMessage("Starting quick installation with default settings...").Show()
+		})
+		
+		customBtn := dialog.AddButton("🔧 Custom Install")
+		customBtn.OnClick(func() {
+			application.InfoDialog().SetMessage("Opening custom installation options...").Show()
+		})
+		
+		portableBtn := dialog.AddButton("💼 Portable Install")
+		portableBtn.OnClick(func() {
+			application.InfoDialog().SetMessage("Creating portable installation...").Show()
+		})
+		
+		cancelBtn := dialog.AddButton("🚫 Cancel Installation")
+		cancelBtn.OnClick(func() {
+			application.InfoDialog().SetMessage("Installation cancelled.").Show()
+		})
+		
+		dialog.SetDefaultButton(quickBtn)
+		dialog.SetCancelButton(cancelBtn)
+		dialog.Show()
+	})
+
 	saveMenu := menu.AddSubmenu("Save")
 	saveMenu.Add("Select File (Defaults)").OnClick(func(ctx *application.Context) {
 		result, _ := application.SaveFileDialog().

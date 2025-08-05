@@ -517,6 +517,40 @@ type SIZE struct {
 	CX, CY int32
 }
 
+// TaskDialog structures and constants
+// https://docs.microsoft.com/en-us/windows/win32/api/commctrl/ns-commctrl-taskdialogconfig
+type TASKDIALOGCONFIG struct {
+	CbSize                           uint32
+	HwndParent                       HWND
+	HInstance                        uintptr
+	DwFlags                          uint32
+	DwCommonButtons                  uint32
+	PszWindowTitle                   *uint16
+	HMainIcon                        uintptr
+	PszMainInstruction               *uint16
+	PszContent                       *uint16
+	CButtons                         uint32
+	PButtons                         *TASKDIALOG_BUTTON
+	NDefaultButton                   int32
+	CRadioButtons                    uint32
+	PRadioButtons                    *TASKDIALOG_BUTTON
+	NDefaultRadioButton              int32
+	PszVerificationText              *uint16
+	PszExpandedInformation           *uint16
+	PszExpandedControlText           *uint16
+	PszCollapsedControlText          *uint16
+	HFooterIcon                      uintptr
+	PszFooter                        *uint16
+	PfCallback                       uintptr
+	LpCallbackData                   uintptr
+	CxWidth                          uint32
+}
+
+type TASKDIALOG_BUTTON struct {
+	NButtonID     int32
+	PszButtonText *uint16
+}
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd145132.aspx
 type TEXTMETRIC struct {
 	TmHeight           int32

@@ -17,7 +17,8 @@ import (
 )
 
 var (
-	moduser32 = syscall.NewLazyDLL("user32.dll")
+	moduser32  = syscall.NewLazyDLL("user32.dll")
+	modcomctl32 = syscall.NewLazyDLL("comctl32.dll")
 
 	procRegisterClassEx               = moduser32.NewProc("RegisterClassExW")
 	procGetClassName                  = moduser32.NewProc("GetClassNameW")
@@ -72,6 +73,7 @@ var (
 	procGetWindowThreadProcessId      = moduser32.NewProc("GetWindowThreadProcessId")
 	procMessageBox                    = moduser32.NewProc("MessageBoxW")
 	procMessageBoxIndirect            = moduser32.NewProc("MessageBoxIndirectW")
+	procTaskDialogIndirect            = modcomctl32.NewProc("TaskDialogIndirect")
 	procGetSystemMetrics              = moduser32.NewProc("GetSystemMetrics")
 	procPostThreadMessageW            = moduser32.NewProc("PostThreadMessageW")
 	procRegisterWindowMessageA        = moduser32.NewProc("RegisterWindowMessageA")
@@ -272,6 +274,33 @@ func MessageBoxIndirect(msgbox *MSGBOXPARAMS) int32 {
 		uintptr(unsafe.Pointer(msgbox)))
 
 	return int32(ret)
+}
+
+// TaskDialogIndirect displays a task dialog
+func TaskDialogIndirect(config *TASKDIALOGCONFIG, button *int32, radioButton *int32, verificationFlagChecked *bool) error {
+	var buttonPtr, radioButtonPtr, verificationPtr uintptr
+	
+	if button != nil {
+		buttonPtr = uintptr(unsafe.Pointer(button))
+	}
+	if radioButton != nil {
+		radioButtonPtr = uintptr(unsafe.Pointer(radioButton))
+	}
+	if verificationFlagChecked != nil {
+		verificationPtr = uintptr(unsafe.Pointer(verificationFlagChecked))
+	}
+
+	ret, _, err := procTaskDialogIndirect.Call(
+		uintptr(unsafe.Pointer(config)),
+		buttonPtr,
+		radioButtonPtr,
+		verificationPtr,
+	)
+	
+	if ret != 0 {
+		return err
+	}
+	return nil
 }
 
 func ShowWindow(hwnd HWND, cmdshow int) bool {

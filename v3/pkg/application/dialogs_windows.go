@@ -31,7 +31,76 @@ type windowsDialog struct {
 }
 
 func (m *windowsDialog) show() {
+	// If we have custom buttons, use TaskDialog
+	if len(m.dialog.Buttons) > 0 && hasCustomButtons(m.dialog.Buttons) {
+		m.showTaskDialog()
+		return
+	}
 
+	// Fallback to MessageBox for standard dialogs
+	m.showMessageBox()
+}
+
+func (m *windowsDialog) showTaskDialog() {
+	title := w32.MustStringToUTF16Ptr(m.dialog.Title)
+	message := w32.MustStringToUTF16Ptr(m.dialog.Message)
+
+	var parentWindow uintptr
+	var err error
+	if m.dialog.window != nil {
+		parentWindow, err = m.dialog.window.NativeWindowHandle()
+		if err != nil {
+			globalApplication.handleFatalError(err)
+		}
+	}
+
+	// Create custom buttons
+	buttons := make([]w32.TASKDIALOG_BUTTON, len(m.dialog.Buttons))
+	for i, btn := range m.dialog.Buttons {
+		buttons[i] = w32.TASKDIALOG_BUTTON{
+			NButtonID:     int32(i + 1000), // Use unique IDs starting from 1000
+			PszButtonText: w32.MustStringToUTF16Ptr(btn.Label),
+		}
+	}
+
+	// Determine default button
+	var defaultButton int32 = 1000 // Default to first button
+	for i, btn := range m.dialog.Buttons {
+		if btn.IsDefault {
+			defaultButton = int32(i + 1000)
+			break
+		}
+	}
+
+	// Get appropriate icon
+	icon := getTaskDialogIcon(m.dialog.DialogType, m.dialog.Icon)
+
+	// Show TaskDialog
+	buttonPressed, err := w32.CustomTaskDialog(
+		w32.HWND(parentWindow),
+		title,
+		message,
+		nil, // content (we put everything in instruction for simplicity)
+		buttons,
+		icon,
+		defaultButton,
+	)
+
+	if err != nil {
+		globalApplication.handleFatalError(err)
+		return
+	}
+
+	// Find and execute callback for pressed button
+	buttonIndex := int(buttonPressed - 1000)
+	if buttonIndex >= 0 && buttonIndex < len(m.dialog.Buttons) {
+		if m.dialog.Buttons[buttonIndex].Callback != nil {
+			m.dialog.Buttons[buttonIndex].Callback()
+		}
+	}
+}
+
+func (m *windowsDialog) showMessageBox() {
 	title := w32.MustStringToUTF16Ptr(m.dialog.Title)
 	message := w32.MustStringToUTF16Ptr(m.dialog.Message)
 	flags := calculateMessageDialogFlags(m.dialog.MessageDialogOptions)
@@ -71,6 +140,49 @@ func (m *windowsDialog) show() {
 				buttonInDialog.Callback()
 			}
 		}
+	}
+}
+
+// hasCustomButtons checks if the dialog has custom (non-standard) buttons
+func hasCustomButtons(buttons []*Button) bool {
+	standardButtons := map[string]bool{
+		"Ok":       true,
+		"Cancel":   true,
+		"Yes":      true,
+		"No":       true,
+		"Abort":    true,
+		"Retry":    true,
+		"Ignore":   true,
+		"Continue": true,
+	}
+	
+	for _, btn := range buttons {
+		if !standardButtons[btn.Label] {
+			return true
+		}
+	}
+	return false
+}
+
+// getTaskDialogIcon returns the appropriate icon for TaskDialog
+func getTaskDialogIcon(dialogType DialogType, customIcon []byte) uintptr {
+	if customIcon != nil {
+		// For custom icons, we would need to load from memory
+		// This is complex and requires additional implementation
+		// For now, fall back to system icons
+	}
+	
+	switch dialogType {
+	case InfoDialogType:
+		return w32.TD_INFORMATION_ICON
+	case WarningDialogType:
+		return w32.TD_WARNING_ICON
+	case ErrorDialogType:
+		return w32.TD_ERROR_ICON
+	case QuestionDialogType:
+		return w32.TD_INFORMATION_ICON // Question uses info icon typically
+	default:
+		return w32.TD_INFORMATION_ICON
 	}
 }
 
