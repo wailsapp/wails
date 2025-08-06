@@ -101,6 +101,9 @@ type App struct {
 
 	// DisablePanicRecovery disables the panic recovery system in messages processing
 	DisablePanicRecovery bool
+
+	// List of allowed origins for bindings in format "wails://wails,https://*.myapp.com"
+	BindingsAllowedOrigins string
 }
 
 type ErrorFormatter func(error) any

@@ -62,6 +62,8 @@ type Frontend struct {
 
 	hasStarted bool
 
+	bindingOriginValidator *OriginValidator
+
 	// Windows build number
 	versionInfo     *operatingsystem.WindowsVersionInfo
 	resizeDebouncer func(f func())
@@ -72,13 +74,18 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	// Get Windows build number
 	versionInfo, _ := operatingsystem.GetWindowsVersionInfo()
 
+	if appoptions.BindingsAllowedOrigins == "" {
+		appoptions.BindingsAllowedOrigins = startURL
+	}
+
 	result := &Frontend{
-		frontendOptions: appoptions,
-		logger:          myLogger,
-		bindings:        appBindings,
-		dispatcher:      dispatcher,
-		ctx:             ctx,
-		versionInfo:     versionInfo,
+		frontendOptions:        appoptions,
+		logger:                 myLogger,
+		bindings:               appBindings,
+		dispatcher:             dispatcher,
+		ctx:                    ctx,
+		versionInfo:            versionInfo,
+		bindingOriginValidator: NewOriginValidator(appoptions.BindingsAllowedOrigins),
 	}
 
 	if appoptions.Windows != nil {
@@ -725,6 +732,23 @@ func (f *Frontend) processMessage(message string) {
 }
 
 func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+	topSource, err := sender.GetSource()
+	if err != nil {
+		f.logger.Error(fmt.Sprintf("Unable to get source from sender: %s", err.Error()))
+		return
+	}
+
+	senderSource, err := args.GetSource()
+	if err != nil {
+		f.logger.Error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
+		return
+	}
+
+	// verify both topSource and sender are allowed origins
+	if !f.validBindingOrigin(topSource) || !f.validBindingOrigin(senderSource) {
+		return
+	}
+
 	if strings.HasPrefix(message, "file:drop") {
 		if !f.frontendOptions.DragAndDrop.EnableFileDrop {
 			return
@@ -781,6 +805,20 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 		go f.dispatchMessage(fmt.Sprintf("DD:%s:%s:%s", x, y, strings.Join(files, "\n")))
 		return
 	}
+}
+
+func (f *Frontend) validBindingOrigin(source string) bool {
+	origin, err := f.bindingOriginValidator.GetOriginFromURL(source)
+	if err != nil {
+		f.logger.Error(fmt.Sprintf("Error parsing source URL %s: %v", source, err.Error()))
+		return false
+	}
+	allowed := f.bindingOriginValidator.IsOriginAllowed(origin)
+	if !allowed {
+		log.Printf("Blocked request from unauthorized origin: %s", origin)
+		return false
+	}
+	return true
 }
 
 func (f *Frontend) dispatchMessage(message string) {

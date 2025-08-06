@@ -111,3 +111,5 @@ require (
 	howett.net/plist v1.0.0 // indirect
 	mvdan.cc/sh/v3 v3.7.0 // indirect
 )
+
+replace github.com/wailsapp/go-webview2 => github.com/APshenkin/go-webview2 v0.0.0-20250806161322-3036144d5a14
