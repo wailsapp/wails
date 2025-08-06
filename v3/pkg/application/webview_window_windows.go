@@ -1485,6 +1485,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_SIZE:
 		switch wparam {
 		case w32.SIZE_MAXIMIZED:
+			if w.isMinimizing {
+				w.parent.emit(events.Windows.WindowUnMinimise)
+			}
+			w.isMinimizing = false
 			w.parent.emit(events.Windows.WindowMaximise)
 			// Force complete redraw when maximized
 			if w.menu != nil && w.menubarTheme != nil {
