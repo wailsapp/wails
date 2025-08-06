@@ -112,4 +112,4 @@ require (
 	mvdan.cc/sh/v3 v3.7.0 // indirect
 )
 
-replace github.com/wailsapp/go-webview2 => github.com/APshenkin/go-webview2 v0.0.0-20250806191757-7dcb71719a06
+replace github.com/wailsapp/go-webview2 => github.com/APshenkin/go-webview2 v0.0.0-20250806192641-fab2fac73038

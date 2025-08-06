@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"log/slog"
 	"net"
 	"net/url"
 	"os"
@@ -701,9 +700,6 @@ func (f *Frontend) processMessage(message string, sender *edge.ICoreWebView2, ar
 		return
 	}
 
-	slog.Info(fmt.Sprintf("top source %s", topSource))
-	slog.Info(fmt.Sprintf("sender source %s", senderSource))
-
 	// verify both topSource and sender are allowed origins
 	if !f.validBindingOrigin(topSource) || !f.validBindingOrigin(senderSource) {
 		return
@@ -764,9 +760,6 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 		f.logger.Error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
 		return
 	}
-
-	slog.Info(fmt.Sprintf("top source %s", topSource))
-	slog.Info(fmt.Sprintf("sender source %s", senderSource))
 
 	// verify both topSource and sender are allowed origins
 	if !f.validBindingOrigin(topSource) || !f.validBindingOrigin(senderSource) {
@@ -839,7 +832,7 @@ func (f *Frontend) validBindingOrigin(source string) bool {
 	}
 	allowed := f.bindingOriginValidator.IsOriginAllowed(origin)
 	if !allowed {
-		log.Printf("Blocked request from unauthorized origin: %s", origin)
+		f.logger.Error("Blocked request from unauthorized origin: %s", origin)
 		return false
 	}
 	return true
