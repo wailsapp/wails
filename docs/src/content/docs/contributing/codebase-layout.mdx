@@ -116,7 +116,7 @@ func main() {
         Name: "MyApp",
         Assets: application.NewAssetsFS(assetsFS),
     })
-    window := app.NewWebviewWindow(&application.WebviewWindowOptions{
+    window := app.Window.New(&application.WebviewWindowOptions{
         Title:  "Hello",
         Width:  1024,
         Height: 768,

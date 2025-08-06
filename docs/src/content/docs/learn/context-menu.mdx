@@ -210,7 +210,7 @@ func main() {
     // Register the context menu with the manager
     app.ContextMenu.Add("test", contextMenu)
 
-    window := app.NewWebviewWindow()
+    window := app.Window.New()
     window.SetTitle("Context Menu Demo")
 
     err := app.Run()

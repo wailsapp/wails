@@ -269,11 +269,16 @@ func (m *macosApp) run() error {
 		C.startSingleInstanceListener(cUniqueID)
 	}
 	// Add a hook to the ApplicationDidFinishLaunching event
-	m.parent.Event.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(*ApplicationEvent) {
-		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))
-		C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
-		C.activateIgnoringOtherApps()
-	})
+	m.parent.Event.OnApplicationEvent(
+		events.Mac.ApplicationDidFinishLaunching,
+		func(*ApplicationEvent) {
+			C.setApplicationShouldTerminateAfterLastWindowClosed(
+				C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed),
+			)
+			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
+			C.activateIgnoringOtherApps()
+		},
+	)
 	m.setupCommonEvents()
 	// setup event listeners
 	for eventID := range m.parent.applicationEventListeners {
@@ -370,17 +375,35 @@ func processWindowKeyDownEvent(windowID C.uint, acceleratorString *C.char) {
 }
 
 //export processDragItems
-func processDragItems(windowID C.uint, arr **C.char, length C.int) {
+func processDragItems(windowID C.uint, arr **C.char, length C.int, x C.int, y C.int) {
 	var filenames []string
 	// Convert the C array to a Go slice
 	goSlice := (*[1 << 30]*C.char)(unsafe.Pointer(arr))[:length:length]
 	for _, str := range goSlice {
 		filenames = append(filenames, C.GoString(str))
 	}
-	windowDragAndDropBuffer <- &dragAndDropMessage{
-		windowId:  uint(windowID),
-		filenames: filenames,
+
+	globalApplication.debug(
+		"[DragDropDebug] processDragItems called",
+		"windowID",
+		windowID,
+		"fileCount",
+		len(filenames),
+		"x",
+		x,
+		"y",
+		y,
+	)
+	targetWindow, ok := globalApplication.Window.GetByID(uint(windowID))
+	if !ok || targetWindow == nil {
+		println("Error: processDragItems could not find window with ID:", uint(windowID))
+		return
 	}
+
+	globalApplication.debug(
+		"[DragDropDebug] processDragItems: Calling targetWindow.InitiateFrontendDropProcessing",
+	)
+	targetWindow.InitiateFrontendDropProcessing(filenames, int(x), int(y))
 }
 
 //export processMenuItemClick
