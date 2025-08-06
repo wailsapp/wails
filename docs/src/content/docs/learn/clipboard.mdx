@@ -110,7 +110,7 @@ func main() {
     })
 
     app.Menu.Set(menu)
-    app.NewWebviewWindow()
+    app.Window.New()
 
     err := app.Run()
     if err != nil {

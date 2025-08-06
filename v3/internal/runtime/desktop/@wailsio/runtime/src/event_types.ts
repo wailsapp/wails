@@ -205,6 +205,7 @@ export const Types = Object.freeze({
 	Common: Object.freeze({
 		ApplicationOpenedWithFile: "common:ApplicationOpenedWithFile",
 		ApplicationStarted: "common:ApplicationStarted",
+		ApplicationLaunchedWithUrl: "common:ApplicationLaunchedWithUrl",
 		ThemeChanged: "common:ThemeChanged",
 		WindowClosing: "common:WindowClosing",
 		WindowDidMove: "common:WindowDidMove",
@@ -228,5 +229,6 @@ export const Types = Object.freeze({
 		WindowZoomIn: "common:WindowZoomIn",
 		WindowZoomOut: "common:WindowZoomOut",
 		WindowZoomReset: "common:WindowZoomReset",
+		WindowDropZoneFilesDropped: "common:WindowDropZoneFilesDropped",
 	}),
 });

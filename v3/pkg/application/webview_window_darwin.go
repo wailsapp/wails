@@ -18,6 +18,7 @@ struct WebviewPreferences {
     bool *TabFocusesLinks;
     bool *TextInteractionEnabled;
     bool *FullscreenEnabled;
+    bool *AllowsBackForwardNavigationGestures;
 };
 
 extern void registerListener(unsigned int event);
@@ -100,6 +101,11 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[webView autorelease];
+
+    // Set allowsBackForwardNavigationGestures if specified
+    if (preferences.AllowsBackForwardNavigationGestures != NULL) {
+        webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
+    }
 
 	[view addSubview:webView];
 
@@ -1182,6 +1188,9 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	if wvprefs.FullscreenEnabled.IsSet() {
 		result.FullscreenEnabled = bool2CboolPtr(wvprefs.FullscreenEnabled.Get())
 	}
+	if wvprefs.AllowsBackForwardNavigationGestures.IsSet() {
+		result.AllowsBackForwardNavigationGestures = bool2CboolPtr(wvprefs.AllowsBackForwardNavigationGestures.Get())
+	}
 
 	return result
 }
@@ -1442,3 +1451,4 @@ func (w *macosWebviewWindow) showMenuBar()    {}
 func (w *macosWebviewWindow) hideMenuBar()    {}
 func (w *macosWebviewWindow) toggleMenuBar()  {}
 func (w *macosWebviewWindow) setMenu(_ *Menu) {}
+func (w *macosWebviewWindow) snapAssist()     {} // No-op on macOS

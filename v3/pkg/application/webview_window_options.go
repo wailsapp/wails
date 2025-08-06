@@ -95,10 +95,6 @@ type WebviewWindowOptions struct {
 	// Y is the starting Y position of the window.
 	Y int
 
-	// TransparentTitlebar will make the titlebar transparent.
-	// TODO: Move to mac window options
-	FullscreenButtonEnabled bool
-
 	// Hidden will hide the window when it is first created.
 	Hidden bool
 
@@ -161,6 +157,13 @@ func NewRGB(red, green, blue uint8) RGBA {
 		Blue:  blue,
 		Alpha: 255,
 	}
+}
+
+func NewRGBPtr(red, green, blue uint8) *uint32 {
+	result := uint32(red)
+	result |= uint32(green) << 8
+	result |= uint32(blue) << 16
+	return &result
 }
 
 type BackgroundType int
@@ -233,7 +236,7 @@ type WindowsWindow struct {
 
 	// Specify custom colours to use for dark/light mode
 	// Default: nil
-	CustomTheme *ThemeSettings
+	CustomTheme ThemeSettings
 
 	// Disable all window decorations in Frameless mode, which means no "Aero Shadow" and no "Rounded Corner" will be shown.
 	// "Rounded Corners" are only available on Windows 11.
@@ -289,13 +292,15 @@ type WindowsWindow struct {
 	// PasswordAutosaveEnabled enables autosaving passwords
 	PasswordAutosaveEnabled bool
 
-	// EnabledFeatures and DisabledFeatures are used to enable or disable specific features in the WebView2 browser.
+	// EnabledFeatures, DisabledFeatures and AdditionalLaunchArgs are used to enable or disable specific features in the WebView2 browser.
 	// Available flags: https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/webview-features-flags?tabs=dotnetcsharp#available-webview2-browser-flags
 	// WARNING: Apps in production shouldn't use WebView2 browser flags,
 	// because these flags might be removed or altered at any time,
 	// and aren't necessarily supported long-term.
-	EnabledFeatures  []string
-	DisabledFeatures []string
+	// AdditionalLaunchArgs should always be preceded by "--"
+	EnabledFeatures      []string
+	DisabledFeatures     []string
+	AdditionalLaunchArgs []string
 }
 
 type Theme int
@@ -309,21 +314,56 @@ const (
 	Light Theme = 2
 )
 
+type WindowTheme struct {
+	// BorderColour is the colour of the window border
+	BorderColour *uint32
+
+	// TitleBarColour is the colour of the window title bar
+	TitleBarColour *uint32
+
+	// TitleTextColour is the colour of the window title text
+	TitleTextColour *uint32
+}
+
+type TextTheme struct {
+	// Text is the colour of the text
+	Text *uint32
+
+	// Background is the background colour of the text
+	Background *uint32
+}
+
+type MenuBarTheme struct {
+	// Default is the default theme
+	Default *TextTheme
+
+	// Hover defines the theme to use when the menu item is hovered
+	Hover *TextTheme
+
+	// Selected defines the theme to use when the menu item is selected
+	Selected *TextTheme
+}
+
 // ThemeSettings defines custom colours to use in dark or light mode.
 // They may be set using the hex values: 0x00BBGGRR
 type ThemeSettings struct {
-	DarkModeTitleBar           int32
-	DarkModeTitleBarInactive   int32
-	DarkModeTitleText          int32
-	DarkModeTitleTextInactive  int32
-	DarkModeBorder             int32
-	DarkModeBorderInactive     int32
-	LightModeTitleBar          int32
-	LightModeTitleBarInactive  int32
-	LightModeTitleText         int32
-	LightModeTitleTextInactive int32
-	LightModeBorder            int32
-	LightModeBorderInactive    int32
+	// Dark mode active window
+	DarkModeActive *WindowTheme
+
+	// Dark mode inactive window
+	DarkModeInactive *WindowTheme
+
+	// Light mode active window
+	LightModeActive *WindowTheme
+
+	// Light mode inactive window
+	LightModeInactive *WindowTheme
+
+	// Dark mode MenuBar
+	DarkModeMenuBar *MenuBarTheme
+
+	// Light mode MenuBar
+	LightModeMenuBar *MenuBarTheme
 }
 
 /****** Mac Options *******/
@@ -403,6 +443,8 @@ type MacWebviewPreferences struct {
 	TextInteractionEnabled u.Bool
 	// FullscreenEnabled will enable fullscreen
 	FullscreenEnabled u.Bool
+	// AllowsBackForwardNavigationGestures enables horizontal swipe gestures for back/forward navigation
+	AllowsBackForwardNavigationGestures u.Bool
 }
 
 // MacTitleBar contains options for the Mac titlebar

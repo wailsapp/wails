@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -56,9 +57,13 @@ func (m *windowsApp) isDarkMode() bool {
 }
 
 func (m *windowsApp) getAccentColor() string {
-	// Windows doesn't have a simple accent color API in the current w32 package
-	// Return a default blue color
-	return "rgb(0,122,255)"
+	accentColor, err := w32.GetAccentColor()
+	if err != nil {
+		m.parent.error("failed to get accent color: %w", err)
+		return "rgb(0,122,255)"
+	}
+
+	return accentColor
 }
 
 func (m *windowsApp) isOnMainThread() bool {
@@ -150,20 +155,35 @@ func (m *windowsApp) run() error {
 		ctx: blankApplicationEventContext,
 	}
 
-	// Check if there is 1 parameter passed to the application
-	// and if the extension matches the options.FileAssociations string
-	if len(os.Args) == 2 {
-		arg := os.Args[1]
-		ext := filepath.Ext(arg)
-		if slices.Contains(m.parent.options.FileAssociations, ext) {
+	if len(os.Args) == 2 { // Case: program + 1 argument
+		arg1 := os.Args[1]
+		// Check if the argument is likely a URL from a custom protocol invocation
+		if strings.Contains(arg1, "://") {
+			m.parent.info("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
 			eventContext := newApplicationEventContext()
-			eventContext.setOpenedWithFile(arg)
-			// EmitEvent application started event
+			eventContext.setURL(arg1)
 			applicationEvents <- &ApplicationEvent{
-				Id:  uint(events.Common.ApplicationOpenedWithFile),
+				Id:  uint(events.Common.ApplicationLaunchedWithUrl),
 				ctx: eventContext,
 			}
+		} else {
+			// If not a URL-like string, check for file association
+			if m.parent.options.FileAssociations != nil {
+				ext := filepath.Ext(arg1)
+				if slices.Contains(m.parent.options.FileAssociations, ext) {
+					m.parent.info("Application launched with file via file association", "file", arg1)
+					eventContext := newApplicationEventContext()
+					eventContext.setOpenedWithFile(arg1)
+					applicationEvents <- &ApplicationEvent{
+						Id:  uint(events.Common.ApplicationOpenedWithFile),
+						ctx: eventContext,
+					}
+				}
+			}
 		}
+	} else if len(os.Args) > 2 {
+		// Log if multiple arguments are passed, though typical protocol/file launch is a single arg.
+		m.parent.info("Application launched with multiple arguments", "args", os.Args[1:])
 	}
 
 	_ = m.runMainLoop()
@@ -383,7 +403,9 @@ func newPlatformApp(app *App) *windowsApp {
 func (a *App) logPlatformInfo() {
 	var args []any
 	args = append(args, "Go-WebView2Loader", webviewloader.UsingGoWebview2Loader)
-	webviewVersion, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(a.options.Windows.WebviewBrowserPath)
+	webviewVersion, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(
+		a.options.Windows.WebviewBrowserPath,
+	)
 	if err != nil {
 		args = append(args, "WebView2", "Error: "+err.Error())
 	} else {
@@ -398,7 +420,9 @@ func (a *App) logPlatformInfo() {
 
 func (a *App) platformEnvironment() map[string]any {
 	result := map[string]any{}
-	webviewVersion, _ := webviewloader.GetAvailableCoreWebView2BrowserVersionString(a.options.Windows.WebviewBrowserPath)
+	webviewVersion, _ := webviewloader.GetAvailableCoreWebView2BrowserVersionString(
+		a.options.Windows.WebviewBrowserPath,
+	)
 	result["Go-WebView2Loader"] = webviewloader.UsingGoWebview2Loader
 	result["WebView2"] = webviewVersion
 	return result

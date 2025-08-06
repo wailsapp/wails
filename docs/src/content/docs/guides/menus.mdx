@@ -10,7 +10,7 @@ Wails v3 provides a powerful menu system that allows you to create both applicat
 To create a new menu, use the `New()` method from the Menus manager:
 
 ```go
-menu := app.Menus.New()
+menu := app.Menu.New()
 ```
 
 ### Adding Menu Items
@@ -59,10 +59,10 @@ submenu.Add("Save")
 #### Combining menus
 A menu can be added into another menu by appending or prepending it.
 ```go
-menu := app.Menus.New()
+menu := app.Menu.New()
 menu.Add("First Menu")
 
-secondaryMenu := app.Menus.New()
+secondaryMenu := app.Menu.New()
 secondaryMenu.Add("Second Menu")
 
 // insert 'secondaryMenu' after 'menu'
@@ -88,7 +88,7 @@ In some cases it'll be better to construct a whole new menu if you are working w
 This will clear all items on an existing menu and allows you to add items again.
 
 ```go
-menu := app.Menus.New()
+menu := app.Menu.New()
 menu.Add("Waiting for update...")
 
 // after certain logic, the menu has to be updated
@@ -107,7 +107,7 @@ so be sure to manage your menus carefully.
 If you want to clear and release a menu, use the `Destroy()` method:
 
 ```go
-menu := app.Menus.New()
+menu := app.Menu.New()
 menu.Add("Waiting for update...")
 
 // after certain logic, the menu has to be destroyed
@@ -265,7 +265,7 @@ These roles can be used to add individual menu items:
 Here's an example showing how to use both complete menus and individual roles:
 
 ```go
-menu := app.Menus.New()
+menu := app.Menu.New()
 
 // Add complete menu structures
 menu.AddRole(application.AppMenu)    // macOS only
@@ -287,11 +287,11 @@ Application menus are the menus that appear at the top of your application windo
 
 ### Application Menu Behaviour
 
-When you set an application menu using `app.Menus.Set()`, it becomes the main menu on macOS.
+When you set an application menu using `app.Menu.Set()`, it becomes the main menu on macOS.
 Menus are set on a per-window basis for Windows/Linux.
 
 ```go
-app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title: "Custom Menu Window",
     Windows: application.WindowsWindow{
         Menu: customMenu,  // Override application menu for this window
@@ -306,7 +306,7 @@ func main() {
     app := application.New(application.Options{})
 
     // Create application menu
-    appMenu := app.Menus.New()
+    appMenu := app.Menu.New()
     fileMenu := appMenu.AddSubmenu("File")
     fileMenu.Add("New").OnClick(func(ctx *application.Context) {
         // This will be available in all windows unless overridden
@@ -315,12 +315,12 @@ func main() {
     })
     
     // Set as application menu - this is for macOS
-    app.Menus.Set(appMenu)
+    app.Menu.Set(appMenu)
 
     // Window with custom menu on Windows
-    customMenu := app.Menus.New()
+    customMenu := app.Menu.New()
     customMenu.Add("Custom Action")
-    app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title: "Custom Menu",
         Windows: application.WindowsWindow{
             Menu: customMenu,
