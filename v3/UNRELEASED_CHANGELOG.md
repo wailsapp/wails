@@ -48,6 +48,7 @@ After processing, the content will be moved to the main changelog and this file 
 **Fixed:**
 - Fix memory leak in event system during window close operations (#5678)
 - Fix crash when using context menus on Linux with Wayland
+- Fix WindowUnMinised event not fired when the window was Maxmised on Windows.
 
 **Security:**
 - Update dependencies to address CVE-2024-12345 in third-party library
