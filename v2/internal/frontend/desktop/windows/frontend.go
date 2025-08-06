@@ -688,7 +688,27 @@ var edgeMap = map[string]uintptr{
 	"nw-resize": w32.HTTOPLEFT,
 }
 
-func (f *Frontend) processMessage(message string) {
+func (f *Frontend) processMessage(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+	topSource, err := sender.GetSource()
+	if err != nil {
+		f.logger.Error(fmt.Sprintf("Unable to get source from sender: %s", err.Error()))
+		return
+	}
+
+	senderSource, err := args.GetSource()
+	if err != nil {
+		f.logger.Error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
+		return
+	}
+
+	slog.Info(fmt.Sprintf("top source %s", topSource))
+	slog.Info(fmt.Sprintf("sender source %s", senderSource))
+
+	// verify both topSource and sender are allowed origins
+	if !f.validBindingOrigin(topSource) || !f.validBindingOrigin(senderSource) {
+		return
+	}
+
 	if message == "drag" {
 		if !f.mainWindow.IsFullScreen() {
 			err := f.startDrag()
