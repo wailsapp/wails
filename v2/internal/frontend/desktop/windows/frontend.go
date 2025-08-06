@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net"
 	"net/url"
 	"os"
@@ -743,6 +744,9 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 		f.logger.Error(fmt.Sprintf("Unable to get source from args: %s", err.Error()))
 		return
 	}
+
+	slog.Info(fmt.Sprintf("top source %s", topSource))
+	slog.Info(fmt.Sprintf("sender source %s", senderSource))
 
 	// verify both topSource and sender are allowed origins
 	if !f.validBindingOrigin(topSource) || !f.validBindingOrigin(senderSource) {
