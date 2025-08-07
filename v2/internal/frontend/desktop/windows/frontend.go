@@ -63,7 +63,7 @@ type Frontend struct {
 
 	hasStarted bool
 
-	bindingOriginValidator *originvalidator.OriginValidator
+	originValidator *originvalidator.OriginValidator
 
 	// Windows build number
 	versionInfo     *operatingsystem.WindowsVersionInfo
@@ -75,19 +75,13 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	// Get Windows build number
 	versionInfo, _ := operatingsystem.GetWindowsVersionInfo()
 
-	allowedOrigins := startURL
-	if appoptions.BindingsAllowedOrigins != "" {
-		allowedOrigins += "," + appoptions.BindingsAllowedOrigins
-	}
-
 	result := &Frontend{
-		frontendOptions:        appoptions,
-		logger:                 myLogger,
-		bindings:               appBindings,
-		dispatcher:             dispatcher,
-		ctx:                    ctx,
-		versionInfo:            versionInfo,
-		bindingOriginValidator: originvalidator.NewOriginValidator(allowedOrigins),
+		frontendOptions: appoptions,
+		logger:          myLogger,
+		bindings:        appBindings,
+		dispatcher:      dispatcher,
+		ctx:             ctx,
+		versionInfo:     versionInfo,
 	}
 
 	if appoptions.Windows != nil {
@@ -98,14 +92,17 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	// We currently can't use wails://wails/ as other platforms do, therefore we map the assets sever onto the following url.
 	result.startURL, _ = url.Parse(startURL)
+	result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
+		result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 		return result
 	}
 
+	result.startURL.Host = net.JoinHostPort(result.startURL.Host, port)
 	if port, _ := ctx.Value("assetserverport").(string); port != "" {
-		result.startURL.Host = net.JoinHostPort(result.startURL.Host, port)
+		result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 	}
 
 	var bindings string
@@ -827,12 +824,12 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 }
 
 func (f *Frontend) validBindingOrigin(source string) bool {
-	origin, err := f.bindingOriginValidator.GetOriginFromURL(source)
+	origin, err := f.originValidator.GetOriginFromURL(source)
 	if err != nil {
 		f.logger.Error(fmt.Sprintf("Error parsing source URL %s: %v", source, err.Error()))
 		return false
 	}
-	allowed := f.bindingOriginValidator.IsOriginAllowed(origin)
+	allowed := f.originValidator.IsOriginAllowed(origin)
 	if !allowed {
 		f.logger.Error("Blocked request from unauthorized origin: %s", origin)
 		return false

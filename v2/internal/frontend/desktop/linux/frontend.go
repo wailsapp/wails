@@ -151,26 +151,23 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		}
 	})
 
-	allowedOrigins := startURL
-	if appoptions.BindingsAllowedOrigins != "" {
-		allowedOrigins += "," + appoptions.BindingsAllowedOrigins
-	}
-
 	result := &Frontend{
 		frontendOptions: appoptions,
 		logger:          myLogger,
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		originValidator: originvalidator.NewOriginValidator(allowedOrigins),
 	}
 	result.startURL, _ = url.Parse(startURL)
+	result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
+		result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 	} else {
 		if port, _ := ctx.Value("assetserverport").(string); port != "" {
 			result.startURL.Host = net.JoinHostPort(result.startURL.Host+".localhost", port)
+			result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 		}
 
 		var bindings string

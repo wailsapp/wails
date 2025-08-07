@@ -12,9 +12,13 @@ type OriginValidator struct {
 }
 
 // NewOriginValidator creates a new validator from a comma-separated string of allowed origins
-func NewOriginValidator(allowedOriginsString string) *OriginValidator {
+func NewOriginValidator(startUrl *url.URL, allowedOriginsString string) *OriginValidator {
+	allowedOrigins := startUrl.Scheme + "://" + startUrl.Host
+	if allowedOriginsString != "" {
+		allowedOrigins += "," + allowedOriginsString
+	}
 	validator := &OriginValidator{}
-	validator.parseAllowedOrigins(allowedOriginsString)
+	validator.parseAllowedOrigins(allowedOrigins)
 	return validator
 }
 
