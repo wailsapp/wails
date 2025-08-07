@@ -100,8 +100,8 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		return result
 	}
 
-	result.startURL.Host = net.JoinHostPort(result.startURL.Host, port)
 	if port, _ := ctx.Value("assetserverport").(string); port != "" {
+		result.startURL.Host = net.JoinHostPort(result.startURL.Host, port)
 		result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 	}
 
