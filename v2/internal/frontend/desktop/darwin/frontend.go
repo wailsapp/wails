@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/frontend/originvalidator"
 	"html/template"
 	"log"
 	"net"
@@ -32,6 +31,7 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/originvalidator"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -173,8 +173,9 @@ func (f *Frontend) startMessageProcessor() {
 
 func (f *Frontend) startBindingsMessageProcessor() {
 	for msg := range bindingsMessageBuffer {
-		// don't allow bindings from iFrame
+		// Apple webkit doesn't provide origin of main frame. So we can't verify in case of iFrame that top level origin is allowed.
 		if !msg.isMainFrame {
+			f.logger.Error("Blocked request from not main frame")
 			return
 		}
 
@@ -497,11 +498,10 @@ func processMessage(message *C.char) {
 func processBindingMessage(message *C.char, source *C.char, fromMainFrame bool) {
 	goMessage := C.GoString(message)
 	goSource := C.GoString(source)
-	goFromMainFrame := fromMainFrame
 	bindingsMessageBuffer <- &bindingsMessage{
 		message:     goMessage,
 		source:      goSource,
-		isMainFrame: goFromMainFrame,
+		isMainFrame: fromMainFrame,
 	}
 }
 

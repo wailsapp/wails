@@ -482,11 +482,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     if (message.frameInfo && message.frameInfo.request && message.frameInfo.request.URL) {
         NSURL *url = message.frameInfo.request.URL;
         if (url.scheme && url.host) {
-            if (url.port && ![url.port isEqualToNumber:@80] && ![url.port isEqualToNumber:@443]) {
-                origin = [NSString stringWithFormat:@"%@://%@:%@", url.scheme, url.host, url.port];
-            } else {
-                origin = [NSString stringWithFormat:@"%@://%@", url.scheme, url.host];
-            }
+            origin = [url absoluteString];
         }
     }
 
