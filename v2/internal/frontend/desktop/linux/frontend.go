@@ -4,7 +4,7 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0 
+#cgo linux pkg-config: gtk+-3.0
 #cgo !webkit2_41 pkg-config: webkit2gtk-4.0
 #cgo webkit2_41 pkg-config: webkit2gtk-4.1
 
@@ -80,6 +80,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/frontend/originvalidator"
 	"log"
 	"net"
 	"net/url"
@@ -124,6 +125,8 @@ type Frontend struct {
 	mainWindow *Window
 	bindings   *binding.Bindings
 	dispatcher frontend.Dispatcher
+
+	originValidator *originvalidator.OriginValidator
 }
 
 func (f *Frontend) RunMainLoop() {
@@ -154,6 +157,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
+		originValidator: originvalidator.NewOriginValidator(appoptions.BindingsAllowedOrigins),
 	}
 	result.startURL, _ = url.Parse(startURL)
 
@@ -184,6 +188,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 
 	go result.startMessageProcessor()
+	go result.startBindingMessageProcessor()
 
 	var _debug = ctx.Value("debug")
 	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
@@ -213,6 +218,24 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 func (f *Frontend) startMessageProcessor() {
 	for message := range messageBuffer {
 		f.processMessage(message)
+	}
+}
+
+func (f *Frontend) startBindingMessageProcessor() {
+	for msg := range bindingsMessageBuffer {
+		origin, err := f.originValidator.GetOriginFromURL(msg.source)
+		if err != nil {
+			f.logger.Error(fmt.Sprintf("failed to get origin for URL %q: %v", msg.source, err))
+			return
+		}
+
+		allowed := f.originValidator.IsOriginAllowed(origin)
+		if !allowed {
+			f.logger.Error("Blocked request from unauthorized origin: %s", origin)
+			return
+		}
+
+		f.processMessage(msg.message)
 	}
 }
 
@@ -507,12 +530,28 @@ func (f *Frontend) ExecJS(js string) {
 	f.mainWindow.ExecJS(js)
 }
 
+type bindingsMessage struct {
+	message string
+	source  string
+}
+
 var messageBuffer = make(chan string, 100)
+var bindingsMessageBuffer = make(chan *bindingsMessage, 100)
 
 //export processMessage
 func processMessage(message *C.char) {
 	goMessage := C.GoString(message)
 	messageBuffer <- goMessage
+}
+
+//export processBindingMessage
+func processBindingMessage(message *C.char, source *C.char) {
+	goMessage := C.GoString(message)
+	goSource := C.GoString(source)
+	bindingsMessageBuffer <- &bindingsMessage{
+		message: goMessage,
+		source:  goSource,
+	}
 }
 
 var requestBuffer = make(chan webview.Request, 100)
