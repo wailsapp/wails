@@ -105,17 +105,8 @@ func (v *OriginValidator) GetOriginFromURL(urlString string) (string, error) {
 		return "", fmt.Errorf("URL missing scheme or host")
 	}
 
-	// Build origin (scheme + host + port if non-standard)
+	// Build origin (scheme + host)
 	origin := parsedURL.Scheme + "://" + parsedURL.Host
-
-	// Only include port if it's not the standard port for the scheme
-	if parsedURL.Port() != "" {
-		port := parsedURL.Port()
-		if !((parsedURL.Scheme == "http" && port == "80") ||
-			(parsedURL.Scheme == "https" && port == "443")) {
-			origin += ":" + port
-		}
-	}
 
 	return origin, nil
 }
