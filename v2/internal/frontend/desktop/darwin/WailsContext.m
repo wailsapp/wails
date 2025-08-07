@@ -223,10 +223,6 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         config.preferences.tabFocusesLinks = *preferences.tabFocusesLinks;
     }
 
-    if (preferences.allowedOrigins != NULL) {
-      [self parseAllowedOrigins:preferences.allowedOrigins];
-    }
-
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 110300
     if (@available(macOS 11.3, *)) {
         if (preferences.textInteractionEnabled != NULL) {
@@ -494,18 +490,6 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         }
     }
 
-    // don't allow to do requests from iframes
-    if (!message.frameInfo.isMainFrame) {
-        NSLog(@"Blocked message from iframe: %@", origin);
-        return;
-    }
-
-    // Validate origin
-    if (![self isOriginAllowed:origin]) {
-        NSLog(@"Blocked message from unauthorized origin: %@", origin);
-        return;
-    }
-
     NSString *m = message.body;
 
     // Check for drag
@@ -520,95 +504,10 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     }
 
     const char *_m = [m UTF8String];
+    const char *_origin = [origin UTF8String];
 
-    processMessage(_m);
+    processBindingMessage(_m, _origin, message.frameInfo.isMainFrame);
 }
-
-- (void)parseAllowedOrigins:(const char *)originsString {
-    if (!originsString || strlen(originsString) == 0) {
-        self.allowedOrigins = @[];
-        return;
-    }
-
-    // Convert const char* to NSString
-    NSString *originsNSString = [NSString stringWithUTF8String:originsString];
-
-    NSArray *origins = [originsNSString componentsSeparatedByString:@","];
-    NSMutableArray *trimmedOrigins = [NSMutableArray array];
-
-    for (NSString *origin in origins) {
-        NSString *trimmed = [origin stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        if (trimmed.length > 0) {
-            [trimmedOrigins addObject:trimmed];
-        }
-    }
-
-    self.allowedOrigins = [trimmedOrigins copy];
-}
-
-- (BOOL)isOriginAllowed:(NSString *)origin {
-    if (!origin || origin.length == 0) {
-        return NO;
-    }
-
-    for (NSString *allowedOrigin in self.allowedOrigins) {
-        if ([self matchesOriginPattern:allowedOrigin withOrigin:origin]) {
-            return YES;
-        }
-    }
-
-    return NO;
-}
-
-- (BOOL)matchesOriginPattern:(NSString *)pattern withOrigin:(NSString *)origin {
-    // Exact match
-    if ([pattern isEqualToString:origin]) {
-        return YES;
-    }
-
-    // Wildcard pattern matching
-    if ([pattern containsString:@"*"]) {
-        // Convert wildcard pattern to regex
-        NSString *regexPattern = [self wildcardPatternToRegex:pattern];
-
-        NSError *error = nil;
-        NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:regexPattern
-                                                                               options:NSRegularExpressionCaseInsensitive
-                                                                                 error:&error];
-
-        if (error) {
-            NSLog(@"Regex error for pattern %@: %@", pattern, error.localizedDescription);
-            return NO;
-        }
-
-        NSRange range = NSMakeRange(0, origin.length);
-        NSUInteger matches = [regex numberOfMatchesInString:origin options:0 range:range];
-
-        return matches > 0;
-    }
-
-    return NO;
-}
-
-- (NSString *)wildcardPatternToRegex:(NSString *)wildcardPattern {
-    // Escape special regex characters except *
-    NSString *escaped = wildcardPattern;
-
-    // Characters that need escaping in regex (note: \ must be first to avoid double-escaping)
-    NSArray *specialChars = @[@"\\", @".", @"+", @"?", @"^", @"$", @"{", @"}", @"(", @")", @"|", @"[", @"]"];
-
-    for (NSString *specialChar in specialChars) {
-        escaped = [escaped stringByReplacingOccurrencesOfString:specialChar
-                                                     withString:[NSString stringWithFormat:@"\\%@", specialChar]];
-    }
-
-    // Replace * with .* (matches any characters)
-    escaped = [escaped stringByReplacingOccurrencesOfString:@"*" withString:@".*"];
-
-    // Anchor the pattern to match the entire string
-    return [NSString stringWithFormat:@"^%@$", escaped];
-}
-
 
 /***** Dialogs ******/
 -(void) MessageDialog :(NSString*)dialogType :(NSString*)title :(NSString*)message :(NSString*)button1 :(NSString*)button2 :(NSString*)button3 :(NSString*)button4 :(NSString*)defaultButton :(NSString*)cancelButton :(void*)iconData :(int)iconDataLength {

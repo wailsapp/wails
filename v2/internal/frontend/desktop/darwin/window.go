@@ -99,11 +99,6 @@ func NewWindow(frontendOptions *options.App, debug bool, devtools bool) *Window 
 			hideToolbarSeparator = bool2Cint(mac.TitleBar.HideToolbarSeparator)
 		}
 
-		preferences.allowedOrigins = c.String("wails://wails")
-		if frontendOptions.BindingsAllowedOrigins != "" {
-			preferences.allowedOrigins = c.String(frontendOptions.BindingsAllowedOrigins)
-		}
-
 		if mac.Preferences != nil {
 			if mac.Preferences.TabFocusesLinks.IsSet() {
 				preferences.tabFocusesLinks = bool2CboolPtr(mac.Preferences.TabFocusesLinks.Get())

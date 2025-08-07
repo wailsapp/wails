@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/frontend/originvalidator"
 	"html/template"
 	"log"
 	"net"
@@ -38,13 +39,20 @@ import (
 
 const startURL = "wails://wails/"
 
+type bindingsMessage struct {
+	message     string
+	source      string
+	isMainFrame bool
+}
+
 var (
-	messageBuffer        = make(chan string, 100)
-	requestBuffer        = make(chan webview.Request, 100)
-	callbackBuffer       = make(chan uint, 10)
-	openFilepathBuffer   = make(chan string, 100)
-	openUrlBuffer        = make(chan string, 100)
-	secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
+	messageBuffer         = make(chan string, 100)
+	bindingsMessageBuffer = make(chan *bindingsMessage, 100)
+	requestBuffer         = make(chan webview.Request, 100)
+	callbackBuffer        = make(chan uint, 10)
+	openFilepathBuffer    = make(chan string, 100)
+	openUrlBuffer         = make(chan string, 100)
+	secondInstanceBuffer  = make(chan options.SecondInstanceData, 1)
 )
 
 type Frontend struct {
@@ -67,6 +75,8 @@ type Frontend struct {
 	mainWindow *Window
 	bindings   *binding.Bindings
 	dispatcher frontend.Dispatcher
+
+	originValidator *originvalidator.OriginValidator
 }
 
 func (f *Frontend) RunMainLoop() {
@@ -84,6 +94,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
+		originValidator: originvalidator.NewOriginValidator(appoptions.BindingsAllowedOrigins),
 	}
 	result.startURL, _ = url.Parse(startURL)
 
@@ -119,6 +130,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 
 	go result.startMessageProcessor()
+	go result.startBindingsMessageProcessor()
 	go result.startCallbackProcessor()
 	go result.startFileOpenProcessor()
 	go result.startUrlOpenProcessor()
@@ -151,6 +163,29 @@ func (f *Frontend) startSecondInstanceProcessor() {
 func (f *Frontend) startMessageProcessor() {
 	for message := range messageBuffer {
 		f.processMessage(message)
+	}
+}
+
+func (f *Frontend) startBindingsMessageProcessor() {
+	for msg := range bindingsMessageBuffer {
+		// don't allow bindings from iFrame
+		if !msg.isMainFrame {
+			return
+		}
+
+		origin, err := f.originValidator.GetOriginFromURL(msg.source)
+		if err != nil {
+			f.logger.Error(fmt.Sprintf("failed to get origin for URL %q: %v", msg.source, err))
+			return
+		}
+
+		allowed := f.originValidator.IsOriginAllowed(origin)
+		if !allowed {
+			f.logger.Error("Blocked request from unauthorized origin: %s", origin)
+			return
+		}
+
+		f.processMessage(msg.message)
 	}
 }
 
@@ -451,6 +486,18 @@ func (f *Frontend) ExecJS(js string) {
 func processMessage(message *C.char) {
 	goMessage := C.GoString(message)
 	messageBuffer <- goMessage
+}
+
+//export processBindingMessage
+func processBindingMessage(message *C.char, source *C.char, fromMainFrame bool) {
+	goMessage := C.GoString(message)
+	goSource := C.GoString(source)
+	goFromMainFrame := fromMainFrame
+	bindingsMessageBuffer <- &bindingsMessage{
+		message:     goMessage,
+		source:      goSource,
+		isMainFrame: goFromMainFrame,
+	}
 }
 
 //export processCallback

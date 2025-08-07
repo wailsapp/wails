@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/frontend/originvalidator"
 	"log"
 	"net"
 	"net/url"
@@ -62,7 +63,7 @@ type Frontend struct {
 
 	hasStarted bool
 
-	bindingOriginValidator *OriginValidator
+	bindingOriginValidator *originvalidator.OriginValidator
 
 	// Windows build number
 	versionInfo     *operatingsystem.WindowsVersionInfo
@@ -85,7 +86,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		dispatcher:             dispatcher,
 		ctx:                    ctx,
 		versionInfo:            versionInfo,
-		bindingOriginValidator: NewOriginValidator(appoptions.BindingsAllowedOrigins),
+		bindingOriginValidator: originvalidator.NewOriginValidator(appoptions.BindingsAllowedOrigins),
 	}
 
 	if appoptions.Windows != nil {
