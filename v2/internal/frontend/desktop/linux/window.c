@@ -67,7 +67,7 @@ static void sendMessageToBackend(WebKitUserContentManager *contentManager,
     JSStringGetUTF8CString(js, message, messageSize);
     JSStringRelease(js);
 #endif
-    processMessage(message, uri);
+    processBindingMessage(message, uri);
     g_free(message);
     g_free(uri);
 }
