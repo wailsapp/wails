@@ -75,8 +75,9 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	// Get Windows build number
 	versionInfo, _ := operatingsystem.GetWindowsVersionInfo()
 
-	if appoptions.BindingsAllowedOrigins == "" {
-		appoptions.BindingsAllowedOrigins = startURL
+	allowedOrigins := startURL
+	if appoptions.BindingsAllowedOrigins != "" {
+		allowedOrigins += "," + appoptions.BindingsAllowedOrigins
 	}
 
 	result := &Frontend{
@@ -86,7 +87,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		dispatcher:             dispatcher,
 		ctx:                    ctx,
 		versionInfo:            versionInfo,
-		bindingOriginValidator: originvalidator.NewOriginValidator(appoptions.BindingsAllowedOrigins),
+		bindingOriginValidator: originvalidator.NewOriginValidator(allowedOrigins),
 	}
 
 	if appoptions.Windows != nil {

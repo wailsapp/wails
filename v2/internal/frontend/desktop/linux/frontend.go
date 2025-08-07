@@ -151,13 +151,18 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		}
 	})
 
+	allowedOrigins := startURL
+	if appoptions.BindingsAllowedOrigins != "" {
+		allowedOrigins += "," + appoptions.BindingsAllowedOrigins
+	}
+
 	result := &Frontend{
 		frontendOptions: appoptions,
 		logger:          myLogger,
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		originValidator: originvalidator.NewOriginValidator(appoptions.BindingsAllowedOrigins),
+		originValidator: originvalidator.NewOriginValidator(allowedOrigins),
 	}
 	result.startURL, _ = url.Parse(startURL)
 

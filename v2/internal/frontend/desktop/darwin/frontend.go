@@ -88,13 +88,18 @@ func (f *Frontend) WindowClose() {
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
+	allowedOrigins := startURL
+	if appoptions.BindingsAllowedOrigins != "" {
+		allowedOrigins += "," + appoptions.BindingsAllowedOrigins
+	}
+
 	result := &Frontend{
 		frontendOptions: appoptions,
 		logger:          myLogger,
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		originValidator: originvalidator.NewOriginValidator(appoptions.BindingsAllowedOrigins),
+		originValidator: originvalidator.NewOriginValidator(allowedOrigins),
 	}
 	result.startURL, _ = url.Parse(startURL)
 

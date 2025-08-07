@@ -102,7 +102,7 @@ type App struct {
 	// DisablePanicRecovery disables the panic recovery system in messages processing
 	DisablePanicRecovery bool
 
-	// List of allowed origins for bindings in format "wails://wails,https://*.myapp.com"
+	// List of additional allowed origins for bindings in format "https://*.myapp.com,https://example.com"
 	BindingsAllowedOrigins string
 }
 

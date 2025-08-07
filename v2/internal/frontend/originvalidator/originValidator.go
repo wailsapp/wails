@@ -29,7 +29,7 @@ func (v *OriginValidator) parseAllowedOrigins(originsString string) {
 	var trimmedOrigins []string
 
 	for _, origin := range origins {
-		trimmed := strings.TrimSpace(origin)
+		trimmed := strings.TrimSuffix(strings.TrimSpace(origin), "/")
 		if trimmed != "" {
 			trimmedOrigins = append(trimmedOrigins, trimmed)
 		}
