@@ -135,6 +135,9 @@ type WebviewWindowOptions struct {
 
 	// IgnoreMouseEvents will ignore mouse events in the window (Windows + Mac only)
 	IgnoreMouseEvents bool
+
+	// ContentProtectionEnabled specifies whether content protection is enabled, preventing screen capture and recording.
+	ContentProtectionEnabled bool
 }
 
 type RGBA struct {

@@ -188,7 +188,8 @@ var (
 
 	procRedrawWindow = moduser32.NewProc("RedrawWindow")
 
-	procRegisterWindowMessageW = moduser32.NewProc("RegisterWindowMessageW")
+	procRegisterWindowMessageW   = moduser32.NewProc("RegisterWindowMessageW")
+	procSetWindowDisplayAffinity = user32.NewProc("SetWindowDisplayAffinity")
 
 	mainThread HANDLE
 )

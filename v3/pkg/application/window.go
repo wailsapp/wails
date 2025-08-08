@@ -88,4 +88,5 @@ type Window interface {
 	ZoomReset() Window
 	SetMenu(menu *Menu)
 	SnapAssist()
+	SetContentProtection(protection bool) Window
 }

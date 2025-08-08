@@ -112,6 +112,7 @@ type (
 		toggleMenuBar()
 		setMenu(menu *Menu)
 		snapAssist()
+		setContentProtection(enabled bool)
 	}
 )
 
@@ -516,6 +517,15 @@ func (w *WebviewWindow) SetResizable(b bool) Window {
 		InvokeSync(func() {
 			w.impl.setResizable(b)
 		})
+	}
+	return w
+}
+
+func (w *WebviewWindow) SetContentProtection(b bool) Window {
+	if w.impl == nil {
+		w.options.ContentProtectionEnabled = b
+	} else {
+		w.impl.setContentProtection(b)
 	}
 	return w
 }

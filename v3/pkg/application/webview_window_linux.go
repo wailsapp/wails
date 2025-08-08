@@ -424,7 +424,8 @@ func (w *linuxWebviewWindow) hide() {
 	w.windowHide()
 }
 
-func (w *linuxWebviewWindow) showMenuBar()   {}
-func (w *linuxWebviewWindow) hideMenuBar()   {}
-func (w *linuxWebviewWindow) toggleMenuBar() {}
-func (w *linuxWebviewWindow) snapAssist()    {} // No-op on Linux
+func (w *linuxWebviewWindow) showMenuBar()                      {}
+func (w *linuxWebviewWindow) hideMenuBar()                      {}
+func (w *linuxWebviewWindow) toggleMenuBar()                    {}
+func (w *linuxWebviewWindow) snapAssist()                       {} // No-op on Linux
+func (w *linuxWebviewWindow) setContentProtection(enabled bool) {}
