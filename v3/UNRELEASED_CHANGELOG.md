@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
++ Fix extra-broad Linux package dependencies, fix outdated RPM dependencies.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
