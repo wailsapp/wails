@@ -14,6 +14,7 @@ import (
 func (f *Frontend) BrowserOpenURL(url string) {
 	if err := utils.ValidateURL(url); err != nil {
 		f.logger.Error(fmt.Sprintf("Invalid URL %s", err.Error()))
+		return
 	}
 	// Specific method implementation
 	if err := browser.OpenURL(url); err != nil {
