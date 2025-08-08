@@ -41,6 +41,10 @@ func (a *Apt) Packages() Packagemap {
 		"npm": []*Package{
 			{Name: "npm", SystemPackage: true},
 		},
+		"musl-dev": []*Package{
+			{Name: "musl-dev", SystemPackage: true, Optional: true},
+			{Name: "musl-tools", SystemPackage: true, Optional: true},
+		},
 	}
 }
 

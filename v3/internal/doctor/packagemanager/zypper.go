@@ -45,6 +45,9 @@ func (z *Zypper) Packages() Packagemap {
 		"npm": []*Package{
 			{Name: "npm10", SystemPackage: true},
 		},
+		"musl-dev": []*Package{
+			{Name: "musl-devel", SystemPackage: true, Optional: true},
+		},
 	}
 }
 
