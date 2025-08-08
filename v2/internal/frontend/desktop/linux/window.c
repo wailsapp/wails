@@ -53,7 +53,7 @@ static void sendMessageToBackend(WebKitUserContentManager *contentManager,
 {
     // Retrieve webview from content manager
     WebKitWebView *webview = WEBKIT_WEB_VIEW(g_object_get_data(G_OBJECT(contentManager), "webview"));
-    const char *current_uri = webkit_web_view_get_uri(webview);
+    const char *current_uri = webview ? webkit_web_view_get_uri(webview) : NULL;
     char *uri = current_uri ? g_strdup(current_uri) : NULL;
 
 #if WEBKIT_MAJOR_VERSION >= 2 && WEBKIT_MINOR_VERSION >= 22
