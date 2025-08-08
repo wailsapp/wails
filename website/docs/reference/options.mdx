@@ -134,6 +134,7 @@ func main() {
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
         },
+        BindingsAllowedOrigins: "https://my.topapp,https://*.wails.isgreat",
     })
 
     if err != nil {
@@ -619,8 +620,8 @@ Type: `bool`
 
 Prevents window contents from being captured by other applications.
 
-On Windows it calls SetWindowDisplayAffinity with `WDA_EXCLUDEFROMCAPTURE`. 
-For Windows 10 version 2004 and later the window will be completely removed from capture. 
+On Windows it calls SetWindowDisplayAffinity with `WDA_EXCLUDEFROMCAPTURE`.
+For Windows 10 version 2004 and later the window will be completely removed from capture.
 Older Windows versions will call SetWindowDisplayAffinity with `WDA_MONITOR`, capturing a black window.
 
 Name: ContentProtection<br/>
@@ -940,7 +941,7 @@ Type: `bool`
 
 Prevents window contents from being captured by other applications.
 
-On MacOS it sets the NSWindow's sharingType to NSWindowSharingNone, removing the window from capture entirely. 
+On MacOS it sets the NSWindow's sharingType to NSWindowSharingNone, removing the window from capture entirely.
 
 Name: ContentProtection<br/>
 Type: `bool`
@@ -1129,3 +1130,12 @@ Setting this to `true` will open the WebInspector on startup of the application.
 
 Name: OpenInspectorOnStartup<br/>
 Type: `bool`
+
+### BindingsAllowedOrigins
+
+Comma-separated list of additional allowed origins for JS ↔ Go bindings.
+Supports “*” wildcards in hostnames for subdomain matching.
+Example: `"https://*.myapp.com, https://example.com"`
+
+Name: BindingsAllowedOrigins<br/>
+Type: `string`<br/>
