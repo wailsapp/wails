@@ -24,20 +24,20 @@ contents:
   - src: "./build/linux/{{.BinaryName}}.desktop"
     dst: "/usr/share/applications/{{.BinaryName}}.desktop"
 
-# Default runtime dependencies for Debian 12/Ubuntu 22.04+ with WebKit 4.1
+# Default runtime dependencies for Debian 12/Ubuntu 22.04+
 depends:
   - libgtk-3-0
   - libwebkit2gtk-4.1-0
 
 # Distribution-specific overrides for different package formats and WebKit versions
 overrides:
-  # RPM packages for RHEL/CentOS/AlmaLinux/Rocky Linux (WebKit 4.0)
+  # RPM packages for RHEL/CentOS/AlmaLinux/Rocky Linux
   rpm:
     depends:
       - gtk3
-      - webkit2gtk3
+      - webkit2gtk4.1
   
-  # Arch Linux packages (WebKit 4.1)  
+  # Arch Linux packages
   archlinux:
     depends:
       - gtk3
