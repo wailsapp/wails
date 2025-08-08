@@ -20,7 +20,7 @@ func ValidateURL(rawURL string) error {
 		return fmt.Errorf("invalid URL format: %v", err)
 	}
 
-	scheme := parsedURL.Scheme
+	scheme := strings.ToLower(parsedURL.Scheme)
 
 	if scheme == "javascript" || scheme == "data" || scheme == "file" || scheme == "ftp" || scheme == "" {
 		return errors.New("scheme not allowed")

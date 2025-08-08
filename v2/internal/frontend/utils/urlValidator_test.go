@@ -8,7 +8,7 @@ import (
 )
 
 // Test cases for ValidateAndOpenURL
-func TestValidateAndOpenURL(t *testing.T) {
+func TestValidateURL(t *testing.T) {
 	testCases := []struct {
 		name      string
 		url       string
@@ -124,7 +124,7 @@ func TestValidateAndOpenURL(t *testing.T) {
 			errMsg:    "control character",
 		},
 		{
-			name:      "URL with tab character (allowed)",
+			name:      "URL with tab character",
 			url:       "https://example.com/path?q=hello\tworld",
 			shouldErr: true,
 			errMsg:    "control character",
