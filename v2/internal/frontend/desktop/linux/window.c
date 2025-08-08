@@ -53,7 +53,8 @@ static void sendMessageToBackend(WebKitUserContentManager *contentManager,
 {
     // Retrieve webview from content manager
     WebKitWebView *webview = WEBKIT_WEB_VIEW(g_object_get_data(G_OBJECT(contentManager), "webview"));
-    char *uri = g_strdup(webkit_web_view_get_uri(webview));
+    const char *current_uri = webkit_web_view_get_uri(webview);
+    char *uri = current_uri ? g_strdup(current_uri) : NULL;
 
 #if WEBKIT_MAJOR_VERSION >= 2 && WEBKIT_MINOR_VERSION >= 22
     JSCValue *value = webkit_javascript_result_get_js_value(result);
@@ -69,7 +70,9 @@ static void sendMessageToBackend(WebKitUserContentManager *contentManager,
 #endif
     processBindingMessage(message, uri);
     g_free(message);
-    g_free(uri);
+    if (uri) {
+        g_free(uri);
+    }
 }
 
 static bool isNULLRectangle(GdkRectangle input)

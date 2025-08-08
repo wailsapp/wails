@@ -190,7 +190,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 
 	go result.startMessageProcessor()
-	go result.startBindingMessageProcessor()
+	go result.startBindingsMessageProcessor()
 
 	var _debug = ctx.Value("debug")
 	var _devtoolsEnabled = ctx.Value("devtoolsEnabled")
@@ -223,18 +223,18 @@ func (f *Frontend) startMessageProcessor() {
 	}
 }
 
-func (f *Frontend) startBindingMessageProcessor() {
+func (f *Frontend) startBindingsMessageProcessor() {
 	for msg := range bindingsMessageBuffer {
 		origin, err := f.originValidator.GetOriginFromURL(msg.source)
 		if err != nil {
 			f.logger.Error(fmt.Sprintf("failed to get origin for URL %q: %v", msg.source, err))
-			return
+			continue
 		}
 
 		allowed := f.originValidator.IsOriginAllowed(origin)
 		if !allowed {
 			f.logger.Error("Blocked request from unauthorized origin: %s", origin)
-			return
+			continue
 		}
 
 		f.processMessage(msg.message)

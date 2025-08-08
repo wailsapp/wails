@@ -173,19 +173,19 @@ func (f *Frontend) startBindingsMessageProcessor() {
 		// Apple webkit doesn't provide origin of main frame. So we can't verify in case of iFrame that top level origin is allowed.
 		if !msg.isMainFrame {
 			f.logger.Error("Blocked request from not main frame")
-			return
+			continue
 		}
 
 		origin, err := f.originValidator.GetOriginFromURL(msg.source)
 		if err != nil {
 			f.logger.Error(fmt.Sprintf("failed to get origin for URL %q: %v", msg.source, err))
-			return
+			continue
 		}
 
 		allowed := f.originValidator.IsOriginAllowed(origin)
 		if !allowed {
 			f.logger.Error("Blocked request from unauthorized origin: %s", origin)
-			return
+			continue
 		}
 
 		f.processMessage(msg.message)
