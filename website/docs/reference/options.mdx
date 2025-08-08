@@ -134,7 +134,7 @@ func main() {
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
         },
-        BindingsAllowedOrigins: "https://my.topapp,https://*.wails.isgreat"
+        BindingsAllowedOrigins: "https://my.topapp,https://*.wails.isgreat",
     })
 
     if err != nil {
@@ -1131,9 +1131,11 @@ Setting this to `true` will open the WebInspector on startup of the application.
 Name: OpenInspectorOnStartup<br/>
 Type: `bool`
 
-#### BindingsAllowedOrigins
+### BindingsAllowedOrigins
 
-List of additional allowed origins for bindings in format "https://*.myapp.com,https://example.com"
+Comma-separated list of additional allowed origins for JS ↔ Go bindings.
+Supports “*” wildcards in hostnames for subdomain matching.
+Example: `"https://*.myapp.com, https://example.com"`
 
 Name: BindingsAllowedOrigins<br/>
-Type: `string`
+Type: `string`<br/>
