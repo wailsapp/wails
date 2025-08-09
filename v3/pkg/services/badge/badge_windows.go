@@ -5,6 +5,7 @@ package badge
 import (
 	"bytes"
 	"context"
+	"errors"
 	"image"
 	"image/color"
 	"image/png"
@@ -86,14 +87,16 @@ func (w *windowsBadge) SetBadge(label string) error {
 		return nil
 	}
 
-	hwnd, err := window.NativeWindowHandle()
-	if err != nil {
-		return err
+	nativeWindow := window.NativeWindow()
+	if nativeWindow == nil {
+		return errors.New("window native handle unavailable")
 	}
+	hwnd := uintptr(nativeWindow)
 
 	w.createBadge()
 
 	var hicon w32.HICON
+	var err error
 	if label == "" {
 		hicon, err = w.createBadgeIcon()
 		if err != nil {
@@ -126,10 +129,11 @@ func (w *windowsBadge) SetCustomBadge(label string, options Options) error {
 		return nil
 	}
 
-	hwnd, err := window.NativeWindowHandle()
-	if err != nil {
-		return err
+	nativeWindow := window.NativeWindow()
+	if nativeWindow == nil {
+		return errors.New("window native handle unavailable")
 	}
+	hwnd := uintptr(nativeWindow)
 
 	const badgeSize = 32
 
@@ -151,6 +155,7 @@ func (w *windowsBadge) SetCustomBadge(label string, options Options) error {
 	}
 
 	var hicon w32.HICON
+	var err error
 	if label == "" {
 		hicon, err = createBadgeIcon(badgeSize, img, options)
 		if err != nil {
@@ -183,10 +188,11 @@ func (w *windowsBadge) RemoveBadge() error {
 		return nil
 	}
 
-	hwnd, err := window.NativeWindowHandle()
-	if err != nil {
-		return err
+	nativeWindow := window.NativeWindow()
+	if nativeWindow == nil {
+		return errors.New("window native handle unavailable")
 	}
+	hwnd := uintptr(nativeWindow)
 
 	return w.taskbar.SetOverlayIcon(hwnd, 0, nil)
 }
