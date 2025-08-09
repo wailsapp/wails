@@ -26,28 +26,22 @@ contents:
 
 # Default dependencies for Debian 12/Ubuntu 22.04+ with WebKit 4.1
 depends:
-  - libgtk-3-dev
-  - libwebkit2gtk-4.1-dev
-  - build-essential
-  - pkg-config
+  - libgtk-3-0
+  - libwebkit2gtk-4.1-0
 
 # Distribution-specific overrides for different package formats and WebKit versions
 overrides:
   # RPM packages for RHEL/CentOS/AlmaLinux/Rocky Linux (WebKit 4.0)
   rpm:
     depends:
-      - gtk3-devel
-      - webkit2gtk3-devel
-      - gcc-c++
-      - pkg-config
+      - gtk3
+      - webkit2gtk4.1
   
   # Arch Linux packages (WebKit 4.1)  
   archlinux:
     depends:
       - gtk3
       - webkit2gtk-4.1
-      - base-devel
-      - pkgconf
 
 # scripts section to ensure desktop database is updated after install
 scripts:
