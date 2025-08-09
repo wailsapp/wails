@@ -187,50 +187,6 @@ wails3 task -p task1 task2 task3
 wails3 task -w dev
 ```
 
-### `task`
-Runs tasks defined in your project's Taskfile.yml. This is an embedded version of [Taskfile](https://taskfile.dev) that allows you to define and run custom build, test, and deployment tasks.
-
-```bash
-wails3 task [taskname] [CLI variables...] [flags]
-```
-
-#### CLI Variables
-You can pass variables to tasks in the format `KEY=VALUE`:
-```bash
-wails3 task build PLATFORM=linux CONFIG=production
-wails3 task deploy ENV=staging VERSION=1.2.3
-```
-
-These variables can be accessed in your Taskfile.yml using Go template syntax:
-```yaml
-tasks:
-  build:
-    cmds:
-      - echo "Building for {{.PLATFORM | default "darwin"}}"
-      - echo "Config: {{.CONFIG | default "debug"}}"
-```
-
-#### Examples
-```bash
-# Run the default task
-wails3 task
-
-# Run a specific task
-wails3 task test
-
-# Run a task with variables
-wails3 task build PLATFORM=windows ARCH=amd64
-
-# List all available tasks
-wails3 task --list
-
-# Run multiple tasks in parallel
-wails3 task -p task1 task2 task3
-
-# Watch for changes and re-run task
-wails3 task -w dev
-```
-
 ### `doctor`
 Performs a system check and displays a status report.
 
