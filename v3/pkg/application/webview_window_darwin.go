@@ -825,7 +825,6 @@ static void setContentProtection(void *nsWindow, bool enabled) {
 	}
 
 	if( enabled ) {
-		NSLog(@"Disabling Capture\n");
 		[window setSharingType:NSWindowSharingNone];
 	} else {
 		[window setSharingType:NSWindowSharingReadOnly];
