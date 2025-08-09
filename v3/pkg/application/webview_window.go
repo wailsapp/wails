@@ -525,7 +525,9 @@ func (w *WebviewWindow) SetContentProtection(b bool) Window {
 	if w.impl == nil {
 		w.options.ContentProtectionEnabled = b
 	} else {
-		w.impl.setContentProtection(b)
+		InvokeSync(func() {
+			w.impl.setContentProtection(b)
+		})
 	}
 	return w
 }

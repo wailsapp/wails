@@ -825,10 +825,12 @@ static void setContentProtection(void *nsWindow, bool enabled) {
 	}
 
 	if( enabled ) {
-		[window setSharingType:NSWindowSharingReadOnly];
-	} else {
+		NSLog(@"Disabling Capture\n");
 		[window setSharingType:NSWindowSharingNone];
+	} else {
+		[window setSharingType:NSWindowSharingReadOnly];
 	}
+}
 
 */
 import "C"
@@ -1233,6 +1235,9 @@ func (w *macosWebviewWindow) run() {
 		}
 		//w.setZoom(options.Zoom)
 		w.enableDevTools()
+
+		// Content Protection
+		w.setContentProtection(options.ContentProtectionEnabled)
 
 		w.setBackgroundColour(options.BackgroundColour)
 

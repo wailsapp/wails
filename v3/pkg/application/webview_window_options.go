@@ -137,6 +137,8 @@ type WebviewWindowOptions struct {
 	IgnoreMouseEvents bool
 
 	// ContentProtectionEnabled specifies whether content protection is enabled, preventing screen capture and recording.
+	// Effective on Windows and macOS only; no-op on Linux.
+	// Best-effort protection with platform-specific caveats (see docs).
 	ContentProtectionEnabled bool
 }
 

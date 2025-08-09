@@ -2451,5 +2451,10 @@ func (w *windowsWebviewWindow) setContentProtection(enabled bool) {
 	if !enabled {
 		affinity = w32.WDA_NONE
 	}
-	w32.SetWindowDisplayAffinity(w.hwnd, affinity)
+	if ok := w32.SetWindowDisplayAffinity(w.hwnd, affinity); !ok {
+		// Note: wrapper already falls back to WDA_MONITOR on older Windows.
+		globalApplication.warning("SetWindowDisplayAffinity failed",
+			"window", w.parent.id,
+			"affinity", affinity)
+	}
 }

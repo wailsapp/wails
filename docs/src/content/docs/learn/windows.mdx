@@ -232,8 +232,8 @@ window.SetContentProtection(false)
 
 ### Platform Support
 
-- **Windows**: Uses `WDA_EXCLUDEFROMCAPTURE` on Windows 10 version 2004+ (build 19041+). Falls back to `WDA_MONITOR` on older versions.
-- **macOS**: Uses `NSWindowSharingType` to set the window as read-only for screen sharing.
+- **Windows**: Uses `WDA_EXCLUDEFROMCAPTURE` on Windows 10 version 2004+ (build 19041+). Falls back to `WDA_MONITOR` on older versions (legacy mode providing partial protection that may not block all capture paths).
+- **macOS**: Sets `NSWindow.sharingType` to `NSWindowSharingNone` when enabled (prevents capture) and `NSWindowSharingReadOnly` when disabled (allows capture).
 - **Linux**: Currently not implemented (no-op).
 
 ### Use Cases
@@ -251,6 +251,8 @@ Content protection is ideal for:
 2. On Windows, the fallback for older versions provides partial protection
 3. Some screen capture tools may still be able to capture protected content using low-level APIs
 4. This feature should be part of a comprehensive security strategy, not the only protection
+5. Detached DevTools or inspector windows are separate instances and will not inherit content protection automatically
+
 
 ## Advanced Window Management
 
