@@ -1,6 +1,8 @@
 package application
 
 import (
+	"unsafe"
+	
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -82,6 +84,9 @@ type Window interface {
 	UnMaximise()
 	UnMinimise()
 	Width() int
+	IsVisible() bool
+	Bounds() Rect
+	SetBounds(bounds Rect)
 	Zoom()
 	ZoomIn()
 	ZoomOut()
@@ -89,4 +94,19 @@ type Window interface {
 	SetMenu(menu *Menu)
 	SnapAssist()
 	SetContentProtection(protection bool) Window
+	NativeWindow() unsafe.Pointer
+	SetEnabled(enabled bool)
+	Flash(enabled bool)
+	Print() error
+	RegisterHook(eventType events.WindowEventType, callback func(event *WindowEvent)) func()
+	shouldUnconditionallyClose() bool
+
+	// Editing methods
+	cut()
+	copy()
+	paste()
+	undo()
+	redo()
+	delete()
+	selectAll()
 }

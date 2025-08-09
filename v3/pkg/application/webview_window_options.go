@@ -131,7 +131,7 @@ type WebviewWindowOptions struct {
 	DefaultContextMenuDisabled bool
 
 	// KeyBindings is a map of key bindings to functions
-	KeyBindings map[string]func(window *WebviewWindow)
+	KeyBindings map[string]func(window Window)
 
 	// IgnoreMouseEvents will ignore mouse events in the window (Windows + Mac only)
 	IgnoreMouseEvents bool
