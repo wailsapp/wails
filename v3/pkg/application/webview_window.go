@@ -2,7 +2,6 @@ package application
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"runtime"
 	"slices"
@@ -10,6 +9,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"text/template"
+	"unsafe"
 
 	"github.com/leaanthony/u"
 
@@ -79,7 +79,7 @@ type (
 		getScreen() (*Screen, error)
 		setFrameless(bool)
 		openContextMenu(menu *Menu, data *ContextMenuData)
-		nativeWindowHandle() uintptr
+		nativeWindow() unsafe.Pointer
 		startDrag() error
 		startResize(border string) error
 		print() error
@@ -151,7 +151,7 @@ type WebviewWindow struct {
 	cancellers     []func()
 
 	// keyBindings holds the keybindings for the window
-	keyBindings     map[string]func(*WebviewWindow)
+	keyBindings     map[string]func(Window)
 	keyBindingsLock sync.RWMutex
 
 	// menuBindings holds the menu bindings for the window
@@ -294,9 +294,9 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 }
 
 func processKeyBindingOptions(
-	keyBindings map[string]func(window *WebviewWindow),
-) map[string]func(window *WebviewWindow) {
-	result := make(map[string]func(window *WebviewWindow))
+	keyBindings map[string]func(window Window),
+) map[string]func(window Window) {
+	result := make(map[string]func(window Window))
 	for key, callback := range keyBindings {
 		// Parse the key to an accelerator
 		acc, err := parseAccelerator(key)
@@ -1276,12 +1276,17 @@ func (w *WebviewWindow) OpenContextMenu(data *ContextMenuData) {
 	})
 }
 
-// NativeWindowHandle returns the platform native window handle for the window.
-func (w *WebviewWindow) NativeWindowHandle() (uintptr, error) {
+// NativeWindow returns the platform-specific native window handle
+func (w *WebviewWindow) NativeWindow() unsafe.Pointer {
 	if w.impl == nil || w.isDestroyed() {
-		return 0, errors.New("native handle unavailable as window is not running")
+		return nil
 	}
-	return w.impl.nativeWindowHandle(), nil
+	return w.impl.nativeWindow()
+}
+
+// shouldUnconditionallyClose returns whether the window should close unconditionally
+func (w *WebviewWindow) shouldUnconditionallyClose() bool {
+	return atomic.LoadUint32(&w.unconditionallyClose) != 0
 }
 
 func (w *WebviewWindow) Focus() {

@@ -234,8 +234,8 @@ func (w *windowsWebviewWindow) startDrag() error {
 	return nil
 }
 
-func (w *windowsWebviewWindow) nativeWindowHandle() uintptr {
-	return w.hwnd
+func (w *windowsWebviewWindow) nativeWindow() unsafe.Pointer {
+	return unsafe.Pointer(w.hwnd)
 }
 
 func (w *windowsWebviewWindow) setTitle(title string) {

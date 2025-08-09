@@ -35,7 +35,7 @@ type systemTrayImpl interface {
 	setDarkModeIcon(icon []byte)
 	bounds() (*Rect, error)
 	getScreen() (*Screen, error)
-	positionWindow(window *WebviewWindow, offset int) error
+	positionWindow(window Window, offset int) error
 	openMenu()
 	Show()
 	Hide()
@@ -121,7 +121,7 @@ func (s *SystemTray) Run() {
 	InvokeSync(s.impl.run)
 }
 
-func (s *SystemTray) PositionWindow(window *WebviewWindow, offset int) error {
+func (s *SystemTray) PositionWindow(window Window, offset int) error {
 	if s.impl == nil {
 		return errors.New("system tray not running")
 	}
@@ -257,7 +257,7 @@ func (s *SystemTray) Hide() {
 
 type WindowAttachConfig struct {
 	// Window is the window to attach to the system tray. If it's null, the request to attach will be ignored.
-	Window *WebviewWindow
+	Window Window
 
 	// Offset indicates the gap in pixels between the system tray and the window
 	Offset int
@@ -278,7 +278,7 @@ type WindowAttachConfig struct {
 
 // AttachWindow attaches a window to the system tray. The window will be shown when the system tray icon is clicked.
 // The window will be hidden when the system tray icon is clicked again, or when the window loses focus.
-func (s *SystemTray) AttachWindow(window *WebviewWindow) *SystemTray {
+func (s *SystemTray) AttachWindow(window Window) *SystemTray {
 	s.attachedWindow.Window = window
 	return s
 }
