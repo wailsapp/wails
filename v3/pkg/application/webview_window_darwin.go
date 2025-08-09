@@ -818,6 +818,19 @@ static void setIgnoreMouseEvents(void *nsWindow, bool ignore) {
     [window setIgnoresMouseEvents:ignore];
 }
 
+static void setContentProtection(void *nsWindow, bool enabled) {
+    NSWindow *window = (__bridge NSWindow *)nsWindow;
+	if( ! [window respondsToSelector:@selector(setSharingType:)]) {
+		return;
+	}
+
+	if( enabled ) {
+		[window setSharingType:NSWindowSharingNone];
+	} else {
+		[window setSharingType:NSWindowSharingReadOnly];
+	}
+}
+
 */
 import "C"
 import (
@@ -1222,6 +1235,9 @@ func (w *macosWebviewWindow) run() {
 		//w.setZoom(options.Zoom)
 		w.enableDevTools()
 
+		// Content Protection
+		w.setContentProtection(options.ContentProtectionEnabled)
+
 		w.setBackgroundColour(options.BackgroundColour)
 
 		switch macOptions.Backdrop {
@@ -1326,8 +1342,8 @@ func (w *macosWebviewWindow) run() {
 	})
 }
 
-func (w *macosWebviewWindow) nativeWindowHandle() uintptr {
-	return uintptr(w.nsWindow)
+func (w *macosWebviewWindow) nativeWindow() unsafe.Pointer {
+	return w.nsWindow
 }
 
 func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
@@ -1420,6 +1436,10 @@ func (w *macosWebviewWindow) isIgnoreMouseEvents() bool {
 
 func (w *macosWebviewWindow) setIgnoreMouseEvents(ignore bool) {
 	C.setIgnoreMouseEvents(w.nsWindow, C.bool(ignore))
+}
+
+func (w *macosWebviewWindow) setContentProtection(enabled bool) {
+	C.setContentProtection(w.nsWindow, C.bool(enabled))
 }
 
 func (w *macosWebviewWindow) cut() {

@@ -17,9 +17,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add Content Protection on Windows/Mac by [@leaanthony](https://github.com/leaanthony) based on the original work of [@Taiterbase](https://github.com/Taiterbase) in this [PR](https://github.com/wailsapp/wails/pull/4241)
 
 ## Changed
 <!-- Changes in existing functionality -->
+- `window.NativeWindowHandle()` -> `window.NativeWindow()` by @leaanthony in [#4471](https://github.com/wailsapp/wails/pull/4471)
+- Refactor internal window handling by @leaanthony in [#4471](https://github.com/wailsapp/wails/pull/4471)
 
 ## Fixed
 <!-- Bug fixes -->

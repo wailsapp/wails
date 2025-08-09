@@ -278,6 +278,26 @@ type pointer unsafe.Pointer
 type GSList C.GSList
 type GSListPointer *GSList
 
+// getLinuxWebviewWindow safely extracts a linuxWebviewWindow from a Window interface
+// Returns nil if the window is not a WebviewWindow or not a Linux implementation
+func getLinuxWebviewWindow(window Window) *linuxWebviewWindow {
+	if window == nil {
+		return nil
+	}
+	
+	webviewWindow, ok := window.(*WebviewWindow)
+	if !ok {
+		return nil
+	}
+	
+	lw, ok := webviewWindow.impl.(*linuxWebviewWindow)
+	if !ok {
+		return nil
+	}
+	
+	return lw
+}
+
 var (
 	nilPointer    pointer       = nil
 	nilRadioGroup GSListPointer = nil
@@ -1278,8 +1298,8 @@ func emit(we *C.WindowEvent) {
 func handleConfigureEvent(widget *C.GtkWidget, event *C.GdkEventConfigure, data C.uintptr_t) C.gboolean {
 	window, _ := globalApplication.Window.GetByID(uint(data))
 	if window != nil {
-		lw, ok := window.(*WebviewWindow).impl.(*linuxWebviewWindow)
-		if !ok {
+		lw := getLinuxWebviewWindow(window)
+		if lw == nil {
 			return C.gboolean(1)
 		}
 		if lw.lastX != int(event.x) || lw.lastY != int(event.y) {
@@ -1461,8 +1481,8 @@ func onButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t) C.
 	if window == nil {
 		return C.gboolean(0)
 	}
-	lw, ok := (window.(*WebviewWindow).impl).(*linuxWebviewWindow)
-	if !ok {
+	lw := getLinuxWebviewWindow(window)
+	if lw == nil {
 		return C.gboolean(0)
 	}
 
@@ -1498,8 +1518,8 @@ func onMenuButtonEvent(_ *C.GtkWidget, event *C.GdkEventButton, data C.uintptr_t
 	if window == nil {
 		return C.gboolean(0)
 	}
-	lw, ok := (window.(*WebviewWindow).impl).(*linuxWebviewWindow)
-	if !ok {
+	lw := getLinuxWebviewWindow(window)
+	if lw == nil {
 		return C.gboolean(0)
 	}
 
@@ -1755,7 +1775,10 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
 
 	window := nilPointer
 	if dialog.window != nil {
-		window = (dialog.window.impl).(*linuxWebviewWindow).window
+		nativeWindow := dialog.window.NativeWindow()
+		if nativeWindow != nil {
+			window = pointer(nativeWindow)
+		}
 	}
 
 	buttonText := dialog.buttonText

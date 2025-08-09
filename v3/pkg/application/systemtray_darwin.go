@@ -101,12 +101,15 @@ func (s *macosSystemTray) setMenu(menu *Menu) {
 	s.menu = menu
 }
 
-func (s *macosSystemTray) positionWindow(window *WebviewWindow, offset int) error {
-	// Get the window's native window
-	impl := window.impl.(*macosWebviewWindow)
+func (s *macosSystemTray) positionWindow(window Window, offset int) error {
+	// Get the platform-specific window implementation
+	nativeWindow := window.NativeWindow()
+	if nativeWindow == nil {
+		return errors.New("window native implementation unavailable")
+	}
 
 	// Position the window relative to the systray
-	C.systemTrayPositionWindow(s.nsStatusItem, impl.nsWindow, C.int(offset))
+	C.systemTrayPositionWindow(s.nsStatusItem, nativeWindow, C.int(offset))
 
 	return nil
 }
