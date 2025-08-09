@@ -138,6 +138,29 @@ commands, Wails internally translates them to the appropriate task execution:
 - `wails3 build` → `wails3 task build`
 - `wails3 package` → `wails3 task package`
 
+### Passing Parameters to Tasks
+
+You can pass CLI variables to tasks using the `KEY=VALUE` format. These variables are forwarded through the alias commands:
+
+```bash
+# These are equivalent:
+wails3 build PLATFORM=linux CONFIG=production
+wails3 task build PLATFORM=linux CONFIG=production
+
+# Package with custom version:
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
+In your `Taskfile.yml`, you can access these variables using Go template syntax:
+
+```yaml
+tasks:
+  build:
+    cmds:
+      - echo "Building for {{.PLATFORM | default "darwin"}}"
+      - go build -tags {{.CONFIG | default "debug"}} -o myapp
+```
+
 ## Common Build Process
 
 Across all platforms, the build process typically includes the following steps:
